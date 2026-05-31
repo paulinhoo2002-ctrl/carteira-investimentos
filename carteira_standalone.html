@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📈 Carteira de Investimentos</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;font-size:14px}
+button{cursor:pointer;font-family:inherit}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#161b22}::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+.hdr{background:#161b22;border-bottom:1px solid #30363d;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.hdr-title{font-size:17px;font-weight:700;color:#e6edf3}
+.hdr-sub{font-size:12px;color:#8b949e;margin-top:2px}
+.tabs{background:#161b22;border-bottom:1px solid #30363d;padding:0 20px;display:flex;gap:2px;overflow-x:auto}
+.tab{background:transparent;border:none;border-bottom:2px solid transparent;color:#8b949e;padding:11px 15px;font-size:13px;transition:all .15s;white-space:nowrap}
+.tab:hover{color:#c9d1d9}
+.tab.on{border-bottom-color:#818cf8;color:#a5b4fc;font-weight:700}
+.wrap{padding:20px;max-width:1100px;margin:0 auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px 18px}
+.card.acc{border-left:3px solid}
+.clbl{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.cval{font-size:20px;font-weight:700;margin-bottom:2px}
+.csub{font-size:11px;color:#6e7681}
+.tw{background:#161b22;border:1px solid #30363d;border-radius:12px;overflow:hidden}
+.ts{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+thead tr{background:#1c2128}
+th{padding:10px 14px;text-align:left;color:#8b949e;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #21262d}
+td{padding:10px 14px;border-bottom:1px solid #21262d;color:#c9d1d9}
+tbody tr{transition:background .1s}tbody tr:hover{background:#1c2128}
+tbody tr:last-child td{border-bottom:none}
+.bdg{border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600}
+.b-ac{background:#0d2618;color:#34d399}
+.b-fi{background:#0c2233;color:#60a5fa}
+.b-et{background:#1a1433;color:#a78bfa}
+.b-xx{background:#1c2128;color:#8b949e}
+.btn{border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;transition:opacity .15s}
+.btn:hover{opacity:.8}
+.bp{background:#312e81;color:#c7d2fe}
+.bs{background:#064e3b;color:#6ee7b7}
+.bg{background:#1c2128;color:#8b949e;border:1px solid #30363d}
+.bi{background:transparent;border:1px solid #30363d;border-radius:6px;padding:4px 8px;color:#8b949e;font-size:13px}
+.bd{background:transparent;border:1px solid #7f1d1d;border-radius:6px;padding:4px 8px;color:#f87171;font-size:13px}
+.fc{background:#1c2128;border:1px solid #4c1d95;border-radius:12px;padding:18px;margin-bottom:16px}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.fl{font-size:11px;color:#8b949e;margin-bottom:4px}
+input,select{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:8px 10px;color:#e6edf3;font-size:13px;width:100%}
+input:focus,select:focus{border-color:#6366f1;outline:none}
+input::placeholder{color:#6e7681}
+select option{background:#0d1117}
+.bw{background:#21262d;border-radius:4px;height:6px;width:80px;overflow:hidden;display:inline-block}
+.bf{height:100%;background:#fbbf24}
+.gn{color:#34d399}.rd{color:#f87171}.am{color:#fbbf24}.pu{color:#818cf8}.bl{color:#60a5fa}.mu{color:#8b949e}.di{color:#6e7681}
+.es{text-align:center;padding:40px 20px;color:#8b949e}
+.aic{background:#1c2128;border:1px solid #4c1d95;border-radius:12px;padding:20px}
+.air{font-size:13px;line-height:1.8;color:#c9d1d9;white-space:pre-wrap}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.st{font-size:15px;font-weight:700}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:620px){.cg{grid-template-columns:1fr}}
+.cc{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px 18px}
+.ct{font-size:13px;font-weight:500;color:#8b949e;margin-bottom:14px}
+.db{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.dbl{font-size:12px;color:#c9d1d9;min-width:64px;font-weight:600}
+.dbt{flex:1;background:#21262d;border-radius:4px;height:8px;overflow:hidden}
+.dbf{height:100%;border-radius:4px}
+.dbv{font-size:12px;color:#8b949e;min-width:72px;text-align:right}
+.pleg{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pli{display:flex;align-items:center;gap:5px;font-size:12px;color:#8b949e}
+.pd{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.sp{display:inline-block;animation:spin 1s linear infinite}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const COLORS=['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
+const DEFAULT_ASSETS=[
+  {id:1,ticker:"PETR4",type:"Ação",sector:"Petróleo",qty:100,avgPrice:32.50,currentPrice:38.20,dy:8.5},
+  {id:2,ticker:"MXRF11",type:"FII",sector:"Papel",qty:200,avgPrice:9.80,currentPrice:10.15,dy:12.3},
+  {id:3,ticker:"VALE3",type:"Ação",sector:"Mineração",qty:50,avgPrice:65.00,currentPrice:68.50,dy:6.2},
+  {id:4,ticker:"HGLG11",type:"FII",sector:"Logística",qty:30,avgPrice:155.00,currentPrice:162.00,dy:9.1},
+];
+let S={assets:[...DEFAULT_ASSETS],aportes:[],tab:'dashboard',aiText:'',aiLoading:false,editId:null,showA:false,showP:false,_fa:null,_fp:null};
+
+function load(){try{const d=JSON.parse(localStorage.getItem('civ3')||'{}');if(d.assets)S.assets=d.assets;if(d.aportes)S.aportes=d.aportes;}catch(e){}}
+function save(){try{localStorage.setItem('civ3',JSON.stringify({assets:S.assets,aportes:S.aportes}));}catch(e){}}
+const fmt=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtP=v=>`${v>=0?'+':''}${v.toFixed(2)}%`;
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+function cx(){
+  const tI=S.assets.reduce((s,a)=>s+a.qty*a.avgPrice,0);
+  const tC=S.assets.reduce((s,a)=>s+a.qty*a.currentPrice,0);
+  const tG=tC-tI,tGP=tI>0?(tG/tI)*100:0;
+  const mD=S.assets.reduce((s,a)=>s+(a.qty*a.currentPrice*(a.dy/100))/12,0);
+  const aD=mD*12,avgDY=tC>0?(aD/tC)*100:0;
+  return{tI,tC,tG,tGP,mD,aD,avgDY};
+}
+function bdg(t){return t==='Ação'?'b-ac':t==='FII'?'b-fi':t==='ETF'?'b-et':'b-xx';}
+
+function pie(data){
+  const tot=data.reduce((s,d)=>s+d.value,0);
+  if(!tot)return'<svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:0 auto"><circle cx="100" cy="100" r="78" fill="#21262d"/></svg>';
+  let p='',a=-Math.PI/2;
+  data.forEach((d,i)=>{
+    const ang=(d.value/tot)*2*Math.PI;
+    const x1=100+78*Math.cos(a),y1=100+78*Math.sin(a);
+    const x2=100+78*Math.cos(a+ang),y2=100+78*Math.sin(a+ang);
+    const la=ang>Math.PI?1:0;
+    p+=`<path d="M100,100 L${x1.toFixed(1)},${y1.toFixed(1)} A78,78 0 ${la},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${COLORS[i%COLORS.length]}" stroke="#0d1117" stroke-width="2"/>`;
+    a+=ang;
+  });
+  return`<svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:0 auto">${p}</svg>`;
+}
+
+function render(){document.getElementById('app').innerHTML=html();bind();}
+
+function html(){
+  const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const tabs=['dashboard','ativos','aportes','dividendos','ia'];
+  const tlbl={'dashboard':'📊 Dashboard','ativos':'💼 Ativos','aportes':'💰 Aportes','dividendos':'📅 Dividendos','ia':'🤖 IA'};
+  return`<div class="hdr"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:24px">📈</span><div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">Gestão e acompanhamento patrimonial</div></div></div><div class="di" style="font-size:12px">${now}</div></div>
+  <div class="tabs">${tabs.map(t=>`<button class="tab ${S.tab===t?'on':''}" onclick="go('${t}')">${tlbl[t]}</button>`).join('')}</div>
+  <div class="wrap">${content()}</div>`;
+}
+
+function content(){
+  if(S.tab==='dashboard')return dash();
+  if(S.tab==='ativos')return ativos();
+  if(S.tab==='aportes')return aportes();
+  if(S.tab==='dividendos')return divs();
+  if(S.tab==='ia')return ia();
+  return'';
+}
+
+function dash(){
+  const {tI,tC,tG,tGP,mD,aD,avgDY}=cx();
+  const byType={};
+  S.assets.forEach(a=>{const v=a.qty*a.currentPrice;byType[a.type]=(byType[a.type]||0)+v;});
+  const ad=Object.entries(byType).map(([n,v])=>({name:n,value:v}));
+  const p=pie(ad);
+  const leg=ad.map((d,i)=>`<div class="pli"><div class="pd" style="background:${COLORS[i%COLORS.length]}"></div><span>${esc(d.name)} ${tC>0?((d.value/tC)*100).toFixed(0):'0'}%</span></div>`).join('');
+  const sd=[...S.assets].sort((a,b)=>((b.qty*b.currentPrice*(b.dy/100))/12)-((a.qty*a.currentPrice*(a.dy/100))/12));
+  const maxD=sd.length?Math.max(...sd.map(a=>(a.qty*a.currentPrice*(a.dy/100))/12)):0;
+  const bars=sd.map((a,i)=>{const dm=(a.qty*a.currentPrice*(a.dy/100))/12;const pct=maxD>0?(dm/maxD)*100:0;return`<div class="db"><div class="dbl">${esc(a.ticker)}</div><div class="dbt"><div class="dbf" style="width:${pct.toFixed(1)}%;background:${COLORS[i%COLORS.length]}"></div></div><div class="dbv am">${fmt(dm)}</div></div>`;}).join('');
+  return`<div class="cards">
+    <div class="card acc" style="border-left-color:#818cf8"><div class="clbl">💼 Patrimônio total</div><div class="cval pu">${fmt(tC)}</div><div class="csub">Investido: ${fmt(tI)}</div></div>
+    <div class="card acc" style="border-left-color:${tG>=0?'#34d399':'#f87171'}"><div class="clbl">📈 Ganho / perda</div><div class="cval" style="color:${tG>=0?'#34d399':'#f87171'}">${fmt(tG)}</div><div class="csub">${fmtP(tGP)}</div></div>
+    <div class="card acc" style="border-left-color:#fbbf24"><div class="clbl">💰 Dividendos / mês</div><div class="cval am">${fmt(mD)}</div><div class="csub">Anual: ${fmt(aD)}</div></div>
+    <div class="card acc" style="border-left-color:#60a5fa"><div class="clbl">% DY médio</div><div class="cval bl">${avgDY.toFixed(2)}%</div><div class="csub">${S.assets.length} ativos</div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Alocação por tipo</div>${p}<div class="pleg">${leg}</div></div>
+    <div class="cc"><div class="ct">Dividendos mensais por ativo</div>${bars||'<div class="di" style="font-size:13px">Cadastre seus ativos.</div>'}</div>
+  </div>`;
+}
+
+function formA(){
+  if(!S.showA)return'';
+  const f=S._fa||{};
+  return`<div class="fc"><div style="font-size:14px;font-weight:600;margin-bottom:12px;color:#c4b5fd">${S.editId?'Editar ativo':'Novo ativo'}</div>
+  <div class="fg">
+    <div><div class="fl">Ticker</div><input id="f-ti" placeholder="ex: ITSA4" value="${esc(f.ticker||'')}"></div>
+    <div><div class="fl">Quantidade</div><input id="f-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>
+    <div><div class="fl">Preço médio</div><input id="f-ap" type="number" step="0.01" placeholder="32.50" value="${esc(f.avgPrice||'')}"></div>
+    <div><div class="fl">Cotação atual</div><input id="f-cp" type="number" step="0.01" placeholder="38.00" value="${esc(f.currentPrice||'')}"></div>
+    <div><div class="fl">DY anual %</div><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
+    <div><div class="fl">Setor</div><input id="f-se" placeholder="ex: Financeiro" value="${esc(f.sector||'')}"></div>
+    <div><div class="fl">Tipo</div><select id="f-ty">${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option ${(f.type||'Ação')===t?'selected':''}>${t}</option>`).join('')}</select></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px"><button class="btn bs" onclick="svA()">Salvar</button><button class="btn bg" onclick="clA()">Cancelar</button></div></div>`;
+}
+
+function ativos(){
+  const rows=S.assets.map(a=>{
+    const vr=((a.currentPrice-a.avgPrice)/a.avgPrice)*100;
+    const dm=(a.qty*a.currentPrice*(a.dy/100))/12;
+    return`<tr><td style="font-weight:700;color:#e6edf3">${esc(a.ticker)}</td><td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td><td class="mu">${esc(a.sector||'—')}</td><td>${a.qty}</td><td>R$ ${a.avgPrice.toFixed(2)}</td><td>R$ ${a.currentPrice.toFixed(2)}</td><td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td><td style="font-weight:700;color:#e6edf3">${fmt(a.qty*a.currentPrice)}</td><td class="am">${fmt(dm)}</td><td class="mu">${a.dy}%</td><td><div style="display:flex;gap:4px"><button class="bi" onclick="edA(${a.id})">✏️</button><button class="bd" onclick="rmA(${a.id})">🗑️</button></div></td></tr>`;
+  }).join('');
+  return`<div class="sh"><div class="st">Minha carteira</div><button class="btn bp" onclick="tgA()">+ Adicionar ativo</button></div>
+  ${formA()}
+  <div class="tw"><div class="ts"><table><thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th><th>Atual</th><th>Variação</th><th>Total</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+  <tbody>${rows||'<tr><td colspan="11" style="text-align:center;padding:24px;color:#6e7681">Nenhum ativo cadastrado.</td></tr>'}</tbody></table></div></div>`;
+}
+
+function formP(){
+  if(!S.showP)return'';
+  const f=S._fp||{};
+  return`<div class="fc"><div style="font-size:14px;font-weight:600;margin-bottom:12px;color:#c4b5fd">Novo aporte</div>
+  <div class="fg">
+    <div><div class="fl">Data</div><input id="p-dt" type="date" value="${esc(f.date||'')}"></div>
+    <div><div class="fl">Ticker</div><input id="p-ti" placeholder="ex: MXRF11" value="${esc(f.ticker||'')}"></div>
+    <div><div class="fl">Quantidade</div><input id="p-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>
+    <div><div class="fl">Preço</div><input id="p-pr" type="number" step="0.01" placeholder="10.15" value="${esc(f.price||'')}"></div>
+  </div>
+  <div style="margin-top:10px"><div class="fl">Decisão / motivo</div><input id="p-dc" placeholder="ex: rebalanceamento, aproveitei queda..." value="${esc(f.decision||'')}"></div>
+  <div style="display:flex;gap:8px;margin-top:12px"><button class="btn bs" onclick="svP()">Salvar</button><button class="btn bg" onclick="clP()">Cancelar</button></div></div>`;
+}
+
+function aportes(){
+  const tot=S.aportes.reduce((s,a)=>s+a.qty*a.price,0);
+  const sum=S.aportes.length?`<div class="card" style="margin-bottom:12px;display:flex;gap:32px"><div><div class="clbl">Total aportado</div><div style="font-size:18px;font-weight:700;color:#818cf8">${fmt(tot)}</div></div><div><div class="clbl">Operações</div><div style="font-size:18px;font-weight:700">${S.aportes.length}</div></div></div>`:'';
+  const rows=[...S.aportes].reverse().map(a=>`<tr><td class="mu">${esc(a.date)}</td><td style="font-weight:700;color:#e6edf3">${esc(a.ticker)}</td><td>${a.qty}</td><td>R$ ${a.price.toFixed(2)}</td><td class="gn" style="font-weight:700">${fmt(a.qty*a.price)}</td><td class="mu">${esc(a.decision||'—')}</td><td><button class="bd" onclick="rmP(${a.id})">🗑️</button></td></tr>`).join('');
+  return`<div class="sh"><div class="st">Histórico de aportes</div><button class="btn bp" onclick="tgP()">+ Registrar aporte</button></div>
+  ${formP()}
+  ${!S.aportes.length?`<div class="es">💰<br><br>Nenhum aporte registrado. Clique em "+ Registrar aporte" para começar.</div>`:
+  `${sum}<div class="tw"><div class="ts"><table><thead><tr><th>Data</th><th>Ticker</th><th>Qtd</th><th>Preço</th><th>Total</th><th>Decisão / motivo</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`}`;
+}
+
+function divs(){
+  const {mD,aD,avgDY}=cx();
+  const sd=[...S.assets].sort((a,b)=>((b.qty*b.currentPrice*(b.dy/100))/12)-((a.qty*a.currentPrice*(a.dy/100))/12));
+  const rows=sd.map(a=>{const dm=(a.qty*a.currentPrice*(a.dy/100))/12;const pct=mD>0?(dm/mD)*100:0;
+    return`<tr><td style="font-weight:700;color:#e6edf3">${esc(a.ticker)}</td><td>${esc(a.type)}</td><td>${a.qty}</td><td>R$ ${a.currentPrice.toFixed(2)}</td><td class="am">${a.dy}%</td><td class="am" style="font-weight:700">${fmt(dm)}</td><td>${fmt(dm*12)}</td><td><div style="display:flex;align-items:center;gap:8px"><div class="bw"><div class="bf" style="width:${Math.min(pct,100).toFixed(1)}%"></div></div><span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span></div></td></tr>`;
+  }).join('');
+  return`<div style="font-size:15px;font-weight:700;margin-bottom:14px">Projeção de dividendos</div>
+  <div class="cards" style="margin-bottom:20px">
+    <div class="card acc" style="border-left-color:#fbbf24"><div class="clbl">Estimativa deste mês</div><div class="cval am">${fmt(mD)}</div></div>
+    <div class="card acc" style="border-left-color:#34d399"><div class="clbl">Projeção anual</div><div class="cval gn">${fmt(aD)}</div></div>
+    <div class="card acc" style="border-left-color:#818cf8"><div class="clbl">DY médio da carteira</div><div class="cval pu">${avgDY.toFixed(2)}%</div></div>
+  </div>
+  <div class="tw"><div class="ts"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY anual</th><th>Div. mensal</th><th>Div. anual</th><th>% da renda</th></tr></thead>
+  <tbody>${rows||'<tr><td colspan="8" style="text-align:center;padding:24px;color:#6e7681">Nenhum ativo cadastrado.</td></tr>'}</tbody></table></div></div>`;
+}
+
+function ia(){
+  const btn=`<button class="btn bp" onclick="getAI()" ${S.aiLoading?'disabled':''} style="display:flex;align-items:center;gap:8px;margin-bottom:20px;opacity:${S.aiLoading?.6:1}"><span ${S.aiLoading?'class="sp"':''}>${S.aiLoading?'⏳':'✨'}</span>${S.aiLoading?'Analisando sua carteira...':'Analisar carteira com IA'}</button>`;
+  const res=S.aiText?`<div class="aic"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:18px">🤖</span><span style="font-size:14px;font-weight:600;color:#c4b5fd">Análise da IA</span></div><div class="air">${esc(S.aiText)}</div><div style="margin-top:14px;padding-top:12px;border-top:1px solid #21262d;font-size:11px;color:#6e7681">⚠️ Conteúdo gerado por IA com caráter informativo. Não constitui recomendação de investimento. Consulte um profissional certificado (CFP/CNPI).</div></div>`:(!S.aiLoading?`<div class="es" style="border:1px dashed #21262d;border-radius:12px;background:#161b22">🤖<br><br>Clique no botão acima para receber uma análise personalizada da sua carteira.</div>`:'');
+  return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">Sugestões com inteligência artificial</div><div class="mu" style="font-size:13px;margin-bottom:16px">Análise e sugestões de rebalanceamento com base na sua carteira atual. Requer conexão com a internet.</div>${btn}${res}`;
+}
+
+// Actions
+function go(t){S.tab=t;render();}
+function tgA(){S.showA=!S.showA;S.editId=null;S._fa={type:'Ação'};render();}
+function clA(){S.showA=false;S.editId=null;S._fa=null;render();}
+function edA(id){const a=S.assets.find(x=>x.id===id);if(!a)return;S._fa={...a,qty:String(a.qty),avgPrice:String(a.avgPrice),currentPrice:String(a.currentPrice),dy:String(a.dy)};S.editId=id;S.showA=true;render();}
+function svA(){
+  const ti=document.getElementById('f-ti')?.value?.trim().toUpperCase();
+  const qt=parseFloat(document.getElementById('f-qt')?.value);
+  const ap=parseFloat(document.getElementById('f-ap')?.value);
+  const cp=parseFloat(document.getElementById('f-cp')?.value)||ap;
+  const dy=parseFloat(document.getElementById('f-dy')?.value)||0;
+  const se=document.getElementById('f-se')?.value?.trim()||'';
+  const ty=document.getElementById('f-ty')?.value||'Ação';
+  if(!ti||isNaN(qt)||isNaN(ap)){alert('Preencha Ticker, Quantidade e Preço Médio.');return;}
+  if(S.editId){S.assets=S.assets.map(a=>a.id===S.editId?{...a,ticker:ti,qty:qt,avgPrice:ap,currentPrice:cp,dy,sector:se,type:ty}:a);}
+  else{S.assets.push({id:Date.now(),ticker:ti,type:ty,sector:se,qty:qt,avgPrice:ap,currentPrice:cp,dy});}
+  S.showA=false;S.editId=null;S._fa=null;save();render();
+}
+function rmA(id){if(!confirm('Remover este ativo da carteira?'))return;S.assets=S.assets.filter(a=>a.id!==id);save();render();}
+function tgP(){S.showP=!S.showP;S._fp={};render();}
+function clP(){S.showP=false;S._fp=null;render();}
+function svP(){
+  const ti=document.getElementById('p-ti')?.value?.trim().toUpperCase();
+  const qt=parseFloat(document.getElementById('p-qt')?.value);
+  const pr=parseFloat(document.getElementById('p-pr')?.value);
+  const dc=document.getElementById('p-dc')?.value?.trim()||'';
+  let dt=document.getElementById('p-dt')?.value||'';
+  if(dt){const[y,m,d]=dt.split('-');dt=`${d}/${m}/${y}`;}else{dt=new Date().toLocaleDateString('pt-BR');}
+  if(!ti||isNaN(qt)||isNaN(pr)){alert('Preencha Ticker, Quantidade e Preço.');return;}
+  S.aportes.push({id:Date.now(),ticker:ti,qty:qt,price:pr,date:dt,decision:dc});
+  S.showP=false;S._fp=null;save();render();
+}
+function rmP(id){if(!confirm('Remover este aporte?'))return;S.aportes=S.aportes.filter(a=>a.id!==id);save();render();}
+
+async function getAI(){
+  if(S.aiLoading)return;
+  S.aiLoading=true;S.aiText='';render();
+  const{tC,tGP,mD,avgDY}=cx();
+  try{
+    const sum=S.assets.map(a=>`${a.ticker} (${a.type}/${a.sector}): ${a.qty} cotas, PM R$${a.avgPrice}, cotação R$${a.currentPrice}, DY ${a.dy}%`).join('\n');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:'Você é um analista de investimentos brasileiro especialista em renda variável, FIIs e renda passiva. Analise a carteira e forneça sugestões práticas e objetivas em português. Use tópicos curtos, seja direto. Não dê recomendações como verdade absoluta.',
+        messages:[{role:'user',content:`Minha carteira:\n\n${sum}\n\nPatrimônio: ${fmt(tC)}\nGanho: ${fmtP(tGP)}\nDividendos mensais: ${fmt(mD)}\nDY médio: ${avgDY.toFixed(2)}%\n\nAnalise e dê sugestões.`}]})
+    });
+    const data=await res.json();
+    S.aiText=data.content?.map(i=>i.text||'').join('\n')||'Sem resposta.';
+  }catch(e){S.aiText='Erro ao consultar a IA. Verifique sua conexão com a internet.';}
+  S.aiLoading=false;render();
+}
+
+function bind(){
+  document.querySelectorAll('.fc input,.fc select').forEach(el=>{
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'){if(S.showA)svA();else if(S.showP)svP();}});
+  });
+}
+
+load();render();
+</script>
+</body>
+</html>
