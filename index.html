@@ -81,6 +81,25 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .cc{background:#0d111e;border:1px solid #161e2e;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;min-height:100%}
 .cc>.tw{flex:1;min-height:0}
 .ct{font-size:11px;font-weight:600;color:#3d5472;margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em}
+.ag-wrap{display:flex;flex-direction:column;gap:12px}
+.ag{background:#0d111e;border:1px solid #161e2e;border-radius:14px;overflow:hidden}
+.ag>summary{list-style:none;display:flex;align-items:center;gap:14px;padding:18px 18px;cursor:pointer;flex-wrap:wrap}
+.ag>summary::-webkit-details-marker{display:none}
+.ag-left{display:flex;align-items:center;gap:12px;flex:1 1 240px;min-width:220px}
+.ag-ico{width:38px;height:38px;border-radius:12px;background:#111828;border:1px solid #1e2a3d;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.ag-name{font-size:19px;font-weight:800;line-height:1.1}
+.ag-sub{font-size:12px;color:#64748b;margin-top:4px}
+.ag-stats{display:grid;grid-template-columns:repeat(5,minmax(96px,1fr));gap:12px;flex:2 1 620px;min-width:0}
+.ag-stat{min-width:0}
+.ag-k{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.ag-v{font-size:15px;font-weight:800;line-height:1.1;white-space:nowrap}
+.ag-v small{font-size:11px;font-weight:700;color:#64748b;margin-left:6px}
+.ag-open{width:32px;height:32px;border-radius:999px;border:1px solid #1e2a3d;background:#111828;color:#c0cce0;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .18s}
+.ag[open] .ag-open{transform:rotate(180deg)}
+.ag-body{padding:0 14px 14px}
+.ag-table{margin-top:0}
+.ag-table .ts{border-radius:10px}
+.ag-table table{min-width:1120px}
 .db{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .dbl{font-size:12px;color:#c0cce0;min-width:62px;font-weight:600}
 .dbt{flex:1;background:#111828;border-radius:4px;height:6px;overflow:hidden}
@@ -134,6 +153,12 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .bexp,.bimp,.bb3{padding:7px 10px;font-size:11px}
   .fc{padding:12px;border-radius:11px}
   .fg{grid-template-columns:1fr;gap:8px}
+  .ag>summary{padding:14px}
+  .ag-left{min-width:0;flex:1 1 100%}
+  .ag-stats{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
+  .ag-open{margin-left:auto}
+  .ag-name{font-size:17px}
+  .ag-table table{min-width:980px}
   input,select{font-size:16px;padding:10px 11px}
   th,td{padding:8px 10px;font-size:11px}
   table{font-size:11px;min-width:720px}
@@ -608,6 +633,7 @@ const fmt  = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
 const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const bdg  = t => t==='Ação'?'bac':t==='FII'?'bfi':t==='ETF'?'bet':'bxx';
+const tipoIcon = t => t==='Ação'?'📈':t==='FII'?'🏢':t==='ETF'?'📊':t==='Renda Fixa'?'💼':t==='BDR'?'🧾':t==='Crypto'?'₿':'🗂️';
 function parseNum(v){
   if(v==null) return 0;
   let s=String(v).trim().replace(/R\$|%|\s/g,'');
@@ -1218,59 +1244,103 @@ function frmA(){
   </div>`;
 }
 function ativos(){
-  const total=S.assets.reduce((s,a)=>s+a.qty*a.current_price,0);
-  const rows=S.assets.map(a=>{
-    const vr=a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0;
-    const dm=(a.qty*a.current_price*(a.dy/100))/12;
-    const peso=total>0?(a.qty*a.current_price/total)*100:0;
-    const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
-    const q=S.quotes[a.ticker];
-    const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
-    const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
-    const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'mercado';
-    return`<tr>
-      <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
-      <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
-      <td class="mu">${esc(a.sector||'—')}</td>
-      <td>${a.qty}</td>
-      <td>R$ ${Number(a.avg_price).toFixed(2)}</td>
-      <td style="font-weight:600;color:${a.current_price>=a.avg_price?'#34d399':'#f87171'}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
-        R$ ${Number(a.current_price).toFixed(2)}
-        ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
-        <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
-      </td>
-      <td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td>
-      <td>${alvo>0?'R$ '+alvo.toFixed(2):'—'}</td>
-      <td style="font-weight:700;color:#e2eaf6">${fmt(a.qty*a.current_price)}</td>
-      <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
-      <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
-      <td class="am" style="font-weight:600">${fmt(dm)}</td>
-      <td class="mu">${a.dy||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
-      <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
-    </tr>`;
+  const total=S.assets.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.current_price)||0),0);
+  const grouped=new Map();
+  S.assets.forEach(a=>{
+    const type=(a.type||metaTicker(a.ticker).type||'Ação').trim();
+    if(!grouped.has(type)) grouped.set(type,[]);
+    grouped.get(type).push(a);
+  });
+  const order=['Ação','FII','ETF','Renda Fixa','BDR','Crypto'];
+  const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
+  const sections=groupNames.map((type,idx)=>{
+    const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
+    const gTotal=items.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.current_price)||0),0);
+    const gCost=items.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.avg_price)||0),0);
+    const gDivMes=items.reduce((s,a)=>s+((Number(a.qty)||0)*(Number(a.current_price)||0)*(Number(a.dy)||0)/100)/12,0);
+    const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
+    const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
+    const share=total>0?(gTotal/total)*100:0;
+    const rows=items.map(a=>{
+      const avg=Number(a.avg_price)||0;
+      const current=Number(a.current_price)||0;
+      const vr=avg>0?((current-avg)/avg)*100:0;
+      const dm=((Number(a.qty)||0)*current*(Number(a.dy)||0))/1200;
+      const peso=total>0?((Number(a.qty)||0)*current/total)*100:0;
+      const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
+      const q=S.quotes[a.ticker];
+      const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
+      const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
+      const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'mercado';
+      return`<tr>
+        <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
+        <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
+        <td class="mu">${esc(a.sector||'—')}</td>
+        <td>${a.qty}</td>
+        <td>R$ ${avg.toFixed(2)}</td>
+        <td style="font-weight:600;color:${current>=avg?'#34d399':'#f87171'}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
+          R$ ${current.toFixed(2)}
+          ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
+          <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
+        </td>
+        <td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td>
+        <td>${alvo>0?'R$ '+alvo.toFixed(2):'—'}</td>
+        <td style="font-weight:700;color:#e2eaf6">${fmt((Number(a.qty)||0)*current)}</td>
+        <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
+        <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
+        <td class="am" style="font-weight:600">${fmt(dm)}</td>
+        <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
+        <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
+      </tr>`;
+    }).join('');
+    return`<details class="ag"${idx===0?' open':''}>
+      <summary>
+        <div class="ag-left">
+          <div class="ag-ico">${tipoIcon(type)}</div>
+          <div>
+            <div class="ag-name">${esc(type)}</div>
+            <div class="ag-sub">${items.length} ativos · ${fmt(gTotal)} · ${share.toFixed(1)}% da carteira</div>
+          </div>
+        </div>
+        <div class="ag-stats">
+          <div class="ag-stat"><div class="ag-k">Ativos</div><div class="ag-v">${items.length}</div></div>
+          <div class="ag-stat"><div class="ag-k">Valor total</div><div class="ag-v">${fmt(gTotal)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Variação</div><div class="ag-v" style="color:${gVar>=0?'#34d399':'#f87171'}">${fmtP(gVar)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Rentabilidade</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${gDY.toFixed(2)}% <small>DY</small></div></div>
+          <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${share.toFixed(1)}%</div></div>
+        </div>
+        <div class="ag-open">⌄</div>
+      </summary>
+      <div class="ag-body">
+        <div class="ag-table">
+          <div class="tw"><div class="ts"><table>
+            <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
+              <th>
+                <div style="display:flex;align-items:center;gap:5px">
+                  ATUAL
+                  <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
+                </div>
+              </th>
+              <th>Rentab.</th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
+          </table></div></div>
+        </div>
+      </div>
+    </details>`;
   }).join('');
   return`<div class="sh">
-    <div><div class="st">Minha carteira</div><div class="mu" style="font-size:12px;margin-top:4px">Alimentada automaticamente pelos Aportes. Use ✏️ para ajustar DY, preço médio, preço alvo e % ideal. Cotação vem automática pelo Yahoo.</div></div>
+    <div>
+      <div class="st">Meus Ativos (${S.assets.length})</div>
+      <div class="mu" style="font-size:12px;margin-top:4px">Ativos agrupados por categoria. Abra cada bloco para ver os detalhes e editar um item.</div>
+    </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
     </div>
   </div>
   ${frmA()}
-  <div class="tw"><div class="ts"><table>
-    <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
-      <th>
-        <div style="display:flex;align-items:center;gap:5px">
-          ATUAL
-          <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
-        </div>
-      </th>
-      <th>Rentab.</th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
-    <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Registre compras na aba 💰 Aportes para alimentar esta tela.</td></tr>'}</tbody>
-  </table></div></div>`;
+  <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>`;
 }
-
-// ══════════════════════════════════════
 // APORTES
 // ══════════════════════════════════════
 function frmP(){
