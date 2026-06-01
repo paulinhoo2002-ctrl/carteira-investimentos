@@ -463,27 +463,25 @@ async function fetchQuotes(manual=false){
       tickers.slice(i,i+20).forEach(t=>{if(!recv.has(t)) semPreco.push(t);});
     }
     S.lastUpdate=new Date(); autoDY(); save();
-    // ── Fallback: Yahoo Finance para tickers sem cotação brapi
-    const semCotacao=S.assets.filter(a=>!a.quoteSource||a.quoteSource!=='brapi').map(a=>a.ticker);
-    if(semCotacao.length){
-      const yResults=await fetchQuotesYahoo(semCotacao);
-      yResults.forEach(q=>{
-        const ticker=(q.symbol||'').replace('.SA','').toUpperCase();
-        const a=S.assets.find(x=>x.ticker===ticker); if(!a) return;
-        const price=q.regularMarketPrice;
-        if(price&&price>0){
-          const prev=a.current_price;
-          a.current_price=price;
-          a.quoteSource='yahoo';
-          a.quoteUpdatedAt=new Date().toISOString();
-          S.quotes[ticker]={price,change:q.regularMarketChangePercent||0,flash:price>prev?'up':price<prev?'down':''};
-          atualizados++;
-        }
-        const dyY=(q.trailingAnnualDividendYield||0)*100;
-        if(dyY>0&&(!a.dy||a.dySource==='estimate')){a.dy=Number(dyY.toFixed(2));a.dySource='yahoo';}
-      });
-      if(yResults.length) save();
-    }
+    // ── Yahoo Finance busca TODOS os tickers para garantir preço real
+    const todosT=S.assets.map(a=>a.ticker);
+    const yResults=await fetchQuotesYahoo(todosT);
+    yResults.forEach(q=>{
+      const ticker=(q.symbol||'').replace('.SA','').toUpperCase();
+      const a=S.assets.find(x=>x.ticker===ticker); if(!a) return;
+      const price=q.regularMarketPrice;
+      if(price&&price>0){
+        const prev=a.current_price;
+        a.current_price=price;
+        a.quoteSource='yahoo';
+        a.quoteUpdatedAt=new Date().toISOString();
+        S.quotes[ticker]={price,change:q.regularMarketChangePercent||0,flash:price>prev?'up':price<prev?'down':''};
+      }
+      const dyY=(q.trailingAnnualDividendYield||0)*100;
+      if(dyY>0&&(!a.dy||a.dySource==='estimate')){a.dy=Number(dyY.toFixed(2));a.dySource='yahoo';}
+    });
+    if(yResults.length){ autoDY(); save(); render(); }
+    else if(!yResults.length && manual) toast('⚠️ Yahoo Finance indisponível. Usando cotações brapi.','#fbbf24');
     if(manual) toast(`✅ ${atualizados} cotação(ões) atualizadas pela brapi.${semPreco.length?' ('+[...new Set(semPreco)].join(',')+' sem retorno)':''}`);
   }catch(e){
     console.warn('brapi:',e);
