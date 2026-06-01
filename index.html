@@ -483,6 +483,37 @@ document.getElementById('imp-file').addEventListener('change',e=>{
   r.readAsText(f); e.target.value='';
 });
 
+function resetPortfolio(){
+  const total=(S.assets?.length||0)+(S.aportes?.length||0)+(S.proventos?.length||0);
+  const ok=confirm(`Tem certeza que deseja apagar todo o histórico da carteira?\n\nIsso vai remover ${total} registros locais e voltar a carteira para um estado limpo.`);
+  if(!ok) return;
+  const typed=prompt('Para confirmar, digite LIMPAR');
+  if((typed||'').trim().toUpperCase()!=='LIMPAR') return;
+  S.assets=[];
+  S.aportes=[];
+  S.proventos=[];
+  S.divGoal=0;
+  S.goals={
+    patrimonio:{target:0, aporte:0, annualVar:0},
+    ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
+    proventos:{types:['Ação','FII','ETF','BDR','Stocks'], monthly:0}
+  };
+  S.apHistoryOpen=true;
+  S.apSearch='';
+  S.tab='dashboard';
+  S.showA=false; S.editId=null; S._fa=null;
+  S.showP=false; S.editPId=null; S._fp=null;
+  S.showD=false; S.editDId=null; S._fd=null;
+  try{
+    localStorage.removeItem(STOR);
+    localStorage.removeItem(STOR+'_cfg');
+  }catch(e){}
+  save();
+  saveConfig();
+  render();
+  toast('🧹 Carteira resetada e pronta para começar do zero.');
+}
+
 // ══════════════════════════════════════
 // IMPORTADOR B3 / CORRETORA — Excel/CSV de posição
 // ══════════════════════════════════════
@@ -1175,6 +1206,7 @@ const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','
       ${installBox()}
       <button class="btn bexp" onclick="exportBackup()">💾 Backup</button>
       <button class="btn bimp" onclick="importBackup()">📂 Importar</button>
+      <button class="btn bimp" onclick="resetPortfolio()" style="border-color:#7f1d1d;color:#fecaca;background:#1a0f12">🧹 Reset</button>
       <button class="btn bb3" onclick="importB3Excel()" title="Importar posição B3 / corretora em Excel">📥 B3/Excel</button>
 
       <div style="text-align:right">
