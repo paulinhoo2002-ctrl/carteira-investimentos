@@ -27,7 +27,7 @@ button{cursor:pointer;font-family:inherit}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:#3d5472;padding:11px 18px;font-size:13px;white-space:nowrap;transition:all .2s}
 .tab:hover{color:#7a8fa8}.tab.on{border-bottom-color:#6366f1;color:#a5b4fc;font-weight:700}
 @media(max-width:640px){.tab{padding:11px 12px;font-size:12px}}
-.wrap{padding:20px;max-width:1100px;margin:0 auto}
+.wrap{padding:20px;max-width:1360px;margin:0 auto}
 @media(max-width:640px){.wrap{padding:14px}}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
 .card{background:#0d111e;border:1px solid #161e2e;border-radius:12px;padding:14px 16px;transition:border-color .2s,box-shadow .2s}
@@ -36,11 +36,23 @@ button{cursor:pointer;font-family:inherit}
 .cv{font-size:21px;font-weight:700;margin-bottom:2px;letter-spacing:-.02em}.cs{font-size:11px;color:#2e3f58}
 .tw{background:#0d111e;border:1px solid #161e2e;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.25)}
 .ts{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ts::-webkit-scrollbar{height:0}
+.ts{scrollbar-width:none}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
 thead tr{background:#090c15}
 th{padding:9px 12px;text-align:left;color:#3d5472;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #161e2e}
 td{padding:9px 12px;border-bottom:1px solid #0f1520;color:#b8c8de}
 tbody tr{transition:background .1s}tbody tr:hover{background:#0f1728}tbody tr:last-child td{border-bottom:none}
+.hist-monthly{min-width:1040px}
+.hist-monthly th,.hist-monthly td{text-align:center;white-space:nowrap}
+.hist-monthly th:first-child,.hist-monthly td:first-child{
+  position:sticky;left:0;z-index:2;text-align:left;
+  background:#090c15;border-right:1px solid #161e2e;
+}
+.hist-monthly tbody tr td:first-child{background:#0d111e}
+.hist-monthly thead th{position:sticky;top:0;z-index:3;background:#090c15}
+.hist-monthly thead th:first-child{z-index:4}
+.hist-monthly td:nth-last-child(2),.hist-monthly td:last-child{font-variant-numeric:tabular-nums}
 .bdg{border-radius:5px;padding:2px 8px;font-size:11px;font-weight:600}
 .bac{background:rgba(52,211,153,.08);color:#34d399;border:1px solid rgba(52,211,153,.18)}
 .bfi{background:rgba(96,165,250,.08);color:#60a5fa;border:1px solid rgba(96,165,250,.18)}
@@ -1571,7 +1583,7 @@ function divs2(){
   </div>
   <div class="cc" style="margin-bottom:20px">
     <div class="ct">Histórico mensal</div>
-    <div class="tw"><div class="ts"><table style="min-width:1180px">
+    <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
       <thead><tr><th>Ano</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
       <tbody>${yearlyRows}</tbody>
     </table></div></div>
