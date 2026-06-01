@@ -1497,8 +1497,6 @@ function divs(){
     <div class="card al" style="border-left-color:#34d399"><div class="cl">Projeção anual</div><div class="cv gn">${fmt(aD)}</div></div>
     <div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${avgDY.toFixed(2)}%</div></div>
     <div class="card al" style="border-left-color:#60a5fa"><div class="cl">Patrimônio p/ objetivo</div><div class="cv bl">${patrimonioObj>0?fmt(patrimonioObj):'—'}</div><div class="cs">Aporte est.: ${patrimonioObj>0?fmt(aporteNec):'preencha DY'}</div></div>
-    <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no mês</div><div class="cv gn">${fmt(rec.mes)}</div><div class="cs">${S.proventos.filter(p=>{const d=parseAnyDate(p.date);const n=new Date();return d&&d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();}).length} pagamentos</div></div>
-    <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Recebido no ano</div><div class="cv pu">${fmt(rec.ano)}</div><div class="cs">Total: ${fmt(rec.total)}</div></div>
   </div>
 
   <div class="sh" style="margin-top:4px">
@@ -1640,22 +1638,6 @@ function divs2(){
       <thead><tr><th>Ano</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
       <tbody>${yearlyRows}</tbody>
     </table></div></div>
-  </div>
-  <div class="cg" style="margin-bottom:20px">
-    <div class="cc">
-      <div class="ct">Recebido mês a mês</div>
-      <div class="tw"><div class="ts"><table>
-        <thead><tr><th>Mês</th><th>Ano</th><th>Pagamentos</th><th>Valor</th></tr></thead>
-        <tbody>${mesRows}</tbody>
-      </table></div></div>
-    </div>
-    <div class="cc">
-      <div class="ct">Recebido por ano</div>
-      <div class="tw"><div class="ts"><table>
-        <thead><tr><th>Ano</th><th>Pagamentos</th><th>Valor</th></tr></thead>
-        <tbody>${anoRows}</tbody>
-      </table></div></div>
-    </div>
   </div>
   <div class="sh" style="margin-top:4px">
     <div><div class="st">Proventos recebidos (${S.proventos.length})</div><div class="mu" style="font-size:12px;margin-top:4px">Dinheiro que já caiu na conta.</div></div>
