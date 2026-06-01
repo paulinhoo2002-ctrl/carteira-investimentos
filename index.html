@@ -678,6 +678,24 @@ function proventoStats(){
 // ══════════════════════════════════════
 // SYNC ATIVOS ← APORTES
 // ══════════════════════════════════════
+function proventoResumo(){
+  const meses=new Map(),anos=new Map();
+  S.proventos.forEach(p=>{
+    const dt=parseAnyDate(p.date),v=Number(p.value)||0;
+    if(!dt||v<=0) return;
+    const y=dt.getFullYear(),m=String(dt.getMonth()+1).padStart(2,'0');
+    const mk=`${y}-${m}`;
+    if(!meses.has(mk)) meses.set(mk,{key:mk,ano:y,mes:dt.toLocaleDateString('pt-BR',{month:'long'}),valor:0,count:0});
+    const mr=meses.get(mk); mr.valor+=v; mr.count++;
+    if(!anos.has(y)) anos.set(y,{ano:y,valor:0,count:0});
+    const ar=anos.get(y); ar.valor+=v; ar.count++;
+  });
+  return{
+    meses:[...meses.values()].sort((a,b)=>b.key.localeCompare(a.key)),
+    anos:[...anos.values()].sort((a,b)=>b.ano-a.ano)
+  };
+}
+
 function syncAssetsFromAportes(showMsg=false){
   const keep={};
   S.assets.forEach(a=>keep[a.ticker]={...a});
@@ -757,6 +775,7 @@ function collectDividendItems(payload,fallback){
   walk(payload); return out;
 }
 function proventoKey(d){ return `${d.symbol}|${toISODate(d.payDate)}|${Number(d.rate||0).toFixed(8)}|${String(d.label||'').toUpperCase()}`; }
+function marketApiBase(){ return location.protocol==='file:'?'https://carteira-investimentos-delta.vercel.app':''; }
 
 // ══════════════════════════════════════
 // COTAÇÕES — Yahoo Finance gratuito como fonte principal
@@ -766,7 +785,7 @@ function proventoKey(d){ return `${d.symbol}|${toISODate(d.payDate)}|${Number(d.
 async function fetchQuotesYahoo(tickers){
   const clean=[...new Set((tickers||[]).map(t=>String(t||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
   if(!clean.length) return [];
-  const apiBase=location.protocol==='file:'?'https://carteira-investimentos-delta.vercel.app':'';
+  const apiBase=marketApiBase();
   const r=await fetch(`${apiBase}/api/yahoo-quote?symbols=${encodeURIComponent(clean.join(','))}`,{cache:'no-store'});
   if(!r.ok) throw new Error('Yahoo HTTP '+r.status);
   const j=await r.json();
@@ -927,6 +946,46 @@ async function fetchAutoProventos(){
 }
 
 // ══════════════════════════════════════
+async function fetchAutoProventosGratis(){
+  if(!S.assets.length){alert('Registre compras na aba Aportes antes de buscar proventos.');return;}
+  const start=toISODate(earliestAporteDate());
+  const existing=new Set(S.proventos.map(p=>p.autoKey).filter(Boolean));
+  let novos=0,ignorados=0,erros=[];
+  const addItems=(items,origem)=>{
+    items.forEach(d=>{
+      if(!d.symbol||!d.payDate||!d.rate) return;
+      const q=qtyAtDate(d.symbol,d.posDate||d.payDate); if(q<=0){ignorados++;return;}
+      const value=q*d.rate; if(value<=0){ignorados++;return;}
+      const key=proventoKey(d);
+      const dup=existing.has(key)||S.proventos.some(p=>String(p.ticker).toUpperCase()===d.symbol&&p.date===toBRDate(d.payDate)&&Math.abs((Number(p.value)||0)-value)<0.01);
+      if(dup){ignorados++;return;}
+      S.proventos.unshift({id:Date.now()+Math.floor(Math.random()*999999),ticker:d.symbol,value:Number(value.toFixed(2)),type:d.label,date:toBRDate(d.payDate),note:`Auto ${origem}: ${q} cotas x R$ ${Number(d.rate).toFixed(4)}`,autoKey:key});
+      existing.add(key); novos++;
+    });
+  };
+  try{
+    const tickers=[...new Set(S.assets.map(a=>a.ticker).filter(t=>t&&isMarketTicker(t)))];
+    const apiBase=marketApiBase();
+    const period1=Math.floor((parseAnyDate(start)||earliestAporteDate()).getTime()/1000);
+    const period2=Math.floor(Date.now()/1000);
+    for(let i=0;i<tickers.length;i+=30){
+      const batch=tickers.slice(i,i+30).join(',');
+      try{
+        const r=await fetch(`${apiBase}/api/yahoo-quote?symbols=${encodeURIComponent(batch)}&dividends=1&period1=${period1}&period2=${period2}`,{cache:'no-store'});
+        if(!r.ok){erros.push('Yahoo');continue;}
+        const j=await r.json();
+        const items=(j.results||[]).map(d=>normalizeDividendItem({symbol:String(d.symbol||'').replace('.SA',''),amount:d.amount,date:new Date(Number(d.date)*1000),label:'Yahoo'}));
+        addItems(items,'Yahoo');
+      }catch(e){erros.push('Yahoo');}
+    }
+    save(); render();
+    toast(`✅ ${novos} provento(s) histórico(s) adicionados pelo Yahoo.${ignorados?' '+ignorados+' ignorados/duplicados.':''}`, erros.length?'#fbbf24':'#6ee7b7');
+    if(erros.length) console.warn('Avisos proventos:',[...new Set(erros)].join(', '));
+  }catch(e){
+    console.warn(e); toast('❌ Erro ao buscar proventos históricos.','#f87171');
+  }
+}
+
 // PIE SVG
 // ══════════════════════════════════════
 function pie(data){
@@ -1207,6 +1266,13 @@ function divs(){
   const patrimonioObj=objetivo>0&&avgDY>0?(objetivo*12)/(avgDY/100):0;
   const aporteNec=Math.max(0,patrimonioObj-tC);
   const rec=proventoStats();
+  const resumo=proventoResumo();
+  const mesRows=resumo.meses.length
+    ?resumo.meses.map(r=>`<tr><td style="font-weight:700;color:#e2eaf6;text-transform:capitalize">${esc(r.mes)}</td><td>${r.ano}</td><td>${r.count}</td><td class="gn" style="font-weight:800">${fmt(r.valor)}</td></tr>`).join('')
+    :'<tr><td colspan="4" style="text-align:center;padding:18px;color:#2e3f58">Busque ou registre proventos para ver o resumo mensal.</td></tr>';
+  const anoRows=resumo.anos.length
+    ?resumo.anos.map(r=>`<tr><td style="font-weight:700;color:#e2eaf6">${r.ano}</td><td>${r.count}</td><td class="gn" style="font-weight:800">${fmt(r.valor)}</td></tr>`).join('')
+    :'<tr><td colspan="3" style="text-align:center;padding:18px;color:#2e3f58">Sem histórico anual ainda.</td></tr>';
   const sd=[...S.assets].sort((a,b)=>((b.qty*b.current_price*(b.dy/100))/12)-((a.qty*a.current_price*(a.dy/100))/12));
   const projRows=sd.map(a=>{
     const dm=(a.qty*a.current_price*(a.dy/100))/12,pct=mD>0?(dm/mD)*100:0;
@@ -1261,10 +1327,27 @@ function divs(){
     <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Recebido no ano</div><div class="cv pu">${fmt(rec.ano)}</div><div class="cs">Total: ${fmt(rec.total)}</div></div>
   </div>
 
+  <div class="cg" style="margin-bottom:20px">
+    <div class="cc">
+      <div class="ct">Recebido mês a mês</div>
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Mês</th><th>Ano</th><th>Pagamentos</th><th>Valor</th></tr></thead>
+        <tbody>${mesRows}</tbody>
+      </table></div></div>
+    </div>
+    <div class="cc">
+      <div class="ct">Recebido por ano</div>
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Ano</th><th>Pagamentos</th><th>Valor</th></tr></thead>
+        <tbody>${anoRows}</tbody>
+      </table></div></div>
+    </div>
+  </div>
+
   <div class="sh" style="margin-top:4px">
     <div><div class="st">Proventos recebidos (${S.proventos.length})</div><div class="mu" style="font-size:12px;margin-top:4px">Dinheiro que já caiu na conta.</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventos()">🔎 Buscar automático</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
       <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
     </div>
   </div>
