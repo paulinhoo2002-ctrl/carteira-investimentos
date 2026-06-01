@@ -1,0 +1,17 @@
+{
+  "name": "Carteira de Investimentos",
+  "short_name": "Carteira",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#07090f",
+  "theme_color": "#07090f",
+  "description": "Controle pessoal da carteira com cotações, dividendos e aportes.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#07090f">
+<link rel="manifest" href="manifest.json">
 <title>📈 Carteira de Investimentos</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#07090f;color:#e2eaf6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:14px}
+body{background:#07090f;color:#e2eaf6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:14px;overflow-x:hidden}
 button{cursor:pointer;font-family:inherit}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:#0d111e}::-webkit-scrollbar-thumb{background:#1e2a3d;border-radius:2px}
 .hdr{background:#0d111e;border-bottom:1px solid #161e2e;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 4px 24px rgba(0,0,0,.5)}
@@ -85,6 +87,41 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .spn{display:inline-block;animation:rota 1s linear infinite}
 .toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){
+  .hdr{padding:10px 12px;gap:10px}
+  .hdr-title{font-size:15px}
+  .hdr-sub{display:none}
+  .hdr-right{margin-left:auto}
+  .tabs{top:58px;justify-content:flex-start;padding:0 8px}
+}
+@media(max-width:640px){
+  .hdr{padding:10px 10px;align-items:flex-start}
+  .hdr-logo{gap:10px;min-width:0}
+  .hdr-icon{width:32px;height:32px;font-size:17px;border-radius:9px}
+  .hdr-title{font-size:14px}
+  .hdr-right{width:100%;justify-content:flex-end}
+  .tabs{top:52px}
+  .tab{padding:10px 10px;font-size:11px}
+  .wrap{padding:10px}
+  .cards{grid-template-columns:1fr;gap:8px}
+  .card{padding:12px 13px;border-radius:11px}
+  .cv{font-size:18px}
+  .cs{font-size:10px}
+  .cg{grid-template-columns:1fr;gap:10px}
+  .cc{padding:12px;border-radius:11px}
+  .sh{gap:6px;margin-bottom:10px}
+  .st{font-size:14px}
+  .btn{padding:8px 12px;font-size:12px}
+  .bexp,.bimp,.bb3{padding:7px 10px;font-size:11px}
+  .fc{padding:12px;border-radius:11px}
+  .fg{grid-template-columns:1fr;gap:8px}
+  input,select{font-size:16px;padding:10px 11px}
+  th,td{padding:8px 10px;font-size:11px}
+  table{font-size:11px;min-width:720px}
+  .tw{border-radius:10px}
+  .es{padding:24px 14px}
+  .toast{left:10px;right:10px;bottom:12px}
+}
 </style>
 </head>
 <body>
@@ -1576,6 +1613,9 @@ if(S.aportes.length) syncAssetsFromAportes(false); else render();
 fetchQuotes(false);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
 window.addEventListener('focus',()=>fetchQuotes(false));
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
 setInterval(()=>{
   S.cd=Math.max(0,S.cd-1);
   if(S.cd<=0){ S.cd=QI; fetchQuotes(false); return; }
