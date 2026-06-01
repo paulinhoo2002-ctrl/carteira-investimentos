@@ -81,6 +81,14 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .cc{background:#0d111e;border:1px solid #161e2e;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;min-height:100%}
 .cc>.tw{flex:1;min-height:0}
 .ct{font-size:11px;font-weight:600;color:#3d5472;margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em}
+.sec{background:#0d111e;border:1px solid #161e2e;border-radius:12px;overflow:hidden}
+.sec+ .sec{margin-top:12px}
+.sec>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer}
+.sec>summary::-webkit-details-marker{display:none}
+.sec[open]>summary{border-bottom:1px solid #161e2e}
+.sec-title{font-size:14px;font-weight:700;color:#e2eaf6}
+.sec-meta{font-size:12px;color:#64748b}
+.sec-body{padding:14px 16px 16px}
 .ag-wrap{display:flex;flex-direction:column;gap:12px}
 .ag{background:#0d111e;border:1px solid #161e2e;border-radius:14px;overflow:hidden}
 .ag>summary{list-style:none;display:flex;align-items:center;gap:14px;padding:18px 18px;cursor:pointer;flex-wrap:wrap}
@@ -1632,30 +1640,58 @@ function divs2(){
     <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no mês</div><div class="cv gn">${fmt(rec.mes)}</div><div class="cs">${S.proventos.filter(p=>{const d=parseAnyDate(p.date);const n=new Date();return d&&d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();}).length} pagamentos</div></div>
     <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Recebido no ano</div><div class="cv pu">${fmt(rec.ano)}</div><div class="cs">Total: ${fmt(rec.total)}</div></div>
   </div>
-  <div class="cc" style="margin-bottom:20px">
-    <div class="ct">Histórico mensal</div>
-    <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
-      <thead><tr><th>Ano</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
-      <tbody>${yearlyRows}</tbody>
-    </table></div></div>
-  </div>
-  <div class="sh" style="margin-top:4px">
-    <div><div class="st">Proventos recebidos (${S.proventos.length})</div><div class="mu" style="font-size:12px;margin-top:4px">Dinheiro que já caiu na conta.</div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
-      <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
+  <details class="sec" style="margin-bottom:12px">
+    <summary>
+      <div>
+        <div class="sec-title">Projeção por ativo</div>
+        <div class="sec-meta">${S.assets.length} ativos com estimativa de dividendos por mês e ano</div>
+      </div>
+      <div class="sec-meta">clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY</th><th>Div. mês</th><th>Div. ano</th><th>% renda</th></tr></thead>
+        <tbody>${projRows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#2e3f58">Cadastre compras na aba Aportes.</td></tr>'}</tbody>
+      </table></div></div>
     </div>
-  </div>
-  ${frmD()}
-  <div class="tw" style="margin-bottom:20px"><div class="ts"><table>
-    <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Valor recebido</th><th>Obs.</th><th></th></tr></thead>
-    <tbody>${provRows}</tbody>
-  </table></div></div>
-  <div style="font-size:15px;font-weight:700;margin-bottom:12px">Projeção por ativo</div>
-  <div class="tw"><div class="ts"><table>
-    <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY</th><th>Div. mês</th><th>Div. ano</th><th>% renda</th></tr></thead>
-    <tbody>${projRows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#2e3f58">Cadastre compras na aba Aportes.</td></tr>'}</tbody>
-  </table></div></div>`;
+  </details>
+
+  <details class="sec" style="margin-bottom:12px">
+    <summary>
+      <div>
+        <div class="sec-title">Histórico mensal</div>
+        <div class="sec-meta">visão consolidada por ano e por mês</div>
+      </div>
+      <div class="sec-meta">clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
+        <thead><tr><th>Ano</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
+        <tbody>${yearlyRows}</tbody>
+      </table></div></div>
+    </div>
+  </details>
+
+  <details class="sec" open style="margin-bottom:12px">
+    <summary>
+      <div>
+        <div class="sec-title">Proventos recebidos (${S.proventos.length})</div>
+        <div class="sec-meta">dinheiro que já caiu na conta</div>
+      </div>
+      <div class="sec-meta">clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
+        <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
+      </div>
+      ${frmD()}
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Valor recebido</th><th>Obs.</th><th></th></tr></thead>
+        <tbody>${provRows}</tbody>
+      </table></div></div>
+    </div>
+  </details>`;
 }
 
 function ajudarTab(){
