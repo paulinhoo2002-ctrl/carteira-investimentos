@@ -46,6 +46,7 @@ tbody tr{transition:background .1s}tbody tr:hover{background:#0f1728}tbody tr:la
 .bgh{background:#111828;color:#64748b;border:1px solid #1e2a3d}
 .bexp{background:#111828;color:#fbbf24;border:1px solid rgba(251,191,36,.2);font-size:12px;padding:7px 12px}
 .bimp{background:#111828;color:#60a5fa;border:1px solid rgba(96,165,250,.2);font-size:12px;padding:7px 12px}
+.bb3{background:#111828;color:#34d399;border:1px solid rgba(52,211,153,.22);font-size:12px;padding:7px 12px}
 .bi{background:transparent;border:1px solid #1e2a3d;border-radius:7px;padding:3px 9px;color:#64748b;font-size:13px}
 .bdi{background:transparent;border:1px solid rgba(127,29,29,.5);border-radius:7px;padding:3px 9px;color:#f87171;font-size:13px}
 .fc{background:#090c15;border:1px solid #312e81;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(99,102,241,.08)}
@@ -90,6 +91,8 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 <div id="root"></div>
 <div id="toast-area"></div>
 <input type="file" id="imp-file" accept=".json" style="display:none">
+<input type="file" id="b3-file" accept=".xlsx,.xls,.csv" style="display:none">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -345,6 +348,120 @@ document.getElementById('imp-file').addEventListener('change',e=>{
   };
   r.readAsText(f); e.target.value='';
 });
+
+// ══════════════════════════════════════
+// IMPORTADOR B3 / CORRETORA — Excel/CSV de posição
+// ══════════════════════════════════════
+function importB3Excel(){
+  const el=document.getElementById('b3-file');
+  if(!el){ alert('Campo de importação B3 não encontrado.'); return; }
+  el.click();
+}
+function normHeaderB3(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+}
+function pickB3(row, headers, names){
+  const wanted=names.map(normHeaderB3);
+  for(let i=0;i<headers.length;i++){
+    const h=normHeaderB3(headers[i]);
+    if(wanted.includes(h)) return row[i];
+  }
+  return null;
+}
+function tickerValidoB3(t){
+  t=String(t||'').trim().toUpperCase();
+  return /^[A-Z]{4}[0-9]{1,2}$/.test(t) || /^[A-Z]{3,6}[0-9]{1,2}$/.test(t);
+}
+function tipoPorAbaB3(sheetName,ticker){
+  const sh=String(sheetName||'').toLowerCase();
+  if(sh.includes('fundo de investimento')) return 'FII';
+  if(sh.includes('etf')) return 'ETF';
+  if(sh.includes('acoes') || sh.includes('ações')) return 'Ação';
+  return metaTicker(ticker).type || 'Ação';
+}
+function setorPorAbaB3(sheetName,ticker){
+  const meta=metaTicker(ticker);
+  if(meta.sector && meta.sector!=='FII' && meta.sector!=='Ação') return meta.sector;
+  const sh=String(sheetName||'').toLowerCase();
+  if(sh.includes('fundo de investimento')) return 'FII';
+  if(sh.includes('etf')) return 'ETF';
+  return meta.sector || '';
+}
+function parseB3PositionWorkbook(wb, fileName=''){
+  const items=[]; const warnings=[];
+  const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
+  const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  (wb.SheetNames||[]).forEach(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    if(!rows || rows.length<2) return;
+    const headers=rows[0].map(x=>String(x||'').trim());
+    const hasTicker=headers.some(h=>normHeaderB3(h)==='codigo de negociacao');
+    const hasQtd=headers.some(h=>normHeaderB3(h)==='quantidade');
+    if(!hasTicker || !hasQtd) return;
+    rows.slice(1).forEach((row,idx)=>{
+      const ticker=String(pickB3(row,headers,['Código de Negociação','Codigo de Negociacao','Código','Codigo'])||'').trim().toUpperCase();
+      if(!tickerValidoB3(ticker)) return;
+      const produto=String(pickB3(row,headers,['Produto'])||'');
+      if(produto.trim()==='29' || ticker==='TOTAL') return;
+      let qty=parseNum(pickB3(row,headers,['Quantidade','Quantidade Disponível','Quantidade Disponivel']));
+      let price=parseNum(pickB3(row,headers,['Preço de Fechamento','Preco de Fechamento','Preço Atualizado','Preco Atualizado','Preço Atualizado CURVA','Preco Atualizado CURVA']));
+      let value=parseNum(pickB3(row,headers,['Valor Atualizado','Valor Atualizado CURVA','Valor Atualizado MTM','Valor Atualizado FECHAMENTO']));
+      if(qty<=0) return;
+      if((!price || price<=0) && value>0) price=value/qty;
+      if(price<=0){ warnings.push(`${ticker}: sem preço válido; ignorado.`); return; }
+      const tipo=tipoPorAbaB3(sheetName,ticker);
+      const setor=setorPorAbaB3(sheetName,ticker);
+      items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,date:importDate});
+    });
+  });
+  return {items,warnings,importDate};
+}
+function hasSameB3Import(ticker, date){
+  return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
+}
+function applyB3ImportedPositions(items, importDate){
+  const importTag='[IMPORT_B3_POSICAO]';
+  // Remove importações B3 anteriores da mesma data para evitar duplicar se subir o mesmo arquivo outra vez.
+  S.aportes=S.aportes.filter(a=>!(String(a.decision||'').includes(importTag) && String(a.date||'')===importDate));
+  const now=Date.now();
+  const novos=items.map((it,i)=>({
+    id: now+i,
+    operation:'compra',
+    ticker:it.ticker,
+    qty:Number(it.qty)||0,
+    price:Number(it.price)||0,
+    date:it.date||importDate,
+    decision:`${importTag} ${it.sheet} · posição importada do Excel B3/corretora`
+  })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
+  S.aportes=[...novos,...S.aportes];
+  // Completa metadados para estes ativos após recálculo.
+  syncAssetsFromAportes(false);
+  S.assets=S.assets.map(a=>{
+    const it=items.find(x=>x.ticker===a.ticker);
+    if(!it) return a;
+    return {...a,type:a.type||it.type,sector:a.sector||it.sector,current_price:it.price,quoteSource:a.quoteSource||'importado',quoteUpdatedAt:a.quoteUpdatedAt||new Date().toISOString()};
+  });
+  save(); render(); fetchQuotes(false);
+  toast(`✅ ${novos.length} posição(ões) importadas do Excel.`);
+}
+document.getElementById('b3-file').addEventListener('change',async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  try{
+    if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const {items,warnings,importDate}=parseB3PositionWorkbook(wb,file.name);
+    if(!items.length){ alert('Não encontrei posições válidas no arquivo. Tente exportar a posição da B3/corretora em Excel com colunas Código de Negociação, Quantidade, Preço de Fechamento e Valor Atualizado.'); return; }
+    const total=items.reduce((s,i)=>s+(i.value||i.qty*i.price),0);
+    const sample=items.slice(0,12).map(i=>`${i.ticker}: ${i.qty} x R$ ${Number(i.price).toFixed(2)} (${i.type}/${i.sector||'-'})`).join('\n');
+    const msg=`Encontrei ${items.length} posição(ões) no Excel.\n\nData usada: ${importDate}\nTotal aproximado: ${fmt(total)}\n\nPrévia:\n${sample}${items.length>12?'\n...':''}\n\nVou importar como compras de ajuste na aba Aportes e recalcular Ativos.\nSe já existir importação B3 desta mesma data, ela será substituída para evitar duplicidade.\n\nObservação: arquivo de posição não traz preço médio real nem data de compra original; para histórico exato, use extrato de movimentações.\n\nConfirmar importação?`;
+    if(confirm(msg)) applyB3ImportedPositions(items,importDate);
+    if(warnings.length) console.warn('Avisos importação B3:',warnings);
+  }catch(err){ console.error(err); alert('Erro ao importar Excel. Verifique o arquivo e tente novamente.'); }
+  e.target.value='';
+});
+
 function configBrapi(){
   const token=prompt('Opcional: cole token da brapi.dev apenas para proventos automáticos/fallback (cotações usam Yahoo sem token):',S.brapiToken?'••••••••':'');
   if(token===null) return;
@@ -541,7 +658,7 @@ function syncAssetsFromAportes(showMsg=false){
       avg_price:old.avg_manual?Number(old.avg_price)||avg:avg, avg_manual:!!old.avg_manual,
       current_price:Number(old.current_price)||avg, dy:Number(old.dy)||0,
       dySource:old.dySource||'', price_target:Number(old.price_target)||0, ideal_pct:Number(old.ideal_pct)||0,
-      quoteSource:old.quoteSource||'', quoteUpdatedAt:old.quoteUpdatedAt||'', quoteLocked:!!old.quoteLocked
+      quoteSource:old.quoteSource||'', quoteUpdatedAt:old.quoteUpdatedAt||''
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
   autoDY(); // ← aplica DY automático após recalcular
@@ -617,12 +734,8 @@ async function fetchQuotes(manual=false){
 
       const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===ticker);
       if(!a) return;
-      if(a.quoteLocked){
-        S.quotes[ticker]={price:Number(a.current_price)||0,change:Number(q.regularMarketChangePercent)||0,flash:'manual'};
-        return;
-      }
 
-      const price=Number(q.regularMarketPrice ?? q.postMarketPrice ?? q.preMarketPrice);
+      const price=Number(q.regularMarketPrice ?? q.postMarketPrice ?? q.preMarketPrice ?? q.regularMarketPreviousClose);
       if(Number.isFinite(price)&&price>0){
         const prev=Number(a.current_price)||0;
         a.current_price=price;
@@ -669,8 +782,7 @@ async function fetchQuotes(manual=false){
             recv.add(sym);
             const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===sym);
             if(!a) return;
-            if(a.quoteLocked) return;
-            const price=Number(q.regularMarketPrice??q.price??q.close);
+            const price=Number(q.regularMarketPrice??q.price??q.close??q.previousClose);
             if(Number.isFinite(price)&&price>0){
               const prev=Number(a.current_price)||0;
               a.current_price=price;
@@ -789,6 +901,7 @@ function app(){
       ${authBox()}
       <button class="btn bexp" onclick="exportBackup()">💾 Backup</button>
       <button class="btn bimp" onclick="importBackup()">📂 Importar</button>
+      <button class="btn bb3" onclick="importB3Excel()" title="Importar posição B3 / corretora em Excel">📥 B3/Excel</button>
 
       <div style="text-align:right">
         <div style="font-size:11px;color:#2e3f58">${now}</div>
@@ -849,7 +962,7 @@ function frmA(){
   const f=S._fa||{},m=metaTicker(f.ticker);
   return`<div class="fc">
     <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#c4b5fd">✏️ Editar dados do ativo</div>
-    <div class="mu" style="font-size:12px;margin-bottom:12px">Quantidade vem dos Aportes. Ajuste preço médio, cotação manual, DY, preço alvo e % ideal aqui. Se travar a cotação, o Yahoo não sobrescreve.</div>
+    <div class="mu" style="font-size:12px;margin-bottom:12px">Quantidade vem dos Aportes. Ajuste preço médio, cotação, DY, preço alvo e % ideal aqui.</div>
     <div class="fg">
       <div><div class="fl">Ticker</div><input value="${esc(f.ticker||'')}" disabled></div>
       <div><div class="fl">Quantidade</div><input value="${esc(f.qty||0)}" disabled></div>
@@ -860,15 +973,11 @@ function frmA(){
           ${f.quoteSource==='brapi'?'📡 brapi':f.quoteSource==='yahoo'?'📡 yahoo':'📡 auto'}
         </span>
       </div>
-      <input id="f-cp" type="text" inputmode="decimal" placeholder="ex: 10,15" value="${esc(moneyInput(f.current_price||0))}">
-      <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#64748b;cursor:pointer">
-        <input id="f-ql" type="checkbox" ${f.quoteLocked?'checked':''} style="width:auto;accent-color:#6366f1">
-        travar cotação manual, não sobrescrever pelo Yahoo
-      </label>
+      <input id="f-cp" type="number" step="0.01" value="${esc(f.current_price||'')}" disabled style="opacity:.6;cursor:not-allowed">
       <div style="font-size:10px;color:#3d5472;margin-top:4px">
         ${f.quoteUpdatedAt
-          ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar Yahoo agora</a>`
-          :`<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação Yahoo agora</a>`}
+          ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`
+          :`<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação agora</a>`}
       </div></div>
       <div><div class="fl">DY anual %</div><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
       <div><div class="fl">Preço alvo</div><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
@@ -899,7 +1008,7 @@ function ativos(){
       <td>R$ ${Number(a.avg_price).toFixed(2)}</td>
       <td style="font-weight:600;color:${a.current_price>=a.avg_price?'#34d399':'#f87171'}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
         R$ ${Number(a.current_price).toFixed(2)}
-        ${a.quoteLocked?'<span style="font-size:9px;color:#fbbf24;margin-left:3px" title="Cotação manual travada">●M</span>':a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
+        ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
       </td>
       <td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td>
       <td>${alvo>0?'R$ '+alvo.toFixed(2):'—'}</td>
@@ -912,10 +1021,10 @@ function ativos(){
     </tr>`;
   }).join('');
   return`<div class="sh">
-    <div><div class="st">Minha carteira</div><div class="mu" style="font-size:12px;margin-top:4px">Alimentada automaticamente pelos Aportes. Use ✏️ para ajustar DY, preço médio, preço alvo e % ideal. Cotação vem automática pelo Yahoo; se algum preço vier errado, use ✏️ e trave a cotação manual.</div></div>
+    <div><div class="st">Minha carteira</div><div class="mu" style="font-size:12px;margin-top:4px">Alimentada automaticamente pelos Aportes. Use ✏️ para ajustar DY, preço médio, preço alvo e % ideal. Cotação vem automática pelo Yahoo.</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
-      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar cotações</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar Yahoo</button>
     </div>
   </div>
   ${frmA()}
@@ -1165,9 +1274,6 @@ function iaTab(){
 function go(t){ S.tab=t; save(); render(); }  // ← FIX: salva tab ao navegar
 function clA(){ S.showA=false; S.editId=null; S._fa=null; render(); }
 async function refreshCotacao(){
-  const cur=S.assets.find(x=>x.id===S.editId);
-  if(cur?.quoteLocked && !confirm('Este ativo está com cotação manual travada. Deseja destravar e buscar pelo Yahoo agora?')) return;
-  if(cur) cur.quoteLocked=false;
   await fetchQuotes(false);
   // Atualiza o campo com o novo valor sem fechar o form
   const a = S.assets.find(x=>x.id===S.editId);
@@ -1182,8 +1288,6 @@ function edA(id){ const a=S.assets.find(x=>x.id===id); if(!a)return; S._fa={...a
 function svA(){
   if(!S.editId) return;
   const ap=parseNum(document.getElementById('f-ap')?.value);
-  const cp=parseNum(document.getElementById('f-cp')?.value);
-  const ql=!!document.getElementById('f-ql')?.checked;
   const dy=parseNum(document.getElementById('f-dy')?.value);
   const pt=parseNum(document.getElementById('f-pt')?.value);
   const ip=parseNum(document.getElementById('f-ip')?.value);
@@ -1192,11 +1296,9 @@ function svA(){
   S.assets=S.assets.map(a=>{
     if(a.id!==S.editId) return a;
     const avgManual=ap>0&&Math.abs(ap-Number(a.avg_price||0))>0.0001;
-    const quoteManual=cp>0&&Math.abs(cp-Number(a.current_price||0))>0.0001;
     return{...a,avg_price:ap||a.avg_price,avg_manual:avgManual||a.avg_manual,
-      current_price:cp||a.current_price, quoteLocked:ql, quoteSource:ql?'manual':(quoteManual?'manual':a.quoteSource), quoteUpdatedAt:quoteManual?new Date().toISOString():a.quoteUpdatedAt,
       dy,dySource:'manual',price_target:pt,ideal_pct:ip,sector:se,type:ty};
-    // cotação pode ser automática pelo Yahoo ou manual travada
+    // cotação não é editada aqui — vem automaticamente via Yahoo Finance e fallback opcional brapi
   });
   S.showA=false; S.editId=null; S._fa=null;
   save(); toast('✅ Ativo atualizado!'); render();
