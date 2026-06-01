@@ -662,37 +662,108 @@ async function fetchQuotes(manual=false){
   S.qLoad=false; S.cd=QI; render();
 }
 async function fetchAutoProventos(){
-  if(!S.brapiToken){alert('Configure o token da brapi.dev (⚙️ brapi) para buscar proventos automáticos.');return;}
   if(!S.assets.length){alert('Registre compras na aba Aportes antes de buscar proventos.');return;}
-  const start=toISODate(earliestAporteDate()),end=toISODate(new Date());
+  toast('🔎 Buscando dividendos históricos pelo Yahoo Finance...','#60a5fa');
+  const tickers=[...new Set(S.assets.map(a=>a.ticker).filter(t=>t&&isMarketTicker(t)))];
   const existing=new Set(S.proventos.map(p=>p.autoKey).filter(Boolean));
-  let novos=0,ignorados=0,erros=[];
-  const addItems=(items,origem)=>{
-    items.forEach(d=>{
-      if(!d.symbol||!d.payDate||!d.rate) return;
-      const q=qtyAtDate(d.symbol,d.posDate||d.payDate); if(q<=0){ignorados++;return;}
-      const value=q*d.rate; if(value<=0){ignorados++;return;}
-      const key=proventoKey(d);
-      if(existing.has(key)||S.proventos.some(p=>String(p.ticker).toUpperCase()===d.symbol&&p.date===toBRDate(d.payDate)&&Math.abs((Number(p.value)||0)-value)<0.01)){ignorados++;return;}
-      S.proventos.unshift({id:Date.now()+Math.floor(Math.random()*999999),ticker:d.symbol,value:Number(value.toFixed(2)),type:d.label,date:toBRDate(d.payDate),note:`Auto ${origem}: ${q} cotas x R$ ${Number(d.rate).toFixed(4)}`,autoKey:key});
-      existing.add(key); novos++;
-    });
-  };
+  let novos=0, ignorados=0;
+
   try{
-    const tickers=[...new Set(S.assets.map(a=>a.ticker).filter(t=>t&&isMarketTicker(t)))];
-    for(let i=0;i<tickers.length;i+=10){
-      const batch=tickers.slice(i,i+10).join(',');
-      try{const r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?dividends=true&range=max&interval=1d&token=${encodeURIComponent(S.brapiToken)}`);if(r.ok){const j=await r.json();(j.results||[]).forEach(q=>addItems(collectDividendItems(q,q.symbol),'quote'));}}catch(e){erros.push('quote');}
+    // ── Busca dividendos históricos via Yahoo Finance (sem token) ──
+    for(let i=0;i<tickers.length;i+=20){
+      const batch=tickers.slice(i,i+20).join(',');
+      try{
+        const r=await fetch(`/api/yahoo-quote?symbols=${encodeURIComponent(batch)}&dividends=true&range=2y`,{cache:'no-store'});
+        if(!r.ok) continue;
+        const j=await r.json();
+        const divMap=j.dividends||{};
+
+        Object.entries(divMap).forEach(([ticker,divList])=>{
+          if(!Array.isArray(divList)) return;
+          divList.forEach(d=>{
+            const payDate=new Date(d.date*1000); // unix seconds → ms
+            const rate=Number(d.amount)||0;
+            if(!payDate||!rate) return;
+
+            const q=qtyAtDate(ticker,payDate);
+            if(q<=0){ignorados++;return;}
+            const value=Number((q*rate).toFixed(2));
+            if(value<=0){ignorados++;return;}
+
+            // Chave de deduplicação
+            const key=`${ticker}|${toISODate(payDate)}|${rate.toFixed(8)}`;
+            const dup=existing.has(key)||S.proventos.some(p=>
+              String(p.ticker).toUpperCase()===ticker &&
+              p.date===toBRDate(payDate) &&
+              Math.abs((Number(p.value)||0)-value)<0.01
+            );
+            if(dup){ignorados++;return;}
+
+            // Tipo do provento
+            const asset=S.assets.find(a=>a.ticker===ticker);
+            const tipo=asset?.type==='FII'?'Rendimento':
+                       asset?.type==='Ação'?'Dividendo':'Rendimento';
+
+            S.proventos.push({
+              id:Date.now()+Math.floor(Math.random()*999999),
+              ticker,
+              value,
+              type:tipo,
+              date:toBRDate(payDate),
+              note:`Auto Yahoo: ${q} cotas × R$ ${rate.toFixed(4)} em ${toBRDate(payDate)}`,
+              autoKey:key
+            });
+            existing.add(key);
+            novos++;
+          });
+        });
+      }catch(e){console.warn('yahoo dividends',batch,e);}
     }
-    const fiis=tickers.filter(t=>(S.assets.find(a=>a.ticker===t)?.type||metaTicker(t).type)==='FII');
-    for(let i=0;i<fiis.length;i+=20){
-      const batch=fiis.slice(i,i+20).join(','); if(!batch) continue;
-      try{const r=await fetch(`https://brapi.dev/api/v2/fii/dividends?symbols=${encodeURIComponent(batch)}&startDate=${start}&endDate=${end}&sortOrder=asc`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});if(r.ok){const j=await r.json();addItems(collectDividendItems(j,''),'FII');}else if(r.status===403)erros.push('FIIs: plano Pro brapi');}catch(e){erros.push('FII');}
+
+    // Ordena por data mais recente
+    S.proventos.sort((a,b)=>{
+      const da=parseAnyDate(a.date)?.getTime()||0;
+      const db=parseAnyDate(b.date)?.getTime()||0;
+      return db-da;
+    });
+
+    autoDY(); save(); render();
+
+    if(novos>0){
+      toast(`✅ ${novos} provento(s) adicionados automaticamente pelo Yahoo Finance!${ignorados?' ('+ignorados+' já existentes)':''}`);}
+    else{
+      toast('ℹ️ Nenhum provento novo encontrado. Yahoo Finance pode não ter histórico para estes ativos.','#fbbf24');
     }
-    save(); render();
-    toast(`✅ ${novos} provento(s) adicionados.${ignorados?' '+ignorados+' ignorados.':''}`);
-    if(erros.length) console.warn([...new Set(erros)].join(', '));
-  }catch(e){console.warn(e);toast('❌ Erro ao buscar proventos.','#f87171');}
+
+    // ── Fallback opcional: brapi (se token configurado) ──
+    if(S.brapiToken){
+      try{
+        const start=toISODate(earliestAporteDate()),end=toISODate(new Date());
+        const fiis=tickers.filter(t=>(S.assets.find(a=>a.ticker===t)?.type||metaTicker(t).type)==='FII');
+        for(let i=0;i<fiis.length;i+=20){
+          const batch=fiis.slice(i,i+20).join(','); if(!batch) continue;
+          const r=await fetch(`https://brapi.dev/api/v2/fii/dividends?symbols=${encodeURIComponent(batch)}&startDate=${start}&endDate=${end}&sortOrder=asc`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
+          if(r.ok){
+            const j=await r.json();
+            collectDividendItems(j,'').forEach(d=>{
+              if(!d.symbol||!d.payDate||!d.rate) return;
+              const q=qtyAtDate(d.symbol,d.posDate||d.payDate); if(q<=0) return;
+              const value=Number((q*d.rate).toFixed(2)); if(value<=0) return;
+              const key=proventoKey(d);
+              if(existing.has(key)) return;
+              S.proventos.unshift({id:Date.now()+Math.floor(Math.random()*999999),ticker:d.symbol,value,type:d.label,date:toBRDate(d.payDate),note:`Auto brapi FII: ${q} cotas × R$ ${Number(d.rate).toFixed(4)}`,autoKey:key});
+              existing.add(key); novos++;
+            });
+          }
+        }
+        if(novos>0){ save(); render(); toast(`✅ +${novos} proventos via brapi FII adicionados!`); }
+      }catch(e){console.warn('brapi fallback:',e);}
+    }
+
+  }catch(e){
+    console.warn(e);
+    toast('❌ Erro ao buscar proventos históricos.','#f87171');
+  }
 }
 
 // ══════════════════════════════════════
