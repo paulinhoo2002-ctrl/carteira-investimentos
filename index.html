@@ -235,6 +235,40 @@ function parseAnyDate(v){
 function toISODate(d){ if(!d)return''; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function toBRDate(d){ if(!d)return''; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
 
+// ── DY padrão para principais ativos brasileiros (fonte: médias de mercado)
+const DY_REF = {
+  // FIIs — Papel/CRI
+  MXRF11:13.5,VGIP11:12.8,KNCR11:14.2,KNIP11:13.1,CPTS11:13.4,RBRR11:13.0,VGHF11:13.6,HABT11:14.0,VRTA11:13.2,HCTR11:14.5,BCFF11:12.5,BCIA11:13.0,
+  // FIIs — Logística
+  HGLG11:9.2,XPLG11:9.5,VILG11:9.1,BTLG11:9.3,LVBI11:9.4,GGRC11:9.8,BRCO11:9.0,PATL11:9.5,
+  // FIIs — Shopping
+  XPML11:10.2,VISC11:10.0,HSML11:10.3,MALL11:9.8,HGBS11:9.5,VSHO11:10.0,
+  // FIIs — Lajes/Escritório
+  PVBI11:8.5,RBRP11:9.0,BRCR11:8.0,HGRE11:8.2,BREV11:8.5,
+  // FIIs — Renda Urbana
+  HGRU11:10.5,TRXF11:10.8,RBVA11:10.2,VINO11:9.8,
+  // FIIs — Desenvolvimento
+  TGAR11:13.0,RZAT11:13.5,
+  // FIIs — Fundo de Fundos
+  BCFF11:12.0,RBRF11:11.5,KFOF11:11.8,
+  // ETFs renda
+  XFIX11:12.0,DIVD11:8.5,DIVO11:7.5,
+  // Ações — Banco
+  BBAS3:9.5,ITUB4:6.2,ITUB3:6.0,BBDC4:7.0,BBDC3:6.8,SANB11:7.5,BRSR6:8.0,
+  // Ações — Energia elétrica
+  TAEE11:8.5,EGIE3:7.2,TRPL4:8.0,CMIG4:8.5,CMIG3:8.0,CPFE3:6.5,ENBR3:5.8,ENGI11:7.0,AURE3:6.0,ISAE4:8.0,
+  // Ações — Saneamento
+  SAPR11:7.5,SAPR4:7.0,CSMG3:7.2,SBSP3:4.5,GETT4:5.0,
+  // Ações — Petróleo/Mineração
+  PETR4:9.0,PETR3:8.8,VALE3:7.5,PRIO3:3.0,RECV3:4.0,
+  // Ações — Seguros/Financeiro
+  BBSE3:7.5,PSSA3:5.0,CXSE3:7.0,IRBR3:4.0,
+  // Ações — Telecom/Consumo
+  VIVT3:6.5,TIMS3:5.5,ABEV3:6.0,WEGE3:2.0,MDIA3:6.5,JBSS3:5.5,
+  // Ações — Siderurgia
+  GGBR4:6.0,CSNA3:7.0,USIM5:5.0,
+};
+
 const META={
   PETR3:['Ação','Petróleo'],PETR4:['Ação','Petróleo'],PRIO3:['Ação','Petróleo'],RECV3:['Ação','Petróleo'],
   ITUB3:['Ação','Banco'],ITUB4:['Ação','Banco'],BBAS3:['Ação','Banco'],BBDC3:['Ação','Banco'],BBDC4:['Ação','Banco'],SANB11:['Ação','Banco'],
@@ -250,6 +284,33 @@ const META={
   HGRU11:['FII','Renda Urbana'],TRXF11:['FII','Renda Urbana'],RBVA11:['FII','Renda Urbana'],
   TGAR11:['FII','Desenvolvimento'],HGBS11:['FII','Shopping'],HGRE11:['FII','Lajes'],PVBI11:['FII','Lajes'],RBRP11:['FII','Lajes']
 };
+// ── DY automático: proventos reais → estimativa da tabela → manual
+function autoDY(){
+  const now=new Date();
+  const oneYearAgo=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());
+  let updated=0;
+  S.assets.forEach(a=>{
+    if(a.dySource==='manual') return; // não sobrescreve DY manual
+    // 1ª prioridade: calcula pelo histórico real de proventos (mais preciso)
+    const provsAno=S.proventos.filter(p=>{
+      const d=parseAnyDate(p.date);
+      return String(p.ticker||'').toUpperCase()===a.ticker && d && d>=oneYearAgo;
+    });
+    if(provsAno.length>0 && a.qty>0 && a.current_price>0){
+      const totalAnual=provsAno.reduce((s,p)=>s+(Number(p.value)||0),0);
+      const dy=(totalAnual/(a.qty*a.current_price))*100;
+      if(dy>0){ a.dy=Number(dy.toFixed(2)); a.dySource='proventos'; updated++; return; }
+    }
+    // 2ª prioridade: tabela de referência de mercado
+    if(!a.dy || Number(a.dy)===0 || a.dySource==='estimate'){
+      const ref=DY_REF[a.ticker];
+      if(ref){ a.dy=ref; a.dySource='estimate'; updated++; }
+    }
+  });
+  if(updated>0){ save(); }
+  return updated;
+}
+
 function metaTicker(ticker){
   const t=String(ticker||'').trim().toUpperCase();
   if(META[t]) return{type:META[t][0],sector:META[t][1]};
@@ -326,6 +387,7 @@ function syncAssetsFromAportes(showMsg=false){
       quoteSource:old.quoteSource||'', quoteUpdatedAt:old.quoteUpdatedAt||''
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
+  autoDY(); // ← aplica DY automático após recalcular
   save();
   if(showMsg) toast('✅ Carteira recalculada pelos aportes!');
   render();
@@ -397,7 +459,7 @@ async function fetchQuotes(manual=false){
       });
       tickers.slice(i,i+20).forEach(t=>{if(!recv.has(t)) semPreco.push(t);});
     }
-    S.lastUpdate=new Date(); save();
+    S.lastUpdate=new Date(); autoDY(); save();
     if(manual) toast(`✅ ${atualizados} cotação(ões) atualizadas pela brapi.${semPreco.length?' ('+[...new Set(semPreco)].join(',')+' sem retorno)':''}`);
   }catch(e){
     console.warn('brapi:',e);
