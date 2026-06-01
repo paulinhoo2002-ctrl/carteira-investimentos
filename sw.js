@@ -1,9 +1,13 @@
-const CACHE_NAME = 'carteira-investimentos-v1';
+const CACHE_NAME = 'carteira-investimentos-v2';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-192.png',
+  './icon-maskable-512.png',
   './api/yahoo-quote.js'
 ];
 

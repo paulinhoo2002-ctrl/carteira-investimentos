@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="theme-color" content="#07090f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>📈 Carteira de Investimentos</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -49,6 +54,7 @@ tbody tr{transition:background .1s}tbody tr:hover{background:#0f1728}tbody tr:la
 .bexp{background:#111828;color:#fbbf24;border:1px solid rgba(251,191,36,.2);font-size:12px;padding:7px 12px}
 .bimp{background:#111828;color:#60a5fa;border:1px solid rgba(96,165,250,.2);font-size:12px;padding:7px 12px}
 .bb3{background:#111828;color:#34d399;border:1px solid rgba(52,211,153,.22);font-size:12px;padding:7px 12px}
+.binst{background:#111828;color:#a5b4fc;border:1px solid rgba(99,102,241,.28);font-size:12px;padding:7px 12px}
 .bi{background:transparent;border:1px solid #1e2a3d;border-radius:7px;padding:3px 9px;color:#64748b;font-size:13px}
 .bdi{background:transparent;border:1px solid rgba(127,29,29,.5);border-radius:7px;padding:3px 9px;color:#f87171;font-size:13px}
 .fc{background:#090c15;border:1px solid #312e81;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(99,102,241,.08)}
@@ -164,6 +170,10 @@ let S = {
   editId:null, editPId:null, showA:false, showP:false, showD:false,
   _fa:null, _fp:null, _fd:null,
 };
+let PWA = { prompt:null, installed: false };
+try{
+  PWA.installed = window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone || false;
+}catch(e){}
 
 // ══════════════════════════════════════
 // STORAGE — corrigido: salva tab + divGoal + beforeunload
@@ -349,6 +359,32 @@ function authBox(){
 
 
 // ══════════════════════════════════════
+function installBox(){
+  if(PWA.installed) return `<span style="font-size:11px;color:#34d399;border:1px solid rgba(52,211,153,.2);background:#09131a;border-radius:999px;padding:6px 10px">App instalado</span>`;
+  if(!PWA.prompt) return '';
+  return `<button class="btn binst" style="font-size:12px;padding:7px 12px" onclick="installPWA()">Instalar app</button>`;
+}
+
+async function installPWA(){
+  if(!PWA.prompt){ toast('Instalação ainda não está disponível. Abra o site publicado no Chrome ou Edge.','#fbbf24'); return; }
+  const prompt = PWA.prompt;
+  PWA.prompt = null;
+  render();
+  try{
+    await prompt.prompt();
+    const choice = await prompt.userChoice;
+    if(choice?.outcome === 'accepted'){
+      PWA.installed = true;
+      toast('App instalado no dispositivo!');
+    }else{
+      toast('Instalação cancelada.','#fbbf24');
+    }
+  }catch(e){
+    console.warn(e);
+  }
+  render();
+}
+
 // TOAST
 // ══════════════════════════════════════
 let _toastTimer=null;
@@ -1058,6 +1094,7 @@ function app(){
     </div>
     <div class="hdr-right">
       ${authBox()}
+      ${installBox()}
       <button class="btn bexp" onclick="exportBackup()">💾 Backup</button>
       <button class="btn bimp" onclick="importBackup()">📂 Importar</button>
       <button class="btn bb3" onclick="importB3Excel()" title="Importar posição B3 / corretora em Excel">📥 B3/Excel</button>
@@ -1613,8 +1650,23 @@ if(S.aportes.length) syncAssetsFromAportes(false); else render();
 fetchQuotes(false);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
 window.addEventListener('focus',()=>fetchQuotes(false));
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  PWA.prompt=e;
+  render();
+});
+window.addEventListener('appinstalled',()=>{
+  PWA.prompt=null;
+  PWA.installed=true;
+  toast('App instalado no dispositivo!');
+  render();
+});
 if('serviceWorker' in navigator && location.protocol!=='file:'){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      if(reg && reg.update) reg.update().catch(()=>{});
+    }).catch(()=>{});
+  });
 }
 setInterval(()=>{
   S.cd=Math.max(0,S.cd-1);
