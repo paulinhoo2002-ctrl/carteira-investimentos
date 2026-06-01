@@ -90,11 +90,30 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 <div id="root"></div>
 <div id="toast-area"></div>
 <input type="file" id="imp-file" accept=".json" style="display:none">
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
 const STOR         = 'civ5';
-const DEFAULT_BRAPI = 'bnZzRLy7SmaCMprZVTDqD7'; // token padrão da brapi.dev
+const DEFAULT_BRAPI = ''; // token não fica exposto no código; salve no botão ⚙️ brapi ou na nuvem após login
+
+// Firebase — login Google + Firestore
+const firebaseConfig = {
+  apiKey: "AIzaSyAUAGr6VfVoq4BdYAKSNENLv5dCaisHIho",
+  authDomain: "carteira-de-investimento-16725.firebaseapp.com",
+  projectId: "carteira-de-investimento-16725",
+  storageBucket: "carteira-de-investimento-16725.firebasestorage.app",
+  messagingSenderId: "194762472851",
+  appId: "1:194762472851:web:1285e351b2dcc80f147c66",
+  measurementId: "G-ZP045H8HTZ"
+};
+
+let FB = {
+  ready:false, app:null, auth:null, db:null, user:null,
+  unsub:null, cloudLoaded:false, applying:false, saveTimer:null, lastCloudUpdate:null
+};
 
 let S = {
   assets:[], aportes:[], proventos:[], quotes:{}, lastUpdate:null,
@@ -112,12 +131,13 @@ function save(){
   try{
     localStorage.setItem(STOR, JSON.stringify({
       assets:S.assets, aportes:S.aportes, proventos:S.proventos,
-      tab:S.tab, divGoal:S.divGoal          // ← FIX: salva tab ativa e meta
+      tab:S.tab, divGoal:S.divGoal
     }));
+    queueCloudSave();
   }catch(e){ console.error('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
 }
 function saveConfig(){
-  try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); }catch(e){}
+  try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
 }
 
 function load(){
@@ -153,6 +173,139 @@ function load(){
 
 // ← FIX: salva SEMPRE antes da página fechar/recarregar (F5, fecha aba, etc.)
 window.addEventListener('beforeunload', save);
+
+// ══════════════════════════════════════
+// FIREBASE — login Google + sincronização em nuvem
+// ══════════════════════════════════════
+function initFirebase(){
+  try{
+    if(!window.firebase) return;
+    FB.app  = firebase.initializeApp(firebaseConfig);
+    FB.auth = firebase.auth();
+    FB.db   = firebase.firestore();
+    FB.ready = true;
+    try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+    FB.auth.onAuthStateChanged(user=>{
+      FB.user = user || null;
+      if(FB.user) startCloudSync();
+      else stopCloudSync();
+      render();
+    });
+  }catch(e){
+    console.warn('Firebase indisponível:', e);
+    FB.ready=false;
+  }
+}
+function portfolioRef(){
+  if(!FB.db || !FB.user) return null;
+  return FB.db.collection('portfolios').doc(FB.user.uid);
+}
+function cloudPayload(){
+  return {
+    assets:S.assets,
+    aportes:S.aportes,
+    proventos:S.proventos,
+    divGoal:Number(S.divGoal)||0,
+    settings:{brapiToken:S.brapiToken||''},
+    tab:S.tab,
+    updatedAtLocal:new Date().toISOString(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+function hasLocalData(){
+  return (S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0);
+}
+function applyCloudData(d){
+  if(!d) return;
+  FB.applying=true;
+  if(Array.isArray(d.assets))    S.assets    = d.assets;
+  if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
+  if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+  if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
+  if(d.tab && !S.tab)            S.tab       = d.tab;
+  if(d.settings && d.settings.brapiToken && !S.brapiToken) S.brapiToken = d.settings.brapiToken;
+  try{
+    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal}));
+    localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
+  }catch(e){}
+  FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
+  FB.applying=false;
+}
+function startCloudSync(){
+  const ref=portfolioRef();
+  if(!ref) return;
+  stopCloudSync(false);
+  FB.cloudLoaded=false;
+  FB.unsub=ref.onSnapshot(async snap=>{
+    try{
+      if(!snap.exists){
+        if(hasLocalData()) await uploadLocalToCloud(false);
+        FB.cloudLoaded=true;
+        render();
+        return;
+      }
+      const data=snap.data()||{};
+      applyCloudData(data);
+      FB.cloudLoaded=true;
+      render();
+    }catch(e){ console.warn('cloud sync:',e); }
+  },err=>{
+    console.warn('Firestore:',err);
+    toast('⚠️ Erro na sincronização com a nuvem. Confira regras do Firestore.','#fbbf24');
+  });
+}
+function stopCloudSync(doRender=true){
+  if(FB.unsub){ try{ FB.unsub(); }catch(e){} }
+  FB.unsub=null; FB.cloudLoaded=false;
+  if(doRender) render();
+}
+function queueCloudSave(){
+  if(FB.applying || !FB.user || !FB.cloudLoaded) return;
+  clearTimeout(FB.saveTimer);
+  FB.saveTimer=setTimeout(uploadLocalToCloud,900);
+}
+async function uploadLocalToCloud(show=true){
+  const ref=portfolioRef();
+  if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return; }
+  try{
+    await ref.set(cloudPayload(), {merge:true});
+    FB.lastCloudUpdate=new Date().toISOString();
+    if(show) toast('☁️ Dados sincronizados na nuvem!');
+  }catch(e){
+    console.warn(e);
+    if(show) toast('❌ Erro ao enviar para a nuvem.','#f87171');
+  }
+}
+async function signInGoogle(){
+  if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    await FB.auth.signInWithPopup(provider);
+  }catch(e){
+    console.warn(e);
+    alert('Não foi possível entrar com Google. Confirme se o domínio está autorizado no Firebase.');
+  }
+}
+async function signOutGoogle(){
+  try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos.'); }catch(e){}
+}
+function cloudStatus(){
+  if(!FB.ready) return '<span style="font-size:11px;color:#f87171">Firebase offline</span>';
+  if(!FB.user) return '<span style="font-size:11px;color:#64748b">Local</span>';
+  return `<span style="font-size:11px;color:#34d399">☁️ Nuvem ${FB.cloudLoaded?'online':'conectando...'}</span>`;
+}
+function authBox(){
+  if(!FB.ready) return '';
+  if(!FB.user) return `<button class="btn bp" style="font-size:12px;padding:7px 12px" onclick="signInGoogle()">🔑 Entrar Google</button>`;
+  const name=esc(FB.user.displayName||'Conta Google');
+  const photo=FB.user.photoURL?`<img src="${esc(FB.user.photoURL)}" style="width:26px;height:26px;border-radius:50%;border:1px solid #1e2a3d">`:'<div style="width:26px;height:26px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center">👤</div>';
+  return `<div style="display:flex;align-items:center;gap:7px;background:#090c15;border:1px solid #1e2a3d;border-radius:999px;padding:4px 7px">
+    ${photo}<span style="font-size:12px;color:#b8c8de;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+    <button class="bi" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)">☁️</button>
+    <button class="bi" title="Sair" onclick="signOutGoogle()">Sair</button>
+  </div>`;
+}
+
 
 // ══════════════════════════════════════
 // TOAST
@@ -197,7 +350,7 @@ function configBrapi(){
   if(token===null) return;
   S.brapiToken=token.trim()==='••••••••'?S.brapiToken:token.trim();
   saveConfig();
-  toast(S.brapiToken?'✅ Token brapi salvo!':'Token brapi removido.');
+  toast(S.brapiToken?'✅ Token brapi salvo! Se estiver logado, ele também sincroniza na nuvem.':'Token brapi removido.');
 }
 
 // ══════════════════════════════════════
@@ -566,9 +719,10 @@ function app(){
   <div class="hdr">
     <div class="hdr-logo">
       <div class="hdr-icon">📈</div>
-      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">Dados salvos automaticamente · Backup disponível</div></div>
+      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">Dados locais + Google/Firebase · ${cloudStatus()}</div></div>
     </div>
     <div class="hdr-right">
+      ${authBox()}
       <button class="btn bexp" onclick="exportBackup()">💾 Backup</button>
       <button class="btn bimp" onclick="importBackup()">📂 Importar</button>
 
@@ -1076,6 +1230,7 @@ function bind(){
 // INIT
 // ══════════════════════════════════════
 load();
+initFirebase();
 if(S.aportes.length) syncAssetsFromAportes(false); else render();
 fetchQuotes(false);
 setInterval(()=>{
