@@ -572,7 +572,7 @@ function app(){
     <div class="hdr-right">
       <button class="btn bexp" onclick="exportBackup()">💾 Backup</button>
       <button class="btn bimp" onclick="importBackup()">📂 Importar</button>
-      <button class="btn bimp" onclick="configBrapi()">⚙️ brapi</button>
+
       <div style="text-align:right">
         <div style="font-size:11px;color:#2e3f58">${now}</div>
         <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:2px">
@@ -958,7 +958,6 @@ function edA(id){ const a=S.assets.find(x=>x.id===id); if(!a)return; S._fa={...a
 function svA(){
   if(!S.editId) return;
   const ap=parseNum(document.getElementById('f-ap')?.value);
-  const cp=parseNum(document.getElementById('f-cp')?.value);
   const dy=parseNum(document.getElementById('f-dy')?.value);
   const pt=parseNum(document.getElementById('f-pt')?.value);
   const ip=parseNum(document.getElementById('f-ip')?.value);
@@ -967,7 +966,9 @@ function svA(){
   S.assets=S.assets.map(a=>{
     if(a.id!==S.editId) return a;
     const avgManual=ap>0&&Math.abs(ap-Number(a.avg_price||0))>0.0001;
-    return{...a,avg_price:ap||a.avg_price,avg_manual:avgManual||a.avg_manual,current_price:cp||a.current_price,dy,dySource:'manual',price_target:pt,ideal_pct:ip,sector:se,type:ty};
+    return{...a,avg_price:ap||a.avg_price,avg_manual:avgManual||a.avg_manual,
+      dy,dySource:'manual',price_target:pt,ideal_pct:ip,sector:se,type:ty};
+    // cotação não é editada aqui — vem automaticamente via brapi/yahoo
   });
   S.showA=false; S.editId=null; S._fa=null;
   save(); toast('✅ Ativo atualizado!'); render();
