@@ -75,7 +75,10 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .qdot.spin{background:#fbbf24;box-shadow:0 0 6px rgba(251,191,36,.6);animation:pulse 1s ease-in-out infinite}
 .aic{background:#090c15;border:1px solid #2d2a7a;border-radius:12px;padding:20px;box-shadow:0 4px 24px rgba(99,102,241,.12)}
 .air{font-size:13px;line-height:1.9;color:#b8c8de;white-space:pre-wrap}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes priceUp{0%{background:rgba(52,211,153,.25)}100%{background:transparent}}
+@keyframes priceDown{0%{background:rgba(248,113,113,.25)}100%{background:transparent}}
+.flash-up{animation:priceUp .8s ease-out}
+.flash-down{animation:priceDown .8s ease-out}
 @keyframes rota{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .spn{display:inline-block;animation:rota 1s linear infinite}
 .toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s}
@@ -460,6 +463,27 @@ async function fetchQuotes(manual=false){
       tickers.slice(i,i+20).forEach(t=>{if(!recv.has(t)) semPreco.push(t);});
     }
     S.lastUpdate=new Date(); autoDY(); save();
+    // ── Fallback: Yahoo Finance para tickers sem cotação brapi
+    const semCotacao=S.assets.filter(a=>!a.quoteSource||a.quoteSource!=='brapi').map(a=>a.ticker);
+    if(semCotacao.length){
+      const yResults=await fetchQuotesYahoo(semCotacao);
+      yResults.forEach(q=>{
+        const ticker=(q.symbol||'').replace('.SA','').toUpperCase();
+        const a=S.assets.find(x=>x.ticker===ticker); if(!a) return;
+        const price=q.regularMarketPrice;
+        if(price&&price>0){
+          const prev=a.current_price;
+          a.current_price=price;
+          a.quoteSource='yahoo';
+          a.quoteUpdatedAt=new Date().toISOString();
+          S.quotes[ticker]={price,change:q.regularMarketChangePercent||0,flash:price>prev?'up':price<prev?'down':''};
+          atualizados++;
+        }
+        const dyY=(q.trailingAnnualDividendYield||0)*100;
+        if(dyY>0&&(!a.dy||a.dySource==='estimate')){a.dy=Number(dyY.toFixed(2));a.dySource='yahoo';}
+      });
+      if(yResults.length) save();
+    }
     if(manual) toast(`✅ ${atualizados} cotação(ões) atualizadas pela brapi.${semPreco.length?' ('+[...new Set(semPreco)].join(',')+' sem retorno)':''}`);
   }catch(e){
     console.warn('brapi:',e);
@@ -652,7 +676,10 @@ function ativos(){
       <td class="mu">${esc(a.sector||'—')}</td>
       <td>${a.qty}</td>
       <td>R$ ${Number(a.avg_price).toFixed(2)}</td>
-      <td style="font-weight:600;color:${a.current_price>=a.avg_price?'#34d399':'#f87171'}">R$ ${Number(a.current_price).toFixed(2)}${a.quoteSource==='brapi'?'<span style="font-size:10px;color:#60a5fa;margin-left:4px">●</span>':''}</td>
+      <td style="font-weight:600;color:${a.current_price>=a.avg_price?'#34d399':'#f87171'}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
+        R$ ${Number(a.current_price).toFixed(2)}
+        ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
+      </td>
       <td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td>
       <td>${alvo>0?'R$ '+alvo.toFixed(2):'—'}</td>
       <td style="font-weight:700;color:#e2eaf6">${fmt(a.qty*a.current_price)}</td>
@@ -672,7 +699,14 @@ function ativos(){
   </div>
   ${frmA()}
   <div class="tw"><div class="ts"><table>
-    <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th><th>Atual</th><th>Rentab.</th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+    <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
+      <th>
+        <div style="display:flex;align-items:center;gap:5px">
+          ATUAL
+          <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
+        </div>
+      </th>
+      <th>Rentab.</th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
     <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Registre compras na aba 💰 Aportes para alimentar esta tela.</td></tr>'}</tbody>
   </table></div></div>`;
 }
