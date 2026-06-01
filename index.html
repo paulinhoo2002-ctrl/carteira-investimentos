@@ -159,6 +159,16 @@ document.getElementById('imp-file').addEventListener('change', e => {
 // ── Helpers ───────────────────────────────────────────────
 const fmt  = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
+function parseNum(v){
+  if(v===undefined || v===null) return 0;
+  let s=String(v).trim().replace(/R\$|%|\s/g,'');
+  if(!s) return 0;
+  if(s.includes(',') && s.includes('.')) s=s.replace(/\./g,'').replace(',', '.');
+  else if(s.includes(',')) s=s.replace(',', '.');
+  const n=parseFloat(s);
+  return isNaN(n)?0:n;
+}
+const moneyInput = v => (Number(v)||0).toFixed(2).replace('.', ',');
 const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const bdg  = t => t==='Ação'?'bac':t==='FII'?'bfi':t==='ETF'?'bet':'bxx';
 
@@ -231,9 +241,11 @@ function syncAssetsFromAportes(showMsg=false){
       type:old.type||m.type,
       sector:old.sector||m.sector,
       qty:g.qty,
-      avg_price:avg,
+      avg_price:old.avg_manual ? Number(old.avg_price)||avg : avg,
+      avg_manual:!!old.avg_manual,
       current_price:Number(old.current_price)||avg,
       dy:Number(old.dy)||0,
+      dySource:old.dySource||'',
       price_target:Number(old.price_target)||0,
       ideal_pct:Number(old.ideal_pct)||0
     };
@@ -243,12 +255,26 @@ function syncAssetsFromAportes(showMsg=false){
   render();
 }
 function findDy(q){
-  const keys=['dividendYield','trailingAnnualDividendYield','yield','dy','regularMarketDividendYield'];
-  for(const k of keys){
-    const v=Number(q?.[k]);
-    if(v>0) return v>1?v:v*100;
+  const keys=['dividendYield','trailingAnnualDividendYield','yield','dy','regularMarketDividendYield','dividend_yield','dividendYieldAnnual','annualDividendYield'];
+  const seen=new Set();
+  function scan(obj){
+    if(!obj || typeof obj!=='object' || seen.has(obj)) return 0;
+    seen.add(obj);
+    for(const k of keys){
+      const raw=obj[k];
+      if(raw!==undefined && raw!==null && raw!==''){
+        const txt=String(raw).replace('%','').replace(',','.');
+        const v=Number(txt);
+        if(v>0) return v>1?v:v*100;
+      }
+    }
+    for(const v of Object.values(obj)){
+      const found=scan(v);
+      if(found>0) return found;
+    }
+    return 0;
   }
-  return 0;
+  return scan(q);
 }
 
 function cx(){
@@ -271,7 +297,7 @@ async function fetchQuotes(manual=false){
   const tks=[...new Set(S.assets.map(a=>a.ticker).filter(Boolean))].join(',');
   if(!tks){ S.qLoad=false; render(); return; }
   try{
-    const r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(tks)}?token=${encodeURIComponent(S.brapiToken)}`);
+    const r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(tks)}?fundamental=true&token=${encodeURIComponent(S.brapiToken)}`);
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j=await r.json();
     if(j.results){
@@ -282,7 +308,10 @@ async function fetchQuotes(manual=false){
         if(a){
           a.current_price=q.regularMarketPrice;
           const dyApi=findDy(q);
-          if(dyApi>0 && (!a.dy || Number(a.dy)===0)) a.dy=Number(dyApi.toFixed(2));
+          if(dyApi>0 && (manual || !a.dy || Number(a.dy)===0 || a.dySource==='api')){
+            a.dy=Number(dyApi.toFixed(2));
+            a.dySource='api';
+          }
           const m=metaTicker(a.ticker);
           if(!a.sector) a.sector=m.sector;
           if(!a.type) a.type=m.type;
@@ -391,11 +420,11 @@ function frmA(){
   const m=metaTicker(f.ticker);
   return`<div class="fc">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">✏️ Editar dados do ativo</div>
-    <div class="mu" style="font-size:12px;margin-bottom:12px">Quantidade e preço médio são calculados automaticamente pela aba Aportes.</div>
+    <div class="mu" style="font-size:12px;margin-bottom:12px">Quantidade vem da aba Aportes. Preço médio, cotação atual, DY, preço alvo e % ideal podem ser ajustados manualmente aqui.</div>
     <div class="fg">
       <div><div class="fl">Ticker</div><input value="${esc(f.ticker||'')}" disabled></div>
       <div><div class="fl">Quantidade</div><input value="${esc(f.qty||0)}" disabled></div>
-      <div><div class="fl">Preço médio</div><input value="R$ ${Number(f.avg_price||0).toFixed(2)}" disabled></div>
+      <div><div class="fl">Preço médio manual</div><input id="f-ap" type="text" inputmode="decimal" placeholder="ex: 10,15" value="${esc(moneyInput(f.avg_price||0))}"><div class="mu" style="font-size:10px;margin-top:4px">Pode usar vírgula ou ponto</div></div>
       <div><div class="fl">Cotação atual</div><input id="f-cp" type="number" step="0.01" placeholder="38.00" value="${esc(f.current_price||'')}"></div>
       <div><div class="fl">DY anual %</div><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
       <div><div class="fl">Preço alvo</div><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
@@ -434,14 +463,14 @@ function ativos(){
       <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
       <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
       <td class="am" style="font-weight:600">${fmt(dm)}</td>
-      <td class="mu">${a.dy||0}%</td>
+      <td class="mu">${a.dy||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px">API</span>':''}</td>
       <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
     </tr>`;
   }).join('');
-  return`<div class="sh"><div><div class="st">Minha carteira</div><div class="mu" style="font-size:12px;margin-top:4px">Ativos gerados automaticamente pelos lançamentos da aba Aportes. Use o lápis apenas para ajustar DY, cotação, preço alvo e % ideal.</div></div>
+  return`<div class="sh"><div><div class="st">Minha carteira</div><div class="mu" style="font-size:12px;margin-top:4px">Ativos gerados automaticamente pelos lançamentos da aba Aportes. Use o lápis para ajustar preço médio, DY, cotação, preço alvo e % ideal.</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular pelos aportes</button>
-      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar cotações</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar cotações/DY</button>
     </div>
   </div>
   ${frmA()}
@@ -646,13 +675,18 @@ function edA(id){ const a=S.assets.find(x=>x.id===id); if(!a)return; S._fa={...a
 
 function svA(){
   if(!S.editId) return;
-  const cp=parseFloat(document.getElementById('f-cp')?.value)||0;
-  const dy=parseFloat(document.getElementById('f-dy')?.value)||0;
-  const pt=parseFloat(document.getElementById('f-pt')?.value)||0;
-  const ip=parseFloat(document.getElementById('f-ip')?.value)||0;
+  const ap=parseNum(document.getElementById('f-ap')?.value);
+  const cp=parseNum(document.getElementById('f-cp')?.value);
+  const dy=parseNum(document.getElementById('f-dy')?.value);
+  const pt=parseNum(document.getElementById('f-pt')?.value);
+  const ip=parseNum(document.getElementById('f-ip')?.value);
   const se=document.getElementById('f-se')?.value?.trim()||'';
   const ty=document.getElementById('f-ty')?.value||'Ação';
-  S.assets=S.assets.map(a=>a.id===S.editId?{...a,current_price:cp||a.current_price,dy,price_target:pt,ideal_pct:ip,sector:se,type:ty}:a);
+  S.assets=S.assets.map(a=>{
+    if(a.id!==S.editId) return a;
+    const avgManual = ap>0 && Math.abs(ap-Number(a.avg_price||0))>0.0001;
+    return {...a,avg_price:ap||a.avg_price,avg_manual:avgManual||a.avg_manual,current_price:cp||a.current_price,dy,dySource:'manual',price_target:pt,ideal_pct:ip,sector:se,type:ty};
+  });
   S.showA=false; S.editId=null; S._fa=null;
   save(); render();
 }
@@ -667,8 +701,8 @@ function clP(){ S.showP=false; S._fp=null; render(); }
 function svP(){
   const op=(document.getElementById('p-op')?.value||'compra').toLowerCase();
   const ti=document.getElementById('p-ti')?.value?.trim().toUpperCase();
-  const qt=Math.abs(parseFloat(document.getElementById('p-qt')?.value));
-  const pr=parseFloat(document.getElementById('p-pr')?.value);
+  const qt=Math.abs(parseNum(document.getElementById('p-qt')?.value));
+  const pr=parseNum(document.getElementById('p-pr')?.value);
   const dc=document.getElementById('p-dc')?.value?.trim()||'';
   let dt=document.getElementById('p-dt')?.value||'';
   if(dt){ const[y,m,d]=dt.split('-'); dt=`${d}/${m}/${y}`; }
