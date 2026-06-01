@@ -1,11 +1,12 @@
-Carteira de Investimentos — Firebase + Yahoo Finance
+Carteira de Investimentos — Firebase + Yahoo Finance + Importador B3/Excel
 
-Arquivos necessários na raiz do GitHub:
-- index.html
-- api/yahoo-quote.js
+Estrutura correta para GitHub/Vercel:
+index.html
+api/yahoo-quote.js
 
-Correções desta versão:
-- Cotação atual usa Yahoo via função /api/yahoo-quote sem token.
-- Se o Yahoo retornar valor incorreto para algum ativo, é possível editar a cotação manualmente no lápis e marcar “travar cotação manual”.
-- Ao travar a cotação, o botão de atualizar não sobrescreve esse ativo.
-- Função Yahoo com no-store e fallback por chart v8.
+Novidade:
+- Botão 📥 B3/Excel para importar posição em .xlsx/.xls/.csv exportada da B3/corretora.
+- O importador lê abas como Acoes, ETF e Fundo de Investimento.
+- Importa Código de Negociação, Quantidade, Preço de Fechamento e Valor Atualizado.
+- Cria operações de compra de ajuste na aba Aportes e recalcula Ativos.
+- Observação: arquivo de posição não contém preço médio real nem data real de compra.
