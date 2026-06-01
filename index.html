@@ -613,7 +613,18 @@ function frmA(){
       <div><div class="fl">Ticker</div><input value="${esc(f.ticker||'')}" disabled></div>
       <div><div class="fl">Quantidade</div><input value="${esc(f.qty||0)}" disabled></div>
       <div><div class="fl">Preço médio manual</div><input id="f-ap" type="text" inputmode="decimal" placeholder="ex: 10,15" value="${esc(moneyInput(f.avg_price||0))}"></div>
-      <div><div class="fl">Cotação atual</div><input id="f-cp" type="number" step="0.01" placeholder="preenche via brapi" value="${esc(f.current_price||'')}"></div>
+      <div><div class="fl" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Cotação atual</span>
+        ${f.quoteSource==='brapi'
+          ?`<span style="font-size:10px;color:#34d399;background:rgba(52,211,153,.1);padding:1px 7px;border-radius:4px;border:1px solid rgba(52,211,153,.2)">📡 brapi</span>`
+          :`<span style="font-size:10px;color:#fbbf24;background:rgba(251,191,36,.08);padding:1px 7px;border-radius:4px;border:1px solid rgba(251,191,36,.2)">manual</span>`}
+      </div>
+      <input id="f-cp" type="number" step="0.01" placeholder="atualiza automaticamente" value="${esc(f.current_price||'')}">
+      <div style="font-size:10px;color:#3d5472;margin-top:4px">
+        ${f.quoteUpdatedAt
+          ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`
+          :`Atualiza automaticamente a cada ${QI}s · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`}
+      </div></div>
       <div><div class="fl">DY anual %</div><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
       <div><div class="fl">Preço alvo</div><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
       <div><div class="fl">% ideal na carteira</div><input id="f-ip" type="number" step="0.1" placeholder="ex: 8" value="${esc(f.ideal_pct||'')}"></div>
@@ -898,6 +909,17 @@ function iaTab(){
 // ══════════════════════════════════════
 function go(t){ S.tab=t; save(); render(); }  // ← FIX: salva tab ao navegar
 function clA(){ S.showA=false; S.editId=null; S._fa=null; render(); }
+async function refreshCotacao(){
+  await fetchQuotes(false);
+  // Atualiza o campo com o novo valor sem fechar o form
+  const a = S.assets.find(x=>x.id===S.editId);
+  if(!a) return;
+  const el = document.getElementById('f-cp');
+  if(el) el.value = a.current_price;
+  const info = document.querySelector('#f-cp + div');
+  if(info && a.quoteUpdatedAt) info.innerHTML = `⏱ ${new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`;
+  toast(`✅ Cotação de ${a.ticker} atualizada: R$ ${a.current_price.toFixed(2)}`);
+}
 function edA(id){ const a=S.assets.find(x=>x.id===id); if(!a)return; S._fa={...a}; S.editId=id; S.showA=true; render(); }
 function svA(){
   if(!S.editId) return;
