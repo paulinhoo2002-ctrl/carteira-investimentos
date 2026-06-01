@@ -648,7 +648,7 @@ function ativos(){
       <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
       <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
       <td class="am" style="font-weight:600">${fmt(dm)}</td>
-      <td class="mu">${a.dy||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px">API</span>':''}</td>
+      <td class="mu">${a.dy||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
       <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
     </tr>`;
   }).join('');
