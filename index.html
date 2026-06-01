@@ -81,7 +81,6 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 @keyframes priceDown{0%{background:rgba(248,113,113,.25)}100%{background:transparent}}
 .flash-up{animation:priceUp .8s ease-out}
 .flash-down{animation:priceDown .8s ease-out}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 @keyframes rota{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .spn{display:inline-block;animation:rota 1s linear infinite}
 .toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s}
@@ -98,18 +97,20 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
-const QI            = 60;
-const CLRS          = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
-const STOR          = 'civ5';
-const DEFAULT_BRAPI = '';
+const QI           = 60;
+const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
+const STOR         = 'civ5';
+const DEFAULT_BRAPI = ''; // brapi fica opcional; cotações usam Yahoo Finance via /api/yahoo-quote sem token
 
+// Firebase — login Google + Firestore
 const firebaseConfig = {
   apiKey: "AIzaSyAUAGr6VfVoq4BdYAKSNENLv5dCaisHIho",
   authDomain: "carteira-de-investimento-16725.firebaseapp.com",
   projectId: "carteira-de-investimento-16725",
   storageBucket: "carteira-de-investimento-16725.firebasestorage.app",
   messagingSenderId: "194762472851",
-  appId: "1:194762472851:web:1285e351b2dcc80f147c66"
+  appId: "1:194762472851:web:1285e351b2dcc80f147c66",
+  measurementId: "G-ZP045H8HTZ"
 };
 
 let FB = {
@@ -120,14 +121,15 @@ let FB = {
 let S = {
   assets:[], aportes:[], proventos:[], quotes:{}, lastUpdate:null,
   tab:'dashboard', qLoad:false, cd:QI,
-  brapiToken:DEFAULT_BRAPI, divGoal:0,
+  qInFlight:false,
+  brapiToken: DEFAULT_BRAPI, divGoal:0,
   aiText:'', aiLoad:false,
   editId:null, editPId:null, showA:false, showP:false, showD:false,
   _fa:null, _fp:null, _fd:null,
 };
 
 // ══════════════════════════════════════
-// STORAGE
+// STORAGE — corrigido: salva tab + divGoal + beforeunload
 // ══════════════════════════════════════
 function save(){
   try{
@@ -136,25 +138,29 @@ function save(){
       tab:S.tab, divGoal:S.divGoal
     }));
     queueCloudSave();
-  }catch(e){ console.error('save erro:',e); }
+  }catch(e){ console.error('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
 }
 function saveConfig(){
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
 }
+
 function load(){
+  // ← FIX: try-catch separados para não perder tudo se um falhar
   try{
     const d=JSON.parse(localStorage.getItem(STOR)||'{}');
     if(Array.isArray(d.assets))    S.assets    = d.assets;
     if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
     if(Array.isArray(d.proventos)) S.proventos = d.proventos;
-    if(d.tab)                      S.tab       = d.tab;
-    if(d.divGoal !== undefined)    S.divGoal   = Number(d.divGoal)||0;
+    if(d.tab)                       S.tab       = d.tab;       // ← FIX: restaura tab
+    if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
   }catch(e){ console.error('load erro:',e); }
   try{
     const c=JSON.parse(localStorage.getItem(STOR+'_cfg')||'{}');
     if(c.brapiToken)            S.brapiToken = c.brapiToken;
+    else                        S.brapiToken = DEFAULT_BRAPI; // garante token padrão
     if(c.divGoal !== undefined) S.divGoal    = Number(c.divGoal)||S.divGoal;
-  }catch(e){}
+  }catch(e){ S.brapiToken = DEFAULT_BRAPI; }
+  // Migração de versões antigas (civ4, civ3...)
   if(!S.aportes.length && !S.assets.length){
     for(const k of ['civ4','civ3','civ2','carteira_v1']){
       try{
@@ -168,10 +174,12 @@ function load(){
     }
   }
 }
+
+// ← FIX: salva SEMPRE antes da página fechar/recarregar (F5, fecha aba, etc.)
 window.addEventListener('beforeunload', save);
 
 // ══════════════════════════════════════
-// FIREBASE — Google Auth + Firestore
+// FIREBASE — login Google + sincronização em nuvem
 // ══════════════════════════════════════
 function initFirebase(){
   try{
@@ -182,25 +190,35 @@ function initFirebase(){
     FB.ready = true;
     try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     FB.auth.onAuthStateChanged(user=>{
-      FB.user = user||null;
-      if(FB.user) startCloudSync(); else stopCloudSync();
+      FB.user = user || null;
+      if(FB.user) startCloudSync();
+      else stopCloudSync();
       render();
     });
-  }catch(e){ console.warn('Firebase indisponível:',e); FB.ready=false; }
+  }catch(e){
+    console.warn('Firebase indisponível:', e);
+    FB.ready=false;
+  }
 }
 function portfolioRef(){
-  if(!FB.db||!FB.user) return null;
+  if(!FB.db || !FB.user) return null;
   return FB.db.collection('portfolios').doc(FB.user.uid);
 }
 function cloudPayload(){
-  return{
-    assets:S.assets, aportes:S.aportes, proventos:S.proventos,
-    divGoal:Number(S.divGoal)||0, settings:{brapiToken:S.brapiToken||''},
-    tab:S.tab, updatedAtLocal:new Date().toISOString(),
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  return {
+    assets:S.assets,
+    aportes:S.aportes,
+    proventos:S.proventos,
+    divGoal:Number(S.divGoal)||0,
+    settings:{brapiToken:S.brapiToken||''},
+    tab:S.tab,
+    updatedAtLocal:new Date().toISOString(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
-function hasLocalData(){ return (S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length); }
+function hasLocalData(){
+  return (S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0);
+}
 function applyCloudData(d){
   if(!d) return;
   FB.applying=true;
@@ -208,85 +226,111 @@ function applyCloudData(d){
   if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
   if(Array.isArray(d.proventos)) S.proventos = d.proventos;
   if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
-  if(d.tab&&!S.tab)              S.tab       = d.tab;
-  if(d.settings?.brapiToken&&!S.brapiToken) S.brapiToken=d.settings.brapiToken;
+  if(d.tab && !S.tab)            S.tab       = d.tab;
+  if(d.settings && d.settings.brapiToken && !S.brapiToken) S.brapiToken = d.settings.brapiToken;
   try{
-    localStorage.setItem(STOR, JSON.stringify({assets:S.assets,aportes:S.aportes,proventos:S.proventos,tab:S.tab,divGoal:S.divGoal}));
-    localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken,divGoal:S.divGoal}));
+    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal}));
+    localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
   }catch(e){}
-  FB.lastCloudUpdate=d.updatedAtLocal||new Date().toISOString();
+  FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
   FB.applying=false;
 }
 function startCloudSync(){
-  const ref=portfolioRef(); if(!ref) return;
+  const ref=portfolioRef();
+  if(!ref) return;
   stopCloudSync(false);
   FB.cloudLoaded=false;
   FB.unsub=ref.onSnapshot(async snap=>{
     try{
-      if(!snap.exists){ if(hasLocalData()) await uploadLocalToCloud(false); FB.cloudLoaded=true; render(); return; }
-      applyCloudData(snap.data()||{});
-      FB.cloudLoaded=true; render();
+      if(!snap.exists){
+        if(hasLocalData()) await uploadLocalToCloud(false);
+        FB.cloudLoaded=true;
+        render();
+        return;
+      }
+      const data=snap.data()||{};
+      applyCloudData(data);
+      FB.cloudLoaded=true;
+      render();
     }catch(e){ console.warn('cloud sync:',e); }
   },err=>{
     console.warn('Firestore:',err);
-    toast('⚠️ Erro na sincronização. Confira regras do Firestore.','#fbbf24');
+    toast('⚠️ Erro na sincronização com a nuvem. Confira regras do Firestore.','#fbbf24');
   });
 }
-function stopCloudSync(doRender=true){ if(FB.unsub){try{FB.unsub();}catch(e){}} FB.unsub=null; FB.cloudLoaded=false; if(doRender) render(); }
+function stopCloudSync(doRender=true){
+  if(FB.unsub){ try{ FB.unsub(); }catch(e){} }
+  FB.unsub=null; FB.cloudLoaded=false;
+  if(doRender) render();
+}
 function queueCloudSave(){
-  if(FB.applying||!FB.user||!FB.cloudLoaded) return;
+  if(FB.applying || !FB.user || !FB.cloudLoaded) return;
   clearTimeout(FB.saveTimer);
   FB.saveTimer=setTimeout(uploadLocalToCloud,900);
 }
 async function uploadLocalToCloud(show=true){
   const ref=portfolioRef();
-  if(!ref){ if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return; }
-  try{ await ref.set(cloudPayload(),{merge:true}); FB.lastCloudUpdate=new Date().toISOString(); if(show) toast('☁️ Sincronizado na nuvem!'); }
-  catch(e){ console.warn(e); if(show) toast('❌ Erro ao enviar para a nuvem.','#f87171'); }
+  if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return; }
+  try{
+    await ref.set(cloudPayload(), {merge:true});
+    FB.lastCloudUpdate=new Date().toISOString();
+    if(show) toast('☁️ Dados sincronizados na nuvem!');
+  }catch(e){
+    console.warn(e);
+    if(show) toast('❌ Erro ao enviar para a nuvem.','#f87171');
+  }
 }
 async function signInGoogle(){
   if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
-  try{ await FB.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-  catch(e){ console.warn(e); alert('Não foi possível entrar. Confirme se o domínio está autorizado no Firebase.'); }
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    await FB.auth.signInWithPopup(provider);
+  }catch(e){
+    console.warn(e);
+    alert('Não foi possível entrar com Google. Confirme se o domínio está autorizado no Firebase.');
+  }
 }
-async function signOutGoogle(){ try{ await FB.auth.signOut(); toast('Sessão encerrada.'); }catch(e){} }
+async function signOutGoogle(){
+  try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos.'); }catch(e){}
+}
 function cloudStatus(){
   if(!FB.ready) return '<span style="font-size:11px;color:#f87171">Firebase offline</span>';
-  if(!FB.user)  return '<span style="font-size:11px;color:#64748b">Somente local</span>';
-  return `<span style="font-size:11px;color:#34d399">☁️ ${FB.cloudLoaded?'Nuvem online':'Conectando...'}</span>`;
+  if(!FB.user) return '<span style="font-size:11px;color:#64748b">Local</span>';
+  return `<span style="font-size:11px;color:#34d399">☁️ Nuvem ${FB.cloudLoaded?'online':'conectando...'}</span>`;
 }
 function authBox(){
   if(!FB.ready) return '';
-  if(!FB.user) return `<button class="btn bp" style="font-size:12px;padding:7px 14px" onclick="signInGoogle()">🔑 Entrar Google</button>`;
-  const name=esc(FB.user.displayName||'Google');
-  const photo=FB.user.photoURL
-    ?`<img src="${esc(FB.user.photoURL)}" style="width:26px;height:26px;border-radius:50%;border:1px solid #1e2a3d">`
-    :'<div style="width:26px;height:26px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center">👤</div>';
-  return `<div style="display:flex;align-items:center;gap:7px;background:#090c15;border:1px solid #1e2a3d;border-radius:999px;padding:4px 10px 4px 4px">
-    ${photo}
-    <span style="font-size:12px;color:#b8c8de;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-    <button class="bi" title="Sincronizar na nuvem" onclick="uploadLocalToCloud(true)">☁️</button>
+  if(!FB.user) return `<button class="btn bp" style="font-size:12px;padding:7px 12px" onclick="signInGoogle()">🔑 Entrar Google</button>`;
+  const name=esc(FB.user.displayName||'Conta Google');
+  const photo=FB.user.photoURL?`<img src="${esc(FB.user.photoURL)}" style="width:26px;height:26px;border-radius:50%;border:1px solid #1e2a3d">`:'<div style="width:26px;height:26px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center">👤</div>';
+  return `<div style="display:flex;align-items:center;gap:7px;background:#090c15;border:1px solid #1e2a3d;border-radius:999px;padding:4px 7px">
+    ${photo}<span style="font-size:12px;color:#b8c8de;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+    <button class="bi" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)">☁️</button>
     <button class="bi" title="Sair" onclick="signOutGoogle()">Sair</button>
   </div>`;
 }
 
+
 // ══════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════
-let _tt=null;
-function toast(msg,cor='#6ee7b7'){
-  const el=document.getElementById('toast-area'); if(!el) return;
+let _toastTimer=null;
+function toast(msg, cor='#6ee7b7'){
+  const el=document.getElementById('toast-area');
+  if(!el) return;
   el.innerHTML=`<div class="toast" style="border-color:${cor}33;color:${cor}">${msg}</div>`;
-  clearTimeout(_tt); _tt=setTimeout(()=>{if(el)el.innerHTML='';},2800);
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{ if(el) el.innerHTML=''; },2800);
 }
 
 // ══════════════════════════════════════
 // BACKUP
 // ══════════════════════════════════════
 function exportBackup(){
-  const data=JSON.stringify({assets:S.assets,aportes:S.aportes,proventos:S.proventos,divGoal:S.divGoal,exportedAt:new Date().toISOString()},null,2);
+  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, exportedAt:new Date().toISOString()}, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-backup-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.json`});
-  a.click(); toast('💾 Backup exportado!');
+  a.click();
+  toast('💾 Backup exportado com sucesso!');
 }
 function importBackup(){ document.getElementById('imp-file').click(); }
 document.getElementById('imp-file').addEventListener('change',e=>{
@@ -300,98 +344,176 @@ document.getElementById('imp-file').addEventListener('change',e=>{
       if(Array.isArray(d.proventos)) S.proventos = d.proventos;
       if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
       save(); saveConfig(); render();
-      toast(`✅ ${S.assets.length} ativos, ${S.aportes.length} aportes, ${S.proventos.length} proventos importados!`);
+      toast(`✅ ${S.assets.length} ativos, ${S.aportes.length} aportes e ${S.proventos.length} proventos importados!`);
     }catch(err){ alert('Erro ao importar. Verifique o arquivo.'); }
   };
   r.readAsText(f); e.target.value='';
 });
 
 // ══════════════════════════════════════
-// IMPORTADOR B3 / EXCEL
+// IMPORTADOR B3 / CORRETORA — Excel/CSV de posição
 // ══════════════════════════════════════
-function importB3Excel(){ document.getElementById('b3-file')?.click(); }
-function normH(v){ return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase(); }
-function pickB3(row,headers,names){
-  const w=names.map(normH);
-  for(let i=0;i<headers.length;i++){ if(w.includes(normH(headers[i]))) return row[i]; }
+function importB3Excel(){
+  const el=document.getElementById('b3-file');
+  if(!el){ alert('Campo de importação B3 não encontrado.'); return; }
+  el.click();
+}
+function normHeaderB3(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+}
+function pickB3(row, headers, names){
+  const wanted=names.map(normHeaderB3);
+  for(let i=0;i<headers.length;i++){
+    const h=normHeaderB3(headers[i]);
+    if(wanted.includes(h)) return row[i];
+  }
   return null;
 }
-function tickerOk(t){ t=String(t||'').trim().toUpperCase(); return /^[A-Z]{4}[0-9]{1,2}$/.test(t)||/^[A-Z]{3,6}[0-9]{1,2}$/.test(t); }
-function isMarketTicker(t){ return tickerOk(t); }
+function tickerValidoB3(t){
+  t=String(t||'').trim().toUpperCase();
+  return /^[A-Z]{4}[0-9]{1,2}$/.test(t) || /^[A-Z]{3,6}[0-9]{1,2}$/.test(t);
+}
+function isMarketTicker(t){
+  return tickerValidoB3(t);
+}
 function cleanAssetCode(txt){
-  let s=String(txt||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase().replace(/\s+/g,' ');
-  if(tickerOk(s)) return s;
-  return s.replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim().slice(0,38);
+  let s=String(txt||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();
+  s=s.replace(/\s+/g,' ');
+  if(!s) return '';
+  // Mantém tickers de bolsa normais; para renda fixa cria um identificador legível e estável.
+  if(tickerValidoB3(s)) return s;
+  s=s.replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+  return s.slice(0,38);
 }
-function isRF(v){ return /(renda fixa|tesouro|cdb|lci|lca|cri|cra|debenture|letra financeira|lc\b|lf\b)/.test(String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()); }
-function rfMeta(v){
+function isRendaFixaText(v){
+  const s=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  return /(renda fixa|tesouro|cdb|lci|lca|cri|cra|debenture|debentures|letra financeira|lc\b|lf\b)/.test(s);
+}
+function rfMetaFromText(v){
   const s=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
-  if(s.includes('TESOURO')) return{type:'Renda Fixa',sector:'Tesouro Direto'};
-  if(/\bCDB\b/.test(s))  return{type:'Renda Fixa',sector:'CDB'};
-  if(/\bLCI\b/.test(s))  return{type:'Renda Fixa',sector:'LCI'};
-  if(/\bLCA\b/.test(s))  return{type:'Renda Fixa',sector:'LCA'};
-  if(/\bCRI\b/.test(s))  return{type:'Renda Fixa',sector:'CRI'};
-  if(/\bCRA\b/.test(s))  return{type:'Renda Fixa',sector:'CRA'};
-  return{type:'Renda Fixa',sector:'Renda Fixa'};
+  if(s.includes('TESOURO')) return {type:'Renda Fixa',sector:'Tesouro Direto'};
+  if(/\bCDB\b/.test(s)) return {type:'Renda Fixa',sector:'CDB'};
+  if(/\bLCI\b/.test(s)) return {type:'Renda Fixa',sector:'LCI'};
+  if(/\bLCA\b/.test(s)) return {type:'Renda Fixa',sector:'LCA'};
+  if(/\bCRI\b/.test(s)) return {type:'Renda Fixa',sector:'CRI'};
+  if(/\bCRA\b/.test(s)) return {type:'Renda Fixa',sector:'CRA'};
+  if(s.includes('DEBENT')) return {type:'Renda Fixa',sector:'Debênture'};
+  if(/\bLF\b|LETRA FINANCEIRA/.test(s)) return {type:'Renda Fixa',sector:'Letra Financeira'};
+  return {type:'Renda Fixa',sector:'Renda Fixa'};
 }
-function parseB3Wb(wb,fileName){
-  const items=[],warnings=[];
-  const dm=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
-  const importDate=dm?`${dm[3]}/${dm[2]}/${dm[1]}`:new Date().toLocaleDateString('pt-BR');
-  (wb.SheetNames||[]).forEach(sn=>{
-    const sheet=wb.Sheets[sn]; if(!sheet) return;
+function tipoPorAbaB3(sheetName,ticker){
+  const sh=String(sheetName||'').toLowerCase();
+  if(isRendaFixaText(sheetName)||isRendaFixaText(ticker)) return 'Renda Fixa';
+  if(sh.includes('fundo de investimento')) return 'FII';
+  if(sh.includes('etf')) return 'ETF';
+  if(sh.includes('acoes') || sh.includes('ações')) return 'Ação';
+  return metaTicker(ticker).type || 'Ação';
+}
+function setorPorAbaB3(sheetName,ticker){
+  if(isRendaFixaText(sheetName)||isRendaFixaText(ticker)) return rfMetaFromText(`${sheetName} ${ticker}`).sector;
+  const meta=metaTicker(ticker);
+  if(meta.sector && meta.sector!=='FII' && meta.sector!=='Ação') return meta.sector;
+  const sh=String(sheetName||'').toLowerCase();
+  if(sh.includes('fundo de investimento')) return 'FII';
+  if(sh.includes('etf')) return 'ETF';
+  return meta.sector || '';
+}
+function parseB3PositionWorkbook(wb, fileName=''){
+  const items=[]; const warnings=[];
+  const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
+  const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  (wb.SheetNames||[]).forEach(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return;
     const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
-    if(!rows||rows.length<2) return;
+    if(!rows || rows.length<2) return;
     const headers=rows[0].map(x=>String(x||'').trim());
-    const isRFSheet=isRF(sn);
-    rows.slice(1).forEach(row=>{
+    const normHeaders=headers.map(normHeaderB3);
+    const hasQtd=normHeaders.includes('quantidade') || normHeaders.includes('quantidade disponivel');
+    const hasTicker=normHeaders.includes('codigo de negociacao') || normHeaders.includes('codigo') || normHeaders.includes('ticker');
+    const isRF=isRendaFixaText(sheetName) || normHeaders.some(h=>/vencimento|indexador|emissor|instituicao|taxa/.test(h));
+    const isETF=String(sheetName||'').toLowerCase().includes('etf');
+    if(!hasQtd && !isRF) return;
+    rows.slice(1).forEach((row,idx)=>{
       const produto=String(pickB3(row,headers,['Produto','Nome do Produto','Ativo','Descrição','Descricao','Título','Titulo'])||'').trim();
-      let ticker=String(pickB3(row,headers,['Código de Negociação','Codigo de Negociacao','Código','Codigo','Ticker'])||'').trim().toUpperCase();
-      const inst=String(pickB3(row,headers,['Instituição','Instituicao','Emissor','Administrador'])||'').trim();
+      const rawTicker=String(pickB3(row,headers,['Código de Negociação','Codigo de Negociacao','Código','Codigo','Ticker'])||'').trim().toUpperCase();
       const venc=String(pickB3(row,headers,['Vencimento','Data de Vencimento'])||'').trim();
-      if(!ticker&&isRFSheet) ticker=cleanAssetCode([produto,inst,venc].filter(Boolean).join(' ')||sn);
+      const inst=String(pickB3(row,headers,['Instituição','Instituicao','Emissor','Administrador'])||'').trim();
+      let ticker=rawTicker;
+      if(!ticker && isRF){
+        const base=[produto,inst,venc].filter(Boolean).join(' ');
+        ticker=cleanAssetCode(base||sheetName);
+      }
       if(!ticker) return;
-      if(!isRFSheet&&!tickerOk(ticker)) return;
-      if(produto.trim()==='29'||ticker==='TOTAL') return;
+      if(!isRF && !tickerValidoB3(ticker)) return;
+      if(produto.trim()==='29' || ticker==='TOTAL') return;
       let qty=parseNum(pickB3(row,headers,['Quantidade','Quantidade Disponível','Quantidade Disponivel','Quantidade Atual']));
-      let price=parseNum(pickB3(row,headers,['Preço de Fechamento','Preco de Fechamento','Preço Atualizado','Preco Atualizado','PU','Valor Unitário','Valor Unitario']));
-      let value=parseNum(pickB3(row,headers,['Valor Atualizado','Valor Bruto','Valor Líquido','Valor Liquido','Valor Atual','Saldo Bruto','Saldo Líquido']));
-      if(qty<=0&&isRFSheet&&value>0) qty=1;
+      let price=parseNum(pickB3(row,headers,['Preço de Fechamento','Preco de Fechamento','Preço Atualizado','Preco Atualizado','Preço Atualizado CURVA','Preco Atualizado CURVA','Preço Unitário','Preco Unitario','PU','Valor Unitário','Valor Unitario']));
+      let value=parseNum(pickB3(row,headers,['Valor Atualizado','Valor Atualizado CURVA','Valor Atualizado MTM','Valor Atualizado FECHAMENTO','Valor Bruto','Valor Líquido','Valor Liquido','Valor Atual','Saldo Bruto','Saldo Líquido','Saldo Liquido']));
+      if(qty<=0 && isRF && value>0) qty=1;
       if(qty<=0) return;
-      if((!price||price<=0)&&value>0) price=value/qty;
+      if((!price || price<=0) && value>0) price=value/qty;
       if(price<=0){ warnings.push(`${ticker}: sem preço válido; ignorado.`); return; }
-      const tipo=isRFSheet?'Renda Fixa':(String(sn||'').toLowerCase().includes('fundo')?'FII':metaTicker(ticker).type||'Ação');
-      const setor=isRFSheet?rfMeta(`${produto} ${ticker} ${sn}`).sector:metaTicker(ticker).sector||'';
-      items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto,sheet:sn,date:importDate});
+      const tipo=isRF?'Renda Fixa':tipoPorAbaB3(sheetName,ticker);
+      const setor=isRF?rfMetaFromText(`${produto} ${ticker} ${sheetName}`).sector:setorPorAbaB3(sheetName,ticker);
+      items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,date:importDate});
     });
   });
-  return{items,warnings,importDate};
+  return {items,warnings,importDate};
 }
-function applyB3Positions(items,importDate){
-  const tag='[IMPORT_B3_POSICAO]';
-  S.aportes=S.aportes.filter(a=>!(String(a.decision||'').includes(tag)&&String(a.date||'')===importDate));
+function hasSameB3Import(ticker, date){
+  return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
+}
+function applyB3ImportedPositions(items, importDate){
+  const importTag='[IMPORT_B3_POSICAO]';
+  // Remove importações B3 anteriores da mesma data para evitar duplicar se subir o mesmo arquivo outra vez.
+  S.aportes=S.aportes.filter(a=>!(String(a.decision||'').includes(importTag) && String(a.date||'')===importDate));
   const now=Date.now();
-  const novos=items.map((it,i)=>({id:now+i,operation:'compra',ticker:it.ticker,qty:Number(it.qty)||0,price:Number(it.price)||0,date:it.date||importDate,decision:`${tag} ${it.sheet}`,type:it.type,sector:it.sector})).filter(x=>x.ticker&&x.qty>0&&x.price>0);
+  const novos=items.map((it,i)=>({
+    id: now+i,
+    operation:'compra',
+    ticker:it.ticker,
+    qty:Number(it.qty)||0,
+    price:Number(it.price)||0,
+    date:it.date||importDate,
+    decision:`${importTag} ${it.sheet} · posição importada do Excel B3/corretora`,
+    type:it.type,
+    sector:it.sector
+  })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
   S.aportes=[...novos,...S.aportes];
+  // Completa metadados para estes ativos após recálculo.
   syncAssetsFromAportes(false);
-  S.assets=S.assets.map(a=>{const it=items.find(x=>x.ticker===a.ticker);if(!it)return a;return{...a,type:a.type||it.type,sector:a.sector||it.sector,current_price:it.price,quoteSource:a.quoteSource||'importado'};});
+  S.assets=S.assets.map(a=>{
+    const it=items.find(x=>x.ticker===a.ticker);
+    if(!it) return a;
+    return {...a,type:a.type||it.type,sector:a.sector||it.sector,current_price:it.price,quoteSource:a.quoteSource||'importado',quoteUpdatedAt:a.quoteUpdatedAt||new Date().toISOString()};
+  });
   save(); render(); fetchQuotes(false);
-  toast(`✅ ${novos.length} posição(ões) importadas do Excel B3.`);
+  toast(`✅ ${novos.length} posição(ões) importadas do Excel.`);
 }
 document.getElementById('b3-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   try{
-    if(typeof XLSX==='undefined'){alert('Biblioteca Excel não carregou. Verifique a internet.');return;}
-    const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
-    const{items,warnings,importDate}=parseB3Wb(wb,file.name);
-    if(!items.length){alert('Não encontrei posições válidas no arquivo. Exporte como Excel da B3/corretora com colunas Código, Quantidade e Preço.');return;}
+    if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const {items,warnings,importDate}=parseB3PositionWorkbook(wb,file.name);
+    if(!items.length){ alert('Não encontrei posições válidas no arquivo. Tente exportar a posição da B3/corretora em Excel com colunas Código de Negociação, Quantidade, Preço de Fechamento e Valor Atualizado.'); return; }
     const total=items.reduce((s,i)=>s+(i.value||i.qty*i.price),0);
-    const sample=items.slice(0,10).map(i=>`${i.ticker}: ${i.qty} x R$ ${Number(i.price).toFixed(2)} (${i.type}/${i.sector||'-'})`).join('\n');
-    if(confirm(`${items.length} posição(ões) encontradas\nTotal: ${fmt(total)}\n\n${sample}${items.length>10?'\n...':''}\n\nConfirmar importação?`)) applyB3Positions(items,importDate);
-    if(warnings.length) console.warn('Avisos B3:',warnings);
-  }catch(err){console.error(err);alert('Erro ao importar Excel. Verifique o arquivo.');}
+    const sample=items.slice(0,12).map(i=>`${i.ticker}: ${i.qty} x R$ ${Number(i.price).toFixed(2)} (${i.type}/${i.sector||'-'})`).join('\n');
+    const msg=`Encontrei ${items.length} posição(ões) no Excel.\n\nData usada: ${importDate}\nTotal aproximado: ${fmt(total)}\n\nPrévia:\n${sample}${items.length>12?'\n...':''}\n\nVou importar como compras de ajuste na aba Aportes e recalcular Ativos.\nSe já existir importação B3 desta mesma data, ela será substituída para evitar duplicidade.\n\nObservação: arquivo de posição não traz preço médio real nem data de compra original; para histórico exato, use extrato de movimentações.\n\nConfirmar importação?`;
+    if(confirm(msg)) applyB3ImportedPositions(items,importDate);
+    if(warnings.length) console.warn('Avisos importação B3:',warnings);
+  }catch(err){ console.error(err); alert('Erro ao importar Excel. Verifique o arquivo e tente novamente.'); }
   e.target.value='';
 });
+
+function configBrapi(){
+  const token=prompt('Opcional: cole token da brapi.dev apenas para proventos automáticos/fallback (cotações usam Yahoo sem token):',S.brapiToken?'••••••••':'');
+  if(token===null) return;
+  S.brapiToken=token.trim()==='••••••••'?S.brapiToken:token.trim();
+  saveConfig();
+  toast(S.brapiToken?'✅ Token brapi opcional salvo! Cotações continuam pelo Yahoo sem token.':'Token brapi removido. Cotações seguem pelo Yahoo sem token.');
+}
 
 // ══════════════════════════════════════
 // HELPERS
@@ -414,12 +536,12 @@ function inputDateValue(v){
   const s=String(v).trim();
   if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
   const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if(m){ return `${m[3].length<3?2000+Number(m[3]):m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`; }
+  if(m){ const d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=String(m[3].length<3?2000+Number(m[3]):Number(m[3]));return `${y}-${mo}-${d}`; }
   return '';
 }
 function brDate(v){
   if(!v) return new Date().toLocaleDateString('pt-BR');
-  if(/^\d{4}-\d{2}-\d{2}$/.test(v)){const[y,m,d]=v.split('-');return`${d}/${m}/${y}`;}
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)){ const[y,m,d]=v.split('-');return`${d}/${m}/${y}`; }
   return v;
 }
 function parseAnyDate(v){
@@ -429,39 +551,88 @@ function parseAnyDate(v){
   const b=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if(b) return new Date(+b[3]<100?2000+ +b[3]:+b[3],+b[2]-1,+b[1]);
   const d=new Date(s); return isNaN(d)?null:d;
 }
-function toISODate(d){ if(!d)return'';return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function toBRDate(d){ if(!d)return'';return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
+function toISODate(d){ if(!d)return''; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function toBRDate(d){ if(!d)return''; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
 
-// ── DY de referência
-const DY_REF={
-  MXRF11:13.5,VGIP11:12.8,KNCR11:14.2,KNIP11:13.1,CPTS11:13.4,RBRR11:13.0,HGLG11:9.2,XPLG11:9.5,VILG11:9.1,BTLG11:9.3,
-  XPML11:10.2,VISC11:10.0,HSML11:10.3,MALL11:9.8,HGBS11:9.5,PVBI11:8.5,HGRU11:10.5,TRXF11:10.8,TGAR11:13.0,
-  XFIX11:12.0,DIVD11:8.5,DIVO11:7.5,BOVA11:4.0,SMAL11:3.5,IVVB11:1.5,
-  BBAS3:9.5,ITUB4:6.2,ITUB3:6.0,BBDC4:7.0,BBDC3:6.8,SANB11:7.5,
-  TAEE11:8.5,EGIE3:7.2,TRPL4:8.0,CMIG4:8.5,CMIG3:8.0,CPFE3:6.5,ENBR3:5.8,
-  SAPR11:7.5,SAPR4:7.0,CSMG3:7.2,SBSP3:4.5,
-  PETR4:9.0,PETR3:8.8,VALE3:7.5,PRIO3:3.0,
-  BBSE3:7.5,PSSA3:5.0,VIVT3:6.5,TIMS3:5.5,ABEV3:6.0,WEGE3:2.0,
+// ── DY padrão para principais ativos brasileiros (fonte: médias de mercado)
+const DY_REF = {
+  // FIIs — Papel/CRI
+  MXRF11:13.5,VGIP11:12.8,KNCR11:14.2,KNIP11:13.1,CPTS11:13.4,RBRR11:13.0,VGHF11:13.6,HABT11:14.0,VRTA11:13.2,HCTR11:14.5,BCFF11:12.5,BCIA11:13.0,
+  // FIIs — Logística
+  HGLG11:9.2,XPLG11:9.5,VILG11:9.1,BTLG11:9.3,LVBI11:9.4,GGRC11:9.8,BRCO11:9.0,PATL11:9.5,
+  // FIIs — Shopping
+  XPML11:10.2,VISC11:10.0,HSML11:10.3,MALL11:9.8,HGBS11:9.5,VSHO11:10.0,
+  // FIIs — Lajes/Escritório
+  PVBI11:8.5,RBRP11:9.0,BRCR11:8.0,HGRE11:8.2,BREV11:8.5,
+  // FIIs — Renda Urbana
+  HGRU11:10.5,TRXF11:10.8,RBVA11:10.2,VINO11:9.8,
+  // FIIs — Desenvolvimento
+  TGAR11:13.0,RZAT11:13.5,
+  // FIIs — Fundo de Fundos
+  BCFF11:12.0,RBRF11:11.5,KFOF11:11.8,
+  // ETFs renda
+  XFIX11:12.0,DIVD11:8.5,DIVO11:7.5,
+  // Ações — Banco
+  BBAS3:9.5,ITUB4:6.2,ITUB3:6.0,BBDC4:7.0,BBDC3:6.8,SANB11:7.5,BRSR6:8.0,
+  // Ações — Energia elétrica
+  TAEE11:8.5,EGIE3:7.2,TRPL4:8.0,CMIG4:8.5,CMIG3:8.0,CPFE3:6.5,ENBR3:5.8,ENGI11:7.0,AURE3:6.0,ISAE4:8.0,
+  // Ações — Saneamento
+  SAPR11:7.5,SAPR4:7.0,CSMG3:7.2,SBSP3:4.5,GETT4:5.0,
+  // Ações — Petróleo/Mineração
+  PETR4:9.0,PETR3:8.8,VALE3:7.5,PRIO3:3.0,RECV3:4.0,
+  // Ações — Seguros/Financeiro
+  BBSE3:7.5,PSSA3:5.0,CXSE3:7.0,IRBR3:4.0,
+  // Ações — Telecom/Consumo
+  VIVT3:6.5,TIMS3:5.5,ABEV3:6.0,WEGE3:2.0,MDIA3:6.5,JBSS3:5.5,
+  // Ações — Siderurgia
   GGBR4:6.0,CSNA3:7.0,USIM5:5.0,
 };
+
 const META={
-  PETR3:['Ação','Petróleo'],PETR4:['Ação','Petróleo'],VALE3:['Ação','Mineração'],
+  PETR3:['Ação','Petróleo'],PETR4:['Ação','Petróleo'],PRIO3:['Ação','Petróleo'],RECV3:['Ação','Petróleo'],
   ITUB3:['Ação','Banco'],ITUB4:['Ação','Banco'],BBAS3:['Ação','Banco'],BBDC3:['Ação','Banco'],BBDC4:['Ação','Banco'],SANB11:['Ação','Banco'],
   CMIG3:['Ação','Energia'],CMIG4:['Ação','Energia'],TAEE11:['Ação','Energia'],TRPL4:['Ação','Energia'],EGIE3:['Ação','Energia'],CPFE3:['Ação','Energia'],ENBR3:['Ação','Energia'],
   SAPR3:['Ação','Saneamento'],SAPR4:['Ação','Saneamento'],SAPR11:['Ação','Saneamento'],SBSP3:['Ação','Saneamento'],CSMG3:['Ação','Saneamento'],
-  CSNA3:['Ação','Siderurgia'],GGBR4:['Ação','Siderurgia'],USIM5:['Ação','Siderurgia'],
+  VALE3:['Ação','Mineração'],CSNA3:['Ação','Siderurgia'],GGBR4:['Ação','Siderurgia'],USIM5:['Ação','Siderurgia'],
   WEGE3:['Ação','Industrial'],ABEV3:['Ação','Bebidas'],VIVT3:['Ação','Telecom'],TIMS3:['Ação','Telecom'],
-  BBSE3:['Ação','Seguros'],PSSA3:['Ação','Seguros'],PRIO3:['Ação','Petróleo'],
+  BBSE3:['Ação','Seguros'],PSSA3:['Ação','Seguros'],CXSE3:['Ação','Seguros'],
   BOVA11:['ETF','Ibovespa'],SMAL11:['ETF','Small Caps'],IVVB11:['ETF','Exterior'],HASH11:['ETF','Cripto'],DIVD11:['ETF','Dividendos'],DIVO11:['ETF','Dividendos'],XFIX11:['ETF','IFIX'],
   MXRF11:['FII','Papel'],VGIP11:['FII','Papel'],KNCR11:['FII','Papel'],KNIP11:['FII','Papel'],CPTS11:['FII','Papel'],RBRR11:['FII','Papel'],
-  HGLG11:['FII','Logística'],XPLG11:['FII','Logística'],VILG11:['FII','Logística'],BTLG11:['FII','Logística'],
+  HGLG11:['FII','Logística'],XPLG11:['FII','Logística'],VILG11:['FII','Logística'],BTLG11:['FII','Logística'],LVBI11:['FII','Logística'],
   XPML11:['FII','Shopping'],VISC11:['FII','Shopping'],HSML11:['FII','Shopping'],MALL11:['FII','Shopping'],
-  HGRU11:['FII','Renda Urbana'],TRXF11:['FII','Renda Urbana'],
-  TGAR11:['FII','Desenvolvimento'],HGBS11:['FII','Shopping'],HGRE11:['FII','Lajes'],PVBI11:['FII','Lajes'],
+  HGRU11:['FII','Renda Urbana'],TRXF11:['FII','Renda Urbana'],RBVA11:['FII','Renda Urbana'],
+  TGAR11:['FII','Desenvolvimento'],HGBS11:['FII','Shopping'],HGRE11:['FII','Lajes'],PVBI11:['FII','Lajes'],RBRP11:['FII','Lajes']
 };
+// ── DY automático: proventos reais → estimativa da tabela → manual
+function autoDY(){
+  const now=new Date();
+  const oneYearAgo=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());
+  let updated=0;
+  S.assets.forEach(a=>{
+    if(a.dySource==='manual') return; // não sobrescreve DY manual
+    // 1ª prioridade: calcula pelo histórico real de proventos (mais preciso)
+    const provsAno=S.proventos.filter(p=>{
+      const d=parseAnyDate(p.date);
+      return String(p.ticker||'').toUpperCase()===a.ticker && d && d>=oneYearAgo;
+    });
+    if(provsAno.length>0 && a.qty>0 && a.current_price>0){
+      const totalAnual=provsAno.reduce((s,p)=>s+(Number(p.value)||0),0);
+      const dy=(totalAnual/(a.qty*a.current_price))*100;
+      if(dy>0){ a.dy=Number(dy.toFixed(2)); a.dySource='proventos'; updated++; return; }
+    }
+    // 2ª prioridade: tabela de referência de mercado
+    if(!a.dy || Number(a.dy)===0 || a.dySource==='estimate'){
+      const ref=DY_REF[a.ticker];
+      if(ref){ a.dy=ref; a.dySource='estimate'; updated++; }
+    }
+  });
+  if(updated>0){ save(); }
+  return updated;
+}
+
 function metaTicker(ticker){
   const t=String(ticker||'').trim().toUpperCase();
-  if(isRF(t)) return rfMeta(t);
+  if(isRendaFixaText(t)) return rfMetaFromText(t);
   if(META[t]) return{type:META[t][0],sector:META[t][1]};
   if(/^[A-Z]{4}11$/.test(t)) return{type:'FII',sector:'FII'};
   if(/^[A-Z]{4}[34]$/.test(t)) return{type:'Ação',sector:'Ação'};
@@ -471,11 +642,12 @@ function applyMetaToAporte(){
   const ti=(document.getElementById('p-ti')?.value||'').toUpperCase();
   const se=document.getElementById('p-se'); const ty=document.getElementById('p-ty');
   let m=metaTicker(ti);
-  if(ty&&(!ty.dataset.manual||!ty.value)) ty.value=m.type||'Ação';
-  if(se&&(!se.dataset.manual||!se.value)) se.value=m.sector||'';
+  if(ty && ty.value==='Renda Fixa') m=rfMetaFromText(ti||se?.value||'Renda Fixa');
+  if(ty && (!ty.dataset.manual || !ty.value)) ty.value=m.type||'Ação';
+  if(se && (!se.dataset.manual || !se.value)) se.value=m.sector||'';
 }
 function findDy(q){
-  const keys=['dividendYield','trailingAnnualDividendYield','yield','dy','regularMarketDividendYield','dividend_yield'];
+  const keys=['dividendYield','trailingAnnualDividendYield','yield','dy','regularMarketDividendYield','dividend_yield','dividendYieldAnnual','annualDividendYield'];
   const seen=new Set();
   function scan(obj){
     if(!obj||typeof obj!=='object'||seen.has(obj)) return 0; seen.add(obj);
@@ -502,24 +674,6 @@ function proventoStats(){
   });
   return{mes,ano,total};
 }
-function autoDY(){
-  const now=new Date(),oneYearAgo=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());
-  let updated=0;
-  S.assets.forEach(a=>{
-    if(a.dySource==='manual') return;
-    const provsAno=S.proventos.filter(p=>{const d=parseAnyDate(p.date);return String(p.ticker||'').toUpperCase()===a.ticker&&d&&d>=oneYearAgo;});
-    if(provsAno.length>0&&a.qty>0&&a.current_price>0){
-      const dy=(provsAno.reduce((s,p)=>s+(Number(p.value)||0),0)/(a.qty*a.current_price))*100;
-      if(dy>0){a.dy=Number(dy.toFixed(2));a.dySource='proventos';updated++;return;}
-    }
-    if(!a.dy||Number(a.dy)===0||a.dySource==='estimate'){
-      const ref=DY_REF[a.ticker];
-      if(ref){a.dy=ref;a.dySource='estimate';updated++;}
-    }
-  });
-  if(updated>0) save();
-  return updated;
-}
 
 // ══════════════════════════════════════
 // SYNC ATIVOS ← APORTES
@@ -537,10 +691,12 @@ function syncAssetsFromAportes(showMsg=false){
     const t=cleanAssetCode(raw)||raw;
     const q=Math.abs(Number(p.qty)||0),pr=Number(p.price)||0;
     const op=(p.operation||p.op||'compra').toLowerCase();
-    const m=metaTicker(t),tipo=p.type||p.asset_type||m.type||'Ação',setor=p.sector||p.asset_sector||m.sector||'';
+    const m=metaTicker(t);
+    const tipo=p.type||p.asset_type||m.type||'Ação';
+    const setor=p.sector||p.asset_sector||m.sector||'';
     if(!grouped[t]) grouped[t]={ticker:t,qty:0,total:0,type:tipo,sector:setor};
-    if(!grouped[t].type&&tipo) grouped[t].type=tipo;
-    if(!grouped[t].sector&&setor) grouped[t].sector=setor;
+    if(!grouped[t].type && tipo) grouped[t].type=tipo;
+    if(!grouped[t].sector && setor) grouped[t].sector=setor;
     if(op==='venda'){
       const atual=grouped[t].qty,vendida=Math.min(q,atual),avg=atual>0?grouped[t].total/atual:0;
       grouped[t].qty=Math.max(0,atual-vendida);
@@ -550,23 +706,26 @@ function syncAssetsFromAportes(showMsg=false){
   });
   S.assets=Object.values(grouped).filter(g=>g.qty>0.000001).map(g=>{
     const old=keep[g.ticker]||{},m=metaTicker(g.ticker),avg=g.qty>0?g.total/g.qty:0;
+    const isRF=(old.type||g.type||m.type)==='Renda Fixa';
     return{
       id:old.id||Date.now()+Math.floor(Math.random()*999999),
       ticker:g.ticker, type:old.type||g.type||m.type, sector:old.sector||g.sector||m.sector, qty:g.qty,
       avg_price:old.avg_manual?Number(old.avg_price)||avg:avg, avg_manual:!!old.avg_manual,
       current_price:Number(old.current_price)||avg, dy:Number(old.dy)||0,
       dySource:old.dySource||'', price_target:Number(old.price_target)||0, ideal_pct:Number(old.ideal_pct)||0,
-      quoteSource:old.quoteSource||'', quoteUpdatedAt:old.quoteUpdatedAt||''
+      quoteSource:old.quoteSource||(isRF?'manual':''), quoteUpdatedAt:old.quoteUpdatedAt||''
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
-  autoDY(); save();
-  if(showMsg) toast('✅ Carteira recalculada!');
+  autoDY();
+  save();
+  if(showMsg) toast('✅ Carteira recalculada pelos aportes!');
   render();
 }
 function qtyAtDate(ticker,refDate){
   const t=String(ticker||'').toUpperCase(); let qty=0;
   [...S.aportes].filter(a=>String(a.ticker||'').toUpperCase()===t).sort((a,b)=>(parseAnyDate(a.date)?.getTime()||0)-(parseAnyDate(b.date)?.getTime()||0)).forEach(a=>{
-    const d=parseAnyDate(a.date); if(!d||!refDate||d.getTime()>refDate.getTime()) return;
+    const d=parseAnyDate(a.date);
+    if(!d||!refDate||d.getTime()>refDate.getTime()) return;
     const q=Math.abs(Number(a.qty)||0),op=(a.operation||a.op||'compra').toLowerCase();
     qty+=op==='venda'?-q:q; if(qty<0) qty=0;
   });
@@ -581,13 +740,13 @@ function earliestAporteDate(){
 function normalizeDividendItem(item,fallback){
   const symbol=String(item.symbol||item.ticker||fallback||'').toUpperCase();
   const payDate=parseAnyDate(item.paymentDate||item.pay_date||item.payableDate||item.date||item.dataPagamento||item.exDate||item.lastDatePrior);
-  const posDate=parseAnyDate(item.lastDatePrior||item.recordDate||item.exDate||item.date||item.paymentDate);
+  const posDate=parseAnyDate(item.lastDatePrior||item.recordDate||item.comDate||item.exDate||item.date||item.paymentDate);
   const rate=parseNum(item.rate??item.amount??item.value??item.dividend??item.cashAmount??item.valor);
   const label=String(item.label||item.type||item.tipo||'Provento').trim()||'Provento';
   return{symbol,payDate,posDate:posDate||payDate,rate,label};
 }
 function collectDividendItems(payload,fallback){
-  const out=[];
+  const out=[]; const seen=new Set();
   function walk(x){
     if(!x) return; if(Array.isArray(x)){x.forEach(walk);return;} if(typeof x!=='object') return;
     const hasRate=['rate','amount','value','dividend','cashAmount','valor'].some(k=>x[k]!==undefined);
@@ -597,172 +756,173 @@ function collectDividendItems(payload,fallback){
   }
   walk(payload); return out;
 }
-function proventoKey(d){ return`${d.symbol}|${toISODate(d.payDate)}|${Number(d.rate||0).toFixed(8)}|${String(d.label||'').toUpperCase()}`; }
+function proventoKey(d){ return `${d.symbol}|${toISODate(d.payDate)}|${Number(d.rate||0).toFixed(8)}|${String(d.label||'').toUpperCase()}`; }
 
 // ══════════════════════════════════════
-// COTAÇÕES — Yahoo Finance via /api/yahoo-quote (Vercel)
+// COTAÇÕES — Yahoo Finance gratuito como fonte principal
+// Usa a função Vercel /api/yahoo-quote para evitar CORS e NÃO precisar de token.
+// brapi fica opcional apenas para proventos automáticos, se você quiser usar.
 // ══════════════════════════════════════
+async function fetchQuotesYahoo(tickers){
+  const clean=[...new Set((tickers||[]).map(t=>String(t||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
+  if(!clean.length) return [];
+  const apiBase=location.protocol==='file:'?'https://carteira-investimentos-delta.vercel.app':'';
+  const r=await fetch(`${apiBase}/api/yahoo-quote?symbols=${encodeURIComponent(clean.join(','))}`,{cache:'no-store'});
+  if(!r.ok) throw new Error('Yahoo HTTP '+r.status);
+  const j=await r.json();
+  return Array.isArray(j.results)?j.results:[];
+}
 async function fetchQuotes(manual=false){
   if(!S.assets.length) return;
+  if(S.qInFlight) return;
+  S.qInFlight=true;
   S.qLoad=true; render();
+
   const tickers=[...new Set(S.assets.map(a=>String(a.ticker||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
   let atualizados=0,semPreco=[];
+
   try{
-    const r=await fetch(`/api/yahoo-quote?symbols=${encodeURIComponent(tickers.join(','))}`,{cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const j=await r.json();
-    const results=Array.isArray(j.results)?j.results:[];
+    const yResults=await fetchQuotesYahoo(tickers);
     const recebidos=new Set();
-    results.forEach(q=>{
-      const ticker=String(q.symbol||'').replace('.SA','').toUpperCase(); if(!ticker) return;
+
+    yResults.forEach(q=>{
+      const ticker=String(q.symbol||'').replace('.SA','').toUpperCase();
+      if(!ticker) return;
       recebidos.add(ticker);
-      const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===ticker); if(!a) return;
-      const price=Number(q.regularMarketPrice??q.postMarketPrice??q.regularMarketPreviousClose);
+
+      const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===ticker);
+      if(!a) return;
+
+      const price=Number(q.regularMarketPrice ?? q.postMarketPrice ?? q.preMarketPrice ?? q.regularMarketPreviousClose);
       if(Number.isFinite(price)&&price>0){
         const prev=Number(a.current_price)||0;
-        a.current_price=price; a.quoteSource='yahoo'; a.quoteUpdatedAt=new Date().toISOString();
-        S.quotes[ticker]={price,change:Number(q.regularMarketChangePercent)||0,flash:prev>0?(price>prev?'up':price<prev?'down':''):''};
+        a.current_price=price;
+        a.quoteSource='yahoo';
+        a.quoteUpdatedAt=new Date().toISOString();
+        S.quotes[ticker]={
+          price,
+          change:Number(q.regularMarketChangePercent)||0,
+          flash:prev>0?(price>prev?'up':price<prev?'down':''):''
+        };
         atualizados++;
-      }else semPreco.push(ticker);
+      }else{
+        semPreco.push(ticker);
+      }
+
       const dyY=Number(q.trailingAnnualDividendYield||0)*100;
-      if(dyY>0&&(!a.dy||a.dySource==='estimate'||a.dySource==='yahoo')){a.dy=Number(dyY.toFixed(2));a.dySource='yahoo';}
+      if(dyY>0&&(!a.dy||a.dySource==='estimate'||a.dySource==='yahoo')){
+        a.dy=Number(dyY.toFixed(2));
+        a.dySource='yahoo';
+      }
+
+      const m=metaTicker(a.ticker);
+      if(!a.sector) a.sector=m.sector;
+      if(!a.type) a.type=m.type;
     });
+
     tickers.forEach(t=>{ if(!recebidos.has(t)) semPreco.push(t); });
-    // Fallback brapi (opcional — só se token configurado)
-    if(semPreco.length&&S.brapiToken){
-      for(let i=0;i<semPreco.length;i+=20){
-        const batch=[...new Set(semPreco)].slice(i,i+20).join(',');
-        try{
-          let r2=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?range=1d&interval=1d&fundamental=true`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
-          if(!r2.ok) r2=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?token=${encodeURIComponent(S.brapiToken)}`);
-          if(!r2.ok) continue;
-          const j2=await r2.json();
-          (j2.results||[]).forEach(q=>{
+
+    // Fallback opcional para brapi: só tenta se você salvou um token.
+    // A cotação principal funciona sem token pelo Yahoo.
+    if(semPreco.length && S.brapiToken){
+      try{
+        const falhou=[...new Set(semPreco)];
+        semPreco=[];
+        for(let i=0;i<falhou.length;i+=20){
+          const batch=falhou.slice(i,i+20).join(',');
+          let r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?range=1d&interval=1d&fundamental=true`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
+          if(!r.ok) r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?range=1d&interval=1d&fundamental=true&token=${encodeURIComponent(S.brapiToken)}`);
+          if(!r.ok) continue;
+          const j=await r.json();
+          const recv=new Set();
+          (j.results||[]).forEach(q=>{
             const sym=String(q.symbol||'').toUpperCase();
-            const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===sym); if(!a) return;
-            const price=Number(q.regularMarketPrice??q.price??q.close);
+            recv.add(sym);
+            const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===sym);
+            if(!a) return;
+            const price=Number(q.regularMarketPrice??q.price??q.close??q.previousClose);
             if(Number.isFinite(price)&&price>0){
               const prev=Number(a.current_price)||0;
-              a.current_price=price; a.quoteSource='brapi'; a.quoteUpdatedAt=new Date().toISOString();
+              a.current_price=price;
+              a.quoteSource='brapi';
+              a.quoteUpdatedAt=new Date().toISOString();
               S.quotes[sym]={price,change:Number(q.regularMarketChangePercent)||0,flash:prev>0?(price>prev?'up':price<prev?'down':''):''};
               atualizados++;
             }
             const dyApi=findDy(q);
-            if(dyApi>0&&(!a.dy||a.dySource==='estimate')){a.dy=Number(dyApi.toFixed(2));a.dySource='api';}
+            if(dyApi>0&&(!a.dy||a.dySource==='api'||a.dySource==='estimate')){
+              a.dy=Number(dyApi.toFixed(2));
+              a.dySource='api';
+            }
           });
-        }catch(e){console.warn('fallback brapi:',e);}
-      }
+          falhou.slice(i,i+20).forEach(t=>{ if(!recv.has(t)) semPreco.push(t); });
+        }
+      }catch(e){ console.warn('fallback brapi:',e); }
     }
-    S.lastUpdate=new Date(); autoDY(); save();
-    if(manual) toast(`✅ ${atualizados} cotação(ões) atualizadas.${semPreco.length?' Sem retorno: '+[...new Set(semPreco)].slice(0,5).join(', '):''}`, semPreco.length?'#fbbf24':'#6ee7b7');
+
+    S.lastUpdate=new Date();
+    if(S.editId){
+      const editAsset=S.assets.find(x=>x.id===S.editId);
+      if(editAsset) S._fa={...editAsset};
+    }
+    autoDY();
+    save();
+
+    if(manual){
+      const msg = semPreco.length
+        ? `✅ ${atualizados} cotação(ões) atualizadas pelo Yahoo. Sem retorno: ${[...new Set(semPreco)].join(', ')}`
+        : `✅ ${atualizados} cotação(ões) atualizadas automaticamente pelo Yahoo.`;
+      toast(msg, semPreco.length?'#fbbf24':'#6ee7b7');
+    }
   }catch(e){
-    console.warn('fetchQuotes:',e);
-    if(manual) toast('❌ Erro ao buscar cotações. Verifique se api/yahoo-quote.js está no GitHub.','#f87171');
+    console.warn('Yahoo Finance:',e);
+    if(manual) toast('❌ Não foi possível atualizar pelo Yahoo. Verifique se a pasta api foi enviada ao GitHub/Vercel.','#f87171');
   }
+
+  S.qInFlight=false;
   S.qLoad=false; S.cd=QI; render();
 }
 async function fetchAutoProventos(){
+  if(!S.brapiToken){alert('Configure o token da brapi.dev em ⚙️ brapi.');return;}
   if(!S.assets.length){alert('Registre compras na aba Aportes antes de buscar proventos.');return;}
-  toast('🔎 Buscando dividendos históricos pelo Yahoo Finance...','#60a5fa');
-  const tickers=[...new Set(S.assets.map(a=>a.ticker).filter(t=>t&&isMarketTicker(t)))];
+  const start=toISODate(earliestAporteDate()),end=toISODate(new Date());
   const existing=new Set(S.proventos.map(p=>p.autoKey).filter(Boolean));
-  let novos=0, ignorados=0;
-
-  try{
-    // ── Busca dividendos históricos via Yahoo Finance (sem token) ──
-    for(let i=0;i<tickers.length;i+=20){
-      const batch=tickers.slice(i,i+20).join(',');
-      try{
-        const r=await fetch(`/api/yahoo-quote?symbols=${encodeURIComponent(batch)}&dividends=true&range=2y`,{cache:'no-store'});
-        if(!r.ok) continue;
-        const j=await r.json();
-        const divMap=j.dividends||{};
-
-        Object.entries(divMap).forEach(([ticker,divList])=>{
-          if(!Array.isArray(divList)) return;
-          divList.forEach(d=>{
-            const payDate=new Date(d.date*1000); // unix seconds → ms
-            const rate=Number(d.amount)||0;
-            if(!payDate||!rate) return;
-
-            const q=qtyAtDate(ticker,payDate);
-            if(q<=0){ignorados++;return;}
-            const value=Number((q*rate).toFixed(2));
-            if(value<=0){ignorados++;return;}
-
-            // Chave de deduplicação
-            const key=`${ticker}|${toISODate(payDate)}|${rate.toFixed(8)}`;
-            const dup=existing.has(key)||S.proventos.some(p=>
-              String(p.ticker).toUpperCase()===ticker &&
-              p.date===toBRDate(payDate) &&
-              Math.abs((Number(p.value)||0)-value)<0.01
-            );
-            if(dup){ignorados++;return;}
-
-            // Tipo do provento
-            const asset=S.assets.find(a=>a.ticker===ticker);
-            const tipo=asset?.type==='FII'?'Rendimento':
-                       asset?.type==='Ação'?'Dividendo':'Rendimento';
-
-            S.proventos.push({
-              id:Date.now()+Math.floor(Math.random()*999999),
-              ticker,
-              value,
-              type:tipo,
-              date:toBRDate(payDate),
-              note:`Auto Yahoo: ${q} cotas × R$ ${rate.toFixed(4)} em ${toBRDate(payDate)}`,
-              autoKey:key
-            });
-            existing.add(key);
-            novos++;
-          });
-        });
-      }catch(e){console.warn('yahoo dividends',batch,e);}
-    }
-
-    // Ordena por data mais recente
-    S.proventos.sort((a,b)=>{
-      const da=parseAnyDate(a.date)?.getTime()||0;
-      const db=parseAnyDate(b.date)?.getTime()||0;
-      return db-da;
+  let novos=0,ignorados=0,erros=[];
+  const addItems=(items,origem)=>{
+    items.forEach(d=>{
+      if(!d.symbol||!d.payDate||!d.rate) return;
+      const q=qtyAtDate(d.symbol,d.posDate||d.payDate); if(q<=0){ignorados++;return;}
+      const value=q*d.rate; if(value<=0){ignorados++;return;}
+      const key=proventoKey(d);
+      const dup=existing.has(key)||S.proventos.some(p=>String(p.ticker).toUpperCase()===d.symbol&&p.date===toBRDate(d.payDate)&&Math.abs((Number(p.value)||0)-value)<0.01);
+      if(dup){ignorados++;return;}
+      S.proventos.unshift({id:Date.now()+Math.floor(Math.random()*999999),ticker:d.symbol,value:Number(value.toFixed(2)),type:d.label,date:toBRDate(d.payDate),note:`Auto ${origem}: ${q} cotas x R$ ${Number(d.rate).toFixed(4)}`,autoKey:key});
+      existing.add(key); novos++;
     });
-
-    autoDY(); save(); render();
-
-    if(novos>0){
-      toast(`✅ ${novos} provento(s) adicionados automaticamente pelo Yahoo Finance!${ignorados?' ('+ignorados+' já existentes)':''}`);}
-    else{
-      toast('ℹ️ Nenhum provento novo encontrado. Yahoo Finance pode não ter histórico para estes ativos.','#fbbf24');
-    }
-
-    // ── Fallback opcional: brapi (se token configurado) ──
-    if(S.brapiToken){
+  };
+  try{
+    const tickers=[...new Set(S.assets.map(a=>a.ticker).filter(t=>t&&isMarketTicker(t)))];
+    for(let i=0;i<tickers.length;i+=10){
+      const batch=tickers.slice(i,i+10).join(',');
       try{
-        const start=toISODate(earliestAporteDate()),end=toISODate(new Date());
-        const fiis=tickers.filter(t=>(S.assets.find(a=>a.ticker===t)?.type||metaTicker(t).type)==='FII');
-        for(let i=0;i<fiis.length;i+=20){
-          const batch=fiis.slice(i,i+20).join(','); if(!batch) continue;
-          const r=await fetch(`https://brapi.dev/api/v2/fii/dividends?symbols=${encodeURIComponent(batch)}&startDate=${start}&endDate=${end}&sortOrder=asc`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
-          if(r.ok){
-            const j=await r.json();
-            collectDividendItems(j,'').forEach(d=>{
-              if(!d.symbol||!d.payDate||!d.rate) return;
-              const q=qtyAtDate(d.symbol,d.posDate||d.payDate); if(q<=0) return;
-              const value=Number((q*d.rate).toFixed(2)); if(value<=0) return;
-              const key=proventoKey(d);
-              if(existing.has(key)) return;
-              S.proventos.unshift({id:Date.now()+Math.floor(Math.random()*999999),ticker:d.symbol,value,type:d.label,date:toBRDate(d.payDate),note:`Auto brapi FII: ${q} cotas × R$ ${Number(d.rate).toFixed(4)}`,autoKey:key});
-              existing.add(key); novos++;
-            });
-          }
-        }
-        if(novos>0){ save(); render(); toast(`✅ +${novos} proventos via brapi FII adicionados!`); }
-      }catch(e){console.warn('brapi fallback:',e);}
+        const r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?dividends=true&range=max&interval=1d&token=${encodeURIComponent(S.brapiToken)}`);
+        if(r.ok){const j=await r.json();(j.results||[]).forEach(q=>addItems(collectDividendItems(q,q.symbol),'quote'));}
+      }catch(e){erros.push('quote');}
     }
-
+    const fiis=tickers.filter(t=>(S.assets.find(a=>a.ticker===t)?.type||metaTicker(t).type)==='FII');
+    for(let i=0;i<fiis.length;i+=20){
+      const batch=fiis.slice(i,i+20).join(','); if(!batch) continue;
+      try{
+        const r=await fetch(`https://brapi.dev/api/v2/fii/dividends?symbols=${encodeURIComponent(batch)}&startDate=${start}&endDate=${end}&sortOrder=asc`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
+        if(r.ok){const j=await r.json();addItems(collectDividendItems(j,''),'FII');}
+        else if(r.status===403) erros.push('FIIs exigem plano Pro na brapi');
+      }catch(e){erros.push('FII');}
+    }
+    save(); render();
+    toast(`✅ ${novos} novo(s) provento(s) adicionados.${ignorados?' '+ignorados+' ignorados/duplicados.':''}`);
+    if(erros.length) console.warn('Avisos proventos:',[...new Set(erros)].join(', '));
   }catch(e){
-    console.warn(e);
-    toast('❌ Erro ao buscar proventos históricos.','#f87171');
+    console.warn(e); toast('❌ Erro ao buscar proventos automáticos.','#f87171');
   }
 }
 
@@ -798,13 +958,14 @@ function app(){
   <div class="hdr">
     <div class="hdr-logo">
       <div class="hdr-icon">📈</div>
-      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">${cloudStatus()}</div></div>
+      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">Dados locais + Google/Firebase · ${cloudStatus()}</div></div>
     </div>
     <div class="hdr-right">
       ${authBox()}
       <button class="btn bexp" onclick="exportBackup()">💾 Backup</button>
       <button class="btn bimp" onclick="importBackup()">📂 Importar</button>
-      <button class="btn bb3" onclick="importB3Excel()" title="Importar Excel B3/corretora">📥 B3/Excel</button>
+      <button class="btn bb3" onclick="importB3Excel()" title="Importar posição B3 / corretora em Excel">📥 B3/Excel</button>
+
       <div style="text-align:right">
         <div style="font-size:11px;color:#2e3f58">${now}</div>
         <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:2px">
@@ -827,7 +988,9 @@ function content(){
   return'';
 }
 
-// ══ DASHBOARD ══
+// ══════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════
 function dash(){
   const{tI,tC,tG,tGP,mD,aD,avgDY}=cx();
   const byT={};
@@ -837,14 +1000,16 @@ function dash(){
   const leg=ad.map((d,i)=>`<div class="pli"><div class="pd" style="background:${CLRS[i%CLRS.length]}"></div><span>${esc(d.name)} ${tC>0?((d.value/tC)*100).toFixed(0):'0'}%</span></div>`).join('');
   const sd=[...S.assets].sort((a,b)=>((b.qty*b.current_price*(b.dy/100))/12)-((a.qty*a.current_price*(a.dy/100))/12));
   const maxD=sd.length?Math.max(...sd.map(a=>(a.qty*a.current_price*(a.dy/100))/12)):0;
-  const bars=sd.map((a,i)=>{const dm=(a.qty*a.current_price*(a.dy/100))/12;const pct=maxD>0?(dm/maxD)*100:0;return`<div class="db"><div class="dbl">${esc(a.ticker)}</div><div class="dbt"><div class="dbf" style="width:${pct.toFixed(0)}%;background:${CLRS[i%CLRS.length]}"></div></div><div class="dbv am">${fmt(dm)}</div></div>`;}).join('');
+  const bars=sd.map((a,i)=>{const dm=(a.qty*a.current_price*(a.dy/100))/12;const pct=maxD>0?(dm/maxD)*100:0;
+    return`<div class="db"><div class="dbl">${esc(a.ticker)}</div><div class="dbt"><div class="dbf" style="width:${pct.toFixed(0)}%;background:${CLRS[i%CLRS.length]}"></div></div><div class="dbv am">${fmt(dm)}</div></div>`;
+  }).join('');
   const rec=proventoStats();
   return`<div class="cards">
     <div class="card al" style="border-left-color:#818cf8"><div class="cl">💼 Patrimônio</div><div class="cv pu">${fmt(tC)}</div><div class="cs">Investido: ${fmt(tI)}</div></div>
     <div class="card al" style="border-left-color:${tG>=0?'#34d399':'#f87171'}"><div class="cl">📈 Resultado</div><div class="cv" style="color:${tG>=0?'#34d399':'#f87171'}">${fmt(tG)}</div><div class="cs">${fmtP(tGP)}</div></div>
     <div class="card al" style="border-left-color:#fbbf24"><div class="cl">💰 Div. projetado/mês</div><div class="cv am">${fmt(mD)}</div><div class="cs">Anual: ${fmt(aD)}</div></div>
     <div class="card al" style="border-left-color:#60a5fa"><div class="cl">% DY médio</div><div class="cv bl">${avgDY.toFixed(2)}%</div><div class="cs">${S.assets.length} ativos · ${S.aportes.length} aportes</div></div>
-    <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no ano</div><div class="cv gn">${fmt(rec.ano)}</div><div class="cs">Total: ${fmt(rec.total)}</div></div>
+    <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no ano</div><div class="cv gn">${fmt(rec.ano)}</div><div class="cs">Total histórico: ${fmt(rec.total)}</div></div>
   </div>
   <div class="cg">
     <div class="cc"><div class="ct">Alocação por tipo</div>${p}<div class="pleg">${leg}</div></div>
@@ -852,24 +1017,30 @@ function dash(){
   </div>`;
 }
 
-// ══ ATIVOS ══
+// ══════════════════════════════════════
+// ATIVOS
+// ══════════════════════════════════════
 function frmA(){
   if(!S.showA||!S.editId) return'';
   const f=S._fa||{},m=metaTicker(f.ticker);
   return`<div class="fc">
     <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#c4b5fd">✏️ Editar dados do ativo</div>
+    <div class="mu" style="font-size:12px;margin-bottom:12px">Quantidade vem dos Aportes. Ajuste preço médio, cotação, DY, preço alvo e % ideal aqui.</div>
     <div class="fg">
       <div><div class="fl">Ticker</div><input value="${esc(f.ticker||'')}" disabled></div>
       <div><div class="fl">Quantidade</div><input value="${esc(f.qty||0)}" disabled></div>
       <div><div class="fl">Preço médio manual</div><input id="f-ap" type="text" inputmode="decimal" placeholder="ex: 10,15" value="${esc(moneyInput(f.avg_price||0))}"></div>
-      <div><div class="fl" style="display:flex;justify-content:space-between">
+      <div><div class="fl" style="display:flex;justify-content:space-between;align-items:center">
         <span>Cotação atual</span>
-        <span style="font-size:10px;color:#34d399;background:rgba(52,211,153,.1);padding:1px 7px;border-radius:4px;border:1px solid rgba(52,211,153,.2)">📡 ${f.quoteSource||'auto'}</span>
+        <span style="font-size:10px;color:#34d399;background:rgba(52,211,153,.1);padding:1px 7px;border-radius:4px;border:1px solid rgba(52,211,153,.2)">
+          ${f.quoteSource==='brapi'?'📡 brapi':f.quoteSource==='yahoo'?'📡 yahoo':'📡 auto'}
+        </span>
       </div>
       <input id="f-cp" type="number" step="0.01" value="${esc(f.current_price||'')}" disabled style="opacity:.6;cursor:not-allowed">
       <div style="font-size:10px;color:#3d5472;margin-top:4px">
-        ${f.quoteUpdatedAt?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · `:''}
-        <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 atualizar agora</a>
+        ${f.quoteUpdatedAt
+          ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`
+          :`<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação agora</a>`}
       </div></div>
       <div><div class="fl">DY anual %</div><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
       <div><div class="fl">Preço alvo</div><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
@@ -892,15 +1063,18 @@ function ativos(){
     const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
     const q=S.quotes[a.ticker];
     const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
+    const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
+    const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'mercado';
     return`<tr>
       <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
       <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
       <td class="mu">${esc(a.sector||'—')}</td>
       <td>${a.qty}</td>
       <td>R$ ${Number(a.avg_price).toFixed(2)}</td>
-      <td style="font-weight:600;color:${a.current_price>=a.avg_price?'#34d399':'#f87171'}" class="${S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':''}">
+      <td style="font-weight:600;color:${a.current_price>=a.avg_price?'#34d399':'#f87171'}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
         R$ ${Number(a.current_price).toFixed(2)}
-        ${a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':''}
+        ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
+        <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
       </td>
       <td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td>
       <td>${alvo>0?'R$ '+alvo.toFixed(2):'—'}</td>
@@ -908,27 +1082,34 @@ function ativos(){
       <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
       <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
       <td class="am" style="font-weight:600">${fmt(dm)}</td>
-      <td class="mu">${a.dy||0}%${a.dySource==='proventos'?'<span style="font-size:9px;color:#818cf8;margin-left:3px" title="calculado pelos proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:9px;color:#fbbf24;margin-left:3px" title="estimativa">~Est</span>':''}</td>
+      <td class="mu">${a.dy||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
       <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
     </tr>`;
   }).join('');
   return`<div class="sh">
-    <div><div class="st">Minha carteira</div><div class="mu" style="font-size:12px;margin-top:4px">Alimentada pelos Aportes · Cotação via Yahoo Finance automática.</div></div>
+    <div><div class="st">Minha carteira</div><div class="mu" style="font-size:12px;margin-top:4px">Alimentada automaticamente pelos Aportes. Use ✏️ para ajustar DY, preço médio, preço alvo e % ideal. Cotação vem automática pelo Yahoo.</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
-      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
     </div>
   </div>
   ${frmA()}
   <div class="tw"><div class="ts"><table>
     <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
-      <th><div style="display:flex;align-items:center;gap:5px">ATUAL <span class="qdot${S.qLoad?' spin':''}" title="Yahoo Finance · a cada ${QI}s"></span></div></th>
+      <th>
+        <div style="display:flex;align-items:center;gap:5px">
+          ATUAL
+          <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
+        </div>
+      </th>
       <th>Rentab.</th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
     <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Registre compras na aba 💰 Aportes para alimentar esta tela.</td></tr>'}</tbody>
   </table></div></div>`;
 }
 
-// ══ APORTES ══
+// ══════════════════════════════════════
+// APORTES
+// ══════════════════════════════════════
 function frmP(){
   if(!S.showP) return'';
   const f=S._fp||{},op=(f.operation||f.op||'compra').toLowerCase();
@@ -938,14 +1119,16 @@ function frmP(){
     <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">${S.editPId?'✏️ Editar operação':'➕ Registrar compra / venda'}</div>
     <div class="fg">
       <div><div class="fl">Operação</div><select id="p-op"><option value="compra" ${op==='compra'?'selected':''}>Compra</option><option value="venda" ${op==='venda'?'selected':''}>Venda</option></select></div>
-      <div><div class="fl">Tipo do ativo</div><select id="p-ty" onchange="this.dataset.manual='1'">${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option value="${t}" ${fType===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div><div class="fl">Tipo do ativo</div><select id="p-ty" onchange="this.dataset.manual='1'; if(this.value==='Renda Fixa'){const se=document.getElementById('p-se'); if(se&&!se.value) se.value='Renda Fixa';}">
+        ${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option value="${t}" ${fType===t?'selected':''}>${t}</option>`).join('')}
+      </select></div>
       <div><div class="fl">Data</div><input id="p-dt" type="date" value="${esc(inputDateValue(f.date||''))}"></div>
-      <div><div class="fl">Ticker / nome do ativo</div><input id="p-ti" placeholder="ex: MXRF11, CDB Banco..." value="${esc(f.ticker||'')}" oninput="this.value=this.value.toUpperCase();applyMetaToAporte()" onblur="applyMetaToAporte()"></div>
+      <div><div class="fl">Ticker / nome do ativo</div><input id="p-ti" placeholder="ex: MXRF11, DIVD11, CDB Banco..." value="${esc(f.ticker||'')}" oninput="this.value=this.value.toUpperCase();applyMetaToAporte()" onblur="applyMetaToAporte()"></div>
       <div><div class="fl">Quantidade</div><input id="p-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>
       <div><div class="fl">Preço da operação</div><input id="p-pr" type="text" placeholder="10,15" value="${f.price?esc(moneyInput(f.price)):''}"></div>
-      <div><div class="fl">Setor / classe</div><input id="p-se" placeholder="ex: CDB, Papel, Banco" value="${esc(fSector)}" oninput="this.dataset.manual='1'"></div>
+      <div><div class="fl">Setor / classe</div><input id="p-se" placeholder="ex: ETF, CDB, Papel, Banco" value="${esc(fSector)}" oninput="this.dataset.manual='1'"></div>
     </div>
-    <div style="margin-top:10px"><div class="fl">Decisão / motivo</div><input id="p-dc" placeholder="ex: rebalanceamento, aproveitei queda..." value="${esc(f.decision||'')}"></div>
+    <div style="margin-top:10px"><div class="fl">Decisão / motivo</div><input id="p-dc" placeholder="ex: rebalanceamento, importação B3, renda fixa..." value="${esc(f.decision||'')}"></div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bsv" onclick="svP()">${S.editPId?'Salvar edição':'Salvar operação'}</button>
       <button class="btn bgh" onclick="clP()">Cancelar</button>
@@ -980,7 +1163,7 @@ function apTab(){
     </tr>`;
   }).join('');
   return`<div class="sh">
-    <div><div class="st">Histórico de aportes</div><div class="mu" style="font-size:12px;margin-top:4px">Compras e vendas atualizam automaticamente a aba Ativos.</div></div>
+    <div><div class="st">Histórico de aportes</div><div class="mu" style="font-size:12px;margin-top:4px">Compras, vendas, ETFs e renda fixa atualizam automaticamente a aba Ativos.</div></div>
     <button class="btn bp" onclick="tgP()">+ Registrar operação</button>
   </div>
   ${frmP()}
@@ -992,7 +1175,9 @@ function apTab(){
     </table></div></div>`}`;
 }
 
-// ══ DIVIDENDOS ══
+// ══════════════════════════════════════
+// DIVIDENDOS — corrigido: proventos agora aparecem sempre
+// ══════════════════════════════════════
 function frmD(){
   if(!S.showD) return'';
   return`<div class="fc">
@@ -1016,32 +1201,51 @@ function saveDivGoal(){
 }
 function divs(){
   const{mD,aD,avgDY,tC}=cx();
-  const objetivo=Number(S.divGoal)||0,falta=Math.max(0,objetivo-mD),prog=objetivo>0?Math.min(100,(mD/objetivo)*100):0;
-  const patrimonioObj=objetivo>0&&avgDY>0?(objetivo*12)/(avgDY/100):0,aporteNec=Math.max(0,patrimonioObj-tC);
+  const objetivo=Number(S.divGoal)||0;
+  const falta=Math.max(0,objetivo-mD);
+  const prog=objetivo>0?Math.min(100,(mD/objetivo)*100):0;
+  const patrimonioObj=objetivo>0&&avgDY>0?(objetivo*12)/(avgDY/100):0;
+  const aporteNec=Math.max(0,patrimonioObj-tC);
   const rec=proventoStats();
   const sd=[...S.assets].sort((a,b)=>((b.qty*b.current_price*(b.dy/100))/12)-((a.qty*a.current_price*(a.dy/100))/12));
   const projRows=sd.map(a=>{
     const dm=(a.qty*a.current_price*(a.dy/100))/12,pct=mD>0?(dm/mD)*100:0;
-    return`<tr><td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td><td>${esc(a.type)}</td><td>${a.qty}</td>
-      <td>R$ ${Number(a.current_price).toFixed(2)}</td><td class="am" style="font-weight:600">${Number(a.dy||0).toFixed(2)}%</td>
-      <td class="am" style="font-weight:700">${fmt(dm)}</td><td>${fmt(dm*12)}</td>
-      <td><div style="display:flex;align-items:center;gap:7px"><div class="bwr"><div class="bfr" style="width:${Math.min(pct,100).toFixed(0)}%"></div></div>
-      <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span></div></td></tr>`;
+    return`<tr>
+      <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td>
+      <td>${esc(a.type)}</td><td>${a.qty}</td>
+      <td>R$ ${Number(a.current_price).toFixed(2)}</td>
+      <td class="am" style="font-weight:600">${Number(a.dy||0).toFixed(2)}%</td>
+      <td class="am" style="font-weight:700">${fmt(dm)}</td>
+      <td>${fmt(dm*12)}</td>
+      <td><div style="display:flex;align-items:center;gap:7px">
+        <div class="bwr"><div class="bfr" style="width:${Math.min(pct,100).toFixed(0)}%"></div></div>
+        <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
+      </div></td>
+    </tr>`;
   }).join('');
+
+  // ← FIX: proventos recebidos sempre renderizados aqui
   const provRows=S.proventos.length
-    ?S.proventos.map(p=>`<tr><td class="mu">${esc(p.date)}</td><td style="font-weight:700;color:#e2eaf6">${esc(p.ticker)}</td>
-        <td>${esc(p.type||'Rendimento')}</td><td class="gn" style="font-weight:700">${fmt(Number(p.value)||0)}</td>
+    ?S.proventos.map(p=>`<tr>
+        <td class="mu">${esc(p.date)}</td>
+        <td style="font-weight:700;color:#e2eaf6">${esc(p.ticker)}</td>
+        <td>${esc(p.type||'Rendimento')}</td>
+        <td class="gn" style="font-weight:700">${fmt(Number(p.value)||0)}</td>
         <td class="mu" style="font-size:12px">${esc(p.note||'—')}</td>
-        <td><button class="bdi" onclick="rmD(${p.id})">🗑️</button></td></tr>`).join('')
-    :'<tr><td colspan="6" style="text-align:center;padding:20px;color:#2e3f58">Nenhum provento registrado.</td></tr>';
+        <td><button class="bdi" onclick="rmD(${p.id})">🗑️</button></td>
+      </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;padding:20px;color:#2e3f58">Nenhum provento registrado. Use "Buscar proventos" ou "+ Registrar provento".</td></tr>';
+
   return`<div style="font-size:15px;font-weight:700;margin-bottom:14px">Dividendos e Proventos</div>
   <div class="fc" style="margin-bottom:16px">
     <div class="cg" style="align-items:end">
-      <div><div class="fl">🎯 Objetivo mensal de dividendos (R$)</div>
+      <div>
+        <div class="fl">🎯 Objetivo mensal de dividendos (R$)</div>
         <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()">
-        <div class="mu" style="font-size:12px;margin-top:6px">Digite e pressione Enter para salvar.</div>
+        <div class="mu" style="font-size:12px;margin-top:6px">Digite e pressione Enter ou clique fora para salvar.</div>
       </div>
-      <div><div class="fl">Progresso até o objetivo</div>
+      <div>
+        <div class="fl">Progresso até o objetivo</div>
         <div style="font-size:22px;font-weight:800;color:#fbbf24;margin-bottom:8px">${prog.toFixed(1)}%</div>
         <div class="dbt" style="height:8px"><div class="dbf" style="width:${prog.toFixed(1)}%;background:#fbbf24"></div></div>
         <div class="mu" style="font-size:12px;margin-top:6px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(falta)}/mês</div>
@@ -1049,13 +1253,14 @@ function divs(){
     </div>
   </div>
   <div class="cards" style="margin-bottom:16px">
-    <div class="card al" style="border-left-color:#fbbf24"><div class="cl">Estimativa/mês</div><div class="cv am">${fmt(mD)}</div></div>
+    <div class="card al" style="border-left-color:#fbbf24"><div class="cl">Estimativa projetada/mês</div><div class="cv am">${fmt(mD)}</div></div>
     <div class="card al" style="border-left-color:#34d399"><div class="cl">Projeção anual</div><div class="cv gn">${fmt(aD)}</div></div>
     <div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#60a5fa"><div class="cl">Patrimônio p/ objetivo</div><div class="cv bl">${patrimonioObj>0?fmt(patrimonioObj):'—'}</div><div class="cs">Aporte: ${patrimonioObj>0?fmt(aporteNec):'preencha DY'}</div></div>
+    <div class="card al" style="border-left-color:#60a5fa"><div class="cl">Patrimônio p/ objetivo</div><div class="cv bl">${patrimonioObj>0?fmt(patrimonioObj):'—'}</div><div class="cs">Aporte est.: ${patrimonioObj>0?fmt(aporteNec):'preencha DY'}</div></div>
     <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no mês</div><div class="cv gn">${fmt(rec.mes)}</div><div class="cs">${S.proventos.filter(p=>{const d=parseAnyDate(p.date);const n=new Date();return d&&d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();}).length} pagamentos</div></div>
     <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Recebido no ano</div><div class="cv pu">${fmt(rec.ano)}</div><div class="cs">Total: ${fmt(rec.total)}</div></div>
   </div>
+
   <div class="sh" style="margin-top:4px">
     <div><div class="st">Proventos recebidos (${S.proventos.length})</div><div class="mu" style="font-size:12px;margin-top:4px">Dinheiro que já caiu na conta.</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1068,6 +1273,7 @@ function divs(){
     <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Valor recebido</th><th>Obs.</th><th></th></tr></thead>
     <tbody>${provRows}</tbody>
   </table></div></div>
+
   <div style="font-size:15px;font-weight:700;margin-bottom:12px">Projeção por ativo</div>
   <div class="tw"><div class="ts"><table>
     <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY</th><th>Div. mês</th><th>Div. ano</th><th>% renda</th></tr></thead>
@@ -1075,11 +1281,14 @@ function divs(){
   </table></div></div>`;
 }
 
-// ══ REBALANCEAR ══
+// ══════════════════════════════════════
+// REBALANCEAR
+// ══════════════════════════════════════
 function ajudarTab(){
   return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">⚖️ Sugestão de aporte</div>
-  <div class="mu" style="font-size:13px;margin-bottom:16px">Analisamos peso atual, % ideal, rentabilidade e DY para sugerir onde aportar.</div>
-  <div class="fc"><div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" placeholder="ex: 500"></div></div>
+  <div class="mu" style="font-size:13px;margin-bottom:16px">Digite o valor do próximo aporte. Analisamos peso atual, % ideal, rentabilidade e DY para sugerir onde aportar.</div>
+  <div class="fc">
+    <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" placeholder="ex: 500"></div></div>
     <div style="display:flex;gap:8px;margin-top:14px"><button class="btn bp" onclick="calcRebalance()">Analisar aporte</button></div>
   </div>
   <div id="reb-out">${!S.assets.length?'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Cadastre compras na aba Aportes para a análise funcionar.</div>':'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Informe um valor e clique em Analisar aporte.</div>'}</div>`;
@@ -1107,34 +1316,46 @@ function calcRebalance(){
     const val=aporte*(a.score/sum),qtd=a.current_price>0?Math.floor(val/a.current_price):0,divMes=val*((Number(a.dy)||0)/100)/12;
     return`<tr><td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td><td>${esc(a.type)}</td><td class="mu">${esc(a.sector||'—')}</td><td>${a.peso.toFixed(1)}%</td><td>${a.ideal?a.ideal.toFixed(1)+'%':'—'}</td><td class="${a.rent<0?'rd':'gn'}">${fmtP(a.rent)}</td><td class="gn" style="font-weight:700">${fmt(val)}</td><td>${qtd}</td><td class="am">+${fmt(divMes)}/mês</td><td class="mu">${esc(a.motivos.join(', '))}</td></tr>`;
   }).join('');
-  out.innerHTML=`<div class="tw"><div class="ts"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>Setor</th><th>% Cart.</th><th>% Ideal</th><th>Rentab.</th><th>Sugestão</th><th>Qtd</th><th>Dividendo</th><th>Motivo</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  out.innerHTML=`<div class="tw"><div class="ts"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>Setor</th><th>% Cart.</th><th>% Ideal</th><th>Rentab.</th><th>Sugestão</th><th>Qtd aprox.</th><th>Dividendo</th><th>Motivo</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 
-// ══ IA ══
+// ══════════════════════════════════════
+// IA LOCAL
+// ══════════════════════════════════════
 function iaTab(){
   const res=S.aiText
-    ?`<div class="aic"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#312e81,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:17px">🤖</div>
-      <span style="font-size:14px;font-weight:700;color:#c4b5fd">Análise da carteira</span></div>
+    ?`<div class="aic">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#312e81,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:17px">🤖</div>
+        <span style="font-size:14px;font-weight:700;color:#c4b5fd">Análise da carteira</span>
+      </div>
       <div class="air">${esc(S.aiText)}</div>
-      <div style="margin-top:16px;padding-top:12px;border-top:1px solid #161e2e;font-size:11px;color:#2e3f58">⚠️ Informativo. Não constitui recomendação. Consulte CFP/CNPI.</div>
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid #161e2e;font-size:11px;color:#2e3f58">⚠️ Análise automática e informativa. Não constitui recomendação. Consulte um profissional CFP/CNPI.</div>
     </div>`
-    :`<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">🤖<br><br>Clique no botão para análise personalizada.</div>`;
+    :`<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">🤖<br><br>Clique no botão para análise personalizada da sua carteira.</div>`;
   return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">Análise automática da carteira</div>
-  <div class="mu" style="font-size:13px;margin-bottom:18px">Análise local — sem enviar sua carteira para servidores externos.</div>
+  <div class="mu" style="font-size:13px;margin-bottom:18px">Análise local com base nos dados cadastrados — sem enviar sua carteira para servidores externos.</div>
   <button class="btn bp" onclick="getAI()" style="display:flex;align-items:center;gap:8px;margin-bottom:18px">✨ Gerar análise</button>${res}`;
 }
 
 // ══════════════════════════════════════
 // AÇÕES (CRUD)
 // ══════════════════════════════════════
-function go(t){ S.tab=t; save(); render(); }
+function go(t){
+  S.tab=t; save(); render();
+  if(t==='ativos') fetchQuotes(false);
+}  // ← FIX: salva tab ao navegar
 function clA(){ S.showA=false; S.editId=null; S._fa=null; render(); }
 async function refreshCotacao(){
   await fetchQuotes(false);
-  const a=S.assets.find(x=>x.id===S.editId); if(!a) return;
-  const el=document.getElementById('f-cp'); if(el) el.value=a.current_price;
-  toast(`✅ Cotação de ${a.ticker}: R$ ${a.current_price.toFixed(2)}`);
+  // Atualiza o campo com o novo valor sem fechar o form
+  const a = S.assets.find(x=>x.id===S.editId);
+  if(!a) return;
+  const el = document.getElementById('f-cp');
+  if(el) el.value = a.current_price;
+  const info = document.querySelector('#f-cp + div');
+  if(info && a.quoteUpdatedAt) info.innerHTML = `⏱ ${new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`;
+  toast(`✅ Cotação de ${a.ticker} atualizada: R$ ${a.current_price.toFixed(2)}`);
 }
 function edA(id){ const a=S.assets.find(x=>x.id===id); if(!a)return; S._fa={...a}; S.editId=id; S.showA=true; render(); }
 function svA(){
@@ -1148,11 +1369,14 @@ function svA(){
   S.assets=S.assets.map(a=>{
     if(a.id!==S.editId) return a;
     const avgManual=ap>0&&Math.abs(ap-Number(a.avg_price||0))>0.0001;
-    return{...a,avg_price:ap||a.avg_price,avg_manual:avgManual||a.avg_manual,dy,dySource:'manual',price_target:pt,ideal_pct:ip,sector:se,type:ty};
+    return{...a,avg_price:ap||a.avg_price,avg_manual:avgManual||a.avg_manual,
+      dy,dySource:'manual',price_target:pt,ideal_pct:ip,sector:se,type:ty};
+    // cotação não é editada aqui — vem automaticamente via Yahoo Finance e fallback opcional brapi
   });
   S.showA=false; S.editId=null; S._fa=null;
   save(); toast('✅ Ativo atualizado!'); render();
 }
+
 function tgP(){ S.showP=!S.showP; S.editPId=null; S._fp={operation:'compra'}; render(); setTimeout(applyMetaToAporte,50); }
 function clP(){ S.showP=false; S.editPId=null; S._fp=null; render(); }
 function edP(id){ const p=S.aportes.find(x=>x.id===id); if(!p) return; S._fp={...p}; S.editPId=id; S.showP=true; render(); setTimeout(applyMetaToAporte,50); }
@@ -1166,12 +1390,15 @@ function svP(){
   const ty=document.getElementById('p-ty')?.value||metaTicker(rawTi).type||'Ação';
   let se=document.getElementById('p-se')?.value?.trim()||'';
   let ti=cleanAssetCode(rawTi);
-  if(!ti&&ty==='Renda Fixa') ti='RENDA FIXA';
-  if(!se){const m=ty==='Renda Fixa'?rfMeta(ti):metaTicker(ti);se=m.sector||ty;}
-  if(!ti||qt<=0||pr<=0){alert('Preencha Ativo/Ticker, Quantidade e Preço.');return;}
-  const reg={id:S.editPId||Date.now(),operation:op,ticker:ti,qty:qt,price:pr,date:dt,decision:dc,type:ty,sector:se};
-  if(S.editPId){S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a);}
-  else{S.aportes.unshift(reg);}
+  if(!ti && ty==='Renda Fixa') ti='RENDA FIXA';
+  if(!se){
+    const m=ty==='Renda Fixa'?rfMetaFromText(ti):metaTicker(ti);
+    se=m.sector||ty;
+  }
+  if(!ti||qt<=0||pr<=0){ alert('Preencha Ativo/Ticker, Quantidade e Preço.'); return; }
+  const reg={id:S.editPId||Date.now(), operation:op, ticker:ti, qty:qt, price:pr, date:dt, decision:dc, type:ty, sector:se};
+  if(S.editPId){ S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a); }
+  else { S.aportes.unshift(reg); }
   S.showP=false; S.editPId=null; S._fp=null;
   syncAssetsFromAportes(false);
   toast(`✅ ${op==='venda'?'Venda':'Compra'} de ${ti} registrada!`);
@@ -1180,9 +1407,11 @@ function svP(){
 function rmP(id){
   if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
   S.aportes=S.aportes.filter(a=>a.id!==id);
-  if(S.editPId===id){S.editPId=null;S.showP=false;S._fp=null;}
-  syncAssetsFromAportes(false); toast('🗑️ Operação removida.');
+  if(S.editPId===id){ S.editPId=null; S.showP=false; S._fp=null; }
+  syncAssetsFromAportes(false);
+  toast('🗑️ Operação removida.');
 }
+
 function tgD(){ S.showD=!S.showD; render(); }
 function clD(){ S.showD=false; render(); }
 function svD(){
@@ -1192,55 +1421,66 @@ function svD(){
   const ob=document.getElementById('d-ob')?.value?.trim()||'';
   const rawDt=document.getElementById('d-dt')?.value||'';
   const dt=rawDt?brDate(rawDt):new Date().toLocaleDateString('pt-BR');
-  if(!ti||va<=0){alert('Preencha Ticker e Valor recebido.');return;}
-  S.proventos.unshift({id:Date.now(),ticker:ti,value:va,type:ty,date:dt,note:ob});
-  S.showD=false; save(); toast(`✅ Provento de ${ti}: ${fmt(va)}`); render();
+  if(!ti||va<=0){ alert('Preencha Ticker e Valor recebido.'); return; }
+  S.proventos.unshift({id:Date.now(), ticker:ti, value:va, type:ty, date:dt, note:ob});
+  S.showD=false; save();
+  toast(`✅ Provento de ${ti} registrado: ${fmt(va)}`);
+  render();
 }
-function rmD(id){ if(!confirm('Remover este provento?')) return; S.proventos=S.proventos.filter(p=>p.id!==id); save(); toast('🗑️ Provento removido.'); render(); }
+function rmD(id){
+  if(!confirm('Remover este provento?')) return;
+  S.proventos=S.proventos.filter(p=>p.id!==id);
+  save(); toast('🗑️ Provento removido.'); render();
+}
 
 function getAI(){
-  const{tC,tGP,mD,aD,avgDY}=cx(); const rec=proventoStats();
-  if(!S.assets.length){S.aiText='Cadastre seus ativos primeiro.';render();return;}
+  const{tC,tGP,mD,aD,avgDY}=cx();
+  const rec=proventoStats();
+  if(!S.assets.length){ S.aiText='Cadastre seus ativos primeiro para gerar uma análise.'; render(); return; }
   const porTipo={},por=S.assets.map(a=>({ticker:a.ticker,type:a.type,valor:a.qty*a.current_price,divMes:(a.qty*a.current_price*(a.dy/100))/12,dy:Number(a.dy)||0,var:a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0})).sort((a,b)=>b.valor-a.valor);
   por.forEach(a=>porTipo[a.type]=(porTipo[a.type]||0)+a.valor);
   const maior=por[0],maiorPct=tC>0?(maior.valor/tC)*100:0;
   const fiisPct=tC>0?((porTipo['FII']||0)/tC)*100:0,acoesPct=tC>0?((porTipo['Ação']||0)/tC)*100:0;
-  const divGoal=Number(S.divGoal)||0,faltaDiv=Math.max(0,divGoal-mD),alvoPat=divGoal>0&&avgDY>0?(divGoal*12)/(avgDY/100):0;
+  const divGoal=Number(S.divGoal)||0,faltaDiv=Math.max(0,divGoal-mD);
+  const alvoPat=divGoal>0&&avgDY>0?(divGoal*12)/(avgDY/100):0;
   const L=[];
   L.push('📊 RESUMO DA CARTEIRA');
   L.push(`Patrimônio: ${fmt(tC)} | Resultado: ${fmtP(tGP)}`);
   L.push(`Renda passiva estimada: ${fmt(mD)}/mês (${fmt(aD)}/ano)`);
   L.push(`Proventos recebidos: ${fmt(rec.mes)} no mês · ${fmt(rec.ano)} no ano · ${fmt(rec.total)} total`);
   L.push(`DY médio: ${avgDY.toFixed(2)}%`);
-  L.push('');L.push('⚖️ ALOCAÇÃO');
+  L.push('');
+  L.push('⚖️ ALOCAÇÃO');
   Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).forEach(([tipo,valor])=>L.push(`• ${tipo}: ${((valor/tC)*100).toFixed(1)}% (${fmt(valor)})`));
-  L.push('');L.push('🔎 PONTOS DE ATENÇÃO');
-  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${maiorPct.toFixed(1)}% — diversifique os próximos aportes.`);
-  else L.push(`• Maior posição: ${maior.ticker} com ${maiorPct.toFixed(1)}% — concentração controlada.`);
-  if(S.assets.length<8) L.push('• Poucos ativos. Para renda consistente, diversifique mais.');
-  if(fiisPct>60) L.push('• FIIs com peso muito alto (>60%). Exposição alta a juros e mercado imobiliário.');
-  if(acoesPct>70) L.push('• Ações com peso muito alto. Dividendos ficam mais irregulares.');
-  if(avgDY>12) L.push('• DY médio elevado. Confirme se os rendimentos são recorrentes.');
-  if(avgDY>0&&avgDY<5) L.push('• DY médio baixo. Considere ativos pagadores de renda nos próximos aportes.');
+  L.push('');
+  L.push('🔎 PONTOS DE ATENÇÃO');
+  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${maiorPct.toFixed(1)}% — considere diversificar próximos aportes.`);
+  else L.push(`• Maior posição: ${maior.ticker} com ${maiorPct.toFixed(1)}% — concentração dentro do esperado.`);
+  if(S.assets.length<8) L.push('• Poucos ativos. Para renda passiva consistente, 10+ ativos de setores diferentes reduzem risco.');
+  if(fiisPct>60) L.push('• FIIs com peso muito alto (>60%). Aumenta exposição a juros e riscos imobiliários.');
+  if(acoesPct>70) L.push('• Ações com peso muito alto. Dividendos ficam mais irregulares e sujeitos a resultado trimestral.');
+  if(avgDY>12) L.push('• DY médio elevado (>12%). Confirme se os rendimentos são recorrentes, não eventos isolados.');
+  if(avgDY>0&&avgDY<5) L.push('• DY médio baixo. Novos aportes em ativos de renda podem acelerar o crescimento da renda passiva.');
   L.push('');
   if(divGoal>0){
     L.push(`💰 OBJETIVO: ${fmt(divGoal)}/mês`);
-    if(mD>=divGoal) L.push('• ✅ Objetivo atingido! Foco em sustentabilidade e diversificação.');
-    else{L.push(`• Falta ${fmt(faltaDiv)}/mês.`);if(alvoPat>0)L.push(`• Patrimônio estimado para atingir: ${fmt(alvoPat)} (falta ${fmt(Math.max(0,alvoPat-tC))})`);}
+    if(mD>=divGoal) L.push(`• ✅ Objetivo atingido! Foco agora é sustentabilidade e diversificação da renda.`);
+    else{ L.push(`• Falta ${fmt(faltaDiv)}/mês para o objetivo.`); if(alvoPat>0) L.push(`• Patrimônio estimado para atingir o objetivo com DY atual: ${fmt(alvoPat)} (falta ${fmt(Math.max(0,alvoPat-tC))})`); }
     L.push('');
   }
   L.push('✅ SUGESTÕES PRÁTICAS');
-  L.push('• Priorize ativos abaixo do peso desejado nos próximos aportes.');
-  L.push('• Evite aumentar posição acima de 20% da carteira.');
-  L.push('• Confirme que o DY reflete rendimentos recorrentes.');
-  L.push('• Registre o motivo de cada operação para acompanhar sua estratégia.');
-  L.push('');L.push('⚠️ Análise automática. Não constitui recomendação. Consulte CFP/CNPI.');
+  L.push('• Priorize ativos/setores abaixo do peso desejado nos próximos aportes.');
+  L.push('• Evite aumentar posição que já está acima de 20% da carteira.');
+  L.push('• Confirme que o DY reflete rendimentos recorrentes, não extraordinários.');
+  L.push('• Registre o motivo de cada compra na aba Aportes para acompanhar a estratégia.');
+  L.push('');
+  L.push('⚠️ Análise automática. Não constitui recomendação de investimento. Consulte um profissional habilitado.');
   S.aiText=L.join('\n'); render();
 }
 
 function bind(){
   document.querySelectorAll('.fc input:not([disabled]),.fc select').forEach(el=>{
-    el.addEventListener('keydown',e=>{if(e.key==='Enter'){if(S.showA)svA();else if(S.showP)svP();else if(S.showD)svD();}});
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ if(S.showA) svA(); else if(S.showP) svP(); else if(S.showD) svD(); } });
   });
 }
 
@@ -1251,10 +1491,13 @@ load();
 initFirebase();
 if(S.aportes.length) syncAssetsFromAportes(false); else render();
 fetchQuotes(false);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
+window.addEventListener('focus',()=>fetchQuotes(false));
 setInterval(()=>{
   S.cd=Math.max(0,S.cd-1);
-  if(S.cd<=0){S.cd=QI;fetchQuotes(false);return;}
-  const el=document.getElementById('cd-span'); if(el) el.textContent=S.cd;
+  if(S.cd<=0){ S.cd=QI; fetchQuotes(false); return; }
+  const el=document.getElementById('cd-span');
+  if(el) el.textContent=S.cd;
 },1000);
 </script>
 </body>
