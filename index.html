@@ -1538,6 +1538,12 @@ function saveMetaPatrimonio(){
   };
   save(); render(); toast('✅ Meta de patrimônio salva!');
 }
+function saveMetaPatrimonioTarget(){
+  S.goals=S.goals||{};
+  S.goals.patrimonio=S.goals.patrimonio||{};
+  S.goals.patrimonio.target=Number(document.getElementById('mp-head-target')?.value)||0;
+  save(); render();
+}
 function setMetaAssetType(type){
   S.goals=S.goals||{};
   S.goals.ativos=S.goals.ativos||{};
@@ -1570,6 +1576,44 @@ function saveMetaProventos(){
   S.goals.proventos=S.goals.proventos||{};
   S.goals.proventos.monthly=Number(document.getElementById('mpr-monthly')?.value)||0;
   save(); render(); toast('✅ Meta de proventos salva!');
+}
+function saveMetaProventosTarget(){
+  S.goals=S.goals||{};
+  S.goals.proventos=S.goals.proventos||{};
+  S.goals.proventos.monthly=Number(document.getElementById('mpr-head-monthly')?.value)||0;
+  save(); render();
+}
+function estimateGoalMonths(startValue,targetValue,monthlyAporte,annualVar){
+  const target=Math.max(0,Number(targetValue)||0);
+  let value=Math.max(0,Number(startValue)||0);
+  const aporte=Math.max(0,Number(monthlyAporte)||0);
+  const yearly=Math.max(0,Number(annualVar)||0);
+  if(!target) return null;
+  if(value>=target) return 0;
+  const rate=yearly>0 ? Math.pow(1+yearly/100,1/12)-1 : 0;
+  if(aporte<=0 && rate<=0) return null;
+  for(let m=1;m<=600;m++){
+    value = value * (1 + rate) + aporte;
+    if(value>=target) return m;
+  }
+  return null;
+}
+function formatGoalMonths(months){
+  if(months===0) return 'agora';
+  if(months===null||months===undefined) return 'sem estimativa';
+  const y=Math.floor(months/12);
+  const m=months%12;
+  const parts=[];
+  if(y) parts.push(`${y} ano${y>1?'s':''}`);
+  if(m) parts.push(`${m} mês${m>1?'es':''}`);
+  return parts.length?parts.join(' e '):'menos de 1 mês';
+}
+function goalProgressText(current,target){
+  const t=Number(target)||0;
+  const c=Number(current)||0;
+  const falta=Math.max(0,t-c);
+  const prog=t>0?Math.min(100,(c/t)*100):0;
+  return {falta,prog};
 }
 
 // ══════════════════════════════════════
@@ -1754,24 +1798,38 @@ function metasTab(){
   const total12=histTop.total||0;
   const metas=S.goals||{};
   const mp=metas.patrimonio||{};
-  const ma=metas.ativos||{};
   const mpr=metas.proventos||{};
   const allTypes=['Ação','FII','ETF','Renda Fixa','BDR','Crypto'];
-  const assetTypes=[...new Set(S.assets.map(a=>a.type).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  const selectedType=ma.type||'Ação';
-  const assetsFiltered=S.assets.filter(a=>(a.type||'').toLowerCase()===(selectedType||'').toLowerCase());
-  const assetOptions=assetsFiltered.length
-    ? assetsFiltered.map(a=>`<option value="${esc(a.ticker)}" ${String(ma.ticker||'')===String(a.ticker)?'selected':''}>${esc(a.ticker)} · ${esc(a.sector||a.type||'')}</option>`).join('')
-    : '<option value="">Nenhum ativo desse tipo</option>';
 
   const selectedProTypes=Array.isArray(mpr.types)&&mpr.types.length?mpr.types:allTypes;
   const proTypeChips=allTypes.map(t=>{
     const on=selectedProTypes.includes(t);
     return `<button class="btn ${on?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="toggleMetaProventoType('${t}')">${esc(t)} ${on?'✓':''}</button>`;
   }).join(' ');
+  const metaPatValor=Number(mp.target)||0;
+  const metaPatAporte=Number(mp.aporte)||0;
+  const metaPatVar=Number(mp.annualVar)||0;
+  const metaPatTime=estimateGoalMonths(tC,metaPatValor,metaPatAporte,metaPatVar);
+  const metaPat=goalProgressText(tC,metaPatValor);
+
+  const selectedTypesSet=new Set(selectedProTypes);
+  const proCurrent=S.assets
+    .filter(a=>selectedTypesSet.has(a.type))
+    .reduce((s,a)=>s+(((Number(a.qty)||0)*(Number(a.current_price)||0)*(Number(a.dy)||0)/100)/12),0);
+  const metaProValor=Number(mpr.monthly)||0;
+  const metaPro=goalProgressText(mD,metaProValor);
 
   return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">🎯 Metas</div>
   <div class="mu" style="font-size:13px;margin-bottom:18px">Central de objetivos da carteira. Aqui ficam os números de renda, progresso e seus objetivos pessoais.</div>
+
+  <div class="cards" style="margin-bottom:16px">
+    <div class="card al" style="border-left-color:#fbbf24"><div class="cl">Estimativa projetada/mês</div><div class="cv am">${fmt(mD)}</div></div>
+    <div class="card al" style="border-left-color:#34d399"><div class="cl">Projeção anual</div><div class="cv gn">${fmt(aD)}</div></div>
+    <div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${avgDY.toFixed(2)}%</div></div>
+    <div class="card al" style="border-left-color:#34d399"><div class="cl">Total histórico proventos</div><div class="cv" style="color:#fb923c">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
+    <div class="card al" style="border-left-color:#60a5fa"><div class="cl">Total da carteira</div><div class="cv bl">${fmt(tC)}</div><div class="cs">Patrimônio atual em ativos</div></div>
+    <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Total 12 meses</div><div class="cv pu">${fmt(total12)}</div><div class="cs">Média mensal: ${fmt(media12)}</div></div>
+  </div>
 
   <div class="fc" style="margin-bottom:16px">
     <div class="cg" style="align-items:end">
@@ -1792,87 +1850,26 @@ function metasTab(){
     </div>
   </div>
 
-  <div class="cards" style="margin-bottom:16px">
-    <div class="card al" style="border-left-color:#fbbf24"><div class="cl">Estimativa projetada/mês</div><div class="cv am">${fmt(mD)}</div></div>
-    <div class="card al" style="border-left-color:#34d399"><div class="cl">Projeção anual</div><div class="cv gn">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#34d399"><div class="cl">Total histórico proventos</div><div class="cv" style="color:#fb923c">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
-    <div class="card al" style="border-left-color:#60a5fa"><div class="cl">Total da carteira</div><div class="cv bl">${fmt(tC)}</div><div class="cs">Patrimônio atual em ativos</div></div>
-    <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Total 12 meses</div><div class="cv pu">${fmt(total12)}</div><div class="cs">Média mensal: ${fmt(media12)}</div></div>
+  <div class="fc" style="margin-bottom:16px">
+    <div class="cg" style="align-items:end">
+      <div>
+        <div class="fl">🎯 Meta de patrimônio (R$)</div>
+        <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
+        <div class="mu" style="font-size:12px;margin-top:6px">Digite e pressione Enter ou clique fora para salvar.</div>
+      </div>
+      <div>
+        <div class="fl">Progresso até o objetivo</div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+          <div style="font-size:22px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+          <div style="font-size:12px;color:#64748b">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
+        </div>
+        <div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:#60a5fa"></div></div>
+        <div class="mu" style="font-size:12px;margin-top:6px">Atual: ${fmt(tC)} · Falta: ${fmt(metaPat.falta)} · ${formatGoalMonths(metaPatTime)}</div>
+      </div>
+    </div>
   </div>
 
-  <div class="sh" style="margin:0 0 12px 0">
-    <div>
-      <div class="st">Atalhos da meta</div>
-      <div class="mu" style="font-size:12px;margin-top:4px">Meta salva aqui também atualiza o restante da planilha.</div>
-    </div>
-    <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
-  </div>
-
-  <details class="sec" open style="margin-bottom:12px">
-    <summary>
-      <div>
-        <div class="sec-title">Meta de Patrimônio</div>
-        <div class="sec-meta">defina um valor total para sua carteira</div>
-      </div>
-      <div class="sec-meta">clicar para ocultar</div>
-    </summary>
-    <div class="sec-body">
-      <div class="fg" style="grid-template-columns:repeat(3,minmax(0,1fr))">
-        <div><div class="fl">Valor total da meta (R$)</div><input id="mp-target" type="number" step="100" value="${Number(mp.target)||0}" placeholder="ex: 500000"></div>
-        <div><div class="fl">Aporte mensal (R$)</div><input id="mp-aporte" type="number" step="10" value="${Number(mp.aporte)||0}" placeholder="ex: 1500"></div>
-        <div><div class="fl">Variação anual estimada (%)</div><input id="mp-var" type="number" step="0.1" value="${Number(mp.annualVar)||0}" placeholder="ex: 10"></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-        <button class="btn bsv" onclick="saveMetaPatrimonio()">Salvar meta</button>
-      </div>
-      <div class="mu" style="margin-top:8px;font-size:12px">Patrimônio atual: ${fmt(tC)} · Falta para a meta: ${fmt(Math.max(0,(Number(mp.target)||0)-tC))}</div>
-    </div>
-  </details>
-
-  <details class="sec" style="margin-bottom:12px">
-    <summary>
-      <div>
-        <div class="sec-title">Meta de Ativos</div>
-        <div class="sec-meta">escolha um tipo e um ativo específico</div>
-      </div>
-      <div class="sec-meta">clicar para ocultar</div>
-    </summary>
-    <div class="sec-body">
-      <div class="fg" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-        <div><div class="fl">Tipo de ativo</div><select id="ma-type" onchange="setMetaAssetType(this.value)">${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option value="${t}" ${selectedType===t?'selected':''}>${t}</option>`).join('')}</select></div>
-        <div><div class="fl">Ativo</div><select id="ma-ticker">${assetOptions}</select></div>
-        <div><div class="fl">Aporte mensal (R$)</div><input id="ma-aporte" type="number" step="10" value="${Number(ma.aporte)||0}" placeholder="ex: 500"></div>
-        <div><div class="fl">Variação anual estimada (%)</div><input id="ma-var" type="number" step="0.1" value="${Number(ma.annualVar)||10}" placeholder="ex: 10"></div>
-        <div><div class="fl">Valor final da meta (R$)</div><input id="ma-final" type="number" step="100" value="${Number(ma.finalValue)||0}" placeholder="ex: 100000"></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-        <button class="btn bsv" onclick="saveMetaAtivos()">Salvar meta</button>
-      </div>
-      <div class="mu" style="margin-top:8px;font-size:12px">Ativos desse tipo na carteira: ${assetsFiltered.length}${assetsFiltered.length?` · ${assetsFiltered.map(a=>a.ticker).slice(0,6).join(', ')}${assetsFiltered.length>6?'…':''}`:''}</div>
-    </div>
-  </details>
-
-  <details class="sec" style="margin-bottom:12px">
-    <summary>
-      <div>
-        <div class="sec-title">Meta de Proventos</div>
-        <div class="sec-meta">defina quanto quer receber por mês e em quais tipos de ativo</div>
-      </div>
-      <div class="sec-meta">clicar para ocultar</div>
-    </summary>
-    <div class="sec-body">
-      <div class="fl" style="margin-bottom:8px">Tipos de ativos</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">${proTypeChips}</div>
-      <div class="fg" style="grid-template-columns:1fr">
-        <div><div class="fl">Média de proventos desejada por mês (R$)</div><input id="mpr-monthly" type="number" step="10" value="${Number(mpr.monthly)||0}" placeholder="ex: 3000"></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-        <button class="btn bsv" onclick="saveMetaProventos()">Salvar meta</button>
-      </div>
-      <div class="mu" style="margin-top:8px;font-size:12px">Tipos selecionados: ${(selectedProTypes||[]).join(', ')}</div>
-    </div>
-  </details>`;
+  `;
 }
 
 function ajudarTab(){
