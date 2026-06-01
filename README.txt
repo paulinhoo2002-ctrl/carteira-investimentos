@@ -1,13 +1,11 @@
 Carteira de Investimentos — Firebase + Yahoo Finance
 
-Arquivos:
+Arquivos necessários na raiz do GitHub:
 - index.html
 - api/yahoo-quote.js
 
-Suba os dois no GitHub mantendo a pasta api na raiz:
-index.html
-api/yahoo-quote.js
-
-O Vercel vai publicar automaticamente.
-As cotações passam a usar Yahoo Finance sem token.
-A brapi fica opcional apenas para fallback/proventos automáticos.
+Correções desta versão:
+- Cotação atual usa Yahoo via função /api/yahoo-quote sem token.
+- Se o Yahoo retornar valor incorreto para algum ativo, é possível editar a cotação manualmente no lápis e marcar “travar cotação manual”.
+- Ao travar a cotação, o botão de atualizar não sobrescreve esse ativo.
+- Função Yahoo com no-store e fallback por chart v8.
