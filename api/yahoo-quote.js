@@ -21,6 +21,36 @@ export default async function handler(req, res) {
       });
 
     const uniq = [...new Set(symbols)].slice(0, 50);
+    const wantsDividends = String(req.query.dividends || req.query.events || '').toLowerCase();
+    if (wantsDividends === '1' || wantsDividends === 'true' || wantsDividends.includes('div')) {
+      const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      };
+      const start = Number(req.query.period1) || Math.floor(new Date('2018-01-01T00:00:00Z').getTime() / 1000);
+      const end = Number(req.query.period2) || Math.floor(Date.now() / 1000);
+      const results = [];
+
+      await Promise.all(uniq.map(async (sym) => {
+        try {
+          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?period1=${start}&period2=${end}&interval=1mo&events=div%7Csplits`;
+          const response = await fetch(url, { headers });
+          if (!response.ok) return;
+          const data = await response.json();
+          const events = data?.chart?.result?.[0]?.events?.dividends || {};
+          Object.values(events).forEach((item) => {
+            const amount = Number(item.amount || 0);
+            const date = Number(item.date || 0);
+            if (amount > 0 && date > 0) results.push({ symbol: sym, amount, date });
+          });
+        } catch (_) {}
+      }));
+
+      results.sort((a, b) => b.date - a.date || String(a.symbol).localeCompare(String(b.symbol)));
+      return res.status(200).json({ source: 'yahoo-dividends', requested: uniq, count: results.length, results });
+    }
+
     const headers = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
       'Accept': 'application/json',
