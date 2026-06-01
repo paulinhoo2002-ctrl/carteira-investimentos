@@ -1640,22 +1640,13 @@ function divs2(){
     <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no mês</div><div class="cv gn">${fmt(rec.mes)}</div><div class="cs">${S.proventos.filter(p=>{const d=parseAnyDate(p.date);const n=new Date();return d&&d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();}).length} pagamentos</div></div>
     <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Recebido no ano</div><div class="cv pu">${fmt(rec.ano)}</div><div class="cs">Total: ${fmt(rec.total)}</div></div>
   </div>
-  <details class="sec" style="margin-bottom:12px">
-    <summary>
-      <div>
-        <div class="sec-title">Projeção por ativo</div>
-        <div class="sec-meta">${S.assets.length} ativos com estimativa de dividendos por mês e ano</div>
-      </div>
-      <div class="sec-meta">clicar para ocultar</div>
-    </summary>
-    <div class="sec-body">
-      <div class="tw"><div class="ts"><table>
-        <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY</th><th>Div. mês</th><th>Div. ano</th><th>% renda</th></tr></thead>
-        <tbody>${projRows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#2e3f58">Cadastre compras na aba Aportes.</td></tr>'}</tbody>
-      </table></div></div>
+  <div class="sh" style="margin:0 0 12px 0">
+    <div>
+      <div class="st">Atualização de dividendos</div>
+      <div class="mu" style="font-size:12px;margin-top:4px">Busque o histórico grátis para recalcular os proventos automaticamente.</div>
     </div>
-  </details>
-
+    <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
+  </div>
   <details class="sec" style="margin-bottom:12px">
     <summary>
       <div>
@@ -1672,6 +1663,22 @@ function divs2(){
     </div>
   </details>
 
+  <details class="sec" style="margin-bottom:12px">
+    <summary>
+      <div>
+        <div class="sec-title">Projeção por ativo</div>
+        <div class="sec-meta">${S.assets.length} ativos com estimativa de dividendos por mês e ano</div>
+      </div>
+      <div class="sec-meta">clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY</th><th>Div. mês</th><th>Div. ano</th><th>% renda</th></tr></thead>
+        <tbody>${projRows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#2e3f58">Cadastre compras na aba Aportes.</td></tr>'}</tbody>
+      </table></div></div>
+    </div>
+  </details>
+
   <details class="sec" open style="margin-bottom:12px">
     <summary>
       <div>
@@ -1682,7 +1689,6 @@ function divs2(){
     </summary>
     <div class="sec-body">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
         <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
       </div>
       ${frmD()}
