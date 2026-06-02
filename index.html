@@ -570,6 +570,10 @@ function isRendaFixaText(v){
   const s=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   return /(renda fixa|tesouro|cdb|lci|lca|cri|cra|debenture|debentures|letra financeira|lc\b|lf\b)/.test(s);
 }
+function isEmprestimoSheet(name){
+  const s=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  return s.includes('emprest') || s.includes('emprést');
+}
 function rfMetaFromText(v){
   const s=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
   if(s.includes('TESOURO')) return {type:'Renda Fixa',sector:'Tesouro Direto'};
@@ -605,6 +609,10 @@ function parseB3PositionWorkbook(wb, fileName=''){
   const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
   (wb.SheetNames||[]).forEach(sheetName=>{
     const sheet=wb.Sheets[sheetName]; if(!sheet) return;
+    if(isEmprestimoSheet(sheetName)){
+      warnings.push(`Aba "${sheetName}" ignorada: posições de empréstimo/lent lending não entram como compra na carteira.`);
+      return;
+    }
     const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
     if(!rows || rows.length<2) return;
     const headers=rows[0].map(x=>String(x||'').trim());
@@ -626,7 +634,10 @@ function parseB3PositionWorkbook(wb, fileName=''){
       }
       if(!ticker) return;
       if(!isRF && !tickerValidoB3(ticker)) return;
-      if(produto.trim()==='29' || ticker==='TOTAL') return;
+      const rowLabel=cleanAssetCode(produto || ticker || '');
+      if(!ticker || ticker==='TOTAL') return;
+      if(/^TOTAL\b/.test(rowLabel) || /^TOTAL\b/.test(produto.trim().toUpperCase())) return;
+      if(/^SUBTOTAL\b/.test(rowLabel) || /^SUBTOTAL\b/.test(produto.trim().toUpperCase())) return;
       let qty=parseNum(pickB3(row,headers,['Quantidade','Quantidade Disponível','Quantidade Disponivel','Quantidade Atual']));
       let price=parseNum(pickB3(row,headers,['Preço de Fechamento','Preco de Fechamento','Preço Atualizado','Preco Atualizado','Preço Atualizado CURVA','Preco Atualizado CURVA','Preço Unitário','Preco Unitario','PU','Valor Unitário','Valor Unitario']));
       let value=parseNum(pickB3(row,headers,['Valor Atualizado','Valor Atualizado CURVA','Valor Atualizado MTM','Valor Atualizado FECHAMENTO','Valor Bruto','Valor Líquido','Valor Liquido','Valor Atual','Saldo Bruto','Saldo Líquido','Saldo Liquido']));
