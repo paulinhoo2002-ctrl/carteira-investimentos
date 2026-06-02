@@ -605,23 +605,49 @@ function setorPorAbaB3(sheetName,ticker){
 }
 function parseB3PositionWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
+  const stats={
+    importedBySheet:{},
+    ignoredBySheet:{},
+    skippedSheets:[],
+    ignoredByReason:{},
+    totalIgnored:0
+  };
   const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
   const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  const addIgnored=(sheetName, reason)=>{
+    stats.totalIgnored++;
+    stats.ignoredBySheet[sheetName]=(stats.ignoredBySheet[sheetName]||0)+1;
+    if(reason){
+      stats.ignoredByReason[reason]=(stats.ignoredByReason[reason]||0)+1;
+    }
+  };
+  const addImported=(sheetName)=>{
+    stats.importedBySheet[sheetName]=(stats.importedBySheet[sheetName]||0)+1;
+  };
   (wb.SheetNames||[]).forEach(sheetName=>{
     const sheet=wb.Sheets[sheetName]; if(!sheet) return;
     if(isEmprestimoSheet(sheetName)){
       warnings.push(`Aba "${sheetName}" ignorada: posições de empréstimo/lent lending não entram como compra na carteira.`);
+      stats.skippedSheets.push(sheetName);
       return;
     }
     const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
-    if(!rows || rows.length<2) return;
+    if(!rows || rows.length<2){
+      warnings.push(`Aba "${sheetName}" sem linhas úteis para importar.`);
+      stats.skippedSheets.push(sheetName);
+      return;
+    }
     const headers=rows[0].map(x=>String(x||'').trim());
     const normHeaders=headers.map(normHeaderB3);
     const hasQtd=normHeaders.includes('quantidade') || normHeaders.includes('quantidade disponivel');
     const hasTicker=normHeaders.includes('codigo de negociacao') || normHeaders.includes('codigo') || normHeaders.includes('ticker');
     const isRF=isRendaFixaText(sheetName) || normHeaders.some(h=>/vencimento|indexador|emissor|instituicao|taxa/.test(h));
     const isETF=String(sheetName||'').toLowerCase().includes('etf');
-    if(!hasQtd && !isRF) return;
+    if(!hasQtd && !isRF){
+      warnings.push(`Aba "${sheetName}" sem colunas reconhecidas de posição; ignorada.`);
+      stats.skippedSheets.push(sheetName);
+      return;
+    }
     rows.slice(1).forEach((row,idx)=>{
       const produto=String(pickB3(row,headers,['Produto','Nome do Produto','Ativo','Descrição','Descricao','Título','Titulo'])||'').trim();
       const rawTicker=String(pickB3(row,headers,['Código de Negociação','Codigo de Negociacao','Código','Codigo','Ticker'])||'').trim().toUpperCase();
@@ -632,25 +658,48 @@ function parseB3PositionWorkbook(wb, fileName=''){
         const base=[produto,inst,venc].filter(Boolean).join(' ');
         ticker=cleanAssetCode(base||sheetName);
       }
-      if(!ticker) return;
-      if(!isRF && !tickerValidoB3(ticker)) return;
+      if(!ticker){
+        addIgnored(sheetName,'sem ticker');
+        return;
+      }
+      if(!isRF && !tickerValidoB3(ticker)){
+        addIgnored(sheetName,'ticker inválido');
+        return;
+      }
       const rowLabel=cleanAssetCode(produto || ticker || '');
-      if(!ticker || ticker==='TOTAL') return;
-      if(/^TOTAL\b/.test(rowLabel) || /^TOTAL\b/.test(produto.trim().toUpperCase())) return;
-      if(/^SUBTOTAL\b/.test(rowLabel) || /^SUBTOTAL\b/.test(produto.trim().toUpperCase())) return;
+      if(!ticker || ticker==='TOTAL'){
+        addIgnored(sheetName,'linha total/subtotal');
+        return;
+      }
+      if(/^TOTAL\b/.test(rowLabel) || /^TOTAL\b/.test(produto.trim().toUpperCase())){
+        addIgnored(sheetName,'linha total/subtotal');
+        return;
+      }
+      if(/^SUBTOTAL\b/.test(rowLabel) || /^SUBTOTAL\b/.test(produto.trim().toUpperCase())){
+        addIgnored(sheetName,'linha total/subtotal');
+        return;
+      }
       let qty=parseNum(pickB3(row,headers,['Quantidade','Quantidade Disponível','Quantidade Disponivel','Quantidade Atual']));
       let price=parseNum(pickB3(row,headers,['Preço de Fechamento','Preco de Fechamento','Preço Atualizado','Preco Atualizado','Preço Atualizado CURVA','Preco Atualizado CURVA','Preço Unitário','Preco Unitario','PU','Valor Unitário','Valor Unitario']));
       let value=parseNum(pickB3(row,headers,['Valor Atualizado','Valor Atualizado CURVA','Valor Atualizado MTM','Valor Atualizado FECHAMENTO','Valor Bruto','Valor Líquido','Valor Liquido','Valor Atual','Saldo Bruto','Saldo Líquido','Saldo Liquido']));
       if(qty<=0 && isRF && value>0) qty=1;
-      if(qty<=0) return;
+      if(qty<=0){
+        addIgnored(sheetName,'sem quantidade');
+        return;
+      }
       if((!price || price<=0) && value>0) price=value/qty;
-      if(price<=0){ warnings.push(`${ticker}: sem preço válido; ignorado.`); return; }
+      if(price<=0){
+        warnings.push(`${ticker}: sem preço válido; ignorado.`);
+        addIgnored(sheetName,'sem preço válido');
+        return;
+      }
       const tipo=isRF?'Renda Fixa':tipoPorAbaB3(sheetName,ticker);
       const setor=isRF?rfMetaFromText(`${produto} ${ticker} ${sheetName}`).sector:setorPorAbaB3(sheetName,ticker);
       items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,date:importDate});
+      addImported(sheetName);
     });
   });
-  return {items,warnings,importDate};
+  return {items,warnings,importDate,stats};
 }
 function hasSameB3Import(ticker, date){
   return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
@@ -688,11 +737,19 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
     if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
     const buf=await file.arrayBuffer();
     const wb=XLSX.read(buf,{type:'array'});
-    const {items,warnings,importDate}=parseB3PositionWorkbook(wb,file.name);
+    const {items,warnings,importDate,stats}=parseB3PositionWorkbook(wb,file.name);
     if(!items.length){ alert('Não encontrei posições válidas no arquivo. Tente exportar a posição da B3/corretora em Excel com colunas Código de Negociação, Quantidade, Preço de Fechamento e Valor Atualizado.'); return; }
     const total=items.reduce((s,i)=>s+(i.value||i.qty*i.price),0);
     const sample=items.slice(0,12).map(i=>`${i.ticker}: ${i.qty} x R$ ${Number(i.price).toFixed(2)} (${i.type}/${i.sector||'-'})`).join('\n');
-    const msg=`Encontrei ${items.length} posição(ões) no Excel.\n\nData usada: ${importDate}\nTotal aproximado: ${fmt(total)}\n\nPrévia:\n${sample}${items.length>12?'\n...':''}\n\nVou importar como compras de ajuste na aba Aportes e recalcular Ativos.\nSe já existir importação B3 desta mesma data, ela será substituída para evitar duplicidade.\n\nObservação: arquivo de posição não traz preço médio real nem data de compra original; para histórico exato, use extrato de movimentações.\n\nConfirmar importação?`;
+    const importedLines=Object.entries(stats.importedBySheet||{}).map(([sheet,count])=>`- ${sheet}: ${count}`).join('\n') || '- Nenhuma aba processada';
+    const skippedLines=(stats.skippedSheets||[]).length?stats.skippedSheets.map(sheet=>`- ${sheet} (ignorada)`).join('\n'):'- Nenhuma';
+    const ignoredBySheetLines=Object.entries(stats.ignoredBySheet||{}).length
+      ? Object.entries(stats.ignoredBySheet).map(([sheet,count])=>`- ${sheet}: ${count}`).join('\n')
+      : '- Nenhuma';
+    const ignoredLines=Object.entries(stats.ignoredByReason||{}).length
+      ? Object.entries(stats.ignoredByReason).map(([reason,count])=>`- ${reason}: ${count}`).join('\n')
+      : '- Nenhuma';
+    const msg=`Resumo da importação\n\nPosições válidas: ${items.length}\nTotal aproximado: ${fmt(total)}\nData usada: ${importDate}\n\nPor aba importada:\n${importedLines}\n\nAbas ignoradas:\n${skippedLines}\n\nLinhas ignoradas por aba:\n${ignoredBySheetLines}\n\nMotivos das linhas ignoradas:\n${stats.totalIgnored||0}\n${ignoredLines}\n\nPrévia das posições que vão entrar:\n${sample}${items.length>12?'\n...':''}\n\nVou importar como compras de ajuste na aba Aportes e recalcular Ativos.\nSe já existir importação B3 desta mesma data, ela será substituída para evitar duplicidade.\n\nObservação: arquivo de posição não traz preço médio real nem data de compra original; para histórico exato, use extrato de movimentações.\n\nConfirmar importação?`;
     if(confirm(msg)) applyB3ImportedPositions(items,importDate);
     if(warnings.length) console.warn('Avisos importação B3:',warnings);
   }catch(err){ console.error(err); alert('Erro ao importar Excel. Verifique o arquivo e tente novamente.'); }
