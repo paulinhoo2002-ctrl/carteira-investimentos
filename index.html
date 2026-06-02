@@ -182,7 +182,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 <div id="root"></div>
 <div id="toast-area"></div>
 <input type="file" id="imp-file" accept=".json" style="display:none">
-<input type="file" id="b3-file" accept=".xlsx,.xls,.csv" style="display:none">
+<input type="file" id="b3-file" accept=".xlsx,.xls,.csv,.pdf" style="display:none">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
@@ -426,7 +426,7 @@ function configMenu(){
     <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="exportBackup();closeConfigMenus()">💾 Backup</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importBackup();closeConfigMenus()">📂 Importar</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel</button>
+      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start;border-color:#7f1d1d;color:#fecaca;background:#1a0f12" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="configBrapi();closeConfigMenus()">🧩 brapi opcional</button>
     </div>
@@ -538,6 +538,149 @@ function importB3Excel(){
   const el=document.getElementById('b3-file');
   if(!el){ alert('Campo de importação B3 não encontrado.'); return; }
   el.click();
+}
+async function loadPdfJs(){
+  if(window.__pdfjsLib) return window.__pdfjsLib;
+  if(!window.__pdfjsPromise){
+    window.__pdfjsPromise = import('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.mjs')
+      .then(mod=>{
+        try{
+          mod.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.worker.mjs';
+        }catch(e){}
+        window.__pdfjsLib = mod;
+        return mod;
+      });
+  }
+  return window.__pdfjsPromise;
+}
+function pdfLinesFromTextContent(textContent){
+  const rows=new Map();
+  (textContent?.items||[]).forEach(item=>{
+    const y=Math.round(item.transform?.[5]||0);
+    const x=Math.round(item.transform?.[4]||0);
+    if(!rows.has(y)) rows.set(y,[]);
+    rows.get(y).push({x, s:String(item.str||'')});
+  });
+  return [...rows.keys()].sort((a,b)=>b-a).map(y=>rows.get(y).sort((a,b)=>a.x-b.x).map(v=>v.s).join(' ').replace(/\s+/g,' ').trim()).filter(Boolean);
+}
+function pdfSectionFromLine(line){
+  const s=String(line||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  if(s.includes('emprestimo de ativos')) return 'Empréstimos';
+  if(s === 'acoes' || s.startsWith('acoes ')) return 'Ações';
+  if(s.includes('etf - exchange traded fund')) return 'ETF';
+  if(s.includes('fii - fundo de investimento imobiliario')) return 'FII';
+  if(s.includes('cdb - certificado de deposito bancario')) return 'Renda Fixa';
+  if(s.includes('cra - certificado de recebiveis do agronegocio')) return 'Renda Fixa';
+  if(s.includes('deb - debentures')) return 'Renda Fixa';
+  if(s.includes('lig - letra imobiliaria garantida')) return 'Renda Fixa';
+  return '';
+}
+function pdfIsRowStart(line, section){
+  const s=String(line||'').trim();
+  if(!s) return false;
+  if(/^total\b/i.test(s)) return false;
+  if(/^extrato de pos/i.test(s)) return false;
+  if(/^paulo sergio/i.test(s)) return false;
+  if(/^filtros aplicados/i.test(s)) return false;
+  if(/^data:/i.test(s) || /^tipo de investimento:/i.test(s) || /^instituicao:/i.test(s) || /^marcacoes:/i.test(s)) return false;
+  if(/^produto\b/i.test(s) || /^tipo\b/i.test(s) || /^instituicao\b/i.test(s) || /^quantidade\b/i.test(s) || /^preco\b/i.test(s) || /^valor\b/i.test(s)) return false;
+  if(/^preço\b/i.test(s) || /^fechamento\b/i.test(s) || /^atualizado\b/i.test(s)) return false;
+  if(/^acesse investidor/i.test(s)) return false;
+  if(section==='Renda Fixa') return /^(CDB|CRA|DEB|LIG)\b/i.test(s);
+  return /^[A-Z0-9]{4,6}[0-9]{1,2}\b/.test(s);
+}
+function pdfBlockToItem(block, section){
+  const txt=String(block||'').replace(/\s+/g,' ').trim();
+  if(!txt || section==='Empréstimos') return null;
+  if(section==='Renda Fixa'){
+    const head=txt.match(/^(?<code>CDB|CRA|DEB|LIG)\s*-\s*/i);
+    const tail=txt.match(/(?<date>\d{2}\/\d{2}\/\d{4})[\s\S]*?(?<qty>[\d.,]+)\s+R\$\s*(?<price>[\d.,]+)[\s\S]*?(?:R\$\s*)?(?<value>[\d.,]+)\b/i);
+    if(!head || !tail) return null;
+    const code=head.groups.code.toUpperCase();
+    const product=txt.slice(head[0].length, tail.index).replace(/\s+/g,' ').trim();
+    const qty=parseNum(tail.groups.qty);
+    const price=parseNum(tail.groups.price);
+    const value=parseNum(tail.groups.value);
+    const ticker=cleanAssetCode(`${code} ${product} ${tail.groups.date}`);
+    const sector=code==='CDB'?'CDB':code==='CRA'?'CRA':code==='DEB'?'Debênture':'LIG';
+    return {ticker,qty,price,value:value||qty*price,type:'Renda Fixa',sector,product,section};
+  }
+  const head=txt.match(/^(?<ticker>[A-Z0-9]{4,6}[0-9]{1,2})\s*-\s*/i);
+  const tail=txt.match(/(?:R\$\s*)?(?<kind>PN|UNIT|Cotas|Direito|Ações|Acoes|Criptoativo|Internacional|Renda Fixa)\b[\s\S]*?(?<qty>[\d.,]+)\s+R\$\s*(?<price>[\d.,]+)[\s\S]*?(?:R\$\s*)?(?<value>[\d.,]+)\b/i);
+  if(!head || !tail) return null;
+  const ticker=head.groups.ticker.toUpperCase();
+  const qty=parseNum(tail.groups.qty);
+  const price=parseNum(tail.groups.price);
+  const value=parseNum(tail.groups.value);
+  const kind=tail.groups.kind;
+  const type=section==='Ações'?'Ação':section==='ETF'?'ETF':section==='FII'?'FII':metaTicker(ticker).type||'Ação';
+  const sector=section==='Ações'?'Ação':section==='ETF'?kind:section==='FII'?'FII':metaTicker(ticker).sector||'';
+  const product=txt.slice(head[0].length, tail.index).replace(/\s+/g,' ').trim();
+  return {ticker,qty,price,value:value||qty*price,type,sector,product,section,kind};
+}
+async function parseB3PositionPdf(file){
+  const pdfjs=await loadPdfJs();
+  const data=new Uint8Array(await file.arrayBuffer());
+  const doc=await pdfjs.getDocument({data}).promise;
+  const items=[]; const warnings=[];
+  const stats={importedBySheet:{},ignoredBySheet:{},skippedSheets:[],ignoredByReason:{},totalIgnored:0};
+  const importedSet=new Set();
+  const addImported=sheet=>{ stats.importedBySheet[sheet]=(stats.importedBySheet[sheet]||0)+1; importedSet.add(sheet); };
+  const addIgnored=(sheet,reason)=>{
+    stats.totalIgnored++;
+    stats.ignoredBySheet[sheet]=(stats.ignoredBySheet[sheet]||0)+1;
+    if(reason) stats.ignoredByReason[reason]=(stats.ignoredByReason[reason]||0)+1;
+  };
+  let importDate=new Date().toLocaleDateString('pt-BR');
+  const blocks=[];
+  for(let p=1;p<=doc.numPages;p++){
+    const page=await doc.getPage(p);
+    const text=await page.getTextContent();
+    const lines=pdfLinesFromTextContent(text);
+    const pageText=lines.join(' ');
+    const pageDateMatch=pageText.match(/Data:\s*(\d{2}\/\d{2}\/\d{4})/i);
+    if(pageDateMatch) importDate=pageDateMatch[1];
+    let section='';
+    let current=[];
+    const flush=()=>{
+      if(!current.length) return;
+      const block=current.join(' ');
+      blocks.push({section,block,page:p});
+      current=[];
+    };
+    for(const line of lines){
+      const sec=pdfSectionFromLine(line);
+      if(sec){
+        flush();
+        section=sec;
+        if(sec==='Empréstimos' && !stats.skippedSheets.includes(sec)) stats.skippedSheets.push(sec);
+        continue;
+      }
+      const s=String(line||'').trim();
+      if(!s) continue;
+      if(/^total\b/i.test(s) || /^extrato de pos/i.test(s) || /^acesse investidor/i.test(s)) { flush(); continue; }
+      if(section==='Empréstimos') continue;
+      if(pdfIsRowStart(s, section)){
+        flush();
+        current=[s];
+        continue;
+      }
+      if(current.length) current.push(s);
+    }
+    flush();
+  }
+  for(const {section,block,page} of blocks){
+    const item=pdfBlockToItem(block, section);
+    if(!item){
+      addIgnored(section||'PDF','linha não reconhecida');
+      warnings.push(`PDF página ${page} (${section||'sem seção'}): linha não reconhecida.`);
+      continue;
+    }
+    items.push({...item,date:importDate});
+    addImported(item.section||section||'PDF');
+  }
+  if(!stats.skippedSheets.includes('Empréstimos')) stats.skippedSheets.push('Empréstimos');
+  return {items,warnings,importDate,stats};
 }
 function normHeaderB3(v){
   return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
@@ -734,10 +877,17 @@ function applyB3ImportedPositions(items, importDate){
 document.getElementById('b3-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   try{
-    if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
-    const buf=await file.arrayBuffer();
-    const wb=XLSX.read(buf,{type:'array'});
-    const {items,warnings,importDate,stats}=parseB3PositionWorkbook(wb,file.name);
+    const isPdf=/\.pdf$/i.test(file.name) || String(file.type||'').includes('pdf');
+    let parsed;
+    if(isPdf){
+      parsed=await parseB3PositionPdf(file);
+    }else{
+      if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
+      const buf=await file.arrayBuffer();
+      const wb=XLSX.read(buf,{type:'array'});
+      parsed=parseB3PositionWorkbook(wb,file.name);
+    }
+    const {items,warnings,importDate,stats}=parsed;
     if(!items.length){ alert('Não encontrei posições válidas no arquivo. Tente exportar a posição da B3/corretora em Excel com colunas Código de Negociação, Quantidade, Preço de Fechamento e Valor Atualizado.'); return; }
     const total=items.reduce((s,i)=>s+(i.value||i.qty*i.price),0);
     const sample=items.slice(0,12).map(i=>`${i.ticker}: ${i.qty} x R$ ${Number(i.price).toFixed(2)} (${i.type}/${i.sector||'-'})`).join('\n');
@@ -749,10 +899,10 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
     const ignoredLines=Object.entries(stats.ignoredByReason||{}).length
       ? Object.entries(stats.ignoredByReason).map(([reason,count])=>`- ${reason}: ${count}`).join('\n')
       : '- Nenhuma';
-    const msg=`Resumo da importação\n\nPosições válidas: ${items.length}\nTotal aproximado: ${fmt(total)}\nData usada: ${importDate}\n\nPor aba importada:\n${importedLines}\n\nAbas ignoradas:\n${skippedLines}\n\nLinhas ignoradas por aba:\n${ignoredBySheetLines}\n\nMotivos das linhas ignoradas:\n${stats.totalIgnored||0}\n${ignoredLines}\n\nPrévia das posições que vão entrar:\n${sample}${items.length>12?'\n...':''}\n\nVou importar como compras de ajuste na aba Aportes e recalcular Ativos.\nSe já existir importação B3 desta mesma data, ela será substituída para evitar duplicidade.\n\nObservação: arquivo de posição não traz preço médio real nem data de compra original; para histórico exato, use extrato de movimentações.\n\nConfirmar importação?`;
+    const msg=`Resumo da importação (${isPdf?'PDF':'Excel'})\n\nPosições válidas: ${items.length}\nTotal aproximado: ${fmt(total)}\nData usada: ${importDate}\n\nPor aba importada:\n${importedLines}\n\nAbas ignoradas:\n${skippedLines}\n\nLinhas ignoradas por aba:\n${ignoredBySheetLines}\n\nMotivos das linhas ignoradas:\n${stats.totalIgnored||0}\n${ignoredLines}\n\nPrévia das posições que vão entrar:\n${sample}${items.length>12?'\n...':''}\n\nVou importar como compras de ajuste na aba Aportes e recalcular Ativos.\nSe já existir importação B3 desta mesma data, ela será substituída para evitar duplicidade.\n\nObservação: arquivo de posição não traz preço médio real nem data de compra original; para histórico exato, use extrato de movimentações.\n\nConfirmar importação?`;
     if(confirm(msg)) applyB3ImportedPositions(items,importDate);
     if(warnings.length) console.warn('Avisos importação B3:',warnings);
-  }catch(err){ console.error(err); alert('Erro ao importar Excel. Verifique o arquivo e tente novamente.'); }
+  }catch(err){ console.error(err); alert('Erro ao importar arquivo. Verifique o PDF/Excel e tente novamente.'); }
   e.target.value='';
 });
 
@@ -991,10 +1141,10 @@ function syncAssetsFromAportes(showMsg=false){
   });
   S.assets=Object.values(grouped).filter(g=>g.qty>0.000001).map(g=>{
     const old=keep[g.ticker]||{},m=metaTicker(g.ticker),avg=g.qty>0?g.total/g.qty:0;
-    const isRF=(old.type||g.type||m.type)==='Renda Fixa';
+    const isRF=(g.type||old.type||m.type)==='Renda Fixa';
     return{
       id:old.id||Date.now()+Math.floor(Math.random()*999999),
-      ticker:g.ticker, type:old.type||g.type||m.type, sector:old.sector||g.sector||m.sector, qty:g.qty,
+      ticker:g.ticker, type:g.type||old.type||m.type, sector:g.sector||old.sector||m.sector, qty:g.qty,
       avg_price:old.avg_manual?Number(old.avg_price)||avg:avg, avg_manual:!!old.avg_manual,
       current_price:Number(old.current_price)||avg, dy:Number(old.dy)||0,
       dySource:old.dySource||'', price_target:Number(old.price_target)||0, ideal_pct:Number(old.ideal_pct)||0,
