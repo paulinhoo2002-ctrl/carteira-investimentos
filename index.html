@@ -1700,9 +1700,10 @@ function metaTicker(ticker){
 function applyMetaToAporte(){
   const ti=(document.getElementById('p-ti')?.value||'').toUpperCase();
   const se=document.getElementById('p-se'); const ty=document.getElementById('p-ty');
+  const manualType=!!S._fp?.typeManual;
   let m=metaTicker(ti);
   if(ty && ty.value==='Renda Fixa') m=rfMetaFromText(ti||se?.value||'Renda Fixa');
-  if(ty && (!ty.dataset.manual || !ty.value)) ty.value=normalizeType(m.type||'Ação','Ação');
+  if(ty && !manualType && (!ty.dataset.manual || !ty.value)) ty.value=normalizeType(m.type||'Ação','Ação');
   if(se && (!se.dataset.manual || !se.value)) se.value=m.sector||'';
 }
 function collectAporteDraft(){
@@ -1723,12 +1724,14 @@ function collectAporteDraft(){
     indexer:document.getElementById('p-rf-index')?.value||S._fp?.indexer||'',
     rate:document.getElementById('p-rf-rate')?.value||S._fp?.rate||'',
     dailyLiquidity:document.getElementById('p-rf-liq')?.value||S._fp?.dailyLiquidity||'',
-    maturityDate:document.getElementById('p-rf-due')?.value||S._fp?.maturityDate||''
+    maturityDate:document.getElementById('p-rf-due')?.value||S._fp?.maturityDate||'',
+    typeManual:!!S._fp?.typeManual
   };
 }
 function updateAporteType(v){
   S._fp=collectAporteDraft();
   S._fp.type=v;
+  S._fp.typeManual=true;
   if(v==='Reserva de emergência'){
     S._fp.reserveTarget = S._fp.reserveTarget || 'bolsa';
     S._fp.reserveMode = S._fp.reserveMode || 'entrada';
@@ -3453,15 +3456,15 @@ function svA(){
 function tgP(pref='compra'){
   S.showP=!S.showP; S.editPId=null;
   S._fp=pref==='reserva'
-    ? {operation:'compra', type:'Reserva de emergência', reserveTarget:'bolsa'}
+    ? {operation:'compra', type:'Reserva de emergência', reserveTarget:'bolsa', typeManual:true}
     : pref==='rf'
-      ? {operation:'compra', type:'Renda Fixa'}
-      : {operation:'compra'};
+      ? {operation:'compra', type:'Renda Fixa', typeManual:true}
+      : {operation:'compra', typeManual:false};
   render();
   setTimeout(applyMetaToAporte,50);
 }
 function clP(){ S.showP=false; S.editPId=null; S._fp=null; render(); }
-function edP(id){ const p=S.aportes.find(x=>x.id===id); if(!p) return; S._fp={...p}; S.editPId=id; S.showP=true; render(); setTimeout(applyMetaToAporte,50); }
+function edP(id){ const p=S.aportes.find(x=>x.id===id); if(!p) return; S._fp={...p, typeManual:true}; S.editPId=id; S.showP=true; render(); setTimeout(applyMetaToAporte,50); }
 function svP(){
   const op=(document.getElementById('p-op')?.value||'compra').toLowerCase();
   const rawTi=document.getElementById('p-ti')?.value?.trim().toUpperCase();
