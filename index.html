@@ -1923,6 +1923,7 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
   let txPos=0;
   let provPos=0;
   let provCum=0;
+  let provPrevCum=0;
   let cursor=new Date(startDate.getFullYear(), startDate.getMonth(), 1);
   while(cursor<=endDate){
     const monthEnd=new Date(cursor.getFullYear(), cursor.getMonth()+1, 0, 23, 59, 59, 999);
@@ -1959,6 +1960,8 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
       if(typeSet && !typeSet.has(pType)) continue;
       provCum += Number(p.value)||0;
     }
+    const provMonth = Math.max(0, provCum - provPrevCum);
+    provPrevCum = provCum;
     const rows=[...holdings.values()].filter(h=>!typeSet || typeSet.has(String(h.type||'Ação')));
     const costBasis=rows.reduce((s,h)=>s+(Number(h.cost)||0),0);
     const currentValue=rows.reduce((s,h)=>{
@@ -1976,6 +1979,7 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
       costBasis,
       currentValue,
       proventos:provCum,
+      provMonth,
       cumReturn,
       delta
     });
@@ -2002,7 +2006,9 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
     const filled=months.filter(Boolean);
     const annual=filled.reduce((s,p)=>s+p.delta,0);
     const acum=filled.length ? filled[filled.length-1].cumReturn : 0;
-    return { year, months, annual, acum };
+    const provAnnual=filled.reduce((s,p)=>s+(Number(p.provMonth)||0),0);
+    const provAcum=filled.length ? Number(filled[filled.length-1].proventos)||0 : 0;
+    return { year, months, annual, acum, provAnnual, provAcum };
   });
   return { points, view, benchSeries, current, prev12, firstView, currentBench, return12m, lastMonth, aboveBench, years, totalMonths };
 }
@@ -3308,18 +3314,19 @@ function rentabilidadeTab(){
   const gap=current.cumReturn - benchNow;
   const return12m=data.return12m || 0;
   const currentMonth=current.delta || 0;
+  const provCurrent=Number(current.proventos)||0;
   const sideCards=[
     {
       title:'Rentabilidade total',
       value:fmtP(current.cumReturn||0),
-      foot:`${gap>=0?'Acima':'Abaixo'} do ${bench}: ${fmtP(gap||0)}`,
+      foot:`Inclui proventos recebidos · ${gap>=0?'Acima':'Abaixo'} do ${bench}: ${fmtP(gap||0)}`,
       color:'#34d399',
       icon:'📈'
     },
     {
       title:'Últimos 12 meses',
       value:fmtP(return12m||0),
-      foot:'Variação acumulada no recorte de 12 meses',
+      foot:`Variação acumulada no recorte de 12 meses · proventos: ${fmt(provCurrent)}`,
       color:'#60a5fa',
       icon:'🗓️'
     },
@@ -3348,6 +3355,8 @@ function rentabilidadeTab(){
       <td style="font-weight:800;color:#e2eaf6">${row.year}</td>
       ${cells}
       <td style="font-weight:800;color:#e2eaf6">${fmtP(row.annual||0)}</td>
+      <td style="font-weight:800;color:${(row.provAnnual||0)>=0?'#fbbf24':'#f87171'}">${fmt(row.provAnnual||0)}</td>
+      <td style="font-weight:800;color:${(row.provAcum||0)>=0?'#34d399':'#f87171'}">${fmt(row.provAcum||0)}</td>
       <td style="font-weight:800;color:${(row.acum||0)>=0?'#34d399':'#f87171'}">${fmtP(row.acum||0)}</td>
     </tr>`;
   }).join('');
@@ -3359,7 +3368,7 @@ function rentabilidadeTab(){
   </div>`;
 
   return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">📈 Rentabilidade</div>
-  <div class="mu" style="font-size:13px;margin-bottom:18px">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. O cálculo usa os lançamentos e a posição atual cadastrada.</div>
+  <div class="mu" style="font-size:13px;margin-bottom:18px">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. A rentabilidade da carteira já soma os proventos recebidos no cálculo.</div>
 
   <div class="rent-layout">
     <div class="rent-side">
@@ -3381,7 +3390,7 @@ function rentabilidadeTab(){
       <div class="sh" style="margin-bottom:12px">
         <div>
           <div class="st">Rentabilidade comparada com índices</div>
-          <div class="mu" style="font-size:12px">Histórico estimado a partir dos dados lançados na carteira.</div>
+          <div class="mu" style="font-size:12px">Histórico estimado a partir dos dados lançados na carteira e dos proventos recebidos.</div>
         </div>
         <div class="rent-filters">
           <select onchange="setRentPeriod(this.value)">
@@ -3404,7 +3413,7 @@ function rentabilidadeTab(){
       <div class="rent-chartbox">
         ${data.points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
       </div>
-      <div class="mu" style="font-size:12px;margin-top:8px">Dica: a comparação com índice é uma referência estimada, usada para leitura visual da carteira. Para índices históricos exatos, podemos conectar uma fonte externa depois.</div>
+      <div class="mu" style="font-size:12px;margin-top:8px">Dica: a comparação com índice é uma referência estimada, usada para leitura visual da carteira. O retorno da carteira já inclui os proventos recebidos; se quiser, depois conectamos índices históricos exatos.</div>
     </div>
   </div>
 
@@ -3412,14 +3421,14 @@ function rentabilidadeTab(){
     <summary>
       <div>
         <div class="sec-title">Rentabilidade mensal</div>
-        <div class="sec-meta">visão consolidada por ano e por mês</div>
+        <div class="sec-meta">visão consolidada por ano, mês e proventos recebidos</div>
       </div>
       <div class="sec-meta">${data.totalMonths} meses analisados · clicar para ocultar</div>
     </summary>
     <div class="sec-body">
       <div class="tw"><div class="ts"><table class="hist-monthly rent-table">
-        <thead><tr><th>Ano</th>${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map(m=>`<th>${m}</th>`).join('')}<th>Retorno anual</th><th>Acumulado</th></tr></thead>
-        <tbody>${yearsRows||'<tr><td colspan="14" style="text-align:center;padding:20px;color:#2e3f58">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
+        <thead><tr><th>Ano</th>${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map(m=>`<th>${m}</th>`).join('')}<th>Retorno anual</th><th>Proventos ano</th><th>Proventos acum.</th><th>Acumulado</th></tr></thead>
+        <tbody>${yearsRows||'<tr><td colspan="17" style="text-align:center;padding:20px;color:#2e3f58">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
       </table></div></div>
     </div>
   </details>`;
