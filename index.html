@@ -32,6 +32,41 @@ button{cursor:pointer;font-family:inherit}
 .wrap{padding:20px;max-width:1360px;margin:0 auto}
 @media(max-width:640px){.wrap{padding:14px}}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
+.dashboard-hero{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dash-card{min-height:138px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between}
+.dash-head{display:flex;align-items:flex-start;gap:10px}
+.dash-ico{width:28px;height:28px;border-radius:999px;background:#111828;border:1px solid #1e2a3d;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.dash-kicker{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.dash-name{font-size:13px;font-weight:700;color:#e2eaf6;line-height:1.15}
+.dash-value{margin-top:10px}
+.dash-card .cv{font-size:24px;line-height:1.1;margin-bottom:0}
+.dash-card .cs{font-size:12px;color:#64748b;margin-top:6px}
+.dash-foot{font-size:11px;color:#64748b;line-height:1.4}
+.dashboard-grid{gap:14px}
+.dashboard-panel{min-height:360px}
+.dashboard-legend{display:flex;flex-direction:column;gap:8px;min-width:220px}
+.dashboard-legend-item{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}
+.dashboard-legend-left{display:flex;align-items:center;gap:8px;min-width:0}
+.dashboard-legend-name{color:#e2eaf6;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-legend-pct{color:#c0cce0;font-weight:700}
+.dashboard-swatch{width:10px;height:10px;border-radius:3px;flex:none}
+.dash-filters{display:flex;gap:6px;flex-wrap:wrap}
+.dash-chip{border:1px solid #1e2a3d;background:#111828;color:#64748b;border-radius:999px;padding:5px 10px;font-size:11px;line-height:1;font-weight:700;transition:all .15s}
+.dash-chip:hover{opacity:.9;transform:translateY(-1px)}
+.dash-chip.on{background:rgba(79,70,229,.14);color:#a5b4fc;border-color:rgba(99,102,241,.35)}
+.rent-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:stretch}
+.rent-side{display:grid;gap:12px;align-content:start}
+.rent-main{min-height:100%}
+.rent-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.rent-filters select{min-width:170px}
+.rent-chartbox{background:#090c15;border:1px solid #161e2e;border-radius:14px;padding:10px 10px 4px;overflow:hidden}
+.rent-card .dash-value{margin-top:8px}
+.rent-card .dash-foot{min-height:34px}
+.rent-table th,.rent-table td{text-align:center;white-space:nowrap}
+.rent-table th:first-child,.rent-table td:first-child{text-align:left}
+.rent-table td{font-variant-numeric:tabular-nums}
+.rent-table td.rd,.rent-table td.gn{font-weight:700}
+.rent-table thead th{position:sticky;top:0;z-index:2}
 .card{background:#0d111e;border:1px solid #161e2e;border-radius:12px;padding:14px 16px;transition:border-color .2s,box-shadow .2s}
 .card.al{border-left:3px solid}.card:hover{border-color:#1e2a3d;box-shadow:0 4px 20px rgba(0,0,0,.3)}
 .cl{font-size:10px;color:#3d5472;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
@@ -135,6 +170,32 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .spn{display:inline-block;animation:rota 1s linear infinite}
 .toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:22px;overflow:auto}
+.note-modal{width:min(1240px,100%);background:#0b1020;border:1px solid #27324a;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.55);overflow:hidden;margin:20px 0}
+.note-head{padding:18px 18px 14px;border-bottom:1px solid #182033;background:linear-gradient(180deg,#0f1527,#0b1020)}
+.note-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.note-title h3{font-size:18px;font-weight:800;color:#f8fafc}
+.note-title p{font-size:12px;color:#64748b;margin-top:4px;line-height:1.5}
+.note-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.note-pill{font-size:11px;color:#a5b4fc;border:1px solid rgba(96,165,250,.18);background:#111828;border-radius:999px;padding:5px 10px}
+.note-body{padding:16px 18px 18px}
+.note-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px}
+.note-actions .left,.note-actions .right{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.note-table-wrap{border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
+.note-table{width:100%;min-width:1180px;font-size:12px}
+.note-table th{position:sticky;top:0;background:#090c15;z-index:2}
+.note-table td,.note-table th{padding:8px 10px}
+.note-table input,.note-table select{padding:7px 8px;font-size:12px;border-radius:8px}
+.note-row-muted{opacity:.55}
+.note-row-bad{background:rgba(248,113,113,.06)}
+.note-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.note-foot .hint{font-size:12px;color:#64748b;line-height:1.5}
+@media(max-width:900px){
+  .note-overlay{padding:10px}
+  .note-modal{border-radius:14px}
+  .note-body{padding:12px}
+  .note-table{min-width:1040px}
+}
 @media(max-width:900px){
   .hdr{padding:10px 12px;gap:10px}
   .hdr-title{font-size:15px}
@@ -152,6 +213,17 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .tab{padding:10px 10px;font-size:11px}
   .wrap{padding:10px}
   .cards{grid-template-columns:1fr;gap:8px}
+  .dashboard-hero{grid-template-columns:1fr;gap:8px}
+  .dash-card{min-height:auto;padding:12px 13px}
+  .dash-card .cv{font-size:20px}
+  .rent-side .dash-card{min-height:auto}
+  .dashboard-panel{min-height:0}
+  .dashboard-legend{min-width:0;width:100%}
+  .dash-filters{width:100%}
+  .rent-layout{grid-template-columns:1fr;gap:10px}
+  .rent-filters{width:100%;justify-content:flex-start}
+  .rent-filters select{min-width:0;flex:1 1 160px}
+  .rent-chartbox{padding:8px 8px 2px}
   .card{padding:12px 13px;border-radius:11px}
   .cv{font-size:18px}
   .cs{font-size:10px}
@@ -183,6 +255,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 <div id="toast-area"></div>
 <input type="file" id="imp-file" accept=".json" style="display:none">
 <input type="file" id="b3-file" accept=".xlsx,.xls,.csv,.pdf" style="display:none">
+<input type="file" id="nota-file" accept=".xlsx,.xls,.csv" style="display:none">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
@@ -190,6 +263,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 <script>
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
+const RENT_BENCH   = { CDI:10.65, IPCA:4.50, IFIX:9.20, IBOV:11.00, SMLL:12.00, IDIV:10.00, IVVB11:13.00 };
 const STOR         = 'civ5';
 const DEFAULT_BRAPI = ''; // brapi fica opcional; cotações usam Yahoo Finance via /api/yahoo-quote sem token
 
@@ -214,7 +288,10 @@ let S = {
   tab:'dashboard', qLoad:false, cd:QI,
   qInFlight:false,
   brapiToken: DEFAULT_BRAPI, divGoal:0,
+  dashPeriod:12, dashType:'all',
+  rentPeriod:'all', rentType:'all', rentBench:'CDI',
   apHistoryOpen:true, apSearch:'',
+  apSearchTimer:null,
   goals:{
     patrimonio:{target:0, aporte:0, annualVar:0},
     ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
@@ -222,6 +299,7 @@ let S = {
   },
   aiText:'', aiLoad:false,
   editId:null, editPId:null, showA:false, showP:false, showD:false,
+  noteReview:null,
   _fa:null, _fp:null, _fd:null,
 };
 let PWA = { prompt:null, installed: false };
@@ -237,7 +315,9 @@ function save(){
     localStorage.setItem(STOR, JSON.stringify({
       assets:S.assets, aportes:S.aportes, proventos:S.proventos,
       tab:S.tab, divGoal:S.divGoal, goals:S.goals,
-      apHistoryOpen:S.apHistoryOpen, apSearch:S.apSearch
+      apHistoryOpen:S.apHistoryOpen, apSearch:S.apSearch,
+      dashPeriod:S.dashPeriod, dashType:S.dashType,
+      rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench
     }));
     queueCloudSave();
   }catch(e){ console.error('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
@@ -257,6 +337,11 @@ function load(){
     if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
     if(d.apHistoryOpen !== undefined) S.apHistoryOpen = !!d.apHistoryOpen;
     if(d.apSearch !== undefined)     S.apSearch  = String(d.apSearch||'');
+    if(d.dashPeriod !== undefined)   S.dashPeriod = Math.max(3, Number(d.dashPeriod)||12);
+    if(d.dashType !== undefined)     S.dashType = String(d.dashType||'all');
+    if(d.rentPeriod !== undefined)   S.rentPeriod = String(d.rentPeriod||'all');
+    if(d.rentType !== undefined)     S.rentType = String(d.rentType||'all');
+    if(d.rentBench !== undefined)    S.rentBench = String(d.rentBench||'CDI');
     if(d.goals && typeof d.goals==='object') S.goals = d.goals;
   }catch(e){ console.error('load erro:',e); }
   try{
@@ -273,6 +358,11 @@ function load(){
         if(Array.isArray(d.aportes) && d.aportes.length){
           S.aportes=d.aportes; S.assets=d.assets||[]; S.proventos=d.proventos||[];
           if(d.divGoal) S.divGoal=Number(d.divGoal)||0;
+          if(d.dashPeriod !== undefined) S.dashPeriod=Math.max(3, Number(d.dashPeriod)||12);
+          if(d.dashType !== undefined) S.dashType=String(d.dashType||'all');
+          if(d.rentPeriod !== undefined) S.rentPeriod=String(d.rentPeriod||'all');
+          if(d.rentType !== undefined) S.rentType=String(d.rentType||'all');
+          if(d.rentBench !== undefined) S.rentBench=String(d.rentBench||'CDI');
           if(d.goals && typeof d.goals==='object') S.goals=d.goals;
           save(); break;
         }
@@ -318,6 +408,8 @@ function cloudPayload(){
     divGoal:Number(S.divGoal)||0,
     goals:S.goals,
     settings:{brapiToken:S.brapiToken||''},
+    dashboard:{period:Number(S.dashPeriod)||12,type:String(S.dashType||'all')},
+    rentabilidade:{period:String(S.rentPeriod||'all'),type:String(S.rentType||'all'),bench:String(S.rentBench||'CDI')},
     tab:S.tab,
     updatedAtLocal:new Date().toISOString(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -336,8 +428,17 @@ function applyCloudData(d){
   if(d.goals && typeof d.goals==='object') S.goals = d.goals;
   if(d.tab && !S.tab)            S.tab       = d.tab;
   if(d.settings && d.settings.brapiToken && !S.brapiToken) S.brapiToken = d.settings.brapiToken;
+  if(d.dashboard && typeof d.dashboard==='object'){
+    if(d.dashboard.period !== undefined) S.dashPeriod = Math.max(3, Number(d.dashboard.period)||12);
+    if(d.dashboard.type !== undefined) S.dashType = String(d.dashboard.type||'all');
+  }
+  if(d.rentabilidade && typeof d.rentabilidade==='object'){
+    if(d.rentabilidade.period !== undefined) S.rentPeriod = String(d.rentabilidade.period||'all');
+    if(d.rentabilidade.type !== undefined) S.rentType = String(d.rentabilidade.type||'all');
+    if(d.rentabilidade.bench !== undefined) S.rentBench = String(d.rentabilidade.bench||'CDI');
+  }
   try{
-    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals}));
+    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench}));
     localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
   }catch(e){}
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -427,6 +528,7 @@ function configMenu(){
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="exportBackup();closeConfigMenus()">💾 Backup</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importBackup();closeConfigMenus()">📂 Importar</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
+      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importNotaCorretora();closeConfigMenus()">🧾 Nota corretora</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start;border-color:#7f1d1d;color:#fecaca;background:#1a0f12" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="configBrapi();closeConfigMenus()">🧩 brapi opcional</button>
     </div>
@@ -476,7 +578,7 @@ function toast(msg, cor='#6ee7b7'){
 // BACKUP
 // ══════════════════════════════════════
 function exportBackup(){
-  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, exportedAt:new Date().toISOString()}, null, 2);
+  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-backup-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.json`});
   a.click();
   toast('💾 Backup exportado com sucesso!');
@@ -493,6 +595,9 @@ document.getElementById('imp-file').addEventListener('change',e=>{
       if(Array.isArray(d.proventos)) S.proventos = d.proventos;
       if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
       if(d.goals && typeof d.goals==='object') S.goals = d.goals;
+      if(d.rentPeriod !== undefined)  S.rentPeriod = String(d.rentPeriod||'all');
+      if(d.rentType !== undefined)    S.rentType = String(d.rentType||'all');
+      if(d.rentBench !== undefined)   S.rentBench = String(d.rentBench||'CDI');
       save(); saveConfig(); render();
       toast(`✅ ${S.assets.length} ativos, ${S.aportes.length} aportes e ${S.proventos.length} proventos importados!`);
     }catch(err){ alert('Erro ao importar. Verifique o arquivo.'); }
@@ -517,10 +622,16 @@ function resetPortfolio(){
   };
   S.apHistoryOpen=true;
   S.apSearch='';
+  clearTimeout(S.apSearchTimer);
+  S.apSearchTimer=null;
+  S.rentPeriod='all';
+  S.rentType='all';
+  S.rentBench='CDI';
   S.tab='dashboard';
   S.showA=false; S.editId=null; S._fa=null;
   S.showP=false; S.editPId=null; S._fp=null;
   S.showD=false; S.editDId=null; S._fd=null;
+  S.noteReview=null;
   try{
     localStorage.removeItem(STOR);
     localStorage.removeItem(STOR+'_cfg');
@@ -537,6 +648,11 @@ function resetPortfolio(){
 function importB3Excel(){
   const el=document.getElementById('b3-file');
   if(!el){ alert('Campo de importação B3 não encontrado.'); return; }
+  el.click();
+}
+function importNotaCorretora(){
+  const el=document.getElementById('nota-file');
+  if(!el){ alert('Campo de importação da nota não encontrado.'); return; }
   el.click();
 }
 async function loadPdfJs(){
@@ -717,6 +833,95 @@ function isEmprestimoSheet(name){
   const s=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   return s.includes('emprest') || s.includes('emprést');
 }
+function notaNorm(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
+}
+function notaFindValue(rows, key){
+  const k=notaNorm(key);
+  for(const row of rows){
+    for(let i=0;i<row.length;i++){
+      if(notaNorm(row[i])===k){
+        for(let j=i+1;j<row.length;j++){
+          const val=String(row[j]||'').trim();
+          if(val) return val;
+        }
+      }
+    }
+  }
+  return '';
+}
+function notaFindHeaderIndex(rows){
+  const req=[
+    'C/V',
+    'TIPO DE MERCADO',
+    'ESPECIFICACAO DO TITULO',
+    'QUANTIDADE',
+    'PRECO DE LIQUIDACAO(R$)',
+    'COMPRA/VENDA (R$)'
+  ];
+  for(let i=0;i<rows.length;i++){
+    const rn=(rows[i]||[]).map(notaNorm);
+    if(req.every(k=>rn.some(c=>c===k || c.includes(k)))) return i;
+  }
+  return -1;
+}
+function notaTickerFromSpec(spec){
+  const s=notaNorm(spec);
+  if(!s) return '';
+  if(/\bSUB\s*TOTAL\b|\bTOTAL\b/.test(s)) return '';
+  const m=s.match(/\b([A-Z]{4,6}\d{1,2})F?\b/);
+  if(m) return m[1].replace(/F$/,'');
+  if(isRendaFixaText(s)) return cleanAssetCode(s);
+  const first=s.split(' ').filter(Boolean)[0] || s;
+  return cleanAssetCode(first);
+}
+function notaFiiSector(text){
+  const s=notaNorm(text);
+  if(s.includes('LOGIST')) return 'Logística';
+  if(s.includes('SHOP')) return 'Shopping';
+  if(s.includes('PAPEL') || s.includes('CRI')) return 'Papel';
+  if(s.includes('LAJES') || s.includes('ESCRITOR')) return 'Lajes';
+  if(s.includes('RENDA URBANA')) return 'Renda Urbana';
+  if(s.includes('DESENVOLV')) return 'Desenvolvimento';
+  if(s.includes('HOTEL')) return 'Hotel';
+  return 'FII';
+}
+function notaEtfSector(text){
+  const s=notaNorm(text);
+  if(s.includes('DIVID')) return 'Dividendos';
+  if(s.includes('IBOV') || s.includes('IBOVESPA')) return 'Ibovespa';
+  if(s.includes('SMALL') || s.includes('SMAL')) return 'Small Caps';
+  if(s.includes('EXTERIOR') || s.includes('EUA') || s.includes('SP500') || s.includes('S&P')) return 'Exterior';
+  if(s.includes('HASH') || s.includes('CRIPTO') || s.includes('CRYPTO') || s.includes('BITCOIN')) return 'Cripto';
+  if(s.includes('RENDA FIXA')) return 'Renda Fixa';
+  return 'ETF';
+}
+function inferNotaMeta(ticker, spec, market){
+  const tickerClean=cleanAssetCode(ticker||notaTickerFromSpec(spec));
+  const existing=S.assets.find(a=>String(a.ticker||'').toUpperCase()===tickerClean);
+  if(existing && existing.type){
+    return {
+      type: existing.type,
+      sector: existing.sector || existing.type
+    };
+  }
+  const text=`${tickerClean} ${spec||''} ${market||''}`;
+  const s=notaNorm(text);
+  if(isRendaFixaText(s)) return rfMetaFromText(text);
+  if(/\bETF\b|FUNDO DE INDICE|FDO DE INDICE|EXCHANGE TRADED FUND/.test(s)){
+    return {type:'ETF',sector:notaEtfSector(text)};
+  }
+  if(/\bFII\b|FUNDO IMOBILIARIO|FUNDO DE INVESTIMENTO IMOBILIARIO|FDO INV IMOB|COTAS DE FII/.test(s)){
+    return {type:'FII',sector:notaFiiSector(text)};
+  }
+  const mt=metaTicker(tickerClean);
+  if(mt.type==='ETF') return {type:'ETF',sector:mt.sector||notaEtfSector(text)};
+  if(mt.type==='FII') return {type:'FII',sector:mt.sector||notaFiiSector(text)};
+  if(mt.type==='Renda Fixa') return rfMetaFromText(text);
+  if(/\bBDR\b/.test(s)) return {type:'BDR',sector:'BDR'};
+  if(/\bCRYPTO\b|\bCRIPTO\b|\bBITCOIN\b/.test(s)) return {type:'Crypto',sector:'Crypto'};
+  return {type:mt.type||'Ação', sector:mt.sector||''};
+}
 function rfMetaFromText(v){
   const s=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
   if(s.includes('TESOURO')) return {type:'Renda Fixa',sector:'Tesouro Direto'};
@@ -844,6 +1049,110 @@ function parseB3PositionWorkbook(wb, fileName=''){
   });
   return {items,warnings,importDate,stats};
 }
+function parseNotaCorretoraWorkbook(wb, fileName=''){
+  const items=[]; const warnings=[];
+  const stats={
+    byType:{},
+    byOperation:{},
+    ignoredByReason:{},
+    totalIgnored:0
+  };
+  const sheetName=(wb.SheetNames||[])[0];
+  if(!sheetName){
+    return {items,warnings,importDate:new Date().toLocaleDateString('pt-BR'),stats,noteKey:'nota-sem-planilha',noteNumber:'',tradeDate:''};
+  }
+  const sheet=wb.Sheets[sheetName];
+  const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:''});
+  const headerIdx=notaFindHeaderIndex(rows);
+  const noteNumber=notaFindValue(rows,'NUM NOTA') || notaFindValue(rows,'Nº NOTA') || notaFindValue(rows,'N. NOTA') || '';
+  const tradeDateRaw=notaFindValue(rows,'DATA PREGÃO') || notaFindValue(rows,'DATA PREGAO') || '';
+  const dateMatch=String(fileName||'').match(/(\d{2})(\d{2})(\d{4})/);
+  const tradeDate=tradeDateRaw
+    ? (String(tradeDateRaw).includes('/') ? String(tradeDateRaw).trim() : `${String(tradeDateRaw).slice(0,2)}/${String(tradeDateRaw).slice(2,4)}/${String(tradeDateRaw).slice(4,8)}`)
+    : (dateMatch ? `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}` : new Date().toLocaleDateString('pt-BR'));
+  const noteKey=[noteNumber||cleanAssetCode(fileName)||'NOTA',tradeDate.replace(/\//g,'-')].join('|');
+  if(headerIdx<0){
+    warnings.push('Cabeçalho da nota corretora não encontrado. Procure a tabela com C/V, TIPO DE MERCADO e ESPECIFICAÇÃO DO TÍTULO.');
+    return {items,warnings,importDate:tradeDate,stats,noteKey,noteNumber,tradeDate};
+  }
+  const headers=(rows[headerIdx]||[]).map(v=>String(v||'').trim());
+  const normHeaders=headers.map(notaNorm);
+  const idxCv=normHeaders.findIndex(h=>h==='C/V' || h==='CV');
+  const idxMarket=normHeaders.findIndex(h=>h.includes('TIPO DE MERCADO'));
+  const idxSpec=normHeaders.findIndex(h=>h.includes('ESPECIFICACAO DO TITULO'));
+  const idxObs=normHeaders.findIndex(h=>h.includes('OBS'));
+  const idxQty=normHeaders.findIndex(h=>h.includes('QUANTIDADE'));
+  const idxPrice=normHeaders.findIndex(h=>h.includes('PRECO DE LIQUIDACAO'));
+  const idxTotal=normHeaders.findIndex(h=>h.includes('COMPRA/VENDA'));
+  if(idxCv<0 || idxSpec<0 || idxQty<0 || idxPrice<0 || idxTotal<0){
+    warnings.push('Algumas colunas esperadas não foram encontradas; a nota pode estar em um formato diferente.');
+  }
+  for(let i=headerIdx+1;i<rows.length;i++){
+    const row=rows[i]||[];
+    const rowTxt=row.map(v=>String(v||'').trim()).filter(Boolean).join(' ');
+    const up=notaNorm(rowTxt);
+    if(!rowTxt) continue;
+    if(/^(RESUMO|TOTAIS|TOTAL|CORRETAGEM|NOTA DE NEGOCIACAO|NOTA DE NEGOCIAÇÃO|MOVIMENTACAO|MOVIMENTAÇÃO)/.test(up)) break;
+    if(/^(PRA?CA|C\/V|TIPO DE MERCADO|ESPECIFICACAO DO TITULO|OBS|QUANTIDADE|PRECO DE LIQUIDACAO|COMPRA\/VENDA)/.test(up)) continue;
+    if(/\bSUB\s*TOTAL\b|\bTOTAL\b/.test(up)) {
+      stats.totalIgnored++;
+      stats.ignoredByReason['linha subtotal/total']=(stats.ignoredByReason['linha subtotal/total']||0)+1;
+      continue;
+    }
+    const spec=String(idxSpec>=0 ? row[idxSpec] : '').trim();
+    const cv=String(idxCv>=0 ? row[idxCv] : '').trim().toUpperCase();
+    const market=String(idxMarket>=0 ? row[idxMarket] : '').trim();
+    const obs=String(idxObs>=0 ? row[idxObs] : '').trim();
+    const qty=parseNum(idxQty>=0 ? row[idxQty] : '');
+    const price=parseNum(idxPrice>=0 ? row[idxPrice] : '');
+    const total=parseNum(idxTotal>=0 ? row[idxTotal] : '');
+    if(!spec && qty<=0 && price<=0 && total<=0) continue;
+    if(!spec){
+      stats.totalIgnored++;
+      stats.ignoredByReason['sem especificação']=(stats.ignoredByReason['sem especificação']||0)+1;
+      continue;
+    }
+    if(/\bSUB\s*TOTAL\b|\bTOTAL\b/.test(notaNorm(spec))){
+      stats.totalIgnored++;
+      stats.ignoredByReason['linha subtotal/total']=(stats.ignoredByReason['linha subtotal/total']||0)+1;
+      continue;
+    }
+    const op=/V/.test(cv) ? 'venda' : 'compra';
+    const ticker=notaTickerFromSpec(spec);
+    if(!ticker){
+      stats.totalIgnored++;
+      stats.ignoredByReason['sem ticker']=(stats.ignoredByReason['sem ticker']||0)+1;
+      continue;
+    }
+    const meta=inferNotaMeta(ticker, spec, market);
+    const finalPrice=price>0 ? price : (qty>0 && total>0 ? total/qty : 0);
+    const finalTotal=total>0 ? total : (qty>0 && finalPrice>0 ? qty*finalPrice : 0);
+    if(qty<=0 || finalPrice<=0){
+      stats.totalIgnored++;
+      stats.ignoredByReason[qty<=0 ? 'sem quantidade' : 'sem preço válido']=(stats.ignoredByReason[qty<=0 ? 'sem quantidade' : 'sem preço válido']||0)+1;
+      continue;
+    }
+    items.push({
+      ticker,
+      qty,
+      price:finalPrice,
+      value:finalTotal,
+      type:meta.type||'Ação',
+      sector:meta.sector||'',
+      product:spec,
+      market,
+      obs,
+      operation:op,
+      date:tradeDate,
+      noteKey,
+      noteNumber,
+      source:'nota-corretora'
+    });
+    stats.byType[meta.type||'Ação']=(stats.byType[meta.type||'Ação']||0)+1;
+    stats.byOperation[op]=(stats.byOperation[op]||0)+1;
+  }
+  return {items,warnings,importDate:tradeDate,stats,noteKey,noteNumber,tradeDate};
+}
 function hasSameB3Import(ticker, date){
   return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
 }
@@ -874,6 +1183,192 @@ function applyB3ImportedPositions(items, importDate){
   save(); render(); fetchQuotes(false);
   toast(`✅ ${novos.length} posição(ões) importadas do Excel.`);
 }
+function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
+  const importTag='[IMPORT_NOTA_CORRETORA]';
+  const stamp=String(noteKey||noteNumber||tradeDate||'');
+  S.aportes=S.aportes.filter(a=>{
+    const dec=String(a.decision||'');
+    return !(dec.includes(importTag) && String(a.noteKey||'')===stamp);
+  });
+  const now=Date.now();
+  const novos=items.map((it,i)=>({
+    id: now+i,
+    operation:it.operation||'compra',
+    ticker:it.ticker,
+    qty:Number(it.qty)||0,
+    price:Number(it.price)||0,
+    date:it.date||tradeDate||new Date().toLocaleDateString('pt-BR'),
+    decision:`${importTag} nota ${noteNumber||stamp} · ${it.market||'mercado'} · ${it.product||it.ticker}`,
+    type:it.type||'Ação',
+    sector:it.sector||'',
+    noteKey:stamp,
+    noteNumber:noteNumber||'',
+    source:'nota-corretora'
+  })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
+  S.aportes=[...novos,...S.aportes];
+  syncAssetsFromAportes(false);
+  save();
+  render();
+  fetchQuotes(false);
+  toast(`✅ ${novos.length} lançamento(ões) importado(s) da nota da corretora.`);
+}
+function openNotaReview(parsed, fileName){
+  const {items=[],warnings=[],importDate='',stats={},noteKey='',noteNumber='',tradeDate=''}=parsed||{};
+  const rows=items.map((it,i)=>({
+    id:i,
+    include:true,
+    ticker:String(it.ticker||'').toUpperCase(),
+    operation:String(it.operation||'compra').toLowerCase(),
+    qty:Number(it.qty)||0,
+    price:Number(it.price)||0,
+    type:it.type||'Ação',
+    sector:it.sector||'',
+    product:it.product||'',
+    market:it.market||'',
+    obs:it.obs||'',
+    value:Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0)),
+    sourceItem:{...it}
+  }));
+  S.noteReview={fileName,importDate,warnings,stats,noteKey,noteNumber,tradeDate,rows};
+  render();
+}
+function closeNotaReview(){
+  S.noteReview=null;
+  render();
+}
+function setNotaReviewAll(v){
+  if(!S.noteReview) return;
+  S.noteReview.rows=S.noteReview.rows.map(r=>({...r,include:!!v}));
+  render();
+}
+function setNotaReviewRow(idx, field, value){
+  if(!S.noteReview || !S.noteReview.rows[idx]) return;
+  const row=S.noteReview.rows[idx];
+  if(field==='include') row.include=!!value;
+  else if(field==='ticker') row.ticker=String(value||'').trim().toUpperCase();
+  else if(field==='operation') row.operation=String(value||'compra').toLowerCase();
+  else if(field==='type') row.type=String(value||'Ação');
+  else if(field==='sector') row.sector=String(value||'');
+  else if(field==='qty') row.qty=parseNum(value);
+  else if(field==='price') row.price=parseNum(value);
+  else if(field==='product') row.product=String(value||'');
+  render();
+}
+function suggestNotaReviewTypes(){
+  if(!S.noteReview) return;
+  S.noteReview.rows=S.noteReview.rows.map(row=>{
+    if(!row.ticker) return row;
+    const sug=inferNotaMeta(row.ticker, row.product||row.sourceItem?.product||'', row.market||row.sourceItem?.market||'');
+    const existing=S.assets.find(a=>String(a.ticker||'').toUpperCase()===String(row.ticker||'').toUpperCase());
+    const type=existing?.type || sug.type || row.type || 'Ação';
+    const sector=existing?.sector || sug.sector || row.sector || '';
+    return {...row, type, sector};
+  });
+  render();
+}
+function importNotaReview(){
+  if(!S.noteReview) return;
+  const rows=S.noteReview.rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0);
+  if(!rows.length){ alert('Selecione pelo menos um lançamento válido para importar.'); return; }
+  applyNotaCorretoraTrades(rows.map(r=>({...r.sourceItem,ticker:r.ticker,operation:r.operation,qty:r.qty,price:r.price,type:r.type,sector:r.sector,product:r.product})),S.noteReview.noteKey,S.noteReview.noteNumber,S.noteReview.tradeDate);
+  S.noteReview=null;
+}
+function notaReviewSummary(rows){
+  const total=rows.filter(r=>r.include!==false).reduce((s,r)=>s+(Number(r.qty)||0)*(Number(r.price)||0),0);
+  const count=rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0).length;
+  return {total,count};
+}
+function notaReviewModal(){
+  const r=S.noteReview;
+  if(!r) return '';
+  const rows=r.rows.map((row,idx)=>{
+    const bad=!row.include || !row.ticker || Number(row.qty)<=0 || Number(row.price)<=0;
+    return `<tr class="${bad?'note-row-muted':''}">
+      <td style="text-align:center"><input type="checkbox" ${row.include!==false?'checked':''} onchange="setNotaReviewRow(${idx},'include',this.checked)"></td>
+      <td><input value="${esc(row.ticker)}" onchange="setNotaReviewRow(${idx},'ticker',this.value)"></td>
+      <td>
+        <select onchange="setNotaReviewRow(${idx},'operation',this.value)">
+          ${['compra','venda'].map(o=>`<option value="${o}" ${String(row.operation||'compra')===o?'selected':''}>${o==='compra'?'Compra':'Venda'}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select onchange="setNotaReviewRow(${idx},'type',this.value)">
+          ${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option ${String(row.type||'Ação')===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </td>
+      <td><input value="${esc(row.sector)}" onchange="setNotaReviewRow(${idx},'sector',this.value)"></td>
+      <td><input value="${esc(row.product)}" onchange="setNotaReviewRow(${idx},'product',this.value)"></td>
+      <td><input type="number" step="1" value="${esc(row.qty)}" onchange="setNotaReviewRow(${idx},'qty',this.value)"></td>
+      <td><input type="number" step="0.01" value="${esc(Number(row.price).toFixed(2))}" onchange="setNotaReviewRow(${idx},'price',this.value)"></td>
+      <td style="text-align:right;color:${bad?'#f87171':'#34d399'};font-weight:700">${fmt(Number(row.qty||0)*Number(row.price||0))}</td>
+    </tr>`;
+  }).join('');
+  const {total,count}=notaReviewSummary(r.rows);
+  const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
+  return `<div class="note-overlay" role="dialog" aria-modal="true">
+    <div class="note-modal">
+      <div class="note-head">
+        <div class="note-title">
+          <div>
+            <h3>🧾 Revisar nota da corretora</h3>
+            <p>Marque o que entra, corrija ticker/tipo se precisar e confirme só o que estiver certo. Assim a carteira aprende melhor a categoria de cada lançamento.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+            <button class="btn bgh" onclick="closeNotaReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importNotaReview()">Importar selecionados</button>
+          </div>
+        </div>
+        <div class="note-meta">
+          <span class="note-pill">Arquivo: ${esc(r.fileName||'nota')}</span>
+          <span class="note-pill">Data: ${esc(r.tradeDate||r.importDate||'—')}</span>
+          <span class="note-pill">Nota: ${esc(r.noteNumber||'—')}</span>
+          <span class="note-pill">Selecionados: ${count}</span>
+          <span class="note-pill">Total: ${fmt(total)}</span>
+        </div>
+      </div>
+      <div class="note-body">
+        <div class="note-actions">
+          <div class="left">
+            <button class="btn bgh" onclick="setNotaReviewAll(true)">Marcar todos</button>
+            <button class="btn bgh" onclick="setNotaReviewAll(false)">Desmarcar todos</button>
+            <button class="btn bgh" onclick="suggestNotaReviewTypes()">✨ Sugerir tipo</button>
+          </div>
+          <div class="right">
+            <span style="font-size:12px;color:#64748b">Linhas com subtotal, total ou sem dados úteis ficam fora por padrão.</span>
+          </div>
+        </div>
+        ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px">${warnings}</ul></div>`:''}
+        <div class="note-table-wrap">
+          <div class="ts">
+            <table class="note-table">
+              <thead>
+                <tr>
+                  <th>Usa?</th>
+                  <th>Ticker</th>
+                  <th>Op.</th>
+                  <th>Tipo</th>
+                  <th>Setor</th>
+                  <th>Linha da nota</th>
+                  <th>Qtd</th>
+                  <th>Preço</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>${rows||`<tr><td colspan="9" style="text-align:center;color:#64748b;padding:18px">Nenhum lançamento reconhecido.</td></tr>`}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="note-foot">
+          <div class="hint">A importação só grava as linhas marcadas. Isso evita que subtotal, totais e linhas ambíguas entrem na carteira.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bgh" onclick="closeNotaReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importNotaReview()">Importar selecionados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
 document.getElementById('b3-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   try{
@@ -903,6 +1398,25 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
     if(confirm(msg)) applyB3ImportedPositions(items,importDate);
     if(warnings.length) console.warn('Avisos importação B3:',warnings);
   }catch(err){ console.error(err); alert('Erro ao importar arquivo. Verifique o PDF/Excel e tente novamente.'); }
+  e.target.value='';
+});
+document.getElementById('nota-file').addEventListener('change',async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  try{
+    if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
+    const isCsv=/\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
+    const wb=isCsv
+      ? XLSX.read(await file.text(),{type:'string'})
+      : XLSX.read(await file.arrayBuffer(),{type:'array'});
+    const parsed=parseNotaCorretoraWorkbook(wb,file.name);
+    const {items,warnings,importDate,stats,noteKey,noteNumber,tradeDate}=parsed;
+    if(!items.length){
+      alert('Não encontrei lançamentos válidos na nota da corretora. Confira se o arquivo é uma nota de negociação/exportação da corretora no formato Excel.');
+      return;
+    }
+    openNotaReview({items,warnings,importDate,stats,noteKey,noteNumber,tradeDate},file.name);
+    if(warnings.length) console.warn('Avisos importação nota:',warnings);
+  }catch(err){ console.error(err); alert('Erro ao importar a nota da corretora. Verifique o arquivo e tente novamente.'); }
   e.target.value='';
 });
 
@@ -971,7 +1485,7 @@ const DY_REF = {
   // FIIs — Fundo de Fundos
   BCFF11:12.0,RBRF11:11.5,KFOF11:11.8,
   // ETFs renda
-  XFIX11:12.0,DIVD11:8.5,DIVO11:7.5,
+  XFIX11:12.0,DIVD11:8.5,DIVO11:7.5,BOVA11:6.5,SMAL11:5.8,IVVB11:4.5,HASH11:0,
   // Ações — Banco
   BBAS3:9.5,ITUB4:6.2,ITUB3:6.0,BBDC4:7.0,BBDC3:6.8,SANB11:7.5,BRSR6:8.0,
   // Ações — Energia elétrica
@@ -996,7 +1510,7 @@ const META={
   VALE3:['Ação','Mineração'],CSNA3:['Ação','Siderurgia'],GGBR4:['Ação','Siderurgia'],USIM5:['Ação','Siderurgia'],
   WEGE3:['Ação','Industrial'],ABEV3:['Ação','Bebidas'],VIVT3:['Ação','Telecom'],TIMS3:['Ação','Telecom'],
   BBSE3:['Ação','Seguros'],PSSA3:['Ação','Seguros'],CXSE3:['Ação','Seguros'],
-  BOVA11:['ETF','Ibovespa'],SMAL11:['ETF','Small Caps'],IVVB11:['ETF','Exterior'],HASH11:['ETF','Cripto'],DIVD11:['ETF','Dividendos'],DIVO11:['ETF','Dividendos'],XFIX11:['ETF','IFIX'],
+  BOVA11:['ETF','Ibovespa'],SMAL11:['ETF','Small Caps'],IVVB11:['ETF','Exterior'],HASH11:['ETF','Cripto'],DIVD11:['ETF','Dividendos'],DIVO11:['ETF','Dividendos'],XFIX11:['ETF','IFIX'],WRLD11:['ETF','Exterior'],B5P211:['ETF','Renda Fixa'],IMAB11:['ETF','Renda Fixa'],IRFM11:['ETF','Renda Fixa'],NASD11:['ETF','Exterior'],EURP11:['ETF','Exterior'],BTEC11:['ETF','Tecnologia'],TECK11:['ETF','Tecnologia'],QBTC11:['ETF','Cripto'],QETH11:['ETF','Cripto'],
   MXRF11:['FII','Papel'],VGIP11:['FII','Papel'],KNCR11:['FII','Papel'],KNIP11:['FII','Papel'],CPTS11:['FII','Papel'],RBRR11:['FII','Papel'],
   HGLG11:['FII','Logística'],XPLG11:['FII','Logística'],VILG11:['FII','Logística'],BTLG11:['FII','Logística'],LVBI11:['FII','Logística'],
   XPML11:['FII','Shopping'],VISC11:['FII','Shopping'],HSML11:['FII','Shopping'],MALL11:['FII','Shopping'],
@@ -1111,6 +1625,172 @@ function proventoHistoricoMensal(){
     const media=total/12;
     return { year, months, total, media };
   });
+}
+
+function rentBenchRate(name){
+  return Number(RENT_BENCH[String(name||'CDI').toUpperCase()] ?? RENT_BENCH.CDI);
+}
+function rentBenchSeries(length, bench='CDI'){
+  const rate=rentBenchRate(bench);
+  const out=[];
+  for(let i=0;i<Math.max(0,length);i++){
+    out.push(((Math.pow(1+rate/100,(i+1)/12)-1)*100));
+  }
+  return out;
+}
+function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
+  const txs=[...S.aportes]
+    .map(a=>({...a, _dt: parseAnyDate(a.date)}))
+    .filter(a=>a._dt)
+    .sort((a,b)=>a._dt-b._dt||((Number(a.id)||0)-(Number(b.id)||0)));
+  const provs=[...S.proventos]
+    .map(p=>({...p, _dt: parseAnyDate(p.date)}))
+    .filter(p=>p._dt&&Number(p.value)>0)
+    .sort((a,b)=>a._dt-b._dt||String(a.ticker||'').localeCompare(String(b.ticker||'')));
+  if(!txs.length && !provs.length){
+    return { points:[], view:[], bench:[], labels:[], months:[], years:[], current:null, prev12:null, totalMonths:0 };
+  }
+
+  const startDate=txs[0]?new Date(txs[0]._dt.getFullYear(),txs[0]._dt.getMonth(),1)
+    :new Date(provs[0]._dt.getFullYear(),provs[0]._dt.getMonth(),1);
+  const endDate=new Date();
+  const priceByTicker=new Map();
+  S.assets.forEach(a=>{
+    const tk=cleanAssetCode(a.ticker||'');
+    if(!tk) return;
+    priceByTicker.set(tk, Number(a.current_price)||Number(a.price)||0);
+  });
+  const typeSet=typeFilter==='all'?null:new Set([typeFilter]);
+  const holdings=new Map();
+  const points=[];
+  let txPos=0;
+  let provPos=0;
+  let provCum=0;
+  let cursor=new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  while(cursor<=endDate){
+    const monthEnd=new Date(cursor.getFullYear(), cursor.getMonth()+1, 0, 23, 59, 59, 999);
+    while(txPos<txs.length && txs[txPos]._dt<=monthEnd){
+      const tx=txs[txPos++];
+      const ticker=cleanAssetCode(tx.ticker||'');
+      if(!ticker) continue;
+      const type=String(tx.type || metaTicker(ticker).type || 'Ação');
+      if(typeSet && !typeSet.has(type)) continue;
+      const qty=Math.abs(Number(tx.qty)||0);
+      const price=Math.max(0, Number(tx.price)||0);
+      if(qty<=0) continue;
+      const op=String(tx.operation||tx.op||'compra').toLowerCase();
+      const cur=holdings.get(ticker)||{ticker, qty:0, cost:0, type, price:priceByTicker.get(ticker)||price};
+      if(op.includes('venda')){
+        const sellQty=Math.min(cur.qty, qty);
+        if(cur.qty>0 && sellQty>0){
+          const avg=cur.cost/cur.qty;
+          cur.cost=Math.max(0, cur.cost-(avg*sellQty));
+          cur.qty=Math.max(0, cur.qty-sellQty);
+        }
+      }else{
+        cur.qty += qty;
+        cur.cost += qty * price;
+      }
+      cur.type = type || cur.type || 'Ação';
+      cur.price = priceByTicker.get(ticker)||cur.price||price;
+      if(cur.qty<=0.0000001) holdings.delete(ticker);
+      else holdings.set(ticker, cur);
+    }
+    while(provPos<provs.length && provs[provPos]._dt<=monthEnd){
+      const p=provs[provPos++];
+      const pType=String(p.type || metaTicker(cleanAssetCode(p.ticker||'')).type || 'Ação');
+      if(typeSet && !typeSet.has(pType)) continue;
+      provCum += Number(p.value)||0;
+    }
+    const rows=[...holdings.values()].filter(h=>!typeSet || typeSet.has(String(h.type||'Ação')));
+    const costBasis=rows.reduce((s,h)=>s+(Number(h.cost)||0),0);
+    const currentValue=rows.reduce((s,h)=>{
+      const qty=Number(h.qty)||0;
+      const unitPrice=priceByTicker.get(h.ticker)||Number(h.price)|| (qty>0 ? (Number(h.cost)||0)/qty : 0);
+      return s + qty * unitPrice;
+    },0);
+    const cumReturn=costBasis>0 ? (((currentValue + provCum - costBasis)/costBasis)*100) : 0;
+    const delta=points.length ? cumReturn - points[points.length-1].cumReturn : cumReturn;
+    points.push({
+      key:`${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}`,
+      year:cursor.getFullYear(),
+      month:cursor.getMonth(),
+      label:cursor.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'}),
+      costBasis,
+      currentValue,
+      proventos:provCum,
+      cumReturn,
+      delta
+    });
+    cursor.setMonth(cursor.getMonth()+1);
+  }
+
+  const totalMonths = points.length;
+  const periodCount = period==='all' ? totalMonths : Math.max(3, Number(period)||12);
+  const view = totalMonths > periodCount ? points.slice(-periodCount) : points.slice();
+  const benchSeries = rentBenchSeries(view.length, bench);
+  const current = view[view.length-1] || points[points.length-1] || null;
+  const prev12 = points.length>12 ? points[points.length-13] : null;
+  const firstView = view[0] || null;
+  const currentBench = benchSeries[benchSeries.length-1] || 0;
+  const return12m = current && prev12 ? current.cumReturn - prev12.cumReturn : current ? current.cumReturn : 0;
+  const lastMonth = current ? current.delta : 0;
+  const aboveBench = current ? current.cumReturn - currentBench : 0;
+  const yearsMap = new Map();
+  points.forEach(p=>{
+    if(!yearsMap.has(p.year)) yearsMap.set(p.year, Array(12).fill(null));
+    yearsMap.get(p.year)[p.month] = p;
+  });
+  const years = [...yearsMap.entries()].sort((a,b)=>b[0]-a[0]).map(([year, months])=>{
+    const filled=months.filter(Boolean);
+    const annual=filled.reduce((s,p)=>s+p.delta,0);
+    const acum=filled.length ? filled[filled.length-1].cumReturn : 0;
+    return { year, months, annual, acum };
+  });
+  return { points, view, benchSeries, current, prev12, firstView, currentBench, return12m, lastMonth, aboveBench, years, totalMonths };
+}
+
+function lineChart(series, labels){
+  const width=1080, height=360;
+  const padL=54, padR=20, padT=18, padB=34;
+  const all=series.flatMap(s=>s.values.map(v=>Number(v)||0));
+  if(!all.length) return '<div class="es" style="padding:36px 18px">Sem dados suficientes para desenhar o gráfico.</div>';
+  let minY=Math.min(0,...all);
+  let maxY=Math.max(0,...all);
+  if(minY===maxY){ maxY=minY+1; }
+  const span=maxY-minY;
+  const extra=Math.max(2, span*0.12);
+  minY-=extra; maxY+=extra;
+  const xStep=(width-padL-padR)/Math.max(1, labels.length-1);
+  const yAt=v=>height-padB-(((v-minY)/(maxY-minY))*(height-padT-padB));
+  const xAt=i=>padL + i*xStep;
+  const grid=[];
+  for(let i=0;i<=5;i++){
+    const y=padT + ((height-padT-padB)/5)*i;
+    const value=maxY - ((maxY-minY)/5)*i;
+    grid.push(`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${width-padR}" y2="${y.toFixed(1)}" stroke="#161e2e" stroke-width="1"/>`);
+    grid.push(`<text x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="#64748b" font-size="10">${fmtP(value)}</text>`);
+  }
+  const paths=series.map((s,idx)=>{
+    const color=s.color||CLRS[idx%CLRS.length];
+    const values=s.values||[];
+    if(!values.length) return '';
+    const pts=values.map((v,i)=>`${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`);
+    const path=`M ${pts.join(' L ')}`;
+    const area=`M ${xAt(0).toFixed(1)},${(height-padB).toFixed(1)} L ${pts.join(' L ')} L ${xAt(values.length-1).toFixed(1)},${(height-padB).toFixed(1)} Z`;
+    return `
+      <path d="${area}" fill="${s.fill||'none'}" opacity="${s.fill?1:0}"/>
+      <path d="${path}" fill="none" stroke="${color}" stroke-width="${s.width||2.2}" stroke-linecap="round" stroke-linejoin="round"/>
+      ${s.points===false?'':values.map((v,i)=>`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.5" fill="${color}" stroke="#090c15" stroke-width="1"/>`).join('')}
+    `;
+  }).join('');
+  const labelStep=Math.max(1, Math.ceil(labels.length/8));
+  const xLabels=labels.map((l,i)=>`<text x="${xAt(i).toFixed(1)}" y="${height-10}" text-anchor="middle" fill="${i%labelStep===0||i===labels.length-1?'#64748b':'transparent'}" font-size="10">${esc(l)}</text>`).join('');
+  return `<svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" style="display:block;overflow:visible">
+    ${grid.join('')}
+    ${paths}
+    ${xLabels}
+  </svg>`;
 }
 
 function syncAssetsFromAportes(showMsg=false){
@@ -1405,7 +2085,7 @@ async function fetchAutoProventosGratis(){
 
 // PIE SVG
 // ══════════════════════════════════════
-function pie(data){
+function pie(data, colors=CLRS){
   const tot=data.reduce((s,d)=>s+d.value,0);
   if(!tot) return'<div class="di" style="text-align:center;padding:24px;font-size:13px">Sem dados</div>';
   let p='',a=-Math.PI/2;
@@ -1413,10 +2093,35 @@ function pie(data){
     const ang=(d.value/tot)*2*Math.PI;
     const[x1,y1]=[80+68*Math.cos(a),80+68*Math.sin(a)];
     const[x2,y2]=[80+68*Math.cos(a+ang),80+68*Math.sin(a+ang)];
-    p+=`<path d="M80,80 L${x1.toFixed(1)},${y1.toFixed(1)} A68,68 0 ${ang>Math.PI?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${CLRS[i%CLRS.length]}" stroke="#07090f" stroke-width="2"/>`;
+    p+=`<path d="M80,80 L${x1.toFixed(1)},${y1.toFixed(1)} A68,68 0 ${ang>Math.PI?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${colors[i%colors.length]}" stroke="#07090f" stroke-width="2"/>`;
     a+=ang;
   });
-  return`<svg viewBox="0 0 160 160" width="140" height="140" style="display:block;margin:0 auto">${p}</svg>`;
+  return`<svg viewBox="0 0 160 160" width="160" height="160" style="display:block;margin:0 auto;overflow:visible">
+    ${p}
+    <circle cx="80" cy="80" r="34" fill="#0d111e" stroke="#111828" stroke-width="2"></circle>
+    <text x="80" y="76" text-anchor="middle" fill="#e2eaf6" font-size="14" font-weight="700">${data.length}</text>
+    <text x="80" y="92" text-anchor="middle" fill="#64748b" font-size="9">ativos</text>
+  </svg>`;
+}
+function setDashPeriod(period){
+  S.dashPeriod=Math.max(3, Number(period)||12);
+  save(); render();
+}
+function setDashType(type){
+  S.dashType=String(type||'all');
+  save(); render();
+}
+function setRentPeriod(period){
+  S.rentPeriod=String(period||'all');
+  save(); render();
+}
+function setRentType(type){
+  S.rentType=String(type||'all');
+  save(); render();
+}
+function setRentBench(bench){
+  S.rentBench=String(bench||'CDI');
+  save(); render();
 }
 
 // ══════════════════════════════════════
@@ -1429,7 +2134,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
+const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -1451,7 +2156,8 @@ const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','
     </div>
   </div>
   <div class="tabs">${TABS.map(([k,l])=>`<button class="tab${S.tab===k?' on':''}" onclick="go('${k}')">${l}</button>`).join('')}</div>
-  <div class="wrap">${content()}</div>`;
+  <div class="wrap">${content()}</div>
+  ${S.noteReview?notaReviewModal():''}`;
 }
 function content(){
   if(S.tab==='dashboard') return dash();
@@ -1459,6 +2165,7 @@ function content(){
   if(S.tab==='aportes')   return apTab();
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
+  if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
   if(S.tab==='ia')        return iaTab();
   return'';
@@ -1469,27 +2176,140 @@ function content(){
 // ══════════════════════════════════════
 function dash(){
   const{tI,tC,tG,tGP,mD,aD,avgDY}=cx();
+  const DCLR=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
+  const periodOpts=[3,6,12,24];
   const byT={};
   S.assets.forEach(a=>{const v=a.qty*a.current_price;byT[a.type]=(byT[a.type]||0)+v;});
   const ad=Object.entries(byT).map(([n,v])=>({name:n,value:v}));
-  const p=pie(ad);
-  const leg=ad.map((d,i)=>`<div class="pli"><div class="pd" style="background:${CLRS[i%CLRS.length]}"></div><span>${esc(d.name)} ${tC>0?((d.value/tC)*100).toFixed(0):'0'}%</span></div>`).join('');
-  const sd=[...S.assets].sort((a,b)=>((b.qty*b.current_price*(b.dy/100))/12)-((a.qty*a.current_price*(a.dy/100))/12));
-  const maxD=sd.length?Math.max(...sd.map(a=>(a.qty*a.current_price*(a.dy/100))/12)):0;
-  const bars=sd.map((a,i)=>{const dm=(a.qty*a.current_price*(a.dy/100))/12;const pct=maxD>0?(dm/maxD)*100:0;
-    return`<div class="db"><div class="dbl">${esc(a.ticker)}</div><div class="dbt"><div class="dbf" style="width:${pct.toFixed(0)}%;background:${CLRS[i%CLRS.length]}"></div></div><div class="dbv am">${fmt(dm)}</div></div>`;
-  }).join('');
+  const p=pie(ad,DCLR);
+  const leg=ad.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${tC>0?((d.value/tC)*100).toFixed(1):'0.0'}%</span></div>`).join('');
   const rec=proventoStats();
-  return`<div class="cards">
-    <div class="card al" style="border-left-color:#818cf8"><div class="cl">💼 Patrimônio</div><div class="cv pu">${fmt(tC)}</div><div class="cs">Investido: ${fmt(tI)}</div></div>
-    <div class="card al" style="border-left-color:${tG>=0?'#34d399':'#f87171'}"><div class="cl">📈 Resultado</div><div class="cv" style="color:${tG>=0?'#34d399':'#f87171'}">${fmt(tG)}</div><div class="cs">${fmtP(tGP)}</div></div>
-    <div class="card al" style="border-left-color:#fbbf24"><div class="cl">💰 Div. projetado/mês</div><div class="cv am">${fmt(mD)}</div><div class="cs">Anual: ${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#60a5fa"><div class="cl">% DY médio</div><div class="cv bl">${avgDY.toFixed(2)}%</div><div class="cs">${S.assets.length} ativos · ${S.aportes.length} aportes</div></div>
-    <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no ano</div><div class="cv gn">${fmt(rec.ano)}</div><div class="cs">Total histórico: ${fmt(rec.total)}</div></div>
+  const twelveMonthsAgo=new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-(Math.max(3,Number(S.dashPeriod)||12)-1));
+  twelveMonthsAgo.setDate(1);
+  const movMap=new Map();
+  S.aportes.forEach(a=>{
+    const d=parseAnyDate(a.date);
+    if(!d||d<twelveMonthsAgo) return;
+    const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(!movMap.has(mk)) movMap.set(mk,{key:mk,label:d.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'}),value:0});
+    const op=(a.operation||a.op||'compra').toLowerCase();
+    const signed=(Math.abs(Number(a.qty)||0)*Number(a.price||0))*(op==='venda'?-1:1);
+    movMap.get(mk).value += signed;
+  });
+  const movSeries=[...movMap.values()].sort((a,b)=>a.key.localeCompare(b.key));
+  let cum=0;
+  const evo=movSeries.map(v=>{cum+=v.value; return {...v,cum};});
+  const maxEvo=Math.max(...evo.map(v=>v.cum), tC, 1);
+  const evoBars=evo.length
+    ? evo.map((v,i)=>`<div class="db"><div class="dbl">${esc(v.label)}</div><div class="dbt"><div class="dbf" style="width:${Math.max(4,(v.cum/maxEvo)*100).toFixed(0)}%;background:${DCLR[i%DCLR.length]}"></div></div><div class="dbv am">${fmt(v.cum)}</div></div>`).join('')
+    : '<div class="di" style="font-size:13px;padding:20px 0;text-align:center">Registre compras na aba 💰 Aportes.</div>';
+  const total12=(S.proventos||[]).reduce((s,p)=>{
+    const d=parseAnyDate(p.date);
+    if(!d) return s;
+    return d>=twelveMonthsAgo ? s + (Number(p.value)||0) : s;
+  },0);
+  const divAno=rec.ano;
+  const lucroCapital=tG;
+  const dashAssets=S.dashType==='all' ? S.assets : S.assets.filter(a=>(a.type||metaTicker(a.ticker).type||'Ação')===S.dashType);
+  const byTypeDash={};
+  dashAssets.forEach(a=>{const v=a.qty*a.current_price;byTypeDash[a.type]=(byTypeDash[a.type]||0)+v;});
+  const adDash=Object.entries(byTypeDash).map(([n,v])=>({name:n,value:v}));
+  const dashTotal=adDash.reduce((s,d)=>s+d.value,0);
+  const pDash=pie(adDash,DCLR);
+  const legDash=adDash.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${dashTotal>0?((d.value/dashTotal)*100).toFixed(1):'0.0'}%</span></div>`).join('');
+  return`<div class="cards dashboard-hero">
+    <div class="card al dash-card" style="border-left-color:#818cf8">
+      <div class="dash-head">
+        <div class="dash-ico">💼</div>
+        <div>
+          <div class="dash-kicker">Patrimônio total</div>
+          <div class="dash-name">Resumo atual da carteira</div>
+        </div>
+      </div>
+      <div class="dash-value">
+        <div class="cv pu">${fmt(tC)}</div>
+        <div class="cs">Valor investido: ${fmt(tI)}</div>
+      </div>
+      <div class="dash-foot">Base para acompanhar o tamanho real da carteira e o avanço dos aportes.</div>
+    </div>
+    <div class="card al dash-card" style="border-left-color:${tG>=0?'#34d399':'#f87171'}">
+      <div class="dash-head">
+        <div class="dash-ico">📈</div>
+        <div>
+          <div class="dash-kicker">Lucro total</div>
+          <div class="dash-name">Ganho de capital + renda recebida</div>
+        </div>
+      </div>
+      <div class="dash-value">
+        <div class="cv" style="color:${tG>=0?'#34d399':'#f87171'}">${fmt(lucroCapital)}</div>
+        <div class="cs">Proventos recebidos: ${fmt(rec.total)}</div>
+      </div>
+      <div class="dash-foot">Mostra quanto a carteira rendeu somando valorização e dinheiro que caiu na conta.</div>
+    </div>
+    <div class="card al dash-card" style="border-left-color:#fbbf24">
+      <div class="dash-head">
+        <div class="dash-ico">💵</div>
+        <div>
+          <div class="dash-kicker">Proventos recebidos (12M)</div>
+          <div class="dash-name">Entradas dos últimos 12 meses</div>
+        </div>
+      </div>
+      <div class="dash-value">
+        <div class="cv am">${fmt(total12)}</div>
+        <div class="cs">12 meses: ${fmt(total12)} · Total histórico: ${fmt(rec.total)}</div>
+      </div>
+      <div class="dash-foot">Ideal para enxergar a evolução da renda passiva sem precisar abrir outras abas.</div>
+    </div>
+    <div class="card al dash-card" style="border-left-color:#60a5fa">
+      <div class="dash-head">
+        <div class="dash-ico">📊</div>
+        <div>
+          <div class="dash-kicker">Variação / Rentabilidade</div>
+          <div class="dash-name">Retorno e eficiência</div>
+        </div>
+      </div>
+      <div class="dash-value">
+        <div class="cv bl">${fmtP(tGP)}</div>
+        <div class="cs">${avgDY.toFixed(2)}% DY médio · ${S.assets.length} ativos</div>
+      </div>
+      <div class="dash-foot">Leitura rápida do desempenho e da força da carteira no momento.</div>
+    </div>
   </div>
-  <div class="cg">
-    <div class="cc"><div class="ct">Alocação por tipo</div>${p}<div class="pleg">${leg}</div></div>
-    <div class="cc"><div class="ct">Dividendos mensais projetados</div>${bars||'<div class="di" style="font-size:13px;padding:20px 0;text-align:center">Registre compras na aba 💰 Aportes.</div>'}</div>
+  <div class="cg dashboard-grid">
+    <div class="cc dashboard-panel">
+      <div class="sh" style="margin-bottom:12px">
+        <div>
+          <div class="ct">Evolução do capital aplicado</div>
+          <div class="mu" style="font-size:12px">Histórico acumulado dos aportes líquidos dos últimos ${S.dashPeriod} meses.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <div class="dash-filters">
+            ${periodOpts.map(p=>`<button class="dash-chip ${Number(S.dashPeriod)===p?'on':''}" onclick="setDashPeriod(${p})">${p}M</button>`).join('')}
+          </div>
+          <div class="note-pill">Carteira: ${fmt(tC)}</div>
+        </div>
+      </div>
+      ${evoBars}
+    </div>
+    <div class="cc dashboard-panel">
+      <div class="sh" style="margin-bottom:12px">
+        <div>
+          <div class="ct">Ativos na carteira</div>
+          <div class="mu" style="font-size:12px">Composição por tipo de ativo.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <div class="dash-filters">
+            ${['all','Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<button class="dash-chip ${String(S.dashType||'all')===t?'on':''}" onclick="setDashType('${t}')">${t==='all'?'Todos':t}</button>`).join('')}
+          </div>
+          <div class="note-pill">${dashAssets.length} ativos</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap">
+        <div style="flex:none">${pDash}</div>
+        <div class="dashboard-legend">${legDash||'<div class="di" style="font-size:13px;padding:20px 0;text-align:center">Cadastre ativos para ver a composição.</div>'}</div>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -1674,37 +2494,78 @@ function apTab(){
     <div><div class="cl">Líquido</div><div style="font-size:18px;font-weight:700;color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div></div>
     <div><div class="cl">Operações</div><div style="font-size:18px;font-weight:700">${S.aportes.length}</div></div>
   </div>`:'';
-  const rows=filtered.map(a=>{const mm=metaTicker(a.ticker),m={type:a.type||a.asset_type||mm.type,sector:a.sector||a.asset_sector||mm.sector},op=(a.operation||a.op||'compra').toLowerCase(),isV=op==='venda';
-    return`<tr>
-      <td class="mu">${esc(a.date)}</td>
-      <td><span class="bdg" style="background:${isV?'rgba(248,113,113,.08)':'rgba(52,211,153,.08)'};color:${isV?'#f87171':'#34d399'};border:1px solid ${isV?'rgba(248,113,113,.22)':'rgba(52,211,153,.22)'}">${isV?'Venda':'Compra'}</span></td>
-      <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td>
-      <td><span class="bdg ${bdg(m.type)}">${esc(m.type)}</span></td>
-      <td class="mu">${esc(m.sector||'—')}</td>
-      <td>${Math.abs(Number(a.qty)||0)}</td>
-      <td>R$ ${Number(a.price).toFixed(2)}</td>
-      <td class="${isV?'rd':'gn'}" style="font-weight:700">${isV?'-':'+'}${fmt(Math.abs(a.qty)*a.price)}</td>
-      <td class="mu">${esc(a.decision||'—')}</td>
-      <td><div style="display:flex;gap:6px">
-        <button class="bi" onclick="edP(${a.id})">✏️</button>
-        <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
-      </div></td>
-    </tr>`;
+  const grouped=new Map();
+  filtered.forEach(a=>{
+    const mm=metaTicker(a.ticker),type=(a.type||a.asset_type||mm.type||'Ação').trim();
+    if(!grouped.has(type)) grouped.set(type,[]);
+    grouped.get(type).push(a);
+  });
+  const order=['Ação','FII','ETF','Renda Fixa','BDR','Crypto'];
+  const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
+  const sections=groupNames.map((type,idx)=>{
+    const items=[...grouped.get(type)].sort((a,b)=>{
+      const da=parseAnyDate(a.date)?.getTime()||0,db=parseAnyDate(b.date)?.getTime()||0;
+      return db-da||String(a.ticker||'').localeCompare(String(b.ticker||''))||((Number(b.id)||0)-(Number(a.id)||0));
+    });
+    const gCompras=items.filter(a=>(a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(Number(a.qty)||0)*Number(a.price||0),0);
+    const gVendas=items.filter(a=>(a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(Number(a.qty)||0)*Number(a.price||0),0);
+    const gLiquido=gCompras-gVendas;
+    const gTickers=[...new Set(items.map(a=>String(a.ticker||'').toUpperCase()))];
+    const rows=items.map(a=>{
+      const mm=metaTicker(a.ticker),m={type:a.type||a.asset_type||mm.type,sector:a.sector||a.asset_sector||mm.sector},op=(a.operation||a.op||'compra').toLowerCase(),isV=op==='venda';
+      return`<tr>
+        <td class="mu">${esc(a.date)}</td>
+        <td><span class="bdg" style="background:${isV?'rgba(248,113,113,.08)':'rgba(52,211,153,.08)'};color:${isV?'#f87171':'#34d399'};border:1px solid ${isV?'rgba(248,113,113,.22)':'rgba(52,211,153,.22)'}">${isV?'Venda':'Compra'}</span></td>
+        <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td>
+        <td><span class="bdg ${bdg(m.type)}">${esc(m.type)}</span></td>
+        <td class="mu">${esc(m.sector||'—')}</td>
+        <td>${Math.abs(Number(a.qty)||0)}</td>
+        <td>R$ ${Number(a.price).toFixed(2)}</td>
+        <td class="${isV?'rd':'gn'}" style="font-weight:700">${isV?'-':'+'}${fmt(Math.abs(a.qty)*a.price)}</td>
+        <td class="mu">${esc(a.decision||'—')}</td>
+        <td><div style="display:flex;gap:6px">
+          <button class="bi" onclick="edP(${a.id})">✏️</button>
+          <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+    return`<details class="ag"${idx===0?' open':''}>
+      <summary>
+        <div class="ag-left">
+          <div class="ag-ico">${tipoIcon(type)}</div>
+          <div>
+            <div class="ag-name">${esc(type)}</div>
+            <div class="ag-sub">${items.length} operações · ${gTickers.length} ativos · ${fmt(gLiquido)}</div>
+          </div>
+        </div>
+        <div class="ag-stats">
+          <div class="ag-stat"><div class="ag-k">Operações</div><div class="ag-v">${items.length}</div></div>
+          <div class="ag-stat"><div class="ag-k">Comprado</div><div class="ag-v">${fmt(gCompras)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Vendido</div><div class="ag-v">${fmt(gVendas)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Líquido</div><div class="ag-v" style="color:${gLiquido>=0?'#34d399':'#f87171'}">${fmt(gLiquido)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Ativos</div><div class="ag-v">${gTickers.length}</div></div>
+        </div>
+        <div class="ag-open">⌄</div>
+      </summary>
+      <div class="ag-body">
+        <div class="ag-table">
+          <div class="tw"><div class="ts"><table>
+            <thead><tr><th>Data</th><th>Op.</th><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Preço</th><th>Total</th><th>Decisão</th><th></th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#2e3f58">Nenhum lançamento nesta categoria.</td></tr>'}</tbody>
+          </table></div></div>
+        </div>
+      </div>
+    </details>`;
   }).join('');
-  const rowsHtml=filtered.length
-    ? rows
-    : q
-      ? '<tr><td colspan="10" style="text-align:center;padding:20px;color:#2e3f58">Nenhum lançamento encontrado para essa busca.</td></tr>'
-      : '<tr><td colspan="10" style="text-align:center;padding:20px;color:#2e3f58">Nenhuma operação registrada ainda.</td></tr>';
   return`<div class="sh">
     <div>
       <div class="st">Histórico de aportes</div>
       <div class="mu" style="font-size:12px;margin-top:4px">Compras, vendas, ETFs e renda fixa atualizam automaticamente a aba Ativos.</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end">
-      <div style="display:flex;align-items:center;gap:8px;background:#0d111e;border:1px solid #161e2e;border-radius:12px;padding:7px 10px;min-width:min(100%,300px)">
+      <div style="display:flex;align-items:center;gap:8px;background:#0d111e;border:1px solid #161e2e;border-radius:12px;padding:7px 10px;min-width:min(100%,380px);flex:1 1 360px;max-width:620px">
         <span style="color:#64748b">🔎</span>
-        <input value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar por ticker, tipo, setor ou data" style="border:0;background:transparent;padding:0;min-width:0">
+        <input value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar por ticker, tipo, setor ou data" spellcheck="false" autocomplete="off" style="border:0;background:transparent;padding:0;min-width:0;flex:1 1 auto;width:100%">
         ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
       </div>
       <button class="btn bgh" onclick="toggleAportesHistory()">${S.apHistoryOpen===false?'Mostrar histórico':'Ocultar histórico'}</button>
@@ -1717,10 +2578,7 @@ function apTab(){
     ?`<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">📁 Histórico recolhido. Use <b>Mostrar histórico</b> para ver as operações ou a lupa para filtrar um ativo específico.</div>`
     :!S.aportes.length
     ?`<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">💰<br><br>Nenhuma operação registrada ainda.</div>`
-    :`${q?`<div class="mu" style="margin:6px 0 10px 0;font-size:12px">Mostrando ${filtered.length} de ${S.aportes.length} operação(ões).</div>`:''}<div class="tw"><div class="ts"><table>
-      <thead><tr><th>Data</th><th>Op.</th><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Preço</th><th>Total</th><th>Decisão</th><th></th></tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table></div></div>`}`;
+    :`${q?`<div class="mu" style="margin:6px 0 10px 0;font-size:12px">Mostrando ${filtered.length} de ${S.aportes.length} operação(ões).</div>`:''}<div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Nenhum lançamento encontrado para essa busca.</div>'}</div>`}`;
 }
 
 // ══════════════════════════════════════
@@ -2090,6 +2948,131 @@ function metasTab(){
   `;
 }
 
+function rentabilidadeTab(){
+  const bench=String(S.rentBench||'CDI');
+  const type=String(S.rentType||'all');
+  const period=String(S.rentPeriod||'all');
+  const data=rentabilityHistory(type, period, bench);
+  const current=data.current || {cumReturn:0, delta:0, costBasis:0, currentValue:0, proventos:0};
+  const benchNow=data.currentBench || 0;
+  const gap=current.cumReturn - benchNow;
+  const return12m=data.return12m || 0;
+  const currentMonth=current.delta || 0;
+  const sideCards=[
+    {
+      title:'Rentabilidade total',
+      value:fmtP(current.cumReturn||0),
+      foot:`${gap>=0?'Acima':'Abaixo'} do ${bench}: ${fmtP(gap||0)}`,
+      color:'#34d399',
+      icon:'📈'
+    },
+    {
+      title:'Últimos 12 meses',
+      value:fmtP(return12m||0),
+      foot:'Variação acumulada no recorte de 12 meses',
+      color:'#60a5fa',
+      icon:'🗓️'
+    },
+    {
+      title:'Último mês',
+      value:fmtP(currentMonth||0),
+      foot:'Mudança estimada no fechamento do mês',
+      color:(currentMonth||0)>=0?'#34d399':'#f87171',
+      icon:'📅'
+    },
+  ];
+
+  const chartLabels=(data.view.length?data.view:data.points).map(p=>p.label);
+  const chartSeries=[
+    {name:'Carteira', values:(data.view.length?data.view:data.points).map(p=>p.cumReturn||0), color:'#8da2ff', fill:'rgba(141,162,255,.12)', width:2.5, points:false},
+    {name:bench, values:data.benchSeries.length?data.benchSeries:rentBenchSeries((data.view.length?data.view:data.points).length, bench), color:'#fbbf24', width:2.2, points:false},
+  ];
+
+  const yearsRows=(data.years||[]).map(row=>{
+    const cells=row.months.map((p,idx)=>{
+      if(!p) return `<td style="color:#2e3f58">-</td>`;
+      const v=p.delta||0;
+      return `<td class="${v>=0?'gn':'rd'}" style="font-weight:${Math.abs(v)>0.005?700:500}">${fmtP(v)}</td>`;
+    }).join('');
+    return `<tr>
+      <td style="font-weight:800;color:#e2eaf6">${row.year}</td>
+      ${cells}
+      <td style="font-weight:800;color:#e2eaf6">${fmtP(row.annual||0)}</td>
+      <td style="font-weight:800;color:${(row.acum||0)>=0?'#34d399':'#f87171'}">${fmtP(row.acum||0)}</td>
+    </tr>`;
+  }).join('');
+
+  const chartLegend=`<div class="pleg" style="margin-top:0">
+    <div class="pli"><span class="pd" style="background:#8da2ff"></span>Carteira</div>
+    <div class="pli"><span class="pd" style="background:#fbbf24"></span>${esc(bench)} estimado</div>
+    <div class="pli"><span class="pd" style="background:#64748b"></span>Baseado na posição atual</div>
+  </div>`;
+
+  return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">📈 Rentabilidade</div>
+  <div class="mu" style="font-size:13px;margin-bottom:18px">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. O cálculo usa os lançamentos e a posição atual cadastrada.</div>
+
+  <div class="rent-layout">
+    <div class="rent-side">
+      ${sideCards.map(c=>`<div class="card al dash-card rent-card" style="border-left-color:${c.color}">
+        <div class="dash-head">
+          <div class="dash-ico">${c.icon}</div>
+          <div>
+            <div class="dash-kicker">${esc(c.title)}</div>
+          </div>
+        </div>
+        <div class="dash-value">
+          <div class="cv" style="color:${c.color}">${c.value}</div>
+        </div>
+        <div class="dash-foot">${esc(c.foot)}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="cc rent-main">
+      <div class="sh" style="margin-bottom:12px">
+        <div>
+          <div class="st">Rentabilidade comparada com índices</div>
+          <div class="mu" style="font-size:12px">Histórico estimado a partir dos dados lançados na carteira.</div>
+        </div>
+        <div class="rent-filters">
+          <select onchange="setRentPeriod(this.value)">
+            <option value="all" ${period==='all'?'selected':''}>Desde o início</option>
+            <option value="12" ${String(period)==='12'?'selected':''}>12M</option>
+            <option value="24" ${String(period)==='24'?'selected':''}>24M</option>
+            <option value="36" ${String(period)==='36'?'selected':''}>36M</option>
+            <option value="60" ${String(period)==='60'?'selected':''}>60M</option>
+          </select>
+          <select onchange="setRentType(this.value)">
+            ${['all','Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option value="${esc(t)}" ${type===t?'selected':''}>${t==='all'?'Todos os tipos':t}</option>`).join('')}
+          </select>
+          <select onchange="setRentBench(this.value)">
+            ${Object.keys(RENT_BENCH).map(b=>`<option value="${esc(b)}" ${bench===b?'selected':''}>${esc(b)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      ${chartLegend}
+      <div class="rent-chartbox">
+        ${data.points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
+      </div>
+      <div class="mu" style="font-size:12px;margin-top:8px">Dica: a comparação com índice é uma referência estimada, usada para leitura visual da carteira. Para índices históricos exatos, podemos conectar uma fonte externa depois.</div>
+    </div>
+  </div>
+
+  <div class="cc" style="margin-top:14px">
+    <div class="sh" style="margin-bottom:10px">
+      <div>
+        <div class="st">Rentabilidade mensal</div>
+        <div class="mu" style="font-size:12px">Visão consolidada por ano e por mês.</div>
+      </div>
+      <div class="note-pill">${data.totalMonths} meses analisados</div>
+    </div>
+    <div class="tw"><div class="ts"><table class="hist-monthly rent-table">
+      <thead><tr><th>Ano</th>${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map(m=>`<th>${m}</th>`).join('')}<th>Retorno anual</th><th>Acumulado</th></tr></thead>
+      <tbody>${yearsRows||'<tr><td colspan="14" style="text-align:center;padding:20px;color:#2e3f58">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
+    </table></div></div>
+  </div>`;
+}
+
 function ajudarTab(){
   return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">⚖️ Sugestão de aporte</div>
   <div class="mu" style="font-size:13px;margin-bottom:16px">Digite o valor do próximo aporte. Analisamos peso atual, % ideal, rentabilidade e DY para sugerir onde aportar.</div>
@@ -2246,10 +3229,12 @@ function toggleAportesHistory(){
 }
 function setAporteSearch(v){
   S.apSearch = String(v||'');
-  render();
+  clearTimeout(S.apSearchTimer);
+  S.apSearchTimer = setTimeout(()=>render(),180);
 }
 function clearAporteSearch(){
   S.apSearch = '';
+  clearTimeout(S.apSearchTimer);
   render();
 }
 
