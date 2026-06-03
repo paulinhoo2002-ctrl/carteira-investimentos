@@ -1817,6 +1817,15 @@ function proventoStats(){
   });
   return{mes,ano,total};
 }
+function lucroTotalComProventos(){
+  const {tG}=cx();
+  const rec=proventoStats();
+  return tG + rec.total;
+}
+function retornoTotalComProventosPct(){
+  const {tI}=cx();
+  return tI>0 ? (lucroTotalComProventos()/tI)*100 : 0;
+}
 
 // ══════════════════════════════════════
 // SYNC ATIVOS ← APORTES
@@ -2436,6 +2445,7 @@ function dash(){
   const p=pie(ad,DCLR);
   const leg=ad.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${tC>0?((d.value/tC)*100).toFixed(1):'0.0'}%</span></div>`).join('');
   const rec=proventoStats();
+  const lucroTotal=lucroTotalComProventos();
   const twelveMonthsAgo=new Date();
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-(Math.max(3,Number(S.dashPeriod)||12)-1));
   twelveMonthsAgo.setDate(1);
@@ -2462,7 +2472,6 @@ function dash(){
     return d>=twelveMonthsAgo ? s + (Number(p.value)||0) : s;
   },0);
   const divAno=rec.ano;
-  const lucroCapital=tG;
   const dashAssets=S.dashType==='all' ? S.assets : S.assets.filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')===S.dashType);
   const byTypeDash={};
   dashAssets.forEach(a=>{const v=a.qty*a.current_price;byTypeDash[a.type]=(byTypeDash[a.type]||0)+v;});
@@ -2485,7 +2494,7 @@ function dash(){
       </div>
       <div class="dash-foot">Base para acompanhar o tamanho real da carteira e o avanço dos aportes.</div>
     </div>
-    <div class="card al dash-card" style="border-left-color:${tG>=0?'#34d399':'#f87171'}">
+    <div class="card al dash-card" style="border-left-color:${lucroTotal>=0?'#34d399':'#f87171'}">
       <div class="dash-head">
         <div class="dash-ico">📈</div>
         <div>
@@ -2494,8 +2503,8 @@ function dash(){
         </div>
       </div>
       <div class="dash-value">
-        <div class="cv" style="color:${tG>=0?'#34d399':'#f87171'}">${fmt(lucroCapital)}</div>
-        <div class="cs">Proventos recebidos: ${fmt(rec.total)}</div>
+        <div class="cv" style="color:${lucroTotal>=0?'#34d399':'#f87171'}">${fmt(lucroTotal)}</div>
+        <div class="cs">Ganho de capital: ${fmt(tG)} · Proventos recebidos: ${fmt(rec.total)}</div>
       </div>
       <div class="dash-foot">Mostra quanto a carteira rendeu somando valorização e dinheiro que caiu na conta.</div>
     </div>
@@ -3620,7 +3629,7 @@ function clearAporteSearch(){
 }
 
 function getAI(){
-  const{tC,tGP,mD,aD,avgDY}=cx();
+  const{tC,tI,tGP,mD,aD,avgDY,tG}=cx();
   const rec=proventoStats();
   if(!S.assets.length){ S.aiText='Cadastre seus ativos primeiro para gerar uma análise.'; render(); return; }
   const porTipo={},por=S.assets.map(a=>({ticker:a.ticker,type:a.type,valor:a.qty*a.current_price,divMes:(a.qty*a.current_price*(a.dy/100))/12,dy:Number(a.dy)||0,var:a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0})).sort((a,b)=>b.valor-a.valor);
@@ -3629,9 +3638,12 @@ function getAI(){
   const fiisPct=tC>0?((porTipo['FII']||0)/tC)*100:0,acoesPct=tC>0?((porTipo['Ação']||0)/tC)*100:0;
   const divGoal=Number(S.divGoal)||0,faltaDiv=Math.max(0,divGoal-mD);
   const alvoPat=divGoal>0&&avgDY>0?(divGoal*12)/(avgDY/100):0;
+  const lucroTotal=tG + rec.total;
+  const retornoTotalPct=tI>0?(lucroTotal/tI)*100:0;
   const L=[];
   L.push('📊 RESUMO DA CARTEIRA');
-  L.push(`Patrimônio: ${fmt(tC)} | Resultado: ${fmtP(tGP)}`);
+  L.push(`Patrimônio: ${fmt(tC)} | Resultado total: ${fmtP(retornoTotalPct)}`);
+  L.push(`Lucro total: ${fmt(lucroTotal)} (ganho de capital + proventos)`);
   L.push(`Renda passiva estimada: ${fmt(mD)}/mês (${fmt(aD)}/ano)`);
   L.push(`Proventos recebidos: ${fmt(rec.mes)} no mês · ${fmt(rec.ano)} no ano · ${fmt(rec.total)} total`);
   L.push(`DY médio: ${avgDY.toFixed(2)}%`);
