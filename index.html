@@ -264,6 +264,21 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
 const RENT_BENCH   = { CDI:10.65, IPCA:4.50, IFIX:9.20, IBOV:11.00, SMLL:12.00, IDIV:10.00, IVVB11:13.00 };
+const TYPE_CHOICES = ['Ação','FII','ETF','Renda Fixa','Tesouro Direto','Reserva de emergência','BDR','Crypto','Stock','Reit','Fundos de Investimento'];
+const TYPE_ORDER   = ['Ação','FII','ETF','Renda Fixa','Tesouro Direto','BDR','Crypto','Stock','Reit','Fundos de Investimento'];
+const TYPE_FORM_CHOICES = TYPE_CHOICES.filter(t=>t!=='Reserva de emergência');
+const TYPE_DASH_CHOICES = TYPE_ORDER;
+const TYPE_GOAL_CHOICES = ['Ação','FII','ETF','BDR','Stock','Reit','Fundos de Investimento'];
+const TYPE_ALIASES = {
+  'AÇÕES':'Ação','AÇÃO':'Ação','ACTIONS':'Ação',
+  'FIIS':'FII','FUNDOS IMOBILIARIOS':'FII','FUNDOS IMOBILIÁRIOS':'FII',
+  'ETFS':'ETF','ETF\'S':'ETF','ETF INTERNACIONAL':'ETF','ETFS INTERNACIONAIS':'ETF',
+  'RENDA FIXA (CDB/LCI/LCA/LC/LF/RDB)':'Renda Fixa','RENDA FIXA':'Renda Fixa','TESOURO DIRETO':'Tesouro Direto',
+  'RESERVA DE EMERGENCIA':'Reserva de emergência','RESERVA DE EMERGÊNCIA':'Reserva de emergência',
+  'FUNDOS DE INVESTIMENTO':'Fundos de Investimento','FUNDOS DE INVESTIMENTOS':'Fundos de Investimento',
+  'STOCK':'Stock','STOCKS':'Stock','REIT':'Reit','REITS':'Reit',
+};
+const TYPE_ALIAS_LOOKUP = Object.fromEntries(Object.entries(TYPE_ALIASES).map(([k,v])=>[k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase(),v]));
 const STOR         = 'civ5';
 const DEFAULT_BRAPI = ''; // brapi fica opcional; cotações usam Yahoo Finance via /api/yahoo-quote sem token
 
@@ -295,11 +310,12 @@ let S = {
   goals:{
     patrimonio:{target:0, aporte:0, annualVar:0},
     ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
-    proventos:{types:['Ação','FII','ETF','BDR','Stocks'], monthly:0}
+    proventos:{types:['Ação','FII','ETF','BDR','Stock'], monthly:0}
   },
   aiText:'', aiLoad:false,
   editId:null, editPId:null, showA:false, showP:false, showD:false,
   noteReview:null,
+  learnMeta:{},
   _fa:null, _fp:null, _fd:null,
 };
 let PWA = { prompt:null, installed: false };
@@ -317,7 +333,8 @@ function save(){
       tab:S.tab, divGoal:S.divGoal, goals:S.goals,
       apHistoryOpen:S.apHistoryOpen, apSearch:S.apSearch,
       dashPeriod:S.dashPeriod, dashType:S.dashType,
-      rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench
+      rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench,
+      learnMeta:S.learnMeta
     }));
     queueCloudSave();
   }catch(e){ console.error('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
@@ -342,7 +359,8 @@ function load(){
     if(d.rentPeriod !== undefined)   S.rentPeriod = String(d.rentPeriod||'all');
     if(d.rentType !== undefined)     S.rentType = String(d.rentType||'all');
     if(d.rentBench !== undefined)    S.rentBench = String(d.rentBench||'CDI');
-    if(d.goals && typeof d.goals==='object') S.goals = d.goals;
+    if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
+    if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
   }catch(e){ console.error('load erro:',e); }
   try{
     const c=JSON.parse(localStorage.getItem(STOR+'_cfg')||'{}');
@@ -363,12 +381,16 @@ function load(){
           if(d.rentPeriod !== undefined) S.rentPeriod=String(d.rentPeriod||'all');
           if(d.rentType !== undefined) S.rentType=String(d.rentType||'all');
           if(d.rentBench !== undefined) S.rentBench=String(d.rentBench||'CDI');
-          if(d.goals && typeof d.goals==='object') S.goals=d.goals;
+          if(d.goals && typeof d.goals==='object') S.goals=normalizeGoals(d.goals);
+          if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta=d.learnMeta;
           save(); break;
         }
       }catch(e){}
     }
   }
+  if(!S.goals || typeof S.goals!=='object') S.goals=normalizeGoals();
+  else S.goals=normalizeGoals(S.goals);
+  rebuildLearnMeta();
 }
 
 // ← FIX: salva SEMPRE antes da página fechar/recarregar (F5, fecha aba, etc.)
@@ -407,6 +429,7 @@ function cloudPayload(){
     proventos:S.proventos,
     divGoal:Number(S.divGoal)||0,
     goals:S.goals,
+    learnMeta:S.learnMeta,
     settings:{brapiToken:S.brapiToken||''},
     dashboard:{period:Number(S.dashPeriod)||12,type:String(S.dashType||'all')},
     rentabilidade:{period:String(S.rentPeriod||'all'),type:String(S.rentType||'all'),bench:String(S.rentBench||'CDI')},
@@ -416,7 +439,7 @@ function cloudPayload(){
   };
 }
 function hasLocalData(){
-  return (S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(S.goals)!==JSON.stringify({patrimonio:{target:0, aporte:0, annualVar:0}, ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0}, proventos:{types:['Ação','FII','ETF','BDR','Stocks'], monthly:0}}));
+  return (S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(normalizeGoals(S.goals))!==JSON.stringify(normalizeGoals()));
 }
 function applyCloudData(d){
   if(!d) return;
@@ -425,7 +448,8 @@ function applyCloudData(d){
   if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
   if(Array.isArray(d.proventos)) S.proventos = d.proventos;
   if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
-  if(d.goals && typeof d.goals==='object') S.goals = d.goals;
+  if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
+  if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
   if(d.tab && !S.tab)            S.tab       = d.tab;
   if(d.settings && d.settings.brapiToken && !S.brapiToken) S.brapiToken = d.settings.brapiToken;
   if(d.dashboard && typeof d.dashboard==='object'){
@@ -437,8 +461,9 @@ function applyCloudData(d){
     if(d.rentabilidade.type !== undefined) S.rentType = String(d.rentabilidade.type||'all');
     if(d.rentabilidade.bench !== undefined) S.rentBench = String(d.rentabilidade.bench||'CDI');
   }
+  rebuildLearnMeta();
   try{
-    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench}));
+    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
     localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
   }catch(e){}
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -578,7 +603,7 @@ function toast(msg, cor='#6ee7b7'){
 // BACKUP
 // ══════════════════════════════════════
 function exportBackup(){
-  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
+  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-backup-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.json`});
   a.click();
   toast('💾 Backup exportado com sucesso!');
@@ -594,10 +619,12 @@ document.getElementById('imp-file').addEventListener('change',e=>{
       if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
       if(Array.isArray(d.proventos)) S.proventos = d.proventos;
       if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
-      if(d.goals && typeof d.goals==='object') S.goals = d.goals;
+      if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
+      if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
       if(d.rentPeriod !== undefined)  S.rentPeriod = String(d.rentPeriod||'all');
       if(d.rentType !== undefined)    S.rentType = String(d.rentType||'all');
       if(d.rentBench !== undefined)   S.rentBench = String(d.rentBench||'CDI');
+      rebuildLearnMeta();
       save(); saveConfig(); render();
       toast(`✅ ${S.assets.length} ativos, ${S.aportes.length} aportes e ${S.proventos.length} proventos importados!`);
     }catch(err){ alert('Erro ao importar. Verifique o arquivo.'); }
@@ -615,11 +642,7 @@ async function resetPortfolio(){
   S.aportes=[];
   S.proventos=[];
   S.divGoal=0;
-  S.goals={
-    patrimonio:{target:0, aporte:0, annualVar:0},
-    ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
-    proventos:{types:['Ação','FII','ETF','BDR','Stocks'], monthly:0}
-  };
+  S.goals=normalizeGoals();
   S.apHistoryOpen=true;
   S.apSearch='';
   clearTimeout(S.apSearchTimer);
@@ -632,6 +655,7 @@ async function resetPortfolio(){
   S.showP=false; S.editPId=null; S._fp=null;
   S.showD=false; S.editDId=null; S._fd=null;
   S.noteReview=null;
+  S.learnMeta={};
   try{
     localStorage.removeItem(STOR);
     localStorage.removeItem(STOR+'_cfg');
@@ -690,6 +714,7 @@ function pdfSectionFromLine(line){
   if(s === 'acoes' || s.startsWith('acoes ')) return 'Ações';
   if(s.includes('etf - exchange traded fund')) return 'ETF';
   if(s.includes('fii - fundo de investimento imobiliario')) return 'FII';
+  if(s.includes('fundo de investimento')) return 'Fundos de Investimento';
   if(s.includes('cdb - certificado de deposito bancario')) return 'Renda Fixa';
   if(s.includes('cra - certificado de recebiveis do agronegocio')) return 'Renda Fixa';
   if(s.includes('deb - debentures')) return 'Renda Fixa';
@@ -724,7 +749,7 @@ function pdfBlockToItem(block, section){
     const value=parseNum(tail.groups.value);
     const ticker=cleanAssetCode(`${code} ${product} ${tail.groups.date}`);
     const sector=code==='CDB'?'CDB':code==='CRA'?'CRA':code==='DEB'?'Debênture':'LIG';
-    return {ticker,qty,price,value:value||qty*price,type:'Renda Fixa',sector,product,section};
+    return {ticker,qty,price,value:value||qty*price,type:normalizeType('Renda Fixa','Renda Fixa'),sector,product,section};
   }
   const head=txt.match(/^(?<ticker>[A-Z0-9]{4,6}[0-9]{1,2})\s*-\s*/i);
   const tail=txt.match(/(?:R\$\s*)?(?<kind>PN|UNIT|Cotas|Direito|Ações|Acoes|Criptoativo|Internacional|Renda Fixa)\b[\s\S]*?(?<qty>[\d.,]+)\s+R\$\s*(?<price>[\d.,]+)[\s\S]*?(?:R\$\s*)?(?<value>[\d.,]+)\b/i);
@@ -734,8 +759,8 @@ function pdfBlockToItem(block, section){
   const price=parseNum(tail.groups.price);
   const value=parseNum(tail.groups.value);
   const kind=tail.groups.kind;
-  const type=section==='Ações'?'Ação':section==='ETF'?'ETF':section==='FII'?'FII':metaTicker(ticker).type||'Ação';
-  const sector=section==='Ações'?'Ação':section==='ETF'?kind:section==='FII'?'FII':metaTicker(ticker).sector||'';
+  const type=normalizeType(section==='Ações'?'Ação':section==='ETF'?'ETF':section==='FII'?'FII':section==='Fundos de Investimento'?'Fundos de Investimento':metaTicker(ticker).type||'Ação','Ação');
+  const sector=section==='Ações'?'Ação':section==='ETF'?kind:section==='FII'?'FII':section==='Fundos de Investimento'?'Fundos de Investimento':metaTicker(ticker).sector||'';
   const product=txt.slice(head[0].length, tail.index).replace(/\s+/g,' ').trim();
   return {ticker,qty,price,value:value||qty*price,type,sector,product,section,kind};
 }
@@ -903,10 +928,12 @@ function notaEtfSector(text){
 }
 function inferNotaMeta(ticker, spec, market){
   const tickerClean=cleanAssetCode(ticker||notaTickerFromSpec(spec));
+  const learned=learnedMetaFor(tickerClean);
+  if(learned?.type) return {type:normalizeType(learned.type,'Ação'), sector:learned.sector||''};
   const existing=S.assets.find(a=>String(a.ticker||'').toUpperCase()===tickerClean);
   if(existing && existing.type){
     return {
-      type: existing.type,
+      type: normalizeType(existing.type,'Ação'),
       sector: existing.sector || existing.type
     };
   }
@@ -919,6 +946,7 @@ function inferNotaMeta(ticker, spec, market){
   if(/\bFII\b|FUNDO IMOBILIARIO|FUNDO DE INVESTIMENTO IMOBILIARIO|FDO INV IMOB|COTAS DE FII/.test(s)){
     return {type:'FII',sector:notaFiiSector(text)};
   }
+  if(/\bFUNDOS?\s+DE\s+INVESTIMENTO\b/.test(s)) return {type:'Fundos de Investimento', sector:'Fundos de Investimento'};
   const mt=metaTicker(tickerClean);
   if(mt.type==='ETF') return {type:'ETF',sector:mt.sector||notaEtfSector(text)};
   if(mt.type==='FII') return {type:'FII',sector:mt.sector||notaFiiSector(text)};
@@ -942,7 +970,8 @@ function rfMetaFromText(v){
 function tipoPorAbaB3(sheetName,ticker){
   const sh=String(sheetName||'').toLowerCase();
   if(isRendaFixaText(sheetName)||isRendaFixaText(ticker)) return 'Renda Fixa';
-  if(sh.includes('fundo de investimento')) return 'FII';
+  if(sh.includes('fundo imobiliario') || sh.includes('fii')) return 'FII';
+  if(sh.includes('fundo de investimento')) return 'Fundos de Investimento';
   if(sh.includes('etf')) return 'ETF';
   if(sh.includes('acoes') || sh.includes('ações')) return 'Ação';
   return metaTicker(ticker).type || 'Ação';
@@ -952,7 +981,8 @@ function setorPorAbaB3(sheetName,ticker){
   const meta=metaTicker(ticker);
   if(meta.sector && meta.sector!=='FII' && meta.sector!=='Ação') return meta.sector;
   const sh=String(sheetName||'').toLowerCase();
-  if(sh.includes('fundo de investimento')) return 'FII';
+  if(sh.includes('fundo imobiliario') || sh.includes('fii')) return 'FII';
+  if(sh.includes('fundo de investimento')) return 'Fundos de Investimento';
   if(sh.includes('etf')) return 'ETF';
   return meta.sector || '';
 }
@@ -1142,7 +1172,7 @@ function parseNotaCorretoraWorkbook(wb, fileName=''){
       qty,
       price:finalPrice,
       value:finalTotal,
-      type:meta.type||'Ação',
+      type:normalizeType(meta.type||'Ação','Ação'),
       sector:meta.sector||'',
       product:spec,
       market,
@@ -1153,7 +1183,8 @@ function parseNotaCorretoraWorkbook(wb, fileName=''){
       noteNumber,
       source:'nota-corretora'
     });
-    stats.byType[meta.type||'Ação']=(stats.byType[meta.type||'Ação']||0)+1;
+    const metaType=normalizeType(meta.type||'Ação','Ação');
+    stats.byType[metaType]=(stats.byType[metaType]||0)+1;
     stats.byOperation[op]=(stats.byOperation[op]||0)+1;
   }
   return {items,warnings,importDate:tradeDate,stats,noteKey,noteNumber,tradeDate};
@@ -1174,8 +1205,8 @@ function applyB3ImportedPositions(items, importDate){
     price:Number(it.price)||0,
     date:it.date||importDate,
     decision:`${importTag} ${it.sheet} · posição importada do Excel B3/corretora`,
-    type:it.type,
-    sector:it.sector
+    type:normalizeType(it.type||metaTicker(it.ticker).type||'Ação','Ação'),
+    sector:it.sector||metaTicker(it.ticker).sector||''
   })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
   S.aportes=[...novos,...S.aportes];
   // Completa metadados para estes ativos após recálculo.
@@ -1183,8 +1214,9 @@ function applyB3ImportedPositions(items, importDate){
   S.assets=S.assets.map(a=>{
     const it=items.find(x=>x.ticker===a.ticker);
     if(!it) return a;
-    return {...a,type:a.type||it.type,sector:a.sector||it.sector,current_price:it.price,quoteSource:a.quoteSource||'importado',quoteUpdatedAt:a.quoteUpdatedAt||new Date().toISOString()};
+    return {...a,type:normalizeType(it.type||a.type||'Ação','Ação'),sector:it.sector||a.sector,current_price:it.price,quoteSource:a.quoteSource||'importado',quoteUpdatedAt:a.quoteUpdatedAt||new Date().toISOString()};
   });
+  items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
   save(); render(); fetchQuotes(false);
   toast(`✅ ${novos.length} posição(ões) importadas do Excel.`);
 }
@@ -1204,7 +1236,7 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
     price:Number(it.price)||0,
     date:it.date||tradeDate||new Date().toLocaleDateString('pt-BR'),
     decision:`${importTag} nota ${noteNumber||stamp} · ${it.market||'mercado'} · ${it.product||it.ticker}`,
-    type:it.type||'Ação',
+    type:normalizeType(it.type||metaTicker(it.ticker).type||'Ação','Ação'),
     sector:it.sector||'',
     noteKey:stamp,
     noteNumber:noteNumber||'',
@@ -1212,6 +1244,7 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
   })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
   S.aportes=[...novos,...S.aportes];
   syncAssetsFromAportes(false);
+  items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
   save();
   render();
   fetchQuotes(false);
@@ -1226,7 +1259,7 @@ function openNotaReview(parsed, fileName){
     operation:String(it.operation||'compra').toLowerCase(),
     qty:Number(it.qty)||0,
     price:Number(it.price)||0,
-    type:it.type||'Ação',
+    type:normalizeType(it.type||'Ação','Ação'),
     sector:it.sector||'',
     product:it.product||'',
     market:it.market||'',
@@ -1252,7 +1285,7 @@ function setNotaReviewRow(idx, field, value){
   if(field==='include') row.include=!!value;
   else if(field==='ticker') row.ticker=String(value||'').trim().toUpperCase();
   else if(field==='operation') row.operation=String(value||'compra').toLowerCase();
-  else if(field==='type') row.type=String(value||'Ação');
+  else if(field==='type') row.type=normalizeType(value||'Ação','Ação');
   else if(field==='sector') row.sector=String(value||'');
   else if(field==='qty') row.qty=parseNum(value);
   else if(field==='price') row.price=parseNum(value);
@@ -1265,7 +1298,7 @@ function suggestNotaReviewTypes(){
     if(!row.ticker) return row;
     const sug=inferNotaMeta(row.ticker, row.product||row.sourceItem?.product||'', row.market||row.sourceItem?.market||'');
     const existing=S.assets.find(a=>String(a.ticker||'').toUpperCase()===String(row.ticker||'').toUpperCase());
-    const type=existing?.type || sug.type || row.type || 'Ação';
+    const type=normalizeType(existing?.type || sug.type || row.type || 'Ação','Ação');
     const sector=existing?.sector || sug.sector || row.sector || '';
     return {...row, type, sector};
   });
@@ -1298,7 +1331,7 @@ function notaReviewModal(){
       </td>
       <td>
         <select onchange="setNotaReviewRow(${idx},'type',this.value)">
-          ${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option ${String(row.type||'Ação')===t?'selected':''}>${t}</option>`).join('')}
+          ${TYPE_FORM_CHOICES.map(t=>`<option ${normalizeType(row.type||'Ação','Ação')===t?'selected':''}>${t}</option>`).join('')}
         </select>
       </td>
       <td><input value="${esc(row.sector)}" onchange="setNotaReviewRow(${idx},'sector',this.value)"></td>
@@ -1440,7 +1473,7 @@ const fmt  = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
 const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const bdg  = t => {
-  const v=String(t||'');
+  const v=normalizeType(t||'','');
   if(v==='Ação') return 'bac';
   if(v==='FII') return 'bfi';
   if(v==='ETF' || v==='Fundos de Investimento' || v==='Fundos de Investimentos') return 'bet';
@@ -1448,7 +1481,21 @@ const bdg  = t => {
   if(v==='Reserva de emergência') return 'bxx';
   return 'bxx';
 };
-const tipoIcon = t => t==='Ação'?'📈':t==='FII'?'🏢':t==='ETF'?'📊':t==='Renda Fixa'?'💼':t==='Tesouro Direto'?'🏛️':t==='Reserva de emergência'?'🧰':t==='BDR'?'🧾':t==='Crypto'?'₿':'🗂️';
+const tipoIcon = t => {
+  const v=normalizeType(t||'','');
+  if(v==='Ação') return '📈';
+  if(v==='FII') return '🏢';
+  if(v==='ETF') return '📊';
+  if(v==='Renda Fixa') return '💼';
+  if(v==='Tesouro Direto') return '🏛️';
+  if(v==='Reserva de emergência') return '🧰';
+  if(v==='BDR') return '🧾';
+  if(v==='Crypto') return '₿';
+  if(v==='Stock') return '🇺🇸';
+  if(v==='Reit') return '🏬';
+  if(v==='Fundos de Investimento') return '📦';
+  return '🗂️';
+};
 function parseNum(v){
   if(v==null) return 0;
   let s=String(v).trim().replace(/R\$|%|\s/g,'');
@@ -1480,6 +1527,84 @@ function parseAnyDate(v){
 }
 function toISODate(d){ if(!d)return''; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function toBRDate(d){ if(!d)return''; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
+function normTypeKey(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
+}
+function normalizeType(v, fallback='Ação'){
+  const raw=String(v||'').trim();
+  if(!raw) return fallback || 'Ação';
+  if(TYPE_CHOICES.includes(raw)) return raw;
+  const key=normTypeKey(raw);
+  if(TYPE_ALIAS_LOOKUP[key]) return TYPE_ALIAS_LOOKUP[key];
+  const compact=key.replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  if(TYPE_ALIAS_LOOKUP[compact]) return TYPE_ALIAS_LOOKUP[compact];
+  if(compact==='FUNDO DE INVESTIMENTO' || compact==='FUNDOS DE INVESTIMENTO') return 'Fundos de Investimento';
+  if(compact==='RENDA FIXA') return 'Renda Fixa';
+  if(compact==='TESOURO DIRETO') return 'Tesouro Direto';
+  if(compact==='RESERVA DE EMERGENCIA') return 'Reserva de emergência';
+  if(compact==='STOCK' || compact==='STOCKS') return 'Stock';
+  if(compact==='REIT' || compact==='REITS') return 'Reit';
+  return fallback || raw || 'Ação';
+}
+function learnedMetaFor(ticker){
+  const t=cleanAssetCode(ticker||'');
+  if(!t) return null;
+  const m=S.learnMeta&&typeof S.learnMeta==='object' ? S.learnMeta[t] : null;
+  if(!m) return null;
+  return {
+    type: normalizeType(m.type || '', ''),
+    sector: String(m.sector || '').trim()
+  };
+}
+function learnTickerMeta(ticker, type, sector, force=false){
+  const t=cleanAssetCode(ticker||'');
+  if(!t) return null;
+  if(!S.learnMeta || typeof S.learnMeta!=='object') S.learnMeta={};
+  const prev=S.learnMeta[t] || {};
+  const next={...prev};
+  const normType = normalizeType(type || prev.type || 'Ação', prev.type || 'Ação');
+  const normSector = String(sector || prev.sector || '').trim();
+  if(force || !next.type) next.type = normType;
+  if(force || !next.sector) next.sector = normSector;
+  if(!next.type) next.type = 'Ação';
+  S.learnMeta[t]=next;
+  return next;
+}
+function rebuildLearnMeta(){
+  const learned={...(S.learnMeta&&typeof S.learnMeta==='object'?S.learnMeta:{})};
+  const seed=(ticker,type,sector)=>{
+    const t=cleanAssetCode(ticker||'');
+    if(!t) return;
+    if(!learned[t]){
+      const nt=normalizeType(type||metaTicker(t).type||'Ação','Ação');
+      learned[t]={type:nt, sector:String(sector||metaTicker(t).sector||'').trim()};
+      return;
+    }
+    if(!learned[t].type) learned[t].type=normalizeType(type||metaTicker(t).type||'Ação','Ação');
+    if(!learned[t].sector) learned[t].sector=String(sector||metaTicker(t).sector||'').trim();
+  };
+  (S.assets||[]).forEach(a=>seed(a.ticker,a.type,a.sector));
+  (S.aportes||[]).forEach(a=>seed(a.ticker,a.type,a.sector));
+  S.learnMeta=learned;
+}
+function normalizeGoals(goals){
+  const base={
+    patrimonio:{target:0, aporte:0, annualVar:0},
+    ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
+    proventos:{types:['Ação','FII','ETF','BDR','Stock'], monthly:0}
+  };
+  const g=(goals && typeof goals==='object') ? JSON.parse(JSON.stringify(goals)) : {};
+  g.patrimonio={...base.patrimonio, ...(g.patrimonio||{})};
+  g.ativos={...base.ativos, ...(g.ativos||{}), type:normalizeType((g.ativos||{}).type||'Ação','Ação')};
+  const rawTypes=Array.isArray(g.proventos?.types) ? g.proventos.types : base.proventos.types;
+  g.proventos={...base.proventos, ...(g.proventos||{}), types:[...new Set(rawTypes.map(t=>normalizeType(t,'')).filter(Boolean))]};
+  if(!g.proventos.types.length) g.proventos.types=[...base.proventos.types];
+  return g;
+}
+function typeSelectOptions(selected, types=TYPE_FORM_CHOICES){
+  const cur=normalizeType(selected||'Ação','Ação');
+  return types.map(t=>`<option value="${esc(t)}" ${cur===t?'selected':''}>${esc(t)}</option>`).join('');
+}
 
 // ── DY padrão para principais ativos brasileiros (fonte: médias de mercado)
 const DY_REF = {
@@ -1559,6 +1684,13 @@ function autoDY(){
 
 function metaTicker(ticker){
   const t=String(ticker||'').trim().toUpperCase();
+  const learned=learnedMetaFor(t);
+  if(learned?.type){
+    const learnedType=normalizeType(learned.type,'Ação');
+    const base=META[t];
+    const sector=learned.sector || (base && normalizeType(base[0],'Ação')===learnedType ? base[1] : '');
+    return {type:learnedType, sector};
+  }
   if(isRendaFixaText(t)) return rfMetaFromText(t);
   if(META[t]) return{type:META[t][0],sector:META[t][1]};
   if(/^[A-Z]{4}11$/.test(t)) return{type:'FII',sector:'FII'};
@@ -1570,7 +1702,7 @@ function applyMetaToAporte(){
   const se=document.getElementById('p-se'); const ty=document.getElementById('p-ty');
   let m=metaTicker(ti);
   if(ty && ty.value==='Renda Fixa') m=rfMetaFromText(ti||se?.value||'Renda Fixa');
-  if(ty && (!ty.dataset.manual || !ty.value)) ty.value=m.type||'Ação';
+  if(ty && (!ty.dataset.manual || !ty.value)) ty.value=normalizeType(m.type||'Ação','Ação');
   if(se && (!se.dataset.manual || !se.value)) se.value=m.sector||'';
 }
 function collectAporteDraft(){
@@ -1736,7 +1868,7 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
       const tx=txs[txPos++];
       const ticker=cleanAssetCode(tx.ticker||'');
       if(!ticker) continue;
-      const type=String(tx.type || metaTicker(ticker).type || 'Ação');
+      const type=normalizeType(tx.type || metaTicker(ticker).type || 'Ação','Ação');
       if(typeSet && !typeSet.has(type)) continue;
       const qty=Math.abs(Number(tx.qty)||0);
       const price=Math.max(0, Number(tx.price)||0);
@@ -1761,7 +1893,7 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
     }
     while(provPos<provs.length && provs[provPos]._dt<=monthEnd){
       const p=provs[provPos++];
-      const pType=String(p.type || metaTicker(cleanAssetCode(p.ticker||'')).type || 'Ação');
+      const pType=normalizeType(p.type || metaTicker(cleanAssetCode(p.ticker||'')).type || 'Ação','Ação');
       if(typeSet && !typeSet.has(pType)) continue;
       provCum += Number(p.value)||0;
     }
@@ -1872,8 +2004,9 @@ function syncAssetsFromAportes(showMsg=false){
     const type=String(p.type||p.asset_type||'').trim();
     if(type==='Reserva de emergência' || op.startsWith('reserva')) return;
     const m=metaTicker(t);
-    const tipo=p.type||p.asset_type||m.type||'Ação';
-    const setor=p.sector||p.asset_sector||m.sector||'';
+    const learned=learnedMetaFor(t);
+    const tipo=normalizeType(learned?.type || p.type || p.asset_type || m.type || 'Ação','Ação');
+    const setor=learned?.sector || p.sector || p.asset_sector || m.sector || '';
     if(!grouped[t]) grouped[t]={ticker:t,qty:0,total:0,type:tipo,sector:setor};
     if(!grouped[t].type && tipo) grouped[t].type=tipo;
     if(!grouped[t].sector && setor) grouped[t].sector=setor;
@@ -1886,7 +2019,8 @@ function syncAssetsFromAportes(showMsg=false){
   });
   S.assets=Object.values(grouped).filter(g=>g.qty>0.000001).map(g=>{
     const old=keep[g.ticker]||{},m=metaTicker(g.ticker),avg=g.qty>0?g.total/g.qty:0;
-    const isRF=(g.type||old.type||m.type)==='Renda Fixa';
+    const isRF=normalizeType(g.type||old.type||m.type||'Ação','Ação')==='Renda Fixa';
+    learnTickerMeta(g.ticker, g.type||old.type||m.type, g.sector||old.sector||m.sector, false);
     return{
       id:old.id||Date.now()+Math.floor(Math.random()*999999),
       ticker:g.ticker, type:g.type||old.type||m.type, sector:g.sector||old.sector||m.sector, qty:g.qty,
@@ -2090,7 +2224,7 @@ async function fetchAutoProventos(){
         if(r.ok){const j=await r.json();(j.results||[]).forEach(q=>addItems(collectDividendItems(q,q.symbol),'quote'));}
       }catch(e){erros.push('quote');}
     }
-    const fiis=tickers.filter(t=>(S.assets.find(a=>a.ticker===t)?.type||metaTicker(t).type)==='FII');
+  const fiis=tickers.filter(t=>normalizeType(S.assets.find(a=>a.ticker===t)?.type||metaTicker(t).type||'Ação','Ação')==='FII');
     for(let i=0;i<fiis.length;i+=20){
       const batch=fiis.slice(i,i+20).join(','); if(!batch) continue;
       try{
@@ -2244,7 +2378,7 @@ function dash(){
   const DCLR=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
   const periodOpts=[3,6,12,24];
   const byT={};
-  S.assets.forEach(a=>{const v=a.qty*a.current_price;byT[a.type]=(byT[a.type]||0)+v;});
+  S.assets.forEach(a=>{const v=a.qty*a.current_price;const ty=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');byT[ty]=(byT[ty]||0)+v;});
   const ad=Object.entries(byT).map(([n,v])=>({name:n,value:v}));
   const p=pie(ad,DCLR);
   const leg=ad.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${tC>0?((d.value/tC)*100).toFixed(1):'0.0'}%</span></div>`).join('');
@@ -2276,7 +2410,7 @@ function dash(){
   },0);
   const divAno=rec.ano;
   const lucroCapital=tG;
-  const dashAssets=S.dashType==='all' ? S.assets : S.assets.filter(a=>(a.type||metaTicker(a.ticker).type||'Ação')===S.dashType);
+  const dashAssets=S.dashType==='all' ? S.assets : S.assets.filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')===S.dashType);
   const byTypeDash={};
   dashAssets.forEach(a=>{const v=a.qty*a.current_price;byTypeDash[a.type]=(byTypeDash[a.type]||0)+v;});
   const adDash=Object.entries(byTypeDash).map(([n,v])=>({name:n,value:v}));
@@ -2365,7 +2499,7 @@ function dash(){
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
           <div class="dash-filters">
-            ${['all','Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<button class="dash-chip ${String(S.dashType||'all')===t?'on':''}" onclick="setDashType('${t}')">${t==='all'?'Todos':t}</button>`).join('')}
+            ${['all',...TYPE_DASH_CHOICES].map(t=>`<button class="dash-chip ${String(S.dashType||'all')===t?'on':''}" onclick="setDashType('${t}')">${t==='all'?'Todos':t}</button>`).join('')}
           </div>
           <div class="note-pill">${dashAssets.length} ativos</div>
         </div>
@@ -2407,7 +2541,7 @@ function frmA(){
       <div><div class="fl">Preço alvo</div><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
       <div><div class="fl">% ideal na carteira</div><input id="f-ip" type="number" step="0.1" placeholder="ex: 8" value="${esc(f.ideal_pct||'')}"></div>
       <div><div class="fl">Setor</div><input id="f-se" placeholder="ex: Petróleo" value="${esc(f.sector||m.sector||'')}"></div>
-      <div><div class="fl">Tipo</div><select id="f-ty">${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option ${(f.type||m.type||'Ação')===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div><div class="fl">Tipo</div><select id="f-ty">${typeSelectOptions(f.type||m.type||'Ação')}</select></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bsv" onclick="svA()">Salvar</button>
@@ -2419,11 +2553,11 @@ function ativos(){
   const total=S.assets.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.current_price)||0),0);
   const grouped=new Map();
   S.assets.forEach(a=>{
-    const type=(a.type||metaTicker(a.ticker).type||'Ação').trim();
+    const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
     if(!grouped.has(type)) grouped.set(type,[]);
     grouped.get(type).push(a);
   });
-  const order=['Ação','FII','ETF','Renda Fixa','BDR','Crypto'];
+  const order=TYPE_ORDER;
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
@@ -2518,7 +2652,7 @@ function ativos(){
 function frmP(){
   if(!S.showP) return'';
   const f=S._fp||{},op=(f.operation||f.op||'compra').toLowerCase();
-  const fType=f.type||f.asset_type||metaTicker(f.ticker).type||'Ação';
+  const fType=normalizeType(f.type||f.asset_type||metaTicker(f.ticker).type||'Ação','Ação');
   const fSector=f.sector||f.asset_sector||metaTicker(f.ticker).sector||'';
   const isRF=fType==='Renda Fixa' || String(fType).includes('Tesouro');
   const isReserve=fType==='Reserva de emergência';
@@ -2558,7 +2692,7 @@ function frmP(){
 }
 function apTab(){
   const isReserveRow=a=>{
-    const type=String(a.type||a.asset_type||'').trim();
+    const type=normalizeType(a.type||a.asset_type||'','');
     const op=String(a.operation||a.op||'').toLowerCase();
     return type==='Reserva de emergência' || op.startsWith('reserva');
   };
@@ -2584,7 +2718,7 @@ function apTab(){
     <div><div class="cl">Reserva pessoal</div><div style="font-size:18px;font-weight:700;color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
   </div>`:'';
   const reserveItems=filtered.filter(a=>{
-    const type=String(a.type||a.asset_type||'').trim();
+    const type=normalizeType(a.type||a.asset_type||'','');
     const op=String(a.operation||a.op||'').toLowerCase();
     return type==='Reserva de emergência' || op.startsWith('reserva');
   });
@@ -2612,12 +2746,12 @@ function apTab(){
     : '';
   const grouped=new Map();
   filtered.forEach(a=>{
-    const mm=metaTicker(a.ticker),type=(a.type||a.asset_type||mm.type||'Ação').trim();
+    const mm=metaTicker(a.ticker),type=normalizeType(a.type||a.asset_type||mm.type||'Ação','Ação');
     if(type==='Reserva de emergência' || String(a.operation||a.op||'').toLowerCase().startsWith('reserva')) return;
     if(!grouped.has(type)) grouped.set(type,[]);
     grouped.get(type).push(a);
   });
-  const order=['Ação','FII','ETF','Renda Fixa','Tesouro Direto','BDR','Crypto','Stock','Reit','Fundos de Investimento','Fundos de Investimentos'];
+  const order=TYPE_ORDER;
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>{
@@ -2629,7 +2763,7 @@ function apTab(){
     const gLiquido=gCompras-gVendas;
     const gTickers=[...new Set(items.map(a=>String(a.ticker||'').toUpperCase()))];
     const rows=items.map(a=>{
-      const mm=metaTicker(a.ticker),m={type:a.type||a.asset_type||mm.type,sector:a.sector||a.asset_sector||mm.sector},op=(a.operation||a.op||'compra').toLowerCase(),isV=op==='venda';
+    const mm=metaTicker(a.ticker),m={type:normalizeType(a.type||a.asset_type||mm.type||'Ação','Ação'),sector:a.sector||a.asset_sector||mm.sector},op=(a.operation||a.op||'compra').toLowerCase(),isV=op==='venda';
       return`<tr>
         <td class="mu">${esc(a.date)}</td>
         <td><span class="bdg" style="background:${isV?'rgba(248,113,113,.08)':'rgba(52,211,153,.08)'};color:${isV?'#f87171':'#34d399'};border:1px solid ${isV?'rgba(248,113,113,.22)':'rgba(52,211,153,.22)'}">${isV?'Venda':'Compra'}</span></td>
@@ -2767,15 +2901,16 @@ function saveMetaPatrimonioTarget(){
 function setMetaAssetType(type){
   S.goals=S.goals||{};
   S.goals.ativos=S.goals.ativos||{};
-  S.goals.ativos.type=type;
-  const first=S.assets.find(a=>(a.type||'').toLowerCase()===(type||'').toLowerCase());
+  const norm=normalizeType(type||'Ação','Ação');
+  S.goals.ativos.type=norm;
+  const first=S.assets.find(a=>normalizeType(a.type||'Ação','Ação')===norm);
   if(first) S.goals.ativos.ticker=first.ticker;
   save(); render();
 }
 function saveMetaAtivos(){
   S.goals=S.goals||{};
   S.goals.ativos={
-    type:document.getElementById('ma-type')?.value||'Ação',
+    type:normalizeType(document.getElementById('ma-type')?.value||'Ação','Ação'),
     ticker:document.getElementById('ma-ticker')?.value||'',
     aporte:Number(document.getElementById('ma-aporte')?.value)||0,
     annualVar:Number(document.getElementById('ma-var')?.value)||0,
@@ -2785,8 +2920,9 @@ function saveMetaAtivos(){
 }
 function toggleMetaProventoType(type){
   S.goals=S.goals||{};
-  const cur=new Set((S.goals.proventos?.types)||['Ação','FII','ETF','BDR','Stocks']);
-  if(cur.has(type)) cur.delete(type); else cur.add(type);
+  const norm=normalizeType(type||'Ação','Ação');
+  const cur=new Set((S.goals.proventos?.types)||['Ação','FII','ETF','BDR','Stock']);
+  if(cur.has(norm)) cur.delete(norm); else cur.add(norm);
   S.goals.proventos=S.goals.proventos||{};
   S.goals.proventos.types=[...cur];
   save(); render();
@@ -3019,7 +3155,7 @@ function metasTab(){
   const metas=S.goals||{};
   const mp=metas.patrimonio||{};
   const mpr=metas.proventos||{};
-  const allTypes=['Ação','FII','ETF','Renda Fixa','BDR','Crypto'];
+  const allTypes=TYPE_GOAL_CHOICES;
 
   const selectedProTypes=Array.isArray(mpr.types)&&mpr.types.length?mpr.types:allTypes;
   const proTypeChips=allTypes.map(t=>{
@@ -3249,7 +3385,7 @@ function calcRebalance(){
   const sum=list.reduce((s,a)=>s+a.score,0)||1;
   const rows=list.map(a=>{
     const val=aporte*(a.score/sum),qtd=a.current_price>0?Math.floor(val/a.current_price):0,divMes=val*((Number(a.dy)||0)/100)/12;
-    return`<tr><td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td><td>${esc(a.type)}</td><td class="mu">${esc(a.sector||'—')}</td><td>${a.peso.toFixed(1)}%</td><td>${a.ideal?a.ideal.toFixed(1)+'%':'—'}</td><td class="${a.rent<0?'rd':'gn'}">${fmtP(a.rent)}</td><td class="gn" style="font-weight:700">${fmt(val)}</td><td>${qtd}</td><td class="am">+${fmt(divMes)}/mês</td><td class="mu">${esc(a.motivos.join(', '))}</td></tr>`;
+    return`<tr><td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td><td>${esc(normalizeType(a.type||'Ação','Ação'))}</td><td class="mu">${esc(a.sector||'—')}</td><td>${a.peso.toFixed(1)}%</td><td>${a.ideal?a.ideal.toFixed(1)+'%':'—'}</td><td class="${a.rent<0?'rd':'gn'}">${fmtP(a.rent)}</td><td class="gn" style="font-weight:700">${fmt(val)}</td><td>${qtd}</td><td class="am">+${fmt(divMes)}/mês</td><td class="mu">${esc(a.motivos.join(', '))}</td></tr>`;
   }).join('');
   out.innerHTML=`<div class="tw"><div class="ts"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>Setor</th><th>% Cart.</th><th>% Ideal</th><th>Rentab.</th><th>Sugestão</th><th>Qtd aprox.</th><th>Dividendo</th><th>Motivo</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
@@ -3295,12 +3431,13 @@ async function refreshCotacao(){
 function edA(id){ const a=S.assets.find(x=>x.id===id); if(!a)return; S._fa={...a}; S.editId=id; S.showA=true; render(); }
 function svA(){
   if(!S.editId) return;
+  const editedAsset=S.assets.find(a=>a.id===S.editId);
   const ap=parseNum(document.getElementById('f-ap')?.value);
   const dy=parseNum(document.getElementById('f-dy')?.value);
   const pt=parseNum(document.getElementById('f-pt')?.value);
   const ip=parseNum(document.getElementById('f-ip')?.value);
   const se=document.getElementById('f-se')?.value?.trim()||'';
-  const ty=document.getElementById('f-ty')?.value||'Ação';
+  const ty=normalizeType(document.getElementById('f-ty')?.value||'Ação','Ação');
   S.assets=S.assets.map(a=>{
     if(a.id!==S.editId) return a;
     const avgManual=ap>0&&Math.abs(ap-Number(a.avg_price||0))>0.0001;
@@ -3309,6 +3446,7 @@ function svA(){
     // cotação não é editada aqui — vem automaticamente via Yahoo Finance e fallback opcional brapi
   });
   S.showA=false; S.editId=null; S._fa=null;
+  if(editedAsset) learnTickerMeta(editedAsset.ticker, ty, se, true);
   save(); toast('✅ Ativo atualizado!'); render();
 }
 
@@ -3331,7 +3469,7 @@ function svP(){
   const pr=parseNum(document.getElementById('p-pr')?.value);
   const dc=document.getElementById('p-dc')?.value?.trim()||'';
   const dt=brDate(document.getElementById('p-dt')?.value||'');
-  const ty=document.getElementById('p-ty')?.value||metaTicker(rawTi).type||'Ação';
+  const ty=normalizeType(document.getElementById('p-ty')?.value||metaTicker(rawTi).type||'Ação','Ação');
   let se=document.getElementById('p-se')?.value?.trim()||'';
   const isRF=ty==='Renda Fixa' || String(ty).includes('Tesouro');
   const isReserve=ty==='Reserva de emergência';
@@ -3364,6 +3502,7 @@ function svP(){
   if(S.editPId){ S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a); }
   else { S.aportes.unshift(reg); }
   S.showP=false; S.editPId=null; S._fp=null;
+  if(!isReserve) learnTickerMeta(ti, ty, se, true);
   syncAssetsFromAportes(false);
   toast(`✅ ${isReserve? (reserveMode==='saida'?'Saída':'Reserva') : (op==='venda'?'Venda':'Compra')} de ${ti} registrada!`);
   fetchQuotes(false);
@@ -3418,7 +3557,7 @@ function getAI(){
   const rec=proventoStats();
   if(!S.assets.length){ S.aiText='Cadastre seus ativos primeiro para gerar uma análise.'; render(); return; }
   const porTipo={},por=S.assets.map(a=>({ticker:a.ticker,type:a.type,valor:a.qty*a.current_price,divMes:(a.qty*a.current_price*(a.dy/100))/12,dy:Number(a.dy)||0,var:a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0})).sort((a,b)=>b.valor-a.valor);
-  por.forEach(a=>porTipo[a.type]=(porTipo[a.type]||0)+a.valor);
+  por.forEach(a=>{const ty=normalizeType(a.type||'Ação','Ação'); porTipo[ty]=(porTipo[ty]||0)+a.valor;});
   const maior=por[0],maiorPct=tC>0?(maior.valor/tC)*100:0;
   const fiisPct=tC>0?((porTipo['FII']||0)/tC)*100:0,acoesPct=tC>0?((porTipo['Ação']||0)/tC)*100:0;
   const divGoal=Number(S.divGoal)||0,faltaDiv=Math.max(0,divGoal-mD);
