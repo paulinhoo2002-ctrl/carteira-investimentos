@@ -1439,8 +1439,16 @@ function configBrapi(){
 const fmt  = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
 const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-const bdg  = t => t==='Ação'?'bac':t==='FII'?'bfi':t==='ETF'?'bet':'bxx';
-const tipoIcon = t => t==='Ação'?'📈':t==='FII'?'🏢':t==='ETF'?'📊':t==='Renda Fixa'?'💼':t==='BDR'?'🧾':t==='Crypto'?'₿':'🗂️';
+const bdg  = t => {
+  const v=String(t||'');
+  if(v==='Ação') return 'bac';
+  if(v==='FII') return 'bfi';
+  if(v==='ETF' || v==='Fundos de Investimento' || v==='Fundos de Investimentos') return 'bet';
+  if(v==='Renda Fixa' || v==='Tesouro Direto') return 'bfi';
+  if(v==='Reserva de emergência') return 'bxx';
+  return 'bxx';
+};
+const tipoIcon = t => t==='Ação'?'📈':t==='FII'?'🏢':t==='ETF'?'📊':t==='Renda Fixa'?'💼':t==='Tesouro Direto'?'🏛️':t==='Reserva de emergência'?'🧰':t==='BDR'?'🧾':t==='Crypto'?'₿':'🗂️';
 function parseNum(v){
   if(v==null) return 0;
   let s=String(v).trim().replace(/R\$|%|\s/g,'');
@@ -1565,6 +1573,37 @@ function applyMetaToAporte(){
   if(ty && (!ty.dataset.manual || !ty.value)) ty.value=m.type||'Ação';
   if(se && (!se.dataset.manual || !se.value)) se.value=m.sector||'';
 }
+function collectAporteDraft(){
+  return {
+    ...(S._fp||{}),
+    operation:document.getElementById('p-op')?.value||S._fp?.operation||'compra',
+    type:document.getElementById('p-ty')?.value||S._fp?.type||'Ação',
+    date:inputDateValue(document.getElementById('p-dt')?.value||S._fp?.date||''),
+    ticker:document.getElementById('p-ti')?.value||S._fp?.ticker||'',
+    qty:document.getElementById('p-qt')?.value||S._fp?.qty||'',
+    price:document.getElementById('p-pr')?.value||S._fp?.price||'',
+    sector:document.getElementById('p-se')?.value||S._fp?.sector||'',
+    decision:document.getElementById('p-dc')?.value||S._fp?.decision||'',
+    reserveTarget:document.getElementById('p-rt')?.value||S._fp?.reserveTarget||'bolsa',
+    reserveMode:document.getElementById('p-rm')?.value||S._fp?.reserveMode||'entrada',
+    issuer:document.getElementById('p-rf-emissor')?.value||S._fp?.issuer||'',
+    bondType:document.getElementById('p-rf-tipo')?.value||S._fp?.bondType||'',
+    indexer:document.getElementById('p-rf-index')?.value||S._fp?.indexer||'',
+    rate:document.getElementById('p-rf-rate')?.value||S._fp?.rate||'',
+    dailyLiquidity:document.getElementById('p-rf-liq')?.value||S._fp?.dailyLiquidity||'',
+    maturityDate:document.getElementById('p-rf-due')?.value||S._fp?.maturityDate||''
+  };
+}
+function updateAporteType(v){
+  S._fp=collectAporteDraft();
+  S._fp.type=v;
+  if(v==='Reserva de emergência'){
+    S._fp.reserveTarget = S._fp.reserveTarget || 'bolsa';
+    S._fp.reserveMode = S._fp.reserveMode || 'entrada';
+  }
+  render();
+  setTimeout(applyMetaToAporte,50);
+}
 function findDy(q){
   const keys=['dividendYield','trailingAnnualDividendYield','yield','dy','regularMarketDividendYield','dividend_yield','dividendYieldAnnual','annualDividendYield'];
   const seen=new Set();
@@ -1630,6 +1669,25 @@ function proventoHistoricoMensal(){
     const media=total/12;
     return { year, months, total, media };
   });
+}
+function reserveStats(){
+  const out={bolsa:0,pessoal:0,total:0,entries:0};
+  S.aportes.forEach(a=>{
+    const type=String(a.type||a.asset_type||'').trim();
+    const op=String(a.operation||a.op||'compra').toLowerCase();
+    const isReserve=type==='Reserva de emergência' || op.startsWith('reserva');
+    if(!isReserve) return;
+    const raw=Number(a.price)||0;
+    const qty=Math.max(1, Math.abs(Number(a.qty)||1));
+    const value=raw*qty;
+    const sign=(op.includes('saida') || op==='venda') ? -1 : 1;
+    const target=String(a.reserveTarget||a.sector||a.asset_sector||'bolsa').toLowerCase();
+    const bucket=target.includes('pess') ? 'pessoal' : 'bolsa';
+    out[bucket]+=sign*value;
+    out.entries++;
+  });
+  out.total=out.bolsa+out.pessoal;
+  return out;
 }
 
 function rentBenchRate(name){
@@ -1811,6 +1869,8 @@ function syncAssetsFromAportes(showMsg=false){
     const t=cleanAssetCode(raw)||raw;
     const q=Math.abs(Number(p.qty)||0),pr=Number(p.price)||0;
     const op=(p.operation||p.op||'compra').toLowerCase();
+    const type=String(p.type||p.asset_type||'').trim();
+    if(type==='Reserva de emergência' || op.startsWith('reserva')) return;
     const m=metaTicker(t);
     const tipo=p.type||p.asset_type||m.type||'Ação';
     const setor=p.sector||p.asset_sector||m.sector||'';
@@ -2460,20 +2520,36 @@ function frmP(){
   const f=S._fp||{},op=(f.operation||f.op||'compra').toLowerCase();
   const fType=f.type||f.asset_type||metaTicker(f.ticker).type||'Ação';
   const fSector=f.sector||f.asset_sector||metaTicker(f.ticker).sector||'';
+  const isRF=fType==='Renda Fixa' || String(fType).includes('Tesouro');
+  const isReserve=fType==='Reserva de emergência';
   return`<div class="fc">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">${S.editPId?'✏️ Editar operação':'➕ Registrar compra / venda'}</div>
     <div class="fg">
       <div><div class="fl">Operação</div><select id="p-op"><option value="compra" ${op==='compra'?'selected':''}>Compra</option><option value="venda" ${op==='venda'?'selected':''}>Venda</option></select></div>
-      <div><div class="fl">Tipo do ativo</div><select id="p-ty" onchange="this.dataset.manual='1'; if(this.value==='Renda Fixa'){const se=document.getElementById('p-se'); if(se&&!se.value) se.value='Renda Fixa';}">
-        ${['Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option value="${t}" ${fType===t?'selected':''}>${t}</option>`).join('')}
+      <div><div class="fl">Tipo do ativo</div><select id="p-ty" onchange="this.dataset.manual='1'; updateAporteType(this.value);">
+        ${['Ação','FII','ETF','Renda Fixa','Tesouro Direto','Reserva de emergência','BDR','Crypto','Stock','Reit','Fundos de Investimento'].map(t=>`<option value="${t}" ${fType===t?'selected':''}>${t}</option>`).join('')}
       </select></div>
       <div><div class="fl">Data</div><input id="p-dt" type="date" value="${esc(inputDateValue(f.date||''))}"></div>
-      <div><div class="fl">Ticker / nome do ativo</div><input id="p-ti" placeholder="ex: MXRF11, DIVD11, CDB Banco..." value="${esc(f.ticker||'')}" oninput="this.value=this.value.toUpperCase();applyMetaToAporte()" onblur="applyMetaToAporte()"></div>
-      <div><div class="fl">Quantidade</div><input id="p-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>
-      <div><div class="fl">Preço da operação</div><input id="p-pr" type="text" placeholder="10,15" value="${f.price?esc(moneyInput(f.price)):''}"></div>
-      <div><div class="fl">Setor / classe</div><input id="p-se" placeholder="ex: ETF, CDB, Papel, Banco" value="${esc(fSector)}" oninput="this.dataset.manual='1'"></div>
+      <div><div class="fl">${isReserve?'Nome / destino da reserva':'Ticker / nome do ativo'}</div><input id="p-ti" placeholder="${isReserve?'ex: Reserva bolsa, Reserva pessoal':'ex: MXRF11, DIVD11, CDB Banco...'}" value="${esc(f.ticker||'')}" oninput="this.value=this.value.toUpperCase();applyMetaToAporte()" onblur="applyMetaToAporte()"></div>
+      ${isReserve?`<div><div class="fl">Quantidade</div><input id="p-qt" type="number" value="1" disabled style="opacity:.6"></div>`:`<div><div class="fl">Quantidade</div><input id="p-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>`}
+      <div><div class="fl">${isReserve?'Valor reservado':'Preço da operação'}</div><input id="p-pr" type="text" placeholder="${isReserve?'500,00':'10,15'}" value="${f.price?esc(moneyInput(f.price)):''}"></div>
+      <div><div class="fl">Setor / classe</div><input id="p-se" placeholder="${isReserve?'bolsa ou pessoal':'ex: ETF, CDB, Papel, Banco'}" value="${esc(fSector)}" oninput="this.dataset.manual='1'"></div>
     </div>
-    <div style="margin-top:10px"><div class="fl">Decisão / motivo</div><input id="p-dc" placeholder="ex: rebalanceamento, importação B3, renda fixa..." value="${esc(f.decision||'')}"></div>
+    ${isReserve?`<div class="fg" style="margin-top:10px">
+      <div><div class="fl">Destino da reserva</div><select id="p-rt"><option value="bolsa" ${(String(f.reserveTarget||f.reserve_target||'bolsa')==='bolsa')?'selected':''}>Bolsa / oportunidade</option><option value="pessoal" ${(String(f.reserveTarget||f.reserve_target||'')==='pessoal')?'selected':''}>Pessoal / particular</option></select></div>
+      <div><div class="fl">Modo</div><select id="p-rm"><option value="entrada" ${String(f.operation||f.op||'compra').toLowerCase()!=='venda'?'selected':''}>Entrada na reserva</option><option value="saida" ${String(f.operation||f.op||'compra').toLowerCase()==='venda'?'selected':''}>Saída da reserva</option></select></div>
+      <div><div class="fl">Observação</div><input id="p-dc" placeholder="ex: reserva de oportunidade, uso pessoal..." value="${esc(f.decision||'')}"></div>
+    </div>`:`<div style="margin-top:10px"><div class="fl">Decisão / motivo</div><input id="p-dc" placeholder="ex: rebalanceamento, importação B3, renda fixa..." value="${esc(f.decision||'')}"></div>`}
+    ${isRF?`<div class="fg" style="margin-top:10px">
+      <div><div class="fl">Emissor</div><input id="p-rf-emissor" placeholder="ex: Banco X / XP / Tesouro" value="${esc(f.issuer||f.emitter||'')}"></div>
+      <div><div class="fl">Tipo de título</div><select id="p-rf-tipo">
+        ${['LCI','LCA','LC','LF','RDB','Debênture','CRI','CRA','CCB','Tesouro Selic','Tesouro IPCA','Tesouro Prefixado','Outro'].map(t=>`<option value="${t}" ${(String(f.bondType||f.bond_type||'').toUpperCase()===t.toUpperCase())?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+      <div><div class="fl">Indexador</div><select id="p-rf-index"><option value="CDI" ${String(f.indexer||'CDI').toUpperCase()==='CDI'?'selected':''}>CDI</option><option value="CDI+" ${String(f.indexer||'').toUpperCase().includes('CDI+')?'selected':''}>CDI+</option><option value="IPCA+" ${String(f.indexer||'').toUpperCase().includes('IPCA')?'selected':''}>IPCA+</option><option value="Prefixado" ${String(f.indexer||'').toUpperCase().includes('PREFIX')?'selected':''}>Prefixado</option><option value="Outro" ${String(f.indexer||'').toUpperCase()==='OUTRO'?'selected':''}>Outro</option></select></div>
+      <div><div class="fl">Taxa / spread</div><input id="p-rf-rate" type="text" placeholder="ex: 102% CDI ou 12,5%" value="${esc(f.rate||f.spread||'')}"></div>
+      <div><div class="fl">Liquidez diária</div><select id="p-rf-liq"><option value="sim" ${String(f.dailyLiquidity||f.liquidity||'').toLowerCase()==='sim'?'selected':''}>Sim</option><option value="nao" ${String(f.dailyLiquidity||f.liquidity||'').toLowerCase()==='nao'?'selected':''}>Não</option></select></div>
+      <div><div class="fl">Vencimento</div><input id="p-rf-due" type="date" value="${esc(inputDateValue(f.maturityDate||f.maturity_date||''))}"></div>
+    </div>`:''}
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bsv" onclick="svP()">${S.editPId?'Salvar edição':'Salvar operação'}</button>
       <button class="btn bgh" onclick="clP()">Cancelar</button>
@@ -2481,31 +2557,67 @@ function frmP(){
   </div>`;
 }
 function apTab(){
-  const compras=S.aportes.filter(a=>(a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
-  const vendas=S.aportes.filter(a=>(a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
+  const isReserveRow=a=>{
+    const type=String(a.type||a.asset_type||'').trim();
+    const op=String(a.operation||a.op||'').toLowerCase();
+    return type==='Reserva de emergência' || op.startsWith('reserva');
+  };
+  const compras=S.aportes.filter(a=>!isReserveRow(a) && (a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
+  const vendas=S.aportes.filter(a=>!isReserveRow(a) && (a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
   const liquido=compras-vendas;
   const q=String(S.apSearch||'').trim().toLowerCase();
   const filtered=q
     ? S.aportes.filter(a=>{
         const mm=metaTicker(a.ticker);
-        const hay=[a.date,a.ticker,a.type,a.asset_type,mm.type,a.sector,a.asset_sector,mm.sector,a.decision,a.operation,a.op]
+        const hay=[a.date,a.ticker,a.type,a.asset_type,mm.type,a.sector,a.asset_sector,mm.sector,a.decision,a.operation,a.op,a.reserveTarget,a.issuer,a.bondType,a.indexer,a.rate,a.spread,a.dailyLiquidity,a.maturityDate]
           .filter(Boolean).join(' ').toLowerCase();
         return hay.includes(q);
       })
     : S.aportes;
+  const reserve=reserveStats();
   const sum=S.aportes.length?`<div class="card" style="margin-bottom:12px;display:flex;gap:24px;flex-wrap:wrap">
     <div><div class="cl">Comprado</div><div style="font-size:18px;font-weight:700;color:#818cf8">${fmt(compras)}</div></div>
     <div><div class="cl">Vendido</div><div style="font-size:18px;font-weight:700;color:#f87171">${fmt(vendas)}</div></div>
     <div><div class="cl">Líquido</div><div style="font-size:18px;font-weight:700;color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div></div>
     <div><div class="cl">Operações</div><div style="font-size:18px;font-weight:700">${S.aportes.length}</div></div>
+    <div><div class="cl">Reserva bolsa</div><div style="font-size:18px;font-weight:700;color:#60a5fa">${fmt(reserve.bolsa)}</div><div class="cs">Oportunidade</div></div>
+    <div><div class="cl">Reserva pessoal</div><div style="font-size:18px;font-weight:700;color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
   </div>`:'';
+  const reserveItems=filtered.filter(a=>{
+    const type=String(a.type||a.asset_type||'').trim();
+    const op=String(a.operation||a.op||'').toLowerCase();
+    return type==='Reserva de emergência' || op.startsWith('reserva');
+  });
+  const reserveRows=reserveItems.length
+    ? reserveItems.map(a=>{
+        const op=String(a.operation||a.op||'').toLowerCase();
+        const isOut=op.includes('saida') || op==='venda';
+        const target=String(a.reserveTarget||a.sector||'bolsa').toLowerCase().includes('pess') ? 'Pessoal' : 'Bolsa';
+        return`<tr>
+          <td class="mu">${esc(a.date)}</td>
+          <td><span class="bdg" style="background:${isOut?'rgba(248,113,113,.08)':'rgba(52,211,153,.08)'};color:${isOut?'#f87171':'#34d399'};border:1px solid ${isOut?'rgba(248,113,113,.22)':'rgba(52,211,153,.22)'}">${isOut?'Saída':'Entrada'}</span></td>
+          <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker||'Reserva')}</td>
+          <td><span class="bdg ${bdg('Reserva de emergência')}">Reserva</span></td>
+          <td class="mu">${esc(target)}</td>
+          <td>${Math.abs(Number(a.qty)||1)}</td>
+          <td>R$ ${Number(a.price).toFixed(2)}</td>
+          <td class="${isOut?'rd':'gn'}" style="font-weight:700">${isOut?'-':'+'}${fmt(Math.abs(Number(a.qty)||1)*Number(a.price||0))}</td>
+          <td class="mu">${esc(a.decision||a.reserveLabel||'—')}</td>
+          <td><div style="display:flex;gap:6px">
+            <button class="bi" onclick="edP(${a.id})">✏️</button>
+            <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+          </div></td>
+        </tr>`;
+      }).join('')
+    : '';
   const grouped=new Map();
   filtered.forEach(a=>{
     const mm=metaTicker(a.ticker),type=(a.type||a.asset_type||mm.type||'Ação').trim();
+    if(type==='Reserva de emergência' || String(a.operation||a.op||'').toLowerCase().startsWith('reserva')) return;
     if(!grouped.has(type)) grouped.set(type,[]);
     grouped.get(type).push(a);
   });
-  const order=['Ação','FII','ETF','Renda Fixa','BDR','Crypto'];
+  const order=['Ação','FII','ETF','Renda Fixa','Tesouro Direto','BDR','Crypto','Stock','Reit','Fundos de Investimento','Fundos de Investimentos'];
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>{
@@ -2579,6 +2691,33 @@ function apTab(){
   </div>
   ${frmP()}
   ${sum}
+  ${reserveItems.length?`<details class="ag" open style="margin-bottom:12px">
+    <summary>
+      <div class="ag-left">
+        <div class="ag-ico">🧰</div>
+        <div>
+          <div class="ag-name">Reserva de emergência</div>
+          <div class="ag-sub">${reserveItems.length} lançamentos · bolsa ${fmt(reserve.bolsa)} · pessoal ${fmt(reserve.pessoal)}</div>
+        </div>
+      </div>
+      <div class="ag-stats">
+        <div class="ag-stat"><div class="ag-k">Lançamentos</div><div class="ag-v">${reserveItems.length}</div></div>
+        <div class="ag-stat"><div class="ag-k">Bolsa</div><div class="ag-v">${fmt(reserve.bolsa)}</div></div>
+        <div class="ag-stat"><div class="ag-k">Pessoal</div><div class="ag-v">${fmt(reserve.pessoal)}</div></div>
+        <div class="ag-stat"><div class="ag-k">Total</div><div class="ag-v">${fmt(reserve.total)}</div></div>
+        <div class="ag-stat"><div class="ag-k">Disponível</div><div class="ag-v">${fmt(reserve.total)}</div></div>
+      </div>
+      <div class="ag-open">⌄</div>
+    </summary>
+    <div class="ag-body">
+      <div class="ag-table">
+        <div class="tw"><div class="ts"><table>
+          <thead><tr><th>Data</th><th>Mov.</th><th>Nome</th><th>Tipo</th><th>Destino</th><th>Qtd</th><th>Valor</th><th>Total</th><th>Obs.</th><th></th></tr></thead>
+          <tbody>${reserveRows||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#2e3f58">Nenhum lançamento de reserva ainda.</td></tr>'}</tbody>
+        </table></div></div>
+      </div>
+    </div>
+  </details>`:''}
   ${S.apHistoryOpen===false
     ?`<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">📁 Histórico recolhido. Use <b>Mostrar histórico</b> para ver as operações ou a lupa para filtrar um ativo específico.</div>`
     :!S.aportes.length
@@ -3173,7 +3312,16 @@ function svA(){
   save(); toast('✅ Ativo atualizado!'); render();
 }
 
-function tgP(){ S.showP=!S.showP; S.editPId=null; S._fp={operation:'compra'}; render(); setTimeout(applyMetaToAporte,50); }
+function tgP(pref='compra'){
+  S.showP=!S.showP; S.editPId=null;
+  S._fp=pref==='reserva'
+    ? {operation:'compra', type:'Reserva de emergência', reserveTarget:'bolsa'}
+    : pref==='rf'
+      ? {operation:'compra', type:'Renda Fixa'}
+      : {operation:'compra'};
+  render();
+  setTimeout(applyMetaToAporte,50);
+}
 function clP(){ S.showP=false; S.editPId=null; S._fp=null; render(); }
 function edP(id){ const p=S.aportes.find(x=>x.id===id); if(!p) return; S._fp={...p}; S.editPId=id; S.showP=true; render(); setTimeout(applyMetaToAporte,50); }
 function svP(){
@@ -3185,19 +3333,39 @@ function svP(){
   const dt=brDate(document.getElementById('p-dt')?.value||'');
   const ty=document.getElementById('p-ty')?.value||metaTicker(rawTi).type||'Ação';
   let se=document.getElementById('p-se')?.value?.trim()||'';
+  const isRF=ty==='Renda Fixa' || String(ty).includes('Tesouro');
+  const isReserve=ty==='Reserva de emergência';
   let ti=cleanAssetCode(rawTi);
-  if(!ti && ty==='Renda Fixa') ti='RENDA FIXA';
+  const reserveTarget=isReserve?(document.getElementById('p-rt')?.value||'bolsa'):'';
+  const reserveMode=isReserve?(document.getElementById('p-rm')?.value||'entrada'):'';
+  if(isReserve){
+    ti = ti || `RESERVA ${reserveTarget==='pessoal'?'PESSOAL':'BOLSA'}`;
+  }else if(!ti && isRF) ti='RENDA FIXA';
   if(!se){
-    const m=ty==='Renda Fixa'?rfMetaFromText(ti):metaTicker(ti);
+    const m=isRF?rfMetaFromText(ti):metaTicker(ti);
     se=m.sector||ty;
   }
   if(!ti||qt<=0||pr<=0){ alert('Preencha Ativo/Ticker, Quantidade e Preço.'); return; }
-  const reg={id:S.editPId||Date.now(), operation:op, ticker:ti, qty:qt, price:pr, date:dt, decision:dc, type:ty, sector:se};
+  const reg={id:S.editPId||Date.now(), operation:isReserve?(reserveMode==='saida'?'reserva-saida':'reserva-entrada'):op, ticker:ti, qty:isReserve?1:qt, price:pr, date:dt, decision:dc, type:ty, sector:se};
+  if(isReserve){
+    reg.reserveTarget=reserveTarget;
+    reg.reserveMode=reserveMode;
+    reg.reserveLabel=reserveTarget==='pessoal'?'Pessoal':'Bolsa';
+    reg.sector=reserveTarget==='pessoal'?'Pessoal':'Bolsa';
+  }
+  if(isRF){
+    reg.issuer=document.getElementById('p-rf-emissor')?.value?.trim()||'';
+    reg.bondType=document.getElementById('p-rf-tipo')?.value||'';
+    reg.indexer=document.getElementById('p-rf-index')?.value||'';
+    reg.rate=document.getElementById('p-rf-rate')?.value?.trim()||'';
+    reg.dailyLiquidity=document.getElementById('p-rf-liq')?.value||'';
+    reg.maturityDate=brDate(document.getElementById('p-rf-due')?.value||'');
+  }
   if(S.editPId){ S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a); }
   else { S.aportes.unshift(reg); }
   S.showP=false; S.editPId=null; S._fp=null;
   syncAssetsFromAportes(false);
-  toast(`✅ ${op==='venda'?'Venda':'Compra'} de ${ti} registrada!`);
+  toast(`✅ ${isReserve? (reserveMode==='saida'?'Saída':'Reserva') : (op==='venda'?'Venda':'Compra')} de ${ti} registrada!`);
   fetchQuotes(false);
 }
 function rmP(id){
