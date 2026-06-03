@@ -316,6 +316,9 @@ let S = {
   editId:null, editPId:null, showA:false, showP:false, showD:false,
   noteReview:null,
   learnMeta:{},
+  autoProvDirty:false,
+  autoProvTimer:null,
+  autoProvRunning:false,
   _fa:null, _fp:null, _fd:null,
 };
 let PWA = { prompt:null, installed: false };
@@ -341,6 +344,29 @@ function save(){
 }
 function saveConfig(){
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
+}
+function markProventosDirty(){
+  S.autoProvDirty=true;
+}
+function scheduleAutoProventosGratis(reason='change'){
+  markProventosDirty();
+  clearTimeout(S.autoProvTimer);
+  S.autoProvTimer=setTimeout(()=>runAutoProventosGratis(reason), 1400);
+}
+async function runAutoProventosGratis(reason='change'){
+  if(S.autoProvRunning) return;
+  if(!S.assets.length || !S.aportes.length) return;
+  if(!S.autoProvDirty && reason!=='force') return;
+  S.autoProvRunning=true;
+  try{
+    const before=S.proventos.length;
+    await fetchAutoProventosGratis();
+    const added=Math.max(0,(S.proventos.length||0)-before);
+    S.autoProvDirty=false;
+    if(added>0) toast(`✅ ${added} provento(s) atualizado(s) automaticamente.`, '#6ee7b7');
+  }finally{
+    S.autoProvRunning=false;
+  }
 }
 
 function load(){
@@ -391,6 +417,7 @@ function load(){
   if(!S.goals || typeof S.goals!=='object') S.goals=normalizeGoals();
   else S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
+  if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
 }
 
 // ← FIX: salva SEMPRE antes da página fechar/recarregar (F5, fecha aba, etc.)
@@ -555,7 +582,6 @@ function configMenu(){
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importNotaCorretora();closeConfigMenus()">🧾 Nota corretora</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start;border-color:#7f1d1d;color:#fecaca;background:#1a0f12" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="configBrapi();closeConfigMenus()">🧩 brapi opcional</button>
     </div>
   </details>`;
 }
@@ -1218,6 +1244,7 @@ function applyB3ImportedPositions(items, importDate){
   });
   items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
   save(); render(); fetchQuotes(false);
+  scheduleAutoProventosGratis('b3');
   toast(`✅ ${novos.length} posição(ões) importadas do Excel.`);
 }
 function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
@@ -1248,6 +1275,7 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
   save();
   render();
   fetchQuotes(false);
+  scheduleAutoProventosGratis('nota');
   toast(`✅ ${novos.length} lançamento(ões) importado(s) da nota da corretora.`);
 }
 function openNotaReview(parsed, fileName){
@@ -1545,6 +1573,28 @@ function normalizeType(v, fallback='Ação'){
   if(compact==='STOCK' || compact==='STOCKS') return 'Stock';
   if(compact==='REIT' || compact==='REITS') return 'Reit';
   return fallback || raw || 'Ação';
+}
+function typeAccentColor(type){
+  const v=normalizeType(type||'','');
+  if(v==='FII') return '#34d399';
+  if(v==='ETF') return '#60a5fa';
+  if(v==='Renda Fixa' || v==='Tesouro Direto') return '#fbbf24';
+  if(v==='Reserva de emergência') return '#818cf8';
+  if(v==='BDR') return '#f472b6';
+  if(v==='Crypto') return '#fb923c';
+  if(v==='Stock') return '#7dd3fc';
+  if(v==='Reit') return '#a78bfa';
+  if(v==='Fundos de Investimento') return '#22c8a6';
+  return '#4f46e5';
+}
+function typeQuickHint(type){
+  const v=normalizeType(type||'','');
+  if(v==='FII') return 'FII: confira ticker, setor e DY; a carteira usa a classificação da nota e do ativo aprendido.';
+  if(v==='ETF') return 'ETF: normalmente a categoria é inferida pelo ticker e pelo nome do fundo.';
+  if(v==='Renda Fixa') return 'Renda fixa: preencha emissor, título, indexador e vencimento para ficar completo.';
+  if(v==='Reserva de emergência') return 'Reserva: fica separada da carteira de ativos e não entra no cálculo de posição.';
+  if(v==='Fundos de Investimento') return 'Fundos: os lançamentos são tratados como classe separada para não confundir com FII.';
+  return 'O tipo escolhido aqui é respeitado no lançamento e reaproveitado no aprendizado da carteira.';
 }
 function learnedMetaFor(ticker){
   const t=cleanAssetCode(ticker||'');
@@ -2659,8 +2709,16 @@ function frmP(){
   const fSector=f.sector||f.asset_sector||metaTicker(f.ticker).sector||'';
   const isRF=fType==='Renda Fixa' || String(fType).includes('Tesouro');
   const isReserve=fType==='Reserva de emergência';
-  return`<div class="fc">
+  const accent=typeAccentColor(fType);
+  return`<div class="fc" style="border-color:${accent}55;box-shadow:0 4px 20px ${accent}12">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">${S.editPId?'✏️ Editar operação':'➕ Registrar compra / venda'}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:-2px 0 14px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="bdg ${bdg(fType)}" style="font-size:12px;padding:4px 10px">${tipoIcon(fType)} ${esc(fType)}</span>
+        <span style="font-size:12px;color:#64748b">${typeQuickHint(fType)}</span>
+      </div>
+      <div style="font-size:11px;color:${accent};border:1px solid ${accent}33;background:${accent}10;border-radius:999px;padding:4px 10px">${isReserve?'fluxo separado':'tipo aprendido e salvo'}</div>
+    </div>
     <div class="fg">
       <div><div class="fl">Operação</div><select id="p-op"><option value="compra" ${op==='compra'?'selected':''}>Compra</option><option value="venda" ${op==='venda'?'selected':''}>Venda</option></select></div>
       <div><div class="fl">Tipo do ativo</div><select id="p-ty" onchange="this.dataset.manual='1'; updateAporteType(this.value);">
@@ -3418,6 +3476,7 @@ function iaTab(){
 function go(t){
   S.tab=t; save(); render();
   if(t==='ativos') fetchQuotes(false);
+  if(t==='dividendos') runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
 function clA(){ S.showA=false; S.editId=null; S._fa=null; render(); }
 async function refreshCotacao(){
@@ -3451,6 +3510,7 @@ function svA(){
   S.showA=false; S.editId=null; S._fa=null;
   if(editedAsset) learnTickerMeta(editedAsset.ticker, ty, se, true);
   save(); toast('✅ Ativo atualizado!'); render();
+  scheduleAutoProventosGratis('asset-edit');
 }
 
 function tgP(pref='compra'){
@@ -3509,6 +3569,7 @@ function svP(){
   syncAssetsFromAportes(false);
   toast(`✅ ${isReserve? (reserveMode==='saida'?'Saída':'Reserva') : (op==='venda'?'Venda':'Compra')} de ${ti} registrada!`);
   fetchQuotes(false);
+  scheduleAutoProventosGratis('aporte');
 }
 function rmP(id){
   if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
@@ -3516,6 +3577,7 @@ function rmP(id){
   if(S.editPId===id){ S.editPId=null; S.showP=false; S._fp=null; }
   syncAssetsFromAportes(false);
   toast('🗑️ Operação removida.');
+  scheduleAutoProventosGratis('remove-aporte');
 }
 
 function tgD(){ S.showD=!S.showD; render(); }
@@ -3532,11 +3594,13 @@ function svD(){
   S.showD=false; save();
   toast(`✅ Provento de ${ti} registrado: ${fmt(va)}`);
   render();
+  markProventosDirty();
 }
 function rmD(id){
   if(!confirm('Remover este provento?')) return;
   S.proventos=S.proventos.filter(p=>p.id!==id);
   save(); toast('🗑️ Provento removido.'); render();
+  markProventosDirty();
 }
 
 function toggleAportesHistory(){
