@@ -605,7 +605,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
   r.readAsText(f); e.target.value='';
 });
 
-function resetPortfolio(){
+async function resetPortfolio(){
   const total=(S.assets?.length||0)+(S.aportes?.length||0)+(S.proventos?.length||0);
   const ok=confirm(`Tem certeza que deseja apagar todo o histórico da carteira?\n\nIsso vai remover ${total} registros locais e voltar a carteira para um estado limpo.`);
   if(!ok) return;
@@ -638,6 +638,11 @@ function resetPortfolio(){
   }catch(e){}
   save();
   saveConfig();
+  if(FB.user){
+    try{
+      await uploadLocalToCloud(false);
+    }catch(e){}
+  }
   render();
   toast('🧹 Carteira resetada e pronta para começar do zero.');
 }
