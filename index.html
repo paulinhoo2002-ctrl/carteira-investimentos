@@ -3058,19 +3058,21 @@ function rentabilidadeTab(){
     </div>
   </div>
 
-  <div class="cc" style="margin-top:14px">
-    <div class="sh" style="margin-bottom:10px">
+  <details class="sec" style="margin-top:14px">
+    <summary>
       <div>
-        <div class="st">Rentabilidade mensal</div>
-        <div class="mu" style="font-size:12px">Visão consolidada por ano e por mês.</div>
+        <div class="sec-title">Rentabilidade mensal</div>
+        <div class="sec-meta">visão consolidada por ano e por mês</div>
       </div>
-      <div class="note-pill">${data.totalMonths} meses analisados</div>
+      <div class="sec-meta">${data.totalMonths} meses analisados · clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table class="hist-monthly rent-table">
+        <thead><tr><th>Ano</th>${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map(m=>`<th>${m}</th>`).join('')}<th>Retorno anual</th><th>Acumulado</th></tr></thead>
+        <tbody>${yearsRows||'<tr><td colspan="14" style="text-align:center;padding:20px;color:#2e3f58">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
+      </table></div></div>
     </div>
-    <div class="tw"><div class="ts"><table class="hist-monthly rent-table">
-      <thead><tr><th>Ano</th>${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map(m=>`<th>${m}</th>`).join('')}<th>Retorno anual</th><th>Acumulado</th></tr></thead>
-      <tbody>${yearsRows||'<tr><td colspan="14" style="text-align:center;padding:20px;color:#2e3f58">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
-    </table></div></div>
-  </div>`;
+  </details>`;
 }
 
 function ajudarTab(){
