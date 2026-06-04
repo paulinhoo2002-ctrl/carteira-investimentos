@@ -190,11 +190,68 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .note-row-bad{background:rgba(248,113,113,.06)}
 .note-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
 .note-foot .hint{font-size:12px;color:#64748b;line-height:1.5}
+.nota-review-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.nota-review-group{border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
+.nota-review-group summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;background:#0b1020}
+.nota-review-group summary::-webkit-details-marker{display:none}
+.nota-review-group[open] summary{border-bottom:1px solid #182033}
+.nota-review-group-head{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1}
+.nota-review-group-title{font-size:14px;font-weight:800;color:#e2eaf6;line-height:1.15}
+.nota-review-group-sub{font-size:12px;color:#64748b;margin-top:4px;line-height:1.45}
+.nota-review-group-meta{font-size:12px;color:#94a3b8;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.nota-review-group-body{padding:12px 14px 14px}
+.nota-review-lines{display:flex;flex-direction:column;gap:8px}
+.nota-review-line{display:grid;grid-template-columns:24px 94px 88px 92px 1fr 92px 96px 100px 92px;gap:8px;align-items:center;padding:10px 10px;border:1px solid #161e2e;border-radius:10px;background:#0b0f17}
+.nota-review-line label{display:flex;align-items:center;justify-content:center}
+.nota-review-line .mini{font-size:11px;color:#64748b}
+.nota-review-line .ticker{font-weight:800;color:#e2eaf6}
+.nota-review-line .kind{font-size:12px;color:#cbd5e1}
+.nota-review-line .value{font-weight:800;text-align:right}
+.nota-review-line input,.nota-review-line select{padding:6px 7px;font-size:12px;border-radius:8px}
+.nota-review-line.bad{opacity:.55}
+.nota-review-line .line-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.b3-review-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.b3-review-group{border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
+.b3-review-group summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;background:#0b1020}
+.b3-review-group summary::-webkit-details-marker{display:none}
+.b3-review-group[open] summary{border-bottom:1px solid #182033}
+.b3-review-group-head{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1}
+.b3-review-group-title{font-size:14px;font-weight:800;color:#e2eaf6;line-height:1.15}
+.b3-review-group-sub{font-size:12px;color:#64748b;margin-top:4px;line-height:1.45}
+.b3-review-group-meta{font-size:12px;color:#94a3b8;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.b3-review-group-body{padding:12px 14px 14px}
+.b3-review-lines{display:flex;flex-direction:column;gap:8px}
+.b3-review-line{display:grid;grid-template-columns:24px 92px 76px 86px 1fr 78px 96px 92px;gap:8px;align-items:center;padding:10px 10px;border:1px solid #161e2e;border-radius:10px;background:#0b0f17}
+.b3-review-line label{display:flex;align-items:center;justify-content:center}
+.b3-review-line .mini{font-size:11px;color:#64748b}
+.b3-review-line .ticker{font-weight:800;color:#e2eaf6}
+.b3-review-line .kind{font-size:12px;color:#cbd5e1}
+.b3-review-line .value{font-weight:800;text-align:right}
+.b3-review-line input,.b3-review-line select{padding:6px 7px;font-size:12px;border-radius:8px}
+.b3-review-line.bad{opacity:.55}
+.b3-review-line .line-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end}
 @media(max-width:900px){
   .note-overlay{padding:10px}
   .note-modal{border-radius:14px}
   .note-body{padding:12px}
   .note-table{min-width:1040px}
+  .nota-review-line{grid-template-columns:24px 1fr 1fr;grid-template-areas:"chk ticker ticker" "chk kind sector" "chk qty price" "chk product product" "chk total total";align-items:start}
+  .nota-review-line .col-check{grid-area:chk}
+  .nota-review-line .col-ticker{grid-area:ticker}
+  .nota-review-line .col-kind{grid-area:kind}
+  .nota-review-line .col-sector{grid-area:sector}
+  .nota-review-line .col-product{grid-area:product}
+  .nota-review-line .col-qty{grid-area:qty}
+  .nota-review-line .col-price{grid-area:price}
+  .nota-review-line .col-total{grid-area:total}
+  .b3-review-line{grid-template-columns:24px 1fr 1fr;grid-template-areas:"chk ticker ticker" "chk kind sector" "chk qty price" "chk total total";align-items:start}
+  .b3-review-line .col-ticker{grid-area:ticker}
+  .b3-review-line .col-kind{grid-area:kind}
+  .b3-review-line .col-sector{grid-area:sector}
+  .b3-review-line .col-qty{grid-area:qty}
+  .b3-review-line .col-price{grid-area:price}
+  .b3-review-line .col-total{grid-area:total}
+  .b3-review-line .col-check{grid-area:chk}
 }
 @media(max-width:900px){
   .hdr{padding:10px 12px;gap:10px}
@@ -315,6 +372,7 @@ let S = {
   aiText:'', aiLoad:false,
   editId:null, editPId:null, showA:false, showP:false, showD:false,
   noteReview:null,
+  b3Review:null,
   learnMeta:{},
   autoProvDirty:false,
   autoProvTimer:null,
@@ -785,9 +843,10 @@ function pdfBlockToItem(block, section){
   const price=parseNum(tail.groups.price);
   const value=parseNum(tail.groups.value);
   const kind=tail.groups.kind;
-  const type=normalizeType(section==='Ações'?'Ação':section==='ETF'?'ETF':section==='FII'?'FII':section==='Fundos de Investimento'?'Fundos de Investimento':metaTicker(ticker).type||'Ação','Ação');
-  const sector=section==='Ações'?'Ação':section==='ETF'?kind:section==='FII'?'FII':section==='Fundos de Investimento'?'Fundos de Investimento':metaTicker(ticker).sector||'';
   const product=txt.slice(head[0].length, tail.index).replace(/\s+/g,' ').trim();
+  const meta=inferB3PositionMeta(section, ticker, product, kind);
+  const type=normalizeType(meta.type||'Ação','Ação');
+  const sector=meta.sector||'';
   return {ticker,qty,price,value:value||qty*price,type,sector,product,section,kind};
 }
 async function parseB3PositionPdf(file){
@@ -888,6 +947,36 @@ function isRendaFixaText(v){
 function isEmprestimoSheet(name){
   const s=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   return s.includes('emprest') || s.includes('emprést');
+}
+function inferB3PositionMeta(sheetName, ticker, product='', rowType=''){
+  const sheet=String(sheetName||'');
+  const sh=sheet.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const kind=String(rowType||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const text=`${sheet} ${ticker} ${product} ${rowType}`;
+  const s=notaNorm(text);
+  if(isRendaFixaText(text)) return rfMetaFromText(text);
+  if(/\bCRIPTOATIVO\b|\bBITCOIN\b|\bHASH\b|\bCRIPTO\b|\bCRYPTO\b/.test(s)) return {type:'Crypto',sector:'Crypto'};
+  if(sh.includes('acoes') || sh.includes('acao')) return {type:'Ação',sector:'Ação'};
+  if(sh.includes('etf')){
+    if(/\bCRIPTOATIVO\b|\bBITCOIN\b|\bHASH\b|\bCRIPTO\b|\bCRYPTO\b/.test(s)) return {type:'Crypto',sector:'Cripto'};
+    if(/\bRENDA FIXA\b|IMAB|IRFM|B5P2|TESOURO/.test(s)) return {type:'ETF',sector:'Renda Fixa'};
+    if(/\bEXTERIOR\b|INTERNACIONAL|WRLD|SP500|S&P|NASDAQ|EURO/.test(s)) return {type:'ETF',sector:'Exterior'};
+    if(/\bDIVID\b/.test(s)) return {type:'ETF',sector:'Dividendos'};
+    return {type:'ETF',sector:notaEtfSector(text)};
+  }
+  if(sh.includes('fundo de investimento') || sh.includes('fundo imobiliario') || sh.includes('fii')){
+    const isFii=/\bFII\b|FUNDO DE INVESTIMENTO IMOBILIARIO|FDO INV IMOB|FDO DE INVESTIMENTO IMOBILIARIO|IMOB|RECEBIV|MALLS|HEDGE FUND|LOGIST|PAPEL|LAJES|SHOP|RBR|KN|HGLG|HGRU|PVBI|BRCO|BTLG|MCCI|KNRI|KNUQ|GARE|IRIM/i.test(s);
+    if(isFii || kind==='cotas' || kind==='direito') return {type:'FII',sector:notaFiiSector(text)};
+    return {type:'Fundos de Investimento',sector:'Fundos de Investimento'};
+  }
+  if(kind==='criptoativo') return {type:'Crypto',sector:'Crypto'};
+  if(kind==='renda fixa') return {type:'ETF',sector:'Renda Fixa'};
+  if(kind==='internacional') return {type:'ETF',sector:'Exterior'};
+  const mt=metaTicker(ticker);
+  if(mt.type==='ETF') return {type:'ETF',sector:mt.sector||notaEtfSector(text)};
+  if(mt.type==='FII') return {type:'FII',sector:mt.sector||notaFiiSector(text)};
+  if(mt.type==='Renda Fixa') return rfMetaFromText(text);
+  return {type:mt.type||'Ação', sector:mt.sector||''};
 }
 function notaNorm(v){
   return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
@@ -1062,6 +1151,7 @@ function parseB3PositionWorkbook(wb, fileName=''){
       const rawTicker=String(pickB3(row,headers,['Código de Negociação','Codigo de Negociacao','Código','Codigo','Ticker'])||'').trim().toUpperCase();
       const venc=String(pickB3(row,headers,['Vencimento','Data de Vencimento'])||'').trim();
       const inst=String(pickB3(row,headers,['Instituição','Instituicao','Emissor','Administrador'])||'').trim();
+      const rowType=String(pickB3(row,headers,['Tipo'])||'').trim();
       let ticker=rawTicker;
       if(!ticker && isRF){
         const base=[produto,inst,venc].filter(Boolean).join(' ');
@@ -1102,9 +1192,10 @@ function parseB3PositionWorkbook(wb, fileName=''){
         addIgnored(sheetName,'sem preço válido');
         return;
       }
-      const tipo=isRF?'Renda Fixa':tipoPorAbaB3(sheetName,ticker);
-      const setor=isRF?rfMetaFromText(`${produto} ${ticker} ${sheetName}`).sector:setorPorAbaB3(sheetName,ticker);
-      items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,date:importDate});
+      const meta=inferB3PositionMeta(sheetName, ticker, produto, rowType);
+      const tipo=normalizeType(meta.type||'Ação','Ação');
+      const setor=meta.sector||'';
+      items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,kind:rowType,date:importDate});
       addImported(sheetName);
     });
   });
@@ -1245,7 +1336,7 @@ function applyB3ImportedPositions(items, importDate){
   items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
   save(); render(); fetchQuotes(false);
   scheduleAutoProventosGratis('b3');
-  toast(`✅ ${novos.length} posição(ões) importadas do Excel.`);
+  toast(`✅ ${novos.length} posição(ões) importadas da B3.`);
 }
 function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
   const importTag='[IMPORT_NOTA_CORRETORA]';
@@ -1307,6 +1398,11 @@ function setNotaReviewAll(v){
   S.noteReview.rows=S.noteReview.rows.map(r=>({...r,include:!!v}));
   render();
 }
+function setNotaReviewOperation(op, value){
+  if(!S.noteReview) return;
+  S.noteReview.rows=S.noteReview.rows.map(r=>String(r.operation||'compra').toLowerCase()===String(op||'compra').toLowerCase() ? {...r,include:!!value} : r);
+  render();
+}
 function setNotaReviewRow(idx, field, value){
   if(!S.noteReview || !S.noteReview.rows[idx]) return;
   const row=S.noteReview.rows[idx];
@@ -1347,32 +1443,85 @@ function notaReviewSummary(rows){
 function notaReviewModal(){
   const r=S.noteReview;
   if(!r) return '';
-  const rows=r.rows.map((row,idx)=>{
-    const bad=!row.include || !row.ticker || Number(row.qty)<=0 || Number(row.price)<=0;
-    return `<tr class="${bad?'note-row-muted':''}">
-      <td style="text-align:center"><input type="checkbox" ${row.include!==false?'checked':''} onchange="setNotaReviewRow(${idx},'include',this.checked)"></td>
-      <td><input value="${esc(row.ticker)}" onchange="setNotaReviewRow(${idx},'ticker',this.value)"></td>
-      <td>
-        <select onchange="setNotaReviewRow(${idx},'operation',this.value)">
-          ${['compra','venda'].map(o=>`<option value="${o}" ${String(row.operation||'compra')===o?'selected':''}>${o==='compra'?'Compra':'Venda'}</option>`).join('')}
-        </select>
-      </td>
-      <td>
-        <select onchange="setNotaReviewRow(${idx},'type',this.value)">
-          ${TYPE_FORM_CHOICES.map(t=>`<option ${normalizeType(row.type||'Ação','Ação')===t?'selected':''}>${t}</option>`).join('')}
-        </select>
-      </td>
-      <td><input value="${esc(row.sector)}" onchange="setNotaReviewRow(${idx},'sector',this.value)"></td>
-      <td><input value="${esc(row.product)}" onchange="setNotaReviewRow(${idx},'product',this.value)"></td>
-      <td><input type="number" step="1" value="${esc(row.qty)}" onchange="setNotaReviewRow(${idx},'qty',this.value)"></td>
-      <td><input type="number" step="0.01" value="${esc(Number(row.price).toFixed(2))}" onchange="setNotaReviewRow(${idx},'price',this.value)"></td>
-      <td style="text-align:right;color:${bad?'#f87171':'#34d399'};font-weight:700">${fmt(Number(row.qty||0)*Number(row.price||0))}</td>
-    </tr>`;
+  const grouped=new Map();
+  (r.rows||[]).forEach((row,idx)=>{
+    const op=String(row.operation||'compra').toLowerCase();
+    if(!grouped.has(op)) grouped.set(op,{op,rows:[]});
+    grouped.get(op).rows.push({...row,_idx:idx});
+  });
+  const groups=[...grouped.values()].map(g=>{
+    const rows=g.rows||[];
+    const selected=rows.filter(r=>r.include!==false);
+    const total=selected.reduce((s,r)=>s+(Number(r.qty)||0)*(Number(r.price)||0),0);
+    const count=selected.filter(r=>r.ticker && Number(r.qty)>0 && Number(r.price)>0).length;
+    const lines=rows.map((row)=>{
+      const idx=row._idx;
+      const bad=!row.include || !row.ticker || Number(row.qty)<=0 || Number(row.price)<=0;
+      const totalLine=(Number(row.qty)||0)*(Number(row.price)||0);
+      return `<div class="nota-review-line ${bad?'bad':''}">
+        <div class="col-check"><input type="checkbox" ${row.include!==false?'checked':''} onchange="setNotaReviewRow(${idx},'include',this.checked)"></div>
+        <div class="col-ticker">
+          <div class="ticker">${esc(row.ticker)}</div>
+          <div class="mini">${esc(row.product||'')}</div>
+        </div>
+        <div class="col-kind">
+          <select onchange="setNotaReviewRow(${idx},'operation',this.value)">
+            ${['compra','venda'].map(o=>`<option value="${o}" ${String(row.operation||'compra')===o?'selected':''}>${o==='compra'?'Compra':'Venda'}</option>`).join('')}
+          </select>
+        </div>
+        <div class="col-sector">
+          <select onchange="setNotaReviewRow(${idx},'type',this.value)">
+            ${TYPE_FORM_CHOICES.map(t=>`<option ${normalizeType(row.type||'Ação','Ação')===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="col-product">
+          <div class="mini">Setor</div>
+          <input value="${esc(row.sector)}" onchange="setNotaReviewRow(${idx},'sector',this.value)">
+        </div>
+        <div class="col-qty">
+          <div class="mini">Qtd</div>
+          <input type="number" step="1" value="${esc(row.qty)}" onchange="setNotaReviewRow(${idx},'qty',this.value)">
+        </div>
+        <div class="col-price">
+          <div class="mini">Preço</div>
+          <input type="number" step="0.01" value="${esc(Number(row.price).toFixed(2))}" onchange="setNotaReviewRow(${idx},'price',this.value)">
+        </div>
+        <div class="col-total">
+          <div class="mini">Total</div>
+          <div class="value" style="color:${bad?'#f87171':'#34d399'}">${fmt(totalLine)}</div>
+        </div>
+        <div class="line-controls">
+          <button class="bi" onclick="setNotaReviewRow(${idx},'include',false)">Ocultar</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<details class="nota-review-group" open>
+      <summary>
+        <div class="nota-review-group-head">
+          <input type="checkbox" checked onchange="setNotaReviewOperation(${JSON.stringify(g.op)}, this.checked)">
+          <div style="min-width:0">
+            <div class="nota-review-group-title">${g.op==='venda'?'Vendas':'Compras'}</div>
+            <div class="nota-review-group-sub">${count} lançamento(s) válido(s) · ${fmt(total)}${rows.length?` · ${rows.length} linha(s)`:''}</div>
+          </div>
+        </div>
+        <div class="nota-review-group-meta">
+          <span class="note-pill">Selecionados: ${count}</span>
+          <span class="note-pill">Total: ${fmt(total)}</span>
+        </div>
+      </summary>
+      <div class="nota-review-group-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn bgh" onclick="setNotaReviewOperation(${JSON.stringify(g.op)}, true)">Marcar linhas</button>
+          <button class="btn bgh" onclick="setNotaReviewOperation(${JSON.stringify(g.op)}, false)">Desmarcar linhas</button>
+        </div>
+        <div class="nota-review-lines">${lines||'<div class="es" style="padding:16px 12px">Nenhuma linha reconhecida.</div>'}</div>
+      </div>
+    </details>`;
   }).join('');
   const {total,count}=notaReviewSummary(r.rows);
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   return `<div class="note-overlay" role="dialog" aria-modal="true">
-    <div class="note-modal">
+    <div class="note-modal" style="max-width:1320px">
       <div class="note-head">
         <div class="note-title">
           <div>
@@ -1404,31 +1553,249 @@ function notaReviewModal(){
           </div>
         </div>
         ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px">${warnings}</ul></div>`:''}
-        <div class="note-table-wrap">
-          <div class="ts">
-            <table class="note-table">
-              <thead>
-                <tr>
-                  <th>Usa?</th>
-                  <th>Ticker</th>
-                  <th>Op.</th>
-                  <th>Tipo</th>
-                  <th>Setor</th>
-                  <th>Linha da nota</th>
-                  <th>Qtd</th>
-                  <th>Preço</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>${rows||`<tr><td colspan="9" style="text-align:center;color:#64748b;padding:18px">Nenhum lançamento reconhecido.</td></tr>`}</tbody>
-            </table>
-          </div>
-        </div>
+        <div class="nota-review-grid">${groups||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Nenhuma linha reconhecida.</div>'}</div>
         <div class="note-foot">
           <div class="hint">A importação só grava as linhas marcadas. Isso evita que subtotal, totais e linhas ambíguas entrem na carteira.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeNotaReview()">Cancelar</button>
             <button class="btn bsv" onclick="importNotaReview()">Importar selecionados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function openB3Review(parsed, fileName='', sourceKind='excel'){
+  const items=(parsed?.items||[]).map((it,i)=>({
+    id:it.id ?? i,
+    include:true,
+    ticker:String(it.ticker||'').toUpperCase(),
+    qty:Number(it.qty)||0,
+    price:Number(it.price)||0,
+    value:Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0)),
+    type:normalizeType(it.type||'Ação','Ação'),
+    sector:String(it.sector||''),
+    product:String(it.product||''),
+    sheet:String(it.sheet||it.section||'Outros').trim()||'Outros',
+    kind:String(it.kind||'').trim(),
+    date:it.date||parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
+    sourceItem:{...it}
+  })).filter(it=>it.ticker && it.qty>0 && it.price>0);
+  const groupsMap=new Map();
+  items.forEach(it=>{
+    const key=it.sheet||'Outros';
+    if(!groupsMap.has(key)){
+      groupsMap.set(key,{sheet:key,count:0,total:0,rights:0,sample:[],selected:true,sourceCount:0,items:[]});
+    }
+    const g=groupsMap.get(key);
+    g.count++;
+    g.total += Number(it.value)||0;
+    g.sourceCount++;
+    g.items.push(it);
+    if(g.sample.length<4){
+      g.sample.push(`${it.ticker} ${it.kind||it.sector||it.type||''}`.trim());
+    }
+    if(String(it.kind||'').toLowerCase()==='direito' || String(it.sector||'').toLowerCase()==='direito') g.rights++;
+  });
+  const groups=[...groupsMap.values()].sort((a,b)=>a.sheet.localeCompare(b.sheet,'pt-BR'));
+  const selectedSheets={};
+  groups.forEach(g=>{
+    selectedSheets[g.sheet]=!/emprest/i.test(g.sheet);
+  });
+  S.b3Review={
+    fileName,
+    sourceKind,
+    importDate:parsed?.importDate||'',
+    warnings:parsed?.warnings||[],
+    stats:parsed?.stats||{},
+    items,
+    groups,
+    selectedSheets,
+    includeRights:false
+  };
+  render();
+}
+function closeB3Review(){
+  S.b3Review=null;
+  render();
+}
+function setB3ReviewSheet(sheet, value){
+  if(!S.b3Review) return;
+  S.b3Review.selectedSheets = S.b3Review.selectedSheets || {};
+  S.b3Review.selectedSheets[sheet] = !!value;
+  render();
+}
+function setB3ReviewAll(value){
+  if(!S.b3Review) return;
+  S.b3Review.selectedSheets = Object.fromEntries((S.b3Review.groups||[]).map(g=>[g.sheet,!!value && !/emprest/i.test(g.sheet)]));
+  render();
+}
+function setB3ReviewItem(sheet, idx, value){
+  if(!S.b3Review) return;
+  const group=(S.b3Review.groups||[]).find(g=>g.sheet===sheet);
+  if(!group || !group.items || !group.items[idx]) return;
+  group.items[idx].include=!!value;
+  render();
+}
+function setB3ReviewGroupItems(sheet, value){
+  if(!S.b3Review) return;
+  const group=(S.b3Review.groups||[]).find(g=>g.sheet===sheet);
+  if(!group) return;
+  group.items=(group.items||[]).map(it=>({...it, include:!!value}));
+  render();
+}
+function setB3ReviewRights(value){
+  if(!S.b3Review) return;
+  S.b3Review.includeRights = !!value;
+  render();
+}
+function b3ReviewSelectedItems(){
+  const r=S.b3Review;
+  if(!r) return [];
+  return (r.items||[]).filter(it=>{
+    if(it.include===false) return false;
+    if(!r.selectedSheets?.[it.sheet]) return false;
+    if(!r.includeRights && (String(it.kind||'').toLowerCase()==='direito' || String(it.sector||'').toLowerCase()==='direito')) return false;
+    return true;
+  });
+}
+function b3ReviewSummary(){
+  const items=b3ReviewSelectedItems();
+  const total=items.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
+  const sheets=[...new Set(items.map(it=>it.sheet))];
+  return {count:items.length,total,sheets};
+}
+function importB3Review(){
+  if(!S.b3Review) return;
+  const rows=b3ReviewSelectedItems();
+  if(!rows.length){
+    alert('Selecione ao menos uma aba válida para importar.');
+    return;
+  }
+  const importDate=S.b3Review.importDate || new Date().toLocaleDateString('pt-BR');
+  const payload=rows.map(r=>({
+    ...r.sourceItem,
+    ticker:r.ticker,
+    qty:r.qty,
+    price:r.price,
+    value:r.value,
+    type:r.type,
+    sector:r.sector,
+    product:r.product,
+    sheet:r.sheet,
+    kind:r.kind,
+    date:r.date
+  }));
+  S.b3Review=null;
+  applyB3ImportedPositions(payload, importDate);
+}
+function b3ReviewModal(){
+  const r=S.b3Review;
+  if(!r) return '';
+  const {count,total,sheets}=b3ReviewSummary();
+  const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
+  const groups=(r.groups||[]).map(g=>{
+    const checked=!!r.selectedSheets?.[g.sheet];
+    const disabled=/emprest/i.test(g.sheet);
+    const items=(g.items||[]).map((it,idx)=>{
+      const bad=it.include===false || !it.ticker || Number(it.qty)<=0 || Number(it.price)<=0;
+      const totalLine=(Number(it.qty)||0)*(Number(it.price)||0);
+      return `<div class="b3-review-line ${bad?'bad':''}">
+        <div class="col-check"><input type="checkbox" ${it.include===false?'':'checked'} onchange="setB3ReviewItem(${JSON.stringify(g.sheet)}, ${idx}, this.checked)"></div>
+        <div class="col-ticker">
+          <div class="ticker">${esc(it.ticker)}</div>
+          <div class="mini">${esc(it.product||'')}</div>
+        </div>
+        <div class="col-kind">
+          <div class="kind">${esc(it.type||'')}</div>
+          <div class="mini">${esc(it.kind||'')}</div>
+        </div>
+        <div class="col-sector">
+          <div class="kind">${esc(it.sector||'—')}</div>
+          <div class="mini">${esc(it.sheet||'')}</div>
+        </div>
+        <div class="col-qty">
+          <div class="mini">Qtd</div>
+          <div class="value">${fmtN(it.qty)}</div>
+        </div>
+        <div class="col-price">
+          <div class="mini">Preço</div>
+          <div class="value">${fmt(it.price)}</div>
+        </div>
+        <div class="col-total">
+          <div class="mini">Total</div>
+          <div class="value" style="color:${bad?'#f87171':'#34d399'}">${fmt(totalLine)}</div>
+        </div>
+        <div class="line-controls">
+          <button class="bi" onclick="setB3ReviewItem(${JSON.stringify(g.sheet)}, ${idx}, false)">Ocultar</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<details class="b3-review-group" ${checked?'open':''}>
+      <summary>
+        <div class="b3-review-group-head">
+          <input type="checkbox" ${checked?'checked':''} ${disabled?'disabled':''} onchange="setB3ReviewSheet(${JSON.stringify(g.sheet)}, this.checked)">
+          <div style="min-width:0">
+            <div class="b3-review-group-title">${esc(g.sheet)}</div>
+            <div class="b3-review-group-sub">${g.count} posição(ões) · ${fmt(g.total)}${g.rights?` · Direitos: ${g.rights}`:''}${(g.sample||[]).length?` · ${g.sample.map(x=>esc(x)).join(' · ')}`:''}</div>
+          </div>
+        </div>
+        <div class="b3-review-group-meta">
+          <span class="note-pill">Ativos: ${g.count}</span>
+          <span class="note-pill">Total: ${fmt(g.total)}</span>
+        </div>
+      </summary>
+      <div class="b3-review-group-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn bgh" onclick="setB3ReviewGroupItems(${JSON.stringify(g.sheet)}, true)">Marcar linhas</button>
+          <button class="btn bgh" onclick="setB3ReviewGroupItems(${JSON.stringify(g.sheet)}, false)">Desmarcar linhas</button>
+        </div>
+        <div class="b3-review-lines">${items||'<div class="es" style="padding:16px 12px">Nenhuma linha válida nesta aba.</div>'}</div>
+      </div>
+    </details>`;
+  }).join('');
+  return `<div class="note-overlay" role="dialog" aria-modal="true">
+    <div class="note-modal" style="max-width:1320px">
+      <div class="note-head">
+        <div class="note-title">
+          <div>
+            <h3>📥 Revisar importação B3</h3>
+            <p>Escolha o que vai entrar antes de confirmar. Empréstimos ficam fora por padrão e direitos/subscrições podem ser incluídos ou não.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+            <button class="btn bgh" onclick="closeB3Review()">Cancelar</button>
+            <button class="btn bsv" onclick="importB3Review()">Importar selecionados</button>
+          </div>
+        </div>
+        <div class="note-meta">
+          <span class="note-pill">Arquivo: ${esc(r.fileName||'B3')}</span>
+          <span class="note-pill">Data: ${esc(r.importDate||'—')}</span>
+          <span class="note-pill">Selecionados: ${count}</span>
+          <span class="note-pill">Total: ${fmt(total)}</span>
+          <span class="note-pill">Abas: ${sheets.length}</span>
+        </div>
+      </div>
+      <div class="note-body">
+        <div class="note-actions">
+          <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="btn bgh" onclick="setB3ReviewAll(true)">Marcar todas</button>
+            <button class="btn bgh" onclick="setB3ReviewAll(false)">Desmarcar todas</button>
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #161e2e;border-radius:10px;background:#0d111e;font-size:12px;color:#cbd5e1">
+              <input type="checkbox" ${r.includeRights?'checked':''} onchange="setB3ReviewRights(this.checked)">
+              Incluir direitos/subscrições
+            </label>
+          </div>
+          <div class="right">
+            <span style="font-size:12px;color:#64748b">Aba de empréstimos vem desmarcada por padrão para evitar sujeira na carteira.</span>
+          </div>
+        </div>
+        ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
+        <div class="b3-review-grid">${groups||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Nenhuma aba encontrada para revisar.</div>'}</div>
+        <div class="note-foot">
+          <div class="hint">Só entram as abas marcadas. Isso ajuda a evitar importação de empréstimos, totais e itens que você não quer aceitar.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bgh" onclick="closeB3Review()">Cancelar</button>
+            <button class="btn bsv" onclick="importB3Review()">Importar selecionados</button>
           </div>
         </div>
       </div>
@@ -1450,18 +1817,7 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
     }
     const {items,warnings,importDate,stats}=parsed;
     if(!items.length){ alert('Não encontrei posições válidas no arquivo. Tente exportar a posição da B3/corretora em Excel com colunas Código de Negociação, Quantidade, Preço de Fechamento e Valor Atualizado.'); return; }
-    const total=items.reduce((s,i)=>s+(i.value||i.qty*i.price),0);
-    const sample=items.slice(0,12).map(i=>`${i.ticker}: ${i.qty} x R$ ${Number(i.price).toFixed(2)} (${i.type}/${i.sector||'-'})`).join('\n');
-    const importedLines=Object.entries(stats.importedBySheet||{}).map(([sheet,count])=>`- ${sheet}: ${count}`).join('\n') || '- Nenhuma aba processada';
-    const skippedLines=(stats.skippedSheets||[]).length?stats.skippedSheets.map(sheet=>`- ${sheet} (ignorada)`).join('\n'):'- Nenhuma';
-    const ignoredBySheetLines=Object.entries(stats.ignoredBySheet||{}).length
-      ? Object.entries(stats.ignoredBySheet).map(([sheet,count])=>`- ${sheet}: ${count}`).join('\n')
-      : '- Nenhuma';
-    const ignoredLines=Object.entries(stats.ignoredByReason||{}).length
-      ? Object.entries(stats.ignoredByReason).map(([reason,count])=>`- ${reason}: ${count}`).join('\n')
-      : '- Nenhuma';
-    const msg=`Resumo da importação (${isPdf?'PDF':'Excel'})\n\nPosições válidas: ${items.length}\nTotal aproximado: ${fmt(total)}\nData usada: ${importDate}\n\nPor aba importada:\n${importedLines}\n\nAbas ignoradas:\n${skippedLines}\n\nLinhas ignoradas por aba:\n${ignoredBySheetLines}\n\nMotivos das linhas ignoradas:\n${stats.totalIgnored||0}\n${ignoredLines}\n\nPrévia das posições que vão entrar:\n${sample}${items.length>12?'\n...':''}\n\nVou importar como compras de ajuste na aba Aportes e recalcular Ativos.\nSe já existir importação B3 desta mesma data, ela será substituída para evitar duplicidade.\n\nObservação: arquivo de posição não traz preço médio real nem data de compra original; para histórico exato, use extrato de movimentações.\n\nConfirmar importação?`;
-    if(confirm(msg)) applyB3ImportedPositions(items,importDate);
+    openB3Review({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
     if(warnings.length) console.warn('Avisos importação B3:',warnings);
   }catch(err){ console.error(err); alert('Erro ao importar arquivo. Verifique o PDF/Excel e tente novamente.'); }
   e.target.value='';
@@ -1499,6 +1855,7 @@ function configBrapi(){
 // ══════════════════════════════════════
 const fmt  = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
+const fmtN = v => Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
 const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const bdg  = t => {
   const v=normalizeType(t||'','');
@@ -2424,7 +2781,8 @@ const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','
   </div>
   <div class="tabs">${TABS.map(([k,l])=>`<button class="tab${S.tab===k?' on':''}" onclick="go('${k}')">${l}</button>`).join('')}</div>
   <div class="wrap">${content()}</div>
-  ${S.noteReview?notaReviewModal():''}`;
+  ${S.noteReview?notaReviewModal():''}
+  ${S.b3Review?b3ReviewModal():''}`;
 }
 function content(){
   if(S.tab==='dashboard') return dash();
