@@ -390,6 +390,8 @@ let S = {
   brapiToken: DEFAULT_BRAPI, divGoal:0,
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
+  irpfYear:new Date().getFullYear(),
+  irpfStep:1,
   apHistoryOpen:true, apSearch:'',
   apSearchTimer:null,
   goals:{
@@ -424,6 +426,7 @@ function save(){
       apHistoryOpen:S.apHistoryOpen, apSearch:S.apSearch,
       dashPeriod:S.dashPeriod, dashType:S.dashType,
       rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench,
+      irpfYear:S.irpfYear, irpfStep:S.irpfStep,
       learnMeta:S.learnMeta
     }));
     queueCloudSave();
@@ -472,6 +475,8 @@ function load(){
     if(d.rentPeriod !== undefined)   S.rentPeriod = String(d.rentPeriod||'all');
     if(d.rentType !== undefined)     S.rentType = String(d.rentType||'all');
     if(d.rentBench !== undefined)    S.rentBench = String(d.rentBench||'CDI');
+    if(d.irpfYear !== undefined)     S.irpfYear = Math.max(2010, Number(d.irpfYear)||new Date().getFullYear());
+    if(d.irpfStep !== undefined)     S.irpfStep = Math.min(4, Math.max(1, Number(d.irpfStep)||1));
     if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
     if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
   }catch(e){ console.error('load erro:',e); }
@@ -494,6 +499,8 @@ function load(){
           if(d.rentPeriod !== undefined) S.rentPeriod=String(d.rentPeriod||'all');
           if(d.rentType !== undefined) S.rentType=String(d.rentType||'all');
           if(d.rentBench !== undefined) S.rentBench=String(d.rentBench||'CDI');
+          if(d.irpfYear !== undefined) S.irpfYear=Math.max(2010, Number(d.irpfYear)||new Date().getFullYear());
+          if(d.irpfStep !== undefined) S.irpfStep=Math.min(4, Math.max(1, Number(d.irpfStep)||1));
           if(d.goals && typeof d.goals==='object') S.goals=normalizeGoals(d.goals);
           if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta=d.learnMeta;
           save(); break;
@@ -2832,6 +2839,839 @@ function reserveStats(){
   return out;
 }
 
+function irpfSelectedYear(){
+  const current=new Date().getFullYear();
+  return Math.max(2010, Number(S.irpfYear)||current);
+}
+function setIrpfYear(year){
+  S.irpfYear=Math.max(2010, Number(year)||new Date().getFullYear());
+  S.irpfStep=1;
+  save();
+  render();
+}
+function setIrpfStep(step){
+  S.irpfStep=Math.min(4, Math.max(1, Number(step)||1));
+  save();
+  render();
+}
+function irpfStepLabel(step){
+  return {
+    1:'Revisar posições',
+    2:'Revisar proventos',
+    3:'Revisar DARF',
+    4:'Resumo final',
+  }[step] || 'IRPF';
+}
+function irpfYears(){
+  const years=new Set([new Date().getFullYear()]);
+  S.aportes.forEach(a=>{ const d=parseAnyDate(a.date); if(d) years.add(d.getFullYear()); });
+  S.proventos.forEach(p=>{ const d=parseAnyDate(p.date); if(d) years.add(d.getFullYear()); });
+  return [...years].sort((a,b)=>b-a);
+}
+function irpfIsEquityType(type){
+  const t=normalizeType(type||'Ação','Ação');
+  return ['Ação','Stock','Reit','BDR'].includes(t);
+}
+function irpfSaleRate(type){
+  const t=normalizeType(type||'Ação','Ação');
+  if(t==='FII') return 20;
+  if(t==='ETF') return 15;
+  if(t==='Renda Fixa' || t==='Tesouro Direto') return 15;
+  return 15;
+}
+function irpfDividendBucketLabel(kind){
+  const k=String(kind||'').toLowerCase();
+  if(k.includes('jcp') || k.includes('juros')) return 'Tributação exclusiva';
+  return 'Isento / não tributável';
+}
+function irpfTaxBucket(type){
+  const t=normalizeType(type||'Ação','Ação');
+  if(t==='FII') return 'FII';
+  if(t==='ETF') return 'ETF';
+  if(t==='BDR') return 'BDR';
+  if(t==='Renda Fixa' || t==='Tesouro Direto') return 'Renda Fixa';
+  return 'Ações';
+}
+function irpfTaxRate(bucket){
+  if(bucket==='FII') return 20;
+  if(bucket==='ETF' || bucket==='BDR' || bucket==='Renda Fixa') return 15;
+  return 15;
+}
+function irpfCsvEscape(v){
+  const s=String(v??'');
+  return `"${s.replace(/"/g,'""')}"`;
+}
+function irpfDownloadText(name, content, mime='text/plain;charset=utf-8'){
+  const blob=new Blob([content],{type:mime});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:name});
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function irpfCopyFinalSummary(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('✅ Resumo final copiado.');
+  }catch(e){
+    window.prompt('Copie o resumo final abaixo:', text);
+  }
+}
+function irpfMonthLabel(monthIndex){
+  return ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][monthIndex] || '';
+}
+function irpfBuildYearReport(year){
+  const y=Number(year)||new Date().getFullYear();
+  const bucketOrder=['Ações','FII','ETF','BDR','Renda Fixa'];
+  const months=Array.from({length:12},(_,idx)=>({
+    key:`${y}-${String(idx+1).padStart(2,'0')}`,
+    label:irpfMonthLabel(idx),
+    buys:0,
+    sells:0,
+    salesByBucket:Object.fromEntries(bucketOrder.map(b=>[b,0])),
+    realizedByBucket:Object.fromEntries(bucketOrder.map(b=>[b,0])),
+    taxByBucket:Object.fromEntries(bucketOrder.map(b=>[b,0])),
+    exemptByBucket:Object.fromEntries(bucketOrder.map(b=>[b,0])),
+    carryByBucket:Object.fromEntries(bucketOrder.map(b=>[b,0])),
+    lossUsedByBucket:Object.fromEntries(bucketOrder.map(b=>[b,0])),
+    events:[]
+  }));
+  const holdings=new Map();
+  const carryByBucket=Object.fromEntries(bucketOrder.map(b=>[b,0]));
+  const txs=[...S.aportes]
+    .map(a=>({...a,_dt:parseAnyDate(a.date)}))
+    .filter(a=>a._dt && a._dt.getFullYear()===y)
+    .sort((a,b)=>a._dt-b._dt||((Number(a.id)||0)-(Number(b.id)||0)));
+  const provs=[...S.proventos]
+    .map(p=>({...p,_dt:parseAnyDate(p.date)}))
+    .filter(p=>p._dt && p._dt.getFullYear()===y && Number(p.value)>0)
+    .sort((a,b)=>a._dt-b._dt||String(a.ticker||'').localeCompare(String(b.ticker||'')));
+
+  const ensurePos=(ticker)=>{
+    const tk=String(ticker||'').toUpperCase();
+    if(!holdings.has(tk)){
+      const meta=metaTicker(tk);
+      holdings.set(tk,{ticker:tk,qty:0,cost:0,type:meta.type||'Ação',sector:meta.sector||''});
+    }
+    return holdings.get(tk);
+  };
+
+  txs.forEach(tx=>{
+    const rawTicker=cleanAssetCode(tx.ticker||'')||String(tx.ticker||'').trim().toUpperCase();
+    if(!rawTicker) return;
+    const type=normalizeType(tx.type||tx.asset_type||metaTicker(rawTicker).type||'Ação','Ação');
+    const isReserve=type==='Reserva de emergência' || String(tx.operation||tx.op||'').toLowerCase().startsWith('reserva');
+    if(isReserve) return;
+
+    const month=months[tx._dt.getMonth()];
+    const qty=Math.abs(Number(tx.qty)||0);
+    const price=Math.abs(Number(tx.price)||0);
+    const op=String(tx.operation||tx.op||'compra').toLowerCase();
+    const bucket=irpfTaxBucket(type);
+    const pos=ensurePos(rawTicker);
+    pos.type=type;
+    pos.sector=tx.sector||tx.asset_sector||pos.sector||metaTicker(rawTicker).sector||'';
+
+    if(op==='venda'){
+      const avgBefore=pos.qty>0 ? (pos.cost/pos.qty) : 0;
+      const saleValue=qty*price;
+      const costBasis=avgBefore*qty;
+      const realized=saleValue-costBasis;
+      pos.qty=Math.max(0,pos.qty-qty);
+      pos.cost=Math.max(0,pos.cost-costBasis);
+      month.sells+=saleValue;
+      month.salesByBucket[bucket]+=saleValue;
+      month.events.push({bucket, realized, saleValue, type});
+      return;
+    }
+
+    pos.qty+=qty;
+    pos.cost+=qty*price;
+    month.buys+=qty*price;
+  });
+
+  months.forEach(month=>{
+    const equitySalesTotal=month.salesByBucket['Ações'];
+    month.events.forEach(evt=>{
+      const rate=irpfTaxRate(evt.bucket);
+      const canUseExemption = evt.bucket==='Ações' && equitySalesTotal<=20000;
+      if(canUseExemption){
+        if(evt.realized>0) month.exemptByBucket[evt.bucket]+=evt.realized;
+        else month.lossUsedByBucket[evt.bucket]+=evt.realized;
+        month.realizedByBucket[evt.bucket]+=evt.realized;
+        return;
+      }
+
+      const priorCarry=Number(carryByBucket[evt.bucket]||0);
+      const net=evt.realized + priorCarry;
+      month.realizedByBucket[evt.bucket]+=evt.realized;
+      if(net>0){
+        month.taxByBucket[evt.bucket]+=net*(rate/100);
+        carryByBucket[evt.bucket]=0;
+      }else{
+        carryByBucket[evt.bucket]=net;
+        month.lossUsedByBucket[evt.bucket]+=net;
+      }
+    });
+    bucketOrder.forEach(bucket=>{
+      month.carryByBucket[bucket]=carryByBucket[bucket];
+    });
+    delete month.events;
+  });
+
+  const finalPositions=[...holdings.values()]
+    .filter(p=>p.qty>0.000001)
+    .map(p=>{
+      const avg=p.qty>0 ? p.cost/p.qty : 0;
+      const current=Number((S.assets.find(a=>String(a.ticker||'').toUpperCase()===p.ticker)?.current_price)||0);
+      const bucket=irpfTaxBucket(p.type);
+      return {
+        ticker:p.ticker,
+        type:p.type,
+        bucket,
+        sector:p.sector||metaTicker(p.ticker).sector||'',
+        qty:p.qty,
+        cost:p.cost,
+        avg,
+        current,
+        marketValue: current>0 ? p.qty*current : p.cost,
+        note: bucket==='FII'
+          ? 'Ficha Bens e Direitos'
+          : bucket==='ETF'
+            ? 'ETF: conferir enquadramento'
+            : bucket==='BDR'
+              ? 'BDR: verificar custo em reais'
+              : bucket==='Renda Fixa'
+                ? 'Renda fixa: apurar IR do resgate/vencimento'
+                : 'Ações: posição em 31/12'
+      };
+    })
+    .sort((a,b)=>a.bucket.localeCompare(b.bucket)||a.ticker.localeCompare(b.ticker));
+
+  const yearProvents=provs.map(p=>{
+    const type=String(p.type||'').trim();
+    const bucket=irpfDividendBucketLabel(type);
+    const value=Number(p.value)||0;
+    return { ...p, bucket, value };
+  });
+
+  const positionsByBucket=finalPositions.reduce((acc,p)=>{
+    if(!acc[p.bucket]) acc[p.bucket]=[];
+    acc[p.bucket].push(p);
+    return acc;
+  },{});
+
+  const totalsByBucket=months.reduce((acc,month)=>{
+    bucketOrder.forEach(bucket=>{
+      if(!acc[bucket]) acc[bucket]={sales:0, realized:0, exempt:0, tax:0, carry:0};
+      acc[bucket].sales+=Number(month.salesByBucket[bucket]||0);
+      acc[bucket].realized+=Number(month.realizedByBucket[bucket]||0);
+      acc[bucket].exempt+=Number(month.exemptByBucket[bucket]||0);
+      acc[bucket].tax+=Number(month.taxByBucket[bucket]||0);
+      acc[bucket].carry=Number(month.carryByBucket[bucket]||0);
+    });
+    return acc;
+  },{});
+
+  const totalBuys=months.reduce((s,m)=>s+m.buys,0);
+  const totalSells=months.reduce((s,m)=>s+m.sells,0);
+  const totalTax=months.reduce((s,m)=>s+bucketOrder.reduce((x,b)=>x+Number(m.taxByBucket[b]||0),0),0);
+  const totalTaxableGain=months.reduce((s,m)=>s+bucketOrder.reduce((x,b)=>x+Math.max(0, Number(m.realizedByBucket[b]||0)+Math.max(0,Number(m.carryByBucket[b]||0))),0),0);
+  const totalExemptGain=months.reduce((s,m)=>s+Number(m.exemptByBucket['Ações']||0),0);
+  const totalLossCarry=months.reduce((s,m)=>s+bucketOrder.reduce((x,b)=>x+Math.min(0, Number(m.carryByBucket[b]||0)),0),0);
+  const liquidationYearEnd=finalPositions.reduce((s,p)=>s+p.cost,0);
+  const totalProvents=yearProvents.reduce((s,p)=>s+(Number(p.value)||0),0);
+  const taxableProvents=yearProvents.filter(p=>String(p.bucket).includes('Tributação')).reduce((s,p)=>s+(Number(p.value)||0),0);
+  const exemptProvents=totalProvents-taxableProvents;
+
+  return {
+    year:y,
+    months,
+    positions:finalPositions,
+    positionsByBucket,
+    provents:yearProvents,
+    bucketOrder,
+    totalsByBucket,
+    totals:{
+      buys:totalBuys,
+      sells:totalSells,
+      taxableGain:totalTaxableGain,
+      exemptGain:totalExemptGain,
+      tax:totalTax,
+      lossCarry:totalLossCarry,
+      proventsTotal:totalProvents,
+      proventsExempt:exemptProvents,
+      proventsTaxable:taxableProvents,
+      yearEndCost:liquidationYearEnd,
+    }
+  };
+}
+function irpfExportCSV(){
+  const year=irpfSelectedYear();
+  const report=irpfBuildYearReport(year);
+  const lines=[];
+  lines.push(`IRPF;Ano-calendario;${year}`);
+  lines.push(`Gerado em;${new Date().toLocaleString('pt-BR')}`);
+  lines.push('');
+  lines.push('RESUMO');
+  lines.push(['Indicador','Valor'].map(irpfCsvEscape).join(';'));
+  [
+    ['Compras no ano', report.totals.buys],
+    ['Vendas no ano', report.totals.sells],
+    ['Ganhos tributáveis', report.totals.taxableGain],
+    ['Ganhos isentos', report.totals.exemptGain],
+    ['Proventos totais', report.totals.proventsTotal],
+    ['Proventos isentos', report.totals.proventsExempt],
+    ['Proventos tributáveis', report.totals.proventsTaxable],
+    ['Imposto estimado', report.totals.tax],
+    ['Posicao em 31/12', report.totals.yearEndCost],
+  ].forEach(([k,v])=>lines.push([k, fmt(Number(v)||0)].map(irpfCsvEscape).join(';')));
+  lines.push('');
+  lines.push('APURACAO_MENSAL');
+  lines.push(['Mes','Acoes vendas','Acoes ganho real','Acoes ganho isento','Acoes imposto','FII vendas','FII ganho real','FII imposto','ETF vendas','ETF ganho real','ETF imposto','BDR vendas','BDR ganho real','BDR imposto','RendaFixa vendas','RendaFixa ganho real','RendaFixa imposto','DARF total'].map(irpfCsvEscape).join(';'));
+  report.months.forEach(m=>{
+    const row=[
+      m.label,
+      m.salesByBucket['Ações'], m.realizedByBucket['Ações'], m.exemptByBucket['Ações'], m.taxByBucket['Ações'],
+      m.salesByBucket['FII'], m.realizedByBucket['FII'], m.taxByBucket['FII'],
+      m.salesByBucket['ETF'], m.realizedByBucket['ETF'], m.taxByBucket['ETF'],
+      m.salesByBucket['BDR'], m.realizedByBucket['BDR'], m.taxByBucket['BDR'],
+      m.salesByBucket['Renda Fixa'], m.realizedByBucket['Renda Fixa'], m.taxByBucket['Renda Fixa'],
+      report.bucketOrder.reduce((s,b)=>s+Number(m.taxByBucket[b]||0),0)
+    ];
+    lines.push(row.map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
+  });
+  lines.push('');
+  lines.push('POSICOES_31_12');
+  lines.push(['Ticker','Bucket','Tipo','Setor','Qtd','Custo','PM','Preco atual','Valor de mercado','Observacao'].map(irpfCsvEscape).join(';'));
+  report.positions.forEach(p=>{
+    lines.push([
+      p.ticker,p.bucket,p.type,p.sector,p.qty,p.cost,p.avg,p.current,p.marketValue,p.note
+    ].map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
+  });
+  lines.push('');
+  lines.push('PROVENTOS');
+  lines.push(['Ticker','Data','Classificacao','Valor','Tipo'].map(irpfCsvEscape).join(';'));
+  report.provents.forEach(p=>{
+    lines.push([p.ticker,p.date,p.bucket,p.value,p.type].map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
+  });
+  irpfDownloadText(`irpf-${year}.csv`, lines.join('\r\n'), 'text/csv;charset=utf-8');
+  toast(`✅ CSV do IRPF ${year} exportado.`);
+}
+function irpfExportPdf(){
+  const year=irpfSelectedYear();
+  const report=irpfBuildYearReport(year);
+  const now=new Date().toLocaleString('pt-BR');
+  const bucketOrder=report.bucketOrder;
+  const bucketLabels={Ações:'Ações',FII:'FIIs',ETF:'ETFs',BDR:'BDRs','Renda Fixa':'Renda Fixa'};
+  const monthTable=report.months.map(m=>`
+    <tr>
+      <td>${m.label}</td>
+      <td>${fmt(m.salesByBucket['Ações'])}</td>
+      <td>${fmt(m.taxByBucket['Ações'])}</td>
+      <td>${fmt(m.salesByBucket['FII'])}</td>
+      <td>${fmt(m.taxByBucket['FII'])}</td>
+      <td>${fmt(m.salesByBucket['ETF'])}</td>
+      <td>${fmt(m.taxByBucket['ETF'])}</td>
+      <td>${fmt(m.salesByBucket['BDR'])}</td>
+      <td>${fmt(m.taxByBucket['BDR'])}</td>
+      <td>${fmt(m.salesByBucket['Renda Fixa'])}</td>
+      <td>${fmt(m.taxByBucket['Renda Fixa'])}</td>
+      <td>${fmt(bucketOrder.reduce((s,b)=>s+Number(m.taxByBucket[b]||0),0))}</td>
+    </tr>`).join('');
+  const positionGroups=report.bucketOrder.map(bucket=>{
+    const rows=(report.positionsByBucket[bucket]||[]).map(p=>`
+      <tr>
+        <td>${p.ticker}</td>
+        <td>${p.type}</td>
+        <td>${esc(p.sector||'—')}</td>
+        <td>${p.qty.toLocaleString('pt-BR',{maximumFractionDigits:8})}</td>
+        <td>${fmt(p.cost)}</td>
+        <td>${fmt(p.avg)}</td>
+        <td>${p.current>0?fmt(p.current):'—'}</td>
+        <td>${fmt(p.marketValue)}</td>
+      </tr>`).join('');
+    return `
+        <h3>${bucketLabels[bucket] || bucket}</h3>
+        <table>
+          <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Custo</th><th>PM</th><th>Preço atual</th><th>Valor</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="8">Sem posições</td></tr>`}</tbody>
+        </table>`;
+    }).join('');
+    const html = [
+      '<html>',
+      '<head>',
+      `<title>IRPF ${year}</title>`,
+      '<style>',
+      'body{font-family:Arial,sans-serif;margin:24px;color:#111827}',
+      'h1,h2,h3{margin:0 0 10px}',
+      'h1{font-size:22px}',
+      'h2{font-size:16px;margin-top:22px}',
+      'h3{font-size:14px;margin-top:18px}',
+      '.meta{color:#4b5563;font-size:12px;margin-bottom:18px}',
+      '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 18px}',
+      '.card{border:1px solid #d1d5db;border-radius:10px;padding:10px}',
+      '.k{font-size:11px;color:#6b7280;text-transform:uppercase}',
+      '.v{font-size:18px;font-weight:700}',
+      'table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}',
+      'th,td{border:1px solid #d1d5db;padding:6px 7px;text-align:left}',
+      'th{background:#f3f4f6}',
+      '.page-break{page-break-after:always}',
+      '@media print {.no-print{display:none}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<div class="no-print" style="margin-bottom:12px;font-size:12px;color:#6b7280">Use imprimir/salvar como PDF no navegador.</div>',
+      `<h1>IRPF ${year}</h1>`,
+      `<div class="meta">Gerado em ${now}</div>`,
+      '<div class="grid">',
+      `<div class="card"><div class="k">Compras</div><div class="v">${fmt(report.totals.buys)}</div></div>`,
+      `<div class="card"><div class="k">Vendas</div><div class="v">${fmt(report.totals.sells)}</div></div>`,
+      `<div class="card"><div class="k">DARF estimado</div><div class="v">${fmt(report.totals.tax)}</div></div>`,
+      `<div class="card"><div class="k">Ganhos tributáveis</div><div class="v">${fmt(report.totals.taxableGain)}</div></div>`,
+      `<div class="card"><div class="k">Ganhos isentos</div><div class="v">${fmt(report.totals.exemptGain)}</div></div>`,
+      `<div class="card"><div class="k">Proventos totais</div><div class="v">${fmt(report.totals.proventsTotal)}</div></div>`,
+      '</div>',
+      '<h2>Apuração mensal</h2>',
+      '<table>',
+      '<thead><tr><th>Mês</th><th>Ações vendas</th><th>Ações IR</th><th>FII vendas</th><th>FII IR</th><th>ETF vendas</th><th>ETF IR</th><th>BDR vendas</th><th>BDR IR</th><th>Renda Fixa vendas</th><th>Renda Fixa IR</th><th>DARF total</th></tr></thead>',
+      `<tbody>${monthTable}</tbody>`,
+      '</table>',
+      '<h2>Posições por bucket</h2>',
+      positionGroups,
+      '<h2>Proventos</h2>',
+      '<table>',
+      '<thead><tr><th>Ticker</th><th>Data</th><th>Classificação</th><th>Valor</th><th>Tipo</th></tr></thead>',
+      `<tbody>${report.provents.map(p=>`<tr><td>${p.ticker}</td><td>${p.date}</td><td>${p.bucket}</td><td>${fmt(p.value)}</td><td>${esc(p.type||'—')}</td></tr>`).join('') || '<tr><td colspan="5">Sem proventos</td></tr>'}</tbody>`,
+      '</table>',
+      '<scr'+'ipt>setTimeout(()=>window.print(),250)</scr'+'ipt>',
+      '</body>',
+      '</html>'
+    ].join('');
+    const w=window.open('', '_blank', 'noopener,noreferrer,width=1280,height=900');
+    if(!w){ alert('O navegador bloqueou a janela de PDF. Permita pop-ups e tente novamente.'); return; }
+    w.document.open();
+    w.document.write(html);
+  w.document.close();
+  toast(`🖨️ Janela de impressão aberta para o IRPF ${year}.`);
+}
+function irpfConferenceMarkup(report){
+  const taxDue=Math.max(0, Number(report.totals.tax)||0);
+  const bucketPositions=report.bucketOrder.map(bucket=>({
+    bucket,
+    count:(report.positionsByBucket[bucket]||[]).length,
+    value:(report.positionsByBucket[bucket]||[]).reduce((s,p)=>s+Number(p.marketValue||0),0),
+  }));
+  const items=[
+    {label:'Bens e Direitos', value:`${report.positions.length} posições · ${fmt(report.totals.yearEndCost)}`, hint:'use os saldos em 31/12 para conferir a ficha patrimonial'},
+    {label:'Rendimentos isentos', value:fmt(report.totals.exemptGain + report.totals.proventsExempt), hint:'ações isentas + proventos isentos'},
+    {label:'Rendimentos tributáveis', value:fmt(report.totals.taxableGain + report.totals.proventsTaxable), hint:'ganhos tributáveis e JCP/RF tributados'},
+    {label:'DARF estimado', value:taxDue>0 ? fmt(taxDue) : 'Sem DARF', hint:taxDue>0 ? 'emitir e revisar o pagamento' : 'sem imposto mensal estimado'},
+    {label:'Prejuízo acumulado', value:report.totals.lossCarry<0 ? fmt(Math.abs(report.totals.lossCarry)) : 'Nenhum', hint:'guarde para compensação futura, se houver'},
+  ];
+  const bucketRows=bucketPositions.map(b=>`
+    <tr>
+      <td style="font-weight:700;color:#e2eaf6">${esc(b.bucket)}</td>
+      <td>${b.count}</td>
+      <td>${fmt(b.value)}</td>
+    </tr>`).join('');
+  const checklist=[
+    taxDue>0 ? 'Gerar DARF do mês/ano apurado antes de declarar.' : 'Conferir se houve mês com imposto devido e sem pagamento.',
+    report.positions.length ? 'Revisar posição em 31/12 e conferir se todas as compras/vendas bateram.' : 'Sem posição apurada para revisar.',
+    report.provents.length ? 'Conferir rendimentos isentos e tributáveis com informes das corretoras.' : 'Sem proventos no ano selecionado.',
+    'Validar os lançamentos na declaração oficial antes do envio.',
+  ];
+  const fichaCards=[
+    {title:'Bens e Direitos', tag:'Patrimônio', body:'Posição em 31/12, custo de aquisição, tipo do ativo e quantidade. Aqui entram ações, FIIs, ETFs, BDRs e outros ativos ainda em carteira.'},
+    {title:'Renda Variável', tag:'Ganhos e perdas', body:'Resultado mensal de vendas tributáveis, prejuízo acumulado para compensação e operação por tipo. Ações podem ter faixa isenta mensal; FIIs, ETFs e BDRs seguem regra própria.'},
+    {title:'Rendimentos isentos e não tributáveis', tag:'Dividendos', body:'Dividendos isentos, parte isenta de operações e eventos que não entram como imposto pago. Use como apoio para cruzar com o informe da corretora.'},
+    {title:'Rendimentos sujeitos à tributação exclusiva/definitiva', tag:'JCP e similares', body:'Juros sobre capital próprio, renda fixa com IR retido e outros rendimentos com tributação na fonte. Servem para conferir com o informe anual.'},
+    {title:'GCAP / DARF', tag:'Imposto devido', body:'Meses com lucro tributável e imposto estimado. Se houver DARF, revise o valor e a data de pagamento antes de enviar a declaração.'},
+  ];
+  return `
+  <details class="sec" open style="margin-bottom:12px">
+    <summary>
+      <div>
+        <div class="sec-title">Conferência final antes do envio</div>
+        <div class="sec-meta">o que revisar para declarar com mais segurança</div>
+      </div>
+      <div class="sec-meta">${taxDue>0 ? `DARF estimado ${fmt(taxDue)}` : 'sem DARF estimado'}</div>
+    </summary>
+    <div class="sec-body">
+      <div class="cards" style="margin-bottom:14px">
+        ${items.map(item=>`
+          <div class="card al" style="border-left-color:#60a5fa">
+            <div class="cl">${esc(item.label)}</div>
+            <div class="cv bl" style="font-size:18px">${esc(item.value)}</div>
+            <div class="cs">${esc(item.hint)}</div>
+          </div>`).join('')}
+      </div>
+      <div class="tw" style="margin-bottom:12px"><div class="ts"><table>
+        <thead><tr><th>Bucket</th><th>Posições</th><th>Valor de mercado</th></tr></thead>
+        <tbody>${bucketRows}</tbody>
+      </table></div></div>
+      <div class="aic">
+        <div style="font-size:13px;line-height:1.8;color:#b8c8de">
+          <strong style="color:#f8fafc">Checklist prático</strong><br>
+          ${checklist.map((t,i)=>`${i+1}. ${esc(t)}`).join('<br>')}
+        </div>
+      </div>
+    </div>
+  </details>`;
+}
+function irpfFinalSummaryText(report){
+  const y=report.year;
+  const taxDue=Math.max(0, Number(report.totals.tax)||0);
+  const posCount=report.positions.length;
+  const provCount=report.provents.length;
+  const totalMarket=report.positions.reduce((s,p)=>s+Number(p.marketValue||0),0);
+  const buckets=report.bucketOrder.map(bucket=>{
+    const data=report.totalsByBucket[bucket]||{};
+    const label={ 'Ações':'Ações', 'FII':'FIIs', 'ETF':'ETFs', 'BDR':'BDRs', 'Renda Fixa':'Renda Fixa' }[bucket] || bucket;
+    return `${label}: ${fmt(data.realized||0)} realizado, ${fmt(data.tax||0)} IR estimado`;
+  }).join('\n');
+  return `IRPF ${y}
+Resumo para conferência da declaração
+
+1) Posições em 31/12
+- ${posCount} posições apuradas
+- Valor de mercado estimado: ${fmt(totalMarket)}
+- Custo de aquisição em 31/12: ${fmt(report.totals.yearEndCost)}
+
+2) Proventos do ano
+- ${provCount} lançamentos
+- Total de proventos: ${fmt(report.totals.proventsTotal)}
+- Isentos: ${fmt(report.totals.proventsExempt)}
+- Tributáveis: ${fmt(report.totals.proventsTaxable)}
+
+3) Apuração e DARF
+- Ganhos tributáveis: ${fmt(report.totals.taxableGain)}
+- Ganhos isentos: ${fmt(report.totals.exemptGain)}
+- DARF estimado: ${fmt(taxDue)}
+- Prejuízo acumulado: ${report.totals.lossCarry<0 ? fmt(Math.abs(report.totals.lossCarry)) : 'Nenhum'}
+
+4) Quebra por tipo
+${buckets}
+
+Checklist final
+- Conferir posição em 31/12 na ficha de Bens e Direitos.
+- Conferir rendimentos isentos e tributáveis com os informes.
+- Conferir meses com vendas tributáveis e eventual DARF.
+- Validar tudo no programa oficial antes de enviar.
+`;
+}
+function irpfTab(){
+  const year=irpfSelectedYear();
+  const report=irpfBuildYearReport(year);
+  const years=irpfYears();
+  const step=Math.min(4, Math.max(1, Number(S.irpfStep)||1));
+  const safeTax=Math.max(0, report.totals.tax);
+  const bucketOrder=report.bucketOrder;
+  const bucketCards=bucketOrder.map(bucket=>{
+    const data=report.totalsByBucket[bucket]||{sales:0,realized:0,exempt:0,tax:0,carry:0};
+    const title={ 'Ações':'Ações', 'FII':'FIIs', 'ETF':'ETFs', 'BDR':'BDRs', 'Renda Fixa':'Renda Fixa' }[bucket] || bucket;
+    return `<div class="card al" style="border-left-color:${bucket==='Ações'?'#818cf8':bucket==='FII'?'#34d399':bucket==='ETF'?'#60a5fa':bucket==='BDR'?'#fbbf24':'#a78bfa'}">
+      <div class="cl">${title}</div>
+      <div class="cv">${fmt(data.realized||0)}</div>
+      <div class="cs">Vendas ${fmt(data.sales||0)} · Imposto ${fmt(data.tax||0)}</div>
+    </div>`;
+  }).join('');
+  const stepLabels={1:'Revisar posições',2:'Revisar proventos',3:'Revisar DARF',4:'Resumo final'};
+  const stepButtons=[1,2,3,4].map(n=>`<button class="dash-chip ${step===n?'on':''}" onclick="setIrpfStep(${n})">${n}. ${stepLabels[n]}</button>`).join('');
+  const finalSummaryText=irpfFinalSummaryText(report);
+  const monthRows=report.months.map(m=>{
+    const monthTax=bucketOrder.reduce((s,b)=>s+Number(m.taxByBucket[b]||0),0);
+    return `<tr>
+      <td style="font-weight:700;color:#e2eaf6">${m.label}</td>
+      <td>${fmt(m.salesByBucket['Ações'])}</td>
+      <td class="${m.taxByBucket['Ações']>=0?'rd':'mu'}">${fmt(m.taxByBucket['Ações'])}</td>
+      <td>${fmt(m.salesByBucket['FII'])}</td>
+      <td class="${m.taxByBucket['FII']>=0?'rd':'mu'}">${fmt(m.taxByBucket['FII'])}</td>
+      <td>${fmt(m.salesByBucket['ETF'])}</td>
+      <td class="${m.taxByBucket['ETF']>=0?'rd':'mu'}">${fmt(m.taxByBucket['ETF'])}</td>
+      <td>${fmt(m.salesByBucket['BDR'])}</td>
+      <td class="${m.taxByBucket['BDR']>=0?'rd':'mu'}">${fmt(m.taxByBucket['BDR'])}</td>
+      <td>${fmt(m.salesByBucket['Renda Fixa'])}</td>
+      <td class="${m.taxByBucket['Renda Fixa']>=0?'rd':'mu'}">${fmt(m.taxByBucket['Renda Fixa'])}</td>
+      <td class="${monthTax>=0?'rd':'mu'}">${fmt(monthTax)}</td>
+    </tr>`;
+  }).join('');
+  const proventosRows=report.provents.length ? report.provents.map(p=>`
+    <tr>
+      <td style="font-weight:700;color:#e2eaf6">${esc(p.ticker)}</td>
+      <td>${esc(p.date)}</td>
+      <td><span class="bdg ${String(p.bucket).includes('Tributação')?'bet':'bfi'}">${esc(p.bucket)}</span></td>
+      <td class="gn" style="font-weight:700">${fmt(p.value)}</td>
+      <td class="mu">${esc(p.type||'—')}</td>
+    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:20px;color:#2e3f58">Sem proventos lançados para esse ano.</td></tr>';
+  const guidedPanel=step===1 ? `
+    <details class="sec" open style="margin-top:12px">
+      <summary>
+        <div>
+          <div class="sec-title">Passo 1 - Revisar posições</div>
+          <div class="sec-meta">o que vai em Bens e Direitos</div>
+        </div>
+        <div class="sec-meta">${report.positions.length} posições</div>
+      </summary>
+      <div class="sec-body">
+        <div class="aic" style="margin-bottom:12px;padding:14px 16px">
+          <div class="sec-title" style="margin-bottom:4px">Confira agora</div>
+          <div class="air" style="white-space:normal">Veja se a quantidade, o custo total e a posição em 31/12 estão coerentes antes de avançar. Se algo parecer fora do lugar, corrija o lançamento de origem.</div>
+        </div>
+        <div class="cards" style="margin-bottom:14px">${bucketCards}</div>
+        <div class="tw"><div class="ts"><table>
+          <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd.</th><th>Custo</th><th>PM</th><th>Preço atual</th><th>Valor</th><th>Obs.</th></tr></thead>
+          <tbody>${report.positions.map(p=>`
+            <tr>
+              <td style="font-weight:700;color:#e2eaf6">${esc(p.ticker)}</td>
+              <td><span class="bdg ${bdg(p.type)}">${esc(p.type)}</span></td>
+              <td class="mu">${esc(p.sector||'—')}</td>
+              <td>${p.qty.toLocaleString('pt-BR',{maximumFractionDigits:8})}</td>
+              <td>${fmt(p.cost)}</td>
+              <td>${fmt(p.avg)}</td>
+              <td>${p.current>0?fmt(p.current):'—'}</td>
+              <td>${fmt(p.marketValue)}</td>
+              <td class="mu">${esc(p.note)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div></div>
+      </div>
+    </details>`
+  : step===2 ? `
+    <details class="sec" open style="margin-top:12px">
+      <summary>
+        <div>
+          <div class="sec-title">Passo 2 - Revisar proventos</div>
+          <div class="sec-meta">o que pode ir em isentos ou tributação exclusiva</div>
+        </div>
+        <div class="sec-meta">${report.provents.length} lançamentos</div>
+      </summary>
+      <div class="sec-body">
+        <div class="aic" style="margin-bottom:12px;padding:14px 16px">
+          <div class="sec-title" style="margin-bottom:4px">Conferência rápida</div>
+          <div class="air" style="white-space:normal">Confira se dividendos ficaram como isentos, se JCP e rendimentos com IR retido estão classificados como tributação exclusiva e se nada entrou no bucket errado.</div>
+        </div>
+        <div class="tw"><div class="ts"><table>
+          <thead><tr><th>Ticker</th><th>Data</th><th>Tipo</th><th>Valor</th><th>Classificação</th></tr></thead>
+          <tbody>${proventosRows}</tbody>
+        </table></div></div>
+      </div>
+    </details>`
+  : step===3 ? `
+    <details class="sec" open style="margin-top:12px">
+      <summary>
+        <div>
+          <div class="sec-title">Passo 3 - Revisar DARF</div>
+          <div class="sec-meta">apuração mensal do que pode gerar imposto</div>
+        </div>
+        <div class="sec-meta">${year} · ${report.months.length} meses</div>
+      </summary>
+      <div class="sec-body">
+        <div class="aic" style="margin-bottom:12px;padding:14px 16px">
+          <div class="sec-title" style="margin-bottom:4px">Olhe estes meses primeiro</div>
+          <div class="air" style="white-space:normal">Os meses com IR positivo merecem revisão antes do envio. Ações podem ter isenção até R$ 20 mil no mês, enquanto FIIs, ETFs, BDRs e Renda Fixa seguem a apuração do ganho tributável.</div>
+        </div>
+        <div class="tw"><div class="ts"><table style="min-width:1600px">
+          <thead><tr><th>Mês</th><th>Ações vendas</th><th>Ações IR</th><th>FII vendas</th><th>FII IR</th><th>ETF vendas</th><th>ETF IR</th><th>BDR vendas</th><th>BDR IR</th><th>Renda Fixa vendas</th><th>Renda Fixa IR</th><th>DARF total</th></tr></thead>
+          <tbody>${monthRows}</tbody>
+        </table></div></div>
+      </div>
+    </details>`
+  : `
+    <details class="sec" open style="margin-top:12px">
+      <summary>
+        <div>
+          <div class="sec-title">Passo 4 - Resumo final</div>
+          <div class="sec-meta">texto pronto para copiar para a declaração</div>
+        </div>
+        <div class="sec-meta">${safeTax>0 ? `DARF ${fmt(safeTax)}` : 'sem DARF estimado'}</div>
+      </summary>
+      <div class="sec-body">
+        <div class="aic" style="margin-bottom:12px;padding:14px 16px">
+          <div class="sec-title" style="margin-bottom:4px">Antes de copiar</div>
+          <div class="air" style="white-space:normal">Faça uma última leitura do resumo, compare com seus informes e só então copie para a declaração ou para sua planilha de controle.</div>
+        </div>
+        <div class="aic">
+          <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:700;color:#c4b5fd">Resumo final pronto para copiar</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn bp" onclick="irpfCopyFinalSummary(\`${finalSummaryText.replace(/`/g,'\\`')}\`)">Copiar resumo</button>
+              <button class="btn bgh" onclick="irpfExportCSV()">Baixar CSV</button>
+            </div>
+          </div>
+          <div class="air" style="background:#090c15;border:1px solid #161e2e;border-radius:12px;padding:16px">${finalSummaryText.replace(/\n/g,'<br>')}</div>
+        </div>
+      </div>
+    </details>`;
+  const posSections=bucketOrder.map(bucket=>{
+    const rows=(report.positionsByBucket[bucket]||[]).map(p=>`
+      <tr>
+        <td style="font-weight:700;color:#e2eaf6">${esc(p.ticker)}</td>
+        <td><span class="bdg ${bdg(p.type)}">${esc(p.type)}</span></td>
+        <td class="mu">${esc(p.sector||'—')}</td>
+        <td>${p.qty.toLocaleString('pt-BR',{maximumFractionDigits:8})}</td>
+        <td>${fmt(p.cost)}</td>
+        <td>${fmt(p.avg)}</td>
+        <td>${p.current>0?fmt(p.current):'—'}</td>
+        <td>${fmt(p.marketValue)}</td>
+        <td class="mu">${esc(p.note)}</td>
+      </tr>`).join('');
+    return `<details class="sec" style="margin-top:12px">
+      <summary>
+        <div>
+          <div class="sec-title">${bucket==='Ações'?'Ações':bucket==='FII'?'FIIs':bucket==='ETF'?'ETFs':bucket==='BDR'?'BDRs':'Renda Fixa'}</div>
+          <div class="sec-meta">${(report.positionsByBucket[bucket]||[]).length} posições</div>
+        </div>
+        <div class="sec-meta">${fmt((report.totalsByBucket[bucket]||{}).realized||0)} realizado</div>
+      </summary>
+      <div class="sec-body">
+        <div class="tw"><div class="ts"><table>
+          <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd.</th><th>Custo</th><th>PM</th><th>Preço atual</th><th>Valor</th><th>Obs.</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="9" style="text-align:center;padding:20px;color:#2e3f58">Sem posições apuradas.</td></tr>'}</tbody>
+        </table></div></div>
+      </div>
+    </details>`;
+  }).join('');
+  return `<div style="font-size:15px;font-weight:700;margin-bottom:4px">🧾 IRPF</div>
+  <div class="mu" style="font-size:13px;margin-bottom:18px">Apuração anual com foco em declaração, DARF e exportação. A leitura abaixo separa Ações, FIIs, ETFs, BDRs e Renda Fixa para ficar mais próxima da apuração tributária real.</div>
+
+  <div class="fc" style="margin-bottom:16px">
+    <div class="cg" style="align-items:end">
+      <div>
+        <div class="fl">Ano-calendário</div>
+        <select id="irpf-year" onchange="setIrpfYear(this.value)">
+          ${years.map(y=>`<option value="${y}" ${Number(y)===Number(year)?'selected':''}>${y}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn bp" onclick="irpfExportCSV()">⬇️ CSV</button>
+        <button class="btn bgh" onclick="irpfExportPdf()">🖨️ PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fc" style="margin-bottom:16px">
+    <div class="sh" style="margin-bottom:10px">
+      <div>
+        <div class="sec-title">Fluxo guiado em 4 passos</div>
+        <div class="sec-meta">avance na ordem para revisar tudo antes de declarar</div>
+      </div>
+      <div class="sec-meta">${step}/4 · ${stepLabels[step]}</div>
+    </div>
+    <div class="dash-filters" style="justify-content:flex-start">${stepButtons}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn bgh" onclick="setIrpfStep(${Math.max(1, step-1)})" ${step===1?'disabled':''}>← Anterior</button>
+      <button class="btn bp" onclick="setIrpfStep(${Math.min(4, step+1)})" ${step===4?'disabled':''}>Próximo →</button>
+      <button class="btn bgh" onclick="setIrpfStep(1)">Reiniciar</button>
+    </div>
+  </div>
+
+  <div class="cards" style="margin-bottom:16px">
+    <div class="card al" style="border-left-color:#818cf8"><div class="cl">Compras no ano</div><div class="cv pu">${fmt(report.totals.buys)}</div></div>
+    <div class="card al" style="border-left-color:#34d399"><div class="cl">Vendas no ano</div><div class="cv gn">${fmt(report.totals.sells)}</div></div>
+    <div class="card al" style="border-left-color:#fbbf24"><div class="cl">Proventos</div><div class="cv am">${fmt(report.totals.proventsTotal)}</div></div>
+    <div class="card al" style="border-left-color:#60a5fa"><div class="cl">Posição 31/12</div><div class="cv bl">${fmt(report.totals.yearEndCost)}</div></div>
+    <div class="card al" style="border-left-color:#f472b6"><div class="cl">DARF estimado</div><div class="cv" style="color:${safeTax>0?'#f87171':'#34d399'}">${fmt(safeTax)}</div></div>
+    <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Lucro tributável</div><div class="cv pu">${fmt(report.totals.taxableGain)}</div></div>
+  </div>
+
+  ${irpfConferenceMarkup(report)}
+
+  ${guidedPanel}
+
+  <div class="cards" style="margin-bottom:16px">${bucketCards}</div>
+
+  <details class="sec" style="margin-bottom:12px" open>
+    <summary>
+      <div>
+        <div class="sec-title">Onde lançar cada parte da declaração</div>
+        <div class="sec-meta">guia rápido para conferir a ficha certa no IRPF</div>
+      </div>
+      <div class="sec-meta">5 fichas principais</div>
+    </summary>
+    <div class="sec-body">
+      <div class="cards">
+        ${[
+          {title:'Bens e Direitos', kicker:'Patrimônio', color:'#60a5fa'},
+          {title:'Renda Variável', kicker:'Ganhos e perdas', color:'#34d399'},
+          {title:'Isentos / não tributáveis', kicker:'Dividendos e isenções', color:'#fbbf24'},
+          {title:'Tributação exclusiva', kicker:'JCP e renda retida', color:'#a78bfa'},
+          {title:'GCAP / DARF', kicker:'Imposto devido', color:'#f472b6'},
+        ].map(item=>`
+          <div class="card al" style="border-left-color:${item.color}">
+            <div class="cl">${esc(item.kicker)}</div>
+            <div class="cv" style="font-size:18px;color:${item.color}">${esc(item.title)}</div>
+          </div>`).join('')}
+      </div>
+      <div class="tw" style="margin-top:12px"><div class="ts"><table>
+        <thead><tr><th>Ficha</th><th>O que entra</th><th>Como o app ajuda</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700;color:#e2eaf6">Bens e Direitos</td><td>Posição em 31/12, custo de aquisição, quantidade e tipo do ativo.</td><td>Mostra posições por bucket e o valor de mercado/custo.</td></tr>
+          <tr><td style="font-weight:700;color:#e2eaf6">Renda Variável</td><td>Lucros e prejuízos de vendas, por mês e por tipo de ativo.</td><td>Exibe apuração mensal e separa Ações, FIIs, ETFs e BDRs.</td></tr>
+          <tr><td style="font-weight:700;color:#e2eaf6">Isentos / não tributáveis</td><td>Dividendos isentos e operações com isenção mensal aplicável.</td><td>Resume proventos isentos e ganhos isentos estimados.</td></tr>
+          <tr><td style="font-weight:700;color:#e2eaf6">Tributação exclusiva</td><td>JCP, renda fixa com IR retido e outros rendimentos retidos na fonte.</td><td>Lista proventos com classificação e valor para conferência.</td></tr>
+          <tr><td style="font-weight:700;color:#e2eaf6">GCAP / DARF</td><td>Meses com lucro tributável e imposto a pagar.</td><td>Mostra o DARF estimado e destaca meses que precisam revisão.</td></tr>
+        </tbody>
+      </table></div></div>
+      <div class="mu" style="font-size:12px;margin-top:8px">Dica: a aba não substitui o programa oficial da Receita, mas reduz bastante o trabalho de procurar cada número na hora de preencher.</div>
+    </div>
+  </details>
+
+  <details class="sec" open>
+    <summary>
+      <div>
+        <div class="sec-title">Apuração mensal por tipo</div>
+        <div class="sec-meta">mais próximo do que entra em GCAP/DARF e na ficha anual</div>
+      </div>
+      <div class="sec-meta">${year} · ${report.months.length} meses</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table style="min-width:1600px">
+        <thead><tr><th>Mês</th><th>Ações vendas</th><th>Ações IR</th><th>FII vendas</th><th>FII IR</th><th>ETF vendas</th><th>ETF IR</th><th>BDR vendas</th><th>BDR IR</th><th>Renda Fixa vendas</th><th>Renda Fixa IR</th><th>DARF total</th></tr></thead>
+        <tbody>${monthRows}</tbody>
+      </table></div></div>
+      <div class="mu" style="font-size:12px;margin-top:8px">Ações comuns ficam isentas quando o total vendido no mês fica até R$ 20 mil. FIIs tendem a tributar em 20%, enquanto ETFs, BDRs e Renda Fixa entram em regra de 15% para ganho tributável. Esta aba não substitui GCAP/contador, mas organiza o que você precisa conferir.</div>
+    </div>
+  </details>
+
+  <details class="sec" style="margin-top:12px" open>
+    <summary>
+      <div>
+        <div class="sec-title">Posição em 31/12 por bucket</div>
+        <div class="sec-meta">separação por tipo para a declaração anual</div>
+      </div>
+      <div class="sec-meta">${report.positions.length} posições</div>
+    </summary>
+    <div class="sec-body">
+      ${posSections}
+    </div>
+  </details>
+
+  <details class="sec" style="margin-top:12px">
+    <summary>
+      <div>
+        <div class="sec-title">Proventos do ano</div>
+        <div class="sec-meta">base para informar rendimentos isentos e tributados</div>
+      </div>
+      <div class="sec-meta">${report.provents.length} lançamentos</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Ticker</th><th>Data</th><th>Tipo</th><th>Valor</th><th>Classificação</th></tr></thead>
+        <tbody>${proventosRows}</tbody>
+      </table></div></div>
+    </div>
+  </details>
+
+  <div class="aic" style="margin-top:14px">
+    <div style="font-size:13px;line-height:1.8;color:#b8c8de">
+      <strong style="color:#f8fafc">Checklist IRPF</strong><br>
+      1. Conferir posição em 31/12.<br>
+      2. Conferir proventos recebidos no ano.<br>
+      3. Conferir meses com vendas tributáveis e DARF.<br>
+      4. Exportar CSV ou imprimir PDF para revisar antes de entregar.
+    </div>
+  </div>`;
+}
+
 function rentBenchRate(name){
   return Number(RENT_BENCH[String(name||'CDI').toUpperCase()] ?? RENT_BENCH.CDI);
 }
@@ -3349,7 +4189,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
+const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['irpf','🧾 IRPF'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -3382,6 +4222,7 @@ function content(){
   if(S.tab==='aportes')   return apTab();
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
+  if(S.tab==='irpf')      return irpfTab();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
   if(S.tab==='ia')        return iaTab();
@@ -3395,6 +4236,9 @@ function dash(){
   const{tI,tC,tG,tGP,mD,aD,avgDY}=cx();
   const DCLR=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
   const periodOpts=[3,6,12,24];
+  const irpfYear=new Date().getFullYear();
+  const irpfPreview=irpfBuildYearReport(irpfYear);
+  const irpfTax=Math.max(0, irpfPreview.totals.tax);
   const byT={};
   S.assets.forEach(a=>{const v=a.qty*a.current_price;const ty=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');byT[ty]=(byT[ty]||0)+v;});
   const ad=Object.entries(byT).map(([n,v])=>({name:n,value:v}));
@@ -3491,6 +4335,21 @@ function dash(){
         <div class="cs">${avgDY.toFixed(2)}% DY médio · ${S.assets.length} ativos</div>
       </div>
       <div class="dash-foot">Leitura rápida do desempenho e da força da carteira no momento.</div>
+    </div>
+  </div>
+  <div class="fc" style="margin-bottom:16px;border-left:4px solid #a78bfa">
+    <div class="sh" style="margin-bottom:12px">
+      <div>
+        <div class="ct">Prévia fiscal do ano</div>
+        <div class="mu" style="font-size:12px">Resumo rápido inspirado na estrutura da declaração: Bens e Direitos, rendimentos e DARF.</div>
+      </div>
+      <button class="btn bp" style="font-size:12px;padding:7px 12px" onclick="go('irpf')">🧾 Abrir IRPF</button>
+    </div>
+    <div class="cards" style="margin-bottom:0">
+      <div class="card al" style="margin:0;border-left-color:#60a5fa"><div class="cl">Posições</div><div class="cv bl">${irpfPreview.positions.length}</div><div class="cs">Base de Bens e Direitos</div></div>
+      <div class="card al" style="margin:0;border-left-color:#fbbf24"><div class="cl">Proventos</div><div class="cv am">${fmt(irpfPreview.totals.proventsTotal)}</div><div class="cs">${irpfPreview.provents.length} lançamentos</div></div>
+      <div class="card al" style="margin:0;border-left-color:#34d399"><div class="cl">Lucro tributável</div><div class="cv gn">${fmt(irpfPreview.totals.taxableGain)}</div><div class="cs">Ganhos com apuração mensal</div></div>
+      <div class="card al" style="margin:0;border-left-color:#f472b6"><div class="cl">DARF estimado</div><div class="cv" style="color:${irpfTax>0?'#f87171':'#34d399'}">${fmt(irpfTax)}</div><div class="cs">Ano-calendário ${irpfYear}</div></div>
     </div>
   </div>
   <div class="cg dashboard-grid">
