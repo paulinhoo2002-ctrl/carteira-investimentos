@@ -387,6 +387,7 @@ let S = {
   assets:[], aportes:[], proventos:[], quotes:{}, lastUpdate:null,
   tab:'dashboard', qLoad:false, cd:QI,
   qInFlight:false,
+  hideValues:false,
   brapiToken: DEFAULT_BRAPI, divGoal:0,
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
@@ -427,13 +428,20 @@ function save(){
       dashPeriod:S.dashPeriod, dashType:S.dashType,
       rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench,
       irpfYear:S.irpfYear, irpfStep:S.irpfStep,
-      learnMeta:S.learnMeta
+      learnMeta:S.learnMeta,
+      hideValues:!!S.hideValues
     }));
     queueCloudSave();
   }catch(e){ console.error('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
 }
 function saveConfig(){
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
+}
+function toggleHideValues(){
+  S.hideValues=!S.hideValues;
+  save();
+  render();
+  toast(S.hideValues?'🙈 Valores ocultos':'👁️ Valores visíveis');
 }
 function markProventosDirty(){
   S.autoProvDirty=true;
@@ -479,6 +487,7 @@ function load(){
     if(d.irpfStep !== undefined)     S.irpfStep = Math.min(4, Math.max(1, Number(d.irpfStep)||1));
     if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
     if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
+    if(d.hideValues !== undefined)   S.hideValues = !!d.hideValues;
   }catch(e){ console.error('load erro:',e); }
   try{
     const c=JSON.parse(localStorage.getItem(STOR+'_cfg')||'{}');
@@ -554,6 +563,7 @@ function cloudPayload(){
     settings:{brapiToken:S.brapiToken||''},
     dashboard:{period:Number(S.dashPeriod)||12,type:String(S.dashType||'all')},
     rentabilidade:{period:String(S.rentPeriod||'all'),type:String(S.rentType||'all'),bench:String(S.rentBench||'CDI')},
+    hideValues:!!S.hideValues,
     tab:S.tab,
     updatedAtLocal:new Date().toISOString(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -568,6 +578,7 @@ function applyCloudData(d){
   if(Array.isArray(d.assets))    S.assets    = d.assets;
   if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
   if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+  if(d.hideValues !== undefined) S.hideValues = !!d.hideValues;
   if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
   if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
   if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
@@ -584,7 +595,7 @@ function applyCloudData(d){
   }
   rebuildLearnMeta();
   try{
-    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
+    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta, hideValues:!!S.hideValues}));
     localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
   }catch(e){}
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -679,6 +690,9 @@ function configMenu(){
     </div>
   </details>`;
 }
+function hideValuesToggle(){
+  return `<button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="toggleHideValues()">${S.hideValues?'👁️ Mostrar valores':'🙈 Ocultar valores'}</button>`;
+}
 
 
 // ══════════════════════════════════════
@@ -723,7 +737,7 @@ function toast(msg, cor='#6ee7b7'){
 // BACKUP
 // ══════════════════════════════════════
 function exportBackup(){
-  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
+  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, hideValues:!!S.hideValues, exportedAt:new Date().toISOString()}, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-backup-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.json`});
   a.click();
   toast('💾 Backup exportado com sucesso!');
@@ -744,6 +758,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
       if(d.rentPeriod !== undefined)  S.rentPeriod = String(d.rentPeriod||'all');
       if(d.rentType !== undefined)    S.rentType = String(d.rentType||'all');
       if(d.rentBench !== undefined)   S.rentBench = String(d.rentBench||'CDI');
+      if(d.hideValues !== undefined)  S.hideValues = !!d.hideValues;
       rebuildLearnMeta();
       save(); saveConfig(); render();
       toast(`✅ ${S.assets.length} ativos, ${S.aportes.length} aportes e ${S.proventos.length} proventos importados!`);
@@ -2451,8 +2466,16 @@ function configBrapi(){
 // ══════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════
-const fmt  = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
+const moneyMask = v => {
+  const n = Number(v)||0;
+  const sign = n < 0 ? '-' : '';
+  return `${sign}R$ ••••••`;
+};
+const pctMask = v => `${(Number(v)||0) >= 0 ? '+' : '-'}••••%`;
+const fmt  = v => S.hideValues ? moneyMask(v) : Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtP = v => S.hideValues ? pctMask(v) : `${Number(v||0)>=0?'+':''}${Number(v||0).toFixed(2)}%`;
+const pct1 = v => S.hideValues ? '•••%' : `${Number(v||0).toFixed(1)}%`;
+const pct2 = v => S.hideValues ? '••••%' : `${Number(v||0).toFixed(2)}%`;
 const fmtN = v => Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
 const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const bdg  = t => {
@@ -4200,6 +4223,7 @@ const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','
       ${authBox()}
       ${installBox()}
       ${configMenu()}
+      ${hideValuesToggle()}
 
       <div style="text-align:right">
         <div style="font-size:11px;color:#2e3f58">${now}</div>
@@ -4243,7 +4267,7 @@ function dash(){
   S.assets.forEach(a=>{const v=a.qty*a.current_price;const ty=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');byT[ty]=(byT[ty]||0)+v;});
   const ad=Object.entries(byT).map(([n,v])=>({name:n,value:v}));
   const p=pie(ad,DCLR);
-  const leg=ad.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${tC>0?((d.value/tC)*100).toFixed(1):'0.0'}%</span></div>`).join('');
+  const leg=ad.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${pct1(tC>0?((d.value/tC)*100):0)}</span></div>`).join('');
   const rec=proventoStats();
   const lucroTotal=lucroTotalComProventos();
   const twelveMonthsAgo=new Date();
@@ -4278,7 +4302,7 @@ function dash(){
   const adDash=Object.entries(byTypeDash).map(([n,v])=>({name:n,value:v}));
   const dashTotal=adDash.reduce((s,d)=>s+d.value,0);
   const pDash=pie(adDash,DCLR);
-  const legDash=adDash.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${dashTotal>0?((d.value/dashTotal)*100).toFixed(1):'0.0'}%</span></div>`).join('');
+  const legDash=adDash.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${pct1(dashTotal>0?((d.value/dashTotal)*100):0)}</span></div>`).join('');
   return`<div class="cards dashboard-hero">
     <div class="card al dash-card" style="border-left-color:#818cf8">
       <div class="dash-head">
@@ -4332,7 +4356,7 @@ function dash(){
       </div>
       <div class="dash-value">
         <div class="cv bl">${fmtP(tGP)}</div>
-        <div class="cs">${avgDY.toFixed(2)}% DY médio · ${S.assets.length} ativos</div>
+        <div class="cs">${fmtP(avgDY)} DY médio · ${S.assets.length} ativos</div>
       </div>
       <div class="dash-foot">Leitura rápida do desempenho e da força da carteira no momento.</div>
     </div>
@@ -4460,19 +4484,19 @@ function ativos(){
         <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
         <td class="mu">${esc(a.sector||'—')}</td>
         <td>${a.qty}</td>
-        <td>R$ ${avg.toFixed(2)}</td>
+        <td>${fmt(avg)}</td>
         <td style="font-weight:600;color:${current>=avg?'#34d399':'#f87171'}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
-          R$ ${current.toFixed(2)}
+          ${fmt(current)}
           ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
           <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
         </td>
         <td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td>
-        <td>${alvo>0?'R$ '+alvo.toFixed(2):'—'}</td>
+        <td>${alvo>0?fmt(alvo):'—'}</td>
         <td style="font-weight:700;color:#e2eaf6">${fmt((Number(a.qty)||0)*current)}</td>
-        <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
-        <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
+        <td class="bl" style="font-weight:600">${pct1(peso)}</td>
+        <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?pct1(ideal):'—'}</td>
         <td class="am" style="font-weight:600">${fmt(dm)}</td>
-        <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
+        <td class="mu">${fmtP(Number(a.dy)||0)}${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
         <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
       </tr>`;
     }).join('');
@@ -4482,15 +4506,15 @@ function ativos(){
           <div class="ag-ico">${tipoIcon(type)}</div>
           <div>
             <div class="ag-name">${esc(type)}</div>
-            <div class="ag-sub">${items.length} ativos · ${fmt(gTotal)} · ${share.toFixed(1)}% da carteira</div>
+    <div class="ag-sub">${items.length} ativos · ${fmt(gTotal)} · ${pct1(share)} da carteira</div>
           </div>
         </div>
         <div class="ag-stats">
           <div class="ag-stat"><div class="ag-k">Ativos</div><div class="ag-v">${items.length}</div></div>
           <div class="ag-stat"><div class="ag-k">Valor total</div><div class="ag-v">${fmt(gTotal)}</div></div>
           <div class="ag-stat"><div class="ag-k">Variação</div><div class="ag-v" style="color:${gVar>=0?'#34d399':'#f87171'}">${fmtP(gVar)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Rentabilidade</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${gDY.toFixed(2)}% <small>DY</small></div></div>
-          <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${share.toFixed(1)}%</div></div>
+    <div class="ag-stat"><div class="ag-k">Rentabilidade</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${fmtP(gDY)} <small>DY</small></div></div>
+    <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${pct1(share)}</div></div>
         </div>
         <div class="ag-open">⌄</div>
       </summary>
@@ -4619,7 +4643,7 @@ function apTab(){
           <td><span class="bdg ${bdg('Reserva de emergência')}">Reserva</span></td>
           <td class="mu">${esc(target)}</td>
           <td>${Math.abs(Number(a.qty)||1)}</td>
-          <td>R$ ${Number(a.price).toFixed(2)}</td>
+<td>${fmt(a.price)}</td>
           <td class="${isOut?'rd':'gn'}" style="font-weight:700">${isOut?'-':'+'}${fmt(Math.abs(Number(a.qty)||1)*Number(a.price||0))}</td>
           <td class="mu">${esc(a.decision||a.reserveLabel||'—')}</td>
           <td><div style="display:flex;gap:6px">
@@ -4656,7 +4680,7 @@ function apTab(){
         <td><span class="bdg ${bdg(m.type)}">${esc(m.type)}</span></td>
         <td class="mu">${esc(m.sector||'—')}</td>
         <td>${Math.abs(Number(a.qty)||0)}</td>
-        <td>R$ ${Number(a.price).toFixed(2)}</td>
+<td>${fmt(a.price)}</td>
         <td class="${isV?'rd':'gn'}" style="font-weight:700">${isV?'-':'+'}${fmt(Math.abs(a.qty)*a.price)}</td>
         <td class="mu">${esc(a.decision||'—')}</td>
         <td><div style="display:flex;gap:6px">
@@ -4899,13 +4923,13 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       return`<tr>
         <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td>
         <td>${esc(a.type)}</td><td>${a.qty}</td>
-        <td>R$ ${Number(a.current_price).toFixed(2)}</td>
-        <td class="am" style="font-weight:600">${Number(a.dy||0).toFixed(2)}%</td>
+<td>${fmt(a.current_price)}</td>
+<td class="am" style="font-weight:600">${fmtP(Number(a.dy||0))}</td>
         <td class="am" style="font-weight:700">${fmt(dm)}</td>
         <td>${fmt(dm*12)}</td>
         <td><div style="display:flex;align-items:center;gap:7px">
           <div class="bwr"><div class="bfr" style="width:${Math.min(pct,100).toFixed(0)}%"></div></div>
-          <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
+          <span class="mu" style="font-size:11px">${pct1(pct)}</span>
         </div></td>
       </tr>`;
     }).join('');
@@ -4932,10 +4956,10 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       <div>
         <div class="fl">Progresso até o objetivo</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-          <div style="font-size:22px;font-weight:800;color:#fbbf24">${ratio.toFixed(1)}%</div>
+          <div style="font-size:22px;font-weight:800;color:#fbbf24">${pct1(ratio)}</div>
           <div style="font-size:12px;color:#64748b">${fmt(media12)} / ${fmt(objetivo||0)}</div>
         </div>
-        <div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${ratio.toFixed(1)}%;background:#fbbf24"></div></div>
+        <div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${Math.min(ratio,100).toFixed(1)}%;background:#fbbf24"></div></div>
         <div class="mu" style="font-size:12px;margin-top:6px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
       </div>
     </div>
@@ -4958,7 +4982,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   <div class="cards" style="margin-bottom:16px">
     <div class="card al" style="border-left-color:#fbbf24"><div class="cl">Estimativa projetada/mês</div><div class="cv am">${fmt(mD)}</div></div>
     <div class="card al" style="border-left-color:#34d399"><div class="cl">Projeção anual</div><div class="cv gn">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${avgDY.toFixed(2)}%</div></div>
+<div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${fmtP(avgDY)}</div></div>
     <div class="card al" style="border-left-color:#34d399"><div class="cl">💵 Recebido no mês</div><div class="cv gn">${fmt(rec.mes)}</div><div class="cs">${S.proventos.filter(p=>{const d=parseAnyDate(p.date);const n=new Date();return d&&d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();}).length} pagamentos</div></div>
     <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Recebido no ano</div><div class="cv pu">${fmt(rec.ano)}</div><div class="cs">Total: ${fmt(rec.total)}</div></div>
     <div class="card al" style="border-left-color:#f97316"><div class="cl">Total histórico proventos</div><div class="cv" style="color:#fb923c">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
@@ -5061,7 +5085,7 @@ function metasTab(){
   <div class="cards" style="margin-bottom:16px">
     <div class="card al" style="border-left-color:#fbbf24"><div class="cl">Estimativa projetada/mês</div><div class="cv am">${fmt(mD)}</div></div>
     <div class="card al" style="border-left-color:#34d399"><div class="cl">Projeção anual</div><div class="cv gn">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${avgDY.toFixed(2)}%</div></div>
+<div class="card al" style="border-left-color:#818cf8"><div class="cl">DY médio</div><div class="cv pu">${fmtP(avgDY)}</div></div>
     <div class="card al" style="border-left-color:#34d399"><div class="cl">Total histórico proventos</div><div class="cv" style="color:#fb923c">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
     <div class="card al" style="border-left-color:#60a5fa"><div class="cl">Total da carteira</div><div class="cv bl">${fmt(tC)}</div><div class="cs">Patrimônio atual em ativos</div></div>
     <div class="card al" style="border-left-color:#a78bfa"><div class="cl">Total 12 meses</div><div class="cv pu">${fmt(total12)}</div><div class="cs">Média mensal: ${fmt(media12)}</div></div>
@@ -5077,10 +5101,10 @@ function metasTab(){
       <div>
         <div class="fl">Progresso até o objetivo</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-          <div style="font-size:22px;font-weight:800;color:#fbbf24">${prog.toFixed(1)}%</div>
+<div style="font-size:22px;font-weight:800;color:#fbbf24">${pct1(prog)}</div>
           <div style="font-size:12px;color:#64748b">${fmt(media12)} / ${fmt(objetivo||0)}</div>
         </div>
-        <div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${prog.toFixed(1)}%;background:#fbbf24"></div></div>
+<div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${Math.min(prog,100).toFixed(1)}%;background:#fbbf24"></div></div>
         <div class="mu" style="font-size:12px;margin-top:6px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(falta)}/mês</div>
       </div>
     </div>
@@ -5096,10 +5120,10 @@ function metasTab(){
       <div>
         <div class="fl">Progresso até o objetivo</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-          <div style="font-size:22px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+<div style="font-size:22px;font-weight:800;color:#60a5fa">${pct1(metaPat.prog)}</div>
           <div style="font-size:12px;color:#64748b">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
         </div>
-        <div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:#60a5fa"></div></div>
+<div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${Math.min(metaPat.prog,100).toFixed(1)}%;background:#60a5fa"></div></div>
         <div class="mu" style="font-size:12px;margin-top:6px">Atual: ${fmt(tC)} · Falta: ${fmt(metaPat.falta)} · ${formatGoalMonths(metaPatTime)}</div>
       </div>
     </div>
@@ -5268,7 +5292,7 @@ function calcRebalance(){
   const sum=list.reduce((s,a)=>s+a.score,0)||1;
   const rows=list.map(a=>{
     const val=aporte*(a.score/sum),qtd=a.current_price>0?Math.floor(val/a.current_price):0,divMes=val*((Number(a.dy)||0)/100)/12;
-    return`<tr><td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td><td>${esc(normalizeType(a.type||'Ação','Ação'))}</td><td class="mu">${esc(a.sector||'—')}</td><td>${a.peso.toFixed(1)}%</td><td>${a.ideal?a.ideal.toFixed(1)+'%':'—'}</td><td class="${a.rent<0?'rd':'gn'}">${fmtP(a.rent)}</td><td class="gn" style="font-weight:700">${fmt(val)}</td><td>${qtd}</td><td class="am">+${fmt(divMes)}/mês</td><td class="mu">${esc(a.motivos.join(', '))}</td></tr>`;
+    return`<tr><td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td><td>${esc(normalizeType(a.type||'Ação','Ação'))}</td><td class="mu">${esc(a.sector||'—')}</td><td>${pct1(a.peso)}</td><td>${a.ideal?pct1(a.ideal):'—'}</td><td class="${a.rent<0?'rd':'gn'}">${fmtP(a.rent)}</td><td class="gn" style="font-weight:700">${fmt(val)}</td><td>${qtd}</td><td class="am">+${fmt(divMes)}/mês</td><td class="mu">${esc(a.motivos.join(', '))}</td></tr>`;
   }).join('');
   out.innerHTML=`<div class="tw"><div class="ts"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>Setor</th><th>% Cart.</th><th>% Ideal</th><th>Rentab.</th><th>Sugestão</th><th>Qtd aprox.</th><th>Dividendo</th><th>Motivo</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
@@ -5459,14 +5483,14 @@ function getAI(){
   L.push(`Lucro total: ${fmt(lucroTotal)} (ganho de capital + proventos)`);
   L.push(`Renda passiva estimada: ${fmt(mD)}/mês (${fmt(aD)}/ano)`);
   L.push(`Proventos recebidos: ${fmt(rec.mes)} no mês · ${fmt(rec.ano)} no ano · ${fmt(rec.total)} total`);
-  L.push(`DY médio: ${avgDY.toFixed(2)}%`);
+  L.push(`DY médio: ${fmtP(avgDY)}`);
   L.push('');
   L.push('⚖️ ALOCAÇÃO');
-  Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).forEach(([tipo,valor])=>L.push(`• ${tipo}: ${((valor/tC)*100).toFixed(1)}% (${fmt(valor)})`));
+  Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).forEach(([tipo,valor])=>L.push(`• ${tipo}: ${pct1(tC>0?((valor/tC)*100):0)} (${fmt(valor)})`));
   L.push('');
   L.push('🔎 PONTOS DE ATENÇÃO');
-  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${maiorPct.toFixed(1)}% — considere diversificar próximos aportes.`);
-  else L.push(`• Maior posição: ${maior.ticker} com ${maiorPct.toFixed(1)}% — concentração dentro do esperado.`);
+  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${pct1(maiorPct)} — considere diversificar próximos aportes.`);
+  else L.push(`• Maior posição: ${maior.ticker} com ${pct1(maiorPct)} — concentração dentro do esperado.`);
   if(S.assets.length<8) L.push('• Poucos ativos. Para renda passiva consistente, 10+ ativos de setores diferentes reduzem risco.');
   if(fiisPct>60) L.push('• FIIs com peso muito alto (>60%). Aumenta exposição a juros e riscos imobiliários.');
   if(acoesPct>70) L.push('• Ações com peso muito alto. Dividendos ficam mais irregulares e sujeitos a resultado trimestral.');
