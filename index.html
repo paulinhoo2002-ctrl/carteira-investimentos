@@ -32,26 +32,26 @@ button{cursor:pointer;font-family:inherit}
 .wrap{padding:20px;max-width:1360px;margin:0 auto}
 @media(max-width:640px){.wrap{padding:14px}}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
-.dashboard-hero{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.dash-card{min-height:138px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between}
+.dashboard-hero{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.dash-card{min-height:124px;padding:12px 14px 10px;display:flex;flex-direction:column;justify-content:space-between}
 .dash-head{display:flex;align-items:flex-start;gap:10px}
-.dash-ico{width:28px;height:28px;border-radius:999px;background:#111828;border:1px solid #1e2a3d;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
-.dash-kicker{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
-.dash-name{font-size:13px;font-weight:700;color:#e2eaf6;line-height:1.15}
-.dash-value{margin-top:10px}
-.dash-card .cv{font-size:24px;line-height:1.1;margin-bottom:0}
-.dash-card .cs{font-size:12px;color:#64748b;margin-top:6px}
-.dash-foot{font-size:11px;color:#64748b;line-height:1.4}
-.dashboard-grid{gap:14px}
-.dashboard-panel{min-height:360px}
-.dashboard-legend{display:flex;flex-direction:column;gap:8px;min-width:220px}
+.dash-ico{width:26px;height:26px;border-radius:999px;background:#111828;border:1px solid #1e2a3d;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.dash-kicker{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.09em;margin-bottom:2px}
+.dash-name{font-size:12px;font-weight:700;color:#e2eaf6;line-height:1.1}
+.dash-value{margin-top:8px}
+.dash-card .cv{font-size:22px;line-height:1.05;margin-bottom:0}
+.dash-card .cs{font-size:11px;color:#64748b;margin-top:4px}
+.dash-foot{font-size:10px;color:#64748b;line-height:1.3;max-width:100%}
+.dashboard-grid{gap:10px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.95fr)}
+.dashboard-panel{min-height:306px}
+.dashboard-legend{display:flex;flex-direction:column;gap:6px;min-width:220px}
 .dashboard-legend-item{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}
 .dashboard-legend-left{display:flex;align-items:center;gap:8px;min-width:0}
 .dashboard-legend-name{color:#e2eaf6;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dashboard-legend-pct{color:#c0cce0;font-weight:700}
 .dashboard-swatch{width:10px;height:10px;border-radius:3px;flex:none}
 .dash-filters{display:flex;gap:6px;flex-wrap:wrap}
-.dash-chip{border:1px solid #1e2a3d;background:#111828;color:#64748b;border-radius:999px;padding:5px 10px;font-size:11px;line-height:1;font-weight:700;transition:all .15s}
+.dash-chip{border:1px solid #1e2a3d;background:#111828;color:#64748b;border-radius:999px;padding:4px 9px;font-size:11px;line-height:1;font-weight:700;transition:all .15s}
 .dash-chip:hover{opacity:.9;transform:translateY(-1px)}
 .dash-chip.on{background:rgba(79,70,229,.14);color:#a5b4fc;border-color:rgba(99,102,241,.35)}
 .rent-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:stretch}
@@ -166,10 +166,11 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .ag-table{margin-top:0}
 .ag-table .ts{border-radius:10px}
 .ag-table table{min-width:1120px}
-.db{display:flex;align-items:center;gap:8px;margin-bottom:9px}
-.dbl{font-size:12px;color:#c0cce0;min-width:62px;font-weight:600}
-.dbt{flex:1;background:#111828;border-radius:4px;height:6px;overflow:hidden}
-.dbf{height:100%;border-radius:4px}.dbv{font-size:12px;color:#64748b;min-width:70px;text-align:right}
+.db{display:grid;grid-template-columns:56px minmax(0,1fr) 92px;align-items:center;gap:10px;margin-bottom:10px}
+.dbl{font-size:11px;color:#c0cce0;min-width:0;font-weight:800;letter-spacing:.02em}
+.dbt{background:#111828;border-radius:999px;height:8px;overflow:hidden;border:1px solid #1e2a3d;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.dbf{height:100%;border-radius:999px;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset}
+.dbv{font-size:12px;color:#fbbf24;min-width:0;text-align:right;font-weight:800;letter-spacing:-.01em}
 .pleg{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .pli{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b}
 .pd{width:8px;height:8px;border-radius:2px}
@@ -3736,28 +3737,26 @@ function irpfTab(){
       </div>
     </details>`;
   }).join('');
-  return `<div style="font-size:14px;font-weight:700;margin-bottom:4px">🧾 IRPF</div>
-  <div class="mu" style="font-size:12px;margin-bottom:14px">Apuração anual com foco em declaração, DARF e exportação. A leitura abaixo separa Ações, FIIs, ETFs, BDRs e Renda Fixa para ficar mais próxima da apuração tributária real.</div>
+  return `<div style="font-size:13px;font-weight:800;margin-bottom:3px;letter-spacing:.01em">🧾 IRPF</div>
+  <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:12px">Apuração anual com foco em declaração, DARF e exportação. A leitura abaixo separa Ações, FIIs, ETFs, BDRs e Renda Fixa para ficar mais próxima da apuração tributária real.</div>
 
-  <details class="sec" open style="margin-bottom:8px;border-left:4px solid #a78bfa">
-    <summary>
+  <div class="card al" style="margin-bottom:2px;border-left-color:#a78bfa;padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
-        <div class="sec-title">Prévia fiscal do ano</div>
-        <div class="sec-meta">Resumo rápido inspirado na declaração: Bens e Direitos, rendimentos e DARF.</div>
+        <div class="sec-title" style="font-size:14px;line-height:1.15">Prévia fiscal do ano</div>
+        <div class="sec-meta" style="font-size:11px;line-height:1.35;margin-top:3px">Resumo rápido inspirado na declaração: Bens e Direitos, rendimentos e DARF.</div>
       </div>
-      <div class="sec-meta">${irpfYear}</div>
-    </summary>
-    <div class="sec-body">
-      <div class="cards" style="margin-bottom:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
-        <div class="card al" style="margin:0;border-left-color:#60a5fa;padding:10px 12px;min-height:68px"><div class="cl">Posições</div><div class="cv bl" style="font-size:17px">${irpfPreview.positions.length}</div><div class="cs">Base de Bens e Direitos</div></div>
-        <div class="card al" style="margin:0;border-left-color:#fbbf24;padding:10px 12px;min-height:68px"><div class="cl">Proventos</div><div class="cv am" style="font-size:17px">${fmt(irpfPreview.totals.proventsTotal)}</div><div class="cs">${irpfPreview.provents.length} lançamentos</div></div>
-        <div class="card al" style="margin:0;border-left-color:#34d399;padding:10px 12px;min-height:68px"><div class="cl">Lucro tributável</div><div class="cv gn" style="font-size:17px">${fmt(irpfPreview.totals.taxableGain)}</div><div class="cs">Ganhos com apuração mensal</div></div>
-        <div class="card al" style="margin:0;border-left-color:#f472b6;padding:10px 12px;min-height:68px"><div class="cl">DARF estimado</div><div class="cv" style="color:${irpfTax>0?'#f87171':'#34d399'};font-size:17px">${fmt(irpfTax)}</div><div class="cs">Ano-calendário ${irpfYear}</div></div>
-      </div>
+      <div class="sec-meta" style="padding-top:2px">${irpfYear}</div>
     </div>
-  </details>
+    <div class="cards" style="margin-bottom:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+      <div class="card al" style="margin:0;border-left-color:#34d399;padding:7px 10px;min-height:50px"><div class="cl" style="font-size:10px">Vendas no ano</div><div class="cv gn" style="font-size:15px;line-height:1.05">${fmt(report.totals.sells)}</div><div class="cs" style="font-size:10px">Base da apuração mensal</div></div>
+      <div class="card al" style="margin:0;border-left-color:#60a5fa;padding:7px 10px;min-height:50px"><div class="cl" style="font-size:10px">Posições</div><div class="cv bl" style="font-size:15px;line-height:1.05">${irpfPreview.positions.length}</div><div class="cs" style="font-size:10px">Bens e Direitos</div></div>
+      <div class="card al" style="margin:0;border-left-color:#fbbf24;padding:7px 10px;min-height:50px"><div class="cl" style="font-size:10px">Proventos</div><div class="cv am" style="font-size:15px;line-height:1.05">${fmt(irpfPreview.totals.proventsTotal)}</div><div class="cs" style="font-size:10px">${irpfPreview.provents.length} lançamentos</div></div>
+      <div class="card al" style="margin:0;border-left-color:#f472b6;padding:7px 10px;min-height:50px"><div class="cl" style="font-size:10px">DARF estimado</div><div class="cv" style="color:${irpfTax>0?'#f87171':'#34d399'};font-size:15px;line-height:1.05">${fmt(irpfTax)}</div><div class="cs" style="font-size:10px">Ano-calendário ${irpfYear}</div></div>
+    </div>
+  </div>
 
-  <div class="cg" style="margin-bottom:10px;gap:10px">
+  <div class="cg" style="margin-bottom:6px;gap:6px">
     <div class="card al" style="border-left-color:#818cf8;padding:11px 12px;display:flex;flex-direction:column;gap:7px;min-height:0">
       <div class="fl">Ano-calendário</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -3784,12 +3783,6 @@ function irpfTab(){
         <button class="btn bgh" onclick="setIrpfStep(1)">Reiniciar</button>
       </div>
     </div>
-  </div>
-
-  <div class="cards" style="margin-bottom:10px;gap:8px">
-    <div class="card al" style="border-left-color:#34d399;padding:11px 12px;min-height:74px"><div class="cl">Vendas no ano</div><div class="cv gn" style="font-size:17px">${fmt(report.totals.sells)}</div></div>
-    <div class="card al" style="border-left-color:#fbbf24;padding:11px 12px;min-height:74px"><div class="cl">Proventos</div><div class="cv am" style="font-size:17px">${fmt(report.totals.proventsTotal)}</div></div>
-    <div class="card al" style="border-left-color:#f472b6;padding:11px 12px;min-height:74px"><div class="cl">DARF estimado</div><div class="cv" style="color:${safeTax>0?'#f87171':'#34d399'};font-size:17px">${fmt(safeTax)}</div></div>
   </div>
 
   <details class="sec" style="margin-bottom:10px">
@@ -4519,7 +4512,7 @@ function dash(){
   const evo=movSeries.map(v=>{cum+=v.value; return {...v,cum};});
   const maxEvo=Math.max(...evo.map(v=>v.cum), tC, 1);
   const evoBars=evo.length
-    ? evo.map((v,i)=>`<div class="db"><div class="dbl">${esc(v.label)}</div><div class="dbt"><div class="dbf" style="width:${Math.max(4,(v.cum/maxEvo)*100).toFixed(0)}%;background:${DCLR[i%DCLR.length]}"></div></div><div class="dbv am">${fmt(v.cum)}</div></div>`).join('')
+    ? evo.map((v)=>`<div class="db"><div class="dbl">${esc(v.label)}</div><div class="dbt"><div class="dbf" style="width:${Math.max(4,(v.cum/maxEvo)*100).toFixed(0)}%;background:linear-gradient(90deg,#34d399,#86efac)"></div></div><div class="dbv am">${fmt(v.cum)}</div></div>`).join('')
     : '<div class="di" style="font-size:13px;padding:20px 0;text-align:center">Registre compras na aba 💰 Aportes.</div>';
   const total12=(S.proventos||[]).reduce((s,p)=>{
     const d=parseAnyDate(p.date);
@@ -4534,7 +4527,7 @@ function dash(){
   const dashTotal=adDash.reduce((s,d)=>s+d.value,0);
   const pDash=pie(adDash,DCLR);
   const legDash=adDash.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${dashTotal>0?((d.value/dashTotal)*100).toFixed(1):'0.0'}%</span></div>`).join('');
-  return`<div class="cards dashboard-hero">
+  return`<div class="cards dashboard-hero" style="gap:10px">
     <div class="card al dash-card" style="border-left-color:#818cf8">
       <div class="dash-head">
         <div class="dash-ico">💼</div>
@@ -4547,7 +4540,7 @@ function dash(){
         <div class="cv pu">${fmt(tC)}</div>
         <div class="cs">Valor investido: ${fmt(tI)}</div>
       </div>
-      <div class="dash-foot">Base para acompanhar o tamanho real da carteira e o avanço dos aportes.</div>
+      <div class="dash-foot">Acompanhamento do tamanho da carteira e dos aportes.</div>
     </div>
     <div class="card al dash-card" style="border-left-color:${lucroTotal>=0?'#34d399':'#f87171'}">
       <div class="dash-head">
@@ -4561,7 +4554,7 @@ function dash(){
         <div class="cv" style="color:${lucroTotal>=0?'#34d399':'#f87171'}">${fmt(lucroTotal)}</div>
         <div class="cs">Ganho de capital: ${fmt(tG)} · Proventos recebidos: ${fmt(rec.total)}</div>
       </div>
-      <div class="dash-foot">Mostra quanto a carteira rendeu somando valorização e dinheiro que caiu na conta.</div>
+      <div class="dash-foot">Rentabilidade consolidada com proventos inclusos.</div>
     </div>
     <div class="card al dash-card" style="border-left-color:#fbbf24">
       <div class="dash-head">
@@ -4575,7 +4568,7 @@ function dash(){
         <div class="cv am">${fmt(total12)}</div>
         <div class="cs">12 meses: ${fmt(total12)} · Total histórico: ${fmt(rec.total)}</div>
       </div>
-      <div class="dash-foot">Ideal para enxergar a evolução da renda passiva sem precisar abrir outras abas.</div>
+      <div class="dash-foot">Renda passiva em leitura rápida.</div>
     </div>
     <div class="card al dash-card" style="border-left-color:#60a5fa">
       <div class="dash-head">
@@ -4589,17 +4582,17 @@ function dash(){
         <div class="cv bl">${fmtP(tGP)}</div>
         <div class="cs">${avgDY.toFixed(2)}% DY médio · ${S.assets.length} ativos</div>
       </div>
-      <div class="dash-foot">Leitura rápida do desempenho e da força da carteira no momento.</div>
+      <div class="dash-foot">Desempenho e eficiência da carteira.</div>
     </div>
   </div>
-  <div class="cg dashboard-grid">
-    <div class="cc dashboard-panel">
-      <div class="sh" style="margin-bottom:12px">
+  <div class="cg dashboard-grid" style="gap:10px">
+    <div class="cc dashboard-panel" style="padding:12px 12px 10px">
+      <div class="sh" style="margin-bottom:8px;align-items:flex-end">
         <div>
           <div class="ct">Evolução do capital aplicado</div>
-          <div class="mu" style="font-size:12px">Histórico acumulado dos aportes líquidos dos últimos ${S.dashPeriod} meses.</div>
+          <div class="mu" style="font-size:12px">Aportes líquidos acumulados dos últimos ${S.dashPeriod} meses.</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           <div class="dash-filters">
             ${periodOpts.map(p=>`<button class="dash-chip ${Number(S.dashPeriod)===p?'on':''}" onclick="setDashPeriod(${p})">${p}M</button>`).join('')}
           </div>
@@ -4608,20 +4601,20 @@ function dash(){
       </div>
       ${evoBars}
     </div>
-    <div class="cc dashboard-panel">
-      <div class="sh" style="margin-bottom:12px">
+    <div class="cc dashboard-panel" style="padding:12px 12px 10px">
+      <div class="sh" style="margin-bottom:8px;align-items:flex-end">
         <div>
           <div class="ct">Ativos na carteira</div>
-          <div class="mu" style="font-size:12px">Composição por tipo de ativo.</div>
+          <div class="mu" style="font-size:12px">Mix atual por tipo de ativo.</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           <div class="dash-filters">
             ${['all',...TYPE_DASH_CHOICES].map(t=>`<button class="dash-chip ${String(S.dashType||'all')===t?'on':''}" onclick="setDashType('${t}')">${t==='all'?'Todos':t}</button>`).join('')}
           </div>
           <div class="note-pill">${dashAssets.length} ativos</div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
         <div style="flex:none">${pDash}</div>
         <div class="dashboard-legend">${legDash||'<div class="di" style="font-size:13px;padding:20px 0;text-align:center">Cadastre ativos para ver a composição.</div>'}</div>
       </div>
@@ -5365,64 +5358,64 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </tr>`).join('')
     : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#2e3f58">Nenhum provento registrado. Use "Buscar histórico grátis" ou "+ Registrar provento".</td></tr>';
 
-  return`<div style="font-size:15px;font-weight:700;margin-bottom:14px">${esc(pageTitle)}</div>
-  ${showGoal?`<div class="fc" style="margin-bottom:16px">
-    <div class="cg" style="align-items:end">
+  return`<div style="font-size:14px;font-weight:700;margin-bottom:10px">${esc(pageTitle)}</div>
+  ${showGoal?`<div class="fc" style="margin-bottom:12px">
+    <div class="cg" style="align-items:end;gap:8px">
       <div>
-        <div class="fl">🎯 Objetivo mensal de dividendos (R$)</div>
+        <div class="fl" style="margin-bottom:4px">🎯 Objetivo mensal de dividendos (R$)</div>
         <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()">
-        <div class="mu" style="font-size:12px;margin-top:6px">Digite e pressione Enter ou clique fora para salvar.</div>
+        <div class="mu" style="font-size:11px;margin-top:5px">Digite e pressione Enter ou clique fora para salvar.</div>
       </div>
       <div>
-        <div class="fl">Progresso até o objetivo</div>
+        <div class="fl" style="margin-bottom:4px">Progresso até o objetivo</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-          <div style="font-size:22px;font-weight:800;color:#fbbf24">${ratio.toFixed(1)}%</div>
+          <div style="font-size:20px;font-weight:800;color:#fbbf24">${ratio.toFixed(1)}%</div>
           <div style="font-size:12px;color:#64748b">${fmt(media12)} / ${fmt(objetivo||0)}</div>
         </div>
-        <div class="dbt" style="height:8px;margin-top:8px"><div class="dbf" style="width:${ratio.toFixed(1)}%;background:#fbbf24"></div></div>
-        <div class="mu" style="font-size:12px;margin-top:6px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
+        <div class="dbt" style="height:7px;margin-top:7px"><div class="dbf" style="width:${ratio.toFixed(1)}%;background:#fbbf24"></div></div>
+        <div class="mu" style="font-size:11px;margin-top:5px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
       </div>
     </div>
   </div>`:''}
-  <div class="cc" style="margin-bottom:10px;padding:10px 10px 8px">
-    <div class="sh" style="margin-bottom:8px">
+  <div class="cc" style="margin-bottom:8px;padding:10px 10px 8px">
+    <div class="sh" style="margin-bottom:6px">
       <div>
         <div class="st">Resumo</div>
-        <div class="mu" style="font-size:12px;margin-top:4px">Visão rápida dos últimos 12 meses e do tamanho atual da carteira.</div>
+        <div class="mu" style="font-size:11px;margin-top:3px">Visão rápida dos últimos 12 meses e do tamanho atual da carteira.</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch">
-      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:76px;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:66px;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl">Média mensal (últ. 12 meses)</div>
-          <div class="cv am" style="font-size:21px">${fmt(media12)}</div>
+          <div class="cl" style="margin-bottom:4px">Média mensal (12M)</div>
+          <div class="cv am" style="font-size:19px">${fmt(media12)}</div>
         </div>
         <div class="cs">Total 12 meses: ${fmt(total12)}</div>
       </div>
-      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:76px;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:66px;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
           <div class="cl" style="margin-bottom:4px">Recebido no mês</div>
-          <div class="cv gn" style="font-size:21px">${fmt(rec.mes)}</div>
+          <div class="cv gn" style="font-size:19px">${fmt(rec.mes)}</div>
         </div>
       </div>
-      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:76px;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:66px;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
           <div class="cl" style="margin-bottom:4px">Recebido no ano</div>
-          <div class="cv pu" style="font-size:21px">${fmt(rec.ano)}</div>
+          <div class="cv pu" style="font-size:19px">${fmt(rec.ano)}</div>
         </div>
       </div>
     </div>
   </div>
   <div class="cards" style="margin-bottom:10px;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
-    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:76px"><div class="cl">Estimativa projetada/mês</div><div class="cv am" style="font-size:19px">${fmt(mD)}</div></div>
-    <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:76px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:19px">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8;padding:10px 12px;min-height:76px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:19px">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#f97316;padding:10px 12px;min-height:76px"><div class="cl">Total histórico proventos</div><div class="cv" style="color:#fb923c;font-size:19px">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
+    <div class="card al" style="border-left-color:#fbbf24;padding:9px 11px;min-height:66px"><div class="cl">Estimativa/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div></div>
+    <div class="card al" style="border-left-color:#34d399;padding:9px 11px;min-height:66px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
+    <div class="card al" style="border-left-color:#818cf8;padding:9px 11px;min-height:66px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
+    <div class="card al" style="border-left-color:#f97316;padding:9px 11px;min-height:66px"><div class="cl">Total histórico</div><div class="cv" style="color:#fb923c;font-size:18px">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
   </div>
   <div class="sh" style="margin:0 0 8px 0">
     <div>
       <div class="st">Atualização de dividendos</div>
-      <div class="mu" style="font-size:12px;margin-top:3px">Busque o histórico grátis para recalcular os proventos automaticamente.</div>
+      <div class="mu" style="font-size:11px;margin-top:3px">Busque o histórico grátis para recalcular os proventos automaticamente.</div>
     </div>
     <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
   </div>
@@ -5527,26 +5520,24 @@ function metasTab(){
   const metaProValor=Number(mpr.monthly)||0;
   const metaPro=goalProgressText(mD,metaProValor);
 
-  return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">🎯 Metas</div>
-  <div class="mu" style="font-size:13px;margin-bottom:18px">Central de objetivos da carteira. Aqui ficam os números de renda, progresso e seus objetivos pessoais.</div>
+  return`<div style="font-size:14px;font-weight:700;margin-bottom:4px">🎯 Metas</div>
+  <div class="mu" style="font-size:12px;margin-bottom:12px">Objetivos da carteira com foco em renda, patrimônio e distribuição.</div>
 
-  <div class="cards" style="margin-bottom:10px;gap:8px">
-    <div class="card al" style="border-left-color:#fbbf24;padding:11px 12px;min-height:74px"><div class="cl">Estimativa projetada/mês</div><div class="cv am" style="font-size:17px">${fmt(mD)}</div></div>
-    <div class="card al" style="border-left-color:#34d399;padding:11px 12px;min-height:74px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:17px">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8;padding:11px 12px;min-height:74px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:17px">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#34d399;padding:11px 12px;min-height:74px"><div class="cl">Total histórico proventos</div><div class="cv" style="color:#fb923c;font-size:17px">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
-    <div class="card al" style="border-left-color:#60a5fa;padding:11px 12px;min-height:74px"><div class="cl">Total da carteira</div><div class="cv bl" style="font-size:17px">${fmt(tC)}</div><div class="cs">Patrimônio atual em ativos</div></div>
-    <div class="card al" style="border-left-color:#a78bfa;padding:11px 12px;min-height:74px"><div class="cl">Total 12 meses</div><div class="cv pu" style="font-size:17px">${fmt(total12)}</div><div class="cs">Média mensal: ${fmt(media12)}</div></div>
+  <div class="cards" style="margin-bottom:10px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
+    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Estimativa/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div></div>
+    <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:64px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
+    <div class="card al" style="border-left-color:#818cf8;padding:10px 12px;min-height:64px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
+    <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;min-height:64px"><div class="cl">Total da carteira</div><div class="cv bl" style="font-size:18px">${fmt(tC)}</div></div>
   </div>
 
-  <div class="cg" style="margin-bottom:10px;gap:10px">
-    <div class="card al" style="border-left-color:#fbbf24;padding:11px 12px;display:flex;flex-direction:column;gap:7px;min-height:0">
-      <div class="fl">🎯 Objetivo mensal de dividendos</div>
+  <div class="cg" style="margin-bottom:10px;gap:10px;grid-template-columns:1fr 1fr">
+    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+      <div class="fl">Objetivo mensal de dividendos</div>
       <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()">
       <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:2px">
-        <div class="fl" style="margin-bottom:0">Progresso até o objetivo</div>
-        <div style="font-size:17px;font-weight:800;color:#fbbf24">${prog.toFixed(1)}%</div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+        <div class="mu">Progresso</div>
+        <div style="font-size:16px;font-weight:800;color:#fbbf24">${prog.toFixed(1)}%</div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div class="mu">${fmt(media12)} / ${fmt(objetivo||0)}</div>
@@ -5554,13 +5545,13 @@ function metasTab(){
       </div>
       <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${prog.toFixed(1)}%;background:#fbbf24"></div></div>
     </div>
-    <div class="card al" style="border-left-color:#60a5fa;padding:11px 12px;display:flex;flex-direction:column;gap:7px;min-height:0">
-      <div class="fl">🎯 Meta de patrimônio</div>
+    <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+      <div class="fl">Meta de patrimônio</div>
       <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
       <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:2px">
-        <div class="fl" style="margin-bottom:0">Progresso até o objetivo</div>
-        <div style="font-size:17px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+        <div class="mu">Progresso</div>
+        <div style="font-size:16px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
