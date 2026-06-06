@@ -456,12 +456,210 @@ try{
   PWA.installed = window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone || false;
 }catch(e){}
 
+function cloneData(v){ return JSON.parse(JSON.stringify(v ?? null)); }
+function makeWalletId(){ return `w_${Date.now()}_${Math.random().toString(16).slice(2,8)}`; }
+function emptyWallet(name='Carteira principal'){
+  return {
+    id: makeWalletId(),
+    name,
+    assets:[],
+    aportes:[],
+    proventos:[],
+    divGoal:0,
+    goals:normalizeGoals(),
+    learnMeta:{}
+  };
+}
+function normalizeWalletEntry(w, fallbackName='Carteira'){
+  const base=emptyWallet(fallbackName);
+  const obj=(w&&typeof w==='object')?w:{};
+  return {
+    ...base,
+    id:String(obj.id||base.id),
+    name:String(obj.name||fallbackName||base.name),
+    assets:Array.isArray(obj.assets)?obj.assets:[],
+    aportes:Array.isArray(obj.aportes)?obj.aportes:[],
+    proventos:Array.isArray(obj.proventos)?obj.proventos:[],
+    divGoal:Number(obj.divGoal)||0,
+    goals:normalizeGoals(obj.goals),
+    learnMeta:(obj.learnMeta && typeof obj.learnMeta==='object') ? obj.learnMeta : {}
+  };
+}
+function ensureWallets(){
+  if(!Array.isArray(S.wallets) || !S.wallets.length){
+    const legacy=normalizeWalletEntry({
+      assets:S.assets,
+      aportes:S.aportes,
+      proventos:S.proventos,
+      divGoal:S.divGoal,
+      goals:S.goals,
+      learnMeta:S.learnMeta
+    }, 'Carteira principal');
+    S.wallets=[legacy];
+    S.activeWalletId=legacy.id;
+    return;
+  }
+  S.wallets=S.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
+  if(!S.activeWalletId || !S.wallets.some(w=>w.id===S.activeWalletId)){
+    S.activeWalletId=S.wallets[0].id;
+  }
+}
+function activeWallet(){
+  ensureWallets();
+  return S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
+}
+function syncStateFromWallet(w){
+  const wallet=normalizeWalletEntry(w);
+  S.assets=cloneData(wallet.assets||[]);
+  S.aportes=cloneData(wallet.aportes||[]);
+  S.proventos=cloneData(wallet.proventos||[]);
+  S.divGoal=Number(wallet.divGoal)||0;
+  S.goals=normalizeGoals(wallet.goals);
+  S.learnMeta=(wallet.learnMeta && typeof wallet.learnMeta==='object') ? wallet.learnMeta : {};
+  rebuildLearnMeta();
+}
+function syncWalletFromState(){
+  ensureWallets();
+  const w=activeWallet();
+  if(!w) return;
+  w.assets=cloneData(S.assets||[]);
+  w.aportes=cloneData(S.aportes||[]);
+  w.proventos=cloneData(S.proventos||[]);
+  w.divGoal=Number(S.divGoal)||0;
+  w.goals=normalizeGoals(S.goals);
+  w.learnMeta=(S.learnMeta && typeof S.learnMeta==='object') ? cloneData(S.learnMeta) : {};
+}
+function walletLabel(w=activeWallet()){
+  if(!w) return 'Carteira';
+  const assets=Number(w.assets?.length||0);
+  const aportes=Number(w.aportes?.length||0);
+  const prov=Number(w.proventos?.length||0);
+  return `${w.name} · ${assets} ativos · ${aportes} aportes · ${prov} proventos`;
+}
+function activeWalletIndex(){
+  ensureWallets();
+  const idx=S.wallets.findIndex(w=>w.id===S.activeWalletId);
+  return idx>=0 ? idx+1 : 1;
+}
+function walletCount(){
+  ensureWallets();
+  return Math.max(1, Number(S.wallets?.length||0));
+}
+function walletTone(idx=1){
+  const tones=[
+    {bg:'linear-gradient(180deg,rgba(99,102,241,.18),rgba(99,102,241,.08))',bd:'rgba(99,102,241,.35)',fg:'#c7d2fe'},
+    {bg:'linear-gradient(180deg,rgba(52,211,153,.18),rgba(52,211,153,.08))',bd:'rgba(52,211,153,.35)',fg:'#a7f3d0'},
+    {bg:'linear-gradient(180deg,rgba(251,191,36,.18),rgba(251,191,36,.08))',bd:'rgba(251,191,36,.35)',fg:'#fde68a'},
+    {bg:'linear-gradient(180deg,rgba(244,114,182,.18),rgba(244,114,182,.08))',bd:'rgba(244,114,182,.35)',fg:'#f9a8d4'},
+    {bg:'linear-gradient(180deg,rgba(96,165,250,.18),rgba(96,165,250,.08))',bd:'rgba(96,165,250,.35)',fg:'#bfdbfe'}
+  ];
+  return tones[(Math.max(1,idx)-1)%tones.length];
+}
+function walletChip(){
+  const idx=activeWalletIndex();
+  const total=walletCount();
+  const tone=walletTone(idx);
+  return `<span style="display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;border:1px solid ${tone.bd};background:${tone.bg};color:${tone.fg};font-size:10px;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)">${idx}<span style="opacity:.7">/</span>${total}</span>`;
+}
+function walletPill(w, idx){
+  const active=String(w.id)===String(S.activeWalletId);
+  const tone=walletTone(idx+1);
+  return `<button class="btn" onclick="switchWallet('${esc(w.id)}')" style="width:100%;justify-content:space-between;padding:8px 10px;border-radius:12px;border:1px solid ${active?tone.bd:'#162033'};background:${active?tone.bg:'#0b1220'};color:${active?tone.fg:'#9fb4d6'};font-size:11px;box-shadow:${active?'0 0 0 1px rgba(255,255,255,.03), inset 0 1px 0 rgba(255,255,255,.05)':'none'}">
+    <span style="display:flex;align-items:center;gap:8px;min-width:0">
+      <span style="width:8px;height:8px;border-radius:999px;background:${active?tone.fg:'#51617d'};box-shadow:0 0 0 3px ${active?'rgba(255,255,255,.06)':'transparent'}"></span>
+      <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${active?'700':'600'}">${esc(w.name)}</span>
+    </span>
+    <span style="font-size:10px;opacity:.8">${active?'ativa':'abrir'}</span>
+  </button>`;
+}
+function switchWallet(id){
+  ensureWallets();
+  syncWalletFromState();
+  const next=S.wallets.find(w=>w.id===id);
+  if(!next){
+    save();
+    render();
+    return;
+  }
+  if(next.id===S.activeWalletId){
+    save();
+    render();
+    return;
+  }
+  S.activeWalletId=next.id;
+  syncStateFromWallet(next);
+  save();
+  render();
+  toast(`📁 ${next.name} ativada.`);
+}
+function createWallet(){
+  ensureWallets();
+  syncWalletFromState();
+  const name=(prompt('Nome da nova carteira:', `Carteira ${S.wallets.length+1}`)||'').trim();
+  if(!name) return;
+  const w=emptyWallet(name);
+  S.wallets.push(w);
+  S.activeWalletId=w.id;
+  syncStateFromWallet(w);
+  save();
+  render();
+  toast(`✅ Carteira "${name}" criada.`);
+}
+function duplicateWallet(){
+  ensureWallets();
+  syncWalletFromState();
+  const src=activeWallet();
+  if(!src) return;
+  const name=(prompt('Nome da carteira duplicada:', `${src.name} - cópia` )||'').trim();
+  if(!name) return;
+  const copy=normalizeWalletEntry({...cloneData(src), id:makeWalletId(), name}, name);
+  S.wallets.push(copy);
+  S.activeWalletId=copy.id;
+  syncStateFromWallet(copy);
+  save();
+  render();
+  toast(`✅ Carteira duplicada como "${name}".`);
+}
+function renameWallet(){
+  ensureWallets();
+  const w=activeWallet();
+  if(!w) return;
+  const name=(prompt('Novo nome da carteira:', w.name)||'').trim();
+  if(!name) return;
+  w.name=name;
+  save();
+  render();
+  toast(`✏️ Carteira renomeada para "${name}".`);
+}
+function deleteWallet(){
+  ensureWallets();
+  if(S.wallets.length<=1){
+    toast('⚠️ Mantenha ao menos uma carteira.');
+    return;
+  }
+  const w=activeWallet();
+  if(!w) return;
+  const ok=confirm(`Excluir a carteira "${w.name}"? Isso remove só essa carteira do perfil.`);
+  if(!ok) return;
+  const idx=S.wallets.findIndex(x=>x.id===w.id);
+  if(idx<0) return;
+  S.wallets.splice(idx,1);
+  const next=S.wallets[Math.min(idx, S.wallets.length-1)];
+  S.activeWalletId=next.id;
+  syncStateFromWallet(next);
+  save();
+  render();
+  toast(`🗑️ Carteira "${w.name}" excluída.`);
+}
+
 // ══════════════════════════════════════
 // STORAGE — corrigido: salva tab + divGoal + beforeunload
 // ══════════════════════════════════════
 function save(){
   try{
+    syncWalletFromState();
     localStorage.setItem(STOR, JSON.stringify({
+      wallets:S.wallets, activeWalletId:S.activeWalletId,
       assets:S.assets, aportes:S.aportes, proventos:S.proventos,
       tab:S.tab, divGoal:S.divGoal, goals:S.goals,
       hideValues:S.hideValues,
@@ -528,9 +726,16 @@ function load(){
   // ← FIX: try-catch separados para não perder tudo se um falhar
   try{
     const d=JSON.parse(localStorage.getItem(STOR)||'{}');
-    if(Array.isArray(d.assets))    S.assets    = d.assets;
-    if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
-    if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+    if(Array.isArray(d.wallets) && d.wallets.length){
+      S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
+      S.activeWalletId=String(d.activeWalletId||S.wallets[0].id);
+      const active=S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
+      syncStateFromWallet(active);
+    }else{
+      if(Array.isArray(d.assets))    S.assets    = d.assets;
+      if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
+      if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+    }
     if(d.tab)                       S.tab       = d.tab;       // ← FIX: restaura tab
     if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
     if(d.hideValues !== undefined)  S.hideValues = !!d.hideValues;
@@ -574,6 +779,8 @@ function load(){
       }catch(e){}
     }
   }
+  ensureWallets();
+  syncWalletFromState();
   if(!S.goals || typeof S.goals!=='object') S.goals=normalizeGoals();
   else S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
@@ -610,7 +817,10 @@ function portfolioRef(){
   return FB.db.collection('portfolios').doc(FB.user.uid);
 }
 function cloudPayload(){
+  syncWalletFromState();
   return {
+    wallets:S.wallets.map(w=>normalizeWalletEntry(w, w.name)),
+    activeWalletId:S.activeWalletId,
     assets:S.assets,
     aportes:S.aportes,
     proventos:S.proventos,
@@ -626,17 +836,27 @@ function cloudPayload(){
   };
 }
 function hasLocalData(){
-  return (S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(normalizeGoals(S.goals))!==JSON.stringify(normalizeGoals()));
+  return (S.wallets&&S.wallets.length>1)||(S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(normalizeGoals(S.goals))!==JSON.stringify(normalizeGoals()));
 }
 function applyCloudData(d){
   if(!d) return;
   FB.applying=true;
-  if(Array.isArray(d.assets))    S.assets    = d.assets;
-  if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
-  if(Array.isArray(d.proventos)) S.proventos = d.proventos;
-  if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
-  if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
-  if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
+  if(Array.isArray(d.wallets) && d.wallets.length){
+    S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
+    if(d.activeWalletId) S.activeWalletId=String(d.activeWalletId);
+    const active=S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
+    syncStateFromWallet(active);
+  }else{
+    if(Array.isArray(d.assets))    S.assets    = d.assets;
+    if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
+    if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+    if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
+    if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
+    if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
+  }
+  if(d.divGoal!==undefined && !(Array.isArray(d.wallets) && d.wallets.length)) S.divGoal = Number(d.divGoal)||0;
+  if(d.goals && typeof d.goals==='object' && !(Array.isArray(d.wallets) && d.wallets.length)) S.goals = normalizeGoals(d.goals);
+  if(d.learnMeta && typeof d.learnMeta==='object' && !(Array.isArray(d.wallets) && d.wallets.length)) S.learnMeta = d.learnMeta;
   if(d.tab && !S.tab)            S.tab       = d.tab;
   if(d.settings && d.settings.brapiToken && !S.brapiToken) S.brapiToken = d.settings.brapiToken;
   if(d.dashboard && typeof d.dashboard==='object'){
@@ -650,7 +870,8 @@ function applyCloudData(d){
   }
   rebuildLearnMeta();
   try{
-    localStorage.setItem(STOR, JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
+    syncWalletFromState();
+    localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
     localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
   }catch(e){}
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -733,6 +954,40 @@ function authBox(){
 function closeConfigMenus(){
   document.querySelectorAll('.cfg-menu[open]').forEach(d=>d.open=false);
 }
+function closeWalletMenus(){
+  document.querySelectorAll('.wallet-menu[open]').forEach(d=>d.open=false);
+}
+function walletSwitchBox(){
+  const wallets=(Array.isArray(S.wallets)&&S.wallets.length)?S.wallets:[normalizeWalletEntry({assets:S.assets,aportes:S.aportes,proventos:S.proventos,divGoal:S.divGoal,goals:S.goals,learnMeta:S.learnMeta},'Carteira principal')];
+  const activeId=S.activeWalletId || wallets[0].id;
+  return `<details class="wallet-menu" style="position:relative">
+    <summary class="btn bgh" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px;display:flex;align-items:center;gap:8px">
+      <span>📁 Carteiras</span>${walletChip()}
+    </summary>
+    <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:31;min-width:220px;max-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:6px 8px 8px;background:#090c15;border:1px solid #162033;border-radius:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#64748b">Carteira ativa</div>
+          ${walletChip()}
+        </div>
+        <select class="inp" style="width:100%;min-height:34px;padding:7px 10px;margin-top:2px" onchange="switchWallet(this.value)">
+          ${wallets.map((w,i)=>`<option value="${esc(w.id)}" ${String(w.id)===String(activeId)?'selected':''}>${esc(w.name)}${i===activeWalletIndex()-1?' · ativa':''}</option>`).join('')}
+        </select>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;font-size:10px;color:#64748b">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:999px;background:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.12)"></span>ativa</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:999px;background:#51617d"></span>abrir</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+          <button class="btn bgh" style="width:100%;justify-content:flex-start;padding:7px 10px" onclick="createWallet();closeWalletMenus()">➕ Nova</button>
+          <button class="btn bgh" style="width:100%;justify-content:flex-start;padding:7px 10px" onclick="duplicateWallet();closeWalletMenus()">⧉ Duplicar</button>
+          <button class="btn bgh" style="width:100%;justify-content:flex-start;padding:7px 10px" onclick="renameWallet();closeWalletMenus()">✏️ Renomear</button>
+          <button class="btn bgh" style="width:100%;justify-content:flex-start;padding:7px 10px" onclick="deleteWallet();closeWalletMenus()">🗑️ Excluir</button>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-top:7px;line-height:1.35">${esc(walletLabel(activeWallet()))}</div>
+      </div>
+    </div>
+  </details>`;
+}
 function configMenu(){
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px">⚙️ Configurações</summary>
@@ -797,7 +1052,8 @@ function toast(msg, cor='#6ee7b7'){
 // BACKUP
 // ══════════════════════════════════════
 function exportBackup(){
-  const data=JSON.stringify({assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
+  syncWalletFromState();
+  const data=JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-backup-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.json`});
   a.click();
   toast('💾 Backup exportado com sucesso!');
@@ -809,12 +1065,18 @@ document.getElementById('imp-file').addEventListener('change',e=>{
   r.onload=ev=>{
     try{
       const d=JSON.parse(ev.target.result);
-      if(Array.isArray(d.assets))    S.assets    = d.assets;
-      if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
-      if(Array.isArray(d.proventos)) S.proventos = d.proventos;
-      if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
-      if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
-      if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
+      if(Array.isArray(d.wallets) && d.wallets.length){
+        S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
+        S.activeWalletId=String(d.activeWalletId||S.wallets[0].id);
+        syncStateFromWallet(activeWallet());
+      }else{
+        if(Array.isArray(d.assets))    S.assets    = d.assets;
+        if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
+        if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+        if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
+        if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
+        if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
+      }
       if(d.rentPeriod !== undefined)  S.rentPeriod = String(d.rentPeriod||'all');
       if(d.rentType !== undefined)    S.rentType = String(d.rentType||'all');
       if(d.rentBench !== undefined)   S.rentBench = String(d.rentBench||'CDI');
@@ -828,7 +1090,8 @@ document.getElementById('imp-file').addEventListener('change',e=>{
 
 async function resetPortfolio(){
   const total=(S.assets?.length||0)+(S.aportes?.length||0)+(S.proventos?.length||0);
-  const ok=confirm(`Tem certeza que deseja apagar todo o histórico da carteira?\n\nIsso vai remover ${total} registros locais e voltar a carteira para um estado limpo.`);
+  const current=activeWallet();
+  const ok=confirm(`Tem certeza que deseja apagar o histórico da carteira ativa "${current?.name||'Carteira'}"?\n\nIsso vai remover ${total} registros desta carteira e manter as outras carteiras intactas.`);
   if(!ok) return;
   const typed=prompt('Para confirmar, digite LIMPAR');
   if((typed||'').trim().toUpperCase()!=='LIMPAR') return;
@@ -837,6 +1100,7 @@ async function resetPortfolio(){
   S.proventos=[];
   S.divGoal=0;
   S.goals=normalizeGoals();
+  S.learnMeta={};
   S.apHistoryOpen=true;
   S.apSearch='';
   clearTimeout(S.apSearchTimer);
@@ -851,11 +1115,7 @@ async function resetPortfolio(){
   S.noteReview=null;
   S.b3Review=null;
   S.b3MovementReview=null;
-  S.learnMeta={};
-  try{
-    localStorage.removeItem(STOR);
-    localStorage.removeItem(STOR+'_cfg');
-  }catch(e){}
+  syncWalletFromState();
   save();
   saveConfig();
   if(FB.user){
@@ -4462,11 +4722,12 @@ const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','
   <div class="hdr">
     <div class="hdr-logo">
       <div class="hdr-icon">📈</div>
-      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">Dados locais + Google/Firebase · ${cloudStatus()}</div></div>
+      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">Dados locais + Google/Firebase · ${cloudStatus()} · ${esc(activeWallet()?.name||'Carteira')} ${walletChip()}</div></div>
     </div>
     <div class="hdr-right">
       ${authBox()}
       ${installBox()}
+      ${walletSwitchBox()}
       ${configMenu()}
 
       <div style="text-align:right">
@@ -5749,7 +6010,7 @@ function rentabilidadeTab(){
       <div class="rent-chartbox">
         ${data.points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
       </div>
-      <div class="mu" style="font-size:12px;margin-top:8px;line-height:1.45">${esc(concentrationNote)}</div>
+      <div class="mu" style="font-size:11px;margin-top:6px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</div>
     </div>
   </div>
 
