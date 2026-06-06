@@ -55,11 +55,12 @@ button{cursor:pointer;font-family:inherit}
 .dash-chip:hover{opacity:.9;transform:translateY(-1px)}
 .dash-chip.on{background:rgba(79,70,229,.14);color:#a5b4fc;border-color:rgba(99,102,241,.35)}
 .rent-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:stretch}
-.rent-side{display:grid;gap:12px;align-content:start}
-.rent-main{min-height:100%}
-.rent-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.rent-filters select{min-width:170px}
+.rent-side{display:flex;flex-direction:column;gap:12px;height:100%}
+.rent-main{min-height:0;display:flex;flex-direction:column;gap:12px;height:100%}
+.rent-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;justify-content:stretch}
+.rent-filters select{min-width:0}
 .rent-chartbox{background:#090c15;border:1px solid #161e2e;border-radius:14px;padding:10px 10px 4px;overflow:hidden}
+.rent-card{flex:1;min-height:0}
 .rent-card .dash-value{margin-top:8px}
 .rent-card .dash-foot{min-height:34px}
 .rent-table th,.rent-table td{text-align:center;white-space:nowrap}
@@ -305,9 +306,10 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .dashboard-panel{min-height:0}
   .dashboard-legend{min-width:0;width:100%}
   .dash-filters{width:100%}
-  .rent-layout{grid-template-columns:1fr;gap:10px}
-  .rent-filters{width:100%;justify-content:flex-start}
-  .rent-filters select{min-width:0;flex:1 1 160px}
+  .rent-layout{grid-template-columns:1fr;gap:10px;align-items:start}
+  .rent-side{height:auto}
+  .rent-main{height:auto}
+  .rent-filters{grid-template-columns:1fr;width:100%}
   .rent-chartbox{padding:8px 8px 2px}
   .card{padding:12px 13px;border-radius:11px}
   .cv{font-size:18px}
@@ -389,6 +391,7 @@ let S = {
   qInFlight:false,
   brapiToken: DEFAULT_BRAPI, divGoal:0,
   hideValues:false,
+  allocGoalOpen:false,
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
   irpfYear:new Date().getFullYear(),
@@ -401,6 +404,7 @@ let S = {
     proventos:{types:['Ação','FII','ETF','BDR','Stock'], monthly:0}
   },
   aiText:'', aiLoad:false,
+  aiFocus:'geral',
   editId:null, editPId:null, showA:false, showP:false, showD:false,
   noteReview:null,
   b3Review:null,
@@ -675,6 +679,7 @@ function configMenu(){
     <summary class="btn bimp" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px">⚙️ Configurações</summary>
     <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="toggleHideValues();closeConfigMenus()">${S.hideValues?'👁️ Mostrar valores':'🙈 Ocultar valores'}</button>
+      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="exportBackup();closeConfigMenus()">💾 Backup</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importBackup();closeConfigMenus()">📂 Importar</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
@@ -2618,7 +2623,14 @@ function normalizeGoals(goals){
   const base={
     patrimonio:{target:0, aporte:0, annualVar:0},
     ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
-    proventos:{types:['Ação','FII','ETF','BDR','Stock'], monthly:0}
+    proventos:{types:['Ação','FII','ETF','BDR','Stock'], monthly:0},
+    allocation:{items:[
+      {type:'FII', pct:40},
+      {type:'ETF', pct:20},
+      {type:'Ação', pct:25},
+      {type:'BDR', pct:5},
+      {type:'Renda Fixa', pct:10},
+    ]}
   };
   const g=(goals && typeof goals==='object') ? JSON.parse(JSON.stringify(goals)) : {};
   g.patrimonio={...base.patrimonio, ...(g.patrimonio||{})};
@@ -2626,6 +2638,19 @@ function normalizeGoals(goals){
   const rawTypes=Array.isArray(g.proventos?.types) ? g.proventos.types : base.proventos.types;
   g.proventos={...base.proventos, ...(g.proventos||{}), types:[...new Set(rawTypes.map(t=>normalizeType(t,'')).filter(Boolean))]};
   if(!g.proventos.types.length) g.proventos.types=[...base.proventos.types];
+  const allocSrc=Array.isArray(g.allocation?.items)
+    ? g.allocation.items
+    : (g.allocation && typeof g.allocation==='object' ? Object.entries(g.allocation).map(([type,pct])=>({type,pct})) : base.allocation.items);
+  const seen=new Set();
+  g.allocation={items:allocSrc.map(it=>({
+    type:normalizeType(it?.type||it?.label||'',''),
+    pct:Math.max(0, Number(it?.pct ?? it?.value ?? it?.percent ?? it?.weight) || 0)
+  })).filter(it=>{
+    if(!it.type || seen.has(it.type)) return false;
+    seen.add(it.type);
+    return true;
+  })};
+  if(!g.allocation.items.length) g.allocation.items=[...base.allocation.items];
   return g;
 }
 function typeSelectOptions(selected, types=TYPE_FORM_CHOICES){
@@ -3828,7 +3853,7 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
 }
 
 function lineChart(series, labels){
-  const width=1080, height=360;
+  const width=1080, height=300;
   const padL=54, padR=20, padT=18, padB=34;
   const all=series.flatMap(s=>s.values.map(v=>Number(v)||0));
   if(!all.length) return '<div class="es" style="padding:36px 18px">Sem dados suficientes para desenhar o gráfico.</div>';
@@ -4215,7 +4240,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['irpf','🧾 IRPF'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
+const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -4240,7 +4265,8 @@ const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','
   <div class="wrap">${content()}</div>
   ${S.noteReview?notaReviewModal():''}
   ${S.b3Review?b3ReviewModal():''}
-  ${S.b3MovementReview?b3MovementReviewModal():''}`;
+  ${S.b3MovementReview?b3MovementReviewModal():''}
+  ${S.allocGoalOpen?allocationGoalModal():''}`;
 }
 function content(){
   if(S.tab==='dashboard') return dash();
@@ -4882,6 +4908,208 @@ function goalProgressText(current,target){
   const prog=t>0?Math.min(100,(c/t)*100):0;
   return {falta,prog};
 }
+const ALLOC_CHOICES = ['Ação','FII','ETF','BDR','Renda Fixa','Stock','Reit','Fundos de Investimento'];
+const ALLOC_COLORS = ['#4f8cff','#7cfc9a','#ffd86b','#ff6b81','#8b5cf6','#22c55e','#38bdf8','#f59e0b'];
+function normalizeAllocationItems(items){
+  const defaults = [
+    {type:'FII', pct:40},
+    {type:'ETF', pct:20},
+    {type:'Ação', pct:25},
+    {type:'BDR', pct:5},
+    {type:'Renda Fixa', pct:10},
+  ];
+  const src = Array.isArray(items)
+    ? items
+    : (items && typeof items==='object' ? Object.entries(items).map(([type,pct])=>({type,pct})) : defaults);
+  const seen = new Set();
+  const out = src.map(it=>({
+    type: normalizeType(it?.type||it?.label||'',''),
+    pct: Math.max(0, Number(it?.pct ?? it?.value ?? it?.percent ?? it?.weight) || 0)
+  })).filter(it=>{
+    if(!it.type || seen.has(it.type)) return false;
+    seen.add(it.type);
+    return true;
+  });
+  return out.length ? out : defaults;
+}
+function allocationGoalItems(){
+  return normalizeAllocationItems(S.goals?.allocation?.items);
+}
+function saveAllocationGoalItems(items){
+  S.goals=S.goals||{};
+  S.goals.allocation={items:normalizeAllocationItems(items)};
+  save();
+  render();
+}
+function normalizeAllocationGoal(){
+  const items=allocationGoalItems();
+  if(!items.length) return toast('Adicione ao menos uma categoria antes de normalizar.');
+  const total=items.reduce((s,it)=>s+Number(it.pct||0),0);
+  if(total<=0){
+    const share=100/items.length;
+    let acc=0;
+    items.forEach((it,idx)=>{
+      if(idx===items.length-1) it.pct=Number((100-acc).toFixed(1));
+      else{
+        const v=Number(share.toFixed(1));
+        it.pct=v;
+        acc+=v;
+      }
+    });
+  }else{
+    let acc=0;
+    items.forEach((it,idx)=>{
+      if(idx===items.length-1) it.pct=Number((100-acc).toFixed(1));
+      else{
+        const v=Number(((Number(it.pct)||0)/total*100).toFixed(1));
+        it.pct=v;
+        acc+=v;
+      }
+    });
+  }
+  saveAllocationGoalItems(items);
+  toast('✅ Distribuição normalizada para 100%');
+}
+function openAllocationGoal(){
+  S.allocGoalOpen=true;
+  render();
+}
+function closeAllocationGoal(){
+  S.allocGoalOpen=false;
+  render();
+}
+function allocationGoalAddFromSelect(){
+  const sel=document.getElementById('alloc-add-type');
+  if(!sel) return;
+  const type=normalizeType(sel.value||'','');
+  if(!type) return;
+  const items=allocationGoalItems();
+  if(items.some(it=>it.type===type)) return toast('Essa categoria já está na lista.');
+  items.push({type,pct:0});
+  saveAllocationGoalItems(items);
+}
+function allocationGoalSetPct(index, value){
+  const items=allocationGoalItems();
+  if(!items[index]) return;
+  items[index].pct=Math.max(0, Number(value)||0);
+  saveAllocationGoalItems(items);
+}
+function allocationGoalAdjust(index, delta){
+  const items=allocationGoalItems();
+  if(!items[index]) return;
+  items[index].pct=Math.max(0, Math.round((Number(items[index].pct)||0) + delta));
+  saveAllocationGoalItems(items);
+}
+function allocationGoalRemove(index){
+  const items=allocationGoalItems();
+  if(!items[index]) return;
+  items.splice(index,1);
+  saveAllocationGoalItems(items);
+}
+function allocationActualByType(){
+  const total = S.assets.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.current_price)||0),0);
+  const map = {};
+  S.assets.forEach(a=>{
+    const type=normalizeType(a.type||'Ação','Ação');
+    const value=(Number(a.qty)||0)*(Number(a.current_price)||0);
+    map[type]=(map[type]||0)+value;
+  });
+  return { total, map };
+}
+function allocationGoalLegend(items){
+  return items.map((it,idx)=>`<div class="pli"><span class="pd" style="background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></span>${esc(it.type)} ${Number(it.pct)||0}%</div>`).join('');
+}
+function allocationGoalModal(){
+  const items=allocationGoalItems();
+  const {total,map}=allocationActualByType();
+  const available=ALLOC_CHOICES.filter(t=>!items.some(it=>it.type===t)).map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  const totalTarget=items.reduce((s,it)=>s+Number(it.pct||0),0);
+  const chart = items.length
+    ? `conic-gradient(${(() => {
+        let start=0;
+        return items.map((it,idx)=>{
+          const color=ALLOC_COLORS[idx%ALLOC_COLORS.length];
+          const pct=Number(it.pct)||0;
+          const end=start+pct;
+          const slice=`${color} ${start}% ${end}%`;
+          start=end;
+          return slice;
+        }).join(',');
+      })()})`
+    : 'conic-gradient(#4f8cff 0 100%)';
+  const rows = items.map((it,idx)=>{
+    const actualPct = total>0 ? ((Number(map[it.type])||0)/total)*100 : 0;
+    const diff = actualPct - Number(it.pct||0);
+    const color = ALLOC_COLORS[idx%ALLOC_COLORS.length];
+    return `<div style="display:grid;grid-template-columns:1fr 100px auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #1e2a3d;border-radius:12px;background:#0d111e">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <span style="width:12px;height:12px;border-radius:3px;background:${color};flex:none"></span>
+        <div style="min-width:0">
+          <div style="font-weight:700;color:#e2eaf6">${esc(it.type)}</div>
+          <div class="mu" style="font-size:11px">${total>0 ? `Atual: ${actualPct.toFixed(1)}% · Diferença: ${diff>=0?'+':''}${diff.toFixed(1)}%` : 'Sem posições para comparar ainda'}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+        <button class="bi" title="Diminuir" onclick="allocationGoalAdjust(${idx},-1)">−</button>
+        <input type="number" min="0" step="0.1" value="${esc(Number(it.pct)||0)}" style="width:72px;text-align:center" onchange="allocationGoalSetPct(${idx}, this.value)">
+        <button class="bi" title="Aumentar" onclick="allocationGoalAdjust(${idx},1)">+</button>
+      </div>
+      <button class="bdi" title="Remover" onclick="allocationGoalRemove(${idx})">🗑️</button>
+    </div>`;
+  }).join('');
+  const donutStyle = `width:260px;height:260px;border-radius:50%;background:${chart};position:relative;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px #1e2a3d`;
+  const center = `<div style="width:142px;height:142px;border-radius:50%;background:#0d111e;border:1px solid #1e2a3d;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center">
+      <div style="font-size:24px;font-weight:800;color:#e2eaf6">${totalTarget.toFixed(0)}%</div>
+      <div class="mu" style="font-size:11px">objetivo total</div>
+    </div>`;
+  return `<div class="note-overlay" onclick="if(event.target===this) closeAllocationGoal()">
+    <div class="note-modal" style="max-width:1120px">
+      <div class="note-head">
+        <div class="note-title">
+          <div>
+            <h3>Distribuição da carteira</h3>
+            <p>Defina a porcentagem ideal para cada categoria de ativo que você deseja manter na carteira.</p>
+          </div>
+          <div class="note-pill">${totalTarget.toFixed(0)}% total</div>
+        </div>
+      </div>
+      <div class="sec-body" style="display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start">
+        <div style="display:flex;justify-content:center;padding-top:10px">
+          <div style="${donutStyle}">${center}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${rows || '<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Adicione categorias para montar a distribuição.</div>'}
+          <div class="fc" style="margin-top:8px">
+            <div class="fg" style="grid-template-columns:1fr auto;align-items:end">
+              <div>
+                <div class="fl">Adicionar categoria</div>
+                <select id="alloc-add-type">
+                  <option value="">Selecione</option>
+                  ${available}
+                </select>
+              </div>
+              <button class="btn bgh" onclick="allocationGoalAddFromSelect()">Adicionar</button>
+            </div>
+          </div>
+          <div class="pleg" style="margin-top:4px">${allocationGoalLegend(items)}</div>
+          <div class="aic" style="padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+              <div>
+                <div class="sec-title">Total configurado</div>
+                <div class="sec-meta">A soma ideal deve fechar em 100% para ficar consistente.</div>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:${Math.abs(totalTarget-100)<0.05?'#34d399':'#fbbf24'}">${totalTarget.toFixed(1)}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 18px 18px">
+        <button class="btn bgh" onclick="normalizeAllocationGoal()">Normalizar 100%</button>
+        <button class="btn bgh" onclick="closeAllocationGoal()">Fechar</button>
+      </div>
+    </div>
+  </div>`;
+}
 
 // ══════════════════════════════════════
 // REBALANCEAR
@@ -5073,6 +5301,22 @@ function metasTab(){
   const metaPatVar=Number(mp.annualVar)||0;
   const metaPatTime=estimateGoalMonths(tC,metaPatValor,metaPatAporte,metaPatVar);
   const metaPat=goalProgressText(tC,metaPatValor);
+  const allocItems=allocationGoalItems();
+  const {total:allocTotal,map:allocMap}=allocationActualByType();
+  const allocRows=allocItems.map((it,idx)=>{
+    const target=Number(it.pct)||0;
+    const actual=allocTotal>0 ? ((Number(allocMap[it.type])||0)/allocTotal)*100 : 0;
+    const diff=actual-target;
+    const color=ALLOC_COLORS[idx%ALLOC_COLORS.length];
+    const barWidth=Math.max(4, Math.min(100, Math.abs(diff)));
+    return `<tr>
+      <td style="font-weight:700;color:#e2eaf6"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${color};margin-right:8px;vertical-align:middle"></span>${esc(it.type)}</td>
+      <td>${target.toFixed(1)}%</td>
+      <td>${actual.toFixed(1)}%</td>
+      <td class="${diff>=0?'gn':'rd'}" style="font-weight:700">${diff>=0?'+':''}${diff.toFixed(1)}%</td>
+      <td><div class="bwr" style="width:110px"><div class="bfr" style="width:${barWidth}%;background:${diff>=0?'#34d399':'#f87171'}"></div></div></td>
+    </tr>`;
+  }).join('');
 
   const selectedTypesSet=new Set(selectedProTypes);
   const proCurrent=S.assets
@@ -5131,6 +5375,28 @@ function metasTab(){
     </div>
   </div>
 
+  <details class="sec" style="margin-bottom:16px">
+    <summary>
+      <div>
+        <div class="sec-title">Distribuição da carteira</div>
+        <div class="sec-meta">objetivo por categoria e comparação com a carteira atual</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="sec-meta">${allocItems.length} categorias</div>
+        <button class="btn bgh" onclick="event.stopPropagation();openAllocationGoal()">⚙️ Configurar</button>
+      </div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Categoria</th><th>Meta</th><th>Atual</th><th>Diferença</th><th>Desvio</th></tr></thead>
+        <tbody>${allocRows || '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Configure a distribuição na aba Configurações.</td></tr>'}</tbody>
+      </table></div></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button class="btn bgh" onclick="openAllocationGoal()">Abrir configurador</button>
+      </div>
+    </div>
+  </details>
+
   `;
 }
 
@@ -5145,6 +5411,33 @@ function rentabilidadeTab(){
   const return12m=data.return12m || 0;
   const currentMonth=current.delta || 0;
   const provCurrent=Number(current.proventos)||0;
+  const yearsList=(data.years||[]).filter(r=>Number.isFinite(Number(r.annual)));
+  const bestYear=yearsList.reduce((best,row)=>!best || Number(row.annual||-999)>Number(best.annual||-999)?row:best,null);
+  const worstYear=yearsList.reduce((worst,row)=>!worst || Number(row.annual||999)<Number(worst.annual||999)?row:worst,null);
+  const assetsByValue=[...S.assets].map(a=>({
+    ticker:a.ticker,
+    value:(Number(a.qty)||0)*(Number(a.current_price)||0),
+    dy:Number(a.dy)||0,
+    type:normalizeType(a.type||'Ação','Ação'),
+    sector:String(a.sector||'').trim()||'—'
+  })).sort((a,b)=>b.value-a.value);
+  const topAsset=assetsByValue[0];
+  const top3Value=assetsByValue.slice(0,3).reduce((s,a)=>s+a.value,0);
+  const top3Share=data.current?.currentValue>0 ? (top3Value/(Number(data.current.currentValue)||top3Value))*100 : 0;
+  const actualByType=S.assets.reduce((acc,a)=>{
+    const ty=normalizeType(a.type||'Ação','Ação');
+    const v=(Number(a.qty)||0)*(Number(a.current_price)||0);
+    acc[ty]=(acc[ty]||0)+v;
+    return acc;
+  },{});
+  const allocItems=allocationGoalItems();
+  const allocTarget=Object.fromEntries(allocItems.map(it=>[it.type, Number(it.pct)||0]));
+  const allocWarning=Object.keys(allocTarget).map(ty=>{
+    const total=Object.values(actualByType).reduce((s,v)=>s+v,0);
+    const actual=total>0 ? ((actualByType[ty]||0)/total)*100 : 0;
+    const diff=actual-(allocTarget[ty]||0);
+    return {ty, actual, target:allocTarget[ty]||0, diff};
+  }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff))[0];
   const sideCards=[
     {
       title:'Rentabilidade total',
@@ -5168,6 +5461,9 @@ function rentabilidadeTab(){
       icon:'📅'
     },
   ];
+  const concentrationNote=topAsset
+    ? `Concentração: top 3 com ${top3Share.toFixed(1)}% da carteira. Maior posição: ${topAsset.ticker} com ${fmt(topAsset.value)} (${normalizeType(topAsset.type||'Ação','Ação')}).`
+    : 'Concentração: sem posições ainda.';
 
   const chartLabels=(data.view.length?data.view:data.points).map(p=>p.label);
   const chartSeries=[
@@ -5243,7 +5539,7 @@ function rentabilidadeTab(){
       <div class="rent-chartbox">
         ${data.points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
       </div>
-      <div class="mu" style="font-size:12px;margin-top:8px">Dica: a comparação com índice é uma referência estimada, usada para leitura visual da carteira. O retorno da carteira já inclui os proventos recebidos; se quiser, depois conectamos índices históricos exatos.</div>
+      <div class="mu" style="font-size:12px;margin-top:8px;line-height:1.45">${esc(concentrationNote)}</div>
     </div>
   </div>
 
@@ -5279,14 +5575,31 @@ function calcRebalance(){
   if(aporte<=0){out.innerHTML='<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Digite um valor maior que zero.</div>';return;}
   const total=S.assets.reduce((s,a)=>s+a.qty*a.current_price,0);
   if(!S.assets.length||total<=0){out.innerHTML='<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Ainda não há ativos suficientes.</div>';return;}
+  const allocItems=allocationGoalItems();
+  const allocTarget=Object.fromEntries(allocItems.map(it=>[it.type, Number(it.pct)||0]));
+  const allocActual = {};
+  S.assets.forEach(a=>{
+    const type=normalizeType(a.type||'Ação','Ação');
+    const value=(Number(a.qty)||0)*(Number(a.current_price)||0);
+    allocActual[type]=(allocActual[type]||0)+value;
+  });
+  Object.keys(allocActual).forEach(k=>{ allocActual[k] = total>0 ? (allocActual[k]/total)*100 : 0; });
   let list=S.assets.map(a=>{
     const valor=a.qty*a.current_price,peso=valor/total*100,ideal=Number(a.ideal_pct)||0,falta=ideal>0?Math.max(0,ideal-peso):0;
     const rent=a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0;
+    const type=normalizeType(a.type||'Ação','Ação');
+    const typeTarget=Number(allocTarget[type]||0);
+    const typeActual=Number(allocActual[type]||0);
+    const typeGap=typeTarget-typeActual;
     let score=0,motivos=[];
     if(ideal>0&&falta>0){score+=falta*4;motivos.push(`abaixo do ideal em ${falta.toFixed(1)} p.p.`);}
     if(ideal===0&&peso<10){score+=(10-peso)*1.2;motivos.push('baixo peso');}
     if(rent<0){score+=Math.min(20,Math.abs(rent))*1.1;motivos.push(`queda vs PM (${fmtP(rent)})`);}
     if((Number(a.dy)||0)>6){score+=(Number(a.dy)||0)*0.8;motivos.push(`DY ${a.dy}%`);}
+    if(typeTarget>0){
+      if(typeGap>0){ score += typeGap*3; motivos.push(`${type} abaixo da meta (${typeGap.toFixed(1)} p.p.)`); }
+      else if(typeGap<0){ score -= Math.min(20, Math.abs(typeGap)*1.2); motivos.push(`${type} acima da meta (${Math.abs(typeGap).toFixed(1)} p.p.)`); }
+    }
     if(peso>20){score-=25;motivos.push('peso já alto');}
     return{...a,valor,peso,ideal,rent,score,motivos};
   }).filter(a=>a.score>0).sort((a,b)=>b.score-a.score).slice(0,4);
@@ -5313,8 +5626,15 @@ function iaTab(){
       <div style="margin-top:16px;padding-top:12px;border-top:1px solid #161e2e;font-size:11px;color:#2e3f58">⚠️ Análise automática e informativa. Não constitui recomendação. Consulte um profissional CFP/CNPI.</div>
     </div>`
     :`<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">🤖<br><br>Clique no botão para análise personalizada da sua carteira.</div>`;
+  const focusButtons=[
+    ['geral','Visão geral'],
+    ['renda','Priorizar renda'],
+    ['rebalancear','Rebalancear'],
+    ['concentracao','Concentração'],
+  ].map(([mode,label])=>`<button class="btn ${String(S.aiFocus||'geral')===mode?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="setAIFocus('${mode}')">${label}</button>`).join(' ');
   return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">Análise automática da carteira</div>
   <div class="mu" style="font-size:13px;margin-bottom:18px">Análise local com base nos dados cadastrados — sem enviar sua carteira para servidores externos.</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">${focusButtons}</div>
   <button class="btn bp" onclick="getAI()" style="display:flex;align-items:center;gap:8px;margin-bottom:18px">✨ Gerar análise</button>${res}`;
 }
 
@@ -5466,38 +5786,71 @@ function clearAporteSearch(){
   clearTimeout(S.apSearchTimer);
   render();
 }
+function setAIFocus(mode){
+  S.aiFocus = ['geral','renda','rebalancear','concentracao'].includes(mode) ? mode : 'geral';
+  save();
+  if(S.assets.length){ getAI(); return; }
+  render();
+}
 
 function getAI(){
   const{tC,tI,tGP,mD,aD,avgDY,tG}=cx();
   const rec=proventoStats();
   if(!S.assets.length){ S.aiText='Cadastre seus ativos primeiro para gerar uma análise.'; render(); return; }
-  const porTipo={},por=S.assets.map(a=>({ticker:a.ticker,type:a.type,valor:a.qty*a.current_price,divMes:(a.qty*a.current_price*(a.dy/100))/12,dy:Number(a.dy)||0,var:a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0})).sort((a,b)=>b.valor-a.valor);
+  const focus=String(S.aiFocus||'geral');
+  const porTipo={},por=S.assets.map(a=>({ticker:a.ticker,type:a.type,valor:a.qty*a.current_price,divMes:(a.qty*a.current_price*(a.dy/100))/12,dy:Number(a.dy)||0,var:a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0,sector:String(a.sector||'').trim()||'—'})).sort((a,b)=>b.valor-a.valor);
   por.forEach(a=>{const ty=normalizeType(a.type||'Ação','Ação'); porTipo[ty]=(porTipo[ty]||0)+a.valor;});
   const maior=por[0],maiorPct=tC>0?(maior.valor/tC)*100:0;
+  const pior=por[por.length-1];
+  const top3=por.slice(0,3);
+  const top3Pct=tC>0?(top3.reduce((s,a)=>s+a.valor,0)/tC)*100:0;
   const fiisPct=tC>0?((porTipo['FII']||0)/tC)*100:0,acoesPct=tC>0?((porTipo['Ação']||0)/tC)*100:0;
   const divGoal=Number(S.divGoal)||0,faltaDiv=Math.max(0,divGoal-mD);
   const alvoPat=divGoal>0&&avgDY>0?(divGoal*12)/(avgDY/100):0;
   const lucroTotal=tG + rec.total;
   const retornoTotalPct=tI>0?(lucroTotal/tI)*100:0;
+  const allocItems=allocationGoalItems();
+  const allocTarget=Object.fromEntries(allocItems.map(it=>[it.type, Number(it.pct)||0]));
+  const atualByType=S.assets.reduce((acc,a)=>{
+    const ty=normalizeType(a.type||'Ação','Ação');
+    const v=(Number(a.qty)||0)*(Number(a.current_price)||0);
+    acc[ty]=(acc[ty]||0)+v;
+    return acc;
+  },{});
+  const allocTotal=Object.values(atualByType).reduce((s,v)=>s+v,0);
+  const allocDiffs=Object.keys(allocTarget).map(ty=>{
+    const actual=allocTotal>0 ? ((atualByType[ty]||0)/allocTotal)*100 : 0;
+    return {type:ty, target:allocTarget[ty], actual, diff:actual-(allocTarget[ty]||0)};
+  }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff));
+  const worstAlloc=allocDiffs[0];
+  const benchmark=String(S.rentBench||'CDI');
+  const rentData=rentabilityHistory(String(S.rentType||'all'), String(S.rentPeriod||'all'), benchmark);
+  const rentGap=(rentData.current?.cumReturn||0)-(rentData.currentBench||0);
   const L=[];
-  L.push('📊 RESUMO DA CARTEIRA');
-  L.push(`Patrimônio: ${fmt(tC)} | Resultado total: ${fmtP(retornoTotalPct)}`);
+  L.push('📊 ANÁLISE RÁPIDA DA CARTEIRA');
+  L.push(`Patrimônio atual: ${fmt(tC)} | Resultado total: ${fmtP(retornoTotalPct)}`);
   L.push(`Lucro total: ${fmt(lucroTotal)} (ganho de capital + proventos)`);
   L.push(`Renda passiva estimada: ${fmt(mD)}/mês (${fmt(aD)}/ano)`);
   L.push(`Proventos recebidos: ${fmt(rec.mes)} no mês · ${fmt(rec.ano)} no ano · ${fmt(rec.total)} total`);
-  L.push(`DY médio: ${avgDY.toFixed(2)}%`);
+  L.push(`DY médio da carteira: ${avgDY.toFixed(2)}%`);
+  L.push(`Top 3 posições concentram ${top3Pct.toFixed(1)}% da carteira.`);
+  if(focus==='renda') L.push(`Foco atual: renda passiva e proventos.`);
+  if(focus==='rebalancear') L.push(`Foco atual: rebalanceamento e aportes abaixo da meta.`);
+  if(focus==='concentracao') L.push(`Foco atual: concentração e risco da carteira.`);
   L.push('');
-  L.push('⚖️ ALOCAÇÃO');
+  L.push('⚖️ ALOCAÇÃO ATUAL');
   Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).forEach(([tipo,valor])=>L.push(`• ${tipo}: ${((valor/tC)*100).toFixed(1)}% (${fmt(valor)})`));
+  if(worstAlloc) L.push(`• Maior desvio da meta: ${worstAlloc.type} com ${worstAlloc.diff>=0?'+':''}${worstAlloc.diff.toFixed(1)} p.p.`);
   L.push('');
-  L.push('🔎 PONTOS DE ATENÇÃO');
-  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${maiorPct.toFixed(1)}% — considere diversificar próximos aportes.`);
-  else L.push(`• Maior posição: ${maior.ticker} com ${maiorPct.toFixed(1)}% — concentração dentro do esperado.`);
-  if(S.assets.length<8) L.push('• Poucos ativos. Para renda passiva consistente, 10+ ativos de setores diferentes reduzem risco.');
-  if(fiisPct>60) L.push('• FIIs com peso muito alto (>60%). Aumenta exposição a juros e riscos imobiliários.');
-  if(acoesPct>70) L.push('• Ações com peso muito alto. Dividendos ficam mais irregulares e sujeitos a resultado trimestral.');
-  if(avgDY>12) L.push('• DY médio elevado (>12%). Confirme se os rendimentos são recorrentes, não eventos isolados.');
-  if(avgDY>0&&avgDY<5) L.push('• DY médio baixo. Novos aportes em ativos de renda podem acelerar o crescimento da renda passiva.');
+  L.push('🔎 O QUE OBSERVAR');
+  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${maiorPct.toFixed(1)}% da carteira.`);
+  else L.push(`• Maior posição: ${maior.ticker} com ${maiorPct.toFixed(1)}% — concentração sob controle.`);
+  if(S.assets.length<8) L.push('• Poucos ativos. Para renda passiva consistente, 10+ ativos de setores diferentes ajudam a reduzir risco.');
+  if(fiisPct>60) L.push('• FIIs com peso muito alto (>60%). Isso aumenta a sensibilidade a juros e imóveis.');
+  if(acoesPct>70) L.push('• Ações com peso muito alto. A renda tende a oscilar mais com resultados trimestrais.');
+  if(avgDY>12) L.push('• DY médio elevado (>12%). Vale conferir se os rendimentos são recorrentes e não pontuais.');
+  if(avgDY>0&&avgDY<5) L.push('• DY médio baixo. Novos aportes em ativos de renda podem acelerar a renda passiva.');
+  if(rentGap!==0) L.push(`• ${rentGap>=0?'Acima':'Abaixo'} do ${benchmark} em ${fmtP(rentGap)} no recorte atual de rentabilidade.`);
   L.push('');
   if(divGoal>0){
     L.push(`💰 OBJETIVO: ${fmt(divGoal)}/mês`);
@@ -5505,11 +5858,32 @@ function getAI(){
     else{ L.push(`• Falta ${fmt(faltaDiv)}/mês para o objetivo.`); if(alvoPat>0) L.push(`• Patrimônio estimado para atingir o objetivo com DY atual: ${fmt(alvoPat)} (falta ${fmt(Math.max(0,alvoPat-tC))})`); }
     L.push('');
   }
-  L.push('✅ SUGESTÕES PRÁTICAS');
-  L.push('• Priorize ativos/setores abaixo do peso desejado nos próximos aportes.');
-  L.push('• Evite aumentar posição que já está acima de 20% da carteira.');
-  L.push('• Confirme que o DY reflete rendimentos recorrentes, não extraordinários.');
-  L.push('• Registre o motivo de cada compra na aba Aportes para acompanhar a estratégia.');
+  L.push('✅ PRIORIDADES PARA O PRÓXIMO APORTE');
+  if(allocDiffs.length){
+    allocDiffs.slice(0,3).forEach(a=>{
+      if(Math.abs(a.diff)<0.5) return;
+      if(a.diff<0) L.push(`• Reforçar ${a.type}: está ${Math.abs(a.diff).toFixed(1)} p.p. abaixo da meta.`);
+      else L.push(`• Segurar ${a.type}: está ${a.diff.toFixed(1)} p.p. acima da meta.`);
+    });
+  }
+  if(maiorPct>20) L.push(`• Evite aumentar ${maior.ticker} agora; ela já lidera a concentração.`);
+  if(top3Pct>70) L.push('• Top 3 posições muito concentradas. Considere distribuir os próximos aportes entre categorias abaixo da meta.');
+  if(pior) L.push(`• Posição menor e potencialmente negligenciada: ${pior.ticker} (${fmt(pior.valor)}) pode merecer revisão.`);
+  if(focus==='renda'){
+    L.push('• Priorize ativos com proventos recorrentes e boa previsibilidade de fluxo.');
+    if(avgDY>0) L.push(`• Com DY médio atual de ${avgDY.toFixed(2)}%, a renda estimada continua sensível a novas compras nessa taxa.`);
+  }
+  if(focus==='rebalancear'){
+    const under=allocDiffs.filter(a=>a.diff<0).sort((a,b)=>a.diff-b.diff)[0];
+    if(under) L.push(`• Comece pelo maior déficit: ${under.type} está ${Math.abs(under.diff).toFixed(1)} p.p. abaixo da meta.`);
+    L.push('• Seus próximos aportes podem servir para aproximar a carteira do desenho-alvo sem vender nada.');
+  }
+  if(focus==='concentracao'){
+    L.push(`• ${top3Pct.toFixed(1)}% da carteira está no top 3. Vale olhar se isso está confortável para seu perfil.`);
+    if(maiorPct>20) L.push(`• ${maior.ticker} sozinho já representa ${maiorPct.toFixed(1)}%.`);
+  }
+  L.push('• Registre o motivo de cada compra na aba Aportes para acompanhar a estratégia ao longo do tempo.');
+  if(focus==='renda') L.push('• Quando olhar um ativo novo, compare sempre contribuição mensal estimada, volatilidade e peso na carteira.');
   L.push('');
   L.push('⚠️ Análise automática. Não constitui recomendação de investimento. Consulte um profissional habilitado.');
   S.aiText=L.join('\n'); render();
