@@ -5358,59 +5358,59 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </tr>`).join('')
     : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#2e3f58">Nenhum provento registrado. Use "Buscar histórico grátis" ou "+ Registrar provento".</td></tr>';
 
-  return`<div style="font-size:14px;font-weight:700;margin-bottom:10px">${esc(pageTitle)}</div>
-  ${showGoal?`<div class="fc" style="margin-bottom:12px">
+  return`<div style="font-size:14px;font-weight:700;margin-bottom:8px">${esc(pageTitle)}</div>
+  ${showGoal?`<div class="fc" style="margin-bottom:10px">
     <div class="cg" style="align-items:end;gap:8px">
       <div>
-        <div class="fl" style="margin-bottom:4px">🎯 Objetivo mensal de dividendos (R$)</div>
+        <div class="fl" style="margin-bottom:3px">🎯 Objetivo mensal de dividendos (R$)</div>
         <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()">
-        <div class="mu" style="font-size:11px;margin-top:5px">Digite e pressione Enter ou clique fora para salvar.</div>
+        <div class="mu" style="font-size:11px;margin-top:4px">Digite e pressione Enter ou clique fora para salvar.</div>
       </div>
       <div>
-        <div class="fl" style="margin-bottom:4px">Progresso até o objetivo</div>
+        <div class="fl" style="margin-bottom:3px">Progresso até o objetivo</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
           <div style="font-size:20px;font-weight:800;color:#fbbf24">${ratio.toFixed(1)}%</div>
           <div style="font-size:12px;color:#64748b">${fmt(media12)} / ${fmt(objetivo||0)}</div>
         </div>
         <div class="dbt" style="height:7px;margin-top:7px"><div class="dbf" style="width:${ratio.toFixed(1)}%;background:#fbbf24"></div></div>
-        <div class="mu" style="font-size:11px;margin-top:5px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
+        <div class="mu" style="font-size:11px;margin-top:4px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
       </div>
     </div>
   </div>`:''}
-  <div class="cc" style="margin-bottom:8px;padding:10px 10px 8px">
-    <div class="sh" style="margin-bottom:6px">
+  <div class="cc" style="margin-bottom:8px;padding:9px 10px 7px">
+    <div class="sh" style="margin-bottom:5px">
       <div>
         <div class="st">Resumo</div>
-        <div class="mu" style="font-size:11px;margin-top:3px">Visão rápida dos últimos 12 meses e do tamanho atual da carteira.</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Visão rápida dos últimos 12 meses e do tamanho atual da carteira.</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch">
-      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:66px;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:60px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl" style="margin-bottom:4px">Média mensal (12M)</div>
-          <div class="cv am" style="font-size:19px">${fmt(media12)}</div>
+          <div class="cl" style="margin-bottom:3px">Média mensal (12M)</div>
+          <div class="cv am" style="font-size:18px">${fmt(media12)}</div>
         </div>
         <div class="cs">Total 12 meses: ${fmt(total12)}</div>
       </div>
-      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:66px;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:60px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl" style="margin-bottom:4px">Recebido no mês</div>
-          <div class="cv gn" style="font-size:19px">${fmt(rec.mes)}</div>
+          <div class="cl" style="margin-bottom:3px">Recebido no mês</div>
+          <div class="cv gn" style="font-size:18px">${fmt(rec.mes)}</div>
         </div>
       </div>
-      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:66px;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:60px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl" style="margin-bottom:4px">Recebido no ano</div>
-          <div class="cv pu" style="font-size:19px">${fmt(rec.ano)}</div>
+          <div class="cl" style="margin-bottom:3px">Recebido no ano</div>
+          <div class="cv pu" style="font-size:18px">${fmt(rec.ano)}</div>
         </div>
       </div>
     </div>
   </div>
-  <div class="cards" style="margin-bottom:10px;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
-    <div class="card al" style="border-left-color:#fbbf24;padding:9px 11px;min-height:66px"><div class="cl">Estimativa/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div></div>
-    <div class="card al" style="border-left-color:#34d399;padding:9px 11px;min-height:66px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8;padding:9px 11px;min-height:66px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#f97316;padding:9px 11px;min-height:66px"><div class="cl">Total histórico</div><div class="cv" style="color:#fb923c;font-size:18px">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
+  <div class="cards" style="margin-bottom:8px;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+    <div class="card al" style="border-left-color:#fbbf24;padding:8px 10px;min-height:60px"><div class="cl">Estimativa/mês</div><div class="cv am" style="font-size:17px">${fmt(mD)}</div></div>
+    <div class="card al" style="border-left-color:#34d399;padding:8px 10px;min-height:60px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:17px">${fmt(aD)}</div></div>
+    <div class="card al" style="border-left-color:#818cf8;padding:8px 10px;min-height:60px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:17px">${avgDY.toFixed(2)}%</div></div>
+    <div class="card al" style="border-left-color:#f97316;padding:8px 10px;min-height:60px"><div class="cl">Total histórico</div><div class="cv" style="color:#fb923c;font-size:17px">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
   </div>
   <div class="sh" style="margin:0 0 8px 0">
     <div>
