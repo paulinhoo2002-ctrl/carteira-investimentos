@@ -50,6 +50,38 @@ button{cursor:pointer;font-family:inherit}
 .dashboard-legend-name{color:#e2eaf6;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dashboard-legend-pct{color:#c0cce0;font-weight:700}
 .dashboard-swatch{width:10px;height:10px;border-radius:3px;flex:none}
+.perf-grid{display:grid;grid-template-columns:minmax(280px,1.08fr) repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.perf-card{background:#0d111e;border:1px solid #161e2e;border-radius:14px;padding:12px 12px 10px}
+.perf-card.comp{display:flex;flex-direction:column;gap:10px}
+.perf-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.perf-card.comp .perf-title{margin-bottom:0}
+.perf-h{font-size:13px;font-weight:800;color:#e2eaf6}
+.perf-sub{font-size:11px;color:#64748b;margin-top:2px}
+.perf-badge{font-size:11px;color:#64748b;border:1px solid #1e2a3d;background:#111828;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.perf-list{display:flex;flex-direction:column;gap:10px}
+.perf-comp-body{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;flex-wrap:wrap}
+.perf-comp-pie{flex:none;transform:scale(.92);transform-origin:center}
+.perf-comp-side{flex:1;min-width:190px}
+.perf-comp-side .dashboard-legend{min-width:0;gap:5px}
+.perf-comp-side .dashboard-legend-item{font-size:11px}
+.perf-comp-side .dashboard-legend-pct{font-size:11px}
+.perf-comp-empty{font-size:12px;color:#64748b;padding:16px 4px}
+.perf-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.perf-left{min-width:0}
+.perf-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.perf-ticker{font-size:13px;font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.perf-val{font-size:11px;color:#64748b;white-space:nowrap}
+.perf-bar{height:4px;border-radius:999px;background:#111828;border:1px solid #1e2a3d;overflow:hidden;margin-top:6px}
+.perf-fill{height:100%;border-radius:999px}
+.perf-pct{font-size:14px;font-weight:900;white-space:nowrap}
+.perf-amt{font-size:11px;color:#64748b;margin-top:2px;text-align:right}
+.perf-empty{font-size:12px;color:#64748b;padding:18px 0;text-align:center}
+.perf-card.hi .perf-pct{color:#34d399}
+.perf-card.lo .perf-pct{color:#f87171}
+.perf-card.hi .perf-fill{background:linear-gradient(90deg,#34d399,#86efac)}
+.perf-card.lo .perf-fill{background:linear-gradient(90deg,#f87171,#fb7185)}
+.perf-card.hi .perf-badge{color:#86efac;border-color:rgba(52,211,153,.2);background:rgba(16,185,129,.06)}
+.perf-card.lo .perf-badge{color:#fca5a5;border-color:rgba(248,113,113,.2);background:rgba(248,113,113,.06)}
 .dash-filters{display:flex;gap:6px;flex-wrap:wrap}
 .dash-chip{border:1px solid #1e2a3d;background:#111828;color:#64748b;border-radius:999px;padding:4px 9px;font-size:11px;line-height:1;font-weight:700;transition:all .15s}
 .dash-chip:hover{opacity:.9;transform:translateY(-1px)}
@@ -336,6 +368,8 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .rent-side .dash-card{min-height:auto}
   .dashboard-panel{min-height:0}
   .dashboard-legend{min-width:0;width:100%}
+  .perf-grid{grid-template-columns:1fr}
+  .perf-card{padding:11px 11px 9px}
   .dash-filters{width:100%}
   .rent-layout{grid-template-columns:1fr;gap:10px;align-items:start}
   .rent-side{height:auto}
@@ -4664,16 +4698,16 @@ function pie(data, colors=CLRS){
   let p='',a=-Math.PI/2;
   data.forEach((d,i)=>{
     const ang=(d.value/tot)*2*Math.PI;
-    const[x1,y1]=[80+68*Math.cos(a),80+68*Math.sin(a)];
-    const[x2,y2]=[80+68*Math.cos(a+ang),80+68*Math.sin(a+ang)];
-    p+=`<path d="M80,80 L${x1.toFixed(1)},${y1.toFixed(1)} A68,68 0 ${ang>Math.PI?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${colors[i%colors.length]}" stroke="#07090f" stroke-width="2"/>`;
+    const[x1,y1]=[90+74*Math.cos(a),90+74*Math.sin(a)];
+    const[x2,y2]=[90+74*Math.cos(a+ang),90+74*Math.sin(a+ang)];
+    p+=`<path d="M90,90 L${x1.toFixed(1)},${y1.toFixed(1)} A74,74 0 ${ang>Math.PI?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${colors[i%colors.length]}" stroke="#07090f" stroke-width="2"/>`;
     a+=ang;
   });
-  return`<svg viewBox="0 0 160 160" width="160" height="160" style="display:block;margin:0 auto;overflow:visible">
+  return`<svg viewBox="0 0 180 180" width="180" height="180" style="display:block;margin:0 auto;overflow:visible">
     ${p}
-    <circle cx="80" cy="80" r="34" fill="#0d111e" stroke="#111828" stroke-width="2"></circle>
-    <text x="80" y="76" text-anchor="middle" fill="#e2eaf6" font-size="14" font-weight="700">${data.length}</text>
-    <text x="80" y="92" text-anchor="middle" fill="#64748b" font-size="9">ativos</text>
+    <circle cx="90" cy="90" r="38" fill="#0d111e" stroke="#111828" stroke-width="2"></circle>
+    <text x="90" y="86" text-anchor="middle" fill="#e2eaf6" font-size="15" font-weight="700">${data.length}</text>
+    <text x="90" y="103" text-anchor="middle" fill="#64748b" font-size="10">ativos</text>
   </svg>`;
 }
 function setDashPeriod(period){
@@ -4717,7 +4751,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -4748,6 +4782,7 @@ const TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','
 }
 function content(){
   if(S.tab==='dashboard') return dash();
+  if(S.tab==='patrimonio') return patrimonioTab();
   if(S.tab==='ativos')    return ativos();
   if(S.tab==='aportes')   return apTab();
   if(S.tab==='metas')     return metasTab();
@@ -4806,6 +4841,45 @@ function dash(){
   const dashTotal=adDash.reduce((s,d)=>s+d.value,0);
   const pDash=pie(adDash,DCLR);
   const legDash=adDash.map((d,i)=>`<div class="dashboard-legend-item"><div class="dashboard-legend-left"><span class="dashboard-swatch" style="background:${DCLR[i%DCLR.length]}"></span><span class="dashboard-legend-name">${esc(d.name)}</span></div><span class="dashboard-legend-pct">${dashTotal>0?((d.value/dashTotal)*100).toFixed(1):'0.0'}%</span></div>`).join('');
+  const perfSrc=S.assets
+    .map(a=>{
+      const qty=Number(a.qty)||0;
+      const avg=Number(a.avg_price)||0;
+      const cur=Number(a.current_price)||0;
+      const value=qty*cur;
+      const cost=qty*avg;
+      const changePct=avg>0&&cur>0?((cur-avg)/avg)*100:null;
+      const changeValue=value-cost;
+      return{...a,qty,avg,cur,value,cost,changePct,changeValue};
+    })
+    .filter(a=>Number.isFinite(a.changePct)&&a.avg>0&&a.cur>0&&a.qty>0);
+  const perfHigh=[...perfSrc].sort((a,b)=>b.changePct-a.changePct||b.value-a.value).filter(a=>a.changePct>0).slice(0,5);
+  const perfLow=[...perfSrc].sort((a,b)=>a.changePct-b.changePct||a.value-b.value).filter(a=>a.changePct<0).slice(0,5);
+  const perfMaxHigh=Math.max(...perfHigh.map(a=>Math.abs(a.changePct)),1);
+  const perfMaxLow=Math.max(...perfLow.map(a=>Math.abs(a.changePct)),1);
+  const perfEmptyHi='<div class="perf-empty">Sem ativos com alta acima do preço médio.</div>';
+  const perfEmptyLo='<div class="perf-empty">Sem ativos em baixa no momento.</div>';
+  const perfCompEmpty='<div class="perf-comp-empty">Cadastre ativos para ver a composição da carteira.</div>';
+  const perfRows=(items,maxAbs,kind)=>items.length
+    ? items.map(a=>{
+        const pct=a.changePct||0;
+        const pctTxt=`${pct>0?'+':''}${pct.toFixed(1)}%`;
+        const barW=Math.max(8,Math.min(100,(Math.abs(pct)/maxAbs)*100));
+        const pm=`${fmt(a.avg)}`;
+        const atual=`${fmt(a.cur)}`;
+        const value=fmt(a.value);
+        return `<div class="perf-row">
+          <div class="perf-left">
+            <div class="perf-top"><div class="perf-ticker">${esc(a.ticker)}</div><div class="perf-val">PM ${pm} · Atual ${atual}</div></div>
+            <div class="perf-bar"><div class="perf-fill" style="width:${barW.toFixed(0)}%"></div></div>
+          </div>
+          <div style="text-align:right">
+            <div class="perf-pct">${pctTxt}</div>
+            <div class="perf-amt">${value}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : (kind==='hi'?perfEmptyHi:perfEmptyLo);
   return`<div class="cards dashboard-hero" style="gap:10px">
     <div class="card al dash-card" style="border-left-color:#818cf8">
       <div class="dash-head">
@@ -4819,7 +4893,7 @@ function dash(){
         <div class="cv pu">${fmt(tC)}</div>
         <div class="cs">Valor investido: ${fmt(tI)}</div>
       </div>
-      <div class="dash-foot">Acompanhamento do tamanho da carteira e dos aportes.</div>
+      <div class="dash-foot">Patrimônio e aportes.</div>
     </div>
     <div class="card al dash-card" style="border-left-color:${lucroTotal>=0?'#34d399':'#f87171'}">
       <div class="dash-head">
@@ -4833,7 +4907,7 @@ function dash(){
         <div class="cv" style="color:${lucroTotal>=0?'#34d399':'#f87171'}">${fmt(lucroTotal)}</div>
         <div class="cs">Ganho de capital: ${fmt(tG)} · Proventos recebidos: ${fmt(rec.total)}</div>
       </div>
-      <div class="dash-foot">Rentabilidade consolidada com proventos inclusos.</div>
+      <div class="dash-foot">Lucro consolidado.</div>
     </div>
     <div class="card al dash-card" style="border-left-color:#fbbf24">
       <div class="dash-head">
@@ -4847,7 +4921,7 @@ function dash(){
         <div class="cv am">${fmt(total12)}</div>
         <div class="cs">12 meses: ${fmt(total12)} · Total histórico: ${fmt(rec.total)}</div>
       </div>
-      <div class="dash-foot">Renda passiva em leitura rápida.</div>
+      <div class="dash-foot">Entradas de renda.</div>
     </div>
     <div class="card al dash-card" style="border-left-color:#60a5fa">
       <div class="dash-head">
@@ -4861,7 +4935,75 @@ function dash(){
         <div class="cv bl">${fmtP(tGP)}</div>
         <div class="cs">${avgDY.toFixed(2)}% DY médio · ${S.assets.length} ativos</div>
       </div>
-      <div class="dash-foot">Desempenho e eficiência da carteira.</div>
+      <div class="dash-foot">Retorno e eficiência.</div>
+    </div>
+  </div>
+  <div class="perf-grid">
+    <div class="perf-card comp">
+      <div class="perf-title">
+        <div>
+          <div class="perf-h">Composição</div>
+          <div class="perf-sub">Por classe de ativo.</div>
+        </div>
+        <div class="perf-badge">${dashAssets.length} ativos</div>
+      </div>
+      <div class="perf-comp-body">
+        <div class="perf-comp-pie">${pDash}</div>
+        <div class="perf-comp-side">${legDash||perfCompEmpty}</div>
+      </div>
+    </div>
+    <div class="perf-card hi">
+      <div class="perf-title">
+        <div>
+          <div class="perf-h">Maiores altas</div>
+          <div class="perf-sub">Variação desde o preço médio.</div>
+        </div>
+      </div>
+      <div class="perf-list">${perfRows(perfHigh,perfMaxHigh,'hi')}</div>
+    </div>
+    <div class="perf-card lo">
+      <div class="perf-title">
+        <div>
+          <div class="perf-h">Maiores baixas</div>
+          <div class="perf-sub">Variação desde o preço médio.</div>
+        </div>
+      </div>
+      <div class="perf-list">${perfRows(perfLow,perfMaxLow,'lo')}</div>
+    </div>
+  </div>`;
+}
+
+function patrimonioTab(){
+  const {tI,tC,tG}=cx();
+  const periodOpts=[3,6,12,24];
+  const twelveMonthsAgo=new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-(Math.max(3,Number(S.dashPeriod)||12)-1));
+  twelveMonthsAgo.setDate(1);
+  const movMap=new Map();
+  S.aportes.forEach(a=>{
+    const d=parseAnyDate(a.date);
+    if(!d||d<twelveMonthsAgo) return;
+    const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if(!movMap.has(mk)) movMap.set(mk,{key:mk,label:d.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'}),value:0});
+    const op=(a.operation||a.op||'compra').toLowerCase();
+    const signed=(Math.abs(Number(a.qty)||0)*Number(a.price||0))*(op==='venda'?-1:1);
+    movMap.get(mk).value += signed;
+  });
+  const movSeries=[...movMap.values()].sort((a,b)=>a.key.localeCompare(b.key));
+  let cum=0;
+  const evo=movSeries.map(v=>{cum+=v.value; return {...v,cum};});
+  const maxEvo=Math.max(...evo.map(v=>v.cum), tC, 1);
+  const evoBars=evo.length
+    ? evo.map((v)=>`<div class="evo-row"><div class="evo-label">${esc(v.label)}</div><div class="evo-track"><div class="evo-fill" style="width:${Math.max(4,(v.cum/maxEvo)*100).toFixed(0)}%"></div></div><div class="evo-value">${fmt(v.cum)}</div></div>`).join('')
+    : '<div class="evo-empty">Registre compras na aba 💰 Aportes.</div>';
+  return`
+  <div class="sh">
+    <div>
+      <div class="st">Patrimônio</div>
+      <div class="mu" style="font-size:12px;margin-top:4px">Acompanhe a evolução do capital aplicado e o patrimônio consolidado.</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+      ${periodOpts.map(p=>`<button class="dash-chip ${Number(S.dashPeriod)===p?'on':''}" onclick="setDashPeriod(${p})">${p}M</button>`).join('')}
     </div>
   </div>
   <div class="cg dashboard-grid" style="gap:10px">
@@ -4870,17 +5012,14 @@ function dash(){
         <div class="evo-top">
           <div>
             <div class="ct">Evolução do capital aplicado</div>
-            <div class="evo-sub">Aportes líquidos acumulados dos últimos ${S.dashPeriod} meses.</div>
+            <div class="evo-sub">Aportes líquidos dos últimos ${S.dashPeriod} meses.</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
             <div class="evo-legend">
-              <span class="evo-chip aplicado"><span class="dot"></span>Valor aplicado ${fmt(tI)}</span>
-              <span class="evo-chip ganho"><span class="dot"></span>Ganho de capital ${fmt(tG)}</span>
+              <span class="evo-chip aplicado"><span class="dot"></span>${fmt(tI)}</span>
+              <span class="evo-chip ganho"><span class="dot"></span>${fmt(tG)}</span>
             </div>
-            <div class="dash-filters">
-              ${periodOpts.map(p=>`<button class="dash-chip ${Number(S.dashPeriod)===p?'on':''}" onclick="setDashPeriod(${p})">${p}M</button>`).join('')}
-            </div>
-            <div class="evo-badge">Carteira: ${fmt(tC)}</div>
+            <div class="evo-badge">Carteira ${fmt(tC)}</div>
           </div>
         </div>
         <div class="evo-list">${evoBars}</div>
@@ -4889,19 +5028,26 @@ function dash(){
     <div class="cc dashboard-panel" style="padding:12px 12px 10px">
       <div class="sh" style="margin-bottom:8px;align-items:flex-end">
         <div>
-          <div class="ct">Ativos na carteira</div>
-          <div class="mu" style="font-size:12px">Mix atual por tipo de ativo.</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-          <div class="dash-filters">
-            ${['all',...TYPE_DASH_CHOICES].map(t=>`<button class="dash-chip ${String(S.dashType||'all')===t?'on':''}" onclick="setDashType('${t}')">${t==='all'?'Todos':t}</button>`).join('')}
-          </div>
-          <div class="note-pill">${dashAssets.length} ativos</div>
+          <div class="ct">Resumo de patrimônio</div>
+          <div class="mu" style="font-size:12px">Valor total, aportes e ganho consolidado.</div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
-        <div style="flex:none">${pDash}</div>
-        <div class="dashboard-legend">${legDash||'<div class="di" style="font-size:13px;padding:20px 0;text-align:center">Cadastre ativos para ver a composição.</div>'}</div>
+      <div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0">
+        <div class="card al dash-card" style="min-height:92px;padding:10px 12px;border-left-color:#818cf8">
+          <div class="dash-kicker">Valor aplicado</div>
+          <div class="cv pu" style="font-size:21px">${fmt(tI)}</div>
+          <div class="dash-foot">Aportes acumulados.</div>
+        </div>
+        <div class="card al dash-card" style="min-height:92px;padding:10px 12px;border-left-color:#34d399">
+          <div class="dash-kicker">Patrimônio atual</div>
+          <div class="cv gn" style="font-size:21px">${fmt(tC)}</div>
+          <div class="dash-foot">Carteira consolidada.</div>
+        </div>
+        <div class="card al dash-card" style="min-height:92px;padding:10px 12px;border-left-color:#60a5fa">
+          <div class="dash-kicker">Ganho de capital</div>
+          <div class="cv bl" style="font-size:21px">${fmt(tG)}</div>
+          <div class="dash-foot">Valor acumulado.</div>
+        </div>
       </div>
     </div>
   </div>`;
