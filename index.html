@@ -1100,13 +1100,13 @@ function cloudStatus(){
 }
 function authBox(){
   if(!FB.ready) return '';
-  if(!FB.user) return `<button class="btn bp" style="font-size:12px;padding:7px 12px" onclick="signInGoogle()">🔑 Entrar Google</button>`;
+  if(!FB.user) return `<button class="btn bgh" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()">🔑 Entrar Google</button>`;
   const name=esc(FB.user.displayName||'Conta Google');
   const photo=FB.user.photoURL?`<img src="${esc(FB.user.photoURL)}" style="width:24px;height:24px;border-radius:50%;border:1px solid #1e2a3d">`:'<div style="width:24px;height:24px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center;font-size:12px">👤</div>';
-  return `<div style="display:flex;align-items:center;gap:6px;background:#090c15;border:1px solid #1e2a3d;border-radius:999px;padding:4px 6px">
-    ${photo}<span style="font-size:12px;color:#b8c8de;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-    <button class="bi" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" style="width:24px;height:24px;padding:0;font-size:12px">☁️</button>
-    <button class="bi" title="Sair" onclick="signOutGoogle()" style="width:24px;height:24px;padding:0;font-size:12px">⎋</button>
+  return `<div style="display:flex;align-items:center;gap:5px;background:#090c15;border:1px solid #1e2a3d;border-radius:999px;padding:3px 5px">
+    ${photo}<span style="font-size:11px;color:#b8c8de;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+    <button class="bi" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" style="width:22px;height:22px;padding:0;font-size:11px;opacity:.9">☁️</button>
+    <button class="bi" title="Sair" onclick="signOutGoogle()" style="width:22px;height:22px;padding:0;font-size:11px;opacity:.9">⎋</button>
   </div>`;
 }
 function accessGateBox(){
