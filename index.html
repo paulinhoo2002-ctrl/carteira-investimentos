@@ -16,19 +16,19 @@
 body{background:#0a0f18;color:#edf3ff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:14px;overflow-x:hidden}
 button{cursor:pointer;font-family:inherit}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:#111727}::-webkit-scrollbar-thumb{background:#263347;border-radius:2px}
-.hdr{background:#111828;border-bottom:1px solid #1d2940;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 4px 24px rgba(0,0,0,.38)}
-.hdr-logo{display:flex;align-items:center;gap:12px}
-.hdr-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 2px 12px rgba(99,102,241,.4)}
-.hdr-title{font-size:16px;font-weight:700;letter-spacing:-.01em}
-.hdr-sub{font-size:11px;color:#55708d;margin-top:1px}
-.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hdr{background:#111828;border-bottom:1px solid #1d2940;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 4px 24px rgba(0,0,0,.38)}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 2px 12px rgba(99,102,241,.4)}
+.hdr-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.hdr-sub{font-size:10px;color:#55708d;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .cfg-menu>summary{list-style:none}
 .cfg-menu>summary::-webkit-details-marker{display:none}
-.tabs{background:#111828;border-bottom:1px solid #1d2940;display:flex;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;position:sticky;top:62px;z-index:9;scrollbar-width:none}
+.tabs{background:#111828;border-bottom:1px solid #1d2940;display:flex;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;position:sticky;top:58px;z-index:9;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:#58718f;padding:11px 18px;font-size:13px;white-space:nowrap;flex:0 0 auto;transition:all .2s}
 .tab:hover{color:#9fb0c7}.tab.on{border-bottom-color:#6366f1;color:#c7d2fe;font-weight:700}
-@media(max-width:640px){.tabs{justify-content:flex-start;padding:0 8px}.tab{padding:11px 12px;font-size:12px}}
+@media(max-width:640px){.tabs{justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}}
 .wrap{padding:20px;max-width:1360px;margin:0 auto}
 @media(max-width:640px){.wrap{padding:14px}}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
@@ -1103,10 +1103,10 @@ function authBox(){
   if(!FB.user) return `<button class="btn bgh" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()">🔑 Entrar Google</button>`;
   const name=esc(FB.user.displayName||'Conta Google');
   const photo=FB.user.photoURL?`<img src="${esc(FB.user.photoURL)}" style="width:24px;height:24px;border-radius:50%;border:1px solid #1e2a3d">`:'<div style="width:24px;height:24px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center;font-size:12px">👤</div>';
-  return `<div style="display:flex;align-items:center;gap:5px;background:#090c15;border:1px solid #1e2a3d;border-radius:999px;padding:3px 5px">
-    ${photo}<span style="font-size:11px;color:#b8c8de;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-    <button class="bi" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" style="width:22px;height:22px;padding:0;font-size:11px;opacity:.9">☁️</button>
-    <button class="bi" title="Sair" onclick="signOutGoogle()" style="width:22px;height:22px;padding:0;font-size:11px;opacity:.9">⎋</button>
+  return `<div style="display:flex;align-items:center;gap:4px;background:#0a0e18;border:1px solid #1c2738;border-radius:999px;padding:3px 4px">
+    ${photo}<span style="font-size:10px;color:#b3c2d6;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+    <button class="bi" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149">☁️</button>
+    <button class="bi" title="Sair" onclick="signOutGoogle()" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149">⎋</button>
   </div>`;
 }
 function accessGateBox(){
