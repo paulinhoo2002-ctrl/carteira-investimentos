@@ -1202,55 +1202,63 @@ function accessSettingsModal(){
   const allowedDomains = listToText(cfg.allowedDomains || []);
   const message = esc(cfg.message || 'Acesso restrito a usuários aprovados.');
   return `<div class="note-overlay" onclick="if(event.target===this) closeAccessSettings()">
-    <div class="note-modal" style="max-width:860px">
-      <div class="note-head">
+    <div class="note-modal" style="max-width:760px;max-height:84vh;display:flex;flex-direction:column">
+      <div class="note-head" style="padding:14px 16px 12px">
         <div class="note-title">
           <div>
-            <h3>Segurança de acesso</h3>
-            <p>Controle quem pode entrar no site e manter a carteira sincronizada.</p>
+            <h3 style="font-size:17px">Segurança de acesso</h3>
+            <p style="font-size:11px">Controle quem pode entrar no site e manter a carteira sincronizada.</p>
           </div>
           <div class="note-pill">${FB.access.allowed ? 'Ativo' : 'Bloqueado'}</div>
         </div>
       </div>
-      <div class="sec-body" style="display:grid;grid-template-columns:1fr;gap:10px">
-        <label class="card" style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div class="sec-body" style="display:grid;grid-template-columns:1fr;gap:8px;overflow:auto;min-height:0;padding:12px 16px 12px">
+        <label class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
           <div>
-            <div class="sec-title">Ativar trava de acesso</div>
-            <div class="sec-meta">Quando ligado, apenas os e-mails listados podem entrar.</div>
+            <div class="sec-title" style="font-size:13px">Ativar trava de acesso</div>
+            <div class="sec-meta" style="font-size:11px">Quando ligado, apenas os e-mails listados podem entrar.</div>
           </div>
           <input id="acc-enabled" type="checkbox" ${enabled?'checked':''} style="width:auto;transform:scale(1.1)">
         </label>
-        <div class="fg" style="grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg" style="grid-template-columns:1fr 1fr;gap:8px">
           <div>
-            <div class="fl">E-mails aprovados</div>
-            <textarea id="acc-emails" rows="6" style="min-height:126px;resize:vertical;width:100%;padding:10px 11px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedEmails)}</textarea>
-            <div class="mu" style="font-size:10px;margin-top:4px">Um por linha. O seu e-mail atual é mantido automaticamente.</div>
+            <div class="fl" style="margin-bottom:3px">E-mails aprovados</div>
+            <textarea id="acc-emails" rows="4" style="min-height:96px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedEmails)}</textarea>
+            <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Um por linha. O seu e-mail atual é mantido automaticamente.</div>
           </div>
           <div>
-            <div class="fl">Domínios aprovados</div>
-            <textarea id="acc-domains" rows="6" style="min-height:126px;resize:vertical;width:100%;padding:10px 11px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedDomains)}</textarea>
-            <div class="mu" style="font-size:10px;margin-top:4px">Ex.: empresa.com.br. Se preferir, deixe vazio.</div>
+            <div class="fl" style="margin-bottom:3px">Domínios aprovados</div>
+            <textarea id="acc-domains" rows="4" style="min-height:96px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedDomains)}</textarea>
+            <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Ex.: empresa.com.br. Se preferir, deixe vazio.</div>
           </div>
         </div>
         <div>
-          <div class="fl">E-mails bloqueados</div>
-          <textarea id="acc-blocked" rows="4" style="min-height:90px;resize:vertical;width:100%;padding:10px 11px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(blockedEmails)}</textarea>
-          <div class="mu" style="font-size:10px;margin-top:4px">Mesmo que o domínio esteja liberado, estes e-mails ficam negados.</div>
+          <div class="fl" style="margin-bottom:3px">E-mails bloqueados</div>
+          <textarea id="acc-blocked" rows="3" style="min-height:72px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(blockedEmails)}</textarea>
+          <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Mesmo que o domínio esteja liberado, estes e-mails ficam negados.</div>
         </div>
         <div>
-          <div class="fl">Mensagem exibida no bloqueio</div>
-          <textarea id="acc-message" rows="3" style="min-height:72px;resize:vertical;width:100%;padding:10px 11px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${message}</textarea>
+          <div class="fl" style="margin-bottom:3px">Mensagem exibida no bloqueio</div>
+          <textarea id="acc-message" rows="2" style="min-height:60px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${message}</textarea>
         </div>
-        <div class="card" style="padding:12px 14px;border-left:3px solid #60a5fa">
-          <div class="sec-title">Como funciona</div>
-          <div class="sec-meta" style="line-height:1.5;margin-top:4px">
+        <details class="sec" style="margin:0">
+          <summary style="padding:10px 12px;min-height:42px">
+            <div>
+              <div class="sec-title" style="font-size:13px">Como funciona</div>
+              <div class="sec-meta" style="font-size:11px">ver passos rápidos de validação</div>
+            </div>
+            <div class="sec-meta">abrir</div>
+          </summary>
+          <div class="sec-body" style="padding:10px 12px 12px">
+            <div class="sec-meta" style="line-height:1.45;margin-top:0">
             1. A pessoa faz login com Google.<br>
             2. O sistema confere e-mail e domínio na lista.<br>
             3. Se não estiver aprovado, a carteira não aparece.
           </div>
-        </div>
+          </div>
+        </details>
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 18px 18px">
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
         <button class="btn bgh" onclick="closeAccessSettings()">Cancelar</button>
         <button class="btn bp" onclick="saveAccessSettings()">Salvar segurança</button>
       </div>
