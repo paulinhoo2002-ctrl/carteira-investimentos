@@ -676,7 +676,13 @@ function deleteWallet(){
   }
   const w=activeWallet();
   if(!w) return;
-  const ok=confirm(`Excluir a carteira "${w.name}"? Isso remove só essa carteira do perfil.`);
+  const typed=(prompt(`Confirme a exclusão digitando exatamente o nome da carteira:\n\n"${w.name}"`)||'').trim();
+  if(!typed) return;
+  if(typed!==String(w.name||'')){
+    toast('⚠️ Nome digitado não confere. Exclusão cancelada.','#fbbf24');
+    return;
+  }
+  const ok=confirm(`Última confirmação: excluir a carteira "${w.name}"? Isso remove só essa carteira do perfil.`);
   if(!ok) return;
   const idx=S.wallets.findIndex(x=>x.id===w.id);
   if(idx<0) return;
@@ -1029,7 +1035,6 @@ function configMenu(){
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px">⚙️ Configurações</summary>
     <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="toggleHideValues();closeConfigMenus()">${S.hideValues?'👁️ Mostrar valores':'🙈 Ocultar valores'}</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="exportBackup();closeConfigMenus()">💾 Backup</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importBackup();closeConfigMenus()">📂 Importar</button>
@@ -1038,6 +1043,9 @@ function configMenu(){
       <button class="btn bgh" style="width:100%;justify-content:flex-start;border-color:#7f1d1d;color:#fecaca;background:#1a0f12" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
     </div>
   </details>`;
+}
+function hideValuesToggleButton(){
+  return `<button class="btn bgh" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleHideValues()">${S.hideValues?'👁️ Mostrar valores':'🙈 Ocultar valores'}</button>`;
 }
 function toggleHideValues(){
   S.hideValues = !S.hideValues;
@@ -4763,6 +4771,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
     </div>
     <div class="hdr-right">
       ${authBox()}
+      ${hideValuesToggleButton()}
       ${installBox()}
       ${walletSwitchBox()}
       ${configMenu()}
