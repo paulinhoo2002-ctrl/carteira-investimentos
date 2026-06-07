@@ -42,6 +42,7 @@ button{cursor:pointer;font-family:inherit}
 .dash-card .cv{font-size:22px;line-height:1.05;margin-bottom:0}
 .dash-card .cs{font-size:11px;color:#64748b;margin-top:4px}
 .dash-foot{font-size:10px;color:#64748b;line-height:1.3;max-width:100%}
+.div-line-summary{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:stretch}
 .dashboard-grid{gap:10px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.95fr)}
 .dashboard-panel{min-height:260px}
 .dashboard-legend{display:flex;flex-direction:column;gap:6px;min-width:220px}
@@ -351,6 +352,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .hdr-sub{display:none}
   .hdr-right{margin-left:auto}
   .tabs{top:58px;justify-content:flex-start;padding:0 8px}
+  .div-line-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:640px){
   .hdr{padding:10px 10px;align-items:flex-start}
@@ -363,6 +365,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .wrap{padding:10px}
   .cards{grid-template-columns:1fr;gap:8px}
   .dashboard-hero{grid-template-columns:1fr;gap:8px}
+  .div-line-summary{grid-template-columns:1fr}
   .dash-card{min-height:auto;padding:12px 13px}
   .dash-card .cv{font-size:20px}
   .rent-side .dash-card{min-height:auto}
@@ -4050,13 +4053,13 @@ function irpfTab(){
     </details>`;
   }).join('');
   return `<div style="font-size:13px;font-weight:800;margin-bottom:3px;letter-spacing:.01em">🧾 IRPF</div>
-  <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:12px">Apuração anual com foco em declaração, DARF e exportação. A leitura abaixo separa Ações, FIIs, ETFs, BDRs e Renda Fixa para ficar mais próxima da apuração tributária real.</div>
+  <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:12px">Apuração anual para declaração, DARF e exportação. A leitura abaixo separa Ações, FIIs, ETFs, BDRs e Renda Fixa.</div>
 
   <div class="card al" style="margin-bottom:2px;border-left-color:#a78bfa;padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
         <div class="sec-title" style="font-size:14px;line-height:1.15">Prévia fiscal do ano</div>
-        <div class="sec-meta" style="font-size:11px;line-height:1.35;margin-top:3px">Resumo rápido inspirado na declaração: Bens e Direitos, rendimentos e DARF.</div>
+        <div class="sec-meta" style="font-size:11px;line-height:1.35;margin-top:3px">Resumo rápido: patrimônio, renda e DARF.</div>
       </div>
       <div class="sec-meta" style="padding-top:2px">${irpfYear}</div>
     </div>
@@ -4083,8 +4086,8 @@ function irpfTab(){
     <div class="card al" style="border-left-color:#34d399;padding:11px 12px;display:flex;flex-direction:column;gap:7px;min-height:0">
       <div class="sh" style="margin-bottom:2px">
         <div>
-          <div class="sec-title">Fluxo guiado em 4 passos</div>
-          <div class="sec-meta">avance na ordem para revisar tudo antes de declarar</div>
+          <div class="sec-title">Fluxo guiado</div>
+          <div class="sec-meta">4 etapas para revisar antes de declarar</div>
         </div>
         <div class="sec-meta">${step}/4 · ${stepLabels[step]}</div>
       </div>
@@ -4101,7 +4104,7 @@ function irpfTab(){
     <summary>
       <div>
         <div class="sec-title">Fluxo guiado em 4 passos</div>
-        <div class="sec-meta">toque para abrir os passos e revisar por etapas</div>
+        <div class="sec-meta">toque para abrir e revisar por etapas</div>
       </div>
       <div class="sec-meta">${step}/4 · ${stepLabels[step]}</div>
     </summary>
@@ -4113,8 +4116,8 @@ function irpfTab(){
   <details class="sec" style="margin-bottom:10px">
     <summary>
       <div>
-        <div class="sec-title">Onde lançar cada parte da declaração</div>
-        <div class="sec-meta">guia rápido para conferir a ficha certa no IRPF</div>
+        <div class="sec-title">Onde lançar na declaração</div>
+        <div class="sec-meta">guia rápido para conferir a ficha certa</div>
       </div>
       <div class="sec-meta">5 fichas principais</div>
     </summary>
@@ -4123,7 +4126,7 @@ function irpfTab(){
         ${[
           {title:'Bens e Direitos', kicker:'Patrimônio', color:'#60a5fa'},
           {title:'Renda Variável', kicker:'Ganhos e perdas', color:'#34d399'},
-          {title:'Isentos / não tributáveis', kicker:'Dividendos e isenções', color:'#fbbf24'},
+          {title:'Isentos', kicker:'Dividendos e isenções', color:'#fbbf24'},
           {title:'Tributação exclusiva', kicker:'JCP e renda retida', color:'#a78bfa'},
           {title:'GCAP / DARF', kicker:'Imposto devido', color:'#f472b6'},
         ].map(item=>`
@@ -4137,7 +4140,7 @@ function irpfTab(){
         <tbody>
           <tr><td style="font-weight:700;color:#e2eaf6">Bens e Direitos</td><td>Posição em 31/12, custo de aquisição, quantidade e tipo do ativo.</td><td>Mostra posições por bucket e o valor de mercado/custo.</td></tr>
           <tr><td style="font-weight:700;color:#e2eaf6">Renda Variável</td><td>Lucros e prejuízos de vendas, por mês e por tipo de ativo.</td><td>Exibe apuração mensal e separa Ações, FIIs, ETFs e BDRs.</td></tr>
-          <tr><td style="font-weight:700;color:#e2eaf6">Isentos / não tributáveis</td><td>Dividendos isentos e operações com isenção mensal aplicável.</td><td>Resume proventos isentos e ganhos isentos estimados.</td></tr>
+          <tr><td style="font-weight:700;color:#e2eaf6">Isentos</td><td>Dividendos isentos e operações com isenção mensal aplicável.</td><td>Resume proventos isentos e ganhos isentos estimados.</td></tr>
           <tr><td style="font-weight:700;color:#e2eaf6">Tributação exclusiva</td><td>JCP, renda fixa com IR retido e outros rendimentos retidos na fonte.</td><td>Lista proventos com classificação e valor para conferência.</td></tr>
           <tr><td style="font-weight:700;color:#e2eaf6">GCAP / DARF</td><td>Meses com lucro tributável e imposto a pagar.</td><td>Mostra o DARF estimado e destaca meses que precisam revisão.</td></tr>
         </tbody>
@@ -4149,8 +4152,8 @@ function irpfTab(){
   <details class="sec">
     <summary>
       <div>
-        <div class="sec-title">Apuração mensal por tipo</div>
-        <div class="sec-meta">mais próximo do que entra em GCAP/DARF e na ficha anual</div>
+        <div class="sec-title">Apuração mensal</div>
+        <div class="sec-meta">mais próximo do que entra em GCAP/DARF</div>
       </div>
       <div class="sec-meta">${year} · ${report.months.length} meses</div>
     </summary>
@@ -4159,15 +4162,15 @@ function irpfTab(){
         <thead><tr><th>Mês</th><th>Ações vendas</th><th>Ações IR</th><th>FII vendas</th><th>FII IR</th><th>ETF vendas</th><th>ETF IR</th><th>BDR vendas</th><th>BDR IR</th><th>Renda Fixa vendas</th><th>Renda Fixa IR</th><th>DARF total</th></tr></thead>
         <tbody>${monthRows}</tbody>
       </table></div></div>
-      <div class="mu" style="font-size:12px;margin-top:8px">Ações comuns ficam isentas quando o total vendido no mês fica até R$ 20 mil. FIIs tendem a tributar em 20%, enquanto ETFs, BDRs e Renda Fixa entram em regra de 15% para ganho tributável. Esta aba não substitui GCAP/contador, mas organiza o que você precisa conferir.</div>
+      <div class="mu" style="font-size:12px;margin-top:8px">Ações comuns ficam isentas quando o total vendido no mês fica até R$ 20 mil. FIIs tendem a tributar em 20%, enquanto ETFs, BDRs e Renda Fixa seguem regra própria. Esta aba não substitui GCAP/contador, mas organiza o que você precisa conferir.</div>
     </div>
   </details>
 
   <details class="sec" style="margin-top:12px">
     <summary>
       <div>
-        <div class="sec-title">Posição em 31/12 por bucket</div>
-        <div class="sec-meta">separação por tipo para a declaração anual</div>
+        <div class="sec-title">Posição em 31/12</div>
+        <div class="sec-meta">separação por tipo para a declaração</div>
       </div>
       <div class="sec-meta">${report.positions.length} posições</div>
     </summary>
@@ -4180,7 +4183,7 @@ function irpfTab(){
     <summary>
       <div>
         <div class="sec-title">Proventos do ano</div>
-        <div class="sec-meta">base para informar rendimentos isentos e tributados</div>
+        <div class="sec-meta">base para informar rendimentos</div>
       </div>
       <div class="sec-meta">${report.provents.length} lançamentos</div>
     </summary>
@@ -4195,8 +4198,8 @@ function irpfTab(){
   <details class="sec" style="margin-top:12px">
     <summary>
       <div>
-        <div class="sec-title">Checklist IRPF</div>
-        <div class="sec-meta">última revisão antes de entregar a declaração</div>
+        <div class="sec-title">Checklist final</div>
+        <div class="sec-meta">revisão antes de entregar</div>
       </div>
       <div class="sec-meta">4 itens</div>
     </summary>
@@ -4836,7 +4839,11 @@ function dash(){
   const divAno=rec.ano;
   const dashAssets=S.dashType==='all' ? S.assets : S.assets.filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')===S.dashType);
   const byTypeDash={};
-  dashAssets.forEach(a=>{const v=a.qty*a.current_price;byTypeDash[a.type]=(byTypeDash[a.type]||0)+v;});
+  dashAssets.forEach(a=>{
+    const v=a.qty*a.current_price;
+    const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
+    byTypeDash[type]=(byTypeDash[type]||0)+v;
+  });
   const adDash=Object.entries(byTypeDash).map(([n,v])=>({name:n,value:v}));
   const dashTotal=adDash.reduce((s,d)=>s+d.value,0);
   const pDash=pie(adDash,DCLR);
@@ -4886,7 +4893,7 @@ function dash(){
         <div class="dash-ico">💼</div>
         <div>
           <div class="dash-kicker">Patrimônio total</div>
-          <div class="dash-name">Resumo atual da carteira</div>
+          <div class="dash-name">Patrimônio consolidado</div>
         </div>
       </div>
       <div class="dash-value">
@@ -4899,8 +4906,8 @@ function dash(){
       <div class="dash-head">
         <div class="dash-ico">📈</div>
         <div>
-          <div class="dash-kicker">Lucro total</div>
-          <div class="dash-name">Ganho de capital + renda recebida</div>
+          <div class="dash-kicker">Resultado total</div>
+          <div class="dash-name">Ganho de capital + proventos</div>
         </div>
       </div>
       <div class="dash-value">
@@ -4913,7 +4920,7 @@ function dash(){
       <div class="dash-head">
         <div class="dash-ico">💵</div>
         <div>
-          <div class="dash-kicker">Proventos recebidos (12M)</div>
+          <div class="dash-kicker">Proventos 12M</div>
           <div class="dash-name">Entradas dos últimos 12 meses</div>
         </div>
       </div>
@@ -4927,7 +4934,7 @@ function dash(){
       <div class="dash-head">
         <div class="dash-ico">📊</div>
         <div>
-          <div class="dash-kicker">Variação / Rentabilidade</div>
+          <div class="dash-kicker">Rentabilidade total</div>
           <div class="dash-name">Retorno e eficiência</div>
         </div>
       </div>
@@ -5000,7 +5007,7 @@ function patrimonioTab(){
   <div class="sh">
     <div>
       <div class="st">Patrimônio</div>
-      <div class="mu" style="font-size:12px;margin-top:4px">Acompanhe a evolução do capital aplicado e o patrimônio consolidado.</div>
+      <div class="mu" style="font-size:12px;margin-top:4px">Evolução do capital aplicado e visão patrimonial.</div>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
       ${periodOpts.map(p=>`<button class="dash-chip ${Number(S.dashPeriod)===p?'on':''}" onclick="setDashPeriod(${p})">${p}M</button>`).join('')}
@@ -5012,7 +5019,7 @@ function patrimonioTab(){
         <div class="evo-top">
           <div>
             <div class="ct">Evolução do capital aplicado</div>
-            <div class="evo-sub">Aportes líquidos dos últimos ${S.dashPeriod} meses.</div>
+            <div class="evo-sub">Aportes líquidos acumulados nos últimos ${S.dashPeriod} meses.</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
             <div class="evo-legend">
@@ -5028,8 +5035,8 @@ function patrimonioTab(){
     <div class="cc dashboard-panel" style="padding:12px 12px 10px">
       <div class="sh" style="margin-bottom:8px;align-items:flex-end">
         <div>
-          <div class="ct">Resumo de patrimônio</div>
-          <div class="mu" style="font-size:12px">Valor total, aportes e ganho consolidado.</div>
+          <div class="ct">Resumo patrimonial</div>
+          <div class="mu" style="font-size:12px">Valor aplicado, carteira atual e ganho acumulado.</div>
         </div>
       </div>
       <div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0">
@@ -5791,20 +5798,20 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
 
   return`<div style="font-size:14px;font-weight:700;margin-bottom:8px">${esc(pageTitle)}</div>
   ${showGoal?`<div class="fc" style="margin-bottom:10px">
-    <div class="cg" style="align-items:end;gap:8px">
-      <div>
-        <div class="fl" style="margin-bottom:3px">🎯 Objetivo mensal de dividendos (R$)</div>
-        <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()">
-        <div class="mu" style="font-size:11px;margin-top:4px">Digite e pressione Enter ou clique fora para salvar.</div>
+    <div class="cg" style="align-items:end;gap:8px;grid-template-columns:1.15fr .85fr">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div class="fl" style="margin-bottom:0">🎯 Objetivo mensal de dividendos (R$)</div>
+        <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()" style="min-height:40px;padding:8px 10px">
+        <div class="mu" style="font-size:10px">Enter ou clique fora para salvar.</div>
       </div>
-      <div>
-        <div class="fl" style="margin-bottom:3px">Progresso até o objetivo</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div class="fl" style="margin-bottom:0">Progresso até o objetivo</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-          <div style="font-size:20px;font-weight:800;color:#fbbf24">${ratio.toFixed(1)}%</div>
-          <div style="font-size:12px;color:#64748b">${fmt(media12)} / ${fmt(objetivo||0)}</div>
+          <div style="font-size:18px;font-weight:800;color:#fbbf24">${ratio.toFixed(1)}%</div>
+          <div style="font-size:11px;color:#64748b">${fmt(media12)} / ${fmt(objetivo||0)}</div>
         </div>
-        <div class="dbt" style="height:7px;margin-top:7px"><div class="dbf" style="width:${ratio.toFixed(1)}%;background:#fbbf24"></div></div>
-        <div class="mu" style="font-size:11px;margin-top:4px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
+        <div class="dbt" style="height:6px;margin-top:0"><div class="dbf" style="width:${ratio.toFixed(1)}%;background:#fbbf24"></div></div>
+        <div class="mu" style="font-size:10px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
       </div>
     </div>
   </div>`:''}
@@ -5812,41 +5819,60 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
     <div class="sh" style="margin-bottom:5px">
       <div>
         <div class="st">Resumo</div>
-        <div class="mu" style="font-size:11px;margin-top:2px">Visão rápida dos últimos 12 meses e do tamanho atual da carteira.</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Leitura rápida dos últimos 12 meses e da renda atual da carteira.</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch">
-      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:60px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between">
+    <div class="div-line-summary">
+      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl" style="margin-bottom:3px">Média mensal (12M)</div>
-          <div class="cv am" style="font-size:18px">${fmt(media12)}</div>
+          <div class="cl" style="margin-bottom:2px">Média mensal (12M)</div>
+          <div class="cv am" style="font-size:16px">${fmt(media12)}</div>
         </div>
-        <div class="cs">Total 12 meses: ${fmt(total12)}</div>
+        <div class="cs" style="font-size:10px">Total 12 meses: ${fmt(total12)}</div>
       </div>
-      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:60px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl" style="margin-bottom:3px">Recebido no mês</div>
-          <div class="cv gn" style="font-size:18px">${fmt(rec.mes)}</div>
+          <div class="cl" style="margin-bottom:2px">Recebido no mês</div>
+          <div class="cv gn" style="font-size:16px">${fmt(rec.mes)}</div>
         </div>
       </div>
-      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:60px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between">
+      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl" style="margin-bottom:3px">Recebido no ano</div>
-          <div class="cv pu" style="font-size:18px">${fmt(rec.ano)}</div>
+          <div class="cl" style="margin-bottom:2px">Recebido no ano</div>
+          <div class="cv pu" style="font-size:16px">${fmt(rec.ano)}</div>
         </div>
+      </div>
+      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Renda estimada/mês</div>
+          <div class="cv am" style="font-size:16px">${fmt(mD)}</div>
+        </div>
+      </div>
+      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Projeção anual</div>
+          <div class="cv gn" style="font-size:16px">${fmt(aD)}</div>
+        </div>
+      </div>
+      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">DY médio</div>
+          <div class="cv pu" style="font-size:16px">${avgDY.toFixed(2)}%</div>
+        </div>
+      </div>
+      <div class="card al" style="margin:0;border-left-color:#f97316;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Total histórico</div>
+          <div class="cv" style="color:#fb923c;font-size:16px">${fmt(rec.total)}</div>
+        </div>
+        <div class="cs" style="font-size:10px">Tudo que já entrou na conta</div>
       </div>
     </div>
-  </div>
-  <div class="cards" style="margin-bottom:8px;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
-    <div class="card al" style="border-left-color:#fbbf24;padding:8px 10px;min-height:60px"><div class="cl">Estimativa/mês</div><div class="cv am" style="font-size:17px">${fmt(mD)}</div></div>
-    <div class="card al" style="border-left-color:#34d399;padding:8px 10px;min-height:60px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:17px">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8;padding:8px 10px;min-height:60px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:17px">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#f97316;padding:8px 10px;min-height:60px"><div class="cl">Total histórico</div><div class="cv" style="color:#fb923c;font-size:17px">${fmt(rec.total)}</div><div class="cs">Tudo que já entrou na conta</div></div>
   </div>
   <div class="sh" style="margin:0 0 8px 0">
     <div>
       <div class="st">Atualização de dividendos</div>
-      <div class="mu" style="font-size:11px;margin-top:3px">Busque o histórico grátis para recalcular os proventos automaticamente.</div>
+      <div class="mu" style="font-size:11px;margin-top:3px">Busque o histórico gratuito para recalcular os proventos automaticamente.</div>
     </div>
     <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
   </div>
@@ -5854,7 +5880,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
     <summary onclick="toggleDividendSection('monthly', event)">
       <div>
         <div class="sec-title">Histórico mensal</div>
-        <div class="sec-meta">visão consolidada por ano e por mês</div>
+        <div class="sec-meta">consolidado por ano e por mês</div>
       </div>
       <div class="sec-meta">clicar para ocultar</div>
     </summary>
@@ -5870,7 +5896,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
     <summary onclick="toggleDividendSection('projection', event)">
       <div>
         <div class="sec-title">Projeção por ativo</div>
-        <div class="sec-meta">${S.assets.length} ativos com estimativa de dividendos por mês e ano</div>
+        <div class="sec-meta">${S.assets.length} ativos com projeção mensal e anual</div>
       </div>
       <div class="sec-meta">clicar para ocultar</div>
     </summary>
@@ -5886,7 +5912,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
     <summary onclick="toggleDividendSection('received', event)">
       <div>
         <div class="sec-title">Proventos recebidos (${S.proventos.length})</div>
-        <div class="sec-meta">dinheiro que já caiu na conta</div>
+        <div class="sec-meta">valores já creditados na conta</div>
       </div>
       <div class="sec-meta">clicar para ocultar</div>
     </summary>
@@ -5955,7 +5981,7 @@ function metasTab(){
   <div class="mu" style="font-size:12px;margin-bottom:12px">Objetivos da carteira com foco em renda, patrimônio e distribuição.</div>
 
   <div class="cards" style="margin-bottom:10px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Estimativa/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div></div>
+    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Renda estimada/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div></div>
     <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:64px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
     <div class="card al" style="border-left-color:#818cf8;padding:10px 12px;min-height:64px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
     <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;min-height:64px"><div class="cl">Total da carteira</div><div class="cv bl" style="font-size:18px">${fmt(tC)}</div></div>
