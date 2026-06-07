@@ -436,6 +436,7 @@ const TYPE_ALIASES = {
 const TYPE_ALIAS_LOOKUP = Object.fromEntries(Object.entries(TYPE_ALIASES).map(([k,v])=>[k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase(),v]));
 const STOR         = 'civ5';
 const DEFAULT_BRAPI = ''; // brapi fica opcional; cotações usam Yahoo Finance via /api/yahoo-quote sem token
+const ACCESS_ADMIN_EMAILS = ['paulinhoo2002@gmail.com'];
 
 // Firebase — login Google + Firestore
 const firebaseConfig = {
@@ -501,6 +502,12 @@ function normalizeAccessList(v){
   return Array.isArray(v)
     ? v.map(x=>normalizeEmail(x)).filter(Boolean)
     : [];
+}
+function isAccessAdmin(email){
+  return ACCESS_ADMIN_EMAILS.includes(normalizeEmail(email));
+}
+function canManageSecurity(){
+  return !!FB.user && isAccessAdmin(FB.user.email);
 }
 function makeWalletId(){ return `w_${Date.now()}_${Math.random().toString(16).slice(2,8)}`; }
 function emptyWallet(name='Carteira principal'){
@@ -1152,6 +1159,10 @@ function listToText(arr){
   return Array.isArray(arr) ? arr.join('\n') : '';
 }
 function openAccessSettings(){
+  if(!canManageSecurity()){
+    toast('🔒 Acesso restrito ao administrador.','#fbbf24');
+    return;
+  }
   S.accessSettingsOpen=true;
   render();
 }
@@ -1162,6 +1173,10 @@ function closeAccessSettings(){
 async function saveAccessSettings(){
   if(!FB.db || !FB.user){
     toast('Entre com Google para salvar a segurança.','#fbbf24');
+    return;
+  }
+  if(!canManageSecurity()){
+    toast('🔒 Somente o administrador pode alterar a segurança.','#f87171');
     return;
   }
   const enabled = !!document.getElementById('acc-enabled')?.checked;
@@ -1195,6 +1210,7 @@ async function saveAccessSettings(){
   }
 }
 function accessSettingsModal(){
+  if(!canManageSecurity()) return '';
   const cfg = FB.access.cfg || {};
   const enabled = cfg.enabled !== false;
   const allowedEmails = listToText(cfg.allowedEmails || []);
@@ -1303,10 +1319,13 @@ function walletSwitchBox(){
   </details>`;
 }
 function configMenu(){
+  const securityBtn = canManageSecurity()
+    ? `<button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>`
+    : '';
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px">⚙️ Configurações</summary>
     <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>
+      ${securityBtn}
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="exportBackup();closeConfigMenus()">💾 Backup</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importBackup();closeConfigMenus()">📂 Importar</button>
