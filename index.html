@@ -1045,7 +1045,7 @@ function configMenu(){
   </details>`;
 }
 function hideValuesToggleButton(){
-  return `<button class="btn bgh" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleHideValues()">${S.hideValues?'👁️ Mostrar valores':'🙈 Ocultar valores'}</button>`;
+  return `<button class="btn bgh" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;white-space:nowrap;border-radius:999px;letter-spacing:.2px;opacity:.96" onclick="toggleHideValues()">${S.hideValues?'👁️ Mostrar valores':'🙈 Ocultar valores'}</button>`;
 }
 function toggleHideValues(){
   S.hideValues = !S.hideValues;
