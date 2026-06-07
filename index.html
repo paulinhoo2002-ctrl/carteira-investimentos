@@ -5051,10 +5051,6 @@ function render(){
   bind();
 }
 function app(){
-  if(!FB.ready) return `<div class="wrap">${accessGateBox()}</div>`;
-  if(FB.access.loading) return `<div class="wrap">${accessGateBox()}</div>`;
-  if(!FB.user) return `<div class="wrap">${accessGateBox()}</div>`;
-  if(FB.access.loaded && !FB.access.allowed) return `<div class="wrap">${accessGateBox()}</div>`;
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
 const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
