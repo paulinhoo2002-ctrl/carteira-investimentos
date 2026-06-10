@@ -22,6 +22,7 @@ button{cursor:pointer;font-family:inherit}
 .hdr-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
 .hdr-sub{font-size:10px;color:#55708d;margin-top:1px}
 .hdr-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hdr-top-fab{display:none}
 .cfg-menu>summary{list-style:none}
 .cfg-menu>summary::-webkit-details-marker{display:none}
 .tabs{background:#111828;border-bottom:1px solid #1d2940;display:flex;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;position:sticky;top:58px;z-index:9;scrollbar-width:none}
@@ -400,6 +401,15 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .hdr-right .binst.hdr-mobile-btn{
     box-shadow:none!important
   }
+  .hdr-right .hdr-top-fab{
+    display:inline-flex!important;align-items:center;justify-content:center;
+    width:32px!important;height:32px!important;padding:0!important;margin-left:2px;
+    border-radius:12px!important;font-size:0!important;line-height:1!important;
+    border:1px solid #27344b!important;background:#111827!important;color:#c7d2fe!important
+  }
+  .hdr-right .hdr-top-fab .hdr-mobile-icon{font-size:16px!important}
+  .hdr-right .hdr-top-fab .hdr-mobile-label{display:none!important}
+  .hdr-right > :not(.hdr-top-fab){display:none!important}
   .tabs{top:52px}
   .tab{padding:10px 10px;font-size:11px}
   .wrap{padding:10px}
@@ -472,6 +482,47 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .perf-grid{grid-template-columns:1fr!important}
   .rent-layout{grid-template-columns:1fr!important}
   .perf-card.comp{display:none!important}
+}
+#investTopDrawer{
+  display:none;position:fixed;inset:0;z-index:72;pointer-events:none
+}
+#investTopDrawer.open{display:block;pointer-events:auto}
+#investTopDrawer .mt-overlay{
+  position:absolute;inset:0;background:transparent
+}
+#investTopDrawer .mt-panel{
+  position:absolute;top:54px;right:10px;width:min(280px,calc(100vw - 20px));
+  background:rgba(11,16,30,.98);border:1px solid #233149;border-radius:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);padding:12px;transform:translateY(-6px);
+  animation:topBubbleIn .18s ease-out
+}
+#investTopDrawer .mt-grip{
+  width:34px;height:4px;border-radius:99px;background:#24324a;margin:0 0 10px auto
+}
+#investTopDrawer .mt-title{
+  font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#64748b;
+  margin-bottom:10px
+}
+#investTopDrawer .mt-stack{display:flex;flex-direction:column;gap:8px}
+#investTopDrawer .mt-item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:12px 12px;border-radius:14px;
+  border:1px solid #1d2940;background:#141d2f;color:#edf3ff;font-size:13px;font-weight:700;
+  text-align:left;box-shadow:none
+}
+#investTopDrawer .mt-item.primary{
+  border-color:#27344b;background:linear-gradient(135deg,#18233b,#111828);color:#c7d2fe
+}
+#investTopDrawer .mt-item span{flex:1 1 auto;min-width:0}
+#investTopDrawer .mt-badge{
+  flex:none;font-size:10px;padding:3px 7px;border-radius:999px;border:1px solid #27344b;background:#0d111e
+}
+#investTopDrawer .mt-foot{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-top:10px;padding-top:10px;border-top:1px solid #1d2940;font-size:10px;color:#64748b
+}
+@keyframes topBubbleIn{
+  from{opacity:0;transform:translateY(-10px) scale(.98)}
+  to{opacity:1;transform:translateY(-6px) scale(1)}
 }
 #investBottomNav{display:none}
 #investMenuDrawer{display:none;position:fixed;inset:0;z-index:60}
@@ -573,6 +624,7 @@ let S = {
   apSearchTimer:null,
   activeDividendSection:'',
   mobileMenuOpen:false,
+  mobileTopMenuOpen:false,
   accessSettingsOpen:false,
   goals:{
     patrimonio:{target:0, aporte:0, annualVar:0},
@@ -1418,6 +1470,9 @@ function walletSwitchBox(){
     </div>
   </details>`;
 }
+function mobileTopActionButton(){
+  return `<button class="btn bgh hdr-top-fab" onclick="toggleMobileTopMenu()" aria-label="Abrir menu rápido"><span class="hdr-mobile-icon">⋯</span><span class="hdr-mobile-label">Menu</span></button>`;
+}
 function configMenu(){
   const securityBtn = canManageSecurity()
     ? `<button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>`
@@ -1451,6 +1506,45 @@ function installBox(){
   if(PWA.installed) return `<span style="font-size:11px;color:#34d399;border:1px solid rgba(52,211,153,.2);background:#09131a;border-radius:999px;padding:6px 10px">App instalado</span>`;
   if(!PWA.prompt) return '';
   return `<button class="btn binst hdr-mobile-btn" style="font-size:12px;padding:7px 12px" onclick="installPWA()"><span class="hdr-mobile-icon">📲</span><span class="hdr-mobile-label">Instalar app</span></button>`;
+}
+function mobileTopDrawer(){
+  return `<div id="investTopDrawer" class="${S.mobileTopMenuOpen?'open':''}">
+    <div class="mt-overlay" onclick="closeMobileTopMenu()"></div>
+    <div class="mt-panel">
+      <div class="mt-grip"></div>
+      <div class="mt-title">Ações rápidas</div>
+      <div class="mt-stack">
+        ${authBox()}
+        ${hideValuesToggleButton()}
+        ${installBox()}
+        ${walletSwitchBox()}
+        ${configMenu()}
+      </div>
+      <div class="mt-foot">
+        <span>${esc(activeWallet()?.name||'Carteira')}</span>
+        <span>${cloudStatus()}</span>
+      </div>
+    </div>
+  </div>`;
+}
+function toggleMobileTopMenu(){
+  S.mobileTopMenuOpen=!S.mobileTopMenuOpen;
+  render();
+}
+function closeMobileTopMenu(){
+  if(!S.mobileTopMenuOpen) return;
+  S.mobileTopMenuOpen=false;
+  render();
+}
+function openWalletQuickMenu(){
+  closeMobileTopMenu();
+  const el=document.querySelector('.wallet-menu > summary');
+  if(el) el.click();
+}
+function openConfigQuickMenu(){
+  closeMobileTopMenu();
+  const el=document.querySelector('.cfg-menu > summary');
+  if(el) el.click();
 }
 
 async function installPWA(){
@@ -5166,6 +5260,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
       ${installBox()}
       ${walletSwitchBox()}
       ${configMenu()}
+      ${mobileTopActionButton()}
 
       <div style="text-align:right">
         <div style="font-size:11px;color:#2e3f58">${now}</div>
@@ -5178,6 +5273,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
   </div>
   <div class="tabs">${TABS.map(([k,l])=>`<button class="tab${S.tab===k?' on':''}" onclick="go('${k}')">${l}</button>`).join('')}</div>
   <div class="wrap">${content()}</div>
+  ${mobileTopDrawer()}
   ${mobileBottomNav()}
   ${mobileMenuDrawer()}
   ${S.accessSettingsOpen?accessSettingsModal():''}
@@ -6730,6 +6826,7 @@ function go(t){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
   S.tab=t;
   S.mobileMenuOpen=false;
+  S.mobileTopMenuOpen=false;
   if(t==='ativos') S.activeAssetsGroup='';
   if(t==='dividendos') S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
