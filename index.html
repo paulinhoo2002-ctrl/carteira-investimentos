@@ -416,8 +416,16 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .cards{grid-template-columns:1fr;gap:8px}
   .dashboard-hero{grid-template-columns:1fr;gap:8px}
   .div-line-summary{grid-template-columns:1fr}
-  .dash-card{min-height:auto;padding:12px 13px}
-  .dash-card .cv{font-size:20px}
+  .dash-card{min-height:auto;padding:10px 11px}
+  .dash-head{gap:8px}
+  .dash-ico{width:24px;height:24px;font-size:12px}
+  .dash-kicker{font-size:9px;line-height:1.05;letter-spacing:.06em}
+  .dash-value{margin-top:6px}
+  .dash-card .cv{font-size:17px;line-height:1.06}
+  .dash-foot{
+    font-size:10px;line-height:1.18;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+  }
   .rent-side .dash-card{min-height:auto}
   .dashboard-panel{min-height:0}
   .dashboard-legend{min-width:0;width:100%}
@@ -429,22 +437,52 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .rent-main{height:auto}
   .rent-filters{grid-template-columns:1fr;width:100%}
   .rent-chartbox{padding:8px 8px 2px}
-  .card{padding:12px 13px;border-radius:11px}
-  .cv{font-size:18px}
-  .cs{font-size:11px}
+  .card{padding:11px 12px;border-radius:11px}
+  .cards .card.al{min-height:70px!important;padding:10px 11px!important}
+  .cards .card .cl,
+  .cards .card .fl,
+  .cards .card .mu{font-size:10px;line-height:1.15}
+  .cards .card .cv{font-size:16px;line-height:1.04}
+  .cv{font-size:17px}
+  .cs{font-size:10px}
   .cg{grid-template-columns:1fr;gap:10px}
+  .cg .card.al{padding:11px 12px!important;min-height:0!important}
+  .cg .card.al .mu{font-size:10px!important;line-height:1.15!important}
+  .cg .card.al input{font-size:15px!important;padding:9px 10px!important}
   .cc{padding:12px;border-radius:11px}
-  .sh{gap:6px;margin-bottom:10px}
-  .st{font-size:14px}
+  .sh{gap:6px;margin-bottom:10px;align-items:flex-start}
+  .st{font-size:13px;line-height:1.15}
   .btn{padding:8px 12px;font-size:12px}
   .bexp,.bimp,.bb3{padding:7px 10px;font-size:11px}
   .fc{padding:12px;border-radius:11px}
   .fg{grid-template-columns:1fr;gap:8px}
-  .ag>summary{padding:14px}
-  .ag-left{min-width:0;flex:1 1 100%}
-  .ag-stats{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
-  .ag-open{margin-left:auto}
-  .ag-name{font-size:17px}
+  .ap-summary{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px 8px!important;
+    padding:11px 12px!important
+  }
+  .ap-summary .cl{font-size:9px!important;margin-bottom:3px!important}
+  .ap-summary .cs{font-size:9px!important;line-height:1.1!important}
+  .ap-summary > div{min-width:0}
+  .ap-summary > div > div:nth-child(2){
+    font-size:15px!important;
+    line-height:1.06!important;
+    word-break:break-word
+  }
+  .reserve-card .ag-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .ag>summary{padding:11px 12px;align-items:flex-start;flex-wrap:wrap;gap:8px;min-height:0}
+  .ag-left{min-width:0;flex:1 1 100%;align-items:flex-start;gap:10px}
+  .ag-ico{width:30px;height:30px;font-size:14px;border-radius:10px}
+  .ag-stats{grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:6px;flex:1 1 100%}
+  .ag-stat{min-width:0}
+  .ag-k{font-size:8px;line-height:1.05;margin-bottom:2px;letter-spacing:.05em}
+  .ag-v{font-size:12px;line-height:1.06;white-space:nowrap}
+  .ag-v small{font-size:9px;margin-left:4px}
+  .ag-open{margin-left:auto;width:28px;height:28px}
+  .ag-name{font-size:15px;line-height:1.06}
+  .ag-sub{font-size:10px;line-height:1.22;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .ag-wrap{gap:8px}
   .ag-table table{min-width:980px}
   input,select{font-size:16px;padding:10px 11px}
   th,td{padding:8px 10px;font-size:11px}
@@ -477,8 +515,8 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   #investBottomNav .nav-center span:last-child{font-size:9px;color:#818cf8;font-weight:800;margin-top:1px}
   .tabs{display:none!important}
   .wrap{padding:10px 10px 88px!important}
-  .dashboard-hero{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
-  .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .dashboard-hero{grid-template-columns:1fr!important;gap:8px!important}
+  .cards{grid-template-columns:1fr!important;gap:8px!important}
   .perf-grid{grid-template-columns:1fr!important}
   .rent-layout{grid-template-columns:1fr!important}
   .perf-card.comp{display:none!important}
@@ -5765,7 +5803,7 @@ function apTab(){
       })
     : S.aportes;
   const reserve=reserveStats();
-  const sum=S.aportes.length?`<div class="card" style="margin-bottom:12px;display:flex;gap:24px;flex-wrap:wrap">
+  const sum=S.aportes.length?`<div class="card ap-summary" style="margin-bottom:12px;display:flex;gap:24px;flex-wrap:wrap">
     <div><div class="cl">Comprado</div><div style="font-size:18px;font-weight:700;color:#818cf8">${fmt(compras)}</div></div>
     <div><div class="cl">Vendido</div><div style="font-size:18px;font-weight:700;color:#f87171">${fmt(vendas)}</div></div>
     <div><div class="cl">Líquido</div><div style="font-size:18px;font-weight:700;color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div></div>
@@ -5882,7 +5920,7 @@ function apTab(){
   </div>
   ${frmP()}
   ${sum}
-  ${reserveItems.length?`<details class="ag" open style="margin-bottom:12px">
+  ${reserveItems.length?`<details class="ag reserve-card" open style="margin-bottom:12px">
     <summary>
       <div class="ag-left">
         <div class="ag-ico">🧰</div>
