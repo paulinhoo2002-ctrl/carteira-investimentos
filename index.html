@@ -369,7 +369,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .hdr-sub{display:none!important}
   .hdr-right{
     width:auto;max-width:calc(100vw - 190px);margin-left:auto;
-    justify-content:flex-end;align-items:center;gap:4px;flex-wrap:nowrap;overflow:hidden
+    justify-content:flex-end;align-items:center;gap:4px;flex-wrap:nowrap;overflow:visible
   }
   .hdr-right .hdr-mobile-label,
   .hdr-right .hdr-mobile-user{display:none!important}
@@ -388,7 +388,9 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
     gap:4px!important;padding:5px 7px!important;min-height:28px!important
   }
   .hdr-right .wallet-menu,
-  .hdr-right .cfg-menu{margin:0}
+  .hdr-right .cfg-menu{
+    margin:0;position:relative;z-index:45
+  }
   .hdr-right .bi.hdr-mobile-btn{
     width:18px!important;height:18px!important;padding:0!important;font-size:9px!important;
     display:inline-flex!important;align-items:center;justify-content:center
@@ -1392,7 +1394,7 @@ function walletSwitchBox(){
     <summary class="btn bgh hdr-mobile-btn" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px;display:flex;align-items:center;gap:8px">
       <span class="hdr-mobile-icon">📁</span><span class="hdr-mobile-label">Carteiras</span>${walletChip()}
     </summary>
-    <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:31;min-width:220px;max-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
+    <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:31;width:min(220px,calc(100vw - 24px));min-width:220px;max-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
       <div style="padding:6px 8px 8px;background:#090c15;border:1px solid #162033;border-radius:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#64748b">Carteira ativa</div>
@@ -1422,7 +1424,7 @@ function configMenu(){
     : '';
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp hdr-mobile-btn" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px"><span class="hdr-mobile-icon">⚙️</span><span class="hdr-mobile-label">Configurações</span></summary>
-    <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
+    <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(220px,calc(100vw - 24px));min-width:220px;max-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
       ${securityBtn}
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="exportBackup();closeConfigMenus()">💾 Backup</button>
