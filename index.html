@@ -148,54 +148,6 @@ input,select{background:#111828;border:1px solid #27344b;border-radius:9px;paddi
 input:focus,select:focus{border-color:#4f46e5;outline:none;box-shadow:0 0 0 3px rgba(79,70,229,.15)}
 input:disabled{opacity:.45;cursor:not-allowed}
 input::placeholder{color:#2e3f58}select option{background:#0d111e}
-.trade-shell{overflow:hidden}
-.trade-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.trade-title{font-size:16px;font-weight:800;line-height:1.04;color:#edf3ff}
-.trade-sub{font-size:12px;color:#64748b;margin-top:4px;max-width:720px;line-height:1.35}
-.trade-badges{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.trade-pill{
-  display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;
-  border:1px solid #27344b;background:#141d2f;color:#c0cce0;font-size:12px;font-weight:700
-}
-.trade-pill.soft{background:#0d111e;color:#7dd3fc}
-.trade-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.95fr);gap:12px;align-items:start}
-.trade-main,.trade-side{display:flex;flex-direction:column;gap:12px;min-width:0}
-.trade-section{
-  background:#0d111e;border:1px solid #1d2940;border-radius:12px;padding:12px
-}
-.trade-section h4{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.trade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.trade-wide{grid-column:1/-1}
-.trade-preview{
-  background:linear-gradient(180deg,#111827,#0d111e);
-  border:1px solid #27344b;border-radius:14px;padding:12px
-}
-.trade-preview-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.trade-preview-amount{font-size:24px;font-weight:900;line-height:1;letter-spacing:-.03em;color:#c7d2fe;margin-top:8px}
-.trade-preview-amount small{display:block;font-size:11px;font-weight:700;color:#64748b;margin-top:5px}
-.trade-preview-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.trade-chip{
-  display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 8px;border-radius:999px;
-  border:1px solid #27344b;background:#141d2f;color:#c0cce0
-}
-.trade-help{font-size:11px;color:#64748b;line-height:1.35;margin-top:10px}
-.trade-list{display:flex;flex-direction:column;gap:8px}
-.trade-row{
-  display:flex;justify-content:space-between;gap:10px;align-items:center;
-  border:1px solid #1d2940;background:#111828;border-radius:12px;padding:9px 10px
-}
-.trade-row strong{font-size:12px}
-.trade-row small{display:block;color:#64748b;font-size:10px;line-height:1.25}
-.trade-row button{padding:6px 8px;font-size:11px;border-radius:8px;white-space:nowrap}
-.trade-advanced{
-  border:1px dashed #27344b;background:#0d111e;border-radius:12px;padding:10px 12px
-}
-.trade-advanced>summary{
-  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer
-}
-.trade-advanced>summary::-webkit-details-marker{display:none}
-.trade-advanced-body{padding-top:10px}
-.trade-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:2px}
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
 @media(max-width:640px){.cg{grid-template-columns:1fr}}
 .cc{background:#111828;border:1px solid #1d2940;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;min-height:100%}
@@ -504,25 +456,6 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .bexp,.bimp,.bb3{padding:7px 10px;font-size:11px}
   .fc{padding:12px;border-radius:11px}
   .fg{grid-template-columns:1fr;gap:8px}
-  .trade-head{gap:8px;margin-bottom:10px}
-  .trade-title{font-size:15px}
-  .trade-sub{font-size:11px;line-height:1.28}
-  .trade-badges{gap:6px}
-  .trade-pill{padding:6px 9px;font-size:11px}
-  .trade-layout{grid-template-columns:1fr;gap:10px}
-  .trade-main,.trade-side{gap:10px}
-  .trade-section{padding:11px}
-  .trade-section h4{margin-bottom:8px}
-  .trade-grid{grid-template-columns:1fr;gap:8px}
-  .trade-preview{padding:11px}
-  .trade-preview-amount{font-size:20px}
-  .trade-preview-meta{gap:5px}
-  .trade-chip{font-size:10px;padding:4px 7px}
-  .trade-row{align-items:flex-start}
-  .trade-row button{align-self:flex-start}
-  .trade-help{font-size:10px;line-height:1.28}
-  .trade-actions{justify-content:stretch}
-  .trade-actions .btn{flex:1 1 0}
   .ap-summary{
     display:grid!important;
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -3735,76 +3668,13 @@ function collectAporteDraft(){
   };
 }
 function updateAporteType(v){
-  S._fp=collectAporteDraft();
-  S._fp.type=v;
-  S._fp.typeManual=true;
+  S._fp={...collectAporteDraft(), type:v, typeManual:true};
   if(v==='Reserva de emergência'){
     S._fp.reserveTarget = S._fp.reserveTarget || 'bolsa';
     S._fp.reserveMode = S._fp.reserveMode || 'entrada';
   }
   render();
-  setTimeout(()=>{ applyMetaToAporte(); updateAportePreview(); },50);
-}
-function fillAportePreset(preset={}){
-  S._fp={...collectAporteDraft(), ...preset};
-  if(preset.type) S._fp.typeManual=true;
-  if(String(S._fp.type||'')==='Reserva de emergência'){
-    S._fp.reserveTarget = S._fp.reserveTarget || 'bolsa';
-    S._fp.reserveMode = S._fp.reserveMode || 'entrada';
-    S._fp.qty = 1;
-  }
-  if(preset.date===undefined && !S.editPId) S._fp.date = inputDateValue(new Date());
-  render();
-  setTimeout(()=>{ applyMetaToAporte(); updateAportePreview(); },50);
-}
-function updateAportePreview(){
-  const el=document.getElementById('p-preview');
-  if(!el) return;
-  const d=collectAporteDraft();
-  const type=normalizeType(d.type||metaTicker(d.ticker).type||'Ação','Ação');
-  const op=String(d.operation||'compra').toLowerCase();
-  const isReserve=type==='Reserva de emergência';
-  const isRF=type==='Renda Fixa' || String(type).includes('Tesouro');
-  const qty=isReserve?1:Math.abs(parseNum(d.qty)||0);
-  const price=Math.max(0,parseNum(d.price)||0);
-  const total=(qty||0)*(price||0);
-  const ticker=(String(d.ticker||'').trim().toUpperCase()) || (isReserve ? `RESERVA ${String(d.reserveTarget||'bolsa').toUpperCase()}` : '—');
-  const mode=isReserve ? (String(d.reserveMode||'entrada')==='saida' ? 'Saída da reserva' : 'Entrada na reserva') : (op==='venda' ? 'Venda' : 'Compra');
-  const target=String(d.reserveTarget||'bolsa')==='pessoal' ? 'Pessoal / particular' : 'Bolsa / oportunidade';
-  const dateTxt=d.date ? brDate(d.date) : 'sem data';
-  const advanced= isReserve
-    ? `Reserva separada da carteira · ${target}`
-    : isRF
-      ? `${esc(d.bondType||'Título')} · ${esc(d.indexer||'Indexador')} ${d.rate?`· ${esc(d.rate)}`:''}`
-      : `${esc(d.sector||metaTicker(d.ticker).sector||'—')}`;
-  const dayNote = !isReserve && qty>0 && price>0 ? `${fmt(qty)} × ${fmt(price)}` : 'preencha quantidade e preço';
-  el.innerHTML = `
-    <div class="trade-preview-top">
-      <div>
-        <div class="trade-title" style="font-size:13px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Resumo ao vivo</div>
-        <div style="font-size:18px;font-weight:900;line-height:1.02;color:#edf3ff">${esc(ticker)}</div>
-        <div class="trade-help" style="margin-top:6px">${esc(mode)} · ${dateTxt}</div>
-      </div>
-      <div class="trade-chip" style="border-color:${typeAccentColor(type)}55;color:${typeAccentColor(type)}">${tipoIcon(type)} ${esc(type)}</div>
-    </div>
-    <div class="trade-preview-amount">${fmt(total)}<small>${isReserve ? 'valor reservado' : dayNote}</small></div>
-    <div class="trade-preview-meta">
-      <span class="trade-chip">${isReserve ? 'Fluxo separado' : 'Carteira ativa'}</span>
-      <span class="trade-chip">${isReserve ? target : advanced}</span>
-      <span class="trade-chip">${isReserve ? `Qtd 1` : `Qtd ${qty || 0}`}</span>
-      <span class="trade-chip">${isReserve ? 'não entra em ativos' : `Preço ${fmt(price)}`}</span>
-    </div>
-    <div class="trade-help">${isReserve ? 'Use a reserva para separar dinheiro da bolsa ou uso pessoal sem poluir seus ativos.' : (isRF ? 'Os campos avançados ajudam na renda fixa e ficam agrupados para não pesar a tela.' : 'Dica: o ticker aprende sozinho a categoria quando você reaproveita lançamentos.')}</div>
-  `;
-}
-function useAporteTemplate(id){
-  const a=S.aportes.find(x=>String(x.id)===String(id));
-  if(!a) return;
-  S._fp={...a, date:inputDateValue(new Date()), typeManual:true};
-  S.editPId=null;
-  S.showP=true;
-  render();
-  setTimeout(()=>{ applyMetaToAporte(); updateAportePreview(); },50);
+  setTimeout(applyMetaToAporte,50);
 }
 function findDy(q){
   const keys=['dividendYield','trailingAnnualDividendYield','yield','dy','regularMarketDividendYield','dividend_yield','dividendYieldAnnual','annualDividendYield'];
@@ -5409,7 +5279,6 @@ function toggleDividendSection(section, ev){
 function render(){
   document.getElementById('root').innerHTML=app();
   bind();
-  if(S.showP) setTimeout(updateAportePreview,0);
 }
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
@@ -5872,169 +5741,44 @@ function frmP(){
   const isRF=fType==='Renda Fixa' || String(fType).includes('Tesouro');
   const isReserve=fType==='Reserva de emergência';
   const accent=typeAccentColor(fType);
-  const recent=[...S.aportes].slice(0,4);
-  const qtyAttr=isReserve
-    ? 'value="1" disabled style="opacity:.6"'
-    : `placeholder="100" value="${esc(f.qty||'')}"`;
-  const jsq=s=>String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const typeChips=['Ação','FII','ETF','Renda Fixa','Reserva de emergência'].map(t=>`<button class="trade-pill ${fType===t?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="fillAportePreset({type:'${jsq(t)}', operation:'${jsq(t==='Reserva de emergência'?'compra':op)}'})">${tipoIcon(t)} ${esc(t)}</button>`).join('');
-  const modeChips=['compra','venda'].map(m=>`<button class="trade-pill ${op===m?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="fillAportePreset({operation:'${jsq(m)}'})">${m==='compra'?'🟢 Compra':'🔴 Venda'}</button>`).join('');
-  const quickRows=recent.length
-    ? recent.map(a=>{
-        const ty=normalizeType(a.type||a.asset_type||metaTicker(a.ticker).type||'Ação','Ação');
-        const opx=String(a.operation||a.op||'compra').toLowerCase();
-        const isOut=opx==='venda';
-        const total=(Math.abs(Number(a.qty)||0)*(Number(a.price)||0));
-        return `<div class="trade-row">
-          <div style="min-width:0;flex:1 1 auto">
-            <strong>${esc(a.ticker||'—')}</strong>
-            <small>${esc(brDate(a.date||new Date()))} · ${esc(ty)} · ${isOut?'Venda':'Compra'} · ${fmt(total)}</small>
-          </div>
-          <button class="btn bgh" onclick="useAporteTemplate('${jsq(a.id)}')">Usar</button>
-        </div>`;
-      }).join('')
-    : `<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Os últimos lançamentos aparecem aqui para repetir com 1 toque.</div>`;
-  return`<div class="fc trade-shell" style="border-color:${accent}55;box-shadow:0 4px 20px ${accent}12">
-    <div class="trade-head">
-      <div>
-        <div class="trade-title">${S.editPId?'✏️ Editar operação':'➕ Registrar operação'}</div>
-        <div class="trade-sub">${isReserve ? 'Fluxo separado para reserva de emergência e uso particular.' : isRF ? 'Fluxo guiado para renda fixa, com campos avançados agrupados.' : 'Fluxo rápido para compra e venda com resumo vivo na lateral.'}</div>
+  return`<div class="fc" style="border-color:${accent}55;box-shadow:0 4px 20px ${accent}12">
+    <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">${S.editPId?'✏️ Editar operação':'➕ Registrar compra / venda'}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:-2px 0 14px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="bdg ${bdg(fType)}" style="font-size:12px;padding:4px 10px">${tipoIcon(fType)} ${esc(fType)}</span>
+        <span style="font-size:12px;color:#64748b">${typeQuickHint(fType)}</span>
       </div>
-      <div class="trade-badges">
-        <span class="trade-pill" style="border-color:${accent}33;color:${accent}">${tipoIcon(fType)} ${esc(fType)}</span>
-        <span class="trade-pill soft">${typeQuickHint(fType)}</span>
-      </div>
+      <div style="font-size:11px;color:${accent};border:1px solid ${accent}33;background:${accent}10;border-radius:999px;padding:4px 10px">${isReserve?'fluxo separado':'tipo aprendido e salvo'}</div>
     </div>
-    <div class="trade-layout">
-      <div class="trade-main">
-        <div class="trade-section">
-          <h4>Atalhos rápidos</h4>
-          <div class="trade-badges" style="margin-bottom:10px">${modeChips}</div>
-          <div class="trade-badges">${typeChips}</div>
-        </div>
-
-        <div class="trade-section">
-          <h4>Dados principais</h4>
-          <div class="trade-grid">
-            <div class="trade-wide">
-              <div class="fl">Operação</div>
-              <select id="p-op" onchange="updateAportePreview()">
-                <option value="compra" ${op==='compra'?'selected':''}>Compra</option>
-                <option value="venda" ${op==='venda'?'selected':''}>Venda</option>
-              </select>
-            </div>
-            <div>
-              <div class="fl">Tipo do ativo</div>
-              <select id="p-ty" onchange="this.dataset.manual='1'; updateAporteType(this.value);">
-                ${['Ação','FII','ETF','Renda Fixa','Tesouro Direto','Reserva de emergência','BDR','Crypto','Stock','Reit','Fundos de Investimento'].map(t=>`<option value="${t}" ${fType===t?'selected':''}>${t}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <div class="fl">Data</div>
-              <input id="p-dt" type="date" value="${esc(inputDateValue(f.date||''))}" oninput="updateAportePreview()">
-            </div>
-            <div class="trade-wide">
-              <div class="fl">${isReserve?'Nome / destino da reserva':'Ticker / nome do ativo'}</div>
-              <input id="p-ti" placeholder="${isReserve?'ex: Reserva bolsa, Reserva pessoal':'ex: MXRF11, DIVD11, CDB Banco...'}" value="${esc(f.ticker||'')}" oninput="this.value=this.value.toUpperCase();applyMetaToAporte();updateAportePreview()" onblur="applyMetaToAporte();updateAportePreview()">
-            </div>
-            <div>
-              <div class="fl">${isReserve?'Quantidade':'Quantidade'}</div>
-              <input id="p-qt" type="number" ${qtyAttr} oninput="updateAportePreview()">
-            </div>
-            <div>
-              <div class="fl">${isReserve?'Valor reservado':'Preço da operação'}</div>
-              <input id="p-pr" type="text" placeholder="${isReserve?'500,00':'10,15'}" value="${f.price?esc(moneyInput(f.price)):''}" oninput="updateAportePreview()">
-            </div>
-            <div class="trade-wide">
-              <div class="fl">Setor / classe</div>
-              <input id="p-se" placeholder="${isReserve?'bolsa ou pessoal':'ex: ETF, CDB, Papel, Banco'}" value="${esc(fSector)}" oninput="this.dataset.manual='1';updateAportePreview()">
-            </div>
-          </div>
-        </div>
-
-        ${isReserve?`<div class="trade-section">
-          <h4>Reserva</h4>
-          <div class="trade-grid">
-            <div>
-              <div class="fl">Destino da reserva</div>
-              <select id="p-rt" onchange="updateAportePreview()">
-                <option value="bolsa" ${(String(f.reserveTarget||f.reserve_target||'bolsa')==='bolsa')?'selected':''}>Bolsa / oportunidade</option>
-                <option value="pessoal" ${(String(f.reserveTarget||f.reserve_target||'')==='pessoal')?'selected':''}>Pessoal / particular</option>
-              </select>
-            </div>
-            <div>
-              <div class="fl">Modo</div>
-              <select id="p-rm" onchange="updateAportePreview()">
-                <option value="entrada" ${String(f.operation||f.op||'compra').toLowerCase()!=='venda'?'selected':''}>Entrada na reserva</option>
-                <option value="saida" ${String(f.operation||f.op||'compra').toLowerCase()==='venda'?'selected':''}>Saída da reserva</option>
-              </select>
-            </div>
-          </div>
-          <div class="trade-help" style="margin-top:8px">A reserva fica separada dos ativos e ajuda a acompanhar disponibilidade para bolsa ou uso pessoal.</div>
-        </div>`:''}
-
-        ${isRF?`<div class="trade-section">
-          <h4>Renda fixa</h4>
-          <div class="trade-grid">
-            <div>
-              <div class="fl">Emissor</div>
-              <input id="p-rf-emissor" placeholder="ex: Banco X / XP / Tesouro" value="${esc(f.issuer||f.emitter||'')}" oninput="updateAportePreview()">
-            </div>
-            <div>
-              <div class="fl">Tipo de título</div>
-              <select id="p-rf-tipo" onchange="updateAportePreview()">
-                ${['LCI','LCA','LC','LF','RDB','Debênture','CRI','CRA','CCB','Tesouro Selic','Tesouro IPCA','Tesouro Prefixado','Outro'].map(t=>`<option value="${t}" ${(String(f.bondType||f.bond_type||'').toUpperCase()===t.toUpperCase())?'selected':''}>${t}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <div class="fl">Indexador</div>
-              <select id="p-rf-index" onchange="updateAportePreview()"><option value="CDI" ${String(f.indexer||'CDI').toUpperCase()==='CDI'?'selected':''}>CDI</option><option value="CDI+" ${String(f.indexer||'').toUpperCase().includes('CDI+')?'selected':''}>CDI+</option><option value="IPCA+" ${String(f.indexer||'').toUpperCase().includes('IPCA')?'selected':''}>IPCA+</option><option value="Prefixado" ${String(f.indexer||'').toUpperCase().includes('PREFIX')?'selected':''}>Prefixado</option><option value="Outro" ${String(f.indexer||'').toUpperCase()==='OUTRO'?'selected':''}>Outro</option></select>
-            </div>
-            <div>
-              <div class="fl">Taxa / spread</div>
-              <input id="p-rf-rate" type="text" placeholder="ex: 102% CDI ou 12,5%" value="${esc(f.rate||f.spread||'')}" oninput="updateAportePreview()">
-            </div>
-            <div>
-              <div class="fl">Liquidez diária</div>
-              <select id="p-rf-liq" onchange="updateAportePreview()"><option value="sim" ${String(f.dailyLiquidity||f.liquidity||'').toLowerCase()==='sim'?'selected':''}>Sim</option><option value="nao" ${String(f.dailyLiquidity||f.liquidity||'').toLowerCase()==='nao'?'selected':''}>Não</option></select>
-            </div>
-            <div>
-              <div class="fl">Vencimento</div>
-              <input id="p-rf-due" type="date" value="${esc(inputDateValue(f.maturityDate||f.maturity_date||''))}" oninput="updateAportePreview()">
-            </div>
-          </div>
-        </div>`:''}
-
-        <details class="trade-advanced"${(isRF||isReserve)?' open':''}>
-          <summary>
-            <span style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Mais opções</span>
-            <span style="font-size:12px;color:#7489a4">${(isRF||isReserve)?'Aberto por contexto':'Ocultar / mostrar'}</span>
-          </summary>
-          <div class="trade-advanced-body">
-            <div class="trade-grid">
-              <div class="trade-wide">
-                <div class="fl">Decisão / motivo</div>
-                <input id="p-dc" placeholder="${isReserve?'ex: reserva de oportunidade, uso pessoal...':'ex: rebalanceamento, importação B3, renda fixa...'}" value="${esc(f.decision||'')}" oninput="updateAportePreview()">
-              </div>
-            </div>
-          </div>
-        </details>
-
-        <div class="trade-actions">
-          <button class="btn bgh" onclick="clP()">Cancelar</button>
-          <button class="btn bsv" onclick="svP()">${S.editPId?'Salvar edição':'Salvar operação'}</button>
-        </div>
-      </div>
-
-      <div class="trade-side">
-        <div class="trade-preview" id="p-preview"></div>
-        <div class="trade-section">
-          <h4>Últimos lançamentos</h4>
-          <div class="trade-list">
-            ${quickRows}
-          </div>
-        </div>
-      </div>
+    <div class="fg">
+      <div><div class="fl">Operação</div><select id="p-op"><option value="compra" ${op==='compra'?'selected':''}>Compra</option><option value="venda" ${op==='venda'?'selected':''}>Venda</option></select></div>
+      <div><div class="fl">Tipo do ativo</div><select id="p-ty" onchange="this.dataset.manual='1'; updateAporteType(this.value);">
+        ${['Ação','FII','ETF','Renda Fixa','Tesouro Direto','Reserva de emergência','BDR','Crypto','Stock','Reit','Fundos de Investimento'].map(t=>`<option value="${t}" ${fType===t?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+      <div><div class="fl">Data</div><input id="p-dt" type="date" value="${esc(inputDateValue(f.date||''))}"></div>
+      <div><div class="fl">${isReserve?'Nome / destino da reserva':'Ticker / nome do ativo'}</div><input id="p-ti" placeholder="${isReserve?'ex: Reserva bolsa, Reserva pessoal':'ex: MXRF11, DIVD11, CDB Banco...'}" value="${esc(f.ticker||'')}" oninput="this.value=this.value.toUpperCase();applyMetaToAporte()" onblur="applyMetaToAporte()"></div>
+      ${isReserve?`<div><div class="fl">Quantidade</div><input id="p-qt" type="number" value="1" disabled style="opacity:.6"></div>`:`<div><div class="fl">Quantidade</div><input id="p-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>`}
+      <div><div class="fl">${isReserve?'Valor reservado':'Preço da operação'}</div><input id="p-pr" type="text" placeholder="${isReserve?'500,00':'10,15'}" value="${f.price?esc(moneyInput(f.price)):''}"></div>
+      <div><div class="fl">Setor / classe</div><input id="p-se" placeholder="${isReserve?'bolsa ou pessoal':'ex: ETF, CDB, Papel, Banco'}" value="${esc(fSector)}" oninput="this.dataset.manual='1'"></div>
+    </div>
+    ${isReserve?`<div class="fg" style="margin-top:10px">
+      <div><div class="fl">Destino da reserva</div><select id="p-rt"><option value="bolsa" ${(String(f.reserveTarget||f.reserve_target||'bolsa')==='bolsa')?'selected':''}>Bolsa / oportunidade</option><option value="pessoal" ${(String(f.reserveTarget||f.reserve_target||'')==='pessoal')?'selected':''}>Pessoal / particular</option></select></div>
+      <div><div class="fl">Modo</div><select id="p-rm"><option value="entrada" ${String(f.operation||f.op||'compra').toLowerCase()!=='venda'?'selected':''}>Entrada na reserva</option><option value="saida" ${String(f.operation||f.op||'compra').toLowerCase()==='venda'?'selected':''}>Saída da reserva</option></select></div>
+      <div><div class="fl">Observação</div><input id="p-dc" placeholder="ex: reserva de oportunidade, uso pessoal..." value="${esc(f.decision||'')}"></div>
+    </div>`:`<div style="margin-top:10px"><div class="fl">Decisão / motivo</div><input id="p-dc" placeholder="ex: rebalanceamento, importação B3, renda fixa..." value="${esc(f.decision||'')}"></div>`}
+    ${isRF?`<div class="fg" style="margin-top:10px">
+      <div><div class="fl">Emissor</div><input id="p-rf-emissor" placeholder="ex: Banco X / XP / Tesouro" value="${esc(f.issuer||f.emitter||'')}"></div>
+      <div><div class="fl">Tipo de título</div><select id="p-rf-tipo">
+        ${['LCI','LCA','LC','LF','RDB','Debênture','CRI','CRA','CCB','Tesouro Selic','Tesouro IPCA','Tesouro Prefixado','Outro'].map(t=>`<option value="${t}" ${(String(f.bondType||f.bond_type||'').toUpperCase()===t.toUpperCase())?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+      <div><div class="fl">Indexador</div><select id="p-rf-index"><option value="CDI" ${String(f.indexer||'CDI').toUpperCase()==='CDI'?'selected':''}>CDI</option><option value="CDI+" ${String(f.indexer||'').toUpperCase().includes('CDI+')?'selected':''}>CDI+</option><option value="IPCA+" ${String(f.indexer||'').toUpperCase().includes('IPCA')?'selected':''}>IPCA+</option><option value="Prefixado" ${String(f.indexer||'').toUpperCase().includes('PREFIX')?'selected':''}>Prefixado</option><option value="Outro" ${String(f.indexer||'').toUpperCase()==='OUTRO'?'selected':''}>Outro</option></select></div>
+      <div><div class="fl">Taxa / spread</div><input id="p-rf-rate" type="text" placeholder="ex: 102% CDI ou 12,5%" value="${esc(f.rate||f.spread||'')}"></div>
+      <div><div class="fl">Liquidez diária</div><select id="p-rf-liq"><option value="sim" ${String(f.dailyLiquidity||f.liquidity||'').toLowerCase()==='sim'?'selected':''}>Sim</option><option value="nao" ${String(f.dailyLiquidity||f.liquidity||'').toLowerCase()==='nao'?'selected':''}>Não</option></select></div>
+      <div><div class="fl">Vencimento</div><input id="p-rf-due" type="date" value="${esc(inputDateValue(f.maturityDate||f.maturity_date||''))}"></div>
+    </div>`:''}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn bsv" onclick="svP()">${S.editPId?'Salvar edição':'Salvar operação'}</button>
+      <button class="btn bgh" onclick="clP()">Cancelar</button>
     </div>
   </div>`;
 }
@@ -7170,10 +6914,10 @@ function tgP(pref='compra'){
       ? {operation:'compra', type:'Renda Fixa', typeManual:true}
       : {operation:'compra', typeManual:false};
   render();
-  setTimeout(()=>{ applyMetaToAporte(); updateAportePreview(); },50);
+  setTimeout(applyMetaToAporte,50);
 }
 function clP(){ S.showP=false; S.editPId=null; S._fp=null; render(); }
-function edP(id){ const p=S.aportes.find(x=>x.id===id); if(!p) return; S._fp={...p, typeManual:true}; S.editPId=id; S.showP=true; render(); setTimeout(()=>{ applyMetaToAporte(); updateAportePreview(); },50); }
+function edP(id){ const p=S.aportes.find(x=>x.id===id); if(!p) return; S._fp={...p, typeManual:true}; S.editPId=id; S.showP=true; render(); setTimeout(applyMetaToAporte,50); }
 function svP(){
   const op=(document.getElementById('p-op')?.value||'compra').toLowerCase();
   const rawTi=document.getElementById('p-ti')?.value?.trim().toUpperCase();
