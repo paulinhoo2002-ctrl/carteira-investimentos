@@ -1,9 +1,10 @@
-const CACHE_NAME = 'carteira-investimentos-v2';
+const CACHE_NAME = 'carteira-investimentos-v3';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
+  './icon-180.png',
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-192.png',
