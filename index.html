@@ -1095,21 +1095,16 @@ async function loadAccessControl(user){
   try{
     const snap = await FB.db.collection('meta').doc('access').get();
     if(!snap.exists){
+      const isAdmin = isAccessAdmin(email);
       FB.access = {
         loaded:true,
         loading:false,
-        allowed:true,
-        reason:'',
-        cfg:{
-          enabled:true,
-          allowedEmails:[email],
-          blockedEmails:[],
-          allowedDomains:[],
-          message:''
-        },
-        lastDeniedAt:null
+        allowed:isAdmin,
+        reason:isAdmin ? '' : 'O controle de acesso ainda não foi configurado neste ambiente.',
+        cfg:null,
+        lastDeniedAt:isAdmin ? null : new Date().toISOString()
       };
-      return true;
+      return isAdmin;
     }
     const cfg = snap.exists ? (snap.data() || {}) : {};
     const enabled = cfg.enabled !== false;
@@ -2102,10 +2097,33 @@ async function detectB3PdfKind(file){
   const pdfjs=await loadPdfJs();
   const data=new Uint8Array(await file.arrayBuffer());
   const doc=await pdfjs.getDocument({data}).promise;
-  const page=await doc.getPage(1);
-  const text=await page.getTextContent();
-  const lines=pdfLinesFromTextContent(text).join(' ');
-  return detectB3PdfKindFromText(lines);
+  const maxPages=Math.min(doc.numPages||0, 3);
+  let positionHits=0;
+  let movementHits=0;
+  for(let p=1;p<=maxPages;p++){
+    const page=await doc.getPage(p);
+    const text=await page.getTextContent();
+    const lines=pdfLinesFromTextContent(text).join(' ');
+    const s=b3MovementNorm(lines);
+    if(/(DATA INICIAL|TIPO DE MOVIMENTACAO|MOVIMENTACAO PRODUTO INSTITUICAO QUANTIDADE PRECO|PAGAMENTO DE JUROS|COMPRA\/VENDA|RESGATE ANTECIPADO|TRANSFERENCIA SEM FINANCEIRO|RETIRADA DE CUSTODIA|EVENTO GENERICO)/.test(s)) movementHits++;
+    if(/(EXTRATO DE POS|POSICAO CONSOLIDADA|CARTEIRA|CUSTODIA|QUANTIDADE DISPONIVEL|VALOR ATUALIZADO|PRECO DE FECHAMENTO|VENCIMENTO|INSTITUICAO EMISSORA)/.test(s)) positionHits++;
+    if(movementHits && !positionHits) return 'movement';
+    if(positionHits && !movementHits) return 'position';
+  }
+  const totalPages=doc.numPages||0;
+  for(let p=maxPages+1;p<=totalPages && !positionHits && !movementHits;p++){
+    const page=await doc.getPage(p);
+    const text=await page.getTextContent();
+    const lines=pdfLinesFromTextContent(text).join(' ');
+    const s=b3MovementNorm(lines);
+    if(/(DATA INICIAL|TIPO DE MOVIMENTACAO|MOVIMENTACAO PRODUTO INSTITUICAO QUANTIDADE PRECO|PAGAMENTO DE JUROS|COMPRA\/VENDA|RESGATE ANTECIPADO|TRANSFERENCIA SEM FINANCEIRO|RETIRADA DE CUSTODIA|EVENTO GENERICO)/.test(s)) movementHits++;
+    if(/(EXTRATO DE POS|POSICAO CONSOLIDADA|CARTEIRA|CUSTODIA|QUANTIDADE DISPONIVEL|VALOR ATUALIZADO|PRECO DE FECHAMENTO|VENCIMENTO|INSTITUICAO EMISSORA)/.test(s)) positionHits++;
+    if(movementHits && !positionHits) return 'movement';
+    if(positionHits && !movementHits) return 'position';
+  }
+  if(movementHits && !positionHits) return 'movement';
+  if(positionHits && !movementHits) return 'position';
+  return 'ambiguous';
 }
 function normHeaderB3(v){
   return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
@@ -3299,11 +3317,29 @@ function b3MovementReviewModal(){
 document.getElementById('b3-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   try{
-    const isPdf=/\.pdf$/i.test(file.name) || String(file.type||'').includes('pdf');
+    const fileName=String(file.name||'');
+    const fileType=String(file.type||'').toLowerCase();
+    const isPdf=/\.pdf$/i.test(fileName) || fileType.includes('pdf');
+    const isCsv=/\.csv$/i.test(fileName) || fileType.includes('csv') || fileType.includes('comma-separated-values');
     let parsed;
     if(isPdf){
       const kind=await detectB3PdfKind(file);
-      parsed=kind==='movement' ? await parseB3MovementPdf(file) : await parseB3PositionPdf(file);
+      if(kind==='ambiguous'){
+        const choice=(prompt('Não foi possível identificar o tipo do PDF da B3. Digite P para posição ou M para movimentação antes de importar:','P')||'').trim().toUpperCase();
+        if(choice!=='P' && choice!=='M'){
+          alert('Importação cancelada. Informe P para posição ou M para movimentação.');
+          return;
+        }
+        parsed=choice==='M' ? await parseB3MovementPdf(file) : await parseB3PositionPdf(file);
+      }else{
+        parsed=kind==='movement' ? await parseB3MovementPdf(file) : await parseB3PositionPdf(file);
+      }
+    }else if(isCsv){
+      if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
+      const csvText=await file.text();
+      const wb=XLSX.read(csvText,{type:'string'});
+      const kind=detectB3WorkbookKind(wb);
+      parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
     }else{
       if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
       const buf=await file.arrayBuffer();
