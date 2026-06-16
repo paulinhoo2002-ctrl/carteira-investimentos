@@ -231,6 +231,25 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .bwr{background:#111828;border-radius:3px;height:5px;width:70px;overflow:hidden;display:inline-block}
 .bfr{height:100%;background:#fbbf24}
 .es{text-align:center;padding:40px 20px;color:#3d5472;line-height:1.7}
+.rank-shell{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.rank-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.rank-sub{font-size:12px;color:#64748b;line-height:1.4}
+.rank-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
+.rank-card{min-height:110px;display:flex;flex-direction:column;justify-content:space-between}
+.rank-card .cv{font-size:20px;line-height:1.06}
+.rank-card .cs{margin-top:4px}
+.rank-kicker{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.08em}
+.rank-name{font-size:14px;font-weight:800;color:#edf3ff;line-height:1.2}
+.rank-filters{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rank-filters::-webkit-scrollbar{display:none}
+.rank-filter{white-space:nowrap;flex:0 0 auto;font-size:12px;padding:7px 12px}
+.rank-filter.on{background:rgba(79,70,241,.18);color:#c7d2fe;border-color:rgba(99,102,241,.35)}
+.rank-table-wrap{overflow:hidden}
+.rank-table td,.rank-table th{white-space:nowrap}
+.rank-table td:nth-child(7),.rank-table td:nth-child(8),.rank-table td:nth-child(9){font-variant-numeric:tabular-nums}
+.rank-num-pos{color:#34d399;font-weight:700}
+.rank-num-neg{color:#f87171;font-weight:700}
+.rank-muted{color:#64748b}
 .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .st{font-size:15px;font-weight:700}
 .qdot{width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;box-shadow:0 0 6px rgba(52,211,153,.6)}
@@ -655,6 +674,7 @@ let S = {
   irpfSeqSeen:-1,
   irpfFinalOpen:false,
   activeAssetsGroup:'',
+  assetsRankFilter:'all',
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
   irpfYear:new Date().getFullYear(),
@@ -995,6 +1015,7 @@ function load(){
     if(d.rentPeriod !== undefined)   S.rentPeriod = String(d.rentPeriod||'all');
     if(d.rentType !== undefined)     S.rentType = String(d.rentType||'all');
     if(d.rentBench !== undefined)    S.rentBench = String(d.rentBench||'CDI');
+    if(d.assetsRankFilter !== undefined) S.assetsRankFilter = normalizeAssetsRankFilter(d.assetsRankFilter);
     if(d.irpfYear !== undefined)     S.irpfYear = Math.max(2010, Number(d.irpfYear)||new Date().getFullYear());
     if(d.irpfStep !== undefined)     S.irpfStep = Math.min(4, Math.max(1, Number(d.irpfStep)||1));
     if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
@@ -1170,6 +1191,7 @@ function cloudPayload(){
     settings:{brapiToken:S.brapiToken||''},
     dashboard:{period:Number(S.dashPeriod)||12,type:String(S.dashType||'all')},
     rentabilidade:{period:String(S.rentPeriod||'all'),type:String(S.rentType||'all'),bench:String(S.rentBench||'CDI')},
+    assetsRankFilter: normalizeAssetsRankFilter(S.assetsRankFilter),
     tab:S.tab,
     updatedAtLocal:new Date().toISOString(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1208,10 +1230,11 @@ function applyCloudData(d){
     if(d.rentabilidade.type !== undefined) S.rentType = String(d.rentabilidade.type||'all');
     if(d.rentabilidade.bench !== undefined) S.rentBench = String(d.rentabilidade.bench||'CDI');
   }
+  if(d.assetsRankFilter !== undefined) S.assetsRankFilter = normalizeAssetsRankFilter(d.assetsRankFilter);
   rebuildLearnMeta();
   try{
     syncWalletFromState();
-    localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
+    localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, assetsRankFilter:S.assetsRankFilter, learnMeta:S.learnMeta}));
     localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
   }catch(e){}
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -1617,7 +1640,7 @@ function toast(msg, cor='#6ee7b7'){
 // ══════════════════════════════════════
 function exportBackup(){
   syncWalletFromState();
-  const data=JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
+  const data=JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, assetsRankFilter:S.assetsRankFilter, exportedAt:new Date().toISOString()}, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-backup-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.json`});
   a.click();
   toast('💾 Backup exportado com sucesso!');
@@ -1644,6 +1667,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
       if(d.rentPeriod !== undefined)  S.rentPeriod = String(d.rentPeriod||'all');
       if(d.rentType !== undefined)    S.rentType = String(d.rentType||'all');
       if(d.rentBench !== undefined)   S.rentBench = String(d.rentBench||'CDI');
+      if(d.assetsRankFilter !== undefined) S.assetsRankFilter = normalizeAssetsRankFilter(d.assetsRankFilter);
       rebuildLearnMeta();
       save(); saveConfig(); render();
       toast(`✅ ${S.assets.length} ativos, ${S.aportes.length} aportes e ${S.proventos.length} proventos importados!`);
@@ -3430,6 +3454,158 @@ const tipoIcon = t => {
   if(v==='Fundos de Investimento') return '📦';
   return '🗂️';
 };
+function normalizeAssetsRankFilter(v){
+  const mode=String(v||'all').trim().toLowerCase();
+  return ['all','negative','positive','below-pm','above-pm','dy','position'].includes(mode) ? mode : 'all';
+}
+function setAssetsRankFilter(v){
+  S.assetsRankFilter=normalizeAssetsRankFilter(v);
+  save();
+  render();
+}
+function assetRankMetrics(a){
+  const qty=Number(a?.qty)||0;
+  const current=Number(a?.current_price)||0;
+  const avg=Number(a?.avg_price)||0;
+  const dyRaw=Number(a?.dy);
+  const hasCurrent=current>0;
+  const hasAvg=avg>0;
+  const total=hasCurrent && qty>0 ? qty*current : null;
+  const rentab=(hasCurrent && hasAvg) ? ((current-avg)/avg)*100 : null;
+  const dy=Number.isFinite(dyRaw) ? dyRaw : null;
+  return { qty, current, avg, total, rentab, dy };
+}
+function buildAssetsRankRows(){
+  const rows=(S.assets||[]).map((asset, index)=>{
+    const m=assetRankMetrics(asset);
+    return {
+      asset,
+      index,
+      ticker:String(asset?.ticker||'').toUpperCase(),
+      type:normalizeType(asset?.type||metaTicker(asset?.ticker).type||'Ação','Ação'),
+      sector:String(asset?.sector||metaTicker(asset?.ticker).sector||'—').trim()||'—',
+      qty:Number(asset?.qty)||0,
+      avg:m.avg,
+      current:m.current,
+      rentab:m.rentab,
+      total:m.total,
+      dy:m.dy
+    };
+  }).filter(r=>r.ticker);
+  const byTicker=(a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')) || (a.index-b.index);
+  const byTotalDesc=(a,b)=>{
+    const av=Number.isFinite(a.total) ? a.total : null;
+    const bv=Number.isFinite(b.total) ? b.total : null;
+    if(av===null && bv===null) return byTicker(a,b);
+    if(av===null) return 1;
+    if(bv===null) return -1;
+    if(bv!==av) return bv-av;
+    return byTicker(a,b);
+  };
+  const byRentabAsc=(a,b)=>{
+    const av=Number.isFinite(a.rentab) ? a.rentab : null;
+    const bv=Number.isFinite(b.rentab) ? b.rentab : null;
+    if(av===null && bv===null) return byTicker(a,b);
+    if(av===null) return 1;
+    if(bv===null) return -1;
+    if(av!==bv) return av-bv;
+    return byTicker(a,b);
+  };
+  const byRentabDesc=(a,b)=>{
+    const av=Number.isFinite(a.rentab) ? a.rentab : null;
+    const bv=Number.isFinite(b.rentab) ? b.rentab : null;
+    if(av===null && bv===null) return byTicker(a,b);
+    if(av===null) return 1;
+    if(bv===null) return -1;
+    if(bv!==av) return bv-av;
+    return byTicker(a,b);
+  };
+  const byDyDesc=(a,b)=>{
+    const av=Number.isFinite(a.dy) ? a.dy : null;
+    const bv=Number.isFinite(b.dy) ? b.dy : null;
+    if(av===null && bv===null) return byTicker(a,b);
+    if(av===null) return 1;
+    if(bv===null) return -1;
+    if(bv!==av) return bv-av;
+    return byTicker(a,b);
+  };
+  const filter=normalizeAssetsRankFilter(S.assetsRankFilter);
+  let rowsSorted=[...rows];
+  if(filter==='negative') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && r.rentab<0).sort(byRentabAsc);
+  else if(filter==='positive') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && r.rentab>0).sort(byRentabDesc);
+  else if(filter==='below-pm') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && Number(r.current)>0 && Number(r.avg)>0 && r.current<r.avg).sort(byRentabAsc);
+  else if(filter==='above-pm') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && Number(r.current)>0 && Number(r.avg)>0 && r.current>=r.avg).sort(byRentabDesc);
+  else if(filter==='dy') rowsSorted=rowsSorted.sort(byDyDesc);
+  else rowsSorted=rowsSorted.sort(byTotalDesc);
+  return { filter, rows:rowsSorted, allRows:rows };
+}
+function rankSummaryCards(rows){
+  const validRent=rows.filter(r=>Number.isFinite(r.rentab));
+  const validDy=rows.filter(r=>Number.isFinite(r.dy));
+  const validTotal=rows.filter(r=>Number.isFinite(r.total));
+  const pickMin=(list, key)=>list.reduce((best,item)=>best===null||item[key]<best[key]?item:best, null);
+  const pickMax=(list, key)=>list.reduce((best,item)=>best===null||item[key]>best[key]?item:best, null);
+  const queda=pickMin(validRent,'rentab');
+  const alta=pickMax(validRent,'rentab');
+  const maiorDy=pickMax(validDy,'dy');
+  const maiorPos=pickMax(validTotal,'total');
+  const cardBody=(item, label, value, tone='rank-muted')=>item
+    ? `<div class="rank-name">${esc(item.ticker)}</div><div class="${tone}" style="font-size:13px;margin-top:6px">${esc(label)} ${esc(value)}</div><div class="cs">${esc(item.type)} · ${esc(item.sector||'—')}</div>`
+    : `<div class="rank-name">—</div><div class="cs">Sem dados suficientes</div>`;
+  return [
+    { title:'Maior queda', accent:'#f87171', body:cardBody(queda, 'Rentab.', queda ? fmtP(queda.rentab) : '—') },
+    { title:'Maior alta', accent:'#34d399', body:cardBody(alta, 'Rentab.', alta ? fmtP(alta.rentab) : '—') },
+    { title:'Maior DY', accent:'#60a5fa', body:cardBody(maiorDy, 'DY', maiorDy ? `${Number(maiorDy.dy).toFixed(2)}%` : '—') },
+    { title:'Maior posição', accent:'#fbbf24', body:cardBody(maiorPos, 'Total', maiorPos ? fmt(maiorPos.total) : '—') }
+  ];
+}
+function assetsRankingBlock(){
+  const { filter, rows, allRows } = buildAssetsRankRows();
+  const cards = rankSummaryCards(allRows).map(card=>`
+    <div class="card rank-card" style="border-left:3px solid ${card.accent}">
+      <div class="rank-kicker">${card.title}</div>
+      <div>${card.body}</div>
+    </div>
+  `).join('');
+  const filters = [
+    ['all','Todos'],
+    ['negative','Mais negativos'],
+    ['positive','Mais positivos'],
+    ['below-pm','Abaixo do PM'],
+    ['above-pm','Acima do PM'],
+    ['dy','Maior DY'],
+    ['position','Maior posição'],
+  ].map(([mode,label])=>`<button class="btn rank-filter ${filter===mode?'on':'bgh'}" onclick="setAssetsRankFilter('${mode}')">${label}</button>`).join('');
+  const rowHtml = rows.length ? rows.map(r=>{
+    const rentabClass = Number.isFinite(r.rentab) ? (r.rentab>=0 ? 'rank-num-pos' : 'rank-num-neg') : 'rank-muted';
+    const dyValue = Number.isFinite(r.dy) ? `${Number(r.dy).toFixed(2)}%` : '—';
+    return `<tr>
+      <td style="font-weight:700;color:#e2eaf6">${esc(r.ticker)}</td>
+      <td><span class="bdg ${bdg(r.type)}">${esc(r.type)}</span></td>
+      <td class="rank-muted">${esc(r.sector||'—')}</td>
+      <td>${r.qty ? r.qty.toLocaleString('pt-BR',{maximumFractionDigits:8}) : '0'}</td>
+      <td>${r.avg>0 ? fmt(r.avg) : '—'}</td>
+      <td>${r.current>0 ? fmt(r.current) : '—'}</td>
+      <td class="${rentabClass}">${Number.isFinite(r.rentab) ? fmtP(r.rentab) : '—'}</td>
+      <td>${Number.isFinite(r.total) ? fmt(r.total) : '—'}</td>
+      <td class="${Number.isFinite(r.dy) ? 'rank-muted' : 'rank-muted'}">${dyValue}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo atende ao filtro selecionado.</td></tr>`;
+  return `<section class="rank-shell">
+    <div class="rank-head">
+      <div>
+        <div class="st">Ranking Inteligente de Ativos</div>
+        <div class="rank-sub">Visão rápida dos destaques da carteira, sem alterar a listagem por categoria.</div>
+      </div>
+    </div>
+    <div class="rank-grid">${cards}</div>
+    <div class="rank-filters" aria-label="Filtros do ranking">${filters}</div>
+    <div class="tw rank-table-wrap"><div class="ts"><table class="rank-table">
+      <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th><th>Atual</th><th>Rentab.</th><th>Total</th><th>DY</th></tr></thead>
+      <tbody>${rowHtml}</tbody>
+    </table></div></div>
+  </section>`;
+}
 function parseNum(v){
   if(v==null) return 0;
   let s=String(v).trim().replace(/R\$|%|\s/g,'');
@@ -5671,6 +5847,7 @@ function frmA(){
 }
 function ativos(){
   const total=S.assets.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.current_price)||0),0);
+  const rankBlock=assetsRankingBlock();
   const grouped=new Map();
   S.assets.forEach(a=>{
     const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
@@ -5760,11 +5937,12 @@ function ativos(){
       <div class="st">Meus Ativos (${S.assets.length})</div>
       <div class="mu" style="font-size:12px;margin-top:4px">Ativos agrupados por categoria. Abra cada bloco para ver os detalhes e editar um item.</div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
     </div>
   </div>
+  ${rankBlock}
   ${frmA()}
   <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>`;
 }
