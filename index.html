@@ -232,19 +232,38 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .bfr{height:100%;background:#fbbf24}
 .es{text-align:center;padding:40px 20px;color:#3d5472;line-height:1.7}
 .rank-shell{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
-.rank-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.rank-sub{font-size:12px;color:#64748b;line-height:1.4}
+.rank-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:2px 2px 0}
+.rank-sub{font-size:12px;color:#64748b;line-height:1.45;max-width:760px}
 .rank-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
-.rank-card{min-height:110px;display:flex;flex-direction:column;justify-content:space-between}
+.rank-card{min-height:118px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,#121a2d,#0f1525);border:1px solid #1e2840;box-shadow:0 10px 28px rgba(0,0,0,.22)}
 .rank-card .cv{font-size:20px;line-height:1.06}
 .rank-card .cs{margin-top:4px}
-.rank-kicker{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.08em}
-.rank-name{font-size:14px;font-weight:800;color:#edf3ff;line-height:1.2}
-.rank-filters{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rank-kicker{font-size:11px;color:#89a0be;text-transform:uppercase;letter-spacing:.08em}
+.rank-name{font-size:15px;font-weight:800;color:#edf3ff;line-height:1.15}
+.rank-filters{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .rank-filters::-webkit-scrollbar{display:none}
-.rank-filter{white-space:nowrap;flex:0 0 auto;font-size:12px;padding:7px 12px}
-.rank-filter.on{background:rgba(79,70,241,.18);color:#c7d2fe;border-color:rgba(99,102,241,.35)}
-.rank-table-wrap{overflow:hidden}
+.rank-filter{white-space:nowrap;flex:0 0 auto;font-size:11px;padding:6px 10px;border-radius:999px;background:#131b2c;border:1px solid #24304a;color:#90a1bb;box-shadow:none}
+.rank-filter.on{background:linear-gradient(135deg,rgba(79,70,241,.24),rgba(96,165,250,.18));color:#e0e7ff;border-color:rgba(99,102,241,.45);box-shadow:0 6px 18px rgba(99,102,241,.15)}
+.rank-spotlight{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.rank-spot-card{background:linear-gradient(180deg,#111827,#0d1322);border:1px solid #1c2740;border-radius:16px;padding:12px 12px 10px;box-shadow:0 8px 24px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:8px}
+.rank-spot-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.rank-spot-badge{width:28px;height:28px;border-radius:10px;background:#141d2f;border:1px solid #24324a;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.rank-spot-pos{font-size:11px;color:#7c8da7;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.rank-spot-ticker{font-size:16px;font-weight:900;color:#f8fafc;line-height:1.05}
+.rank-spot-meta{font-size:12px;color:#8ea1bd;line-height:1.35}
+.rank-spot-values{display:flex;flex-direction:column;gap:4px}
+.rank-spot-line{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:12px}
+.rank-spot-label{color:#6f809b}
+.rank-spot-value{font-weight:800;color:#e5eefc;white-space:nowrap}
+.rank-spot-value.pos{color:#34d399}
+.rank-spot-value.neg{color:#f87171}
+.rank-mini-bar{height:6px;border-radius:999px;background:#121a2c;border:1px solid #25324a;overflow:hidden;margin-top:2px}
+.rank-mini-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#34d399,#60a5fa)}
+.rank-mini-fill.neg{background:linear-gradient(90deg,#f87171,#fb7185)}
+.rank-support{font-size:12px;color:#7489a4;line-height:1.45;padding:2px 2px 0}
+.rank-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.rank-toggle{font-size:12px;padding:7px 12px;border-radius:999px}
+.rank-toggle-details{margin-top:2px}
 .rank-table td,.rank-table th{white-space:nowrap}
 .rank-table td:nth-child(7),.rank-table td:nth-child(8),.rank-table td:nth-child(9){font-variant-numeric:tabular-nums}
 .rank-num-pos{color:#34d399;font-weight:700}
@@ -675,6 +694,7 @@ let S = {
   irpfFinalOpen:false,
   activeAssetsGroup:'',
   assetsRankFilter:'all',
+  assetsRankExpanded:false,
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
   irpfYear:new Date().getFullYear(),
@@ -3458,6 +3478,56 @@ function normalizeAssetsRankFilter(v){
   const mode=String(v||'all').trim().toLowerCase();
   return ['all','negative','positive','below-pm','above-pm','dy','position'].includes(mode) ? mode : 'all';
 }
+function toggleAssetsRankExpanded(){
+  S.assetsRankExpanded=!S.assetsRankExpanded;
+  save();
+  render();
+}
+function isRendaFixaAsset(a){
+  return normalizeType(a?.type||metaTicker(a?.ticker).type||'Ação','Ação') === 'Renda Fixa';
+}
+function rfValues(a){
+  const qty=Number(a?.qty)||0;
+  const avg=Number(a?.avg_price)||0;
+  const currentStored=Number(a?.current_price)||0;
+  const fixedInitial=Number(a?.fixed_initial_value)||0;
+  const fixedCurrent=Number(a?.fixed_current_value)||0;
+  const applied=fixedInitial>0 ? fixedInitial : qty*avg;
+  const current=fixedCurrent>0 ? fixedCurrent : currentStored>0 ? currentStored : null;
+  const hasExplicitCurrent = fixedCurrent>0 || (currentStored>0 && Math.abs(currentStored-applied) > 0.0001);
+  const juros=Number.isFinite(current) ? current-applied : null;
+  const rentab=(Number.isFinite(current) && applied>0 && hasExplicitCurrent) ? ((current-applied)/applied)*100 : null;
+  return { qty, avg, applied, current, currentStored, fixedInitial, fixedCurrent, juros, rentab, hasExplicitCurrent };
+}
+function assetAppliedValue(a){
+  return isRendaFixaAsset(a) ? rfValues(a).applied : (Number(a?.qty)||0) * (Number(a?.avg_price)||0);
+}
+function assetCurrentValue(a){
+  return isRendaFixaAsset(a) ? rfValues(a).current : (Number(a?.qty)||0) * (Number(a?.current_price)||0);
+}
+function assetCurrentValueForDisplay(a){
+  const v=assetCurrentValue(a);
+  return Number.isFinite(v) ? v : null;
+}
+function assetJurosValue(a){
+  if(!isRendaFixaAsset(a)) return null;
+  const v=rfValues(a);
+  return Number.isFinite(v.juros) ? v.juros : null;
+}
+function assetRentabPct(a){
+  if(!isRendaFixaAsset(a)){
+    const avg=Number(a?.avg_price)||0;
+    const current=Number(a?.current_price)||0;
+    return avg>0 && current>0 ? ((current-avg)/avg)*100 : null;
+  }
+  const v=rfValues(a);
+  return Number.isFinite(v.rentab) ? v.rentab : null;
+}
+function assetNeedsRFUpdate(a){
+  if(!isRendaFixaAsset(a)) return false;
+  const v=rfValues(a);
+  return !v.hasExplicitCurrent || (Number.isFinite(v.current) && Number.isFinite(v.applied) && Math.abs(v.current - v.applied) < 0.0001);
+}
 function setAssetsRankFilter(v){
   S.assetsRankFilter=normalizeAssetsRankFilter(v);
   save();
@@ -3465,15 +3535,23 @@ function setAssetsRankFilter(v){
 }
 function assetRankMetrics(a){
   const qty=Number(a?.qty)||0;
-  const current=Number(a?.current_price)||0;
+  const currentUnit=Number(a?.current_price)||0;
+  const marketValue=isRendaFixaAsset(a) ? assetCurrentValue(a) : qty*currentUnit;
+  const appliedValue=assetAppliedValue(a);
   const avg=Number(a?.avg_price)||0;
   const dyRaw=Number(a?.dy);
-  const hasCurrent=current>0;
-  const hasAvg=avg>0;
-  const total=hasCurrent && qty>0 ? qty*current : null;
-  const rentab=(hasCurrent && hasAvg) ? ((current-avg)/avg)*100 : null;
+  const rentab=assetRentabPct(a);
   const dy=Number.isFinite(dyRaw) ? dyRaw : null;
-  return { qty, current, avg, total, rentab, dy };
+  return {
+    qty,
+    currentUnit,
+    marketValue,
+    avg,
+    applied:appliedValue,
+    currentDisplay:isRendaFixaAsset(a) ? marketValue : currentUnit,
+    rentab,
+    dy
+  };
 }
 function buildAssetsRankRows(){
   const rows=(S.assets||[]).map((asset, index)=>{
@@ -3486,9 +3564,11 @@ function buildAssetsRankRows(){
       sector:String(asset?.sector||metaTicker(asset?.ticker).sector||'—').trim()||'—',
       qty:Number(asset?.qty)||0,
       avg:m.avg,
-      current:m.current,
+      currentUnit:m.currentUnit,
+      currentDisplay:m.currentDisplay,
       rentab:m.rentab,
-      total:m.total,
+      total:m.marketValue,
+      applied:m.applied,
       dy:m.dy
     };
   }).filter(r=>r.ticker);
@@ -3533,8 +3613,8 @@ function buildAssetsRankRows(){
   let rowsSorted=[...rows];
   if(filter==='negative') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && r.rentab<0).sort(byRentabAsc);
   else if(filter==='positive') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && r.rentab>0).sort(byRentabDesc);
-  else if(filter==='below-pm') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && Number(r.current)>0 && Number(r.avg)>0 && r.current<r.avg).sort(byRentabAsc);
-  else if(filter==='above-pm') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && Number(r.current)>0 && Number(r.avg)>0 && r.current>=r.avg).sort(byRentabDesc);
+  else if(filter==='below-pm') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && Number(r.currentUnit)>0 && Number(r.avg)>0 && r.currentUnit<r.avg).sort(byRentabAsc);
+  else if(filter==='above-pm') rowsSorted=rowsSorted.filter(r=>Number.isFinite(r.rentab) && Number(r.currentUnit)>0 && Number(r.avg)>0 && r.currentUnit>=r.avg).sort(byRentabDesc);
   else if(filter==='dy') rowsSorted=rowsSorted.sort(byDyDesc);
   else rowsSorted=rowsSorted.sort(byTotalDesc);
   return { filter, rows:rowsSorted, allRows:rows };
@@ -3559,14 +3639,48 @@ function rankSummaryCards(rows){
     { title:'Maior posição', accent:'#fbbf24', body:cardBody(maiorPos, 'Total', maiorPos ? fmt(maiorPos.total) : '—') }
   ];
 }
+function rankAssetCard(r, index){
+  const isRF=r.type==='Renda Fixa';
+  const rentab=Number.isFinite(r.rentab) ? r.rentab : null;
+  const total=Number.isFinite(r.total) ? r.total : null;
+  const dy=Number.isFinite(r.dy) ? r.dy : null;
+  const pct=Math.min(100, Math.max(0, Math.abs(Number(rentab)||0)));
+  const fillClass=rentab<0?'neg':'';
+  const cardClass=rentab<0?'neg':'pos';
+  const subtitle=isRF ? `${esc(r.sector||'—')} · Renda Fixa` : `${esc(r.type)} · ${esc(r.sector||'—')}`;
+  const extra=isRF
+    ? `<div class="rank-spot-line"><span class="rank-spot-label">Rentab.</span><span class="rank-spot-value ${rentab>=0?'pos':'neg'}">${Number.isFinite(rentab)?fmtP(rentab):'—'}</span></div>
+       <div class="rank-spot-line"><span class="rank-spot-label">Juros</span><span class="rank-spot-value ${Number.isFinite(total)&&Number.isFinite(r.applied)?(total-r.applied>=0?'pos':'neg'):'rank-muted'}">${Number.isFinite(total)&&Number.isFinite(r.applied)?fmt(total-r.applied):'—'}</span></div>`
+    : `<div class="rank-spot-line"><span class="rank-spot-label">Rentab.</span><span class="rank-spot-value ${rentab>=0?'pos':'neg'}">${Number.isFinite(rentab)?fmtP(rentab):'—'}</span></div>`;
+  return `<article class="rank-spot-card">
+    <div class="rank-spot-top">
+      <div>
+        <div class="rank-spot-pos">#${index}</div>
+        <div class="rank-spot-ticker">${esc(r.ticker)}</div>
+        <div class="rank-spot-meta">${subtitle}</div>
+      </div>
+      <div class="rank-spot-badge">${isRF?'💼':'📈'}</div>
+    </div>
+    <div class="rank-spot-values">
+      ${extra}
+      <div class="rank-spot-line"><span class="rank-spot-label">Total</span><span class="rank-spot-value">${Number.isFinite(total)?fmt(total):'—'}</span></div>
+      <div class="rank-spot-line"><span class="rank-spot-label">DY</span><span class="rank-spot-value" style="color:#7dd3fc">${dy!=null?`${Number(dy).toFixed(2)}%`:'—'}</span></div>
+      <div class="rank-mini-bar"><div class="rank-mini-fill ${fillClass}" style="width:${pct.toFixed(0)}%"></div></div>
+    </div>
+  </article>`;
+}
+function rankCompactList(rows){
+  return rows.slice(0,5).map((r,i)=>rankAssetCard(r, i+1)).join('');
+}
 function assetsRankingBlock(){
   const { filter, rows, allRows } = buildAssetsRankRows();
-  const cards = rankSummaryCards(allRows).map(card=>`
+  const summaryCards = rankSummaryCards(allRows).map(card=>`
     <div class="card rank-card" style="border-left:3px solid ${card.accent}">
       <div class="rank-kicker">${card.title}</div>
       <div>${card.body}</div>
     </div>
   `).join('');
+  const compactCards = rows.length ? rankCompactList(rows) : '<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Nenhum ativo atende ao filtro selecionado.</div>';
   const filters = [
     ['all','Todos'],
     ['negative','Mais negativos'],
@@ -3577,34 +3691,61 @@ function assetsRankingBlock(){
     ['position','Maior posição'],
   ].map(([mode,label])=>`<button class="btn rank-filter ${filter===mode?'on':'bgh'}" onclick="setAssetsRankFilter('${mode}')">${label}</button>`).join('');
   const rowHtml = rows.length ? rows.map(r=>{
-    const rentabClass = Number.isFinite(r.rentab) ? (r.rentab>=0 ? 'rank-num-pos' : 'rank-num-neg') : 'rank-muted';
-    const dyValue = Number.isFinite(r.dy) ? `${Number(r.dy).toFixed(2)}%` : '—';
+    const isRF = r.type === 'Renda Fixa';
+    const juros = isRF ? (Number.isFinite(r.currentDisplay) && Number.isFinite(r.applied) ? r.currentDisplay - r.applied : null) : null;
+    const atualText = isRF ? (Number.isFinite(r.currentDisplay) ? fmt(r.currentDisplay) : '—') : (Number.isFinite(r.currentUnit) ? fmt(r.currentUnit) : '—');
+    const pmText = isRF ? (Number.isFinite(r.applied) ? fmt(r.applied) : '—') : (Number.isFinite(r.avg) && r.avg>0 ? fmt(r.avg) : '—');
+    const rentText = isRF
+      ? `${Number.isFinite(r.rentab) ? `Rentab.: ${fmtP(r.rentab)}` : 'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Juros: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(r.asset)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Atualize o valor atual para calcular os juros acumulados.</div>':''}`
+      : `${Number.isFinite(r.rentab) ? fmtP(r.rentab) : '—'}`;
     return `<tr>
       <td style="font-weight:700;color:#e2eaf6">${esc(r.ticker)}</td>
       <td><span class="bdg ${bdg(r.type)}">${esc(r.type)}</span></td>
       <td class="rank-muted">${esc(r.sector||'—')}</td>
       <td>${r.qty ? r.qty.toLocaleString('pt-BR',{maximumFractionDigits:8}) : '0'}</td>
-      <td>${r.avg>0 ? fmt(r.avg) : '—'}</td>
-      <td>${r.current>0 ? fmt(r.current) : '—'}</td>
-      <td class="${rentabClass}">${Number.isFinite(r.rentab) ? fmtP(r.rentab) : '—'}</td>
+      <td>${pmText}</td>
+      <td>${atualText}</td>
+      <td>${rentText}</td>
       <td>${Number.isFinite(r.total) ? fmt(r.total) : '—'}</td>
-      <td class="${Number.isFinite(r.dy) ? 'rank-muted' : 'rank-muted'}">${dyValue}</td>
+      <td class="rank-muted">${Number.isFinite(r.dy) ? `${Number(r.dy).toFixed(2)}%` : '—'}</td>
     </tr>`;
   }).join('') : `<tr><td colspan="9" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo atende ao filtro selecionado.</td></tr>`;
+  const expanded=!!S.assetsRankExpanded;
+  const topCount = Math.min(5, rows.length);
   return `<section class="rank-shell">
     <div class="rank-head">
       <div>
         <div class="st">Ranking Inteligente de Ativos</div>
-        <div class="rank-sub">Visão rápida dos destaques da carteira, sem alterar a listagem por categoria.</div>
+        <div class="rank-sub">Veja rapidamente oportunidades, destaques e pontos de atenção da carteira.</div>
       </div>
     </div>
-    <div class="rank-grid">${cards}</div>
+    <div class="rank-grid">${summaryCards}</div>
     <div class="rank-filters" aria-label="Filtros do ranking">${filters}</div>
-    <div class="tw rank-table-wrap"><div class="ts"><table class="rank-table">
-      <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th><th>Atual</th><th>Rentab.</th><th>Total</th><th>DY</th></tr></thead>
-      <tbody>${rowHtml}</tbody>
-    </table></div></div>
+    <div class="rank-support">Use este ranking como apoio visual. Antes de aportar, avalie qualidade, concentração e recorrência de dividendos.</div>
+    <div class="rank-spotlight">${compactCards}</div>
+    <div class="rank-toggle-row">
+      <button class="btn bgh rank-toggle" onclick="toggleAssetsRankExpanded()">${expanded?'Ocultar lista completa':'Ver todos os ativos do ranking'}</button>
+      <div class="rank-muted" style="font-size:12px">${rows.length>5?`Mostrando top ${topCount} de ${rows.length}`:'Mostrando todos os ativos do filtro'}</div>
+    </div>
+    ${expanded?`<details class="sec rank-toggle-details" open>
+      <summary>
+        <div>
+          <div class="sec-title">Lista completa do ranking</div>
+          <div class="sec-meta">Tabela completa com todas as colunas disponíveis.</div>
+        </div>
+        <div class="sec-meta">Clique para recolher</div>
+      </summary>
+      <div class="sec-body">
+        <div class="tw rank-table-wrap"><div class="ts"><table class="rank-table">
+          <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th><th>Atual</th><th>Rentab.</th><th>Total</th><th>DY</th></tr></thead>
+          <tbody>${rowHtml}</tbody>
+        </table></div></div>
+      </div>
+    </details>`:''}
   </section>`;
+}
+function rankingTab(){
+  return assetsRankingBlock();
 }
 function parseNum(v){
   if(v==null) return 0;
@@ -3901,10 +4042,13 @@ function findDy(q){
   return scan(q);
 }
 function cx(){
-  const tI=S.assets.reduce((s,a)=>s+a.qty*a.avg_price,0);
-  const tC=S.assets.reduce((s,a)=>s+a.qty*a.current_price,0);
+  const tI=S.assets.reduce((s,a)=>s+assetAppliedValue(a),0);
+  const tC=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
   const tG=tC-tI,tGP=tI>0?(tG/tI)*100:0;
-  const mD=S.assets.reduce((s,a)=>s+(a.qty*a.current_price*(a.dy/100))/12,0);
+  const mD=S.assets.reduce((s,a)=>{
+    const cur=assetCurrentValue(a);
+    return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
+  },0);
   const aD=mD*12,avgDY=tC>0?(aD/tC)*100:0;
   return{tI,tC,tG,tGP,mD,aD,avgDY};
 }
@@ -5155,12 +5299,21 @@ function syncAssetsFromAportes(showMsg=false){
   S.assets=Object.values(grouped).filter(g=>g.qty>0.000001).map(g=>{
     const old=keep[g.ticker]||{},m=metaTicker(g.ticker),avg=g.qty>0?g.total/g.qty:0;
     const isRF=normalizeType(g.type||old.type||m.type||'Ação','Ação')==='Renda Fixa';
+    const oldApplied=Number(old.fixed_initial_value)||Number(old.avg_price)||avg;
+    const oldCurrent=Number(old.fixed_current_value)||Number(old.current_price)||oldApplied;
     learnTickerMeta(g.ticker, g.type||old.type||m.type, g.sector||old.sector||m.sector, false);
     return{
       id:old.id||Date.now()+Math.floor(Math.random()*999999),
       ticker:g.ticker, type:g.type||old.type||m.type, sector:g.sector||old.sector||m.sector, qty:g.qty,
-      avg_price:old.avg_manual?Number(old.avg_price)||avg:avg, avg_manual:!!old.avg_manual,
-      current_price:Number(old.current_price)||avg, dy:Number(old.dy)||0,
+      avg_price:isRF?(old.fixed_initial_value||old.avg_price||avg):(old.avg_manual?Number(old.avg_price)||avg:avg), avg_manual:!!old.avg_manual,
+      current_price:isRF?(old.fixed_current_value||old.current_price||old.avg_price||avg):(Number(old.current_price)||avg),
+      fixed_initial_value:isRF?(old.fixed_initial_value||oldApplied||0):old.fixed_initial_value,
+      fixed_current_value:isRF?(old.fixed_current_value||oldCurrent||0):old.fixed_current_value,
+      rf_aporte_date:isRF?(old.rf_aporte_date||old.aporte_date||''):old.rf_aporte_date,
+      rf_yield_type:isRF?(old.rf_yield_type||old.indexer||'Manual'):old.rf_yield_type,
+      rf_contract_rate:isRF?(old.rf_contract_rate||old.rate||''):old.rf_contract_rate,
+      rf_maturity_date:isRF?(old.rf_maturity_date||old.maturityDate||''):old.rf_maturity_date,
+      dy:Number(old.dy)||0,
       dySource:old.dySource||'', price_target:Number(old.price_target)||0, ideal_pct:Number(old.ideal_pct)||0,
       quoteSource:old.quoteSource||(isRF?'manual':''), quoteUpdatedAt:old.quoteUpdatedAt||''
     };
@@ -5496,7 +5649,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ranking','🏅 Ranking'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -5534,6 +5687,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
 function content(){
   if(S.tab==='dashboard') return dash();
   if(S.tab==='patrimonio') return patrimonioTab();
+  if(S.tab==='ranking')    return rankingTab();
   if(S.tab==='ativos')    return ativos();
   if(S.tab==='aportes')   return apTab();
   if(S.tab==='metas')     return metasTab();
@@ -5814,30 +5968,42 @@ function patrimonioTab(){
 function frmA(){
   if(!S.showA||!S.editId) return'';
   const f=S._fa||{},m=metaTicker(f.ticker);
+  const isRF=normalizeType(f.type||m.type||'Ação','Ação')==='Renda Fixa';
+  const rf=isRF?rfValues(f):null;
   return`<div class="fc">
     <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#c4b5fd">✏️ Editar dados do ativo</div>
-    <div class="mu" style="font-size:12px;margin-bottom:12px">Quantidade vem dos Aportes. Ajuste preço médio, cotação, DY, preço alvo e % ideal aqui.</div>
+    <div class="mu" style="font-size:12px;margin-bottom:12px">${isRF?'Renda Fixa: ajuste valor aplicado, valor atual, taxa contratada e vencimento aqui.':'Quantidade vem dos Aportes. Ajuste preço médio, cotação, DY, preço alvo e % ideal aqui.'}</div>
     <div class="fg">
       <div><div class="fl">Ticker</div><input value="${esc(f.ticker||'')}" disabled></div>
       <div><div class="fl">Quantidade</div><input value="${esc(f.qty||0)}" disabled></div>
-      <div><div class="fl">Preço médio manual</div><input id="f-ap" type="text" inputmode="decimal" placeholder="ex: 10,15" value="${esc(moneyInput(f.avg_price||0))}"></div>
+      <div><div class="fl">${isRF?'Valor aplicado inicial':'Preço médio manual'}</div><input id="f-ap" type="text" inputmode="decimal" placeholder="${isRF?'ex: 10.000,00':'ex: 10,15'}" value="${esc(moneyInput(isRF?(rf?.fixedInitial||rf?.applied||f.avg_price||0):(f.avg_price||0)))}"></div>
       <div><div class="fl" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Cotação atual</span>
+        <span>${isRF?'Valor atual':'Cotação atual'}</span>
         <span style="font-size:10px;color:#34d399;background:rgba(52,211,153,.1);padding:1px 7px;border-radius:4px;border:1px solid rgba(52,211,153,.2)">
-          ${f.quoteSource==='brapi'?'📡 brapi':f.quoteSource==='yahoo'?'📡 yahoo':'📡 auto'}
+          ${isRF?'📡 manual':f.quoteSource==='brapi'?'📡 brapi':f.quoteSource==='yahoo'?'📡 yahoo':'📡 auto'}
         </span>
       </div>
-      <input id="f-cp" type="number" step="0.01" value="${esc(f.current_price||'')}" disabled style="opacity:.6;cursor:not-allowed">
+      <input id="f-cp" type="text" inputmode="decimal" step="0.01" value="${esc(moneyInput(isRF?(rf?.fixedCurrent||rf?.current||f.current_price||0):(f.current_price||0)))}" ${isRF?'':'disabled'} style="${isRF?'':'opacity:.6;cursor:not-allowed'}">
       <div style="font-size:10px;color:#3d5472;margin-top:4px">
-        ${f.quoteUpdatedAt
-          ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`
-          :`<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação agora</a>`}
+        ${isRF
+          ? (rf && assetNeedsRFUpdate(f)
+              ? 'Atualize o valor atual para calcular os juros acumulados.'
+              : (rf && Number.isFinite(rf.juros) ? `Juros acumulados: ${fmt(rf.juros)}` : ''))
+          : (f.quoteUpdatedAt
+              ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`
+              :`<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação agora</a>`)}
       </div></div>
       <div><div class="fl">DY anual %</div><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
       <div><div class="fl">Preço alvo</div><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
       <div><div class="fl">% ideal na carteira</div><input id="f-ip" type="number" step="0.1" placeholder="ex: 8" value="${esc(f.ideal_pct||'')}"></div>
       <div><div class="fl">Setor</div><input id="f-se" placeholder="ex: Petróleo" value="${esc(f.sector||m.sector||'')}"></div>
       <div><div class="fl">Tipo</div><select id="f-ty">${typeSelectOptions(f.type||m.type||'Ação')}</select></div>
+      ${isRF?`<div><div class="fl">Data do aporte</div><input id="f-rf-date" type="date" value="${esc(inputDateValue(f.rf_aporte_date||f.aporte_date||f.maturityDate||''))}"></div>
+      <div><div class="fl">Tipo de rendimento</div><select id="f-rf-yield">
+        ${['CDI','IPCA','Prefixado','Manual'].map(t=>`<option value="${t}" ${String(f.rf_yield_type||f.indexer||'Manual')===t?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+      <div><div class="fl">Taxa contratada</div><input id="f-rf-rate" type="text" placeholder="ex: 102% CDI ou 12,5%" value="${esc(f.rf_contract_rate||f.rate||'')}"></div>
+      <div><div class="fl">Vencimento</div><input id="f-rf-due" type="date" value="${esc(inputDateValue(f.maturityDate||f.rf_maturity_date||''))}"></div>`:''}
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bsv" onclick="svA()">Salvar</button>
@@ -5846,8 +6012,7 @@ function frmA(){
   </div>`;
 }
 function ativos(){
-  const total=S.assets.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.current_price)||0),0);
-  const rankBlock=assetsRankingBlock();
+  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
   const grouped=new Map();
   S.assets.forEach(a=>{
     const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
@@ -5858,37 +6023,58 @@ function ativos(){
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
-    const gTotal=items.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.current_price)||0),0);
-    const gCost=items.reduce((s,a)=>s+(Number(a.qty)||0)*(Number(a.avg_price)||0),0);
-    const gDivMes=items.reduce((s,a)=>s+((Number(a.qty)||0)*(Number(a.current_price)||0)*(Number(a.dy)||0)/100)/12,0);
+    const gApplied=items.reduce((s,a)=>s+assetAppliedValue(a),0);
+    const gTotal=items.reduce((s,a)=>s+assetCurrentValue(a),0);
+    const gDivMes=items.reduce((s,a)=>{
+      const cur=assetCurrentValue(a);
+      return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
+    },0);
+    const gJuros=items.reduce((s,a)=>{
+      const j=assetJurosValue(a);
+      return s + (Number.isFinite(j) ? j : 0);
+    },0);
+    const gCost=gApplied;
     const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
     const rows=items.map(a=>{
       const avg=Number(a.avg_price)||0;
-      const current=Number(a.current_price)||0;
-      const vr=avg>0?((current-avg)/avg)*100:0;
-      const dm=((Number(a.qty)||0)*current*(Number(a.dy)||0))/1200;
-      const peso=total>0?((Number(a.qty)||0)*current/total)*100:0;
+      const currentUnit=Number(a.current_price)||0;
+      const marketValue=isRendaFixaAsset(a) ? assetCurrentValue(a) : (Number(a.qty)||0)*currentUnit;
+      const currentDisplay=isRendaFixaAsset(a) ? marketValue : currentUnit;
+      const applied=assetAppliedValue(a);
+      const rentab=assetRentabPct(a);
+      const juros=assetJurosValue(a);
+      const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
+      const peso=total>0?(marketValue/total)*100:0;
       const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
       const q=S.quotes[a.ticker];
       const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
       const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
       const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'mercado';
+      const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
+      const atualText=marketValue!=null?fmt(currentDisplay):'—';
+      const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
+      const rentText=isRF
+        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Juros: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Atualize o valor atual para calcular os juros acumulados.</div>':''}`
+        : `${Number.isFinite(rentab)?fmtP(rentab):'—'}`;
+      const atualCls=isRF
+        ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
+        : `font-weight:600;color:${currentUnit>=avg?'#34d399':'#f87171'}`;
       return`<tr>
         <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
         <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
         <td class="mu">${esc(a.sector||'—')}</td>
         <td>${a.qty}</td>
-        <td>${fmt(avg)}</td>
-        <td style="font-weight:600;color:${current>=avg?'#34d399':'#f87171'}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
-          ${fmt(current)}
+        <td>${pmText}</td>
+        <td style="${atualCls}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
+          ${atualText}
           ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
           <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
         </td>
-        <td style="color:${vr>=0?'#34d399':'#f87171'};font-weight:700">${fmtP(vr)}</td>
+        <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
         <td>${alvo>0?fmt(alvo):'—'}</td>
-        <td style="font-weight:700;color:#e2eaf6">${fmt((Number(a.qty)||0)*current)}</td>
+        <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'—'}</td>
         <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
         <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
         <td class="am" style="font-weight:600">${fmt(dm)}</td>
@@ -5907,10 +6093,10 @@ function ativos(){
           </div>
         </div>
         <div class="ag-stats">
-          <div class="ag-stat"><div class="ag-k">Ativos</div><div class="ag-v">${items.length}</div></div>
-          <div class="ag-stat"><div class="ag-k">Valor total</div><div class="ag-v">${fmt(gTotal)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Variação</div><div class="ag-v" style="color:${gVar>=0?'#34d399':'#f87171'}">${fmtP(gVar)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Rentabilidade</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${gDY.toFixed(2)}% <small>DY</small></div></div>
+          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor aplicado':'Ativos'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gApplied):items.length}</div></div>
+          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor atual':'Valor total'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gTotal):fmt(gTotal)}</div></div>
+          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Juros acumulados':'Variação'}</div><div class="ag-v" style="color:${type==='Renda Fixa'?(gJuros>=0?'#34d399':'#f87171'):(gVar>=0?'#34d399':'#f87171')}">${type==='Renda Fixa'?fmt(gJuros):fmtP(gVar)}</div></div>
+          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Rentab. acumulada':'Rentabilidade'}</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${type==='Renda Fixa'?(gApplied>0?(gTotal-gApplied)/gApplied*100:0).toFixed(2)+'%':gDY.toFixed(2)+'%'} <small>${type==='Renda Fixa'?'':'DY'}</small></div></div>
           <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${share.toFixed(1)}%</div></div>
         </div>
         <div class="ag-open">⌄</div>
@@ -5937,12 +6123,11 @@ function ativos(){
       <div class="st">Meus Ativos (${S.assets.length})</div>
       <div class="mu" style="font-size:12px;margin-top:4px">Ativos agrupados por categoria. Abra cada bloco para ver os detalhes e editar um item.</div>
     </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
     </div>
   </div>
-  ${rankBlock}
   ${frmA()}
   <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>`;
 }
@@ -6006,6 +6191,8 @@ function apTab(){
   const compras=S.aportes.filter(a=>!isReserveRow(a) && (a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
   const vendas=S.aportes.filter(a=>!isReserveRow(a) && (a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
   const liquido=compras-vendas;
+  const valorAtualCarteira=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  const resultadoAcumulado=valorAtualCarteira-liquido;
   const q=String(S.apSearch||'').trim().toLowerCase();
   const filtered=q
     ? S.aportes.filter(a=>{
@@ -6016,14 +6203,19 @@ function apTab(){
       })
     : S.aportes;
   const reserve=reserveStats();
+  const summaryCards=S.aportes.length?`<div class="cards" style="margin:0 0 12px">
+    <div class="card"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Soma dos ativos pelo valor atual</div></div>
+    <div class="card"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}</div><div class="cs">Valor atual - investido líquido</div></div>
+  </div>`:'';
   const sum=S.aportes.length?`<div class="card ap-summary" style="margin-bottom:12px;display:flex;gap:24px;flex-wrap:wrap">
     <div><div class="cl">Comprado</div><div style="font-size:18px;font-weight:700;color:#818cf8">${fmt(compras)}</div></div>
     <div><div class="cl">Vendido</div><div style="font-size:18px;font-weight:700;color:#f87171">${fmt(vendas)}</div></div>
-    <div><div class="cl">Líquido</div><div style="font-size:18px;font-weight:700;color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div></div>
+    <div><div class="cl">Investido líquido</div><div style="font-size:18px;font-weight:700;color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div></div>
     <div><div class="cl">Operações</div><div style="font-size:18px;font-weight:700">${S.aportes.length}</div></div>
     <div><div class="cl">Reserva bolsa</div><div style="font-size:18px;font-weight:700;color:#60a5fa">${fmt(reserve.bolsa)}</div><div class="cs">Oportunidade</div></div>
     <div><div class="cl">Reserva pessoal</div><div style="font-size:18px;font-weight:700;color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
   </div>`:'';
+  const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Investido líquido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
   const reserveItems=filtered.filter(a=>{
     const type=normalizeType(a.type||a.asset_type||'','');
     const op=String(a.operation||a.op||'').toLowerCase();
@@ -6101,7 +6293,7 @@ function apTab(){
           <div class="ag-stat"><div class="ag-k">Operações</div><div class="ag-v">${items.length}</div></div>
           <div class="ag-stat"><div class="ag-k">Comprado</div><div class="ag-v">${fmt(gCompras)}</div></div>
           <div class="ag-stat"><div class="ag-k">Vendido</div><div class="ag-v">${fmt(gVendas)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Líquido</div><div class="ag-v" style="color:${gLiquido>=0?'#34d399':'#f87171'}">${fmt(gLiquido)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Investido líquido</div><div class="ag-v" style="color:${gLiquido>=0?'#34d399':'#f87171'}">${fmt(gLiquido)}</div></div>
           <div class="ag-stat"><div class="ag-k">Ativos</div><div class="ag-v">${gTickers.length}</div></div>
         </div>
         <div class="ag-open">⌄</div>
@@ -6132,7 +6324,9 @@ function apTab(){
     </div>
   </div>
   ${frmP()}
+  ${summaryCards}
   ${sum}
+  ${helpText}
   ${reserveItems.length?`<details class="ag reserve-card" open style="margin-bottom:12px">
     <summary>
       <div class="ag-left">
@@ -7103,16 +7297,31 @@ function svA(){
   if(!S.editId) return;
   const editedAsset=S.assets.find(a=>a.id===S.editId);
   const ap=parseNum(document.getElementById('f-ap')?.value);
+  const cp=parseNum(document.getElementById('f-cp')?.value);
   const dy=parseNum(document.getElementById('f-dy')?.value);
   const pt=parseNum(document.getElementById('f-pt')?.value);
   const ip=parseNum(document.getElementById('f-ip')?.value);
   const se=document.getElementById('f-se')?.value?.trim()||'';
   const ty=normalizeType(document.getElementById('f-ty')?.value||'Ação','Ação');
+  const isRF=ty==='Renda Fixa';
   S.assets=S.assets.map(a=>{
     if(a.id!==S.editId) return a;
     const avgManual=ap>0&&Math.abs(ap-Number(a.avg_price||0))>0.0001;
-    return{...a,avg_price:ap||a.avg_price,avg_manual:avgManual||a.avg_manual,
-      dy,dySource:'manual',price_target:pt,ideal_pct:ip,sector:se,type:ty};
+    const rfInitial=isRF ? (ap>0 ? ap : Number(a.fixed_initial_value||a.avg_price||0)) : undefined;
+    const rfCurrent=isRF ? (cp>0 ? cp : Number(a.fixed_current_value||a.current_price||0)) : undefined;
+    return{...a,
+      avg_price:isRF?(rfInitial||a.avg_price):(ap||a.avg_price),
+      avg_manual:avgManual||a.avg_manual,
+      current_price:isRF?(rfCurrent||a.current_price):(a.current_price),
+      fixed_initial_value:isRF?(rfInitial||a.fixed_initial_value||0):a.fixed_initial_value,
+      fixed_current_value:isRF?(rfCurrent||a.fixed_current_value||0):a.fixed_current_value,
+      rf_aporte_date:isRF?(document.getElementById('f-rf-date')?.value||a.rf_aporte_date||''):a.rf_aporte_date,
+      rf_yield_type:isRF?(document.getElementById('f-rf-yield')?.value||a.rf_yield_type||'Manual'):a.rf_yield_type,
+      rf_contract_rate:isRF?(document.getElementById('f-rf-rate')?.value?.trim()||a.rf_contract_rate||''):a.rf_contract_rate,
+      rf_maturity_date:isRF?(document.getElementById('f-rf-due')?.value||a.rf_maturity_date||''):a.rf_maturity_date,
+      dy:isRF ? Number(a.dy)||0 : dy,
+      dySource:isRF ? (a.dySource||'manual') : 'manual',
+      price_target:pt, ideal_pct:ip, sector:se, type:ty};
     // cotação não é editada aqui — vem automaticamente via Yahoo Finance e fallback opcional brapi
   });
   S.showA=false; S.editId=null; S._fa=null;
