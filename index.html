@@ -235,22 +235,25 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .rank-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:2px 2px 0}
 .rank-sub{font-size:12px;color:#64748b;line-height:1.45;max-width:760px}
 .rank-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
-.rank-card{min-height:118px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,#121a2d,#0f1525);border:1px solid #1e2840;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.rank-card{min-height:104px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,#121a2d,#0f1525);border:1px solid #1e2840;box-shadow:0 10px 28px rgba(0,0,0,.22);padding:12px 13px 11px}
+.rank-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.rank-card-ico{width:28px;height:28px;border-radius:10px;background:#141d2f;border:1px solid #26344d;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.rank-card-pill{font-size:11px;font-weight:800;color:#dbe7fb;background:rgba(20,29,47,.86);border:1px solid #24324a;border-radius:999px;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
 .rank-card .cv{font-size:20px;line-height:1.06}
-.rank-card .cs{margin-top:4px}
+.rank-card .cs{margin-top:4px;font-size:12px;color:#8ea1bd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rank-kicker{font-size:11px;color:#89a0be;text-transform:uppercase;letter-spacing:.08em}
-.rank-name{font-size:15px;font-weight:800;color:#edf3ff;line-height:1.15}
+.rank-name{font-size:15px;font-weight:800;color:#edf3ff;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rank-filters{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .rank-filters::-webkit-scrollbar{display:none}
 .rank-filter{white-space:nowrap;flex:0 0 auto;font-size:11px;padding:6px 10px;border-radius:999px;background:#131b2c;border:1px solid #24304a;color:#90a1bb;box-shadow:none}
 .rank-filter.on{background:linear-gradient(135deg,rgba(79,70,241,.24),rgba(96,165,250,.18));color:#e0e7ff;border-color:rgba(99,102,241,.45);box-shadow:0 6px 18px rgba(99,102,241,.15)}
 .rank-spotlight{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
-.rank-spot-card{background:linear-gradient(180deg,#111827,#0d1322);border:1px solid #1c2740;border-radius:16px;padding:12px 12px 10px;box-shadow:0 8px 24px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:8px}
+.rank-spot-card{background:linear-gradient(180deg,#111827,#0d1322);border:1px solid #1c2740;border-radius:16px;padding:12px 12px 10px;box-shadow:0 8px 24px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:8px;min-height:0}
 .rank-spot-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .rank-spot-badge{width:28px;height:28px;border-radius:10px;background:#141d2f;border:1px solid #24324a;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
 .rank-spot-pos{font-size:11px;color:#7c8da7;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-.rank-spot-ticker{font-size:16px;font-weight:900;color:#f8fafc;line-height:1.05}
-.rank-spot-meta{font-size:12px;color:#8ea1bd;line-height:1.35}
+.rank-spot-ticker{font-size:16px;font-weight:900;color:#f8fafc;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.rank-spot-meta{font-size:12px;color:#8ea1bd;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
 .rank-spot-values{display:flex;flex-direction:column;gap:4px}
 .rank-spot-line{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:12px}
 .rank-spot-label{color:#6f809b}
@@ -263,7 +266,9 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .rank-support{font-size:12px;color:#7489a4;line-height:1.45;padding:2px 2px 0}
 .rank-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .rank-toggle{font-size:12px;padding:7px 12px;border-radius:999px}
-.rank-toggle-details{margin-top:2px}
+.rank-detail{margin-top:2px;border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
+.rank-detail-head{padding:12px 14px 10px;border-bottom:1px solid #182033;background:linear-gradient(180deg,#0f1527,#0b1020)}
+.rank-table-wrap{border:1px solid #182033;border-radius:12px;overflow:hidden;background:#090c15}
 .rank-table td,.rank-table th{white-space:nowrap}
 .rank-table td:nth-child(7),.rank-table td:nth-child(8),.rank-table td:nth-child(9){font-variant-numeric:tabular-nums}
 .rank-num-pos{color:#34d399;font-weight:700}
@@ -393,6 +398,10 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .hdr-right{margin-left:auto}
   .tabs{top:58px;justify-content:flex-start;padding:0 8px}
   .div-line-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rank-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .rank-spotlight{grid-template-columns:1fr}
+  .rank-spot-card{padding:11px 11px 10px}
+  .rank-spot-ticker,.rank-spot-meta{max-width:100%}
 }
 @media(max-width:640px){
   .hdr{
@@ -559,6 +568,15 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .perf-grid{grid-template-columns:1fr!important}
   .rent-layout{grid-template-columns:1fr!important}
   .perf-card.comp{display:none!important}
+  .rank-grid{grid-template-columns:1fr!important}
+  .rank-card{min-height:0!important;padding:11px 12px!important}
+  .rank-card .cs{font-size:11px}
+  .rank-spotlight{grid-template-columns:1fr!important}
+  .rank-spot-card{padding:11px 11px 10px}
+  .rank-toggle-row{align-items:flex-start}
+  .rank-toggle{width:100%;justify-content:center}
+  .rank-detail-head{padding:11px 12px 10px}
+  .rank-table-wrap .ts{overflow-x:auto}
 }
 #investTopDrawer{
   display:none;position:fixed;inset:0;z-index:72;pointer-events:none
@@ -3630,8 +3648,8 @@ function rankSummaryCards(rows){
   const maiorDy=pickMax(validDy,'dy');
   const maiorPos=pickMax(validTotal,'total');
   const cardBody=(item, label, value, tone='rank-muted')=>item
-    ? `<div class="rank-name">${esc(item.ticker)}</div><div class="${tone}" style="font-size:13px;margin-top:6px">${esc(label)} ${esc(value)}</div><div class="cs">${esc(item.type)} · ${esc(item.sector||'—')}</div>`
-    : `<div class="rank-name">—</div><div class="cs">Sem dados suficientes</div>`;
+    ? `<div class="rank-card-top"><div class="rank-card-ico">${esc(typeIcon(item.type))}</div><div class="rank-card-pill">${esc(label)} ${esc(value)}</div></div><div class="rank-name">${esc(item.ticker)}</div><div class="cs">${esc(item.type)} · ${esc(item.sector||'—')}</div>`
+    : `<div class="rank-card-top"><div class="rank-card-ico">—</div><div class="rank-card-pill">Sem dados</div></div><div class="rank-name">—</div><div class="cs">Dados insuficientes</div>`;
   return [
     { title:'Maior queda', accent:'#f87171', body:cardBody(queda, 'Rentab.', queda ? fmtP(queda.rentab) : '—') },
     { title:'Maior alta', accent:'#34d399', body:cardBody(alta, 'Rentab.', alta ? fmtP(alta.rentab) : '—') },
@@ -3711,7 +3729,6 @@ function assetsRankingBlock(){
     </tr>`;
   }).join('') : `<tr><td colspan="9" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo atende ao filtro selecionado.</td></tr>`;
   const expanded=!!S.assetsRankExpanded;
-  const topCount = Math.min(5, rows.length);
   return `<section class="rank-shell">
     <div class="rank-head">
       <div>
@@ -3724,24 +3741,21 @@ function assetsRankingBlock(){
     <div class="rank-support">Use este ranking como apoio visual. Antes de aportar, avalie qualidade, concentração e recorrência de dividendos.</div>
     <div class="rank-spotlight">${compactCards}</div>
     <div class="rank-toggle-row">
-      <button class="btn bgh rank-toggle" onclick="toggleAssetsRankExpanded()">${expanded?'Ocultar lista completa':'Ver todos os ativos do ranking'}</button>
-      <div class="rank-muted" style="font-size:12px">${rows.length>5?`Mostrando top ${topCount} de ${rows.length}`:'Mostrando todos os ativos do filtro'}</div>
+      <button class="btn bgh rank-toggle" onclick="toggleAssetsRankExpanded()">${expanded?'Ocultar tabela completa':'Ver tabela completa'}</button>
     </div>
-    ${expanded?`<details class="sec rank-toggle-details" open>
-      <summary>
+    ${expanded?`<section class="sec rank-detail">
+      <div class="rank-detail-head">
         <div>
-          <div class="sec-title">Lista completa do ranking</div>
-          <div class="sec-meta">Tabela completa com todas as colunas disponíveis.</div>
+          <div class="sec-title">Tabela detalhada</div>
         </div>
-        <div class="sec-meta">Clique para recolher</div>
-      </summary>
+      </div>
       <div class="sec-body">
         <div class="tw rank-table-wrap"><div class="ts"><table class="rank-table">
           <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th><th>Atual</th><th>Rentab.</th><th>Total</th><th>DY</th></tr></thead>
           <tbody>${rowHtml}</tbody>
         </table></div></div>
       </div>
-    </details>`:''}
+    </section>`:''}
   </section>`;
 }
 function rankingTab(){
@@ -6193,6 +6207,7 @@ function apTab(){
   const liquido=compras-vendas;
   const valorAtualCarteira=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
   const resultadoAcumulado=valorAtualCarteira-liquido;
+  const resultadoPct=liquido>0 ? (resultadoAcumulado/liquido)*100 : null;
   const q=String(S.apSearch||'').trim().toLowerCase();
   const filtered=q
     ? S.aportes.filter(a=>{
@@ -6205,17 +6220,19 @@ function apTab(){
   const reserve=reserveStats();
   const summaryCards=S.aportes.length?`<div class="cards" style="margin:0 0 12px">
     <div class="card"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Soma dos ativos pelo valor atual</div></div>
-    <div class="card"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}</div><div class="cs">Valor atual - investido líquido</div></div>
+    <div class="card"><div class="cl">Capital investido</div><div class="cv" style="color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div><div class="cs">Compras - vendas</div></div>
+    <div class="card"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}${resultadoPct!=null?` <span class="cs" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'};font-size:12px">(${resultadoPct>=0?'+':''}${resultadoPct.toFixed(2)}%)</span>`:''}</div><div class="cs">Valor atual - capital investido</div></div>
   </div>`:'';
-  const sum=S.aportes.length?`<div class="card ap-summary" style="margin-bottom:12px;display:flex;gap:24px;flex-wrap:wrap">
-    <div><div class="cl">Comprado</div><div style="font-size:18px;font-weight:700;color:#818cf8">${fmt(compras)}</div></div>
-    <div><div class="cl">Vendido</div><div style="font-size:18px;font-weight:700;color:#f87171">${fmt(vendas)}</div></div>
-    <div><div class="cl">Investido líquido</div><div style="font-size:18px;font-weight:700;color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div></div>
+  const movSummary=S.aportes.length?`<div class="card ap-summary" style="margin-bottom:12px;display:flex;gap:24px;flex-wrap:wrap">
+    <div><div class="cl">Compras realizadas</div><div style="font-size:18px;font-weight:700;color:#818cf8">${fmt(compras)}</div></div>
+    <div><div class="cl">Vendas realizadas</div><div style="font-size:18px;font-weight:700;color:#f87171">${fmt(vendas)}</div></div>
     <div><div class="cl">Operações</div><div style="font-size:18px;font-weight:700">${S.aportes.length}</div></div>
-    <div><div class="cl">Reserva bolsa</div><div style="font-size:18px;font-weight:700;color:#60a5fa">${fmt(reserve.bolsa)}</div><div class="cs">Oportunidade</div></div>
-    <div><div class="cl">Reserva pessoal</div><div style="font-size:18px;font-weight:700;color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
   </div>`:'';
-  const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Investido líquido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
+  const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Capital investido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
+  const reserveSummary=reserve.total>0?`<div class="cards" style="margin:0 0 12px">
+    <div class="card"><div class="cl">Reserva bolsa</div><div class="cv" style="color:#60a5fa">${fmt(reserve.bolsa)}</div><div class="cs">Oportunidade</div></div>
+    <div class="card"><div class="cl">Reserva pessoal</div><div class="cv" style="color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
+  </div>`:'';
   const reserveItems=filtered.filter(a=>{
     const type=normalizeType(a.type||a.asset_type||'','');
     const op=String(a.operation||a.op||'').toLowerCase();
@@ -6291,9 +6308,9 @@ function apTab(){
         </div>
         <div class="ag-stats">
           <div class="ag-stat"><div class="ag-k">Operações</div><div class="ag-v">${items.length}</div></div>
-          <div class="ag-stat"><div class="ag-k">Comprado</div><div class="ag-v">${fmt(gCompras)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Vendido</div><div class="ag-v">${fmt(gVendas)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Investido líquido</div><div class="ag-v" style="color:${gLiquido>=0?'#34d399':'#f87171'}">${fmt(gLiquido)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Compras realizadas</div><div class="ag-v">${fmt(gCompras)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Vendas realizadas</div><div class="ag-v">${fmt(gVendas)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Capital investido</div><div class="ag-v" style="color:${gLiquido>=0?'#34d399':'#f87171'}">${fmt(gLiquido)}</div></div>
           <div class="ag-stat"><div class="ag-k">Ativos</div><div class="ag-v">${gTickers.length}</div></div>
         </div>
         <div class="ag-open">⌄</div>
@@ -6325,8 +6342,9 @@ function apTab(){
   </div>
   ${frmP()}
   ${summaryCards}
-  ${sum}
+  ${movSummary}
   ${helpText}
+  ${reserveSummary}
   ${reserveItems.length?`<details class="ag reserve-card" open style="margin-bottom:12px">
     <summary>
       <div class="ag-left">
