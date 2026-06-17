@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carteira-investimentos-v3';
+const CACHE_NAME = 'carteira-investimentos-v2026-06-17-06';
 const APP_SHELL = [
   './',
   './index.html',
@@ -13,12 +13,12 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     try {
       await cache.addAll(APP_SHELL);
     } catch (_) {}
-    self.skipWaiting();
   })());
 });
 
@@ -37,14 +37,18 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
+    // O index.html usa network-first para evitar travar versao antiga apos deploy.
     event.respondWith((async () => {
       try {
         const fresh = await fetch(request);
         const cache = await caches.open(CACHE_NAME);
-        cache.put('./index.html', fresh.clone());
+        await cache.put('./index.html', fresh.clone());
+        await cache.put('./', fresh.clone());
         return fresh;
       } catch (_) {
-        const cached = await caches.match('./index.html');
+        const cached = await caches.match(request, { ignoreSearch: true })
+          || await caches.match('./index.html')
+          || await caches.match('./');
         return cached || Response.error();
       }
     })());
