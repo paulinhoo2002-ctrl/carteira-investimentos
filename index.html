@@ -3708,7 +3708,8 @@ function assetsRankingBlock(){
     ['dy','Maior DY'],
     ['position','Maior posição'],
   ].map(([mode,label])=>`<button class="btn rank-filter ${filter===mode?'on':'bgh'}" onclick="setAssetsRankFilter('${mode}')">${label}</button>`).join('');
-  const rowHtml = rows.length ? rows.map(r=>{
+  const expanded=!!S.assetsRankExpanded;
+  const rowHtml = expanded ? (rows.length ? rows.map(r=>{
     const isRF = r.type === 'Renda Fixa';
     const juros = isRF ? (Number.isFinite(r.currentDisplay) && Number.isFinite(r.applied) ? r.currentDisplay - r.applied : null) : null;
     const atualText = isRF ? (Number.isFinite(r.currentDisplay) ? fmt(r.currentDisplay) : '—') : (Number.isFinite(r.currentUnit) ? fmt(r.currentUnit) : '—');
@@ -3727,8 +3728,7 @@ function assetsRankingBlock(){
       <td>${Number.isFinite(r.total) ? fmt(r.total) : '—'}</td>
       <td class="rank-muted">${Number.isFinite(r.dy) ? `${Number(r.dy).toFixed(2)}%` : '—'}</td>
     </tr>`;
-  }).join('') : `<tr><td colspan="9" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo atende ao filtro selecionado.</td></tr>`;
-  const expanded=!!S.assetsRankExpanded;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo atende ao filtro selecionado.</td></tr>`) : '';
   return `<section class="rank-shell">
     <div class="rank-head">
       <div>
