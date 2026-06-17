@@ -362,6 +362,9 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .div-line-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ap-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+@media(max-width:1120px) and (min-width:641px){
+  .ap-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 @media(max-width:640px){
   .hdr{
     padding:8px 10px!important;align-items:center!important;
@@ -527,6 +530,9 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .perf-grid{grid-template-columns:1fr!important}
   .rent-layout{grid-template-columns:1fr!important}
   .perf-card.comp{display:none!important}
+}
+@media(max-width:420px){
+  .ap-summary{grid-template-columns:1fr!important}
 }
 #investTopDrawer{
   display:none;position:fixed;inset:0;z-index:72;pointer-events:none

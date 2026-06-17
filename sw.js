@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carteira-investimentos-v2026-06-17-04';
+const CACHE_NAME = 'carteira-investimentos-v2026-06-17-05';
 const APP_SHELL = [
   './',
   './index.html',
@@ -37,7 +37,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    // O index.html usa network-first para evitar travar versão antiga após deploy.
+    // O index.html usa network-first para evitar travar versao antiga apos deploy.
     event.respondWith((async () => {
       try {
         const fresh = await fetch(request);
