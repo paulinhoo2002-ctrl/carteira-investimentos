@@ -231,6 +231,11 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .bwr{background:#111828;border-radius:3px;height:5px;width:70px;overflow:hidden;display:inline-block}
 .bfr{height:100%;background:#fbbf24}
 .es{text-align:center;padding:40px 20px;color:#3d5472;line-height:1.7}
+.ap-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.ap-summary .card{min-width:0;padding:10px 11px}
+.ap-summary .cv{font-size:17px;line-height:1.05;word-break:break-word}
+.ap-summary .cl{font-size:10px;line-height:1.15}
+.ap-summary .cs{font-size:10px;line-height:1.2}
 .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .st{font-size:15px;font-weight:700}
 .qdot{width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;box-shadow:0 0 6px rgba(52,211,153,.6)}
@@ -355,6 +360,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .hdr-right{margin-left:auto}
   .tabs{top:58px;justify-content:flex-start;padding:0 8px}
   .div-line-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ap-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:640px){
   .hdr{
@@ -5932,15 +5938,13 @@ function apTab(){
       })
     : S.aportes;
   const reserve=reserveStats();
-  const summaryCards=S.aportes.length?`<div class="cards" style="margin:0 0 12px">
+  const summaryCards=S.aportes.length?`<div class="ap-summary">
     <div class="card"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Soma dos ativos pelo valor atual</div></div>
     <div class="card"><div class="cl">Capital investido</div><div class="cv" style="color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div><div class="cs">Compras - vendas</div></div>
-    <div class="card"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}${resultadoPct!=null?` <span class="cs" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'};font-size:12px">(${resultadoPct>=0?'+':''}${resultadoPct.toFixed(2)}%)</span>`:''}</div><div class="cs">Valor atual - capital investido</div></div>
-  </div>`:'';
-  const movSummary=S.aportes.length?`<div class="card ap-summary" style="margin-bottom:12px;display:flex;gap:24px;flex-wrap:wrap">
-    <div><div class="cl">Compras realizadas</div><div style="font-size:18px;font-weight:700;color:#818cf8">${fmt(compras)}</div></div>
-    <div><div class="cl">Vendas realizadas</div><div style="font-size:18px;font-weight:700;color:#f87171">${fmt(vendas)}</div></div>
-    <div><div class="cl">Operações</div><div style="font-size:18px;font-weight:700">${S.aportes.length}</div></div>
+    <div class="card"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}${resultadoPct!=null?` <span class="cs" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'};font-size:11px">(${resultadoPct>=0?'+':''}${resultadoPct.toFixed(2)}%)</span>`:''}</div><div class="cs">Valor atual - capital investido</div></div>
+    <div class="card"><div class="cl">Compras realizadas</div><div class="cv" style="color:#818cf8">${fmt(compras)}</div><div class="cs">Total comprado</div></div>
+    <div class="card"><div class="cl">Vendas realizadas</div><div class="cv" style="color:#f87171">${fmt(vendas)}</div><div class="cs">Total vendido</div></div>
+    <div class="card"><div class="cl">Operações</div><div class="cv" style="color:#e2eaf6">${S.aportes.length}</div><div class="cs">Total de registros</div></div>
   </div>`:'';
   const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Capital investido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
   const reserveSummary=reserve.total>0?`<div class="cards" style="margin:0 0 12px">
@@ -6056,7 +6060,6 @@ function apTab(){
   </div>
   ${frmP()}
   ${summaryCards}
-  ${movSummary}
   ${helpText}
   ${reserveSummary}
   ${reserveItems.length?`<details class="ag reserve-card" open style="margin-bottom:12px">
