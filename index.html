@@ -302,6 +302,18 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .b3-review-line input,.b3-review-line select{padding:6px 7px;font-size:12px;border-radius:8px}
 .b3-review-line.bad{opacity:.55}
 .b3-review-line .line-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.rf-pos-review-wrap{overflow:auto;border:1px solid #182033;border-radius:14px;background:#090c15}
+.rf-pos-review-table{width:100%;min-width:1500px;border-collapse:separate;border-spacing:0;font-size:12px}
+.rf-pos-review-table th,.rf-pos-review-table td{padding:10px 9px;border-bottom:1px solid #162033;text-align:left;vertical-align:top}
+.rf-pos-review-table th{position:sticky;top:0;background:#0b1020;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.04em;z-index:1}
+.rf-pos-review-table tr:last-child td{border-bottom:0}
+.rf-pos-review-table .ticker{font-weight:900;color:#e2eaf6}
+.rf-pos-review-table .asset-name{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
+.rf-pos-review-table .num{text-align:right;white-space:nowrap}
+.rf-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;border:1px solid #24324a;background:#111827;color:#cbd5e1;white-space:nowrap}
+.rf-status.ok{color:#34d399;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08)}
+.rf-status.warn{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
+.rf-status.review{color:#f87171;border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.08)}
 .mov-review-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .mov-review-group{border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
 .mov-review-group summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;background:#0b1020}
@@ -692,6 +704,7 @@ let S = {
   noteReview:null,
   b3Review:null,
   b3MovementReview:null,
+  rfPositionReview:null,
   learnMeta:{},
   autoProvDirty:false,
   autoProvTimer:null,
@@ -1695,6 +1708,7 @@ async function resetPortfolio(){
   S.noteReview=null;
   S.b3Review=null;
   S.b3MovementReview=null;
+  S.rfPositionReview=null;
   syncWalletFromState();
   save();
   saveConfig();
@@ -2521,6 +2535,145 @@ function parseB3PositionWorkbook(wb, fileName=''){
   });
   return {items,warnings,importDate,stats,kind:'position'};
 }
+function rfPosNorm(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
+}
+function detectRfDetailedPositionWorkbook(wb, fileName=''){
+  const fileHint=/posicao\s*detalhada|posicaodetalhada/i.test(String(fileName||''));
+  return (wb.SheetNames||[]).some(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return false;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    const text=rows.slice(0,40).map(r=>(r||[]).join(' ')).join(' ');
+    const s=rfPosNorm(`${sheetName} ${text}`);
+    return (fileHint || s.includes('RENDA FIXA')) && s.includes('POSICAO A MERCADO') && s.includes('VALOR APLICADO') && s.includes('DATA VENCIMENTO');
+  });
+}
+function rfDetailedKnownCode(name){
+  const s=rfPosNorm(name);
+  if(s.includes('DEB MOVIDA')) return 'MOVI18';
+  if(s.includes('CRA JBS')) return 'CRA024004SB';
+  return '';
+}
+function rfDetailedIssuer(name){
+  const s=String(name||'').replace(/\s+/g,' ').trim();
+  const m=s.match(/^(?:DEB|CRA|CRI|CDB|LCI|LCA)\s+(.+?)(?:\s+-\s+|$)/i);
+  return (m?m[1]:s.split(' - ')[0]||s).trim();
+}
+function rfDetailedSector(name, rate){
+  const s=rfPosNorm(`${name} ${rate}`);
+  const indexer=s.includes('IPCA') || s.includes('IPC-A') ? 'IPCA' : s.includes('CDI') ? 'CDI' : s.includes('PRE') ? 'Prefixado' : '';
+  const base=s.includes('CRA') ? 'CRA' : s.includes('CRI') ? 'CRI' : s.includes('DEB') ? 'Debênture' : 'Renda Fixa';
+  return indexer ? `${base} / ${indexer}` : base;
+}
+function rfDetailedFindExistingAsset(item){
+  const ticker=String(item?.ticker||'').toUpperCase();
+  const nameKey=rfPosNorm(item?.name);
+  const issuerKey=rfPosNorm(item?.issuer);
+  const maturityKey=b3MovementDateKey(item?.maturityDate);
+  const assets=S.assets||[];
+  let idx=assets.findIndex(a=>ticker && String(a.ticker||'').toUpperCase()===ticker);
+  if(idx>=0) return {idx,reason:'Mesmo código já existe em Meus Ativos.'};
+  idx=assets.findIndex(a=>{
+    const text=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''}`);
+    return text && nameKey && (text.includes(nameKey) || nameKey.includes(text));
+  });
+  if(idx>=0) return {idx,reason:'Nome parecido já existe em Meus Ativos.'};
+  idx=assets.findIndex(a=>{
+    const aMat=b3MovementDateKey(a.rf_maturity_date||a.fixed_maturity_date||a.maturityDate||a.vencimento||'');
+    const text=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.sector||''}`);
+    return maturityKey && aMat===maturityKey && issuerKey && text.includes(issuerKey);
+  });
+  if(idx>=0) return {idx,reason:'Mesmo vencimento e emissor/setor já aparecem em Meus Ativos.'};
+  return {idx:-1,reason:''};
+}
+function rfDetailedPossibleDuplicateAsset(item){
+  const maturityKey=b3MovementDateKey(item?.maturityDate);
+  if(!maturityKey) return -1;
+  return (S.assets||[]).findIndex(a=>{
+    const aMat=b3MovementDateKey(a.rf_maturity_date||a.fixed_maturity_date||a.maturityDate||a.vencimento||'');
+    return aMat===maturityKey && rfPosNorm(a.sector)===rfPosNorm(item?.sector);
+  });
+}
+function rfDetailedStatus(item){
+  if(!item.ticker || !item.name || item.qty<=0 || item.appliedValue<=0 || item.marketValue<=0) return {status:'Revisar', note:'Dados principais incompletos.'};
+  const found=rfDetailedFindExistingAsset(item);
+  if(found.idx>=0) return {status:'Atualizar existente', note:found.reason};
+  if(rfDetailedPossibleDuplicateAsset(item)>=0) return {status:'Possível duplicado', note:'Mesmo vencimento e setor encontrados. Revise antes de gravar.'};
+  return {status:'Novo ativo', note:'Novo ativo identificado apenas para revisão.'};
+}
+function parseRfDetailedPositionWorkbook(wb, fileName=''){
+  const items=[]; const warnings=[];
+  const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
+  const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  (wb.SheetNames||[]).forEach(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    for(let i=0;i<rows.length;i++){
+      const header=(rows[i]||[]).map(v=>String(v||'').trim());
+      const norm=header.map(rfPosNorm);
+      const hasRfHeader=norm.some(h=>h.includes('POSICAO A MERCADO')) && norm.some(h=>h.includes('VALOR APLICADO')) && norm.some(h=>h.includes('DATA VENCIMENTO'));
+      if(!hasRfHeader) continue;
+      const idx={
+        name:0,
+        market:norm.findIndex(h=>h.includes('POSICAO A MERCADO')),
+        applied:norm.findIndex(h=>h==='VALOR APLICADO'),
+        rate:norm.findIndex(h=>h.includes('TAXA')),
+        application:norm.findIndex(h=>h.includes('DATA APLICACAO')),
+        maturity:norm.findIndex(h=>h.includes('DATA VENCIMENTO')),
+        qty:norm.findIndex(h=>h==='QUANTIDADE')
+      };
+      for(let j=i+1;j<rows.length;j++){
+        const row=rows[j]||[];
+        const name=String(row[idx.name]||'').replace(/\s+/g,' ').trim();
+        const nameKey=rfPosNorm(name);
+        if(!nameKey) continue;
+        if(['FUNDOS DE INVESTIMENTOS','DIVIDENDOS, PROVENTOS E OUTRAS DISTRIBUICOES','PROVENTOS','ACOES','CUSTODIA REMUNERADA'].some(stop=>nameKey.includes(stop))) break;
+        if(nameKey==='RENDA FIXA' || nameKey.includes('|')) continue;
+        const qty=parseNum(row[idx.qty]);
+        const appliedValue=parseNum(row[idx.applied]);
+        const marketValue=parseNum(row[idx.market]);
+        if(qty<=0 && appliedValue<=0 && marketValue<=0) continue;
+        const rate=String(row[idx.rate]||'').replace('IPC-A','IPCA').trim();
+        const appDate=b3MovementDateFromCell(row[idx.application], '');
+        const maturityDate=b3MovementDateFromCell(row[idx.maturity], '');
+        const ticker=rfDetailedKnownCode(name);
+        const avgPrice=qty>0 ? appliedValue/qty : 0;
+        const currentPrice=qty>0 ? marketValue/qty : 0;
+        const result=marketValue-appliedValue;
+        const rentability=appliedValue>0 ? (result/appliedValue)*100 : 0;
+        const item={
+          id:items.length,
+          include:true,
+          ticker,
+          name,
+          type:'Renda Fixa',
+          sector:rfDetailedSector(name, rate),
+          issuer:rfDetailedIssuer(name),
+          qty,
+          appliedValue,
+          marketValue,
+          avgPrice,
+          currentPrice,
+          result,
+          rentability,
+          rate,
+          applicationDate:appDate,
+          maturityDate,
+          sheet:sheetName,
+          importDate
+        };
+        const status=rfDetailedStatus(item);
+        item.status=status.status;
+        item.note=status.note;
+        if(!item.maturityDate) item.note=`${item.note} Vencimento não informado no arquivo.`.trim();
+        if(item.status==='Revisar') item.include=false;
+        items.push(item);
+      }
+    }
+  });
+  if(!items.length) warnings.push('Nenhum ativo de Renda Fixa foi identificado na seção de posição detalhada.');
+  return {items,warnings,importDate,kind:'rf-detailed-position'};
+}
 function parseNotaCorretoraWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
   const stats={
@@ -3122,6 +3275,233 @@ function b3ReviewModal(){
     </div>
   </div>`;
 }
+function openRfPositionReview(parsed, fileName='', sourceKind='excel'){
+  const items=(parsed?.items||[]).map((it,i)=>({
+    id:it.id ?? i,
+    include:it.include!==false && (it.status==='Novo ativo' || it.status==='Atualizar existente'),
+    status:String(it.status||'Revisar'),
+    ticker:String(it.ticker||'').toUpperCase(),
+    name:String(it.name||''),
+    type:'Renda Fixa',
+    sector:String(it.sector||'Renda Fixa'),
+    issuer:String(it.issuer||''),
+    qty:Number(it.qty)||0,
+    appliedValue:Number(it.appliedValue)||0,
+    marketValue:Number(it.marketValue)||0,
+    avgPrice:Number(it.avgPrice)||0,
+    currentPrice:Number(it.currentPrice)||0,
+    result:Number(it.result)||0,
+    rentability:Number(it.rentability)||0,
+    rate:String(it.rate||''),
+    applicationDate:String(it.applicationDate||''),
+    maturityDate:String(it.maturityDate||''),
+    note:String(it.note||''),
+    sheet:String(it.sheet||'')
+  }));
+  S.rfPositionReview={
+    fileName,
+    sourceKind,
+    importDate:parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
+    warnings:parsed?.warnings||[],
+    items
+  };
+  render();
+}
+function closeRfPositionReview(){
+  S.rfPositionReview=null;
+  render();
+}
+function setRfPositionReviewItem(idx, value){
+  if(!S.rfPositionReview || !S.rfPositionReview.items?.[idx]) return;
+  const item=S.rfPositionReview.items[idx];
+  item.include=!!value && (item.status==='Novo ativo' || item.status==='Atualizar existente');
+  render();
+}
+function setRfPositionReviewAll(value){
+  if(!S.rfPositionReview) return;
+  S.rfPositionReview.items=(S.rfPositionReview.items||[]).map(it=>({
+    ...it,
+    include:!!value && (it.status==='Novo ativo' || it.status==='Atualizar existente')
+  }));
+  render();
+}
+function importRfPositionReview(){
+  if(!S.rfPositionReview) return;
+  const rows=(S.rfPositionReview.items||[]).filter(it=>it.include!==false);
+  let created=0,updated=0,ignored=0;
+  const now=new Date().toISOString();
+  const safeStatuses=new Set(['Novo ativo','Atualizar existente']);
+  rows.forEach(row=>{
+    const item={...row};
+    const status=rfDetailedStatus(item);
+    item.status=status.status;
+    item.note=status.note;
+    const safe=safeStatuses.has(item.status)
+      && item.ticker
+      && Number(item.qty)>0
+      && Number(item.appliedValue)>0
+      && Number(item.marketValue)>0;
+    if(!safe){ ignored++; return; }
+    const avgPrice=Number(item.appliedValue)/Number(item.qty);
+    const currentPrice=Number(item.marketValue)/Number(item.qty);
+    const found=rfDetailedFindExistingAsset(item);
+    if(found.idx>=0){
+      const old=S.assets[found.idx]||{};
+      S.assets[found.idx]={
+        ...old,
+        ticker:old.ticker||item.ticker,
+        name:old.name||item.name,
+        product:old.product||item.name,
+        type:'Renda Fixa',
+        sector:(!old.sector || rfPosNorm(old.sector)==='RENDA FIXA' || String(old.fixed_source||'')==='PosicaoDetalhada B3/XP') ? item.sector : old.sector,
+        qty:Number(item.qty),
+        avg_price:avgPrice,
+        current_price:currentPrice,
+        dy:Number(old.dy)||0,
+        ideal_pct:Number(old.ideal_pct)||0,
+        fixed_initial_value:Number(item.appliedValue),
+        fixed_current_value:Number(item.marketValue),
+        fixed_rate:item.rate,
+        fixed_application_date:item.applicationDate,
+        fixed_maturity_date:item.maturityDate,
+        fixed_source:'PosicaoDetalhada B3/XP',
+        updated_at:now,
+        rf_aporte_date:old.rf_aporte_date||item.applicationDate,
+        rf_contract_rate:old.rf_contract_rate||item.rate,
+        rf_maturity_date:old.rf_maturity_date||item.maturityDate,
+        quoteSource:old.quoteSource||'manual',
+        quoteUpdatedAt:old.quoteUpdatedAt||now
+      };
+      updated++;
+      learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
+      return;
+    }
+    S.assets.push({
+      id:Date.now()+Math.floor(Math.random()*999999),
+      ticker:item.ticker,
+      name:item.name,
+      product:item.name,
+      type:'Renda Fixa',
+      sector:item.sector,
+      qty:Number(item.qty),
+      avg_price:avgPrice,
+      current_price:currentPrice,
+      dy:0,
+      ideal_pct:0,
+      fixed_initial_value:Number(item.appliedValue),
+      fixed_current_value:Number(item.marketValue),
+      fixed_rate:item.rate,
+      fixed_application_date:item.applicationDate,
+      fixed_maturity_date:item.maturityDate,
+      fixed_source:'PosicaoDetalhada B3/XP',
+      updated_at:now,
+      rf_aporte_date:item.applicationDate,
+      rf_yield_type:String(item.rate||'').toUpperCase().includes('IPCA') ? 'IPCA' : 'Manual',
+      rf_contract_rate:item.rate,
+      rf_maturity_date:item.maturityDate,
+      quoteSource:'manual',
+      quoteUpdatedAt:now
+    });
+    created++;
+    learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
+  });
+  ignored += (S.rfPositionReview.items||[]).filter(it=>it.include===false || !safeStatuses.has(it.status)).length;
+  S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  S.rfPositionReview=null;
+  save();
+  render();
+  toast(`Renda Fixa importada com sucesso: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
+}
+function rfPositionReviewSummary(){
+  const items=S.rfPositionReview?.items||[];
+  const selected=items.filter(it=>it.include!==false);
+  const applied=selected.reduce((s,it)=>s+(Number(it.appliedValue)||0),0);
+  const market=selected.reduce((s,it)=>s+(Number(it.marketValue)||0),0);
+  return {count:selected.length,total:items.length,applied,market};
+}
+function rfStatusClass(status){
+  if(status==='Novo ativo') return 'ok';
+  if(status==='Atualizar existente' || status==='Possível duplicado') return 'warn';
+  return 'review';
+}
+function rfPositionReviewModal(){
+  const r=S.rfPositionReview;
+  if(!r) return '';
+  const sum=rfPositionReviewSummary();
+  const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
+  const rows=(r.items||[]).map((it,idx)=>{
+    const resultColor=Number(it.result)>=0?'#34d399':'#f87171';
+    return `<tr>
+      <td><input type="checkbox" ${it.include===false?'':'checked'} ${(it.status==='Novo ativo' || it.status==='Atualizar existente')?'':'disabled'} onchange="setRfPositionReviewItem(${idx}, this.checked)"></td>
+      <td><span class="rf-status ${rfStatusClass(it.status)}">${esc(it.status)}</span></td>
+      <td><div class="ticker">${esc(it.ticker||'—')}</div></td>
+      <td><div class="asset-name" title="${esc(it.name)}">${esc(it.name)}</div></td>
+      <td>${esc(it.type)}</td>
+      <td>${esc(it.sector)}</td>
+      <td class="num">${fmtN(it.qty)}</td>
+      <td class="num">${fmt(it.appliedValue)}</td>
+      <td class="num">${fmt(it.marketValue)}</td>
+      <td class="num">${fmt(it.avgPrice)}</td>
+      <td class="num">${fmt(it.currentPrice)}</td>
+      <td class="num" style="color:${resultColor}">${fmt(it.result)}</td>
+      <td class="num" style="color:${resultColor}">${fmtP(it.rentability)}</td>
+      <td>${esc(it.rate||'—')}</td>
+      <td>${esc(it.applicationDate||'—')}</td>
+      <td>${esc(it.maturityDate||'—')}</td>
+      <td><div class="asset-name" title="${esc(it.note)}">${esc(it.note||'—')}</div></td>
+    </tr>`;
+  }).join('');
+  return `<div class="note-overlay" role="dialog" aria-modal="true">
+    <div class="note-modal" style="max-width:1380px">
+      <div class="note-head">
+        <div class="note-title">
+          <div>
+            <h3>💼 Revisar posição detalhada de Renda Fixa</h3>
+            <p>Confira os ativos selecionados. A importação grava somente em Meus Ativos e não cria aportes, vendas ou proventos.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+            <button class="btn bgh" onclick="closeRfPositionReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importRfPositionReview()">Importar selecionados</button>
+          </div>
+        </div>
+        <div class="note-meta">
+          <span class="note-pill">Arquivo: ${esc(r.fileName||'PosicaoDetalhada.xlsx')}</span>
+          <span class="note-pill">Linhas: ${sum.total}</span>
+          <span class="note-pill">Selecionados: ${sum.count}</span>
+          <span class="note-pill">Aplicado: ${fmt(sum.applied)}</span>
+          <span class="note-pill">Mercado: ${fmt(sum.market)}</span>
+        </div>
+      </div>
+      <div class="note-body">
+        <div class="note-actions">
+          <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="btn bgh" onclick="setRfPositionReviewAll(true)">Marcar todos</button>
+            <button class="btn bgh" onclick="setRfPositionReviewAll(false)">Desmarcar todos</button>
+          </div>
+          <div class="right">
+            <span style="font-size:12px;color:#64748b">Linhas em Possível duplicado ou Revisar ficam bloqueadas para evitar duplicidade.</span>
+          </div>
+        </div>
+        ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
+        <div class="rf-pos-review-wrap">
+          <table class="rf-pos-review-table">
+            <thead><tr>
+              <th>Importar</th><th>Status</th><th>Código</th><th>Nome do ativo</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Valor aplicado</th><th>Posição a mercado</th><th>PM calc.</th><th>Atual calc.</th><th>Resultado</th><th>Rentab.</th><th>Taxa</th><th>Data aplicação</th><th>Vencimento</th><th>Observação</th>
+            </tr></thead>
+            <tbody>${rows||'<tr><td colspan="17" style="color:#94a3b8;padding:18px">Nenhum ativo de Renda Fixa encontrado.</td></tr>'}</tbody>
+          </table>
+        </div>
+        <div class="note-foot">
+          <div class="hint">A importação atualiza somente a aba Meus Ativos. Histórico de aportes e Proventos não são alterados.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bgh" onclick="closeRfPositionReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importRfPositionReview()">Importar selecionados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
 function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
   const items=(parsed?.items||[]).map((it,i)=>b3MovementRefreshReviewFlags({
     id:it.id ?? i,
@@ -3474,18 +3854,28 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
       if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
       const csvText=await file.text();
       const wb=XLSX.read(csvText,{type:'string'});
-      const kind=detectB3WorkbookKind(wb);
-      parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      if(detectRfDetailedPositionWorkbook(wb,file.name)){
+        parsed=parseRfDetailedPositionWorkbook(wb,file.name);
+      }else{
+        const kind=detectB3WorkbookKind(wb);
+        parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      }
     }else{
       if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
       const buf=await file.arrayBuffer();
       const wb=XLSX.read(buf,{type:'array'});
-      const kind=detectB3WorkbookKind(wb);
-      parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      if(detectRfDetailedPositionWorkbook(wb,file.name)){
+        parsed=parseRfDetailedPositionWorkbook(wb,file.name);
+      }else{
+        const kind=detectB3WorkbookKind(wb);
+        parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      }
     }
     const {items,warnings,importDate,stats}=parsed;
     if(!items.length){ alert('Não encontrei itens válidos no arquivo. Tente exportar a posição ou movimentação da B3/corretora no formato correto.'); return; }
-    if((parsed.kind||'position')==='movement'){
+    if((parsed.kind||'position')==='rf-detailed-position'){
+      openRfPositionReview({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
+    }else if((parsed.kind||'position')==='movement'){
       openB3MovementReview({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
     }else{
       openB3Review({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
@@ -5545,6 +5935,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
   ${S.noteReview?notaReviewModal():''}
   ${S.b3Review?b3ReviewModal():''}
   ${S.b3MovementReview?b3MovementReviewModal():''}
+  ${S.rfPositionReview?rfPositionReviewModal():''}
   ${S.allocGoalOpen?allocationGoalModal():''}`;
 }
 function content(){
