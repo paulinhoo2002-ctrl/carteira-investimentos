@@ -2316,6 +2316,7 @@ function b3ProventoBuild(raw){
     id:raw.id||0,
     include,
     status,
+    product,
     paymentDate,
     ticker,
     assetName:assetName||product,
@@ -2352,15 +2353,22 @@ function parseB3ProventosWorkbook(wb, fileName=''){
     const headers=(rows[headerIdx]||[]).map(v=>String(v||'').trim());
     rows.slice(headerIdx+1).forEach((row,idx)=>{
       if(!row || row.every(v=>v===null || String(v).trim()==='')) return;
-      const product=String(getRowValue(row,['Produto','Ativo','Nome do Produto','Produto/Ativo','Descrição','Descricao','Papel'],headers)||'').trim();
-      const paymentDate=getRowValue(row,['Pagamento','Data Pagamento','Data de Pagamento','Data'],headers);
-      const eventType=String(getRowValue(row,['Tipo de Evento','Evento','Tipo Evento'],headers)||'').trim();
-      const institution=String(getRowValue(row,['Instituição','Instituicao','Corretora'],headers)||'').trim();
-      const qty=b3ProventoQty(getRowValue(row,['Quantidade','Qtd'],headers));
-      const unitPrice=parseNum(getRowValue(row,['Preço unitário','Preco unitario','Preço','Preco','PU'],headers));
-      const netValue=parseNum(getRowValue(row,['Valor líquido','Valor Liquido','Valor Líquido','Valor','Valor Liquido'],headers));
+      const rowObj={};
+      headers.forEach((h,i)=>{
+        const key=String(h||'').trim() || `__EMPTY_${i}`;
+        rowObj[key]=row[i];
+        rowObj[`__EMPTY_${i}`]=row[i];
+      });
+      const product=String(getRowValue(rowObj,['Produto','Produto/Ativo','Ativo','Nome do Produto','Nome do Ativo','Descrição','Descricao','Papel','Código','Codigo','Ticker'])||'').trim();
+      const paymentDate=getRowValue(rowObj,['Pagamento','Data Pagamento','Data de Pagamento','Data']);
+      const eventType=String(getRowValue(rowObj,['Tipo de Evento','Evento','Tipo Evento'])||'').trim();
+      const institution=String(getRowValue(rowObj,['Instituição','Instituicao','Corretora'])||'').trim();
+      const qty=b3ProventoQty(getRowValue(rowObj,['Quantidade','Qtd']));
+      const unitPrice=parseNum(getRowValue(rowObj,['Preço unitário','Preco unitario','Preço','Preco','PU']));
+      const netValue=parseNum(getRowValue(rowObj,['Valor líquido','Valor Liquido','Valor Líquido','Valor','Valor Liquido']));
       const ticker=b3ProventoTicker(product);
-      const looksLikeSummary=b3ProventoLooksLikeSummaryRow(product,row,headers);
+      const looksLikeSummary=b3ProventoLooksLikeSummaryRow(product,rowObj,headers);
+      if(idx===0) console.log("B3 Proventos - debug:", {headers:Object.keys(rowObj), row:rowObj, produto});
       if(looksLikeSummary || !product || !eventType || !paymentDate || !ticker || !netValue || netValue<=0){
         ignoredCount++;
         if(looksLikeSummary) return;
@@ -2511,34 +2519,41 @@ async function detectB3PdfKind(file){
 function normHeaderB3(v){
   return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
 }
-function normalizeB3Loose(v){
-  return String(v||'')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[\u200B-\u200D\uFEFF]/g,'')
-    .replace(/\s+/g,'')
+function normalizeKey(value){
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "")
+    .replace(/[^a-zA-Z0-9]/g, "")
     .toLowerCase();
 }
-function getRowValue(row, possibleNames, headers=[]){
-  const wanted=(possibleNames||[]).map(normalizeB3Loose).filter(Boolean);
-  if(!wanted.length) return null;
-  if(Array.isArray(row) && Array.isArray(headers) && headers.length){
-    for(let i=0;i<headers.length;i++){
-      const h=normalizeB3Loose(headers[i]);
-      if(!h) continue;
-      if(wanted.some(w=>h===w || h.includes(w) || w.includes(h))) return row[i];
+function normalizeB3Loose(v){
+  return normalizeKey(v);
+}
+function getRowValue(row, possibleNames){
+  const keys = Object.keys(row || {});
+  const normalizedMap = {};
+  keys.forEach((key) => {
+    normalizedMap[normalizeKey(key)] = row[key];
+  });
+  for (const name of (possibleNames||[])) {
+    const value = normalizedMap[normalizeKey(name)];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return value;
     }
   }
-  if(row && typeof row==='object' && !Array.isArray(row)){
-    for(const [key,val] of Object.entries(row)){
-      const h=normalizeB3Loose(key);
-      if(!h) continue;
-      if(wanted.some(w=>h===w || h.includes(w) || w.includes(h))) return val;
-    }
-  }
-  return null;
+  return "";
 }
 function pickB3(row, headers, names){
-  return getRowValue(row, names, headers);
+  if(Array.isArray(row) && Array.isArray(headers) && headers.length){
+    const asObj={};
+    headers.forEach((h,i)=>{
+      const key=String(h||'').trim() || `__EMPTY_${i}`;
+      asObj[key]=row[i];
+    });
+    return getRowValue(asObj, names);
+  }
+  return getRowValue(row, names);
 }
 function tickerValidoB3(t){
   t=String(t||'').trim().toUpperCase();
