@@ -314,6 +314,27 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .rf-status.ok{color:#34d399;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08)}
 .rf-status.warn{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
 .rf-status.review{color:#f87171;border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.08)}
+.rf-status.muted{color:#94a3b8;border-color:#2a3649;background:rgba(148,163,184,.06)}
+.rf-proventos-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 12px}
+.rf-proventos-kpi{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;justify-content:space-between;min-height:72px}
+.rf-proventos-kpi-label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:700}
+.rf-proventos-kpi-value{font-size:18px;font-weight:900;color:#e2eaf6;line-height:1.1}
+.rf-proventos-kpi-sub{font-size:10px;color:#94a3b8;line-height:1.35;margin-top:4px}
+.rf-proventos-kpi.green .rf-proventos-kpi-value{color:#34d399}
+.rf-proventos-kpi.yellow .rf-proventos-kpi-value{color:#fbbf24}
+.rf-proventos-kpi.blue .rf-proventos-kpi-value{color:#60a5fa}
+.rf-proventos-kpi.red .rf-proventos-kpi-value{color:#f87171}
+.rf-proventos-kpi.purple .rf-proventos-kpi-value{color:#a78bfa}
+.rf-proventos-table th:nth-child(3),.rf-proventos-table td:nth-child(3),
+.rf-proventos-table th:nth-child(4),.rf-proventos-table td:nth-child(4),
+.rf-proventos-table th:nth-child(6),.rf-proventos-table td:nth-child(6),
+.rf-proventos-table th:nth-child(11),.rf-proventos-table td:nth-child(11){
+  white-space:nowrap;
+  font-weight:800;
+}
+.rf-proventos-table th:nth-child(2),.rf-proventos-table td:nth-child(2){white-space:nowrap}
+.rf-proventos-table td:nth-child(12),.rf-proventos-table td:nth-child(13){font-size:11px;color:#94a3b8}
+.rf-proventos-table tbody tr:nth-child(odd){background:rgba(11,16,32,.35)}
 .rf-review-section{border:1px solid #182033;border-radius:16px;background:#090c15;overflow:hidden;margin-bottom:14px}
 .rf-review-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;background:#0b1020;border-bottom:1px solid #182033}
 .rf-review-section-title{font-size:14px;font-weight:900;color:#e2eaf6}
@@ -372,6 +393,14 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .mov-review-line .col-total{grid-area:total}
   .mov-review-line .col-obs{grid-area:obs}
   .mov-review-line .line-controls{grid-area:ctrl;justify-content:flex-start}
+  .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rf-proventos-table{min-width:1180px}
+}
+@media(max-width:640px){
+  .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .rf-proventos-kpi{min-height:66px;padding:9px 10px}
+  .rf-proventos-kpi-value{font-size:16px}
+  .rf-proventos-table{min-width:1220px}
 }
 @media(max-width:900px){
   .hdr{padding:10px 12px;gap:10px}
@@ -4044,17 +4073,31 @@ function b3ProventosReviewModal(){
         </div>
         <div class="note-meta">
           <span class="note-pill">Arquivo: ${esc(r.fileName||'Proventos B3')}</span>
-          <span class="note-pill">Linhas válidas: ${sum.valid}</span>
-          <span class="note-pill">Linhas ignoradas: ${sum.ignored}</span>
-          <span class="note-pill">Linhas na revisão: ${sum.totalRows}</span>
-          <span class="note-pill">Selecionados: ${sum.count}</span>
-          <span class="note-pill">Importáveis: ${sum.importable}</span>
-          <span class="note-pill">Duplicados: ${sum.duplicates}</span>
-          <span class="note-pill">Revisar: ${sum.review}</span>
-          <span class="note-pill">Total líquido selecionado: ${fmt(sum.total)}</span>
         </div>
       </div>
       <div class="note-body">
+        <div class="rf-proventos-kpis">
+          <div class="rf-proventos-kpi yellow">
+            <div class="rf-proventos-kpi-label">Linhas válidas</div>
+            <div class="rf-proventos-kpi-value">${sum.valid}</div>
+            <div class="rf-proventos-kpi-sub">Itens reais do extrato</div>
+          </div>
+          <div class="rf-proventos-kpi muted">
+            <div class="rf-proventos-kpi-label">Linhas ignoradas</div>
+            <div class="rf-proventos-kpi-value">${sum.ignored}</div>
+            <div class="rf-proventos-kpi-sub">Totais, resumos e rodapés</div>
+          </div>
+          <div class="rf-proventos-kpi blue">
+            <div class="rf-proventos-kpi-label">Selecionados</div>
+            <div class="rf-proventos-kpi-value">${sum.count}</div>
+            <div class="rf-proventos-kpi-sub">Checkboxes marcados</div>
+          </div>
+          <div class="rf-proventos-kpi green">
+            <div class="rf-proventos-kpi-label">Total líquido selecionado</div>
+            <div class="rf-proventos-kpi-value">${fmt(sum.total)}</div>
+            <div class="rf-proventos-kpi-sub">Soma só das linhas válidas marcadas</div>
+          </div>
+        </div>
         <div class="note-actions">
           <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button class="btn bgh" onclick="setB3ProventoReviewAll(true)">Marcar todos importáveis</button>
@@ -4066,7 +4109,7 @@ function b3ProventosReviewModal(){
         </div>
         ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
         <div class="rf-pos-review-wrap">
-          <table class="rf-pos-review-table" style="min-width:1320px">
+          <table class="rf-pos-review-table rf-proventos-table" style="min-width:1320px">
             <thead><tr>
               <th>Importar</th><th>Status</th><th>Pagamento</th><th>Ticker/código</th><th>Nome do ativo</th><th>Tipo de evento</th><th>Categoria sugerida</th><th>Instituição</th><th>Qtd</th><th>Preço unitário</th><th>Valor líquido</th><th>Destino</th><th>Observação</th>
             </tr></thead>
