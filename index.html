@@ -34,6 +34,35 @@ button{cursor:pointer;font-family:inherit}
 .wrap{padding:20px;max-width:1360px;margin:0 auto}
 @media(max-width:640px){.wrap{padding:14px}}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
+.asset-inner-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px}
+.asset-inner-tab{border:1px solid #27344b;background:#111828;color:#7489a4;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;transition:all .15s}
+.asset-inner-tab:hover{opacity:.92;transform:translateY(-1px)}
+.asset-inner-tab.on{background:rgba(79,70,229,.14);color:#c7d2fe;border-color:rgba(99,102,241,.35)}
+.asset-inner-panel{display:flex;flex-direction:column;gap:12px}
+.analysis-shell{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+.analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.analysis-card{background:#0b1020;border:1px solid #182033;border-radius:14px;padding:11px 12px 10px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.analysis-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.analysis-card-title{font-size:12px;font-weight:800;color:#edf3ff}
+.analysis-card-meta{font-size:10px;color:#94a3b8;line-height:1.35;margin-top:2px}
+.analysis-list{display:flex;flex-direction:column;gap:7px}
+.analysis-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 8px;border:1px solid #162033;border-radius:10px;background:#090c15;min-width:0}
+.analysis-item-left{min-width:0;display:flex;flex-direction:column;gap:3px;flex:1}
+.analysis-item-top{display:flex;align-items:center;gap:6px;min-width:0}
+.analysis-item-ticker{font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.analysis-item-desc{font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.analysis-item-right{text-align:right;flex:none}
+.analysis-item-val{font-size:12px;font-weight:800;white-space:nowrap}
+.analysis-item-sub{font-size:10px;color:#94a3b8;white-space:nowrap}
+.analysis-bar{height:6px;border-radius:999px;background:#111828;overflow:hidden;margin-top:2px}
+.analysis-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#4f46e5,#818cf8)}
+.analysis-empty{padding:10px;border:1px dashed #223048;border-radius:10px;color:#7489a4;font-size:11px;background:#09101b;line-height:1.4}
+.analysis-pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8;border:1px solid #1d2940;background:#111828;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.analysis-positive .analysis-item-val{color:#34d399}
+.analysis-negative .analysis-item-val{color:#f87171}
+.analysis-info .analysis-item-val{color:#60a5fa}
+.analysis-warn .analysis-item-val{color:#fbbf24}
+.analysis-warn .analysis-bar-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
 .dashboard-hero{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .dash-card{min-height:124px;padding:12px 14px 10px;display:flex;flex-direction:column;justify-content:space-between}
 .dash-head{display:flex;align-items:flex-start;gap:10px}
@@ -92,6 +121,20 @@ button{cursor:pointer;font-family:inherit}
   .prov-audit-kpis{grid-template-columns:1fr 1fr;gap:7px}
   .prov-audit-kpi .cv{font-size:15px}
   .prov-audit-table{min-width:1240px}
+}
+@media(max-width:900px){
+  .analysis-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .analysis-shell{gap:8px;margin-bottom:12px}
+  .analysis-card{padding:10px 10px 9px}
+  .analysis-card-title{font-size:11px}
+  .analysis-card-meta{font-size:10px}
+  .analysis-item{padding:7px 8px}
+  .analysis-item-val{font-size:11px}
+  .analysis-item-sub{font-size:10px}
+  .asset-inner-tabs{gap:6px;margin:2px 0 10px}
+  .asset-inner-tab{padding:7px 10px;font-size:11px}
 }
 .dashboard-grid{gap:10px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.95fr)}
 .dashboard-panel{min-height:260px}
@@ -777,6 +820,7 @@ let S = {
   irpfSeqSeen:-1,
   irpfFinalOpen:false,
   activeAssetsGroup:'',
+  assetsInnerTab:'patrimonio',
   assetSort:{},
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
@@ -7594,6 +7638,134 @@ function sortAssetsByGroup(type, items){
     return at.localeCompare(bt,'pt-BR',{sensitivity:'base'}) * dirFactor;
   });
 }
+function assetAnalysisRows(){
+  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  return (S.assets||[]).map(a=>{
+    const ticker=String(a.ticker||'').trim().toUpperCase();
+    const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
+    const sector=String(a.sector||'').trim()||'—';
+    const applied=assetAppliedValue(a);
+    const current=assetCurrentValue(a);
+    const profit=current-applied;
+    const pct=assetRentabPct(a);
+    const share=total>0 && Number.isFinite(current) ? (current/total)*100 : null;
+    return {
+      ticker,
+      type,
+      sector,
+      applied:Number.isFinite(applied)?applied:0,
+      current:Number.isFinite(current)?current:0,
+      profit:Number.isFinite(profit)?profit:0,
+      pct:Number.isFinite(pct)?pct:null,
+      share:Number.isFinite(share)?share:null,
+      dy:Number(a.dy)||0
+    };
+  }).filter(r=>r.ticker || r.current>0 || r.applied>0);
+}
+function assetAnalysisRowHtml(row, mode, maxShare){
+  const typeLabel=`${row.type}${row.sector&&row.sector!=='—'?` · ${row.sector}`:''}`;
+  if(mode==='positive' || mode==='negative'){
+    const value=fmt(row.profit);
+    const pct=row.pct!=null ? fmtP(row.pct) : '—';
+    return `<div class="analysis-item ${mode==='positive'?'analysis-positive':'analysis-negative'}">
+      <div class="analysis-item-left">
+        <div class="analysis-item-top"><div class="analysis-item-ticker">${esc(row.ticker)}</div></div>
+        <div class="analysis-item-desc">${esc(typeLabel)}</div>
+      </div>
+      <div class="analysis-item-right">
+        <div class="analysis-item-val">${value}</div>
+        <div class="analysis-item-sub">${pct}</div>
+      </div>
+    </div>`;
+  }
+  if(mode==='position'){
+    const share=row.share!=null ? row.share : 0;
+    const shareTxt=row.share!=null ? `${row.share.toFixed(1)}% da carteira` : 'dados insuficientes';
+    return `<div class="analysis-item analysis-info">
+      <div class="analysis-item-left">
+        <div class="analysis-item-top"><div class="analysis-item-ticker">${esc(row.ticker)}</div></div>
+        <div class="analysis-item-desc">${esc(typeLabel)}</div>
+      </div>
+      <div class="analysis-item-right">
+        <div class="analysis-item-val">${fmt(row.current)}</div>
+        <div class="analysis-item-sub">${shareTxt}</div>
+      </div>
+    </div>`;
+  }
+  const share=row.share!=null ? row.share : 0;
+  const shareTxt=row.share!=null ? `${row.share.toFixed(1)}% da carteira` : 'dados insuficientes';
+  const barWidth=maxShare>0 ? Math.max(6, Math.min(100, (share/maxShare)*100)) : 0;
+  return `<div class="analysis-item analysis-warn">
+    <div class="analysis-item-left">
+      <div class="analysis-item-top"><div class="analysis-item-ticker">${esc(row.ticker)}</div></div>
+      <div class="analysis-item-desc">${esc(typeLabel)}</div>
+      <div class="analysis-bar"><div class="analysis-bar-fill" style="width:${barWidth.toFixed(0)}%"></div></div>
+    </div>
+    <div class="analysis-item-right">
+      <div class="analysis-item-val">${row.share!=null?`${row.share.toFixed(1)}%`:'—'}</div>
+      <div class="analysis-item-sub">${shareTxt}</div>
+    </div>
+  </div>`;
+}
+function assetAnalysisCard(title, subtitle, items, mode, emptyText, headRight=''){
+  const totalItems=items.length;
+  const list=totalItems
+    ? items.map(it=>assetAnalysisRowHtml(it, mode, Math.max(...items.map(r=>Number(r.share)||0), 1))).join('')
+    : `<div class="analysis-empty">${esc(emptyText)}</div>`;
+  return `<div class="analysis-card">
+    <div class="analysis-card-head">
+      <div>
+        <div class="analysis-card-title">${esc(title)}</div>
+        <div class="analysis-card-meta">${esc(subtitle)}</div>
+      </div>
+      ${headRight?`<div>${headRight}</div>`:''}
+    </div>
+    <div class="analysis-list">${list}</div>
+  </div>`;
+}
+function assetAnalysisBlock(){
+  const rows=assetAnalysisRows();
+  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  const positive=[...rows]
+    .filter(r=>Number.isFinite(r.profit) && r.profit>0 && Number.isFinite(r.pct))
+    .sort((a,b)=>b.profit-a.profit || (b.pct||0)-(a.pct||0))
+    .slice(0,5);
+  const negative=[...rows]
+    .filter(r=>Number.isFinite(r.profit) && r.profit<0 && Number.isFinite(r.pct))
+    .sort((a,b)=>a.profit-b.profit || (a.pct||0)-(b.pct||0))
+    .slice(0,5);
+  const positions=[...rows]
+    .filter(r=>r.current>0)
+    .sort((a,b)=>b.current-a.current)
+    .slice(0,5);
+  const concentration=[...rows]
+    .filter(r=>r.share!=null)
+    .sort((a,b)=>b.share-a.share)
+    .slice(0,5);
+  const top3Pct=concentration.slice(0,3).reduce((s,r)=>s+(Number(r.share)||0),0);
+  const statusText=rows.length
+    ? `${rows.length} ativos analisados · carteira ${fmt(total)}`
+    : 'dados insuficientes';
+  return `<div class="analysis-shell">
+    <div class="sh" style="margin-bottom:0">
+      <div>
+        <div class="st">Análise de Ativos</div>
+        <div class="mu" style="font-size:11px;margin-top:3px">Leitura rápida da carteira usando os dados já cadastrados.</div>
+      </div>
+      <div class="analysis-pill">${esc(statusText)}</div>
+    </div>
+    <div class="analysis-grid">
+      ${assetAnalysisCard('Ativos mais positivos','Maior lucro da carteira',positive,'positive','Dados insuficientes para identificar ativos positivos.')}
+      ${assetAnalysisCard('Ativos mais negativos','Maior prejuízo da carteira',negative,'negative','Dados insuficientes para identificar ativos negativos.')}
+      ${assetAnalysisCard('Maiores posições','Maior valor atual na carteira',positions,'position','Dados insuficientes para calcular posições.')}
+      ${assetAnalysisCard('Maior concentração',`Top 3 = ${top3Pct.toFixed(1)}% da carteira`,concentration,'concentration','Dados insuficientes para medir concentração.')}
+    </div>
+  </div>`;
+}
+function setAssetsInnerTab(tab){
+  S.assetsInnerTab = tab==='analise' ? 'analise' : 'patrimonio';
+  render();
+}
 function toggleDividendSection(section, ev){
   if(ev) ev.preventDefault();
   S.activeDividendSection = S.activeDividendSection===section ? '' : section;
@@ -7989,6 +8161,7 @@ function ativos(){
   });
   const order=TYPE_ORDER;
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
+  const analysis=assetAnalysisBlock();
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
     const sortedItems=sortAssetsByGroup(type, items);
@@ -8087,6 +8260,12 @@ function ativos(){
       </div>
     </details>`;
   }).join('');
+  const innerTab=String(S.assetsInnerTab||'patrimonio')==='analise' ? 'analise' : 'patrimonio';
+  const patrimonyPanel=`<div class="asset-inner-panel">
+    ${frmA()}
+    <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
+  </div>`;
+  const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
   return`<div class="sh">
     <div>
       <div class="st">Meus Ativos (${S.assets.length})</div>
@@ -8097,8 +8276,11 @@ function ativos(){
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
     </div>
   </div>
-  ${frmA()}
-  <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>`;
+  <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
+    <button class="asset-inner-tab ${innerTab==='patrimonio'?'on':''}" onclick="setAssetsInnerTab('patrimonio')" role="tab" aria-selected="${innerTab==='patrimonio'?'true':'false'}">Patrimônio</button>
+    <button class="asset-inner-tab ${innerTab==='analise'?'on':''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab==='analise'?'true':'false'}">Análise</button>
+  </div>
+  ${innerTab==='analise'?analysisPanel:patrimonyPanel}`;
 }
 // APORTES
 // ══════════════════════════════════════
@@ -9602,7 +9784,7 @@ function go(t){
   S.tab=t;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
-  if(t==='ativos') S.activeAssetsGroup='';
+  if(t==='ativos') { S.activeAssetsGroup=''; S.assetsInnerTab='patrimonio'; }
   if(t==='dividendos') S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();
