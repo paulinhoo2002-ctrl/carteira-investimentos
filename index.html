@@ -52,6 +52,47 @@ button{cursor:pointer;font-family:inherit}
 .prov-imported-card .cl,.prov-imported-card .cs,.prov-imported-card .cv{min-width:0}
 .prov-imported-card .cl,.prov-imported-card .cs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prov-imported-hint{font-size:11px;line-height:1.4;color:#94a3b8}
+.prov-audit-shell{display:flex;flex-direction:column;gap:10px}
+.prov-audit-filters{display:grid;grid-template-columns:1.15fr .95fr 1.1fr auto;gap:8px;align-items:end}
+.prov-audit-filters .aud-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.prov-audit-filters .aud-field .fl{margin-bottom:0}
+.prov-audit-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.prov-audit-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.prov-audit-kpi{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:9px 10px;min-height:72px;display:flex;flex-direction:column;justify-content:space-between}
+.prov-audit-kpi .cl{font-size:11px;color:#94a3b8;margin-bottom:3px}
+.prov-audit-kpi .cv{font-size:16px;font-weight:900;line-height:1.1}
+.prov-audit-kpi .cs{font-size:10px;color:#64748b;line-height:1.35;margin-top:4px}
+.prov-audit-kpi.warn .cv{color:#fbbf24}
+.prov-audit-kpi.ok .cv{color:#34d399}
+.prov-audit-kpi.info .cv{color:#60a5fa}
+.prov-audit-kpi.purple .cv{color:#a78bfa}
+.prov-audit-kpi.red .cv{color:#f87171}
+.prov-audit-table-wrap{border:1px solid #182033;border-radius:14px;overflow:auto;background:#090c15}
+.prov-audit-table{width:100%;min-width:1320px;border-collapse:separate;border-spacing:0;font-size:12px}
+.prov-audit-table th,.prov-audit-table td{padding:9px 10px;border-bottom:1px solid #162033;vertical-align:top;text-align:left}
+.prov-audit-table th{position:sticky;top:0;background:#0b1020;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.04em;z-index:2;white-space:nowrap}
+.prov-audit-table tr:last-child td{border-bottom:0}
+.prov-audit-table .num{text-align:right;white-space:nowrap}
+.prov-audit-table .ticker{font-weight:800;color:#e2eaf6}
+.prov-audit-table .asset{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
+.prov-audit-table .obs{max-width:280px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prov-audit-row-dup{background:rgba(248,191,36,.06)}
+.prov-audit-row-primary{background:rgba(59,130,246,.04)}
+.prov-audit-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;border:1px solid #24324a;background:#111827;color:#cbd5e1;white-space:nowrap}
+.prov-audit-status.ok{color:#34d399;border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08)}
+.prov-audit-status.warn{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
+.prov-audit-status.muted{color:#94a3b8;border-color:#2a3649;background:rgba(148,163,184,.06)}
+@media(max-width:900px){
+  .prov-audit-filters{grid-template-columns:1fr 1fr}
+  .prov-audit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .prov-audit-kpi{min-height:66px}
+}
+@media(max-width:640px){
+  .prov-audit-filters{grid-template-columns:1fr}
+  .prov-audit-kpis{grid-template-columns:1fr 1fr;gap:7px}
+  .prov-audit-kpi .cv{font-size:15px}
+  .prov-audit-table{min-width:1240px}
+}
 .dashboard-grid{gap:10px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.95fr)}
 .dashboard-panel{min-height:260px}
 .dashboard-legend{display:flex;flex-direction:column;gap:6px;min-width:220px}
@@ -744,6 +785,7 @@ let S = {
   apSearchTimer:null,
   activeDividendSection:'',
   showImportedDividendsDetails:false,
+  proventoAudit:{month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]},
   mobileMenuOpen:false,
   mobileTopMenuOpen:false,
   accessSettingsOpen:false,
@@ -5784,6 +5826,185 @@ function proventoResumoPorTipo(){
 function proventoRankingPagadores(){
   return proventoResumoPorAtivo().slice(0,10);
 }
+function proventoAuditMonthKey(dateLike){
+  const dt=parseAnyDate(dateLike);
+  if(!dt) return '';
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+}
+function proventoAuditMonthLabel(key){
+  const [year,month]=String(key||'').split('-');
+  if(!year || !month) return '—';
+  return `${month}/${year}`;
+}
+function proventoAuditEnsureState(){
+  if(!S.proventoAudit || typeof S.proventoAudit!=='object') S.proventoAudit={month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]};
+  const state=S.proventoAudit;
+  if(!Array.isArray(state.selectedIds)) state.selectedIds=[];
+  if(typeof state.eventType!=='string' || !state.eventType) state.eventType='all';
+  if(typeof state.ticker!=='string') state.ticker='';
+  if(typeof state.onlyDuplicates!=='boolean') state.onlyDuplicates=false;
+  const months=proventoAuditMonthOptions();
+  if(!state.month || !months.some(m=>m.key===state.month)) state.month=months[0]?.key || proventoAuditMonthKey(new Date()) || '';
+  return state;
+}
+function proventoAuditMonthOptions(){
+  const months=new Map();
+  (S.proventos||[]).forEach((p,idx)=>{
+    const key=proventoAuditMonthKey(p.date);
+    if(!key) return;
+    if(!months.has(key)){
+      months.set(key,{
+        key,
+        label:proventoAuditMonthLabel(key),
+        index:idx
+      });
+    }
+  });
+  const list=[...months.values()].sort((a,b)=>b.key.localeCompare(a.key));
+  if(!list.length){
+    const fallback=proventoAuditMonthKey(new Date());
+    if(fallback) list.push({key:fallback, label:proventoAuditMonthLabel(fallback), index:0});
+  }
+  return list;
+}
+function proventoAuditEntryType(p){
+  return proventoTipoCanonical(p?.eventType||p?.type||'Outro');
+}
+function proventoAuditEntryId(p, idx){
+  return `prov-audit|${idx}|${String(p?.id ?? '')}|${String(p?.autoKey ?? '')}`;
+}
+function proventoAuditBuildRows(){
+  const state=proventoAuditEnsureState();
+  const all=(S.proventos||[]).map((p,idx)=>{
+    const date=String(p.date||'').trim();
+    const dt=parseAnyDate(date);
+    const monthKey=proventoAuditMonthKey(date);
+    const eventType=proventoAuditEntryType(p);
+    const ticker=String(p.ticker||'').trim().toUpperCase();
+    const value=Number(p.value)||0;
+    const assetMeta=proventoAssetMeta(p);
+    const name=String(p.assetName||assetMeta.title||p.note||'—').trim() || '—';
+    const source=String(p.source||'—').trim() || '—';
+    const autoKey=String(p.autoKey||'—').trim() || '—';
+    const dupKey=[ticker||'—', date||'—', eventType||'—', value.toFixed(2)].join('|');
+    return {
+      sourceItem:p,
+      auditId:proventoAuditEntryId(p, idx),
+      auditIndex:idx,
+      date,
+      dateKey:dt ? toISODate(dt) : '',
+      monthKey,
+      ticker: ticker || '—',
+      name,
+      eventType,
+      value,
+      source,
+      autoKey,
+      dupKey
+    };
+  });
+  const groups=new Map();
+  all.forEach(row=>{
+    if(!groups.has(row.dupKey)) groups.set(row.dupKey, []);
+    groups.get(row.dupKey).push(row);
+  });
+  all.forEach(row=>{
+    const group=groups.get(row.dupKey)||[];
+    row.dupCount=group.length;
+    row.dupIndex=group.findIndex(x=>x.auditId===row.auditId);
+    row.isDuplicateGroup=group.length>1;
+    row.isPrimary=row.dupIndex===0;
+    row.canRemove=row.isDuplicateGroup && !row.isPrimary;
+    row.status=row.isDuplicateGroup ? (row.isPrimary ? 'OK' : 'Possível duplicado') : 'OK';
+    row.statusClass=row.isDuplicateGroup ? (row.isPrimary ? 'ok' : 'warn') : 'ok';
+    row.statusLabel=row.isDuplicateGroup
+      ? (row.isPrimary ? `OK · grupo ${group.length}` : `Possível duplicado · ${row.dupIndex+1}/${group.length}`)
+      : 'OK';
+    row.obs=row.isDuplicateGroup
+      ? (row.isPrimary ? `Mantido como primeiro lançamento do grupo de ${group.length}.` : `Possível duplicado extra do mesmo grupo.`)
+      : 'Sem duplicidade aparente.';
+  });
+  const tickerFilter=rfPosNorm(state.ticker||'');
+  const eventFilter=String(state.eventType||'all').trim();
+  const monthFilter=String(state.month||'').trim();
+  const filteredBase=all.filter(row=>{
+    if(monthFilter && row.monthKey!==monthFilter) return false;
+    if(eventFilter!=='all' && row.eventType!==eventFilter) return false;
+    if(tickerFilter){
+      const hay=rfPosNorm(`${row.ticker} ${row.name} ${row.source} ${row.autoKey}`);
+      if(!hay.includes(tickerFilter)) return false;
+    }
+    return true;
+  });
+  const visibleRows=(state.onlyDuplicates ? filteredBase.filter(r=>r.canRemove) : filteredBase)
+    .slice()
+    .sort((a,b)=> (b.dateKey||'').localeCompare(a.dateKey||'') || a.ticker.localeCompare(b.ticker) || a.eventType.localeCompare(b.eventType));
+  const total=filteredBase.reduce((s,r)=>s+r.value,0);
+  const dupRows=filteredBase.filter(r=>r.canRemove);
+  const dupTotal=dupRows.reduce((s,r)=>s+r.value,0);
+  const summary={
+    total,
+    count:filteredBase.length,
+    duplicates:dupRows.length,
+    dupTotal,
+    cleanTotal:Math.max(0,total-dupTotal),
+    selected: (state.selectedIds||[]).filter(id=>dupRows.some(r=>r.auditId===id)).length
+  };
+  return {state, all, filteredBase, rows:visibleRows, summary};
+}
+function setProventoAuditMonth(value){
+  const state=proventoAuditEnsureState();
+  state.month=String(value||'');
+  render();
+}
+function setProventoAuditEventType(value){
+  const state=proventoAuditEnsureState();
+  state.eventType=String(value||'all');
+  render();
+}
+function setProventoAuditTicker(value){
+  const state=proventoAuditEnsureState();
+  state.ticker=String(value||'');
+  render();
+}
+function toggleProventoAuditOnlyDuplicates(){
+  const state=proventoAuditEnsureState();
+  state.onlyDuplicates=!state.onlyDuplicates;
+  render();
+}
+function setProventoAuditRowSelected(auditId, value){
+  const state=proventoAuditEnsureState();
+  const id=String(auditId||'');
+  if(!id) return;
+  const selected=new Set(state.selectedIds||[]);
+  if(value) selected.add(id); else selected.delete(id);
+  state.selectedIds=[...selected];
+  render();
+}
+function selectProventoAuditDuplicateExtras(){
+  const audit=proventoAuditBuildRows();
+  const state=proventoAuditEnsureState();
+  state.selectedIds=[...new Set(audit.rows.filter(r=>r.canRemove).map(r=>r.auditId))];
+  render();
+}
+function removeProventoAuditSelected(){
+  const audit=proventoAuditBuildRows();
+  const state=proventoAuditEnsureState();
+  const selectedSet=new Set(state.selectedIds||[]);
+  const removable=audit.all.filter(r=>selectedSet.has(r.auditId) && r.canRemove);
+  if(!removable.length){
+    alert('Selecione ao menos um possível duplicado extra para remover.');
+    return;
+  }
+  const ok=confirm(`Deseja remover ${removable.length} lançamentos duplicados? Essa ação não altera Meus Ativos nem Histórico.`);
+  if(!ok) return;
+  const removalIds=new Set(removable.map(r=>r.auditId));
+  S.proventos=(S.proventos||[]).filter((p,idx)=>!removalIds.has(proventoAuditEntryId(p, idx)));
+  state.selectedIds=[];
+  save();
+  render();
+  toast(`✅ ${removable.length} lançamento(s) duplicado(s) removido(s).`);
+}
 function reserveStats(){
   const out={bolsa:0,pessoal:0,total:0,entries:0};
   S.aportes.forEach(a=>{
@@ -8389,6 +8610,9 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const resumoTiposDetalhado = proventoResumoPorTipo();
   const maioresPagadores = proventoRankingPagadores();
   const importedDetailsOpen = !!S.showImportedDividendsDetails;
+  const audit = proventoAuditBuildRows();
+  const auditMonths = proventoAuditMonthOptions();
+  const auditSelected = new Set(audit.state.selectedIds || []);
   const historico = proventoHistoricoMensal();
   const histTop = historico[0] || { total: 0, media: 0 };
   const media12 = histTop.media || 0;
@@ -8415,6 +8639,37 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const anoRows = resumo.anos.length
     ? resumo.anos.map(r=>`<tr><td style="font-weight:700;color:#e2eaf6">${r.ano}</td><td>${r.count}</td><td class="gn" style="font-weight:800">${fmt(r.valor)}</td></tr>`).join('')
     : '<tr><td colspan="3" style="text-align:center;padding:18px;color:#2e3f58">Sem histórico anual ainda.</td></tr>';
+  const auditMonthOptionsHtml = auditMonths.map(m=>`<option value="${esc(m.key)}" ${audit.state.month===m.key?'selected':''}>${esc(m.label)}</option>`).join('');
+  const auditEventOptionsHtml = ['all','Rendimento','Dividendo','JCP','Juros de Renda Fixa','Reembolso']
+    .map(type=>`<option value="${esc(type)}" ${String(audit.state.eventType||'all')===type?'selected':''}>${type==='all'?'Todos':esc(type)}</option>`)
+    .join('');
+  const auditRowsHtml = audit.rows.length
+    ? audit.rows.map(row=>{
+        const canRemove=row.canRemove;
+        const checked=auditSelected.has(row.auditId);
+        const statusClass=row.isDuplicateGroup ? (row.isPrimary ? 'ok' : 'warn') : 'ok';
+        const rowClass=row.isDuplicateGroup ? (row.isPrimary ? 'prov-audit-row-primary' : 'prov-audit-row-dup') : '';
+        const obs=String(row.obs||'').trim();
+        return `<tr class="${rowClass}">
+          <td style="width:42px;text-align:center">
+            <input type="checkbox" ${canRemove ? (checked?'checked':'') : 'disabled'} onchange="setProventoAuditRowSelected(${JSON.stringify(row.auditId)}, this.checked)" style="width:16px;height:16px">
+          </td>
+          <td>
+            <div class="prov-audit-status ${statusClass}">${esc(row.status)}</div>
+            <div class="mu" style="font-size:10px;margin-top:4px">${esc(row.statusLabel)}</div>
+          </td>
+          <td style="white-space:nowrap">${esc(row.date || '—')}</td>
+          <td class="ticker">${esc(row.ticker || '—')}</td>
+          <td class="asset">${esc(row.name || '—')}</td>
+          <td>${esc(row.eventType || '—')}</td>
+          <td class="gn num" style="font-weight:800">${fmt(row.value)}</td>
+          <td class="mu">${esc(row.source || '—')}</td>
+          <td class="mu">${esc(row.autoKey || '—')}</td>
+          <td class="obs" title="${esc(obs)}">${esc(obs)}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="10" style="text-align:center;padding:18px;color:#2e3f58">Nenhum provento encontrado para os filtros atuais.</td></tr>';
+  const auditTypeLabel=String(audit.state.eventType||'all')==='all' ? 'Todos' : String(audit.state.eventType||'all');
 
   const projRows = [...S.assets]
     .sort((a,b)=>((b.qty*b.current_price*(b.dy/100))/12)-((a.qty*a.current_price*(a.dy/100))/12))
@@ -8751,6 +9006,93 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </div>
     </div>
     `:''}
+  <details class="sec" style="margin-bottom:8px">
+    <summary>
+      <div>
+        <div class="sec-title">Auditoria de Proventos</div>
+        <div class="sec-meta">Filtre por mês/ano e identifique possíveis duplicidades antes de remover apenas os extras.</div>
+      </div>
+      <div class="sec-meta">fechado por padrão</div>
+    </summary>
+    <div class="sec-body prov-audit-shell">
+      <div class="prov-audit-filters">
+        <div class="aud-field">
+          <div class="fl">Mês/Ano</div>
+          <select onchange="setProventoAuditMonth(this.value)">${auditMonthOptionsHtml}</select>
+        </div>
+        <div class="aud-field">
+          <div class="fl">Tipo de evento</div>
+          <select onchange="setProventoAuditEventType(this.value)">${auditEventOptionsHtml}</select>
+        </div>
+        <div class="aud-field">
+          <div class="fl">Ticker / Ativo</div>
+          <input type="text" placeholder="Ex.: BRCO11 ou Petrobras" value="${esc(audit.state.ticker||'')}" oninput="setProventoAuditTicker(this.value)">
+        </div>
+        <div class="aud-field">
+          <div class="fl">Mostrar apenas possíveis duplicados</div>
+          <button class="btn ${audit.state.onlyDuplicates ? 'bp' : 'bgh'}" style="min-height:38px" onclick="toggleProventoAuditOnlyDuplicates()">${audit.state.onlyDuplicates ? 'Sim' : 'Não'}</button>
+        </div>
+      </div>
+      <div class="prov-audit-kpis">
+        <div class="prov-audit-kpi warn">
+          <div class="cl">Total recebido no mês</div>
+          <div class="cv">${fmt(audit.summary.total)}</div>
+          <div class="cs">${proventoAuditMonthLabel(audit.state.month)}</div>
+        </div>
+        <div class="prov-audit-kpi ok">
+          <div class="cl">Lançamentos</div>
+          <div class="cv">${audit.summary.count}</div>
+          <div class="cs">Itens no recorte atual</div>
+        </div>
+        <div class="prov-audit-kpi purple">
+          <div class="cl">Possíveis duplicados</div>
+          <div class="cv">${audit.summary.duplicates}</div>
+          <div class="cs">${audit.summary.selected} selecionados para remoção</div>
+        </div>
+        <div class="prov-audit-kpi red">
+          <div class="cl">Total suspeito duplicado</div>
+          <div class="cv">${fmt(audit.summary.dupTotal)}</div>
+          <div class="cs">Apenas extras repetidos</div>
+        </div>
+        <div class="prov-audit-kpi info">
+          <div class="cl">Total líquido sem duplicados</div>
+          <div class="cv">${fmt(audit.summary.cleanTotal)}</div>
+          <div class="cs">Total - duplicados extras</div>
+        </div>
+      </div>
+      <div class="prov-audit-actions">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <button class="btn bgh" onclick="toggleProventoAuditOnlyDuplicates()">${audit.state.onlyDuplicates ? 'Mostrar todos' : 'Ver somente duplicados'}</button>
+          <button class="btn bgh" onclick="selectProventoAuditDuplicateExtras()">Selecionar duplicados extras</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <span class="note-pill">Tipo: ${esc(auditTypeLabel)}</span>
+          <span class="note-pill">Saldo filtrado: ${fmt(audit.summary.cleanTotal)}</span>
+          <button class="btn bdi" onclick="removeProventoAuditSelected()">Remover selecionados</button>
+        </div>
+      </div>
+      <div class="prov-audit-table-wrap">
+        <table class="prov-audit-table">
+          <thead>
+            <tr>
+              <th style="width:46px">Sel.</th>
+              <th>Status</th>
+              <th>Data</th>
+              <th>Ticker</th>
+              <th>Nome do ativo</th>
+              <th>Tipo de evento</th>
+              <th>Valor</th>
+              <th>Origem</th>
+              <th>AutoKey</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>${auditRowsHtml}</tbody>
+        </table>
+      </div>
+      <div class="prov-audit-hint" style="font-size:11px;color:#64748b;line-height:1.45">O primeiro lançamento de cada grupo fica protegido. Só os duplicados extras podem ser marcados e removidos.</div>
+    </div>
+  </details>
   <div class="sh" style="margin:0 0 8px 0">
     <div>
       <div class="st">Atualização de dividendos</div>
