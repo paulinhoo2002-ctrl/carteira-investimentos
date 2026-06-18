@@ -368,8 +368,9 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .mov-review-group-meta{font-size:12px;color:#94a3b8;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .mov-review-group-body{padding:12px 14px 14px}
 .mov-review-lines{display:flex;flex-direction:column;gap:8px}
-.mov-review-line{display:grid;grid-template-columns:24px 92px 116px 1fr 78px 86px 98px minmax(150px,1fr) 86px;gap:8px;align-items:center;padding:10px 10px;border:1px solid #161e2e;border-radius:10px;background:#0b0f17}
+.mov-review-line{display:grid;grid-template-columns:24px 90px 92px 116px 1fr 78px 86px 98px minmax(150px,1fr) 86px;gap:8px;align-items:center;padding:10px 10px;border:1px solid #161e2e;border-radius:10px;background:#0b0f17}
 .mov-review-line label{display:flex;align-items:center;justify-content:center}
+.mov-review-line .col-status{min-width:0}
 .mov-review-line .mini{font-size:11px;color:#64748b}
 .mov-review-line .ticker{font-weight:800;color:#e2eaf6}
 .mov-review-line .kind{font-size:12px;color:#cbd5e1}
@@ -401,8 +402,9 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .b3-review-line .col-price{grid-area:price}
   .b3-review-line .col-total{grid-area:total}
   .b3-review-line .col-check{grid-area:chk}
-  .mov-review-line{grid-template-columns:24px 1fr 1fr;grid-template-areas:"chk ticker ticker" "chk kind kind" "chk target target" "chk qty price" "chk total total" "chk obs obs" "chk ctrl ctrl";align-items:start}
+  .mov-review-line{grid-template-columns:24px 1fr 1fr;grid-template-areas:"chk status status" "chk ticker ticker" "chk kind kind" "chk target target" "chk qty price" "chk total total" "chk obs obs" "chk ctrl ctrl";align-items:start}
   .mov-review-line .col-check{grid-area:chk}
+  .mov-review-line .col-status{grid-area:status}
   .mov-review-line .col-ticker{grid-area:ticker}
   .mov-review-line .col-kind{grid-area:kind}
   .mov-review-line .col-target{grid-area:target}
@@ -4733,6 +4735,7 @@ function b3MovementSelectedItems(){
     const group=it.group||b3MovementGroup(it.movement);
     if(r.selectedGroups && r.selectedGroups[group]===false) return false;
     if(it.include===false) return false;
+    if(!['historico','proventos'].includes(String(it.destination||''))) return false;
     if(it.target==='ignorar' || it.target==='revisar' || it.target==='eventos') return false;
     if(it.possibleDuplicate) return false;
     return true;
@@ -4836,7 +4839,9 @@ function importB3MovementReview(){
     alert('Selecione ao menos um item valido para importar.');
     return;
   }
-  toast('Revisão pronta. A gravação será implementada na próxima etapa.');
+  const importDate=S.b3MovementReview.importDate || new Date().toLocaleDateString('pt-BR');
+  S.b3MovementReview=null;
+  applyB3MovementImported(rows, importDate);
 }
 function b3MovementReviewModal(){
   const r=S.b3MovementReview;
