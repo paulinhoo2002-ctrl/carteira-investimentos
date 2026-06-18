@@ -777,6 +777,7 @@ let S = {
   irpfSeqSeen:-1,
   irpfFinalOpen:false,
   activeAssetsGroup:'',
+  assetSort:{},
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
   irpfYear:new Date().getFullYear(),
@@ -7545,6 +7546,54 @@ function toggleAssetGroup(type, ev){
   S.activeAssetsGroup = S.activeAssetsGroup===type ? '' : type;
   render();
 }
+function getAssetSortConfig(type){
+  const sort=S.assetSort || (S.assetSort={});
+  return sort[type] || {field:'ticker', dir:'asc'};
+}
+function toggleAssetSort(type, field){
+  const sort=S.assetSort || (S.assetSort={});
+  const current=sort[type] || {field:'ticker', dir:'asc'};
+  let dir='asc';
+  if(current.field===field){
+    dir=current.dir==='asc' ? 'desc' : 'asc';
+  }else{
+    dir=field==='rentability' ? 'desc' : 'asc';
+  }
+  sort[type]={field, dir};
+  render();
+}
+function assetSortIndicator(type, field){
+  const current=getAssetSortConfig(type);
+  if(current.field!==field) return '';
+  return current.dir==='asc' ? ' ↑' : ' ↓';
+}
+function sortAssetsByGroup(type, items){
+  const cfg=getAssetSortConfig(type);
+  const dirFactor=cfg.dir==='desc' ? -1 : 1;
+  return [...items].sort((a,b)=>{
+    if(cfg.field==='rentability'){
+      const ar=assetRentabPct(a);
+      const br=assetRentabPct(b);
+      const aValid=Number.isFinite(ar);
+      const bValid=Number.isFinite(br);
+      if(aValid!==bValid) return aValid ? -1 : 1;
+      if(!aValid && !bValid){
+        const at=String(a.ticker||'').toUpperCase();
+        const bt=String(b.ticker||'').toUpperCase();
+        return at.localeCompare(bt,'pt-BR',{sensitivity:'base'}) * dirFactor;
+      }
+      if(ar===br) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (ar-br) * dirFactor;
+    }
+    const at=String(a.ticker||'').trim().toUpperCase();
+    const bt=String(b.ticker||'').trim().toUpperCase();
+    const aValid=!!at;
+    const bValid=!!bt;
+    if(aValid!==bValid) return aValid ? -1 : 1;
+    if(!aValid && !bValid) return 0;
+    return at.localeCompare(bt,'pt-BR',{sensitivity:'base'}) * dirFactor;
+  });
+}
 function toggleDividendSection(section, ev){
   if(ev) ev.preventDefault();
   S.activeDividendSection = S.activeDividendSection===section ? '' : section;
@@ -7942,6 +7991,7 @@ function ativos(){
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
+    const sortedItems=sortAssetsByGroup(type, items);
     const gApplied=items.reduce((s,a)=>s+assetAppliedValue(a),0);
     const gTotal=items.reduce((s,a)=>s+assetCurrentValue(a),0);
     const gDivMes=items.reduce((s,a)=>{
@@ -7956,7 +8006,7 @@ function ativos(){
     const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
-    const rows=items.map(a=>{
+    const rows=sortedItems.map(a=>{
       const avg=Number(a.avg_price)||0;
       const currentUnit=Number(a.current_price)||0;
       const marketValue=isRendaFixaAsset(a) ? assetCurrentValue(a) : (Number(a.qty)||0)*currentUnit;
@@ -8023,14 +8073,14 @@ function ativos(){
       <div class="ag-body">
         <div class="ag-table">
           <div class="tw"><div class="ts"><table>
-            <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
+            <thead><tr><th><span style="cursor:pointer;user-select:none" onclick="toggleAssetSort(${JSON.stringify(type)},'ticker');event.stopPropagation()">Ticker${assetSortIndicator(type,'ticker')}</span></th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
               <th>
                 <div style="display:flex;align-items:center;gap:5px">
                   ATUAL
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th>Rentab.</th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+              <th><span style="cursor:pointer;user-select:none" onclick="toggleAssetSort(${JSON.stringify(type)},'rentability');event.stopPropagation()">Rentab.${assetSortIndicator(type,'rentability')}</span></th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
             <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>
