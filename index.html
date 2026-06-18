@@ -1965,6 +1965,11 @@ function b3MovementTicker(product){
   const first=s.split(' - ')[0] || s.split(' ').filter(Boolean)[0] || s;
   return cleanAssetCode(first);
 }
+function b3MovementAssetType(product, ticker='', mov=''){
+  const tk=String(ticker||b3MovementTicker(product)||'').trim().toUpperCase();
+  const meta=inferB3PositionMeta('Movimentação', tk, product, mov);
+  return normalizeType(meta.type || metaTicker(tk).type || 'Ação','Ação');
+}
 function b3MovementKind(mov){
   const s=b3MovementNorm(mov);
   if(/DIVIDENDO|DIVIDENDOS|JCP|JUROS SOBRE CAPITAL|RENDIMENTO|RENDIMENTOS|PAGAMENTO DE JUROS|PAGAMENTO DE RENDIMENTO/.test(s)) return 'provento';
@@ -1977,9 +1982,10 @@ function b3MovementKind(mov){
   if(/VENDA|SAIDA/.test(s)) return 'resgate';
   return 'revisar';
 }
-function b3MovementClassify(mov, entryExit, product='', qty=0, price=0, value=0){
+function b3MovementClassify(mov, entryExit, product='', qty=0, price=0, value=0, assetType=''){
   const s=b3MovementNorm(mov);
   const e=b3MovementNorm(entryExit);
+  const type=normalizeType(assetType || b3MovementAssetType(product, '', mov), 'Ação');
   const hasValid=String(product||'').trim() && Number(qty)>0 && Number(price)>0 && Number(value)>0;
   const exact=txt=>b3MovementNorm(txt);
   const isTransferLiquidity=/TRANSFERENCIA\s*-\s*LIQUIDACAO|TRANSFERENCIA LIQUIDACAO/.test(s);
@@ -1992,14 +1998,17 @@ function b3MovementClassify(mov, entryExit, product='', qty=0, price=0, value=0)
   let status='Revisar';
   let confidence='Baixa';
   let action='revisar';
+  let operationLabel='Revisar';
   let note='Linha sem classificação segura.';
   let group='Revisar manualmente';
   let includeDefault=false;
+  let reviewReason='';
   if(isProvento){
     destination='proventos';
     status='Proventos';
     group='Proventos / juros';
     action='provento';
+    operationLabel='Provento';
     note='Vai para Proventos.';
     confidence=isReviewProvento ? 'Média' : (hasValid ? 'Alta' : 'Média');
     includeDefault=!isReviewProvento && hasValid;
@@ -2020,48 +2029,98 @@ function b3MovementClassify(mov, entryExit, product='', qty=0, price=0, value=0)
     status='Eventos';
     group='Eventos societários';
     action='revisar';
+    operationLabel='Evento societário';
     note='Evento societário para revisão.';
     confidence='Baixa';
     includeDefault=false;
   }else if(isTransfer || isTransferLiquidity){
-    destination='revisar';
-    status=isTransferLiquidity ? 'Operação potencial' : 'Revisar';
-    group=isTransferLiquidity ? 'Operação potencial / Revisar' : 'Transferências / custódia';
-    action='revisar';
-    note=isTransferLiquidity ? 'Transferência com liquidação: revisar para evitar duplicidade.' : 'Transferência ou custódia: revisar manualmente.';
-    confidence=isTransferLiquidity ? 'Média' : 'Baixa';
-    includeDefault=false;
+    const validTrade=hasValid && Number(qty)>0 && Number(price)>0 && Number(value)>0;
+    const isRf=type==='Renda Fixa';
+    const credit=e==='CREDITO' || e==='ENTRADA';
+    const debit=e==='DEBITO' || e==='SAIDA';
+    if(isTransferLiquidity && validTrade && !isRf && (credit || debit)){
+      destination='historico';
+      status='Histórico';
+      group='Compras / vendas';
+      action=credit ? 'compra' : 'venda';
+      operationLabel=credit ? 'Compra' : 'Venda';
+      note='Transferência - Liquidação interpretada como operação de bolsa.';
+      confidence='Alta';
+      includeDefault=true;
+    }else if(isTransferLiquidity && validTrade && isRf && (credit || debit)){
+      destination='historico';
+      status='Histórico';
+      group='Resgates / vencimentos';
+      action=credit ? 'venda' : 'compra';
+      operationLabel=credit ? 'Resgate' : 'Aplicação';
+      note='Transferência - Liquidação interpretada como movimentação de renda fixa.';
+      confidence='Alta';
+      includeDefault=true;
+    }else{
+      destination='revisar';
+      status=isTransferLiquidity ? 'Operação potencial' : 'Revisar';
+      group=isTransferLiquidity ? 'Operação potencial / Revisar' : 'Transferências / custódia';
+      action='revisar';
+      operationLabel='Revisar';
+      note=isTransferLiquidity ? 'Liquidação sem preço/valor no extrato B3. Revisar manualmente.' : 'Transferência ou custódia: revisar manualmente.';
+      confidence=isTransferLiquidity ? 'Baixa' : 'Baixa';
+      includeDefault=false;
+      reviewReason=isTransferLiquidity ? 'sem_precovalor' : 'transferencia';
+    }
   }else if(isHistoric){
     destination='historico';
     status='Histórico';
     group=/RESGATE\b|VENCIMENTO/.test(s) ? 'Resgates / vencimentos' : (/APLICA/.test(s) ? 'Aplicações' : 'Compras / vendas');
     action=/VENDA|SAIDA/.test(s) || /RESGATE\b|VENCIMENTO/.test(s) ? 'venda' : 'compra';
-    if(/COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO/.test(s)){
+    if(type==='Renda Fixa' && /COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO/.test(s)){
+      const credit=e==='CREDITO' || e==='ENTRADA';
+      const debit=e==='DEBITO' || e==='SAIDA';
+      if(debit){
+        action='compra';
+        operationLabel='Aplicação';
+        note='Renda fixa interpretada como aplicação/compra.';
+        confidence=hasValid ? 'Alta' : 'Média';
+      }else if(credit){
+        action='venda';
+        operationLabel='Resgate';
+        note='Renda fixa interpretada como resgate/venda.';
+        confidence=hasValid ? 'Alta' : 'Média';
+      }else{
+        action='revisar';
+        operationLabel='Revisar';
+        confidence='Média';
+        note='Renda fixa sem entrada/saída suficiente para interpretar.';
+      }
+    }else if(/COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO/.test(s)){
       const eup=exact(entryExit);
       action=eup==='DEBITO' || eup==='SAIDA' ? 'compra' : eup==='CREDITO' || eup==='ENTRADA' ? 'venda' : 'revisar';
       confidence=eup==='DEBITO' || eup==='SAIDA' || eup==='CREDITO' || eup==='ENTRADA' ? 'Alta' : 'Média';
       note='Operação compra/venda com base na entrada/saída.';
+      operationLabel=action==='compra' ? 'Compra' : action==='venda' ? 'Venda' : 'Revisar';
     }else if(/RESGATE ANTECIPADO|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO|RESGATE\b/.test(s)){
       action='venda';
       confidence=hasValid ? 'Alta' : 'Média';
       note='Movimentação de resgate/vencimento.';
+      operationLabel=/RESGATE ANTECIPADO/.test(s) ? 'Resgate antecipado' : (/VENCIMENTO/.test(s) ? 'Vencimento' : 'Resgate');
     }else if(/APLICA/.test(s)){
       action='compra';
       confidence=hasValid ? 'Alta' : 'Média';
       note='Aplicação financeira.';
+      operationLabel='Aplicação';
     }else{
       confidence=hasValid ? 'Alta' : 'Média';
       note='Compra ou venda identificada.';
+      operationLabel=action==='compra' ? 'Compra' : 'Venda';
     }
     includeDefault=confidence==='Alta' && hasValid;
   }
-  return {destination,status,confidence,action,note,group,includeDefault,hasValid};
+  return {destination,status,confidence,action,operationLabel,note,group,includeDefault,hasValid,type,reviewReason};
 }
 function b3MovementAction(mov, entryExit){
   return b3MovementClassify(mov, entryExit).action;
 }
-function b3MovementTarget(mov, entryExit){
-  const cls=b3MovementClassify(mov, entryExit);
+function b3MovementTarget(mov, entryExit, product='', qty=0, price=0, value=0, assetType=''){
+  const cls=b3MovementClassify(mov, entryExit, product, qty, price, value, assetType);
   if(cls.destination==='historico') return 'aportes';
   if(cls.destination==='proventos') return 'proventos';
   if(cls.destination==='eventos') return 'eventos';
@@ -2095,12 +2154,12 @@ function b3MovementParseRow({movement, product, entryExit, qty, price, value, im
   const v=parseNum(value);
   let p=parseNum(price);
   if((!p || p<=0) && q>0 && v>0) p=v/q;
-  const meta=inferB3PositionMeta('Renda Fixa', ticker, prod, mov);
-  const type=normalizeType(meta.type||'Renda Fixa','Renda Fixa');
+  const meta=inferB3PositionMeta('Movimentação', ticker, prod, mov);
+  const type=normalizeType(meta.type||metaTicker(ticker).type||'Ação','Ação');
   const sector=meta.sector||'';
-  const classification=b3MovementClassify(mov, entryExit, prod, q, p, v);
+  const classification=b3MovementClassify(mov, entryExit, prod, q, p, v, type);
   const action=classification.action;
-  const target=b3MovementTarget(mov, entryExit);
+  const target=b3MovementTarget(mov, entryExit, prod, q, p, v, type);
   const movDate=date||importDate||new Date().toLocaleDateString('pt-BR');
   const total=v||q*p;
   const movKey=[sheet,movDate,b3MovementNorm(entryExit),b3MovementNorm(mov),ticker,String(q),String(Number(p||0).toFixed(4)),String(Number(total||0).toFixed(2))].join('|');
@@ -2115,6 +2174,7 @@ function b3MovementParseRow({movement, product, entryExit, qty, price, value, im
     movement:mov,
     entryExit:String(entryExit||''),
     action,
+    interpretedOperation:classification.operationLabel||'Revisar',
     target,
     destination:classification.destination,
     destinationLabel:classification.status,
@@ -2122,6 +2182,7 @@ function b3MovementParseRow({movement, product, entryExit, qty, price, value, im
     reviewGroup:classification.group,
     include:classification.includeDefault,
     reviewNote:classification.note,
+    reviewReason:classification.reviewReason||'',
     sheet,
     date:movDate,
     broker:String(broker||''),
@@ -2191,11 +2252,13 @@ function b3MovementReviewNote(it){
   if(Number(it.value)<=0) notes.push('Valor total ausente ou zerado.');
   const dup=it.possibleDuplicate ? (it.duplicateKind||b3MovementDuplicateKind(it)) : '';
   if(dup) notes.push('Possivel duplicado ja existente.');
+  if(it.interpretedOperation) notes.push(`Tipo interpretado: ${it.interpretedOperation}.`);
   if(String(it.target||'')==='proventos') notes.push('Vai entrar na aba Proventos.');
   else if(String(it.target||'')==='aportes') notes.push('Vai atualizar Historico de aportes e Ativos.');
   if(it.destinationLabel) notes.push(`Destino sugerido: ${it.destinationLabel}.`);
   if(it.confidence) notes.push(`Confianca: ${it.confidence}.`);
   if(it.reviewNote) notes.push(it.reviewNote);
+  if(it.reviewReason==='sem_precovalor') notes.push('Liquidação sem preço/valor no extrato B3. Revisar manualmente.');
   return notes.join(' ');
 }
 function b3MovementIsHistoricalImportable(it){
@@ -2267,14 +2330,16 @@ function b3MovementRefreshReviewFlags(it){
   const next={...it};
   next.value=(Number(next.value)||((Number(next.qty)||0)*(Number(next.price)||0)));
   if(!next.destination || !next.destinationLabel || !next.confidence){
-    const cls=b3MovementClassify(next.movement, next.entryExit, next.product, next.qty, next.price, next.value);
+    const cls=b3MovementClassify(next.movement, next.entryExit, next.product, next.qty, next.price, next.value, next.type);
     next.destination=cls.destination;
     next.destinationLabel=cls.status;
     next.confidence=cls.confidence;
     next.reviewGroup=cls.group;
     next.reviewNote=cls.note;
     next.action=cls.action;
-    next.target=b3MovementTarget(next.movement, next.entryExit);
+    next.interpretedOperation=cls.operationLabel||next.interpretedOperation||'Revisar';
+    next.reviewReason=cls.reviewReason||next.reviewReason||'';
+    next.target=b3MovementTarget(next.movement, next.entryExit, next.product, next.qty, next.price, next.value, next.type);
     next.include=cls.includeDefault;
   }
   next.duplicateKind=b3MovementDuplicateKind(next);
@@ -4810,15 +4875,14 @@ function b3MovementSummary(){
   const selected=b3MovementSelectedItems();
   const total=selected.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
   const valid=items.filter(it=>it.ticker && Number(it.value)>0 && String(it.date||'').trim()).length;
-  const applications=items.filter(it=>String(it.action||'').toLowerCase()==='compra' && String(it.target||'')==='aportes').length;
-  const resgates=items.filter(it=>String(it.action||'').toLowerCase()==='venda').length;
-  const buysSells=items.filter(it=>String(it.target||'')==='aportes').length;
-  const juros=items.filter(it=>String(it.target||'')==='proventos').length;
-  const events=items.filter(it=>String(it.target||'')==='eventos').length;
+  const compras=items.filter(it=>String(it.interpretedOperation||'').toLowerCase()==='compra').length;
+  const vendas=items.filter(it=>String(it.interpretedOperation||'').toLowerCase()==='venda').length;
+  const rfAplicResg=items.filter(it=>normalizeType(it.type||'','')==='Renda Fixa' && ['aplicação','resgate','resgate antecipado','vencimento'].includes(String(it.interpretedOperation||'').toLowerCase())).length;
+  const revisarPrecoValor=items.filter(it=>String(it.reviewReason||'')==='sem_precovalor' || (String(it.target||'')==='revisar' && (!Number(it.price) || !Number(it.value)))).length;
+  const ignoradas=Number(r.stats?.totalIgnored)||0;
+  const events=items.filter(it=>String(it.target||'')==='eventos' || /EVENTOS SOCIETARIOS/.test(String(it.reviewGroup||b3MovementGroup(it.movement)).toUpperCase())).length;
   const revisar=items.filter(it=>String(it.target||'')==='revisar').length;
-  const ignorar=items.filter(it=>String(it.target||'')==='ignorar').length;
   const transferencias=items.filter(it=>String(it.reviewGroup||b3MovementGroup(it.movement)).includes('Transfer') || String(it.reviewGroup||b3MovementGroup(it.movement)).includes('custódia') || String(it.reviewGroup||b3MovementGroup(it.movement)).includes('custodia')).length;
-  const societarios=items.filter(it=>String(it.target||'')==='eventos' || /EVENTOS SOCIETARIOS/.test(String(it.reviewGroup||b3MovementGroup(it.movement)).toUpperCase())).length;
   const groups=[...new Set(selected.map(it=>it.group||b3MovementGroup(it.movement)))];
   return {
     count:selected.length,
@@ -4826,14 +4890,14 @@ function b3MovementSummary(){
     groups,
     linesRead:items.length + Number(r.stats?.totalIgnored||0),
     valid,
-    ignored:Number(r.stats?.totalIgnored)||0,
-    applications,
-    resgates,
-    buysSells,
-    juros,
+    ignored:ignoradas,
+    compras,
+    vendas,
+    rfAplicResg,
+    revisarPrecoValor,
     events,
     revisar,
-    ignorar,
+    ignorar:ignoradas,
     transferencias
   };
 }
@@ -4920,7 +4984,7 @@ function importB3MovementReview(){
 function b3MovementReviewModal(){
   const r=S.b3MovementReview;
   if(!r) return '';
-  const {count,total,groups,linesRead,valid,ignored,applications,resgates,buysSells,juros,events,revisar,ignorar,transferencias}=b3MovementSummary();
+  const {count,total,groups,linesRead,valid,ignored,compras,vendas,rfAplicResg,revisarPrecoValor,events,revisar,transferencias}=b3MovementSummary();
   const warnings=(r.warnings||[]).slice(0,8).map(w=>`<li>${esc(w)}</li>`).join('');
   const groupsHtml=(r.groups||[]).map(g=>{
     const checked=!!r.selectedGroups?.[g.group];
@@ -4946,6 +5010,7 @@ function b3MovementReviewModal(){
         <div class="col-kind">
           <div class="kind">${esc(it.movement||'')}</div>
           <div class="mini">${esc(it.entryExit||'')}</div>
+          <div class="mini" style="color:#a5b4fc">${esc(it.interpretedOperation||'—')}</div>
         </div>
         <div class="col-target">
           <div class="mini">Destino</div>
@@ -5020,13 +5085,13 @@ function b3MovementReviewModal(){
           <span class="note-pill">Linhas lidas: ${linesRead}</span>
           <span class="note-pill">Linhas válidas: ${valid}</span>
           <span class="note-pill">Linhas ignoradas: ${ignored}</span>
-          <span class="note-pill">Aplicações: ${applications}</span>
-          <span class="note-pill">Resgates: ${resgates}</span>
-          <span class="note-pill">Compras/Vendas: ${buysSells}</span>
-          <span class="note-pill">Juros encontrados: ${juros}</span>
+          <span class="note-pill">Compras interpretadas: ${compras}</span>
+          <span class="note-pill">Vendas interpretadas: ${vendas}</span>
+          <span class="note-pill">Renda fixa aplicação/resgate: ${rfAplicResg}</span>
+          <span class="note-pill">Revisar por preço/valor: ${revisarPrecoValor}</span>
           <span class="note-pill">Eventos societários: ${events}</span>
           <span class="note-pill">Transferências/Revisar: ${transferencias} / ${revisar}</span>
-          <span class="note-pill">Ignorar: ${ignorar}</span>
+          <span class="note-pill">Ignoradas: ${ignored}</span>
           <span class="note-pill">Total financeiro selecionado: ${fmt(total)}</span>
           <span class="note-pill">Selecionados: ${count}</span>
           <span class="note-pill">Grupos: ${groups.length}</span>
