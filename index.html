@@ -2198,6 +2198,71 @@ function b3MovementReviewNote(it){
   if(it.reviewNote) notes.push(it.reviewNote);
   return notes.join(' ');
 }
+function b3MovementIsHistoricalImportable(it){
+  return String(it.destination||'')==='historico'
+    && String(it.target||'')==='aportes'
+    && String(it.confidence||'')!=='Baixa'
+    && it.include!==false
+    && !it.possibleDuplicate
+    && String(it.ticker||'').trim()
+    && Number(it.qty)>0
+    && Number(it.price)>0
+    && Number(it.value)>0;
+}
+function b3MovementHistoricalOperationType(it){
+  const s=b3MovementNorm(it.movement);
+  const entryExit=b3MovementNorm(it.entryExit);
+  if(/APLICA/.test(s)) return 'Aplicação';
+  if(/RESGATE ANTECIPADO/.test(s)) return 'Resgate antecipado';
+  if(/VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO/.test(s)) return 'Vencimento';
+  if(/RESGATE\b/.test(s)) return 'Resgate';
+  if(/COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO/.test(s)){
+    return entryExit==='CREDITO' || entryExit==='ENTRADA' ? 'Venda' : 'Compra';
+  }
+  if(/VENDA|SAIDA/.test(s)) return 'Venda';
+  return 'Compra';
+}
+function b3MovementHistoricalSide(it, operationType){
+  const op=String(operationType||'').toLowerCase();
+  return ['compra','aplicação','aplicacao'].includes(op) ? 'Entrada' : 'Saída';
+}
+function b3MovementHistoricalAutoKey(it, operationType, side){
+  const dateKey=b3MovementDateKey(it.date);
+  const ticker=String(it.ticker||'').trim().toUpperCase();
+  const qty=Number(it.qty)||0;
+  const unitPrice=Number(it.price)||0;
+  const totalValue=Number(it.value)||0;
+  const institution=String(it.broker||it.institution||'').trim();
+  return [
+    'mov',
+    ticker,
+    dateKey,
+    b3MovementNorm(operationType),
+    b3MovementNorm(side),
+    String(qty.toFixed(4)),
+    String(unitPrice.toFixed(2)),
+    String(totalValue.toFixed(2)),
+    b3MovementNorm(institution)
+  ].join('|');
+}
+function b3MovementSavedHistoricalAutoKey(a){
+  const operationType=String(a.operationType||a.operation||a.op||'').trim();
+  const side=String(a.side||'').trim();
+  const qty=Number(a.qty)||0;
+  const unitPrice=Number(a.unitPrice||a.price||0);
+  const totalValue=Number(a.totalValue||a.value||(Math.abs(qty)*unitPrice)||0);
+  return [
+    'mov',
+    String(a.ticker||'').trim().toUpperCase(),
+    b3MovementDateKey(a.date),
+    b3MovementNorm(operationType),
+    b3MovementNorm(side),
+    String(qty.toFixed(4)),
+    String(unitPrice.toFixed(2)),
+    String(totalValue.toFixed(2)),
+    b3MovementNorm(a.institution||a.broker||'')
+  ].join('|');
+}
 function b3MovementRefreshReviewFlags(it){
   const next={...it};
   next.value=(Number(next.value)||((Number(next.qty)||0)*(Number(next.price)||0)));
@@ -4734,9 +4799,7 @@ function b3MovementSelectedItems(){
   return (r.items||[]).filter(it=>{
     const group=it.group||b3MovementGroup(it.movement);
     if(r.selectedGroups && r.selectedGroups[group]===false) return false;
-    if(it.include===false) return false;
-    if(!['historico','proventos'].includes(String(it.destination||''))) return false;
-    if(it.target==='ignorar' || it.target==='revisar' || it.target==='eventos') return false;
+    if(!b3MovementIsHistoricalImportable(it)) return false;
     if(it.possibleDuplicate) return false;
     return true;
   });
@@ -4775,62 +4838,73 @@ function b3MovementSummary(){
   };
 }
 function applyB3MovementImported(rows, importDate){
-  const importTag='[IMPORT_B3_MOVIMENTO]';
-  const safeRows=(rows||[]).map(b3MovementRefreshReviewFlags).filter(r=>r.target==='aportes' || r.target==='proventos');
-  const finalRows=safeRows.filter(r=>!r.possibleDuplicate && r.target!=='revisar');
-  const skipped=safeRows.length-finalRows.length;
-  const movKeys=new Set(finalRows.map(r=>String(r.movKey||'')));
-  if(!movKeys.size){
-    toast('Nenhuma linha nova para importar. Possiveis duplicados ou itens em revisao foram ignorados.');
-    return;
-  }
-  S.aportes=S.aportes.filter(a=>!(String(a.source||'')==='b3-movement' && movKeys.has(String(a.movKey||''))));
-  S.proventos=S.proventos.filter(p=>!(String(p.source||'')==='b3-movement' && movKeys.has(String(p.movKey||''))));
-  const now=Date.now();
-  const addAportes=[];
-  const addProventos=[];
-  finalRows.forEach((r,i)=>{
-    const date=r.date||importDate||new Date().toLocaleDateString('pt-BR');
-    if(r.target==='proventos'){
-      addProventos.push({
-        id:now+i,
-        ticker:r.ticker,
-        value:Number(r.value)||0,
-        type:r.movement||'Juros',
-        date,
-        note:`${importTag} ${r.movement||'provento'} · ${r.product||r.ticker}`,
-        autoKey:r.movKey,
-        movKey:r.movKey,
-        source:'b3-movement'
-      });
+  const inputRows=[...(rows||[])];
+  const safeRows=inputRows.map(b3MovementRefreshReviewFlags).filter(b3MovementIsHistoricalImportable);
+  const existingKeys=new Set((S.aportes||[]).map(a=>b3MovementSavedHistoricalAutoKey(a)));
+  const batchKeys=new Set();
+  const finalRows=[];
+  let duplicateCount=0;
+  safeRows.forEach(r=>{
+    const operationType=b3MovementHistoricalOperationType(r);
+    const side=b3MovementHistoricalSide(r, operationType);
+    const autoKey=b3MovementHistoricalAutoKey(r, operationType, side);
+    const dupKind=r.duplicateKind || b3MovementDuplicateKind({...r, target:'aportes', action:r.action||(/venda/i.test(operationType)?'venda':'compra')});
+    if(dupKind || existingKeys.has(autoKey) || batchKeys.has(autoKey)){
+      duplicateCount++;
       return;
     }
+    batchKeys.add(autoKey);
+    finalRows.push({...r, operationType, side, autoKey});
+  });
+  const ignoredCount=Math.max(0, inputRows.length - safeRows.length);
+  if(!finalRows.length){
+    toast(`Movimentações importadas: 0 novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
+    return;
+  }
+  const now=Date.now();
+  const addAportes=[];
+  finalRows.forEach((r,i)=>{
+    const date=r.date||importDate||new Date().toLocaleDateString('pt-BR');
+    const unitPrice=Number(r.price)||0;
+    const totalValue=Number(r.value)||((Number(r.qty)||0)*unitPrice);
+    const operationType=String(r.operationType||b3MovementHistoricalOperationType(r)).trim();
+    const side=String(r.side||b3MovementHistoricalSide(r, operationType)).trim();
+    const institution=String(r.broker||r.institution||'').trim();
+    const note=`[IMPORT_B3_MOVIMENTO] ${r.movement||'movimentacao'} · ${r.product||r.ticker}`;
     addAportes.push({
       id:now+i,
-      operation:r.action||'compra',
+      operation:operationType==='Venda' || side==='Saída' ? 'venda' : 'compra',
+      op:operationType==='Venda' || side==='Saída' ? 'venda' : 'compra',
+      operationType,
+      side,
       ticker:r.ticker,
       qty:Number(r.qty)||0,
-      price:Number(r.price)||0,
+      price:unitPrice,
+      unitPrice,
+      totalValue,
       date,
-      decision:`${importTag} ${r.movement||'movimentacao'} · ${r.product||r.ticker}`,
+      decision:note,
+      note,
       type:normalizeType(r.type||metaTicker(r.ticker).type||'Renda Fixa','Renda Fixa'),
       sector:r.sector||metaTicker(r.ticker).sector||'',
-      movKey:r.movKey,
-      source:'b3-movement',
+      assetName:r.product||r.ticker,
+      category:normalizeType(r.type||metaTicker(r.ticker).type||'Renda Fixa','Renda Fixa'),
+      institution,
+      source:'B3 Movimentação',
+      autoKey:r.autoKey,
+      movKey:r.autoKey,
+      created_at:new Date().toISOString(),
       movement:r.movement,
       entryExit:r.entryExit,
       product:r.product
     });
   });
-  S.proventos=[...addProventos,...S.proventos];
   S.aportes=[...addAportes,...S.aportes];
   syncAssetsFromAportes(false);
   [...finalRows].forEach(r=>learnTickerMeta(r.ticker, r.type, r.sector, true));
   save();
   render();
-  fetchQuotes(false);
-  scheduleAutoProventosGratis('b3-mov');
-  toast(`✅ ${addAportes.length} movimento(s) e ${addProventos.length} provento(s) importados da B3.${skipped?` ${skipped} duplicado(s)/revisao ignorado(s).`:''}`);
+  toast(`Movimentações importadas: ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
 }
 function importB3MovementReview(){
   if(!S.b3MovementReview) return;
@@ -4933,7 +5007,7 @@ function b3MovementReviewModal(){
         <div class="note-title">
           <div>
             <h3>📜 Revisar movimentações B3</h3>
-            <p>Confira as linhas antes de gravar. Nesta etapa, nada será salvo ainda. O app agora separa histórico, proventos, eventos societários e revisão manual.</p>
+            <p>Confira as linhas antes de gravar. Nesta etapa, o botão importa apenas itens selecionados com destino Histórico de aportes.</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
@@ -4965,13 +5039,13 @@ function b3MovementReviewModal(){
             <button class="btn bgh" onclick="setB3MovementAll(false)">Ignorar selecionados</button>
           </div>
           <div class="right">
-            <span style="font-size:12px;color:#64748b">Possíveis duplicados e linhas em Revisar ficam desligados por padrão para proteger seus dados.</span>
+            <span style="font-size:12px;color:#64748b">Somente linhas com destino Histórico, confiança acima de Baixa e sem duplicidade entram na importação.</span>
           </div>
         </div>
         ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
         <div class="mov-review-grid">${groupsHtml||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Nenhuma linha encontrada para revisar.</div>'}</div>
         <div class="note-foot">
-          <div class="hint">Nesta etapa, a revisão só organiza e valida as linhas. O botão final mostra apenas um aviso e nenhuma gravação acontece.</div>
+          <div class="hint">O botão final grava somente o que estiver selecionado, com destino Histórico de aportes. Proventos e eventos continuam fora desta etapa.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
             <button class="btn bsv" onclick="importB3MovementReview()">Importar selecionados</button>
