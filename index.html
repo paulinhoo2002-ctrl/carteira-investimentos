@@ -723,6 +723,7 @@ let S = {
   apHistoryOpen:true, apSearch:'',
   apSearchTimer:null,
   activeDividendSection:'',
+  showImportedDividendsDetails:false,
   mobileMenuOpen:false,
   mobileTopMenuOpen:false,
   accessSettingsOpen:false,
@@ -2268,7 +2269,7 @@ function b3ProventoSavedAutoKey(row){
   const dateKey=b3MovementDateKey(row.paymentDate);
   const typeKey=rfPosNorm(row.eventType).toLowerCase();
   const value=Number(row.netValue||0).toFixed(2);
-  return `prov|${ticker}|${dateKey}|${typeKey}|${value}|b3`;
+  return `prov|${ticker}|${dateKey}|${typeKey}|${value}|b3-proventos-recebidos`;
 }
 function b3ProventoAlreadySaved(row){
   const ticker=String(row.ticker||'').toUpperCase();
@@ -2368,7 +2369,6 @@ function parseB3ProventosWorkbook(wb, fileName=''){
       const netValue=parseNum(getRowValue(rowObj,['Valor líquido','Valor Liquido','Valor Líquido','Valor','Valor Liquido']));
       const ticker=b3ProventoTicker(product);
       const looksLikeSummary=b3ProventoLooksLikeSummaryRow(product,rowObj,headers);
-      if(idx===0) console.log("B3 Proventos - debug:", {headers:Object.keys(rowObj), row:rowObj, product});
       if(looksLikeSummary || !product || !eventType || !paymentDate || !ticker || !netValue || netValue<=0){
         ignoredCount++;
         if(looksLikeSummary) return;
@@ -5135,6 +5135,64 @@ function proventoHistoricoMensal(){
     return { year, months, total, media };
   });
 }
+function proventoAssetTypeLabel(asset, provento){
+  const type=normalizeType(asset?.type||metaTicker(asset?.ticker).type||'Ação','Ação');
+  const event=proventoTipoCanonical(provento?.eventType||provento?.type);
+  if(event==='JCP') return 'JCP';
+  if(event==='Dividendo') return 'Dividendos';
+  if(type==='Renda Fixa' || event==='Juros de Renda Fixa') return 'Renda Fixa';
+  return type || 'Ação';
+}
+function proventoAssetMeta(p){
+  const ticker=String(p?.ticker||'').toUpperCase();
+  const name=rfPosNorm(p?.assetName||'');
+  const asset=(S.assets||[]).find(a=>{
+    const at=String(a.ticker||'').toUpperCase();
+    const hay=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''}`);
+    return (ticker && at===ticker) || (name && hay.includes(name)) || (name && name.includes(hay));
+  }) || null;
+  return {
+    asset,
+    type:proventoAssetTypeLabel(asset,p),
+    title:asset?.ticker ? `${asset.ticker}${asset.name?` · ${asset.name}`:''}` : (p?.assetName||p?.ticker||'—')
+  };
+}
+function proventoResumoPorAtivo(){
+  const map=new Map();
+  (S.proventos||[]).forEach(p=>{
+    const value=Number(p.value)||0;
+    if(value<=0) return;
+    const meta=proventoAssetMeta(p);
+    const key=String(p.ticker||meta.title||'').toUpperCase() || meta.title;
+    if(!map.has(key)){
+      map.set(key,{key,ticker:String(p.ticker||'').toUpperCase()||'—',name:meta.title||'—',type:meta.type||'Ação',total:0,count:0,lastDate:'',assetName:p.assetName||''});
+    }
+    const row=map.get(key);
+    row.total+=value;
+    row.count++;
+    const dt=parseAnyDate(p.date);
+    const iso=dt?toISODate(dt):'';
+    if(iso && iso>row.lastDate) row.lastDate=iso;
+  });
+  return [...map.values()].sort((a,b)=>b.total-a.total);
+}
+function proventoResumoPorTipo(){
+  const map=new Map();
+  (S.proventos||[]).forEach(p=>{
+    const value=Number(p.value)||0;
+    if(value<=0) return;
+    const meta=proventoAssetMeta(p);
+    const type=meta.type||'Ação';
+    if(!map.has(type)) map.set(type,{type,total:0,count:0});
+    const row=map.get(type);
+    row.total+=value;
+    row.count++;
+  });
+  return [...map.values()].sort((a,b)=>b.total-a.total);
+}
+function proventoRankingPagadores(){
+  return proventoResumoPorAtivo().slice(0,10);
+}
 function reserveStats(){
   const out={bolsa:0,pessoal:0,total:0,entries:0};
   S.aportes.forEach(a=>{
@@ -6665,6 +6723,11 @@ function toggleDividendSection(section, ev){
   S.activeDividendSection = S.activeDividendSection===section ? '' : section;
   render();
 }
+function toggleImportedDividendsDetails(ev){
+  if(ev) ev.preventDefault();
+  S.showImportedDividendsDetails = !S.showImportedDividendsDetails;
+  render();
+}
 
 // ══════════════════════════════════════
 // RENDER
@@ -7716,6 +7779,10 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const resumo = proventoResumo();
   const resumoTipos = proventoResumoTipos();
   const resumoMensalTipos = proventoResumoMensalTipos();
+  const resumoAtivos = proventoResumoPorAtivo();
+  const resumoTiposDetalhado = proventoResumoPorTipo();
+  const maioresPagadores = proventoRankingPagadores();
+  const importedDetailsOpen = !!S.showImportedDividendsDetails;
   const historico = proventoHistoricoMensal();
   const histTop = historico[0] || { total: 0, media: 0 };
   const media12 = histTop.media || 0;
@@ -7845,91 +7912,239 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </div>
     </div>
   </div>
-  <div class="cc" style="margin-bottom:8px;padding:9px 10px 7px">
-    <div class="sh" style="margin-bottom:5px">
-      <div>
-        <div class="st">Resumo dos proventos importados</div>
-        <div class="mu" style="font-size:11px;margin-top:2px">Consolidação dos dados já gravados em <strong style="color:#e2eaf6">S.proventos</strong>, sem importar nada novo.</div>
+  <div class="cc" style="margin-bottom:8px;padding:10px 10px 9px">
+    <div class="sh" style="margin-bottom:6px;gap:10px">
+      <div style="min-width:0">
+        <div class="st">Proventos importados da B3</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Consolidado dos dados gravados em <strong style="color:#e2eaf6">Proventos</strong>.</div>
       </div>
-      <div class="mu" style="font-size:11px">${S.proventos.length} lançamentos</div>
+      <button class="btn ${importedDetailsOpen ? 'bp' : 'bgh'}" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleImportedDividendsDetails(event)">${importedDetailsOpen ? 'Ocultar detalhes' : 'Ver detalhes'}</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px">
-      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin-bottom:8px">
+      <div class="card al" style="margin:0;flex:1 1 220px;min-height:54px;padding:8px 10px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div class="cl" style="margin-bottom:2px">Total no período</div>
-          <div class="cv" style="font-size:18px;color:#fbbf24">${fmt(resumoTipos.total)}</div>
+          <div class="cl" style="margin-bottom:2px">Total importado</div>
+          <div class="cv" style="font-size:17px;color:#fbbf24">${fmt(resumoTipos.total)}</div>
         </div>
-        <div class="cs" style="font-size:10px;line-height:1.3">${resumoTipos.count} lançamentos</div>
+        <div class="cs" style="font-size:10px;line-height:1.3">B3 importado: ${fmt(resumoTipos.total)} • ${resumoTipos.count} lançamentos</div>
       </div>
-      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#34d399;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Rendimentos</div>
-          <div class="cv" style="font-size:18px;color:#34d399">${fmt(resumoTipos.tipos.Rendimento||0)}</div>
-        </div>
-        <div class="cs" style="font-size:10px;line-height:1.3">Proventos de fundo/ação</div>
+      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#34d399">
+        <div class="cl" style="margin-bottom:2px">Lançamentos</div>
+        <div class="cv gn" style="font-size:17px">${resumoTipos.count}</div>
       </div>
-      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#60a5fa;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Dividendos</div>
-          <div class="cv" style="font-size:18px;color:#60a5fa">${fmt(resumoTipos.tipos.Dividendo||0)}</div>
-        </div>
-        <div class="cs" style="font-size:10px;line-height:1.3">Dividendos isentos</div>
+      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#60a5fa">
+        <div class="cl" style="margin-bottom:2px">Rendimentos</div>
+        <div class="cv" style="font-size:17px;color:#60a5fa">${fmt(resumoTipos.tipos.Rendimento||0)}</div>
       </div>
-      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#a78bfa;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">JCP</div>
-          <div class="cv" style="font-size:18px;color:#a78bfa">${fmt(resumoTipos.tipos.JCP||0)}</div>
-        </div>
-        <div class="cs" style="font-size:10px;line-height:1.3">Juros sobre capital próprio</div>
+      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#a78bfa">
+        <div class="cl" style="margin-bottom:2px">Dividendos</div>
+        <div class="cv" style="font-size:17px;color:#a78bfa">${fmt(resumoTipos.tipos.Dividendo||0)}</div>
       </div>
-      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f97316;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Juros de Renda Fixa</div>
-          <div class="cv" style="font-size:18px;color:#f97316">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
-        </div>
-        <div class="cs" style="font-size:10px;line-height:1.3">Pagamentos de juros</div>
+      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#f97316">
+        <div class="cl" style="margin-bottom:2px">JCP</div>
+        <div class="cv" style="font-size:17px;color:#f97316">${fmt(resumoTipos.tipos.JCP||0)}</div>
       </div>
-      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f87171;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Reembolsos</div>
-          <div class="cv" style="font-size:18px;color:#f87171">${fmt(resumoTipos.tipos.Reembolso||0)}</div>
-        </div>
-        <div class="cs" style="font-size:10px;line-height:1.3">Se existirem</div>
+      <div class="card al" style="margin:0;flex:1 1 150px;min-height:54px;padding:8px 10px;border-left-color:#f59e0b">
+        <div class="cl" style="margin-bottom:2px">Juros RF</div>
+        <div class="cv" style="font-size:17px;color:#f59e0b">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
       </div>
     </div>
-    <div class="tw">
-      <div class="ts">
-        <table style="min-width:1080px">
-          <thead>
-            <tr>
-              <th>Mês/Ano</th>
-              <th>Total recebido</th>
-              <th>Rendimentos</th>
-              <th>Dividendos</th>
-              <th>JCP</th>
-              <th>Juros RF</th>
-              <th>Reembolsos</th>
-              <th>Lançamentos</th>
-            </tr>
-          </thead>
-          <tbody>${
-            resumoMensalTipos.length
-              ? resumoMensalTipos.map(r=>`<tr>
-                  <td style="font-weight:700;color:#e2eaf6;text-transform:capitalize">${esc(r.label)}/${r.year}</td>
-                  <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
-                  <td>${fmt(r.tipos.Rendimento||0)}</td>
-                  <td>${fmt(r.tipos.Dividendo||0)}</td>
-                  <td>${fmt(r.tipos.JCP||0)}</td>
-                  <td>${fmt(r.tipos['Juros de Renda Fixa']||0)}</td>
-                  <td>${fmt(r.tipos.Reembolso||0)}</td>
-                  <td style="font-weight:700;color:#94a3b8">${r.count}</td>
-                </tr>`).join('')
-              : '<tr><td colspan="8" style="text-align:center;padding:18px;color:#2e3f58">Busque ou registre proventos para ver o resumo mensal por tipo.</td></tr>'
-          }</tbody>
-        </table>
+    <div class="mu" style="font-size:11px;line-height:1.4;color:#94a3b8">Resumo compacto: ${fmt(resumoTipos.total)} recebidos, ${resumoTipos.count} lançamentos e consolidação por tipo.</div>
+    ${importedDetailsOpen?`
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+      <div class="cc" style="margin:0;padding:9px 10px 7px">
+        <div class="sh" style="margin-bottom:5px">
+          <div>
+            <div class="st">Resumo mensal de proventos</div>
+            <div class="mu" style="font-size:11px;margin-top:2px">Consolidação dos dados já gravados em <strong style="color:#e2eaf6">S.proventos</strong>, sem importar nada novo.</div>
+          </div>
+          <div class="mu" style="font-size:11px">${S.proventos.length} lançamentos</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px">
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Total no período</div>
+              <div class="cv" style="font-size:18px;color:#fbbf24">${fmt(resumoTipos.total)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">${resumoTipos.count} lançamentos</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#34d399;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Rendimentos</div>
+              <div class="cv" style="font-size:18px;color:#34d399">${fmt(resumoTipos.tipos.Rendimento||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Proventos de fundo/ação</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#60a5fa;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Dividendos</div>
+              <div class="cv" style="font-size:18px;color:#60a5fa">${fmt(resumoTipos.tipos.Dividendo||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Dividendos isentos</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#a78bfa;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">JCP</div>
+              <div class="cv" style="font-size:18px;color:#a78bfa">${fmt(resumoTipos.tipos.JCP||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Juros sobre capital próprio</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f97316;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Juros de Renda Fixa</div>
+              <div class="cv" style="font-size:18px;color:#f97316">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Pagamentos de juros</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f87171;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Reembolsos</div>
+              <div class="cv" style="font-size:18px;color:#f87171">${fmt(resumoTipos.tipos.Reembolso||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Se existirem</div>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table style="min-width:1080px">
+              <thead>
+                <tr>
+                  <th>Mês/Ano</th>
+                  <th>Total recebido</th>
+                  <th>Rendimentos</th>
+                  <th>Dividendos</th>
+                  <th>JCP</th>
+                  <th>Juros RF</th>
+                  <th>Reembolsos</th>
+                  <th>Lançamentos</th>
+                </tr>
+              </thead>
+              <tbody>${
+                resumoMensalTipos.length
+                  ? resumoMensalTipos.map(r=>`<tr>
+                      <td style="font-weight:700;color:#e2eaf6;text-transform:capitalize">${esc(r.label)}/${r.year}</td>
+                      <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                      <td>${fmt(r.tipos.Rendimento||0)}</td>
+                      <td>${fmt(r.tipos.Dividendo||0)}</td>
+                      <td>${fmt(r.tipos.JCP||0)}</td>
+                      <td>${fmt(r.tipos['Juros de Renda Fixa']||0)}</td>
+                      <td>${fmt(r.tipos.Reembolso||0)}</td>
+                      <td style="font-weight:700;color:#94a3b8">${r.count}</td>
+                    </tr>`).join('')
+                  : '<tr><td colspan="8" style="text-align:center;padding:18px;color:#2e3f58">Busque ou registre proventos para ver o resumo mensal por tipo.</td></tr>'
+              }</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="cc" style="margin:0;padding:9px 10px 7px">
+        <div class="sh" style="margin-bottom:5px">
+          <div>
+            <div class="st">Proventos por ativo e por tipo</div>
+            <div class="mu" style="font-size:11px;margin-top:2px">Leitura rápida dos maiores pagadores e da composição da renda recebida.</div>
+          </div>
+          <div class="mu" style="font-size:11px">${resumoAtivos.length} ativos com proventos</div>
+        </div>
+        <div class="cg" style="grid-template-columns:1.2fr .8fr;gap:10px;align-items:stretch">
+          <div class="tw">
+            <div class="ts">
+              <table style="min-width:900px">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Ativo</th>
+                    <th>Tipo</th>
+                    <th>Total recebido</th>
+                    <th>Recebimentos</th>
+                    <th>Último pagamento</th>
+                  </tr>
+                </thead>
+                <tbody>${
+                  resumoAtivos.length
+                    ? resumoAtivos.map((r,idx)=>`<tr>
+                        <td style="font-weight:800;color:#94a3b8">#${idx+1}</td>
+                        <td style="font-weight:700;color:#e2eaf6">${esc(r.name||r.ticker||'—')}</td>
+                        <td>${esc(r.type||'—')}</td>
+                        <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                        <td>${r.count}</td>
+                        <td class="mu">${esc(r.lastDate ? toBRDate(parseAnyDate(r.lastDate)) : '—')}</td>
+                      </tr>`).join('')
+                    : '<tr><td colspan="6" style="text-align:center;padding:18px;color:#2e3f58">Nenhum provento por ativo encontrado.</td></tr>'
+                }</tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tw">
+            <div class="ts">
+              <table style="min-width:560px">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Total recebido</th>
+                    <th>Lançamentos</th>
+                  </tr>
+                </thead>
+                <tbody>${
+                  ['FII','Ação','Renda Fixa','JCP','Dividendos','Outro']
+                    .map(type=>{
+                      const row=resumoTiposDetalhado.find(r=>r.type===type) || {type,total:0,count:0};
+                      return `<tr>
+                        <td style="font-weight:700;color:#e2eaf6">${esc(type)}</td>
+                        <td class="gn" style="font-weight:800">${fmt(row.total)}</td>
+                        <td>${row.count}</td>
+                      </tr>`;
+                    }).join('')
+                }</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cc" style="margin:0;padding:9px 10px 7px">
+        <div class="sh" style="margin-bottom:5px">
+          <div>
+            <div class="st">Ranking dos maiores pagadores</div>
+            <div class="mu" style="font-size:11px;margin-top:2px">Top 10 ativos que mais pagaram proventos no período.</div>
+          </div>
+          <div class="mu" style="font-size:11px">${maioresPagadores.length} no ranking</div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table style="min-width:920px">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ativo</th>
+                  <th>Tipo</th>
+                  <th>Total recebido</th>
+                  <th>Participação</th>
+                </tr>
+              </thead>
+              <tbody>${
+                maioresPagadores.length
+                  ? maioresPagadores.map((r,idx)=>{
+                      const pct=resumoTipos.total>0 ? (r.total/resumoTipos.total)*100 : 0;
+                      return `<tr>
+                        <td style="font-weight:800;color:#94a3b8">#${idx+1}</td>
+                        <td style="font-weight:700;color:#e2eaf6">${esc(r.name||r.ticker||'—')}</td>
+                        <td>${esc(r.type||'—')}</td>
+                        <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                        <td>
+                          <div style="display:flex;align-items:center;gap:8px">
+                            <div class="bwr" style="width:120px"><div class="bfr" style="width:${Math.min(100,pct).toFixed(0)}%;background:#34d399"></div></div>
+                            <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
+                          </div>
+                        </td>
+                      </tr>`;
+                    }).join('')
+                  : '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Nenhum pagador encontrado.</td></tr>'
+              }</tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+    `:''}
   <div class="sh" style="margin:0 0 8px 0">
     <div>
       <div class="st">Atualização de dividendos</div>
