@@ -1118,7 +1118,8 @@ function load(){
   else S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
   const cleanedB3Summary = cleanupB3PositionSummaryAssets();
-  if(cleanedB3Summary>0) save();
+  const cleanedB3Aportes = cleanupB3PositionAportes();
+  if(cleanedB3Summary>0 || cleanedB3Aportes>0) save();
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
 }
 
@@ -2575,6 +2576,30 @@ function pickB3(row, headers, names){
   }
   return getRowValue(row, names);
 }
+function b3PositionUnitPrice(row, headers){
+  return parseNum(pickB3(row, headers, [
+    'Preço de Fechamento','Preco de Fechamento',
+    'Preço Atualizado','Preco Atualizado',
+    'Preço Atualizado CURVA','Preco Atualizado CURVA',
+    'Preço Unitário','Preco Unitario',
+    'PU',
+    'Valor Unitário','Valor Unitario'
+  ]));
+}
+function b3PositionCurrentValue(row, headers){
+  return parseNum(pickB3(row, headers, [
+    'Valor Atualizado MTM',
+    'Valor Atualizado CURVA',
+    'Valor Atualizado FECHAMENTO',
+    'Valor Atualizado',
+    'Posição a mercado','Posicao a mercado',
+    'Valor Líquido','Valor Liquido',
+    'Valor Atual',
+    'Saldo Líquido','Saldo Liquido',
+    'Valor Bruto',
+    'Saldo Bruto'
+  ]));
+}
 function tickerValidoB3(t){
   t=String(t||'').trim().toUpperCase();
   return /^[A-Z]{4}[0-9]{1,2}$/.test(t) || /^[A-Z]{3,6}[0-9]{1,2}$/.test(t);
@@ -2868,14 +2893,16 @@ function parseB3PositionWorkbook(wb, fileName=''){
         return;
       }
       let qty=parseNum(pickB3(row,headers,['Quantidade','Quantidade Disponível','Quantidade Disponivel','Quantidade Atual']));
-      let price=parseNum(pickB3(row,headers,['Preço de Fechamento','Preco de Fechamento','Preço Atualizado','Preco Atualizado','Preço Atualizado CURVA','Preco Atualizado CURVA','Preço Unitário','Preco Unitario','PU','Valor Unitário','Valor Unitario']));
-      let value=parseNum(pickB3(row,headers,['Valor Atualizado','Valor Atualizado CURVA','Valor Atualizado MTM','Valor Atualizado FECHAMENTO','Valor Bruto','Valor Líquido','Valor Liquido','Valor Atual','Saldo Bruto','Saldo Líquido','Saldo Liquido']));
-      if(qty<=0 && isRF && value>0) qty=1;
+      const unitPrice=b3PositionUnitPrice(row, headers);
+      let currentValue=b3PositionCurrentValue(row, headers);
+      if(qty<=0 && isRF && currentValue>0) qty=1;
       if(qty<=0){
         addIgnored(sheetName,'sem quantidade');
         return;
       }
-      if((!price || price<=0) && value>0) price=value/qty;
+      if(currentValue<=0 && unitPrice>0 && qty>0) currentValue=qty*unitPrice;
+      let price=unitPrice>0 ? unitPrice : (currentValue>0 && qty>0 ? currentValue/qty : 0);
+      if(isRF && currentValue>0 && qty>0) price=currentValue/qty;
       if(price<=0){
         warnings.push(`${ticker}: sem preço válido; ignorado.`);
         addIgnored(sheetName,'sem preço válido');
@@ -2884,7 +2911,21 @@ function parseB3PositionWorkbook(wb, fileName=''){
       const meta=inferB3PositionMeta(sheetName, ticker, produto, rowType);
       const tipo=normalizeType(meta.type||'Ação','Ação');
       const setor=meta.sector||'';
-      const candidate={ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,kind:rowType,date:importDate};
+      const totalValue=currentValue>0 ? currentValue : qty*price;
+      const candidate={
+        ticker,
+        qty,
+        price,
+        value:totalValue,
+        currentValue:totalValue,
+        unitPrice:unitPrice>0 ? unitPrice : price,
+        type:tipo,
+        sector:setor,
+        product:produto.trim(),
+        sheet:sheetName,
+        kind:rowType,
+        date:importDate
+      };
       if(isB3PositionSummaryRow(candidate)){
         addIgnored(sheetName,'linha totalizadora / resumo');
         return;
@@ -2937,6 +2978,21 @@ function cleanupB3PositionSummaryAssets(){
     return !isB3PositionSummaryRow(a);
   });
   return before-Number(S.assets?.length||0);
+}
+function cleanupB3PositionAportes(){
+  const before=Number(S.aportes?.length||0);
+  const isB3PositionAporte=a=>{
+    const src=rfPosNorm(a?.source||a?.origin||a?.origem||'');
+    const decision=rfPosNorm(a?.decision||'');
+    const note=rfPosNorm(a?.note||a?.observation||'');
+    return src==='B3 POSICAO ATUAL'
+      || decision.includes('IMPORT_B3_POSICAO')
+      || decision.includes('B3 POSICAO ATUAL')
+      || note.includes('B3 POSICAO ATUAL')
+      || note.includes('POSICAO ATUAL B3');
+  };
+  S.aportes=(S.aportes||[]).filter(a=>!isB3PositionAporte(a));
+  return before-Number(S.aportes?.length||0);
 }
 function rfDetailedFindExistingAsset(item){
   const ticker=String(item?.ticker||'').toUpperCase();
@@ -3267,34 +3323,136 @@ function hasSameB3Import(ticker, date){
   return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
 }
 function applyB3ImportedPositions(items, importDate){
-  const importTag='[IMPORT_B3_POSICAO]';
-  // Remove importações B3 anteriores da mesma data para evitar duplicar se subir o mesmo arquivo outra vez.
-  S.aportes=S.aportes.filter(a=>!(String(a.decision||'').includes(importTag) && String(a.date||'')===importDate));
   const validItems=(items||[]).filter(it=>!isB3PositionSummaryRow(it));
-  const now=Date.now();
-  const novos=validItems.map((it,i)=>({
-    id: now+i,
-    operation:'compra',
-    ticker:it.ticker,
-    qty:Number(it.qty)||0,
-    price:Number(it.price)||0,
-    date:it.date||importDate,
-    decision:`${importTag} ${it.sheet} · posição importada do Excel B3/corretora`,
-    type:normalizeType(it.type||metaTicker(it.ticker).type||'Ação','Ação'),
-    sector:it.sector||metaTicker(it.ticker).sector||''
-  })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
-  S.aportes=[...novos,...S.aportes];
-  // Completa metadados para estes ativos após recálculo.
-  syncAssetsFromAportes(false);
-  S.assets=S.assets.map(a=>{
-    const it=validItems.find(x=>x.ticker===a.ticker);
-    if(!it) return a;
-    return {...a,type:normalizeType(it.type||a.type||'Ação','Ação'),sector:it.sector||a.sector,current_price:it.price,quoteSource:a.quoteSource||'importado',quoteUpdatedAt:a.quoteUpdatedAt||new Date().toISOString()};
+  const now=new Date().toISOString();
+  let created=0,updated=0,ignored=0;
+  const normalizeName=s=>rfPosNorm(String(s||'').replace(/[-–—|]/g,' '));
+  const findExisting=item=>{
+    const ticker=String(item?.ticker||'').trim().toUpperCase();
+    const nameKey=normalizeName(item?.product||item?.name||item?.ticker||'');
+    const rfMaturity=String(item?.fixed_maturity_date||item?.rf_maturity_date||item?.maturityDate||'').trim();
+    const rfIssuer=normalizeName(item?.fixed_issuer||item?.issuer||item?.sector||'');
+    let idx=(S.assets||[]).findIndex(a=>ticker && String(a.ticker||'').trim().toUpperCase()===ticker);
+    if(idx>=0) return {idx,reason:'Mesmo código já existe em Meus Ativos.'};
+    idx=(S.assets||[]).findIndex(a=>{
+      const text=normalizeName(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''}`);
+      return text && nameKey && (text.includes(nameKey) || nameKey.includes(text));
+    });
+    if(idx>=0) return {idx,reason:'Nome parecido já existe em Meus Ativos.'};
+    if(rfMaturity){
+      idx=(S.assets||[]).findIndex(a=>{
+        const aMat=String(a.rf_maturity_date||a.fixed_maturity_date||a.maturityDate||a.vencimento||'').trim();
+        const aIssuer=normalizeName(a.fixed_issuer||a.issuer||a.sector||a.product||a.name||'');
+        return aMat && aMat===rfMaturity && rfIssuer && aIssuer && (aIssuer.includes(rfIssuer) || rfIssuer.includes(aIssuer));
+      });
+      if(idx>=0) return {idx,reason:'Mesmo vencimento e emissor/setor já aparecem em Meus Ativos.'};
+    }
+    return {idx:-1,reason:''};
+  };
+  validItems.forEach(it=>{
+    const ticker=String(it.ticker||'').trim().toUpperCase();
+    const qty=Number(it.qty)||0;
+    const totalValue=Number(it.currentValue)||Number(it.value)||0;
+    const unitPrice=Number(it.price)||0;
+    const type=normalizeType(it.type||metaTicker(ticker).type||'Ação','Ação');
+    const sector=it.sector||metaTicker(ticker).sector||'';
+    const isRF=type==='Renda Fixa';
+    if(!ticker || qty<=0 || totalValue<=0){
+      ignored++;
+      return;
+    }
+    const currentPrice = isRF
+      ? (qty>0 ? totalValue/qty : (unitPrice>0 ? unitPrice : 0))
+      : (unitPrice>0 ? unitPrice : (qty>0 ? totalValue/qty : 0));
+    if(currentPrice<=0){
+      ignored++;
+      return;
+    }
+    const found=findExisting({...it, ticker, type, sector});
+    const importedSource='B3 Posição Atual';
+    if(found.idx>=0){
+      const old=S.assets[found.idx]||{};
+      const preservedAvg=Number(old.avg_price)||0;
+      const preservedType=old.type||type;
+      const preservedSector=old.sector||sector;
+      const preservedQuoteSource=old.quoteSource||'importado';
+      const previousCurrent=Number(old.current_price)||0;
+      const nextCurrentPrice=isRF
+        ? (totalValue>0 && qty>0 ? totalValue/qty : previousCurrent || currentPrice)
+        : currentPrice;
+      S.assets[found.idx]={
+        ...old,
+        ticker:old.ticker||ticker,
+        name:old.name||it.product||it.name||ticker,
+        product:old.product||it.product||it.name||ticker,
+        type:preservedType,
+        sector:preservedSector,
+        qty,
+        avg_price:preservedAvg>0 ? preservedAvg : currentPrice,
+        current_price:nextCurrentPrice,
+        value:totalValue,
+        current_value:totalValue,
+        dy:Number(old.dy)||0,
+        ideal_pct:Number(old.ideal_pct)||0,
+        fixed_current_value:isRF ? totalValue : old.fixed_current_value,
+        fixed_initial_value:isRF ? (Number(old.fixed_initial_value)||Number(old.avg_price)||totalValue) : old.fixed_initial_value,
+        fixed_rate:isRF ? (old.fixed_rate||it.fixed_rate||it.rate||'') : old.fixed_rate,
+        fixed_application_date:isRF ? (old.fixed_application_date||it.fixed_application_date||it.applicationDate||'') : old.fixed_application_date,
+        fixed_maturity_date:isRF ? (old.fixed_maturity_date||it.fixed_maturity_date||it.maturityDate||'') : old.fixed_maturity_date,
+        fixed_issuer:isRF ? (old.fixed_issuer||it.fixed_issuer||it.issuer||'') : old.fixed_issuer,
+        fixed_indexer:isRF ? (old.fixed_indexer||it.fixed_indexer||it.indexer||'') : old.fixed_indexer,
+        fixed_source:importedSource,
+        updated_at:now,
+        quoteSource:preservedQuoteSource,
+        quoteUpdatedAt:old.quoteUpdatedAt||now,
+        source:importedSource,
+        institution:old.institution||it.institution||old.broker||'',
+        broker:old.broker||it.institution||'',
+        observation:old.observation||old.note||'',
+        note:old.note||old.observation||''
+      };
+      updated++;
+    }else{
+      S.assets.push({
+        id:Date.now()+Math.floor(Math.random()*999999),
+        ticker,
+        name:it.product||it.name||ticker,
+        product:it.product||it.name||ticker,
+        type,
+        sector,
+        qty,
+        avg_price:currentPrice,
+        current_price:currentPrice,
+        value:totalValue,
+        current_value:totalValue,
+        dy:0,
+        ideal_pct:0,
+        fixed_initial_value:isRF ? totalValue : undefined,
+        fixed_current_value:isRF ? totalValue : undefined,
+        fixed_rate:isRF ? (it.fixed_rate||it.rate||'') : undefined,
+        fixed_application_date:isRF ? (it.fixed_application_date||it.applicationDate||'') : undefined,
+        fixed_maturity_date:isRF ? (it.fixed_maturity_date||it.maturityDate||'') : undefined,
+        fixed_issuer:isRF ? (it.fixed_issuer||it.issuer||'') : undefined,
+        fixed_indexer:isRF ? (it.fixed_indexer||it.indexer||'') : undefined,
+        fixed_source:importedSource,
+        updated_at:now,
+        quoteSource:'importado',
+        quoteUpdatedAt:now,
+        source:importedSource,
+        institution:it.institution||'',
+        broker:it.institution||'',
+        observation:isRF ? 'Preço médio provisório importado da posição atual B3. Ajustar pelo histórico de movimentações.' : '',
+        note:isRF ? 'Preço médio provisório importado da posição atual B3. Ajustar pelo histórico de movimentações.' : ''
+      });
+      created++;
+    }
+    learnTickerMeta(ticker, type, sector, true);
   });
-  validItems.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
-  save(); render(); fetchQuotes(false);
-  scheduleAutoProventosGratis('b3');
-  toast(`✅ ${novos.length} posição(ões) importadas da B3.`);
+  S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  save();
+  render();
+  fetchQuotes(false);
+  toast(`✅ Posição B3 importada: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
 }
 function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
   const importTag='[IMPORT_NOTA_CORRETORA]';
@@ -3624,7 +3782,8 @@ function b3ReviewSummary(){
   const selectedTotal=selected.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
   const sheets=[...new Set(items.map(it=>it.sheet))];
   const ignored=Number(S.b3Review?.stats?.totalIgnored)||0;
-  return {count:selected.length,total:selectedTotal,sheets,ignored,valid:items.length,validTotal:total,selectedCount:selected.length};
+  const diff=Math.abs(total-selectedTotal);
+  return {count:selected.length,total:selectedTotal,sheets,ignored,valid:items.length,validTotal:total,selectedCount:selected.length,diff};
 }
 function importB3Review(){
   if(!S.b3Review) return;
@@ -3653,7 +3812,7 @@ function importB3Review(){
 function b3ReviewModal(){
   const r=S.b3Review;
   if(!r) return '';
-  const {count,total,sheets,valid,validTotal}=b3ReviewSummary();
+  const {count,total,sheets,valid,validTotal,diff}=b3ReviewSummary();
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   const groups=(r.groups||[]).map(g=>{
     const checked=!!r.selectedSheets?.[g.sheet];
@@ -3733,7 +3892,9 @@ function b3ReviewModal(){
           <span class="note-pill">Data: ${esc(r.importDate||'—')}</span>
           <span class="note-pill">Ativos válidos: ${valid}</span>
           <span class="note-pill">Linhas ignoradas: ${Number(r.stats?.totalIgnored)||0}</span>
-          <span class="note-pill">Valor total válido: ${fmt(validTotal)}</span>
+          <span class="note-pill">Total válido: ${fmt(validTotal)}</span>
+          <span class="note-pill">Total gravado: ${fmt(total)}</span>
+          <span class="note-pill">Diferença: ${fmt(diff)}</span>
           <span class="note-pill">Selecionados: ${count}</span>
           <span class="note-pill">Abas: ${sheets.length}</span>
         </div>
@@ -3752,6 +3913,7 @@ function b3ReviewModal(){
             <span style="font-size:12px;color:#64748b">Aba de empréstimos vem desmarcada por padrão para evitar sujeira na carteira.</span>
           </div>
         </div>
+        ${diff>1 && count===valid ? `<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.25);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6">Atenção: valor da revisão não bate com o total calculado. Verifique campos de preço/valor atualizado.</div>` : ''}
         ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
         <div class="b3-review-grid">${groups||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Nenhuma aba encontrada para revisar.</div>'}</div>
         <div class="note-foot">
@@ -6580,7 +6742,11 @@ async function fetchQuotes(manual=false){
   S.qInFlight=true;
   S.qLoad=true; render();
 
-  const tickers=[...new Set(S.assets.map(a=>String(a.ticker||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
+  const eligibleAssets=(S.assets||[]).filter(a=>{
+    const importedB3=rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source);
+    return !importedB3 && a.quoteSource!=='importado';
+  });
+  const tickers=[...new Set(eligibleAssets.map(a=>String(a.ticker||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
   let atualizados=0,semPreco=[];
 
   try{
@@ -6594,6 +6760,7 @@ async function fetchQuotes(manual=false){
 
       const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===ticker);
       if(!a) return;
+      if(rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source) || a.quoteSource==='importado') return;
 
       const price=Number(q.regularMarketPrice ?? q.postMarketPrice ?? q.preMarketPrice ?? q.regularMarketPreviousClose);
       if(Number.isFinite(price)&&price>0){
@@ -6642,6 +6809,7 @@ async function fetchQuotes(manual=false){
             recv.add(sym);
             const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===sym);
             if(!a) return;
+            if(rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source) || a.quoteSource==='importado') return;
             const price=Number(q.regularMarketPrice??q.price??q.close??q.previousClose);
             if(Number.isFinite(price)&&price>0){
               const prev=Number(a.current_price)||0;
