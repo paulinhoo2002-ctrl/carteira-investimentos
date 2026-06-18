@@ -45,6 +45,13 @@ button{cursor:pointer;font-family:inherit}
 .dash-card .cs{font-size:11px;color:#7489a4;margin-top:4px}
 .dash-foot{font-size:11px;color:#7489a4;line-height:1.3;max-width:100%}
 .div-line-summary{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:stretch}
+.prov-imported-shell{display:flex;flex-direction:column;gap:8px}
+.prov-imported-head{gap:10px}
+.prov-imported-compact{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.prov-imported-card{min-height:54px;padding:8px 10px}
+.prov-imported-card .cl,.prov-imported-card .cs,.prov-imported-card .cv{min-width:0}
+.prov-imported-card .cl,.prov-imported-card .cs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prov-imported-hint{font-size:11px;line-height:1.4;color:#94a3b8}
 .dashboard-grid{gap:10px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.95fr)}
 .dashboard-panel{min-height:260px}
 .dashboard-legend{display:flex;flex-direction:column;gap:6px;min-width:220px}
@@ -151,6 +158,17 @@ input:disabled{opacity:.45;cursor:not-allowed}
 input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
 @media(max-width:640px){.cg{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .prov-imported-shell{gap:6px}
+  .prov-imported-head{gap:8px;align-items:flex-start}
+  .prov-imported-compact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .prov-imported-card{min-height:44px;padding:6px 7px}
+  .prov-imported-card .cl{font-size:9px;margin-bottom:1px}
+  .prov-imported-card .cv{font-size:14px;line-height:1.05}
+  .prov-imported-card .cs{display:none}
+  .prov-imported-hint{font-size:10px;line-height:1.25}
+  .prov-imported-head .btn{padding:6px 10px;font-size:11px}
+}
 .cc{background:#111828;border:1px solid #1d2940;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;min-height:100%}
 .cc>.tw{flex:1;min-height:0}
 .ct{font-size:11px;font-weight:600;color:#3d5472;margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em}
@@ -2862,6 +2880,10 @@ function rfDetailedSector(name, rate){
   const base=s.includes('CRA') ? 'CRA' : s.includes('CRI') ? 'CRI' : s.includes('DEB') ? 'Debênture' : 'Renda Fixa';
   return indexer ? `${base} / ${indexer}` : base;
 }
+function rfPositionImportSourceTag(src){
+  const s=rfPosNorm(src);
+  return s==='B3 POSICAO ATUAL' || s==='POSICAODETALHADA B3/XP';
+}
 function rfDetailedFindExistingAsset(item){
   const ticker=String(item?.ticker||'').toUpperCase();
   const nameKey=rfPosNorm(item?.name);
@@ -3752,6 +3774,8 @@ function setRfEventReviewAll(value){
 function importRfPositionRows(rows){
   let created=0,updated=0,ignored=0;
   const now=new Date().toISOString();
+  const source='B3 Posição Atual';
+  const fallbackNote='Preço médio provisório importado da posição atual B3. Ajustar pelo histórico de movimentações.';
   const safeStatuses=new Set(['Novo ativo','Atualizar existente']);
   rows.forEach(row=>{
     const item={...row};
@@ -3764,35 +3788,48 @@ function importRfPositionRows(rows){
       && Number(item.appliedValue)>0
       && Number(item.marketValue)>0;
     if(!safe){ ignored++; return; }
-    const avgPrice=Number(item.appliedValue)/Number(item.qty);
     const currentPrice=Number(item.marketValue)/Number(item.qty);
     const found=rfDetailedFindExistingAsset(item);
     if(found.idx>=0){
       const old=S.assets[found.idx]||{};
+      const preservedAvg=Number(old.avg_price)||0;
+      const preservedType=old.type||item.type||'Renda Fixa';
+      const preservedSector=old.sector||item.sector||'';
+      const preservedName=old.name||item.name;
+      const preservedProduct=old.product||item.name;
       S.assets[found.idx]={
         ...old,
         ticker:old.ticker||item.ticker,
-        name:old.name||item.name,
-        product:old.product||item.name,
-        type:'Renda Fixa',
-        sector:(!old.sector || rfPosNorm(old.sector)==='RENDA FIXA' || String(old.fixed_source||'')==='PosicaoDetalhada B3/XP') ? item.sector : old.sector,
+        name:preservedName,
+        product:preservedProduct,
+        type:preservedType,
+        sector:preservedSector,
         qty:Number(item.qty),
-        avg_price:avgPrice,
+        avg_price:preservedAvg,
         current_price:currentPrice,
         dy:Number(old.dy)||0,
         ideal_pct:Number(old.ideal_pct)||0,
+        value:Number(item.marketValue),
+        current_value:Number(item.marketValue),
         fixed_initial_value:Number(item.appliedValue),
         fixed_current_value:Number(item.marketValue),
         fixed_rate:item.rate,
         fixed_application_date:item.applicationDate,
         fixed_maturity_date:item.maturityDate,
-        fixed_source:'PosicaoDetalhada B3/XP',
+        fixed_issuer:old.fixed_issuer||item.issuer||'',
+        fixed_indexer:old.fixed_indexer || (String(item.rate||'').toUpperCase().includes('IPCA') ? 'IPCA' : 'Manual'),
+        fixed_source:source,
         updated_at:now,
         rf_aporte_date:old.rf_aporte_date||item.applicationDate,
         rf_contract_rate:old.rf_contract_rate||item.rate,
         rf_maturity_date:old.rf_maturity_date||item.maturityDate,
-        quoteSource:old.quoteSource||'manual',
-        quoteUpdatedAt:old.quoteUpdatedAt||now
+        quoteSource:old.quoteSource||'importado',
+        quoteUpdatedAt:old.quoteUpdatedAt||now,
+        source:old.source||source,
+        institution:old.institution||item.institution||old.broker||'',
+        broker:old.broker||item.institution||'',
+        observation:old.observation||old.note||'',
+        note:old.note||old.observation||''
       };
       updated++;
       learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
@@ -3806,23 +3843,32 @@ function importRfPositionRows(rows){
       type:'Renda Fixa',
       sector:item.sector,
       qty:Number(item.qty),
-      avg_price:avgPrice,
+      avg_price:currentPrice,
       current_price:currentPrice,
       dy:0,
       ideal_pct:0,
+      value:Number(item.marketValue),
+      current_value:Number(item.marketValue),
       fixed_initial_value:Number(item.appliedValue),
       fixed_current_value:Number(item.marketValue),
       fixed_rate:item.rate,
       fixed_application_date:item.applicationDate,
       fixed_maturity_date:item.maturityDate,
-      fixed_source:'PosicaoDetalhada B3/XP',
+      fixed_issuer:item.issuer||'',
+      fixed_indexer:String(item.rate||'').toUpperCase().includes('IPCA') ? 'IPCA' : 'Manual',
+      fixed_source:source,
       updated_at:now,
       rf_aporte_date:item.applicationDate,
       rf_yield_type:String(item.rate||'').toUpperCase().includes('IPCA') ? 'IPCA' : 'Manual',
       rf_contract_rate:item.rate,
       rf_maturity_date:item.maturityDate,
-      quoteSource:'manual',
-      quoteUpdatedAt:now
+      quoteSource:'importado',
+      quoteUpdatedAt:now,
+      source,
+      institution:item.institution||'',
+      broker:item.institution||'',
+      observation:fallbackNote,
+      note:fallbackNote
     });
     created++;
     learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
@@ -3862,16 +3908,15 @@ function importRfEventRows(events){
 function importRfPositionReview(){
   if(!S.rfPositionReview) return;
   const selectedPositions=(S.rfPositionReview.items||[]).filter(it=>it.include!==false);
-  const selectedEvents=(S.rfPositionReview.events||[]).filter(ev=>ev.include!==false);
-  const blockedEvents=(S.rfPositionReview.events||[]).filter(ev=>ev.include===false);
+  if(!selectedPositions.length){
+    alert('Selecione ao menos uma posição válida para importar.');
+    return;
+  }
   const positionResult=importRfPositionRows(selectedPositions);
-  const eventResult=importRfEventRows(selectedEvents);
-  eventResult.duplicates += blockedEvents.filter(ev=>ev.status==='Duplicado').length;
-  eventResult.review += blockedEvents.filter(ev=>ev.status!=='Duplicado').length;
   S.rfPositionReview=null;
   save();
   render();
-  toast(`Renda Fixa importada: ${positionResult.created} criados, ${positionResult.updated} atualizados, ${positionResult.ignored} ignorados. Eventos de Renda Fixa importados: ${eventResult.imported} proventos, ${eventResult.duplicates} duplicados ignorados, ${eventResult.review} para revisão.`);
+  toast(`Posição B3 importada: ${positionResult.created} criados, ${positionResult.updated} atualizados, ${positionResult.ignored} ignorados.`);
 }
 function rfPositionReviewSummary(){
   const items=S.rfPositionReview?.items||[];
@@ -3984,7 +4029,7 @@ function rfPositionReviewModal(){
           <div class="rf-review-section-head">
             <div>
               <div class="rf-review-section-title">Eventos de Renda Fixa encontrados</div>
-              <div class="rf-review-section-sub">Juros e Prêmio podem ir para Proventos. Amortização, resgate e vencimento ficam para revisão.</div>
+              <div class="rf-review-section-sub">Nesta etapa eles ficam só para conferência. A gravação desta tela importa apenas os ativos selecionados.</div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn bgh" onclick="setRfEventReviewAll(true)">Marcar eventos</button>
@@ -6403,6 +6448,15 @@ function syncAssetsFromAportes(showMsg=false){
       quoteSource:old.quoteSource||(isRF?'manual':''), quoteUpdatedAt:old.quoteUpdatedAt||''
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
+  const importedPositionAssets=Object.values(keep)
+    .filter(a=>{
+      const tk=String(a?.ticker||'').trim().toUpperCase();
+      return tk && !grouped[tk] && (rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source));
+    })
+    .map(a=>({...a}));
+  if(importedPositionAssets.length){
+    S.assets=[...S.assets, ...importedPositionAssets].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
+  }
   autoDY();
   save();
   if(showMsg) toast('✅ Carteira recalculada pelos aportes!');
@@ -7912,44 +7966,44 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </div>
     </div>
   </div>
-  <div class="cc" style="margin-bottom:8px;padding:10px 10px 9px">
-    <div class="sh" style="margin-bottom:6px;gap:10px">
+  <div class="cc prov-imported-shell" style="margin-bottom:8px;padding:10px 10px 9px">
+    <div class="sh prov-imported-head" style="margin-bottom:6px;gap:10px">
       <div style="min-width:0">
         <div class="st">Proventos importados da B3</div>
         <div class="mu" style="font-size:11px;margin-top:2px">Consolidado dos dados gravados em <strong style="color:#e2eaf6">Proventos</strong>.</div>
       </div>
       <button class="btn ${importedDetailsOpen ? 'bp' : 'bgh'}" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleImportedDividendsDetails(event)">${importedDetailsOpen ? 'Ocultar detalhes' : 'Ver detalhes'}</button>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin-bottom:8px">
-      <div class="card al" style="margin:0;flex:1 1 220px;min-height:54px;padding:8px 10px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
+    <div class="prov-imported-compact" style="margin-bottom:8px">
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 220px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
         <div>
           <div class="cl" style="margin-bottom:2px">Total importado</div>
           <div class="cv" style="font-size:17px;color:#fbbf24">${fmt(resumoTipos.total)}</div>
         </div>
         <div class="cs" style="font-size:10px;line-height:1.3">B3 importado: ${fmt(resumoTipos.total)} • ${resumoTipos.count} lançamentos</div>
       </div>
-      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#34d399">
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#34d399">
         <div class="cl" style="margin-bottom:2px">Lançamentos</div>
         <div class="cv gn" style="font-size:17px">${resumoTipos.count}</div>
       </div>
-      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#60a5fa">
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#60a5fa">
         <div class="cl" style="margin-bottom:2px">Rendimentos</div>
         <div class="cv" style="font-size:17px;color:#60a5fa">${fmt(resumoTipos.tipos.Rendimento||0)}</div>
       </div>
-      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#a78bfa">
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#a78bfa">
         <div class="cl" style="margin-bottom:2px">Dividendos</div>
         <div class="cv" style="font-size:17px;color:#a78bfa">${fmt(resumoTipos.tipos.Dividendo||0)}</div>
       </div>
-      <div class="card al" style="margin:0;flex:1 1 140px;min-height:54px;padding:8px 10px;border-left-color:#f97316">
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#f97316">
         <div class="cl" style="margin-bottom:2px">JCP</div>
         <div class="cv" style="font-size:17px;color:#f97316">${fmt(resumoTipos.tipos.JCP||0)}</div>
       </div>
-      <div class="card al" style="margin:0;flex:1 1 150px;min-height:54px;padding:8px 10px;border-left-color:#f59e0b">
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 150px;border-left-color:#f59e0b">
         <div class="cl" style="margin-bottom:2px">Juros RF</div>
         <div class="cv" style="font-size:17px;color:#f59e0b">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
       </div>
     </div>
-    <div class="mu" style="font-size:11px;line-height:1.4;color:#94a3b8">Resumo compacto: ${fmt(resumoTipos.total)} recebidos, ${resumoTipos.count} lançamentos e consolidação por tipo.</div>
+    <div class="prov-imported-hint">Resumo compacto: ${fmt(resumoTipos.total)} recebidos, ${resumoTipos.count} lançamentos e consolidação por tipo.</div>
     ${importedDetailsOpen?`
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
       <div class="cc" style="margin:0;padding:9px 10px 7px">
