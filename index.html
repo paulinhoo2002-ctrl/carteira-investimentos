@@ -2368,7 +2368,7 @@ function parseB3ProventosWorkbook(wb, fileName=''){
       const netValue=parseNum(getRowValue(rowObj,['Valor líquido','Valor Liquido','Valor Líquido','Valor','Valor Liquido']));
       const ticker=b3ProventoTicker(product);
       const looksLikeSummary=b3ProventoLooksLikeSummaryRow(product,rowObj,headers);
-      if(idx===0) console.log("B3 Proventos - debug:", {headers:Object.keys(rowObj), row:rowObj, produto});
+      if(idx===0) console.log("B3 Proventos - debug:", {headers:Object.keys(rowObj), row:rowObj, product});
       if(looksLikeSummary || !product || !eventType || !paymentDate || !ticker || !netValue || netValue<=0){
         ignoredCount++;
         if(looksLikeSummary) return;
