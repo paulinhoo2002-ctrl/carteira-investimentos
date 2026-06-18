@@ -2178,6 +2178,17 @@ function b3ProventoQty(v){
   if(/^\d{1,3}(\.\d{3})+$/.test(s)) return Number(s.replace(/\./g,''));
   return parseNum(v);
 }
+function b3ProventoLooksLikeSummaryRow(product, row, headers=[]){
+  const keywords=['TOTAL','TOTAL LIQUIDO','TOTAL LÍQUIDO','VALOR TOTAL','TOTAL GERAL','RESUMO','CONSOLIDADO','SOMA'];
+  const cells=[product,...(Array.isArray(row)?row:[])].filter(v=>v!==null && v!==undefined).map(v=>String(v).trim()).filter(Boolean);
+  if(!cells.length) return true;
+  const firstCells=cells.slice(0,3).join(' | ');
+  const firstNorm=rfPosNorm(firstCells);
+  if(keywords.some(k=>firstNorm.includes(rfPosNorm(k)))) return true;
+  const headerName=(Array.isArray(headers)&&headers.length?String(headers[0]||'').trim():'').toLowerCase();
+  if(headerName && keywords.some(k=>rfPosNorm(headerName).includes(rfPosNorm(k)))) return true;
+  return false;
+}
 function b3ProventoDuplicate(row){
   const ticker=String(row.ticker||'').toUpperCase();
   const dateKey=b3MovementDateKey(row.paymentDate);
@@ -2259,6 +2270,7 @@ function b3ProventoBuild(raw){
 }
 function parseB3ProventosWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
+  let ignoredCount=0;
   const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
   const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
   (wb.SheetNames||[]).forEach(sheetName=>{
@@ -2281,7 +2293,11 @@ function parseB3ProventosWorkbook(wb, fileName=''){
       const qty=b3ProventoQty(pickB3(row,headers,['Quantidade']));
       const unitPrice=parseNum(pickB3(row,headers,['Preço unitário','Preco unitario']));
       const netValue=parseNum(pickB3(row,headers,['Valor líquido','Valor liquido']));
-      if(!product || !eventType || !paymentDate){
+      const ticker=b3ProventoTicker(product);
+      const looksLikeSummary=b3ProventoLooksLikeSummaryRow(product,row,headers);
+      if(looksLikeSummary || !product || !eventType || !paymentDate || !ticker || !netValue || netValue<=0){
+        ignoredCount++;
+        if(looksLikeSummary) return;
         warnings.push(`Linha ${idx+headerIdx+2}: dados insuficientes para revisar.`);
         return;
       }
@@ -2289,7 +2305,7 @@ function parseB3ProventosWorkbook(wb, fileName=''){
     });
   });
   if(!items.length) warnings.push('Nenhum provento recebido foi identificado no arquivo.');
-  return {items,warnings,importDate,kind:'b3-proventos'};
+  return {items,warnings,importDate,kind:'b3-proventos',ignoredCount};
 }
 function pdfMovementIsRowStart(line){
   const s=b3MovementNorm(line);
@@ -3898,6 +3914,7 @@ function openB3ProventosReview(parsed, fileName='', sourceKind='excel'){
     sourceKind,
     importDate:parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
     warnings:parsed?.warnings||[],
+    ignoredCount:Number(parsed?.ignoredCount)||0,
     items:(parsed?.items||[]).map((it,i)=>b3ProventoBuild({...it,id:it.id ?? i}))
   };
   render();
@@ -3982,10 +3999,12 @@ function b3ProventosReviewSummary(){
   const rows=S.b3ProventosReview?.items||[];
   const selected=rows.filter(r=>r.include!==false);
   const total=selected.reduce((s,r)=>s+(Number(r.netValue)||0),0);
+  const valid=rows.filter(r=>r.status==='Novo provento').length;
+  const ignored=Number(S.b3ProventosReview?.ignoredCount)||Math.max(0, rows.length-valid);
   const importable=rows.filter(r=>r.status==='Novo provento' && r.destination==='Proventos').length;
   const duplicates=rows.filter(r=>r.status==='Duplicado').length;
   const review=rows.filter(r=>r.destination==='Revisar').length;
-  return {count:selected.length,totalRows:rows.length,total,importable,duplicates,review};
+  return {count:selected.length,totalRows:rows.length,total,importable,duplicates,review,valid,ignored};
 }
 function b3ProventosReviewModal(){
   const r=S.b3ProventosReview;
@@ -4025,12 +4044,14 @@ function b3ProventosReviewModal(){
         </div>
         <div class="note-meta">
           <span class="note-pill">Arquivo: ${esc(r.fileName||'Proventos B3')}</span>
-          <span class="note-pill">Linhas: ${sum.totalRows}</span>
+          <span class="note-pill">Linhas válidas: ${sum.valid}</span>
+          <span class="note-pill">Linhas ignoradas: ${sum.ignored}</span>
+          <span class="note-pill">Linhas na revisão: ${sum.totalRows}</span>
           <span class="note-pill">Selecionados: ${sum.count}</span>
           <span class="note-pill">Importáveis: ${sum.importable}</span>
           <span class="note-pill">Duplicados: ${sum.duplicates}</span>
           <span class="note-pill">Revisar: ${sum.review}</span>
-          <span class="note-pill">Total selecionado: ${fmt(sum.total)}</span>
+          <span class="note-pill">Total líquido selecionado: ${fmt(sum.total)}</span>
         </div>
       </div>
       <div class="note-body">
@@ -4910,6 +4931,75 @@ function proventoResumo(){
     meses:[...meses.values()].sort((a,b)=>b.key.localeCompare(a.key)),
     anos:[...anos.values()].sort((a,b)=>b.ano-a.ano)
   };
+}
+function proventoTipoCanonical(value){
+  const s=rfPosNorm(value);
+  if(!s) return 'Outro';
+  if(s.includes('RENDIMENTO')) return 'Rendimento';
+  if(s.includes('DIVIDENDO')) return 'Dividendo';
+  if(s.includes('JUROS SOBRE CAPITAL') || s==='JCP' || s.includes('JCP')) return 'JCP';
+  if(s.includes('PAGAMENTO DE JUROS') || s.includes('JUROS RENDA FIXA')) return 'Juros de Renda Fixa';
+  if(s.includes('REEMBOLSO')) return 'Reembolso';
+  return 'Outro';
+}
+function proventoResumoTipos(){
+  const base={
+    total:0,
+    count:0,
+    tipos:{
+      Rendimento:0,
+      Dividendo:0,
+      JCP:0,
+      'Juros de Renda Fixa':0,
+      Reembolso:0,
+      Outro:0
+    }
+  };
+  (S.proventos||[]).forEach(p=>{
+    const value=Number(p.value)||0;
+    if(value<=0) return;
+    const type=proventoTipoCanonical(p.eventType||p.type);
+    base.total+=value;
+    base.count++;
+    base.tipos[type]=(base.tipos[type]||0)+value;
+  });
+  return base;
+}
+function proventoResumoMensalTipos(){
+  const months=new Map();
+  (S.proventos||[]).forEach(p=>{
+    const dt=parseAnyDate(p.date);
+    const value=Number(p.value)||0;
+    if(!dt || value<=0) return;
+    const year=dt.getFullYear();
+    const month=String(dt.getMonth()+1).padStart(2,'0');
+    const key=`${year}-${month}`;
+    const label=dt.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+    if(!months.has(key)){
+      months.set(key,{
+        key,
+        year,
+        month,
+        label,
+        total:0,
+        count:0,
+        tipos:{
+          Rendimento:0,
+          Dividendo:0,
+          JCP:0,
+          'Juros de Renda Fixa':0,
+          Reembolso:0,
+          Outro:0
+        }
+      });
+    }
+    const row=months.get(key);
+    const type=proventoTipoCanonical(p.eventType||p.type);
+    row.total+=value;
+    row.count++;
+    row.tipos[type]=(row.tipos[type]||0)+value;
+  });
+  return [...months.values()].sort((a,b)=>b.key.localeCompare(a.key));
 }
 function proventoHistoricoMensal(){
   const byYear=new Map();
@@ -7507,6 +7597,8 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const objetivo = Number(S.divGoal) || 0;
   const rec = proventoStats();
   const resumo = proventoResumo();
+  const resumoTipos = proventoResumoTipos();
+  const resumoMensalTipos = proventoResumoMensalTipos();
   const historico = proventoHistoricoMensal();
   const histTop = historico[0] || { total: 0, media: 0 };
   const media12 = histTop.media || 0;
@@ -7633,6 +7725,91 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
           <div class="cv" style="color:#fb923c;font-size:16px">${fmt(rec.total)}</div>
         </div>
         <div class="cs" style="font-size:10px">Tudo que já entrou na conta</div>
+      </div>
+    </div>
+  </div>
+  <div class="cc" style="margin-bottom:8px;padding:9px 10px 7px">
+    <div class="sh" style="margin-bottom:5px">
+      <div>
+        <div class="st">Resumo dos proventos importados</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Consolidação dos dados já gravados em <strong style="color:#e2eaf6">S.proventos</strong>, sem importar nada novo.</div>
+      </div>
+      <div class="mu" style="font-size:11px">${S.proventos.length} lançamentos</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px">
+      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Total no período</div>
+          <div class="cv" style="font-size:18px;color:#fbbf24">${fmt(resumoTipos.total)}</div>
+        </div>
+        <div class="cs" style="font-size:10px;line-height:1.3">${resumoTipos.count} lançamentos</div>
+      </div>
+      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#34d399;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Rendimentos</div>
+          <div class="cv" style="font-size:18px;color:#34d399">${fmt(resumoTipos.tipos.Rendimento||0)}</div>
+        </div>
+        <div class="cs" style="font-size:10px;line-height:1.3">Proventos de fundo/ação</div>
+      </div>
+      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#60a5fa;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Dividendos</div>
+          <div class="cv" style="font-size:18px;color:#60a5fa">${fmt(resumoTipos.tipos.Dividendo||0)}</div>
+        </div>
+        <div class="cs" style="font-size:10px;line-height:1.3">Dividendos isentos</div>
+      </div>
+      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#a78bfa;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">JCP</div>
+          <div class="cv" style="font-size:18px;color:#a78bfa">${fmt(resumoTipos.tipos.JCP||0)}</div>
+        </div>
+        <div class="cs" style="font-size:10px;line-height:1.3">Juros sobre capital próprio</div>
+      </div>
+      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f97316;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Juros de Renda Fixa</div>
+          <div class="cv" style="font-size:18px;color:#f97316">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
+        </div>
+        <div class="cs" style="font-size:10px;line-height:1.3">Pagamentos de juros</div>
+      </div>
+      <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f87171;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Reembolsos</div>
+          <div class="cv" style="font-size:18px;color:#f87171">${fmt(resumoTipos.tipos.Reembolso||0)}</div>
+        </div>
+        <div class="cs" style="font-size:10px;line-height:1.3">Se existirem</div>
+      </div>
+    </div>
+    <div class="tw">
+      <div class="ts">
+        <table style="min-width:1080px">
+          <thead>
+            <tr>
+              <th>Mês/Ano</th>
+              <th>Total recebido</th>
+              <th>Rendimentos</th>
+              <th>Dividendos</th>
+              <th>JCP</th>
+              <th>Juros RF</th>
+              <th>Reembolsos</th>
+              <th>Lançamentos</th>
+            </tr>
+          </thead>
+          <tbody>${
+            resumoMensalTipos.length
+              ? resumoMensalTipos.map(r=>`<tr>
+                  <td style="font-weight:700;color:#e2eaf6;text-transform:capitalize">${esc(r.label)}/${r.year}</td>
+                  <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                  <td>${fmt(r.tipos.Rendimento||0)}</td>
+                  <td>${fmt(r.tipos.Dividendo||0)}</td>
+                  <td>${fmt(r.tipos.JCP||0)}</td>
+                  <td>${fmt(r.tipos['Juros de Renda Fixa']||0)}</td>
+                  <td>${fmt(r.tipos.Reembolso||0)}</td>
+                  <td style="font-weight:700;color:#94a3b8">${r.count}</td>
+                </tr>`).join('')
+              : '<tr><td colspan="8" style="text-align:center;padding:18px;color:#2e3f58">Busque ou registre proventos para ver o resumo mensal por tipo.</td></tr>'
+          }</tbody>
+        </table>
       </div>
     </div>
   </div>
