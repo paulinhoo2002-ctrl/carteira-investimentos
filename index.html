@@ -45,6 +45,54 @@ button{cursor:pointer;font-family:inherit}
 .dash-card .cs{font-size:11px;color:#7489a4;margin-top:4px}
 .dash-foot{font-size:11px;color:#7489a4;line-height:1.3;max-width:100%}
 .div-line-summary{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:stretch}
+.prov-imported-shell{display:flex;flex-direction:column;gap:8px}
+.prov-imported-head{gap:10px}
+.prov-imported-compact{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.prov-imported-card{min-height:54px;padding:8px 10px}
+.prov-imported-card .cl,.prov-imported-card .cs,.prov-imported-card .cv{min-width:0}
+.prov-imported-card .cl,.prov-imported-card .cs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prov-imported-hint{font-size:11px;line-height:1.4;color:#94a3b8}
+.prov-audit-shell{display:flex;flex-direction:column;gap:10px}
+.prov-audit-filters{display:grid;grid-template-columns:1.15fr .95fr 1.1fr auto;gap:8px;align-items:end}
+.prov-audit-filters .aud-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.prov-audit-filters .aud-field .fl{margin-bottom:0}
+.prov-audit-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.prov-audit-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.prov-audit-kpi{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:9px 10px;min-height:72px;display:flex;flex-direction:column;justify-content:space-between}
+.prov-audit-kpi .cl{font-size:11px;color:#94a3b8;margin-bottom:3px}
+.prov-audit-kpi .cv{font-size:16px;font-weight:900;line-height:1.1}
+.prov-audit-kpi .cs{font-size:10px;color:#64748b;line-height:1.35;margin-top:4px}
+.prov-audit-kpi.warn .cv{color:#fbbf24}
+.prov-audit-kpi.ok .cv{color:#34d399}
+.prov-audit-kpi.info .cv{color:#60a5fa}
+.prov-audit-kpi.purple .cv{color:#a78bfa}
+.prov-audit-kpi.red .cv{color:#f87171}
+.prov-audit-table-wrap{border:1px solid #182033;border-radius:14px;overflow:auto;background:#090c15}
+.prov-audit-table{width:100%;min-width:1320px;border-collapse:separate;border-spacing:0;font-size:12px}
+.prov-audit-table th,.prov-audit-table td{padding:9px 10px;border-bottom:1px solid #162033;vertical-align:top;text-align:left}
+.prov-audit-table th{position:sticky;top:0;background:#0b1020;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.04em;z-index:2;white-space:nowrap}
+.prov-audit-table tr:last-child td{border-bottom:0}
+.prov-audit-table .num{text-align:right;white-space:nowrap}
+.prov-audit-table .ticker{font-weight:800;color:#e2eaf6}
+.prov-audit-table .asset{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
+.prov-audit-table .obs{max-width:280px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prov-audit-row-dup{background:rgba(248,191,36,.06)}
+.prov-audit-row-primary{background:rgba(59,130,246,.04)}
+.prov-audit-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;border:1px solid #24324a;background:#111827;color:#cbd5e1;white-space:nowrap}
+.prov-audit-status.ok{color:#34d399;border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08)}
+.prov-audit-status.warn{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
+.prov-audit-status.muted{color:#94a3b8;border-color:#2a3649;background:rgba(148,163,184,.06)}
+@media(max-width:900px){
+  .prov-audit-filters{grid-template-columns:1fr 1fr}
+  .prov-audit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .prov-audit-kpi{min-height:66px}
+}
+@media(max-width:640px){
+  .prov-audit-filters{grid-template-columns:1fr}
+  .prov-audit-kpis{grid-template-columns:1fr 1fr;gap:7px}
+  .prov-audit-kpi .cv{font-size:15px}
+  .prov-audit-table{min-width:1240px}
+}
 .dashboard-grid{gap:10px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.95fr)}
 .dashboard-panel{min-height:260px}
 .dashboard-legend{display:flex;flex-direction:column;gap:6px;min-width:220px}
@@ -151,6 +199,17 @@ input:disabled{opacity:.45;cursor:not-allowed}
 input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
 @media(max-width:640px){.cg{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .prov-imported-shell{gap:6px}
+  .prov-imported-head{gap:8px;align-items:flex-start}
+  .prov-imported-compact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .prov-imported-card{min-height:44px;padding:6px 7px}
+  .prov-imported-card .cl{font-size:9px;margin-bottom:1px}
+  .prov-imported-card .cv{font-size:14px;line-height:1.05}
+  .prov-imported-card .cs{display:none}
+  .prov-imported-hint{font-size:10px;line-height:1.25}
+  .prov-imported-head .btn{padding:6px 10px;font-size:11px}
+}
 .cc{background:#111828;border:1px solid #1d2940;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;min-height:100%}
 .cc>.tw{flex:1;min-height:0}
 .ct{font-size:11px;font-weight:600;color:#3d5472;margin-bottom:12px;text-transform:uppercase;letter-spacing:.07em}
@@ -302,6 +361,43 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .b3-review-line input,.b3-review-line select{padding:6px 7px;font-size:12px;border-radius:8px}
 .b3-review-line.bad{opacity:.55}
 .b3-review-line .line-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.rf-pos-review-wrap{overflow:auto;border:1px solid #182033;border-radius:14px;background:#090c15}
+.rf-pos-review-table{width:100%;min-width:1500px;border-collapse:separate;border-spacing:0;font-size:12px}
+.rf-pos-review-table th,.rf-pos-review-table td{padding:10px 9px;border-bottom:1px solid #162033;text-align:left;vertical-align:top}
+.rf-pos-review-table th{position:sticky;top:0;background:#0b1020;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.04em;z-index:1}
+.rf-pos-review-table tr:last-child td{border-bottom:0}
+.rf-pos-review-table .ticker{font-weight:900;color:#e2eaf6}
+.rf-pos-review-table .asset-name{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
+.rf-pos-review-table .num{text-align:right;white-space:nowrap}
+.rf-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;border:1px solid #24324a;background:#111827;color:#cbd5e1;white-space:nowrap}
+.rf-status.ok{color:#34d399;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08)}
+.rf-status.warn{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
+.rf-status.review{color:#f87171;border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.08)}
+.rf-status.muted{color:#94a3b8;border-color:#2a3649;background:rgba(148,163,184,.06)}
+.rf-proventos-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 12px}
+.rf-proventos-kpi{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;justify-content:space-between;min-height:72px}
+.rf-proventos-kpi-label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:700}
+.rf-proventos-kpi-value{font-size:18px;font-weight:900;color:#e2eaf6;line-height:1.1}
+.rf-proventos-kpi-sub{font-size:10px;color:#94a3b8;line-height:1.35;margin-top:4px}
+.rf-proventos-kpi.green .rf-proventos-kpi-value{color:#34d399}
+.rf-proventos-kpi.yellow .rf-proventos-kpi-value{color:#fbbf24}
+.rf-proventos-kpi.blue .rf-proventos-kpi-value{color:#60a5fa}
+.rf-proventos-kpi.red .rf-proventos-kpi-value{color:#f87171}
+.rf-proventos-kpi.purple .rf-proventos-kpi-value{color:#a78bfa}
+.rf-proventos-table th:nth-child(3),.rf-proventos-table td:nth-child(3),
+.rf-proventos-table th:nth-child(4),.rf-proventos-table td:nth-child(4),
+.rf-proventos-table th:nth-child(6),.rf-proventos-table td:nth-child(6),
+.rf-proventos-table th:nth-child(11),.rf-proventos-table td:nth-child(11){
+  white-space:nowrap;
+  font-weight:800;
+}
+.rf-proventos-table th:nth-child(2),.rf-proventos-table td:nth-child(2){white-space:nowrap}
+.rf-proventos-table td:nth-child(12),.rf-proventos-table td:nth-child(13){font-size:11px;color:#94a3b8}
+.rf-proventos-table tbody tr:nth-child(odd){background:rgba(11,16,32,.35)}
+.rf-review-section{border:1px solid #182033;border-radius:16px;background:#090c15;overflow:hidden;margin-bottom:14px}
+.rf-review-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;background:#0b1020;border-bottom:1px solid #182033}
+.rf-review-section-title{font-size:14px;font-weight:900;color:#e2eaf6}
+.rf-review-section-sub{font-size:12px;color:#94a3b8;margin-top:4px;line-height:1.45}
 .mov-review-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .mov-review-group{border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
 .mov-review-group summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;background:#0b1020}
@@ -313,14 +409,17 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .mov-review-group-meta{font-size:12px;color:#94a3b8;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .mov-review-group-body{padding:12px 14px 14px}
 .mov-review-lines{display:flex;flex-direction:column;gap:8px}
-.mov-review-line{display:grid;grid-template-columns:24px 90px 92px 1.2fr 100px 78px 98px 108px 92px;gap:8px;align-items:center;padding:10px 10px;border:1px solid #161e2e;border-radius:10px;background:#0b0f17}
+.mov-review-line{display:grid;grid-template-columns:24px 90px 92px 116px 1fr 78px 86px 98px minmax(150px,1fr) 86px;gap:8px;align-items:center;padding:10px 10px;border:1px solid #161e2e;border-radius:10px;background:#0b0f17}
 .mov-review-line label{display:flex;align-items:center;justify-content:center}
+.mov-review-line .col-status{min-width:0}
 .mov-review-line .mini{font-size:11px;color:#64748b}
 .mov-review-line .ticker{font-weight:800;color:#e2eaf6}
 .mov-review-line .kind{font-size:12px;color:#cbd5e1}
 .mov-review-line .value{font-weight:800;text-align:right}
 .mov-review-line input,.mov-review-line select{padding:6px 7px;font-size:12px;border-radius:8px}
 .mov-review-line.bad{opacity:.55}
+.mov-review-line.warn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.05)}
+.mov-review-line .col-obs{min-width:0}
 .mov-review-line .line-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end}
 @media(max-width:900px){
   .note-overlay{padding:10px}
@@ -344,14 +443,25 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .b3-review-line .col-price{grid-area:price}
   .b3-review-line .col-total{grid-area:total}
   .b3-review-line .col-check{grid-area:chk}
-  .mov-review-line{grid-template-columns:24px 1fr 1fr;grid-template-areas:"chk ticker ticker" "chk kind kind" "chk target target" "chk qty price" "chk total total";align-items:start}
+  .mov-review-line{grid-template-columns:24px 1fr 1fr;grid-template-areas:"chk status status" "chk ticker ticker" "chk kind kind" "chk target target" "chk qty price" "chk total total" "chk obs obs" "chk ctrl ctrl";align-items:start}
   .mov-review-line .col-check{grid-area:chk}
+  .mov-review-line .col-status{grid-area:status}
   .mov-review-line .col-ticker{grid-area:ticker}
   .mov-review-line .col-kind{grid-area:kind}
   .mov-review-line .col-target{grid-area:target}
   .mov-review-line .col-qty{grid-area:qty}
   .mov-review-line .col-price{grid-area:price}
   .mov-review-line .col-total{grid-area:total}
+  .mov-review-line .col-obs{grid-area:obs}
+  .mov-review-line .line-controls{grid-area:ctrl;justify-content:flex-start}
+  .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rf-proventos-table{min-width:1180px}
+}
+@media(max-width:640px){
+  .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .rf-proventos-kpi{min-height:66px;padding:9px 10px}
+  .rf-proventos-kpi-value{font-size:16px}
+  .rf-proventos-table{min-width:1220px}
 }
 @media(max-width:900px){
   .hdr{padding:10px 12px;gap:10px}
@@ -667,6 +777,7 @@ let S = {
   irpfSeqSeen:-1,
   irpfFinalOpen:false,
   activeAssetsGroup:'',
+  assetSort:{},
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
   irpfYear:new Date().getFullYear(),
@@ -674,6 +785,8 @@ let S = {
   apHistoryOpen:true, apSearch:'',
   apSearchTimer:null,
   activeDividendSection:'',
+  showImportedDividendsDetails:false,
+  proventoAudit:{month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]},
   mobileMenuOpen:false,
   mobileTopMenuOpen:false,
   accessSettingsOpen:false,
@@ -688,6 +801,8 @@ let S = {
   noteReview:null,
   b3Review:null,
   b3MovementReview:null,
+  rfPositionReview:null,
+  b3ProventosReview:null,
   learnMeta:{},
   autoProvDirty:false,
   autoProvTimer:null,
@@ -942,6 +1057,8 @@ function markProventosDirty(){
 function isAutoGeneratedProvento(p){
   const source=String(p?.source||'').toLowerCase();
   if(source==='b3-movement') return false;
+  if(source==='posicaodetalhada b3/xp') return false;
+  if(source==='b3 proventos recebidos') return false;
   return !!p?.autoKey || source.startsWith('auto');
 }
 function stripAutoProventos(){
@@ -1045,6 +1162,9 @@ function load(){
   if(!S.goals || typeof S.goals!=='object') S.goals=normalizeGoals();
   else S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
+  const cleanedB3Summary = cleanupB3PositionSummaryAssets();
+  const cleanedB3Aportes = cleanupB3PositionAportes();
+  if(cleanedB3Summary>0 || cleanedB3Aportes>0) save();
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
 }
 
@@ -1691,6 +1811,8 @@ async function resetPortfolio(){
   S.noteReview=null;
   S.b3Review=null;
   S.b3MovementReview=null;
+  S.rfPositionReview=null;
+  S.b3ProventosReview=null;
   syncWalletFromState();
   save();
   saveConfig();
@@ -1886,41 +2008,188 @@ function b3MovementTicker(product){
   const first=s.split(' - ')[0] || s.split(' ').filter(Boolean)[0] || s;
   return cleanAssetCode(first);
 }
+function b3MovementAssetType(product, ticker='', mov=''){
+  const tk=String(ticker||b3MovementTicker(product)||'').trim().toUpperCase();
+  const meta=inferB3PositionMeta('Movimentação', tk, product, mov);
+  return normalizeType(meta.type || metaTicker(tk).type || 'Ação','Ação');
+}
 function b3MovementKind(mov){
   const s=b3MovementNorm(mov);
-  if(/PAGAMENTO DE JUROS/.test(s)) return 'provento';
-  if(/TRANSFERENCIA SEM FINANCEIRO|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|RETIRADA DE CUSTODIA/.test(s)) return 'transferencia';
-  if(/EVENTO GENERICO/.test(s)) return 'evento';
-  if(/RESGATE ANTECIPADO|VENCIMENTO/.test(s)) return 'resgate';
-  return 'aporte';
+  if(/DIVIDENDO|DIVIDENDOS|JCP|JUROS SOBRE CAPITAL|RENDIMENTO|RENDIMENTOS|PAGAMENTO DE JUROS|PAGAMENTO DE RENDIMENTO/.test(s)) return 'provento';
+  if(/TRANSFERENCIA\s*-\s*LIQUIDACAO|TRANSFERENCIA LIQUIDACAO/.test(s)) return 'transferencia';
+  if(/TRANSFERENCIA SEM FINANCEIRO|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|RETIRADA DE CUSTODIA|TRANSFERENCIA/.test(s)) return 'transferencia';
+  if(/BONIFICACAO|DESDOBRAMENTO|DESDOBRO|GRUPAMENTO|FRACAO|DIREITO DE SUBSCRICAO|DIREITOS DE SUBSCRICAO|SOLICITACAO DE SUBSCRICAO|RECIBO DE SUBSCRICAO|CESSAO DE DIREITOS|ATUALIZACAO|LEILAO DE FRACAO|EVENTO GENERICO/.test(s)) return 'evento';
+  if(/VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO/.test(s)) return 'aporte';
+  if(/RESGATE ANTECIPADO/.test(s)) return 'resgate';
+  if(/COMPRA|APLICA|SUBSCRICAO|ENTRADA/.test(s)) return 'aporte';
+  if(/VENDA|SAIDA/.test(s)) return 'resgate';
+  return 'revisar';
+}
+function b3MovementClassify(mov, entryExit, product='', qty=0, price=0, value=0, assetType=''){
+  const s=b3MovementNorm(mov);
+  const e=b3MovementNorm(entryExit);
+  const type=normalizeType(assetType || b3MovementAssetType(product, '', mov), 'Ação');
+  const hasValid=String(product||'').trim() && Number(qty)>0 && Number(price)>0 && Number(value)>0;
+  const exact=txt=>b3MovementNorm(txt);
+  const isTransferLiquidity=/TRANSFERENCIA\s*-\s*LIQUIDACAO|TRANSFERENCIA LIQUIDACAO/.test(s);
+  const isTransfer=/TRANSFERENCIA SEM FINANCEIRO|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|RETIRADA DE CUSTODIA|EMPRESTIMO|TRANSFERENCIA/.test(s);
+  const isSocietary=/BONIFICACAO|DESDOBRAMENTO|DESDOBRO|GRUPAMENTO|FRACAO|DIREITO DE SUBSCRICAO|DIREITOS DE SUBSCRICAO|SOLICITACAO DE SUBSCRICAO|RECIBO DE SUBSCRICAO|CESSAO DE DIREITOS|ATUALIZACAO|LEILAO DE FRACAO|EVENTO GENERICO/.test(s);
+  const isProvento=/RENDIMENTO|DIVIDENDO|JCP|JUROS SOBRE CAPITAL|PAGAMENTO DE JUROS|PAGAMENTO DE RENDIMENTO/.test(s);
+  const isReviewProvento=/REEMBOLSO|AMORTIZA|RESTITUICAO DE CAPITAL/.test(s);
+  const isHistoric=/COMPRA|VENDA|COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO|APLICA|RESGATE ANTECIPADO|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO|RESGATE\b/.test(s);
+  let destination='revisar';
+  let status='Revisar';
+  let confidence='Baixa';
+  let action='revisar';
+  let operationLabel='Revisar';
+  let note='Linha sem classificação segura.';
+  let group='Revisar manualmente';
+  let includeDefault=false;
+  let reviewReason='';
+  if(isProvento){
+    destination='proventos';
+    status='Proventos';
+    group='Proventos / juros';
+    action='provento';
+    operationLabel='Provento';
+    note='Vai para Proventos.';
+    confidence=isReviewProvento ? 'Média' : (hasValid ? 'Alta' : 'Média');
+    includeDefault=!isReviewProvento && hasValid;
+    if(/TRANSFERIDO/.test(s)) confidence='Média';
+    if(/REEMBOLSO/.test(s)) note='Reembolso fica em revisão.';
+    if(/AMORTIZA/.test(s)) note='Amortização fica em revisão.';
+    if(/RESTITUICAO/.test(s)) note='Restituição de capital fica em revisão.';
+    if(isReviewProvento){
+      destination='revisar';
+      status='Revisar';
+      group='Revisar manualmente';
+      action='revisar';
+      confidence='Média';
+      includeDefault=false;
+    }
+  }else if(isSocietary){
+    destination='eventos';
+    status='Eventos';
+    group='Eventos societários';
+    action='revisar';
+    operationLabel='Evento societário';
+    note='Evento societário para revisão.';
+    confidence='Baixa';
+    includeDefault=false;
+  }else if(isTransfer || isTransferLiquidity){
+    const validTrade=hasValid && Number(qty)>0 && Number(price)>0 && Number(value)>0;
+    const isRf=type==='Renda Fixa';
+    const credit=e==='CREDITO' || e==='ENTRADA';
+    const debit=e==='DEBITO' || e==='SAIDA';
+    if(isTransferLiquidity && validTrade && !isRf && (credit || debit)){
+      destination='historico';
+      status='Histórico';
+      group='Compras / vendas';
+      action=credit ? 'compra' : 'venda';
+      operationLabel=credit ? 'Compra' : 'Venda';
+      note='Transferência - Liquidação interpretada como operação de bolsa.';
+      confidence='Alta';
+      includeDefault=true;
+    }else if(isTransferLiquidity && validTrade && isRf && (credit || debit)){
+      destination='historico';
+      status='Histórico';
+      group='Resgates / vencimentos';
+      action=credit ? 'venda' : 'compra';
+      operationLabel=credit ? 'Resgate' : 'Aplicação';
+      note='Transferência - Liquidação interpretada como movimentação de renda fixa.';
+      confidence='Alta';
+      includeDefault=true;
+    }else{
+      destination='revisar';
+      status=isTransferLiquidity ? 'Operação potencial' : 'Revisar';
+      group=isTransferLiquidity ? 'Operação potencial / Revisar' : 'Transferências / custódia';
+      action='revisar';
+      operationLabel='Revisar';
+      note=isTransferLiquidity ? 'Liquidação sem preço/valor no extrato B3. Revisar manualmente.' : 'Transferência ou custódia: revisar manualmente.';
+      confidence=isTransferLiquidity ? 'Baixa' : 'Baixa';
+      includeDefault=false;
+      reviewReason=isTransferLiquidity ? 'sem_precovalor' : 'transferencia';
+    }
+  }else if(isHistoric){
+    destination='historico';
+    status='Histórico';
+    group=/RESGATE\b|VENCIMENTO/.test(s) ? 'Resgates / vencimentos' : (/APLICA/.test(s) ? 'Aplicações' : 'Compras / vendas');
+    action=/VENDA|SAIDA/.test(s) || /RESGATE\b|VENCIMENTO/.test(s) ? 'venda' : 'compra';
+    if(type==='Renda Fixa' && /COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO/.test(s)){
+      const credit=e==='CREDITO' || e==='ENTRADA';
+      const debit=e==='DEBITO' || e==='SAIDA';
+      if(debit){
+        action='compra';
+        operationLabel='Aplicação';
+        note='Renda fixa interpretada como aplicação/compra.';
+        confidence=hasValid ? 'Alta' : 'Média';
+      }else if(credit){
+        action='venda';
+        operationLabel='Resgate';
+        note='Renda fixa interpretada como resgate/venda.';
+        confidence=hasValid ? 'Alta' : 'Média';
+      }else{
+        action='revisar';
+        operationLabel='Revisar';
+        confidence='Média';
+        note='Renda fixa sem entrada/saída suficiente para interpretar.';
+      }
+    }else if(/COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO/.test(s)){
+      const eup=exact(entryExit);
+      action=eup==='DEBITO' || eup==='SAIDA' ? 'compra' : eup==='CREDITO' || eup==='ENTRADA' ? 'venda' : 'revisar';
+      confidence=eup==='DEBITO' || eup==='SAIDA' || eup==='CREDITO' || eup==='ENTRADA' ? 'Alta' : 'Média';
+      note='Operação compra/venda com base na entrada/saída.';
+      operationLabel=action==='compra' ? 'Compra' : action==='venda' ? 'Venda' : 'Revisar';
+    }else if(/RESGATE ANTECIPADO|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO|RESGATE\b/.test(s)){
+      action='venda';
+      confidence=hasValid ? 'Alta' : 'Média';
+      note='Movimentação de resgate/vencimento.';
+      operationLabel=/RESGATE ANTECIPADO/.test(s) ? 'Resgate antecipado' : (/VENCIMENTO/.test(s) ? 'Vencimento' : 'Resgate');
+    }else if(/APLICA/.test(s)){
+      action='compra';
+      confidence=hasValid ? 'Alta' : 'Média';
+      note='Aplicação financeira.';
+      operationLabel='Aplicação';
+    }else{
+      confidence=hasValid ? 'Alta' : 'Média';
+      note='Compra ou venda identificada.';
+      operationLabel=action==='compra' ? 'Compra' : 'Venda';
+    }
+    includeDefault=confidence==='Alta' && hasValid;
+  }
+  return {destination,status,confidence,action,operationLabel,note,group,includeDefault,hasValid,type,reviewReason};
 }
 function b3MovementAction(mov, entryExit){
-  const kind=b3MovementKind(mov);
-  if(kind==='provento') return 'provento';
-  if(kind==='transferencia' || kind==='evento') return 'ignorar';
-  if(kind==='resgate') return 'venda';
-  const e=String(entryExit||'').toLowerCase();
-  if(e==='debito') return 'venda';
-  if(e==='credito') return 'compra';
-  return /RESGATE|VENCIMENTO/.test(b3MovementNorm(mov)) ? 'venda' : 'compra';
+  return b3MovementClassify(mov, entryExit).action;
 }
-function b3MovementTarget(mov, entryExit){
-  const kind=b3MovementKind(mov);
-  if(kind==='provento') return 'proventos';
-  if(kind==='transferencia' || kind==='evento') return 'ignorar';
-  return 'aportes';
+function b3MovementTarget(mov, entryExit, product='', qty=0, price=0, value=0, assetType=''){
+  const cls=b3MovementClassify(mov, entryExit, product, qty, price, value, assetType);
+  if(cls.destination==='historico') return 'aportes';
+  if(cls.destination==='proventos') return 'proventos';
+  if(cls.destination==='eventos') return 'eventos';
+  if(cls.status==='Operação potencial') return 'revisar';
+  return 'revisar';
 }
 function b3MovementGroup(mov){
   const s=b3MovementNorm(mov);
-  if(/PAGAMENTO DE JUROS/.test(s)) return 'Proventos / juros';
-  if(/TRANSFERENCIA SEM FINANCEIRO|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|RETIRADA DE CUSTODIA/.test(s)) return 'Transferencias / custodia';
-  if(/EVENTO GENERICO/.test(s)) return 'Eventos';
-  if(/RESGATE ANTECIPADO|VENCIMENTO/.test(s)) return 'Resgates / vencimentos';
-  if(/APLICA/.test(s)) return 'Aplicacoes';
-  if(/COMPRA/.test(s)) return 'Compras / vendas';
-  return 'Outros';
+  if(/DIVIDENDO|DIVIDENDOS|JCP|JUROS SOBRE CAPITAL|RENDIMENTO|RENDIMENTOS|PAGAMENTO DE JUROS|PAGAMENTO DE RENDIMENTO/.test(s)) return 'Proventos / juros';
+  if(/TRANSFERENCIA\s*-\s*LIQUIDACAO/.test(s)) return 'Operação potencial / Revisar';
+  if(/TRANSFERENCIA SEM FINANCEIRO|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|RETIRADA DE CUSTODIA|EMPRESTIMO|TRANSFERENCIA/.test(s)) return 'Transferências / custódia';
+  if(/BONIFICACAO|DESDOBRAMENTO|DESDOBRO|GRUPAMENTO|FRACAO|DIREITO DE SUBSCRICAO|DIREITOS DE SUBSCRICAO|SOLICITACAO DE SUBSCRICAO|RECIBO DE SUBSCRICAO|CESSAO DE DIREITOS|ATUALIZACAO|LEILAO DE FRACAO|EVENTO GENERICO/.test(s)) return 'Eventos societários';
+  if(/RESGATE ANTECIPADO|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO/.test(s)) return 'Resgates / vencimentos';
+  if(/APLICA/.test(s)) return 'Aplicações';
+  if(/COMPRA|VENDA|SUBSCRICAO/.test(s)) return 'Compras / vendas';
+  return 'Revisar manualmente';
 }
-function b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, sheet='Movimentacao'}){
+function b3MovementLooksLikeSummaryRow(movement, product, row=[]){
+  const keywords=['TOTAL','TOTAL LIQUIDO','TOTAL LÍQUIDO','VALOR TOTAL','TOTAL GERAL','RESUMO','CONSOLIDADO','SOMA'];
+  const cells=[movement,product,...(Array.isArray(row)?row:[])].filter(v=>v!==null && v!==undefined).map(v=>String(v).trim()).filter(Boolean);
+  if(!cells.length) return true;
+  const firstNorm=b3MovementNorm(cells.slice(0,3).join(' | '));
+  if(keywords.some(k=>firstNorm.includes(b3MovementNorm(k)))) return true;
+  return false;
+}
+function b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, date, broker, sheet='Movimentacao'}){
   const mov=String(movement||'').trim();
   const prod=String(product||'').trim();
   const ticker=b3MovementTicker(prod);
@@ -1928,14 +2197,213 @@ function b3MovementParseRow({movement, product, entryExit, qty, price, value, im
   const v=parseNum(value);
   let p=parseNum(price);
   if((!p || p<=0) && q>0 && v>0) p=v/q;
-  const meta=inferB3PositionMeta('Renda Fixa', ticker, prod, mov);
-  const type=normalizeType(meta.type||'Renda Fixa','Renda Fixa');
+  const meta=inferB3PositionMeta('Movimentação', ticker, prod, mov);
+  const type=normalizeType(meta.type||metaTicker(ticker).type||'Ação','Ação');
   const sector=meta.sector||'';
-  const action=b3MovementAction(mov, entryExit);
-  const target=b3MovementTarget(mov, entryExit);
-  const date=importDate||new Date().toLocaleDateString('pt-BR');
-  const movKey=[sheet,date,b3MovementNorm(entryExit),b3MovementNorm(mov),ticker,String(q),String(Number(p||0).toFixed(4)),String(Number(v||0).toFixed(2))].join('|');
-  return {ticker,qty:q,price:p,value:v||q*p,type,sector,product:prod,movement:mov,entryExit:String(entryExit||''),action,target,sheet,date,movKey};
+  const classification=b3MovementClassify(mov, entryExit, prod, q, p, v, type);
+  const action=classification.action;
+  const target=b3MovementTarget(mov, entryExit, prod, q, p, v, type);
+  const movDate=date||importDate||new Date().toLocaleDateString('pt-BR');
+  const total=v||q*p;
+  const movKey=[sheet,movDate,b3MovementNorm(entryExit),b3MovementNorm(mov),ticker,String(q),String(Number(p||0).toFixed(4)),String(Number(total||0).toFixed(2))].join('|');
+  return {
+    ticker,
+    qty:q,
+    price:p,
+    value:total,
+    type,
+    sector,
+    product:prod,
+    movement:mov,
+    entryExit:String(entryExit||''),
+    action,
+    interpretedOperation:classification.operationLabel||'Revisar',
+    target,
+    destination:classification.destination,
+    destinationLabel:classification.status,
+    confidence:classification.confidence,
+    reviewGroup:classification.group,
+    include:classification.includeDefault,
+    reviewNote:classification.note,
+    reviewReason:classification.reviewReason||'',
+    sheet,
+    date:movDate,
+    broker:String(broker||''),
+    movKey
+  };
+}
+function b3MovementDateKey(v){
+  const d=parseAnyDate(v);
+  return d ? toISODate(d) : String(v||'').trim();
+}
+function b3MovementDateFromCell(v, fallback){
+  if(v instanceof Date && !isNaN(v)) return toBRDate(v);
+  if(typeof v==='number' && Number.isFinite(v) && v>20000){
+    const d=new Date(Math.round((v-25569)*86400*1000));
+    if(!isNaN(d)) return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`;
+  }
+  const s=String(v||'').trim();
+  if(!s) return fallback||'';
+  const input=inputDateValue(s);
+  if(input) return brDate(input);
+  const d=parseAnyDate(s);
+  return d ? toBRDate(d) : (fallback||'');
+}
+function b3MoneyEquals(a,b){
+  return Math.abs((Number(a)||0)-(Number(b)||0)) < 0.01;
+}
+function b3QtyEquals(a,b){
+  return Math.abs((Number(a)||0)-(Number(b)||0)) < 0.0001;
+}
+function b3MovementDuplicateKind(it){
+  const ticker=String(it.ticker||'').toUpperCase();
+  if(!ticker) return '';
+  const dateKey=b3MovementDateKey(it.date);
+  const value=Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0));
+  if(String(it.target||'')==='proventos'){
+    const typeNorm=b3MovementNorm(it.movement||it.type||'');
+    const dup=(S.proventos||[]).some(p=>{
+      const pType=b3MovementNorm(p.type||p.note||'');
+      return String(p.ticker||'').toUpperCase()===ticker
+        && b3MovementDateKey(p.date)===dateKey
+        && b3MoneyEquals(p.value,value)
+        && (!typeNorm || !pType || pType.includes(typeNorm) || typeNorm.includes(pType));
+    });
+    return dup ? 'provento' : '';
+  }
+  if(String(it.target||'')==='aportes'){
+    const op=String(it.action||'compra').toLowerCase();
+    const dup=(S.aportes||[]).some(a=>{
+      const aOp=String(a.operation||a.op||'compra').toLowerCase();
+      const aTotal=(Math.abs(Number(a.qty)||0))*(Number(a.price)||0);
+      return String(a.ticker||'').toUpperCase()===ticker
+        && b3MovementDateKey(a.date)===dateKey
+        && aOp===op
+        && b3QtyEquals(Math.abs(Number(a.qty)||0),Math.abs(Number(it.qty)||0))
+        && b3MoneyEquals(aTotal,value);
+    });
+    return dup ? 'aporte' : '';
+  }
+  return '';
+}
+function b3MovementReviewNote(it){
+  const notes=[];
+  if(String(it.target||'')==='revisar') notes.push('Revisar manualmente antes de gravar.');
+  if(!it.ticker) notes.push('Ticker nao identificado.');
+  if(Number(it.qty)<=0 && String(it.target||'')!=='proventos') notes.push('Quantidade ausente ou zerada.');
+  if(String(it.target||'')==='aportes' && Number(it.price)<=0) notes.push('Preco unitario ausente ou zerado.');
+  if(Number(it.value)<=0) notes.push('Valor total ausente ou zerado.');
+  const dup=it.possibleDuplicate ? (it.duplicateKind||b3MovementDuplicateKind(it)) : '';
+  if(dup) notes.push('Possivel duplicado ja existente.');
+  if(it.interpretedOperation) notes.push(`Tipo interpretado: ${it.interpretedOperation}.`);
+  if(String(it.target||'')==='proventos') notes.push('Vai entrar na aba Proventos.');
+  else if(String(it.target||'')==='aportes') notes.push('Vai atualizar Historico de aportes e Ativos.');
+  if(it.destinationLabel) notes.push(`Destino sugerido: ${it.destinationLabel}.`);
+  if(it.confidence) notes.push(`Confianca: ${it.confidence}.`);
+  if(it.reviewNote) notes.push(it.reviewNote);
+  if(it.reviewReason==='sem_precovalor') notes.push('Liquidação sem preço/valor no extrato B3. Revisar manualmente.');
+  return notes.join(' ');
+}
+function b3MovementIsHistoricalImportable(it){
+  return String(it.destination||'')==='historico'
+    && String(it.target||'')==='aportes'
+    && String(it.confidence||'')!=='Baixa'
+    && it.include!==false
+    && !it.possibleDuplicate
+    && String(it.ticker||'').trim()
+    && Number(it.qty)>0
+    && Number(it.price)>0
+    && Number(it.value)>0;
+}
+function b3MovementHistoricalOperationType(it){
+  const s=b3MovementNorm(it.movement);
+  const entryExit=b3MovementNorm(it.entryExit);
+  if(/APLICA/.test(s)) return 'Aplicação';
+  if(/RESGATE ANTECIPADO/.test(s)) return 'Resgate antecipado';
+  if(/VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO/.test(s)) return 'Vencimento';
+  if(/RESGATE\b/.test(s)) return 'Resgate';
+  if(/COMPRA\s*\/\s*VENDA|COMPRA\/VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO/.test(s)){
+    return entryExit==='CREDITO' || entryExit==='ENTRADA' ? 'Venda' : 'Compra';
+  }
+  if(/VENDA|SAIDA/.test(s)) return 'Venda';
+  return 'Compra';
+}
+function b3MovementHistoricalSide(it, operationType){
+  const op=String(operationType||'').toLowerCase();
+  return ['compra','aplicação','aplicacao'].includes(op) ? 'Entrada' : 'Saída';
+}
+function b3MovementHistoricalAutoKey(it, operationType, side){
+  const dateKey=b3MovementDateKey(it.date);
+  const ticker=String(it.ticker||'').trim().toUpperCase();
+  const qty=Number(it.qty)||0;
+  const unitPrice=Number(it.price)||0;
+  const totalValue=Number(it.value)||0;
+  const institution=String(it.broker||it.institution||'').trim();
+  return [
+    'mov',
+    ticker,
+    dateKey,
+    b3MovementNorm(operationType),
+    b3MovementNorm(side),
+    String(qty.toFixed(4)),
+    String(unitPrice.toFixed(2)),
+    String(totalValue.toFixed(2)),
+    b3MovementNorm(institution)
+  ].join('|');
+}
+function b3MovementSavedHistoricalAutoKey(a){
+  const operationType=String(a.operationType||a.operation||a.op||'').trim();
+  const side=String(a.side||'').trim();
+  const qty=Number(a.qty)||0;
+  const unitPrice=Number(a.unitPrice||a.price||0);
+  const totalValue=Number(a.totalValue||a.value||(Math.abs(qty)*unitPrice)||0);
+  return [
+    'mov',
+    String(a.ticker||'').trim().toUpperCase(),
+    b3MovementDateKey(a.date),
+    b3MovementNorm(operationType),
+    b3MovementNorm(side),
+    String(qty.toFixed(4)),
+    String(unitPrice.toFixed(2)),
+    String(totalValue.toFixed(2)),
+    b3MovementNorm(a.institution||a.broker||'')
+  ].join('|');
+}
+function b3MovementRefreshReviewFlags(it){
+  const next={...it};
+  next.value=(Number(next.value)||((Number(next.qty)||0)*(Number(next.price)||0)));
+  if(!next.destination || !next.destinationLabel || !next.confidence){
+    const cls=b3MovementClassify(next.movement, next.entryExit, next.product, next.qty, next.price, next.value, next.type);
+    next.destination=cls.destination;
+    next.destinationLabel=cls.status;
+    next.confidence=cls.confidence;
+    next.reviewGroup=cls.group;
+    next.reviewNote=cls.note;
+    next.action=cls.action;
+    next.interpretedOperation=cls.operationLabel||next.interpretedOperation||'Revisar';
+    next.reviewReason=cls.reviewReason||next.reviewReason||'';
+    next.target=b3MovementTarget(next.movement, next.entryExit, next.product, next.qty, next.price, next.value, next.type);
+    next.include=cls.includeDefault;
+  }
+  next.duplicateKind=b3MovementDuplicateKind(next);
+  next.possibleDuplicate=!!next.duplicateKind;
+  next.observation=b3MovementReviewNote(next);
+  const allowedForDefault=(next.destination==='historico' || next.destination==='proventos') && next.confidence==='Alta';
+  if(next.possibleDuplicate
+    || !next.ticker
+    || Number(next.value)<=0
+    || !String(next.date||'').trim()
+    || next.target==='revisar'
+    || next.destination==='eventos'
+    || next.destination==='revisar'
+    || next.destination==='ignorar'
+    || (next.destination==='historico' && (Number(next.qty)<=0 || Number(next.price)<=0))
+    || (next.destination==='proventos' && (Number(next.qty)<=0 || Number(next.price)<=0))){
+    next.include=false;
+  }else if(allowedForDefault){
+    next.include=true;
+  }
+  return next;
 }
 function parseB3MovementWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
@@ -1972,11 +2440,17 @@ function parseB3MovementWorkbook(wb, fileName=''){
       const qty=parseNum(pickB3(row,headers,['Quantidade']));
       const price=parseNum(pickB3(row,headers,['Preço unitário','Preco unitario']));
       const value=parseNum(pickB3(row,headers,['Valor da Operação','Valor da Operacao']));
-      if(!movement || !product){
+      const movementDate=b3MovementDateFromCell(pickB3(row,headers,['Data','Data do Movimento','Data da Movimentação','Data da Movimentacao','Data da Operação','Data da Operacao']), importDate);
+      const broker=String(pickB3(row,headers,['Instituição','Instituicao','Corretora','Instituição Financeira','Instituicao Financeira'])||'').trim();
+      if(b3MovementLooksLikeSummaryRow(movement, product, row)){
+        addIgnored(movement||product||'sem movimento','linha total / resumo');
+        return;
+      }
+      if(!movement || !product || !movementDate || value<=0){
         addIgnored(movement||'sem movimento','linha não reconhecida');
         return;
       }
-      const item=b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, sheet:sheetName});
+      const item=b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, date:movementDate, broker, sheet:sheetName});
       if(!item.ticker){
         addIgnored(movement,'sem ticker');
         warnings.push(`Movimentacao ${sheetName}: produto nao reconhecido (${movement}).`);
@@ -1986,9 +2460,9 @@ function parseB3MovementWorkbook(wb, fileName=''){
         addIgnored(movement,'sem quantidade');
         return;
       }
-      if(item.target==='ignorar' || item.action==='ignorar'){
-        addIgnored(movement,'movimentacao ignorada');
-        warnings.push(`Movimentacao ${sheetName}: "${movement}" ficou fora por padrao.`);
+      if(item.target==='revisar' || item.action==='revisar'){
+        addIgnored(movement,'revisao manual');
+        warnings.push(`Movimentacao ${sheetName}: "${movement}" ficou em revisao manual.`);
         items.push({...item, include:false});
         return;
       }
@@ -2003,6 +2477,237 @@ function parseB3MovementWorkbook(wb, fileName=''){
   });
   return {items,warnings,importDate,stats,kind:'movement'};
 }
+function detectB3ProventosWorkbook(wb, fileName=''){
+  const fileHint=/proventos.*recebidos|proventos-recebidos/i.test(String(fileName||''));
+  return (wb.SheetNames||[]).some(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return false;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    for(let i=0;i<Math.min(rows.length,10);i++){
+      const h=(rows[i]||[]).map(normalizeB3Loose);
+      const hasAny=(list)=>h.some(x=>list.includes(x));
+      const ok=hasAny(['produto','ativo','nomedoproduto','produtoativo','descricao','papel'])
+        && hasAny(['pagamento','datapagamento','datadepagamento','data'])
+        && hasAny(['tipodeevento','evento','tipoevento'])
+        && hasAny(['instituicao','corretora'])
+        && hasAny(['quantidade','qtd'])
+        && hasAny(['precounitario','pu'])
+        && hasAny(['valorliquido','valor','valornet','valorliquid']);
+      if(ok) return true;
+    }
+    return fileHint && rfPosNorm(sheetName).includes('PROVENTOS');
+  });
+}
+function b3ProventoTicker(product){
+  const s=String(product||'').trim();
+  const first=s.split(/\s*-\s*/)[0].trim();
+  const firstCode=cleanAssetCode(first);
+  const firstNorm=rfPosNorm(first);
+  const rfPrefixes=/^(DEB|CRA|CRI|CDB|LCA|LCI)\b/.test(firstNorm);
+  if(tickerValidoB3(firstCode)) return firstCode;
+  if(rfPrefixes){
+    const known=rfDetailedKnownCode(s) || rfDetailedKnownCode(first) || b3ProventoResolveRfTicker(s);
+    if(known) return known;
+  }
+  const known=rfDetailedKnownCode(s) || rfDetailedKnownCode(first) || b3ProventoResolveRfTicker(s);
+  if(known) return known;
+  return tickerValidoB3(firstCode) ? firstCode : '';
+}
+function b3ProventoResolveRfTicker(product){
+  const text=rfPosNorm(product);
+  if(!text) return '';
+  const base=text
+    .replace(/^(DEB|CRA|CRI|CDB|LCA|LCI)\s*-\s*/,'')
+    .replace(/^(DEB|CRA|CRI|CDB|LCA|LCI)\s+/,'')
+    .trim();
+  const assets=(S.assets||[]).filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa');
+  for(const a of assets){
+    const hay=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''} ${a.issuer||''} ${a.sector||''}`);
+    if(!hay) continue;
+    if(base && (hay.includes(base) || base.includes(hay))) return String(a.ticker||'').toUpperCase();
+    if(text && hay.includes(text)) return String(a.ticker||'').toUpperCase();
+  }
+  return '';
+}
+function b3ProventoCategory(product,eventType,ticker){
+  const s=rfPosNorm(`${product} ${eventType}`);
+  if(/^(DEB|CRA|CRI|CDB|LCA|LCI)\b/.test(s) || s.includes('PAGAMENTO DE JUROS')) return 'Renda Fixa';
+  const meta=metaTicker(ticker);
+  return normalizeType(meta.type||inferB3PositionMeta('',ticker,product,eventType).type||'Ação','Ação');
+}
+function b3ProventoAssetName(product, ticker=''){
+  const s=String(product||'').trim();
+  if(!s) return '';
+  const parts=s.split(/\s*-\s*/).map(p=>p.trim()).filter(Boolean);
+  if(parts.length>1){
+    const first=cleanAssetCode(parts[0]);
+    if((ticker && first===ticker) || tickerValidoB3(first)) return parts.slice(1).join(' - ').trim();
+    if(/^(DEB|CRA|CRI|CDB|LCA|LCI)\b/.test(rfPosNorm(parts[0]))) return s;
+  }
+  return s;
+}
+function b3ProventoEventType(eventType){
+  const s=rfPosNorm(eventType);
+  if(s.includes('JUROS SOBRE CAPITAL')) return 'JCP';
+  if(s.includes('PAGAMENTO DE JUROS')) return 'Juros Renda Fixa';
+  if(s.includes('RENDIMENTO')) return 'Rendimento';
+  if(s.includes('DIVIDENDO')) return 'Dividendo';
+  if(s.includes('REEMBOLSO')) return 'Reembolso';
+  return String(eventType||'').trim()||'Provento';
+}
+function b3ProventoDestination(eventType){
+  const t=b3ProventoEventType(eventType);
+  if(['Rendimento','Dividendo','JCP','Juros Renda Fixa'].includes(t)) return 'Proventos';
+  return 'Revisar';
+}
+function b3ProventoDate(v){
+  const d=b3MovementDateFromCell(v,'');
+  return d || String(v||'').trim();
+}
+function b3ProventoQty(v){
+  const s=String(v??'').trim();
+  if(/^\d{1,3}(\.\d{3})+$/.test(s)) return Number(s.replace(/\./g,''));
+  return parseNum(v);
+}
+function b3ProventoLooksLikeSummaryRow(product, row, headers=[]){
+  const keywords=['TOTAL','TOTAL LIQUIDO','TOTAL LÍQUIDO','VALOR TOTAL','TOTAL GERAL','RESUMO','CONSOLIDADO','SOMA'];
+  const cells=[product,...(Array.isArray(row)?row:[])].filter(v=>v!==null && v!==undefined).map(v=>String(v).trim()).filter(Boolean);
+  if(!cells.length) return true;
+  const firstCells=cells.slice(0,3).join(' | ');
+  const firstNorm=normalizeB3Loose(firstCells);
+  if(keywords.some(k=>firstNorm.includes(normalizeB3Loose(k)))) return true;
+  const headerName=(Array.isArray(headers)&&headers.length?String(headers[0]||'').trim():'').toLowerCase();
+  if(headerName && keywords.some(k=>normalizeB3Loose(headerName).includes(normalizeB3Loose(k)))) return true;
+  return false;
+}
+function b3ProventoDuplicate(row){
+  const ticker=String(row.ticker||'').toUpperCase();
+  const dateKey=b3MovementDateKey(row.paymentDate);
+  const typeKey=rfPosNorm(row.eventType);
+  const value=Number(row.netValue)||0;
+  return (S.proventos||[]).some(p=>{
+    return String(p.ticker||'').toUpperCase()===ticker
+      && b3MovementDateKey(p.date)===dateKey
+      && rfPosNorm(p.eventType||p.type)===typeKey
+      && Math.abs((Number(p.value)||0)-value)<0.01;
+  });
+}
+function b3ProventoSavedAutoKey(row){
+  const ticker=String(row.ticker||'').toUpperCase();
+  const dateKey=b3MovementDateKey(row.paymentDate);
+  const typeKey=rfPosNorm(row.eventType).toLowerCase();
+  const value=Number(row.netValue||0).toFixed(2);
+  return `prov|${ticker}|${dateKey}|${typeKey}|${value}|b3-proventos-recebidos`;
+}
+function b3ProventoAlreadySaved(row){
+  const ticker=String(row.ticker||'').toUpperCase();
+  const dateKey=b3MovementDateKey(row.paymentDate);
+  const typeKey=rfPosNorm(row.eventType);
+  const value=Number(row.netValue)||0;
+  const autoKey=b3ProventoSavedAutoKey(row);
+  return (S.proventos||[]).some(p=>{
+    const sameKey=String(p.autoKey||'')===autoKey;
+    const sameFields=String(p.ticker||'').toUpperCase()===ticker
+      && b3MovementDateKey(p.date)===dateKey
+      && rfPosNorm(p.eventType||p.type)===typeKey
+      && Math.abs((Number(p.value)||0)-value)<0.01;
+    return sameKey || sameFields;
+  });
+}
+function b3ProventoBuild(raw){
+  const product=String(raw.product||'').trim();
+  const eventType=b3ProventoEventType(raw.eventType);
+  const ticker=b3ProventoTicker(product);
+  const assetName=b3ProventoAssetName(product,ticker);
+  const category=b3ProventoCategory(product,eventType,ticker);
+  const destination=b3ProventoDestination(eventType);
+  const paymentDate=b3ProventoDate(raw.paymentDate);
+  const netValue=Number(raw.netValue)||0;
+  const isRf=category==='Renda Fixa';
+  const matchedRf=!isRf || (S.assets||[]).some(a=>{
+    const text=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''}`);
+    return (ticker && String(a.ticker||'').toUpperCase()===ticker) || (product && text.includes(rfPosNorm(product).split(' - ')[0]));
+  });
+  let status='Novo provento';
+  let include=destination==='Proventos';
+  let finalDestination=destination;
+  let note=destination==='Proventos' ? 'Pode ser importado em Proventos.' : 'Evento exige revisão manual.';
+  if(!ticker || !paymentDate || netValue<=0){
+    status='Revisar'; include=false; finalDestination='Revisar'; note='Dados principais incompletos.';
+  }else if(isRf && !matchedRf){
+    status='Revisar'; include=false; finalDestination='Revisar'; note='Renda Fixa sem associação segura com ativo existente.';
+  }else if(b3ProventoDuplicate({ticker,paymentDate,eventType,netValue})){
+    status='Duplicado'; include=false; finalDestination='Ignorar'; note='Provento já existe.';
+  }else if(finalDestination==='Revisar'){
+    status='Revisar'; include=false;
+  }
+  return {
+    id:raw.id||0,
+    include,
+    status,
+    product,
+    paymentDate,
+    ticker,
+    assetName:assetName||product,
+    eventType,
+    category,
+    institution:String(raw.institution||'').trim(),
+    qty:Number(raw.qty)||0,
+    unitPrice:Number(raw.unitPrice)||0,
+    netValue,
+    destination:finalDestination,
+    note,
+    autoKey:b3ProventoSavedAutoKey({ticker,paymentDate,eventType,netValue}),
+    source:'B3 Proventos Recebidos'
+  };
+}
+function parseB3ProventosWorkbook(wb, fileName=''){
+  const items=[]; const warnings=[];
+  let ignoredCount=0;
+  const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
+  const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  (wb.SheetNames||[]).forEach(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    let headerIdx=-1;
+    for(let i=0;i<Math.min(rows.length,20);i++){
+      const h=(rows[i]||[]).map(normalizeB3Loose);
+      const ok=h.some(x=>['produto','ativo','nomedoproduto','produtoativo','descricao','papel'].includes(x))
+        && h.some(x=>['pagamento','datapagamento','datadepagamento','data'].includes(x))
+        && h.some(x=>['tipodeevento','evento','tipoevento'].includes(x))
+        && h.some(x=>['valorliquido','valor','valorliquid'].includes(x));
+      if(ok){ headerIdx=i; break; }
+    }
+    if(headerIdx<0){ warnings.push(`Aba "${sheetName}" não parece ser Proventos Recebidos da B3.`); return; }
+    const headers=(rows[headerIdx]||[]).map(v=>String(v||'').trim());
+    rows.slice(headerIdx+1).forEach((row,idx)=>{
+      if(!row || row.every(v=>v===null || String(v).trim()==='')) return;
+      const rowObj={};
+      headers.forEach((h,i)=>{
+        const key=String(h||'').trim() || `__EMPTY_${i}`;
+        rowObj[key]=row[i];
+        rowObj[`__EMPTY_${i}`]=row[i];
+      });
+      const product=String(getRowValue(rowObj,['Produto','Produto/Ativo','Ativo','Nome do Produto','Nome do Ativo','Descrição','Descricao','Papel','Código','Codigo','Ticker'])||'').trim();
+      const paymentDate=getRowValue(rowObj,['Pagamento','Data Pagamento','Data de Pagamento','Data']);
+      const eventType=String(getRowValue(rowObj,['Tipo de Evento','Evento','Tipo Evento'])||'').trim();
+      const institution=String(getRowValue(rowObj,['Instituição','Instituicao','Corretora'])||'').trim();
+      const qty=b3ProventoQty(getRowValue(rowObj,['Quantidade','Qtd']));
+      const unitPrice=parseNum(getRowValue(rowObj,['Preço unitário','Preco unitario','Preço','Preco','PU']));
+      const netValue=parseNum(getRowValue(rowObj,['Valor líquido','Valor Liquido','Valor Líquido','Valor','Valor Liquido']));
+      const ticker=b3ProventoTicker(product);
+      const looksLikeSummary=b3ProventoLooksLikeSummaryRow(product,rowObj,headers);
+      if(looksLikeSummary || !product || !eventType || !paymentDate || !ticker || !netValue || netValue<=0){
+        ignoredCount++;
+        if(looksLikeSummary) return;
+        warnings.push(`Linha ${idx+headerIdx+2}: dados insuficientes para revisar.`);
+        return;
+      }
+      items.push(b3ProventoBuild({id:items.length,product,paymentDate,eventType,institution,qty,unitPrice,netValue}));
+    });
+  });
+  if(!items.length) warnings.push('Nenhum provento recebido foi identificado no arquivo.');
+  return {items,warnings,importDate,kind:'b3-proventos',ignoredCount};
+}
 function pdfMovementIsRowStart(line){
   const s=b3MovementNorm(line);
   if(!s) return false;
@@ -2012,12 +2717,12 @@ function pdfMovementIsRowStart(line){
   if(/^FILTROS APLICADOS/.test(s)) return false;
   if(/^DATA INICIAL:/.test(s) || /^DATA FINAL:/.test(s) || /^TIPO DE MOVIMENTACAO:/.test(s) || /^TIPO DE INVESTIMENTO:/.test(s) || /^INSTITUICAO:/.test(s)) return false;
   if(/^MOVIMENTACAO\b/.test(s) || /^PRODUTO\b/.test(s) || /^INSTITUICAO\b/.test(s) || /^QUANTIDADE\b/.test(s) || /^PRECO\b/.test(s) || /^VALOR\b/.test(s)) return false;
-  return /^(APLICACAO|RESGATE ANTECIPADO\/?|COMPRA \/ VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO|PAGAMENTO DE JUROS|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|TRANSFERENCIA SEM FINANCEIRO|RETIRADA DE CUSTODIA|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO|EVENTO GENERICO)\b/.test(s);
+  return /^(APLICACAO|SUBSCRICAO|RESGATE ANTECIPADO\/?|COMPRA \/ VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO|DIVIDENDO|DIVIDENDOS|JCP|JUROS SOBRE CAPITAL|RENDIMENTO|RENDIMENTOS|PAGAMENTO DE JUROS|PAGAMENTO DE RENDIMENTO|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|TRANSFERENCIA SEM FINANCEIRO|RETIRADA DE CUSTODIA|BONIFICACAO|DESDOBRAMENTO|GRUPAMENTO|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO|EVENTO GENERICO)\b/.test(s);
 }
 function parseB3MovementBlock(block, date, page=0){
   const txt=String(block||'').replace(/\s+/g,' ').trim();
   if(!txt) return null;
-  const m=txt.match(/^(?<movement>APLICAÇÃO|APLICACAO|RESGATE ANTECIPADO\/?|COMPRA \/ VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO|PAGAMENTO DE JUROS|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|TRANSFERENCIA SEM FINANCEIRO|RETIRADA DE CUSTODIA|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO|EVENTO GENERICO)\s+(?<product>[\s\S]*?)\s+(?<qty>[\d.,]+)\s+R\$\s*(?<price>[\d.,]+)\s+R\$\s*(?<value>[\d.,]+)\b/i);
+  const m=txt.match(/^(?<movement>APLICAÇÃO|APLICACAO|SUBSCRIÇÃO|SUBSCRICAO|RESGATE ANTECIPADO\/?|COMPRA \/ VENDA|COMPRA\/VENDA DEFINITIVA\/CESSAO|DIVIDENDO|DIVIDENDOS|JCP|JUROS SOBRE CAPITAL|RENDIMENTO|RENDIMENTOS|PAGAMENTO DE JUROS|PAGAMENTO DE RENDIMENTO|SAIDA\/ENTR\. CUST-TRANSF S\/FIN|TRANSFERENCIA SEM FINANCEIRO|RETIRADA DE CUSTODIA|BONIFICAÇÃO|BONIFICACAO|DESDOBRAMENTO|GRUPAMENTO|VENCIMENTO\/RESGATE SALDO EM CONTA|VENCIMENTO|EVENTO GENERICO)\s+(?<product>[\s\S]*?)\s+(?<qty>[\d.,]+)\s+R\$\s*(?<price>[\d.,]+)\s+R\$\s*(?<value>[\d.,]+)\b/i);
   if(!m) return null;
   const movement=String(m.groups.movement||'').replace(/\s+/g,' ').trim();
   const product=String(m.groups.product||'').replace(/\s+/g,' ').trim();
@@ -2030,7 +2735,7 @@ function parseB3MovementBlock(block, date, page=0){
     importDate:date,
     sheet:`PDF ${page||''}`.trim()
   });
-  return {...item, include:item.target!=='ignorar'};
+  return {...item, include:item.target!=='revisar'};
 }
 async function parseB3MovementPdf(file){
   const pdfjs=await loadPdfJs();
@@ -2085,7 +2790,7 @@ async function parseB3MovementPdf(file){
       return;
     }
     items.push(item);
-    if(item.include===false) addIgnored(item.movement||'PDF','movimentacao ignorada');
+    if(item.include===false) addIgnored(item.movement||'PDF','revisao manual');
     else addImported(item.movement||'PDF');
   });
   return {items,warnings,importDate,stats,kind:'movement'};
@@ -2141,13 +2846,65 @@ async function detectB3PdfKind(file){
 function normHeaderB3(v){
   return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
 }
-function pickB3(row, headers, names){
-  const wanted=names.map(normHeaderB3);
-  for(let i=0;i<headers.length;i++){
-    const h=normHeaderB3(headers[i]);
-    if(wanted.includes(h)) return row[i];
+function normalizeKey(value){
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toLowerCase();
+}
+function normalizeB3Loose(v){
+  return normalizeKey(v);
+}
+function getRowValue(row, possibleNames){
+  const keys = Object.keys(row || {});
+  const normalizedMap = {};
+  keys.forEach((key) => {
+    normalizedMap[normalizeKey(key)] = row[key];
+  });
+  for (const name of (possibleNames||[])) {
+    const value = normalizedMap[normalizeKey(name)];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return value;
+    }
   }
-  return null;
+  return "";
+}
+function pickB3(row, headers, names){
+  if(Array.isArray(row) && Array.isArray(headers) && headers.length){
+    const asObj={};
+    headers.forEach((h,i)=>{
+      const key=String(h||'').trim() || `__EMPTY_${i}`;
+      asObj[key]=row[i];
+    });
+    return getRowValue(asObj, names);
+  }
+  return getRowValue(row, names);
+}
+function b3PositionUnitPrice(row, headers){
+  return parseNum(pickB3(row, headers, [
+    'Preço de Fechamento','Preco de Fechamento',
+    'Preço Atualizado','Preco Atualizado',
+    'Preço Atualizado CURVA','Preco Atualizado CURVA',
+    'Preço Unitário','Preco Unitario',
+    'PU',
+    'Valor Unitário','Valor Unitario'
+  ]));
+}
+function b3PositionCurrentValue(row, headers){
+  return parseNum(pickB3(row, headers, [
+    'Valor Atualizado MTM',
+    'Valor Atualizado CURVA',
+    'Valor Atualizado FECHAMENTO',
+    'Valor Atualizado',
+    'Posição a mercado','Posicao a mercado',
+    'Valor Líquido','Valor Liquido',
+    'Valor Atual',
+    'Saldo Líquido','Saldo Liquido',
+    'Valor Bruto',
+    'Saldo Bruto'
+  ]));
 }
 function tickerValidoB3(t){
   t=String(t||'').trim().toUpperCase();
@@ -2326,6 +3083,44 @@ function setorPorAbaB3(sheetName,ticker){
   if(sh.includes('etf')) return 'ETF';
   return meta.sector || '';
 }
+const B3_POSITION_SUMMARY_LABELS = new Set([
+  'etf',
+  'fundodeinvestimento',
+  'fundosdeinvestimento',
+  'rendafixa',
+  'acoes',
+  'emprestimos',
+  'total',
+  'totalgeral',
+  'totalliquido',
+  'valortotal',
+  'resumo',
+  'consolidado',
+  'soma',
+  'subtotal'
+]);
+function isB3PositionSummaryText(v){
+  const s=normalizeKey(v);
+  if(!s) return false;
+  if(B3_POSITION_SUMMARY_LABELS.has(s)) return true;
+  return ['total','resumo','consolidado','soma'].some(pref=>s.startsWith(pref));
+}
+function isB3PositionSummaryRow(item){
+  if(!item) return true;
+  const ticker=String(item.ticker||'').trim();
+  const product=String(item.product||item.name||'').trim();
+  const name=String(item.name||item.product||'').trim();
+  const category=String(item.category||item.type||item.sector||'').trim();
+  const tickerNorm=normalizeKey(ticker);
+  const productNorm=normalizeKey(product);
+  const nameNorm=normalizeKey(name);
+  const categoryNorm=normalizeKey(category);
+  if(isB3PositionSummaryText(tickerNorm)) return true;
+  if(isB3PositionSummaryText(productNorm)) return true;
+  if(isB3PositionSummaryText(nameNorm)) return true;
+  if(!tickerNorm && isB3PositionSummaryText(categoryNorm)) return true;
+  return false;
+}
 function parseB3PositionWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
   const stats={
@@ -2404,14 +3199,16 @@ function parseB3PositionWorkbook(wb, fileName=''){
         return;
       }
       let qty=parseNum(pickB3(row,headers,['Quantidade','Quantidade Disponível','Quantidade Disponivel','Quantidade Atual']));
-      let price=parseNum(pickB3(row,headers,['Preço de Fechamento','Preco de Fechamento','Preço Atualizado','Preco Atualizado','Preço Atualizado CURVA','Preco Atualizado CURVA','Preço Unitário','Preco Unitario','PU','Valor Unitário','Valor Unitario']));
-      let value=parseNum(pickB3(row,headers,['Valor Atualizado','Valor Atualizado CURVA','Valor Atualizado MTM','Valor Atualizado FECHAMENTO','Valor Bruto','Valor Líquido','Valor Liquido','Valor Atual','Saldo Bruto','Saldo Líquido','Saldo Liquido']));
-      if(qty<=0 && isRF && value>0) qty=1;
+      const unitPrice=b3PositionUnitPrice(row, headers);
+      let currentValue=b3PositionCurrentValue(row, headers);
+      if(qty<=0 && isRF && currentValue>0) qty=1;
       if(qty<=0){
         addIgnored(sheetName,'sem quantidade');
         return;
       }
-      if((!price || price<=0) && value>0) price=value/qty;
+      if(currentValue<=0 && unitPrice>0 && qty>0) currentValue=qty*unitPrice;
+      let price=unitPrice>0 ? unitPrice : (currentValue>0 && qty>0 ? currentValue/qty : 0);
+      if(isRF && currentValue>0 && qty>0) price=currentValue/qty;
       if(price<=0){
         warnings.push(`${ticker}: sem preço válido; ignorado.`);
         addIgnored(sheetName,'sem preço válido');
@@ -2420,11 +3217,308 @@ function parseB3PositionWorkbook(wb, fileName=''){
       const meta=inferB3PositionMeta(sheetName, ticker, produto, rowType);
       const tipo=normalizeType(meta.type||'Ação','Ação');
       const setor=meta.sector||'';
-      items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,kind:rowType,date:importDate});
+      const totalValue=currentValue>0 ? currentValue : qty*price;
+      const candidate={
+        ticker,
+        qty,
+        price,
+        value:totalValue,
+        currentValue:totalValue,
+        unitPrice:unitPrice>0 ? unitPrice : price,
+        type:tipo,
+        sector:setor,
+        product:produto.trim(),
+        sheet:sheetName,
+        kind:rowType,
+        date:importDate
+      };
+      if(isB3PositionSummaryRow(candidate)){
+        addIgnored(sheetName,'linha totalizadora / resumo');
+        return;
+      }
+      items.push(candidate);
       addImported(sheetName);
     });
   });
   return {items,warnings,importDate,stats,kind:'position'};
+}
+function rfPosNorm(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
+}
+function detectRfDetailedPositionWorkbook(wb, fileName=''){
+  const fileHint=/posicao\s*detalhada|posicaodetalhada/i.test(String(fileName||''));
+  return (wb.SheetNames||[]).some(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return false;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    const text=rows.slice(0,40).map(r=>(r||[]).join(' ')).join(' ');
+    const s=rfPosNorm(`${sheetName} ${text}`);
+    return (fileHint || s.includes('RENDA FIXA')) && s.includes('POSICAO A MERCADO') && s.includes('VALOR APLICADO') && s.includes('DATA VENCIMENTO');
+  });
+}
+function rfDetailedKnownCode(name){
+  const s=rfPosNorm(name);
+  if(s.includes('DEB MOVIDA')) return 'MOVI18';
+  if(s.includes('CRA JBS')) return 'CRA024004SB';
+  return '';
+}
+function rfDetailedIssuer(name){
+  const s=String(name||'').replace(/\s+/g,' ').trim();
+  const m=s.match(/^(?:DEB|CRA|CRI|CDB|LCI|LCA)\s+(.+?)(?:\s+-\s+|$)/i);
+  return (m?m[1]:s.split(' - ')[0]||s).trim();
+}
+function rfDetailedSector(name, rate){
+  const s=rfPosNorm(`${name} ${rate}`);
+  const indexer=s.includes('IPCA') || s.includes('IPC-A') ? 'IPCA' : s.includes('CDI') ? 'CDI' : s.includes('PRE') ? 'Prefixado' : '';
+  const base=s.includes('CRA') ? 'CRA' : s.includes('CRI') ? 'CRI' : s.includes('DEB') ? 'Debênture' : 'Renda Fixa';
+  return indexer ? `${base} / ${indexer}` : base;
+}
+function rfPositionImportSourceTag(src){
+  const s=rfPosNorm(src);
+  return s==='B3 POSICAO ATUAL' || s==='POSICAODETALHADA B3/XP';
+}
+function cleanupB3PositionSummaryAssets(){
+  const before=Number(S.assets?.length||0);
+  S.assets=(S.assets||[]).filter(a=>{
+    const source=String(a?.source||a?.fixed_source||'');
+    if(rfPosNorm(source)!=='B3 POSICAO ATUAL') return true;
+    return !isB3PositionSummaryRow(a);
+  });
+  return before-Number(S.assets?.length||0);
+}
+function cleanupB3PositionAportes(){
+  const before=Number(S.aportes?.length||0);
+  const isB3PositionAporte=a=>{
+    const src=rfPosNorm(a?.source||a?.origin||a?.origem||'');
+    const decision=rfPosNorm(a?.decision||'');
+    const note=rfPosNorm(a?.note||a?.observation||'');
+    return src==='B3 POSICAO ATUAL'
+      || decision.includes('IMPORT_B3_POSICAO')
+      || decision.includes('B3 POSICAO ATUAL')
+      || note.includes('B3 POSICAO ATUAL')
+      || note.includes('POSICAO ATUAL B3');
+  };
+  S.aportes=(S.aportes||[]).filter(a=>!isB3PositionAporte(a));
+  return before-Number(S.aportes?.length||0);
+}
+function rfDetailedFindExistingAsset(item){
+  const ticker=String(item?.ticker||'').toUpperCase();
+  const nameKey=rfPosNorm(item?.name);
+  const issuerKey=rfPosNorm(item?.issuer);
+  const maturityKey=b3MovementDateKey(item?.maturityDate);
+  const assets=S.assets||[];
+  let idx=assets.findIndex(a=>ticker && String(a.ticker||'').toUpperCase()===ticker);
+  if(idx>=0) return {idx,reason:'Mesmo código já existe em Meus Ativos.'};
+  idx=assets.findIndex(a=>{
+    const text=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''}`);
+    return text && nameKey && (text.includes(nameKey) || nameKey.includes(text));
+  });
+  if(idx>=0) return {idx,reason:'Nome parecido já existe em Meus Ativos.'};
+  idx=assets.findIndex(a=>{
+    const aMat=b3MovementDateKey(a.rf_maturity_date||a.fixed_maturity_date||a.maturityDate||a.vencimento||'');
+    const text=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.sector||''}`);
+    return maturityKey && aMat===maturityKey && issuerKey && text.includes(issuerKey);
+  });
+  if(idx>=0) return {idx,reason:'Mesmo vencimento e emissor/setor já aparecem em Meus Ativos.'};
+  return {idx:-1,reason:''};
+}
+function rfDetailedPossibleDuplicateAsset(item){
+  const maturityKey=b3MovementDateKey(item?.maturityDate);
+  if(!maturityKey) return -1;
+  return (S.assets||[]).findIndex(a=>{
+    const aMat=b3MovementDateKey(a.rf_maturity_date||a.fixed_maturity_date||a.maturityDate||a.vencimento||'');
+    return aMat===maturityKey && rfPosNorm(a.sector)===rfPosNorm(item?.sector);
+  });
+}
+function rfEventTypeLabel(v){
+  const s=rfPosNorm(v);
+  if(s.includes('JUROS')) return 'Juros';
+  if(s.includes('PREMIO')) return 'Prêmio';
+  if(s.includes('AMORT')) return 'Amortização';
+  if(s.includes('RESGATE') || s.includes('VENCIMENTO')) return 'Resgate/Vencimento';
+  return String(v||'').trim() || 'Revisar';
+}
+function rfEventDestination(eventType){
+  const t=rfEventTypeLabel(eventType);
+  return (t==='Juros' || t==='Prêmio') ? 'Proventos' : 'Revisar';
+}
+function rfEventAutoKey(ev){
+  const ticker=String(ev?.ticker||'').toUpperCase();
+  const date=b3MovementDateKey(ev?.date);
+  const type=rfPosNorm(ev?.eventType).toLowerCase();
+  const value=Number(ev?.value||0).toFixed(2);
+  return `rf|${ticker}|${date}|${type}|${value}`;
+}
+function rfEventDuplicate(ev){
+  const key=rfEventAutoKey(ev);
+  const ticker=String(ev?.ticker||'').toUpperCase();
+  const date=b3MovementDateKey(ev?.date);
+  const eventType=rfPosNorm(ev?.eventType);
+  const value=Number(ev?.value)||0;
+  return (S.proventos||[]).some(p=>{
+    const sameKey=String(p.autoKey||'')===key;
+    const sameFields=String(p.ticker||'').toUpperCase()===ticker
+      && b3MovementDateKey(p.date)===date
+      && rfPosNorm(p.eventType||p.type)===eventType
+      && Math.abs((Number(p.value)||0)-value)<0.01
+      && String(p.source||'')==='PosicaoDetalhada B3/XP';
+    return sameKey || sameFields;
+  });
+}
+function rfEventBuild(raw){
+  const eventType=rfEventTypeLabel(raw.eventType);
+  const destination=rfEventDestination(eventType);
+  const ticker=String(raw.ticker||rfDetailedKnownCode(raw.assetName)||'').toUpperCase();
+  const value=Number(raw.value)||0;
+  const date=b3MovementDateFromCell(raw.date,'');
+  const ev={
+    id:raw.id||0,
+    include:false,
+    status:'Revisar',
+    date,
+    ticker,
+    assetName:String(raw.assetName||''),
+    eventType,
+    value,
+    destination,
+    note:'',
+    source:'PosicaoDetalhada B3/XP'
+  };
+  ev.autoKey=rfEventAutoKey(ev);
+  if(!ticker || !date || value<=0){
+    ev.status='Revisar';
+    ev.note='Dados do evento incompletos.';
+    return ev;
+  }
+  if(destination==='Revisar'){
+    ev.status='Revisar';
+    ev.note=`${eventType} fica para revisão manual nesta etapa.`;
+    return ev;
+  }
+  if(rfEventDuplicate(ev)){
+    ev.status='Duplicado';
+    ev.note='Evento já existe em Proventos.';
+    return ev;
+  }
+  ev.status='Novo provento';
+  ev.include=true;
+  ev.note='Pode ser importado em Proventos.';
+  return ev;
+}
+function rfParseDetailedEvents(rows){
+  const events=[];
+  for(let i=0;i<rows.length;i++){
+    const header=(rows[i]||[]).map(v=>String(v||'').trim());
+    const norm=header.map(rfPosNorm);
+    const hasDate=norm.some(h=>h.includes('DATA') || h.includes('PAGAMENTO'));
+    const hasEventCols=norm.some(h=>h.includes('JUROS') || h.includes('PREMIO') || h.includes('AMORT') || h.includes('RESGATE') || (h.includes('VENCIMENTO') && !h.includes('DATA')));
+    const hasGenericEvent=norm.some(h=>h==='EVENTO' || h.includes('TIPO DE EVENTO')) && norm.some(h=>h.includes('VALOR'));
+    if(!hasDate || (!hasEventCols && !hasGenericEvent)) continue;
+    const idxDate=norm.findIndex(h=>h.includes('DATA') || h.includes('PAGAMENTO'));
+    const idxName=norm.findIndex(h=>h.includes('PRODUTO') || h.includes('ATIVO') || h.includes('TITULO') || h.includes('NOME'));
+    const idxTicker=norm.findIndex(h=>h.includes('CODIGO') || h.includes('TICKER'));
+    const idxEvent=norm.findIndex(h=>h==='EVENTO' || h.includes('TIPO DE EVENTO'));
+    const idxValue=norm.findIndex(h=>h.includes('VALOR'));
+    const eventCols=norm.map((h,idx)=>({h,idx,type:rfEventTypeLabel(h)})).filter(c=>['Juros','Prêmio','Amortização','Resgate/Vencimento'].includes(c.type) && !c.h.includes('DATA'));
+    for(let j=i+1;j<rows.length;j++){
+      const row=rows[j]||[];
+      if(!row.some(v=>v!==null && String(v).trim()!=='')) break;
+      const rowLabel=rfPosNorm(row[0]);
+      if(['RENDA FIXA','FUNDOS DE INVESTIMENTOS','DIVIDENDOS, PROVENTOS E OUTRAS DISTRIBUICOES','ACOES','CUSTODIA REMUNERADA'].some(stop=>rowLabel.includes(stop))) break;
+      const assetName=String((idxName>=0?row[idxName]:row[0])||'').replace(/\s+/g,' ').trim();
+      const ticker=String((idxTicker>=0?row[idxTicker]:'')||rfDetailedKnownCode(assetName)||'').toUpperCase();
+      const date=idxDate>=0 ? row[idxDate] : '';
+      if(hasGenericEvent && idxEvent>=0 && idxValue>=0){
+        const value=parseNum(row[idxValue]);
+        if(value>0) events.push(rfEventBuild({id:events.length,date,ticker,assetName,eventType:row[idxEvent],value}));
+      }
+      eventCols.forEach(col=>{
+        const value=parseNum(row[col.idx]);
+        if(value>0) events.push(rfEventBuild({id:events.length,date,ticker,assetName,eventType:col.type,value}));
+      });
+    }
+  }
+  return events;
+}
+function rfDetailedStatus(item){
+  if(!item.ticker || !item.name || item.qty<=0 || item.appliedValue<=0 || item.marketValue<=0) return {status:'Revisar', note:'Dados principais incompletos.'};
+  const found=rfDetailedFindExistingAsset(item);
+  if(found.idx>=0) return {status:'Atualizar existente', note:found.reason};
+  if(rfDetailedPossibleDuplicateAsset(item)>=0) return {status:'Possível duplicado', note:'Mesmo vencimento e setor encontrados. Revise antes de gravar.'};
+  return {status:'Novo ativo', note:'Novo ativo identificado apenas para revisão.'};
+}
+function parseRfDetailedPositionWorkbook(wb, fileName=''){
+  const items=[]; const events=[]; const warnings=[];
+  const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
+  const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  (wb.SheetNames||[]).forEach(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    events.push(...rfParseDetailedEvents(rows));
+    for(let i=0;i<rows.length;i++){
+      const header=(rows[i]||[]).map(v=>String(v||'').trim());
+      const norm=header.map(rfPosNorm);
+      const hasRfHeader=norm.some(h=>h.includes('POSICAO A MERCADO')) && norm.some(h=>h.includes('VALOR APLICADO')) && norm.some(h=>h.includes('DATA VENCIMENTO'));
+      if(!hasRfHeader) continue;
+      const idx={
+        name:0,
+        market:norm.findIndex(h=>h.includes('POSICAO A MERCADO')),
+        applied:norm.findIndex(h=>h==='VALOR APLICADO'),
+        rate:norm.findIndex(h=>h.includes('TAXA')),
+        application:norm.findIndex(h=>h.includes('DATA APLICACAO')),
+        maturity:norm.findIndex(h=>h.includes('DATA VENCIMENTO')),
+        qty:norm.findIndex(h=>h==='QUANTIDADE')
+      };
+      for(let j=i+1;j<rows.length;j++){
+        const row=rows[j]||[];
+        const name=String(row[idx.name]||'').replace(/\s+/g,' ').trim();
+        const nameKey=rfPosNorm(name);
+        if(!nameKey) continue;
+        if(['FUNDOS DE INVESTIMENTOS','DIVIDENDOS, PROVENTOS E OUTRAS DISTRIBUICOES','PROVENTOS','ACOES','CUSTODIA REMUNERADA'].some(stop=>nameKey.includes(stop))) break;
+        if(nameKey==='RENDA FIXA' || nameKey.includes('|')) continue;
+        const qty=parseNum(row[idx.qty]);
+        const appliedValue=parseNum(row[idx.applied]);
+        const marketValue=parseNum(row[idx.market]);
+        if(qty<=0 && appliedValue<=0 && marketValue<=0) continue;
+        const rate=String(row[idx.rate]||'').replace('IPC-A','IPCA').trim();
+        const appDate=b3MovementDateFromCell(row[idx.application], '');
+        const maturityDate=b3MovementDateFromCell(row[idx.maturity], '');
+        const ticker=rfDetailedKnownCode(name);
+        const avgPrice=qty>0 ? appliedValue/qty : 0;
+        const currentPrice=qty>0 ? marketValue/qty : 0;
+        const result=marketValue-appliedValue;
+        const rentability=appliedValue>0 ? (result/appliedValue)*100 : 0;
+        const item={
+          id:items.length,
+          include:true,
+          ticker,
+          name,
+          type:'Renda Fixa',
+          sector:rfDetailedSector(name, rate),
+          issuer:rfDetailedIssuer(name),
+          qty,
+          appliedValue,
+          marketValue,
+          avgPrice,
+          currentPrice,
+          result,
+          rentability,
+          rate,
+          applicationDate:appDate,
+          maturityDate,
+          sheet:sheetName,
+          importDate
+        };
+        const status=rfDetailedStatus(item);
+        item.status=status.status;
+        item.note=status.note;
+        if(!item.maturityDate) item.note=`${item.note} Vencimento não informado no arquivo.`.trim();
+        if(item.status==='Revisar') item.include=false;
+        items.push(item);
+      }
+    }
+  });
+  if(!items.length) warnings.push('Nenhum ativo de Renda Fixa foi identificado na seção de posição detalhada.');
+  return {items,events,warnings,importDate,kind:'rf-detailed-position'};
 }
 function parseNotaCorretoraWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
@@ -2535,33 +3629,136 @@ function hasSameB3Import(ticker, date){
   return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
 }
 function applyB3ImportedPositions(items, importDate){
-  const importTag='[IMPORT_B3_POSICAO]';
-  // Remove importações B3 anteriores da mesma data para evitar duplicar se subir o mesmo arquivo outra vez.
-  S.aportes=S.aportes.filter(a=>!(String(a.decision||'').includes(importTag) && String(a.date||'')===importDate));
-  const now=Date.now();
-  const novos=items.map((it,i)=>({
-    id: now+i,
-    operation:'compra',
-    ticker:it.ticker,
-    qty:Number(it.qty)||0,
-    price:Number(it.price)||0,
-    date:it.date||importDate,
-    decision:`${importTag} ${it.sheet} · posição importada do Excel B3/corretora`,
-    type:normalizeType(it.type||metaTicker(it.ticker).type||'Ação','Ação'),
-    sector:it.sector||metaTicker(it.ticker).sector||''
-  })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
-  S.aportes=[...novos,...S.aportes];
-  // Completa metadados para estes ativos após recálculo.
-  syncAssetsFromAportes(false);
-  S.assets=S.assets.map(a=>{
-    const it=items.find(x=>x.ticker===a.ticker);
-    if(!it) return a;
-    return {...a,type:normalizeType(it.type||a.type||'Ação','Ação'),sector:it.sector||a.sector,current_price:it.price,quoteSource:a.quoteSource||'importado',quoteUpdatedAt:a.quoteUpdatedAt||new Date().toISOString()};
+  const validItems=(items||[]).filter(it=>!isB3PositionSummaryRow(it));
+  const now=new Date().toISOString();
+  let created=0,updated=0,ignored=0;
+  const normalizeName=s=>rfPosNorm(String(s||'').replace(/[-–—|]/g,' '));
+  const findExisting=item=>{
+    const ticker=String(item?.ticker||'').trim().toUpperCase();
+    const nameKey=normalizeName(item?.product||item?.name||item?.ticker||'');
+    const rfMaturity=String(item?.fixed_maturity_date||item?.rf_maturity_date||item?.maturityDate||'').trim();
+    const rfIssuer=normalizeName(item?.fixed_issuer||item?.issuer||item?.sector||'');
+    let idx=(S.assets||[]).findIndex(a=>ticker && String(a.ticker||'').trim().toUpperCase()===ticker);
+    if(idx>=0) return {idx,reason:'Mesmo código já existe em Meus Ativos.'};
+    idx=(S.assets||[]).findIndex(a=>{
+      const text=normalizeName(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''}`);
+      return text && nameKey && (text.includes(nameKey) || nameKey.includes(text));
+    });
+    if(idx>=0) return {idx,reason:'Nome parecido já existe em Meus Ativos.'};
+    if(rfMaturity){
+      idx=(S.assets||[]).findIndex(a=>{
+        const aMat=String(a.rf_maturity_date||a.fixed_maturity_date||a.maturityDate||a.vencimento||'').trim();
+        const aIssuer=normalizeName(a.fixed_issuer||a.issuer||a.sector||a.product||a.name||'');
+        return aMat && aMat===rfMaturity && rfIssuer && aIssuer && (aIssuer.includes(rfIssuer) || rfIssuer.includes(aIssuer));
+      });
+      if(idx>=0) return {idx,reason:'Mesmo vencimento e emissor/setor já aparecem em Meus Ativos.'};
+    }
+    return {idx:-1,reason:''};
+  };
+  validItems.forEach(it=>{
+    const ticker=String(it.ticker||'').trim().toUpperCase();
+    const qty=Number(it.qty)||0;
+    const totalValue=Number(it.currentValue)||Number(it.value)||0;
+    const unitPrice=Number(it.price)||0;
+    const type=normalizeType(it.type||metaTicker(ticker).type||'Ação','Ação');
+    const sector=it.sector||metaTicker(ticker).sector||'';
+    const isRF=type==='Renda Fixa';
+    if(!ticker || qty<=0 || totalValue<=0){
+      ignored++;
+      return;
+    }
+    const currentPrice = isRF
+      ? (qty>0 ? totalValue/qty : (unitPrice>0 ? unitPrice : 0))
+      : (unitPrice>0 ? unitPrice : (qty>0 ? totalValue/qty : 0));
+    if(currentPrice<=0){
+      ignored++;
+      return;
+    }
+    const found=findExisting({...it, ticker, type, sector});
+    const importedSource='B3 Posição Atual';
+    if(found.idx>=0){
+      const old=S.assets[found.idx]||{};
+      const preservedAvg=Number(old.avg_price)||0;
+      const preservedType=old.type||type;
+      const preservedSector=old.sector||sector;
+      const preservedQuoteSource=old.quoteSource||'importado';
+      const previousCurrent=Number(old.current_price)||0;
+      const nextCurrentPrice=isRF
+        ? (totalValue>0 && qty>0 ? totalValue/qty : previousCurrent || currentPrice)
+        : currentPrice;
+      S.assets[found.idx]={
+        ...old,
+        ticker:old.ticker||ticker,
+        name:old.name||it.product||it.name||ticker,
+        product:old.product||it.product||it.name||ticker,
+        type:preservedType,
+        sector:preservedSector,
+        qty,
+        avg_price:preservedAvg>0 ? preservedAvg : currentPrice,
+        current_price:nextCurrentPrice,
+        value:totalValue,
+        current_value:totalValue,
+        dy:Number(old.dy)||0,
+        ideal_pct:Number(old.ideal_pct)||0,
+        fixed_current_value:isRF ? totalValue : old.fixed_current_value,
+        fixed_initial_value:isRF ? (Number(old.fixed_initial_value)||Number(old.avg_price)||totalValue) : old.fixed_initial_value,
+        fixed_rate:isRF ? (old.fixed_rate||it.fixed_rate||it.rate||'') : old.fixed_rate,
+        fixed_application_date:isRF ? (old.fixed_application_date||it.fixed_application_date||it.applicationDate||'') : old.fixed_application_date,
+        fixed_maturity_date:isRF ? (old.fixed_maturity_date||it.fixed_maturity_date||it.maturityDate||'') : old.fixed_maturity_date,
+        fixed_issuer:isRF ? (old.fixed_issuer||it.fixed_issuer||it.issuer||'') : old.fixed_issuer,
+        fixed_indexer:isRF ? (old.fixed_indexer||it.fixed_indexer||it.indexer||'') : old.fixed_indexer,
+        fixed_source:importedSource,
+        updated_at:now,
+        quoteSource:preservedQuoteSource,
+        quoteUpdatedAt:old.quoteUpdatedAt||now,
+        source:importedSource,
+        institution:old.institution||it.institution||old.broker||'',
+        broker:old.broker||it.institution||'',
+        observation:old.observation||old.note||'',
+        note:old.note||old.observation||''
+      };
+      updated++;
+    }else{
+      S.assets.push({
+        id:Date.now()+Math.floor(Math.random()*999999),
+        ticker,
+        name:it.product||it.name||ticker,
+        product:it.product||it.name||ticker,
+        type,
+        sector,
+        qty,
+        avg_price:currentPrice,
+        current_price:currentPrice,
+        value:totalValue,
+        current_value:totalValue,
+        dy:0,
+        ideal_pct:0,
+        fixed_initial_value:isRF ? totalValue : undefined,
+        fixed_current_value:isRF ? totalValue : undefined,
+        fixed_rate:isRF ? (it.fixed_rate||it.rate||'') : undefined,
+        fixed_application_date:isRF ? (it.fixed_application_date||it.applicationDate||'') : undefined,
+        fixed_maturity_date:isRF ? (it.fixed_maturity_date||it.maturityDate||'') : undefined,
+        fixed_issuer:isRF ? (it.fixed_issuer||it.issuer||'') : undefined,
+        fixed_indexer:isRF ? (it.fixed_indexer||it.indexer||'') : undefined,
+        fixed_source:importedSource,
+        updated_at:now,
+        quoteSource:'importado',
+        quoteUpdatedAt:now,
+        source:importedSource,
+        institution:it.institution||'',
+        broker:it.institution||'',
+        observation:isRF ? 'Preço médio provisório importado da posição atual B3. Ajustar pelo histórico de movimentações.' : '',
+        note:isRF ? 'Preço médio provisório importado da posição atual B3. Ajustar pelo histórico de movimentações.' : ''
+      });
+      created++;
+    }
+    learnTickerMeta(ticker, type, sector, true);
   });
-  items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
-  save(); render(); fetchQuotes(false);
-  scheduleAutoProventosGratis('b3');
-  toast(`✅ ${novos.length} posição(ões) importadas da B3.`);
+  S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  save();
+  render();
+  fetchQuotes(false);
+  toast(`✅ Posição B3 importada: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
 }
 function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
   const importTag='[IMPORT_NOTA_CORRETORA]';
@@ -2805,7 +4002,7 @@ function openB3Review(parsed, fileName='', sourceKind='excel'){
     kind:String(it.kind||'').trim(),
     date:it.date||parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
     sourceItem:{...it}
-  })).filter(it=>it.ticker && it.qty>0 && it.price>0);
+  })).filter(it=>it.ticker && it.qty>0 && it.price>0 && !isB3PositionSummaryRow(it));
   const groupsMap=new Map();
   items.forEach(it=>{
     const key=it.sheet||'Outros';
@@ -2885,14 +4082,18 @@ function b3ReviewSelectedItems(){
   });
 }
 function b3ReviewSummary(){
-  const items=b3ReviewSelectedItems();
+  const items=(S.b3Review?.items||[]).filter(it=>!isB3PositionSummaryRow(it));
+  const selected=b3ReviewSelectedItems().filter(it=>!isB3PositionSummaryRow(it));
   const total=items.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
+  const selectedTotal=selected.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
   const sheets=[...new Set(items.map(it=>it.sheet))];
-  return {count:items.length,total,sheets};
+  const ignored=Number(S.b3Review?.stats?.totalIgnored)||0;
+  const diff=Math.abs(total-selectedTotal);
+  return {count:selected.length,total:selectedTotal,sheets,ignored,valid:items.length,validTotal:total,selectedCount:selected.length,diff};
 }
 function importB3Review(){
   if(!S.b3Review) return;
-  const rows=b3ReviewSelectedItems();
+  const rows=b3ReviewSelectedItems().filter(it=>!isB3PositionSummaryRow(it));
   if(!rows.length){
     alert('Selecione ao menos uma aba válida para importar.');
     return;
@@ -2917,7 +4118,7 @@ function importB3Review(){
 function b3ReviewModal(){
   const r=S.b3Review;
   if(!r) return '';
-  const {count,total,sheets}=b3ReviewSummary();
+  const {count,total,sheets,valid,validTotal,diff}=b3ReviewSummary();
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   const groups=(r.groups||[]).map(g=>{
     const checked=!!r.selectedSheets?.[g.sheet];
@@ -2995,8 +4196,12 @@ function b3ReviewModal(){
         <div class="note-meta">
           <span class="note-pill">Arquivo: ${esc(r.fileName||'B3')}</span>
           <span class="note-pill">Data: ${esc(r.importDate||'—')}</span>
+          <span class="note-pill">Ativos válidos: ${valid}</span>
+          <span class="note-pill">Linhas ignoradas: ${Number(r.stats?.totalIgnored)||0}</span>
+          <span class="note-pill">Total válido: ${fmt(validTotal)}</span>
+          <span class="note-pill">Total gravado: ${fmt(total)}</span>
+          <span class="note-pill">Diferença: ${fmt(diff)}</span>
           <span class="note-pill">Selecionados: ${count}</span>
-          <span class="note-pill">Total: ${fmt(total)}</span>
           <span class="note-pill">Abas: ${sheets.length}</span>
         </div>
       </div>
@@ -3014,6 +4219,7 @@ function b3ReviewModal(){
             <span style="font-size:12px;color:#64748b">Aba de empréstimos vem desmarcada por padrão para evitar sujeira na carteira.</span>
           </div>
         </div>
+        ${diff>1 && count===valid ? `<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.25);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6">Atenção: valor da revisão não bate com o total calculado. Verifique campos de preço/valor atualizado.</div>` : ''}
         ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
         <div class="b3-review-grid">${groups||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Nenhuma aba encontrada para revisar.</div>'}</div>
         <div class="note-foot">
@@ -3027,12 +4233,553 @@ function b3ReviewModal(){
     </div>
   </div>`;
 }
-function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
+function openRfPositionReview(parsed, fileName='', sourceKind='excel'){
   const items=(parsed?.items||[]).map((it,i)=>({
     id:it.id ?? i,
+    include:it.include!==false && (it.status==='Novo ativo' || it.status==='Atualizar existente'),
+    status:String(it.status||'Revisar'),
+    ticker:String(it.ticker||'').toUpperCase(),
+    name:String(it.name||''),
+    type:'Renda Fixa',
+    sector:String(it.sector||'Renda Fixa'),
+    issuer:String(it.issuer||''),
+    qty:Number(it.qty)||0,
+    appliedValue:Number(it.appliedValue)||0,
+    marketValue:Number(it.marketValue)||0,
+    avgPrice:Number(it.avgPrice)||0,
+    currentPrice:Number(it.currentPrice)||0,
+    result:Number(it.result)||0,
+    rentability:Number(it.rentability)||0,
+    rate:String(it.rate||''),
+    applicationDate:String(it.applicationDate||''),
+    maturityDate:String(it.maturityDate||''),
+    note:String(it.note||''),
+    sheet:String(it.sheet||'')
+  }));
+  const events=(parsed?.events||[]).map((it,i)=>rfEventBuild({...it,id:it.id ?? i}));
+  S.rfPositionReview={
+    fileName,
+    sourceKind,
+    importDate:parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
+    warnings:parsed?.warnings||[],
+    items,
+    events
+  };
+  render();
+}
+function closeRfPositionReview(){
+  S.rfPositionReview=null;
+  render();
+}
+function setRfPositionReviewItem(idx, value){
+  if(!S.rfPositionReview || !S.rfPositionReview.items?.[idx]) return;
+  const item=S.rfPositionReview.items[idx];
+  item.include=!!value && (item.status==='Novo ativo' || item.status==='Atualizar existente');
+  render();
+}
+function setRfPositionReviewAll(value){
+  if(!S.rfPositionReview) return;
+  S.rfPositionReview.items=(S.rfPositionReview.items||[]).map(it=>({
+    ...it,
+    include:!!value && (it.status==='Novo ativo' || it.status==='Atualizar existente')
+  }));
+  render();
+}
+function setRfEventReviewItem(idx, value){
+  if(!S.rfPositionReview || !S.rfPositionReview.events?.[idx]) return;
+  const ev=S.rfPositionReview.events[idx];
+  ev.include=!!value && ev.status==='Novo provento';
+  render();
+}
+function setRfEventReviewAll(value){
+  if(!S.rfPositionReview) return;
+  S.rfPositionReview.events=(S.rfPositionReview.events||[]).map(ev=>({
+    ...ev,
+    include:!!value && ev.status==='Novo provento'
+  }));
+  render();
+}
+function importRfPositionRows(rows){
+  let created=0,updated=0,ignored=0;
+  const now=new Date().toISOString();
+  const source='B3 Posição Atual';
+  const fallbackNote='Preço médio provisório importado da posição atual B3. Ajustar pelo histórico de movimentações.';
+  const safeStatuses=new Set(['Novo ativo','Atualizar existente']);
+  rows.forEach(row=>{
+    const item={...row};
+    const status=rfDetailedStatus(item);
+    item.status=status.status;
+    item.note=status.note;
+    const safe=safeStatuses.has(item.status)
+      && item.ticker
+      && Number(item.qty)>0
+      && Number(item.appliedValue)>0
+      && Number(item.marketValue)>0;
+    if(!safe){ ignored++; return; }
+    const currentPrice=Number(item.marketValue)/Number(item.qty);
+    const found=rfDetailedFindExistingAsset(item);
+    if(found.idx>=0){
+      const old=S.assets[found.idx]||{};
+      const preservedAvg=Number(old.avg_price)||0;
+      const preservedType=old.type||item.type||'Renda Fixa';
+      const preservedSector=old.sector||item.sector||'';
+      const preservedName=old.name||item.name;
+      const preservedProduct=old.product||item.name;
+      S.assets[found.idx]={
+        ...old,
+        ticker:old.ticker||item.ticker,
+        name:preservedName,
+        product:preservedProduct,
+        type:preservedType,
+        sector:preservedSector,
+        qty:Number(item.qty),
+        avg_price:preservedAvg,
+        current_price:currentPrice,
+        dy:Number(old.dy)||0,
+        ideal_pct:Number(old.ideal_pct)||0,
+        value:Number(item.marketValue),
+        current_value:Number(item.marketValue),
+        fixed_initial_value:Number(item.appliedValue),
+        fixed_current_value:Number(item.marketValue),
+        fixed_rate:item.rate,
+        fixed_application_date:item.applicationDate,
+        fixed_maturity_date:item.maturityDate,
+        fixed_issuer:old.fixed_issuer||item.issuer||'',
+        fixed_indexer:old.fixed_indexer || (String(item.rate||'').toUpperCase().includes('IPCA') ? 'IPCA' : 'Manual'),
+        fixed_source:source,
+        updated_at:now,
+        rf_aporte_date:old.rf_aporte_date||item.applicationDate,
+        rf_contract_rate:old.rf_contract_rate||item.rate,
+        rf_maturity_date:old.rf_maturity_date||item.maturityDate,
+        quoteSource:old.quoteSource||'importado',
+        quoteUpdatedAt:old.quoteUpdatedAt||now,
+        source:old.source||source,
+        institution:old.institution||item.institution||old.broker||'',
+        broker:old.broker||item.institution||'',
+        observation:old.observation||old.note||'',
+        note:old.note||old.observation||''
+      };
+      updated++;
+      learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
+      return;
+    }
+    S.assets.push({
+      id:Date.now()+Math.floor(Math.random()*999999),
+      ticker:item.ticker,
+      name:item.name,
+      product:item.name,
+      type:'Renda Fixa',
+      sector:item.sector,
+      qty:Number(item.qty),
+      avg_price:currentPrice,
+      current_price:currentPrice,
+      dy:0,
+      ideal_pct:0,
+      value:Number(item.marketValue),
+      current_value:Number(item.marketValue),
+      fixed_initial_value:Number(item.appliedValue),
+      fixed_current_value:Number(item.marketValue),
+      fixed_rate:item.rate,
+      fixed_application_date:item.applicationDate,
+      fixed_maturity_date:item.maturityDate,
+      fixed_issuer:item.issuer||'',
+      fixed_indexer:String(item.rate||'').toUpperCase().includes('IPCA') ? 'IPCA' : 'Manual',
+      fixed_source:source,
+      updated_at:now,
+      rf_aporte_date:item.applicationDate,
+      rf_yield_type:String(item.rate||'').toUpperCase().includes('IPCA') ? 'IPCA' : 'Manual',
+      rf_contract_rate:item.rate,
+      rf_maturity_date:item.maturityDate,
+      quoteSource:'importado',
+      quoteUpdatedAt:now,
+      source,
+      institution:item.institution||'',
+      broker:item.institution||'',
+      observation:fallbackNote,
+      note:fallbackNote
+    });
+    created++;
+    learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
+  });
+  S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  return {created,updated,ignored};
+}
+function importRfEventRows(events){
+  let imported=0,duplicates=0,review=0;
+  const now=new Date().toISOString();
+  const add=[];
+  const seen=new Set();
+  events.forEach(raw=>{
+    const ev=rfEventBuild(raw);
+    if(seen.has(ev.autoKey)){ duplicates++; return; }
+    if(ev.status==='Duplicado'){ duplicates++; return; }
+    if(ev.status!=='Novo provento' || ev.destination!=='Proventos'){ review++; return; }
+    seen.add(ev.autoKey);
+    add.push({
+      id:Date.now()+Math.floor(Math.random()*999999),
+      date:b3MovementDateKey(ev.date),
+      ticker:ev.ticker,
+      assetName:ev.assetName,
+      type:'Renda Fixa',
+      eventType:ev.eventType,
+      value:Number(ev.value)||0,
+      source:'PosicaoDetalhada B3/XP',
+      autoKey:ev.autoKey,
+      created_at:now,
+      note:`PosicaoDetalhada B3/XP · ${ev.eventType} · ${ev.assetName||ev.ticker}`
+    });
+    imported++;
+  });
+  S.proventos=[...add,...S.proventos];
+  return {imported,duplicates,review};
+}
+function importRfPositionReview(){
+  if(!S.rfPositionReview) return;
+  const selectedPositions=(S.rfPositionReview.items||[]).filter(it=>it.include!==false);
+  if(!selectedPositions.length){
+    alert('Selecione ao menos uma posição válida para importar.');
+    return;
+  }
+  const positionResult=importRfPositionRows(selectedPositions);
+  S.rfPositionReview=null;
+  save();
+  render();
+  toast(`Posição B3 importada: ${positionResult.created} criados, ${positionResult.updated} atualizados, ${positionResult.ignored} ignorados.`);
+}
+function rfPositionReviewSummary(){
+  const items=S.rfPositionReview?.items||[];
+  const events=S.rfPositionReview?.events||[];
+  const selected=items.filter(it=>it.include!==false);
+  const selectedEvents=events.filter(it=>it.include!==false);
+  const applied=selected.reduce((s,it)=>s+(Number(it.appliedValue)||0),0);
+  const market=selected.reduce((s,it)=>s+(Number(it.marketValue)||0),0);
+  const eventValue=selectedEvents.reduce((s,it)=>s+(Number(it.value)||0),0);
+  return {count:selected.length,total:items.length,applied,market,eventCount:selectedEvents.length,eventTotal:events.length,eventValue};
+}
+function rfStatusClass(status){
+  if(status==='Novo ativo') return 'ok';
+  if(status==='Novo provento') return 'ok';
+  if(status==='Atualizar existente' || status==='Possível duplicado') return 'warn';
+  if(status==='Duplicado' || status==='Ignorar') return 'muted';
+  return 'review';
+}
+function rfPositionReviewModal(){
+  const r=S.rfPositionReview;
+  if(!r) return '';
+  const sum=rfPositionReviewSummary();
+  const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
+  const positionRows=(r.items||[]).map((it,idx)=>{
+    const resultColor=Number(it.result)>=0?'#34d399':'#f87171';
+    return `<tr>
+      <td><input type="checkbox" ${it.include===false?'':'checked'} ${(it.status==='Novo ativo' || it.status==='Atualizar existente')?'':'disabled'} onchange="setRfPositionReviewItem(${idx}, this.checked)"></td>
+      <td><span class="rf-status ${rfStatusClass(it.status)}">${esc(it.status)}</span></td>
+      <td><div class="ticker">${esc(it.ticker||'—')}</div></td>
+      <td><div class="asset-name" title="${esc(it.name)}">${esc(it.name)}</div></td>
+      <td>${esc(it.type)}</td>
+      <td>${esc(it.sector)}</td>
+      <td class="num">${fmtN(it.qty)}</td>
+      <td class="num">${fmt(it.appliedValue)}</td>
+      <td class="num">${fmt(it.marketValue)}</td>
+      <td class="num">${fmt(it.avgPrice)}</td>
+      <td class="num">${fmt(it.currentPrice)}</td>
+      <td class="num" style="color:${resultColor}">${fmt(it.result)}</td>
+      <td class="num" style="color:${resultColor}">${fmtP(it.rentability)}</td>
+      <td>${esc(it.rate||'—')}</td>
+      <td>${esc(it.applicationDate||'—')}</td>
+      <td>${esc(it.maturityDate||'—')}</td>
+      <td><div class="asset-name" title="${esc(it.note)}">${esc(it.note||'—')}</div></td>
+    </tr>`;
+  }).join('');
+  const eventRows=(r.events||[]).map((ev,idx)=>{
+    const canImport=ev.status==='Novo provento';
+    return `<tr>
+      <td><input type="checkbox" ${ev.include===false?'':'checked'} ${canImport?'':'disabled'} onchange="setRfEventReviewItem(${idx}, this.checked)"></td>
+      <td><span class="rf-status ${rfStatusClass(ev.status)}">${esc(ev.status)}</span></td>
+      <td>${esc(ev.date||'—')}</td>
+      <td><div class="ticker">${esc(ev.ticker||'—')}</div></td>
+      <td><div class="asset-name" title="${esc(ev.assetName)}">${esc(ev.assetName||'—')}</div></td>
+      <td>${esc(ev.eventType||'—')}</td>
+      <td class="num">${fmt(ev.value)}</td>
+      <td>${esc(ev.destination||'Revisar')}</td>
+      <td><div class="asset-name" title="${esc(ev.note)}">${esc(ev.note||'—')}</div></td>
+    </tr>`;
+  }).join('');
+  return `<div class="note-overlay" role="dialog" aria-modal="true">
+    <div class="note-modal" style="max-width:1380px">
+      <div class="note-head">
+        <div class="note-title">
+          <div>
+            <h3>💼 Revisar posição detalhada de Renda Fixa</h3>
+            <p>Confira os ativos selecionados. A importação grava somente em Meus Ativos e não cria aportes, vendas ou proventos.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+            <button class="btn bgh" onclick="closeRfPositionReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importRfPositionReview()">Importar selecionados</button>
+          </div>
+        </div>
+        <div class="note-meta">
+          <span class="note-pill">Arquivo: ${esc(r.fileName||'PosicaoDetalhada.xlsx')}</span>
+          <span class="note-pill">Linhas: ${sum.total}</span>
+          <span class="note-pill">Selecionados: ${sum.count}</span>
+          <span class="note-pill">Aplicado: ${fmt(sum.applied)}</span>
+          <span class="note-pill">Mercado: ${fmt(sum.market)}</span>
+          <span class="note-pill">Eventos: ${sum.eventCount}/${sum.eventTotal}</span>
+        </div>
+      </div>
+      <div class="note-body">
+        <div class="note-actions">
+          <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="btn bgh" onclick="setRfPositionReviewAll(true)">Marcar todos</button>
+            <button class="btn bgh" onclick="setRfPositionReviewAll(false)">Desmarcar todos</button>
+          </div>
+          <div class="right">
+            <span style="font-size:12px;color:#64748b">Linhas em Possível duplicado ou Revisar ficam bloqueadas para evitar duplicidade.</span>
+          </div>
+        </div>
+        ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
+        <div class="rf-review-section">
+          <div class="rf-review-section-head">
+            <div>
+              <div class="rf-review-section-title">Posição de Renda Fixa</div>
+              <div class="rf-review-section-sub">Cria ou atualiza ativos em Meus Ativos. Não lança compras nem vendas.</div>
+            </div>
+          </div>
+          <div class="rf-pos-review-wrap" style="border:0;border-radius:0">
+            <table class="rf-pos-review-table">
+              <thead><tr>
+                <th>Importar</th><th>Status</th><th>Código</th><th>Nome do ativo</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Valor aplicado</th><th>Posição a mercado</th><th>PM calc.</th><th>Atual calc.</th><th>Resultado</th><th>Rentab.</th><th>Taxa</th><th>Data aplicação</th><th>Vencimento</th><th>Observação</th>
+              </tr></thead>
+              <tbody>${positionRows||'<tr><td colspan="17" style="color:#94a3b8;padding:18px">Nenhum ativo de Renda Fixa encontrado.</td></tr>'}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="rf-review-section">
+          <div class="rf-review-section-head">
+            <div>
+              <div class="rf-review-section-title">Eventos de Renda Fixa encontrados</div>
+              <div class="rf-review-section-sub">Nesta etapa eles ficam só para conferência. A gravação desta tela importa apenas os ativos selecionados.</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn bgh" onclick="setRfEventReviewAll(true)">Marcar eventos</button>
+              <button class="btn bgh" onclick="setRfEventReviewAll(false)">Desmarcar eventos</button>
+            </div>
+          </div>
+          <div class="rf-pos-review-wrap" style="border:0;border-radius:0">
+            <table class="rf-pos-review-table" style="min-width:980px">
+              <thead><tr>
+                <th>Importar</th><th>Status</th><th>Data</th><th>Código</th><th>Nome do ativo</th><th>Tipo de evento</th><th>Valor</th><th>Destino</th><th>Observação</th>
+              </tr></thead>
+              <tbody>${eventRows||'<tr><td colspan="9" style="color:#94a3b8;padding:18px">Nenhum evento de Renda Fixa encontrado neste arquivo.</td></tr>'}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="note-foot">
+          <div class="hint">A importação atualiza somente a aba Meus Ativos. Histórico de aportes e Proventos não são alterados.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bgh" onclick="closeRfPositionReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importRfPositionReview()">Importar selecionados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function openB3ProventosReview(parsed, fileName='', sourceKind='excel'){
+  S.b3ProventosReview={
+    fileName,
+    sourceKind,
+    importDate:parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
+    warnings:parsed?.warnings||[],
+    ignoredCount:Number(parsed?.ignoredCount)||0,
+    items:(parsed?.items||[]).map((it,i)=>b3ProventoBuild({...it,id:it.id ?? i}))
+  };
+  render();
+}
+function closeB3ProventosReview(){
+  S.b3ProventosReview=null;
+  render();
+}
+function setB3ProventoReviewItem(idx,value){
+  if(!S.b3ProventosReview || !S.b3ProventosReview.items?.[idx]) return;
+  const row=S.b3ProventosReview.items[idx];
+  row.include=!!value && row.status==='Novo provento' && row.destination==='Proventos';
+  render();
+}
+function setB3ProventoReviewAll(value){
+  if(!S.b3ProventosReview) return;
+  S.b3ProventosReview.items=(S.b3ProventosReview.items||[]).map(row=>({
+    ...row,
+    include:!!value && row.status==='Novo provento' && row.destination==='Proventos'
+  }));
+  render();
+}
+function importB3ProventosReview(){
+  if(!S.b3ProventosReview) return;
+  const rows=Array.isArray(S.b3ProventosReview.items)?S.b3ProventosReview.items:[];
+  const totalRows=rows.length;
+  let added=0;
+  let duplicates=rows.filter(r=>r.status==='Duplicado').length;
+  const next=[];
+  (S.proventos||[]).forEach(p=>next.push(p));
+  rows.forEach(row=>{
+    if(row.include===false) return;
+    if(row.status!=='Novo provento' || row.destination!=='Proventos'){
+      return;
+    }
+    const ticker=String(row.ticker||'').trim().toUpperCase();
+    const paymentDate=String(row.paymentDate||'').trim();
+    const eventType=String(row.eventType||'').trim();
+    const value=Number(row.netValue)||0;
+    if(!ticker || !paymentDate || !eventType || value<=0){
+      return;
+    }
+    const importRow={
+      id:Date.now()+Math.floor(Math.random()*999999),
+      date:paymentDate,
+      ticker,
+      assetName:String(row.assetName||'').trim(),
+      type:eventType,
+      category:String(row.category||'').trim(),
+      eventType,
+      qty:Number(row.qty)||0,
+      unitPrice:Number(row.unitPrice)||0,
+      value:Number(value.toFixed(2)),
+      institution:String(row.institution||'').trim(),
+      source:'B3 Proventos Recebidos',
+      autoKey:b3ProventoSavedAutoKey(row),
+      created_at:new Date().toISOString()
+    };
+    const dup=(next||[]).some(p=>{
+      const sameKey=String(p.autoKey||'')===importRow.autoKey;
+      const sameFields=String(p.ticker||'').toUpperCase()===ticker
+        && b3MovementDateKey(p.date)===b3MovementDateKey(paymentDate)
+        && rfPosNorm(p.eventType||p.type)===rfPosNorm(eventType)
+        && Math.abs((Number(p.value)||0)-Number(importRow.value||0))<0.01;
+      return sameKey || sameFields;
+    });
+    if(dup){
+      duplicates++;
+      return;
+    }
+    next.unshift(importRow);
+    added++;
+  });
+  const ignored=Math.max(0,totalRows-added-duplicates);
+  S.proventos=next;
+  S.b3ProventosReview=null;
+  save();
+  render();
+  toast(`Proventos importados: ${added} novos, ${duplicates} duplicados ignorados, ${ignored} ignorados.`);
+}
+function b3ProventosReviewSummary(){
+  const rows=S.b3ProventosReview?.items||[];
+  const selected=rows.filter(r=>r.include!==false);
+  const total=selected.reduce((s,r)=>s+(Number(r.netValue)||0),0);
+  const valid=rows.length;
+  const ignored=Number(S.b3ProventosReview?.ignoredCount)||0;
+  const importable=rows.filter(r=>r.status==='Novo provento' && r.destination==='Proventos').length;
+  const duplicates=rows.filter(r=>r.status==='Duplicado').length;
+  const review=rows.filter(r=>r.destination==='Revisar').length;
+  return {count:selected.length,totalRows:rows.length,total,importable,duplicates,review,valid,ignored};
+}
+function b3ProventosReviewModal(){
+  const r=S.b3ProventosReview;
+  if(!r) return '';
+  const sum=b3ProventosReviewSummary();
+  const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
+  const rows=(r.items||[]).map((it,idx)=>{
+    const canImport=it.status==='Novo provento' && it.destination==='Proventos';
+    return `<tr>
+      <td><input type="checkbox" ${it.include===false?'':'checked'} ${canImport?'':'disabled'} onchange="setB3ProventoReviewItem(${idx}, this.checked)"></td>
+      <td><span class="rf-status ${rfStatusClass(it.status)}">${esc(it.status)}</span></td>
+      <td>${esc(it.paymentDate||'—')}</td>
+      <td><div class="ticker">${esc(it.ticker||'—')}</div></td>
+      <td><div class="asset-name" title="${esc(it.assetName)}">${esc(it.assetName||'—')}</div></td>
+      <td>${esc(it.eventType||'—')}</td>
+      <td>${esc(it.category||'—')}</td>
+      <td><div class="asset-name" title="${esc(it.institution)}">${esc(it.institution||'—')}</div></td>
+      <td class="num">${fmtN(it.qty)}</td>
+      <td class="num">${fmt(it.unitPrice)}</td>
+      <td class="num">${fmt(it.netValue)}</td>
+      <td>${esc(it.destination||'—')}</td>
+      <td><div class="asset-name" title="${esc(it.note)}">${esc(it.note||'—')}</div></td>
+    </tr>`;
+  }).join('');
+  return `<div class="note-overlay" role="dialog" aria-modal="true">
+    <div class="note-modal" style="max-width:1380px">
+      <div class="note-head">
+        <div class="note-title">
+          <div>
+            <h3>💸 Revisar proventos recebidos da B3</h3>
+            <p>Confira os proventos antes de gravar. Nesta etapa nada será salvo na carteira.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+            <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importB3ProventosReview()">Importar selecionados</button>
+          </div>
+        </div>
+        <div class="note-meta">
+          <span class="note-pill">Arquivo: ${esc(r.fileName||'Proventos B3')}</span>
+        </div>
+      </div>
+      <div class="note-body">
+        <div class="rf-proventos-kpis">
+          <div class="rf-proventos-kpi yellow">
+            <div class="rf-proventos-kpi-label">Linhas válidas</div>
+            <div class="rf-proventos-kpi-value">${sum.valid}</div>
+            <div class="rf-proventos-kpi-sub">Itens reais do extrato</div>
+          </div>
+          <div class="rf-proventos-kpi muted">
+            <div class="rf-proventos-kpi-label">Linhas ignoradas</div>
+            <div class="rf-proventos-kpi-value">${sum.ignored}</div>
+            <div class="rf-proventos-kpi-sub">Totais, resumos e rodapés</div>
+          </div>
+          <div class="rf-proventos-kpi blue">
+            <div class="rf-proventos-kpi-label">Selecionados</div>
+            <div class="rf-proventos-kpi-value">${sum.count}</div>
+            <div class="rf-proventos-kpi-sub">Checkboxes marcados</div>
+          </div>
+          <div class="rf-proventos-kpi green">
+            <div class="rf-proventos-kpi-label">Total líquido selecionado</div>
+            <div class="rf-proventos-kpi-value">${fmt(sum.total)}</div>
+            <div class="rf-proventos-kpi-sub">Soma só das linhas válidas marcadas</div>
+          </div>
+        </div>
+        <div class="note-actions">
+          <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="btn bgh" onclick="setB3ProventoReviewAll(true)">Marcar todos importáveis</button>
+            <button class="btn bgh" onclick="setB3ProventoReviewAll(false)">Desmarcar todos</button>
+          </div>
+          <div class="right">
+            <span style="font-size:12px;color:#64748b">Primeira etapa: revisão sem gravação em Proventos, Ativos, Aportes, Firebase ou localStorage.</span>
+          </div>
+        </div>
+        ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
+        <div class="rf-pos-review-wrap">
+          <table class="rf-pos-review-table rf-proventos-table" style="min-width:1320px">
+            <thead><tr>
+              <th>Importar</th><th>Status</th><th>Pagamento</th><th>Ticker/código</th><th>Nome do ativo</th><th>Tipo de evento</th><th>Categoria sugerida</th><th>Instituição</th><th>Qtd</th><th>Preço unitário</th><th>Valor líquido</th><th>Destino</th><th>Observação</th>
+            </tr></thead>
+            <tbody>${rows||'<tr><td colspan="13" style="color:#94a3b8;padding:18px">Nenhum provento encontrado para revisar.</td></tr>'}</tbody>
+          </table>
+        </div>
+        <div class="note-foot">
+          <div class="hint">O botão de importar ainda não grava. Ele apenas confirma que a revisão está pronta para a próxima etapa.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
+            <button class="btn bsv" onclick="importB3ProventosReview()">Importar selecionados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
+  const items=(parsed?.items||[]).map((it,i)=>b3MovementRefreshReviewFlags({
+    id:it.id ?? i,
     include:it.include!==false,
-    target:String(it.target||'aportes'),
-    group:b3MovementGroup(it.movement),
+    target:String(it.target||b3MovementTarget(it.movement,it.entryExit)),
+    group:it.reviewGroup||b3MovementGroup(it.movement),
     ticker:String(it.ticker||'').toUpperCase(),
     qty:Number(it.qty)||0,
     price:Number(it.price)||0,
@@ -3042,14 +4789,21 @@ function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
     product:String(it.product||''),
     movement:String(it.movement||''),
     entryExit:String(it.entryExit||''),
+    broker:String(it.broker||''),
     sheet:String(it.sheet||'Movimentacao').trim()||'Movimentacao',
     date:it.date||parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
     action:String(it.action||'compra'),
+    destination:it.destination||'',
+    destinationLabel:it.destinationLabel||'',
+    confidence:it.confidence||'',
+    reviewGroup:it.reviewGroup||'',
+    reviewNote:it.reviewNote||'',
+    movKey:String(it.movKey||''),
     sourceItem:{...it}
   })).filter(it=>it.ticker || it.movement || it.product);
   const groupsMap=new Map();
   items.forEach(it=>{
-    const key=b3MovementGroup(it.movement);
+    const key=it.reviewGroup||b3MovementGroup(it.movement);
     if(!groupsMap.has(key)){
       groupsMap.set(key,{group:key,count:0,total:0,items:[],selected:true});
     }
@@ -3067,7 +4821,7 @@ function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
     stats:parsed?.stats||{},
     items,
     groups,
-    selectedGroups:Object.fromEntries(groups.map(g=>[g.group,!/Transferencias|Eventos/.test(g.group)]))
+    selectedGroups:Object.fromEntries(groups.map(g=>[g.group,(g.items||[]).some(it=>it.include!==false && (it.destination==='historico' || it.destination==='proventos'))]))
   };
   render();
 }
@@ -3080,18 +4834,19 @@ function setB3MovementGroup(group, value){
   S.b3MovementReview.selectedGroups = S.b3MovementReview.selectedGroups || {};
   S.b3MovementReview.selectedGroups[group] = !!value;
   const g=(S.b3MovementReview.groups||[]).find(x=>x.group===group);
-  if(g) g.items=(g.items||[]).map(it=>({...it, include:!!value}));
+  if(g) g.items=(g.items||[]).map(it=>b3MovementRefreshReviewFlags({...it, include:!!value}));
   S.b3MovementReview.items = (S.b3MovementReview.items||[]).map(it=>{
     const match=(it.group||b3MovementGroup(it.movement))===group;
-    return match ? {...it, include:!!value} : it;
+    return match ? b3MovementRefreshReviewFlags({...it, include:!!value}) : it;
   });
   render();
 }
 function setB3MovementAll(value){
   if(!S.b3MovementReview) return;
-  S.b3MovementReview.selectedGroups = Object.fromEntries((S.b3MovementReview.groups||[]).map(g=>[g.group,!!value]));
-  S.b3MovementReview.items = (S.b3MovementReview.items||[]).map(it=>({...it, include:!!value}));
-  S.b3MovementReview.groups = (S.b3MovementReview.groups||[]).map(g=>({...g, items:(g.items||[]).map(it=>({...it, include:!!value}))}));
+  const groups=(S.b3MovementReview.groups||[]).map(g=>({...g, items:(g.items||[]).map(it=>b3MovementRefreshReviewFlags({...it, include:!!value}))}));
+  S.b3MovementReview.groups=groups;
+  S.b3MovementReview.items = (S.b3MovementReview.items||[]).map(it=>b3MovementRefreshReviewFlags({...it, include:!!value}));
+  S.b3MovementReview.selectedGroups = Object.fromEntries(groups.map(g=>[g.group,(g.items||[]).some(it=>it.include!==false)]));
   render();
 }
 function setB3MovementItem(group, idx, field, value){
@@ -3100,12 +4855,20 @@ function setB3MovementItem(group, idx, field, value){
   if(!g || !g.items || !g.items[idx]) return;
   const row=g.items[idx];
   if(field==='include') row.include=!!value;
-  else if(field==='target') row.target=String(value||'aportes');
+  else if(field==='target'){
+    row.target=String(value||'aportes');
+    if(row.target==='proventos') row.action='provento';
+    else if(row.target==='eventos' || row.target==='revisar' || row.target==='ignorar') row.action='revisar';
+    else if(row.action==='provento' || row.action==='revisar') row.action=b3MovementAction(row.movement,row.entryExit);
+  }
   else if(field==='ticker') row.ticker=String(value||'').trim().toUpperCase();
   else if(field==='type') row.type=normalizeType(value||'Renda Fixa','Renda Fixa');
   else if(field==='sector') row.sector=String(value||'');
   else if(field==='qty') row.qty=parseNum(value);
   else if(field==='price') row.price=parseNum(value);
+  row.value=(Number(row.qty)||0)*(Number(row.price)||0) || Number(row.value)||0;
+  const refreshed=b3MovementRefreshReviewFlags(row);
+  Object.assign(row, refreshed);
   const master=(S.b3MovementReview.items||[]).find(it=>it.movKey===row.movKey || (it.date===row.date && it.product===row.product && it.movement===row.movement));
   if(master){
     master.include=row.include;
@@ -3115,23 +4878,27 @@ function setB3MovementItem(group, idx, field, value){
     master.sector=row.sector;
     master.qty=row.qty;
     master.price=row.price;
-    master.value=(Number(row.value)||((Number(row.qty)||0)*(Number(row.price)||0)));
+    master.value=row.value;
+    master.action=row.action;
+    master.duplicateKind=row.duplicateKind;
+    master.possibleDuplicate=row.possibleDuplicate;
+    master.observation=row.observation;
   }
   S.b3MovementReview.selectedGroups = S.b3MovementReview.selectedGroups || {};
-  S.b3MovementReview.selectedGroups[group] = (g.items||[]).every(it=>it.include!==false);
+  S.b3MovementReview.selectedGroups[group] = (g.items||[]).some(it=>it.include!==false);
   render();
 }
 function setB3MovementGroupItems(group, value){
   if(!S.b3MovementReview) return;
   const g=(S.b3MovementReview.groups||[]).find(x=>x.group===group);
   if(!g) return;
-  g.items=(g.items||[]).map(it=>({...it, include:!!value}));
+  g.items=(g.items||[]).map(it=>b3MovementRefreshReviewFlags({...it, include:!!value}));
   S.b3MovementReview.items = (S.b3MovementReview.items||[]).map(it=>{
     const match=(it.group||b3MovementGroup(it.movement))===group;
-    return match ? {...it, include:!!value} : it;
+    return match ? b3MovementRefreshReviewFlags({...it, include:!!value}) : it;
   });
   S.b3MovementReview.selectedGroups = S.b3MovementReview.selectedGroups || {};
-  S.b3MovementReview.selectedGroups[group] = !!value;
+  S.b3MovementReview.selectedGroups[group] = (g.items||[]).some(it=>it.include!==false);
   render();
 }
 function b3MovementSelectedItems(){
@@ -3140,68 +4907,111 @@ function b3MovementSelectedItems(){
   return (r.items||[]).filter(it=>{
     const group=it.group||b3MovementGroup(it.movement);
     if(r.selectedGroups && r.selectedGroups[group]===false) return false;
-    if(it.include===false) return false;
-    if(it.target==='ignorar') return false;
+    if(!b3MovementIsHistoricalImportable(it)) return false;
+    if(it.possibleDuplicate) return false;
     return true;
   });
 }
 function b3MovementSummary(){
-  const items=b3MovementSelectedItems();
-  const total=items.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
-  const groups=[...new Set(items.map(it=>it.group||b3MovementGroup(it.movement)))];
-  return {count:items.length,total,groups};
+  const r=S.b3MovementReview||{};
+  const items=[...(r.items||[])];
+  const selected=b3MovementSelectedItems();
+  const total=selected.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
+  const valid=items.filter(it=>it.ticker && Number(it.value)>0 && String(it.date||'').trim()).length;
+  const compras=items.filter(it=>String(it.interpretedOperation||'').toLowerCase()==='compra').length;
+  const vendas=items.filter(it=>String(it.interpretedOperation||'').toLowerCase()==='venda').length;
+  const rfAplicResg=items.filter(it=>normalizeType(it.type||'','')==='Renda Fixa' && ['aplicação','resgate','resgate antecipado','vencimento'].includes(String(it.interpretedOperation||'').toLowerCase())).length;
+  const revisarPrecoValor=items.filter(it=>String(it.reviewReason||'')==='sem_precovalor' || (String(it.target||'')==='revisar' && (!Number(it.price) || !Number(it.value)))).length;
+  const ignoradas=Number(r.stats?.totalIgnored)||0;
+  const events=items.filter(it=>String(it.target||'')==='eventos' || /EVENTOS SOCIETARIOS/.test(String(it.reviewGroup||b3MovementGroup(it.movement)).toUpperCase())).length;
+  const revisar=items.filter(it=>String(it.target||'')==='revisar').length;
+  const transferencias=items.filter(it=>String(it.reviewGroup||b3MovementGroup(it.movement)).includes('Transfer') || String(it.reviewGroup||b3MovementGroup(it.movement)).includes('custódia') || String(it.reviewGroup||b3MovementGroup(it.movement)).includes('custodia')).length;
+  const groups=[...new Set(selected.map(it=>it.group||b3MovementGroup(it.movement)))];
+  return {
+    count:selected.length,
+    total,
+    groups,
+    linesRead:items.length + Number(r.stats?.totalIgnored||0),
+    valid,
+    ignored:ignoradas,
+    compras,
+    vendas,
+    rfAplicResg,
+    revisarPrecoValor,
+    events,
+    revisar,
+    ignorar:ignoradas,
+    transferencias
+  };
 }
 function applyB3MovementImported(rows, importDate){
-  const importTag='[IMPORT_B3_MOVIMENTO]';
-  const movKeys=new Set(rows.map(r=>String(r.movKey||'')));
-  if(!movKeys.size) return;
-  S.aportes=S.aportes.filter(a=>!(String(a.source||'')==='b3-movement' && movKeys.has(String(a.movKey||''))));
-  S.proventos=S.proventos.filter(p=>!(String(p.source||'')==='b3-movement' && movKeys.has(String(p.movKey||''))));
-  const now=Date.now();
-  const addAportes=[];
-  const addProventos=[];
-  rows.forEach((r,i)=>{
-    const date=r.date||importDate||new Date().toLocaleDateString('pt-BR');
-    if(r.target==='proventos'){
-      addProventos.push({
-        id:now+i,
-        ticker:r.ticker,
-        value:Number(r.value)||0,
-        type:r.movement||'Juros',
-        date,
-        note:`${importTag} ${r.movement||'provento'} · ${r.product||r.ticker}`,
-        autoKey:r.movKey,
-        movKey:r.movKey,
-        source:'b3-movement'
-      });
+  const inputRows=[...(rows||[])];
+  const safeRows=inputRows.map(b3MovementRefreshReviewFlags).filter(b3MovementIsHistoricalImportable);
+  const existingKeys=new Set((S.aportes||[]).map(a=>b3MovementSavedHistoricalAutoKey(a)));
+  const batchKeys=new Set();
+  const finalRows=[];
+  let duplicateCount=0;
+  safeRows.forEach(r=>{
+    const operationType=b3MovementHistoricalOperationType(r);
+    const side=b3MovementHistoricalSide(r, operationType);
+    const autoKey=b3MovementHistoricalAutoKey(r, operationType, side);
+    const dupKind=r.duplicateKind || b3MovementDuplicateKind({...r, target:'aportes', action:r.action||(/venda/i.test(operationType)?'venda':'compra')});
+    if(dupKind || existingKeys.has(autoKey) || batchKeys.has(autoKey)){
+      duplicateCount++;
       return;
     }
+    batchKeys.add(autoKey);
+    finalRows.push({...r, operationType, side, autoKey});
+  });
+  const ignoredCount=Math.max(0, inputRows.length - safeRows.length);
+  if(!finalRows.length){
+    toast(`Movimentações importadas: 0 novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
+    return;
+  }
+  const now=Date.now();
+  const addAportes=[];
+  finalRows.forEach((r,i)=>{
+    const date=r.date||importDate||new Date().toLocaleDateString('pt-BR');
+    const unitPrice=Number(r.price)||0;
+    const totalValue=Number(r.value)||((Number(r.qty)||0)*unitPrice);
+    const operationType=String(r.operationType||b3MovementHistoricalOperationType(r)).trim();
+    const side=String(r.side||b3MovementHistoricalSide(r, operationType)).trim();
+    const institution=String(r.broker||r.institution||'').trim();
+    const note=`[IMPORT_B3_MOVIMENTO] ${r.movement||'movimentacao'} · ${r.product||r.ticker}`;
     addAportes.push({
       id:now+i,
-      operation:r.action||'compra',
+      operation:operationType==='Venda' || side==='Saída' ? 'venda' : 'compra',
+      op:operationType==='Venda' || side==='Saída' ? 'venda' : 'compra',
+      operationType,
+      side,
       ticker:r.ticker,
       qty:Number(r.qty)||0,
-      price:Number(r.price)||0,
+      price:unitPrice,
+      unitPrice,
+      totalValue,
       date,
-      decision:`${importTag} ${r.movement||'movimentacao'} · ${r.product||r.ticker}`,
+      decision:note,
+      note,
       type:normalizeType(r.type||metaTicker(r.ticker).type||'Renda Fixa','Renda Fixa'),
       sector:r.sector||metaTicker(r.ticker).sector||'',
-      movKey:r.movKey,
-      source:'b3-movement',
+      assetName:r.product||r.ticker,
+      category:normalizeType(r.type||metaTicker(r.ticker).type||'Renda Fixa','Renda Fixa'),
+      institution,
+      source:'B3 Movimentação',
+      autoKey:r.autoKey,
+      movKey:r.autoKey,
+      created_at:new Date().toISOString(),
       movement:r.movement,
       entryExit:r.entryExit,
       product:r.product
     });
   });
-  S.proventos=[...addProventos,...S.proventos];
   S.aportes=[...addAportes,...S.aportes];
   syncAssetsFromAportes(false);
-  [...rows].forEach(r=>learnTickerMeta(r.ticker, r.type, r.sector, true));
+  [...finalRows].forEach(r=>learnTickerMeta(r.ticker, r.type, r.sector, true));
   save();
   render();
-  fetchQuotes(false);
-  scheduleAutoProventosGratis('b3-mov');
-  toast(`✅ ${addAportes.length} movimento(s) e ${addProventos.length} provento(s) importados da B3.`);
+  toast(`Movimentações importadas: ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
 }
 function importB3MovementReview(){
   if(!S.b3MovementReview) return;
@@ -3217,29 +5027,41 @@ function importB3MovementReview(){
 function b3MovementReviewModal(){
   const r=S.b3MovementReview;
   if(!r) return '';
-  const {count,total,groups}=b3MovementSummary();
+  const {count,total,groups,linesRead,valid,ignored,compras,vendas,rfAplicResg,revisarPrecoValor,events,revisar,transferencias}=b3MovementSummary();
   const warnings=(r.warnings||[]).slice(0,8).map(w=>`<li>${esc(w)}</li>`).join('');
   const groupsHtml=(r.groups||[]).map(g=>{
     const checked=!!r.selectedGroups?.[g.group];
     const rows=(g.items||[]).map((it,idx)=>{
-      const bad=it.include===false || !it.ticker || Number(it.qty)<=0 || (it.target!=='proventos' && Number(it.price)<0);
+    const warn=!!it.possibleDuplicate || ['eventos','revisar','ignorar'].includes(String(it.target||''));
+      const bad=it.include===false || !it.ticker || (it.target!=='proventos' && Number(it.qty)<=0) || (it.target!=='proventos' && Number(it.price)<0);
       const totalLine=(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0)));
       const tgt=String(it.target||'aportes');
-      return `<div class="mov-review-line ${bad?'bad':''}">
+      const obs=it.observation||b3MovementReviewNote(it)||'Conferir antes de confirmar.';
+      const dst=it.destinationLabel || (tgt==='aportes'?'Histórico':tgt==='proventos'?'Proventos':tgt==='eventos'?'Eventos':'Revisar');
+      const conf=it.confidence || 'Baixa';
+      return `<div class="mov-review-line ${bad?'bad':''} ${warn?'warn':''}">
         <div class="col-check"><input type="checkbox" ${it.include===false?'':'checked'} onchange="setB3MovementItem(${JSON.stringify(g.group)}, ${idx}, 'include', this.checked)"></div>
+        <div class="col-status">
+          <div class="kind">${esc(dst)}</div>
+          <div class="mini">${esc(conf)}</div>
+        </div>
         <div class="col-ticker">
           <div class="ticker">${esc(it.ticker||'—')}</div>
           <div class="mini">${esc(it.date||'')}</div>
+          ${it.broker?`<div class="mini">${esc(it.broker)}</div>`:''}
         </div>
         <div class="col-kind">
           <div class="kind">${esc(it.movement||'')}</div>
           <div class="mini">${esc(it.entryExit||'')}</div>
+          <div class="mini" style="color:#a5b4fc">${esc(it.interpretedOperation||'—')}</div>
         </div>
         <div class="col-target">
           <div class="mini">Destino</div>
           <select onchange="setB3MovementItem(${JSON.stringify(g.group)}, ${idx}, 'target', this.value)">
-            <option value="aportes" ${tgt==='aportes'?'selected':''}>Aportes</option>
+            <option value="aportes" ${tgt==='aportes'?'selected':''}>Histórico</option>
             <option value="proventos" ${tgt==='proventos'?'selected':''}>Proventos</option>
+            <option value="eventos" ${tgt==='eventos'?'selected':''}>Eventos</option>
+            <option value="revisar" ${tgt==='revisar'?'selected':''}>Revisar</option>
             <option value="ignorar" ${tgt==='ignorar'?'selected':''}>Ignorar</option>
           </select>
         </div>
@@ -3254,6 +5076,10 @@ function b3MovementReviewModal(){
         <div class="col-total">
           <div class="mini">Total</div>
           <div class="value" style="color:${bad?'#f87171':'#34d399'}">${fmt(totalLine)}</div>
+        </div>
+        <div class="col-obs">
+          <div class="mini">Observacao</div>
+          <div class="kind" title="${esc(obs)}" style="color:${warn?'#fbbf24':'#94a3b8'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(obs)}</div>
         </div>
         <div class="line-controls">
           <button class="bi" onclick="setB3MovementItem(${JSON.stringify(g.group)}, ${idx}, 'include', false)">Ocultar</button>
@@ -3288,8 +5114,8 @@ function b3MovementReviewModal(){
       <div class="note-head">
         <div class="note-title">
           <div>
-            <h3>📜 Revisar movimentacao B3</h3>
-            <p>Marque apenas o que deve entrar. Aqui o app separa compras, vendas, juros e transferencias antes de atualizar a carteira.</p>
+            <h3>📜 Revisar movimentações B3</h3>
+            <p>Confira as linhas antes de gravar. Nesta etapa, o botão importa apenas itens selecionados com destino Histórico de aportes.</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
@@ -3299,8 +5125,18 @@ function b3MovementReviewModal(){
         <div class="note-meta">
           <span class="note-pill">Arquivo: ${esc(r.fileName||'B3')}</span>
           <span class="note-pill">Data: ${esc(r.importDate||'—')}</span>
+          <span class="note-pill">Linhas lidas: ${linesRead}</span>
+          <span class="note-pill">Linhas válidas: ${valid}</span>
+          <span class="note-pill">Linhas ignoradas: ${ignored}</span>
+          <span class="note-pill">Compras interpretadas: ${compras}</span>
+          <span class="note-pill">Vendas interpretadas: ${vendas}</span>
+          <span class="note-pill">Renda fixa aplicação/resgate: ${rfAplicResg}</span>
+          <span class="note-pill">Revisar por preço/valor: ${revisarPrecoValor}</span>
+          <span class="note-pill">Eventos societários: ${events}</span>
+          <span class="note-pill">Transferências/Revisar: ${transferencias} / ${revisar}</span>
+          <span class="note-pill">Ignoradas: ${ignored}</span>
+          <span class="note-pill">Total financeiro selecionado: ${fmt(total)}</span>
           <span class="note-pill">Selecionados: ${count}</span>
-          <span class="note-pill">Total: ${fmt(total)}</span>
           <span class="note-pill">Grupos: ${groups.length}</span>
         </div>
       </div>
@@ -3308,16 +5144,16 @@ function b3MovementReviewModal(){
         <div class="note-actions">
           <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button class="btn bgh" onclick="setB3MovementAll(true)">Marcar todos</button>
-            <button class="btn bgh" onclick="setB3MovementAll(false)">Desmarcar todos</button>
+            <button class="btn bgh" onclick="setB3MovementAll(false)">Ignorar selecionados</button>
           </div>
           <div class="right">
-            <span style="font-size:12px;color:#64748b">Transferencias e eventos vem desligados por padrao para evitar sujeira na carteira.</span>
+            <span style="font-size:12px;color:#64748b">Somente linhas com destino Histórico, confiança acima de Baixa e sem duplicidade entram na importação.</span>
           </div>
         </div>
         ${warnings?`<div style="margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.2);background:#111828;border-radius:12px;color:#fbbf24;font-size:12px;line-height:1.6"><strong style="display:block;margin-bottom:4px">Avisos da leitura</strong><ul style="padding-left:18px;margin:0">${warnings}</ul></div>`:''}
         <div class="mov-review-grid">${groupsHtml||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Nenhuma linha encontrada para revisar.</div>'}</div>
         <div class="note-foot">
-          <div class="hint">As linhas marcadas entram na carteira. Compras e vendas atualizam os ativos; juros entram como proventos; transferencias ficam fora por padrao.</div>
+          <div class="hint">O botão final grava somente o que estiver selecionado, com destino Histórico de aportes. Proventos e eventos continuam fora desta etapa.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
             <button class="btn bsv" onclick="importB3MovementReview()">Importar selecionados</button>
@@ -3351,18 +5187,34 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
       if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
       const csvText=await file.text();
       const wb=XLSX.read(csvText,{type:'string'});
-      const kind=detectB3WorkbookKind(wb);
-      parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      if(detectB3ProventosWorkbook(wb,file.name)){
+        parsed=parseB3ProventosWorkbook(wb,file.name);
+      }else if(detectRfDetailedPositionWorkbook(wb,file.name)){
+        parsed=parseRfDetailedPositionWorkbook(wb,file.name);
+      }else{
+        const kind=detectB3WorkbookKind(wb);
+        parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      }
     }else{
       if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
       const buf=await file.arrayBuffer();
       const wb=XLSX.read(buf,{type:'array'});
-      const kind=detectB3WorkbookKind(wb);
-      parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      if(detectB3ProventosWorkbook(wb,file.name)){
+        parsed=parseB3ProventosWorkbook(wb,file.name);
+      }else if(detectRfDetailedPositionWorkbook(wb,file.name)){
+        parsed=parseRfDetailedPositionWorkbook(wb,file.name);
+      }else{
+        const kind=detectB3WorkbookKind(wb);
+        parsed=kind==='movement' ? parseB3MovementWorkbook(wb,file.name) : parseB3PositionWorkbook(wb,file.name);
+      }
     }
     const {items,warnings,importDate,stats}=parsed;
     if(!items.length){ alert('Não encontrei itens válidos no arquivo. Tente exportar a posição ou movimentação da B3/corretora no formato correto.'); return; }
-    if((parsed.kind||'position')==='movement'){
+    if((parsed.kind||'position')==='b3-proventos'){
+      openB3ProventosReview({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
+    }else if((parsed.kind||'position')==='rf-detailed-position'){
+      openRfPositionReview({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
+    }else if((parsed.kind||'position')==='movement'){
       openB3MovementReview({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
     }else{
       openB3Review({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
@@ -3831,6 +5683,75 @@ function proventoResumo(){
     anos:[...anos.values()].sort((a,b)=>b.ano-a.ano)
   };
 }
+function proventoTipoCanonical(value){
+  const s=rfPosNorm(value);
+  if(!s) return 'Outro';
+  if(s.includes('RENDIMENTO')) return 'Rendimento';
+  if(s.includes('DIVIDENDO')) return 'Dividendo';
+  if(s.includes('JUROS SOBRE CAPITAL') || s==='JCP' || s.includes('JCP')) return 'JCP';
+  if(s.includes('PAGAMENTO DE JUROS') || s.includes('JUROS RENDA FIXA')) return 'Juros de Renda Fixa';
+  if(s.includes('REEMBOLSO')) return 'Reembolso';
+  return 'Outro';
+}
+function proventoResumoTipos(){
+  const base={
+    total:0,
+    count:0,
+    tipos:{
+      Rendimento:0,
+      Dividendo:0,
+      JCP:0,
+      'Juros de Renda Fixa':0,
+      Reembolso:0,
+      Outro:0
+    }
+  };
+  (S.proventos||[]).forEach(p=>{
+    const value=Number(p.value)||0;
+    if(value<=0) return;
+    const type=proventoTipoCanonical(p.eventType||p.type);
+    base.total+=value;
+    base.count++;
+    base.tipos[type]=(base.tipos[type]||0)+value;
+  });
+  return base;
+}
+function proventoResumoMensalTipos(){
+  const months=new Map();
+  (S.proventos||[]).forEach(p=>{
+    const dt=parseAnyDate(p.date);
+    const value=Number(p.value)||0;
+    if(!dt || value<=0) return;
+    const year=dt.getFullYear();
+    const month=String(dt.getMonth()+1).padStart(2,'0');
+    const key=`${year}-${month}`;
+    const label=dt.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+    if(!months.has(key)){
+      months.set(key,{
+        key,
+        year,
+        month,
+        label,
+        total:0,
+        count:0,
+        tipos:{
+          Rendimento:0,
+          Dividendo:0,
+          JCP:0,
+          'Juros de Renda Fixa':0,
+          Reembolso:0,
+          Outro:0
+        }
+      });
+    }
+    const row=months.get(key);
+    const type=proventoTipoCanonical(p.eventType||p.type);
+    row.total+=value;
+    row.count++;
+    row.tipos[type]=(row.tipos[type]||0)+value;
+  });
+  return [...months.values()].sort((a,b)=>b.key.localeCompare(a.key));
+}
 function proventoHistoricoMensal(){
   const byYear=new Map();
   S.proventos.forEach(p=>{
@@ -3847,6 +5768,243 @@ function proventoHistoricoMensal(){
     const media=total/12;
     return { year, months, total, media };
   });
+}
+function proventoAssetTypeLabel(asset, provento){
+  const type=normalizeType(asset?.type||metaTicker(asset?.ticker).type||'Ação','Ação');
+  const event=proventoTipoCanonical(provento?.eventType||provento?.type);
+  if(event==='JCP') return 'JCP';
+  if(event==='Dividendo') return 'Dividendos';
+  if(type==='Renda Fixa' || event==='Juros de Renda Fixa') return 'Renda Fixa';
+  return type || 'Ação';
+}
+function proventoAssetMeta(p){
+  const ticker=String(p?.ticker||'').toUpperCase();
+  const name=rfPosNorm(p?.assetName||'');
+  const asset=(S.assets||[]).find(a=>{
+    const at=String(a.ticker||'').toUpperCase();
+    const hay=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''}`);
+    return (ticker && at===ticker) || (name && hay.includes(name)) || (name && name.includes(hay));
+  }) || null;
+  return {
+    asset,
+    type:proventoAssetTypeLabel(asset,p),
+    title:asset?.ticker ? `${asset.ticker}${asset.name?` · ${asset.name}`:''}` : (p?.assetName||p?.ticker||'—')
+  };
+}
+function proventoResumoPorAtivo(){
+  const map=new Map();
+  (S.proventos||[]).forEach(p=>{
+    const value=Number(p.value)||0;
+    if(value<=0) return;
+    const meta=proventoAssetMeta(p);
+    const key=String(p.ticker||meta.title||'').toUpperCase() || meta.title;
+    if(!map.has(key)){
+      map.set(key,{key,ticker:String(p.ticker||'').toUpperCase()||'—',name:meta.title||'—',type:meta.type||'Ação',total:0,count:0,lastDate:'',assetName:p.assetName||''});
+    }
+    const row=map.get(key);
+    row.total+=value;
+    row.count++;
+    const dt=parseAnyDate(p.date);
+    const iso=dt?toISODate(dt):'';
+    if(iso && iso>row.lastDate) row.lastDate=iso;
+  });
+  return [...map.values()].sort((a,b)=>b.total-a.total);
+}
+function proventoResumoPorTipo(){
+  const map=new Map();
+  (S.proventos||[]).forEach(p=>{
+    const value=Number(p.value)||0;
+    if(value<=0) return;
+    const meta=proventoAssetMeta(p);
+    const type=meta.type||'Ação';
+    if(!map.has(type)) map.set(type,{type,total:0,count:0});
+    const row=map.get(type);
+    row.total+=value;
+    row.count++;
+  });
+  return [...map.values()].sort((a,b)=>b.total-a.total);
+}
+function proventoRankingPagadores(){
+  return proventoResumoPorAtivo().slice(0,10);
+}
+function proventoAuditMonthKey(dateLike){
+  const dt=parseAnyDate(dateLike);
+  if(!dt) return '';
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+}
+function proventoAuditMonthLabel(key){
+  const [year,month]=String(key||'').split('-');
+  if(!year || !month) return '—';
+  return `${month}/${year}`;
+}
+function proventoAuditEnsureState(){
+  if(!S.proventoAudit || typeof S.proventoAudit!=='object') S.proventoAudit={month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]};
+  const state=S.proventoAudit;
+  if(!Array.isArray(state.selectedIds)) state.selectedIds=[];
+  if(typeof state.eventType!=='string' || !state.eventType) state.eventType='all';
+  if(typeof state.ticker!=='string') state.ticker='';
+  if(typeof state.onlyDuplicates!=='boolean') state.onlyDuplicates=false;
+  const months=proventoAuditMonthOptions();
+  if(!state.month || !months.some(m=>m.key===state.month)) state.month=months[0]?.key || proventoAuditMonthKey(new Date()) || '';
+  return state;
+}
+function proventoAuditMonthOptions(){
+  const months=new Map();
+  (S.proventos||[]).forEach((p,idx)=>{
+    const key=proventoAuditMonthKey(p.date);
+    if(!key) return;
+    if(!months.has(key)){
+      months.set(key,{
+        key,
+        label:proventoAuditMonthLabel(key),
+        index:idx
+      });
+    }
+  });
+  const list=[...months.values()].sort((a,b)=>b.key.localeCompare(a.key));
+  if(!list.length){
+    const fallback=proventoAuditMonthKey(new Date());
+    if(fallback) list.push({key:fallback, label:proventoAuditMonthLabel(fallback), index:0});
+  }
+  return list;
+}
+function proventoAuditEntryType(p){
+  return proventoTipoCanonical(p?.eventType||p?.type||'Outro');
+}
+function proventoAuditEntryId(p, idx){
+  return `prov-audit|${idx}|${String(p?.id ?? '')}|${String(p?.autoKey ?? '')}`;
+}
+function proventoAuditBuildRows(){
+  const state=proventoAuditEnsureState();
+  const all=(S.proventos||[]).map((p,idx)=>{
+    const date=String(p.date||'').trim();
+    const dt=parseAnyDate(date);
+    const monthKey=proventoAuditMonthKey(date);
+    const eventType=proventoAuditEntryType(p);
+    const ticker=String(p.ticker||'').trim().toUpperCase();
+    const value=Number(p.value)||0;
+    const assetMeta=proventoAssetMeta(p);
+    const name=String(p.assetName||assetMeta.title||p.note||'—').trim() || '—';
+    const source=String(p.source||'—').trim() || '—';
+    const autoKey=String(p.autoKey||'—').trim() || '—';
+    const dupKey=[ticker||'—', date||'—', eventType||'—', value.toFixed(2)].join('|');
+    return {
+      sourceItem:p,
+      auditId:proventoAuditEntryId(p, idx),
+      auditIndex:idx,
+      date,
+      dateKey:dt ? toISODate(dt) : '',
+      monthKey,
+      ticker: ticker || '—',
+      name,
+      eventType,
+      value,
+      source,
+      autoKey,
+      dupKey
+    };
+  });
+  const groups=new Map();
+  all.forEach(row=>{
+    if(!groups.has(row.dupKey)) groups.set(row.dupKey, []);
+    groups.get(row.dupKey).push(row);
+  });
+  all.forEach(row=>{
+    const group=groups.get(row.dupKey)||[];
+    row.dupCount=group.length;
+    row.dupIndex=group.findIndex(x=>x.auditId===row.auditId);
+    row.isDuplicateGroup=group.length>1;
+    row.isPrimary=row.dupIndex===0;
+    row.canRemove=row.isDuplicateGroup && !row.isPrimary;
+    row.status=row.isDuplicateGroup ? (row.isPrimary ? 'OK' : 'Possível duplicado') : 'OK';
+    row.statusClass=row.isDuplicateGroup ? (row.isPrimary ? 'ok' : 'warn') : 'ok';
+    row.statusLabel=row.isDuplicateGroup
+      ? (row.isPrimary ? `OK · grupo ${group.length}` : `Possível duplicado · ${row.dupIndex+1}/${group.length}`)
+      : 'OK';
+    row.obs=row.isDuplicateGroup
+      ? (row.isPrimary ? `Mantido como primeiro lançamento do grupo de ${group.length}.` : `Possível duplicado extra do mesmo grupo.`)
+      : 'Sem duplicidade aparente.';
+  });
+  const tickerFilter=rfPosNorm(state.ticker||'');
+  const eventFilter=String(state.eventType||'all').trim();
+  const monthFilter=String(state.month||'').trim();
+  const filteredBase=all.filter(row=>{
+    if(monthFilter && row.monthKey!==monthFilter) return false;
+    if(eventFilter!=='all' && row.eventType!==eventFilter) return false;
+    if(tickerFilter){
+      const hay=rfPosNorm(`${row.ticker} ${row.name} ${row.source} ${row.autoKey}`);
+      if(!hay.includes(tickerFilter)) return false;
+    }
+    return true;
+  });
+  const visibleRows=(state.onlyDuplicates ? filteredBase.filter(r=>r.canRemove) : filteredBase)
+    .slice()
+    .sort((a,b)=> (b.dateKey||'').localeCompare(a.dateKey||'') || a.ticker.localeCompare(b.ticker) || a.eventType.localeCompare(b.eventType));
+  const total=filteredBase.reduce((s,r)=>s+r.value,0);
+  const dupRows=filteredBase.filter(r=>r.canRemove);
+  const dupTotal=dupRows.reduce((s,r)=>s+r.value,0);
+  const summary={
+    total,
+    count:filteredBase.length,
+    duplicates:dupRows.length,
+    dupTotal,
+    cleanTotal:Math.max(0,total-dupTotal),
+    selected: (state.selectedIds||[]).filter(id=>dupRows.some(r=>r.auditId===id)).length
+  };
+  return {state, all, filteredBase, rows:visibleRows, summary};
+}
+function setProventoAuditMonth(value){
+  const state=proventoAuditEnsureState();
+  state.month=String(value||'');
+  render();
+}
+function setProventoAuditEventType(value){
+  const state=proventoAuditEnsureState();
+  state.eventType=String(value||'all');
+  render();
+}
+function setProventoAuditTicker(value){
+  const state=proventoAuditEnsureState();
+  state.ticker=String(value||'');
+  render();
+}
+function toggleProventoAuditOnlyDuplicates(){
+  const state=proventoAuditEnsureState();
+  state.onlyDuplicates=!state.onlyDuplicates;
+  render();
+}
+function setProventoAuditRowSelected(auditId, value){
+  const state=proventoAuditEnsureState();
+  const id=String(auditId||'');
+  if(!id) return;
+  const selected=new Set(state.selectedIds||[]);
+  if(value) selected.add(id); else selected.delete(id);
+  state.selectedIds=[...selected];
+  render();
+}
+function selectProventoAuditDuplicateExtras(){
+  const audit=proventoAuditBuildRows();
+  const state=proventoAuditEnsureState();
+  state.selectedIds=[...new Set(audit.rows.filter(r=>r.canRemove).map(r=>r.auditId))];
+  render();
+}
+function removeProventoAuditSelected(){
+  const audit=proventoAuditBuildRows();
+  const state=proventoAuditEnsureState();
+  const selectedSet=new Set(state.selectedIds||[]);
+  const removable=audit.all.filter(r=>selectedSet.has(r.auditId) && r.canRemove);
+  if(!removable.length){
+    alert('Selecione ao menos um possível duplicado extra para remover.');
+    return;
+  }
+  const ok=confirm(`Deseja remover ${removable.length} lançamentos duplicados? Essa ação não altera Meus Ativos nem Histórico.`);
+  if(!ok) return;
+  const removalIds=new Set(removable.map(r=>r.auditId));
+  S.proventos=(S.proventos||[]).filter((p,idx)=>!removalIds.has(proventoAuditEntryId(p, idx)));
+  state.selectedIds=[];
+  save();
+  render();
+  toast(`✅ ${removable.length} lançamento(s) duplicado(s) removido(s).`);
 }
 function reserveStats(){
   const out={bolsa:0,pessoal:0,total:0,entries:0};
@@ -5058,6 +7216,15 @@ function syncAssetsFromAportes(showMsg=false){
       quoteSource:old.quoteSource||(isRF?'manual':''), quoteUpdatedAt:old.quoteUpdatedAt||''
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
+  const importedPositionAssets=Object.values(keep)
+    .filter(a=>{
+      const tk=String(a?.ticker||'').trim().toUpperCase();
+      return tk && !grouped[tk] && (rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source));
+    })
+    .map(a=>({...a}));
+  if(importedPositionAssets.length){
+    S.assets=[...S.assets, ...importedPositionAssets].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  }
   autoDY();
   save();
   if(showMsg) toast('✅ Carteira recalculada pelos aportes!');
@@ -5121,7 +7288,11 @@ async function fetchQuotes(manual=false){
   S.qInFlight=true;
   S.qLoad=true; render();
 
-  const tickers=[...new Set(S.assets.map(a=>String(a.ticker||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
+  const eligibleAssets=(S.assets||[]).filter(a=>{
+    const importedB3=rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source);
+    return !importedB3 && a.quoteSource!=='importado';
+  });
+  const tickers=[...new Set(eligibleAssets.map(a=>String(a.ticker||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
   let atualizados=0,semPreco=[];
 
   try{
@@ -5135,6 +7306,7 @@ async function fetchQuotes(manual=false){
 
       const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===ticker);
       if(!a) return;
+      if(rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source) || a.quoteSource==='importado') return;
 
       const price=Number(q.regularMarketPrice ?? q.postMarketPrice ?? q.preMarketPrice ?? q.regularMarketPreviousClose);
       if(Number.isFinite(price)&&price>0){
@@ -5183,6 +7355,7 @@ async function fetchQuotes(manual=false){
             recv.add(sym);
             const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===sym);
             if(!a) return;
+            if(rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source) || a.quoteSource==='importado') return;
             const price=Number(q.regularMarketPrice??q.price??q.close??q.previousClose);
             if(Number.isFinite(price)&&price>0){
               const prev=Number(a.current_price)||0;
@@ -5373,9 +7546,62 @@ function toggleAssetGroup(type, ev){
   S.activeAssetsGroup = S.activeAssetsGroup===type ? '' : type;
   render();
 }
+function getAssetSortConfig(type){
+  const sort=S.assetSort || (S.assetSort={});
+  return sort[type] || {field:'ticker', dir:'asc'};
+}
+function toggleAssetSort(type, field){
+  const sort=S.assetSort || (S.assetSort={});
+  const current=sort[type] || {field:'ticker', dir:'asc'};
+  let dir='asc';
+  if(current.field===field){
+    dir=current.dir==='asc' ? 'desc' : 'asc';
+  }else{
+    dir=field==='rentability' ? 'desc' : 'asc';
+  }
+  sort[type]={field, dir};
+  render();
+}
+function assetSortIndicator(type, field){
+  const current=getAssetSortConfig(type);
+  if(current.field!==field) return '';
+  return current.dir==='asc' ? ' ↑' : ' ↓';
+}
+function sortAssetsByGroup(type, items){
+  const cfg=getAssetSortConfig(type);
+  const dirFactor=cfg.dir==='desc' ? -1 : 1;
+  return [...items].sort((a,b)=>{
+    if(cfg.field==='rentability'){
+      const ar=assetRentabPct(a);
+      const br=assetRentabPct(b);
+      const aValid=Number.isFinite(ar);
+      const bValid=Number.isFinite(br);
+      if(aValid!==bValid) return aValid ? -1 : 1;
+      if(!aValid && !bValid){
+        const at=String(a.ticker||'').toUpperCase();
+        const bt=String(b.ticker||'').toUpperCase();
+        return at.localeCompare(bt,'pt-BR',{sensitivity:'base'}) * dirFactor;
+      }
+      if(ar===br) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (ar-br) * dirFactor;
+    }
+    const at=String(a.ticker||'').trim().toUpperCase();
+    const bt=String(b.ticker||'').trim().toUpperCase();
+    const aValid=!!at;
+    const bValid=!!bt;
+    if(aValid!==bValid) return aValid ? -1 : 1;
+    if(!aValid && !bValid) return 0;
+    return at.localeCompare(bt,'pt-BR',{sensitivity:'base'}) * dirFactor;
+  });
+}
 function toggleDividendSection(section, ev){
   if(ev) ev.preventDefault();
   S.activeDividendSection = S.activeDividendSection===section ? '' : section;
+  render();
+}
+function toggleImportedDividendsDetails(ev){
+  if(ev) ev.preventDefault();
+  S.showImportedDividendsDetails = !S.showImportedDividendsDetails;
   render();
 }
 
@@ -5422,6 +7648,8 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
   ${S.noteReview?notaReviewModal():''}
   ${S.b3Review?b3ReviewModal():''}
   ${S.b3MovementReview?b3MovementReviewModal():''}
+  ${S.rfPositionReview?rfPositionReviewModal():''}
+  ${S.b3ProventosReview?b3ProventosReviewModal():''}
   ${S.allocGoalOpen?allocationGoalModal():''}`;
 }
 function content(){
@@ -5727,8 +7955,8 @@ function frmA(){
       <div style="font-size:10px;color:#3d5472;margin-top:4px">
         ${isRF
           ? (rf && assetNeedsRFUpdate(f)
-              ? 'Atualize o valor atual para calcular os juros acumulados.'
-              : (rf && Number.isFinite(rf.juros) ? `Juros acumulados: ${fmt(rf.juros)}` : ''))
+              ? 'Atualize o valor atual para calcular o resultado acumulado.'
+              : (rf && Number.isFinite(rf.juros) ? `Resultado acumulado: ${fmt(rf.juros)}` : ''))
           : (f.quoteUpdatedAt
               ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`
               :`<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação agora</a>`)}
@@ -5763,6 +7991,7 @@ function ativos(){
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
+    const sortedItems=sortAssetsByGroup(type, items);
     const gApplied=items.reduce((s,a)=>s+assetAppliedValue(a),0);
     const gTotal=items.reduce((s,a)=>s+assetCurrentValue(a),0);
     const gDivMes=items.reduce((s,a)=>{
@@ -5777,7 +8006,7 @@ function ativos(){
     const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
-    const rows=items.map(a=>{
+    const rows=sortedItems.map(a=>{
       const avg=Number(a.avg_price)||0;
       const currentUnit=Number(a.current_price)||0;
       const marketValue=isRendaFixaAsset(a) ? assetCurrentValue(a) : (Number(a.qty)||0)*currentUnit;
@@ -5796,7 +8025,7 @@ function ativos(){
       const atualText=marketValue!=null?fmt(currentDisplay):'—';
       const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
       const rentText=isRF
-        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Juros: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Atualize o valor atual para calcular os juros acumulados.</div>':''}`
+        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Atualize o valor atual para calcular o resultado acumulado.</div>':''}`
         : `${Number.isFinite(rentab)?fmtP(rentab):'—'}`;
       const atualCls=isRF
         ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
@@ -5835,7 +8064,7 @@ function ativos(){
         <div class="ag-stats">
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor aplicado':'Ativos'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gApplied):items.length}</div></div>
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor atual':'Valor total'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gTotal):fmt(gTotal)}</div></div>
-          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Juros acumulados':'Variação'}</div><div class="ag-v" style="color:${type==='Renda Fixa'?(gJuros>=0?'#34d399':'#f87171'):(gVar>=0?'#34d399':'#f87171')}">${type==='Renda Fixa'?fmt(gJuros):fmtP(gVar)}</div></div>
+          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Resultado acumulado':'Variação'}</div><div class="ag-v" style="color:${type==='Renda Fixa'?(gJuros>=0?'#34d399':'#f87171'):(gVar>=0?'#34d399':'#f87171')}">${type==='Renda Fixa'?fmt(gJuros):fmtP(gVar)}</div></div>
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Rentab. acumulada':'Rentabilidade'}</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${type==='Renda Fixa'?(gApplied>0?(gTotal-gApplied)/gApplied*100:0).toFixed(2)+'%':gDY.toFixed(2)+'%'} <small>${type==='Renda Fixa'?'':'DY'}</small></div></div>
           <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${share.toFixed(1)}%</div></div>
         </div>
@@ -5844,14 +8073,14 @@ function ativos(){
       <div class="ag-body">
         <div class="ag-table">
           <div class="tw"><div class="ts"><table>
-            <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
+            <thead><tr><th><span style="cursor:pointer;user-select:none" onclick="toggleAssetSort(${JSON.stringify(type)},'ticker');event.stopPropagation()">Ticker${assetSortIndicator(type,'ticker')}</span></th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
               <th>
                 <div style="display:flex;align-items:center;gap:5px">
                   ATUAL
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th>Rentab.</th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+              <th><span style="cursor:pointer;user-select:none" onclick="toggleAssetSort(${JSON.stringify(type)},'rentability');event.stopPropagation()">Rentab.${assetSortIndicator(type,'rentability')}</span></th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
             <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>
@@ -6425,6 +8654,15 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const objetivo = Number(S.divGoal) || 0;
   const rec = proventoStats();
   const resumo = proventoResumo();
+  const resumoTipos = proventoResumoTipos();
+  const resumoMensalTipos = proventoResumoMensalTipos();
+  const resumoAtivos = proventoResumoPorAtivo();
+  const resumoTiposDetalhado = proventoResumoPorTipo();
+  const maioresPagadores = proventoRankingPagadores();
+  const importedDetailsOpen = !!S.showImportedDividendsDetails;
+  const audit = proventoAuditBuildRows();
+  const auditMonths = proventoAuditMonthOptions();
+  const auditSelected = new Set(audit.state.selectedIds || []);
   const historico = proventoHistoricoMensal();
   const histTop = historico[0] || { total: 0, media: 0 };
   const media12 = histTop.media || 0;
@@ -6451,6 +8689,37 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const anoRows = resumo.anos.length
     ? resumo.anos.map(r=>`<tr><td style="font-weight:700;color:#e2eaf6">${r.ano}</td><td>${r.count}</td><td class="gn" style="font-weight:800">${fmt(r.valor)}</td></tr>`).join('')
     : '<tr><td colspan="3" style="text-align:center;padding:18px;color:#2e3f58">Sem histórico anual ainda.</td></tr>';
+  const auditMonthOptionsHtml = auditMonths.map(m=>`<option value="${esc(m.key)}" ${audit.state.month===m.key?'selected':''}>${esc(m.label)}</option>`).join('');
+  const auditEventOptionsHtml = ['all','Rendimento','Dividendo','JCP','Juros de Renda Fixa','Reembolso']
+    .map(type=>`<option value="${esc(type)}" ${String(audit.state.eventType||'all')===type?'selected':''}>${type==='all'?'Todos':esc(type)}</option>`)
+    .join('');
+  const auditRowsHtml = audit.rows.length
+    ? audit.rows.map(row=>{
+        const canRemove=row.canRemove;
+        const checked=auditSelected.has(row.auditId);
+        const statusClass=row.isDuplicateGroup ? (row.isPrimary ? 'ok' : 'warn') : 'ok';
+        const rowClass=row.isDuplicateGroup ? (row.isPrimary ? 'prov-audit-row-primary' : 'prov-audit-row-dup') : '';
+        const obs=String(row.obs||'').trim();
+        return `<tr class="${rowClass}">
+          <td style="width:42px;text-align:center">
+            <input type="checkbox" ${canRemove ? (checked?'checked':'') : 'disabled'} onchange="setProventoAuditRowSelected(${JSON.stringify(row.auditId)}, this.checked)" style="width:16px;height:16px">
+          </td>
+          <td>
+            <div class="prov-audit-status ${statusClass}">${esc(row.status)}</div>
+            <div class="mu" style="font-size:10px;margin-top:4px">${esc(row.statusLabel)}</div>
+          </td>
+          <td style="white-space:nowrap">${esc(row.date || '—')}</td>
+          <td class="ticker">${esc(row.ticker || '—')}</td>
+          <td class="asset">${esc(row.name || '—')}</td>
+          <td>${esc(row.eventType || '—')}</td>
+          <td class="gn num" style="font-weight:800">${fmt(row.value)}</td>
+          <td class="mu">${esc(row.source || '—')}</td>
+          <td class="mu">${esc(row.autoKey || '—')}</td>
+          <td class="obs" title="${esc(obs)}">${esc(obs)}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="10" style="text-align:center;padding:18px;color:#2e3f58">Nenhum provento encontrado para os filtros atuais.</td></tr>';
+  const auditTypeLabel=String(audit.state.eventType||'all')==='all' ? 'Todos' : String(audit.state.eventType||'all');
 
   const projRows = [...S.assets]
     .sort((a,b)=>((b.qty*b.current_price*(b.dy/100))/12)-((a.qty*a.current_price*(a.dy/100))/12))
@@ -6554,6 +8823,326 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </div>
     </div>
   </div>
+  <div class="cc prov-imported-shell" style="margin-bottom:8px;padding:10px 10px 9px">
+    <div class="sh prov-imported-head" style="margin-bottom:6px;gap:10px">
+      <div style="min-width:0">
+        <div class="st">Proventos importados da B3</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Consolidado dos dados gravados em <strong style="color:#e2eaf6">Proventos</strong>.</div>
+      </div>
+      <button class="btn ${importedDetailsOpen ? 'bp' : 'bgh'}" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleImportedDividendsDetails(event)">${importedDetailsOpen ? 'Ocultar detalhes' : 'Ver detalhes'}</button>
+    </div>
+    <div class="prov-imported-compact" style="margin-bottom:8px">
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 220px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="cl" style="margin-bottom:2px">Total importado</div>
+          <div class="cv" style="font-size:17px;color:#fbbf24">${fmt(resumoTipos.total)}</div>
+        </div>
+        <div class="cs" style="font-size:10px;line-height:1.3">B3 importado: ${fmt(resumoTipos.total)} • ${resumoTipos.count} lançamentos</div>
+      </div>
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#34d399">
+        <div class="cl" style="margin-bottom:2px">Lançamentos</div>
+        <div class="cv gn" style="font-size:17px">${resumoTipos.count}</div>
+      </div>
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#60a5fa">
+        <div class="cl" style="margin-bottom:2px">Rendimentos</div>
+        <div class="cv" style="font-size:17px;color:#60a5fa">${fmt(resumoTipos.tipos.Rendimento||0)}</div>
+      </div>
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#a78bfa">
+        <div class="cl" style="margin-bottom:2px">Dividendos</div>
+        <div class="cv" style="font-size:17px;color:#a78bfa">${fmt(resumoTipos.tipos.Dividendo||0)}</div>
+      </div>
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 140px;border-left-color:#f97316">
+        <div class="cl" style="margin-bottom:2px">JCP</div>
+        <div class="cv" style="font-size:17px;color:#f97316">${fmt(resumoTipos.tipos.JCP||0)}</div>
+      </div>
+      <div class="card al prov-imported-card" style="margin:0;flex:1 1 150px;border-left-color:#f59e0b">
+        <div class="cl" style="margin-bottom:2px">Juros RF</div>
+        <div class="cv" style="font-size:17px;color:#f59e0b">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
+      </div>
+    </div>
+    <div class="prov-imported-hint">Resumo compacto: ${fmt(resumoTipos.total)} recebidos, ${resumoTipos.count} lançamentos e consolidação por tipo.</div>
+    ${importedDetailsOpen?`
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+      <div class="cc" style="margin:0;padding:9px 10px 7px">
+        <div class="sh" style="margin-bottom:5px">
+          <div>
+            <div class="st">Resumo mensal de proventos</div>
+            <div class="mu" style="font-size:11px;margin-top:2px">Consolidação dos dados já gravados em <strong style="color:#e2eaf6">S.proventos</strong>, sem importar nada novo.</div>
+          </div>
+          <div class="mu" style="font-size:11px">${S.proventos.length} lançamentos</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px">
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Total no período</div>
+              <div class="cv" style="font-size:18px;color:#fbbf24">${fmt(resumoTipos.total)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">${resumoTipos.count} lançamentos</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#34d399;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Rendimentos</div>
+              <div class="cv" style="font-size:18px;color:#34d399">${fmt(resumoTipos.tipos.Rendimento||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Proventos de fundo/ação</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#60a5fa;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Dividendos</div>
+              <div class="cv" style="font-size:18px;color:#60a5fa">${fmt(resumoTipos.tipos.Dividendo||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Dividendos isentos</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#a78bfa;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">JCP</div>
+              <div class="cv" style="font-size:18px;color:#a78bfa">${fmt(resumoTipos.tipos.JCP||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Juros sobre capital próprio</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f97316;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Juros de Renda Fixa</div>
+              <div class="cv" style="font-size:18px;color:#f97316">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Pagamentos de juros</div>
+          </div>
+          <div class="card al" style="margin:0;min-height:76px;padding:10px 11px 9px;border-left-color:#f87171;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="cl" style="margin-bottom:2px">Reembolsos</div>
+              <div class="cv" style="font-size:18px;color:#f87171">${fmt(resumoTipos.tipos.Reembolso||0)}</div>
+            </div>
+            <div class="cs" style="font-size:10px;line-height:1.3">Se existirem</div>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table style="min-width:1080px">
+              <thead>
+                <tr>
+                  <th>Mês/Ano</th>
+                  <th>Total recebido</th>
+                  <th>Rendimentos</th>
+                  <th>Dividendos</th>
+                  <th>JCP</th>
+                  <th>Juros RF</th>
+                  <th>Reembolsos</th>
+                  <th>Lançamentos</th>
+                </tr>
+              </thead>
+              <tbody>${
+                resumoMensalTipos.length
+                  ? resumoMensalTipos.map(r=>`<tr>
+                      <td style="font-weight:700;color:#e2eaf6;text-transform:capitalize">${esc(r.label)}/${r.year}</td>
+                      <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                      <td>${fmt(r.tipos.Rendimento||0)}</td>
+                      <td>${fmt(r.tipos.Dividendo||0)}</td>
+                      <td>${fmt(r.tipos.JCP||0)}</td>
+                      <td>${fmt(r.tipos['Juros de Renda Fixa']||0)}</td>
+                      <td>${fmt(r.tipos.Reembolso||0)}</td>
+                      <td style="font-weight:700;color:#94a3b8">${r.count}</td>
+                    </tr>`).join('')
+                  : '<tr><td colspan="8" style="text-align:center;padding:18px;color:#2e3f58">Busque ou registre proventos para ver o resumo mensal por tipo.</td></tr>'
+              }</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="cc" style="margin:0;padding:9px 10px 7px">
+        <div class="sh" style="margin-bottom:5px">
+          <div>
+            <div class="st">Proventos por ativo e por tipo</div>
+            <div class="mu" style="font-size:11px;margin-top:2px">Leitura rápida dos maiores pagadores e da composição da renda recebida.</div>
+          </div>
+          <div class="mu" style="font-size:11px">${resumoAtivos.length} ativos com proventos</div>
+        </div>
+        <div class="cg" style="grid-template-columns:1.2fr .8fr;gap:10px;align-items:stretch">
+          <div class="tw">
+            <div class="ts">
+              <table style="min-width:900px">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Ativo</th>
+                    <th>Tipo</th>
+                    <th>Total recebido</th>
+                    <th>Recebimentos</th>
+                    <th>Último pagamento</th>
+                  </tr>
+                </thead>
+                <tbody>${
+                  resumoAtivos.length
+                    ? resumoAtivos.map((r,idx)=>`<tr>
+                        <td style="font-weight:800;color:#94a3b8">#${idx+1}</td>
+                        <td style="font-weight:700;color:#e2eaf6">${esc(r.name||r.ticker||'—')}</td>
+                        <td>${esc(r.type||'—')}</td>
+                        <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                        <td>${r.count}</td>
+                        <td class="mu">${esc(r.lastDate ? toBRDate(parseAnyDate(r.lastDate)) : '—')}</td>
+                      </tr>`).join('')
+                    : '<tr><td colspan="6" style="text-align:center;padding:18px;color:#2e3f58">Nenhum provento por ativo encontrado.</td></tr>'
+                }</tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tw">
+            <div class="ts">
+              <table style="min-width:560px">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Total recebido</th>
+                    <th>Lançamentos</th>
+                  </tr>
+                </thead>
+                <tbody>${
+                  ['FII','Ação','Renda Fixa','JCP','Dividendos','Outro']
+                    .map(type=>{
+                      const row=resumoTiposDetalhado.find(r=>r.type===type) || {type,total:0,count:0};
+                      return `<tr>
+                        <td style="font-weight:700;color:#e2eaf6">${esc(type)}</td>
+                        <td class="gn" style="font-weight:800">${fmt(row.total)}</td>
+                        <td>${row.count}</td>
+                      </tr>`;
+                    }).join('')
+                }</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cc" style="margin:0;padding:9px 10px 7px">
+        <div class="sh" style="margin-bottom:5px">
+          <div>
+            <div class="st">Ranking dos maiores pagadores</div>
+            <div class="mu" style="font-size:11px;margin-top:2px">Top 10 ativos que mais pagaram proventos no período.</div>
+          </div>
+          <div class="mu" style="font-size:11px">${maioresPagadores.length} no ranking</div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table style="min-width:920px">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ativo</th>
+                  <th>Tipo</th>
+                  <th>Total recebido</th>
+                  <th>Participação</th>
+                </tr>
+              </thead>
+              <tbody>${
+                maioresPagadores.length
+                  ? maioresPagadores.map((r,idx)=>{
+                      const pct=resumoTipos.total>0 ? (r.total/resumoTipos.total)*100 : 0;
+                      return `<tr>
+                        <td style="font-weight:800;color:#94a3b8">#${idx+1}</td>
+                        <td style="font-weight:700;color:#e2eaf6">${esc(r.name||r.ticker||'—')}</td>
+                        <td>${esc(r.type||'—')}</td>
+                        <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                        <td>
+                          <div style="display:flex;align-items:center;gap:8px">
+                            <div class="bwr" style="width:120px"><div class="bfr" style="width:${Math.min(100,pct).toFixed(0)}%;background:#34d399"></div></div>
+                            <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
+                          </div>
+                        </td>
+                      </tr>`;
+                    }).join('')
+                  : '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Nenhum pagador encontrado.</td></tr>'
+              }</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    `:''}
+  <details class="sec" style="margin-bottom:8px">
+    <summary>
+      <div>
+        <div class="sec-title">Auditoria de Proventos</div>
+        <div class="sec-meta">Filtre por mês/ano e identifique possíveis duplicidades antes de remover apenas os extras.</div>
+      </div>
+      <div class="sec-meta">fechado por padrão</div>
+    </summary>
+    <div class="sec-body prov-audit-shell">
+      <div class="prov-audit-filters">
+        <div class="aud-field">
+          <div class="fl">Mês/Ano</div>
+          <select onchange="setProventoAuditMonth(this.value)">${auditMonthOptionsHtml}</select>
+        </div>
+        <div class="aud-field">
+          <div class="fl">Tipo de evento</div>
+          <select onchange="setProventoAuditEventType(this.value)">${auditEventOptionsHtml}</select>
+        </div>
+        <div class="aud-field">
+          <div class="fl">Ticker / Ativo</div>
+          <input type="text" placeholder="Ex.: BRCO11 ou Petrobras" value="${esc(audit.state.ticker||'')}" oninput="setProventoAuditTicker(this.value)">
+        </div>
+        <div class="aud-field">
+          <div class="fl">Mostrar apenas possíveis duplicados</div>
+          <button class="btn ${audit.state.onlyDuplicates ? 'bp' : 'bgh'}" style="min-height:38px" onclick="toggleProventoAuditOnlyDuplicates()">${audit.state.onlyDuplicates ? 'Sim' : 'Não'}</button>
+        </div>
+      </div>
+      <div class="prov-audit-kpis">
+        <div class="prov-audit-kpi warn">
+          <div class="cl">Total recebido no mês</div>
+          <div class="cv">${fmt(audit.summary.total)}</div>
+          <div class="cs">${proventoAuditMonthLabel(audit.state.month)}</div>
+        </div>
+        <div class="prov-audit-kpi ok">
+          <div class="cl">Lançamentos</div>
+          <div class="cv">${audit.summary.count}</div>
+          <div class="cs">Itens no recorte atual</div>
+        </div>
+        <div class="prov-audit-kpi purple">
+          <div class="cl">Possíveis duplicados</div>
+          <div class="cv">${audit.summary.duplicates}</div>
+          <div class="cs">${audit.summary.selected} selecionados para remoção</div>
+        </div>
+        <div class="prov-audit-kpi red">
+          <div class="cl">Total suspeito duplicado</div>
+          <div class="cv">${fmt(audit.summary.dupTotal)}</div>
+          <div class="cs">Apenas extras repetidos</div>
+        </div>
+        <div class="prov-audit-kpi info">
+          <div class="cl">Total líquido sem duplicados</div>
+          <div class="cv">${fmt(audit.summary.cleanTotal)}</div>
+          <div class="cs">Total - duplicados extras</div>
+        </div>
+      </div>
+      <div class="prov-audit-actions">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <button class="btn bgh" onclick="toggleProventoAuditOnlyDuplicates()">${audit.state.onlyDuplicates ? 'Mostrar todos' : 'Ver somente duplicados'}</button>
+          <button class="btn bgh" onclick="selectProventoAuditDuplicateExtras()">Selecionar duplicados extras</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <span class="note-pill">Tipo: ${esc(auditTypeLabel)}</span>
+          <span class="note-pill">Saldo filtrado: ${fmt(audit.summary.cleanTotal)}</span>
+          <button class="btn bdi" onclick="removeProventoAuditSelected()">Remover selecionados</button>
+        </div>
+      </div>
+      <div class="prov-audit-table-wrap">
+        <table class="prov-audit-table">
+          <thead>
+            <tr>
+              <th style="width:46px">Sel.</th>
+              <th>Status</th>
+              <th>Data</th>
+              <th>Ticker</th>
+              <th>Nome do ativo</th>
+              <th>Tipo de evento</th>
+              <th>Valor</th>
+              <th>Origem</th>
+              <th>AutoKey</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>${auditRowsHtml}</tbody>
+        </table>
+      </div>
+      <div class="prov-audit-hint" style="font-size:11px;color:#64748b;line-height:1.45">O primeiro lançamento de cada grupo fica protegido. Só os duplicados extras podem ser marcados e removidos.</div>
+    </div>
+  </details>
   <div class="sh" style="margin:0 0 8px 0">
     <div>
       <div class="st">Atualização de dividendos</div>
