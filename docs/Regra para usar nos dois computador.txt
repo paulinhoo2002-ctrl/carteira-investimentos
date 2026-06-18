@@ -1,0 +1,19 @@
+Regra para usar nos dois computadores
+
+Antes de começar em qualquer computador:
+
+Abrir PowerShell
+cd C:\Projetos\carteira-investimentos
+git pull
+
+
+Depois que terminar alguma alteração:
+Abrir PowerShell
+git status
+git add .
+git commit -m "ajustes realizados"
+git push
+
+No outro computador, antes de continuar:
+Abrir PowerShell
+git pull
