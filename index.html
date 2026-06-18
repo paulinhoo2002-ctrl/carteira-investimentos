@@ -6241,8 +6241,8 @@ function frmA(){
       <div style="font-size:10px;color:#3d5472;margin-top:4px">
         ${isRF
           ? (rf && assetNeedsRFUpdate(f)
-              ? 'Atualize o valor atual para calcular os juros acumulados.'
-              : (rf && Number.isFinite(rf.juros) ? `Juros acumulados: ${fmt(rf.juros)}` : ''))
+              ? 'Atualize o valor atual para calcular o resultado acumulado.'
+              : (rf && Number.isFinite(rf.juros) ? `Resultado acumulado: ${fmt(rf.juros)}` : ''))
           : (f.quoteUpdatedAt
               ?`⏱ ${new Date(f.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`
               :`<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação agora</a>`)}
@@ -6310,7 +6310,7 @@ function ativos(){
       const atualText=marketValue!=null?fmt(currentDisplay):'—';
       const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
       const rentText=isRF
-        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Juros: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Atualize o valor atual para calcular os juros acumulados.</div>':''}`
+        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Atualize o valor atual para calcular o resultado acumulado.</div>':''}`
         : `${Number.isFinite(rentab)?fmtP(rentab):'—'}`;
       const atualCls=isRF
         ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
@@ -6349,7 +6349,7 @@ function ativos(){
         <div class="ag-stats">
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor aplicado':'Ativos'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gApplied):items.length}</div></div>
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor atual':'Valor total'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gTotal):fmt(gTotal)}</div></div>
-          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Juros acumulados':'Variação'}</div><div class="ag-v" style="color:${type==='Renda Fixa'?(gJuros>=0?'#34d399':'#f87171'):(gVar>=0?'#34d399':'#f87171')}">${type==='Renda Fixa'?fmt(gJuros):fmtP(gVar)}</div></div>
+          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Resultado acumulado':'Variação'}</div><div class="ag-v" style="color:${type==='Renda Fixa'?(gJuros>=0?'#34d399':'#f87171'):(gVar>=0?'#34d399':'#f87171')}">${type==='Renda Fixa'?fmt(gJuros):fmtP(gVar)}</div></div>
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Rentab. acumulada':'Rentabilidade'}</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${type==='Renda Fixa'?(gApplied>0?(gTotal-gApplied)/gApplied*100:0).toFixed(2)+'%':gDY.toFixed(2)+'%'} <small>${type==='Renda Fixa'?'':'DY'}</small></div></div>
           <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${share.toFixed(1)}%</div></div>
         </div>
