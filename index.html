@@ -2155,14 +2155,15 @@ function detectB3ProventosWorkbook(wb, fileName=''){
     const sheet=wb.Sheets[sheetName]; if(!sheet) return false;
     const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
     for(let i=0;i<Math.min(rows.length,10);i++){
-      const h=(rows[i]||[]).map(normHeaderB3);
-      const ok=h.includes('produto')
-        && h.includes('pagamento')
-        && h.includes('tipo de evento')
-        && h.includes('instituicao')
-        && h.includes('quantidade')
-        && h.includes('preco unitario')
-        && h.includes('valor liquido');
+      const h=(rows[i]||[]).map(normalizeB3Loose);
+      const hasAny=(list)=>h.some(x=>list.includes(x));
+      const ok=hasAny(['produto','ativo','nomedoproduto','produtoativo','descricao','papel'])
+        && hasAny(['pagamento','datapagamento','datadepagamento','data'])
+        && hasAny(['tipodeevento','evento','tipoevento'])
+        && hasAny(['instituicao','corretora'])
+        && hasAny(['quantidade','qtd'])
+        && hasAny(['precounitario','pu'])
+        && hasAny(['valorliquido','valor','valornet','valorliquid']);
       if(ok) return true;
     }
     return fileHint && rfPosNorm(sheetName).includes('PROVENTOS');
@@ -2170,19 +2171,51 @@ function detectB3ProventosWorkbook(wb, fileName=''){
 }
 function b3ProventoTicker(product){
   const s=String(product||'').trim();
-  const first=s.split(' - ')[0].trim();
+  const first=s.split(/\s*-\s*/)[0].trim();
+  const firstCode=cleanAssetCode(first);
   const firstNorm=rfPosNorm(first);
-  if(/^(DEB|CRA|CRI|CDB|LCA|LCI)\b/.test(firstNorm)){
-    const known=rfDetailedKnownCode(s);
-    return known || cleanAssetCode(first);
+  const rfPrefixes=/^(DEB|CRA|CRI|CDB|LCA|LCI)\b/.test(firstNorm);
+  if(tickerValidoB3(firstCode)) return firstCode;
+  if(rfPrefixes){
+    const known=rfDetailedKnownCode(s) || rfDetailedKnownCode(first) || b3ProventoResolveRfTicker(s);
+    if(known) return known;
   }
-  return cleanAssetCode(first);
+  const known=rfDetailedKnownCode(s) || rfDetailedKnownCode(first) || b3ProventoResolveRfTicker(s);
+  if(known) return known;
+  return tickerValidoB3(firstCode) ? firstCode : '';
+}
+function b3ProventoResolveRfTicker(product){
+  const text=rfPosNorm(product);
+  if(!text) return '';
+  const base=text
+    .replace(/^(DEB|CRA|CRI|CDB|LCA|LCI)\s*-\s*/,'')
+    .replace(/^(DEB|CRA|CRI|CDB|LCA|LCI)\s+/,'')
+    .trim();
+  const assets=(S.assets||[]).filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa');
+  for(const a of assets){
+    const hay=rfPosNorm(`${a.ticker||''} ${a.name||''} ${a.product||''} ${a.title||''} ${a.issuer||''} ${a.sector||''}`);
+    if(!hay) continue;
+    if(base && (hay.includes(base) || base.includes(hay))) return String(a.ticker||'').toUpperCase();
+    if(text && hay.includes(text)) return String(a.ticker||'').toUpperCase();
+  }
+  return '';
 }
 function b3ProventoCategory(product,eventType,ticker){
   const s=rfPosNorm(`${product} ${eventType}`);
   if(/^(DEB|CRA|CRI|CDB|LCA|LCI)\b/.test(s) || s.includes('PAGAMENTO DE JUROS')) return 'Renda Fixa';
   const meta=metaTicker(ticker);
   return normalizeType(meta.type||inferB3PositionMeta('',ticker,product,eventType).type||'Ação','Ação');
+}
+function b3ProventoAssetName(product, ticker=''){
+  const s=String(product||'').trim();
+  if(!s) return '';
+  const parts=s.split(/\s*-\s*/).map(p=>p.trim()).filter(Boolean);
+  if(parts.length>1){
+    const first=cleanAssetCode(parts[0]);
+    if((ticker && first===ticker) || tickerValidoB3(first)) return parts.slice(1).join(' - ').trim();
+    if(/^(DEB|CRA|CRI|CDB|LCA|LCI)\b/.test(rfPosNorm(parts[0]))) return s;
+  }
+  return s;
 }
 function b3ProventoEventType(eventType){
   const s=rfPosNorm(eventType);
@@ -2212,10 +2245,10 @@ function b3ProventoLooksLikeSummaryRow(product, row, headers=[]){
   const cells=[product,...(Array.isArray(row)?row:[])].filter(v=>v!==null && v!==undefined).map(v=>String(v).trim()).filter(Boolean);
   if(!cells.length) return true;
   const firstCells=cells.slice(0,3).join(' | ');
-  const firstNorm=rfPosNorm(firstCells);
-  if(keywords.some(k=>firstNorm.includes(rfPosNorm(k)))) return true;
+  const firstNorm=normalizeB3Loose(firstCells);
+  if(keywords.some(k=>firstNorm.includes(normalizeB3Loose(k)))) return true;
   const headerName=(Array.isArray(headers)&&headers.length?String(headers[0]||'').trim():'').toLowerCase();
-  if(headerName && keywords.some(k=>rfPosNorm(headerName).includes(rfPosNorm(k)))) return true;
+  if(headerName && keywords.some(k=>normalizeB3Loose(headerName).includes(normalizeB3Loose(k)))) return true;
   return false;
 }
 function b3ProventoDuplicate(row){
@@ -2256,6 +2289,7 @@ function b3ProventoBuild(raw){
   const product=String(raw.product||'').trim();
   const eventType=b3ProventoEventType(raw.eventType);
   const ticker=b3ProventoTicker(product);
+  const assetName=b3ProventoAssetName(product,ticker);
   const category=b3ProventoCategory(product,eventType,ticker);
   const destination=b3ProventoDestination(eventType);
   const paymentDate=b3ProventoDate(raw.paymentDate);
@@ -2284,7 +2318,7 @@ function b3ProventoBuild(raw){
     status,
     paymentDate,
     ticker,
-    assetName:product,
+    assetName:assetName||product,
     eventType,
     category,
     institution:String(raw.institution||'').trim(),
@@ -2307,21 +2341,24 @@ function parseB3ProventosWorkbook(wb, fileName=''){
     const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
     let headerIdx=-1;
     for(let i=0;i<Math.min(rows.length,20);i++){
-      const h=(rows[i]||[]).map(normHeaderB3);
-      const ok=h.includes('produto') && h.includes('pagamento') && h.includes('tipo de evento') && h.includes('valor liquido');
+      const h=(rows[i]||[]).map(normalizeB3Loose);
+      const ok=h.some(x=>['produto','ativo','nomedoproduto','produtoativo','descricao','papel'].includes(x))
+        && h.some(x=>['pagamento','datapagamento','datadepagamento','data'].includes(x))
+        && h.some(x=>['tipodeevento','evento','tipoevento'].includes(x))
+        && h.some(x=>['valorliquido','valor','valorliquid'].includes(x));
       if(ok){ headerIdx=i; break; }
     }
     if(headerIdx<0){ warnings.push(`Aba "${sheetName}" não parece ser Proventos Recebidos da B3.`); return; }
     const headers=(rows[headerIdx]||[]).map(v=>String(v||'').trim());
     rows.slice(headerIdx+1).forEach((row,idx)=>{
       if(!row || row.every(v=>v===null || String(v).trim()==='')) return;
-      const product=String(pickB3(row,headers,['Produto'])||'').trim();
-      const paymentDate=pickB3(row,headers,['Pagamento']);
-      const eventType=String(pickB3(row,headers,['Tipo de Evento'])||'').trim();
-      const institution=String(pickB3(row,headers,['Instituição','Instituicao'])||'').trim();
-      const qty=b3ProventoQty(pickB3(row,headers,['Quantidade']));
-      const unitPrice=parseNum(pickB3(row,headers,['Preço unitário','Preco unitario']));
-      const netValue=parseNum(pickB3(row,headers,['Valor líquido','Valor liquido']));
+      const product=String(getRowValue(row,['Produto','Ativo','Nome do Produto','Produto/Ativo','Descrição','Descricao','Papel'],headers)||'').trim();
+      const paymentDate=getRowValue(row,['Pagamento','Data Pagamento','Data de Pagamento','Data'],headers);
+      const eventType=String(getRowValue(row,['Tipo de Evento','Evento','Tipo Evento'],headers)||'').trim();
+      const institution=String(getRowValue(row,['Instituição','Instituicao','Corretora'],headers)||'').trim();
+      const qty=b3ProventoQty(getRowValue(row,['Quantidade','Qtd'],headers));
+      const unitPrice=parseNum(getRowValue(row,['Preço unitário','Preco unitario','Preço','Preco','PU'],headers));
+      const netValue=parseNum(getRowValue(row,['Valor líquido','Valor Liquido','Valor Líquido','Valor','Valor Liquido'],headers));
       const ticker=b3ProventoTicker(product);
       const looksLikeSummary=b3ProventoLooksLikeSummaryRow(product,row,headers);
       if(looksLikeSummary || !product || !eventType || !paymentDate || !ticker || !netValue || netValue<=0){
@@ -2474,13 +2511,34 @@ async function detectB3PdfKind(file){
 function normHeaderB3(v){
   return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
 }
-function pickB3(row, headers, names){
-  const wanted=names.map(normHeaderB3);
-  for(let i=0;i<headers.length;i++){
-    const h=normHeaderB3(headers[i]);
-    if(wanted.includes(h)) return row[i];
+function normalizeB3Loose(v){
+  return String(v||'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/\s+/g,'')
+    .toLowerCase();
+}
+function getRowValue(row, possibleNames, headers=[]){
+  const wanted=(possibleNames||[]).map(normalizeB3Loose).filter(Boolean);
+  if(!wanted.length) return null;
+  if(Array.isArray(row) && Array.isArray(headers) && headers.length){
+    for(let i=0;i<headers.length;i++){
+      const h=normalizeB3Loose(headers[i]);
+      if(!h) continue;
+      if(wanted.some(w=>h===w || h.includes(w) || w.includes(h))) return row[i];
+    }
+  }
+  if(row && typeof row==='object' && !Array.isArray(row)){
+    for(const [key,val] of Object.entries(row)){
+      const h=normalizeB3Loose(key);
+      if(!h) continue;
+      if(wanted.some(w=>h===w || h.includes(w) || w.includes(h))) return val;
+    }
   }
   return null;
+}
+function pickB3(row, headers, names){
+  return getRowValue(row, names, headers);
 }
 function tickerValidoB3(t){
   t=String(t||'').trim().toUpperCase();
@@ -3814,6 +3872,7 @@ function rfStatusClass(status){
   if(status==='Novo ativo') return 'ok';
   if(status==='Novo provento') return 'ok';
   if(status==='Atualizar existente' || status==='Possível duplicado') return 'warn';
+  if(status==='Duplicado' || status==='Ignorar') return 'muted';
   return 'review';
 }
 function rfPositionReviewModal(){
@@ -4028,8 +4087,8 @@ function b3ProventosReviewSummary(){
   const rows=S.b3ProventosReview?.items||[];
   const selected=rows.filter(r=>r.include!==false);
   const total=selected.reduce((s,r)=>s+(Number(r.netValue)||0),0);
-  const valid=rows.filter(r=>r.status==='Novo provento').length;
-  const ignored=Number(S.b3ProventosReview?.ignoredCount)||Math.max(0, rows.length-valid);
+  const valid=rows.length;
+  const ignored=Number(S.b3ProventosReview?.ignoredCount)||0;
   const importable=rows.filter(r=>r.status==='Novo provento' && r.destination==='Proventos').length;
   const duplicates=rows.filter(r=>r.status==='Duplicado').length;
   const review=rows.filter(r=>r.destination==='Revisar').length;
