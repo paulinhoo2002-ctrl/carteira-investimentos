@@ -1117,6 +1117,8 @@ function load(){
   if(!S.goals || typeof S.goals!=='object') S.goals=normalizeGoals();
   else S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
+  const cleanedB3Summary = cleanupB3PositionSummaryAssets();
+  if(cleanedB3Summary>0) save();
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
 }
 
@@ -2750,6 +2752,44 @@ function setorPorAbaB3(sheetName,ticker){
   if(sh.includes('etf')) return 'ETF';
   return meta.sector || '';
 }
+const B3_POSITION_SUMMARY_LABELS = new Set([
+  'etf',
+  'fundodeinvestimento',
+  'fundosdeinvestimento',
+  'rendafixa',
+  'acoes',
+  'emprestimos',
+  'total',
+  'totalgeral',
+  'totalliquido',
+  'valortotal',
+  'resumo',
+  'consolidado',
+  'soma',
+  'subtotal'
+]);
+function isB3PositionSummaryText(v){
+  const s=normalizeKey(v);
+  if(!s) return false;
+  if(B3_POSITION_SUMMARY_LABELS.has(s)) return true;
+  return ['total','resumo','consolidado','soma'].some(pref=>s.startsWith(pref));
+}
+function isB3PositionSummaryRow(item){
+  if(!item) return true;
+  const ticker=String(item.ticker||'').trim();
+  const product=String(item.product||item.name||'').trim();
+  const name=String(item.name||item.product||'').trim();
+  const category=String(item.category||item.type||item.sector||'').trim();
+  const tickerNorm=normalizeKey(ticker);
+  const productNorm=normalizeKey(product);
+  const nameNorm=normalizeKey(name);
+  const categoryNorm=normalizeKey(category);
+  if(isB3PositionSummaryText(tickerNorm)) return true;
+  if(isB3PositionSummaryText(productNorm)) return true;
+  if(isB3PositionSummaryText(nameNorm)) return true;
+  if(!tickerNorm && isB3PositionSummaryText(categoryNorm)) return true;
+  return false;
+}
 function parseB3PositionWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
   const stats={
@@ -2844,7 +2884,12 @@ function parseB3PositionWorkbook(wb, fileName=''){
       const meta=inferB3PositionMeta(sheetName, ticker, produto, rowType);
       const tipo=normalizeType(meta.type||'Ação','Ação');
       const setor=meta.sector||'';
-      items.push({ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,kind:rowType,date:importDate});
+      const candidate={ticker,qty,price,value:value||qty*price,type:tipo,sector:setor,product:produto.trim(),sheet:sheetName,kind:rowType,date:importDate};
+      if(isB3PositionSummaryRow(candidate)){
+        addIgnored(sheetName,'linha totalizadora / resumo');
+        return;
+      }
+      items.push(candidate);
       addImported(sheetName);
     });
   });
@@ -2883,6 +2928,15 @@ function rfDetailedSector(name, rate){
 function rfPositionImportSourceTag(src){
   const s=rfPosNorm(src);
   return s==='B3 POSICAO ATUAL' || s==='POSICAODETALHADA B3/XP';
+}
+function cleanupB3PositionSummaryAssets(){
+  const before=Number(S.assets?.length||0);
+  S.assets=(S.assets||[]).filter(a=>{
+    const source=String(a?.source||a?.fixed_source||'');
+    if(rfPosNorm(source)!=='B3 POSICAO ATUAL') return true;
+    return !isB3PositionSummaryRow(a);
+  });
+  return before-Number(S.assets?.length||0);
 }
 function rfDetailedFindExistingAsset(item){
   const ticker=String(item?.ticker||'').toUpperCase();
@@ -3216,8 +3270,9 @@ function applyB3ImportedPositions(items, importDate){
   const importTag='[IMPORT_B3_POSICAO]';
   // Remove importações B3 anteriores da mesma data para evitar duplicar se subir o mesmo arquivo outra vez.
   S.aportes=S.aportes.filter(a=>!(String(a.decision||'').includes(importTag) && String(a.date||'')===importDate));
+  const validItems=(items||[]).filter(it=>!isB3PositionSummaryRow(it));
   const now=Date.now();
-  const novos=items.map((it,i)=>({
+  const novos=validItems.map((it,i)=>({
     id: now+i,
     operation:'compra',
     ticker:it.ticker,
@@ -3232,11 +3287,11 @@ function applyB3ImportedPositions(items, importDate){
   // Completa metadados para estes ativos após recálculo.
   syncAssetsFromAportes(false);
   S.assets=S.assets.map(a=>{
-    const it=items.find(x=>x.ticker===a.ticker);
+    const it=validItems.find(x=>x.ticker===a.ticker);
     if(!it) return a;
     return {...a,type:normalizeType(it.type||a.type||'Ação','Ação'),sector:it.sector||a.sector,current_price:it.price,quoteSource:a.quoteSource||'importado',quoteUpdatedAt:a.quoteUpdatedAt||new Date().toISOString()};
   });
-  items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
+  validItems.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
   save(); render(); fetchQuotes(false);
   scheduleAutoProventosGratis('b3');
   toast(`✅ ${novos.length} posição(ões) importadas da B3.`);
@@ -3483,7 +3538,7 @@ function openB3Review(parsed, fileName='', sourceKind='excel'){
     kind:String(it.kind||'').trim(),
     date:it.date||parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
     sourceItem:{...it}
-  })).filter(it=>it.ticker && it.qty>0 && it.price>0);
+  })).filter(it=>it.ticker && it.qty>0 && it.price>0 && !isB3PositionSummaryRow(it));
   const groupsMap=new Map();
   items.forEach(it=>{
     const key=it.sheet||'Outros';
@@ -3563,14 +3618,17 @@ function b3ReviewSelectedItems(){
   });
 }
 function b3ReviewSummary(){
-  const items=b3ReviewSelectedItems();
+  const items=(S.b3Review?.items||[]).filter(it=>!isB3PositionSummaryRow(it));
+  const selected=b3ReviewSelectedItems().filter(it=>!isB3PositionSummaryRow(it));
   const total=items.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
+  const selectedTotal=selected.reduce((s,it)=>s+(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0))),0);
   const sheets=[...new Set(items.map(it=>it.sheet))];
-  return {count:items.length,total,sheets};
+  const ignored=Number(S.b3Review?.stats?.totalIgnored)||0;
+  return {count:selected.length,total:selectedTotal,sheets,ignored,valid:items.length,validTotal:total,selectedCount:selected.length};
 }
 function importB3Review(){
   if(!S.b3Review) return;
-  const rows=b3ReviewSelectedItems();
+  const rows=b3ReviewSelectedItems().filter(it=>!isB3PositionSummaryRow(it));
   if(!rows.length){
     alert('Selecione ao menos uma aba válida para importar.');
     return;
@@ -3595,7 +3653,7 @@ function importB3Review(){
 function b3ReviewModal(){
   const r=S.b3Review;
   if(!r) return '';
-  const {count,total,sheets}=b3ReviewSummary();
+  const {count,total,sheets,valid,validTotal}=b3ReviewSummary();
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   const groups=(r.groups||[]).map(g=>{
     const checked=!!r.selectedSheets?.[g.sheet];
@@ -3673,8 +3731,10 @@ function b3ReviewModal(){
         <div class="note-meta">
           <span class="note-pill">Arquivo: ${esc(r.fileName||'B3')}</span>
           <span class="note-pill">Data: ${esc(r.importDate||'—')}</span>
+          <span class="note-pill">Ativos válidos: ${valid}</span>
+          <span class="note-pill">Linhas ignoradas: ${Number(r.stats?.totalIgnored)||0}</span>
+          <span class="note-pill">Valor total válido: ${fmt(validTotal)}</span>
           <span class="note-pill">Selecionados: ${count}</span>
-          <span class="note-pill">Total: ${fmt(total)}</span>
           <span class="note-pill">Abas: ${sheets.length}</span>
         </div>
       </div>
@@ -6455,7 +6515,7 @@ function syncAssetsFromAportes(showMsg=false){
     })
     .map(a=>({...a}));
   if(importedPositionAssets.length){
-    S.assets=[...S.assets, ...importedPositionAssets].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
+    S.assets=[...S.assets, ...importedPositionAssets].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
   }
   autoDY();
   save();

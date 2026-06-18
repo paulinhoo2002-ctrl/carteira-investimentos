@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carteira-investimentos-v2026-06-18-14';
+const CACHE_NAME = 'carteira-investimentos-v2026-06-18-15';
 const APP_SHELL = [
   './',
   './index.html',
