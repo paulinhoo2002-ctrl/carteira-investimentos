@@ -5991,6 +5991,51 @@ function passiveIncomeGoalTarget(){
   const monthly = Math.max(0, Number(S.goals?.proventos?.monthly) || 0);
   return monthly > 0 ? monthly : legacy;
 }
+function passiveIncomeMetricCard({tone='muted', kicker='', value='—', sub=''}){
+  return `<div class="passive-goal-card ${tone}">
+    <div class="passive-goal-kicker">${esc(kicker)}</div>
+    <div class="passive-goal-value">${value}</div>
+    <div class="passive-goal-sub">${sub}</div>
+  </div>`;
+}
+function passiveIncomeProgressCard({tone='muted', kicker='', value='—', sub='', percent=0, barColor='#60a5fa'}){
+  const width=Math.max(0, Math.min(100, Number(percent)||0)).toFixed(1);
+  return `<div class="passive-goal-card ${tone}" style="min-height:88px">
+    <div class="passive-goal-kicker">${esc(kicker)}</div>
+    <div class="passive-goal-value">${value}</div>
+    <div class="passive-goal-sub">${sub}</div>
+    <div class="dbt" style="height:6px;margin-top:7px"><div class="dbf" style="width:${width}%;background:${barColor}"></div></div>
+  </div>`;
+}
+function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
+  const rec=proventoStats();
+  const bestPayer=stats.bestPayer || null;
+  const bestLabel=bestPayer ? esc(bestPayer.ticker || bestPayer.name || '—') : '—';
+  const bestSub=bestPayer ? `${fmt(bestPayer.total)} recebidos nos últimos 12 meses` : 'Nenhum pagador encontrado';
+  const avgLabel=stats.hasData ? fmt(stats.monthlyAvg) : '—';
+  const total12Label=stats.hasData ? fmt(stats.total12) : '—';
+  const annualLabel=stats.hasData ? fmt(stats.annualProjection) : '—';
+  return `<div class="cc passive-goal-shell" style="margin-bottom:8px;padding:10px 10px 9px">
+    <div class="sh passive-goal-head" style="margin-bottom:4px;gap:10px">
+      <div style="min-width:0">
+        <div class="st">Resumo de proventos realizados</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Indicadores reais e históricos já creditados na conta.</div>
+      </div>
+      <div class="passive-goal-badge ${stats.hasData ? 'info' : 'muted'}">${stats.hasData ? `${fmt(rec.total)} acumulados` : 'Sem histórico'}</div>
+    </div>
+    <div class="passive-goal-grid main">
+      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Recebido no mês', value:fmt(rec.mes), sub:'Valor real recebido no mês atual'})}
+      ${passiveIncomeMetricCard({tone:'info', kicker:'Recebido no ano', value:fmt(rec.ano), sub:'Somatório do ano corrente'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'warn':'muted', kicker:'Total histórico', value:fmt(rec.total), sub:'Tudo que já entrou na conta'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Melhor pagador', value:bestLabel, sub:bestSub})}
+    </div>
+    <div class="passive-goal-grid secondary">
+      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Média mensal 12M', value:avgLabel, sub:'Histórico real dos últimos 12 meses corridos'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Total recebido 12M', value:total12Label, sub:'Soma dos 12 meses analisados'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Projeção anualizada', value:annualLabel, sub:'Média mensal real × 12'})}
+    </div>
+  </div>`;
+}
 function passiveIncomeTopPayers(limit=5, monthKeys=null){
   const keys=Array.isArray(monthKeys) && monthKeys.length ? new Set(monthKeys) : null;
   const map=new Map();
@@ -6057,145 +6102,52 @@ function passiveIncomeGoalStats(){
     hasData: total12>0 || topPayers.length>0
   };
 }
-function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats()){
+function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly=0){
   const hasGoal=stats.target>0;
-  const pct=Number.isFinite(stats.percent) ? Math.max(0, stats.percent) : 0;
-  const rec=proventoStats();
-  const pctLabel=hasGoal
-    ? `Você atingiu ${pct.toFixed(0)}% da meta configurada na aba Metas`
-    : 'Meta não definida.';
-  const topTone = !hasGoal ? 'muted' : !stats.hasData ? 'muted' : pct>=100 ? 'ok' : pct>=75 ? 'info' : pct>=40 ? 'warn' : 'danger';
-  const growthTone = hasGoal && stats.monthlyAvg>0 ? (stats.monthlyAvg>=stats.target ? 'ok' : 'warn') : 'muted';
-  const bestPayerLabel = stats.bestPayer
-    ? `${stats.bestPayer.ticker || stats.bestPayer.name || '—'}`
-    : '—';
-  const bestPayerSub = stats.bestPayer
-    ? `${fmt(stats.bestPayer.total)} recebidos no período`
-    : 'Nenhum pagador encontrado';
-  const progressText = hasGoal
-    ? (stats.hasData
-      ? `Faltam ${fmt(stats.missing)}/mês para atingir a meta configurada na aba Metas.`
-      : 'Sem base suficiente para estimar a renda passiva com confiança.')
-    : 'Meta não definida. Defina sua meta de renda passiva na aba Metas.';
-  const topRows = stats.topPayers.length
-    ? stats.topPayers.map((row, idx)=>{
-        const avg=row.total/12;
-        const name=row.name && row.name!==row.ticker ? row.name : row.ticker;
-        const typeLabel=row.type || 'Ação';
-        const lastPay=row.lastDate ? new Date(`${row.lastDate}T00:00:00`).toLocaleDateString('pt-BR') : '—';
-        return `<div class="passive-goal-list-row">
-          <div class="passive-goal-list-main">
-            <div class="passive-goal-list-ticker">#${idx+1} ${esc(row.ticker||'—')}</div>
-            <div class="passive-goal-list-name">${esc(name)}${row.type ? ` · ${esc(typeLabel)}` : ''}</div>
-          </div>
-          <div class="passive-goal-list-stat">
-            <div class="passive-goal-list-label">Total 12M</div>
-            <div class="passive-goal-list-value good">${fmt(row.total)}</div>
-          </div>
-          <div class="passive-goal-list-stat">
-            <div class="passive-goal-list-label">Média/mês</div>
-            <div class="passive-goal-list-value info">${fmt(avg)}</div>
-          </div>
-          <div class="passive-goal-list-stat">
-            <div class="passive-goal-list-label">Último pag.</div>
-            <div class="passive-goal-list-value">${esc(lastPay)}</div>
-          </div>
-          <div class="passive-goal-list-stat">
-            <div class="passive-goal-list-label">Classe</div>
-            <div class="passive-goal-list-value">${esc(typeLabel)}</div>
-          </div>
-        </div>`;
-      }).join('')
-    : `<div class="passive-goal-list-empty">Dados insuficientes para listar os melhores pagadores.</div>`;
+  const avgProg=goalProgressText(stats.monthlyAvg, stats.target);
+  const projProg=goalProgressText(projectedMonthly, stats.target);
+  const avgTone = !hasGoal ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
+  const projTone = !hasGoal ? 'muted' : projProg.prog>=100 ? 'ok' : projProg.prog>=75 ? 'info' : projProg.prog>=40 ? 'warn' : 'danger';
+  const annualReal=stats.monthlyAvg*12;
+  const projectedLabel = projectedMonthly>0 ? fmt(projectedMonthly) : '—';
+  const annualLabel = stats.hasData ? fmt(annualReal) : '—';
+  const guidance = hasGoal
+    ? 'A renda projetada/mês é uma estimativa da carteira. A média mensal 12M é histórico real de proventos.'
+    : 'Defina sua meta de renda passiva na aba Metas para ver o progresso desta seção.';
+  const topTone = !hasGoal ? 'muted' : !stats.hasData ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
   return `<div class="cc passive-goal-shell" style="margin-bottom:8px;padding:10px 10px 9px">
     <div class="sh passive-goal-head" style="margin-bottom:4px;gap:10px">
       <div style="min-width:0">
         <div class="st">Meta de Renda Passiva</div>
         <div class="mu" style="font-size:11px;margin-top:2px">Meta mensal lida da aba <strong style="color:#e2eaf6">Metas</strong> e calculada com base nos proventos já gravados em <strong style="color:#e2eaf6">S.proventos</strong>.</div>
       </div>
-      <div class="passive-goal-badge ${topTone}">${hasGoal ? (stats.hasData ? `${pct.toFixed(1)}% da meta` : 'Dados insuficientes') : 'Sem meta'}</div>
+      <div class="passive-goal-badge ${topTone}">${hasGoal ? (stats.hasData ? `${avgProg.prog.toFixed(1)}% da meta` : 'Dados insuficientes') : 'Sem meta'}</div>
     </div>
-    ${hasGoal ? `
-    <div class="passive-goal-progress" style="margin-bottom:2px">
-      <div class="passive-goal-progress-top">
-        <div class="passive-goal-progress-main">
-          <div class="passive-goal-progress-title">Progresso da meta mensal</div>
-          <div class="passive-goal-progress-amount">${pct.toFixed(1)}%</div>
-          <div class="passive-goal-progress-note">${pctLabel}</div>
-          <div class="passive-goal-progress-note">${progressText}</div>
-        </div>
-        <div class="passive-goal-progress-right">
-          <div class="passive-goal-progress-title">Base usada</div>
-          <div class="passive-goal-progress-amount">${stats.monthKeys.length}</div>
-          <div class="passive-goal-progress-note">meses corridos analisados</div>
-        </div>
-      </div>
-      <div class="dbt" style="height:7px;margin:10px 0 0"><div class="dbf" style="width:${Math.min(100,pct).toFixed(1)}%;background:${pct>=100?'#34d399':pct>=50?'#fbbf24':'#60a5fa'}"></div></div>
-      <div class="passive-goal-progress-note" style="margin-top:8px">${progressText}</div>
-    </div>` : `
-    <div class="passive-goal-empty">
+    <div class="mu" style="font-size:11px;margin:0 0 2px;line-height:1.35">${esc(guidance)}</div>
+    ${!hasGoal ? `<div class="passive-goal-empty">
       <div>
         <div class="passive-goal-empty-title">Meta não definida</div>
         <div class="passive-goal-empty-note">Defina sua meta de renda passiva na aba Metas.</div>
       </div>
       <div class="passive-goal-badge muted">Sem meta cadastrada</div>
-    </div>`}
+    </div>` : ''}
     <div class="passive-goal-grid main">
-      <div class="passive-goal-card ${stats.hasData ? 'ok' : 'muted'}">
-        <div class="passive-goal-kicker">Recebido no mês</div>
-        <div class="passive-goal-value">${fmt(rec.mes)}</div>
-        <div class="passive-goal-sub">Mês corrente</div>
+      <div class="passive-goal-card ${hasGoal ? 'info' : 'muted'}" style="justify-content:flex-start;gap:6px">
+        <div class="passive-goal-kicker">Objetivo mensal de dividendos</div>
+        <input id="mpr-head-monthly" type="number" step="10" placeholder="ex: 1500" value="${hasGoal ? stats.target : ''}" onkeydown="if(event.key==='Enter')saveMetaProventosTarget()" onblur="saveMetaProventosTarget()" style="min-height:40px;padding:8px 10px">
+        <div class="passive-goal-sub">${hasGoal ? 'Meta cadastrada na aba Metas' : 'Defina sua meta de renda passiva'}</div>
       </div>
-      <div class="passive-goal-card info">
-        <div class="passive-goal-kicker">Recebido no ano</div>
-        <div class="passive-goal-value">${fmt(rec.ano)}</div>
-        <div class="passive-goal-sub">Ano atual</div>
-      </div>
-      <div class="passive-goal-card ${hasGoal ? (stats.hasData ? (pct>=100 ? 'ok' : 'warn') : 'muted') : 'muted'}">
-        <div class="passive-goal-kicker">Total histórico</div>
-        <div class="passive-goal-value">${fmt(rec.total)}</div>
-        <div class="passive-goal-sub">Tudo que já entrou na conta</div>
-      </div>
-      <div class="passive-goal-card ${growthTone}">
-        <div class="passive-goal-kicker">Melhor pagador</div>
-        <div class="passive-goal-value">${esc(bestPayerLabel)}</div>
-        <div class="passive-goal-sub">${esc(bestPayerSub)}</div>
-      </div>
+      ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Renda real média 12M', value:stats.hasData ? fmt(stats.monthlyAvg) : '—', sub:'Histórico real dos últimos 12 meses corridos'})}
+      ${passiveIncomeMetricCard({tone:projectedMonthly>0 ? 'info' : 'muted', kicker:'Renda projetada/mês', value:projectedLabel, sub:projectedMonthly>0 ? 'Estimativa da carteira' : 'Sem ativos suficientes para projetar'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Média mensal real × 12'})}
     </div>
+    ${hasGoal ? `
     <div class="passive-goal-grid secondary">
-      <div class="passive-goal-card ${growthTone}">
-        <div class="passive-goal-kicker">Média mensal (12M)</div>
-        <div class="passive-goal-value">${fmt(stats.monthlyAvg)}</div>
-        <div class="passive-goal-sub">Últimos 12 meses corridos</div>
-      </div>
-      <div class="passive-goal-card info">
-        <div class="passive-goal-kicker">Total recebido (12M)</div>
-        <div class="passive-goal-value">${fmt(stats.total12)}</div>
-        <div class="passive-goal-sub">Soma dos 12 meses analisados</div>
-      </div>
-      <div class="passive-goal-card ok">
-        <div class="passive-goal-kicker">Projeção anualizada</div>
-        <div class="passive-goal-value">${hasGoal ? fmt(stats.annualProjection) : '—'}</div>
-        <div class="passive-goal-sub">Média mensal × 12</div>
-      </div>
-    </div>
-    <details class="sec passive-goal-more"${S.activeDividendSection==='payers'?' open':''} style="margin-top:2px">
-      <summary onclick="toggleDividendSection('payers', event)">
-        <div>
-          <div class="sec-title">Melhores pagadores</div>
-          <div class="sec-meta">Top 5 ativos que mais contribuíram nos últimos 12 meses corridos.</div>
-        </div>
-        <div class="sec-meta">${stats.hasData ? 'clique para abrir' : 'sem dados'}</div>
-      </summary>
-      <div class="sec-body" style="padding-top:6px">
-        <div class="passive-goal-list">
-          <div class="passive-goal-list-head">
-            <div>Ativo</div><div>Tipo / nome</div><div>Total 12M</div><div>Média/mês</div><div>Último pagamento</div>
-          </div>
-          ${topRows}
-        </div>
-      </div>
-    </details>
+      ${passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:`${avgProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`, percent:avgProg.prog, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#f87171'})}
+      ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(projProg.falta)}/mês para atingir a meta pela estimativa.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
+      ${passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:fmt(avgProg.falta), sub:'Comparação entre meta e média mensal 12M'})}
+      ${passiveIncomeMetricCard({tone:projTone, kicker:'Quanto falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
+    </div>` : ''}
   </div>`;
 }
 function proventoAuditMonthKey(dateLike){
@@ -8915,8 +8867,12 @@ function frmD(){
   </div>`;
 }
 function saveDivGoal(){
-  const v=Number(document.getElementById('div-goal')?.value)||0;
-  S.divGoal=Math.max(0,v); saveConfig(); save(); render();
+  const v=Number((document.getElementById('div-goal')||document.getElementById('mpr-head-monthly')||document.getElementById('mpr-monthly'))?.value)||0;
+  S.divGoal=Math.max(0,v);
+  S.goals=S.goals||{};
+  S.goals.proventos=S.goals.proventos||{};
+  S.goals.proventos.monthly=Math.max(0,v);
+  saveConfig(); save(); render();
 }
 function saveMetaPatrimonio(){
   S.goals=S.goals||{};
@@ -8965,13 +8921,19 @@ function toggleMetaProventoType(type){
 function saveMetaProventos(){
   S.goals=S.goals||{};
   S.goals.proventos=S.goals.proventos||{};
-  S.goals.proventos.monthly=Number(document.getElementById('mpr-monthly')?.value)||0;
+  const v=Math.max(0, Number((document.getElementById('mpr-monthly')||document.getElementById('mpr-head-monthly')||document.getElementById('div-goal'))?.value)||0);
+  S.goals.proventos.monthly=v;
+  S.divGoal=v;
+  saveConfig();
   save(); render(); toast('✅ Meta de proventos salva!');
 }
 function saveMetaProventosTarget(){
+  const v=Math.max(0, Number((document.getElementById('mpr-head-monthly')||document.getElementById('mpr-monthly')||document.getElementById('div-goal'))?.value)||0);
   S.goals=S.goals||{};
   S.goals.proventos=S.goals.proventos||{};
-  S.goals.proventos.monthly=Number(document.getElementById('mpr-head-monthly')?.value)||0;
+  S.goals.proventos.monthly=v;
+  S.divGoal=v;
+  saveConfig();
   save(); render();
 }
 function estimateGoalMonths(startValue,targetValue,monthlyAporte,annualVar){
@@ -9214,8 +9176,6 @@ function allocationGoalModal(){
 // ══════════════════════════════════════
 function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const { mD, aD, avgDY, tC } = cx();
-  const objetivo = Number(S.divGoal) || 0;
-  const resumo = proventoResumo();
   const passiveGoal = passiveIncomeGoalStats();
   const resumoTipos = proventoResumoTipos();
   const resumoMensalTipos = proventoResumoMensalTipos();
@@ -9310,25 +9270,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
     : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#2e3f58">Nenhum provento registrado. Use "Buscar histórico grátis" ou "+ Registrar provento".</td></tr>';
 
   return`<div style="font-size:14px;font-weight:700;margin-bottom:8px">${esc(pageTitle)}</div>
-  ${showGoal?`<div class="fc" style="margin-bottom:10px">
-    <div class="cg" style="align-items:end;gap:8px;grid-template-columns:1.15fr .85fr">
-      <div style="display:flex;flex-direction:column;gap:4px">
-        <div class="fl" style="margin-bottom:0">🎯 Objetivo mensal de dividendos (R$)</div>
-        <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()" style="min-height:40px;padding:8px 10px">
-        <div class="mu" style="font-size:10px">Enter ou clique fora para salvar.</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        <div class="fl" style="margin-bottom:0">Progresso até o objetivo</div>
-        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-          <div style="font-size:18px;font-weight:800;color:#fbbf24">${ratio.toFixed(1)}%</div>
-          <div style="font-size:11px;color:#64748b">${fmt(media12)} / ${fmt(objetivo||0)}</div>
-        </div>
-        <div class="dbt" style="height:6px;margin-top:0"><div class="dbf" style="width:${ratio.toFixed(1)}%;background:#fbbf24"></div></div>
-        <div class="mu" style="font-size:10px">Atual: ${fmt(mD)}/mês · Falta: ${fmt(Math.max(0,objetivo-mD))}/mês</div>
-      </div>
-    </div>
-  </div>`:''}
-  ${passiveIncomeGoalBlock(passiveGoal)}
+  ${passiveIncomeDividendSummaryBlock(passiveGoal)}
   <details class="sec"${S.activeDividendSection==='monthly'?' open':''} style="margin-bottom:8px">
     <summary onclick="toggleDividendSection('monthly', event)">
       <div>
@@ -9714,13 +9656,6 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
 
 function metasTab(){
   const{mD,aD,avgDY,tC}=cx();
-  const objetivo=Number(S.divGoal)||0;
-  const falta=Math.max(0,objetivo-mD);
-  const prog=objetivo>0?Math.min(100,(mD/objetivo)*100):0;
-  const rec=proventoStats();
-  const histTop=proventoHistoricoMensal()[0]||{total:0,media:0};
-  const media12=histTop.media||0;
-  const total12=histTop.total||0;
   const metas=S.goals||{};
   const mp=metas.patrimonio||{};
   const mpr=metas.proventos||{};
@@ -9736,8 +9671,12 @@ function metasTab(){
   const metaPatVar=Number(mp.annualVar)||0;
   const metaPatTime=estimateGoalMonths(tC,metaPatValor,metaPatAporte,metaPatVar);
   const metaPat=goalProgressText(tC,metaPatValor);
+  const passiveGoal=passiveIncomeGoalStats();
   const allocItems=allocationGoalItems();
   const {total:allocTotal,map:allocMap}=allocationActualByType();
+  const projCurrent=S.assets
+    .filter(a=>selectedProTypes.includes(a.type))
+    .reduce((s,a)=>s+(((Number(a.qty)||0)*(Number(a.current_price)||0)*(Number(a.dy)||0)/100)/12),0);
   const allocRows=allocItems.map((it,idx)=>{
     const target=Number(it.pct)||0;
     const actual=allocTotal>0 ? ((Number(allocMap[it.type])||0)/allocTotal)*100 : 0;
@@ -9753,51 +9692,44 @@ function metasTab(){
     </tr>`;
   }).join('');
 
-  const selectedTypesSet=new Set(selectedProTypes);
-  const proCurrent=S.assets
-    .filter(a=>selectedTypesSet.has(a.type))
-    .reduce((s,a)=>s+(((Number(a.qty)||0)*(Number(a.current_price)||0)*(Number(a.dy)||0)/100)/12),0);
-  const metaProValor=Number(mpr.monthly)||0;
-  const metaPro=goalProgressText(mD,metaProValor);
-
   return`<div style="font-size:14px;font-weight:700;margin-bottom:4px">🎯 Metas</div>
   <div class="mu" style="font-size:12px;margin-bottom:12px">Objetivos da carteira com foco em renda, patrimônio e distribuição.</div>
 
   <div class="cards" style="margin-bottom:10px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Renda estimada/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div></div>
+    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Renda projetada/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div><div class="cs">Estimativa da carteira</div></div>
     <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:64px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
     <div class="card al" style="border-left-color:#818cf8;padding:10px 12px;min-height:64px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
     <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;min-height:64px"><div class="cl">Total da carteira</div><div class="cv bl" style="font-size:18px">${fmt(tC)}</div></div>
   </div>
 
-  <div class="cg" style="margin-bottom:10px;gap:10px;grid-template-columns:1fr 1fr">
-    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
-      <div class="fl">Objetivo mensal de dividendos</div>
-      <input id="div-goal" type="number" step="10" placeholder="ex: 4000" value="${objetivo||''}" onkeydown="if(event.key==='Enter')saveDivGoal()" onblur="saveDivGoal()">
-      <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-        <div class="mu">Progresso</div>
-        <div style="font-size:16px;font-weight:800;color:#fbbf24">${prog.toFixed(1)}%</div>
+  ${passiveIncomeGoalBlock(passiveGoal, projCurrent)}
+
+  <div class="cc" style="margin-bottom:10px;padding:10px 12px">
+    <div class="sh" style="margin-bottom:8px;gap:10px">
+      <div style="min-width:0">
+        <div class="st">Meta de Patrimônio</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Objetivo de patrimônio total, progresso atual e valor em aberto.</div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div class="mu">${fmt(media12)} / ${fmt(objetivo||0)}</div>
-        <div class="mu">${fmt(mD)}/mês · falta ${fmt(falta)}/mês</div>
-      </div>
-      <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${prog.toFixed(1)}%;background:#fbbf24"></div></div>
+      <div class="passive-goal-badge info">Planejamento patrimonial</div>
     </div>
-    <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
-      <div class="fl">Meta de patrimônio</div>
-      <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
-      <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-        <div class="mu">Progresso</div>
-        <div style="font-size:16px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+    <div class="cg" style="gap:10px;grid-template-columns:1fr 1fr">
+      <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+        <div class="fl">Meta de patrimônio</div>
+        <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
+        <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
-        <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
+      <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+        <div class="fl">Progresso</div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+          <div class="mu">Carteira atual</div>
+          <div style="font-size:16px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
+          <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
+        </div>
+        <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:#60a5fa"></div></div>
       </div>
-      <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:#60a5fa"></div></div>
     </div>
   </div>
 
