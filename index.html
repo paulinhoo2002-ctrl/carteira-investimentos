@@ -473,6 +473,53 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .rf-proventos-kpi.blue .rf-proventos-kpi-value{color:#60a5fa}
 .rf-proventos-kpi.red .rf-proventos-kpi-value{color:#f87171}
 .rf-proventos-kpi.purple .rf-proventos-kpi-value{color:#a78bfa}
+.passive-goal-shell{display:flex;flex-direction:column;gap:10px}
+.passive-goal-head{gap:10px;align-items:flex-start}
+.passive-goal-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8;border:1px solid #1d2940;background:#111828;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.passive-goal-badge.ok{color:#34d399;border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.08)}
+.passive-goal-badge.info{color:#60a5fa;border-color:rgba(96,165,250,.28);background:rgba(96,165,250,.08)}
+.passive-goal-badge.warn{color:#fbbf24;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08)}
+.passive-goal-badge.danger{color:#f87171;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.08)}
+.passive-goal-badge.muted{color:#94a3b8;border-color:#1d2940;background:#111828}
+.passive-goal-empty{background:#0b1020;border:1px dashed #223048;border-radius:14px;padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:2px 0 8px}
+.passive-goal-empty-title{font-size:13px;font-weight:800;color:#edf3ff;line-height:1.2}
+.passive-goal-empty-note{font-size:11px;color:#94a3b8;line-height:1.35}
+.passive-goal-grid{display:grid;gap:8px}
+.passive-goal-grid.main{grid-template-columns:repeat(4,minmax(0,1fr))}
+.passive-goal-grid.secondary{grid-template-columns:repeat(3,minmax(0,1fr))}
+.passive-goal-card{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:10px;min-height:72px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.passive-goal-card .passive-goal-kicker{font-size:10px;color:#94a3b8;line-height:1.2}
+.passive-goal-card .passive-goal-value{font-size:15px;font-weight:900;color:#edf3ff;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.passive-goal-card .passive-goal-sub{font-size:10px;color:#7489a4;line-height:1.35}
+.passive-goal-card.ok .passive-goal-value{color:#34d399}
+.passive-goal-card.info .passive-goal-value{color:#60a5fa}
+.passive-goal-card.warn .passive-goal-value{color:#fbbf24}
+.passive-goal-card.danger .passive-goal-value{color:#f87171}
+.passive-goal-card.muted .passive-goal-value{color:#94a3b8}
+.passive-goal-progress{background:linear-gradient(180deg,rgba(11,16,32,.96),rgba(9,12,21,.98));border:1px solid #182033;border-radius:14px;padding:12px}
+.passive-goal-progress-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.passive-goal-progress-title{font-size:12px;font-weight:800;color:#edf3ff}
+.passive-goal-progress-meta{font-size:10px;color:#94a3b8;line-height:1.35;margin-top:2px}
+.passive-goal-progress-main{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.passive-goal-progress-amount{font-size:24px;font-weight:900;line-height:1.05;color:#fbbf24}
+.passive-goal-progress-note{font-size:11px;color:#94a3b8;line-height:1.35}
+.passive-goal-progress-right{display:flex;flex-direction:column;gap:4px;align-items:flex-end;text-align:right;min-width:180px}
+.passive-goal-progress-right .passive-goal-progress-amount{color:#60a5fa}
+.passive-goal-list{display:flex;flex-direction:column;gap:7px}
+.passive-goal-list-head,.passive-goal-list-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.7fr) .9fr .9fr minmax(0,1.1fr);gap:8px;align-items:center}
+.passive-goal-list-head{padding:0 8px;font-size:10px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.passive-goal-list-row{padding:9px 8px;border:1px solid #162033;border-radius:10px;background:#090c15}
+.passive-goal-list-main{min-width:0;display:flex;flex-direction:column;gap:3px}
+.passive-goal-list-ticker{font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.passive-goal-list-name{font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.passive-goal-list-stat{min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.passive-goal-list-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.passive-goal-list-value{font-size:12px;font-weight:800;white-space:nowrap;color:#edf3ff}
+.passive-goal-list-value.good{color:#34d399}
+.passive-goal-list-value.info{color:#60a5fa}
+.passive-goal-list-value.warn{color:#fbbf24}
+.passive-goal-list-value.danger{color:#f87171}
+.passive-goal-list-empty{padding:10px;border:1px dashed #223048;border-radius:10px;color:#7489a4;font-size:11px;background:#09101b;line-height:1.4}
 .rf-proventos-table th:nth-child(3),.rf-proventos-table td:nth-child(3),
 .rf-proventos-table th:nth-child(4),.rf-proventos-table td:nth-child(4),
 .rf-proventos-table th:nth-child(6),.rf-proventos-table td:nth-child(6),
@@ -551,6 +598,19 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .rf-proventos-kpi{min-height:66px;padding:9px 10px}
   .rf-proventos-kpi-value{font-size:16px}
   .rf-proventos-table{min-width:1220px}
+  .passive-goal-grid.main,.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .passive-goal-empty{padding:9px 10px}
+  .passive-goal-card{min-height:66px;padding:9px}
+  .passive-goal-card .passive-goal-value{font-size:13px}
+  .passive-goal-progress{padding:11px}
+  .passive-goal-progress-top{gap:8px}
+  .passive-goal-progress-right{min-width:0;align-items:flex-start;text-align:left}
+  .passive-goal-progress-amount{font-size:22px}
+  .passive-goal-list-head{display:none}
+  .passive-goal-list{gap:8px}
+  .passive-goal-list-row{grid-template-columns:1fr 1fr;gap:6px;padding:9px}
+  .passive-goal-list-main{grid-column:1/-1}
+  .passive-goal-list-stat{align-items:flex-start}
 }
 @media(max-width:900px){
   .hdr{padding:10px 12px;gap:10px}
@@ -5917,6 +5977,227 @@ function proventoResumoPorTipo(){
 function proventoRankingPagadores(){
   return proventoResumoPorAtivo().slice(0,10);
 }
+function passiveIncomeRollingMonthKeys(baseDate=new Date(), count=12){
+  const dt=new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+  const keys=[];
+  for(let i=count-1;i>=0;i--){
+    const cur=new Date(dt.getFullYear(), dt.getMonth()-i, 1);
+    keys.push(`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`);
+  }
+  return keys;
+}
+function passiveIncomeGoalTarget(){
+  const legacy = Math.max(0, Number(S.divGoal) || 0);
+  const monthly = Math.max(0, Number(S.goals?.proventos?.monthly) || 0);
+  return monthly > 0 ? monthly : legacy;
+}
+function passiveIncomeTopPayers(limit=5, monthKeys=null){
+  const keys=Array.isArray(monthKeys) && monthKeys.length ? new Set(monthKeys) : null;
+  const map=new Map();
+  (S.proventos||[]).forEach((p,idx)=>{
+    const dt=parseAnyDate(p?.date);
+    const value=Number(p?.value)||0;
+    if(!dt || value<=0) return;
+    const monthKey=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    if(keys && !keys.has(monthKey)) return;
+    const meta=proventoAssetMeta(p);
+    const ticker=String(p?.ticker||meta.asset?.ticker||meta.title||'').trim().toUpperCase() || '—';
+    const name=String(meta.title || p?.assetName || ticker || '—').trim() || '—';
+    const type=String(meta.type || proventoAssetTypeLabel(meta.asset,p) || 'Ação').trim() || 'Ação';
+    const key=ticker || name;
+    if(!map.has(key)){
+      map.set(key,{key,ticker,name,type,total:0,count:0,lastDate:'',sourceIndex:idx});
+    }
+    const row=map.get(key);
+    row.total+=value;
+    row.count++;
+    const iso=toISODate(dt);
+    if(iso && iso>row.lastDate) row.lastDate=iso;
+  });
+  return [...map.values()].sort((a,b)=>b.total-a.total || b.count-a.count).slice(0,limit);
+}
+function passiveIncomeGoalStats(){
+  const target=passiveIncomeGoalTarget();
+  const monthKeys=passiveIncomeRollingMonthKeys(new Date(), 12);
+  const monthMap=new Map(monthKeys.map(key=>[key,{key,total:0,count:0}]));
+  let total12=0;
+  const currentMonthKey=monthKeys[monthKeys.length-1] || '';
+  (S.proventos||[]).forEach(p=>{
+    const dt=parseAnyDate(p?.date);
+    const value=Number(p?.value)||0;
+    if(!dt || value<=0) return;
+    const key=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    if(!monthMap.has(key)) return;
+    const row=monthMap.get(key);
+    row.total+=value;
+    row.count++;
+    total12+=value;
+  });
+  const monthlyAvg=total12/12;
+  const annualProjection=monthlyAvg*12;
+  const percent=target>0 ? (monthlyAvg/target)*100 : 0;
+  const missing=Math.max(0, target-monthlyAvg);
+  const currentMonthTotal=monthMap.get(currentMonthKey)?.total || 0;
+  const byMonth=[...monthMap.values()];
+  const topPayers=passiveIncomeTopPayers(5, monthKeys);
+  const bestPayer=topPayers[0] || null;
+  return {
+    target,
+    monthKeys,
+    byMonth,
+    total12,
+    monthlyAvg,
+    annualProjection,
+    percent,
+    missing,
+    currentMonthKey,
+    currentMonthTotal,
+    topPayers,
+    bestPayer,
+    hasData: total12>0 || topPayers.length>0
+  };
+}
+function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats()){
+  const hasGoal=stats.target>0;
+  const pct=Number.isFinite(stats.percent) ? Math.max(0, stats.percent) : 0;
+  const rec=proventoStats();
+  const pctLabel=hasGoal
+    ? `Você atingiu ${pct.toFixed(0)}% da meta configurada na aba Metas`
+    : 'Meta não definida.';
+  const topTone = !hasGoal ? 'muted' : !stats.hasData ? 'muted' : pct>=100 ? 'ok' : pct>=75 ? 'info' : pct>=40 ? 'warn' : 'danger';
+  const growthTone = hasGoal && stats.monthlyAvg>0 ? (stats.monthlyAvg>=stats.target ? 'ok' : 'warn') : 'muted';
+  const bestPayerLabel = stats.bestPayer
+    ? `${stats.bestPayer.ticker || stats.bestPayer.name || '—'}`
+    : '—';
+  const bestPayerSub = stats.bestPayer
+    ? `${fmt(stats.bestPayer.total)} recebidos no período`
+    : 'Nenhum pagador encontrado';
+  const progressText = hasGoal
+    ? (stats.hasData
+      ? `Faltam ${fmt(stats.missing)}/mês para atingir a meta configurada na aba Metas.`
+      : 'Sem base suficiente para estimar a renda passiva com confiança.')
+    : 'Meta não definida. Defina sua meta de renda passiva na aba Metas.';
+  const topRows = stats.topPayers.length
+    ? stats.topPayers.map((row, idx)=>{
+        const avg=row.total/12;
+        const name=row.name && row.name!==row.ticker ? row.name : row.ticker;
+        const typeLabel=row.type || 'Ação';
+        const lastPay=row.lastDate ? new Date(`${row.lastDate}T00:00:00`).toLocaleDateString('pt-BR') : '—';
+        return `<div class="passive-goal-list-row">
+          <div class="passive-goal-list-main">
+            <div class="passive-goal-list-ticker">#${idx+1} ${esc(row.ticker||'—')}</div>
+            <div class="passive-goal-list-name">${esc(name)}${row.type ? ` · ${esc(typeLabel)}` : ''}</div>
+          </div>
+          <div class="passive-goal-list-stat">
+            <div class="passive-goal-list-label">Total 12M</div>
+            <div class="passive-goal-list-value good">${fmt(row.total)}</div>
+          </div>
+          <div class="passive-goal-list-stat">
+            <div class="passive-goal-list-label">Média/mês</div>
+            <div class="passive-goal-list-value info">${fmt(avg)}</div>
+          </div>
+          <div class="passive-goal-list-stat">
+            <div class="passive-goal-list-label">Último pag.</div>
+            <div class="passive-goal-list-value">${esc(lastPay)}</div>
+          </div>
+          <div class="passive-goal-list-stat">
+            <div class="passive-goal-list-label">Classe</div>
+            <div class="passive-goal-list-value">${esc(typeLabel)}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="passive-goal-list-empty">Dados insuficientes para listar os melhores pagadores.</div>`;
+  return `<div class="cc passive-goal-shell" style="margin-bottom:8px;padding:10px 10px 9px">
+    <div class="sh passive-goal-head" style="margin-bottom:4px;gap:10px">
+      <div style="min-width:0">
+        <div class="st">Meta de Renda Passiva</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Meta mensal lida da aba <strong style="color:#e2eaf6">Metas</strong> e calculada com base nos proventos já gravados em <strong style="color:#e2eaf6">S.proventos</strong>.</div>
+      </div>
+      <div class="passive-goal-badge ${topTone}">${hasGoal ? (stats.hasData ? `${pct.toFixed(1)}% da meta` : 'Dados insuficientes') : 'Sem meta'}</div>
+    </div>
+    ${hasGoal ? `
+    <div class="passive-goal-progress" style="margin-bottom:2px">
+      <div class="passive-goal-progress-top">
+        <div class="passive-goal-progress-main">
+          <div class="passive-goal-progress-title">Progresso da meta mensal</div>
+          <div class="passive-goal-progress-amount">${pct.toFixed(1)}%</div>
+          <div class="passive-goal-progress-note">${pctLabel}</div>
+          <div class="passive-goal-progress-note">${progressText}</div>
+        </div>
+        <div class="passive-goal-progress-right">
+          <div class="passive-goal-progress-title">Base usada</div>
+          <div class="passive-goal-progress-amount">${stats.monthKeys.length}</div>
+          <div class="passive-goal-progress-note">meses corridos analisados</div>
+        </div>
+      </div>
+      <div class="dbt" style="height:7px;margin:10px 0 0"><div class="dbf" style="width:${Math.min(100,pct).toFixed(1)}%;background:${pct>=100?'#34d399':pct>=50?'#fbbf24':'#60a5fa'}"></div></div>
+      <div class="passive-goal-progress-note" style="margin-top:8px">${progressText}</div>
+    </div>` : `
+    <div class="passive-goal-empty">
+      <div>
+        <div class="passive-goal-empty-title">Meta não definida</div>
+        <div class="passive-goal-empty-note">Defina sua meta de renda passiva na aba Metas.</div>
+      </div>
+      <div class="passive-goal-badge muted">Sem meta cadastrada</div>
+    </div>`}
+    <div class="passive-goal-grid main">
+      <div class="passive-goal-card ${stats.hasData ? 'ok' : 'muted'}">
+        <div class="passive-goal-kicker">Recebido no mês</div>
+        <div class="passive-goal-value">${fmt(rec.mes)}</div>
+        <div class="passive-goal-sub">Mês corrente</div>
+      </div>
+      <div class="passive-goal-card info">
+        <div class="passive-goal-kicker">Recebido no ano</div>
+        <div class="passive-goal-value">${fmt(rec.ano)}</div>
+        <div class="passive-goal-sub">Ano atual</div>
+      </div>
+      <div class="passive-goal-card ${hasGoal ? (stats.hasData ? (pct>=100 ? 'ok' : 'warn') : 'muted') : 'muted'}">
+        <div class="passive-goal-kicker">Total histórico</div>
+        <div class="passive-goal-value">${fmt(rec.total)}</div>
+        <div class="passive-goal-sub">Tudo que já entrou na conta</div>
+      </div>
+      <div class="passive-goal-card ${growthTone}">
+        <div class="passive-goal-kicker">Melhor pagador</div>
+        <div class="passive-goal-value">${esc(bestPayerLabel)}</div>
+        <div class="passive-goal-sub">${esc(bestPayerSub)}</div>
+      </div>
+    </div>
+    <div class="passive-goal-grid secondary">
+      <div class="passive-goal-card ${growthTone}">
+        <div class="passive-goal-kicker">Média mensal (12M)</div>
+        <div class="passive-goal-value">${fmt(stats.monthlyAvg)}</div>
+        <div class="passive-goal-sub">Últimos 12 meses corridos</div>
+      </div>
+      <div class="passive-goal-card info">
+        <div class="passive-goal-kicker">Total recebido (12M)</div>
+        <div class="passive-goal-value">${fmt(stats.total12)}</div>
+        <div class="passive-goal-sub">Soma dos 12 meses analisados</div>
+      </div>
+      <div class="passive-goal-card ok">
+        <div class="passive-goal-kicker">Projeção anualizada</div>
+        <div class="passive-goal-value">${hasGoal ? fmt(stats.annualProjection) : '—'}</div>
+        <div class="passive-goal-sub">Média mensal × 12</div>
+      </div>
+    </div>
+    <details class="sec passive-goal-more"${S.activeDividendSection==='payers'?' open':''} style="margin-top:2px">
+      <summary onclick="toggleDividendSection('payers', event)">
+        <div>
+          <div class="sec-title">Melhores pagadores</div>
+          <div class="sec-meta">Top 5 ativos que mais contribuíram nos últimos 12 meses corridos.</div>
+        </div>
+        <div class="sec-meta">${stats.hasData ? 'clique para abrir' : 'sem dados'}</div>
+      </summary>
+      <div class="sec-body" style="padding-top:6px">
+        <div class="passive-goal-list">
+          <div class="passive-goal-list-head">
+            <div>Ativo</div><div>Tipo / nome</div><div>Total 12M</div><div>Média/mês</div><div>Último pagamento</div>
+          </div>
+          ${topRows}
+        </div>
+      </div>
+    </details>
+  </div>`;
+}
 function proventoAuditMonthKey(dateLike){
   const dt=parseAnyDate(dateLike);
   if(!dt) return '';
@@ -8934,8 +9215,8 @@ function allocationGoalModal(){
 function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const { mD, aD, avgDY, tC } = cx();
   const objetivo = Number(S.divGoal) || 0;
-  const rec = proventoStats();
   const resumo = proventoResumo();
+  const passiveGoal = passiveIncomeGoalStats();
   const resumoTipos = proventoResumoTipos();
   const resumoMensalTipos = proventoResumoMensalTipos();
   const resumoAtivos = proventoResumoPorAtivo();
@@ -8946,10 +9227,6 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const auditMonths = proventoAuditMonthOptions();
   const auditSelected = new Set(audit.state.selectedIds || []);
   const historico = proventoHistoricoMensal();
-  const histTop = historico[0] || { total: 0, media: 0 };
-  const media12 = histTop.media || 0;
-  const total12 = histTop.total || 0;
-  const ratio = objetivo > 0 ? Math.min(100, (media12 / objetivo) * 100) : 0;
   const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const currentMonthIndex = new Date().getMonth();
 
@@ -9051,69 +9328,76 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </div>
     </div>
   </div>`:''}
-  <div class="cc" style="margin-bottom:8px;padding:9px 10px 7px">
-    <div class="sh" style="margin-bottom:5px">
+  ${passiveIncomeGoalBlock(passiveGoal)}
+  <details class="sec"${S.activeDividendSection==='monthly'?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('monthly', event)">
       <div>
-        <div class="st">Resumo</div>
-        <div class="mu" style="font-size:11px;margin-top:2px">Leitura rápida dos últimos 12 meses e da renda atual da carteira.</div>
+        <div class="sec-title">Histórico mensal</div>
+        <div class="sec-meta">consolidado por ano e por mês</div>
       </div>
+      <div class="sec-meta">clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
+        <thead><tr><th>Ano</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
+        <tbody>${yearlyRows}</tbody>
+      </table></div></div>
     </div>
-    <div class="div-line-summary">
-      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Média mensal (12M)</div>
-          <div class="cv am" style="font-size:16px">${fmt(media12)}</div>
-        </div>
-        <div class="cs" style="font-size:10px">Total 12 meses: ${fmt(total12)}</div>
-      </div>
-      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Recebido no mês</div>
-          <div class="cv gn" style="font-size:16px">${fmt(rec.mes)}</div>
-        </div>
-      </div>
-      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Recebido no ano</div>
-          <div class="cv pu" style="font-size:16px">${fmt(rec.ano)}</div>
-        </div>
-      </div>
-      <div class="card al" style="margin:0;border-left-color:#fbbf24;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Renda estimada/mês</div>
-          <div class="cv am" style="font-size:16px">${fmt(mD)}</div>
-        </div>
-      </div>
-      <div class="card al" style="margin:0;border-left-color:#34d399;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Projeção anual</div>
-          <div class="cv gn" style="font-size:16px">${fmt(aD)}</div>
-        </div>
-      </div>
-      <div class="card al" style="margin:0;border-left-color:#818cf8;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">DY médio</div>
-          <div class="cv pu" style="font-size:16px">${avgDY.toFixed(2)}%</div>
-        </div>
-      </div>
-      <div class="card al" style="margin:0;border-left-color:#f97316;min-height:52px;padding:7px 9px;display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div class="cl" style="margin-bottom:2px">Total histórico</div>
-          <div class="cv" style="color:#fb923c;font-size:16px">${fmt(rec.total)}</div>
-        </div>
-        <div class="cs" style="font-size:10px">Tudo que já entrou na conta</div>
-      </div>
+  </details>
+  <div class="sh" style="margin:0 0 8px 0">
+    <div>
+      <div class="st">Atualização de dividendos</div>
+      <div class="mu" style="font-size:11px;margin-top:3px">Busque o histórico gratuito para recalcular os proventos automaticamente.</div>
     </div>
+    <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
   </div>
+
+  <details class="sec"${S.activeDividendSection==='received'?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('received', event)">
+      <div>
+        <div class="sec-title">Proventos recebidos (${S.proventos.length})</div>
+        <div class="sec-meta">valores já creditados na conta</div>
+      </div>
+      <div class="sec-meta">clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
+      </div>
+      ${frmD()}
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Valor recebido</th><th>Obs.</th><th></th></tr></thead>
+        <tbody>${provRows}</tbody>
+      </table></div></div>
+    </div>
+  </details>
+
+  <details class="sec"${S.activeDividendSection==='projection'?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('projection', event)">
+      <div>
+        <div class="sec-title">Projeção por ativo</div>
+        <div class="sec-meta">${S.assets.length} ativos com projeção mensal e anual</div>
+      </div>
+      <div class="sec-meta">clicar para ocultar</div>
+    </summary>
+    <div class="sec-body">
+      <div class="tw"><div class="ts"><table>
+        <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY</th><th>Div. mês</th><th>Div. ano</th><th>% renda</th></tr></thead>
+        <tbody>${projRows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#2e3f58">Cadastre compras na aba Aportes.</td></tr>'}</tbody>
+      </table></div></div>
+    </div>
+  </details>
+
   <div class="cc prov-imported-shell" style="margin-bottom:8px;padding:10px 10px 9px">
     <div class="sh prov-imported-head" style="margin-bottom:6px;gap:10px">
       <div style="min-width:0">
         <div class="st">Proventos importados da B3</div>
-        <div class="mu" style="font-size:11px;margin-top:2px">Consolidado dos dados gravados em <strong style="color:#e2eaf6">Proventos</strong>.</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">${fmt(resumoTipos.total)} importados · ${resumoTipos.count} lançamentos</div>
       </div>
       <button class="btn ${importedDetailsOpen ? 'bp' : 'bgh'}" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleImportedDividendsDetails(event)">${importedDetailsOpen ? 'Ocultar detalhes' : 'Ver detalhes'}</button>
     </div>
-    <div class="prov-imported-compact" style="margin-bottom:8px">
+    <div class="prov-imported-hint" style="display:${importedDetailsOpen ? 'none' : 'block'}">Seção operacional de conferência, fechada por padrão.</div>
+    <div class="prov-imported-compact" style="display:${importedDetailsOpen ? 'flex' : 'none'};margin-bottom:8px">
       <div class="card al prov-imported-card" style="margin:0;flex:1 1 220px;border-left-color:#fbbf24;display:flex;flex-direction:column;justify-content:space-between">
         <div>
           <div class="cl" style="margin-bottom:2px">Total importado</div>
@@ -9142,7 +9426,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
         <div class="cv" style="font-size:17px;color:#f59e0b">${fmt(resumoTipos.tipos['Juros de Renda Fixa']||0)}</div>
       </div>
     </div>
-    <div class="prov-imported-hint">Resumo compacto: ${fmt(resumoTipos.total)} recebidos, ${resumoTipos.count} lançamentos e consolidação por tipo.</div>
+    <div class="prov-imported-hint" style="display:${importedDetailsOpen ? 'block' : 'none'}">Resumo compacto: ${fmt(resumoTipos.total)} recebidos, ${resumoTipos.count} lançamentos e consolidação por tipo.</div>
     ${importedDetailsOpen?`
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
       <div class="cc" style="margin:0;padding:9px 10px 7px">
@@ -9338,13 +9622,13 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </div>
     </div>
     `:''}
-  <details class="sec" style="margin-bottom:8px">
-    <summary>
+  <details class="sec"${S.activeDividendSection==='audit'?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('audit', event)">
       <div>
-        <div class="sec-title">Auditoria de Proventos</div>
-        <div class="sec-meta">Filtre por mês/ano e identifique possíveis duplicidades antes de remover apenas os extras.</div>
+        <div class="sec-title">Auditoria e conferência de proventos</div>
+        <div class="sec-meta">Área avançada para filtrar por mês/ano e identificar possíveis duplicidades.</div>
       </div>
-      <div class="sec-meta">fechado por padrão</div>
+      <div class="sec-meta">${S.activeDividendSection==='audit' ? 'clicar para ocultar' : 'fechado por padrão'}</div>
     </summary>
     <div class="sec-body prov-audit-shell">
       <div class="prov-audit-filters">
@@ -9425,64 +9709,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       <div class="prov-audit-hint" style="font-size:11px;color:#64748b;line-height:1.45">O primeiro lançamento de cada grupo fica protegido. Só os duplicados extras podem ser marcados e removidos.</div>
     </div>
   </details>
-  <div class="sh" style="margin:0 0 8px 0">
-    <div>
-      <div class="st">Atualização de dividendos</div>
-      <div class="mu" style="font-size:11px;margin-top:3px">Busque o histórico gratuito para recalcular os proventos automaticamente.</div>
-    </div>
-    <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
-  </div>
-  <details class="sec"${S.activeDividendSection==='monthly'?' open':''} style="margin-bottom:8px">
-    <summary onclick="toggleDividendSection('monthly', event)">
-      <div>
-        <div class="sec-title">Histórico mensal</div>
-        <div class="sec-meta">consolidado por ano e por mês</div>
-      </div>
-      <div class="sec-meta">clicar para ocultar</div>
-    </summary>
-    <div class="sec-body">
-      <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
-        <thead><tr><th>Ano</th>${months.map(m=>`<th>${m}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
-        <tbody>${yearlyRows}</tbody>
-      </table></div></div>
-    </div>
-  </details>
-
-  <details class="sec"${S.activeDividendSection==='projection'?' open':''} style="margin-bottom:8px">
-    <summary onclick="toggleDividendSection('projection', event)">
-      <div>
-        <div class="sec-title">Projeção por ativo</div>
-        <div class="sec-meta">${S.assets.length} ativos com projeção mensal e anual</div>
-      </div>
-      <div class="sec-meta">clicar para ocultar</div>
-    </summary>
-    <div class="sec-body">
-      <div class="tw"><div class="ts"><table>
-        <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Cotação</th><th>DY</th><th>Div. mês</th><th>Div. ano</th><th>% renda</th></tr></thead>
-        <tbody>${projRows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#2e3f58">Cadastre compras na aba Aportes.</td></tr>'}</tbody>
-      </table></div></div>
-    </div>
-  </details>
-
-  <details class="sec"${S.activeDividendSection==='received'?' open':''} style="margin-bottom:8px">
-    <summary onclick="toggleDividendSection('received', event)">
-      <div>
-        <div class="sec-title">Proventos recebidos (${S.proventos.length})</div>
-        <div class="sec-meta">valores já creditados na conta</div>
-      </div>
-      <div class="sec-meta">clicar para ocultar</div>
-    </summary>
-    <div class="sec-body">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
-      </div>
-      ${frmD()}
-      <div class="tw"><div class="ts"><table>
-        <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Valor recebido</th><th>Obs.</th><th></th></tr></thead>
-        <tbody>${provRows}</tbody>
-      </table></div></div>
-    </div>
-  </details>`;
+  `;
 }
 
 function metasTab(){
@@ -9885,7 +10112,7 @@ function go(t){
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
   if(t==='ativos') { S.activeAssetsGroup=''; S.assetsInnerTab='patrimonio'; }
-  if(t==='dividendos') S.activeDividendSection='';
+  if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();
   render();
