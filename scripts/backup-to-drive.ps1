@@ -28,7 +28,7 @@ if (-not (Test-Path -LiteralPath $destinationDrive)) {
 
 Write-Info "Origem:      $SourcePath"
 Write-Info "Destino:     $DestinationPath"
-Write-Info "Exclusoes:   node_modules, .git, .vercel, *.log, *.tmp, *.temp, *.bak, *~"
+Write-Info "Exclusoes:   node_modules, .git, .vercel, .agents, *.log, *.tmp, *.temp, *.bak, *~"
 Write-Warn "Aviso: este backup e espelhado. Arquivos removidos da origem tambem serao removidos do destino."
 
 if (-not (Test-Path -LiteralPath $DestinationPath)) {
@@ -43,7 +43,7 @@ $robocopyArgs = @(
   '/W:2',
   '/MT:8',
   '/XJ',
-  '/XD', 'node_modules', '.git', '.vercel',
+  '/XD', 'node_modules', '.git', '.vercel', '.agents',
   '/XF', '*.log', '*.tmp', '*.temp', '*.bak', '*~',
   '/NFL',
   '/NDL',
