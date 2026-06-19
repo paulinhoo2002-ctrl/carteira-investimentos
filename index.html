@@ -63,6 +63,36 @@ button{cursor:pointer;font-family:inherit}
 .analysis-pill.warn{color:#fbbf24;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08)}
 .analysis-pill.danger{color:#f87171;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.08)}
 .analysis-pill.muted{color:#94a3b8;border-color:#1d2940;background:#111828}
+.analysis-pill.signal{font-size:9px;padding:3px 7px}
+.analysis-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.analysis-summary-card{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:10px;min-height:72px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.analysis-summary-card .analysis-summary-kicker{font-size:10px;color:#94a3b8;line-height:1.2}
+.analysis-summary-card .analysis-summary-value{font-size:14px;font-weight:900;color:#edf3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.analysis-summary-card .analysis-summary-sub{font-size:10px;color:#7489a4;line-height:1.35}
+.analysis-summary-card.ok .analysis-summary-value{color:#34d399}
+.analysis-summary-card.info .analysis-summary-value{color:#60a5fa}
+.analysis-summary-card.warn .analysis-summary-value{color:#fbbf24}
+.analysis-summary-card.danger .analysis-summary-value{color:#f87171}
+.analysis-summary-card.muted .analysis-summary-value{color:#94a3b8}
+.analysis-ranking{background:#0b1020;border:1px solid #182033;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.analysis-ranking-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.analysis-ranking-title{font-size:12px;font-weight:800;color:#edf3ff}
+.analysis-ranking-meta{font-size:10px;color:#94a3b8;line-height:1.35;margin-top:2px}
+.analysis-ranking-table{display:flex;flex-direction:column;gap:6px}
+.analysis-ranking-labels,.analysis-ranking-row{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.5fr) .95fr .85fr .9fr 1fr;gap:8px;align-items:center}
+.analysis-ranking-labels{padding:0 8px;font-size:10px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.analysis-ranking-row{padding:9px 8px;border:1px solid #162033;border-radius:10px;background:#090c15}
+.analysis-ranking-main{min-width:0;display:flex;flex-direction:column;gap:3px}
+.analysis-ranking-ticker{font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.analysis-ranking-type{font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.analysis-ranking-stat{min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.analysis-ranking-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.analysis-ranking-value{font-size:12px;font-weight:800;white-space:nowrap;color:#edf3ff}
+.analysis-ranking-value.pos{color:#60a5fa}
+.analysis-ranking-value.neg{color:#f87171}
+.analysis-ranking-value.good{color:#34d399}
+.analysis-ranking-signal{display:flex;justify-content:flex-end}
+.analysis-ranking-empty{padding:10px;border:1px dashed #223048;border-radius:10px;color:#7489a4;font-size:11px;background:#09101b;line-height:1.4}
 .analysis-positive .analysis-item-val{color:#34d399}
 .analysis-negative .analysis-item-val{color:#f87171}
 .analysis-info .analysis-item-val{color:#60a5fa}
@@ -129,6 +159,7 @@ button{cursor:pointer;font-family:inherit}
 }
 @media(max-width:900px){
   .analysis-grid{grid-template-columns:1fr}
+  .analysis-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:640px){
   .analysis-shell{gap:8px;margin-bottom:12px}
@@ -138,6 +169,16 @@ button{cursor:pointer;font-family:inherit}
   .analysis-item{padding:7px 8px}
   .analysis-item-val{font-size:11px}
   .analysis-item-sub{font-size:10px}
+  .analysis-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .analysis-summary-card{min-height:66px;padding:9px}
+  .analysis-summary-card .analysis-summary-value{font-size:13px}
+  .analysis-ranking{padding:10px}
+  .analysis-ranking-labels{display:none}
+  .analysis-ranking-table{gap:7px}
+  .analysis-ranking-row{grid-template-columns:1fr 1fr;gap:6px;padding:9px}
+  .analysis-ranking-main{grid-column:1/-1}
+  .analysis-ranking-signal{grid-column:1/-1;justify-content:flex-start}
+  .analysis-ranking-stat{align-items:flex-start}
   .asset-inner-tabs{gap:6px;margin:2px 0 10px}
   .asset-inner-tab{padding:7px 10px;font-size:11px}
 }
@@ -7677,94 +7718,118 @@ function assetConcentrationAlert(share){
   if(share<=50) return {label:'Concentração alta', tone:'danger'};
   return {label:'Concentração muito alta', tone:'danger'};
 }
-function assetAnalysisRowHtml(row, mode, maxShare){
+function assetContributionSignal(row){
+  if(!row || row.share==null || !Number.isFinite(row.share) || row.pct==null || !Number.isFinite(row.pct) || !Number.isFinite(row.current) || !Number.isFinite(row.applied)){
+    return {label:'Dados insuficientes', tone:'muted'};
+  }
+  if(row.share>30) return {label:'Evitar aumentar por concentração', tone:'danger'};
+  if(row.pct<0 && row.share<20) return {label:'Pode estudar aporte', tone:'ok'};
+  if(row.pct>=0 && row.share<20) return {label:'Acompanhar', tone:'info'};
+  if(row.pct>=0 && row.share>=20) return {label:'Aguardar', tone:'warn'};
+  if(row.pct<0 && row.share>=20) return {label:'Aguardar', tone:'warn'};
+  return {label:'Acompanhar', tone:'info'};
+}
+function assetRankingModeLabel(mode){
+  return ({
+    positions:'Maiores posições',
+    concentration:'Maior concentração',
+    best:'Melhores ativos',
+    worst:'Piores ativos',
+    opportunity:'Oportunidades'
+  }[mode]) || 'Maiores posições';
+}
+function assetSummaryCard(title, value, subtitle, tone='muted'){
+  return `<div class="analysis-summary-card ${esc(tone)}">
+    <div class="analysis-summary-kicker">${esc(title)}</div>
+    <div class="analysis-summary-value">${esc(value)}</div>
+    <div class="analysis-summary-sub">${esc(subtitle)}</div>
+  </div>`;
+}
+function assetRankingRowHtml(row, index){
   const typeLabel=`${row.type}${row.sector&&row.sector!=='—'?` · ${row.sector}`:''}`;
-  if(mode==='positive' || mode==='negative'){
-    const value=fmt(row.profit);
-    const pct=row.pct!=null ? fmtP(row.pct) : '—';
-    return `<div class="analysis-item ${mode==='positive'?'analysis-positive':'analysis-negative'}">
-      <div class="analysis-item-left">
-        <div class="analysis-item-top"><div class="analysis-item-ticker">${esc(row.ticker)}</div></div>
-        <div class="analysis-item-desc">${esc(typeLabel)}</div>
-      </div>
-      <div class="analysis-item-right">
-        <div class="analysis-item-val">${value}</div>
-        <div class="analysis-item-sub">${pct}</div>
-      </div>
-    </div>`;
-  }
-  if(mode==='position'){
-    const share=row.share!=null ? row.share : 0;
-    const shareTxt=row.share!=null ? `${row.share.toFixed(1)}% da carteira` : 'dados insuficientes';
-    return `<div class="analysis-item analysis-info">
-      <div class="analysis-item-left">
-        <div class="analysis-item-top"><div class="analysis-item-ticker">${esc(row.ticker)}</div></div>
-        <div class="analysis-item-desc">${esc(typeLabel)}</div>
-      </div>
-      <div class="analysis-item-right">
-        <div class="analysis-item-val">${fmt(row.current)}</div>
-        <div class="analysis-item-sub">${shareTxt}</div>
-      </div>
-    </div>`;
-  }
-  const share=row.share!=null ? row.share : 0;
-  const shareTxt=row.share!=null ? `${row.share.toFixed(1)}% da carteira` : 'dados insuficientes';
-  const barWidth=maxShare>0 ? Math.max(6, Math.min(100, (share/maxShare)*100)) : 0;
-  return `<div class="analysis-item analysis-warn">
-    <div class="analysis-item-left">
-      <div class="analysis-item-top"><div class="analysis-item-ticker">${esc(row.ticker)}</div></div>
-      <div class="analysis-item-desc">${esc(typeLabel)}</div>
-      <div class="analysis-bar"><div class="analysis-bar-fill" style="width:${barWidth.toFixed(0)}%"></div></div>
+  const signal=assetContributionSignal(row);
+  const profitClass=row.pct==null ? '' : row.pct>0 ? 'good' : row.pct<0 ? 'neg' : 'pos';
+  const currentTxt=row.current>0 ? fmt(row.current) : '—';
+  const shareTxt=row.share!=null ? `${row.share.toFixed(1)}%` : '—';
+  const pctTxt=row.pct!=null ? fmtP(row.pct) : '—';
+  return `<div class="analysis-ranking-row">
+    <div class="analysis-ranking-main">
+      <div class="analysis-ranking-ticker">#${index} ${esc(row.ticker)}</div>
+      <div class="analysis-ranking-type">${esc(typeLabel)}</div>
     </div>
-    <div class="analysis-item-right">
-      <div class="analysis-item-val">${row.share!=null?`${row.share.toFixed(1)}%`:'—'}</div>
-      <div class="analysis-item-sub">${shareTxt}</div>
+    <div class="analysis-ranking-stat">
+      <div class="analysis-ranking-label">Valor atual</div>
+      <div class="analysis-ranking-value pos">${esc(currentTxt)}</div>
+    </div>
+    <div class="analysis-ranking-stat">
+      <div class="analysis-ranking-label">% carteira</div>
+      <div class="analysis-ranking-value">${esc(shareTxt)}</div>
+    </div>
+    <div class="analysis-ranking-stat">
+      <div class="analysis-ranking-label">Rentab.</div>
+      <div class="analysis-ranking-value ${profitClass}">${esc(pctTxt)}</div>
+    </div>
+    <div class="analysis-ranking-signal">
+      <span class="analysis-pill signal ${esc(signal.tone)}">${esc(signal.label)}</span>
     </div>
   </div>`;
 }
-function assetAnalysisCard(title, subtitle, items, mode, emptyText, headRight=''){
-  const totalItems=items.length;
-  const list=totalItems
-    ? items.map(it=>assetAnalysisRowHtml(it, mode, Math.max(...items.map(r=>Number(r.share)||0), 1))).join('')
-    : `<div class="analysis-empty">${esc(emptyText)}</div>`;
-  return `<div class="analysis-card">
-    <div class="analysis-card-head">
-      <div>
-        <div class="analysis-card-title">${esc(title)}</div>
-        <div class="analysis-card-meta">${esc(subtitle)}</div>
-      </div>
-      ${headRight?`<div>${headRight}</div>`:''}
+function assetRankingListHtml(rows, mode){
+  let listRows=[...rows];
+  if(mode==='concentration'){
+    listRows=listRows.filter(r=>r.share!=null).sort((a,b)=>b.share-a.share || b.current-a.current);
+  }else if(mode==='best'){
+    listRows=listRows.filter(r=>Number.isFinite(r.pct) && r.pct>0).sort((a,b)=>b.pct-a.pct || b.current-a.current);
+  }else if(mode==='worst'){
+    listRows=listRows.filter(r=>Number.isFinite(r.pct) && r.pct<0).sort((a,b)=>a.pct-b.pct || a.current-b.current);
+  }else if(mode==='opportunity'){
+    listRows=listRows.filter(r=>{
+      const sig=assetContributionSignal(r);
+      return sig.label==='Pode estudar aporte';
+    }).sort((a,b)=>a.pct-b.pct || b.current-a.current);
+  }else{
+    listRows=listRows.filter(r=>Number.isFinite(r.current) || Number.isFinite(r.applied)).sort((a,b)=>b.current-a.current || (b.share||0)-(a.share||0));
+  }
+  listRows=listRows.slice(0,12);
+  if(!listRows.length) return `<div class="analysis-ranking-empty">Dados insuficientes para montar o ranking compacto.</div>`;
+  return `
+    <div class="analysis-ranking-labels">
+      <div>Ativo</div><div>Tipo / setor</div><div>Valor atual</div><div>% carteira</div><div>Rentab.</div><div>Sinalizador</div>
     </div>
-    <div class="analysis-list">${list}</div>
-  </div>`;
+    <div class="analysis-ranking-table">
+      ${listRows.map((row,idx)=>assetRankingRowHtml(row, idx+1)).join('')}
+    </div>`;
 }
 function assetAnalysisBlock(){
   const rows=assetAnalysisRows();
+  const rankingMode=String(S.assetsAnalysisRankingMode||'positions');
   const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
-  const positive=[...rows]
-    .filter(r=>Number.isFinite(r.profit) && r.profit>0 && Number.isFinite(r.pct))
-    .sort((a,b)=>b.profit-a.profit || (b.pct||0)-(a.pct||0))
-    .slice(0,5);
-  const negative=[...rows]
-    .filter(r=>Number.isFinite(r.profit) && r.profit<0 && Number.isFinite(r.pct))
-    .sort((a,b)=>a.profit-b.profit || (a.pct||0)-(b.pct||0))
-    .slice(0,5);
-  const positions=[...rows]
-    .filter(r=>r.current>0)
-    .sort((a,b)=>b.current-a.current)
-    .slice(0,5);
-  const concentration=[...rows]
-    .filter(r=>r.share!=null)
-    .sort((a,b)=>b.share-a.share)
-    .slice(0,5);
-  const topConcentration=concentration[0] || null;
+  const positives=[...rows].filter(r=>Number.isFinite(r.profit) && r.profit>0 && Number.isFinite(r.pct)).sort((a,b)=>b.profit-a.profit || (b.pct||0)-(a.pct||0));
+  const negatives=[...rows].filter(r=>Number.isFinite(r.profit) && r.profit<0 && Number.isFinite(r.pct)).sort((a,b)=>a.profit-b.profit || (a.pct||0)-(b.pct||0));
+  const byCurrent=[...rows].filter(r=>r.current>0).sort((a,b)=>b.current-a.current);
+  const byShare=[...rows].filter(r=>r.share!=null).sort((a,b)=>b.share-a.share);
+  const best=positives[0] || byCurrent[0] || rows[0] || null;
+  const worst=negatives[0] || positives.slice().reverse()[0] || rows[rows.length-1] || null;
+  const topPosition=byCurrent[0] || null;
+  const topConcentration=byShare[0] || null;
   const concentrationAlert=assetConcentrationAlert(topConcentration ? topConcentration.share : null);
   const concentrationSubtitle=topConcentration
-    ? `Top 1 = ${Number(topConcentration.share).toFixed(1)}% da carteira`
+    ? `${topConcentration.ticker} · ${Number(topConcentration.share).toFixed(1)}% da carteira`
     : 'dados insuficientes para medir concentração.';
   const statusText=rows.length
     ? `${rows.length} ativos analisados · carteira ${fmt(total)}`
     : 'dados insuficientes';
+  const rankingNote=rows.length
+    ? `Lista compacta com até 12 ativos, ordenada pelos maiores pesos da carteira.`
+    : 'Sem ativos suficientes para montar o ranking.';
+  const rankingSubtitle=assetRankingModeLabel(rankingMode);
+  const rankingButtons=[
+    ['positions','Maiores posições'],
+    ['concentration','Maior concentração'],
+    ['best','Melhores ativos'],
+    ['worst','Piores ativos'],
+    ['opportunity','Oportunidades']
+  ].map(([mode,label])=>`<button class="asset-inner-tab ${rankingMode===mode?'on':''}" onclick="setAssetsAnalysisRankingMode('${mode}')" role="tab" aria-selected="${rankingMode===mode?'true':'false'}">${esc(label)}</button>`).join('');
   return `<div class="analysis-shell">
     <div class="sh" style="margin-bottom:0">
       <div>
@@ -7773,13 +7838,29 @@ function assetAnalysisBlock(){
       </div>
       <div class="analysis-pill">${esc(statusText)}</div>
     </div>
-    <div class="analysis-grid">
-      ${assetAnalysisCard('Ativos mais positivos','Maior lucro da carteira',positive,'positive','Dados insuficientes para identificar ativos positivos.')}
-      ${assetAnalysisCard('Ativos mais negativos','Maior prejuízo da carteira',negative,'negative','Dados insuficientes para identificar ativos negativos.')}
-      ${assetAnalysisCard('Maiores posições','Maior valor atual na carteira',positions,'position','Dados insuficientes para calcular posições.')}
-      ${assetAnalysisCard('Maior concentração',concentrationSubtitle,concentration,'concentration','Dados insuficientes para medir concentração.',`<span class="analysis-pill ${esc(concentrationAlert.tone)}">${esc(concentrationAlert.label)}</span>`)}
+    <div class="analysis-summary">
+      ${assetSummaryCard('Maior posição', topPosition ? `${topPosition.ticker}` : '—', topPosition ? `${fmt(topPosition.current)} · ${topPosition.share!=null?topPosition.share.toFixed(1)+'% da carteira':'sem participação'}` : 'dados insuficientes', 'info')}
+      ${assetSummaryCard('Maior concentração', topConcentration ? `${topConcentration.ticker}` : '—', topConcentration ? `${topConcentration.share.toFixed(1)}% da carteira` : 'dados insuficientes', concentrationAlert.tone)}
+      ${assetSummaryCard('Melhor ativo', best ? `${best.ticker}` : '—', best ? `${fmtP(best.pct)} · ${fmt(best.profit)}` : 'dados insuficientes', 'ok')}
+      ${assetSummaryCard('Pior ativo', worst ? `${worst.ticker}` : '—', worst ? `${fmtP(worst.pct)} · ${fmt(worst.profit)}` : 'dados insuficientes', 'danger')}
+      ${assetSummaryCard('Ativos analisados', `${rows.length}`, rankingNote, 'muted')}
+    </div>
+    <div class="analysis-ranking">
+      <div class="analysis-ranking-head">
+        <div>
+          <div class="analysis-ranking-title">Ranking de Ativos</div>
+          <div class="analysis-ranking-meta">${esc(rankingSubtitle)} · ${esc(rankingNote)}</div>
+        </div>
+        <div class="analysis-pill ${esc(concentrationAlert.tone)}">${esc(concentrationAlert.label)}</div>
+      </div>
+      <div class="asset-inner-tabs" style="margin:0 0 2px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px">${rankingButtons}</div>
+      ${assetRankingListHtml(rows, rankingMode)}
     </div>
   </div>`;
+}
+function setAssetsAnalysisRankingMode(mode){
+  S.assetsAnalysisRankingMode = ['positions','concentration','best','worst','opportunity'].includes(mode) ? mode : 'positions';
+  render();
 }
 function setAssetsInnerTab(tab){
   S.assetsInnerTab = tab==='analise' ? 'analise' : 'patrimonio';
