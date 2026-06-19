@@ -4,8 +4,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$projectRoot = "C:\Projetos\carteira-investimentos"
-$backupScript = Join-Path $projectRoot 'backup-to-drive.ps1'
+$scriptRoot = $PSScriptRoot
+if (-not $scriptRoot) {
+  $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
+
+$backupScript = Join-Path $scriptRoot 'backup-to-drive.ps1'
 $destinationDrive = 'G:\'
 
 if ($IntervalMinutes -lt 15) {

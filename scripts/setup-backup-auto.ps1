@@ -4,8 +4,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$projectRoot = "C:\Projetos\carteira-investimentos"
-$loopScript = Join-Path $projectRoot 'backup-auto-loop.ps1'
+$scriptRoot = $PSScriptRoot
+if (-not $scriptRoot) {
+  $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
+
+$loopScript = Join-Path $scriptRoot 'backup-auto-loop.ps1'
 
 if (-not (Test-Path -LiteralPath $loopScript)) {
   throw "Script de automacao nao encontrado: $loopScript"
