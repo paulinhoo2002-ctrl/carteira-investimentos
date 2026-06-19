@@ -7962,11 +7962,20 @@ function assetContributionSignal(row){
 function assetRankingModeLabel(mode){
   return ({
     positions:'Maiores posições',
-    concentration:'Maior concentração',
+    concentration:'Concentração crítica',
     best:'Melhores ativos',
     worst:'Piores ativos',
     opportunity:'Oportunidades'
   }[mode]) || 'Maiores posições';
+}
+function assetRankingModeDescription(mode){
+  return ({
+    positions:'Ativos com maior valor na carteira',
+    concentration:'Ativos com maior peso e possível risco de concentração',
+    best:'Maiores rentabilidades positivas',
+    worst:'Maiores quedas da carteira',
+    opportunity:'Ativos para estudar, sem concentração elevada'
+  }[mode]) || 'Ativos com maior valor na carteira';
 }
 function assetSummaryCard(title, value, subtitle, tone='muted'){
   return `<div class="analysis-summary-card ${esc(tone)}">
@@ -8007,7 +8016,7 @@ function assetRankingRowHtml(row, index){
 function assetRankingListHtml(rows, mode){
   let listRows=[...rows];
   if(mode==='concentration'){
-    listRows=listRows.filter(r=>r.share!=null).sort((a,b)=>b.share-a.share || b.current-a.current);
+    listRows=listRows.filter(r=>r.share!=null && r.share>10).sort((a,b)=>b.share-a.share || b.current-a.current);
   }else if(mode==='best'){
     listRows=listRows.filter(r=>Number.isFinite(r.pct) && r.pct>0).sort((a,b)=>b.pct-a.pct || b.current-a.current);
   }else if(mode==='worst'){
@@ -8015,13 +8024,26 @@ function assetRankingListHtml(rows, mode){
   }else if(mode==='opportunity'){
     listRows=listRows.filter(r=>{
       const sig=assetContributionSignal(r);
-      return sig.label==='Pode estudar aporte';
-    }).sort((a,b)=>a.pct-b.pct || b.current-a.current);
+      return sig.label==='Pode estudar aporte'
+        && Number.isFinite(r.pct)
+        && r.pct<0
+        && r.share!=null
+        && r.share<15
+        && Number.isFinite(r.current)
+        && r.current>0;
+    }).sort((a,b)=>(a.share||0)-(b.share||0) || Math.abs(a.pct)-Math.abs(b.pct));
   }else{
     listRows=listRows.filter(r=>Number.isFinite(r.current) || Number.isFinite(r.applied)).sort((a,b)=>b.current-a.current || (b.share||0)-(a.share||0));
   }
   listRows=listRows.slice(0,12);
-  if(!listRows.length) return `<div class="analysis-ranking-empty">Dados insuficientes para montar o ranking compacto.</div>`;
+  if(!listRows.length){
+    const msg = mode==='concentration'
+      ? 'Nenhum ativo com concentração relevante.'
+      : mode==='opportunity'
+        ? 'Nenhuma oportunidade clara com os critérios atuais.'
+        : 'Dados insuficientes para montar o ranking compacto.';
+    return `<div class="analysis-ranking-empty">${esc(msg)}</div>`;
+  }
   return `
     <div class="analysis-ranking-labels">
       <div>Ativo</div><div>Tipo / setor</div><div>Valor atual</div><div>% carteira</div><div>Rentab.</div><div>Sinalizador</div>
@@ -8053,9 +8075,10 @@ function assetAnalysisBlock(){
     ? `Lista compacta com até 12 ativos, ordenada pelos maiores pesos da carteira.`
     : 'Sem ativos suficientes para montar o ranking.';
   const rankingSubtitle=assetRankingModeLabel(rankingMode);
+  const rankingDescription=assetRankingModeDescription(rankingMode);
   const rankingButtons=[
     ['positions','Maiores posições'],
-    ['concentration','Maior concentração'],
+    ['concentration','Concentração crítica'],
     ['best','Melhores ativos'],
     ['worst','Piores ativos'],
     ['opportunity','Oportunidades']
@@ -8079,7 +8102,7 @@ function assetAnalysisBlock(){
       <div class="analysis-ranking-head">
         <div>
           <div class="analysis-ranking-title">Ranking de Ativos</div>
-          <div class="analysis-ranking-meta">${esc(rankingSubtitle)} · ${esc(rankingNote)}</div>
+          <div class="analysis-ranking-meta">${esc(rankingSubtitle)} · ${esc(rankingDescription)}</div>
         </div>
         <div class="analysis-pill ${esc(concentrationAlert.tone)}">${esc(concentrationAlert.label)}</div>
       </div>
@@ -9182,7 +9205,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
   const resumoMensalTipos = proventoResumoMensalTipos();
   const resumoAtivos = proventoResumoPorAtivo();
   const resumoTiposDetalhado = proventoResumoPorTipo();
-  const maioresPagadores = proventoRankingPagadores();
+  const maioresPagadores = passiveIncomeTopPayers(10, passiveGoal.monthKeys);
   const importedDetailsOpen = !!S.showImportedDividendsDetails;
   const audit = proventoAuditBuildRows();
   const auditMonths = proventoAuditMonthOptions();
@@ -9270,8 +9293,64 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </tr>`).join('')
     : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#2e3f58">Nenhum provento registrado. Use "Buscar histórico grátis" ou "+ Registrar provento".</td></tr>';
 
+  const payersBlock = `<details class="sec"${S.activeDividendSection==='payers'?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('payers', event)">
+      <div>
+        <div class="sec-title">Melhores pagadores</div>
+        <div class="sec-meta">Top 10 ativos que mais pagaram proventos nos últimos 12 meses</div>
+      </div>
+      <div class="sec-meta">${dividendDisclosureLabel('payers')}</div>
+    </summary>
+    <div class="sec-body">
+      <div class="cc" style="margin:0;padding:9px 10px 7px">
+        <div class="sh" style="margin-bottom:5px">
+          <div>
+            <div class="st">Ranking dos maiores pagadores</div>
+            <div class="mu" style="font-size:11px;margin-top:2px">Top 10 ativos que mais pagaram proventos nos últimos 12 meses.</div>
+          </div>
+          <div class="mu" style="font-size:11px">${maioresPagadores.length} no ranking</div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table style="min-width:920px">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ativo</th>
+                  <th>Tipo</th>
+                  <th>Total recebido</th>
+                  <th>Participação</th>
+                </tr>
+              </thead>
+              <tbody>${
+                maioresPagadores.length
+                  ? maioresPagadores.map((r,idx)=>{
+                      const pct=passiveGoal.total12>0 ? (r.total/passiveGoal.total12)*100 : 0;
+                      return `<tr>
+                        <td style="font-weight:800;color:#94a3b8">#${idx+1}</td>
+                        <td style="font-weight:700;color:#e2eaf6">${esc(r.name||r.ticker||'—')}</td>
+                        <td>${esc(r.type||'—')}</td>
+                        <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
+                        <td>
+                          <div style="display:flex;align-items:center;gap:8px">
+                            <div class="bwr" style="width:120px"><div class="bfr" style="width:${Math.min(100,pct).toFixed(0)}%;background:#34d399"></div></div>
+                            <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
+                          </div>
+                        </td>
+                      </tr>`;
+                    }).join('')
+                  : '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Nenhum pagador encontrado.</td></tr>'
+              }</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>`;
+
   return`<div style="font-size:14px;font-weight:700;margin-bottom:8px">${esc(pageTitle)}</div>
   ${passiveIncomeDividendSummaryBlock(passiveGoal)}
+  ${payersBlock}
   <details class="sec"${S.activeDividendSection==='monthly'?' open':''} style="margin-bottom:8px">
     <summary onclick="toggleDividendSection('monthly', event)">
       <div>
@@ -9522,60 +9601,6 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </div>
     </div>
     `:''}
-  <details class="sec"${S.activeDividendSection==='payers'?' open':''} style="margin-bottom:8px">
-    <summary onclick="toggleDividendSection('payers', event)">
-      <div>
-        <div class="sec-title">Melhores pagadores</div>
-        <div class="sec-meta">Top 10 ativos que mais pagaram proventos no período.</div>
-      </div>
-      <div class="sec-meta">${dividendDisclosureLabel('payers')}</div>
-    </summary>
-    <div class="sec-body">
-      <div class="cc" style="margin:0;padding:9px 10px 7px">
-        <div class="sh" style="margin-bottom:5px">
-          <div>
-            <div class="st">Ranking dos maiores pagadores</div>
-            <div class="mu" style="font-size:11px;margin-top:2px">Top 10 ativos que mais pagaram proventos no período.</div>
-          </div>
-          <div class="mu" style="font-size:11px">${maioresPagadores.length} no ranking</div>
-        </div>
-        <div class="tw">
-          <div class="ts">
-            <table style="min-width:920px">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Ativo</th>
-                  <th>Tipo</th>
-                  <th>Total recebido</th>
-                  <th>Participação</th>
-                </tr>
-              </thead>
-              <tbody>${
-                maioresPagadores.length
-                  ? maioresPagadores.map((r,idx)=>{
-                      const pct=resumoTipos.total>0 ? (r.total/resumoTipos.total)*100 : 0;
-                      return `<tr>
-                        <td style="font-weight:800;color:#94a3b8">#${idx+1}</td>
-                        <td style="font-weight:700;color:#e2eaf6">${esc(r.name||r.ticker||'—')}</td>
-                        <td>${esc(r.type||'—')}</td>
-                        <td class="gn" style="font-weight:800">${fmt(r.total)}</td>
-                        <td>
-                          <div style="display:flex;align-items:center;gap:8px">
-                            <div class="bwr" style="width:120px"><div class="bfr" style="width:${Math.min(100,pct).toFixed(0)}%;background:#34d399"></div></div>
-                            <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
-                          </div>
-                        </td>
-                      </tr>`;
-                    }).join('')
-                  : '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Nenhum pagador encontrado.</td></tr>'
-              }</tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </details>
   <details class="sec"${S.activeDividendSection==='audit'?' open':''} style="margin-bottom:8px">
     <summary onclick="toggleDividendSection('audit', event)">
       <div>
