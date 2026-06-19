@@ -486,7 +486,8 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .passive-goal-empty-note{font-size:11px;color:#94a3b8;line-height:1.35}
 .passive-goal-grid{display:grid;gap:8px}
 .passive-goal-grid.main{grid-template-columns:repeat(4,minmax(0,1fr))}
-.passive-goal-grid.secondary{grid-template-columns:repeat(3,minmax(0,1fr))}
+.passive-goal-grid.summary{grid-template-columns:repeat(5,minmax(120px,1fr))}
+.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
 .passive-goal-card{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:10px;min-height:72px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
 .passive-goal-card .passive-goal-kicker{font-size:10px;color:#94a3b8;line-height:1.2}
 .passive-goal-card .passive-goal-value{font-size:15px;font-weight:900;color:#edf3ff;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -599,6 +600,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .rf-proventos-kpi-value{font-size:16px}
   .rf-proventos-table{min-width:1220px}
   .passive-goal-grid.main,.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-empty{padding:9px 10px}
   .passive-goal-card{min-height:66px;padding:9px}
   .passive-goal-card .passive-goal-value{font-size:13px}
@@ -6014,7 +6016,6 @@ function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
   const bestSub=bestPayer ? `${fmt(bestPayer.total)} recebidos nos últimos 12 meses` : 'Nenhum pagador encontrado';
   const avgLabel=stats.hasData ? fmt(stats.monthlyAvg) : '—';
   const total12Label=stats.hasData ? fmt(stats.total12) : '—';
-  const annualLabel=stats.hasData ? fmt(stats.annualProjection) : '—';
   return `<div class="cc passive-goal-shell" style="margin-bottom:8px;padding:10px 10px 9px">
     <div class="sh passive-goal-head" style="margin-bottom:4px;gap:10px">
       <div style="min-width:0">
@@ -6023,16 +6024,12 @@ function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
       </div>
       <div class="passive-goal-badge ${stats.hasData ? 'info' : 'muted'}">${stats.hasData ? `${fmt(rec.total)} acumulados` : 'Sem histórico'}</div>
     </div>
-    <div class="passive-goal-grid main">
+    <div class="passive-goal-grid summary">
       ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Recebido no mês', value:fmt(rec.mes), sub:'Valor real recebido no mês atual'})}
       ${passiveIncomeMetricCard({tone:'info', kicker:'Recebido no ano', value:fmt(rec.ano), sub:'Somatório do ano corrente'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'warn':'muted', kicker:'Total histórico', value:fmt(rec.total), sub:'Tudo que já entrou na conta'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Melhor pagador', value:bestLabel, sub:bestSub})}
-    </div>
-    <div class="passive-goal-grid secondary">
-      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Média mensal 12M', value:avgLabel, sub:'Histórico real dos últimos 12 meses corridos'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Total recebido 12M', value:total12Label, sub:'Soma dos 12 meses analisados'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Projeção anualizada', value:annualLabel, sub:'Média mensal real × 12'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Média mensal 12M', value:avgLabel, sub:'Histórico real dos últimos 12 meses'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Total recebido 12M', value:total12Label, sub:'Soma dos últimos 12 meses'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Melhor pagador', value:bestLabel, sub:'Maior pagador nos últimos 12 meses'})}
     </div>
   </div>`;
 }
@@ -8104,6 +8101,9 @@ function toggleDividendSection(section, ev){
   S.activeDividendSection = S.activeDividendSection===section ? '' : section;
   render();
 }
+function dividendDisclosureLabel(section){
+  return S.activeDividendSection===section ? 'clique para ocultar' : 'clique para abrir';
+}
 function toggleImportedDividendsDetails(ev){
   if(ev) ev.preventDefault();
   S.showImportedDividendsDetails = !S.showImportedDividendsDetails;
@@ -9278,7 +9278,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
         <div class="sec-title">Histórico mensal</div>
         <div class="sec-meta">consolidado por ano e por mês</div>
       </div>
-      <div class="sec-meta">clicar para ocultar</div>
+      <div class="sec-meta">${dividendDisclosureLabel('monthly')}</div>
     </summary>
     <div class="sec-body">
       <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
@@ -9301,7 +9301,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
         <div class="sec-title">Proventos recebidos (${S.proventos.length})</div>
         <div class="sec-meta">valores já creditados na conta</div>
       </div>
-      <div class="sec-meta">clicar para ocultar</div>
+      <div class="sec-meta">${dividendDisclosureLabel('received')}</div>
     </summary>
     <div class="sec-body">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
@@ -9321,7 +9321,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
         <div class="sec-title">Projeção por ativo</div>
         <div class="sec-meta">${S.assets.length} ativos com projeção mensal e anual</div>
       </div>
-      <div class="sec-meta">clicar para ocultar</div>
+      <div class="sec-meta">${dividendDisclosureLabel('projection')}</div>
     </summary>
     <div class="sec-body">
       <div class="tw"><div class="ts"><table>
@@ -9337,7 +9337,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
         <div class="st">Proventos importados da B3</div>
         <div class="mu" style="font-size:11px;margin-top:2px">${fmt(resumoTipos.total)} importados · ${resumoTipos.count} lançamentos</div>
       </div>
-      <button class="btn ${importedDetailsOpen ? 'bp' : 'bgh'}" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleImportedDividendsDetails(event)">${importedDetailsOpen ? 'Ocultar detalhes' : 'Ver detalhes'}</button>
+      <button class="btn ${importedDetailsOpen ? 'bp' : 'bgh'}" style="font-size:12px;padding:7px 12px;white-space:nowrap" onclick="toggleImportedDividendsDetails(event)">${importedDetailsOpen ? 'clique para ocultar' : 'clique para abrir'}</button>
     </div>
     <div class="prov-imported-hint" style="display:${importedDetailsOpen ? 'none' : 'block'}">Seção operacional de conferência, fechada por padrão.</div>
     <div class="prov-imported-compact" style="display:${importedDetailsOpen ? 'flex' : 'none'};margin-bottom:8px">
@@ -9520,6 +9520,17 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
           </div>
         </div>
       </div>
+    </div>
+    `:''}
+  <details class="sec"${S.activeDividendSection==='payers'?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('payers', event)">
+      <div>
+        <div class="sec-title">Melhores pagadores</div>
+        <div class="sec-meta">Top 10 ativos que mais pagaram proventos no período.</div>
+      </div>
+      <div class="sec-meta">${dividendDisclosureLabel('payers')}</div>
+    </summary>
+    <div class="sec-body">
       <div class="cc" style="margin:0;padding:9px 10px 7px">
         <div class="sh" style="margin-bottom:5px">
           <div>
@@ -9564,14 +9575,14 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
         </div>
       </div>
     </div>
-    `:''}
+  </details>
   <details class="sec"${S.activeDividendSection==='audit'?' open':''} style="margin-bottom:8px">
     <summary onclick="toggleDividendSection('audit', event)">
       <div>
         <div class="sec-title">Auditoria e conferência de proventos</div>
         <div class="sec-meta">Área avançada para filtrar por mês/ano e identificar possíveis duplicidades.</div>
       </div>
-      <div class="sec-meta">${S.activeDividendSection==='audit' ? 'clicar para ocultar' : 'fechado por padrão'}</div>
+      <div class="sec-meta">${dividendDisclosureLabel('audit')}</div>
     </summary>
     <div class="sec-body prov-audit-shell">
       <div class="prov-audit-filters">
