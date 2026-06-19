@@ -58,6 +58,11 @@ button{cursor:pointer;font-family:inherit}
 .analysis-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#4f46e5,#818cf8)}
 .analysis-empty{padding:10px;border:1px dashed #223048;border-radius:10px;color:#7489a4;font-size:11px;background:#09101b;line-height:1.4}
 .analysis-pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8;border:1px solid #1d2940;background:#111828;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.analysis-pill.ok{color:#34d399;border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.08)}
+.analysis-pill.info{color:#60a5fa;border-color:rgba(96,165,250,.28);background:rgba(96,165,250,.08)}
+.analysis-pill.warn{color:#fbbf24;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08)}
+.analysis-pill.danger{color:#f87171;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.08)}
+.analysis-pill.muted{color:#94a3b8;border-color:#1d2940;background:#111828}
 .analysis-positive .analysis-item-val{color:#34d399}
 .analysis-negative .analysis-item-val{color:#f87171}
 .analysis-info .analysis-item-val{color:#60a5fa}
@@ -7662,6 +7667,16 @@ function assetAnalysisRows(){
     };
   }).filter(r=>r.ticker || r.current>0 || r.applied>0);
 }
+function assetConcentrationAlert(share){
+  if(share==null || !Number.isFinite(share)){
+    return {label:'dados insuficientes', tone:'muted'};
+  }
+  if(share<=10) return {label:'Peso saudável', tone:'ok'};
+  if(share<=20) return {label:'Atenção: posição relevante', tone:'info'};
+  if(share<=30) return {label:'Atenção', tone:'warn'};
+  if(share<=50) return {label:'Concentração alta', tone:'danger'};
+  return {label:'Concentração muito alta', tone:'danger'};
+}
 function assetAnalysisRowHtml(row, mode, maxShare){
   const typeLabel=`${row.type}${row.sector&&row.sector!=='—'?` · ${row.sector}`:''}`;
   if(mode==='positive' || mode==='negative'){
@@ -7742,7 +7757,11 @@ function assetAnalysisBlock(){
     .filter(r=>r.share!=null)
     .sort((a,b)=>b.share-a.share)
     .slice(0,5);
-  const top3Pct=concentration.slice(0,3).reduce((s,r)=>s+(Number(r.share)||0),0);
+  const topConcentration=concentration[0] || null;
+  const concentrationAlert=assetConcentrationAlert(topConcentration ? topConcentration.share : null);
+  const concentrationSubtitle=topConcentration
+    ? `Top 1 = ${Number(topConcentration.share).toFixed(1)}% da carteira`
+    : 'dados insuficientes para medir concentração.';
   const statusText=rows.length
     ? `${rows.length} ativos analisados · carteira ${fmt(total)}`
     : 'dados insuficientes';
@@ -7758,7 +7777,7 @@ function assetAnalysisBlock(){
       ${assetAnalysisCard('Ativos mais positivos','Maior lucro da carteira',positive,'positive','Dados insuficientes para identificar ativos positivos.')}
       ${assetAnalysisCard('Ativos mais negativos','Maior prejuízo da carteira',negative,'negative','Dados insuficientes para identificar ativos negativos.')}
       ${assetAnalysisCard('Maiores posições','Maior valor atual na carteira',positions,'position','Dados insuficientes para calcular posições.')}
-      ${assetAnalysisCard('Maior concentração',`Top 3 = ${top3Pct.toFixed(1)}% da carteira`,concentration,'concentration','Dados insuficientes para medir concentração.')}
+      ${assetAnalysisCard('Maior concentração',concentrationSubtitle,concentration,'concentration','Dados insuficientes para medir concentração.',`<span class="analysis-pill ${esc(concentrationAlert.tone)}">${esc(concentrationAlert.label)}</span>`)}
     </div>
   </div>`;
 }
