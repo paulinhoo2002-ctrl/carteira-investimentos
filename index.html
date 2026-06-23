@@ -98,6 +98,45 @@ button{cursor:pointer;font-family:inherit}
 .analysis-info .analysis-item-val{color:#60a5fa}
 .analysis-warn .analysis-item-val{color:#fbbf24}
 .analysis-warn .analysis-bar-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.asset-premium-analysis{display:flex;flex-direction:column;gap:10px}
+.asset-premium-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:15px;padding:13px;background:linear-gradient(135deg,#10182a,#0b1020 65%,#11162a)}
+.asset-premium-hero:after{content:"";position:absolute;width:140px;height:140px;border-radius:50%;right:-72px;top:-78px;background:rgba(99,102,241,.13);pointer-events:none}
+.asset-premium-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1}
+.asset-premium-title{font-size:15px;font-weight:900;color:#edf3ff}
+.asset-premium-sub{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:3px}
+.asset-premium-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:11px;position:relative;z-index:1}
+.asset-premium-kpi{padding:8px 9px;border:1px solid #1d2940;border-radius:10px;background:rgba(9,12,21,.68);min-width:0}
+.asset-premium-kpi-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.asset-premium-kpi-value{font-size:13px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-premium-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.asset-premium-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr))}
+.asset-premium-section{border:1px solid #1d2940;border-radius:14px;background:#0d1320;overflow:hidden;min-width:0}
+.asset-premium-section>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:11px 12px;cursor:pointer}
+.asset-premium-section>summary::-webkit-details-marker{display:none}
+.asset-premium-section[open]>summary{border-bottom:1px solid #182033}
+.asset-premium-section-title{font-size:12px;font-weight:850;color:#e2eaf6}
+.asset-premium-section-sub{font-size:9px;color:#7489a4;line-height:1.35;margin-top:2px}
+.asset-premium-section-meta{font-size:9px;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 7px;white-space:nowrap}
+.asset-premium-body{display:flex;flex-direction:column;gap:7px;padding:10px 11px}
+.asset-performance-row{padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15;min-width:0}
+.asset-performance-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.asset-performance-name{font-size:11px;font-weight:900;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-performance-prices{font-size:9px;color:#7489a4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-performance-result{text-align:right}
+.asset-performance-pct{font-size:12px;font-weight:900;white-space:nowrap}
+.asset-performance-total{font-size:9px;color:#94a3b8;margin-top:2px;white-space:nowrap}
+.asset-performance-bar{height:5px;border-radius:999px;background:#141d2f;overflow:hidden;margin-top:7px}
+.asset-performance-fill{height:100%;border-radius:999px}
+.asset-performance-row.positive .asset-performance-pct{color:#34d399}
+.asset-performance-row.positive .asset-performance-fill{background:linear-gradient(90deg,#22c55e,#86efac)}
+.asset-performance-row.negative .asset-performance-pct{color:#f87171}
+.asset-performance-row.negative .asset-performance-fill{background:linear-gradient(90deg,#ef4444,#fb7185)}
+.asset-insight-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center;padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15;min-width:0}
+.asset-insight-main{min-width:0}
+.asset-insight-title{font-size:11px;font-weight:850;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-insight-sub{font-size:9px;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-insight-value{text-align:right;font-size:11px;font-weight:850;white-space:nowrap}
+.asset-premium-empty{padding:12px;border:1px dashed #26344b;border-radius:10px;background:#09101b;color:#7489a4;font-size:10px;line-height:1.45}
 .rebalance-shell{display:flex;flex-direction:column;gap:12px}
 .rebalance-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:16px;padding:15px;background:linear-gradient(135deg,#10182a 0%,#0b1020 58%,#11162a 100%)}
 .rebalance-hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-90px;top:-100px;background:rgba(99,102,241,.12);filter:blur(4px);pointer-events:none}
@@ -191,6 +230,8 @@ button{cursor:pointer;font-family:inherit}
 @media(max-width:900px){
   .analysis-grid{grid-template-columns:1fr}
   .analysis-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .asset-premium-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .asset-premium-grid,.asset-premium-grid.compact{grid-template-columns:1fr}
   .rebalance-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rebalance-study-labels{display:none}
   .rebalance-study-row{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -220,6 +261,27 @@ button{cursor:pointer;font-family:inherit}
   .analysis-ranking-stat{align-items:flex-start}
   .asset-inner-tabs{gap:6px;margin:2px 0 10px}
   .asset-inner-tab{padding:7px 10px;font-size:11px}
+  .asset-premium-analysis{gap:8px;padding-bottom:22px}
+  .asset-premium-hero{padding:11px;border-radius:12px}
+  .asset-premium-title{font-size:13px}
+  .asset-premium-sub{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .asset-premium-overview{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
+  .asset-premium-kpi{padding:7px 8px}
+  .asset-premium-kpi-label{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .asset-premium-kpi-value{font-size:11px}
+  .asset-premium-grid,.asset-premium-grid.compact{grid-template-columns:1fr;gap:7px}
+  .asset-premium-section{border-radius:11px}
+  .asset-premium-section>summary{padding:9px 10px;align-items:center}
+  .asset-premium-section-title{font-size:10px}
+  .asset-premium-section-sub{display:none}
+  .asset-premium-section-meta{font-size:8px;padding:3px 6px}
+  .asset-premium-body{padding:8px;gap:6px}
+  .asset-premium-body .asset-performance-row:nth-child(n+4),
+  .asset-premium-body .asset-insight-row:nth-child(n+4){display:none}
+  .asset-performance-row,.asset-insight-row{padding:7px 8px}
+  .asset-performance-name,.asset-insight-title{font-size:10px}
+  .asset-performance-prices,.asset-insight-sub{font-size:8px}
+  .asset-performance-pct,.asset-insight-value{font-size:10px}
   .rebalance-hero{padding:12px}
   .rebalance-form{grid-template-columns:1fr}
   .rebalance-form .btn{width:100%}
@@ -8608,69 +8670,95 @@ function assetRankingListHtml(rows, mode){
       ${listRows.map((row,idx)=>assetRankingRowHtml(row, idx+1)).join('')}
     </div>`;
 }
+function assetPremiumSection(title, subtitle, count, body, tone='muted'){
+  const mobile=typeof window!=='undefined' && window.matchMedia && window.matchMedia('(max-width:640px)').matches;
+  return `<details class="asset-premium-section" ${mobile?'':'open'}>
+    <summary>
+      <div style="min-width:0"><div class="asset-premium-section-title">${esc(title)}</div><div class="asset-premium-section-sub">${esc(subtitle)}</div></div>
+      <span class="asset-premium-section-meta analysis-pill ${esc(tone)}">${count} ${count===1?'ativo':'ativos'}</span>
+    </summary>
+    <div class="asset-premium-body">${body}</div>
+  </details>`;
+}
+function assetPerformanceRowHtml(row, maxAbs, kind){
+  const pct=Number(row.pct)||0;
+  const width=Math.max(6,Math.min(100,(Math.abs(pct)/Math.max(1,maxAbs))*100));
+  const avg=Number(row.avgPrice)||0;
+  const currentPrice=Number(row.currentPrice)||0;
+  return `<div class="asset-performance-row ${kind}">
+    <div class="asset-performance-top">
+      <div style="min-width:0">
+        <div class="asset-performance-name">${esc(row.ticker)}</div>
+        <div class="asset-performance-prices">PM ${avg>0?fmt(avg):'—'} · Atual ${currentPrice>0?fmt(currentPrice):'—'} · ${esc(row.type)}</div>
+      </div>
+      <div class="asset-performance-result">
+        <div class="asset-performance-pct">${fmtP(pct)}</div>
+        <div class="asset-performance-total">${fmt(row.current)}</div>
+      </div>
+    </div>
+    <div class="asset-performance-bar"><div class="asset-performance-fill" style="width:${width.toFixed(0)}%"></div></div>
+  </div>`;
+}
+function assetInsightRowHtml(row, mode){
+  const signal=assetContributionSignal(row);
+  if(mode==='position'){
+    return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(row.type)} · ${row.share!=null?row.share.toFixed(1)+'% da carteira':'participação indisponível'}</div></div><div class="asset-insight-value bl">${fmt(row.current)}</div></div>`;
+  }
+  if(mode==='concentration'){
+    const alert=assetConcentrationAlert(row.share);
+    return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(alert.label)} · ${fmt(row.current)}</div></div><div class="asset-insight-value am">${row.share!=null?row.share.toFixed(1)+'%':'—'}</div></div>`;
+  }
+  if(mode==='incomplete'){
+    return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker||'Ativo sem código')}</div><div class="asset-insight-sub">${esc(row.type)} · revise preço atual, preço médio ou quantidade</div></div><div class="asset-insight-value mu">Revisar</div></div>`;
+  }
+  return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(row.type)} · ${row.pct!=null?fmtP(row.pct):'rentabilidade indisponível'}</div></div><div class="asset-insight-value"><span class="analysis-pill signal ${esc(signal.tone)}">${esc(signal.label)}</span></div></div>`;
+}
 function assetAnalysisBlock(){
   const rows=assetAnalysisRows();
-  const rankingMode=String(S.assetsAnalysisRankingMode||'positions');
   const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
-  const positives=[...rows].filter(r=>Number.isFinite(r.profit) && r.profit>0 && Number.isFinite(r.pct)).sort((a,b)=>b.profit-a.profit || (b.pct||0)-(a.pct||0));
-  const negatives=[...rows].filter(r=>Number.isFinite(r.profit) && r.profit<0 && Number.isFinite(r.pct)).sort((a,b)=>a.profit-b.profit || (a.pct||0)-(b.pct||0));
-  const byCurrent=[...rows].filter(r=>r.current>0).sort((a,b)=>b.current-a.current);
-  const byShare=[...rows].filter(r=>r.share!=null).sort((a,b)=>b.share-a.share);
-  const best=positives[0] || byCurrent[0] || rows[0] || null;
-  const worst=negatives[0] || positives.slice().reverse()[0] || rows[rows.length-1] || null;
-  const topPosition=byCurrent[0] || null;
-  const topConcentration=byShare[0] || null;
-  const concentrationAbove20=byShare.filter(r=>Number.isFinite(r.share) && r.share>20);
-  const concentrationAbove10=byShare.filter(r=>Number.isFinite(r.share) && r.share>10);
-  const concentrationAlert=assetConcentrationAlert(topConcentration ? topConcentration.share : null);
-  const concentrationRiskCount=concentrationAbove20.length || concentrationAbove10.length;
-  const concentrationRiskLimit=concentrationAbove20.length ? '20%' : '10%';
-  const concentrationRiskValue=concentrationRiskCount
-    ? `${concentrationRiskCount} ativo${concentrationRiskCount>1?'s':''} acima de ${concentrationRiskLimit}`
-    : topConcentration ? 'Concentração saudável' : '—';
-  const concentrationRiskSubtitle=concentrationRiskCount && topConcentration
-    ? `Maior risco: ${topConcentration.ticker} · ${Number(topConcentration.share).toFixed(1)}%`
-    : topConcentration ? 'Nenhum ativo acima de 10%' : 'dados insuficientes';
-  const statusText=rows.length
-    ? `${rows.length} ativos analisados · carteira ${fmt(total)}`
-    : 'dados insuficientes';
-  const rankingNote=rows.length
-    ? `Lista compacta com até 12 ativos, ordenada pelos maiores pesos da carteira.`
-    : 'Sem ativos suficientes para montar o ranking.';
-  const rankingSubtitle=assetRankingModeLabel(rankingMode);
-  const rankingDescription=assetRankingModeDescription(rankingMode);
-  const rankingButtons=[
-    ['positions','Maiores posições'],
-    ['concentration','Concentração crítica'],
-    ['best','Melhores ativos'],
-    ['worst','Piores ativos'],
-    ['opportunity','Oportunidades']
-  ].map(([mode,label])=>`<button class="asset-inner-tab ${rankingMode===mode?'on':''}" onclick="setAssetsAnalysisRankingMode('${mode}')" role="tab" aria-selected="${rankingMode===mode?'true':'false'}">${esc(label)}</button>`).join('');
-  return `<div class="analysis-shell">
-    <div class="sh" style="margin-bottom:0">
-      <div>
-        <div class="st">Análise de Ativos</div>
-        <div class="mu" style="font-size:11px;margin-top:3px">Leitura rápida da carteira usando os dados já cadastrados.</div>
+  const assetsByTicker=new Map((S.assets||[]).map(a=>[String(a.ticker||'').trim().toUpperCase(),a]));
+  const enriched=rows.map(row=>{
+    const asset=assetsByTicker.get(row.ticker)||{};
+    return {...row,avgPrice:Number(asset.avg_price)||0,currentPrice:Number(asset.current_price)||0};
+  });
+  const positives=enriched.filter(r=>Number.isFinite(r.pct)&&r.pct>0&&r.current>0).sort((a,b)=>b.pct-a.pct||b.current-a.current).slice(0,5);
+  const negatives=enriched.filter(r=>Number.isFinite(r.pct)&&r.pct<0&&r.current>0).sort((a,b)=>a.pct-b.pct||b.current-a.current).slice(0,5);
+  const positions=[...enriched].filter(r=>r.current>0).sort((a,b)=>b.current-a.current).slice(0,5);
+  const concentrations=[...enriched].filter(r=>Number.isFinite(r.share)&&r.share>10).sort((a,b)=>b.share-a.share).slice(0,5);
+  const incomplete=enriched.filter(r=>!r.ticker||r.pct==null||!Number.isFinite(r.current)||r.current<=0||!Number.isFinite(r.applied)||r.applied<=0).slice(0,5);
+  const attention=enriched.filter(r=>{
+    const signal=assetContributionSignal(r);
+    return signal.label==='Aguardar'||signal.label==='Evitar aumentar por concentração'||(Number.isFinite(r.pct)&&r.pct<=-20);
+  }).sort((a,b)=>(b.share||0)-(a.share||0)||a.pct-b.pct).slice(0,5);
+  const maxPositive=Math.max(...positives.map(r=>Math.abs(r.pct)),1);
+  const maxNegative=Math.max(...negatives.map(r=>Math.abs(r.pct)),1);
+  const performanceEmpty='<div class="asset-premium-empty">Nenhum ativo disponível para este diagnóstico.</div>';
+  const topPosition=positions[0]||null;
+  const topConcentration=concentrations[0]||null;
+  const best=positives[0]||null;
+  const worst=negatives[0]||null;
+  return `<div class="asset-premium-analysis">
+    <div class="asset-premium-hero">
+      <div class="asset-premium-hero-head">
+        <div style="min-width:0"><div class="asset-premium-title">Análise de Ativos</div><div class="asset-premium-sub">Desempenho, tamanho das posições e pontos que merecem acompanhamento.</div></div>
+        <div class="analysis-pill">${rows.length} analisados</div>
       </div>
-      <div class="analysis-pill">${esc(statusText)}</div>
-    </div>
-    <div class="analysis-summary">
-      ${assetSummaryCard('Maior posição', topPosition ? `${topPosition.ticker}` : '—', topPosition ? `${fmt(topPosition.current)} · ${topPosition.share!=null?topPosition.share.toFixed(1)+'% da carteira':'sem participação'}` : 'dados insuficientes', 'info')}
-      ${assetSummaryCard('Risco de concentração', concentrationRiskValue, concentrationRiskSubtitle, concentrationRiskCount ? concentrationAlert.tone : 'ok')}
-      ${assetSummaryCard('Melhor ativo', best ? `${best.ticker}` : '—', best ? `${fmtP(best.pct)} · ${fmt(best.profit)}` : 'dados insuficientes', 'ok')}
-      ${assetSummaryCard('Pior ativo', worst ? `${worst.ticker}` : '—', worst ? `${fmtP(worst.pct)} · ${fmt(worst.profit)}` : 'dados insuficientes', 'danger')}
-      ${assetSummaryCard('Ativos analisados', `${rows.length}`, rankingNote, 'muted')}
-    </div>
-    <div class="analysis-ranking">
-      <div class="analysis-ranking-head">
-        <div>
-          <div class="analysis-ranking-title">Ranking de Ativos</div>
-          <div class="analysis-ranking-meta">${esc(rankingSubtitle)} · ${esc(rankingDescription)}</div>
-        </div>
-        <div class="analysis-pill ${esc(concentrationAlert.tone)}">${esc(concentrationAlert.label)}</div>
+      <div class="asset-premium-overview">
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Carteira analisada</div><div class="asset-premium-kpi-value">${fmt(total)}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Maior posição</div><div class="asset-premium-kpi-value">${esc(topPosition?.ticker||'—')}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Melhor desempenho</div><div class="asset-premium-kpi-value gn">${best?`${best.ticker} · ${fmtP(best.pct)}`:'—'}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Maior atenção</div><div class="asset-premium-kpi-value ${worst?'rd':''}">${worst?`${worst.ticker} · ${fmtP(worst.pct)}`:'—'}</div></div>
       </div>
-      <div class="asset-inner-tabs" style="margin:0 0 2px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px">${rankingButtons}</div>
-      ${assetRankingListHtml(rows, rankingMode)}
+    </div>
+    <div class="asset-premium-grid">
+      ${assetPremiumSection('Maiores altas','Ativos acima do preço médio, com valor atual e intensidade do desempenho.',positives.length,positives.length?positives.map(r=>assetPerformanceRowHtml(r,maxPositive,'positive')).join(''):performanceEmpty,'ok')}
+      ${assetPremiumSection('Maiores baixas','Ativos abaixo do preço médio. Queda não representa oportunidade automática.',negatives.length,negatives.length?negatives.map(r=>assetPerformanceRowHtml(r,maxNegative,'negative')).join(''):performanceEmpty,'danger')}
+    </div>
+    <div class="asset-premium-grid compact">
+      ${assetPremiumSection('Maiores posições','Ativos com maior valor financeiro dentro da carteira.',positions.length,positions.length?positions.map(r=>assetInsightRowHtml(r,'position')).join(''):performanceEmpty,'info')}
+      ${assetPremiumSection('Maiores concentrações','Somente posições acima de 10% do patrimônio analisado.',concentrations.length,concentrations.length?concentrations.map(r=>assetInsightRowHtml(r,'concentration')).join(''):'<div class="asset-premium-empty">Nenhum ativo acima do limite de atenção.</div>',topConcentration?assetConcentrationAlert(topConcentration.share).tone:'ok')}
+      ${assetPremiumSection('Dados incompletos','Ativos que precisam de preço, quantidade ou preço médio para análise segura.',incomplete.length,incomplete.length?incomplete.map(r=>assetInsightRowHtml(r,'incomplete')).join(''):'<div class="asset-premium-empty">Todos os ativos possuem dados suficientes.</div>','muted')}
+      ${assetPremiumSection('Merecem atenção','Concentração elevada, sinal de aguardar ou queda acentuada.',attention.length,attention.length?attention.map(r=>assetInsightRowHtml(r,'attention')).join(''):'<div class="asset-premium-empty">Nenhum alerta relevante com os critérios atuais.</div>','warn')}
     </div>
   </div>`;
 }
