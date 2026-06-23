@@ -521,6 +521,27 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .passive-goal-list-value.warn{color:#fbbf24}
 .passive-goal-list-value.danger{color:#f87171}
 .passive-goal-list-empty{padding:10px;border:1px dashed #223048;border-radius:10px;color:#7489a4;font-size:11px;background:#09101b;line-height:1.4}
+.dividend-query-shell{display:flex;flex-direction:column;gap:10px}
+.dividend-query-head{gap:10px;align-items:flex-start}
+.dividend-query-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dividend-query-filters .fl{font-size:10px}
+.dividend-query-filters input,.dividend-query-filters select{width:100%;padding:8px 10px;border-radius:10px}
+.dividend-query-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.dividend-query-summary .passive-goal-card{min-height:70px}
+.dividend-query-list{display:flex;flex-direction:column;gap:7px}
+.dividend-query-list-head,.dividend-query-row{display:grid;grid-template-columns:minmax(0,1.3fr) .85fr .85fr .9fr minmax(0,1fr);gap:8px;align-items:center}
+.dividend-query-list-head{padding:0 8px;font-size:10px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.dividend-query-row{padding:9px 8px;border:1px solid #162033;border-radius:10px;background:#090c15}
+.dividend-query-main{min-width:0;display:flex;flex-direction:column;gap:3px}
+.dividend-query-ticker{font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dividend-query-name{font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dividend-query-stat{min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.dividend-query-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.dividend-query-value{font-size:12px;font-weight:800;white-space:nowrap;color:#edf3ff}
+.dividend-query-value.good{color:#34d399}
+.dividend-query-value.info{color:#60a5fa}
+.dividend-query-value.warn{color:#fbbf24}
+.dividend-query-value.muted{color:#94a3b8}
 .rf-proventos-table th:nth-child(3),.rf-proventos-table td:nth-child(3),
 .rf-proventos-table th:nth-child(4),.rf-proventos-table td:nth-child(4),
 .rf-proventos-table th:nth-child(6),.rf-proventos-table td:nth-child(6),
@@ -613,6 +634,12 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .passive-goal-list-row{grid-template-columns:1fr 1fr;gap:6px;padding:9px}
   .passive-goal-list-main{grid-column:1/-1}
   .passive-goal-list-stat{align-items:flex-start}
+  .dividend-query-filters{grid-template-columns:1fr}
+  .dividend-query-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dividend-query-list-head{display:none}
+  .dividend-query-row{grid-template-columns:1fr 1fr;gap:6px;padding:9px}
+  .dividend-query-main{grid-column:1/-1}
+  .dividend-query-stat{align-items:flex-start}
 }
 @media(max-width:900px){
   .hdr{padding:10px 12px;gap:10px}
@@ -938,6 +965,9 @@ let S = {
   apSearchTimer:null,
   activeDividendSection:'',
   showImportedDividendsDetails:false,
+  dividendQueryMonth:'',
+  dividendQueryType:'all',
+  dividendQueryTicker:'',
   proventoAudit:{month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]},
   mobileMenuOpen:false,
   mobileTopMenuOpen:false,
@@ -5999,6 +6029,197 @@ function proventoHistoricoMensal(){
     return { year, months, total, media };
   });
 }
+function dividendMonthQueryMonthOptions(){
+  const months=new Map();
+  (S.proventos||[]).forEach((p,idx)=>{
+    const dt=parseAnyDate(p?.date);
+    if(!dt) return;
+    const key=proventoAuditMonthKey(dt);
+    if(!key) return;
+    if(!months.has(key)){
+      months.set(key,{
+        key,
+        label:proventoAuditMonthLabel(key),
+        index:idx
+      });
+    }
+  });
+  const list=[...months.values()].sort((a,b)=>b.key.localeCompare(a.key));
+  if(!list.length){
+    const fallback=proventoAuditMonthKey(new Date());
+    if(fallback) list.push({key:fallback,label:proventoAuditMonthLabel(fallback),index:0});
+  }
+  return list;
+}
+function dividendMonthQueryState(){
+  const months=dividendMonthQueryMonthOptions();
+  const currentValid=!!S.dividendQueryMonth && months.some(m=>m.key===S.dividendQueryMonth);
+  if(!currentValid){
+    S.dividendQueryMonth=months[0]?.key || '';
+  }
+  if(typeof S.dividendQueryType!=='string' || !S.dividendQueryType) S.dividendQueryType='all';
+  if(typeof S.dividendQueryTicker!=='string') S.dividendQueryTicker='';
+  return {
+    month:String(S.dividendQueryMonth||''),
+    type:String(S.dividendQueryType||'all'),
+    ticker:String(S.dividendQueryTicker||''),
+    months
+  };
+}
+function dividendMonthQueryRows(){
+  const state=dividendMonthQueryState();
+  const monthFilter=String(state.month||'').trim();
+  const typeFilter=String(state.type||'all').trim();
+  const tickerFilter=rfPosNorm(state.ticker||'');
+  const rows=[];
+  const monthTotals=new Map();
+  (S.proventos||[]).forEach((p,idx)=>{
+    const dt=parseAnyDate(p?.date);
+    const value=Number(p?.value)||0;
+    if(!dt || value<=0) return;
+    const monthKey=proventoAuditMonthKey(dt);
+    if(monthFilter && monthKey!==monthFilter) return;
+    const eventType=proventoTipoCanonical(p?.eventType||p?.type);
+    if(typeFilter!=='all' && eventType!==typeFilter) return;
+    const meta=proventoAssetMeta(p);
+    const ticker=String(p?.ticker||meta.asset?.ticker||'').trim().toUpperCase();
+    const name=String(p?.assetName||meta.title||p?.note||ticker||'—').trim() || '—';
+    const source=String(p?.source||'').trim();
+    const hay=rfPosNorm(`${ticker} ${name} ${source} ${p?.note||''}`);
+    if(tickerFilter && !hay.includes(tickerFilter)) return;
+    const key=ticker||name||`row-${idx}`;
+    if(!monthTotals.has(key)){
+      monthTotals.set(key,{key,ticker:ticker||'—',name,total:0,count:0});
+    }
+    const agg=monthTotals.get(key);
+    agg.total+=value;
+    agg.count++;
+    rows.push({
+      date:toISODate(dt),
+      ticker:ticker||'—',
+      name,
+      type:eventType,
+      value,
+      source:source||'—',
+      monthKey,
+      idx,
+      title:meta.title||name
+    });
+  });
+  rows.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || a.ticker.localeCompare(b.ticker) || a.type.localeCompare(b.type) || a.idx-b.idx);
+  const filteredCount=rows.length;
+  const total=rows.reduce((s,r)=>s+r.value,0);
+  const typeSet=[...new Set(rows.map(r=>r.type).filter(Boolean))];
+  const bestPayer=[...monthTotals.values()].sort((a,b)=>b.total-a.total || b.count-a.count || a.ticker.localeCompare(b.ticker))[0] || null;
+  return {
+    state,
+    rows,
+    total,
+    count:filteredCount,
+    bestPayer,
+    types:typeSet,
+    monthLabel:monthFilter ? proventoAuditMonthLabel(monthFilter) : '—'
+  };
+}
+function setDividendQueryMonth(value){
+  S.dividendQueryMonth=String(value||'');
+  render();
+}
+function setDividendQueryType(value){
+  S.dividendQueryType=String(value||'all');
+  render();
+}
+function setDividendQueryTicker(value){
+  S.dividendQueryTicker=String(value||'');
+  render();
+}
+function dividendMonthQueryBlock(){
+  const query=dividendMonthQueryRows();
+  const hasData=query.rows.length>0;
+  const monthOptions=query.state.months.length
+    ? query.state.months.map(m=>`<option value="${esc(m.key)}" ${query.state.month===m.key?'selected':''}>${esc(m.label)}</option>`).join('')
+    : `<option value="">Sem meses</option>`;
+  const typeOptions=['all','Rendimento','Dividendo','JCP','Juros de Renda Fixa','Reembolso','Outro']
+    .map(type=>`<option value="${esc(type)}" ${String(query.state.type||'all')===type?'selected':''}>${type==='all'?'Todos os tipos':esc(type)}</option>`)
+    .join('');
+  const listRows=hasData
+    ? query.rows.map(row=>`<div class="dividend-query-row">
+        <div class="dividend-query-main">
+          <div class="dividend-query-ticker">${esc(row.ticker)}</div>
+          <div class="dividend-query-name" title="${esc(row.title||row.name||'')}">${esc(row.name)}${row.source && row.source!=='—' ? ` · ${esc(row.source)}` : ''}</div>
+        </div>
+        <div class="dividend-query-stat">
+          <div class="dividend-query-label">Data</div>
+          <div class="dividend-query-value">${esc(row.date || '—')}</div>
+        </div>
+        <div class="dividend-query-stat">
+          <div class="dividend-query-label">Tipo</div>
+          <div class="dividend-query-value ${row.type==='JCP' || row.type==='Dividendo' ? 'good' : row.type==='Juros de Renda Fixa' ? 'warn' : 'info'}">${esc(row.type || '—')}</div>
+        </div>
+        <div class="dividend-query-stat">
+          <div class="dividend-query-label">Valor</div>
+          <div class="dividend-query-value good">${fmt(row.value)}</div>
+        </div>
+        <div class="dividend-query-stat">
+          <div class="dividend-query-label">Fonte</div>
+          <div class="dividend-query-value muted">${esc(row.source || '—')}</div>
+        </div>
+      </div>`).join('')
+    : `<div class="passive-goal-list-empty">${query.state.month ? 'Nenhum provento encontrado para os filtros atuais.' : 'Nenhum provento cadastrado ainda. Registre ou importe proventos para usar a consulta mensal.'}</div>`;
+  const bestPayerLabel=query.bestPayer ? (query.bestPayer.ticker && query.bestPayer.ticker!=='—' ? query.bestPayer.ticker : query.bestPayer.name) : '—';
+  const bestPayerSub=query.bestPayer ? `${fmt(query.bestPayer.total)} · ${query.bestPayer.count} lançamento${query.bestPayer.count>1?'s':''}` : 'Sem registros';
+  const typesLabel=query.types.length ? query.types.join(' · ') : '—';
+  return `<details class="sec dividend-query-sec"${S.activeDividendSection==='query'?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('query', event)">
+      <div>
+        <div class="sec-title">Consulta mensal</div>
+        <div class="sec-meta">Filtre exatamente o que entrou em um mês específico.</div>
+      </div>
+      <div class="sec-meta">${dividendDisclosureLabel('query')}</div>
+    </summary>
+    <div class="sec-body">
+      <div class="cc dividend-query-shell" style="margin:0;padding:10px 10px 9px">
+        <div class="dividend-query-filters">
+          <div><div class="fl">Mês/Ano</div><select onchange="setDividendQueryMonth(this.value)">${monthOptions}</select></div>
+          <div><div class="fl">Tipo</div><select onchange="setDividendQueryType(this.value)">${typeOptions}</select></div>
+          <div><div class="fl">Ticker / ativo</div><input type="text" value="${esc(query.state.ticker||'')}" oninput="setDividendQueryTicker(this.value)" placeholder="ex: BRCO11, BBAS3, JCP"></div>
+        </div>
+        <div class="dividend-query-summary">
+          <div class="passive-goal-card ${hasData ? 'ok' : 'muted'}">
+            <div class="passive-goal-kicker">Total recebido no mês</div>
+            <div class="passive-goal-value">${fmt(query.total)}</div>
+            <div class="passive-goal-sub">Mês filtrado: ${esc(query.monthLabel || '—')}</div>
+          </div>
+          <div class="passive-goal-card ${hasData ? 'info' : 'muted'}">
+            <div class="passive-goal-kicker">Lançamentos</div>
+            <div class="passive-goal-value">${query.count}</div>
+            <div class="passive-goal-sub">Itens que atendem aos filtros atuais</div>
+          </div>
+          <div class="passive-goal-card ${hasData ? 'warn' : 'muted'}">
+            <div class="passive-goal-kicker">Melhor pagador do mês</div>
+            <div class="passive-goal-value">${esc(bestPayerLabel)}</div>
+            <div class="passive-goal-sub">${esc(bestPayerSub)}</div>
+          </div>
+          <div class="passive-goal-card ${hasData ? 'info' : 'muted'}">
+            <div class="passive-goal-kicker">Tipos recebidos</div>
+            <div class="passive-goal-value">${query.types.length ? `${query.types.length} tipos` : '—'}</div>
+            <div class="passive-goal-sub">${esc(typesLabel)}</div>
+          </div>
+        </div>
+        <div class="passive-goal-list">
+          <div class="passive-goal-list-head">
+            <div>Provento</div>
+            <div>Data</div>
+            <div>Tipo</div>
+            <div>Valor</div>
+            <div>Fonte</div>
+          </div>
+          ${listRows}
+        </div>
+      </div>
+    </div>
+  </details>`;
+}
 function proventoAssetTypeLabel(asset, provento){
   const type=normalizeType(asset?.type||metaTicker(asset?.ticker).type||'Ação','Ação');
   const event=proventoTipoCanonical(provento?.eventType||provento?.type);
@@ -9576,7 +9797,6 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
 
   return`<div style="font-size:14px;font-weight:700;margin-bottom:8px">${esc(pageTitle)}</div>
   ${passiveIncomeDividendSummaryBlock(passiveGoal)}
-  ${payersBlock}
   <details class="sec"${S.activeDividendSection==='monthly'?' open':''} style="margin-bottom:8px">
     <summary onclick="toggleDividendSection('monthly', event)">
       <div>
@@ -9592,39 +9812,13 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </table></div></div>
     </div>
   </details>
-  <div class="sh" style="margin:0 0 8px 0">
-    <div>
-      <div class="st">Atualização de dividendos</div>
-      <div class="mu" style="font-size:11px;margin-top:3px">Busque o histórico gratuito para recalcular os proventos automaticamente.</div>
-    </div>
-    <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
-  </div>
-
-  <details class="sec"${S.activeDividendSection==='received'?' open':''} style="margin-bottom:8px">
-    <summary onclick="toggleDividendSection('received', event)">
-      <div>
-        <div class="sec-title">Proventos recebidos (${S.proventos.length})</div>
-        <div class="sec-meta">valores já creditados na conta</div>
-      </div>
-      <div class="sec-meta">${dividendDisclosureLabel('received')}</div>
-    </summary>
-    <div class="sec-body">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
-      </div>
-      ${frmD()}
-      <div class="tw"><div class="ts"><table>
-        <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Valor recebido</th><th>Obs.</th><th></th></tr></thead>
-        <tbody>${provRows}</tbody>
-      </table></div></div>
-    </div>
-  </details>
-
+  ${dividendMonthQueryBlock()}
+  ${payersBlock}
   <details class="sec"${S.activeDividendSection==='projection'?' open':''} style="margin-bottom:8px">
     <summary onclick="toggleDividendSection('projection', event)">
       <div>
         <div class="sec-title">Projeção por ativo</div>
-        <div class="sec-meta">${S.assets.length} ativos com projeção mensal e anual</div>
+        <div class="sec-meta">Estimativa futura baseada em posição, cotação e DY. Não representa valor já recebido.</div>
       </div>
       <div class="sec-meta">${dividendDisclosureLabel('projection')}</div>
     </summary>
@@ -9635,6 +9829,43 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
       </table></div></div>
     </div>
   </details>
+
+  <details class="sec"${['operational','received','audit'].includes(S.activeDividendSection)?' open':''} style="margin-bottom:8px">
+    <summary onclick="toggleDividendSection('operational', event)">
+      <div>
+        <div class="sec-title">Área operacional</div>
+        <div class="sec-meta">Importação, conferência e manutenção dos proventos.</div>
+      </div>
+      <div class="sec-meta">${dividendDisclosureLabel('operational')}</div>
+    </summary>
+    <div class="sec-body">
+      <div class="sh" style="margin:0 0 8px 0">
+        <div>
+          <div class="st">Atualização de dividendos</div>
+          <div class="mu" style="font-size:11px;margin-top:3px">Busque o histórico gratuito para recalcular os proventos automaticamente.</div>
+        </div>
+        <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchAutoProventosGratis()">🔎 Buscar histórico grátis</button>
+      </div>
+
+      <details class="sec"${S.activeDividendSection==='received'?' open':''} style="margin-bottom:8px">
+        <summary onclick="toggleDividendSection('received', event)">
+          <div>
+            <div class="sec-title">Proventos recebidos (${S.proventos.length})</div>
+            <div class="sec-meta">valores já creditados na conta</div>
+          </div>
+          <div class="sec-meta">${dividendDisclosureLabel('received')}</div>
+        </summary>
+        <div class="sec-body">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+            <button class="btn bp" onclick="tgD()">+ Registrar provento</button>
+          </div>
+          ${frmD()}
+          <div class="tw"><div class="ts"><table>
+            <thead><tr><th>Data</th><th>Ticker</th><th>Tipo</th><th>Valor recebido</th><th>Obs.</th><th></th></tr></thead>
+            <tbody>${provRows}</tbody>
+          </table></div></div>
+        </div>
+      </details>
 
   <div class="cc prov-imported-shell" style="margin-bottom:8px;padding:10px 10px 9px">
     <div class="sh prov-imported-head" style="margin-bottom:6px;gap:10px">
@@ -9912,6 +10143,8 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
         </table>
       </div>
       <div class="prov-audit-hint" style="font-size:11px;color:#64748b;line-height:1.45">O primeiro lançamento de cada grupo fica protegido. Só os duplicados extras podem ser marcados e removidos.</div>
+    </div>
+  </details>
     </div>
   </details>
   `;
