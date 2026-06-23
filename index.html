@@ -5482,6 +5482,13 @@ function rfValues(a){
   const rentab=(Number.isFinite(profit) && applied>0) ? (profit/applied)*100 : null;
   return { qty, avg, applied, current, currentStored, fixedInitial, fixedCurrent, gross: grossCandidate, liquid: liquidCandidate, irIof, unavailable, profit, rentab, hasExplicitCurrent, hasManualProfit };
 }
+function assetRfCurrentValueMeta(a){
+  if(!isRendaFixaAsset(a)) return {source:'', origin:''};
+  const v=rfValues(a);
+  const imported=rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source);
+  const source=v.liquid>0 ? 'valor líquido informado' : v.gross>0 ? 'valor bruto informado' : v.applied>0 ? 'valor aplicado' : 'estimado';
+  return { source, origin: imported ? 'importado da B3' : '' };
+}
 function assetAppliedValue(a){
   return isRendaFixaAsset(a) ? rfValues(a).applied : (Number(a?.qty)||0) * (Number(a?.avg_price)||0);
 }
@@ -5509,13 +5516,23 @@ function assetRentabPct(a){
 function assetNeedsRFUpdate(a){
   if(!isRendaFixaAsset(a)) return false;
   const v=rfValues(a);
-  return !v.hasExplicitCurrent || (Number.isFinite(v.current) && Number.isFinite(v.applied) && Math.abs(v.current - v.applied) < 0.0001);
+  const sameAsApplied = Number.isFinite(v.current) && Number.isFinite(v.applied) && Math.abs(v.current - v.applied) < 0.0001;
+  const zeroProfit = !Number.isFinite(v.profit) || Math.abs(v.profit) < 0.0001;
+  return (!v.liquid && !v.gross) || (sameAsApplied && zeroProfit);
 }
 function assetRfName(a){
   return String(a?.name||a?.product||a?.title||a?.ticker||'').trim();
 }
 function assetRfSubtype(a){
   return String(a?.rf_subtype||a?.fixed_subtype||a?.bondType||a?.sector||a?.fixed_indexer||a?.rf_yield_type||'Renda Fixa').trim() || 'Renda Fixa';
+}
+function assetRfIndexerLabel(a){
+  const raw=rfPosNorm([a?.fixed_indexer,a?.rf_yield_type,a?.rf_contract_rate,a?.fixed_rate,a?.rate,a?.sector].filter(Boolean).join(' '));
+  if(raw.includes('IPCA') || raw.includes('IPC A')) return 'IPCA';
+  if(raw.includes('CDI')) return 'CDI';
+  if(raw.includes('SELIC')) return 'Selic';
+  if(raw.includes('PRE')) return 'Prefixado';
+  return '—';
 }
 function assetRfApplicationDate(a){
   return String(a?.rf_application_date||a?.rf_aporte_date||a?.fixed_application_date||a?.aporte_date||'').trim();
@@ -8634,7 +8651,10 @@ function frmA(){
            <div><div class="fl">Subtipo</div><select id="f-rf-subtype">${rfSubtypeOptions}</select></div>
            <div><div class="fl">Data da aplicação</div><input id="f-rf-app-date" type="date" value="${esc(inputDateValue(assetRfApplicationDate(f)))}"></div>
            <div><div class="fl">Data de vencimento</div><input id="f-rf-due" type="date" value="${esc(inputDateValue(assetRfMaturityDate(f)))}"></div>
-           <div><div class="fl">Rentabilidade contratada</div><input id="f-rf-rate" type="text" placeholder="ex: 100% do CDI, CDI + 2%, IPCA + 6%, 12% a.a." value="${esc(assetRfContractRate(f))}"></div>
+           <div><div class="fl">Rentabilidade contratada / taxa</div><input id="f-rf-rate" type="text" placeholder="ex: 100% do CDI, CDI + 2%, IPCA + 6%, 12% a.a." value="${esc(assetRfContractRate(f))}">
+             <div style="font-size:10px;color:#8da0bd;margin-top:4px">Para CDB 100% CDI, informe 100. Esse campo é a taxa contratada, não o rendimento acumulado.</div>
+             <div style="font-size:10px;color:#8da0bd;margin-top:2px">Indexador: <b style="color:#e2eaf6">${esc(assetRfIndexerLabel(f))}</b></div>
+           </div>
            <div><div class="fl">Valor aplicado</div><input id="f-rf-applied" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(rf?.applied || f.fixed_initial_value || f.avg_price || 0))}"></div>
            <div><div class="fl">Valor bruto</div><input id="f-rf-gross" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(rf?.gross || f.fixed_gross_value || f.current_value || f.marketValue || 0))}"></div>
            <div><div class="fl">Valor líquido</div><input id="f-rf-liquid" type="text" inputmode="decimal" placeholder="ex: 87.275,52" value="${esc(moneyInput(rf?.liquid || f.fixed_current_value || f.current_price || 0))}"></div>
@@ -8659,7 +8679,7 @@ function frmA(){
            <div><div class="fl">Tipo</div><select id="f-ty">${typeSelectOptions(f.type||m.type||'Ação')}</select></div>`
       }
     </div>
-    ${isRF?`<div class="mu" style="font-size:11px;margin-top:8px">Se o valor líquido for informado, ele vira o valor atual da posição. Se não for, o sistema usa o valor bruto.</div>`:''}
+    ${isRF?`<div class="mu" style="font-size:11px;margin-top:8px">Se o valor líquido for informado, ele vira o valor atual da posição. Se não houver valor líquido nem bruto, o sistema usa o valor aplicado como referência.</div>`:''}
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bsv" onclick="svA()">Salvar</button>
       <button class="btn bgh" onclick="clA()">Cancelar</button>
@@ -8712,8 +8732,9 @@ function ativos(){
       const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
       const atualText=marketValue!=null?fmt(currentDisplay):'—';
       const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
+      const rfSource=isRF?assetRfCurrentValueMeta(a):null;
       const rentText=isRF
-        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Atualize o valor atual para calcular o resultado acumulado.</div>':''}`
+        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>':''}`
         : `${Number.isFinite(rentab)?fmtP(rentab):'—'}`;
       const atualCls=isRF
         ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
@@ -8728,6 +8749,7 @@ function ativos(){
           ${atualText}
           ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
           <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
+          ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
         </td>
         <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
         <td>${alvo>0?fmt(alvo):'—'}</td>
