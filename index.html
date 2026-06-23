@@ -8376,12 +8376,12 @@ function assetRankingModeLabel(mode){
 }
 function assetRankingModeDescription(mode){
   return ({
-    positions:'Ativos com maior valor na carteira',
-    concentration:'Ativos com maior peso e possível risco de concentração',
+    positions:'Maiores valores financeiros da carteira.',
+    concentration:'Ativos com peso relevante na carteira. Evite aumentar sem revisar o risco.',
     best:'Maiores rentabilidades positivas',
-    worst:'Maiores quedas da carteira',
-    opportunity:'Ativos para estudar, sem concentração elevada'
-  }[mode]) || 'Ativos com maior valor na carteira';
+    worst:'Ativos com maior queda ou menor desempenho. Nem toda queda é oportunidade.',
+    opportunity:'Ativos negativos com concentração controlada para estudo. Não é recomendação automática de compra.'
+  }[mode]) || 'Maiores valores financeiros da carteira.';
 }
 function assetSummaryCard(title, value, subtitle, tone='muted'){
   return `<div class="analysis-summary-card ${esc(tone)}">
@@ -8437,16 +8437,20 @@ function assetRankingListHtml(rows, mode){
         && r.share<15
         && Number.isFinite(r.current)
         && r.current>0;
-    }).sort((a,b)=>(a.share||0)-(b.share||0) || Math.abs(a.pct)-Math.abs(b.pct));
+    }).sort((a,b)=>{
+      const aModeration=Math.abs(Math.abs(a.pct)-8);
+      const bModeration=Math.abs(Math.abs(b.pct)-8);
+      return (a.share||0)-(b.share||0) || aModeration-bModeration || Math.abs(a.pct)-Math.abs(b.pct);
+    });
   }else{
     listRows=listRows.filter(r=>Number.isFinite(r.current) || Number.isFinite(r.applied)).sort((a,b)=>b.current-a.current || (b.share||0)-(a.share||0));
   }
   listRows=listRows.slice(0,12);
   if(!listRows.length){
     const msg = mode==='concentration'
-      ? 'Nenhum ativo com concentração relevante.'
+      ? 'Nenhum ativo acima do limite de atenção.'
       : mode==='opportunity'
-        ? 'Nenhuma oportunidade clara com os critérios atuais.'
+        ? 'Nenhum ativo combina queda com concentração saudável no momento.'
         : 'Dados insuficientes para montar o ranking compacto.';
     return `<div class="analysis-ranking-empty">${esc(msg)}</div>`;
   }
@@ -8470,10 +8474,17 @@ function assetAnalysisBlock(){
   const worst=negatives[0] || positives.slice().reverse()[0] || rows[rows.length-1] || null;
   const topPosition=byCurrent[0] || null;
   const topConcentration=byShare[0] || null;
+  const concentrationAbove20=byShare.filter(r=>Number.isFinite(r.share) && r.share>20);
+  const concentrationAbove10=byShare.filter(r=>Number.isFinite(r.share) && r.share>10);
   const concentrationAlert=assetConcentrationAlert(topConcentration ? topConcentration.share : null);
-  const concentrationSubtitle=topConcentration
-    ? `${topConcentration.ticker} · ${Number(topConcentration.share).toFixed(1)}% da carteira`
-    : 'dados insuficientes para medir concentração.';
+  const concentrationRiskCount=concentrationAbove20.length || concentrationAbove10.length;
+  const concentrationRiskLimit=concentrationAbove20.length ? '20%' : '10%';
+  const concentrationRiskValue=concentrationRiskCount
+    ? `${concentrationRiskCount} ativo${concentrationRiskCount>1?'s':''} acima de ${concentrationRiskLimit}`
+    : topConcentration ? 'Concentração saudável' : '—';
+  const concentrationRiskSubtitle=concentrationRiskCount && topConcentration
+    ? `Maior risco: ${topConcentration.ticker} · ${Number(topConcentration.share).toFixed(1)}%`
+    : topConcentration ? 'Nenhum ativo acima de 10%' : 'dados insuficientes';
   const statusText=rows.length
     ? `${rows.length} ativos analisados · carteira ${fmt(total)}`
     : 'dados insuficientes';
@@ -8499,7 +8510,7 @@ function assetAnalysisBlock(){
     </div>
     <div class="analysis-summary">
       ${assetSummaryCard('Maior posição', topPosition ? `${topPosition.ticker}` : '—', topPosition ? `${fmt(topPosition.current)} · ${topPosition.share!=null?topPosition.share.toFixed(1)+'% da carteira':'sem participação'}` : 'dados insuficientes', 'info')}
-      ${assetSummaryCard('Maior concentração', topConcentration ? `${topConcentration.ticker}` : '—', topConcentration ? `${topConcentration.share.toFixed(1)}% da carteira` : 'dados insuficientes', concentrationAlert.tone)}
+      ${assetSummaryCard('Risco de concentração', concentrationRiskValue, concentrationRiskSubtitle, concentrationRiskCount ? concentrationAlert.tone : 'ok')}
       ${assetSummaryCard('Melhor ativo', best ? `${best.ticker}` : '—', best ? `${fmtP(best.pct)} · ${fmt(best.profit)}` : 'dados insuficientes', 'ok')}
       ${assetSummaryCard('Pior ativo', worst ? `${worst.ticker}` : '—', worst ? `${fmtP(worst.pct)} · ${fmt(worst.profit)}` : 'dados insuficientes', 'danger')}
       ${assetSummaryCard('Ativos analisados', `${rows.length}`, rankingNote, 'muted')}
