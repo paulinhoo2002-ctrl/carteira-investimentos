@@ -240,6 +240,8 @@ button{cursor:pointer;font-family:inherit}
   .premium-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
   .premium-dashboard-grid{grid-template-columns:1fr}
   .premium-radar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .patrimony-grid{grid-template-columns:1fr}
+  .patrimony-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:640px){
   .analysis-shell{gap:8px;margin-bottom:12px}
@@ -282,6 +284,41 @@ button{cursor:pointer;font-family:inherit}
   .asset-performance-name,.asset-insight-title{font-size:10px}
   .asset-performance-prices,.asset-insight-sub{font-size:8px}
   .asset-performance-pct,.asset-insight-value{font-size:10px}
+  .patrimony-premium{gap:8px;padding-bottom:22px}
+  .patrimony-hero{padding:11px;border-radius:12px}
+  .patrimony-head{display:block}
+  .patrimony-title{font-size:14px}
+  .patrimony-subtitle{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .patrimony-reading{margin-top:8px;max-width:none;padding:8px}
+  .patrimony-reading-label{font-size:8px}
+  .patrimony-reading-text{font-size:10px}
+  .patrimony-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
+  .patrimony-kpi{padding:8px}
+  .patrimony-kpi-label{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .patrimony-kpi-value{font-size:12px}
+  .patrimony-periods{gap:5px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+  .patrimony-periods .dash-chip{flex:0 0 auto}
+  .patrimony-grid{grid-template-columns:1fr;gap:7px}
+  .patrimony-panel{padding:9px;border-radius:11px}
+  .patrimony-panel-head{align-items:center;margin-bottom:7px}
+  .patrimony-panel-title{font-size:10px}
+  .patrimony-panel-sub{display:none}
+  .patrimony-panel-badge{font-size:8px;padding:3px 6px}
+  .patrimony-month-list{gap:6px}
+  .patrimony-month-row{grid-template-columns:42px minmax(0,1fr) 84px;gap:6px}
+  .patrimony-month-label,.patrimony-month-value{font-size:9px}
+  .patrimony-insights{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .patrimony-insight{padding:8px}
+  .patrimony-insight-label{font-size:8px}
+  .patrimony-insight-value{font-size:10px}
+  .patrimony-insight-note{display:none}
+  .patrimony-composition{grid-template-columns:1fr;gap:8px}
+  .patrimony-composition-track{height:12px}
+  .patrimony-composition-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .patrimony-composition-stat{padding:7px}
+  .patrimony-composition-label{font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .patrimony-composition-value{font-size:9px}
+  .patrimony-composition-text{font-size:9px;margin-top:7px}
   .rebalance-hero{padding:12px}
   .rebalance-form{grid-template-columns:1fr}
   .rebalance-form .btn{width:100%}
@@ -538,6 +575,50 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .evo-fill{height:100%;border-radius:999px;box-shadow:0 0 0 1px rgba(255,255,255,.05) inset;background:linear-gradient(90deg,#34d399,#86efac)}
 .evo-value{font-size:12px;color:#fbbf24;text-align:right;font-weight:800;letter-spacing:-.01em}
 .evo-empty{font-size:13px;padding:16px 0;text-align:center;color:#64748b}
+.patrimony-premium{display:flex;flex-direction:column;gap:10px}
+.patrimony-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:16px;padding:14px;background:linear-gradient(135deg,#10182a,#0c1220 62%,#11182a)}
+.patrimony-hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-85px;top:-95px;background:rgba(52,211,153,.09);pointer-events:none}
+.patrimony-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
+.patrimony-title{font-size:16px;font-weight:900;color:#edf3ff}
+.patrimony-subtitle{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:3px}
+.patrimony-reading{max-width:440px;border:1px solid #27344b;border-radius:11px;background:rgba(9,12,21,.68);padding:9px 10px}
+.patrimony-reading-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.05em}
+.patrimony-reading-text{font-size:11px;font-weight:750;color:#dbe7f7;line-height:1.4;margin-top:3px}
+.patrimony-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;position:relative;z-index:1}
+.patrimony-kpi{min-width:0;border:1px solid #1d2940;border-radius:11px;background:rgba(9,12,21,.68);padding:9px}
+.patrimony-kpi-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
+.patrimony-kpi-value{font-size:15px;font-weight:900;color:#edf3ff;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patrimony-periods{display:flex;gap:6px;flex-wrap:wrap}
+.patrimony-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:10px}
+.patrimony-panel{border:1px solid #1d2940;border-radius:14px;background:#0d1320;padding:12px;min-width:0}
+.patrimony-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.patrimony-panel-title{font-size:12px;font-weight:850;color:#e2eaf6}
+.patrimony-panel-sub{font-size:9px;color:#7489a4;line-height:1.4;margin-top:2px}
+.patrimony-panel-badge{font-size:9px;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 7px;white-space:nowrap}
+.patrimony-month-list{display:flex;flex-direction:column;gap:7px}
+.patrimony-month-row{display:grid;grid-template-columns:52px minmax(0,1fr) 104px;gap:9px;align-items:center}
+.patrimony-month-label{font-size:10px;font-weight:800;color:#cbd5e1}
+.patrimony-month-track{height:7px;border:1px solid #1e2a3d;background:#111828;border-radius:999px;overflow:hidden}
+.patrimony-month-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#34d399,#86efac)}
+.patrimony-month-value{text-align:right;font-size:10px;font-weight:800;color:#fbbf24;white-space:nowrap}
+.patrimony-insights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.patrimony-insight{border:1px solid #182033;border-radius:10px;background:#090c15;padding:9px;min-width:0}
+.patrimony-insight-label{font-size:9px;color:#7489a4;line-height:1.25}
+.patrimony-insight-value{font-size:12px;font-weight:900;color:#e2eaf6;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patrimony-insight-note{font-size:8px;color:#64748b;line-height:1.35;margin-top:3px}
+.patrimony-composition{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:12px;align-items:center}
+.patrimony-composition-track{height:15px;border:1px solid #27344b;background:#111828;border-radius:999px;overflow:hidden;display:flex}
+.patrimony-composition-applied{height:100%;background:linear-gradient(90deg,#6366f1,#818cf8)}
+.patrimony-composition-result{height:100%;background:linear-gradient(90deg,#22c55e,#86efac)}
+.patrimony-composition-result.negative{background:repeating-linear-gradient(135deg,#ef4444 0 7px,#7f1d1d 7px 14px)}
+.patrimony-composition-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.patrimony-composition-chip{display:inline-flex;align-items:center;gap:6px;font-size:9px;color:#94a3b8}
+.patrimony-composition-dot{width:8px;height:8px;border-radius:3px;flex:none}
+.patrimony-composition-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.patrimony-composition-stat{border:1px solid #182033;border-radius:10px;background:#090c15;padding:8px;min-width:0}
+.patrimony-composition-label{font-size:8px;color:#7489a4;line-height:1.25}
+.patrimony-composition-value{font-size:11px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patrimony-composition-text{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:9px}
 .pleg{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .pli{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b}
 .pd{width:8px;height:8px;border-radius:2px}
@@ -9255,82 +9336,127 @@ function dash(){
   </div>`;
 }
 
-function patrimonioTab(){
-  const {tI,tC,tG}=cx();
-  const periodOpts=[3,6,12,24];
-  const twelveMonthsAgo=new Date();
-  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth()-(Math.max(3,Number(S.dashPeriod)||12)-1));
-  twelveMonthsAgo.setDate(1);
-  const movMap=new Map();
-  S.aportes.forEach(a=>{
-    const d=parseAnyDate(a.date);
-    if(!d||d<twelveMonthsAgo) return;
-    const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    if(!movMap.has(mk)) movMap.set(mk,{key:mk,label:d.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'}),value:0});
-    const op=(a.operation||a.op||'compra').toLowerCase();
-    const signed=(Math.abs(Number(a.qty)||0)*Number(a.price||0))*(op==='venda'?-1:1);
-    movMap.get(mk).value += signed;
+function patrimonySnapshot(period=Number(S.dashPeriod)||12){
+  const summary=cx();
+  const count=Math.max(3,Number(period)||12);
+  const now=new Date();
+  const firstMonth=new Date(now.getFullYear(),now.getMonth()-(count-1),1);
+  const months=[];
+  for(let i=0;i<count;i++){
+    const date=new Date(firstMonth.getFullYear(),firstMonth.getMonth()+i,1);
+    months.push({
+      key:`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`,
+      label:date.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'}),
+      aporte:0,
+      cumulative:0
+    });
+  }
+  const monthMap=new Map(months.map(row=>[row.key,row]));
+  let baseline=0;
+  (S.aportes||[]).forEach(item=>{
+    const date=parseAnyDate(item.date);
+    if(!date) return;
+    const op=String(item.operationType||item.operation||item.op||'compra').toLowerCase();
+    const rawValue=Number(item.totalValue||item.value)||Math.abs(Number(item.qty)||0)*(Number(item.unitPrice||item.price)||0);
+    if(!Number.isFinite(rawValue)||rawValue<=0) return;
+    const signed=/venda|resgate|vencimento/.test(op) ? -rawValue : rawValue;
+    const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+    if(date<firstMonth) baseline+=signed;
+    else if(monthMap.has(key)) monthMap.get(key).aporte+=signed;
   });
-  const movSeries=[...movMap.values()].sort((a,b)=>a.key.localeCompare(b.key));
-  let cum=0;
-  const evo=movSeries.map(v=>{cum+=v.value; return {...v,cum};});
-  const maxEvo=Math.max(...evo.map(v=>v.cum), tC, 1);
-  const evoBars=evo.length
-    ? evo.map((v)=>`<div class="evo-row"><div class="evo-label">${esc(v.label)}</div><div class="evo-track"><div class="evo-fill" style="width:${Math.max(4,(v.cum/maxEvo)*100).toFixed(0)}%"></div></div><div class="evo-value">${fmt(v.cum)}</div></div>`).join('')
-    : '<div class="evo-empty">Registre compras na aba 💰 Aportes.</div>';
-  return`
-  <div class="sh">
-    <div>
-      <div class="st">Patrimônio</div>
-      <div class="mu" style="font-size:12px;margin-top:4px">Evolução do capital aplicado e visão patrimonial.</div>
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-      ${periodOpts.map(p=>`<button class="dash-chip ${Number(S.dashPeriod)===p?'on':''}" onclick="setDashPeriod(${p})">${p}M</button>`).join('')}
-    </div>
-  </div>
-  <div class="cg dashboard-grid" style="gap:10px">
-    <div class="cc dashboard-panel" style="padding:12px 12px 10px">
-      <div class="evo-shell">
-        <div class="evo-top">
-          <div>
-            <div class="ct">Evolução do capital aplicado</div>
-            <div class="evo-sub">Aportes líquidos acumulados nos últimos ${S.dashPeriod} meses.</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-            <div class="evo-legend">
-              <span class="evo-chip aplicado"><span class="dot"></span>${fmt(tI)}</span>
-              <span class="evo-chip ganho"><span class="dot"></span>${fmt(tG)}</span>
-            </div>
-            <div class="evo-badge">Carteira ${fmt(tC)}</div>
-          </div>
-        </div>
-        <div class="evo-list">${evoBars}</div>
+  let cumulative=baseline;
+  months.forEach(row=>{cumulative+=row.aporte;row.cumulative=cumulative;});
+  const rent=rentabilityHistory('all',String(count),String(S.rentBench||'CDI'));
+  const performance=(rent.view||[]).filter(row=>Number.isFinite(Number(row.delta)));
+  const bestEvolution=performance.reduce((best,row)=>!best||Number(row.delta)>Number(best.delta)?row:best,null);
+  const worstEvolution=performance.reduce((worst,row)=>!worst||Number(row.delta)<Number(worst.delta)?row:worst,null);
+  const biggestContribution=months.filter(row=>row.aporte>0).sort((a,b)=>b.aporte-a.aporte)[0]||null;
+  const pct=summary.tI>0?(summary.tG/summary.tI)*100:0;
+  const absPct=Math.abs(pct);
+  const reading=pct>1
+    ? {tone:'ok',title:'Crescimento acima dos aportes',text:`O patrimônio está ${fmt(summary.tG)} acima do valor aplicado. Há ganho de capital acumulado de ${fmtP(pct)}.`}
+    : pct<-1
+      ? {tone:'danger',title:'Patrimônio abaixo do aplicado',text:`A carteira está ${fmt(Math.abs(summary.tG))} abaixo do valor aplicado. Revise desempenho e concentração antes de novas decisões.`}
+      : {tone:'muted',title:'Patrimônio próximo do aplicado',text:`A diferença atual é pequena (${fmtP(pct)}). O crescimento observado vem principalmente dos aportes registrados.`};
+  return {summary,months,performance,bestEvolution,worstEvolution,biggestContribution,pct,absPct,reading,count};
+}
+function patrimonioTab(){
+  const data=patrimonySnapshot();
+  const {tI,tC,tG}=data.summary;
+  const periodOpts=[3,6,12,24];
+  const maxMonth=Math.max(...data.months.map(row=>Math.max(0,row.cumulative)),tC,1);
+  const mobile=typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:640px)').matches;
+  const visibleMonths=mobile&&data.months.length>8?data.months.slice(-8):data.months;
+  const monthRows=visibleMonths.length ? visibleMonths.map((row,index)=>{
+    const width=Math.max(row.cumulative>0?4:0,Math.min(100,(Math.max(0,row.cumulative)/maxMonth)*100));
+    const isLast=index===visibleMonths.length-1;
+    return `<div class="patrimony-month-row">
+      <div class="patrimony-month-label">${esc(row.label)}</div>
+      <div class="patrimony-month-track"><div class="patrimony-month-fill" style="width:${width.toFixed(0)}%"></div></div>
+      <div class="patrimony-month-value">${fmt(row.cumulative)}${isLast?' *':''}</div>
+    </div>`;
+  }).join('') : '<div class="evo-empty">Registre movimentações na aba Aportes para acompanhar a evolução.</div>';
+  const resultTone=tG>0?'gn':tG<0?'rd':'mu';
+  const resultLabel=tG>0?'Acima do aplicado':tG<0?'Abaixo do aplicado':'Próximo do aplicado';
+  const appliedShare=tC>0?Math.min(100,(tI/tC)*100):(tI>0?100:0);
+  const resultShare=tC>0?(tG/tC)*100:0;
+  const positiveResultShare=Math.max(0,Math.min(100,resultShare));
+  const appliedBarShare=tG>=0?Math.max(0,100-positiveResultShare):100;
+  return `<div class="patrimony-premium">
+    <div class="patrimony-hero">
+      <div class="patrimony-head">
+        <div><div class="patrimony-title">Patrimônio Inteligente</div><div class="patrimony-subtitle">Entenda quanto veio de aportes e quanto representa ganho ou perda de capital.</div></div>
+        <div class="patrimony-reading"><div class="patrimony-reading-label">${esc(data.reading.title)}</div><div class="patrimony-reading-text">${esc(data.reading.text)}</div></div>
+      </div>
+      <div class="patrimony-kpis">
+        <div class="patrimony-kpi"><div class="patrimony-kpi-label">Valor aplicado total</div><div class="patrimony-kpi-value pu">${fmt(tI)}</div></div>
+        <div class="patrimony-kpi"><div class="patrimony-kpi-label">Patrimônio atual</div><div class="patrimony-kpi-value gn">${fmt(tC)}</div></div>
+        <div class="patrimony-kpi"><div class="patrimony-kpi-label">Ganho ou perda de capital</div><div class="patrimony-kpi-value ${resultTone}">${fmt(tG)}</div></div>
+        <div class="patrimony-kpi"><div class="patrimony-kpi-label">Resultado sobre aplicado</div><div class="patrimony-kpi-value ${resultTone}">${fmtP(data.pct)}</div></div>
       </div>
     </div>
-    <div class="cc dashboard-panel" style="padding:12px 12px 10px">
-      <div class="sh" style="margin-bottom:8px;align-items:flex-end">
+    <div class="patrimony-periods">
+      ${periodOpts.map(period=>`<button class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})">${period}M</button>`).join('')}
+    </div>
+    <div class="patrimony-grid">
+      <div class="patrimony-panel">
+        <div class="patrimony-panel-head">
+          <div><div class="patrimony-panel-title">Evolução mensal do capital aplicado</div><div class="patrimony-panel-sub">Aportes líquidos acumulados por mês. O asterisco indica o período atual.</div></div>
+          <div class="patrimony-panel-badge">Patrimônio atual ${fmt(tC)}</div>
+        </div>
+        <div class="patrimony-month-list">${monthRows}</div>
+      </div>
+      <div class="patrimony-panel">
+        <div class="patrimony-panel-head"><div><div class="patrimony-panel-title">Indicadores do período</div><div class="patrimony-panel-sub">Movimentações reais e evolução estimada pelo histórico disponível.</div></div><div class="patrimony-panel-badge">${data.count} meses</div></div>
+        <div class="patrimony-insights">
+          <div class="patrimony-insight"><div class="patrimony-insight-label">Maior mês de aporte</div><div class="patrimony-insight-value">${data.biggestContribution?esc(data.biggestContribution.label):'—'}</div><div class="patrimony-insight-note">${data.biggestContribution?fmt(data.biggestContribution.aporte):'Sem aporte positivo no período'}</div></div>
+          <div class="patrimony-insight"><div class="patrimony-insight-label">Melhor evolução estimada</div><div class="patrimony-insight-value gn">${data.bestEvolution?esc(data.bestEvolution.label):'—'}</div><div class="patrimony-insight-note">${data.bestEvolution?fmtP(data.bestEvolution.delta):'Dados insuficientes'}</div></div>
+          <div class="patrimony-insight"><div class="patrimony-insight-label">Pior evolução estimada</div><div class="patrimony-insight-value ${data.worstEvolution&&data.worstEvolution.delta<0?'rd':''}">${data.worstEvolution?esc(data.worstEvolution.label):'—'}</div><div class="patrimony-insight-note">${data.worstEvolution?fmtP(data.worstEvolution.delta):'Dados insuficientes'}</div></div>
+          <div class="patrimony-insight"><div class="patrimony-insight-label">Meses analisados</div><div class="patrimony-insight-value">${data.months.length}</div><div class="patrimony-insight-note">Janela selecionada para leitura</div></div>
+        </div>
+        <div class="premium-note">A evolução estimada usa o histórico disponível e os preços atuais cadastrados; não substitui uma série histórica de cotações.</div>
+      </div>
+    </div>
+    <div class="patrimony-panel">
+      <div class="patrimony-panel-head"><div><div class="patrimony-panel-title">Composição do crescimento</div><div class="patrimony-panel-sub">Quanto do patrimônio atual vem do capital aplicado e quanto representa resultado de mercado.</div></div><div class="patrimony-panel-badge ${resultTone}">${esc(resultLabel)}</div></div>
+      <div class="patrimony-composition">
         <div>
-          <div class="ct">Resumo patrimonial</div>
-          <div class="mu" style="font-size:12px">Valor aplicado, carteira atual e ganho acumulado.</div>
+          <div class="patrimony-composition-track">
+            <div class="patrimony-composition-applied" style="width:${appliedBarShare.toFixed(1)}%"></div>
+            ${tG>=0?`<div class="patrimony-composition-result" style="width:${positiveResultShare.toFixed(1)}%"></div>`:''}
+          </div>
+          <div class="patrimony-composition-legend">
+            <span class="patrimony-composition-chip"><span class="patrimony-composition-dot" style="background:#818cf8"></span>Capital aportado</span>
+            <span class="patrimony-composition-chip"><span class="patrimony-composition-dot" style="background:${tG>=0?'#34d399':'#f87171'}"></span>${tG>=0?'Ganho de capital':'Perda de capital'}</span>
+          </div>
+        </div>
+        <div class="patrimony-composition-stats">
+          <div class="patrimony-composition-stat"><div class="patrimony-composition-label">Aportes no patrimônio</div><div class="patrimony-composition-value pu">${appliedShare.toFixed(1)}%</div></div>
+          <div class="patrimony-composition-stat"><div class="patrimony-composition-label">${tG>=0?'Ganho no patrimônio':'Perda sobre patrimônio'}</div><div class="patrimony-composition-value ${resultTone}">${fmtP(resultShare)}</div></div>
+          <div class="patrimony-composition-stat"><div class="patrimony-composition-label">Resultado acumulado</div><div class="patrimony-composition-value ${resultTone}">${fmt(tG)}</div></div>
         </div>
       </div>
-      <div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0">
-        <div class="card al dash-card" style="min-height:92px;padding:10px 12px;border-left-color:#818cf8">
-          <div class="dash-kicker">Valor aplicado</div>
-          <div class="cv pu" style="font-size:21px">${fmt(tI)}</div>
-          <div class="dash-foot">Aportes acumulados.</div>
-        </div>
-        <div class="card al dash-card" style="min-height:92px;padding:10px 12px;border-left-color:#34d399">
-          <div class="dash-kicker">Patrimônio atual</div>
-          <div class="cv gn" style="font-size:21px">${fmt(tC)}</div>
-          <div class="dash-foot">Carteira consolidada.</div>
-        </div>
-        <div class="card al dash-card" style="min-height:92px;padding:10px 12px;border-left-color:#60a5fa">
-          <div class="dash-kicker">Ganho de capital</div>
-          <div class="cv bl" style="font-size:21px">${fmt(tG)}</div>
-          <div class="dash-foot">Valor acumulado.</div>
-        </div>
-      </div>
+      <div class="patrimony-composition-text">${tG>0?`O patrimônio atual combina capital aportado com ${fmt(tG)} de valorização. Aproximadamente ${positiveResultShare.toFixed(1)}% do valor atual representa ganho de capital.`:tG<0?`O patrimônio é formado pelos aportes, mas uma perda de ${fmt(Math.abs(tG))} reduziu o valor atual. O crescimento depende principalmente de novos aportes enquanto essa diferença permanecer.`:'O patrimônio atual está praticamente igual ao capital aplicado; neste momento, o crescimento vem principalmente dos aportes.'}</div>
     </div>
   </div>`;
 }
