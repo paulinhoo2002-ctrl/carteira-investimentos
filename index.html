@@ -6435,15 +6435,27 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
       </div>
       ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Renda real média 12M', value:stats.hasData ? fmt(stats.monthlyAvg) : '—', sub:'Histórico real dos últimos 12 meses corridos'})}
       ${passiveIncomeMetricCard({tone:projectedMonthly>0 ? 'info' : 'muted', kicker:'Renda projetada/mês', value:projectedLabel, sub:projectedMonthly>0 ? 'Estimativa da carteira' : 'Sem ativos suficientes para projetar'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Média mensal real × 12'})}
+      ${hasGoal ? passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:`${avgProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`, percent:avgProg.prog, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#f87171'}) : ''}
+      ${hasGoal ? passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:fmt(avgProg.falta), sub:'Comparação entre meta e média mensal 12M'}) : ''}
     </div>
     ${hasGoal ? `
-    <div class="passive-goal-grid secondary">
-      ${passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:`${avgProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`, percent:avgProg.prog, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#f87171'})}
-      ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(projProg.falta)}/mês para atingir a meta pela estimativa.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
-      ${passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:fmt(avgProg.falta), sub:'Comparação entre meta e média mensal 12M'})}
-      ${passiveIncomeMetricCard({tone:projTone, kicker:'Quanto falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
-    </div>` : ''}
+    <details class="sec" style="margin-top:8px;margin-bottom:0">
+      <summary>
+        <div>
+          <div class="sec-title">Detalhes da renda passiva</div>
+          <div class="sec-meta">Projeções e leitura complementar da meta mensal</div>
+        </div>
+        <div class="sec-meta">clique para abrir</div>
+      </summary>
+      <div class="sec-body">
+        <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">A média real usa proventos já recebidos nos últimos 12 meses. A renda projetada é uma estimativa da carteira atual.</div>
+        <div class="passive-goal-grid secondary">
+          ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Média mensal real × 12'})}
+          ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(projProg.falta)}/mês para atingir a meta pela estimativa.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
+          ${passiveIncomeMetricCard({tone:projTone, kicker:'Quanto falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
+        </div>
+      </div>
+    </details>` : ''}
   </div>`;
 }
 function proventoAuditMonthKey(dateLike){
@@ -10200,43 +10212,44 @@ function metasTab(){
 
   ${passiveIncomeGoalBlock(passiveGoal, projCurrent)}
 
-  <div class="cc" style="margin-bottom:10px;padding:10px 12px">
-    <div class="sh" style="margin-bottom:8px;gap:10px">
-      <div style="min-width:0">
-        <div class="st">Meta de Patrimônio</div>
-        <div class="mu" style="font-size:11px;margin-top:2px">Objetivo de patrimônio total, progresso atual e valor em aberto.</div>
+  <details class="sec" style="margin-bottom:10px">
+    <summary>
+      <div>
+        <div class="sec-title">Meta de Patrimônio</div>
+        <div class="sec-meta">${fmt(tC)} / ${fmt(metaPatValor||0)} · ${metaPat.prog.toFixed(1)}% de progresso</div>
       </div>
-      <div class="passive-goal-badge info">Planejamento patrimonial</div>
-    </div>
-    <div class="cg" style="gap:10px;grid-template-columns:1fr 1fr">
-      <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
-        <div class="fl">Meta de patrimônio</div>
-        <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
-        <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
-      </div>
-      <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
-        <div class="fl">Progresso</div>
-        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-          <div class="mu">Carteira atual</div>
-          <div style="font-size:16px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+      <div class="sec-meta">clique para abrir</div>
+    </summary>
+    <div class="sec-body">
+      <div class="cg" style="gap:10px;grid-template-columns:1fr 1fr">
+        <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+          <div class="fl">Meta de patrimônio</div>
+          <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
+          <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-          <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
-          <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
+        <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+          <div class="fl">Progresso</div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <div class="mu">Carteira atual</div>
+            <div style="font-size:16px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
+            <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
+          </div>
+          <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:#60a5fa"></div></div>
         </div>
-        <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:#60a5fa"></div></div>
       </div>
     </div>
-  </div>
+  </details>
 
   <details class="sec" style="margin-bottom:12px">
     <summary>
       <div>
         <div class="sec-title">Distribuição da carteira</div>
-        <div class="sec-meta">objetivo por categoria e comparação com a carteira atual</div>
+        <div class="sec-meta">${allocItems.length} categorias · clique para abrir</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
-        <div class="sec-meta">${allocItems.length} categorias</div>
         <button class="btn bgh" onclick="event.stopPropagation();openAllocationGoal()">⚙️ Configurar</button>
       </div>
     </summary>
