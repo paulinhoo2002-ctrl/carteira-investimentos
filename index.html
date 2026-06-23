@@ -98,6 +98,37 @@ button{cursor:pointer;font-family:inherit}
 .analysis-info .analysis-item-val{color:#60a5fa}
 .analysis-warn .analysis-item-val{color:#fbbf24}
 .analysis-warn .analysis-bar-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.rebalance-shell{display:flex;flex-direction:column;gap:12px}
+.rebalance-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:16px;padding:15px;background:linear-gradient(135deg,#10182a 0%,#0b1020 58%,#11162a 100%)}
+.rebalance-hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-90px;top:-100px;background:rgba(99,102,241,.12);filter:blur(4px);pointer-events:none}
+.rebalance-title{font-size:16px;font-weight:900;color:#edf3ff;position:relative;z-index:1}
+.rebalance-subtitle{max-width:820px;font-size:12px;color:#94a3b8;line-height:1.5;margin-top:5px;position:relative;z-index:1}
+.rebalance-form{display:grid;grid-template-columns:minmax(220px,360px) auto;gap:10px;align-items:end;margin-top:14px;position:relative;z-index:1}
+.rebalance-form .fg{margin:0}
+.rebalance-form .btn{min-height:39px}
+.rebalance-safety{font-size:11px;line-height:1.45;color:#94a3b8;border:1px solid #1d2940;background:rgba(9,12,21,.62);border-radius:11px;padding:9px 10px}
+.rebalance-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.rebalance-summary-card{min-height:72px;padding:10px 11px;border:1px solid #182033;border-radius:12px;background:#0b1020;display:flex;flex-direction:column;justify-content:space-between;gap:5px}
+.rebalance-summary-label{font-size:10px;color:#94a3b8}
+.rebalance-summary-value{font-size:15px;font-weight:900;color:#edf3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rebalance-summary-note{font-size:10px;color:#64748b;line-height:1.35}
+.rebalance-study{display:flex;flex-direction:column;gap:8px}
+.rebalance-study-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.rebalance-study-title{font-size:12px;font-weight:800;color:#edf3ff}
+.rebalance-study-sub{font-size:10px;color:#7489a4;line-height:1.4;margin-top:2px}
+.rebalance-study-labels,.rebalance-study-row{display:grid;grid-template-columns:minmax(0,1.15fr) .8fr .8fr .7fr minmax(0,1.25fr) .9fr minmax(0,1.8fr);gap:8px;align-items:center}
+.rebalance-study-labels{padding:0 9px;font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+.rebalance-study-row{padding:10px 9px;border:1px solid #182033;border-radius:12px;background:#090c15}
+.rebalance-study-asset{min-width:0}
+.rebalance-study-ticker{font-size:12px;font-weight:900;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rebalance-study-type{font-size:10px;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rebalance-study-stat{min-width:0}
+.rebalance-study-stat-label{display:none;font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+.rebalance-study-stat-value{font-size:11px;font-weight:800;color:#d7e1ef}
+.rebalance-study-value{color:#60a5fa;font-size:12px;font-weight:900}
+.rebalance-study-criteria{font-size:10px;color:#94a3b8;line-height:1.4}
+.rebalance-empty{padding:16px;border:1px dashed #26344b;border-radius:13px;background:#0b1020;color:#94a3b8;font-size:12px;line-height:1.5}
+.rebalance-dy-note{font-size:10px;color:#64748b;line-height:1.4}
 .dashboard-hero{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .dash-card{min-height:124px;padding:12px 14px 10px;display:flex;flex-direction:column;justify-content:space-between}
 .dash-head{display:flex;align-items:flex-start;gap:10px}
@@ -160,6 +191,11 @@ button{cursor:pointer;font-family:inherit}
 @media(max-width:900px){
   .analysis-grid{grid-template-columns:1fr}
   .analysis-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rebalance-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rebalance-study-labels{display:none}
+  .rebalance-study-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .rebalance-study-asset,.rebalance-study-criteria{grid-column:1/-1}
+  .rebalance-study-stat-label{display:block;margin-bottom:2px}
 }
 @media(max-width:640px){
   .analysis-shell{gap:8px;margin-bottom:12px}
@@ -181,6 +217,13 @@ button{cursor:pointer;font-family:inherit}
   .analysis-ranking-stat{align-items:flex-start}
   .asset-inner-tabs{gap:6px;margin:2px 0 10px}
   .asset-inner-tab{padding:7px 10px;font-size:11px}
+  .rebalance-hero{padding:12px}
+  .rebalance-form{grid-template-columns:1fr}
+  .rebalance-form .btn{width:100%}
+  .rebalance-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .rebalance-summary-card{min-height:66px;padding:9px}
+  .rebalance-study-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .rebalance-study-asset,.rebalance-study-criteria{grid-column:1/-1}
 }
 .dashboard-grid{gap:10px;grid-template-columns:minmax(0,1.45fr) minmax(330px,.95fr)}
 .dashboard-panel{min-height:260px}
@@ -10439,55 +10482,127 @@ function rentabilidadeTab(){
 }
 
 function ajudarTab(){
-  return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">⚖️ Sugestão de aporte</div>
-  <div class="mu" style="font-size:13px;margin-bottom:16px">Digite o valor do próximo aporte. Analisamos peso atual, % ideal, rentabilidade e DY para sugerir onde aportar.</div>
-  <div class="fc">
-    <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" placeholder="ex: 500"></div></div>
-    <div style="display:flex;gap:8px;margin-top:14px"><button class="btn bp" onclick="calcRebalance()">Analisar aporte</button></div>
+  return`<div class="rebalance-shell">
+  <div class="rebalance-hero">
+    <div class="rebalance-title">⚖️ Sugestão prudente de aporte</div>
+    <div class="rebalance-subtitle">Simulação para apoiar estudo de aporte, considerando concentração, desempenho, DY e metas da carteira. Não é recomendação de compra.</div>
+    <div class="rebalance-form">
+      <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500"></div></div>
+      <button class="btn bp" onclick="calcRebalance()">Simular aporte</button>
+    </div>
   </div>
-  <div id="reb-out">${!S.assets.length?'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Cadastre compras na aba Aportes para a análise funcionar.</div>':'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Informe um valor e clique em Analisar aporte.</div>'}</div>`;
+  <div class="rebalance-safety">Esta análise é apenas apoio de organização da carteira. Não é recomendação de compra, venda ou manutenção.</div>
+  <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha os valores atuais preenchidos para usar a simulação prudente.</div>':'<div class="rebalance-empty">Informe um valor e clique em Simular aporte. O resultado mostrará somente ativos que atendam aos critérios prudentes.</div>'}</div>
+  </div>`;
 }
 function calcRebalance(){
   const aporte=Number(document.getElementById('reb-val')?.value)||0;
   const out=document.getElementById('reb-out'); if(!out) return;
-  if(aporte<=0){out.innerHTML='<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Digite um valor maior que zero.</div>';return;}
-  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
-  if(!S.assets.length||total<=0){out.innerHTML='<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Ainda não há ativos suficientes.</div>';return;}
+  if(aporte<=0){out.innerHTML='<div class="rebalance-empty">Digite um valor maior que zero para iniciar a simulação.</div>';return;}
+  const analysisRows=assetAnalysisRows();
+  const total=analysisRows.reduce((s,row)=>s+(Number(row.current)||0),0);
+  if(!analysisRows.length||total<=0){out.innerHTML='<div class="rebalance-empty">Dados insuficientes para analisar a carteira. Confira quantidade e valor atual dos ativos.</div>';return;}
   const allocItems=allocationGoalItems();
   const allocTarget=Object.fromEntries(allocItems.map(it=>[it.type, Number(it.pct)||0]));
-  const allocActual = {};
-  S.assets.forEach(a=>{
-    const type=normalizeType(a.type||'Ação','Ação');
-    const value=(Number(a.qty)||0)*(Number(a.current_price)||0);
-    allocActual[type]=(allocActual[type]||0)+value;
-  });
-  Object.keys(allocActual).forEach(k=>{ allocActual[k] = total>0 ? (allocActual[k]/total)*100 : 0; });
-  let list=S.assets.map(a=>{
-    const valor=assetCurrentValue(a),peso=valor/total*100,ideal=Number(a.ideal_pct)||0,falta=ideal>0?Math.max(0,ideal-peso):0;
-    const rent=a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0;
-    const type=normalizeType(a.type||'Ação','Ação');
-    const typeTarget=Number(allocTarget[type]||0);
-    const typeActual=Number(allocActual[type]||0);
-    const typeGap=typeTarget-typeActual;
-    let score=0,motivos=[];
-    if(ideal>0&&falta>0){score+=falta*4;motivos.push(`abaixo do ideal em ${falta.toFixed(1)} p.p.`);}
-    if(ideal===0&&peso<10){score+=(10-peso)*1.2;motivos.push('baixo peso');}
-    if(rent<0){score+=Math.min(20,Math.abs(rent))*1.1;motivos.push(`queda vs PM (${fmtP(rent)})`);}
-    if((Number(a.dy)||0)>6){score+=(Number(a.dy)||0)*0.8;motivos.push(`DY ${a.dy}%`);}
-    if(typeTarget>0){
-      if(typeGap>0){ score += typeGap*3; motivos.push(`${type} abaixo da meta (${typeGap.toFixed(1)} p.p.)`); }
-      else if(typeGap<0){ score -= Math.min(20, Math.abs(typeGap)*1.2); motivos.push(`${type} acima da meta (${Math.abs(typeGap).toFixed(1)} p.p.)`); }
+  const {map:allocValues}=allocationActualByType();
+  const allocActual=Object.fromEntries(Object.entries(allocValues).map(([type,value])=>[type,total>0?(Number(value)||0)/total*100:0]));
+  const assetsByTicker=new Map((S.assets||[]).map(a=>[String(a.ticker||'').trim().toUpperCase(),a]));
+  let insufficient=0;
+  let avoided=0;
+  const evaluated=analysisRows.map(row=>{
+    const asset=assetsByTicker.get(row.ticker)||{};
+    const signal=assetContributionSignal(row);
+    const valid=!!row.ticker
+      && Number.isFinite(row.current) && row.current>0
+      && Number.isFinite(row.share)
+      && Number.isFinite(row.pct);
+    if(!valid || signal.label==='Dados insuficientes'){
+      insufficient++;
+      return {...row,asset,signal,valid:false,score:-Infinity,criteria:['dados insuficientes']};
     }
-    if(peso>20){score-=25;motivos.push('peso já alto');}
-    return{...a,valor,peso,ideal,rent,score,motivos};
-  }).filter(a=>a.score>0).sort((a,b)=>b.score-a.score).slice(0,4);
-  if(!list.length) list=[...S.assets].map(a=>({...a,valor:assetCurrentValue(a),peso:(assetCurrentValue(a)/total*100),ideal:Number(a.ideal_pct)||0,rent:0,score:1,motivos:['menor concentração']})).sort((a,b)=>a.peso-b.peso).slice(0,3);
-  const sum=list.reduce((s,a)=>s+a.score,0)||1;
-  const rows=list.map(a=>{
-    const val=aporte*(a.score/sum),qtd=a.current_price>0?Math.floor(val/a.current_price):0,divMes=val*((Number(a.dy)||0)/100)/12;
-    return`<tr><td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td><td>${esc(normalizeType(a.type||'Ação','Ação'))}</td><td class="mu">${esc(a.sector||'—')}</td><td>${a.peso.toFixed(1)}%</td><td>${a.ideal?a.ideal.toFixed(1)+'%':'—'}</td><td class="${a.rent<0?'rd':'gn'}">${fmtP(a.rent)}</td><td class="gn" style="font-weight:700">${fmt(val)}</td><td>${qtd}</td><td class="am">+${fmt(divMes)}/mês</td><td class="mu">${esc(a.motivos.join(', '))}</td></tr>`;
+    if(row.share>30 || signal.label==='Evitar aumentar por concentração'){
+      avoided++;
+      return {...row,asset,signal,valid:true,score:-Infinity,criteria:['concentração acima do limite prudente']};
+    }
+    const ideal=Number(asset.ideal_pct)||0;
+    const idealGap=ideal>0 ? Math.max(0,ideal-row.share) : 0;
+    const typeTarget=Number(allocTarget[row.type]||0);
+    const typeActual=Number(allocActual[row.type]||0);
+    const typeGap=typeTarget-typeActual;
+    const dy=Math.max(0,Number(row.dy)||0);
+    const criteria=[];
+    let score=0;
+
+    if(row.share<10){score+=18;criteria.push('concentração saudável');}
+    else if(row.share<15){score+=10;criteria.push('concentração controlada');}
+    else if(row.share<=20){score-=8;criteria.push('posição já relevante');}
+    else{score-=32;criteria.push('concentração elevada');}
+
+    if(signal.label==='Pode estudar aporte'){score+=24;criteria.push('sinal prudente favorável ao estudo');}
+    else if(signal.label==='Acompanhar'){score+=7;criteria.push('ativo em acompanhamento');}
+    else if(signal.label==='Aguardar'){score-=22;criteria.push('sinal de aguardar');}
+
+    if(row.pct<0){
+      const fall=Math.abs(row.pct);
+      if(fall>=3 && fall<=20){score+=Math.min(14,fall*.7);criteria.push(`queda moderada (${fmtP(row.pct)})`);}
+      else if(fall>20){score-=5;criteria.push(`queda acentuada exige análise (${fmtP(row.pct)})`);}
+      else{criteria.push(`oscilação leve (${fmtP(row.pct)})`);}
+    }else{
+      score+=2;
+      criteria.push(`desempenho ${fmtP(row.pct)}`);
+    }
+
+    if(idealGap>0){score+=Math.min(16,idealGap*1.6);criteria.push(`abaixo do peso ideal em ${idealGap.toFixed(1)} p.p.`);}
+    if(typeTarget>0 && typeGap>0){score+=Math.min(15,typeGap*1.2);criteria.push(`${row.type} abaixo da meta em ${typeGap.toFixed(1)} p.p.`);}
+    else if(typeTarget>0 && typeGap<0){score-=Math.min(14,Math.abs(typeGap));criteria.push(`${row.type} acima da meta em ${Math.abs(typeGap).toFixed(1)} p.p.`);}
+    if(dy>0){score+=Math.min(5,dy*.45);criteria.push(`DY ${dy.toFixed(2)}% como apoio`);}
+
+    return {...row,asset,signal,valid:true,score,criteria,ideal,typeGap};
+  });
+  const list=evaluated
+    .filter(row=>row.valid && Number.isFinite(row.score) && row.score>8 && row.signal.label!=='Aguardar')
+    .sort((a,b)=>b.score-a.score || a.share-b.share)
+    .slice(0,5);
+  const summary=`<div class="rebalance-summary">
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Valor analisado</div><div class="rebalance-summary-value">${fmt(aporte)}</div><div class="rebalance-summary-note">Base informada para a simulação.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Ativos para estudo</div><div class="rebalance-summary-value">${list.length}</div><div class="rebalance-summary-note">Até cinco opções que passaram pelos filtros.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Evitados por concentração</div><div class="rebalance-summary-value">${avoided}</div><div class="rebalance-summary-note">Peso acima do limite prudente.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Dados insuficientes</div><div class="rebalance-summary-value">${insufficient}</div><div class="rebalance-summary-note">Sem base completa para análise.</div></div>
+  </div>`;
+  if(!list.length){
+    out.innerHTML=`${summary}<div class="rebalance-empty">Nenhum ativo atende aos critérios prudentes no momento. Revise concentração, metas e dados disponíveis antes de aportar.</div>`;
+    return;
+  }
+  const scoreSum=list.reduce((sum,row)=>sum+row.score,0);
+  const studyRows=list.map(row=>{
+    const value=scoreSum>0 ? aporte*(row.score/scoreSum) : 0;
+    const pctClass=row.pct<0?'rd':row.pct>0?'gn':'';
+    return `<div class="rebalance-study-row">
+      <div class="rebalance-study-asset">
+        <div class="rebalance-study-ticker">${esc(row.ticker)}</div>
+        <div class="rebalance-study-type">${esc(row.type)}${row.sector&&row.sector!=='—'?` · ${esc(row.sector)}`:''}</div>
+      </div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Peso atual</div><div class="rebalance-study-stat-value">${row.share.toFixed(1)}%</div></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Rentab.</div><div class="rebalance-study-stat-value ${pctClass}">${fmtP(row.pct)}</div></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">DY</div><div class="rebalance-study-stat-value">${row.dy>0?row.dy.toFixed(2)+'%':'—'}</div></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Sinal prudente</div><span class="analysis-pill signal ${esc(row.signal.tone)}">${esc(row.signal.label)}</span></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Valor para estudo</div><div class="rebalance-study-value">${fmt(value)}</div></div>
+      <div class="rebalance-study-criteria">${esc(row.criteria.slice(0,4).join(' · '))}</div>
+    </div>`;
   }).join('');
-  out.innerHTML=`<div class="tw"><div class="ts"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>Setor</th><th>% Cart.</th><th>% Ideal</th><th>Rentab.</th><th>Sugestão</th><th>Qtd aprox.</th><th>Dividendo</th><th>Motivo</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  out.innerHTML=`${summary}
+    <div class="rebalance-study">
+      <div class="rebalance-study-head">
+        <div>
+          <div class="rebalance-study-title">Simulação prudente</div>
+          <div class="rebalance-study-sub">Distribuição indicativa para estudo, sem ordem automática de execução.</div>
+        </div>
+        <span class="analysis-pill muted">${list.length} ativo${list.length===1?'':'s'}</span>
+      </div>
+      <div class="rebalance-study-labels"><div>Ativo</div><div>Peso atual</div><div>Rentab.</div><div>DY</div><div>Sinal prudente</div><div>Valor para estudo</div><div>Critérios considerados</div></div>
+      ${studyRows}
+      <div class="rebalance-dy-note">O DY é usado apenas como apoio. Qualidade do ativo, recorrência dos pagamentos e riscos devem ser avaliados separadamente.</div>
+    </div>`;
 }
 
 // ══════════════════════════════════════
