@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carteira-investimentos-v2026-06-18-23';
+const CACHE_NAME = 'carteira-investimentos-v2026-06-23-01';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,8 +8,7 @@ const APP_SHELL = [
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-192.png',
-  './icon-maskable-512.png',
-  './api/yahoo-quote.js'
+  './icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -35,6 +34,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   if (request.mode === 'navigate') {
     // O index.html usa network-first para evitar travar versao antiga apos deploy.

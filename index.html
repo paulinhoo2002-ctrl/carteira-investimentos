@@ -3065,6 +3065,14 @@ function tickerValidoB3(t){
 function isMarketTicker(t){
   return tickerValidoB3(t);
 }
+function isMarketQuoteEligibleAsset(a){
+  if(!a) return false;
+  if(isRendaFixaAsset(a)) return false;
+  const ticker=String(a.ticker||'').trim().toUpperCase();
+  if(!ticker || !isMarketTicker(ticker)) return false;
+  const type=normalizeType(a.type||metaTicker(ticker).type||'Ação','Ação');
+  return ['Ação','FII','ETF','BDR','Stock','Reit'].includes(type);
+}
 function cleanAssetCode(txt){
   let s=String(txt||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();
   s=s.replace(/\s+/g,' ');
@@ -7758,8 +7766,7 @@ async function fetchQuotes(manual=false){
   S.qLoad=true; render();
 
   const eligibleAssets=(S.assets||[]).filter(a=>{
-    const importedB3=rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source);
-    return !importedB3 && a.quoteSource!=='importado' && !isRendaFixaAsset(a);
+    return isMarketQuoteEligibleAsset(a);
   });
   const tickers=[...new Set(eligibleAssets.map(a=>String(a.ticker||'').trim().toUpperCase()).filter(t=>t&&isMarketTicker(t)))];
   let atualizados=0,semPreco=[];
@@ -7775,7 +7782,7 @@ async function fetchQuotes(manual=false){
 
       const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===ticker);
       if(!a) return;
-      if(rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source) || a.quoteSource==='importado' || isRendaFixaAsset(a)) return;
+      if(!isMarketQuoteEligibleAsset(a)) return;
 
       const price=Number(q.regularMarketPrice ?? q.postMarketPrice ?? q.preMarketPrice ?? q.regularMarketPreviousClose);
       if(Number.isFinite(price)&&price>0){
@@ -7824,7 +7831,7 @@ async function fetchQuotes(manual=false){
             recv.add(sym);
             const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===sym);
             if(!a) return;
-            if(rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source) || a.quoteSource==='importado' || isRendaFixaAsset(a)) return;
+            if(!isMarketQuoteEligibleAsset(a)) return;
             const price=Number(q.regularMarketPrice??q.price??q.close??q.previousClose);
             if(Number.isFinite(price)&&price>0){
               const prev=Number(a.current_price)||0;
@@ -8701,7 +8708,7 @@ function ativos(){
       const q=S.quotes[a.ticker];
       const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
       const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
-      const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'mercado';
+      const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'sem atualização';
       const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
       const atualText=marketValue!=null?fmt(currentDisplay):'—';
       const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
