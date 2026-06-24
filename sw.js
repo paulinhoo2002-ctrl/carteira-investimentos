@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carteira-investimentos-v2026-06-23-01';
+const CACHE_NAME = 'carteira-investimentos-v15a';
 const APP_SHELL = [
   './',
   './index.html',
@@ -12,11 +12,11 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     try {
-      await cache.addAll(APP_SHELL);
+      const requests = APP_SHELL.map((url) => new Request(url, { cache: 'reload' }));
+      await cache.addAll(requests);
     } catch (_) {}
   })());
 });
@@ -24,9 +24,15 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.map((key) => key === CACHE_NAME ? Promise.resolve() : caches.delete(key)));
+    await Promise.all(keys
+      .filter((key) => key.startsWith('carteira-investimentos-') && key !== CACHE_NAME)
+      .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -35,19 +41,20 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (url.pathname.startsWith('/api/')) {
+  if (url.pathname.startsWith('/api/') || url.pathname.endsWith('/sw.js')) {
     event.respondWith(fetch(request));
     return;
   }
 
   if (request.mode === 'navigate') {
-    // O index.html usa network-first para evitar travar versao antiga apos deploy.
     event.respondWith((async () => {
       try {
-        const fresh = await fetch(request);
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put('./index.html', fresh.clone());
-        await cache.put('./', fresh.clone());
+        const fresh = await fetch(request, { cache: 'no-store' });
+        if (fresh.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, fresh.clone());
+          await cache.put('./index.html', fresh.clone());
+        }
         return fresh;
       } catch (_) {
         const cached = await caches.match(request, { ignoreSearch: true })
@@ -64,8 +71,10 @@ self.addEventListener('fetch', (event) => {
     if (cached) return cached;
     try {
       const fresh = await fetch(request);
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, fresh.clone());
+      if (fresh.ok && fresh.type === 'basic') {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(request, fresh.clone());
+      }
       return fresh;
     } catch (_) {
       return cached || Response.error();

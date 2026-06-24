@@ -12641,6 +12641,57 @@ function bind(){
   });
 }
 
+function showPwaUpdateNotice(registration){
+  if(!registration?.waiting || document.getElementById('pwa-update-notice')) return;
+  const notice=document.createElement('div');
+  notice.id='pwa-update-notice';
+  notice.setAttribute('role','status');
+  notice.style.cssText=[
+    'position:fixed',
+    `bottom:${window.matchMedia('(max-width:700px)').matches?'calc(76px + env(safe-area-inset-bottom))':'18px'}`,
+    'left:50%',
+    'transform:translateX(-50%)',
+    'z-index:99999',
+    'width:min(430px,calc(100% - 24px))',
+    'display:flex',
+    'align-items:center',
+    'justify-content:space-between',
+    'gap:12px',
+    'padding:10px 12px',
+    'border:1px solid #26364d',
+    'border-radius:13px',
+    'background:#0c1727',
+    'box-shadow:0 14px 40px rgba(0,0,0,.38)',
+    'color:#dbeafe',
+    'font:600 12px/1.35 system-ui,sans-serif'
+  ].join(';');
+  const text=document.createElement('span');
+  text.textContent='Nova versão disponível.';
+  const button=document.createElement('button');
+  button.type='button';
+  button.textContent='Atualizar agora';
+  button.style.cssText='flex:0 0 auto;border:0;border-radius:9px;padding:8px 10px;background:#38bdf8;color:#062033;font-weight:850;cursor:pointer';
+  button.addEventListener('click',()=>{
+    button.disabled=true;
+    button.textContent='Atualizando...';
+    registration.waiting?.postMessage({type:'SKIP_WAITING'});
+  });
+  notice.append(text,button);
+  document.body.appendChild(notice);
+}
+function watchPwaUpdate(registration){
+  if(registration.waiting && navigator.serviceWorker.controller) showPwaUpdateNotice(registration);
+  registration.addEventListener('updatefound',()=>{
+    const worker=registration.installing;
+    if(!worker) return;
+    worker.addEventListener('statechange',()=>{
+      if(worker.state==='installed' && navigator.serviceWorker.controller){
+        showPwaUpdateNotice(registration);
+      }
+    });
+  });
+}
+
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
@@ -12667,14 +12718,16 @@ window.addEventListener('appinstalled',()=>{
   render();
 });
 if('serviceWorker' in navigator && location.protocol!=='file:'){
+  const hadServiceWorkerController=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(navigator.serviceWorker.controller && !window.__swReloaded){
+    if(hadServiceWorkerController && navigator.serviceWorker.controller && !window.__swReloaded){
       window.__swReloaded = true;
       window.location.reload();
     }
   });
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then(reg=>{
+      watchPwaUpdate(reg);
       if(reg && reg.update) reg.update().catch(()=>{});
     }).catch(()=>{});
   });
