@@ -425,6 +425,48 @@ button{cursor:pointer;font-family:inherit}
 .rf-preview-row .premium-row-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rf-preview-value{text-align:right;font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
 .rf-preview-value .premium-row-sub{font-size:9px;color:#94a3b8;margin-top:2px}
+.irpf-shell{display:flex;flex-direction:column;gap:12px}
+.irpf-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.irpf-title{font-size:18px;font-weight:900;color:#edf3ff;letter-spacing:-.02em}
+.irpf-sub{font-size:11px;color:#7489a4;line-height:1.45;margin-top:3px}
+.irpf-yearbox{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.irpf-yearbox .btn{padding:7px 10px;font-size:10px}
+.irpf-badge{font-size:10px;font-weight:800;border:1px solid #1d2940;background:#111828;border-radius:999px;padding:5px 8px;white-space:nowrap;color:#94a3b8}
+.irpf-badge.ok{color:#34d399;border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08)}
+.irpf-badge.warn{color:#fbbf24;border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08)}
+.irpf-badge.danger{color:#f87171;border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.08)}
+.irpf-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.irpf-section{display:flex;flex-direction:column;gap:10px}
+.irpf-section-summary{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.irpf-section-title{font-size:13px;font-weight:850;color:#e2eaf6}
+.irpf-section-sub{font-size:10px;color:#7489a4;line-height:1.4;margin-top:2px}
+.irpf-section-badge{font-size:9px;font-weight:800;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.irpf-section-body{display:flex;flex-direction:column;gap:10px}
+.irpf-section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.irpf-table-wrap{background:#111828;border:1px solid #1d2940;border-radius:14px;overflow:auto}
+.irpf-table{width:100%;border-collapse:collapse;min-width:980px}
+.irpf-table th,.irpf-table td{padding:8px 10px;border-bottom:1px solid #182033;font-size:11px;vertical-align:top}
+.irpf-table th{position:sticky;top:0;background:#0b1020;color:#94a3b8;text-align:left;font-weight:800;z-index:1}
+.irpf-table td{color:#cbd5e1}
+.irpf-table tr:last-child td{border-bottom:0}
+.irpf-table .irpf-right{text-align:right;white-space:nowrap}
+.irpf-table .irpf-strong{color:#edf3ff;font-weight:800}
+.irpf-table .irpf-muted{color:#7489a4}
+.irpf-mobile-list{display:none;flex-direction:column;gap:7px}
+.irpf-mobile-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15}
+.irpf-mobile-row .premium-row-title{font-size:10px}
+.irpf-mobile-row .premium-row-sub{font-size:8px}
+.irpf-mobile-value{text-align:right;font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
+.irpf-mobile-value .premium-row-sub{font-size:8px;color:#94a3b8;margin-top:2px}
+.irpf-summary-card{border:1px solid #182033;border-radius:12px;background:#0b1020;padding:10px;min-height:72px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.irpf-summary-card .analysis-summary-kicker{font-size:10px;color:#94a3b8;line-height:1.2}
+.irpf-summary-card .analysis-summary-value{font-size:14px;font-weight:900;color:#edf3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.irpf-summary-card .analysis-summary-sub{font-size:10px;color:#7489a4;line-height:1.35}
+.irpf-summary-card.ok .analysis-summary-value{color:#34d399}
+.irpf-summary-card.info .analysis-summary-value{color:#60a5fa}
+.irpf-summary-card.warn .analysis-summary-value{color:#fbbf24}
+.irpf-summary-card.danger .analysis-summary-value{color:#f87171}
+.irpf-summary-card.muted .analysis-summary-value{color:#94a3b8}
 .premium-mobile-only{display:none}
 .perf-grid{display:grid;grid-template-columns:minmax(280px,1.08fr) repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 .perf-card{background:#111828;border:1px solid #1d2940;border-radius:14px;padding:12px 12px 10px}
@@ -1245,8 +1287,24 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .rf-table-wrap{margin-right:-4px}
 .rf-table{min-width:760px}
 .rf-table th,.rf-table td{padding:6px 8px;font-size:10px}
-.premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
-.premium-rf-list .premium-rf-row:nth-child(n+3){display:none}
+  .premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
+  .premium-rf-list .premium-rf-row:nth-child(n+3){display:none}
+  .irpf-head{flex-direction:column;align-items:flex-start}
+  .irpf-yearbox{align-items:flex-start;width:100%}
+  .irpf-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .irpf-summary-card{min-height:78px;padding:9px}
+  .irpf-summary-card .analysis-summary-value{font-size:13px}
+  .irpf-section-grid{grid-template-columns:1fr;gap:8px}
+  .irpf-table-wrap{display:none}
+  .irpf-mobile-list{display:flex}
+  .irpf-section-title{font-size:11px;line-height:1.2}
+  .irpf-section-sub{display:none}
+  .irpf-section-badge{font-size:8px;padding:3px 6px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+  .irpf-mobile-row{padding:7px 8px;gap:7px}
+  .irpf-mobile-row .premium-row-title{font-size:10px}
+  .irpf-mobile-row .premium-row-sub{font-size:8px}
+  .irpf-mobile-value{font-size:10px;max-width:132px;overflow:hidden;text-overflow:ellipsis}
+  .irpf-mobile-value .premium-row-sub{font-size:8px}
   .backup-grid,.backup-summary{grid-template-columns:1fr!important}
   .backup-card .cv,.backup-summary .cv{font-size:16px}
   .backup-note{font-size:10px}
@@ -7492,57 +7550,226 @@ function irpfBuildYearReport(year){
     }
   };
 }
-function irpfExportCSV(){
-  return withVisibleValues(()=>{
-  const year=irpfSelectedYear();
-  const report=irpfBuildYearReport(year);
+function irpfIsRfPosition(row){
+  return normalizeType(row?.type||'Ação','Ação')==='Renda Fixa' || row?.bucket==='Renda Fixa';
+}
+function irpfProventoCategory(p){
+  const meta=proventoAssetMeta(p);
+  const event=proventoTipoCanonical(p?.eventType||p?.type);
+  const assetType=normalizeType(meta?.asset?.type||meta?.type||'Ação','Ação');
+  const text=rfPosNorm(`${p?.assetName||''} ${p?.ticker||''} ${p?.eventType||''} ${p?.type||''}`);
+  if(event==='JCP') return {bucket:'JCP', group:'Tributação exclusiva', label:'JCP'};
+  if(event==='Rendimento' && assetType==='FII') return {bucket:'Rendimentos de FIIs', group:'Isento / não tributável', label:'Rendimento de FII'};
+  if(event==='Dividendo') return {bucket:'Dividendos', group:'Isento / não tributável', label:'Dividendo'};
+  if(event==='Juros de Renda Fixa') return {bucket:'Juros de Renda Fixa', group:'Tributação exclusiva', label:'Juros de Renda Fixa'};
+  if(event==='Reembolso') return {bucket:'Reembolso', group:'Outros', label:'Reembolso'};
+  if(event==='Rendimento' && /FII|FUNDO IMOBILIARIO|FUNDOS IMOBILIARIOS|IMOBILIARIO/.test(text)) return {bucket:'Rendimentos de FIIs', group:'Isento / não tributável', label:'Rendimento de FII'};
+  if(assetType==='FII' && event!=='JCP') return {bucket:'Rendimentos de FIIs', group:'Isento / não tributável', label:'Rendimento de FII'};
+  if(assetType==='Renda Fixa') return {bucket:'Juros de Renda Fixa', group:'Tributação exclusiva', label:event || 'Juros de Renda Fixa'};
+  return {bucket:'Outros', group:'Outros', label:event || 'Outro'};
+}
+function irpfAlertItems(report){
+  const items=[];
+  const assets=(S.assets||[]);
+  const rfAssets=assets.filter(isRendaFixaAsset);
+  const noType=assets.filter(a=>!String(a.type||metaTicker(a.ticker).type||'').trim()).slice(0,12);
+  const noQty=assets.filter(a=>Number(a.qty)<=0).slice(0,12);
+  const noAvg=assets.filter(a=>Number(a.avg_price)<=0 && !isRendaFixaAsset(a)).slice(0,12);
+  const noProventoCat=(S.proventos||[])
+    .map(p=>({p, cat:irpfProventoCategory(p)}))
+    .filter(row=>!row.cat.bucket || row.cat.bucket==='Outros')
+    .slice(0,12);
+  const rfNoDue=rfAssets.filter(a=>!assetRfMaturityDate(a)).slice(0,12);
+  const rfNoCurrent=rfAssets.filter(a=>!assetRfCurrentValueMeta(a).source || assetRfCurrentValueMeta(a).source==='valor aplicado').slice(0,12);
+  noType.forEach(a=>items.push({tone:'warn',label:'Ativo sem tipo',value:String(a.ticker||a.name||'—'),hint:'Verifique o tipo antes de fechar a declaração.'}));
+  noQty.forEach(a=>items.push({tone:'warn',label:'Ativo sem quantidade',value:String(a.ticker||a.name||'—'),hint:'A posição precisa ter quantidade para compor Bens e Direitos.'}));
+  noAvg.forEach(a=>items.push({tone:'warn',label:'Ativo sem preço médio',value:String(a.ticker||a.name||'—'),hint:'O IRPF usa custo de aquisição como referência principal.'}));
+  noProventoCat.forEach(row=>items.push({tone:'info',label:'Provento sem categoria',value:String(row.p.ticker||row.p.assetName||'—'),hint:'Classifique dividendos, JCP, FIIs ou outros antes de declarar.'}));
+  rfNoDue.forEach(a=>items.push({tone:'warn',label:'Renda fixa sem vencimento',value:String(a.ticker||assetRfName(a)||'—'),hint:'Falta a data de vencimento para conferir o título.'}));
+  rfNoCurrent.forEach(a=>items.push({tone:'warn',label:'Renda fixa sem valor atual',value:String(a.ticker||assetRfName(a)||'—'),hint:'Informe valor bruto ou líquido para melhorar a conferência.'}));
+  if(!assets.length) items.push({tone:'muted',label:'Sem ativos cadastrados',value:'—',hint:'Cadastre posições para gerar o relatório.'});
+  return items;
+}
+function irpfSummaryMetrics(report, year){
+  const byCat=report.provents.reduce((acc,p)=>{
+    const cat=irpfProventoCategory(p).bucket;
+    acc[cat]=(acc[cat]||0)+(Number(p.value)||0);
+    return acc;
+  },{});
+  const rfValue=report.positions.filter(irpfIsRfPosition).reduce((s,p)=>s+Number(p.cost||0),0);
+  const incomplete=irpfAlertItems(report).length;
+  return {
+    applied: report.totals.yearEndCost,
+    provents: report.totals.proventsTotal,
+    dividends: byCat['Dividendos']||0,
+    jcp: byCat['JCP']||0,
+    fii: byCat['Rendimentos de FIIs']||0,
+    rf: rfValue,
+    positions: report.positions.length,
+    alerts: incomplete,
+    year
+  };
+}
+function irpfAssetsByCategory(report){
+  const rows=report.positions.map(p=>({
+    ...p,
+    referenceValue:Number(p.marketValue)||0,
+    acquisitionValue:Number(p.cost)||0,
+    note:p.note || (irpfIsRfPosition(p) ? 'IRPF usa custo de aquisição como base principal.' : 'IRPF normalmente usa custo de aquisição, não valor de mercado.')
+  }));
+  const buckets=rows.reduce((acc,p)=>{
+    if(!acc[p.bucket]) acc[p.bucket]=[];
+    acc[p.bucket].push(p);
+    return acc;
+  },{});
+  return {rows,buckets};
+}
+function irpfProventoSummary(report){
+  const rows=report.provents.map(p=>{
+    const cat=irpfProventoCategory(p);
+    const meta=proventoAssetMeta(p);
+    return {
+      date:p.date,
+      ticker:String(p.ticker||meta.asset?.ticker||'—').trim()||'—',
+      assetName:meta.title||p.assetName||p.ticker||'—',
+      eventType:proventoTipoCanonical(p.eventType||p.type),
+      category:cat.bucket,
+      group:cat.group,
+      value:Number(p.value)||0,
+      source:String(p.source||'').trim()||'—',
+      bucket:cat.bucket
+    };
+  });
+  const byAsset=rows.reduce((acc,row)=>{
+    const key=row.ticker || row.assetName;
+    if(!acc[key]) acc[key]={ticker:row.ticker, assetName:row.assetName, total:0, count:0, dividendos:0, jcp:0, fii:0, outros:0};
+    const item=acc[key];
+    item.total+=row.value;
+    item.count++;
+    if(row.bucket==='Dividendos') item.dividendos+=row.value;
+    else if(row.bucket==='JCP') item.jcp+=row.value;
+    else if(row.bucket==='Rendimentos de FIIs') item.fii+=row.value;
+    else item.outros+=row.value;
+    return acc;
+  },{});
+  const byCategory=rows.reduce((acc,row)=>{
+    acc[row.bucket]=(acc[row.bucket]||0)+row.value;
+    return acc;
+  },{});
+  return {
+    rows:rows.sort((a,b)=>new Date(b.date)-new Date(a.date)||b.value-a.value||a.ticker.localeCompare(b.ticker)),
+    byAsset:Object.values(byAsset).sort((a,b)=>b.total-a.total),
+    byCategory
+  };
+}
+function irpfRendaFixaRows(report){
+  return report.positions
+    .filter(irpfIsRfPosition)
+    .map(p=>{
+      const currentMeta=assetRfCurrentValueMeta(p);
+      const due=assetRfMaturityDate(p);
+      const app=assetRfApplicationDate(p);
+      const alerts=[];
+      if(!assetRfContractRate(p)) alerts.push('Sem taxa');
+      if(!due) alerts.push('Sem vencimento');
+      if(!currentMeta.source || currentMeta.source==='valor aplicado') alerts.push('Sem valor atual');
+      return {
+        ticker:p.ticker,
+        name:assetRfName(p)||p.sector||p.type||p.ticker||'Renda Fixa',
+        type:assetRfSubtype(p),
+        issuer:String(p.fixed_issuer||p.issuer||'').trim()||'—',
+        applied:Number(p.cost)||0,
+        current:Number(p.marketValue)||0,
+        average:Number(p.avg)||0,
+        app,
+        due,
+        note:p.note || 'IRPF usa custo de aquisição como base principal.',
+        alerts,
+        source:currentMeta.source || 'valor aplicado'
+      };
+    })
+    .sort((a,b)=>{
+      const ad=a.due?new Date(a.due).getTime():9999999999999;
+      const bd=b.due?new Date(b.due).getTime():9999999999999;
+      return ad-bd || b.applied-a.applied || a.ticker.localeCompare(b.ticker);
+    });
+}
+function irpfCsvBuild(report, year){
   const lines=[];
-  lines.push(`IRPF;Ano-calendario;${year}`);
-  lines.push(`Gerado em;${new Date().toLocaleString('pt-BR')}`);
+  const nowLabel=new Date().toLocaleString('pt-BR');
+  const summary=irpfSummaryMetrics(report, year);
+  const proventos=irpfProventoSummary(report);
+  const rfRows=irpfRendaFixaRows(report);
+  const alerts=irpfAlertItems(report);
+  lines.push(`IRPF;Ano-base;${year}`);
+  lines.push(`Gerado em;${nowLabel}`);
+  lines.push('ORIGEM;carteira-investimentos');
   lines.push('');
   lines.push('RESUMO');
   lines.push(['Indicador','Valor'].map(irpfCsvEscape).join(';'));
   [
-    ['Compras no ano', report.totals.buys],
-    ['Vendas no ano', report.totals.sells],
-    ['Ganhos tributáveis', report.totals.taxableGain],
-    ['Ganhos isentos', report.totals.exemptGain],
-    ['Proventos totais', report.totals.proventsTotal],
-    ['Proventos isentos', report.totals.proventsExempt],
-    ['Proventos tributáveis', report.totals.proventsTaxable],
-    ['Imposto estimado', report.totals.tax],
-    ['Posicao em 31/12', report.totals.yearEndCost],
+    ['Total aplicado em ativos', summary.applied],
+    ['Total de proventos no ano', summary.provents],
+    ['Total de dividendos', summary.dividends],
+    ['Total de JCP', summary.jcp],
+    ['Total de rendimentos de FIIs', summary.fii],
+    ['Total de renda fixa', summary.rf],
+    ['Quantidade de ativos com posição', summary.positions],
+    ['Alertas de dados incompletos', summary.alerts],
   ].forEach(([k,v])=>lines.push([k, fmt(Number(v)||0)].map(irpfCsvEscape).join(';')));
   lines.push('');
-  lines.push('APURACAO_MENSAL');
-  lines.push(['Mes','Acoes vendas','Acoes ganho real','Acoes ganho isento','Acoes imposto','FII vendas','FII ganho real','FII imposto','ETF vendas','ETF ganho real','ETF imposto','BDR vendas','BDR ganho real','BDR imposto','RendaFixa vendas','RendaFixa ganho real','RendaFixa imposto','DARF total'].map(irpfCsvEscape).join(';'));
-  report.months.forEach(m=>{
-    const row=[
-      m.label,
-      m.salesByBucket['Ações'], m.realizedByBucket['Ações'], m.exemptByBucket['Ações'], m.taxByBucket['Ações'],
-      m.salesByBucket['FII'], m.realizedByBucket['FII'], m.taxByBucket['FII'],
-      m.salesByBucket['ETF'], m.realizedByBucket['ETF'], m.taxByBucket['ETF'],
-      m.salesByBucket['BDR'], m.realizedByBucket['BDR'], m.taxByBucket['BDR'],
-      m.salesByBucket['Renda Fixa'], m.realizedByBucket['Renda Fixa'], m.taxByBucket['Renda Fixa'],
-      report.bucketOrder.reduce((s,b)=>s+Number(m.taxByBucket[b]||0),0)
-    ];
-    lines.push(row.map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
-  });
-  lines.push('');
-  lines.push('POSICOES_31_12');
-  lines.push(['Ticker','Bucket','Tipo','Setor','Qtd','Custo','PM','Preco atual','Valor de mercado','Observacao'].map(irpfCsvEscape).join(';'));
+  lines.push('BENS_E_DIREITOS');
+  lines.push(['Ticker','Classe','Quantidade','Preco medio','Custo de aquisicao','Valor atual referencia','Observacao'].map(irpfCsvEscape).join(';'));
   report.positions.forEach(p=>{
     lines.push([
-      p.ticker,p.bucket,p.type,p.sector,p.qty,p.cost,p.avg,p.current,p.marketValue,p.note
+      p.ticker,
+      p.bucket,
+      p.qty,
+      p.avg,
+      p.cost,
+      p.marketValue,
+      p.note
     ].map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
   });
   lines.push('');
-  lines.push('PROVENTOS');
-  lines.push(['Ticker','Data','Classificacao','Valor','Tipo'].map(irpfCsvEscape).join(';'));
-  report.provents.forEach(p=>{
-    lines.push([p.ticker,p.date,p.bucket,p.value,p.type].map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
+  lines.push('PROVENTOS_DO_ANO');
+  lines.push(['Data','Ticker','Ativo','Evento','Categoria','Grupo','Valor','Fonte'].map(irpfCsvEscape).join(';'));
+  proventos.rows.forEach(p=>{
+    lines.push([p.date,p.ticker,p.assetName,p.eventType,p.category,p.group,p.value,p.source].map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
   });
-  irpfDownloadText(`irpf-${year}.csv`, lines.join('\r\n'), 'text/csv;charset=utf-8');
+  lines.push('');
+  lines.push('PROVENTOS_POR_CATEGORIA');
+  lines.push(['Categoria','Total'].map(irpfCsvEscape).join(';'));
+  Object.entries(proventos.byCategory).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+    lines.push([k, fmt(v)].map(irpfCsvEscape).join(';'));
+  });
+  lines.push('');
+  lines.push('PROVENTOS_POR_ATIVO');
+  lines.push(['Ticker','Ativo','Total','Qtd lançamentos','Dividendos','JCP','FIIs','Outros'].map(irpfCsvEscape).join(';'));
+  proventos.byAsset.forEach(r=>{
+    lines.push([r.ticker,r.assetName,r.total,r.count,r.dividendos,r.jcp,r.fii,r.outros].map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
+  });
+  lines.push('');
+  lines.push('RENDA_FIXA');
+  lines.push(['Ticker','Tipo','Emissor','Valor aplicado','Valor atual referencia','Data aplicacao','Data vencimento','Fonte','Alertas'].map(irpfCsvEscape).join(';'));
+  rfRows.forEach(r=>{
+    lines.push([r.ticker,r.type,r.issuer,r.applied,r.current,r.app||'',r.due||'',r.source,r.alerts.join(' | ')||'—'].map(v=>typeof v==='number'?fmt(v):String(v||'')).map(irpfCsvEscape).join(';'));
+  });
+  lines.push('');
+  lines.push('ALERTAS');
+  lines.push(['Tipo','Elemento','Observacao'].map(irpfCsvEscape).join(';'));
+  alerts.forEach(a=>{
+    lines.push([a.label,a.value,a.hint].map(v=>String(v||'')).map(irpfCsvEscape).join(';'));
+  });
+  return lines.join('\r\n');
+}
+function irpfExportCSV(){
+  return withVisibleValues(()=>{
+  const year=irpfSelectedYear();
+  const report=irpfBuildYearReport(year);
+  const today=new Date();
+  const name=`carteira-irpf-${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}-ano-base-${year}.csv`;
+  irpfDownloadText(name, irpfCsvBuild(report, year), 'text/csv;charset=utf-8');
   toast(`✅ CSV do IRPF ${year} exportado.`);
   });
 }
@@ -7857,7 +8084,7 @@ Checklist final
 - Validar tudo no programa oficial antes de enviar.
 `;
 }
-function irpfTab(){
+function irpfTabLegacy(){
   if(Number(S.irpfSeqSeen)!==Number(S.tabSeq||0)){
     S.irpfStep=1;
     S.irpfSeqSeen=Number(S.tabSeq||0);
@@ -8187,6 +8414,286 @@ function irpfTab(){
       <div class="air" style="white-space:normal">1. Conferir posição em 31/12.<br>2. Conferir proventos recebidos no ano.<br>3. Conferir meses com vendas tributáveis e DARF.<br>4. Exportar CSV ou imprimir PDF para revisar antes de entregar.</div>
     </div>
   </details>`;
+}
+function irpfTabPremium(){
+  const year=irpfSelectedYear();
+  const years=irpfYears();
+  const report=irpfBuildYearReport(year);
+  const summary=irpfSummaryMetrics(report, year);
+  const assets=irpfAssetsByCategory(report);
+  const proventos=irpfProventoSummary(report);
+  const rfRows=irpfRendaFixaRows(report);
+  const alerts=irpfAlertItems(report);
+  const totalCurrent=report.positions.reduce((sum,p)=>sum+Number(p.marketValue||0),0);
+  const gain=totalCurrent-Number(summary.applied||0);
+  const gainPct=summary.applied>0 ? (gain/summary.applied*100) : 0;
+  const proventoOthers=Math.max(0, Number(summary.provents||0)-Number(summary.dividends||0)-Number(summary.jcp||0)-Number(summary.fii||0));
+  const rfAlertRows=rfRows.filter(r=>Array.isArray(r.alerts)&&r.alerts.length).length;
+  const rfMissingCurrent=rfRows.filter(r=>Array.isArray(r.alerts)&&r.alerts.includes('Sem valor atual')).length;
+  const rfMissingMaturity=rfRows.filter(r=>Array.isArray(r.alerts)&&r.alerts.includes('Sem vencimento')).length;
+  const bucketLabels={Ações:'Ações',FII:'FIIs',ETF:'ETFs',BDR:'BDRs','Renda Fixa':'Renda Fixa'};
+  const section=(title, sub, badge, body, open=false)=>`
+    <details class="sec irpf-section" ${open?'open':''} style="margin-top:12px">
+      <summary>
+        <div>
+          <div class="irpf-section-title">${esc(title)}</div>
+          <div class="irpf-section-sub">${esc(sub)}</div>
+        </div>
+        <div class="irpf-section-badge">${esc(badge)}</div>
+      </summary>
+      <div class="irpf-section-body">${body}</div>
+    </details>`;
+  const summaryCards=[
+    {tone:'info', label:'Total aplicado em ativos', value:fmt(summary.applied||0), note:'Custo de aquisição consolidado'},
+    {tone:gain>=0?'ok':'warn', label:'Patrimônio estimado', value:fmt(totalCurrent), note:`Diferença de ${gain>=0?'+':''}${fmt(gain)} (${fmtP(gainPct)})`},
+    {tone:'info', label:'Total de proventos', value:fmt(summary.provents||0), note:'Dividendos, JCP e FIIs recebidos no ano'},
+    {tone:'ok', label:'Dividendos', value:fmt(summary.dividends||0), note:'Rendimentos isentos tradicionais'},
+    {tone:'warn', label:'JCP', value:fmt(summary.jcp||0), note:'Tributação exclusiva na fonte'},
+    {tone:'info', label:'Rendimentos de FIIs', value:fmt(summary.fii||0), note:'Rendimentos isentos de FIIs'},
+    {tone:'warn', label:'Renda fixa', value:fmt(summary.rf||0), note:'Valor aplicado em títulos informados'},
+    {tone:summary.positions>0?'info':'muted', label:'Ativos com posição', value:String(summary.positions||0), note:`${summary.positions||0} ativos na carteira`},
+  ].map(card=>`
+    <div class="irpf-summary-card ${card.tone}">
+      <div class="analysis-summary-kicker">${esc(card.label)}</div>
+      <div class="analysis-summary-value">${esc(card.value)}</div>
+      <div class="analysis-summary-sub">${esc(card.note)}</div>
+    </div>`).join('');
+  const bucketCards=report.bucketOrder.map(bucket=>{
+    const rows=(assets.buckets[bucket]||[]);
+    const applied=rows.reduce((sum,p)=>sum+Number(p.cost||0),0);
+    const market=rows.reduce((sum,p)=>sum+Number(p.marketValue||0),0);
+    const label=bucketLabels[bucket]||bucket;
+    return `
+      <div class="irpf-summary-card muted">
+        <div class="analysis-summary-kicker">${esc(label)}</div>
+        <div class="analysis-summary-value">${rows.length}</div>
+        <div class="analysis-summary-sub">Custo ${fmt(applied)} · ref. ${fmt(market)}</div>
+      </div>`;
+  }).join('');
+  const positionRows=report.positions.map(p=>`
+    <tr>
+      <td class="irpf-strong">${esc(p.ticker||'—')}</td>
+      <td>${esc(bucketLabels[p.bucket]||p.bucket||'—')}</td>
+      <td>${esc(p.type||'—')}</td>
+      <td class="irpf-right">${Number(p.qty||0).toLocaleString('pt-BR',{maximumFractionDigits:8})}</td>
+      <td class="irpf-right">${fmt(Number(p.avg)||0)}</td>
+      <td class="irpf-right">${fmt(Number(p.cost)||0)}</td>
+      <td class="irpf-right">${Number(p.marketValue)>0?fmt(Number(p.marketValue)||0):'—'}</td>
+      <td class="irpf-muted">${esc(p.note||'IRPF usa custo de aquisição como referência principal.')}</td>
+    </tr>`).join('');
+  const positionMobile=report.positions.map(p=>`
+    <div class="irpf-mobile-row">
+      <div>
+        <div class="premium-row-title">${esc(p.ticker||'—')}</div>
+        <div class="premium-row-sub">${esc(bucketLabels[p.bucket]||p.bucket||'—')} · ${esc(p.type||'—')}</div>
+        <div class="premium-row-sub">${esc(p.note||'IRPF usa custo de aquisição como referência principal.')}</div>
+      </div>
+      <div class="irpf-mobile-value">
+        ${fmt(Number(p.cost)||0)}
+        <div class="premium-row-sub">${Number(p.marketValue)>0?`Ref. ${fmt(Number(p.marketValue)||0)}`:'Sem valor de referência'}</div>
+      </div>
+    </div>`).join('');
+  const proventoCategoryCards=[
+    {label:'Dividendos', value:summary.dividends||0, tone:'ok', note:'Rendimentos isentos tradicionais'},
+    {label:'JCP', value:summary.jcp||0, tone:'warn', note:'Tributação exclusiva'},
+    {label:'FIIs', value:summary.fii||0, tone:'info', note:'Rendimentos de FIIs'},
+    {label:'Outros', value:proventoOthers, tone:'muted', note:'Eventos fora das categorias principais'},
+  ].map(card=>`
+    <div class="irpf-summary-card ${card.tone}">
+      <div class="analysis-summary-kicker">${esc(card.label)}</div>
+      <div class="analysis-summary-value">${fmt(card.value)}</div>
+      <div class="analysis-summary-sub">${esc(card.note)}</div>
+    </div>`).join('');
+  const proventoRows=proventos.byAsset.length ? proventos.byAsset.map(r=>`
+    <tr>
+      <td class="irpf-strong">${esc(r.ticker||'—')}</td>
+      <td>${esc(r.assetName||'—')}</td>
+      <td class="irpf-right">${fmt(Number(r.total)||0)}</td>
+      <td class="irpf-right">${Number(r.count||0)}</td>
+      <td class="irpf-right">${fmt(Number(r.dividendos)||0)}</td>
+      <td class="irpf-right">${fmt(Number(r.jcp)||0)}</td>
+      <td class="irpf-right">${fmt(Number(r.fii)||0)}</td>
+      <td class="irpf-right">${fmt(Number(r.outros)||0)}</td>
+    </tr>`).join('') : '<tr><td colspan="8" class="irpf-muted" style="text-align:center;padding:18px">Sem proventos lançados no ano selecionado.</td></tr>';
+  const proventoMobile=proventos.byAsset.length ? proventos.byAsset.map(r=>`
+    <div class="irpf-mobile-row">
+      <div>
+        <div class="premium-row-title">${esc(r.ticker||'—')}</div>
+        <div class="premium-row-sub">${esc(r.assetName||'—')}</div>
+        <div class="premium-row-sub">${Number(r.count||0)} lançamentos · Dividendos ${fmt(Number(r.dividendos)||0)} · JCP ${fmt(Number(r.jcp)||0)}</div>
+      </div>
+      <div class="irpf-mobile-value">
+        ${fmt(Number(r.total)||0)}
+        <div class="premium-row-sub">FIIs ${fmt(Number(r.fii)||0)} · Outros ${fmt(Number(r.outros)||0)}</div>
+      </div>
+    </div>`).join('') : '<div class="premium-empty">Sem proventos lançados no ano selecionado.</div>';
+  const rfSummaryCards=[
+    {label:'Total aplicado em RF', value:fmt(summary.rf||0), tone:'warn', note:'Base declarada em títulos de renda fixa'},
+    {label:'Títulos de RF', value:String(rfRows.length), tone:'info', note:'Itens com leitura auxiliar para IRPF'},
+    {label:'Com alertas', value:String(rfAlertRows), tone:rfAlertRows?'warn':'ok', note:'Sem vencimento, taxa ou valor atual'},
+    {label:'Sem valor atual', value:String(rfMissingCurrent), tone:rfMissingCurrent?'warn':'ok', note:'Informe o valor bruto ou líquido da corretora'},
+  ].map(card=>`
+    <div class="irpf-summary-card ${card.tone}">
+      <div class="analysis-summary-kicker">${esc(card.label)}</div>
+      <div class="analysis-summary-value">${esc(card.value)}</div>
+      <div class="analysis-summary-sub">${esc(card.note)}</div>
+    </div>`).join('');
+  const rfRowsHtml=rfRows.length ? rfRows.map(r=>`
+    <tr>
+      <td class="irpf-strong">${esc(r.ticker||'—')}</td>
+      <td>${esc(r.name||'—')}</td>
+      <td>${esc(r.type||'—')}</td>
+      <td>${esc(r.issuer||'—')}</td>
+      <td class="irpf-right">${fmt(Number(r.applied)||0)}</td>
+      <td class="irpf-right">${fmt(Number(r.current)||0)}</td>
+      <td class="irpf-right">${esc(r.app||'—')}</td>
+      <td class="irpf-right">${esc(r.due||'—')}</td>
+      <td>${esc((r.alerts||[]).join(' · ')||'—')}</td>
+    </tr>`).join('') : '<tr><td colspan="9" class="irpf-muted" style="text-align:center;padding:18px">Sem títulos de renda fixa classificados para o ano selecionado.</td></tr>';
+  const rfMobile=rfRows.length ? rfRows.map(r=>`
+    <div class="irpf-mobile-row">
+      <div>
+        <div class="premium-row-title">${esc(r.ticker||'—')}</div>
+        <div class="premium-row-sub">${esc(r.name||'—')}</div>
+        <div class="premium-row-sub">${esc(r.type||'—')} · ${esc(r.issuer||'—')}</div>
+        <div class="premium-row-sub">${esc(r.app||'—')} · ${esc(r.due||'—')}</div>
+      </div>
+      <div class="irpf-mobile-value">
+        ${fmt(Number(r.applied)||0)}
+        <div class="premium-row-sub">${fmt(Number(r.current)||0)} · ${(r.alerts||[]).join(' · ')||'sem alertas'}</div>
+      </div>
+    </div>`).join('') : '<div class="premium-empty">Sem títulos de renda fixa classificados para o ano selecionado.</div>';
+  const alertCards=alerts.length ? alerts.map(a=>`
+    <div class="irpf-summary-card ${a.tone==='danger'?'danger':a.tone==='warn'?'warn':a.tone==='ok'?'ok':'muted'}">
+      <div class="analysis-summary-kicker">${esc(a.label)}</div>
+      <div class="analysis-summary-value">${esc(a.value)}</div>
+      <div class="analysis-summary-sub">${esc(a.hint)}</div>
+    </div>`).join('') : `
+      <div class="irpf-summary-card ok">
+        <div class="analysis-summary-kicker">Conferência limpa</div>
+        <div class="analysis-summary-value">Sem alertas</div>
+        <div class="analysis-summary-sub">Os dados principais estão completos para revisão.</div>
+      </div>`;
+  return `
+    <div class="irpf-shell">
+      <div class="irpf-head">
+        <div style="min-width:0">
+          <div class="irpf-badge">Relatório auxiliar de IRPF</div>
+          <div class="irpf-title" style="margin-top:7px">Relatório IRPF ${year}</div>
+          <div class="irpf-sub">Ferramenta de conferência para bens, proventos e renda fixa. Use como apoio e valide sempre com os informes oficiais da corretora e documentos fiscais.</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px">
+            <span class="irpf-badge ${summary.alerts ? 'warn':'ok'}">${summary.alerts} alerta${summary.alerts===1?'':'s'}</span>
+            <span class="irpf-badge">${summary.positions} ativo${summary.positions===1?'':'s'} com posição</span>
+            <span class="irpf-badge">Base: custo de aquisição</span>
+          </div>
+        </div>
+        <div class="irpf-yearbox">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+            <select id="irpf-year" onchange="setIrpfYear(this.value)" style="min-width:160px">
+              ${years.map(y=>`<option value="${y}" ${Number(y)===Number(year)?'selected':''}>${y}</option>`).join('')}
+            </select>
+            <button class="btn bp" onclick="irpfExportCSV()">⬇️ CSV</button>
+            <button class="btn bgh" onclick="irpfExportPdf()">🖨️ PDF</button>
+          </div>
+          <div class="irpf-sub" style="text-align:right">Ano-base ${year} · ${proventos.rows.length} proventos · ${rfRows.length} títulos RF</div>
+        </div>
+      </div>
+
+      <div class="irpf-summary">${summaryCards}</div>
+
+      <details class="sec irpf-section" open style="margin-top:12px">
+        <summary>
+          <div>
+            <div class="irpf-section-title">Bens e Direitos</div>
+            <div class="irpf-section-sub">Custo de aquisição, quantidade e valor atual apenas como referência.</div>
+          </div>
+          <div class="irpf-section-badge">${summary.positions} posições · clique para ocultar</div>
+        </summary>
+        <div class="irpf-section-body">
+          <div class="irpf-section-grid">${bucketCards}</div>
+          <div class="irpf-table-wrap">
+            <table class="irpf-table">
+              <thead>
+                <tr>
+                  <th>Ticker</th><th>Classe</th><th>Tipo</th><th class="irpf-right">Qtd.</th><th class="irpf-right">PM</th><th class="irpf-right">Custo</th><th class="irpf-right">Ref.</th><th>Observação</th>
+                </tr>
+              </thead>
+              <tbody>${positionRows || '<tr><td colspan="8" class="irpf-muted" style="text-align:center;padding:18px">Sem posições para o ano selecionado.</td></tr>'}</tbody>
+            </table>
+          </div>
+          <div class="irpf-mobile-list">${positionMobile || '<div class="premium-empty">Sem posições para o ano selecionado.</div>'}</div>
+          <div class="irpf-sub">IRPF normalmente usa custo de aquisição. O valor de mercado serve apenas como referência visual para a conferência.</div>
+        </div>
+      </details>
+
+      <details class="sec irpf-section" style="margin-top:12px">
+        <summary>
+          <div>
+            <div class="irpf-section-title">Proventos do ano</div>
+            <div class="irpf-section-sub">Dividendos, JCP, FIIs e outros eventos com total por ativo e por categoria.</div>
+          </div>
+          <div class="irpf-section-badge">${proventos.rows.length} lançamentos · clique para abrir</div>
+        </summary>
+        <div class="irpf-section-body">
+          <div class="irpf-section-grid">${proventoCategoryCards}</div>
+          <div class="irpf-table-wrap">
+            <table class="irpf-table">
+              <thead>
+                <tr>
+                  <th>Ticker</th><th>Ativo</th><th class="irpf-right">Total</th><th class="irpf-right">Lanç.</th><th class="irpf-right">Dividendos</th><th class="irpf-right">JCP</th><th class="irpf-right">FIIs</th><th class="irpf-right">Outros</th>
+                </tr>
+              </thead>
+              <tbody>${proventoRows}</tbody>
+            </table>
+          </div>
+          <div class="irpf-mobile-list">${proventoMobile}</div>
+          <div class="irpf-sub">Esta visão ajuda a conferir o que entra em rendimentos isentos, tributação exclusiva e eventos classificados como outros.</div>
+        </div>
+      </details>
+
+      <details class="sec irpf-section" style="margin-top:12px">
+        <summary>
+          <div>
+            <div class="irpf-section-title">Renda Fixa para IRPF</div>
+            <div class="irpf-section-sub">Títulos com valor aplicado, valor atual/líquido e alertas de conferência.</div>
+          </div>
+          <div class="irpf-section-badge">${rfRows.length} títulos · ${rfAlertRows} com alerta</div>
+        </summary>
+        <div class="irpf-section-body">
+          <div class="irpf-section-grid">${rfSummaryCards}</div>
+          <div class="irpf-table-wrap">
+            <table class="irpf-table">
+              <thead>
+                <tr>
+                  <th>Ticker</th><th>Nome</th><th>Tipo</th><th>Instituição</th><th class="irpf-right">Aplicado</th><th class="irpf-right">Atual</th><th class="irpf-right">Aplicação</th><th class="irpf-right">Vencimento</th><th>Alertas</th>
+                </tr>
+              </thead>
+              <tbody>${rfRowsHtml}</tbody>
+            </table>
+          </div>
+          <div class="irpf-mobile-list">${rfMobile}</div>
+          <div class="irpf-sub">${rfMissingMaturity || rfMissingCurrent ? `Há ${rfMissingMaturity} título${rfMissingMaturity===1?'':'s'} sem vencimento e ${rfMissingCurrent} sem valor atual informado.` : 'Títulos de renda fixa com dados suficientes para conferência visual.'}</div>
+        </div>
+      </details>
+
+      <details class="sec irpf-section" style="margin-top:12px">
+        <summary>
+          <div>
+            <div class="irpf-section-title">Alertas para conferência</div>
+            <div class="irpf-section-sub">Itens que merecem revisão antes de usar os dados na declaração.</div>
+          </div>
+          <div class="irpf-section-badge">${alerts.length} alerta${alerts.length===1?'':'s'} · clique para abrir</div>
+        </summary>
+        <div class="irpf-section-body">
+          <div class="irpf-section-grid">${alertCards}</div>
+          <div class="irpf-sub">A ferramenta aponta pendências, mas a conferência final deve ser feita com informes oficiais da corretora e documentos fiscais.</div>
+        </div>
+      </details>
+    </div>`;
+}
+
+function irpfTab(){
+  return irpfTabPremium();
 }
 
 function rentBenchRate(name){
@@ -9145,8 +9652,36 @@ function toggleImportedDividendsDetails(ev){
 // RENDER
 // ══════════════════════════════════════
 function render(){
-  document.getElementById('root').innerHTML=app();
-  bind();
+  const root=document.getElementById('root');
+  if(!root) return;
+  try{
+    root.innerHTML=app();
+    bind();
+  }catch(error){
+    console.error('render erro:',error);
+    const failedTab=S.tab;
+    if(failedTab!=='dashboard'){
+      try{
+        S.tab='dashboard';
+        root.innerHTML=app();
+        bind();
+        console.warn(`A aba "${failedTab}" falhou ao abrir. Dashboard carregado como proteção.`);
+        return;
+      }catch(dashboardError){
+        console.error('dashboard fallback erro:',dashboardError);
+        S.tab=failedTab;
+      }
+    }
+    root.innerHTML=`
+      <div style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#07101d;color:#e5edf8;font-family:system-ui,sans-serif">
+        <div style="width:min(520px,100%);padding:24px;border:1px solid #26364d;border-radius:18px;background:#0c1727;box-shadow:0 18px 50px rgba(0,0,0,.28)">
+          <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc">Inicialização protegida</div>
+          <h1 style="margin:10px 0 8px;font-size:22px">Não foi possível montar esta tela</h1>
+          <p style="margin:0;color:#9fb0c5;line-height:1.55">Seus dados locais foram preservados. Atualize a página e, se o problema continuar, consulte o primeiro erro no Console do navegador.</p>
+          <button onclick="location.reload()" style="margin-top:18px;padding:11px 16px;border:0;border-radius:10px;background:#38bdf8;color:#062033;font-weight:800;cursor:pointer">Tentar novamente</button>
+        </div>
+      </div>`;
+  }
 }
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
@@ -9198,7 +9733,7 @@ function content(){
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
   if(S.tab==='renda-fixa')return rendaFixaTab();
-  if(S.tab==='irpf')      return irpfTab();
+  if(S.tab==='irpf')      return irpfTabPremium();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
   if(S.tab==='ia')        return iaTab();
@@ -12111,7 +12646,12 @@ function bind(){
 // ══════════════════════════════════════
 load();
 initFirebase();
-if(S.aportes.length) syncAssetsFromAportes(false); else render();
+try{
+  if(S.aportes.length) syncAssetsFromAportes(false); else render();
+}catch(error){
+  console.error('sincronização inicial de ativos falhou:',error);
+  render();
+}
 fetchQuotes(false);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
 window.addEventListener('focus',()=>fetchQuotes(false));
