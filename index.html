@@ -1309,6 +1309,138 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .backup-card .cv,.backup-summary .cv{font-size:16px}
   .backup-note{font-size:10px}
 }
+@media(max-width:640px){
+  html,body,#root{width:100%;max-width:100%;overflow-x:hidden}
+  .wrap,.wrap>*,.card,.cc,.sec,.ag,.fc,.asset-inner-panel,.analysis-shell,
+  .asset-premium-analysis,.patrimony-premium,.premium-dashboard,.rebalance-shell,
+  .rf-shell,.irpf-shell,.passive-goal-shell,.dividend-query-shell,.prov-audit-shell{
+    min-width:0;max-width:100%
+  }
+  .wrap{padding:10px 10px calc(98px + env(safe-area-inset-bottom))!important}
+  .wrap .btn,.note-modal .btn,#investMenuSheet button,#investTopDrawer button{
+    min-height:42px;touch-action:manipulation
+  }
+  input,select,textarea{
+    width:100%;max-width:100%;min-width:0;min-height:44px;font-size:16px;
+    word-break:normal;overflow-wrap:normal
+  }
+  textarea{resize:vertical}
+  .sh{align-items:flex-start;gap:8px}
+  .sh>div{min-width:0}
+  .st,.ct,.sec-title,.asset-premium-title,.patrimony-title,.rf-hero-title,
+  .irpf-title,.rebalance-title,.premium-dashboard-title{
+    overflow-wrap:break-word;word-break:normal
+  }
+  .mu,.cs,.air,.backup-note,.backup-warning,.rebalance-safety,
+  .patrimony-reading-text,.patrimony-composition-text{
+    overflow-wrap:break-word;word-break:normal
+  }
+  .asset-inner-tabs{
+    flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;
+    -webkit-overflow-scrolling:touch
+  }
+  .asset-inner-tabs::-webkit-scrollbar{display:none}
+  .asset-inner-tab{flex:0 0 auto;min-height:40px}
+  .sec>summary,.ag>summary,.nota-review-group summary,.b3-review-group summary,
+  .mov-review-group summary,.asset-premium-section>summary,.irpf-section>summary{
+    min-height:48px;padding:10px 11px;gap:8px;touch-action:manipulation
+  }
+  .sec>summary>div:first-child,.ag>summary>div:first-child,
+  .asset-premium-section>summary>div:first-child,.irpf-section>summary>div:first-child{
+    min-width:0;flex:1 1 auto
+  }
+  .sec-meta,.asset-premium-section-meta,.irpf-section-badge,.patrimony-panel-badge,
+  .rf-panel-badge,.premium-panel-badge{
+    flex:0 1 auto;max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-align:right
+  }
+  .sec-body,.ag-body,.nota-review-group-body,.b3-review-group-body,
+  .mov-review-group-body{padding:10px}
+  .tw,.ts,.ag-table,.rf-table-wrap,.note-table-wrap,.prov-audit-table-wrap{
+    width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    overscroll-behavior-inline:contain
+  }
+  .ag-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .ag-v{font-size:11px;overflow:hidden;text-overflow:ellipsis}
+  .ag-table table{min-width:820px}
+  .patrimony-month-row{grid-template-columns:38px minmax(0,1fr) 78px;gap:5px}
+  .patrimony-composition-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .patrimony-composition-stat:last-child{grid-column:1/-1}
+  .dividend-query-filters,.prov-audit-filters,.rent-filters{
+    grid-template-columns:1fr!important
+  }
+  .dividend-query-filters .fg,.prov-audit-filters .aud-field{min-width:0}
+  .prov-audit-actions,.note-actions,.note-foot{align-items:stretch}
+  .prov-audit-actions .btn,.note-actions .btn,.note-foot .btn{flex:1 1 140px}
+  .rebalance-study-row{min-width:0}
+  .rebalance-study-stat-value,.rebalance-study-value{
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .irpf-yearbox>div{width:100%;justify-content:flex-start!important}
+  .irpf-yearbox select{flex:1 1 150px;min-width:0!important}
+  .irpf-yearbox .btn{flex:1 1 auto;min-height:42px}
+  .irpf-summary-card{min-height:68px}
+  .irpf-summary-card .analysis-summary-sub{display:none}
+  .irpf-mobile-row{min-width:0}
+  .irpf-mobile-row>div{min-width:0}
+  .irpf-mobile-row .premium-row-title,.irpf-mobile-row .premium-row-sub{
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .note-overlay{
+    padding:0;align-items:flex-end;overflow:hidden
+  }
+  .note-modal{
+    width:100%;max-width:100%!important;max-height:calc(100dvh - 6px)!important;
+    margin:0;border-radius:18px 18px 0 0;display:flex;flex-direction:column
+  }
+  .note-head{padding:12px 12px 10px;flex:0 0 auto}
+  .note-title{gap:8px}
+  .note-title h3{font-size:15px;line-height:1.2}
+  .note-title p{
+    font-size:10px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
+    -webkit-box-orient:vertical;overflow:hidden
+  }
+  .note-meta{gap:5px;margin-top:7px}
+  .note-pill{font-size:9px;padding:4px 7px}
+  .note-body{
+    padding:10px;overflow:auto;-webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;min-height:0
+  }
+  .note-actions .left,.note-actions .right{width:100%;display:flex}
+  .note-foot{
+    position:sticky;bottom:0;background:#0b1020;padding:9px 0 calc(4px + env(safe-area-inset-bottom));
+    border-top:1px solid #182033;z-index:3
+  }
+  .note-foot .hint{width:100%;font-size:10px;line-height:1.35}
+  .backup-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .backup-grid{grid-template-columns:1fr!important}
+  .backup-warning{font-size:10px;line-height:1.35;padding:9px 10px}
+  .backup-shell .btn,.note-modal .bexp,.note-modal .bimp{width:100%;justify-content:center}
+  #investTopDrawer .mt-panel{
+    max-height:calc(100dvh - 68px);overflow-y:auto;-webkit-overflow-scrolling:touch
+  }
+  #investMenuSheet{
+    max-height:82dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:16px 12px calc(20px + env(safe-area-inset-bottom))
+  }
+  #investMenuSheet .sheet-grid{gap:8px}
+  #investMenuSheet .sheet-grid button{min-height:48px;padding:12px}
+  .cfg-menu>div,.wallet-menu>div{max-width:calc(100vw - 20px)!important}
+  .toast{bottom:calc(74px + env(safe-area-inset-bottom))}
+}
+@media(max-width:360px){
+  .premium-metrics,.rf-metrics,.patrimony-kpis,.analysis-summary,.rebalance-summary,
+  .irpf-summary,.passive-goal-grid.main,.passive-goal-grid.secondary,
+  .passive-goal-grid.summary,.dividend-query-summary,.backup-summary{
+    grid-template-columns:1fr!important
+  }
+  .ap-summary{grid-template-columns:1fr!important}
+  .premium-radar{grid-template-columns:1fr!important}
+  .patrimony-insights{grid-template-columns:1fr}
+  .patrimony-composition-stats{grid-template-columns:1fr}
+  .patrimony-composition-stat:last-child{grid-column:auto}
+  .note-actions .btn,.note-foot .btn{flex-basis:100%}
+}
 </style>
 </head>
 <body>
