@@ -842,6 +842,23 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .rf-proventos-kpi.yellow .rf-proventos-kpi-value{color:#fbbf24}
 .rf-proventos-kpi.blue .rf-proventos-kpi-value{color:#60a5fa}
 .rf-proventos-kpi.red .rf-proventos-kpi-value{color:#f87171}
+.b3-conference-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:10px 0 12px}
+.b3-conference-card{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:9px 10px;min-width:0}
+.b3-conference-card .label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+.b3-conference-card .value{font-size:17px;color:#e2eaf6;font-weight:900;line-height:1.15;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b3-conference-card .sub{font-size:10px;color:#94a3b8;line-height:1.3;margin-top:3px}
+.b3-review-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.b3-review-filters label{font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:6px}
+.b3-review-filters select{min-width:150px;padding:7px 9px;font-size:12px}
+.b3-preview-cards{display:none}
+.b3-preview-card{border:1px solid #182033;border-radius:12px;background:#0b0f17;padding:10px;min-width:0}
+.b3-preview-card.warn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.04)}
+.b3-preview-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.b3-preview-card-title{font-size:13px;font-weight:900;color:#e2eaf6;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b3-preview-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px}
+.b3-preview-card-label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+.b3-preview-card-value{font-size:12px;color:#cbd5e1;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b3-backup-warning{margin:0 0 12px;padding:9px 11px;border:1px solid rgba(96,165,250,.22);background:rgba(59,130,246,.06);border-radius:11px;color:#93c5fd;font-size:11px;line-height:1.45}
 .rf-proventos-kpi.purple .rf-proventos-kpi-value{color:#a78bfa}
 .passive-goal-shell{display:flex;flex-direction:column;gap:10px}
 .passive-goal-head{gap:10px;align-items:flex-start}
@@ -983,13 +1000,21 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .mov-review-line .col-obs{grid-area:obs}
   .mov-review-line .line-controls{grid-area:ctrl;justify-content:flex-start}
   .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .b3-conference-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
   .rf-proventos-table{min-width:1180px}
 }
 @media(max-width:640px){
   .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .rf-proventos-kpi{min-height:66px;padding:9px 10px}
   .rf-proventos-kpi-value{font-size:16px}
-  .rf-proventos-table{min-width:1220px}
+  .b3-conference-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .b3-conference-card{padding:8px 9px}
+  .b3-conference-card .value{font-size:15px}
+  .b3-review-filters{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .b3-review-filters label{display:block}
+  .b3-review-filters select{width:100%;min-width:0;margin-top:4px}
+  .rf-proventos-table{display:none}
+  .b3-preview-cards{display:grid;grid-template-columns:1fr;gap:8px}
   .passive-goal-grid.main,.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-empty{padding:9px 10px}
@@ -4761,7 +4786,7 @@ function applyB3ImportedPositions(items, importDate){
   save();
   render();
   fetchQuotes(false);
-  toast(`✅ Posição B3 importada: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
+  b3ImportCompletedMessage(`✅ Posição B3 importada: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
 }
 function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
   const importTag='[IMPORT_NOTA_CORRETORA]';
@@ -4990,6 +5015,42 @@ function notaReviewModal(){
     </div>
   </div>`;
 }
+function b3ReviewPeriod(rows){
+  const dates=(rows||[])
+    .map(row=>parseAnyDate(row?.date||row?.paymentDate||row?.applicationDate||row?.importDate))
+    .filter(Boolean)
+    .sort((a,b)=>a-b);
+  if(!dates.length) return 'Não identificado';
+  const format=date=>date.toLocaleDateString('pt-BR');
+  return dates.length===1 ? format(dates[0]) : `${format(dates[0])} a ${format(dates[dates.length-1])}`;
+}
+function b3ConfirmImport(label, selected, duplicates=0, incomplete=0){
+  const message=[
+    `Confirmar ${label}?`,
+    '',
+    `Selecionados: ${selected}`,
+    `Duplicados ignorados: ${duplicates}`,
+    `Pendentes/incompletos: ${incomplete}`,
+    '',
+    'Somente os itens válidos e selecionados serão aplicados.',
+    'Por segurança, recomendamos exportar um backup antes de continuar.'
+  ].join('\n');
+  const confirmed=confirm(message);
+  if(!confirmed) toast('Importação cancelada. Nenhum dado foi alterado.');
+  return confirmed;
+}
+function b3ImportCompletedMessage(message){
+  toast(`${message} Reexecute a Auditoria de Dados para conferir o resultado.`);
+}
+function b3ConferenceSummaryHtml(items){
+  return `<div class="b3-conference-summary">
+    ${items.map(item=>`<div class="b3-conference-card">
+      <div class="label">${esc(item.label)}</div>
+      <div class="value">${esc(String(item.value))}</div>
+      <div class="sub">${esc(item.sub||'')}</div>
+    </div>`).join('')}
+  </div>`;
+}
 function openB3Review(parsed, fileName='', sourceKind='excel'){
   const items=(parsed?.items||[]).map((it,i)=>({
     id:it.id ?? i,
@@ -5101,6 +5162,8 @@ function importB3Review(){
     alert('Selecione ao menos uma aba válida para importar.');
     return;
   }
+  const summary=b3ReviewSummary();
+  if(!b3ConfirmImport('a posição atual da B3', rows.length, 0, summary.ignored)) return;
   const importDate=S.b3Review.importDate || new Date().toLocaleDateString('pt-BR');
   const payload=rows.map(r=>({
     ...r.sourceItem,
@@ -5121,7 +5184,8 @@ function importB3Review(){
 function b3ReviewModal(){
   const r=S.b3Review;
   if(!r) return '';
-  const {count,total,sheets,valid,validTotal,diff}=b3ReviewSummary();
+  const {count,total,sheets,valid,validTotal,diff,ignored}=b3ReviewSummary();
+  const period=b3ReviewPeriod(r.items||[]);
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   const groups=(r.groups||[]).map(g=>{
     const checked=!!r.selectedSheets?.[g.sheet];
@@ -5209,6 +5273,15 @@ function b3ReviewModal(){
         </div>
       </div>
       <div class="note-body">
+        ${b3ConferenceSummaryHtml([
+          {label:'Registros lidos',value:valid+ignored,sub:'Posições identificadas'},
+          {label:'Válidos',value:valid,sub:'Ativos reais da posição'},
+          {label:'Ignorados',value:ignored,sub:'Totais, resumos ou inválidos'},
+          {label:'Selecionados',value:count,sub:'Serão criados ou atualizados'},
+          {label:'Diferença',value:fmt(diff),sub:'Entre total válido e selecionado'},
+          {label:'Período',value:period,sub:'Data da posição'}
+        ])}
+        <div class="b3-backup-warning">Antes de confirmar, recomendamos exportar um backup em Configurações. A posição atualiza apenas os ativos selecionados e não apaga a carteira existente.</div>
         <div class="note-actions">
           <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button class="btn bgh" onclick="setB3ReviewAll(true)">Marcar todas</button>
@@ -5443,11 +5516,15 @@ function importRfPositionReview(){
     alert('Selecione ao menos uma posição válida para importar.');
     return;
   }
+  const summary=rfPositionReviewSummary();
+  const duplicates=(S.rfPositionReview.items||[]).filter(it=>it.status==='Possível duplicado' || it.status==='Duplicado').length;
+  const incomplete=(S.rfPositionReview.items||[]).filter(it=>it.status==='Revisar').length;
+  if(!b3ConfirmImport('a posição detalhada de Renda Fixa', selectedPositions.length, duplicates, incomplete)) return;
   const positionResult=importRfPositionRows(selectedPositions);
   S.rfPositionReview=null;
   save();
   render();
-  toast(`Posição B3 importada: ${positionResult.created} criados, ${positionResult.updated} atualizados, ${positionResult.ignored} ignorados.`);
+  b3ImportCompletedMessage(`Posição B3 importada: ${positionResult.created} criados, ${positionResult.updated} atualizados, ${positionResult.ignored} ignorados.`);
 }
 function rfPositionReviewSummary(){
   const items=S.rfPositionReview?.items||[];
@@ -5470,6 +5547,9 @@ function rfPositionReviewModal(){
   const r=S.rfPositionReview;
   if(!r) return '';
   const sum=rfPositionReviewSummary();
+  const period=b3ReviewPeriod([...(r.items||[]),...(r.events||[])]);
+  const duplicates=[...(r.items||[]),...(r.events||[])].filter(it=>it.status==='Duplicado' || it.status==='Possível duplicado').length;
+  const incomplete=[...(r.items||[]),...(r.events||[])].filter(it=>it.status==='Revisar' || it.destination==='Revisar').length;
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   const positionRows=(r.items||[]).map((it,idx)=>{
     const resultColor=Number(it.result)>=0?'#34d399':'#f87171';
@@ -5530,6 +5610,15 @@ function rfPositionReviewModal(){
         </div>
       </div>
       <div class="note-body">
+        ${b3ConferenceSummaryHtml([
+          {label:'Registros lidos',value:sum.total+sum.eventTotal,sub:'Posições e eventos'},
+          {label:'Posições válidas',value:sum.count,sub:'Selecionadas para ativos'},
+          {label:'Eventos',value:sum.eventTotal,sub:'Separados para conferência'},
+          {label:'Duplicados',value:duplicates,sub:'Bloqueados na revisão'},
+          {label:'Revisar',value:incomplete,sub:'Dados não seguros'},
+          {label:'Período',value:period,sub:'Datas encontradas'}
+        ])}
+        <div class="b3-backup-warning">Antes de confirmar, recomendamos exportar um backup em Configurações. A gravação desta tela continua restrita às posições selecionadas.</div>
         <div class="note-actions">
           <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button class="btn bgh" onclick="setRfPositionReviewAll(true)">Marcar todos</button>
@@ -5594,6 +5683,8 @@ function openB3ProventosReview(parsed, fileName='', sourceKind='excel'){
     importDate:parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
     warnings:parsed?.warnings||[],
     ignoredCount:Number(parsed?.ignoredCount)||0,
+    filterStatus:'all',
+    filterType:'all',
     items:(parsed?.items||[]).map((it,i)=>b3ProventoBuild({...it,id:it.id ?? i}))
   };
   render();
@@ -5616,10 +5707,37 @@ function setB3ProventoReviewAll(value){
   }));
   render();
 }
+function setB3ProventosReviewFilter(field,value){
+  if(!S.b3ProventosReview) return;
+  if(field==='status') S.b3ProventosReview.filterStatus=String(value||'all');
+  if(field==='type') S.b3ProventosReview.filterType=String(value||'all');
+  render();
+}
+function b3ProventosReviewFilteredRows(){
+  const r=S.b3ProventosReview||{};
+  const status=String(r.filterStatus||'all');
+  const type=String(r.filterType||'all');
+  return (r.items||[]).map((item,index)=>({item,index})).filter(({item})=>{
+    const statusOk=status==='all'
+      || (status==='valid' && item.status==='Novo provento' && item.destination==='Proventos')
+      || (status==='duplicate' && item.status==='Duplicado')
+      || (status==='review' && (item.status==='Revisar' || item.destination==='Revisar'));
+    const typeOk=type==='all' || rfPosNorm(item.eventType)===rfPosNorm(type);
+    return statusOk && typeOk;
+  });
+}
 function importB3ProventosReview(){
   if(!S.b3ProventosReview) return;
   const rows=Array.isArray(S.b3ProventosReview.items)?S.b3ProventosReview.items:[];
   const totalRows=rows.length;
+  const selectedRows=rows.filter(row=>row.include!==false && row.status==='Novo provento' && row.destination==='Proventos');
+  if(!selectedRows.length){
+    alert('Selecione ao menos um provento válido para importar.');
+    return;
+  }
+  const initialDuplicates=rows.filter(r=>r.status==='Duplicado').length;
+  const incomplete=rows.filter(r=>r.status==='Revisar' || r.destination==='Revisar').length;
+  if(!b3ConfirmImport('os proventos recebidos da B3', selectedRows.length, initialDuplicates, incomplete)) return;
   let added=0;
   let duplicates=rows.filter(r=>r.status==='Duplicado').length;
   const next=[];
@@ -5672,7 +5790,7 @@ function importB3ProventosReview(){
   S.b3ProventosReview=null;
   save();
   render();
-  toast(`Proventos importados: ${added} novos, ${duplicates} duplicados ignorados, ${ignored} ignorados.`);
+  b3ImportCompletedMessage(`Proventos importados: ${added} novos, ${duplicates} duplicados ignorados, ${ignored} ignorados.`);
 }
 function b3ProventosReviewSummary(){
   const rows=S.b3ProventosReview?.items||[];
@@ -5689,8 +5807,11 @@ function b3ProventosReviewModal(){
   const r=S.b3ProventosReview;
   if(!r) return '';
   const sum=b3ProventosReviewSummary();
+  const period=b3ReviewPeriod(r.items||[]);
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
-  const rows=(r.items||[]).map((it,idx)=>{
+  const filtered=b3ProventosReviewFilteredRows();
+  const eventTypes=[...new Set((r.items||[]).map(it=>String(it.eventType||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const rows=filtered.map(({item:it,index:idx})=>{
     const canImport=it.status==='Novo provento' && it.destination==='Proventos';
     return `<tr>
       <td><input type="checkbox" ${it.include===false?'':'checked'} ${canImport?'':'disabled'} onchange="setB3ProventoReviewItem(${idx}, this.checked)"></td>
@@ -5708,13 +5829,33 @@ function b3ProventosReviewModal(){
       <td><div class="asset-name" title="${esc(it.note)}">${esc(it.note||'—')}</div></td>
     </tr>`;
   }).join('');
+  const cards=filtered.map(({item:it,index:idx})=>{
+    const canImport=it.status==='Novo provento' && it.destination==='Proventos';
+    return `<div class="b3-preview-card ${canImport?'':'warn'}">
+      <div class="b3-preview-card-head">
+        <label style="display:flex;align-items:center;gap:8px;min-width:0">
+          <input type="checkbox" ${it.include===false?'':'checked'} ${canImport?'':'disabled'} onchange="setB3ProventoReviewItem(${idx}, this.checked)">
+          <span class="b3-preview-card-title">${esc(it.ticker||it.assetName||'Ativo não identificado')}</span>
+        </label>
+        <span class="rf-status ${rfStatusClass(it.status)}">${esc(it.status)}</span>
+      </div>
+      <div class="b3-preview-card-grid">
+        <div><div class="b3-preview-card-label">Pagamento</div><div class="b3-preview-card-value">${esc(it.paymentDate||'—')}</div></div>
+        <div><div class="b3-preview-card-label">Valor líquido</div><div class="b3-preview-card-value">${fmt(it.netValue)}</div></div>
+        <div><div class="b3-preview-card-label">Tipo</div><div class="b3-preview-card-value">${esc(it.eventType||'—')}</div></div>
+        <div><div class="b3-preview-card-label">Destino</div><div class="b3-preview-card-value">${esc(it.destination||'—')}</div></div>
+        <div><div class="b3-preview-card-label">Quantidade</div><div class="b3-preview-card-value">${fmtN(it.qty)}</div></div>
+        <div><div class="b3-preview-card-label">Fonte</div><div class="b3-preview-card-value">${esc(it.institution||'B3')}</div></div>
+      </div>
+    </div>`;
+  }).join('');
   return `<div class="note-overlay" role="dialog" aria-modal="true">
     <div class="note-modal" style="max-width:1380px">
       <div class="note-head">
         <div class="note-title">
           <div>
             <h3>💸 Revisar proventos recebidos da B3</h3>
-            <p>Confira os proventos antes de gravar. Nesta etapa nada será salvo na carteira.</p>
+            <p>Confira os proventos antes de gravar. Somente linhas válidas e selecionadas serão aplicadas após confirmação.</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
@@ -5726,6 +5867,14 @@ function b3ProventosReviewModal(){
         </div>
       </div>
       <div class="note-body">
+        ${b3ConferenceSummaryHtml([
+          {label:'Registros lidos',value:sum.valid+sum.ignored,sub:'Linhas identificadas no arquivo'},
+          {label:'Válidos',value:sum.importable,sub:'Prontos para importar'},
+          {label:'Ignorados',value:sum.ignored,sub:'Totais, rodapés ou vazios'},
+          {label:'Duplicados',value:sum.duplicates,sub:'Não serão importados'},
+          {label:'Revisar',value:sum.review,sub:'Incompletos ou não seguros'},
+          {label:'Período',value:period,sub:'Datas encontradas'}
+        ])}
         <div class="rf-proventos-kpis">
           <div class="rf-proventos-kpi yellow">
             <div class="rf-proventos-kpi-label">Linhas válidas</div>
@@ -5748,6 +5897,24 @@ function b3ProventosReviewModal(){
             <div class="rf-proventos-kpi-sub">Soma só das linhas válidas marcadas</div>
           </div>
         </div>
+        <div class="b3-review-filters">
+          <label>Status
+            <select onchange="setB3ProventosReviewFilter('status',this.value)">
+              <option value="all" ${r.filterStatus==='all'?'selected':''}>Todos</option>
+              <option value="valid" ${r.filterStatus==='valid'?'selected':''}>Válidos</option>
+              <option value="duplicate" ${r.filterStatus==='duplicate'?'selected':''}>Duplicados</option>
+              <option value="review" ${r.filterStatus==='review'?'selected':''}>Revisar</option>
+            </select>
+          </label>
+          <label>Tipo
+            <select onchange="setB3ProventosReviewFilter('type',this.value)">
+              <option value="all">Todos os tipos</option>
+              ${eventTypes.map(type=>`<option value="${esc(type)}" ${r.filterType===type?'selected':''}>${esc(type)}</option>`).join('')}
+            </select>
+          </label>
+          <span class="note-pill">${filtered.length} item(ns) exibido(s)</span>
+        </div>
+        <div class="b3-backup-warning">Antes de confirmar, recomendamos exportar um backup em Configurações. A importação não apaga registros existentes e ignora duplicidades detectadas.</div>
         <div class="note-actions">
           <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button class="btn bgh" onclick="setB3ProventoReviewAll(true)">Marcar todos importáveis</button>
@@ -5766,8 +5933,9 @@ function b3ProventosReviewModal(){
             <tbody>${rows||'<tr><td colspan="13" style="color:#94a3b8;padding:18px">Nenhum provento encontrado para revisar.</td></tr>'}</tbody>
           </table>
         </div>
+        <div class="b3-preview-cards">${cards||'<div class="es">Nenhum provento corresponde aos filtros.</div>'}</div>
         <div class="note-foot">
-          <div class="hint">O botão de importar ainda não grava. Ele apenas confirma que a revisão está pronta para a próxima etapa.</div>
+          <div class="hint">A importação grava somente os itens seguros e selecionados em Proventos. Duplicados e linhas para revisão permanecem fora.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
             <button class="btn bsv" onclick="importB3ProventosReview()">Importar selecionados</button>
@@ -5822,6 +5990,8 @@ function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
     importDate:parsed?.importDate||'',
     warnings:parsed?.warnings||[],
     stats:parsed?.stats||{},
+    filterStatus:'all',
+    filterType:'all',
     items,
     groups,
     selectedGroups:Object.fromEntries(groups.map(g=>[g.group,(g.items||[]).some(it=>it.include!==false && (it.destination==='historico' || it.destination==='proventos'))]))
@@ -5851,6 +6021,26 @@ function setB3MovementAll(value){
   S.b3MovementReview.items = (S.b3MovementReview.items||[]).map(it=>b3MovementRefreshReviewFlags({...it, include:!!value}));
   S.b3MovementReview.selectedGroups = Object.fromEntries(groups.map(g=>[g.group,(g.items||[]).some(it=>it.include!==false)]));
   render();
+}
+function setB3MovementReviewFilter(field,value){
+  if(!S.b3MovementReview) return;
+  if(field==='status') S.b3MovementReview.filterStatus=String(value||'all');
+  if(field==='type') S.b3MovementReview.filterType=String(value||'all');
+  render();
+}
+function b3MovementReviewMatchesFilter(item){
+  const r=S.b3MovementReview||{};
+  const status=String(r.filterStatus||'all');
+  const type=String(r.filterType||'all');
+  const isDuplicate=!!item.possibleDuplicate;
+  const isReview=['eventos','revisar','ignorar'].includes(String(item.target||'')) || String(item.confidence||'').toLowerCase()==='baixa';
+  const isValid=b3MovementIsHistoricalImportable(item) && !isDuplicate;
+  const statusOk=status==='all'
+    || (status==='valid' && isValid)
+    || (status==='duplicate' && isDuplicate)
+    || (status==='review' && isReview);
+  const typeOk=type==='all' || String(item.target||'')===type;
+  return statusOk && typeOk;
 }
 function setB3MovementItem(group, idx, field, value){
   if(!S.b3MovementReview) return;
@@ -5929,6 +6119,8 @@ function b3MovementSummary(){
   const events=items.filter(it=>String(it.target||'')==='eventos' || /EVENTOS SOCIETARIOS/.test(String(it.reviewGroup||b3MovementGroup(it.movement)).toUpperCase())).length;
   const revisar=items.filter(it=>String(it.target||'')==='revisar').length;
   const transferencias=items.filter(it=>String(it.reviewGroup||b3MovementGroup(it.movement)).includes('Transfer') || String(it.reviewGroup||b3MovementGroup(it.movement)).includes('custódia') || String(it.reviewGroup||b3MovementGroup(it.movement)).includes('custodia')).length;
+  const duplicates=items.filter(it=>it.possibleDuplicate).length;
+  const incomplete=items.filter(it=>!it.ticker || !String(it.date||'').trim() || (String(it.target||'')!=='proventos' && (!Number(it.qty) || !Number(it.value)))).length;
   const groups=[...new Set(selected.map(it=>it.group||b3MovementGroup(it.movement)))];
   return {
     count:selected.length,
@@ -5944,7 +6136,9 @@ function b3MovementSummary(){
     events,
     revisar,
     ignorar:ignoradas,
-    transferencias
+    transferencias,
+    duplicates,
+    incomplete
   };
 }
 function applyB3MovementImported(rows, importDate){
@@ -6014,7 +6208,7 @@ function applyB3MovementImported(rows, importDate){
   [...finalRows].forEach(r=>learnTickerMeta(r.ticker, r.type, r.sector, true));
   save();
   render();
-  toast(`Movimentações importadas: ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
+  b3ImportCompletedMessage(`Movimentações importadas: ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
 }
 function importB3MovementReview(){
   if(!S.b3MovementReview) return;
@@ -6023,6 +6217,8 @@ function importB3MovementReview(){
     alert('Selecione ao menos um item valido para importar.');
     return;
   }
+  const summary=b3MovementSummary();
+  if(!b3ConfirmImport('as movimentações B3 no Histórico de aportes', rows.length, summary.duplicates, summary.incomplete+summary.revisar)) return;
   const importDate=S.b3MovementReview.importDate || new Date().toLocaleDateString('pt-BR');
   S.b3MovementReview=null;
   applyB3MovementImported(rows, importDate);
@@ -6030,11 +6226,16 @@ function importB3MovementReview(){
 function b3MovementReviewModal(){
   const r=S.b3MovementReview;
   if(!r) return '';
-  const {count,total,groups,linesRead,valid,ignored,compras,vendas,rfAplicResg,revisarPrecoValor,events,revisar,transferencias}=b3MovementSummary();
+  const {count,total,groups,linesRead,valid,ignored,compras,vendas,rfAplicResg,revisarPrecoValor,events,revisar,transferencias,duplicates,incomplete}=b3MovementSummary();
+  const period=b3ReviewPeriod(r.items||[]);
   const warnings=(r.warnings||[]).slice(0,8).map(w=>`<li>${esc(w)}</li>`).join('');
-  const groupsHtml=(r.groups||[]).map(g=>{
+  const visibleGroups=(r.groups||[]).map(g=>({
+    ...g,
+    filteredItems:(g.items||[]).map((item,index)=>({item,index})).filter(({item})=>b3MovementReviewMatchesFilter(item))
+  })).filter(g=>g.filteredItems.length);
+  const groupsHtml=visibleGroups.map(g=>{
     const checked=!!r.selectedGroups?.[g.group];
-    const rows=(g.items||[]).map((it,idx)=>{
+    const rows=g.filteredItems.map(({item:it,index:idx})=>{
     const warn=!!it.possibleDuplicate || ['eventos','revisar','ignorar'].includes(String(it.target||''));
       const bad=it.include===false || !it.ticker || (it.target!=='proventos' && Number(it.qty)<=0) || (it.target!=='proventos' && Number(it.price)<0);
       const totalLine=(Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0)));
@@ -6095,7 +6296,7 @@ function b3MovementReviewModal(){
           <input type="checkbox" ${checked?'checked':''} onchange="setB3MovementGroup(${JSON.stringify(g.group)}, this.checked)">
           <div style="min-width:0">
             <div class="mov-review-group-title">${esc(g.group)}</div>
-            <div class="mov-review-group-sub">${g.count} linha(s) · ${fmt(g.total)}</div>
+            <div class="mov-review-group-sub">${g.filteredItems.length} de ${g.count} linha(s) · ${fmt(g.total)}</div>
           </div>
         </div>
         <div class="mov-review-group-meta">
@@ -6144,6 +6345,36 @@ function b3MovementReviewModal(){
         </div>
       </div>
       <div class="note-body">
+        ${b3ConferenceSummaryHtml([
+          {label:'Registros lidos',value:linesRead,sub:'Linhas identificadas no arquivo'},
+          {label:'Válidos',value:valid,sub:'Com ativo, data e valor'},
+          {label:'Ignorados',value:ignored,sub:'Totais, vazios ou inválidos'},
+          {label:'Duplicados',value:duplicates,sub:'Não entram automaticamente'},
+          {label:'Revisar',value:revisar+incomplete,sub:'Eventos ou dados incompletos'},
+          {label:'Período',value:period,sub:'Datas encontradas'}
+        ])}
+        <div class="b3-review-filters">
+          <label>Status
+            <select onchange="setB3MovementReviewFilter('status',this.value)">
+              <option value="all" ${r.filterStatus==='all'?'selected':''}>Todos</option>
+              <option value="valid" ${r.filterStatus==='valid'?'selected':''}>Válidos</option>
+              <option value="duplicate" ${r.filterStatus==='duplicate'?'selected':''}>Duplicados</option>
+              <option value="review" ${r.filterStatus==='review'?'selected':''}>Revisar/incompletos</option>
+            </select>
+          </label>
+          <label>Destino
+            <select onchange="setB3MovementReviewFilter('type',this.value)">
+              <option value="all" ${r.filterType==='all'?'selected':''}>Todos</option>
+              <option value="aportes" ${r.filterType==='aportes'?'selected':''}>Histórico</option>
+              <option value="proventos" ${r.filterType==='proventos'?'selected':''}>Proventos</option>
+              <option value="eventos" ${r.filterType==='eventos'?'selected':''}>Eventos</option>
+              <option value="revisar" ${r.filterType==='revisar'?'selected':''}>Revisar</option>
+              <option value="ignorar" ${r.filterType==='ignorar'?'selected':''}>Ignorar</option>
+            </select>
+          </label>
+          <span class="note-pill">${visibleGroups.reduce((sum,g)=>sum+g.filteredItems.length,0)} item(ns) exibido(s)</span>
+        </div>
+        <div class="b3-backup-warning">Antes de confirmar, recomendamos exportar um backup em Configurações. Nesta etapa, somente movimentações seguras com destino Histórico são gravadas.</div>
         <div class="note-actions">
           <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button class="btn bgh" onclick="setB3MovementAll(true)">Marcar todos</button>
