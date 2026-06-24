@@ -392,6 +392,39 @@ button{cursor:pointer;font-family:inherit}
 .premium-panel-actions{display:flex;justify-content:flex-end;margin-top:9px}
 .premium-panel-actions .btn{padding:7px 10px;font-size:10px}
 .premium-note{font-size:9px;color:#64748b;line-height:1.45;margin-top:8px}
+.rf-page{display:flex;flex-direction:column;gap:12px}
+.rf-hero{display:flex;flex-direction:column;gap:10px}
+.rf-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.rf-hero-title{font-size:18px;font-weight:900;color:#edf3ff;letter-spacing:-.02em}
+.rf-hero-sub{font-size:11px;color:#7489a4;line-height:1.45;margin-top:3px}
+.rf-hero-badge{font-size:10px;font-weight:800;border:1px solid #1d2940;background:#111828;border-radius:999px;padding:5px 8px;white-space:nowrap;color:#94a3b8;flex:none}
+.rf-hero-badge.ok{color:#34d399;border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08)}
+.rf-hero-badge.warn{color:#fbbf24;border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08)}
+.rf-hero-badge.danger{color:#f87171;border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.08)}
+.rf-hero-note{font-size:10px;color:#64748b;line-height:1.45}
+.rf-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.rf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rf-panel{border:1px solid #1d2940;border-radius:15px;background:#0d1320;padding:12px;min-width:0}
+.rf-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.rf-panel-title{font-size:13px;font-weight:850;color:#e2eaf6}
+.rf-panel-sub{font-size:10px;color:#7489a4;line-height:1.4;margin-top:2px}
+.rf-panel-badge{font-size:9px;font-weight:800;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.rf-empty{padding:10px;border:1px dashed #26344b;border-radius:10px;background:#09101b;color:#7489a4;font-size:10px;line-height:1.45}
+.rf-note{font-size:9px;color:#64748b;line-height:1.45;margin-top:8px}
+.rf-bucket-list,.rf-type-list,.rf-alert-list,.rf-preview-list{display:flex;flex-direction:column;gap:7px}
+.rf-table-wrap{background:#111828;border:1px solid #1d2940;border-radius:14px;overflow:auto}
+.rf-table{width:100%;border-collapse:collapse;min-width:920px}
+.rf-table th,.rf-table td{padding:8px 10px;border-bottom:1px solid #182033;font-size:11px;vertical-align:top}
+.rf-table th{position:sticky;top:0;background:#0b1020;color:#94a3b8;text-align:left;font-weight:800;z-index:1}
+.rf-table td{color:#cbd5e1}
+.rf-table tr:last-child td{border-bottom:0}
+.rf-table .rf-right{text-align:right;white-space:nowrap}
+.rf-table .rf-strong{color:#edf3ff;font-weight:800}
+.rf-table .rf-muted{color:#7489a4}
+.rf-preview-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15}
+.rf-preview-row .premium-row-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-preview-value{text-align:right;font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
+.rf-preview-value .premium-row-sub{font-size:9px;color:#94a3b8;margin-top:2px}
 .premium-mobile-only{display:none}
 .perf-grid{display:grid;grid-template-columns:minmax(280px,1.08fr) repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 .perf-card{background:#111828;border:1px solid #1d2940;border-radius:14px;padding:12px 12px 10px}
@@ -1189,6 +1222,29 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .premium-panel-actions{margin-top:7px}
   .premium-panel-actions .btn{width:100%;padding:7px 9px;font-size:9px}
   .premium-note{font-size:8px;margin-top:6px}
+.rf-hero-head{flex-direction:column;align-items:flex-start}
+.rf-hero-title{font-size:16px;line-height:1.15}
+.rf-hero-sub{font-size:10px;line-height:1.3}
+.rf-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.rf-metrics .premium-metric{min-height:78px!important;padding:9px!important;gap:4px!important;border-radius:12px}
+.rf-metrics .premium-metric-icon{width:22px;height:22px;font-size:11px}
+.rf-metrics .premium-metric-label{font-size:8px;line-height:1.1;letter-spacing:.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-metrics .premium-metric-value{font-size:15px;line-height:1.08}
+.rf-metrics .premium-metric-note{font-size:8px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-grid{grid-template-columns:1fr;gap:8px}
+.rf-panel{padding:9px;border-radius:12px}
+.rf-panel-head{align-items:center;margin-bottom:7px;gap:7px}
+.rf-panel-title{font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-panel-sub{display:none}
+.rf-panel-badge{font-size:8px;padding:3px 6px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+.rf-bucket-list,.rf-type-list,.rf-alert-list,.rf-preview-list{gap:5px}
+.rf-preview-row{padding:7px 8px;gap:7px}
+.rf-preview-row .premium-row-title{font-size:10px}
+.rf-preview-row .premium-row-sub{font-size:8px}
+.rf-preview-value{font-size:10px;max-width:132px;overflow:hidden;text-overflow:ellipsis}
+.rf-table-wrap{margin-right:-4px}
+.rf-table{min-width:760px}
+.rf-table th,.rf-table td{padding:6px 8px;font-size:10px}
 .premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
 .premium-rf-list .premium-rf-row:nth-child(n+3){display:none}
   .backup-grid,.backup-summary{grid-template-columns:1fr!important}
@@ -9095,7 +9151,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -9141,6 +9197,7 @@ function content(){
   if(S.tab==='aportes')   return apTab();
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
+  if(S.tab==='renda-fixa')return rendaFixaTab();
   if(S.tab==='irpf')      return irpfTab();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
@@ -9269,6 +9326,299 @@ function dashboardSnapshot(){
     concentration,positives,negatives,insufficient,concentrated,
     contribution:prudentContributionAnalysis()
   };
+}
+function rfCategoryLabel(a){
+  const text=rfPosNorm([assetRfSubtype(a),assetRfName(a),a?.fixed_indexer,a?.rf_yield_type,a?.sector].filter(Boolean).join(' '));
+  if(/\bCDB\b/.test(text)) return 'CDB';
+  if(/\bLCI\b/.test(text)) return 'LCI';
+  if(/\bLCA\b/.test(text)) return 'LCA';
+  if(text.includes('TESOURO')) return 'Tesouro Direto';
+  if(/\bDEB\b/.test(text) || text.includes('DEBENT')) return 'Debênture';
+  return 'Outros';
+}
+function rfBucketLabel(days){
+  if(days==null) return 'Sem vencimento';
+  if(days<0) return 'Vencido';
+  if(days<=30) return 'Próximos 30 dias';
+  if(days<=90) return 'Próximos 90 dias';
+  if(days<=365) return 'Próximos 12 meses';
+  return 'Acima de 12 meses';
+}
+function rfIntelligenceSnapshot(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const assets=(S.assets||[]).filter(isRendaFixaAsset);
+  const rows=assets.map(a=>{
+    const vals=rfValues(a);
+    const applied=Number(vals.applied)||0;
+    const current=Number(vals.current)||0;
+    const profit=Number(vals.profit)||0;
+    const pct=applied>0 ? (profit/applied)*100 : 0;
+    const due=parseAnyDate(assetRfMaturityDate(a));
+    const days=due ? Math.floor((due.getTime()-today.getTime())/86400000) : null;
+    const category=rfCategoryLabel(a);
+    const explicit=!!vals.hasExplicitCurrent;
+    const issues=[];
+    if(!assetRfContractRate(a)) issues.push({tone:'warn',label:'Sem taxa'});
+    if(!assetRfMaturityDate(a)) issues.push({tone:'muted',label:'Sem vencimento'});
+    if(!explicit) issues.push({tone:'warn',label:'Valor atual não informado'});
+    if(days!=null && days<0) issues.push({tone:'danger',label:'Vencido'});
+    else if(days!=null && days<=30) issues.push({tone:'warn',label:'Vence em até 30 dias'});
+    else if(days!=null && days<=90) issues.push({tone:'warn',label:'Vence em até 90 dias'});
+    const currentMeta=assetRfCurrentValueMeta(a);
+    return {
+      asset:a,
+      ticker:String(a.ticker||assetRfName(a)||'—').trim()||'—',
+      name:assetRfName(a)||a.name||a.product||a.ticker||'Renda Fixa',
+      category,
+      subtype:assetRfSubtype(a),
+      indexer:assetRfIndexerLabel(a),
+      rate:assetRfContractRate(a)||'taxa não informada',
+      applied,
+      current,
+      profit,
+      pct,
+      due,
+      days,
+      explicit,
+      currentMeta,
+      issues,
+      bucket:rfBucketLabel(days)
+    };
+  });
+  const totalApplied=rows.reduce((s,r)=>s+r.applied,0);
+  const totalCurrent=rows.reduce((s,r)=>s+r.current,0);
+  const totalProfit=totalCurrent-totalApplied;
+  const totalPct=totalApplied>0 ? (totalProfit/totalApplied)*100 : 0;
+  const explicitCount=rows.filter(r=>r.explicit).length;
+  const missingCurrent=rows.length-explicitCount;
+  const overdue=rows.filter(r=>r.days!=null && r.days<0).length;
+  const soon30=rows.filter(r=>r.days!=null && r.days>=0 && r.days<=30).length;
+  const soon90=rows.filter(r=>r.days!=null && r.days>=0 && r.days<=90).length;
+  const soon12m=rows.filter(r=>r.days!=null && r.days>90 && r.days<=365).length;
+  const longTerm=rows.filter(r=>r.days!=null && r.days>365).length;
+  const missingDue=rows.filter(r=>r.days==null).length;
+  const missingRate=rows.filter(r=>!String(r.rate||'').trim() || /taxa não informada/i.test(r.rate)).length;
+  const typeOrder=['CDB','LCI','LCA','Tesouro Direto','Debênture','Outros'];
+  const typeRows=typeOrder.map(type=>{
+    const subset=rows.filter(r=>r.category===type);
+    const value=subset.reduce((s,r)=>s+r.current,0);
+    const count=subset.length;
+    return {
+      type,
+      count,
+      value,
+      share:totalCurrent>0 ? (value/totalCurrent)*100 : 0
+    };
+  }).filter(r=>r.count>0);
+  const bucketOrder=['Vencido','Próximos 30 dias','Próximos 90 dias','Próximos 12 meses','Acima de 12 meses','Sem vencimento'];
+  const bucketRows=bucketOrder.map(bucket=>{
+    const subset=rows.filter(r=>r.bucket===bucket);
+    const value=subset.reduce((s,r)=>s+r.current,0);
+    return {bucket,count:subset.length,value,share:totalCurrent>0 ? (value/totalCurrent)*100 : 0};
+  }).filter(r=>r.count>0);
+  const alertRows=rows
+    .flatMap(r=>{
+      const severity=r.days==null ? (r.explicit ? 3 : 2) : (r.days<0 ? 0 : r.days<=30 ? 1 : r.days<=90 ? 2 : 4);
+      const primaryIssue=(r.days!=null && r.days<0)
+        ? 'Vencido'
+        : (r.days!=null && r.days<=30)
+          ? 'Vence em até 30 dias'
+          : (r.days!=null && r.days<=90)
+            ? 'Vence em até 90 dias'
+            : r.issues.find(it=>it.label==='Valor atual não informado')?.label
+              || r.issues.find(it=>it.label==='Sem taxa')?.label
+              || r.issues.find(it=>it.label==='Sem vencimento')?.label
+              || '';
+      return primaryIssue ? [{...r, severity, primaryIssue}] : [];
+    })
+    .sort((a,b)=>a.severity-b.severity || a.days-b.days || a.ticker.localeCompare(b.ticker))
+    .slice(0,6);
+  const previewRows=[...rows]
+    .sort((a,b)=>b.current-a.current || a.days-b.days || a.ticker.localeCompare(b.ticker))
+    .slice(0,5);
+  const tableRows=[...rows]
+    .sort((a,b)=>{
+      const ad=a.days==null ? 99999 : a.days;
+      const bd=b.days==null ? 99999 : b.days;
+      return ad-bd || b.current-a.current || a.ticker.localeCompare(b.ticker);
+    });
+  const reading=rows.length===0
+    ? {tone:'muted',title:'Nenhum título cadastrado',text:'Cadastre títulos de renda fixa para ver resumo, vencimentos e alertas.'}
+    : missingCurrent===rows.length
+      ? {tone:'warn',title:'Dados incompletos para cálculo preciso',text:'Nenhum título tem valor atual explícito. Informe o valor bruto ou líquido da corretora para ver a rentabilidade com mais segurança.'}
+      : overdue>0
+        ? {tone:'danger',title:'Atenção a vencimentos vencidos',text:`${overdue} título${overdue===1?'':'s'} já passou do vencimento e merece revisão.`}
+        : soon30>0
+          ? {tone:'warn',title:'Atenção a vencimentos próximos',text:`${soon30} título${soon30===1?'':'s'} vencem em até 30 dias.`}
+          : missingCurrent>0
+            ? {tone:'warn',title:'Dados incompletos para cálculo preciso',text:`${missingCurrent} título${missingCurrent===1?'':'s'} ainda usam o valor aplicado como referência.`}
+            : totalProfit>=0
+              ? {tone:'ok',title:'Carteira de renda fixa organizada',text:'Os valores atuais informados permitem uma leitura mais confiável da rentabilidade.'}
+              : {tone:'warn',title:'Atenção ao resultado informado',text:'Os dados atuais mostram resultado abaixo do aplicado. Revise taxas, vencimentos e valores da corretora.'};
+  return {
+    assets:rows,
+    totalApplied,
+    totalCurrent,
+    totalProfit,
+    totalPct,
+    explicitCount,
+    missingCurrent,
+    overdue,
+    soon30,
+    soon90,
+    soon12m,
+    longTerm,
+    missingDue,
+    missingRate,
+    typeRows,
+    bucketRows,
+    alertRows,
+    previewRows,
+    tableRows,
+    reading
+  };
+}
+function rendaFixaTab(){
+  const data=rfIntelligenceSnapshot();
+  const count=data.assets.length;
+  const currentLabel=data.explicitCount===count ? 'valor atual/líquido total' : 'valor atual/líquido total*';
+  const kpis=[
+    dashboardMetricCard('💵','Valor aplicado total',fmt(data.totalApplied),count>0?'Capital informado na carteira':'Cadastre títulos para começar','#c4b5fd','rgba(129,140,248,.16)'),
+    dashboardMetricCard('🏦',currentLabel,fmt(data.totalCurrent),data.explicitCount===count ? 'Leitura com valores já informados' : `${data.explicitCount}/${count} títulos com valor atual explícito`,'#34d399','rgba(52,211,153,.14)'),
+    dashboardMetricCard('📈','Ganho estimado em reais',fmt(data.totalProfit),data.totalApplied>0?'Diferença entre aplicado e valor atual informado':'Sem base suficiente','#60a5fa','rgba(96,165,250,.14)'),
+    dashboardMetricCard('🎯','Rentabilidade estimada',count>0 ? fmtP(data.totalPct) : '—',count>0 ? 'Calculada com os valores já cadastrados' : 'Sem títulos cadastrados',count>0?(data.totalPct>=0?'#34d399':'#f87171'):'#94a3b8',count>0?(data.totalPct>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)'):'rgba(148,163,184,.12)'),
+    dashboardMetricCard('🧾','Quantidade de títulos',String(count),data.missingCurrent ? `${data.missingCurrent} sem valor atual explícito` : 'Carteira mais confiável para leitura','#edf3ff','rgba(148,163,184,.12)')
+  ];
+  const typeRows=data.typeRows.length ? data.typeRows.map(row=>`
+    <div class="premium-income-row">
+      <div class="premium-row-main">
+        <div class="premium-row-title">${esc(row.type)}</div>
+        <div class="premium-row-sub">${row.count} título${row.count===1?'':'s'} · ${row.share.toFixed(1)}% da renda fixa</div>
+      </div>
+      <div class="premium-row-value">${fmt(row.value)}</div>
+    </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+  const bucketRows=data.bucketRows.length ? data.bucketRows.map(row=>`
+    <div class="premium-income-row">
+      <div class="premium-row-main">
+        <div class="premium-row-title">${esc(row.bucket)}</div>
+        <div class="premium-row-sub">${row.count} título${row.count===1?'':'s'} · ${row.share.toFixed(1)}% da renda fixa</div>
+      </div>
+      <div class="premium-row-value">${fmt(row.value)}</div>
+    </div>`).join('') : '<div class="rf-empty">Sem vencimentos cadastrados.</div>';
+  const alertRows=data.alertRows.length ? data.alertRows.map(row=>`
+    <div class="rf-preview-row">
+      <div class="premium-row-main">
+        <div class="premium-row-title">${esc(row.ticker)}</div>
+        <div class="premium-row-sub">${esc(row.primaryIssue)}${row.days!=null?` · ${row.days<0?'vencido':`${Math.abs(row.days)} dia${Math.abs(row.days)===1?'':'s'}`}`:''}</div>
+      </div>
+      <div class="rf-preview-value">
+        <span class="analysis-pill ${row.severity<=1?'danger':row.severity===2?'warn':'muted'}">${esc(row.primaryIssue)}</span>
+        <div class="premium-row-sub">${esc(row.rate||'taxa não informada')}</div>
+      </div>
+    </div>`).join('') : '<div class="rf-empty">Nenhum alerta crítico no momento.</div>';
+  const previewRows=data.previewRows.length ? data.previewRows.map(row=>`
+    <div class="rf-preview-row">
+      <div class="premium-row-main">
+        <div class="premium-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
+        <div class="premium-row-sub">${esc(row.category)} · ${esc(row.indexer)}${row.rate&&row.rate!=='taxa não informada'?` · ${esc(row.rate)}`:''}${row.days!=null?` · ${row.days<0?'vencido':`${Math.abs(row.days)} dia${Math.abs(row.days)===1?'':'s'} para o vencimento`}`:''}</div>
+      </div>
+      <div class="rf-preview-value">
+        <div class="${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</div>
+        <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>
+      </div>
+    </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+  const tableRows=data.tableRows.length ? data.tableRows.map(row=>`
+    <tr>
+      <td class="rf-strong">${esc(row.ticker)}</td>
+      <td>${esc(row.category)}</td>
+      <td class="rf-right">${fmt(row.applied)}</td>
+      <td class="rf-right">${fmt(row.current)}</td>
+      <td class="rf-right ${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</td>
+      <td class="rf-right ${row.pct>=0?'gn':'rd'}">${fmtP(row.pct)}</td>
+      <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
+      <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span></td>
+    </tr>`).join('') : '<tr><td colspan="8" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
+  return `<div class="rf-page">
+    <div class="rf-hero">
+      <div class="rf-hero-head">
+        <div>
+          <div class="rf-hero-title">💼 Renda Fixa Inteligente</div>
+          <div class="rf-hero-sub">Minha renda fixa está rendendo bem, vencendo quando, e quanto posso esperar receber?</div>
+        </div>
+        <div class="rf-hero-badge ${data.reading.tone}">${esc(data.reading.title)}</div>
+      </div>
+      <div class="rf-hero-note">${esc(data.reading.text)}</div>
+      <div class="rf-metrics">
+        ${kpis.join('')}
+      </div>
+      ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
+    </div>
+
+    <div class="rf-grid">
+      <div class="rf-panel">
+        <div class="rf-panel-head">
+          <div><div class="rf-panel-title">Tipos cadastrados</div><div class="rf-panel-sub">Separação por subtipo para leitura rápida da renda fixa.</div></div>
+          <div class="rf-panel-badge">${data.typeRows.length} tipos</div>
+        </div>
+        <div class="premium-income-list">${typeRows}</div>
+      </div>
+      <div class="rf-panel">
+        <div class="rf-panel-head">
+          <div><div class="rf-panel-title">Vencimentos</div><div class="rf-panel-sub">Vencidos, próximos 30/90 dias e horizonte de 12 meses.</div></div>
+          <div class="rf-panel-badge">${data.alertRows.length} alertas</div>
+        </div>
+        <div class="premium-income-list">${bucketRows}</div>
+        <div class="rf-note">${data.missingDue ? `${data.missingDue} título${data.missingDue===1?'':'s'} sem data de vencimento.` : 'Todas as posições têm vencimento informado ou não foram marcadas como tal.'}</div>
+      </div>
+    </div>
+
+    <div class="rf-grid">
+      <div class="rf-panel">
+        <div class="rf-panel-head">
+          <div><div class="rf-panel-title">Alertas inteligentes</div><div class="rf-panel-sub">Itens que precisam de revisão antes de confiar no cálculo.</div></div>
+          <div class="rf-panel-badge">${data.alertRows.length} itens</div>
+        </div>
+        <div class="rf-preview-list">${alertRows}</div>
+      </div>
+      <div class="rf-panel">
+        <div class="rf-panel-head">
+          <div><div class="rf-panel-title">Leitura por título</div><div class="rf-panel-sub">Resultado estimado com base apenas nos valores já informados.</div></div>
+          <div class="rf-panel-badge">${data.previewRows.length} destaques</div>
+        </div>
+        <div class="rf-preview-list">${previewRows}</div>
+        <div class="rf-note">A estimativa não inventa rendimento: se faltar valor atual, taxa ou vencimento, o ativo fica como dados incompletos.</div>
+      </div>
+    </div>
+
+    <details class="sec" style="margin-top:2px">
+      <summary>
+        <div>
+          <div class="sec-title">Detalhamento dos títulos</div>
+          <div class="sec-meta">lista completa dos ativos de renda fixa com aplicado, atual, resultado e vencimento</div>
+        </div>
+        <div class="sec-meta">${data.tableRows.length} títulos · clique para abrir</div>
+      </summary>
+      <div class="sec-body">
+        <div class="rf-table-wrap">
+          <table class="rf-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Tipo</th>
+                <th class="rf-right">Aplicado</th>
+                <th class="rf-right">Atual</th>
+                <th class="rf-right">Resultado</th>
+                <th class="rf-right">Rentab.</th>
+                <th>Vencimento</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </div>`;
 }
 function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)'){
   return `<div class="premium-metric" style="--metric-color:${tone};--metric-glow:${glow}">
@@ -11357,7 +11707,7 @@ function mobileBottomNav(){
     <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"><span class="ni">💼</span><span>Ativos</span></button>
     <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"><span class="ni">💰</span><span>Aportes</span></button>
     <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"><span class="ni">📅</span><span>Dividendos</span></button>
-    <button class="${['patrimonio','metas','rentabilidade','ajudar','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()"><span class="ni">☰</span><span>Menu</span></button>
+    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()"><span class="ni">☰</span><span>Menu</span></button>
   </nav>`;
 }
 function mobileMenuDrawer(){
@@ -11370,6 +11720,7 @@ function mobileMenuDrawer(){
       <div class="sheet-grid">
         <button onclick="mobileMenuClose();go('patrimonio')">🏛️ Patrimônio</button>
         <button onclick="mobileMenuClose();go('rentabilidade')">📈 Rentab.</button>
+        <button onclick="mobileMenuClose();go('renda-fixa')">💼 Renda Fixa</button>
         <button onclick="mobileMenuClose();go('metas')">🎯 Metas</button>
         <button onclick="mobileMenuClose();go('ajudar')">⚖️ Rebalancear</button>
         <button class="focus" onclick="mobileMenuClose();go('ia')">🤖 IA</button>
