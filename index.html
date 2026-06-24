@@ -9471,7 +9471,11 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
     .filter(p=>p._dt&&Number(p.value)>0)
     .sort((a,b)=>a._dt-b._dt||String(a.ticker||'').localeCompare(String(b.ticker||'')));
   if(!txs.length && !provs.length){
-    return { points:[], view:[], bench:[], labels:[], months:[], years:[], current:null, prev12:null, totalMonths:0 };
+    return {
+      points:[], view:[], benchSeries:[], labels:[], months:[], years:[],
+      current:null, prev12:null, firstView:null, currentBench:0,
+      return12m:0, lastMonth:0, aboveBench:0, totalMonths:0
+    };
   }
 
   const startDate=txs[0]?new Date(txs[0]._dt.getFullYear(),txs[0]._dt.getMonth(),1)
@@ -13235,6 +13239,9 @@ function rentabilidadeTab(){
   const type=String(S.rentType||'all');
   const period=String(S.rentPeriod||'all');
   const data=rentabilityHistory(type, period, bench);
+  const view=Array.isArray(data.view)?data.view:[];
+  const points=Array.isArray(data.points)?data.points:[];
+  const benchSeries=Array.isArray(data.benchSeries)?data.benchSeries:[];
   const current=data.current || {cumReturn:0, delta:0, costBasis:0, currentValue:0, proventos:0};
   const benchNow=data.currentBench || 0;
   const gap=current.cumReturn - benchNow;
@@ -13295,10 +13302,11 @@ function rentabilidadeTab(){
     ? `Concentração: top 3 com ${top3Share.toFixed(1)}% da carteira. Maior posição: ${topAsset.ticker} com ${fmt(topAsset.value)} (${normalizeType(topAsset.type||'Ação','Ação')}).`
     : 'Concentração: sem posições ainda.';
 
-  const chartLabels=(data.view.length?data.view:data.points).map(p=>p.label);
+  const chartData=view.length?view:points;
+  const chartLabels=chartData.map(p=>p.label);
   const chartSeries=[
-    {name:'Carteira', values:(data.view.length?data.view:data.points).map(p=>p.cumReturn||0), color:'#8da2ff', fill:'rgba(141,162,255,.12)', width:2.5, points:false},
-    {name:bench, values:data.benchSeries.length?data.benchSeries:rentBenchSeries((data.view.length?data.view:data.points).length, bench), color:'#fbbf24', width:2.2, points:false},
+    {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'#8da2ff', fill:'rgba(141,162,255,.12)', width:2.5, points:false},
+    {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'#fbbf24', width:2.2, points:false},
   ];
 
   const yearsRows=(data.years||[]).map(row=>{
@@ -13367,7 +13375,7 @@ function rentabilidadeTab(){
 
       ${chartLegend}
       <div class="rent-chartbox">
-        ${data.points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
+        ${points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
       </div>
       <div class="mu" style="font-size:11px;margin-top:6px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</div>
     </div>
@@ -13379,7 +13387,7 @@ function rentabilidadeTab(){
         <div class="sec-title">Rentabilidade mensal</div>
         <div class="sec-meta">visão consolidada por ano, mês e proventos recebidos</div>
       </div>
-      <div class="sec-meta">${data.totalMonths} meses analisados · clicar para ocultar</div>
+      <div class="sec-meta">${data.totalMonths} meses analisados · clique para abrir</div>
     </summary>
     <div class="sec-body">
       <div class="tw"><div class="ts"><table class="hist-monthly rent-table">
