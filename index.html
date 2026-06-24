@@ -883,6 +883,40 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .report-export-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
 .report-export-actions .btn{min-height:36px}
 .reports-footnote{padding:10px 12px;border:1px solid #1a273b;border-radius:12px;background:#0a101b;color:#8294ad;font-size:11px;line-height:1.45}
+.pdf-report-overlay{position:fixed;inset:0;z-index:1200;background:rgba(2,6,14,.94);overflow:auto;padding:18px}
+.pdf-report-toolbar{position:sticky;top:0;z-index:3;max-width:1040px;margin:0 auto 10px;padding:10px 12px;border:1px solid #263650;border-radius:14px;background:rgba(10,16,27,.96);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pdf-report-toolbar-text{font-size:11px;color:#91a3bc;line-height:1.4}
+.pdf-report-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.pdf-report-page{max-width:1040px;margin:0 auto;background:#f6f8fb;color:#172033;border-radius:18px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.42);font-family:Georgia,'Times New Roman',serif}
+.pdf-report-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:2px solid #d8e0ea}
+.pdf-report-brand{font:800 12px/1.2 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#2563eb}
+.pdf-report-title{font:900 30px/1.08 Georgia,'Times New Roman',serif;color:#111827;margin-top:7px}
+.pdf-report-sub{font:400 12px/1.55 system-ui,sans-serif;color:#64748b;margin-top:7px;max-width:660px}
+.pdf-report-meta{font:600 11px/1.5 system-ui,sans-serif;color:#64748b;text-align:right;white-space:nowrap}
+.pdf-report-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:18px 0}
+.pdf-report-kpi{padding:11px;border:1px solid #d9e2ec;border-radius:11px;background:#fff;min-width:0}
+.pdf-report-kpi-label{font:800 9px/1.2 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#64748b}
+.pdf-report-kpi-value{font:900 18px/1.15 system-ui,sans-serif;color:#111827;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pdf-report-kpi-sub{font:400 9px/1.35 system-ui,sans-serif;color:#718096;margin-top:3px}
+.pdf-report-section{margin-top:22px;break-inside:avoid-page;page-break-inside:avoid}
+.pdf-report-section.page-start{break-before:page;page-break-before:always}
+.pdf-report-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid #cfd8e3;padding-bottom:6px;margin-bottom:9px}
+.pdf-report-section-title{font:900 17px/1.2 Georgia,'Times New Roman',serif;color:#172033}
+.pdf-report-section-note{font:400 9px/1.35 system-ui,sans-serif;color:#64748b;text-align:right}
+.pdf-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.pdf-report-card{padding:10px 11px;border:1px solid #d9e2ec;border-radius:10px;background:#fff;break-inside:avoid;page-break-inside:avoid}
+.pdf-report-card-title{font:800 11px/1.3 system-ui,sans-serif;color:#172033}
+.pdf-report-card-sub{font:400 9px/1.4 system-ui,sans-serif;color:#64748b;margin-top:3px}
+.pdf-report-value{font:900 14px/1.2 system-ui,sans-serif;color:#111827;margin-top:5px}
+.pdf-report-list{display:flex;flex-direction:column;gap:5px}
+.pdf-report-row{display:grid;grid-template-columns:minmax(100px,1.2fr) repeat(3,minmax(70px,.7fr));gap:8px;align-items:center;padding:7px 8px;border:1px solid #e0e7ef;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;font:500 9px/1.3 system-ui,sans-serif}
+.pdf-report-row-main{min-width:0;font-weight:800;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pdf-report-row-value{text-align:right;color:#334155;white-space:nowrap}
+.pdf-report-bar{height:5px;border-radius:999px;background:#e5eaf0;overflow:hidden;margin-top:5px}
+.pdf-report-bar>span{display:block;height:100%;border-radius:inherit;background:#3b82f6}
+.pdf-report-alert{border-left:3px solid #f59e0b}
+.pdf-report-alert.critical{border-left-color:#dc2626}
+.pdf-report-footer{margin-top:22px;padding-top:12px;border-top:1px solid #d8e0ea;font:400 9px/1.5 system-ui,sans-serif;color:#64748b}
 .rf-proventos-kpi.purple .rf-proventos-kpi-value{color:#a78bfa}
 .passive-goal-shell{display:flex;flex-direction:column;gap:10px}
 .passive-goal-head{gap:10px;align-items:flex-start}
@@ -1056,6 +1090,21 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .report-export-desc{font-size:10px}
   .report-export-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
   .report-export-actions .btn{width:100%;justify-content:center}
+  .pdf-report-overlay{padding:8px 8px calc(96px + env(safe-area-inset-bottom))}
+  .pdf-report-toolbar{display:block;padding:9px}
+  .pdf-report-toolbar-actions{display:grid;grid-template-columns:1fr 1fr;margin-top:8px}
+  .pdf-report-toolbar-actions .btn{width:100%;justify-content:center}
+  .pdf-report-page{padding:16px 12px;border-radius:13px}
+  .pdf-report-header{display:block}
+  .pdf-report-meta{text-align:left;margin-top:10px;white-space:normal}
+  .pdf-report-title{font-size:22px}
+  .pdf-report-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .pdf-report-kpi-value{font-size:14px}
+  .pdf-report-grid{grid-template-columns:1fr}
+  .pdf-report-row{grid-template-columns:1fr 1fr;gap:5px}
+  .pdf-report-row-main{grid-column:1/-1}
+  .pdf-report-section-head{display:block}
+  .pdf-report-section-note{text-align:left;margin-top:3px}
   .passive-goal-grid.main,.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-empty{padding:9px 10px}
@@ -1565,6 +1614,27 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .patrimony-composition-stat:last-child{grid-column:auto}
   .note-actions .btn,.note-foot .btn{flex-basis:100%}
 }
+@media print{
+  @page{size:A4;margin:10mm}
+  html,body{background:#fff!important;color:#111827!important;overflow:visible!important}
+  body>*:not(#root){display:none!important}
+  #root{display:block!important}
+  #root>*:not(.pdf-report-overlay){display:none!important}
+  .pdf-report-overlay{position:static!important;inset:auto!important;display:block!important;background:#fff!important;overflow:visible!important;padding:0!important}
+  .pdf-report-toolbar{display:none!important}
+  .pdf-report-page{display:block!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#fff!important;color:#111827!important}
+  .pdf-report-header{padding-bottom:10px}
+  .pdf-report-title{font-size:23px}
+  .pdf-report-kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:11px 0}
+  .pdf-report-kpi{padding:7px;border-radius:7px}
+  .pdf-report-kpi-value{font-size:13px}
+  .pdf-report-section{margin-top:14px;break-inside:auto;page-break-inside:auto}
+  .pdf-report-section.page-start{break-before:page;page-break-before:always}
+  .pdf-report-card,.pdf-report-row,.pdf-report-kpi{break-inside:avoid;page-break-inside:avoid}
+  .pdf-report-section-title{font-size:14px}
+  .pdf-report-row{padding:5px 6px;font-size:8px}
+  .pdf-report-footer{margin-top:14px}
+}
 </style>
 </head>
 <body>
@@ -1650,6 +1720,7 @@ let S = {
   accessSettingsOpen:false,
   backupOpen:false,
   backupImportDraft:null,
+  pdfReportOpen:false,
   goals:{
     patrimonio:{target:0, aporte:0, annualVar:0},
     ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
@@ -10598,6 +10669,171 @@ function exportReportJSON(type){
     }
   });
 }
+function reportPdfSnapshot(){
+  const summary=reportsSnapshot();
+  const analysis=assetAnalysisRows();
+  const allocation=allocationActualByType();
+  const allocationRows=Object.entries(allocation.map||{})
+    .map(([type,value])=>({type,value:Number(value)||0,share:allocation.total>0?(Number(value)||0)/allocation.total*100:0}))
+    .sort((a,b)=>b.value-a.value);
+  const positions=[...analysis].filter(row=>row.current>0).sort((a,b)=>b.current-a.current).slice(0,10);
+  const highs=[...analysis].filter(row=>Number.isFinite(row.pct)&&row.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,5);
+  const lows=[...analysis].filter(row=>Number.isFinite(row.pct)&&row.pct<0).sort((a,b)=>a.pct-b.pct).slice(0,5);
+  const recentProventos=reportProventoRows().slice(0,10);
+  const dividendMonths=(summary.income.byMonth||[]).slice(-12);
+  const fixed=[...(summary.fixed.assets||[])].sort((a,b)=>{
+    const ad=a.due?a.due.getTime():Number.MAX_SAFE_INTEGER;
+    const bd=b.due?b.due.getTime():Number.MAX_SAFE_INTEGER;
+    return ad-bd||b.current-a.current;
+  }).slice(0,8);
+  const patrimony=reportPatrimonyRows().slice(-12);
+  const severityOrder={critical:0,warning:1,info:2};
+  const alerts=[...(summary.audit.alerts||[])].sort((a,b)=>(severityOrder[a.severity]??9)-(severityOrder[b.severity]??9)).slice(0,5);
+  const concentration=positions.filter(row=>Number(row.share)>10);
+  return {summary,analysis,allocationRows,positions,highs,lows,recentProventos,dividendMonths,fixed,patrimony,alerts,concentration};
+}
+function openPdfReport(){
+  try{
+    S.pdfReportOpen=true;
+    render();
+  }catch(error){
+    S.pdfReportOpen=false;
+    console.error('openPdfReport erro:',error);
+    toast('Não foi possível abrir a prévia do relatório. Nenhum dado foi alterado.','#f87171');
+  }
+}
+function closePdfReport(){
+  S.pdfReportOpen=false;
+  render();
+}
+function printPdfReport(){
+  try{
+    window.print();
+  }catch(error){
+    console.error('printPdfReport erro:',error);
+    toast('Não foi possível abrir a impressão neste navegador.','#f87171');
+  }
+}
+function pdfReportKpi(label,value,sub=''){
+  return `<div class="pdf-report-kpi"><div class="pdf-report-kpi-label">${esc(label)}</div><div class="pdf-report-kpi-value">${esc(value)}</div><div class="pdf-report-kpi-sub">${esc(sub)}</div></div>`;
+}
+function pdfReportSection(title,note,body,className=''){
+  return `<section class="pdf-report-section ${className}">
+    <div class="pdf-report-section-head"><div class="pdf-report-section-title">${esc(title)}</div><div class="pdf-report-section-note">${esc(note)}</div></div>
+    ${body}
+  </section>`;
+}
+function reportPdfPreview(){
+  return withVisibleValues(()=>{
+    const data=reportPdfSnapshot();
+    const {portfolio,income,fixed,audit}=data.summary;
+    const resultTone=portfolio.tG>=0?'#15803d':'#b91c1c';
+    const allocationMax=Math.max(...data.allocationRows.map(row=>row.share),1);
+    const allocationHtml=data.allocationRows.length ? data.allocationRows.map(row=>`
+      <div class="pdf-report-card">
+        <div class="pdf-report-card-title">${esc(row.type)}</div>
+        <div class="pdf-report-value">${fmt(row.value)} · ${row.share.toFixed(1)}%</div>
+        <div class="pdf-report-bar"><span style="width:${Math.min(100,(row.share/allocationMax)*100)}%"></span></div>
+      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Sem dados de alocação.</div></div>';
+    const positionHtml=data.positions.length ? data.positions.map(row=>`
+      <div class="pdf-report-row">
+        <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.type)}</div>
+        <div class="pdf-report-row-value">${fmt(row.current)}</div>
+        <div class="pdf-report-row-value">${row.share==null?'—':`${row.share.toFixed(1)}%`}</div>
+        <div class="pdf-report-row-value">${row.pct==null?'—':fmtP(row.pct)}</div>
+      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Nenhuma posição disponível.</div></div>';
+    const performanceColumn=(rows,empty)=>rows.length ? rows.map(row=>`
+      <div class="pdf-report-card">
+        <div class="pdf-report-card-title">${esc(row.ticker)} · ${esc(row.type)}</div>
+        <div class="pdf-report-value" style="color:${row.pct>=0?'#15803d':'#b91c1c'}">${fmtP(row.pct)}</div>
+        <div class="pdf-report-card-sub">${fmt(row.current)} em valor atual</div>
+      </div>`).join('') : `<div class="pdf-report-card"><div class="pdf-report-card-sub">${esc(empty)}</div></div>`;
+    const dividendsHtml=data.dividendMonths.length ? data.dividendMonths.map(month=>{
+      const date=parseAnyDate(`${month.key}-01`);
+      return `<div class="pdf-report-row" style="grid-template-columns:1fr 1fr">
+        <div class="pdf-report-row-main">${date?date.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):month.key}</div>
+        <div class="pdf-report-row-value">${fmt(month.total)}</div>
+      </div>`;
+    }).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Sem proventos nos últimos 12 meses.</div></div>';
+    const recentHtml=data.recentProventos.length ? data.recentProventos.slice(0,6).map(row=>`
+      <div class="pdf-report-row" style="grid-template-columns:1.2fr .7fr .7fr">
+        <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.eventType)}</div>
+        <div class="pdf-report-row-value">${esc(row.date)}</div>
+        <div class="pdf-report-row-value">${fmt(row.value)}</div>
+      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Nenhum provento recente.</div></div>';
+    const fixedHtml=data.fixed.length ? data.fixed.map(row=>`
+      <div class="pdf-report-row">
+        <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.category)}</div>
+        <div class="pdf-report-row-value">${fmt(row.current)}</div>
+        <div class="pdf-report-row-value">${row.due?row.due.toLocaleDateString('pt-BR'):'Sem vencimento'}</div>
+        <div class="pdf-report-row-value">${esc(row.rate||'Sem taxa')}</div>
+      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Nenhum título de renda fixa cadastrado.</div></div>';
+    const patrimonyHtml=data.patrimony.length ? data.patrimony.map(row=>`
+      <div class="pdf-report-row" style="grid-template-columns:.7fr 1fr 1fr">
+        <div class="pdf-report-row-main">${esc(row.period)}</div>
+        <div class="pdf-report-row-value">Aporte ${fmt(row.contribution)}</div>
+        <div class="pdf-report-row-value">Acumulado ${fmt(row.accumulatedContributions)}</div>
+      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Sem histórico patrimonial suficiente.</div></div>';
+    const alertsHtml=data.alerts.length ? data.alerts.map(alert=>`
+      <div class="pdf-report-card pdf-report-alert ${alert.severity==='critical'?'critical':''}">
+        <div class="pdf-report-card-title">${esc(dataAuditSeverityLabel(alert.severity))} · ${esc(alert.area)} · ${esc(alert.item)}</div>
+        <div class="pdf-report-card-sub">${esc(alert.problem)}</div>
+        <div class="pdf-report-card-sub"><strong>Conferir:</strong> ${esc(alert.fix)}</div>
+      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-title">Auditoria sem alertas relevantes</div><div class="pdf-report-card-sub">Nenhuma inconsistência foi encontrada com os critérios atuais.</div></div>';
+    return `<div class="pdf-report-overlay" role="dialog" aria-modal="true">
+      <div class="pdf-report-toolbar">
+        <div class="pdf-report-toolbar-text"><strong>Prévia do Relatório PDF Premium</strong><br>Use a opção imprimir/salvar como PDF do navegador.</div>
+        <div class="pdf-report-toolbar-actions">
+          <button class="btn bgh" onclick="closePdfReport()">Voltar</button>
+          <button class="btn bp" onclick="printPdfReport()">Imprimir / Salvar PDF</button>
+        </div>
+      </div>
+      <article class="pdf-report-page">
+        <header class="pdf-report-header">
+          <div>
+            <div class="pdf-report-brand">${esc(APP_NAME)}</div>
+            <div class="pdf-report-title">Relatório Premium da Carteira</div>
+            <div class="pdf-report-sub">Visão executiva para conferência da carteira, com patrimônio, alocação, desempenho, proventos, renda fixa e qualidade dos dados.</div>
+          </div>
+          <div class="pdf-report-meta">Período: ${esc(data.summary.periodLabel)}<br>Gerado em ${new Date(data.summary.generatedAt).toLocaleString('pt-BR')}<br>${data.summary.assetsCount} ativo(s) analisado(s)</div>
+        </header>
+        <div class="pdf-report-kpis">
+          ${pdfReportKpi('Patrimônio atual',fmt(portfolio.tC),'Estimativa da posição atual')}
+          ${pdfReportKpi('Valor aplicado',fmt(portfolio.tI),'Base cadastrada')}
+          ${pdfReportKpi('Resultado',fmt(portfolio.tG),fmtP(portfolio.tGP))}
+          ${pdfReportKpi('Renda média 12M',fmt(income.monthlyAvg),'Proventos reais recebidos')}
+          ${pdfReportKpi('Ativos',String(data.summary.assetsCount),`${data.summary.fixedCount} título(s) RF`)}
+          ${pdfReportKpi('Proventos 12M',fmt(income.total12),`${data.summary.proventosCount} registro(s) no filtro`)}
+          ${pdfReportKpi('Renda Fixa',fmt(fixed.totalCurrent),'Valor atual/líquido')}
+          ${pdfReportKpi('Alertas',String(audit.alerts.length),`${audit.counts.critical||0} crítico(s)`)}
+        </div>
+        ${pdfReportSection('Resumo Executivo','Leitura consolidada da carteira',`
+          <div class="pdf-report-grid">
+            <div class="pdf-report-card"><div class="pdf-report-card-title">Resultado sobre o valor aplicado</div><div class="pdf-report-value" style="color:${resultTone}">${fmt(portfolio.tG)} · ${fmtP(portfolio.tGP)}</div><div class="pdf-report-card-sub">${portfolio.tG>=0?'O patrimônio está acima do valor aplicado.':'O patrimônio está abaixo do valor aplicado.'}</div></div>
+            <div class="pdf-report-card"><div class="pdf-report-card-title">Concentração</div><div class="pdf-report-value">${data.concentration.length?`${data.concentration.length} ativo(s) acima de 10%`:'Concentração saudável'}</div><div class="pdf-report-card-sub">${data.concentration[0]?`Maior peso: ${data.concentration[0].ticker} · ${data.concentration[0].share.toFixed(1)}%`:'Nenhum ativo acima do limite de atenção.'}</div></div>
+          </div>`)}
+        ${pdfReportSection('Alocação por classe','Participação no patrimônio atual',`<div class="pdf-report-grid">${allocationHtml}</div>`)}
+        ${pdfReportSection('Maiores posições','Top 10 por valor atual',`<div class="pdf-report-list">${positionHtml}</div>`)}
+        ${pdfReportSection('Maiores altas e baixas','Desempenho acumulado informado',`
+          <div class="pdf-report-grid">
+            <div><div class="pdf-report-card-title" style="margin-bottom:6px">Maiores altas</div>${performanceColumn(data.highs,'Nenhuma alta com dados suficientes.')}</div>
+            <div><div class="pdf-report-card-title" style="margin-bottom:6px">Maiores baixas</div>${performanceColumn(data.lows,'Nenhuma baixa com dados suficientes.')}</div>
+          </div>`,'page-start')}
+        ${pdfReportSection('Dividendos e proventos','Últimos 12 meses e lançamentos recentes',`
+          <div class="pdf-report-grid"><div class="pdf-report-list">${dividendsHtml}</div><div class="pdf-report-list">${recentHtml}</div></div>`)}
+        ${pdfReportSection('Renda Fixa','Principais títulos e vencimentos',`<div class="pdf-report-list">${fixedHtml}</div>`)}
+        ${pdfReportSection('Patrimônio','Aportes e evolução do período',`<div class="pdf-report-list">${patrimonyHtml}</div>`,'page-start')}
+        ${pdfReportSection('Auditoria de Dados','Até 5 alertas prioritários',`<div class="pdf-report-grid">${alertsHtml}</div>`)}
+        ${pdfReportSection('Observações finais','Uso auxiliar e informativo',`
+          <div class="pdf-report-card">
+            <div class="pdf-report-card-title">Relatório para conferência</div>
+            <div class="pdf-report-card-sub">Informações podem depender dos dados cadastrados e das cotações disponíveis. Valores de patrimônio, desempenho e renda fixa podem conter estimativas. Este documento não substitui backup, informe oficial, declaração de IRPF nem orientação profissional.</div>
+          </div>`)}
+        <footer class="pdf-report-footer">Relatório gerado para conferência. Informações podem depender de dados cadastrados e cotações disponíveis. Período selecionado: ${esc(data.summary.periodLabel)}.</footer>
+      </article>
+    </div>`;
+  });
+}
 function reportExportCard(icon,title,description,type,formats=['csv','json']){
   const generated=new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
   return `<article class="report-export-card">
@@ -10622,6 +10858,15 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
 function reportsTab(){
   const data=reportsSnapshot();
   const cards=[
+    `<article class="report-export-card">
+      <div class="report-export-card-head">
+        <div class="report-export-icon">🖨️</div>
+        <div style="min-width:0"><div class="report-export-title">Relatório PDF Premium</div><div class="report-export-desc">Prévia executiva com patrimônio, alocação, desempenho, proventos, renda fixa e auditoria.</div></div>
+      </div>
+      <div class="report-export-meta"><span class="report-format">PDF</span><span class="report-format">${esc(reportsPeriodLabel())}</span></div>
+      <div class="report-export-desc">Use a opção imprimir/salvar como PDF do navegador.</div>
+      <div class="report-export-actions"><button class="btn bp" onclick="openPdfReport()">Gerar PDF da carteira</button></div>
+    </article>`,
     reportExportCard('🗂️','Carteira completa','Resumo, ativos, proventos, renda fixa, patrimônio, metas e auditoria.','complete'),
     reportExportCard('💼','Ativos','Posições, preços, valores aplicados, valores atuais e resultados.','assets'),
     reportExportCard('💸','Dividendos e proventos','Recebimentos por ativo, evento, mês, fonte e observação.','proventos'),
@@ -10729,6 +10974,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
   ${mobileMenuDrawer()}
   ${S.accessSettingsOpen?accessSettingsModal():''}
   ${S.backupOpen?backupManagerModal():''}
+  ${S.pdfReportOpen?reportPdfPreview():''}
   ${S.noteReview?notaReviewModal():''}
   ${S.b3Review?b3ReviewModal():''}
   ${S.b3MovementReview?b3MovementReviewModal():''}
