@@ -859,6 +859,30 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .b3-preview-card-label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
 .b3-preview-card-value{font-size:12px;color:#cbd5e1;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .b3-backup-warning{margin:0 0 12px;padding:9px 11px;border:1px solid rgba(96,165,250,.22);background:rgba(59,130,246,.06);border-radius:11px;color:#93c5fd;font-size:11px;line-height:1.45}
+.reports-shell{display:flex;flex-direction:column;gap:12px;min-width:0}
+.reports-hero{padding:17px;border:1px solid #1b2940;border-radius:18px;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(79,70,229,.08) 54%,rgba(15,23,42,.35));box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.reports-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.reports-title{font-size:20px;font-weight:900;color:#edf3ff}
+.reports-sub{font-size:12px;color:#94a3b8;line-height:1.5;margin-top:4px;max-width:760px}
+.reports-filter{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.reports-filter button{border:1px solid #263650;background:#0d1625;color:#91a3bc;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}
+.reports-filter button.on{border-color:rgba(56,189,248,.45);background:rgba(14,165,233,.13);color:#bae6fd}
+.reports-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+.reports-kpi{padding:10px 11px;border:1px solid #1b2940;border-radius:12px;background:rgba(7,12,22,.62);min-width:0}
+.reports-kpi .label{font-size:10px;color:#71849f;text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+.reports-kpi .value{font-size:17px;font-weight:900;color:#e5edf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reports-kpi .sub{font-size:10px;color:#8192aa;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reports-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.report-export-card{display:flex;flex-direction:column;gap:11px;padding:15px;border:1px solid #1a273b;border-radius:15px;background:#0b111d;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+.report-export-card-head{display:flex;align-items:flex-start;gap:10px}
+.report-export-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:rgba(99,102,241,.13);font-size:18px;flex:0 0 auto}
+.report-export-title{font-size:14px;font-weight:900;color:#e5edf8}
+.report-export-desc{font-size:11px;line-height:1.45;color:#8799b1;margin-top:3px}
+.report-export-meta{display:flex;gap:6px;flex-wrap:wrap}
+.report-format{font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#a5b4fc;border:1px solid rgba(129,140,248,.22);background:rgba(79,70,229,.08);padding:4px 7px;border-radius:999px}
+.report-export-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
+.report-export-actions .btn{min-height:36px}
+.reports-footnote{padding:10px 12px;border:1px solid #1a273b;border-radius:12px;background:#0a101b;color:#8294ad;font-size:11px;line-height:1.45}
 .rf-proventos-kpi.purple .rf-proventos-kpi-value{color:#a78bfa}
 .passive-goal-shell{display:flex;flex-direction:column;gap:10px}
 .passive-goal-head{gap:10px;align-items:flex-start}
@@ -1001,6 +1025,7 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .mov-review-line .line-controls{grid-area:ctrl;justify-content:flex-start}
   .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .b3-conference-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .reports-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rf-proventos-table{min-width:1180px}
 }
 @media(max-width:640px){
@@ -1015,6 +1040,22 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .b3-review-filters select{width:100%;min-width:0;margin-top:4px}
   .rf-proventos-table{display:none}
   .b3-preview-cards{display:grid;grid-template-columns:1fr;gap:8px}
+  .reports-shell{gap:9px;padding-bottom:10px}
+  .reports-hero{padding:12px;border-radius:14px}
+  .reports-head{display:block}
+  .reports-title{font-size:17px}
+  .reports-sub{font-size:10px;line-height:1.4}
+  .reports-filter{margin-top:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .reports-filter button{padding:7px 5px;font-size:9px;white-space:nowrap}
+  .reports-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:11px}
+  .reports-kpi{padding:8px 9px}
+  .reports-kpi .value{font-size:14px}
+  .reports-kpi .sub{display:none}
+  .reports-grid{grid-template-columns:1fr;gap:8px}
+  .report-export-card{padding:12px;gap:9px}
+  .report-export-desc{font-size:10px}
+  .report-export-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .report-export-actions .btn{width:100%;justify-content:center}
   .passive-goal-grid.main,.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-empty{padding:9px 10px}
@@ -1593,6 +1634,7 @@ let S = {
   assetSort:{},
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
+  reportsPeriod:'12m',
   irpfYear:new Date().getFullYear(),
   irpfStep:1,
   apHistoryOpen:true, apSearch:'',
@@ -10290,6 +10332,335 @@ function toggleImportedDividendsDetails(ev){
 }
 
 // ══════════════════════════════════════
+// RELATÓRIOS E EXPORTAÇÕES
+// ══════════════════════════════════════
+function reportsPeriod(){
+  return ['year','12m','all'].includes(String(S.reportsPeriod||'')) ? String(S.reportsPeriod) : '12m';
+}
+function setReportsPeriod(value){
+  S.reportsPeriod=['year','12m','all'].includes(String(value)) ? String(value) : '12m';
+  render();
+}
+function reportsPeriodLabel(){
+  return reportsPeriod()==='year' ? 'Ano atual' : reportsPeriod()==='all' ? 'Todos os dados' : 'Últimos 12 meses';
+}
+function reportsPeriodStart(){
+  const now=new Date();
+  if(reportsPeriod()==='all') return null;
+  if(reportsPeriod()==='year') return new Date(now.getFullYear(),0,1);
+  return new Date(now.getFullYear(),now.getMonth()-11,1);
+}
+function reportsDateAllowed(value){
+  const date=parseAnyDate(value);
+  if(!date) return reportsPeriod()==='all';
+  const start=reportsPeriodStart();
+  return !start || date>=start;
+}
+function reportsSnapshot(){
+  const portfolio=cx();
+  const income=passiveIncomeGoalStats();
+  const fixed=rfIntelligenceSnapshot();
+  const audit=dataAuditSnapshot();
+  const filteredProventos=(S.proventos||[]).filter(p=>reportsDateAllowed(p.date));
+  const filteredAportes=(S.aportes||[]).filter(a=>reportsDateAllowed(a.date));
+  return {
+    generatedAt:new Date().toISOString(),
+    period:reportsPeriod(),
+    periodLabel:reportsPeriodLabel(),
+    portfolio,
+    income,
+    fixed,
+    audit,
+    assetsCount:(S.assets||[]).length,
+    proventosCount:filteredProventos.length,
+    aportesCount:filteredAportes.length,
+    fixedCount:fixed.assets.length,
+    auditCount:audit.alerts.length
+  };
+}
+function reportNumber(value){
+  return (Number(value)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function reportDateText(value){
+  const date=parseAnyDate(value);
+  return date ? date.toLocaleDateString('pt-BR') : String(value||'');
+}
+function csvEscape(value){
+  return `"${String(value??'').replace(/"/g,'""')}"`;
+}
+function reportFilename(type,extension){
+  const stamp=new Date();
+  const date=`${stamp.getFullYear()}-${String(stamp.getMonth()+1).padStart(2,'0')}-${String(stamp.getDate()).padStart(2,'0')}-${String(stamp.getHours()).padStart(2,'0')}-${String(stamp.getMinutes()).padStart(2,'0')}`;
+  const safe=String(type||'relatorio').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
+  return `carteira-${safe}-${date}.${extension}`;
+}
+function downloadTextFile(filename,content,mimeType='text/plain;charset=utf-8'){
+  const blob=new Blob([content],{type:mimeType});
+  const url=URL.createObjectURL(blob);
+  const link=Object.assign(document.createElement('a'),{href:url,download:filename});
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function reportAssetRows(){
+  return (S.assets||[]).map(asset=>{
+    const applied=assetAppliedValue(asset);
+    const current=assetCurrentValue(asset);
+    const result=current-applied;
+    return {
+      ticker:String(asset.ticker||'').trim()||'—',
+      name:String(asset.name||asset.product||asset.ticker||'').trim()||'—',
+      type:normalizeType(asset.type||metaTicker(asset.ticker).type||'Ação','Ação'),
+      sector:String(asset.sector||metaTicker(asset.ticker).sector||'').trim()||'—',
+      qty:Number(asset.qty)||0,
+      avgPrice:Number(asset.avg_price)||0,
+      currentPrice:Number(asset.current_price)||0,
+      applied,
+      current,
+      result,
+      resultPct:applied>0?(result/applied)*100:0,
+      source:String(asset.source||asset.quoteSource||'').trim()||'—',
+      updatedAt:String(asset.updated_at||asset.quoteUpdatedAt||'').trim()||'—'
+    };
+  }).sort((a,b)=>a.type.localeCompare(b.type,'pt-BR')||a.ticker.localeCompare(b.ticker,'pt-BR'));
+}
+function reportProventoRows(){
+  return (S.proventos||[]).filter(p=>reportsDateAllowed(p.date)).map(p=>{
+    const date=parseAnyDate(p.date);
+    return {
+      date:reportDateText(p.date),
+      ticker:String(p.ticker||'').trim()||'—',
+      assetName:String(p.assetName||p.name||p.ticker||'').trim()||'—',
+      eventType:proventoTipoCanonical(p.eventType||p.type||p.category)||'Outro',
+      category:String(p.category||p.type||'').trim()||'Outro',
+      value:Number(p.value)||0,
+      monthYear:date?`${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`:'—',
+      source:String(p.source||'').trim()||'—',
+      note:String(p.note||p.observation||'').trim()||'—'
+    };
+  }).sort((a,b)=>String(b.date).localeCompare(String(a.date))||a.ticker.localeCompare(b.ticker,'pt-BR'));
+}
+function reportFixedIncomeRows(){
+  return rfIntelligenceSnapshot().assets.map(row=>({
+    ticker:row.ticker,
+    title:row.name,
+    type:row.category||row.subtype,
+    subtype:row.subtype,
+    indexer:row.indexer,
+    applied:row.applied,
+    current:row.current,
+    profit:row.profit,
+    resultPct:row.pct,
+    rate:row.rate,
+    applicationDate:reportDateText(assetRfApplicationDate(row.asset)),
+    maturityDate:row.due?row.due.toLocaleDateString('pt-BR'):'—',
+    status:row.issues.length?row.issues.map(issue=>issue.label).join(' | '):'Organizado',
+    valueSource:[row.currentMeta?.source,row.currentMeta?.origin].filter(Boolean).join(' · ')||'—'
+  }));
+}
+function reportPatrimonyRows(){
+  let months=12;
+  if(reportsPeriod()==='year') months=new Date().getMonth()+1;
+  if(reportsPeriod()==='all'){
+    const dates=(S.aportes||[]).map(a=>parseAnyDate(a.date)).filter(Boolean).sort((a,b)=>a-b);
+    months=dates.length ? Math.max(3,(new Date().getFullYear()-dates[0].getFullYear())*12+new Date().getMonth()-dates[0].getMonth()+1) : 12;
+  }
+  const data=patrimonySnapshot(months);
+  return data.months.map(row=>({
+    period:row.label,
+    contribution:row.aporte,
+    accumulatedContributions:row.cumulative,
+    estimatedPatrimony:row===data.months[data.months.length-1]?data.summary.tC:'',
+    estimatedEvolution:row===data.months[data.months.length-1]?data.summary.tG:'',
+    note:'Valores de patrimônio e evolução podem conter estimativas baseadas nos dados cadastrados.'
+  }));
+}
+function reportAuditRows(){
+  return dataAuditSnapshot().alerts.map(alert=>({
+    severity:dataAuditSeverityLabel(alert.severity),
+    area:alert.area,
+    item:alert.item,
+    problem:alert.problem,
+    impact:alert.impact,
+    suggestion:alert.fix
+  }));
+}
+function buildReportRows(type){
+  if(type==='assets') return reportAssetRows();
+  if(type==='proventos') return reportProventoRows();
+  if(type==='fixed') return reportFixedIncomeRows();
+  if(type==='patrimony') return reportPatrimonyRows();
+  if(type==='audit') return reportAuditRows();
+  return [];
+}
+function reportHeaders(type){
+  const headers={
+    assets:['Ticker','Ativo','Classe','Setor','Quantidade','Preço médio','Preço atual','Valor aplicado','Valor atual','Resultado R$','Resultado %','Fonte','Atualizado em'],
+    proventos:['Data','Ticker','Ativo','Tipo de evento','Categoria','Valor','Mês/Ano','Fonte','Observação'],
+    fixed:['Ticker','Título','Tipo','Subtipo','Indexador','Valor aplicado','Valor atual/líquido','Ganho estimado','Rentabilidade %','Taxa','Data aplicação','Vencimento','Status/alerta','Fonte do valor'],
+    patrimony:['Período','Aportes do mês','Aportes acumulados','Patrimônio estimado','Evolução estimada','Observação'],
+    audit:['Severidade','Área','Item afetado','Problema','Impacto','Sugestão de correção']
+  };
+  return headers[type]||[];
+}
+function reportRowValues(type,row){
+  if(type==='assets') return [row.ticker,row.name,row.type,row.sector,row.qty,reportNumber(row.avgPrice),reportNumber(row.currentPrice),reportNumber(row.applied),reportNumber(row.current),reportNumber(row.result),reportNumber(row.resultPct),row.source,row.updatedAt];
+  if(type==='proventos') return [row.date,row.ticker,row.assetName,row.eventType,row.category,reportNumber(row.value),row.monthYear,row.source,row.note];
+  if(type==='fixed') return [row.ticker,row.title,row.type,row.subtype,row.indexer,reportNumber(row.applied),reportNumber(row.current),reportNumber(row.profit),reportNumber(row.resultPct),row.rate,row.applicationDate,row.maturityDate,row.status,row.valueSource];
+  if(type==='patrimony') return [row.period,reportNumber(row.contribution),reportNumber(row.accumulatedContributions),row.estimatedPatrimony===''?'':reportNumber(row.estimatedPatrimony),row.estimatedEvolution===''?'':reportNumber(row.estimatedEvolution),row.note];
+  if(type==='audit') return [row.severity,row.area,row.item,row.problem,row.impact,row.suggestion];
+  return [];
+}
+function reportCsvSection(type,title){
+  const rows=buildReportRows(type);
+  const lines=[title,reportHeaders(type).map(csvEscape).join(';')];
+  rows.forEach(row=>lines.push(reportRowValues(type,row).map(csvEscape).join(';')));
+  return lines.join('\r\n');
+}
+function reportSummaryCsv(){
+  const data=reportsSnapshot();
+  const rows=[
+    ['Período',data.periodLabel],
+    ['Patrimônio atual estimado',reportNumber(data.portfolio.tC)],
+    ['Valor aplicado',reportNumber(data.portfolio.tI)],
+    ['Ganho/perda de capital',reportNumber(data.portfolio.tG)],
+    ['Renda passiva média 12M',reportNumber(data.income.monthlyAvg)],
+    ['Quantidade de ativos',data.assetsCount],
+    ['Proventos no período',data.proventosCount],
+    ['Títulos de renda fixa',data.fixedCount],
+    ['Alertas de auditoria',data.auditCount]
+  ];
+  return ['RESUMO_GERAL',['Indicador','Valor'].map(csvEscape).join(';'),...rows.map(row=>row.map(csvEscape).join(';'))].join('\r\n');
+}
+function reportGoalsCsv(){
+  const goals=normalizeGoals(S.goals||{});
+  const rows=[
+    ['Meta de patrimônio',reportNumber(goals.patrimonio?.target)],
+    ['Aporte mensal planejado',reportNumber(goals.patrimonio?.aporte)],
+    ['Objetivo mensal de dividendos',reportNumber(goals.proventos?.monthly)],
+    ['Tipos considerados em proventos',(goals.proventos?.types||[]).join(' | ')||'—'],
+    ['Tipo da meta de ativos',goals.ativos?.type||'—'],
+    ['Ticker da meta de ativos',goals.ativos?.ticker||'—'],
+    ['Aporte planejado em ativos',reportNumber(goals.ativos?.aporte)]
+  ];
+  return ['METAS',['Indicador','Valor'].map(csvEscape).join(';'),...rows.map(row=>row.map(csvEscape).join(';'))].join('\r\n');
+}
+function buildReportPayload(type){
+  const snapshot=reportsSnapshot();
+  const metadata={
+    app:APP_NAME,
+    reportType:type,
+    reportVersion:1,
+    generatedAt:snapshot.generatedAt,
+    period:snapshot.period,
+    periodLabel:snapshot.periodLabel,
+    purpose:'Relatório para consulta e exportação. Não substitui o backup de restauração.'
+  };
+  if(type==='complete'){
+    return {metadata,summary:snapshot,assets:reportAssetRows(),proventos:reportProventoRows(),fixedIncome:reportFixedIncomeRows(),patrimony:reportPatrimonyRows(),goals:cloneData(S.goals||{}),audit:reportAuditRows()};
+  }
+  return {metadata,summary:snapshot,rows:buildReportRows(type)};
+}
+function exportReportCSV(type){
+  return withVisibleValues(()=>{
+    try{
+      if(type==='irpf'){ irpfExportCSV(); return; }
+      const types=type==='complete'?['assets','proventos','fixed','patrimony','audit']:[type];
+      const hasData=types.some(key=>buildReportRows(key).length);
+      if(!hasData){ toast('Não há dados suficientes para este relatório.','#fbbf24'); return; }
+      const sections=types.map(key=>reportCsvSection(key,{
+        assets:'ATIVOS',proventos:'DIVIDENDOS_E_PROVENTOS',fixed:'RENDA_FIXA',patrimony:'PATRIMONIO',audit:'AUDITORIA_DE_DADOS'
+      }[key])).join('\r\n\r\n');
+      const body=type==='complete'
+        ? [reportSummaryCsv(),sections,reportGoalsCsv()].join('\r\n\r\n')
+        : sections;
+      const header=[csvEscape(APP_NAME),csvEscape(`Relatório: ${type}`),csvEscape(`Período: ${reportsPeriodLabel()}`),csvEscape(`Gerado em: ${new Date().toLocaleString('pt-BR')}`)].join(';');
+      downloadTextFile(reportFilename(type,'csv'),`\ufeff${header}\r\n\r\n${body}`,'text/csv;charset=utf-8');
+      toast('✅ Relatório exportado com sucesso.');
+    }catch(error){
+      console.error('exportReportCSV erro:',error);
+      toast('Erro ao gerar relatório. Nenhum dado foi alterado.','#f87171');
+    }
+  });
+}
+function exportReportJSON(type){
+  return withVisibleValues(()=>{
+    try{
+      const payload=buildReportPayload(type);
+      const hasData=type==='complete'
+        ? payload.assets.length||payload.proventos.length||payload.fixedIncome.length
+        : payload.rows.length;
+      if(!hasData){ toast('Não há dados suficientes para este relatório.','#fbbf24'); return; }
+      downloadTextFile(reportFilename(type,'json'),JSON.stringify(payload,null,2),'application/json;charset=utf-8');
+      toast('✅ Relatório JSON exportado com sucesso.');
+    }catch(error){
+      console.error('exportReportJSON erro:',error);
+      toast('Erro ao gerar relatório JSON. Nenhum dado foi alterado.','#f87171');
+    }
+  });
+}
+function reportExportCard(icon,title,description,type,formats=['csv','json']){
+  const generated=new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+  return `<article class="report-export-card">
+    <div class="report-export-card-head">
+      <div class="report-export-icon">${icon}</div>
+      <div style="min-width:0">
+        <div class="report-export-title">${esc(title)}</div>
+        <div class="report-export-desc">${esc(description)}</div>
+      </div>
+    </div>
+    <div class="report-export-meta">
+      ${formats.map(format=>`<span class="report-format">${format.toUpperCase()}</span>`).join('')}
+      <span class="report-format">${esc(reportsPeriodLabel())}</span>
+    </div>
+    <div class="report-export-desc">Geração: ${esc(generated)}</div>
+    <div class="report-export-actions">
+      ${formats.includes('csv')?`<button class="btn bgh" onclick="exportReportCSV('${type}')">Exportar CSV</button>`:''}
+      ${formats.includes('json')?`<button class="btn bsv" onclick="exportReportJSON('${type}')">Exportar JSON</button>`:''}
+    </div>
+  </article>`;
+}
+function reportsTab(){
+  const data=reportsSnapshot();
+  const cards=[
+    reportExportCard('🗂️','Carteira completa','Resumo, ativos, proventos, renda fixa, patrimônio, metas e auditoria.','complete'),
+    reportExportCard('💼','Ativos','Posições, preços, valores aplicados, valores atuais e resultados.','assets'),
+    reportExportCard('💸','Dividendos e proventos','Recebimentos por ativo, evento, mês, fonte e observação.','proventos'),
+    reportExportCard('🏦','Renda Fixa','Títulos, taxas, valores, vencimentos, fontes e alertas.','fixed'),
+    reportExportCard('🏛️','Patrimônio','Evolução por período, aportes e patrimônio estimado.','patrimony'),
+    reportExportCard('🔎','Auditoria de Dados','Alertas, impactos e sugestões de correção sem alterar registros.','audit'),
+    reportExportCard('🧾','IRPF auxiliar','Atalho para a exportação fiscal auxiliar já existente. Confira com informes oficiais.','irpf',['csv']),
+    reportExportCard('📦','Dados completos em JSON','Relatório estruturado para consulta. Não é arquivo de restauração.','complete',['json'])
+  ].join('');
+  return `<div class="reports-shell">
+    <section class="reports-hero">
+      <div class="reports-head">
+        <div>
+          <div class="reports-title">Relatórios e Exportações</div>
+          <div class="reports-sub">Gere arquivos organizados para análise e conferência. Esta área é somente leitura e não substitui o Backup e restauração.</div>
+        </div>
+        <div class="reports-filter">
+          <button class="${reportsPeriod()==='year'?'on':''}" onclick="setReportsPeriod('year')">Ano atual</button>
+          <button class="${reportsPeriod()==='12m'?'on':''}" onclick="setReportsPeriod('12m')">Últimos 12 meses</button>
+          <button class="${reportsPeriod()==='all'?'on':''}" onclick="setReportsPeriod('all')">Todos</button>
+        </div>
+      </div>
+      <div class="reports-kpis">
+        <div class="reports-kpi"><div class="label">Patrimônio atual</div><div class="value">${fmt(data.portfolio.tC)}</div><div class="sub">Estimativa pelos ativos cadastrados</div></div>
+        <div class="reports-kpi"><div class="label">Valor aplicado</div><div class="value">${fmt(data.portfolio.tI)}</div><div class="sub">Base consolidada da carteira</div></div>
+        <div class="reports-kpi"><div class="label">Renda média 12M</div><div class="value">${fmt(data.income.monthlyAvg)}</div><div class="sub">Histórico real de proventos</div></div>
+        <div class="reports-kpi"><div class="label">Ativos</div><div class="value">${data.assetsCount}</div><div class="sub">${data.fixedCount} título(s) de renda fixa</div></div>
+        <div class="reports-kpi"><div class="label">Proventos no filtro</div><div class="value">${data.proventosCount}</div><div class="sub">${esc(data.periodLabel)}</div></div>
+        <div class="reports-kpi"><div class="label">Renda Fixa</div><div class="value">${fmt(data.fixed.totalCurrent)}</div><div class="sub">Valor atual/líquido informado</div></div>
+        <div class="reports-kpi"><div class="label">Alertas de auditoria</div><div class="value">${data.auditCount}</div><div class="sub">Somente para conferência</div></div>
+        <div class="reports-kpi"><div class="label">Gerado em</div><div class="value">${new Date().toLocaleDateString('pt-BR')}</div><div class="sub">${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>
+      </div>
+    </section>
+    <section class="reports-grid">${cards}</section>
+    <div class="reports-footnote">CSV usa ponto e vírgula, preserva acentos e abre corretamente no Excel em português. O JSON desta tela é um relatório de consulta; para restaurar dados em outro navegador, use Configurações → Backup e restauração.</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════
 function render(){
@@ -10327,7 +10698,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['auditoria','🔎 Auditoria'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['auditoria','🔎 Auditoria'],['relatorios','📑 Relatórios'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -10378,6 +10749,7 @@ function content(){
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
   if(S.tab==='auditoria') return dataAuditTab();
+  if(S.tab==='relatorios')return reportsTab();
   if(S.tab==='ia')        return iaTab();
   return'';
 }
@@ -12884,7 +13256,7 @@ function mobileBottomNav(){
     <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"><span class="ni">💼</span><span>Ativos</span></button>
     <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"><span class="ni">💰</span><span>Aportes</span></button>
     <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"><span class="ni">📅</span><span>Dividendos</span></button>
-    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()"><span class="ni">☰</span><span>Menu</span></button>
+    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()"><span class="ni">☰</span><span>Menu</span></button>
   </nav>`;
 }
 function mobileMenuDrawer(){
@@ -12901,6 +13273,7 @@ function mobileMenuDrawer(){
         <button onclick="mobileMenuClose();go('metas')">🎯 Metas</button>
         <button onclick="mobileMenuClose();go('ajudar')">⚖️ Rebalancear</button>
         <button onclick="mobileMenuClose();go('auditoria')">🔎 Auditoria</button>
+        <button onclick="mobileMenuClose();go('relatorios')">📑 Relatórios</button>
         <button class="focus" onclick="mobileMenuClose();go('ia')">🤖 IA</button>
         <button onclick="mobileMenuClose();go('irpf')">🧾 IRPF</button>
       </div>
