@@ -467,6 +467,43 @@ button{cursor:pointer;font-family:inherit}
 .irpf-summary-card.warn .analysis-summary-value{color:#fbbf24}
 .irpf-summary-card.danger .analysis-summary-value{color:#f87171}
 .irpf-summary-card.muted .analysis-summary-value{color:#94a3b8}
+.data-audit-shell{display:flex;flex-direction:column;gap:12px}
+.data-audit-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:16px;padding:14px;background:linear-gradient(135deg,#10182a,#0c1220 62%,#11182a)}
+.data-audit-hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-85px;top:-100px;background:rgba(56,189,248,.1);pointer-events:none}
+.data-audit-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
+.data-audit-title{font-size:17px;font-weight:900;color:#edf3ff}
+.data-audit-sub{font-size:11px;color:#94a3b8;line-height:1.45;margin-top:4px;max-width:760px}
+.data-audit-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.data-audit-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px;position:relative;z-index:1}
+.data-audit-card{border:1px solid #1d2940;border-radius:11px;background:rgba(9,12,21,.68);padding:9px;min-width:0}
+.data-audit-card-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.data-audit-card-value{font-size:15px;font-weight:900;color:#edf3ff;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.data-audit-card.critical .data-audit-card-value{color:#f87171}
+.data-audit-card.warning .data-audit-card-value{color:#fbbf24}
+.data-audit-card.info .data-audit-card-value{color:#60a5fa}
+.data-audit-card.ok .data-audit-card-value{color:#34d399}
+.data-audit-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 11px;border:1px solid #1d2940;border-radius:13px;background:#0d1320}
+.data-audit-filter-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.data-audit-filter-label{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+.data-audit-chip{border:1px solid #27344b;background:#141d2f;color:#94a3b8;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:750;white-space:nowrap}
+.data-audit-chip.on{border-color:rgba(96,165,250,.4);background:rgba(59,130,246,.12);color:#bfdbfe}
+.data-audit-list{display:flex;flex-direction:column;gap:8px}
+.data-audit-alert{display:grid;grid-template-columns:110px minmax(120px,.75fr) minmax(130px,.9fr) minmax(220px,1.5fr) minmax(220px,1.5fr);gap:10px;align-items:start;padding:11px;border:1px solid #182033;border-radius:12px;background:#0b1020;min-width:0}
+.data-audit-alert.critical{border-left:3px solid #f87171}
+.data-audit-alert.warning{border-left:3px solid #fbbf24}
+.data-audit-alert.info{border-left:3px solid #60a5fa}
+.data-audit-severity{display:inline-flex;width:max-content;max-width:100%;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:850;white-space:nowrap}
+.data-audit-severity.critical{color:#fecaca;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25)}
+.data-audit-severity.warning{color:#fde68a;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25)}
+.data-audit-severity.info{color:#bfdbfe;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25)}
+.data-audit-area{font-size:10px;color:#94a3b8;font-weight:800}
+.data-audit-item{font-size:11px;color:#e2eaf6;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.data-audit-problem{font-size:11px;color:#cbd5e1;line-height:1.4}
+.data-audit-impact{font-size:10px;color:#7489a4;line-height:1.4;margin-top:3px}
+.data-audit-fix{font-size:10px;color:#a7f3d0;line-height:1.4}
+.data-audit-empty{padding:28px 16px;text-align:center;border:1px dashed #26344b;border-radius:13px;background:#0b1020;color:#94a3b8;font-size:12px;line-height:1.5}
+.data-audit-areas{display:flex;gap:6px;flex-wrap:wrap}
+.data-audit-area-pill{font-size:9px;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 7px}
 .premium-mobile-only{display:none}
 .perf-grid{display:grid;grid-template-columns:minmax(280px,1.08fr) repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 .perf-card{background:#111828;border:1px solid #1d2940;border-radius:14px;padding:12px 12px 10px}
@@ -1308,6 +1345,27 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .backup-grid,.backup-summary{grid-template-columns:1fr!important}
   .backup-card .cv,.backup-summary .cv{font-size:16px}
   .backup-note{font-size:10px}
+  .data-audit-hero{padding:11px;border-radius:12px}
+  .data-audit-head{display:block}
+  .data-audit-title{font-size:14px}
+  .data-audit-sub{font-size:9px;line-height:1.35}
+  .data-audit-actions{justify-content:flex-start;margin-top:9px}
+  .data-audit-actions .btn{width:100%}
+  .data-audit-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
+  .data-audit-card{padding:8px}
+  .data-audit-card:last-child{grid-column:1/-1}
+  .data-audit-card-label{font-size:8px}
+  .data-audit-card-value{font-size:13px}
+  .data-audit-filters{display:block;padding:9px;overflow:hidden}
+  .data-audit-filter-group{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-top:5px;scrollbar-width:none}
+  .data-audit-filter-group::-webkit-scrollbar{display:none}
+  .data-audit-chip{flex:0 0 auto;min-height:38px;padding:7px 10px}
+  .data-audit-alert{grid-template-columns:1fr 1fr;gap:7px;padding:9px}
+  .data-audit-alert>div:nth-child(3),
+  .data-audit-alert>div:nth-child(4),
+  .data-audit-alert>div:nth-child(5){grid-column:1/-1}
+  .data-audit-problem{font-size:10px}
+  .data-audit-impact,.data-audit-fix{font-size:9px}
 }
 @media(max-width:640px){
   html,body,#root{width:100%;max-width:100%;overflow-x:hidden}
@@ -8828,6 +8886,226 @@ function irpfTab(){
   return irpfTabPremium();
 }
 
+const DATA_AUDIT_AREAS=['Ativos','Dividendos/Proventos','Renda Fixa','Patrimônio','IRPF','Metas','Backup/Configurações'];
+function dataAuditSeverityLabel(severity){
+  return severity==='critical' ? 'Crítico' : severity==='warning' ? 'Atenção' : 'Info';
+}
+function dataAuditItemName(item, fallback='Registro'){
+  return String(item?.ticker||item?.name||item?.product||item?.assetName||item?.title||fallback).trim() || fallback;
+}
+function dataAuditAlerts(){
+  const alerts=[];
+  let checks=0;
+  let failed=0;
+  const add=(severity,area,item,problem,impact,fix)=>{
+    alerts.push({
+      id:`audit-${alerts.length+1}`,
+      severity,area,
+      item:String(item||'Registro'),
+      problem:String(problem||'Dado incompleto.'),
+      impact:String(impact||'Pode reduzir a confiabilidade das análises.'),
+      fix:String(fix||'Revise o cadastro manualmente.')
+    });
+  };
+  const check=(ok,alert)=>{
+    checks++;
+    if(ok) return;
+    failed++;
+    add(...alert);
+  };
+
+  (S.assets||[]).forEach((asset,index)=>{
+    const item=dataAuditItemName(asset,`Ativo ${index+1}`);
+    const ticker=String(asset?.ticker||'').trim();
+    const rawType=String(asset?.type||asset?.category||'').trim();
+    const qty=Number(asset?.qty);
+    const avg=Number(asset?.avg_price);
+    const current=Number(asset?.current_price);
+    check(!!ticker,['critical','Ativos',item,'Ativo sem ticker/código.','Pode impedir identificação, cotação, agrupamento e conferência no IRPF.','Edite o ativo e informe um ticker ou código válido.']);
+    check(!!rawType,['critical','Ativos',item,'Ativo sem tipo ou classe.','Afeta Dashboard, distribuição, análise e classificação no IRPF.','Informe a classe correta, como Ação, FII, ETF ou Renda Fixa.']);
+    check(Number.isFinite(qty)&&qty>0,['critical','Ativos',item,'Quantidade ausente, zerada ou inválida.','Compromete valor atual, concentração e rentabilidade.','Revise a quantidade da posição.']);
+    check(Number.isFinite(avg)&&avg>0,['critical','Ativos',item,'Preço médio/custo de aquisição ausente.','Compromete resultado acumulado, Patrimônio e Bens e Direitos.','Informe o preço médio ou custo de aquisição correto.']);
+    check(Number.isFinite(current)&&current>0,['warning','Ativos',item,'Preço atual ou valor de referência ausente.','Reduz a confiabilidade do patrimônio, concentração e análise.','Atualize a cotação de mercado ou informe o valor atual quando aplicável.']);
+    check(![qty,avg,current].some(v=>Number.isFinite(v)&&v<0),['critical','Ativos',item,'Valor negativo incoerente no cadastro.','Pode inverter totais e distorcer cálculos principais.','Revise quantidade, preço médio e preço atual.']);
+
+    if(isRendaFixaAsset(asset)){
+      const values=rfValues(asset);
+      const subtype=String(asset?.rf_subtype||asset?.fixed_subtype||asset?.bondType||asset?.sector||'').trim();
+      const rate=String(asset?.rf_contract_rate||asset?.fixed_rate||asset?.rate||'').trim();
+      const maturity=String(asset?.rf_maturity_date||asset?.fixed_maturity_date||asset?.maturityDate||asset?.vencimento||'').trim();
+      const maturityDate=parseAnyDate(maturity);
+      const issuer=String(asset?.fixed_issuer||asset?.issuer||asset?.institution||asset?.broker||'').trim();
+      check(!!subtype,['warning','Renda Fixa',item,'Título sem tipo/subtipo definido.','Dificulta agrupamento e leitura da carteira de renda fixa.','Informe se é CDB, LCI, LCA, Tesouro, Debênture ou outro.']);
+      check(Number(values.applied)>0,['critical','Renda Fixa',item,'Valor aplicado ausente ou zerado.','Impede calcular ganho e rentabilidade da posição.','Informe o valor efetivamente aplicado.']);
+      check(!!values.hasExplicitCurrent&&Number(values.current)>0,['warning','Renda Fixa',item,'Valor atual, bruto ou líquido não informado.','O app usa o valor aplicado como referência e não acompanha o rendimento real.','Informe o valor atual apresentado pela corretora ou instituição.']);
+      check(!!rate,['warning','Renda Fixa',item,'Taxa contratada ausente.','Impede uma leitura completa do título e estimativas futuras.','Informe a taxa, como 100% CDI, IPCA + taxa ou prefixado.']);
+      check(!!maturity&&!!maturityDate,['warning','Renda Fixa',item,'Data de vencimento ausente ou inválida.','Impede alertas de vencimento e planejamento de liquidez.','Informe a data de vencimento correta.']);
+      if(maturityDate && maturityDate.getTime()<new Date().setHours(0,0,0,0)){
+        add('warning','Renda Fixa',item,'Título vencido sem baixa ou status claro.','Pode manter valor vencido como posição ativa.','Confirme resgate, liquidação ou atualização da posição.');
+      }
+      if(!(Number(values.applied)>0 && Number(values.current)>0 && rate && maturityDate)){
+        add('info','Renda Fixa',item,'Dados insuficientes para estimativa completa.','A projeção até o vencimento fica limitada.','Complete valor, taxa e vencimento usando o informe da instituição.');
+      }
+      check(!!issuer,['info','IRPF',item,'Renda fixa sem instituição ou emissor.','Pode dificultar a descrição e conferência com o informe oficial.','Informe instituição, banco ou emissor do título.']);
+      check(!!maturity,['warning','IRPF',item,'Renda fixa sem vencimento para conferência.','Deixa o relatório auxiliar de IRPF incompleto.','Informe o vencimento e confira com o documento oficial.']);
+    }
+
+    check(!!rawType,['critical','IRPF',item,'Ativo sem classe para Bens e Direitos.','Pode impedir a classificação adequada no relatório auxiliar.','Defina o tipo do ativo e confira o código aplicável no programa oficial.']);
+    check(Number.isFinite(avg)&&avg>0,['critical','IRPF',item,'Ativo sem custo de aquisição confiável.','O valor de Bens e Direitos pode ficar incompleto.','Revise preço médio e operações usando notas e informes oficiais.']);
+  });
+
+  (S.proventos||[]).forEach((prov,index)=>{
+    const item=dataAuditItemName(prov,`Provento ${index+1}`);
+    const dateRaw=String(prov?.date||prov?.paymentDate||'').trim();
+    const date=parseAnyDate(dateRaw);
+    const ticker=String(prov?.ticker||prov?.assetName||'').trim();
+    const value=Number(prov?.value);
+    const rawType=String(prov?.eventType||prov?.type||prov?.category||'').trim();
+    check(!!dateRaw&&!!date,['critical','Dividendos/Proventos',item,'Provento sem data válida.','Afeta histórico mensal, média de 12 meses e IRPF.','Informe a data real do pagamento.']);
+    check(!!ticker,['warning','Dividendos/Proventos',item,'Provento sem ativo identificado.','Dificulta ranking de pagadores e conferência por ativo.','Informe ticker ou nome do ativo.']);
+    check(Number.isFinite(value)&&value>0,['critical','Dividendos/Proventos',item,'Provento com valor ausente, zerado ou negativo.','Distorce totais mensais, renda passiva e relatório anual.','Revise o valor líquido recebido.']);
+    check(!!rawType,['warning','Dividendos/Proventos',item,'Provento sem categoria ou tipo de evento.','Prejudica separação entre Dividendos, JCP, FIIs e Renda Fixa.','Classifique o evento corretamente.']);
+    check(!!rawType,['warning','IRPF',item,'Provento sem categoria fiscal auxiliar.','Pode ficar fora do agrupamento correto do relatório IRPF.','Confira o tipo do evento com o informe oficial.']);
+  });
+
+  const validContributionMonths=new Set();
+  const validContributionDates=[];
+  (S.aportes||[]).forEach((entry,index)=>{
+    const item=dataAuditItemName(entry,`Lançamento ${index+1}`);
+    const rawDate=String(entry?.date||'').trim();
+    const date=parseAnyDate(rawDate);
+    const qty=Number(entry?.qty);
+    const price=Number(entry?.price);
+    const total=Number(entry?.totalValue ?? entry?.value ?? ((Number.isFinite(qty)&&Number.isFinite(price))?Math.abs(qty*price):0));
+    check(!!rawDate&&!!date,['critical','Patrimônio',item,'Registro de aporte com data inválida.','Pode quebrar a ordem cronológica e a evolução mensal.','Corrija a data do lançamento.']);
+    check(![qty,price,total].some(v=>Number.isFinite(v)&&v<0),['critical','Patrimônio',item,'Registro com quantidade, preço ou valor negativo incoerente.','Pode inverter aportes e distorcer patrimônio aplicado.','Use o tipo da operação para Compra/Venda e mantenha valores absolutos válidos.']);
+    if(date){
+      validContributionDates.push(date);
+      validContributionMonths.add(`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`);
+    }
+  });
+  if(validContributionDates.length){
+    const sorted=validContributionDates.sort((a,b)=>a-b);
+    const cursor=new Date(sorted[0].getFullYear(),sorted[0].getMonth(),1);
+    const end=new Date(sorted.at(-1).getFullYear(),sorted.at(-1).getMonth(),1);
+    const missing=[];
+    while(cursor<=end && missing.length<120){
+      const key=`${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}`;
+      if(!validContributionMonths.has(key)) missing.push(cursor.toLocaleDateString('pt-BR',{month:'2-digit',year:'numeric'}));
+      cursor.setMonth(cursor.getMonth()+1);
+    }
+    if(missing.length) add('info','Patrimônio',`${missing.length} mês${missing.length===1?'':'es'}`,'Existem meses sem registro de aporte no intervalo analisado.','A evolução mensal pode ter períodos sem movimento, reduzindo a leitura comparativa.','Confirme se realmente não houve aporte nesses meses.');
+  }
+  if(validContributionMonths.size<2){
+    add('warning','Patrimônio','Evolução mensal','Poucos meses com dados válidos.','Não há histórico suficiente para uma evolução patrimonial confiável.','Mantenha os aportes históricos com datas corretas.');
+  }
+
+  const target=passiveIncomeGoalTarget();
+  check(target>0,['warning','Metas','Renda passiva','Meta mensal de renda passiva ausente ou zerada.','Dashboard e acompanhamento de progresso ficam sem referência.','Defina o objetivo mensal de dividendos na aba Metas.']);
+  const currentGoal=Number(S.goals?.proventos?.monthly)||0;
+  const legacyGoal=Number(S.divGoal)||0;
+  if(currentGoal>0 && legacyGoal>0 && Math.abs(currentGoal-legacyGoal)>0.01){
+    add('info','Metas','Renda passiva','Existem valores diferentes entre a meta atual e o campo legado.','O app usa a meta atual primeiro, mas a diferença pode causar dúvida em conferências antigas.','Mantenha a meta atual na aba Metas e confira backups antigos antes de restaurar.');
+  }
+
+  const localRecords=(S.assets?.length||0)+(S.aportes?.length||0)+(S.proventos?.length||0);
+  if(localRecords>0){
+    add('info','Backup/Configurações','Proteção dos dados','A auditoria não consegue confirmar quando o último backup foi exportado.','Dados somente locais podem ser perdidos ao limpar o navegador ou trocar de computador.','Exporte um backup JSON recente em Configurações > Backup e restauração.');
+  }
+
+  return {alerts,checks,failed};
+}
+function dataAuditSnapshot(){
+  const data=dataAuditAlerts();
+  const counts={critical:0,warning:0,info:0};
+  const areas={};
+  data.alerts.forEach(alert=>{
+    counts[alert.severity]=(counts[alert.severity]||0)+1;
+    areas[alert.area]=(areas[alert.area]||0)+1;
+  });
+  const score=data.checks>0 ? Math.max(0,Math.round(((data.checks-data.failed)/data.checks)*100)) : 100;
+  const affected=Object.entries(areas).sort((a,b)=>b[1]-a[1]);
+  return {...data,counts,areas,affected,score};
+}
+function setDataAuditSeverity(value){
+  S.dataAuditSeverity=String(value||'all');
+  render();
+}
+function setDataAuditArea(value){
+  S.dataAuditArea=String(value||'all');
+  render();
+}
+function rerunDataAudit(){
+  S.dataAuditRunAt=new Date();
+  render();
+  toast('Auditoria reexecutada. Nenhum dado foi alterado.');
+}
+function renderAuditAlertCard(alert){
+  return `<article class="data-audit-alert ${esc(alert.severity)}">
+    <div><span class="data-audit-severity ${esc(alert.severity)}">${dataAuditSeverityLabel(alert.severity)}</span></div>
+    <div class="data-audit-area">${esc(alert.area)}</div>
+    <div class="data-audit-item" title="${esc(alert.item)}">${esc(alert.item)}</div>
+    <div>
+      <div class="data-audit-problem">${esc(alert.problem)}</div>
+      <div class="data-audit-impact">${esc(alert.impact)}</div>
+    </div>
+    <div class="data-audit-fix">${esc(alert.fix)}</div>
+  </article>`;
+}
+function dataAuditTab(){
+  const snapshot=dataAuditSnapshot();
+  const severity=String(S.dataAuditSeverity||'all');
+  const area=String(S.dataAuditArea||'all');
+  const filtered=snapshot.alerts.filter(alert=>
+    (severity==='all'||alert.severity===severity) &&
+    (area==='all'||alert.area===area)
+  );
+  const severityChips=[
+    ['all','Todos'],
+    ['critical','Críticos'],
+    ['warning','Atenção'],
+    ['info','Info']
+  ].map(([value,label])=>`<button class="data-audit-chip ${severity===value?'on':''}" onclick="setDataAuditSeverity('${value}')">${label}</button>`).join('');
+  const areaChips=[['all','Todas'],...DATA_AUDIT_AREAS.map(value=>[value,value])]
+    .map(([value,label])=>`<button class="data-audit-chip ${area===value?'on':''}" onclick="setDataAuditArea(${JSON.stringify(value)})">${esc(label)}</button>`).join('');
+  const affected=snapshot.affected.length
+    ? snapshot.affected.slice(0,5).map(([name,count])=>`<span class="data-audit-area-pill">${esc(name)} · ${count}</span>`).join('')
+    : '<span class="data-audit-area-pill">Nenhuma área afetada</span>';
+  const runAt=S.dataAuditRunAt instanceof Date ? S.dataAuditRunAt : new Date();
+  return `<div class="data-audit-shell">
+    <section class="data-audit-hero">
+      <div class="data-audit-head">
+        <div>
+          <div class="data-audit-title">Auditoria de Dados</div>
+          <div class="data-audit-sub">A auditoria não altera seus dados. Use esta tela para revisar cadastros incompletos. Dados incompletos podem afetar Dashboard, IRPF, Renda Fixa e Patrimônio.</div>
+        </div>
+        <div class="data-audit-actions">
+          <button class="btn bgh" onclick="rerunDataAudit()">Reexecutar auditoria</button>
+        </div>
+      </div>
+      <div class="data-audit-summary">
+        <div class="data-audit-card ${snapshot.alerts.length?'warning':'ok'}"><div class="data-audit-card-label">Total de alertas</div><div class="data-audit-card-value">${snapshot.alerts.length}</div></div>
+        <div class="data-audit-card critical"><div class="data-audit-card-label">Críticos</div><div class="data-audit-card-value">${snapshot.counts.critical}</div></div>
+        <div class="data-audit-card warning"><div class="data-audit-card-label">Atenção</div><div class="data-audit-card-value">${snapshot.counts.warning}</div></div>
+        <div class="data-audit-card info"><div class="data-audit-card-label">Informativos</div><div class="data-audit-card-value">${snapshot.counts.info}</div></div>
+        <div class="data-audit-card ${snapshot.score>=90?'ok':snapshot.score>=70?'warning':'critical'}"><div class="data-audit-card-label">Completude aproximada</div><div class="data-audit-card-value">${snapshot.score}%</div></div>
+      </div>
+    </section>
+    <div class="data-audit-filters">
+      <div class="data-audit-filter-group"><span class="data-audit-filter-label">Severidade</span>${severityChips}</div>
+      <div class="data-audit-filter-group"><span class="data-audit-filter-label">Área</span>${areaChips}</div>
+    </div>
+    <div class="data-audit-areas">
+      ${affected}
+      <span class="data-audit-area-pill">Executada às ${runAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+      <span class="data-audit-area-pill">${filtered.length} exibido${filtered.length===1?'':'s'}</span>
+    </div>
+    <div class="data-audit-list">
+      ${filtered.length ? filtered.map(renderAuditAlertCard).join('') : '<div class="data-audit-empty">Nenhum alerta corresponde aos filtros atuais. A auditoria não modificou nenhum cadastro.</div>'}
+    </div>
+  </div>`;
+}
+
 function rentBenchRate(name){
   return Number(RENT_BENCH[String(name||'CDI').toUpperCase()] ?? RENT_BENCH.CDI);
 }
@@ -9818,7 +10096,7 @@ function render(){
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['auditoria','🔎 Auditoria'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -9868,6 +10146,7 @@ function content(){
   if(S.tab==='irpf')      return irpfTabPremium();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
+  if(S.tab==='auditoria') return dataAuditTab();
   if(S.tab==='ia')        return iaTab();
   return'';
 }
@@ -12374,7 +12653,7 @@ function mobileBottomNav(){
     <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"><span class="ni">💼</span><span>Ativos</span></button>
     <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"><span class="ni">💰</span><span>Aportes</span></button>
     <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"><span class="ni">📅</span><span>Dividendos</span></button>
-    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()"><span class="ni">☰</span><span>Menu</span></button>
+    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()"><span class="ni">☰</span><span>Menu</span></button>
   </nav>`;
 }
 function mobileMenuDrawer(){
@@ -12390,6 +12669,7 @@ function mobileMenuDrawer(){
         <button onclick="mobileMenuClose();go('renda-fixa')">💼 Renda Fixa</button>
         <button onclick="mobileMenuClose();go('metas')">🎯 Metas</button>
         <button onclick="mobileMenuClose();go('ajudar')">⚖️ Rebalancear</button>
+        <button onclick="mobileMenuClose();go('auditoria')">🔎 Auditoria</button>
         <button class="focus" onclick="mobileMenuClose();go('ia')">🤖 IA</button>
         <button onclick="mobileMenuClose();go('irpf')">🧾 IRPF</button>
       </div>
