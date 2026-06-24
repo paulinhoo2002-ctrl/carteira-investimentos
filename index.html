@@ -552,6 +552,17 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .ag-table{margin-top:0}
 .ag-table .ts{border-radius:10px}
 .ag-table table{min-width:1120px}
+.backup-shell{display:flex;flex-direction:column;gap:10px}
+.backup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.backup-card{min-height:0;padding:10px 12px;border-left:3px solid}
+.backup-card .cl,.backup-card .cs{min-width:0}
+.backup-card .cv{font-size:18px;line-height:1.08}
+.backup-card .cs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.backup-note{font-size:11px;line-height:1.45;color:#94a3b8}
+.backup-warning{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);color:#fbbf24;border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.45}
+.backup-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.backup-summary .card{padding:10px 11px;min-height:0}
+.backup-summary .cv{font-size:18px}
 .db{display:grid;grid-template-columns:58px minmax(0,1fr) 92px;align-items:center;gap:12px;margin-bottom:10px}
 .dbl{font-size:11px;color:#c0cce0;min-width:0;font-weight:800;letter-spacing:.02em}
 .dbt{background:#141d2f;border-radius:999px;height:8px;overflow:hidden;border:1px solid #27344b;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
@@ -1178,8 +1189,11 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .premium-panel-actions{margin-top:7px}
   .premium-panel-actions .btn{width:100%;padding:7px 9px;font-size:9px}
   .premium-note{font-size:8px;margin-top:6px}
-  .premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
-  .premium-rf-list .premium-rf-row:nth-child(n+3){display:none}
+.premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
+.premium-rf-list .premium-rf-row:nth-child(n+3){display:none}
+  .backup-grid,.backup-summary{grid-template-columns:1fr!important}
+  .backup-card .cv,.backup-summary .cv{font-size:16px}
+  .backup-note{font-size:10px}
 }
 </style>
 </head>
@@ -1213,6 +1227,8 @@ const TYPE_ALIASES = {
 };
 const TYPE_ALIAS_LOOKUP = Object.fromEntries(Object.entries(TYPE_ALIASES).map(([k,v])=>[k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase(),v]));
 const STOR         = 'civ5';
+const APP_NAME     = 'Carteira de Investimentos';
+const BACKUP_VER   = 1;
 const DEFAULT_BRAPI = ''; // brapi fica opcional; cotações usam Yahoo Finance via /api/yahoo-quote sem token
 const ACCESS_ADMIN_EMAILS = ['paulinhoo2002@gmail.com'];
 
@@ -1261,6 +1277,8 @@ let S = {
   mobileMenuOpen:false,
   mobileTopMenuOpen:false,
   accessSettingsOpen:false,
+  backupOpen:false,
+  backupImportDraft:null,
   goals:{
     patrimonio:{target:0, aporte:0, annualVar:0},
     ativos:{type:'Ação', ticker:'', aporte:0, annualVar:10, finalValue:0},
@@ -2070,6 +2088,83 @@ function accessSettingsModal(){
     </div>
   </div>`;
 }
+function backupManagerModal(){
+  if(!S.backupOpen) return '';
+  const current=backupPayload();
+  const currentStats=backupStats(current.data);
+  const draft=S.backupImportDraft;
+  const draftStats=draft ? draft.summary : null;
+  return `<div class="note-overlay" onclick="if(event.target===this) closeBackupCenter()">
+    <div class="note-modal" style="max-width:920px;max-height:86vh;display:flex;flex-direction:column">
+      <div class="note-head" style="padding:14px 16px 12px">
+        <div class="note-title">
+          <div>
+            <h3 style="font-size:17px">Backup e restauração</h3>
+            <p style="font-size:11px">Exportar, revisar e restaurar os dados da carteira com segurança.</p>
+          </div>
+          <div class="note-pill">${draft ? 'Arquivo pronto' : 'Backup local'}</div>
+        </div>
+      </div>
+      <div class="sec-body" style="display:flex;flex-direction:column;gap:10px;overflow:auto;min-height:0;padding:12px 16px 12px">
+        <div class="backup-warning">A importação substitui os dados atuais da carteira ativa. Recomenda-se exportar um backup antes de restaurar outro arquivo.</div>
+        <div class="backup-summary">
+          <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${currentStats.wallets}</div><div class="cs">Carteiras locais no app</div></div>
+          <div class="card backup-card"><div class="cl">Ativos</div><div class="cv">${currentStats.assets}</div><div class="cs">Cadastros em Meus Ativos</div></div>
+          <div class="card backup-card"><div class="cl">Aportes</div><div class="cv">${currentStats.aportes}</div><div class="cs">Registros de histórico</div></div>
+          <div class="card backup-card"><div class="cl">Dividendos</div><div class="cv">${currentStats.proventos}</div><div class="cs">Proventos recebidos</div></div>
+          <div class="card backup-card"><div class="cl">Renda Fixa</div><div class="cv">${currentStats.fixed}</div><div class="cs">Ativos de renda fixa</div></div>
+          <div class="card backup-card"><div class="cl">Metas</div><div class="cv">${currentStats.goals}</div><div class="cs">Grupos de metas salvos</div></div>
+        </div>
+        <div class="backup-shell">
+          <div class="cc" style="padding:12px 12px 11px">
+            <div class="sh" style="margin-bottom:8px;gap:10px">
+              <div>
+                <div class="st">Exportação</div>
+                <div class="mu" style="font-size:11px;margin-top:2px">Gera um arquivo JSON com os dados e configurações locais da carteira.</div>
+              </div>
+              <button class="btn bexp" onclick="exportBackup()">Exportar backup</button>
+            </div>
+            <div class="backup-note">O arquivo inclui metadados do app, ativos, aportes, dividendos, metas, renda fixa e preferências relevantes. Nome sugerido: <strong style="color:#e2eaf6">carteira-investimentos-backup-AAAA-MM-DD-HH-mm.json</strong>.</div>
+          </div>
+          <div class="cc" style="padding:12px 12px 11px">
+            <div class="sh" style="margin-bottom:8px;gap:10px">
+              <div>
+                <div class="st">Importação</div>
+                <div class="mu" style="font-size:11px;margin-top:2px">Selecione um backup válido e revise o resumo antes de substituir os dados atuais.</div>
+              </div>
+              <button class="btn bimp" onclick="triggerBackupImport()">Selecionar arquivo</button>
+            </div>
+            ${draft?`
+              <div class="backup-grid">
+                <div class="card backup-card"><div class="cl">Arquivo</div><div class="cv" style="font-size:16px">${esc(draft.fileName||'backup.json')}</div><div class="cs">Recebido em ${esc(draft.importedAt||'—')}</div></div>
+                <div class="card backup-card"><div class="cl">Ativos</div><div class="cv">${draftStats.assets}</div><div class="cs">Itens na carteira</div></div>
+                <div class="card backup-card"><div class="cl">Aportes</div><div class="cv">${draftStats.aportes}</div><div class="cs">Lançamentos históricos</div></div>
+                <div class="card backup-card"><div class="cl">Dividendos</div><div class="cv">${draftStats.proventos}</div><div class="cs">Proventos no arquivo</div></div>
+                <div class="card backup-card"><div class="cl">Renda Fixa</div><div class="cv">${draftStats.fixed}</div><div class="cs">Posições de renda fixa</div></div>
+                <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${draftStats.wallets}</div><div class="cs">Estrutura de carteiras</div></div>
+              </div>
+              <div class="backup-note">Metas configuradas: ${draftStats.goals} · Cotação manual/Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}</div>
+              <div class="backup-note" style="margin-top:2px">Meta de patrimônio e outras preferências também serão restauradas se existirem no arquivo.</div>
+            `:`
+              <div class="backup-note">Nenhum arquivo carregado ainda. Selecione um JSON de backup para ver a prévia antes de importar.</div>
+            `}
+          </div>
+        </div>
+        <div class="backup-note">Data do backup selecionado: ${draft ? esc(draft.importedAt||'—') : '—'}</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px;padding:0 16px 16px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bgh" onclick="closeBackupCenter()">Fechar</button>
+          <button class="btn bgh" onclick="triggerBackupImport()">Selecionar outro arquivo</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bgh" onclick="cancelBackupImport()">Cancelar importação</button>
+          <button class="btn bp" onclick="confirmBackupImport()" ${draft ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>Importar backup</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
 function closeConfigMenus(){
   document.querySelectorAll('.cfg-menu[open]').forEach(d=>d.open=false);
 }
@@ -2119,8 +2214,7 @@ function configMenu(){
     <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(220px,calc(100vw - 24px));min-width:220px;max-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
       ${securityBtn}
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="exportBackup();closeConfigMenus()">💾 Backup</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importBackup();closeConfigMenus()">📂 Importar</button>
+      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importNotaCorretora();closeConfigMenus()">🧾 Nota corretora</button>
       <button class="btn bgh" style="width:100%;justify-content:flex-start;border-color:#7f1d1d;color:#fecaca;background:#1a0f12" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
@@ -2218,39 +2312,165 @@ function toast(msg, cor='#6ee7b7'){
 // ══════════════════════════════════════
 // BACKUP
 // ══════════════════════════════════════
-function exportBackup(){
+function backupStamp(date=new Date()){
+  const pad=n=>String(n).padStart(2,'0');
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}-${pad(date.getHours())}-${pad(date.getMinutes())}`;
+}
+function backupCurrentState(){
   syncWalletFromState();
-  const data=JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, divGoal:S.divGoal, goals:S.goals, learnMeta:S.learnMeta, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, exportedAt:new Date().toISOString()}, null, 2);
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-backup-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.json`});
+  return {
+    wallets: cloneData(S.wallets||[]),
+    activeWalletId: String(S.activeWalletId||''),
+    assets: cloneData(S.assets||[]),
+    aportes: cloneData(S.aportes||[]),
+    proventos: cloneData(S.proventos||[]),
+    divGoal: Number(S.divGoal)||0,
+    goals: normalizeGoals(S.goals),
+    brapiToken: String(S.brapiToken||''),
+    hideValues: !!S.hideValues,
+    apHistoryOpen: !!S.apHistoryOpen,
+    apSearch: String(S.apSearch||''),
+    dashPeriod: Number(S.dashPeriod)||12,
+    dashType: String(S.dashType||'all'),
+    rentPeriod: String(S.rentPeriod||'all'),
+    rentType: String(S.rentType||'all'),
+    rentBench: String(S.rentBench||'CDI'),
+    irpfYear: Number(S.irpfYear)||new Date().getFullYear(),
+    irpfStep: Number(S.irpfStep)||1,
+    learnMeta: cloneData(S.learnMeta||{}),
+    tab: String(S.tab||'dashboard')
+  };
+}
+function backupCurrentConfig(){
+  return {brapiToken:String(S.brapiToken||''), divGoal:Number(S.divGoal)||0};
+}
+function backupPayload(){
+  const data=backupCurrentState();
+  const storage={};
+  storage[STOR]=data;
+  storage[`${STOR}_cfg`]=backupCurrentConfig();
+  return {
+    meta:{
+      app:APP_NAME,
+      backupVersion:BACKUP_VER,
+      exportedAt:new Date().toISOString(),
+      origin:'localStorage',
+      storageKeys:[STOR, `${STOR}_cfg`]
+    },
+    data,
+    storage
+  };
+}
+function backupFromRaw(raw){
+  if(!raw || typeof raw!=='object' || Array.isArray(raw)) return null;
+  const meta=raw.meta && typeof raw.meta==='object' ? raw.meta : null;
+  const data=raw.data && typeof raw.data==='object' ? raw.data : raw;
+  const storage=raw.storage && typeof raw.storage==='object' ? raw.storage : null;
+  const hasKnown=Array.isArray(data.wallets) || Array.isArray(data.assets) || Array.isArray(data.aportes) || Array.isArray(data.proventos) || data.goals || data.divGoal!==undefined || data.learnMeta || data.brapiToken!==undefined;
+  if(!hasKnown && !(meta && /carteira/i.test(String(meta.app||'')))) return null;
+  return {meta,data,storage};
+}
+function backupStats(data){
+  const wallets=Array.isArray(data.wallets) ? data.wallets : [];
+  const assets=Array.isArray(data.assets) ? data.assets : [];
+  const aportes=Array.isArray(data.aportes) ? data.aportes : [];
+  const proventos=Array.isArray(data.proventos) ? data.proventos : [];
+  const goals=data.goals && typeof data.goals==='object' ? data.goals : {};
+  const defaultGoals=normalizeGoals();
+  const goalsChanged=Object.keys(goals).filter(k=>JSON.stringify(goals[k] ?? null)!==JSON.stringify(defaultGoals[k] ?? null)).length;
+  return {
+    wallets:wallets.length,
+    assets:assets.length,
+    aportes:aportes.length,
+    proventos:proventos.length,
+    fixed:assets.filter(isRendaFixaAsset).length,
+    goals:goalsChanged,
+    hasToken:!!String(data.brapiToken||'').trim()
+  };
+}
+function backupImportedAt(payload){
+  const iso=payload?.meta?.exportedAt || payload?.data?.exportedAt || payload?.exportedAt || '';
+  const d=iso ? new Date(iso) : null;
+  return d && !Number.isNaN(d.getTime()) ? d.toLocaleString('pt-BR') : '—';
+}
+function openBackupCenter(){
+  S.backupOpen=true;
+  render();
+}
+function closeBackupCenter(){
+  S.backupOpen=false;
+  S.backupImportDraft=null;
+  render();
+}
+function exportBackup(){
+  const payload=backupPayload();
+  const data=JSON.stringify(payload, null, 2);
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-${backupStamp()}.json`});
   a.click();
   toast('💾 Backup exportado com sucesso!');
 }
-function importBackup(){ document.getElementById('imp-file').click(); }
+function importBackup(){ openBackupCenter(); }
+function triggerBackupImport(){ document.getElementById('imp-file')?.click(); }
+function applyBackupData(parsed){
+  const payload=backupFromRaw(parsed);
+  if(!payload){
+    toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
+    return false;
+  }
+  const state=payload.storage?.[STOR] || payload.data || {};
+  const cfg=payload.storage?.[`${STOR}_cfg`] || {
+    brapiToken:String(payload.data?.brapiToken || payload.meta?.brapiToken || ''),
+    divGoal:Number(payload.data?.divGoal)||0
+  };
+  try{
+    localStorage.setItem(STOR, JSON.stringify(state));
+    localStorage.setItem(`${STOR}_cfg`, JSON.stringify(cfg));
+  }catch(err){
+    toast('Não foi possível gravar o backup neste navegador.', '#f87171');
+    return false;
+  }
+  load();
+  S.backupImportDraft=null;
+  S.backupOpen=false;
+  save();
+  saveConfig();
+  render();
+  toast('✅ Backup importado com sucesso!', '#6ee7b7');
+  return true;
+}
+function confirmBackupImport(){
+  if(!S.backupImportDraft?.parsed) return;
+  const summary=S.backupImportDraft.summary;
+  const ok=confirm(`Importar este backup vai substituir os dados atuais da carteira.\n\nAtivos: ${summary.assets}\nAportes: ${summary.aportes}\nDividendos: ${summary.proventos}\nRenda fixa: ${summary.fixed}\n\nDeseja continuar?`);
+  if(!ok){
+    toast('Importação cancelada.');
+    return;
+  }
+  applyBackupData(S.backupImportDraft.parsed);
+}
+function cancelBackupImport(){
+  if(S.backupImportDraft) toast('Importação cancelada.');
+  S.backupImportDraft=null;
+  render();
+}
 document.getElementById('imp-file').addEventListener('change',e=>{
   const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=ev=>{
     try{
       const d=JSON.parse(ev.target.result);
-      if(Array.isArray(d.wallets) && d.wallets.length){
-        S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
-        S.activeWalletId=String(d.activeWalletId||S.wallets[0].id);
-        syncStateFromWallet(activeWallet());
-      }else{
-        if(Array.isArray(d.assets))    S.assets    = d.assets;
-        if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
-        if(Array.isArray(d.proventos)) S.proventos = d.proventos;
-        if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
-        if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
-        if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
+      const parsed=backupFromRaw(d);
+      if(!parsed){
+        toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
+        return;
       }
-      if(d.rentPeriod !== undefined)  S.rentPeriod = String(d.rentPeriod||'all');
-      if(d.rentType !== undefined)    S.rentType = String(d.rentType||'all');
-      if(d.rentBench !== undefined)   S.rentBench = String(d.rentBench||'CDI');
-      rebuildLearnMeta();
-      save(); saveConfig(); render();
-      toast(`✅ ${S.assets.length} ativos, ${S.aportes.length} aportes e ${S.proventos.length} proventos importados!`);
-    }catch(err){ alert('Erro ao importar. Verifique o arquivo.'); }
+      const summary=backupStats(parsed.data);
+      S.backupImportDraft={fileName:f.name, parsed, summary, importedAt:backupImportedAt(parsed)};
+      S.backupOpen=true;
+      render();
+    }catch(err){
+      toast('Arquivo inválido. Selecione um backup em JSON.', '#f87171');
+    }
   };
   r.readAsText(f); e.target.value='';
 });
@@ -8905,6 +9125,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
   ${mobileBottomNav()}
   ${mobileMenuDrawer()}
   ${S.accessSettingsOpen?accessSettingsModal():''}
+  ${S.backupOpen?backupManagerModal():''}
   ${S.noteReview?notaReviewModal():''}
   ${S.b3Review?b3ReviewModal():''}
   ${S.b3MovementReview?b3MovementReviewModal():''}
