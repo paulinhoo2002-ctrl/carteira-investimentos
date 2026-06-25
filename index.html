@@ -2428,7 +2428,7 @@ const firebaseConfig = {
 
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
-  unsub:null, cloudLoaded:false, applying:false, saveTimer:null, lastCloudUpdate:null,
+  unsub:null, cloudLoaded:false, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
   access:{loaded:false,loading:false,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
 
@@ -2996,9 +2996,76 @@ function portfolioRef(){
   if(!FB.db || !FB.user) return null;
   return FB.db.collection('portfolios').doc(FB.user.uid);
 }
+function sanitizeFirestoreValue(value, seen=new WeakSet()){
+  if(value===undefined || typeof value==='function' || typeof value==='symbol') return undefined;
+  if(value===null || typeof value==='string' || typeof value==='boolean') return value;
+  if(typeof value==='number') return Number.isFinite(value) ? value : null;
+  if(value instanceof Date) return value;
+  if(Array.isArray(value)){
+    return value.map(item=>{
+      const clean=sanitizeFirestoreValue(item, seen);
+      return clean===undefined ? null : clean;
+    });
+  }
+  if(value && typeof value==='object'){
+    if(seen.has(value)) return undefined;
+    seen.add(value);
+    const out={};
+    for(const [key, item] of Object.entries(value)){
+      const clean=sanitizeFirestoreValue(item, seen);
+      if(clean!==undefined) out[key]=clean;
+    }
+    seen.delete(value);
+    return out;
+  }
+  return value;
+}
+function cloudSyncErrorMessage(error){
+  const code=String(error?.code||error?.name||'').toLowerCase();
+  const message=String(error?.message||error||'').trim();
+  if(code.includes('permission-denied') || /insufficient permissions/i.test(message)) return 'Sem permissão para salvar na nuvem.';
+  if(code.includes('unauth') || /not authenticated|unauthenticated/i.test(message)) return 'Faça login com Google para sincronizar.';
+  if(/undefined/i.test(message)) return 'O payload da nuvem contém campos inválidos.';
+  if(/invalid|failed-precondition|failed to set/i.test(message)) return 'A estrutura enviada para a nuvem foi recusada.';
+  if(/network|offline|unavailable|deadline/i.test(message)) return 'Falha temporária de conexão com a nuvem.';
+  return 'Falha técnica ao sincronizar com a nuvem.';
+}
+function isTransientCloudError(error){
+  const code=String(error?.code||error?.name||'').toLowerCase();
+  const message=String(error?.message||error||'').toLowerCase();
+  return /network|offline|unavailable|deadline|aborted|cancelled|timeout/.test(code) || /network|offline|unavailable|deadline|aborted|cancelled|timeout/.test(message);
+}
+function logCloudSyncError(error, context='uploadLocalToCloud'){
+  const ref=portfolioRef();
+  const payload=cloudPayload();
+  console.error(`[${context}] cloud sync failed`, {
+    code:error?.code||error?.name||'unknown',
+    message:error?.message||String(error||''),
+    path:ref?.path||null,
+    userUid:FB.user?.uid||null,
+    walletId:S.activeWalletId||null,
+    pending:!!FB.pendingCloudSave,
+    accessAllowed:!!FB.access.allowed,
+    cloudLoaded:!!FB.cloudLoaded,
+    payloadSummary:{
+      wallets:Array.isArray(payload.wallets)?payload.wallets.length:0,
+      assets:Array.isArray(payload.assets)?payload.assets.length:0,
+      aportes:Array.isArray(payload.aportes)?payload.aportes.length:0,
+      proventos:Array.isArray(payload.proventos)?payload.proventos.length:0,
+    },
+    stack:error?.stack||null
+  });
+}
+function scheduleCloudRetry(delay=12000){
+  clearTimeout(FB.cloudRetryTimer);
+  FB.cloudRetryTimer=setTimeout(()=>{
+    FB.cloudRetryTimer=null;
+    if(FB.pendingCloudSave) queueCloudSave();
+  }, delay);
+}
 function cloudPayload(){
   syncWalletFromState();
-  return {
+  return sanitizeFirestoreValue({
     wallets:S.wallets.map(w=>normalizeWalletEntry(w, w.name)),
     activeWalletId:S.activeWalletId,
     assets:S.assets,
@@ -3011,9 +3078,8 @@ function cloudPayload(){
     dashboard:{period:Number(S.dashPeriod)||12,type:String(S.dashType||'all')},
     rentabilidade:{period:String(S.rentPeriod||'all'),type:String(S.rentType||'all'),bench:String(S.rentBench||'CDI')},
     tab:S.tab,
-    updatedAtLocal:new Date().toISOString(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
+    updatedAtLocal:new Date().toISOString()
+  });
 }
 function hasLocalData(){
   return (S.wallets&&S.wallets.length>1)||(S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(normalizeGoals(S.goals))!==JSON.stringify(normalizeGoals()));
@@ -3067,12 +3133,14 @@ function startCloudSync(){
       if(!snap.exists){
         if(hasLocalData()) await uploadLocalToCloud(false);
         FB.cloudLoaded=true;
+        if(FB.pendingCloudSave) queueCloudSave();
         render();
         return;
       }
       const data=snap.data()||{};
       applyCloudData(data);
       FB.cloudLoaded=true;
+      if(FB.pendingCloudSave) queueCloudSave();
       render();
     }catch(e){ console.warn('cloud sync:',e); }
   },err=>{
@@ -3083,12 +3151,14 @@ function startCloudSync(){
 function stopCloudSync(doRender=true){
   if(FB.unsub){ try{ FB.unsub(); }catch(e){} }
   FB.unsub=null; FB.cloudLoaded=false;
+  clearTimeout(FB.cloudRetryTimer);
   if(doRender) render();
 }
 function queueCloudSave(){
+  FB.pendingCloudSave=true;
   if(FB.applying || !FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
   clearTimeout(FB.saveTimer);
-  FB.saveTimer=setTimeout(uploadLocalToCloud,900);
+  FB.saveTimer=setTimeout(()=>uploadLocalToCloud(true),900);
 }
 async function uploadLocalToCloud(show=true){
   if(!FB.access.allowed){
@@ -3098,12 +3168,20 @@ async function uploadLocalToCloud(show=true){
   const ref=portfolioRef();
   if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return; }
   try{
-    await ref.set(cloudPayload(), {merge:true});
+    const payload=cloudPayload();
+    payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+    await ref.set(payload, {merge:true});
     FB.lastCloudUpdate=new Date().toISOString();
+    FB.lastCloudError=null;
+    FB.pendingCloudSave=false;
+    clearTimeout(FB.cloudRetryTimer);
     if(show) toast('☁️ Dados sincronizados na nuvem!');
   }catch(e){
-    console.warn(e);
-    if(show) toast('❌ Erro ao enviar para a nuvem.','#f87171');
+    FB.lastCloudError=e;
+    FB.pendingCloudSave=true;
+    logCloudSyncError(e);
+    if(show) toast(`Lançamento salvo localmente, mas não sincronizado com a nuvem. ${cloudSyncErrorMessage(e)}`,'#f87171');
+    if(FB.user && FB.cloudLoaded && FB.access.allowed && navigator.onLine!==false && isTransientCloudError(e)) scheduleCloudRetry();
   }
 }
 async function signInGoogle(){
@@ -14754,6 +14832,7 @@ try{
 fetchQuotes(false);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
 window.addEventListener('focus',()=>fetchQuotes(false));
+window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();
   PWA.prompt=e;
