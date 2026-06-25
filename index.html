@@ -817,6 +817,16 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .note-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .note-pill{font-size:11px;color:#a5b4fc;border:1px solid rgba(96,165,250,.18);background:#141d2f;border-radius:999px;padding:5px 10px}
 .note-body{padding:16px 18px 18px}
+.quick-movement-modal .fc{margin:0}
+.quick-movement-preview-card{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:16px;background:#0b1020;border:1px solid #27324a;box-shadow:0 18px 40px rgba(0,0,0,.24)}
+.quick-movement-preview-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.quick-movement-preview-kicker{font-size:13px;font-weight:800;color:#f8fafc;line-height:1.35}
+.quick-movement-preview-sub{font-size:12px;color:#94a3b8;line-height:1.5;margin-top:4px}
+.quick-movement-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.quick-movement-preview-stat{padding:10px 11px;border-radius:12px;background:rgba(15,23,42,.72);border:1px solid #182033}
+.quick-movement-preview-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:700}
+.quick-movement-preview-value{font-size:14px;font-weight:800;color:#f8fafc;line-height:1.3;word-break:break-word}
+.quick-movement-preview-note{font-size:12px;color:#cbd5e1;line-height:1.5}
 .note-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px}
 .note-actions .left,.note-actions .right{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .note-table-wrap{border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
@@ -1097,6 +1107,8 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
   .mov-review-line .col-total{grid-area:total}
   .mov-review-line .col-obs{grid-area:obs}
   .mov-review-line .line-controls{grid-area:ctrl;justify-content:flex-start}
+  .quick-movement-modal .sec-body{grid-template-columns:1fr!important}
+  .quick-movement-preview-grid{grid-template-columns:1fr}
   .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .b3-conference-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
   .reports-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1784,11 +1796,30 @@ html[data-theme="light"] .irpf-section,
 html[data-theme="light"] .irpf-summary-card,
 html[data-theme="light"] .data-audit-card,
 html[data-theme="light"] .data-audit-hero,
-html[data-theme="light"] .note-modal{
+html[data-theme="light"] .note-modal,
+html[data-theme="light"] .quick-movement-preview-card{
   background:var(--panel)!important;
   border-color:var(--border)!important;
   box-shadow:var(--shadow)!important;
   color:var(--text)!important;
+}
+html[data-theme="light"] .quick-movement-modal .fc{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+  box-shadow:var(--shadow)!important;
+}
+html[data-theme="light"] .quick-movement-preview-stat{
+  background:#f7fbff!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .quick-movement-preview-kicker,
+html[data-theme="light"] .quick-movement-preview-value{
+  color:var(--text)!important;
+}
+html[data-theme="light"] .quick-movement-preview-sub,
+html[data-theme="light"] .quick-movement-preview-label,
+html[data-theme="light"] .quick-movement-preview-note{
+  color:var(--muted)!important;
 }
 html[data-theme="light"] .card:hover,
 html[data-theme="light"] .sec:hover,
@@ -2506,6 +2537,9 @@ let S = {
   aiText:'', aiLoad:false,
   aiFocus:'geral',
   editId:null, editPId:null, showA:false, showP:false, showD:false,
+  quickMovementOpen:false,
+  quickMovementDraft:null,
+  quickMovementEditId:null,
   noteReview:null,
   b3Review:null,
   b3MovementReview:null,
@@ -7497,6 +7531,472 @@ const tipoIcon = t => {
   if(v==='Fundos de Investimento') return '📦';
   return '🗂️';
 };
+function normalizeQuickMovementKind(value){
+  const s=String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(s==='venda') return 'venda';
+  if(s==='provento' || s==='dividendo' || s==='dividendos' || s==='jcp' || s==='rendimento') return 'provento';
+  if(s==='renda fixa' || s==='renda-fixa' || s==='rf' || s==='tesouro direto') return 'renda-fixa';
+  if(s==='outro' || s==='outros' || s==='neutral' || s==='neutro') return 'outro';
+  return 'compra';
+}
+function quickMovementKindLabel(kind){
+  return ({
+    compra:'Compra',
+    venda:'Venda',
+    provento:'Provento',
+    'renda-fixa':'Renda Fixa',
+    outro:'Outro'
+  }[normalizeQuickMovementKind(kind)]) || 'Compra';
+}
+function quickMovementKindIcon(kind){
+  return ({
+    compra:'🛒',
+    venda:'📤',
+    provento:'💸',
+    'renda-fixa':'💼',
+    outro:'🧩'
+  }[normalizeQuickMovementKind(kind)]) || '🧾';
+}
+function quickMovementKindTone(kind){
+  return ({
+    compra:'ok',
+    venda:'warn',
+    provento:'info',
+    'renda-fixa':'muted',
+    outro:'muted'
+  }[normalizeQuickMovementKind(kind)]) || 'muted';
+}
+function quickMovementDefaultDraft(kind='compra'){
+  const next=normalizeQuickMovementKind(kind);
+  const today=new Date().toISOString().slice(0,10);
+  return {
+    kind:next,
+    date:today,
+    ticker:'',
+    type:'Ação',
+    sector:'',
+    qty:'',
+    price:'',
+    value:'',
+    note:'',
+    eventType:'Rendimento',
+    rfName:'',
+    rfSubtype:'CDB',
+    rfAppDate:today,
+    rfDue:'',
+    rfRate:'',
+    rfApplied:'',
+    rfGross:'',
+    rfLiquid:'',
+    rfIrIof:'',
+    rfUnavailable:'',
+    rfNote:'',
+    outroTitle:'',
+    outroCategory:'Geral'
+  };
+}
+function quickMovementKindOptions(){
+  return (TYPE_FORM_CHOICES||[]).filter(t=>!['Renda Fixa','Tesouro Direto'].includes(t));
+}
+function quickMovementSourceLabel(kind){
+  const next=normalizeQuickMovementKind(kind);
+  if(next==='provento') return 'Proventos';
+  if(next==='renda-fixa') return 'Ativos e Renda Fixa';
+  if(next==='outro') return 'Histórico neutro';
+  return 'Ativos e Patrimônio';
+}
+function quickMovementImpactText(kind){
+  const next=normalizeQuickMovementKind(kind);
+  if(next==='provento') return 'Entra em Dividendos e afeta a leitura de renda passiva.';
+  if(next==='renda-fixa') return 'Entra em Aportes, recalcula Ativos e atualiza a leitura de renda fixa.';
+  if(next==='outro') return 'Fica apenas como registro local e não entra nos cálculos consolidados.';
+  return 'Entra em Aportes e recalcula Ativos, Patrimônio e Rentabilidade.';
+}
+function quickMovementPreviewHtml(){
+  const draft=S.quickMovementDraft || quickMovementDefaultDraft();
+  const kind=normalizeQuickMovementKind(draft.kind);
+  const tone=quickMovementKindTone(kind);
+  const ticker=String(draft.ticker||draft.rfName||draft.outroTitle||'—').trim().toUpperCase() || '—';
+  const qty=Math.abs(parseNum(draft.qty));
+  const price=Math.max(0, parseNum(draft.price));
+  const value=Math.max(0, parseNum(draft.value));
+  const total=kind==='provento'
+    ? value
+    : kind==='renda-fixa'
+      ? Math.max(parseNum(draft.rfApplied), parseNum(draft.rfGross), parseNum(draft.rfLiquid))
+      : kind==='outro'
+        ? Math.max(0, value || parseNum(draft.price) || parseNum(draft.qty))
+        : qty*price;
+  const label=quickMovementSourceLabel(kind);
+  const totalLabel=kind==='provento' ? 'Valor recebido' : kind==='renda-fixa' ? 'Valor principal' : kind==='outro' ? 'Valor do registro' : 'Total da operação';
+  const countLabel=kind==='provento' ? 'Categoria' : kind==='renda-fixa' ? 'Subtipo' : kind==='outro' ? 'Categoria' : 'Tipo';
+  const detail=kind==='provento'
+    ? String(draft.eventType||'Rendimento')
+    : kind==='renda-fixa'
+      ? String(draft.rfSubtype||'Renda Fixa')
+      : kind==='outro'
+        ? String(draft.outroCategory||'Geral')
+        : String(draft.type||'Ação');
+  const secondary=kind==='renda-fixa'
+    ? quickMovementImpactText(kind)
+    : kind==='outro'
+      ? quickMovementImpactText(kind)
+      : `Destino: ${label}.`;
+  return `
+    <div class="quick-movement-preview-card">
+      <div class="quick-movement-preview-head">
+        <div>
+          <div class="quick-movement-preview-kicker">${quickMovementKindIcon(kind)} ${quickMovementKindLabel(kind)}</div>
+          <div class="quick-movement-preview-sub">${quickMovementImpactText(kind)}</div>
+        </div>
+        <span class="analysis-pill ${tone}">${esc(label)}</span>
+      </div>
+      <div class="quick-movement-preview-grid">
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Ativo</div>
+          <div class="quick-movement-preview-value">${esc(ticker)}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">${esc(countLabel)}</div>
+          <div class="quick-movement-preview-value">${esc(detail)}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">${esc(totalLabel)}</div>
+          <div class="quick-movement-preview-value">${fmt(total)}</div>
+        </div>
+      </div>
+      <div class="quick-movement-preview-note">${esc(secondary)}</div>
+    </div>`;
+}
+function refreshQuickMovementPreview(){
+  const el=document.getElementById('quick-movement-preview');
+  if(el) el.innerHTML=quickMovementPreviewHtml();
+}
+function openQuickMovement(kind='compra'){
+  const next=normalizeQuickMovementKind(kind);
+  const current=S.quickMovementDraft && typeof S.quickMovementDraft==='object' ? S.quickMovementDraft : {};
+  S.showA=false;
+  S.showP=false;
+  S.showD=false;
+  S.editId=null;
+  S.editPId=null;
+  S.quickMovementEditId=null;
+  S.quickMovementDraft={...quickMovementDefaultDraft(next), ...current, kind:next};
+  S.quickMovementOpen=true;
+  render();
+}
+function closeQuickMovement(){
+  S.quickMovementOpen=false;
+  S.quickMovementDraft=null;
+  S.quickMovementEditId=null;
+  render();
+}
+function setQuickMovementField(field, value){
+  if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
+  S.quickMovementDraft[field]=value;
+  if(field==='kind') refreshQuickMovementPreview();
+  else refreshQuickMovementPreview();
+}
+function quickMovementModal(){
+  const draft=S.quickMovementDraft || quickMovementDefaultDraft();
+  const kind=normalizeQuickMovementKind(draft.kind);
+  const kinds=['compra','venda','provento','renda-fixa','outro'];
+  const tabs=kinds.map(next=>`<button class="dash-chip ${kind===next?'on':''}" onclick="openQuickMovement('${next}')">${quickMovementKindIcon(next)} ${quickMovementKindLabel(next)}</button>`).join('');
+  const assetTypes=quickMovementKindOptions().map(t=>`<option ${normalizeType(draft.type||'Ação','Ação')===t?'selected':''}>${esc(t)}</option>`).join('');
+  const eventTypes=['Rendimento','Dividendo','JCP','Amortização','Outro'].map(t=>`<option ${String(draft.eventType||'Rendimento')===t?'selected':''}>${esc(t)}</option>`).join('');
+  const rfSubtypes=['CDB','LCI','LCA','Tesouro Direto','CRI','CRA','Debênture','Letra Financeira','Outro'].map(t=>`<option ${String(draft.rfSubtype||'CDB')===t?'selected':''}>${esc(t)}</option>`).join('');
+  const commonHeader=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:14px;font-weight:800;color:#e2eaf6">Cadastro premium de ${quickMovementKindLabel(kind).toLowerCase()}</div>
+        <div class="mu" style="font-size:11px;line-height:1.45">${esc(quickMovementImpactText(kind))}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${tabs}</div>
+    </div>`;
+  const buySellFields = `
+    <div class="fg">
+      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Tipo de ativo</div><select id="qm-type" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
+      <div><div class="fl">Setor</div><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" oninput="setQuickMovementField('sector', this.value)"></div>
+      <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" oninput="setQuickMovementField('qty', this.value)"></div>
+      <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" placeholder="ex: 10,00" value="${esc(draft.price||'')}" oninput="setQuickMovementField('price', this.value)"></div>
+    </div>
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+  const proventoFields = `
+    <div class="fg">
+      <div><div class="fl">Data do pagamento</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: MXRF11" value="${esc(draft.ticker||'')}" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Valor recebido (R$)</div><input id="qm-value" type="text" placeholder="ex: 35,80" value="${esc(draft.value||'')}" oninput="setQuickMovementField('value', this.value)"></div>
+      <div><div class="fl">Tipo</div><select id="qm-event" onchange="setQuickMovementField('eventType', this.value)">${eventTypes}</select></div>
+    </div>
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: competência, evento especial..." value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+  const rfFields = `
+    <div class="fg">
+      <div><div class="fl">Nome do ativo</div><input id="qm-rf-name" placeholder="ex: CDB Banco X 2028" value="${esc(draft.rfName||draft.ticker||'')}" oninput="setQuickMovementField('rfName', this.value)"></div>
+      <div><div class="fl">Subtipo</div><select id="qm-rf-subtype" onchange="setQuickMovementField('rfSubtype', this.value)">${rfSubtypes}</select></div>
+      <div><div class="fl">Aplicação</div><input id="qm-rf-app-date" type="date" value="${esc(draft.rfAppDate||draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('rfAppDate', this.value)"></div>
+      <div><div class="fl">Vencimento</div><input id="qm-rf-due" type="date" value="${esc(draft.rfDue||'')}" oninput="setQuickMovementField('rfDue', this.value)"></div>
+      <div><div class="fl">Taxa contratada</div><input id="qm-rf-rate" placeholder="ex: CDI + 1,10%" value="${esc(draft.rfRate||'')}" oninput="setQuickMovementField('rfRate', this.value)"></div>
+      <div><div class="fl">Valor aplicado</div><input id="qm-rf-applied" type="text" placeholder="ex: 1000,00" value="${esc(draft.rfApplied||'')}" oninput="setQuickMovementField('rfApplied', this.value)"></div>
+      <div><div class="fl">Valor bruto</div><input id="qm-rf-gross" type="text" placeholder="ex: 1040,00" value="${esc(draft.rfGross||'')}" oninput="setQuickMovementField('rfGross', this.value)"></div>
+      <div><div class="fl">Valor líquido</div><input id="qm-rf-liquid" type="text" placeholder="ex: 1035,00" value="${esc(draft.rfLiquid||'')}" oninput="setQuickMovementField('rfLiquid', this.value)"></div>
+      <div><div class="fl">IR/IOF</div><input id="qm-rf-iriof" type="text" placeholder="ex: 5,00" value="${esc(draft.rfIrIof||'')}" oninput="setQuickMovementField('rfIrIof', this.value)"></div>
+      <div><div class="fl">Indisponível</div><input id="qm-rf-unavailable" type="text" placeholder="ex: 0,00" value="${esc(draft.rfUnavailable||'')}" oninput="setQuickMovementField('rfUnavailable', this.value)"></div>
+    </div>
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-rf-note" placeholder="opcional: banco, indexador, razão do lançamento..." value="${esc(draft.rfNote||draft.note||'')}" oninput="setQuickMovementField('rfNote', this.value)"></div>`;
+  const outroFields = `
+    <div class="fg">
+      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
+      <div><div class="fl">Título</div><input id="qm-outro-title" placeholder="ex: ajuste interno, transferência, nota..." value="${esc(draft.outroTitle||draft.ticker||'')}" oninput="setQuickMovementField('outroTitle', this.value)"></div>
+      <div><div class="fl">Valor</div><input id="qm-outro-value" type="text" placeholder="ex: 150,00" value="${esc(draft.value||'')}" oninput="setQuickMovementField('value', this.value)"></div>
+      <div><div class="fl">Categoria</div><input id="qm-outro-category" placeholder="ex: interno, ajuste, observação" value="${esc(draft.outroCategory||'Geral')}" oninput="setQuickMovementField('outroCategory', this.value)"></div>
+    </div>
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-outro-note" placeholder="registro neutro, sem impacto nos cálculos" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+  const body=kind==='provento' ? proventoFields : kind==='renda-fixa' ? rfFields : kind==='outro' ? outroFields : buySellFields;
+  const saveLabel=kind==='provento' ? 'Salvar provento' : kind==='renda-fixa' ? 'Salvar renda fixa' : kind==='outro' ? 'Salvar registro' : `Salvar ${quickMovementKindLabel(kind).toLowerCase()}`;
+  return `<div class="note-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) closeQuickMovement()">
+    <div class="note-modal quick-movement-modal" style="max-width:1140px;max-height:90vh;display:flex;flex-direction:column">
+      <div class="note-head">
+        <div class="note-title">
+          <div>
+            <h3>Nova movimentação</h3>
+            <p>Cadastro premium com destino certo para cada tipo, sem mexer nos cálculos consolidados.</p>
+          </div>
+          <div class="note-pill">${quickMovementKindIcon(kind)} ${quickMovementKindLabel(kind)}</div>
+        </div>
+      </div>
+      <div class="sec-body" style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.85fr);gap:12px;align-items:start;overflow:auto;min-height:0">
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <div class="fc" style="margin:0">
+            ${commonHeader}
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">${body}</div>
+          </div>
+        </div>
+        <div id="quick-movement-preview">${quickMovementPreviewHtml()}</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 18px 18px;flex-wrap:wrap">
+        <button class="btn bsv" onclick="saveQuickMovement()">${saveLabel}</button>
+        <button class="btn bgh" onclick="closeQuickMovement()">Cancelar</button>
+      </div>
+    </div>
+  </div>`;
+}
+function aporteMovementKind(a){
+  const op=String(a?.movementKind || a?.kind || a?.operation || a?.op || '').trim().toLowerCase();
+  const type=normalizeType(a?.type||a?.asset_type||'', '');
+  if(op.startsWith('reserva')) return op.includes('saida') ? 'reserva-saida' : 'reserva-entrada';
+  if(op==='outro' || op==='neutro' || type==='Outro') return 'outro';
+  if(op==='provento' || op==='dividendo' || op==='dividendos' || op==='jcp' || op==='rendimento') return 'provento';
+  if(op==='venda' || op==='sell') return 'venda';
+  return 'compra';
+}
+function isNeutralMovement(a){
+  return aporteMovementKind(a)==='outro';
+}
+function aporteMovementLabel(a){
+  const kind=aporteMovementKind(a);
+  if(kind==='venda') return 'Venda';
+  if(kind==='provento') return 'Provento';
+  if(kind==='outro') return 'Outro';
+  if(kind==='reserva-saida') return 'Saída';
+  if(kind==='reserva-entrada') return 'Entrada';
+  return 'Compra';
+}
+function aporteMovementTone(a){
+  const kind=aporteMovementKind(a);
+  if(kind==='venda') return 'rd';
+  if(kind==='provento') return 'am';
+  if(kind==='outro') return 'mu';
+  if(kind==='reserva-saida') return 'rd';
+  if(kind==='reserva-entrada') return 'gn';
+  return 'gn';
+}
+function quickMovementBuildAporteFromFields(kind){
+  const next=normalizeQuickMovementKind(kind);
+  const dt=brDate(document.getElementById('qm-dt')?.value || S.quickMovementDraft?.date || new Date().toISOString().slice(0,10));
+  if(next==='renda-fixa'){
+    const rfName=String(document.getElementById('qm-rf-name')?.value||'').trim();
+    const rfSubtype=String(document.getElementById('qm-rf-subtype')?.value||'CDB').trim()||'CDB';
+    const rfAppDate=inputDateValue(document.getElementById('qm-rf-app-date')?.value||dt);
+    const rfDue=inputDateValue(document.getElementById('qm-rf-due')?.value||'');
+    const rfRate=String(document.getElementById('qm-rf-rate')?.value||'').trim();
+    const rfApplied=parseNum(document.getElementById('qm-rf-applied')?.value);
+    const rfGross=parseNum(document.getElementById('qm-rf-gross')?.value);
+    const rfLiquid=parseNum(document.getElementById('qm-rf-liquid')?.value);
+    const rfIrIof=parseNum(document.getElementById('qm-rf-iriof')?.value);
+    const rfUnavailable=parseNum(document.getElementById('qm-rf-unavailable')?.value);
+    const rfNote=String(document.getElementById('qm-rf-note')?.value||'').trim();
+    if(!rfName) return {error:'Preencha o nome do ativo de renda fixa.'};
+    if(!rfAppDate) return {error:'Preencha a data da aplicação.'};
+    if(!rfApplied && !rfGross && !rfLiquid) return {error:'Preencha ao menos um valor: aplicado, bruto ou líquido.'};
+    const ticker=cleanAssetCode(String(document.getElementById('qm-rf-name')?.value||rfName||`${rfSubtype} ${rfAppDate}`));
+    const value=Math.max(rfApplied, rfGross, rfLiquid);
+    const currentValue=rfLiquid>0 ? rfLiquid : (rfGross>0 ? rfGross : (rfApplied>0 ? rfApplied : 0));
+    const appliedValue=rfApplied>0 ? rfApplied : (rfGross>0 ? rfGross : (rfLiquid>0 ? rfLiquid : 0));
+    return {
+      kind:next,
+      reg:{
+        id:Date.now(),
+        operation:'compra',
+        movementKind:'renda-fixa',
+        ticker:ticker || `RF${Date.now()}`,
+        qty:1,
+        price:appliedValue||currentValue||0,
+        date:rfAppDate,
+        decision:rfNote,
+        type:'Renda Fixa',
+        sector:rfSubtype,
+        name:rfName,
+        product:rfName,
+        title:rfName,
+        rf_name:rfName,
+        rf_subtype:rfSubtype,
+        rf_application_date:rfAppDate,
+        rf_aporte_date:rfAppDate,
+        rf_contract_rate:rfRate,
+        rf_maturity_date:rfDue,
+        rf_applied_value:appliedValue,
+        rf_gross_value:rfGross,
+        rf_liquid_value:rfLiquid,
+        rf_ir_iof:rfIrIof,
+        rf_unavailable_value:rfUnavailable,
+        rf_profit_value:undefined,
+        rf_profit_source:'derived',
+        rf_note:rfNote,
+        fixed_initial_value:appliedValue,
+        fixed_current_value:currentValue,
+        fixed_gross_value:rfGross,
+        fixed_application_date:rfAppDate,
+        fixed_maturity_date:rfDue,
+        fixed_indexer:rfSubtype,
+        fixed_issuer:'',
+        current_price:currentValue,
+        avg_price:appliedValue||currentValue||0,
+        avg_manual:false,
+        dy:0,
+        dySource:'manual',
+        quoteSource:'manual',
+        quoteUpdatedAt:'',
+        source:'manual-rf'
+      }
+    };
+  }
+  if(next==='provento'){
+    const ticker=String(document.getElementById('qm-ti')?.value||'').trim().toUpperCase();
+    const value=parseNum(document.getElementById('qm-value')?.value);
+    const eventType=String(document.getElementById('qm-event')?.value||'Rendimento').trim() || 'Rendimento';
+    const note=String(document.getElementById('qm-note')?.value||'').trim();
+    if(!ticker) return {error:'Preencha o ticker do provento.'};
+    if(value<=0) return {error:'Preencha um valor recebido maior que zero.'};
+    return {
+      kind:next,
+      reg:{
+        id:Date.now(),
+        ticker,
+        value,
+        type:eventType,
+        date:dt,
+        note,
+        movementKind:'provento'
+      }
+    };
+  }
+  if(next==='outro'){
+    const title=String(document.getElementById('qm-outro-title')?.value||'').trim();
+    const value=parseNum(document.getElementById('qm-outro-value')?.value);
+    const category=String(document.getElementById('qm-outro-category')?.value||'Geral').trim()||'Geral';
+    const note=String(document.getElementById('qm-outro-note')?.value||'').trim();
+    if(!title) return {error:'Preencha o título do registro.'};
+    if(value<=0) return {error:'Preencha um valor maior que zero.'};
+    return {
+      kind:next,
+      reg:{
+        id:Date.now(),
+        operation:'outro',
+        movementKind:'outro',
+        ticker:cleanAssetCode(title) || `OUTRO${Date.now()}`,
+        qty:1,
+        price:value,
+        date:dt,
+        decision:note || category,
+        type:'Outro',
+        sector:category,
+        name:title,
+        product:title,
+        title,
+        value,
+        totalValue:value,
+        note,
+        neutral:true
+      }
+    };
+  }
+  const ticker=String(document.getElementById('qm-ti')?.value||'').trim().toUpperCase();
+  const qty=Math.abs(parseNum(document.getElementById('qm-qty')?.value));
+  const price=parseNum(document.getElementById('qm-price')?.value);
+  const type=normalizeType(document.getElementById('qm-type')?.value||metaTicker(ticker).type||'Ação','Ação');
+  const sector=String(document.getElementById('qm-sector')?.value||'').trim() || metaTicker(ticker).sector || '';
+  const note=String(document.getElementById('qm-note')?.value||'').trim();
+  if(!ticker || qty<=0 || price<=0) return {error:'Preencha ticker, quantidade e preço.'};
+  return {
+    kind:next,
+    reg:{
+      id:Date.now(),
+      operation:next,
+      movementKind:next,
+      ticker:cleanAssetCode(ticker),
+      qty,
+      price,
+      date:dt,
+      decision:note,
+      type,
+      sector
+    }
+  };
+}
+function saveQuickMovement(){
+  const kind=normalizeQuickMovementKind(S.quickMovementDraft?.kind);
+  const built=quickMovementBuildAporteFromFields(kind);
+  if(built.error){ alert(built.error); return; }
+  const reg=built.reg;
+  const editId=S.quickMovementEditId;
+  S.quickMovementOpen=false;
+  S.quickMovementDraft=null;
+  S.quickMovementEditId=null;
+  if(kind==='provento'){
+    S.proventos.unshift(reg);
+    save();
+    toast(`✅ Provento de ${reg.ticker} registrado!`);
+    render();
+    markProventosDirty();
+    return;
+  }
+  if(kind==='outro'){
+    if(editId){
+      S.aportes=S.aportes.map(a=>a.id===editId?{...reg,id:editId}:a);
+    }else{
+      S.aportes.unshift(reg);
+    }
+    save();
+    toast('✅ Registro neutro salvo localmente.');
+    render();
+    return;
+  }
+  S.aportes.unshift(reg);
+  if(kind==='renda-fixa'){
+    learnTickerMeta(reg.ticker, 'Renda Fixa', reg.sector, true);
+    syncAssetsFromAportes(false);
+    toast(`✅ Lançamento de ${reg.name||reg.ticker} registrado!`);
+    fetchQuotes(false);
+    scheduleAutoProventosGratis('aporte-rf');
+    return;
+  }
+  learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
+  syncAssetsFromAportes(false);
+  toast(`✅ ${kind==='venda'?'Venda':'Compra'} de ${reg.ticker} registrada!`);
+  fetchQuotes(false);
+  scheduleAutoProventosGratis('aporte');
+}
 function isRendaFixaAsset(a){
   return normalizeType(a?.type||metaTicker(a?.ticker).type||'Ação','Ação') === 'Renda Fixa';
 }
@@ -10320,7 +10820,7 @@ function rentBenchSeries(length, bench='CDI'){
 function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
   const txs=[...S.aportes]
     .map(a=>({...a, _dt: parseAnyDate(a.date)}))
-    .filter(a=>a._dt)
+    .filter(a=>a._dt && !isNeutralMovement(a))
     .sort((a,b)=>a._dt-b._dt||((Number(a.id)||0)-(Number(b.id)||0)));
   const provs=[...S.proventos]
     .map(p=>({...p, _dt: parseAnyDate(p.date)}))
@@ -10491,6 +10991,7 @@ function syncAssetsFromAportes(showMsg=false){
     return da-db||((Number(a.id)||0)-(Number(b.id)||0));
   });
   movs.forEach(p=>{
+    if(isNeutralMovement(p)) return;
     const raw=String(p.ticker||'').trim().toUpperCase();
     const op=(p.operation||p.op||'compra').toLowerCase();
     const type=String(p.type||p.asset_type||'').trim();
@@ -10646,6 +11147,7 @@ function syncAssetsFromAportes(showMsg=false){
 function qtyAtDate(ticker,refDate){
   const t=String(ticker||'').toUpperCase(); let qty=0;
   [...S.aportes].filter(a=>String(a.ticker||'').toUpperCase()===t).sort((a,b)=>(parseAnyDate(a.date)?.getTime()||0)-(parseAnyDate(b.date)?.getTime()||0)).forEach(a=>{
+    if(isNeutralMovement(a)) return;
     const d=parseAnyDate(a.date);
     if(!d||!refDate||d.getTime()>refDate.getTime()) return;
     const q=Math.abs(Number(a.qty)||0),op=(a.operation||a.op||'compra').toLowerCase();
@@ -10655,7 +11157,7 @@ function qtyAtDate(ticker,refDate){
 }
 function earliestAporteDate(){
   let min=null;
-  S.aportes.forEach(a=>{const d=parseAnyDate(a.date);if(d&&(!min||d<min)) min=d;});
+  S.aportes.forEach(a=>{if(isNeutralMovement(a)) return; const d=parseAnyDate(a.date);if(d&&(!min||d<min)) min=d;});
   if(!min){const y=new Date().getFullYear();min=new Date(y,0,1);}
   min.setDate(min.getDate()-10); return min;
 }
@@ -11817,6 +12319,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
       ${walletSwitchBox()}
       ${configMenu()}
       ${mobileTopActionButton()}
+      <button class="btn bp" onclick="openQuickMovement()" style="white-space:nowrap">+ Nova movimentação</button>
 
       <div style="text-align:right">
         <div style="font-size:11px;color:#2e3f58">${now}</div>
@@ -11840,7 +12343,8 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
   ${S.b3MovementReview?b3MovementReviewModal():''}
   ${S.rfPositionReview?rfPositionReviewModal():''}
   ${S.b3ProventosReview?b3ProventosReviewModal():''}
-  ${S.allocGoalOpen?allocationGoalModal():''}`;
+  ${S.allocGoalOpen?allocationGoalModal():''}
+  ${S.quickMovementOpen?quickMovementModal():''}`;
 }
 function content(){
   if(S.tab==='dashboard') return dash();
@@ -12498,7 +13002,10 @@ function dash(){
         <div class="premium-dashboard-title">Visão geral da carteira</div>
         <div class="premium-dashboard-sub">Patrimônio, renda, riscos e próximos pontos de atenção em uma leitura rápida.</div>
       </div>
-      <div class="premium-dashboard-date">${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div class="premium-dashboard-date">${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>
+        <button class="btn bp" onclick="openQuickMovement()" style="white-space:nowrap">+ Nova movimentação</button>
+      </div>
     </div>
     <div class="premium-metrics">
       ${dashboardMetricCard('💼','Patrimônio estimado',fmt(tC),`Aplicado: ${fmt(tI)}`,'#c4b5fd','rgba(129,140,248,.16)')}
@@ -12580,6 +13087,7 @@ function patrimonySnapshot(period=Number(S.dashPeriod)||12){
   const monthMap=new Map(months.map(row=>[row.key,row]));
   let baseline=0;
   (S.aportes||[]).forEach(item=>{
+    if(isNeutralMovement(item)) return;
     const date=parseAnyDate(item.date);
     if(!date) return;
     const op=String(item.operationType||item.operation||item.op||'compra').toLowerCase();
@@ -12976,8 +13484,8 @@ function apTab(){
     const op=String(a.operation||a.op||'').toLowerCase();
     return type==='Reserva de emergência' || op.startsWith('reserva');
   };
-  const compras=S.aportes.filter(a=>!isReserveRow(a) && (a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
-  const vendas=S.aportes.filter(a=>!isReserveRow(a) && (a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
+  const compras=S.aportes.filter(a=>!isReserveRow(a) && !isNeutralMovement(a) && (a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
+  const vendas=S.aportes.filter(a=>!isReserveRow(a) && !isNeutralMovement(a) && (a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(a.qty)*a.price,0);
   const liquido=compras-vendas;
   const valorAtualCarteira=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
   const resultadoAcumulado=valorAtualCarteira-liquido;
@@ -13046,15 +13554,23 @@ function apTab(){
       const da=parseAnyDate(a.date)?.getTime()||0,db=parseAnyDate(b.date)?.getTime()||0;
       return db-da||String(a.ticker||'').localeCompare(String(b.ticker||''))||((Number(b.id)||0)-(Number(a.id)||0));
     });
-    const gCompras=items.filter(a=>(a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(Number(a.qty)||0)*Number(a.price||0),0);
-    const gVendas=items.filter(a=>(a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(Number(a.qty)||0)*Number(a.price||0),0);
-    const gLiquido=gCompras-gVendas;
+    const gCompras=items.filter(a=>!isNeutralMovement(a) && (a.operation||a.op||'compra')!=='venda').reduce((s,a)=>s+Math.abs(Number(a.qty)||0)*Number(a.price||0),0);
+    const gVendas=items.filter(a=>!isNeutralMovement(a) && (a.operation||a.op||'compra')==='venda').reduce((s,a)=>s+Math.abs(Number(a.qty)||0)*Number(a.price||0),0);
+    const gNeutro=items.filter(a=>isNeutralMovement(a)).reduce((s,a)=>s+Math.abs(Number(a.qty)||0)*Number(a.price||0),0);
+    const groupIsNeutral=type==='Outro' || items.every(a=>isNeutralMovement(a));
+    const gLiquido=groupIsNeutral ? gNeutro : (gCompras-gVendas);
     const gTickers=[...new Set(items.map(a=>String(a.ticker||'').toUpperCase()))];
     const rows=items.map(a=>{
-    const mm=metaTicker(a.ticker),m={type:normalizeType(a.type||a.asset_type||mm.type||'Ação','Ação'),sector:a.sector||a.asset_sector||mm.sector},op=(a.operation||a.op||'compra').toLowerCase(),isV=op==='venda';
+      const mm=metaTicker(a.ticker),m={type:normalizeType(a.type||a.asset_type||mm.type||'Ação','Ação'),sector:a.sector||a.asset_sector||mm.sector},kind=aporteMovementKind(a),isV=kind==='venda',isO=kind==='outro';
+      const badgeLabel=aporteMovementLabel(a);
+      const badgeStyle=isV
+        ? 'background:rgba(248,113,113,.08);color:#f87171;border:1px solid rgba(248,113,113,.22)'
+        : isO
+          ? 'background:rgba(148,163,184,.08);color:#94a3b8;border:1px solid rgba(148,163,184,.22)'
+          : 'background:rgba(52,211,153,.08);color:#34d399;border:1px solid rgba(52,211,153,.22)';
       return`<tr>
         <td class="mu">${esc(a.date)}</td>
-        <td><span class="bdg" style="background:${isV?'rgba(248,113,113,.08)':'rgba(52,211,153,.08)'};color:${isV?'#f87171':'#34d399'};border:1px solid ${isV?'rgba(248,113,113,.22)':'rgba(52,211,153,.22)'}">${isV?'Venda':'Compra'}</span></td>
+        <td><span class="bdg" style="${badgeStyle}">${esc(badgeLabel)}</span></td>
         <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td>
         <td><span class="bdg ${bdg(m.type)}">${esc(m.type)}</span></td>
         <td class="mu">${esc(m.sector||'—')}</td>
@@ -13075,14 +13591,14 @@ function apTab(){
           <div class="ag-ico">${tipoIcon(type)}</div>
           <div>
             <div class="ag-name">${esc(type)}</div>
-            <div class="ag-sub">${items.length} operações · ${gTickers.length} ativos · ${fmt(gLiquido)}</div>
+            <div class="ag-sub">${items.length} operações · ${gTickers.length} ativos · ${groupIsNeutral?'registro':'capital'} ${fmt(gLiquido)}</div>
           </div>
         </div>
         <div class="ag-stats">
           <div class="ag-stat"><div class="ag-k">Operações</div><div class="ag-v">${items.length}</div></div>
           <div class="ag-stat"><div class="ag-k">Compras realizadas</div><div class="ag-v">${fmt(gCompras)}</div></div>
           <div class="ag-stat"><div class="ag-k">Vendas realizadas</div><div class="ag-v">${fmt(gVendas)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Capital investido</div><div class="ag-v" style="color:${gLiquido>=0?'#34d399':'#f87171'}">${fmt(gLiquido)}</div></div>
+          <div class="ag-stat"><div class="ag-k">${groupIsNeutral?'Valor registrado':'Capital investido'}</div><div class="ag-v" style="color:${groupIsNeutral?'#94a3b8':(gLiquido>=0?'#34d399':'#f87171')}">${fmt(gLiquido)}</div></div>
           <div class="ag-stat"><div class="ag-k">Ativos</div><div class="ag-v">${gTickers.length}</div></div>
         </div>
         <div class="ag-open">⌄</div>
@@ -13109,8 +13625,7 @@ function apTab(){
         ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
       </div>
       <button class="btn bgh" onclick="toggleAportesHistory()">${S.apHistoryOpen===false?'Mostrar histórico':'Ocultar histórico'}</button>
-      <button class="btn bp" onclick="tgP()">+ Registrar operação</button>
-      <button class="btn bgh" onclick="tgP('rf')">+ Renda Fixa</button>
+      <button class="btn bp" onclick="openQuickMovement()">+ Nova movimentação</button>
     </div>
   </div>
   ${frmP()}
@@ -14485,6 +15000,9 @@ function svA(){
 
 function tgP(pref='compra'){
   S.showP=!S.showP; S.editPId=null;
+  S.quickMovementOpen=false;
+  S.quickMovementDraft=null;
+  S.quickMovementEditId=null;
   S._fp=pref==='reserva'
     ? {operation:'compra', type:'Reserva de emergência', reserveTarget:'bolsa', typeManual:true}
     : pref==='rf'
@@ -14494,7 +15012,22 @@ function tgP(pref='compra'){
   setTimeout(applyMetaToAporte,50);
 }
 function clP(){ S.showP=false; S.editPId=null; S._fp=null; render(); }
-function edP(id){ const p=S.aportes.find(x=>x.id===id); if(!p) return; S._fp={...p, typeManual:true}; S.editPId=id; S.showP=true; render(); setTimeout(applyMetaToAporte,50); }
+function edP(id){
+  const p=S.aportes.find(x=>x.id===id);
+  if(!p) return;
+  if(isNeutralMovement(p)){
+    S.quickMovementEditId=id;
+    S.quickMovementDraft={...quickMovementDefaultDraft('outro'), kind:'outro', date:inputDateValue(p.date||''), outroTitle:String(p.title||p.name||p.ticker||'').trim(), value:String(Number(p.totalValue||p.value||p.price||0)||''), outroCategory:String(p.sector||'Geral').trim()||'Geral', note:String(p.note||p.decision||'').trim()};
+    S.quickMovementOpen=true;
+    render();
+    return;
+  }
+  S._fp={...p, typeManual:true};
+  S.editPId=id;
+  S.showP=true;
+  render();
+  setTimeout(applyMetaToAporte,50);
+}
 function svP(){
   const op=(document.getElementById('p-op')?.value||'compra').toLowerCase();
   const rawName=String(document.getElementById('p-ti')?.value||'').trim();
@@ -14619,7 +15152,13 @@ function rmP(id){
   scheduleAutoProventosGratis('remove-aporte');
 }
 
-function tgD(){ S.showD=!S.showD; render(); }
+function tgD(){
+  S.quickMovementOpen=false;
+  S.quickMovementDraft=null;
+  S.quickMovementEditId=null;
+  S.showD=!S.showD;
+  render();
+}
 function clD(){ S.showD=false; render(); }
 function svD(){
   const ti=document.getElementById('d-ti')?.value?.trim().toUpperCase();
@@ -14762,7 +15301,7 @@ function getAI(){
 
 function bind(){
   document.querySelectorAll('.fc input:not([disabled]),.fc select').forEach(el=>{
-    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ if(S.showA) svA(); else if(S.showP) svP(); else if(S.showD) svD(); } });
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ if(S.quickMovementOpen) saveQuickMovement(); else if(S.showA) svA(); else if(S.showP) svP(); else if(S.showD) svD(); } });
   });
 }
 
