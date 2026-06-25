@@ -7566,6 +7566,24 @@ function quickMovementKindTone(kind){
     outro:'muted'
   }[normalizeQuickMovementKind(kind)]) || 'muted';
 }
+function findQuickMovementAssetByTicker(ticker){
+  const tk=cleanAssetCode(ticker);
+  if(!tk) return null;
+  const assets=Array.isArray(S.assets) ? S.assets : [];
+  const direct=assets.find(a=>cleanAssetCode(a?.ticker||'')===tk);
+  if(direct) return direct;
+  const learned=learnedMetaFor(tk);
+  const meta=metaTicker(tk);
+  if((learned && (learned.type || learned.sector || learned.name)) || (meta && (meta.type || meta.sector))){
+    return {
+      ticker:tk,
+      name:String(learned?.name||meta?.name||'').trim(),
+      type:normalizeType(learned?.type||meta?.type||'', ''),
+      sector:String(learned?.sector||meta?.sector||'').trim()
+    };
+  }
+  return null;
+}
 function quickMovementDefaultDraft(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
   const today=new Date().toISOString().slice(0,10);
@@ -7580,6 +7598,7 @@ function quickMovementDefaultDraft(kind='compra'){
     value:'',
     note:'',
     eventType:'Rendimento',
+    assetName:'',
     rfName:'',
     rfSubtype:'CDB',
     rfAppDate:today,
@@ -7592,7 +7611,10 @@ function quickMovementDefaultDraft(kind='compra'){
     rfUnavailable:'',
     rfNote:'',
     outroTitle:'',
-    outroCategory:'Geral'
+    outroCategory:'Geral',
+    manualType:false,
+    manualSector:false,
+    manualName:false
   };
 }
 function quickMovementKindOptions(){
@@ -7616,6 +7638,7 @@ function quickMovementPreviewHtml(){
   const draft=S.quickMovementDraft || quickMovementDefaultDraft();
   const kind=normalizeQuickMovementKind(draft.kind);
   const tone=quickMovementKindTone(kind);
+  const lookup=findQuickMovementAssetByTicker(draft.ticker||draft.rfName||draft.outroTitle||'');
   const ticker=String(draft.ticker||draft.rfName||draft.outroTitle||'—').trim().toUpperCase() || '—';
   const qty=Math.abs(parseNum(draft.qty));
   const price=Math.max(0, parseNum(draft.price));
@@ -7637,11 +7660,22 @@ function quickMovementPreviewHtml(){
       : kind==='outro'
         ? String(draft.outroCategory||'Geral')
         : String(draft.type||'Ação');
+  const lookupType=String(lookup?.type||'').trim() || (kind==='renda-fixa' ? 'Renda Fixa' : '');
+  const lookupSector=String(lookup?.sector||'').trim();
+  const lookupName=String(lookup?.name||'').trim();
+  const assetInfo=kind==='renda-fixa'
+    ? lookupName || String(draft.rfName||draft.ticker||'')
+    : lookupType || draft.type || '—';
+  const assetSector=kind==='renda-fixa'
+    ? (lookupSector || String(draft.rfSubtype||'Renda Fixa'))
+    : (lookupSector || String(draft.sector||'—'));
   const secondary=kind==='renda-fixa'
     ? quickMovementImpactText(kind)
     : kind==='outro'
       ? quickMovementImpactText(kind)
-      : `Destino: ${label}.`;
+      : lookupType || lookupSector
+        ? `Encontrado: ${assetInfo}${assetSector ? ` · ${assetSector}` : ''}.`
+        : `Destino: ${label}.`;
   return `
     <div class="quick-movement-preview-card">
       <div class="quick-movement-preview-head">
@@ -7665,6 +7699,7 @@ function quickMovementPreviewHtml(){
           <div class="quick-movement-preview-value">${fmt(total)}</div>
         </div>
       </div>
+      ${lookupType || lookupSector ? `<div class="quick-movement-preview-note">Tipo: ${esc(assetInfo || '—')} · Setor: ${esc(assetSector || '—')}</div>` : ''}
       <div class="quick-movement-preview-note">${esc(secondary)}</div>
     </div>`;
 }
@@ -7681,7 +7716,15 @@ function openQuickMovement(kind='compra'){
   S.editId=null;
   S.editPId=null;
   S.quickMovementEditId=null;
-  S.quickMovementDraft={...quickMovementDefaultDraft(next), ...current, kind:next};
+  S.quickMovementDraft={...quickMovementDefaultDraft(next), ...current, kind:next, manualType:false, manualSector:false, manualName:false};
+  if(next!=='renda-fixa'){
+    const lookup=findQuickMovementAssetByTicker(S.quickMovementDraft.ticker||S.quickMovementDraft.rfName||S.quickMovementDraft.outroTitle||'');
+    if(lookup){
+      if(lookup.name && !S.quickMovementDraft.assetName) S.quickMovementDraft.assetName=lookup.name;
+      if(lookup.type) S.quickMovementDraft.type=normalizeType(lookup.type,S.quickMovementDraft.type||'Ação');
+      if(lookup.sector) S.quickMovementDraft.sector=String(lookup.sector).trim();
+    }
+  }
   S.quickMovementOpen=true;
   render();
 }
@@ -7693,9 +7736,29 @@ function closeQuickMovement(){
 }
 function setQuickMovementField(field, value){
   if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
-  S.quickMovementDraft[field]=value;
-  if(field==='kind') refreshQuickMovementPreview();
-  else refreshQuickMovementPreview();
+  const next=normalizeQuickMovementKind(S.quickMovementDraft.kind);
+  if(field==='ticker' || field==='rfName' || field==='outroTitle'){
+    const normalized=field==='ticker' ? String(value||'').toUpperCase() : String(value||'');
+    S.quickMovementDraft[field]=normalized;
+    if(field==='ticker'){
+      const lookup=next!=='renda-fixa' ? findQuickMovementAssetByTicker(normalized) : null;
+      if(lookup){
+        if(lookup.name && !S.quickMovementDraft.manualName) S.quickMovementDraft.assetName=lookup.name;
+        if(next!=='outro' && lookup.type && !S.quickMovementDraft.manualType) S.quickMovementDraft.type=normalizeType(lookup.type,'Ação');
+        if(next!=='outro' && lookup.sector && !S.quickMovementDraft.manualSector) S.quickMovementDraft.sector=String(lookup.sector).trim();
+      }else if(next!=='renda-fixa' && next!=='outro'){
+        if(!S.quickMovementDraft.manualType) S.quickMovementDraft.type='Ação';
+        if(!S.quickMovementDraft.manualSector) S.quickMovementDraft.sector='';
+        if(!S.quickMovementDraft.manualName) S.quickMovementDraft.assetName='';
+      }
+    }
+  }else{
+    S.quickMovementDraft[field]=value;
+    if(field==='type') S.quickMovementDraft.manualType=String(value||'').trim().length>0;
+    if(field==='sector') S.quickMovementDraft.manualSector=String(value||'').trim().length>0;
+    if(field==='rfName' || field==='outroTitle') S.quickMovementDraft.manualName=String(value||'').trim().length>0;
+  }
+  refreshQuickMovementPreview();
 }
 function quickMovementModal(){
   const draft=S.quickMovementDraft || quickMovementDefaultDraft();
@@ -7934,8 +7997,9 @@ function quickMovementBuildAporteFromFields(kind){
   const ticker=String(document.getElementById('qm-ti')?.value||'').trim().toUpperCase();
   const qty=Math.abs(parseNum(document.getElementById('qm-qty')?.value));
   const price=parseNum(document.getElementById('qm-price')?.value);
-  const type=normalizeType(document.getElementById('qm-type')?.value||metaTicker(ticker).type||'Ação','Ação');
-  const sector=String(document.getElementById('qm-sector')?.value||'').trim() || metaTicker(ticker).sector || '';
+  const lookup=findQuickMovementAssetByTicker(ticker);
+  const type=normalizeType(document.getElementById('qm-type')?.value||lookup?.type||metaTicker(ticker).type||'Ação','Ação');
+  const sector=String(document.getElementById('qm-sector')?.value||'').trim() || String(lookup?.sector||'').trim() || metaTicker(ticker).sector || '';
   const note=String(document.getElementById('qm-note')?.value||'').trim();
   if(!ticker || qty<=0 || price<=0) return {error:'Preencha ticker, quantidade e preço.'};
   return {
