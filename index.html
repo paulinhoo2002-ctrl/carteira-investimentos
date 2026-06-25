@@ -910,6 +910,37 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .nota-review-line input,.nota-review-line select{padding:6px 7px;font-size:12px;border-radius:8px}
 .nota-review-line.bad{opacity:.55}
 .nota-review-line .line-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.broker-note-upload{border:1px dashed var(--border);border-radius:14px;background:var(--surface);padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.broker-note-upload-title{font-size:13px;font-weight:850;color:var(--text)}
+.broker-note-upload-sub{font-size:11px;color:var(--muted);line-height:1.45;margin-top:4px}
+.broker-note-status{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--panel);font-size:11px;color:var(--muted);line-height:1.5}
+.broker-note-status.error{color:var(--danger);border-color:rgba(239,68,68,.28);background:rgba(239,68,68,.07)}
+.broker-note-status.loading{color:#60a5fa;border-color:rgba(59,130,246,.28);background:rgba(59,130,246,.07)}
+.broker-note-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.broker-note-kpi{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:10px;min-width:0}
+.broker-note-kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.broker-note-kpi-value{font-size:13px;font-weight:900;color:var(--text);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.broker-note-options{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+.broker-note-options label{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text);font-weight:700}
+.broker-note-lines{display:flex;flex-direction:column;gap:8px}
+.broker-note-line{display:grid;grid-template-columns:minmax(155px,1.25fr) 120px 100px 110px 120px minmax(150px,1fr);gap:9px;align-items:center;padding:11px;border:1px solid var(--border);border-radius:12px;background:var(--panel-2)}
+.broker-note-line.pending{border-color:rgba(251,191,36,.42);background:rgba(251,191,36,.06)}
+.broker-note-line-title{font-size:12px;font-weight:900;color:var(--text)}
+.broker-note-line-sub{font-size:9px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.broker-note-field-label{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.broker-note-line-value{font-size:11px;font-weight:800;color:var(--text)}
+.broker-note-line input{padding:7px 8px;font-size:12px}
+.broker-note-alert{padding:10px 12px;border:1px solid rgba(251,191,36,.3);border-radius:12px;background:rgba(251,191,36,.08);color:var(--warning);font-size:11px;line-height:1.5}
+.broker-note-alert.danger{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.07);color:var(--danger)}
+@media(max-width:640px){
+  .broker-note-upload{padding:13px}
+  .broker-note-upload .btn{width:100%}
+  .broker-note-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .broker-note-line{grid-template-columns:1fr 1fr!important}
+  .broker-note-line>div:first-child,.broker-note-line>div:last-child{grid-column:1/-1}
+  .broker-note-options{align-items:flex-start}
+  .broker-note-options label{width:100%}
+}
 .b3-review-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .b3-review-group-head{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1}
 .b3-review-group-title{font-size:14px;font-weight:800;color:#e2eaf6;line-height:1.15}
@@ -1131,6 +1162,9 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .mov-review-line .col-obs{min-width:0}
 .mov-review-line .line-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end}
 @media(max-width:900px){
+  .broker-note-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .broker-note-line{grid-template-columns:1fr 1fr 1fr}
+  .broker-note-line>div:first-child,.broker-note-line>div:last-child{grid-column:1/-1}
   .note-overlay{padding:10px}
   .note-modal{border-radius:14px}
   .note-body{padding:12px}
@@ -2495,6 +2529,7 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
 <input type="file" id="imp-file" accept=".json" style="display:none">
 <input type="file" id="b3-file" accept=".xlsx,.xls,.csv,.pdf" style="display:none">
 <input type="file" id="nota-file" accept=".xlsx,.xls,.csv" style="display:none">
+<input type="file" id="broker-note-pdf-file" accept=".pdf,application/pdf" style="display:none">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
@@ -2623,6 +2658,7 @@ let S = {
   quickMovementOpen:false,
   quickMovementDraft:null,
   quickMovementEditId:null,
+  brokerNoteImport:null,
   noteReview:null,
   b3Review:null,
   b3MovementReview:null,
@@ -3914,6 +3950,7 @@ async function resetPortfolio(){
   S.showA=false; S.editId=null; S._fa=null;
   S.showP=false; S.editPId=null; S._fp=null;
   S.showD=false; S.editDId=null; S._fd=null;
+  S.brokerNoteImport=null;
   S.noteReview=null;
   S.b3Review=null;
   S.b3MovementReview=null;
@@ -5166,6 +5203,180 @@ function inferNotaMeta(ticker, spec, market){
   if(/\bCRYPTO\b|\bCRIPTO\b|\bBITCOIN\b/.test(s)) return {type:'Crypto',sector:'Crypto'};
   return {type:mt.type||'Ação', sector:mt.sector||''};
 }
+function brokerNoteMoney(text, labels){
+  const source=String(text||'');
+  const lines=source.split(/\r?\n/).map(line=>line.replace(/\s+/g,' ').trim()).filter(Boolean);
+  for(const label of labels){
+    const normalizedLabel=notaNorm(label);
+    const line=lines.find(item=>notaNorm(item).includes(normalizedLabel));
+    if(line){
+      const values=[...line.matchAll(/(?:R\$\s*)?([\d.]+,\d{2})/g)];
+      if(values.length) return parseNum(values[values.length-1][1]);
+    }
+  }
+  return 0;
+}
+function mapInterAssetToTicker(description){
+  const s=notaNorm(description);
+  const mappings=[
+    [/\bINVESTO\s+HODL\b/,'HODL11','ETF','Cripto'],
+    [/\bIT\s+NOW\s+DIVD\b/,'DIVD11','ETF','Dividendos'],
+    [/\bVALE\b.*\bON\b|\bON\b.*\bVALE\b/,'VALE3','Ação','Mineração'],
+    [/\bCEMIG\b.*\bPN\b|\bPN\b.*\bCEMIG\b/,'CMIG4','Ação','Energia elétrica'],
+    [/\bBRASIL\b.*\bON\b|\bON\b.*\bBRASIL\b/,'BBAS3','Ação','Bancos'],
+    [/\bSANEPAR\b.*\bUNT\b|\bUNT\b.*\bSANEPAR\b/,'SAPR11','Ação','Saneamento'],
+    [/\bPETROBRAS\b.*\bPN\b|\bPN\b.*\bPETROBRAS\b/,'PETR4','Ação','Petróleo e gás']
+  ];
+  for(const [pattern,ticker,type,sector] of mappings){
+    if(pattern.test(s)) return {ticker,type,sector,recognized:true};
+  }
+  const direct=s.match(/\b([A-Z]{4}\d{1,2})\b/);
+  if(direct){
+    const ticker=direct[1];
+    const meta=metaTicker(ticker);
+    return {ticker,type:normalizeType(meta.type||'Ação','Ação'),sector:meta.sector||'',recognized:true};
+  }
+  return {ticker:'',type:'Ação',sector:'',recognized:false};
+}
+function parseInterBrokerOperationLine(line){
+  const clean=String(line||'').replace(/\s+/g,' ').trim();
+  if(!clean || !/^Bovespa\b/i.test(clean)) return null;
+  const match=clean.match(/^Bovespa\s+([CV])\s+(?:VIS|FRA)\s+(.+?)\s+([\d.]+)\s+([\d.,]+)\s+([\d.,]+)\s+[DC]\b/i);
+  if(!match) return null;
+  const description=match[2].trim();
+  const qty=parseNum(match[3]);
+  const price=parseNum(match[4]);
+  const total=parseNum(match[5]);
+  if(qty<=0 || price<=0 || total<=0) return null;
+  const mapped=mapInterAssetToTicker(description);
+  return {
+    operation:match[1].toUpperCase()==='V'?'venda':'compra',
+    description,
+    ticker:mapped.ticker,
+    recognized:mapped.recognized,
+    type:mapped.type,
+    sector:mapped.sector,
+    qty,
+    price,
+    total
+  };
+}
+function consolidateBrokerNoteOperations(operations, tradeDate=''){
+  const groups=new Map();
+  (operations||[]).forEach((item,index)=>{
+    const identity=item.ticker || `PENDENTE:${notaNorm(item.description)}`;
+    const key=[identity,item.operation||'compra',tradeDate].join('|');
+    if(!groups.has(key)){
+      groups.set(key,{
+        id:index,
+        include:true,
+        ticker:item.ticker||'',
+        recognized:!!item.recognized,
+        operation:item.operation||'compra',
+        description:item.description||'',
+        type:normalizeType(item.type||'Ação','Ação'),
+        sector:item.sector||'',
+        qty:0,total:0,price:0,lines:0,tradeDate
+      });
+    }
+    const row=groups.get(key);
+    row.qty+=Number(item.qty)||0;
+    row.total+=Number(item.total)||0;
+    row.lines++;
+    row.price=row.qty>0 ? row.total/row.qty : 0;
+  });
+  return [...groups.values()];
+}
+function extractInterBrokerNoteHeader(text){
+  const raw=String(text||'').replace(/\u00a0/g,' ');
+  const lines=raw.split(/\r?\n/).map(line=>line.replace(/\s+/g,' ').trim()).filter(Boolean);
+  const businessIndex=lines.findIndex(line=>notaNorm(line).includes('NEGOCIOS REALIZADOS'));
+  const headerLines=lines.slice(0,businessIndex>=0?businessIndex:Math.min(lines.length,40));
+  const headerText=headerLines.join('\n');
+  const normalized=notaNorm(headerText);
+  const tradeLabel='DATA\\s*(?:DO\\s*)?PREG[^A-Z0-9]*A?O';
+  let noteNumber='';
+  let tradeDate='';
+  const directNotePatterns=[
+    /(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA\s*[:.-]?\s*(\d{5,12})/,
+    /NOTA\s*(?:N\.?|NR\.?)\s*[:.-]?\s*(\d{5,12})/,
+    new RegExp(`(\\d{5,12})\\s+FOLHA\\s+\\d+\\s+${tradeLabel}`)
+  ];
+  for(const pattern of directNotePatterns){
+    const match=normalized.match(pattern);
+    if(match){ noteNumber=match[1]; break; }
+  }
+  const directDatePatterns=[
+    new RegExp(`${tradeLabel}\\s*[:.-]?\\s*(\\d{2}\\/\\d{2}\\/\\d{4})`),
+    /(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA[\s\S]{0,100}?(\d{5,12})[\s\S]{0,60}?(\d{2}\/\d{2}\/\d{4})/
+  ];
+  for(const pattern of directDatePatterns){
+    const match=normalized.match(pattern);
+    if(match){ tradeDate=match[match.length-1]; break; }
+  }
+  for(let i=0;i<headerLines.length && (!noteNumber||!tradeDate);i++){
+    const lineNorm=notaNorm(headerLines[i]);
+    const hasNoteLabel=/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA/.test(lineNorm);
+    const hasTradeLabel=new RegExp(tradeLabel).test(lineNorm);
+    const hasHeaderValues=/\b\d{5,12}\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/.test(lineNorm);
+    if(!hasNoteLabel && !hasTradeLabel && !hasHeaderValues) continue;
+    const windowText=headerLines.slice(i,Math.min(headerLines.length,i+4)).join(' ');
+    const windowNorm=notaNorm(windowText);
+    if(!noteNumber){
+      const afterLabel=windowNorm.match(/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA[\s:.-]*(?:FOLHA[\s:.-]*)?(?:DATA\s*(?:DO\s*)?PREGAO[\s:.-]*)?(\d{5,12})/);
+      const beforeSheet=windowNorm.match(/\b(\d{5,12})\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/);
+      noteNumber=(afterLabel||beforeSheet||[])[1]||'';
+    }
+    if(!tradeDate){
+      tradeDate=(windowNorm.match(new RegExp(`${tradeLabel}[\\s:.-]*(\\d{2}\\/\\d{2}\\/\\d{4})`))||windowNorm.match(/\b(\d{2}\/\d{2}\/\d{4})\b/)||[])[1]||'';
+    }
+  }
+  return {noteNumber,tradeDate};
+}
+function parseInterBrokerNoteText(text){
+  const raw=String(text||'').replace(/\u00a0/g,' ');
+  const normalized=notaNorm(raw);
+  const warnings=[];
+  const isInter=/NOTA DE CORRETAGEM/.test(normalized) && /INTER DTVM LTDA/.test(normalized);
+  if(!isInter) warnings.push('O arquivo não foi identificado com segurança como nota de corretagem do Banco Inter.');
+  const {noteNumber,tradeDate}=extractInterBrokerNoteHeader(raw);
+  const broker='INTER DTVM LTDA.';
+  const lines=raw.split(/\r?\n/).map(line=>line.replace(/\s+/g,' ').trim()).filter(Boolean);
+  const operations=lines.map(parseInterBrokerOperationLine).filter(Boolean);
+  const rows=consolidateBrokerNoteOperations(operations,tradeDate);
+  const operationsTotal=brokerNoteMoney(raw,['Valor das operações']) || operations.reduce((sum,item)=>sum+item.total,0);
+  const netTotal=brokerNoteMoney(raw,['Líquido para','Líquido da nota','Valor líquido da nota','Total líquido']);
+  const settlementFee=brokerNoteMoney(raw,['Taxa de liquidação']);
+  const emoluments=brokerNoteMoney(raw,['Emolumentos']);
+  const transferFee=brokerNoteMoney(raw,['Taxa de transferência de ativos','Transferência de ativos']);
+  const costs=netTotal>0 && operationsTotal>0 ? netTotal-operationsTotal : settlementFee+emoluments+transferFee;
+  if(!noteNumber) warnings.push('Número da nota não identificado.');
+  if(!tradeDate) warnings.push('Data do pregão não identificada.');
+  if(!operations.length) warnings.push('Nenhuma operação foi reconhecida em Negócios realizados.');
+  const pending=rows.filter(row=>!row.ticker).length;
+  if(pending) warnings.push(`${pending} ativo(s) pendente(s) de identificação. Informe o ticker antes de importar.`);
+  return {
+    valid:isInter && !!noteNumber && !!tradeDate && operations.length>0,
+    noteNumber,tradeDate,broker,operations,rows,operationsTotal,netTotal,
+    settlementFee,emoluments,transferFee,costs,warnings,
+    noteKey:[noteNumber,tradeDate,broker].join('|')
+  };
+}
+function brokerNoteValidTicker(value){
+  return /^[A-Z]{4}\d{1,2}$/.test(String(value||'').trim().toUpperCase());
+}
+function detectBrokerNoteDuplicate(note=S.brokerNoteImport?.parsed){
+  if(!note) return false;
+  const key=String(note.noteKey||'');
+  const noteNumber=String(note.noteNumber||'');
+  const tradeDate=String(note.tradeDate||'');
+  return (S.aportes||[]).some(item=>{
+    const decision=String(item.decision||item.note||'');
+    return (key && String(item.brokerNoteKey||'')===key)
+      || (noteNumber && tradeDate && decision.includes(`nota Inter ${noteNumber}`) && decision.includes(tradeDate))
+      || (noteNumber && String(item.source||'')==='Nota Inter PDF' && String(item.brokerNoteNumber||'')===noteNumber && String(item.date||'')===tradeDate);
+  });
+}
 function rfMetaFromText(v){
   const s=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
   if(s.includes('TESOURO')) return {type:'Renda Fixa',sector:'Tesouro Direto'};
@@ -5874,6 +6085,122 @@ function applyB3ImportedPositions(items, importDate){
   fetchQuotes(false);
   b3ImportCompletedMessage(`✅ Posição B3 importada: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
 }
+function openBrokerNoteImport(){
+  S.brokerNoteImport={open:true,status:'idle',message:'',fileName:'',rateCosts:false,parsed:null};
+  render();
+}
+function closeBrokerNoteImport(){
+  S.brokerNoteImport=null;
+  const input=document.getElementById('broker-note-pdf-file');
+  if(input) input.value='';
+  render();
+}
+function chooseBrokerNotePdf(){
+  document.getElementById('broker-note-pdf-file')?.click();
+}
+async function readBrokerNotePdf(file){
+  if(!file) return;
+  if(!S.brokerNoteImport) S.brokerNoteImport={open:true};
+  S.brokerNoteImport={...S.brokerNoteImport,status:'loading',message:'Lendo o PDF localmente...',fileName:file.name||'nota.pdf',parsed:null};
+  render();
+  try{
+    let pdfjs;
+    try{ pdfjs=await loadPdfJs(); }
+    catch(error){ throw new Error('PDFJS_LOAD'); }
+    const data=new Uint8Array(await file.arrayBuffer());
+    const doc=await pdfjs.getDocument({data}).promise;
+    const pages=[];
+    for(let pageNumber=1;pageNumber<=doc.numPages;pageNumber++){
+      const page=await doc.getPage(pageNumber);
+      const content=await page.getTextContent();
+      pages.push(pdfLinesFromTextContent(content).join('\n'));
+    }
+    const text=pages.join('\n');
+    if(text.replace(/\s+/g,'').length<80) throw new Error('PDF_NO_TEXT');
+    const parsed=parseInterBrokerNoteText(text);
+    parsed.duplicate=detectBrokerNoteDuplicate(parsed);
+    S.brokerNoteImport={...S.brokerNoteImport,status:parsed.valid?'ready':'error',message:parsed.valid?'Nota lida. Confira todos os dados antes de confirmar.':'Não foi possível validar todos os dados da nota.',parsed};
+  }catch(error){
+    console.error('[Nota Inter PDF] falha na leitura local',error);
+    const message=error?.message==='PDFJS_LOAD'
+      ? 'Não foi possível carregar o leitor de PDF. Verifique sua conexão e tente novamente.'
+      : 'Não foi possível ler este PDF. Verifique se é uma nota de corretagem do Inter com texto selecionável.';
+    S.brokerNoteImport={...S.brokerNoteImport,status:'error',message,parsed:null};
+  }
+  render();
+}
+function setBrokerNoteImportOption(field,value){
+  if(!S.brokerNoteImport) return;
+  if(field==='rateCosts') S.brokerNoteImport.rateCosts=!!value;
+  render();
+}
+function setBrokerNoteRowTicker(index,value){
+  const row=S.brokerNoteImport?.parsed?.rows?.[index];
+  if(!row) return;
+  row.ticker=String(value||'').trim().toUpperCase();
+  row.recognized=brokerNoteValidTicker(row.ticker);
+  if(row.recognized){
+    const existing=findQuickMovementAssetByTicker(row.ticker);
+    const meta=metaTicker(row.ticker);
+    row.type=normalizeType(existing?.type||meta.type||row.type||'Ação','Ação');
+    row.sector=existing?.sector||meta.sector||row.sector||'';
+  }
+  render();
+}
+function brokerNoteAdjustedRow(row,note,rateCosts){
+  const baseTotal=Number(row.total)||0;
+  const operationsTotal=Number(note.operationsTotal)||note.rows.reduce((sum,item)=>sum+(Number(item.total)||0),0);
+  const share=rateCosts && operationsTotal>0 ? baseTotal/operationsTotal : 0;
+  const allocated=share*(Number(note.costs)||0);
+  const adjustedTotal=Math.max(0,baseTotal+allocated);
+  return {...row,allocatedCost:allocated,adjustedTotal,adjustedPrice:Number(row.qty)>0?adjustedTotal/Number(row.qty):Number(row.price)||0};
+}
+function confirmBrokerNoteImport(){
+  const state=S.brokerNoteImport;
+  const note=state?.parsed;
+  if(!note?.valid) return;
+  const rows=(note.rows||[]).filter(row=>row.include!==false);
+  const invalid=rows.filter(row=>!brokerNoteValidTicker(row.ticker) || Number(row.qty)<=0 || Number(row.price)<=0);
+  if(invalid.length){
+    alert('Existem ativos pendentes ou linhas inválidas. Corrija o ticker antes de importar.');
+    return;
+  }
+  if(detectBrokerNoteDuplicate(note) && !confirm('Esta nota parece já ter sido importada. Continuar poderá duplicar posições e valores. Deseja realmente importar novamente?')) return;
+  const adjusted=rows.map(row=>brokerNoteAdjustedRow(row,note,!!state.rateCosts));
+  const now=Date.now();
+  const observation=`Importado da nota Inter ${note.noteNumber} - Pregão ${note.tradeDate}`;
+  const records=adjusted.map((row,index)=>({
+    id:now+index,
+    operation:row.operation||'compra',
+    movementKind:row.operation||'compra',
+    ticker:row.ticker,
+    qty:Number(row.qty)||0,
+    price:Number(row.adjustedPrice)||Number(row.price)||0,
+    totalValue:Number(row.adjustedTotal)||Number(row.total)||0,
+    date:note.tradeDate,
+    decision:observation,
+    note:observation,
+    type:normalizeType(row.type||metaTicker(row.ticker).type||'Ação','Ação'),
+    sector:row.sector||metaTicker(row.ticker).sector||'',
+    source:'Nota Inter PDF',
+    origin:'Nota Inter PDF',
+    brokerNoteKey:note.noteKey,
+    brokerNoteNumber:note.noteNumber,
+    brokerNoteBroker:note.broker,
+    brokerNoteCostsAllocated:!!state.rateCosts,
+    brokerNoteAllocatedCost:Number(row.allocatedCost)||0
+  }));
+  S.aportes=[...records,...S.aportes];
+  records.forEach(row=>learnTickerMeta(row.ticker,row.type,row.sector,true));
+  S.brokerNoteImport=null;
+  S.aportesViewMode='extrato';
+  S.aportesFilter='todos';
+  S.aportesPage=1;
+  syncAssetsFromAportes(false);
+  fetchQuotes(false);
+  scheduleAutoProventosGratis('nota-inter-pdf');
+  toast(`✅ Nota Inter ${note.noteNumber}: ${records.length} ativo(s) importado(s).`);
+}
 function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
   const importTag='[IMPORT_NOTA_CORRETORA]';
   const stamp=String(noteKey||noteNumber||tradeDate||'');
@@ -5975,6 +6302,73 @@ function notaReviewSummary(rows){
   const total=rows.filter(r=>r.include!==false).reduce((s,r)=>s+(Number(r.qty)||0)*(Number(r.price)||0),0);
   const count=rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0).length;
   return {total,count};
+}
+function brokerNoteImportModal(){
+  const state=S.brokerNoteImport;
+  if(!state?.open) return '';
+  const note=state.parsed;
+  const rows=note?.rows||[];
+  const rateCosts=!!state.rateCosts;
+  const duplicate=note ? detectBrokerNoteDuplicate(note) : false;
+  const pending=rows.filter(row=>!brokerNoteValidTicker(row.ticker)).length;
+  const previewRows=rows.map((row,index)=>{
+    const adjusted=brokerNoteAdjustedRow(row,note,rateCosts);
+    const pendingRow=!brokerNoteValidTicker(row.ticker);
+    return `<div class="broker-note-line ${pendingRow?'pending':''}">
+      <div><div class="broker-note-line-title">${esc(row.description||row.ticker||'Ativo não identificado')}</div><div class="broker-note-line-sub">${row.lines} linha(s) consolidada(s) · ${esc(row.type||'Ação')} ${row.sector?`· ${esc(row.sector)}`:''}</div></div>
+      <div><div class="broker-note-field-label">Ticker</div><input value="${esc(row.ticker||'')}" placeholder="Ex.: BBAS3" oninput="this.value=this.value.toUpperCase()" onchange="setBrokerNoteRowTicker(${index},this.value)"></div>
+      <div><div class="broker-note-field-label">Operação</div><div class="broker-note-line-value">${row.operation==='venda'?'Venda':'Compra'}</div></div>
+      <div><div class="broker-note-field-label">Quantidade</div><div class="broker-note-line-value">${row.qty}</div></div>
+      <div><div class="broker-note-field-label">Preço médio</div><div class="broker-note-line-value">${fmt(adjusted.adjustedPrice)}</div></div>
+      <div><div class="broker-note-field-label">${rateCosts?'Total com rateio':'Total da operação'}</div><div class="broker-note-line-value">${fmt(adjusted.adjustedTotal)}</div>${rateCosts?`<div class="broker-note-line-sub">Custo rateado: ${fmt(adjusted.allocatedCost)}</div>`:''}</div>
+    </div>`;
+  }).join('');
+  const statusClass=state.status==='error'?'error':state.status==='loading'?'loading':'';
+  return `<div class="note-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) closeBrokerNoteImport()">
+    <div class="note-modal" style="max-width:1180px;max-height:90vh;display:flex;flex-direction:column">
+      <div class="note-head">
+        <div class="note-title">
+          <div><h3>🧾 Importar nota PDF do Inter</h3><p>O PDF é lido localmente no navegador e nada é enviado para serviços externos.</p></div>
+          <button class="btn bgh" onclick="closeBrokerNoteImport()">Cancelar</button>
+        </div>
+      </div>
+      <div class="note-body" style="overflow:auto">
+        <div class="broker-note-upload">
+          <div><div class="broker-note-upload-title">Importe notas de corretagem PDF do Banco Inter</div><div class="broker-note-upload-sub">${state.fileName?`Arquivo selecionado: ${esc(state.fileName)}`:'Escolha um PDF com texto selecionável. Nenhum dado será salvo nesta etapa.'}</div></div>
+          <button class="btn bgh" onclick="chooseBrokerNotePdf()">${state.fileName?'Escolher outro PDF':'Selecionar PDF'}</button>
+        </div>
+        ${state.message?`<div class="broker-note-status ${statusClass}" style="margin-top:10px">${esc(state.message)}</div>`:''}
+        ${note?`
+          <div class="broker-note-kpis" style="margin-top:12px">
+            <div class="broker-note-kpi"><div class="broker-note-kpi-label">Nota</div><div class="broker-note-kpi-value">${esc(note.noteNumber||'—')}</div></div>
+            <div class="broker-note-kpi"><div class="broker-note-kpi-label">Pregão</div><div class="broker-note-kpi-value">${esc(note.tradeDate||'—')}</div></div>
+            <div class="broker-note-kpi"><div class="broker-note-kpi-label">Corretora</div><div class="broker-note-kpi-value">${esc(note.broker||'—')}</div></div>
+            <div class="broker-note-kpi"><div class="broker-note-kpi-label">Ativos consolidados</div><div class="broker-note-kpi-value">${rows.length}</div></div>
+            <div class="broker-note-kpi"><div class="broker-note-kpi-label">Operações</div><div class="broker-note-kpi-value">${fmt(note.operationsTotal)}</div></div>
+            <div class="broker-note-kpi"><div class="broker-note-kpi-label">Líquido da nota</div><div class="broker-note-kpi-value">${note.netTotal?fmt(note.netTotal):'—'}</div></div>
+          </div>
+          <div class="broker-note-options" style="margin-top:10px">
+            <div><div class="broker-note-upload-title">Custos aproximados: ${fmt(note.costs)}</div><div class="broker-note-upload-sub">Liquidação ${fmt(note.settlementFee)} · Emolumentos ${fmt(note.emoluments)} · Transferência ${fmt(note.transferFee)}</div></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <label><input type="radio" name="broker-note-rate" ${!rateCosts?'checked':''} onchange="setBrokerNoteImportOption('rateCosts',false)"> Importar sem ratear custos</label>
+              <label><input type="radio" name="broker-note-rate" ${rateCosts?'checked':''} onchange="setBrokerNoteImportOption('rateCosts',true)"> Ratear proporcionalmente</label>
+            </div>
+          </div>
+          ${duplicate?'<div class="broker-note-alert danger" style="margin-top:10px">Esta nota parece já ter sido importada. A confirmação exigirá uma autorização adicional.</div>':''}
+          ${pending?`<div class="broker-note-alert" style="margin-top:10px">${pending} ativo(s) pendente(s) de identificação. Informe um ticker válido antes de importar.</div>`:''}
+          ${(note.warnings||[]).length?`<div class="broker-note-alert" style="margin-top:10px">${note.warnings.map(esc).join('<br>')}</div>`:''}
+          <div class="broker-note-lines" style="margin-top:12px">${previewRows||'<div class="aporte-empty">Nenhuma operação reconhecida.</div>'}</div>
+        `:''}
+        <div class="note-foot">
+          <div class="hint">Cancelar ou fechar esta tela não altera a carteira. O salvamento só ocorre após a confirmação.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bgh" onclick="closeBrokerNoteImport()">Cancelar</button>
+            ${note?.valid?`<button class="btn bsv" onclick="confirmBrokerNoteImport()" ${pending?'disabled':''}>Confirmar importação</button>`:''}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 function notaReviewModal(){
   const r=S.noteReview;
@@ -7560,6 +7954,11 @@ document.getElementById('nota-file').addEventListener('change',async e=>{
     openNotaReview({items,warnings,importDate,stats,noteKey,noteNumber,tradeDate},file.name);
     if(warnings.length) console.warn('Avisos importação nota:',warnings);
   }catch(err){ console.error(err); alert('Erro ao importar a nota da corretora. Verifique o arquivo e tente novamente.'); }
+  e.target.value='';
+});
+document.getElementById('broker-note-pdf-file').addEventListener('change',async e=>{
+  const file=e.target.files[0];
+  if(file) await readBrokerNotePdf(file);
   e.target.value='';
 });
 
@@ -12483,6 +12882,7 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
   ${S.accessSettingsOpen?accessSettingsModal():''}
   ${S.backupOpen?backupManagerModal():''}
   ${S.pdfReportOpen?reportPdfPreview():''}
+  ${S.brokerNoteImport?brokerNoteImportModal():''}
   ${S.noteReview?notaReviewModal():''}
   ${S.b3Review?b3ReviewModal():''}
   ${S.b3MovementReview?b3MovementReviewModal():''}
@@ -13957,6 +14357,7 @@ function apTab(){
           <input value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
           ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
         </div>
+        <button class="btn bgh" onclick="openBrokerNoteImport()">Importar nota Inter</button>
         <button class="btn bp" onclick="openQuickMovement()">+ Nova movimentação</button>
       </div>
     </div>
