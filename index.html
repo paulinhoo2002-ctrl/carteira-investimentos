@@ -1160,28 +1160,40 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .dividend-query-value.info{color:#60a5fa}
 .dividend-query-value.warn{color:#fbbf24}
 .dividend-query-value.muted{color:#94a3b8}
-.div-premium{display:flex;flex-direction:column;gap:11px}
-.div-premium-hero{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:16px;padding:15px;background:linear-gradient(135deg,#10182a,#0b1020 68%,#102219)}
+.div-premium{display:flex;flex-direction:column;gap:12px;padding-bottom:4px}
+.div-premium-hero{position:relative;overflow:hidden;border:1px solid rgba(148,163,184,.18);border-radius:18px;padding:16px;background:linear-gradient(135deg,rgba(15,23,42,.98),rgba(10,14,28,.94) 62%,rgba(10,34,33,.92));box-shadow:0 18px 38px rgba(2,6,23,.22)}
 .div-premium-hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-90px;top:-100px;background:rgba(34,197,94,.12);pointer-events:none}
 .div-premium-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
-.div-premium-title{font-size:17px;font-weight:900;color:#edf3ff}
-.div-premium-sub{font-size:11px;color:#94a3b8;line-height:1.45;margin-top:4px}
+.div-premium-title{font-size:17px;font-weight:900;color:#edf3ff;letter-spacing:-.01em}
+.div-premium-sub{font-size:11px;color:#94a3b8;line-height:1.45;margin-top:4px;max-width:62ch}
+.div-premium-hero-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:relative;z-index:1;margin-top:12px}
+.div-premium-hero-pill,.div-premium-status{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:850;line-height:1.1}
+.div-premium-hero-pill{border:1px solid rgba(148,163,184,.22);background:rgba(255,255,255,.04);color:#cbd5e1}
+.div-premium-hero-pill strong{color:#f8fafc;font-size:11px;font-weight:900}
+.div-premium-status{border:1px solid rgba(52,211,153,.26);color:#bbf7d0;background:rgba(16,185,129,.14)}
+.div-premium-status.warn{color:#fde68a;border-color:rgba(245,158,11,.24);background:rgba(245,158,11,.14)}
+.div-premium-status.neutral{color:#cbd5e1;border-color:rgba(148,163,184,.24);background:rgba(255,255,255,.04)}
+.div-premium-progress{width:min(360px,100%);height:8px;border-radius:999px;overflow:hidden;background:rgba(148,163,184,.14);border:1px solid rgba(148,163,184,.1)}
+.div-premium-progress > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#34d399)}
 .div-premium-tabs,.div-premium-filters{display:flex;gap:7px;align-items:center;overflow-x:auto;scrollbar-width:none}
 .div-premium-tabs::-webkit-scrollbar,.div-premium-filters::-webkit-scrollbar{display:none}
 .div-premium-tabs{position:relative;z-index:1;margin-top:13px}
-.div-premium-tab,.div-premium-chip{flex:0 0 auto;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:7px 11px;font-size:10px;font-weight:850}
-.div-premium-tab.on{color:#ecfdf5;border-color:rgba(52,211,153,.35);background:rgba(16,185,129,.16)}
-.div-premium-chip.on{color:#c7d2fe;border-color:rgba(99,102,241,.38);background:rgba(79,70,229,.16)}
+.div-premium-tab,.div-premium-chip{flex:0 0 auto;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:8px 12px;font-size:10px;font-weight:850;box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
+.div-premium-tab.on{color:#ecfdf5;border-color:rgba(52,211,153,.35);background:linear-gradient(180deg,rgba(16,185,129,.2),rgba(16,185,129,.12))}
+.div-premium-chip.on{color:#e0e7ff;border-color:rgba(99,102,241,.38);background:linear-gradient(180deg,rgba(79,70,229,.2),rgba(79,70,229,.12))}
 .div-premium-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:10px}
 .div-premium-search{display:flex;align-items:center;gap:7px;flex:1 1 280px;max-width:560px;border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:7px 9px}
 .div-premium-search input{border:0;background:transparent;padding:0;min-width:0;width:100%;color:var(--text)}
-.div-premium-metrics{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
-.div-premium-metric{min-height:82px;border:1px solid var(--border);border-radius:13px;background:var(--panel-2);padding:10px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}
+.div-premium-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.div-premium-metric{min-height:88px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:11px 12px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;box-shadow:0 10px 24px rgba(2,6,23,.08)}
 .div-premium-metric-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.045em;line-height:1.25}
 .div-premium-metric-value{font-size:15px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .div-premium-metric-value.good{color:var(--success)}
 .div-premium-metric-value.warn{color:var(--warning)}
-.div-premium-metric-sub{font-size:9px;color:var(--muted);line-height:1.3}
+.div-premium-metric-sub{font-size:9px;color:var(--muted);line-height:1.35}
+.div-premium-metric-bar{height:6px;border-radius:999px;overflow:hidden;background:rgba(148,163,184,.14)}
+.div-premium-metric-bar > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#10b981)}
+.div-premium-metric-bar.warn > div{background:linear-gradient(90deg,#f59e0b,#f97316)}
 .div-goal-panel{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:12px}
 .div-goal-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .div-goal-title{font-size:12px;font-weight:900;color:var(--text)}
@@ -1258,6 +1270,303 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
   .div-month-name{grid-column:1/-1}
   .div-timeline{grid-template-columns:1fr;gap:7px}
 }
+.div-premium{display:flex;flex-direction:column;gap:12px;padding-bottom:4px}
+.div-premium-hero{position:relative;overflow:hidden;border:1px solid rgba(148,163,184,.18);border-radius:18px;padding:16px;background:linear-gradient(135deg,rgba(15,23,42,.98),rgba(10,14,28,.94) 62%,rgba(10,34,33,.92));box-shadow:0 18px 38px rgba(2,6,23,.22)}
+.div-premium-hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-90px;top:-100px;background:rgba(34,197,94,.12);pointer-events:none}
+.div-premium-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
+.div-premium-title{font-size:17px;font-weight:900;color:#edf3ff;letter-spacing:-.01em}
+.div-premium-sub{font-size:11px;color:#94a3b8;line-height:1.45;margin-top:4px;max-width:62ch}
+.div-premium-hero-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:relative;z-index:1;margin-top:12px}
+.div-premium-hero-pill,.div-premium-status{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:850;line-height:1.1}
+.div-premium-hero-pill{border:1px solid rgba(148,163,184,.22);background:rgba(255,255,255,.04);color:#cbd5e1}
+.div-premium-hero-pill strong{color:#f8fafc;font-size:11px;font-weight:900}
+.div-premium-status{border:1px solid rgba(52,211,153,.26);color:#bbf7d0;background:rgba(16,185,129,.14)}
+.div-premium-status.warn{color:#fde68a;border-color:rgba(245,158,11,.24);background:rgba(245,158,11,.14)}
+.div-premium-status.neutral{color:#cbd5e1;border-color:rgba(148,163,184,.24);background:rgba(255,255,255,.04)}
+.div-premium-progress{width:min(360px,100%);height:8px;border-radius:999px;overflow:hidden;background:rgba(148,163,184,.14);border:1px solid rgba(148,163,184,.1)}
+.div-premium-progress > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#34d399)}
+.div-premium-tabs,.div-premium-filters{display:flex;gap:7px;align-items:center;overflow-x:auto;scrollbar-width:none}
+.div-premium-tabs::-webkit-scrollbar,.div-premium-filters::-webkit-scrollbar{display:none}
+.div-premium-tabs{position:relative;z-index:1;margin-top:13px}
+.div-premium-tab,.div-premium-chip{flex:0 0 auto;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:8px 12px;font-size:10px;font-weight:850;box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
+.div-premium-tab.on{color:#ecfdf5;border-color:rgba(52,211,153,.35);background:linear-gradient(180deg,rgba(16,185,129,.2),rgba(16,185,129,.12))}
+.div-premium-chip.on{color:#e0e7ff;border-color:rgba(99,102,241,.38);background:linear-gradient(180deg,rgba(79,70,229,.2),rgba(79,70,229,.12))}
+.div-premium-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:10px}
+.div-premium-search{display:flex;align-items:center;gap:7px;flex:1 1 280px;max-width:560px;border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:7px 9px}
+.div-premium-search input{border:0;background:transparent;padding:0;min-width:0;width:100%;color:var(--text)}
+.div-premium-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.div-premium-metric{min-height:88px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:11px 12px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.div-premium-metric-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;line-height:1.25}
+.div-premium-metric-value{font-size:15px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-premium-metric-value.good{color:var(--success)}
+.div-premium-metric-value.warn{color:var(--warning)}
+.div-premium-metric-sub{font-size:9px;color:var(--muted);line-height:1.35}
+.div-premium-metric-bar{height:6px;border-radius:999px;overflow:hidden;background:rgba(148,163,184,.14)}
+.div-premium-metric-bar > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#10b981)}
+.div-premium-metric-bar.warn > div{background:linear-gradient(90deg,#f59e0b,#f97316)}
+.div-goal-panel{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:12px}
+.div-goal-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.div-goal-title{font-size:12px;font-weight:900;color:var(--text)}
+.div-goal-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.div-goal-values{display:flex;gap:15px;align-items:flex-end;text-align:right}
+.div-goal-value{font-size:17px;font-weight:900;color:var(--success)}
+.div-goal-track{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-top:10px}
+.div-goal-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#22c55e,#34d399)}
+.div-recent-list,.div-asset-list,.div-month-list{display:flex;flex-direction:column;gap:9px}
+.div-receipt-card{display:flex;flex-direction:column;gap:5px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:8px 10px;box-shadow:0 8px 20px rgba(2,6,23,.08)}
+.div-receipt-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.div-receipt-date{font-size:9px;color:var(--muted);font-weight:750}
+.div-receipt-topline{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.div-receipt-main{min-width:0;display:flex;flex-direction:column;gap:2px}
+.div-receipt-title{display:flex;align-items:baseline;gap:6px;min-width:0;flex-wrap:wrap}
+.div-receipt-ticker{font-size:12px;font-weight:900;color:var(--text);letter-spacing:.01em}
+.div-receipt-name,.div-receipt-note{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-receipt-note{white-space:normal;line-height:1.2}
+.div-receipt-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.div-receipt-value{font-size:12px;font-weight:900;color:var(--success);white-space:nowrap}
+.div-receipt-source{font-size:8px;color:var(--muted);line-height:1.2}
+.div-type-badge{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:8px;font-weight:900;border:1px solid var(--border);white-space:nowrap}
+.div-type-badge.dividendo{color:#60a5fa;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.25)}
+.div-type-badge.jcp{color:#fbbf24;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25)}
+.div-type-badge.rendimento{color:#34d399;background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.25)}
+.div-type-badge.outro{color:#94a3b8;background:rgba(148,163,184,.1)}
+.div-asset-group{border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));overflow:hidden;box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.div-asset-group>summary{list-style:none;display:grid;grid-template-columns:auto minmax(150px,1fr) repeat(4,minmax(92px,.62fr)) auto;gap:10px;align-items:center;padding:12px;cursor:pointer}
+.div-asset-group>summary::-webkit-details-marker{display:none}
+.div-asset-group[open]>summary{border-bottom:1px solid var(--border)}
+.div-asset-rank{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.18);color:#c7d2fe;font-size:10px;font-weight:900}
+.div-asset-name{font-size:13px;font-weight:900;color:var(--text)}
+.div-asset-sub{font-size:9px;color:var(--muted);margin-top:3px}
+.div-asset-stat span{display:block;font-size:8px;color:var(--muted);text-transform:uppercase}
+.div-asset-stat strong{display:block;font-size:11px;color:var(--text);margin-top:3px}
+.div-month-card{display:grid;grid-template-columns:90px minmax(120px,1fr) 100px minmax(120px,1fr) 120px;gap:10px;align-items:center;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:12px;box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.div-month-card.current{border-color:rgba(34,197,94,.35);box-shadow:0 12px 28px rgba(34,197,94,.08)}
+.div-month-name{font-size:12px;font-weight:900;color:var(--text);text-transform:capitalize}
+.div-month-stat-label{font-size:8px;color:var(--muted);text-transform:uppercase}
+.div-month-stat-value{font-size:11px;font-weight:850;color:var(--text);margin-top:3px}
+.div-month-stat-value.gn{color:var(--success)}
+.div-month-progress{height:7px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden;margin-top:7px}
+.div-month-progress > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#10b981)}
+.div-timeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.div-timeline-card{border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:11px;min-height:102px;box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.div-timeline-month{font-size:10px;font-weight:900;color:var(--text);text-transform:capitalize}
+.div-timeline-value{font-size:14px;font-weight:900;color:var(--success);margin-top:9px}
+.div-timeline-sub{font-size:9px;color:var(--muted);margin-top:4px}
+.div-timeline-progress{height:7px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden;margin-top:8px}
+.div-timeline-progress > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#60a5fa,#22c55e)}
+.div-premium-empty{padding:28px 16px;text-align:center;border:1px dashed var(--border);border-radius:14px;background:var(--panel);color:var(--muted);line-height:1.5}
+.div-empty-title{font-size:13px;font-weight:850;color:var(--text)}
+.div-empty-sub{font-size:10px;color:var(--muted);margin-top:5px}
+.div-collapsible{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
+.div-collapsible + .div-collapsible{margin-top:8px}
+.div-collapsible-summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;cursor:pointer;user-select:none}
+.div-collapsible-summary::-webkit-details-marker{display:none}
+.div-collapsible-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.div-collapsible-title{font-size:13px;font-weight:900;color:var(--text);line-height:1.15}
+.div-collapsible-sub{font-size:10px;color:var(--muted);line-height:1.35}
+.div-collapsible-meta{font-size:10px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px;flex:none}
+.div-collapsible-meta .when-open{display:none}
+.div-collapsible[open] .div-collapsible-meta .when-open{display:inline}
+.div-collapsible[open] .div-collapsible-meta .when-closed{display:none}
+.div-collapsible-chev{flex:none;width:26px;height:26px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text);background:var(--surface);font-size:12px}
+.div-collapsible[open]{box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.div-collapsible[open] .div-collapsible-summary{border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+.div-collapsible-body{padding:10px 12px 12px}
+details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
+html[data-theme="light"] .div-collapsible-summary{background:rgba(255,255,255,.75)}
+html[data-theme="light"] .div-collapsible[open] .div-collapsible-summary{background:linear-gradient(180deg,#fff,#f8fafc)}
+html[data-theme="light"] .div-collapsible-chev{background:#fff}
+html[data-theme="light"] .div-collapsible{box-shadow:0 8px 22px rgba(15,23,42,.06)}
+html[data-theme="light"] .div-premium-hero{background:linear-gradient(135deg,#fbfdff,#eef6f4 60%,#edf4ff);box-shadow:0 12px 30px rgba(15,23,42,.08)}
+html[data-theme="light"] .div-premium-title{color:#172033}
+html[data-theme="light"] .div-premium-sub{color:#5b6b80}
+html[data-theme="light"] .div-premium-hero-pill{background:rgba(255,255,255,.72);color:#334155;border-color:rgba(148,163,184,.28)}
+html[data-theme="light"] .div-premium-hero-pill strong{color:#0f172a}
+html[data-theme="light"] .div-premium-status.neutral{color:#475569;background:#f8fafc}
+html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
+html[data-theme="light"] .div-receipt-card,
+html[data-theme="light"] .div-asset-group,
+html[data-theme="light"] .div-month-card,
+html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,.06)}
+@media(max-width:1000px){
+  .div-premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .div-timeline{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .div-asset-group>summary{grid-template-columns:auto minmax(150px,1fr) repeat(2,minmax(92px,.65fr)) auto}
+  .div-asset-group>summary .div-asset-stat:nth-of-type(3),.div-asset-group>summary .div-asset-stat:nth-of-type(4){display:none}
+  .div-month-card{grid-template-columns:1fr 1fr}
+  .div-month-card > :nth-child(n+3){grid-column:1/-1}
+}
+@media(max-width:640px){
+  .div-premium{gap:9px;padding-bottom:22px}
+  .div-premium-hero{padding:12px;border-radius:14px}
+  .div-premium-head{display:block}
+  .div-premium-head .btn{width:100%;margin-top:10px}
+  .div-premium-title{font-size:15px}
+  .div-premium-tabs{margin-top:10px}
+  .div-premium-toolbar{padding:8px}
+  .div-premium-search{flex-basis:100%;max-width:none}
+  .div-premium-filters{width:100%}
+  .div-premium-metrics{grid-template-columns:1fr;gap:7px}
+  .div-premium-metric{min-height:75px;padding:9px}
+  .div-premium-metric-value{font-size:13px}
+  .div-premium-hero-meta{gap:6px}
+  .div-premium-hero-pill,.div-premium-status{width:100%;justify-content:flex-start}
+  .div-premium-progress{width:100%}
+  .div-goal-top{display:block}
+  .div-goal-values{text-align:left;margin-top:8px;justify-content:space-between}
+  .div-collapsible-summary{padding:10px 11px;align-items:flex-start}
+  .div-collapsible-meta{white-space:normal;text-align:right}
+  .div-collapsible-body{padding:9px 10px 10px}
+  .div-receipt-top,.div-receipt-foot{display:block}
+  .div-receipt-card{padding:10px}
+  .div-receipt-value{margin-top:6px}
+  .div-receipt-source{margin-top:4px}
+  .div-asset-group>summary{grid-template-columns:1fr}
+  .div-asset-group>summary .div-asset-stat:nth-of-type(2),.div-asset-group>summary .div-asset-stat:nth-of-type(3),.div-asset-group>summary .div-asset-stat:nth-of-type(4){display:none}
+  .div-month-card{grid-template-columns:1fr 1fr;gap:7px;padding:10px}
+  .div-month-name{grid-column:1/-1}
+  .div-month-card > :nth-child(n+3){grid-column:1/-1}
+  .div-timeline{grid-template-columns:1fr;gap:7px}
+}
+.div-premium .div-premium-hero{padding:12px}
+.div-premium .div-premium-head{gap:8px}
+.div-premium .div-premium-title{font-size:15px;line-height:1.15}
+.div-premium .div-premium-sub{font-size:10px;line-height:1.3;margin-top:3px;max-width:52ch}
+.div-premium .div-premium-hero-meta{margin-top:10px;gap:6px}
+.div-premium .div-premium-hero-pill,.div-premium .div-premium-status{padding:6px 9px;font-size:9px}
+.div-premium .div-premium-hero-pill strong{font-size:10px}
+.div-premium .div-premium-progress{height:7px}
+.div-premium .div-premium-tabs{margin-top:10px}
+.div-premium .div-premium-tab{padding:7px 10px;font-size:9px}
+.div-premium .div-premium-metrics{gap:6px}
+.div-premium .div-premium-metric{min-height:74px;padding:9px 10px;border-radius:12px;gap:4px}
+.div-premium .div-premium-metric-label{font-size:8px}
+.div-premium .div-premium-metric-value{font-size:13px}
+.div-premium .div-premium-metric-sub{font-size:8px;line-height:1.25}
+.div-premium .div-goal-panel{padding:10px}
+.div-premium .div-goal-top{gap:8px}
+.div-premium .div-goal-title{font-size:11px}
+.div-premium .div-goal-sub{font-size:9px}
+.div-premium .div-goal-value{font-size:14px}
+.div-premium .div-goal-track{height:7px;margin-top:8px}
+.div-premium .div-collapsible-summary{padding:9px 10px;gap:10px}
+.div-premium .div-collapsible-title{font-size:12px}
+.div-premium .div-collapsible-sub{font-size:9px;line-height:1.25}
+.div-premium .div-collapsible-meta{font-size:9px}
+.div-premium .div-collapsible-chev{width:22px;height:22px;font-size:11px}
+.div-premium .div-collapsible-body{padding:8px 10px 10px}
+.div-premium .div-recent-list,.div-premium .div-asset-list,.div-premium .div-month-list{gap:6px}
+.div-premium .div-receipt-card{padding:8px 9px;gap:6px}
+.div-premium .div-receipt-date{font-size:9px}
+.div-premium .div-receipt-title{gap:5px}
+.div-premium .div-receipt-ticker{font-size:12px}
+.div-premium .div-receipt-name,.div-premium .div-receipt-note{font-size:9px}
+.div-premium .div-receipt-value{font-size:12px}
+.div-premium .div-receipt-source{font-size:8px}
+.div-premium .div-receipt-foot .div-receipt-trash{
+  margin-left:auto;
+  padding:2px 6px;
+  min-height:22px;
+  font-size:10px;
+  line-height:1;
+  border-radius:7px;
+  border:1px solid rgba(148,163,184,.22);
+  background:rgba(15,23,42,.12);
+  color:var(--muted);
+  box-shadow:none;
+}
+.div-premium .div-recent-more{font-size:8px;color:var(--muted);margin-top:4px;text-align:right;opacity:.85}
+.div-premium .div-asset-group{border-radius:12px}
+.div-premium .div-asset-group>summary{padding:9px 10px;gap:8px}
+.div-premium .div-asset-rank{width:22px;height:22px;font-size:9px}
+.div-premium .div-asset-name{font-size:12px}
+.div-premium .div-asset-sub{font-size:8px}
+.div-premium .div-asset-stat strong{font-size:10px}
+.div-premium .div-month-card{padding:9px 10px;gap:6px;border-radius:12px}
+.div-premium .div-month-name{font-size:11px}
+.div-premium .div-month-stat-label{font-size:7px}
+.div-premium .div-month-stat-value{font-size:10px}
+.div-premium .div-month-progress{height:6px;margin-top:5px}
+.div-premium .div-timeline{gap:6px}
+.div-premium .div-timeline-card{padding:9px 10px;min-height:82px;border-radius:12px}
+.div-premium .div-timeline-month{font-size:9px}
+.div-premium .div-timeline-value{font-size:13px;margin-top:6px}
+.div-premium .div-timeline-sub{font-size:8px}
+.div-premium .div-timeline-progress{height:6px;margin-top:6px}
+.div-premium .div-premium-empty{padding:18px 12px;border-radius:12px}
+.div-premium .div-empty-title{font-size:12px}
+.div-premium .div-empty-sub{font-size:9px}
+.div-premium .div-premium-hero{padding:10px 12px}
+.div-premium .div-premium-head{gap:6px}
+.div-premium .div-premium-title{font-size:14px;line-height:1.1}
+.div-premium .div-premium-sub{font-size:9px;line-height:1.25;margin-top:2px;max-width:46ch}
+.div-premium .div-premium-hero-meta{margin-top:8px;gap:5px}
+.div-premium .div-premium-hero-pill,
+.div-premium .div-premium-status{padding:5px 8px;font-size:8px;gap:5px}
+.div-premium .div-premium-hero-pill strong{font-size:9px}
+.div-premium .div-premium-progress{height:6px}
+.div-premium .div-premium-tabs{margin-top:8px;gap:5px}
+.div-premium .div-premium-tab,
+.div-premium .div-premium-chip{padding:6px 9px;font-size:9px}
+.div-premium .div-premium-toolbar{padding:7px 8px;gap:8px}
+.div-premium .div-premium-search{padding:6px 8px;gap:6px;border-radius:10px}
+.div-premium .div-premium-metrics{gap:5px}
+.div-premium .div-premium-metric{min-height:70px;padding:8px 9px;border-radius:11px;gap:3px}
+.div-premium .div-premium-metric-label{font-size:7px;letter-spacing:.05em}
+.div-premium .div-premium-metric-value{font-size:12px}
+.div-premium .div-premium-metric-sub{font-size:7px;line-height:1.2}
+.div-premium .div-goal-panel{padding:9px 10px}
+.div-premium .div-goal-top{gap:6px}
+.div-premium .div-goal-title{font-size:10px}
+.div-premium .div-goal-sub{font-size:8px}
+.div-premium .div-goal-values{gap:10px}
+.div-premium .div-goal-value{font-size:13px}
+.div-premium .div-goal-track{height:6px;margin-top:7px}
+.div-premium .div-collapsible{border-radius:12px}
+.div-premium .div-collapsible-summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:8px 10px;align-items:center}
+.div-premium .div-collapsible-main{gap:2px}
+.div-premium .div-collapsible-title{font-size:11px;line-height:1.1}
+.div-premium .div-collapsible-sub{font-size:8px;line-height:1.2;max-width:44ch}
+.div-premium .div-collapsible-meta{font-size:8px}
+.div-premium .div-collapsible-chev{width:20px;height:20px;font-size:10px}
+.div-premium .div-collapsible-body{padding:7px 8px 8px}
+.div-premium .div-recent-list,.div-premium .div-asset-list,.div-premium .div-month-list{gap:5px}
+.div-premium .div-receipt-card{padding:7px 8px;gap:4px;border-radius:12px}
+.div-premium .div-receipt-top{gap:5px}
+.div-premium .div-receipt-topline{gap:4px}
+.div-premium .div-receipt-date{font-size:8px}
+.div-premium .div-receipt-ticker{font-size:11px}
+.div-premium .div-receipt-name,.div-premium .div-receipt-note{font-size:8px}
+.div-premium .div-receipt-value{font-size:12px}
+.div-premium .div-receipt-source{font-size:7px}
+.div-premium .div-receipt-foot .div-receipt-trash{
+  padding:2px 5px;
+  min-height:20px;
+  font-size:9px;
+  border-radius:6px;
+}
+.div-premium .div-recent-more{font-size:8px;margin-top:4px}
+.div-premium .div-asset-group{border-radius:11px}
+.div-premium .div-asset-group>summary{padding:8px 9px;gap:7px}
+.div-premium .div-asset-rank{width:20px;height:20px;font-size:8px}
+.div-premium .div-asset-name{font-size:11px}
+.div-premium .div-asset-sub{font-size:7px}
+.div-premium .div-asset-stat span{font-size:7px}
+.div-premium .div-asset-stat strong{font-size:9px}
+.div-premium .div-month-card{padding:8px 9px;gap:5px;border-radius:11px}
+.div-premium .div-month-name{font-size:10px}
+.div-premium .div-month-stat-label{font-size:6px}
+.div-premium .div-month-stat-value{font-size:9px}
+.div-premium .div-month-progress{height:5px;margin-top:4px}
+.div-premium .div-timeline{gap:5px}
+.div-premium .div-timeline-card{padding:8px 9px;min-height:76px;border-radius:11px}
+.div-premium .div-timeline-month{font-size:8px}
+.div-premium .div-timeline-value{font-size:12px;margin-top:5px}
+.div-premium .div-timeline-sub{font-size:7px}
+.div-premium .div-timeline-progress{height:5px;margin-top:5px}
+.div-premium .div-premium-empty{padding:16px 10px;border-radius:11px}
+.div-premium .div-empty-title{font-size:11px}
+.div-premium .div-empty-sub{font-size:8px}
 .rf-proventos-table th:nth-child(3),.rf-proventos-table td:nth-child(3),
 .rf-proventos-table th:nth-child(4),.rf-proventos-table td:nth-child(4),
 .rf-proventos-table th:nth-child(6),.rf-proventos-table td:nth-child(6),
@@ -12560,14 +12869,23 @@ function setAssetsInnerTab(tab){
   S.assetsInnerTab = tab==='analise' ? 'analise' : 'patrimonio';
   render();
 }
+function isDividendSectionOpen(section){
+  return S.activeDividendSection===section;
+}
 function toggleDividendSection(section, ev){
-  if(ev) ev.preventDefault();
+  if(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
   S.activeDividendSection = S.activeDividendSection===section ? '' : section;
   render();
+  return false;
 }
 function dividendDisclosureLabel(section){
-  return S.activeDividendSection===section ? 'clique para ocultar' : 'clique para abrir';
+  return isDividendSectionOpen(section) ? 'clique para ocultar' : 'clique para abrir';
 }
+window.isDividendSectionOpen = isDividendSectionOpen;
+window.toggleDividendSection = toggleDividendSection;
 function toggleImportedDividendsDetails(ev){
   if(ev) ev.preventDefault();
   S.showImportedDividendsDetails = !S.showImportedDividendsDetails;
@@ -15012,20 +15330,85 @@ function dividendTypeTone(type){
   if(type==='Rendimento FII'||type==='Rendimento') return 'rendimento';
   return 'outro';
 }
+function dividendRecentSummary(rows){
+  const total=rows.reduce((sum,row)=>sum+row.value,0);
+  const latest=rows[0];
+  return `${rows.length} lanç. · ${fmt(total)} total${latest?` · último ${latest.date||'—'}`:''}`;
+}
+function dividendMonthlySummary(rows){
+  const months=dividendMonthlyRows(rows);
+  const total=months.reduce((sum,row)=>sum+row.total,0);
+  const avg=months.length ? total/months.length : 0;
+  return `${months.length} meses · ${fmt(total)} total · média ${fmt(avg)}`;
+}
+function dividendAssetSummary(rows){
+  const groups=new Map();
+  rows.forEach(row=>{
+    const key=row.ticker||row.name;
+    if(!groups.has(key)) groups.set(key,{total:0});
+    groups.get(key).total+=row.value;
+  });
+  const total=rows.reduce((sum,row)=>sum+row.value,0);
+  return `${groups.size} ativo(s) · ${fmt(total)} total recebido`;
+}
+function dividendTimelineSummary(rows){
+  const stats=passiveIncomeGoalStats();
+  const months=stats.byMonth.length;
+  const total=stats.total12;
+  return `${months} mês(es) · ${fmt(total)} no período`;
+}
+function dividendCompactSectionHeader(section,title,summary,body){
+  return `<details class="div-collapsible">
+    <summary class="div-collapsible-summary">
+      <div class="div-collapsible-main">
+        <div class="div-collapsible-title">${esc(title)}</div>
+        <div class="div-collapsible-sub">${esc(summary)}</div>
+      </div>
+      <div class="div-collapsible-meta"><span class="when-closed">clique para abrir</span><span class="when-open">clique para ocultar</span></div>
+      <div class="div-collapsible-chev">▸</div>
+    </summary>
+    <div class="div-collapsible-body">${body}</div>
+  </details>`;
+}
+function dividendEmptyState(message='Nenhum provento encontrado para os filtros atuais.', detail='Ajuste a busca, os filtros ou a visão selecionada.'){
+  return `<div class="div-premium-empty"><div class="div-empty-title">${esc(message)}</div>${detail?`<div class="div-empty-sub">${esc(detail)}</div>`:''}</div>`;
+}
+function dividendHeroHeader(stats){
+  const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)||{total:0,count:0};
+  const target=Number(stats.target)||0;
+  const currentLabel=stats.currentMonthKey ? new Date(`${stats.currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'mês atual';
+  const pct=target>0 ? current.total/target*100 : 0;
+  const statusText=target>0 ? (pct>=100 ? 'Meta atingida' : `Faltam ${fmt(Math.max(0,target-current.total))}`) : 'Meta não definida';
+  const statusTone=target>0 ? (pct>=100 ? 'good' : 'warn') : 'neutral';
+  return `<div class="div-premium-hero-meta">
+    <div class="div-premium-hero-pill"><span>Mês atual</span><strong>${esc(currentLabel)}</strong></div>
+    <div class="div-premium-hero-pill"><span>Recebido</span><strong>${fmt(current.total)}</strong></div>
+    <div class="div-premium-hero-pill"><span>Meta mensal</span><strong>${target>0?fmt(target):'—'}</strong></div>
+    <div class="div-premium-status ${statusTone}">${esc(statusText)}</div>
+    ${target>0?`<div class="div-premium-progress" aria-hidden="true"><div style="width:${Math.min(100,pct).toFixed(1)}%"></div></div>`:''}
+  </div>`;
+}
 function dividendRecentList(rows,limit=0){
   const visible=limit>0?rows.slice(0,limit):rows;
-  if(!visible.length) return '<div class="div-premium-empty">Nenhum provento encontrado para os filtros atuais.</div>';
-  return `<div class="div-recent-list">${visible.map(row=>`<article class="div-recent-card">
-    <div class="div-recent-date">${esc(row.date||'Sem data')}</div>
-    <div class="div-recent-main">
-      <div class="div-recent-title"><span class="div-type-badge ${dividendTypeTone(row.type)}">${esc(row.type)}</span><span class="div-recent-ticker">${esc(row.ticker)}</span></div>
-      <div class="div-recent-name">${esc(row.name)}</div>
-      ${row.note?`<div class="div-recent-note">${esc(row.note)}</div>`:''}
+  if(!visible.length) return dividendEmptyState();
+  const footer=limit>0 && rows.length>visible.length ? `<div class="div-recent-more">Mostrando ${visible.length} de ${rows.length}</div>` : '';
+  return `<div class="div-recent-list">${visible.map(row=>`<article class="div-receipt-card">
+    <div class="div-receipt-top">
+      <div class="div-receipt-main">
+        <div class="div-receipt-topline">
+          <div class="div-receipt-date">${esc(row.date||'Sem data')}</div>
+          <span class="div-type-badge ${dividendTypeTone(row.type)}">${esc(row.type)}</span>
+          <span class="div-type-badge outro">${esc(row.source||'Manual')}</span>
+        </div>
+        <div class="div-receipt-title"><span class="div-receipt-ticker">${esc(row.ticker)}</span><span class="div-receipt-name">${esc(row.name)}</span></div>
+      </div>
+      <div class="div-receipt-value">${fmt(row.value)}</div>
     </div>
-    <div class="div-recent-source">${esc(row.source)}</div>
-    <div class="div-recent-value">${fmt(row.value)}</div>
-    <button class="bdi" onclick="rmD(${JSON.stringify(row.id)})" title="Remover provento">🗑️</button>
-  </article>`).join('')}</div>`;
+    <div class="div-receipt-foot">
+      <div class="div-receipt-source">${esc(row.source)}${row.note?` · ${esc(row.note)}`:''}</div>
+      <button class="bdi div-receipt-trash" onclick="rmD(${JSON.stringify(row.id)})" title="Remover provento">🗑️</button>
+    </div>
+  </article>`).join('')}${footer}</div>`;
 }
 function dividendsByAssetView(rows){
   const groups=new Map();
@@ -15037,10 +15420,11 @@ function dividendsByAssetView(rows){
     if(row.date>group.lastDate) group.lastDate=row.date;
   });
   const total=rows.reduce((sum,row)=>sum+row.value,0);
-  const html=[...groups.values()].sort((a,b)=>b.total-a.total).map(group=>{
+  const html=[...groups.values()].sort((a,b)=>b.total-a.total).map((group,index)=>{
     const share=total>0?group.total/total*100:0;
     return `<details class="div-asset-group">
       <summary>
+        <div class="div-asset-rank">#${index+1}</div>
         <div><div class="div-asset-name">${esc(group.ticker)}</div><div class="div-asset-sub">${esc(group.name)} · ${share.toFixed(1)}% do período</div></div>
         <div class="div-asset-stat"><span>Total recebido</span><strong>${fmt(group.total)}</strong></div>
         <div class="div-asset-stat"><span>Lançamentos</span><strong>${group.count}</strong></div>
@@ -15051,7 +15435,7 @@ function dividendsByAssetView(rows){
       <div class="ag-body">${dividendRecentList(group.rows)}</div>
     </details>`;
   }).join('');
-  return html?`<div class="div-asset-list">${html}</div>`:'<div class="div-premium-empty">Nenhum ativo com proventos encontrado.</div>';
+  return html?`<div class="div-asset-list">${html}</div>`:dividendEmptyState('Nenhum ativo com proventos encontrado.', 'Tente mudar a visão, os filtros ou a busca.');
 }
 function dividendMonthlyRows(rows=dividendPremiumRows()){
   const map=new Map();
@@ -15073,14 +15457,21 @@ function dividendMonthlyRows(rows=dividendPremiumRows()){
 }
 function dividendMonthlyHistory(rows){
   const months=dividendMonthlyRows(rows);
-  if(!months.length) return '<div class="div-premium-empty">Sem histórico mensal no período selecionado.</div>';
-  return `<div class="div-month-list">${months.map(row=>`<div class="div-month-card">
+  if(!months.length) return dividendEmptyState('Sem histórico mensal no período selecionado.', 'Mude o filtro de período ou a busca para ver meses com dados.');
+  const currentKey=passiveIncomeGoalStats().currentMonthKey;
+  return `<div class="div-month-list">${months.map(row=>{
+    const goalPct=row.goal>0?Math.min(100,row.goalPct):0;
+    const trend=row.comparison==null?'—':`${row.comparison>=0?'+':''}${row.comparison.toFixed(1)}%`;
+    const status=row.goal>0 ? (row.total>=row.goal ? 'Acima da meta' : 'Abaixo da meta') : 'Sem meta';
+    return `<div class="div-month-card${row.key===currentKey?' current':''}">
     <div class="div-month-name">${esc(row.label)}</div>
     <div><div class="div-month-stat-label">Total recebido</div><div class="div-month-stat-value gn">${fmt(row.total)}</div></div>
     <div><div class="div-month-stat-label">Lançamentos</div><div class="div-month-stat-value">${row.count}</div></div>
     <div><div class="div-month-stat-label">Melhor pagador</div><div class="div-month-stat-value">${row.best?`${esc(row.best[0])} · ${fmt(row.best[1])}`:'—'}</div></div>
-    <div><div class="div-month-stat-label">Mês anterior / meta</div><div class="div-month-stat-value">${row.comparison==null?'—':`${row.comparison>=0?'+':''}${row.comparison.toFixed(1)}%`} · ${row.goal>0?`${Math.min(row.goalPct,999).toFixed(0)}%`:'sem meta'}</div></div>
-  </div>`).join('')}</div>`;
+    <div><div class="div-month-stat-label">Mês anterior</div><div class="div-month-stat-value">${trend}</div><div class="div-month-progress"><div style="width:${goalPct.toFixed(1)}%"></div></div></div>
+    <div><div class="div-month-stat-label">Meta</div><div class="div-month-stat-value">${row.goal>0?`${Math.min(row.goalPct,999).toFixed(0)}% · ${status}`:'sem meta'}</div></div>
+  </div>`;
+  }).join('')}</div>`;
 }
 function dividendMonthlyTimeline(){
   const stats=passiveIncomeGoalStats();
@@ -15088,7 +15479,8 @@ function dividendMonthlyTimeline(){
   return `<div class="div-timeline">${stats.byMonth.map(row=>{
     const dt=new Date(`${row.key}-01T12:00:00`);
     const reached=goal>0&&row.total>=goal;
-    return `<div class="div-timeline-card"><div class="div-timeline-month">${esc(dt.toLocaleDateString('pt-BR',{month:'long',year:'2-digit'}))}</div><div class="div-timeline-value">${fmt(row.total)}</div><div class="div-timeline-sub">${row.count} lançamento(s) · ${goal>0?(reached?'meta atingida':'abaixo da meta'):'sem meta definida'}</div></div>`;
+    const pct=goal>0?Math.min(100,row.total/goal*100):0;
+    return `<div class="div-timeline-card"><div class="div-timeline-month">${esc(dt.toLocaleDateString('pt-BR',{month:'long',year:'2-digit'}))}</div><div class="div-timeline-value">${fmt(row.total)}</div><div class="div-timeline-sub">${row.count} lançamento(s) · ${goal>0?(reached?'meta atingida':'abaixo da meta'):'sem meta definida'}</div><div class="div-timeline-progress"><div style="width:${pct.toFixed(1)}%"></div></div></div>`;
   }).join('')}</div>`;
 }
 function dividendSummaryCards(){
@@ -15150,14 +15542,39 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   S.dividendViewMode=mode;
   const rows=filteredDividendRows();
   const tabs=[['overview','Visão geral'],['received','Recebimentos'],['asset','Por ativo'],['monthly','Histórico mensal'],['timeline','Linha do tempo']];
-  const body=mode==='asset'?dividendsByAssetView(rows)
-    :mode==='monthly'?dividendMonthlyHistory(rows)
-    :mode==='timeline'?dividendMonthlyTimeline()
-    :mode==='received'?dividendRecentList(rows)
-    :`${dividendSummaryCards()}${dividendGoalProgress()}<div class="div-goal-panel"><div class="div-goal-top"><div><div class="div-goal-title">Últimos recebimentos</div><div class="div-goal-sub">Movimentações mais recentes em ordem de pagamento.</div></div><button class="btn bgh" onclick="setDividendViewMode('received')">Ver todos</button></div><div style="margin-top:10px">${dividendRecentList(rows,8)}</div></div>`;
+  const recentSection=dividendCompactSectionHeader(
+    'received',
+    'Últimos recebimentos',
+    dividendRecentSummary(rows),
+    dividendRecentList(rows, mode==='received' ? 8 : 5)
+  );
+  const assetSection=dividendCompactSectionHeader(
+    'asset',
+    'Por ativo',
+    dividendAssetSummary(rows),
+    dividendsByAssetView(rows)
+  );
+  const monthlySection=dividendCompactSectionHeader(
+    'monthly',
+    'Histórico mensal',
+    dividendMonthlySummary(rows),
+    dividendMonthlyHistory(rows)
+  );
+  const timelineSection=dividendCompactSectionHeader(
+    'timeline',
+    'Linha do tempo',
+    dividendTimelineSummary(rows),
+    dividendMonthlyTimeline()
+  );
+  const body=mode==='asset'?assetSection
+    :mode==='monthly'?monthlySection
+    :mode==='timeline'?timelineSection
+    :mode==='received'?recentSection
+    :`${dividendSummaryCards()}${dividendGoalProgress()}${recentSection}${assetSection}${monthlySection}${timelineSection}`;
   return `<div class="div-premium">
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Renda recebida, evolução mensal e progresso da meta em uma leitura confortável no desktop e no celular.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
+      ${dividendHeroHeader(passiveIncomeGoalStats())}
       <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
     </div>
     ${frmD()}
