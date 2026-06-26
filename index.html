@@ -3975,7 +3975,6 @@ async function uploadLocalToCloud(show=true){
     FB.lastCloudError=null;
     FB.pendingCloudSave=false;
     clearTimeout(FB.cloudRetryTimer);
-    if(show) toast('☁️ Dados sincronizados na nuvem!');
   }catch(e){
     FB.lastCloudError=e;
     FB.pendingCloudSave=true;
