@@ -297,10 +297,11 @@ button{cursor:pointer;font-family:inherit}
   .analysis-ranking{padding:10px}
   .analysis-ranking-labels{display:none}
   .analysis-ranking-table{gap:7px}
-  .analysis-ranking-row{grid-template-columns:1fr 1fr;gap:6px;padding:9px}
+  .analysis-ranking-row{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:5px;padding:8px}
   .analysis-ranking-main{grid-column:1/-1}
   .analysis-ranking-signal{grid-column:1/-1;justify-content:flex-start}
-  .analysis-ranking-stat{align-items:flex-start}
+  .analysis-ranking-stat{align-items:flex-start;gap:1px}
+  .analysis-ranking-value{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:11px}
   .asset-inner-tabs{gap:6px;margin:2px 0 10px}
   .asset-inner-tab{padding:7px 10px;font-size:11px}
   .asset-premium-analysis{gap:8px;padding-bottom:22px}
@@ -318,8 +319,8 @@ button{cursor:pointer;font-family:inherit}
   .asset-premium-section-sub{display:none}
   .asset-premium-section-meta{font-size:8px;padding:3px 6px}
   .asset-premium-body{padding:8px;gap:6px}
-  .asset-premium-body .asset-performance-row:nth-child(n+4),
-  .asset-premium-body .asset-insight-row:nth-child(n+4){display:none}
+  .asset-premium-body .asset-performance-row:nth-child(n+6),
+  .asset-premium-body .asset-insight-row:nth-child(n+6){display:none}
   .asset-performance-row,.asset-insight-row{padding:7px 8px}
   .asset-performance-name,.asset-insight-title{font-size:10px}
   .asset-performance-prices,.asset-insight-sub{font-size:8px}
