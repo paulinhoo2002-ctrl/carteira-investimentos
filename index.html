@@ -710,6 +710,8 @@ tbody tr{transition:background .1s}tbody tr:hover{background:#0f1728}tbody tr:la
 .binst{background:#111828;color:#a5b4fc;border:1px solid rgba(99,102,241,.28);font-size:12px;padding:7px 12px}
 .bi{background:transparent;border:1px solid #27344b;border-radius:7px;padding:3px 9px;color:#7489a4;font-size:13px}
 .bdi{background:transparent;border:1px solid rgba(127,29,29,.5);border-radius:7px;padding:3px 9px;color:#f87171;font-size:13px}
+.aporte-card-actions .bi,
+.aporte-card-actions .bdi{min-width:32px;min-height:32px}
 .fc{background:#111828;border:1px solid #312e81;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 4px 20px rgba(99,102,241,.08)}
 .fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
 .fl{font-size:11px;color:#3d5472;margin-bottom:4px;font-weight:500}
@@ -1939,6 +1941,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .aporte-history-meta-value{font-size:9px;margin-top:0;white-space:normal}
   .aporte-history-card .aporte-history-meta:nth-of-type(4){display:flex}
   .aporte-card-actions{grid-column:1/-1;justify-content:flex-start;border-top:1px solid var(--border);padding-top:8px}
+  .aporte-card-actions .bi,
+  .aporte-card-actions .bdi{min-width:36px;min-height:36px}
   .aporte-pagination{align-items:flex-start;flex-direction:column}
   .aporte-pagination-actions{width:100%;justify-content:space-between}
   .aporte-asset-group>summary{grid-template-columns:minmax(0,1fr) auto;padding:11px}
@@ -13583,7 +13587,7 @@ function render(){
       </div>`;
   }
 }
-const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['auditoria','🔎 Auditoria'],['relatorios','📑 Relatórios'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
 }
@@ -13601,17 +13605,15 @@ function navTabGroup(label, items){
 }
 function desktopTabs(){
   return `<div class="tabs tabs-desktop">
-    ${navTabButton('dashboard','📊 Dashboard')}
-    ${navTabGroup('Carteira',[['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear']])}
-    ${navTabButton('aportes','💰 Aportes')}
-    ${navTabButton('dividendos','📅 Dividendos')}
-    ${navTabButton('renda-fixa','💼 Renda Fixa')}
+    ${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}
     ${navTabGroup('Relatórios',[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']])}
-    ${navTabGroup('Mais',[['metas','🎯 Metas'],['ia','🤖 IA']])}
   </div>`;
 }
 function mobileTabs(){
-  return `<div class="tabs tabs-mobile">${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}</div>`;
+  return `<div class="tabs tabs-mobile">
+    ${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}
+    ${navTabGroup('Relatórios',[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']])}
+  </div>`;
 }
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
@@ -15157,7 +15159,7 @@ function aporteHistoryCard(row){
   const detail=[row.type,row.sector].filter(Boolean).join(' · ') || 'Sem classificação';
   const name=row.name && row.name.toUpperCase()!==row.ticker.toUpperCase() ? row.name : '';
   const action=row.sourceType==='aporte'
-    ? `<button class="bi" onclick='edP(${JSON.stringify(row.id)})' title="Editar movimentação" aria-label="Editar movimentação">✏️</button>`
+    ? `<button class="bi" onclick='edP(${JSON.stringify(row.id)})' title="Editar lançamento" aria-label="Editar lançamento">✏️</button><button class="bdi" onclick='rmAporte(${JSON.stringify(row.id)})' title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`
     : `<button class="bi" onclick="go('dividendos')" title="Abrir Dividendos" aria-label="Abrir Dividendos">↗</button>`;
   return `<article class="aporte-history-card">
     <div class="aporte-history-date">${esc(row.date||'Sem data')}</div>
@@ -17214,12 +17216,15 @@ function svP(){
   scheduleAutoProventosGratis('aporte');
 }
 function rmP(id){
-  if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
+  if(!confirm('Deseja excluir este lançamento? Esta ação não pode ser desfeita.')) return;
   S.aportes=S.aportes.filter(a=>a.id!==id);
   if(S.editPId===id){ S.editPId=null; S.showP=false; S._fp=null; }
   syncAssetsFromAportes(false);
-  toast('🗑️ Operação removida.');
+  toast('🗑️ Lançamento removido.');
   scheduleAutoProventosGratis('remove-aporte');
+}
+function rmAporte(id){
+  rmP(id);
 }
 
 function tgD(){
