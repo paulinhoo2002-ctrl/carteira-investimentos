@@ -2205,11 +2205,12 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
     overflow-wrap:break-word;word-break:normal
   }
   .asset-inner-tabs{
-    flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;
+    flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;padding:2px 0 3px;
     -webkit-overflow-scrolling:touch
   }
   .asset-inner-tabs::-webkit-scrollbar{display:none}
-  .asset-inner-tab{flex:0 0 auto;min-height:40px}
+  .asset-inner-tab{flex:0 0 auto;min-height:38px;scroll-snap-align:start;padding:6px 9px}
   .sec>summary,.ag>summary,.nota-review-group summary,.b3-review-group summary,
   .mov-review-group summary,.asset-premium-section>summary,.irpf-section>summary{
     min-height:48px;padding:10px 11px;gap:8px;touch-action:manipulation
