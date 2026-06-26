@@ -14620,7 +14620,7 @@ function apTab(){
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;flex:1 1 460px">
         <div class="aporte-search">
           <span style="color:var(--muted)">🔎</span>
-          <input value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
+          <input id="aporte-premium-search" value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
           ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
         </div>
         <button class="btn bgh" onclick="openBrokerNoteImport()">Importar nota Inter</button>
@@ -16368,13 +16368,29 @@ function setAporteSearch(v){
   S.apSearch = String(v||'');
   S.aportesPage = 1;
   clearTimeout(S.apSearchTimer);
-  S.apSearchTimer = setTimeout(()=>render(),180);
+  const cursor=Number(document.getElementById('aporte-premium-search')?.selectionStart);
+  S.apSearchTimer = setTimeout(()=>{
+    render();
+    requestAnimationFrame(()=>{
+      const input=document.getElementById('aporte-premium-search');
+      if(!input) return;
+      input.focus({preventScroll:true});
+      const position=Number.isFinite(cursor)?Math.min(cursor,input.value.length):input.value.length;
+      input.setSelectionRange(position,position);
+    });
+  },180);
 }
 function clearAporteSearch(){
   S.apSearch = '';
   S.aportesPage = 1;
   clearTimeout(S.apSearchTimer);
   render();
+  requestAnimationFrame(()=>{
+    const input=document.getElementById('aporte-premium-search');
+    if(!input) return;
+    input.focus({preventScroll:true});
+    input.setSelectionRange(0,0);
+  });
 }
 function setAportesViewMode(mode){
   S.aportesViewMode=['extrato','ativo','categorias','resumo'].includes(mode) ? mode : 'extrato';
