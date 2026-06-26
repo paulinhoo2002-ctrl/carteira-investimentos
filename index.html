@@ -401,6 +401,63 @@ button{cursor:pointer;font-family:inherit}
 .premium-metric-label{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.055em;line-height:1.25}
 .premium-metric-value{font-size:17px;font-weight:900;color:var(--metric-color,#edf3ff);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .premium-metric-note{font-size:9px;color:#64748b;line-height:1.35}
+.premium-consultive-shell{display:flex;flex-direction:column;gap:8px}
+.premium-consultive-header{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:14px;padding:10px 11px;background:linear-gradient(135deg,var(--panel-2),var(--panel) 64%,var(--panel-2));display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.premium-consultive-header:after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-58px;top:-72px;background:rgba(59,130,246,.12);pointer-events:none}
+.premium-consultive-copy{position:relative;z-index:1;min-width:0}
+.premium-consultive-kicker{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:850}
+.premium-consultive-title{font-size:14px;font-weight:950;line-height:1.1;color:var(--text);margin-top:3px}
+.premium-consultive-title.ok{color:#34d399}
+.premium-consultive-title.warn{color:#fbbf24}
+.premium-consultive-title.danger{color:#f87171}
+.premium-consultive-title.info{color:#60a5fa}
+.premium-consultive-sub{font-size:9px;color:var(--muted);line-height:1.3;margin-top:4px;max-width:66ch}
+.premium-consultive-side{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-width:min(100%,280px)}
+.premium-consultive-pills{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+.premium-consultive-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:3px 7px;font-size:8px;font-weight:800;color:var(--muted);white-space:nowrap}
+.premium-consultive-pill strong{color:var(--text);font-size:8px}
+.premium-consultive-note{font-size:8px;color:var(--muted);line-height:1.25;text-align:right;max-width:30ch}
+.premium-consultive-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.premium-consultive-card{border:1px solid #1d2940;border-radius:12px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:9px 10px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.premium-consultive-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.premium-consultive-card-title{font-size:11px;font-weight:900;color:var(--text);line-height:1.15}
+.premium-consultive-card-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:900;border:1px solid var(--border);background:var(--panel);white-space:nowrap}
+.premium-consultive-card-status.ok{color:#34d399;border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.08)}
+.premium-consultive-card-status.warn{color:#fbbf24;border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08)}
+.premium-consultive-card-status.danger{color:#f87171;border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.08)}
+.premium-consultive-card-status.info{color:#60a5fa;border-color:rgba(96,165,250,.24);background:rgba(96,165,250,.08)}
+.premium-consultive-card-status.muted{color:#94a3b8}
+.premium-consultive-card-text{font-size:9px;color:var(--muted);line-height:1.35}
+.premium-consultive-card-action{font-size:9px;color:#a7f3d0;line-height:1.3}
+.premium-consultive-list{display:flex;flex-direction:column;gap:6px}
+.premium-consultive-grid .premium-consultive-list{min-width:0}
+.premium-consultive-grid .premium-consultive-card{height:100%}
+.premium-consultive-grid .premium-consultive-card .premium-consultive-card-text{max-width:100%}
+.premium-consultive-grid .premium-consultive-card .premium-consultive-card-action{margin-top:auto}
+.premium-exec-list{display:flex;flex-direction:column;gap:5px}
+.premium-exec-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(148,163,184,.12)}
+.premium-exec-row:last-child{border-bottom:0}
+.premium-exec-left{min-width:0}
+.premium-exec-title{font-size:10px;font-weight:900;color:var(--text);line-height:1.15}
+.premium-exec-sub{font-size:8px;color:var(--muted);line-height:1.25;margin-top:2px}
+.premium-exec-value{font-size:9px;font-weight:900;color:var(--text);text-align:right;white-space:nowrap}
+.premium-exec-value .gn,.premium-exec-value .am,.premium-exec-value .rd{display:block}
+.premium-compact-details{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+.premium-compact-details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px}
+.premium-compact-details>summary::-webkit-details-marker{display:none}
+.premium-compact-summary-main{min-width:0;display:flex;flex-direction:column;gap:2px}
+.premium-compact-summary-title{font-size:10px;font-weight:900;color:var(--text);line-height:1.15}
+.premium-compact-summary-sub{font-size:8px;color:var(--muted);line-height:1.2}
+.premium-compact-summary-meta{font-size:8px;color:var(--muted);font-weight:800;white-space:nowrap}
+.premium-compact-details[open] .premium-compact-summary-meta{color:var(--text)}
+.premium-compact-body{padding:0 10px 9px}
+.premium-compact-line{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(148,163,184,.12)}
+.premium-compact-line:first-child{border-top:0}
+.premium-compact-line-label{font-size:9px;font-weight:850;color:var(--text);line-height:1.2}
+.premium-compact-line-value{font-size:8px;color:var(--muted);line-height:1.25;text-align:right}
+.premium-nextstep-panel,.premium-quality-panel,.premium-reading-panel,.premium-dividend-panel{padding:10px}
+.premium-nextstep-panel .premium-panel-head,.premium-quality-panel .premium-panel-head,.premium-reading-panel .premium-panel-head,.premium-dividend-panel .premium-panel-head{margin-bottom:8px}
+.premium-nextstep-panel .premium-panel-sub,.premium-quality-panel .premium-panel-sub,.premium-reading-panel .premium-panel-sub,.premium-dividend-panel .premium-panel-sub{max-width:52ch}
 .premium-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:10px}
 .premium-panel{border:1px solid #1d2940;border-radius:15px;background:#0d1320;padding:12px;min-width:0}
 .premium-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -545,7 +602,7 @@ button{cursor:pointer;font-family:inherit}
 .data-audit-areas{display:flex;gap:6px;flex-wrap:wrap}
 .data-audit-area-pill{font-size:9px;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 7px}
 .premium-mobile-only{display:none}
-.perf-grid{display:grid;grid-template-columns:minmax(280px,1.08fr) repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.perf-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
 .perf-card{background:#111828;border:1px solid #1d2940;border-radius:14px;padding:12px 12px 10px}
 .perf-card.comp{display:flex;flex-direction:column;gap:10px}
 .perf-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
@@ -577,6 +634,13 @@ button{cursor:pointer;font-family:inherit}
 .perf-card.lo .perf-fill{background:linear-gradient(90deg,#f87171,#fb7185)}
 .perf-card.hi .perf-badge{color:#86efac;border-color:rgba(52,211,153,.2);background:rgba(16,185,129,.06)}
 .perf-card.lo .perf-badge{color:#fca5a5;border-color:rgba(248,113,113,.2);background:rgba(248,113,113,.06)}
+.premium-home-performance{align-items:stretch}
+.premium-home-summary .premium-wallet-body{grid-template-columns:142px minmax(0,1fr);gap:10px;align-items:center}
+.premium-home-summary .premium-wallet-pie{display:flex;justify-content:center;transform:scale(.9);transform-origin:center}
+.premium-home-summary .premium-wallet-list{gap:5px}
+.premium-home-summary .premium-wallet-row{gap:8px}
+.premium-home-summary .premium-wallet-name{font-size:10px}
+.premium-home-summary .premium-wallet-value{font-size:9px}
 .dash-filters{display:flex;gap:6px;flex-wrap:wrap}
 .dash-chip{border:1px solid #27344b;background:#141d2f;color:#7489a4;border-radius:999px;padding:4px 9px;font-size:11px;line-height:1;font-weight:700;transition:all .15s}
 .dash-chip:hover{opacity:.9;transform:translateY(-1px)}
@@ -1912,6 +1976,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .perf-grid{grid-template-columns:1fr!important}
   .rent-layout{grid-template-columns:1fr!important}
   .perf-card.comp{display:none!important}
+  .perf-card.comp.premium-home-summary{display:flex!important}
 }
 @media(max-width:420px){
   .ap-summary{grid-template-columns:1fr!important}
@@ -1993,6 +2058,26 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-dashboard-head{padding:0 1px}
   .premium-dashboard-title{font-size:16px;line-height:1.15}
   .premium-dashboard-sub{font-size:10px;line-height:1.3;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .premium-consultive-header{padding:9px 10px;gap:8px;display:block}
+  .premium-consultive-header:after{display:none}
+  .premium-consultive-side{align-items:flex-start;min-width:0;margin-top:8px}
+  .premium-consultive-pills{justify-content:flex-start}
+  .premium-consultive-note{text-align:left;max-width:none}
+  .premium-consultive-grid{grid-template-columns:1fr!important;gap:7px!important}
+  .premium-radar-panel .premium-consultive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  .premium-reading-panel .premium-consultive-list{grid-template-columns:1fr;gap:5px}
+  .premium-exec-row{padding:4px 0;gap:6px}
+  .premium-exec-title{font-size:9px}
+  .premium-exec-sub{font-size:7px}
+  .premium-exec-value{font-size:8px}
+  .premium-compact-details>summary{padding:7px 8px}
+  .premium-compact-summary-title{font-size:9px}
+  .premium-compact-summary-sub,.premium-compact-summary-meta{font-size:7px}
+  .premium-compact-body{padding:0 8px 8px}
+  .premium-consultive-card{padding:8px 9px}
+  .premium-consultive-card-title{font-size:10px}
+  .premium-consultive-card-status{font-size:8px;padding:3px 6px}
+  .premium-consultive-card-text,.premium-consultive-card-action,.premium-consultive-pill,.premium-consultive-note{font-size:8px;line-height:1.2}
   .premium-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
   .premium-metric{min-height:78px!important;padding:9px!important;gap:4px!important;border-radius:12px}
   .premium-metric:nth-child(n+4){display:none}
@@ -2008,6 +2093,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-panel-title{font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .premium-panel-sub{display:none}
   .premium-panel-badge{font-size:8px;padding:3px 6px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+  .premium-nextstep-panel,.premium-quality-panel,.premium-reading-panel,.premium-dividend-panel{padding:8px!important}
   .premium-portfolio-panel{display:none}
   .premium-concentration-list .premium-concentration-row:nth-child(n+4){display:none}
   .premium-concentration-row,.premium-income-row,.premium-rf-row,.premium-action-row{padding:7px 8px;gap:7px}
@@ -13615,6 +13701,350 @@ function dashboardSnapshot(){
     contribution:prudentContributionAnalysis()
   };
 }
+function dashboardLatestSourceInfo(){
+  const rows=[];
+  const add=(item,label)=>{
+    const source=String(item?.source||item?.fixed_source||item?.origin||item?.importSource||'').trim();
+    if(!source || /^manual$/i.test(source)) return;
+    const date=parseAnyDate(item?.date||item?.createdAt||item?.updatedAt||item?.updatedAtLocal||'');
+    rows.push({source,date,label});
+  };
+  (S.aportes||[]).forEach(item=>add(item,'Aporte'));
+  (S.proventos||[]).forEach(item=>add(item,'Provento'));
+  (S.assets||[]).forEach(item=>add(item,'Ativo'));
+  rows.sort((a,b)=>(b.date?.getTime?.()||0)-(a.date?.getTime?.()||0));
+  const top=rows[0];
+  if(!top) return null;
+  return {
+    source:top.source,
+    label:top.label,
+    date:top.date ? top.date.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) : '—'
+  };
+}
+function dashboardConsultiveCard(title,status,text,action='',tone='muted'){
+  return `<div class="premium-consultive-card">
+    <div class="premium-consultive-card-head">
+      <div class="premium-consultive-card-title">${esc(title)}</div>
+      <span class="premium-consultive-card-status ${esc(tone)}">${esc(status)}</span>
+    </div>
+    <div class="premium-consultive-card-text">${esc(text)}</div>
+    ${action?`<div class="premium-consultive-card-action">${esc(action)}</div>`:''}
+  </div>`;
+}
+function dashboardConsultiveHeader(data){
+  const target=Number(data?.income?.target)||0;
+  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const incomplete=Number(data?.insufficient?.length)||0;
+  const top1=data?.concentration?.[0]||null;
+  const top3Share=(data?.concentration||[]).slice(0,3).reduce((sum,row)=>sum+(Number(row?.share)||0),0);
+  const portfolioTotal=Number(data?.portfolio?.tC)||0;
+  const fixedShare=portfolioTotal>0 ? (Number(data?.fixed?.current)||0)/portfolioTotal*100 : 0;
+  const source=dashboardLatestSourceInfo();
+  let tone='ok';
+  let title='Carteira equilibrada, com leitura estável.';
+  let text='Apoio de organização da carteira, não é recomendação de compra ou venda.';
+  if(incomplete>0){
+    tone='warn';
+    title='Carteira com dados incompletos para análise completa.';
+    text=`${incomplete} ativo${incomplete===1?'':'s'} pedem revisão.`;
+  }else if(target>0 && monthlyAvg < target*0.9){
+    tone='warn';
+    title='Renda passiva abaixo da meta mensal.';
+    text=`A média atual ainda está distante da meta definida.`;
+  }else if(top1 && Number(top1.share)>20){
+    tone='danger';
+    title='Carteira saudável, mas com atenção à concentração.';
+    text=`A maior posição responde por ${Number(top1.share).toFixed(1)}% da carteira.`;
+  }else if(fixedShare>45){
+    tone='warn';
+    title='Renda fixa acima do peso planejado.';
+    text=`A renda fixa representa ${fixedShare.toFixed(1)}% do patrimônio estimado.`;
+  }else if(target>0 && monthlyAvg >= target){
+    tone='ok';
+    title='Renda passiva em linha com a meta mensal.';
+    text=`A média atual já alcança a meta mensal.`;
+  }
+  const pills=[
+    `<div class="premium-consultive-pill"><span>Patrimônio</span><strong>${fmt(Number(data?.portfolio?.tC)||0)}</strong></div>`,
+    `<div class="premium-consultive-pill"><span>Meta</span><strong>${target>0?fmt(target):'—'}</strong></div>`,
+    `<div class="premium-consultive-pill"><span>Top 3</span><strong>${top3Share.toFixed(1)}%</strong></div>`
+  ];
+  if(source) pills.push(`<div class="premium-consultive-pill"><span>Última origem</span><strong>${esc(source.source)}</strong></div>`);
+  return `<div class="premium-consultive-header">
+    <div class="premium-consultive-copy">
+      <div class="premium-consultive-kicker">Dashboard consultivo premium</div>
+      <div class="premium-consultive-title ${tone}">${esc(title)}</div>
+      <div class="premium-consultive-sub">${esc(text)}</div>
+    </div>
+    <div class="premium-consultive-side">
+      <div class="premium-consultive-pills">${pills.join('')}</div>
+    </div>
+  </div>`;
+}
+function dashboardPortfolioReading(data){
+  const top1=data?.concentration?.[0]||null;
+  const top3=(data?.concentration||[]).slice(0,3);
+  const top3Share=top3.reduce((sum,row)=>sum+(Number(row?.share)||0),0);
+  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const target=Number(data?.income?.target)||0;
+  const fixedTotal=Number(data?.fixed?.current)||0;
+  const portfolioTotal=Number(data?.portfolio?.tC)||0;
+  const fixedShare=portfolioTotal>0 ? (fixedTotal/portfolioTotal)*100 : 0;
+  const incomplete=Number(data?.insufficient?.length)||0;
+  const reading=[
+    {
+      title:'Renda média mensal',
+      value:target>0 ? `${fmt(monthlyAvg)} / ${fmt(target)}` : 'Sem meta',
+      sub:target>0 ? (monthlyAvg<target ? 'Abaixo da meta.' : 'Em linha com a meta.') : 'Defina a meta mensal.',
+      tone:target>0 && monthlyAvg<target ? 'warn' : 'ok'
+    },
+    {
+      title:'Maior concentração',
+      value:top1 ? `${top1.ticker} · ${Number(top1.share).toFixed(1)}%` : 'Dados insuficientes',
+      sub:top1 ? (Number(top1.share)>20 ? 'Atenção ao peso.' : 'Peso saudável.') : 'Sem base suficiente.',
+      tone:top1 && Number(top1.share)>20 ? 'warn' : top1 ? 'ok' : 'muted'
+    },
+    {
+      title:'Top 3 posições',
+      value:top3.length ? `${top3Share.toFixed(1)}%` : '—',
+      sub:top3.length ? top3.map(r=>r.ticker).join(' · ') : 'Sem dados suficientes.',
+      tone:top3Share>55 ? 'warn' : 'ok'
+    },
+    {
+      title:'Renda fixa',
+      value:portfolioTotal>0 ? `${fixedShare.toFixed(1)}%` : '—',
+      sub:portfolioTotal>0 ? `Aplicado: ${fmt(fixedTotal)}` : 'Sem base suficiente.',
+      tone:portfolioTotal>0 && fixedShare>45 ? 'warn' : 'ok'
+    },
+    {
+      title:'Dados incompletos',
+      value:incomplete>0 ? `${incomplete}` : 'OK',
+      sub:incomplete>0 ? 'Revisar cadastros.' : 'Leitura consistente.',
+      tone:incomplete>0 ? 'warn' : 'ok'
+    }
+  ];
+  return `<div class="premium-panel premium-reading-panel">
+    <div class="premium-panel-head"><div><div class="premium-panel-title">Leitura da carteira</div><div class="premium-panel-sub">Resumo executivo com foco em organização, atenção e próximos passos prudentes.</div></div><div class="premium-panel-badge">${reading.length} pontos</div></div>
+    <div class="premium-exec-list">${reading.map(row=>`<div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">${esc(row.title)}</div><div class="premium-exec-sub">${esc(row.sub)}</div></div><div class="premium-exec-value ${row.tone==='warn'?'am':row.tone==='danger'?'rd':'gn'}">${esc(row.value)}</div></div>`).join('')}</div>
+    <details class="premium-compact-details">
+      <summary>
+        <div class="premium-compact-summary-main">
+          <div class="premium-compact-summary-title">Ver leitura detalhada</div>
+          <div class="premium-compact-summary-sub">Abrir a explicação resumida dos principais pontos.</div>
+        </div>
+        <div class="premium-compact-summary-meta">clique para abrir</div>
+      </summary>
+      <div class="premium-compact-body">
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Concentração</div><div class="premium-compact-line-value">${top1 ? `${top1.ticker} · ${Number(top1.share).toFixed(1)}%` : 'Sem base'}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Top 3</div><div class="premium-compact-line-value">${top3.length ? `${top3Share.toFixed(1)}%` : '—'}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Renda fixa</div><div class="premium-compact-line-value">${portfolioTotal>0 ? `${fixedShare.toFixed(1)}%` : '—'}</div></div>
+      </div>
+    </details>
+  </div>`;
+}
+function dashboardNextStep(data){
+  const target=Number(data?.income?.target)||0;
+  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const incomplete=Number(data?.insufficient?.length)||0;
+  const top1=data?.concentration?.[0]||null;
+  const top3Share=(data?.concentration||[]).slice(0,3).reduce((sum,row)=>sum+(Number(row?.share)||0),0);
+  const portfolioTotal=Number(data?.portfolio?.tC)||0;
+  const fixedShare=portfolioTotal>0 ? (Number(data?.fixed?.current)||0)/portfolioTotal*100 : 0;
+  let tone='ok';
+  let status='OK';
+  let title='Próximo foco';
+  let text='Manter acompanhamento e reinvestimento disciplinado.';
+  if(incomplete>0){
+    tone='warn'; status='Atenção';
+    text='Completar dados dos ativos antes de decidir novos aportes.';
+  }else if(target>0 && monthlyAvg < target){
+    tone='warn'; status='Atenção';
+    text='Priorizar análise de ativos geradores de renda.';
+  }else if(top1 && (Number(top1.share)>20 || top3Share>45)){
+    tone='danger'; status='Atenção';
+    text='Evitar aumentar posição nos ativos já concentrados.';
+  }else if(fixedShare>45 && target>0 && monthlyAvg >= target){
+    tone='info'; status='OK';
+    text='Avaliar rebalanceamento gradual conforme seu plano.';
+  }
+  return `<div class="premium-panel premium-nextstep-panel">
+    <div class="premium-panel-head"><div><div class="premium-panel-title">${esc(title)}</div><div class="premium-panel-sub">${esc(status)}</div></div><div class="premium-panel-badge">${tone==='ok'?'OK':'Atenção'}</div></div>
+    <div class="premium-exec-list">
+      <div class="premium-exec-row">
+        <div class="premium-exec-left">
+          <div class="premium-exec-title">${esc(text)}</div>
+          <div class="premium-exec-sub">Leitura de organização da carteira, não recomendação de compra ou venda.</div>
+        </div>
+        <div class="premium-exec-value ${tone==='ok'?'gn':tone==='info'?'am':'rd'}">${esc(status)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+function dashboardAttentionRadar(data){
+  const target=Number(data?.income?.target)||0;
+  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const incomplete=Number(data?.insufficient?.length)||0;
+  const portfolioPct=Number(data?.portfolio?.tGP)||0;
+  const fixedMissing=Number(data?.fixed?.missing)||0;
+  const portfolioTotal=Number(data?.portfolio?.tC)||0;
+  const fixedShare=portfolioTotal>0 ? (Number(data?.fixed?.current)||0)/portfolioTotal*100 : 0;
+  const top1=data?.concentration?.[0]||null;
+  const top3Share=(data?.concentration||[]).slice(0,3).reduce((sum,row)=>sum+(Number(row?.share)||0),0);
+  const totalTypes=Number(data?.typeRows?.length)||0;
+  const cards=[
+    {
+      title:'Concentração',
+      status:top1 ? `${Number(top1.share).toFixed(1)}%` : 'Dados insuficientes',
+      tone:top1 && Number(top1.share)>30 ? 'danger' : top1 && Number(top1.share)>20 ? 'warn' : top1 ? 'ok' : 'muted',
+      text:top1 ? `${top1.ticker} lidera a carteira.` : 'Sem base suficiente para medir o peso do líder.',
+      action:top1 ? (Number(top1.share)>20 ? 'Atenção antes de novos aportes.' : 'Peso saudável.') : 'Completar dados ajuda.'
+    },
+    {
+      title:'Renda passiva',
+      status:target>0 ? `${((target>0 ? (monthlyAvg/target)*100 : 0)).toFixed(1)}%` : 'Sem meta',
+      tone:target>0 && monthlyAvg<target ? 'warn' : 'ok',
+      text:target>0 ? `Média de ${fmt(monthlyAvg)} frente à meta de ${fmt(target)}.` : 'Defina a meta mensal para medir progresso.',
+      action:target>0 && monthlyAvg<target ? 'Acompanhar evolução mensal.' : 'Meta acompanhada.'
+    },
+    {
+      title:'Dados incompletos',
+      status:incomplete>0 ? `${incomplete}` : 'OK',
+      tone:incomplete>0 ? 'warn' : 'ok',
+      text:incomplete>0 ? `${incomplete} ativo${incomplete===1?'':'s'} pedem revisão.` : 'Cadastros principais estão completos.',
+      action:incomplete>0 ? 'Completar cadastro melhora a leitura.' : 'Sem pendências relevantes.'
+    },
+    {
+      title:'Rentabilidade',
+      status:`${fmtP(portfolioPct)}`,
+      tone:portfolioPct<0 ? 'danger' : portfolioPct<5 ? 'warn' : 'ok',
+      text:portfolioPct<0 ? 'Resultado consolidado abaixo do valor aplicado.' : 'Rentabilidade consolidada positiva na base atual.',
+      action:'Olhar o conjunto antes de decisões.'
+    },
+    {
+      title:'Renda fixa',
+      status:fixedMissing>0 ? `${fixedMissing} pend.` : `${fixedShare.toFixed(1)}%`,
+      tone:fixedMissing>0 ? 'warn' : fixedShare>45 ? 'warn' : 'ok',
+      text:fixedMissing>0 ? 'Há títulos de renda fixa sem valor atual explícito.' : 'Participação de renda fixa calculada pela posição atual.',
+      action:fixedMissing>0 ? 'Completar valor atual ou líquido.' : 'Acompanhar vencimentos.'
+    },
+    {
+      title:'Diversificação',
+      status:top3Share>60 ? 'Crítico' : top3Share>45 ? 'Atenção' : 'OK',
+      tone:top3Share>60 ? 'danger' : top3Share>45 ? 'warn' : 'ok',
+      text:totalTypes>0 ? `${totalTypes} classes diferentes em acompanhamento.` : 'Ainda não há classes suficientes para medir.',
+      action:top3Share>45 ? 'Revisar peso das maiores posições.' : 'Diversificação em leitura estável.'
+    }
+  ];
+  return `<div class="premium-panel premium-radar-panel">
+    <div class="premium-panel-head"><div><div class="premium-panel-title">Radar de atenção</div><div class="premium-panel-sub">Acompanhamento prático da carteira.</div></div><div class="premium-panel-badge">${cards.length} focos</div></div>
+    <div class="premium-consultive-grid">${cards.map(row=>dashboardConsultiveCard(row.title,row.status,row.text,row.action,row.tone)).join('')}</div>
+  </div>`;
+}
+function dashboardIncomeSnapshot(data){
+  const recentMonthLabel=data.recent.month ? new Date(`${data.recent.month}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'Sem histórico';
+  const goalPct=Number(data?.income?.percent)||0;
+  const target=Number(data?.income?.target)||0;
+  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const best=data?.income?.bestPayer;
+  const total12=Number(data?.income?.total12)||0;
+  const launches=Number(data?.recent?.count)||0;
+  return `<div class="premium-panel premium-dividend-panel">
+    <div class="premium-panel-head"><div><div class="premium-panel-title">Dividendos recentes</div><div class="premium-panel-sub">Último mês com proventos registrados.</div></div><div class="premium-panel-badge">${esc(recentMonthLabel)}</div></div>
+    <div class="premium-exec-list">
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Total recebido</div><div class="premium-exec-sub">${launches} lançamento${launches===1?'':'s'} no período</div></div><div class="premium-exec-value gn">${fmt(data.recent.total)}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Melhor pagador</div><div class="premium-exec-sub">${best?best.count||0:'—'} lançamento${best&&best.count===1?'':'s'} no período</div></div><div class="premium-exec-value">${best?`${best.ticker||best.key||'—'} · ${fmt(best.total||0)}`:'Sem dados'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Meta</div><div class="premium-exec-sub">${target>0?`${goalPct.toFixed(1)}% da meta`:'Sem meta definida'}</div></div><div class="premium-exec-value ${target>0 && goalPct>=100?'gn':'am'}">${target>0?fmt(monthlyAvg):'—'}</div></div>
+    </div>
+    <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver dividendos</button></div>
+  </div>`;
+}
+function dashboardDataQuality(data,audit){
+  const source=dashboardLatestSourceInfo();
+  const auditCount=Number(audit?.alerts?.length)||0;
+  const critical=Number(audit?.counts?.critical)||0;
+  const warning=Number(audit?.counts?.warning)||0;
+  const info=Number(audit?.counts?.info)||0;
+  const incomplete=Number(data?.insufficient?.length)||0;
+  const fixedMissing=Number(data?.fixed?.missing)||0;
+  const suggestion=incomplete>0
+    ? 'Completar dados para melhorar a leitura.'
+    : auditCount>0
+      ? 'Revisar os alertas de auditoria mais relevantes.'
+      : 'Sem pendências relevantes no momento.';
+  return `<div class="premium-panel premium-quality-panel">
+    <div class="premium-panel-head"><div><div class="premium-panel-title">Qualidade dos dados</div><div class="premium-panel-sub">Resumo enxuto da base atual.</div></div><div class="premium-panel-badge">${auditCount} alertas</div></div>
+    <div class="premium-exec-list">
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Status geral</div><div class="premium-exec-sub">${suggestion}</div></div><div class="premium-exec-value ${auditCount>0?'am':'gn'}">${auditCount>0?'Atenção':'OK'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Última origem</div><div class="premium-exec-sub">${source?`${source.label} · ${source.date}`:'Nenhuma detectada'}</div></div><div class="premium-exec-value">${source?source.source:'—'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Alertas</div><div class="premium-exec-sub">${critical} críticos · ${warning} atenção · ${info} info</div></div><div class="premium-exec-value">${auditCount}</div></div>
+    </div>
+    <details class="premium-compact-details">
+      <summary>
+        <div class="premium-compact-summary-main">
+          <div class="premium-compact-summary-title">Ver revisão dos dados</div>
+          <div class="premium-compact-summary-sub">Abrir os itens de conferência mais úteis.</div>
+        </div>
+        <div class="premium-compact-summary-meta">clique para abrir</div>
+      </summary>
+      <div class="premium-compact-body">
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Ativos incompletos</div><div class="premium-compact-line-value">${incomplete>0?`${incomplete}`:'OK'}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Renda fixa incompleta</div><div class="premium-compact-line-value">${fixedMissing>0?`${fixedMissing}`:'OK'}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Auditoria</div><div class="premium-compact-line-value">Abrir na aba Auditoria</div></div>
+      </div>
+    </details>
+  </div>`;
+}
+function dashboardPerformanceSnapshot(classPie='',classRows='',classCount=0){
+  const assets=(S.assets||[]).map(a=>{
+    const qty=Number(a.qty)||0;
+    const avg=Number(a.avg_price)||0;
+    const cur=Number(a.current_price)||0;
+    const value=qty*cur;
+    const cost=qty*avg;
+    const pct=avg>0&&cur>0?((cur-avg)/avg)*100:null;
+    return {...a,qty,avgPrice:avg,currentPrice:cur,current:value,cost,pct};
+  }).filter(a=>Number.isFinite(a.pct)&&a.avgPrice>0&&a.currentPrice>0&&a.qty>0);
+  const positives=[...assets].sort((a,b)=>b.pct-a.pct||b.current-a.current).filter(a=>a.pct>0).slice(0,5);
+  const negatives=[...assets].sort((a,b)=>a.pct-b.pct||a.current-b.current).filter(a=>a.pct<0).slice(0,5);
+  const maxPositive=Math.max(...positives.map(a=>Math.abs(a.pct)),1);
+  const maxNegative=Math.max(...negatives.map(a=>Math.abs(a.pct)),1);
+  const empty='<div class="perf-empty">Nenhum ativo disponível para este diagnóstico.</div>';
+  return `<div class="perf-grid premium-home-performance">
+    <div class="perf-card comp premium-home-summary">
+      <div class="perf-title">
+        <div>
+          <div class="perf-h">Resumo da Carteira</div>
+          <div class="perf-sub">Distribuição por classe e participação no patrimônio.</div>
+        </div>
+        <div class="perf-badge">${classCount} classes</div>
+      </div>
+      <div class="premium-wallet-body">
+        <div class="premium-wallet-pie">${classPie||'<div class="perf-empty">Sem dados de composição.</div>'}</div>
+        <div class="premium-wallet-list">${classRows||'<div class="perf-empty">Cadastre ativos para visualizar a distribuição.</div>'}</div>
+      </div>
+    </div>
+    <div class="perf-card hi">
+      <div class="perf-title">
+        <div>
+          <div class="perf-h">Maiores altas</div>
+          <div class="perf-sub">Melhor desempenho da carteira.</div>
+        </div>
+        <div class="perf-badge">${positives.length} ativos</div>
+      </div>
+      <div class="perf-list">${positives.length ? positives.map(r=>assetPerformanceRowHtml(r,maxPositive,'positive')).join('') : empty}</div>
+    </div>
+    <div class="perf-card lo">
+      <div class="perf-title">
+        <div>
+          <div class="perf-h">Maiores baixas</div>
+          <div class="perf-sub">Piores retornos da carteira.</div>
+        </div>
+        <div class="perf-badge">${negatives.length} ativos</div>
+      </div>
+      <div class="perf-list">${negatives.length ? negatives.map(r=>assetPerformanceRowHtml(r,maxNegative,'negative')).join('') : empty}</div>
+    </div>
+  </div>`;
+}
 function rfCategoryLabel(a){
   const text=rfPosNorm([assetRfSubtype(a),assetRfName(a),a?.fixed_indexer,a?.rf_yield_type,a?.sector].filter(Boolean).join(' '));
   if(/\bCDB\b/.test(text)) return 'CDB';
@@ -14101,97 +14531,45 @@ function dashLegacy(){
 function dash(){
   const data=dashboardSnapshot();
   const{tI,tC}=data.portfolio;
+  const capitalGain=tC-tI;
+  const dividendMonth=proventoStats().mes;
+  const accumulatedResult=lucroTotalComProventos();
   const DCLR=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
   const classPie=pie(data.typeRows.map(row=>({name:row.type,value:row.value})),DCLR);
   const classRows=data.typeRows.length ? data.typeRows.map((row,index)=>`<div class="premium-wallet-row">
     <div class="premium-wallet-name"><span class="dashboard-swatch" style="background:${DCLR[index%DCLR.length]}"></span><span>${esc(row.type)}</span></div>
     <div class="premium-wallet-value">${fmt(row.value)} · ${row.share.toFixed(1)}%</div>
   </div>`).join('') : '<div class="premium-empty">Cadastre ativos para visualizar a distribuição.</div>';
-  const topConcentration=data.concentration.slice(0,4);
-  const concentrationRows=topConcentration.length ? topConcentration.map(row=>{
+  const concentrationTopRows=data.concentration.slice(0,4);
+  const concentrationRows=concentrationTopRows.length ? concentrationTopRows.map(row=>{
     const alert=assetConcentrationAlert(row.share);
     return `<div class="premium-concentration-row"><div class="premium-row-main"><div class="premium-row-title">${esc(row.ticker)}</div><div class="premium-row-sub">${esc(row.type)} · ${fmt(row.current)}</div></div><div class="premium-row-value"><span class="analysis-pill signal ${esc(alert.tone)}">${row.share.toFixed(1)}%</span></div></div>`;
   }).join('') : '<div class="premium-empty">Sem dados suficientes de concentração.</div>';
   const goalLabel=data.income.target>0 ? `${data.income.percent.toFixed(1)}%` : 'Sem meta';
   const goalNote=data.income.target>0 ? `${fmt(data.income.monthlyAvg)} de ${fmt(data.income.target)}/mês` : 'Defina o objetivo na aba Metas';
-  const contributionRows=data.contribution.candidates.slice(0,3);
-  const mobileContribution=contributionRows[0]||null;
-  const contributionHtml=contributionRows.length ? contributionRows.map(row=>`<div class="premium-action-row"><div class="premium-row-main"><div class="premium-row-title">${esc(row.ticker)}</div><div class="premium-action-signal">${esc(row.signal.label)} · ${esc(row.criteria.slice(0,2).join(' · '))}</div></div><div class="premium-action-share">${row.share.toFixed(1)}%</div></div>`).join('') : '<div class="premium-empty">Nenhum ativo atende aos critérios prudentes no momento.</div>';
-  const recentMonthLabel=data.recent.month ? new Date(`${data.recent.month}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'Sem histórico';
   const maturityRows=data.fixed.maturities.slice(0,3);
   const maturityHtml=maturityRows.length ? maturityRows.map(row=>{
     const base=new Date(); base.setHours(0,0,0,0);
     const days=Math.ceil((row.date-base)/86400000);
     return `<div class="premium-rf-row"><div class="premium-row-main"><div class="premium-row-title">${esc(row.ticker)}</div><div class="premium-row-sub">${esc(row.rate)}</div></div><div class="premium-row-value">${row.date.toLocaleDateString('pt-BR')}<div class="premium-row-sub">${days<=365?`${days} dias`:'longo prazo'}</div></div></div>`;
   }).join('') : '<div class="premium-empty">Nenhum vencimento futuro informado.</div>';
-  const latestBest=data.recent.best ? `${data.recent.best[0]} · ${fmt(data.recent.best[1])}` : 'Sem dados';
   return `<div class="premium-dashboard">
     <div class="premium-dashboard-head">
       <div>
-        <div class="premium-dashboard-title">Visão geral da carteira</div>
-        <div class="premium-dashboard-sub">Patrimônio, renda, riscos e próximos pontos de atenção em uma leitura rápida.</div>
+        <div class="premium-dashboard-title">Dashboard consultivo premium</div>
+        <div class="premium-dashboard-sub">Resumo executivo da carteira em leitura rápida.</div>
       </div>
       <div class="premium-dashboard-date">${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>
     </div>
     <div class="premium-metrics">
       ${dashboardMetricCard('💼','Patrimônio estimado',fmt(tC),`Aplicado: ${fmt(tI)}`,'#c4b5fd','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard('💵','Renda média mensal',fmt(data.income.monthlyAvg),'Histórico real dos últimos 12 meses','#34d399','rgba(52,211,153,.14)')}
+      ${dashboardMetricCard('📈','Ganho/perda de capital',fmt(capitalGain),'Diferença entre valor atual e capital aplicado',capitalGain>=0?'#34d399':'#f87171',capitalGain>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
+      ${dashboardMetricCard('📈','Resultado acumulado',fmt(accumulatedResult),'Capital + proventos recebidos',accumulatedResult>=0?'#34d399':'#f87171',accumulatedResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
+      ${dashboardMetricCard('💵','Renda média mensal',fmt(data.income.monthlyAvg),'Média dos últimos 12 meses','#34d399','rgba(52,211,153,.14)')}
       ${dashboardMetricCard('🎯','Meta de renda passiva',goalLabel,goalNote,data.income.target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-      ${dashboardMetricCard('🏦','Aplicado em renda fixa',fmt(data.fixed.applied),`${data.fixed.assets.length} ativo${data.fixed.assets.length===1?'':'s'} de renda fixa`,'#fbbf24','rgba(251,191,36,.14)')}
-      ${dashboardMetricCard('📈','Renda variável',fmt(data.variableValue),'Valor atual fora de renda fixa','#60a5fa','rgba(96,165,250,.14)')}
-      ${dashboardMetricCard('🧭','Ativos acompanhados',String(data.analysis.length),`${data.insufficient.length} com dados incompletos`,'#edf3ff','rgba(148,163,184,.12)')}
-      <div class="premium-metric premium-mobile-only" style="--metric-color:#fbbf24;--metric-glow:rgba(251,191,36,.14)" onclick="go('ajudar')" role="button" tabindex="0">
-        <div class="premium-metric-top"><div class="premium-metric-icon">⚖️</div><div class="premium-metric-label">Próximo aporte</div></div>
-        <div class="premium-metric-value">${esc(mobileContribution?.ticker||'Sem sinal claro')}</div>
-        <div class="premium-metric-note">${esc(mobileContribution?.signal?.label||'Abra a simulação prudente')}</div>
-      </div>
+      ${dashboardMetricCard('💵','Dividendos no mês',fmt(dividendMonth),'Recebidos no mês atual',dividendMonth>=0?'#34d399':'#f87171',dividendMonth>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
     </div>
-    <div class="premium-dashboard-grid">
-      <div class="premium-panel premium-portfolio-panel">
-        <div class="premium-panel-head"><div><div class="premium-panel-title">Resumo da Carteira</div><div class="premium-panel-sub">Distribuição por classe e participação no patrimônio estimado.</div></div><div class="premium-panel-badge">${data.typeRows.length} classes</div></div>
-        <div class="premium-wallet-body"><div class="premium-wallet-pie">${classPie}</div><div class="premium-wallet-list">${classRows}</div></div>
-      </div>
-      <div class="premium-panel premium-concentration-panel">
-        <div class="premium-panel-head"><div><div class="premium-panel-title">Concentração dos maiores ativos</div><div class="premium-panel-sub">Pesos elevados merecem revisão antes de novos aportes.</div></div><div class="premium-panel-badge">${data.concentrated.length} alertas</div></div>
-        <div class="premium-concentration-list">${concentrationRows}</div>
-      </div>
-    </div>
-    <div class="premium-panel premium-radar-panel">
-      <div class="premium-panel-head"><div><div class="premium-panel-title">Radar de Atenção</div><div class="premium-panel-sub">Diagnóstico compacto com base nos dados atuais da carteira.</div></div><div class="premium-panel-badge">${data.analysis.length} analisados</div></div>
-      <div class="premium-radar">
-        ${dashboardRadarCard('Mais positivos',data.positives,row=>`<span class="gn">${fmtP(row.pct)}</span>`,'Nenhum ativo positivo.')}
-        ${dashboardRadarCard('Mais negativos',data.negatives,row=>`<span class="rd">${fmtP(row.pct)}</span>`,'Nenhum ativo negativo.')}
-        ${dashboardRadarCard('Dados insuficientes',data.insufficient,()=>'<span class="mu">revisar</span>','Dados essenciais preenchidos.')}
-        ${dashboardRadarCard('Alerta de concentração',data.concentrated,row=>`<span class="am">${row.share.toFixed(1)}%</span>`,'Nenhum ativo acima de 10%.')}
-      </div>
-    </div>
-    <div class="premium-dashboard-grid">
-      <div class="premium-panel premium-contribution-panel">
-        <div class="premium-panel-head"><div><div class="premium-panel-title">Próximo Aporte</div><div class="premium-panel-sub">Ativos que passaram pelos critérios da simulação prudente.</div></div><div class="premium-panel-badge">${contributionRows.length} para estudo</div></div>
-        <div class="premium-action-list">${contributionHtml}</div>
-        <div class="premium-panel-actions"><button class="btn bgh" onclick="go('ajudar')">Abrir simulação prudente</button></div>
-        <div class="premium-note">Apoio de organização, sem recomendação automática de compra, venda ou manutenção.</div>
-      </div>
-      <div class="premium-panel premium-dividend-panel">
-        <div class="premium-panel-head"><div><div class="premium-panel-title">Dividendos Recentes</div><div class="premium-panel-sub">Último mês com proventos registrados.</div></div><div class="premium-panel-badge">${esc(recentMonthLabel)}</div></div>
-        <div class="premium-income-list">
-          <div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">Total recebido</div><div class="premium-row-sub">${data.recent.count} lançamento${data.recent.count===1?'':'s'} no período</div></div><div class="premium-row-value gn">${fmt(data.recent.total)}</div></div>
-          <div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">Melhor pagador recente</div><div class="premium-row-sub">Maior contribuição no último mês disponível</div></div><div class="premium-row-value">${esc(latestBest)}</div></div>
-        </div>
-        <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver dividendos</button></div>
-      </div>
-    </div>
-    <div class="premium-panel premium-rf-panel">
-      <div class="premium-panel-head"><div><div class="premium-panel-title">Renda Fixa</div><div class="premium-panel-sub">Valores cadastrados e próximos vencimentos informados.</div></div><div class="premium-panel-badge">${fmt(data.fixed.current)} atuais</div></div>
-      <div class="premium-dashboard-grid">
-        <div class="premium-income-list">
-          <div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">Total aplicado</div><div class="premium-row-sub">Capital registrado em ativos de renda fixa</div></div><div class="premium-row-value am">${fmt(data.fixed.applied)}</div></div>
-          <div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">Qualidade dos dados</div><div class="premium-row-sub">${data.fixed.missing?`${data.fixed.missing} ativo(s) sem valor atual explícito`:'Valores atuais informados'}</div></div><div class="premium-row-value">${data.fixed.missing?'Revisar':'OK'}</div></div>
-        </div>
-        <div class="premium-rf-list">${maturityHtml}</div>
-      </div>
-      ${data.fixed.missing?'<div class="premium-note">Alguns valores atuais usam o valor aplicado como referência. Informe o valor bruto ou líquido da corretora para maior precisão.</div>':''}
-    </div>
+    ${dashboardPerformanceSnapshot(classPie,classRows,data.typeRows.length)}
   </div>`;
 }
 
