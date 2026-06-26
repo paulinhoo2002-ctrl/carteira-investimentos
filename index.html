@@ -66,11 +66,22 @@ button{cursor:pointer;font-family:inherit}
 .hdr-top-fab{display:none}
 .cfg-menu>summary{list-style:none}
 .cfg-menu>summary::-webkit-details-marker{display:none}
-.tabs{background:#111828;border-bottom:1px solid #1d2940;display:flex;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;position:sticky;top:58px;z-index:9;scrollbar-width:none}
+.tabs{background:#111828;border-bottom:1px solid #1d2940;position:sticky;top:58px;z-index:9;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
+.tabs-desktop{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:6px;overflow:visible;padding:0 10px}
+.tabs-mobile{display:none;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto}
+.tab-menu{position:relative;flex:0 0 auto}
+.tab-menu>summary{list-style:none;display:flex;align-items:center;gap:6px}
+.tab-menu>summary::-webkit-details-marker{display:none}
+.tab-menu>summary::after{content:'▾';font-size:10px;opacity:.75}
+.tab-menu[open]>summary::after{content:'▴'}
+.tab-menu-panel{position:absolute;left:0;top:calc(100% + 6px);z-index:30;min-width:220px;padding:8px;border:1px solid #1d2940;border-radius:14px;background:#0d111e;box-shadow:0 20px 45px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px}
+.tab-menu-panel button{width:100%;justify-content:flex-start;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:12px;font-weight:800;text-align:left}
+.tab-menu-panel button:hover{background:var(--panel);color:var(--text)}
+.tab-menu-panel button.on{border-color:rgba(99,102,241,.35);background:rgba(79,70,229,.14);color:#c7d2fe}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:#58718f;padding:11px 18px;font-size:13px;white-space:nowrap;flex:0 0 auto;transition:all .2s}
 .tab:hover{color:#9fb0c7}.tab.on{border-bottom-color:#6366f1;color:#c7d2fe;font-weight:700}
-@media(max-width:640px){.tabs{justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}}
+@media(max-width:640px){.tabs-desktop{display:none}.tabs-mobile{display:flex;justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}.tab-menu-panel{left:8px;right:8px;min-width:0}}
 .wrap{padding:20px;max-width:1360px;margin:0 auto}
 @media(max-width:640px){.wrap{padding:14px}}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
@@ -2517,6 +2528,24 @@ html[data-theme="light"] .report-format{
 html[data-theme="light"] .tab{color:#6b7b91}
 html[data-theme="light"] .tab:hover{color:#334155}
 html[data-theme="light"] .tab.on{border-bottom-color:var(--primary);color:var(--primary);font-weight:800}
+html[data-theme="light"] .tab-menu-panel{
+  background:#ffffff;
+  border-color:#dbe3ee;
+  box-shadow:0 20px 45px rgba(15,23,42,.12);
+}
+html[data-theme="light"] .tab-menu-panel button{
+  background:#f8fafc;
+  color:#1f2f44;
+  border-color:#dbe3ee;
+}
+html[data-theme="light"] .tab-menu-panel button:hover{
+  background:#eef4fb;
+}
+html[data-theme="light"] .tab-menu-panel button.on{
+  color:#1d4ed8;
+  border-color:#bfd0f5;
+  background:#eaf1ff;
+}
 html[data-theme="light"] .bgh,
 html[data-theme="light"] .bimp,
 html[data-theme="light"] .bb3,
@@ -13554,10 +13583,39 @@ function render(){
       </div>`;
   }
 }
+const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['auditoria','🔎 Auditoria'],['relatorios','📑 Relatórios'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+function navTabActive(key){
+  return S.tab===key || (key==='ativos' && S.tab==='ranking');
+}
+function navTabButton(key, label){
+  return `<button class="tab${navTabActive(key)?' on':''}" onclick="go('${key}')">${label}</button>`;
+}
+function navTabGroup(label, items){
+  const active=items.some(([key])=>navTabActive(key));
+  return `<details class="tab-menu">
+    <summary class="tab${active?' on':''}">${label}</summary>
+    <div class="tab-menu-panel">
+      ${items.map(([key,itemLabel])=>`<button class="tab${navTabActive(key)?' on':''}" onclick="go('${key}')">${itemLabel}</button>`).join('')}
+    </div>
+  </details>`;
+}
+function desktopTabs(){
+  return `<div class="tabs tabs-desktop">
+    ${navTabButton('dashboard','📊 Dashboard')}
+    ${navTabGroup('Carteira',[['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear']])}
+    ${navTabButton('aportes','💰 Aportes')}
+    ${navTabButton('dividendos','📅 Dividendos')}
+    ${navTabButton('renda-fixa','💼 Renda Fixa')}
+    ${navTabGroup('Relatórios',[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']])}
+    ${navTabGroup('Mais',[['metas','🎯 Metas'],['ia','🤖 IA']])}
+  </div>`;
+}
+function mobileTabs(){
+  return `<div class="tabs tabs-mobile">${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}</div>`;
+}
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['auditoria','🔎 Auditoria'],['relatorios','📑 Relatórios'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
   return`
   <div class="hdr">
     <div class="hdr-logo">
@@ -13581,7 +13639,8 @@ const TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],
       </div>
     </div>
   </div>
-  <div class="tabs">${TABS.map(([k,l])=>`<button class="tab${S.tab===k?' on':''}" onclick="go('${k}')">${l}</button>`).join('')}</div>
+  ${desktopTabs()}
+  ${mobileTabs()}
   <div class="wrap">${content()}</div>
   ${mobileTopDrawer()}
   ${mobileBottomNav()}
