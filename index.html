@@ -938,7 +938,8 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .flash-down{animation:priceDown .8s ease-out}
 @keyframes rota{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .spn{display:inline-block;animation:rota 1s linear infinite}
-.toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s}
+.toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:3000;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s;pointer-events:none}
+#toast-area{pointer-events:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:22px;overflow:auto}
 .note-modal{width:min(1240px,100%);background:#0b1020;border:1px solid #27324a;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.55);overflow:hidden;margin:20px 0}
@@ -3140,7 +3141,7 @@ const firebaseConfig = {
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
-  access:{loaded:false,loading:false,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
+  lastCloudSignature:'', access:{loaded:false,loading:false,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
 
 let THEME = 'dark';
@@ -3754,6 +3755,62 @@ function cloudSyncErrorMessage(error){
   if(/network|offline|unavailable|deadline/i.test(message)) return 'Falha temporária de conexão com a nuvem.';
   return 'Falha técnica ao sincronizar com a nuvem.';
 }
+function cloudSnapshotSignatureFromData(d){
+  return JSON.stringify({
+    wallets:Array.isArray(d?.wallets) ? d.wallets.map(w=>[
+      String(w?.id||''),
+      String(w?.name||''),
+      Array.isArray(w?.assets)?w.assets.length:0,
+      Array.isArray(w?.aportes)?w.aportes.length:0,
+      Array.isArray(w?.proventos)?w.proventos.length:0
+    ]) : [],
+    activeWalletId:String(d?.activeWalletId||''),
+    assets:Array.isArray(d?.assets) ? d.assets.map(a=>[
+      String(a?.id||''),
+      String(a?.ticker||''),
+      String(a?.type||''),
+      String(a?.qty||''),
+      String(a?.current_price||''),
+      String(a?.name||''),
+      String(a?.sector||'')
+    ]) : [],
+    aportes:Array.isArray(d?.aportes) ? d.aportes.map(a=>[
+      String(a?.id||''),
+      String(a?.ticker||''),
+      String(a?.op||a?.type||''),
+      String(a?.date||''),
+      String(a?.qty||''),
+      String(a?.price||''),
+      String(a?.value||'')
+    ]) : [],
+    proventos:Array.isArray(d?.proventos) ? d.proventos.map(p=>[
+      String(p?.id||''),
+      String(p?.ticker||''),
+      String(p?.type||''),
+      String(p?.date||''),
+      String(p?.value||'')
+    ]) : [],
+    divGoal:Number(d?.divGoal)||0,
+    goals:JSON.stringify(normalizeGoals(d?.goals||[])),
+    dashboard:[Number(d?.dashboard?.period)||0,String(d?.dashboard?.type||'')],
+    rentabilidade:[String(d?.rentabilidade?.period||''),String(d?.rentabilidade?.type||''),String(d?.rentabilidade?.bench||'')],
+    learnMeta:Object.keys(d?.learnMeta||{}).sort().map(k=>[k,JSON.stringify(d?.learnMeta?.[k]??null)])
+  });
+}
+function cloudSnapshotSignature(){
+  return cloudSnapshotSignatureFromData({
+    wallets:S.wallets,
+    activeWalletId:S.activeWalletId,
+    assets:S.assets,
+    aportes:S.aportes,
+    proventos:S.proventos,
+    divGoal:S.divGoal,
+    goals:S.goals,
+    dashboard:{period:S.dashPeriod,type:S.dashType},
+    rentabilidade:{period:S.rentPeriod,type:S.rentType,bench:S.rentBench},
+    learnMeta:S.learnMeta
+  });
+}
 function isTransientCloudError(error){
   const code=String(error?.code||error?.name||'').toLowerCase();
   const message=String(error?.message||error||'').toLowerCase();
@@ -3819,6 +3876,7 @@ function hasLocalData(){
 function applyCloudData(d){
   if(!d) return;
   FB.applying=true;
+  const before=cloudSnapshotSignature();
   debugInfo('cloud data received', {
     wallets:Array.isArray(d.wallets)?d.wallets.length:0,
     assets:Array.isArray(d.assets)?d.assets.length:0,
@@ -3861,6 +3919,9 @@ function applyCloudData(d){
   }catch(e){}
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
   FB.applying=false;
+  const after=cloudSnapshotSignature();
+  FB.lastCloudSignature=after;
+  return before!==after;
 }
 function startCloudSync(){
   const ref=portfolioRef();
@@ -3877,10 +3938,10 @@ function startCloudSync(){
         return;
       }
       const data=snap.data()||{};
-      applyCloudData(data);
+      const changed=applyCloudData(data);
       FB.cloudLoaded=true;
       if(FB.pendingCloudSave) queueCloudSave();
-      render();
+      if(changed) render();
     }catch(e){ console.warn('cloud sync:',e); }
   },err=>{
     console.warn('Firestore:',err);
@@ -13583,7 +13644,8 @@ function render(){
       </div>`;
   }
 }
-const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['auditoria','🔎 Auditoria'],['relatorios','📑 Relatórios'],['ia','🤖 IA'],['irpf','🧾 IRPF']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
+const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
 }
@@ -13602,16 +13664,23 @@ function navTabGroup(label, items){
 function desktopTabs(){
   return `<div class="tabs tabs-desktop">
     ${navTabButton('dashboard','📊 Dashboard')}
-    ${navTabGroup('Carteira',[['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear']])}
+    ${navTabButton('patrimonio','🏛️ Patrimônio')}
+    ${navTabButton('ativos','💼 Ativos')}
     ${navTabButton('aportes','💰 Aportes')}
+    ${navTabButton('metas','🎯 Metas')}
     ${navTabButton('dividendos','📅 Dividendos')}
     ${navTabButton('renda-fixa','💼 Renda Fixa')}
-    ${navTabGroup('Relatórios',[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']])}
-    ${navTabGroup('Mais',[['metas','🎯 Metas'],['ia','🤖 IA']])}
+    ${navTabButton('rentabilidade','📈 Rentabilidade')}
+    ${navTabButton('ajudar','⚖️ Rebalancear')}
+    ${navTabButton('ia','🤖 IA')}
+    ${navTabGroup('Relatórios',REPORT_TABS)}
   </div>`;
 }
 function mobileTabs(){
-  return `<div class="tabs tabs-mobile">${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}</div>`;
+  return `<div class="tabs tabs-mobile">
+    ${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}
+    ${navTabGroup('Relatórios',REPORT_TABS)}
+  </div>`;
 }
 function app(){
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
