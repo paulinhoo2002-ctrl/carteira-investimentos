@@ -3753,6 +3753,7 @@ function logCloudSyncError(error, context='uploadLocalToCloud'){
 }
 function scheduleCloudRetry(delay=12000){
   clearTimeout(FB.cloudRetryTimer);
+  debugLog('cloud retry scheduled', { delay, pending: !!FB.pendingCloudSave });
   FB.cloudRetryTimer=setTimeout(()=>{
     FB.cloudRetryTimer=null;
     if(FB.pendingCloudSave) queueCloudSave();
@@ -3760,7 +3761,7 @@ function scheduleCloudRetry(delay=12000){
 }
 function cloudPayload(){
   syncWalletFromState();
-  return sanitizeFirestoreValue({
+  const payload = sanitizeFirestoreValue({
     wallets:S.wallets.map(w=>normalizeWalletEntry(w, w.name)),
     activeWalletId:S.activeWalletId,
     assets:S.assets,
@@ -3769,12 +3770,19 @@ function cloudPayload(){
     divGoal:Number(S.divGoal)||0,
     goals:S.goals,
     learnMeta:S.learnMeta,
-    settings:{brapiToken:S.brapiToken||''},
     dashboard:{period:Number(S.dashPeriod)||12,type:String(S.dashType||'all')},
     rentabilidade:{period:String(S.rentPeriod||'all'),type:String(S.rentType||'all'),bench:String(S.rentBench||'CDI')},
     tab:S.tab,
     updatedAtLocal:new Date().toISOString()
   });
+  debugInfo('cloud payload prepared', {
+    wallets:Array.isArray(payload?.wallets)?payload.wallets.length:0,
+    assets:Array.isArray(payload?.assets)?payload.assets.length:0,
+    aportes:Array.isArray(payload?.aportes)?payload.aportes.length:0,
+    proventos:Array.isArray(payload?.proventos)?payload.proventos.length:0,
+    hasSettings:Object.prototype.hasOwnProperty.call(payload||{}, 'settings')
+  });
+  return payload;
 }
 function hasLocalData(){
   return (S.wallets&&S.wallets.length>1)||(S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(normalizeGoals(S.goals))!==JSON.stringify(normalizeGoals()));
@@ -3782,6 +3790,14 @@ function hasLocalData(){
 function applyCloudData(d){
   if(!d) return;
   FB.applying=true;
+  debugInfo('cloud data received', {
+    wallets:Array.isArray(d.wallets)?d.wallets.length:0,
+    assets:Array.isArray(d.assets)?d.assets.length:0,
+    aportes:Array.isArray(d.aportes)?d.aportes.length:0,
+    proventos:Array.isArray(d.proventos)?d.proventos.length:0,
+    hasSettings:!!d.settings,
+    hasTokenInSettings:!!d.settings?.brapiToken
+  });
   if(Array.isArray(d.wallets) && d.wallets.length){
     S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
     if(d.activeWalletId) S.activeWalletId=String(d.activeWalletId);
@@ -3799,7 +3815,6 @@ function applyCloudData(d){
   if(d.goals && typeof d.goals==='object' && !(Array.isArray(d.wallets) && d.wallets.length)) S.goals = normalizeGoals(d.goals);
   if(d.learnMeta && typeof d.learnMeta==='object' && !(Array.isArray(d.wallets) && d.wallets.length)) S.learnMeta = d.learnMeta;
   if(d.tab && !S.tab)            S.tab       = d.tab==='ranking' ? 'ativos' : d.tab;
-  if(d.settings && d.settings.brapiToken && !S.brapiToken) S.brapiToken = d.settings.brapiToken;
   if(d.dashboard && typeof d.dashboard==='object'){
     if(d.dashboard.period !== undefined) S.dashPeriod = Math.max(3, Number(d.dashboard.period)||12);
     if(d.dashboard.type !== undefined) S.dashType = String(d.dashboard.type||'all');
@@ -8650,7 +8665,23 @@ const withVisibleValues = fn => {
 };
 const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
 const fmtN = v => Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
-const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const DEBUG = (() => {
+  try{
+    return /(^|[?&])debug(?:=1)?(?:&|$)/i.test(location.search) || localStorage.getItem(`${STOR}_debug`)==='1';
+  }catch(e){
+    return false;
+  }
+})();
+const debugLog = (...args) => { if(DEBUG) console.log('[DEBUG]', ...args); };
+const debugInfo = (...args) => { if(DEBUG) console.info('[DEBUG]', ...args); };
+const debugWarn = (...args) => { if(DEBUG) console.warn('[DEBUG]', ...args); };
+const esc  = s => String(s ?? '').replace(/[&<>"']/g, ch => ({
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;',
+  '"':'&quot;',
+  "'":'&#39;'
+}[ch]));
 const noteDisplay = note => {
   const text = String(note||'');
   if(!S.hideValues) return esc(text);
