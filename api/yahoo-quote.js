@@ -1,10 +1,35 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  const allowedOrigins = new Set([
+    'https://carteira-investimentos-delta.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173'
+  ]);
+  const origin = typeof req.headers.origin === 'string' ? req.headers.origin.trim() : '';
+  const hasOrigin = Boolean(origin);
+  const isAllowedOrigin = hasOrigin && allowedOrigins.has(origin);
+
+  if (isAllowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+
+  if (req.method === 'OPTIONS') {
+    if (hasOrigin && !isAllowedOrigin) return res.status(204).end();
+    if (isAllowedOrigin) {
+      return res.status(204).end();
+    }
+    return res.status(204).end();
+  }
+
+  if (hasOrigin && !isAllowedOrigin) {
+    return res.status(403).json({ error: 'Origin nao permitida' });
+  }
 
   try {
     const raw = String(req.query.symbols || req.query.tickers || '').trim();
