@@ -11046,8 +11046,8 @@ function irpfExportPdf(){
   const positionGroups=report.bucketOrder.map(bucket=>{
     const rows=(report.positionsByBucket[bucket]||[]).map(p=>`
       <tr>
-        <td>${p.ticker}</td>
-        <td>${p.type}</td>
+        <td>${esc(p.ticker)}</td>
+        <td>${esc(p.type)}</td>
         <td>${esc(p.sector||'—')}</td>
         <td>${p.qty.toLocaleString('pt-BR',{maximumFractionDigits:8})}</td>
         <td>${fmt(p.cost)}</td>
@@ -11056,7 +11056,7 @@ function irpfExportPdf(){
         <td>${fmt(p.marketValue)}</td>
       </tr>`).join('');
     return `
-        <h3>${bucketLabels[bucket] || bucket}</h3>
+        <h3>${esc(bucketLabels[bucket] || bucket)}</h3>
         <table>
           <thead><tr><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Custo</th><th>PM</th><th>Preço atual</th><th>Valor</th></tr></thead>
           <tbody>${rows || `<tr><td colspan="8">Sem posições</td></tr>`}</tbody>
@@ -11194,7 +11194,7 @@ function irpfExportPdf(){
       '<div class="section-note">Conferência de rendimentos recebidos e última revisão antes de transmitir a declaração.</div>',
       '<table>',
       '<thead><tr><th>Ticker</th><th>Data</th><th>Classificação</th><th>Valor</th><th>Tipo</th></tr></thead>',
-      `<tbody>${report.provents.map(p=>`<tr><td>${p.ticker}</td><td>${p.date}</td><td>${p.bucket}</td><td>${fmt(p.value)}</td><td>${esc(p.type||'—')}</td></tr>`).join('') || '<tr><td colspan="5">Sem proventos</td></tr>'}</tbody>`,
+      `<tbody>${report.provents.map(p=>`<tr><td>${esc(p.ticker)}</td><td>${esc(p.date)}</td><td>${esc(p.bucket)}</td><td>${fmt(p.value)}</td><td>${esc(p.type||'—')}</td></tr>`).join('') || '<tr><td colspan="5">Sem proventos</td></tr>'}</tbody>`,
       '</table>',
       '<div class="section" style="margin-top:16px">',
       '<h2>Checklist final</h2>',
@@ -13538,7 +13538,7 @@ function reportPdfPreview(){
         ${pdfReportSection('Resumo Executivo','Leitura consolidada da carteira',`
           <div class="pdf-report-grid">
             <div class="pdf-report-card"><div class="pdf-report-card-title">Resultado sobre o valor aplicado</div><div class="pdf-report-value" style="color:${resultTone}">${fmt(portfolio.tG)} · ${fmtP(portfolio.tGP)}</div><div class="pdf-report-card-sub">${portfolio.tG>=0?'O patrimônio está acima do valor aplicado.':'O patrimônio está abaixo do valor aplicado.'}</div></div>
-            <div class="pdf-report-card"><div class="pdf-report-card-title">Concentração</div><div class="pdf-report-value">${data.concentration.length?`${data.concentration.length} ativo(s) acima de 10%`:'Concentração saudável'}</div><div class="pdf-report-card-sub">${data.concentration[0]?`Maior peso: ${data.concentration[0].ticker} · ${data.concentration[0].share.toFixed(1)}%`:'Nenhum ativo acima do limite de atenção.'}</div></div>
+            <div class="pdf-report-card"><div class="pdf-report-card-title">Concentração</div><div class="pdf-report-value">${data.concentration.length?`${data.concentration.length} ativo(s) acima de 10%`:'Concentração saudável'}</div><div class="pdf-report-card-sub">${data.concentration[0]?`Maior peso: ${esc(data.concentration[0].ticker)} · ${data.concentration[0].share.toFixed(1)}%`:'Nenhum ativo acima do limite de atenção.'}</div></div>
           </div>`)}
         ${pdfReportSection('Alocação por classe','Participação no patrimônio atual',`<div class="pdf-report-grid">${allocationHtml}</div>`)}
         ${pdfReportSection('Maiores posições','Top 10 por valor atual',`<div class="pdf-report-list">${positionHtml}</div>`)}
