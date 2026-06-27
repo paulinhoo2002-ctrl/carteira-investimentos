@@ -16200,7 +16200,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
     :mode==='received'?recentSection
-    :`${dividendSummaryCards()}${dividendGoalProgress()}${dividendMonthlyTableBlock(rows)}${recentSection}${assetSection}${timelineSection}`;
+    :`${dividendSummaryCards()}${monthlySection}${recentSection}`;
   return `<div class="div-premium">
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Renda recebida, evolução mensal e progresso da meta em uma leitura confortável no desktop e no celular.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
