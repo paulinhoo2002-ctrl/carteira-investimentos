@@ -1451,10 +1451,29 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
 .div-collapsible[open] .div-collapsible-summary{border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--panel-2),var(--panel))}
 .div-collapsible-body{padding:10px 12px 12px}
 details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
+.div-monthly-table-block{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
+.div-monthly-table-block>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;cursor:pointer}
+.div-monthly-table-block>summary::-webkit-details-marker{display:none}
+.div-monthly-table-block[open]>summary{border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+.div-monthly-head-main{min-width:0}
+.div-monthly-title{font-size:13px;font-weight:900;color:var(--text)}
+.div-monthly-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.div-monthly-head-side{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.div-monthly-total{font-size:12px;font-weight:900;color:var(--success);white-space:nowrap}
+.div-monthly-toggle{font-size:10px;font-weight:850;color:var(--text);border:1px solid var(--border);border-radius:999px;background:var(--surface);padding:6px 9px;white-space:nowrap}
+.div-monthly-toggle .when-open{display:none}
+.div-monthly-table-block[open] .div-monthly-toggle .when-open{display:inline}
+.div-monthly-table-block[open] .div-monthly-toggle .when-closed{display:none}
+.div-monthly-body{padding:10px 12px 12px}
+.div-monthly-filters{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.div-monthly-filter{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:6px 10px;font-size:10px;font-weight:850;white-space:nowrap}
+.div-monthly-filter.on{color:#c7d2fe;border-color:rgba(99,102,241,.4);background:rgba(79,70,229,.16)}
 html[data-theme="light"] .div-collapsible-summary{background:rgba(255,255,255,.75)}
 html[data-theme="light"] .div-collapsible[open] .div-collapsible-summary{background:linear-gradient(180deg,#fff,#f8fafc)}
 html[data-theme="light"] .div-collapsible-chev{background:#fff}
 html[data-theme="light"] .div-collapsible{box-shadow:0 8px 22px rgba(15,23,42,.06)}
+html[data-theme="light"] .div-monthly-table-block{box-shadow:0 8px 22px rgba(15,23,42,.06)}
+html[data-theme="light"] .div-monthly-filter.on{color:#3343c7;background:#e8ebff}
 html[data-theme="light"] .div-premium-hero{background:linear-gradient(135deg,#fbfdff,#eef6f4 60%,#edf4ff);box-shadow:0 12px 30px rgba(15,23,42,.08)}
 html[data-theme="light"] .div-premium-title{color:#172033}
 html[data-theme="light"] .div-premium-sub{color:#5b6b80}
@@ -1495,6 +1514,10 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .div-collapsible-summary{padding:10px 11px;align-items:flex-start}
   .div-collapsible-meta{white-space:normal;text-align:right}
   .div-collapsible-body{padding:9px 10px 10px}
+  .div-monthly-table-block>summary{align-items:flex-start;padding:10px 11px}
+  .div-monthly-head-side{align-items:flex-end;gap:6px}
+  .div-monthly-body{padding:9px 10px 10px}
+  .div-monthly-filters{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
   .dividend-query-list-head{display:none}
   .dividend-query-row{grid-template-columns:1fr;gap:6px;padding:9px}
   .dividend-query-main{grid-column:1/-1}
@@ -16039,6 +16062,52 @@ function dividendMonthlyHistory(rows){
   </div>`;
   }).join('')}</div>`;
 }
+function dividendMonthlyTableBlock(rows){
+  const months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const byYear=new Map();
+  rows.forEach(row=>{
+    if(!row.dt) return;
+    const year=row.dt.getFullYear();
+    const month=row.dt.getMonth();
+    if(!byYear.has(year)) byYear.set(year,{year,months:Array(12).fill(0),total:0});
+    const item=byYear.get(year);
+    item.months[month]+=row.value;
+    item.total+=row.value;
+  });
+  const total=rows.reduce((sum,row)=>sum+row.value,0);
+  const tableRows=[...byYear.values()].sort((a,b)=>b.year-a.year).map(row=>{
+    const avg=row.total/12;
+    return `<tr>
+      <td style="font-weight:800;color:var(--text)">${row.year}</td>
+      ${row.months.map(value=>`<td>${value>0?fmt(value):'—'}</td>`).join('')}
+      <td style="font-weight:800;color:var(--text)">${fmt(avg)}</td>
+      <td class="gn" style="font-weight:900">${fmt(row.total)}</td>
+    </tr>`;
+  }).join('');
+  return `<details class="div-monthly-table-block" open>
+    <summary>
+      <div class="div-monthly-head-main">
+        <div class="div-monthly-title">Histórico mensal</div>
+        <div class="div-monthly-sub">Valores recebidos por ano e por mês.</div>
+      </div>
+      <div class="div-monthly-head-side">
+        <div class="div-monthly-total">Total ${fmt(total)}</div>
+        <div class="div-monthly-toggle"><span class="when-open">Mostrar menos</span><span class="when-closed">Mostrar mais</span></div>
+      </div>
+    </summary>
+    <div class="div-monthly-body">
+      <div class="div-monthly-filters">
+        <button class="div-monthly-filter on" onclick="setDividendViewMode('received')">Recebidos</button>
+        <button class="div-monthly-filter" onclick="setDividendFilter('all')">Tipo de ativo</button>
+        <button class="div-monthly-filter" onclick="setDividendViewMode('asset')">Ativos</button>
+      </div>
+      <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
+        <thead><tr><th>Ano</th>${months.map(month=>`<th>${month}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
+        <tbody>${tableRows||'<tr><td colspan="15" style="text-align:center;padding:18px;color:#2e3f58">Sem histórico mensal no período selecionado.</td></tr>'}</tbody>
+      </table></div></div>
+    </div>
+  </details>`;
+}
 function dividendMonthlyTimeline(){
   const stats=passiveIncomeGoalStats();
   const goal=stats.target;
@@ -16120,12 +16189,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendAssetSummary(rows),
     dividendsByAssetView(rows)
   );
-  const monthlySection=dividendCompactSectionHeader(
-    'monthly',
-    'Histórico mensal',
-    dividendMonthlySummary(rows),
-    dividendMonthlyHistory(rows)
-  );
+  const monthlySection=dividendMonthlyTableBlock(rows);
   const timelineSection=dividendCompactSectionHeader(
     'timeline',
     'Linha do tempo',
@@ -16136,7 +16200,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
     :mode==='received'?recentSection
-    :`${dividendSummaryCards()}${dividendGoalProgress()}${recentSection}${assetSection}${monthlySection}${timelineSection}`;
+    :`${dividendSummaryCards()}${dividendGoalProgress()}${dividendMonthlyTableBlock(rows)}${recentSection}${assetSection}${timelineSection}`;
   return `<div class="div-premium">
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Renda recebida, evolução mensal e progresso da meta em uma leitura confortável no desktop e no celular.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
