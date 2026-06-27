@@ -902,7 +902,8 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .aporte-kind.provento{color:#fbbf24;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.28)}
 .aporte-kind.renda-fixa{color:#60a5fa;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.25)}
 .aporte-kind.outro{color:#94a3b8;background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.28)}
-.aporte-card-actions{display:flex;gap:6px;justify-content:flex-end}
+.aporte-card-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.aporte-card-actions button{min-height:30px}
 .aporte-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:13px;background:var(--panel)}
 .aporte-pagination-info{font-size:10px;color:var(--muted)}
 .aporte-pagination-actions{display:flex;align-items:center;gap:7px}
@@ -1962,7 +1963,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .aporte-history-meta-label{font-size:8px}
   .aporte-history-meta-value{font-size:9px;margin-top:0;white-space:normal}
   .aporte-history-card .aporte-history-meta:nth-of-type(4){display:flex}
-  .aporte-card-actions{grid-column:1/-1;justify-content:flex-start;border-top:1px solid var(--border);padding-top:8px}
+  .aporte-card-actions{grid-column:1/-1;justify-content:flex-start;border-top:1px solid var(--border);padding-top:8px;gap:8px}
+  .aporte-card-actions button{min-height:34px;padding:6px 10px}
   .aporte-pagination{align-items:flex-start;flex-direction:column}
   .aporte-pagination-actions{width:100%;justify-content:space-between}
   .aporte-asset-group>summary{grid-template-columns:minmax(0,1fr) auto;padding:11px}
@@ -15242,14 +15244,35 @@ function filteredAporteRows(rows=aporteExtractRows()){
     return hay.includes(q);
   });
 }
+function deleteMovementLaunch(id,sourceType){
+  const type=String(sourceType||'aporte').toLowerCase();
+  if(!confirm('Deseja excluir este lançamento? Esta ação não pode ser desfeita.')) return;
+  if(type==='provento'){
+    S.proventos=(S.proventos||[]).filter(p=>p.id!==id);
+    save();
+    toast('🗑️ Lançamento excluído.');
+    markProventosDirty();
+    render();
+    return;
+  }
+  S.aportes=(S.aportes||[]).filter(a=>a.id!==id);
+  if(S.editPId===id){ S.editPId=null; S.showP=false; S._fp=null; }
+  syncAssetsFromAportes(false);
+  toast('🗑️ Lançamento excluído.');
+  scheduleAutoProventosGratis('remove-aporte');
+}
 function aporteHistoryCard(row){
   const quantity=row.qty>0 ? `${row.qty} un.` : 'Não se aplica';
   const unit=row.price>0 ? fmt(row.price) : row.kind==='provento' ? 'Valor recebido' : 'Valor informado';
   const detail=[row.type,row.sector].filter(Boolean).join(' · ') || 'Sem classificação';
   const name=row.name && row.name.toUpperCase()!==row.ticker.toUpperCase() ? row.name : '';
-  const action=row.sourceType==='aporte'
-    ? `<button class="bi" onclick='edP(${JSON.stringify(row.id)})' title="Editar movimentação" aria-label="Editar movimentação">✏️</button>`
-    : `<button class="bi" onclick="go('dividendos')" title="Abrir Dividendos" aria-label="Abrir Dividendos">↗</button>`;
+  const actions=[];
+  if(row.sourceType==='aporte'){
+    actions.push(`<button class="bi" onclick='edP(${JSON.stringify(row.id)})' title="Editar movimentação" aria-label="Editar movimentação">✏️</button>`);
+  }else if(row.sourceType==='provento'){
+    actions.push(`<button class="bi" onclick="go('dividendos')" title="Abrir Dividendos" aria-label="Abrir Dividendos">↗</button>`);
+  }
+  actions.push(`<button class="bdi" onclick="deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})" title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
   return `<article class="aporte-history-card">
     <div class="aporte-history-date">${esc(row.date||'Sem data')}</div>
     <div class="aporte-history-main">
@@ -15260,7 +15283,7 @@ function aporteHistoryCard(row){
     <div class="aporte-history-meta"><div class="aporte-history-meta-label">Classe e setor</div><div class="aporte-history-meta-value">${esc(detail)}</div></div>
     <div class="aporte-history-meta"><div class="aporte-history-meta-label">Quantidade</div><div class="aporte-history-meta-value">${esc(quantity)}</div></div>
     <div class="aporte-history-value"><div class="aporte-history-total">${fmt(row.total)}</div><div class="aporte-history-unit">${esc(unit)} · ${esc(row.source||'Manual')}</div></div>
-    <div class="aporte-card-actions">${action}</div>
+    <div class="aporte-card-actions">${actions.join('')}</div>
   </article>`;
 }
 function aportesPagination(total,pageSize=15){
