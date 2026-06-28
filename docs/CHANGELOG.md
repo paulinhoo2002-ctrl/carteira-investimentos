@@ -2,6 +2,39 @@
 
 Histórico resumido das principais melhorias do projeto.
 
+## Fase 47 — Release Candidate v1.0
+
+- Consolidação das fases 44, 45 e 46 como auditoria final.
+- Produção acessível e navegável.
+- Backup/exportação validado.
+- PWA, cache e service worker validados.
+- Console sem erro crítico conhecido.
+- Ponto conhecido não bloqueante: aviso futuro de depreciação do Firebase `enableMultiTabIndexedDbPersistence()`.
+
+## Fase 46 — PWA, cache e atualização
+
+- Manifesto carregando corretamente em produção.
+- Service worker acessível e registrado.
+- Cache com versão explícita.
+- APIs fora do cache.
+- Aviso de nova versão e atualização preservados.
+
+## Fase 45 — Segurança de backup e restauração
+
+- Exportação JSON validada.
+- Arquivo inválido rejeitado.
+- Restauração protegida por confirmação.
+- Reset separado visualmente.
+- Dados do usuário preservados.
+
+## Fase 44 — QA geral de produção
+
+- Produção validada com HTTP 200.
+- Navegação geral conferida.
+- Layout mobile validado.
+- PWA básico validado.
+- Console sem erro crítico.
+
 ## Fase 15
 
 ### 15A — Controle de versão do PWA/cache
