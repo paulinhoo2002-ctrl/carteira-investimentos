@@ -447,6 +447,17 @@ button{cursor:pointer;font-family:inherit}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-text{max-width:100%}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-action{margin-top:auto}
 .premium-exec-list{display:flex;flex-direction:column;gap:5px}
+.dashboard-consultive-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:10px;align-items:start}
+.dashboard-consultive-main,.dashboard-consultive-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.dashboard-home-attention .premium-consultive-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.dashboard-home-actions .dashboard-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.dashboard-action-btn{border:1px solid var(--border);background:linear-gradient(180deg,var(--panel-2),var(--panel));border-radius:12px;padding:9px 10px;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;color:var(--text);cursor:pointer}
+.dashboard-action-btn:hover{border-color:rgba(96,165,250,.38);box-shadow:0 8px 16px rgba(0,0,0,.14)}
+.dashboard-action-btn strong{font-size:11px;font-weight:900;line-height:1.2}
+.dashboard-action-btn span{font-size:9px;line-height:1.3;color:var(--muted)}
+.dashboard-home-actions .premium-panel-actions{margin-top:8px}
+.dashboard-home-actions .premium-panel-actions .btn{width:100%}
 .premium-exec-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(148,163,184,.12)}
 .premium-exec-row:last-child{border-bottom:0}
 .premium-exec-left{min-width:0}
@@ -2260,6 +2271,10 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-consultive-card-status{font-size:8px;padding:3px 6px}
   .premium-consultive-card-text,.premium-consultive-card-action,.premium-consultive-pill,.premium-consultive-note{font-size:8px;line-height:1.2}
   .premium-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  .dashboard-consultive-grid{grid-template-columns:1fr!important;gap:8px!important}
+  .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  .dashboard-home-attention .premium-consultive-grid{grid-template-columns:1fr!important;gap:6px!important}
+  .dashboard-home-actions .dashboard-action-grid{grid-template-columns:1fr!important;gap:6px!important}
   .premium-metric{min-height:76px!important;padding:8px!important;gap:4px!important;border-radius:12px}
   .premium-metric-icon{width:20px;height:20px;font-size:10px}
   .premium-metric-label{font-size:8px;line-height:1.08;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -14076,28 +14091,23 @@ function dashboardConsultiveHeader(data){
   const fixedShare=portfolioTotal>0 ? (Number(data?.fixed?.current)||0)/portfolioTotal*100 : 0;
   const source=dashboardLatestSourceInfo();
   let tone='ok';
-  let title='Carteira equilibrada, com leitura estável.';
-  let text='Apoio de organização da carteira, não é recomendação de compra ou venda.';
+  let title='Resumo da carteira';
+  let text='Acompanhe patrimônio, renda passiva e pontos de atenção.';
   if(incomplete>0){
     tone='warn';
-    title='Carteira com dados incompletos para análise completa.';
-    text=`${incomplete} ativo${incomplete===1?'':'s'} pedem revisão.`;
+    text=`${incomplete} ativo${incomplete===1?'':'s'} pedem revisão antes de novas decisões.`;
   }else if(target>0 && monthlyAvg < target*0.9){
     tone='warn';
-    title='Renda passiva abaixo da meta mensal.';
     text=`A média atual ainda está distante da meta definida.`;
   }else if(top1 && Number(top1.share)>20){
     tone='danger';
-    title='Carteira saudável, mas com atenção à concentração.';
     text=`A maior posição responde por ${Number(top1.share).toFixed(1)}% da carteira.`;
   }else if(fixedShare>45){
     tone='warn';
-    title='Renda fixa acima do peso planejado.';
     text=`A renda fixa representa ${fixedShare.toFixed(1)}% do patrimônio estimado.`;
   }else if(target>0 && monthlyAvg >= target){
     tone='ok';
-    title='Renda passiva em linha com a meta mensal.';
-    text=`A média atual já alcança a meta mensal.`;
+    text=`A média atual já alcança a meta mensal definida.`;
   }
   const pills=[
     `<div class="premium-consultive-pill"><span>Patrimônio</span><strong>${fmt(Number(data?.portfolio?.tC)||0)}</strong></div>`,
@@ -14107,12 +14117,93 @@ function dashboardConsultiveHeader(data){
   if(source) pills.push(`<div class="premium-consultive-pill"><span>Última origem</span><strong>${esc(source.source)}</strong></div>`);
   return `<div class="premium-consultive-header">
     <div class="premium-consultive-copy">
-      <div class="premium-consultive-kicker">Dashboard consultivo premium</div>
+      <div class="premium-consultive-kicker">Resumo da carteira</div>
       <div class="premium-consultive-title ${tone}">${esc(title)}</div>
       <div class="premium-consultive-sub">${esc(text)}</div>
     </div>
     <div class="premium-consultive-side">
       <div class="premium-consultive-pills">${pills.join('')}</div>
+    </div>
+  </div>`;
+}
+function dashboardHomeSummaryPanel(data){
+  const p=data?.portfolio||cx();
+  const totalCurrent=Number(p.tC)||0;
+  const totalApplied=Number(p.tI)||0;
+  const totalResult=Number(p.tG)||0;
+  const totalPct=Number(p.tGP)||0;
+  return `<div class="premium-panel dashboard-home-summary">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Resumo patrimonial</div><div class="premium-panel-sub">Patrimônio, capital aplicado, resultado e rentabilidade.</div></div>
+      <div class="premium-panel-badge">Visão rápida</div>
+    </div>
+    <div class="premium-metrics">
+      ${dashboardMetricCard('💼','Patrimônio atual',fmt(totalCurrent),totalCurrent>0?'Valor estimado da carteira':'Cadastre ativos para começar','#c4b5fd','rgba(129,140,248,.16)')}
+      ${dashboardMetricCard('💵','Total investido',fmt(totalApplied),totalApplied>0?'Capital informado na carteira':'Sem aportes registrados','#34d399','rgba(52,211,153,.14)')}
+      ${dashboardMetricCard('📈','Resultado geral',fmt(totalResult),totalCurrent>0?'Diferença entre aplicado e atual':'Sem base suficiente',totalResult>=0?'#34d399':'#f87171',totalResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
+      ${dashboardMetricCard('🎯','Rentabilidade',totalApplied>0?fmtP(totalPct):'—',totalApplied>0?'Cálculo sobre o capital aplicado':'Sem capital informado',totalPct>=0?'#34d399':'#f87171',totalPct>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
+    </div>
+  </div>`;
+}
+function dashboardPassiveIncomePanel(data){
+  const income=data?.income||passiveIncomeGoalStats();
+  const target=Number(income.target)||0;
+  const monthlyAvg=Number(income.monthlyAvg)||0;
+  const goalReached=target>0 ? Math.max(target-monthlyAvg,0) : 0;
+  const monthReceived=Number(proventoStats().mes)||0;
+  const monthLabel=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  return `<div class="premium-panel dashboard-home-income">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal.</div></div>
+      <div class="premium-panel-badge">${esc(monthLabel)}</div>
+    </div>
+    <div class="premium-metrics">
+      ${dashboardMetricCard('💵','Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#34d399','rgba(52,211,153,.14)')}
+      ${dashboardMetricCard('📊','Média 12 meses',fmt(monthlyAvg),'Base usada para leitura da renda passiva','#60a5fa','rgba(96,165,250,.14)')}
+      ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
+      ${dashboardMetricCard('🧭','Falta para meta',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
+    </div>
+    <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
+  </div>`;
+}
+function dashboardHomeAttentionPanel(data){
+  const top1=data?.concentration?.[0]||null;
+  const top3=(data?.concentration||[]).slice(0,3);
+  const positives=(data?.positives||[]).slice(0,3);
+  const negatives=(data?.negatives||[]).slice(0,3);
+  const incomplete=Number(data?.insufficient?.length)||0;
+  const fixedMissing=Number(data?.fixed?.missing)||0;
+  const top3Share=top3.reduce((sum,row)=>sum+(Number(row?.share)||0),0);
+  const positiveText=positives.length ? positives.map(row=>`${row.ticker} ${fmtP(row.pct)}`).join(' · ') : 'Sem alta relevante';
+  const negativeText=negatives.length ? negatives.map(row=>`${row.ticker} ${fmtP(row.pct)}`).join(' · ') : 'Sem baixa relevante';
+  const top3Text=top3.length ? top3.map(row=>row.ticker).join(' · ') : 'Sem posições suficientes';
+  return `<div class="premium-panel dashboard-home-attention">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Atenção da carteira</div><div class="premium-panel-sub">Posições mais pesadas, maiores altas e maiores baixas.</div></div>
+      <div class="premium-panel-badge">${incomplete>0?`${incomplete} dados incompletos`:'Carteira em dia'}</div>
+    </div>
+    <div class="premium-consultive-grid">
+      ${dashboardConsultiveCard('Maior posição',top1?`${Number(top1.share).toFixed(1)}%`:'—',top1?`${esc(top1.ticker)} · ${fmt(top1.current)}`:'Sem base suficiente',top1?`Top 3: ${esc(top3Text)}`:'Revisar a carteira para leitura mais confiável',top1&&Number(top1.share)>20?'warn':'ok')}
+      ${dashboardConsultiveCard('Maiores altas',positives.length?`${positives.length} ativos`:'—',positiveText,positives.length?'Ativos em destaque no momento':'Sem ganho relevante','ok')}
+      ${dashboardConsultiveCard('Maiores baixas',negatives.length?`${negatives.length} ativos`:'—',negativeText,negatives.length?'Ativos com pior desempenho':'Sem perda relevante',negatives.length?'danger':'muted')}
+    </div>
+    <div class="premium-exec-list" style="margin-top:8px">
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Concentração do Top 3</div><div class="premium-exec-sub">${top3.length?`${top3Share.toFixed(1)}% da carteira`:'Sem dados suficientes'}</div></div><div class="premium-exec-value">${top3.length?top3.map(row=>row.ticker).join(' · '):'—'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Renda fixa incompleta</div><div class="premium-exec-sub">Ativos sem valor atual explícito</div></div><div class="premium-exec-value">${fixedMissing>0?fixedMissing:'OK'}</div></div>
+    </div>
+  </div>`;
+}
+function dashboardHomeActionsPanel(){
+  return `<div class="premium-panel dashboard-home-actions">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Próximos passos</div><div class="premium-panel-sub">Atalhos práticos para as áreas mais usadas.</div></div>
+      <div class="premium-panel-badge">Atalhos</div>
+    </div>
+    <div class="dashboard-action-grid">
+      <button class="dashboard-action-btn" onclick="go('dividendos')"><strong>Ver Dividendos</strong><span>Renda passiva, histórico e meta.</span></button>
+      <button class="dashboard-action-btn" onclick="go('ativos')"><strong>Ver Meus Ativos</strong><span>Posições, resultado e concentração.</span></button>
+      <button class="dashboard-action-btn" onclick="go('aportes')"><strong>Registrar Movimentação</strong><span>Entrar na área de aportes.</span></button>
+      <button class="dashboard-action-btn" onclick="go('metas')"><strong>Ver Metas</strong><span>Meta de renda passiva e patrimônio.</span></button>
     </div>
   </div>`;
 }
@@ -14865,46 +14956,18 @@ function dashLegacy(){
 }
 function dash(){
   const data=dashboardSnapshot();
-  const{tI,tC}=data.portfolio;
-  const capitalGain=tC-tI;
-  const dividendMonth=proventoStats().mes;
-  const accumulatedResult=lucroTotalComProventos();
-  const DCLR=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
-  const classPie=pie(data.typeRows.map(row=>({name:row.type,value:row.value})),DCLR);
-  const classRows=data.typeRows.length ? data.typeRows.map((row,index)=>`<div class="premium-wallet-row">
-    <div class="premium-wallet-name"><span class="dashboard-swatch" style="background:${DCLR[index%DCLR.length]}"></span><span>${esc(row.type)}</span></div>
-    <div class="premium-wallet-value">${fmt(row.value)} · ${row.share.toFixed(1)}%</div>
-  </div>`).join('') : '<div class="premium-empty">Cadastre ativos para visualizar a distribuição.</div>';
-  const concentrationTopRows=data.concentration.slice(0,4);
-  const concentrationRows=concentrationTopRows.length ? concentrationTopRows.map(row=>{
-    const alert=assetConcentrationAlert(row.share);
-    return `<div class="premium-concentration-row"><div class="premium-row-main"><div class="premium-row-title">${esc(row.ticker)}</div><div class="premium-row-sub">${esc(row.type)} · ${fmt(row.current)}</div></div><div class="premium-row-value"><span class="analysis-pill signal ${esc(alert.tone)}">${row.share.toFixed(1)}%</span></div></div>`;
-  }).join('') : '<div class="premium-empty">Sem dados suficientes de concentração.</div>';
-  const goalLabel=data.income.target>0 ? `${data.income.percent.toFixed(1)}%` : 'Sem meta';
-  const goalNote=data.income.target>0 ? `${fmt(data.income.monthlyAvg)} de ${fmt(data.income.target)}/mês` : 'Defina o objetivo na aba Metas';
-  const maturityRows=data.fixed.maturities.slice(0,3);
-  const maturityHtml=maturityRows.length ? maturityRows.map(row=>{
-    const base=new Date(); base.setHours(0,0,0,0);
-    const days=Math.ceil((row.date-base)/86400000);
-    return `<div class="premium-rf-row"><div class="premium-row-main"><div class="premium-row-title">${esc(row.ticker)}</div><div class="premium-row-sub">${esc(row.rate)}</div></div><div class="premium-row-value">${row.date.toLocaleDateString('pt-BR')}<div class="premium-row-sub">${days<=365?`${days} dias`:'longo prazo'}</div></div></div>`;
-  }).join('') : '<div class="premium-empty">Nenhum vencimento futuro informado.</div>';
-  return `<div class="premium-dashboard">
-    <div class="premium-dashboard-head">
-      <div>
-        <div class="premium-dashboard-title">Resumo da Carteira</div>
-        <div class="premium-dashboard-sub">Visão geral dos seus investimentos, rentabilidade e renda passiva.</div>
+  return `<div class="premium-dashboard premium-consultive-shell">
+    ${dashboardConsultiveHeader(data)}
+    <div class="dashboard-consultive-grid">
+      <div class="dashboard-consultive-main">
+        ${dashboardHomeSummaryPanel(data)}
+        ${dashboardPassiveIncomePanel(data)}
       </div>
-      <div class="premium-dashboard-date">${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>
+      <div class="dashboard-consultive-side">
+        ${dashboardHomeAttentionPanel(data)}
+        ${dashboardHomeActionsPanel()}
+      </div>
     </div>
-    <div class="premium-metrics">
-      ${dashboardMetricCard('💼','Patrimônio estimado',fmt(tC),`Aplicado: ${fmt(tI)}`,'#c4b5fd','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard('📈','Ganho/perda de capital',fmt(capitalGain),'Diferença entre valor atual e capital aplicado',capitalGain>=0?'#34d399':'#f87171',capitalGain>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
-      ${dashboardMetricCard('📈','Resultado acumulado',fmt(accumulatedResult),'Capital + proventos recebidos',accumulatedResult>=0?'#34d399':'#f87171',accumulatedResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
-      ${dashboardMetricCard('💵','Renda média mensal',fmt(data.income.monthlyAvg),'Média dos últimos 12 meses','#34d399','rgba(52,211,153,.14)')}
-      ${dashboardMetricCard('🎯','Meta de renda passiva',goalLabel,goalNote,data.income.target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-      ${dashboardMetricCard('💵','Dividendos no mês',fmt(dividendMonth),'Recebidos no mês atual',dividendMonth>=0?'#34d399':'#f87171',dividendMonth>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
-    </div>
-    ${dashboardPerformanceSnapshot(classPie,classRows,data.typeRows.length)}
   </div>`;
 }
 
