@@ -497,6 +497,11 @@ button{cursor:pointer;font-family:inherit}
 .premium-panel-actions{display:flex;justify-content:flex-end;margin-top:9px}
 .premium-panel-actions .btn{padding:7px 10px;font-size:10px}
 .premium-note{font-size:9px;color:#64748b;line-height:1.45;margin-top:8px}
+.premium-consultive-details{display:block;margin-top:8px}
+.premium-consultive-details>summary{list-style:none;cursor:pointer}
+.premium-consultive-details>summary::-webkit-details-marker{display:none}
+.premium-consultive-details .premium-panel-head{margin-bottom:0}
+.premium-consultive-details[open] .premium-panel-head{margin-bottom:10px}
 .rf-page{display:flex;flex-direction:column;gap:12px}
 .rf-hero{display:flex;flex-direction:column;gap:10px}
 .rf-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -14131,8 +14136,6 @@ function dashboardConsultiveAnalysisPanel(data){
   const target=Number(income.target)||0;
   const monthlyAvg=Number(income.monthlyAvg)||0;
   const totalCurrent=Number(p.tC)||0;
-  const totalApplied=Number(p.tI)||0;
-  const totalResult=Number(p.tG)||0;
   const top1=data?.concentration?.[0]||null;
   const top3=(data?.concentration||[]).slice(0,3);
   const top3Share=top3.reduce((sum,row)=>sum+(Number(row?.share)||0),0);
@@ -14160,12 +14163,20 @@ function dashboardConsultiveAnalysisPanel(data){
     focusStatus='OK';
     focusText='Carteira com participação relevante de renda fixa.';
   }
-  const statusTone=top3Share>60 ? 'rd' : top3Share>45 ? 'am' : 'gn';
-  return `<div class="premium-panel premium-reading-panel">
-    <div class="premium-panel-head">
-      <div><div class="premium-panel-title">Análises consultivas</div><div class="premium-panel-sub">Leitura neutra da carteira.</div></div>
-      <div class="premium-panel-badge">Leitura neutra</div>
-    </div>
+  const pctText=target>0 ? `${monthlyAvg>=target?'Acima da meta':'Abaixo da meta'} em relação à média 12M.` : 'Meta mensal não definida.';
+  const concentrationText=top1 ? `${esc(top1.ticker)} lidera o peso atual.` : 'Sem base suficiente para medir a liderança.';
+  const reviewText=incomplete>0 ? `${incomplete} ativo${incomplete===1?'':'s'} pedem revisão.` : 'Base principal consistente para a leitura.';
+  const noteText=fixedMissing>0 ? `${fixedMissing} título${fixedMissing===1?'':'s'} de renda fixa sem valor atual explícito.` : `Renda fixa em ${fixedShare.toFixed(1)}% da carteira.`;
+  return `<details class="premium-panel premium-reading-panel premium-consultive-details">
+    <summary>
+      <div class="premium-panel-head">
+        <div class="premium-compact-summary-main">
+          <div class="premium-panel-title">Leitura complementar</div>
+          <div class="premium-panel-sub">Análise consultiva da carteira. Não é recomendação de investimento.</div>
+        </div>
+        <div class="premium-compact-summary-meta">clique para abrir</div>
+      </div>
+    </summary>
     <div class="premium-exec-list">
       <div class="premium-exec-row">
         <div class="premium-exec-left">
@@ -14177,21 +14188,21 @@ function dashboardConsultiveAnalysisPanel(data){
       <div class="premium-exec-row">
         <div class="premium-exec-left">
           <div class="premium-exec-title">Concentração</div>
-          <div class="premium-exec-sub">${top1?`${esc(top1.ticker)} lidera o peso atual.`:'Sem base suficiente para medir a liderança.'}</div>
+          <div class="premium-exec-sub">${concentrationText}</div>
         </div>
-        <div class="premium-exec-value"><span class="${statusTone}">${top3.length?`${top3Share.toFixed(1)}%`:'—'}</span></div>
+        <div class="premium-exec-value"><span class="${top3Share>60?'rd':top3Share>45?'am':'gn'}">${top3.length?`${top3Share.toFixed(1)}%`:'—'}</span></div>
       </div>
       <div class="premium-exec-row">
         <div class="premium-exec-left">
           <div class="premium-exec-title">Dados em revisão</div>
-          <div class="premium-exec-sub">${incomplete>0?`${incomplete} ativo${incomplete===1?'':'s'} pedem revisão.`:'Base principal consistente para a leitura.'}</div>
+          <div class="premium-exec-sub">${reviewText}</div>
         </div>
         <div class="premium-exec-value"><span class="${incomplete>0?'am':'gn'}">${incomplete>0?incomplete:'OK'}</span></div>
       </div>
       <div class="premium-exec-row">
         <div class="premium-exec-left">
           <div class="premium-exec-title">Renda fixa</div>
-          <div class="premium-exec-sub">${fixedMissing>0?'Há títulos sem valor atual explícito.':'Participação calculada pela posição atual.'}</div>
+          <div class="premium-exec-sub">${noteText}</div>
         </div>
         <div class="premium-exec-value"><span class="${fixedMissing>0?'am':'gn'}">${fixedMissing>0?`${fixedMissing} pend.`:`${fixedShare.toFixed(1)}%`}</span></div>
       </div>
@@ -14203,22 +14214,13 @@ function dashboardConsultiveAnalysisPanel(data){
         <div class="premium-exec-value"><span class="${focusTone==='ok'?'gn':focusTone==='info'?'am':'rd'}">${esc(focusStatus)}</span></div>
       </div>
     </div>
-    <details class="premium-compact-details">
-      <summary>
-        <div class="premium-compact-summary-main">
-          <div class="premium-compact-summary-title">Ver leitura resumida</div>
-          <div class="premium-compact-summary-sub">Abrir um resumo curto do patrimônio e do resultado.</div>
-        </div>
-        <div class="premium-compact-summary-meta">clique para abrir</div>
-      </summary>
-      <div class="premium-compact-body">
-        <div class="premium-compact-line"><div class="premium-compact-line-label">Patrimônio atual</div><div class="premium-compact-line-value">${fmt(totalCurrent)}</div></div>
-        <div class="premium-compact-line"><div class="premium-compact-line-label">Total investido</div><div class="premium-compact-line-value">${fmt(totalApplied)}</div></div>
-        <div class="premium-compact-line"><div class="premium-compact-line-label">Resultado geral</div><div class="premium-compact-line-value">${fmt(totalResult)}</div></div>
-      </div>
-    </details>
     <div class="premium-note">Informações para apoio e organização da carteira. Não é recomendação de investimento.</div>
-  </div>`;
+    <div class="premium-compact-body" style="margin-top:8px">
+      <div class="premium-compact-line"><div class="premium-compact-line-label">Leitura</div><div class="premium-compact-line-value">${pctText}</div></div>
+      <div class="premium-compact-line"><div class="premium-compact-line-label">Atalho</div><div class="premium-compact-line-value"><button class="btn bgh" style="padding:6px 10px;font-size:9px" onclick="go('dividendos')">Ver Dividendos</button></div></div>
+      <div class="premium-compact-line"><div class="premium-compact-line-label">Atalho</div><div class="premium-compact-line-value"><button class="btn bgh" style="padding:6px 10px;font-size:9px" onclick="go('metas')">Ver Metas</button></div></div>
+    </div>
+  </details>`;
 }
 function dashboardHomeActionsPanel(){
   return `<div class="premium-panel dashboard-home-actions">
@@ -14988,13 +14990,13 @@ function dash(){
       <div class="dashboard-consultive-main">
         ${dashboardHomeSummaryPanel(data)}
         ${dashboardPassiveIncomePanel(data)}
-        ${dashboardConsultiveAnalysisPanel(data)}
       </div>
       <div class="dashboard-consultive-side">
         ${dashboardHomeAttentionPanel(data)}
         ${dashboardHomeActionsPanel()}
       </div>
     </div>
+    ${dashboardConsultiveAnalysisPanel(data)}
   </div>`;
 }
 
