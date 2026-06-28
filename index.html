@@ -1230,6 +1230,50 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .passive-goal-list-value.warn{color:#fbbf24}
 .passive-goal-list-value.danger{color:#f87171}
 .passive-goal-list-empty{padding:10px;border:1px dashed #223048;border-radius:10px;color:#7489a4;font-size:11px;background:#09101b;line-height:1.4}
+.metas-shell{display:flex;flex-direction:column;gap:10px;padding-bottom:4px}
+.metas-shell>.mu{font-size:11px;line-height:1.35;margin-bottom:8px}
+.metas-shell .cards{gap:8px}
+.metas-shell .cards .card.al{min-height:68px;padding:10px 11px}
+.metas-shell .cards .card.al .cl,
+.metas-shell .cards .card.al .cs{font-size:9px;line-height:1.15}
+.metas-shell .cards .card.al .cv{font-size:16px;line-height:1.04}
+.metas-shell .passive-goal-shell{gap:8px;padding:10px 10px 9px}
+.metas-shell .passive-goal-head{gap:8px;margin-bottom:4px}
+.metas-shell .passive-goal-empty{padding:9px 10px}
+.metas-shell .passive-goal-empty-title{font-size:12px}
+.metas-shell .passive-goal-empty-note{font-size:10px}
+.metas-shell .passive-goal-grid.main{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.metas-shell .passive-goal-grid.summary{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.metas-shell .passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.metas-shell .passive-goal-card{min-height:66px;padding:9px}
+.metas-shell .passive-goal-card .passive-goal-kicker{font-size:9px}
+.metas-shell .passive-goal-card .passive-goal-value{font-size:13px}
+.metas-shell .passive-goal-card .passive-goal-sub{font-size:9px;line-height:1.3}
+.metas-shell .passive-goal-progress{padding:10px}
+.metas-shell .passive-goal-progress-top{gap:8px}
+.metas-shell .passive-goal-progress-title{font-size:11px}
+.metas-shell .passive-goal-progress-meta{font-size:9px}
+.metas-shell .passive-goal-progress-amount{font-size:22px}
+.metas-shell .passive-goal-progress-note{font-size:10px}
+.metas-shell .passive-goal-progress-right{min-width:160px}
+.metas-shell .passive-goal-list{gap:6px}
+.metas-shell .passive-goal-list-head{padding:0 6px;font-size:9px}
+.metas-shell .passive-goal-list-row{padding:8px 9px;gap:6px}
+.metas-shell .passive-goal-list-ticker{font-size:12px}
+.metas-shell .passive-goal-list-name{font-size:9px}
+.metas-shell .passive-goal-list-label{font-size:8px}
+.metas-shell .passive-goal-list-value{font-size:11px}
+.metas-shell .sec{margin-bottom:10px}
+.metas-shell .sec summary{padding:11px 12px}
+.metas-shell .sec-title{font-size:13px}
+.metas-shell .sec-meta{font-size:9px}
+.metas-shell .sec-body{padding:10px 12px 12px}
+.metas-shell .tw{overflow:auto}
+.metas-shell .tw table{min-width:820px}
+.metas-shell .cg .card.al{padding:9px 10px}
+.metas-shell .fl{font-size:10px}
+.metas-shell input,.metas-shell select{font-size:15px}
+.metas-shell .bwr{width:62px}
 .dividend-query-shell{display:flex;flex-direction:column;gap:10px}
 .dividend-query-head{gap:10px;align-items:flex-start}
 .dividend-query-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -1858,6 +1902,21 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .passive-goal-list-row{grid-template-columns:1fr 1fr;gap:6px;padding:9px}
   .passive-goal-list-main{grid-column:1/-1}
   .passive-goal-list-stat{align-items:flex-start}
+  .metas-shell{gap:8px}
+  .metas-shell>.mu{margin-bottom:6px}
+  .metas-shell .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+  .metas-shell .cards .card.al{padding:9px 10px;min-height:0}
+  .metas-shell .cards .card.al .cv{font-size:15px}
+  .metas-shell .passive-goal-grid.main,
+  .metas-shell .passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .metas-shell .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .metas-shell .passive-goal-card{padding:8px;min-height:62px}
+  .metas-shell .passive-goal-progress{padding:9px}
+  .metas-shell .passive-goal-progress-amount{font-size:20px}
+  .metas-shell .passive-goal-progress-right{min-width:0;align-items:flex-start;text-align:left}
+  .metas-shell .sec summary{padding:10px 11px}
+  .metas-shell .sec-body{padding:9px 10px 10px}
+  .metas-shell .tw table{min-width:760px}
   .dividend-query-filters{grid-template-columns:1fr}
   .dividend-query-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dividend-query-list-head{display:none}
@@ -16919,10 +16978,11 @@ function metasTab(){
     </tr>`;
   }).join('');
 
-  return`<div style="font-size:14px;font-weight:700;margin-bottom:4px">🎯 Metas</div>
-  <div class="mu" style="font-size:12px;margin-bottom:12px">Objetivos da carteira com foco em renda, patrimônio e distribuição.</div>
+  return`<div class="metas-shell">
+  <div style="font-size:14px;font-weight:700;margin-bottom:2px">🎯 Metas</div>
+  <div class="mu">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
-  <div class="cards" style="margin-bottom:10px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
+  <div class="cards" style="margin-bottom:8px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
     <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Renda projetada/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div><div class="cs">Estimativa da carteira</div></div>
     <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:64px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
     <div class="card al" style="border-left-color:#818cf8;padding:10px 12px;min-height:64px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
@@ -16983,7 +17043,7 @@ function metasTab(){
     </div>
   </details>
 
-  `;
+  </div>`;
 }
 
 function rentabilidadeTab(){
