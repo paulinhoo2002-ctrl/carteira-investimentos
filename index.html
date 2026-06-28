@@ -149,27 +149,27 @@ button{cursor:pointer;font-family:inherit}
 .analysis-info .analysis-item-val{color:#60a5fa}
 .analysis-warn .analysis-item-val{color:#fbbf24}
 .analysis-warn .analysis-bar-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
-.asset-premium-analysis{display:flex;flex-direction:column;gap:10px}
-.asset-premium-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:15px;padding:13px;background:linear-gradient(135deg,#10182a,#0b1020 65%,#11162a)}
+.asset-premium-analysis{display:flex;flex-direction:column;gap:9px}
+.asset-premium-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:15px;padding:12px;background:linear-gradient(135deg,#10182a,#0b1020 65%,#11162a)}
 .asset-premium-hero:after{content:"";position:absolute;width:140px;height:140px;border-radius:50%;right:-72px;top:-78px;background:rgba(99,102,241,.13);pointer-events:none}
 .asset-premium-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1}
 .asset-premium-title{font-size:15px;font-weight:900;color:#edf3ff}
 .asset-premium-sub{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:3px}
-.asset-premium-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:11px;position:relative;z-index:1}
-.asset-premium-kpi{padding:8px 9px;border:1px solid #1d2940;border-radius:10px;background:rgba(9,12,21,.68);min-width:0}
+.asset-premium-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px;position:relative;z-index:1}
+.asset-premium-kpi{padding:7px 8px;border:1px solid #1d2940;border-radius:10px;background:rgba(9,12,21,.68);min-width:0}
 .asset-premium-kpi-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
 .asset-premium-kpi-value{font-size:13px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-premium-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .asset-premium-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr))}
 .asset-premium-section{border:1px solid #1d2940;border-radius:14px;background:#0d1320;overflow:hidden;min-width:0}
-.asset-premium-section>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:11px 12px;cursor:pointer}
+.asset-premium-section>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 11px;cursor:pointer}
 .asset-premium-section>summary::-webkit-details-marker{display:none}
 .asset-premium-section[open]>summary{border-bottom:1px solid #182033}
 .asset-premium-section-title{font-size:12px;font-weight:850;color:#e2eaf6}
-.asset-premium-section-sub{font-size:9px;color:#7489a4;line-height:1.35;margin-top:2px}
+.asset-premium-section-sub{font-size:9px;color:#7489a4;line-height:1.3;margin-top:2px}
 .asset-premium-section-meta{font-size:9px;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 7px;white-space:nowrap}
-.asset-premium-body{display:flex;flex-direction:column;gap:7px;padding:10px 11px}
-.asset-performance-row{padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15;min-width:0}
+.asset-premium-body{display:flex;flex-direction:column;gap:6px;padding:9px 10px}
+.asset-performance-row{padding:7px 8px;border:1px solid #182033;border-radius:10px;background:#090c15;min-width:0}
 .asset-performance-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
 .asset-performance-name{font-size:11px;font-weight:900;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-performance-prices{font-size:9px;color:#7489a4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -182,7 +182,7 @@ button{cursor:pointer;font-family:inherit}
 .asset-performance-row.positive .asset-performance-fill{background:linear-gradient(90deg,#22c55e,#86efac)}
 .asset-performance-row.negative .asset-performance-pct{color:#f87171}
 .asset-performance-row.negative .asset-performance-fill{background:linear-gradient(90deg,#ef4444,#fb7185)}
-.asset-insight-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center;padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15;min-width:0}
+.asset-insight-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid #182033;border-radius:10px;background:#090c15;min-width:0}
 .asset-insight-main{min-width:0}
 .asset-insight-title{font-size:11px;font-weight:850;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-insight-sub{font-size:9px;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -330,8 +330,8 @@ button{cursor:pointer;font-family:inherit}
   .asset-premium-section-sub{display:none}
   .asset-premium-section-meta{font-size:8px;padding:3px 6px}
   .asset-premium-body{padding:8px;gap:6px}
-  .asset-premium-body .asset-performance-row:nth-child(n+6),
-  .asset-premium-body .asset-insight-row:nth-child(n+6){display:none}
+  .asset-premium-body .asset-performance-row:nth-child(n+5),
+  .asset-premium-body .asset-insight-row:nth-child(n+5){display:none}
   .asset-performance-row,.asset-insight-row{padding:7px 8px}
   .asset-performance-name,.asset-insight-title{font-size:10px}
   .asset-performance-prices,.asset-insight-sub{font-size:8px}
@@ -13112,7 +13112,7 @@ function assetAnalysisBlock(){
   return `<div class="asset-premium-analysis">
     <div class="asset-premium-hero">
       <div class="asset-premium-hero-head">
-        <div style="min-width:0"><div class="asset-premium-title">Análise de Ativos</div><div class="asset-premium-sub">Desempenho, tamanho das posições e pontos que merecem acompanhamento.</div></div>
+        <div style="min-width:0"><div class="asset-premium-title">Análise de Ativos</div><div class="asset-premium-sub">Leitura rápida de desempenho, concentração e revisão.</div></div>
         <div class="analysis-pill">${rows.length} analisados</div>
       </div>
       <div class="asset-premium-overview">
@@ -13123,14 +13123,14 @@ function assetAnalysisBlock(){
       </div>
     </div>
     <div class="asset-premium-grid">
-      ${assetPremiumSection('Maiores altas','Ativos acima do preço médio, com valor atual e intensidade do desempenho.',positives.length,positives.length?positives.map(r=>assetPerformanceRowHtml(r,maxPositive,'positive')).join(''):performanceEmpty,'ok')}
-      ${assetPremiumSection('Maiores baixas','Ativos abaixo do preço médio. Queda não representa oportunidade automática.',negatives.length,negatives.length?negatives.map(r=>assetPerformanceRowHtml(r,maxNegative,'negative')).join(''):performanceEmpty,'danger')}
+      ${assetPremiumSection('Maiores altas','Ativos acima do preço médio e em alta.',positives.length,positives.length?positives.map(r=>assetPerformanceRowHtml(r,maxPositive,'positive')).join(''):performanceEmpty,'ok')}
+      ${assetPremiumSection('Maiores baixas','Ativos abaixo do preço médio.',negatives.length,negatives.length?negatives.map(r=>assetPerformanceRowHtml(r,maxNegative,'negative')).join(''):performanceEmpty,'danger')}
     </div>
     <div class="asset-premium-grid compact">
-      ${assetPremiumSection('Maiores posições','Ativos com maior valor financeiro dentro da carteira.',positions.length,positions.length?positions.map(r=>assetInsightRowHtml(r,'position')).join(''):performanceEmpty,'info')}
-      ${assetPremiumSection('Maiores concentrações','Somente posições acima de 10% do patrimônio analisado.',concentrations.length,concentrations.length?concentrations.map(r=>assetInsightRowHtml(r,'concentration')).join(''):'<div class="asset-premium-empty">Nenhum ativo acima do limite de atenção.</div>',topConcentration?assetConcentrationAlert(topConcentration.share).tone:'ok')}
-      ${assetPremiumSection('Dados incompletos','Ativos que precisam de preço, quantidade ou preço médio para análise segura.',incomplete.length,incomplete.length?incomplete.map(r=>assetInsightRowHtml(r,'incomplete')).join(''):'<div class="asset-premium-empty">Todos os ativos possuem dados suficientes.</div>','muted')}
-      ${assetPremiumSection('Merecem atenção','Concentração elevada, sinal de aguardar ou queda acentuada.',attention.length,attention.length?attention.map(r=>assetInsightRowHtml(r,'attention')).join(''):'<div class="asset-premium-empty">Nenhum alerta relevante com os critérios atuais.</div>','warn')}
+      ${assetPremiumSection('Maiores posições','Ativos com maior peso financeiro.',positions.length,positions.length?positions.map(r=>assetInsightRowHtml(r,'position')).join(''):performanceEmpty,'info')}
+      ${assetPremiumSection('Maiores concentrações','Posições acima de 10% do patrimônio.',concentrations.length,concentrations.length?concentrations.map(r=>assetInsightRowHtml(r,'concentration')).join(''):'<div class="asset-premium-empty">Nenhum ativo acima do limite de atenção.</div>',topConcentration?assetConcentrationAlert(topConcentration.share).tone:'ok')}
+      ${assetPremiumSection('Dados incompletos','Ativos que pedem revisão de base.',incomplete.length,incomplete.length?incomplete.map(r=>assetInsightRowHtml(r,'incomplete')).join(''):'<div class="asset-premium-empty">Todos os ativos possuem dados suficientes.</div>','muted')}
+      ${assetPremiumSection('Merecem atenção','Risco, queda ou concentração.',attention.length,attention.length?attention.map(r=>assetInsightRowHtml(r,'attention')).join(''):'<div class="asset-premium-empty">Nenhum alerta relevante com os critérios atuais.</div>','warn')}
     </div>
   </div>`;
 }
