@@ -1337,6 +1337,15 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .div-premium-metric-bar{height:6px;border-radius:999px;overflow:hidden;background:rgba(148,163,184,.14)}
 .div-premium-metric-bar > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#10b981)}
 .div-premium-metric-bar.warn > div{background:linear-gradient(90deg,#f59e0b,#f97316)}
+.div-overview-grid{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr);gap:10px;align-items:start}
+.div-overview-main,.div-overview-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.div-overview-panel{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:10px;min-width:0}
+.div-overview-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.div-overview-panel-title{font-size:12px;font-weight:900;color:var(--text);line-height:1.15}
+.div-overview-panel-sub{font-size:9px;color:var(--muted);line-height:1.3;margin-top:2px}
+.div-overview-panel-badge{font-size:9px;font-weight:850;color:var(--muted);border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:4px 7px;white-space:nowrap}
+.div-overview-panel-actions{display:flex;justify-content:flex-end;margin-top:8px}
+.div-overview-panel-actions .btn{padding:7px 10px;font-size:10px}
 .div-goal-panel{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:12px}
 .div-goal-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .div-goal-title{font-size:12px;font-weight:900;color:var(--text)}
@@ -1557,6 +1566,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .div-asset-group>summary .div-asset-stat:nth-of-type(3),.div-asset-group>summary .div-asset-stat:nth-of-type(4){display:none}
   .div-month-card{grid-template-columns:1fr 1fr}
   .div-month-card > :nth-child(n+3){grid-column:1/-1}
+  .div-overview-grid{grid-template-columns:1fr}
 }
 @media(max-width:640px){
   .div-premium{gap:9px;padding-bottom:22px}
@@ -1610,6 +1620,12 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .div-month-name{grid-column:1/-1}
   .div-month-card > :nth-child(n+3){grid-column:1/-1}
   .div-timeline{grid-template-columns:1fr;gap:7px}
+  .div-overview-grid{gap:8px}
+  .div-overview-panel{padding:9px;border-radius:12px}
+  .div-overview-panel-head{margin-bottom:7px}
+  .div-overview-panel-title{font-size:11px}
+  .div-overview-panel-sub{font-size:8px;line-height:1.25}
+  .div-overview-panel-badge{font-size:8px;padding:3px 6px}
 }
 .div-premium .div-premium-hero{padding:12px}
 .div-premium .div-premium-head{gap:8px}
@@ -16074,6 +16090,11 @@ function dividendRecentSummary(rows){
   const latest=rows[0];
   return `${rows.length} lanç. · ${fmt(total)} total${latest?` · último ${latest.date||'—'}`:''}`;
 }
+function dividendOverviewRecentSummary(rows, limit=6){
+  const visible=rows.slice(0,limit);
+  const total=visible.reduce((sum,row)=>sum+row.value,0);
+  return `${visible.length} recente(s) · ${fmt(total)} nos últimos lançamentos${rows.length>visible.length?` · ${rows.length} no total`:''}`;
+}
 function dividendUpcomingRows(rows=dividendPremiumRows()){
   const today=new Date();
   today.setHours(0,0,0,0);
@@ -16375,6 +16396,23 @@ function dividendGoalProgress(){
     <div class="div-goal-sub" style="margin-top:6px">${stats.target>0?`${pct.toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current))} · mantendo a média atual: ${fmt(stats.annualProjection)} ao ano.`:'Defina uma meta mensal na aba Metas para acompanhar o progresso.'}</div>
   </div>`;
 }
+function dividendOverviewRecentPanel(rows){
+  const limit=6;
+  const visible=rows.slice(0,limit);
+  return `<div class="div-overview-panel">
+    <div class="div-overview-panel-head">
+      <div>
+        <div class="div-overview-panel-title">Histórico recente</div>
+        <div class="div-overview-panel-sub">${esc(dividendOverviewRecentSummary(rows,limit))}</div>
+      </div>
+      <div class="div-overview-panel-badge">${visible.length}${rows.length>visible.length?` / ${rows.length}`:''}</div>
+    </div>
+    ${dividendRecentList(rows,limit)}
+    <div class="div-overview-panel-actions">
+      <button class="btn bgh" onclick="setDividendViewMode('received')">Ver recebimentos</button>
+    </div>
+  </div>`;
+}
 function setDividendViewMode(mode){
   S.dividendViewMode=['overview','received','asset','monthly','timeline'].includes(mode)?mode:'overview';
   render();
@@ -16412,7 +16450,6 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendRecentSummary(rows),
     dividendRecentList(rows, mode==='received' ? 8 : 5)
   );
-  const upcomingSection=dividendUpcomingSection(rows);
   const assetSection=dividendCompactSectionHeader(
     'asset',
     'Por ativo',
@@ -16426,11 +16463,20 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendTimelineSummary(rows),
     dividendMonthlyTimeline()
   );
+  const overviewBody=`<div class="div-overview-grid">
+    <div class="div-overview-main">
+      ${dividendSummaryCards()}
+      ${dividendGoalProgress()}
+    </div>
+    <div class="div-overview-side">
+      ${dividendOverviewRecentPanel(rows)}
+    </div>
+  </div>`;
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
     :mode==='received'?recentSection
-    :`${dividendSummaryCards()}${upcomingSection}${monthlySection}${recentSection}`;
+    :overviewBody;
   return `<div class="div-premium">
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Renda recebida, evolução mensal e progresso da meta em uma leitura confortável no desktop e no celular.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
