@@ -1518,6 +1518,17 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .div-monthly-head-side{align-items:flex-end;gap:6px}
   .div-monthly-body{padding:9px 10px 10px}
   .div-monthly-filters{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+  .div-upcoming-summary{grid-template-columns:1fr;gap:6px}
+  .div-upcoming-card{padding:9px;min-height:72px;border-radius:11px}
+  .div-upcoming-value{font-size:13px}
+  .div-upcoming-sub{font-size:8px}
+  .div-upcoming-group{padding:9px;border-radius:11px}
+  .div-upcoming-group-head{display:block}
+  .div-upcoming-group-total{margin-top:6px}
+  .div-upcoming-items{gap:6px;padding-top:7px}
+  .div-upcoming-item{grid-template-columns:1fr;gap:6px;padding:8px 0}
+  .div-upcoming-subline{white-space:normal;overflow-wrap:anywhere}
+  .div-upcoming-ticker{font-size:11px}
   .dividend-query-list-head{display:none}
   .dividend-query-row{grid-template-columns:1fr;gap:6px;padding:9px}
   .dividend-query-main{grid-column:1/-1}
@@ -1636,6 +1647,29 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-collapsible-meta{font-size:8px}
 .div-premium .div-collapsible-chev{width:20px;height:20px;font-size:10px}
 .div-premium .div-collapsible-body{padding:7px 8px 8px}
+.div-premium .div-upcoming-shell{display:flex;flex-direction:column;gap:8px}
+.div-premium .div-upcoming-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.div-premium .div-upcoming-card{border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:10px;display:flex;flex-direction:column;gap:5px;min-height:82px}
+.div-premium .div-upcoming-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;line-height:1.2}
+.div-premium .div-upcoming-value{font-size:14px;font-weight:900;color:var(--text);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-premium .div-upcoming-value.good{color:var(--success)}
+.div-premium .div-upcoming-sub{font-size:9px;color:var(--muted);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-premium .div-upcoming-note{font-size:10px;color:var(--muted);line-height:1.35}
+.div-premium .div-upcoming-list{display:flex;flex-direction:column;gap:8px}
+.div-premium .div-upcoming-group{border:1px solid var(--border);border-radius:12px;background:var(--panel-2);padding:10px}
+.div-premium .div-upcoming-group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(148,163,184,.14)}
+.div-premium .div-upcoming-group-date{font-size:12px;font-weight:900;color:var(--text)}
+.div-premium .div-upcoming-group-sub{font-size:9px;color:var(--muted);margin-top:2px}
+.div-premium .div-upcoming-group-total{font-size:13px;font-weight:900;color:var(--success);white-space:nowrap}
+.div-premium .div-upcoming-items{display:flex;flex-direction:column;gap:7px;padding-top:8px}
+.div-premium .div-upcoming-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0}
+.div-premium .div-upcoming-item + .div-upcoming-item{border-top:1px solid rgba(148,163,184,.08)}
+.div-premium .div-upcoming-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.div-premium .div-upcoming-title{display:flex;align-items:center;gap:7px;min-width:0;flex-wrap:wrap}
+.div-premium .div-upcoming-ticker{font-size:12px;font-weight:900;color:var(--text);white-space:nowrap}
+.div-premium .div-upcoming-subline{font-size:9px;color:var(--muted);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-premium .div-upcoming-item .div-type-badge{flex:none}
+.div-premium .div-upcoming-empty{padding:10px;border:1px dashed var(--border);border-radius:12px;background:var(--panel);color:var(--muted);line-height:1.45}
 .div-premium .div-recent-list,.div-premium .div-asset-list,.div-premium .div-month-list{gap:5px}
 .div-premium .div-receipt-card{padding:7px 8px;gap:4px;border-radius:12px}
 .div-premium .div-receipt-top{gap:5px}
@@ -15869,6 +15903,7 @@ function allocationGoalModal(){
 function dividendPremiumRows(){
   return (S.proventos||[]).map((p,index)=>{
     const dt=parseAnyDate(p.date);
+    const paymentDt=proventoDividendPaymentDate(p);
     const meta=proventoAssetMeta(p);
     const canonical=proventoTipoCanonical(p.eventType||p.type);
     const assetType=normalizeType(meta.asset?.type||metaTicker(p.ticker).type||'Ação','Ação');
@@ -15887,9 +15922,25 @@ function dividendPremiumRows(){
       value:Number(p.value)||0,
       source:String(p.source||p.origin||'Manual').trim()||'Manual',
       note:String(p.note||p.observation||'').trim(),
-      assetType
+      assetType,
+      paymentDt,
+      paymentDate:paymentDt ? toISODate(paymentDt) : ''
     };
   }).filter(row=>row.value>0).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.index-a.index);
+}
+function proventoDividendPaymentDate(provento){
+  const candidates=[
+    provento?.dataPagamento,
+    provento?.paymentDate,
+    provento?.pagamento,
+    provento?.data,
+    provento?.date
+  ];
+  for(const value of candidates){
+    const dt=parseAnyDate(value);
+    if(dt) return dt;
+  }
+  return null;
 }
 function filteredDividendRows(rows=dividendPremiumRows()){
   const filter=String(S.dividendFilter||'all');
@@ -15923,6 +15974,85 @@ function dividendRecentSummary(rows){
   const total=rows.reduce((sum,row)=>sum+row.value,0);
   const latest=rows[0];
   return `${rows.length} lanç. · ${fmt(total)} total${latest?` · último ${latest.date||'—'}`:''}`;
+}
+function dividendUpcomingRows(rows=dividendPremiumRows()){
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const end=new Date(today);
+  end.setDate(end.getDate()+60);
+  return rows
+    .filter(row=>row.paymentDt instanceof Date && !Number.isNaN(row.paymentDt.getTime()) && row.paymentDt>=today && row.paymentDt<=end)
+    .sort((a,b)=>(a.paymentDt?.getTime?.()||0)-(b.paymentDt?.getTime?.()||0)||b.value-a.value||String(a.ticker).localeCompare(String(b.ticker),'pt-BR'));
+}
+function dividendUpcomingSummary(rows){
+  const upcoming=dividendUpcomingRows(rows);
+  const total=upcoming.reduce((sum,row)=>sum+row.value,0);
+  const next=upcoming[0];
+  const nextLabel=next ? (next.paymentDt ? next.paymentDt.toLocaleDateString('pt-BR') : (next.paymentDate||'—')) : '';
+  return upcoming.length
+    ? `${upcoming.length} recebimento(s) · ${fmt(total)} previstos em 60 dias${next?` · próximo ${nextLabel}`:''}`
+    : 'Nenhum recebimento futuro nos próximos 60 dias';
+}
+function dividendUpcomingSection(rows){
+  const upcoming=dividendUpcomingRows(rows);
+  const total=upcoming.reduce((sum,row)=>sum+row.value,0);
+  const next=upcoming[0];
+  const nextLabel=next ? (next.paymentDt ? next.paymentDt.toLocaleDateString('pt-BR') : (next.paymentDate||'—')) : '—';
+  const groupsMap=new Map();
+  upcoming.forEach(row=>{
+    const key=row.paymentDate || (row.paymentDt ? toISODate(row.paymentDt) : '');
+    if(!key) return;
+    if(!groupsMap.has(key)) groupsMap.set(key,{key,dt:row.paymentDt,total:0,count:0,rows:[]});
+    const group=groupsMap.get(key);
+    group.total+=row.value;
+    group.count++;
+    group.rows.push(row);
+  });
+  const groups=[...groupsMap.values()].sort((a,b)=>a.key.localeCompare(b.key));
+  const body=upcoming.length ? `<div class="div-upcoming-shell">
+    <div class="div-upcoming-summary">
+      <div class="div-upcoming-card">
+        <div class="div-upcoming-label">Total previsto</div>
+        <div class="div-upcoming-value good">${fmt(total)}</div>
+        <div class="div-upcoming-sub">Próximos 60 dias</div>
+      </div>
+      <div class="div-upcoming-card">
+        <div class="div-upcoming-label">Recebimentos</div>
+        <div class="div-upcoming-value">${upcoming.length}</div>
+        <div class="div-upcoming-sub">Lançamentos futuros encontrados</div>
+      </div>
+      <div class="div-upcoming-card">
+        <div class="div-upcoming-label">Próximo pagamento</div>
+        <div class="div-upcoming-value">${esc(nextLabel)}</div>
+        <div class="div-upcoming-sub">${next ? `${esc(next.ticker)} · ${fmt(next.value)}` : 'Nenhum agendado'}</div>
+      </div>
+    </div>
+    <div class="div-upcoming-note">Usa apenas os proventos já cadastrados em <strong style="color:var(--text)">S.proventos</strong>.</div>
+    <div class="div-upcoming-list">${groups.map(group=>`<div class="div-upcoming-group">
+      <div class="div-upcoming-group-head">
+        <div>
+          <div class="div-upcoming-group-date">${esc(group.dt ? group.dt.toLocaleDateString('pt-BR') : group.key)}</div>
+          <div class="div-upcoming-group-sub">${group.count} recebimento(s)</div>
+        </div>
+        <div class="div-upcoming-group-total">${fmt(group.total)}</div>
+      </div>
+      <div class="div-upcoming-items">${group.rows.map(row=>`<div class="div-upcoming-item">
+        <div class="div-upcoming-main">
+          <div class="div-upcoming-title"><span class="div-upcoming-ticker">${esc(row.ticker)}</span><span class="div-type-badge ${dividendTypeTone(row.type)}">${esc(row.type)}</span></div>
+          <div class="div-upcoming-subline">${esc(row.name)}${row.source ? ` · ${esc(row.source)}` : ''}${row.note ? ` · ${esc(row.note)}` : ''}</div>
+        </div>
+        <div class="div-upcoming-value">${fmt(row.value)}</div>
+      </div>`).join('')}</div>
+    </div>`).join('')}</div>` : `<div class="div-upcoming-empty">
+      <div class="div-empty-title">Nenhum recebimento futuro encontrado nos proventos cadastrados.</div>
+      <div class="div-empty-sub">Quando houver proventos com data de pagamento futura, eles aparecerão aqui.</div>
+    </div>`;
+  return dividendCompactSectionHeader(
+    'upcoming',
+    'Próximos recebimentos',
+    dividendUpcomingSummary(rows),
+    body
+  );
 }
 function dividendMonthlySummary(rows){
   const months=dividendMonthlyRows(rows);
@@ -16183,6 +16313,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendRecentSummary(rows),
     dividendRecentList(rows, mode==='received' ? 8 : 5)
   );
+  const upcomingSection=dividendUpcomingSection(rows);
   const assetSection=dividendCompactSectionHeader(
     'asset',
     'Por ativo',
@@ -16200,7 +16331,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
     :mode==='received'?recentSection
-    :`${dividendSummaryCards()}${monthlySection}${recentSection}`;
+    :`${dividendSummaryCards()}${upcomingSection}${monthlySection}${recentSection}`;
   return `<div class="div-premium">
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Renda recebida, evolução mensal e progresso da meta em uma leitura confortável no desktop e no celular.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
