@@ -791,6 +791,13 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .backup-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .backup-summary .card{padding:10px 11px;min-height:0}
 .backup-summary .cv{font-size:18px}
+.cfg-menu-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(240px,calc(100vw - 24px));min-width:240px;max-width:240px;background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:8px;display:flex;flex-direction:column;gap:8px}
+.cfg-menu-group{display:flex;flex-direction:column;gap:6px}
+.cfg-menu-group-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:1px 4px}
+.cfg-menu-divider{height:1px;background:var(--border);opacity:.9}
+.cfg-menu-panel .btn{width:100%;justify-content:flex-start;min-height:36px;padding:8px 10px;line-height:1.15}
+.cfg-menu-panel .btn.cfg-danger{border-color:rgba(239,68,68,.28);color:#fecaca;background:rgba(239,68,68,.08)}
+.cfg-menu-panel .btn.cfg-danger:hover{background:rgba(239,68,68,.12)}
 .db{display:grid;grid-template-columns:58px minmax(0,1fr) 92px;align-items:center;gap:12px;margin-bottom:10px}
 .dbl{font-size:11px;color:#c0cce0;min-width:0;font-weight:800;letter-spacing:.02em}
 .dbt{background:#141d2f;border-radius:999px;height:8px;overflow:hidden;border:1px solid #27344b;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
@@ -4260,44 +4267,44 @@ function accessSettingsModal(){
   const allowedDomains = listToText(cfg.allowedDomains || []);
   const message = esc(cfg.message || 'Acesso restrito a usuários aprovados.');
   return `<div class="note-overlay" onclick="if(event.target===this) closeAccessSettings()">
-    <div class="note-modal" style="max-width:760px;max-height:84vh;display:flex;flex-direction:column">
-      <div class="note-head" style="padding:14px 16px 12px">
+    <div class="note-modal" style="max-width:740px;max-height:84vh;display:flex;flex-direction:column">
+      <div class="note-head" style="padding:13px 16px 11px">
         <div class="note-title">
           <div>
             <h3 style="font-size:17px">Segurança de acesso</h3>
-            <p style="font-size:11px">Controle quem pode entrar no site e manter a carteira sincronizada.</p>
+            <p style="font-size:11px">Defina quem entra e quem mantém a carteira sincronizada.</p>
           </div>
           <div class="note-pill">${FB.access.allowed ? 'Ativo' : 'Bloqueado'}</div>
         </div>
       </div>
-      <div class="sec-body" style="display:grid;grid-template-columns:1fr;gap:8px;overflow:auto;min-height:0;padding:12px 16px 12px">
+      <div class="sec-body" style="display:grid;grid-template-columns:1fr;gap:8px;overflow:auto;min-height:0;padding:11px 16px 12px">
         <label class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
           <div>
             <div class="sec-title" style="font-size:13px">Ativar trava de acesso</div>
-            <div class="sec-meta" style="font-size:11px">Quando ligado, apenas os e-mails listados podem entrar.</div>
+            <div class="sec-meta" style="font-size:11px">Quando ligado, só os e-mails listados entram.</div>
           </div>
           <input id="acc-enabled" type="checkbox" ${enabled?'checked':''} style="width:auto;transform:scale(1.1)">
         </label>
         <div class="fg" style="grid-template-columns:1fr 1fr;gap:8px">
           <div>
             <div class="fl" style="margin-bottom:3px">E-mails aprovados</div>
-            <textarea id="acc-emails" rows="4" style="min-height:96px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedEmails)}</textarea>
+            <textarea id="acc-emails" rows="3" style="min-height:88px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedEmails)}</textarea>
             <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Um por linha. O seu e-mail atual é mantido automaticamente.</div>
           </div>
           <div>
             <div class="fl" style="margin-bottom:3px">Domínios aprovados</div>
-            <textarea id="acc-domains" rows="4" style="min-height:96px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedDomains)}</textarea>
+            <textarea id="acc-domains" rows="3" style="min-height:88px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedDomains)}</textarea>
             <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Ex.: empresa.com.br. Se preferir, deixe vazio.</div>
           </div>
         </div>
         <div>
           <div class="fl" style="margin-bottom:3px">E-mails bloqueados</div>
-          <textarea id="acc-blocked" rows="3" style="min-height:72px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(blockedEmails)}</textarea>
-          <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Mesmo que o domínio esteja liberado, estes e-mails ficam negados.</div>
+          <textarea id="acc-blocked" rows="2" style="min-height:66px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(blockedEmails)}</textarea>
+          <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Mesmo com domínio liberado, estes e-mails continuam negados.</div>
         </div>
         <div>
-          <div class="fl" style="margin-bottom:3px">Mensagem exibida no bloqueio</div>
-          <textarea id="acc-message" rows="2" style="min-height:60px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${message}</textarea>
+          <div class="fl" style="margin-bottom:3px">Mensagem de bloqueio</div>
+          <textarea id="acc-message" rows="2" style="min-height:58px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${message}</textarea>
         </div>
         <details class="sec" style="margin:0">
           <summary style="padding:10px 12px;min-height:42px">
@@ -4330,18 +4337,18 @@ function backupManagerModal(){
   const draft=S.backupImportDraft;
   const draftStats=draft ? draft.summary : null;
   return `<div class="note-overlay" onclick="if(event.target===this) closeBackupCenter()">
-    <div class="note-modal" style="max-width:920px;max-height:86vh;display:flex;flex-direction:column">
-      <div class="note-head" style="padding:14px 16px 12px">
+    <div class="note-modal" style="max-width:900px;max-height:86vh;display:flex;flex-direction:column">
+      <div class="note-head" style="padding:13px 16px 11px">
         <div class="note-title">
           <div>
             <h3 style="font-size:17px">Backup e restauração</h3>
-            <p style="font-size:11px">Exportar, revisar e restaurar os dados da carteira com segurança.</p>
+            <p style="font-size:11px">Exportar, revisar e restaurar os dados com segurança.</p>
           </div>
           <div class="note-pill">${draft ? 'Arquivo pronto' : 'Backup local'}</div>
         </div>
       </div>
-      <div class="sec-body" style="display:flex;flex-direction:column;gap:10px;overflow:auto;min-height:0;padding:12px 16px 12px">
-        <div class="backup-warning">A importação substitui os dados atuais da carteira ativa. Recomenda-se exportar um backup antes de restaurar outro arquivo.</div>
+      <div class="sec-body" style="display:flex;flex-direction:column;gap:10px;overflow:auto;min-height:0;padding:11px 16px 12px">
+        <div class="backup-warning">A importação substitui a carteira ativa. Exporte um backup antes de restaurar outro arquivo.</div>
         <div class="backup-summary">
           <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${currentStats.wallets}</div><div class="cs">Carteiras locais no app</div></div>
           <div class="card backup-card"><div class="cl">Ativos</div><div class="cv">${currentStats.assets}</div><div class="cs">Cadastros em Meus Ativos</div></div>
@@ -4355,17 +4362,17 @@ function backupManagerModal(){
             <div class="sh" style="margin-bottom:8px;gap:10px">
               <div>
                 <div class="st">Exportação</div>
-                <div class="mu" style="font-size:11px;margin-top:2px">Gera um arquivo JSON com os dados e configurações locais da carteira.</div>
+                <div class="mu" style="font-size:11px;margin-top:2px">Gera um JSON com dados e configurações locais.</div>
               </div>
               <button class="btn bexp" onclick="exportBackup()">Exportar backup</button>
             </div>
-            <div class="backup-note">O arquivo inclui metadados do app, ativos, aportes, dividendos, metas, renda fixa e preferências relevantes. Nome sugerido: <strong style="color:#e2eaf6">carteira-investimentos-backup-AAAA-MM-DD-HH-mm.json</strong>.</div>
+            <div class="backup-note">Inclui metadados, ativos, aportes, dividendos, metas, renda fixa e preferências. Nome sugerido: <strong style="color:#e2eaf6">carteira-investimentos-backup-AAAA-MM-DD-HH-mm.json</strong>.</div>
           </div>
           <div class="cc" style="padding:12px 12px 11px">
             <div class="sh" style="margin-bottom:8px;gap:10px">
               <div>
                 <div class="st">Importação</div>
-                <div class="mu" style="font-size:11px;margin-top:2px">Selecione um backup válido e revise o resumo antes de substituir os dados atuais.</div>
+                <div class="mu" style="font-size:11px;margin-top:2px">Selecione um backup e revise o resumo antes de substituir os dados.</div>
               </div>
               <button class="btn bimp" onclick="triggerBackupImport()">Selecionar arquivo</button>
             </div>
@@ -4378,7 +4385,7 @@ function backupManagerModal(){
                 <div class="card backup-card"><div class="cl">Renda Fixa</div><div class="cv">${draftStats.fixed}</div><div class="cs">Posições de renda fixa</div></div>
                 <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${draftStats.wallets}</div><div class="cs">Estrutura de carteiras</div></div>
               </div>
-              <div class="backup-note">Metas configuradas: ${draftStats.goals} · Cotação manual/Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}</div>
+              <div class="backup-note">Metas configuradas: ${draftStats.goals} · Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}</div>
               <div class="backup-note" style="margin-top:2px">Meta de patrimônio e outras preferências também serão restauradas se existirem no arquivo.</div>
             `:`
               <div class="backup-note">Nenhum arquivo carregado ainda. Selecione um JSON de backup para ver a prévia antes de importar.</div>
@@ -4442,18 +4449,25 @@ function mobileTopActionButton(){
 }
 function configMenu(){
   const securityBtn = canManageSecurity()
-    ? `<button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>`
+    ? `<button class="btn bgh" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>`
     : '';
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp hdr-mobile-btn" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px"><span class="hdr-mobile-icon">⚙️</span><span class="hdr-mobile-label">Configurações</span></summary>
-    <div style="position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(220px,calc(100vw - 24px));min-width:220px;max-width:220px;background:#0d111e;border:1px solid #1e2a3d;border-radius:14px;box-shadow:0 20px 45px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;gap:6px">
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="toggleThemeFromMenu()">${themeActionLabel()}</button>
-      ${securityBtn}
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start" onclick="importNotaCorretora();closeConfigMenus()">🧾 Nota corretora</button>
-      <button class="btn bgh" style="width:100%;justify-content:flex-start;border-color:#7f1d1d;color:#fecaca;background:#1a0f12" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
+    <div class="cfg-menu-panel">
+      <div class="cfg-menu-group">
+        <div class="cfg-menu-group-title">Ações comuns</div>
+        <button class="btn bgh" onclick="toggleThemeFromMenu()">${themeActionLabel()}</button>
+        ${securityBtn}
+        <button class="btn bgh" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
+        <button class="btn bgh" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
+        <button class="btn bgh" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
+        <button class="btn bgh" onclick="importNotaCorretora();closeConfigMenus()">🧾 Nota corretora</button>
+      </div>
+      <div class="cfg-menu-divider"></div>
+      <div class="cfg-menu-group">
+        <div class="cfg-menu-group-title">Ação crítica</div>
+        <button class="btn bgh cfg-danger" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
+      </div>
     </div>
   </details>`;
 }
