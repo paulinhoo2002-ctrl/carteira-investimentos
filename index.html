@@ -14125,6 +14125,101 @@ function dashboardHomeAttentionPanel(data){
     </div>
   </div>`;
 }
+function dashboardConsultiveAnalysisPanel(data){
+  const p=data?.portfolio||cx();
+  const income=data?.income||passiveIncomeGoalStats();
+  const target=Number(income.target)||0;
+  const monthlyAvg=Number(income.monthlyAvg)||0;
+  const totalCurrent=Number(p.tC)||0;
+  const totalApplied=Number(p.tI)||0;
+  const totalResult=Number(p.tG)||0;
+  const top1=data?.concentration?.[0]||null;
+  const top3=(data?.concentration||[]).slice(0,3);
+  const top3Share=top3.reduce((sum,row)=>sum+(Number(row?.share)||0),0);
+  const incomplete=Number(data?.insufficient?.length)||0;
+  const fixedMissing=Number(data?.fixed?.missing)||0;
+  const fixedShare=totalCurrent>0 ? (Number(data?.fixed?.current)||0)/totalCurrent*100 : 0;
+  const monthReceived=Number(proventoStats().mes)||0;
+  let focusTone='ok';
+  let focusStatus='OK';
+  let focusText='Manter acompanhamento e disciplina.';
+  if(incomplete>0){
+    focusTone='warn';
+    focusStatus='Atenção';
+    focusText='Completar dados antes de novas leituras.';
+  }else if(target>0 && monthlyAvg<target){
+    focusTone='info';
+    focusStatus='Em evolução';
+    focusText='A renda passiva ainda está abaixo da meta mensal.';
+  }else if(top1 && (Number(top1.share)>20 || top3Share>45)){
+    focusTone='warn';
+    focusStatus='Atenção';
+    focusText='Acompanhar o peso das maiores posições.';
+  }else if(fixedShare>45 && target>0 && monthlyAvg>=target){
+    focusTone='info';
+    focusStatus='OK';
+    focusText='Carteira com participação relevante de renda fixa.';
+  }
+  const statusTone=top3Share>60 ? 'rd' : top3Share>45 ? 'am' : 'gn';
+  return `<div class="premium-panel premium-reading-panel">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Análises consultivas</div><div class="premium-panel-sub">Leitura neutra da carteira.</div></div>
+      <div class="premium-panel-badge">Leitura neutra</div>
+    </div>
+    <div class="premium-exec-list">
+      <div class="premium-exec-row">
+        <div class="premium-exec-left">
+          <div class="premium-exec-title">Renda passiva</div>
+          <div class="premium-exec-sub">${target>0?'Comparação entre média 12M e meta mensal.':'Meta mensal ainda não definida.'}</div>
+        </div>
+        <div class="premium-exec-value">${target>0?`<span class="${monthlyAvg>=target?'gn':'am'}">${fmt(monthlyAvg)} / ${fmt(target)}</span>`:`<span class="gn">${fmt(monthReceived)}</span>`}</div>
+      </div>
+      <div class="premium-exec-row">
+        <div class="premium-exec-left">
+          <div class="premium-exec-title">Concentração</div>
+          <div class="premium-exec-sub">${top1?`${esc(top1.ticker)} lidera o peso atual.`:'Sem base suficiente para medir a liderança.'}</div>
+        </div>
+        <div class="premium-exec-value"><span class="${statusTone}">${top3.length?`${top3Share.toFixed(1)}%`:'—'}</span></div>
+      </div>
+      <div class="premium-exec-row">
+        <div class="premium-exec-left">
+          <div class="premium-exec-title">Dados em revisão</div>
+          <div class="premium-exec-sub">${incomplete>0?`${incomplete} ativo${incomplete===1?'':'s'} pedem revisão.`:'Base principal consistente para a leitura.'}</div>
+        </div>
+        <div class="premium-exec-value"><span class="${incomplete>0?'am':'gn'}">${incomplete>0?incomplete:'OK'}</span></div>
+      </div>
+      <div class="premium-exec-row">
+        <div class="premium-exec-left">
+          <div class="premium-exec-title">Renda fixa</div>
+          <div class="premium-exec-sub">${fixedMissing>0?'Há títulos sem valor atual explícito.':'Participação calculada pela posição atual.'}</div>
+        </div>
+        <div class="premium-exec-value"><span class="${fixedMissing>0?'am':'gn'}">${fixedMissing>0?`${fixedMissing} pend.`:`${fixedShare.toFixed(1)}%`}</span></div>
+      </div>
+      <div class="premium-exec-row">
+        <div class="premium-exec-left">
+          <div class="premium-exec-title">Próximo foco</div>
+          <div class="premium-exec-sub">${focusText}</div>
+        </div>
+        <div class="premium-exec-value"><span class="${focusTone==='ok'?'gn':focusTone==='info'?'am':'rd'}">${esc(focusStatus)}</span></div>
+      </div>
+    </div>
+    <details class="premium-compact-details">
+      <summary>
+        <div class="premium-compact-summary-main">
+          <div class="premium-compact-summary-title">Ver leitura resumida</div>
+          <div class="premium-compact-summary-sub">Abrir um resumo curto do patrimônio e do resultado.</div>
+        </div>
+        <div class="premium-compact-summary-meta">clique para abrir</div>
+      </summary>
+      <div class="premium-compact-body">
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Patrimônio atual</div><div class="premium-compact-line-value">${fmt(totalCurrent)}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Total investido</div><div class="premium-compact-line-value">${fmt(totalApplied)}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Resultado geral</div><div class="premium-compact-line-value">${fmt(totalResult)}</div></div>
+      </div>
+    </details>
+    <div class="premium-note">Informações para apoio e organização da carteira. Não é recomendação de investimento.</div>
+  </div>`;
+}
 function dashboardHomeActionsPanel(){
   return `<div class="premium-panel dashboard-home-actions">
     <div class="premium-panel-head">
@@ -14893,6 +14988,7 @@ function dash(){
       <div class="dashboard-consultive-main">
         ${dashboardHomeSummaryPanel(data)}
         ${dashboardPassiveIncomePanel(data)}
+        ${dashboardConsultiveAnalysisPanel(data)}
       </div>
       <div class="dashboard-consultive-side">
         ${dashboardHomeAttentionPanel(data)}
