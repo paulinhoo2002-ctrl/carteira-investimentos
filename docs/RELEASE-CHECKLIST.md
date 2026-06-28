@@ -1,32 +1,22 @@
-# Release Checklist v1.0 RC1
+# Release Checklist v1.0 RC1+1
 
-Checklist de preparação para publicação do Release Candidate do projeto Carteira de Investimentos.
+## Hardening pós-RC
 
-## Validação concluída
+- [x] `sw.js` atualizado para `CACHE_NAME = carteira-investimentos-v16`.
+- [x] `sw.js` continua com bypass para `/api/` e `sw.js`.
+- [x] Firestore Rules exigem `email_verified == true` para admin.
+- [x] `meta/access` restrito ao administrador.
+- [x] Logs diretos de produção reduzidos no `index.html`.
 
-- [x] Fase 44 concluída: QA geral de produção.
-- [x] Fase 45 concluída: backup e restauração auditados.
-- [x] Fase 46 concluída: PWA, cache e atualização auditados.
+## Validações mantidas
+
 - [x] Produção acessível.
-- [x] Navegação geral validada.
-- [x] Mobile validado.
-- [x] Backup/exportação validado.
-- [x] PWA/service worker validados.
-- [x] Console sem erro crítico conhecido.
-
-## Ponto conhecido
-
-- [x] Aviso futuro de depreciação do Firebase `enableMultiTabIndexedDbPersistence()` registrado como não bloqueante.
-
-## Pronto para RC
-
-- [x] Nenhuma alteração em cálculos financeiros.
-- [x] Nenhuma alteração em lógica de dados ou persistência.
-- [x] Nenhuma alteração em API Yahoo, Firestore Rules, Firebase config ou regras sensíveis.
-- [x] Nenhuma alteração em telas do app.
 - [x] Build validado com `npm run build`.
+- [x] Nenhum cálculo financeiro alterado.
+- [x] Nenhuma tela ou fluxo principal alterado.
+- [x] `api/yahoo-quote.js` não alterado.
+- [x] `firestore.rules`, `firebase.json` e `.firebaserc` revisados sem impacto fora do hardening.
 
-## Próximos passos
+## Observação
 
-- [ ] Criar tag `v1.0.0-rc1` após a validação final.
-- [ ] Publicar a tag no repositório remoto.
+- Aviso futuro de depreciação do Firebase `enableMultiTabIndexedDbPersistence()` continua conhecido e não bloqueante.

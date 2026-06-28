@@ -3633,7 +3633,7 @@ function save(){
       learnMeta:S.learnMeta
     }));
     queueCloudSave();
-  }catch(e){ console.error('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
+  }catch(e){ debugError('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
 }
 function saveConfig(){
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
@@ -3715,7 +3715,7 @@ function load(){
     if(d.irpfStep !== undefined)     S.irpfStep = Math.min(4, Math.max(1, Number(d.irpfStep)||1));
     if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
     if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
-  }catch(e){ console.error('load erro:',e); }
+  }catch(e){ debugError('load erro:',e); }
   try{
     const c=JSON.parse(localStorage.getItem(STOR+'_cfg')||'{}');
     if(c.brapiToken)            S.brapiToken = c.brapiToken;
@@ -3802,7 +3802,7 @@ function initFirebase(){
       render();
     });
   }catch(e){
-    console.warn('Firebase indisponível:', e);
+    debugWarn('Firebase indisponível:', e);
     FB.ready=false;
   }
 }
@@ -3847,7 +3847,7 @@ async function loadAccessControl(user){
     };
     return isAllowed;
   }catch(e){
-    console.warn('Acesso:', e);
+    debugWarn('Acesso:', e);
     FB.access = {loaded:true,loading:false,allowed:false,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()};
     return false;
   }
@@ -3868,7 +3868,7 @@ async function recordAccessAttempt(user, allowed, reason=''){
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge:true });
   }catch(e){
-    console.warn('log acesso:', e);
+    debugWarn('log acesso:', e);
   }
 }
 function portfolioRef(){
@@ -3973,7 +3973,7 @@ function isTransientCloudError(error){
 function logCloudSyncError(error, context='uploadLocalToCloud'){
   const ref=portfolioRef();
   const payload=cloudPayload();
-  console.error(`[${context}] cloud sync failed`, {
+  debugError(`[${context}] cloud sync failed`, {
     code:error?.code||error?.name||'unknown',
     message:error?.message||String(error||''),
     path:ref?.path||null,
@@ -4096,9 +4096,9 @@ function startCloudSync(){
       FB.cloudLoaded=true;
       if(FB.pendingCloudSave) queueCloudSave();
       if(changed) render();
-    }catch(e){ console.warn('cloud sync:',e); }
+    }catch(e){ debugWarn('cloud sync:',e); }
   },err=>{
-    console.warn('Firestore:',err);
+    debugWarn('Firestore:',err);
     toast('⚠️ Erro na sincronização com a nuvem. Confira regras do Firestore.','#fbbf24');
   });
 }
@@ -4143,7 +4143,7 @@ async function signInGoogle(){
     const provider=new firebase.auth.GoogleAuthProvider();
     await FB.auth.signInWithPopup(provider);
   }catch(e){
-    console.warn(e);
+    debugWarn(e);
     alert('Não foi possível entrar com Google. Confirme se o domínio está autorizado no Firebase.');
   }
 }
@@ -4262,7 +4262,7 @@ async function saveAccessSettings(){
     closeAccessSettings();
     render();
   }catch(e){
-    console.warn(e);
+    debugWarn(e);
     toast('❌ Não foi possível salvar a segurança.','#f87171');
   }
 }
@@ -4551,7 +4551,7 @@ async function installPWA(){
       toast('Instalação cancelada.','#fbbf24');
     }
   }catch(e){
-    console.warn(e);
+    debugWarn(e);
   }
   render();
 }
@@ -6934,7 +6934,7 @@ async function readBrokerNotePdf(file){
     parsed.duplicate=detectBrokerNoteDuplicate(parsed);
     S.brokerNoteImport={...S.brokerNoteImport,status:parsed.valid?'ready':'error',message:parsed.valid?'Nota lida. Confira todos os dados antes de confirmar.':'Não foi possível validar todos os dados da nota.',allowDuplicate:false,parsed};
   }catch(error){
-    console.error('[Nota Inter PDF] falha na leitura local',error);
+    debugError('[Nota Inter PDF] falha na leitura local',error);
     const message=error?.message==='PDFJS_LOAD'
       ? 'Não foi possível carregar o leitor de PDF. Verifique sua conexão e tente novamente.'
       : 'Não foi possível ler este PDF. Verifique se é uma nota de corretagem do Inter com texto selecionável.';
@@ -8865,8 +8865,8 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
     }else{
       openB3Review({...parsed, sourceKind:isPdf?'pdf':'excel'}, file.name);
     }
-    if(warnings.length) console.warn('Avisos importação B3:',warnings);
-  }catch(err){ console.error(err); alert('Erro ao importar arquivo. Verifique o PDF/Excel e tente novamente.'); }
+    if(warnings.length) debugWarn('Avisos importação B3:',warnings);
+  }catch(err){ debugError(err); alert('Erro ao importar arquivo. Verifique o PDF/Excel e tente novamente.'); }
   e.target.value='';
 });
 document.getElementById('nota-file').addEventListener('change',async e=>{
@@ -8884,8 +8884,8 @@ document.getElementById('nota-file').addEventListener('change',async e=>{
       return;
     }
     openNotaReview({items,warnings,importDate,stats,noteKey,noteNumber,tradeDate},file.name);
-    if(warnings.length) console.warn('Avisos importação nota:',warnings);
-  }catch(err){ console.error(err); alert('Erro ao importar a nota da corretora. Verifique o arquivo e tente novamente.'); }
+    if(warnings.length) debugWarn('Avisos importação nota:',warnings);
+  }catch(err){ debugError(err); alert('Erro ao importar a nota da corretora. Verifique o arquivo e tente novamente.'); }
   e.target.value='';
 });
 document.getElementById('broker-note-pdf-file').addEventListener('change',async e=>{
@@ -8925,6 +8925,7 @@ const DEBUG = (() => {
 const debugLog = (...args) => { if(DEBUG) console.log('[DEBUG]', ...args); };
 const debugInfo = (...args) => { if(DEBUG) console.info('[DEBUG]', ...args); };
 const debugWarn = (...args) => { if(DEBUG) console.warn('[DEBUG]', ...args); };
+const debugError = (...args) => { if(DEBUG) console.error('[DEBUG]', ...args); };
 const esc  = s => String(s ?? '').replace(/[&<>"']/g, ch => ({
   '&':'&amp;',
   '<':'&lt;',
@@ -12780,7 +12781,7 @@ async function fetchQuotes(manual=false){
           });
           falhou.slice(i,i+20).forEach(t=>{ if(!recv.has(t)) semPreco.push(t); });
         }
-      }catch(e){ console.warn('fallback brapi:',e); }
+      }catch(e){ debugWarn('fallback brapi:',e); }
     }
 
     S.lastUpdate=new Date();
@@ -12798,7 +12799,7 @@ async function fetchQuotes(manual=false){
       toast(msg, semPreco.length?'#fbbf24':'#6ee7b7');
     }
   }catch(e){
-    console.warn('Yahoo Finance:',e);
+    debugWarn('Yahoo Finance:',e);
     if(manual) toast('❌ Não foi possível atualizar pelo Yahoo. Verifique se a pasta api foi enviada ao GitHub/Vercel.','#f87171');
   }
 
@@ -12851,10 +12852,10 @@ async function fetchAutoProventos(){
     S.proventos=[...nextAuto,...preserved];
     save(); render();
     toast(`✅ ${novos} novo(s) provento(s) adicionados.${ignorados?' '+ignorados+' ignorados/duplicados.':''}`, erros.length?'#fbbf24':'#6ee7b7');
-    if(erros.length) console.warn('Avisos proventos:',[...new Set(erros)].join(', '));
+    if(erros.length) debugWarn('Avisos proventos:',[...new Set(erros)].join(', '));
     return { added: novos, cleaned };
   }catch(e){
-    console.warn(e); toast('❌ Erro ao buscar proventos automáticos.','#f87171');
+    debugWarn(e); toast('❌ Erro ao buscar proventos automáticos.','#f87171');
   }
 }
 
@@ -12901,10 +12902,10 @@ async function fetchAutoProventosGratis(){
     S.proventos=[...nextAuto,...preserved];
     save(); render();
     toast(`✅ ${novos} provento(s) histórico(s) adicionados pelo Yahoo.${ignorados?' '+ignorados+' ignorados/duplicados.':''}`, erros.length?'#fbbf24':'#6ee7b7');
-    if(erros.length) console.warn('Avisos proventos:',[...new Set(erros)].join(', '));
+    if(erros.length) debugWarn('Avisos proventos:',[...new Set(erros)].join(', '));
     return { added: novos, cleaned };
   }catch(e){
-    console.warn(e); toast('❌ Erro ao buscar proventos históricos.','#f87171');
+    debugWarn(e); toast('❌ Erro ao buscar proventos históricos.','#f87171');
   }
 }
 
@@ -13512,7 +13513,7 @@ function exportReportCSV(type){
       downloadTextFile(reportFilename(type,'csv'),`\ufeff${header}\r\n\r\n${body}`,'text/csv;charset=utf-8');
       toast('✅ Relatório exportado com sucesso.');
     }catch(error){
-      console.error('exportReportCSV erro:',error);
+      debugError('exportReportCSV erro:',error);
       toast('Erro ao gerar relatório. Nenhum dado foi alterado.','#f87171');
     }
   });
@@ -13528,7 +13529,7 @@ function exportReportJSON(type){
       downloadTextFile(reportFilename(type,'json'),JSON.stringify(payload,null,2),'application/json;charset=utf-8');
       toast('✅ Relatório JSON exportado com sucesso.');
     }catch(error){
-      console.error('exportReportJSON erro:',error);
+      debugError('exportReportJSON erro:',error);
       toast('Erro ao gerar relatório JSON. Nenhum dado foi alterado.','#f87171');
     }
   });
@@ -13562,7 +13563,7 @@ function openPdfReport(){
     render();
   }catch(error){
     S.pdfReportOpen=false;
-    console.error('openPdfReport erro:',error);
+    debugError('openPdfReport erro:',error);
     toast('Não foi possível abrir a prévia do relatório. Nenhum dado foi alterado.','#f87171');
   }
 }
@@ -13574,7 +13575,7 @@ function printPdfReport(){
   try{
     window.print();
   }catch(error){
-    console.error('printPdfReport erro:',error);
+    debugError('printPdfReport erro:',error);
     toast('Não foi possível abrir a impressão neste navegador.','#f87171');
   }
 }
@@ -13779,17 +13780,17 @@ function render(){
     root.innerHTML=app();
     bind();
   }catch(error){
-    console.error('render erro:',error);
+    debugError('render erro:',error);
     const failedTab=S.tab;
     if(failedTab!=='dashboard'){
       try{
         S.tab='dashboard';
         root.innerHTML=app();
         bind();
-        console.warn(`A aba "${failedTab}" falhou ao abrir. Dashboard carregado como proteção.`);
+        debugWarn(`A aba "${failedTab}" falhou ao abrir. Dashboard carregado como proteção.`);
         return;
       }catch(dashboardError){
-        console.error('dashboard fallback erro:',dashboardError);
+        debugError('dashboard fallback erro:',dashboardError);
         S.tab=failedTab;
       }
     }
@@ -17895,7 +17896,7 @@ initFirebase();
 try{
   if(S.aportes.length) syncAssetsFromAportes(false); else render();
 }catch(error){
-  console.error('sincronização inicial de ativos falhou:',error);
+  debugError('sincronização inicial de ativos falhou:',error);
   render();
 }
 fetchQuotes(false);
