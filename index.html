@@ -1150,6 +1150,16 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .report-export-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
 .report-export-actions .btn{min-height:36px}
 .reports-footnote{padding:9px 11px;border:1px solid #1a273b;border-radius:12px;background:#0a101b;color:#8294ad;font-size:10px;line-height:1.45}
+.reports-monthly{display:flex;flex-direction:column;gap:10px;padding:13px;border:1px solid var(--border);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);min-width:0;margin-top:2px}
+.reports-monthly-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.reports-monthly-title{font-size:16px;font-weight:900;color:var(--text);line-height:1.15}
+.reports-monthly-sub{font-size:11px;color:var(--muted);line-height:1.4;margin-top:4px;max-width:760px}
+.reports-monthly-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.reports-monthly-select{min-width:200px}
+.reports-monthly-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.reports-monthly-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.reports-monthly-panel{min-height:0}
+.reports-monthly-foot{font-size:10px;color:var(--muted);line-height:1.45}
 .pdf-report-overlay{position:fixed;inset:0;z-index:1200;background:rgba(2,6,14,.94);overflow:auto;padding:18px}
 .pdf-report-toolbar{position:sticky;top:0;z-index:3;max-width:1040px;margin:0 auto 10px;padding:10px 12px;border:1px solid #263650;border-radius:14px;background:rgba(10,16,27,.96);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pdf-report-toolbar-text{font-size:11px;color:#91a3bc;line-height:1.4}
@@ -1887,6 +1897,13 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .reports-kpi{padding:8px 9px}
   .reports-kpi .value{font-size:13px}
   .reports-kpi .sub{display:none}
+  .reports-monthly{padding:11px;border-radius:14px}
+  .reports-monthly-head{display:block}
+  .reports-monthly-actions{margin-top:10px;width:100%}
+  .reports-monthly-select{width:100%;min-width:0}
+  .reports-monthly-actions .btn{width:100%;justify-content:center}
+  .reports-monthly-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .reports-monthly-panels{grid-template-columns:1fr}
   .reports-grid{grid-template-columns:1fr;gap:8px}
   .report-export-card{padding:11px;gap:8px}
   .report-export-desc{font-size:10px}
@@ -2475,6 +2492,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .passive-goal-grid.summary,.dividend-query-summary,.backup-summary{
     grid-template-columns:1fr!important
   }
+  .reports-monthly-summary{grid-template-columns:1fr!important}
   .ap-summary{grid-template-columns:1fr!important}
   .premium-radar{grid-template-columns:1fr!important}
   .patrimony-insights{grid-template-columns:1fr}
@@ -13292,6 +13310,320 @@ function reportsDateAllowed(value){
   const start=reportsPeriodStart();
   return !start || date>=start;
 }
+let reportsMonthlyExecutiveMonthKey='';
+function reportsMonthlyExecutiveMonthLabel(key){
+  const [year,month]=String(key||'').split('-');
+  if(!year || !month) return '—';
+  const date=new Date(Number(year),Number(month)-1,1);
+  return date.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+}
+function reportsMonthlyExecutiveMonthOptions(){
+  const months=new Map();
+  const addMonth=(value)=>{
+    const dt=parseAnyDate(value);
+    if(!dt) return;
+    const key=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    if(!months.has(key)){
+      months.set(key,{
+        key,
+        label:reportsMonthlyExecutiveMonthLabel(key),
+        order:dt.getFullYear()*12+dt.getMonth()
+      });
+    }
+  };
+  (S.aportes||[]).forEach(item=>addMonth(item?.date));
+  (S.proventos||[]).forEach(item=>addMonth(item?.date));
+  const out=[...months.values()].sort((a,b)=>a.order-b.order || a.key.localeCompare(b.key));
+  if(!out.length){
+    const now=new Date();
+    const key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    out.push({
+      key,
+      label:reportsMonthlyExecutiveMonthLabel(key),
+      order:now.getFullYear()*12+now.getMonth()
+    });
+  }
+  return out;
+}
+function reportsMonthlyExecutiveMonthCurrent(){
+  const options=reportsMonthlyExecutiveMonthOptions();
+  if(!reportsMonthlyExecutiveMonthKey || !options.some(option=>option.key===reportsMonthlyExecutiveMonthKey)){
+    reportsMonthlyExecutiveMonthKey=options[options.length-1]?.key || options[0]?.key || '';
+  }
+  return reportsMonthlyExecutiveMonthKey;
+}
+function setReportsMonthlyExecutiveMonth(value){
+  reportsMonthlyExecutiveMonthKey=String(value||'');
+  render();
+}
+function reportMonthlyExecutiveRowHtml(title, description, value, tone='muted', badge=''){
+  const toneClass=tone==='ok' ? 'analysis-positive' : tone==='danger' ? 'analysis-negative' : tone==='info' ? 'analysis-info' : tone==='warn' ? 'analysis-warn' : '';
+  return `<div class="analysis-item ${toneClass}">
+    <div class="analysis-item-left">
+      <div class="analysis-item-top">
+        <div class="analysis-item-ticker">${esc(title)}</div>
+        ${badge?`<span class="analysis-pill ${esc(tone)}">${esc(badge)}</span>`:''}
+      </div>
+      <div class="analysis-item-desc">${esc(description)}</div>
+    </div>
+    <div class="analysis-item-right">
+      <div class="analysis-item-val">${value}</div>
+    </div>
+  </div>`;
+}
+function reportMonthlyExecutiveSummaryCard(title, value, subtitle, tone='muted'){
+  return assetSummaryCard(title,value,subtitle,tone);
+}
+function reportsMonthlyExecutiveSnapshot(){
+  const monthKey=reportsMonthlyExecutiveMonthCurrent();
+  const [yearStr,monthStr]=String(monthKey||'').split('-');
+  const year=Number(yearStr)||new Date().getFullYear();
+  const monthIndex=(Number(monthStr)||1)-1;
+  const monthLabel=reportsMonthlyExecutiveMonthLabel(monthKey);
+  const matches=date=>!!date && date.getFullYear()===year && date.getMonth()===monthIndex;
+  const portfolio=cx();
+  const income=passiveIncomeGoalStats();
+  const audit=dataAuditSnapshot();
+  const analysis=assetAnalysisRows();
+  const buyKinds=new Set(['compra','renda-fixa','reserva-entrada']);
+  const sellKinds=new Set(['venda','reserva-saida']);
+  const proventoRows=(S.proventos||[])
+    .map((item,idx)=>({ ...item, _dt:parseAnyDate(item?.date), _idx:idx }))
+    .filter(item=>matches(item._dt) && Number(item.value)>0)
+    .sort((a,b)=>(b._dt?.getTime()||0)-(a._dt?.getTime()||0) || String(b.ticker||'').localeCompare(String(a.ticker||''),'pt-BR'));
+  const movementRows=(S.aportes||[])
+    .map((item,idx)=>{
+      const dt=parseAnyDate(item?.date);
+      const kind=aporteMovementKind(item);
+      const ticker=String(item.ticker||item.name||item.title||'Movimentação').trim()||'Movimentação';
+      const total=Math.abs(Number(item.totalValue ?? item.value ?? (Math.abs(Number(item.qty)||0)*Math.abs(Number(item.price)||0)))||0);
+      const label=aporteMovementLabel(item);
+      const note=String(item.note||item.decision||item.rf_note||'').trim();
+      return {item,idx,dt,kind,ticker,total,label,note,qty:Math.abs(Number(item.qty)||0),price:Number(item.price)||0};
+    })
+    .filter(row=>matches(row.dt) && !isNeutralMovement(row.item))
+    .sort((a,b)=>b.total-a.total || (b.dt?.getTime()||0)-(a.dt?.getTime()||0) || (Number(b.item?.id)||0)-(Number(a.item?.id)||0))
+    .map(row=>({
+      ...row,
+      dateLabel:row.dt ? row.dt.toLocaleDateString('pt-BR') : '—',
+      typeLabel:row.kind==='renda-fixa' ? 'Renda fixa' : row.label,
+      tone:row.kind==='venda' || row.kind==='reserva-saida' ? 'danger' : row.kind==='renda-fixa' ? 'info' : 'ok'
+    }));
+  const buyTotal=movementRows.filter(row=>buyKinds.has(row.kind)).reduce((sum,row)=>sum+row.total,0);
+  const sellTotal=movementRows.filter(row=>sellKinds.has(row.kind)).reduce((sum,row)=>sum+row.total,0);
+  const movementCount=movementRows.length;
+  const proventoTotal=proventoRows.reduce((sum,row)=>sum+(Number(row.value)||0),0);
+  const proventoCount=proventoRows.length;
+  const proventoMonthMap=new Map();
+  proventoRows.forEach(row=>{
+    const ticker=String(row.ticker||row.assetName||'').trim().toUpperCase() || '—';
+    const assetMeta=proventoAssetMeta(row);
+    if(!proventoMonthMap.has(ticker)){
+      proventoMonthMap.set(ticker,{
+        ticker:ticker||'—',
+        name:assetMeta.title || row.assetName || row.ticker || '—',
+        type:assetMeta.type || 'Ação',
+        total:0,
+        count:0,
+        lastDate:''
+      });
+    }
+    const payer=proventoMonthMap.get(ticker);
+    payer.total+=Number(row.value)||0;
+    payer.count++;
+    const iso=row._dt ? toISODate(row._dt) : '';
+    if(iso && iso>payer.lastDate) payer.lastDate=iso;
+  });
+  const topPayers=[...proventoMonthMap.values()].sort((a,b)=>b.total-a.total || b.count-a.count || a.ticker.localeCompare(b.ticker,'pt-BR')).slice(0,3);
+  const totalCurrent=Number(portfolio.tC)||0;
+  const target=income.target||passiveIncomeGoalTarget();
+  const goalGap=Math.max(0,(Number(target)||0)-proventoTotal);
+  const goalPercent=Number(target)>0 ? (proventoTotal/Number(target))*100 : 0;
+  const topConcentration=[...analysis]
+    .filter(row=>row.share!=null && Number.isFinite(row.share))
+    .sort((a,b)=>b.share-a.share || b.current-a.current)
+    .slice(0,3);
+  const topConcentrationShare=topConcentration.reduce((sum,row)=>sum+(Number(row.share)||0),0);
+  const attention=[];
+  if(Number(target)>0){
+    attention.push({
+      title:'Meta mensal',
+      desc:proventoTotal>=Number(target)
+        ? 'Meta mensal atingida no mês selecionado.'
+        : `Faltam ${fmt(goalGap)} para a meta mensal do mês selecionado.`,
+      value:proventoTotal>=Number(target) ? 'Meta ok' : `${goalPercent.toFixed(1)}%`
+    });
+  }
+  if(topConcentration.length){
+    attention.push({
+      title:'Concentração',
+      desc:`Top 3 da carteira somam ${topConcentrationShare.toFixed(1)}% do patrimônio.`,
+      value:topConcentrationShare>60 ? 'Atenção' : 'Info'
+    });
+  }
+  if((audit.alerts||[]).length){
+    attention.push({
+      title:'Auditoria',
+      desc:`${audit.alerts.length} alerta(s) de dados continuam visíveis na aba Auditoria.`,
+      value:audit.counts?.critical ? `${audit.counts.critical} críticos` : 'Conferir'
+    });
+  }
+  if(!proventoCount){
+    attention.push({
+      title:'Proventos',
+      desc:'Nenhum provento encontrado no mês selecionado.',
+      value:'Sem dados'
+    });
+  }
+  if(!attention.length){
+    attention.push({
+      title:'Carteira',
+      desc:'Nenhum ponto crítico identificado no mês selecionado.',
+      value:'OK'
+    });
+  }
+  const monthOptions=reportsMonthlyExecutiveMonthOptions().map(option=>`<option value="${esc(option.key)}" ${option.key===monthKey?'selected':''}>${esc(option.label)}</option>`).join('');
+  return {
+    monthKey,
+    monthLabel,
+    totalCurrent,
+    target:Number(target)||0,
+    goalGap,
+    goalPercent,
+    buyTotal,
+    sellTotal,
+    movementCount,
+    proventoTotal,
+    proventoCount,
+    topPayers,
+    movementRows,
+    attention,
+    monthOptions,
+    hasData:!!(movementCount || proventoCount || totalCurrent)
+  };
+}
+function reportMonthlyExecutiveCsv(snapshot=reportsMonthlyExecutiveSnapshot()){
+  const lines=[];
+  lines.push('RELATORIO_MENSAL_EXECUTIVO');
+  lines.push(['Indicador','Valor','Detalhe'].map(csvEscape).join(';'));
+  lines.push(['Mês',snapshot.monthLabel,'Leitura mensal da carteira'].map(csvEscape).join(';'));
+  lines.push(['Patrimônio atual',reportNumber(snapshot.totalCurrent),'Valor consolidado da carteira'].map(csvEscape).join(';'));
+  lines.push(['Aportes do mês',reportNumber(snapshot.buyTotal),'Compras e renda fixa do mês'].map(csvEscape).join(';'));
+  lines.push(['Resgates do mês',reportNumber(snapshot.sellTotal),'Vendas e saídas da reserva'].map(csvEscape).join(';'));
+  lines.push(['Proventos do mês',reportNumber(snapshot.proventoTotal),'Somente lançamentos de dividendos/proventos'].map(csvEscape).join(';'));
+  lines.push(['Meta mensal',reportNumber(snapshot.target),'Meta lida da aba Metas'].map(csvEscape).join(';'));
+  lines.push(['Falta para a meta',reportNumber(snapshot.goalGap),'Comparação do mês selecionado'].map(csvEscape).join(';'));
+  lines.push('');
+  lines.push('MAIORES_PAGADORES');
+  lines.push(['Ticker','Ativo','Valor','Lançamentos','Último pagamento'].map(csvEscape).join(';'));
+  snapshot.topPayers.forEach(row=>{
+    lines.push([row.ticker,row.name,reportNumber(row.total),row.count,row.lastDate||'—'].map(csvEscape).join(';'));
+  });
+  lines.push('');
+  lines.push('MOVIMENTACOES_PRINCIPAIS');
+  lines.push(['Data','Ticker','Tipo','Valor','Observação'].map(csvEscape).join(';'));
+  snapshot.movementRows.slice(0,5).forEach(row=>{
+    lines.push([row.dateLabel,row.ticker,row.typeLabel,reportNumber(row.total),row.note||'—'].map(csvEscape).join(';'));
+  });
+  lines.push('');
+  lines.push('PONTOS_DE_ATENCAO');
+  lines.push(['Título','Detalhe','Status'].map(csvEscape).join(';'));
+  snapshot.attention.forEach(item=>{
+    lines.push([item.title,item.desc,item.value].map(csvEscape).join(';'));
+  });
+  return lines.join('\r\n');
+}
+function downloadMonthlyExecutiveCSV(){
+  const snapshot=reportsMonthlyExecutiveSnapshot();
+  if(!snapshot.hasData){
+    toast('Não há dados suficientes para exportar o relatório mensal executivo.','#fbbf24');
+    return;
+  }
+  downloadTextFile(reportFilename('relatorio-mensal-executivo','csv'),`\ufeff${reportMonthlyExecutiveCsv(snapshot)}`,'text/csv;charset=utf-8');
+  toast('✅ Relatório mensal executivo exportado com sucesso.');
+}
+function reportMonthlyExecutiveSection(){
+  const data=reportsMonthlyExecutiveSnapshot();
+  const topPayersHtml=data.topPayers.length
+    ? data.topPayers.map(row=>reportMonthlyExecutiveRowHtml(
+        row.ticker,
+        `${row.name} · ${row.count} lançamentos · último ${row.lastDate ? (parseAnyDate(row.lastDate)?.toLocaleDateString('pt-BR') || row.lastDate) : '—'}`,
+        fmt(row.total),
+        row.total>0 ? 'ok' : 'muted',
+        'Pagador'
+      )).join('')
+    : '<div class="analysis-empty">Nenhum provento encontrado no mês selecionado.</div>';
+  const movementsHtml=data.movementRows.length
+    ? data.movementRows.slice(0,5).map(row=>reportMonthlyExecutiveRowHtml(
+        row.ticker,
+        `${row.typeLabel} · ${row.dateLabel}${row.note ? ` · ${row.note}` : ''}`,
+        fmt(row.total),
+        row.tone,
+        row.kind==='renda-fixa' ? 'RF' : row.kind==='venda' ? 'Saída' : 'Entrada'
+      )).join('')
+    : '<div class="analysis-empty">Nenhuma movimentação encontrada no mês selecionado.</div>';
+  const attentionHtml=data.attention.length
+    ? data.attention.slice(0,4).map(item=>reportMonthlyExecutiveRowHtml(
+        item.title,
+        item.desc,
+        item.value,
+        item.value==='OK' ? 'ok' : item.value==='Sem dados' ? 'muted' : item.value==='Meta ok' ? 'ok' : 'info'
+      )).join('')
+    : '<div class="analysis-empty">Nenhum ponto de atenção encontrado no mês selecionado.</div>';
+  return `<section class="reports-monthly">
+    <div class="reports-monthly-head">
+      <div style="min-width:0">
+        <div class="reports-monthly-title">Relatório mensal executivo da carteira</div>
+        <div class="reports-monthly-sub">Leitura informativa do mês selecionado, com foco em patrimônio, renda passiva, movimentações e pontos de atenção. Não é recomendação de investimento.</div>
+      </div>
+      <div class="reports-monthly-actions">
+        <select class="reports-monthly-select" onchange="setReportsMonthlyExecutiveMonth(this.value)">${data.monthOptions}</select>
+        <button class="btn bgh" onclick="downloadMonthlyExecutiveCSV()">Exportar CSV</button>
+      </div>
+    </div>
+    <div class="reports-monthly-summary">
+      ${reportMonthlyExecutiveSummaryCard('Patrimônio atual',fmt(data.totalCurrent),'Valor consolidado da carteira',data.totalCurrent>0?'ok':'muted')}
+      ${reportMonthlyExecutiveSummaryCard('Aportes do mês',fmt(data.buyTotal),'Compras e renda fixa do mês',data.buyTotal>0?'info':'muted')}
+      ${reportMonthlyExecutiveSummaryCard('Proventos do mês',fmt(data.proventoTotal),'Dividendos e proventos do mês selecionado',data.proventoTotal>0?'ok':'muted')}
+      ${reportMonthlyExecutiveSummaryCard('Média mensal 12M',fmt(passiveIncomeGoalStats().monthlyAvg),'Histórico real dos últimos 12 meses','info')}
+      ${reportMonthlyExecutiveSummaryCard('Meta mensal',data.target>0 ? fmt(data.target) : '—',data.target>0 ? 'Meta lida da aba Metas' : 'Defina a meta na aba Metas',data.target>0?'warn':'muted')}
+      ${reportMonthlyExecutiveSummaryCard('Falta para a meta',data.target>0 ? fmt(data.goalGap) : '—',data.target>0 ? (data.proventoTotal>=data.target ? 'Meta atingida no mês selecionado' : 'Comparação do mês selecionado') : 'Defina a meta na aba Metas',data.target>0 ? (data.goalGap>0?'warn':'ok') : 'muted')}
+    </div>
+    <div class="reports-monthly-panels">
+      <article class="analysis-card reports-monthly-panel">
+        <div class="analysis-card-head">
+          <div>
+            <div class="analysis-card-title">Maiores pagadores do mês</div>
+            <div class="analysis-card-meta">Top 3 por valor recebido no mês selecionado.</div>
+          </div>
+          <span class="analysis-pill info">${data.topPayers.length} ativo${data.topPayers.length===1?'':'s'}</span>
+        </div>
+        <div class="analysis-list">${topPayersHtml}</div>
+      </article>
+      <article class="analysis-card reports-monthly-panel">
+        <div class="analysis-card-head">
+          <div>
+            <div class="analysis-card-title">Principais movimentações do mês</div>
+            <div class="analysis-card-meta">Lançamentos mais relevantes de aporte, venda ou renda fixa.</div>
+          </div>
+          <span class="analysis-pill ${data.movementCount? 'ok':'muted'}">${data.movementCount} lançamento${data.movementCount===1?'':'s'}</span>
+        </div>
+        <div class="analysis-list">${movementsHtml}</div>
+      </article>
+    </div>
+    <article class="analysis-card reports-monthly-panel" style="margin-top:8px">
+      <div class="analysis-card-head">
+        <div>
+          <div class="analysis-card-title">Pontos de atenção do mês</div>
+          <div class="analysis-card-meta">Leitura neutra para acompanhamento e conferência da carteira.</div>
+        </div>
+        <span class="analysis-pill info">${data.attention.length} ponto${data.attention.length===1?'':'s'}</span>
+      </div>
+      <div class="analysis-list">${attentionHtml}</div>
+    </article>
+    <div class="reports-monthly-foot">Relatório informativo. Os valores acima usam os dados já cadastrados no app e não alteram registros nem cálculos existentes.</div>
+  </section>`;
+}
 function reportsSnapshot(){
   const portfolio=cx();
   const income=passiveIncomeGoalStats();
@@ -13765,6 +14097,7 @@ function reportsTab(){
         <div class="reports-kpi"><div class="label">Gerado em</div><div class="value">${new Date().toLocaleDateString('pt-BR')}</div><div class="sub">${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>
       </div>
     </section>
+    ${reportMonthlyExecutiveSection()}
     <section class="reports-grid">${cards}</section>
     <div class="reports-footnote">CSV usa ponto e vírgula, preserva acentos e abre corretamente no Excel em português. O JSON desta tela é um relatório de consulta; para restaurar dados em outro navegador, use Configurações → Backup e restauração.</div>
   </div>`;
