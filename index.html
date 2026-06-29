@@ -431,6 +431,18 @@ button{cursor:pointer;font-family:inherit}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-text{max-width:100%}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-action{margin-top:auto}
 .premium-exec-list{display:flex;flex-direction:column;gap:5px}
+.dashboard-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.dashboard-home-grid > *{min-width:0}
+.dashboard-home-payers .premium-income-list{gap:6px}
+.dashboard-home-composition-body{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;align-items:center}
+.dashboard-home-composition-list{display:flex;flex-direction:column;gap:7px}
+.dashboard-class-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15}
+.dashboard-class-main{min-width:0}
+.dashboard-class-title{display:flex;align-items:center;gap:7px;min-width:0;font-size:11px;font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-class-sub{font-size:9px;color:#64748b;line-height:1.25;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-class-value{font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
+.dashboard-class-dot{width:8px;height:8px;border-radius:999px;flex:none}
+.dashboard-home-performance .perf-list{gap:8px}
 .dashboard-consultive-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:10px;align-items:start}
 .dashboard-consultive-main,.dashboard-consultive-side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
@@ -1292,13 +1304,14 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .metas-shell .passive-goal-empty{padding:9px 10px}
 .metas-shell .passive-goal-empty-title{font-size:12px}
 .metas-shell .passive-goal-empty-note{font-size:10px}
-.metas-shell .passive-goal-grid.main{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.metas-shell .passive-goal-grid.main{grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
 .metas-shell .passive-goal-grid.summary{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
 .metas-shell .passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .metas-shell .passive-goal-card{min-height:66px;padding:9px}
 .metas-shell .passive-goal-card .passive-goal-kicker{font-size:9px}
 .metas-shell .passive-goal-card .passive-goal-value{font-size:13px}
 .metas-shell .passive-goal-card .passive-goal-sub{font-size:9px;line-height:1.3}
+.metas-shell .passive-goal-summary{font-size:11px;line-height:1.45;color:#d7e1ef;border:1px solid #24324a;background:rgba(12,18,31,.68);border-radius:12px;padding:9px 10px}
 .metas-shell .passive-goal-progress{padding:10px}
 .metas-shell .passive-goal-progress-top{gap:8px}
 .metas-shell .passive-goal-progress-title{font-size:11px}
@@ -1991,10 +2004,11 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .metas-shell .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
   .metas-shell .cards .card.al{padding:9px 10px;min-height:0}
   .metas-shell .cards .card.al .cv{font-size:15px}
-  .metas-shell .passive-goal-grid.main,
+  .metas-shell .passive-goal-grid.main{grid-template-columns:repeat(3,minmax(0,1fr))!important}
   .metas-shell .passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .metas-shell .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .metas-shell .passive-goal-card{padding:8px;min-height:62px}
+  .metas-shell .passive-goal-summary{font-size:10px;padding:8px 9px}
   .metas-shell .passive-goal-progress{padding:9px}
   .metas-shell .passive-goal-progress-amount{font-size:20px}
   .metas-shell .passive-goal-progress-right{min-width:0;align-items:flex-start;text-align:left}
@@ -2313,9 +2327,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-consultive-card-text,.premium-consultive-card-action,.premium-consultive-pill,.premium-consultive-note{font-size:8px;line-height:1.2}
   .premium-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
   .dashboard-consultive-grid{grid-template-columns:1fr!important;gap:8px!important}
+  .dashboard-home-grid{grid-template-columns:1fr!important;gap:8px!important}
   .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
-  .dashboard-home-attention .premium-consultive-grid{grid-template-columns:1fr!important;gap:6px!important}
-  .dashboard-home-actions .dashboard-action-grid{grid-template-columns:1fr!important;gap:6px!important}
   .premium-metric{min-height:76px!important;padding:8px!important;gap:4px!important;border-radius:12px}
   .premium-metric-icon{width:20px;height:20px;font-size:10px}
   .premium-metric-label{font-size:8px;line-height:1.08;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2325,11 +2338,22 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-dashboard-grid>.premium-panel+.premium-panel{margin-top:8px}
   .premium-home-summary .premium-wallet-body{grid-template-columns:1fr!important}
   .premium-home-summary .premium-wallet-pie{display:none!important}
+  .dashboard-home-composition-body{grid-template-columns:1fr!important}
+  .dashboard-home-composition-pie{display:none!important}
   .premium-panel{padding:9px!important;border-radius:12px}
   .premium-panel-head{align-items:center;margin-bottom:7px;gap:7px}
   .premium-panel-title{font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .premium-panel-sub{display:none}
   .premium-panel-badge{font-size:8px;padding:3px 6px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+  .dashboard-home-performance{padding:8px!important}
+  .dashboard-home-performance .perf-title{margin-bottom:6px}
+  .dashboard-home-performance .perf-h{font-size:11px}
+  .dashboard-home-performance .perf-sub{font-size:8px}
+  .dashboard-home-performance .perf-list{gap:7px}
+  .dashboard-class-row{padding:7px 8px;gap:7px}
+  .dashboard-class-title{font-size:10px}
+  .dashboard-class-sub{font-size:8px}
+  .dashboard-class-value{font-size:10px}
   .premium-nextstep-panel,.premium-quality-panel,.premium-reading-panel,.premium-dividend-panel{padding:8px!important}
   .premium-portfolio-panel{display:none}
   .premium-concentration-list .premium-concentration-row:nth-child(n+4){display:none}
@@ -2673,6 +2697,7 @@ html[data-theme="light"] .backup-card,
 html[data-theme="light"] .backup-summary .card,
 html[data-theme="light"] .passive-goal-card,
 html[data-theme="light"] .passive-goal-progress,
+html[data-theme="light"] .metas-shell .passive-goal-summary,
 html[data-theme="light"] .passive-goal-empty,
 html[data-theme="light"] .irpf-section,
 html[data-theme="light"] .irpf-summary-card,
@@ -3030,6 +3055,7 @@ html[data-theme="light"] .rebalance-safety,
 html[data-theme="light"] .rebalance-summary-note,
 html[data-theme="light"] .rebalance-study-sub,
 html[data-theme="light"] .rebalance-dy-note,
+html[data-theme="light"] .rebalance-study-criteria,
 html[data-theme="light"] .premium-metric-note,
 html[data-theme="light"] .premium-panel-sub,
 html[data-theme="light"] .premium-panel-badge,
@@ -10478,17 +10504,18 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
   const avgTone = !hasGoal ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
   const projTone = !hasGoal ? 'muted' : projProg.prog>=100 ? 'ok' : projProg.prog>=75 ? 'info' : projProg.prog>=40 ? 'warn' : 'danger';
   const annualReal=stats.monthlyAvg*12;
+  const portfolioTotal=cx().tC||0;
   const projectedLabel = projectedMonthly>0 ? fmt(projectedMonthly) : '—';
   const annualLabel = stats.hasData ? fmt(annualReal) : '—';
   const guidance = hasGoal
-    ? 'A renda projetada/mês é uma estimativa da carteira. A média mensal 12M é histórico real de proventos.'
-    : 'Defina sua meta de renda passiva na aba Metas para ver o progresso desta seção.';
+    ? `Você está em ${avgProg.prog.toFixed(1)}% da meta. Faltam ${fmt(avgProg.falta)}/mês para atingir ${fmt(stats.target)}.`
+    : 'Defina uma meta mensal para acompanhar o progresso pela média real dos últimos 12 meses.';
   const topTone = !hasGoal ? 'muted' : !stats.hasData ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
   return `<div class="cc passive-goal-shell" style="margin-bottom:8px;padding:10px 10px 9px">
     <div class="sh passive-goal-head" style="margin-bottom:4px;gap:10px">
       <div style="min-width:0">
-        <div class="st">Meta de Renda Passiva</div>
-        <div class="mu" style="font-size:11px;margin-top:2px">Meta mensal lida da aba <strong style="color:#e2eaf6">Metas</strong> e calculada com base nos proventos já gravados em <strong style="color:#e2eaf6">S.proventos</strong>.</div>
+        <div class="st">Meta de renda passiva</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Leitura consultiva da meta mensal com base na média real dos últimos 12 meses.</div>
       </div>
       <div class="passive-goal-badge ${topTone}">${hasGoal ? (stats.hasData ? `${avgProg.prog.toFixed(1)}% da meta` : 'Dados insuficientes') : 'Sem meta'}</div>
     </div>
@@ -10496,36 +10523,37 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
     ${!hasGoal ? `<div class="passive-goal-empty">
       <div>
         <div class="passive-goal-empty-title">Meta não definida</div>
-        <div class="passive-goal-empty-note">Defina sua meta de renda passiva na aba Metas.</div>
+        <div class="passive-goal-empty-note">Defina sua meta mensal na aba Metas para liberar a leitura completa.</div>
       </div>
       <div class="passive-goal-badge muted">Sem meta cadastrada</div>
     </div>` : ''}
     <div class="passive-goal-grid main">
       <div class="passive-goal-card ${hasGoal ? 'info' : 'muted'}" style="justify-content:flex-start;gap:6px">
-        <div class="passive-goal-kicker">Objetivo mensal de dividendos</div>
+        <div class="passive-goal-kicker">Meta mensal</div>
         <input id="mpr-head-monthly" type="number" step="10" placeholder="ex: 1500" value="${hasGoal ? stats.target : ''}" onkeydown="if(event.key==='Enter')saveMetaProventosTarget()" onblur="saveMetaProventosTarget()" style="min-height:40px;padding:8px 10px">
-        <div class="passive-goal-sub">${hasGoal ? 'Meta cadastrada na aba Metas' : 'Defina sua meta de renda passiva'}</div>
+        <div class="passive-goal-sub">${hasGoal ? 'Objetivo principal da carteira' : 'Defina a meta para iniciar a leitura'}</div>
       </div>
-      ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Renda real média 12M', value:stats.hasData ? fmt(stats.monthlyAvg) : '—', sub:'Histórico real dos últimos 12 meses corridos'})}
-      ${passiveIncomeMetricCard({tone:projectedMonthly>0 ? 'info' : 'muted', kicker:'Renda projetada/mês', value:projectedLabel, sub:projectedMonthly>0 ? 'Estimativa da carteira' : 'Sem ativos suficientes para projetar'})}
-      ${hasGoal ? passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:`${avgProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`, percent:avgProg.prog, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#f87171'}) : ''}
-      ${hasGoal ? passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:fmt(avgProg.falta), sub:'Comparação entre meta e média mensal 12M'}) : ''}
+      ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Média real 12M', value:stats.hasData ? fmt(stats.monthlyAvg) : '—', sub:'Histórico real dos últimos 12 meses corridos'})}
+      ${passiveIncomeMetricCard({tone:hasGoal ? 'warn' : 'muted', kicker:'Falta por mês', value:hasGoal ? fmt(avgProg.falta) : '—', sub:hasGoal ? `Para atingir ${fmt(stats.target)}` : 'Sem meta definida'})}
+      ${passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso', value:hasGoal ? `${avgProg.prog.toFixed(1)}%` : '—', sub:hasGoal ? `Meta mensal já definida na aba Metas` : 'Defina uma meta para ver o progresso', percent:hasGoal ? avgProg.prog : 0, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#f87171'})}
+      ${passiveIncomeMetricCard({tone:projectedMonthly>0 ? 'info' : 'muted', kicker:'Renda projetada', value:projectedLabel, sub:projectedMonthly>0 ? 'Estimativa da carteira atual' : 'Sem ativos suficientes para projetar'})}
+      ${passiveIncomeMetricCard({tone:portfolioTotal>0 ? 'ok' : 'muted', kicker:'Patrimônio', value:fmt(portfolioTotal), sub:'Base usada na leitura da carteira'})}
     </div>
     ${hasGoal ? `
     <details class="sec" style="margin-top:8px;margin-bottom:0">
       <summary>
         <div>
-          <div class="sec-title">Detalhes da renda passiva</div>
-          <div class="sec-meta">Projeções e leitura complementar da meta mensal</div>
+          <div class="sec-title">Detalhes da meta</div>
+          <div class="sec-meta">Projeção anualizada e comparação complementar</div>
         </div>
         <div class="sec-meta">clique para abrir</div>
       </summary>
       <div class="sec-body">
-        <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">A média real usa proventos já recebidos nos últimos 12 meses. A renda projetada é uma estimativa da carteira atual.</div>
+        <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">A média real usa os proventos já recebidos nos últimos 12 meses. A projeção anualizada ajuda a comparar o ritmo atual com a meta mensal.</div>
         <div class="passive-goal-grid secondary">
           ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Média mensal real × 12'})}
-          ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(projProg.falta)}/mês para atingir a meta pela estimativa.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
-          ${passiveIncomeMetricCard({tone:projTone, kicker:'Quanto falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
+          ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada', value:`${projProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(projProg.falta)}/mês para atingir a meta pela estimativa.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
+          ${passiveIncomeMetricCard({tone:projTone, kicker:'Falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
         </div>
       </div>
     </details>` : ''}
@@ -14580,9 +14608,13 @@ function dashboardSnapshot(){
   recentProventos.forEach(p=>{
     const meta=proventoAssetMeta(p);
     const ticker=String(p.ticker||meta.asset?.ticker||meta.title||'Sem ticker').trim().toUpperCase()||'Sem ticker';
-    recentPayerMap.set(ticker,(recentPayerMap.get(ticker)||0)+(Number(p.value)||0));
+    const current=recentPayerMap.get(ticker) || {ticker,total:0,count:0};
+    current.total += Number(p.value)||0;
+    current.count += 1;
+    recentPayerMap.set(ticker,current);
   });
-  const recentBest=[...recentPayerMap.entries()].sort((a,b)=>b[1]-a[1])[0]||null;
+  const recentPayers=[...recentPayerMap.values()].sort((a,b)=>b.total-a.total || b.count-a.count || a.ticker.localeCompare(b.ticker)).slice(0,5);
+  const recentBest=recentPayers[0]||null;
   const concentration=[...analysis].filter(r=>Number.isFinite(r.share)).sort((a,b)=>b.share-a.share);
   const positives=[...analysis].filter(r=>Number.isFinite(r.pct)&&r.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
   const negatives=[...analysis].filter(r=>Number.isFinite(r.pct)&&r.pct<0).sort((a,b)=>a.pct-b.pct).slice(0,3);
@@ -14591,7 +14623,7 @@ function dashboardSnapshot(){
   return {
     portfolio,income,analysis,typeRows,variableValue,
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
-    recent:{month:latestMonth,total:recentTotal,count:recentProventos.length,best:recentBest},
+    recent:{month:latestMonth,total:recentTotal,count:recentProventos.length,best:recentBest,payers:recentPayers,items:recentProventos},
     concentration,positives,negatives,insufficient,concentrated,
     contribution:prudentContributionAnalysis()
   };
@@ -14664,6 +14696,78 @@ function dashboardPassiveIncomePanel(data){
       ${dashboardMetricCard('🧭','Falta para meta',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
     </div>
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
+  </div>`;
+}
+function dashboardHomeMonthlyPayersPanel(data){
+  const recent=data?.recent||{};
+  const monthLabel=recent.month ? new Date(`${recent.month}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'Sem histórico';
+  const total=Number(recent.total)||0;
+  const payers=Array.isArray(recent.payers) ? recent.payers.slice(0,4) : [];
+  const body=payers.length
+    ? payers.map(row=>{
+        const share=total>0 ? (Number(row.total)||0)/total*100 : 0;
+        return `<div class="premium-income-row">
+          <div class="premium-row-main">
+            <div class="premium-row-title">${esc(row.ticker||'—')}</div>
+            <div class="premium-row-sub">${row.count} lançamento${Number(row.count)===1?'':'s'} · ${share.toFixed(1)}% do mês</div>
+          </div>
+          <div class="premium-row-value">${fmt(Number(row.total)||0)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="premium-empty">Sem proventos registrados neste mês.</div>';
+  return `<div class="premium-panel dashboard-home-payers">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Maiores pagadores do mês</div><div class="premium-panel-sub">Ranking consultivo dos ativos que mais contribuíram no período atual.</div></div>
+      <div class="premium-panel-badge">${esc(monthLabel)}</div>
+    </div>
+    <div class="premium-income-list">${body}</div>
+    <div class="premium-note">Total recebido no mês: <strong>${fmt(total)}</strong></div>
+  </div>`;
+}
+function dashboardHomeCompositionPanel(data){
+  const rows=Array.isArray(data?.typeRows) ? data.typeRows : [];
+  const total=Number(data?.portfolio?.tC)||0;
+  const palette=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
+  const pieData=pie(rows.map(row=>({name:row.type,value:row.value})),palette);
+  const body=rows.length
+    ? rows.map((row,idx)=>{
+        const pct=Number(row.share)||0;
+        return `<div class="dashboard-class-row">
+          <div class="dashboard-class-main">
+            <div class="dashboard-class-title"><span class="dashboard-class-dot" style="background:${palette[idx%palette.length]}"></span>${esc(row.type)}</div>
+            <div class="dashboard-class-sub">${fmt(Number(row.value)||0)} · ${pct.toFixed(1)}% da carteira</div>
+          </div>
+          <div class="dashboard-class-value">${fmt(Number(row.value)||0)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="premium-empty">Cadastre ativos para visualizar a composição por classe.</div>';
+  return `<div class="premium-panel dashboard-home-composition">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Composição por classe</div><div class="premium-panel-sub">Leitura clara do valor financeiro e da participação percentual por classe.</div></div>
+      <div class="premium-panel-badge">${rows.length} classes</div>
+    </div>
+    <div class="dashboard-home-composition-body">
+      <div class="dashboard-home-composition-pie">${pieData||'<div class="premium-empty">Sem dados de composição.</div>'}</div>
+      <div class="dashboard-home-composition-list">${body}</div>
+    </div>
+    <div class="premium-note">Total considerado na composição: <strong>${fmt(total)}</strong></div>
+  </div>`;
+}
+function dashboardHomePerformancePanel(title, subtitle, items, kind, tone){
+  const list=Array.isArray(items) ? items : [];
+  const empty=kind==='high'
+    ? '<div class="perf-empty">Nenhuma alta relevante no momento.</div>'
+    : '<div class="perf-empty">Nenhuma baixa relevante no momento.</div>';
+  const maxAbs=Math.max(...list.map(a=>Math.abs(Number(a.pct)||0)),1);
+  return `<div class="perf-card ${kind==='high'?'hi':'lo'} dashboard-home-performance">
+    <div class="perf-title">
+      <div>
+        <div class="perf-h">${esc(title)}</div>
+        <div class="perf-sub">${esc(subtitle)}</div>
+      </div>
+      <div class="perf-badge">${list.length} ativos</div>
+    </div>
+    <div class="perf-list">${list.length ? list.map(r=>assetPerformanceRowHtml(r,maxAbs,kind==='high'?'positive':'negative')).join('') : empty}</div>
   </div>`;
 }
 function dashboardHomeAttentionPanel(data){
@@ -15457,15 +15561,13 @@ function dashLegacy(){
 function dash(){
   const data=dashboardSnapshot();
   return `<div class="premium-dashboard">
-    <div class="dashboard-consultive-grid">
-      <div class="dashboard-consultive-main">
-        ${dashboardHomeSummaryPanel(data)}
-        ${dashboardPassiveIncomePanel(data)}
-      </div>
-      <div class="dashboard-consultive-side">
-        ${dashboardHomeAttentionPanel(data)}
-        ${dashboardHomeActionsPanel()}
-      </div>
+    <div class="dashboard-home-grid">
+      ${dashboardHomeSummaryPanel(data)}
+      ${dashboardPassiveIncomePanel(data)}
+      ${dashboardHomeMonthlyPayersPanel(data)}
+      ${dashboardHomeCompositionPanel(data)}
+      ${dashboardHomePerformancePanel('Maiores altas','Melhor desempenho da carteira.',data.positives||[],'high')}
+      ${dashboardHomePerformancePanel('Maiores baixas','Pior desempenho da carteira.',data.negatives||[],'low')}
     </div>
   </div>`;
 }
@@ -17600,10 +17702,10 @@ function metasTab(){
   <div class="mu">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
   <div class="cards" style="margin-bottom:8px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Renda projetada/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div><div class="cs">Estimativa da carteira</div></div>
-    <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:64px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
+    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Renda projetada</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div><div class="cs">Estimativa mensal da carteira</div></div>
+    <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:64px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div><div class="cs">Estimativa para 12 meses</div></div>
     <div class="card al" style="border-left-color:#818cf8;padding:10px 12px;min-height:64px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;min-height:64px"><div class="cl">Total da carteira</div><div class="cv bl" style="font-size:18px">${fmt(tC)}</div></div>
+    <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;min-height:64px"><div class="cl">Patrimônio</div><div class="cv bl" style="font-size:18px">${fmt(tC)}</div><div class="cs">Estimativa atual da carteira</div></div>
   </div>
 
   ${passiveIncomeGoalBlock(passiveGoal, projCurrent)}
@@ -17757,11 +17859,22 @@ function rentabilidadeTab(){
   const chartLegend=`<div class="pleg" style="margin-top:0">
     <div class="pli"><span class="pd" style="background:#8da2ff"></span>Carteira</div>
     <div class="pli"><span class="pd" style="background:#fbbf24"></span>${esc(bench)} estimado</div>
-    <div class="pli"><span class="pd" style="background:#64748b"></span>Baseado na posição atual</div>
+    <div class="pli"><span class="pd" style="background:#64748b"></span>Leitura da posição atual</div>
+  </div>`;
+  const consultiveSummary=`<div class="premium-panel rent-consultive-panel" style="margin-top:10px">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Leitura consultiva</div><div class="premium-panel-sub">Carteira, CDI e último mês em linguagem direta.</div></div>
+      <div class="premium-panel-badge">${gap>=0?'Acima do CDI':'Abaixo do CDI'}</div>
+    </div>
+    <div class="premium-exec-list">
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Carteira x CDI</div><div class="premium-exec-sub">${gap>=0?'A carteira está acima do CDI no recorte atual.':'A carteira está abaixo do CDI no recorte atual.'}</div></div><div class="premium-exec-value ${gap>=0?'gn':'rd'}">${fmtP(gap||0)}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Último mês</div><div class="premium-exec-sub">${currentMonth>=0?'Mês mais forte da série recente.':'Mês mais fraco da série recente.'}</div></div><div class="premium-exec-value ${currentMonth>=0?'gn':'rd'}">${fmtP(currentMonth||0)}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Fator que mais pesa</div><div class="premium-exec-sub">${topAsset ? `${topAsset.ticker} lidera a carteira e o top 3 concentra ${top3Share.toFixed(1)}%.` : 'Sem posições suficientes para resumir.'}</div></div><div class="premium-exec-value">${topAsset ? fmt(topAsset.value) : '—'}</div></div>
+    </div>
   </div>`;
 
   return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">📈 Rentabilidade</div>
-  <div class="mu" style="font-size:13px;margin-bottom:18px">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. A rentabilidade da carteira já soma os proventos recebidos no cálculo.</div>
+  <div class="mu" style="font-size:13px;margin-bottom:18px">Leitura da rentabilidade com foco em CDI, último mês e efeitos da concentração da carteira.</div>
 
   <div class="rent-layout">
     <div class="rent-side">
@@ -17806,7 +17919,7 @@ function rentabilidadeTab(){
       <div class="rent-chartbox">
         ${points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
       </div>
-      <div class="mu" style="font-size:11px;margin-top:6px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</div>
+      ${consultiveSummary}
     </div>
   </div>
 
@@ -17830,15 +17943,15 @@ function rentabilidadeTab(){
 function ajudarTab(){
   return`<div class="rebalance-shell">
   <div class="rebalance-hero">
-    <div class="rebalance-title">⚖️ Sugestão prudente de aporte</div>
-    <div class="rebalance-subtitle">Simulação para apoiar estudo de aporte, considerando concentração, desempenho, DY e metas da carteira. Não é recomendação de compra.</div>
+    <div class="rebalance-title">⚖️ Guia de aporte</div>
+    <div class="rebalance-subtitle">Apoio para estudar o próximo aporte com foco em concentração, desempenho, DY e metas. Não é recomendação de compra.</div>
     <div class="rebalance-form">
       <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500"></div></div>
-      <button class="btn bp" onclick="calcRebalance()">Simular aporte</button>
+      <button class="btn bp" onclick="calcRebalance()">Analisar aporte</button>
     </div>
   </div>
-  <div class="rebalance-safety">Esta análise é apenas apoio de organização da carteira. Não é recomendação de compra, venda ou manutenção.</div>
-  <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha os valores atuais preenchidos para usar a simulação prudente.</div>':'<div class="rebalance-empty">Informe um valor e clique em Simular aporte. O resultado mostrará somente ativos que atendam aos critérios prudentes.</div>'}</div>
+  <div class="rebalance-safety">Resumo: estude os ativos abaixo do peso, evite aumentar posições já concentradas e observe o top 3 antes de decidir o próximo aporte.</div>
+  <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha os valores atuais preenchidos para usar o guia de aporte.</div>':'<div class="rebalance-empty">Informe um valor e clique em Analisar aporte. O resultado mostrará somente ativos que atendam aos critérios prudentes.</div>'}</div>
   </div>`;
 }
 function calcRebalance(){
@@ -17851,13 +17964,14 @@ function calcRebalance(){
   const insufficient=analysis.insufficient;
   const avoided=analysis.avoided;
   const summary=`<div class="rebalance-summary">
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Valor analisado</div><div class="rebalance-summary-value">${fmt(aporte)}</div><div class="rebalance-summary-note">Base informada para a simulação.</div></div>
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Ativos para estudo</div><div class="rebalance-summary-value">${list.length}</div><div class="rebalance-summary-note">Até cinco opções que passaram pelos filtros.</div></div>
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Evitados por concentração</div><div class="rebalance-summary-value">${avoided}</div><div class="rebalance-summary-note">Peso acima do limite prudente.</div></div>
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Dados insuficientes</div><div class="rebalance-summary-value">${insufficient}</div><div class="rebalance-summary-note">Sem base completa para análise.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Aporte estudado</div><div class="rebalance-summary-value">${fmt(aporte)}</div><div class="rebalance-summary-note">Base informada para a leitura.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Boas opções</div><div class="rebalance-summary-value">${list.length}</div><div class="rebalance-summary-note">Ativos que passaram nos filtros prudentes.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Evitar aumentar</div><div class="rebalance-summary-value">${avoided}</div><div class="rebalance-summary-note">Posições acima do limite prudente.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Dados a rever</div><div class="rebalance-summary-value">${insufficient}</div><div class="rebalance-summary-note">Sem base completa para a leitura.</div></div>
   </div>`;
+  const guidance='<div class="rebalance-safety" style="margin-top:8px">Onde estudar aporte: priorize os ativos abaixo do peso. O que evitar aumentar: posições já concentradas. Risco de concentração: observe o top 3 antes de decidir o próximo aporte.</div>';
   if(!list.length){
-    out.innerHTML=`${summary}<div class="rebalance-empty">Nenhum ativo atende aos critérios prudentes no momento. Revise concentração, metas e dados disponíveis antes de aportar.</div>`;
+    out.innerHTML=`${summary}${guidance}<div class="rebalance-empty">Nenhum ativo atende aos critérios prudentes no momento. Revise concentração, metas e dados disponíveis antes de aportar.</div>`;
     return;
   }
   const scoreSum=list.reduce((sum,row)=>sum+row.score,0);
@@ -17877,11 +17991,11 @@ function calcRebalance(){
       <div class="rebalance-study-criteria">${esc(row.criteria.slice(0,4).join(' · '))}</div>
     </div>`;
   }).join('');
-  out.innerHTML=`${summary}
+  out.innerHTML=`${summary}${guidance}
     <div class="rebalance-study">
       <div class="rebalance-study-head">
         <div>
-          <div class="rebalance-study-title">Simulação prudente</div>
+          <div class="rebalance-study-title">Guia de aporte</div>
           <div class="rebalance-study-sub">Distribuição indicativa para estudo, sem ordem automática de execução.</div>
         </div>
         <span class="analysis-pill muted">${list.length} ativo${list.length===1?'':'s'}</span>
@@ -17895,27 +18009,89 @@ function calcRebalance(){
 // ══════════════════════════════════════
 // IA LOCAL
 // ══════════════════════════════════════
+function aiConsultiveSectionCard(title, status, tone, items){
+  const content=(items||[]).length
+    ? (items||[]).map(item=>`<div>• ${esc(item)}</div>`).join('')
+    : '<div>Sem observações relevantes no momento.</div>';
+  return `<div class="premium-consultive-card">
+    <div class="premium-consultive-card-head">
+      <div class="premium-consultive-card-title">${esc(title)}</div>
+      <span class="premium-consultive-card-status ${esc(tone)}">${esc(status)}</span>
+    </div>
+    <div class="premium-consultive-card-text" style="display:flex;flex-direction:column;gap:4px">${content}</div>
+  </div>`;
+}
+function aiConsultiveParse(text){
+  const sections={good:[],attention:[],next:[]};
+  const lines=String(text||'').split('\n').map(line=>line.trim()).filter(Boolean);
+  let current='';
+  lines.forEach(line=>{
+    const upper=line.toUpperCase();
+    if(upper==='O QUE ESTÁ BOM'){ current='good'; return; }
+    if(upper==='PONTOS DE ATENÇÃO'){ current='attention'; return; }
+    if(upper==='PRÓXIMAS DECISÕES'){ current='next'; return; }
+    if(line.startsWith('• ')){
+      if(current) sections[current].push(line.replace(/^•\s*/,''));
+      return;
+    }
+    if(current) sections[current].push(line);
+  });
+  return sections;
+}
 function iaTab(){
-  const res=S.aiText
-    ?`<div class="aic">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#312e81,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:17px">🤖</div>
-        <span style="font-size:14px;font-weight:700;color:#c4b5fd">Análise da carteira</span>
-      </div>
-      <div class="air">${esc(S.aiText)}</div>
-      <div style="margin-top:16px;padding-top:12px;border-top:1px solid #161e2e;font-size:11px;color:#2e3f58">⚠️ Análise automática e informativa. Não constitui recomendação. Consulte um profissional CFP/CNPI.</div>
-    </div>`
-    :`<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">🤖<br><br>Clique no botão para análise personalizada da sua carteira.</div>`;
+  const snap=dashboardSnapshot();
+  const top1=snap?.concentration?.[0]||null;
+  const target=Number(snap?.income?.target)||0;
+  const monthlyAvg=Number(snap?.income?.monthlyAvg)||0;
+  const goalPct=target>0 ? (monthlyAvg/target)*100 : 0;
+  const incomplete=Number(snap?.insufficient?.length)||0;
+  const top3Share=(snap?.concentration||[]).slice(0,3).reduce((sum,row)=>sum+(Number(row?.share)||0),0);
   const focusButtons=[
     ['geral','Visão geral'],
-    ['renda','Priorizar renda'],
-    ['rebalancear','Rebalancear'],
-    ['concentracao','Concentração'],
+    ['renda','Renda'],
+    ['rebalancear','Aporte'],
+    ['concentracao','Risco'],
   ].map(([mode,label])=>`<button class="btn ${String(S.aiFocus||'geral')===mode?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="setAIFocus('${mode}')">${label}</button>`).join(' ');
-  return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">Análise automática da carteira</div>
-  <div class="mu" style="font-size:13px;margin-bottom:18px">Análise local com base nos dados cadastrados — sem enviar sua carteira para servidores externos.</div>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">${focusButtons}</div>
-  <button class="btn bp" onclick="getAI()" style="display:flex;align-items:center;gap:8px;margin-bottom:18px">✨ Gerar análise</button>${res}`;
+  const summaryCards=[
+    dashboardConsultiveCard('Saúde geral',incomplete>0?'Atenção':'OK',incomplete>0?'Revisar dados incompletos antes da decisão.':'Cadastro consistente para leitura diária.',incomplete>0?`${incomplete} pendência${incomplete===1?'':'s'} na base.`:'Sem pendências relevantes.',incomplete>0?'warn':'ok'),
+    dashboardConsultiveCard('Renda passiva',target>0?`${goalPct.toFixed(1)}%`:'Sem meta',target>0?'Média real x meta mensal.':'Defina a meta na aba Metas.',target>0?`Média real: ${fmt(monthlyAvg)}/mês · Meta: ${fmt(target)}/mês`:'Sem meta configurada.',target>0?(goalPct>=100?'ok':'warn'):'muted'),
+    dashboardConsultiveCard('Concentração',top1?`${Number(top1.share).toFixed(1)}%`:'—',top1&&Number(top1.share)>20?'Concentração alta':'Leitura estável',top1?[`${esc(top1.ticker)} lidera a carteira.`, `Top 3 concentram ${top3Share.toFixed(1)}%.`]:['Sem base suficiente para leitura.'],top1&&Number(top1.share)>20?'warn':'ok'),
+    dashboardConsultiveCard('Meta',target>0?`${goalPct.toFixed(1)}%`:'—',target>0?'Progresso pela média real 12M.':'Meta mensal não configurada.',target>0?[`Faltam ${fmt(Math.max(0,target-monthlyAvg))}/mês`, `para atingir ${fmt(target)}.`]:'Defina a meta mensal na aba Metas.',target>0?(goalPct>=100?'ok':'info'):'muted')
+  ].join('');
+  const parsed=aiConsultiveParse(S.aiText);
+  const resultReady=!!String(S.aiText||'').trim();
+  const resultHtml=resultReady
+    ? `<div class="premium-consultive-grid" style="margin-top:2px">
+        ${aiConsultiveSectionCard('O que está bom', parsed.good.length ? `${parsed.good.length} ponto${parsed.good.length===1?'':'s'}` : 'OK', 'ok', parsed.good)}
+        ${aiConsultiveSectionCard('Pontos de atenção', parsed.attention.length ? `${parsed.attention.length} ponto${parsed.attention.length===1?'':'s'}` : 'OK', parsed.attention.length ? 'warn' : 'ok', parsed.attention)}
+        ${aiConsultiveSectionCard('Próximas decisões', parsed.next.length ? `${parsed.next.length} ação${parsed.next.length===1?'':'es'}` : 'OK', parsed.next.length ? 'info' : 'ok', parsed.next)}
+      </div>
+      <details class="premium-compact-details" style="margin-top:8px">
+        <summary>
+          <div class="premium-compact-summary-main">
+            <div class="premium-compact-summary-title">Ver diagnóstico completo</div>
+            <div class="premium-compact-summary-sub">Abrir o texto completo da análise local.</div>
+          </div>
+          <div class="premium-compact-summary-meta">clique para abrir</div>
+        </summary>
+        <div class="premium-compact-body">
+          <div class="air" style="white-space:pre-wrap">${esc(S.aiText)}</div>
+        </div>
+      </details>`
+    : `<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">🤖<br><br>Clique no botão para gerar o diagnóstico consultivo da carteira.</div>`;
+  return `<div class="premium-panel ai-consultive-shell">
+    <div class="premium-panel-head">
+      <div>
+        <div class="premium-panel-title">Diagnóstico da carteira</div>
+        <div class="premium-panel-sub">Leitura local com foco em saúde geral, renda passiva, concentração e próximos passos.</div>
+      </div>
+      <div class="premium-panel-badge">${String(S.aiFocus||'geral')==='geral'?'Visão geral':'Foco ativo'}</div>
+    </div>
+    <div class="premium-consultive-grid">${summaryCards}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 14px">${focusButtons}</div>
+    <button class="btn bp" onclick="getAI()" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">✨ Gerar diagnóstico</button>
+    ${resultHtml}
+  </div>`;
 }
 
 // ══════════════════════════════════════
@@ -18301,6 +18477,11 @@ function getAI(){
   const rec=proventoStats();
   if(!S.assets.length){ S.aiText='Cadastre seus ativos primeiro para gerar uma análise.'; render(); return; }
   const focus=String(S.aiFocus||'geral');
+  const snap=dashboardSnapshot();
+  const top1=snap?.concentration?.[0]||null;
+  const target=Number(snap?.income?.target)||0;
+  const monthlyAvg=Number(snap?.income?.monthlyAvg)||0;
+  const incomplete=Number(snap?.insufficient?.length)||0;
   const porTipo={},por=S.assets.map(a=>({ticker:a.ticker,type:a.type,valor:assetCurrentValue(a),divMes:(assetCurrentValue(a)*(a.dy/100))/12,dy:Number(a.dy)||0,var:a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0,sector:String(a.sector||'').trim()||'—'})).sort((a,b)=>b.valor-a.valor);
   por.forEach(a=>{const ty=normalizeType(a.type||'Ação','Ação'); porTipo[ty]=(porTipo[ty]||0)+a.valor;});
   const maior=por[0],maiorPct=tC>0?(maior.valor/tC)*100:0;
@@ -18329,39 +18510,49 @@ function getAI(){
   const benchmark=String(S.rentBench||'CDI');
   const rentData=rentabilityHistory(String(S.rentType||'all'), String(S.rentPeriod||'all'), benchmark);
   const rentGap=(rentData.current?.cumReturn||0)-(rentData.currentBench||0);
+  const incomeGap=Math.max(0,Number(S.divGoal||0)-mD);
+  const healthStatus = incomplete>0 ? `${incomplete} dado${incomplete===1?'':'s'} pedem revisão.` : 'Dados principais consistentes.';
+  const incomeStatus = target>0 ? `${(target>0 ? (mD/target)*100 : 0).toFixed(1)}% da meta mensal.` : 'Meta mensal não configurada.';
+  const concentrationStatus = top1 ? `${top1.ticker} lidera com ${maiorPct.toFixed(1)}% da carteira.` : 'Sem posições suficientes.';
+  const metaStatus = target>0 ? `Faltam ${fmt(incomeGap)}/mês para a meta.` : 'Defina uma meta mensal para medir progresso.';
   const L=[];
-  L.push('📊 ANÁLISE RÁPIDA DA CARTEIRA');
-  L.push(`Patrimônio atual: ${fmt(tC)} | Resultado total: ${fmtP(retornoTotalPct)}`);
-  L.push(`Lucro total: ${fmt(lucroTotal)} (ganho de capital + proventos)`);
-  L.push(`Renda passiva estimada: ${fmt(mD)}/mês (${fmt(aD)}/ano)`);
-  L.push(`Proventos recebidos: ${fmt(rec.mes)} no mês · ${fmt(rec.ano)} no ano · ${fmt(rec.total)} total`);
-  L.push(`DY médio da carteira: ${avgDY.toFixed(2)}%`);
-  L.push(`Top 3 posições concentram ${top3Pct.toFixed(1)}% da carteira.`);
-  if(focus==='renda') L.push(`Foco atual: renda passiva e proventos.`);
-  if(focus==='rebalancear') L.push(`Foco atual: rebalanceamento e aportes abaixo da meta.`);
-  if(focus==='concentracao') L.push(`Foco atual: concentração e risco da carteira.`);
+  L.push('DIAGNÓSTICO CONSULTIVO DA CARTEIRA');
+  L.push(`Saúde geral: ${healthStatus}`);
+  L.push(`Renda passiva: ${incomeStatus}`);
+  L.push(`Concentração: ${concentrationStatus}`);
+  L.push(`Meta: ${metaStatus}`);
   L.push('');
-  L.push('⚖️ ALOCAÇÃO ATUAL');
-  Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).forEach(([tipo,valor])=>L.push(`• ${tipo}: ${((valor/tC)*100).toFixed(1)}% (${fmt(valor)})`));
+  L.push('O QUE ESTÁ BOM');
+  if(tI>0) L.push(`• A carteira já soma ${fmtP(retornoTotalPct)} de resultado total, com ${fmt(lucroTotal)} entre ganho de capital e proventos.`);
+  else L.push('• Ainda não há base suficiente para medir o retorno consolidado.');
+  if(mD>0) L.push(`• A renda passiva estimada já entrega ${fmt(mD)}/mês (${fmt(aD)}/ano).`);
+  if(avgDY>0) L.push(`• O DY médio da carteira está em ${avgDY.toFixed(2)}%, útil para comparar o fluxo de renda.`);
+  if(top3Pct<=45) L.push(`• O top 3 concentra ${top3Pct.toFixed(1)}% da carteira, em faixa confortável para leitura atual.`);
+  if(rentGap>=0) L.push(`• A carteira está acima do ${benchmark} no recorte atual de rentabilidade.`);
+  if(focus==='renda') L.push('• O foco de renda destaca ativos com proventos mais previsíveis.');
+  if(focus==='rebalancear') L.push('• O foco de aporte aponta categorias abaixo da meta como candidatas naturais ao próximo estudo.');
+  if(focus==='concentracao') L.push('• O foco de risco ajuda a evitar ampliar posições já grandes demais.');
+  L.push('');
+  L.push('PONTOS DE ATENÇÃO');
+  if(incomplete>0) L.push(`• ${incomplete} cadastro${incomplete===1?' pede':'s pedem'} revisão antes de decisões mais firmes.`);
+  if(maiorPct>20) L.push(`• ${maior.ticker} já representa ${maiorPct.toFixed(1)}% da carteira. Vale evitar aumentar essa posição agora.`);
+  if(top3Pct>70) L.push('• O top 3 está muito concentrado. Distribuir melhor os próximos aportes pode reduzir risco.');
+  if(avgDY>12) L.push('• DY médio acima de 12% pede checagem de recorrência e qualidade dos pagamentos.');
+  if(avgDY>0&&avgDY<5) L.push('• DY médio mais baixo pede paciência: aportes em ativos de renda podem acelerar o fluxo mensal.');
+  if(fiisPct>60) L.push('• FIIs estão com peso muito alto e podem aumentar a sensibilidade da carteira a juros e imóveis.');
+  if(acoesPct>70) L.push('• Ações estão com peso alto e tendem a oscilar mais com resultados trimestrais.');
   if(worstAlloc) L.push(`• Maior desvio da meta: ${worstAlloc.type} com ${worstAlloc.diff>=0?'+':''}${worstAlloc.diff.toFixed(1)} p.p.`);
+  if(rentGap<0) L.push(`• A carteira está abaixo do ${benchmark} em ${fmtP(Math.abs(rentGap))} no recorte atual de rentabilidade.`);
+  if(target>0 && incomeGap>0) L.push(`• Faltam ${fmt(incomeGap)}/mês para a meta de renda passiva.`);
   L.push('');
-  L.push('🔎 O QUE OBSERVAR');
-  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${maiorPct.toFixed(1)}% da carteira.`);
-  else L.push(`• Maior posição: ${maior.ticker} com ${maiorPct.toFixed(1)}% — concentração sob controle.`);
-  if(S.assets.length<8) L.push('• Poucos ativos. Para renda passiva consistente, 10+ ativos de setores diferentes ajudam a reduzir risco.');
-  if(fiisPct>60) L.push('• FIIs com peso muito alto (>60%). Isso aumenta a sensibilidade a juros e imóveis.');
-  if(acoesPct>70) L.push('• Ações com peso muito alto. A renda tende a oscilar mais com resultados trimestrais.');
-  if(avgDY>12) L.push('• DY médio elevado (>12%). Vale conferir se os rendimentos são recorrentes e não pontuais.');
-  if(avgDY>0&&avgDY<5) L.push('• DY médio baixo. Novos aportes em ativos de renda podem acelerar a renda passiva.');
-  if(rentGap!==0) L.push(`• ${rentGap>=0?'Acima':'Abaixo'} do ${benchmark} em ${fmtP(rentGap)} no recorte atual de rentabilidade.`);
-  L.push('');
-  if(divGoal>0){
-    L.push(`💰 OBJETIVO: ${fmt(divGoal)}/mês`);
-    if(mD>=divGoal) L.push(`• ✅ Objetivo atingido! Foco agora é sustentabilidade e diversificação da renda.`);
-    else{ L.push(`• Falta ${fmt(faltaDiv)}/mês para o objetivo.`); if(alvoPat>0) L.push(`• Patrimônio estimado para atingir o objetivo com DY atual: ${fmt(alvoPat)} (falta ${fmt(Math.max(0,alvoPat-tC))})`); }
-    L.push('');
+  L.push('PRÓXIMAS DECISÕES');
+  if(target>0){
+    if(mD>=target) L.push('• A meta mensal já foi atingida. Agora vale preservar sustentabilidade e diversificação.');
+    else{
+      L.push(`• Faltam ${fmt(faltaDiv)}/mês para o objetivo de ${fmt(divGoal)}.`);
+      if(alvoPat>0) L.push(`• Patrimônio estimado para sustentar a meta atual com DY médio: ${fmt(alvoPat)}.`);
+    }
   }
-  L.push('✅ PRIORIDADES PARA O PRÓXIMO APORTE');
   if(allocDiffs.length){
     allocDiffs.slice(0,3).forEach(a=>{
       if(Math.abs(a.diff)<0.5) return;
@@ -18370,25 +18561,18 @@ function getAI(){
     });
   }
   if(maiorPct>20) L.push(`• Evite aumentar ${maior.ticker} agora; ela já lidera a concentração.`);
-  if(top3Pct>70) L.push('• Top 3 posições muito concentradas. Considere distribuir os próximos aportes entre categorias abaixo da meta.');
-  if(pior) L.push(`• Posição menor e potencialmente negligenciada: ${pior.ticker} (${fmt(pior.valor)}) pode merecer revisão.`);
-  if(focus==='renda'){
-    L.push('• Priorize ativos com proventos recorrentes e boa previsibilidade de fluxo.');
-    if(avgDY>0) L.push(`• Com DY médio atual de ${avgDY.toFixed(2)}%, a renda estimada continua sensível a novas compras nessa taxa.`);
-  }
+  if(top3Pct>70) L.push('• Distribuir os próximos aportes entre categorias abaixo da meta pode reduzir o risco concentrado.');
+  if(pior) L.push(`• A posição ${pior.ticker} pode merecer revisão, mesmo sendo menor na carteira.`);
+  if(focus==='renda') L.push('• Priorize ativos com proventos recorrentes e fluxo mais previsível.');
   if(focus==='rebalancear'){
     const under=allocDiffs.filter(a=>a.diff<0).sort((a,b)=>a.diff-b.diff)[0];
     if(under) L.push(`• Comece pelo maior déficit: ${under.type} está ${Math.abs(under.diff).toFixed(1)} p.p. abaixo da meta.`);
-    L.push('• Seus próximos aportes podem servir para aproximar a carteira do desenho-alvo sem vender nada.');
   }
-  if(focus==='concentracao'){
-    L.push(`• ${top3Pct.toFixed(1)}% da carteira está no top 3. Vale olhar se isso está confortável para seu perfil.`);
-    if(maiorPct>20) L.push(`• ${maior.ticker} sozinho já representa ${maiorPct.toFixed(1)}%.`);
-  }
-  L.push('• Registre o motivo de cada compra na aba Aportes para acompanhar a estratégia ao longo do tempo.');
-  if(focus==='renda') L.push('• Quando olhar um ativo novo, compare sempre contribuição mensal estimada, volatilidade e peso na carteira.');
+  if(focus==='concentracao' && maiorPct>20) L.push(`• ${maior.ticker} sozinho já representa ${maiorPct.toFixed(1)}%.`);
+  L.push('• Registre o motivo de cada compra na aba Movimentações para acompanhar sua estratégia.');
+  if(focus==='renda') L.push('• Compare sempre contribuição mensal estimada, volatilidade e peso na carteira.');
   L.push('');
-  L.push('⚠️ Análise automática. Não constitui recomendação de investimento. Consulte um profissional habilitado.');
+  L.push('Observação: análise local e consultiva. Não constitui recomendação de investimento.');
   S.aiText=L.join('\n'); render();
 }
 
