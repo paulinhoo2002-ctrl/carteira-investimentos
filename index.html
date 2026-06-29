@@ -1751,11 +1751,17 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-premium-chip{padding:6px 9px;font-size:9px}
 .div-premium .div-premium-toolbar{padding:7px 8px;gap:8px}
 .div-premium .div-premium-search{padding:6px 8px;gap:6px;border-radius:10px}
-.div-premium .div-premium-metrics{gap:5px}
+.div-premium .div-premium-metrics{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
 .div-premium .div-premium-metric{min-height:70px;padding:8px 9px;border-radius:11px;gap:3px}
 .div-premium .div-premium-metric-label{font-size:7px;letter-spacing:.05em}
 .div-premium .div-premium-metric-value{font-size:12px}
 .div-premium .div-premium-metric-sub{font-size:7px;line-height:1.2}
+@media(max-width:1100px){
+  .div-premium .div-premium-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .div-premium .div-premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 .div-premium .div-goal-panel{padding:9px 10px}
 .div-premium .div-goal-top{gap:6px}
 .div-premium .div-goal-title{font-size:10px}
@@ -16939,7 +16945,6 @@ function dividendSummaryCards(){
     <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">Lida da aba Metas</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Meta atingida</div><div class="div-premium-metric-value ${goalPct>=100?'good':'warn'}">${stats.target>0?`${goalPct.toFixed(1)}%`:'—'}</div><div class="div-premium-metric-sub">${stats.target>0?`Faltam ${fmt(Math.max(0,stats.target-current.total))}`:'Defina uma meta'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Melhor pagador do mês</div><div class="div-premium-metric-value">${esc(best?.[0]||'—')}</div><div class="div-premium-metric-sub">${best?fmt(best[1]):'Sem recebimentos'}</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Lançamentos no mês</div><div class="div-premium-metric-value">${current.count}</div><div class="div-premium-metric-sub">Valores creditados</div></div>
   </div>`;
 }
 function dividendGoalProgress(){
@@ -17019,14 +17024,9 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendTimelineSummary(rows),
     dividendMonthlyTimeline()
   );
-  const overviewBody=`<div class="div-overview-grid">
-    <div class="div-overview-main">
-      ${dividendSummaryCards()}
-      ${dividendGoalProgress()}
-    </div>
-    <div class="div-overview-side">
-      ${dividendOverviewRecentPanel(rows)}
-    </div>
+  const overviewBody=`<div class="div-overview-main">
+    ${dividendSummaryCards()}
+    ${monthlySection}
   </div>`;
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
