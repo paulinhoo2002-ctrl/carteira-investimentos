@@ -440,14 +440,17 @@ button{cursor:pointer;font-family:inherit}
 .dashboard-home-performance.hi{order:5}
 .dashboard-home-performance.lo{order:6}
 .dashboard-home-payers .premium-income-list{gap:6px}
-.dashboard-home-composition-body{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;align-items:center}
-.dashboard-home-composition-list{display:flex;flex-direction:column;gap:7px}
-.dashboard-class-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15}
-.dashboard-class-main{min-width:0}
-.dashboard-class-title{display:flex;align-items:center;gap:7px;min-width:0;font-size:11px;font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dashboard-class-sub{font-size:9px;color:#64748b;line-height:1.25;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dashboard-class-value{font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
-.dashboard-class-dot{width:8px;height:8px;border-radius:999px;flex:none}
+.dashboard-home-composition-body{display:grid;grid-template-columns:112px minmax(0,1fr);gap:14px;align-items:center}
+.dashboard-home-composition-pie{display:flex;align-items:center;justify-content:center;transform:scale(.76);transform-origin:center}
+.dashboard-home-composition-list{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dashboard-class-row{display:grid;grid-template-columns:minmax(0,.95fr) auto 48px;gap:7px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(148,163,184,.12)}
+.dashboard-class-row:last-child{border-bottom:0}
+.dashboard-class-main{min-width:0;overflow:hidden}
+.dashboard-class-title{display:flex;align-items:center;gap:6px;min-width:0;font-size:10px;font-weight:850;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-class-title span:last-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-class-value{font-size:10px;font-weight:850;color:#d7e1ef;white-space:nowrap}
+.dashboard-class-share{font-size:10px;font-weight:850;color:#94a3b8;text-align:right;white-space:nowrap}
+.dashboard-class-dot{width:7px;height:7px;border-radius:999px;flex:none}
 .dashboard-home-performance .perf-list{gap:8px}
 .dashboard-consultive-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:10px;align-items:start}
 .dashboard-consultive-main,.dashboard-consultive-side{display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -2356,10 +2359,10 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .dashboard-home-performance .perf-h{font-size:11px}
   .dashboard-home-performance .perf-sub{font-size:8px}
   .dashboard-home-performance .perf-list{gap:7px}
-  .dashboard-class-row{padding:7px 8px;gap:7px}
+  .dashboard-class-row{grid-template-columns:minmax(0,.95fr) auto 46px;padding:5px 0;gap:6px}
   .dashboard-class-title{font-size:10px}
-  .dashboard-class-sub{font-size:8px}
   .dashboard-class-value{font-size:10px}
+  .dashboard-class-share{font-size:9px}
   .premium-nextstep-panel,.premium-quality-panel,.premium-reading-panel,.premium-dividend-panel{padding:8px!important}
   .premium-portfolio-panel{display:none}
   .premium-concentration-list .premium-concentration-row:nth-child(n+4){display:none}
@@ -14701,7 +14704,6 @@ function dashboardPassiveIncomePanel(data){
       ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
       ${dashboardMetricCard('🧭','Falta para meta',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
     </div>
-    <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
   </div>`;
 }
 function dashboardHomeMonthlyPayersPanel(data){
@@ -14741,9 +14743,9 @@ function dashboardHomeCompositionPanel(data){
         return `<div class="dashboard-class-row">
           <div class="dashboard-class-main">
             <div class="dashboard-class-title"><span class="dashboard-class-dot" style="background:${palette[idx%palette.length]}"></span>${esc(row.type)}</div>
-            <div class="dashboard-class-sub">${fmt(Number(row.value)||0)} · ${pct.toFixed(1)}% da carteira</div>
           </div>
           <div class="dashboard-class-value">${fmt(Number(row.value)||0)}</div>
+          <div class="dashboard-class-share">${pct.toFixed(1)}%</div>
         </div>`;
       }).join('')
     : '<div class="premium-empty">Cadastre ativos para visualizar a composição por classe.</div>';
