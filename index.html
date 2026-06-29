@@ -431,6 +431,18 @@ button{cursor:pointer;font-family:inherit}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-text{max-width:100%}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-action{margin-top:auto}
 .premium-exec-list{display:flex;flex-direction:column;gap:5px}
+.dashboard-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.dashboard-home-grid > *{min-width:0}
+.dashboard-home-payers .premium-income-list{gap:6px}
+.dashboard-home-composition-body{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;align-items:center}
+.dashboard-home-composition-list{display:flex;flex-direction:column;gap:7px}
+.dashboard-class-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 9px;border:1px solid #182033;border-radius:10px;background:#090c15}
+.dashboard-class-main{min-width:0}
+.dashboard-class-title{display:flex;align-items:center;gap:7px;min-width:0;font-size:11px;font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-class-sub{font-size:9px;color:#64748b;line-height:1.25;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-class-value{font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
+.dashboard-class-dot{width:8px;height:8px;border-radius:999px;flex:none}
+.dashboard-home-performance .perf-list{gap:8px}
 .dashboard-consultive-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:10px;align-items:start}
 .dashboard-consultive-main,.dashboard-consultive-side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
@@ -2315,9 +2327,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-consultive-card-text,.premium-consultive-card-action,.premium-consultive-pill,.premium-consultive-note{font-size:8px;line-height:1.2}
   .premium-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
   .dashboard-consultive-grid{grid-template-columns:1fr!important;gap:8px!important}
+  .dashboard-home-grid{grid-template-columns:1fr!important;gap:8px!important}
   .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
-  .dashboard-home-attention .premium-consultive-grid{grid-template-columns:1fr!important;gap:6px!important}
-  .dashboard-home-actions .dashboard-action-grid{grid-template-columns:1fr!important;gap:6px!important}
   .premium-metric{min-height:76px!important;padding:8px!important;gap:4px!important;border-radius:12px}
   .premium-metric-icon{width:20px;height:20px;font-size:10px}
   .premium-metric-label{font-size:8px;line-height:1.08;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2327,11 +2338,22 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-dashboard-grid>.premium-panel+.premium-panel{margin-top:8px}
   .premium-home-summary .premium-wallet-body{grid-template-columns:1fr!important}
   .premium-home-summary .premium-wallet-pie{display:none!important}
+  .dashboard-home-composition-body{grid-template-columns:1fr!important}
+  .dashboard-home-composition-pie{display:none!important}
   .premium-panel{padding:9px!important;border-radius:12px}
   .premium-panel-head{align-items:center;margin-bottom:7px;gap:7px}
   .premium-panel-title{font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .premium-panel-sub{display:none}
   .premium-panel-badge{font-size:8px;padding:3px 6px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+  .dashboard-home-performance{padding:8px!important}
+  .dashboard-home-performance .perf-title{margin-bottom:6px}
+  .dashboard-home-performance .perf-h{font-size:11px}
+  .dashboard-home-performance .perf-sub{font-size:8px}
+  .dashboard-home-performance .perf-list{gap:7px}
+  .dashboard-class-row{padding:7px 8px;gap:7px}
+  .dashboard-class-title{font-size:10px}
+  .dashboard-class-sub{font-size:8px}
+  .dashboard-class-value{font-size:10px}
   .premium-nextstep-panel,.premium-quality-panel,.premium-reading-panel,.premium-dividend-panel{padding:8px!important}
   .premium-portfolio-panel{display:none}
   .premium-concentration-list .premium-concentration-row:nth-child(n+4){display:none}
@@ -14586,9 +14608,13 @@ function dashboardSnapshot(){
   recentProventos.forEach(p=>{
     const meta=proventoAssetMeta(p);
     const ticker=String(p.ticker||meta.asset?.ticker||meta.title||'Sem ticker').trim().toUpperCase()||'Sem ticker';
-    recentPayerMap.set(ticker,(recentPayerMap.get(ticker)||0)+(Number(p.value)||0));
+    const current=recentPayerMap.get(ticker) || {ticker,total:0,count:0};
+    current.total += Number(p.value)||0;
+    current.count += 1;
+    recentPayerMap.set(ticker,current);
   });
-  const recentBest=[...recentPayerMap.entries()].sort((a,b)=>b[1]-a[1])[0]||null;
+  const recentPayers=[...recentPayerMap.values()].sort((a,b)=>b.total-a.total || b.count-a.count || a.ticker.localeCompare(b.ticker)).slice(0,5);
+  const recentBest=recentPayers[0]||null;
   const concentration=[...analysis].filter(r=>Number.isFinite(r.share)).sort((a,b)=>b.share-a.share);
   const positives=[...analysis].filter(r=>Number.isFinite(r.pct)&&r.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
   const negatives=[...analysis].filter(r=>Number.isFinite(r.pct)&&r.pct<0).sort((a,b)=>a.pct-b.pct).slice(0,3);
@@ -14597,7 +14623,7 @@ function dashboardSnapshot(){
   return {
     portfolio,income,analysis,typeRows,variableValue,
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
-    recent:{month:latestMonth,total:recentTotal,count:recentProventos.length,best:recentBest},
+    recent:{month:latestMonth,total:recentTotal,count:recentProventos.length,best:recentBest,payers:recentPayers,items:recentProventos},
     concentration,positives,negatives,insufficient,concentrated,
     contribution:prudentContributionAnalysis()
   };
@@ -14670,6 +14696,78 @@ function dashboardPassiveIncomePanel(data){
       ${dashboardMetricCard('🧭','Falta para meta',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
     </div>
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
+  </div>`;
+}
+function dashboardHomeMonthlyPayersPanel(data){
+  const recent=data?.recent||{};
+  const monthLabel=recent.month ? new Date(`${recent.month}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'Sem histórico';
+  const total=Number(recent.total)||0;
+  const payers=Array.isArray(recent.payers) ? recent.payers.slice(0,4) : [];
+  const body=payers.length
+    ? payers.map(row=>{
+        const share=total>0 ? (Number(row.total)||0)/total*100 : 0;
+        return `<div class="premium-income-row">
+          <div class="premium-row-main">
+            <div class="premium-row-title">${esc(row.ticker||'—')}</div>
+            <div class="premium-row-sub">${row.count} lançamento${Number(row.count)===1?'':'s'} · ${share.toFixed(1)}% do mês</div>
+          </div>
+          <div class="premium-row-value">${fmt(Number(row.total)||0)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="premium-empty">Sem proventos registrados neste mês.</div>';
+  return `<div class="premium-panel dashboard-home-payers">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Maiores pagadores do mês</div><div class="premium-panel-sub">Ranking consultivo dos ativos que mais contribuíram no período atual.</div></div>
+      <div class="premium-panel-badge">${esc(monthLabel)}</div>
+    </div>
+    <div class="premium-income-list">${body}</div>
+    <div class="premium-note">Total recebido no mês: <strong>${fmt(total)}</strong></div>
+  </div>`;
+}
+function dashboardHomeCompositionPanel(data){
+  const rows=Array.isArray(data?.typeRows) ? data.typeRows : [];
+  const total=Number(data?.portfolio?.tC)||0;
+  const palette=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
+  const pieData=pie(rows.map(row=>({name:row.type,value:row.value})),palette);
+  const body=rows.length
+    ? rows.map((row,idx)=>{
+        const pct=Number(row.share)||0;
+        return `<div class="dashboard-class-row">
+          <div class="dashboard-class-main">
+            <div class="dashboard-class-title"><span class="dashboard-class-dot" style="background:${palette[idx%palette.length]}"></span>${esc(row.type)}</div>
+            <div class="dashboard-class-sub">${fmt(Number(row.value)||0)} · ${pct.toFixed(1)}% da carteira</div>
+          </div>
+          <div class="dashboard-class-value">${fmt(Number(row.value)||0)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="premium-empty">Cadastre ativos para visualizar a composição por classe.</div>';
+  return `<div class="premium-panel dashboard-home-composition">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Composição por classe</div><div class="premium-panel-sub">Leitura clara do valor financeiro e da participação percentual por classe.</div></div>
+      <div class="premium-panel-badge">${rows.length} classes</div>
+    </div>
+    <div class="dashboard-home-composition-body">
+      <div class="dashboard-home-composition-pie">${pieData||'<div class="premium-empty">Sem dados de composição.</div>'}</div>
+      <div class="dashboard-home-composition-list">${body}</div>
+    </div>
+    <div class="premium-note">Total considerado na composição: <strong>${fmt(total)}</strong></div>
+  </div>`;
+}
+function dashboardHomePerformancePanel(title, subtitle, items, kind, tone){
+  const list=Array.isArray(items) ? items : [];
+  const empty=kind==='high'
+    ? '<div class="perf-empty">Nenhuma alta relevante no momento.</div>'
+    : '<div class="perf-empty">Nenhuma baixa relevante no momento.</div>';
+  const maxAbs=Math.max(...list.map(a=>Math.abs(Number(a.pct)||0)),1);
+  return `<div class="perf-card ${kind==='high'?'hi':'lo'} dashboard-home-performance">
+    <div class="perf-title">
+      <div>
+        <div class="perf-h">${esc(title)}</div>
+        <div class="perf-sub">${esc(subtitle)}</div>
+      </div>
+      <div class="perf-badge">${list.length} ativos</div>
+    </div>
+    <div class="perf-list">${list.length ? list.map(r=>assetPerformanceRowHtml(r,maxAbs,kind==='high'?'positive':'negative')).join('') : empty}</div>
   </div>`;
 }
 function dashboardHomeAttentionPanel(data){
@@ -15463,15 +15561,13 @@ function dashLegacy(){
 function dash(){
   const data=dashboardSnapshot();
   return `<div class="premium-dashboard">
-    <div class="dashboard-consultive-grid">
-      <div class="dashboard-consultive-main">
-        ${dashboardHomeSummaryPanel(data)}
-        ${dashboardPassiveIncomePanel(data)}
-      </div>
-      <div class="dashboard-consultive-side">
-        ${dashboardHomeAttentionPanel(data)}
-        ${dashboardHomeActionsPanel()}
-      </div>
+    <div class="dashboard-home-grid">
+      ${dashboardHomeSummaryPanel(data)}
+      ${dashboardPassiveIncomePanel(data)}
+      ${dashboardHomeMonthlyPayersPanel(data)}
+      ${dashboardHomeCompositionPanel(data)}
+      ${dashboardHomePerformancePanel('Maiores altas','Melhor desempenho da carteira.',data.positives||[],'high')}
+      ${dashboardHomePerformancePanel('Maiores baixas','Pior desempenho da carteira.',data.negatives||[],'low')}
     </div>
   </div>`;
 }
