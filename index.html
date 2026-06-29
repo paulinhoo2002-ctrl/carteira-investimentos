@@ -1589,7 +1589,7 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
 .div-collapsible[open] .div-collapsible-summary{border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--panel-2),var(--panel))}
 .div-collapsible-body{padding:10px 12px 12px}
 details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
-.div-monthly-table-block{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
+.div-monthly-table-block{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden;min-width:0}
 .div-monthly-table-block>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;cursor:pointer}
 .div-monthly-table-block>summary::-webkit-details-marker{display:none}
 .div-monthly-table-block[open]>summary{border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--panel-2),var(--panel))}
@@ -1602,7 +1602,8 @@ details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
 .div-monthly-toggle .when-open{display:none}
 .div-monthly-table-block[open] .div-monthly-toggle .when-open{display:inline}
 .div-monthly-table-block[open] .div-monthly-toggle .when-closed{display:none}
-.div-monthly-body{padding:10px 12px 12px}
+.div-monthly-body{padding:10px 12px 12px;min-width:0}
+.div-monthly-table-block .tw,.div-monthly-table-block .ts{max-width:100%;min-width:0}
 .div-monthly-filters{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-bottom:10px}
 .div-monthly-filter{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:6px 10px;font-size:10px;font-weight:850;white-space:nowrap}
 .div-monthly-filter.on{color:#c7d2fe;border-color:rgba(99,102,241,.4);background:rgba(79,70,229,.16)}
@@ -3497,6 +3498,22 @@ let S = {
   autoProvRunning:false,
   _fa:null, _fp:null, _fd:null,
 };
+const UI = {
+  openCardsByTab: Object.create(null)
+};
+function isCollapsibleOpen(tab,key){
+  return !!UI.openCardsByTab?.[tab]?.[key];
+}
+function setCollapsibleOpen(tab,key,open){
+  if(!tab||!key) return;
+  if(!UI.openCardsByTab[tab]) UI.openCardsByTab[tab]=Object.create(null);
+  if(open) UI.openCardsByTab[tab][key]=true;
+  else delete UI.openCardsByTab[tab][key];
+}
+function resetCollapsibleCardsForTab(tab){
+  if(tab && UI.openCardsByTab?.[tab]) delete UI.openCardsByTab[tab];
+}
+window.setCollapsibleOpen = setCollapsibleOpen;
 let PWA = { prompt:null, installed: false };
 try{
   PWA.installed = window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone || false;
@@ -13249,8 +13266,8 @@ function assetRankingListHtml(rows, mode){
     </div>`;
 }
 function assetPremiumSection(title, subtitle, count, body, tone='muted'){
-  const mobile=typeof window!=='undefined' && window.matchMedia && window.matchMedia('(max-width:640px)').matches;
-  return `<details class="asset-premium-section" ${mobile?'':'open'}>
+  const cardKey=`analysis:${title}`;
+  return `<details class="asset-premium-section" ${isCollapsibleOpen('ativos',cardKey)?'open':''} ontoggle='setCollapsibleOpen("ativos",${JSON.stringify(cardKey)},this.open)'>
     <summary>
       <div style="min-width:0"><div class="asset-premium-section-title">${esc(title)}</div><div class="asset-premium-section-sub">${esc(subtitle)}</div></div>
       <span class="asset-premium-section-meta analysis-pill ${esc(tone)}">${count} ${count===1?'ativo':'ativos'}</span>
@@ -16869,7 +16886,8 @@ function dividendTimelineSummary(rows){
   return `${months} mês(es) · ${fmt(total)} no período`;
 }
 function dividendCompactSectionHeader(section,title,summary,body){
-  return `<details class="div-collapsible">
+  const cardKey=`section:${section}`;
+  return `<details class="div-collapsible" ${isCollapsibleOpen('dividendos',cardKey)?'open':''} ontoggle='setCollapsibleOpen("dividendos",${JSON.stringify(cardKey)},this.open)'>
     <summary class="div-collapsible-summary">
       <div class="div-collapsible-main">
         <div class="div-collapsible-title">${esc(title)}</div>
@@ -16933,7 +16951,8 @@ function dividendsByAssetView(rows){
   const total=rows.reduce((sum,row)=>sum+row.value,0);
   const html=[...groups.values()].sort((a,b)=>b.total-a.total).map((group,index)=>{
     const share=total>0?group.total/total*100:0;
-    return `<details class="div-asset-group">
+    const cardKey=`asset:${group.ticker}`;
+    return `<details class="div-asset-group" ${isCollapsibleOpen('dividendos',cardKey)?'open':''} ontoggle='setCollapsibleOpen("dividendos",${JSON.stringify(cardKey)},this.open)'>
       <summary>
         <div class="div-asset-rank">#${index+1}</div>
         <div><div class="div-asset-name">${esc(group.ticker)}</div><div class="div-asset-sub">${esc(group.name)} · ${share.toFixed(1)}% do período</div></div>
@@ -17006,7 +17025,7 @@ function dividendMonthlyTableBlock(rows){
       <td class="gn" style="font-weight:900">${fmt(row.total)}</td>
     </tr>`;
   }).join('');
-  return `<details class="div-monthly-table-block">
+  return `<details class="div-monthly-table-block" ${isCollapsibleOpen('dividendos','historicoMensal')?'open':''} ontoggle='setCollapsibleOpen("dividendos","historicoMensal",this.open)'>
     <summary>
       <div class="div-monthly-head-main">
         <div class="div-monthly-title">Histórico mensal</div>
@@ -18149,6 +18168,8 @@ function mobileMenuDrawer(){
 }
 function go(t){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
+  const previousTab=S.tab;
+  if(previousTab!==t) resetCollapsibleCardsForTab(previousTab);
   S.tab=t;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
