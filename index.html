@@ -1603,7 +1603,14 @@ details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
 .div-monthly-table-block[open] .div-monthly-toggle .when-open{display:inline}
 .div-monthly-table-block[open] .div-monthly-toggle .when-closed{display:none}
 .div-monthly-body{padding:10px 12px 12px;min-width:0}
-.div-monthly-table-block .tw,.div-monthly-table-block .ts{max-width:100%;min-width:0}
+.div-monthly-table-block .tw{max-width:100%;min-width:0;overflow:hidden}
+.div-monthly-table-block .ts{display:block;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
+.div-monthly-table-block .ts::-webkit-scrollbar{height:6px}
+.div-monthly-table-block .ts::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px}
+.div-monthly-table-block .hist-monthly{width:100%;min-width:920px;table-layout:auto}
+.div-monthly-table-block .hist-monthly th,.div-monthly-table-block .hist-monthly td{padding:7px 8px;font-size:10px}
+.div-monthly-table-block .hist-monthly th:first-child,.div-monthly-table-block .hist-monthly td:first-child{min-width:58px}
+.div-monthly-table-block .hist-monthly th:nth-last-child(-n+2),.div-monthly-table-block .hist-monthly td:nth-last-child(-n+2){min-width:86px}
 .div-monthly-filters{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-bottom:10px}
 .div-monthly-filter{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:6px 10px;font-size:10px;font-weight:850;white-space:nowrap}
 .div-monthly-filter.on{color:#c7d2fe;border-color:rgba(99,102,241,.4);background:rgba(79,70,229,.16)}
@@ -17042,7 +17049,7 @@ function dividendMonthlyTableBlock(rows){
         <button class="div-monthly-filter" onclick="setDividendFilter('all')">Tipo de ativo</button>
         <button class="div-monthly-filter" onclick="setDividendViewMode('asset')">Ativos</button>
       </div>
-      <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
+      <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:920px">
         <thead><tr><th>Ano</th>${months.map(month=>`<th>${month}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
         <tbody>${tableRows||'<tr><td colspan="15" style="text-align:center;padding:18px;color:#2e3f58">Sem histórico mensal no período selecionado.</td></tr>'}</tbody>
       </table></div></div>
