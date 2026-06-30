@@ -1,131 +1,68 @@
-# 🧭 Carteira de Investimentos
+# Carteira de Investimentos
 
-Sistema pessoal de controle financeiro e análise de carteira de investimentos.
+Sistema pessoal de controle financeiro e analise de carteira de investimentos.
 
----
+## STATUS DO PROJETO
 
-## 🚀 Status do Projeto
+Versao atual:
+v1.1.0 (Em desenvolvimento)
 
-**Versão:** 1.0 Final (Modo Painel Premium)
+Status:
+🟢 Desenvolvimento ativo
 
-Este sistema está oficialmente congelado como versão estável de uso diário.
+Ultima grande entrega:
+Fase 57 - UX Premium
 
-Não é mais um projeto em desenvolvimento ativo.
-É um **painel financeiro pessoal de decisão**.
+## DOCUMENTACAO
 
----
+| Documento | Descricao |
+|-----------|-----------|
+| [PRODUCT.md](PRODUCT.md) | Visao do produto |
+| [DESIGN.md](DESIGN.md) | Sistema de design |
+| [CHANGELOG.md](CHANGELOG.md) | Historico de versoes |
 
-## 🧠 Objetivo do Sistema
+## PRINCIPIOS DO PROJETO
 
-Fornecer uma visão clara e rápida da carteira para responder em poucos segundos:
+- UX em primeiro lugar.
+- Mobile First.
+- Performance.
+- PWA.
+- Codigo simples.
+- Melhorias incrementais por fases.
+- Nao alterar regras de negocio durante melhorias visuais.
+- Sempre validar com `cmd /c npm run build`.
 
-- Quanto eu tenho?
-- Quanto estou ganhando?
-- Estou próximo da minha meta?
-- O que está forte na carteira?
-- O que está fraco?
+## ROADMAP RESUMIDO
 
----
+### Concluido
 
-## 🏦 Modo Painel Premium Final
+✅ v1.0
 
-O sistema opera em modo fixo:
+### Em desenvolvimento
 
-### ✔ Permitido
-- ajustes de layout (espaçamento, alinhamento)
-- melhorias de legibilidade
-- pequenos refinamentos visuais
+🚧 Fase 57
 
-### ❌ Proibido
-- alterar cálculos financeiros
-- criar novas telas grandes
-- adicionar IA ou APIs externas
-- mudar estrutura de dados
-- refatorações grandes
+### Planejado
 
----
+Fase 58  
+Assistente Inteligente
 
-## 📊 Estrutura da Home / Dashboard
+Fase 59  
+Automações
 
-A tela inicial segue um padrão fixo:
+Fase 60  
+IA Consultiva
 
-### 1. Visão principal
-- Resumo patrimonial
-- Renda passiva
+## INFORMAÇÕES PARA DESENVOLVEDORES
 
-### 2. Análise de fluxo
-- Maiores pagadores do mês
-- Composição por classe
+Antes de implementar qualquer melhoria:
 
-### 3. Performance da carteira
-- Maiores altas
-- Maiores baixas
+1. Ler `PRODUCT.md`
+2. Ler `DESIGN.md`
+3. Consultar `CHANGELOG.md`
+4. Executar `cmd /c npm run build` antes de finalizar
 
----
+## QUALIDADE
 
-## 🎯 Princípios do Sistema
+O README deve permanecer limpo, objetivo e servir como ponto de entrada da documentacao.
 
-- Clareza acima de complexidade
-- Decisão rápida (5 segundos)
-- Menos ruído visual
-- Mais foco em informação útil
-- Experiência de painel profissional
-
----
-
-## 🧭 Filosofia de Evolução
-
-O sistema segue o modelo:
-
-Sem mudanças estruturais constantes.
-
----
-
-## 🖥️ Direção Visual
-
-- Layout tipo painel financeiro profissional
-- Grid alinhado e consistente
-- Espaçamento equilibrado
-- Legibilidade otimizada
-- Interface limpa e objetiva
-
----
-
-## 🔒 Regras de Estabilidade
-
-O sistema não deve mais sofrer mudanças estruturais.
-
-Apenas ajustes leves são permitidos:
-- espaçamento
-- tipografia leve
-- alinhamento visual
-- conforto de leitura
-
----
-
-## 📌 Resultado Final
-
-Este sistema é agora uma ferramenta pessoal de longo prazo para:
-
-- acompanhamento de patrimônio
-- análise de renda passiva
-- controle de performance da carteira
-- suporte à decisão financeira
-
----
-
-## 🏁 Status
-
-✔ Sistema funcional  
-✔ Interface otimizada  
-✔ Layout consolidado  
-✔ Modo Painel Premium ativo  
-✔ Versão 1.0 final concluída  
-
----
-
-## 🧠 Nota Final
-
-Este sistema não é mais um projeto em construção.
-
-É uma ferramenta de uso diário e contínuo.
