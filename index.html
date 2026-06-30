@@ -3469,45 +3469,46 @@ td{font-size:13px}
 
 /* Respiro visual apenas no desktop: espaçamento sem alterar tipografia. */
 @media(min-width:1024px){
-  .premium-dashboard{gap:16px}
-  .dashboard-home-grid{gap:16px}
-  .premium-panel{padding:16px}
-  .premium-panel-head{gap:14px;margin-bottom:14px}
+  .premium-dashboard{gap:12px}
+  .dashboard-home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch}
+  .dashboard-home-grid > *{height:100%}
+  .premium-panel{padding:14px}
+  .premium-panel-head{gap:12px;margin-bottom:11px}
   .premium-panel-head+.premium-exec-list{margin-top:4px}
-  .premium-exec-list{gap:7px}
-  .premium-exec-row{gap:12px;padding:8px 0}
+  .premium-exec-list{gap:6px}
+  .premium-exec-row{gap:10px;padding:7px 0}
   .premium-metrics,
   .div-premium-metrics,
   .reports-kpis,
   .metas-shell .cards,
   .metas-shell .passive-goal-grid.main,
-  .metas-shell .passive-goal-grid.summary{gap:10px}
+  .metas-shell .passive-goal-grid.summary{gap:8px}
   .premium-metric,
   .div-premium-metric,
   .reports-kpi,
   .metas-shell .cards .card.al,
-  .metas-shell .passive-goal-card{padding:13px 14px}
+  .metas-shell .passive-goal-card{padding:12px 13px}
   .dashboard-home-summary .premium-metrics,
-  .dashboard-home-income .premium-metrics{gap:10px}
-  .dashboard-home-payers .premium-income-list{gap:8px}
-  .dashboard-home-composition-body{gap:22px}
-  .dashboard-home-composition-list{gap:6px}
-  .dashboard-class-row{gap:10px;padding:7px 0}
-  .dashboard-home-performance .perf-list{gap:10px}
-  .perf-card{padding:16px}
-  .perf-card.comp{gap:12px}
-  .perf-row{gap:14px}
-  .div-monthly-table-block>summary{gap:14px;padding:14px 15px}
-  .div-monthly-body{padding:14px 15px 15px}
-  .div-monthly-filters{gap:8px;margin-bottom:14px}
+  .dashboard-home-income .premium-metrics{gap:8px}
+  .dashboard-home-payers .premium-income-list{gap:7px}
+  .dashboard-home-composition-body{grid-template-columns:112px minmax(0,1fr);gap:18px;align-items:center}
+  .dashboard-home-composition-list{gap:5px}
+  .dashboard-class-row{gap:9px;padding:6px 0}
+  .dashboard-home-performance .perf-list{gap:8px}
+  .perf-card{padding:14px}
+  .perf-card.comp{gap:10px}
+  .perf-row{gap:12px}
+  .div-monthly-table-block>summary{gap:12px;padding:12px 14px}
+  .div-monthly-body{padding:12px 14px 14px}
+  .div-monthly-filters{gap:8px;margin-bottom:10px}
   .div-monthly-table-block .tw{margin-top:2px}
   .div-monthly-table-block .hist-monthly th,
-  .div-monthly-table-block .hist-monthly td{padding:8px 9px}
+  .div-monthly-table-block .hist-monthly td{padding:7px 8px}
   .reports-shell,
   .metas-shell,
   .rent-layout,
   .rebalance-shell,
-  .asset-premium-analysis{gap:14px}
+  .asset-premium-analysis{gap:12px}
 }
 @media print{
   @page{size:A4;margin:10mm}
