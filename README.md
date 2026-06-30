@@ -1,95 +1,131 @@
-# Carteira de Investimentos
+# 🧭 Carteira de Investimentos
 
-Aplicativo web para organizar e acompanhar uma carteira de investimentos, com foco em patrimônio, ativos, aportes, dividendos, renda fixa, metas e conferência de dados.
+Sistema pessoal de controle financeiro e análise de carteira de investimentos.
 
-O projeto funciona como aplicação estática e pode ser aberto localmente ou publicado na Vercel. Também possui recursos de PWA, armazenamento local e sincronização com Firebase/Google quando configurados.
+---
 
-## Principais funcionalidades
+## 🚀 Status do Projeto
 
-- Dashboard inicial com visão executiva da carteira.
-- Cadastro e acompanhamento de ativos.
-- Análise de desempenho, concentração e dados incompletos.
-- Registro e histórico de aportes.
-- Sugestão prudente de aporte na área Rebalancear.
-- Metas de patrimônio e renda passiva.
-- Consulta mensal, histórico e auditoria de dividendos.
-- Patrimônio Inteligente, comparando valor aplicado e patrimônio atual.
-- Renda Fixa Inteligente, com vencimentos e alertas de dados.
-- Importações da B3 com revisão antes da gravação.
-- Backup e restauração dos dados em JSON.
-- Relatório auxiliar de IRPF e exportação CSV.
-- PWA com controle de versão e aviso de atualização.
+**Versão:** 1.0 Final (Modo Painel Premium)
 
-## Tecnologias
+Este sistema está oficialmente congelado como versão estável de uso diário.
 
-- HTML, CSS e JavaScript em arquivo principal único.
-- LocalStorage para persistência local.
-- Firebase Authentication e Firestore para login e sincronização, quando disponíveis.
-- Service Worker e Web App Manifest para PWA.
-- APIs de cotação usadas pelo próprio projeto.
-- Node.js apenas para validação do build.
+Não é mais um projeto em desenvolvimento ativo.
+É um **painel financeiro pessoal de decisão**.
 
-## Estrutura principal
+---
 
-```text
-index.html       Aplicação, estilos e lógica principal
-sw.js            Service worker e controle de cache
-manifest.json    Configuração do PWA
-api/             Funções de API do projeto
-docs/            Manuais e documentação
-scripts/         Scripts auxiliares e de backup externo
-```
+## 🧠 Objetivo do Sistema
 
-## Como rodar localmente
+Fornecer uma visão clara e rápida da carteira para responder em poucos segundos:
 
-É possível abrir `index.html` diretamente no navegador:
+- Quanto eu tenho?
+- Quanto estou ganhando?
+- Estou próximo da minha meta?
+- O que está forte na carteira?
+- O que está fraco?
 
-```text
-file:///C:/Projetos/carteira-investimentos/index.html
-```
+---
 
-Para testar recursos de PWA e service worker, use um servidor local ou a versão publicada. Service workers não funcionam normalmente em páginas abertas por `file://`.
+## 🏦 Modo Painel Premium Final
 
-## Como validar o projeto
+O sistema opera em modo fixo:
 
-Na pasta do projeto, execute:
+### ✔ Permitido
+- ajustes de layout (espaçamento, alinhamento)
+- melhorias de legibilidade
+- pequenos refinamentos visuais
 
-```powershell
-cmd /c npm run build
-```
+### ❌ Proibido
+- alterar cálculos financeiros
+- criar novas telas grandes
+- adicionar IA ou APIs externas
+- mudar estrutura de dados
+- refatorações grandes
 
-O comando confirma a existência dos arquivos estáticos obrigatórios. Para considerar uma alteração concluída, faça também um teste visual nas principais telas e no celular.
+---
 
-## Dados e sincronização
+## 📊 Estrutura da Home / Dashboard
 
-- Os dados podem existir no armazenamento local do navegador.
-- A limpeza dos dados do site pode apagar o LocalStorage.
-- O Firebase pode sincronizar dados quando o usuário autorizado entra com Google.
-- Um navegador, perfil ou computador diferente pode ter dados locais diferentes.
-- Exporte um backup JSON antes de limpar cache, armazenamento ou trocar de computador.
+A tela inicial segue um padrão fixo:
 
-## PWA e atualização
+### 1. Visão principal
+- Resumo patrimonial
+- Renda passiva
 
-Quando aparecer **“Nova versão disponível”**, use **“Atualizar agora”** para ativar a versão nova. O processo atualiza os arquivos do aplicativo sem apagar os dados da carteira.
+### 2. Análise de fluxo
+- Maiores pagadores do mês
+- Composição por classe
 
-Se a interface parecer antiga, tente `Ctrl + F5`. Antes de limpar os dados do site ou remover manualmente o armazenamento, exporte um backup.
+### 3. Performance da carteira
+- Maiores altas
+- Maiores baixas
 
-## Aviso sobre IRPF
+---
 
-O relatório de IRPF é uma ferramenta auxiliar de organização. Ele não substitui:
+## 🎯 Princípios do Sistema
 
-- informes oficiais das corretoras e instituições;
-- notas de negociação;
-- documentos fiscais;
-- programa oficial da Receita Federal;
-- orientação de contador ou profissional habilitado.
+- Clareza acima de complexidade
+- Decisão rápida (5 segundos)
+- Menos ruído visual
+- Mais foco em informação útil
+- Experiência de painel profissional
 
-Confira todos os valores antes de utilizá-los em uma declaração.
+---
 
-## Documentação
+## 🧭 Filosofia de Evolução
 
-- [Manual de uso](docs/MANUAL-USO.md)
-- [Fluxo de desenvolvimento](docs/FLUXO-DESENVOLVIMENTO.md)
-- [Backup e restauração](docs/BACKUP-RESTAURACAO.md)
-- [Histórico de melhorias](docs/CHANGELOG.md)
+O sistema segue o modelo:
 
+Sem mudanças estruturais constantes.
+
+---
+
+## 🖥️ Direção Visual
+
+- Layout tipo painel financeiro profissional
+- Grid alinhado e consistente
+- Espaçamento equilibrado
+- Legibilidade otimizada
+- Interface limpa e objetiva
+
+---
+
+## 🔒 Regras de Estabilidade
+
+O sistema não deve mais sofrer mudanças estruturais.
+
+Apenas ajustes leves são permitidos:
+- espaçamento
+- tipografia leve
+- alinhamento visual
+- conforto de leitura
+
+---
+
+## 📌 Resultado Final
+
+Este sistema é agora uma ferramenta pessoal de longo prazo para:
+
+- acompanhamento de patrimônio
+- análise de renda passiva
+- controle de performance da carteira
+- suporte à decisão financeira
+
+---
+
+## 🏁 Status
+
+✔ Sistema funcional  
+✔ Interface otimizada  
+✔ Layout consolidado  
+✔ Modo Painel Premium ativo  
+✔ Versão 1.0 final concluída  
+
+---
+
+## 🧠 Nota Final
+
+Este sistema não é mais um projeto em construção.
+
+É uma ferramenta de uso diário e contínuo.
