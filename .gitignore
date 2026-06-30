@@ -1,8 +1,39 @@
+# ===============================
+# Node
+# ===============================
 node_modules/
-.vercel/
+
+# Build
+dist/
+build/
+
+# Logs
 *.log
-*.tmp
+npm-debug.log*
+
+# Ambiente
 .env
-.env.local
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Codex / IA
+.agents/
+skills-lock.json
+
+# Vercel
+.vercel/
+
+# Cache
+.cache/
+
+# Extras locais
+*.tmp
 backups/
 *.bak

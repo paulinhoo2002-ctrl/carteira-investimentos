@@ -452,6 +452,210 @@ button{cursor:pointer;font-family:inherit}
 .dashboard-class-share{font-size:10px;font-weight:850;color:#94a3b8;text-align:right;white-space:nowrap}
 .dashboard-class-dot{width:7px;height:7px;border-radius:999px;flex:none}
 .dashboard-home-performance .perf-list{gap:8px}
+.dashboard-home-assistant{grid-column:1/-1}
+.dashboard-home-assistant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ai-consultive-shell{padding:2px 0 0}
+.dashboard-home-assistant .assistant-card{
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  padding:11px;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.dashboard-home-assistant .assistant-card.full{grid-column:1/-1}
+.dashboard-home-assistant .assistant-card-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+.dashboard-home-assistant .assistant-card-title{
+  font-size:11px;
+  font-weight:850;
+  color:var(--text);
+  line-height:1.2;
+}
+.dashboard-home-assistant .assistant-card-status{
+  font-size:9px;
+  font-weight:800;
+  color:var(--muted);
+  border:1px solid var(--border);
+  background:var(--panel-3);
+  border-radius:999px;
+  padding:3px 6px;
+  white-space:nowrap;
+}
+.dashboard-home-assistant .assistant-card-value{
+  font-size:16px;
+  font-weight:900;
+  color:var(--text);
+  line-height:1.05;
+}
+.dashboard-home-assistant .assistant-card-value.ok{color:#34d399}
+.dashboard-home-assistant .assistant-card-value.info{color:#60a5fa}
+.dashboard-home-assistant .assistant-card-value.warn{color:#fbbf24}
+.dashboard-home-assistant .assistant-card-value.danger{color:#f87171}
+.dashboard-home-assistant .assistant-card-sub{
+  font-size:9px;
+  line-height:1.42;
+  color:var(--muted);
+}
+.dashboard-home-assistant .assistant-summary-text{
+  font-size:10px;
+  line-height:1.5;
+  color:var(--text);
+}
+.dashboard-home-assistant .assistant-alerts{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.dashboard-home-assistant .assistant-alert{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:start;
+  padding:7px 8px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--panel-3);
+}
+.dashboard-home-assistant .assistant-alert-title{
+  font-size:10px;
+  font-weight:850;
+  color:var(--text);
+  line-height:1.2;
+}
+.dashboard-home-assistant .assistant-alert-desc,
+.dashboard-home-assistant .assistant-alert-suggest,
+.dashboard-home-assistant .assistant-next-reason{
+  font-size:9px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.dashboard-home-assistant .assistant-alert-badge{
+  font-size:8px;
+  font-weight:800;
+  border-radius:999px;
+  padding:3px 6px;
+  white-space:nowrap;
+  border:1px solid var(--border);
+}
+.dashboard-home-assistant .assistant-alert-badge.leve{color:#60a5fa;background:rgba(96,165,250,.12)}
+.dashboard-home-assistant .assistant-alert-badge.forte{color:#fbbf24;background:rgba(251,191,36,.12)}
+.dashboard-home-assistant .assistant-alert-badge.critico{color:#f87171;background:rgba(248,113,113,.12)}
+.dashboard-home-assistant .assistant-next-list{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.dashboard-home-assistant .assistant-next-item{
+  display:flex;
+  align-items:flex-start;
+  gap:6px;
+  min-width:0;
+}
+.dashboard-home-assistant .assistant-next-bullet{
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  flex:none;
+  margin-top:5px;
+  background:#60a5fa;
+}
+.dashboard-home-assistant .assistant-mini{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+}
+.dashboard-home-assistant .assistant-mini-box{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--panel-3);
+  padding:7px 8px;
+  min-width:0;
+}
+.dashboard-home-assistant .assistant-mini-kicker{
+  font-size:9px;
+  line-height:1.15;
+  color:var(--muted);
+}
+.dashboard-home-assistant .assistant-mini-value{
+  font-size:13px;
+  font-weight:900;
+  line-height:1.05;
+  color:var(--text);
+  margin-top:2px;
+}
+.dashboard-home-assistant .assistant-mini-sub{
+  font-size:8px;
+  line-height:1.3;
+  color:var(--muted);
+  margin-top:2px;
+}
+.dashboard-home-assistant .assistant-action{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+}
+.dashboard-home-assistant .assistant-action-btn{
+  border:1px solid var(--border);
+  background:var(--panel-3);
+  color:var(--text);
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:9px;
+  font-weight:800;
+  cursor:pointer;
+}
+.dashboard-home-assistant .assistant-action-btn:hover{
+  border-color:rgba(96,165,250,.35);
+  background:rgba(96,165,250,.08);
+}
+.dashboard-home-assistant .assistant-disclosure{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.dashboard-home-assistant .assistant-disclosure-row{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--panel-3);
+  padding:8px 9px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.dashboard-home-assistant .assistant-disclosure-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+.dashboard-home-assistant .assistant-disclosure-title{
+  font-size:10px;
+  font-weight:850;
+  color:var(--text);
+  line-height:1.2;
+}
+.dashboard-home-assistant .assistant-disclosure-sub{
+  font-size:9px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.dashboard-home-assistant .assistant-disclosure-detail{
+  font-size:9px;
+  line-height:1.35;
+  color:var(--text);
+}
+.dashboard-home-assistant .assistant-disclosure-foot{
+  font-size:8px;
+  line-height:1.3;
+  color:var(--muted);
+}
 .dashboard-consultive-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:10px;align-items:start}
 .dashboard-consultive-main,.dashboard-consultive-side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
@@ -2446,6 +2650,14 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-metric-note{font-size:8px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .premium-dashboard-grid{display:block!important}
   .premium-dashboard-grid>.premium-panel+.premium-panel{margin-top:8px}
+  .dashboard-home-assistant-grid{grid-template-columns:1fr!important;gap:6px!important}
+  .dashboard-home-assistant .assistant-card{padding:10px!important;border-radius:12px}
+  .dashboard-home-assistant .assistant-card-value{font-size:15px}
+  .dashboard-home-assistant .assistant-card-status{font-size:8px;padding:3px 5px}
+  .dashboard-home-assistant .assistant-summary-text{font-size:9px;line-height:1.4}
+  .dashboard-home-assistant .assistant-alert{padding:6px 7px;gap:7px}
+  .dashboard-home-assistant .assistant-mini{grid-template-columns:1fr;gap:5px}
+  .ai-consultive-shell{padding-top:0}
   .premium-home-summary .premium-wallet-body{grid-template-columns:1fr!important}
   .premium-home-summary .premium-wallet-pie{display:none!important}
   .dashboard-home-composition-body{grid-template-columns:1fr!important}
@@ -3598,6 +3810,10 @@ td{font-size:13px}
   .dashboard-home-payers .premium-income-list{gap:7px}
   .dashboard-home-composition-body{grid-template-columns:112px minmax(0,1fr);gap:18px;align-items:center}
   .dashboard-home-composition-list{gap:5px}
+  .dashboard-home-assistant-grid{gap:10px}
+  .dashboard-home-assistant .assistant-card{padding:12px}
+  .dashboard-home-assistant .assistant-card-value{font-size:17px}
+  .dashboard-home-assistant .assistant-summary-text{font-size:10px}
   .dashboard-class-row{gap:9px;padding:6px 0}
   .dashboard-home-performance .perf-list{gap:8px}
   .perf-card{padding:14px}
@@ -14966,6 +15182,310 @@ function dashboardSnapshot(){
     contribution:prudentContributionAnalysis()
   };
 }
+function portfolioTrendFromSeries(series){
+  const values=Array.isArray(series) ? series.map(v=>Math.max(0, Number(v)||0)) : [];
+  const nonZero=values.filter(v=>v>0);
+  if(nonZero.length<3){
+    return {status:'dados insuficientes', recentAvg:0, previousAvg:0, deltaPct:0, samples:nonZero.length, series:values};
+  }
+  const avg=list=>list.length ? list.reduce((sum,v)=>sum+v,0)/list.length : 0;
+  const recent=values.slice(-3);
+  const previousRaw=values.slice(-6,-3);
+  const previous=previousRaw.length ? previousRaw : values.slice(0, Math.max(0, values.length-3));
+  const recentAvg=avg(recent);
+  const previousAvg=avg(previous);
+  const deltaPct=previousAvg>0 ? ((recentAvg-previousAvg)/previousAvg)*100 : (recentAvg>0 ? 100 : 0);
+  let status='estável';
+  if(nonZero.length<4) status='dados insuficientes';
+  else if(deltaPct>=8) status='crescimento';
+  else if(deltaPct<=-8) status='queda';
+  return {status, recentAvg, previousAvg, deltaPct, samples:nonZero.length, series:values};
+}
+function analyzePortfolio(snapshot=dashboardSnapshot()){
+  const portfolio=snapshot.portfolio || cx();
+  const income=snapshot.income || passiveIncomeGoalStats();
+  const rows=Array.isArray(snapshot.analysis) ? snapshot.analysis : assetAnalysisRows();
+  const typeRows=Array.isArray(snapshot.typeRows) ? [...snapshot.typeRows] : [];
+  const total=Number(portfolio.tC)||0;
+  const topAssets=[...rows]
+    .filter(row=>Number.isFinite(row.share))
+    .sort((a,b)=>b.share-a.share || b.current-a.current)
+    .slice(0,5)
+    .map(row=>({
+      ticker:row.ticker,
+      type:row.type,
+      sector:row.sector,
+      current:Number(row.current)||0,
+      share:Number(row.share)||0,
+      level:row.share>20 ? 'critical' : row.share>15 ? 'strong' : row.share>10 ? 'light' : 'ok'
+    }));
+  const topAsset=topAssets[0] || null;
+  const topType=typeRows[0] || null;
+  const topTypeShare=Number(topType?.share)||0;
+  const top3Share=typeRows.slice(0,3).reduce((sum,row)=>sum+(Number(row.share)||0),0);
+  const sectorMap=new Map();
+  rows.forEach(row=>{
+    const sector=String(row.sector||'').trim();
+    if(!sector || sector==='â€”') return;
+    const current=sectorMap.get(sector) || {sector, value:0, count:0};
+    current.value += Number(row.current)||0;
+    current.count += 1;
+    sectorMap.set(sector, current);
+  });
+  const bySector=[...sectorMap.values()]
+    .map(row=>({...row, share:total>0 ? (row.value/total)*100 : 0}))
+    .sort((a,b)=>b.value-a.value)
+    .slice(0,6);
+  const goalTypes=allocationGoalItems().map(item=>item.type).filter(Boolean);
+  const referenceTypes=goalTypes.length ? goalTypes : ['Ação','FII','ETF','BDR','Exterior','Renda Fixa'];
+  const typeMap=new Map(typeRows.map(row=>[normalizeType(row.type||'',''), row]));
+  const missingTypes=referenceTypes
+    .map(type=>{
+      const found=typeMap.get(type) || null;
+      const share=Number(found?.share)||0;
+      const value=Number(found?.value)||0;
+      return {
+        type,
+        share,
+        value,
+        status:!found ? 'ausente' : share<5 ? 'pequena' : 'ok'
+      };
+    })
+    .filter(item=>item.status!=='ok');
+  const incomeTrend=portfolioTrendFromSeries((income.byMonth||[]).map(row=>Number(row.total)||0));
+  const incomeProgress=income.target>0 ? (Number(income.monthlyAvg)||0)/Number(income.target||1)*100 : 0;
+  const concentrationRows=topAssets.map(row=>({
+    ...row,
+    alert:row.level==='critical' ? 'Alerta crítico' : row.level==='strong' ? 'Alerta forte' : row.level==='light' ? 'Alerta leve' : 'Peso saudável'
+  }));
+  const alerts=[];
+  const addAlert=(type,severidade,titulo,descricao,ativoRelacionado='',sugestao='')=>{
+    alerts.push({
+      type,
+      severidade,
+      titulo,
+      descricao,
+      ativoRelacionado:ativoRelacionado || '',
+      sugestao
+    });
+  };
+  if(!rows.length){
+    addAlert('dados','info','Sem base','Ainda nao ha ativos suficientes para leitura consultiva.','','Cadastre ativos para liberar a analise.');
+  }
+  if(topAsset){
+    if(topAsset.share>20){
+      addAlert('concentracao','critical','Concentração alta',`${topAsset.ticker} representa ${topAsset.share.toFixed(1)}% da carteira.`,topAsset.ticker,'Evite reforçar este ativo por enquanto.');
+    }else if(topAsset.share>15){
+      addAlert('concentracao','critical','Concentração forte',`${topAsset.ticker} já pesa ${topAsset.share.toFixed(1)}% da carteira.`,topAsset.ticker,'Priorize ativos ou categorias menos concentradas.');
+    }else if(topAsset.share>10){
+      addAlert('concentracao','warn','Posição relevante',`${topAsset.ticker} já ultrapassa 10% da carteira.`,topAsset.ticker,'Observe o limite antes de reforçar.');
+    }
+  }
+  if(topTypeShare>55){
+    addAlert('diversificacao', topTypeShare>=70 ? 'critical' : 'warn', 'Classe concentrada', `${topType.type} concentra ${topTypeShare.toFixed(1)}% da carteira.`, topType.type, 'Distribua melhor os próximos aportes.');
+  }
+  if(top3Share>70){
+    addAlert('diversificacao','warn','Top 3 concentrado',`As três maiores posições somam ${top3Share.toFixed(1)}% da carteira.`,'','Considere reforçar classes menores antes de aumentar os líderes.');
+  }
+  if(missingTypes.length){
+    const missingLabel=missingTypes.slice(0,3).map(item=>`${item.type}${item.status==='pequena'?' (pequena)':' (ausente)'}`).join(', ');
+    addAlert('diversificacao','info','Classes faltantes',`Leitura atual mostra ${missingLabel}.`,'','Acompanhe a distribuição antes do próximo aporte.');
+  }
+  if(!income.hasData){
+    addAlert('renda','info','Sem histórico', 'Ainda não há histórico suficiente para medir a renda passiva.','','Continue registrando proventos para liberar a leitura.');
+  }else if(incomeTrend.status==='queda'){
+    addAlert('renda','warn','Renda em queda',`A média recente ficou ${fmtP(incomeTrend.deltaPct)} abaixo da janela anterior.`, '', 'Revise se houve concentração ou interrupção de pagamentos.');
+  }else if(incomeTrend.status==='crescimento' && income.target>0){
+    addAlert('renda','info','Renda em alta',`A média recente subiu ${fmtP(incomeTrend.deltaPct)} frente ao período anterior.`, '', 'Mantenha a disciplina de aporte nos pagadores.');
+  }
+  if(income.target>0 && income.monthlyAvg<income.target){
+    addAlert('meta','warn','Meta pendente',`Faltam ${fmt(Math.max(0, income.target-income.monthlyAvg))}/mês para a meta.`, '', 'Priorize ativos que reforcem a renda recorrente.');
+  }
+  if(income.target>0 && income.monthlyAvg>=income.target){
+    addAlert('meta','ok','Meta atingida',`A média real de ${fmt(income.monthlyAvg)}/mês supera a meta de ${fmt(income.target)}.`,'','Preserve o ritmo sem aumentar o risco.');
+  }
+  const candidatePack=prudentContributionAnalysis();
+  const candidate=Array.isArray(candidatePack?.candidates) ? candidatePack.candidates[0] : null;
+  const underAllocation=Array.isArray(typeRows)
+    ? [...typeRows]
+        .map(row=>({type:row.type, target:Number(allocationGoalItems().find(it=>it.type===row.type)?.pct)||0, actual:Number(row.share)||0}))
+        .filter(row=>row.target>0 && row.actual<row.target)
+        .sort((a,b)=>(a.actual-a.target)-(b.actual-b.target))[0] || null
+    : null;
+  const recommendations=[];
+  const addRecommendation=(type,titulo,descricao,sugestao,confidence=60,active='')=>{
+    recommendations.push({
+      type,
+      titulo,
+      descricao,
+      sugestao,
+      confidence,
+      ativoRelacionado:active || ''
+    });
+  };
+  if(topAsset && topAsset.share>15){
+    addRecommendation('concentracao','Não reforçar o líder',`${topAsset.ticker} já representa ${topAsset.share.toFixed(1)}% da carteira.`,'Evite reforçar este ativo por enquanto e olhe alternativas menos concentradas.',78,topAsset.ticker);
+  }
+  if(underAllocation){
+    addRecommendation('alocacao',`Reforçar ${underAllocation.type}`,`${underAllocation.type} está ${Math.abs(underAllocation.actual-underAllocation.target).toFixed(1)} p.p. abaixo da meta.`,'Use o próximo aporte para equilibrar a carteira.',82,underAllocation.type);
+  }
+  if(income.target>0 && income.monthlyAvg<income.target){
+    addRecommendation('renda','Fortalecer renda passiva',`A média real de ${fmt(income.monthlyAvg)}/mês ainda está abaixo da meta de ${fmt(income.target)}.`,'Priorize ativos e classes que sustentem fluxo recorrente.',74,'');
+  }
+  if(incomeTrend.status==='queda'){
+    addRecommendation('renda','Revisar tendência',`A janela recente de proventos caiu ${fmtP(incomeTrend.deltaPct)} frente ao período anterior.`,'Cheque se houve menor distribuição ou concentração excessiva.',68,'');
+  }
+  if(!recommendations.length){
+    addRecommendation('equilibrio','Manter disciplina','A carteira não exibe um alerta dominante agora.','Mantenha aportes em classes abaixo da meta e evite elevar concentração.',64,'');
+  }
+  const nextContribution = candidate
+    ? {
+        kind:'asset',
+        ticker:candidate.ticker,
+        category:candidate.type,
+        reasons:[candidate.signal?.label||'Sinal prudente favoravel', ...(candidate.criteria||[]).slice(0,2)],
+        confidence:Math.max(45, Math.min(95, Math.round(50 + Number(candidate.score||0)/2))),
+        disclaimer:'Não é recomendação financeira. É uma leitura local baseada nos dados cadastrados.'
+      }
+    : underAllocation
+      ? {
+          kind:'category',
+          category:underAllocation.type,
+          reasons:[`${underAllocation.type} está abaixo da meta de alocação.`],
+          confidence:72,
+          disclaimer:'Não é recomendação financeira. É uma leitura local baseada nos dados cadastrados.'
+        }
+      : {
+          kind:'wait',
+          category:'',
+          reasons:['Sem sinal forte para sugerir aporte agora.'],
+          confidence:40,
+          disclaimer:'Não é recomendação financeira. É uma leitura local baseada nos dados cadastrados.'
+        };
+  let healthScore=100;
+  if(!rows.length) healthScore=0;
+  if(topAsset){
+    if(topAsset.share>20) healthScore-=Math.min(24,(topAsset.share-20)*2.4);
+    else if(topAsset.share>15) healthScore-=(topAsset.share-15)*1.8;
+    else if(topAsset.share>10) healthScore-=(topAsset.share-10)*1.0;
+  }
+  if(top3Share>70) healthScore-=Math.min(12,(top3Share-70)*0.7);
+  if(typeRows.length<=1) healthScore-=18;
+  else if(typeRows.length===2) healthScore-=12;
+  else if(typeRows.length===3) healthScore-=6;
+  else if(typeRows.length>=5) healthScore+=5;
+  if(topType){
+    const topTypeShare=Number(topType.share)||0;
+    if(topTypeShare>55) healthScore-=Math.min(12,(topTypeShare-55)*0.6);
+  }
+  if(missingTypes.length>=3) healthScore-=4;
+  if(!income.hasData) healthScore-=8;
+  else{
+    if(income.target>0){
+      if(incomeProgress>=100) healthScore+=8;
+      else if(incomeProgress>=75) healthScore+=4;
+      else if(incomeProgress<25) healthScore-=6;
+      else if(incomeProgress<50) healthScore-=3;
+    }
+    if(incomeTrend.status==='crescimento') healthScore+=4;
+    else if(incomeTrend.status==='queda') healthScore-=4;
+  }
+  if(candidatePack?.avoided>0) healthScore-=Math.min(6, candidatePack.avoided*2);
+  if(candidatePack?.insufficient>0) healthScore-=Math.min(6, candidatePack.insufficient);
+  healthScore=Math.max(0, Math.min(100, Math.round(healthScore)));
+  const dominantTypes=typeRows.filter(row=>(Number(row.share)||0) >= 25).map(row=>({
+    type:row.type,
+    share:Number(row.share)||0,
+    value:Number(row.value)||0
+  }));
+  const diversifiedStatus = !rows.length
+    ? 'dados insuficientes'
+    : healthScore>=80 ? 'saudável'
+    : healthScore>=60 ? 'em atenção'
+    : 'concentrada';
+  const summaryParts=[];
+  if(!rows.length){
+    summaryParts.push('Ainda faltam ativos para montar uma leitura confiável da carteira.');
+  }else if(topAsset && topAsset.share>20){
+    summaryParts.push(`A carteira está concentrada em ${topAsset.ticker}.`);
+  }else if(topAsset){
+    summaryParts.push(`A carteira está organizada e liderada por ${topAsset.ticker}.`);
+  }
+  if(income.hasData){
+    if(income.target>0){
+      summaryParts.push(`A renda passiva está em ${Math.min(999, incomeProgress).toFixed(1)}% da meta e segue ${incomeTrend.status}.`);
+    }else{
+      summaryParts.push(`A renda passiva média é de ${fmt(income.monthlyAvg)}/mês nos últimos 12 meses.`);
+    }
+  }else{
+    summaryParts.push('A renda passiva ainda não tem histórico suficiente para tendência firme.');
+  }
+  if(missingTypes.length){
+    summaryParts.push(`Categorias abaixo do ideal: ${missingTypes.slice(0,2).map(item=>item.type).join(', ')}.`);
+  }
+  return {
+    healthScore,
+    diversification:{
+      status:diversifiedStatus,
+      byType:typeRows.map(row=>({
+        type:row.type,
+        value:Number(row.value)||0,
+        share:Number(row.share)||0
+      })),
+      bySector,
+      missingTypes,
+      dominantTypes,
+      top3Share:Number(top3Share.toFixed(1))
+    },
+    concentration:{
+      status:topAsset ? topAsset.level : 'ok',
+      topAssets:concentrationRows,
+      topAsset,
+      topType:topType ? {
+        type:topType.type,
+        value:Number(topType.value)||0,
+        share:Number(topType.share)||0
+      } : null,
+      thresholds:{light:10,strong:15,critical:20},
+      top3Share:Number(top3Share.toFixed(1))
+    },
+    income:{
+      status:incomeTrend.status,
+      target:Number(income.target)||0,
+      monthlyAvg:Number(income.monthlyAvg)||0,
+      annualProjection:Number(income.annualProjection)||0,
+      percent:Number(income.percent)||0,
+      missing:Number(income.missing)||0,
+      currentMonthKey:String(income.currentMonthKey||''),
+      currentMonthTotal:Number(income.currentMonthTotal)||0,
+      total12:Number(income.total12)||0,
+      topPayers:Array.isArray(income.topPayers) ? income.topPayers.map(row=>({
+        ticker:row.ticker,
+        name:row.name,
+        type:row.type,
+        total:Number(row.total)||0,
+        count:Number(row.count)||0,
+        lastDate:row.lastDate||''
+      })) : [],
+      bestPayer:income.bestPayer ? {
+        ticker:income.bestPayer.ticker,
+        name:income.bestPayer.name,
+        type:income.bestPayer.type,
+        total:Number(income.bestPayer.total)||0,
+        count:Number(income.bestPayer.count)||0,
+        lastDate:income.bestPayer.lastDate||''
+      } : null,
+      trend:incomeTrend,
+      hasData:!!income.hasData
+    },
+    alerts,
+    recommendations,
+    nextContribution,
+    summary:summaryParts.join(' '),
+    generatedAt:new Date().toISOString()
+  };
+}
+window.analyzePortfolio=analyzePortfolio;
 function dashboardLatestSourceInfo(){
   const rows=[];
   const add=(item,label)=>{
@@ -15088,6 +15608,237 @@ function dashboardHomeCompositionPanel(data){
       <div class="dashboard-home-composition-list">${body}</div>
     </div>
     <div class="premium-note">Total considerado na composição: <strong>${fmt(total)}</strong></div>
+  </div>`;
+}
+function dashboardAssistantSevLabel(value){
+  const v=String(value||'').toLowerCase();
+  if(v==='critical') return 'crítico';
+  if(v==='warn') return 'forte';
+  if(v==='info') return 'leve';
+  return 'leve';
+}
+function dashboardAssistantSevClass(value){
+  const v=String(value||'').toLowerCase();
+  if(v==='critical') return 'critico';
+  if(v==='warn') return 'forte';
+  return 'leve';
+}
+function dashboardAssistantTone(value){
+  const v=String(value||'').toLowerCase();
+  if(v==='critical' || v==='danger') return 'danger';
+  if(v==='warn') return 'warn';
+  if(v==='info') return 'info';
+  if(v==='ok') return 'ok';
+  return 'muted';
+}
+const dashboardAssistantTabKey='ia';
+function dashboardAssistantIsOpen(key){
+  return isCollapsibleOpen(dashboardAssistantTabKey,key);
+}
+function dashboardAssistantToggle(key){
+  setCollapsibleOpen(dashboardAssistantTabKey,key,!dashboardAssistantIsOpen(key));
+  render();
+}
+function dashboardAssistantPanel(analysis){
+  const ai=analysis || {};
+  if(ai._error){
+    return `<div class="premium-panel dashboard-home-assistant ai-consultive-shell">
+      <div class="premium-panel-head">
+        <div><div class="premium-panel-title">Assistente Inteligente da Carteira</div><div class="premium-panel-sub">Análise automática baseada nos dados cadastrados na carteira.</div></div>
+        <div class="premium-panel-badge">Fallback</div>
+      </div>
+      <div class="assistant-card full">
+        <div class="assistant-card-head">
+          <div class="assistant-card-title">Análise temporariamente indisponível</div>
+          <div class="assistant-card-status">Aguarde</div>
+        </div>
+        <div class="assistant-summary-text">${esc(ai._error)}</div>
+      </div>
+    </div>`;
+  }
+  const score=Number(ai.healthScore);
+  const healthTone = Number.isFinite(score) ? (score>=80 ? 'ok' : score>=60 ? 'info' : score>=40 ? 'warn' : 'danger') : 'muted';
+  const healthStatus = Number.isFinite(score)
+    ? (score>=80 ? 'Saudável' : score>=60 ? 'Em atenção' : score>=40 ? 'Risco moderado' : 'Risco alto')
+    : 'Dados insuficientes';
+  const generatedAt = ai.generatedAt ? new Date(ai.generatedAt) : null;
+  const generatedLabel = generatedAt && !Number.isNaN(generatedAt.getTime())
+    ? generatedAt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+    : '—';
+  const alerts=Array.isArray(ai.alerts) ? ai.alerts.slice(0,3) : [];
+  const concentration=ai.concentration || {};
+  const topAsset=concentration.topAsset || null;
+  const income=ai.income || {};
+  const next=ai.nextContribution || {};
+  const summaryText=String(ai.summary||'').trim() || 'Ainda faltam dados para gerar uma leitura consultiva.';
+  const summaryDisplay=summaryText.split('.').map(part=>part.trim()).filter(Boolean).slice(0,2).join('. ');
+  const nextReasons=Array.isArray(next.reasons) ? next.reasons.slice(0,2) : [];
+  const nextLabel=next.kind==='asset'
+    ? `Ativo sugerido: ${next.ticker || '—'}`
+    : next.kind==='category'
+      ? `Categoria sugerida: ${next.category || '—'}`
+    : 'Sem sugestão clara';
+  const nextStatus=next.kind==='wait' ? 'Aguardar' : next.kind==='asset' ? 'Ativo' : 'Categoria';
+  const topAssetLabel=topAsset ? `${topAsset.ticker || '—'} · ${Number(topAsset.share||0).toFixed(1)}%` : 'Sem concentração detectada';
+  const topAssetStatus=topAsset ? (Number(topAsset.share||0)>20 ? 'Atenção' : Number(topAsset.share||0)>15 ? 'Forte' : Number(topAsset.share||0)>10 ? 'Leve' : 'Saudável') : 'Dados insuficientes';
+  const concentrationTone=topAsset ? (Number(topAsset.share||0)>20 ? 'danger' : Number(topAsset.share||0)>15 ? 'warn' : Number(topAsset.share||0)>10 ? 'info' : 'ok') : 'muted';
+  const incomeMonthly=Number(income.monthlyAvg)||0;
+  const incomeTarget=Number(income.target)||0;
+  const incomePct=Number(income.percent)||0;
+  const incomeStatus=income.hasData
+    ? (income.status==='queda' ? 'Em queda' : income.status==='crescimento' ? 'Em crescimento' : 'Estável')
+    : 'Dados insuficientes';
+  const incomeHint=income.hasData
+    ? (incomeTarget>0 ? `Falta ${fmt(Math.max(0,incomeTarget-incomeMonthly))}/mês para a meta.` : 'Sem meta definida.')
+    : 'Continue cadastrando proventos.';
+  const incomeValue=income.hasData ? `${fmt(incomeMonthly)}/mês` : '—';
+  const incomeGoal=incomeTarget>0 ? fmt(incomeTarget) : '—';
+  const incomeDisplay=income.hasData
+    ? (incomeTarget>0
+      ? `Você já atingiu ${incomePct.toFixed(1)}% da meta mensal. Faltam ${fmt(Math.max(0,incomeTarget-incomeMonthly))}/mês para a meta.`
+      : `Média mensal de ${fmt(incomeMonthly)}/mês nos últimos 12 meses.`)
+    : 'Ainda não há histórico suficiente para medir a renda passiva.';
+  const alertsOpen=dashboardAssistantIsOpen('alerts');
+  const nextOpen=dashboardAssistantIsOpen('next');
+  const concentrationOpen=dashboardAssistantIsOpen('concentration');
+  const incomeOpen=dashboardAssistantIsOpen('income');
+  const alertBody=alerts.length
+    ? alerts.map(alert=>{
+        const sev=dashboardAssistantSevLabel(alert.severidade);
+        const sevClass=dashboardAssistantSevClass(alert.severidade);
+        const tone=dashboardAssistantTone(alert.severidade);
+        const detailReason=alert.tipoRazao || alert.motivo || alert.descricao || '';
+        return `<div class="assistant-alert">
+          <div style="min-width:0">
+            <div class="assistant-alert-title">${esc(alert.titulo||'Alerta')}</div>
+            <div class="assistant-alert-desc">${esc(alert.descricao||'')}</div>
+            ${alertsOpen ? `<div class="assistant-alert-suggest">Motivo: ${esc(detailReason)}</div>
+            ${alert.ativoRelacionado?`<div class="assistant-alert-suggest">Ativo relacionado: ${esc(alert.ativoRelacionado)}</div>`:''}
+            ${alert.sugestao?`<div class="assistant-alert-suggest">Sugestão: ${esc(alert.sugestao)}</div>`:''}` : ''}
+          </div>
+          <div class="assistant-alert-badge ${sevClass} ${tone}">${sev}</div>
+        </div>`;
+      }).join('')
+    : '<div class="premium-empty">Sem alertas prioritários no momento.</div>';
+  const concentrationList=Array.isArray(concentration.topAssets) ? concentration.topAssets.slice(0,5) : [];
+  const incomePayers=Array.isArray(income.topPayers) ? income.topPayers.slice(0,5) : [];
+  const concentrationDetail = concentrationOpen && concentrationList.length
+    ? `<div class="assistant-disclosure">
+        ${concentrationList.map(row=>{
+          const sev = row.level==='critical' ? 'Crítico' : row.level==='strong' ? 'Forte' : row.level==='light' ? 'Leve' : 'Saudável';
+          const sugg = row.share>20 ? 'Evite reforçar essa posição.' : row.share>15 ? 'Mantenha sob atenção antes de aportar.' : 'Peso aceitável.';
+          return `<div class="assistant-disclosure-row">
+            <div class="assistant-disclosure-head">
+              <div style="min-width:0">
+                <div class="assistant-disclosure-title">${esc(row.ticker||'—')}</div>
+                <div class="assistant-disclosure-sub">${esc(row.type||'—')} · ${Number(row.share||0).toFixed(1)}% da carteira</div>
+              </div>
+              <div class="assistant-alert-badge ${dashboardAssistantSevClass(row.level)} ${dashboardAssistantTone(row.level)}">${sev}</div>
+            </div>
+            <div class="assistant-disclosure-detail">Sugestão: ${esc(sugg)}</div>
+          </div>`;
+        }).join('')}
+      </div>`
+    : concentrationOpen ? '<div class="premium-empty">Sem ativos concentrados o suficiente para detalhar.</div>' : '';
+  const incomeDetail = incomeOpen && incomePayers.length
+    ? `<div class="assistant-disclosure">
+        ${incomePayers.map(row=>`
+          <div class="assistant-disclosure-row">
+            <div class="assistant-disclosure-head">
+              <div style="min-width:0">
+                <div class="assistant-disclosure-title">${esc(row.ticker||'—')}</div>
+                <div class="assistant-disclosure-sub">${esc(row.name||'—')} · ${Number(row.count||0)} recebimento${Number(row.count||0)===1?'':'s'}</div>
+              </div>
+              <div class="assistant-alert-badge leve info">${fmt(Number(row.total)||0)}</div>
+            </div>
+            <div class="assistant-disclosure-detail">Média mensal: ${incomeTarget>0 ? `${fmt(incomeMonthly)}/mês` : 'Sem meta' } · Meta: ${incomeGoal} · Faltante: ${incomeTarget>0 ? fmt(Math.max(0,incomeTarget-incomeMonthly)) : '—'}</div>
+          </div>`).join('')}
+      </div>`
+    : incomeOpen ? '<div class="premium-empty">Sem pagadores suficientes para detalhar.</div>' : '';
+  const nextDisclaimer=String(next.disclaimer||'').trim();
+  return `<div class="premium-panel dashboard-home-assistant ai-consultive-shell">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Assistente Inteligente da Carteira</div><div class="premium-panel-sub">Leitura local para saúde, risco, renda e próxima decisão.</div></div>
+      <div class="premium-panel-badge">Atualizado ${esc(generatedLabel)}</div>
+    </div>
+    <div class="dashboard-home-assistant-grid">
+      <div class="assistant-card">
+        <div class="assistant-card-head">
+          <div class="assistant-card-title">Saúde da carteira</div>
+          <div class="assistant-card-status">${esc(healthStatus)}</div>
+        </div>
+        <div class="assistant-card-value ${healthTone}">${Number.isFinite(score) ? score : '—'}</div>
+        <div class="assistant-card-sub">Atualizado em ${esc(generatedLabel)}</div>
+      </div>
+      <div class="assistant-card">
+        <div class="assistant-card-head">
+          <div class="assistant-card-title">Maior concentração</div>
+          <div class="assistant-card-status">${esc(topAssetStatus)}</div>
+        </div>
+        <div class="assistant-card-value ${concentrationTone}">${esc(topAssetLabel)}</div>
+        <div class="assistant-card-sub">${topAsset && Number(topAsset.share||0)>15 ? 'Evite reforçar este ativo por enquanto.' : 'Peso ainda administrável.'}</div>
+        <div class="assistant-action">
+          <button type="button" class="assistant-action-btn" onclick="dashboardAssistantToggle('concentration')">${concentrationOpen?'Ocultar ativos':'Ver ativos concentrados'}</button>
+        </div>
+        ${concentrationOpen ? concentrationDetail : ''}
+      </div>
+      <div class="assistant-card full">
+        <div class="assistant-card-head">
+          <div class="assistant-card-title">Resumo consultivo</div>
+          <div class="assistant-card-status">${score>=80?'Positivo':score>=60?'Em atenção':'Leitura local'}</div>
+        </div>
+        <div class="assistant-summary-text">${esc(summaryDisplay || summaryText)}</div>
+      </div>
+      <div class="assistant-card full">
+        <div class="assistant-card-head">
+          <div class="assistant-card-title">Alertas prioritários</div>
+          <div class="assistant-action">
+            <button type="button" class="assistant-action-btn" onclick="dashboardAssistantToggle('alerts')">${alertsOpen?'Ocultar detalhes':'Ver detalhes'}</button>
+          </div>
+        </div>
+        <div class="assistant-card-sub">${alerts.length ? `${alerts.length} alerta${alerts.length===1?'':'s'} em leitura local.` : 'Sem alertas relevantes no momento.'}</div>
+        <div class="assistant-alerts">${alertBody}</div>
+      </div>
+      <div class="assistant-card">
+        <div class="assistant-card-head">
+          <div class="assistant-card-title">Próximo aporte</div>
+          <div class="assistant-action">
+            <button type="button" class="assistant-action-btn" onclick="dashboardAssistantToggle('next')">${nextOpen?'Ocultar justificativa':'Ver justificativa'}</button>
+          </div>
+        </div>
+        <div class="assistant-card-value ${dashboardAssistantTone(next.kind==='asset' ? 'ok' : next.kind==='category' ? 'info' : 'muted')}">${esc(nextLabel)}</div>
+        <div class="assistant-card-sub">${nextReasons.length ? nextReasons[0] : 'Sem sinal forte para direcionar aporte agora.'}</div>
+        ${nextOpen ? `<div class="assistant-next-list">
+          ${nextReasons.length ? nextReasons.map(reason=>`<div class="assistant-next-item"><span class="assistant-next-bullet"></span><div class="assistant-next-reason">${esc(reason)}</div></div>`).join('') : '<div class="assistant-next-reason">Sem sinal forte para direcionar aporte agora.</div>'}
+        </div>` : ''}
+        <div class="assistant-card-sub">Confiança: ${Number(next.confidence)||0}% · ${esc(nextDisclaimer)}</div>
+      </div>
+      <div class="assistant-card">
+        <div class="assistant-card-head">
+          <div class="assistant-card-title">Renda passiva</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="assistant-card-status">${esc(incomeStatus)}</div>
+            <div class="assistant-action">
+              <button type="button" class="assistant-action-btn" onclick="dashboardAssistantToggle('income')">${incomeOpen?'Ocultar pagadores':'Ver pagadores'}</button>
+            </div>
+          </div>
+        </div>
+        <div class="assistant-mini">
+          <div class="assistant-mini-box">
+            <div class="assistant-mini-kicker">Média mensal</div>
+            <div class="assistant-mini-value">${income.hasData ? fmt(incomeMonthly) : '—'}</div>
+            <div class="assistant-mini-sub">Média real dos últimos 12 meses</div>
+          </div>
+          <div class="assistant-mini-box">
+            <div class="assistant-mini-kicker">Meta mensal</div>
+            <div class="assistant-mini-value">${incomeTarget>0 ? fmt(incomeTarget) : '—'}</div>
+            <div class="assistant-mini-sub">${incomeTarget>0 ? `${incomePct.toFixed(1)}% da meta` : 'Sem meta configurada'}</div>
+          </div>
+        </div>
+        <div class="assistant-card-sub">${esc(incomeDisplay)}</div>
+        ${incomeOpen ? incomeDetail : ''}
+      </div>
+    </div>
   </div>`;
 }
 function dashboardHomePerformancePanel(title, subtitle, items, kind, tone){
@@ -15897,6 +16648,12 @@ function dashLegacy(){
 }
 function dash(){
   const data=dashboardSnapshot();
+  let assistant;
+  try{
+    assistant=analyzePortfolio(data);
+  }catch(error){
+    assistant={_error:String(error?.message||error||'Falha na análise local.')};
+  }
   return `<div class="premium-dashboard">
     <div class="dashboard-home-grid">
       ${dashboardHomeSummaryPanel(data)}
@@ -18470,59 +19227,13 @@ function aiConsultiveParse(text){
   return sections;
 }
 function iaTab(){
-  const snap=dashboardSnapshot();
-  const top1=snap?.concentration?.[0]||null;
-  const target=Number(snap?.income?.target)||0;
-  const monthlyAvg=Number(snap?.income?.monthlyAvg)||0;
-  const goalPct=target>0 ? (monthlyAvg/target)*100 : 0;
-  const incomplete=Number(snap?.insufficient?.length)||0;
-  const top3Share=(snap?.concentration||[]).slice(0,3).reduce((sum,row)=>sum+(Number(row?.share)||0),0);
-  const focusButtons=[
-    ['geral','Visão geral'],
-    ['renda','Renda'],
-    ['rebalancear','Aporte'],
-    ['concentracao','Risco'],
-  ].map(([mode,label])=>`<button class="btn ${String(S.aiFocus||'geral')===mode?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="setAIFocus('${mode}')">${label}</button>`).join(' ');
-  const summaryCards=[
-    dashboardConsultiveCard('Saúde geral',incomplete>0?'Atenção':'OK',incomplete>0?'Revisar dados incompletos antes da decisão.':'Cadastro consistente para leitura diária.',incomplete>0?`${incomplete} pendência${incomplete===1?'':'s'} na base.`:'Sem pendências relevantes.',incomplete>0?'warn':'ok'),
-    dashboardConsultiveCard('Renda passiva',target>0?`${goalPct.toFixed(1)}%`:'Sem meta',target>0?'Média real x meta mensal.':'Defina a meta na aba Metas.',target>0?`Média real: ${fmt(monthlyAvg)}/mês · Meta: ${fmt(target)}/mês`:'Sem meta configurada.',target>0?(goalPct>=100?'ok':'warn'):'muted'),
-    dashboardConsultiveCard('Concentração',top1?`${Number(top1.share).toFixed(1)}%`:'—',top1&&Number(top1.share)>20?'Concentração alta':'Leitura estável',top1?[`${esc(top1.ticker)} lidera a carteira.`, `Top 3 concentram ${top3Share.toFixed(1)}%.`]:['Sem base suficiente para leitura.'],top1&&Number(top1.share)>20?'warn':'ok'),
-    dashboardConsultiveCard('Meta',target>0?`${goalPct.toFixed(1)}%`:'—',target>0?'Progresso pela média real 12M.':'Meta mensal não configurada.',target>0?[`Faltam ${fmt(Math.max(0,target-monthlyAvg))}/mês`, `para atingir ${fmt(target)}.`]:'Defina a meta mensal na aba Metas.',target>0?(goalPct>=100?'ok':'info'):'muted')
-  ].join('');
-  const parsed=aiConsultiveParse(S.aiText);
-  const resultReady=!!String(S.aiText||'').trim();
-  const resultHtml=resultReady
-    ? `<div class="premium-consultive-grid" style="margin-top:2px">
-        ${aiConsultiveSectionCard('O que está bom', parsed.good.length ? `${parsed.good.length} ponto${parsed.good.length===1?'':'s'}` : 'OK', 'ok', parsed.good)}
-        ${aiConsultiveSectionCard('Pontos de atenção', parsed.attention.length ? `${parsed.attention.length} ponto${parsed.attention.length===1?'':'s'}` : 'OK', parsed.attention.length ? 'warn' : 'ok', parsed.attention)}
-        ${aiConsultiveSectionCard('Próximas decisões', parsed.next.length ? `${parsed.next.length} ação${parsed.next.length===1?'':'es'}` : 'OK', parsed.next.length ? 'info' : 'ok', parsed.next)}
-      </div>
-      <details class="premium-compact-details" style="margin-top:8px">
-        <summary>
-          <div class="premium-compact-summary-main">
-            <div class="premium-compact-summary-title">Ver diagnóstico completo</div>
-            <div class="premium-compact-summary-sub">Abrir o texto completo da análise local.</div>
-          </div>
-          <div class="premium-compact-summary-meta">clique para abrir</div>
-        </summary>
-        <div class="premium-compact-body">
-          <div class="air" style="white-space:pre-wrap">${esc(S.aiText)}</div>
-        </div>
-      </details>`
-    : `<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">🤖<br><br>Clique no botão para gerar o diagnóstico consultivo da carteira.</div>`;
-  return `<div class="premium-panel ai-consultive-shell">
-    <div class="premium-panel-head">
-      <div>
-        <div class="premium-panel-title">Diagnóstico da carteira</div>
-        <div class="premium-panel-sub">Leitura local com foco em saúde geral, renda passiva, concentração e próximos passos.</div>
-      </div>
-      <div class="premium-panel-badge">${String(S.aiFocus||'geral')==='geral'?'Visão geral':'Foco ativo'}</div>
-    </div>
-    <div class="premium-consultive-grid">${summaryCards}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 14px">${focusButtons}</div>
-    <button class="btn bp" onclick="getAI()" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">✨ Gerar diagnóstico</button>
-    ${resultHtml}
-  </div>`;
+  let assistant;
+  try{
+    assistant=analyzePortfolio(dashboardSnapshot());
+  }catch(error){
+    assistant={_error:String(error?.message||error||'Falha na análise local.')};
+  }
+  return dashboardAssistantPanel(assistant);
 }
 
 // ══════════════════════════════════════
