@@ -4796,8 +4796,8 @@ function authBox(){
   const photo=FB.user.photoURL?`<img src="${esc(FB.user.photoURL)}" style="width:24px;height:24px;border-radius:50%;border:1px solid #1e2a3d">`:'<div style="width:24px;height:24px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center;font-size:12px">👤</div>';
   return `<div style="display:flex;align-items:center;gap:4px;background:#0a0e18;border:1px solid #1c2738;border-radius:999px;padding:3px 4px">
     ${photo}<span class="hdr-mobile-user" style="font-size:10px;color:#b3c2d6;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-    <button class="bi hdr-mobile-btn" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149"><span class="hdr-mobile-icon">☁️</span></button>
-    <button class="bi hdr-mobile-btn" title="Sair" onclick="signOutGoogle()" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149"><span class="hdr-mobile-icon">⎋</span></button>
+    <button class="bi hdr-mobile-btn" title="Enviar dados locais para a nuvem" aria-label="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149"><span class="hdr-mobile-icon">☁️</span></button>
+    <button class="bi hdr-mobile-btn" title="Sair" aria-label="Sair" onclick="signOutGoogle()" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149"><span class="hdr-mobile-icon">⎋</span></button>
   </div>`;
 }
 function accessGateBox(){
@@ -9838,42 +9838,42 @@ function quickMovementModal(){
     </div>`;
   const buySellFields = `
     <div class="fg">
-      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
-      <div><div class="fl">Tipo de ativo</div><select id="qm-type" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
-      <div><div class="fl">Setor</div><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" oninput="setQuickMovementField('sector', this.value)"></div>
-      <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" oninput="setQuickMovementField('qty', this.value)"></div>
-      <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" placeholder="ex: 10,00" value="${esc(draft.price||'')}" oninput="setQuickMovementField('price', this.value)"></div>
+      <div><label class="fl" for="qm-dt">Data</label><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
+      <div><label class="fl" for="qm-ti">Ticker</label><input id="qm-ti" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+<div><label class="fl" for="qm-type">Tipo de ativo</label><select id="qm-type" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
+      <div><label class="fl" for="qm-sector">Setor</label><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" oninput="setQuickMovementField('sector', this.value)"></div>
+      <div><label class="fl" for="qm-qty">Quantidade</label><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" oninput="setQuickMovementField('qty', this.value)"></div>
+      <div><label class="fl" for="qm-price">Preço unitário</label><input id="qm-price" type="text" placeholder="ex: 10,00" value="${esc(draft.price||'')}" oninput="setQuickMovementField('price', this.value)"></div>
     </div>
-    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+    <div style="margin-top:10px"><label class="fl" for="qm-note">Observação</label><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
   const proventoFields = `
     <div class="fg">
-      <div><div class="fl">Data do pagamento</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: MXRF11" value="${esc(draft.ticker||'')}" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
-      <div><div class="fl">Valor recebido (R$)</div><input id="qm-value" type="text" placeholder="ex: 35,80" value="${esc(draft.value||'')}" oninput="setQuickMovementField('value', this.value)"></div>
-      <div><div class="fl">Tipo</div><select id="qm-event" onchange="setQuickMovementField('eventType', this.value)">${eventTypes}</select></div>
+      <div><label class="fl" for="qm-dt">Data do pagamento</label><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
+      <div><label class="fl" for="qm-ti">Ticker</label><input id="qm-ti" placeholder="ex: MXRF11" value="${esc(draft.ticker||'')}" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><label class="fl" for="qm-value">Valor recebido (R$)</label><input id="qm-value" type="text" placeholder="ex: 35,80" value="${esc(draft.value||'')}" oninput="setQuickMovementField('value', this.value)"></div>
+<div><label class="fl" for="qm-event">Tipo</label><select id="qm-event" onchange="setQuickMovementField('eventType', this.value)">${eventTypes}</select></div>
     </div>
-    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: competência, evento especial..." value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+    <div style="margin-top:10px"><label class="fl" for="qm-note">Observação</label><input id="qm-note" placeholder="opcional: competência, evento especial..." value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfFields = `
     <div class="fg">
-      <div><div class="fl">Nome do ativo</div><input id="qm-rf-name" placeholder="ex: CDB Banco X 2028" value="${esc(draft.rfName||draft.ticker||'')}" oninput="setQuickMovementField('rfName', this.value)"></div>
-      <div><div class="fl">Subtipo</div><select id="qm-rf-subtype" onchange="setQuickMovementField('rfSubtype', this.value)">${rfSubtypes}</select></div>
-      <div><div class="fl">Aplicação</div><input id="qm-rf-app-date" type="date" value="${esc(draft.rfAppDate||draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('rfAppDate', this.value)"></div>
-      <div><div class="fl">Vencimento</div><input id="qm-rf-due" type="date" value="${esc(draft.rfDue||'')}" oninput="setQuickMovementField('rfDue', this.value)"></div>
-      <div><div class="fl">Taxa contratada</div><input id="qm-rf-rate" placeholder="ex: CDI + 1,10%" value="${esc(draft.rfRate||'')}" oninput="setQuickMovementField('rfRate', this.value)"></div>
-      <div><div class="fl">Valor aplicado</div><input id="qm-rf-applied" type="text" placeholder="ex: 1000,00" value="${esc(draft.rfApplied||'')}" oninput="setQuickMovementField('rfApplied', this.value)"></div>
-      <div><div class="fl">Valor bruto</div><input id="qm-rf-gross" type="text" placeholder="ex: 1040,00" value="${esc(draft.rfGross||'')}" oninput="setQuickMovementField('rfGross', this.value)"></div>
-      <div><div class="fl">Valor líquido</div><input id="qm-rf-liquid" type="text" placeholder="ex: 1035,00" value="${esc(draft.rfLiquid||'')}" oninput="setQuickMovementField('rfLiquid', this.value)"></div>
-      <div><div class="fl">IR/IOF</div><input id="qm-rf-iriof" type="text" placeholder="ex: 5,00" value="${esc(draft.rfIrIof||'')}" oninput="setQuickMovementField('rfIrIof', this.value)"></div>
-      <div><div class="fl">Indisponível</div><input id="qm-rf-unavailable" type="text" placeholder="ex: 0,00" value="${esc(draft.rfUnavailable||'')}" oninput="setQuickMovementField('rfUnavailable', this.value)"></div>
+      <div><label class="fl" for="qm-rf-name">Nome do ativo</label><input id="qm-rf-name" placeholder="ex: CDB Banco X 2028" value="${esc(draft.rfName||draft.ticker||'')}" oninput="setQuickMovementField('rfName', this.value)"></div>
+<div><label class="fl" for="qm-rf-subtype">Subtipo</label><select id="qm-rf-subtype" onchange="setQuickMovementField('rfSubtype', this.value)">${rfSubtypes}</select></div>
+      <div><label class="fl" for="qm-rf-app-date">Aplicação</label><input id="qm-rf-app-date" type="date" value="${esc(draft.rfAppDate||draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('rfAppDate', this.value)"></div>
+      <div><label class="fl" for="qm-rf-due">Vencimento</label><input id="qm-rf-due" type="date" value="${esc(draft.rfDue||'')}" oninput="setQuickMovementField('rfDue', this.value)"></div>
+      <div><label class="fl" for="qm-rf-rate">Taxa contratada</label><input id="qm-rf-rate" placeholder="ex: CDI + 1,10%" value="${esc(draft.rfRate||'')}" oninput="setQuickMovementField('rfRate', this.value)"></div>
+      <div><label class="fl" for="qm-rf-applied">Valor aplicado</label><input id="qm-rf-applied" type="text" placeholder="ex: 1000,00" value="${esc(draft.rfApplied||'')}" oninput="setQuickMovementField('rfApplied', this.value)"></div>
+      <div><label class="fl" for="qm-rf-gross">Valor bruto</label><input id="qm-rf-gross" type="text" placeholder="ex: 1040,00" value="${esc(draft.rfGross||'')}" oninput="setQuickMovementField('rfGross', this.value)"></div>
+      <div><label class="fl" for="qm-rf-liquid">Valor líquido</label><input id="qm-rf-liquid" type="text" placeholder="ex: 1035,00" value="${esc(draft.rfLiquid||'')}" oninput="setQuickMovementField('rfLiquid', this.value)"></div>
+      <div><label class="fl" for="qm-rf-iriof">IR/IOF</label><input id="qm-rf-iriof" type="text" placeholder="ex: 5,00" value="${esc(draft.rfIrIof||'')}" oninput="setQuickMovementField('rfIrIof', this.value)"></div>
+      <div><label class="fl" for="qm-rf-unavailable">Indisponível</label><input id="qm-rf-unavailable" type="text" placeholder="ex: 0,00" value="${esc(draft.rfUnavailable||'')}" oninput="setQuickMovementField('rfUnavailable', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-rf-note" placeholder="opcional: banco, indexador, razão do lançamento..." value="${esc(draft.rfNote||draft.note||'')}" oninput="setQuickMovementField('rfNote', this.value)"></div>`;
   const outroFields = `
     <div class="fg">
-      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Título</div><input id="qm-outro-title" placeholder="ex: ajuste interno, transferência, nota..." value="${esc(draft.outroTitle||draft.ticker||'')}" oninput="setQuickMovementField('outroTitle', this.value)"></div>
-      <div><div class="fl">Valor</div><input id="qm-outro-value" type="text" placeholder="ex: 150,00" value="${esc(draft.value||'')}" oninput="setQuickMovementField('value', this.value)"></div>
-      <div><div class="fl">Categoria</div><input id="qm-outro-category" placeholder="ex: interno, ajuste, observação" value="${esc(draft.outroCategory||'Geral')}" oninput="setQuickMovementField('outroCategory', this.value)"></div>
+      <div><label class="fl" for="qm-dt">Data</label><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
+      <div><label class="fl" for="qm-outro-title">Título</label><input id="qm-outro-title" placeholder="ex: ajuste interno, transferência, nota..." value="${esc(draft.outroTitle||draft.ticker||'')}" oninput="setQuickMovementField('outroTitle', this.value)"></div>
+      <div><label class="fl" for="qm-outro-value">Valor</label><input id="qm-outro-value" type="text" placeholder="ex: 150,00" value="${esc(draft.value||'')}" oninput="setQuickMovementField('value', this.value)"></div>
+      <div><label class="fl" for="qm-outro-category">Categoria</label><input id="qm-outro-category" placeholder="ex: interno, ajuste, observação" value="${esc(draft.outroCategory||'Geral')}" oninput="setQuickMovementField('outroCategory', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-outro-note" placeholder="registro neutro, sem impacto nos cálculos" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
   const body=kind==='provento' ? proventoFields : kind==='renda-fixa' ? rfFields : kind==='outro' ? outroFields : buySellFields;
@@ -10821,9 +10821,9 @@ function dividendMonthQueryBlock(){
     <div class="sec-body">
       <div class="cc dividend-query-shell" style="margin:0;padding:10px 10px 9px">
         <div class="dividend-query-filters">
-          <div><div class="fl">Mês/Ano</div><select onchange="setDividendQueryMonth(this.value)">${monthOptions}</select></div>
-          <div><div class="fl">Tipo</div><select onchange="setDividendQueryType(this.value)">${typeOptions}</select></div>
-          <div><div class="fl">Ticker / ativo</div><input type="text" value="${esc(query.state.ticker||'')}" oninput="setDividendQueryTicker(this.value)" placeholder="ex: BRCO11, BBAS3, JCP"></div>
+<div><label class="fl" for="dividend-query-month">Mês/Ano</label><select id="dividend-query-month" onchange="setDividendQueryMonth(this.value)">${monthOptions}</select></div>
+<div><label class="fl" for="dividend-query-type">Tipo</label><select id="dividend-query-type" onchange="setDividendQueryType(this.value)">${typeOptions}</select></div>
+<div><label class="fl" for="dividend-query-ticker">Ticker / ativo</label><input id="dividend-query-ticker" type="text" value="${esc(query.state.ticker||'')}" oninput="setDividendQueryTicker(this.value)" placeholder="ex: BRCO11, BBAS3, JCP"></div>
         </div>
         <div class="dividend-query-summary">
           <div class="passive-goal-card ${hasData ? 'ok' : 'muted'}">
@@ -16822,20 +16822,20 @@ function frmA(){
     ? [
         assetEditSection('Informações', 'Identificação, subtipo e forma de rentabilidade do título.', `
           <div class="fg">
-            <div><div class="fl">Código interno</div><input value="${esc(f.ticker||'')}" disabled></div>
-            <div><div class="fl">Nome do ativo</div><input id="f-rf-name" placeholder="ex: CDB Porquinho Objetivo" value="${esc(f.rf_name||assetRfName(f))}"></div>
-            <div><div class="fl">Subtipo</div><select id="f-rf-subtype">${rfSubtypeOptions}</select></div>
-            <div><div class="fl">Tipo de rentabilidade</div><select id="f-rf-yield">${rfYieldOptions}</select></div>
+<div><label class="fl" for="f-rf-code">Código interno</label><input id="f-rf-code" value="${esc(f.ticker||'')}" disabled></div>
+            <div><label class="fl" for="f-rf-name">Nome do ativo</label><input id="f-rf-name" placeholder="ex: CDB Porquinho Objetivo" value="${esc(f.rf_name||assetRfName(f))}"></div>
+            <div><label class="fl" for="f-rf-subtype">Subtipo</label><select id="f-rf-subtype">${rfSubtypeOptions}</select></div>
+            <div><label class="fl" for="f-rf-yield">Tipo de rentabilidade</label><select id="f-rf-yield">${rfYieldOptions}</select></div>
           </div>
         `),
         assetEditSection('Valores', 'Aplicação, vencimento e faixas financeiras principais.', `
           <div class="fg">
-            <div><div class="fl">Data da aplicação</div><input id="f-rf-app-date" type="date" value="${esc(inputDateValue(f.rf_application_date||assetRfApplicationDate(f)))}"></div>
-            <div><div class="fl">Data de vencimento</div><input id="f-rf-due" type="date" value="${esc(inputDateValue(f.rf_maturity_date||assetRfMaturityDate(f)))}"></div>
-            <div><div class="fl">Valor aplicado</div><input id="f-rf-applied" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(rf.applied || f.rf_applied_value || f.fixed_initial_value || f.avg_price || 0))}"></div>
-            <div><div class="fl">Valor bruto</div><input id="f-rf-gross" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(rf.gross || f.rf_gross_value || f.fixed_gross_value || f.currentValue || f.marketValue || 0))}"></div>
-            <div><div class="fl">Valor líquido</div><input id="f-rf-liquid" type="text" inputmode="decimal" placeholder="ex: 87.275,52" value="${esc(moneyInput(rf.liquid || f.rf_liquid_value || f.fixed_current_value || f.current_price || 0))}"></div>
-            <div><div class="fl">Rentabilidade contratada / taxa</div><input id="f-rf-rate" type="text" placeholder="ex: 100% do CDI, CDI + 2%, IPCA + 6%, 12% a.a." value="${esc(f.rf_contract_rate||assetRfContractRate(f))}">
+            <div><label class="fl" for="f-rf-app-date">Data da aplicação</label><input id="f-rf-app-date" type="date" value="${esc(inputDateValue(f.rf_application_date||assetRfApplicationDate(f)))}"></div>
+            <div><label class="fl" for="f-rf-due">Data de vencimento</label><input id="f-rf-due" type="date" value="${esc(inputDateValue(f.rf_maturity_date||assetRfMaturityDate(f)))}"></div>
+            <div><label class="fl" for="f-rf-applied">Valor aplicado</label><input id="f-rf-applied" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(rf.applied || f.rf_applied_value || f.fixed_initial_value || f.avg_price || 0))}"></div>
+            <div><label class="fl" for="f-rf-gross">Valor bruto</label><input id="f-rf-gross" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(rf.gross || f.rf_gross_value || f.fixed_gross_value || f.currentValue || f.marketValue || 0))}"></div>
+            <div><label class="fl" for="f-rf-liquid">Valor líquido</label><input id="f-rf-liquid" type="text" inputmode="decimal" placeholder="ex: 87.275,52" value="${esc(moneyInput(rf.liquid || f.rf_liquid_value || f.fixed_current_value || f.current_price || 0))}"></div>
+            <div><label class="fl" for="f-rf-rate">Rentabilidade contratada / taxa</label><input id="f-rf-rate" type="text" placeholder="ex: 100% do CDI, CDI + 2%, IPCA + 6%, 12% a.a." value="${esc(f.rf_contract_rate||assetRfContractRate(f))}">
               <div style="font-size:10px;color:#8da0bd;margin-top:4px">Para CDB 100% CDI, informe 100. Esse campo é a taxa contratada, não o rendimento acumulado.</div>
               <div style="font-size:10px;color:#8da0bd;margin-top:2px">Indexador: <b style="color:#e2eaf6">${esc(assetRfIndexerLabel(f))}</b></div>
             </div>
@@ -16843,10 +16843,10 @@ function frmA(){
         `),
         assetEditSection('Dividendos', 'Resultado, encargos e leitura de rentabilidade da posição.', `
           <div class="fg">
-            <div><div class="fl">IR/IOF</div><input id="f-rf-iriof" type="text" inputmode="decimal" placeholder="ex: -756,12 ou 0,00" value="${esc(moneyInput(f.rf_ir_iof ?? assetRfIrIof(f)))}"></div>
-            <div><div class="fl">Valor indisponível</div><input id="f-rf-unavailable" type="text" inputmode="decimal" placeholder="ex: 0,00" value="${esc(moneyInput(f.rf_unavailable_value ?? assetRfUnavailableValue(f)))}"></div>
-            <div><div class="fl">Ganhos/Perdas</div><input id="f-rf-profit" type="text" inputmode="decimal" placeholder="deixe em branco para calcular automaticamente" value="${esc(f.rf_profit_source==='manual' || f.rf_profit_manual ? moneyInput(f.rf_profit_value ?? assetRfProfit(f)) : '')}"></div>
-            <div><div class="fl">Rentabilidade estimada</div><input value="${esc(Number.isFinite(rf.rentab)?fmtP(rf.rentab):'—')}" disabled></div>
+            <div><label class="fl" for="f-rf-iriof">IR/IOF</label><input id="f-rf-iriof" type="text" inputmode="decimal" placeholder="ex: -756,12 ou 0,00" value="${esc(moneyInput(f.rf_ir_iof ?? assetRfIrIof(f)))}"></div>
+            <div><label class="fl" for="f-rf-unavailable">Valor indisponível</label><input id="f-rf-unavailable" type="text" inputmode="decimal" placeholder="ex: 0,00" value="${esc(moneyInput(f.rf_unavailable_value ?? assetRfUnavailableValue(f)))}"></div>
+            <div><label class="fl" for="f-rf-profit">Ganhos/Perdas</label><input id="f-rf-profit" type="text" inputmode="decimal" placeholder="deixe em branco para calcular automaticamente" value="${esc(f.rf_profit_source==='manual' || f.rf_profit_manual ? moneyInput(f.rf_profit_value ?? assetRfProfit(f)) : '')}"></div>
+<div><label class="fl" for="f-rf-yield-display">Rentabilidade estimada</label><input id="f-rf-yield-display" value="${esc(Number.isFinite(rf.rentab)?fmtP(rf.rentab):'—')}" disabled></div>
           </div>
         `),
         assetEditSection('Observações', 'Informações auxiliares já registradas na carteira.', `
@@ -16865,16 +16865,16 @@ function frmA(){
     : [
         assetEditSection('Informações', 'Identificação e classificação do ativo.', `
           <div class="fg">
-            <div><div class="fl">Ticker</div><input value="${esc(f.ticker||'')}" disabled></div>
-            <div><div class="fl">Tipo</div><select id="f-ty">${typeSelectOptions(f.type||m.type||'Ação')}</select></div>
-            <div><div class="fl">Setor</div><input id="f-se" placeholder="ex: Petróleo" value="${esc(f.sector||m.sector||'')}"></div>
-            <div><div class="fl">Fonte da cotação</div><input value="${esc(quoteSourceLabel)}" disabled></div>
+<div><label class="fl" for="f-ticker-display">Ticker</label><input id="f-ticker-display" value="${esc(f.ticker||'')}" disabled></div>
+            <div><label class="fl" for="f-ty">Tipo</label><select id="f-ty">${typeSelectOptions(f.type||m.type||'Ação')}</select></div>
+            <div><label class="fl" for="f-se">Setor</label><input id="f-se" placeholder="ex: Petróleo" value="${esc(f.sector||m.sector||'')}"></div>
+<div><label class="fl" for="f-quote-source">Fonte da cotação</label><input id="f-quote-source" value="${esc(quoteSourceLabel)}" disabled></div>
           </div>
         `),
         assetEditSection('Valores', 'Quantidade, preço médio e valor atual.', `
           <div class="fg">
-            <div><div class="fl">Quantidade</div><input value="${esc(f.qty||0)}" disabled></div>
-            <div><div class="fl">Preço médio manual</div><input id="f-ap" type="text" inputmode="decimal" placeholder="ex: 10,15" value="${esc(moneyInput(f.avg_price||0))}"></div>
+<div><label class="fl" for="f-qty-display">Quantidade</label><input id="f-qty-display" value="${esc(f.qty||0)}" disabled></div>
+            <div><label class="fl" for="f-ap">Preço médio manual</label><input id="f-ap" type="text" inputmode="decimal" placeholder="ex: 10,15" value="${esc(moneyInput(f.avg_price||0))}"></div>
             <div><div class="fl" style="display:flex;justify-content:space-between;align-items:center">
               <span>Cotação atual</span>
               <span style="font-size:10px;color:#34d399;background:rgba(52,211,153,.1);padding:1px 7px;border-radius:4px;border:1px solid rgba(52,211,153,.2)">
@@ -16883,16 +16883,16 @@ function frmA(){
             </div>
             <input id="f-cp" type="text" inputmode="decimal" step="0.01" value="${esc(moneyInput(f.current_price||0))}" disabled style="opacity:.6;cursor:not-allowed">
             <div style="font-size:10px;color:#3d5472;margin-top:4px">${f.quoteUpdatedAt ? `${quoteUpdated} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>` : `<a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">🔄 buscar cotação agora</a>`}</div></div>
-            <div><div class="fl">Preço alvo</div><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
-            <div><div class="fl">% ideal na carteira</div><input id="f-ip" type="number" step="0.1" placeholder="ex: 8" value="${esc(f.ideal_pct||'')}"></div>
+            <div><label class="fl" for="f-pt">Preço alvo</label><input id="f-pt" type="number" step="0.01" placeholder="ex: 45.00" value="${esc(f.price_target||'')}"></div>
+            <div><label class="fl" for="f-ip">% ideal na carteira</label><input id="f-ip" type="number" step="0.1" placeholder="ex: 8" value="${esc(f.ideal_pct||'')}"></div>
           </div>
         `),
         assetEditSection('Dividendos', 'Dividendos, renda estimada e indicador anual.', `
           <div class="fg">
-            <div><div class="fl">DY anual %</div><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
-            <div><div class="fl">Renda mensal estimada</div><input value="${esc(fmt(assetDividendEst))}" disabled></div>
-            <div><div class="fl">Resultado aproximado</div><input value="${esc(f.current_price>0&&f.avg_price>0?fmt((Number(f.current_price)||0)-(Number(f.avg_price)||0)):'—')}" disabled></div>
-            <div><div class="fl">Rentabilidade estimada</div><input value="${esc(f.avg_price>0&&f.current_price>0?fmtP(((Number(f.current_price)||0)-(Number(f.avg_price)||0))/(Number(f.avg_price)||1)*100):'—')}" disabled></div>
+            <div><label class="fl" for="f-dy">DY anual %</label><input id="f-dy" type="number" step="0.1" placeholder="8.5" value="${esc(f.dy||'')}"></div>
+<div><label class="fl" for="f-monthly-income-display">Renda mensal estimada</label><input id="f-monthly-income-display" value="${esc(fmt(assetDividendEst))}" disabled></div>
+<div><label class="fl" for="f-result-display">Resultado aproximado</label><input id="f-result-display" value="${esc(f.current_price>0&&f.avg_price>0?fmt((Number(f.current_price)||0)-(Number(f.avg_price)||0)):'—')}" disabled></div>
+<div><label class="fl" for="f-yield-display">Rentabilidade estimada</label><input id="f-yield-display" value="${esc(f.avg_price>0&&f.current_price>0?fmtP(((Number(f.current_price)||0)-(Number(f.avg_price)||0))/(Number(f.avg_price)||1)*100):'—')}" disabled></div>
           </div>
         `),
         assetEditSection('Observações', 'Fonte auxiliar e observação já registrada na carteira.', `
@@ -16908,15 +16908,15 @@ function frmA(){
           </div>
         `)
       ].join('');
-  return`<div class="note-overlay asset-edit-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) clA()">
+  return`<div class="note-overlay asset-edit-overlay" role="dialog" aria-modal="true" aria-labelledby="asset-edit-title" aria-describedby="asset-edit-desc" onclick="if(event.target===this) clA()">
     <div class="note-modal asset-edit-modal">
       <div class="note-head">
         <div class="note-title">
           <div>
-            <h3>Editar ativo</h3>
-            <p>${esc(titleName)} · ${esc(category)}</p>
+            <h3 id="asset-edit-title">Editar ativo</h3>
+            <p id="asset-edit-desc">${esc(titleName)} · ${esc(category)}</p>
           </div>
-          <button class="bi" type="button" onclick="clA()">✕</button>
+          <button class="bi" type="button" onclick="clA()" aria-label="Fechar modal de edição">✕</button>
         </div>
         <div class="asset-edit-meta">
           <span class="note-pill">${esc(category)}</span>
@@ -17011,7 +17011,7 @@ function ativos(){
         <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
         <td class="am" style="font-weight:600">${fmt(dm)}</td>
       <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
-        <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
+        <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">✏️</button></td>
       </tr>`;
     }).join('');
     const rfCards=sortedItems.map(a=>{
@@ -17033,7 +17033,7 @@ function ativos(){
             <div style="font-weight:800;font-size:14px;color:#e2eaf6;line-height:1.2">${esc(name||a.ticker||'Renda Fixa')}</div>
             <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
           </div>
-          <button class="bi" onclick="edA(${a.id})">✏️</button>
+          <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">✏️</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplicação</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'—')}</div></div>
@@ -17137,33 +17137,33 @@ function frmP(){
       <div style="font-size:11px;color:${accent};border:1px solid ${accent}33;background:${accent}10;border-radius:999px;padding:4px 10px">${isReserve?'fluxo separado':'tipo aprendido e salvo'}</div>
     </div>
     <div class="fg">
-      <div><div class="fl">Operação</div><select id="p-op"><option value="compra" ${op==='compra'?'selected':''}>Compra</option><option value="venda" ${op==='venda'?'selected':''}>Venda</option></select></div>
-      <div><div class="fl">Tipo do ativo</div><select id="p-ty" onchange="this.dataset.manual='1'; updateAporteType(this.value);">
+      <div><label class="fl" for="p-op">Operação</label><select id="p-op"><option value="compra" ${op==='compra'?'selected':''}>Compra</option><option value="venda" ${op==='venda'?'selected':''}>Venda</option></select></div>
+<div><label class="fl" for="p-ty">Tipo do ativo</label><select id="p-ty" onchange="this.dataset.manual='1'; updateAporteType(this.value);">
         ${['Ação','FII','ETF','Renda Fixa','Tesouro Direto','Reserva de emergência','BDR','Crypto','Stock','Reit','Fundos de Investimento'].map(t=>`<option value="${t}" ${fType===t?'selected':''}>${t}</option>`).join('')}
       </select></div>
-      <div><div class="fl">Data</div><input id="p-dt" type="date" value="${esc(inputDateValue(f.date||''))}"></div>
-      <div><div class="fl">${isReserve?'Nome / destino da reserva':isRF?'Nome do ativo':'Ticker / nome do ativo'}</div><input id="p-ti" placeholder="${isReserve?'ex: Reserva bolsa, Reserva pessoal':isRF?'ex: CDB Porquinho Objetivo':'ex: MXRF11, DIVD11, CDB Banco...'}" value="${esc(isRF?(f.name||f.rf_name||f.assetName||''):(f.ticker||f.name||f.assetName||''))}" oninput="${pTiOnInput}" onblur="${isReserve?'':'applyMetaToAporte()'}"></div>
+      <div><label class="fl" for="p-dt">Data</label><input id="p-dt" type="date" value="${esc(inputDateValue(f.date||''))}"></div>
+      <div><label class="fl" for="p-ti">${isReserve?'Nome / destino da reserva':isRF?'Nome do ativo':'Ticker / nome do ativo'}</label><input id="p-ti" placeholder="${isReserve?'ex: Reserva bolsa, Reserva pessoal':isRF?'ex: CDB Porquinho Objetivo':'ex: MXRF11, DIVD11, CDB Banco...'}" value="${esc(isRF?(f.name||f.rf_name||f.assetName||''):(f.ticker||f.name||f.assetName||''))}" oninput="${pTiOnInput}" onblur="${isReserve?'':'applyMetaToAporte()'}"></div>
       ${isRF
-        ? `<div><div class="fl">Subtipo</div><select id="p-rf-subtype">${rfSubtypeOptions}</select></div>
-           <div><div class="fl">Data da aplicação</div><input id="p-rf-app-date" type="date" value="${esc(inputDateValue(f.rf_application_date||f.rf_aporte_date||f.fixed_application_date||f.date||''))}"></div>
-           <div><div class="fl">Data de vencimento</div><input id="p-rf-due" type="date" value="${esc(inputDateValue(f.rf_maturity_date||f.maturityDate||f.fixed_maturity_date||''))}"></div>
-           <div><div class="fl">Rentabilidade contratada</div><input id="p-rf-rate" type="text" placeholder="ex: 100% do CDI, CDI + 2%, IPCA + 6%" value="${esc(f.rf_contract_rate||f.rate||'')}"></div>
-           <div><div class="fl">Valor aplicado</div><input id="p-rf-applied" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(f.rf_applied_value||f.fixed_initial_value||f.price||0))}"></div>
-           <div><div class="fl">Valor bruto</div><input id="p-rf-gross" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(f.rf_gross_value||f.fixed_gross_value||f.currentValue||f.marketValue||0))}"></div>
-           <div><div class="fl">Valor líquido</div><input id="p-rf-liquid" type="text" inputmode="decimal" placeholder="ex: 87.275,52" value="${esc(moneyInput(f.rf_liquid_value||f.fixed_current_value||f.current_value||0))}"></div>
-           <div><div class="fl">IR/IOF</div><input id="p-rf-iriof" type="text" inputmode="decimal" placeholder="ex: -756,12 ou 0,00" value="${esc(moneyInput(f.rf_ir_iof||0))}"></div>
-           <div><div class="fl">Valor indisponível</div><input id="p-rf-unavailable" type="text" inputmode="decimal" placeholder="ex: 0,00" value="${esc(moneyInput(f.rf_unavailable_value||0))}"></div>
-           <div><div class="fl">Ganhos/Perdas</div><input id="p-rf-profit" type="text" inputmode="decimal" placeholder="deixe em branco para calcular automaticamente" value="${esc(f.rf_profit_source==='manual' || f.rf_profit_manual ? moneyInput(f.rf_profit_value||0) : '')}"></div>
-           <div><div class="fl">Observação</div><input id="p-rf-note" placeholder="ex: renda fixa lançada manualmente" value="${esc(f.rf_note||f.note||f.decision||'')}"></div>`
-        : `${isReserve?`<div><div class="fl">Quantidade</div><input id="p-qt" type="number" value="1" disabled style="opacity:.6"></div>`:`<div><div class="fl">Quantidade</div><input id="p-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>`}
-           <div><div class="fl">${isReserve?'Valor reservado':'Preço da operação'}</div><input id="p-pr" type="text" placeholder="${isReserve?'500,00':'10,15'}" value="${f.price?esc(moneyInput(f.price)):''}"></div>
-           <div><div class="fl">Setor / classe</div><input id="p-se" placeholder="${isReserve?'bolsa ou pessoal':'ex: ETF, CDB, Papel, Banco'}" value="${esc(fSector)}" oninput="this.dataset.manual='1'"></div>`
+        ? `<div><label class="fl" for="p-rf-subtype">Subtipo</label><select id="p-rf-subtype">${rfSubtypeOptions}</select></div>
+           <div><label class="fl" for="p-rf-app-date">Data da aplicação</label><input id="p-rf-app-date" type="date" value="${esc(inputDateValue(f.rf_application_date||f.rf_aporte_date||f.fixed_application_date||f.date||''))}"></div>
+           <div><label class="fl" for="p-rf-due">Data de vencimento</label><input id="p-rf-due" type="date" value="${esc(inputDateValue(f.rf_maturity_date||f.maturityDate||f.fixed_maturity_date||''))}"></div>
+           <div><label class="fl" for="p-rf-rate">Rentabilidade contratada</label><input id="p-rf-rate" type="text" placeholder="ex: 100% do CDI, CDI + 2%, IPCA + 6%" value="${esc(f.rf_contract_rate||f.rate||'')}"></div>
+           <div><label class="fl" for="p-rf-applied">Valor aplicado</label><input id="p-rf-applied" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(f.rf_applied_value||f.fixed_initial_value||f.price||0))}"></div>
+           <div><label class="fl" for="p-rf-gross">Valor bruto</label><input id="p-rf-gross" type="text" inputmode="decimal" placeholder="ex: 88.031,64" value="${esc(moneyInput(f.rf_gross_value||f.fixed_gross_value||f.currentValue||f.marketValue||0))}"></div>
+           <div><label class="fl" for="p-rf-liquid">Valor líquido</label><input id="p-rf-liquid" type="text" inputmode="decimal" placeholder="ex: 87.275,52" value="${esc(moneyInput(f.rf_liquid_value||f.fixed_current_value||f.current_value||0))}"></div>
+           <div><label class="fl" for="p-rf-iriof">IR/IOF</label><input id="p-rf-iriof" type="text" inputmode="decimal" placeholder="ex: -756,12 ou 0,00" value="${esc(moneyInput(f.rf_ir_iof||0))}"></div>
+           <div><label class="fl" for="p-rf-unavailable">Valor indisponível</label><input id="p-rf-unavailable" type="text" inputmode="decimal" placeholder="ex: 0,00" value="${esc(moneyInput(f.rf_unavailable_value||0))}"></div>
+           <div><label class="fl" for="p-rf-profit">Ganhos/Perdas</label><input id="p-rf-profit" type="text" inputmode="decimal" placeholder="deixe em branco para calcular automaticamente" value="${esc(f.rf_profit_source==='manual' || f.rf_profit_manual ? moneyInput(f.rf_profit_value||0) : '')}"></div>
+           <div><label class="fl" for="p-rf-note">Observação</label><input id="p-rf-note" placeholder="ex: renda fixa lançada manualmente" value="${esc(f.rf_note||f.note||f.decision||'')}"></div>`
+        : `${isReserve?`<div><label class="fl" for="p-qt">Quantidade</label><input id="p-qt" type="number" value="1" disabled style="opacity:.6"></div>`:`<div><label class="fl" for="p-qt">Quantidade</label><input id="p-qt" type="number" placeholder="100" value="${esc(f.qty||'')}"></div>`}
+           <div><label class="fl" for="p-pr">${isReserve?'Valor reservado':'Preço da operação'}</label><input id="p-pr" type="text" placeholder="${isReserve?'500,00':'10,15'}" value="${f.price?esc(moneyInput(f.price)):''}"></div>
+           <div><label class="fl" for="p-se">Setor / classe</label><input id="p-se" placeholder="${isReserve?'bolsa ou pessoal':'ex: ETF, CDB, Papel, Banco'}" value="${esc(fSector)}" oninput="this.dataset.manual='1'"></div>`
       }
     </div>
     ${isReserve?`<div class="fg" style="margin-top:10px">
-      <div><div class="fl">Destino da reserva</div><select id="p-rt"><option value="bolsa" ${(String(f.reserveTarget||f.reserve_target||'bolsa')==='bolsa')?'selected':''}>Bolsa / oportunidade</option><option value="pessoal" ${(String(f.reserveTarget||f.reserve_target||'')==='pessoal')?'selected':''}>Pessoal / particular</option></select></div>
-      <div><div class="fl">Modo</div><select id="p-rm"><option value="entrada" ${String(f.operation||f.op||'compra').toLowerCase()!=='venda'?'selected':''}>Entrada na reserva</option><option value="saida" ${String(f.operation||f.op||'compra').toLowerCase()==='venda'?'selected':''}>Saída da reserva</option></select></div>
-      <div><div class="fl">Observação</div><input id="p-dc" placeholder="ex: reserva de oportunidade, uso pessoal..." value="${esc(f.decision||'')}"></div>
+      <div><label class="fl" for="p-rt">Destino da reserva</label><select id="p-rt"><option value="bolsa" ${(String(f.reserveTarget||f.reserve_target||'bolsa')==='bolsa')?'selected':''}>Bolsa / oportunidade</option><option value="pessoal" ${(String(f.reserveTarget||f.reserve_target||'')==='pessoal')?'selected':''}>Pessoal / particular</option></select></div>
+      <div><label class="fl" for="p-rm">Modo</label><select id="p-rm"><option value="entrada" ${String(f.operation||f.op||'compra').toLowerCase()!=='venda'?'selected':''}>Entrada na reserva</option><option value="saida" ${String(f.operation||f.op||'compra').toLowerCase()==='venda'?'selected':''}>Saída da reserva</option></select></div>
+      <div><label class="fl" for="p-dc">Observação</label><input id="p-dc" placeholder="ex: reserva de oportunidade, uso pessoal..." value="${esc(f.decision||'')}"></div>
     </div>`:(!isRF?`<div style="margin-top:10px"><div class="fl">Decisão / motivo</div><input id="p-dc" placeholder="ex: rebalanceamento, importação B3, renda fixa..." value="${esc(f.decision||'')}"></div>`:'')}
     <div class="ap-form-actions">
       <button class="btn bsv" onclick="svP()">${S.editPId?'Salvar edição':'Salvar operação'}</button>
@@ -17401,8 +17401,8 @@ function apTab(){
         <td class="${isOut?'rd':'gn'}" style="font-weight:700">${isOut?'-':'+'}${fmt(Math.abs(Number(a.qty)||1)*Number(a.price||0))}</td>
           <td class="mu">${esc(a.decision||a.reserveLabel||'—')}</td>
           <td><div style="display:flex;gap:6px">
-            <button class="bi" onclick="edP(${a.id})">✏️</button>
-            <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+            <button class="bi" onclick="edP(${a.id})" aria-label="Editar movimentação">✏️</button>
+            <button class="bdi" onclick="rmP(${a.id})" aria-label="Excluir movimentação">🗑️</button>
           </div></td>
         </tr>`;
       }).join('')
@@ -17446,8 +17446,8 @@ function apTab(){
         <td class="${isV?'rd':'gn'}" style="font-weight:700">${isV?'-':'+'}${fmt(Math.abs(a.qty)*a.price)}</td>
         <td class="mu">${esc(a.decision||'—')}</td>
         <td><div style="display:flex;gap:6px">
-          <button class="bi" onclick="edP(${a.id})">✏️</button>
-          <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+          <button class="bi" onclick="edP(${a.id})" aria-label="Editar movimentação">✏️</button>
+          <button class="bdi" onclick="rmP(${a.id})" aria-label="Excluir movimentação">🗑️</button>
         </div></td>
       </tr>`;
     }).join('');
@@ -17548,10 +17548,10 @@ function frmD(){
   return`<div class="fc">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">💵 Registrar provento recebido</div>
     <div class="fg">
-      <div><div class="fl">Data do pagamento</div><input id="d-dt" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-      <div><div class="fl">Ticker</div><input id="d-ti" placeholder="ex: MXRF11" oninput="this.value=this.value.toUpperCase()"></div>
-      <div><div class="fl">Valor recebido (R$)</div><input id="d-va" type="text" placeholder="ex: 35,80"></div>
-      <div><div class="fl">Tipo</div><select id="d-ty"><option>Rendimento</option><option>Dividendo</option><option>JCP</option><option>Amortização</option><option>Outro</option></select></div>
+      <div><label class="fl" for="d-dt">Data do pagamento</label><input id="d-dt" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div><label class="fl" for="d-ti">Ticker</label><input id="d-ti" placeholder="ex: MXRF11" oninput="this.value=this.value.toUpperCase()"></div>
+      <div><label class="fl" for="d-va">Valor recebido (R$)</label><input id="d-va" type="text" placeholder="ex: 35,80"></div>
+      <div><label class="fl" for="d-ty">Tipo</label><select id="d-ty"><option>Rendimento</option><option>Dividendo</option><option>JCP</option><option>Amortização</option><option>Outro</option></select></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="d-ob" placeholder="opcional: mês de competência, pagamento especial..."></div>
     <div style="display:flex;gap:8px;margin-top:14px">
@@ -17804,11 +17804,11 @@ function allocationGoalModal(){
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">
-        <button class="bi" title="Diminuir" onclick="allocationGoalAdjust(${idx},-1)">−</button>
+        <button class="bi" title="Diminuir" aria-label="Diminuir meta" onclick="allocationGoalAdjust(${idx},-1)">−</button>
         <input type="number" min="0" step="0.1" value="${esc(Number(it.pct)||0)}" style="width:66px;text-align:center;padding:7px 8px" onchange="allocationGoalSetPct(${idx}, this.value)">
-        <button class="bi" title="Aumentar" onclick="allocationGoalAdjust(${idx},1)">+</button>
+        <button class="bi" title="Aumentar" aria-label="Aumentar meta" onclick="allocationGoalAdjust(${idx},1)">+</button>
       </div>
-      <button class="bdi" title="Remover" onclick="allocationGoalRemove(${idx})" style="padding:3px 8px">🗑️</button>
+      <button class="bdi" title="Remover" aria-label="Remover meta" onclick="allocationGoalRemove(${idx})" style="padding:3px 8px">🗑️</button>
     </div>`;
   }).join('');
   const donutStyle = `width:184px;height:184px;border-radius:50%;background:${chart};position:relative;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px #1e2a3d`;
@@ -19134,7 +19134,7 @@ function ajudarTab(){
     <div class="rebalance-title">⚖️ Guia de aporte</div>
     <div class="rebalance-subtitle">Apoio para estudar o próximo aporte com foco em concentração, desempenho, DY e metas. Não é recomendação de compra.</div>
     <div class="rebalance-form">
-      <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500"></div></div>
+      <div class="fg"><div><label class="fl" for="reb-val">Valor do aporte (R$)</label><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500"></div></div>
       <button class="btn bp" onclick="calcRebalance()">Analisar aporte</button>
     </div>
   </div>
@@ -19320,11 +19320,16 @@ function restoreAssetEditModalScroll(){
     if(body) body.scrollTop=top;
   });
 }
+function assetEditFocusableElements(root){
+  return Array.from(root?.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')||[]);
+}
 function focusAssetEditModal(){
   requestAnimationFrame(()=>{
-    const modal=document.querySelector('.asset-edit-modal');
+    const modal=S.assetEditDiscardOpen
+      ? document.querySelector('.asset-edit-discard-overlay .note-modal')
+      : document.querySelector('.asset-edit-modal');
     const focusById=S.assetEditFocusId ? modal?.querySelector(`#${CSS.escape(S.assetEditFocusId)}`) : null;
-    const first=focusById || modal?.querySelector('input:not([disabled]),select:not([disabled]),textarea:not([disabled])');
+    const first=focusById || assetEditFocusableElements(modal)[0];
     if(first){
       first.focus({preventScroll:true});
       if(first.select) first.select();
@@ -19500,6 +19505,26 @@ function assetEditRenderTypeChange(){
 if(!window.__assetEditEscBound){
   document.addEventListener('keydown',e=>{
     if(!S.showA) return;
+    if(e.key==='Tab'){
+      const root=S.assetEditDiscardOpen
+        ? document.querySelector('.asset-edit-discard-overlay .note-modal')
+        : document.querySelector('.asset-edit-modal');
+      const focusables=assetEditFocusableElements(root);
+      if(!focusables.length) return;
+      const first=focusables[0];
+      const last=focusables[focusables.length-1];
+      const active=document.activeElement;
+      if(e.shiftKey && active===first){
+        e.preventDefault();
+        last.focus({preventScroll:true});
+        return;
+      }
+      if(!e.shiftKey && active===last){
+        e.preventDefault();
+        first.focus({preventScroll:true});
+        return;
+      }
+    }
     if(e.key==='Escape'){
       e.preventDefault();
       if(S.assetEditDiscardOpen) cancelAssetEditDiscard();
@@ -19510,13 +19535,13 @@ if(!window.__assetEditEscBound){
 }
 function assetEditDiscardModal(){
   if(!S.assetEditDiscardOpen) return '';
-  return `<div class="note-overlay asset-edit-discard-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) cancelAssetEditDiscard()">
+  return `<div class="note-overlay asset-edit-discard-overlay" role="dialog" aria-modal="true" aria-labelledby="asset-edit-discard-title" aria-describedby="asset-edit-discard-desc" onclick="if(event.target===this) cancelAssetEditDiscard()">
     <div class="note-modal" style="max-width:520px">
       <div class="note-head">
         <div class="note-title">
           <div>
-            <h3>Existem alterações não salvas</h3>
-            <p>Deseja descartar? Você pode continuar editando e manter o rascunho atual.</p>
+            <h3 id="asset-edit-discard-title">Existem alterações não salvas</h3>
+            <p id="asset-edit-discard-desc">Deseja descartar? Você pode continuar editando e manter o rascunho atual.</p>
           </div>
         </div>
       </div>

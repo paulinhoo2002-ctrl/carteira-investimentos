@@ -95,12 +95,28 @@ Direcao visual atual:
 - fundo coerente com o tema;
 - usados para resumo, analise, historico e metas.
 
+Padrao de uso:
+
+- cada card deve ter titulo curto e funcao clara;
+- valores principais devem ficar em destaque, sem competir com o texto auxiliar;
+- blocos recolhiveis devem abrir e fechar de forma previsivel;
+- nao misturar muitas acoes dentro do mesmo card quando existir uma area dedicada.
+
 ### Modais
 
 - usados para edicao, confirmacoes e fluxos auxiliares;
 - foco em centralizacao, clareza e fechamento facil;
 - fundo bloqueado quando o modal esta ativo;
 - largura responsiva no desktop e quase tela cheia no mobile.
+
+Regras do modal premium atual:
+
+- cabecalho fixo com contexto da edicao;
+- rodape fixo com acoes principais;
+- foco inicial no primeiro campo;
+- fechamento por X, ESC e clique fora quando seguro;
+- retorno de foco e preservacao do scroll ao fechar;
+- feedback visual discreto de alteracoes e salvamento.
 
 ### Tabelas
 
@@ -123,6 +139,12 @@ Direcao visual atual:
 - tempo curto;
 - nao devem bloquear interacao;
 - usados para sucesso, alerta e erro leve.
+
+Preferencia atual:
+
+- sucesso deve ser silencioso ou muito discreto;
+- erro pode ser mais visivel, mas sem travar a interface;
+- nunca cobrir menus, botoes ou impedir clique.
 
 ### Botoes
 
@@ -186,7 +208,31 @@ Para manter o sistema coerente:
 - preservar comportamento de tabelas, modais e toasts;
 - nao quebrar o layout consolidado por fases anteriores.
 
-## 10. Direcao visual por area
+## 10. Superficies atuais prioritarias
+
+As areas que devem guiar qualquer auditoria visual sao:
+
+- Dashboard / Home;
+- Ativos;
+- Movimentacoes;
+- Dividendos;
+- Renda Fixa;
+- Rentabilidade;
+- Metas;
+- Diagnostico;
+- IA / Assistente Inteligente da Carteira;
+- Relatorios;
+- Auditoria;
+- modais globais e toasts.
+
+Diretriz para o Assistente Inteligente:
+
+- manter a area separada do Dashboard;
+- cards consultivos, compactos e reutilizaveis;
+- evitar repeticao de texto;
+- priorizar resumo, alerta, concentracao e renda passiva.
+
+## 11. Direcao visual por area
 
 ### Home / Dashboard
 
@@ -213,7 +259,7 @@ Para manter o sistema coerente:
 - explicacao curta e util;
 - visual que facilita decisao.
 
-## 11. Limites do sistema visual
+## 12. Limites do sistema visual
 
 O design deve continuar:
 
@@ -230,3 +276,15 @@ Nao deve virar:
 - interface pesada;
 - layout instavel.
 
+## 13. Checklist para auditoria Impeccable
+
+Antes de aprovar uma mudanca visual, conferir:
+
+- mobile 390px, 412px e 430px;
+- desktop sem regressao de alinhamento;
+- contraste adequado no tema claro e no escuro;
+- nenhum card abre ou fecha sozinho;
+- nenhuma tabela corta informacao critica;
+- nenhum toast bloqueia interacao;
+- areas consultivas continuam simples e legiveis;
+- a documentacao continua refletindo o estado atual do produto.
