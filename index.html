@@ -19308,9 +19308,20 @@ function getAI(){
 }
 
 function bind(){
-  document.querySelectorAll('.fc input:not([disabled]),.fc select').forEach(el=>{
-    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ if(S.quickMovementOpen) saveQuickMovement(); else if(S.showA) svA(); else if(S.showP) svP(); else if(S.showD) svD(); } });
-  });
+  const root=document.getElementById('root');
+  if(root && root.dataset.fcEnterBound!=='1'){
+    root.dataset.fcEnterBound='1';
+    root.addEventListener('keydown',e=>{
+      const target=e.target;
+      if(!target || !(target instanceof HTMLElement)) return;
+      if(!target.matches('.fc input:not([disabled]), .fc select')) return;
+      if(e.key!=='Enter') return;
+      if(S.quickMovementOpen) saveQuickMovement();
+      else if(S.showA) svA();
+      else if(S.showP) svP();
+      else if(S.showD) svD();
+    });
+  }
   const assetModal=document.querySelector('.asset-edit-modal');
   if(assetModal){
     if(assetModal.dataset.assetEditBound!=='1'){
