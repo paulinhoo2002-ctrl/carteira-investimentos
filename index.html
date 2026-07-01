@@ -18619,7 +18619,6 @@ function go(t){
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();
   render();
-  if(t==='ativos') fetchQuotes(false);
   if(t==='dividendos') runAutoProventosGratis('tab');
 }  // ? FIX: salva tab ao navegar
 function rememberAssetEditScroll(){
