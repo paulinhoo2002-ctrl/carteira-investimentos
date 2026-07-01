@@ -16724,6 +16724,7 @@ function frmA(){
   </div>`;
 }
 function ativos(){
+  const innerTab=String(S.assetsInnerTab||'patrimonio')==='analise' ? 'analise' : 'patrimonio';
   const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
   const grouped=new Map();
   S.assets.forEach(a=>{
@@ -16733,7 +16734,7 @@ function ativos(){
   });
   const order=TYPE_ORDER;
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
-  const analysis=assetAnalysisBlock();
+  const analysis=innerTab==='analise' ? assetAnalysisBlock() : '';
   const sections=groupNames.map((type,idx)=>{
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
     const sortedItems=sortAssetsByGroup(type, items);
@@ -16872,7 +16873,6 @@ function ativos(){
       </div>
     </details>`;
   }).join('');
-  const innerTab=String(S.assetsInnerTab||'patrimonio')==='analise' ? 'analise' : 'patrimonio';
   const patrimonyPanel=`<div class="asset-inner-panel">
     ${frmA()}
     <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
