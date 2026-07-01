@@ -657,7 +657,6 @@ button{cursor:pointer;font-family:inherit}
   color:var(--muted);
 }
 .dashboard-consultive-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:10px;align-items:start}
-.dashboard-consultive-main,.dashboard-consultive-side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
 .dashboard-home-attention .premium-consultive-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .dashboard-home-actions .dashboard-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
@@ -834,7 +833,6 @@ button{cursor:pointer;font-family:inherit}
 .data-audit-empty{padding:28px 16px;text-align:center;border:1px dashed #26344b;border-radius:13px;background:#0b1020;color:#94a3b8;font-size:12px;line-height:1.5}
 .data-audit-areas{display:flex;gap:6px;flex-wrap:wrap}
 .data-audit-area-pill{font-size:9px;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 7px}
-.premium-mobile-only{display:none}
 .perf-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
 .perf-card{background:#111828;border:1px solid #1d2940;border-radius:14px;padding:12px 12px 10px}
 .perf-card.comp{display:flex;flex-direction:column;gap:10px}
@@ -1024,18 +1022,13 @@ input::placeholder{color:#2e3f58}select option{background:#0d111e}
 .dbt{background:#141d2f;border-radius:999px;height:8px;overflow:hidden;border:1px solid #27344b;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
 .dbf{height:100%;border-radius:999px;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset}
 .dbv{font-size:12px;color:#fbbf24;min-width:0;text-align:right;font-weight:800;letter-spacing:-.01em}
-.evo-shell{display:flex;flex-direction:column;gap:10px}
-.evo-top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.evo-sub{font-size:12px;color:#64748b;line-height:1.35}
 .evo-badge{border:1px solid rgba(96,165,250,.18);background:#111828;color:#a5b4fc;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;white-space:nowrap}
-.evo-legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
 .evo-chip{border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:6px}
 .evo-chip .dot{width:8px;height:8px;border-radius:999px;display:inline-block}
 .evo-chip.aplicado{color:#86efac}
 .evo-chip.aplicado .dot{background:#34d399}
 .evo-chip.ganho{color:#a5b4fc}
 .evo-chip.ganho .dot{background:#818cf8}
-.evo-list{display:flex;flex-direction:column;gap:8px;padding-top:4px}
 .evo-row{display:grid;grid-template-columns:58px minmax(0,1fr) 92px;align-items:center;gap:12px}
 .evo-label{font-size:12px;color:#e2eaf6;font-weight:800;letter-spacing:.01em}
 .evo-track{background:#111828;border-radius:999px;height:8px;overflow:hidden;border:1px solid #1e2a3d}
@@ -1719,9 +1712,6 @@ body.asset-modal-open{overflow:hidden;overscroll-behavior:none}
 .div-recent-card{display:grid;grid-template-columns:86px minmax(150px,1.2fr) 130px minmax(130px,.8fr) auto;gap:10px;align-items:center;border:1px solid var(--border);border-radius:13px;background:var(--panel-2);padding:11px}
 .div-recent-date{font-size:10px;color:var(--muted);font-weight:750}
 .div-recent-main{min-width:0}
-.div-recent-title{display:flex;align-items:center;gap:7px;min-width:0}
-.div-recent-ticker{font-size:12px;font-weight:900;color:var(--text)}
-.div-recent-name,.div-recent-note{font-size:9px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .div-type-badge{display:inline-flex;border-radius:999px;padding:4px 7px;font-size:8px;font-weight:900;border:1px solid var(--border)}
 .div-type-badge.dividendo{color:#60a5fa;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.25)}
 .div-type-badge.jcp{color:#fbbf24;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25)}
@@ -2638,7 +2628,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-consultive-card{padding:8px 9px}
   .premium-consultive-card-title{font-size:10px}
   .premium-consultive-card-status{font-size:8px;padding:3px 6px}
-  .premium-consultive-card-text,.premium-consultive-card-action,.premium-consultive-pill,.premium-consultive-note{font-size:8px;line-height:1.2}
+.premium-consultive-card-text,.premium-consultive-card-action{font-size:8px;line-height:1.2}
   .premium-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
   .dashboard-consultive-grid{grid-template-columns:1fr!important;gap:8px!important}
   .dashboard-home-grid{grid-template-columns:1fr!important;gap:8px!important}
@@ -2677,8 +2667,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .dashboard-class-value{font-size:10px}
   .dashboard-class-share{font-size:9px}
   .premium-nextstep-panel,.premium-quality-panel,.premium-reading-panel,.premium-dividend-panel{padding:8px!important}
-  .premium-portfolio-panel{display:none}
-  .premium-concentration-list .premium-concentration-row:nth-child(n+4){display:none}
+.premium-concentration-list .premium-concentration-row:nth-child(n+4){display:none}
   .premium-concentration-row,.premium-income-row,.premium-rf-row,.premium-action-row{padding:7px 8px;gap:7px}
   .premium-row-title{font-size:10px}
   .premium-row-sub{font-size:8px;max-width:100%}
@@ -2689,8 +2678,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .premium-radar-item{font-size:9px;padding:4px 0}
   .premium-radar-item:nth-child(n+3){display:none}
   .premium-radar-value{max-width:62px;overflow:hidden;text-overflow:ellipsis}
-  .premium-contribution-panel{display:none}
-  .premium-income-list,.premium-rf-list{gap:5px}
+.premium-income-list,.premium-rf-list{gap:5px}
   .premium-panel-actions{margin-top:7px}
   .premium-panel-actions .btn{width:100%;padding:7px 9px;font-size:9px}
   .premium-note{font-size:8px;margin-top:6px}
@@ -2764,7 +2752,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   html,body,#root{width:100%;max-width:100%;overflow-x:hidden}
   .wrap,.wrap>*,.card,.cc,.sec,.ag,.fc,.asset-inner-panel,.analysis-shell,
   .asset-premium-analysis,.patrimony-premium,.premium-dashboard,.rebalance-shell,
-  .rf-shell,.irpf-shell,.passive-goal-shell,.dividend-query-shell,.prov-audit-shell{
+  .irpf-shell,.passive-goal-shell,.dividend-query-shell,.prov-audit-shell{
     min-width:0;max-width:100%
   }
   .wrap{padding:10px 10px calc(98px + env(safe-area-inset-bottom))!important}
@@ -2965,7 +2953,6 @@ html[data-theme="light"] .mov-review-group-sub,
 html[data-theme="light"] .b3-conference-card .sub,
 html[data-theme="light"] .b3-backup-warning,
 html[data-theme="light"] .data-audit-sub,
-html[data-theme="light"] .data-audit-card-sub,
 html[data-theme="light"] .passive-goal-empty-note,
 html[data-theme="light"] .passive-goal-card .passive-goal-kicker,
 html[data-theme="light"] .passive-goal-card .passive-goal-sub,
