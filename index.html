@@ -16736,6 +16736,11 @@ function ativos(){
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const analysis=innerTab==='analise' ? assetAnalysisBlock() : '';
   const sections=groupNames.map((type,idx)=>{
+    const groupKey=String(type||'').toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'');
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
     const sortedItems=sortAssetsByGroup(type, items);
     const gApplied=items.reduce((s,a)=>s+assetAppliedValue(a),0);
@@ -16836,7 +16841,7 @@ function ativos(){
       </div>`;
     }).join('');
     const isOpen=S.activeAssetsGroup===type;
-    return`<details class="ag"${isOpen?' open':''} ontoggle='toggleAssetGroup(${JSON.stringify(type)}, this.open)'>
+    return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}" ontoggle='toggleAssetGroup(${JSON.stringify(type)}, this.open)'>
       <summary>
         <div class="ag-left">
           <div class="ag-ico">${tipoIcon(type)}</div>
