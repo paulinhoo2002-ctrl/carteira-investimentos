@@ -16430,7 +16430,6 @@ function dashboardRadarCard(title,rows,formatter,empty){
   const body=rows.length ? rows.map(row=>`<div class="premium-radar-item"><span class="premium-radar-ticker">${esc(row.ticker||'—')}</span><span class="premium-radar-value">${formatter(row)}</span></div>`).join('') : `<div class="premium-empty">${esc(empty)}</div>`;
   return `<div class="premium-radar-card"><div class="premium-radar-title">${esc(title)}</div>${body}</div>`;
 }
-}
 function dash(){
   const data=dashboardSnapshot();
   let assistant;
@@ -18126,7 +18125,6 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
 // ══════════════════════════════════════
 // DIVIDENDOS — ÁREA OPERACIONAL LEGADA PRESERVADA
 // ══════════════════════════════════════
-}
 
 function metasTab(){
   const{mD,aD,avgDY,tC}=cx();
