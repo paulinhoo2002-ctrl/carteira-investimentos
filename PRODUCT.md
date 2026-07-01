@@ -60,6 +60,7 @@ O sistema atual contempla:
 - aba Rebalancear / apoio de aporte;
 - aba Metas;
 - aba Diagnostico / analise consultiva local;
+- aba IA / Assistente Inteligente da Carteira, com analise local baseada nos dados cadastrados;
 - aba Relatorios;
 - aba IRPF;
 - aba Auditoria;
@@ -71,6 +72,15 @@ O sistema atual contempla:
 - tema escuro e tema claro premium;
 - suporte a mobile refinado;
 - sincronizacao com nuvem / Firebase.
+
+O produto tambem ja consolida padroes importantes de experiencia:
+
+- modal moderno para edicao de ativos;
+- preservacao de categoria aberta e posicao de rolagem durante a edicao;
+- cards recolhiveis com comportamento previsivel;
+- Dashboard limpo, com assistente separado em area propria;
+- visao consultiva para Rentabilidade, Metas e Diagnostico;
+- documentacao oficial mantida em `README.md`, `PRODUCT.md`, `DESIGN.md` e `CHANGELOG.md`.
 
 ## 6. Roadmap
 
@@ -132,7 +142,25 @@ Estrutura atual do reposititorio:
 - evitar dependencia nova sem beneficio claro;
 - documentar impacto visual e funcional de cada fase.
 
-## 11. Papel do produto
+## 11. Padrões para auditorias e evolucao
+
+Ao revisar ou evoluir o produto, seguir esta ordem:
+
+1. ler a documentacao oficial do produto;
+2. verificar se ja existe componente ou padrao reutilizavel;
+3. alterar primeiro a menor superficie possivel;
+4. validar build e comportamento em desktop e mobile;
+5. manter alteracoes consistentes com o visual premium e consultivo.
+
+Auditorias devem procurar, antes de tudo:
+
+- risco de quebra visual;
+- duplicacao de componentes;
+- perda de estado da interface;
+- impacto em mobile;
+- impacto em calculos, dados e sincronizacao.
+
+## 12. Papel do produto
 
 Carteira de Investimentos e uma ferramenta de decisao financeira pessoal de longo prazo.
 
@@ -145,4 +173,3 @@ Ela deve ser usada para:
 - revisar rentabilidade;
 - consultar relatorios e auditorias;
 - manter disciplina de investimento.
-
