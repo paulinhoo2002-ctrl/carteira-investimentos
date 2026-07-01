@@ -13612,7 +13612,23 @@ function sortAssetsByGroup(type, items){
   });
 }
 function assetAnalysisRows(){
-  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  const assetMetricsCache=new Map();
+  const getAssetMetrics=a=>{
+    if(assetMetricsCache.has(a)) return assetMetricsCache.get(a);
+    const currentValue=assetCurrentValue(a);
+    const appliedValue=assetAppliedValue(a);
+    const rentabPct=assetRentabPct(a);
+    const jurosValue=assetJurosValue(a);
+    const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
+    const currentUnit=Number(a.current_price)||0;
+    const avgPrice=Number(a.avg_price)||0;
+    const marketValue=isRF ? currentValue : (Number(a.qty)||0)*currentUnit;
+    const currentDisplay=isRF ? marketValue : currentUnit;
+    const metrics={currentValue,appliedValue,rentabPct,jurosValue,isRF,currentUnit,avgPrice,marketValue,currentDisplay};
+    assetMetricsCache.set(a,metrics);
+    return metrics;
+  };
+  const total=S.assets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
   return (S.assets||[]).map(a=>{
     const ticker=String(a.ticker||'').trim().toUpperCase();
     const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
@@ -16725,7 +16741,23 @@ function frmA(){
 }
 function ativos(){
   const innerTab=String(S.assetsInnerTab||'patrimonio')==='analise' ? 'analise' : 'patrimonio';
-  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  const assetMetricsCache=new Map();
+  const getAssetMetrics=a=>{
+    if(assetMetricsCache.has(a)) return assetMetricsCache.get(a);
+    const currentValue=assetCurrentValue(a);
+    const appliedValue=assetAppliedValue(a);
+    const rentabPct=assetRentabPct(a);
+    const jurosValue=assetJurosValue(a);
+    const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
+    const currentUnit=Number(a.current_price)||0;
+    const avgPrice=Number(a.avg_price)||0;
+    const marketValue=isRF ? currentValue : (Number(a.qty)||0)*currentUnit;
+    const currentDisplay=isRF ? marketValue : currentUnit;
+    const metrics={currentValue,appliedValue,rentabPct,jurosValue,isRF,currentUnit,avgPrice,marketValue,currentDisplay};
+    assetMetricsCache.set(a,metrics);
+    return metrics;
+  };
+  const total=S.assets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
   const grouped=new Map();
   S.assets.forEach(a=>{
     const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
@@ -16743,28 +16775,29 @@ function ativos(){
       .replace(/^-+|-+$/g,'');
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
     const sortedItems=sortAssetsByGroup(type, items);
-    const gApplied=items.reduce((s,a)=>s+assetAppliedValue(a),0);
-    const gTotal=items.reduce((s,a)=>s+assetCurrentValue(a),0);
-    const gDivMes=items.reduce((s,a)=>{
-      const cur=assetCurrentValue(a);
-      return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
-    },0);
-    const gJuros=items.reduce((s,a)=>{
-      const j=assetJurosValue(a);
-      return s + (Number.isFinite(j) ? j : 0);
-    },0);
+     const gApplied=items.reduce((s,a)=>s+getAssetMetrics(a).appliedValue,0);
+     const gTotal=items.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
+     const gDivMes=items.reduce((s,a)=>{
+       const cur=getAssetMetrics(a).currentValue;
+       return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
+     },0);
+     const gJuros=items.reduce((s,a)=>{
+       const j=getAssetMetrics(a).jurosValue;
+       return s + (Number.isFinite(j) ? j : 0);
+     },0);
     const gCost=gApplied;
     const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
     const rows=sortedItems.map(a=>{
+      const m=getAssetMetrics(a);
       const avg=Number(a.avg_price)||0;
-      const currentUnit=Number(a.current_price)||0;
-      const marketValue=isRendaFixaAsset(a) ? assetCurrentValue(a) : (Number(a.qty)||0)*currentUnit;
-      const currentDisplay=isRendaFixaAsset(a) ? marketValue : currentUnit;
-      const applied=assetAppliedValue(a);
-      const rentab=assetRentabPct(a);
-      const juros=assetJurosValue(a);
+      const currentUnit=m.currentUnit;
+      const marketValue=m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
+      const currentDisplay=m.isRF ? marketValue : currentUnit;
+      const applied=m.appliedValue;
+      const rentab=m.rentabPct;
+      const juros=m.jurosValue;
       const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
       const peso=total>0?(marketValue/total)*100:0;
       const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
@@ -16772,7 +16805,7 @@ function ativos(){
       const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
       const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
       const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'sem atualização';
-      const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
+      const isRF=m.isRF;
       const atualText=marketValue!=null?fmt(currentDisplay):'—';
       const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
       const rfSource=isRF?assetRfCurrentValueMeta(a):null;
