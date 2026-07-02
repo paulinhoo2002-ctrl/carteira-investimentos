@@ -6110,11 +6110,15 @@ function notaTickerFromSpec(spec){
   const s=notaNorm(spec);
   if(!s) return '';
   if(/\bSUB\s*TOTAL\b|\bTOTAL\b/.test(s)) return '';
-  const m=s.match(/\b([A-Z]{4,6}\d{1,2})F?\b/);
-  if(m) return m[1].replace(/F$/,'');
+  const m=s.match(/\b([A-Z]{4,6}\d{1,2}F?)\b/);
+  if(m) return brokerNoteNormalizeTicker(m[1]);
   if(isRendaFixaText(s)) return cleanAssetCode(s);
   const first=s.split(' ').filter(Boolean)[0] || s;
-  return cleanAssetCode(first);
+  return brokerNoteNormalizeTicker(first);
+}
+function brokerNoteNormalizeTicker(value){
+  const ticker=cleanAssetCode(value||'');
+  return /^[A-Z]{4,6}\d{1,2}F$/.test(ticker) ? ticker.slice(0,-1) : ticker;
 }
 function notaFiiSector(text){
   const s=notaNorm(text);
@@ -6191,11 +6195,11 @@ function mapInterAssetToTicker(description){
     [/\bPETROBRAS\b.*\bPN\b|\bPN\b.*\bPETROBRAS\b/,'PETR4','Ação','Petróleo e gás']
   ];
   for(const [pattern,ticker,type,sector] of mappings){
-    if(pattern.test(s)) return {ticker,type,sector,recognized:true};
+    if(pattern.test(s)) return {ticker:brokerNoteNormalizeTicker(ticker),type,sector,recognized:true};
   }
-  const direct=s.match(/\b([A-Z]{4}\d{1,2})\b/);
+  const direct=s.match(/\b([A-Z]{4,6}\d{1,2}F?)\b/);
   if(direct){
-    const ticker=direct[1];
+    const ticker=brokerNoteNormalizeTicker(direct[1]);
     const meta=metaTicker(ticker);
     return {ticker,type:normalizeType(meta.type||'Ação','Ação'),sector:meta.sector||'',recognized:true};
   }
