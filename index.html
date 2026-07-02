@@ -4843,6 +4843,123 @@ async function loadPdfJs(){
   }
   return window.__pdfjsPromise;
 }
+function decodePdfLiteralString(raw){
+  const text=String(raw||'');
+  let out='';
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(ch!=='\\'){ out+=ch; continue; }
+    const next=text[++i];
+    if(next===undefined) break;
+    if(next==='n'){ out+='\n'; continue; }
+    if(next==='r'){ out+='\r'; continue; }
+    if(next==='t'){ out+='\t'; continue; }
+    if(next==='b'){ out+='\b'; continue; }
+    if(next==='f'){ out+='\f'; continue; }
+    if(next==='(' || next===')' || next==='\\'){ out+=next; continue; }
+    if(next==='\n' || next==='\r'){
+      if(next==='\r' && text[i+1]==='\n') i++;
+      continue;
+    }
+    if(next>='0' && next<='7'){
+      let oct=next;
+      while(i+1<text.length && oct.length<3 && text[i+1]>='0' && text[i+1]<='7') oct+=text[++i];
+      out+=String.fromCharCode(parseInt(oct,8)||0);
+      continue;
+    }
+    out+=next;
+  }
+  return out;
+}
+async function inflatePdfStream(bytes){
+  const formats=['deflate','deflate-raw'];
+  for(const format of formats){
+    try{
+      if(typeof DecompressionStream!=='function') continue;
+      const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream(format));
+      const buffer=await new Response(stream).arrayBuffer();
+      return new TextDecoder('latin1').decode(buffer);
+    }catch(e){}
+  }
+  throw new Error('PDF_STREAM_DECODE');
+}
+function extractPdfTextChunksFromContent(content){
+  const chunks=[];
+  let currentX=0;
+  let currentY=0;
+  const tokenRe=/(-?\d+(?:\.\d+)?(?:\s+-?\d+(?:\.\d+)?){5}\s+Tm)|\((?:\\.|[^\\)])*\)\s*Tj|\[(?:[\s\S]*?)\]\s*TJ/g;
+  for(const match of String(content||'').matchAll(tokenRe)){
+    const token=match[0].trim();
+    if(token.endsWith('Tm')){
+      const nums=token.slice(0,-2).trim().split(/\s+/).map(Number);
+      if(nums.length>=6 && nums.every(Number.isFinite)){
+        currentX=nums[4];
+        currentY=nums[5];
+      }
+      continue;
+    }
+    if(token.endsWith('Tj')){
+      const raw=token.slice(0,-2).trim();
+      if(raw.startsWith('(') && raw.endsWith(')')){
+        const text=decodePdfLiteralString(raw.slice(1,-1));
+        if(text) chunks.push({x:Math.round(currentX),y:Math.round(currentY),text});
+      }
+      continue;
+    }
+    if(token.endsWith('TJ')){
+      const raw=token.slice(0,-2);
+      const text=[...raw.matchAll(/\((?:\\.|[^\\)])*\)/g)].map(item=>decodePdfLiteralString(item[0].slice(1,-1))).join('');
+      if(text) chunks.push({x:Math.round(currentX),y:Math.round(currentY),text});
+    }
+  }
+  return chunks;
+}
+function chunksToPdfLines(chunks){
+  const rows=new Map();
+  (chunks||[]).forEach(({x,y,text})=>{
+    const line=String(text||'').replace(/\s+/g,' ').trim();
+    if(!line) return;
+    const key=Math.round(Number(y)||0);
+    if(!rows.has(key)) rows.set(key,[]);
+    rows.get(key).push({x:Number(x)||0,text:line});
+  });
+  return [...rows.entries()]
+    .sort((a,b)=>b[0]-a[0])
+    .map(([,items])=>items.sort((a,b)=>a.x-b.x).map(item=>item.text).join(' ').replace(/\s+/g,' ').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+async function extractBrokerNotePdfText(file){
+  const buffer=await file.arrayBuffer();
+  const bytes=new Uint8Array(buffer);
+  const raw=new TextDecoder('latin1').decode(bytes);
+  const chunks=[];
+  let cursor=0;
+  while(cursor<raw.length){
+    const streamStart=raw.indexOf('stream',cursor);
+    if(streamStart<0) break;
+    const headerStart=raw.lastIndexOf('<<',streamStart);
+    if(headerStart<0){ cursor=streamStart+6; continue; }
+    const streamEnd=raw.indexOf('endstream',streamStart);
+    if(streamEnd<0) break;
+    const header=raw.slice(headerStart,streamStart);
+    if(/\/Subtype\s*\/Image/.test(header) || !/FlateDecode/.test(header)){
+      cursor=streamEnd+9;
+      continue;
+    }
+    let start=streamStart+6;
+    while(start<bytes.length && (bytes[start]===10 || bytes[start]===13)) start++;
+    let end=streamEnd;
+    while(end>start && (bytes[end-1]===10 || bytes[end-1]===13)) end--;
+    if(end<=start){ cursor=streamEnd+9; continue; }
+    try{
+      const content=await inflatePdfStream(bytes.slice(start,end));
+      chunks.push(...extractPdfTextChunksFromContent(content));
+    }catch(e){}
+    cursor=streamEnd+9;
+  }
+  return chunksToPdfLines(chunks);
+}
 function pdfLinesFromTextContent(textContent){
   const rows=new Map();
   (textContent?.items||[]).forEach(item=>{
@@ -6143,6 +6260,7 @@ function extractInterBrokerNoteHeader(text){
   const headerText=headerLines.join('\n');
   const normalized=notaNorm(headerText);
   const tradeLabel='DATA\\s*(?:DO\\s*)?PREG[^A-Z0-9]*A?O';
+  const noteLabelPattern=/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA/;
   let noteNumber='';
   let tradeDate='';
   const directNotePatterns=[
@@ -6162,9 +6280,16 @@ function extractInterBrokerNoteHeader(text){
     const match=normalized.match(pattern);
     if(match){ tradeDate=match[match.length-1]; break; }
   }
+  const extractNextValue=(items,start,pattern)=>{
+    for(let i=start;i<Math.min(items.length,start+4);i++){
+      const hit=items[i] && String(items[i]).match(pattern);
+      if(hit) return hit[1]||hit[0]||'';
+    }
+    return '';
+  };
   for(let i=0;i<headerLines.length && (!noteNumber||!tradeDate);i++){
     const lineNorm=notaNorm(headerLines[i]);
-    const hasNoteLabel=/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA/.test(lineNorm);
+    const hasNoteLabel=noteLabelPattern.test(lineNorm);
     const hasTradeLabel=new RegExp(tradeLabel).test(lineNorm);
     const hasHeaderValues=/\b\d{5,12}\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/.test(lineNorm);
     if(!hasNoteLabel && !hasTradeLabel && !hasHeaderValues) continue;
@@ -6173,10 +6298,12 @@ function extractInterBrokerNoteHeader(text){
     if(!noteNumber){
       const afterLabel=windowNorm.match(/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA[\s:.-]*(?:FOLHA[\s:.-]*)?(?:DATA\s*(?:DO\s*)?PREGAO[\s:.-]*)?(\d{5,12})/);
       const beforeSheet=windowNorm.match(/\b(\d{5,12})\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/);
-      noteNumber=(afterLabel||beforeSheet||[])[1]||'';
+      const nextLineNumber=extractNextValue(headerLines,i+1,/^\d{5,12}$/);
+      noteNumber=(afterLabel||beforeSheet||[])[1]||nextLineNumber||'';
     }
     if(!tradeDate){
-      tradeDate=(windowNorm.match(new RegExp(`${tradeLabel}[\\s:.-]*(\\d{2}\\/\\d{2}\\/\\d{4})`))||windowNorm.match(/\b(\d{2}\/\d{2}\/\d{4})\b/)||[])[1]||'';
+      const nextLineDate=extractNextValue(headerLines,i+1,/^\d{2}\/\d{2}\/\d{4}$/);
+      tradeDate=(windowNorm.match(new RegExp(`${tradeLabel}[\\s:.-]*(\\d{2}\\/\\d{2}\\/\\d{4})`))||windowNorm.match(/\b(\d{2}\/\d{2}\/\d{4})\b/)||[])[1]||nextLineDate||'';
     }
   }
   return {noteNumber,tradeDate};
@@ -6949,28 +7076,45 @@ function closeBrokerNoteImport(){
   render();
 }
 function chooseBrokerNotePdf(){
-  document.getElementById('broker-note-pdf-file')?.click();
+  const input=document.getElementById('broker-note-pdf-file');
+  if(!input) return;
+  input.click();
 }
 async function readBrokerNotePdf(file){
   if(!file) return;
+  debugLog('[nota] arquivo selecionado', file.name||'nota.pdf');
   if(!S.brokerNoteImport) S.brokerNoteImport={open:true};
   S.brokerNoteImport={...S.brokerNoteImport,status:'loading',message:'Lendo o PDF localmente...',fileName:file.name||'nota.pdf',parsed:null};
   render();
   try{
-    let pdfjs;
-    try{ pdfjs=await loadPdfJs(); }
-    catch(error){ throw new Error('PDFJS_LOAD'); }
-    const data=new Uint8Array(await file.arrayBuffer());
-    const doc=await pdfjs.getDocument({data}).promise;
-    const pages=[];
-    for(let pageNumber=1;pageNumber<=doc.numPages;pageNumber++){
-      const page=await doc.getPage(pageNumber);
-      const content=await page.getTextContent();
-      pages.push(pdfLinesFromTextContent(content).join('\n'));
+    let text='';
+    let pdfjsError=null;
+    try{
+      text=await extractBrokerNotePdfText(file);
+      debugLog('[nota] texto extraído via fallback', text.length);
+    }catch(fallbackError){
+      debugWarn('[nota] fallback local falhou', fallbackError?.message||fallbackError);
     }
-    const text=pages.join('\n');
-    if(text.replace(/\s+/g,'').length<80) throw new Error('PDF_NO_TEXT');
+    if(text.replace(/\s+/g,'').length<80){
+      let pdfjs=null;
+      try{ pdfjs=await loadPdfJs(); }
+      catch(error){ pdfjsError=error; }
+      if(pdfjs){
+        const data=new Uint8Array(await file.arrayBuffer());
+        const doc=await pdfjs.getDocument({data}).promise;
+        const pages=[];
+        for(let pageNumber=1;pageNumber<=doc.numPages;pageNumber++){
+          const page=await doc.getPage(pageNumber);
+          const content=await page.getTextContent();
+          pages.push(pdfLinesFromTextContent(content).join('\n'));
+        }
+        text=pages.join('\n');
+        debugLog('[nota] texto extraído via PDF.js', text.length);
+      }
+    }
+    if(text.replace(/\s+/g,'').length<80) throw new Error(pdfjsError?.message==='PDFJS_LOAD' ? 'PDFJS_LOAD' : 'PDF_NO_TEXT');
     const parsed=parseInterBrokerNoteText(text);
+    debugLog('[nota] operações encontradas', parsed.operations?.length||0);
     parsed.duplicate=detectBrokerNoteDuplicate(parsed);
     S.brokerNoteImport={...S.brokerNoteImport,status:parsed.valid?'ready':'error',message:parsed.valid?'Nota lida. Confira todos os dados antes de confirmar.':'Não foi possível validar todos os dados da nota.',allowDuplicate:false,parsed};
   }catch(error){
@@ -12989,9 +13133,26 @@ function setRentBench(bench){
   S.rentBench=String(bench||'CDI');
   save(); render();
 }
-function toggleAssetGroup(type, ev){
-  if(ev) ev.preventDefault();
-  S.activeAssetsGroup = S.activeAssetsGroup===type ? '' : type;
+function getActiveAssetGroup(){
+  return String(UI.openCardsByTab?.ativos?.group||'');
+}
+function setActiveAssetGroup(type, open){
+  if(!UI.openCardsByTab.ativos) UI.openCardsByTab.ativos=Object.create(null);
+  if(open) UI.openCardsByTab.ativos.group=type;
+  else if(UI.openCardsByTab.ativos.group===type) delete UI.openCardsByTab.ativos.group;
+  S.activeAssetsGroup=open ? type : '';
+}
+function toggleAssetGroup(type, evOrOpen){
+  if(evOrOpen && typeof evOrOpen.preventDefault==='function'){
+    evOrOpen.preventDefault();
+    setActiveAssetGroup(type, S.activeAssetsGroup!==type);
+    render();
+    return;
+  }
+  const open=!!evOrOpen;
+  const isOpen=S.activeAssetsGroup===type || getActiveAssetGroup()===type;
+  if(isOpen===open) return;
+  setActiveAssetGroup(type, open);
   render();
 }
 function getAssetSortConfig(type){
@@ -13043,7 +13204,23 @@ function sortAssetsByGroup(type, items){
   });
 }
 function assetAnalysisRows(){
-  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  const assetMetricsCache=new Map();
+  const getAssetMetrics=a=>{
+    if(assetMetricsCache.has(a)) return assetMetricsCache.get(a);
+    const currentValue=assetCurrentValue(a);
+    const appliedValue=assetAppliedValue(a);
+    const rentabPct=assetRentabPct(a);
+    const jurosValue=assetJurosValue(a);
+    const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
+    const currentUnit=Number(a.current_price)||0;
+    const avgPrice=Number(a.avg_price)||0;
+    const marketValue=isRF ? currentValue : (Number(a.qty)||0)*currentUnit;
+    const currentDisplay=isRF ? marketValue : currentUnit;
+    const metrics={currentValue,appliedValue,rentabPct,jurosValue,isRF,currentUnit,avgPrice,marketValue,currentDisplay};
+    assetMetricsCache.set(a,metrics);
+    return metrics;
+  };
+  const total=S.assets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
   return (S.assets||[]).map(a=>{
     const ticker=String(a.ticker||'').trim().toUpperCase();
     const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
@@ -15205,7 +15382,24 @@ function frmA(){
   </div>`;
 }
 function ativos(){
-  const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  const innerTab=String(S.assetsInnerTab||'patrimonio')==='analise' ? 'analise' : 'patrimonio';
+  const assetMetricsCache=new Map();
+  const getAssetMetrics=a=>{
+    if(assetMetricsCache.has(a)) return assetMetricsCache.get(a);
+    const currentValue=assetCurrentValue(a);
+    const appliedValue=assetAppliedValue(a);
+    const rentabPct=assetRentabPct(a);
+    const jurosValue=assetJurosValue(a);
+    const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
+    const currentUnit=Number(a.current_price)||0;
+    const avgPrice=Number(a.avg_price)||0;
+    const marketValue=isRF ? currentValue : (Number(a.qty)||0)*currentUnit;
+    const currentDisplay=isRF ? marketValue : currentUnit;
+    const metrics={currentValue,appliedValue,rentabPct,jurosValue,isRF,currentUnit,avgPrice,marketValue,currentDisplay};
+    assetMetricsCache.set(a,metrics);
+    return metrics;
+  };
+  const total=S.assets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
   const grouped=new Map();
   S.assets.forEach(a=>{
     const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
@@ -15214,109 +15408,120 @@ function ativos(){
   });
   const order=TYPE_ORDER;
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
-  const analysis=assetAnalysisBlock();
+  const analysis=innerTab==='analise' ? assetAnalysisBlock() : '';
   const sections=groupNames.map((type,idx)=>{
+    const groupKey=String(type||'').toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'');
     const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
-    const sortedItems=sortAssetsByGroup(type, items);
-    const gApplied=items.reduce((s,a)=>s+assetAppliedValue(a),0);
-    const gTotal=items.reduce((s,a)=>s+assetCurrentValue(a),0);
-    const gDivMes=items.reduce((s,a)=>{
-      const cur=assetCurrentValue(a);
-      return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
-    },0);
-    const gJuros=items.reduce((s,a)=>{
-      const j=assetJurosValue(a);
-      return s + (Number.isFinite(j) ? j : 0);
-    },0);
+     const gApplied=items.reduce((s,a)=>s+getAssetMetrics(a).appliedValue,0);
+     const gTotal=items.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
+     const gDivMes=items.reduce((s,a)=>{
+       const cur=getAssetMetrics(a).currentValue;
+       return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
+     },0);
+     const gJuros=items.reduce((s,a)=>{
+       const j=getAssetMetrics(a).jurosValue;
+       return s + (Number.isFinite(j) ? j : 0);
+     },0);
     const gCost=gApplied;
     const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
-    const rows=sortedItems.map(a=>{
-      const avg=Number(a.avg_price)||0;
-      const currentUnit=Number(a.current_price)||0;
-      const marketValue=isRendaFixaAsset(a) ? assetCurrentValue(a) : (Number(a.qty)||0)*currentUnit;
-      const currentDisplay=isRendaFixaAsset(a) ? marketValue : currentUnit;
-      const applied=assetAppliedValue(a);
-      const rentab=assetRentabPct(a);
-      const juros=assetJurosValue(a);
-      const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
-      const peso=total>0?(marketValue/total)*100:0;
-      const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
-      const q=S.quotes[a.ticker];
-      const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
-      const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
-      const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'sem atualização';
-      const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
-      const atualText=marketValue!=null?fmt(currentDisplay):'—';
-      const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
-      const rfSource=isRF?assetRfCurrentValueMeta(a):null;
-      const rentText=isRF
-        ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>':''}`
-        : `${Number.isFinite(rentab)?fmtP(rentab):'—'}`;
-      const atualCls=isRF
-        ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
-        : `font-weight:600;color:${currentUnit>=avg?'#34d399':'#f87171'}`;
-      return`<tr>
-        <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
-        <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
-        <td class="mu">${esc(a.sector||'—')}</td>
-        <td>${a.qty}</td>
-        <td>${pmText}</td>
-        <td style="${atualCls}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
-          ${atualText}
-          ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">●</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">●</span>':''}
-          <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
-          ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
-        </td>
-        <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
-        <td>${alvo>0?fmt(alvo):'—'}</td>
-        <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'—'}</td>
-        <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
-        <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
-        <td class="am" style="font-weight:600">${fmt(dm)}</td>
-      <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">●Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado — atualize se necessário">~Est</span>':''}</td>
-        <td><button class="bi" onclick="edA(${a.id})">✏️</button></td>
-      </tr>`;
-    }).join('');
-    const rfCards=sortedItems.map(a=>{
-      const applied=assetAppliedValue(a);
-      const current=assetCurrentValue(a);
-      const profit=assetJurosValue(a);
-      const rentab=assetRentabPct(a);
-      const name=assetRfName(a);
-      const subtype=assetRfSubtype(a);
-      const appDate=assetRfApplicationDate(a);
-      const dueDate=assetRfMaturityDate(a);
-      const contractRate=assetRfContractRate(a);
-      const note=assetRfNote(a);
-      const iriof=assetRfIrIof(a);
-      const unavailable=assetRfUnavailableValue(a);
-      return `<div class="rf-card" style="background:#0d111e;border:1px solid #161e2e;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)">
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
-          <div style="min-width:0">
-            <div style="font-weight:800;font-size:14px;color:#e2eaf6;line-height:1.2">${esc(name||a.ticker||'Renda Fixa')}</div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
-          </div>
-          <button class="bi" onclick="edA(${a.id})">✏️</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
-          <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplicação</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'—')}</div></div>
-          <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Vencimento</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(dueDate||'—')}</div></div>
-          <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor aplicado</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(applied)}</div></div>
-          <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor líquido</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(current)}</div></div>
-          <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Rentabilidade</div><div style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(rentab)?fmtP(rentab):'—'}</div></div>
-          <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Ganhos/Perdas</div><div style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(profit)?fmt(profit):'—'}</div></div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#94a3b8">
-          ${unavailable?`<span class="note-pill">Indisponível: ${fmt(unavailable)}</span>`:''}
-          ${iriof||a.rf_ir_iof===0?`<span class="note-pill">IR/IOF: ${fmt(iriof)}</span>`:''}
-          ${note?`<span class="note-pill" title="${esc(note)}">Obs.: ${esc(note)}</span>`:''}
-        </div>
-      </div>`;
-    }).join('');
     const isOpen=S.activeAssetsGroup===type;
-    return`<details class="ag"${isOpen?' open':''}>
+    let rows='';
+    let rfCards='';
+    if(isOpen){
+      const sortedItems=sortAssetsByGroup(type, items);
+      rows=sortedItems.map(a=>{
+        const m=getAssetMetrics(a);
+        const avg=Number(a.avg_price)||0;
+        const currentUnit=m.currentUnit;
+        const marketValue=m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
+        const currentDisplay=m.isRF ? marketValue : currentUnit;
+        const applied=m.appliedValue;
+        const rentab=m.rentabPct;
+        const juros=m.jurosValue;
+        const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
+        const peso=total>0?(marketValue/total)*100:0;
+        const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
+        const q=S.quotes[a.ticker];
+        const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
+        const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
+        const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'sem atualiza????o';
+        const isRF=m.isRF;
+        const atualText=marketValue!=null?fmt(currentDisplay):'???';
+        const pmText=isRF?fmt(applied):(avg?fmt(avg):'???');
+        const rfSource=isRF?assetRfCurrentValueMeta(a):null;
+        const rentText=isRF
+          ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: ???'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'???'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou l??quido atual da corretora para acompanhar a rentabilidade.</div>':''}`
+          : `${Number.isFinite(rentab)?fmtP(rentab):'???'}`;
+        const atualCls=isRF
+          ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
+          : `font-weight:600;color:${currentUnit>=avg?'#34d399':'#f87171'}`;
+        return`<tr>
+          <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
+          <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
+          <td class="mu">${esc(a.sector||'???')}</td>
+          <td>${a.qty}</td>
+          <td>${pmText}</td>
+          <td style="${atualCls}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
+            ${atualText}
+            ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">???</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">???</span>':''}
+            <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} ?? ${qt}</div>
+            ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'???')}${rfSource?.origin ? ` ?? ${esc(rfSource.origin)}` : ''}</div>`:''}
+          </td>
+          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
+          <td>${alvo>0?fmt(alvo):'???'}</td>
+          <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'???'}</td>
+          <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
+          <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'???'}</td>
+          <td class="am" style="font-weight:600">${fmt(dm)}</td>
+        <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">???Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado ??? atualize se necess??rio">~Est</span>':''}</td>
+          <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button></td>
+        </tr>`;
+      }).join('');
+      rfCards=sortedItems.map(a=>{
+        const applied=assetAppliedValue(a);
+        const current=assetCurrentValue(a);
+        const profit=assetJurosValue(a);
+        const rentab=assetRentabPct(a);
+        const name=assetRfName(a);
+        const subtype=assetRfSubtype(a);
+        const appDate=assetRfApplicationDate(a);
+        const dueDate=assetRfMaturityDate(a);
+        const contractRate=assetRfContractRate(a);
+        const note=assetRfNote(a);
+        const iriof=assetRfIrIof(a);
+        const unavailable=assetRfUnavailableValue(a);
+        return `<div class="rf-card" style="background:#0d111e;border:1px solid #161e2e;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)">
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+            <div style="min-width:0">
+              <div style="font-weight:800;font-size:14px;color:#e2eaf6;line-height:1.2">${esc(name||a.ticker||'Renda Fixa')}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` ?? ${esc(contractRate)}`:''}</div>
+            </div>
+            <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplica????o</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'???')}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Vencimento</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(dueDate||'???')}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor aplicado</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(applied)}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor l?quido</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(current)}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Rentabilidade</div><div style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(rentab)?fmtP(rentab):'???'}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Ganhos/Perdas</div><div style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(profit)?fmt(profit):'???'}</div></div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#94a3b8">
+            ${unavailable?`<span class="note-pill">Indispon??vel: ${fmt(unavailable)}</span>`:''}
+            ${iriof||a.rf_ir_iof===0?`<span class="note-pill">IR/IOF: ${fmt(iriof)}</span>`:''}
+            ${note?`<span class="note-pill" title="${esc(note)}">Obs.: ${esc(note)}</span>`:''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}">
       <summary onclick="toggleAssetGroup(${JSON.stringify(type)}, event)">
         <div class="ag-left">
           <div class="ag-ico">${tipoIcon(type)}</div>
@@ -15353,7 +15558,6 @@ function ativos(){
       </div>
     </details>`;
   }).join('');
-  const innerTab=String(S.assetsInnerTab||'patrimonio')==='analise' ? 'analise' : 'patrimonio';
   const patrimonyPanel=`<div class="asset-inner-panel">
     ${frmA()}
     <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
@@ -17531,7 +17735,6 @@ function go(t){
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();
   render();
-  if(t==='ativos') fetchQuotes(false);
   if(t==='dividendos') runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
 function clA(){ S.showA=false; S.editId=null; S._fa=null; render(); }
