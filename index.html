@@ -13562,7 +13562,8 @@ function setActiveAssetGroup(type, open){
 function toggleAssetGroup(type, evOrOpen){
   if(evOrOpen && typeof evOrOpen.preventDefault==='function'){
     evOrOpen.preventDefault();
-    setActiveAssetGroup(type, S.activeAssetsGroup!==type);
+    const isOpen=S.activeAssetsGroup===type || getActiveAssetGroup()===type;
+    setActiveAssetGroup(type, !isOpen);
     render();
     return;
   }
@@ -16797,7 +16798,7 @@ function ativos(){
     const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
-    const isOpen=S.activeAssetsGroup===type;
+    const isOpen=S.activeAssetsGroup===type || getActiveAssetGroup()===type;
     let rows='';
     let rfCards='';
     if(isOpen){
