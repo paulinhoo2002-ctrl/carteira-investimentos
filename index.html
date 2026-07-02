@@ -13559,8 +13559,17 @@ function setActiveAssetGroup(type, open){
   else if(UI.openCardsByTab.ativos.group===type) delete UI.openCardsByTab.ativos.group;
   S.activeAssetsGroup=open ? type : '';
 }
-function toggleAssetGroup(type, open){
-  setActiveAssetGroup(type, !!open);
+function toggleAssetGroup(type, evOrOpen){
+  if(evOrOpen && typeof evOrOpen.preventDefault==='function'){
+    evOrOpen.preventDefault();
+    setActiveAssetGroup(type, S.activeAssetsGroup!==type);
+    render();
+    return;
+  }
+  const open=!!evOrOpen;
+  const isOpen=S.activeAssetsGroup===type || getActiveAssetGroup()===type;
+  if(isOpen===open) return;
+  setActiveAssetGroup(type, open);
   render();
 }
 function getAssetSortConfig(type){
@@ -16879,8 +16888,8 @@ function ativos(){
       }).join('');
     }
 
-    return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}" ontoggle='toggleAssetGroup(${JSON.stringify(type)}, this.open)'>
-      <summary>
+    return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}">
+      <summary onclick="toggleAssetGroup(${JSON.stringify(type)}, event)">
         <div class="ag-left">
           <div class="ag-ico">${tipoIcon(type)}</div>
           <div>
