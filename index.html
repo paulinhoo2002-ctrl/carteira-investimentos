@@ -4509,7 +4509,7 @@ function configMenu(){
         <button class="btn bgh" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
         <button class="btn bgh" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
         <button class="btn bgh" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
-        <button class="btn bgh" onclick="importNotaCorretora();closeConfigMenus()">🧾 Nota corretora</button>
+        <button class="btn bgh" onclick="openBrokerNoteImport();closeConfigMenus()">🧾 Nota corretora</button>
       </div>
       <div class="cfg-menu-divider"></div>
       <div class="cfg-menu-group">
@@ -4825,9 +4825,7 @@ function importB3Excel(){
   el.click();
 }
 function importNotaCorretora(){
-  const el=document.getElementById('nota-file');
-  if(!el){ alert('Campo de importação da nota não encontrado.'); return; }
-  el.click();
+  openBrokerNoteImport();
 }
 async function loadPdfJs(){
   if(window.__pdfjsLib) return window.__pdfjsLib;
