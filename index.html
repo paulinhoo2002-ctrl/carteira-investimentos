@@ -6700,6 +6700,7 @@ function extractInterBrokerNoteHeader(text){
   const headerText=headerLines.join('\n');
   const normalized=notaNorm(headerText);
   const tradeLabel='DATA\\s*(?:DO\\s*)?PREG[^A-Z0-9]*A?O';
+  const noteLabelPattern=/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA/;
   let noteNumber='';
   let tradeDate='';
   const directNotePatterns=[
@@ -6719,9 +6720,16 @@ function extractInterBrokerNoteHeader(text){
     const match=normalized.match(pattern);
     if(match){ tradeDate=match[match.length-1]; break; }
   }
+  const extractNextValue=(items,start,pattern)=>{
+    for(let i=start;i<Math.min(items.length,start+4);i++){
+      const hit=items[i] && String(items[i]).match(pattern);
+      if(hit) return hit[1]||hit[0]||'';
+    }
+    return '';
+  };
   for(let i=0;i<headerLines.length && (!noteNumber||!tradeDate);i++){
     const lineNorm=notaNorm(headerLines[i]);
-    const hasNoteLabel=/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA/.test(lineNorm);
+    const hasNoteLabel=noteLabelPattern.test(lineNorm);
     const hasTradeLabel=new RegExp(tradeLabel).test(lineNorm);
     const hasHeaderValues=/\b\d{5,12}\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/.test(lineNorm);
     if(!hasNoteLabel && !hasTradeLabel && !hasHeaderValues) continue;
@@ -6730,10 +6738,12 @@ function extractInterBrokerNoteHeader(text){
     if(!noteNumber){
       const afterLabel=windowNorm.match(/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA[\s:.-]*(?:FOLHA[\s:.-]*)?(?:DATA\s*(?:DO\s*)?PREGAO[\s:.-]*)?(\d{5,12})/);
       const beforeSheet=windowNorm.match(/\b(\d{5,12})\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/);
-      noteNumber=(afterLabel||beforeSheet||[])[1]||'';
+      const nextLineNumber=extractNextValue(headerLines,i+1,/^\d{5,12}$/);
+      noteNumber=(afterLabel||beforeSheet||[])[1]||nextLineNumber||'';
     }
     if(!tradeDate){
-      tradeDate=(windowNorm.match(new RegExp(`${tradeLabel}[\\s:.-]*(\\d{2}\\/\\d{2}\\/\\d{4})`))||windowNorm.match(/\b(\d{2}\/\d{2}\/\d{4})\b/)||[])[1]||'';
+      const nextLineDate=extractNextValue(headerLines,i+1,/^\d{2}\/\d{2}\/\d{4}$/);
+      tradeDate=(windowNorm.match(new RegExp(`${tradeLabel}[\\s:.-]*(\\d{2}\\/\\d{2}\\/\\d{4})`))||windowNorm.match(/\b(\d{2}\/\d{2}\/\d{4})\b/)||[])[1]||nextLineDate||'';
     }
   }
   return {noteNumber,tradeDate};
