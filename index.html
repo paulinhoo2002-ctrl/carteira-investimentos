@@ -293,6 +293,7 @@ button{cursor:pointer;font-family:inherit}
   .premium-radar{grid-template-columns:repeat(2,minmax(0,1fr))}
   .patrimony-grid{grid-template-columns:1fr}
   .patrimony-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dashboard-home-grid{grid-template-columns:1fr!important;gap:8px!important}
 }
 @media(max-width:640px){
   .analysis-shell{gap:8px;margin-bottom:12px}
@@ -387,6 +388,11 @@ button{cursor:pointer;font-family:inherit}
   .premium-metric-value{font-size:15px}
   .premium-dashboard-grid{gap:8px}
   .premium-panel{padding:10px}
+  .dashboard-home-performance{padding:8px!important}
+  .dashboard-home-performance .perf-title{margin-bottom:6px}
+  .dashboard-home-performance .perf-h{font-size:11px}
+  .dashboard-home-performance .perf-sub{font-size:8px}
+  .dashboard-home-performance .perf-list{gap:7px}
   .premium-wallet-body{grid-template-columns:1fr}
   .premium-wallet-pie{display:none}
   .premium-radar{grid-template-columns:1fr 1fr;gap:7px}
@@ -431,6 +437,23 @@ button{cursor:pointer;font-family:inherit}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-text{max-width:100%}
 .premium-consultive-grid .premium-consultive-card .premium-consultive-card-action{margin-top:auto}
 .premium-exec-list{display:flex;flex-direction:column;gap:5px}
+.dashboard-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.dashboard-home-grid > *{min-width:0}
+.dashboard-home-performance.hi{order:5}
+.dashboard-home-performance.lo{order:6}
+.dashboard-home-performance .perf-list{gap:8px}
+.dashboard-home-performance .perf-empty{padding:10px;border:1px dashed #26344b;border-radius:10px;background:#09101b;color:#7489a4;font-size:10px;line-height:1.45}
+.perf-card{border:1px solid #1d2940;border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:10px 11px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.perf-title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.perf-h{font-size:12px;font-weight:900;color:var(--text);line-height:1.15}
+.perf-sub{font-size:9px;color:var(--muted);line-height:1.35;margin-top:2px}
+.perf-badge{font-size:9px;font-weight:800;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 8px;white-space:nowrap;flex:none}
+.perf-list{display:flex;flex-direction:column;gap:6px}
+.perf-empty{padding:10px;border:1px dashed #26344b;border-radius:10px;background:#09101b;color:#7489a4;font-size:10px;line-height:1.45}
+.dashboard-home-performance .asset-performance-row{padding:7px 8px}
+.dashboard-home-performance .asset-performance-name{font-size:11px}
+.dashboard-home-performance .asset-performance-prices,.dashboard-home-performance .asset-performance-total{font-size:8px}
+.dashboard-home-performance .asset-performance-pct{font-size:11px}
 .dashboard-consultive-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:10px;align-items:start}
 .dashboard-consultive-main,.dashboard-consultive-side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .dashboard-home-summary .premium-metrics,.dashboard-home-income .premium-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
@@ -14181,6 +14204,23 @@ function dashboardHomeCompositionPanel(data){
     <div class="premium-note">Total considerado na composição: <strong>${fmt(total)}</strong></div>
   </div>`;
 }
+function dashboardHomePerformancePanel(title, subtitle, items, kind){
+  const list=Array.isArray(items) ? items : [];
+  const empty=kind==='high'
+    ? '<div class="perf-empty">Nenhuma alta relevante no momento.</div>'
+    : '<div class="perf-empty">Nenhuma baixa relevante no momento.</div>';
+  const maxAbs=Math.max(...list.map(a=>Math.abs(Number(a.pct)||0)),1);
+  return `<div class="perf-card ${kind==='high'?'hi':'lo'} dashboard-home-performance">
+    <div class="perf-title">
+      <div>
+        <div class="perf-h">${esc(title)}</div>
+        <div class="perf-sub">${esc(subtitle)}</div>
+      </div>
+      <div class="perf-badge">${list.length} ativos</div>
+    </div>
+    <div class="perf-list">${list.length ? list.map(r=>assetPerformanceRowHtml(r,maxAbs,kind==='high'?'positive':'negative')).join('') : empty}</div>
+  </div>`;
+}
 function dashboardHomeAttentionPanel(data){
   const top1=data?.concentration?.[0]||null;
   const top3=(data?.concentration||[]).slice(0,3);
@@ -14972,17 +15012,13 @@ function dashLegacy(){
 function dash(){
   const data=dashboardSnapshot();
   return `<div class="premium-dashboard">
-    <div class="dashboard-consultive-grid">
-      <div class="dashboard-consultive-main">
-        ${dashboardHomeSummaryPanel(data)}
-        ${dashboardPassiveIncomePanel(data)}
-        ${dashboardHomeMonthlyPayersPanel(data)}
-        ${dashboardHomeCompositionPanel(data)}
-      </div>
-      <div class="dashboard-consultive-side">
-        ${dashboardHomeAttentionPanel(data)}
-        ${dashboardHomeActionsPanel()}
-      </div>
+    <div class="dashboard-home-grid">
+      ${dashboardHomeSummaryPanel(data)}
+      ${dashboardPassiveIncomePanel(data)}
+      ${dashboardHomeMonthlyPayersPanel(data)}
+      ${dashboardHomeCompositionPanel(data)}
+      ${dashboardHomePerformancePanel('Maiores altas','Melhor desempenho da carteira.',data.positives||[],'high')}
+      ${dashboardHomePerformancePanel('Maiores baixas','Pior desempenho da carteira.',data.negatives||[],'low')}
     </div>
   </div>`;
 }
