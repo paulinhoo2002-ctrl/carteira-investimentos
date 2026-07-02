@@ -7068,7 +7068,7 @@ function applyB3ImportedPositions(items, importDate){
   b3ImportCompletedMessage(`✅ Posição B3 importada: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
 }
 function openBrokerNoteImport(){
-  S.brokerNoteImport={open:true,status:'idle',message:'',fileName:'',rateCosts:false,allowDuplicate:false,parsed:null};
+  S.brokerNoteImport={open:true,status:'idle',message:'',fileName:'',fileSize:0,rateCosts:false,allowDuplicate:false,parsed:null,diag:{phase:'aguardando',fileName:'',fileSize:0,chars:0,noteNumber:'',tradeDate:'',operations:0,rows:0,tickers:[],error:''}};
   render();
 }
 function closeBrokerNoteImport(){
@@ -15432,96 +15432,92 @@ function ativos(){
     const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
-    const isOpen=S.activeAssetsGroup===type;
-    let rows='';
-    let rfCards='';
-    if(isOpen){
-      const sortedItems=sortAssetsByGroup(type, items);
-      rows=sortedItems.map(a=>{
-        const m=getAssetMetrics(a);
-        const avg=Number(a.avg_price)||0;
-        const currentUnit=m.currentUnit;
-        const marketValue=m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
-        const currentDisplay=m.isRF ? marketValue : currentUnit;
-        const applied=m.appliedValue;
-        const rentab=m.rentabPct;
-        const juros=m.jurosValue;
-        const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
-        const peso=total>0?(marketValue/total)*100:0;
-        const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
-        const q=S.quotes[a.ticker];
-        const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
-        const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
-        const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'sem atualiza????o';
-        const isRF=m.isRF;
-        const atualText=marketValue!=null?fmt(currentDisplay):'???';
-        const pmText=isRF?fmt(applied):(avg?fmt(avg):'???');
-        const rfSource=isRF?assetRfCurrentValueMeta(a):null;
-        const rentText=isRF
-          ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: ???'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'???'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou l??quido atual da corretora para acompanhar a rentabilidade.</div>':''}`
-          : `${Number.isFinite(rentab)?fmtP(rentab):'???'}`;
-        const atualCls=isRF
-          ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
-          : `font-weight:600;color:${currentUnit>=avg?'#34d399':'#f87171'}`;
-        return`<tr>
-          <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
-          <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
-          <td class="mu">${esc(a.sector||'???')}</td>
-          <td>${a.qty}</td>
-          <td>${pmText}</td>
-          <td style="${atualCls}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
-            ${atualText}
-            ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">???</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">???</span>':''}
-            <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} ?? ${qt}</div>
-            ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'???')}${rfSource?.origin ? ` ?? ${esc(rfSource.origin)}` : ''}</div>`:''}
-          </td>
-          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
-          <td>${alvo>0?fmt(alvo):'???'}</td>
-          <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'???'}</td>
-          <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
-          <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'???'}</td>
-          <td class="am" style="font-weight:600">${fmt(dm)}</td>
-        <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">???Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado ??? atualize se necess??rio">~Est</span>':''}</td>
-          <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button></td>
-        </tr>`;
-      }).join('');
-      rfCards=sortedItems.map(a=>{
-        const applied=assetAppliedValue(a);
-        const current=assetCurrentValue(a);
-        const profit=assetJurosValue(a);
-        const rentab=assetRentabPct(a);
-        const name=assetRfName(a);
-        const subtype=assetRfSubtype(a);
-        const appDate=assetRfApplicationDate(a);
-        const dueDate=assetRfMaturityDate(a);
-        const contractRate=assetRfContractRate(a);
-        const note=assetRfNote(a);
-        const iriof=assetRfIrIof(a);
-        const unavailable=assetRfUnavailableValue(a);
-        return `<div class="rf-card" style="background:#0d111e;border:1px solid #161e2e;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)">
-          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
-            <div style="min-width:0">
-              <div style="font-weight:800;font-size:14px;color:#e2eaf6;line-height:1.2">${esc(name||a.ticker||'Renda Fixa')}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` ?? ${esc(contractRate)}`:''}</div>
-            </div>
-            <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplica????o</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'???')}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Vencimento</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(dueDate||'???')}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor aplicado</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(applied)}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor l?quido</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(current)}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Rentabilidade</div><div style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(rentab)?fmtP(rentab):'???'}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Ganhos/Perdas</div><div style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(profit)?fmt(profit):'???'}</div></div>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#94a3b8">
-            ${unavailable?`<span class="note-pill">Indispon??vel: ${fmt(unavailable)}</span>`:''}
-            ${iriof||a.rf_ir_iof===0?`<span class="note-pill">IR/IOF: ${fmt(iriof)}</span>`:''}
-            ${note?`<span class="note-pill" title="${esc(note)}">Obs.: ${esc(note)}</span>`:''}
-          </div>
-        </div>`;
-      }).join('');
-    }
+     const isOpen=S.activeAssetsGroup===type;
+     const sortedItems=sortAssetsByGroup(type, items);
+     const rows=sortedItems.map(a=>{
+       const m=getAssetMetrics(a);
+       const avg=Number(a.avg_price)||0;
+       const currentUnit=m.currentUnit;
+       const marketValue=m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
+       const currentDisplay=m.isRF ? marketValue : currentUnit;
+       const applied=m.appliedValue;
+       const rentab=m.rentabPct;
+       const juros=m.jurosValue;
+       const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
+       const peso=total>0?(marketValue/total)*100:0;
+       const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
+       const q=S.quotes[a.ticker];
+       const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
+       const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
+       const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'sem atualiza????o';
+       const isRF=m.isRF;
+       const atualText=marketValue!=null?fmt(currentDisplay):'???';
+       const pmText=isRF?fmt(applied):(avg?fmt(avg):'???');
+       const rfSource=isRF?assetRfCurrentValueMeta(a):null;
+       const rentText=isRF
+         ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: ???'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'???'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou l??quido atual da corretora para acompanhar a rentabilidade.</div>':''}`
+         : `${Number.isFinite(rentab)?fmtP(rentab):'???'}`;
+       const atualCls=isRF
+         ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
+         : `font-weight:600;color:${currentUnit>=avg?'#34d399':'#f87171'}`;
+       return`<tr>
+         <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
+         <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
+         <td class="mu">${esc(a.sector||'???')}</td>
+         <td>${a.qty}</td>
+         <td>${pmText}</td>
+         <td style="${atualCls}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
+           ${atualText}
+           ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">???</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">???</span>':''}
+           <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} ?? ${qt}</div>
+           ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'???')}${rfSource?.origin ? ` ?? ${esc(rfSource.origin)}` : ''}</div>`:''}
+         </td>
+         <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
+         <td>${alvo>0?fmt(alvo):'???'}</td>
+         <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'???'}</td>
+         <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
+         <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'???'}</td>
+         <td class="am" style="font-weight:600">${fmt(dm)}</td>
+       <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">???Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado ??? atualize se necess??rio">~Est</span>':''}</td>
+         <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button></td>
+       </tr>`;
+     }).join('');
+     const rfCards=sortedItems.map(a=>{
+       const applied=assetAppliedValue(a);
+       const current=assetCurrentValue(a);
+       const profit=assetJurosValue(a);
+       const rentab=assetRentabPct(a);
+       const name=assetRfName(a);
+       const subtype=assetRfSubtype(a);
+       const appDate=assetRfApplicationDate(a);
+       const dueDate=assetRfMaturityDate(a);
+       const contractRate=assetRfContractRate(a);
+       const note=assetRfNote(a);
+       const iriof=assetRfIrIof(a);
+       const unavailable=assetRfUnavailableValue(a);
+       return `<div class="rf-card" style="background:#0d111e;border:1px solid #161e2e;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)">
+         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+           <div style="min-width:0">
+             <div style="font-weight:800;font-size:14px;color:#e2eaf6;line-height:1.2">${esc(name||a.ticker||'Renda Fixa')}</div>
+             <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` ?? ${esc(contractRate)}`:''}</div>
+           </div>
+           <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button>
+         </div>
+         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
+           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplica????o</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'???')}</div></div>
+           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Vencimento</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(dueDate||'???')}</div></div>
+           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor aplicado</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(applied)}</div></div>
+           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor l?quido</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(current)}</div></div>
+           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Rentabilidade</div><div style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(rentab)?fmtP(rentab):'???'}</div></div>
+           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Ganhos/Perdas</div><div style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(profit)?fmt(profit):'???'}</div></div>
+         </div>
+         <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#94a3b8">
+           ${unavailable?`<span class="note-pill">Indispon??vel: ${fmt(unavailable)}</span>`:''}
+           ${iriof||a.rf_ir_iof===0?`<span class="note-pill">IR/IOF: ${fmt(iriof)}</span>`:''}
+           ${note?`<span class="note-pill" title="${esc(note)}">Obs.: ${esc(note)}</span>`:''}
+         </div>
+       </div>`;
+     }).join('');
 
     return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}">
       <summary onclick="toggleAssetGroup(${JSON.stringify(type)}, event)">
