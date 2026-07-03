@@ -9081,11 +9081,11 @@ document.getElementById('broker-note-pdf-file').addEventListener('change',async 
 });
 
 function configBrapi(){
-  const token=prompt('Opcional: cole token da brapi.dev apenas para proventos automáticos/fallback (cotações usam Yahoo sem token):',S.brapiToken?'••••••••':'');
+  const token=prompt('Opcional: cole token da Brapi apenas para proventos automáticos/fallback (cotações usam Yahoo sem token):',S.brapiToken?'••••••••':'');
   if(token===null) return;
   S.brapiToken=token.trim()==='••••••••'?S.brapiToken:token.trim();
   saveConfig();
-  toast(S.brapiToken?'✅ Token brapi opcional salvo! Cotações continuam pelo Yahoo sem token.':'Token brapi removido. Cotações seguem pelo Yahoo sem token.');
+  toast(S.brapiToken?'✅ Token Brapi opcional salvo! Cotações continuam pelo Yahoo sem token.':'Token Brapi removido. Cotações seguem pelo Yahoo sem token.');
 }
 
 // ══════════════════════════════════════
@@ -13000,7 +13000,7 @@ async function fetchAutoProventos(){
     if(cleaned>0){ save(); render(); toast(`🧹 ${cleaned} provento(s) automático(s) removido(s).`); }
     alert('Registre compras na aba Aportes antes de buscar proventos.');return;
   }
-  if(!S.brapiToken){alert('Configure o token da brapi.dev em ⚙️ brapi.');return;}
+  if(!S.brapiToken){alert('Configure o token da Brapi em ⚙️ brapi.');return;}
   const start=toISODate(earliestAporteDate()),end=toISODate(new Date());
   const existing=new Set(preserved.map(p=>p.autoKey).filter(Boolean));
   let novos=0,ignorados=0,erros=[];
@@ -13031,7 +13031,7 @@ async function fetchAutoProventos(){
       try{
         const r=await fetch(`https://brapi.dev/api/v2/fii/dividends?symbols=${encodeURIComponent(batch)}&startDate=${start}&endDate=${end}&sortOrder=asc`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
         if(r.ok){const j=await r.json();addItems(collectDividendItems(j,''),'FII');}
-        else if(r.status===403) erros.push('FIIs exigem plano Pro na brapi');
+        else if(r.status===403) erros.push('FIIs exigem plano Pro na Brapi');
       }catch(e){erros.push('FII');}
     }
     const cleaned=stripAutoProventos();
@@ -15364,7 +15364,7 @@ function frmA(){
            <div><div class="fl" style="display:flex;justify-content:space-between;align-items:center">
              <span>Cotação atual</span>
              <span style="font-size:10px;color:#34d399;background:rgba(52,211,153,.1);padding:1px 7px;border-radius:4px;border:1px solid rgba(52,211,153,.2)">
-               ${f.quoteSource==='brapi'?'📡 brapi':f.quoteSource==='yahoo'?'📡 yahoo':'📡 auto'}
+                ${f.quoteSource==='brapi'?'📡 Brapi':f.quoteSource==='yahoo'?'📡 Yahoo':'📡 Automático'}
              </span>
            </div>
            <input id="f-cp" type="text" inputmode="decimal" step="0.01" value="${esc(moneyInput(f.current_price||0))}" disabled style="opacity:.6;cursor:not-allowed">
@@ -15449,37 +15449,37 @@ function ativos(){
        const q=S.quotes[a.ticker];
        const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
        const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
-       const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'brapi':a.quoteSource==='importado'?'importado':'sem atualiza????o';
+        const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'Brapi':a.quoteSource==='importado'?'Importado':'sem atualização';
        const isRF=m.isRF;
-       const atualText=marketValue!=null?fmt(currentDisplay):'???';
-       const pmText=isRF?fmt(applied):(avg?fmt(avg):'???');
+        const atualText=marketValue!=null?fmt(currentDisplay):'—';
+        const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
        const rfSource=isRF?assetRfCurrentValueMeta(a):null;
        const rentText=isRF
-         ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: ???'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'???'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou l??quido atual da corretora para acompanhar a rentabilidade.</div>':''}`
-         : `${Number.isFinite(rentab)?fmtP(rentab):'???'}`;
+          ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou liquido atual da corretora para acompanhar a rentabilidade.</div>':''}`
+          : `${Number.isFinite(rentab)?fmtP(rentab):'—'}`;
        const atualCls=isRF
          ? `font-weight:600;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#e2eaf6'}`
          : `font-weight:600;color:${currentUnit>=avg?'#34d399':'#f87171'}`;
        return`<tr>
          <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}</td>
          <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
-         <td class="mu">${esc(a.sector||'???')}</td>
+          <td class="mu">${esc(a.sector||'—')}</td>
          <td>${a.qty}</td>
          <td>${pmText}</td>
          <td style="${atualCls}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
            ${atualText}
-           ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="brapi">???</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">???</span>':''}
-           <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} ?? ${qt}</div>
-           ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'???')}${rfSource?.origin ? ` ?? ${esc(rfSource.origin)}` : ''}</div>`:''}
+            ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="Brapi">Brapi</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">Yahoo</span>':''}
+            <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
+            ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
          </td>
          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
-         <td>${alvo>0?fmt(alvo):'???'}</td>
-         <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'???'}</td>
+          <td>${alvo>0?fmt(alvo):'—'}</td>
+          <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'—'}</td>
          <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
-         <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'???'}</td>
+          <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
          <td class="am" style="font-weight:600">${fmt(dm)}</td>
-       <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">???Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado ??? atualize se necess??rio">~Est</span>':''}</td>
-         <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button></td>
+        <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via Brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado · atualize se necessário">Estimativa</span>':''}</td>
+          <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">Editar</button></td>
        </tr>`;
      }).join('');
      const rfCards=sortedItems.map(a=>{
@@ -15499,28 +15499,28 @@ function ativos(){
          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
            <div style="min-width:0">
              <div style="font-weight:800;font-size:14px;color:#e2eaf6;line-height:1.2">${esc(name||a.ticker||'Renda Fixa')}</div>
-             <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` ?? ${esc(contractRate)}`:''}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
            </div>
-           <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">??????</button>
+            <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">Editar</button>
          </div>
          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
-           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplica????o</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'???')}</div></div>
-           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Vencimento</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(dueDate||'???')}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplicação</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'—')}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Vencimento</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(dueDate||'—')}</div></div>
            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor aplicado</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(applied)}</div></div>
-           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor l?quido</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(current)}</div></div>
-           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Rentabilidade</div><div style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(rentab)?fmtP(rentab):'???'}</div></div>
-           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Ganhos/Perdas</div><div style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(profit)?fmt(profit):'???'}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor líquido</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(current)}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Rentabilidade</div><div style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(rentab)?fmtP(rentab):'—'}</div></div>
+            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Ganhos/Perdas</div><div style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(profit)?fmt(profit):'—'}</div></div>
          </div>
          <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#94a3b8">
-           ${unavailable?`<span class="note-pill">Indispon??vel: ${fmt(unavailable)}</span>`:''}
+            ${unavailable?`<span class="note-pill">Indisponível: ${fmt(unavailable)}</span>`:''}
            ${iriof||a.rf_ir_iof===0?`<span class="note-pill">IR/IOF: ${fmt(iriof)}</span>`:''}
            ${note?`<span class="note-pill" title="${esc(note)}">Obs.: ${esc(note)}</span>`:''}
          </div>
        </div>`;
      }).join('');
 
-    return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}">
-      <summary onclick="toggleAssetGroup(${JSON.stringify(type)}, event)">
+    return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}" ontoggle='toggleAssetGroup(${JSON.stringify(type)}, this.open)'>
+       <summary>
         <div class="ag-left">
           <div class="ag-ico">${tipoIcon(type)}</div>
           <div>
@@ -15542,14 +15542,14 @@ function ativos(){
           ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">${rfCards||'<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Nenhum ativo de renda fixa nesta categoria.</div>'}</div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
-            <thead><tr><th><span style="cursor:pointer;user-select:none" onclick="toggleAssetSort(${JSON.stringify(type)},'ticker');event.stopPropagation()">Ticker${assetSortIndicator(type,'ticker')}</span></th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
+            <thead><tr><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"ticker");event.stopPropagation()'>Ticker${assetSortIndicator(type,'ticker')}</span></th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
               <th>
                 <div style="display:flex;align-items:center;gap:5px">
                   ATUAL
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th><span style="cursor:pointer;user-select:none" onclick="toggleAssetSort(${JSON.stringify(type)},'rentability');event.stopPropagation()">Rentab.${assetSortIndicator(type,'rentability')}</span></th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+              <th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"rentability");event.stopPropagation()'>Rentab.${assetSortIndicator(type,'rentability')}</span></th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
             <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>`}
@@ -15920,7 +15920,7 @@ function apTab(){
     }).join('');
     const isOpen=S.activeAssetsGroup===type;
     return`<details class="ag"${isOpen?' open':''}>
-      <summary onclick="toggleAssetGroup(${JSON.stringify(type)}, event)">
+      <summary onclick='toggleAssetGroup(${JSON.stringify(type)}, event)'>
         <div class="ag-left">
           <div class="ag-ico">${tipoIcon(type)}</div>
           <div>
@@ -16740,6 +16740,8 @@ function setDividendSearch(value){
   S.dividendSearch=String(value||'');
   clearTimeout(S.dividendSearchTimer);
   const cursor=Number(document.getElementById('dividend-premium-search')?.selectionStart);
+  const scrollX=window.scrollX;
+  const scrollY=window.scrollY;
   S.dividendSearchTimer=setTimeout(()=>{
     render();
     requestAnimationFrame(()=>{
@@ -16748,6 +16750,7 @@ function setDividendSearch(value){
       input.focus({preventScroll:true});
       const position=Number.isFinite(cursor)?Math.min(cursor,input.value.length):input.value.length;
       input.setSelectionRange(position,position);
+      window.scrollTo({left:scrollX, top:scrollY, behavior:'auto'});
     });
   },180);
 }
@@ -18009,6 +18012,8 @@ function setAporteSearch(v){
   S.aportesPage = 1;
   clearTimeout(S.apSearchTimer);
   const cursor=Number(document.getElementById('aporte-premium-search')?.selectionStart);
+  const scrollX=window.scrollX;
+  const scrollY=window.scrollY;
   S.apSearchTimer = setTimeout(()=>{
     render();
     requestAnimationFrame(()=>{
@@ -18017,6 +18022,7 @@ function setAporteSearch(v){
       input.focus({preventScroll:true});
       const position=Number.isFinite(cursor)?Math.min(cursor,input.value.length):input.value.length;
       input.setSelectionRange(position,position);
+      window.scrollTo({left:scrollX, top:scrollY, behavior:'auto'});
     });
   },180);
 }
@@ -18024,12 +18030,15 @@ function clearAporteSearch(){
   S.apSearch = '';
   S.aportesPage = 1;
   clearTimeout(S.apSearchTimer);
+  const scrollX=window.scrollX;
+  const scrollY=window.scrollY;
   render();
   requestAnimationFrame(()=>{
     const input=document.getElementById('aporte-premium-search');
     if(!input) return;
     input.focus({preventScroll:true});
     input.setSelectionRange(0,0);
+    window.scrollTo({left:scrollX, top:scrollY, behavior:'auto'});
   });
 }
 function setAportesViewMode(mode){
