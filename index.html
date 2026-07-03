@@ -16740,6 +16740,8 @@ function setDividendSearch(value){
   S.dividendSearch=String(value||'');
   clearTimeout(S.dividendSearchTimer);
   const cursor=Number(document.getElementById('dividend-premium-search')?.selectionStart);
+  const scrollX=window.scrollX;
+  const scrollY=window.scrollY;
   S.dividendSearchTimer=setTimeout(()=>{
     render();
     requestAnimationFrame(()=>{
@@ -16748,6 +16750,7 @@ function setDividendSearch(value){
       input.focus({preventScroll:true});
       const position=Number.isFinite(cursor)?Math.min(cursor,input.value.length):input.value.length;
       input.setSelectionRange(position,position);
+      window.scrollTo({left:scrollX, top:scrollY, behavior:'auto'});
     });
   },180);
 }
@@ -18009,6 +18012,8 @@ function setAporteSearch(v){
   S.aportesPage = 1;
   clearTimeout(S.apSearchTimer);
   const cursor=Number(document.getElementById('aporte-premium-search')?.selectionStart);
+  const scrollX=window.scrollX;
+  const scrollY=window.scrollY;
   S.apSearchTimer = setTimeout(()=>{
     render();
     requestAnimationFrame(()=>{
@@ -18017,6 +18022,7 @@ function setAporteSearch(v){
       input.focus({preventScroll:true});
       const position=Number.isFinite(cursor)?Math.min(cursor,input.value.length):input.value.length;
       input.setSelectionRange(position,position);
+      window.scrollTo({left:scrollX, top:scrollY, behavior:'auto'});
     });
   },180);
 }
@@ -18024,12 +18030,15 @@ function clearAporteSearch(){
   S.apSearch = '';
   S.aportesPage = 1;
   clearTimeout(S.apSearchTimer);
+  const scrollX=window.scrollX;
+  const scrollY=window.scrollY;
   render();
   requestAnimationFrame(()=>{
     const input=document.getElementById('aporte-premium-search');
     if(!input) return;
     input.focus({preventScroll:true});
     input.setSelectionRange(0,0);
+    window.scrollTo({left:scrollX, top:scrollY, behavior:'auto'});
   });
 }
 function setAportesViewMode(mode){
