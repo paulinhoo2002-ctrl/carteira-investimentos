@@ -21,6 +21,15 @@ Fase 57 - UX Premium
 | [DESIGN.md](DESIGN.md) | Sistema de design |
 | [CHANGELOG.md](CHANGELOG.md) | Historico de versoes |
 
+## DOCUMENTACAO DO PRODUTO
+
+| Documento | Descricao |
+|-----------|-----------|
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Proximas fases planejadas |
+| [docs/VERSION.md](docs/VERSION.md) | Versao atual e status |
+| [docs/RELEASES.md](docs/RELEASES.md) | Historico de releases |
+| [docs/BACKUP.md](docs/BACKUP.md) | Guia de backup e protecao de dados |
+
 ## PRINCIPIOS DO PROJETO
 
 - UX em primeiro lugar.
