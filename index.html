@@ -3660,6 +3660,7 @@ function deleteWallet(){
 // ══════════════════════════════════════
 function save(){
   try{
+    if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
     localStorage.setItem(STOR, JSON.stringify({
       wallets:S.wallets, activeWalletId:S.activeWalletId,
@@ -13993,6 +13994,7 @@ function render(){
   const root=document.getElementById('root');
   if(!root) return;
   try{
+    if(S._rmpTrace) console.log('[rmP] render() chamado');
     root.innerHTML=app();
     bind();
   }catch(error){
@@ -15735,7 +15737,7 @@ function aporteHistoryCard(row){
   }else if(row.sourceType==='provento'){
     actions.push(`<button class="bi" onclick="go('dividendos')" title="Abrir Dividendos" aria-label="Abrir Dividendos">↗</button>`);
   }
-  actions.push(`<button class="bdi" onclick="deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})" title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
+  actions.push(`<button class="bdi" onclick='deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})' title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
   return `<article class="aporte-history-card">
     <div class="aporte-history-date">${esc(row.date||'Sem data')}</div>
     <div class="aporte-history-main">
@@ -15865,8 +15867,8 @@ function apTab(){
         <td class="${isOut?'rd':'gn'}" style="font-weight:700">${isOut?'-':'+'}${fmt(Math.abs(Number(a.qty)||1)*Number(a.price||0))}</td>
           <td class="mu">${esc(a.decision||a.reserveLabel||'—')}</td>
           <td><div style="display:flex;gap:6px">
-            <button class="bi" onclick="edP(${a.id})">✏️</button>
-            <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+            <button class="bi" onclick="edP(${JSON.stringify(a.id)})">✏️</button>
+            <button class="bdi" onclick="rmP(${JSON.stringify(a.id)})">🗑️</button>
           </div></td>
         </tr>`;
       }).join('')
@@ -15910,8 +15912,8 @@ function apTab(){
         <td class="${isV?'rd':'gn'}" style="font-weight:700">${isV?'-':'+'}${fmt(Math.abs(a.qty)*a.price)}</td>
         <td class="mu">${esc(a.decision||'—')}</td>
         <td><div style="display:flex;gap:6px">
-          <button class="bi" onclick="edP(${a.id})">✏️</button>
-          <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+          <button class="bi" onclick="edP(${JSON.stringify(a.id)})">✏️</button>
+          <button class="bdi" onclick="rmP(${JSON.stringify(a.id)})">🗑️</button>
         </div></td>
       </tr>`;
     }).join('');
@@ -17962,10 +17964,21 @@ function svP(){
   scheduleAutoProventosGratis('aporte');
 }
 function rmP(id){
+  const idStr=String(id);
+  const before=Array.isArray(S.aportes) ? S.aportes.slice() : [];
+  console.log('[rmP] chamado com id:', id, typeof id);
+  console.log('[rmP] aportes antes:', before.map(a=>({id:a.id, idType:typeof a.id, ticker:a.ticker, valor:a.valor})));
   if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
-  S.aportes=S.aportes.filter(a=>a.id!==id);
-  if(S.editPId===id){ S.editPId=null; S.showP=false; S._fp=null; }
+  console.log('[rmP] confirm true');
+  S.aportes=S.aportes.filter(a=>String(a.id)!==idStr);
+  console.log('[rmP] aportes depois:', S.aportes.map(a=>({id:a.id, idType:typeof a.id, ticker:a.ticker, valor:a.valor})));
+  console.log('[rmP] removidos:', before.length - S.aportes.length);
+  if(String(S.editPId||'')===idStr){ S.editPId=null; S.showP=false; S._fp=null; }
+  S._rmpTrace=true;
+  console.log('[rmP] chamando syncAssetsFromAportes(false)');
   syncAssetsFromAportes(false);
+  console.log('[rmP] syncAssetsFromAportes(false) concluído');
+  S._rmpTrace=false;
   toast('🗑️ Operação removida.');
   scheduleAutoProventosGratis('remove-aporte');
 }
