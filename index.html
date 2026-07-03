@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -3660,6 +3660,7 @@ function deleteWallet(){
 // ══════════════════════════════════════
 function save(){
   try{
+    if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
     localStorage.setItem(STOR, JSON.stringify({
       wallets:S.wallets, activeWalletId:S.activeWalletId,
@@ -13993,6 +13994,7 @@ function render(){
   const root=document.getElementById('root');
   if(!root) return;
   try{
+    if(S._rmpTrace) console.log('[rmP] render() chamado');
     root.innerHTML=app();
     bind();
   }catch(error){
@@ -15735,7 +15737,7 @@ function aporteHistoryCard(row){
   }else if(row.sourceType==='provento'){
     actions.push(`<button class="bi" onclick="go('dividendos')" title="Abrir Dividendos" aria-label="Abrir Dividendos">↗</button>`);
   }
-  actions.push(`<button class="bdi" onclick="deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})" title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
+  actions.push(`<button class="bdi" onclick='deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})' title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
   return `<article class="aporte-history-card">
     <div class="aporte-history-date">${esc(row.date||'Sem data')}</div>
     <div class="aporte-history-main">
