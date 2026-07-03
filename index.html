@@ -15865,8 +15865,8 @@ function apTab(){
         <td class="${isOut?'rd':'gn'}" style="font-weight:700">${isOut?'-':'+'}${fmt(Math.abs(Number(a.qty)||1)*Number(a.price||0))}</td>
           <td class="mu">${esc(a.decision||a.reserveLabel||'—')}</td>
           <td><div style="display:flex;gap:6px">
-            <button class="bi" onclick="edP(${a.id})">✏️</button>
-            <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+            <button class="bi" onclick="edP(${JSON.stringify(a.id)})">✏️</button>
+            <button class="bdi" onclick="rmP(${JSON.stringify(a.id)})">🗑️</button>
           </div></td>
         </tr>`;
       }).join('')
@@ -15910,8 +15910,8 @@ function apTab(){
         <td class="${isV?'rd':'gn'}" style="font-weight:700">${isV?'-':'+'}${fmt(Math.abs(a.qty)*a.price)}</td>
         <td class="mu">${esc(a.decision||'—')}</td>
         <td><div style="display:flex;gap:6px">
-          <button class="bi" onclick="edP(${a.id})">✏️</button>
-          <button class="bdi" onclick="rmP(${a.id})">🗑️</button>
+          <button class="bi" onclick="edP(${JSON.stringify(a.id)})">✏️</button>
+          <button class="bdi" onclick="rmP(${JSON.stringify(a.id)})">🗑️</button>
         </div></td>
       </tr>`;
     }).join('');
@@ -17962,9 +17962,10 @@ function svP(){
   scheduleAutoProventosGratis('aporte');
 }
 function rmP(id){
+  const idStr=String(id);
   if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
-  S.aportes=S.aportes.filter(a=>a.id!==id);
-  if(S.editPId===id){ S.editPId=null; S.showP=false; S._fp=null; }
+  S.aportes=S.aportes.filter(a=>String(a.id)!==idStr);
+  if(String(S.editPId||'')===idStr){ S.editPId=null; S.showP=false; S._fp=null; }
   syncAssetsFromAportes(false);
   toast('🗑️ Operação removida.');
   scheduleAutoProventosGratis('remove-aporte');
