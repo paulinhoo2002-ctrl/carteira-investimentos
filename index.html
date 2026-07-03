@@ -13136,12 +13136,9 @@ function setRentBench(bench){
   save(); render();
 }
 function getActiveAssetGroup(){
-  return String(UI.openCardsByTab?.ativos?.group||'');
+  return String(S.activeAssetsGroup||'');
 }
 function setActiveAssetGroup(type, open){
-  if(!UI.openCardsByTab.ativos) UI.openCardsByTab.ativos=Object.create(null);
-  if(open) UI.openCardsByTab.ativos.group=type;
-  else if(UI.openCardsByTab.ativos.group===type) delete UI.openCardsByTab.ativos.group;
   S.activeAssetsGroup=open ? type : '';
 }
 function toggleAssetGroup(type, evOrOpen){
