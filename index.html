@@ -13176,7 +13176,7 @@ function assetSortIndicator(type, field){
   if(current.field!==field) return '';
   return current.dir==='asc' ? ' ↑' : ' ↓';
 }
-function sortAssetsByGroup(type, items){
+function sortAssetsByGroup(type, items, portfolioTotal=0){
   const cfg=getAssetSortConfig(type);
   const dirFactor=cfg.dir==='desc' ? -1 : 1;
   return [...items].sort((a,b)=>{
@@ -13193,6 +13193,35 @@ function sortAssetsByGroup(type, items){
       }
       if(ar===br) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
       return (ar-br) * dirFactor;
+    }
+    if(cfg.field==='qty'){
+      const aq=Number(a.qty)||0;
+      const bq=Number(b.qty)||0;
+      if(aq===bq) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (aq-bq) * dirFactor;
+    }
+    if(cfg.field==='share'){
+      const total=Number(portfolioTotal)||0;
+      const aValue=assetCurrentValue(a);
+      const bValue=assetCurrentValue(b);
+      const ashare=total>0 ? (aValue/total)*100 : 0;
+      const bshare=total>0 ? (bValue/total)*100 : 0;
+      if(ashare===bshare) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (ashare-bshare) * dirFactor;
+    }
+    if(cfg.field==='ideal'){
+      const aideal=Number(a.ideal_pct)||0;
+      const bideal=Number(b.ideal_pct)||0;
+      if(aideal===bideal) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (aideal-bideal) * dirFactor;
+    }
+    if(cfg.field==='total'){
+      const aType=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
+      const bType=normalizeType(b.type||metaTicker(b.ticker).type||'Ação','Ação');
+      const aDisplay=aType==='Renda Fixa' ? assetCurrentValue(a) : Number(a.current_price)||0;
+      const bDisplay=bType==='Renda Fixa' ? assetCurrentValue(b) : Number(b.current_price)||0;
+      if(aDisplay===bDisplay) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (aDisplay-bDisplay) * dirFactor;
     }
     const at=String(a.ticker||'').trim().toUpperCase();
     const bt=String(b.ticker||'').trim().toUpperCase();
@@ -15434,7 +15463,7 @@ function ativos(){
     const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
     const share=total>0?(gTotal/total)*100:0;
      const isOpen=S.activeAssetsGroup===type;
-     const sortedItems=sortAssetsByGroup(type, items);
+     const sortedItems=sortAssetsByGroup(type, items, total);
      const rows=sortedItems.map(a=>{
        const m=getAssetMetrics(a);
        const avg=Number(a.avg_price)||0;
@@ -15543,14 +15572,14 @@ function ativos(){
           ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">${rfCards||'<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Nenhum ativo de renda fixa nesta categoria.</div>'}</div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
-            <thead><tr><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"ticker");event.stopPropagation()'>Ticker${assetSortIndicator(type,'ticker')}</span></th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>PM</th>
+            <thead><tr><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"ticker");event.stopPropagation()'>Ticker${assetSortIndicator(type,'ticker')}</span></th><th>Tipo</th><th>Setor</th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"qty");event.stopPropagation()'>Qtd${assetSortIndicator(type,'qty')}</span></th><th>PM</th>
               <th>
                 <div style="display:flex;align-items:center;gap:5px">
                   ATUAL
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"rentability");event.stopPropagation()'>Rentab.${assetSortIndicator(type,'rentability')}</span></th><th>Alvo</th><th>Total</th><th>% Cart.</th><th>% Ideal</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+              <th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"rentability");event.stopPropagation()'>Rentab.${assetSortIndicator(type,'rentability')}</span></th><th>Alvo</th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"total");event.stopPropagation()'>Total${assetSortIndicator(type,'total')}</span></th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"share");event.stopPropagation()'>% Cart.${assetSortIndicator(type,'share')}</span></th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"ideal");event.stopPropagation()'>% Ideal${assetSortIndicator(type,'ideal')}</span></th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
             <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>`}
