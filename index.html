@@ -13404,8 +13404,8 @@ function assetInsightRowHtml(row, mode){
   }
   return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(row.type)} · ${row.pct!=null?fmtP(row.pct):'rentabilidade indisponível'}</div></div><div class="asset-insight-value"><span class="analysis-pill signal ${esc(signal.tone)}">${esc(signal.label)}</span></div></div>`;
 }
-function assetAnalysisBlock(){
-  const rows=assetAnalysisRows();
+function assetAnalysisBlock(rowsInput){
+  const rows=Array.isArray(rowsInput) ? rowsInput : assetAnalysisRows();
   const total=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
   const assetsByTicker=new Map((S.assets||[]).map(a=>[String(a.ticker||'').trim().toUpperCase(),a]));
   const enriched=rows.map(row=>{
@@ -14193,10 +14193,10 @@ function prudentContributionAnalysis(){
     .slice(0,5);
   return {rows:analysisRows,total,evaluated,candidates,insufficient,avoided};
 }
-function dashboardSnapshot(){
+function dashboardSnapshot(analysisRows){
   const portfolio=cx();
   const income=passiveIncomeGoalStats();
-  const analysis=assetAnalysisRows();
+  const analysis=Array.isArray(analysisRows) ? analysisRows : assetAnalysisRows();
   const byType={};
   (S.assets||[]).forEach(a=>{
     const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
@@ -15188,7 +15188,8 @@ function dashLegacy(){
   </div>`;
 }
 function dash(){
-  const data=dashboardSnapshot();
+  const analysisRows=assetAnalysisRows();
+  const data=dashboardSnapshot(analysisRows);
   return `<div class="premium-dashboard">
     <div class="dashboard-home-grid">
       ${dashboardHomeSummaryPanel(data)}
@@ -15409,7 +15410,8 @@ function ativos(){
   });
   const order=TYPE_ORDER;
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
-  const analysis=innerTab==='analise' ? assetAnalysisBlock() : '';
+  const analysisRows=innerTab==='analise' ? assetAnalysisRows() : null;
+  const analysis=innerTab==='analise' ? assetAnalysisBlock(analysisRows) : '';
   const sections=groupNames.map((type,idx)=>{
     const groupKey=String(type||'').toLowerCase()
       .normalize('NFD')
