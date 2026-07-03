@@ -1,34 +1,37 @@
 # Regression Checklist
 
-Use esta checklist para validar o sistema após qualquer alteração.
+Use esta checklist para validar o sistema apos qualquer alteracao.
 
-## Regras de execução
+## Regras de execucao
 - Pare imediatamente se aparecer tela branca, tela preta ou erro vermelho no console.
 - Teste primeiro no desktop e depois no mobile.
-- Marque cada item como `OK`, `Falhou` ou `Não testado`.
-- Registre observações curtas quando houver qualquer comportamento estranho.
+- Marque cada item como `OK`, `Falhou` ou `Nao testado`.
+- Registre observacoes curtas quando houver qualquer comportamento estranho.
 
-## Comandos obrigatórios
+## Comandos obrigatorios
 - `npm run build`
 - Verificar o console do navegador
 - Validar desktop
 - Validar mobile
+- Verificar backup/exportacao antes de mudancas maiores
 
 ## Ordem sugerida de testes
 
-| Ordem | Área | Status | Observações |
+| Ordem | Area | Status | Observacoes |
 |---|---|---|---|
 | 1 | Dashboard |  |  |
-| 2 | Ativos |  |  |
-| 3 | Modal de edição de ativo |  |  |
+| 2 | Cadastro / edicao basica |  |  |
+| 3 | Ativos |  |  |
 | 4 | Dividendos |  |  |
 | 5 | Renda Fixa |  |  |
-| 6 | Sugestão de aporte |  |  |
-| 7 | IA / Assistente |  |  |
-| 8 | Configurações |  |  |
-| 9 | Menu mobile |  |  |
-| 10 | Console sem erros |  |  |
-| 11 | Build |  |  |
+| 6 | Backup / exportacao |  |  |
+| 7 | Nota de Corretagem |  |  |
+| 8 | Sugestao de aporte |  |  |
+| 9 | IA / Assistente |  |  |
+| 10 | Responsividade / mobile |  |  |
+| 11 | Login / Firebase, se aplicavel |  |  |
+| 12 | Console sem erros |  |  |
+| 13 | Build |  |  |
 
 ## Checklist detalhada
 
@@ -39,78 +42,88 @@ Use esta checklist para validar o sistema após qualquer alteração.
 - [ ] Testar desktop.
 - [ ] Testar mobile.
 
-### 2. Ativos
-- [ ] Abrir a aba Ativos.
-- [ ] Confirmar que categorias e listas carregam.
-- [ ] Verificar se filtros e ações continuam funcionais.
-- [ ] Testar expansão e recolhimento dos blocos.
+### 2. Cadastro / edicao basica
+- [ ] Abrir um modal ou formulario de cadastro/edicao.
+- [ ] Confirmar que salvar e cancelar funcionam.
+- [ ] Verificar se os campos obrigatorios estao coerentes.
 - [ ] Testar desktop.
 - [ ] Testar mobile.
 
-### 3. Modal de edição de ativo
-- [ ] Abrir o modal de edição.
-- [ ] Confirmar foco inicial no primeiro campo.
-- [ ] Testar salvar.
-- [ ] Testar cancelar.
-- [ ] Testar fechar no X, ESC e clique fora.
-- [ ] Confirmar que a categoria e o scroll são preservados.
+### 3. Ativos
+- [ ] Abrir a aba Ativos.
+- [ ] Confirmar que categorias e listas carregam.
+- [ ] Verificar se filtros e acoes continuam funcionais.
+- [ ] Testar expansao e recolhimento dos blocos.
 - [ ] Testar desktop.
 - [ ] Testar mobile.
 
 ### 4. Dividendos
 - [ ] Abrir a aba Dividendos.
-- [ ] Confirmar se os cards e históricos aparecem corretamente.
+- [ ] Confirmar se os cards e historicos aparecem corretamente.
 - [ ] Testar filtros e abas internas.
-- [ ] Verificar se o histórico mensal continua legível.
+- [ ] Verificar se o historico mensal continua legivel.
 - [ ] Testar desktop.
 - [ ] Testar mobile.
 
 ### 5. Renda Fixa
 - [ ] Abrir a aba Renda Fixa.
-- [ ] Confirmar leitura de títulos, vencimentos e totais.
-- [ ] Verificar botões, cards e mensagens de apoio.
+- [ ] Confirmar leitura de titulos, vencimentos e totais.
+- [ ] Verificar botoes, cards e mensagens de apoio.
 - [ ] Testar desktop.
 - [ ] Testar mobile.
 
-### 6. Sugestão de aporte
-- [ ] Abrir a área de sugestão/rebalanceamento.
-- [ ] Confirmar que a análise aparece sem quebrar o layout.
-- [ ] Testar ações auxiliares e mensagens consultivas.
+### 6. Backup / exportacao
+- [ ] Abrir a area de backup ou exportacao.
+- [ ] Confirmar que o fluxo abre corretamente.
+- [ ] Gerar backup sem erro.
+- [ ] Confirmar que o arquivo exportado parece valido.
 - [ ] Testar desktop.
 - [ ] Testar mobile.
 
-### 7. IA / Assistente
+### 7. Nota de Corretagem
+- [ ] Abrir o modal de importacao de nota.
+- [ ] Selecionar um PDF valido.
+- [ ] Confirmar leitura e previsualizacao.
+- [ ] Confirmar importacao sem quebrar a tela.
+- [ ] Testar desktop.
+- [ ] Testar mobile.
+
+### 8. Sugestao de aporte
+- [ ] Abrir a area de sugestao/rebalanceamento.
+- [ ] Confirmar que a analise aparece sem quebrar o layout.
+- [ ] Testar acoes auxiliares e mensagens consultivas.
+- [ ] Testar desktop.
+- [ ] Testar mobile.
+
+### 9. IA / Assistente
 - [ ] Abrir a aba IA/Assistente.
-- [ ] Confirmar que os cards de análise carregam.
-- [ ] Testar ações inline e expansões leves.
+- [ ] Confirmar que os cards de analise carregam.
+- [ ] Testar acoes inline e expansoes leves.
 - [ ] Verificar mensagens quando houver dados insuficientes.
 - [ ] Testar desktop.
 - [ ] Testar mobile.
 
-### 8. Configurações
-- [ ] Abrir Configurações.
-- [ ] Testar preferências visuais e opções disponíveis.
-- [ ] Confirmar que o menu/cabeçalho continua acessível.
-- [ ] Testar desktop.
-- [ ] Testar mobile.
+### 10. Responsividade / mobile
+- [ ] Testar a aplicacao em largura de celular.
+- [ ] Confirmar que nao ha overflow lateral.
+- [ ] Confirmar que menus e tabelas continuam utilizaveis.
+- [ ] Testar mais de uma largura de tela.
 
-### 9. Menu mobile
-- [ ] Abrir o menu mobile.
-- [ ] Confirmar que os itens principais ficam acessíveis.
-- [ ] Verificar se o menu não cobre conteúdo importante.
-- [ ] Testar navegação entre as áreas principais.
-- [ ] Testar em mais de uma largura de tela.
+### 11. Login / Firebase, se aplicavel
+- [ ] Confirmar login ou estado de autenticacao, se a tela estiver disponivel.
+- [ ] Verificar se a sincronizacao Firebase nao apresenta erro.
+- [ ] Confirmar que a interface continua carregando normalmente.
 
-### 10. Console sem erros
+### 12. Console sem erros
 - [ ] Abrir o console do navegador.
-- [ ] Confirmar ausência de erros vermelhos.
-- [ ] Confirmar que avisos conhecidos não viraram erro funcional.
+- [ ] Confirmar ausencia de erros vermelhos.
+- [ ] Confirmar que avisos conhecidos nao viraram erro funcional.
 
-### 11. Build
+### 13. Build
 - [ ] Rodar `npm run build`.
 - [ ] Confirmar que o build passa sem falhas.
-- [ ] Confirmar que os arquivos obrigatórios continuam presentes.
+- [ ] Confirmar que os arquivos obrigatorios continuam presentes.
 
-## Observações
-- Se um item falhar, registrar a tela, a ação executada e a mensagem do console.
-- Use esta checklist como roteiro fixo antes de qualquer commit ou publicação.
+## Observacoes
+- Se um item falhar, registrar a tela, a acao executada e a mensagem do console.
+- Use esta checklist como roteiro fixo antes de qualquer commit ou publicacao.

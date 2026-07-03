@@ -2,20 +2,35 @@
 
 Descreva de forma objetiva o que foi alterado.
 
+## Escopo
+
+Explique exatamente o que entrou nesta mudanca.
+
+## Fora do escopo
+
+Liste o que nao foi alterado nesta entrega.
+
+## Risco
+
+Descreva o risco da mudanca e os pontos de atencao.
+
 ## Checklist
 
 - [ ] Descrevi claramente o que foi alterado
-- [ ] Não alterei áreas fora do escopo
+- [ ] Confirmei o escopo da mudanca
+- [ ] Confirmei o que ficou fora do escopo
 - [ ] Rodei `npm run build`
 - [ ] Testei Dashboard
 - [ ] Testei Ativos
 - [ ] Testei Dividendos
 - [ ] Testei Renda Fixa
-- [ ] Testei Importação/Exportação quando aplicável
+- [ ] Testei Importacao/Exportacao quando aplicavel
+- [ ] Fiz smoke test manual da area alterada
 - [ ] Verifiquei console sem erro vermelho novo
-- [ ] Não incluí arquivos locais/temporários
-- [ ] Atualizei documentação se necessário
+- [ ] Nao inclui arquivos locais/temporarios
+- [ ] Nao alterei funcionalidades fora do escopo
+- [ ] Atualizei documentacao se necessario
 
-## Observações
+## Observacoes
 
-Informe aqui qualquer risco residual, dependência externa ou validação pendente.
+Informe aqui qualquer risco residual, dependencia externa ou validacao pendente.
