@@ -3335,7 +3335,7 @@ const firebaseConfig = {
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
-  lastCloudSignature:'', access:{loaded:false,loading:false,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
+  lastCloudSignature:'', authResolved:false, access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
 
 let THEME = 'dark';
@@ -3804,13 +3804,20 @@ window.addEventListener('beforeunload', save);
 // ══════════════════════════════════════
 function initFirebase(){
   try{
-    if(!window.firebase) return;
+    if(!window.firebase){
+      FB.authResolved = true;
+      FB.access.loading = false;
+      FB.access.loaded = false;
+      FB.access.allowed = false;
+      return;
+    }
     FB.app  = firebase.initializeApp(firebaseConfig);
     FB.auth = firebase.auth();
     FB.db   = firebase.firestore();
     FB.ready = true;
     try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     FB.auth.onAuthStateChanged(async user=>{
+      FB.authResolved = true;
       FB.user = user || null;
       if(FB.user){
         FB.access.loading = true;
@@ -3842,6 +3849,11 @@ function initFirebase(){
       }
       render();
     });
+    if(!FB.authResolved){
+      FB.access.loading = true;
+      FB.access.loaded = false;
+      FB.access.allowed = false;
+    }
   }catch(e){
     debugWarn('Firebase indisponível:', e);
     FB.ready=false;
@@ -4208,7 +4220,7 @@ function authBox(){
   </div>`;
 }
 function accessGateBox(){
-  const loading = FB.access.loading && FB.user;
+  const loading = !FB.authResolved || FB.access.loading;
   const reason = FB.access.reason || 'Faça login com um e-mail aprovado para acessar a carteira.';
   const stateLabel = loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito');
   const title = loading ? 'Verificando acesso...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
@@ -4246,6 +4258,9 @@ function accessGateBox(){
     </div>
     <div style="text-align:center;color:#324157;font-size:9px;letter-spacing:.12em;padding:0 18px 10px">CARTEIRA DE INVESTIMENTOS · Dados seguros e privados</div>
   `;
+}
+function shouldShowAccessGate(){
+  return !FB.authResolved || FB.access.loading || !FB.access.loaded || !FB.access.allowed;
 }
 function normalizeListFromText(text){
   return Array.from(new Set(String(text||'')
@@ -14093,6 +14108,7 @@ function mobileTabs(){
   </div>`;
 }
 function app(){
+  if(shouldShowAccessGate()) return accessGateBox();
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   const lu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
   return`
