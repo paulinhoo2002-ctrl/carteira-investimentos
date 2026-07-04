@@ -13216,10 +13216,8 @@ function sortAssetsByGroup(type, items, portfolioTotal=0){
       return (aideal-bideal) * dirFactor;
     }
     if(cfg.field==='total'){
-      const aType=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
-      const bType=normalizeType(b.type||metaTicker(b.ticker).type||'Ação','Ação');
-      const aDisplay=aType==='Renda Fixa' ? assetCurrentValue(a) : Number(a.current_price)||0;
-      const bDisplay=bType==='Renda Fixa' ? assetCurrentValue(b) : Number(b.current_price)||0;
+      const aDisplay=assetCurrentValue(a);
+      const bDisplay=assetCurrentValue(b);
       if(aDisplay===bDisplay) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
       return (aDisplay-bDisplay) * dirFactor;
     }
@@ -15504,7 +15502,7 @@ function ativos(){
          </td>
          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
           <td>${alvo>0?fmt(alvo):'—'}</td>
-          <td style="font-weight:700;color:#e2eaf6">${currentDisplay!=null?fmt(currentDisplay):'—'}</td>
+          <td style="font-weight:700;color:#e2eaf6">${marketValue!=null?fmt(marketValue):'—'}</td>
          <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
           <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
          <td class="am" style="font-weight:600">${fmt(dm)}</td>
