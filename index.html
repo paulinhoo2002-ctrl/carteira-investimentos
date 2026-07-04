@@ -13176,6 +13176,10 @@ function assetSortIndicator(type, field){
   if(current.field!==field) return '';
   return current.dir==='asc' ? ' ↑' : ' ↓';
 }
+function assetSortableHeader(type, field, label){
+  const indicator=assetSortIndicator(type, field) || ' ↕';
+  return `<span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},${JSON.stringify(field)});event.stopPropagation()'>${esc(label)}${indicator}</span>`;
+}
 function sortAssetsByGroup(type, items, portfolioTotal=0){
   const cfg=getAssetSortConfig(type);
   const dirFactor=cfg.dir==='desc' ? -1 : 1;
@@ -15570,14 +15574,14 @@ function ativos(){
           ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">${rfCards||'<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Nenhum ativo de renda fixa nesta categoria.</div>'}</div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
-            <thead><tr><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"ticker");event.stopPropagation()'>Ticker${assetSortIndicator(type,'ticker')}</span></th><th>Tipo</th><th>Setor</th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"qty");event.stopPropagation()'>Qtd${assetSortIndicator(type,'qty')}</span></th><th>PM</th>
+            <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Tipo</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
               <th>
                 <div style="display:flex;align-items:center;gap:5px">
                   ATUAL
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"rentability");event.stopPropagation()'>Rentab.${assetSortIndicator(type,'rentability')}</span></th><th>Alvo</th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"total");event.stopPropagation()'>Total${assetSortIndicator(type,'total')}</span></th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"share");event.stopPropagation()'>% Cart.${assetSortIndicator(type,'share')}</span></th><th><span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},"ideal");event.stopPropagation()'>% Ideal${assetSortIndicator(type,'ideal')}</span></th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+              <th>${assetSortableHeader(type,'rentability','Rentab.')}</th><th>Alvo</th><th>${assetSortableHeader(type,'total','Total')}</th><th>${assetSortableHeader(type,'share','% Cart.')}</th><th>${assetSortableHeader(type,'ideal','% Ideal')}</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
             <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>`}
