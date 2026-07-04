@@ -35,5 +35,8 @@ skills-lock.json
 
 # Extras locais
 *.tmp
+.codex-tmp/
+test-results/
+temp-smoke.spec.js
 backups/
 *.bak
