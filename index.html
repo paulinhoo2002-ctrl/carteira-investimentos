@@ -3679,6 +3679,19 @@ function save(){
 function saveConfig(){
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
 }
+function backupCorruptedStorageValue(storageKey, rawValue, error){
+  try{
+    if(rawValue == null) return null;
+    const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\..+$/,'').replace('T','_');
+    const backupKey=`${storageKey}_corrupted_backup_${stamp}`;
+    localStorage.setItem(backupKey, String(rawValue));
+    console.warn(`[storage] valor corrompido preservado em ${backupKey}`, error);
+    return backupKey;
+  }catch(e){
+    console.warn(`[storage] não foi possível preservar o backup corrompido de ${storageKey}`, e);
+    return null;
+  }
+}
 function markProventosDirty(){
   S.autoProvDirty=true;
 }
@@ -3731,7 +3744,8 @@ async function runAutoProventosGratis(reason='change'){
 function load(){
   // ← FIX: try-catch separados para não perder tudo se um falhar
   try{
-    const d=JSON.parse(localStorage.getItem(STOR)||'{}');
+    const raw=localStorage.getItem(STOR);
+    const d=JSON.parse(raw||'{}');
     if(Array.isArray(d.wallets) && d.wallets.length){
       S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
       S.activeWalletId=String(d.activeWalletId||S.wallets[0].id);
@@ -3756,13 +3770,20 @@ function load(){
     if(d.irpfStep !== undefined)     S.irpfStep = Math.min(4, Math.max(1, Number(d.irpfStep)||1));
     if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
     if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
-  }catch(e){ debugError('load erro:',e); }
+  }catch(e){
+    backupCorruptedStorageValue(STOR, localStorage.getItem(STOR), e);
+    debugError('load erro:',e);
+  }
   try{
-    const c=JSON.parse(localStorage.getItem(STOR+'_cfg')||'{}');
+    const cfgRaw=localStorage.getItem(STOR+'_cfg');
+    const c=JSON.parse(cfgRaw||'{}');
     if(c.brapiToken)            S.brapiToken = c.brapiToken;
     else                        S.brapiToken = DEFAULT_BRAPI; // garante token padrão
     if(c.divGoal !== undefined) S.divGoal    = Number(c.divGoal)||S.divGoal;
-  }catch(e){ S.brapiToken = DEFAULT_BRAPI; }
+  }catch(e){
+    backupCorruptedStorageValue(`${STOR}_cfg`, localStorage.getItem(`${STOR}_cfg`), e);
+    S.brapiToken = DEFAULT_BRAPI;
+  }
   // Migração de versões antigas (civ4, civ3...)
   if(!S.aportes.length && !S.assets.length){
     for(const k of ['civ4','civ3','civ2','carteira_v1']){
