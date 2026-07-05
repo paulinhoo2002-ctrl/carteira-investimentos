@@ -4105,6 +4105,7 @@ function applyCloudData(d){
   if(!d) return;
   FB.applying=true;
   const before=cloudSnapshotSignature();
+  const legacyBrapiToken = String(d.settings?.brapiToken || '').trim();
   debugInfo('cloud data received', {
     wallets:Array.isArray(d.wallets)?d.wallets.length:0,
     assets:Array.isArray(d.assets)?d.assets.length:0,
@@ -4138,6 +4139,10 @@ function applyCloudData(d){
     if(d.rentabilidade.period !== undefined) S.rentPeriod = String(d.rentabilidade.period||'all');
     if(d.rentabilidade.type !== undefined) S.rentType = String(d.rentabilidade.type||'all');
     if(d.rentabilidade.bench !== undefined) S.rentBench = String(d.rentabilidade.bench||'CDI');
+  }
+  if(legacyBrapiToken && legacyBrapiToken !== String(S.brapiToken||'').trim()){
+    S.brapiToken = legacyBrapiToken;
+    console.warn('[settings] brapiToken legado migrado apenas para armazenamento local.');
   }
   rebuildLearnMeta();
   try{
@@ -4661,7 +4666,6 @@ function backupCurrentState(){
     proventos: cloneData(S.proventos||[]),
     divGoal: Number(S.divGoal)||0,
     goals: normalizeGoals(S.goals),
-    brapiToken: String(S.brapiToken||''),
     hideValues: !!S.hideValues,
     apHistoryOpen: !!S.apHistoryOpen,
     apSearch: String(S.apSearch||''),
@@ -4677,7 +4681,7 @@ function backupCurrentState(){
   };
 }
 function backupCurrentConfig(){
-  return {brapiToken:String(S.brapiToken||''), divGoal:Number(S.divGoal)||0};
+  return {divGoal:Number(S.divGoal)||0};
 }
 function backupPayload(){
   const data=backupCurrentState();
