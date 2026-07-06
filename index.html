@@ -13939,9 +13939,6 @@ function reportPdfPreview(){
     const recentMonths=(income.byMonth||[]).slice(-12);
     const topPayers=(income.topPayers||[]).slice(0,5);
     const fixedRows=reportFixedIncomeRows().slice(0,6);
-    const compactAssets=[...reportAssetRows()]
-      .sort((a,b)=>(Number(b.current)||0)-(Number(a.current)||0) || String(a.ticker).localeCompare(String(b.ticker),'pt-BR'))
-      .slice(0,12);
     const completeAssetGroups=[
       {label:'Ações', type:'Ação'},
       {label:'FIIs', type:'FII'},
@@ -14039,24 +14036,6 @@ function reportPdfPreview(){
         <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${Number(row.count)||0}</div>
         <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${row.lastDate ? new Date(row.lastDate).toLocaleDateString('pt-BR') : '—'}</div>
       </div>`);
-    const assetsCompactHtml=pdfReportMiniTableCard(
-      'Resumo dos ativos em carteira',
-      'Até 12 ativos ordenados pelo valor atual, para leitura rápida com o assessor.',
-      ['Ativo','Classe','Qtde','PM','Atual','Valor','Resultado %'],
-      compactAssets,
-      'Sem ativos suficientes.',
-      row=>`
-        <div class="pdf-report-row" style="grid-template-columns:minmax(120px,1.25fr) minmax(88px,.9fr) repeat(5,minmax(0,.78fr))">
-          <div class="pdf-report-row-main" title="${esc(row.name||'—')}">${esc(row.ticker||'—')}</div>
-          <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${esc(row.type||'—')}</div>
-          <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${Number(row.qty)||0}</div>
-          <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${Number(row.avgPrice)>0?fmt(Number(row.avgPrice)||0):'—'}</div>
-          <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${Number(row.currentPrice)>0?fmt(Number(row.currentPrice)||0):'—'}</div>
-          <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${Number(row.current)>0?fmt(Number(row.current)||0):'—'}</div>
-          <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
-        </div>`,
-      'minmax(120px,1.25fr) minmax(88px,.9fr) repeat(5,minmax(0,.78fr))'
-    );
     const monthsHistoryHtml=pdfReportMiniTableCard(
       'Histórico 12M de proventos',
       'Últimos 12 meses consolidados, com valor recebido e quantidade de lançamentos.',
@@ -14187,7 +14166,6 @@ function reportPdfPreview(){
           </div>`) }
         ${pdfReportSection('Carteira completa por classe','Todos os ativos cadastrados, agrupados por classe, para conferência com o assessor.',`
           ${carteiraCompletaHtml}`)}
-        ${assetsCompactHtml}
         ${pdfReportSection('Ativos para revisão','Maior desempenho, maior peso e dados incompletos',`
           <div class="pdf-report-grid">
             <div class="pdf-report-card">
