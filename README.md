@@ -71,6 +71,37 @@ Antes de implementar qualquer melhoria:
 3. Consultar `CHANGELOG.md`
 4. Executar `cmd /c npm run build` antes de finalizar
 
+## EXECUCAO LOCAL SEGURA
+
+Nao abra o app diretamente por `file://`.
+
+Evite:
+
+- `file:///C:/Projetos/carteira-investimentos/index.html`
+
+Use sempre um servidor local com `localhost`.
+
+Antes de testar login local, adicione `localhost` em:
+
+`Firebase Console > Authentication > Settings > Authorized domains`
+
+Fluxo recomendado:
+
+1. `npm install`
+2. `npm run build`
+3. `python -m http.server 4173`
+4. Abrir `http://localhost:4173`
+
+Alternativa:
+
+1. `npx serve . -l 4173`
+2. Abrir `http://localhost:4173`
+
+Observacao:
+
+- Se usar outra porta, mantenha o dominio `localhost`.
+- O Firebase Auth valida o dominio, nao o caminho `file://`.
+
 ## QUALIDADE
 
 O README deve permanecer limpo, objetivo e servir como ponto de entrada da documentacao.
