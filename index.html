@@ -993,15 +993,16 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:3000;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s;pointer-events:none}
 #toast-area{pointer-events:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:22px;overflow:auto}
-.note-modal{width:min(1240px,100%);background:#0b1020;border:1px solid #27324a;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.55);overflow:hidden;margin:20px 0}
-.note-head{padding:18px 18px 14px;border-bottom:1px solid #182033;background:linear-gradient(180deg,#0f1527,#0b1020)}
+.note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden}
+.note-modal{width:min(1240px,100%);max-height:min(90dvh,900px);background:#0b1020;border:1px solid #27324a;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.55);overflow:hidden;margin:0;display:flex;flex-direction:column}
+body.modal-open{overflow:hidden}
+.note-head{padding:18px 18px 14px;border-bottom:1px solid #182033;background:linear-gradient(180deg,#0f1527,#0b1020);flex:0 0 auto}
 .note-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .note-title h3{font-size:18px;font-weight:800;color:#f8fafc}
 .note-title p{font-size:12px;color:#64748b;margin-top:4px;line-height:1.5}
 .note-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .note-pill{font-size:11px;color:#a5b4fc;border:1px solid rgba(96,165,250,.18);background:#141d2f;border-radius:999px;padding:5px 10px}
-.note-body{padding:16px 18px 18px}
+.note-body{padding:16px 18px 18px;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .quick-movement-modal .fc{margin:0}
 .quick-movement-preview-card{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:16px;background:#0b1020;border:1px solid #27324a;box-shadow:0 18px 40px rgba(0,0,0,.24)}
 .quick-movement-preview-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
@@ -1021,7 +1022,7 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .note-table input,.note-table select{padding:7px 8px;font-size:12px;border-radius:8px}
 .note-row-muted{opacity:.55}
 .note-row-bad{background:rgba(248,113,113,.06)}
-.note-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.note-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px -18px -18px;padding:12px 18px 14px;align-items:center;position:sticky;bottom:0;z-index:4;background:#0b1020;border-top:1px solid #182033}
 .note-foot .hint{font-size:12px;color:#64748b;line-height:1.5}
 .nota-review-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .nota-review-group-head{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1}
@@ -1084,7 +1085,7 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .broker-note-duplicate-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid rgba(239,68,68,.32);border-radius:13px;background:rgba(239,68,68,.07)}
 .broker-note-duplicate-title{font-size:12px;font-weight:900;color:var(--danger)}
 .broker-note-duplicate-text{font-size:10px;color:var(--muted);line-height:1.45;margin-top:3px}
-.broker-note-confirm-bar{position:sticky;bottom:-18px;z-index:3;margin:12px -18px -18px;padding:12px 18px;background:color-mix(in srgb,var(--panel) 94%,transparent);border-top:1px solid var(--border);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.broker-note-confirm-bar{position:sticky;bottom:0;z-index:3;margin:12px -18px -18px;padding:12px 18px;background:color-mix(in srgb,var(--panel) 94%,transparent);border-top:1px solid var(--border);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .broker-note-success{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:start}
 .broker-note-success-icon{width:64px;height:64px;border-radius:18px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.28);display:flex;align-items:center;justify-content:center;font-size:30px}
 .broker-note-success-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
@@ -1101,7 +1102,7 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
   .broker-note-section-head{align-items:flex-start}
   .broker-note-checklist{grid-template-columns:1fr}
   .broker-note-duplicate-card{grid-template-columns:1fr}
-  .broker-note-confirm-bar{bottom:-12px;margin:10px -12px -12px;padding:10px 12px}
+  .broker-note-confirm-bar{bottom:0;margin:10px -12px -12px;padding:10px 12px}
   .broker-note-confirm-bar .btn{width:100%}
   .broker-note-success{grid-template-columns:1fr}
   .broker-note-success-grid{grid-template-columns:1fr 1fr}
@@ -2499,7 +2500,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   }
   .note-actions .left,.note-actions .right{width:100%;display:flex}
   .note-foot{
-    position:sticky;bottom:0;background:#0b1020;padding:9px 0 calc(4px + env(safe-area-inset-bottom));
+    position:sticky;bottom:0;background:#0b1020;margin:10px -10px -10px;padding:9px 10px calc(4px + env(safe-area-inset-bottom));
     border-top:1px solid #182033;z-index:3
   }
   .note-foot .hint{width:100%;font-size:10px;line-height:1.35}
@@ -4320,8 +4321,10 @@ function openAccessSettings(){
   render();
 }
 function closeAccessSettings(){
-  S.accessSettingsOpen=false;
-  render();
+  withScrollPreserved(()=>{
+    S.accessSettingsOpen=false;
+    render();
+  });
 }
 async function saveAccessSettings(){
   if(!FB.db || !FB.user){
@@ -4356,7 +4359,6 @@ async function saveAccessSettings(){
     FB.access.reason = '';
     toast('🔐 Segurança salva com sucesso.');
     closeAccessSettings();
-    render();
   }catch(e){
     debugWarn(e);
     toast('❌ Não foi possível salvar a segurança.','#f87171');
@@ -4613,13 +4615,16 @@ function mobileTopDrawer(){
   </div>`;
 }
 function toggleMobileTopMenu(){
+  rememberScroll();
   S.mobileTopMenuOpen=!S.mobileTopMenuOpen;
   render();
 }
 function closeMobileTopMenu(){
   if(!S.mobileTopMenuOpen) return;
-  S.mobileTopMenuOpen=false;
-  render();
+  withScrollPreserved(()=>{
+    S.mobileTopMenuOpen=false;
+    render();
+  });
 }
 function openWalletQuickMenu(){
   closeMobileTopMenu();
@@ -4746,14 +4751,68 @@ function backupImportedAt(payload){
   const d=iso ? new Date(iso) : null;
   return d && !Number.isNaN(d.getTime()) ? d.toLocaleString('pt-BR') : '—';
 }
+let scrollRestorePoint=null;
+let bodyScrollLockY=null;
+function rememberScroll(){
+  scrollRestorePoint={x:window.scrollX||0,y:bodyScrollLockY!==null?bodyScrollLockY:(window.scrollY||0)};
+  return scrollRestorePoint;
+}
+function restoreScroll(){
+  const point=scrollRestorePoint;
+  if(!point) return;
+  scrollRestorePoint=null;
+  const x=Number(point.x)||0;
+  const y=Number(point.y)||0;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x, top:y, behavior:'auto'})));
+}
+function bodyModalLockActive(){
+  return !!(S.accessSettingsOpen || S.backupOpen || S.pdfReportOpen || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.mobileMenuOpen || S.mobileTopMenuOpen);
+}
+function scrollPreserveActive(){
+  return !!(bodyModalLockActive() || S.showA || S.showP || S.showD);
+}
+function syncBodyModalLock(){
+  const active=bodyModalLockActive();
+  const body=document.body;
+  if(!body) return;
+  if(active && bodyScrollLockY===null){
+    bodyScrollLockY=window.scrollY||0;
+    body.classList.add('modal-open');
+    body.style.position='fixed';
+    body.style.top=`-${bodyScrollLockY}px`;
+    body.style.left='0';
+    body.style.right='0';
+    body.style.width='100%';
+    return;
+  }
+  if(!active && bodyScrollLockY!==null){
+    const y=bodyScrollLockY;
+    bodyScrollLockY=null;
+    body.classList.remove('modal-open');
+    body.style.position='';
+    body.style.top='';
+    body.style.left='';
+    body.style.right='';
+    body.style.width='';
+    if(!scrollRestorePoint) scrollRestorePoint={x:0,y};
+    return;
+  }
+  body.classList.toggle('modal-open', active);
+}
+function withScrollPreserved(fn){
+  rememberScroll();
+  return fn();
+}
 function openBackupCenter(){
   S.backupOpen=true;
   render();
 }
 function closeBackupCenter(){
-  S.backupOpen=false;
-  S.backupImportDraft=null;
-  render();
+  withScrollPreserved(()=>{
+    S.backupOpen=false;
+    S.backupImportDraft=null;
+    render();
+  });
 }
 function exportBackup(){
   const payload=backupPayload();
@@ -7127,10 +7186,12 @@ function openBrokerNoteImport(){
   render();
 }
 function closeBrokerNoteImport(){
-  S.brokerNoteImport=null;
-  const input=document.getElementById('broker-note-pdf-file');
-  if(input) input.value='';
-  render();
+  withScrollPreserved(()=>{
+    S.brokerNoteImport=null;
+    const input=document.getElementById('broker-note-pdf-file');
+    if(input) input.value='';
+    render();
+  });
 }
 function chooseBrokerNotePdf(){
   const input=document.getElementById('broker-note-pdf-file');
@@ -7347,8 +7408,10 @@ function confirmBrokerNoteImport(){
   toast(`✅ Nota Inter ${note.noteNumber} importada com sucesso.`);
 }
 function closeBrokerNoteImportSuccess(){
-  S.brokerNoteImportSuccess=null;
-  render();
+  withScrollPreserved(()=>{
+    S.brokerNoteImportSuccess=null;
+    render();
+  });
 }
 function brokerNoteImportSuccessHtml(){
   const result=S.brokerNoteImportSuccess;
@@ -7428,8 +7491,10 @@ function openNotaReview(parsed, fileName){
   render();
 }
 function closeNotaReview(){
-  S.noteReview=null;
-  render();
+  withScrollPreserved(()=>{
+    S.noteReview=null;
+    render();
+  });
 }
 function setNotaReviewAll(v){
   if(!S.noteReview) return;
@@ -7470,6 +7535,7 @@ function importNotaReview(){
   if(!S.noteReview) return;
   const rows=S.noteReview.rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0);
   if(!rows.length){ alert('Selecione pelo menos um lançamento válido para importar.'); return; }
+  rememberScroll();
   applyNotaCorretoraTrades(rows.map(r=>({...r.sourceItem,ticker:r.ticker,operation:r.operation,qty:r.qty,price:r.price,type:r.type,sector:r.sector,product:r.product})),S.noteReview.noteKey,S.noteReview.noteNumber,S.noteReview.tradeDate);
   S.noteReview=null;
 }
@@ -7755,8 +7821,10 @@ function openB3Review(parsed, fileName='', sourceKind='excel'){
   render();
 }
 function closeB3Review(){
-  S.b3Review=null;
-  render();
+  withScrollPreserved(()=>{
+    S.b3Review=null;
+    render();
+  });
 }
 function setB3ReviewSheet(sheet, value){
   if(!S.b3Review) return;
@@ -7997,8 +8065,10 @@ function openRfPositionReview(parsed, fileName='', sourceKind='excel'){
   render();
 }
 function closeRfPositionReview(){
-  S.rfPositionReview=null;
-  render();
+  withScrollPreserved(()=>{
+    S.rfPositionReview=null;
+    render();
+  });
 }
 function setRfPositionReviewItem(idx, value){
   if(!S.rfPositionReview || !S.rfPositionReview.items?.[idx]) return;
@@ -8343,8 +8413,10 @@ function openB3ProventosReview(parsed, fileName='', sourceKind='excel'){
   render();
 }
 function closeB3ProventosReview(){
-  S.b3ProventosReview=null;
-  render();
+  withScrollPreserved(()=>{
+    S.b3ProventosReview=null;
+    render();
+  });
 }
 function setB3ProventoReviewItem(idx,value){
   if(!S.b3ProventosReview || !S.b3ProventosReview.items?.[idx]) return;
@@ -8652,8 +8724,10 @@ function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
   render();
 }
 function closeB3MovementReview(){
-  S.b3MovementReview=null;
-  render();
+  withScrollPreserved(()=>{
+    S.b3MovementReview=null;
+    render();
+  });
 }
 function setB3MovementGroup(group, value){
   if(!S.b3MovementReview) return;
@@ -9401,10 +9475,12 @@ function openQuickMovement(kind='compra'){
   render();
 }
 function closeQuickMovement(){
-  S.quickMovementOpen=false;
-  S.quickMovementDraft=null;
-  S.quickMovementEditId=null;
-  render();
+  withScrollPreserved(()=>{
+    S.quickMovementOpen=false;
+    S.quickMovementDraft=null;
+    S.quickMovementEditId=null;
+    render();
+  });
 }
 function setQuickMovementField(field, value){
   if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
@@ -13870,8 +13946,10 @@ function openPdfReport(){
   }
 }
 function closePdfReport(){
-  S.pdfReportOpen=false;
-  render();
+  withScrollPreserved(()=>{
+    S.pdfReportOpen=false;
+    render();
+  });
 }
 function printPdfReport(){
   try{
@@ -14319,8 +14397,12 @@ function render(){
   if(!root) return;
   try{
     if(S._rmpTrace) console.log('[rmP] render() chamado');
+    const preserveScroll=scrollPreserveActive() || !!scrollRestorePoint;
+    if(preserveScroll && !scrollRestorePoint) rememberScroll();
+    syncBodyModalLock();
     root.innerHTML=app();
     bind();
+    if(preserveScroll) restoreScroll();
   }catch(error){
     debugError('render erro:',error);
     const failedTab=S.tab;
@@ -16522,8 +16604,10 @@ function openAllocationGoal(){
   render();
 }
 function closeAllocationGoal(){
-  S.allocGoalOpen=false;
-  render();
+  withScrollPreserved(()=>{
+    S.allocGoalOpen=false;
+    render();
+  });
 }
 function allocationGoalAddFromSelect(){
   const sel=document.getElementById('alloc-add-type');
@@ -18016,10 +18100,13 @@ function mobileMenuOpen(){
   render();
 }
 function mobileMenuClose(){
-  S.mobileMenuOpen=false;
-  render();
+  withScrollPreserved(()=>{
+    S.mobileMenuOpen=false;
+    render();
+  });
 }
 function mobileMenuToggle(){
+  rememberScroll();
   S.mobileMenuOpen=!S.mobileMenuOpen;
   render();
 }
@@ -18064,7 +18151,7 @@ function go(t){
   render();
   if(t==='dividendos') runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
-function clA(){ S.showA=false; S.editId=null; S._fa=null; render(); }
+function clA(){ withScrollPreserved(()=>{ S.showA=false; S.editId=null; S._fa=null; render(); }); }
 async function refreshCotacao(){
   await fetchQuotes(false);
   // Atualiza o campo com o novo valor sem fechar o form
@@ -18139,6 +18226,7 @@ function svA(){
       price_target:pt, ideal_pct:ip, sector:isRF?(rfSubtype||se):se, type:ty};
     // cotação não é editada aqui — vem automaticamente via Yahoo Finance e fallback opcional brapi
   });
+  rememberScroll();
   S.showA=false; S.editId=null; S._fa=null;
   if(editedAsset) learnTickerMeta(editedAsset.ticker, ty, se, true);
   save(); toast('✅ Ativo atualizado!'); render();
@@ -18158,7 +18246,7 @@ function tgP(pref='compra'){
   render();
   setTimeout(applyMetaToAporte,50);
 }
-function clP(){ S.showP=false; S.editPId=null; S._fp=null; render(); }
+function clP(){ withScrollPreserved(()=>{ S.showP=false; S.editPId=null; S._fp=null; render(); }); }
 function edP(id){
   const p=S.aportes.find(x=>x.id===id);
   if(!p) return;
@@ -18253,6 +18341,7 @@ function svP(){
     if(S.editPId){ S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a); }
     else { S.aportes.unshift(reg); }
     if(!isReserve) learnTickerMeta(ti, 'Renda Fixa', rfSubtype, true);
+    rememberScroll();
     S.showP=false; S.editPId=null; S._fp=null;
     syncAssetsFromAportes(false);
     toast(`✅ ${wasEdit?'Edição':'Lançamento'} de ${rfName} registrado!`);
@@ -18283,6 +18372,7 @@ function svP(){
   }
   if(S.editPId){ S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a); }
   else { S.aportes.unshift(reg); }
+  rememberScroll();
   S.showP=false; S.editPId=null; S._fp=null;
   if(!isReserve) learnTickerMeta(ti, ty, se, true);
   syncAssetsFromAportes(false);
@@ -18301,13 +18391,14 @@ function rmP(id){
 }
 
 function tgD(){
+  rememberScroll();
   S.quickMovementOpen=false;
   S.quickMovementDraft=null;
   S.quickMovementEditId=null;
   S.showD=!S.showD;
   render();
 }
-function clD(){ S.showD=false; render(); }
+function clD(){ withScrollPreserved(()=>{ S.showD=false; render(); }); }
 function svD(){
   const ti=document.getElementById('d-ti')?.value?.trim().toUpperCase();
   const va=parseNum(document.getElementById('d-va')?.value);
@@ -18317,6 +18408,7 @@ function svD(){
   const dt=rawDt?brDate(rawDt):new Date().toLocaleDateString('pt-BR');
   if(!ti||va<=0){ alert('Preencha Ticker e Valor recebido.'); return; }
   S.proventos.unshift({id:Date.now(), ticker:ti, value:va, type:ty, date:dt, note:ob});
+  rememberScroll();
   S.showD=false; save();
   toast(`✅ Provento de ${ti} registrado: ${fmt(va)}`);
   render();
