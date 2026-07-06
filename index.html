@@ -14017,10 +14017,57 @@ function reportPdfPreview(){
       </div>`);
     const alertsHtml=pdfReportListHtml(alerts,'Auditoria sem alertas relevantes.',alert=>`
       <div class="pdf-report-card pdf-report-alert ${alert.severity==='critical'?'critical':''}">
-        <div class="pdf-report-card-title">${esc(dataAuditSeverityLabel(alert.severity))} · ${esc(alert.area)} · ${esc(alert.item)}</div>
-        <div class="pdf-report-card-sub">${esc(alert.problem)}</div>
-        <div class="pdf-report-card-sub"><strong>Conferir:</strong> ${esc(alert.fix)}</div>
+        <div class="pdf-report-card-title">Tema: ${esc(alert.area||'Geral')} · Item: ${esc(alert.item||'—')}</div>
+        <div class="pdf-report-card-sub"><strong>Ponto a revisar:</strong> ${esc(alert.problem||'Revise os dados cadastrados.')}</div>
+        <div class="pdf-report-card-sub"><strong>Ação sugerida:</strong> ${esc(alert.fix||'Revisar cadastro ou documento de apoio.')}</div>
       </div>`);
+    const assessorPlanGroups=[
+      {
+        title:'Alocação e risco',
+        subtitle:'Perfil, concentração e equilíbrio',
+        items:[
+          'A carteira está adequada ao perfil de risco?',
+          'Existe concentração excessiva em algum ativo, classe ou setor?'
+        ]
+      },
+      {
+        title:'Renda passiva',
+        subtitle:'Evolução da meta e prioridade dos aportes',
+        items:[
+          'A renda mensal está evoluindo em direção à meta?',
+          'Os próximos aportes devem priorizar renda, equilíbrio ou redução de concentração?'
+        ]
+      },
+      {
+        title:'Renda fixa e liquidez',
+        subtitle:'Liquidez, vencimentos e reserva separada',
+        items:[
+          'A renda fixa atual está adequada em liquidez, vencimentos e indexadores?',
+          'A reserva de emergência está separada da carteira de investimentos?'
+        ]
+      },
+      {
+        title:'Próximos passos',
+        subtitle:'Revisão prática para o mês seguinte',
+        items:[
+          'Quais ativos merecem revisão por peso, desempenho ou dados incompletos?',
+          'Qual deve ser a prioridade dos próximos aportes?',
+          'O que deve ser acompanhado no próximo mês?'
+        ]
+      }
+    ];
+    const assessorPlanHtml=assessorPlanGroups.map(group=>`
+      <div class="pdf-report-card">
+        <div class="pdf-report-card-title">${esc(group.title)}</div>
+        <div class="pdf-report-card-sub" style="margin-top:3px">${esc(group.subtitle)}</div>
+        <div class="pdf-report-list" style="margin-top:7px">
+          ${group.items.map(item=>`
+            <div class="pdf-report-row" style="grid-template-columns:16px 1fr;padding:6px 6px">
+              <div class="pdf-report-row-value" style="font-weight:900;color:#0f172a;text-align:center">•</div>
+              <div class="pdf-report-row-main">${esc(item)}</div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
     const currentMonthPercent=target>0 ? fmtP(targetPercent||0) : '—';
     return `<div class="pdf-report-overlay" role="dialog" aria-modal="true">
       <div class="pdf-report-toolbar">
@@ -14072,7 +14119,7 @@ function reportPdfPreview(){
           <div class="pdf-report-card" style="margin-top:9px">
             <div class="pdf-report-card-title">Top maiores posições</div>
             <div class="pdf-report-list" style="margin-top:7px">${positionHtml}</div>
-          </div>`,'pdf-report-section--compact')}
+          </div>`) }
         ${assetsCompactHtml}
         ${pdfReportSection('Ativos para revisão','Maior desempenho, maior peso e dados incompletos',`
           <div class="pdf-report-grid">
@@ -14094,7 +14141,7 @@ function reportPdfPreview(){
               <div class="pdf-report-card-title">Ativos com dados incompletos</div>
               <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(incompleteRows,'Sem ativos incompletos.',row=>assetInsightRowHtml(row,'incomplete'))}</div>
             </div>
-          </div>`)}
+          </div>`) }
         ${pdfReportSection('Renda passiva','Proventos e meta mensal',`
           <div class="pdf-report-grid">
             <div class="pdf-report-card">
@@ -14117,7 +14164,7 @@ function reportPdfPreview(){
                 <div class="pdf-report-row-value">${Number(row.count)||0}</div>
                 <div class="pdf-report-row-value">${row.lastDate ? new Date(row.lastDate).toLocaleDateString('pt-BR') : '—'}</div>
               </div>`)}</div>
-          </div>`)}
+          </div>`) }
         ${pdfReportSection('Renda fixa','Principais títulos e vencimentos',`
           <div class="pdf-report-grid">
             <div class="pdf-report-card"><div class="pdf-report-card-title">Valor aplicado</div><div class="pdf-report-value">${fmt(Number(dashboard.fixed?.applied)||0)}</div><div class="pdf-report-card-sub">Base usada pela leitura da carteira</div></div>
@@ -14134,22 +14181,15 @@ function reportPdfPreview(){
                 <div class="pdf-report-row-value">${row.maturityDate||'Sem vencimento'}</div>
                 <div class="pdf-report-row-value">${esc(row.rate||'Sem taxa')}</div>
               </div>`)}</div>
-          </div>`)}
-        ${pdfReportSection('Pontos de atenção','Alertas priorizados pela auditoria',`
-          <div class="pdf-report-grid">${pdfReportListHtml(alerts,'Auditoria sem alertas relevantes.',alert=>`
-            <div class="pdf-report-card pdf-report-alert ${alert.severity==='critical'?'critical':''}">
-              <div class="pdf-report-card-title">${esc(dataAuditSeverityLabel(alert.severity))} · ${esc(alert.area)} · ${esc(alert.item)}</div>
-              <div class="pdf-report-card-sub">${esc(alert.problem)}</div>
-              <div class="pdf-report-card-sub"><strong>Conferir:</strong> ${esc(alert.fix)}</div>
-            </div>`)}</div>`)}
-        ${pdfReportSection('Checklist para o assessor','Perguntas objetivas para a reunião',`
-          <div class="pdf-report-checklist">
-            ${checklist.map(question=>`
-              <div class="pdf-report-card">
-                <div class="pdf-report-card-title">${esc(question)}</div>
-                <div class="pdf-report-card-sub">Use como roteiro para discussão e revisão da carteira.</div>
-              </div>`).join('')}
-          </div>`,'pdf-report-section--page-break')}
+          </div>`) }
+        ${pdfReportSection('Pontos de atenção','Alertas objetivos para a conversa com o assessor',`
+          <div class="pdf-report-grid">${alertsHtml}</div>`) }
+        ${pdfReportSection('Plano de conversa com o assessor','Perguntas e próximos passos para a reunião',`
+          <div class="pdf-report-grid">${assessorPlanHtml}</div>
+          <div class="pdf-report-card" style="margin-top:9px">
+            <div class="pdf-report-card-title">Relatório para conferência</div>
+            <div class="pdf-report-card-sub">Informações podem depender dos dados cadastrados e das cotações disponíveis. Valores de patrimônio, desempenho e renda fixa podem conter estimativas. Este documento não substitui backup, informe oficial, declaração de IRPF nem orientação profissional.</div>
+          </div>`) }
         <footer class="pdf-report-footer">Relatório gerado para apoio à análise. Não representa recomendação de investimento. Valide decisões com profissional habilitado. Período selecionado: ${esc(data.summary.periodLabel)}. Gerado em ${generatedAt.toLocaleString('pt-BR')}.</footer>
       </article>
     </div>`;
