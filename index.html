@@ -1219,6 +1219,12 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .pdf-report-alert{border-left:3px solid #f59e0b}
 .pdf-report-alert.critical{border-left-color:#dc2626}
 .pdf-report-footer{margin-top:22px;padding-top:12px;border-top:1px solid #d8e0ea;font:400 9px/1.5 system-ui,sans-serif;color:#64748b}
+.pdf-report-callout{padding:11px 12px;border:1px solid #d9e2ec;border-radius:12px;background:#fff;margin:14px 0 10px}
+.pdf-report-summary-text{display:flex;flex-direction:column;gap:8px;font:400 12px/1.55 system-ui,sans-serif;color:#415066}
+.pdf-report-summary-text p{margin:0}
+.pdf-report-checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pdf-report-section--compact{margin-top:18px}
+.pdf-report-section--page-break{break-before:page;page-break-before:always}
 .rf-proventos-kpi.purple .rf-proventos-kpi-value{color:#a78bfa}
 .passive-goal-shell{display:flex;flex-direction:column;gap:10px}
 .passive-goal-head{gap:10px;align-items:flex-start}
@@ -1942,6 +1948,9 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .pdf-report-row-main{grid-column:1/-1}
   .pdf-report-section-head{display:block}
   .pdf-report-section-note{text-align:left;margin-top:3px}
+  .pdf-report-callout{padding:10px}
+  .pdf-report-summary-text{font-size:11px;line-height:1.5}
+  .pdf-report-checklist{grid-template-columns:1fr;gap:7px}
   .passive-goal-grid.main,.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-empty{padding:9px 10px}
@@ -3275,10 +3284,13 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
   .pdf-report-kpi{padding:7px;border-radius:7px}
   .pdf-report-kpi-value{font-size:13px}
   .pdf-report-section{margin-top:14px;break-inside:auto;page-break-inside:auto}
-  .pdf-report-section.page-start{break-before:page;page-break-before:always}
+  .pdf-report-section.page-start,.pdf-report-section--page-break{break-before:page;page-break-before:always}
   .pdf-report-card,.pdf-report-row,.pdf-report-kpi{break-inside:avoid;page-break-inside:avoid}
   .pdf-report-section-title{font-size:14px}
   .pdf-report-row{padding:5px 6px;font-size:8px}
+  .pdf-report-callout{padding:8px 9px}
+  .pdf-report-summary-text{font-size:9px;line-height:1.45}
+  .pdf-report-checklist{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
   .pdf-report-footer{margin-top:14px}
 }
 </style>
@@ -13876,66 +13888,98 @@ function pdfReportSection(title,note,body,className=''){
     ${body}
   </section>`;
 }
+function pdfReportListHtml(rows, empty, renderRow){
+  return rows.length
+    ? rows.map(renderRow).join('')
+    : `<div class="pdf-report-card"><div class="pdf-report-card-sub">${esc(empty)}</div></div>`;
+}
 function reportPdfPreview(){
   return withVisibleValues(()=>{
     const data=reportPdfSnapshot();
+    const dashboard=dashboardSnapshot(data.analysis);
     const {portfolio,income,fixed,audit}=data.summary;
-    const resultTone=portfolio.tG>=0?'#15803d':'#b91c1c';
-    const allocationMax=Math.max(...data.allocationRows.map(row=>row.share),1);
-    const allocationHtml=data.allocationRows.length ? data.allocationRows.map(row=>`
+    const target=Number(income.target)||0;
+    const monthlyAvg=Number(income.monthlyAvg)||0;
+    const targetPercent=target>0 ? (monthlyAvg/target)*100 : null;
+    const generatedAt=new Date(data.summary.generatedAt);
+    const assetMap=new Map((S.assets||[]).map(a=>[String(a.ticker||'').trim().toUpperCase(),a]));
+    const positiveRows=(dashboard.positives||[]).slice(0,5).map(row=>{
+      const asset=assetMap.get(String(row.ticker||'').trim().toUpperCase())||{};
+      return {...row, avgPrice:Number(asset.avg_price)||0, currentPrice:Number(asset.current_price)||0};
+    });
+    const negativeRows=(dashboard.negatives||[]).slice(0,5).map(row=>{
+      const asset=assetMap.get(String(row.ticker||'').trim().toUpperCase())||{};
+      return {...row, avgPrice:Number(asset.avg_price)||0, currentPrice:Number(asset.current_price)||0};
+    });
+    const maxPositive=Math.max(...positiveRows.map(row=>Math.abs(Number(row.pct)||0)),1);
+    const maxNegative=Math.max(...negativeRows.map(row=>Math.abs(Number(row.pct)||0)),1);
+    const allocationRows=(dashboard.typeRows||[]).slice(0,6);
+    const allocationMax=Math.max(...allocationRows.map(row=>Number(row.share)||0),1);
+    const concentrationRows=(dashboard.concentration||[]).slice(0,5);
+    const positionRows=[...data.analysis].filter(row=>row.current>0).sort((a,b)=>b.current-a.current||String(a.ticker).localeCompare(String(b.ticker),'pt-BR')).slice(0,8);
+    const incompleteRows=(dashboard.insufficient||[]).slice(0,5);
+    const recentMonths=(income.byMonth||[]).slice(-6);
+    const topPayers=(income.topPayers||[]).slice(0,5);
+    const fixedRows=reportFixedIncomeRows().slice(0,6);
+    const severityOrder={critical:0,warning:1,info:2};
+    const alerts=[...(audit.alerts||[])].sort((a,b)=>(severityOrder[a.severity]??9)-(severityOrder[b.severity]??9)).slice(0,8);
+    const summaryText1=target>0
+      ? `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses. A meta mensal de renda passiva está em ${fmt(target)}, o que representa ${fmtP(targetPercent||0)} do objetivo atual.`
+      : `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses.`;
+    const summaryText2='Os blocos abaixo ajudam a revisar alocação, concentração, renda passiva, renda fixa e pontos de atenção com o assessor. A avaliação final deve considerar perfil de risco, objetivos e horizonte de investimento.';
+    const checklist=[
+      'A alocação atual está adequada ao perfil de risco?',
+      'Existe concentração excessiva em algum ativo, classe ou setor?',
+      'A renda passiva mensal está evoluindo em direção à meta?',
+      'Os próximos aportes devem priorizar renda, equilíbrio ou redução de concentração?',
+      'A renda fixa atual está adequada em liquidez, vencimentos e indexadores?',
+      'Existem ativos que precisam de revisão por baixa performance, excesso de peso ou dados incompletos?',
+      'Há necessidade de reserva de liquidez separada da carteira de investimentos?',
+      'Quais são os próximos passos para aproximar a carteira da meta mensal desejada?'
+    ];
+    const allocationHtml=pdfReportListHtml(allocationRows,'Sem dados de alocação.',row=>`
       <div class="pdf-report-card">
         <div class="pdf-report-card-title">${esc(row.type)}</div>
-        <div class="pdf-report-value">${fmt(row.value)} · ${row.share.toFixed(1)}%</div>
-        <div class="pdf-report-bar"><span style="width:${Math.min(100,(row.share/allocationMax)*100)}%"></span></div>
-      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Sem dados de alocação.</div></div>';
-    const positionHtml=data.positions.length ? data.positions.map(row=>`
-      <div class="pdf-report-row">
-        <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.type)}</div>
-        <div class="pdf-report-row-value">${fmt(row.current)}</div>
-        <div class="pdf-report-row-value">${row.share==null?'—':`${row.share.toFixed(1)}%`}</div>
-        <div class="pdf-report-row-value">${row.pct==null?'—':fmtP(row.pct)}</div>
-      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Nenhuma posição disponível.</div></div>';
-    const performanceColumn=(rows,empty)=>rows.length ? rows.map(row=>`
-      <div class="pdf-report-card">
-        <div class="pdf-report-card-title">${esc(row.ticker)} · ${esc(row.type)}</div>
-        <div class="pdf-report-value" style="color:${row.pct>=0?'#15803d':'#b91c1c'}">${fmtP(row.pct)}</div>
-        <div class="pdf-report-card-sub">${fmt(row.current)} em valor atual</div>
-      </div>`).join('') : `<div class="pdf-report-card"><div class="pdf-report-card-sub">${esc(empty)}</div></div>`;
-    const dividendsHtml=data.dividendMonths.length ? data.dividendMonths.map(month=>{
-      const date=parseAnyDate(`${month.key}-01`);
-      return `<div class="pdf-report-row" style="grid-template-columns:1fr 1fr">
-        <div class="pdf-report-row-main">${date?date.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):month.key}</div>
-        <div class="pdf-report-row-value">${fmt(month.total)}</div>
+        <div class="pdf-report-value">${fmt(Number(row.value)||0)} · ${Number(row.share||0).toFixed(1)}%</div>
+        <div class="pdf-report-bar"><span style="width:${Math.min(100,(Number(row.share)||0)/allocationMax*100)}%"></span></div>
+      </div>`);
+    const concentrationHtml=pdfReportListHtml(concentrationRows,'Sem posições relevantes.',row=>assetInsightRowHtml(row,'concentration'));
+    const positionHtml=pdfReportListHtml(positionRows,'Nenhuma posição disponível.',row=>assetInsightRowHtml(row,'position'));
+    const positiveHtml=pdfReportListHtml(positiveRows,'Nenhuma alta com dados suficientes.',row=>assetPerformanceRowHtml(row,maxPositive,'positive'));
+    const negativeHtml=pdfReportListHtml(negativeRows,'Nenhuma baixa com dados suficientes.',row=>assetPerformanceRowHtml(row,maxNegative,'negative'));
+    const incompleteHtml=pdfReportListHtml(incompleteRows,'Sem ativos incompletos.',row=>assetInsightRowHtml(row,'incomplete'));
+    const recentMonthsHtml=pdfReportListHtml(recentMonths,'Sem proventos nos últimos 12 meses.',row=>{
+      const date=parseAnyDate(`${row.key}-01`);
+      return `<div class="pdf-report-row" style="grid-template-columns:minmax(0,1.3fr) auto auto">
+        <div class="pdf-report-row-main">${date?date.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):esc(row.key)}</div>
+        <div class="pdf-report-row-value">${fmt(Number(row.total)||0)}</div>
+        <div class="pdf-report-row-value">${Number(row.count)||0}</div>
       </div>`;
-    }).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Sem proventos nos últimos 12 meses.</div></div>';
-    const recentHtml=data.recentProventos.length ? data.recentProventos.slice(0,6).map(row=>`
-      <div class="pdf-report-row" style="grid-template-columns:1.2fr .7fr .7fr">
-        <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.eventType)}</div>
-        <div class="pdf-report-row-value">${esc(row.date)}</div>
-        <div class="pdf-report-row-value">${fmt(row.value)}</div>
-      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Nenhum provento recente.</div></div>';
-    const fixedHtml=data.fixed.length ? data.fixed.map(row=>`
+    });
+    const topPayersHtml=pdfReportListHtml(topPayers,'Nenhum pagador encontrado.',row=>`
+      <div class="pdf-report-row" style="grid-template-columns:minmax(0,1.2fr) auto auto auto">
+        <div class="pdf-report-row-main">${esc(row.ticker||'—')} · ${esc(row.name||'—')}</div>
+        <div class="pdf-report-row-value">${fmt(Number(row.total)||0)}</div>
+        <div class="pdf-report-row-value">${Number(row.count)||0}</div>
+        <div class="pdf-report-row-value">${row.lastDate ? new Date(row.lastDate).toLocaleDateString('pt-BR') : '—'}</div>
+      </div>`);
+    const fixedHtml=pdfReportListHtml(fixedRows,'Nenhum título de renda fixa cadastrado.',row=>`
       <div class="pdf-report-row">
-        <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.category)}</div>
-        <div class="pdf-report-row-value">${fmt(row.current)}</div>
-        <div class="pdf-report-row-value">${row.due?row.due.toLocaleDateString('pt-BR'):'Sem vencimento'}</div>
+        <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.title||row.type||'Renda Fixa')}</div>
+        <div class="pdf-report-row-value">${fmt(Number(row.current)||0)}</div>
+        <div class="pdf-report-row-value">${row.maturityDate||'Sem vencimento'}</div>
         <div class="pdf-report-row-value">${esc(row.rate||'Sem taxa')}</div>
-      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Nenhum título de renda fixa cadastrado.</div></div>';
-    const patrimonyHtml=data.patrimony.length ? data.patrimony.map(row=>`
-      <div class="pdf-report-row" style="grid-template-columns:.7fr 1fr 1fr">
-        <div class="pdf-report-row-main">${esc(row.period)}</div>
-        <div class="pdf-report-row-value">Aporte ${fmt(row.contribution)}</div>
-        <div class="pdf-report-row-value">Acumulado ${fmt(row.accumulatedContributions)}</div>
-      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-sub">Sem histórico patrimonial suficiente.</div></div>';
-    const alertsHtml=data.alerts.length ? data.alerts.map(alert=>`
+      </div>`);
+    const alertsHtml=pdfReportListHtml(alerts,'Auditoria sem alertas relevantes.',alert=>`
       <div class="pdf-report-card pdf-report-alert ${alert.severity==='critical'?'critical':''}">
         <div class="pdf-report-card-title">${esc(dataAuditSeverityLabel(alert.severity))} · ${esc(alert.area)} · ${esc(alert.item)}</div>
         <div class="pdf-report-card-sub">${esc(alert.problem)}</div>
         <div class="pdf-report-card-sub"><strong>Conferir:</strong> ${esc(alert.fix)}</div>
-      </div>`).join('') : '<div class="pdf-report-card"><div class="pdf-report-card-title">Auditoria sem alertas relevantes</div><div class="pdf-report-card-sub">Nenhuma inconsistência foi encontrada com os critérios atuais.</div></div>';
+      </div>`);
+    const currentMonthPercent=target>0 ? fmtP(targetPercent||0) : '—';
     return `<div class="pdf-report-overlay" role="dialog" aria-modal="true">
       <div class="pdf-report-toolbar">
-        <div class="pdf-report-toolbar-text"><strong>Prévia do Relatório PDF Premium</strong><br>Use a opção imprimir/salvar como PDF do navegador.</div>
+        <div class="pdf-report-toolbar-text"><strong>Prévia do Relatório PDF Executivo</strong><br>Use a opção imprimir/salvar como PDF do navegador.</div>
         <div class="pdf-report-toolbar-actions">
           <button class="btn bgh" onclick="closePdfReport()">Voltar</button>
           <button class="btn bp" onclick="printPdfReport()">Imprimir / Salvar PDF</button>
@@ -13945,44 +13989,132 @@ function reportPdfPreview(){
         <header class="pdf-report-header">
           <div>
             <div class="pdf-report-brand">${esc(APP_NAME)}</div>
-            <div class="pdf-report-title">Relatório Premium da Carteira</div>
-            <div class="pdf-report-sub">Visão executiva para conferência da carteira, com patrimônio, alocação, desempenho, proventos, renda fixa e qualidade dos dados.</div>
+            <div class="pdf-report-title">Relatório Executivo da Carteira</div>
+            <div class="pdf-report-sub">Documento de apoio para revisão com assessor de investimentos.</div>
           </div>
-          <div class="pdf-report-meta">Período: ${esc(data.summary.periodLabel)}<br>Gerado em ${new Date(data.summary.generatedAt).toLocaleString('pt-BR')}<br>${data.summary.assetsCount} ativo(s) analisado(s)</div>
+          <div class="pdf-report-meta">Período: ${esc(data.summary.periodLabel)}<br>Gerado em ${generatedAt.toLocaleString('pt-BR')}<br>${data.summary.assetsCount} ativo(s) analisado(s)</div>
         </header>
+        <div class="pdf-report-callout">
+          <div class="pdf-report-card-title">Este relatório não é recomendação de investimento.</div>
+          <div class="pdf-report-card-sub">Os blocos abaixo ajudam a revisar alocação, concentração, renda passiva, renda fixa e pontos de atenção com o assessor.</div>
+        </div>
         <div class="pdf-report-kpis">
           ${pdfReportKpi('Patrimônio atual',fmt(portfolio.tC),'Estimativa da posição atual')}
           ${pdfReportKpi('Valor aplicado',fmt(portfolio.tI),'Base cadastrada')}
           ${pdfReportKpi('Resultado',fmt(portfolio.tG),fmtP(portfolio.tGP))}
-          ${pdfReportKpi('Renda média 12M',fmt(income.monthlyAvg),'Proventos reais recebidos')}
-          ${pdfReportKpi('Ativos',String(data.summary.assetsCount),`${data.summary.fixedCount} título(s) RF`)}
+          ${pdfReportKpi('Rentabilidade',fmtP(portfolio.tGP),'Retorno sobre o capital aplicado')}
           ${pdfReportKpi('Proventos 12M',fmt(income.total12),`${data.summary.proventosCount} registro(s) no filtro`)}
-          ${pdfReportKpi('Renda Fixa',fmt(fixed.totalCurrent),'Valor atual/líquido')}
-          ${pdfReportKpi('Alertas',String(audit.alerts.length),`${audit.counts.critical||0} crítico(s)`)}
+          ${pdfReportKpi('Média mensal 12M',fmt(monthlyAvg),'Proventos reais recebidos')}
+          ${pdfReportKpi('Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Sem meta definida')}
+          ${pdfReportKpi('Meta atingida',currentMonthPercent,target>0?'Percentual da meta mensal':'Sem referência de meta')}
         </div>
-        ${pdfReportSection('Resumo Executivo','Leitura consolidada da carteira',`
+        ${pdfReportSection('Resumo executivo textual','Leitura neutra e objetiva',`
+          <div class="pdf-report-summary-text">
+            <p>${esc(summaryText1)}</p>
+            <p>${esc(summaryText2)}</p>
+          </div>`,'pdf-report-section--compact')}
+        ${pdfReportSection('Diagnóstico da carteira','Alocação por classe, concentração e maiores posições',`
           <div class="pdf-report-grid">
-            <div class="pdf-report-card"><div class="pdf-report-card-title">Resultado sobre o valor aplicado</div><div class="pdf-report-value" style="color:${resultTone}">${fmt(portfolio.tG)} · ${fmtP(portfolio.tGP)}</div><div class="pdf-report-card-sub">${portfolio.tG>=0?'O patrimônio está acima do valor aplicado.':'O patrimônio está abaixo do valor aplicado.'}</div></div>
-            <div class="pdf-report-card"><div class="pdf-report-card-title">Concentração</div><div class="pdf-report-value">${data.concentration.length?`${data.concentration.length} ativo(s) acima de 10%`:'Concentração saudável'}</div><div class="pdf-report-card-sub">${data.concentration[0]?`Maior peso: ${esc(data.concentration[0].ticker)} · ${data.concentration[0].share.toFixed(1)}%`:'Nenhum ativo acima do limite de atenção.'}</div></div>
-          </div>`)}
-        ${pdfReportSection('Alocação por classe','Participação no patrimônio atual',`<div class="pdf-report-grid">${allocationHtml}</div>`)}
-        ${pdfReportSection('Maiores posições','Top 10 por valor atual',`<div class="pdf-report-list">${positionHtml}</div>`)}
-        ${pdfReportSection('Maiores altas e baixas','Desempenho acumulado informado',`
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Alocação por classe</div>
+              <div class="pdf-report-list" style="margin-top:7px">${allocationHtml}</div>
+            </div>
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Concentração por ativo</div>
+              <div class="pdf-report-list" style="margin-top:7px">${concentrationHtml}</div>
+            </div>
+          </div>
+          <div class="pdf-report-card" style="margin-top:9px">
+            <div class="pdf-report-card-title">Top maiores posições</div>
+            <div class="pdf-report-list" style="margin-top:7px">${positionHtml}</div>
+          </div>`,'pdf-report-section--compact')}
+        ${pdfReportSection('Ativos para revisão','Maior desempenho, maior peso e dados incompletos',`
           <div class="pdf-report-grid">
-            <div><div class="pdf-report-card-title" style="margin-bottom:6px">Maiores altas</div>${performanceColumn(data.highs,'Nenhuma alta com dados suficientes.')}</div>
-            <div><div class="pdf-report-card-title" style="margin-bottom:6px">Maiores baixas</div>${performanceColumn(data.lows,'Nenhuma baixa com dados suficientes.')}</div>
-          </div>`,'page-start')}
-        ${pdfReportSection('Dividendos e proventos','Últimos 12 meses e lançamentos recentes',`
-          <div class="pdf-report-grid"><div class="pdf-report-list">${dividendsHtml}</div><div class="pdf-report-list">${recentHtml}</div></div>`)}
-        ${pdfReportSection('Renda Fixa','Principais títulos e vencimentos',`<div class="pdf-report-list">${fixedHtml}</div>`)}
-        ${pdfReportSection('Patrimônio','Aportes e evolução do período',`<div class="pdf-report-list">${patrimonyHtml}</div>`,'page-start')}
-        ${pdfReportSection('Auditoria de Dados','Até 5 alertas prioritários',`<div class="pdf-report-grid">${alertsHtml}</div>`)}
-        ${pdfReportSection('Observações finais','Uso auxiliar e informativo',`
-          <div class="pdf-report-card">
-            <div class="pdf-report-card-title">Relatório para conferência</div>
-            <div class="pdf-report-card-sub">Informações podem depender dos dados cadastrados e das cotações disponíveis. Valores de patrimônio, desempenho e renda fixa podem conter estimativas. Este documento não substitui backup, informe oficial, declaração de IRPF nem orientação profissional.</div>
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Maiores altas</div>
+              <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(positiveRows,'Nenhuma alta com dados suficientes.',row=>assetPerformanceRowHtml(row,maxPositive,'positive'))}</div>
+            </div>
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Maiores baixas</div>
+              <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(negativeRows,'Nenhuma baixa com dados suficientes.',row=>assetPerformanceRowHtml(row,maxNegative,'negative'))}</div>
+            </div>
+          </div>
+          <div class="pdf-report-grid" style="margin-top:9px">
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Ativos com maior peso</div>
+              <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(concentrationRows,'Sem posições relevantes.',row=>assetInsightRowHtml(row,'concentration'))}</div>
+            </div>
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Ativos com dados incompletos</div>
+              <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(incompleteRows,'Sem ativos incompletos.',row=>assetInsightRowHtml(row,'incomplete'))}</div>
+            </div>
           </div>`)}
-        <footer class="pdf-report-footer">Relatório gerado para conferência. Informações podem depender de dados cadastrados e cotações disponíveis. Período selecionado: ${esc(data.summary.periodLabel)}.</footer>
+        ${pdfReportSection('Renda passiva','Proventos e meta mensal',`
+          <div class="pdf-report-grid">
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Resumo da renda passiva</div>
+              <div class="pdf-report-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:7px">
+                ${pdfReportKpi('Proventos 12M',fmt(income.total12),'Soma dos últimos 12 meses')}
+                ${pdfReportKpi('Média mensal',fmt(monthlyAvg),'Média dos últimos 12 meses')}
+                ${pdfReportKpi('Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Sem meta definida')}
+                ${pdfReportKpi('Meta atingida',currentMonthPercent,target>0?'Percentual da meta mensal':'Sem referência de meta')}
+              </div>
+            </div>
+            <div class="pdf-report-card">
+              <div class="pdf-report-card-title">Meses recentes</div>
+              <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(recentMonths,'Sem proventos nos últimos 12 meses.',row=>{
+                const date=parseAnyDate(`${row.key}-01`);
+                return `<div class="pdf-report-row" style="grid-template-columns:minmax(0,1.3fr) auto auto">
+                  <div class="pdf-report-row-main">${date?date.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):esc(row.key)}</div>
+                  <div class="pdf-report-row-value">${fmt(Number(row.total)||0)}</div>
+                  <div class="pdf-report-row-value">${Number(row.count)||0}</div>
+                </div>`;
+              })}</div>
+            </div>
+          </div>
+          <div class="pdf-report-card" style="margin-top:9px">
+            <div class="pdf-report-card-title">Top pagadores</div>
+            <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(topPayers,'Nenhum pagador encontrado.',row=>`
+              <div class="pdf-report-row" style="grid-template-columns:minmax(0,1.2fr) auto auto auto">
+                <div class="pdf-report-row-main">${esc(row.ticker||'—')} · ${esc(row.name||'—')}</div>
+                <div class="pdf-report-row-value">${fmt(Number(row.total)||0)}</div>
+                <div class="pdf-report-row-value">${Number(row.count)||0}</div>
+                <div class="pdf-report-row-value">${row.lastDate ? new Date(row.lastDate).toLocaleDateString('pt-BR') : '—'}</div>
+              </div>`)}</div>
+          </div>`)}
+        ${pdfReportSection('Renda fixa','Principais títulos e vencimentos',`
+          <div class="pdf-report-grid">
+            <div class="pdf-report-card"><div class="pdf-report-card-title">Valor aplicado</div><div class="pdf-report-value">${fmt(Number(dashboard.fixed?.applied)||0)}</div><div class="pdf-report-card-sub">Base usada pela leitura da carteira</div></div>
+            <div class="pdf-report-card"><div class="pdf-report-card-title">Valor atual / líquido</div><div class="pdf-report-value">${fmt(Number(dashboard.fixed?.current)||0)}</div><div class="pdf-report-card-sub">Valor consolidado das posições</div></div>
+            <div class="pdf-report-card"><div class="pdf-report-card-title">Quantidade de títulos</div><div class="pdf-report-value">${fixedRows.length}</div><div class="pdf-report-card-sub">Itens analisados no período selecionado</div></div>
+            <div class="pdf-report-card"><div class="pdf-report-card-title">Dados incompletos</div><div class="pdf-report-value">${Number(dashboard.fixed?.missing)||0}</div><div class="pdf-report-card-sub">Títulos sem valor atual explícito</div></div>
+          </div>
+          <div class="pdf-report-card" style="margin-top:9px">
+            <div class="pdf-report-card-title">Títulos e vencimentos</div>
+            <div class="pdf-report-list" style="margin-top:7px">${pdfReportListHtml(fixedRows,'Nenhum título de renda fixa cadastrado.',row=>`
+              <div class="pdf-report-row">
+                <div class="pdf-report-row-main">${esc(row.ticker)} · ${esc(row.title||row.type||'Renda Fixa')}</div>
+                <div class="pdf-report-row-value">${fmt(Number(row.current)||0)}</div>
+                <div class="pdf-report-row-value">${row.maturityDate||'Sem vencimento'}</div>
+                <div class="pdf-report-row-value">${esc(row.rate||'Sem taxa')}</div>
+              </div>`)}</div>
+          </div>`)}
+        ${pdfReportSection('Pontos de atenção','Alertas priorizados pela auditoria',`
+          <div class="pdf-report-grid">${pdfReportListHtml(alerts,'Auditoria sem alertas relevantes.',alert=>`
+            <div class="pdf-report-card pdf-report-alert ${alert.severity==='critical'?'critical':''}">
+              <div class="pdf-report-card-title">${esc(dataAuditSeverityLabel(alert.severity))} · ${esc(alert.area)} · ${esc(alert.item)}</div>
+              <div class="pdf-report-card-sub">${esc(alert.problem)}</div>
+              <div class="pdf-report-card-sub"><strong>Conferir:</strong> ${esc(alert.fix)}</div>
+            </div>`)}</div>`)}
+        ${pdfReportSection('Checklist para o assessor','Perguntas objetivas para a reunião',`
+          <div class="pdf-report-checklist">
+            ${checklist.map(question=>`
+              <div class="pdf-report-card">
+                <div class="pdf-report-card-title">${esc(question)}</div>
+                <div class="pdf-report-card-sub">Use como roteiro para discussão e revisão da carteira.</div>
+              </div>`).join('')}
+          </div>`,'pdf-report-section--page-break')}
+        <footer class="pdf-report-footer">Relatório gerado para apoio à análise. Não representa recomendação de investimento. Valide decisões com profissional habilitado. Período selecionado: ${esc(data.summary.periodLabel)}. Gerado em ${generatedAt.toLocaleString('pt-BR')}.</footer>
       </article>
     </div>`;
   });
@@ -14014,11 +14146,11 @@ function reportsTab(){
     `<article class="report-export-card">
       <div class="report-export-card-head">
         <div class="report-export-icon">🖨️</div>
-        <div style="min-width:0"><div class="report-export-title">Relatório PDF Premium</div><div class="report-export-desc">Prévia executiva com patrimônio, alocação, desempenho, proventos, renda fixa e auditoria.</div></div>
+        <div style="min-width:0"><div class="report-export-title">Relatório PDF Executivo</div><div class="report-export-desc">Prévia executiva para revisão com assessor: patrimônio, alocação, desempenho, proventos, renda fixa e auditoria.</div></div>
       </div>
       <div class="report-export-meta"><span class="report-format">PDF</span><span class="report-format">${esc(reportsPeriodLabel())}</span></div>
       <div class="report-export-desc">Use a opção imprimir/salvar como PDF do navegador.</div>
-      <div class="report-export-actions"><button class="btn bp" onclick="openPdfReport()">Gerar PDF da carteira</button></div>
+      <div class="report-export-actions"><button class="btn bp" onclick="openPdfReport()">Gerar PDF Executivo</button></div>
     </article>`,
     reportExportCard('🗂️','Carteira completa','Resumo, ativos, proventos, renda fixa, patrimônio, metas e auditoria.','complete'),
     reportExportCard('💼','Ativos','Posições, preços, valores aplicados, valores atuais e resultados.','assets'),
