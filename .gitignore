@@ -39,5 +39,6 @@ skills-lock.json
 test-results/
 temp-smoke.spec.js
 backups/
+_backups-seguros/
 *.bak
 index.backup*.html
