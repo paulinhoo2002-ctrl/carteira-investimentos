@@ -993,16 +993,16 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:3000;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s;pointer-events:none}
 #toast-area{pointer-events:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:22px;overflow:auto}
-.note-modal{width:min(1240px,100%);background:#0b1020;border:1px solid #27324a;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.55);overflow:hidden;margin:20px 0}
+.note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden}
+.note-modal{width:min(1240px,100%);max-height:min(90dvh,900px);background:#0b1020;border:1px solid #27324a;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.55);overflow:hidden;margin:0;display:flex;flex-direction:column}
 body.modal-open{overflow:hidden}
-.note-head{padding:18px 18px 14px;border-bottom:1px solid #182033;background:linear-gradient(180deg,#0f1527,#0b1020)}
+.note-head{padding:18px 18px 14px;border-bottom:1px solid #182033;background:linear-gradient(180deg,#0f1527,#0b1020);flex:0 0 auto}
 .note-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .note-title h3{font-size:18px;font-weight:800;color:#f8fafc}
 .note-title p{font-size:12px;color:#64748b;margin-top:4px;line-height:1.5}
 .note-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .note-pill{font-size:11px;color:#a5b4fc;border:1px solid rgba(96,165,250,.18);background:#141d2f;border-radius:999px;padding:5px 10px}
-.note-body{padding:16px 18px 18px}
+.note-body{padding:16px 18px 18px;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .quick-movement-modal .fc{margin:0}
 .quick-movement-preview-card{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:16px;background:#0b1020;border:1px solid #27324a;box-shadow:0 18px 40px rgba(0,0,0,.24)}
 .quick-movement-preview-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
@@ -1022,7 +1022,7 @@ body.modal-open{overflow:hidden}
 .note-table input,.note-table select{padding:7px 8px;font-size:12px;border-radius:8px}
 .note-row-muted{opacity:.55}
 .note-row-bad{background:rgba(248,113,113,.06)}
-.note-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.note-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px -18px -18px;padding:12px 18px 14px;align-items:center;position:sticky;bottom:0;z-index:4;background:#0b1020;border-top:1px solid #182033}
 .note-foot .hint{font-size:12px;color:#64748b;line-height:1.5}
 .nota-review-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .nota-review-group-head{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1}
@@ -1085,7 +1085,7 @@ body.modal-open{overflow:hidden}
 .broker-note-duplicate-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid rgba(239,68,68,.32);border-radius:13px;background:rgba(239,68,68,.07)}
 .broker-note-duplicate-title{font-size:12px;font-weight:900;color:var(--danger)}
 .broker-note-duplicate-text{font-size:10px;color:var(--muted);line-height:1.45;margin-top:3px}
-.broker-note-confirm-bar{position:sticky;bottom:-18px;z-index:3;margin:12px -18px -18px;padding:12px 18px;background:color-mix(in srgb,var(--panel) 94%,transparent);border-top:1px solid var(--border);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.broker-note-confirm-bar{position:sticky;bottom:0;z-index:3;margin:12px -18px -18px;padding:12px 18px;background:color-mix(in srgb,var(--panel) 94%,transparent);border-top:1px solid var(--border);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .broker-note-success{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:start}
 .broker-note-success-icon{width:64px;height:64px;border-radius:18px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.28);display:flex;align-items:center;justify-content:center;font-size:30px}
 .broker-note-success-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
@@ -1102,7 +1102,7 @@ body.modal-open{overflow:hidden}
   .broker-note-section-head{align-items:flex-start}
   .broker-note-checklist{grid-template-columns:1fr}
   .broker-note-duplicate-card{grid-template-columns:1fr}
-  .broker-note-confirm-bar{bottom:-12px;margin:10px -12px -12px;padding:10px 12px}
+  .broker-note-confirm-bar{bottom:0;margin:10px -12px -12px;padding:10px 12px}
   .broker-note-confirm-bar .btn{width:100%}
   .broker-note-success{grid-template-columns:1fr}
   .broker-note-success-grid{grid-template-columns:1fr 1fr}
@@ -2490,7 +2490,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   }
   .note-actions .left,.note-actions .right{width:100%;display:flex}
   .note-foot{
-    position:sticky;bottom:0;background:#0b1020;padding:9px 0 calc(4px + env(safe-area-inset-bottom));
+    position:sticky;bottom:0;background:#0b1020;margin:10px -10px -10px;padding:9px 10px calc(4px + env(safe-area-inset-bottom));
     border-top:1px solid #182033;z-index:3
   }
   .note-foot .hint{width:100%;font-size:10px;line-height:1.35}
@@ -4738,8 +4738,9 @@ function backupImportedAt(payload){
   return d && !Number.isNaN(d.getTime()) ? d.toLocaleString('pt-BR') : '—';
 }
 let scrollRestorePoint=null;
+let bodyScrollLockY=null;
 function rememberScroll(){
-  scrollRestorePoint={x:window.scrollX||0,y:window.scrollY||0};
+  scrollRestorePoint={x:window.scrollX||0,y:bodyScrollLockY!==null?bodyScrollLockY:(window.scrollY||0)};
   return scrollRestorePoint;
 }
 function restoreScroll(){
@@ -4757,7 +4758,32 @@ function scrollPreserveActive(){
   return !!(bodyModalLockActive() || S.showA || S.showP || S.showD);
 }
 function syncBodyModalLock(){
-  document.body?.classList.toggle('modal-open', bodyModalLockActive());
+  const active=bodyModalLockActive();
+  const body=document.body;
+  if(!body) return;
+  if(active && bodyScrollLockY===null){
+    bodyScrollLockY=window.scrollY||0;
+    body.classList.add('modal-open');
+    body.style.position='fixed';
+    body.style.top=`-${bodyScrollLockY}px`;
+    body.style.left='0';
+    body.style.right='0';
+    body.style.width='100%';
+    return;
+  }
+  if(!active && bodyScrollLockY!==null){
+    const y=bodyScrollLockY;
+    bodyScrollLockY=null;
+    body.classList.remove('modal-open');
+    body.style.position='';
+    body.style.top='';
+    body.style.left='';
+    body.style.right='';
+    body.style.width='';
+    if(!scrollRestorePoint) scrollRestorePoint={x:0,y};
+    return;
+  }
+  body.classList.toggle('modal-open', active);
 }
 function withScrollPreserved(fn){
   rememberScroll();
