@@ -13721,6 +13721,38 @@ function downloadTextFile(filename,content,mimeType='text/plain;charset=utf-8'){
   link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+function loadExternalScript(src){
+  loadExternalScript._cache = loadExternalScript._cache || new Map();
+  if(loadExternalScript._cache.has(src)) return loadExternalScript._cache.get(src);
+  const promise=new Promise((resolve,reject)=>{
+    const existing=Array.from(document.scripts||[]).find(script=>script.src===src);
+    if(existing){
+      existing.addEventListener('load',()=>resolve(),{once:true});
+      existing.addEventListener('error',()=>reject(new Error(`Falha ao carregar ${src}`)),{once:true});
+      if(existing.readyState==='complete') resolve();
+      return;
+    }
+    const script=document.createElement('script');
+    script.src=src;
+    script.async=true;
+    script.crossOrigin='anonymous';
+    script.onload=()=>resolve();
+    script.onerror=()=>reject(new Error(`Falha ao carregar ${src}`));
+    document.head.appendChild(script);
+  });
+  loadExternalScript._cache.set(src,promise);
+  return promise;
+}
+async function ensurePdfLibraries(){
+  const jsPDFClass=window.jspdf?.jsPDF || window.jsPDF;
+  if(jsPDFClass && jsPDFClass.API?.autoTable) return jsPDFClass;
+  await loadExternalScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+  await loadExternalScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js');
+  const loadedJsPDF=window.jspdf?.jsPDF || window.jsPDF;
+  if(!loadedJsPDF) throw new Error('jsPDF indisponível');
+  if(!loadedJsPDF.API?.autoTable) throw new Error('autoTable indisponível');
+  return loadedJsPDF;
+}
 function reportAssetRows(){
   return (S.assets||[]).map(asset=>{
     const applied=assetAppliedValue(asset);
@@ -13986,9 +14018,266 @@ function closeReportCardPdf(){
     render();
   });
 }
+async function downloadCompletePortfolioPdf(){
+  valueVisibilityDepth++;
+  try{
+    const JsPDF=await ensurePdfLibraries();
+    const payload=buildReportPayload('complete');
+    const summary=payload.summary||{};
+    const portfolio=summary.portfolio||{};
+    const assets=Array.isArray(payload.assets)?payload.assets:[];
+    const fixedIncome=Array.isArray(payload.fixedIncome)?payload.fixedIncome:[];
+    const generatedAt=new Date(payload.metadata?.generatedAt || Date.now());
+    const totalPortfolio=Number(portfolio.tC)||0;
+    const doc=new JsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    const pageWidth=doc.internal.pageSize.getWidth();
+    const pageHeight=doc.internal.pageSize.getHeight();
+    const margin=12;
+    const contentWidth=pageWidth - margin*2;
+    const pdfDash='-';
+    const money=v=>Number.isFinite(Number(v)) ? fmt(Number(v)) : pdfDash;
+    const pct=v=>Number.isFinite(Number(v)) ? fmtP(Number(v)) : pdfDash;
+    const textOrDash=v=>String(v ?? '').trim() || pdfDash;
+    const sharePct=v=>Number.isFinite(Number(v)) ? fmtP(Number(v)) : pdfDash;
+    const assetGroups=[
+      {title:'Ações', type:'Ação'},
+      {title:'FIIs', type:'FII'},
+      {title:'ETFs', type:'ETF'}
+    ];
+    const assetTableColumns=[
+      {header:'Ativo', dataKey:'ativo', width:40},
+      {header:'Classe', dataKey:'classe', width:16},
+      {header:'Quantidade', dataKey:'quantidade', width:13, align:'right'},
+      {header:'Preço médio', dataKey:'precoMedio', width:15, align:'right'},
+      {header:'Preço atual', dataKey:'precoAtual', width:15, align:'right'},
+      {header:'Valor aplicado', dataKey:'valorAplicado', width:16, align:'right'},
+      {header:'Valor atual', dataKey:'valorAtual', width:16, align:'right'},
+      {header:'Resultado', dataKey:'resultado', width:15, align:'right'},
+      {header:'Resultado %', dataKey:'resultadoPct', width:15, align:'right'},
+      {header:'Participação %', dataKey:'participacaoPct', width:15, align:'right'}
+    ];
+    const fixedTableColumns=[
+      {header:'Ativo', dataKey:'ativo', width:40},
+      {header:'Classe', dataKey:'classe', width:16},
+      {header:'Quantidade', dataKey:'quantidade', width:13, align:'right'},
+      {header:'Preço médio', dataKey:'precoMedio', width:15, align:'right'},
+      {header:'Preço atual', dataKey:'precoAtual', width:15, align:'right'},
+      {header:'Valor aplicado', dataKey:'valorAplicado', width:16, align:'right'},
+      {header:'Valor atual', dataKey:'valorAtual', width:16, align:'right'},
+      {header:'Resultado', dataKey:'resultado', width:15, align:'right'},
+      {header:'Resultado %', dataKey:'resultadoPct', width:15, align:'right'},
+      {header:'Participação %', dataKey:'participacaoPct', width:15, align:'right'}
+    ];
+    const buildAssetRows=(groupType)=>{
+      return assets
+        .filter(row=>row.type===groupType)
+        .sort((a,b)=>(Number(b.current)||0)-(Number(a.current)||0) || String(a.ticker).localeCompare(String(b.ticker),'pt-BR'))
+        .map(row=>{
+          const current=Number(row.current)||0;
+          const share=totalPortfolio>0 ? current/totalPortfolio*100 : null;
+          const code=[row.ticker,row.name&&row.name!==row.ticker?row.name:''].filter(Boolean).join(' · ') || pdfDash;
+          return {
+            ativo:code,
+            classe:textOrDash(row.type),
+            quantidade:Number.isFinite(Number(row.qty)) ? Number(row.qty) : pdfDash,
+            precoMedio:Number.isFinite(Number(row.avgPrice)) ? money(row.avgPrice) : pdfDash,
+            precoAtual:Number.isFinite(Number(row.currentPrice)) ? money(row.currentPrice) : pdfDash,
+            valorAplicado:Number.isFinite(Number(row.applied)) ? money(row.applied) : pdfDash,
+            valorAtual:Number.isFinite(Number(row.current)) ? money(row.current) : pdfDash,
+            resultado:Number.isFinite(Number(row.result)) ? money(row.result) : pdfDash,
+            resultadoPct:Number.isFinite(Number(row.resultPct)) ? pct(row.resultPct) : pdfDash,
+            participacaoPct:share!=null ? sharePct(share) : pdfDash,
+            _sign:{resultado:Number(row.result), resultadoPct:Number(row.resultPct), participacaoPct:share}
+          };
+        });
+    };
+    const buildFixedRows=()=>{
+      return [...fixedIncome]
+        .sort((a,b)=>(Number(b.current)||0)-(Number(a.current)||0) || String(a.ticker).localeCompare(String(b.ticker),'pt-BR'))
+        .map(row=>{
+          const current=Number(row.current)||0;
+          const share=totalPortfolio>0 ? current/totalPortfolio*100 : null;
+          const title=[row.ticker,row.title].filter(Boolean).join(' · ') || pdfDash;
+          return {
+            ativo:title,
+            classe:textOrDash(row.type||row.indexer||row.subtype),
+            quantidade:pdfDash,
+            precoMedio:pdfDash,
+            precoAtual:pdfDash,
+            valorAplicado:Number.isFinite(Number(row.applied)) ? money(row.applied) : pdfDash,
+            valorAtual:Number.isFinite(Number(row.current)) ? money(row.current) : pdfDash,
+            resultado:Number.isFinite(Number(row.profit)) ? money(row.profit) : pdfDash,
+            resultadoPct:Number.isFinite(Number(row.resultPct)) ? pct(row.resultPct) : pdfDash,
+            participacaoPct:share!=null ? sharePct(share) : pdfDash,
+            _sign:{resultado:Number(row.profit), resultadoPct:Number(row.resultPct), participacaoPct:share}
+          };
+        });
+    };
+    const drawHeader=()=>{
+      doc.setTextColor(17,24,39);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(18);
+      doc.text('Carteira completa', margin, 18);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(10);
+      doc.setTextColor(107,114,128);
+      doc.text(`Gerado em ${generatedAt.toLocaleString('pt-BR')} · Período ${summary.periodLabel || reportsPeriodLabel()}`, margin, 24);
+      doc.text('Relatório operacional com todas as classes da carteira.', margin, 29);
+    };
+    const drawSummary=()=>{
+      const summaryItems=[
+        {label:'Patrimônio total', value:money(portfolio.tC), sub:'Valor atual estimado'},
+        {label:'Total aplicado', value:money(portfolio.tI), sub:'Capital cadastrado'},
+        {label:'Resultado financeiro', value:money(portfolio.tG), sub:'Diferença entre atual e aplicado'},
+        {label:'Quantidade de ativos', value:String(assets.length + fixedIncome.length), sub:'Ações, FIIs, ETFs e renda fixa'}
+      ];
+      const boxW=(contentWidth - 6) / 2;
+      const boxH=20;
+      const boxTop=33;
+      summaryItems.forEach((item,index)=>{
+        const x=margin + (index % 2) * (boxW + 6);
+        const y=boxTop + Math.floor(index / 2) * (boxH + 4);
+        doc.setDrawColor(229,231,235);
+        doc.setFillColor(249,250,251);
+        doc.roundedRect(x,y,boxW,boxH,3,3,'FD');
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(8);
+        doc.setTextColor(107,114,128);
+        doc.text(item.label, x + 4, y + 5);
+        doc.setTextColor(17,24,39);
+        doc.setFontSize(13);
+        doc.text(item.value, x + 4, y + 12);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(7);
+        doc.setTextColor(100,116,139);
+        doc.text(item.sub, x + 4, y + 17);
+      });
+    };
+    const renderTableSection=(sectionTitle, note, columns, rows, rowBuilder, startY, sectionPage)=>{
+      if(sectionPage>0) doc.addPage();
+      doc.setTextColor(17,24,39);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(13);
+      const sectionTop=startY || 18;
+      doc.text(sectionTitle, margin, sectionTop);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(107,114,128);
+      if(note) doc.text(note, margin, sectionTop + 5, {maxWidth:contentWidth});
+      const body=rows.length ? rows.map(rowBuilder) : [];
+      if(!body.length){
+        doc.setTextColor(100,116,139);
+        doc.setFontSize(10);
+        doc.text('Nenhum dado encontrado para este relatório.', margin, sectionTop + 14);
+        return;
+      }
+      doc.autoTable({
+        startY: sectionTop + 9,
+        margin:{left:margin,right:margin},
+        columns:columns.map(col=>({header:col.header,dataKey:col.dataKey})),
+        body,
+        theme:'grid',
+        tableWidth:'auto',
+        styles:{
+          font:'helvetica',
+          fontSize:6.5,
+          cellPadding:1.8,
+          valign:'top',
+          overflow:'linebreak',
+          textColor:[31,41,55]
+        },
+        headStyles:{
+          fillColor:[37,99,235],
+          textColor:255,
+          fontStyle:'bold',
+          halign:'center'
+        },
+        alternateRowStyles:{fillColor:[248,250,252]},
+        columnStyles:columns.reduce((acc,col)=>{
+          acc[col.dataKey]={
+            halign:col.align || (col.dataKey==='ativo' || col.dataKey==='classe' ? 'left' : 'right'),
+            cellWidth:col.width
+          };
+          return acc;
+        },{}),
+        didParseCell:data=>{
+          if(data.section!=='body') return;
+          const row=data.row.raw || {};
+          const sign=row._sign || {};
+          if(data.column.dataKey==='resultado' || data.column.dataKey==='resultadoPct' || data.column.dataKey==='participacaoPct'){
+            const numeric=data.column.dataKey==='resultado' ? sign.result : data.column.dataKey==='resultadoPct' ? sign.resultPct : sign.participacaoPct;
+            if(Number.isFinite(Number(numeric))){
+              data.cell.styles.textColor = Number(numeric) < 0 ? [220,38,38] : [22,163,74];
+            }
+          }
+          if(data.column.dataKey==='ativo'){
+            data.cell.styles.fontStyle='bold';
+          }
+        }
+      });
+    };
+    drawHeader();
+    drawSummary();
+    const assetSectionStart=84;
+    assetGroups.forEach((group,index)=>{
+      renderTableSection(
+        group.title,
+        index===0 ? 'Ações, FIIs e ETFs separados por classe para conferência com o assessor.' : 'Continuação das classes da carteira.',
+        assetTableColumns,
+        buildAssetRows(group.type),
+        row=>row,
+        index===0 ? assetSectionStart : 18,
+        index
+      );
+    });
+    renderTableSection(
+      'Renda Fixa',
+      'Títulos consolidados com valores atuais/líquidos e resultado estimado.',
+      fixedTableColumns,
+      buildFixedRows(),
+      row=>row,
+      18,
+      assetGroups.length
+    );
+    const totalPages=doc.getNumberOfPages();
+    for(let page=1; page<=totalPages; page++){
+      doc.setPage(page);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(107,114,128);
+      doc.text(`Página ${page} de ${totalPages}`, pageWidth - margin, pageHeight - 7, {align:'right'});
+    }
+    doc.save('carteira-completa.pdf');
+    toast('✅ PDF da carteira completa gerado.');
+  }catch(error){
+    debugError('downloadCompletePortfolioPdf erro:',error);
+    toast('Não foi possível gerar o PDF da carteira completa.','#f87171');
+  }finally{
+    valueVisibilityDepth--;
+  }
+}
 function printReportCardPdf(){
   try{
-    window.print();
+    const type=S.reportCardPdfType;
+    if(!type) return;
+    if(type==='complete'){
+      downloadCompletePortfolioPdf();
+      return;
+    }
+    const html=buildReportCardPrintHtml(type);
+    const win=window.open('','_blank','width=900,height=700');
+    if(!win){
+      alert('Não foi possível abrir a janela de impressão. Verifique se o navegador bloqueou pop-ups.');
+      return;
+    }
+    try{ win.opener=null; }catch(_e){}
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    win.onload=function(){
+      win.focus();
+      setTimeout(()=>{ try{ win.print(); }catch(error){ debugError('printReportCardPdf print erro:',error); } },300);
+    };
   }catch(error){
     debugError('printReportCardPdf erro:',error);
     toast('Não foi possível abrir a impressão neste navegador.','#f87171');
@@ -14024,7 +14313,83 @@ function pdfReportMiniTableCard(title, note, headers, rows, empty, renderRow, gr
     </div>
   </div>`;
 }
-function reportCardPdfPreview(type){
+function reportCardPdfTypeLabel(type){
+  const labels={
+    complete:'Carteira completa',
+    assets:'Ativos',
+    proventos:'Dividendos e proventos',
+    fixed:'Renda Fixa',
+    patrimony:'Patrimônio',
+    audit:'Auditoria de Dados'
+  };
+  return labels[type] || 'Relatório';
+}
+function reportCardPdfPrintStyles(){
+  return `
+    @page{size:A4;margin:12mm}
+    html,body{margin:0;padding:0;height:auto!important;overflow:visible!important;font-family:Arial,sans-serif;color:#111827;background:#ffffff}
+    *{box-sizing:border-box}
+    body{padding:0}
+    .report-print-root{width:100%;height:auto!important;overflow:visible!important}
+    .report-print-page{width:100%;height:auto!important;overflow:visible!important}
+    .report-print-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid #e5e7eb;padding-bottom:10px;margin-bottom:14px}
+    .report-print-brand{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280}
+    .report-print-title{font-size:20px;line-height:1.2;font-weight:800;margin:4px 0 0}
+    .report-print-sub{font-size:11px;color:#6b7280;line-height:1.45;margin-top:4px;max-width:72ch}
+    .report-print-meta{font-size:10px;color:#6b7280;text-align:right;line-height:1.5;white-space:nowrap}
+    .report-print-callout,.pdf-report-callout{padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;margin:0 0 14px}
+    .report-print-callout-title{font-size:12px;font-weight:700;color:#111827}
+    .report-print-callout-sub{font-size:10px;color:#6b7280;line-height:1.5;margin-top:3px}
+    .report-print-kpis,.pdf-report-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+    .report-print-kpi,.pdf-report-kpi{border:1px solid #e5e7eb;border-radius:10px;padding:10px 11px;background:#fff;break-inside:avoid;page-break-inside:avoid}
+    .report-print-kpi-label,.pdf-report-kpi-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280}
+    .report-print-kpi-value,.pdf-report-kpi-value{font-size:18px;font-weight:800;color:#111827;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .report-print-kpi-sub,.pdf-report-kpi-sub{font-size:9px;color:#6b7280;margin-top:2px;line-height:1.35}
+    .report-print-section,.pdf-report-section{margin-top:16px;break-inside:avoid-page;page-break-inside:avoid}
+    .report-print-section-head,.pdf-report-section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin-bottom:10px}
+    .report-print-section-title,.pdf-report-section-title{font-size:14px;font-weight:800;color:#111827}
+    .report-print-section-note,.pdf-report-section-note{font-size:10px;color:#6b7280;text-align:right;line-height:1.4}
+    .report-print-card,.pdf-report-card{border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:10px 11px;break-inside:avoid;page-break-inside:avoid}
+    .report-print-card + .report-print-card,.pdf-report-card + .pdf-report-card{margin-top:10px}
+    .report-print-card-title,.pdf-report-card-title{font-size:11px;font-weight:700;color:#111827}
+    .report-print-card-sub,.pdf-report-card-sub{font-size:9px;color:#6b7280;line-height:1.45;margin-top:3px}
+    .report-print-list,.pdf-report-list{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+    .report-print-row,.pdf-report-row{display:grid;gap:8px;align-items:start;padding:6px 7px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;font-size:9px;line-height:1.35}
+    .report-print-row-main,.pdf-report-row-main{min-width:0;font-weight:700;color:#111827;word-break:break-word}
+    .report-print-row-value,.pdf-report-row-value{color:#374151;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .report-print-footer,.pdf-report-footer{margin-top:16px;padding-top:10px;border-top:1px solid #e5e7eb;font-size:9px;line-height:1.5;color:#6b7280}
+    .report-print-grid,.pdf-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .report-print-grid > *, .pdf-report-grid > *{min-width:0}
+    .report-print-table-card,.pdf-report-table-card{break-inside:auto;page-break-inside:auto}
+    .report-print-table-card .report-print-row,.pdf-report-table-card .pdf-report-row{font-size:8px}
+    .report-print-table-card .report-print-list,.pdf-report-table-card .pdf-report-list{gap:4px}
+    .report-print-table-card .report-print-row-main,.pdf-report-table-card .pdf-report-row-main{font-weight:700}
+    .report-print-note{font-size:10px;color:#6b7280;line-height:1.45;margin-top:10px}
+    @media print{
+      .report-print-root,.report-print-page{overflow:visible!important;height:auto!important;max-height:none!important}
+      .report-print-section,.report-print-card,.report-print-row,.report-print-kpi{break-inside:avoid;page-break-inside:avoid}
+      thead{display:table-header-group}
+      tr{break-inside:avoid;page-break-inside:avoid}
+    }
+  `;
+}
+function buildReportCardPrintHtml(type){
+  const body=reportCardPdfPreview(type,true);
+  const title=reportCardPdfTypeLabel(type);
+  return `<!doctype html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>${esc(title)} - ${esc(APP_NAME)}</title>
+    <style>${reportCardPdfPrintStyles()}</style>
+  </head>
+  <body>
+    <div class="report-print-root">${body}</div>
+  </body>
+  </html>`;
+}
+function reportCardPdfPreview(type, printMode=false){
   return withVisibleValues(()=>{
     if(type==='complete'){
     const payload=buildReportPayload('complete');
@@ -14095,40 +14460,30 @@ function reportCardPdfPreview(type){
       'pdf-report-table-card'
     );
     const assetTables=assetGroups.map(assetTable).join('');
-    return `<div class="pdf-report-overlay" role="dialog" aria-modal="true">
-      <div class="pdf-report-toolbar">
-        <div class="pdf-report-toolbar-text"><strong>Prévia do PDF - Carteira completa</strong><br>Use a opção imprimir/salvar como PDF do navegador.</div>
-        <div class="pdf-report-toolbar-actions">
-          <button class="btn bgh" onclick="closeReportCardPdf()">Voltar</button>
-          <button class="btn bp" onclick="printReportCardPdf()">Imprimir / Salvar PDF</button>
-        </div>
-      </div>
-      <article class="pdf-report-page">
-        <header class="pdf-report-header">
-          <div>
-            <div class="pdf-report-brand">${esc(APP_NAME)}</div>
-            <div class="pdf-report-title">Carteira completa</div>
-            <div class="pdf-report-sub">Relatório operacional com todos os ativos separados por classe.</div>
-          </div>
-          <div class="pdf-report-meta">Período: ${esc(summary.periodLabel)}<br>Gerado em ${generatedAt.toLocaleString('pt-BR')}<br>${Number(summary.assetsCount)||assets.length} ativo(s)</div>
-        </header>
-        <div class="pdf-report-callout">
-          <div class="pdf-report-card-title">Relatório de consulta.</div>
-          <div class="pdf-report-card-sub">Confira os dados com sua corretora antes de tomar decisões.</div>
-        </div>
-        <div class="pdf-report-kpis">
-          ${pdfReportKpi('Patrimônio total',fmt(Number(portfolio.tC)||0),'Valor atual estimado')}
-          ${pdfReportKpi('Total aplicado',fmt(Number(portfolio.tI)||0),'Capital cadastrado')}
-          ${pdfReportKpi('Resultado financeiro',fmt(Number(portfolio.tG)||0),'Diferença entre atual e aplicado')}
-          ${pdfReportKpi('Resultado percentual',fmtP(Number(portfolio.tGP)||0),'Retorno sobre capital aplicado')}
-          ${pdfReportKpi('Quantidade de ativos',String(Number(summary.assetsCount)||assets.length),'Ativos cadastrados')}
-        </div>
-        ${pdfReportSection('Separação por classe','Ações, FIIs, ETFs e Renda Fixa em blocos independentes para facilitar conferência.',`
+    return reportCardPdfLayout({
+      title:'Carteira completa',
+      subtitle:'Relatório operacional com todos os ativos separados por classe.',
+      periodLabel:summary.periodLabel,
+      generatedAt,
+      calloutTitle:'Relatório de consulta.',
+      calloutText:'Confira os dados com sua corretora antes de tomar decisões.',
+      kpis:[
+        {label:'Patrimônio total',value:fmt(Number(portfolio.tC)||0),sub:'Valor atual estimado'},
+        {label:'Total aplicado',value:fmt(Number(portfolio.tI)||0),sub:'Capital cadastrado'},
+        {label:'Resultado financeiro',value:fmt(Number(portfolio.tG)||0),sub:'Diferença entre atual e aplicado'},
+        {label:'Resultado percentual',value:fmtP(Number(portfolio.tGP)||0),sub:'Retorno sobre capital aplicado'},
+        {label:'Quantidade de ativos',value:String(Number(summary.assetsCount)||assets.length),sub:'Ativos cadastrados'}
+      ],
+      sections:[
+        pdfReportSection('Separação por classe','Ações, FIIs, ETFs e Renda Fixa em blocos independentes para facilitar conferência.',`
           ${assetTables}
-          ${fixedTable}`)}
-        <footer class="pdf-report-footer">Relatório de consulta. Confira os dados com sua corretora antes de tomar decisões. Gerado em ${generatedAt.toLocaleString('pt-BR')}.</footer>
-      </article>
-    </div>`;
+          ${fixedTable}`)
+      ],
+      footer:`Relatório de consulta. Confira os dados com sua corretora antes de tomar decisões. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`,
+      primaryActionLabel:'Baixar PDF',
+      primaryActionOnclick:'downloadCompletePortfolioPdf()',
+      printMode
+    });
     }
     const builders={
       assets:reportCardPdfAssetsPreview,
@@ -14138,19 +14493,38 @@ function reportCardPdfPreview(type){
       audit:reportCardPdfAuditPreview
     };
     const build=builders[type];
-    return build ? build() : '';
+    return build ? build(printMode) : '';
   });
 }
-function reportCardPdfLayout({title, subtitle, periodLabel, generatedAt, calloutTitle, calloutText, kpis=[], sections=[], footer}){
+function reportCardPdfLayout({title, subtitle, periodLabel, generatedAt, calloutTitle, calloutText, kpis=[], sections=[], footer, primaryActionLabel='Imprimir / Salvar PDF', primaryActionOnclick='printReportCardPdf()', printMode=false}){
   const kpiHtml=kpis.map(k=>pdfReportKpi(k.label,k.value,k.sub||'')).join('');
   const sectionHtml=sections.join('');
   const footerText=footer || `Relatório gerado em ${generatedAt.toLocaleString('pt-BR')}.`;
+  if(printMode){
+    return `<article class="report-print-page">
+      <header class="report-print-header">
+        <div>
+          <div class="report-print-brand">${esc(APP_NAME)}</div>
+          <div class="report-print-title">${esc(title)}</div>
+          <div class="report-print-sub">${esc(subtitle)}</div>
+        </div>
+        <div class="report-print-meta">Período: ${esc(periodLabel)}<br>Gerado em ${generatedAt.toLocaleString('pt-BR')}</div>
+      </header>
+      <div class="report-print-callout">
+        <div class="report-print-callout-title">${esc(calloutTitle)}</div>
+        <div class="report-print-callout-sub">${esc(calloutText)}</div>
+      </div>
+      <div class="report-print-kpis">${kpiHtml}</div>
+      ${sectionHtml}
+      <footer class="report-print-footer">${esc(footerText)}</footer>
+    </article>`;
+  }
   return `<div class="pdf-report-overlay" role="dialog" aria-modal="true">
     <div class="pdf-report-toolbar">
       <div class="pdf-report-toolbar-text"><strong>Prévia do PDF - ${esc(title)}</strong><br>Use a opção imprimir/salvar como PDF do navegador.</div>
       <div class="pdf-report-toolbar-actions">
         <button class="btn bgh" onclick="closeReportCardPdf()">Voltar</button>
-        <button class="btn bp" onclick="printReportCardPdf()">Imprimir / Salvar PDF</button>
+        <button class="btn bp" onclick="${primaryActionOnclick}">${esc(primaryActionLabel)}</button>
       </div>
     </div>
     <article class="pdf-report-page">
@@ -14172,7 +14546,7 @@ function reportCardPdfLayout({title, subtitle, periodLabel, generatedAt, callout
     </article>
   </div>`;
 }
-function reportCardPdfAssetsPreview(){
+function reportCardPdfAssetsPreview(printMode=false){
   const summary=reportsSnapshot();
   const generatedAt=new Date(summary.generatedAt);
   const rows=reportAssetRows();
@@ -14273,10 +14647,11 @@ function reportCardPdfAssetsPreview(){
         </div>
         <div style="margin-top:9px">${lossesHtml}</div>`)
     ],
-    footer:`Relatório de consulta. Confira os dados com sua corretora antes de tomar decisões. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`
+    footer:`Relatório de consulta. Confira os dados com sua corretora antes de tomar decisões. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`,
+    printMode
   });
 }
-function reportCardPdfProventosPreview(){
+function reportCardPdfProventosPreview(printMode=false){
   const summary=reportsSnapshot();
   const generatedAt=new Date(summary.generatedAt);
   const rows=reportProventoRows();
@@ -14337,10 +14712,11 @@ function reportCardPdfProventosPreview(){
       pdfReportSection('Histórico de proventos','Lista detalhada dos recebimentos por ativo.',tableHtml),
       pdfReportSection('Resumo mensal','Visão consolidada por mês para conferência rápida.',monthlyHtml)
     ],
-    footer:`Relatório informativo. Valores podem variar conforme o período filtrado. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`
+    footer:`Relatório informativo. Valores podem variar conforme o período filtrado. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`,
+    printMode
   });
 }
-function reportCardPdfFixedPreview(){
+function reportCardPdfFixedPreview(printMode=false){
   const summary=reportsSnapshot();
   const generatedAt=new Date(summary.generatedAt);
   const rows=reportFixedIncomeRows();
@@ -14389,10 +14765,11 @@ function reportCardPdfFixedPreview(){
     sections:[
       pdfReportSection('Títulos cadastrados','Lista consolidada da renda fixa, com taxas, indexadores e vencimentos.',tableHtml)
     ],
-    footer:`Relatório informativo. Valores de renda fixa podem conter estimativas. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`
+    footer:`Relatório informativo. Valores de renda fixa podem conter estimativas. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`,
+    printMode
   });
 }
-function reportCardPdfPatrimonyPreview(){
+function reportCardPdfPatrimonyPreview(printMode=false){
   const summary=reportsSnapshot();
   const generatedAt=new Date(summary.generatedAt);
   const rows=reportPatrimonyRows();
@@ -14444,10 +14821,11 @@ function reportCardPdfPatrimonyPreview(){
       pdfReportSection('Evolução patrimonial','Aportes e patrimônio estimado ao longo do tempo.',tableHtml),
       pdfReportSection('Metas e observações','Leitura complementar da evolução patrimonial.',goalsHtml)
     ],
-    footer:`Relatório informativo. A evolução patrimonial pode conter estimativas. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`
+    footer:`Relatório informativo. A evolução patrimonial pode conter estimativas. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`,
+    printMode
   });
 }
-function reportCardPdfAuditPreview(){
+function reportCardPdfAuditPreview(printMode=false){
   const summary=reportsSnapshot();
   const generatedAt=new Date(summary.generatedAt);
   const rows=reportAuditRows();
@@ -14490,7 +14868,8 @@ function reportCardPdfAuditPreview(){
     sections:[
       pdfReportSection('Alertas e inconsistências','Impacto e sugestão de correção para conferência manual.',tableHtml)
     ],
-    footer:`Relatório apenas informativo. Não altera registros. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`
+    footer:`Relatório apenas informativo. Não altera registros. Gerado em ${generatedAt.toLocaleString('pt-BR')}.`,
+    printMode
   });
 }
 function reportPdfPreview(){
@@ -14823,6 +15202,7 @@ function reportPdfPreview(){
   });
 }
 function reportExportCard(icon,title,description,type,formats=['csv','json']){
+  const pdfAction=type==='complete' ? 'downloadCompletePortfolioPdf()' : `openReportCardPdf('${type}')`;
   const generated=new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
   return `<article class="report-export-card">
     <div class="report-export-card-head">
@@ -14840,7 +15220,7 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
     <div class="report-export-actions">
       ${formats.includes('csv')?`<button class="btn bgh" onclick="exportReportCSV('${type}')">Exportar CSV</button>`:''}
       ${formats.includes('json')?`<button class="btn bsv" onclick="exportReportJSON('${type}')">Exportar JSON</button>`:''}
-      ${formats.includes('pdf')?`<button class="btn bp" onclick="openReportCardPdf('${type}')">Gerar PDF</button>`:''}
+      ${formats.includes('pdf')?`<button class="btn bp" onclick="${pdfAction}">Gerar PDF</button>`:''}
     </div>
   </article>`;
 }
