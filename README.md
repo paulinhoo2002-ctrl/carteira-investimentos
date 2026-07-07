@@ -30,6 +30,14 @@ Fase 57 - UX Premium
 | [docs/RELEASES.md](docs/RELEASES.md) | Historico de releases |
 | [docs/BACKUP.md](docs/BACKUP.md) | Guia de backup e protecao de dados |
 
+## Estabilidade e producao
+
+Este projeto possui um guia de estabilidade com checklist de producao, backup real dos dados, regras pre-merge, pos-deploy e criacao de tag estavel.
+
+Consulte:
+
+[docs/ESTABILIDADE.md](docs/ESTABILIDADE.md)
+
 ## PRINCIPIOS DO PROJETO
 
 - UX em primeiro lugar.
