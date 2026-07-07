@@ -16392,41 +16392,51 @@ function ativos(){
           <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">Editar</button></td>
        </tr>`;
      }).join('');
-     const rfCards=sortedItems.map(a=>{
+     const rfRows=sortedItems.map(a=>{
        const applied=assetAppliedValue(a);
        const current=assetCurrentValue(a);
        const profit=assetJurosValue(a);
        const rentab=assetRentabPct(a);
        const name=assetRfName(a);
        const subtype=assetRfSubtype(a);
+       const indexer=assetRfIndexerLabel(a);
        const appDate=assetRfApplicationDate(a);
        const dueDate=assetRfMaturityDate(a);
        const contractRate=assetRfContractRate(a);
        const note=assetRfNote(a);
        const iriof=assetRfIrIof(a);
        const unavailable=assetRfUnavailableValue(a);
-       return `<div class="rf-card" style="background:#0d111e;border:1px solid #161e2e;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)">
-         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
-           <div style="min-width:0">
-             <div style="font-weight:800;font-size:14px;color:#e2eaf6;line-height:1.2">${esc(name||a.ticker||'Renda Fixa')}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
+       const share=total>0 && Number.isFinite(current) ? (current/total)*100 : null;
+       const badges=[
+         unavailable?`<span class="analysis-pill muted" title="Valor indisponível">${esc(`Indisponível: ${fmt(unavailable)}`)}</span>`:'',
+         (iriof||a.rf_ir_iof===0)?`<span class="analysis-pill info">${esc(`IR/IOF: ${fmt(iriof)}`)}</span>`:'',
+         note?`<span class="analysis-pill muted" title="${esc(note)}">${esc(`Obs.: ${note}`)}</span>`:''
+       ].filter(Boolean).join('');
+       return `<tr>
+         <td>
+           <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+             <div style="font-weight:800;color:#e2eaf6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name||a.ticker||'Renda Fixa')}</div>
+             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
+             ${badges?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:1px">${badges}</div>`:''}
            </div>
-            <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">Editar</button>
-         </div>
-         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px">
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Aplicação</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(appDate||'—')}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Vencimento</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${esc(dueDate||'—')}</div></div>
-           <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor aplicado</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(applied)}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Valor líquido</div><div style="font-weight:700;color:#e2eaf6;font-size:13px">${fmt(current)}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Rentabilidade</div><div style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(rentab)?fmtP(rentab):'—'}</div></div>
-            <div style="background:#0b1220;border:1px solid #162033;border-radius:12px;padding:8px 9px"><div class="mu" style="font-size:10px">Ganhos/Perdas</div><div style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'};font-size:13px">${Number.isFinite(profit)?fmt(profit):'—'}</div></div>
-         </div>
-         <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#94a3b8">
-            ${unavailable?`<span class="note-pill">Indisponível: ${fmt(unavailable)}</span>`:''}
-           ${iriof||a.rf_ir_iof===0?`<span class="note-pill">IR/IOF: ${fmt(iriof)}</span>`:''}
-           ${note?`<span class="note-pill" title="${esc(note)}">Obs.: ${esc(note)}</span>`:''}
-         </div>
-       </div>`;
+         </td>
+         <td>
+           <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+             <div style="font-weight:700;color:#d7e1ef;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(subtype)}</div>
+             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(indexer)}</div>
+           </div>
+         </td>
+         <td class="mu">${esc(appDate||'—')}</td>
+         <td class="mu">${esc(dueDate||'—')}</td>
+         <td class="rf-right" style="font-weight:700;color:#e2eaf6">${fmt(applied)}</td>
+         <td class="rf-right" style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'}">${fmt(current)}</td>
+         <td class="rf-right" style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#64748b'}">${Number.isFinite(profit)?fmt(profit):'—'}</td>
+         <td class="rf-right" style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'}">${Number.isFinite(rentab)?fmtP(rentab):'—'}</td>
+         <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
+         <td style="white-space:nowrap">
+           <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">Editar</button>
+         </td>
+       </tr>`;
      }).join('');
 
     return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}" ontoggle='toggleAssetGroup(${JSON.stringify(type)}, this.open)'>
@@ -16449,7 +16459,21 @@ function ativos(){
       </summary>
       <div class="ag-body">
         ${type==='Renda Fixa'
-          ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">${rfCards||'<div class="es" style="background:#0d111e;border:1px solid #161e2e;border-radius:12px">Nenhum ativo de renda fixa nesta categoria.</div>'}</div>`
+          ? `<div class="rf-table-wrap"><table class="rf-table" style="min-width:1120px">
+              <thead><tr>
+                <th>Título</th>
+                <th>Tipo / Indexador</th>
+                <th>Aplicação</th>
+                <th>Vencimento</th>
+                <th class="rf-right">Valor aplicado</th>
+                <th class="rf-right">Valor atual / líquido</th>
+                <th class="rf-right">Resultado</th>
+                <th class="rf-right">Rentabilidade</th>
+                <th class="rf-right">% na carteira</th>
+                <th>Ações</th>
+              </tr></thead>
+              <tbody>${rfRows||'<tr><td colspan="10" style="text-align:center;padding:18px;color:#7489a4">Nenhum ativo de renda fixa nesta categoria.</td></tr>'}</tbody>
+            </table></div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
             <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Tipo</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
