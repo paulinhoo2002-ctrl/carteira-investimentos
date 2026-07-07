@@ -13990,11 +13990,436 @@ function closePdfReport(){
   });
 }
 function printPdfReport(){
+  return downloadExecutivePdf();
+}
+async function downloadExecutivePdf(){
+  console.log('[PDF DIRETO] Gerando Relatório Executivo via jsPDF');
+  valueVisibilityDepth++;
   try{
-    window.print();
+    await ensurePdfLibraries();
+    const { jsPDF } = window.jspdf || {};
+    if(!jsPDF) throw new Error('jsPDF indisponível');
+    const doc = new jsPDF('p','mm','a4');
+    const data = reportPdfSnapshot();
+    const dashboard = dashboardSnapshot(data.analysis);
+    const summary = data.summary || {};
+    const portfolio = summary.portfolio || {};
+    const income = summary.income || {};
+    const generatedAt = new Date(summary.generatedAt || Date.now());
+    const margin = 12;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const contentWidth = pageWidth - margin * 2;
+    const pdfDash = '-';
+    const money = v => Number.isFinite(Number(v)) ? fmt(Number(v)) : pdfDash;
+    const pct = v => Number.isFinite(Number(v)) ? fmtP(Number(v)) : pdfDash;
+    const text = v => String(v ?? '').trim() || pdfDash;
+    const target = Number(income.target) || 0;
+    const monthlyAvg = Number(income.monthlyAvg) || 0;
+    const targetPercent = target > 0 ? (monthlyAvg / target) * 100 : null;
+    const summaryText1 = target > 0
+      ? `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses. A meta mensal de renda passiva está em ${fmt(target)}, o que representa ${fmtP(targetPercent || 0)} do objetivo atual.`
+      : `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses.`;
+    const summaryText2 = 'Os blocos abaixo ajudam a revisar alocação, concentração, renda passiva, renda fixa e pontos de atenção com o assessor. A avaliação final deve considerar perfil de risco, objetivos e horizonte de investimento.';
+    const assetRows = reportAssetRows();
+    const fixedRowsAll = reportFixedIncomeRows();
+    const positions = [...(data.positions || [])].slice(0, 10);
+    const incompleteRows = [...(dashboard.insufficient || [])].slice(0, 5);
+    const recentMonths = [...(income.byMonth || [])].slice(-12);
+    const topPayers = [...(income.topPayers || [])].slice(0, 5);
+    const alerts = [...(data.alerts || [])].slice(0, 8);
+    const assessorPlanGroups = [
+      { title: 'Alocação e risco', items: ['A carteira está adequada ao perfil de risco?', 'Existe concentração excessiva em algum ativo, classe ou setor?'] },
+      { title: 'Renda passiva', items: ['A renda mensal está evoluindo em direção à meta?', 'Os próximos aportes devem priorizar renda, equilíbrio ou redução de concentração?'] },
+      { title: 'Renda fixa e liquidez', items: ['A renda fixa atual está adequada em liquidez, vencimentos e indexadores?', 'A reserva de emergência está separada da carteira de investimentos?'] },
+      { title: 'Próximos passos', items: ['Quais ativos merecem revisão por peso, desempenho ou dados incompletos?', 'Qual deve ser a prioridade dos próximos aportes?', 'O que deve ser acompanhado no próximo mês?'] }
+    ];
+    let y = 16;
+    const ensureSpace = (needed = 14) => {
+      if(y + needed > pageHeight - margin){
+        doc.addPage();
+        y = margin;
+      }
+    };
+    const addTitleBlock = (title, note = '') => {
+      ensureSpace(note ? 16 : 10);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(17, 24, 39);
+      doc.text(title, margin, y);
+      y += 5;
+      if(note){
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(107, 114, 128);
+        const lines = doc.splitTextToSize(note, contentWidth);
+        doc.text(lines, margin, y);
+        y += lines.length * 4 + 1;
+      }
+    };
+    const addParagraph = (textValue) => {
+      ensureSpace(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(31, 41, 55);
+      const lines = doc.splitTextToSize(textValue, contentWidth);
+      doc.text(lines, margin, y);
+      y += lines.length * 4 + 2;
+    };
+    const addTable = (title, note, columns, rows, columnStyles = {}, didParseCell = null) => {
+      addTitleBlock(title, note);
+      if(!rows.length){
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139);
+        doc.text('Nenhum dado encontrado para este relatório.', margin, y + 2);
+        y += 8;
+        return;
+      }
+      doc.autoTable({
+        startY: y,
+        margin: { left: margin, right: margin },
+        columns,
+        body: rows,
+        theme: 'grid',
+        tableWidth: 'auto',
+        styles: {
+          font: 'helvetica',
+          fontSize: 6.5,
+          cellPadding: 1.6,
+          valign: 'top',
+          overflow: 'linebreak',
+          textColor: [31, 41, 55]
+        },
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles,
+        didParseCell: didParseCell || undefined
+      });
+      y = (doc.lastAutoTable?.finalY || y) + 8;
+    };
+    const assetRowsToPdf = groupType => assetRows
+      .filter(row => row.type === groupType)
+      .sort((a,b)=>(Number(b.current)||0)-(Number(a.current)||0) || String(a.ticker).localeCompare(String(b.ticker),'pt-BR'))
+      .map(row => {
+        const current = Number(row.current) || 0;
+        const share = Number(portfolio.tC) > 0 ? current / Number(portfolio.tC) * 100 : null;
+        const label = [row.ticker, row.name && row.name !== row.ticker ? row.name : ''].filter(Boolean).join(' · ') || pdfDash;
+        return {
+          ativo: label,
+          quantidade: Number.isFinite(Number(row.qty)) ? Number(row.qty) : pdfDash,
+          precoMedio: Number.isFinite(Number(row.avgPrice)) ? money(row.avgPrice) : pdfDash,
+          precoAtual: Number.isFinite(Number(row.currentPrice)) ? money(row.currentPrice) : pdfDash,
+          valorAplicado: Number.isFinite(Number(row.applied)) ? money(row.applied) : pdfDash,
+          valorAtual: Number.isFinite(Number(row.current)) ? money(row.current) : pdfDash,
+          resultado: Number.isFinite(Number(row.result)) ? money(row.result) : pdfDash,
+          resultadoPct: Number.isFinite(Number(row.resultPct)) ? pct(row.resultPct) : pdfDash,
+          participacaoPct: share != null ? pct(share) : pdfDash,
+          __sign: { resultado: Number(row.result), resultadoPct: Number(row.resultPct), participacaoPct: share }
+        };
+      });
+    const fixedRowsToPdf = fixedRowsAll
+      .slice()
+      .sort((a,b)=>(Number(b.current)||0)-(Number(a.current)||0) || String(a.ticker).localeCompare(String(b.ticker),'pt-BR'))
+      .map(row => {
+        const current = Number(row.current) || 0;
+        const share = Number(portfolio.tC) > 0 ? current / Number(portfolio.tC) * 100 : null;
+        const title = [row.ticker, row.title].filter(Boolean).join(' · ') || pdfDash;
+        return {
+          titulo: title,
+          aplicado: Number.isFinite(Number(row.applied)) ? money(row.applied) : pdfDash,
+          atualLiquido: Number.isFinite(Number(row.current)) ? money(row.current) : pdfDash,
+          resultado: Number.isFinite(Number(row.profit)) ? money(row.profit) : pdfDash,
+          rentabilidade: Number.isFinite(Number(row.resultPct)) ? pct(row.resultPct) : pdfDash,
+          participacaoPct: share != null ? pct(share) : pdfDash,
+          vencimento: text(row.maturityDate),
+          indexador: text(row.indexer),
+          __sign: { resultado: Number(row.profit), rentabilidade: Number(row.resultPct), participacaoPct: share }
+        };
+      });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(17, 24, 39);
+    doc.text('Relatório Executivo da Carteira', margin, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(107, 114, 128);
+    doc.text(`Gerado em ${generatedAt.toLocaleString('pt-BR')} · Período ${summary.periodLabel || reportsPeriodLabel()}`, margin, y);
+    y += 5;
+    doc.text('Documento de apoio para revisão com assessor de investimentos.', margin, y);
+    y += 7;
+    addTable(
+      'Resumo geral da carteira',
+      'Visão de alto nível com patrimônio, resultado, renda passiva e meta mensal.',
+      [
+        { header: 'Indicador', dataKey: 'indicador' },
+        { header: 'Valor', dataKey: 'valor' },
+        { header: 'Observação', dataKey: 'observacao' }
+      ],
+      [
+        { indicador: 'Patrimônio atual', valor: money(portfolio.tC), observacao: 'Estimativa da posição atual' },
+        { indicador: 'Valor aplicado', valor: money(portfolio.tI), observacao: 'Base cadastrada' },
+        { indicador: 'Resultado financeiro', valor: money(portfolio.tG), observacao: 'Diferença entre atual e aplicado' },
+        { indicador: 'Rentabilidade', valor: Number.isFinite(Number(portfolio.tGP)) ? pct(portfolio.tGP) : pdfDash, observacao: 'Retorno sobre o capital aplicado' },
+        { indicador: 'Proventos 12M', valor: money(income.total12), observacao: `${Number(summary.proventosCount)||0} registro(s) no filtro` },
+        { indicador: 'Média mensal 12M', valor: money(monthlyAvg), observacao: 'Proventos reais recebidos' },
+        { indicador: 'Meta mensal', valor: target > 0 ? money(target) : pdfDash, observacao: target > 0 ? 'Meta configurada na aba Metas' : 'Sem meta definida' },
+        { indicador: 'Meta atingida', valor: target > 0 ? pct(targetPercent || 0) : pdfDash, observacao: target > 0 ? 'Percentual da meta mensal' : 'Sem referência de meta' }
+      ],
+      {
+        indicador: { cellWidth: 42 },
+        valor: { cellWidth: 30, halign: 'right' },
+        observacao: { cellWidth: contentWidth - 72 }
+      }
+    );
+    addTitleBlock('Resumo executivo textual', 'Leitura neutra e objetiva para conversa com o assessor.');
+    addParagraph(summaryText1);
+    addParagraph(summaryText2);
+    addTable(
+      'Top maiores posições',
+      'Até 10 posições com maior valor atual.',
+      [
+        { header: 'Ativo', dataKey: 'ativo' },
+        { header: 'Classe', dataKey: 'classe' },
+        { header: 'Valor atual', dataKey: 'valorAtual' },
+        { header: 'Part. %', dataKey: 'participacaoPct' }
+      ],
+      positions.map(row => ({
+        ativo: text(row.ticker || row.name),
+        classe: text(row.type),
+        valorAtual: money(row.current),
+        participacaoPct: Number.isFinite(Number(row.share)) ? pct(row.share) : pdfDash
+      })),
+      {
+        ativo: { cellWidth: 60 },
+        classe: { cellWidth: 30 },
+        valorAtual: { cellWidth: 30, halign: 'right' },
+        participacaoPct: { cellWidth: 20, halign: 'right' }
+      }
+    );
+    addTitleBlock('Carteira completa por classe', 'Ações, FIIs, ETFs e renda fixa em tabelas separadas.');
+    [
+      {
+        title: 'Ações',
+        type: 'Ação',
+        columns: [
+          { header: 'Ativo', dataKey: 'ativo' },
+          { header: 'Qtd', dataKey: 'quantidade' },
+          { header: 'PM', dataKey: 'precoMedio' },
+          { header: 'Atual', dataKey: 'precoAtual' },
+          { header: 'Aplicado', dataKey: 'valorAplicado' },
+          { header: 'Valor atual', dataKey: 'valorAtual' },
+          { header: 'Resultado', dataKey: 'resultado' },
+          { header: 'Resultado %', dataKey: 'resultadoPct' },
+          { header: 'Part. %', dataKey: 'participacaoPct' }
+        ],
+        widths: { ativo: 42, quantidade: 14, precoMedio: 19, precoAtual: 19, valorAplicado: 20, valorAtual: 20, resultado: 20, resultadoPct: 18, participacaoPct: 18 }
+      },
+      {
+        title: 'FIIs',
+        type: 'FII',
+        columns: [
+          { header: 'Ativo', dataKey: 'ativo' },
+          { header: 'Qtd', dataKey: 'quantidade' },
+          { header: 'PM', dataKey: 'precoMedio' },
+          { header: 'Atual', dataKey: 'precoAtual' },
+          { header: 'Aplicado', dataKey: 'valorAplicado' },
+          { header: 'Valor atual', dataKey: 'valorAtual' },
+          { header: 'Resultado', dataKey: 'resultado' },
+          { header: 'Resultado %', dataKey: 'resultadoPct' },
+          { header: 'Part. %', dataKey: 'participacaoPct' }
+        ],
+        widths: { ativo: 42, quantidade: 14, precoMedio: 19, precoAtual: 19, valorAplicado: 20, valorAtual: 20, resultado: 20, resultadoPct: 18, participacaoPct: 18 }
+      },
+      {
+        title: 'ETFs',
+        type: 'ETF',
+        columns: [
+          { header: 'Ativo', dataKey: 'ativo' },
+          { header: 'Qtd', dataKey: 'quantidade' },
+          { header: 'PM', dataKey: 'precoMedio' },
+          { header: 'Atual', dataKey: 'precoAtual' },
+          { header: 'Aplicado', dataKey: 'valorAplicado' },
+          { header: 'Valor atual', dataKey: 'valorAtual' },
+          { header: 'Resultado', dataKey: 'resultado' },
+          { header: 'Resultado %', dataKey: 'resultadoPct' },
+          { header: 'Part. %', dataKey: 'participacaoPct' }
+        ],
+        widths: { ativo: 42, quantidade: 14, precoMedio: 19, precoAtual: 19, valorAplicado: 20, valorAtual: 20, resultado: 20, resultadoPct: 18, participacaoPct: 18 }
+      },
+      {
+        title: 'Renda Fixa',
+        type: 'fixed',
+        columns: [
+          { header: 'Título', dataKey: 'titulo' },
+          { header: 'Aplicado', dataKey: 'aplicado' },
+          { header: 'Atual/Líquido', dataKey: 'atualLiquido' },
+          { header: 'Resultado', dataKey: 'resultado' },
+          { header: 'Rentab. %', dataKey: 'rentabilidade' },
+          { header: 'Part. %', dataKey: 'participacaoPct' },
+          { header: 'Vencimento', dataKey: 'vencimento' },
+          { header: 'Indexador', dataKey: 'indexador' }
+        ],
+        widths: { titulo: 46, aplicado: 20, atualLiquido: 20, resultado: 20, rentabilidade: 18, participacaoPct: 18, vencimento: 24, indexador: 22 }
+      }
+    ].forEach(section => {
+      const rows = section.type === 'fixed' ? fixedRowsToPdf : assetRowsToPdf(section.type);
+      addTable(
+        section.title,
+        section.type === 'fixed'
+          ? 'Títulos consolidados com valores atuais/líquidos, resultado e vencimento.'
+          : 'Tabela consolidada por classe com ordem decrescente por valor atual.',
+        section.columns,
+        rows,
+        Object.fromEntries(Object.entries(section.widths).map(([key, width]) => [key, { cellWidth: width, halign: ['quantidade', 'precoMedio', 'precoAtual', 'valorAplicado', 'valorAtual', 'resultado', 'resultadoPct', 'participacaoPct', 'aplicado', 'atualLiquido', 'rentabilidade'].includes(key) ? 'right' : 'left' }])),
+        dataCell => {
+          if(dataCell.section !== 'body') return;
+          const raw = dataCell.row.raw || {};
+          const sign = raw.__sign || {};
+          if(['resultado','resultadoPct','participacaoPct','rentabilidade'].includes(dataCell.column.dataKey)){
+            const n = dataCell.column.dataKey === 'resultado'
+              ? sign.resultado
+              : (dataCell.column.dataKey === 'rentabilidade' ? sign.rentabilidade : sign.participacaoPct);
+            if(Number.isFinite(Number(n))){
+              dataCell.cell.styles.textColor = Number(n) < 0 ? [220,38,38] : [22,163,74];
+            }
+          }
+          if(dataCell.column.dataKey === 'ativo' || dataCell.column.dataKey === 'titulo'){
+            dataCell.cell.styles.fontStyle = 'bold';
+          }
+        }
+      );
+    });
+    addTable(
+      'Ativos para revisão',
+      'Posições com dados incompletos ou fora do padrão esperado.',
+      [
+        { header: 'Ativo', dataKey: 'ativo' },
+        { header: 'Classe', dataKey: 'classe' },
+        { header: 'Motivo', dataKey: 'motivo' },
+        { header: 'Observação', dataKey: 'observacao' }
+      ],
+      incompleteRows.map(row => ({
+        ativo: text(row.ticker || row.asset || row.name || '—'),
+        classe: text(row.type),
+        motivo: !Number.isFinite(Number(row.current)) || Number(row.current) <= 0 ? 'Sem valor atual' : (!Number.isFinite(Number(row.applied)) || Number(row.applied) <= 0 ? 'Sem valor aplicado' : 'Dados incompletos'),
+        observacao: 'Revise preço atual, preço médio ou quantidade'
+      })),
+      {
+        ativo: { cellWidth: 40 },
+        classe: { cellWidth: 25 },
+        motivo: { cellWidth: 30 },
+        observacao: { cellWidth: contentWidth - 95 }
+      }
+    );
+    addTable(
+      'Renda passiva',
+      'Resumo de recebimentos, média mensal e principais pagadores.',
+      [
+        { header: 'Indicador', dataKey: 'indicador' },
+        { header: 'Valor', dataKey: 'valor' },
+        { header: 'Observação', dataKey: 'observacao' }
+      ],
+      [
+        { indicador: 'Recebido no mês', valor: money(income.monthlyTotal || income.currentMonth || 0), observacao: 'Proventos no período atual' },
+        { indicador: 'Média 12 meses', valor: money(monthlyAvg), observacao: 'Base histórica dos últimos 12 meses' },
+        { indicador: 'Meta mensal', valor: target > 0 ? money(target) : pdfDash, observacao: target > 0 ? 'Meta configurada' : 'Sem meta' },
+        { indicador: 'Maior pagador', valor: topPayers[0] ? text(topPayers[0].ticker) : pdfDash, observacao: topPayers[0] ? money(topPayers[0].total) : 'Sem registros' }
+      ],
+      {
+        indicador: { cellWidth: 42 },
+        valor: { cellWidth: 30, halign: 'right' },
+        observacao: { cellWidth: contentWidth - 72 }
+      }
+    );
+    addTable(
+      'Histórico 12M de proventos',
+      'Últimos 12 meses consolidados com valor recebido e quantidade de lançamentos.',
+      [
+        { header: 'Mês', dataKey: 'mes' },
+        { header: 'Valor recebido', dataKey: 'valor' },
+        { header: 'Registros', dataKey: 'registros' }
+      ],
+      recentMonths.map(row => {
+        const date = parseAnyDate(`${row.key}-01`);
+        return {
+          mes: date ? date.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : text(row.key),
+          valor: money(row.total),
+          registros: Number(row.count) || 0
+        };
+      }),
+      {
+        mes: { cellWidth: 70 },
+        valor: { cellWidth: 35, halign: 'right' },
+        registros: { cellWidth: 20, halign: 'right' }
+      }
+    );
+    addTable(
+      'Pontos de atenção',
+      'Alertas objetivos para a conversa com o assessor.',
+      [
+        { header: 'Severidade', dataKey: 'severidade' },
+        { header: 'Área', dataKey: 'area' },
+        { header: 'Item', dataKey: 'item' },
+        { header: 'Problema', dataKey: 'problema' },
+        { header: 'Impacto', dataKey: 'impacto' },
+        { header: 'Sugestão', dataKey: 'sugestao' }
+      ],
+      alerts.map(alert => ({
+        severidade: text(alert.severity),
+        area: text(alert.area),
+        item: text(alert.item),
+        problema: text(alert.problem),
+        impacto: text(alert.impact),
+        sugestao: text(alert.suggestion)
+      })),
+      {
+        severidade: { cellWidth: 18 },
+        area: { cellWidth: 24 },
+        item: { cellWidth: 24 },
+        problema: { cellWidth: 35 },
+        impacto: { cellWidth: 35 },
+        sugestao: { cellWidth: 38 }
+      }
+    );
+    addTitleBlock('Plano de conversa com assessor', 'Perguntas e próximos passos para a reunião.');
+    addTable(
+      'Roteiro de conversa',
+      'Use estas perguntas como guia para a revisão executiva.',
+      [
+        { header: 'Tema', dataKey: 'tema' },
+        { header: 'Perguntas-chave', dataKey: 'perguntas' }
+      ],
+      assessorPlanGroups.map(group => ({
+        tema: text(group.title),
+        perguntas: group.items.join(' · ')
+      })),
+      {
+        tema: { cellWidth: 38 },
+        perguntas: { cellWidth: contentWidth - 38 }
+      }
+    );
+    addParagraph('Relatório gerado para apoio à análise. Não representa recomendação de investimento. Valide decisões com profissional habilitado.');
+    const totalPages = doc.getNumberOfPages();
+    for(let page = 1; page <= totalPages; page++){
+      doc.setPage(page);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(107,114,128);
+      doc.text(`Página ${page} de ${totalPages}`, pageWidth - margin, pageHeight - 7, {align:'right'});
+    }
+    doc.save('relatorio-executivo-carteira.pdf');
   }catch(error){
-    debugError('printPdfReport erro:',error);
-    toast('Não foi possível abrir a impressão neste navegador.','#f87171');
+    debugError('downloadExecutivePdf erro:',error);
+    toast('Não foi possível gerar o Relatório Executivo.','#f87171');
+  }finally{
+    valueVisibilityDepth--;
   }
 }
 function openReportCardPdf(type){
@@ -15076,10 +15501,10 @@ function reportPdfPreview(){
     const currentMonthPercent=target>0 ? fmtP(targetPercent||0) : '—';
     return `<div class="pdf-report-overlay" role="dialog" aria-modal="true">
       <div class="pdf-report-toolbar">
-        <div class="pdf-report-toolbar-text"><strong>Prévia do Relatório PDF Executivo</strong><br>Use a opção imprimir/salvar como PDF do navegador.</div>
+        <div class="pdf-report-toolbar-text"><strong>Prévia do Relatório PDF Executivo</strong><br>Baixe o PDF direto pelo botão abaixo.</div>
         <div class="pdf-report-toolbar-actions">
           <button class="btn bgh" onclick="closePdfReport()">Voltar</button>
-          <button class="btn bp" onclick="printPdfReport()">Imprimir / Salvar PDF</button>
+          <button class="btn bp" onclick="downloadExecutivePdf()">Baixar PDF Executivo</button>
         </div>
       </div>
       <article class="pdf-report-page">
