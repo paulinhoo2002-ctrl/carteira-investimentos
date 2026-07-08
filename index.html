@@ -7217,6 +7217,11 @@ function hasSameB3Import(ticker, date){
   return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
 }
 function applyB3ImportedPositions(items, importDate){
+  const gate=b3ActiveWalletGate();
+  if(!gate.allow){
+    toast('Selecione uma carteira de teste antes de aplicar.', '#fbbf24');
+    return;
+  }
   const validItems=(items||[]).filter(it=>!isB3PositionSummaryRow(it));
   const now=new Date().toISOString();
   let created=0,updated=0,ignored=0;
@@ -7346,7 +7351,7 @@ function applyB3ImportedPositions(items, importDate){
   save();
   render();
   fetchQuotes(false);
-  b3ImportCompletedMessage(`✅ Posição B3 importada: ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
+  b3ImportCompletedMessage(`✅ Posição B3 importada na carteira "${gate.name}": ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
 }
 function openBrokerNoteImport(){
   S.brokerNoteImport={open:true,status:'idle',message:'',fileName:'',fileSize:0,rateCosts:false,allowDuplicate:false,parsed:null,diag:{phase:'aguardando',fileName:'',fileSize:0,chars:0,noteNumber:'',tradeDate:'',operations:0,rows:0,tickers:[],error:''}};
@@ -7961,6 +7966,51 @@ function b3ProventosByAssetHtml(rows){
     ${items.map(item=>`${esc(item.ticker)}: ${esc(fmt(item.total))} (${item.count})`).join(' • ')}
   </div>`;
 }
+function b3ActiveWalletGate(){
+  const w=activeWallet();
+  const name=String(w?.name||'Carteira').trim() || 'Carteira';
+  const total=walletCount();
+  const index=activeWalletIndex();
+  const mainLike=!w || total<=1 || (index===1 && /principal/i.test(name));
+  return {wallet:w,name,total,index,mainLike,allow:!mainLike};
+}
+function b3WalletApplyNotice(){
+  const gate=b3ActiveWalletGate();
+  return `<div class="b3-backup-warning">
+    <strong style="display:block;margin-bottom:4px">Carteira ativa</strong>
+    ${esc(gate.name)} · ${gate.allow?'pronta para aplicar nesta carteira':'selecione uma carteira de teste antes de aplicar'}
+  </div>`;
+}
+function b3ConfirmApplyToActiveWallet(label, selected, duplicates=0, incomplete=0){
+  const gate=b3ActiveWalletGate();
+  if(!gate.allow){
+    alert(`Selecione primeiro uma carteira de teste.\n\nCarteira ativa: ${gate.name}\n\nA carteira principal não pode receber esta aplicação.`);
+    toast('Selecione uma carteira de teste antes de aplicar.', '#fbbf24');
+    return false;
+  }
+  const message=[
+    `Confirmar aplicação ${label} na carteira "${gate.name}"?`,
+    '',
+    'Use primeiro em carteira teste.',
+    `Selecionados: ${selected}`,
+    `Duplicados ignorados: ${duplicates}`,
+    `Pendentes/incompletos: ${incomplete}`,
+    '',
+    'Somente os itens válidos e selecionados serão aplicados.',
+    'Se cancelar, nada será alterado.'
+  ].join('\n');
+  const confirmed=confirm(message);
+  if(!confirmed) toast('Importação cancelada. Nenhum dado foi alterado.');
+  return confirmed;
+}
+function b3ApplySimpleKey(item, fallbackDate=''){
+  const date=b3MovementDateKey(item?.date || item?.paymentDate || item?.importDate || fallbackDate || '');
+  const ticker=String(item?.ticker || item?.product || item?.assetName || '').trim().toUpperCase();
+  const type=rfPosNorm(item?.type || item?.eventType || item?.operationType || item?.movement || item?.action || '');
+  const qty=Number(item?.qty)||0;
+  const value=Number(item?.value || item?.netValue || item?.currentValue || item?.totalValue || 0);
+  return [date,ticker,type,qty,value.toFixed(2)].join('|');
+}
 function openB3Review(parsed, fileName='', sourceKind='excel'){
   const items=(parsed?.items||[]).map((it,i)=>({
     id:it.id ?? i,
@@ -8071,17 +8121,13 @@ function b3ReviewSummary(){
 }
 function importB3Review(){
   if(!S.b3Review) return;
-  if(S.b3Review.previewOnly){
-    toast('Prévia B3: nenhuma alteração foi aplicada na carteira.');
-    return;
-  }
   const rows=b3ReviewSelectedItems().filter(it=>!isB3PositionSummaryRow(it));
   if(!rows.length){
     alert('Selecione ao menos uma aba válida para importar.');
     return;
   }
   const summary=b3ReviewSummary();
-  if(!b3ConfirmImport('a posição atual da B3', rows.length, 0, summary.ignored)) return;
+  if(!b3ConfirmApplyToActiveWallet('a posição atual da B3', rows.length, 0, summary.ignored)) return;
   const importDate=S.b3Review.importDate || new Date().toLocaleDateString('pt-BR');
   const payload=rows.map(r=>({
     ...r.sourceItem,
@@ -8103,6 +8149,7 @@ function b3ReviewModal(){
   const r=S.b3Review;
   if(!r) return '';
   const {count,total,sheets,valid,validTotal,diff,ignored}=b3ReviewSummary();
+  const gate=b3ActiveWalletGate();
   const period=b3ReviewPeriod(r.items||[]);
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   const groups=(r.groups||[]).map(g=>{
@@ -8175,7 +8222,7 @@ function b3ReviewModal(){
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3Review()">Cancelar</button>
-            <button class="btn bsv" onclick="importB3Review()">Importar selecionados</button>
+            <button class="btn bsv" ${gate.allow?'':'disabled title="Selecione uma carteira de teste antes de aplicar."'} onclick="importB3Review()">Aplicar na carteira atual</button>
           </div>
         </div>
         <div class="note-meta">
@@ -8199,6 +8246,7 @@ function b3ReviewModal(){
           {label:'Diferença',value:fmt(diff),sub:'Entre total válido e selecionado'},
           {label:'Período',value:period,sub:'Data da posição'}
         ])}
+        ${b3WalletApplyNotice()}
         <div class="b3-backup-warning">Antes de confirmar, recomendamos exportar um backup em Configurações. A posição atualiza apenas os ativos selecionados e não apaga a carteira existente.</div>
         <div class="note-actions">
           <div class="left" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -8220,7 +8268,7 @@ function b3ReviewModal(){
           <div class="hint">Só entram as abas marcadas. Isso ajuda a evitar importação de empréstimos, totais e itens que você não quer aceitar.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3Review()">Cancelar</button>
-            <button class="btn bsv" onclick="importB3Review()">Importar selecionados</button>
+            <button class="btn bsv" ${gate.allow?'':'disabled title="Selecione uma carteira de teste antes de aplicar."'} onclick="importB3Review()">Aplicar na carteira atual</button>
           </div>
         </div>
       </div>
@@ -8653,10 +8701,6 @@ function b3ProventosReviewFilteredRows(){
 }
 function importB3ProventosReview(){
   if(!S.b3ProventosReview) return;
-  if(S.b3ProventosReview.previewOnly){
-    toast('Prévia B3: nenhuma alteração foi aplicada em Proventos.');
-    return;
-  }
   const rows=Array.isArray(S.b3ProventosReview.items)?S.b3ProventosReview.items:[];
   const totalRows=rows.length;
   const selectedRows=rows.filter(row=>row.include!==false && row.status==='Novo provento' && row.destination==='Proventos');
@@ -8666,11 +8710,12 @@ function importB3ProventosReview(){
   }
   const initialDuplicates=rows.filter(r=>r.status==='Duplicado').length;
   const incomplete=rows.filter(r=>r.status==='Revisar' || r.destination==='Revisar').length;
-  if(!b3ConfirmImport('os proventos recebidos da B3', selectedRows.length, initialDuplicates, incomplete)) return;
+  if(!b3ConfirmApplyToActiveWallet('os proventos recebidos da B3', selectedRows.length, initialDuplicates, incomplete)) return;
   let added=0;
   let duplicates=rows.filter(r=>r.status==='Duplicado').length;
   const next=[];
   (S.proventos||[]).forEach(p=>next.push(p));
+  const existingSimpleKeys=new Set((next||[]).map(p=>b3ApplySimpleKey(p)));
   rows.forEach(row=>{
     if(row.include===false) return;
     if(row.status!=='Novo provento' || row.destination!=='Proventos'){
@@ -8699,18 +8744,20 @@ function importB3ProventosReview(){
       autoKey:b3ProventoSavedAutoKey(row),
       created_at:new Date().toISOString()
     };
+    const simpleKey=b3ApplySimpleKey(importRow);
     const dup=(next||[]).some(p=>{
       const sameKey=String(p.autoKey||'')===importRow.autoKey;
       const sameFields=String(p.ticker||'').toUpperCase()===ticker
         && b3MovementDateKey(p.date)===b3MovementDateKey(paymentDate)
         && rfPosNorm(p.eventType||p.type)===rfPosNorm(eventType)
         && Math.abs((Number(p.value)||0)-Number(importRow.value||0))<0.01;
-      return sameKey || sameFields;
+      return sameKey || sameFields || existingSimpleKeys.has(simpleKey);
     });
     if(dup){
       duplicates++;
       return;
     }
+    existingSimpleKeys.add(simpleKey);
     next.unshift(importRow);
     added++;
   });
@@ -8719,7 +8766,7 @@ function importB3ProventosReview(){
   S.b3ProventosReview=null;
   save();
   render();
-  b3ImportCompletedMessage(`Proventos importados: ${added} novos, ${duplicates} duplicados ignorados, ${ignored} ignorados.`);
+  b3ImportCompletedMessage(`Proventos importados na carteira "${b3ActiveWalletGate().name}": ${added} novos, ${duplicates} duplicados ignorados, ${ignored} ignorados.`);
 }
 function b3ProventosReviewSummary(){
   const rows=S.b3ProventosReview?.items||[];
@@ -8736,6 +8783,7 @@ function b3ProventosReviewModal(){
   const r=S.b3ProventosReview;
   if(!r) return '';
   const previewOnly=!!r.previewOnly;
+  const gate=b3ActiveWalletGate();
   const sum=b3ProventosReviewSummary();
   const previewStats=r.stats||{};
   const proventoSummaryCards=previewOnly
@@ -8800,7 +8848,7 @@ function b3ProventosReviewModal(){
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
-            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3ProventosReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
+            <button class="btn bsv" ${gate.allow?'':'disabled title="Selecione uma carteira de teste antes de aplicar."'} onclick="importB3ProventosReview()">Aplicar na carteira atual</button>
           </div>
         </div>
         <div class="note-meta">
@@ -8816,7 +8864,7 @@ function b3ProventosReviewModal(){
           {label:'Revisar',value:sum.review,sub:'Incompletos ou não seguros'},
           {label:'Período',value:period,sub:'Datas encontradas'}
         ])}
-        ${previewOnly?'<div class="b3-backup-warning">Fase 1 segura: esta é apenas uma prévia. Nenhum dado será aplicado na carteira principal.</div>':''}
+        ${b3WalletApplyNotice()}
         ${previewOnly?b3ProventosByAssetHtml(r.items||[]):''}
         ${previewOnly?b3IgnoredReasonsHtml(previewStats):''}
         <div class="rf-proventos-kpis">
@@ -8882,7 +8930,7 @@ function b3ProventosReviewModal(){
           <div class="hint">A importação grava somente os itens seguros e selecionados em Proventos. Duplicados e linhas para revisão permanecem fora.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
-            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3ProventosReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
+            <button class="btn bsv" ${gate.allow?'':'disabled title="Selecione uma carteira de teste antes de aplicar."'} onclick="importB3ProventosReview()">Aplicar na carteira atual</button>
           </div>
         </div>
       </div>
@@ -9090,22 +9138,38 @@ function b3MovementSummary(){
   };
 }
 function applyB3MovementImported(rows, importDate){
+  const gate=b3ActiveWalletGate();
+  if(!gate.allow){
+    toast('Selecione uma carteira de teste antes de aplicar.', '#fbbf24');
+    return;
+  }
   const inputRows=[...(rows||[])];
   const safeRows=inputRows.map(b3MovementRefreshReviewFlags).filter(b3MovementIsHistoricalImportable);
   const existingKeys=new Set((S.aportes||[]).map(a=>b3MovementSavedHistoricalAutoKey(a)));
+  const existingSimpleKeys=new Set((S.aportes||[]).map(a=>{
+    const date=b3MovementDateKey(a.date||a.importDate||a.created_at||'');
+    const ticker=String(a.ticker||'').trim().toUpperCase();
+    const type=rfPosNorm(a.eventType||a.type||a.operationType||a.operation||'');
+    const qty=Number(a.qty)||0;
+    const value=Number(a.totalValue||a.value||0);
+    return [date,ticker,type,qty,value.toFixed(2)].join('|');
+  }));
   const batchKeys=new Set();
+  const batchSimpleKeys=new Set();
   const finalRows=[];
   let duplicateCount=0;
   safeRows.forEach(r=>{
     const operationType=b3MovementHistoricalOperationType(r);
     const side=b3MovementHistoricalSide(r, operationType);
     const autoKey=b3MovementHistoricalAutoKey(r, operationType, side);
+    const simpleKey=[b3MovementDateKey(r.date||importDate||''), String(r.ticker||'').trim().toUpperCase(), rfPosNorm(r.eventType||r.type||operationType||''), Number(r.qty)||0, Number(r.value||0).toFixed(2)].join('|');
     const dupKind=r.duplicateKind || b3MovementDuplicateKind({...r, target:'aportes', action:r.action||(/venda/i.test(operationType)?'venda':'compra')});
-    if(dupKind || existingKeys.has(autoKey) || batchKeys.has(autoKey)){
+    if(dupKind || existingKeys.has(autoKey) || batchKeys.has(autoKey) || existingSimpleKeys.has(simpleKey) || batchSimpleKeys.has(simpleKey)){
       duplicateCount++;
       return;
     }
     batchKeys.add(autoKey);
+    batchSimpleKeys.add(simpleKey);
     finalRows.push({...r, operationType, side, autoKey});
   });
   const ignoredCount=Math.max(0, inputRows.length - safeRows.length);
@@ -9156,21 +9220,17 @@ function applyB3MovementImported(rows, importDate){
   [...finalRows].forEach(r=>learnTickerMeta(r.ticker, r.type, r.sector, true));
   save();
   render();
-  b3ImportCompletedMessage(`Movimentações importadas: ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
+  b3ImportCompletedMessage(`Movimentações importadas na carteira "${gate.name}": ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
 }
 function importB3MovementReview(){
   if(!S.b3MovementReview) return;
-  if(S.b3MovementReview.previewOnly){
-    toast('Prévia B3: nenhuma alteração foi aplicada no histórico.');
-    return;
-  }
   const rows=b3MovementSelectedItems();
   if(!rows.length){
     alert('Selecione ao menos um item valido para importar.');
     return;
   }
   const summary=b3MovementSummary();
-  if(!b3ConfirmImport('as movimentações B3 no Histórico de aportes', rows.length, summary.duplicates, summary.incomplete+summary.revisar)) return;
+  if(!b3ConfirmApplyToActiveWallet('as movimentações B3 no Histórico de aportes', rows.length, summary.duplicates, summary.incomplete+summary.revisar)) return;
   const importDate=S.b3MovementReview.importDate || new Date().toLocaleDateString('pt-BR');
   S.b3MovementReview=null;
   applyB3MovementImported(rows, importDate);
@@ -9179,6 +9239,7 @@ function b3MovementReviewModal(){
   const r=S.b3MovementReview;
   if(!r) return '';
   const previewOnly=!!r.previewOnly;
+  const gate=b3ActiveWalletGate();
   const {count,total,groups,linesRead,valid,ignored,compras,vendas,rfAplicResg,revisarPrecoValor,events,revisar,transferencias,duplicates,incomplete}=b3MovementSummary();
   const previewStats=r.stats||{};
   const negotiationSummaryCards=previewOnly && r.previewKind==='negotiation'
@@ -9287,7 +9348,7 @@ function b3MovementReviewModal(){
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
-            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3MovementReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
+            <button class="btn bsv" ${gate.allow?'':'disabled title="Selecione uma carteira de teste antes de aplicar."'} onclick="importB3MovementReview()">Aplicar na carteira atual</button>
           </div>
         </div>
         <div class="note-meta">
@@ -9317,7 +9378,7 @@ function b3MovementReviewModal(){
           {label:'Revisar',value:revisar+incomplete,sub:'Eventos ou dados incompletos'},
           {label:'Período',value:period,sub:'Datas encontradas'}
         ])}
-        ${previewOnly?'<div class="b3-backup-warning">Fase 1 segura: esta é apenas uma prévia. Nenhum dado será aplicado na carteira principal.</div>':''}
+        ${b3WalletApplyNotice()}
         ${previewOnly?b3IgnoredReasonsHtml(previewStats):''}
         <div class="b3-review-filters">
           <label>Status
@@ -9356,7 +9417,7 @@ function b3MovementReviewModal(){
           <div class="hint">O botão final grava somente o que estiver selecionado, com destino Histórico de aportes. Proventos e eventos continuam fora desta etapa.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
-            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3MovementReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
+            <button class="btn bsv" ${gate.allow?'':'disabled title="Selecione uma carteira de teste antes de aplicar."'} onclick="importB3MovementReview()">Aplicar na carteira atual</button>
           </div>
         </div>
       </div>
