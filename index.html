@@ -13721,37 +13721,6 @@ function downloadTextFile(filename,content,mimeType='text/plain;charset=utf-8'){
   link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-async function sharePdfOrDownload(doc,filename,meta={}){
-  const safeFilename=String(filename||'relatorio.pdf').trim()||'relatorio.pdf';
-  const download=()=>doc.save(safeFilename);
-  try{
-    const canTryShare=typeof navigator!=='undefined'
-      && typeof navigator.share==='function'
-      && typeof navigator.canShare==='function'
-      && typeof File==='function';
-    if(canTryShare){
-      const blob=doc.output('blob');
-      const file=new File([blob],safeFilename,{type:'application/pdf'});
-      const shareData={
-        files:[file],
-        title:String(meta.title||safeFilename),
-        text:String(meta.text||'')
-      };
-      if(navigator.canShare(shareData)){
-        try{
-          await navigator.share(shareData);
-          return;
-        }catch(error){
-          if(error?.name==='AbortError') return;
-          if(typeof debugWarn==='function') debugWarn('sharePdfOrDownload erro:',error);
-        }
-      }
-    }
-  }catch(error){
-    if(typeof debugWarn==='function') debugWarn('sharePdfOrDownload fallback:',error);
-  }
-  download();
-}
 function loadExternalScript(src){
   loadExternalScript._cache = loadExternalScript._cache || new Map();
   if(loadExternalScript._cache.has(src)) return loadExternalScript._cache.get(src);
@@ -14445,10 +14414,7 @@ async function downloadExecutivePdf(){
       doc.setTextColor(107,114,128);
       doc.text(`Página ${page} de ${totalPages}`, pageWidth - margin, pageHeight - 7, {align:'right'});
     }
-    await sharePdfOrDownload(doc,reportFilename('relatorio-executivo','pdf'),{
-      title:'Relatorio Executivo da Carteira',
-      text:'Relatorio gerado pela Carteira de Investimentos.'
-    });
+    doc.save(reportFilename('relatorio-executivo','pdf'));
   }catch(error){
     debugError('downloadExecutivePdf erro:',error);
     toast('Não foi possível gerar o Relatório Executivo.','#f87171');
@@ -14703,10 +14669,7 @@ async function downloadCompletePortfolioPdf(){
       doc.setTextColor(107,114,128);
       doc.text(`Página ${page} de ${totalPages}`, pageWidth - margin, pageHeight - 7, {align:'right'});
     }
-    await sharePdfOrDownload(doc,reportFilename('carteira-completa','pdf'),{
-      title:'Carteira completa',
-      text:'Relatorio gerado pela Carteira de Investimentos.'
-    });
+    doc.save(reportFilename('carteira-completa','pdf'));
     toast('✅ PDF da carteira completa gerado.');
   }catch(error){
     debugError('downloadCompletePortfolioPdf erro:',error);
