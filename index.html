@@ -1183,6 +1183,8 @@ body.modal-open{overflow:hidden}
 .report-export-desc{font-size:10px;line-height:1.42;color:#8799b1;margin-top:3px}
 .report-export-meta{display:flex;gap:6px;flex-wrap:wrap}
 .report-format{font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#a5b4fc;border:1px solid rgba(129,140,248,.22);background:rgba(79,70,229,.08);padding:4px 7px;border-radius:999px}
+.report-format-btn{font-family:inherit;cursor:pointer;appearance:none}
+.report-format-btn:hover{border-color:rgba(129,140,248,.42);background:rgba(79,70,229,.16)}
 .report-export-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
 .report-export-actions .btn{min-height:36px}
 .reports-footnote{padding:9px 11px;border:1px solid #1a273b;border-radius:12px;background:#0a101b;color:#8294ad;font-size:10px;line-height:1.45}
@@ -15626,6 +15628,13 @@ function reportPdfPreview(){
 function reportExportCard(icon,title,description,type,formats=['csv','json']){
   const pdfAction=type==='complete' ? 'downloadCompletePortfolioPdf()' : `openReportCardPdf('${type}')`;
   const generated=new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+  const typeArg=JSON.stringify(type);
+  const jsonOnly=formats.length===1 && formats[0]==='json';
+  const formatBadges=formats.map(format=>{
+    const label=format.toUpperCase();
+    if(format==='json') return `<button type="button" class="report-format report-format-btn" onclick='exportReportJSON(${typeArg})'>${label}</button>`;
+    return `<span class="report-format">${label}</span>`;
+  }).join('');
   return `<article class="report-export-card">
     <div class="report-export-card-head">
       <div class="report-export-icon">${icon}</div>
@@ -15635,13 +15644,13 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
       </div>
     </div>
     <div class="report-export-meta">
-      ${formats.map(format=>`<span class="report-format">${format.toUpperCase()}</span>`).join('')}
+      ${formatBadges}
       <span class="report-format">${esc(reportsPeriodLabel())}</span>
     </div>
     <div class="report-export-desc">Geração: ${esc(generated)}</div>
     <div class="report-export-actions">
       ${formats.includes('csv')?`<button class="btn bgh" onclick="exportReportCSV('${type}')">Exportar CSV</button>`:''}
-      ${formats.includes('json')?`<button class="btn bsv" onclick="exportReportJSON('${type}')">Exportar JSON</button>`:''}
+      ${jsonOnly?`<button class="btn bsv" onclick="exportReportJSON('${type}')">Exportar JSON</button>`:''}
       ${formats.includes('pdf')?`<button class="btn bp" onclick="${pdfAction}">Gerar PDF</button>`:''}
     </div>
   </article>`;
