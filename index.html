@@ -3451,6 +3451,7 @@ let S = {
   noteReview:null,
   b3Review:null,
   b3MovementReview:null,
+  b3ImportMode:null,
   rfPositionReview:null,
   b3ProventosReview:null,
   learnMeta:{},
@@ -4579,6 +4580,12 @@ function configMenu(){
       </div>
       <div class="cfg-menu-divider"></div>
       <div class="cfg-menu-group">
+        <div class="cfg-menu-group-title">Importar B3 experimental</div>
+        <button class="btn bgh" onclick="importB3NegotiationPreview();closeConfigMenus()">Negociacao B3 (previa)</button>
+        <button class="btn bgh" onclick="importB3MovementPreview();closeConfigMenus()">Movimentacao B3 (previa)</button>
+      </div>
+      <div class="cfg-menu-divider"></div>
+      <div class="cfg-menu-group">
         <div class="cfg-menu-group-title">Ação crítica</div>
         <button class="btn bgh cfg-danger" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
       </div>
@@ -4944,6 +4951,19 @@ async function resetPortfolio(){
 function importB3Excel(){
   const el=document.getElementById('b3-file');
   if(!el){ alert('Campo de importação B3 não encontrado.'); return; }
+  S.b3ImportMode=null;
+  el.click();
+}
+function importB3NegotiationPreview(){
+  const el=document.getElementById('b3-file');
+  if(!el){ alert('Campo de importacao B3 nao encontrado.'); return; }
+  S.b3ImportMode='negotiation-preview';
+  el.click();
+}
+function importB3MovementPreview(){
+  const el=document.getElementById('b3-file');
+  if(!el){ alert('Campo de importacao B3 nao encontrado.'); return; }
+  S.b3ImportMode='movement-proventos-preview';
   el.click();
 }
 function importNotaCorretora(){
@@ -5779,12 +5799,13 @@ function b3ProventoEventType(eventType){
   if(s.includes('PAGAMENTO DE JUROS')) return 'Juros Renda Fixa';
   if(s.includes('RENDIMENTO')) return 'Rendimento';
   if(s.includes('DIVIDENDO')) return 'Dividendo';
+  if(s.includes('AMORTIZA')) return 'Amortização';
   if(s.includes('REEMBOLSO')) return 'Reembolso';
   return String(eventType||'').trim()||'Provento';
 }
 function b3ProventoDestination(eventType){
   const t=b3ProventoEventType(eventType);
-  if(['Rendimento','Dividendo','JCP','Juros Renda Fixa'].includes(t)) return 'Proventos';
+  if(['Rendimento','Dividendo','JCP','Juros Renda Fixa','Amortização'].includes(t)) return 'Proventos';
   return 'Revisar';
 }
 function b3ProventoDate(v){
@@ -6022,6 +6043,144 @@ async function parseB3MovementPdf(file){
     else addImported(item.movement||'PDF');
   });
   return {items,warnings,importDate,stats,kind:'movement'};
+}
+function b3NegotiationTicker(rawTicker, market=''){
+  let ticker=cleanAssetCode(rawTicker);
+  const marketNorm=b3MovementNorm(market);
+  if(/F$/.test(ticker) && /^[A-Z]{4}\d{1,2}F$/.test(ticker) && /FRA|FRACION/.test(marketNorm)){
+    ticker=ticker.slice(0,-1);
+  }
+  return ticker;
+}
+function parseB3NegotiationWorkbook(wb, fileName=''){
+  const items=[]; const warnings=[];
+  const stats={totalRead:0,totalIgnored:0,ignoredByReason:{},compras:0,vendas:0,ativos:new Set(),duplicates:0};
+  const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
+  const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  const addIgnored=reason=>{
+    stats.totalIgnored++;
+    stats.ignoredByReason[reason]=(stats.ignoredByReason[reason]||0)+1;
+  };
+  (wb.SheetNames||[]).forEach(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    if(!rows || rows.length<2) return;
+    let headerIdx=-1;
+    for(let i=0;i<Math.min(rows.length,20);i++){
+      const h=(rows[i]||[]).map(normHeaderB3);
+      const ok=h.some(x=>x.includes('data do negocio'))
+        && h.some(x=>x.includes('tipo de movimentacao'))
+        && h.some(x=>x.includes('codigo de negociacao'))
+        && h.some(x=>x.includes('quantidade'))
+        && h.some(x=>x==='preco' || x.includes('preco'))
+        && h.some(x=>x==='valor' || x.includes('valor'));
+      if(ok){ headerIdx=i; break; }
+    }
+    if(headerIdx<0){ warnings.push(`Aba "${sheetName}" ignorada: cabecalho de negociacao B3 nao reconhecido.`); return; }
+    const headers=(rows[headerIdx]||[]).map(v=>String(v||'').trim());
+    rows.slice(headerIdx+1).forEach(row=>{
+      if(!row || row.every(v=>v===null || String(v).trim()==='')) return;
+      stats.totalRead++;
+      const mov=String(pickB3(row,headers,['Tipo de Movimentação','Tipo de Movimentacao'])||'').trim();
+      const movNorm=b3MovementNorm(mov);
+      const market=String(pickB3(row,headers,['Mercado'])||'').trim();
+      const rawTicker=String(pickB3(row,headers,['Código de Negociação','Codigo de Negociacao','Código','Codigo','Ticker'])||'').trim();
+      const ticker=b3NegotiationTicker(rawTicker, market);
+      const qty=parseNum(pickB3(row,headers,['Quantidade']));
+      const price=parseNum(pickB3(row,headers,['Preço','Preco']));
+      const value=parseNum(pickB3(row,headers,['Valor']));
+      const date=b3MovementDateFromCell(pickB3(row,headers,['Data do Negócio','Data do Negocio','Data']), importDate);
+      const broker=String(pickB3(row,headers,['Instituição','Instituicao','Corretora'])||'').trim();
+      const due=String(pickB3(row,headers,['Prazo/Vencimento','Prazo','Vencimento'])||'').trim();
+      const isBuy=/COMPRA|CREDITO|ENTRADA/.test(movNorm);
+      const isSell=/VENDA|DEBITO|SAIDA/.test(movNorm);
+      if(!isBuy && !isSell){ addIgnored('movimento nao compra/venda'); return; }
+      if(!ticker || !tickerValidoB3(ticker)){ addIgnored('ticker invalido'); return; }
+      if(qty<=0 || price<=0 || value<=0){ addIgnored('quantidade/preco/valor invalido'); return; }
+      const meta=metaTicker(ticker);
+      const item=b3MovementRefreshReviewFlags({
+        movement:isSell?'Venda':'Compra',
+        entryExit:isSell?'Saída':'Entrada',
+        product:ticker,
+        ticker,
+        qty,
+        price,
+        value,
+        date,
+        broker,
+        institution:broker,
+        sheet:sheetName||'Negociação B3',
+        type:normalizeType(meta.type||'Ação','Ação'),
+        sector:meta.sector||'',
+        market,
+        due,
+        source:'B3 Negociação',
+        include:true
+      });
+      if(item.possibleDuplicate) stats.duplicates++;
+      if(isSell) stats.vendas++; else stats.compras++;
+      stats.ativos.add(ticker);
+      items.push(item);
+    });
+  });
+  if(!items.length) warnings.push('Nenhuma compra ou venda valida foi identificada no arquivo de negociacao B3.');
+  return {items,warnings,importDate,stats:{...stats,ativos:[...stats.ativos]},kind:'movement',previewOnly:true,previewKind:'negotiation'};
+}
+function parseB3MovementProventosPreviewWorkbook(wb, fileName=''){
+  const items=[]; const warnings=[];
+  const stats={totalRead:0,totalIgnored:0,ignoredByReason:{},proventos:0,ativos:new Set(),duplicates:0};
+  const dateMatch=String(fileName||'').match(/(20\d{2})[-_](\d{2})[-_](\d{2})/);
+  const importDate=dateMatch?`${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`:new Date().toLocaleDateString('pt-BR');
+  const allowed=/RENDIMENTO|DIVIDENDO|JUROS SOBRE CAPITAL|JCP|AMORTIZA/;
+  const ignored=/TRANSFERENCIA|EMPRESTIMO|APLICA|RESGATE ANTECIPADO/;
+  const addIgnored=reason=>{
+    stats.totalIgnored++;
+    stats.ignoredByReason[reason]=(stats.ignoredByReason[reason]||0)+1;
+  };
+  (wb.SheetNames||[]).forEach(sheetName=>{
+    const sheet=wb.Sheets[sheetName]; if(!sheet) return;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    if(!rows || rows.length<2) return;
+    let headerIdx=-1;
+    for(let i=0;i<Math.min(rows.length,20);i++){
+      const h=(rows[i]||[]).map(normHeaderB3);
+      const ok=h.some(x=>x==='entrada/saida' || x==='entrada-saida' || x==='entrada / saida')
+        && h.some(x=>x.includes('movimentacao'))
+        && h.some(x=>x.includes('produto'))
+        && h.some(x=>x.includes('valor da operacao'));
+      if(ok){ headerIdx=i; break; }
+    }
+    if(headerIdx<0){ warnings.push(`Aba "${sheetName}" ignorada: cabecalho de movimentacao B3 nao reconhecido.`); return; }
+    const headers=(rows[headerIdx]||[]).map(v=>String(v||'').trim());
+    rows.slice(headerIdx+1).forEach((row,idx)=>{
+      if(!row || row.every(v=>v===null || String(v).trim()==='')) return;
+      stats.totalRead++;
+      const movement=String(pickB3(row,headers,['Movimentação','Movimentacao'])||'').trim();
+      const movementNorm=b3MovementNorm(movement);
+      const product=String(pickB3(row,headers,['Produto'])||'').trim();
+      const valueRaw=pickB3(row,headers,['Valor da Operação','Valor da Operacao']);
+      const value=parseNum(valueRaw);
+      if(ignored.test(movementNorm)){ addIgnored('movimento ignorado nesta fase'); return; }
+      if(!allowed.test(movementNorm)){ addIgnored('nao e provento permitido'); return; }
+      if(!product || !valueRaw || value<=0){ addIgnored('produto/valor invalido'); return; }
+      const item=b3ProventoBuild({
+        id:items.length,
+        product,
+        paymentDate:pickB3(row,headers,['Data','Data do Movimento','Data da Movimentação','Data da Movimentacao','Data da Operação','Data da Operacao']),
+        eventType:movement,
+        institution:String(pickB3(row,headers,['Instituição','Instituicao','Corretora'])||'').trim(),
+        qty:b3ProventoQty(pickB3(row,headers,['Quantidade'])),
+        unitPrice:parseNum(pickB3(row,headers,['Preço unitário','Preco unitario'])),
+        netValue:value
+      });
+      if(item.status==='Duplicado') stats.duplicates++;
+      stats.proventos++;
+      if(item.ticker) stats.ativos.add(item.ticker);
+      items.push(item);
+    });
+  });
+  if(!items.length) warnings.push('Nenhum provento permitido foi identificado na movimentacao B3.');
+  return {items,warnings,importDate,kind:'b3-proventos',ignoredCount:stats.totalIgnored,stats:{...stats,ativos:[...stats.ativos]},previewOnly:true,previewKind:'movement-proventos'};
 }
 function detectB3WorkbookKind(wb){
   const sheetName=(wb.SheetNames||[])[0];
@@ -7778,6 +7937,30 @@ function b3ConferenceSummaryHtml(items){
     </div>`).join('')}
   </div>`;
 }
+function b3IgnoredReasonsHtml(stats){
+  const reasons=Object.entries(stats?.ignoredByReason||{}).filter(([,count])=>Number(count)>0);
+  if(!reasons.length) return '';
+  return `<div class="b3-backup-warning">
+    <strong style="display:block;margin-bottom:4px">Registros ignorados por motivo</strong>
+    ${reasons.map(([reason,count])=>`${esc(reason)}: ${esc(String(count))}`).join(' • ')}
+  </div>`;
+}
+function b3ProventosByAssetHtml(rows){
+  const map=new Map();
+  (rows||[]).forEach(row=>{
+    const ticker=String(row.ticker||row.assetName||'Sem ticker').trim()||'Sem ticker';
+    const current=map.get(ticker)||{ticker,count:0,total:0};
+    current.count++;
+    current.total+=Number(row.netValue)||0;
+    map.set(ticker,current);
+  });
+  const items=[...map.values()].sort((a,b)=>b.total-a.total || a.ticker.localeCompare(b.ticker,'pt-BR')).slice(0,12);
+  if(!items.length) return '';
+  return `<div class="b3-backup-warning">
+    <strong style="display:block;margin-bottom:4px">Proventos por ativo</strong>
+    ${items.map(item=>`${esc(item.ticker)}: ${esc(fmt(item.total))} (${item.count})`).join(' • ')}
+  </div>`;
+}
 function openB3Review(parsed, fileName='', sourceKind='excel'){
   const items=(parsed?.items||[]).map((it,i)=>({
     id:it.id ?? i,
@@ -7820,6 +8003,8 @@ function openB3Review(parsed, fileName='', sourceKind='excel'){
     sourceKind,
     importDate:parsed?.importDate||'',
     warnings:parsed?.warnings||[],
+    previewOnly:!!parsed?.previewOnly,
+    previewKind:String(parsed?.previewKind||''),
     stats:parsed?.stats||{},
     items,
     groups,
@@ -7886,6 +8071,10 @@ function b3ReviewSummary(){
 }
 function importB3Review(){
   if(!S.b3Review) return;
+  if(S.b3Review.previewOnly){
+    toast('Prévia B3: nenhuma alteração foi aplicada na carteira.');
+    return;
+  }
   const rows=b3ReviewSelectedItems().filter(it=>!isB3PositionSummaryRow(it));
   if(!rows.length){
     alert('Selecione ao menos uma aba válida para importar.');
@@ -8002,7 +8191,7 @@ function b3ReviewModal(){
         </div>
       </div>
       <div class="note-body">
-        ${b3ConferenceSummaryHtml([
+        ${b3ConferenceSummaryHtml(proventoSummaryCards||[
           {label:'Registros lidos',value:valid+ignored,sub:'Posições identificadas'},
           {label:'Válidos',value:valid,sub:'Ativos reais da posição'},
           {label:'Ignorados',value:ignored,sub:'Totais, resumos ou inválidos'},
@@ -8341,7 +8530,7 @@ function rfPositionReviewModal(){
         </div>
       </div>
       <div class="note-body">
-        ${b3ConferenceSummaryHtml([
+        ${b3ConferenceSummaryHtml(negotiationSummaryCards||[
           {label:'Registros lidos',value:sum.total+sum.eventTotal,sub:'Posições e eventos'},
           {label:'Posições válidas',value:sum.count,sub:'Selecionadas para ativos'},
           {label:'Eventos',value:sum.eventTotal,sub:'Separados para conferência'},
@@ -8413,6 +8602,9 @@ function openB3ProventosReview(parsed, fileName='', sourceKind='excel'){
     sourceKind,
     importDate:parsed?.importDate||new Date().toLocaleDateString('pt-BR'),
     warnings:parsed?.warnings||[],
+    previewOnly:!!parsed?.previewOnly,
+    previewKind:String(parsed?.previewKind||''),
+    stats:parsed?.stats||{},
     ignoredCount:Number(parsed?.ignoredCount)||0,
     filterStatus:'all',
     filterType:'all',
@@ -8461,6 +8653,10 @@ function b3ProventosReviewFilteredRows(){
 }
 function importB3ProventosReview(){
   if(!S.b3ProventosReview) return;
+  if(S.b3ProventosReview.previewOnly){
+    toast('Prévia B3: nenhuma alteração foi aplicada em Proventos.');
+    return;
+  }
   const rows=Array.isArray(S.b3ProventosReview.items)?S.b3ProventosReview.items:[];
   const totalRows=rows.length;
   const selectedRows=rows.filter(row=>row.include!==false && row.status==='Novo provento' && row.destination==='Proventos');
@@ -8539,7 +8735,19 @@ function b3ProventosReviewSummary(){
 function b3ProventosReviewModal(){
   const r=S.b3ProventosReview;
   if(!r) return '';
+  const previewOnly=!!r.previewOnly;
   const sum=b3ProventosReviewSummary();
+  const previewStats=r.stats||{};
+  const proventoSummaryCards=previewOnly
+    ? [
+        {label:'Proventos encontrados',value:previewStats.proventos||sum.valid,sub:'Somente eventos permitidos'},
+        {label:'Valor total',value:fmt(sum.total),sub:'Soma dos proventos selecionados'},
+        {label:'Ativos identificados',value:(previewStats.ativos||[]).length,sub:(previewStats.ativos||[]).slice(0,6).join(', ')||'Nenhum'},
+        {label:'Ignorados',value:sum.ignored,sub:'Transferencias, reembolsos, vazios ou invalidos'},
+        {label:'Duplicados provaveis',value:sum.duplicates,sub:'Detectados contra registros atuais'},
+        {label:'Revisar',value:sum.review,sub:'Dados incompletos ou inseguros'}
+      ]
+    : null;
   const period=b3ReviewPeriod(r.items||[]);
   const warnings=(r.warnings||[]).slice(0,6).map(w=>`<li>${esc(w)}</li>`).join('');
   const filtered=b3ProventosReviewFilteredRows();
@@ -8592,7 +8800,7 @@ function b3ProventosReviewModal(){
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
-            <button class="btn bsv" onclick="importB3ProventosReview()">Importar selecionados</button>
+            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3ProventosReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
           </div>
         </div>
         <div class="note-meta">
@@ -8608,6 +8816,9 @@ function b3ProventosReviewModal(){
           {label:'Revisar',value:sum.review,sub:'Incompletos ou não seguros'},
           {label:'Período',value:period,sub:'Datas encontradas'}
         ])}
+        ${previewOnly?'<div class="b3-backup-warning">Fase 1 segura: esta é apenas uma prévia. Nenhum dado será aplicado na carteira principal.</div>':''}
+        ${previewOnly?b3ProventosByAssetHtml(r.items||[]):''}
+        ${previewOnly?b3IgnoredReasonsHtml(previewStats):''}
         <div class="rf-proventos-kpis">
           <div class="rf-proventos-kpi yellow">
             <div class="rf-proventos-kpi-label">Linhas válidas</div>
@@ -8671,7 +8882,7 @@ function b3ProventosReviewModal(){
           <div class="hint">A importação grava somente os itens seguros e selecionados em Proventos. Duplicados e linhas para revisão permanecem fora.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3ProventosReview()">Cancelar</button>
-            <button class="btn bsv" onclick="importB3ProventosReview()">Importar selecionados</button>
+            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3ProventosReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
           </div>
         </div>
       </div>
@@ -8723,6 +8934,8 @@ function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
     importDate:parsed?.importDate||'',
     warnings:parsed?.warnings||[],
     stats:parsed?.stats||{},
+    previewOnly:!!parsed?.previewOnly,
+    previewKind:String(parsed?.previewKind||''),
     filterStatus:'all',
     filterType:'all',
     items,
@@ -8947,6 +9160,10 @@ function applyB3MovementImported(rows, importDate){
 }
 function importB3MovementReview(){
   if(!S.b3MovementReview) return;
+  if(S.b3MovementReview.previewOnly){
+    toast('Prévia B3: nenhuma alteração foi aplicada no histórico.');
+    return;
+  }
   const rows=b3MovementSelectedItems();
   if(!rows.length){
     alert('Selecione ao menos um item valido para importar.');
@@ -8961,7 +9178,19 @@ function importB3MovementReview(){
 function b3MovementReviewModal(){
   const r=S.b3MovementReview;
   if(!r) return '';
+  const previewOnly=!!r.previewOnly;
   const {count,total,groups,linesRead,valid,ignored,compras,vendas,rfAplicResg,revisarPrecoValor,events,revisar,transferencias,duplicates,incomplete}=b3MovementSummary();
+  const previewStats=r.stats||{};
+  const negotiationSummaryCards=previewOnly && r.previewKind==='negotiation'
+    ? [
+        {label:'Operações compra/venda',value:(Number(previewStats.compras)||0)+(Number(previewStats.vendas)||0),sub:'Somente Compra e Venda entram na prévia'},
+        {label:'Compras',value:previewStats.compras||compras,sub:'Entradas positivas'},
+        {label:'Vendas',value:previewStats.vendas||vendas,sub:'Saídas/baixas'},
+        {label:'Ativos identificados',value:(previewStats.ativos||[]).length,sub:(previewStats.ativos||[]).slice(0,6).join(', ')||'Nenhum'},
+        {label:'Registros ignorados',value:ignored,sub:'Fora do escopo conservador'},
+        {label:'Duplicidades prováveis',value:duplicates,sub:'Detectadas contra histórico atual'}
+      ]
+    : null;
   const period=b3ReviewPeriod(r.items||[]);
   const warnings=(r.warnings||[]).slice(0,8).map(w=>`<li>${esc(w)}</li>`).join('');
   const visibleGroups=(r.groups||[]).map(g=>({
@@ -9058,7 +9287,7 @@ function b3MovementReviewModal(){
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
-            <button class="btn bsv" onclick="importB3MovementReview()">Importar selecionados</button>
+            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3MovementReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
           </div>
         </div>
         <div class="note-meta">
@@ -9088,6 +9317,8 @@ function b3MovementReviewModal(){
           {label:'Revisar',value:revisar+incomplete,sub:'Eventos ou dados incompletos'},
           {label:'Período',value:period,sub:'Datas encontradas'}
         ])}
+        ${previewOnly?'<div class="b3-backup-warning">Fase 1 segura: esta é apenas uma prévia. Nenhum dado será aplicado na carteira principal.</div>':''}
+        ${previewOnly?b3IgnoredReasonsHtml(previewStats):''}
         <div class="b3-review-filters">
           <label>Status
             <select onchange="setB3MovementReviewFilter('status',this.value)">
@@ -9125,7 +9356,7 @@ function b3MovementReviewModal(){
           <div class="hint">O botão final grava somente o que estiver selecionado, com destino Histórico de aportes. Proventos e eventos continuam fora desta etapa.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn bgh" onclick="closeB3MovementReview()">Cancelar</button>
-            <button class="btn bsv" onclick="importB3MovementReview()">Importar selecionados</button>
+            <button class="btn bsv" ${previewOnly?'disabled title="Fase 1: aplicação desabilitada"':''} onclick="importB3MovementReview()">${previewOnly?'Aplicar importação (desabilitado)':'Importar selecionados'}</button>
           </div>
         </div>
       </div>
@@ -9135,11 +9366,34 @@ function b3MovementReviewModal(){
 document.getElementById('b3-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   try{
+    const importMode=String(S.b3ImportMode||'');
+    S.b3ImportMode=null;
     const fileName=String(file.name||'');
     const fileType=String(file.type||'').toLowerCase();
     const isPdf=/\.pdf$/i.test(fileName) || fileType.includes('pdf');
     const isCsv=/\.csv$/i.test(fileName) || fileType.includes('csv') || fileType.includes('comma-separated-values');
     let parsed;
+    if(importMode){
+      if(isPdf){
+        alert('A Fase 1 experimental do B3 aceita apenas XLSX/XLS/CSV. PDF continua fora desta prévia segura.');
+        e.target.value='';
+        return;
+      }
+      if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
+      const wb=isCsv
+        ? XLSX.read(await file.text(),{type:'string'})
+        : XLSX.read(await file.arrayBuffer(),{type:'array'});
+      if(importMode==='negotiation-preview'){
+        parsed=parseB3NegotiationWorkbook(wb,file.name);
+        openB3MovementReview({...parsed, sourceKind:isCsv?'csv':'excel'}, file.name);
+      }else if(importMode==='movement-proventos-preview'){
+        parsed=parseB3MovementProventosPreviewWorkbook(wb,file.name);
+        openB3ProventosReview({...parsed, sourceKind:isCsv?'csv':'excel'}, file.name);
+      }
+      if(parsed?.warnings?.length) debugWarn('Avisos prévia B3:',parsed.warnings);
+      e.target.value='';
+      return;
+    }
     if(isPdf){
       const kind=await detectB3PdfKind(file);
       if(kind==='ambiguous'){
