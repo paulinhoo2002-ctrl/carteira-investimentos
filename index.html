@@ -4698,6 +4698,7 @@ function configMenu(){
   const securityBtn = canManageSecurity()
     ? `<button class="btn bgh" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>`
     : '';
+  // Recurso B3 experimental preservado no código, mas oculto da produção até nova validação.
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp hdr-mobile-btn" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px"><span class="hdr-mobile-icon">⚙️</span><span class="hdr-mobile-label">Configurações</span></summary>
     <div class="cfg-menu-panel">
@@ -4709,12 +4710,6 @@ function configMenu(){
         <button class="btn bgh" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
         <button class="btn bgh" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
         <button class="btn bgh" onclick="openBrokerNoteImport();closeConfigMenus()">🧾 Nota corretora</button>
-      </div>
-      <div class="cfg-menu-divider"></div>
-      <div class="cfg-menu-group">
-        <div class="cfg-menu-group-title">Importar B3 experimental</div>
-        <button class="btn bgh" onclick="importB3NegotiationPreview();closeConfigMenus()">Negociacao B3 (previa)</button>
-        <button class="btn bgh" onclick="importB3MovementPreview();closeConfigMenus()">Movimentacao B3 (previa)</button>
       </div>
       <div class="cfg-menu-divider"></div>
       <div class="cfg-menu-group">
