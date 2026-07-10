@@ -565,6 +565,36 @@ button{cursor:pointer;font-family:inherit}
 .rf-preview-row .premium-row-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rf-preview-value{text-align:right;font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
 .rf-preview-value .premium-row-sub{font-size:9px;color:#94a3b8;margin-top:2px}
+.rf-events-stack{display:flex;flex-direction:column;gap:10px}
+.rf-event-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:11px;display:flex;flex-direction:column;gap:10px}
+.rf-event-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.rf-event-title{font-size:12px;font-weight:850;color:var(--text)}
+.rf-event-sub{font-size:10px;color:var(--muted);line-height:1.4;margin-top:2px}
+.rf-event-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.rf-event-badge{font-size:9px;font-weight:800;color:var(--muted);border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.rf-event-badge.ok{color:#34d399;border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.08)}
+.rf-event-badge.warn{color:#fbbf24;border-color:rgba(251,191,36,.22);background:rgba(251,191,36,.08)}
+.rf-event-badge.info{color:#60a5fa;border-color:rgba(96,165,250,.22);background:rgba(96,165,250,.08)}
+.rf-event-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.rf-event-kpi{border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:9px;min-width:0}
+.rf-event-kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.rf-event-kpi-value{font-size:14px;font-weight:900;color:var(--text);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-event-kpi-sub{font-size:9px;color:var(--muted);line-height:1.35;margin-top:3px}
+.rf-event-kpi.good .rf-event-kpi-value{color:#34d399}
+.rf-event-kpi.warn .rf-event-kpi-value{color:#fbbf24}
+.rf-event-kpi.info .rf-event-kpi-value{color:#60a5fa}
+.rf-event-editor{border:1px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:10px}
+.rf-event-editor-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.rf-event-editor-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rf-event-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:auto}
+.rf-event-table{width:100%;border-collapse:collapse;min-width:980px}
+.rf-event-table th,.rf-event-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:10px;vertical-align:top}
+.rf-event-table th{background:var(--surface-2);color:var(--muted);text-align:left;font-weight:800}
+.rf-event-table td{color:var(--text)}
+.rf-event-table tr:last-child td{border-bottom:0}
+.rf-event-table .num{text-align:right;white-space:nowrap}
+.rf-event-table .actions{text-align:right;white-space:nowrap}
+.rf-event-empty{padding:11px;border:1px dashed var(--border);border-radius:11px;background:var(--surface-2);font-size:10px;color:var(--muted);line-height:1.45}
 .irpf-shell{display:flex;flex-direction:column;gap:12px}
 .irpf-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .irpf-title{font-size:18px;font-weight:900;color:var(--text);letter-spacing:-.02em}
@@ -2359,6 +2389,9 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .rf-table-wrap{margin-right:-4px}
 .rf-table{min-width:760px}
 .rf-table th,.rf-table td{padding:6px 8px;font-size:10px}
+.rf-event-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.rf-event-editor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.rf-event-table{min-width:860px}
   .premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
   .premium-rf-list .premium-rf-row:nth-child(n+3){display:none}
   .irpf-head{flex-direction:column;align-items:flex-start}
@@ -3527,7 +3560,7 @@ function themeActionLabel(){
 }
 
 let S = {
-  assets:[], aportes:[], proventos:[], quotes:{}, lastUpdate:null,
+  assets:[], aportes:[], proventos:[], rfEvents:[], quotes:{}, lastUpdate:null,
   tab:'dashboard', qLoad:false, cd:QI,
   qInFlight:false,
   brapiToken: DEFAULT_BRAPI, divGoal:0,
@@ -3590,6 +3623,7 @@ let S = {
   autoProvDirty:false,
   autoProvTimer:null,
   autoProvRunning:false,
+  rfEventEditor:null,
   _fa:null, _fp:null, _fd:null,
 };
 let PWA = { prompt:null, installed: false };
@@ -3618,6 +3652,7 @@ function emptyWallet(name='Carteira principal'){
     assets:[],
     aportes:[],
     proventos:[],
+    rfEvents:[],
     divGoal:0,
     goals:normalizeGoals(),
     learnMeta:{}
@@ -3633,6 +3668,7 @@ function normalizeWalletEntry(w, fallbackName='Carteira'){
     assets:Array.isArray(obj.assets)?obj.assets:[],
     aportes:Array.isArray(obj.aportes)?obj.aportes:[],
     proventos:Array.isArray(obj.proventos)?obj.proventos:[],
+    rfEvents:normalizeRfEvents(obj.rfEvents),
     divGoal:Number(obj.divGoal)||0,
     goals:normalizeGoals(obj.goals),
     learnMeta:(obj.learnMeta && typeof obj.learnMeta==='object') ? obj.learnMeta : {}
@@ -3644,6 +3680,7 @@ function ensureWallets(){
       assets:S.assets,
       aportes:S.aportes,
       proventos:S.proventos,
+      rfEvents:S.rfEvents,
       divGoal:S.divGoal,
       goals:S.goals,
       learnMeta:S.learnMeta
@@ -3666,6 +3703,7 @@ function syncStateFromWallet(w){
   S.assets=cloneData(wallet.assets||[]);
   S.aportes=cloneData(wallet.aportes||[]);
   S.proventos=cloneData(wallet.proventos||[]);
+  S.rfEvents=normalizeRfEvents(wallet.rfEvents);
   S.divGoal=Number(wallet.divGoal)||0;
   S.goals=normalizeGoals(wallet.goals);
   S.learnMeta=(wallet.learnMeta && typeof wallet.learnMeta==='object') ? wallet.learnMeta : {};
@@ -3678,6 +3716,7 @@ function syncWalletFromState(){
   w.assets=cloneData(S.assets||[]);
   w.aportes=cloneData(S.aportes||[]);
   w.proventos=cloneData(S.proventos||[]);
+  w.rfEvents=normalizeRfEvents(S.rfEvents);
   w.divGoal=Number(S.divGoal)||0;
   w.goals=normalizeGoals(S.goals);
   w.learnMeta=(S.learnMeta && typeof S.learnMeta==='object') ? cloneData(S.learnMeta) : {};
@@ -3820,7 +3859,7 @@ function save(){
     syncWalletFromState();
     localStorage.setItem(STOR, JSON.stringify({
       wallets:S.wallets, activeWalletId:S.activeWalletId,
-      assets:S.assets, aportes:S.aportes, proventos:S.proventos,
+      assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents,
       tab:S.tab, divGoal:S.divGoal, goals:S.goals,
       hideValues:S.hideValues,
       apHistoryOpen:S.apHistoryOpen, apSearch:S.apSearch,
@@ -3911,6 +3950,7 @@ function load(){
       if(Array.isArray(d.assets))    S.assets    = d.assets;
       if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
       if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+      if(Array.isArray(d.rfEvents))  S.rfEvents  = normalizeRfEvents(d.rfEvents);
     }
     if(d.tab)                       S.tab       = d.tab==='ranking' ? 'ativos' : d.tab;       // ← FIX: restaura tab
     if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
@@ -3947,6 +3987,7 @@ function load(){
         const d=JSON.parse(localStorage.getItem(k)||'{}');
         if(Array.isArray(d.aportes) && d.aportes.length){
           S.aportes=d.aportes; S.assets=d.assets||[]; S.proventos=d.proventos||[];
+          S.rfEvents=normalizeRfEvents(d.rfEvents);
           if(d.divGoal) S.divGoal=Number(d.divGoal)||0;
           if(d.dashPeriod !== undefined) S.dashPeriod=Math.max(3, Number(d.dashPeriod)||12);
           if(d.dashType !== undefined) S.dashType=String(d.dashType||'all');
@@ -3964,6 +4005,8 @@ function load(){
   }
   ensureWallets();
   syncWalletFromState();
+  S.rfEvents=normalizeRfEvents(S.rfEvents);
+  if(ensureRfEventSeeds()>0) save();
   if(!S.goals || typeof S.goals!=='object') S.goals=normalizeGoals();
   else S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
@@ -4146,7 +4189,8 @@ function cloudSnapshotSignatureFromData(d){
       String(w?.name||''),
       Array.isArray(w?.assets)?w.assets.length:0,
       Array.isArray(w?.aportes)?w.aportes.length:0,
-      Array.isArray(w?.proventos)?w.proventos.length:0
+      Array.isArray(w?.proventos)?w.proventos.length:0,
+      Array.isArray(w?.rfEvents)?w.rfEvents.length:0
     ]) : [],
     activeWalletId:String(d?.activeWalletId||''),
     assets:Array.isArray(d?.assets) ? d.assets.map(a=>[
@@ -4174,6 +4218,17 @@ function cloudSnapshotSignatureFromData(d){
       String(p?.date||''),
       String(p?.value||'')
     ]) : [],
+    rfEvents:Array.isArray(d?.rfEvents) ? d.rfEvents.map(ev=>[
+      String(ev?.id||''),
+      String(ev?.assetId||''),
+      String(ev?.ticker||''),
+      String(ev?.date||''),
+      String(ev?.type||''),
+      String(ev?.grossValue||''),
+      String(ev?.ir||''),
+      String(ev?.iof||''),
+      String(ev?.netValue||'')
+    ]) : [],
     divGoal:Number(d?.divGoal)||0,
     goals:JSON.stringify(normalizeGoals(d?.goals||[])),
     dashboard:[Number(d?.dashboard?.period)||0,String(d?.dashboard?.type||'')],
@@ -4188,6 +4243,7 @@ function cloudSnapshotSignature(){
     assets:S.assets,
     aportes:S.aportes,
     proventos:S.proventos,
+    rfEvents:S.rfEvents,
     divGoal:S.divGoal,
     goals:S.goals,
     dashboard:{period:S.dashPeriod,type:S.dashType},
@@ -4212,12 +4268,13 @@ function logCloudSyncError(error, context='uploadLocalToCloud'){
     pending:!!FB.pendingCloudSave,
     accessAllowed:!!FB.access.allowed,
     cloudLoaded:!!FB.cloudLoaded,
-    payloadSummary:{
-      wallets:Array.isArray(payload.wallets)?payload.wallets.length:0,
-      assets:Array.isArray(payload.assets)?payload.assets.length:0,
-      aportes:Array.isArray(payload.aportes)?payload.aportes.length:0,
-      proventos:Array.isArray(payload.proventos)?payload.proventos.length:0,
-    },
+      payloadSummary:{
+        wallets:Array.isArray(payload.wallets)?payload.wallets.length:0,
+        assets:Array.isArray(payload.assets)?payload.assets.length:0,
+        aportes:Array.isArray(payload.aportes)?payload.aportes.length:0,
+        proventos:Array.isArray(payload.proventos)?payload.proventos.length:0,
+        rfEvents:Array.isArray(payload.rfEvents)?payload.rfEvents.length:0,
+      },
     stack:error?.stack||null
   });
 }
@@ -4237,6 +4294,7 @@ function cloudPayload(){
     assets:S.assets,
     aportes:S.aportes,
     proventos:S.proventos,
+    rfEvents:S.rfEvents,
     divGoal:Number(S.divGoal)||0,
     goals:S.goals,
     learnMeta:S.learnMeta,
@@ -4250,6 +4308,7 @@ function cloudPayload(){
     assets:Array.isArray(payload?.assets)?payload.assets.length:0,
     aportes:Array.isArray(payload?.aportes)?payload.aportes.length:0,
     proventos:Array.isArray(payload?.proventos)?payload.proventos.length:0,
+    rfEvents:Array.isArray(payload?.rfEvents)?payload.rfEvents.length:0,
     hasSettings:Object.prototype.hasOwnProperty.call(payload||{}, 'settings')
   });
   return payload;
@@ -4279,6 +4338,7 @@ function applyCloudData(d){
     if(Array.isArray(d.assets))    S.assets    = d.assets;
     if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
     if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+    if(Array.isArray(d.rfEvents))  S.rfEvents  = normalizeRfEvents(d.rfEvents);
     if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
     if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
     if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
@@ -4303,7 +4363,7 @@ function applyCloudData(d){
   rebuildLearnMeta();
   try{
     syncWalletFromState();
-    localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
+    localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
     localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
   }catch(e){}
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -4825,6 +4885,7 @@ function backupCurrentState(){
     assets: cloneData(S.assets||[]),
     aportes: cloneData(S.aportes||[]),
     proventos: cloneData(S.proventos||[]),
+    rfEvents: cloneData(S.rfEvents||[]),
     divGoal: Number(S.divGoal)||0,
     goals: normalizeGoals(S.goals),
     hideValues: !!S.hideValues,
@@ -4866,7 +4927,7 @@ function backupFromRaw(raw){
   const meta=raw.meta && typeof raw.meta==='object' ? raw.meta : null;
   const data=raw.data && typeof raw.data==='object' ? raw.data : raw;
   const storage=raw.storage && typeof raw.storage==='object' ? raw.storage : null;
-  const hasKnown=Array.isArray(data.wallets) || Array.isArray(data.assets) || Array.isArray(data.aportes) || Array.isArray(data.proventos) || data.goals || data.divGoal!==undefined || data.learnMeta || data.brapiToken!==undefined;
+  const hasKnown=Array.isArray(data.wallets) || Array.isArray(data.assets) || Array.isArray(data.aportes) || Array.isArray(data.proventos) || Array.isArray(data.rfEvents) || data.goals || data.divGoal!==undefined || data.learnMeta || data.brapiToken!==undefined;
   if(!hasKnown && !(meta && /carteira/i.test(String(meta.app||'')))) return null;
   return {meta,data,storage};
 }
@@ -10364,6 +10425,261 @@ function rfManualCode(name, subtype, applicationDate, issuer){
   const raw=[name, subtype, issuer, applicationDate].filter(Boolean).join(' ');
   const code=cleanAssetCode(raw);
   return code || `RF${Date.now()}`;
+}
+const RF_EVENT_TYPE_OPTIONS=[
+  ['juros','Juros / cupom'],
+  ['amortizacao','Amortização'],
+  ['premio','Prêmio'],
+  ['resgate_parcial','Resgate parcial'],
+  ['ir','IR'],
+  ['iof','IOF'],
+  ['outro','Outro']
+];
+const RF_EVENT_SEED_IMPORT_REF='seed-rf-events-pr1';
+const RF_EVENT_SEED_DATA=[
+  {id:'rfevt_movi18_2024_12_16',ticker:'MOVI18',date:'2024-12-16',type:'juros',grossValue:880.80,ir:118.29,iof:0,netValue:762.51,principalDelta:0,source:'Histórico manual XP',note:'DEB MOVIDA - JUN/2029',importRef:RF_EVENT_SEED_IMPORT_REF},
+  {id:'rfevt_movi18_2025_06_16',ticker:'MOVI18',date:'2025-06-16',type:'juros',grossValue:873.48,ir:174.69,iof:0,netValue:698.79,principalDelta:0,source:'Histórico manual XP',note:'DEB MOVIDA - JUN/2029',importRef:RF_EVENT_SEED_IMPORT_REF},
+  {id:'rfevt_movi18_2025_12_15',ticker:'MOVI18',date:'2025-12-15',type:'juros',grossValue:920.10,ir:161.02,iof:0,netValue:759.08,principalDelta:0,source:'Histórico manual XP',note:'DEB MOVIDA - JUN/2029',importRef:RF_EVENT_SEED_IMPORT_REF},
+  {id:'rfevt_movi18_2026_06_15',ticker:'MOVI18',date:'2026-06-15',type:'juros',grossValue:907.17,ir:158.76,iof:0,netValue:748.41,principalDelta:0,source:'Histórico manual XP',note:'DEB MOVIDA - JUN/2029',importRef:RF_EVENT_SEED_IMPORT_REF},
+  {id:'rfevt_cra024004sb_2024_11_18',ticker:'CRA024004SB',date:'2024-11-18',type:'juros',grossValue:586.77,ir:0,iof:0,netValue:586.77,principalDelta:0,source:'Histórico manual XP',note:'CRA JBS - MAI/2039',importRef:RF_EVENT_SEED_IMPORT_REF},
+  {id:'rfevt_cra024004sb_2025_05_15',ticker:'CRA024004SB',date:'2025-05-15',type:'juros',grossValue:601.71,ir:0,iof:0,netValue:601.71,principalDelta:0,source:'Histórico manual XP',note:'CRA JBS - MAI/2039',importRef:RF_EVENT_SEED_IMPORT_REF},
+  {id:'rfevt_cra024004sb_2025_11_17',ticker:'CRA024004SB',date:'2025-11-17',type:'juros',grossValue:665.87,ir:0,iof:0,netValue:665.87,principalDelta:0,source:'Histórico manual XP',note:'CRA JBS - MAI/2039',importRef:RF_EVENT_SEED_IMPORT_REF},
+  {id:'rfevt_cra024004sb_2026_05_15',ticker:'CRA024004SB',date:'2026-05-15',type:'juros',grossValue:633.45,ir:0,iof:0,netValue:633.45,principalDelta:0,source:'Histórico manual XP',note:'CRA JBS - MAI/2039',importRef:RF_EVENT_SEED_IMPORT_REF}
+];
+function normalizeRfEventType(value){
+  const key=rfPosNorm(value).replace(/[^a-z0-9]+/g,' ');
+  if(key.includes('juros') || key.includes('cupom')) return 'juros';
+  if(key.includes('amort')) return 'amortizacao';
+  if(key.includes('premio')) return 'premio';
+  if(key.includes('resgate parcial')) return 'resgate_parcial';
+  if(key==='ir') return 'ir';
+  if(key==='iof') return 'iof';
+  return 'outro';
+}
+function rfEventTypeLabel(value){
+  const type=normalizeRfEventType(value);
+  return RF_EVENT_TYPE_OPTIONS.find(([id])=>id===type)?.[1] || 'Outro';
+}
+function rfAssetEventFallbackId(asset){
+  const name=assetRfName(asset) || String(asset?.name||asset?.product||asset?.ticker||'').trim();
+  const subtype=assetRfSubtype(asset);
+  const appDate=inputDateValue(assetRfApplicationDate(asset));
+  const issuer=String(asset?.fixed_issuer||asset?.issuer||'').trim();
+  return rfManualCode(name, subtype, appDate, issuer);
+}
+function rfAssetEventId(asset){
+  return String(asset?.id||asset?.assetId||asset?.rf_asset_id||rfAssetEventFallbackId(asset)||'').trim();
+}
+function rfAssetEventTicker(asset){
+  return cleanAssetCode(String(asset?.ticker||'').trim()).toUpperCase();
+}
+function rfEventNumber(value){
+  const num=Number(value);
+  return Number.isFinite(num) ? Number(num.toFixed(2)) : 0;
+}
+function rfEventDuplicateKey(event){
+  const ev=event&&typeof event==='object' ? event : {};
+  const assetKey=String(ev.assetId||'').trim() || cleanAssetCode(String(ev.ticker||'')).toUpperCase();
+  return [
+    inputDateValue(ev.date||''),
+    assetKey,
+    normalizeRfEventType(ev.type||''),
+    rfEventNumber(ev.grossValue).toFixed(2),
+    rfEventNumber(ev.ir).toFixed(2),
+    rfEventNumber(ev.iof).toFixed(2),
+    rfEventNumber(ev.netValue).toFixed(2)
+  ].join('|');
+}
+function normalizeRfEventEntry(event){
+  const raw=(event&&typeof event==='object') ? event : {};
+  const assetId=String(raw.assetId||raw.asset_id||'').trim();
+  const ticker=cleanAssetCode(String(raw.ticker||'').trim()).toUpperCase();
+  const grossValue=rfEventNumber(raw.grossValue ?? raw.gross ?? raw.value ?? 0);
+  const ir=rfEventNumber(raw.ir ?? raw.irValue ?? 0);
+  const iof=rfEventNumber(raw.iof ?? raw.iofValue ?? 0);
+  const netFallback=grossValue-ir-iof;
+  const netValue=rfEventNumber(raw.netValue ?? raw.net ?? netFallback);
+  const normalized={
+    id:String(raw.id||'').trim(),
+    assetId,
+    ticker,
+    date:inputDateValue(raw.date||raw.paymentDate||''),
+    type:normalizeRfEventType(raw.type||raw.eventType||'juros'),
+    grossValue,
+    ir,
+    iof,
+    netValue,
+    principalDelta:rfEventNumber(raw.principalDelta ?? raw.principal ?? 0),
+    source:String(raw.source||'Manual').trim()||'Manual',
+    note:String(raw.note||raw.observation||'').trim(),
+    importRef:String(raw.importRef||raw.import_ref||'').trim(),
+    autoKey:String(raw.autoKey||'').trim()
+  };
+  if(!normalized.autoKey) normalized.autoKey=rfEventDuplicateKey(normalized);
+  if(!normalized.id) normalized.id=`rf_${normalized.autoKey}`;
+  return normalized;
+}
+function normalizeRfEvents(list){
+  const map=new Map();
+  (Array.isArray(list)?list:[]).forEach(item=>{
+    const event=normalizeRfEventEntry(item);
+    const key=event.autoKey || rfEventDuplicateKey(event);
+    if(!key) return;
+    if(!map.has(key)) map.set(key,event);
+  });
+  return [...map.values()].sort((a,b)=>(b.date||'').localeCompare(a.date||'') || a.ticker.localeCompare(b.ticker,'pt-BR') || a.type.localeCompare(b.type,'pt-BR'));
+}
+function getRfAssetByEventId(assetId){
+  const id=String(assetId||'').trim();
+  if(!id) return null;
+  return (S.assets||[]).find(asset=>rfAssetEventId(asset)===id) || null;
+}
+function findRfAssetByEventLink(event){
+  const byId=getRfAssetByEventId(event?.assetId);
+  if(byId) return byId;
+  const ticker=cleanAssetCode(String(event?.ticker||'')).toUpperCase();
+  if(!ticker) return null;
+  return (S.assets||[]).find(asset=>isRendaFixaAsset(asset) && rfAssetEventTicker(asset)===ticker) || null;
+}
+function rfEventsForAsset(asset){
+  const assetId=rfAssetEventId(asset);
+  const ticker=rfAssetEventTicker(asset);
+  return normalizeRfEvents(S.rfEvents||[]).filter(event=>{
+    if(event.assetId && assetId && event.assetId===assetId) return true;
+    return ticker && event.ticker===ticker && (!event.assetId || !getRfAssetByEventId(event.assetId));
+  });
+}
+function rfEventTotals(events){
+  return (Array.isArray(events)?events:[]).reduce((acc,event)=>{
+    acc.grossValue+=rfEventNumber(event.grossValue);
+    acc.ir+=rfEventNumber(event.ir);
+    acc.iof+=rfEventNumber(event.iof);
+    acc.netValue+=rfEventNumber(event.netValue);
+    acc.principalDelta+=rfEventNumber(event.principalDelta);
+    acc.count++;
+    return acc;
+  }, {grossValue:0, ir:0, iof:0, netValue:0, principalDelta:0, count:0});
+}
+function rfEventSeedSummaryForTicker(ticker){
+  const currentTicker=cleanAssetCode(String(ticker||'')).toUpperCase();
+  const rows=RF_EVENT_SEED_DATA.filter(event=>cleanAssetCode(String(event.ticker||'')).toUpperCase()===currentTicker);
+  return rfEventTotals(rows);
+}
+function ensureRfEventSeeds(){
+  const current=normalizeRfEvents(S.rfEvents||[]);
+  const known=new Set(current.map(event=>event.autoKey||rfEventDuplicateKey(event)));
+  const additions=[];
+  RF_EVENT_SEED_DATA.forEach(seed=>{
+    const asset=(S.assets||[]).find(item=>isRendaFixaAsset(item) && rfAssetEventTicker(item)===seed.ticker);
+    if(!asset) return;
+    const next=normalizeRfEventEntry({...seed, assetId:rfAssetEventId(asset), ticker:rfAssetEventTicker(asset)});
+    const key=next.autoKey || rfEventDuplicateKey(next);
+    if(known.has(key)) return;
+    known.add(key);
+    additions.push(next);
+  });
+  if(additions.length){
+    S.rfEvents=normalizeRfEvents([...(S.rfEvents||[]), ...additions]);
+  }else if((S.rfEvents||[]).length!==current.length){
+    S.rfEvents=current;
+  }
+  return additions.length;
+}
+function rfEventDraftForAsset(asset, event=null){
+  const current=event ? normalizeRfEventEntry(event) : null;
+  return {
+    id:current?.id||'',
+    assetId:rfAssetEventId(asset),
+    ticker:rfAssetEventTicker(asset),
+    date:current?.date||inputDateValue(new Date()),
+    type:current?.type||'juros',
+    grossValue:current ? moneyInput(current.grossValue) : '',
+    ir:current ? moneyInput(current.ir) : '0,00',
+    iof:current ? moneyInput(current.iof) : '0,00',
+    netValue:current ? moneyInput(current.netValue) : '',
+    principalDelta:current ? moneyInput(current.principalDelta) : '0,00',
+    source:current?.source||'Manual',
+    note:current?.note||'',
+    importRef:current?.importRef||''
+  };
+}
+function openRfEventEditor(assetId, eventId=''){
+  const asset=getRfAssetByEventId(assetId);
+  if(!asset) return;
+  const event=(S.rfEvents||[]).find(item=>String(item.id||'')===String(eventId||'')) || null;
+  S.rfEventEditor={assetId:rfAssetEventId(asset), eventId:String(eventId||''), draft:rfEventDraftForAsset(asset, event)};
+  render();
+}
+function closeRfEventEditor(){
+  S.rfEventEditor=null;
+  render();
+}
+function setRfEventEditorField(field, value){
+  if(!S.rfEventEditor?.draft) return;
+  S.rfEventEditor={
+    ...S.rfEventEditor,
+    draft:{
+      ...S.rfEventEditor.draft,
+      [field]:String(value??'')
+    }
+  };
+}
+function saveRfEventEditor(){
+  if(!S.rfEventEditor?.draft) return;
+  const asset=getRfAssetByEventId(S.rfEventEditor.assetId);
+  if(!asset) return;
+  const draft=S.rfEventEditor.draft;
+  const grossValue=parseNum(draft.grossValue);
+  const ir=parseNum(draft.ir);
+  const iof=parseNum(draft.iof);
+  const principalDelta=parseNum(draft.principalDelta);
+  const netValue=draft.netValue.trim()==='' ? grossValue-ir-iof : parseNum(draft.netValue);
+  if(!draft.date){ alert('Preencha a data do evento.'); return; }
+  if(grossValue<=0 && netValue<=0 && principalDelta===0){ alert('Preencha ao menos valor bruto, valor líquido ou principal.'); return; }
+  const next=normalizeRfEventEntry({
+    id:draft.id||'',
+    assetId:rfAssetEventId(asset),
+    ticker:rfAssetEventTicker(asset),
+    date:draft.date,
+    type:draft.type,
+    grossValue,
+    ir,
+    iof,
+    netValue,
+    principalDelta,
+    source:draft.source||'Manual',
+    note:draft.note||'',
+    importRef:draft.importRef||''
+  });
+  const duplicate=(S.rfEvents||[]).map(normalizeRfEventEntry).find(event=>{
+    if(String(event.id||'')===String(next.id||'')) return false;
+    return (event.autoKey||rfEventDuplicateKey(event))===(next.autoKey||rfEventDuplicateKey(next));
+  });
+  if(duplicate){
+    alert('Já existe um evento com a mesma data, ativo, tipo e valores.');
+    return;
+  }
+  const list=(S.rfEvents||[]).map(normalizeRfEventEntry);
+  const index=list.findIndex(event=>String(event.id||'')===String(next.id||''));
+  if(index>=0) list[index]=next;
+  else list.unshift(next);
+  S.rfEvents=normalizeRfEvents(list);
+  S.rfEventEditor=null;
+  rememberScroll();
+  save();
+  toast('✅ Evento de renda fixa salvo.');
+  render();
+}
+function removeRfEvent(eventId){
+  const event=(S.rfEvents||[]).map(normalizeRfEventEntry).find(item=>String(item.id||'')===String(eventId||''));
+  if(!event) return;
+  if(!confirm(`Remover o evento de ${event.date||'—'} no valor líquido de ${fmt(event.netValue)}?`)) return;
+  S.rfEvents=(S.rfEvents||[]).filter(item=>String(item.id||'')!==String(eventId||''));
+  if(S.rfEventEditor?.eventId===String(eventId||'')) S.rfEventEditor=null;
+  rememberScroll();
+  save();
+  toast('🗑️ Evento de renda fixa removido.');
+  render();
 }
 function parseNum(v){
   if(v==null) return 0;
@@ -17022,6 +17338,117 @@ function rfIntelligenceSnapshot(){
     reading
   };
 }
+function rfEventStatusBadge(row, totals){
+  const seed=rfEventSeedSummaryForTicker(row.ticker);
+  if(seed.count<=0) return `<span class="rf-event-badge info">${totals.count} evento(s)</span>`;
+  const matchesCount=totals.count===seed.count;
+  const matchesGross=Math.abs(totals.grossValue-seed.grossValue)<0.01;
+  const matchesIr=Math.abs(totals.ir-seed.ir)<0.01;
+  const matchesNet=Math.abs(totals.netValue-seed.netValue)<0.01;
+  if(matchesCount && matchesGross && matchesIr && matchesNet){
+    return `<span class="rf-event-badge ok">Seed conferido</span>`;
+  }
+  return `<span class="rf-event-badge warn">${totals.count}/${seed.count} eventos</span>`;
+}
+function rfEventTypeOptionsHtml(selected){
+  return RF_EVENT_TYPE_OPTIONS.map(([value,label])=>`<option value="${value}" ${normalizeRfEventType(selected)===value?'selected':''}>${esc(label)}</option>`).join('');
+}
+function rfEventEditorHtml(asset){
+  if(!S.rfEventEditor || S.rfEventEditor.assetId!==rfAssetEventId(asset)) return '';
+  const draft=S.rfEventEditor.draft||rfEventDraftForAsset(asset);
+  const editing=!!String(S.rfEventEditor.eventId||'').trim();
+  return `<div class="rf-event-editor">
+    <div class="rf-panel-head" style="margin-bottom:8px">
+      <div><div class="rf-panel-title">${editing?'Editar evento':'Novo evento'}</div><div class="rf-panel-sub">Ledger auditável por ativo. Este PR ainda não altera cálculos consolidados.</div></div>
+      <div class="rf-panel-badge">${esc(rfAssetEventTicker(asset)||'RF')}</div>
+    </div>
+    <div class="rf-event-editor-grid">
+      <div><div class="fl">Data</div><input type="date" value="${esc(draft.date||'')}" onchange="setRfEventEditorField('date', this.value)"></div>
+      <div><div class="fl">Tipo</div><select onchange="setRfEventEditorField('type', this.value)">${rfEventTypeOptionsHtml(draft.type)}</select></div>
+      <div><div class="fl">Valor bruto</div><input type="text" inputmode="decimal" value="${esc(draft.grossValue||'')}" onchange="setRfEventEditorField('grossValue', this.value)" placeholder="ex: 880,80"></div>
+      <div><div class="fl">Valor líquido</div><input type="text" inputmode="decimal" value="${esc(draft.netValue||'')}" onchange="setRfEventEditorField('netValue', this.value)" placeholder="deixe vazio para calcular"></div>
+      <div><div class="fl">IR</div><input type="text" inputmode="decimal" value="${esc(draft.ir||'0,00')}" onchange="setRfEventEditorField('ir', this.value)"></div>
+      <div><div class="fl">IOF</div><input type="text" inputmode="decimal" value="${esc(draft.iof||'0,00')}" onchange="setRfEventEditorField('iof', this.value)"></div>
+      <div><div class="fl">Principal</div><input type="text" inputmode="decimal" value="${esc(draft.principalDelta||'0,00')}" onchange="setRfEventEditorField('principalDelta', this.value)" placeholder="0,00"></div>
+      <div><div class="fl">Fonte</div><input type="text" value="${esc(draft.source||'Manual')}" onchange="setRfEventEditorField('source', this.value)" placeholder="ex: Histórico manual XP"></div>
+      <div style="grid-column:1 / -1"><div class="fl">Observação</div><input type="text" value="${esc(draft.note||'')}" onchange="setRfEventEditorField('note', this.value)" placeholder="ex: cupom semestral"></div>
+      <div style="grid-column:1 / -1"><div class="fl">Import ref</div><input type="text" value="${esc(draft.importRef||'')}" onchange="setRfEventEditorField('importRef', this.value)" placeholder="opcional"></div>
+    </div>
+    <div class="rf-event-editor-actions">
+      <button class="btn bgh" onclick="closeRfEventEditor()">Cancelar</button>
+      <button class="btn bp" onclick="saveRfEventEditor()">Salvar evento</button>
+    </div>
+  </div>`;
+}
+function rfEventHistoryCards(rows){
+  if(!rows.length) return '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+  return `<div class="rf-events-stack">${rows.map(row=>{
+    const asset=row.asset;
+    const events=rfEventsForAsset(asset);
+    const totals=rfEventTotals(events);
+    const seed=rfEventSeedSummaryForTicker(row.ticker);
+    const expectedNote=seed.count>0
+      ? `Esperado para conferência: bruto ${fmt(seed.grossValue)} · IR ${fmt(seed.ir)} · líquido ${fmt(seed.netValue)}.`
+      : 'Sem seed pré-cadastrado para este título.';
+    const eventRows=events.length ? events.map(event=>`
+      <tr>
+        <td>${esc(reportDateText(event.date)||'—')}</td>
+        <td>${esc(rfEventTypeLabel(event.type))}</td>
+        <td class="num">${fmt(event.grossValue)}</td>
+        <td class="num">${fmt(event.ir)}</td>
+        <td class="num">${fmt(event.iof)}</td>
+        <td class="num">${fmt(event.netValue)}</td>
+        <td class="num">${fmt(event.principalDelta)}</td>
+        <td>${esc(event.source||'—')}</td>
+        <td>${esc(event.note||'—')}</td>
+        <td class="actions">
+          <button class="bi" onclick='openRfEventEditor(${JSON.stringify(rfAssetEventId(asset))}, ${JSON.stringify(event.id)})' title="Editar evento">✏️</button>
+          <button class="bdi" onclick='removeRfEvent(${JSON.stringify(event.id)})' title="Excluir evento">🗑️</button>
+        </td>
+      </tr>`).join('')
+      : `<tr><td colspan="10" style="padding:14px;text-align:center;color:#7489a4">Nenhum evento auditável registrado para este ativo.</td></tr>`;
+    return `<div class="rf-event-card">
+      <div class="rf-event-head">
+        <div>
+          <div class="rf-event-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
+          <div class="rf-event-sub">${esc(row.category)} · ${esc(row.indexer)}${row.rate&&row.rate!=='taxa não informada'?` · ${esc(row.rate)}`:''}</div>
+        </div>
+        <div class="rf-event-actions">
+          ${rfEventStatusBadge(row, totals)}
+          <button class="btn bgh" onclick='openRfEventEditor(${JSON.stringify(rfAssetEventId(asset))})'>+ Evento</button>
+        </div>
+      </div>
+      <div class="rf-event-summary">
+        <div class="rf-event-kpi info"><div class="rf-event-kpi-label">Bruto</div><div class="rf-event-kpi-value">${fmt(totals.grossValue)}</div><div class="rf-event-kpi-sub">${totals.count} evento(s)</div></div>
+        <div class="rf-event-kpi warn"><div class="rf-event-kpi-label">IR</div><div class="rf-event-kpi-value">${fmt(totals.ir)}</div><div class="rf-event-kpi-sub">Retido nos eventos</div></div>
+        <div class="rf-event-kpi warn"><div class="rf-event-kpi-label">IOF</div><div class="rf-event-kpi-value">${fmt(totals.iof)}</div><div class="rf-event-kpi-sub">Cobrança registrada</div></div>
+        <div class="rf-event-kpi good"><div class="rf-event-kpi-label">Líquido</div><div class="rf-event-kpi-value">${fmt(totals.netValue)}</div><div class="rf-event-kpi-sub">Recebido no caixa</div></div>
+        <div class="rf-event-kpi"><div class="rf-event-kpi-label">Principal</div><div class="rf-event-kpi-value">${fmt(totals.principalDelta)}</div><div class="rf-event-kpi-sub">Ainda não entra no cálculo atual</div></div>
+      </div>
+      <div class="rf-event-sub">${esc(expectedNote)}</div>
+      ${rfEventEditorHtml(asset)}
+      <div class="rf-event-table-wrap">
+        <table class="rf-event-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th class="num">Bruto</th>
+              <th class="num">IR</th>
+              <th class="num">IOF</th>
+              <th class="num">Líquido</th>
+              <th class="num">Principal</th>
+              <th>Fonte</th>
+              <th>Observação</th>
+              <th class="actions"></th>
+            </tr>
+          </thead>
+          <tbody>${eventRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
 function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
   const count=data.assets.length;
@@ -17071,6 +17498,7 @@ function rendaFixaTab(){
         <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>
       </div>
     </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+  const eventCards=rfEventHistoryCards(data.tableRows);
   const tableRows=data.tableRows.length ? data.tableRows.map(row=>`
     <tr>
       <td class="rf-strong">${esc(row.ticker)}</td>
@@ -17160,6 +17588,18 @@ function rendaFixaTab(){
             <tbody>${tableRows}</tbody>
           </table>
         </div>
+      </div>
+    </details>
+    <details class="sec" style="margin-top:2px" open>
+      <summary>
+        <div>
+          <div class="sec-title">Histórico auditável por ativo</div>
+          <div class="sec-meta">ledger de eventos de renda fixa sem alterar ainda os cálculos consolidados</div>
+        </div>
+        <div class="sec-meta">${data.tableRows.length} títulos · clique para recolher</div>
+      </summary>
+      <div class="sec-body">
+        ${eventCards}
       </div>
     </details>
   </div>`;
@@ -20013,6 +20453,7 @@ function svA(){
   rememberScroll();
   S.showA=false; S.editId=null; S._fa=null;
   if(editedAsset) learnTickerMeta(editedAsset.ticker, ty, se, true);
+  if(isRF) ensureRfEventSeeds();
   save(); toast('✅ Ativo atualizado!'); render();
   scheduleAutoProventosGratis('asset-edit');
 }
@@ -20128,6 +20569,7 @@ function svP(){
     rememberScroll();
     S.showP=false; S.editPId=null; S._fp=null;
     syncAssetsFromAportes(false);
+    ensureRfEventSeeds();
     toast(`✅ ${wasEdit?'Edição':'Lançamento'} de ${rfName} registrado!`);
     fetchQuotes(false);
     scheduleAutoProventosGratis('aporte-rf');
