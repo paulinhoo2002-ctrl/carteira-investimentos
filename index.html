@@ -36,22 +36,22 @@
 }
 html[data-theme="light"]{
   color-scheme:light;
-  --bg:#eef4fa;
-  --text:#172033;
-  --muted:#516174;
+  --bg:#e9f0f7;
+  --text:#111827;
+  --muted:#475569;
   --panel:#ffffff;
-  --panel-2:#fbfcfe;
+  --panel-2:#f8fafc;
   --card:#ffffff;
-  --surface:#f5f8fc;
-  --surface-2:#ecf2f8;
-  --border:#ced9e6;
-  --primary:#4353ea;
-  --success:#15803d;
-  --danger:#dc2626;
-  --warning:#b7791f;
-  --shadow:0 18px 45px rgba(15,23,42,.1);
-  --scroll-track:#d7e0eb;
-  --scroll-thumb:#8fa4ba;
+  --surface:#f3f6fa;
+  --surface-2:#e8eef5;
+  --border:#bfcddd;
+  --primary:#4057d6;
+  --success:#137333;
+  --danger:#c62828;
+  --warning:#9a6700;
+  --shadow:0 10px 30px rgba(15,23,42,.10);
+  --scroll-track:#d3deea;
+  --scroll-thumb:#8097b0;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:14px;overflow-x:hidden;transition:background .2s ease,color .2s ease}
@@ -2784,14 +2784,22 @@ html[data-theme="light"] .bdi{
   border-color:#f5c2c2!important;
 }
 html[data-theme="light"] input,
-html[data-theme="light"] select{
+html[data-theme="light"] select,
+html[data-theme="light"] textarea{
   background:#fff!important;
   border-color:var(--border)!important;
   color:var(--text)!important;
   box-shadow:none!important;
 }
-html[data-theme="light"] input::placeholder{color:#94a3b8}
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder{color:var(--muted)!important}
 html[data-theme="light"] select option{background:#fff;color:var(--text)}
+html[data-theme="light"] input:focus,
+html[data-theme="light"] select:focus,
+html[data-theme="light"] textarea:focus{
+  border-color:rgba(64,87,214,.42)!important;
+  box-shadow:0 0 0 3px rgba(64,87,214,.14)!important;
+}
 html[data-theme="light"] th{
   background:#f4f7fb!important;
   color:#607089!important;
@@ -2816,7 +2824,33 @@ html[data-theme="light"] .rf-table .rf-strong,
 html[data-theme="light"] .b3-conference-card .value,
 html[data-theme="light"] .pdf-report-row-main,
 html[data-theme="light"] .pdf-report-value,
-html[data-theme="light"] .pdf-report-title{
+html[data-theme="light"] .pdf-report-title,
+html[data-theme="light"] .analysis-item-ticker,
+html[data-theme="light"] .analysis-ranking-ticker,
+html[data-theme="light"] .analysis-ranking-value,
+html[data-theme="light"] .analysis-summary-card .analysis-summary-value,
+html[data-theme="light"] .asset-premium-kpi-value,
+html[data-theme="light"] .asset-premium-section-title,
+html[data-theme="light"] .asset-performance-name,
+html[data-theme="light"] .asset-insight-title,
+html[data-theme="light"] .rebalance-title,
+html[data-theme="light"] .rebalance-summary-value,
+html[data-theme="light"] .irpf-section-title,
+html[data-theme="light"] .irpf-table .irpf-strong,
+html[data-theme="light"] .patrimony-panel-title,
+html[data-theme="light"] .patrimony-month-label,
+html[data-theme="light"] .patrimony-insight-value,
+html[data-theme="light"] .patrimony-composition-value,
+html[data-theme="light"] .note-title h3,
+html[data-theme="light"] .nota-review-group-title,
+html[data-theme="light"] .b3-review-group-title,
+html[data-theme="light"] .mov-review-group-title,
+html[data-theme="light"] .nota-review-line .ticker,
+html[data-theme="light"] .nota-review-line .kind,
+html[data-theme="light"] .b3-review-line .ticker,
+html[data-theme="light"] .b3-review-line .kind,
+html[data-theme="light"] .mov-review-line .ticker,
+html[data-theme="light"] .mov-review-line .kind{
   color:var(--text)!important;
 }
 html[data-theme="light"] .dashboard-legend-pct,
@@ -2825,7 +2859,17 @@ html[data-theme="light"] .premium-action-signal,
 html[data-theme="light"] .premium-note,
 html[data-theme="light"] .rf-preview-value,
 html[data-theme="light"] .rf-preview-row .premium-row-sub,
-html[data-theme="light"] .passive-goal-progress-meta{
+html[data-theme="light"] .passive-goal-progress-meta,
+html[data-theme="light"] .note-title p,
+html[data-theme="light"] .note-foot .hint,
+html[data-theme="light"] .irpf-table td,
+html[data-theme="light"] .patrimony-composition-note,
+html[data-theme="light"] .patrimony-month-meta,
+html[data-theme="light"] .div-premium-card .subtitle,
+html[data-theme="light"] .div-premium-kpi-label,
+html[data-theme="light"] .div-premium-empty,
+html[data-theme="light"] .passive-goal-card .passive-goal-meta,
+html[data-theme="light"] .passive-goal-card .passive-goal-progress-meta{
   color:var(--muted)!important;
 }
 html[data-theme="light"] .reports-filter button.on{
@@ -2958,6 +3002,18 @@ html[data-theme="light"] .b3-review-line{
   border-color:#dbe3ee!important;
   color:var(--text)!important;
 }
+html[data-theme="light"] .note-head{
+  background:linear-gradient(180deg,#ffffff,#f3f6fa)!important;
+  border-bottom-color:var(--border)!important;
+}
+html[data-theme="light"] .note-table-wrap{
+  background:#ffffff!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .note-foot{
+  background:#ffffff!important;
+  border-top-color:var(--border)!important;
+}
 html[data-theme="light"] #investBottomNav{
   background:rgba(255,255,255,.98)!important;
   border-top-color:var(--border)!important;
@@ -3076,7 +3132,10 @@ html[data-theme="light"] .dividend-query-ticker,
 html[data-theme="light"] .dividend-query-value,
 html[data-theme="light"] .dashboard-legend-name,
 html[data-theme="light"] .perf-ticker,
-html[data-theme="light"] .perf-h{
+html[data-theme="light"] .perf-h,
+html[data-theme="light"] .div-premium-row .title,
+html[data-theme="light"] .div-premium-kpi-value,
+html[data-theme="light"] .div-premium-stat-value{
   color:#1f2f44!important;
 }
 html[data-theme="light"] .dividend-query-row,
@@ -3241,6 +3300,35 @@ html[data-theme="light"] .data-audit-actions .btn.bdi{
   background:#fff5f5!important;
   color:#b91c1c!important;
   border-color:#f5c2c2!important;
+}
+html[data-theme="light"] .analysis-ranking-row,
+html[data-theme="light"] .rebalance-summary-card,
+html[data-theme="light"] .rebalance-study-row,
+html[data-theme="light"] .rebalance-safety,
+html[data-theme="light"] .div-premium-card,
+html[data-theme="light"] .div-premium-row,
+html[data-theme="light"] .div-premium-empty,
+html[data-theme="light"] .patrimony-composition-card{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .analysis-ranking-row:hover,
+html[data-theme="light"] .div-premium-row:hover{
+  background:#f8fbff!important;
+  border-color:#c8d4e2!important;
+}
+html[data-theme="light"] .analysis-ranking-row,
+html[data-theme="light"] .asset-performance-row,
+html[data-theme="light"] .asset-insight-row,
+html[data-theme="light"] .patrimony-month-row,
+html[data-theme="light"] .patrimony-composition-row,
+html[data-theme="light"] .div-premium-row{
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .analysis-ranking-value.mu,
+html[data-theme="light"] .asset-insight-value.mu,
+html[data-theme="light"] .patrimony-panel-sub .mu{
+  color:var(--muted)!important;
 }
 html[data-theme="light"] [style*="background:#0b1020"],
 html[data-theme="light"] [style*="background:#0d1320"],
