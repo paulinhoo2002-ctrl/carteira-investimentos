@@ -13494,15 +13494,35 @@ function rentBenchSeries(length, bench='CDI'){
   }
   return out;
 }
+function rentabilityIncomeRows(){
+  const manualRows=dividendManualRows().map((row,index)=>({
+    id:row.id!=null ? `manual:${row.id}` : `manual-index:${index}`,
+    ticker:String(row.ticker||'').trim().toUpperCase(),
+    date:row.date,
+    _dt:row.dt instanceof Date ? row.dt : parseAnyDate(row.date),
+    value:Number(row.value)||0,
+    assetType:normalizeType(row.assetType||row.assetClass||metaTicker(row.ticker).type||'Ação','Ação'),
+    sourceKind:'manual'
+  }));
+  const rfRows=rfPassiveIncomeRows().map((row,index)=>({
+    id:row.id!=null ? `rf:${row.id}` : `rf-index:${index}`,
+    ticker:String(row.ticker||'').trim().toUpperCase(),
+    date:row.date,
+    _dt:row.dt instanceof Date ? row.dt : parseAnyDate(row.date),
+    value:Number(row.value)||0,
+    assetType:normalizeType(row.assetType||row.assetClass||'Renda Fixa','Renda Fixa'),
+    sourceKind:'rf'
+  }));
+  return [...manualRows, ...rfRows]
+    .filter(row=>row._dt && row.value>0)
+    .sort((a,b)=>a._dt-b._dt || a.ticker.localeCompare(b.ticker,'pt-BR') || a.sourceKind.localeCompare(b.sourceKind,'pt-BR'));
+}
 function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
   const txs=[...S.aportes]
     .map(a=>({...a, _dt: parseAnyDate(a.date)}))
     .filter(a=>a._dt && !isNeutralMovement(a))
     .sort((a,b)=>a._dt-b._dt||((Number(a.id)||0)-(Number(b.id)||0)));
-  const provs=[...S.proventos]
-    .map(p=>({...p, _dt: parseAnyDate(p.date)}))
-    .filter(p=>p._dt&&Number(p.value)>0)
-    .sort((a,b)=>a._dt-b._dt||String(a.ticker||'').localeCompare(String(b.ticker||'')));
+  const provs=rentabilityIncomeRows();
   if(!txs.length && !provs.length){
     return {
       points:[], view:[], benchSeries:[], labels:[], months:[], years:[],
@@ -13559,7 +13579,7 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
     }
     while(provPos<provs.length && provs[provPos]._dt<=monthEnd){
       const p=provs[provPos++];
-      const pType=normalizeType(p.type || metaTicker(cleanAssetCode(p.ticker||'')).type || 'Ação','Ação');
+      const pType=normalizeType(p.assetType || metaTicker(cleanAssetCode(p.ticker||'')).type || 'Ação','Ação');
       if(typeSet && !typeSet.has(pType)) continue;
       provCum += Number(p.value)||0;
     }
