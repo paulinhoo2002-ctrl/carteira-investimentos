@@ -566,6 +566,11 @@ button{cursor:pointer;font-family:inherit}
 .rf-preview-value{text-align:right;font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
 .rf-preview-value .premium-row-sub{font-size:9px;color:#94a3b8;margin-top:2px}
 .rf-events-stack{display:flex;flex-direction:column;gap:10px}
+.rf-history-lead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);margin-bottom:10px}
+.rf-history-title{font-size:12px;font-weight:900;color:var(--text)}
+.rf-history-sub{font-size:10px;line-height:1.45;color:var(--muted);margin-top:2px;max-width:70ch}
+.rf-history-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.rf-history-badge{font-size:9px;font-weight:800;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:4px 8px;white-space:nowrap}
 .rf-event-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:11px;display:flex;flex-direction:column;gap:10px}
 .rf-event-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .rf-event-title{font-size:12px;font-weight:850;color:var(--text)}
@@ -2390,6 +2395,10 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .rf-table{min-width:760px}
 .rf-table th,.rf-table td{padding:6px 8px;font-size:10px}
 .rf-event-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .rf-history-lead{padding:9px 10px;gap:8px}
+  .rf-history-title{font-size:11px}
+  .rf-history-sub{font-size:9px;max-width:none}
+  .rf-history-badge{font-size:8px;padding:3px 6px}
 .rf-event-editor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .rf-event-table{min-width:860px}
   .premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
@@ -17382,7 +17391,9 @@ function rfEventEditorHtml(asset){
 }
 function rfEventHistoryCards(rows){
   if(!rows.length) return '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
-  return `<div class="rf-events-stack">${rows.map(row=>{
+  const totalEvents=rows.reduce((sum,row)=>sum+rfEventsForAsset(row.asset).length,0);
+  const historyLead=`<div class="rf-history-lead"><div><div class="rf-history-title">Ledger auditável por ativo</div><div class="rf-history-sub">Bruto, IR, IOF, líquido e principal por título. O histórico não altera os cálculos consolidados.</div></div><div class="rf-history-badges"><span class="rf-history-badge">${rows.length} título${rows.length===1?'':'s'}</span><span class="rf-history-badge">${totalEvents} evento${totalEvents===1?'':'s'}</span></div></div>`;
+  return `${historyLead}<div class="rf-events-stack">${rows.map(row=>{
     const asset=row.asset;
     const events=rfEventsForAsset(asset);
     const totals=rfEventTotals(events);
