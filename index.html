@@ -267,16 +267,39 @@ button{cursor:pointer;font-family:inherit}
 .prov-audit-status.ok{color:#34d399;border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08)}
 .prov-audit-status.warn{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
 .prov-audit-status.muted{color:#94a3b8;border-color:#2a3649;background:rgba(148,163,184,.06)}
+.prov-review-shell{display:flex;flex-direction:column;gap:8px}
+.prov-review-card{border:1px solid #1f2a3d;border-radius:12px;background:#0b1020;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.prov-review-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.prov-review-title{display:flex;flex-direction:column;gap:4px;min-width:0}
+.prov-review-title strong{font-size:13px;font-weight:900;color:#e2eaf6}
+.prov-review-title span{font-size:11px;color:#94a3b8;line-height:1.4}
+.prov-review-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.prov-review-empty{font-size:12px;color:#94a3b8;line-height:1.45}
+.prov-review-list{display:flex;flex-direction:column;gap:8px}
+.prov-review-item{border:1px solid #1f2a3d;border-radius:12px;background:#0b1020;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.prov-review-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.prov-review-item-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.prov-review-item-title{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.prov-review-item-ticker{font-size:13px;font-weight:900;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prov-review-item-desc{font-size:11px;color:#94a3b8;line-height:1.45}
+.prov-review-item-note{font-size:11px;color:#94a3b8;line-height:1.45}
+.prov-review-item-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.prov-review-flag{font-size:11px;line-height:1.35;color:#f8e7b5;border:1px dashed rgba(251,191,36,.35);background:rgba(251,191,36,.06);border-radius:10px;padding:7px 9px}
+.prov-review-flag strong{color:#fbbf24}
 @media(max-width:900px){
   .prov-audit-filters{grid-template-columns:1fr 1fr}
   .prov-audit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .prov-audit-kpi{min-height:66px}
+  .prov-review-head{flex-direction:column;align-items:flex-start}
 }
 @media(max-width:640px){
   .prov-audit-filters{grid-template-columns:1fr}
   .prov-audit-kpis{grid-template-columns:1fr 1fr;gap:7px}
   .prov-audit-kpi .cv{font-size:15px}
   .prov-audit-table{min-width:1240px}
+  .prov-review-item-head{flex-direction:column;align-items:flex-start}
+  .prov-review-item-actions{flex-direction:column;align-items:stretch}
+  .prov-review-item-actions .btn{width:100%}
 }
 @media(max-width:900px){
   .analysis-grid{grid-template-columns:1fr}
@@ -3625,6 +3648,7 @@ let S = {
   dividendQueryMonth:'',
   dividendQueryType:'all',
   dividendQueryTicker:'',
+  proventoReviewOpen:false,
   proventoAudit:{month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]},
   mobileMenuOpen:false,
   mobileTopMenuOpen:false,
@@ -11841,6 +11865,78 @@ function proventoAuditBuildRows(){
   };
   return {state, all, filteredBase, rows:visibleRows, summary};
 }
+function proventoConciliationCandidateScore(manualRow, rfRow){
+  if(!manualRow || !rfRow) return 0;
+  let score=0;
+  const manualTicker=String(manualRow.ticker||'').trim().toUpperCase();
+  const rfTicker=String(rfRow.ticker||'').trim().toUpperCase();
+  if(manualTicker && rfTicker){
+    if(manualTicker===rfTicker) score+=4;
+    else if(manualTicker.includes(rfTicker) || rfTicker.includes(manualTicker)) score+=2;
+  }
+  const manualValue=Number(manualRow.value)||0;
+  const rfValue=Number(rfRow.value)||0;
+  const valueDiff=Math.abs(manualValue-rfValue);
+  const valueBase=Math.max(manualValue, rfValue, 1);
+  const valuePct=valueDiff/valueBase;
+  if(valueDiff<0.01) score+=4;
+  else if(valuePct<=0.01) score+=3;
+  else if(valuePct<=0.03) score+=2;
+  const manualDate=parseAnyDate(manualRow.date || manualRow.dateKey || manualRow.raw?.date);
+  const rfDate=parseAnyDate(rfRow.date || rfRow.raw?.date);
+  if(manualDate && rfDate){
+    const diffDays=Math.abs((manualDate-rfDate)/86400000);
+    if(diffDays===0) score+=4;
+    else if(diffDays<=3) score+=3;
+    else if(diffDays<=10) score+=1;
+  }
+  const manualText=rfPosNorm(`${manualRow.name||''} ${manualRow.note||''} ${manualRow.source||''} ${manualRow.eventType||''}`);
+  const rfText=rfPosNorm(`${rfRow.name||''} ${rfRow.note||''} ${rfRow.type||''}`);
+  if(manualText && rfText && (manualText.includes(rfText) || rfText.includes(manualText))) score+=1;
+  return score;
+}
+function proventoConciliationBuildRows(){
+  const rfMap=rfEventByIdMap();
+  const manualRows=dividendManualRows(rfMap);
+  const rfRows=rfPassiveIncomeRows();
+  const rows=manualRows.map(row=>{
+    const candidate=(row.rfLinkValid || row.rfLinkBroken) ? null : rfRows
+      .filter(r=>String(r.id||'').trim())
+      .map(r=>({row:r, score:proventoConciliationCandidateScore(row, r)}))
+      .sort((a,b)=>b.score-a.score || (b.row.date||'').localeCompare(a.row.date||'') || a.row.ticker.localeCompare(b.row.ticker,'pt-BR'))[0] || null;
+    const candidateRow=candidate && candidate.score>=6 ? candidate.row : null;
+    const candidateScore=candidate && candidate.score>=6 ? candidate.score : 0;
+    const group=row.rfLinkValid ? 'linked' : row.rfLinkBroken ? 'broken' : candidateRow ? 'possible' : 'unlinked';
+    const candidateNote=candidateRow ? `Possível duplicidade — revisão manual necessária. Candidato RF ${candidateRow.ticker||'---'} em ${candidateRow.date||'---'} por ${fmt(candidateRow.value)}.` : '';
+    return {
+      ...row,
+      rfCandidate:candidateRow,
+      rfCandidateScore:candidateScore,
+      conciliationGroup:group,
+      conciliationNote:row.rfLinkValid
+        ? 'Já contabilizado em Renda Fixa'
+        : row.rfLinkBroken
+          ? `Vínculo de renda fixa não encontrado${row.sourceEventId ? `. sourceEventId ${row.sourceEventId} não existe em S.rfEvents.` : '.'}`
+          : candidateRow
+            ? candidateNote
+            : 'Sem vínculo RF. O lançamento continua contando normalmente.',
+      conciliationLabel:row.rfLinkValid ? 'Vinculado corretamente' : row.rfLinkBroken ? 'Vínculo quebrado' : candidateRow ? 'Possível duplicidade' : 'Sem vínculo',
+      conciliationTone:row.rfLinkValid ? 'ok' : row.rfLinkBroken || candidateRow ? 'warn' : 'muted'
+    };
+  });
+  const summary={
+    pending:rows.filter(r=>r.conciliationGroup==='broken' || r.conciliationGroup==='possible').length,
+    quebrados:rows.filter(r=>r.conciliationGroup==='broken').length,
+    possiveis:rows.filter(r=>r.conciliationGroup==='possible').length
+  };
+  const order=['broken','possible'];
+  const sortRows=(list)=>list.slice().sort((a,b)=>{
+    const ar=order.indexOf(a.conciliationGroup);
+    const br=order.indexOf(b.conciliationGroup);
+    return ar-br || (b.dateKey||'').localeCompare(a.dateKey||'') || a.ticker.localeCompare(b.ticker,'pt-BR') || b.value-a.value;
+  });
+  return {rows:sortRows(rows.filter(r=>r.conciliationGroup==='broken' || r.conciliationGroup==='possible')), summary};
+}
 function setProventoAuditMonth(value){
   const state=proventoAuditEnsureState();
   state.month=String(value||'');
@@ -11854,6 +11950,10 @@ function setProventoAuditEventType(value){
 function setProventoAuditTicker(value){
   const state=proventoAuditEnsureState();
   state.ticker=String(value||'');
+  render();
+}
+function toggleProventoReviewOpen(){
+  S.proventoReviewOpen=!S.proventoReviewOpen;
   render();
 }
 function toggleProventoAuditOnlyDuplicates(){
@@ -12001,7 +12101,7 @@ function renderProventoRfLinkModal(){
   const rows=events.length ? events.map(r=>{
     const score=proventoRfLinkCandidateScore(row,r);
     const linkedCount=linkCounts.get(String(r.id||''))||0;
-    const hint=score>=4 ? 'Possivel candidato' : score>0 ? 'Semelhanca parcial' : 'Conferir manualmente';
+    const hint=score>=4 ? 'Possível duplicidade — revisão manual necessária' : score>0 ? 'Semelhança parcial' : 'Conferir manualmente';
     return `<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #1f2a3d;border-radius:12px;padding:10px;background:#0b1020">
       <div style="min-width:0">
         <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px">
@@ -12079,6 +12179,58 @@ function renderProventoRfLinkAuditPanel(){
       <div style="display:flex;flex-direction:column;gap:8px">${body}</div>
     </div>
   </details>`;
+}
+function renderProventoRfLinkAuditPanel(){
+  const audit=proventoConciliationBuildRows();
+  const open=!!S.proventoReviewOpen;
+  const body=audit.rows.length ? audit.rows.map(row=>{
+    const actionHtml=row.conciliationGroup==='broken'
+      ? `<button class="btn bgh" style="min-height:34px;padding:7px 10px;font-size:11px" onclick="unlinkProventoRfEvent(${JSON.stringify(row.auditId)})">Desfazer vínculo</button>`
+      : `<button class="btn bgh" style="min-height:34px;padding:7px 10px;font-size:11px" onclick="openProventoRfLinkModal(${JSON.stringify(row.auditId)})">Vincular com renda fixa</button>`;
+    const label=row.conciliationGroup==='broken'
+      ? 'Vínculo quebrado'
+      : 'Possível duplicidade';
+    const meta=row.conciliationGroup==='broken'
+      ? `RF ${esc(row.sourceEventId||'---')} não localizado`
+      : `Candidato RF ${esc(row.rfCandidate?.ticker||'---')} · ${esc(row.rfCandidate?.date||'---')} · ${fmt(row.rfCandidate?.value||0)}`;
+    return `<div class="prov-review-item">
+      <div class="prov-review-item-head">
+        <div class="prov-review-item-main">
+          <div class="prov-review-item-title">
+            <strong class="prov-review-item-ticker">${esc(row.ticker||'---')}</strong>
+            <span class="note-pill">${esc(row.date||'---')}</span>
+            <span class="note-pill">${fmt(row.value)}</span>
+            <span class="prov-audit-status ${row.conciliationTone||'muted'}">${esc(label)}</span>
+          </div>
+          <div class="prov-review-item-desc">${esc(row.name||'---')} · ${esc(row.eventType||'---')}</div>
+          <div class="prov-review-item-note">${esc(row.conciliationNote || 'Sem observação.')}</div>
+        </div>
+        ${actionHtml}
+      </div>
+      <div class="prov-review-meta">
+        <span class="note-pill">${esc(row.source||'---')}</span>
+        <span class="note-pill">${esc(meta)}</span>
+      </div>
+      ${row.conciliationGroup==='possible' ? `<div class="prov-review-flag"><strong>Possível duplicidade</strong> — revisão manual necessária.</div>` : ''}
+    </div>`;
+  }).join('') : '<div class="prov-review-empty">Nenhuma revisão pendente.</div>';
+  return `<div class="prov-review-shell">
+    <div class="prov-review-card">
+      <div class="prov-review-head">
+        <div class="prov-review-title">
+          <strong>Revisão de renda passiva</strong>
+          <span>${audit.summary.pending ? `${audit.summary.pending} pendência${audit.summary.pending===1?'':'s'} em revisão` : 'Nenhuma revisão pendente.'}</span>
+        </div>
+        ${audit.summary.pending ? `<button class="btn bgh" style="min-height:34px;padding:7px 10px;font-size:11px" onclick="toggleProventoReviewOpen()">${open ? 'Fechar' : 'Revisar'}</button>` : ''}
+      </div>
+      ${audit.summary.pending ? `<div class="prov-review-meta">
+        <span class="note-pill warn">${fmt(audit.summary.quebrados)} vínculos quebrados</span>
+        <span class="note-pill warn">${fmt(audit.summary.possiveis)} possíveis duplicidades</span>
+        <span class="note-pill">${fmt(audit.summary.pending)} pendências</span>
+      </div>` : `<div class="prov-review-empty">Nenhuma revisão pendente.</div>`}
+    </div>
+    ${audit.summary.pending && open ? `<div class="prov-review-list">${body}</div>` : ''}
+  </div>`;
 }
 function reserveStats(){
   const out={bolsa:0,pessoal:0,total:0,entries:0};
