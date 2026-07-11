@@ -553,7 +553,7 @@ button{cursor:pointer;font-family:inherit}
 .rf-note{font-size:9px;color:var(--muted);line-height:1.45;margin-top:8px}
 .rf-bucket-list,.rf-type-list,.rf-alert-list,.rf-preview-list{display:flex;flex-direction:column;gap:7px}
 .rf-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:auto}
-.rf-table{width:100%;border-collapse:collapse;min-width:920px}
+.rf-table{width:100%;border-collapse:collapse;min-width:1120px}
 .rf-table th,.rf-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:top}
 .rf-table th{position:sticky;top:0;background:var(--surface);color:var(--muted);text-align:left;font-weight:800;z-index:1}
 .rf-table td{color:var(--text)}
@@ -561,6 +561,15 @@ button{cursor:pointer;font-family:inherit}
 .rf-table .rf-right{text-align:right;white-space:nowrap}
 .rf-table .rf-strong{color:#edf3ff;font-weight:800}
 .rf-table .rf-muted{color:var(--muted)}
+.rf-summary-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 2px}
+.rf-summary-item{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:10px 11px}
+.rf-summary-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+.rf-summary-value{font-size:16px;font-weight:900;color:var(--text);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-summary-value.good{color:var(--success)}
+.rf-summary-value.warn{color:var(--warning)}
+.rf-summary-value.bad{color:#f87171}
+.rf-summary-sub{font-size:9px;color:var(--muted);line-height:1.35;margin-top:3px}
+.rf-mini{font-size:9px;color:var(--muted);line-height:1.35;margin-top:4px}
 .rf-preview-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 9px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)}
 .rf-preview-row .premium-row-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rf-preview-value{text-align:right;font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
@@ -2401,6 +2410,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .rf-preview-row .premium-row-title{font-size:10px}
 .rf-preview-row .premium-row-sub{font-size:8px}
 .rf-preview-value{font-size:10px;max-width:132px;overflow:hidden;text-overflow:ellipsis}
+.rf-summary-strip{grid-template-columns:1fr;gap:7px}
+.rf-summary-value{font-size:14px}
 .rf-table-wrap{margin-right:-4px}
 .rf-table{min-width:760px}
 .rf-table th,.rf-table td{padding:6px 8px;font-size:10px}
@@ -10580,6 +10591,9 @@ function rfEventTotals(events){
     return acc;
   }, {grossValue:0, ir:0, iof:0, netValue:0, principalDelta:0, count:0});
 }
+function rfIncomeByAsset(asset){
+  return rfEventTotals(rfEventsForAsset(asset));
+}
 function rfEventSeedSummaryForTicker(ticker){
   const currentTicker=cleanAssetCode(String(ticker||'')).toUpperCase();
   const rows=RF_EVENT_SEED_DATA.filter(event=>cleanAssetCode(String(event.ticker||'')).toUpperCase()===currentTicker);
@@ -17251,7 +17265,7 @@ function rfIntelligenceSnapshot(){
   const assets=(S.assets||[]).filter(isRendaFixaAsset);
   const rows=assets.map(a=>{
     const vals=rfValues(a);
-    const eventTotals=rfEventTotals(rfEventsForAsset(a));
+    const eventTotals=rfIncomeByAsset(a);
     const applied=Number(vals.applied)||0;
     const current=Number(vals.current)||0;
     const profit=Number(vals.profit)||0;
@@ -17302,10 +17316,16 @@ function rfIntelligenceSnapshot(){
         rentabWithEvents,
         bucket:rfBucketLabel(days)
       };
-    });
+  });
   const totalApplied=rows.reduce((s,r)=>s+r.applied,0);
   const totalCurrent=rows.reduce((s,r)=>s+r.current,0);
   const totalProfit=totalCurrent-totalApplied;
+  const totalReceivedGross=rows.reduce((s,r)=>s+r.receivedGross,0);
+  const totalReceivedIr=rows.reduce((s,r)=>s+r.receivedIr,0);
+  const totalReceivedIof=rows.reduce((s,r)=>s+r.receivedIof,0);
+  const totalReceivedNet=rows.reduce((s,r)=>s+r.receivedNet,0);
+  const totalResultWithEvents=totalProfit+totalReceivedNet;
+  const totalRentabWithEvents=totalApplied>0 ? (totalResultWithEvents/totalApplied)*100 : 0;
   const totalPct=totalApplied>0 ? (totalProfit/totalApplied)*100 : 0;
   const explicitCount=rows.filter(r=>r.explicit).length;
   const missingCurrent=rows.length-explicitCount;
@@ -17378,6 +17398,12 @@ function rfIntelligenceSnapshot(){
     totalApplied,
     totalCurrent,
     totalProfit,
+    totalReceivedGross,
+    totalReceivedIr,
+    totalReceivedIof,
+    totalReceivedNet,
+    totalResultWithEvents,
+    totalRentabWithEvents,
     totalPct,
     explicitCount,
     missingCurrent,
@@ -17537,6 +17563,24 @@ function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
   const count=data.assets.length;
   const currentLabel=data.explicitCount===count ? 'valor atual/líquido total' : 'valor atual/líquido total*';
+  const summaryStrip=count ? `
+    <div class="rf-summary-strip">
+      <div class="rf-summary-item">
+        <div class="rf-summary-label">Resultado de mercado</div>
+        <div class="rf-summary-value ${data.totalProfit>=0?'good':'bad'}">${fmt(data.totalProfit)}</div>
+        <div class="rf-summary-sub">Sem considerar rendimentos recebidos.</div>
+      </div>
+      <div class="rf-summary-item">
+        <div class="rf-summary-label">Rendimentos recebidos</div>
+        <div class="rf-summary-value good">${fmt(data.totalReceivedNet)}</div>
+        <div class="rf-summary-sub">Líquido de juros/cupom/rendimento da RF.</div>
+      </div>
+      <div class="rf-summary-item">
+        <div class="rf-summary-label">Resultado total</div>
+        <div class="rf-summary-value ${data.totalResultWithEvents>=0?'good':'bad'}">${fmt(data.totalResultWithEvents)}</div>
+        <div class="rf-summary-sub">Mercado + rendimentos líquidos recebidos.</div>
+      </div>
+    </div>` : '';
   const kpis=[
     dashboardMetricCard('💵','Valor aplicado total',fmt(data.totalApplied),count>0?'Capital informado na carteira':'Cadastre títulos para começar','#c4b5fd','rgba(129,140,248,.16)'),
     dashboardMetricCard('🏦',currentLabel,fmt(data.totalCurrent),data.explicitCount===count ? 'Leitura com valores já informados' : `${data.explicitCount}/${count} títulos com valor atual explícito`,'#34d399','rgba(52,211,153,.14)'),
@@ -17591,13 +17635,21 @@ function rendaFixaTab(){
       <td class="rf-right">${fmt(row.applied)}</td>
       <td class="rf-right">${fmt(row.current)}</td>
       <td class="rf-right ${row.profit>=0?'gn':'rd'}">
-        <div>${fmt(row.profit)}</div>
-        ${rfEventReceiptsSummaryHtml(row) ? `<div class="rf-event-summary-inline">${rfEventReceiptsSummaryHtml(row)}</div>` : ''}
+        <div class="rf-strong">${fmt(row.profit)}</div>
+        <div class="rf-mini">Resultado de mercado</div>
+      </td>
+      <td class="rf-right">
+        <div class="rf-strong">${fmt(row.receivedNet)}</div>
+        <div class="rf-mini">${row.eventCount>0 ? `${row.eventCount} evento${row.eventCount===1?'':'s'} · bruto ${fmt(row.receivedGross)} · IR ${fmt(row.receivedIr)} · IOF ${fmt(row.receivedIof)}` : 'Sem eventos de renda fixa'}</div>
+      </td>
+      <td class="rf-right ${row.resultWithEvents>=0?'gn':'rd'}">
+        <div class="rf-strong">${fmt(row.resultWithEvents)}</div>
+        <div class="rf-mini">${fmtP(row.rentabWithEvents)} · resultado total</div>
       </td>
       <td class="rf-right ${row.pct>=0?'gn':'rd'}">${fmtP(row.pct)}</td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
       <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span></td>
-    </tr>`).join('') : '<tr><td colspan="8" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
+    </tr>`).join('') : '<tr><td colspan="10" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
   return `<div class="rf-page">
     <div class="rf-hero">
       <div class="rf-hero-head">
@@ -17613,6 +17665,8 @@ function rendaFixaTab(){
       </div>
       ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
     </div>
+
+    ${summaryStrip}
 
     <div class="rf-grid">
       <div class="rf-panel">
@@ -17667,7 +17721,9 @@ function rendaFixaTab(){
                 <th>Tipo</th>
                 <th class="rf-right">Aplicado</th>
                 <th class="rf-right">Atual</th>
-                <th class="rf-right">Resultado</th>
+                <th class="rf-right">Resultado de mercado</th>
+                <th class="rf-right">Rendimentos recebidos</th>
+                <th class="rf-right">Resultado total</th>
                 <th class="rf-right">Rentab.</th>
                 <th>Vencimento</th>
                 <th>Situação</th>
