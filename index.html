@@ -4018,7 +4018,6 @@ function load(){
   ensureWallets();
   syncWalletFromState();
   S.rfEvents=normalizeRfEvents(S.rfEvents);
-  if(ensureRfEventSeeds()>0) save();
   if(!S.goals || typeof S.goals!=='object') S.goals=normalizeGoals();
   else S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
@@ -10577,24 +10576,47 @@ function rfEventSeedSummaryForTicker(ticker){
   const rows=RF_EVENT_SEED_DATA.filter(event=>cleanAssetCode(String(event.ticker||'')).toUpperCase()===currentTicker);
   return rfEventTotals(rows);
 }
-function ensureRfEventSeeds(){
+function rfSeedEventsForTicker(ticker){
+  const currentTicker=cleanAssetCode(String(ticker||'')).toUpperCase();
+  return RF_EVENT_SEED_DATA.filter(event=>cleanAssetCode(String(event.ticker||'')).toUpperCase()===currentTicker);
+}
+function rfEventImportSummary(asset){
+  const ticker=rfAssetEventTicker(asset);
+  const seeds=rfSeedEventsForTicker(ticker);
+  const totals=rfEventTotals(rfEventsForAsset(asset));
+  const expected=seeds.length;
+  const current=Number(totals.count)||0;
+  const missing=Math.max(0, expected-current);
+  return {ticker,seeds,totals,expected,current,missing};
+}
+function importRfEventSeeds(assetId){
+  const asset=getRfAssetByEventId(assetId);
+  if(!asset) return 0;
+  const summary=rfEventImportSummary(asset);
+  if(!summary.expected) return 0;
+  const walletName=String((S.wallets||[]).find(w=>String(w.id||'')===String(S.activeWalletId||''))?.name||'Carteira ativa').trim() || 'Carteira ativa';
+  const message=summary.missing>0
+    ? `Registrar ${summary.missing} evento${summary.missing===1?'':'s'} ausente${summary.missing===1?'':'s'} do extrato na ${walletName}?\n\nTicker: ${summary.ticker}\nJá existem: ${summary.current}/${summary.expected}`
+    : `Todos os ${summary.expected} eventos do extrato já estão registrados para ${summary.ticker}. Deseja verificar/registrar novamente?`;
+  if(!confirm(message)) return 0;
   const current=normalizeRfEvents(S.rfEvents||[]);
   const known=new Set(current.map(event=>event.autoKey||rfEventDuplicateKey(event)));
   const additions=[];
-  RF_EVENT_SEED_DATA.forEach(seed=>{
-    const asset=(S.assets||[]).find(item=>isRendaFixaAsset(item) && rfAssetEventTicker(item)===seed.ticker);
-    if(!asset) return;
+  summary.seeds.forEach(seed=>{
     const next=normalizeRfEventEntry({...seed, assetId:rfAssetEventId(asset), ticker:rfAssetEventTicker(asset)});
     const key=next.autoKey || rfEventDuplicateKey(next);
     if(known.has(key)) return;
     known.add(key);
     additions.push(next);
   });
-  if(additions.length){
-    S.rfEvents=normalizeRfEvents([...(S.rfEvents||[]), ...additions]);
-  }else if((S.rfEvents||[]).length!==current.length){
-    S.rfEvents=current;
+  if(!additions.length){
+    toast(`ℹ️ ${summary.ticker}: nenhum evento novo para registrar.`);
+    return 0;
   }
+  S.rfEvents=normalizeRfEvents([...(S.rfEvents||[]), ...additions]);
+  save();
+  render();
+  toast(`✅ ${summary.ticker}: ${additions.length} evento${additions.length===1?'':'s'} adicionado${additions.length===1?'':'s'}.`);
   return additions.length;
 }
 function rfEventDraftForAsset(asset, event=null){
@@ -17374,7 +17396,7 @@ function rfEventStatusBadge(row, totals){
   const matchesIr=Math.abs(totals.ir-seed.ir)<0.01;
   const matchesNet=Math.abs(totals.netValue-seed.netValue)<0.01;
   if(matchesCount && matchesGross && matchesIr && matchesNet){
-    return `<span class="rf-event-badge ok">Seed conferido</span>`;
+    return `<span class="rf-event-badge ok">${totals.count}/${seed.count}</span>`;
   }
   return `<span class="rf-event-badge warn">${totals.count}/${seed.count} eventos</span>`;
 }
@@ -17391,6 +17413,15 @@ function rfEventReceiptsSummaryHtml(row){
     <div><strong>Recebidos:</strong> bruto ${fmt(gross)} · IR ${fmt(ir)} · IOF ${fmt(iof)} · líquido ${fmt(net)}</div>
     <div><strong>Com eventos:</strong> resultado ${fmt(resultWithEvents)} · rentab. ${fmtP(rentabWithEvents)}</div>
   `;
+}
+function rfEventSeedActionHtml(row, totals){
+  const seed=rfEventSeedSummaryForTicker(row.ticker);
+  if(seed.count<=0) return '';
+  const current=Number(totals?.count)||0;
+  const missing=Math.max(0, seed.count-current);
+  if(missing<=0) return '';
+  const label=current>0 ? `Registrar ${missing} evento${missing===1?'':'s'} ausente${missing===1?'':'s'}` : `Registrar ${seed.count} eventos do extrato`;
+  return `<button class="btn bgh" onclick='importRfEventSeeds(${JSON.stringify(rfAssetEventId(row.asset))})'>${esc(label)}</button>`;
 }
 function rfEventTypeOptionsHtml(selected){
   return RF_EVENT_TYPE_OPTIONS.map(([value,label])=>`<option value="${value}" ${normalizeRfEventType(selected)===value?'selected':''}>${esc(label)}</option>`).join('');
@@ -17459,6 +17490,7 @@ function rfEventHistoryCards(rows){
         </div>
         <div class="rf-event-actions">
           ${rfEventStatusBadge(row, totals)}
+          ${rfEventSeedActionHtml(row, totals)}
           <button class="btn bgh" onclick='openRfEventEditor(${JSON.stringify(rfAssetEventId(asset))})'>+ Evento</button>
         </div>
       </div>
@@ -20501,7 +20533,6 @@ function svA(){
   rememberScroll();
   S.showA=false; S.editId=null; S._fa=null;
   if(editedAsset) learnTickerMeta(editedAsset.ticker, ty, se, true);
-  if(isRF) ensureRfEventSeeds();
   save(); toast('✅ Ativo atualizado!'); render();
   scheduleAutoProventosGratis('asset-edit');
 }
@@ -20617,7 +20648,6 @@ function svP(){
     rememberScroll();
     S.showP=false; S.editPId=null; S._fp=null;
     syncAssetsFromAportes(false);
-    ensureRfEventSeeds();
     toast(`✅ ${wasEdit?'Edição':'Lançamento'} de ${rfName} registrado!`);
     fetchQuotes(false);
     scheduleAutoProventosGratis('aporte-rf');
