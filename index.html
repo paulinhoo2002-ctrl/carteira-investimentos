@@ -1401,6 +1401,7 @@ body.modal-open{overflow:hidden}
 .div-premium-tab,.div-premium-chip{flex:0 0 auto;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:8px 12px;font-size:10px;font-weight:850;box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
 .div-premium-tab.on{color:#ecfdf5;border-color:rgba(52,211,153,.35);background:linear-gradient(180deg,rgba(16,185,129,.2),rgba(16,185,129,.12))}
 .div-premium-chip.on{color:#e0e7ff;border-color:rgba(99,102,241,.38);background:linear-gradient(180deg,rgba(79,70,229,.2),rgba(79,70,229,.12))}
+.div-premium-chip.subtle{opacity:.85;pointer-events:none}
 .div-premium-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:10px}
 .div-premium-search{display:flex;align-items:center;gap:7px;flex:1 1 280px;max-width:560px;border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:7px 9px}
 .div-premium-search input{border:0;background:transparent;padding:0;min-width:0;width:100%;color:var(--text)}
@@ -1442,7 +1443,13 @@ body.modal-open{overflow:hidden}
 .div-type-badge.dividendo{color:#60a5fa;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.25)}
 .div-type-badge.jcp{color:#fbbf24;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25)}
 .div-type-badge.rendimento{color:#34d399;background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.25)}
+.div-type-badge.renda-fixa{color:#a78bfa;background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.28)}
 .div-type-badge.outro{color:#94a3b8;background:rgba(148,163,184,.1)}
+.div-receipt-card-rf{border-color:rgba(139,92,246,.24);background:linear-gradient(180deg,rgba(139,92,246,.08),var(--panel))}
+.div-rf-money-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:2px}
+.div-rf-money-item{display:flex;flex-direction:column;gap:2px;border:1px solid rgba(148,163,184,.18);border-radius:10px;padding:6px 8px;background:rgba(15,23,42,.18)}
+.div-rf-money-item span{font-size:9px;line-height:1.1;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.div-rf-money-item strong{font-size:11px;line-height:1.15}
 .div-recent-value{font-size:13px;font-weight:900;color:var(--success);text-align:right;white-space:nowrap}
 .div-recent-source{font-size:9px;color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .div-asset-group{border:1px solid var(--border);border-radius:14px;background:var(--panel-2);overflow:hidden}
@@ -1790,6 +1797,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-premium-metric{min-height:70px;padding:8px 9px;border-radius:11px;gap:3px}
 .div-premium .div-premium-metric-label{font-size:7px;letter-spacing:.05em}
 .div-premium .div-premium-metric-value{font-size:12px}
+.div-premium .div-rf-money-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
 .div-premium .div-premium-metric-sub{font-size:7px;line-height:1.2}
 .div-premium .div-goal-panel{padding:9px 10px}
 .div-premium .div-goal-top{gap:6px}
@@ -3588,6 +3596,7 @@ let S = {
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
   reportsPeriod:'12m',
   reportCardPdfType:null,
+  dividendClassFilter:'all',
   irpfYear:new Date().getFullYear(),
   irpfStep:1,
   apHistoryOpen:true, apSearch:'',
@@ -10458,13 +10467,13 @@ const RF_EVENT_SEED_DATA=[
   {id:'rfevt_cra024004sb_2026_05_15',ticker:'CRA024004SB',date:'2026-05-15',type:'juros',grossValue:633.45,ir:0,iof:0,netValue:633.45,principalDelta:0,source:'Histórico manual XP',note:'CRA JBS - MAI/2039',importRef:RF_EVENT_SEED_IMPORT_REF}
 ];
 function normalizeRfEventType(value){
-  const key=rfPosNorm(value).replace(/[^a-z0-9]+/g,' ');
-  if(key.includes('juros') || key.includes('cupom')) return 'juros';
-  if(key.includes('amort')) return 'amortizacao';
-  if(key.includes('premio')) return 'premio';
-  if(key.includes('resgate parcial')) return 'resgate_parcial';
-  if(key==='ir') return 'ir';
-  if(key==='iof') return 'iof';
+  const key=rfPosNorm(value).replace(/[^A-Z0-9]+/g,' ');
+  if(key.includes('JUROS') || key.includes('CUPOM') || key.includes('RENDIMENTO')) return 'juros';
+  if(key.includes('AMORT')) return 'amortizacao';
+  if(key.includes('PREMIO')) return 'premio';
+  if(key.includes('RESGATE PARCIAL')) return 'resgate_parcial';
+  if(key==='IR') return 'ir';
+  if(key==='IOF') return 'iof';
   return 'outro';
 }
 function rfEventTypeLabel(value){
@@ -11459,25 +11468,24 @@ function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
 function passiveIncomeTopPayers(limit=5, monthKeys=null){
   const keys=Array.isArray(monthKeys) && monthKeys.length ? new Set(monthKeys) : null;
   const map=new Map();
-  (S.proventos||[]).forEach((p,idx)=>{
-    const dt=parseAnyDate(p?.date);
-    const value=Number(p?.value)||0;
+  passiveIncomeCombinedRows().forEach((row,idx)=>{
+    const dt=row?.dt instanceof Date ? row.dt : parseAnyDate(row?.date);
+    const value=Number(row?.value)||0;
     if(!dt || value<=0) return;
     const monthKey=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
     if(keys && !keys.has(monthKey)) return;
-    const meta=proventoAssetMeta(p);
-    const ticker=String(p?.ticker||meta.asset?.ticker||meta.title||'').trim().toUpperCase() || '—';
-    const name=String(meta.title || p?.assetName || ticker || '—').trim() || '—';
-    const type=String(meta.type || proventoAssetTypeLabel(meta.asset,p) || 'Ação').trim() || 'Ação';
+    const ticker=String(row?.ticker||'').trim().toUpperCase() || '—';
+    const name=String(row?.name||ticker||'—').trim() || '—';
+    const type=String(row?.assetClass||row?.assetType||row?.origin||'Ação').trim() || 'Ação';
     const key=ticker || name;
     if(!map.has(key)){
       map.set(key,{key,ticker,name,type,total:0,count:0,lastDate:'',sourceIndex:idx});
     }
-    const row=map.get(key);
-    row.total+=value;
-    row.count++;
+    const agg=map.get(key);
+    agg.total+=value;
+    agg.count++;
     const iso=toISODate(dt);
-    if(iso && iso>row.lastDate) row.lastDate=iso;
+    if(iso && iso>agg.lastDate) agg.lastDate=iso;
   });
   return [...map.values()].sort((a,b)=>b.total-a.total || b.count-a.count).slice(0,limit);
 }
@@ -11487,8 +11495,8 @@ function passiveIncomeGoalStats(){
   const monthMap=new Map(monthKeys.map(key=>[key,{key,total:0,count:0}]));
   let total12=0;
   const currentMonthKey=monthKeys[monthKeys.length-1] || '';
-  (S.proventos||[]).forEach(p=>{
-    const dt=parseAnyDate(p?.date);
+  passiveIncomeCombinedRows().forEach(p=>{
+    const dt=p?.dt instanceof Date ? p.dt : parseAnyDate(p?.date);
     const value=Number(p?.value)||0;
     if(!dt || value<=0) return;
     const key=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
@@ -19046,7 +19054,7 @@ function allocationGoalModal(){
   </div>`;
 }
 
-function dividendPremiumRows(){
+function dividendManualRows(){
   return (S.proventos||[]).map((p,index)=>{
     const dt=parseAnyDate(p.date);
     const paymentDt=proventoDividendPaymentDate(p);
@@ -19054,6 +19062,7 @@ function dividendPremiumRows(){
     const canonical=proventoTipoCanonical(p.eventType||p.type);
     const assetType=normalizeType(meta.asset?.type||metaTicker(p.ticker).type||'Ação','Ação');
     const displayType=canonical==='Rendimento' && assetType==='FII' ? 'Rendimento FII' : canonical;
+    const value=Number(p.value)||0;
     return {
       id:p.id,
       raw:p,
@@ -19065,14 +19074,71 @@ function dividendPremiumRows(){
       name:String(p.assetName||meta.asset?.name||meta.title||p.ticker||'—'),
       type:displayType,
       canonical,
-      value:Number(p.value)||0,
+      value,
+      grossValue:value,
+      ir:0,
+      iof:0,
+      netValue:value,
       source:String(p.source||p.origin||'Manual').trim()||'Manual',
       note:String(p.note||p.observation||'').trim(),
       assetType,
+      assetClass:assetType,
+      origin:assetType,
+      sourceKind:'manual',
+      isRf:false,
       paymentDt,
       paymentDate:paymentDt ? toISODate(paymentDt) : ''
     };
   }).filter(row=>row.value>0).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.index-a.index);
+}
+function rfPassiveIncomeRows(){
+  return normalizeRfEvents(S.rfEvents||[])
+    .map((event,index)=>{
+      if(normalizeRfEventType(event.type)!=='juros') return null;
+      const asset=findRfAssetByEventLink(event);
+      const dt=parseAnyDate(event.date);
+      const gross=rfEventNumber(event.grossValue);
+      const ir=rfEventNumber(event.ir);
+      const iof=rfEventNumber(event.iof);
+      const net=rfEventNumber(event.netValue ?? (gross-ir-iof));
+      const assetName=assetRfName(asset) || String(asset?.name||asset?.product||event.note||event.ticker||'').trim();
+      return {
+        id:event.id,
+        raw:event,
+        index,
+        date:dt?toISODate(dt):String(event.date||''),
+        dt,
+        monthKey:dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`:'',
+        ticker:String(asset?.ticker||event.ticker||'—').trim().toUpperCase()||'—',
+        name:String(assetName||'—'),
+        type:'Juros',
+        canonical:'Juros',
+        value:net,
+        grossValue:gross,
+        ir,
+        iof,
+        netValue:net,
+        source:String(event.source||'Renda Fixa').trim()||'Renda Fixa',
+        note:String(event.note||assetName||'').trim(),
+        assetType:'Renda Fixa',
+        assetClass:'Renda Fixa',
+        origin:'Renda Fixa',
+        sourceKind:'rf',
+        isRf:true,
+        paymentDt:dt,
+        paymentDate:dt ? toISODate(dt) : '',
+        rfEvent:event,
+        rfAsset:asset
+      };
+    })
+    .filter(row=>row && row.value>0)
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||'') || b.index-a.index || b.sourceKind.localeCompare(a.sourceKind,'pt-BR'));
+}
+function passiveIncomeCombinedRows(){
+  return [...dividendManualRows(), ...rfPassiveIncomeRows()];
+}
+function dividendPremiumRows(){
+  return passiveIncomeCombinedRows();
 }
 function proventoDividendPaymentDate(provento){
   const candidates=[
@@ -19090,6 +19156,7 @@ function proventoDividendPaymentDate(provento){
 }
 function filteredDividendRows(rows=dividendPremiumRows()){
   const filter=String(S.dividendFilter||'all');
+  const classFilter=String(S.dividendClassFilter||'all');
   const period=String(S.dividendPeriod||'all');
   const search=rfPosNorm(S.dividendSearch||'');
   const now=new Date();
@@ -19100,6 +19167,12 @@ function filteredDividendRows(rows=dividendPremiumRows()){
     if(filter==='jcp' && row.canonical!=='JCP') return false;
     if(filter==='income' && row.canonical!=='Rendimento') return false;
     if(filter==='other' && ['Dividendo','JCP','Rendimento'].includes(row.canonical)) return false;
+    const rowClass=normalizeType(row.assetClass||row.assetType||row.origin||'','Ação');
+    if(classFilter==='acao' && rowClass!=='Ação') return false;
+    if(classFilter==='fii' && rowClass!=='FII') return false;
+    if(classFilter==='etf' && rowClass!=='ETF') return false;
+    if(classFilter==='renda-fixa' && rowClass!=='Renda Fixa') return false;
+    if(classFilter==='outros' && ['Ação','FII','ETF','Renda Fixa'].includes(rowClass)) return false;
     if(period==='month' && row.monthKey!==currentKey) return false;
     if(period==='12m' && (!row.dt || row.dt<start12)) return false;
     if(search){
@@ -19110,7 +19183,8 @@ function filteredDividendRows(rows=dividendPremiumRows()){
     return true;
   });
 }
-function dividendTypeTone(type){
+function dividendTypeTone(type, origin=''){
+  if(origin==='Renda Fixa') return 'renda-fixa';
   if(type==='Dividendo') return 'dividendo';
   if(type==='JCP') return 'jcp';
   if(type==='Rendimento FII'||type==='Rendimento') return 'rendimento';
@@ -19262,23 +19336,35 @@ function dividendRecentList(rows,limit=0){
   const visible=limit>0?rows.slice(0,limit):rows;
   if(!visible.length) return dividendEmptyState();
   const footer=limit>0 && rows.length>visible.length ? `<div class="div-recent-more">Mostrando ${visible.length} de ${rows.length}</div>` : '';
-  return `<div class="div-recent-list">${visible.map(row=>`<article class="div-receipt-card">
+  return `<div class="div-recent-list">${visible.map(row=>{
+    const isRf=row.origin==='Renda Fixa';
+    const tone=dividendTypeTone(row.type, row.origin);
+    const originLabel=String(row.origin || row.assetClass || row.assetType || row.source || 'Manual').trim();
+    const deleteAction=isRf ? `removeRfEvent(${JSON.stringify(row.id)})` : `rmD(${JSON.stringify(row.id)})`;
+    const rfGrid=isRf ? `<div class="div-rf-money-grid">
+      <div class="div-rf-money-item"><span>Bruto</span><strong>${fmt(row.grossValue ?? row.value)}</strong></div>
+      <div class="div-rf-money-item"><span>IR</span><strong>${fmt(row.ir||0)}</strong></div>
+      <div class="div-rf-money-item"><span>IOF</span><strong>${fmt(row.iof||0)}</strong></div>
+      <div class="div-rf-money-item"><span>Líquido</span><strong>${fmt(row.netValue ?? row.value)}</strong></div>
+    </div>` : '';
+    return `<article class="div-receipt-card${isRf?' div-receipt-card-rf':''}">
     <div class="div-receipt-top">
       <div class="div-receipt-main">
         <div class="div-receipt-topline">
           <div class="div-receipt-date">${esc(row.date||'Sem data')}</div>
-          <span class="div-type-badge ${dividendTypeTone(row.type)}">${esc(row.type)}</span>
-          <span class="div-type-badge outro">${esc(row.source||'Manual')}</span>
+          <span class="div-type-badge ${tone}">${esc(row.type)}</span>
+          <span class="div-type-badge ${isRf ? 'renda-fixa' : 'outro'}">${esc(originLabel)}</span>
         </div>
         <div class="div-receipt-title"><span class="div-receipt-ticker">${esc(row.ticker)}</span><span class="div-receipt-name">${esc(row.name)}</span></div>
       </div>
       <div class="div-receipt-value">${fmt(row.value)}</div>
     </div>
+    ${rfGrid}
     <div class="div-receipt-foot">
       <div class="div-receipt-source">${esc(row.source)}${row.note?` · ${esc(row.note)}`:''}</div>
-      <button class="bdi div-receipt-trash" onclick="rmD(${JSON.stringify(row.id)})" title="Remover provento">🗑️</button>
+      <button class="bdi div-receipt-trash" onclick="${deleteAction}" title="Remover provento">🗑️</button>
     </div>
-  </article>`).join('')}${footer}</div>`;
+  </article>`;}).join('')}${footer}</div>`;
 }
 function dividendsByAssetView(rows){
   const groups=new Map();
@@ -19402,7 +19488,7 @@ function dividendMonthlyTimeline(){
 function dividendSummaryCards(){
   const stats=passiveIncomeGoalStats();
   const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)||{total:0,count:0};
-  const currentRows=dividendPremiumRows().filter(row=>row.monthKey===stats.currentMonthKey);
+  const currentRows=passiveIncomeCombinedRows().filter(row=>row.monthKey===stats.currentMonthKey);
   const payerMap=new Map();
   currentRows.forEach(row=>payerMap.set(row.ticker,(payerMap.get(row.ticker)||0)+row.value));
   const best=[...payerMap.entries()].sort((a,b)=>b[1]-a[1])[0]||null;
@@ -19450,6 +19536,7 @@ function setDividendViewMode(mode){
 }
 function setDividendFilter(value){ S.dividendFilter=['all','dividend','jcp','income','other'].includes(value)?value:'all'; render(); }
 function setDividendPeriod(value){ S.dividendPeriod=['all','month','12m'].includes(value)?value:'all'; render(); }
+function setDividendClassFilter(value){ S.dividendClassFilter=['all','acao','fii','etf','renda-fixa','outros'].includes(value)?value:'all'; render(); }
 function setDividendSearch(value){
   S.dividendSearch=String(value||'');
   clearTimeout(S.dividendSearchTimer);
@@ -19470,8 +19557,9 @@ function setDividendSearch(value){
 }
 function dividendFilterTabs(){
   const types=[['all','Todos'],['dividend','Dividendos'],['jcp','JCP'],['income','Rendimento FII'],['other','Outros']];
+  const classes=[['all','Todas as classes'],['acao','Ação'],['fii','FII'],['etf','ETF'],['renda-fixa','Renda Fixa'],['outros','Outros']];
   const periods=[['all','Todo histórico'],['month','Este mês'],['12m','Últimos 12 meses']];
-  return `<div class="div-premium-toolbar"><div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div><div class="div-premium-filters">${types.map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div></div>`;
+  return `<div class="div-premium-toolbar"><div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div><div class="div-premium-filters">${types.map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Classe</span>${classes.map(([id,label])=>`<button class="div-premium-chip ${S.dividendClassFilter===id?'on':''}" onclick="setDividendClassFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Período</span>${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div></div>`;
 }
 function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const mode=['overview','received','asset','monthly','timeline'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
