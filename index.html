@@ -10477,14 +10477,58 @@ const RF_EVENT_SEED_DATA=[
   {id:'rfevt_cra024004sb_2025_11_17',ticker:'CRA024004SB',date:'2025-11-17',type:'juros',grossValue:665.87,ir:0,iof:0,netValue:665.87,principalDelta:0,source:'Histórico manual XP',note:'CRA JBS - MAI/2039',importRef:RF_EVENT_SEED_IMPORT_REF},
   {id:'rfevt_cra024004sb_2026_05_15',ticker:'CRA024004SB',date:'2026-05-15',type:'juros',grossValue:633.45,ir:0,iof:0,netValue:633.45,principalDelta:0,source:'Histórico manual XP',note:'CRA JBS - MAI/2039',importRef:RF_EVENT_SEED_IMPORT_REF}
 ];
+function rfEventTextCandidates(value){
+  const obj=value && typeof value==='object' ? value : null;
+  if(!obj) return [value];
+  const raw=obj.raw && typeof obj.raw==='object' ? obj.raw : null;
+  return [
+    obj.type,
+    obj.eventType,
+    obj.description,
+    obj.descriptionText,
+    obj.note,
+    obj.source,
+    obj.operationType,
+    obj.movement,
+    obj.action,
+    obj.title,
+    obj.category,
+    obj.kind,
+    raw?.type,
+    raw?.eventType,
+    raw?.description,
+    raw?.descriptionText,
+    raw?.note,
+    raw?.source,
+    raw?.operationType,
+    raw?.movement,
+    raw?.action,
+    raw?.title,
+    raw?.category,
+    raw?.kind,
+    value
+  ].filter(v=>v!=null && v!=='');
+}
 function normalizeRfEventType(value){
-  const key=rfPosNorm(value).replace(/[^A-Z0-9]+/g,' ');
-  if(key.includes('JUROS') || key.includes('CUPOM') || key.includes('RENDIMENTO')) return 'juros';
-  if(key.includes('AMORT')) return 'amortizacao';
-  if(key.includes('PREMIO')) return 'premio';
-  if(key.includes('RESGATE PARCIAL')) return 'resgate_parcial';
-  if(key==='IR') return 'ir';
-  if(key==='IOF') return 'iof';
+  const candidates=rfEventTextCandidates(value);
+  for(const candidate of candidates){
+    const key=rfPosNorm(candidate).replace(/[^A-Z0-9]+/g,' ');
+    if(key.includes('JUROS') || key.includes('CUPOM') || key.includes('RENDIMENTO')) return 'juros';
+    if(key.includes('AMORT')) return 'amortizacao';
+    if(key.includes('PREMIO')) return 'premio';
+    if(key.includes('RESGATE PARCIAL')) return 'resgate_parcial';
+    if(key==='IR') return 'ir';
+    if(key==='IOF') return 'iof';
+  }
+  const obj=value && typeof value==='object' ? value : null;
+  if(obj){
+    const gross=rfEventNumber(obj.grossValue ?? obj.gross ?? obj.value ?? 0);
+    const ir=rfEventNumber(obj.ir ?? obj.irValue ?? 0);
+    const iof=rfEventNumber(obj.iof ?? obj.iofValue ?? 0);
+    const net=rfEventNumber(obj.netValue ?? obj.net ?? (gross-ir-iof));
+    const principalDelta=rfEventNumber(obj.principalDelta ?? obj.principal ?? 0);
+    if(principalDelta===0 && (gross>0 || net>0)) return 'juros';
+  }
   return 'outro';
 }
 function rfEventTypeLabel(value){
@@ -10514,7 +10558,7 @@ function rfEventDuplicateKey(event){
   return [
     inputDateValue(ev.date||''),
     assetKey,
-    normalizeRfEventType(ev.type||''),
+    normalizeRfEventType(ev),
     rfEventNumber(ev.grossValue).toFixed(2),
     rfEventNumber(ev.ir).toFixed(2),
     rfEventNumber(ev.iof).toFixed(2),
@@ -10535,7 +10579,7 @@ function normalizeRfEventEntry(event){
     assetId,
     ticker,
     date:inputDateValue(raw.date||raw.paymentDate||''),
-    type:normalizeRfEventType(raw.type||raw.eventType||'juros'),
+    type:normalizeRfEventType(raw),
     grossValue,
     ir,
     iof,
@@ -19150,7 +19194,7 @@ function dividendManualRows(){
 function rfPassiveIncomeRows(){
   return normalizeRfEvents(S.rfEvents||[])
     .map((event,index)=>{
-      if(normalizeRfEventType(event.type)!=='juros') return null;
+      if(normalizeRfEventType(event)!=='juros') return null;
       const asset=findRfAssetByEventLink(event);
       const dt=parseAnyDate(event.date);
       const gross=rfEventNumber(event.grossValue);
