@@ -11547,6 +11547,42 @@ function passiveIncomeTopPayers(limit=5, monthKeys=null){
   });
   return [...map.values()].sort((a,b)=>b.total-a.total || b.count-a.count).slice(0,limit);
 }
+function passiveIncomeMonthKey(baseDate=new Date()){
+  const dt=baseDate instanceof Date ? baseDate : parseAnyDate(baseDate);
+  return dt ? `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}` : '';
+}
+function passiveIncomeMonthSummary(monthKey){
+  const key=String(monthKey||'').trim();
+  const map=new Map();
+  let total=0;
+  let count=0;
+  passiveIncomeCombinedRows().forEach((row,idx)=>{
+    const rowKey=String(row?.monthKey||'').trim() || passiveIncomeMonthKey(row?.dt || row?.date);
+    const value=Number(row?.value)||0;
+    if(!key || rowKey!==key || value<=0) return;
+    total+=value;
+    count++;
+    const ticker=String(row?.ticker||'').trim().toUpperCase() || '---';
+    const name=String(row?.name||ticker||'---').trim() || '---';
+    const type=String(row?.assetClass||row?.assetType||row?.origin||'').trim();
+    const source=String(row?.origin||row?.assetClass||row?.assetType||row?.source||'').trim();
+    const payerKey=ticker || name;
+    if(!map.has(payerKey)){
+      map.set(payerKey,{key:payerKey,ticker,name,type,source,total:0,count:0,lastDate:'',sourceKinds:new Set(),sourceIndex:idx});
+    }
+    const payer=map.get(payerKey);
+    payer.total+=value;
+    payer.count++;
+    if(row?.sourceKind) payer.sourceKinds.add(String(row.sourceKind));
+    const iso=row?.date || toISODate(row?.dt instanceof Date ? row.dt : parseAnyDate(row?.date));
+    if(iso && iso>payer.lastDate) payer.lastDate=iso;
+  });
+  const payers=[...map.values()].map(p=>({
+    ...p,
+    sourceKinds:[...p.sourceKinds]
+  })).sort((a,b)=>b.total-a.total || b.count-a.count || a.ticker.localeCompare(b.ticker,'pt-BR'));
+  return {month:key,total,count,payers,best:payers[0]||null};
+}
 function passiveIncomeGoalStats(){
   const target=passiveIncomeGoalTarget();
   const monthKeys=passiveIncomeRollingMonthKeys(new Date(), 12);
@@ -16816,37 +16852,8 @@ function dashboardSnapshot(analysisRows){
     const date=parseAnyDate(assetRfMaturityDate(a));
     return {ticker:String(a.ticker||assetRfName(a)||'Renda Fixa').trim()||'Renda Fixa',date,rate:assetRfContractRate(a)||'taxa não informada'};
   }).filter(row=>row.date && row.date>=today).sort((a,b)=>a.date-b.date);
-  const latestMonth=(S.proventos||[]).reduce((latest,p)=>{
-    const date=parseAnyDate(p?.date);
-    const value=Number(p?.value)||0;
-    if(!date || value<=0) return latest;
-    const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
-    return !latest || key>latest ? key : latest;
-  },'');
-  const recentProventos=(S.proventos||[]).filter(p=>{
-    const date=parseAnyDate(p?.date);
-    if(!date || Number(p?.value)<=0) return false;
-    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`===latestMonth;
-  });
-  const recentTotal=recentProventos.reduce((sum,p)=>sum+(Number(p.value)||0),0);
-  const recentPayerMap=new Map();
-  recentProventos.forEach(p=>{
-    const meta=proventoAssetMeta(p);
-    const ticker=String(p.ticker||meta.asset?.ticker||meta.title||'Sem ticker').trim().toUpperCase()||'Sem ticker';
-    recentPayerMap.set(ticker,(recentPayerMap.get(ticker)||0)+(Number(p.value)||0));
-  });
-  const recentPayers=[...recentPayerMap.entries()]
-    .map(([ticker,total])=>({
-      ticker,
-      total:Number(total)||0,
-      count:recentProventos.filter(p=>{
-        const meta=proventoAssetMeta(p);
-        const pt=String(p.ticker||meta.asset?.ticker||meta.title||'').trim().toUpperCase()||'Sem ticker';
-        return pt===ticker;
-      }).length
-    }))
-    .sort((a,b)=>b.total-a.total || a.ticker.localeCompare(b.ticker,'pt-BR'));
-  const recentBest=recentPayers[0]||null;
+  const currentMonthKey=passiveIncomeMonthKey(new Date());
+  const recentIncome=passiveIncomeMonthSummary(currentMonthKey);
   const concentration=[...analysis].filter(r=>Number.isFinite(r.share)).sort((a,b)=>b.share-a.share);
   const positives=[...analysis].filter(r=>Number.isFinite(r.pct)&&r.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
   const negatives=[...analysis].filter(r=>Number.isFinite(r.pct)&&r.pct<0).sort((a,b)=>a.pct-b.pct).slice(0,3);
@@ -16855,7 +16862,7 @@ function dashboardSnapshot(analysisRows){
   return {
     portfolio,income,analysis,typeRows,variableValue,
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
-    recent:{month:latestMonth,total:recentTotal,count:recentProventos.length,best:recentBest,payers:recentPayers},
+    recent:{month:recentIncome.month,total:recentIncome.total,count:recentIncome.count,best:recentIncome.best,payers:recentIncome.payers},
     concentration,positives,negatives,insufficient,concentrated,
     contribution:prudentContributionAnalysis()
   };
@@ -16914,8 +16921,10 @@ function dashboardPassiveIncomePanel(data){
   const target=Number(income.target)||0;
   const monthlyAvg=Number(income.monthlyAvg)||0;
   const goalReached=target>0 ? Math.max(target-monthlyAvg,0) : 0;
-  const monthReceived=Number(proventoStats().mes)||0;
-  const monthLabel=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const currentMonthKey=passiveIncomeMonthKey(new Date());
+  const recent=data?.recent?.month===currentMonthKey ? data.recent : passiveIncomeMonthSummary(currentMonthKey);
+  const monthReceived=Number(recent.total)||0;
+  const monthLabel=new Date(`${currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   return `<div class="premium-panel dashboard-home-income">
     <div class="premium-panel-head">
       <div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal.</div></div>
@@ -16932,7 +16941,7 @@ function dashboardPassiveIncomePanel(data){
 }
 function dashboardHomeMonthlyPayersPanel(data){
   const recent=data?.recent||{};
-  const monthLabel=recent.month ? new Date(`${recent.month}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'Sem histórico';
+  const monthLabel=recent.month ? new Date(`${recent.month}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'Mês atual';
   const total=Number(recent.total)||0;
   const payers=Array.isArray(recent.payers) ? recent.payers.slice(0,4) : [];
   const body=payers.length
@@ -16946,7 +16955,7 @@ function dashboardHomeMonthlyPayersPanel(data){
           <div class="premium-row-value">${fmt(Number(row.total)||0)}</div>
         </div>`;
       }).join('')
-    : '<div class="premium-empty">Sem proventos registrados neste mês.</div>';
+    : '<div class="premium-empty">Nenhum rendimento recebido neste mês.</div>';
   return `<div class="premium-panel dashboard-home-payers">
     <div class="premium-panel-head">
       <div><div class="premium-panel-title">Maiores pagadores do mês</div><div class="premium-panel-sub">Ranking consultivo dos ativos que mais contribuíram no período atual.</div></div>
@@ -17207,11 +17216,11 @@ function dashboardIncomeSnapshot(data){
   const goalPct=Number(data?.income?.percent)||0;
   const target=Number(data?.income?.target)||0;
   const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
-  const best=data?.income?.bestPayer;
+  const best=data?.recent?.best;
   const total12=Number(data?.income?.total12)||0;
   const launches=Number(data?.recent?.count)||0;
   return `<div class="premium-panel premium-dividend-panel">
-    <div class="premium-panel-head"><div><div class="premium-panel-title">Dividendos recentes</div><div class="premium-panel-sub">Último mês com proventos registrados.</div></div><div class="premium-panel-badge">${esc(recentMonthLabel)}</div></div>
+    <div class="premium-panel-head"><div><div class="premium-panel-title">Dividendos recentes</div><div class="premium-panel-sub">Mês calendário atual na base combinada.</div></div><div class="premium-panel-badge">${esc(recentMonthLabel)}</div></div>
     <div class="premium-exec-list">
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Total recebido</div><div class="premium-exec-sub">${launches} lançamento${launches===1?'':'s'} no período</div></div><div class="premium-exec-value gn">${fmt(data.recent.total)}</div></div>
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Melhor pagador</div><div class="premium-exec-sub">${best?best.count||0:'—'} lançamento${best&&best.count===1?'':'s'} no período</div></div><div class="premium-exec-value">${best?`${best.ticker||best.key||'—'} · ${fmt(best.total||0)}`:'Sem dados'}</div></div>
