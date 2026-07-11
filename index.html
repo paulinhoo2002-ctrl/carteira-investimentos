@@ -566,6 +566,8 @@ button{cursor:pointer;font-family:inherit}
 .rf-preview-value{text-align:right;font-size:11px;font-weight:850;color:#d7e1ef;white-space:nowrap}
 .rf-preview-value .premium-row-sub{font-size:9px;color:#94a3b8;margin-top:2px}
 .rf-events-stack{display:flex;flex-direction:column;gap:10px}
+.rf-event-summary-inline{font-size:9px;line-height:1.45;color:var(--muted);display:flex;flex-direction:column;gap:2px;margin-top:6px;padding:8px 9px;border:1px dashed var(--border);border-radius:10px;background:var(--surface-2)}
+.rf-event-summary-inline strong{color:var(--text)}
 .rf-history-lead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);margin-bottom:10px}
 .rf-history-title{font-size:12px;font-weight:900;color:var(--text)}
 .rf-history-sub{font-size:10px;line-height:1.45;color:var(--muted);margin-top:2px;max-width:70ch}
@@ -2399,6 +2401,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .rf-history-title{font-size:11px}
   .rf-history-sub{font-size:9px;max-width:none}
   .rf-history-badge{font-size:8px;padding:3px 6px}
+  .rf-event-summary-inline{font-size:8px;padding:7px 8px}
 .rf-event-editor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .rf-event-table{min-width:860px}
   .premium-rf-panel .premium-dashboard-grid{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
@@ -17218,10 +17221,18 @@ function rfIntelligenceSnapshot(){
   const assets=(S.assets||[]).filter(isRendaFixaAsset);
   const rows=assets.map(a=>{
     const vals=rfValues(a);
+    const eventTotals=rfEventTotals(rfEventsForAsset(a));
     const applied=Number(vals.applied)||0;
     const current=Number(vals.current)||0;
     const profit=Number(vals.profit)||0;
     const pct=applied>0 ? (profit/applied)*100 : 0;
+    const receivedGross=Number(eventTotals.grossValue)||0;
+    const receivedIr=Number(eventTotals.ir)||0;
+    const receivedIof=Number(eventTotals.iof)||0;
+    const receivedNet=Number(eventTotals.netValue)||0;
+    const eventCount=Number(eventTotals.count)||0;
+    const resultWithEvents=profit+receivedNet;
+    const rentabWithEvents=applied>0 ? (resultWithEvents/applied)*100 : null;
     const due=parseAnyDate(assetRfMaturityDate(a));
     const days=due ? Math.floor((due.getTime()-today.getTime())/86400000) : null;
     const category=rfCategoryLabel(a);
@@ -17249,11 +17260,19 @@ function rfIntelligenceSnapshot(){
       due,
       days,
       explicit,
-      currentMeta,
-      issues,
-      bucket:rfBucketLabel(days)
-    };
-  });
+        currentMeta,
+        issues,
+        eventTotals,
+        eventCount,
+        receivedGross,
+        receivedIr,
+        receivedIof,
+        receivedNet,
+        resultWithEvents,
+        rentabWithEvents,
+        bucket:rfBucketLabel(days)
+      };
+    });
   const totalApplied=rows.reduce((s,r)=>s+r.applied,0);
   const totalCurrent=rows.reduce((s,r)=>s+r.current,0);
   const totalProfit=totalCurrent-totalApplied;
@@ -17358,6 +17377,20 @@ function rfEventStatusBadge(row, totals){
     return `<span class="rf-event-badge ok">Seed conferido</span>`;
   }
   return `<span class="rf-event-badge warn">${totals.count}/${seed.count} eventos</span>`;
+}
+function rfEventReceiptsSummaryHtml(row){
+  const count=Number(row?.eventCount)||0;
+  if(count<=0) return '';
+  const gross=Number(row?.receivedGross)||0;
+  const ir=Number(row?.receivedIr)||0;
+  const iof=Number(row?.receivedIof)||0;
+  const net=Number(row?.receivedNet)||0;
+  const resultWithEvents=Number(row?.resultWithEvents)||0;
+  const rentabWithEvents=row?.rentabWithEvents;
+  return `
+    <div><strong>Recebidos:</strong> bruto ${fmt(gross)} · IR ${fmt(ir)} · IOF ${fmt(iof)} · líquido ${fmt(net)}</div>
+    <div><strong>Com eventos:</strong> resultado ${fmt(resultWithEvents)} · rentab. ${fmtP(rentabWithEvents)}</div>
+  `;
 }
 function rfEventTypeOptionsHtml(selected){
   return RF_EVENT_TYPE_OPTIONS.map(([value,label])=>`<option value="${value}" ${normalizeRfEventType(selected)===value?'selected':''}>${esc(label)}</option>`).join('');
@@ -17508,6 +17541,7 @@ function rendaFixaTab(){
         <div class="${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</div>
         <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>
       </div>
+      ${rfEventReceiptsSummaryHtml(row) ? `<div class="rf-event-summary-inline" style="grid-column:1 / -1">${rfEventReceiptsSummaryHtml(row)}</div>` : ''}
     </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
   const eventCards=rfEventHistoryCards(data.tableRows);
   const tableRows=data.tableRows.length ? data.tableRows.map(row=>`
@@ -17516,7 +17550,10 @@ function rendaFixaTab(){
       <td>${esc(row.category)}</td>
       <td class="rf-right">${fmt(row.applied)}</td>
       <td class="rf-right">${fmt(row.current)}</td>
-      <td class="rf-right ${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</td>
+      <td class="rf-right ${row.profit>=0?'gn':'rd'}">
+        <div>${fmt(row.profit)}</div>
+        ${rfEventReceiptsSummaryHtml(row) ? `<div class="rf-event-summary-inline">${rfEventReceiptsSummaryHtml(row)}</div>` : ''}
+      </td>
       <td class="rf-right ${row.pct>=0?'gn':'rd'}">${fmtP(row.pct)}</td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
       <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span></td>
