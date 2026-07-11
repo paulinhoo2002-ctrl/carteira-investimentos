@@ -11733,6 +11733,7 @@ function proventoAuditEntryId(p, idx){
 }
 function proventoAuditBuildRows(){
   const state=proventoAuditEnsureState();
+  const rfMap=rfEventByIdMap();
   const all=(S.proventos||[]).map((p,idx)=>{
     const date=String(p.date||'').trim();
     const dt=parseAnyDate(date);
@@ -11740,6 +11741,7 @@ function proventoAuditBuildRows(){
     const eventType=proventoAuditEntryType(p);
     const ticker=String(p.ticker||'').trim().toUpperCase();
     const value=Number(p.value)||0;
+    const link=manualIncomeRfLinkStatus(p, rfMap);
     const assetMeta=proventoAssetMeta(p);
     const name=String(p.assetName||assetMeta.title||p.note||'—').trim() || '—';
     const source=String(p.source||'—').trim() || '—';
@@ -11758,6 +11760,12 @@ function proventoAuditBuildRows(){
       value,
       source,
       autoKey,
+      rfLinkValid:link.linked,
+      rfLinkBroken:link.broken,
+      excludedByRfLink:link.excluded,
+      rfLinkReason:link.reason,
+      linkedRfEvent:link.rfEvent,
+      sourceEventId:String(p.sourceEventId||'').trim(),
       dupKey
     };
   });
@@ -11785,6 +11793,19 @@ function proventoAuditBuildRows(){
   const tickerFilter=rfPosNorm(state.ticker||'');
   const eventFilter=String(state.eventType||'all').trim();
   const monthFilter=String(state.month||'').trim();
+  all.forEach(row=>{
+    if(row.rfLinkValid){
+      row.status='JÃ¡ contabilizado em Renda Fixa';
+      row.statusClass='info';
+      row.statusLabel='JÃ¡ contabilizado em Renda Fixa';
+      row.obs=`ExcluÃ­do dos totais combinados; RF ${row.sourceEventId} prevalece.`;
+    }else if(row.rfLinkBroken){
+      row.status='VÃ­nculo RF nÃ£o encontrado';
+      row.statusClass='warn';
+      row.statusLabel='VÃ­nculo de renda fixa nÃ£o encontrado';
+      row.obs=`sourceEventId ${row.sourceEventId||'â€”'} nÃ£o existe em S.rfEvents; o provento continua contabilizado.`;
+    }
+  });
   const filteredBase=all.filter(row=>{
     if(monthFilter && row.monthKey!==monthFilter) return false;
     if(eventFilter!=='all' && row.eventType!==eventFilter) return false;
@@ -13531,25 +13552,17 @@ function rentBenchSeries(length, bench='CDI'){
   return out;
 }
 function rentabilityIncomeRows(){
-  const manualRows=dividendManualRows().map((row,index)=>({
-    id:row.id!=null ? `manual:${row.id}` : `manual-index:${index}`,
+  return passiveIncomeCombinedRows().map((row,index)=>({
+    id:row.sourceKind==='rf'
+      ? (row.id!=null ? `rf:${row.id}` : `rf-index:${index}`)
+      : (row.id!=null ? `manual:${row.id}` : `manual-index:${index}`),
     ticker:String(row.ticker||'').trim().toUpperCase(),
     date:row.date,
     _dt:row.dt instanceof Date ? row.dt : parseAnyDate(row.date),
     value:Number(row.value)||0,
-    assetType:normalizeType(row.assetType||row.assetClass||metaTicker(row.ticker).type||'Ação','Ação'),
-    sourceKind:'manual'
-  }));
-  const rfRows=rfPassiveIncomeRows().map((row,index)=>({
-    id:row.id!=null ? `rf:${row.id}` : `rf-index:${index}`,
-    ticker:String(row.ticker||'').trim().toUpperCase(),
-    date:row.date,
-    _dt:row.dt instanceof Date ? row.dt : parseAnyDate(row.date),
-    value:Number(row.value)||0,
-    assetType:normalizeType(row.assetType||row.assetClass||'Renda Fixa','Renda Fixa'),
-    sourceKind:'rf'
-  }));
-  return [...manualRows, ...rfRows]
+    assetType:normalizeType(row.assetType||row.assetClass||metaTicker(row.ticker).type||'AÃ§Ã£o','AÃ§Ã£o'),
+    sourceKind:row.sourceKind||'manual'
+  }))
     .filter(row=>row._dt && row.value>0)
     .sort((a,b)=>a._dt-b._dt || a.ticker.localeCompare(b.ticker,'pt-BR') || a.sourceKind.localeCompare(b.sourceKind,'pt-BR'));
 }
@@ -19183,7 +19196,30 @@ function allocationGoalModal(){
   </div>`;
 }
 
-function dividendManualRows(){
+function rfEventByIdMap(){
+  const map=new Map();
+  normalizeRfEvents(S.rfEvents||[]).forEach(event=>{
+    const id=String(event?.id||'').trim();
+    if(id) map.set(id,event);
+  });
+  return map;
+}
+function manualIncomeRfLinkStatus(row, rfMap=rfEventByIdMap()){
+  const sourceEventKind=String(row?.sourceEventKind||'').trim().toLowerCase();
+  const sourceEventId=String(row?.sourceEventId||'').trim();
+  const hasRfIntent=sourceEventKind==='rf' && !!sourceEventId;
+  const rfEvent=hasRfIntent ? (rfMap.get(sourceEventId)||null) : null;
+  const linked=!!rfEvent;
+  const broken=hasRfIntent && !linked;
+  return {
+    linked,
+    broken,
+    excluded:linked,
+    rfEvent,
+    reason:linked ? 'JÃ¡ contabilizado em Renda Fixa' : broken ? 'VÃ­nculo de renda fixa nÃ£o encontrado' : ''
+  };
+}
+function dividendManualRows(rfMap=rfEventByIdMap()){
   return (S.proventos||[]).map((p,index)=>{
     const dt=parseAnyDate(p.date);
     const paymentDt=proventoDividendPaymentDate(p);
@@ -19192,7 +19228,13 @@ function dividendManualRows(){
     const assetType=normalizeType(meta.asset?.type||metaTicker(p.ticker).type||'Ação','Ação');
     const displayType=canonical==='Rendimento' && assetType==='FII' ? 'Rendimento FII' : canonical;
     const value=Number(p.value)||0;
-    return {
+    const sourceEventKind=String(p.sourceEventKind||'').trim();
+    const sourceEventId=String(p.sourceEventId||'').trim();
+    const dedupeStatus=String(p.dedupeStatus||'').trim();
+    const excludedFromIncomeTotals=p.excludedFromIncomeTotals===true;
+    const dedupeLinkedAt=String(p.dedupeLinkedAt||'').trim();
+    const dedupeNote=String(p.dedupeNote||'').trim();
+    const row={
       id:p.id,
       raw:p,
       index,
@@ -19215,9 +19257,22 @@ function dividendManualRows(){
       origin:assetType,
       sourceKind:'manual',
       isRf:false,
+      sourceEventKind,
+      sourceEventId,
+      dedupeStatus,
+      excludedFromIncomeTotals,
+      dedupeLinkedAt,
+      dedupeNote,
       paymentDt,
       paymentDate:paymentDt ? toISODate(paymentDt) : ''
     };
+    const link=manualIncomeRfLinkStatus(row, rfMap);
+    row.rfLinkValid=link.linked;
+    row.rfLinkBroken=link.broken;
+    row.excludedByRfLink=link.excluded;
+    row.rfLinkedEvent=link.rfEvent;
+    row.dedupeReason=link.reason;
+    return row;
   }).filter(row=>row.value>0).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.index-a.index);
 }
 function rfPassiveIncomeRows(){
@@ -19264,7 +19319,13 @@ function rfPassiveIncomeRows(){
     .sort((a,b)=>(b.date||'').localeCompare(a.date||'') || b.index-a.index || b.sourceKind.localeCompare(a.sourceKind,'pt-BR'));
 }
 function passiveIncomeCombinedRows(){
-  return [...dividendManualRows(), ...rfPassiveIncomeRows()];
+  const rfMap=rfEventByIdMap();
+  const manualRows=dividendManualRows(rfMap);
+  return [...manualRows.filter(row=>!row.excludedByRfLink), ...rfPassiveIncomeRows()];
+}
+function passiveIncomeAllRows(){
+  const rfMap=rfEventByIdMap();
+  return [...dividendManualRows(rfMap), ...rfPassiveIncomeRows()];
 }
 function dividendPremiumRows(){
   return passiveIncomeCombinedRows();
