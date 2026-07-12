@@ -5315,9 +5315,14 @@ let _toastTimer=null;
 function toast(msg, cor='#6ee7b7'){
   const el=document.getElementById('toast-area');
   if(!el) return;
-  el.innerHTML=`<div class="toast" style="border-color:${cor}33;color:${cor}">${msg}</div>`;
+  const node=document.createElement('div');
+  node.className='toast';
+  node.style.borderColor=`${cor}33`;
+  node.style.color=cor;
+  node.textContent=String(msg ?? '');
+  el.replaceChildren(node);
   clearTimeout(_toastTimer);
-  _toastTimer=setTimeout(()=>{ if(el) el.innerHTML=''; },2800);
+  _toastTimer=setTimeout(()=>{ if(el) el.replaceChildren(); },2800);
 }
 
 // ══════════════════════════════════════
