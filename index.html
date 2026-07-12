@@ -14748,7 +14748,6 @@ async function fetchQuotes(manual=false){
         for(let i=0;i<falhou.length;i+=20){
           const batch=falhou.slice(i,i+20).join(',');
           let r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?range=1d&interval=1d&fundamental=true`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
-          if(!r.ok) r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?range=1d&interval=1d&fundamental=true&token=${encodeURIComponent(S.brapiToken)}`);
           if(!r.ok) continue;
           const j=await r.json();
           const recv=new Set();
@@ -14830,7 +14829,7 @@ async function fetchAutoProventos(){
     for(let i=0;i<tickers.length;i+=10){
       const batch=tickers.slice(i,i+10).join(',');
       try{
-        const r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?dividends=true&range=max&interval=1d&token=${encodeURIComponent(S.brapiToken)}`);
+        const r=await fetch(`https://brapi.dev/api/quote/${encodeURIComponent(batch)}?dividends=true&range=max&interval=1d`,{headers:{Authorization:`Bearer ${S.brapiToken}`}});
         if(r.ok){const j=await r.json();(j.results||[]).forEach(q=>addItems(collectDividendItems(q,q.symbol),'quote'));}
       }catch(e){erros.push('quote');}
     }
