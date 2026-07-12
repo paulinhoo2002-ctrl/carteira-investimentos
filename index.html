@@ -5017,7 +5017,7 @@ function walletSwitchBox(){
   </details>`;
 }
 function mobileTopActionButton(){
-  return `<button class="btn bgh hdr-top-fab" onclick="toggleMobileTopMenu()" aria-label="Abrir menu rápido"><span class="hdr-mobile-icon">⋯</span><span class="hdr-mobile-label">Menu</span></button>`;
+  return `<button class="btn bgh hdr-top-fab" onclick="toggleMobileTopMenu()" aria-label="Abrir menu rápido" aria-controls="investTopDrawer" aria-expanded="${S.mobileTopMenuOpen?'true':'false'}"><span class="hdr-mobile-icon">⋯</span><span class="hdr-mobile-label">Menu</span></button>`;
 }
 function configMenu(){
   const securityBtn = canManageSecurity()
@@ -5062,7 +5062,8 @@ function installBox(){
   return `<button class="btn binst hdr-mobile-btn" style="font-size:12px;padding:7px 12px" onclick="installPWA()"><span class="hdr-mobile-icon">📲</span><span class="hdr-mobile-label">Instalar app</span></button>`;
 }
 function mobileTopDrawer(){
-  return `<div id="investTopDrawer" class="${S.mobileTopMenuOpen?'open':''}">
+  const open=!!S.mobileTopMenuOpen;
+  return `<div id="investTopDrawer" class="${open?'open':''}" aria-hidden="${open?'false':'true'}"${open?'':' hidden'}>
     <div class="mt-overlay" onclick="closeMobileTopMenu()"></div>
     <div class="mt-panel">
       <div class="mt-grip"></div>
@@ -17202,20 +17203,24 @@ const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['audi
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
 }
-function navTabButton(key, label){
-  return `<button class="tab${navTabActive(key)?' on':''}" onclick="go('${key}')">${label}</button>`;
+function navCurrentAttr(key){
+  return navTabActive(key)?' aria-current="page"':'';
 }
-function navTabGroup(label, items){
+function navTabButton(key, label){
+  return `<button class="tab${navTabActive(key)?' on':''}" onclick="go('${key}')"${navCurrentAttr(key)}>${label}</button>`;
+}
+function navTabGroup(label, items, idSuffix='main'){
   const active=items.some(([key])=>navTabActive(key));
-  return `<details class="tab-menu">
-    <summary class="tab${active?' on':''}">${label}</summary>
-    <div class="tab-menu-panel">
-      ${items.map(([key,itemLabel])=>`<button class="tab${navTabActive(key)?' on':''}" onclick="go('${key}')">${itemLabel}</button>`).join('')}
+  const panelId=`nav-group-${idSuffix}-${items[0]?.[0] || 'menu'}`;
+  return `<details class="tab-menu" ontoggle="this.querySelector('summary')?.setAttribute('aria-expanded', this.open ? 'true' : 'false')">
+    <summary class="tab${active?' on':''}" aria-controls="${panelId}" aria-expanded="false">${label}</summary>
+    <div class="tab-menu-panel" id="${panelId}">
+      ${items.map(([key,itemLabel])=>`<button class="tab${navTabActive(key)?' on':''}" onclick="go('${key}')"${navCurrentAttr(key)}>${itemLabel}</button>`).join('')}
     </div>
   </details>`;
 }
 function desktopTabs(){
-  return `<div class="tabs tabs-desktop">
+  return `<nav class="tabs tabs-desktop" aria-label="Navegação principal da carteira">
     ${navTabButton('dashboard','📊 Dashboard')}
     ${navTabButton('patrimonio','🏛️ Patrimônio')}
     ${navTabButton('ativos','💼 Ativos')}
@@ -17225,14 +17230,14 @@ function desktopTabs(){
     ${navTabButton('rentabilidade','📈 Rentabilidade')}
     ${navTabButton('ajudar','⚖️ Rebalancear')}
     ${navTabButton('ia','🤖 IA')}
-    ${navTabGroup('Relatórios',REPORT_TABS)}
-  </div>`;
+    ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
+  </nav>`;
 }
 function mobileTabs(){
-  return `<div class="tabs tabs-mobile">
+  return `<nav class="tabs tabs-mobile" aria-label="Navegação principal da carteira">
     ${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}
-    ${navTabGroup('Relatórios',REPORT_TABS)}
-  </div>`;
+    ${navTabGroup('Relatórios',REPORT_TABS,'mobile')}
+  </nav>`;
 }
 function app(){
   if(shouldShowAccessGate()) return accessGateBox();
@@ -21220,30 +21225,30 @@ function mobileMenuClose(){
   });
 }
 function mobileBottomNav(){
-  return `<nav id="investBottomNav">
-    <button class="${S.tab==='dashboard'?'act':''}" onclick="go('dashboard')"><span class="ni">📊</span><span>Dashboard</span></button>
-    <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"><span class="ni">💼</span><span>Ativos</span></button>
-    <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"><span class="ni">💰</span><span>Aportes</span></button>
-    <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"><span class="ni">📅</span><span>Dividendos</span></button>
-    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()"><span class="ni">☰</span><span>Menu</span></button>
+  return `<nav id="investBottomNav" aria-label="Navegação principal da carteira">
+    <button class="${S.tab==='dashboard'?'act':''}" onclick="go('dashboard')"${S.tab==='dashboard'?' aria-current="page"':''}><span class="ni">📊</span><span>Dashboard</span></button>
+    <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"${S.tab==='ativos'?' aria-current="page"':''}><span class="ni">💼</span><span>Ativos</span></button>
+    <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}><span class="ni">💰</span><span>Aportes</span></button>
+    <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"${S.tab==='dividendos'?' aria-current="page"':''}><span class="ni">📅</span><span>Dividendos</span></button>
+    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()" aria-label="Abrir navegação complementar" aria-controls="investMenuDrawer" aria-expanded="${S.mobileMenuOpen?'true':'false'}"><span class="ni">☰</span><span>Menu</span></button>
   </nav>`;
 }
 function mobileMenuDrawer(){
   const open=!!S.mobileMenuOpen;
-  return `<div id="investMenuDrawer" class="${open?'open':''}">
+  return `<div id="investMenuDrawer" class="${open?'open':''}" aria-hidden="${open?'false':'true'}"${open?'':' hidden'}>
     <div class="overlay" onclick="mobileMenuClose()"></div>
     <div id="investMenuSheet">
       <div class="sheet-grip"></div>
       <div class="sheet-title">Mais seções</div>
       <div class="sheet-grid">
-        <button onclick="mobileMenuClose();go('patrimonio')">🏛️ Patrimônio</button>
-        <button onclick="mobileMenuClose();go('rentabilidade')">📈 Rentab.</button>
-        <button onclick="mobileMenuClose();go('metas')">🎯 Metas</button>
-        <button onclick="mobileMenuClose();go('ajudar')">⚖️ Rebalancear</button>
-        <button onclick="mobileMenuClose();go('auditoria')">🔎 Auditoria</button>
-        <button onclick="mobileMenuClose();go('relatorios')">📑 Relatórios</button>
-        <button class="focus" onclick="mobileMenuClose();go('ia')">🤖 IA</button>
-        <button onclick="mobileMenuClose();go('irpf')">🧾 IRPF</button>
+        <button onclick="mobileMenuClose();go('patrimonio')"${S.tab==='patrimonio'?' aria-current="page"':''}>🏛️ Patrimônio</button>
+        <button onclick="mobileMenuClose();go('rentabilidade')"${S.tab==='rentabilidade'?' aria-current="page"':''}>📈 Rentab.</button>
+        <button onclick="mobileMenuClose();go('metas')"${S.tab==='metas'?' aria-current="page"':''}>🎯 Metas</button>
+        <button onclick="mobileMenuClose();go('ajudar')"${S.tab==='ajudar'?' aria-current="page"':''}>⚖️ Rebalancear</button>
+        <button onclick="mobileMenuClose();go('auditoria')"${S.tab==='auditoria'?' aria-current="page"':''}>🔎 Auditoria</button>
+        <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>📑 Relatórios</button>
+        <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>🤖 IA</button>
+        <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>🧾 IRPF</button>
       </div>
     </div>
   </div>`;
