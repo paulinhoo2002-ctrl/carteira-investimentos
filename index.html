@@ -13572,7 +13572,7 @@ function irpfTabPremium(){
         </div>
         <div class="irpf-yearbox">
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-            <select id="irpf-year" onchange="setIrpfYear(this.value)" style="min-width:160px">
+            <select id="irpf-year-report" onchange="setIrpfYear(this.value)" style="min-width:160px">
               ${years.map(y=>`<option value="${y}" ${Number(y)===Number(year)?'selected':''}>${y}</option>`).join('')}
             </select>
             <button class="btn bp" onclick="irpfExportCSV()">⬇️ CSV</button>
