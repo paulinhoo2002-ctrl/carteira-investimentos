@@ -12230,7 +12230,7 @@ function renderProventoRfLinkAuditPanel(){
       <div class="prov-review-head">
         <div class="prov-review-title">
           <strong>Revisão de renda passiva</strong>
-          <span>${audit.summary.pending ? `${audit.summary.pending} pendência${audit.summary.pending===1?'':'s'} em revisão` : 'Nenhuma revisão pendente.'}</span>
+          <span>${audit.summary.pending ? `${audit.summary.pending} pendência${audit.summary.pending===1?'':'s'} em revisão` : 'Revisão limpa nesta lista.'}</span>
         </div>
         ${audit.summary.pending ? `<button class="btn bgh" style="min-height:34px;padding:7px 10px;font-size:11px" onclick="toggleProventoReviewOpen()">${open ? 'Fechar' : 'Revisar'}</button>` : ''}
       </div>
@@ -20080,7 +20080,7 @@ function dividendOverviewRecentPanel(rows){
   </div>`;
 }
 function setDividendViewMode(mode){
-  S.dividendViewMode=['overview','received','asset','monthly','timeline'].includes(mode)?mode:'overview';
+  S.dividendViewMode=['overview','received','asset','monthly','timeline','review'].includes(mode)?mode:'overview';
   render();
 }
 function setDividendFilter(value){ S.dividendFilter=['all','dividend','jcp','income','other'].includes(value)?value:'all'; render(); }
@@ -20108,13 +20108,13 @@ function dividendFilterTabs(){
   const types=[['all','Todos'],['dividend','Dividendos'],['jcp','JCP'],['income','Rendimento FII'],['other','Outros']];
   const classes=[['all','Todas as classes'],['acao','Ação'],['fii','FII'],['etf','ETF'],['renda-fixa','Renda Fixa'],['outros','Outros']];
   const periods=[['all','Todo histórico'],['month','Este mês'],['12m','Últimos 12 meses']];
-  return `<div class="div-premium-toolbar"><div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div><div class="div-premium-filters">${types.map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Classe</span>${classes.map(([id,label])=>`<button class="div-premium-chip ${S.dividendClassFilter===id?'on':''}" onclick="setDividendClassFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Período</span>${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div></div>`;
+  return `<div class="div-premium-toolbar"><div style="display:flex;flex-direction:column;gap:8px;min-width:0;flex:1 1 100%"><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div><div class="div-premium-filters">${types.map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}</div></div><details class="div-collapsible"><summary class="div-collapsible-summary"><div class="div-collapsible-main"><div class="div-collapsible-title">Mais filtros</div><div class="div-collapsible-sub">Classe e período</div></div><div class="div-collapsible-meta"><span class="when-closed">clique para abrir</span><span class="when-open">clique para ocultar</span></div><div class="div-collapsible-chev">▸</div></summary><div class="div-collapsible-body"><div class="div-premium-filters" style="flex-wrap:wrap;overflow:visible">${classes.map(([id,label])=>`<button class="div-premium-chip ${S.dividendClassFilter===id?'on':''}" onclick="setDividendClassFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Período</span>${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div></div></details></div></div>`;
 }
 function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
-  const mode=['overview','received','asset','monthly','timeline'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
+  const mode=['overview','received','asset','monthly','timeline','review'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
   S.dividendViewMode=mode;
   const rows=filteredDividendRows();
-  const tabs=[['overview','Visão geral'],['received','Recebimentos'],['asset','Por ativo'],['monthly','Histórico mensal'],['timeline','Linha do tempo']];
+  const tabs=[['overview','Visão geral'],['received','Recebimentos'],['asset','Por ativo'],['monthly','Histórico mensal'],['timeline','Linha do tempo'],['review','Revisão']];
   const recentSection=dividendCompactSectionHeader(
     'received',
     'Últimos recebimentos',
@@ -20134,6 +20134,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendTimelineSummary(rows),
     dividendMonthlyTimeline()
   );
+  const reviewSection=renderProventoRfLinkAuditPanel();
   const overviewBody=`<div class="div-overview-grid">
     <div class="div-overview-main">
       ${dividendSummaryCards()}
@@ -20147,6 +20148,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
     :mode==='received'?recentSection
+    :mode==='review'?reviewSection
     :overviewBody;
   return `<div class="div-premium">
     <div class="div-premium-hero">
@@ -20155,9 +20157,8 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
       <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
     </div>
     ${frmD()}
-    ${mode!=='timeline'?dividendFilterTabs():''}
+    ${mode!=='timeline' && mode!=='review'?dividendFilterTabs():''}
     ${body}
-    ${renderProventoRfLinkAuditPanel()}
     ${renderProventoRfLinkModal()}
   </div>`;
 }
