@@ -20326,7 +20326,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
       <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
     </div>
     ${frmD()}
-    ${mode!=='timeline' && mode!=='review'?dividendFilterTabs():''}
+    ${mode!=='overview'?dividendFilterTabs():''}
     ${body}
     ${mode==='overview'?dividendGoalProgress():''}
     ${renderProventoRfLinkModal()}
