@@ -4001,7 +4001,8 @@ function load(){
       if(Array.isArray(d.proventos)) S.proventos = d.proventos;
       if(Array.isArray(d.rfEvents))  S.rfEvents  = normalizeRfEvents(d.rfEvents);
     }
-    if(d.tab)                       S.tab       = d.tab==='ranking' ? 'ativos' : d.tab;       // ← FIX: restaura tab
+    if(d.tab)                       S.tab       = d.tab==='ranking' ? 'ativos' : d.tab==='renda-fixa' ? 'ativos' : d.tab;       // ← FIX: restaura tab
+    if(d.tab==='renda-fixa')        S.assetsInnerTab = 'renda-fixa';
     if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
     if(d.hideValues !== undefined)  S.hideValues = !!d.hideValues;
     if(d.apHistoryOpen !== undefined) S.apHistoryOpen = !!d.apHistoryOpen;
@@ -14847,7 +14848,7 @@ function setAssetsAnalysisRankingMode(mode){
   render();
 }
 function setAssetsInnerTab(tab){
-  S.assetsInnerTab = tab==='analise' ? 'analise' : 'patrimonio';
+  S.assetsInnerTab = ['analise','renda-fixa'].includes(tab) ? tab : 'patrimonio';
   render();
 }
 function isDividendSectionOpen(section){
@@ -16966,7 +16967,7 @@ function render(){
       </div>`;
   }
 }
-const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','💼 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
 const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
@@ -16991,7 +16992,6 @@ function desktopTabs(){
     ${navTabButton('aportes','💰 Aportes')}
     ${navTabButton('metas','🎯 Metas')}
     ${navTabButton('dividendos','📅 Dividendos')}
-    ${navTabButton('renda-fixa','💼 Renda Fixa')}
     ${navTabButton('rentabilidade','📈 Rentabilidade')}
     ${navTabButton('ajudar','⚖️ Rebalancear')}
     ${navTabButton('ia','🤖 IA')}
@@ -17059,7 +17059,7 @@ function content(){
   if(S.tab==='aportes')   return apTab();
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
-  if(S.tab==='renda-fixa')return rendaFixaTab();
+  if(S.tab==='renda-fixa')return ativos();
   if(S.tab==='irpf')      return irpfTabPremium();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
@@ -18520,7 +18520,7 @@ function frmA(){
   </div>`;
 }
 function ativos(){
-  const innerTab=String(S.assetsInnerTab||'patrimonio')==='analise' ? 'analise' : 'patrimonio';
+  const innerTab=['analise','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const assetMetricsCache=new Map();
   const getAssetMetrics=a=>{
     if(assetMetricsCache.has(a)) return assetMetricsCache.get(a);
@@ -18735,8 +18735,9 @@ function ativos(){
   <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
     <button class="asset-inner-tab ${innerTab==='patrimonio'?'on':''}" onclick="setAssetsInnerTab('patrimonio')" role="tab" aria-selected="${innerTab==='patrimonio'?'true':'false'}">Patrimônio</button>
     <button class="asset-inner-tab ${innerTab==='analise'?'on':''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab==='analise'?'true':'false'}">Análise</button>
+    <button class="asset-inner-tab ${innerTab==='renda-fixa'?'on':''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab==='renda-fixa'?'true':'false'}">Renda Fixa</button>
   </div>
-  ${innerTab==='analise'?analysisPanel:patrimonyPanel}`;
+  ${innerTab==='analise' ? analysisPanel : innerTab==='renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : patrimonyPanel}`;
 }
 // APORTES
 // ══════════════════════════════════════
@@ -20998,7 +20999,6 @@ function mobileMenuDrawer(){
       <div class="sheet-grid">
         <button onclick="mobileMenuClose();go('patrimonio')">🏛️ Patrimônio</button>
         <button onclick="mobileMenuClose();go('rentabilidade')">📈 Rentab.</button>
-        <button onclick="mobileMenuClose();go('renda-fixa')">💼 Renda Fixa</button>
         <button onclick="mobileMenuClose();go('metas')">🎯 Metas</button>
         <button onclick="mobileMenuClose();go('ajudar')">⚖️ Rebalancear</button>
         <button onclick="mobileMenuClose();go('auditoria')">🔎 Auditoria</button>
@@ -21011,10 +21011,12 @@ function mobileMenuDrawer(){
 }
 function go(t){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
-  S.tab=t;
+  const nextTab=t==='renda-fixa' ? 'ativos' : t;
+  S.tab=nextTab;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
   if(t==='aportes') S.aportesViewMode='resumo';
+  if(t==='renda-fixa') S.assetsInnerTab='renda-fixa';
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();
