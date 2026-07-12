@@ -13,7 +13,21 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <title>📈 Carteira de Investimentos</title>
 <script>
-(()=>{try{const t=localStorage.getItem('carteira_theme');const theme=t==='light'?'light':'dark';document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;const meta=document.querySelector('meta[name="theme-color"]');if(meta) meta.setAttribute('content',theme==='light'?'#eef4fb':'#0b1220');}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();
+(()=>{try{
+  const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('testMode')==='1';
+  window.__LOCAL_TEST_MODE__=testMode;
+  if(testMode){
+    document.documentElement.dataset.theme='dark';
+    document.documentElement.style.colorScheme='dark';
+    return;
+  }
+  const t=localStorage.getItem('carteira_theme');
+  const theme=t==='light'?'light':'dark';
+  document.documentElement.dataset.theme=theme;
+  document.documentElement.style.colorScheme=theme;
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content',theme==='light'?'#eef4fb':'#0b1220');
+}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';}})();
 </script>
 <style>
 :root{
@@ -3535,10 +3549,15 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
 <input type="file" id="b3-file" accept=".xlsx,.xls,.csv,.pdf" style="display:none">
 <input type="file" id="nota-file" accept=".xlsx,.xls,.csv" style="display:none">
 <input type="file" id="broker-note-pdf-file" accept=".pdf,application/pdf" style="display:none">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+(()=>{if(window.__LOCAL_TEST_MODE__) return;
+document.write([
+  '<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"><\/script>',
+  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"><\/script>',
+  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"><\/script>',
+  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"><\/script>'
+].join(''));})();
+</script>
 <script>
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
@@ -3595,12 +3614,17 @@ function applyTheme(theme){
   if(meta) meta.setAttribute('content', THEME_COLOR[THEME] || THEME_COLOR.dark);
 }
 function loadThemePreference(){
+  if(isLocalTestMode()){
+    applyTheme('dark');
+    return;
+  }
   let theme='dark';
   try{ theme=localStorage.getItem(THEME_STOR); }catch(e){}
   applyTheme(theme);
 }
 function saveThemePreference(theme){
   applyTheme(theme);
+  if(isLocalTestMode()) return;
   try{ localStorage.setItem(THEME_STOR, THEME); }catch(e){}
 }
 function toggleTheme(){
@@ -3692,6 +3716,166 @@ try{
 }catch(e){}
 
 function cloneData(v){ return JSON.parse(JSON.stringify(v ?? null)); }
+const DEFAULT_RUNTIME_STATE=cloneData(S);
+function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
+function resetTransientRuntimeState(){
+  clearTimeout(S.apSearchTimer);
+  clearTimeout(S.dividendSearchTimer);
+  clearTimeout(S.autoProvTimer);
+  S.apSearchTimer=null;
+  S.dividendSearchTimer=null;
+  S.autoProvTimer=null;
+  S.autoProvRunning=false;
+  S.autoProvDirty=false;
+  S.qInFlight=false;
+  S.qLoad=false;
+  S.backupOpen=false;
+  S.accessSettingsOpen=false;
+  S.mobileMenuOpen=false;
+  S.mobileTopMenuOpen=false;
+  S.quickMovementOpen=false;
+  S.quickMovementDraft=null;
+  S.quickMovementEditId=null;
+  S.brokerNoteImport=null;
+  S.brokerNoteImportSuccess=null;
+  S.noteReview=null;
+  S.b3Review=null;
+  S.b3MovementReview=null;
+  S.b3ImportMode=null;
+  S.rfPositionReview=null;
+  S.b3ProventosReview=null;
+  S.rfEventEditor=null;
+}
+function localTestFixtureWallet(){
+  const assets=[
+    {id:'stk-petr4',ticker:'PETR4',name:'Petrobras PN',product:'PETR4 Petrobras PN',title:'Petrobras PN',type:'Ação',sector:'Petróleo',qty:120,avg_price:28.10,current_price:34.25,dy:12.4},
+    {id:'stk-itub4',ticker:'ITUB4',name:'Itaú PN',product:'ITUB4 Itaú PN',title:'Itaú PN',type:'Ação',sector:'Bancos',qty:150,avg_price:25.00,current_price:32.10,dy:6.2},
+    {id:'stk-wege3',ticker:'WEGE3',name:'WEG ON',product:'WEGE3 WEG ON',title:'WEG ON',type:'Ação',sector:'Indústria',qty:80,avg_price:40.20,current_price:44.80,dy:1.8},
+    {id:'fii-mxrf11',ticker:'MXRF11',name:'Maxi Renda',product:'MXRF11 Maxi Renda',title:'Maxi Renda',type:'FII',sector:'Papel',qty:500,avg_price:9.65,current_price:10.12,dy:13.6},
+    {id:'fii-hglg11',ticker:'HGLG11',name:'CSHG Logística',product:'HGLG11 CSHG Logística',title:'CSHG Logística',type:'FII',sector:'Logística',qty:50,avg_price:151.00,current_price:165.40,dy:9.1},
+    {id:'fii-visc11',ticker:'VISC11',name:'Vinci Shopping',product:'VISC11 Vinci Shopping',title:'Vinci Shopping',type:'FII',sector:'Shopping',qty:40,avg_price:104.00,current_price:107.20,dy:10.0},
+    {id:'etf-bova11',ticker:'BOVA11',name:'iShares Ibovespa',product:'BOVA11 iShares Ibovespa',title:'iShares Ibovespa',type:'ETF',sector:'ETF',qty:25,avg_price:121.00,current_price:129.30,dy:6.5},
+    {id:'etf-ivvb11',ticker:'IVVB11',name:'iShares S&P 500',product:'IVVB11 iShares S&P 500',title:'iShares S&P 500',type:'ETF',sector:'ETF',qty:10,avg_price:220.00,current_price:248.00,dy:4.5},
+    {id:'rf-movi18',ticker:'MOVI18',name:'CDB MOVI18',product:'CDB MOVI18',title:'CDB MOVI18',type:'Renda Fixa',sector:'Renda Fixa',qty:1,avg_price:5000,current_price:5748.41,rf_applied_value:5000,rf_gross_value:5792.57,rf_liquid_value:5748.41,rf_ir_iof:44.16,rf_application_date:'2024-11-15',rf_maturity_date:'2026-06-15',rf_contract_rate:'CDI + 1,10% aa',rf_subtype:'CDB',fixed_issuer:'Banco Teste',note:'Título de teste MOVI18'},
+    {id:'rf-cra24',ticker:'CRA24',name:'CRA 2024',product:'CRA24 Certificado de Recebíveis',title:'CRA 2024',type:'Renda Fixa',sector:'Renda Fixa',qty:1,avg_price:3000,current_price:3333.45,rf_applied_value:3000,rf_gross_value:3365.00,rf_liquid_value:3333.45,rf_ir_iof:31.55,rf_application_date:'2025-05-10',rf_maturity_date:'2027-05-10',rf_contract_rate:'IPCA + 5,80% aa',rf_subtype:'CRA',fixed_issuer:'Emissor Teste',note:'Título de teste CRA'},
+    {id:'rf-cdb26',ticker:'CDB26',name:'CDB 2026',product:'CDB26 Liquidez',title:'CDB 2026',type:'Renda Fixa',sector:'Renda Fixa',qty:1,avg_price:4000,current_price:4120.40,rf_applied_value:4000,rf_gross_value:4128.20,rf_liquid_value:4120.40,rf_ir_iof:7.80,rf_application_date:'2026-01-12',rf_maturity_date:'2026-12-15',rf_contract_rate:'CDI + 0,95% aa',rf_subtype:'CDB',fixed_issuer:'Banco Teste',note:'Título de teste CDB'},
+    {id:'rf-lci27',ticker:'LCI27',name:'LCI 2027',product:'LCI27 Isenta',title:'LCI 2027',type:'Renda Fixa',sector:'Renda Fixa',qty:1,avg_price:2500,current_price:2618.77,rf_applied_value:2500,rf_gross_value:2618.77,rf_liquid_value:2618.77,rf_ir_iof:0,rf_application_date:'2025-08-08',rf_maturity_date:'2027-08-08',rf_contract_rate:'95% CDI',rf_subtype:'LCI',fixed_issuer:'Banco Teste',note:'Título de teste LCI'}
+  ];
+  const aportes=[
+    {id:'ap-001',date:'2025-01-15',ticker:'PETR4',name:'Petrobras PN',product:'PETR4 Petrobras PN',type:'Ação',asset_type:'Ação',sector:'Petróleo',qty:120,price:28.10,operation:'compra',decision:'Entrada'},
+    {id:'ap-002',date:'2025-02-20',ticker:'ITUB4',name:'Itaú PN',product:'ITUB4 Itaú PN',type:'Ação',asset_type:'Ação',sector:'Bancos',qty:150,price:25.00,operation:'compra',decision:'Entrada'},
+    {id:'ap-003',date:'2025-03-18',ticker:'WEGE3',name:'WEG ON',product:'WEGE3 WEG ON',type:'Ação',asset_type:'Ação',sector:'Indústria',qty:80,price:40.20,operation:'compra',decision:'Entrada'},
+    {id:'ap-004',date:'2025-04-10',ticker:'MXRF11',name:'Maxi Renda',product:'MXRF11 Maxi Renda',type:'FII',asset_type:'FII',sector:'Papel',qty:500,price:9.65,operation:'compra',decision:'Entrada'},
+    {id:'ap-005',date:'2025-05-14',ticker:'HGLG11',name:'CSHG Logística',product:'HGLG11 CSHG Logística',type:'FII',asset_type:'FII',sector:'Logística',qty:50,price:151.00,operation:'compra',decision:'Entrada'},
+    {id:'ap-006',date:'2025-06-12',ticker:'VISC11',name:'Vinci Shopping',product:'VISC11 Vinci Shopping',type:'FII',asset_type:'FII',sector:'Shopping',qty:40,price:104.00,operation:'compra',decision:'Entrada'},
+    {id:'ap-007',date:'2025-07-02',ticker:'BOVA11',name:'iShares Ibovespa',product:'BOVA11 iShares Ibovespa',type:'ETF',asset_type:'ETF',sector:'ETF',qty:25,price:121.00,operation:'compra',decision:'Entrada'},
+    {id:'ap-008',date:'2025-08-08',ticker:'IVVB11',name:'iShares S&P 500',product:'IVVB11 iShares S&P 500',type:'ETF',asset_type:'ETF',sector:'ETF',qty:10,price:220.00,operation:'compra',decision:'Entrada'},
+    {id:'ap-009',date:'2025-09-03',ticker:'MOVI18',name:'CDB MOVI18',product:'CDB MOVI18',type:'Renda Fixa',asset_type:'Renda Fixa',sector:'Renda Fixa',qty:1,price:5000,operation:'compra',decision:'Aporte RF'},
+    {id:'ap-010',date:'2025-10-05',ticker:'CRA24',name:'CRA 2024',product:'CRA24 Certificado de Recebíveis',type:'Renda Fixa',asset_type:'Renda Fixa',sector:'Renda Fixa',qty:1,price:3000,operation:'compra',decision:'Aporte RF'},
+    {id:'ap-011',date:'2025-11-21',ticker:'RESERVA',name:'Reserva de emergência',type:'Reserva de emergência',asset_type:'Reserva de emergência',sector:'Bolsa',qty:1,price:1000,operation:'reserva entrada',reserveTarget:'Bolsa',decision:'Reserva'},
+    {id:'ap-012',date:'2026-02-12',ticker:'RESERVA2',name:'Reserva de emergência',type:'Reserva de emergência',asset_type:'Reserva de emergência',sector:'Pessoal',qty:1,price:700,operation:'reserva entrada',reserveTarget:'Pessoal',decision:'Reserva'}
+  ];
+  const proventos=[
+    {id:'pv-001',date:'2025-11-10',ticker:'PETR4',assetName:'Petrobras PN',type:'Dividendo',value:120.50,source:'Teste local',note:'Dividendos do papel'},
+    {id:'pv-002',date:'2025-12-05',ticker:'ITUB4',assetName:'Itaú PN',type:'Dividendo',value:90.10,source:'Teste local',note:'Dividendos do banco'},
+    {id:'pv-003',date:'2026-05-20',ticker:'WEGE3',assetName:'WEG ON',type:'JCP',value:45.33,source:'Teste local',note:'JCP do ativo'},
+    {id:'pv-004',date:'2026-05-15',ticker:'MXRF11',assetName:'Maxi Renda',type:'Rendimento',value:85.25,source:'Teste local',note:'Rendimento do FII'},
+    {id:'pv-005',date:'2026-06-05',ticker:'HGLG11',assetName:'CSHG Logística',type:'Rendimento',value:77.10,source:'Teste local',note:'Rendimento do FII'},
+    {id:'pv-006',date:'2026-06-08',ticker:'VISC11',assetName:'Vinci Shopping',type:'Rendimento',value:52.80,source:'Teste local',note:'Rendimento do FII'},
+    {id:'pv-007',date:'2026-05-15',ticker:'BOVA11',assetName:'iShares Ibovespa',type:'Dividendo',value:16.00,source:'Teste local',note:'Dividendos do ETF'},
+    {id:'pv-008',date:'2026-06-10',ticker:'IVVB11',assetName:'iShares S&P 500',type:'Dividendo',value:18.20,source:'Teste local',note:'Dividendos do ETF'},
+    {id:'pv-009',date:'2026-06-15',ticker:'MOVI18',assetName:'CDB MOVI18',type:'Juros de Renda Fixa',value:748.41,source:'Teste local',sourceEventKind:'rf',sourceEventId:'rf-movi18-2026-06-15',dedupeStatus:'linked-rf',excludedFromIncomeTotals:true,dedupeLinkedAt:'2026-06-15T09:00:00-03:00',dedupeNote:'Vínculo explícito de teste'},
+    {id:'pv-010',date:'2026-05-15',ticker:'MOVI18',assetName:'CDB MOVI18',type:'Juros de Renda Fixa',value:633.45,source:'Teste local',sourceEventKind:'rf',sourceEventId:'rf-movi18-2026-05-missing',dedupeStatus:'linked-rf',excludedFromIncomeTotals:true,dedupeLinkedAt:'2026-05-15T09:00:00-03:00',dedupeNote:'Vínculo quebrado proposital'},
+    {id:'pv-011',date:'2026-06-18',ticker:'ITAUSA',assetName:'Itaú PN',type:'Dividendo',value:31.75,source:'Teste local',note:'Provento manual sem vínculo'}
+  ];
+  const rfEvents=[
+    {id:'rf-movi18-2026-06-15',assetId:'rf-movi18',ticker:'MOVI18',date:'2026-06-15',type:'juros',grossValue:748.41,ir:0,iof:0,netValue:748.41,principalDelta:0,source:'Seed local',note:'Cupom MOVI18'},
+    {id:'rf-movi18-2026-05-15',assetId:'rf-movi18',ticker:'MOVI18',date:'2026-05-15',type:'juros',grossValue:633.45,ir:0,iof:0,netValue:633.45,principalDelta:0,source:'Seed local',note:'Cupom MOVI18'},
+    {id:'rf-cra24-2026-06-20',assetId:'rf-cra24',ticker:'CRA24',date:'2026-06-20',type:'juros',grossValue:133.45,ir:0,iof:0,netValue:133.45,principalDelta:0,source:'Seed local',note:'Cupom CRA24'},
+    {id:'rf-cdb26-2026-07-12',assetId:'rf-cdb26',ticker:'CDB26',date:'2026-07-12',type:'amortizacao',grossValue:120.40,ir:0,iof:0,netValue:120.40,principalDelta:120.40,source:'Seed local',note:'Amortização CDB26'},
+    {id:'rf-lci27-2026-07-08',assetId:'rf-lci27',ticker:'LCI27',date:'2026-07-08',type:'premio',grossValue:118.77,ir:0,iof:0,netValue:118.77,principalDelta:0,source:'Seed local',note:'Juros LCI27'}
+  ];
+  return {
+    id:'wallet-local-test',
+    name:'Carteira de teste',
+    assets,
+    aportes,
+    proventos,
+    rfEvents,
+    divGoal:1200,
+    goals:normalizeGoals({
+      patrimonio:{target:250000, aporte:1500, annualVar:9},
+      ativos:{type:'FII', ticker:'MXRF11', aporte:600, annualVar:8, finalValue:30000},
+      proventos:{types:['Ação','FII','ETF','Renda Fixa'], monthly:1200},
+      allocation:{
+        items:[
+          {type:'FII', pct:35},
+          {type:'ETF', pct:20},
+          {type:'Ação', pct:25},
+          {type:'Renda Fixa', pct:20}
+        ]
+      }
+    }),
+    learnMeta:{}
+  };
+}
+function applyLocalTestFixture(){
+  Object.assign(S, cloneData(DEFAULT_RUNTIME_STATE));
+  resetTransientRuntimeState();
+  const wallet=normalizeWalletEntry(localTestFixtureWallet(), 'Carteira de teste');
+  S.wallets=[wallet];
+  S.activeWalletId=wallet.id;
+  syncStateFromWallet(wallet);
+  S.tab='dashboard';
+  S.assetsInnerTab='patrimonio';
+  S.dividendViewMode='overview';
+  S.dividendFilter='all';
+  S.dividendPeriod='all';
+  S.dividendSearch='';
+  S.proventoReviewOpen=false;
+  S.proventoAudit={month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]};
+  S.aportesViewMode='resumo';
+  S.aportesFilter='todos';
+  S.apSearch='';
+  S.apHistoryOpen=false;
+  S.activeAssetsGroup='';
+  S.lastUpdate=new Date('2026-07-12T10:00:00-03:00');
+  S.qLoad=false;
+  S.qInFlight=false;
+  S.cd=QI;
+  S.hideValues=false;
+  S.brapiToken=DEFAULT_BRAPI;
+  S.rentPeriod='all';
+  S.rentType='all';
+  S.rentBench='CDI';
+  S.dashPeriod=12;
+  S.dashType='all';
+  S.irpfYear=2026;
+  S.irpfStep=1;
+  S.mobileMenuOpen=false;
+  S.mobileTopMenuOpen=false;
+  S.accessSettingsOpen=false;
+  S.backupOpen=false;
+  S.pdfReportOpen=false;
+  S.quickMovementOpen=false;
+  S.quickMovementDraft=null;
+  S.quickMovementEditId=null;
+  S.noteReview=null;
+  S.b3Review=null;
+  S.b3MovementReview=null;
+  S.b3ImportMode=null;
+  S.rfPositionReview=null;
+  S.b3ProventosReview=null;
+  S.rfEventEditor=null;
+  S.goals=normalizeGoals(S.goals);
+  rebuildLearnMeta();
+}
+function restoreLocalTestData(){
+  if(!isLocalTestMode()) return;
+  applyLocalTestFixture();
+  render();
+  toast('🧪 Dados de teste restaurados.', '#60a5fa');
+}
 function normalizeEmail(v){ return String(v||'').toLowerCase().trim(); }
 function normalizeAccessList(v){
   return Array.isArray(v)
@@ -3906,6 +4090,7 @@ function save(){
   try{
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
+    if(isLocalTestMode()) return;
     localStorage.setItem(STOR, JSON.stringify({
       wallets:S.wallets, activeWalletId:S.activeWalletId,
       assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents,
@@ -3921,6 +4106,7 @@ function save(){
   }catch(e){ debugError('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
 }
 function saveConfig(){
+  if(isLocalTestMode()) return;
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
 }
 function backupCorruptedStorageValue(storageKey, rawValue, error){
@@ -3986,6 +4172,7 @@ async function runAutoProventosGratis(reason='change'){
 }
 
 function load(){
+  if(isLocalTestMode()) return;
   // ← FIX: try-catch separados para não perder tudo se um falhar
   try{
     const raw=localStorage.getItem(STOR);
@@ -4072,6 +4259,14 @@ window.addEventListener('beforeunload', save);
 // FIREBASE — login Google + sincronização em nuvem
 // ══════════════════════════════════════
 function initFirebase(){
+  if(isLocalTestMode()){
+    FB.authResolved = true;
+    FB.access.loading = false;
+    FB.access.loaded = true;
+    FB.access.allowed = true;
+    FB.access.reason = 'Modo de teste local';
+    return;
+  }
   try{
     if(!window.firebase){
       FB.authResolved = true;
@@ -4422,6 +4617,7 @@ function applyCloudData(d){
   return before!==after;
 }
 function startCloudSync(){
+  if(isLocalTestMode()) return;
   const ref=portfolioRef();
   if(!ref) return;
   stopCloudSync(false);
@@ -4447,18 +4643,27 @@ function startCloudSync(){
   });
 }
 function stopCloudSync(doRender=true){
+  if(isLocalTestMode()){
+    if(doRender) render();
+    return;
+  }
   if(FB.unsub){ try{ FB.unsub(); }catch(e){} }
   FB.unsub=null; FB.cloudLoaded=false;
   clearTimeout(FB.cloudRetryTimer);
   if(doRender) render();
 }
 function queueCloudSave(){
+  if(isLocalTestMode()) return;
   FB.pendingCloudSave=true;
   if(FB.applying || !FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
   clearTimeout(FB.saveTimer);
   FB.saveTimer=setTimeout(()=>uploadLocalToCloud(true),900);
 }
 async function uploadLocalToCloud(show=true){
+  if(isLocalTestMode()){
+    if(show) toast('🧪 Modo de teste local: sincronização desativada.');
+    return;
+  }
   if(!FB.access.allowed){
     if(show) toast('Acesso não autorizado para sincronizar.','#fbbf24');
     return;
@@ -4482,6 +4687,10 @@ async function uploadLocalToCloud(show=true){
   }
 }
 async function signInGoogle(){
+  if(isLocalTestMode()){
+    toast('🧪 Modo de teste local: entrada com Google desativada.');
+    return;
+  }
   if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
@@ -4492,14 +4701,20 @@ async function signInGoogle(){
   }
 }
 async function signOutGoogle(){
+  if(isLocalTestMode()){
+    toast('🧪 Modo de teste local: saída desativada.');
+    return;
+  }
   try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos.'); }catch(e){}
 }
 function cloudStatus(){
+  if(isLocalTestMode()) return '<span style="font-size:11px;color:#fbbf24">Modo teste local</span>';
   if(!FB.ready) return '<span style="font-size:11px;color:#f87171">Firebase offline</span>';
   if(!FB.user) return '<span style="font-size:11px;color:#64748b">Local</span>';
   return `<span style="font-size:11px;color:#34d399">☁️ Nuvem ${FB.cloudLoaded?'online':'conectando...'}</span>`;
 }
 function authBox(){
+  if(isLocalTestMode()) return `<span class="note-pill" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Teste local</span>`;
   if(!FB.ready) return '';
   if(!FB.user) return `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()"><span class="hdr-mobile-icon">🔑</span><span class="hdr-mobile-label">Entrar Google</span></button>`;
   const name=esc(FB.user.displayName||'Conta Google');
@@ -4551,6 +4766,7 @@ function accessGateBox(){
   `;
 }
 function shouldShowAccessGate(){
+  if(isLocalTestMode()) return false;
   return !FB.authResolved || FB.access.loading || !FB.access.loaded || !FB.access.allowed;
 }
 function normalizeListFromText(text){
@@ -5045,6 +5261,10 @@ function withScrollPreserved(fn){
   return fn();
 }
 function openBackupCenter(){
+  if(isLocalTestMode()){
+    toast('🧪 Modo de teste local: backup desativado.');
+    return;
+  }
   S.backupOpen=true;
   render();
 }
@@ -5056,14 +5276,18 @@ function closeBackupCenter(){
   });
 }
 function exportBackup(){
+  if(isLocalTestMode()){
+    toast('🧪 Modo de teste local: exportação desativada.');
+    return;
+  }
   const payload=backupPayload();
   const data=JSON.stringify(payload, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-${backupStamp()}.json`});
   a.click();
   toast('💾 Backup exportado com sucesso!');
 }
-function importBackup(){ openBackupCenter(); }
-function triggerBackupImport(){ document.getElementById('imp-file')?.click(); }
+function importBackup(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } openBackupCenter(); }
+function triggerBackupImport(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } document.getElementById('imp-file')?.click(); }
 function applyBackupData(parsed){
   const payload=backupFromRaw(parsed);
   if(!payload){
@@ -9773,6 +9997,7 @@ const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
 const fmtN = v => Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
 const DEBUG = (() => {
   try{
+    if(isLocalTestMode()) return false;
     return /(^|[?&])debug(?:=1)?(?:&|$)/i.test(location.search) || localStorage.getItem(`${STOR}_debug`)==='1';
   }catch(e){
     return false;
@@ -14238,6 +14463,11 @@ async function fetchQuotesYahoo(tickers){
   return Array.isArray(j.results)?j.results:[];
 }
 async function fetchQuotes(manual=false){
+  if(isLocalTestMode()){
+    S.qLoad=false;
+    S.qInFlight=false;
+    return [];
+  }
   if(!S.assets.length) return;
   if(S.qInFlight) return;
   S.qInFlight=true;
@@ -17012,7 +17242,7 @@ function app(){
   <div class="hdr">
     <div class="hdr-logo">
       <div class="hdr-icon">📈</div>
-      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">Dados locais + Google/Firebase · ${cloudStatus()} · ${esc(activeWallet()?.name||'Carteira')} ${walletChip()}</div></div>
+      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">${isLocalTestMode() ? 'Modo de teste local · dados determinísticos em memória' : `Dados locais + Google/Firebase · ${cloudStatus()} · ${esc(activeWallet()?.name||'Carteira')} ${walletChip()}`}</div></div>
     </div>
     <div class="hdr-right">
       ${authBox()}
@@ -17031,6 +17261,14 @@ function app(){
       </div>
     </div>
   </div>
+  ${isLocalTestMode()?`
+  <div style="margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(251,191,36,.28);border-radius:14px;background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.08));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">
+    <div style="min-width:0">
+      <div style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#fde68a">Modo de teste local</div>
+      <div style="font-size:12px;line-height:1.45;color:#e5edf8">Dados determinísticos em memória. Sem Firebase, sem sync, sem importação/exportação e sem localStorage.</div>
+    </div>
+    <button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:34px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>
+  </div>`:''}
   ${desktopTabs()}
   ${mobileTabs()}
   <div class="wrap">${content()}</div>
@@ -17941,6 +18179,7 @@ function rfEventHistoryCards(rows){
 function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
   const count=data.assets.length;
+  const {overdue, soon30, soon90, soon12m, longTerm, missingDue, missingRate}=data;
   const attentionBadges=count ? [
     overdue>0 ? `<span class="note-pill" style="color:#fecaca;background:#3f1d24;border-color:rgba(248,113,113,.24)">${overdue} vencido${overdue===1?'':'s'}</span>` : '',
     soon30>0 ? `<span class="note-pill" style="color:#fde68a;background:#3d2f12;border-color:rgba(251,191,36,.24)">${soon30} em até 30 dias</span>` : '',
@@ -21500,18 +21739,23 @@ function watchPwaUpdate(registration){
 // INIT
 // ══════════════════════════════════════
 loadThemePreference();
-load();
-initFirebase();
-try{
-  if(S.aportes.length) syncAssetsFromAportes(false); else render();
-}catch(error){
-  debugError('sincronização inicial de ativos falhou:',error);
+if(isLocalTestMode()){
+  applyLocalTestFixture();
   render();
+}else{
+  load();
+  initFirebase();
+  try{
+    if(S.aportes.length) syncAssetsFromAportes(false); else render();
+  }catch(error){
+    debugError('sincronização inicial de ativos falhou:',error);
+    render();
+  }
+  fetchQuotes(false);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
+  window.addEventListener('focus',()=>fetchQuotes(false));
+  window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
 }
-fetchQuotes(false);
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
-window.addEventListener('focus',()=>fetchQuotes(false));
-window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();
   PWA.prompt=e;
@@ -21523,7 +21767,7 @@ window.addEventListener('appinstalled',()=>{
   toast('App instalado no dispositivo!');
   render();
 });
-if('serviceWorker' in navigator && location.protocol!=='file:'){
+if(!isLocalTestMode() && 'serviceWorker' in navigator && location.protocol!=='file:'){
   const hadServiceWorkerController=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     if(hadServiceWorkerController && navigator.serviceWorker.controller && !window.__swReloaded){
