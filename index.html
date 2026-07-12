@@ -20052,16 +20052,8 @@ function dividendEmptyState(message='Nenhum provento encontrado para os filtros 
   return `<div class="div-premium-empty"><div class="div-empty-title">${esc(message)}</div>${detail?`<div class="div-empty-sub">${esc(detail)}</div>`:''}</div>`;
 }
 function dividendHeroHeader(stats){
-  const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)||{total:0,count:0};
-  const target=Number(stats.target)||0;
-  const currentLabel=stats.currentMonthKey ? new Date(`${stats.currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'mês atual';
-  const pct=target>0 ? current.total/target*100 : 0;
-  const statusText=target>0 ? (pct>=100 ? 'Meta atingida' : `Faltam ${fmt(Math.max(0,target-current.total))}`) : 'Meta não definida';
-  const statusTone=target>0 ? (pct>=100 ? 'good' : 'warn') : 'neutral';
   return `<div class="div-premium-hero-meta">
-    <div class="div-premium-hero-pill"><span>Mês atual</span><strong>${esc(currentLabel)}</strong></div>
-    <div class="div-premium-status ${statusTone}">${esc(statusText)}</div>
-    ${target>0?`<div class="div-premium-progress" aria-hidden="true"><div style="width:${Math.min(100,pct).toFixed(1)}%"></div></div>`:''}
+    <div class="div-premium-status neutral">Leitura compacta: mês, meta, 12M e revisão.</div>
   </div>`;
 }
 function dividendRecentList(rows,limit=0){
@@ -20220,22 +20212,33 @@ function dividendMonthlyTimeline(){
 function dividendSummaryCards(){
   const stats=passiveIncomeGoalStats();
   const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)||{total:0,count:0};
+  const audit=proventoAuditBuildRows();
+  const reviewPending=Number(audit.summary.pending)||0;
+  const reviewNote=reviewPending
+    ? `${fmt(audit.summary.quebrados)} vínculos quebrados · ${fmt(audit.summary.possiveis)} possíveis duplicidades`
+    : 'Nenhuma revisão pendente.';
   return `<div class="div-premium-metrics">
     <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido no mês</div><div class="div-premium-metric-value good">${fmt(current.total)}</div><div class="div-premium-metric-sub">${current.count} lançamento(s)</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Histórico real</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Média mensal 12M</div><div class="div-premium-metric-value">${fmt(stats.monthlyAvg)}</div><div class="div-premium-metric-sub">Projeção anual ${fmt(stats.annualProjection)}</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">Lida da aba Metas</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Média mensal ${fmt(stats.monthlyAvg)} · projeção anual ${fmt(stats.annualProjection)}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0?`${((current.total/stats.target)*100).toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current.total))}`:'Lida da aba Metas'}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
   </div>`;
 }
 function dividendGoalProgress(){
   const stats=passiveIncomeGoalStats();
   const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.total||0;
   const pct=stats.target>0?current/stats.target*100:0;
-  return `<div class="div-goal-panel">
-    <div class="div-goal-top"><div><div class="div-goal-title">Meta de renda passiva</div><div class="div-goal-sub">Leitura compacta da meta mensal atual, sem repetir os números dos cards acima.</div></div></div>
-    <div class="div-goal-track"><div class="div-goal-fill" style="width:${Math.min(100,pct).toFixed(1)}%"></div></div>
-    <div class="div-goal-sub" style="margin-top:6px">${stats.target>0?`${pct.toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current))} neste mês.`:'Defina uma meta mensal na aba Metas para acompanhar o progresso.'}</div>
-  </div>`;
+  const goalNote=stats.target>0?`${pct.toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current))} neste mês.`:'Defina uma meta mensal na aba Metas para acompanhar o progresso.';
+  return dividendCompactSectionHeader(
+    'goal',
+    'Meta de renda passiva',
+    'Detalhes da meta mensal',
+    `<div class="div-goal-panel">
+      <div class="div-goal-top"><div><div class="div-goal-title">Meta de renda passiva</div><div class="div-goal-sub">Leitura detalhada da meta mensal atual.</div></div></div>
+      <div class="div-goal-track"><div class="div-goal-fill" style="width:${Math.min(100,pct).toFixed(1)}%"></div></div>
+      <div class="div-goal-sub" style="margin-top:6px">${goalNote}</div>
+    </div>`
+  );
 }
 function dividendOverviewRecentPanel(rows){
   const limit=6;
@@ -20305,7 +20308,6 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const overviewBody=`<div class="div-overview-grid">
     <div class="div-overview-main">
       ${dividendSummaryCards()}
-      ${dividendGoalProgress()}
     </div>
     <div class="div-overview-side">
       ${dividendOverviewRecentPanel(rows)}
@@ -20319,13 +20321,14 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     :overviewBody;
   return `<div class="div-premium">
     <div class="div-premium-hero">
-      <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Renda recebida, evolução mensal e progresso da meta em uma leitura confortável no desktop e no celular.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
+      <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Resumo compacto para leitura rápida.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
       ${dividendHeroHeader(passiveIncomeGoalStats())}
       <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
     </div>
     ${frmD()}
     ${mode!=='timeline' && mode!=='review'?dividendFilterTabs():''}
     ${body}
+    ${mode==='overview'?dividendGoalProgress():''}
     ${renderProventoRfLinkModal()}
   </div>`;
 }
