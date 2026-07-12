@@ -3809,17 +3809,6 @@ function walletChip(){
   const tone=walletTone(idx);
   return `<span class="wallet-chip" style="display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;border:1px solid ${tone.bd};background:${tone.bg};color:${tone.fg};font-size:10px;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)">${idx}<span style="opacity:.7">/</span>${total}</span>`;
 }
-function walletPill(w, idx){
-  const active=String(w.id)===String(S.activeWalletId);
-  const tone=walletTone(idx+1);
-  return `<button class="btn" onclick="switchWallet('${esc(w.id)}')" style="width:100%;justify-content:space-between;padding:8px 10px;border-radius:12px;border:1px solid ${active?tone.bd:'#162033'};background:${active?tone.bg:'#0b1220'};color:${active?tone.fg:'#9fb4d6'};font-size:11px;box-shadow:${active?'0 0 0 1px rgba(255,255,255,.03), inset 0 1px 0 rgba(255,255,255,.05)':'none'}">
-    <span style="display:flex;align-items:center;gap:8px;min-width:0">
-      <span style="width:8px;height:8px;border-radius:999px;background:${active?tone.fg:'#51617d'};box-shadow:0 0 0 3px ${active?'rgba(255,255,255,.06)':'transparent'}"></span>
-      <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${active?'700':'600'}">${esc(w.name)}</span>
-    </span>
-    <span style="font-size:10px;opacity:.8">${active?'ativa':'abrir'}</span>
-  </button>`;
-}
 function switchWallet(id){
   ensureWallets();
   syncWalletFromState();
@@ -4883,17 +4872,6 @@ function closeMobileTopMenu(){
     render();
   });
 }
-function openWalletQuickMenu(){
-  closeMobileTopMenu();
-  const el=document.querySelector('.wallet-menu > summary');
-  if(el) el.click();
-}
-function openConfigQuickMenu(){
-  closeMobileTopMenu();
-  const el=document.querySelector('.cfg-menu > summary');
-  if(el) el.click();
-}
-
 async function installPWA(){
   if(!PWA.prompt){ toast('Instalação ainda não está disponível. Abra o site publicado no Chrome ou Edge.','#fbbf24'); return; }
   const prompt = PWA.prompt;
@@ -7159,14 +7137,6 @@ function rfDetailedPossibleDuplicateAsset(item){
     const aMat=b3MovementDateKey(a.rf_maturity_date||a.fixed_maturity_date||a.maturityDate||a.vencimento||'');
     return aMat===maturityKey && rfPosNorm(a.sector)===rfPosNorm(item?.sector);
   });
-}
-function rfEventTypeLabel(v){
-  const s=rfPosNorm(v);
-  if(s.includes('JUROS')) return 'Juros';
-  if(s.includes('PREMIO')) return 'Prêmio';
-  if(s.includes('AMORT')) return 'Amortização';
-  if(s.includes('RESGATE') || s.includes('VENCIMENTO')) return 'Resgate/Vencimento';
-  return String(v||'').trim() || 'Revisar';
 }
 function rfEventDestination(eventType){
   const t=rfEventTypeLabel(eventType);
@@ -12150,47 +12120,7 @@ function renderProventoRfLinkModal(){
     </div>
   </div>`;
 }
-function renderProventoRfLinkAuditPanel(){
-  const audit=proventoAuditBuildRows();
-  const rows=audit.all.slice()
-    .sort((a,b)=>(b.dateKey||'').localeCompare(a.dateKey||'') || a.ticker.localeCompare(b.ticker,'pt-BR'));
-  const body=rows.length ? rows.map(row=>{
-    const actionHtml=(row.rfLinkValid || row.rfLinkBroken)
-      ? `<button class="btn bgh" style="min-height:32px;padding:7px 10px;font-size:11px" onclick="unlinkProventoRfEvent(${JSON.stringify(row.auditId)})">Desfazer vÃ­nculo</button>`
-      : `<button class="btn bgh" style="min-height:32px;padding:7px 10px;font-size:11px" onclick="openProventoRfLinkModal(${JSON.stringify(row.auditId)})">Vincular com renda fixa</button>`;
-    const tone=row.rfLinkValid?'ok':row.rfLinkBroken?'warn':row.isDuplicateGroup?'warn':'muted';
-    const status=row.rfLinkValid?'JÃ¡ contabilizado em Renda Fixa':row.rfLinkBroken?'VÃ­nculo de renda fixa nÃ£o encontrado':'Sem vÃ­nculo RF';
-    const rfInfo=row.rfLinkValid
-      ? `RF ${row.sourceEventId}${row.rfLinkCount>1?` Â· ${row.rfLinkCount} proventos vinculados`:''}`
-      : row.rfLinkBroken ? `RF ${row.sourceEventId||'---'} nÃ£o localizado` : 'Conta normalmente nos totais.';
-    return `<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #1f2a3d;border-radius:12px;padding:10px;background:#0b1020">
-      <div style="min-width:0">
-        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
-          <strong style="color:#e2eaf6">${esc(row.ticker||'---')}</strong>
-          <span class="note-pill">${esc(row.date||'---')}</span>
-          <span class="note-pill">${fmt(row.value)}</span>
-          <span class="note-pill ${tone}">${esc(status)}</span>
-        </div>
-        <div style="font-size:12px;color:#94a3b8;margin-top:5px;line-height:1.35">${esc(row.name||'---')} - ${esc(row.eventType||'---')}</div>
-        <div style="font-size:11px;color:#64748b;margin-top:4px">${esc(rfInfo)}</div>
-      </div>
-      ${actionHtml}
-    </div>`;
-  }).join('') : '<div class="premium-empty">Nenhum provento manual cadastrado para auditar.</div>';
-  return `<details class="sec" open style="margin-top:10px;margin-bottom:0">
-    <summary>
-      <div>
-        <div class="sec-title">Auditoria de vÃ­nculos com Renda Fixa</div>
-        <div class="sec-meta">Vincule manualmente proventos duplicados a eventos RF existentes.</div>
-      </div>
-      <div class="sec-meta">${rows.length} provento${rows.length===1?'':'s'}</div>
-    </summary>
-    <div class="sec-body">
-      <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">A vinculaÃ§Ã£o Ã© explÃ­cita e reversÃ­vel. Sem vÃ­nculo, o provento continua contando normalmente.</div>
-      <div style="display:flex;flex-direction:column;gap:8px">${body}</div>
-    </div>
-  </details>`;
-}
+
 function renderProventoRfLinkAuditPanel(){
   const audit=proventoConciliationBuildRows();
   const open=!!S.proventoReviewOpen;
@@ -21057,11 +20987,6 @@ function mobileMenuClose(){
     render();
   });
 }
-function mobileMenuToggle(){
-  rememberScroll();
-  S.mobileMenuOpen=!S.mobileMenuOpen;
-  render();
-}
 function mobileBottomNav(){
   return `<nav id="investBottomNav">
     <button class="${S.tab==='dashboard'?'act':''}" onclick="go('dashboard')"><span class="ni">📊</span><span>Dashboard</span></button>
@@ -21186,19 +21111,6 @@ function svA(){
   scheduleAutoProventosGratis('asset-edit');
 }
 
-function tgP(pref='compra'){
-  S.showP=!S.showP; S.editPId=null;
-  S.quickMovementOpen=false;
-  S.quickMovementDraft=null;
-  S.quickMovementEditId=null;
-  S._fp=pref==='reserva'
-    ? {operation:'compra', type:'Reserva de emergência', reserveTarget:'bolsa', typeManual:true}
-    : pref==='rf'
-      ? {operation:'compra', type:'Renda Fixa', typeManual:true, rf_subtype:'CDB', rf_note:'', rf_profit_source:'derived'}
-      : {operation:'compra', typeManual:false};
-  render();
-  setTimeout(applyMetaToAporte,50);
-}
 function clP(){ withScrollPreserved(()=>{ S.showP=false; S.editPId=null; S._fp=null; render(); }); }
 function edP(id){
   const p=S.aportes.find(x=>x.id===id);
