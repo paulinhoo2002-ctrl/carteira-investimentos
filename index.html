@@ -3581,6 +3581,7 @@ document.write([
   '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"><\/script>'
 ].join(''));})();
 </script>
+<script src="finance-core.js"></script>
 <script>
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
@@ -10826,28 +10827,20 @@ function assetRfCurrentValueMeta(a){
   return { source, origin: imported ? 'importado da B3' : '' };
 }
 function assetAppliedValue(a){
-  return isRendaFixaAsset(a) ? rfValues(a).applied : (Number(a?.qty)||0) * (Number(a?.avg_price)||0);
+  return FinanceCore.assetAppliedValue(a);
 }
 function assetCurrentValue(a){
-  return isRendaFixaAsset(a) ? rfValues(a).current : (Number(a?.qty)||0) * (Number(a?.current_price)||0);
+  return FinanceCore.assetCurrentValue(a);
 }
 function assetCurrentValueForDisplay(a){
   const v=assetCurrentValue(a);
   return Number.isFinite(v) ? v : null;
 }
 function assetJurosValue(a){
-  if(!isRendaFixaAsset(a)) return null;
-  const v=rfValues(a);
-  return Number.isFinite(v.profit) ? v.profit : null;
+  return FinanceCore.assetJurosValue(a);
 }
 function assetRentabPct(a){
-  if(!isRendaFixaAsset(a)){
-    const avg=Number(a?.avg_price)||0;
-    const current=Number(a?.current_price)||0;
-    return avg>0 && current>0 ? ((current-avg)/avg)*100 : null;
-  }
-  const v=rfValues(a);
-  return Number.isFinite(v.rentab) ? v.rentab : null;
+  return FinanceCore.assetRentabPct(a);
 }
 function assetNeedsRFUpdate(a){
   if(!isRendaFixaAsset(a)) return false;
@@ -10855,6 +10848,9 @@ function assetNeedsRFUpdate(a){
   const sameAsApplied = Number.isFinite(v.current) && Number.isFinite(v.applied) && Math.abs(v.current - v.applied) < 0.0001;
   const zeroProfit = !Number.isFinite(v.profit) || Math.abs(v.profit) < 0.0001;
   return (!v.liquid && !v.gross) || (sameAsApplied && zeroProfit);
+}
+if(window.FinanceCore?.configure){
+  window.FinanceCore.configure({ isRendaFixaAsset, rfValues });
 }
 function assetRfName(a){
   return String(a?.name||a?.product||a?.title||a?.ticker||'').trim();

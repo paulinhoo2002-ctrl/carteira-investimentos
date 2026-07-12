@@ -5,6 +5,7 @@
   "description": "Carteira de investimentos com controle de ativos, aportes, dividendos, metas e sincronizacao Firebase.",
   "scripts": {
     "build": "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"",
+    "test:finance": "node --test tests/finance-core.test.js",
     "test": "npm run build"
   }
 }
