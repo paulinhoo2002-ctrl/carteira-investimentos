@@ -199,6 +199,8 @@ Durante este teste nao houve alteracao em:
 ## Status final do teste
 
 - Branch: `test/reproduz-concorrencia-abas-sync`
-- Arquivo novo: `docs/TESTE-CONCORRENCIA-ABAS-SYNC.md`
-- Commit: nao realizado
-- Push: nao realizado
+- Arquivo: `docs/TESTE-CONCORRENCIA-ABAS-SYNC.md`
+- Commit do documento: `6283064`
+- Push da branch: realizado
+- PR: #142
+- Alteracao funcional: nenhuma
