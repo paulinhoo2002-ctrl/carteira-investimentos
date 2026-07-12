@@ -78,6 +78,29 @@ button{cursor:pointer;font-family:inherit}
 .hdr-sub{font-size:10px;color:var(--muted);margin-top:1px}
 .hdr-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .hdr-top-fab{display:none}
+.edit-lock-banner{
+  margin:12px 0 0;
+  padding:12px 14px;
+  border:1px solid rgba(251,191,36,.28);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(251,191,36,.12),rgba(251,191,36,.07));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap
+}
+html[data-theme="light"] .edit-lock-banner{
+  background:linear-gradient(180deg,rgba(245,158,11,.12),rgba(245,158,11,.07))
+}
+.edit-lock-banner-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.edit-lock-banner-title{font-size:12px;font-weight:900;color:#fde68a;letter-spacing:.02em}
+html[data-theme="light"] .edit-lock-banner-title{color:#9a6700}
+.edit-lock-banner-text{font-size:12px;line-height:1.45;color:#e5edf8}
+html[data-theme="light"] .edit-lock-banner-text{color:#334155}
+.edit-lock-banner-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.edit-lock-banner .btn{min-height:34px;padding:0 12px;font-size:12px;font-weight:800}
 .cfg-menu>summary{list-style:none}
 .cfg-menu>summary::-webkit-details-marker{display:none}
 .tabs{background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:58px;z-index:9;scrollbar-width:none}
@@ -4019,6 +4042,7 @@ function switchWallet(id){
 }
 function createWallet(){
   ensureWallets();
+  if(!canEditFromThisTab('criar carteira')) return;
   syncWalletFromState();
   const name=(prompt('Nome da nova carteira:', `Carteira ${S.wallets.length+1}`)||'').trim();
   if(!name) return;
@@ -4032,6 +4056,7 @@ function createWallet(){
 }
 function duplicateWallet(){
   ensureWallets();
+  if(!canEditFromThisTab('duplicar carteira')) return;
   syncWalletFromState();
   const src=activeWallet();
   if(!src) return;
@@ -4047,6 +4072,7 @@ function duplicateWallet(){
 }
 function renameWallet(){
   ensureWallets();
+  if(!canEditFromThisTab('renomear carteira')) return;
   const w=activeWallet();
   if(!w) return;
   const name=(prompt('Novo nome da carteira:', w.name)||'').trim();
@@ -4058,6 +4084,7 @@ function renameWallet(){
 }
 function deleteWallet(){
   ensureWallets();
+  if(!canEditFromThisTab('excluir carteira')) return;
   if(S.wallets.length<=1){
     toast('⚠️ Mantenha ao menos uma carteira.');
     return;
@@ -4088,6 +4115,7 @@ function deleteWallet(){
 // ══════════════════════════════════════
 function save(){
   try{
+    if(!canEditFromThisTab('salvar')) return;
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
     if(isLocalTestMode()) return;
@@ -4106,8 +4134,172 @@ function save(){
   }catch(e){ debugError('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
 }
 function saveConfig(){
+  if(!canEditFromThisTab('salvar configuração')) return;
   if(isLocalTestMode()) return;
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
+}
+const EDIT_LOCK_KEY = `${STOR}_edit_lock`;
+const EDIT_LOCK_CHANNEL_NAME = `${STOR}_edit_lock_channel`;
+const EDIT_LOCK_HEARTBEAT_MS = 3000;
+const EDIT_LOCK_STALE_MS = 9000;
+let EDIT_LOCK_TAB_ID = '';
+let EDIT_LOCK_CHANNEL = null;
+let EDIT_LOCK_TIMER = null;
+let EDIT_LOCK_STATE = { ownerId:'', updatedAt:0, mode:'owner', stale:false };
+function ensureEditLockTabId(){
+  if(EDIT_LOCK_TAB_ID) return EDIT_LOCK_TAB_ID;
+  try{
+    EDIT_LOCK_TAB_ID = sessionStorage.getItem(`${STOR}_tab_id`) || '';
+    if(!EDIT_LOCK_TAB_ID){
+      EDIT_LOCK_TAB_ID = (window.crypto?.randomUUID?.() || `tab_${Date.now()}_${Math.random().toString(16).slice(2,8)}`);
+      sessionStorage.setItem(`${STOR}_tab_id`, EDIT_LOCK_TAB_ID);
+    }
+  }catch(e){
+    if(!EDIT_LOCK_TAB_ID) EDIT_LOCK_TAB_ID = (window.crypto?.randomUUID?.() || `tab_${Date.now()}_${Math.random().toString(16).slice(2,8)}`);
+  }
+  return EDIT_LOCK_TAB_ID;
+}
+function readEditLockRecord(){
+  try{
+    const raw=localStorage.getItem(EDIT_LOCK_KEY);
+    const lock=JSON.parse(raw||'{}');
+    return lock && lock.ownerId ? lock : null;
+  }catch(e){
+    return null;
+  }
+}
+function writeEditLockRecord(lock){
+  try{
+    localStorage.setItem(EDIT_LOCK_KEY, JSON.stringify(lock));
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+function removeEditLockRecord(){
+  try{ localStorage.removeItem(EDIT_LOCK_KEY); }catch(e){}
+}
+function isEditLockStale(lock){
+  if(!lock || !lock.updatedAt) return true;
+  return (Date.now() - Number(lock.updatedAt||0)) > EDIT_LOCK_STALE_MS;
+}
+function isEditOwner(){
+  return EDIT_LOCK_STATE.mode==='owner' && String(EDIT_LOCK_STATE.ownerId||'')===ensureEditLockTabId();
+}
+function canEditFromThisTab(action='salvar'){
+  if(isEditOwner()) return true;
+  toast(`Esta aba está em modo somente leitura para evitar perda de dados${action ? ` (${action}).` : '.'}`,'#fbbf24');
+  return false;
+}
+function broadcastEditLock(reason='change'){
+  const payload={type:'lock-update', reason, ownerId:ensureEditLockTabId(), updatedAt:Date.now()};
+  try{ EDIT_LOCK_CHANNEL?.postMessage(payload); }catch(e){}
+}
+function applyEditLockState(lock, mode){
+  const next={
+    ownerId:String(lock?.ownerId||''),
+    updatedAt:Number(lock?.updatedAt||0),
+    mode:mode || (String(lock?.ownerId||'')===ensureEditLockTabId() ? 'owner' : 'readonly'),
+    stale:isEditLockStale(lock)
+  };
+  const changed = EDIT_LOCK_STATE.ownerId!==next.ownerId || EDIT_LOCK_STATE.updatedAt!==next.updatedAt || EDIT_LOCK_STATE.mode!==next.mode || EDIT_LOCK_STATE.stale!==next.stale;
+  EDIT_LOCK_STATE = next;
+  if(!changed) return false;
+  if(next.mode==='owner') startCloudSync();
+  else stopCloudSync(false);
+  render();
+  return true;
+}
+function refreshEditProtection({allowClaim=false, forceClaim=false, reason='tick'}={}){
+  const tabId=ensureEditLockTabId();
+  const lock=readEditLockRecord();
+  const ownerId=String(lock?.ownerId||'');
+  const stale=isEditLockStale(lock);
+  if(ownerId===tabId){
+    const next={ownerId:tabId, updatedAt:Date.now()};
+    if(writeEditLockRecord(next)){
+      EDIT_LOCK_STATE={ownerId:tabId, updatedAt:next.updatedAt, mode:'owner', stale:false};
+      return true;
+    }
+    return false;
+  }
+  if(forceClaim || (allowClaim && !lock)){
+    const next={ownerId:tabId, updatedAt:Date.now()};
+    writeEditLockRecord(next);
+    const reread=readEditLockRecord();
+    if(String(reread?.ownerId||'')===tabId){
+      broadcastEditLock(reason);
+      return applyEditLockState(reread, 'owner');
+    }
+  }
+  return applyEditLockState(lock, 'readonly');
+}
+function assumeEditControl(){
+  if(isEditOwner()){
+    toast('Esta aba já está com a edição.');
+    return;
+  }
+  const lock=readEditLockRecord();
+  const stale=isEditLockStale(lock);
+  const ok=confirm(`Assumir edição nesta aba?\n\nA outra aba perderá a permissão de editar.${stale ? '\n\nA propriedade atual parece expirada.' : ''}`);
+  if(!ok) return;
+  refreshEditProtection({forceClaim:true, reason:'manual-takeover'});
+  toast('✅ Edição assumida nesta aba.');
+}
+function releaseEditProtection(reason='pagehide'){
+  const tabId=ensureEditLockTabId();
+  const lock=readEditLockRecord();
+  if(lock && String(lock.ownerId||'')===tabId){
+    removeEditLockRecord();
+    broadcastEditLock(reason);
+  }
+}
+function initEditProtection(){
+  ensureEditLockTabId();
+  if(!EDIT_LOCK_CHANNEL && 'BroadcastChannel' in window){
+    try{
+      EDIT_LOCK_CHANNEL=new BroadcastChannel(EDIT_LOCK_CHANNEL_NAME);
+      EDIT_LOCK_CHANNEL.onmessage=ev=>{
+        const msg=ev?.data||{};
+        if(msg.ownerId && String(msg.ownerId)===ensureEditLockTabId()) return;
+        refreshEditProtection({allowClaim:false, reason:String(msg.reason||'channel')});
+      };
+    }catch(e){
+      EDIT_LOCK_CHANNEL=null;
+    }
+  }
+  if(!window.__editLockStorageBound){
+    window.__editLockStorageBound=true;
+    window.addEventListener('storage',ev=>{
+      if(ev.key===EDIT_LOCK_KEY) refreshEditProtection({allowClaim:false, reason:'storage'});
+    });
+    window.addEventListener('pagehide',()=>releaseEditProtection('pagehide'));
+    window.addEventListener('beforeunload',()=>releaseEditProtection('beforeunload'));
+  }
+  refreshEditProtection({allowClaim:true, reason:'init'});
+  if(!EDIT_LOCK_TIMER){
+    EDIT_LOCK_TIMER=setInterval(()=>refreshEditProtection({allowClaim:false, reason:'heartbeat'}), EDIT_LOCK_HEARTBEAT_MS);
+  }
+}
+function editLockBanner(){
+  if(isEditOwner()) return '';
+  const lock=readEditLockRecord();
+  const hasLock=!!lock;
+  const stale=isEditLockStale(lock);
+  const text=!hasLock
+    ? 'Nenhuma outra aba está com a edição agora. Você pode assumir o controle nesta aba.'
+    : stale
+      ? 'A propriedade da edição parece expirada. Você pode assumir a edição nesta aba.'
+      : 'Esta aba está em modo somente leitura para evitar perda de dados.';
+  return `<div class="edit-lock-banner" role="status" aria-live="polite">
+    <div class="edit-lock-banner-main">
+      <div class="edit-lock-banner-title">Carteira aberta em outra aba</div>
+      <div class="edit-lock-banner-text">${esc(text)}</div>
+    </div>
+    <div class="edit-lock-banner-actions">
+      <button class="btn bgh" onclick="assumeEditControl()">Assumir edição nesta aba</button>
+    </div>
+  </div>`;
 }
 function backupCorruptedStorageValue(storageKey, rawValue, error){
   try{
@@ -4145,6 +4337,7 @@ function scheduleAutoProventosGratis(reason='change'){
 async function runAutoProventosGratis(reason='change'){
   if(S.autoProvRunning) return;
   if(!S.autoProvDirty && reason!=='force') return;
+  if(!isEditOwner()) return;
   S.autoProvRunning=true;
   try{
     if(!S.assets.length || !S.aportes.length){
@@ -4251,9 +4444,6 @@ function load(){
   if(cleanedB3Summary>0 || cleanedB3Aportes>0) save();
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
 }
-
-// ← FIX: salva SEMPRE antes da página fechar/recarregar (F5, fecha aba, etc.)
-window.addEventListener('beforeunload', save);
 
 // ══════════════════════════════════════
 // FIREBASE — login Google + sincronização em nuvem
@@ -4617,7 +4807,7 @@ function applyCloudData(d){
   return before!==after;
 }
 function startCloudSync(){
-  if(isLocalTestMode()) return;
+  if(isLocalTestMode() || !isEditOwner()) return;
   const ref=portfolioRef();
   if(!ref) return;
   stopCloudSync(false);
@@ -4653,7 +4843,7 @@ function stopCloudSync(doRender=true){
   if(doRender) render();
 }
 function queueCloudSave(){
-  if(isLocalTestMode()) return;
+  if(isLocalTestMode() || !isEditOwner()) return;
   FB.pendingCloudSave=true;
   if(FB.applying || !FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
   clearTimeout(FB.saveTimer);
@@ -4662,6 +4852,10 @@ function queueCloudSave(){
 async function uploadLocalToCloud(show=true){
   if(isLocalTestMode()){
     if(show) toast('🧪 Modo de teste local: sincronização desativada.');
+    return;
+  }
+  if(!isEditOwner()){
+    if(show) toast('Esta aba está em modo somente leitura para evitar perda de dados.','#fbbf24');
     return;
   }
   if(!FB.access.allowed){
@@ -4793,6 +4987,7 @@ function closeAccessSettings(){
   });
 }
 async function saveAccessSettings(){
+  if(!canEditFromThisTab('salvar segurança')) return;
   if(!FB.db || !FB.user){
     toast('Entre com Google para salvar a segurança.','#fbbf24');
     return;
@@ -5290,6 +5485,7 @@ function exportBackup(){
 function importBackup(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } openBackupCenter(); }
 function triggerBackupImport(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } document.getElementById('imp-file')?.click(); }
 function applyBackupData(parsed){
+  if(!canEditFromThisTab('restaurar backup')) return false;
   const payload=backupFromRaw(parsed);
   if(!payload){
     toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
@@ -5318,6 +5514,7 @@ function applyBackupData(parsed){
 }
 function confirmBackupImport(){
   if(!S.backupImportDraft?.parsed) return;
+  if(!canEditFromThisTab('restaurar backup')) return;
   const summary=S.backupImportDraft.summary;
   const ok=confirm(`Importar este backup vai substituir os dados atuais da carteira.\n\nAtivos: ${summary.assets}\nAportes: ${summary.aportes}\nDividendos: ${summary.proventos}\nRenda fixa: ${summary.fixed}\n\nDeseja continuar?`);
   if(!ok){
@@ -5354,6 +5551,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
 });
 
 async function resetPortfolio(){
+  if(!canEditFromThisTab('limpar carteira')) return;
   const total=(S.assets?.length||0)+(S.aportes?.length||0)+(S.proventos?.length||0);
   const current=activeWallet();
   const ok=confirm(`Tem certeza que deseja apagar o histórico da carteira ativa "${current?.name||'Carteira'}"?\n\nIsso vai remover ${total} registros desta carteira e manter as outras carteiras intactas.`);
@@ -7964,6 +8162,7 @@ function brokerNoteOperationsReviewHtml(note,rateCosts){
   </div>`;
 }
 function confirmBrokerNoteImport(){
+  if(!canEditFromThisTab('importar nota de corretagem')) return;
   const state=S.brokerNoteImport;
   const note=state?.parsed;
   if(!note?.valid) return;
@@ -8055,6 +8254,7 @@ function brokerNoteImportSuccessHtml(){
   </div>`;
 }
 function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
+  if(!canEditFromThisTab('importar nota de corretagem')) return;
   const importTag='[IMPORT_NOTA_CORRETORA]';
   const stamp=String(noteKey||noteNumber||tradeDate||'');
   S.aportes=S.aportes.filter(a=>{
@@ -8148,6 +8348,7 @@ function suggestNotaReviewTypes(){
 }
 function importNotaReview(){
   if(!S.noteReview) return;
+  if(!canEditFromThisTab('importar nota de corretagem')) return;
   const rows=S.noteReview.rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0);
   if(!rows.length){ alert('Selecione pelo menos um lançamento válido para importar.'); return; }
   rememberScroll();
@@ -8564,6 +8765,7 @@ function b3ReviewSummary(){
 }
 function importB3Review(){
   if(!S.b3Review) return;
+  if(!canEditFromThisTab('aplicar importação B3')) return;
   const rows=b3ReviewSelectedItems().filter(it=>!isB3PositionSummaryRow(it));
   if(!rows.length){
     alert('Selecione ao menos uma aba válida para importar.');
@@ -8787,6 +8989,7 @@ function setRfEventReviewAll(value){
   render();
 }
 function importRfPositionRows(rows){
+  if(!canEditFromThisTab('importar posição de renda fixa')) return {created:0,updated:0,ignored:0};
   let created=0,updated=0,ignored=0;
   const now=new Date().toISOString();
   const source='B3 Posição Atual';
@@ -8892,6 +9095,7 @@ function importRfPositionRows(rows){
   return {created,updated,ignored};
 }
 function importRfEventRows(events){
+  if(!canEditFromThisTab('importar eventos de renda fixa')) return {imported:0,duplicates:0,review:0};
   let imported=0,duplicates=0,review=0;
   const now=new Date().toISOString();
   const add=[];
@@ -8922,6 +9126,7 @@ function importRfEventRows(events){
 }
 function importRfPositionReview(){
   if(!S.rfPositionReview) return;
+  if(!canEditFromThisTab('importar posição de renda fixa')) return;
   const selectedPositions=(S.rfPositionReview.items||[]).filter(it=>it.include!==false);
   if(!selectedPositions.length){
     alert('Selecione ao menos uma posição válida para importar.');
@@ -9144,6 +9349,7 @@ function b3ProventosReviewFilteredRows(){
 }
 function importB3ProventosReview(){
   if(!S.b3ProventosReview) return;
+  if(!canEditFromThisTab('aplicar proventos B3')) return;
   const rows=Array.isArray(S.b3ProventosReview.items)?S.b3ProventosReview.items:[];
   const totalRows=rows.length;
   const selectedRows=rows.filter(row=>row.include!==false && row.status==='Novo provento' && row.destination==='Proventos');
@@ -9581,6 +9787,7 @@ function b3MovementSummary(){
   };
 }
 function applyB3MovementImported(rows, importDate){
+  if(!canEditFromThisTab('aplicar movimentações B3')) return;
   const gate=b3ActiveWalletGate();
   if(!gate.allow){
     toast('Selecione uma carteira de teste antes de aplicar.', '#fbbf24');
@@ -9667,6 +9874,7 @@ function applyB3MovementImported(rows, importDate){
 }
 function importB3MovementReview(){
   if(!S.b3MovementReview) return;
+  if(!canEditFromThisTab('aplicar movimentações B3')) return;
   const rows=b3MovementSelectedItems();
   if(!rows.length){
     alert('Selecione ao menos um item valido para importar.');
@@ -9976,6 +10184,7 @@ document.getElementById('broker-note-pdf-file').addEventListener('change',async 
 });
 
 function configBrapi(){
+  if(!canEditFromThisTab('salvar token Brapi')) return;
   const token=prompt('Opcional: cole token da Brapi apenas para proventos automáticos/fallback (cotações usam Yahoo sem token):',S.brapiToken?'••••••••':'');
   if(token===null) return;
   S.brapiToken=token.trim()==='••••••••'?S.brapiToken:token.trim();
@@ -10533,6 +10742,7 @@ function quickMovementBuildAporteFromFields(kind){
   };
 }
 function saveQuickMovement(){
+  if(!canEditFromThisTab('salvar movimentação rápida')) return;
   const kind=normalizeQuickMovementKind(S.quickMovementDraft?.kind);
   const built=quickMovementBuildAporteFromFields(kind);
   if(built.error){ alert(built.error); return; }
@@ -10951,6 +11161,7 @@ function setRfEventEditorField(field, value){
   };
 }
 function saveRfEventEditor(){
+  if(!canEditFromThisTab('salvar evento RF')) return;
   if(!S.rfEventEditor?.draft) return;
   const asset=getRfAssetByEventId(S.rfEventEditor.assetId);
   if(!asset) return;
@@ -10997,6 +11208,7 @@ function saveRfEventEditor(){
   render();
 }
 function removeRfEvent(eventId){
+  if(!canEditFromThisTab('excluir evento RF')) return;
   const event=(S.rfEvents||[]).map(normalizeRfEventEntry).find(item=>String(item.id||'')===String(eventId||''));
   if(!event) return;
   if(!confirm(`Remover o evento de ${event.date||'—'} no valor líquido de ${fmt(event.netValue)}?`)) return;
@@ -14584,6 +14796,7 @@ async function fetchQuotes(manual=false){
   S.qLoad=false; S.cd=QI; render();
 }
 async function fetchAutoProventos(){
+  if(!canEditFromThisTab('buscar proventos automáticos')) return;
   const preserved=(S.proventos||[]).filter(p=>!isAutoGeneratedProvento(p));
   const nextAuto=[];
   if(!S.assets.length){
@@ -14638,6 +14851,7 @@ async function fetchAutoProventos(){
 
 // ══════════════════════════════════════
 async function fetchAutoProventosGratis(){
+  if(!canEditFromThisTab('buscar proventos automáticos')) return;
   const preserved=(S.proventos||[]).filter(p=>!isAutoGeneratedProvento(p));
   const nextAuto=[];
   if(!S.assets.length){
@@ -17274,6 +17488,7 @@ function app(){
     </div>
     <button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:34px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>
   </div>`:''}
+  ${editLockBanner()}
   ${desktopTabs()}
   ${mobileTabs()}
   <div class="wrap">${content()}</div>
@@ -19117,6 +19332,7 @@ function filteredAporteRows(rows=aporteExtractRows()){
   });
 }
 function deleteMovementLaunch(id,sourceType){
+  if(!canEditFromThisTab('excluir lançamento')) return;
   const type=String(sourceType||'aporte').toLowerCase();
   if(!confirm('Deseja excluir este lançamento? Esta ação não pode ser desfeita.')) return;
   if(type==='provento'){
@@ -19434,6 +19650,7 @@ function frmD(){
   </div>`;
 }
 function saveDivGoal(){
+  if(!canEditFromThisTab('salvar meta de renda passiva')) return;
   const v=Number((document.getElementById('div-goal')||document.getElementById('mpr-head-monthly')||document.getElementById('mpr-monthly'))?.value)||0;
   S.divGoal=Math.max(0,v);
   S.goals=S.goals||{};
@@ -19442,6 +19659,7 @@ function saveDivGoal(){
   saveConfig(); save(); render();
 }
 function saveMetaPatrimonio(){
+  if(!canEditFromThisTab('salvar meta de patrimônio')) return;
   S.goals=S.goals||{};
   S.goals.patrimonio={
     target:Number(document.getElementById('mp-target')?.value)||0,
@@ -19451,12 +19669,14 @@ function saveMetaPatrimonio(){
   save(); render(); toast('✅ Meta de patrimônio salva!');
 }
 function saveMetaPatrimonioTarget(){
+  if(!canEditFromThisTab('salvar meta de patrimônio')) return;
   S.goals=S.goals||{};
   S.goals.patrimonio=S.goals.patrimonio||{};
   S.goals.patrimonio.target=Number(document.getElementById('mp-head-target')?.value)||0;
   save(); render();
 }
 function setMetaAssetType(type){
+  if(!canEditFromThisTab('salvar meta de ativos')) return;
   S.goals=S.goals||{};
   S.goals.ativos=S.goals.ativos||{};
   const norm=normalizeType(type||'Ação','Ação');
@@ -19466,6 +19686,7 @@ function setMetaAssetType(type){
   save(); render();
 }
 function saveMetaAtivos(){
+  if(!canEditFromThisTab('salvar meta de ativos')) return;
   S.goals=S.goals||{};
   S.goals.ativos={
     type:normalizeType(document.getElementById('ma-type')?.value||'Ação','Ação'),
@@ -19477,6 +19698,7 @@ function saveMetaAtivos(){
   save(); render(); toast('✅ Meta de ativos salva!');
 }
 function toggleMetaProventoType(type){
+  if(!canEditFromThisTab('salvar meta de proventos')) return;
   S.goals=S.goals||{};
   const norm=normalizeType(type||'Ação','Ação');
   const cur=new Set((S.goals.proventos?.types)||['Ação','FII','ETF','BDR','Stock']);
@@ -19486,6 +19708,7 @@ function toggleMetaProventoType(type){
   save(); render();
 }
 function saveMetaProventos(){
+  if(!canEditFromThisTab('salvar meta de proventos')) return;
   S.goals=S.goals||{};
   S.goals.proventos=S.goals.proventos||{};
   const v=Math.max(0, Number((document.getElementById('mpr-monthly')||document.getElementById('mpr-head-monthly')||document.getElementById('div-goal'))?.value)||0);
@@ -19495,6 +19718,7 @@ function saveMetaProventos(){
   save(); render(); toast('✅ Meta de proventos salva!');
 }
 function saveMetaProventosTarget(){
+  if(!canEditFromThisTab('salvar meta de proventos')) return;
   const v=Math.max(0, Number((document.getElementById('mpr-head-monthly')||document.getElementById('mpr-monthly')||document.getElementById('div-goal'))?.value)||0);
   S.goals=S.goals||{};
   S.goals.proventos=S.goals.proventos||{};
@@ -21749,9 +21973,11 @@ function watchPwaUpdate(registration){
 loadThemePreference();
 if(isLocalTestMode()){
   applyLocalTestFixture();
+  initEditProtection();
   render();
 }else{
   load();
+  initEditProtection();
   initFirebase();
   try{
     if(S.aportes.length) syncAssetsFromAportes(false); else render();
@@ -21764,6 +21990,7 @@ if(isLocalTestMode()){
   window.addEventListener('focus',()=>fetchQuotes(false));
   window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
 }
+window.addEventListener('beforeunload',()=>{ save(); releaseEditProtection('beforeunload'); });
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();
   PWA.prompt=e;
