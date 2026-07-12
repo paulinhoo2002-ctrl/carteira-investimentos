@@ -3633,7 +3633,7 @@ let S = {
   dividendClassFilter:'all',
   irpfYear:new Date().getFullYear(),
   irpfStep:1,
-  apHistoryOpen:true, apSearch:'',
+  apHistoryOpen:false, apSearch:'',
   aportesViewMode:'extrato',
   aportesFilter:'todos',
   aportesPage:1,
@@ -19157,7 +19157,7 @@ function apTab(){
       </div>
     </details>`;
   }).join('');
-  const reserveDetails=reserveItems.length?`<details class="ag reserve-card" open>
+  const reserveDetails=reserveItems.length?`<details class="ag reserve-card">
     <summary>
       <div class="ag-left">
         <div class="ag-ico">🧰</div>
