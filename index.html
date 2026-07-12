@@ -565,7 +565,7 @@ button{cursor:pointer;font-family:inherit}
 .rf-hero-badge.warn{color:#fbbf24;border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08)}
 .rf-hero-badge.danger{color:#f87171;border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.08)}
 .rf-hero-note{font-size:10px;color:#64748b;line-height:1.45}
-.rf-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.rf-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .rf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .rf-panel{border:1px solid var(--border);border-radius:15px;background:var(--panel-2);padding:12px;min-width:0}
 .rf-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -574,6 +574,10 @@ button{cursor:pointer;font-family:inherit}
 .rf-panel-badge{font-size:9px;font-weight:800;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:4px 8px;white-space:nowrap}
 .rf-empty{padding:10px;border:1px dashed var(--border);border-radius:10px;background:var(--surface-2);color:var(--muted);font-size:10px;line-height:1.45}
 .rf-note{font-size:9px;color:var(--muted);line-height:1.45;margin-top:8px}
+.rf-spotlight{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:10px 11px;margin:10px 0 2px}
+.rf-spotlight-title{font-size:10px;font-weight:850;color:var(--text);line-height:1.2}
+.rf-spotlight-sub{font-size:9px;color:var(--muted);line-height:1.35;margin-top:2px}
+.rf-spotlight-badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .rf-bucket-list,.rf-type-list,.rf-alert-list,.rf-preview-list{display:flex;flex-direction:column;gap:7px}
 .rf-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:auto}
 .rf-table{width:100%;border-collapse:collapse;min-width:1120px}
@@ -17937,31 +17941,27 @@ function rfEventHistoryCards(rows){
 function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
   const count=data.assets.length;
-  const currentLabel=data.explicitCount===count ? 'valor atual/líquido total' : 'valor atual/líquido total*';
+  const attentionBadges=count ? [
+    overdue>0 ? `<span class="note-pill" style="color:#fecaca;background:#3f1d24;border-color:rgba(248,113,113,.24)">${overdue} vencido${overdue===1?'':'s'}</span>` : '',
+    soon30>0 ? `<span class="note-pill" style="color:#fde68a;background:#3d2f12;border-color:rgba(251,191,36,.24)">${soon30} em até 30 dias</span>` : '',
+    missingDue>0 ? `<span class="note-pill">Sem vencimento: ${missingDue}</span>` : '',
+    missingRate>0 ? `<span class="note-pill">Sem taxa: ${missingRate}</span>` : '',
+  ].filter(Boolean).join('') : '';
   const summaryStrip=count ? `
-    <div class="rf-summary-strip">
-      <div class="rf-summary-item">
-        <div class="rf-summary-label">Resultado de mercado</div>
-        <div class="rf-summary-value ${data.totalProfit>=0?'good':'bad'}">${fmt(data.totalProfit)}</div>
-        <div class="rf-summary-sub">Sem considerar rendimentos recebidos.</div>
+    <div class="rf-spotlight">
+      <div>
+        <div class="rf-spotlight-title">O que merece atenção</div>
+        <div class="rf-spotlight-sub">${overdue>0 ? 'Priorize os títulos vencidos.' : soon30>0 ? 'Revise os vencimentos próximos.' : 'Nenhum evento imediato para revisar.'}</div>
       </div>
-      <div class="rf-summary-item">
-        <div class="rf-summary-label">Rendimentos recebidos</div>
-        <div class="rf-summary-value good">${fmt(data.totalReceivedNet)}</div>
-        <div class="rf-summary-sub">Líquido de juros/cupom/rendimento da RF.</div>
-      </div>
-      <div class="rf-summary-item">
-        <div class="rf-summary-label">Resultado total</div>
-        <div class="rf-summary-value ${data.totalResultWithEvents>=0?'good':'bad'}">${fmt(data.totalResultWithEvents)}</div>
-        <div class="rf-summary-sub">Mercado + rendimentos líquidos recebidos.</div>
+      <div class="rf-spotlight-badges">
+        ${attentionBadges || '<span class="note-pill">Nenhum evento próximo.</span>'}
       </div>
     </div>` : '';
   const kpis=[
     dashboardMetricCard('💵','Valor aplicado total',fmt(data.totalApplied),count>0?'Capital informado na carteira':'Cadastre títulos para começar','#c4b5fd','rgba(129,140,248,.16)'),
-    dashboardMetricCard('🏦',currentLabel,fmt(data.totalCurrent),data.explicitCount===count ? 'Leitura com valores já informados' : `${data.explicitCount}/${count} títulos com valor atual explícito`,'#34d399','rgba(52,211,153,.14)'),
-    dashboardMetricCard('📈','Ganho estimado em reais',fmt(data.totalProfit),data.totalApplied>0?'Diferença entre aplicado e valor atual informado':'Sem base suficiente','#60a5fa','rgba(96,165,250,.14)'),
+    dashboardMetricCard('🏦','Valor líquido total',fmt(data.totalCurrent),data.explicitCount===count ? 'Leitura com valores já informados' : `${data.explicitCount}/${count} títulos com valor atual explícito`,'#34d399','rgba(52,211,153,.14)'),
     dashboardMetricCard('🎯','Rentabilidade estimada',count>0 ? fmtP(data.totalPct) : '—',count>0 ? 'Calculada com os valores já cadastrados' : 'Sem títulos cadastrados',count>0?(data.totalPct>=0?'#34d399':'#f87171'):'#94a3b8',count>0?(data.totalPct>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)'):'rgba(148,163,184,.12)'),
-    dashboardMetricCard('🧾','Quantidade de títulos',String(count),data.missingCurrent ? `${data.missingCurrent} sem valor atual explícito` : 'Carteira mais confiável para leitura','#edf3ff','rgba(148,163,184,.12)')
+    dashboardMetricCard('📅','Vencimentos próximos',count>0 ? (overdue>0 ? `${overdue} vencido${overdue===1?'':'s'}` : soon30>0 ? `${soon30} em 30 dias` : soon90>0 ? `${soon90} em 90 dias` : 'sem urgência') : '—',count>0 ? (data.missingDue ? `${data.missingDue} sem vencimento` : 'Sem eventos imediatos') : 'Cadastre títulos para ver alertas','#ffd76c','rgba(251,191,36,.12)')
   ];
   const typeRows=data.typeRows.length ? data.typeRows.map(row=>`
     <div class="premium-income-row">
@@ -18044,13 +18044,18 @@ function rendaFixaTab(){
     ${summaryStrip}
 
     <div class="rf-grid">
-      <div class="rf-panel">
-        <div class="rf-panel-head">
-          <div><div class="rf-panel-title">Tipos cadastrados</div><div class="rf-panel-sub">Separação por subtipo para leitura rápida da renda fixa.</div></div>
-          <div class="rf-panel-badge">${data.typeRows.length} tipos</div>
+      <details class="sec" style="margin-top:0">
+        <summary>
+          <div>
+            <div class="sec-title">Tipos cadastrados</div>
+            <div class="sec-meta">Separação por subtipo para leitura rápida da renda fixa.</div>
+          </div>
+          <div class="sec-meta">${data.typeRows.length} tipos · clique para abrir</div>
+        </summary>
+        <div class="sec-body" style="padding-top:10px">
+          <div class="premium-income-list">${typeRows}</div>
         </div>
-        <div class="premium-income-list">${typeRows}</div>
-      </div>
+      </details>
       <div class="rf-panel">
         <div class="rf-panel-head">
           <div><div class="rf-panel-title">Vencimentos</div><div class="rf-panel-sub">Vencidos, próximos 30/90 dias e horizonte de 12 meses.</div></div>
@@ -18069,14 +18074,19 @@ function rendaFixaTab(){
         </div>
         <div class="rf-preview-list">${alertRows}</div>
       </div>
-      <div class="rf-panel">
-        <div class="rf-panel-head">
-          <div><div class="rf-panel-title">Leitura por título</div><div class="rf-panel-sub">Resultado estimado com base apenas nos valores já informados.</div></div>
-          <div class="rf-panel-badge">${data.previewRows.length} destaques</div>
+      <details class="sec" style="margin-top:0">
+        <summary>
+          <div>
+            <div class="sec-title">Leitura por título</div>
+            <div class="sec-meta">Resultado estimado com base apenas nos valores já informados.</div>
+          </div>
+          <div class="sec-meta">${data.previewRows.length} destaques · clique para abrir</div>
+        </summary>
+        <div class="sec-body" style="padding-top:10px">
+          <div class="rf-preview-list">${previewRows}</div>
+          <div class="rf-note">A estimativa não inventa rendimento: se faltar valor atual, taxa ou vencimento, o ativo fica como dados incompletos.</div>
         </div>
-        <div class="rf-preview-list">${previewRows}</div>
-        <div class="rf-note">A estimativa não inventa rendimento: se faltar valor atual, taxa ou vencimento, o ativo fica como dados incompletos.</div>
-      </div>
+      </details>
     </div>
 
     <details class="sec" style="margin-top:2px">
