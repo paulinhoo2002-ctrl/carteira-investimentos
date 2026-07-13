@@ -11,6 +11,7 @@
     "test:load": "node --test tests/load-integration.test.js",
     "test:roundtrip": "node --test tests/save-load-roundtrip.test.js",
     "test:extraction": "node --test tests/report-asset-row.test.js",
-    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction"
+    "test:ui": "node --test tests/basic-ui.test.js",
+    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui"
   }
 }
