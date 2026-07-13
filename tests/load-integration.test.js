@@ -343,9 +343,11 @@ test('load preserva o estado financeiro quando a configuração está inválida 
   assert.equal(harness.counters.save, 0);
 });
 
-test('load expõe a falha real quando localStorage.getItem quebra na leitura do estado principal', () => {
+test('load preserva estado atual e não propaga mais a falha histórica de localStorage.getItem no estado principal', () => {
   const readError = new Error('state read failed');
+  const initialState = makeInitialState();
   const harness = makeHarness({
+    initialState,
     storageData: {
       [stateKey]: JSON.stringify({ assets: [{ ticker: 'FAIL3' }] }),
       [configKey]: JSON.stringify({ brapiToken: 'cfg-token' })
@@ -353,10 +355,15 @@ test('load expõe a falha real quando localStorage.getItem quebra na leitura do 
     failures: [{ op: 'getItem', key: stateKey, error: readError }]
   });
 
-  assert.throws(() => harness.load(), /state read failed/);
+  assert.doesNotThrow(() => harness.load());
   assert.equal(harness.storage.calls.some(call => call.op === 'setItem'), false);
-  assert.equal(harness.storage.calls.some(call => call.key === configKey), false);
-  assert.equal(harness.debugErrors.length, 0);
+  assert.equal(harness.storage.calls.some(call => call.key === configKey), true);
+  assert.deepEqual(harness.context.S.assets, initialState.assets);
+  assert.deepEqual(harness.context.S.aportes, initialState.aportes);
+  assert.deepEqual(harness.context.S.proventos, initialState.proventos);
+  assert.equal(harness.context.S.brapiToken, 'cfg-token');
+  assert.equal(harness.debugErrors.length, 1);
+  assert.match(String(harness.debugErrors[0][0]), /load leitura storage erro/i);
   assert.equal(harness.counters.save, 0);
 });
 
