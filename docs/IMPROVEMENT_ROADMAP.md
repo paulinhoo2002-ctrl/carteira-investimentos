@@ -1,0 +1,240 @@
+# Controle oficial das melhorias e auditorias
+
+## 1. Propósito
+
+Este documento é o controle oficial das melhorias técnicas do projeto Carteira de Investimentos.
+
+Objetivo:
+- registrar auditorias, melhorias concluídas, fases futuras, riscos, dependências, decisões e evidências;
+- manter rastreabilidade simples;
+- evitar mudanças estruturais grandes sem registro prévio.
+
+Regra central:
+- nenhuma grande mudança estrutural deve ser iniciada sem estar registrada aqui.
+
+## 2. Regras permanentes
+
+- uso obrigatório de Caveman:
+  documento simples, fácil de manter, sem sistema complexo, sem duplicação desnecessária;
+- uso obrigatório de Impeccable:
+  rastreabilidade, critérios objetivos, riscos, dependências, evidências e clareza de status;
+- uma branch, um objetivo e um PR;
+- não misturar correção, refatoração e funcionalidade na mesma fase;
+- nenhuma publicação, push, PR, merge ou deploy sem autorização explícita;
+- revisar o diff completo antes de qualquer aprovação;
+- proteger cálculos, persistência, dados e integridade histórica;
+- testar desktop `1366x768` e mobile `390x844` quando houver impacto visual;
+- não alterar `Firebase/Auth`, schema, backup, sync, save, `sw.js` ou cálculos fora do escopo aprovado;
+- não iniciar mudanças estruturais sem registro prévio nesta trilha oficial.
+
+## 3. Estado atual
+
+Base operacional desta fase:
+
+- `main` em `f26bfde9cee2ef95a5d20c5c8c25e163371a67ee`;
+- módulo `finance-core.js` existente;
+- módulo `persistence-core.js` existente;
+- `80` testes financeiros;
+- `30` testes de persistência;
+- `6` testes integrados de restore;
+- total atual de `116` testes;
+- PR `#148` concluído;
+- PR `#149` concluído;
+- workspace esperado limpo;
+- branches temporárias esperadas como encerradas após uso.
+
+Leitura de status:
+
+| Item | Estado |
+| --- | --- |
+| Commit base da `main` | confirmado |
+| `finance-core.js` | confirmado |
+| `persistence-core.js` | confirmado |
+| 80 testes financeiros | confirmado |
+| 30 testes de persistência | confirmado |
+| 6 testes integrados do restore | confirmado |
+| Total de 116 testes | confirmado |
+| PR #148 concluído | confirmado |
+| PR #149 concluído | confirmado |
+| Workspace esperado limpo | confirmado no início da fase |
+| Branches temporárias encerradas | precisa confirmar periodicamente no remoto |
+
+## 4. Resumo das auditorias
+
+Consolidação dos principais achados já levantados, com classificação de situação atual.
+
+| Achado | Situação | Leitura atual |
+| --- | --- | --- |
+| `index.html` com aproximadamente 22 mil linhas | confirmado | Monólito ainda concentra grande parte da aplicação. |
+| UI, CSS, lógica, Firebase e templates concentrados | confirmado | Alta concentração continua no arquivo principal. |
+| `npm test` atualmente não executa os testes | confirmado | Hoje `npm test` roda apenas o build estático. |
+| build atual é apenas validação estática | confirmado | Não cobre fluxo real de UI nem regressão funcional ampla. |
+| ausência de CI próprio | confirmado | Ainda não há pipeline mínimo registrado nesta base. |
+| ausência de testes automatizados suficientes da UI | confirmado | Testes de UI ainda não cobrem fluxos centrais do app. |
+| renderização ampla do DOM | confirmado | Render central continua extensa e sensível a regressões. |
+| ausência de lint | confirmado | Não há lint ativo no fluxo padrão. |
+| riscos de segurança a confirmar | precisa confirmar | Exigem auditoria específica e evidência atualizada. |
+| excesso histórico de branches remotas a auditar | precisa confirmar | Precisa varredura dedicada no remoto. |
+| risco de restauração parcial entre `civ5` e `civ5_cfg` | resolvido | Evidência: PR `#148`; commit `091f8405a405ae4937d3384d3a5b5b500100a0bf`; `30` testes de persistência; `6` testes integrados do restore. |
+| `finance-core.js` e `persistence-core.js` como exemplos positivos | confirmado | São referências de modularização de baixo risco. |
+| documentação como ponto forte | confirmado | A trilha documental evoluiu bem. |
+| responsividade como ponto forte | parcialmente resolvido | Há cobertura relevante, mas depende de validação manual em telas afetadas. |
+| poucas dependências como ponto forte | confirmado | Estrutura segue enxuta e reduz superfície operacional. |
+
+Resumo executivo:
+
+- confirmado: riscos estruturais do monólito, baixa automação no fluxo principal e comando de teste incompleto;
+- parcialmente resolvido: documentação e parte da responsividade já melhoraram, mas ainda pedem validação contínua;
+- precisa confirmar: segurança e higiene completa de branches remotas;
+- resolvido: o risco de restauração parcial entre `civ5` e `civ5_cfg` foi fechado com evidência de PR, commit e testes.
+
+## 5. Tabela de controle
+
+| ID | Fase | Categoria | Problema | Evidência | Prioridade | Risco | Dependências | Status | Branch | PR | Commit | Testes | Próxima ação |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 148 | Fase 148 | Persistência | Restore precisava cobertura mais robusta | PR #148 concluído | Alta | Alto | `persistence-core.js`, testes | concluído | histórico | #148 | histórico | validados na fase | manter cobertura |
+| 149 | Fase 149 | Integração | Restore entre `civ5` e `civ5_cfg` precisava prova integrada | PR #149 concluído | Alta | Alto | testes integrados | concluído | histórico | #149 | `f26bfde` na base atual | 116 testes esperados | preservar estabilidade |
+| 150 | Fase 150 | Documentação / Governança | Falta um controle oficial único das melhorias | este documento | Alta | Médio | estado atual confirmado | em andamento | `docs/improvement-roadmap` | — | — | build + 116 testes desta fase | concluir revisão documental |
+| 151 | Fase 151 | Qualidade | `npm test` não roda os 116 testes | `package.json` atual | Alta | Médio | comandos atuais de teste | aprovado para futura execução | futura | — | — | obrigatórios | fazer `npm test` executar toda a suíte |
+| 152 | Fase 152 | CI | Ausência de CI mínimo | sem workflow ativo | Alta | Médio | Fase 151 | aprovado | futura | — | — | obrigatórios | criar GitHub Actions mínimo |
+| 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | auditorias do arquivo principal | Média | Médio | base estável | aprovado | futura | — | — | revisão documental | mapear áreas do monólito |
+| 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | risco de regressão em inicialização | Alta | Alto | testes atuais | aprovado | futura | — | — | obrigatórios | criar testes integrados de `load()` |
+| 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | risco de inconsistência local | Alta | Alto | Fase 154 | aprovado | futura | — | — | obrigatórios | validar roundtrip |
+| 156 | Fase 156 | Modularização | Primeira extração segura ainda não formalizada | `index.html` extenso | Média | Alto | mapa arquitetural e testes | aprovado | futura | — | — | obrigatórios | extrair bloco de baixo risco |
+| 157 | Fase 157 | UI | Cobertura automatizada da UI ainda é baixa | achado confirmado em auditoria | Média | Médio | Fases 151 a 156 | aprovado | futura | — | — | obrigatórios | criar testes básicos de UI |
+| 158 | Fase 158 | Segurança | Riscos de segurança ainda sem fechamento formal | achado pendente de confirmação | Alta | Alto | base estabilizada | aprovado | futura | — | — | auditoria dedicada | auditar e corrigir com escopo controlado |
+| 159 | Fase 159 | Performance | Performance ainda sem medição formal | renderização ampla do DOM | Média | Médio | mapa arquitetural | aprovado | futura | — | — | métricas obrigatórias | medir e melhorar |
+
+## 6. Fases concluídas
+
+Concluído até a base atual:
+
+- extração e testes financeiros;
+- extração e testes de persistência;
+- transação de restauração entre `civ5` e `civ5_cfg`;
+- testes integrados de `applyBackupData()`;
+- PR `#148`;
+- PR `#149`.
+
+Critério de leitura:
+
+- concluído significa entregue e incorporado à `main`;
+- manter o que já foi estabilizado tem prioridade sobre acelerar novas frentes.
+
+## 7. Roadmap aprovado
+
+Sequência aprovada no momento:
+
+1. Fase 150 — Controle oficial das melhorias
+2. Fase 151 — Comando completo de testes
+3. Fase 152 — CI mínimo com GitHub Actions
+4. Fase 153 — Mapa arquitetural do `index.html`
+5. Fase 154 — Testes integrados de `load()`
+6. Fase 155 — Roundtrip `save()/load()`
+7. Fase 156 — Primeira extração modular de baixo risco
+8. Fase 157 — Testes básicos de UI
+9. Fase 158 — Auditoria e melhorias de segurança
+10. Fase 159 — Medição e melhoria de performance
+
+Regra:
+
+- manter esta ordem salvo nova decisão registrada no histórico;
+- não abrir fase posterior sem fechar dependências críticas da anterior.
+
+## 8. Itens adiados
+
+Itens adiados, não rejeitados:
+
+- migração para framework;
+- TypeScript;
+- Vite;
+- separação total do CSS;
+- Prettier no monólito;
+- grande refatoração do `render()`;
+- code splitting;
+- Sentry.
+
+Motivo do adiamento:
+
+- risco alto para uma base financeira em produção;
+- dependências técnicas ainda não fechadas;
+- necessidade de cobertura de testes e governança antes de ampliar escopo.
+
+Leitura correta:
+
+- adiado por risco e dependências;
+- não rejeitado definitivamente.
+
+## 9. Critério de conclusão de cada fase
+
+Toda fase precisa cumprir:
+
+- objetivo único;
+- arquivos permitidos definidos;
+- arquivos proibidos definidos;
+- testes obrigatórios definidos;
+- revisão Caveman;
+- revisão Impeccable;
+- revisão do diff completo;
+- commit autorizado;
+- push autorizado;
+- PR revisado;
+- merge autorizado;
+- limpeza da branch ao final.
+
+Checklist operacional:
+
+| Item | Obrigatório |
+| --- | --- |
+| Objetivo único | sim |
+| Escopo de arquivos | sim |
+| Testes obrigatórios | sim |
+| Revisão Caveman | sim |
+| Revisão Impeccable | sim |
+| Diff completo revisado | sim |
+| Commit autorizado | sim |
+| Push autorizado | sim |
+| PR revisado | sim |
+| Merge autorizado | sim |
+| Limpeza da branch | sim |
+
+## 10. Histórico de decisões
+
+| Data | Decisão | Motivo | Impacto | PR/commit relacionado |
+| --- | --- | --- | --- | --- |
+| 2026-07-13 | Criar um controle oficial único para melhorias e auditorias | Evitar dispersão de decisões e mudanças estruturais sem trilha formal | Melhora governança técnica e rastreabilidade | Fase 150 |
+| 2026-07-13 | Manter roadmap simples, sem sistema pesado de gestão | Preservar manutenção barata e aderência Caveman | Documento mais fácil de manter no dia a dia | Fase 150 |
+| 2026-07-13 | Não iniciar Fase 151 nesta branch | Regra de uma branch, um objetivo e um PR | Mantém escopo documental puro | Fase 150 |
+
+## 11. Próxima fase preparada
+
+Próxima fase prevista:
+
+### Fase 151 — Comando completo de testes
+
+Objetivo preliminar:
+
+- fazer `npm test` executar os `80` testes financeiros, `30` testes de persistência e `6` testes integrados;
+- preservar os comandos individuais já existentes.
+
+Regra desta preparação:
+
+- esta fase não será implementada na branch `docs/improvement-roadmap`;
+- qualquer mudança em `package.json` ou fluxo de teste fica reservada para a Fase 151.
+
+---
+
+## Parecer Caveman
+
+- um arquivo;
+- um objetivo;
+- sem duplicar sistema de gestão;
+- leitura rápida;
+- manutenção barata.
+
+## Parecer Impeccable
+
+- há rastreabilidade de estado, riscos, dependências e próximos passos;
+- os achados foram classificados;
+- há tabela de controle, histórico de decisões e critérios de conclusão;
+- o documento separa concluído, pendente, aprovado e adiado com clareza.
