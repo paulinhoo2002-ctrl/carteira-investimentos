@@ -6,7 +6,7 @@ import './styles.css';
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error('Elemento root não encontrado.');
+  throw new Error('Elemento root nao encontrado.');
 }
 
 ReactDOM.createRoot(rootElement).render(

@@ -1,41 +1,72 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { AppHeader } from './components/AppHeader';
+import { PagePlaceholder } from './components/PagePlaceholder';
+import { Sidebar } from './components/Sidebar';
+import { MODERN_PAGES, OVERVIEW_CARDS, type ModernPageId } from './types/navigation';
 
 export function App() {
-  const [showNote, setShowNote] = useState(false);
+  const [activePageId, setActivePageId] = useState<ModernPageId>('overview');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const activePage = MODERN_PAGES.find((page) => page.id === activePageId) ?? MODERN_PAGES[0];
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMenuOpen]);
+
+  const handlePageChange = (pageId: ModernPageId) => {
+    setActivePageId(pageId);
+    setIsMenuOpen(false);
+  };
 
   return (
-    <main className="page-shell">
-      <section className="panel" aria-labelledby="modern-title">
-        <p className="eyebrow">Fase 161</p>
-        <h1 id="modern-title">Carteira de Investimentos</h1>
-        <p className="lead">
-          Base moderna isolada com React, TypeScript e Vite.
-        </p>
-        <p className="notice">
-          Nenhuma leitura ou gravação de dados reais. Esta tela existe só como
-          prova técnica inicial.
-        </p>
+    <div className="modern-app">
+      <AppHeader isMenuOpen={isMenuOpen} onToggleMenu={() => setIsMenuOpen((current) => !current)} />
 
-        <ul className="stack" aria-label="Tecnologias da base moderna">
-          <li>React</li>
-          <li>TypeScript</li>
-          <li>Vite</li>
-        </ul>
+      <div className="modern-shell">
+        <Sidebar
+          activePageId={activePageId}
+          isMenuOpen={isMenuOpen}
+          onSelectPage={handlePageChange}
+          pages={MODERN_PAGES}
+        />
 
-        <button
-          className="button"
-          type="button"
-          onClick={() => setShowNote((current) => !current)}
-        >
-          {showNote ? 'Ocultar confirmação técnica' : 'Mostrar confirmação técnica'}
-        </button>
-
-        {showNote ? (
-          <p className="confirmation" role="status">
-            Confirmação ativa: o moderno está isolado do legado.
-          </p>
+        {isMenuOpen ? (
+          <button
+            aria-label="Fechar menu"
+            className="modern-backdrop"
+            type="button"
+            onClick={() => setIsMenuOpen(false)}
+          />
         ) : null}
-      </section>
-    </main>
+
+        <main className="modern-main" id="modern-main">
+          <PagePlaceholder
+            cardData={activePageId === 'overview' ? OVERVIEW_CARDS : undefined}
+            page={activePage}
+          />
+        </main>
+      </div>
+
+      <footer className="modern-footnote">Base moderna isolada - sem acesso aos dados da carteira.</footer>
+    </div>
   );
 }
