@@ -5,6 +5,9 @@
   "description": "Carteira de investimentos com controle de ativos, aportes, dividendos, metas e sincronizacao Firebase.",
   "scripts": {
     "build": "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"",
+    "dev:modern": "vite --config modern/vite.config.ts",
+    "build:modern": "vite build --config modern/vite.config.ts",
+    "test:modern": "node --test tests/modern-base.test.js",
     "test:finance": "node --test tests/finance-core.test.js",
     "test:persistence": "node --test tests/persistence-core.test.js",
     "test:backup-restore": "node --test tests/backup-restore-integration.test.js",
@@ -14,5 +17,17 @@
     "test:ui": "node --test tests/basic-ui.test.js",
     "test:performance": "node --test tests/performance-reports.test.js",
     "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui && npm run test:performance"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "playwright-core": "^1.61.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
   }
 }
