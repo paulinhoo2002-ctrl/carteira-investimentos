@@ -102,8 +102,8 @@ Resumo executivo:
 | 152 | Fase 152 | CI | Ausência de CI mínimo | PR `#152` concluído | Alta | Médio | Fase 151 | concluído | histórico | #152 | `2ead18a2b251a2a73cdd8020fbbef40399c5fa2d` | workflow `CI` + 116 testes no GitHub Actions | preservar CI mínimo |
 | 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | PR `#153` concluído | Média | Médio | base estável | concluído | histórico | #153 | `bfd23229d1ba27e48ac2d0a8b32602efda47a9a2` | `npm ci` + build + 116 testes validados | usar mapa antes de mexer em `load()` |
 | 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | PR `#154` concluído | Alta | Alto | Fase 153 + CI mínimo | concluído | histórico | #154 | `07b3a149e2f549b14d303201f247f020bab6911f` | build + 123 testes validados | usar cobertura antes do roundtrip |
-| 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | risco de inconsistência local e gravação parcial | Alta | Alto | Fase 154 concluída | em implementação | `test/save-load-roundtrip` | — | — | build + `npm test` com 130 testes | validar roundtrip |
-| 156 | Fase 156 | Modularização | Primeira extração segura ainda não formalizada | `index.html` extenso | Média | Alto | mapa arquitetural e testes | aprovado | futura | — | — | obrigatórios | extrair bloco de baixo risco |
+| 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | PR `#155` concluído | Alta | Alto | Fase 154 concluída | concluído | histórico | #155 | `3cbe0a4b5450410513a440df8964c8158b9c0d36` | build + `npm test` com 130 testes | usar roundtrip antes de extrair |
+| 156 | Fase 156 | Modularização | Primeira extração segura deve provar padrão mínimo de desacoplamento | helper puro `buildReportAssetRow()` derivado de `reportAssetRows()` | Média | Alto | mapa arquitetural e 130 testes prévios | em implementação | `refactor/first-low-risk-extraction` | — | — | build + `npm test` + `test:extraction` | validar a primeira extração |
 | 157 | Fase 157 | UI | Cobertura automatizada da UI ainda é baixa | achado confirmado em auditoria | Média | Médio | Fases 151 a 156 | aprovado | futura | — | — | obrigatórios | criar testes básicos de UI |
 | 158 | Fase 158 | Segurança | Riscos de segurança ainda sem fechamento formal | achado pendente de confirmação | Alta | Alto | base estabilizada | aprovado | futura | — | — | auditoria dedicada | auditar e corrigir com escopo controlado |
 | 159 | Fase 159 | Performance | Performance ainda sem medição formal | renderização ampla do DOM | Média | Médio | mapa arquitetural | aprovado | futura | — | — | métricas obrigatórias | medir e melhorar |
@@ -230,27 +230,29 @@ Checklist operacional:
 
 Próxima fase prevista:
 
-### Fase 155 — Roundtrip `save()/load()`
+### Fase 156 — Primeira extração modular de baixo risco
 
 Status atual:
 
 - em implementação;
-- branch `test/save-load-roundtrip` criada a partir de `main`;
-- escopo limitado a `tests/save-load-roundtrip.test.js`, `package.json` e este roadmap;
-- objetivo imediato: comprovar roundtrip semântico entre `save()` real e `load()` real;
-- validação dedicada em `test:roundtrip` e execução automática via `npm test`, sem alterar produção nesta fase.
+- branch `refactor/first-low-risk-extraction` criada a partir de `main`;
+- Fase 155 concluída via PR `#155` no commit `3cbe0a4b5450410513a440df8964c8158b9c0d36`;
+- base atual registrada com `130` testes aprovados antes da extração;
+- helper escolhido: `buildReportAssetRow()`, originalmente dentro de `reportAssetRows()` em `index.html`;
+- motivo do baixo risco: montagem pura de linha de relatório, sem DOM, sem `localStorage`, sem Firebase, sem rede, sem `save()`, `load()` ou `render()`;
+- validação dedicada prevista em `test:extraction` e execução automática via `npm test`, sem alterar persistência ou cálculos.
 
 Objetivo preliminar:
 
-- criar teste integrado de roundtrip entre persistência principal e preferências;
-- validar segunda gravação, falha de escrita e isolamento entre `civ5` e `civ5_cfg`;
-- documentar campos derivados que não participam da equivalência semântica;
-- elevar o comando principal para `130` testes com roundtrip incluído no CI.
+- extrair exatamente um helper pequeno, puro e determinístico do monólito;
+- manter `reportAssetRows()` apenas como orquestrador da lista e da ordenação;
+- provar equivalência com casos de caracterização simples e reversão barata;
+- elevar o comando principal acima de `130` testes sem tocar em produção fora do recorte.
 
 Regra desta preparação:
 
-- deve ampliar cobertura sem refatoração estrutural ampla;
-- precisa preservar o comportamento atual do monólito durante gravação e carga.
+- deve mover somente uma responsabilidade pequena e isolada;
+- precisa preservar o comportamento atual do monólito sem alterar visual, cálculo, auth, sync ou persistência.
 
 ---
 

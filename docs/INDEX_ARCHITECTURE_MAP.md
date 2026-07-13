@@ -159,6 +159,7 @@ Separacao real observada no arquivo:
 - Risco de alteracao: medio
 - Cobertura de testes existente: ausente
 - Cobertura ausente: UI/preview/export por card
+- Nota de extracao controlada: a Fase 156 pode retirar apenas a montagem pura de uma linha de ativo para modulo dedicado, mantendo a orquestracao de `reportAssetRows()` no monolito.
 
 ### `downloadExecutivePdf()` — `index.html:15615`
 - Responsabilidade: gerar PDF executivo direto via jsPDF
@@ -427,6 +428,7 @@ Somente candidatos de baixo risco observados agora:
 - Testes necessarios antes: snapshots simples de saida
 - Risco: baixo
 - Ordem recomendada: cedo, apos mapa
+- Corte inicial aprovado para a Fase 156: extrair somente o builder puro de uma linha de `reportAssetRows()` para arquivo especifico, sem mover os demais helpers.
 
 3. Tema e preferencia visual
 - Bloco: `normalizeTheme()`, `applyTheme()`, `loadThemePreference()`, `saveThemePreference()` (`index.html:3631-3653`)
