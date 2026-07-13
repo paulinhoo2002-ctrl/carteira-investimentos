@@ -94,8 +94,8 @@ Resumo executivo:
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 148 | Fase 148 | Persistência | Restore precisava cobertura mais robusta | PR #148 concluído | Alta | Alto | `persistence-core.js`, testes | concluído | histórico | #148 | histórico | validados na fase | manter cobertura |
 | 149 | Fase 149 | Integração | Restore entre `civ5` e `civ5_cfg` precisava prova integrada | PR #149 concluído | Alta | Alto | testes integrados | concluído | histórico | #149 | `f26bfde` na base atual | 116 testes esperados | preservar estabilidade |
-| 150 | Fase 150 | Documentação / Governança | Falta um controle oficial único das melhorias | este documento | Alta | Médio | estado atual confirmado | em andamento | `docs/improvement-roadmap` | — | — | build + 116 testes desta fase | concluir revisão documental |
-| 151 | Fase 151 | Qualidade | `npm test` não roda os 116 testes | `package.json` atual | Alta | Médio | comandos atuais de teste | aprovado para futura execução | futura | — | — | obrigatórios | fazer `npm test` executar toda a suíte |
+| 150 | Fase 150 | Documentação / Governança | Falta um controle oficial único das melhorias | PR `#150` concluído | Alta | Médio | estado atual confirmado | concluído | histórico | #150 | `370a328ac7110c8a67ed9dfef65e1cfeb2f833d8` | build + 116 testes validados | manter roadmap oficial |
+| 151 | Fase 151 | Qualidade | `npm test` não roda os 116 testes | `package.json` atual | Alta | Médio | comandos atuais de teste | em implementação | `test/all-tests-command` | — | — | obrigatórios | fazer `npm test` executar toda a suíte |
 | 152 | Fase 152 | CI | Ausência de CI mínimo | sem workflow ativo | Alta | Médio | Fase 151 | aprovado | futura | — | — | obrigatórios | criar GitHub Actions mínimo |
 | 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | auditorias do arquivo principal | Média | Médio | base estável | aprovado | futura | — | — | revisão documental | mapear áreas do monólito |
 | 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | risco de regressão em inicialização | Alta | Alto | testes atuais | aprovado | futura | — | — | obrigatórios | criar testes integrados de `load()` |
@@ -115,6 +115,8 @@ Concluído até a base atual:
 - testes integrados de `applyBackupData()`;
 - PR `#148`;
 - PR `#149`.
+- PR `#150`;
+- commit da `main` `370a328ac7110c8a67ed9dfef65e1cfeb2f833d8`.
 
 Critério de leitura:
 
@@ -205,12 +207,18 @@ Checklist operacional:
 | 2026-07-13 | Criar um controle oficial único para melhorias e auditorias | Evitar dispersão de decisões e mudanças estruturais sem trilha formal | Melhora governança técnica e rastreabilidade | Fase 150 |
 | 2026-07-13 | Manter roadmap simples, sem sistema pesado de gestão | Preservar manutenção barata e aderência Caveman | Documento mais fácil de manter no dia a dia | Fase 150 |
 | 2026-07-13 | Não iniciar Fase 151 nesta branch | Regra de uma branch, um objetivo e um PR | Mantém escopo documental puro | Fase 150 |
+| 2026-07-13 | Iniciar a Fase 151 apenas para corrigir o comando `npm test` | Garantir que a suíte completa rode por um comando único, sem mexer nos testes ou no código de produção | Melhora execução local e futura compatibilidade com CI | Fase 151 |
 
 ## 11. Próxima fase preparada
 
 Próxima fase prevista:
 
 ### Fase 151 — Comando completo de testes
+
+Status atual:
+
+- em implementação;
+- branch: `test/all-tests-command`.
 
 Objetivo preliminar:
 
