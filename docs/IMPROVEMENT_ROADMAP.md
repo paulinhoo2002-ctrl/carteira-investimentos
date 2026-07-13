@@ -67,7 +67,7 @@ Consolidação dos principais achados já levantados, com classificação de sit
 | --- | --- | --- |
 | `index.html` com aproximadamente 22 mil linhas | confirmado | Monólito ainda concentra grande parte da aplicação. |
 | UI, CSS, lógica, Firebase e templates concentrados | confirmado | Alta concentração continua no arquivo principal. |
-| `npm test` atualmente não executa os testes | confirmado | Hoje `npm test` roda apenas o build estático. |
+| `npm test` ainda não cobre os testes integrados de `load()` na base anterior à Fase 154 | confirmado | A cobertura de `load()` passa a entrar no comando principal apenas nesta fase. |
 | build atual é apenas validação estática | confirmado | Não cobre fluxo real de UI nem regressão funcional ampla. |
 | ausência de CI próprio | confirmado | Ainda não há pipeline mínimo registrado nesta base. |
 | ausência de testes automatizados suficientes da UI | confirmado | Testes de UI ainda não cobrem fluxos centrais do app. |
@@ -80,10 +80,11 @@ Consolidação dos principais achados já levantados, com classificação de sit
 | documentação como ponto forte | confirmado | A trilha documental evoluiu bem. |
 | responsividade como ponto forte | parcialmente resolvido | Há cobertura relevante, mas depende de validação manual em telas afetadas. |
 | poucas dependências como ponto forte | confirmado | Estrutura segue enxuta e reduz superfície operacional. |
+| falha de `localStorage.getItem(STOR)` durante `load()` ainda propaga exceção | confirmado | O comportamento foi provado por teste integrado e permanece sem correção nesta fase. |
 
 Resumo executivo:
 
-- confirmado: riscos estruturais do monólito, baixa automação no fluxo principal e comando de teste incompleto;
+- confirmado: riscos estruturais do monólito e a exceção ainda propagada em `getItem(STOR)` dentro de `load()`;
 - parcialmente resolvido: documentação e parte da responsividade já melhoraram, mas ainda pedem validação contínua;
 - precisa confirmar: segurança e higiene completa de branches remotas;
 - resolvido: o risco de restauração parcial entre `civ5` e `civ5_cfg` foi fechado com evidência de PR, commit e testes.
@@ -97,8 +98,8 @@ Resumo executivo:
 | 150 | Fase 150 | Documentação / Governança | Falta um controle oficial único das melhorias | PR `#150` concluído | Alta | Médio | estado atual confirmado | concluído | histórico | #150 | `370a328ac7110c8a67ed9dfef65e1cfeb2f833d8` | build + 116 testes validados | manter roadmap oficial |
 | 151 | Fase 151 | Qualidade | `npm test` não roda os 116 testes | PR `#151` concluído | Alta | Médio | comandos atuais de teste | concluído | histórico | #151 | `a72596d8161248078a1283cf2ca61800b46868ac` | build + 116 testes validados | preservar comando único |
 | 152 | Fase 152 | CI | Ausência de CI mínimo | PR `#152` concluído | Alta | Médio | Fase 151 | concluído | histórico | #152 | `2ead18a2b251a2a73cdd8020fbbef40399c5fa2d` | workflow `CI` + 116 testes no GitHub Actions | preservar CI mínimo |
-| 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | auditorias do arquivo principal | Média | Médio | base estável | em implementação | `docs/index-architecture-map` | — | — | revisão documental | mapear áreas do monólito |
-| 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | risco de regressão em inicialização | Alta | Alto | testes atuais | aprovado | futura | — | — | obrigatórios | criar testes integrados de `load()` |
+| 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | PR `#153` concluído | Média | Médio | base estável | concluído | histórico | #153 | `bfd23229d1ba27e48ac2d0a8b32602efda47a9a2` | `npm ci` + build + 116 testes validados | usar mapa antes de mexer em `load()` |
+| 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | testes integrados reais via `node:vm` na branch atual | Alta | Alto | Fase 153 + CI mínimo | em implementação | `test/load-integration` | — | — | build + 123 testes esperados | validar `load()` sem tocar produção |
 | 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | risco de inconsistência local | Alta | Alto | Fase 154 | aprovado | futura | — | — | obrigatórios | validar roundtrip |
 | 156 | Fase 156 | Modularização | Primeira extração segura ainda não formalizada | `index.html` extenso | Média | Alto | mapa arquitetural e testes | aprovado | futura | — | — | obrigatórios | extrair bloco de baixo risco |
 | 157 | Fase 157 | UI | Cobertura automatizada da UI ainda é baixa | achado confirmado em auditoria | Média | Médio | Fases 151 a 156 | aprovado | futura | — | — | obrigatórios | criar testes básicos de UI |
@@ -123,6 +124,9 @@ Concluído até a base atual:
 - commit da `main` `2ead18a2b251a2a73cdd8020fbbef40399c5fa2d`;
 - workflow `CI` em `pull_request` e `push` para `main`;
 - `116` testes aprovados no GitHub Actions.
+- PR `#153`;
+- commit da `main` `bfd23229d1ba27e48ac2d0a8b32602efda47a9a2`;
+- mapa arquitetural do `index.html` registrado antes da Fase 154.
 
 Critério de leitura:
 
@@ -225,8 +229,14 @@ Próxima fase prevista:
 
 Status atual:
 
-- planejada;
-- sem branch iniciada.
+- em implementação;
+- branch `test/load-integration` criada a partir de `main`;
+- escopo limitado a `tests/load-integration.test.js`, `package.json` e este roadmap;
+- objetivo imediato: validar o `load()` real do `index.html` sem alterar produção;
+- execução esperada também via `npm test` e GitHub Actions, sem alterar o workflow.
+- suíte da fase: `7` testes integrados de `load()`;
+- total esperado no comando principal após este ajuste: `123` testes;
+- risco confirmado nesta fase: falha de `getItem(STOR)` ainda propaga exceção e permanece não resolvida por decisão de escopo.
 
 Objetivo preliminar:
 
