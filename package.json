@@ -9,6 +9,7 @@
     "test:persistence": "node --test tests/persistence-core.test.js",
     "test:backup-restore": "node --test tests/backup-restore-integration.test.js",
     "test:load": "node --test tests/load-integration.test.js",
-    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load"
+    "test:roundtrip": "node --test tests/save-load-roundtrip.test.js",
+    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip"
   }
 }
