@@ -84,6 +84,7 @@ Consolidação dos principais achados já levantados, com classificação de sit
 | falha de `localStorage.setItem(STOR)` durante `save()` é tratada sem corrupção do estado anterior | confirmado | Achado da Fase 155: teste integrado comprovou que a exceção não é propagada, `civ5` anterior é preservado, `civ5_cfg` anterior é preservado, `queueCloudSave()` não é chamada, `debugError(...)` registra o erro e um toast informa falha ao salvar localmente. Mantido sem correção nesta fase porque o objetivo foi validar roundtrip e o cenário testado preserva o estado anterior. Reavaliar apenas se a Fase 158 exigir melhoria de segurança, resiliência ou observabilidade. |
 | fechamento da prévia de Ativos devolvia foco ao `body` | resolvido | Fase 158: retorno de foco ao disparador implementado com fallback seguro quando o elemento original não existe mais. |
 | fluxos de impressão abriam janela sem `noopener,noreferrer` | resolvido | Fase 158: `window.open()` endurecido nos fluxos de impressão de relatórios e IRPF, reduzindo exposição do `opener`. |
+| abertura da prévia de Ativos recalculava `reportsSnapshot()` mais de uma vez no mesmo render | resolvido | Fase 159: cache restrito ao ciclo de render reduziu a recomputação duplicada sem persistir estado entre renders. Medição isolada da abertura da prévia caiu de 2 para 1 cálculo efetivo do snapshot por render. |
 
 Resumo executivo:
 
@@ -109,8 +110,8 @@ Resumo executivo:
 | 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | PR `#155` concluído | Alta | Alto | Fase 154 concluída | concluído | histórico | #155 | `3cbe0a4b5450410513a440df8964c8158b9c0d36` | build + `npm test` com 130 testes | usar roundtrip antes de extrair |
 | 156 | Fase 156 | Modularização | Primeira extração segura deve provar padrão mínimo de desacoplamento | PR `#156` concluído | Média | Alto | mapa arquitetural e 130 testes prévios | concluído | histórico | #156 | `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9` | build + `npm test` com 134 testes | usar corte puro antes de ampliar UI |
 | 157 | Fase 157 | UI | Cobertura automatizada da UI ainda era baixa | suíte estrutural mínima para `testMode=1`, navegação, relatórios e modal básico | Média | Médio | Fases 151 a 156 + 134 testes estáveis | concluído | histórico | #157 | `459c5ee93b5187f8667aec591c11d06df9f9e8a1` | build + `test:ui` + `npm test` com 140 testes | usar base de UI antes da Fase 158 |
-| 158 | Fase 158 | Segurança / Resiliência / Acessibilidade | riscos pontuais ainda abertos em `load()`, foco de modal e impressão | achados auditados e correções pequenas comprovadas | Alta | Médio | base estabilizada + 140 testes | em implementação | `fix/security-resilience-accessibility` | — | — | build + `test:load` + `test:ui` + `npm test` | fechar apenas correções pequenas comprovadas |
-| 159 | Fase 159 | Performance | Performance ainda sem medição formal | renderização ampla do DOM | Média | Médio | mapa arquitetural | aprovado | futura | — | — | métricas obrigatórias | medir e melhorar |
+| 158 | Fase 158 | Segurança / Resiliência / Acessibilidade | riscos pontuais ainda abertos em `load()`, foco de modal e impressão | achados auditados e correções pequenas comprovadas | Alta | Médio | base estabilizada + 140 testes | concluído | histórico | #158 | `c5e1a7ce6d1a86d3051e2d8150be76a4a8d7808b` | build + `test:load` + `test:ui` + `npm test` com 143 testes | preservar correções pequenas comprovadas |
+| 159 | Fase 159 | Performance | Performance ainda não tinha medição objetiva dos fluxos reais de Relatórios | medição em navegador real identificou recomputação duplicada de `reportsSnapshot()` na abertura da prévia de Ativos | Média | Médio | mapa arquitetural + 143 testes estáveis | em implementação | `perf/evidence-based-optimization` | — | — | build + `test:performance` + `npm test` com 145 testes | confirmar melhoria pequena e reversível com evidência |
 
 ## 6. Fases concluídas
 
@@ -146,6 +147,9 @@ Concluído até a base atual:
 - PR `#157`;
 - commit da `main` `459c5ee93b5187f8667aec591c11d06df9f9e8a1`;
 - `140` testes aprovados antes da Fase 158.
+- PR `#158`;
+- commit da `main` `c5e1a7ce6d1a86d3051e2d8150be76a4a8d7808b`;
+- `143` testes aprovados antes da Fase 159.
 
 Critério de leitura:
 
@@ -176,11 +180,13 @@ Regra:
 
 Itens adiados, não rejeitados:
 
-- migração para framework;
+- React como opção preferencial de arquitetura alvo;
 - TypeScript;
 - Vite;
-- separação total do CSS;
-- Prettier no monólito;
+- separação progressiva de CSS;
+- migração incremental do `render()`;
+- retirada gradual do monólito;
+- Prettier somente após modularização;
 - grande refatoração do `render()`;
 - code splitting;
 - Sentry.
@@ -240,33 +246,35 @@ Checklist operacional:
 | 2026-07-13 | Iniciar a Fase 152 com um único workflow mínimo reaproveitando `npm test` | Garantir CI reproduzível sem duplicar lógica de build e testes nem introduzir ferramentas extras | Cria validação automática em pushes e PRs para `main` | Fase 152 |
 | 2026-07-13 | Iniciar a Fase 153 apenas como mapeamento técnico do `index.html` | Preparar futuras extrações de baixo risco sem tocar produção | Cria visão arquitetural rastreável do monólito | Fase 153 |
 | 2026-07-13 | Tratar a Fase 158 como pacote pequeno de correções reais em resiliência, acessibilidade e segurança pontual | Evitar auditoria infinita e refatoração ampla em área sensível | Escopo fechado em `load()`, retorno de foco e proteção pequena de impressão | Fase 158 |
+| 2026-07-13 | Tratar a Fase 159 como medição primeiro e otimização só com prova objetiva | Evitar micro-otimização especulativa em monólito sensível | Escopo fechado em Relatórios com ganho local, reversível e coberto por teste dedicado | Fase 159 |
 
 ## 11. Próxima fase preparada
 
 Próxima fase prevista:
 
-### Fase 158 — Segurança, resiliência e acessibilidade pontual
+### Fase 159 — Medição e melhoria de performance
 
 Status atual:
 
 - em implementação;
-- branch `fix/security-resilience-accessibility` criada a partir de `main`;
-- Fase 157 concluída via PR `#157` no commit `459c5ee93b5187f8667aec591c11d06df9f9e8a1`;
-- base atual registrada com `140` testes aprovados antes desta fase;
-- total atual registrado em `143` testes após ampliar a suíte estrutural existente;
-- correção implementada: `load()` deixou de propagar a falha de `localStorage.getItem(STOR)` e mantém o estado anterior em memória;
-- correção implementada: a prévia de Ativos volta foco ao disparador ao fechar, com fallback seguro quando o disparador sumiu;
-- correção implementada: janelas de impressão auditadas passaram a usar `noopener,noreferrer`;
-- achados auditados sem correção nesta fase: uso amplo de `innerHTML` no render principal e logs de debug antigos fora dos fluxos alterados, por exigirem escopo maior;
-- risco conhecido mantido: a falha de `localStorage.setItem(STOR)` continua apenas documentada, pois o cenário testado já preserva o estado anterior;
-- limitação assumida: a cobertura segue estrutural com `node:vm`, não substitui auditoria de navegador real para toda a aplicação.
+- branch `perf/evidence-based-optimization` criada a partir de `main`;
+- Fase 158 concluída via PR `#158` no commit `c5e1a7ce6d1a86d3051e2d8150be76a4a8d7808b`;
+- base atual registrada com `143` testes aprovados antes desta fase;
+- total atual registrado em `145` testes após adicionar a suíte de performance;
+- método de medição: navegador real com fixture sintética determinística, instrumentação temporária de funções e comparação antes/depois no fluxo de abertura da prévia de Ativos;
+- gargalo comprovado: a abertura da prévia de Ativos em Relatórios recalculava `reportsSnapshot()` mais de uma vez no mesmo render, repetindo `cx()`, `passiveIncomeGoalStats()`, `rfIntelligenceSnapshot()` e `dataAuditSnapshot()`;
+- otimização implementada: cache restrito ao ciclo de render para `reportsSnapshot()`, sem persistência entre renders e sem alteração de schema, cálculos ou dados;
+- evidência principal: no fluxo isolado de abrir a prévia, o cálculo efetivo do snapshot caiu de `2` para `1` por render;
+- evidência de tempo local: mediana do fluxo amplo de abrir a prévia caiu de `25,9 ms` para `21,4 ms` no desktop e de `30,1 ms` para `15,6 ms` no mobile;
+- achados auditados sem correção nesta fase: custo amplo do render central e estrutura monolítica de Relatórios, por exigirem escopo maior;
+- limitação assumida: os tempos são medições locais comparativas, úteis para decisão desta fase, mas não substituem benchmark de produção em múltiplos dispositivos.
 
 Objetivo preliminar:
 
-- impedir que falha de leitura em `load()` derrube a inicialização;
-- devolver foco ao disparador no modal testado pela Fase 157;
-- endurecer apenas os fluxos de impressão comprovadamente próximos ao escopo;
-- manter o restante da base sem refatoração ampla.
+- medir primeiro fluxos reais de Relatórios e prévias;
+- corrigir apenas gargalo comprovado e pequeno;
+- preservar comportamento visual, cálculos, persistência e offline/PWA;
+- registrar ganho com teste automatizado e evidência de navegador real.
 
 Regra desta preparação:
 

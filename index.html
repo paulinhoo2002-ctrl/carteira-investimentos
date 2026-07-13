@@ -15310,27 +15310,46 @@ function reportsDateAllowed(value){
   const start=reportsPeriodStart();
   return !start || date>=start;
 }
+let renderCycleReportCache=null;
+function withRenderCycleReportCache(factory){
+  const previous=renderCycleReportCache;
+  renderCycleReportCache=new Map();
+  try{
+    return factory();
+  }finally{
+    renderCycleReportCache=previous;
+  }
+}
+function readRenderCycleReportCache(key, factory){
+  if(!renderCycleReportCache) return factory();
+  if(renderCycleReportCache.has(key)) return renderCycleReportCache.get(key);
+  const value=factory();
+  renderCycleReportCache.set(key, value);
+  return value;
+}
 function reportsSnapshot(){
-  const portfolio=cx();
-  const income=passiveIncomeGoalStats();
-  const fixed=rfIntelligenceSnapshot();
-  const audit=dataAuditSnapshot();
-  const filteredProventos=(S.proventos||[]).filter(p=>reportsDateAllowed(p.date));
-  const filteredAportes=(S.aportes||[]).filter(a=>reportsDateAllowed(a.date));
-  return {
-    generatedAt:new Date().toISOString(),
-    period:reportsPeriod(),
-    periodLabel:reportsPeriodLabel(),
-    portfolio,
-    income,
-    fixed,
-    audit,
-    assetsCount:(S.assets||[]).length,
-    proventosCount:filteredProventos.length,
-    aportesCount:filteredAportes.length,
-    fixedCount:fixed.assets.length,
-    auditCount:audit.alerts.length
-  };
+  return readRenderCycleReportCache('reportsSnapshot', ()=>{
+    const portfolio=cx();
+    const income=passiveIncomeGoalStats();
+    const fixed=rfIntelligenceSnapshot();
+    const audit=dataAuditSnapshot();
+    const filteredProventos=(S.proventos||[]).filter(p=>reportsDateAllowed(p.date));
+    const filteredAportes=(S.aportes||[]).filter(a=>reportsDateAllowed(a.date));
+    return {
+      generatedAt:new Date().toISOString(),
+      period:reportsPeriod(),
+      periodLabel:reportsPeriodLabel(),
+      portfolio,
+      income,
+      fixed,
+      audit,
+      assetsCount:(S.assets||[]).length,
+      proventosCount:filteredProventos.length,
+      aportesCount:filteredAportes.length,
+      fixedCount:fixed.assets.length,
+      auditCount:audit.alerts.length
+    };
+  });
 }
 function reportNumber(value){
   return (Number(value)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -17371,7 +17390,7 @@ function render(){
     const preserveScroll=scrollPreserveActive() || !!scrollRestorePoint;
     if(preserveScroll && !scrollRestorePoint) rememberScroll();
     syncBodyModalLock();
-    root.innerHTML=app();
+    root.innerHTML=withRenderCycleReportCache(()=>app());
     bind();
     if(preserveScroll) restoreScroll();
   }catch(error){
@@ -17380,7 +17399,7 @@ function render(){
     if(failedTab!=='dashboard'){
       try{
         S.tab='dashboard';
-        root.innerHTML=app();
+        root.innerHTML=withRenderCycleReportCache(()=>app());
         bind();
         debugWarn(`A aba "${failedTab}" falhou ao abrir. Dashboard carregado como proteção.`);
         return;
