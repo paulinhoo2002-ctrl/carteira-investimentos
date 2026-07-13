@@ -12,6 +12,7 @@
     "test:roundtrip": "node --test tests/save-load-roundtrip.test.js",
     "test:extraction": "node --test tests/report-asset-row.test.js",
     "test:ui": "node --test tests/basic-ui.test.js",
-    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui"
+    "test:performance": "node --test tests/performance-reports.test.js",
+    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui && npm run test:performance"
   }
 }
