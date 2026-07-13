@@ -103,8 +103,8 @@ Resumo executivo:
 | 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | PR `#153` concluído | Média | Médio | base estável | concluído | histórico | #153 | `bfd23229d1ba27e48ac2d0a8b32602efda47a9a2` | `npm ci` + build + 116 testes validados | usar mapa antes de mexer em `load()` |
 | 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | PR `#154` concluído | Alta | Alto | Fase 153 + CI mínimo | concluído | histórico | #154 | `07b3a149e2f549b14d303201f247f020bab6911f` | build + 123 testes validados | usar cobertura antes do roundtrip |
 | 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | PR `#155` concluído | Alta | Alto | Fase 154 concluída | concluído | histórico | #155 | `3cbe0a4b5450410513a440df8964c8158b9c0d36` | build + `npm test` com 130 testes | usar roundtrip antes de extrair |
-| 156 | Fase 156 | Modularização | Primeira extração segura deve provar padrão mínimo de desacoplamento | helper puro `buildReportAssetRow()` derivado de `reportAssetRows()` | Média | Alto | mapa arquitetural e 130 testes prévios | em implementação | `refactor/first-low-risk-extraction` | — | — | build + `npm test` + `test:extraction` | validar a primeira extração |
-| 157 | Fase 157 | UI | Cobertura automatizada da UI ainda é baixa | achado confirmado em auditoria | Média | Médio | Fases 151 a 156 | aprovado | futura | — | — | obrigatórios | criar testes básicos de UI |
+| 156 | Fase 156 | Modularização | Primeira extração segura deve provar padrão mínimo de desacoplamento | PR `#156` concluído | Média | Alto | mapa arquitetural e 130 testes prévios | concluído | histórico | #156 | `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9` | build + `npm test` com 134 testes | usar corte puro antes de ampliar UI |
+| 157 | Fase 157 | UI | Cobertura automatizada da UI ainda é baixa | suíte estrutural mínima para `testMode=1`, navegação, relatórios e modal básico | Média | Médio | Fases 151 a 156 + 134 testes estáveis | em implementação | `test/basic-ui` | — | — | build + `test:ui` + `npm test` | validar fluxos críticos sem dependência nova |
 | 158 | Fase 158 | Segurança | Riscos de segurança ainda sem fechamento formal | achado pendente de confirmação | Alta | Alto | base estabilizada | aprovado | futura | — | — | auditoria dedicada | auditar e corrigir com escopo controlado |
 | 159 | Fase 159 | Performance | Performance ainda sem medição formal | renderização ampla do DOM | Média | Médio | mapa arquitetural | aprovado | futura | — | — | métricas obrigatórias | medir e melhorar |
 
@@ -132,6 +132,13 @@ Concluído até a base atual:
 - PR `#154`;
 - commit da `main` `07b3a149e2f549b14d303201f247f020bab6911f`;
 - `123` testes já integrados ao comando principal com cobertura dedicada de `load()`.
+- PR `#155`;
+- commit da `main` `3cbe0a4b5450410513a440df8964c8158b9c0d36`;
+- `130` testes já integrados ao comando principal com roundtrip real de `save()/load()`.
+- PR `#156`;
+- commit da `main` `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9`;
+- helper `buildReportAssetRow()` extraído para arquivo dedicado;
+- `134` testes aprovados antes da Fase 157.
 
 Critério de leitura:
 
@@ -230,29 +237,32 @@ Checklist operacional:
 
 Próxima fase prevista:
 
-### Fase 156 — Primeira extração modular de baixo risco
+### Fase 157 — Testes básicos de UI
 
 Status atual:
 
 - em implementação;
-- branch `refactor/first-low-risk-extraction` criada a partir de `main`;
-- Fase 155 concluída via PR `#155` no commit `3cbe0a4b5450410513a440df8964c8158b9c0d36`;
-- base atual registrada com `130` testes aprovados antes da extração;
-- helper escolhido: `buildReportAssetRow()`, originalmente dentro de `reportAssetRows()` em `index.html`;
-- motivo do baixo risco: montagem pura de linha de relatório, sem DOM, sem `localStorage`, sem Firebase, sem rede, sem `save()`, `load()` ou `render()`;
-- validação dedicada prevista em `test:extraction` e execução automática via `npm test`, sem alterar persistência ou cálculos.
+- branch `test/basic-ui` criada a partir de `main`;
+- Fase 156 concluída via PR `#156` no commit `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9`;
+- base atual registrada com `134` testes aprovados antes da suíte de UI;
+- total atual registrado em `140` testes após incluir `test:ui` no `npm test`;
+- escopo de UI: inicialização local com `testMode=1`, navegação estável, relatórios, prévia de ativos e modal básico;
+- estratégia prevista: testes estruturais do `index.html` com `node:vm`, sem rede real, sem Firebase real, sem conta Google e sem dependência nova;
+- validação manual complementar já repetida em desktop `1366x768` e mobile `390x844`, sem gate Google, sem overflow horizontal grave e sem erros críticos de console nos fluxos testados;
+- limitação assumida: a suíte continua estrutural, não substitui uma cobertura end-to-end completa com navegador real no CI;
+- refinamento futuro registrado: ao fechar a prévia de Ativos, o foco volta ao `body`; não bloqueia a fase, mas vale reavaliar em acessibilidade na Fase 158.
 
 Objetivo preliminar:
 
-- extrair exatamente um helper pequeno, puro e determinístico do monólito;
-- manter `reportAssetRows()` apenas como orquestrador da lista e da ordenação;
-- provar equivalência com casos de caracterização simples e reversão barata;
-- elevar o comando principal acima de `130` testes sem tocar em produção fora do recorte.
+- validar que a aplicação abre localmente em `testMode=1` sem cair no gate Google;
+- cobrir navegação básica entre Início, Ativos e Relatórios;
+- validar uma ação real de relatórios com ausência de `NaN`, `undefined` e `[object Object]`;
+- incluir a nova suíte no `npm test` sem alterar framework, CI ou dependências.
 
 Regra desta preparação:
 
-- deve mover somente uma responsabilidade pequena e isolada;
-- precisa preservar o comportamento atual do monólito sem alterar visual, cálculo, auth, sync ou persistência.
+- deve usar infraestrutura mínima e previsível;
+- precisa preservar comportamento atual da aplicação sem refatoração ampla, sem mudança visual intencional e sem tocar produção fora do necessário.
 
 ---
 
