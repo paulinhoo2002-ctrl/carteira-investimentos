@@ -96,8 +96,8 @@ Resumo executivo:
 | 149 | Fase 149 | Integração | Restore entre `civ5` e `civ5_cfg` precisava prova integrada | PR #149 concluído | Alta | Alto | testes integrados | concluído | histórico | #149 | `f26bfde` na base atual | 116 testes esperados | preservar estabilidade |
 | 150 | Fase 150 | Documentação / Governança | Falta um controle oficial único das melhorias | PR `#150` concluído | Alta | Médio | estado atual confirmado | concluído | histórico | #150 | `370a328ac7110c8a67ed9dfef65e1cfeb2f833d8` | build + 116 testes validados | manter roadmap oficial |
 | 151 | Fase 151 | Qualidade | `npm test` não roda os 116 testes | PR `#151` concluído | Alta | Médio | comandos atuais de teste | concluído | histórico | #151 | `a72596d8161248078a1283cf2ca61800b46868ac` | build + 116 testes validados | preservar comando único |
-| 152 | Fase 152 | CI | Ausência de CI mínimo | sem workflow ativo | Alta | Médio | Fase 151 | em implementação | `ci/minimal-test-workflow` | — | — | obrigatórios | criar GitHub Actions mínimo |
-| 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | auditorias do arquivo principal | Média | Médio | base estável | aprovado | futura | — | — | revisão documental | mapear áreas do monólito |
+| 152 | Fase 152 | CI | Ausência de CI mínimo | PR `#152` concluído | Alta | Médio | Fase 151 | concluído | histórico | #152 | `2ead18a2b251a2a73cdd8020fbbef40399c5fa2d` | workflow `CI` + 116 testes no GitHub Actions | preservar CI mínimo |
+| 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | auditorias do arquivo principal | Média | Médio | base estável | em implementação | `docs/index-architecture-map` | — | — | revisão documental | mapear áreas do monólito |
 | 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | risco de regressão em inicialização | Alta | Alto | testes atuais | aprovado | futura | — | — | obrigatórios | criar testes integrados de `load()` |
 | 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | risco de inconsistência local | Alta | Alto | Fase 154 | aprovado | futura | — | — | obrigatórios | validar roundtrip |
 | 156 | Fase 156 | Modularização | Primeira extração segura ainda não formalizada | `index.html` extenso | Média | Alto | mapa arquitetural e testes | aprovado | futura | — | — | obrigatórios | extrair bloco de baixo risco |
@@ -119,6 +119,10 @@ Concluído até a base atual:
 - commit da `main` `370a328ac7110c8a67ed9dfef65e1cfeb2f833d8`.
 - PR `#151`;
 - commit da `main` `a72596d8161248078a1283cf2ca61800b46868ac`.
+- PR `#152`;
+- commit da `main` `2ead18a2b251a2a73cdd8020fbbef40399c5fa2d`;
+- workflow `CI` em `pull_request` e `push` para `main`;
+- `116` testes aprovados no GitHub Actions.
 
 Critério de leitura:
 
@@ -211,28 +215,29 @@ Checklist operacional:
 | 2026-07-13 | Não iniciar Fase 151 nesta branch | Regra de uma branch, um objetivo e um PR | Mantém escopo documental puro | Fase 150 |
 | 2026-07-13 | Iniciar a Fase 151 apenas para corrigir o comando `npm test` | Garantir que a suíte completa rode por um comando único, sem mexer nos testes ou no código de produção | Melhora execução local e futura compatibilidade com CI | Fase 151 |
 | 2026-07-13 | Iniciar a Fase 152 com um único workflow mínimo reaproveitando `npm test` | Garantir CI reproduzível sem duplicar lógica de build e testes nem introduzir ferramentas extras | Cria validação automática em pushes e PRs para `main` | Fase 152 |
+| 2026-07-13 | Iniciar a Fase 153 apenas como mapeamento técnico do `index.html` | Preparar futuras extrações de baixo risco sem tocar produção | Cria visão arquitetural rastreável do monólito | Fase 153 |
 
 ## 11. Próxima fase preparada
 
 Próxima fase prevista:
 
-### Fase 152 — CI mínimo com GitHub Actions
+### Fase 154 — Testes integrados de `load()`
 
 Status atual:
 
-- em implementação;
-- branch: `ci/minimal-test-workflow`.
+- planejada;
+- sem branch iniciada.
 
 Objetivo preliminar:
 
-- criar `.github/workflows/ci.yml`;
-- executar `npm ci`;
-- executar `npm test` em `push` e `pull_request` para `main`.
+- criar testes integrados dedicados para `load()`;
+- validar inicialização com estado salvo, configuração, legado e falhas controladas;
+- proteger o bootstrap antes de qualquer extração modular.
 
 Regra desta preparação:
 
-- esta fase não altera código de produção;
-- qualquer ampliação de matriz, cache ou ferramentas adicionais fica fora da Fase 152.
+- deve ampliar cobertura sem refatoração estrutural ampla;
+- precisa preservar o comportamento atual do monólito durante a carga inicial.
 
 ---
 
