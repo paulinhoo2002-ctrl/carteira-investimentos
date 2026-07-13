@@ -3582,7 +3582,7 @@ document.write([
 ].join(''));})();
 </script>
 <script src="finance-core.js"></script>
-<script src="persistence-core.js"></script>
+<script src="persistence-core.js"></script><script src="report-asset-row.js"></script>
 <script>
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
@@ -15374,26 +15374,12 @@ async function ensurePdfLibraries(){
   return loadedJsPDF;
 }
 function reportAssetRows(){
-  return (S.assets||[]).map(asset=>{
-    const applied=assetAppliedValue(asset);
-    const current=assetCurrentValue(asset);
-    const result=current-applied;
-    return {
-      ticker:String(asset.ticker||'').trim()||'—',
-      name:String(asset.name||asset.product||asset.ticker||'').trim()||'—',
-      type:normalizeType(asset.type||metaTicker(asset.ticker).type||'Ação','Ação'),
-      sector:String(asset.sector||metaTicker(asset.ticker).sector||'').trim()||'—',
-      qty:Number(asset.qty)||0,
-      avgPrice:Number(asset.avg_price)||0,
-      currentPrice:Number(asset.current_price)||0,
-      applied,
-      current,
-      result,
-      resultPct:applied>0?(result/applied)*100:0,
-      source:String(asset.source||asset.quoteSource||'').trim()||'—',
-      updatedAt:String(asset.updated_at||asset.quoteUpdatedAt||'').trim()||'—'
-    };
-  }).sort((a,b)=>a.type.localeCompare(b.type,'pt-BR')||a.ticker.localeCompare(b.ticker,'pt-BR'));
+  return (S.assets||[]).map(asset=>buildReportAssetRow(asset,{
+    assetAppliedValue,
+    assetCurrentValue,
+    metaTicker,
+    normalizeType
+  })).sort((a,b)=>a.type.localeCompare(b.type,'pt-BR')||a.ticker.localeCompare(b.ticker,'pt-BR'));
 }
 function reportProventoRows(){
   return (S.proventos||[]).filter(p=>reportsDateAllowed(p.date)).map(p=>{
