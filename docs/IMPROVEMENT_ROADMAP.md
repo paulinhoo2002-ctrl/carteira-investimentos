@@ -31,15 +31,24 @@ Regra central:
 
 Base operacional desta fase:
 
-- `main` em `f26bfde9cee2ef95a5d20c5c8c25e163371a67ee`;
-- módulo `finance-core.js` existente;
-- módulo `persistence-core.js` existente;
+- `main` em `40bbd320547c6de5e63166f59a5d556555144537`;
+- `index.html` ainda concentra grande parte da interface e da orquestração;
+- módulos extraídos existentes:
+  - `finance-core.js`;
+  - `persistence-core.js`;
+  - `report-asset-row.js`;
 - `80` testes financeiros;
 - `30` testes de persistência;
 - `6` testes integrados de restore;
-- total atual de `116` testes;
-- PR `#148` concluído;
-- PR `#149` concluído;
+- `7` testes integrados de `load()`;
+- `7` testes integrados de roundtrip `save()/load()`;
+- `4` testes de extração;
+- `9` testes básicos de UI;
+- `2` testes de performance;
+- total atual de `145` testes;
+- CI existente no GitHub Actions;
+- deploy atual na Vercel;
+- Firebase/Auth, sync e backup como áreas sensíveis;
 - workspace esperado limpo;
 - branches temporárias esperadas como encerradas após uso.
 
@@ -48,14 +57,14 @@ Leitura de status:
 | Item | Estado |
 | --- | --- |
 | Commit base da `main` | confirmado |
+| `index.html` como monólito principal | confirmado |
 | `finance-core.js` | confirmado |
 | `persistence-core.js` | confirmado |
-| 80 testes financeiros | confirmado |
-| 30 testes de persistência | confirmado |
-| 6 testes integrados do restore | confirmado |
-| Total de 116 testes | confirmado |
-| PR #148 concluído | confirmado |
-| PR #149 concluído | confirmado |
+| `report-asset-row.js` | confirmado |
+| Total de 145 testes | confirmado |
+| CI existente | confirmado |
+| Vercel atual | confirmado |
+| Firebase/Auth, sync e backup como áreas sensíveis | confirmado |
 | Workspace esperado limpo | confirmado no início da fase |
 | Branches temporárias encerradas | precisa confirmar periodicamente no remoto |
 
@@ -67,34 +76,27 @@ Consolidação dos principais achados já levantados, com classificação de sit
 | --- | --- | --- |
 | `index.html` com aproximadamente 22 mil linhas | confirmado | Monólito ainda concentra grande parte da aplicação. |
 | UI, CSS, lógica, Firebase e templates concentrados | confirmado | Alta concentração continua no arquivo principal. |
-| `npm test` ainda não cobre os testes integrados de `load()` na base anterior à Fase 154 | confirmado | A cobertura de `load()` passa a entrar no comando principal apenas nesta fase. |
 | build atual é apenas validação estática | confirmado | Não cobre fluxo real de UI nem regressão funcional ampla. |
-| ausência de CI próprio | confirmado | Ainda não há pipeline mínimo registrado nesta base. |
-| ausência de testes automatizados suficientes da UI | confirmado | Testes de UI ainda não cobrem fluxos centrais do app. |
-| renderização ampla do DOM | confirmado | Render central continua extensa e sensível a regressões. |
-| ausência de lint | confirmado | Não há lint ativo no fluxo padrão. |
-| riscos de segurança a confirmar | precisa confirmar | Exigem auditoria específica e evidência atualizada. |
-| excesso histórico de branches remotas a auditar | precisa confirmar | Precisa varredura dedicada no remoto. |
+| ausência de testes automatizados suficientes da UI fora dos fluxos já cobertos | parcialmente resolvido | A suíte estrutural mínima existe, mas ainda não cobre toda a aplicação. |
+| riscos de segurança a confirmar fora dos fluxos auditados | precisa confirmar | Exigem auditoria específica e evidência atualizada. |
 | risco de restauração parcial entre `civ5` e `civ5_cfg` | resolvido | Evidência: PR `#148`; commit `091f8405a405ae4937d3384d3a5b5b500100a0bf`; `30` testes de persistência; `6` testes integrados do restore. |
 | `finance-core.js` e `persistence-core.js` como exemplos positivos | confirmado | São referências de modularização de baixo risco. |
 | documentação como ponto forte | confirmado | A trilha documental evoluiu bem. |
-| responsividade como ponto forte | parcialmente resolvido | Há cobertura relevante, mas depende de validação manual em telas afetadas. |
-| poucas dependências como ponto forte | confirmado | Estrutura segue enxuta e reduz superfície operacional. |
 | falha de `localStorage.getItem(STOR)` durante `load()` já não derruba a inicialização | resolvido | Fase 158: leitura do estado principal agora é isolada, preserva estado em memória, evita gravação destrutiva e mantém erro observável por `debugError(...)`. |
-| falha de `localStorage.setItem(STOR)` durante `save()` é tratada sem corrupção do estado anterior | confirmado | Achado da Fase 155: teste integrado comprovou que a exceção não é propagada, `civ5` anterior é preservado, `civ5_cfg` anterior é preservado, `queueCloudSave()` não é chamada, `debugError(...)` registra o erro e um toast informa falha ao salvar localmente. Mantido sem correção nesta fase porque o objetivo foi validar roundtrip e o cenário testado preserva o estado anterior. Reavaliar apenas se a Fase 158 exigir melhoria de segurança, resiliência ou observabilidade. |
+| falha de `localStorage.setItem(STOR)` durante `save()` é tratada sem corrupção do estado anterior | confirmado | Achado da Fase 155: teste integrado comprovou que a exceção não é propagada, `civ5` anterior é preservado, `civ5_cfg` anterior é preservado, `queueCloudSave()` não é chamada, `debugError(...)` registra o erro e um toast informa falha ao salvar localmente. Mantido sem correção porque o cenário testado preserva o estado anterior. |
 | fechamento da prévia de Ativos devolvia foco ao `body` | resolvido | Fase 158: retorno de foco ao disparador implementado com fallback seguro quando o elemento original não existe mais. |
 | fluxos de impressão abriam janela sem `noopener,noreferrer` | resolvido | Fase 158: `window.open()` endurecido nos fluxos de impressão de relatórios e IRPF, reduzindo exposição do `opener`. |
-| abertura da prévia de Ativos recalculava `reportsSnapshot()` mais de uma vez no mesmo render | resolvido | Fase 159: cache restrito ao ciclo de render reduziu a recomputação duplicada sem persistir estado entre renders. Medição isolada da abertura da prévia caiu de 2 para 1 cálculo efetivo do snapshot por render. |
+| abertura da prévia de Ativos recalculava `reportsSnapshot()` mais de uma vez no mesmo render | resolvido | Fase 159: cache restrito ao ciclo de render reduziu a recomputação duplicada sem persistir estado entre renders. Medição isolada da abertura da prévia caiu de `2` para `1` cálculo efetivo do snapshot por render. |
 
 Resumo executivo:
 
 - confirmado: riscos estruturais do monólito seguem presentes;
-- confirmado: a falha de `setItem(STOR)` em `save()` continua como risco conhecido de indisponibilidade da gravação local, mas sem corrupção do estado anterior no cenário testado;
-- parcialmente resolvido: documentação e parte da responsividade já melhoraram, mas ainda pedem validação contínua;
-- precisa confirmar: segurança ampla de `innerHTML` e higiene completa de branches remotas;
+- parcialmente resolvido: a cobertura prática de UI melhorou, mas ainda não cobre a aplicação inteira;
+- precisa confirmar: segurança ampla fora dos fluxos já auditados;
 - resolvido: o risco de restauração parcial entre `civ5` e `civ5_cfg` foi fechado com evidência de PR, commit e testes;
 - resolvido: `load()` deixou de propagar a falha de `getItem(STOR)` no cenário já comprovado;
-- resolvido: retorno de foco da prévia de Ativos e proteção `noopener,noreferrer` nos fluxos de impressão auditados.
+- resolvido: retorno de foco da prévia de Ativos e proteção `noopener,noreferrer` nos fluxos de impressão auditados;
+- resolvido: recomputação duplicada de `reportsSnapshot()` no fluxo auditado de Relatórios.
 
 ## 5. Tabela de controle
 
@@ -111,7 +113,8 @@ Resumo executivo:
 | 156 | Fase 156 | Modularização | Primeira extração segura deve provar padrão mínimo de desacoplamento | PR `#156` concluído | Média | Alto | mapa arquitetural e 130 testes prévios | concluído | histórico | #156 | `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9` | build + `npm test` com 134 testes | usar corte puro antes de ampliar UI |
 | 157 | Fase 157 | UI | Cobertura automatizada da UI ainda era baixa | suíte estrutural mínima para `testMode=1`, navegação, relatórios e modal básico | Média | Médio | Fases 151 a 156 + 134 testes estáveis | concluído | histórico | #157 | `459c5ee93b5187f8667aec591c11d06df9f9e8a1` | build + `test:ui` + `npm test` com 140 testes | usar base de UI antes da Fase 158 |
 | 158 | Fase 158 | Segurança / Resiliência / Acessibilidade | riscos pontuais ainda abertos em `load()`, foco de modal e impressão | achados auditados e correções pequenas comprovadas | Alta | Médio | base estabilizada + 140 testes | concluído | histórico | #158 | `c5e1a7ce6d1a86d3051e2d8150be76a4a8d7808b` | build + `test:load` + `test:ui` + `npm test` com 143 testes | preservar correções pequenas comprovadas |
-| 159 | Fase 159 | Performance | Performance ainda não tinha medição objetiva dos fluxos reais de Relatórios | medição em navegador real identificou recomputação duplicada de `reportsSnapshot()` na abertura da prévia de Ativos | Média | Médio | mapa arquitetural + 143 testes estáveis | em implementação | `perf/evidence-based-optimization` | — | — | build + `test:performance` + `npm test` com 145 testes | confirmar melhoria pequena e reversível com evidência |
+| 159 | Fase 159 | Performance | Performance ainda não tinha medição objetiva dos fluxos reais de Relatórios | medição em navegador real identificou recomputação duplicada de `reportsSnapshot()` na abertura da prévia de Ativos | Média | Médio | mapa arquitetural + 143 testes estáveis | concluído | histórico | #159 | `40bbd320547c6de5e63166f59a5d556555144537` | build + `test:performance` + `npm test` com 145 testes | preservar melhoria pequena e reversível com evidência |
+| 160 | Fase 160 | Arquitetura | Falta definir arquitetura alvo da modernização | decisão documental de React + TypeScript + Vite com migração incremental e tela inicial segura | Alta | Médio | Fases 150 a 159 concluídas + 145 testes estáveis | em implementação | `docs/modernization-architecture` | — | — | build + `npm test` com 145 testes | preparar a Fase 161 sem iniciar migração real |
 
 ## 6. Fases concluídas
 
@@ -150,6 +153,9 @@ Concluído até a base atual:
 - PR `#158`;
 - commit da `main` `c5e1a7ce6d1a86d3051e2d8150be76a4a8d7808b`;
 - `143` testes aprovados antes da Fase 159.
+- PR `#159`;
+- commit da `main` `40bbd320547c6de5e63166f59a5d556555144537`;
+- `145` testes aprovados antes da Fase 160.
 
 Critério de leitura:
 
@@ -170,6 +176,19 @@ Sequência aprovada no momento:
 8. Fase 157 — Testes básicos de UI
 9. Fase 158 — Segurança, resiliência e acessibilidade pontual
 10. Fase 159 — Medição e melhoria de performance
+11. Fase 160 — Arquitetura alvo React + TypeScript + Vite
+12. Fase 161 — Base Vite + React + TypeScript em paralelo
+13. Fase 162 — Tipos e contratos de domínio
+14. Fase 163 — CSS base e tokens visuais
+15. Fase 164 — Shell, tema e navegação React isolados
+16. Fase 165 — Primeira tela simples e somente leitura
+17. Fase 166 — Telas de consulta de ativos e Relatórios
+18. Fase 167 — Formulários e operações de escrita
+19. Fase 168 — Backup, importação, exportação e relatórios sensíveis
+20. Fase 169 — Auth, Firebase e sincronização
+21. Fase 170 — Remoção progressiva do monólito legado
+22. Fase 171 — Prettier, ESLint e padronização completa
+23. Fase 172 — Auditoria final de acessibilidade, performance, segurança e dados
 
 Regra:
 
@@ -180,16 +199,24 @@ Regra:
 
 Itens adiados, não rejeitados:
 
-- React como opção preferencial de arquitetura alvo;
-- TypeScript;
-- Vite;
+- instalação real de React antes da Fase 161;
+- instalação real de TypeScript antes da Fase 161;
+- instalação real de Vite antes da Fase 161;
 - separação progressiva de CSS;
 - migração incremental do `render()`;
 - retirada gradual do monólito;
-- Prettier somente após modularização;
+- Prettier somente após modularização relevante;
 - grande refatoração do `render()`;
-- code splitting;
-- Sentry.
+- mudança de schema;
+- troca de Firebase;
+- Next.js;
+- SSR;
+- microfrontends;
+- design system externo;
+- banco novo;
+- backend novo;
+- troca completa do PWA;
+- Web Workers.
 
 Motivo do adiamento:
 
@@ -247,39 +274,48 @@ Checklist operacional:
 | 2026-07-13 | Iniciar a Fase 153 apenas como mapeamento técnico do `index.html` | Preparar futuras extrações de baixo risco sem tocar produção | Cria visão arquitetural rastreável do monólito | Fase 153 |
 | 2026-07-13 | Tratar a Fase 158 como pacote pequeno de correções reais em resiliência, acessibilidade e segurança pontual | Evitar auditoria infinita e refatoração ampla em área sensível | Escopo fechado em `load()`, retorno de foco e proteção pequena de impressão | Fase 158 |
 | 2026-07-13 | Tratar a Fase 159 como medição primeiro e otimização só com prova objetiva | Evitar micro-otimização especulativa em monólito sensível | Escopo fechado em Relatórios com ganho local, reversível e coberto por teste dedicado | Fase 159 |
+| 2026-07-13 | Preparar a Fase 160 como definição documental da arquitetura alvo antes de instalar nova stack | Evitar iniciar React, TypeScript e Vite sem fronteiras, rollback e ordem de migração definidos | Registra a arquitetura alvo, a estratégia incremental e a primeira tela candidata sem iniciar a Fase 161 | Fase 160 |
 
 ## 11. Próxima fase preparada
 
 Próxima fase prevista:
 
-### Fase 159 — Medição e melhoria de performance
+### Fase 160 — Arquitetura alvo React + TypeScript + Vite
 
 Status atual:
 
 - em implementação;
-- branch `perf/evidence-based-optimization` criada a partir de `main`;
-- Fase 158 concluída via PR `#158` no commit `c5e1a7ce6d1a86d3051e2d8150be76a4a8d7808b`;
-- base atual registrada com `143` testes aprovados antes desta fase;
-- total atual registrado em `145` testes após adicionar a suíte de performance;
-- método de medição: navegador real com fixture sintética determinística, instrumentação temporária de funções e comparação antes/depois no fluxo de abertura da prévia de Ativos;
-- gargalo comprovado: a abertura da prévia de Ativos em Relatórios recalculava `reportsSnapshot()` mais de uma vez no mesmo render, repetindo `cx()`, `passiveIncomeGoalStats()`, `rfIntelligenceSnapshot()` e `dataAuditSnapshot()`;
-- otimização implementada: cache restrito ao ciclo de render para `reportsSnapshot()`, sem persistência entre renders e sem alteração de schema, cálculos ou dados;
-- evidência principal: no fluxo isolado de abrir a prévia, o cálculo efetivo do snapshot caiu de `2` para `1` por render;
-- evidência de tempo local: mediana do fluxo amplo de abrir a prévia caiu de `25,9 ms` para `21,4 ms` no desktop e de `30,1 ms` para `15,6 ms` no mobile;
-- achados auditados sem correção nesta fase: custo amplo do render central e estrutura monolítica de Relatórios, por exigirem escopo maior;
-- limitação assumida: os tempos são medições locais comparativas, úteis para decisão desta fase, mas não substituem benchmark de produção em múltiplos dispositivos.
-
-Objetivo preliminar:
-
-- medir primeiro fluxos reais de Relatórios e prévias;
-- corrigir apenas gargalo comprovado e pequeno;
-- preservar comportamento visual, cálculos, persistência e offline/PWA;
-- registrar ganho com teste automatizado e evidência de navegador real.
+- branch `docs/modernization-architecture` criada a partir de `main`;
+- Fase 159 concluída via PR `#159` no commit `40bbd320547c6de5e63166f59a5d556555144537`;
+- base atual registrada com `145` testes aprovados antes desta fase;
+- objetivo exclusivamente documental;
+- decisão arquitetural alvo:
+  - React para a interface;
+  - TypeScript em modo estrito progressivo;
+  - Vite para build e desenvolvimento;
+- estratégia obrigatória:
+  - migração incremental;
+  - coexistência temporária entre legado e moderno;
+  - sem reescrita total;
+  - sem troca inicial de persistência, schema, Firebase/Auth, backup/restauração ou sync cloud;
+- primeira tela candidata escolhida:
+  - prévia somente leitura de Ativos em Relatórios;
+- justificativa principal:
+  - fluxo isolável;
+  - sem escrita;
+  - sem Firebase;
+  - sem backup;
+  - simples de comparar com o legado;
+  - já coberto por testes e validação manual;
+- próxima fase esperada após esta etapa:
+  - Fase 161 — Base Vite + React + TypeScript em paralelo.
 
 Regra desta preparação:
 
-- deve usar infraestrutura mínima e previsível;
-- precisa preservar comportamento atual da aplicação sem refatoração ampla, sem mudança visual intencional e sem tocar produção fora do necessário.
+- deve manter o legado funcionando como caminho principal no início;
+- não pode instalar dependências nem criar código executável nesta fase;
+- precisa deixar a Fase 161 pronta sem iniciar migração real;
+- a Fase 160 não conclui a modernização e não inicia a Fase 161.
 
 ---
 
@@ -289,11 +325,13 @@ Regra desta preparação:
 - um objetivo;
 - sem duplicar sistema de gestão;
 - leitura rápida;
-- manutenção barata.
+- manutenção barata;
+- arquitetura alvo definida sem reescrever o projeto.
 
 ## Parecer Impeccable
 
 - há rastreabilidade de estado, riscos, dependências e próximos passos;
-- os achados foram classificados;
-- há tabela de controle, histórico de decisões e critérios de conclusão;
-- o documento separa concluído, pendente, aprovado e adiado com clareza.
+- os achados continuam classificados;
+- a Fase 159 ficou registrada como concluída com evidência;
+- a Fase 160 ficou documentada com arquitetura, coexistência, rollback e próxima fase;
+- o documento continua simples de manter e sem iniciar mudança estrutural real.
