@@ -3582,6 +3582,7 @@ document.write([
 ].join(''));})();
 </script>
 <script src="finance-core.js"></script>
+<script src="persistence-core.js"></script>
 <script>
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
@@ -4120,17 +4121,7 @@ function save(){
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
     if(isLocalTestMode()) return;
-    localStorage.setItem(STOR, JSON.stringify({
-      wallets:S.wallets, activeWalletId:S.activeWalletId,
-      assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents,
-      tab:S.tab, divGoal:S.divGoal, goals:S.goals,
-      hideValues:S.hideValues,
-      apHistoryOpen:S.apHistoryOpen, apSearch:S.apSearch,
-      dashPeriod:S.dashPeriod, dashType:S.dashType,
-      rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench,
-      irpfYear:S.irpfYear, irpfStep:S.irpfStep,
-      learnMeta:S.learnMeta
-    }));
+    localStorage.setItem(STOR, PersistenceCore.serializeStoredState(S, normalizeGoals));
     queueCloudSave();
   }catch(e){ debugError('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
 }
@@ -4370,7 +4361,7 @@ function load(){
   // ← FIX: try-catch separados para não perder tudo se um falhar
   try{
     const raw=localStorage.getItem(STOR);
-    const d=JSON.parse(raw||'{}');
+    const d=PersistenceCore.parseStoredState(raw);
     if(Array.isArray(d.wallets) && d.wallets.length){
       S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
       S.activeWalletId=String(d.activeWalletId||S.wallets[0].id);
@@ -4403,7 +4394,7 @@ function load(){
   }
   try{
     const cfgRaw=localStorage.getItem(STOR+'_cfg');
-    const c=JSON.parse(cfgRaw||'{}');
+    const c=PersistenceCore.parseStoredState(cfgRaw);
     if(c.brapiToken)            S.brapiToken = c.brapiToken;
     else                        S.brapiToken = DEFAULT_BRAPI; // garante token padrão
     if(c.divGoal !== undefined) S.divGoal    = Number(c.divGoal)||S.divGoal;
@@ -5335,75 +5326,26 @@ function backupStamp(date=new Date()){
 }
 function backupCurrentState(){
   syncWalletFromState();
-  return {
-    wallets: cloneData(S.wallets||[]),
-    activeWalletId: String(S.activeWalletId||''),
-    assets: cloneData(S.assets||[]),
-    aportes: cloneData(S.aportes||[]),
-    proventos: cloneData(S.proventos||[]),
-    rfEvents: cloneData(S.rfEvents||[]),
-    divGoal: Number(S.divGoal)||0,
-    goals: normalizeGoals(S.goals),
-    hideValues: !!S.hideValues,
-    apHistoryOpen: !!S.apHistoryOpen,
-    apSearch: String(S.apSearch||''),
-    dashPeriod: Number(S.dashPeriod)||12,
-    dashType: String(S.dashType||'all'),
-    rentPeriod: String(S.rentPeriod||'all'),
-    rentType: String(S.rentType||'all'),
-    rentBench: String(S.rentBench||'CDI'),
-    irpfYear: Number(S.irpfYear)||new Date().getFullYear(),
-    irpfStep: Number(S.irpfStep)||1,
-    learnMeta: cloneData(S.learnMeta||{}),
-    tab: String(S.tab||'dashboard')
-  };
+  return PersistenceCore.buildBackupState(S, normalizeGoals);
 }
 function backupCurrentConfig(){
   return {divGoal:Number(S.divGoal)||0};
 }
 function backupPayload(){
   const data=backupCurrentState();
-  const storage={};
-  storage[STOR]=data;
-  storage[`${STOR}_cfg`]=backupCurrentConfig();
-  return {
-    meta:{
-      app:APP_NAME,
-      backupVersion:BACKUP_VER,
-      exportedAt:new Date().toISOString(),
-      origin:'localStorage',
-      storageKeys:[STOR, `${STOR}_cfg`]
-    },
-    data,
-    storage
-  };
+  return PersistenceCore.createBackupPayload(data, backupCurrentConfig(), {
+    appName:APP_NAME,
+    backupVersion:BACKUP_VER,
+    exportedAt:new Date().toISOString(),
+    origin:'localStorage',
+    storageKeys:[STOR, `${STOR}_cfg`]
+  });
 }
 function backupFromRaw(raw){
-  if(!raw || typeof raw!=='object' || Array.isArray(raw)) return null;
-  const meta=raw.meta && typeof raw.meta==='object' ? raw.meta : null;
-  const data=raw.data && typeof raw.data==='object' ? raw.data : raw;
-  const storage=raw.storage && typeof raw.storage==='object' ? raw.storage : null;
-  const hasKnown=Array.isArray(data.wallets) || Array.isArray(data.assets) || Array.isArray(data.aportes) || Array.isArray(data.proventos) || Array.isArray(data.rfEvents) || data.goals || data.divGoal!==undefined || data.learnMeta || data.brapiToken!==undefined;
-  if(!hasKnown && !(meta && /carteira/i.test(String(meta.app||'')))) return null;
-  return {meta,data,storage};
+  return PersistenceCore.parseBackupRaw(raw);
 }
 function backupStats(data){
-  const wallets=Array.isArray(data.wallets) ? data.wallets : [];
-  const assets=Array.isArray(data.assets) ? data.assets : [];
-  const aportes=Array.isArray(data.aportes) ? data.aportes : [];
-  const proventos=Array.isArray(data.proventos) ? data.proventos : [];
-  const goals=data.goals && typeof data.goals==='object' ? data.goals : {};
-  const defaultGoals=normalizeGoals();
-  const goalsChanged=Object.keys(goals).filter(k=>JSON.stringify(goals[k] ?? null)!==JSON.stringify(defaultGoals[k] ?? null)).length;
-  return {
-    wallets:wallets.length,
-    assets:assets.length,
-    aportes:aportes.length,
-    proventos:proventos.length,
-    fixed:assets.filter(isRendaFixaAsset).length,
-    goals:goalsChanged,
-    hasToken:!!String(data.brapiToken||'').trim()
-  };
+  return PersistenceCore.backupStats(data, normalizeGoals, isRendaFixaAsset);
 }
 function backupImportedAt(payload){
   const iso=payload?.meta?.exportedAt || payload?.data?.exportedAt || payload?.exportedAt || '';
@@ -5492,7 +5434,7 @@ function importBackup(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local
 function triggerBackupImport(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } document.getElementById('imp-file')?.click(); }
 function applyBackupData(parsed){
   if(!canEditFromThisTab('restaurar backup')) return false;
-  const payload=backupFromRaw(parsed);
+  const payload=PersistenceCore.parseBackupRaw(parsed);
   if(!payload){
     toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
     return false;
