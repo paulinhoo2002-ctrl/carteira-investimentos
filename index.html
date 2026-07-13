@@ -5444,11 +5444,21 @@ function applyBackupData(parsed){
     brapiToken:String(payload.data?.brapiToken || payload.meta?.brapiToken || ''),
     divGoal:Number(payload.data?.divGoal)||0
   };
-  try{
-    localStorage.setItem(STOR, JSON.stringify(state));
-    localStorage.setItem(`${STOR}_cfg`, JSON.stringify(cfg));
-  }catch(err){
-    toast('Não foi possível gravar o backup neste navegador.', '#f87171');
+  const result=PersistenceCore.applyStorageTransaction(
+    localStorage,
+    STOR,
+    `${STOR}_cfg`,
+    JSON.stringify(state),
+    JSON.stringify(cfg)
+  );
+  if(!result.ok){
+    debugError('restore backup erro:', result.error);
+    if(result.rollbackErrors?.length){
+      result.rollbackErrors.forEach(err=>debugError('restore backup rollback erro:', err));
+      toast('Falha ao restaurar. Recuperacao automatica incompleta; nao feche a pagina antes de verificar os dados.', '#f87171');
+    }else{
+      toast('Nao foi possivel gravar o backup. Seus dados anteriores foram restaurados.', '#f87171');
+    }
     return false;
   }
   load();

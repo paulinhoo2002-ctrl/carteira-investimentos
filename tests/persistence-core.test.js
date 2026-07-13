@@ -121,6 +121,47 @@ function makeState() {
   };
 }
 
+function makeStorage(initial = {}, failures = []) {
+  const data = new Map(Object.entries(initial).filter(([, value]) => value !== null));
+  const calls = [];
+  const counts = {};
+  const shouldFail = (op, key) => {
+    const countKey = `${op}:${key}`;
+    counts[countKey] = (counts[countKey] || 0) + 1;
+    const call = counts[countKey];
+    return failures.find(f => f.op === op && (f.key === undefined || f.key === key) && (f.call === undefined || f.call === call));
+  };
+  const run = (op, key, fn) => {
+    calls.push({ op, key });
+    const failure = shouldFail(op, key);
+    if (failure) throw failure.error;
+    return fn();
+  };
+  return {
+    calls,
+    data,
+    getItem(key) {
+      return run('getItem', key, () => data.has(key) ? data.get(key) : null);
+    },
+    setItem(key, value) {
+      return run('setItem', key, () => {
+        data.set(key, String(value));
+      });
+    },
+    removeItem(key) {
+      return run('removeItem', key, () => {
+        data.delete(key);
+      });
+    },
+    snapshot() {
+      return Object.fromEntries(data.entries());
+    }
+  };
+}
+
+const stateKey = 'civ5';
+const configKey = 'civ5_cfg';
+
 test('buildStoredState preserves persisted fields without cloning save data', () => {
   const state = makeState();
   const result = PersistenceCore.buildStoredState(state, normalizeGoals);
@@ -348,4 +389,206 @@ test('backupStats handles absent arrays, wrong types, empty backup, and tokens l
 test('backupStats falls back to the core exact normalized rule only without injected classifier', () => {
   const stats = PersistenceCore.backupStats({ assets: [{ type: 'Renda Fixa' }, { type: 'FII' }] }, normalizeGoals);
   assert.equal(stats.fixed, 1);
+});
+
+test('applyStorageTransaction writes state and config in order without rollback', () => {
+  const storage = makeStorage({ [stateKey]: 'old-state', [configKey]: 'old-config' });
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, true);
+  assert.equal(result.previousStateRaw, 'old-state');
+  assert.equal(result.previousConfigRaw, 'old-config');
+  assert.deepEqual(storage.snapshot(), { [stateKey]: 'new-state', [configKey]: 'new-config' });
+  assert.deepEqual(storage.calls.map(c => `${c.op}:${c.key}`), [
+    `getItem:${stateKey}`,
+    `getItem:${configKey}`,
+    `setItem:${stateKey}`,
+    `setItem:${configKey}`
+  ]);
+});
+
+test('applyStorageTransaction does not rollback when reading state fails', () => {
+  const readError = new Error('state read failed');
+  const storage = makeStorage(
+    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+    [{ op: 'getItem', key: stateKey, error: readError }]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, readError);
+  assert.deepEqual(result.rollbackErrors, []);
+  assert.equal(result.previousStateRaw, null);
+  assert.equal(result.previousConfigRaw, null);
+  assert.equal(storage.calls.some(c => c.op === 'setItem'), false);
+  assert.equal(storage.calls.some(c => c.op === 'removeItem'), false);
+  assert.deepEqual(storage.snapshot(), { [stateKey]: 'old-state', [configKey]: 'old-config' });
+});
+
+test('applyStorageTransaction does not rollback when reading config fails', () => {
+  const readError = new Error('config read failed');
+  const storage = makeStorage(
+    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+    [{ op: 'getItem', key: configKey, error: readError }]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, readError);
+  assert.deepEqual(result.rollbackErrors, []);
+  assert.equal(result.previousStateRaw, 'old-state');
+  assert.equal(result.previousConfigRaw, null);
+  assert.equal(storage.calls.some(c => c.op === 'setItem'), false);
+  assert.equal(storage.calls.some(c => c.op === 'removeItem'), false);
+  assert.deepEqual(storage.snapshot(), { [stateKey]: 'old-state', [configKey]: 'old-config' });
+});
+
+test('applyStorageTransaction restores both keys when the first write fails', () => {
+  const quotaError = Object.assign(new Error('quota'), { name: 'QuotaExceededError' });
+  const storage = makeStorage(
+    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+    [{ op: 'setItem', key: stateKey, error: quotaError, call: 1 }]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, quotaError);
+  assert.deepEqual(result.rollbackErrors, []);
+  assert.deepEqual(storage.snapshot(), { [stateKey]: 'old-state', [configKey]: 'old-config' });
+  assert.deepEqual(storage.calls.map(c => `${c.op}:${c.key}`), [
+    `getItem:${stateKey}`,
+    `getItem:${configKey}`,
+    `setItem:${stateKey}`,
+    `setItem:${stateKey}`,
+    `setItem:${configKey}`
+  ]);
+});
+
+test('applyStorageTransaction restores the first key when the second write fails', () => {
+  const writeError = new Error('generic write failed');
+  const storage = makeStorage(
+    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+    [{ op: 'setItem', key: configKey, error: writeError, call: 1 }]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, writeError);
+  assert.deepEqual(result.rollbackErrors, []);
+  assert.deepEqual(storage.snapshot(), { [stateKey]: 'old-state', [configKey]: 'old-config' });
+});
+
+test('applyStorageTransaction removes config on rollback when previous config was null', () => {
+  const writeError = new Error('config write failed');
+  const storage = makeStorage(
+    { [stateKey]: 'old-state' },
+    [{ op: 'setItem', key: configKey, error: writeError }]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.previousStateRaw, 'old-state');
+  assert.equal(result.previousConfigRaw, null);
+  assert.deepEqual(storage.snapshot(), { [stateKey]: 'old-state' });
+  assert.ok(storage.calls.some(c => c.op === 'removeItem' && c.key === configKey));
+  assert.equal(storage.calls.some(c => c.op === 'setItem' && c.key === configKey && storage.data.get(configKey) === 'null'), false);
+});
+
+test('applyStorageTransaction removes state on rollback when previous state was null', () => {
+  const writeError = new Error('config write failed');
+  const storage = makeStorage(
+    { [configKey]: 'old-config' },
+    [{ op: 'setItem', key: configKey, error: writeError }]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.previousStateRaw, null);
+  assert.equal(result.previousConfigRaw, 'old-config');
+  assert.deepEqual(storage.snapshot(), { [configKey]: 'old-config' });
+  assert.ok(storage.calls.some(c => c.op === 'removeItem' && c.key === stateKey));
+});
+
+test('applyStorageTransaction removes both keys on rollback when both were null', () => {
+  const writeError = new Error('config write failed');
+  const storage = makeStorage({}, [{ op: 'setItem', key: configKey, error: writeError }]);
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.previousStateRaw, null);
+  assert.equal(result.previousConfigRaw, null);
+  assert.deepEqual(storage.snapshot(), {});
+  assert.deepEqual(storage.calls.filter(c => c.op === 'removeItem').map(c => c.key), [stateKey, configKey]);
+});
+
+test('applyStorageTransaction tries config rollback when state rollback fails', () => {
+  const writeError = new Error('config write failed');
+  const rollbackError = new Error('state rollback failed');
+  const storage = makeStorage(
+    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+    [
+      { op: 'setItem', key: configKey, error: writeError, call: 1 },
+      { op: 'setItem', key: stateKey, error: rollbackError, call: 2 }
+    ]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, writeError);
+  assert.deepEqual(result.rollbackErrors, [rollbackError]);
+  assert.ok(storage.calls.some(c => c.op === 'setItem' && c.key === configKey));
+  assert.equal(storage.data.get(configKey), 'old-config');
+});
+
+test('applyStorageTransaction records config rollback failure', () => {
+  const writeError = new Error('config write failed');
+  const rollbackError = new Error('config rollback failed');
+  const storage = makeStorage(
+    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+    [
+      { op: 'setItem', key: configKey, error: writeError, call: 1 },
+      { op: 'setItem', key: configKey, error: rollbackError, call: 2 }
+    ]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, writeError);
+  assert.deepEqual(result.rollbackErrors, [rollbackError]);
+});
+
+test('applyStorageTransaction reports multiple rollback failures without replacing the original error', () => {
+  const writeError = new Error('first write failed');
+  const stateRollbackError = new Error('state rollback failed');
+  const configRollbackError = new Error('config rollback failed');
+  const storage = makeStorage(
+    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+    [
+      { op: 'setItem', key: stateKey, error: writeError, call: 1 },
+      { op: 'setItem', key: stateKey, error: stateRollbackError, call: 2 },
+      { op: 'setItem', key: configKey, error: configRollbackError, call: 1 }
+    ]
+  );
+  const result = PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, writeError);
+  assert.deepEqual(result.rollbackErrors, [stateRollbackError, configRollbackError]);
+});
+
+test('applyStorageTransaction does not mutate received raw strings', () => {
+  const storage = makeStorage({ [stateKey]: 'old-state', [configKey]: 'old-config' });
+  const nextStateRaw = '{"wallets":[]}';
+  const nextConfigRaw = '{"divGoal":10}';
+  PersistenceCore.applyStorageTransaction(storage, stateKey, configKey, nextStateRaw, nextConfigRaw);
+  assert.equal(nextStateRaw, '{"wallets":[]}');
+  assert.equal(nextConfigRaw, '{"divGoal":10}');
+});
+
+test('applyStorageTransaction is deterministic for equivalent successful calls', () => {
+  const one = makeStorage({ [stateKey]: 'old-state', [configKey]: 'old-config' });
+  const two = makeStorage({ [stateKey]: 'old-state', [configKey]: 'old-config' });
+  const first = PersistenceCore.applyStorageTransaction(one, stateKey, configKey, 'new-state', 'new-config');
+  const second = PersistenceCore.applyStorageTransaction(two, stateKey, configKey, 'new-state', 'new-config');
+  assert.deepEqual(first, second);
+  assert.deepEqual(one.snapshot(), two.snapshot());
+  assert.deepEqual(one.calls, two.calls);
+});
+
+test('applyStorageTransaction fails predictably for invalid storage', () => {
+  const result = PersistenceCore.applyStorageTransaction({}, stateKey, configKey, 'new-state', 'new-config');
+  assert.equal(result.ok, false);
+  assert.ok(result.error instanceof TypeError);
+  assert.deepEqual(result.rollbackErrors, []);
+  assert.equal(result.previousStateRaw, null);
+  assert.equal(result.previousConfigRaw, null);
 });

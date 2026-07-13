@@ -108,6 +108,46 @@
     return JSON.parse(raw || '{}');
   }
 
+  function applyStorageTransaction(storage, stateKey, configKey, nextStateRaw, nextConfigRaw) {
+    const required = ['getItem', 'setItem', 'removeItem'];
+    const invalid = !storage || required.some(name => typeof storage[name] !== 'function');
+    if (invalid) {
+      return {
+        ok: false,
+        error: new TypeError('Invalid storage interface'),
+        rollbackErrors: [],
+        previousStateRaw: null,
+        previousConfigRaw: null
+      };
+    }
+    let previousStateRaw = null;
+    let previousConfigRaw = null;
+    try {
+      previousStateRaw = storage.getItem(stateKey);
+      previousConfigRaw = storage.getItem(configKey);
+    } catch (error) {
+      return { ok: false, error, rollbackErrors: [], previousStateRaw, previousConfigRaw };
+    }
+    try {
+      storage.setItem(stateKey, nextStateRaw);
+      storage.setItem(configKey, nextConfigRaw);
+      return { ok: true, previousStateRaw, previousConfigRaw };
+    } catch (error) {
+      const rollbackErrors = [];
+      const restore = (key, value) => {
+        try {
+          if (value === null) storage.removeItem(key);
+          else storage.setItem(key, value);
+        } catch (rollbackError) {
+          rollbackErrors.push(rollbackError);
+        }
+      };
+      restore(stateKey, previousStateRaw);
+      restore(configKey, previousConfigRaw);
+      return { ok: false, error, rollbackErrors, previousStateRaw, previousConfigRaw };
+    }
+  }
+
   function createBackupPayload(state, config, options = {}) {
     const data = cloneBackupState(state);
     const storageState = cloneBackupState(state);
@@ -165,6 +205,7 @@
   }
 
   return {
+    applyStorageTransaction,
     buildStoredState,
     buildBackupState,
     serializeStoredState,
