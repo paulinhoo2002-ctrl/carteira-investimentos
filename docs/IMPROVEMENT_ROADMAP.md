@@ -81,10 +81,12 @@ Consolidação dos principais achados já levantados, com classificação de sit
 | responsividade como ponto forte | parcialmente resolvido | Há cobertura relevante, mas depende de validação manual em telas afetadas. |
 | poucas dependências como ponto forte | confirmado | Estrutura segue enxuta e reduz superfície operacional. |
 | falha de `localStorage.getItem(STOR)` durante `load()` ainda propaga exceção | confirmado | O comportamento foi provado por teste integrado e permanece sem correção nesta fase. |
+| falha de `localStorage.setItem(STOR)` durante `save()` é tratada sem corrupção do estado anterior | confirmado | Achado da Fase 155: teste integrado comprovou que a exceção não é propagada, `civ5` anterior é preservado, `civ5_cfg` anterior é preservado, `queueCloudSave()` não é chamada, `debugError(...)` registra o erro e um toast informa falha ao salvar localmente. Mantido sem correção nesta fase porque o objetivo foi validar roundtrip e o cenário testado preserva o estado anterior. Reavaliar apenas se a Fase 158 exigir melhoria de segurança, resiliência ou observabilidade. |
 
 Resumo executivo:
 
 - confirmado: riscos estruturais do monólito e a exceção ainda propagada em `getItem(STOR)` dentro de `load()`;
+- confirmado: a falha de `setItem(STOR)` em `save()` continua como risco conhecido de indisponibilidade da gravação local, mas sem corrupção do estado anterior no cenário testado;
 - parcialmente resolvido: documentação e parte da responsividade já melhoraram, mas ainda pedem validação contínua;
 - precisa confirmar: segurança e higiene completa de branches remotas;
 - resolvido: o risco de restauração parcial entre `civ5` e `civ5_cfg` foi fechado com evidência de PR, commit e testes.
@@ -99,8 +101,8 @@ Resumo executivo:
 | 151 | Fase 151 | Qualidade | `npm test` não roda os 116 testes | PR `#151` concluído | Alta | Médio | comandos atuais de teste | concluído | histórico | #151 | `a72596d8161248078a1283cf2ca61800b46868ac` | build + 116 testes validados | preservar comando único |
 | 152 | Fase 152 | CI | Ausência de CI mínimo | PR `#152` concluído | Alta | Médio | Fase 151 | concluído | histórico | #152 | `2ead18a2b251a2a73cdd8020fbbef40399c5fa2d` | workflow `CI` + 116 testes no GitHub Actions | preservar CI mínimo |
 | 153 | Fase 153 | Arquitetura | Monólito dificulta leitura do `index.html` | PR `#153` concluído | Média | Médio | base estável | concluído | histórico | #153 | `bfd23229d1ba27e48ac2d0a8b32602efda47a9a2` | `npm ci` + build + 116 testes validados | usar mapa antes de mexer em `load()` |
-| 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | testes integrados reais via `node:vm` na branch atual | Alta | Alto | Fase 153 + CI mínimo | em implementação | `test/load-integration` | — | — | build + 123 testes esperados | validar `load()` sem tocar produção |
-| 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | risco de inconsistência local | Alta | Alto | Fase 154 | aprovado | futura | — | — | obrigatórios | validar roundtrip |
+| 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | PR `#154` concluído | Alta | Alto | Fase 153 + CI mínimo | concluído | histórico | #154 | `07b3a149e2f549b14d303201f247f020bab6911f` | build + 123 testes validados | usar cobertura antes do roundtrip |
+| 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | risco de inconsistência local e gravação parcial | Alta | Alto | Fase 154 concluída | em implementação | `test/save-load-roundtrip` | — | — | build + `npm test` com 130 testes | validar roundtrip |
 | 156 | Fase 156 | Modularização | Primeira extração segura ainda não formalizada | `index.html` extenso | Média | Alto | mapa arquitetural e testes | aprovado | futura | — | — | obrigatórios | extrair bloco de baixo risco |
 | 157 | Fase 157 | UI | Cobertura automatizada da UI ainda é baixa | achado confirmado em auditoria | Média | Médio | Fases 151 a 156 | aprovado | futura | — | — | obrigatórios | criar testes básicos de UI |
 | 158 | Fase 158 | Segurança | Riscos de segurança ainda sem fechamento formal | achado pendente de confirmação | Alta | Alto | base estabilizada | aprovado | futura | — | — | auditoria dedicada | auditar e corrigir com escopo controlado |
@@ -127,6 +129,9 @@ Concluído até a base atual:
 - PR `#153`;
 - commit da `main` `bfd23229d1ba27e48ac2d0a8b32602efda47a9a2`;
 - mapa arquitetural do `index.html` registrado antes da Fase 154.
+- PR `#154`;
+- commit da `main` `07b3a149e2f549b14d303201f247f020bab6911f`;
+- `123` testes já integrados ao comando principal com cobertura dedicada de `load()`.
 
 Critério de leitura:
 
@@ -225,29 +230,27 @@ Checklist operacional:
 
 Próxima fase prevista:
 
-### Fase 154 — Testes integrados de `load()`
+### Fase 155 — Roundtrip `save()/load()`
 
 Status atual:
 
 - em implementação;
-- branch `test/load-integration` criada a partir de `main`;
-- escopo limitado a `tests/load-integration.test.js`, `package.json` e este roadmap;
-- objetivo imediato: validar o `load()` real do `index.html` sem alterar produção;
-- execução esperada também via `npm test` e GitHub Actions, sem alterar o workflow.
-- suíte da fase: `7` testes integrados de `load()`;
-- total esperado no comando principal após este ajuste: `123` testes;
-- risco confirmado nesta fase: falha de `getItem(STOR)` ainda propaga exceção e permanece não resolvida por decisão de escopo.
+- branch `test/save-load-roundtrip` criada a partir de `main`;
+- escopo limitado a `tests/save-load-roundtrip.test.js`, `package.json` e este roadmap;
+- objetivo imediato: comprovar roundtrip semântico entre `save()` real e `load()` real;
+- validação dedicada em `test:roundtrip` e execução automática via `npm test`, sem alterar produção nesta fase.
 
 Objetivo preliminar:
 
-- criar testes integrados dedicados para `load()`;
-- validar inicialização com estado salvo, configuração, legado e falhas controladas;
-- proteger o bootstrap antes de qualquer extração modular.
+- criar teste integrado de roundtrip entre persistência principal e preferências;
+- validar segunda gravação, falha de escrita e isolamento entre `civ5` e `civ5_cfg`;
+- documentar campos derivados que não participam da equivalência semântica;
+- elevar o comando principal para `130` testes com roundtrip incluído no CI.
 
 Regra desta preparação:
 
 - deve ampliar cobertura sem refatoração estrutural ampla;
-- precisa preservar o comportamento atual do monólito durante a carga inicial.
+- precisa preservar o comportamento atual do monólito durante gravação e carga.
 
 ---
 
