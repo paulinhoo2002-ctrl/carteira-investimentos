@@ -1,0 +1,127 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const test = require('node:test');
+
+const appUrl = process.env.MODERN_APP_URL;
+const browserTest = appUrl ? test : test.skip;
+
+function resolveBrowserExecutable() {
+  const candidates = [
+    process.env.CHROME_PATH,
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  ].filter(Boolean);
+
+  return candidates.find((candidate) => fs.existsSync(candidate));
+}
+
+browserTest('modern shell smoke navigation', async () => {
+  const executablePath = resolveBrowserExecutable();
+  assert.ok(executablePath, 'Chrome or Edge executable not found for smoke test');
+
+  const { chromium } = await import('playwright-core');
+  const browser = await chromium.launch({
+    executablePath,
+    headless: true,
+  });
+
+  try {
+    await runViewportScenario(browser, { width: 1366, height: 768 }, async (page) => {
+      await assertPageReady(page);
+      await page.locator('.sidebar__item').nth(1).click();
+      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
+      await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Ativos');
+    });
+
+    await runViewportScenario(browser, { width: 390, height: 844 }, async (page) => {
+      await assertPageReady(page);
+      const menuButton = page.locator('.modern-menu-button');
+
+      await menuButton.focus();
+      const menuFocusOutline = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
+      assert.notEqual(menuFocusOutline, 'none', 'Menu button focus is not visible');
+
+      await menuButton.press('Enter');
+      await assert.equal(await menuButton.getAttribute('aria-expanded'), 'true');
+
+      const sidebar = page.locator('#modern-sidebar');
+      await assert.equal(await sidebar.getAttribute('data-open'), 'true');
+
+      await menuButton.press('Escape');
+      await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
+
+      await menuButton.press('Enter');
+      await assert.equal(await menuButton.getAttribute('aria-expanded'), 'true');
+      await page.locator('#modern-sidebar .sidebar__item').nth(1).press('Enter');
+      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
+      await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Ativos');
+      await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
+    });
+  } finally {
+    await browser.close();
+  }
+});
+
+async function runViewportScenario(browser, viewport, scenario) {
+  const context = await browser.newContext({
+    viewport,
+    hasTouch: viewport.width <= 430,
+    isMobile: viewport.width <= 430,
+  });
+  const page = await context.newPage();
+  const consoleErrors = [];
+  const failedRequests = [];
+  const pageErrors = [];
+
+  page.on('console', (message) => {
+    if (message.type() === 'error') {
+      consoleErrors.push(message.text());
+    }
+  });
+
+  page.on('pageerror', (error) => {
+    pageErrors.push(error.message);
+  });
+
+  page.on('requestfailed', (request) => {
+    failedRequests.push(request.url());
+  });
+
+  await page.goto(appUrl, { waitUntil: 'networkidle' });
+
+  await scenario(page);
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+  assert.equal(overflow, true, 'Horizontal overflow detected');
+  assert.equal(consoleErrors.length, 0, `Console errors: ${consoleErrors.join(' | ')}`);
+  assert.equal(pageErrors.length, 0, `Page errors: ${pageErrors.join(' | ')}`);
+  assert.equal(failedRequests.length, 0, `Failed requests: ${failedRequests.join(' | ')}`);
+
+  const requestOrigins = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((entry) => {
+        try {
+          return new URL(entry.name).origin;
+        } catch {
+          return 'invalid';
+        }
+      }),
+  );
+
+  const externalRequests = requestOrigins.filter(
+    (origin) => origin !== 'http://127.0.0.1:4173' && origin !== 'http://localhost:4173' && origin !== 'null',
+  );
+  assert.equal(externalRequests.length, 0, `External requests found: ${externalRequests.join(', ')}`);
+
+  await context.close();
+}
+
+async function assertPageReady(page) {
+  await page.getByRole('heading', { name: 'Carteira de Investimentos' }).waitFor();
+  await page.locator('.sidebar__item').count().then((count) => {
+    assert.equal(count, 7);
+  });
+}

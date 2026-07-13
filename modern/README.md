@@ -1,6 +1,6 @@
-# Base moderna isolada
+# Shell moderno isolado
 
-Fase 161 da Carteira de Investimentos.
+Fase 2 da modernizacao da Carteira de Investimentos.
 
 ## Rodar
 
@@ -14,8 +14,8 @@ npm run dev:modern
 npm run build:modern
 ```
 
-## Observações
+## Observacoes
 
-- esta base não lê dados reais da carteira;
-- não acessa Firebase, Auth, sync, backup ou storage;
+- esta base nao le dados reais da carteira;
+- nao acessa sistemas externos ou armazenamento persistente;
 - o build sai em `modern/dist`.
