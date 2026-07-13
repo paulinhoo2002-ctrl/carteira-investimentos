@@ -23,7 +23,7 @@ function extractThemeBootstrap() {
 
 function extractUiBundle() {
   return [
-    extractSnippet('function openReportCardPdf(type){', 'async function downloadCompletePortfolioPdf(){'),
+    extractSnippet('let reportModalFocusOrigin=null;', 'function pdfReportKpi('),
     extractSnippet("function pdfReportKpi(label,value,sub=''){", 'function reportCardPdfProventosPreview('),
     extractSnippet('function content(){', 'function prudentContributionAnalysis(){'),
     extractSnippet('function go(t){', 'function clA(){')
@@ -67,7 +67,29 @@ function makeUiHarness(overrides = {}) {
     render: 0,
     autoProv: 0,
     withScrollPreserved: 0,
-    toasts: []
+    toasts: [],
+    openCalls: []
+  };
+  const focusLog = [];
+  const trigger = {
+    id: 'report-trigger',
+    disabled: false,
+    isConnected: true,
+    focus(options) {
+      focusLog.push({ target: 'trigger', options: options || null });
+      document.activeElement = trigger;
+    }
+  };
+  const body = {
+    focus(options) {
+      focusLog.push({ target: 'body', options: options || null });
+      document.activeElement = body;
+    }
+  };
+  const document = {
+    activeElement: trigger,
+    body,
+    getElementById() { return null; }
   };
 
   const context = {
@@ -140,6 +162,34 @@ function makeUiHarness(overrides = {}) {
     toast(message, color) {
       counters.toasts.push({ message, color });
     },
+    debugError() {},
+    requestAnimationFrame(fn) {
+      fn();
+      return 1;
+    },
+    setTimeout(fn) {
+      fn();
+      return 1;
+    },
+    alert() {},
+    document,
+    window: {
+      open(url, target, features) {
+        counters.openCalls.push({ url, target, features });
+        return {
+          closed: false,
+          opener: {},
+          document: {
+            readyState: 'complete',
+            open() {},
+            write() {},
+            close() {}
+          },
+          focus() {},
+          print() {}
+        };
+      }
+    },
     dashboardMarkup() {
       return '<section id="dashboard-view">dashboard</section>';
     },
@@ -170,8 +220,8 @@ function makeUiHarness(overrides = {}) {
     .replace("if(S.tab==='ranking')    return ativos();", "if(S.tab==='ranking')    return ativosMarkup();")
     .replace("if(S.tab==='renda-fixa')return ativos();", "if(S.tab==='renda-fixa')return ativosMarkup();");
 
-  const exported = vm.runInNewContext(`${bundle}\n({ openReportCardPdf, closeReportCardPdf, reportCardPdfAssetsPreview, buildReportCardPrintHtml, content, go });`, context);
-  return { ...exported, context, counters };
+  const exported = vm.runInNewContext(`${bundle}\n({ openReportCardPdf, closeReportCardPdf, printReportCardPdf, reportCardPdfAssetsPreview, buildReportCardPrintHtml, content, go });`, context);
+  return { ...exported, context, counters, focusLog, trigger, body };
 }
 
 test('bootstrap local com testMode ativa modo de teste e não lê tema salvo', () => {
@@ -256,4 +306,37 @@ test('prévia de ativos abre e fecha como modal acessível sem placeholders queb
   assert.equal(harness.context.S.reportCardPdfType, null);
   assert.equal(harness.counters.withScrollPreserved, 1);
   assert.equal(harness.counters.render, 2);
+});
+
+test('prévia de ativos devolve foco ao disparador ao fechar o modal', () => {
+  const harness = makeUiHarness();
+
+  harness.openReportCardPdf('assets');
+  harness.context.document.activeElement = harness.body;
+  harness.closeReportCardPdf();
+
+  assert.equal(harness.focusLog.some(entry => entry.target === 'trigger'), true);
+  assert.equal(harness.context.document.activeElement, harness.trigger);
+});
+
+test('fechamento da prévia não lança erro quando o disparador original não existe mais', () => {
+  const harness = makeUiHarness();
+
+  harness.openReportCardPdf('assets');
+  harness.trigger.isConnected = false;
+
+  assert.doesNotThrow(() => harness.closeReportCardPdf());
+  assert.equal(harness.focusLog.some(entry => entry.target === 'trigger'), false);
+});
+
+test('fluxo de impressão dos relatórios usa janela protegida com noopener e noreferrer', () => {
+  const harness = makeUiHarness();
+
+  harness.context.S.reportCardPdfType = 'assets';
+  harness.printReportCardPdf();
+
+  assert.equal(harness.counters.openCalls.length, 1);
+  assert.equal(harness.counters.openCalls[0].features, 'noopener,noreferrer,width=900,height=700');
+  const html = readIndexHtml();
+  assert.match(html, /window\.open\('about:blank', '_blank', 'noopener,noreferrer,width=1280,height=900'\)/);
 });

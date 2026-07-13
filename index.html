@@ -4306,6 +4306,14 @@ function backupCorruptedStorageValue(storageKey, rawValue, error){
     return null;
   }
 }
+function safeGetLocalStorageItem(key, contextLabel='storage leitura'){
+  try{
+    return { ok:true, value:localStorage.getItem(key) };
+  }catch(error){
+    debugError(`${contextLabel} erro:`, error);
+    return { ok:false, error, value:null };
+  }
+}
 function markProventosDirty(){
   S.autoProvDirty=true;
 }
@@ -4358,48 +4366,53 @@ async function runAutoProventosGratis(reason='change'){
 
 function load(){
   if(isLocalTestMode()) return;
-  // ← FIX: try-catch separados para não perder tudo se um falhar
-  try{
-    const raw=localStorage.getItem(STOR);
-    const d=PersistenceCore.parseStoredState(raw);
-    if(Array.isArray(d.wallets) && d.wallets.length){
-      S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
-      S.activeWalletId=String(d.activeWalletId||S.wallets[0].id);
-      const active=S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
-      syncStateFromWallet(active);
-    }else{
-      if(Array.isArray(d.assets))    S.assets    = d.assets;
-      if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
-      if(Array.isArray(d.proventos)) S.proventos = d.proventos;
-      if(Array.isArray(d.rfEvents))  S.rfEvents  = normalizeRfEvents(d.rfEvents);
+  const stateRead=safeGetLocalStorageItem(STOR, 'load leitura storage');
+  if(stateRead.ok){
+    try{
+      const d=PersistenceCore.parseStoredState(stateRead.value);
+      if(Array.isArray(d.wallets) && d.wallets.length){
+        S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
+        S.activeWalletId=String(d.activeWalletId||S.wallets[0].id);
+        const active=S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
+        syncStateFromWallet(active);
+      }else{
+        if(Array.isArray(d.assets))    S.assets    = d.assets;
+        if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
+        if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+        if(Array.isArray(d.rfEvents))  S.rfEvents  = normalizeRfEvents(d.rfEvents);
+      }
+      if(d.tab)                       S.tab       = d.tab==='ranking' ? 'ativos' : d.tab==='renda-fixa' ? 'ativos' : d.tab;
+      if(d.tab==='renda-fixa')        S.assetsInnerTab = 'renda-fixa';
+      if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
+      if(d.hideValues !== undefined)  S.hideValues = !!d.hideValues;
+      if(d.apHistoryOpen !== undefined) S.apHistoryOpen = !!d.apHistoryOpen;
+      if(d.apSearch !== undefined)     S.apSearch  = String(d.apSearch||'');
+      if(d.dashPeriod !== undefined)   S.dashPeriod = Math.max(3, Number(d.dashPeriod)||12);
+      if(d.dashType !== undefined)     S.dashType = String(d.dashType||'all');
+      if(d.rentPeriod !== undefined)   S.rentPeriod = String(d.rentPeriod||'all');
+      if(d.rentType !== undefined)     S.rentType = String(d.rentType||'all');
+      if(d.rentBench !== undefined)    S.rentBench = String(d.rentBench||'CDI');
+      if(d.irpfYear !== undefined)     S.irpfYear = Math.max(2010, Number(d.irpfYear)||new Date().getFullYear());
+      if(d.irpfStep !== undefined)     S.irpfStep = Math.min(4, Math.max(1, Number(d.irpfStep)||1));
+      if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
+      if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
+    }catch(e){
+      backupCorruptedStorageValue(STOR, stateRead.value, e);
+      debugError('load erro:',e);
     }
-    if(d.tab)                       S.tab       = d.tab==='ranking' ? 'ativos' : d.tab==='renda-fixa' ? 'ativos' : d.tab;       // ← FIX: restaura tab
-    if(d.tab==='renda-fixa')        S.assetsInnerTab = 'renda-fixa';
-    if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
-    if(d.hideValues !== undefined)  S.hideValues = !!d.hideValues;
-    if(d.apHistoryOpen !== undefined) S.apHistoryOpen = !!d.apHistoryOpen;
-    if(d.apSearch !== undefined)     S.apSearch  = String(d.apSearch||'');
-    if(d.dashPeriod !== undefined)   S.dashPeriod = Math.max(3, Number(d.dashPeriod)||12);
-    if(d.dashType !== undefined)     S.dashType = String(d.dashType||'all');
-    if(d.rentPeriod !== undefined)   S.rentPeriod = String(d.rentPeriod||'all');
-    if(d.rentType !== undefined)     S.rentType = String(d.rentType||'all');
-    if(d.rentBench !== undefined)    S.rentBench = String(d.rentBench||'CDI');
-    if(d.irpfYear !== undefined)     S.irpfYear = Math.max(2010, Number(d.irpfYear)||new Date().getFullYear());
-    if(d.irpfStep !== undefined)     S.irpfStep = Math.min(4, Math.max(1, Number(d.irpfStep)||1));
-    if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
-    if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta = d.learnMeta;
-  }catch(e){
-    backupCorruptedStorageValue(STOR, localStorage.getItem(STOR), e);
-    debugError('load erro:',e);
   }
-  try{
-    const cfgRaw=localStorage.getItem(STOR+'_cfg');
-    const c=PersistenceCore.parseStoredState(cfgRaw);
-    if(c.brapiToken)            S.brapiToken = c.brapiToken;
-    else                        S.brapiToken = DEFAULT_BRAPI; // garante token padrão
-    if(c.divGoal !== undefined) S.divGoal    = Number(c.divGoal)||S.divGoal;
-  }catch(e){
-    backupCorruptedStorageValue(`${STOR}_cfg`, localStorage.getItem(`${STOR}_cfg`), e);
+  const cfgRead=safeGetLocalStorageItem(STOR+'_cfg', 'load leitura config');
+  if(cfgRead.ok){
+    try{
+      const c=PersistenceCore.parseStoredState(cfgRead.value);
+      if(c.brapiToken)            S.brapiToken = c.brapiToken;
+      else                        S.brapiToken = DEFAULT_BRAPI;
+      if(c.divGoal !== undefined) S.divGoal    = Number(c.divGoal)||S.divGoal;
+    }catch(e){
+      backupCorruptedStorageValue(`${STOR}_cfg`, cfgRead.value, e);
+      S.brapiToken = DEFAULT_BRAPI;
+    }
+  }else{
     S.brapiToken = DEFAULT_BRAPI;
   }
   // Migração de versões antigas (civ4, civ3...)
@@ -13268,8 +13281,9 @@ function irpfExportPdf(){
       '</body>',
       '</html>'
     ].join('');
-    const w=window.open('about:blank', '_blank', 'width=1280,height=900');
+    const w=window.open('about:blank', '_blank', 'noopener,noreferrer,width=1280,height=900');
     if(!w){ alert('O navegador bloqueou a janela de PDF. Permita pop-ups e tente novamente.'); return; }
+    try{ w.opener=null; }catch(_e){}
     w.document.open();
     w.document.write(html);
     w.document.close();
@@ -15581,6 +15595,7 @@ function reportPdfSnapshot(){
 }
 function openPdfReport(){
   try{
+    rememberReportModalFocusOrigin();
     S.pdfReportOpen=true;
     render();
   }catch(error){
@@ -15593,10 +15608,43 @@ function closePdfReport(){
   withScrollPreserved(()=>{
     S.pdfReportOpen=false;
     render();
+    scheduleReportModalFocusRestore();
   });
 }
 function printPdfReport(){
   return downloadExecutivePdf();
+}
+let reportModalFocusOrigin=null;
+function canRestoreFocusTo(el){
+  if(!el || typeof el.focus!=='function') return false;
+  if(el.disabled) return false;
+  if('isConnected' in el && el.isConnected===false) return false;
+  return true;
+}
+function rememberReportModalFocusOrigin(el){
+  const candidate=el || (typeof document!=='undefined' ? document.activeElement : null);
+  reportModalFocusOrigin=canRestoreFocusTo(candidate) ? candidate : null;
+  return reportModalFocusOrigin;
+}
+function restoreReportModalFocusOrigin(){
+  const candidate=reportModalFocusOrigin;
+  reportModalFocusOrigin=null;
+  if(!canRestoreFocusTo(candidate)) return false;
+  try{
+    candidate.focus({preventScroll:true});
+    return true;
+  }catch(_error){
+    try{
+      candidate.focus();
+      return true;
+    }catch(_nestedError){
+      return false;
+    }
+  }
+}
+function scheduleReportModalFocusRestore(){
+  const schedule=typeof requestAnimationFrame==='function' ? requestAnimationFrame : (fn)=>fn();
+  schedule(()=>restoreReportModalFocusOrigin());
 }
 async function downloadExecutivePdf(){
   console.log('[PDF DIRETO] Gerando Relatório Executivo via jsPDF');
@@ -16035,6 +16083,7 @@ function openReportCardPdf(type){
       toast('PDF disponível apenas para os cards habilitados nesta etapa.','#fbbf24');
       return;
     }
+    rememberReportModalFocusOrigin();
     S.reportCardPdfType=type;
     render();
   }catch(error){
@@ -16047,6 +16096,7 @@ function closeReportCardPdf(){
   withScrollPreserved(()=>{
     S.reportCardPdfType=null;
     render();
+    scheduleReportModalFocusRestore();
   });
 }
 async function downloadCompletePortfolioPdf(){
@@ -16293,7 +16343,7 @@ function printReportCardPdf(){
       return;
     }
     const html=buildReportCardPrintHtml(type);
-    const win=window.open('','_blank','width=900,height=700');
+    const win=window.open('','_blank','noopener,noreferrer,width=900,height=700');
     if(!win){
       alert('Não foi possível abrir a janela de impressão. Verifique se o navegador bloqueou pop-ups.');
       return;

@@ -80,16 +80,20 @@ Consolidação dos principais achados já levantados, com classificação de sit
 | documentação como ponto forte | confirmado | A trilha documental evoluiu bem. |
 | responsividade como ponto forte | parcialmente resolvido | Há cobertura relevante, mas depende de validação manual em telas afetadas. |
 | poucas dependências como ponto forte | confirmado | Estrutura segue enxuta e reduz superfície operacional. |
-| falha de `localStorage.getItem(STOR)` durante `load()` ainda propaga exceção | confirmado | O comportamento foi provado por teste integrado e permanece sem correção nesta fase. |
+| falha de `localStorage.getItem(STOR)` durante `load()` já não derruba a inicialização | resolvido | Fase 158: leitura do estado principal agora é isolada, preserva estado em memória, evita gravação destrutiva e mantém erro observável por `debugError(...)`. |
 | falha de `localStorage.setItem(STOR)` durante `save()` é tratada sem corrupção do estado anterior | confirmado | Achado da Fase 155: teste integrado comprovou que a exceção não é propagada, `civ5` anterior é preservado, `civ5_cfg` anterior é preservado, `queueCloudSave()` não é chamada, `debugError(...)` registra o erro e um toast informa falha ao salvar localmente. Mantido sem correção nesta fase porque o objetivo foi validar roundtrip e o cenário testado preserva o estado anterior. Reavaliar apenas se a Fase 158 exigir melhoria de segurança, resiliência ou observabilidade. |
+| fechamento da prévia de Ativos devolvia foco ao `body` | resolvido | Fase 158: retorno de foco ao disparador implementado com fallback seguro quando o elemento original não existe mais. |
+| fluxos de impressão abriam janela sem `noopener,noreferrer` | resolvido | Fase 158: `window.open()` endurecido nos fluxos de impressão de relatórios e IRPF, reduzindo exposição do `opener`. |
 
 Resumo executivo:
 
-- confirmado: riscos estruturais do monólito e a exceção ainda propagada em `getItem(STOR)` dentro de `load()`;
+- confirmado: riscos estruturais do monólito seguem presentes;
 - confirmado: a falha de `setItem(STOR)` em `save()` continua como risco conhecido de indisponibilidade da gravação local, mas sem corrupção do estado anterior no cenário testado;
 - parcialmente resolvido: documentação e parte da responsividade já melhoraram, mas ainda pedem validação contínua;
-- precisa confirmar: segurança e higiene completa de branches remotas;
-- resolvido: o risco de restauração parcial entre `civ5` e `civ5_cfg` foi fechado com evidência de PR, commit e testes.
+- precisa confirmar: segurança ampla de `innerHTML` e higiene completa de branches remotas;
+- resolvido: o risco de restauração parcial entre `civ5` e `civ5_cfg` foi fechado com evidência de PR, commit e testes;
+- resolvido: `load()` deixou de propagar a falha de `getItem(STOR)` no cenário já comprovado;
+- resolvido: retorno de foco da prévia de Ativos e proteção `noopener,noreferrer` nos fluxos de impressão auditados.
 
 ## 5. Tabela de controle
 
@@ -104,8 +108,8 @@ Resumo executivo:
 | 154 | Fase 154 | Testes integrados | `load()` precisa cobertura dedicada | PR `#154` concluído | Alta | Alto | Fase 153 + CI mínimo | concluído | histórico | #154 | `07b3a149e2f549b14d303201f247f020bab6911f` | build + 123 testes validados | usar cobertura antes do roundtrip |
 | 155 | Fase 155 | Testes integrados | `save()/load()` precisa roundtrip confiável | PR `#155` concluído | Alta | Alto | Fase 154 concluída | concluído | histórico | #155 | `3cbe0a4b5450410513a440df8964c8158b9c0d36` | build + `npm test` com 130 testes | usar roundtrip antes de extrair |
 | 156 | Fase 156 | Modularização | Primeira extração segura deve provar padrão mínimo de desacoplamento | PR `#156` concluído | Média | Alto | mapa arquitetural e 130 testes prévios | concluído | histórico | #156 | `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9` | build + `npm test` com 134 testes | usar corte puro antes de ampliar UI |
-| 157 | Fase 157 | UI | Cobertura automatizada da UI ainda é baixa | suíte estrutural mínima para `testMode=1`, navegação, relatórios e modal básico | Média | Médio | Fases 151 a 156 + 134 testes estáveis | em implementação | `test/basic-ui` | — | — | build + `test:ui` + `npm test` | validar fluxos críticos sem dependência nova |
-| 158 | Fase 158 | Segurança | Riscos de segurança ainda sem fechamento formal | achado pendente de confirmação | Alta | Alto | base estabilizada | aprovado | futura | — | — | auditoria dedicada | auditar e corrigir com escopo controlado |
+| 157 | Fase 157 | UI | Cobertura automatizada da UI ainda era baixa | suíte estrutural mínima para `testMode=1`, navegação, relatórios e modal básico | Média | Médio | Fases 151 a 156 + 134 testes estáveis | concluído | histórico | #157 | `459c5ee93b5187f8667aec591c11d06df9f9e8a1` | build + `test:ui` + `npm test` com 140 testes | usar base de UI antes da Fase 158 |
+| 158 | Fase 158 | Segurança / Resiliência / Acessibilidade | riscos pontuais ainda abertos em `load()`, foco de modal e impressão | achados auditados e correções pequenas comprovadas | Alta | Médio | base estabilizada + 140 testes | em implementação | `fix/security-resilience-accessibility` | — | — | build + `test:load` + `test:ui` + `npm test` | fechar apenas correções pequenas comprovadas |
 | 159 | Fase 159 | Performance | Performance ainda sem medição formal | renderização ampla do DOM | Média | Médio | mapa arquitetural | aprovado | futura | — | — | métricas obrigatórias | medir e melhorar |
 
 ## 6. Fases concluídas
@@ -139,6 +143,9 @@ Concluído até a base atual:
 - commit da `main` `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9`;
 - helper `buildReportAssetRow()` extraído para arquivo dedicado;
 - `134` testes aprovados antes da Fase 157.
+- PR `#157`;
+- commit da `main` `459c5ee93b5187f8667aec591c11d06df9f9e8a1`;
+- `140` testes aprovados antes da Fase 158.
 
 Critério de leitura:
 
@@ -157,7 +164,7 @@ Sequência aprovada no momento:
 6. Fase 155 — Roundtrip `save()/load()`
 7. Fase 156 — Primeira extração modular de baixo risco
 8. Fase 157 — Testes básicos de UI
-9. Fase 158 — Auditoria e melhorias de segurança
+9. Fase 158 — Segurança, resiliência e acessibilidade pontual
 10. Fase 159 — Medição e melhoria de performance
 
 Regra:
@@ -232,32 +239,34 @@ Checklist operacional:
 | 2026-07-13 | Iniciar a Fase 151 apenas para corrigir o comando `npm test` | Garantir que a suíte completa rode por um comando único, sem mexer nos testes ou no código de produção | Melhora execução local e futura compatibilidade com CI | Fase 151 |
 | 2026-07-13 | Iniciar a Fase 152 com um único workflow mínimo reaproveitando `npm test` | Garantir CI reproduzível sem duplicar lógica de build e testes nem introduzir ferramentas extras | Cria validação automática em pushes e PRs para `main` | Fase 152 |
 | 2026-07-13 | Iniciar a Fase 153 apenas como mapeamento técnico do `index.html` | Preparar futuras extrações de baixo risco sem tocar produção | Cria visão arquitetural rastreável do monólito | Fase 153 |
+| 2026-07-13 | Tratar a Fase 158 como pacote pequeno de correções reais em resiliência, acessibilidade e segurança pontual | Evitar auditoria infinita e refatoração ampla em área sensível | Escopo fechado em `load()`, retorno de foco e proteção pequena de impressão | Fase 158 |
 
 ## 11. Próxima fase preparada
 
 Próxima fase prevista:
 
-### Fase 157 — Testes básicos de UI
+### Fase 158 — Segurança, resiliência e acessibilidade pontual
 
 Status atual:
 
 - em implementação;
-- branch `test/basic-ui` criada a partir de `main`;
-- Fase 156 concluída via PR `#156` no commit `d4b10fb6a4a0ae71da92d4844569f0ecaa1b75c9`;
-- base atual registrada com `134` testes aprovados antes da suíte de UI;
-- total atual registrado em `140` testes após incluir `test:ui` no `npm test`;
-- escopo de UI: inicialização local com `testMode=1`, navegação estável, relatórios, prévia de ativos e modal básico;
-- estratégia prevista: testes estruturais do `index.html` com `node:vm`, sem rede real, sem Firebase real, sem conta Google e sem dependência nova;
-- validação manual complementar já repetida em desktop `1366x768` e mobile `390x844`, sem gate Google, sem overflow horizontal grave e sem erros críticos de console nos fluxos testados;
-- limitação assumida: a suíte continua estrutural, não substitui uma cobertura end-to-end completa com navegador real no CI;
-- refinamento futuro registrado: ao fechar a prévia de Ativos, o foco volta ao `body`; não bloqueia a fase, mas vale reavaliar em acessibilidade na Fase 158.
+- branch `fix/security-resilience-accessibility` criada a partir de `main`;
+- Fase 157 concluída via PR `#157` no commit `459c5ee93b5187f8667aec591c11d06df9f9e8a1`;
+- base atual registrada com `140` testes aprovados antes desta fase;
+- total atual registrado em `143` testes após ampliar a suíte estrutural existente;
+- correção implementada: `load()` deixou de propagar a falha de `localStorage.getItem(STOR)` e mantém o estado anterior em memória;
+- correção implementada: a prévia de Ativos volta foco ao disparador ao fechar, com fallback seguro quando o disparador sumiu;
+- correção implementada: janelas de impressão auditadas passaram a usar `noopener,noreferrer`;
+- achados auditados sem correção nesta fase: uso amplo de `innerHTML` no render principal e logs de debug antigos fora dos fluxos alterados, por exigirem escopo maior;
+- risco conhecido mantido: a falha de `localStorage.setItem(STOR)` continua apenas documentada, pois o cenário testado já preserva o estado anterior;
+- limitação assumida: a cobertura segue estrutural com `node:vm`, não substitui auditoria de navegador real para toda a aplicação.
 
 Objetivo preliminar:
 
-- validar que a aplicação abre localmente em `testMode=1` sem cair no gate Google;
-- cobrir navegação básica entre Início, Ativos e Relatórios;
-- validar uma ação real de relatórios com ausência de `NaN`, `undefined` e `[object Object]`;
-- incluir a nova suíte no `npm test` sem alterar framework, CI ou dependências.
+- impedir que falha de leitura em `load()` derrube a inicialização;
+- devolver foco ao disparador no modal testado pela Fase 157;
+- endurecer apenas os fluxos de impressão comprovadamente próximos ao escopo;
+- manter o restante da base sem refatoração ampla.
 
 Regra desta preparação:
 
