@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react';
+import type { ReportsRefreshController } from './reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 
 const trendLabel = {
@@ -30,11 +32,17 @@ function formatQuantity(value: number) {
 
 interface AssetsReportPreviewProps {
   adapter: ReadOnlyReportsAdapter;
+  refreshController?: ReportsRefreshController | null;
 }
 
-export function AssetsReportPreview({ adapter }: AssetsReportPreviewProps) {
-  const snapshot = adapter.getSnapshot();
+interface AssetsReportPreviewContentProps {
+  errorMessage: string | null;
+  onRefresh?: () => void;
+  showRefreshButton: boolean;
+  snapshot: ReturnType<ReadOnlyReportsAdapter['getSnapshot']>;
+}
 
+function AssetsReportPreviewContent({ errorMessage, onRefresh, showRefreshButton, snapshot }: AssetsReportPreviewContentProps) {
   return (
     <section className="page-shell assets-report" aria-labelledby="page-reports">
       <div className="assets-report__header">
@@ -44,13 +52,27 @@ export function AssetsReportPreview({ adapter }: AssetsReportPreviewProps) {
             Previa somente leitura de Relatorios
           </h2>
         </div>
-        <p className="assets-report__updated">Atualizacao ficticia: {snapshot.generatedAt}</p>
+        <div className="assets-report__refresh">
+          <p className="assets-report__updated" aria-live="polite">
+            Atualizacao ficticia: {snapshot.generatedAt}
+          </p>
+          {showRefreshButton ? (
+            <button className="assets-report__refresh-button" type="button" onClick={onRefresh}>
+              Atualizar previa
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <p className="page-shell__description">
         Primeira tela moderna somente leitura para demonstrar uma previa de relatorios sem carregar dados reais.
       </p>
       <p className="assets-report__notice">{snapshot.notice}</p>
+      {errorMessage ? (
+        <p className="assets-report__status" role="status" aria-live="polite">
+          {errorMessage}
+        </p>
+      ) : null}
 
       <div className="assets-report__summary" aria-label="Resumo demonstrativo da previa de relatorios">
         <article className="overview-card">
@@ -165,4 +187,43 @@ export function AssetsReportPreview({ adapter }: AssetsReportPreviewProps) {
       </div>
     </section>
   );
+}
+
+function StaticAssetsReportPreview({ adapter }: { adapter: ReadOnlyReportsAdapter }) {
+  return (
+    <AssetsReportPreviewContent
+      errorMessage={null}
+      showRefreshButton={false}
+      snapshot={adapter.getSnapshot()}
+    />
+  );
+}
+
+function RefreshableAssetsReportPreview({
+  refreshController,
+}: {
+  refreshController: ReportsRefreshController;
+}) {
+  const refreshState = useSyncExternalStore(
+    refreshController?.subscribe ?? (() => () => {}),
+    refreshController!.getState,
+    refreshController!.getState,
+  );
+
+  return (
+    <AssetsReportPreviewContent
+      errorMessage={refreshState.errorMessage}
+      onRefresh={() => refreshController?.refresh()}
+      showRefreshButton={true}
+      snapshot={refreshState.snapshot}
+    />
+  );
+}
+
+export function AssetsReportPreview({ adapter, refreshController }: AssetsReportPreviewProps) {
+  if (!refreshController) {
+    return <StaticAssetsReportPreview adapter={adapter} />;
+  }
+
+  return <RefreshableAssetsReportPreview refreshController={refreshController} />;
 }

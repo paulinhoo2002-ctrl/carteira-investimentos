@@ -14,6 +14,15 @@ const hostSourceModulePath = path.join(
   'bootstrap',
   'hostLegacyReportsReadonlySource.ts',
 );
+const refreshControllerModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'features',
+  'reports',
+  'reportsRefreshController.ts',
+);
 const mountModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'mountModernApp.ts');
 const runtimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernReportsRuntime.ts');
 const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
@@ -24,6 +33,10 @@ async function loadMountModule() {
 
 async function loadRuntimeModule() {
   return import(pathToFileURL(runtimeModulePath).href);
+}
+
+async function loadRefreshControllerModule() {
+  return import(pathToFileURL(refreshControllerModulePath).href);
 }
 
 function read(relativePath) {
@@ -38,15 +51,19 @@ test('host experimental exists and keeps modern app isolated', () => {
   const hostSourceTs = fs.readFileSync(hostSourceModulePath, 'utf8');
   const mountTsx = fs.readFileSync(mountModulePath, 'utf8');
   const runtimeTs = fs.readFileSync(runtimeModulePath, 'utf8');
+  const refreshControllerTs = fs.readFileSync(refreshControllerModulePath, 'utf8');
   const appTsx = fs.readFileSync(appModulePath, 'utf8');
 
   assert.match(hostHtml, /Host experimental/);
   assert.match(hostHtml, /src="\/src\/host\.tsx"/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
+  assert.match(hostTsx, /createReportsRefreshController/);
+  assert.match(hostTsx, /createRefreshableReportsSource/);
   assert.match(hostTsx, /createModernReportsRuntime/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /AppComponent: App/);
+  assert.match(hostTsx, /reportsRefreshController/);
   assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
   assert.match(hostSourceTs, /buildReportAssetRow/);
   assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);
@@ -54,6 +71,11 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostSourceTs, /report-asset-row\.js/);
   assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
   assert.equal(hostSourceTs.includes('globalThis'), false);
+  assert.match(refreshControllerTs, /createReportsRefreshController/);
+  assert.match(refreshControllerTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(refreshControllerTs, /subscribe/);
+  assert.match(refreshControllerTs, /refresh/);
+  assert.match(refreshControllerTs, /getState/);
   assert.match(mountTsx, /export function mountModernApp/);
   assert.match(mountTsx, /Elemento root nao encontrado para a base moderna\./);
   assert.match(mountTsx, /Adapter moderno invalido\./);
@@ -99,6 +121,20 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(hostSourceTs.includes('auth'), false);
   assert.equal(/\bsync\b/.test(hostSourceTs), false);
   assert.equal(hostSourceTs.includes('backup'), false);
+  assert.equal(refreshControllerTs.includes('legacy/reports-readonly-source.js'), false);
+  assert.equal(refreshControllerTs.includes('@legacy-reports-readonly-source'), false);
+  assert.equal(refreshControllerTs.includes('localStorage'), false);
+  assert.equal(refreshControllerTs.includes('sessionStorage'), false);
+  assert.equal(refreshControllerTs.includes('indexedDB'), false);
+  assert.equal(refreshControllerTs.includes('firebase'), false);
+  assert.equal(refreshControllerTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(refreshControllerTs), false);
+  assert.equal(refreshControllerTs.includes('backup'), false);
+  assert.equal(refreshControllerTs.includes('setInterval'), false);
+  assert.equal(refreshControllerTs.includes('setTimeout'), false);
+  assert.equal(refreshControllerTs.includes('requestAnimationFrame'), false);
+  assert.equal(refreshControllerTs.includes('MutationObserver'), false);
+  assert.equal(refreshControllerTs.includes('WebSocket'), false);
 });
 
 test('mountModernApp controlled errors and repeat mount guard', async () => {
@@ -126,4 +162,52 @@ test('host runtime keeps demo source available', async () => {
 
   assert.equal(typeof runtime.reportsAdapter.getSnapshot, 'function');
   assert.match(read('src/host.tsx'), /createModernReportsRuntime/);
+});
+
+test('refresh controller keeps snapshot frozen and preserves listeners', async () => {
+  const { createReportsRefreshController } = await loadRefreshControllerModule();
+  let refreshIndex = 0;
+  const snapshots = [
+    {
+      generatedAt: '2026-07-14T10:30:00.000Z',
+      notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
+      summary: { totalValue: 900, itemCount: 0, averageVariationPct: 0.14 },
+      items: [],
+    },
+    {
+      generatedAt: '2026-07-14T10:31:00.000Z',
+      notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
+      summary: { totalValue: 910, itemCount: 0, averageVariationPct: 0.14 },
+      items: [],
+    },
+  ];
+  const source = {
+    getSnapshot() {
+      return snapshots[Math.min(refreshIndex, snapshots.length - 1)];
+    },
+  };
+
+  const controller = createReportsRefreshController({
+    source,
+    onRefresh() {
+      refreshIndex += 1;
+    },
+  });
+
+  let calls = 0;
+  const unsubscribe = controller.subscribe(() => {
+    calls += 1;
+  });
+
+  const initial = controller.getSnapshot();
+  controller.refresh();
+  const afterRefresh = controller.getSnapshot();
+
+  assert.equal(calls, 1);
+  assert.notEqual(afterRefresh, initial);
+  assert.equal(Object.isFrozen(afterRefresh), true);
+
+  unsubscribe();
+  controller.refresh();
+  assert.equal(calls, 1);
 });
