@@ -37,6 +37,10 @@ test('documentacao referencia arquivos e funcoes reais', () => {
     'metaTicker()',
     'normalizeType()',
     'Plano para a Fase 174',
+    'Fase 178 - navegacao controlada para o relatorio readonly real',
+    'Relatório experimental somente leitura',
+    'activeWalletHost=1&testMode=1',
+    'Voltar ao legado',
   ].forEach((token) => {
     assert.ok(doc.includes(token), `Documento deve citar ${token}`);
   });

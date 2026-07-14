@@ -1298,6 +1298,13 @@ body.modal-open{overflow:hidden}
 .report-export-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
 .report-export-actions .btn{min-height:36px}
 .reports-footnote{padding:9px 11px;border:1px solid #1a273b;border-radius:12px;background:#0a101b;color:#8294ad;font-size:10px;line-height:1.45}
+.reports-experiment-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid #24344d;border-radius:14px;background:linear-gradient(180deg,rgba(13,20,34,.98),rgba(10,16,27,.92));box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.reports-experiment-entry__title{font-size:12px;font-weight:900;color:#edf3ff;line-height:1.2}
+.reports-experiment-entry__sub{max-width:66ch;margin-top:4px;color:#94a3b8;font-size:11px;line-height:1.45}
+.reports-experiment-entry__actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.reports-experiment-entry__button{min-height:36px;padding:0 12px;border:1px solid rgba(79,70,229,.45);border-radius:999px;background:rgba(79,70,229,.14);color:#dbe4ff;font-weight:800;transition:transform .16s ease,border-color .16s ease,background-color .16s ease}
+.reports-experiment-entry__button:hover{transform:translateY(-1px);border-color:rgba(125,182,255,.56);background:rgba(79,70,229,.22)}
+.reports-experiment-entry__button:focus-visible{outline:3px solid #eef3ff;outline-offset:3px}
 .pdf-report-overlay{position:fixed;inset:0;z-index:1200;background:rgba(2,6,14,.94);overflow:auto;padding:18px}
 .pdf-report-toolbar{position:sticky;top:0;z-index:3;max-width:1040px;margin:0 auto 10px;padding:10px 12px;border:1px solid #263650;border-radius:14px;background:rgba(10,16,27,.96);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pdf-report-toolbar-text{font-size:11px;color:#91a3bc;line-height:1.4}
@@ -2055,6 +2062,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .report-export-desc{font-size:10px}
   .report-export-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
   .report-export-actions .btn{width:100%;justify-content:center}
+  .reports-experiment-entry{display:grid;gap:10px;padding:11px 12px}
+  .reports-experiment-entry__actions{justify-content:flex-start}
   .pdf-report-overlay{padding:8px 8px calc(96px + env(safe-area-inset-bottom))}
   .pdf-report-toolbar{display:block;padding:9px}
   .pdf-report-toolbar-actions{display:grid;grid-template-columns:1fr 1fr;margin-top:8px}
@@ -3745,12 +3754,61 @@ try{
 function cloneData(v){ return JSON.parse(JSON.stringify(v ?? null)); }
 const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
+function isReadonlyReportsExperimentalEntryEnabled(){
+  return isLocalTestMode() && !isActiveWalletHostMode();
+}
 function isActiveWalletHostMode(){
   try{
     return (location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('activeWalletHost')==='1' && new URLSearchParams(location.search).get('testMode')==='1';
   }catch(e){
     return false;
   }
+}
+function readonlyReportsExperimentalHostUrl(){
+  try{
+    const url=new URL(location.href);
+    url.searchParams.set('activeWalletHost','1');
+    url.searchParams.set('testMode','1');
+    url.hash='';
+    return url.toString();
+  }catch(e){
+    return `${location.pathname}?activeWalletHost=1&testMode=1`;
+  }
+}
+function readonlyReportsLegacyReturnUrl(){
+  try{
+    const url=new URL(location.href);
+    url.searchParams.delete('activeWalletHost');
+    url.searchParams.set('testMode','1');
+    url.hash='';
+    return url.toString();
+  }catch(e){
+    return `${location.pathname}?testMode=1`;
+  }
+}
+function openReadonlyReportsExperimentalHost(){
+  location.assign(readonlyReportsExperimentalHostUrl());
+}
+function returnFromReadonlyReportsExperimentalHost(){
+  if(window.history.length>1){
+    window.history.back();
+    return;
+  }
+
+  location.assign(readonlyReportsLegacyReturnUrl());
+}
+function installReadonlyReportsExperimentalBanner(targetRoot){
+  if(document.getElementById('readonly-reports-experimental-banner')) return;
+  const banner=document.createElement('section');
+  banner.id='readonly-reports-experimental-banner';
+  banner.className='reports-experiment-entry';
+  banner.setAttribute('aria-labelledby','readonly-reports-experimental-banner-title');
+  banner.innerHTML=`<div><div class="reports-experiment-entry__title" id="readonly-reports-experimental-banner-title">Relatório experimental somente leitura</div><div class="reports-experiment-entry__sub">Host controlado em leitura. Use o retorno para voltar ao legado sem alterar dados.</div></div><div class="reports-experiment-entry__actions"><button class="reports-experiment-entry__button" type="button" onclick="returnFromReadonlyReportsExperimentalHost()">Voltar ao legado</button></div>`;
+  if(targetRoot?.parentNode){
+    targetRoot.parentNode.insertBefore(banner,targetRoot);
+    return;
+  }
+  document.body.appendChild(banner);
 }
 function resetTransientRuntimeState(){
   clearTimeout(S.apSearchTimer);
@@ -4475,6 +4533,7 @@ async function bootstrapExperimentalActiveWalletHost(){
     targetRoot.id='active-wallet-host-root';
     document.body.appendChild(targetRoot);
   }
+  installReadonlyReportsExperimentalBanner(targetRoot);
   const bootstrapPromise = bootstrapHost({
     rootElement: targetRoot,
     legacyModule: legacyReadonlySourceModule,
@@ -17393,6 +17452,17 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
 function reportsTab(){
   const data=reportsSnapshot();
   const completeFormats=['csv','json','pdf'];
+  const experimentalEntry=isReadonlyReportsExperimentalEntryEnabled()
+    ? `<section class="reports-experiment-entry" aria-labelledby="readonly-reports-experimental-title">
+        <div>
+          <div class="reports-experiment-entry__title" id="readonly-reports-experimental-title">Relatório experimental somente leitura</div>
+          <div class="reports-experiment-entry__sub">Abertura controlada em modo local. Abre o host readonly da carteira ativa e permite voltar ao legado sem escrita.</div>
+        </div>
+        <div class="reports-experiment-entry__actions">
+          <button class="reports-experiment-entry__button" type="button" onclick="openReadonlyReportsExperimentalHost()">Abrir relatório experimental</button>
+        </div>
+      </section>`
+    : '';
   const cards=[
     `<article class="report-export-card">
       <div class="report-export-card-head">
@@ -17437,6 +17507,7 @@ function reportsTab(){
       </div>
     </section>
     <section class="reports-grid">${cards}</section>
+    ${experimentalEntry}
     <div class="reports-footnote">CSV usa ponto e vírgula, preserva acentos e abre corretamente no Excel em português. O JSON desta tela é um relatório de consulta; para restaurar dados em outro navegador, use Configurações → Backup e restauração.</div>
   </div>`;
 }

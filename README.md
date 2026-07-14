@@ -38,6 +38,12 @@ Consulte:
 
 [docs/ESTABILIDADE.md](docs/ESTABILIDADE.md)
 
+## ACESSO EXPERIMENTAL
+
+Quando o app roda em `localhost` ou `127.0.0.1` com `testMode=1`, a tela de Relatorios mostra a entrada `Relatório experimental somente leitura`.
+
+Essa entrada abre o host readonly da carteira ativa com `activeWalletHost=1&testMode=1` e inclui retorno explicito ao legado.
+
 ## PRINCIPIOS DO PROJETO
 
 - UX em primeiro lugar.

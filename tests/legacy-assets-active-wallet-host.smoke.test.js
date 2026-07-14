@@ -24,7 +24,6 @@ browserTest('active wallet host smoke navigation', async () => {
   const projectRoot = path.join(__dirname, '..');
   const serverHandle = hostUrl ? null : await startStaticServer(projectRoot);
   const smokeUrl = hostUrl ?? serverHandle.url;
-  hostUrl = smokeUrl;
   const executablePath = resolveBrowserExecutable();
   assert.ok(executablePath, 'Chrome or Edge executable not found for active wallet host smoke test');
 
@@ -72,6 +71,72 @@ browserTest('active wallet host smoke navigation', async () => {
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'real-wallet');
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-refresh-status'), 'idle');
+    });
+  } finally {
+    await browser.close();
+    await new Promise((resolve) => {
+      if (!serverHandle) return resolve();
+      serverHandle.server.close(() => resolve());
+    });
+  }
+});
+
+browserTest('legacy reports experimental entry opens host and returns to legacy', async () => {
+  const projectRoot = path.join(__dirname, '..');
+  const serverHandle = hostUrl ? null : await startStaticServer(projectRoot);
+  const smokeUrl = hostUrl ?? serverHandle.url;
+  const legacyUrl = buildLegacyUrl(smokeUrl);
+  const executablePath = resolveBrowserExecutable();
+  assert.ok(executablePath, 'Chrome or Edge executable not found for legacy entry smoke test');
+
+  const { chromium } = await import('playwright-core');
+  const browser = await chromium.launch({
+    executablePath,
+    headless: true,
+  });
+
+  try {
+    await runViewportScenario(browser, legacyUrl, { width: 1366, height: 768 }, async (page) => {
+      await assertLegacyPageReady(page);
+      await page.evaluate(() => go('relatorios'));
+      await assert.equal(await page.locator('.reports-experiment-entry').count(), 1);
+      await assert.equal(
+        await page.locator('.reports-experiment-entry__title').textContent(),
+        'Relatório experimental somente leitura',
+      );
+
+      await assert.equal(await page.getByRole('button', { name: 'Abrir relatório experimental' }).count(), 1);
+      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
+      await page.locator('#readonly-reports-experimental-banner').waitFor();
+      await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 1);
+      await assert.equal(
+        await page.locator('#readonly-reports-experimental-banner .reports-experiment-entry__title').textContent(),
+        'Relatório experimental somente leitura',
+      );
+      await assert.equal(await page.getByRole('button', { name: 'Voltar ao legado' }).count(), 1);
+      await page.getByRole('button', { name: 'Voltar ao legado' }).click();
+      await page.waitForURL((url) => !url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
+      await page.locator('.hdr-title').waitFor();
+      await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 0);
+      await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
+      await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
+    });
+
+    await runViewportScenario(browser, legacyUrl, { width: 390, height: 844 }, async (page) => {
+      await assertLegacyPageReady(page);
+      await page.evaluate(() => go('relatorios'));
+      await assert.equal(await page.locator('.reports-experiment-entry').count(), 1);
+      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
+      await page.locator('#readonly-reports-experimental-banner').waitFor();
+      await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 1);
+      await page.getByRole('button', { name: 'Voltar ao legado' }).click();
+      await page.waitForURL((url) => !url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
+      await page.locator('.hdr-title').waitFor();
+      await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 0);
+      await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
+      await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
     });
   } finally {
     await browser.close();
@@ -147,6 +212,13 @@ async function assertPageReady(page) {
   assert.equal(await page.evaluate(() => Object.prototype.hasOwnProperty.call(window, 'createLegacyReportsReadonlySource')), false);
 }
 
+async function assertLegacyPageReady(page) {
+  await page.locator('.hdr-title').waitFor();
+  await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
+  await assert.match(await page.locator('.hdr-sub').textContent(), /Modo de teste local/);
+  await assert.equal(await page.locator('.tab').count() >= 7, true);
+}
+
 async function startStaticServer(rootDir) {
   const server = http.createServer(async (req, res) => {
     try {
@@ -177,8 +249,16 @@ async function startStaticServer(rootDir) {
   const { port } = server.address();
   return {
     server,
+    baseUrl: `http://127.0.0.1:${port}/index.html`,
     url: `http://127.0.0.1:${port}/index.html?activeWalletHost=1&testMode=1`,
   };
+}
+
+function buildLegacyUrl(urlLike) {
+  const url = new URL(urlLike);
+  url.searchParams.delete('activeWalletHost');
+  url.searchParams.set('testMode', '1');
+  return url.toString();
 }
 
 function contentType(filePath) {
