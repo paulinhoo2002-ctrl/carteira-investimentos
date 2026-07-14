@@ -92,7 +92,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
   assert.match(hostSourceTs, /buildReportAssetRow/);
   assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);
-  assert.match(hostSourceTs, /loadBuildReportAssetRowModule/);
+  assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
+  assert.equal(hostSourceTs.includes('globalThis'), false);
   assert.match(mountTsx, /export function mountModernApp/);
   assert.match(mountTsx, /WeakMap/);
   assert.match(mountTsx, /Base moderna ja montada neste root\./);

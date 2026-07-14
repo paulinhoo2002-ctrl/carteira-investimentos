@@ -68,6 +68,7 @@ test('host source usa fonte legada readonly real e buildReportAssetRow', async (
   const runtime = createModernReportsRuntime({ reportsSource: source });
   const runtimeSnapshot = runtime.reportsAdapter.getSnapshot();
   assert.deepEqual(runtimeSnapshot, snapshot);
+  assert.notDeepEqual(runtimeSnapshot, createModernReportsRuntime().reportsAdapter.getSnapshot());
   assertDeepFrozen(runtimeSnapshot);
 
   const after = new Set(Object.getOwnPropertyNames(globalThis));

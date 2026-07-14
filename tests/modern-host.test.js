@@ -50,9 +50,10 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
   assert.match(hostSourceTs, /buildReportAssetRow/);
   assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);
-  assert.match(hostSourceTs, /loadBuildReportAssetRowModule/);
   assert.match(hostSourceTs, /legacy\/reports-readonly-source\.js/);
   assert.match(hostSourceTs, /report-asset-row\.js/);
+  assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
+  assert.equal(hostSourceTs.includes('globalThis'), false);
   assert.match(mountTsx, /export function mountModernApp/);
   assert.match(mountTsx, /Elemento root nao encontrado para a base moderna\./);
   assert.match(mountTsx, /Adapter moderno invalido\./);

@@ -133,21 +133,6 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
-async function loadBuildReportAssetRowModule(): Promise<Record<string, unknown> | null> {
-  const hadOwnProperty = Object.prototype.hasOwnProperty.call(globalThis, 'buildReportAssetRow');
-  const previousValue = (globalThis as Record<string, unknown>).buildReportAssetRow;
-
-  try {
-    return await import('../../../report-asset-row.js');
-  } finally {
-    if (hadOwnProperty) {
-      (globalThis as Record<string, unknown>).buildReportAssetRow = previousValue;
-    } else {
-      Reflect.deleteProperty(globalThis, 'buildReportAssetRow');
-    }
-  }
-}
-
 export async function createHostLegacyReportsReadonlySource(
   options: HostLegacyReportsReadonlySourceOptions = {},
 ): Promise<ReadOnlyReportsSource | null> {
@@ -155,7 +140,7 @@ export async function createHostLegacyReportsReadonlySource(
     const legacyModule =
       options.legacyModule === undefined ? await import('../../../legacy/reports-readonly-source.js') : options.legacyModule;
     const buildReportAssetRowModule =
-      options.buildReportAssetRowModule === undefined ? await loadBuildReportAssetRowModule() : options.buildReportAssetRowModule;
+      options.buildReportAssetRowModule === undefined ? await import('../../../report-asset-row.js') : options.buildReportAssetRowModule;
 
     if (!legacyModule || !buildReportAssetRowModule) {
       return null;
