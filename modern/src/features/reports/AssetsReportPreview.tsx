@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react';
 import type { ReportsRefreshController } from './reportsRefreshController';
-import { createConnectedReportsDemoSource } from './legacyReportsReadonlyIntegration.ts';
 import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 
 const trendLabel = {
@@ -42,8 +41,6 @@ interface AssetsReportPreviewContentProps {
   showRefreshButton: boolean;
   snapshot: ReturnType<ReadOnlyReportsAdapter['getSnapshot']>;
 }
-
-const STATIC_REPORTS_SNAPSHOT = createConnectedReportsDemoSource().getSnapshot();
 
 function AssetsReportPreviewContent({ errorMessage, onRefresh, showRefreshButton, snapshot }: AssetsReportPreviewContentProps) {
   return (
@@ -197,12 +194,12 @@ function StaticAssetsReportPreview({ adapter }: { adapter: ReadOnlyReportsAdapte
     <AssetsReportPreviewContent
       errorMessage={null}
       showRefreshButton={false}
-      snapshot={STATIC_REPORTS_SNAPSHOT}
+      snapshot={adapter.getSnapshot()}
     />
   );
 }
 
-function RefreshableAssetsReportPreview({ adapter, refreshController }: AssetsReportPreviewProps) {
+function RefreshableAssetsReportPreview({ refreshController }: AssetsReportPreviewProps) {
   const refreshState = useSyncExternalStore(
     refreshController?.subscribe ?? (() => () => {}),
     refreshController!.getState,
@@ -224,5 +221,5 @@ export function AssetsReportPreview({ adapter, refreshController }: AssetsReport
     return <StaticAssetsReportPreview adapter={adapter} />;
   }
 
-  return <RefreshableAssetsReportPreview adapter={adapter} refreshController={refreshController} />;
+  return <RefreshableAssetsReportPreview refreshController={refreshController} />;
 }

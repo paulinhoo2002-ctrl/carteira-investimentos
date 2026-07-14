@@ -3,6 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
+const React = require('react');
+const { renderToStaticMarkup } = require('react-dom/server');
+const { createServer } = require('vite');
 
 const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
 const integrationModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'legacyReportsReadonlyIntegration.ts');
@@ -128,6 +131,61 @@ test('runtime usa fonte demonstrativa quando origem real nao existe', async () =
     averageVariationPct: 0.14,
   });
   assertFrozenSnapshot(snapshot);
+});
+
+test('preview estatica usa adapter recebido e nao mostra botao experimental', async () => {
+  const customSnapshot = {
+    generatedAt: '2026-07-14T11:00:00.000Z',
+    notice: 'Snapshot customizado do adapter. React nao cria fonte propria.',
+    summary: {
+      totalValue: 1234,
+      itemCount: 1,
+      averageVariationPct: 2.5,
+    },
+    items: [
+      {
+        ticker: 'TEST3',
+        name: 'Teste Tres',
+        category: 'Acao demo',
+        quantity: 1,
+        averagePrice: 10,
+        currentValue: 12,
+        variationPct: 20,
+        allocationPct: 100,
+        trend: 'positive',
+      },
+    ],
+  };
+  let calls = 0;
+  const adapter = {
+    getSnapshot() {
+      calls += 1;
+      return customSnapshot;
+    },
+  };
+
+  const viteServer = await createServer({
+    configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
+    logLevel: 'error',
+    server: { middlewareMode: true },
+  });
+
+  try {
+    const { AssetsReportPreview } = await viteServer.ssrLoadModule('/src/features/reports/AssetsReportPreview.tsx');
+    const html = renderToStaticMarkup(
+      React.createElement(AssetsReportPreview, {
+        adapter,
+      }),
+    );
+
+    assert.equal(calls, 1);
+    assert.match(html, /Snapshot customizado do adapter/);
+    assert.match(html, /Atualizacao ficticia: 2026-07-14T11:00:00.000Z/);
+    assert.equal(html.includes('Atualizar previa'), false);
+    assert.equal(html.includes('button'), false);
+  } finally {
+    await viteServer.close();
+  }
 });
 
 test('runtime substitui fonte demonstrativa por origem simulada valida', async () => {

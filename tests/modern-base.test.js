@@ -165,8 +165,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(reportsIntegrationTs, /createConnectedReportsAdapter/);
   assert.match(reportsPreviewTsx, /Previa somente leitura de Relatorios/);
   assert.match(reportsPreviewTsx, /adapter: ReadOnlyReportsAdapter/);
-  assert.match(reportsPreviewTsx, /STATIC_REPORTS_SNAPSHOT/);
-  assert.match(reportsPreviewTsx, /snapshot=\{refreshState\.snapshot\}/);
+  assert.match(reportsPreviewTsx, /snapshot=\{adapter\.getSnapshot\(\)\}/);
+  assert.match(reportsPreviewTsx, /showRefreshButton=\{false\}/);
   assert.match(reportsPreviewTsx, /snapshot\.notice/);
   assert.match(reportsPreviewTsx, /snapshot\.summary\.totalValue/);
   assert.match(reportsPreviewTsx, /snapshot\.items\.map/);
@@ -222,6 +222,8 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(hostTsx.includes('legacy/reports-readonly-source.js'), false);
   assert.equal(hostTsx.includes('@legacy-reports-readonly-source'), false);
   assert.equal(hostTsx.includes('report-asset-row.js'), false);
+  assert.equal(reportsPreviewTsx.includes('createConnectedReportsDemoSource'), false);
+  assert.equal(reportsPreviewTsx.includes('STATIC_REPORTS_SNAPSHOT'), false);
   assert.equal(mountTsx.includes('legacy/reports-readonly-source.js'), false);
   assert.equal(mountTsx.includes('@legacy-reports-readonly-source'), false);
   assert.equal(mountTsx.includes("from '../App'"), false);
