@@ -14,6 +14,7 @@ const sourceFiles = [
   'src/main.tsx',
   'src/host.tsx',
   'src/bootstrap/mountModernApp.ts',
+  'src/bootstrap/hostLegacyReportsReadonlySource.ts',
   'src/styles.css',
   'src/bootstrap/modernReportsRuntime.ts',
   'src/components/AppHeader.tsx',
@@ -26,12 +27,15 @@ const sourceFiles = [
   'src/types/navigation.ts',
 ];
 
+const hostExperimentalFiles = ['src/bootstrap/hostLegacyReportsReadonlySource.ts'];
+
 function read(relativePath) {
   return fs.readFileSync(path.join(modernRoot, relativePath), 'utf8');
 }
 
 function allSourceText() {
   return sourceFiles
+    .filter((file) => !hostExperimentalFiles.includes(file))
     .filter((file) => file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.css') || file.endsWith('.html') || file.endsWith('.md'))
     .map((file) => read(file))
     .join('\n');
@@ -48,6 +52,7 @@ test('modern shell exists and stays isolated', () => {
   const appTsx = read('src/App.tsx');
   const mainTsx = read('src/main.tsx');
   const hostTsx = read('src/host.tsx');
+  const hostSourceTs = read('src/bootstrap/hostLegacyReportsReadonlySource.ts');
   const mountTsx = read('src/bootstrap/mountModernApp.ts');
   const stylesCss = read('src/styles.css');
   const runtimeTs = read('src/bootstrap/modernReportsRuntime.ts');
@@ -69,6 +74,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(readme, /# Shell moderno isolado/);
   assert.match(readme, /Host experimental/);
   assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
+  assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
+  assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(appTsx, /interface AppProps/);
   assert.match(appTsx, /reportsAdapter: ReadOnlyReportsAdapter/);
   assert.match(appTsx, /adapter=\{reportsAdapter\}/);
@@ -80,7 +87,12 @@ test('modern shell exists and stays isolated', () => {
   assert.match(mainTsx, /AppComponent: App/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /createModernReportsRuntime/);
+  assert.match(hostTsx, /bootstrapHost/);
   assert.match(hostTsx, /AppComponent: App/);
+  assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
+  assert.match(hostSourceTs, /buildReportAssetRow/);
+  assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);
+  assert.match(hostSourceTs, /loadBuildReportAssetRowModule/);
   assert.match(mountTsx, /export function mountModernApp/);
   assert.match(mountTsx, /WeakMap/);
   assert.match(mountTsx, /Base moderna ja montada neste root\./);
@@ -117,6 +129,9 @@ test('modern shell exists and stays isolated', () => {
   assert.match(viteConfigTs, /rollupOptions/);
   assert.match(viteConfigTs, /index: resolve\(rootDir, 'index\.html'\)/);
   assert.match(viteConfigTs, /host: resolve\(rootDir, 'host\.html'\)/);
+  assert.match(viteConfigTs, /server:/);
+  assert.match(viteConfigTs, /fs:\s*\{\s*allow:/);
+  assert.match(viteConfigTs, /resolve\(rootDir, '\.\.'\)/);
   assert.match(headerTsx, /aria-controls="modern-sidebar"/);
   assert.match(headerTsx, /aria-expanded=\{isMenuOpen\}/);
   assert.match(sidebarTsx, /aria-current=\{isActive \? 'page' : undefined\}/);
@@ -154,7 +169,7 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -174,7 +189,7 @@ test('modern shell exists and stays isolated', () => {
     assert.equal(matches, false, `Forbidden reference found: ${forbidden}`);
   }
 
-  for (const file of [appTsx, mainTsx, headerTsx, sidebarTsx, placeholderTsx, reportsPreviewTsx, reportsAdapterTs, navigationTs]) {
+  for (const file of [appTsx, mainTsx, hostTsx, headerTsx, sidebarTsx, placeholderTsx, reportsPreviewTsx, reportsAdapterTs, navigationTs]) {
     assert.equal(/from\s+['"`]\.\.\/\.\.\//.test(file), false, 'Legacy import path found');
     assert.equal(/from\s+['"`]\/(?!node_modules)/.test(file), false, 'Absolute import path found');
   }
@@ -185,6 +200,7 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(mainTsx.includes('@legacy-reports-readonly-source'), false);
   assert.equal(hostTsx.includes('legacy/reports-readonly-source.js'), false);
   assert.equal(hostTsx.includes('@legacy-reports-readonly-source'), false);
+  assert.equal(hostTsx.includes('report-asset-row.js'), false);
   assert.equal(mountTsx.includes('legacy/reports-readonly-source.js'), false);
   assert.equal(mountTsx.includes('@legacy-reports-readonly-source'), false);
   assert.equal(mountTsx.includes("from '../App'"), false);
@@ -207,6 +223,18 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(reportsIntegrationTs.includes('totalValueCalculator'), false);
   assert.equal(reportsIntegrationTs.includes('averageVariationPctCalculator'), false);
   assert.equal(reportsIntegrationTs.includes('allocationPctCalculator'), false);
+  assert.equal(hostSourceTs.includes('localStorage'), false);
+  assert.equal(hostSourceTs.includes('sessionStorage'), false);
+  assert.equal(hostSourceTs.includes('indexedDB'), false);
+  assert.equal(hostSourceTs.includes('firebase'), false);
+  assert.equal(hostSourceTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(hostSourceTs), false);
+  assert.equal(hostSourceTs.includes('backup'), false);
+  assert.equal(hostSourceTs.includes('document'), false);
+  assert.equal(hostSourceTs.includes('window'), false);
+  assert.equal(hostSourceTs.includes('postMessage'), false);
+  assert.equal(hostSourceTs.includes('BroadcastChannel'), false);
+  assert.equal(hostSourceTs.includes('CustomEvent'), false);
   assert.equal(mountTsx.includes('globalThis'), false);
   assert.equal(mountTsx.includes('localStorage'), false);
   assert.equal(mountTsx.includes('sessionStorage'), false);

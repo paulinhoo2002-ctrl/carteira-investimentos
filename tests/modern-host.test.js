@@ -6,6 +6,14 @@ const test = require('node:test');
 
 const hostHtmlPath = path.join(__dirname, '..', 'modern', 'host.html');
 const hostModulePath = path.join(__dirname, '..', 'modern', 'src', 'host.tsx');
+const hostSourceModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'bootstrap',
+  'hostLegacyReportsReadonlySource.ts',
+);
 const mountModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'mountModernApp.ts');
 const runtimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernReportsRuntime.ts');
 const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
@@ -27,15 +35,24 @@ test('host experimental exists and keeps modern app isolated', () => {
 
   const hostHtml = fs.readFileSync(hostHtmlPath, 'utf8');
   const hostTsx = fs.readFileSync(hostModulePath, 'utf8');
+  const hostSourceTs = fs.readFileSync(hostSourceModulePath, 'utf8');
   const mountTsx = fs.readFileSync(mountModulePath, 'utf8');
   const runtimeTs = fs.readFileSync(runtimeModulePath, 'utf8');
   const appTsx = fs.readFileSync(appModulePath, 'utf8');
 
   assert.match(hostHtml, /Host experimental/);
   assert.match(hostHtml, /src="\/src\/host\.tsx"/);
+  assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
+  assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /createModernReportsRuntime/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /AppComponent: App/);
+  assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
+  assert.match(hostSourceTs, /buildReportAssetRow/);
+  assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);
+  assert.match(hostSourceTs, /loadBuildReportAssetRowModule/);
+  assert.match(hostSourceTs, /legacy\/reports-readonly-source\.js/);
+  assert.match(hostSourceTs, /report-asset-row\.js/);
   assert.match(mountTsx, /export function mountModernApp/);
   assert.match(mountTsx, /Elemento root nao encontrado para a base moderna\./);
   assert.match(mountTsx, /Adapter moderno invalido\./);
@@ -55,15 +72,18 @@ test('host experimental exists and keeps modern app isolated', () => {
     'indexedDB',
     'firebase',
     'auth',
-    'sync',
+    /\bsync\b/,
     'backup',
     'postMessage',
     'BroadcastChannel',
     'CustomEvent',
     'window.',
   ]) {
-    assert.equal(hostTsx.includes(forbidden), false, `Forbidden host reference found: ${forbidden}`);
-    assert.equal(mountTsx.includes(forbidden), false, `Forbidden mount reference found: ${forbidden}`);
+    const matchesHost = forbidden instanceof RegExp ? forbidden.test(hostTsx) : hostTsx.includes(forbidden);
+    const matchesMount = forbidden instanceof RegExp ? forbidden.test(mountTsx) : mountTsx.includes(forbidden);
+
+    assert.equal(matchesHost, false, `Forbidden host reference found: ${forbidden}`);
+    assert.equal(matchesMount, false, `Forbidden mount reference found: ${forbidden}`);
   }
 
   assert.equal(hostTsx.includes('document.getElementById'), true);
@@ -71,6 +91,13 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(mountTsx.includes('window'), false);
   assert.equal(mountTsx.includes("from '../App'"), false);
   assert.equal(appTsx.includes('legacyReportsReadonlyIntegration'), false);
+  assert.equal(hostSourceTs.includes('localStorage'), false);
+  assert.equal(hostSourceTs.includes('sessionStorage'), false);
+  assert.equal(hostSourceTs.includes('indexedDB'), false);
+  assert.equal(hostSourceTs.includes('firebase'), false);
+  assert.equal(hostSourceTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(hostSourceTs), false);
+  assert.equal(hostSourceTs.includes('backup'), false);
 });
 
 test('mountModernApp controlled errors and repeat mount guard', async () => {

@@ -20,7 +20,7 @@ npm run build:modern
 http://127.0.0.1:4173/host.html
 ```
 
-O host compartilha o mesmo shell moderno, mas fica fora do fluxo principal.
+O host compartilha o mesmo shell moderno, mas fica fora do fluxo principal. Ele usa a fonte legada readonly real somente nesse entrypoint experimental e cai para a fonte demonstrativa se a carga falhar.
 
 ## Observacoes
 

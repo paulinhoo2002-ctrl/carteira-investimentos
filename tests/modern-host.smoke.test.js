@@ -136,6 +136,8 @@ async function assertPageReady(page) {
   await page.locator('.sidebar__item').count().then((count) => {
     assert.equal(count, 7);
   });
+  assert.equal(await page.evaluate(() => Object.prototype.hasOwnProperty.call(window, 'buildReportAssetRow')), false);
+  assert.equal(await page.evaluate(() => Object.prototype.hasOwnProperty.call(window, 'createLegacyReportsReadonlySource')), false);
 }
 
 async function assertReportsPreview(page) {
