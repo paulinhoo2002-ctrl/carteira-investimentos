@@ -14,6 +14,14 @@ npm run dev:modern
 npm run build:modern
 ```
 
+## Host experimental
+
+```bash
+http://127.0.0.1:4173/host.html
+```
+
+O host compartilha o mesmo shell moderno, mas fica fora do fluxo principal.
+
 ## Observacoes
 
 - esta base nao le dados reais da carteira;

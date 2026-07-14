@@ -8,6 +8,7 @@ const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features',
 const integrationModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'legacyReportsReadonlyIntegration.ts');
 const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
 const mainModulePath = path.join(__dirname, '..', 'modern', 'src', 'main.tsx');
+const mountModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'mountModernApp.ts');
 const runtimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernReportsRuntime.ts');
 const viteConfigPath = path.join(__dirname, '..', 'modern', 'vite.config.ts');
 
@@ -119,7 +120,13 @@ test('runtime usa fonte demonstrativa quando origem real nao existe', async () =
   const runtime = createModernReportsRuntime();
   const snapshot = runtime.reportsAdapter.getSnapshot();
 
-  assert.deepEqual(snapshot, createValidSnapshot());
+  assert.equal(snapshot.generatedAt, '2026-07-14T10:30:00.000Z');
+  assert.equal(snapshot.notice, 'Snapshot legado somente leitura. React nao escreve na fonte.');
+  assert.deepEqual(snapshot.summary, {
+    totalValue: 900,
+    itemCount: 3,
+    averageVariationPct: 0.14,
+  });
   assertFrozenSnapshot(snapshot);
 });
 
@@ -235,6 +242,7 @@ test('mutacao posterior na fonte nao altera snapshot do React', async () => {
 
 test('runtime e react nao importam legado nem reintroduzem calculos', async () => {
   const runtimeText = fs.readFileSync(runtimeModulePath, 'utf8');
+  const mountText = fs.readFileSync(mountModulePath, 'utf8');
   const sourceText = fs.readFileSync(integrationModulePath, 'utf8');
   const appText = fs.readFileSync(appModulePath, 'utf8');
   const mainText = fs.readFileSync(mainModulePath, 'utf8');
@@ -262,15 +270,18 @@ test('runtime e react nao importam legado nem reintroduzem calculos', async () =
     const matchesIntegration = forbidden instanceof RegExp ? forbidden.test(sourceText) : sourceText.includes(forbidden);
     const matchesApp = forbidden instanceof RegExp ? forbidden.test(appText) : appText.includes(forbidden);
     const matchesMain = forbidden instanceof RegExp ? forbidden.test(mainText) : mainText.includes(forbidden);
+    const matchesMount = forbidden instanceof RegExp ? forbidden.test(mountText) : mountText.includes(forbidden);
     assert.equal(matchesRuntime, false, `Forbidden reference found in runtime: ${forbidden}`);
     assert.equal(matchesIntegration, false, `Forbidden reference found in integration: ${forbidden}`);
     assert.equal(matchesApp, false, `Forbidden reference found in app: ${forbidden}`);
     assert.equal(matchesMain, false, `Forbidden reference found in main: ${forbidden}`);
+    assert.equal(matchesMount, false, `Forbidden reference found in mount: ${forbidden}`);
   }
 
   for (const forbidden of ['document', 'window']) {
     assert.equal(runtimeText.includes(forbidden), false, `Forbidden reference found in runtime: ${forbidden}`);
     assert.equal(sourceText.includes(forbidden), false, `Forbidden reference found in integration: ${forbidden}`);
+    assert.equal(mountText.includes(forbidden), false, `Forbidden reference found in mount: ${forbidden}`);
   }
 
   const viteText = fs.readFileSync(viteConfigPath, 'utf8');
@@ -279,11 +290,22 @@ test('runtime e react nao importam legado nem reintroduzem calculos', async () =
   assert.match(appText, /reportsAdapter: ReadOnlyReportsAdapter/);
   assert.match(mainText, /createModernReportsRuntime/);
   assert.match(mainText, /const modernReportsRuntime = createModernReportsRuntime\(\);/);
-  assert.match(mainText, /App reportsAdapter=\{modernReportsRuntime\.reportsAdapter\}/);
+  assert.match(mainText, /mountModernApp\(\{/);
+  assert.match(mainText, /AppComponent: App/);
+  assert.match(mountText, /export function mountModernApp/);
+  assert.match(mountText, /Base moderna ja montada neste root\./);
+  assert.match(mountText, /Adapter moderno invalido\./);
+  assert.match(mountText, /Componente moderno invalido\./);
+  assert.match(mountText, /Elemento root nao encontrado para a base moderna\./);
   assert.match(runtimeText, /createConnectedReportsAdapter/);
   assert.match(runtimeText, /createConnectedReportsDemoSource/);
   assert.match(runtimeText, /reportsSource \?\? createConnectedReportsDemoSource\(\)/);
   assert.equal(appText.includes('legacyReportsReadonlyIntegration'), false);
+  assert.equal(mainText.includes('createRoot'), false);
+  assert.equal(mainText.includes('App reportsAdapter={modernReportsRuntime.reportsAdapter}'), false);
+  assert.equal(mountText.includes('legacy/reports-readonly-source.js'), false);
+  assert.equal(mountText.includes('globalThis'), false);
+  assert.equal(mountText.includes("from '../App'"), false);
 
   assert.equal(viteText.includes('@legacy-reports-readonly-source'), false);
   assert.equal(viteText.includes('optimizeDeps'), false);
