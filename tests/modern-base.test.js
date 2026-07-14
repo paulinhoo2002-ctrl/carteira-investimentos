@@ -43,6 +43,7 @@ test('modern shell exists and stays isolated', () => {
   const appTsx = read('src/App.tsx');
   const mainTsx = read('src/main.tsx');
   const stylesCss = read('src/styles.css');
+  const viteConfigTs = read('vite.config.ts');
   const headerTsx = read('src/components/AppHeader.tsx');
   const sidebarTsx = read('src/components/Sidebar.tsx');
   const placeholderTsx = read('src/components/PagePlaceholder.tsx');
@@ -58,7 +59,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(readme, /# Shell moderno isolado/);
   assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
   assert.match(appTsx, /createConnectedReportsAdapter/);
-  assert.match(appTsx, /useState\(\(\) => createConnectedReportsAdapter\(\)\)/);
+  assert.match(appTsx, /createConnectedReportsDemoSource/);
+  assert.match(appTsx, /useState\(\(\) => createConnectedReportsAdapter\(createConnectedReportsDemoSource\(\)\)\)/);
   assert.match(appTsx, /adapter=\{reportsAdapter\}/);
   assert.match(appTsx, /activePageId === 'reports'/);
   assert.match(mainTsx, /createRoot/);
@@ -82,6 +84,10 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(stylesCss.includes('url('), false);
   assert.equal(stylesCss.includes('--shell-bg'), false);
   assert.equal(stylesCss.includes('--panel-bg'), false);
+  assert.equal(viteConfigTs.includes('@legacy-reports-readonly-source'), false);
+  assert.equal(viteConfigTs.includes('optimizeDeps'), false);
+  assert.equal(viteConfigTs.includes("target: 'esnext'"), false);
+  assert.equal(viteConfigTs.includes("base: './'"), false);
   assert.match(headerTsx, /aria-controls="modern-sidebar"/);
   assert.match(headerTsx, /aria-expanded=\{isMenuOpen\}/);
   assert.match(sidebarTsx, /aria-current=\{isActive \? 'page' : undefined\}/);
@@ -98,8 +104,7 @@ test('modern shell exists and stays isolated', () => {
   assert.match(reportsIntegrationTs, /createLegacyReportsReadonlyBoundary/);
   assert.match(reportsIntegrationTs, /createConnectedReportsBridge/);
   assert.match(reportsIntegrationTs, /createConnectedReportsAdapter/);
-  assert.match(reportsIntegrationTs, /LEGACY_REPORTS_READONLY_FIXTURE/);
-  assert.match(reportsIntegrationTs, /createLegacyReportsReadonlySource/);
+  assert.match(reportsIntegrationTs, /createConnectedReportsDemoSource/);
   assert.match(reportsPreviewTsx, /Previa somente leitura de Relatorios/);
   assert.match(reportsPreviewTsx, /adapter: ReadOnlyReportsAdapter/);
   assert.match(reportsPreviewTsx, /const snapshot = adapter.getSnapshot\(\)/);
@@ -146,6 +151,8 @@ test('modern shell exists and stays isolated', () => {
     assert.equal(/from\s+['"`]\/(?!node_modules)/.test(file), false, 'Absolute import path found');
   }
 
+  assert.equal(reportsIntegrationTs.includes('legacy/reports-readonly-source.js'), false);
+  assert.equal(reportsIntegrationTs.includes('@legacy-reports-readonly-source'), false);
   assert.equal(reportsIntegrationTs.includes('globalThis'), false);
   assert.equal(reportsIntegrationTs.includes('localStorage'), false);
   assert.equal(reportsIntegrationTs.includes('sessionStorage'), false);

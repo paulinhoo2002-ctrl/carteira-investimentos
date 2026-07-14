@@ -4,108 +4,109 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
-const legacySourceModulePath = path.join(__dirname, '..', 'legacy', 'reports-readonly-source.js');
 const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
 const integrationModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'legacyReportsReadonlyIntegration.ts');
+const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
+const viteConfigPath = path.join(__dirname, '..', 'modern', 'vite.config.ts');
 
-const { createLegacyReportsReadonlySource, LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT } = require(legacySourceModulePath);
+async function loadBridgeModule() {
+  return import(pathToFileURL(bridgeModulePath).href);
+}
 
 async function loadIntegrationModule() {
   return import(pathToFileURL(integrationModulePath).href);
 }
 
-async function loadBridgeModule() {
-  return import(pathToFileURL(bridgeModulePath).href);
+function createValidSnapshot() {
+  return {
+    generatedAt: '2026-07-14T10:30:00.000Z',
+    notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
+    summary: {
+      totalValue: 900,
+      itemCount: 3,
+      averageVariationPct: 0.14,
+    },
+    items: [
+      {
+        ticker: 'PETR4',
+        name: 'Petrobras',
+        category: 'Acao demo',
+        quantity: 10,
+        averagePrice: 20,
+        currentValue: 250,
+        variationPct: 25,
+        allocationPct: 27.78,
+        trend: 'positive',
+      },
+      {
+        ticker: 'MXRF11',
+        name: 'Maxi Renda',
+        category: 'FII demo',
+        quantity: 5,
+        averagePrice: 100,
+        currentValue: 450,
+        variationPct: -10,
+        allocationPct: 50,
+        trend: 'negative',
+      },
+      {
+        ticker: 'BOVA11',
+        name: 'BOVA',
+        category: 'ETF demo',
+        quantity: 2,
+        averagePrice: 100,
+        currentValue: 200,
+        variationPct: 0,
+        allocationPct: 22.22,
+        trend: 'neutral',
+      },
+    ],
+  };
+}
+
+function createSnapshotSource(snapshot) {
+  return {
+    getSnapshot() {
+      return snapshot;
+    },
+  };
 }
 
 function assertFrozenSnapshot(snapshot) {
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
+
   for (const item of snapshot.items) {
     assert.equal(Object.isFrozen(item), true);
   }
 }
 
-function makeLegacySourceFixture() {
-  return createLegacyReportsReadonlySource({
-    getGeneratedAt() {
-      return '2026-07-14T10:30:00.000Z';
-    },
-    assetAppliedValue(asset) {
-      return Number(asset.qty) * Number(asset.avg_price);
-    },
-    assetCurrentValue(asset) {
-      return Number(asset.qty) * Number(asset.current_price);
-    },
-    buildReportAssetRow(asset, deps) {
-      const applied = deps.assetAppliedValue(asset);
-      const current = deps.assetCurrentValue(asset);
-      const result = current - applied;
-
-      return {
-        ticker: String(asset.ticker || '').trim(),
-        name: String(asset.name || asset.ticker || '').trim(),
-        type: String(asset.type || '').trim(),
-        qty: Number(asset.qty),
-        avgPrice: Number(asset.avg_price),
-        current: Number(current),
-        resultPct: applied > 0 ? (result / applied) * 100 : 0,
-      };
-    },
-    getAssets() {
-      return [
-        {
-          ticker: 'PETR4',
-          name: 'Petrobras',
-          type: 'Ação',
-          qty: 10,
-          avg_price: 20,
-          current_price: 25,
-        },
-        {
-          ticker: 'MXRF11',
-          name: 'Maxi Renda',
-          type: 'FII',
-          qty: 5,
-          avg_price: 100,
-          current_price: 90,
-        },
-        {
-          ticker: 'BOVA11',
-          name: 'BOVA',
-          type: 'ETF',
-          qty: 2,
-          avg_price: 100,
-          current_price: 100,
-        },
-      ];
-    },
-  });
-}
-
-test('integracao aceita fonte legada valida e entrega snapshot congelado', async () => {
+test('fonte fake valida percorre boundary, bridge e adapter', async () => {
   const {
     createLegacyReportsReadonlyBoundary,
     createConnectedReportsBridge,
     createConnectedReportsAdapter,
-    LEGACY_REPORTS_READONLY_FIXTURE,
+    createConnectedReportsDemoSource,
   } = await loadIntegrationModule();
 
-  const boundary = createLegacyReportsReadonlyBoundary(makeLegacySourceFixture());
-  const bridge = createConnectedReportsBridge(makeLegacySourceFixture());
-  const adapter = createConnectedReportsAdapter(makeLegacySourceFixture());
+  const sourceSnapshot = createValidSnapshot();
+  const source = createSnapshotSource(sourceSnapshot);
+
+  assert.deepEqual(createConnectedReportsDemoSource().getSnapshot(), createValidSnapshot());
+
+  const boundary = createLegacyReportsReadonlyBoundary(source);
+  const bridge = createConnectedReportsBridge(source);
+  const adapter = createConnectedReportsAdapter(source);
 
   const boundarySnapshot = boundary.getSnapshot();
   const bridgeSnapshot = bridge.readSnapshot();
   const adapterSnapshot = adapter.getSnapshot();
 
-  assert.equal(Array.isArray(LEGACY_REPORTS_READONLY_FIXTURE), true);
-  assert.equal(boundarySnapshot.items.length, 3);
-  assert.equal(bridgeSnapshot.summary.totalValue, 900);
-  assert.equal(adapterSnapshot.summary.itemCount, 3);
-  assert.deepEqual(adapterSnapshot.items.map((item) => item.category), ['Acao demo', 'FII demo', 'ETF demo']);
-  assert.deepEqual(adapterSnapshot.items.map((item) => item.trend), ['positive', 'negative', 'neutral']);
+  assert.deepEqual(boundarySnapshot, sourceSnapshot);
+  assert.deepEqual(bridgeSnapshot, sourceSnapshot);
+  assert.deepEqual(adapterSnapshot, sourceSnapshot);
+  assert.notEqual(adapterSnapshot, sourceSnapshot);
   assertFrozenSnapshot(adapterSnapshot);
 });
 
@@ -124,13 +125,9 @@ test('fonte ausente usa fallback', async () => {
 
 test('fonte que retorna null ou lança excecao usa fallback', async () => {
   const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT } = await loadBridgeModule();
-  const { createLegacyReportsReadonlyBoundary, createConnectedReportsBridge, createConnectedReportsAdapter } = await loadIntegrationModule();
+  const { createConnectedReportsBridge, createConnectedReportsAdapter } = await loadIntegrationModule();
 
-  const nullSource = {
-    getSnapshot() {
-      return null;
-    },
-  };
+  const nullSource = createSnapshotSource(null);
   const throwingSource = {
     getSnapshot() {
       throw new Error('boom');
@@ -141,39 +138,27 @@ test('fonte que retorna null ou lança excecao usa fallback', async () => {
   assert.deepEqual(createConnectedReportsAdapter(nullSource).getSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
   assert.deepEqual(createConnectedReportsBridge(throwingSource).readSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
   assert.deepEqual(createConnectedReportsAdapter(throwingSource).getSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
-  assert.equal(createLegacyReportsReadonlyBoundary(nullSource).getSnapshot(), null);
 });
 
 test('snapshot invalido usa fallback', async () => {
   const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT } = await loadBridgeModule();
-  const { createLegacyReportsReadonlyBoundary, createConnectedReportsBridge, createConnectedReportsAdapter } = await loadIntegrationModule();
+  const { createConnectedReportsBridge, createConnectedReportsAdapter } = await loadIntegrationModule();
 
-  const invalidSource = {
-    getSnapshot() {
-      return {
-        generatedAt: '15/07/2026, 10:30',
-        notice: 'invalido',
-        summary: { totalValue: NaN, itemCount: 1, averageVariationPct: Infinity },
-        items: [{ ticker: '', name: '', category: 'Cripto demo' }],
-      };
-    },
-  };
+  const invalidSource = createSnapshotSource({
+    generatedAt: '15/07/2026, 10:30',
+    notice: 'invalido',
+    summary: { totalValue: NaN, itemCount: 1, averageVariationPct: Infinity },
+    items: [{ ticker: '', name: '', category: 'Cripto demo' }],
+  });
 
   assert.deepEqual(createConnectedReportsBridge(invalidSource).readSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
   assert.deepEqual(createConnectedReportsAdapter(invalidSource).getSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
-
-  const boundary = createLegacyReportsReadonlyBoundary(invalidSource);
-  assert.deepEqual(boundary.getSnapshot(), invalidSource.getSnapshot());
 });
 
 test('mutacao posterior na fonte nao altera snapshot do React', async () => {
   const { createConnectedReportsAdapter } = await loadIntegrationModule();
-  const sourceSnapshot = makeLegacySourceFixture().getSnapshot();
-  const source = {
-    getSnapshot() {
-      return sourceSnapshot;
-    },
-  };
+  const sourceSnapshot = createValidSnapshot();
+  const source = createSnapshotSource(sourceSnapshot);
   const adapter = createConnectedReportsAdapter(source);
 
   const snapshot = adapter.getSnapshot();
@@ -187,24 +172,18 @@ test('mutacao posterior na fonte nao altera snapshot do React', async () => {
   assertFrozenSnapshot(snapshot);
 });
 
-test('integracao nao polui globalThis nem duplica calculos', async () => {
-  const before = new Set(Object.getOwnPropertyNames(globalThis));
-  const module = await loadIntegrationModule();
-  const after = new Set(Object.getOwnPropertyNames(globalThis));
+test('integracao nao importa legado nem reintroduz calculos', async () => {
   const sourceText = fs.readFileSync(integrationModulePath, 'utf8');
 
-  for (const name of [
-    'createLegacyReportsReadonlyBoundary',
-    'createConnectedReportsBridge',
-    'createConnectedReportsAdapter',
-    'LEGACY_REPORTS_READONLY_FIXTURE',
-  ]) {
-    assert.equal(before.has(name), false);
-    assert.equal(after.has(name), false);
-  }
-
-  assert.equal(typeof module.createConnectedReportsAdapter, 'function');
   for (const forbidden of [
+    'legacy/reports-readonly-source.js',
+    '@legacy-reports-readonly-source',
+    'globalThis',
+    'assetAppliedValue',
+    'assetCurrentValue',
+    'totalValueCalculator',
+    'averageVariationPctCalculator',
+    'allocationPctCalculator',
     'localStorage',
     'sessionStorage',
     'indexedDB',
@@ -216,14 +195,23 @@ test('integracao nao polui globalThis nem duplica calculos', async () => {
     'backup',
     'document',
     'window',
-    'globalThis',
-    'assetAppliedValue',
-    'assetCurrentValue',
-    'totalValueCalculator',
-    'averageVariationPctCalculator',
-    'allocationPctCalculator',
   ]) {
     const matches = forbidden instanceof RegExp ? forbidden.test(sourceText) : sourceText.includes(forbidden);
     assert.equal(matches, false, `Forbidden reference found: ${forbidden}`);
   }
+});
+
+test('App recebe apenas adaptador moderno e vite sem alias legado', () => {
+  const appText = fs.readFileSync(appModulePath, 'utf8');
+  const viteText = fs.readFileSync(viteConfigPath, 'utf8');
+
+  assert.match(appText, /createConnectedReportsAdapter\(createConnectedReportsDemoSource\(\)\)/);
+  assert.match(appText, /AssetsReportPreview adapter=\{reportsAdapter\}/);
+  assert.equal(appText.includes('legacy/reports-readonly-source.js'), false);
+  assert.equal(appText.includes('@legacy-reports-readonly-source'), false);
+
+  assert.equal(viteText.includes('@legacy-reports-readonly-source'), false);
+  assert.equal(viteText.includes('optimizeDeps'), false);
+  assert.equal(viteText.includes("target: 'esnext'"), false);
+  assert.equal(viteText.includes("base: './'"), false);
 });
