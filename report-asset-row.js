@@ -3,7 +3,9 @@
   if (typeof module === 'object' && module.exports) {
     module.exports = api;
   }
-  root.buildReportAssetRow = api.buildReportAssetRow;
+  if (typeof document !== 'undefined' && document.currentScript) {
+    root.buildReportAssetRow = api.buildReportAssetRow;
+  }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function() {
   function buildReportAssetRow(asset, deps) {
     const applied = deps.assetAppliedValue(asset);

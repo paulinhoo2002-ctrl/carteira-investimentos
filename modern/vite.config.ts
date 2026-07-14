@@ -8,6 +8,11 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   root: 'modern',
   plugins: [react()],
+  server: {
+    fs: {
+      allow: [resolve(rootDir, '..')],
+    },
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
