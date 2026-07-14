@@ -12,6 +12,7 @@ const sourceFiles = [
   'src/App.tsx',
   'src/main.tsx',
   'src/styles.css',
+  'src/bootstrap/modernReportsRuntime.ts',
   'src/components/AppHeader.tsx',
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
@@ -43,6 +44,7 @@ test('modern shell exists and stays isolated', () => {
   const appTsx = read('src/App.tsx');
   const mainTsx = read('src/main.tsx');
   const stylesCss = read('src/styles.css');
+  const runtimeTs = read('src/bootstrap/modernReportsRuntime.ts');
   const viteConfigTs = read('vite.config.ts');
   const headerTsx = read('src/components/AppHeader.tsx');
   const sidebarTsx = read('src/components/Sidebar.tsx');
@@ -58,12 +60,17 @@ test('modern shell exists and stays isolated', () => {
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
   assert.match(readme, /# Shell moderno isolado/);
   assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
-  assert.match(appTsx, /createConnectedReportsAdapter/);
-  assert.match(appTsx, /createConnectedReportsDemoSource/);
-  assert.match(appTsx, /useState\(\(\) => createConnectedReportsAdapter\(createConnectedReportsDemoSource\(\)\)\)/);
+  assert.match(appTsx, /interface AppProps/);
+  assert.match(appTsx, /reportsAdapter: ReadOnlyReportsAdapter/);
   assert.match(appTsx, /adapter=\{reportsAdapter\}/);
   assert.match(appTsx, /activePageId === 'reports'/);
+  assert.match(mainTsx, /createModernReportsRuntime/);
+  assert.match(mainTsx, /const modernReportsRuntime = createModernReportsRuntime\(\);/);
+  assert.match(mainTsx, /App reportsAdapter=\{modernReportsRuntime\.reportsAdapter\}/);
   assert.match(mainTsx, /createRoot/);
+  assert.match(runtimeTs, /createConnectedReportsAdapter/);
+  assert.match(runtimeTs, /createConnectedReportsDemoSource/);
+  assert.match(runtimeTs, /reportsSource \?\? createConnectedReportsDemoSource\(\)/);
   assert.match(stylesCss, /\.modern-menu-button:focus-visible/);
   assert.match(stylesCss, /--color-background:/);
   assert.match(stylesCss, /--color-surface:/);
@@ -104,7 +111,6 @@ test('modern shell exists and stays isolated', () => {
   assert.match(reportsIntegrationTs, /createLegacyReportsReadonlyBoundary/);
   assert.match(reportsIntegrationTs, /createConnectedReportsBridge/);
   assert.match(reportsIntegrationTs, /createConnectedReportsAdapter/);
-  assert.match(reportsIntegrationTs, /createConnectedReportsDemoSource/);
   assert.match(reportsPreviewTsx, /Previa somente leitura de Relatorios/);
   assert.match(reportsPreviewTsx, /adapter: ReadOnlyReportsAdapter/);
   assert.match(reportsPreviewTsx, /const snapshot = adapter.getSnapshot\(\)/);
@@ -151,6 +157,12 @@ test('modern shell exists and stays isolated', () => {
     assert.equal(/from\s+['"`]\/(?!node_modules)/.test(file), false, 'Absolute import path found');
   }
 
+  assert.equal(appTsx.includes('legacy/reports-readonly-source.js'), false);
+  assert.equal(appTsx.includes('@legacy-reports-readonly-source'), false);
+  assert.equal(mainTsx.includes('legacy/reports-readonly-source.js'), false);
+  assert.equal(mainTsx.includes('@legacy-reports-readonly-source'), false);
+  assert.equal(runtimeTs.includes('legacy/reports-readonly-source.js'), false);
+  assert.equal(runtimeTs.includes('@legacy-reports-readonly-source'), false);
   assert.equal(reportsIntegrationTs.includes('legacy/reports-readonly-source.js'), false);
   assert.equal(reportsIntegrationTs.includes('@legacy-reports-readonly-source'), false);
   assert.equal(reportsIntegrationTs.includes('globalThis'), false);

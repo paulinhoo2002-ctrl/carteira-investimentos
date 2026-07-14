@@ -7,6 +7,8 @@ const test = require('node:test');
 const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
 const integrationModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'legacyReportsReadonlyIntegration.ts');
 const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
+const mainModulePath = path.join(__dirname, '..', 'modern', 'src', 'main.tsx');
+const runtimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernReportsRuntime.ts');
 const viteConfigPath = path.join(__dirname, '..', 'modern', 'vite.config.ts');
 
 async function loadBridgeModule() {
@@ -15,6 +17,10 @@ async function loadBridgeModule() {
 
 async function loadIntegrationModule() {
   return import(pathToFileURL(integrationModulePath).href);
+}
+
+async function loadRuntimeModule() {
+  return import(pathToFileURL(runtimeModulePath).href);
 }
 
 function createValidSnapshot() {
@@ -82,18 +88,15 @@ function assertFrozenSnapshot(snapshot) {
   }
 }
 
-test('fonte fake valida percorre boundary, bridge e adapter', async () => {
+test('composicao aceita fonte simulada e percorre boundary, bridge e adapter', async () => {
   const {
     createLegacyReportsReadonlyBoundary,
     createConnectedReportsBridge,
     createConnectedReportsAdapter,
-    createConnectedReportsDemoSource,
   } = await loadIntegrationModule();
 
   const sourceSnapshot = createValidSnapshot();
   const source = createSnapshotSource(sourceSnapshot);
-
-  assert.deepEqual(createConnectedReportsDemoSource().getSnapshot(), createValidSnapshot());
 
   const boundary = createLegacyReportsReadonlyBoundary(source);
   const bridge = createConnectedReportsBridge(source);
@@ -108,6 +111,31 @@ test('fonte fake valida percorre boundary, bridge e adapter', async () => {
   assert.deepEqual(adapterSnapshot, sourceSnapshot);
   assert.notEqual(adapterSnapshot, sourceSnapshot);
   assertFrozenSnapshot(adapterSnapshot);
+});
+
+test('runtime usa fonte demonstrativa quando origem real nao existe', async () => {
+  const { createModernReportsRuntime } = await loadRuntimeModule();
+
+  const runtime = createModernReportsRuntime();
+  const snapshot = runtime.reportsAdapter.getSnapshot();
+
+  assert.deepEqual(snapshot, createValidSnapshot());
+  assertFrozenSnapshot(snapshot);
+});
+
+test('runtime substitui fonte demonstrativa por origem simulada valida', async () => {
+  const { createModernReportsRuntime } = await loadRuntimeModule();
+
+  const sourceSnapshot = createValidSnapshot();
+  const runtime = createModernReportsRuntime({
+    reportsSource: createSnapshotSource(sourceSnapshot),
+  });
+
+  const snapshot = runtime.reportsAdapter.getSnapshot();
+
+  assert.deepEqual(snapshot, sourceSnapshot);
+  assert.notEqual(snapshot, sourceSnapshot);
+  assertFrozenSnapshot(snapshot);
 });
 
 test('fonte ausente usa fallback', async () => {
@@ -140,6 +168,21 @@ test('fonte que retorna null ou lança excecao usa fallback', async () => {
   assert.deepEqual(createConnectedReportsAdapter(throwingSource).getSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
 });
 
+test('runtime usa fallback quando origem falha', async () => {
+  const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT } = await loadBridgeModule();
+  const { createModernReportsRuntime } = await loadRuntimeModule();
+
+  const runtime = createModernReportsRuntime({
+    reportsSource: {
+      getSnapshot() {
+        throw new Error('boom');
+      },
+    },
+  });
+
+  assert.deepEqual(runtime.reportsAdapter.getSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
+});
+
 test('snapshot invalido usa fallback', async () => {
   const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT } = await loadBridgeModule();
   const { createConnectedReportsBridge, createConnectedReportsAdapter } = await loadIntegrationModule();
@@ -153,6 +196,24 @@ test('snapshot invalido usa fallback', async () => {
 
   assert.deepEqual(createConnectedReportsBridge(invalidSource).readSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
   assert.deepEqual(createConnectedReportsAdapter(invalidSource).getSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
+});
+
+test('snapshot final e mutacao posterior na origem permanecem seguros no runtime', async () => {
+  const { createModernReportsRuntime } = await loadRuntimeModule();
+  const sourceSnapshot = createValidSnapshot();
+  const runtime = createModernReportsRuntime({
+    reportsSource: createSnapshotSource(sourceSnapshot),
+  });
+
+  const snapshot = runtime.reportsAdapter.getSnapshot();
+  sourceSnapshot.notice = 'mutado';
+  sourceSnapshot.summary.totalValue = 9999;
+  sourceSnapshot.items[0].ticker = 'TROCADO';
+
+  assert.equal(snapshot.notice, 'Snapshot legado somente leitura. React nao escreve na fonte.');
+  assert.equal(snapshot.summary.totalValue, 900);
+  assert.equal(snapshot.items[0].ticker, 'PETR4');
+  assertFrozenSnapshot(snapshot);
 });
 
 test('mutacao posterior na fonte nao altera snapshot do React', async () => {
@@ -172,8 +233,11 @@ test('mutacao posterior na fonte nao altera snapshot do React', async () => {
   assertFrozenSnapshot(snapshot);
 });
 
-test('integracao nao importa legado nem reintroduz calculos', async () => {
+test('runtime e react nao importam legado nem reintroduzem calculos', async () => {
+  const runtimeText = fs.readFileSync(runtimeModulePath, 'utf8');
   const sourceText = fs.readFileSync(integrationModulePath, 'utf8');
+  const appText = fs.readFileSync(appModulePath, 'utf8');
+  const mainText = fs.readFileSync(mainModulePath, 'utf8');
 
   for (const forbidden of [
     'legacy/reports-readonly-source.js',
@@ -193,22 +257,33 @@ test('integracao nao importa legado nem reintroduz calculos', async () => {
     'Auth',
     /\bsync\b/,
     'backup',
-    'document',
-    'window',
   ]) {
-    const matches = forbidden instanceof RegExp ? forbidden.test(sourceText) : sourceText.includes(forbidden);
-    assert.equal(matches, false, `Forbidden reference found: ${forbidden}`);
+    const matchesRuntime = forbidden instanceof RegExp ? forbidden.test(runtimeText) : runtimeText.includes(forbidden);
+    const matchesIntegration = forbidden instanceof RegExp ? forbidden.test(sourceText) : sourceText.includes(forbidden);
+    const matchesApp = forbidden instanceof RegExp ? forbidden.test(appText) : appText.includes(forbidden);
+    const matchesMain = forbidden instanceof RegExp ? forbidden.test(mainText) : mainText.includes(forbidden);
+    assert.equal(matchesRuntime, false, `Forbidden reference found in runtime: ${forbidden}`);
+    assert.equal(matchesIntegration, false, `Forbidden reference found in integration: ${forbidden}`);
+    assert.equal(matchesApp, false, `Forbidden reference found in app: ${forbidden}`);
+    assert.equal(matchesMain, false, `Forbidden reference found in main: ${forbidden}`);
   }
-});
 
-test('App recebe apenas adaptador moderno e vite sem alias legado', () => {
-  const appText = fs.readFileSync(appModulePath, 'utf8');
+  for (const forbidden of ['document', 'window']) {
+    assert.equal(runtimeText.includes(forbidden), false, `Forbidden reference found in runtime: ${forbidden}`);
+    assert.equal(sourceText.includes(forbidden), false, `Forbidden reference found in integration: ${forbidden}`);
+  }
+
   const viteText = fs.readFileSync(viteConfigPath, 'utf8');
 
-  assert.match(appText, /createConnectedReportsAdapter\(createConnectedReportsDemoSource\(\)\)/);
-  assert.match(appText, /AssetsReportPreview adapter=\{reportsAdapter\}/);
-  assert.equal(appText.includes('legacy/reports-readonly-source.js'), false);
-  assert.equal(appText.includes('@legacy-reports-readonly-source'), false);
+  assert.match(appText, /interface AppProps/);
+  assert.match(appText, /reportsAdapter: ReadOnlyReportsAdapter/);
+  assert.match(mainText, /createModernReportsRuntime/);
+  assert.match(mainText, /const modernReportsRuntime = createModernReportsRuntime\(\);/);
+  assert.match(mainText, /App reportsAdapter=\{modernReportsRuntime\.reportsAdapter\}/);
+  assert.match(runtimeText, /createConnectedReportsAdapter/);
+  assert.match(runtimeText, /createConnectedReportsDemoSource/);
+  assert.match(runtimeText, /reportsSource \?\? createConnectedReportsDemoSource\(\)/);
+  assert.equal(appText.includes('legacyReportsReadonlyIntegration'), false);
 
   assert.equal(viteText.includes('@legacy-reports-readonly-source'), false);
   assert.equal(viteText.includes('optimizeDeps'), false);
