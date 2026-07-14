@@ -199,7 +199,11 @@ function StaticAssetsReportPreview({ adapter }: { adapter: ReadOnlyReportsAdapte
   );
 }
 
-function RefreshableAssetsReportPreview({ refreshController }: AssetsReportPreviewProps) {
+function RefreshableAssetsReportPreview({
+  refreshController,
+}: {
+  refreshController: ReportsRefreshController;
+}) {
   const refreshState = useSyncExternalStore(
     refreshController?.subscribe ?? (() => () => {}),
     refreshController!.getState,
