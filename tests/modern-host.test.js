@@ -60,6 +60,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /createReportsRefreshController/);
   assert.match(hostTsx, /createRefreshableReportsSource/);
+  assert.match(hostTsx, /createHostExperimentalAssets/);
+  assert.match(hostTsx, /getAssets: \(\) => experimentalAssets/);
   assert.match(hostTsx, /createModernReportsRuntime/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /AppComponent: App/);

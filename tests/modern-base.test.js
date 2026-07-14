@@ -138,7 +138,9 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(stylesCss.includes('--shell-bg'), false);
   assert.equal(stylesCss.includes('--panel-bg'), false);
   assert.equal(viteConfigTs.includes('@legacy-reports-readonly-source'), false);
-  assert.equal(viteConfigTs.includes('optimizeDeps'), false);
+  assert.match(viteConfigTs, /optimizeDeps/);
+  assert.match(viteConfigTs, /reports-readonly-source\.js/);
+  assert.match(viteConfigTs, /report-asset-row\.js/);
   assert.equal(viteConfigTs.includes("target: 'esnext'"), false);
   assert.equal(viteConfigTs.includes("base: './'"), false);
   assert.match(viteConfigTs, /rollupOptions/);

@@ -272,7 +272,7 @@ function buildLegacyReportsReadonlySnapshot(assets, deps = {}) {
   }
 }
 
-function createLegacyReportsReadonlySource(deps = {}) {
+function createLegacyAssetsReadonlyProvider(deps = {}) {
   return {
     getSnapshot() {
       try {
@@ -285,11 +285,16 @@ function createLegacyReportsReadonlySource(deps = {}) {
   };
 }
 
+function createLegacyReportsReadonlySource(deps = {}) {
+  return createLegacyAssetsReadonlyProvider(deps);
+}
+
 function installLegacyReportsReadonlySource(target = globalThis) {
   if (!target || typeof target !== 'object') {
     return null;
   }
 
+  target.createLegacyAssetsReadonlyProvider = createLegacyAssetsReadonlyProvider;
   target.createLegacyReportsReadonlySource = createLegacyReportsReadonlySource;
   target.buildLegacyReportsReadonlySnapshot = buildLegacyReportsReadonlySnapshot;
   target.LEGACY_REPORT_CATEGORY_MAP = LEGACY_REPORT_CATEGORY_MAP;
@@ -303,6 +308,7 @@ module.exports = {
   LEGACY_REPORT_CATEGORY_MAP,
   LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT,
   buildLegacyReportsReadonlySnapshot,
+  createLegacyAssetsReadonlyProvider,
   createLegacyReportsReadonlySource,
   installLegacyReportsReadonlySource,
   mapLegacyCategory,
