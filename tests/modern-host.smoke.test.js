@@ -37,6 +37,7 @@ browserTest('modern host smoke navigation', async () => {
       await page.locator('.sidebar__item').nth(5).click();
       await assertReportsPreview(page);
       const beforeRefresh = await page.locator('.assets-report__updated').textContent();
+      const beforeTotal = await page.locator('.overview-card__value').first().textContent();
       await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
       await page.locator('.assets-report__refresh-button').click();
       await page.waitForFunction(
@@ -44,7 +45,9 @@ browserTest('modern host smoke navigation', async () => {
         beforeRefresh,
       );
       const afterRefresh = await page.locator('.assets-report__updated').textContent();
+      const afterTotal = await page.locator('.overview-card__value').first().textContent();
       assert.notEqual(afterRefresh, beforeRefresh);
+      assert.notEqual(afterTotal, beforeTotal);
       await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Relatorios');
     });
 
@@ -76,6 +79,7 @@ browserTest('modern host smoke navigation', async () => {
       await page.locator('#modern-sidebar .sidebar__item').nth(5).press('Enter');
       await assertReportsPreview(page);
       const beforeRefresh = await page.locator('.assets-report__updated').textContent();
+      const beforeTotal = await page.locator('.overview-card__value').first().textContent();
       await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
       await page.locator('.assets-report__refresh-button').click();
       await page.waitForFunction(
@@ -83,7 +87,9 @@ browserTest('modern host smoke navigation', async () => {
         beforeRefresh,
       );
       const afterRefresh = await page.locator('.assets-report__updated').textContent();
+      const afterTotal = await page.locator('.overview-card__value').first().textContent();
       assert.notEqual(afterRefresh, beforeRefresh);
+      assert.notEqual(afterTotal, beforeTotal);
       await assert.equal(await page.locator('.assets-report__mobile-list').isVisible(), true);
       await assert.equal(await page.locator('.assets-report__mobile-card').count(), 3);
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');

@@ -178,3 +178,81 @@ Manter o legado como fonte de verdade e extrair somente um provider readonly peq
 - Remover `docs/legacy-assets-runtime-map.md`.
 - Remover o teste estrutural associado.
 - Nenhum arquivo funcional precisa ser alterado para desfazer esta fase.
+
+## Fase 174 - contrato do provider readonly
+
+Contrato final:
+
+- `createLegacyAssetsReadonlyProvider({ getAssets, buildReportAssetRow, assetAppliedValue, assetCurrentValue, metaTicker, normalizeType, getGeneratedAt, notice })`
+
+Dependencias:
+
+- `getAssets` entrega coleção em memoria, por dependencia explicita.
+- `buildReportAssetRow` continua builder canonico da linha.
+- `assetAppliedValue`, `assetCurrentValue`, `metaTicker` e `normalizeType` seguem canônicas e injetadas.
+- `getGeneratedAt` e `notice` seguem opcionais, usados so para metadados do snapshot.
+
+Fluxo:
+
+```
+colecao em memoria
+↓
+provider readonly
+↓
+buildReportAssetRow canonico
+↓
+snapshot validado e congelado
+↓
+bridge
+↓
+controller
+↓
+adapter
+↓
+React
+```
+
+Garantias:
+
+- provider nao acessa `S` ou `S.assets`;
+- provider nao acessa storage, Firebase, Auth, sync, backup, DOM ou React;
+- provider nao cria copia permanente da coleção;
+- provider le `getAssets` somente no `getSnapshot()`;
+- snapshot, summary, items e cada item sao congelados profundamente;
+- snapshot anterior permanece imutavel;
+- nova leitura reflete coleção atual;
+- falhas retornam fallback readonly valido sem escrever nada.
+
+Erro:
+
+- retorno invalido de `getAssets`, excecao em `getAssets` ou erro no builder cai no fallback readonly ja existente;
+- controller preserva ultimo snapshot valido quando a falha vem do refresh;
+- React nao recebe excecao.
+
+Imutabilidade:
+
+- ativos originais nao sao congelados;
+- array original nao e congelado;
+- apenas snapshot derivado e congelado.
+
+Compatibilidade:
+
+- `createLegacyReportsReadonlySource()` continua disponivel como alias do provider canonico;
+- `installLegacyReportsReadonlySource()` permanece apenas para compatibilidade de modulo;
+- o host experimental usa `createLegacyAssetsReadonlyProvider()` por exportacao explicita, sem escrita temporaria em `globalThis`.
+
+Futuro:
+
+- Fase 175 pode fornecer `getAssets: () => S.assets` por composicao externa, quando a carteira real em memoria estiver pronta para leitura controlada.
+
+Riscos remanescentes:
+
+- divergencia se a colecao mudar fora do refresh controlado;
+- snapshot stale se a fase futura conectar uma fonte real sem callback explicito;
+- necessidade de manter `buildReportAssetRow` como unica implementacao canônica.
+
+Rollback:
+
+- remover o provider alias novo se ele nao for mais necessario;
+- manter `createLegacyReportsReadonlySource` como compatibilidade;
+- nenhum dado real ou estado persistido depende desta fase.

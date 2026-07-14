@@ -8,6 +8,9 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   root: 'modern',
   plugins: [react()],
+  optimizeDeps: {
+    include: [resolve(rootDir, '..', 'legacy', 'reports-readonly-source.js'), resolve(rootDir, '..', 'report-asset-row.js')],
+  },
   server: {
     fs: {
       allow: [resolve(rootDir, '..')],

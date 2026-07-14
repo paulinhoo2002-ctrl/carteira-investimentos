@@ -7,6 +7,7 @@ const {
   LEGACY_REPORT_CATEGORY_MAP,
   LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT,
   buildLegacyReportsReadonlySnapshot,
+  createLegacyAssetsReadonlyProvider,
   createLegacyReportsReadonlySource,
 } = require(modulePath);
 
@@ -248,6 +249,7 @@ test('fonte nao polui globalThis ao carregar', () => {
   const after = new Set(Object.getOwnPropertyNames(globalThis));
 
   for (const name of [
+    'createLegacyAssetsReadonlyProvider',
     'createLegacyReportsReadonlySource',
     'buildLegacyReportsReadonlySnapshot',
     'LEGACY_REPORT_CATEGORY_MAP',
@@ -258,6 +260,84 @@ test('fonte nao polui globalThis ao carregar', () => {
   }
 
   assert.equal(typeof loaded.installLegacyReportsReadonlySource, 'function');
+});
+
+test('provider le getAssets somente quando getSnapshot e chama builder canônico', () => {
+  let assets = makeAssets();
+  let getAssetsCalls = 0;
+  let buildCalls = 0;
+
+  const source = createLegacyAssetsReadonlyProvider({
+    getAssets() {
+      getAssetsCalls += 1;
+      return assets;
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+    ...makeBaseDeps({
+      buildReportAssetRow(asset, deps) {
+        buildCalls += 1;
+        return makeBaseDeps().buildReportAssetRow(asset, deps);
+      },
+    }),
+  });
+
+  assert.equal(getAssetsCalls, 0);
+
+  const firstSnapshot = source.getSnapshot();
+  assert.equal(getAssetsCalls, 1);
+  assert.equal(buildCalls, 3);
+
+  assets = assets.map((asset, index) =>
+    index === 0 ? { ...asset, current_price: 27 } : asset,
+  );
+
+  const secondSnapshot = source.getSnapshot();
+
+  assert.equal(getAssetsCalls, 2);
+  assert.equal(buildCalls, 6);
+  assert.notDeepEqual(secondSnapshot, firstSnapshot);
+  assert.equal(firstSnapshot.summary.totalValue, 900);
+  assert.equal(secondSnapshot.summary.totalValue, 920);
+  assert.equal(Object.isFrozen(firstSnapshot), true);
+  assert.equal(Object.isFrozen(firstSnapshot.summary), true);
+  assert.equal(Object.isFrozen(firstSnapshot.items), true);
+  assert.equal(Object.isFrozen(firstSnapshot.items[0]), true);
+  assert.equal(Object.isFrozen(secondSnapshot.items[0]), true);
+});
+
+test('provider trata coleção inválida, exceção e builder com erro', () => {
+  const invalidObjectSource = createLegacyAssetsReadonlyProvider({
+    getAssets() {
+      return { assets: makeAssets() };
+    },
+    ...makeBaseDeps(),
+  });
+
+  assert.deepEqual(invalidObjectSource.getSnapshot(), LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT);
+
+  const throwingAssetsSource = createLegacyAssetsReadonlyProvider({
+    getAssets() {
+      throw new Error('boom');
+    },
+    ...makeBaseDeps(),
+  });
+
+  assert.deepEqual(throwingAssetsSource.getSnapshot(), LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT);
+
+  const throwingBuilderSource = createLegacyAssetsReadonlyProvider({
+    getAssets() {
+      return makeAssets();
+    },
+    ...makeBaseDeps({
+      buildReportAssetRow() {
+        throw new Error('boom');
+      },
+    }),
+  });
+
+  assert.deepEqual(throwingBuilderSource.getSnapshot(), LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT);
 });
 
 test('fonte nao chama storage, Firebase, Auth, sync, backup ou DOM', () => {

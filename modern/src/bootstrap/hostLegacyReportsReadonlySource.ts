@@ -139,24 +139,33 @@ export async function createHostLegacyReportsReadonlySource(
   try {
     const legacyModule =
       options.legacyModule === undefined ? await import('../../../legacy/reports-readonly-source.js') : options.legacyModule;
-    const buildReportAssetRowModule =
+    const buildReportAssetRowModuleValue =
       options.buildReportAssetRowModule === undefined ? await import('../../../report-asset-row.js') : options.buildReportAssetRowModule;
 
-    if (!legacyModule || !buildReportAssetRowModule) {
+    if (!legacyModule || !buildReportAssetRowModuleValue) {
       return null;
     }
 
+    const createLegacyAssetsReadonlyProvider = resolveModuleFunction(
+      legacyModule,
+      'createLegacyAssetsReadonlyProvider',
+    );
     const createLegacyReportsReadonlySource = resolveModuleFunction(
       legacyModule,
       'createLegacyReportsReadonlySource',
     );
-    const buildReportAssetRow = resolveModuleFunction(buildReportAssetRowModule, 'buildReportAssetRow');
+    const buildReportAssetRow = resolveModuleFunction(buildReportAssetRowModuleValue, 'buildReportAssetRow');
 
-    if (!isModuleFunction(createLegacyReportsReadonlySource) || !isModuleFunction(buildReportAssetRow)) {
+    const createReadonlySource =
+      isModuleFunction(createLegacyAssetsReadonlyProvider)
+        ? createLegacyAssetsReadonlyProvider
+        : createLegacyReportsReadonlySource;
+
+    if (!isModuleFunction(createReadonlySource) || !isModuleFunction(buildReportAssetRow)) {
       return null;
     }
 
-    return createLegacyReportsReadonlySource({
+    return createReadonlySource({
       getAssets: options.getAssets ?? (() => HOST_LEGACY_REPORTS_ASSETS),
       buildReportAssetRow,
       assetAppliedValue: hostAssetAppliedValue,

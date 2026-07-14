@@ -95,3 +95,48 @@ test('host source retorna fallback controlado quando getAssets falha', async () 
   assert.ok(source);
   assert.deepEqual(source.getSnapshot(), LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT);
 });
+
+test('host source reflete a colecao atual injetada por dependencia explicita', async () => {
+  const { createHostLegacyReportsReadonlySource } = await loadHostSourceModule();
+
+  let assets = [
+    {
+      ticker: 'PETR4',
+      name: 'Petrobras',
+      type: 'Ação',
+      sector: 'Energia',
+      qty: 10,
+      avg_price: 20,
+      current_price: 25,
+      applied: 200,
+      current: 250,
+      source: 'host-experimental',
+      updated_at: '2026-07-14T10:30:00.000Z',
+    },
+  ];
+
+  const source = await createHostLegacyReportsReadonlySource({
+    getAssets() {
+      return assets;
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const firstSnapshot = source.getSnapshot();
+  assets = [
+    {
+      ...assets[0],
+      current_price: 27,
+      current: 270,
+    },
+  ];
+  const secondSnapshot = source.getSnapshot();
+
+  assert.equal(firstSnapshot.summary.totalValue, 250);
+  assert.equal(secondSnapshot.summary.totalValue, 270);
+  assert.notDeepEqual(secondSnapshot, firstSnapshot);
+  assert.equal(Object.isFrozen(firstSnapshot), true);
+  assert.equal(Object.isFrozen(secondSnapshot), true);
+});
