@@ -33,6 +33,10 @@ browserTest('modern shell smoke navigation', async () => {
       await page.locator('.sidebar__item').nth(1).click();
       await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
       await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Ativos');
+
+      await page.locator('.sidebar__item').nth(5).click();
+      await assertReportsPreview(page);
+      await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Relatorios');
     });
 
     await runViewportScenario(browser, { width: 390, height: 844 }, async (page) => {
@@ -57,6 +61,13 @@ browserTest('modern shell smoke navigation', async () => {
       await page.locator('#modern-sidebar .sidebar__item').nth(1).press('Enter');
       await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
       await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Ativos');
+      await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
+
+      await menuButton.press('Enter');
+      await page.locator('#modern-sidebar .sidebar__item').nth(5).press('Enter');
+      await assertReportsPreview(page);
+      await assert.equal(await page.locator('.assets-report__mobile-list').isVisible(), true);
+      await assert.equal(await page.locator('.assets-report__mobile-card').count(), 4);
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
     });
   } finally {
@@ -124,4 +135,24 @@ async function assertPageReady(page) {
   await page.locator('.sidebar__item').count().then((count) => {
     assert.equal(count, 7);
   });
+}
+
+async function assertReportsPreview(page) {
+  await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa de Ativos');
+  await assert.equal(
+    await page.getByText('Dados demonstrativos. Nenhuma informacao real da carteira foi carregada.').count(),
+    1,
+  );
+  await assert.equal(await page.locator('.assets-report__table').count(), 1);
+  await assert.equal(await page.locator('.assets-report__table caption').textContent(), 'Previa demonstrativa de ativos em relatorios');
+  await assert.equal(await page.locator('.assets-report__table thead th[scope="col"]').count(), 8);
+  await assert.equal(await page.getByText('Total demonstrativo').count(), 1);
+
+  for (const ticker of ['DEMO-ALFA11', 'DEMO-BETA34', 'DEMO-GAMA3', 'DEMO-DELTA5']) {
+    assert.ok((await page.getByText(ticker).count()) >= 1, `Missing ticker: ${ticker}`);
+  }
+
+  for (const state of ['Positivo', 'Neutro', 'Negativo']) {
+    assert.ok((await page.getByText(state).count()) >= 1, `Missing state: ${state}`);
+  }
 }
