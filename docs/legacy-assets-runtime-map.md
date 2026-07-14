@@ -334,3 +334,61 @@ Rollback:
 - remover o bootstrap experimental do `index.html`;
 - remover os testes e a doc desta fase;
 - manter `createLegacyAssetsReadonlyProvider` e o host moderno como estavam na fase anterior.
+
+## Fase 177 - host readonly observavel e verificavel
+
+Frentes observaveis:
+
+- o host experimental distingue carteira ativa real, snapshot vazio valido, fallback readonly e demo source;
+- o diagnostico readonly mostra apenas `originMode`, `itemCount`, `generatedAt`, presenca de `notice` e status do ultimo refresh;
+- o diagnostico e profundamente congelado e nao vaza `S.assets` ao React;
+- o fallback readonly fica identificavel visualmente no host experimental sem redesenhar a tela;
+- o shell independente continua demonstrativo e mostra o diagnostico readonly da fonte demonstrativa.
+
+Fluxo:
+
+```
+S.assets em memoria
+â†“
+getAssets explicito no bootstrap experimental
+â†“
+createLegacyAssetsReadonlyProvider(...)
+â†“
+snapshot validado e congelado
+â†“
+bridge
+â†“
+controller
+â†“
+diagnostico readonly
+â†“
+adapter
+â†“
+React experimental
+```
+
+Estados da origem:
+
+- `real-wallet`: a carteira ativa tem itens e foi lida pelo entrypoint experimental;
+- `empty-wallet`: a carteira ativa foi lida, mas veio vazia;
+- `fallback-readonly`: o provider caiu para o snapshot readonly seguro;
+- `demo-source`: o host isolado segue no modo demonstrativo quando nao ha injeccao real.
+
+Refresh:
+
+- o refresh continua manual e controlado pelo host;
+- a leitura le `getAssets` novamente e atualiza o diagnostico;
+- o ultimo snapshot valido e preservado em erro;
+- nao existe polling, telemetria ou escrita.
+
+Isolamento:
+
+- somente o bootstrap experimental conhece `S.assets`;
+- `modern/src` continua sem acesso direto a `S.assets`;
+- o shell independente nao ganha esse diagnostico;
+- a composicao continua removivel sem tocar no fluxo principal.
+
+Rollback:
+
+- remover a observabilidade do host experimental, os testes associados e a doc desta fase;
+- manter o provider readonly e a ponte como estavam na fase anterior.

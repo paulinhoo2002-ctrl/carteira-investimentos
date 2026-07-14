@@ -49,6 +49,11 @@ browserTest('active wallet host smoke navigation', async () => {
         await page.locator('.assets-report__notice').textContent(),
         'Snapshot legado somente leitura. React nao escreve na fonte.',
       );
+      assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Carteira ativa real/);
+      assert.match(await page.locator('.assets-report__diagnostic').innerText(), /3 ativos/);
+      assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Leitura inicial pronta/);
+      await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'real-wallet');
+      await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-refresh-status'), 'idle');
     });
 
     await runViewportScenario(browser, smokeUrl, { width: 390, height: 844 }, async (page) => {
@@ -65,6 +70,8 @@ browserTest('active wallet host smoke navigation', async () => {
       await assert.equal(await page.getByText('WEGE3').count() > 0, true);
       await assert.equal(await page.getByText('MXRF11').count(), 0);
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
+      await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'real-wallet');
+      await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-refresh-status'), 'idle');
     });
   } finally {
     await browser.close();

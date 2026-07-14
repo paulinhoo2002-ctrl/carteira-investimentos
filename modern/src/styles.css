@@ -364,6 +364,52 @@ button {
   font-weight: 700;
 }
 
+.assets-report__diagnostic {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.assets-report__diagnostic strong {
+  font-size: 1rem;
+}
+
+.assets-report__diagnostic[data-origin-mode='fallback-readonly'] {
+  border-color: rgba(248, 113, 113, 0.48);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.assets-report__diagnostic[data-origin-mode='empty-wallet'] {
+  border-color: rgba(125, 182, 255, 0.42);
+}
+
+.assets-report__diagnostic[data-origin-mode='real-wallet'] {
+  border-color: rgba(52, 211, 153, 0.42);
+}
+
+.assets-report__diagnostic[data-origin-mode='demo-source'] {
+  border-color: rgba(250, 204, 21, 0.42);
+}
+
+.assets-report__diagnostic[data-refresh-status='fallback'] {
+  border-color: rgba(251, 146, 60, 0.48);
+  background: rgba(251, 146, 60, 0.12);
+}
+
+.assets-report__diagnostic[data-refresh-status='error'] {
+  border-color: rgba(248, 113, 113, 0.52);
+  background: rgba(248, 113, 113, 0.14);
+}
+
 .assets-report__status {
   margin: 0;
   color: var(--color-text-muted);
