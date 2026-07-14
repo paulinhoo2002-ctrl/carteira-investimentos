@@ -3,8 +3,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
+const { createServer } = require('vite');
 
 const hostHtmlPath = path.join(__dirname, '..', 'modern', 'host.html');
+const rootIndexPath = path.join(__dirname, '..', 'index.html');
+const hostSmokePath = path.join(__dirname, 'modern-host.smoke.test.js');
 const hostModulePath = path.join(__dirname, '..', 'modern', 'src', 'host.tsx');
 const hostSourceModulePath = path.join(
   __dirname,
@@ -47,6 +50,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(fs.existsSync(hostHtmlPath), true, 'Missing host.html');
 
   const hostHtml = fs.readFileSync(hostHtmlPath, 'utf8');
+  const rootIndexHtml = fs.readFileSync(rootIndexPath, 'utf8');
+  const hostSmokeText = fs.readFileSync(hostSmokePath, 'utf8');
   const hostTsx = fs.readFileSync(hostModulePath, 'utf8');
   const hostSourceTs = fs.readFileSync(hostSourceModulePath, 'utf8');
   const mountTsx = fs.readFileSync(mountModulePath, 'utf8');
@@ -56,10 +61,12 @@ test('host experimental exists and keeps modern app isolated', () => {
 
   assert.match(hostHtml, /Host experimental/);
   assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);
+  assert.match(hostHtml, /host-entry\.tsx/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /createReportsRefreshController/);
   assert.match(hostTsx, /createNullReportsSource/);
+  assert.match(hostTsx, /strictSourceWiring/);
   assert.match(hostTsx, /buildReportAssetRowModule/);
   assert.match(hostTsx, /createHostExperimentalAssets/);
   assert.match(hostTsx, /experimentalAssets/);
@@ -77,6 +84,13 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostSourceTs, /report-asset-row\.js/);
   assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
   assert.equal(hostSourceTs.includes('globalThis'), false);
+  assert.match(
+    rootIndexHtml,
+    /function isActiveWalletHostMode\(\)\{\s*try\{\s*return \(location\.hostname==='localhost' \|\| location\.hostname==='127\.0\.0\.1'\) && new URLSearchParams\(location\.search\)\.get\('activeWalletHost'\)==='1' && new URLSearchParams\(location\.search\)\.get\('testMode'\)==='1';/,
+  );
+  assert.match(hostSmokeText, /MODERN_HOST_URL/);
+  assert.match(hostSmokeText, /CI/);
+  assert.match(hostSmokeText, /assert\.fail\('MODERN_HOST_URL required for host smoke test in CI'\)/);
   assert.match(refreshControllerTs, /createReportsRefreshController/);
   assert.match(refreshControllerTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
   assert.match(refreshControllerTs, /subscribe/);
@@ -216,4 +230,29 @@ test('refresh controller keeps snapshot frozen and preserves listeners', async (
   unsubscribe();
   controller.refresh();
   assert.equal(calls, 1);
+});
+
+test('host experimental strict wiring fails with explicit error', async () => {
+  const viteServer = await createServer({
+    configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
+    logLevel: 'error',
+    server: { middlewareMode: true },
+  });
+
+  try {
+    const { bootstrapHost } = await viteServer.ssrLoadModule('/src/host.tsx');
+
+    await assert.rejects(
+      () =>
+        bootstrapHost({
+          rootElement: {},
+          strictSourceWiring: true,
+          legacyModule: null,
+          buildReportAssetRowModule: null,
+        }),
+      /Fonte readonly experimental indisponivel\./,
+    );
+  } finally {
+    await viteServer.close();
+  }
 });

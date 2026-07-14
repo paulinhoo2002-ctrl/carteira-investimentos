@@ -16,6 +16,7 @@ export interface HostBootstrapOptions {
   readonly buildReportAssetRowModule?: Record<string, unknown> | null;
   readonly getGeneratedAt?: () => string;
   readonly notice?: string;
+  readonly strictSourceWiring?: boolean;
 }
 
 function createNullReportsSource() {
@@ -88,6 +89,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     options.buildReportAssetRowModule?.buildReportAssetRow ??
     options.buildReportAssetRowModule?.default?.buildReportAssetRow ??
     options.buildReportAssetRowModule?.default;
+  const strictSourceWiring = options.strictSourceWiring === true;
 
   const directLegacyProvider =
     injectedLegacyModule &&
@@ -96,7 +98,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
       injectedLegacyModule.default?.createLegacyAssetsReadonlyProvider ??
       injectedLegacyModule.default?.createLegacyReportsReadonlySource);
 
-  const baseReportsSource = (() => {
+  const directReportsSource = (() => {
     if (typeof directLegacyProvider === 'function' && typeof injectedBuildReportAssetRow === 'function') {
       return directLegacyProvider({
         getAssets: options.getAssets ?? (() => experimentalAssets),
@@ -128,8 +130,9 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     }
 
     return null;
-  })() ??
-    (await createHostLegacyReportsReadonlySource({
+  })();
+
+  const fallbackHostReportsSource = await createHostLegacyReportsReadonlySource({
       legacyModule: injectedLegacyModule ?? undefined,
       getAssets: options.getAssets ?? (() => experimentalAssets),
       buildReportAssetRowModule: options.buildReportAssetRowModule ?? null,
@@ -140,7 +143,16 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
             ? new Date().toISOString()
             : new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString()),
       notice: options.notice ?? 'Snapshot legado somente leitura. React nao escreve na fonte.',
-    })) ?? (hasInjectedAssets ? createNullReportsSource() : createConnectedReportsDemoSource());
+    });
+
+  const resolvedReportsSource = directReportsSource ?? fallbackHostReportsSource;
+
+  if (strictSourceWiring && !resolvedReportsSource) {
+    throw new Error('Fonte readonly experimental indisponivel.');
+  }
+
+  const baseReportsSource =
+    resolvedReportsSource ?? (hasInjectedAssets ? createNullReportsSource() : createConnectedReportsDemoSource());
 
   const reportsRefreshController = createReportsRefreshController({
     source: baseReportsSource,
