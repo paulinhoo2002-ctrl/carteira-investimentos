@@ -3,7 +3,14 @@ const fs = require('node:fs');
 const test = require('node:test');
 
 const hostUrl = process.env.MODERN_HOST_URL;
+const ciMode = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 const browserTest = hostUrl ? test : test.skip;
+
+if (!hostUrl && ciMode) {
+  test('modern host smoke navigation', () => {
+    assert.fail('MODERN_HOST_URL required for host smoke test in CI');
+  });
+}
 
 function resolveBrowserExecutable() {
   const candidates = [

@@ -4,6 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const modernRoot = path.join(__dirname, '..', 'modern');
+const rootIndexPath = path.join(__dirname, '..', 'index.html');
 const sourceFiles = [
   'index.html',
   'README.md',
@@ -50,6 +51,7 @@ test('modern shell exists and stays isolated', () => {
   }
 
   const indexHtml = read('index.html');
+  const rootIndexHtml = fs.readFileSync(rootIndexPath, 'utf8');
   const hostHtml = read('host.html');
   const readme = read('README.md');
   const appTsx = read('src/App.tsx');
@@ -73,6 +75,10 @@ test('modern shell exists and stays isolated', () => {
 
   assert.match(indexHtml, /<title>Carteira de Investimentos \| Shell moderno isolado<\/title>/);
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
+  assert.match(
+    rootIndexHtml,
+    /function isActiveWalletHostMode\(\)\{\s*try\{\s*return \(location\.hostname==='localhost' \|\| location\.hostname==='127\.0\.0\.1'\) && new URLSearchParams\(location\.search\)\.get\('activeWalletHost'\)==='1' && new URLSearchParams\(location\.search\)\.get\('testMode'\)==='1';/,
+  );
   assert.match(hostHtml, /Host experimental/);
   assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);
   assert.match(readme, /# Shell moderno isolado/);

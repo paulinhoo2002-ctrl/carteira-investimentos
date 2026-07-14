@@ -14,7 +14,7 @@
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
-  const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1' || location.protocol==='file:') && new URLSearchParams(location.search).get('testMode')==='1';
+  const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('testMode')==='1';
   window.__LOCAL_TEST_MODE__=testMode;
   if(testMode){
     document.documentElement.dataset.theme='dark';
@@ -3747,7 +3747,7 @@ const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
 function isActiveWalletHostMode(){
   try{
-    return (location.hostname==='localhost' || location.hostname==='127.0.0.1' || location.protocol==='file:') && new URLSearchParams(location.search).get('activeWalletHost')==='1';
+    return (location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('activeWalletHost')==='1' && new URLSearchParams(location.search).get('testMode')==='1';
   }catch(e){
     return false;
   }
@@ -4479,6 +4479,7 @@ async function bootstrapExperimentalActiveWalletHost(){
     rootElement: targetRoot,
     legacyModule: legacyReadonlySourceModule,
     buildReportAssetRowModule,
+    strictSourceWiring: true,
     getAssets(){
       return Array.isArray(S.assets)
         ? S.assets
