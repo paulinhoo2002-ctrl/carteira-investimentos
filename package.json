@@ -7,7 +7,7 @@
     "build": "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"",
     "dev:modern": "vite --config modern/vite.config.ts",
     "build:modern": "vite build --config modern/vite.config.ts",
-    "test:modern": "node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js",
+    "test:modern": "node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js",
     "test:finance": "node --test tests/finance-core.test.js",
     "test:persistence": "node --test tests/persistence-core.test.js",
     "test:backup-restore": "node --test tests/backup-restore-integration.test.js",

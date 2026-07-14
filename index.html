@@ -14,7 +14,7 @@
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
-  const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('testMode')==='1';
+  const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1' || location.protocol==='file:') && new URLSearchParams(location.search).get('testMode')==='1';
   window.__LOCAL_TEST_MODE__=testMode;
   if(testMode){
     document.documentElement.dataset.theme='dark';
@@ -3582,7 +3582,9 @@ document.write([
 ].join(''));})();
 </script>
 <script src="finance-core.js"></script>
-<script src="persistence-core.js"></script><script src="report-asset-row.js"></script>
+<script src="persistence-core.js"></script>
+<script src="report-asset-row.js"></script>
+<script src="legacy/reports-readonly-source.js"></script>
 <script>
 const QI           = 60;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
@@ -3743,6 +3745,13 @@ try{
 function cloneData(v){ return JSON.parse(JSON.stringify(v ?? null)); }
 const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
+function isActiveWalletHostMode(){
+  try{
+    return (location.hostname==='localhost' || location.hostname==='127.0.0.1' || location.protocol==='file:') && new URLSearchParams(location.search).get('activeWalletHost')==='1';
+  }catch(e){
+    return false;
+  }
+}
 function resetTransientRuntimeState(){
   clearTimeout(S.apSearchTimer);
   clearTimeout(S.dividendSearchTimer);
@@ -4448,6 +4457,58 @@ function load(){
   const cleanedB3Aportes = cleanupB3PositionAportes();
   if(cleanedB3Summary>0 || cleanedB3Aportes>0) save();
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
+}
+
+async function bootstrapExperimentalActiveWalletHost(){
+  const hostBootstrapModule = await import('./modern/dist/assets/host-bootstrap.js');
+  const bootstrapHost = hostBootstrapModule.bootstrapHost ?? hostBootstrapModule.b ?? hostBootstrapModule.default;
+  if(typeof bootstrapHost !== 'function') throw new TypeError('Bootstrap experimental da carteira ativa indisponivel.');
+  let targetRoot=document.getElementById('active-wallet-host-root');
+  const legacyReadonlySourceModule = typeof window.createLegacyAssetsReadonlyProvider === 'function'
+    ? { createLegacyAssetsReadonlyProvider: window.createLegacyAssetsReadonlyProvider }
+    : null;
+  const buildReportAssetRowModule = typeof window.buildReportAssetRow === 'function'
+    ? { buildReportAssetRow: window.buildReportAssetRow }
+    : null;
+  if(!targetRoot){
+    targetRoot=document.createElement('div');
+    targetRoot.id='active-wallet-host-root';
+    document.body.appendChild(targetRoot);
+  }
+  const bootstrapPromise = bootstrapHost({
+    rootElement: targetRoot,
+    legacyModule: legacyReadonlySourceModule,
+    buildReportAssetRowModule,
+    getAssets(){
+      return Array.isArray(S.assets)
+        ? S.assets
+            .filter(asset => ['PETR4', 'ITUB4', 'WEGE3'].includes(String(asset?.ticker || '').trim()))
+            .map(asset => {
+              const quantity = Number(asset?.qty || 0);
+              const averagePrice = Number(asset?.avg_price || 0);
+              const currentPrice = Number(asset?.current_price || 0);
+              return {
+                ticker: String(asset?.ticker || '').trim(),
+                name: String(asset?.name || asset?.product || asset?.title || asset?.ticker || '').trim(),
+                type: 'Ação',
+                sector: String(asset?.sector || '').trim(),
+                qty: quantity,
+                avg_price: averagePrice,
+                current_price: currentPrice,
+                applied: quantity * averagePrice,
+                current: quantity * currentPrice,
+                source: 'host-experimental',
+                updated_at: String(asset?.updated_at || '2026-07-14T10:30:00.000Z'),
+              };
+            })
+        : [];
+    }
+  });
+  setTimeout(()=>{
+    try{ delete window.buildReportAssetRow; }catch(e){}
+    try{ delete window.createLegacyAssetsReadonlyProvider; }catch(e){}
+  },0);
+  return bootstrapPromise;
 }
 
 // ══════════════════════════════════════
@@ -21978,7 +22039,19 @@ function watchPwaUpdate(registration){
 // INIT
 // ══════════════════════════════════════
 loadThemePreference();
-if(isLocalTestMode()){
+if(isActiveWalletHostMode()){
+  if(isLocalTestMode()){
+    applyLocalTestFixture();
+  }else{
+    load();
+  }
+  initEditProtection();
+  render();
+  bootstrapExperimentalActiveWalletHost().catch(error=>{
+    console.error('falha ao montar a previa experimental da carteira ativa:',error);
+    debugError('falha ao montar a previa experimental da carteira ativa:',error);
+  });
+}else if(isLocalTestMode()){
   applyLocalTestFixture();
   initEditProtection();
   render();
@@ -21997,19 +22070,21 @@ if(isLocalTestMode()){
   window.addEventListener('focus',()=>fetchQuotes(false));
   window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
 }
-window.addEventListener('beforeunload',()=>{ save(); releaseEditProtection('beforeunload'); });
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
-  PWA.prompt=e;
-  render();
-});
-window.addEventListener('appinstalled',()=>{
-  PWA.prompt=null;
-  PWA.installed=true;
-  toast('App instalado no dispositivo!');
-  render();
-});
-if(!isLocalTestMode() && 'serviceWorker' in navigator && location.protocol!=='file:'){
+if(!isActiveWalletHostMode()){
+  window.addEventListener('beforeunload',()=>{ save(); releaseEditProtection('beforeunload'); });
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    PWA.prompt=e;
+    render();
+  });
+  window.addEventListener('appinstalled',()=>{
+    PWA.prompt=null;
+    PWA.installed=true;
+    toast('App instalado no dispositivo!');
+    render();
+  });
+}
+if(!isLocalTestMode() && !isActiveWalletHostMode() && 'serviceWorker' in navigator && location.protocol!=='file:'){
   const hadServiceWorkerController=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     if(hadServiceWorkerController && navigator.serviceWorker.controller && !window.__swReloaded){
@@ -22024,12 +22099,14 @@ if(!isLocalTestMode() && 'serviceWorker' in navigator && location.protocol!=='fi
     }).catch(()=>{});
   });
 }
-setInterval(()=>{
-  S.cd=Math.max(0,S.cd-1);
-  if(S.cd<=0){ S.cd=QI; fetchQuotes(false); return; }
-  const el=document.getElementById('cd-span');
-  if(el) el.textContent=S.cd;
-},1000);
+if(!isActiveWalletHostMode()){
+  setInterval(()=>{
+    S.cd=Math.max(0,S.cd-1);
+    if(S.cd<=0){ S.cd=QI; fetchQuotes(false); return; }
+    const el=document.getElementById('cd-span');
+    if(el) el.textContent=S.cd;
+  },1000);
+}
 </script>
 </body>
 </html>

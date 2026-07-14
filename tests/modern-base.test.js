@@ -10,11 +10,13 @@ const sourceFiles = [
   'host.html',
   'vite.config.ts',
   'tsconfig.json',
+  'src/host-entry.tsx',
   'src/App.tsx',
   'src/main.tsx',
   'src/host.tsx',
   'src/bootstrap/mountModernApp.ts',
   'src/bootstrap/hostLegacyReportsReadonlySource.ts',
+  'src/bootstrap/hostBootstrap.ts',
   'src/styles.css',
   'src/bootstrap/modernReportsRuntime.ts',
   'src/features/reports/reportsRefreshController.ts',
@@ -72,14 +74,15 @@ test('modern shell exists and stays isolated', () => {
   assert.match(indexHtml, /<title>Carteira de Investimentos \| Shell moderno isolado<\/title>/);
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
   assert.match(hostHtml, /Host experimental/);
-  assert.match(hostHtml, /src="\/src\/host\.tsx"/);
+  assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);
   assert.match(readme, /# Shell moderno isolado/);
   assert.match(readme, /Host experimental/);
   assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /createReportsRefreshController/);
-  assert.match(hostTsx, /createRefreshableReportsSource/);
+  assert.match(hostTsx, /createNullReportsSource/);
+  assert.match(hostTsx, /buildReportAssetRowModule/);
   assert.match(appTsx, /interface AppProps/);
   assert.match(appTsx, /reportsAdapter: ReadOnlyReportsAdapter/);
   assert.match(appTsx, /reportsRefreshController\?\:/);
@@ -93,8 +96,10 @@ test('modern shell exists and stays isolated', () => {
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /createModernReportsRuntime/);
   assert.match(hostTsx, /bootstrapHost/);
+  assert.match(hostTsx, /isHostPage/);
   assert.match(hostTsx, /AppComponent: App/);
   assert.match(hostTsx, /reportsRefreshController/);
+  assert.match(read('src/host-entry.tsx'), /bootstrapHost/);
   assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
   assert.match(hostSourceTs, /buildReportAssetRow/);
   assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);
@@ -142,7 +147,7 @@ test('modern shell exists and stays isolated', () => {
   assert.match(viteConfigTs, /reports-readonly-source\.js/);
   assert.match(viteConfigTs, /report-asset-row\.js/);
   assert.equal(viteConfigTs.includes("target: 'esnext'"), false);
-  assert.equal(viteConfigTs.includes("base: './'"), false);
+  assert.equal(viteConfigTs.includes("base: './'"), true);
   assert.match(viteConfigTs, /rollupOptions/);
   assert.match(viteConfigTs, /index: resolve\(rootDir, 'index\.html'\)/);
   assert.match(viteConfigTs, /host: resolve\(rootDir, 'host\.html'\)/);
@@ -187,7 +192,7 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();

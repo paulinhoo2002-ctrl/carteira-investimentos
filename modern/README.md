@@ -24,6 +24,16 @@ O host compartilha o mesmo shell moderno, mas fica fora do fluxo principal. Ele 
 
 No host experimental, a previa de Relatorios ganha um botao manual de atualizacao. Ele apenas solicita uma nova leitura readonly e preserva o ultimo snapshot valido se algo falhar.
 
+## Carteira ativa experimental
+
+Quando for preciso compor a carteira ativa em memoria do legado, use o entrypoint isolado do app principal:
+
+```bash
+../index.html?activeWalletHost=1
+```
+
+Esse modo continua somente leitura. Ele injeta os ativos do legado apenas na composicao experimental, sem expor `S` ao React e sem criar copia permanente da carteira.
+
 ## Observacoes
 
 - esta base nao le dados reais da carteira;
