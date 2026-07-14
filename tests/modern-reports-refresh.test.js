@@ -87,6 +87,10 @@ function assertDeepFrozen(snapshot) {
   }
 }
 
+function assertDeepFrozenDiagnostics(diagnostics) {
+  assert.equal(Object.isFrozen(diagnostics), true);
+}
+
 test('controlador inicia com snapshot valido', async () => {
   const { createReportsRefreshController } = await loadControllerModule();
   const source = {
@@ -253,4 +257,107 @@ test('refresh sequencial e deterministico', async () => {
   assert.equal(snapshot.generatedAt, '2026-07-14T10:32:00.000Z');
   assert.equal(snapshot.summary.totalValue, 920);
   assertDeepFrozen(snapshot);
+});
+
+test('diagnostico readonly distingue real, vazio, fallback e erro de refresh', async () => {
+  const { createReportsRefreshController } = await loadControllerModule();
+  const snapshots = [
+    createSnapshot('2026-07-14T10:30:00.000Z', 900),
+    {
+      generatedAt: '2026-07-14T10:31:00.000Z',
+      notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
+      summary: {
+        totalValue: 0,
+        itemCount: 0,
+        averageVariationPct: 0,
+      },
+      items: [],
+    },
+  ];
+  let cursor = 0;
+  const source = {
+    getSnapshot() {
+      if (cursor >= snapshots.length) {
+        throw new Error('boom');
+      }
+
+      return snapshots[cursor];
+    },
+  };
+
+  const controller = createReportsRefreshController({
+    source,
+    onRefresh() {
+      cursor += 1;
+    },
+    buildDiagnostics({ snapshot, isFallbackSnapshot, refreshStatus }) {
+      const originMode = isFallbackSnapshot ? 'fallback-readonly' : snapshot.items.length > 0 ? 'real-wallet' : 'empty-wallet';
+
+      return {
+        originMode,
+        originLabel:
+          originMode === 'real-wallet'
+            ? 'Carteira ativa real'
+            : originMode === 'empty-wallet'
+              ? 'Carteira ativa vazia'
+              : 'Fallback readonly',
+        itemCount: snapshot.items.length,
+        generatedAt: snapshot.generatedAt,
+        hasNotice: Boolean(String(snapshot.notice || '').trim()),
+        refreshStatus,
+      };
+    },
+  });
+
+  const initialState = controller.getState();
+  assert.equal(initialState.diagnostics.originMode, 'real-wallet');
+  assert.equal(initialState.diagnostics.originLabel, 'Carteira ativa real');
+  assert.equal(initialState.diagnostics.refreshStatus, 'idle');
+  assert.equal(initialState.diagnostics.itemCount, 3);
+  assert.equal(initialState.diagnostics.generatedAt, '2026-07-14T10:30:00.000Z');
+  assertDeepFrozenDiagnostics(initialState.diagnostics);
+
+  controller.refresh();
+  const emptyState = controller.getState();
+  assert.equal(emptyState.diagnostics.originMode, 'empty-wallet');
+  assert.equal(emptyState.diagnostics.originLabel, 'Carteira ativa vazia');
+  assert.equal(emptyState.diagnostics.refreshStatus, 'updated');
+  assert.equal(emptyState.diagnostics.itemCount, 0);
+  assertDeepFrozenDiagnostics(emptyState.diagnostics);
+
+  const previousSnapshot = controller.getSnapshot();
+  controller.refresh();
+  const errorState = controller.getState();
+
+  assert.equal(errorState.snapshot, previousSnapshot);
+  assert.equal(errorState.diagnostics.originMode, 'empty-wallet');
+  assert.equal(errorState.diagnostics.refreshStatus, 'fallback');
+  assert.equal(errorState.errorMessage, 'Nao foi possivel atualizar a previa. Ultimo snapshot valido mantido.');
+  assertDeepFrozenDiagnostics(errorState.diagnostics);
+});
+
+test('erro explicito no callback de refresh marca estado de erro sem perder snapshot valido', async () => {
+  const { createReportsRefreshController } = await loadControllerModule();
+  const source = {
+    getSnapshot() {
+      return createSnapshot('2026-07-14T10:30:00.000Z');
+    },
+  };
+
+  const controller = createReportsRefreshController({
+    source,
+    onRefresh() {
+      throw new Error('boom');
+    },
+  });
+
+  const before = controller.getSnapshot();
+  const refreshed = controller.refresh();
+  const after = controller.getState();
+
+  assert.equal(refreshed, false);
+  assert.equal(after.snapshot, before);
+  assert.equal(after.diagnostics.refreshStatus, 'error');
+  assert.equal(after.errorMessage, 'Nao foi possivel atualizar a previa. Ultimo snapshot valido mantido.');
+  assertDeepFrozenDiagnostics(after.diagnostics);
 });

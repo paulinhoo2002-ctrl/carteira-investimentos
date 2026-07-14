@@ -23,6 +23,7 @@ http://127.0.0.1:4173/host.html
 O host compartilha o mesmo shell moderno, mas fica fora do fluxo principal. Ele usa a fonte legada readonly real somente nesse entrypoint experimental e cai para a fonte demonstrativa se a carga falhar.
 
 No host experimental, a previa de Relatorios ganha um botao manual de atualizacao. Ele apenas solicita uma nova leitura readonly e preserva o ultimo snapshot valido se algo falhar.
+Quando o host esta em modo experimental, um diagnostico discreto mostra se a origem veio da carteira ativa real, de um snapshot vazio valido, do fallback readonly ou da fonte demonstrativa.
 
 ## Carteira ativa experimental
 

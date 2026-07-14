@@ -3,7 +3,12 @@ import { createHostLegacyReportsReadonlySource } from './bootstrap/hostLegacyRep
 import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
 import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
-import { createReportsRefreshController } from './features/reports/reportsRefreshController.ts';
+import {
+  createReportsRefreshController,
+  type ReportsReadonlyDiagnostics,
+  type ReportsRefreshControllerDiagnosticsFactory,
+  type ReportsReadonlyOriginMode,
+} from './features/reports/reportsRefreshController.ts';
 import type { HostLegacyReportAsset } from './bootstrap/hostLegacyReportsReadonlySource';
 import './styles.css';
 
@@ -71,6 +76,65 @@ function createHostExperimentalAssets(revision: number) {
       updated_at: '2026-07-14T10:30:00.000Z',
     },
   ] as const;
+}
+
+function resolveHostOriginMode({
+  hasInjectedAssets,
+  isFallbackSnapshot,
+  itemCount,
+}: {
+  readonly hasInjectedAssets: boolean;
+  readonly isFallbackSnapshot: boolean;
+  readonly itemCount: number;
+}): ReportsReadonlyOriginMode {
+  if (isFallbackSnapshot) {
+    return 'fallback-readonly';
+  }
+
+  if (!hasInjectedAssets) {
+    return 'demo-source';
+  }
+
+  return itemCount > 0 ? 'real-wallet' : 'empty-wallet';
+}
+
+function buildHostOriginLabel(originMode: ReportsReadonlyOriginMode) {
+  switch (originMode) {
+    case 'real-wallet':
+      return 'Carteira ativa real';
+    case 'empty-wallet':
+      return 'Carteira ativa vazia';
+    case 'fallback-readonly':
+      return 'Fallback readonly';
+    case 'demo-source':
+    default:
+      return 'Fonte demonstrativa';
+  }
+}
+
+function createHostDiagnosticsFactory({
+  hasInjectedAssets,
+}: {
+  readonly hasInjectedAssets: boolean;
+}): ReportsRefreshControllerDiagnosticsFactory {
+  return ({ snapshot, isFallbackSnapshot, refreshStatus, previousDiagnostics }) => {
+    const originMode = resolveHostOriginMode({
+      hasInjectedAssets,
+      isFallbackSnapshot,
+      itemCount: snapshot.items.length,
+    });
+
+    const diagnostics: ReportsReadonlyDiagnostics = {
+      originMode,
+      originLabel: buildHostOriginLabel(originMode),
+      itemCount: snapshot.items.length,
+      generatedAt: snapshot.generatedAt,
+      hasNotice: Boolean(String(snapshot.notice || '').trim()),
+      refreshStatus: refreshStatus === 'error' && previousDiagnostics ? 'error' : refreshStatus,
+    };
+
+    return diagnostics;
+  };
 }
 
 export async function bootstrapHost(options: HostBootstrapOptions = {}) {
@@ -156,6 +220,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
 
   const reportsRefreshController = createReportsRefreshController({
     source: baseReportsSource,
+    buildDiagnostics: createHostDiagnosticsFactory({ hasInjectedAssets }),
     onRefresh: hasInjectedAssets
       ? undefined
       : () => {

@@ -87,6 +87,10 @@ test('modern shell exists and stays isolated', () => {
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /createReportsRefreshController/);
+  assert.match(hostTsx, /createHostDiagnosticsFactory/);
+  assert.match(hostTsx, /Carteira ativa real/);
+  assert.match(hostTsx, /Carteira ativa vazia/);
+  assert.match(hostTsx, /Fallback readonly/);
   assert.match(hostTsx, /createNullReportsSource/);
   assert.match(hostTsx, /buildReportAssetRowModule/);
   assert.match(appTsx, /interface AppProps/);
@@ -122,6 +126,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(runtimeTs, /reportsSource \?\? createConnectedReportsDemoSource\(\)/);
   assert.match(refreshControllerTs, /createReportsRefreshController/);
   assert.match(refreshControllerTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(refreshControllerTs, /ReportsReadonlyDiagnostics/);
+  assert.match(refreshControllerTs, /ReportsRefreshControllerDiagnosticsFactory/);
   assert.match(refreshControllerTs, /subscribe/);
   assert.match(refreshControllerTs, /refresh/);
   assert.match(refreshControllerTs, /getState/);
@@ -142,6 +148,7 @@ test('modern shell exists and stays isolated', () => {
   assert.match(stylesCss, /\.assets-report__table caption/);
   assert.match(stylesCss, /\.assets-report__mobile-list/);
   assert.match(stylesCss, /\.assets-report__refresh-button/);
+  assert.match(stylesCss, /\.assets-report__diagnostic/);
   assert.match(stylesCss, /\.assets-report__status/);
   assert.match(stylesCss, /font-variant-numeric: tabular-nums/);
   assert.equal(stylesCss.includes('!important'), false);
@@ -180,6 +187,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(reportsPreviewTsx, /adapter: ReadOnlyReportsAdapter/);
   assert.match(reportsPreviewTsx, /snapshot=\{adapter\.getSnapshot\(\)\}/);
   assert.match(reportsPreviewTsx, /showRefreshButton=\{false\}/);
+  assert.match(reportsPreviewTsx, /assets-report__diagnostic/);
+  assert.match(reportsPreviewTsx, /aria-live="polite"/);
   assert.match(reportsPreviewTsx, /snapshot\.notice/);
   assert.match(reportsPreviewTsx, /snapshot\.summary\.totalValue/);
   assert.match(reportsPreviewTsx, /snapshot\.items\.map/);

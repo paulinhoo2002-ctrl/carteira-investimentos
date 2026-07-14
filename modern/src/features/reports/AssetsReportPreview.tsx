@@ -1,5 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import type { ReportsRefreshController } from './reportsRefreshController';
+import type {
+  ReportsReadonlyDiagnostics,
+  ReportsRefreshController,
+} from './reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 
 const trendLabel = {
@@ -39,10 +42,24 @@ interface AssetsReportPreviewContentProps {
   errorMessage: string | null;
   onRefresh?: () => void;
   showRefreshButton: boolean;
+  diagnostics?: ReportsReadonlyDiagnostics | null;
   snapshot: ReturnType<ReadOnlyReportsAdapter['getSnapshot']>;
 }
 
-function AssetsReportPreviewContent({ errorMessage, onRefresh, showRefreshButton, snapshot }: AssetsReportPreviewContentProps) {
+const diagnosticStatusLabel: Record<ReportsReadonlyDiagnostics['refreshStatus'], string> = {
+  idle: 'Leitura inicial pronta',
+  updated: 'Leitura atualizada',
+  fallback: 'Fallback readonly ativo',
+  error: 'Erro de refresh detectado',
+};
+
+function AssetsReportPreviewContent({
+  diagnostics,
+  errorMessage,
+  onRefresh,
+  showRefreshButton,
+  snapshot,
+}: AssetsReportPreviewContentProps) {
   return (
     <section className="page-shell assets-report" aria-labelledby="page-reports">
       <div className="assets-report__header">
@@ -67,6 +84,20 @@ function AssetsReportPreviewContent({ errorMessage, onRefresh, showRefreshButton
       <p className="page-shell__description">
         Primeira tela moderna somente leitura para demonstrar uma previa de relatorios sem carregar dados reais.
       </p>
+      {diagnostics ? (
+        <div
+          className="assets-report__diagnostic"
+          data-origin-mode={diagnostics.originMode}
+          data-refresh-status={diagnostics.refreshStatus}
+          aria-live="polite"
+        >
+          <strong>{diagnostics.originLabel}</strong>
+          <span>{diagnostics.itemCount} ativos</span>
+          <span>Atualizacao: {diagnosticStatusLabel[diagnostics.refreshStatus]}</span>
+          <span>Gerado em {diagnostics.generatedAt}</span>
+          <span>{diagnostics.hasNotice ? 'Notice ativo' : 'Sem notice'}</span>
+        </div>
+      ) : null}
       <p className="assets-report__notice">{snapshot.notice}</p>
       {errorMessage ? (
         <p className="assets-report__status" role="status" aria-live="polite">
@@ -192,6 +223,7 @@ function AssetsReportPreviewContent({ errorMessage, onRefresh, showRefreshButton
 function StaticAssetsReportPreview({ adapter }: { adapter: ReadOnlyReportsAdapter }) {
   return (
     <AssetsReportPreviewContent
+      diagnostics={null}
       errorMessage={null}
       showRefreshButton={false}
       snapshot={adapter.getSnapshot()}
@@ -212,6 +244,7 @@ function RefreshableAssetsReportPreview({
 
   return (
     <AssetsReportPreviewContent
+      diagnostics={refreshState.diagnostics}
       errorMessage={refreshState.errorMessage}
       onRefresh={() => refreshController?.refresh()}
       showRefreshButton={true}

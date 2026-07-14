@@ -162,6 +162,9 @@ async function assertReportsPreview(page) {
     mainText?.includes('Snapshot legado somente leitura. React nao escreve na fonte.') === true,
     'Missing read-only snapshot notice',
   );
+  await assert.equal(await page.locator('.assets-report__diagnostic').count(), 1);
+  assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Fonte demonstrativa/);
+  await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'demo-source');
   await assert.equal(await page.locator('.assets-report__table').count(), 1);
   await assert.equal(await page.locator('.assets-report__table caption').textContent(), 'Previa demonstrativa de ativos em relatorios');
   await assert.equal(await page.locator('.assets-report__table thead th[scope="col"]').count(), 8);
