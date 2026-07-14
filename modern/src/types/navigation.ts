@@ -60,9 +60,9 @@ export const MODERN_PAGES: ModernPage[] = [
   {
     id: 'reports',
     label: 'Relatorios',
-    title: 'Relatorios',
-    description: 'Espaco para relatorios e consolidacoes ainda nao migrados.',
-    hint: 'Saidas futuras',
+    title: 'Previa de Ativos',
+    description: 'Previa somente leitura com dados ficticios para demonstrar relatorios no shell moderno.',
+    hint: 'Previa de ativos demo',
   },
   {
     id: 'settings',

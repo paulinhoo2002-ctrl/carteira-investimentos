@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { PagePlaceholder } from './components/PagePlaceholder';
 import { Sidebar } from './components/Sidebar';
+import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
 import { MODERN_PAGES, OVERVIEW_CARDS, type ModernPageId } from './types/navigation';
 
 export function App() {
@@ -59,10 +60,14 @@ export function App() {
         ) : null}
 
         <main className="modern-main" id="modern-main">
-          <PagePlaceholder
-            cardData={activePageId === 'overview' ? OVERVIEW_CARDS : undefined}
-            page={activePage}
-          />
+          {activePageId === 'reports' ? (
+            <AssetsReportPreview />
+          ) : (
+            <PagePlaceholder
+              cardData={activePageId === 'overview' ? OVERVIEW_CARDS : undefined}
+              page={activePage}
+            />
+          )}
         </main>
       </div>
 

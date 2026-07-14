@@ -148,7 +148,8 @@ button {
 
 .modern-menu-button:focus-visible,
 .sidebar__item:focus-visible,
-.modern-backdrop:focus-visible {
+.modern-backdrop:focus-visible,
+.assets-report__mobile-card:focus-within {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
@@ -304,6 +305,174 @@ button {
   font-size: 0.94rem;
 }
 
+.assets-report {
+  align-content: start;
+}
+
+.assets-report__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.assets-report__updated {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.assets-report__notice {
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.assets-report__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.assets-report__table-wrap {
+  overflow-x: auto;
+}
+
+.assets-report__table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  color: var(--color-text);
+}
+
+.assets-report__table caption {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-weight: 700;
+  text-align: left;
+}
+
+.assets-report__table th,
+.assets-report__table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.assets-report__table thead th {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.assets-report__table tbody tr {
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.assets-report__table tbody tr + tr {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.assets-report__ticker,
+.assets-report__name {
+  display: block;
+}
+
+.assets-report__ticker {
+  font-weight: 800;
+}
+
+.assets-report__name {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.number-cell {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.trend-badge {
+  display: inline-flex;
+  min-width: 78px;
+  justify-content: center;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.trend-badge[data-trend='positive'] {
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #bbf7d0;
+}
+
+.trend-badge[data-trend='neutral'] {
+  border-color: rgba(203, 213, 225, 0.45);
+  color: #e2e8f0;
+}
+
+.trend-badge[data-trend='negative'] {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fecaca;
+}
+
+.assets-report__mobile-list {
+  display: none;
+}
+
+.assets-report__mobile-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+
+.assets-report__mobile-card h3,
+.assets-report__mobile-card p,
+.assets-report__mobile-card dl {
+  margin: 0;
+}
+
+.assets-report__mobile-card p {
+  color: var(--color-text-muted);
+}
+
+.assets-report__mobile-card dl {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.assets-report__mobile-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.assets-report__mobile-card dt {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.assets-report__mobile-card dd {
+  margin: 0;
+  max-width: 58%;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .modern-footnote {
   padding: 0 var(--space-7) var(--space-7);
   color: var(--color-text-soft);
@@ -374,8 +543,26 @@ button {
     border-radius: var(--radius-lg);
   }
 
-  .overview-grid {
+  .overview-grid,
+  .assets-report__summary {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .assets-report__header {
+    display: grid;
+  }
+
+  .assets-report__updated {
+    text-align: left;
+  }
+
+  .assets-report__table-wrap {
+    display: none;
+  }
+
+  .assets-report__mobile-list {
+    display: grid;
+    gap: var(--space-3);
   }
 }
 
