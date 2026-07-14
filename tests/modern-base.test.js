@@ -15,6 +15,7 @@ const sourceFiles = [
   'src/components/AppHeader.tsx',
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
+  'src/features/reports/reportsReadonlyBridge.ts',
   'src/features/reports/AssetsReportPreview.tsx',
   'src/features/reports/reportsSnapshotAdapter.ts',
   'src/types/navigation.ts',
@@ -44,6 +45,7 @@ test('modern shell exists and stays isolated', () => {
   const headerTsx = read('src/components/AppHeader.tsx');
   const sidebarTsx = read('src/components/Sidebar.tsx');
   const placeholderTsx = read('src/components/PagePlaceholder.tsx');
+  const reportsBridgeTs = read('src/features/reports/reportsReadonlyBridge.ts');
   const reportsPreviewTsx = read('src/features/reports/AssetsReportPreview.tsx');
   const reportsAdapterTs = read('src/features/reports/reportsSnapshotAdapter.ts');
   const navigationTs = read('src/types/navigation.ts');
@@ -52,7 +54,7 @@ test('modern shell exists and stays isolated', () => {
   assert.match(indexHtml, /<title>Carteira de Investimentos \| Shell moderno isolado<\/title>/);
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
   assert.match(readme, /# Shell moderno isolado/);
-  assert.match(readme, /Relatorios consome snapshot somente leitura por adaptador explicito/);
+  assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
   assert.match(appTsx, /READ_ONLY_REPORTS_ADAPTER/);
   assert.match(appTsx, /adapter=\{READ_ONLY_REPORTS_ADAPTER\}/);
   assert.match(appTsx, /activePageId === 'reports'/);
@@ -82,22 +84,27 @@ test('modern shell exists and stays isolated', () => {
   assert.match(sidebarTsx, /aria-current=\{isActive \? 'page' : undefined\}/);
   assert.match(sidebarTsx, /Secoes da base moderna/);
   assert.match(placeholderTsx, /Funcionalidade real ainda nao foi migrada\./);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORT_CATEGORIES/);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORT_TRENDS/);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(reportsBridgeTs, /createReadOnlyReportsBridge/);
+  assert.match(reportsBridgeTs, /readSnapshot\(\)/);
+  assert.match(reportsBridgeTs, /itemCount !== value\.items\.length/);
+  assert.match(reportsBridgeTs, /Number\.isFinite/);
+  assert.match(reportsBridgeTs, /catch/);
   assert.match(reportsPreviewTsx, /Previa somente leitura de Relatorios/);
   assert.match(reportsPreviewTsx, /adapter: ReadOnlyReportsAdapter/);
   assert.match(reportsPreviewTsx, /const snapshot = adapter.getSnapshot\(\)/);
   assert.match(reportsPreviewTsx, /snapshot\.notice/);
   assert.match(reportsPreviewTsx, /snapshot\.summary\.totalValue/);
   assert.match(reportsPreviewTsx, /snapshot\.items\.map/);
-  assert.match(reportsAdapterTs, /export interface ReadOnlyReportsSnapshot/);
+  assert.match(reportsAdapterTs, /createReadOnlyReportsBridge/);
+  assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_BRIDGE/);
+  assert.match(reportsAdapterTs, /export type \{ ReadOnlyReportCategory, ReadOnlyReportItem, ReadOnlyReportTrend, ReadOnlyReportsSnapshot \}/);
   assert.match(reportsAdapterTs, /export interface ReadOnlyReportsAdapter/);
   assert.match(reportsAdapterTs, /createReadOnlyReportsAdapter/);
   assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_ADAPTER/);
-  assert.match(reportsAdapterTs, /Snapshot controlado por adaptador somente leitura/);
-  assert.match(reportsAdapterTs, /deepFreeze/);
-  assert.match(reportsAdapterTs, /DEMO-ALFA11/);
-  assert.match(reportsAdapterTs, /DEMO-BETA34/);
-  assert.match(reportsAdapterTs, /DEMO-GAMA3/);
-  assert.match(reportsAdapterTs, /DEMO-DELTA5/);
+  assert.match(reportsAdapterTs, /ReadOnlyReportsBridge/);
   assert.match(navigationTs, /Visao geral/);
   assert.match(navigationTs, /Configuracoes/);
   assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
@@ -106,7 +113,7 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --test tests/modern-base.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-reports-bridge.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -146,14 +153,22 @@ test('modern shell exposes seven navigation options', () => {
 });
 
 test('modern reports adapter returns frozen read-only snapshot', () => {
+  const bridgeFile = read('src/features/reports/reportsReadonlyBridge.ts');
   const adapterFile = read('src/features/reports/reportsSnapshotAdapter.ts');
-  assert.match(adapterFile, /FALLBACK_SNAPSHOT/);
+
+  assert.match(bridgeFile, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(bridgeFile, /createReadOnlyReportsBridge/);
+  assert.match(bridgeFile, /cloneReadOnlyReportsSnapshot/);
+  assert.match(bridgeFile, /isReadOnlyReportsSnapshot/);
+  assert.match(bridgeFile, /deepFreeze/);
+  assert.match(bridgeFile, /React nao escreve na fonte/);
+  assert.match(bridgeFile, /readonly/);
+  assert.match(adapterFile, /READ_ONLY_REPORTS_ADAPTER/);
   assert.match(adapterFile, /createReadOnlyReportsAdapter/);
-  assert.match(adapterFile, /cloneSnapshot/);
-  assert.match(adapterFile, /isSnapshotLike/);
-  assert.match(adapterFile, /deepFreeze/);
-  assert.match(adapterFile, /React nao escreve na fonte/);
-  assert.match(adapterFile, /readonly/);
+  assert.match(adapterFile, /ReadOnlyReportsBridge/);
+  assert.equal(bridgeFile.includes('localStorage'), false);
+  assert.equal(bridgeFile.includes('sessionStorage'), false);
+  assert.equal(bridgeFile.includes('indexedDB'), false);
   assert.equal(adapterFile.includes('localStorage'), false);
   assert.equal(adapterFile.includes('sessionStorage'), false);
   assert.equal(adapterFile.includes('indexedDB'), false);
