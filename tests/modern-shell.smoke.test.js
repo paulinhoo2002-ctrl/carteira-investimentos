@@ -138,9 +138,9 @@ async function assertPageReady(page) {
 }
 
 async function assertReportsPreview(page) {
-  await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa de Ativos');
+  await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
   await assert.equal(
-    await page.getByText('Dados demonstrativos. Nenhuma informacao real da carteira foi carregada.').count(),
+    await page.getByText('Snapshot controlado por adaptador somente leitura. React nao escreve na fonte.').count(),
     1,
   );
   await assert.equal(await page.locator('.assets-report__table').count(), 1);
