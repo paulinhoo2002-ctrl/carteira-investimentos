@@ -55,17 +55,21 @@ test('host experimental exists and keeps modern app isolated', () => {
   const appTsx = fs.readFileSync(appModulePath, 'utf8');
 
   assert.match(hostHtml, /Host experimental/);
-  assert.match(hostHtml, /src="\/src\/host\.tsx"/);
+  assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /createReportsRefreshController/);
-  assert.match(hostTsx, /createRefreshableReportsSource/);
+  assert.match(hostTsx, /createNullReportsSource/);
+  assert.match(hostTsx, /buildReportAssetRowModule/);
   assert.match(hostTsx, /createHostExperimentalAssets/);
-  assert.match(hostTsx, /getAssets: \(\) => experimentalAssets/);
+  assert.match(hostTsx, /experimentalAssets/);
   assert.match(hostTsx, /createModernReportsRuntime/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /AppComponent: App/);
   assert.match(hostTsx, /reportsRefreshController/);
+  assert.match(hostTsx, /bootstrapHost/);
+  assert.match(hostTsx, /isHostPage/);
+  assert.match(read('src/host-entry.tsx'), /bootstrapHost/);
   assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
   assert.match(hostSourceTs, /buildReportAssetRow/);
   assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);

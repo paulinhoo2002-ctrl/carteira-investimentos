@@ -7,6 +7,7 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   root: 'modern',
+  base: './',
   plugins: [react()],
   optimizeDeps: {
     include: [resolve(rootDir, '..', 'legacy', 'reports-readonly-source.js'), resolve(rootDir, '..', 'report-asset-row.js')],
@@ -20,9 +21,13 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name].js',
+      },
       input: {
         index: resolve(rootDir, 'index.html'),
         host: resolve(rootDir, 'host.html'),
+        'host-bootstrap': resolve(rootDir, 'src/bootstrap/hostBootstrap.ts'),
       },
     },
   },

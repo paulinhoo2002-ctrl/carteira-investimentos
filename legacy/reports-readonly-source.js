@@ -285,31 +285,34 @@ function createLegacyAssetsReadonlyProvider(deps = {}) {
   };
 }
 
-function createLegacyReportsReadonlySource(deps = {}) {
-  return createLegacyAssetsReadonlyProvider(deps);
-}
+const createLegacyReportsReadonlySource = (deps = {}) => createLegacyAssetsReadonlyProvider(deps);
 
 function installLegacyReportsReadonlySource(target = globalThis) {
   if (!target || typeof target !== 'object') {
     return null;
   }
 
-  target.createLegacyAssetsReadonlyProvider = createLegacyAssetsReadonlyProvider;
-  target.createLegacyReportsReadonlySource = createLegacyReportsReadonlySource;
-  target.buildLegacyReportsReadonlySnapshot = buildLegacyReportsReadonlySnapshot;
-  target.LEGACY_REPORT_CATEGORY_MAP = LEGACY_REPORT_CATEGORY_MAP;
-  target.LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT = LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
+  Object.defineProperties(target, {
+    createLegacyAssetsReadonlyProvider: {
+      value: createLegacyAssetsReadonlyProvider,
+      configurable: true,
+      writable: true,
+      enumerable: true,
+    },
+  });
 
   return target;
 }
 
-module.exports = {
-  DEFAULT_NOTICE,
-  LEGACY_REPORT_CATEGORY_MAP,
-  LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT,
-  buildLegacyReportsReadonlySnapshot,
-  createLegacyAssetsReadonlyProvider,
-  createLegacyReportsReadonlySource,
-  installLegacyReportsReadonlySource,
-  mapLegacyCategory,
-};
+if (typeof module === 'object' && module.exports) {
+  module.exports = {
+    DEFAULT_NOTICE,
+    LEGACY_REPORT_CATEGORY_MAP,
+    LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT,
+    buildLegacyReportsReadonlySnapshot,
+    createLegacyAssetsReadonlyProvider,
+    createLegacyReportsReadonlySource,
+    installLegacyReportsReadonlySource,
+    mapLegacyCategory,
+  };
+}

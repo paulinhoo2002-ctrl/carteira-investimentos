@@ -370,5 +370,5 @@ test('runtime e react nao importam legado nem reintroduzem calculos', async () =
   assert.match(viteText, /reports-readonly-source\.js/);
   assert.match(viteText, /report-asset-row\.js/);
   assert.equal(viteText.includes("target: 'esnext'"), false);
-  assert.equal(viteText.includes("base: './'"), false);
+  assert.equal(viteText.includes("base: './'"), true);
 });

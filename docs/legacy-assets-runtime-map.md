@@ -256,3 +256,81 @@ Rollback:
 - remover o provider alias novo se ele nao for mais necessario;
 - manter `createLegacyReportsReadonlySource` como compatibilidade;
 - nenhum dado real ou estado persistido depende desta fase.
+
+## Fase 175 - composicao experimental com carteira ativa
+
+Ponto de composicao:
+
+- o unico ponto que conhece `S.assets` e o bootstrap experimental do `index.html`;
+- a injeção acontece por `getAssets: () => Array.isArray(S.assets) ? S.assets : []`;
+- o moderno continua recebendo apenas provider, bridge, controller e adapter;
+- `S` nao atravessa a fronteira React.
+
+Ordem:
+
+```
+S.assets em memoria
+↓
+getAssets explicito no bootstrap experimental
+↓
+createLegacyAssetsReadonlyProvider(...)
+↓
+snapshot validado e congelado
+↓
+bridge
+↓
+controller
+↓
+adapter
+↓
+React experimental
+```
+
+Contrato:
+
+- leitura somente em `getSnapshot()`;
+- snapshot anterior permanece imutavel;
+- colecao vazia gera snapshot valido;
+- ausencia de carteira ativa ou excecao de leitura cai no fallback readonly;
+- nenhum dado e escrito;
+- nenhum storage, Firebase, Auth, sync, backup ou DOM legado e exposto ao React.
+
+Refresh:
+
+- o botao `Atualizar previa` continua controlado pelo host experimental;
+- cada refresh relê `S.assets` por meio de `getAssets`;
+- o ultimo snapshot valido e preservado em erro;
+- nao existe polling, timer ou callback global novo.
+
+Isolamento:
+
+- o entrypoint experimental e local e opt-in;
+- a rota principal segue inalterada;
+- o host moderno independente segue demonstrativo;
+- a composicao experimental continua removivel sem mexer no legado principal.
+
+Seguranca e privacidade:
+
+- nao registrar ativos ou valores no console;
+- nao serializar carteira em URL;
+- nao usar dados reais em testes;
+- nao criar copia permanente da carteira;
+- nao ativar a composicao sem a leitura experimental explicita.
+
+Riscos remanescentes:
+
+- a carteira ativa pode mudar entre refreshes manuais;
+- uma leitura invalida continua caindo no fallback readonly;
+- a composicao continua dependente de `buildReportAssetRow` canonico e das funcoes puras reutilizadas.
+
+Plano da Fase 176:
+
+- revisar se a composicao experimental pode sair do `index.html` e virar um bootstrap dedicado ainda mais explicito;
+- manter a mesma fronteira somente leitura;
+- nao aproximar o React do legado.
+
+Rollback:
+
+- remover o bootstrap experimental do `index.html`;
+- remover os testes e a doc desta fase;
+- manter `createLegacyAssetsReadonlyProvider` e o host moderno como estavam na fase anterior.

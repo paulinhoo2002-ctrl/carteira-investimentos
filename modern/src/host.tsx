@@ -4,28 +4,24 @@ import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
 import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
 import { createReportsRefreshController } from './features/reports/reportsRefreshController.ts';
+import type { HostLegacyReportAsset } from './bootstrap/hostLegacyReportsReadonlySource';
 import './styles.css';
 
-const rootElement = document.getElementById('root');
+const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null;
 
-if (!rootElement) {
-  throw new Error('Elemento root nao encontrado.');
+export interface HostBootstrapOptions {
+  readonly rootElement?: HTMLElement | null;
+  readonly getAssets?: () => readonly HostLegacyReportAsset[];
+  readonly legacyModule?: Record<string, unknown> | null;
+  readonly buildReportAssetRowModule?: Record<string, unknown> | null;
+  readonly getGeneratedAt?: () => string;
+  readonly notice?: string;
 }
 
-void bootstrapHost();
-
-function createRefreshableReportsSource(baseSource: { readonly getSnapshot: () => unknown }, getGeneratedAt: () => string) {
+function createNullReportsSource() {
   return {
     getSnapshot() {
-      const snapshot = baseSource.getSnapshot();
-      if (!snapshot || typeof snapshot !== 'object') {
-        return snapshot;
-      }
-
-      return {
-        ...(snapshot as Record<string, unknown>),
-        generatedAt: getGeneratedAt(),
-      };
+      return null;
     },
   };
 }
@@ -76,37 +72,100 @@ function createHostExperimentalAssets(revision: number) {
   ] as const;
 }
 
-async function bootstrapHost() {
+export async function bootstrapHost(options: HostBootstrapOptions = {}) {
+  const targetRoot = options.rootElement ?? rootElement;
+
+  if (!targetRoot) {
+    throw new Error('Elemento root nao encontrado.');
+  }
+
+  const hasInjectedAssets = typeof options.getAssets === 'function';
   let experimentalRevision = 0;
   let experimentalAssets = createHostExperimentalAssets(experimentalRevision);
 
-  const baseReportsSource =
-    (await createHostLegacyReportsReadonlySource({
-      getAssets: () => experimentalAssets,
-      getGeneratedAt: () => new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString(),
-    })) ?? createConnectedReportsDemoSource();
+  const injectedLegacyModule = options.legacyModule ?? null;
+  const injectedBuildReportAssetRow =
+    options.buildReportAssetRowModule?.buildReportAssetRow ??
+    options.buildReportAssetRowModule?.default?.buildReportAssetRow ??
+    options.buildReportAssetRowModule?.default;
 
-  const initialSnapshot = baseReportsSource.getSnapshot();
-  const initialGeneratedAt =
-    initialSnapshot && typeof initialSnapshot === 'object' && 'generatedAt' in initialSnapshot
-      ? String((initialSnapshot as Record<string, unknown>).generatedAt)
-      : '2026-07-14T10:30:00.000Z';
+  const directLegacyProvider =
+    injectedLegacyModule &&
+    (injectedLegacyModule.createLegacyAssetsReadonlyProvider ??
+      injectedLegacyModule.createLegacyReportsReadonlySource ??
+      injectedLegacyModule.default?.createLegacyAssetsReadonlyProvider ??
+      injectedLegacyModule.default?.createLegacyReportsReadonlySource);
+
+  const baseReportsSource = (() => {
+    if (typeof directLegacyProvider === 'function' && typeof injectedBuildReportAssetRow === 'function') {
+      return directLegacyProvider({
+        getAssets: options.getAssets ?? (() => experimentalAssets),
+        buildReportAssetRow: injectedBuildReportAssetRow,
+        assetAppliedValue: (asset) => asset.applied,
+        assetCurrentValue: (asset) => asset.current,
+        metaTicker: (ticker) => {
+          const normalizedTicker = String(ticker || '').trim();
+          return (
+            {
+              PETR4: { type: 'Ação', sector: 'Energia' },
+              MXRF11: { type: 'FII', sector: 'Imobiliario' },
+              BOVA11: { type: 'ETF', sector: 'Ibovespa' },
+            }[normalizedTicker] ?? { type: 'Ação', sector: '' }
+          );
+        },
+        normalizeType: (value, fallback = 'Ação') => {
+          const normalized = String(value ?? '').trim();
+          return normalized === 'Ação' || normalized === 'FII' || normalized === 'ETF' ? normalized : fallback;
+        },
+        getGeneratedAt:
+          options.getGeneratedAt ??
+          (() =>
+            hasInjectedAssets
+              ? new Date().toISOString()
+              : new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString()),
+        notice: options.notice ?? 'Snapshot legado somente leitura. React nao escreve na fonte.',
+      });
+    }
+
+    return null;
+  })() ??
+    (await createHostLegacyReportsReadonlySource({
+      legacyModule: injectedLegacyModule ?? undefined,
+      getAssets: options.getAssets ?? (() => experimentalAssets),
+      buildReportAssetRowModule: options.buildReportAssetRowModule ?? null,
+      getGeneratedAt:
+        options.getGeneratedAt ??
+        (() =>
+          hasInjectedAssets
+            ? new Date().toISOString()
+            : new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString()),
+      notice: options.notice ?? 'Snapshot legado somente leitura. React nao escreve na fonte.',
+    })) ?? (hasInjectedAssets ? createNullReportsSource() : createConnectedReportsDemoSource());
+
   const reportsRefreshController = createReportsRefreshController({
-    source: createRefreshableReportsSource(baseReportsSource, () =>
-      new Date(Date.parse(initialGeneratedAt) + experimentalRevision * 60000).toISOString(),
-    ),
-    onRefresh: () => {
-      experimentalRevision += 1;
-      experimentalAssets = createHostExperimentalAssets(experimentalRevision);
-    },
+    source: baseReportsSource,
+    onRefresh: hasInjectedAssets
+      ? undefined
+      : () => {
+          experimentalRevision += 1;
+          experimentalAssets = createHostExperimentalAssets(experimentalRevision);
+        },
   });
 
   const modernReportsRuntime = createModernReportsRuntime({ reportsSource: reportsRefreshController });
 
   mountModernApp({
-    rootElement,
+    rootElement: targetRoot,
     reportsAdapter: modernReportsRuntime.reportsAdapter,
     AppComponent: App,
     reportsRefreshController,
   });
+
+  return {
+    reportsRefreshController,
+    reportsAdapter: modernReportsRuntime.reportsAdapter,
+  };
 }
+
+export const isHostPage =
+  typeof location !== 'undefined' && /\/host\.html(?:[?#]|$)/.test(location.pathname);
