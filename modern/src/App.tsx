@@ -3,16 +3,16 @@ import { AppHeader } from './components/AppHeader';
 import { PagePlaceholder } from './components/PagePlaceholder';
 import { Sidebar } from './components/Sidebar';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
-import {
-  createConnectedReportsAdapter,
-  createConnectedReportsDemoSource,
-} from './features/reports/legacyReportsReadonlyIntegration';
+import type { ReadOnlyReportsAdapter } from './features/reports/reportsSnapshotAdapter';
 import { MODERN_PAGES, OVERVIEW_CARDS, type ModernPageId } from './types/navigation';
 
-export function App() {
+interface AppProps {
+  reportsAdapter: ReadOnlyReportsAdapter;
+}
+
+export function App({ reportsAdapter }: AppProps) {
   const [activePageId, setActivePageId] = useState<ModernPageId>('overview');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [reportsAdapter] = useState(() => createConnectedReportsAdapter(createConnectedReportsDemoSource()));
 
   const activePage = MODERN_PAGES.find((page) => page.id === activePageId) ?? MODERN_PAGES[0];
 
