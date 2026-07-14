@@ -31,7 +31,7 @@ function assertDeepFrozen(snapshot) {
   }
 }
 
-test('fase 175 mantém a composicao experimental isolada no entrypoint legado', () => {
+test('fase 178 mantém a composicao experimental isolada no entrypoint legado', () => {
   const indexHtml = normalize(fs.readFileSync(indexHtmlPath, 'utf8'));
   const hostHtml = normalize(fs.readFileSync(hostHtmlPath, 'utf8'));
   const hostTsx = normalize(fs.readFileSync(hostModulePath, 'utf8'));
@@ -45,6 +45,17 @@ test('fase 175 mantém a composicao experimental isolada no entrypoint legado', 
   assert.match(indexHtml, /bootstrapExperimentalActiveWalletHost/);
   assert.match(indexHtml, /Array\.isArray\(S\.assets\)/);
   assert.match(indexHtml, /if\(!isActiveWalletHostMode\(\)\)\{\n  setInterval\(/);
+  assert.match(indexHtml, /isReadonlyReportsExperimentalEntryEnabled/);
+  assert.match(indexHtml, /function isReadonlyReportsExperimentalEntryEnabled\(\)\{\s*return isLocalTestMode\(\) && !isActiveWalletHostMode\(\);\s*\}/);
+  assert.match(indexHtml, /readonlyReportsExperimentalHostUrl/);
+  assert.match(indexHtml, /readonlyReportsLegacyReturnUrl/);
+  assert.match(indexHtml, /openReadonlyReportsExperimentalHost/);
+  assert.match(indexHtml, /returnFromReadonlyReportsExperimentalHost/);
+  assert.match(indexHtml, /installReadonlyReportsExperimentalBanner/);
+  assert.match(indexHtml, /Relatório experimental somente leitura/);
+  assert.match(indexHtml, /Abrir relatório experimental/);
+  assert.match(indexHtml, /Voltar ao legado/);
+  assert.match(indexHtml, /activeWalletHost=1&testMode=1/);
 
   for (const text of [hostHtml, hostTsx, hostSourceTs, modernMainTsx, previewTsx, bridgeTs, adapterTs]) {
     assert.equal(text.includes('S.assets'), false, 'Modern files cannot know S.assets');

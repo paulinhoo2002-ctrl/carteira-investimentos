@@ -392,3 +392,49 @@ Rollback:
 
 - remover a observabilidade do host experimental, os testes associados e a doc desta fase;
 - manter o provider readonly e a ponte como estavam na fase anterior.
+
+## Fase 178 - navegacao controlada para o relatorio readonly real
+
+Entrada experimental:
+
+- a aplicacao legada mostra uma entrada discreta na tela de Relatorios apenas em `localhost` ou `127.0.0.1` com `testMode=1`;
+- a entrada abre `index.html?activeWalletHost=1&testMode=1`, sem substituir o menu nem a rota principal;
+- o host experimental continua isolado e readonly.
+
+Retorno:
+
+- o host experimental mostra um banner minimo com `Relatório experimental somente leitura`;
+- o botao `Voltar ao legado` retorna para a aplicacao anterior sem escrita;
+- quando o navegador tiver historico util, o retorno preserva o estado anterior da navegacao.
+
+Fluxo:
+
+```
+Relatorios legado
+â†“ entrada experimental opt-in
+host readonly experimental
+â†“ banner de retorno
+legado novamente
+```
+
+Estado permitido:
+
+- entrada invisivel em producao normal;
+- entrada visivel somente com opt-in local;
+- host readonly segue sem `S.assets` em `modern/src`;
+- falha estrita em `testMode=1` continua explicita;
+- fallback visual fora do modo estrito continua seguro.
+
+Seguranca:
+
+- nenhuma escrita e introduzida;
+- nenhum storage, Firebase, Auth, sync ou backup e acessado;
+- nenhuma duplicacao de calculo e adicionada;
+- a navegação nova continua facilmente removivel.
+
+Rollback:
+
+- remover a entrada experimental da tela de Relatorios;
+- remover o banner de retorno do host;
+- remover os testes novos e a atualizacao documental desta fase;
+- manter os contratos readonly anteriores intactos.
