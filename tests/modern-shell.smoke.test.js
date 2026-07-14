@@ -36,6 +36,7 @@ browserTest('modern shell smoke navigation', async () => {
 
       await page.locator('.sidebar__item').nth(5).click();
       await assertReportsPreview(page);
+      await assert.equal(await page.locator('.assets-report__refresh-button').count(), 0);
       await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Relatorios');
     });
 
@@ -66,6 +67,7 @@ browserTest('modern shell smoke navigation', async () => {
       await menuButton.press('Enter');
       await page.locator('#modern-sidebar .sidebar__item').nth(5).press('Enter');
       await assertReportsPreview(page);
+      await assert.equal(await page.locator('.assets-report__refresh-button').count(), 0);
       await assert.equal(await page.locator('.assets-report__mobile-list').isVisible(), true);
       await assert.equal(await page.locator('.assets-report__mobile-card').count(), 3);
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
@@ -149,6 +151,7 @@ async function assertReportsPreview(page) {
   await assert.equal(await page.locator('.assets-report__table caption').textContent(), 'Previa demonstrativa de ativos em relatorios');
   await assert.equal(await page.locator('.assets-report__table thead th[scope="col"]').count(), 8);
   await assert.equal(await page.getByText('Total demonstrativo').count(), 1);
+  await assert.equal(await page.locator('.assets-report__refresh-button').count(), 0);
 
   for (const ticker of ['PETR4', 'MXRF11', 'BOVA11']) {
     assert.ok((await page.getByText(ticker).count()) >= 1, `Missing ticker: ${ticker}`);

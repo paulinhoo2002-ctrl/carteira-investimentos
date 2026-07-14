@@ -3,14 +3,16 @@ import { AppHeader } from './components/AppHeader';
 import { PagePlaceholder } from './components/PagePlaceholder';
 import { Sidebar } from './components/Sidebar';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
+import type { ReportsRefreshController } from './features/reports/reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './features/reports/reportsSnapshotAdapter';
 import { MODERN_PAGES, OVERVIEW_CARDS, type ModernPageId } from './types/navigation';
 
 interface AppProps {
   reportsAdapter: ReadOnlyReportsAdapter;
+  reportsRefreshController?: ReportsRefreshController | null;
 }
 
-export function App({ reportsAdapter }: AppProps) {
+export function App({ reportsAdapter, reportsRefreshController }: AppProps) {
   const [activePageId, setActivePageId] = useState<ModernPageId>('overview');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -66,7 +68,7 @@ export function App({ reportsAdapter }: AppProps) {
 
         <main className="modern-main" id="modern-main">
           {activePageId === 'reports' ? (
-            <AssetsReportPreview adapter={reportsAdapter} />
+            <AssetsReportPreview adapter={reportsAdapter} refreshController={reportsRefreshController} />
           ) : (
             <PagePlaceholder
               cardData={activePageId === 'overview' ? OVERVIEW_CARDS : undefined}

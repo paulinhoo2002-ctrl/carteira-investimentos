@@ -1,12 +1,17 @@
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import type { ReportsRefreshController } from '../features/reports/reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from '../features/reports/reportsSnapshotAdapter';
 import type { ComponentType } from 'react';
 
 interface MountModernAppOptions {
   readonly rootElement: HTMLElement | null | undefined;
   readonly reportsAdapter: ReadOnlyReportsAdapter | null | undefined;
-  readonly AppComponent?: ComponentType<{ reportsAdapter: ReadOnlyReportsAdapter }> | null | undefined;
+  readonly reportsRefreshController?: ReportsRefreshController | null | undefined;
+  readonly AppComponent?: ComponentType<{
+    reportsAdapter: ReadOnlyReportsAdapter;
+    reportsRefreshController?: ReportsRefreshController | null | undefined;
+  }> | null | undefined;
 }
 
 export interface ModernAppMount {
@@ -16,7 +21,7 @@ export interface ModernAppMount {
 const mountedRoots = new WeakMap<HTMLElement, Root>();
 
 export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
-  const { rootElement, reportsAdapter, AppComponent } = options;
+  const { rootElement, reportsAdapter, reportsRefreshController, AppComponent } = options;
 
   if (!rootElement) {
     throw new Error('Elemento root nao encontrado para a base moderna.');
@@ -40,7 +45,7 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
     React.createElement(
       React.StrictMode,
       null,
-      React.createElement(AppComponent, { reportsAdapter }),
+      React.createElement(AppComponent, { reportsAdapter, reportsRefreshController }),
     ),
   );
 
