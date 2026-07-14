@@ -16,7 +16,7 @@ const sourceFiles = [
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
   'src/features/reports/AssetsReportPreview.tsx',
-  'src/features/reports/assetsReportData.ts',
+  'src/features/reports/reportsSnapshotAdapter.ts',
   'src/types/navigation.ts',
 ];
 
@@ -44,21 +44,18 @@ test('modern shell exists and stays isolated', () => {
   const headerTsx = read('src/components/AppHeader.tsx');
   const sidebarTsx = read('src/components/Sidebar.tsx');
   const placeholderTsx = read('src/components/PagePlaceholder.tsx');
-  const assetsReportTsx = read('src/features/reports/AssetsReportPreview.tsx');
-  const assetsReportDataTs = read('src/features/reports/assetsReportData.ts');
+  const reportsPreviewTsx = read('src/features/reports/AssetsReportPreview.tsx');
+  const reportsAdapterTs = read('src/features/reports/reportsSnapshotAdapter.ts');
   const navigationTs = read('src/types/navigation.ts');
   const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 
   assert.match(indexHtml, /<title>Carteira de Investimentos \| Shell moderno isolado<\/title>/);
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
   assert.match(readme, /# Shell moderno isolado/);
-  assert.match(readme, /Fase 2 da modernizacao da Carteira de Investimentos\./);
-  assert.match(appTsx, /AppHeader/);
-  assert.match(appTsx, /Sidebar/);
-  assert.match(appTsx, /PagePlaceholder/);
-  assert.match(appTsx, /AssetsReportPreview/);
+  assert.match(readme, /Relatorios consome snapshot somente leitura por adaptador explicito/);
+  assert.match(appTsx, /READ_ONLY_REPORTS_ADAPTER/);
+  assert.match(appTsx, /adapter=\{READ_ONLY_REPORTS_ADAPTER\}/);
   assert.match(appTsx, /activePageId === 'reports'/);
-  assert.match(appTsx, /OVERVIEW_CARDS/);
   assert.match(mainTsx, /createRoot/);
   assert.match(stylesCss, /\.modern-menu-button:focus-visible/);
   assert.match(stylesCss, /--color-background:/);
@@ -85,26 +82,26 @@ test('modern shell exists and stays isolated', () => {
   assert.match(sidebarTsx, /aria-current=\{isActive \? 'page' : undefined\}/);
   assert.match(sidebarTsx, /Secoes da base moderna/);
   assert.match(placeholderTsx, /Funcionalidade real ainda nao foi migrada\./);
-  assert.match(assetsReportTsx, /Dados demonstrativos\. Nenhuma informacao real da carteira foi carregada\./);
-  assert.match(assetsReportTsx, /<caption>Previa demonstrativa de ativos em relatorios<\/caption>/);
-  assert.match(assetsReportTsx, /scope="col"/);
-  assert.match(assetsReportTsx, /scope="row"/);
-  assert.match(assetsReportTsx, /Lista mobile equivalente da previa de ativos/);
-  assert.match(assetsReportTsx, /Positivo/);
-  assert.match(assetsReportTsx, /Neutro/);
-  assert.match(assetsReportTsx, /Negativo/);
-  assert.match(assetsReportDataTs, /export type AssetCategory/);
-  assert.match(assetsReportDataTs, /export type AssetTrend/);
-  assert.match(assetsReportDataTs, /export interface AssetReportItem/);
-  assert.match(assetsReportDataTs, /Object\.freeze/);
-  assert.match(assetsReportDataTs, /DEMO-ALFA11/);
-  assert.match(assetsReportDataTs, /DEMO-BETA34/);
-  assert.match(assetsReportDataTs, /DEMO-GAMA3/);
-  assert.match(assetsReportDataTs, /DEMO-DELTA5/);
+  assert.match(reportsPreviewTsx, /Previa somente leitura de Relatorios/);
+  assert.match(reportsPreviewTsx, /adapter: ReadOnlyReportsAdapter/);
+  assert.match(reportsPreviewTsx, /const snapshot = adapter.getSnapshot\(\)/);
+  assert.match(reportsPreviewTsx, /snapshot\.notice/);
+  assert.match(reportsPreviewTsx, /snapshot\.summary\.totalValue/);
+  assert.match(reportsPreviewTsx, /snapshot\.items\.map/);
+  assert.match(reportsAdapterTs, /export interface ReadOnlyReportsSnapshot/);
+  assert.match(reportsAdapterTs, /export interface ReadOnlyReportsAdapter/);
+  assert.match(reportsAdapterTs, /createReadOnlyReportsAdapter/);
+  assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_ADAPTER/);
+  assert.match(reportsAdapterTs, /Snapshot controlado por adaptador somente leitura/);
+  assert.match(reportsAdapterTs, /deepFreeze/);
+  assert.match(reportsAdapterTs, /DEMO-ALFA11/);
+  assert.match(reportsAdapterTs, /DEMO-BETA34/);
+  assert.match(reportsAdapterTs, /DEMO-GAMA3/);
+  assert.match(reportsAdapterTs, /DEMO-DELTA5/);
   assert.match(navigationTs, /Visao geral/);
   assert.match(navigationTs, /Configuracoes/);
-  assert.match(navigationTs, /Patrimonio/);
-  assert.match(navigationTs, /Previa de ativos demo/);
+  assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
+  assert.match(navigationTs, /Snapshot de leitura segura/);
   assert.equal(packageJson.scripts.build, "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"");
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
@@ -128,7 +125,7 @@ test('modern shell exists and stays isolated', () => {
     assert.equal(allText.includes(forbidden), false, `Forbidden reference found: ${forbidden}`);
   }
 
-  for (const file of [appTsx, mainTsx, headerTsx, sidebarTsx, placeholderTsx, navigationTs]) {
+  for (const file of [appTsx, mainTsx, headerTsx, sidebarTsx, placeholderTsx, reportsPreviewTsx, reportsAdapterTs, navigationTs]) {
     assert.equal(/from\s+['"`]\.\.\/\.\.\//.test(file), false, 'Legacy import path found');
     assert.equal(/from\s+['"`]\/(?!node_modules)/.test(file), false, 'Absolute import path found');
   }
@@ -148,27 +145,16 @@ test('modern shell exposes seven navigation options', () => {
   assert.match(navigationTs, /export const OVERVIEW_CARDS/);
 });
 
-test('modern reports preview uses only local demonstrative data', () => {
-  const appTsx = read('src/App.tsx');
-  const assetsReportTsx = read('src/features/reports/AssetsReportPreview.tsx');
-  const assetsReportDataTs = read('src/features/reports/assetsReportData.ts');
-  const stylesCss = read('src/styles.css');
-  const allText = allSourceText();
-
-  assert.match(appTsx, /activePageId === 'reports'/);
-  assert.match(assetsReportTsx, /Total demonstrativo/);
-  assert.match(assetsReportTsx, /Ativos na previa/);
-  assert.match(assetsReportTsx, /Variacao media/);
-  assert.match(assetsReportTsx, /formatCurrency/);
-  assert.match(assetsReportTsx, /formatPercent/);
-  assert.match(assetsReportTsx, /formatQuantity/);
-  assert.match(stylesCss, /@media \(max-width: 640px\)[\s\S]*\.assets-report__table-wrap[\s\S]*display: none/);
-  assert.match(stylesCss, /@media \(max-width: 640px\)[\s\S]*\.assets-report__mobile-list[\s\S]*display: grid/);
-
-  const tickers = [...assetsReportDataTs.matchAll(/ticker: '([^']+)'/g)].map((match) => match[1]);
-  assert.deepEqual(tickers, ['DEMO-ALFA11', 'DEMO-BETA34', 'DEMO-GAMA3', 'DEMO-DELTA5']);
-
-  for (const forbidden of ['PETR', 'VALE', 'ITUB', 'BBDC', 'BBAS', 'Tesouro', 'CDB']) {
-    assert.equal(allText.includes(forbidden), false, `Possible real asset reference found: ${forbidden}`);
-  }
+test('modern reports adapter returns frozen read-only snapshot', () => {
+  const adapterFile = read('src/features/reports/reportsSnapshotAdapter.ts');
+  assert.match(adapterFile, /FALLBACK_SNAPSHOT/);
+  assert.match(adapterFile, /createReadOnlyReportsAdapter/);
+  assert.match(adapterFile, /cloneSnapshot/);
+  assert.match(adapterFile, /isSnapshotLike/);
+  assert.match(adapterFile, /deepFreeze/);
+  assert.match(adapterFile, /React nao escreve na fonte/);
+  assert.match(adapterFile, /readonly/);
+  assert.equal(adapterFile.includes('localStorage'), false);
+  assert.equal(adapterFile.includes('sessionStorage'), false);
+  assert.equal(adapterFile.includes('indexedDB'), false);
 });

@@ -1,17 +1,10 @@
-import {
-  ASSETS_REPORT_ITEMS,
-  ASSETS_REPORT_UPDATED_AT,
-  type AssetReportItem,
-  type AssetTrend,
-} from './assetsReportData';
+import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 
-const DEMO_NOTICE = 'Dados demonstrativos. Nenhuma informacao real da carteira foi carregada.';
-
-const trendLabel: Record<AssetTrend, string> = {
+const trendLabel = {
   positive: 'Positivo',
   neutral: 'Neutro',
   negative: 'Negativo',
-};
+} as const;
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -35,17 +28,12 @@ function formatQuantity(value: number) {
   });
 }
 
-function totalCurrentValue(items: readonly AssetReportItem[]) {
-  return items.reduce((total, item) => total + item.currentValue, 0);
+interface AssetsReportPreviewProps {
+  adapter: ReadOnlyReportsAdapter;
 }
 
-function averageVariation(items: readonly AssetReportItem[]) {
-  return items.reduce((total, item) => total + item.variationPct, 0) / items.length;
-}
-
-export function AssetsReportPreview() {
-  const totalValue = totalCurrentValue(ASSETS_REPORT_ITEMS);
-  const variationAverage = averageVariation(ASSETS_REPORT_ITEMS);
+export function AssetsReportPreview({ adapter }: AssetsReportPreviewProps) {
+  const snapshot = adapter.getSnapshot();
 
   return (
     <section className="page-shell assets-report" aria-labelledby="page-reports">
@@ -53,31 +41,31 @@ export function AssetsReportPreview() {
         <div>
           <p className="page-shell__eyebrow">Relatorios</p>
           <h2 className="page-shell__title" id="page-reports">
-            Previa de Ativos
+            Previa somente leitura de Relatorios
           </h2>
         </div>
-        <p className="assets-report__updated">Atualizacao ficticia: {ASSETS_REPORT_UPDATED_AT}</p>
+        <p className="assets-report__updated">Atualizacao ficticia: {snapshot.generatedAt}</p>
       </div>
 
       <p className="page-shell__description">
-        Primeira tela moderna somente leitura para demonstrar uma previa de ativos sem carregar dados reais.
+        Primeira tela moderna somente leitura para demonstrar uma previa de relatorios sem carregar dados reais.
       </p>
-      <p className="assets-report__notice">{DEMO_NOTICE}</p>
+      <p className="assets-report__notice">{snapshot.notice}</p>
 
-      <div className="assets-report__summary" aria-label="Resumo demonstrativo da previa de ativos">
+      <div className="assets-report__summary" aria-label="Resumo demonstrativo da previa de relatorios">
         <article className="overview-card">
           <p className="overview-card__label">Total demonstrativo</p>
-          <p className="overview-card__value">{formatCurrency(totalValue)}</p>
+          <p className="overview-card__value">{formatCurrency(snapshot.summary.totalValue)}</p>
           <p className="overview-card__hint">Soma ficticia dos valores atuais</p>
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Ativos na previa</p>
-          <p className="overview-card__value">{ASSETS_REPORT_ITEMS.length}</p>
+          <p className="overview-card__value">{snapshot.summary.itemCount}</p>
           <p className="overview-card__hint">Itens locais de demonstracao</p>
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Variacao media</p>
-          <p className="overview-card__value">{formatPercent(variationAverage)}</p>
+          <p className="overview-card__value">{formatPercent(snapshot.summary.averageVariationPct)}</p>
           <p className="overview-card__hint">Media simples ficticia</p>
         </article>
       </div>
@@ -108,7 +96,7 @@ export function AssetsReportPreview() {
             </tr>
           </thead>
           <tbody>
-            {ASSETS_REPORT_ITEMS.map((item) => (
+            {snapshot.items.map((item) => (
               <tr key={item.ticker}>
                 <th scope="row">
                   <span className="assets-report__ticker">{item.ticker}</span>
@@ -132,7 +120,7 @@ export function AssetsReportPreview() {
       </div>
 
       <div className="assets-report__mobile-list" aria-label="Lista mobile equivalente da previa de ativos">
-        {ASSETS_REPORT_ITEMS.map((item) => (
+        {snapshot.items.map((item) => (
           <article className="assets-report__mobile-card" key={item.ticker}>
             <div>
               <h3>{item.ticker}</h3>
