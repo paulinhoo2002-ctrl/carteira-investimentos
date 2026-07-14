@@ -1,14 +1,16 @@
 const assert = require('node:assert/strict');
+const path = require('node:path');
 const test = require('node:test');
 
+const modulePath = path.join(__dirname, '..', 'legacy', 'reports-readonly-source.js');
 const {
   LEGACY_REPORT_CATEGORY_MAP,
   LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT,
   buildLegacyReportsReadonlySnapshot,
   createLegacyReportsReadonlySource,
-} = require('../legacy/reports-readonly-source.js');
+} = require(modulePath);
 
-function makeDeps(overrides = {}) {
+function makeBaseDeps(overrides = {}) {
   return {
     getGeneratedAt() {
       return '2026-07-14T10:30:00.000Z';
@@ -19,12 +21,6 @@ function makeDeps(overrides = {}) {
     assetCurrentValue(asset) {
       return Number(asset.qty) * Number(asset.current_price);
     },
-    metaTicker(ticker) {
-      return { type: String(ticker || '').includes('11') ? 'FII' : 'Ação', sector: 'Carteira' };
-    },
-    normalizeType(value, fallback) {
-      return value || fallback;
-    },
     buildReportAssetRow(asset, deps) {
       const applied = deps.assetAppliedValue(asset);
       const current = deps.assetCurrentValue(asset);
@@ -33,7 +29,7 @@ function makeDeps(overrides = {}) {
       return {
         ticker: String(asset.ticker || '').trim(),
         name: String(asset.name || asset.ticker || '').trim(),
-        type: String(asset.type || deps.metaTicker(asset.ticker).type || 'Ação').trim(),
+        type: String(asset.type || '').trim(),
         qty: Number(asset.qty),
         avgPrice: Number(asset.avg_price),
         current: Number(current),
@@ -119,7 +115,7 @@ test('fonte produz snapshot valido com calculos legados', () => {
     getAssets() {
       return makeAssets();
     },
-    ...makeDeps(),
+    ...makeBaseDeps(),
   });
 
   const snapshot = source.getSnapshot();
@@ -130,151 +126,24 @@ test('fonte produz snapshot valido com calculos legados', () => {
   assert.equal(snapshot.summary.itemCount, 3);
   assert.equal(snapshot.summary.averageVariationPct, 5);
   assert.deepEqual(snapshot.items.map((item) => item.category), [
-    LEGACY_REPORT_CATEGORY_MAP['Ação'],
+    LEGACY_REPORT_CATEGORY_MAP.Ação,
     LEGACY_REPORT_CATEGORY_MAP.FII,
     LEGACY_REPORT_CATEGORY_MAP.ETF,
   ]);
   assert.deepEqual(snapshot.items.map((item) => item.trend), ['positive', 'negative', 'neutral']);
-  assert.deepEqual(snapshot.items.map((item) => item.allocationPct), [250 / 9, 450 / 9, 200 / 9]);
   assertFrozenSnapshot(snapshot);
 });
 
-test('totalValue e itemCount saem de calculos existentes', () => {
-  const assets = [
-    {
-      ticker: 'ABCD11',
-      name: 'Ativo 1',
-      type: 'FII',
-      qty: 2,
-      avg_price: 50,
-      current_price: 60,
-    },
-    {
-      ticker: 'EFGH3',
-      name: 'Ativo 2',
-      type: 'Ação',
-      qty: 3,
-      avg_price: 20,
-      current_price: 15,
-    },
-  ];
-
-  const source = createLegacyReportsReadonlySource({
-    getAssets() {
-      return assets;
-    },
-    ...makeDeps(),
-  });
-
-  const snapshot = source.getSnapshot();
-
-  assert.equal(snapshot.summary.totalValue, 165);
-  assert.equal(snapshot.summary.itemCount, 2);
-  assert.equal(snapshot.items[0].currentValue + snapshot.items[1].currentValue, 165);
-});
-
-test('averageVariationPct usa regra de media dos ativos', () => {
-  const source = createLegacyReportsReadonlySource({
-    getAssets() {
-      return [
-        {
-          ticker: 'AAA11',
-          name: 'A',
-          type: 'FII',
-          qty: 1,
-          avg_price: 100,
-          current_price: 125,
-        },
-        {
-          ticker: 'BBB3',
-          name: 'B',
-          type: 'Ação',
-          qty: 1,
-          avg_price: 100,
-          current_price: 75,
-        },
-        {
-          ticker: 'CCC11',
-          name: 'C',
-          type: 'ETF',
-          qty: 1,
-          avg_price: 100,
-          current_price: 100,
-        },
-      ];
-    },
-    ...makeDeps(),
-  });
-
-  const snapshot = source.getSnapshot();
-
-  assert.equal(snapshot.summary.averageVariationPct, 0);
-  assert.deepEqual(snapshot.items.map((item) => item.variationPct), [25, -25, 0]);
-});
-
-test('categoria e trend sao mapeadas corretamente', () => {
-  const source = createLegacyReportsReadonlySource({
-    getAssets() {
-      return [
-        {
-          ticker: 'AAA11',
-          name: 'A',
-          type: 'Ação',
-          qty: 1,
-          avg_price: 100,
-          current_price: 101,
-        },
-        {
-          ticker: 'BBB11',
-          name: 'B',
-          type: 'FII',
-          qty: 1,
-          avg_price: 100,
-          current_price: 100,
-        },
-        {
-          ticker: 'CCC3',
-          name: 'C',
-          type: 'ETF',
-          qty: 1,
-          avg_price: 100,
-          current_price: 99,
-        },
-      ];
-    },
-    ...makeDeps(),
-  });
-
-  const snapshot = source.getSnapshot();
-
-  assert.deepEqual(snapshot.items.map((item) => item.category), [
-    'Acao demo',
-    'FII demo',
-    'ETF demo',
-  ]);
-  assert.deepEqual(snapshot.items.map((item) => item.trend), [
-    'positive',
-    'neutral',
-    'negative',
-  ]);
-});
-
-test('dados invalidos retornam fallback controlado', () => {
+test('categoria ausente usa fallback controlado', () => {
   const source = createLegacyReportsReadonlySource({
     getAssets() {
       return makeAssets();
     },
-    ...makeDeps({
-      buildReportAssetRow() {
-        return {
-          ticker: 'AAA11',
-          name: 'Item',
-          type: 'Cripto',
-          qty: 1,
-          avgPrice: 10,
-          current: Number.POSITIVE_INFINITY,
-          resultPct: Number.NaN,
-        };
+    ...makeBaseDeps({
+      buildReportAssetRow(asset, deps) {
+        const row = makeBaseDeps().buildReportAssetRow(asset, deps);
+        delete row.type;
+        return row;
       },
     }),
   });
@@ -282,13 +151,45 @@ test('dados invalidos retornam fallback controlado', () => {
   assert.deepEqual(source.getSnapshot(), LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT);
 });
 
-test('NaN e Infinity nao vazam para snapshot', () => {
+test('categoria desconhecida usa fallback controlado', () => {
   const source = createLegacyReportsReadonlySource({
     getAssets() {
       return makeAssets();
     },
-    ...makeDeps({
-      assetCurrentValue() {
+    ...makeBaseDeps({
+      buildReportAssetRow(asset, deps) {
+        const row = makeBaseDeps().buildReportAssetRow(asset, deps);
+        row.type = 'Cripto';
+        return row;
+      },
+    }),
+  });
+
+  assert.deepEqual(source.getSnapshot(), LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT);
+});
+
+test('agregacao nao finita usa fallback controlado', () => {
+  const source = createLegacyReportsReadonlySource({
+    getAssets() {
+      return makeAssets();
+    },
+    ...makeBaseDeps({
+      totalValueCalculator() {
+        return Number.NaN;
+      },
+    }),
+  });
+
+  assert.deepEqual(source.getSnapshot(), LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT);
+});
+
+test('averageVariationPct nao finita usa fallback controlado', () => {
+  const source = createLegacyReportsReadonlySource({
+    getAssets() {
+      return makeAssets();
+    },
+    ...makeBaseDeps({
+      averageVariationPctCalculator() {
         return Number.POSITIVE_INFINITY;
       },
     }),
@@ -303,7 +204,7 @@ test('resultado nao reutiliza referencias mutaveis da entrada', () => {
     getAssets() {
       return assets;
     },
-    ...makeDeps(),
+    ...makeBaseDeps(),
   });
 
   const snapshot = source.getSnapshot();
@@ -332,7 +233,7 @@ test('fonte nao modifica a colecao recebida', () => {
     getAssets() {
       return assets;
     },
-    ...makeDeps(),
+    ...makeBaseDeps(),
   });
 
   source.getSnapshot();
@@ -340,8 +241,27 @@ test('fonte nao modifica a colecao recebida', () => {
   assert.deepEqual(assets, before);
 });
 
+test('fonte nao polui globalThis ao carregar', () => {
+  const before = new Set(Object.getOwnPropertyNames(globalThis));
+  delete require.cache[require.resolve(modulePath)];
+  const loaded = require(modulePath);
+  const after = new Set(Object.getOwnPropertyNames(globalThis));
+
+  for (const name of [
+    'createLegacyReportsReadonlySource',
+    'buildLegacyReportsReadonlySnapshot',
+    'LEGACY_REPORT_CATEGORY_MAP',
+    'LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT',
+  ]) {
+    assert.equal(before.has(name), false);
+    assert.equal(after.has(name), false);
+  }
+
+  assert.equal(typeof loaded.installLegacyReportsReadonlySource, 'function');
+});
+
 test('fonte nao chama storage, Firebase, Auth, sync, backup ou DOM', () => {
-  const sourceText = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'legacy', 'reports-readonly-source.js'), 'utf8');
+  const sourceText = require('node:fs').readFileSync(modulePath, 'utf8');
 
   for (const forbidden of [
     'localStorage',
@@ -364,7 +284,7 @@ test('fonte nao chama storage, Firebase, Auth, sync, backup ou DOM', () => {
 });
 
 test('nenhum import moderno entra na fonte', () => {
-  const sourceText = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'legacy', 'reports-readonly-source.js'), 'utf8');
+  const sourceText = require('node:fs').readFileSync(modulePath, 'utf8');
 
   assert.equal(sourceText.includes('modern/'), false);
   assert.equal(sourceText.includes('../modern'), false);

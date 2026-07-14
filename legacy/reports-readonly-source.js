@@ -1,26 +1,182 @@
-(function (root, factory) {
-  const api = factory(root);
+const DEFAULT_NOTICE = 'Snapshot legado somente leitura. React nao escreve na fonte.';
 
-  if (typeof module === 'object' && module.exports) {
-    module.exports = api;
+const LEGACY_REPORT_CATEGORY_MAP = deepFreeze({
+  Ação: 'Acao demo',
+  FII: 'FII demo',
+  ETF: 'ETF demo',
+});
+
+const LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT = deepFreeze({
+  generatedAt: '1970-01-01T00:00:00.000Z',
+  notice: DEFAULT_NOTICE,
+  summary: {
+    totalValue: 0,
+    itemCount: 0,
+    averageVariationPct: 0,
+  },
+  items: [],
+});
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function normalizeText(value, fallback = '') {
+  const text = String(value ?? '').trim();
+  return text || fallback;
+}
+
+function deepFreeze(value) {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
+    return value;
   }
 
-  root.createLegacyReportsReadonlySource = api.createLegacyReportsReadonlySource;
-  root.buildLegacyReportsReadonlySnapshot = api.buildLegacyReportsReadonlySnapshot;
-  root.LEGACY_REPORT_CATEGORY_MAP = api.LEGACY_REPORT_CATEGORY_MAP;
-  root.LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT = api.LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
-  const DEFAULT_NOTICE = 'Snapshot legado somente leitura. React nao escreve na fonte.';
+  Object.freeze(value);
 
-  const LEGACY_REPORT_CATEGORY_MAP = deepFreeze({
-    Ação: 'Acao demo',
-    FII: 'FII demo',
-    ETF: 'ETF demo',
-  });
+  for (const key of Object.keys(value)) {
+    deepFreeze(value[key]);
+  }
 
-  const LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT = deepFreeze({
-    generatedAt: '1970-01-01T00:00:00.000Z',
-    notice: DEFAULT_NOTICE,
+  return value;
+}
+
+function resolveBuildReportAssetRow(deps) {
+  if (typeof deps.buildReportAssetRow === 'function') {
+    return deps.buildReportAssetRow;
+  }
+
+  if (typeof require === 'function') {
+    const helper = require('../report-asset-row.js');
+    if (typeof helper.buildReportAssetRow === 'function') {
+      return helper.buildReportAssetRow;
+    }
+  }
+
+  return null;
+}
+
+function mapLegacyCategory(type) {
+  const normalized = normalizeText(type, '');
+  if (!normalized || !Object.prototype.hasOwnProperty.call(LEGACY_REPORT_CATEGORY_MAP, normalized)) {
+    return null;
+  }
+
+  return LEGACY_REPORT_CATEGORY_MAP[normalized];
+}
+
+function mapTrend(variationPct) {
+  if (!isFiniteNumber(variationPct)) {
+    return null;
+  }
+
+  if (variationPct > 0) {
+    return 'positive';
+  }
+
+  if (variationPct < 0) {
+    return 'negative';
+  }
+
+  return 'neutral';
+}
+
+function resolveSummaryNumber(calculator, fallbackCalculator) {
+  if (typeof calculator === 'function') {
+    return calculator();
+  }
+
+  return fallbackCalculator();
+}
+
+function calculateTotalValue(items, deps) {
+  return resolveSummaryNumber(
+    deps.totalValueCalculator,
+    () => items.reduce((sum, item) => sum + item.currentValue, 0),
+  );
+}
+
+function calculateAverageVariationPct(items, deps) {
+  return resolveSummaryNumber(
+    deps.averageVariationPctCalculator,
+    () => (items.length > 0 ? items.reduce((sum, item) => sum + item.variationPct, 0) / items.length : 0),
+  );
+}
+
+function calculateAllocationPct(item, totalValue, deps) {
+  if (typeof deps.allocationPctCalculator === 'function') {
+    return deps.allocationPctCalculator(item, totalValue);
+  }
+
+  if (!isFiniteNumber(totalValue) || totalValue <= 0) {
+    return 0;
+  }
+
+  return (item.currentValue / totalValue) * 100;
+}
+
+function normalizeItem(row, deps) {
+  const ticker = normalizeText(row.ticker, '');
+  const name = normalizeText(row.name, ticker);
+  const category = mapLegacyCategory(row.type);
+  const quantity = Number(row.qty);
+  const averagePrice = Number(row.avgPrice);
+  const currentValue = Number(row.current);
+  const variationPct = Number(row.resultPct);
+
+  if (!ticker || !name || !category) {
+    return null;
+  }
+
+  if (!isFiniteNumber(quantity) || quantity < 0) {
+    return null;
+  }
+
+  if (!isFiniteNumber(averagePrice) || averagePrice < 0) {
+    return null;
+  }
+
+  if (!isFiniteNumber(currentValue) || currentValue < 0) {
+    return null;
+  }
+
+  if (!isFiniteNumber(variationPct)) {
+    return null;
+  }
+
+  const trend = mapTrend(variationPct);
+  if (!trend) {
+    return null;
+  }
+
+  const item = {
+    ticker,
+    name,
+    category,
+    quantity,
+    averagePrice,
+    currentValue,
+    variationPct,
+    allocationPct: 0,
+    trend,
+  };
+
+  const allocationPct = calculateAllocationPct(item, deps.__totalValue, deps);
+  if (!isFiniteNumber(allocationPct)) {
+    return null;
+  }
+
+  item.allocationPct = allocationPct;
+  return item;
+}
+
+function createEmptySnapshot(generatedAt, notice) {
+  return deepFreeze({
+    generatedAt,
+    notice,
     summary: {
       totalValue: 0,
       itemCount: 0,
@@ -28,229 +184,126 @@
     },
     items: [],
   });
+}
 
-  function isPlainObject(value) {
-    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-  }
+function buildLegacyReportsReadonlySnapshot(assets, deps = {}) {
+  try {
+    const generatedAt = normalizeText(typeof deps.getGeneratedAt === 'function' ? deps.getGeneratedAt() : new Date().toISOString(), '');
+    const notice = normalizeText(deps.notice, DEFAULT_NOTICE);
 
-  function isFiniteNumber(value) {
-    return typeof value === 'number' && Number.isFinite(value);
-  }
-
-  function normalizeText(value, fallback = '') {
-    const text = String(value ?? '').trim();
-    return text || fallback;
-  }
-
-  function deepFreeze(value) {
-    if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
-      return value;
+    if (!generatedAt) {
+      return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
     }
 
-    Object.freeze(value);
-
-    for (const key of Object.keys(value)) {
-      deepFreeze(value[key]);
+    if (!Array.isArray(assets)) {
+      return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
     }
 
-    return value;
-  }
-
-  function resolveBuildReportAssetRow(deps) {
-    if (typeof deps.buildReportAssetRow === 'function') {
-      return deps.buildReportAssetRow;
+    if (assets.length === 0) {
+      return createEmptySnapshot(generatedAt, notice);
     }
 
-    if (typeof root.buildReportAssetRow === 'function') {
-      return root.buildReportAssetRow;
+    const buildReportAssetRow = resolveBuildReportAssetRow(deps);
+    if (typeof buildReportAssetRow !== 'function') {
+      return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
     }
 
-    if (typeof require === 'function') {
-      const helper = require('../report-asset-row.js');
-      if (typeof helper.buildReportAssetRow === 'function') {
-        return helper.buildReportAssetRow;
+    const rows = [];
+
+    for (const asset of assets) {
+      if (!isPlainObject(asset)) {
+        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
       }
+
+      const row = buildReportAssetRow(asset, deps);
+      if (!isPlainObject(row)) {
+        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
+      }
+
+      rows.push(row);
     }
 
-    return null;
-  }
+    const totalValue = calculateTotalValue(
+      rows.map((row) => ({
+        currentValue: Number(row.current),
+        variationPct: Number(row.resultPct),
+      })),
+      deps,
+    );
 
-  function mapLegacyCategory(type) {
-    const normalized = normalizeText(type, 'Ação');
-    return LEGACY_REPORT_CATEGORY_MAP[normalized] || LEGACY_REPORT_CATEGORY_MAP['Ação'];
-  }
+    const averageVariationPct = calculateAverageVariationPct(
+      rows.map((row) => ({
+        currentValue: Number(row.current),
+        variationPct: Number(row.resultPct),
+      })),
+      deps,
+    );
 
-  function mapTrend(variationPct) {
-    if (!isFiniteNumber(variationPct)) {
-      return null;
+    if (!isFiniteNumber(totalValue) || !isFiniteNumber(averageVariationPct)) {
+      return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
     }
 
-    if (variationPct > 0) {
-      return 'positive';
+    const items = rows.map((row) => normalizeItem(row, { ...deps, __totalValue: totalValue }));
+    if (items.some((item) => !item)) {
+      return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
     }
 
-    if (variationPct < 0) {
-      return 'negative';
+    const finalItems = items.map((item) => ({
+      ...item,
+      allocationPct: calculateAllocationPct(item, totalValue, deps),
+    }));
+
+    if (finalItems.some((item) => !isFiniteNumber(item.allocationPct))) {
+      return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
     }
 
-    return 'neutral';
-  }
-
-  function normalizeItem(row) {
-    const ticker = normalizeText(row.ticker, '');
-    const name = normalizeText(row.name, ticker);
-    const category = mapLegacyCategory(row.type);
-    const quantity = Number(row.qty);
-    const averagePrice = Number(row.avgPrice);
-    const currentValue = Number(row.current);
-    const variationPct = Number(row.resultPct);
-
-    if (!ticker || ticker === '—' || !name) {
-      return null;
-    }
-
-    if (!isFiniteNumber(quantity) || quantity < 0) {
-      return null;
-    }
-
-    if (!isFiniteNumber(averagePrice) || averagePrice < 0) {
-      return null;
-    }
-
-    if (!isFiniteNumber(currentValue) || currentValue < 0) {
-      return null;
-    }
-
-    if (!isFiniteNumber(variationPct)) {
-      return null;
-    }
-
-    const trend = mapTrend(variationPct);
-    if (!trend) {
-      return null;
-    }
-
-    return {
-      ticker,
-      name,
-      category,
-      quantity,
-      averagePrice,
-      currentValue,
-      variationPct,
-      allocationPct: 0,
-      trend,
-    };
-  }
-
-  function createEmptySnapshot(generatedAt, notice) {
     return deepFreeze({
       generatedAt,
       notice,
       summary: {
-        totalValue: 0,
-        itemCount: 0,
-        averageVariationPct: 0,
+        totalValue,
+        itemCount: finalItems.length,
+        averageVariationPct,
       },
-      items: [],
+      items: finalItems,
     });
+  } catch {
+    return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
   }
+}
 
-  function buildLegacyReportsReadonlySnapshot(assets, deps = {}) {
-    try {
-      const generatedAt = normalizeText(typeof deps.getGeneratedAt === 'function' ? deps.getGeneratedAt() : new Date().toISOString(), '');
-      const notice = normalizeText(deps.notice, DEFAULT_NOTICE);
-
-      if (!generatedAt) {
-        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-      }
-
-      if (!Array.isArray(assets)) {
-        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-      }
-
-      if (assets.length === 0) {
-        return createEmptySnapshot(generatedAt, notice);
-      }
-
-      const buildReportAssetRow = resolveBuildReportAssetRow(deps);
-      if (typeof buildReportAssetRow !== 'function') {
-        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-      }
-
-      const items = [];
-
-      for (const asset of assets) {
-        if (!isPlainObject(asset)) {
-          return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-        }
-
-        const row = buildReportAssetRow(asset, deps);
-        if (!isPlainObject(row)) {
-          return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-        }
-
-        const item = normalizeItem(row);
-        if (!item) {
-          return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-        }
-
-        items.push(item);
-      }
-
-      const totalValue = items.reduce((sum, item) => sum + item.currentValue, 0);
-      const averageVariationPct = items.length > 0
-        ? items.reduce((sum, item) => sum + item.variationPct, 0) / items.length
-        : 0;
-      const safeTotalValue = Number.isFinite(totalValue) ? totalValue : 0;
-      const safeAverageVariationPct = Number.isFinite(averageVariationPct) ? averageVariationPct : 0;
-
-      if (items.length > 0 && (!Number.isFinite(safeTotalValue) || !Number.isFinite(safeAverageVariationPct))) {
-        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-      }
-
-      const finalItems = items.map((item) => ({
-        ...item,
-        allocationPct: safeTotalValue > 0 ? (item.currentValue / safeTotalValue) * 100 : 0,
-      }));
-
-      if (finalItems.some((item) => !Number.isFinite(item.allocationPct))) {
-        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-      }
-
-      return deepFreeze({
-        generatedAt,
-        notice,
-        summary: {
-          totalValue: safeTotalValue,
-          itemCount: finalItems.length,
-          averageVariationPct: safeAverageVariationPct,
-        },
-        items: finalItems,
-      });
-    } catch {
-      return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-    }
-  }
-
-  function createLegacyReportsReadonlySource(deps = {}) {
-    return {
-      getSnapshot() {
-        try {
-          const assets = typeof deps.getAssets === 'function' ? deps.getAssets() : [];
-          return buildLegacyReportsReadonlySnapshot(assets, deps);
-        } catch {
-          return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
-        }
-      },
-    };
-  }
-
+function createLegacyReportsReadonlySource(deps = {}) {
   return {
-    DEFAULT_NOTICE,
-    LEGACY_REPORT_CATEGORY_MAP,
-    LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT,
-    buildLegacyReportsReadonlySnapshot,
-    createLegacyReportsReadonlySource,
+    getSnapshot() {
+      try {
+        const assets = typeof deps.getAssets === 'function' ? deps.getAssets() : [];
+        return buildLegacyReportsReadonlySnapshot(assets, deps);
+      } catch {
+        return LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
+      }
+    },
   };
-});
+}
+
+function installLegacyReportsReadonlySource(target = globalThis) {
+  if (!target || typeof target !== 'object') {
+    return null;
+  }
+
+  target.createLegacyReportsReadonlySource = createLegacyReportsReadonlySource;
+  target.buildLegacyReportsReadonlySnapshot = buildLegacyReportsReadonlySnapshot;
+  target.LEGACY_REPORT_CATEGORY_MAP = LEGACY_REPORT_CATEGORY_MAP;
+  target.LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT = LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT;
+
+  return target;
+}
+
+module.exports = {
+  DEFAULT_NOTICE,
+  LEGACY_REPORT_CATEGORY_MAP,
+  LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT,
+  buildLegacyReportsReadonlySnapshot,
+  createLegacyReportsReadonlySource,
+  installLegacyReportsReadonlySource,
+  mapLegacyCategory,
+};
