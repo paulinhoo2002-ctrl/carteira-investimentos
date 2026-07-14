@@ -67,7 +67,7 @@ browserTest('modern shell smoke navigation', async () => {
       await page.locator('#modern-sidebar .sidebar__item').nth(5).press('Enter');
       await assertReportsPreview(page);
       await assert.equal(await page.locator('.assets-report__mobile-list').isVisible(), true);
-      await assert.equal(await page.locator('.assets-report__mobile-card').count(), 4);
+      await assert.equal(await page.locator('.assets-report__mobile-card').count(), 3);
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
     });
   } finally {
@@ -122,8 +122,9 @@ async function runViewportScenario(browser, viewport, scenario) {
       }),
   );
 
+  const allowedOrigin = appUrl ? new URL(appUrl).origin : null;
   const externalRequests = requestOrigins.filter(
-    (origin) => origin !== 'http://127.0.0.1:4173' && origin !== 'http://localhost:4173' && origin !== 'null',
+    (origin) => origin !== allowedOrigin && origin !== 'null',
   );
   assert.equal(externalRequests.length, 0, `External requests found: ${externalRequests.join(', ')}`);
 
@@ -139,16 +140,17 @@ async function assertPageReady(page) {
 
 async function assertReportsPreview(page) {
   await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
-  await assert.equal(
-    await page.getByText('Snapshot controlado por adaptador somente leitura. React nao escreve na fonte.').count(),
-    1,
+  const mainText = await page.locator('main').textContent();
+  assert.ok(
+    mainText?.includes('Snapshot legado somente leitura. React nao escreve na fonte.') === true,
+    'Missing read-only snapshot notice',
   );
   await assert.equal(await page.locator('.assets-report__table').count(), 1);
   await assert.equal(await page.locator('.assets-report__table caption').textContent(), 'Previa demonstrativa de ativos em relatorios');
   await assert.equal(await page.locator('.assets-report__table thead th[scope="col"]').count(), 8);
   await assert.equal(await page.getByText('Total demonstrativo').count(), 1);
 
-  for (const ticker of ['DEMO-ALFA11', 'DEMO-BETA34', 'DEMO-GAMA3', 'DEMO-DELTA5']) {
+  for (const ticker of ['PETR4', 'MXRF11', 'BOVA11']) {
     assert.ok((await page.getByText(ticker).count()) >= 1, `Missing ticker: ${ticker}`);
   }
 

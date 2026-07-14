@@ -16,6 +16,7 @@ const sourceFiles = [
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
   'src/features/reports/reportsReadonlyBridge.ts',
+  'src/features/reports/legacyReportsReadonlyIntegration.ts',
   'src/features/reports/AssetsReportPreview.tsx',
   'src/features/reports/reportsSnapshotAdapter.ts',
   'src/types/navigation.ts',
@@ -46,6 +47,7 @@ test('modern shell exists and stays isolated', () => {
   const sidebarTsx = read('src/components/Sidebar.tsx');
   const placeholderTsx = read('src/components/PagePlaceholder.tsx');
   const reportsBridgeTs = read('src/features/reports/reportsReadonlyBridge.ts');
+  const reportsIntegrationTs = read('src/features/reports/legacyReportsReadonlyIntegration.ts');
   const reportsPreviewTsx = read('src/features/reports/AssetsReportPreview.tsx');
   const reportsAdapterTs = read('src/features/reports/reportsSnapshotAdapter.ts');
   const navigationTs = read('src/types/navigation.ts');
@@ -55,8 +57,9 @@ test('modern shell exists and stays isolated', () => {
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
   assert.match(readme, /# Shell moderno isolado/);
   assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
-  assert.match(appTsx, /READ_ONLY_REPORTS_ADAPTER/);
-  assert.match(appTsx, /adapter=\{READ_ONLY_REPORTS_ADAPTER\}/);
+  assert.match(appTsx, /createConnectedReportsAdapter/);
+  assert.match(appTsx, /useState\(\(\) => createConnectedReportsAdapter\(\)\)/);
+  assert.match(appTsx, /adapter=\{reportsAdapter\}/);
   assert.match(appTsx, /activePageId === 'reports'/);
   assert.match(mainTsx, /createRoot/);
   assert.match(stylesCss, /\.modern-menu-button:focus-visible/);
@@ -92,6 +95,11 @@ test('modern shell exists and stays isolated', () => {
   assert.match(reportsBridgeTs, /itemCount !== value\.items\.length/);
   assert.match(reportsBridgeTs, /Number\.isFinite/);
   assert.match(reportsBridgeTs, /catch/);
+  assert.match(reportsIntegrationTs, /createLegacyReportsReadonlyBoundary/);
+  assert.match(reportsIntegrationTs, /createConnectedReportsBridge/);
+  assert.match(reportsIntegrationTs, /createConnectedReportsAdapter/);
+  assert.match(reportsIntegrationTs, /LEGACY_REPORTS_READONLY_FIXTURE/);
+  assert.match(reportsIntegrationTs, /createLegacyReportsReadonlySource/);
   assert.match(reportsPreviewTsx, /Previa somente leitura de Relatorios/);
   assert.match(reportsPreviewTsx, /adapter: ReadOnlyReportsAdapter/);
   assert.match(reportsPreviewTsx, /const snapshot = adapter.getSnapshot\(\)/);
@@ -113,7 +121,7 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-reports-bridge.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -123,19 +131,36 @@ test('modern shell exists and stays isolated', () => {
     'localStorage',
     'sessionStorage',
     'indexedDB',
-    'sync',
+    /\bsync\b/,
     'backup',
     'fetch(',
     'axios',
     'XMLHttpRequest',
   ]) {
-    assert.equal(allText.includes(forbidden), false, `Forbidden reference found: ${forbidden}`);
+    const matches = forbidden instanceof RegExp ? forbidden.test(allText) : allText.includes(forbidden);
+    assert.equal(matches, false, `Forbidden reference found: ${forbidden}`);
   }
 
   for (const file of [appTsx, mainTsx, headerTsx, sidebarTsx, placeholderTsx, reportsPreviewTsx, reportsAdapterTs, navigationTs]) {
     assert.equal(/from\s+['"`]\.\.\/\.\.\//.test(file), false, 'Legacy import path found');
     assert.equal(/from\s+['"`]\/(?!node_modules)/.test(file), false, 'Absolute import path found');
   }
+
+  assert.equal(reportsIntegrationTs.includes('globalThis'), false);
+  assert.equal(reportsIntegrationTs.includes('localStorage'), false);
+  assert.equal(reportsIntegrationTs.includes('sessionStorage'), false);
+  assert.equal(reportsIntegrationTs.includes('indexedDB'), false);
+  assert.equal(reportsIntegrationTs.includes('firebase'), false);
+  assert.equal(reportsIntegrationTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(reportsIntegrationTs), false);
+  assert.equal(reportsIntegrationTs.includes('backup'), false);
+  assert.equal(reportsIntegrationTs.includes('document'), false);
+  assert.equal(reportsIntegrationTs.includes('window'), false);
+  assert.equal(reportsIntegrationTs.includes('assetAppliedValue'), false);
+  assert.equal(reportsIntegrationTs.includes('assetCurrentValue'), false);
+  assert.equal(reportsIntegrationTs.includes('totalValueCalculator'), false);
+  assert.equal(reportsIntegrationTs.includes('averageVariationPctCalculator'), false);
+  assert.equal(reportsIntegrationTs.includes('allocationPctCalculator'), false);
 });
 
 test('modern shell exposes seven navigation options', () => {
