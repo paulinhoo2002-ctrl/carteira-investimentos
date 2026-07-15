@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
+const readonlyReportPageContract = require('../readonly-report-page-contract.js');
 
 const modulePath = path.join(
   __dirname,
@@ -23,6 +24,21 @@ test('readonly report session context aceita estado visual valido e rejeita inva
     buildReadonlyReportSessionUrl,
     readReadonlyReportSessionContext,
   } = await loadModule();
+
+  assert.deepEqual(readonlyReportPageContract.READONLY_REPORT_PAGE_IDS, [
+    'overview',
+    'assets',
+    'fixed-income',
+    'provents',
+    'contributions',
+    'reports',
+    'settings',
+  ]);
+  assert.equal(readonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID, 'reports');
+  assert.equal(readonlyReportPageContract.isReadonlyReportPageId('reports'), true);
+  assert.equal(readonlyReportPageContract.isReadonlyReportPageId('invalid'), false);
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId(' assets '), 'assets');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('', 'overview'), 'overview');
 
   assert.deepEqual(readReadonlyReportSessionContext('?readonlyReportPage=assets'), {
     pageId: 'assets',

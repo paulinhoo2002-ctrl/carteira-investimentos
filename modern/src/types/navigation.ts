@@ -7,6 +7,16 @@ export type ModernPageId =
   | 'reports'
   | 'settings';
 
+export const MODERN_PAGE_IDS = [
+  'overview',
+  'assets',
+  'fixed-income',
+  'provents',
+  'contributions',
+  'reports',
+  'settings',
+] as const satisfies readonly ModernPageId[];
+
 export interface ModernPage {
   id: ModernPageId;
   label: string;

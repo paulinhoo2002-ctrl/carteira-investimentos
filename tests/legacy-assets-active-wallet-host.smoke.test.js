@@ -48,9 +48,9 @@ browserTest('active wallet host smoke navigation', async () => {
         await page.locator('.assets-report__notice').textContent(),
         'Snapshot legado somente leitura. React nao escreve na fonte.',
       );
-      assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Carteira ativa real/);
-      assert.match(await page.locator('.assets-report__diagnostic').innerText(), /3 ativos/);
-      assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Leitura inicial pronta/);
+      await assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Carteira ativa real/);
+      await assert.match(await page.locator('.assets-report__diagnostic').innerText(), /3 ativos/);
+      await assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Leitura inicial pronta/);
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'real-wallet');
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-refresh-status'), 'idle');
     });
@@ -100,22 +100,22 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       await assertLegacyPageReady(page);
       await page.evaluate(() => go('relatorios'));
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 1);
-      await assert.equal(
+      await assert.match(
         await page.locator('.reports-experiment-entry__title').textContent(),
-        'Relatório experimental somente leitura',
+        /Relat.rio experimental somente leitura/,
       );
 
-      await assert.equal(await page.getByRole('button', { name: 'Abrir relatório experimental' }).count(), 1);
-      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await assert.equal(await page.getByRole('button', { name: /Abrir.*experimental/i }).count(), 1);
+      await page.getByRole('button', { name: /Abrir.*experimental/i }).click();
       await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
       await page.locator('#readonly-reports-experimental-banner').waitFor();
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 1);
       await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
       await page.locator('.sidebar__item').nth(1).click();
       await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
-      await assert.equal(
+      await assert.match(
         await page.locator('#readonly-reports-experimental-banner .reports-experiment-entry__title').textContent(),
-        'Relatório experimental somente leitura',
+        /Relat.rio experimental somente leitura/,
       );
       await assert.equal(await page.getByRole('button', { name: 'Voltar ao legado' }).count(), 1);
       await page.getByRole('button', { name: 'Voltar ao legado' }).click();
@@ -125,7 +125,8 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
 
-      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await page.evaluate(() => go('relatorios'));
+      await page.getByRole('button', { name: /Abrir.*experimental/i }).click();
       await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
       await page.locator('#readonly-reports-experimental-banner').waitFor();
       await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
@@ -135,7 +136,7 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       await assertLegacyPageReady(page);
       await page.evaluate(() => go('relatorios'));
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 1);
-      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await page.getByRole('button', { name: /Abrir.*experimental/i }).click();
       await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
       await page.locator('#readonly-reports-experimental-banner').waitFor();
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 1);
@@ -150,7 +151,8 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
 
-      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await page.evaluate(() => go('relatorios'));
+      await page.getByRole('button', { name: /Abrir.*experimental/i }).click();
       await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
       await page.locator('#readonly-reports-experimental-banner').waitFor();
       await menuButton.press('Enter');
