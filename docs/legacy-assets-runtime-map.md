@@ -11,6 +11,7 @@ Para relatorios, os ativos passam por `reportAssetRows()`, que mapeia `S.assets`
 - Estrutura canonica em execucao: a carteira ativa dentro de `S`, sobretudo `S.assets`, espelhada pela entrada ativa em `S.wallets`.
 - Arquivo: `index.html`.
 - Escopo: estado global do app legado.
+- O catalogo completo de IDs readonly fica em `readonly-report-page-contract.js`, em `MODERN_PAGES` e nos testes de paridade. Documentacao nao replica a lista completa.
 - Lifecycle:
   - `load()` carrega e reidrata o estado inicial.
   - `syncStateFromWallet(w)` copia da carteira persistida para `S`.
@@ -489,15 +490,7 @@ Fonte canonica:
 - `readonly-report-page-contract.js` concentra a lista imutavel de paginas permitidas e a normalizacao segura reutilizada pelo legado e pelo moderno.
 - O contrato e carregado pelo `index.html` legado e pelo `modern/host.html`; o modulo moderno de contexto readonly le o contrato exposto em runtime quando a sessao experimental esta ativa.
 
-IDs permitidos:
-
-- `overview`
-- `assets`
-- `fixed-income`
-- `provents`
-- `contributions`
-- `reports`
-- `settings`
+- IDs permitidos: consultar o contrato canonico `readonly-report-page-contract.js` e o catalogo visual `MODERN_PAGES`.
 
 Fallback:
 
@@ -609,3 +602,51 @@ Rollback:
 Recomendacao para a Fase 183:
 
 - manter a API publica unica e nao reintroduzir resolucao local em consumidores.
+
+## Fase 183 - guardrails automaticos da arquitetura readonly
+
+Objetivo:
+
+- proteger a arquitetura readonly consolidada das Fases 180, 181 e 182;
+- impedir reintroducao de fallback local, resolvedor local, lista duplicada ou consumo inseguro do contrato.
+
+Guardrail central:
+
+- um teste estrutural unico valida contrato, consumidores, host, shell independente, ordem de scripts, compatibilidade CommonJS/Vite/Node e ausencia de lista duplicada fora dos locais autorizados;
+- os testes existentes continuam cobrindo comportamento funcional; este guardrail cobre a forma da arquitetura.
+
+Arquivos autorizados para a lista completa:
+
+- `readonly-report-page-contract.js`;
+- `modern/src/types/navigation.ts`;
+- testes readonly de paridade e arquitetura.
+
+Arquivos autorizados para importar ou carregar o contrato:
+
+- `readonly-report-page-contract.js`;
+- `index.html`;
+- `modern/host.html`;
+- `modern/src/features/reports/readonlyReportSessionContext.ts`;
+- testes readonly de comportamento e arquitetura.
+
+Seguranca e privacidade:
+
+- sem storage, Firebase, Auth, sync, backup, polling, timers ou fetch dinamico nessa fronteira;
+- sem dados financeiros em URL, console ou estado novo;
+- `modern/dist` continua ignorado e fora do indice.
+
+Atualizacao legitima:
+
+- mudar primeiro o contrato canonico;
+- depois os consumidores;
+- por ultimo os guardrails, na mesma PR.
+
+Rollback:
+
+- reverter o commit desta fase;
+- manter contrato canonico e consumidores intactos.
+
+Recomendacao para a Fase 184:
+
+- manter o teste central como alarme de regressao;
+- atualizar os guardrails sempre que a arquitetura readonly mudar de forma legitima.

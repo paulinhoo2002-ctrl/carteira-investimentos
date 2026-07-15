@@ -7,7 +7,7 @@
     "build": "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"",
     "dev:modern": "vite --config modern/vite.config.ts",
     "build:modern": "vite build --config modern/vite.config.ts",
-    "test:modern": "node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js",
+    "test:modern": "node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js",
     "test:finance": "node --test tests/finance-core.test.js",
     "test:persistence": "node --test tests/persistence-core.test.js",
     "test:backup-restore": "node --test tests/backup-restore-integration.test.js",
@@ -16,7 +16,7 @@
     "test:extraction": "node --test tests/report-asset-row.test.js",
     "test:ui": "node --test tests/basic-ui.test.js",
     "test:performance": "node --test tests/performance-reports.test.js",
-    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui && npm run test:performance"
+    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui && npm run test:performance && npm run test:modern"
   },
   "dependencies": {
     "react": "^18.3.1",
