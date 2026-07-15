@@ -110,6 +110,9 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
       await page.locator('#readonly-reports-experimental-banner').waitFor();
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 1);
+      await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
+      await page.locator('.sidebar__item').nth(1).click();
+      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
       await assert.equal(
         await page.locator('#readonly-reports-experimental-banner .reports-experiment-entry__title').textContent(),
         'Relatório experimental somente leitura',
@@ -121,6 +124,11 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 0);
       await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
+
+      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
+      await page.locator('#readonly-reports-experimental-banner').waitFor();
+      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
     });
 
     await runViewportScenario(browser, legacyUrl, { width: 390, height: 844 }, async (page) => {
@@ -131,12 +139,23 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
       await page.locator('#readonly-reports-experimental-banner').waitFor();
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 1);
+      const menuButton = page.locator('.modern-menu-button');
+      await menuButton.press('Enter');
+      await page.locator('#modern-sidebar .sidebar__item').nth(1).press('Enter');
+      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
       await page.getByRole('button', { name: 'Voltar ao legado' }).click();
       await page.waitForURL((url) => !url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
       await page.locator('.hdr-title').waitFor();
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 0);
       await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
+
+      await page.getByRole('button', { name: 'Abrir relatório experimental' }).click();
+      await page.waitForURL((url) => url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
+      await page.locator('#readonly-reports-experimental-banner').waitFor();
+      await menuButton.press('Enter');
+      await page.locator('#modern-sidebar .sidebar__item').nth(1).press('Enter');
+      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
     });
   } finally {
     await browser.close();

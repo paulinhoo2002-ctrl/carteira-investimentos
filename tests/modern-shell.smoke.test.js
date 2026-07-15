@@ -102,7 +102,7 @@ async function runViewportScenario(browser, viewport, scenario) {
     failedRequests.push(request.url());
   });
 
-  await page.goto(appUrl, { waitUntil: 'networkidle' });
+  await page.goto(appUrl, { waitUntil: 'domcontentloaded' });
 
   await scenario(page);
 

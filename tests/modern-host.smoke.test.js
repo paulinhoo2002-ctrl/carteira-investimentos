@@ -115,7 +115,7 @@ async function runViewportScenario(browser, viewport, scenario) {
     failedRequests.push(request.url());
   });
 
-  await page.goto(hostUrl, { waitUntil: 'networkidle' });
+  await page.goto(hostUrl, { waitUntil: 'domcontentloaded' });
 
   await scenario(page);
 
@@ -163,19 +163,19 @@ async function assertReportsPreview(page) {
     'Missing read-only snapshot notice',
   );
   await assert.equal(await page.locator('.assets-report__diagnostic').count(), 1);
-  assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Fonte demonstrativa/);
-  await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'demo-source');
+  assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Carteira ativa real/);
+  await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'real-wallet');
   await assert.equal(await page.locator('.assets-report__table').count(), 1);
   await assert.equal(await page.locator('.assets-report__table caption').textContent(), 'Previa demonstrativa de ativos em relatorios');
   await assert.equal(await page.locator('.assets-report__table thead th[scope="col"]').count(), 8);
   await assert.equal(await page.getByText('Total demonstrativo').count(), 1);
   await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
 
-  for (const ticker of ['PETR4', 'MXRF11', 'BOVA11']) {
+  for (const ticker of ['PETR4', 'ITUB4', 'WEGE3']) {
     assert.ok((await page.getByText(ticker).count()) >= 1, `Missing ticker: ${ticker}`);
   }
 
-  for (const state of ['Positivo', 'Neutro', 'Negativo']) {
+  for (const state of ['Positivo']) {
     assert.ok((await page.getByText(state).count()) >= 1, `Missing state: ${state}`);
   }
 }

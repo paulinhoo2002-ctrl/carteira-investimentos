@@ -28,6 +28,7 @@ const sourceFiles = [
   'src/features/reports/legacyReportsReadonlyIntegration.ts',
   'src/features/reports/AssetsReportPreview.tsx',
   'src/features/reports/reportsSnapshotAdapter.ts',
+  'src/features/reports/readonlyReportSessionContext.ts',
   'src/types/navigation.ts',
 ];
 
@@ -70,6 +71,7 @@ test('modern shell exists and stays isolated', () => {
   const reportsIntegrationTs = read('src/features/reports/legacyReportsReadonlyIntegration.ts');
   const reportsPreviewTsx = read('src/features/reports/AssetsReportPreview.tsx');
   const reportsAdapterTs = read('src/features/reports/reportsSnapshotAdapter.ts');
+  const readonlySessionTs = read('src/features/reports/readonlyReportSessionContext.ts');
   const navigationTs = read('src/types/navigation.ts');
   const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 
@@ -86,6 +88,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
+  assert.match(hostTsx, /readReadonlyReportSessionContext/);
+  assert.match(hostTsx, /buildReadonlyReportSessionSearch/);
   assert.match(hostTsx, /createReportsRefreshController/);
   assert.match(hostTsx, /createHostDiagnosticsFactory/);
   assert.match(hostTsx, /Carteira ativa real/);
@@ -96,6 +100,8 @@ test('modern shell exists and stays isolated', () => {
   assert.match(appTsx, /interface AppProps/);
   assert.match(appTsx, /reportsAdapter: ReadOnlyReportsAdapter/);
   assert.match(appTsx, /reportsRefreshController\?\:/);
+  assert.match(appTsx, /initialPageId\?: ModernPageId/);
+  assert.match(appTsx, /onActivePageIdChange\?: \(pageId: ModernPageId\) => void/);
   assert.match(appTsx, /adapter=\{reportsAdapter\}/);
   assert.match(appTsx, /activePageId === 'reports'/);
   assert.match(mainTsx, /mountModernApp/);
@@ -199,6 +205,10 @@ test('modern shell exists and stays isolated', () => {
   assert.match(reportsAdapterTs, /createReadOnlyReportsAdapter/);
   assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_ADAPTER/);
   assert.match(reportsAdapterTs, /ReadOnlyReportsBridge/);
+  assert.match(readonlySessionTs, /readonlyReportPage/);
+  assert.match(readonlySessionTs, /readReadonlyReportSessionContext/);
+  assert.match(readonlySessionTs, /buildReadonlyReportSessionSearch/);
+  assert.match(readonlySessionTs, /buildReadonlyReportSessionUrl/);
   assert.match(navigationTs, /Visao geral/);
   assert.match(navigationTs, /Configuracoes/);
   assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
@@ -207,7 +217,7 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -282,6 +292,13 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(reportsIntegrationTs.includes('totalValueCalculator'), false);
   assert.equal(reportsIntegrationTs.includes('averageVariationPctCalculator'), false);
   assert.equal(reportsIntegrationTs.includes('allocationPctCalculator'), false);
+  assert.equal(readonlySessionTs.includes('localStorage'), false);
+  assert.equal(readonlySessionTs.includes('sessionStorage'), false);
+  assert.equal(readonlySessionTs.includes('indexedDB'), false);
+  assert.equal(readonlySessionTs.includes('firebase'), false);
+  assert.equal(readonlySessionTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(readonlySessionTs), false);
+  assert.equal(readonlySessionTs.includes('backup'), false);
   assert.equal(hostSourceTs.includes('localStorage'), false);
   assert.equal(hostSourceTs.includes('sessionStorage'), false);
   assert.equal(hostSourceTs.includes('indexedDB'), false);

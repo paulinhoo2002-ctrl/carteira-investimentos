@@ -438,3 +438,46 @@ Rollback:
 - remover o banner de retorno do host;
 - remover os testes novos e a atualizacao documental desta fase;
 - manter os contratos readonly anteriores intactos.
+
+## Fase 179 - contexto visual de sessao no relatorio readonly
+
+Estados visuais preservados:
+
+- pagina moderna selecionada no shell readonly experimental;
+- estado de menu apenas quando ja existir e for seguro restaurar;
+- nenhum filtro financeiro novo;
+- nenhuma ordenacao nova;
+- nenhuma seccao expandida nova.
+
+Mecanismo:
+
+- `readonlyReportPage` carrega somente um identificador visual seguro na URL experimental;
+- o host experimental lê o valor valido ao abrir e atualiza a URL durante a navegacao;
+- o retorno ao legado preserva o mesmo identificador visual na URL da sessao;
+- ausencias ou valores invalidos caem no padrao seguro sem quebrar o host.
+
+Proibido preservar:
+
+- tickers;
+- nomes completos de ativos;
+- quantidades;
+- precos;
+- patrimonio;
+- saldos;
+- snapshot completo;
+- diagnostico completo;
+- qualquer dado financeiro sensivel.
+
+Compatibilidade:
+
+- producao normal segue sem entrada experimental;
+- o shell moderno independente continua sem esse contexto;
+- o retorno ao legado permanece disponivel;
+- o fallback seguro continua quando o estado salvo e invalido.
+
+Rollback:
+
+- remover o parametro de URL da sessao experimental;
+- remover a sincronizacao minima do host experimental;
+- remover os testes e a documentacao da Fase 179;
+- manter os contratos readonly anteriores intactos.

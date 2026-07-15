@@ -4,12 +4,17 @@ import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
 import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
 import {
+  buildReadonlyReportSessionSearch,
+  readReadonlyReportSessionContext,
+} from './features/reports/readonlyReportSessionContext.ts';
+import {
   createReportsRefreshController,
   type ReportsReadonlyDiagnostics,
   type ReportsRefreshControllerDiagnosticsFactory,
   type ReportsReadonlyOriginMode,
 } from './features/reports/reportsRefreshController.ts';
 import type { HostLegacyReportAsset } from './bootstrap/hostLegacyReportsReadonlySource';
+import type { ModernPageId } from './types/navigation';
 import './styles.css';
 
 const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null;
@@ -145,6 +150,14 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   }
 
   const hasInjectedAssets = typeof options.getAssets === 'function';
+  const sessionContextEnabled =
+    typeof location !== 'undefined' &&
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1') &&
+    new URLSearchParams(location.search).get('activeWalletHost') === '1' &&
+    new URLSearchParams(location.search).get('testMode') === '1';
+  const initialSessionContext = sessionContextEnabled
+    ? readReadonlyReportSessionContext(location.search, 'reports')
+    : null;
   let experimentalRevision = 0;
   let experimentalAssets = createHostExperimentalAssets(experimentalRevision);
 
@@ -236,6 +249,21 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     reportsAdapter: modernReportsRuntime.reportsAdapter,
     AppComponent: App,
     reportsRefreshController,
+      initialPageId: initialSessionContext?.pageId ?? 'overview',
+      onActivePageIdChange(pageId: ModernPageId) {
+      if (!sessionContextEnabled) {
+        return;
+      }
+
+      try {
+        const nextUrl = new URL(location.href);
+        nextUrl.search = buildReadonlyReportSessionSearch(pageId, location.search);
+        nextUrl.hash = '';
+        history.replaceState(history.state, '', nextUrl.toString());
+      } catch (error) {
+        debugWarn('readonly report session context failed:', error);
+      }
+    },
   });
 
   return {
