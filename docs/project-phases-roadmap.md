@@ -7,7 +7,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - fase atual: 184
 - branch atual: `docs/audit-readonly-boundary-roadmap`
 - SHA-base: `cc6d4d4fcb964da2f451743993e1cfc44698a25c`
-- situacao: em desenvolvimento
+- situacao: em revisão — draft
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -37,9 +37,9 @@ Base de referencia desta fase:
 | 179 | Contexto visual de sessao no relatorio readonly | Concluida | `#179` | `6d249359cb865cde88e7e5974e1cece5bc89e80d` | `README.md`, `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/src/App.tsx`, `modern/src/bootstrap/mountModernApp.ts`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `modern/src/host.tsx`, `package.json`, `tests/legacy-assets-active-wallet-host.smoke.test.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/modern-host.smoke.test.js`, `tests/modern-host.test.js`, `tests/modern-shell.smoke.test.js`, `tests/readonly-report-session-context.test.js` | preserva apenas pagina moderna selecionada via `readonlyReportPage` | contexto visual ainda limitado a identificadores seguros | reverter merge da fase |
 | 180 | Contrato unico das paginas readonly seguras | Concluida | `#180` | `1e7300675363691fdc766b3943b9a1467643f45f` | `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/host.html`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `readonly-report-page-contract.js`, `tests/legacy-assets-active-wallet-host.smoke.test.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/modern-host.smoke.test.js`, `tests/modern-host.test.js`, `tests/readonly-report-session-context.test.js` | `READONLY_REPORT_PAGE_IDS` virou lista canonica; `MODERN_PAGES` permaneceu visual | fallback local duplicado ainda podia ser recriado por consumidor | reverter merge da fase |
 | 181 | Carregamento resiliente do contrato readonly | Concluida | `#181` | `4d8aaf0bd9efbe1cecfdd2750467f2fbac600d93` | `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/host.html`, `modern/vite.config.ts`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `readonly-report-page-contract.js`, `tests/legacy-assets-active-wallet-host.smoke.test.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/readonly-report-session-context.test.js` | `getReadonlyReportPageContract(candidate?)` passou a validar candidato e cair em `reports` com seguranca | dependencia fraca de ordem de carga foi reduzida, mas precisava de fronteira unica | reverter merge da fase |
-| 182 | Fronteira unica de consumo do contrato readonly | Concluida | `#182` | `1ba344206aa4d59247a5d7e97d4759a173eedb1d` | `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `readonly-report-page-contract.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/readonly-report-session-context.test.js` | removeu listas funcionais duplicadas no consumo; fallback `reports` permaneceu unico | guardrail estrutural passou a cobrir consumidores autorizados e nao autorizados | reverter merge da fase |
+| 182 | Fronteira unica de consumo do contrato readonly | Concluida | `#182` | `1ba344206aa4d59247a5d7e97d4759a173eedb1d` | `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `readonly-report-page-contract.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/readonly-report-session-context.test.js` | removeu listas funcionais duplicadas no consumo; fallback `reports` permaneceu unico | ainda nao existia guardrail automatico contra reintroducao de listas, fallbacks ou resolvedores locais | reverter merge da fase |
 | 183 | Guardrails automaticos da arquitetura readonly | Concluida | `#183` | `cc6d4d4fcb964da2f451743993e1cfc44698a25c` | `docs/legacy-assets-runtime-map.md`, `package.json`, `tests/modern-base.test.js`, `tests/readonly-contract-architecture.test.js` | guardrails de arquitetura passaram a rodar no CI sem duplicar a suite moderna completa | warnings CJS e `MODULE_TYPELESS_PACKAGE_JSON` continuam aceitos | reverter merge da fase |
-| 184 | Auditoria da fronteira readonly e mapa oficial de evolucao | Em desenvolvimento | n/a | n/a | `docs/project-phases-roadmap.md` | consolidar auditoria, mapa tecnico e sequencia oficial das fases sem nova funcionalidade | risco principal e drift de documentacao se a ordem oficial nao for mantida aqui | remover este documento e qualquer ajuste documental associado |
+| 184 | Auditoria da fronteira readonly e mapa oficial de evolucao | Em revisão — draft | `#184` | `pendente de merge` | `docs/project-phases-roadmap.md` | consolidar auditoria, mapa tecnico e sequencia oficial das fases sem nova funcionalidade; commit atual da branch `42afae06e09e8a81d419708b894533737be1e490` | risco principal e drift de documentacao se a ordem oficial nao for mantida aqui | remover este documento e qualquer ajuste documental associado |
 
 ## 2. Ordem consolidada das fases readonly
 
@@ -198,7 +198,7 @@ Funcoes publicas relevantes:
 | Host ausente | shell independente continua no modo demo | sem host nao ha contexto experimental | baixo |
 | Contrato ausente | resolvedor seguro cai em `reports` | sem ReferenceError | baixo |
 | Payload invalido | contrato e snapshot retornam fallback seguro | UI nao quebra | baixo |
-| Erro de componente | host e bridge preservam ultimo snapshot valido | sem tela branca | medio |
+| Erro de componente | refresh ou snapshot invalido preservam ultimo snapshot valido | nao confirma cobertura total para erro inesperado de renderizacao do componente | medio |
 | Fallback visual | host mostra origem segura e caminho de retorno ao legado | sem escrita | baixo |
 
 Estado de listeners e memoria:
@@ -218,7 +218,8 @@ Estado de listeners e memoria:
 | Dados financeiros no console | nao confirmados na fronteira | testes cobrem console limpo nos smokes readonly | baixo |
 | `postMessage` | nao usado na fronteira readonly moderna | greps na fronteira nao apontam uso legitimo | informativo |
 | `CustomEvent` | nao usado na fronteira readonly moderna | sem contrato exposto por evento | informativo |
-| Validacao de origem | sim | `localhost` / `127.0.0.1` + `testMode=1` no host experimental | baixo |
+| Validacao de origem de mensagens | nao aplicavel | a fronteira nao usa `postMessage`; sem mensagens para validar | informativa |
+| Restricao de ativacao do host experimental | `localhost` / `127.0.0.1` + `testMode=1` | restringe ativacao, nao valida `event.origin` | baixa |
 | `localStorage` | nao introduzido em `modern/src` | legado continua com persistencia propria, fora da fronteira | baixo |
 | `sessionStorage` | nao introduzido em `modern/src` | idem | baixo |
 | Firebase | nao introduzido em `modern/src` | legado continua como fonte de verdade fora da UI moderna | baixo |
