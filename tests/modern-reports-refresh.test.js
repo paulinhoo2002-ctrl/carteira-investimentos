@@ -78,6 +78,7 @@ function createSnapshot(generatedAt, currentValue = 900) {
 }
 
 function assertDeepFrozen(snapshot) {
+  assert.equal(snapshot.version, 1);
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);

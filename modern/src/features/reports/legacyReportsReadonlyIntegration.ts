@@ -2,6 +2,7 @@ import { createReadOnlyReportsBridge, type ReadOnlyReportsBridge, type ReadOnlyR
 import { createReadOnlyReportsAdapter, type ReadOnlyReportsAdapter } from './reportsSnapshotAdapter.ts';
 
 const CONNECTED_REPORTS_DEMO_SNAPSHOT = {
+  version: 1,
   generatedAt: '2026-07-14T10:30:00.000Z',
   notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
   summary: {

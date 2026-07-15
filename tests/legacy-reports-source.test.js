@@ -71,6 +71,7 @@ function makeAssets() {
 }
 
 function assertFrozenSnapshot(snapshot) {
+  assert.equal(snapshot.version, 1);
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
@@ -98,6 +99,7 @@ test('fonte aceita coleção vazia', () => {
   });
 
   assert.deepEqual(snapshot, {
+    version: 1,
     generatedAt: '2026-07-14T10:30:00.000Z',
     notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
     summary: {
@@ -122,6 +124,7 @@ test('fonte produz snapshot valido com calculos legados', () => {
   const snapshot = source.getSnapshot();
 
   assert.equal(snapshot.generatedAt, '2026-07-14T10:30:00.000Z');
+  assert.equal(snapshot.version, 1);
   assert.equal(snapshot.notice, 'Snapshot legado somente leitura. React nao escreve na fonte.');
   assert.equal(snapshot.summary.totalValue, 900);
   assert.equal(snapshot.summary.itemCount, 3);

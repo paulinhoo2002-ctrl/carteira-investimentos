@@ -30,6 +30,7 @@ const sourceFiles = [
   'src/components/AppHeader.tsx',
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
+  'src/features/reports/reportsReadonlyContract.ts',
   'src/features/reports/reportsReadonlyBridge.ts',
   'src/features/reports/legacyReportsReadonlyIntegration.ts',
   'src/features/reports/AssetsReportPreview.tsx',
@@ -196,10 +197,13 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(reportsBridgeTs, /READ_ONLY_REPORT_CATEGORIES/);
   assert.match(reportsBridgeTs, /READ_ONLY_REPORT_TRENDS/);
   assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(reportsBridgeTs, /reportsReadonlyContract/);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_CONTRACT_VERSION/);
+  assert.match(reportsBridgeTs, /normalizeReadOnlyReportsSnapshot/);
   assert.match(reportsBridgeTs, /createReadOnlyReportsBridge/);
   assert.match(reportsBridgeTs, /readSnapshot\(\)/);
-  assert.match(reportsBridgeTs, /itemCount !== value\.items\.length/);
-  assert.match(reportsBridgeTs, /Number\.isFinite/);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_BRIDGE/);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_CONTRACT_VERSION/);
   assert.match(reportsBridgeTs, /catch/);
   assert.match(reportsIntegrationTs, /createLegacyReportsReadonlyBoundary/);
   assert.match(reportsIntegrationTs, /createConnectedReportsBridge/);
@@ -220,6 +224,9 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(reportsAdapterTs, /createReadOnlyReportsAdapter/);
   assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_ADAPTER/);
   assert.match(reportsAdapterTs, /ReadOnlyReportsBridge/);
+  assert.match(reportsAdapterTs, /reportsReadonlyContract/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.ts'), /READ_ONLY_REPORTS_CONTRACT_VERSION/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.ts'), /normalizeReadOnlyReportsSnapshot/);
   assert.match(readonlySessionTs, /readonlyReportPage/);
   assert.match(readonlySessionTs, /readReadonlyReportSessionContext/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionSearch/);
@@ -255,9 +262,13 @@ test('modern shell exists and stays isolated', async () => {
     packageJson.scripts.test.includes('tests/readonly-contract-architecture.test.js'),
     true,
   );
+  assert.equal(
+    packageJson.scripts.test.includes('tests/readonly-reports-data-contract.test.js'),
+    true,
+  );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -405,11 +416,9 @@ test('modern reports adapter returns frozen read-only snapshot', () => {
 
   assert.match(bridgeFile, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
   assert.match(bridgeFile, /createReadOnlyReportsBridge/);
-  assert.match(bridgeFile, /cloneReadOnlyReportsSnapshot/);
   assert.match(bridgeFile, /isReadOnlyReportsSnapshot/);
-  assert.match(bridgeFile, /deepFreeze/);
-  assert.match(bridgeFile, /React nao escreve na fonte/);
-  assert.match(bridgeFile, /readonly/);
+  assert.match(bridgeFile, /normalizeReadOnlyReportsSnapshot/);
+  assert.match(bridgeFile, /READ_ONLY_REPORTS_BRIDGE/);
   assert.match(adapterFile, /READ_ONLY_REPORTS_ADAPTER/);
   assert.match(adapterFile, /createReadOnlyReportsAdapter/);
   assert.match(adapterFile, /ReadOnlyReportsBridge/);

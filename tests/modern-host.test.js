@@ -187,6 +187,7 @@ test('host runtime keeps demo source available', async () => {
   const runtime = createModernReportsRuntime();
 
   assert.equal(typeof runtime.reportsAdapter.getSnapshot, 'function');
+  assert.equal(runtime.reportsAdapter.getSnapshot().version, 1);
   assert.match(read('src/host.tsx'), /createModernReportsRuntime/);
 });
 
@@ -229,6 +230,8 @@ test('refresh controller keeps snapshot frozen and preserves listeners', async (
   controller.refresh();
   const afterRefresh = controller.getSnapshot();
 
+  assert.equal(initial.version, 1);
+  assert.equal(afterRefresh.version, 1);
   assert.equal(calls, 1);
   assert.notEqual(afterRefresh, initial);
   assert.equal(Object.isFrozen(afterRefresh), true);

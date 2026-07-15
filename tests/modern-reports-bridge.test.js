@@ -16,6 +16,7 @@ async function loadAdapterModule() {
 
 function createValidSnapshot(overrides = {}) {
   return {
+    version: 1,
     generatedAt: '15/07/2026, 10:30',
     notice: 'Snapshot preparado por fonte de teste',
     summary: {
@@ -52,6 +53,7 @@ function createValidSnapshot(overrides = {}) {
 }
 
 function assertDeepFrozen(snapshot) {
+  assert.equal(snapshot.version, 1);
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
@@ -73,6 +75,27 @@ test('snapshot valido e aceito pela ponte somente leitura', async () => {
   const snapshot = bridge.readSnapshot();
 
   assert.deepEqual(snapshot, sourceSnapshot);
+  assert.notEqual(snapshot, sourceSnapshot);
+  assertDeepFrozen(snapshot);
+});
+
+test('snapshot sem versao continua aceito e normaliza para v1', async () => {
+  const { createReadOnlyReportsBridge } = await loadBridgeModule();
+  const sourceSnapshot = createValidSnapshot();
+  delete sourceSnapshot.version;
+  const bridge = createReadOnlyReportsBridge({
+    getSnapshot() {
+      return sourceSnapshot;
+    },
+  });
+
+  const snapshot = bridge.readSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.deepEqual(snapshot, {
+    ...sourceSnapshot,
+    version: 1,
+  });
   assert.notEqual(snapshot, sourceSnapshot);
   assertDeepFrozen(snapshot);
 });
@@ -231,6 +254,20 @@ test('category invalida usa fallback', async () => {
           },
         ],
       });
+    },
+  });
+
+  assert.deepEqual(bridge.readSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
+});
+
+test('versao desconhecida usa fallback', async () => {
+  const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT, createReadOnlyReportsBridge } = await loadBridgeModule();
+  const bridge = createReadOnlyReportsBridge({
+    getSnapshot() {
+      return {
+        ...createValidSnapshot(),
+        version: 2,
+      };
     },
   });
 

@@ -4,10 +4,10 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 184
-- branch atual: `docs/audit-readonly-boundary-roadmap`
-- SHA-base: `cc6d4d4fcb964da2f451743993e1cfc44698a25c`
-- situacao: em revisão — draft
+- fase atual: 185
+- branch atual: `feat/typed-readonly-reports-contract`
+- SHA-base: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`
+- situacao: em desenvolvimento
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -21,9 +21,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `cc6d4d4fcb964da2f451743993e1cfc44698a25c`
+- HEAD / `origin/main`: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`
 - workspace: limpo no inicio desta fase
-- PR `#183`: merged e closed
+- PR `#184`: merged e closed
 
 ## 1. Historico confirmado das fases readonly
 
@@ -39,7 +39,38 @@ Base de referencia desta fase:
 | 181 | Carregamento resiliente do contrato readonly | Concluida | `#181` | `4d8aaf0bd9efbe1cecfdd2750467f2fbac600d93` | `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/host.html`, `modern/vite.config.ts`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `readonly-report-page-contract.js`, `tests/legacy-assets-active-wallet-host.smoke.test.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/readonly-report-session-context.test.js` | `getReadonlyReportPageContract(candidate?)` passou a validar candidato e cair em `reports` com seguranca | dependencia fraca de ordem de carga foi reduzida, mas precisava de fronteira unica | reverter merge da fase |
 | 182 | Fronteira unica de consumo do contrato readonly | Concluida | `#182` | `1ba344206aa4d59247a5d7e97d4759a173eedb1d` | `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `readonly-report-page-contract.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/readonly-report-session-context.test.js` | removeu listas funcionais duplicadas no consumo; fallback `reports` permaneceu unico | ainda nao existia guardrail automatico contra reintroducao de listas, fallbacks ou resolvedores locais | reverter merge da fase |
 | 183 | Guardrails automaticos da arquitetura readonly | Concluida | `#183` | `cc6d4d4fcb964da2f451743993e1cfc44698a25c` | `docs/legacy-assets-runtime-map.md`, `package.json`, `tests/modern-base.test.js`, `tests/readonly-contract-architecture.test.js` | guardrails de arquitetura passaram a rodar no CI sem duplicar a suite moderna completa | warnings CJS e `MODULE_TYPELESS_PACKAGE_JSON` continuam aceitos | reverter merge da fase |
-| 184 | Auditoria da fronteira readonly e mapa oficial de evolucao | Em revisão — draft | `#184` | `pendente de merge` | `docs/project-phases-roadmap.md` | consolidar auditoria, mapa tecnico e sequencia oficial das fases sem nova funcionalidade; commit atual da branch `42afae06e09e8a81d419708b894533737be1e490` | risco principal e drift de documentacao se a ordem oficial nao for mantida aqui | remover este documento e qualquer ajuste documental associado |
+| 184 | Auditoria da fronteira readonly e mapa oficial de evolucao | Concluida | `#184` | `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512` | `docs/project-phases-roadmap.md` | documentacao ajustada; sem mudanca funcional; apenas roadmap e auditoria | risco residual apenas documental se novas fases legitimas nao atualizarem o mapa | reverter commit `cfe83ce0a075218f088cfab01ed3bbe9dbb5eda8` |
+
+## 2. Fechamento da Fase 184 e abertura da Fase 185
+
+### Fase 184
+
+- estado: Concluida;
+- PR: `#184`;
+- SHA final real da main: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`;
+- titulo do commit final: `docs: corrige precisao do roadmap readonly`;
+- resultado principal: roadmap e auditoria ajustados com precisao historica e tecnica;
+- apenas documentacao alterada;
+- zero mudanca funcional;
+- rollback: `git revert cfe83ce0a075218f088cfab01ed3bbe9dbb5eda8`.
+
+### Estado atual
+
+- fase atual: 185;
+- nome da fase: Contrato tipado e versionado dos dados de relatorio readonly;
+- branch: `feat/typed-readonly-reports-contract`;
+- SHA-base: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`;
+- situacao: em desenvolvimento;
+- PR: pendente de abertura.
+
+### Fase 185
+
+- objetivo: formalizar e proteger o contrato de dados readonly entregue pelo legado ao moderno, sem alterar calculos financeiros, persistencia, autenticacao, sincronizacao ou comportamento visual;
+- entregaveis: contrato tipado, versao minima, validacao runtime simples, fallback seguro, imutabilidade, testes de compatibilidade, guardrail de arquitetura e roadmap atualizado;
+- fora de escopo: nova tela, mudanca visual relevante, migracao funcional, escrita moderna, novo Firebase, novo banco, persistencia nova, sincronizacao nova, alteracao de formulas, automacao de compra/aporte, dependencia nova e correcao dos warnings CJS/Vite;
+- riscos: divergencia entre contrato e consumidores, payload legado sem versao, versao desconhecida, mutacao por referencia e deriva de documentacao;
+- rollback: reverter o commit da fase e remover o contrato / testes adicionados, mantendo o legado intacto;
+- criterios de conclusao: contrato v1 validado, fallback seguro, imutabilidade, bridge e adapter consumindo o contrato, guardrails atualizados, builds / testes / smokes verdes e PR em draft pronta para revisao.
 
 ## 2. Ordem consolidada das fases readonly
 
@@ -56,12 +87,14 @@ Ordem oficial atual:
 9. 182 - fronteira unica de consumo
 10. 183 - guardrails automaticos da arquitetura readonly
 11. 184 - auditoria da fronteira readonly e mapa oficial
+12. 185 - contrato tipado e versionado dos dados de relatorio readonly
 
 Mudanca de ordem relevante:
 
 - a consolidacao do contrato fechou antes da auditoria oficial;
 - a validacao automatica protege a arquitetura consolidada, nao substitui o contrato;
-- a fase 184 e meta-fase de documentacao e auditoria, sem nova funcionalidade.
+- a fase 184 encerra o ciclo de documentacao e auditoria, sem nova funcionalidade;
+- a fase 185 formaliza o contrato de dados readonly sem mudar o fluxo funcional.
 
 ## 3. Auditoria da fronteira readonly
 
@@ -297,12 +330,11 @@ Para abrir a Fase 185 com risco controlado, o documento atual recomenda que exis
 
 Manter a sequencia oficial:
 
-1. 185: contrato tipado dos dados de relatorio
-2. 186: Ativos moderno readonly
-3. 187: Renda Fixa readonly
-4. 188: Proventos e renda mensal
-5. 189: Aportes e sugestao explicavel
-6. 190: decisao arquitetural
+1. 186: Ativos moderno readonly
+2. 187: Renda Fixa readonly
+3. 188: Proventos e renda mensal
+4. 189: Aportes e sugestao explicavel
+5. 190: decisao arquitetural
 
 ## 12. Radar estrategico - mudancas de alto impacto
 

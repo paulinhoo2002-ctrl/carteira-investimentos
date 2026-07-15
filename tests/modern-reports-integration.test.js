@@ -29,6 +29,7 @@ async function loadRuntimeModule() {
 
 function createValidSnapshot() {
   return {
+    version: 1,
     generatedAt: '2026-07-14T10:30:00.000Z',
     notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
     summary: {
@@ -83,6 +84,7 @@ function createSnapshotSource(snapshot) {
 }
 
 function assertFrozenSnapshot(snapshot) {
+  assert.equal(snapshot.version, 1);
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
@@ -123,6 +125,7 @@ test('runtime usa fonte demonstrativa quando origem real nao existe', async () =
   const runtime = createModernReportsRuntime();
   const snapshot = runtime.reportsAdapter.getSnapshot();
 
+  assert.equal(snapshot.version, 1);
   assert.equal(snapshot.generatedAt, '2026-07-14T10:30:00.000Z');
   assert.equal(snapshot.notice, 'Snapshot legado somente leitura. React nao escreve na fonte.');
   assert.deepEqual(snapshot.summary, {
@@ -135,6 +138,7 @@ test('runtime usa fonte demonstrativa quando origem real nao existe', async () =
 
 test('preview estatica usa adapter recebido e nao mostra botao experimental', async () => {
   const customSnapshot = {
+    version: 1,
     generatedAt: '2026-07-14T11:00:00.000Z',
     notice: 'Snapshot customizado do adapter. React nao cria fonte propria.',
     summary: {
@@ -199,6 +203,7 @@ test('runtime substitui fonte demonstrativa por origem simulada valida', async (
 
   const snapshot = runtime.reportsAdapter.getSnapshot();
 
+  assert.equal(snapshot.version, 1);
   assert.deepEqual(snapshot, sourceSnapshot);
   assert.notEqual(snapshot, sourceSnapshot);
   assertFrozenSnapshot(snapshot);

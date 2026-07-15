@@ -19,6 +19,7 @@ const readonlyPageIds = [
 
 const contractFilename = ['readonly-report-page-contract', '.js'].join('');
 const readonlyContractToken = ['Readonly', 'Report', 'Page', 'Contract'].join('');
+const readonlyReportsContractToken = ['Readonly', 'Reports', 'Contract'].join('');
 const legacyFallbackToken = ['fallback', readonlyContractToken].join('');
 const createFallbackToken = ['create', readonlyContractToken, 'Fallback'].join('');
 const createSafeFallbackToken = ['create', readonlyContractToken, 'Safe', 'Fallback'].join('');
@@ -30,6 +31,10 @@ const manualDeclareToken = ['declare const ', readonlyContractToken].join('');
 const modernPageIdsToken = 'MODERN_PAGE_IDS';
 const sessionPageIdsToken = 'SESSION_PAGE_IDS';
 const readonlySessionPageIdsToken = 'READONLY_REPORT_SESSION_PAGE_IDS';
+const readonlyReportsContractVersionToken = 'READ_ONLY_REPORTS_CONTRACT_VERSION';
+const normalizeReadonlyReportsSnapshotToken = 'normalizeReadOnlyReportsSnapshot';
+const isReadonlyReportsSnapshotToken = 'isReadOnlyReportsSnapshot';
+const readonlyReportsContractFilename = 'reportsReadonlyContract.ts';
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
@@ -130,6 +135,48 @@ function assertShellIsolation(textByPath) {
   }
 }
 
+function assertReadOnlyReportsContract(contractTs) {
+  assert.match(contractTs, /READ_ONLY_REPORTS_CONTRACT_VERSION/);
+  assert.match(contractTs, /normalizeReadOnlyReportsSnapshot/);
+  assert.match(contractTs, /isReadOnlyReportsSnapshot/);
+  assert.match(contractTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(contractTs, /ReadOnlyReportsSnapshot/);
+  assert.match(contractTs, /version: READ_ONLY_REPORTS_CONTRACT_VERSION/);
+  assert.match(contractTs, /generatedAt/);
+  assert.match(contractTs, /notice/);
+  assert.match(contractTs, /summary/);
+  assert.match(contractTs, /items/);
+  assert.equal(contractTs.includes('localStorage'), false);
+  assert.equal(contractTs.includes('sessionStorage'), false);
+  assert.equal(contractTs.includes('indexedDB'), false);
+  assert.equal(contractTs.includes('firebase'), false);
+  assert.equal(contractTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(contractTs), false);
+  assert.equal(contractTs.includes('backup'), false);
+  assert.equal(contractTs.includes('fetch('), false);
+  assert.equal(contractTs.includes('setInterval'), false);
+  assert.equal(contractTs.includes('setTimeout'), false);
+  assert.equal(contractTs.includes('MutationObserver'), false);
+}
+
+function assertImportsReadOnlyReportsContract(text, label) {
+  assert.match(text, /reportsReadonlyContract/);
+  assert.equal(/function\s+normalizeReadOnlyReportsSnapshot/.test(text), false, `${label} nao pode recriar normalizeReadOnlyReportsSnapshot`);
+  assert.equal(/function\s+isReadOnlyReportsSnapshot/.test(text), false, `${label} nao pode recriar isReadOnlyReportsSnapshot`);
+  assert.equal(/const\s+READ_ONLY_REPORTS_CONTRACT_VERSION\s*=/.test(text), false, `${label} nao pode recriar READ_ONLY_REPORTS_CONTRACT_VERSION`);
+}
+
+function assertNoLocalReadOnlyReportsContract(text, label) {
+  for (const token of [
+    readonlyReportsContractVersionToken,
+    normalizeReadonlyReportsSnapshotToken,
+    isReadonlyReportsSnapshotToken,
+    readonlyReportsContractToken,
+  ]) {
+    assert.equal(text.includes(token), false, `${label} nao pode recriar ${token}`);
+  }
+}
+
 function assertHostHtmlOrder(hostHtml) {
   const contractScript = '<script src="../readonly-report-page-contract.js"></script>';
   const hostEntryScript = '<script type="module" src="/src/host-entry.tsx"></script>';
@@ -151,7 +198,9 @@ function assertViteCopy(viteConfigTs) {
 
 function assertPackageScripts(packageJson) {
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-contract-architecture\.test\.js/);
+  assert.match(packageJson.scripts['test:modern'], /tests\/readonly-reports-data-contract\.test\.js/);
   assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
+  assert.match(packageJson.scripts.test, /tests\/readonly-reports-data-contract\.test\.js/);
   assert.equal(
     packageJson.scripts.test.includes('npm run test:modern'),
     false,
@@ -190,6 +239,7 @@ function loadArchitectureSnapshot() {
     modernReportsRuntimeTs: read('modern/src/bootstrap/modernReportsRuntime.ts'),
     appTsx: read('modern/src/App.tsx'),
     assetsPreviewTsx: read('modern/src/features/reports/AssetsReportPreview.tsx'),
+    dataContractTs: read('modern/src/features/reports/reportsReadonlyContract.ts'),
     bridgeTs: read('modern/src/features/reports/reportsReadonlyBridge.ts'),
     adapterTs: read('modern/src/features/reports/reportsSnapshotAdapter.ts'),
     integrationTs: read('modern/src/features/reports/legacyReportsReadonlyIntegration.ts'),
@@ -218,6 +268,15 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     'modern/src/App.tsx': snapshot.appTsx,
     'modern/src/bootstrap/mountModernApp.ts': snapshot.mountModernAppTs,
   });
+  assertReadOnlyReportsContract(snapshot.dataContractTs);
+  assertImportsReadOnlyReportsContract(
+    snapshot.bridgeTs,
+    'modern/src/features/reports/reportsReadonlyBridge.ts',
+  );
+  assertImportsReadOnlyReportsContract(
+    snapshot.adapterTs,
+    'modern/src/features/reports/reportsSnapshotAdapter.ts',
+  );
   assertNoCompleteReadonlyPageList(snapshot.indexHtml, 'index.html');
   assertNoCompleteReadonlyPageList(snapshot.hostHtml, 'modern/host.html');
   assertNoCompleteReadonlyPageList(snapshot.modernIndexHtml, 'modern/index.html');
@@ -232,6 +291,20 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoCompleteReadonlyPageList(snapshot.adapterTs, 'modern/src/features/reports/reportsSnapshotAdapter.ts');
   assertNoCompleteReadonlyPageList(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoCompleteReadonlyPageList(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
+
+  assertNoLocalReadOnlyReportsContract(snapshot.indexHtml, 'index.html');
+  assertNoLocalReadOnlyReportsContract(snapshot.hostHtml, 'modern/host.html');
+  assertNoLocalReadOnlyReportsContract(snapshot.modernIndexHtml, 'modern/index.html');
+  assertNoLocalReadOnlyReportsContract(snapshot.mainTsx, 'modern/src/main.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.hostEntryTsx, 'modern/src/host-entry.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.hostTsx, 'modern/src/host.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.mountModernAppTs, 'modern/src/bootstrap/mountModernApp.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.modernReportsRuntimeTs, 'modern/src/bootstrap/modernReportsRuntime.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.appTsx, 'modern/src/App.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.navigationTs, 'modern/src/types/navigation.ts');
 
   assertNoForbiddenTokens(snapshot.indexHtml, 'index.html');
   assertNoForbiddenTokens(snapshot.hostHtml, 'modern/host.html');

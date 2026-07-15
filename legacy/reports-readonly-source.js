@@ -7,6 +7,7 @@ const LEGACY_REPORT_CATEGORY_MAP = deepFreeze({
 });
 
 const LEGACY_REPORTS_SOURCE_FALLBACK_SNAPSHOT = deepFreeze({
+  version: 1,
   generatedAt: '1970-01-01T00:00:00.000Z',
   notice: DEFAULT_NOTICE,
   summary: {
@@ -175,6 +176,7 @@ function normalizeItem(row, deps) {
 
 function createEmptySnapshot(generatedAt, notice) {
   return deepFreeze({
+    version: 1,
     generatedAt,
     notice,
     summary: {
@@ -258,6 +260,7 @@ function buildLegacyReportsReadonlySnapshot(assets, deps = {}) {
     }
 
     return deepFreeze({
+      version: 1,
       generatedAt,
       notice,
       summary: {

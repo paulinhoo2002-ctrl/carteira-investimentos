@@ -1,10 +1,10 @@
 import {
   READ_ONLY_REPORTS_BRIDGE,
   type ReadOnlyReportsBridge,
-  type ReadOnlyReportsSnapshot,
   type ReadOnlyReportsSource,
   createReadOnlyReportsBridge,
 } from './reportsReadonlyBridge.ts';
+import type { ReadOnlyReportsSnapshot } from './reportsReadonlyContract.ts';
 
 export type { ReadOnlyReportCategory, ReadOnlyReportItem, ReadOnlyReportTrend, ReadOnlyReportsSnapshot } from './reportsReadonlyBridge.ts';
 

@@ -27,6 +27,7 @@ async function loadRuntimeModule() {
 }
 
 function assertDeepFrozen(snapshot) {
+  assert.equal(snapshot.version, 1);
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
@@ -44,6 +45,7 @@ test('host source usa fonte legada readonly real e buildReportAssetRow', async (
   assert.ok(source);
 
   const snapshot = source.getSnapshot();
+  assert.equal(snapshot.version, 1);
   assert.equal(snapshot.generatedAt, '2026-07-14T10:30:00.000Z');
   assert.equal(snapshot.notice, 'Snapshot legado somente leitura. React nao escreve na fonte.');
   assert.equal(snapshot.summary.totalValue, 900);
@@ -67,6 +69,7 @@ test('host source usa fonte legada readonly real e buildReportAssetRow', async (
   const { createModernReportsRuntime } = await loadRuntimeModule();
   const runtime = createModernReportsRuntime({ reportsSource: source });
   const runtimeSnapshot = runtime.reportsAdapter.getSnapshot();
+  assert.equal(runtimeSnapshot.version, 1);
   assert.deepEqual(runtimeSnapshot, snapshot);
   assert.notDeepEqual(runtimeSnapshot, createModernReportsRuntime().reportsAdapter.getSnapshot());
   assertDeepFrozen(runtimeSnapshot);
