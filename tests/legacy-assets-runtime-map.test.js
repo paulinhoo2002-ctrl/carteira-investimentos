@@ -43,7 +43,7 @@ test('documentacao referencia arquivos e funcoes reais', () => {
     'Fase 179 - contexto visual de sessao no relatorio readonly',
     'Fase 180 - contrato unico das paginas readonly seguras',
     'readonlyReportPage',
-    'ReadOnlyReportPageContract',
+    'getReadonlyReportPageContract',
     'READONLY_REPORT_PAGE_IDS',
     'DEFAULT_READONLY_REPORT_PAGE_ID',
     'normalizeReadonlyReportPageId',
@@ -58,7 +58,7 @@ test('estrutura canonica e ordem de scripts continuam no index legado', () => {
   const readonlyReportPageContract = read(readonlyPageContractPath);
 
   assert.match(indexHtml, /<script src="finance-core\.js"><\/script>/);
-  assert.match(indexHtml, /<script src="persistence-core\.js"><\/script><script src="report-asset-row\.js"><\/script>/);
+  assert.match(indexHtml, /<script src="persistence-core\.js"><\/script>\s*<script src="report-asset-row\.js"><\/script>/);
   assert.match(indexHtml, /<script src="readonly-report-page-contract\.js"><\/script>/);
   assert.match(indexHtml, /function syncStateFromWallet\(w\)\{/);
   assert.match(indexHtml, /function syncWalletFromState\(\)\{/);
@@ -67,10 +67,11 @@ test('estrutura canonica e ordem de scripts continuam no index legado', () => {
   assert.match(indexHtml, /function reportAssetRows\(\)\{/);
   assert.match(indexHtml, /return \(S\.assets\|\|\[\]\)\.map\(asset=>buildReportAssetRow\(asset,\{/);
   assert.match(indexHtml, /assetAppliedValue,\s*assetCurrentValue,\s*metaTicker,\s*normalizeType/);
-  assert.match(indexHtml, /readonlyReportPageContractFromGlobal/);
-  assert.match(indexHtml, /resolveReadonlyReportPageContract/);
+  assert.match(indexHtml, /getReadonlyReportPageContract/);
   assert.equal(indexHtml.includes('ReadonlyReportPageContract.normalizeReadonlyReportPageId'), false);
   assert.equal(indexHtml.includes('ReadonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID'), false);
+  assert.equal(indexHtml.includes('fallbackReadonlyReportPageContract'), false);
+  assert.equal(indexHtml.includes('readonlyReportPageContractFromGlobal'), false);
   assert.equal(indexHtml.includes('READONLY_REPORT_SESSION_PAGE_IDS=new Set'), false);
   assert.equal(indexHtml.includes('normalizeReadonlyReportSessionPageId'), false);
   assert.match(indexHtml, /window\.FinanceCore\.configure\(\{ isRendaFixaAsset, rfValues \}\);/);
@@ -78,6 +79,7 @@ test('estrutura canonica e ordem de scripts continuam no index legado', () => {
   assert.match(readonlyReportPageContract, /DEFAULT_READONLY_REPORT_PAGE_ID/);
   assert.match(readonlyReportPageContract, /isReadonlyReportPageId/);
   assert.match(readonlyReportPageContract, /normalizeReadonlyReportPageId/);
+  assert.match(readonlyReportPageContract, /getReadonlyReportPageContract/);
 });
 
 test('funcoes financeiras canonicas permanecem disponiveis', () => {

@@ -135,8 +135,28 @@
     });
   }
 
-  function resolveReadonlyReportPageContract(candidate) {
-    return isReadonlyReportPageContract(candidate) ? candidate : createReadonlyReportPageContractFallback();
+  function readReadonlyReportPageContractCandidate() {
+    try {
+      if (typeof globalThis === 'undefined') {
+        return undefined;
+      }
+
+      return globalThis.ReadonlyReportPageContract;
+    } catch {
+      return undefined;
+    }
+  }
+
+  function getReadonlyReportPageContract(candidate) {
+    const contractCandidate = arguments.length > 0 ? candidate : readReadonlyReportPageContractCandidate();
+
+    try {
+      return isReadonlyReportPageContract(contractCandidate)
+        ? contractCandidate
+        : createReadonlyReportPageContractFallback();
+    } catch {
+      return createReadonlyReportPageContractFallback();
+    }
   }
 
   return Object.freeze({
@@ -145,6 +165,6 @@
     isReadonlyReportPageId,
     normalizeReadonlyReportPageId,
     isReadonlyReportPageContract,
-    resolveReadonlyReportPageContract,
+    getReadonlyReportPageContract,
   });
 });
