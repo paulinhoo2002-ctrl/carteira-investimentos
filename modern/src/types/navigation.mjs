@@ -1,6 +1,4 @@
-'use strict';
-
-const MODERN_PAGES = [
+export const MODERN_PAGES = [
   {
     id: 'overview',
     label: 'Visao geral',
@@ -52,7 +50,7 @@ const MODERN_PAGES = [
   },
 ];
 
-const OVERVIEW_CARDS = [
+export const OVERVIEW_CARDS = [
   {
     label: 'Patrimonio',
     value: 'Nao conectado',
@@ -74,8 +72,3 @@ const OVERVIEW_CARDS = [
     hint: 'Fluxo futuro',
   },
 ];
-
-module.exports = {
-  MODERN_PAGES,
-  OVERVIEW_CARDS,
-};

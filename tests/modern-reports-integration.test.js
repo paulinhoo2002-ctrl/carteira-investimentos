@@ -7,7 +7,7 @@ const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 const { createServer } = require('vite');
 
-const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
+const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.mjs');
 const integrationModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'legacyReportsReadonlyIntegration.ts');
 const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
 const mainModulePath = path.join(__dirname, '..', 'modern', 'src', 'main.tsx');
@@ -222,7 +222,7 @@ test('fonte ausente usa fallback', async () => {
   assert.deepEqual(adapter.getSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
 });
 
-test('fonte que retorna null ou lança excecao usa fallback', async () => {
+test('fonte que retorna null ou lanÃ§a excecao usa fallback', async () => {
   const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT } = await loadBridgeModule();
   const { createConnectedReportsBridge, createConnectedReportsAdapter } = await loadIntegrationModule();
 

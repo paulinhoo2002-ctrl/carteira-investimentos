@@ -3,8 +3,8 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
-const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
-const adapterModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsSnapshotAdapter.ts');
+const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.mjs');
+const adapterModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsSnapshotAdapter.mjs');
 
 async function loadBridgeModule() {
   return import(pathToFileURL(bridgeModulePath).href);
@@ -118,7 +118,7 @@ test('fonte que retorna null usa fallback', async () => {
   assert.deepEqual(bridge.readSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
 });
 
-test('fonte que lança excecao usa fallback', async () => {
+test('fonte que lanÃ§a excecao usa fallback', async () => {
   const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT, createReadOnlyReportsBridge } = await loadBridgeModule();
   const bridge = createReadOnlyReportsBridge({
     getSnapshot() {

@@ -1,5 +1,11 @@
 import { App } from './App';
-import { createHostLegacyReportsReadonlySource } from './bootstrap/hostLegacyReportsReadonlySource';
+import {
+  createHostLegacyReportsReadonlySource,
+  hostAssetAppliedValue,
+  hostAssetCurrentValue,
+  hostMetaTicker,
+  hostNormalizeType,
+} from './bootstrap/hostLegacyReportsReadonlySource';
 import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
 import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
@@ -14,7 +20,7 @@ import {
   type ReportsReadonlyOriginMode,
 } from './features/reports/reportsRefreshController.ts';
 import type { HostLegacyReportAsset } from './bootstrap/hostLegacyReportsReadonlySource';
-import type { ModernPageId } from './types/navigation';
+import type { ModernPageId } from './types/navigation.mjs';
 import './styles.css';
 
 const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null;
@@ -44,7 +50,7 @@ function createHostExperimentalAssets(revision: number) {
     {
       ticker: 'PETR4',
       name: 'Petrobras',
-      type: 'Ação',
+      type: 'AÃ§Ã£o',
       sector: 'Energia',
       qty: 10,
       avg_price: 20,
@@ -180,22 +186,10 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
       return directLegacyProvider({
         getAssets: options.getAssets ?? (() => experimentalAssets),
         buildReportAssetRow: injectedBuildReportAssetRow,
-        assetAppliedValue: (asset) => asset.applied,
-        assetCurrentValue: (asset) => asset.current,
-        metaTicker: (ticker) => {
-          const normalizedTicker = String(ticker || '').trim();
-          return (
-            {
-              PETR4: { type: 'Ação', sector: 'Energia' },
-              MXRF11: { type: 'FII', sector: 'Imobiliario' },
-              BOVA11: { type: 'ETF', sector: 'Ibovespa' },
-            }[normalizedTicker] ?? { type: 'Ação', sector: '' }
-          );
-        },
-        normalizeType: (value, fallback = 'Ação') => {
-          const normalized = String(value ?? '').trim();
-          return normalized === 'Ação' || normalized === 'FII' || normalized === 'ETF' ? normalized : fallback;
-        },
+        assetAppliedValue: hostAssetAppliedValue,
+        assetCurrentValue: hostAssetCurrentValue,
+        metaTicker: hostMetaTicker,
+        normalizeType: hostNormalizeType,
         getGeneratedAt:
           options.getGeneratedAt ??
           (() =>

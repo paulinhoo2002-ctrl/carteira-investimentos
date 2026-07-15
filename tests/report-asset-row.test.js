@@ -24,8 +24,8 @@ function makeDeps(overrides = {}) {
 test('buildReportAssetRow monta linha completa com dados explicitos do ativo', () => {
   const asset = {
     ticker: ' ITUB4 ',
-    name: ' Itaú Unibanco ',
-    type: 'Ação',
+    name: ' ItaÃº Unibanco ',
+    type: 'AÃ§Ã£o',
     sector: ' Bancos ',
     qty: 10,
     avg_price: 23.45,
@@ -40,8 +40,8 @@ test('buildReportAssetRow monta linha completa com dados explicitos do ativo', (
 
   assert.deepStrictEqual(row, {
     ticker: 'ITUB4',
-    name: 'Itaú Unibanco',
-    type: 'Ação',
+    name: 'ItaÃº Unibanco',
+    type: 'AÃ§Ã£o',
     sector: 'Bancos',
     qty: 10,
     avgPrice: 23.45,
@@ -69,7 +69,7 @@ test('buildReportAssetRow usa fallbacks de metadata e placeholders quando o ativ
   const row = buildReportAssetRow(asset, makeDeps({
     metaTicker(ticker) {
       metaCalls.push(ticker);
-      return { type: 'FII', sector: 'Logística' };
+      return { type: 'FII', sector: 'LogÃ­stica' };
     }
   }));
 
@@ -78,7 +78,7 @@ test('buildReportAssetRow usa fallbacks de metadata e placeholders quando o ativ
     ticker: 'ABCD11',
     name: 'ABCD11',
     type: 'FII',
-    sector: 'Logística',
+    sector: 'LogÃ­stica',
     qty: 0,
     avgPrice: 0,
     currentPrice: 0,

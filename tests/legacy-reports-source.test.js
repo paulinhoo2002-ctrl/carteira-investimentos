@@ -46,7 +46,7 @@ function makeAssets() {
     {
       ticker: 'PETR4',
       name: 'Petrobras',
-      type: 'Ação',
+      type: 'AÃ§Ã£o',
       qty: 10,
       avg_price: 20,
       current_price: 25,
@@ -81,7 +81,7 @@ function assertFrozenSnapshot(snapshot) {
   }
 }
 
-test('fonte aceita coleção vazia', () => {
+test('fonte aceita coleÃ§Ã£o vazia', () => {
   const source = createLegacyReportsReadonlySource({
     getAssets() {
       return [];
@@ -130,7 +130,7 @@ test('fonte produz snapshot valido com calculos legados', () => {
   assert.equal(snapshot.summary.itemCount, 3);
   assert.equal(snapshot.summary.averageVariationPct, 5);
   assert.deepEqual(snapshot.items.map((item) => item.category), [
-    LEGACY_REPORT_CATEGORY_MAP.Ação,
+    LEGACY_REPORT_CATEGORY_MAP.AÃ§Ã£o,
     LEGACY_REPORT_CATEGORY_MAP.FII,
     LEGACY_REPORT_CATEGORY_MAP.ETF,
   ]);
@@ -219,7 +219,7 @@ test('resultado nao reutiliza referencias mutaveis da entrada', () => {
   assets.push({
     ticker: 'NOVO3',
     name: 'Novo',
-    type: 'Ação',
+    type: 'AÃ§Ã£o',
     qty: 1,
     avg_price: 1,
     current_price: 1,
@@ -265,7 +265,7 @@ test('fonte nao polui globalThis ao carregar', () => {
   assert.equal(typeof loaded.installLegacyReportsReadonlySource, 'function');
 });
 
-test('provider le getAssets somente quando getSnapshot e chama builder canônico', () => {
+test('provider le getAssets somente quando getSnapshot e chama builder canÃ´nico', () => {
   let assets = makeAssets();
   let getAssetsCalls = 0;
   let buildCalls = 0;
@@ -310,7 +310,7 @@ test('provider le getAssets somente quando getSnapshot e chama builder canônico
   assert.equal(Object.isFrozen(secondSnapshot.items[0]), true);
 });
 
-test('provider trata coleção inválida, exceção e builder com erro', () => {
+test('provider trata coleÃ§Ã£o invÃ¡lida, exceÃ§Ã£o e builder com erro', () => {
   const invalidObjectSource = createLegacyAssetsReadonlyProvider({
     getAssets() {
       return { assets: makeAssets() };

@@ -106,7 +106,7 @@ test('host source reflete a colecao atual injetada por dependencia explicita', a
     {
       ticker: 'PETR4',
       name: 'Petrobras',
-      type: 'Ação',
+      type: 'AÃ§Ã£o',
       sector: 'Energia',
       qty: 10,
       avg_price: 20,

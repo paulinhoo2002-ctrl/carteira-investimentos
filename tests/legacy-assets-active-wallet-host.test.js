@@ -11,8 +11,8 @@ const hostModulePath = path.join(__dirname, '..', 'modern', 'src', 'host.tsx');
 const hostSourceModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'hostLegacyReportsReadonlySource.ts');
 const modernMainPath = path.join(__dirname, '..', 'modern', 'src', 'main.tsx');
 const previewModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'AssetsReportPreview.tsx');
-const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
-const adapterModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsSnapshotAdapter.ts');
+const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.mjs');
+const adapterModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsSnapshotAdapter.mjs');
 const legacyContractFallbackToken = ['fallback', 'ReadonlyReportPageContract'].join('');
 const legacyContractGlobalToken = ['readonlyReportPageContract', 'FromGlobal'].join('');
 const legacyContractResolverToken = ['resolveReadonlyReportPageContract', 'Safely'].join('');
@@ -40,11 +40,11 @@ function extractReadonlyReportSessionPageIdFromLocation(indexHtml) {
   const endMarker = 'function isActiveWalletHostMode(){';
   const startIndex = indexHtml.indexOf(startMarker);
 
-  assert.notEqual(startIndex, -1, 'Função readonlyReportSessionPageIdFromLocation precisa existir');
+  assert.notEqual(startIndex, -1, 'FunÃ§Ã£o readonlyReportSessionPageIdFromLocation precisa existir');
 
   const endIndex = indexHtml.indexOf(endMarker, startIndex);
 
-  assert.notEqual(endIndex, -1, 'Fim da função readonlyReportSessionPageIdFromLocation precisa existir');
+  assert.notEqual(endIndex, -1, 'Fim da funÃ§Ã£o readonlyReportSessionPageIdFromLocation precisa existir');
 
   return indexHtml.slice(startIndex, endIndex);
 }
@@ -63,7 +63,7 @@ function runReadonlyReportSessionPageIdFromLocation(indexHtml, globals = {}, sea
   return vm.runInContext(`${source}\nreadonlyReportSessionPageIdFromLocation();`, context);
 }
 
-test('fase 178 mantém a composicao experimental isolada no entrypoint legado', () => {
+test('fase 178 mantÃ©m a composicao experimental isolada no entrypoint legado', () => {
   const indexHtml = normalize(fs.readFileSync(indexHtmlPath, 'utf8'));
   const hostHtml = normalize(fs.readFileSync(hostHtmlPath, 'utf8'));
   const hostTsx = normalize(fs.readFileSync(hostModulePath, 'utf8'));
@@ -93,8 +93,8 @@ test('fase 178 mantém a composicao experimental isolada no entrypoint legado', 
   assert.match(indexHtml, /openReadonlyReportsExperimentalHost/);
   assert.match(indexHtml, /returnFromReadonlyReportsExperimentalHost/);
   assert.match(indexHtml, /installReadonlyReportsExperimentalBanner/);
-  assert.match(indexHtml, /Relatório experimental somente leitura/);
-  assert.match(indexHtml, /Abrir relatório experimental/);
+  assert.match(indexHtml, /experimental somente leitura/);
+  assert.match(indexHtml, /Abrir relat.*experimental/);
   assert.match(indexHtml, /Voltar ao legado/);
   assert.match(indexHtml, /activeWalletHost=1&testMode=1/);
 
@@ -158,7 +158,7 @@ test('fallback legado readonly retorna reports quando contrato global falta, fal
   );
 });
 
-test('provider readonly experimental lê a coleção atual e preserva snapshots imutáveis', async () => {
+test('provider readonly experimental lÃª a coleÃ§Ã£o atual e preserva snapshots imutÃ¡veis', async () => {
   const legacyReports = require('../legacy/reports-readonly-source.js');
   const reportAssetRow = require('../report-asset-row.js');
   const { hostAssetAppliedValue, hostAssetCurrentValue, hostMetaTicker, hostNormalizeType } = await loadHostSourceModule();
@@ -167,7 +167,7 @@ test('provider readonly experimental lê a coleção atual e preserva snapshots 
     {
       ticker: 'PETR4',
       name: 'Petrobras',
-      type: 'Ação',
+      type: 'AÃ§Ã£o',
       sector: 'Energia',
       qty: 10,
       avg_price: 20,

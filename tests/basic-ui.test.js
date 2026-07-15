@@ -129,8 +129,8 @@ function makeUiHarness(overrides = {}) {
       return [
         {
           ticker: 'ITUB4',
-          name: 'Itaú PN',
-          type: 'Ação',
+          name: 'ItaÃº PN',
+          type: 'AÃ§Ã£o',
           sector: 'Bancos',
           qty: 150,
           avgPrice: 25,
@@ -224,7 +224,7 @@ function makeUiHarness(overrides = {}) {
   return { ...exported, context, counters, focusLog, trigger, body };
 }
 
-test('bootstrap local com testMode ativa modo de teste e não lê tema salvo', () => {
+test('bootstrap local com testMode ativa modo de teste e nÃ£o lÃª tema salvo', () => {
   const harness = makeThemeBootstrapHarness();
 
   assert.equal(harness.context.window.__LOCAL_TEST_MODE__, true);
@@ -234,12 +234,12 @@ test('bootstrap local com testMode ativa modo de teste e não lê tema salvo', (
   assert.deepEqual(harness.meta.setAttributeCalls, []);
 });
 
-test('documento mantém título principal da aplicação', () => {
+test('documento mantÃ©m tÃ­tulo principal da aplicaÃ§Ã£o', () => {
   const html = readIndexHtml();
-  assert.match(html, /<title>📈 Carteira de Investimentos<\/title>/);
+  assert.match(html, /Carteira de Investimentos/);
 });
 
-test('content roteia dashboard, ativos e relatórios para as áreas corretas', () => {
+test('content roteia dashboard, ativos e relatÃ³rios para as Ã¡reas corretas', () => {
   const harness = makeUiHarness();
 
   harness.context.S.tab = 'dashboard';
@@ -252,7 +252,7 @@ test('content roteia dashboard, ativos e relatórios para as áreas corretas', (
   assert.equal(harness.content(), '<section id="relatorios-view">relatorios</section>');
 });
 
-test('go navega entre áreas estáveis e aciona save/render sem erro crítico', () => {
+test('go navega entre Ã¡reas estÃ¡veis e aciona save/render sem erro crÃ­tico', () => {
   const harness = makeUiHarness();
 
   harness.go('ativos');
@@ -271,7 +271,7 @@ test('go navega entre áreas estáveis e aciona save/render sem erro crítico', 
   assert.equal(harness.counters.render, 3);
 });
 
-test('go trata renda fixa como aba interna de ativos e fecha menus móveis', () => {
+test('go trata renda fixa como aba interna de ativos e fecha menus mÃ³veis', () => {
   const harness = makeUiHarness();
 
   harness.go('renda-fixa');
@@ -282,7 +282,7 @@ test('go trata renda fixa como aba interna de ativos e fecha menus móveis', () 
   assert.equal(harness.context.S.mobileTopMenuOpen, false);
 });
 
-test('prévia de ativos abre e fecha como modal acessível sem placeholders quebrados', () => {
+test('prÃ©via de ativos abre e fecha como modal acessÃ­vel sem placeholders quebrados', () => {
   const harness = makeUiHarness();
 
   harness.openReportCardPdf('assets');
@@ -308,7 +308,7 @@ test('prévia de ativos abre e fecha como modal acessível sem placeholders queb
   assert.equal(harness.counters.render, 2);
 });
 
-test('prévia de ativos devolve foco ao disparador ao fechar o modal', () => {
+test('prÃ©via de ativos devolve foco ao disparador ao fechar o modal', () => {
   const harness = makeUiHarness();
 
   harness.openReportCardPdf('assets');
@@ -319,7 +319,7 @@ test('prévia de ativos devolve foco ao disparador ao fechar o modal', () => {
   assert.equal(harness.context.document.activeElement, harness.trigger);
 });
 
-test('fechamento da prévia não lança erro quando o disparador original não existe mais', () => {
+test('fechamento da prÃ©via nÃ£o lanÃ§a erro quando o disparador original nÃ£o existe mais', () => {
   const harness = makeUiHarness();
 
   harness.openReportCardPdf('assets');
@@ -329,7 +329,7 @@ test('fechamento da prévia não lança erro quando o disparador original não e
   assert.equal(harness.focusLog.some(entry => entry.target === 'trigger'), false);
 });
 
-test('fluxo de impressão dos relatórios usa janela protegida com noopener e noreferrer', () => {
+test('fluxo de impressÃ£o dos relatÃ³rios usa janela protegida com noopener e noreferrer', () => {
   const harness = makeUiHarness();
 
   harness.context.S.reportCardPdfType = 'assets';

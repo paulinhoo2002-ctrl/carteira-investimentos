@@ -33,7 +33,7 @@ test('documentacao referencia arquivos e funcoes reais', () => {
     'report-asset-row.js',
     'legacy/reports-readonly-source.js',
     'readonly-report-page-contract.js',
-    'reportsReadonlyContract.ts',
+    'reportsReadonlyContract.mjs',
     'reportAssetRows()',
     'buildReportAssetRow()',
     'assetAppliedValue()',

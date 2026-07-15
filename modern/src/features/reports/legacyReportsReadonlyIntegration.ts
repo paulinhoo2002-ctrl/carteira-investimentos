@@ -1,5 +1,7 @@
-import { createReadOnlyReportsBridge, type ReadOnlyReportsBridge, type ReadOnlyReportsSource } from './reportsReadonlyBridge.ts';
-import { createReadOnlyReportsAdapter, type ReadOnlyReportsAdapter } from './reportsSnapshotAdapter.ts';
+import type { ReadOnlyReportsBridge, ReadOnlyReportsSource } from './reportsReadonlyBridge.mjs';
+import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter.mjs';
+import { createReadOnlyReportsBridge } from './reportsReadonlyBridge.mjs';
+import { createReadOnlyReportsAdapter } from './reportsSnapshotAdapter.mjs';
 
 const CONNECTED_REPORTS_DEMO_SNAPSHOT = {
   version: 1,

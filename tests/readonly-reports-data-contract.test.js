@@ -9,7 +9,7 @@ const contractModulePath = path.join(
   'src',
   'features',
   'reports',
-  'reportsReadonlyContract.js',
+  'reportsReadonlyContract.mjs',
 );
 const bridgeModulePath = path.join(
   __dirname,
@@ -18,7 +18,7 @@ const bridgeModulePath = path.join(
   'src',
   'features',
   'reports',
-  'reportsReadonlyBridge.js',
+  'reportsReadonlyBridge.mjs',
 );
 const adapterModulePath = path.join(
   __dirname,
@@ -27,7 +27,7 @@ const adapterModulePath = path.join(
   'src',
   'features',
   'reports',
-  'reportsSnapshotAdapter.js',
+  'reportsSnapshotAdapter.mjs',
 );
 
 async function loadContractModule() {

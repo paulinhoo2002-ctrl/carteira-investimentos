@@ -1,10 +1,8 @@
-'use strict';
+export const READ_ONLY_REPORTS_CONTRACT_VERSION = 1;
+export const READ_ONLY_REPORT_CATEGORIES = ['Acao demo', 'FII demo', 'ETF demo'];
+export const READ_ONLY_REPORT_TRENDS = ['positive', 'neutral', 'negative'];
 
-const READ_ONLY_REPORTS_CONTRACT_VERSION = 1;
-const READ_ONLY_REPORT_CATEGORIES = ['Acao demo', 'FII demo', 'ETF demo'];
-const READ_ONLY_REPORT_TRENDS = ['positive', 'neutral', 'negative'];
-
-const READ_ONLY_REPORTS_FALLBACK_SNAPSHOT = deepFreeze({
+export const READ_ONLY_REPORTS_FALLBACK_SNAPSHOT = deepFreeze({
   version: READ_ONLY_REPORTS_CONTRACT_VERSION,
   generatedAt: '1970-01-01T00:00:00.000Z',
   notice: 'Snapshot controlado por adaptador somente leitura. React nao escreve na fonte.',
@@ -120,7 +118,7 @@ function hasSupportedVersion(value) {
   return value.version === READ_ONLY_REPORTS_CONTRACT_VERSION;
 }
 
-function isReadOnlyReportsSnapshot(value) {
+export function isReadOnlyReportsSnapshot(value) {
   if (!isPlainObject(value)) {
     return false;
   }
@@ -144,19 +142,10 @@ function isReadOnlyReportsSnapshot(value) {
   return value.items.every((item) => isReadOnlyReportItem(item));
 }
 
-function normalizeReadOnlyReportsSnapshot(candidate) {
+export function normalizeReadOnlyReportsSnapshot(candidate) {
   if (!isReadOnlyReportsSnapshot(candidate)) {
     return READ_ONLY_REPORTS_FALLBACK_SNAPSHOT;
   }
 
   return cloneReadOnlyReportsSnapshot(candidate);
 }
-
-module.exports = {
-  READ_ONLY_REPORTS_CONTRACT_VERSION,
-  READ_ONLY_REPORTS_FALLBACK_SNAPSHOT,
-  READ_ONLY_REPORT_CATEGORIES,
-  READ_ONLY_REPORT_TRENDS,
-  isReadOnlyReportsSnapshot,
-  normalizeReadOnlyReportsSnapshot,
-};

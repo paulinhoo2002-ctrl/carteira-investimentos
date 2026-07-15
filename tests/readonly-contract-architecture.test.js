@@ -34,7 +34,14 @@ const readonlySessionPageIdsToken = 'READONLY_REPORT_SESSION_PAGE_IDS';
 const readonlyReportsContractVersionToken = 'READ_ONLY_REPORTS_CONTRACT_VERSION';
 const normalizeReadonlyReportsSnapshotToken = 'normalizeReadOnlyReportsSnapshot';
 const isReadonlyReportsSnapshotToken = 'isReadOnlyReportsSnapshot';
-const readonlyReportsContractFilename = 'reportsReadonlyContract.ts';
+const readonlyReportsContractRuntimeFilename = 'reportsReadonlyContract.mjs';
+const readonlyReportsContractTypesFilename = 'reportsReadonlyContract.d.ts';
+const readonlyReportsBridgeRuntimeFilename = 'reportsReadonlyBridge.mjs';
+const readonlyReportsBridgeTypesFilename = 'reportsReadonlyBridge.d.ts';
+const readonlyReportsAdapterRuntimeFilename = 'reportsSnapshotAdapter.mjs';
+const readonlyReportsAdapterTypesFilename = 'reportsSnapshotAdapter.d.ts';
+const modernNavigationRuntimeFilename = 'navigation.mjs';
+const modernNavigationTypesFilename = 'navigation.d.ts';
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
@@ -82,6 +89,14 @@ function assertCanonicalContract(contractJs) {
   assert.match(contractJs, /isReadonlyReportPageId/);
   assert.match(contractJs, /normalizeReadonlyReportPageId/);
   assert.equal(containsAllReadonlyPageIds(contractJs), true, 'Contrato precisa manter lista completa canonica');
+}
+
+function assertTypeDeclarationsNoRuntime(text, label) {
+  for (const token of ['module.exports', 'require(', 'Object.freeze(', 'deepFreeze(']) {
+    assert.equal(text.includes(token), false, `${label} nao pode conter implementacao runtime: ${token}`);
+  }
+
+  assert.equal(/(?<!declare\s)function\s+[A-Za-z_]/.test(text), false, `${label} nao pode conter definicao runtime de funcao`);
 }
 
 function assertLegacyConsumerFallback(indexHtml) {
@@ -159,8 +174,11 @@ function assertReadOnlyReportsContract(contractTs) {
   assert.equal(contractTs.includes('MutationObserver'), false);
 }
 
-function assertImportsReadOnlyReportsContract(text, label) {
-  assert.match(text, /reportsReadonlyContract/);
+function assertImportsReadOnlyReportsContract(text, label, requiredTokens = []) {
+  for (const token of requiredTokens) {
+    assert.match(text, new RegExp(token));
+  }
+
   assert.equal(/function\s+normalizeReadOnlyReportsSnapshot/.test(text), false, `${label} nao pode recriar normalizeReadOnlyReportsSnapshot`);
   assert.equal(/function\s+isReadOnlyReportsSnapshot/.test(text), false, `${label} nao pode recriar isReadOnlyReportsSnapshot`);
   assert.equal(/const\s+READ_ONLY_REPORTS_CONTRACT_VERSION\s*=/.test(text), false, `${label} nao pode recriar READ_ONLY_REPORTS_CONTRACT_VERSION`);
@@ -239,11 +257,15 @@ function loadArchitectureSnapshot() {
     modernReportsRuntimeTs: read('modern/src/bootstrap/modernReportsRuntime.ts'),
     appTsx: read('modern/src/App.tsx'),
     assetsPreviewTsx: read('modern/src/features/reports/AssetsReportPreview.tsx'),
-    dataContractTs: read('modern/src/features/reports/reportsReadonlyContract.ts'),
-    bridgeTs: read('modern/src/features/reports/reportsReadonlyBridge.ts'),
-    adapterTs: read('modern/src/features/reports/reportsSnapshotAdapter.ts'),
+    dataContractJs: read('modern/src/features/reports/reportsReadonlyContract.mjs'),
+    dataContractTypes: read('modern/src/features/reports/reportsReadonlyContract.d.ts'),
+    bridgeJs: read('modern/src/features/reports/reportsReadonlyBridge.mjs'),
+    bridgeTypes: read('modern/src/features/reports/reportsReadonlyBridge.d.ts'),
+    adapterJs: read('modern/src/features/reports/reportsSnapshotAdapter.mjs'),
+    adapterTypes: read('modern/src/features/reports/reportsSnapshotAdapter.d.ts'),
     integrationTs: read('modern/src/features/reports/legacyReportsReadonlyIntegration.ts'),
-    navigationTs: read('modern/src/types/navigation.ts'),
+    navigationJs: read('modern/src/types/navigation.mjs'),
+    navigationTypes: read('modern/src/types/navigation.d.ts'),
     readonlySessionTs: read('modern/src/features/reports/readonlyReportSessionContext.ts'),
     viteConfigTs: read('modern/vite.config.ts'),
     docs: read('docs/legacy-assets-runtime-map.md'),
@@ -253,6 +275,27 @@ function loadArchitectureSnapshot() {
 
 test('arquitetura readonly consolidada continua unica e guardrails entram no npm test', () => {
   const snapshot = loadArchitectureSnapshot();
+  const reportsRoot = path.join(modernRoot, 'src', 'features', 'reports');
+  const typesRoot = path.join(modernRoot, 'src', 'types');
+
+  for (const file of [
+    readonlyReportsContractRuntimeFilename,
+    readonlyReportsBridgeRuntimeFilename,
+    readonlyReportsAdapterRuntimeFilename,
+  ]) {
+    assert.equal(fs.existsSync(path.join(reportsRoot, file)), true, `${file} precisa existir como runtime canÃ´nico`);
+  }
+
+  for (const file of [
+    readonlyReportsContractTypesFilename,
+    readonlyReportsBridgeTypesFilename,
+    readonlyReportsAdapterTypesFilename,
+  ]) {
+    assert.equal(fs.existsSync(path.join(reportsRoot, file)), true, `${file} precisa existir como tipagem`);
+  }
+
+  assert.equal(fs.existsSync(path.join(typesRoot, modernNavigationRuntimeFilename)), true, 'navigation.mjs precisa existir como runtime canÃ´nico');
+  assert.equal(fs.existsSync(path.join(typesRoot, modernNavigationTypesFilename)), true, 'navigation.d.ts precisa existir como tipagem');
 
   assertCanonicalContract(snapshot.contractJs);
   assertLegacyConsumerFallback(snapshot.indexHtml);
@@ -268,14 +311,16 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     'modern/src/App.tsx': snapshot.appTsx,
     'modern/src/bootstrap/mountModernApp.ts': snapshot.mountModernAppTs,
   });
-  assertReadOnlyReportsContract(snapshot.dataContractTs);
+  assertReadOnlyReportsContract(snapshot.dataContractJs);
   assertImportsReadOnlyReportsContract(
-    snapshot.bridgeTs,
-    'modern/src/features/reports/reportsReadonlyBridge.ts',
+    snapshot.bridgeJs,
+    'modern/src/features/reports/reportsReadonlyBridge.mjs',
+    ['reportsReadonlyContract'],
   );
   assertImportsReadOnlyReportsContract(
-    snapshot.adapterTs,
-    'modern/src/features/reports/reportsSnapshotAdapter.ts',
+    snapshot.adapterJs,
+    'modern/src/features/reports/reportsSnapshotAdapter.mjs',
+    ['reportsReadonlyBridge'],
   );
   assertNoCompleteReadonlyPageList(snapshot.indexHtml, 'index.html');
   assertNoCompleteReadonlyPageList(snapshot.hostHtml, 'modern/host.html');
@@ -287,8 +332,8 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoCompleteReadonlyPageList(snapshot.modernReportsRuntimeTs, 'modern/src/bootstrap/modernReportsRuntime.ts');
   assertNoCompleteReadonlyPageList(snapshot.appTsx, 'modern/src/App.tsx');
   assertNoCompleteReadonlyPageList(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
-  assertNoCompleteReadonlyPageList(snapshot.bridgeTs, 'modern/src/features/reports/reportsReadonlyBridge.ts');
-  assertNoCompleteReadonlyPageList(snapshot.adapterTs, 'modern/src/features/reports/reportsSnapshotAdapter.ts');
+  assertNoCompleteReadonlyPageList(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
+  assertNoCompleteReadonlyPageList(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoCompleteReadonlyPageList(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoCompleteReadonlyPageList(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
 
@@ -304,7 +349,12 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoLocalReadOnlyReportsContract(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
   assertNoLocalReadOnlyReportsContract(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
-  assertNoLocalReadOnlyReportsContract(snapshot.navigationTs, 'modern/src/types/navigation.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.navigationJs, 'modern/src/types/navigation.mjs');
+
+  assertTypeDeclarationsNoRuntime(snapshot.dataContractTypes, 'modern/src/features/reports/reportsReadonlyContract.d.ts');
+  assertTypeDeclarationsNoRuntime(snapshot.bridgeTypes, 'modern/src/features/reports/reportsReadonlyBridge.d.ts');
+  assertTypeDeclarationsNoRuntime(snapshot.adapterTypes, 'modern/src/features/reports/reportsSnapshotAdapter.d.ts');
+  assertTypeDeclarationsNoRuntime(snapshot.navigationTypes, 'modern/src/types/navigation.d.ts');
 
   assertNoForbiddenTokens(snapshot.indexHtml, 'index.html');
   assertNoForbiddenTokens(snapshot.hostHtml, 'modern/host.html');
@@ -316,10 +366,15 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoForbiddenTokens(snapshot.modernReportsRuntimeTs, 'modern/src/bootstrap/modernReportsRuntime.ts');
   assertNoForbiddenTokens(snapshot.appTsx, 'modern/src/App.tsx');
   assertNoForbiddenTokens(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
-  assertNoForbiddenTokens(snapshot.bridgeTs, 'modern/src/features/reports/reportsReadonlyBridge.ts');
-  assertNoForbiddenTokens(snapshot.adapterTs, 'modern/src/features/reports/reportsSnapshotAdapter.ts');
+  assertNoForbiddenTokens(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
+  assertNoForbiddenTokens(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoForbiddenTokens(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
-  assertNoForbiddenTokens(snapshot.navigationTs, 'modern/src/types/navigation.ts');
+  assertNoForbiddenTokens(snapshot.navigationJs, 'modern/src/types/navigation.mjs');
+
+  assert.equal(fs.existsSync(path.join(modernRoot, 'src/features/reports/reportsReadonlyContract.ts')), false, 'reportsReadonlyContract.ts nao pode permanecer');
+  assert.equal(fs.existsSync(path.join(modernRoot, 'src/features/reports/reportsReadonlyBridge.ts')), false, 'reportsReadonlyBridge.ts nao pode permanecer');
+  assert.equal(fs.existsSync(path.join(modernRoot, 'src/features/reports/reportsSnapshotAdapter.ts')), false, 'reportsSnapshotAdapter.ts nao pode permanecer');
+  assert.equal(fs.existsSync(path.join(modernRoot, 'src/types/navigation.ts')), false, 'navigation.ts nao pode permanecer');
 });
 
 test('guardrail pega fallback local, lista duplicada, shell acoplado, candidato ausente e ordem errada', () => {

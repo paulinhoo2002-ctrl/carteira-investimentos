@@ -101,37 +101,37 @@ describe('FinanceCore', () => {
   describe('ativos normais', () => {
     describe('assetAppliedValue', () => {
       const cases = [
-        ['ação com quantidade inteira e preço médio numérico', { type: 'Ação', qty: 12, avg_price: 10.5 }],
+        ['aÃ§Ã£o com quantidade inteira e preÃ§o mÃ©dio numÃ©rico', { type: 'AÃ§Ã£o', qty: 12, avg_price: 10.5 }],
         ['quantidade fracionada', { type: 'FII', qty: 2.5, avg_price: 17.2 }],
-        ['quantidade como string numérica', { type: 'ETF', qty: '3', avg_price: 20 }],
-        ['preço médio como string numérica', { type: 'Ação', qty: 4, avg_price: '11.25' }],
-        ['quantidade zero', { type: 'Ação', qty: 0, avg_price: 99 }],
-        ['preço médio zero', { type: 'FII', qty: 8, avg_price: 0 }],
+        ['quantidade como string numÃ©rica', { type: 'ETF', qty: '3', avg_price: 20 }],
+        ['preÃ§o mÃ©dio como string numÃ©rica', { type: 'AÃ§Ã£o', qty: 4, avg_price: '11.25' }],
+        ['quantidade zero', { type: 'AÃ§Ã£o', qty: 0, avg_price: 99 }],
+        ['preÃ§o mÃ©dio zero', { type: 'FII', qty: 8, avg_price: 0 }],
         ['quantidade vazia', { type: 'ETF', qty: '', avg_price: 5 }],
-        ['preço médio vazio', { type: 'Ação', qty: 5, avg_price: '' }],
-        ['quantidade null', { type: 'Ação', qty: null, avg_price: 5 }],
-        ['preço médio null', { type: 'FII', qty: 5, avg_price: null }],
+        ['preÃ§o mÃ©dio vazio', { type: 'AÃ§Ã£o', qty: 5, avg_price: '' }],
+        ['quantidade null', { type: 'AÃ§Ã£o', qty: null, avg_price: 5 }],
+        ['preÃ§o mÃ©dio null', { type: 'FII', qty: 5, avg_price: null }],
         ['quantidade undefined', { type: 'ETF', avg_price: 5 }],
-        ['preço médio undefined', { type: 'Ação', qty: 5 }],
-        ['quantidade não numérica', { type: 'Ação', qty: 'abc', avg_price: 5 }],
-        ['preço médio não numérico', { type: 'FII', qty: 5, avg_price: 'abc' }],
+        ['preÃ§o mÃ©dio undefined', { type: 'AÃ§Ã£o', qty: 5 }],
+        ['quantidade nÃ£o numÃ©rica', { type: 'AÃ§Ã£o', qty: 'abc', avg_price: 5 }],
+        ['preÃ§o mÃ©dio nÃ£o numÃ©rico', { type: 'FII', qty: 5, avg_price: 'abc' }],
         ['valores NaN', { type: 'ETF', qty: NaN, avg_price: NaN }],
-        ['valores Infinity', { type: 'Ação', qty: Infinity, avg_price: 2 }],
+        ['valores Infinity', { type: 'AÃ§Ã£o', qty: Infinity, avg_price: 2 }],
       ];
       for(const [name, asset] of cases){
         test(name, () => {
           assert.equal(FinanceCore.assetAppliedValue(asset), refAppliedValue(asset));
         });
       }
-      test('mantém a mesma fórmula para Ação', () => {
-        const asset = { type: 'Ação', qty: 7, avg_price: 13.5 };
+      test('mantÃ©m a mesma fÃ³rmula para AÃ§Ã£o', () => {
+        const asset = { type: 'AÃ§Ã£o', qty: 7, avg_price: 13.5 };
         assert.equal(FinanceCore.assetAppliedValue(asset), 94.5);
       });
-      test('mantém a mesma fórmula para FII', () => {
+      test('mantÃ©m a mesma fÃ³rmula para FII', () => {
         const asset = { type: 'FII', qty: 9, avg_price: 8.5 };
         assert.equal(FinanceCore.assetAppliedValue(asset), 76.5);
       });
-      test('mantém a mesma fórmula para ETF', () => {
+      test('mantÃ©m a mesma fÃ³rmula para ETF', () => {
         const asset = { type: 'ETF', qty: 1.75, avg_price: 19.2 };
         assert.equal(FinanceCore.assetAppliedValue(asset), 33.6);
       });
@@ -139,35 +139,35 @@ describe('FinanceCore', () => {
 
     describe('assetCurrentValue', () => {
       const cases = [
-        ['quantidade e cotação válidas', { type: 'Ação', qty: 12, current_price: 11.5 }],
+        ['quantidade e cotaÃ§Ã£o vÃ¡lidas', { type: 'AÃ§Ã£o', qty: 12, current_price: 11.5 }],
         ['quantidade fracionada', { type: 'FII', qty: 2.5, current_price: 18 }],
         ['quantidade como string', { type: 'ETF', qty: '3', current_price: 20 }],
-        ['cotação como string', { type: 'Ação', qty: 4, current_price: '11.25' }],
-        ['quantidade zero', { type: 'Ação', qty: 0, current_price: 99 }],
-        ['cotação zero', { type: 'FII', qty: 8, current_price: 0 }],
-        ['cotação ausente', { type: 'ETF', qty: 5 }],
-        ['quantidade ausente', { type: 'Ação', current_price: 5 }],
+        ['cotaÃ§Ã£o como string', { type: 'AÃ§Ã£o', qty: 4, current_price: '11.25' }],
+        ['quantidade zero', { type: 'AÃ§Ã£o', qty: 0, current_price: 99 }],
+        ['cotaÃ§Ã£o zero', { type: 'FII', qty: 8, current_price: 0 }],
+        ['cotaÃ§Ã£o ausente', { type: 'ETF', qty: 5 }],
+        ['quantidade ausente', { type: 'AÃ§Ã£o', current_price: 5 }],
         ['valores vazios', { type: 'FII', qty: '', current_price: '' }],
         ['null', { type: 'ETF', qty: null, current_price: null }],
-        ['undefined', { type: 'Ação' }],
-        ['não numéricos', { type: 'FII', qty: 'abc', current_price: 'xyz' }],
+        ['undefined', { type: 'AÃ§Ã£o' }],
+        ['nÃ£o numÃ©ricos', { type: 'FII', qty: 'abc', current_price: 'xyz' }],
         ['NaN', { type: 'ETF', qty: NaN, current_price: NaN }],
-        ['Infinity', { type: 'Ação', qty: Infinity, current_price: 2 }],
+        ['Infinity', { type: 'AÃ§Ã£o', qty: Infinity, current_price: 2 }],
       ];
       for(const [name, asset] of cases){
         test(name, () => {
           assert.equal(FinanceCore.assetCurrentValue(asset), refCurrentValue(asset));
         });
       }
-      test('mantém a mesma fórmula para Ação', () => {
-        const asset = { type: 'Ação', qty: 7, current_price: 13.5 };
+      test('mantÃ©m a mesma fÃ³rmula para AÃ§Ã£o', () => {
+        const asset = { type: 'AÃ§Ã£o', qty: 7, current_price: 13.5 };
         assert.equal(FinanceCore.assetCurrentValue(asset), 94.5);
       });
-      test('mantém a mesma fórmula para FII', () => {
+      test('mantÃ©m a mesma fÃ³rmula para FII', () => {
         const asset = { type: 'FII', qty: 9, current_price: 8.5 };
         assert.equal(FinanceCore.assetCurrentValue(asset), 76.5);
       });
-      test('mantém a mesma fórmula para ETF', () => {
+      test('mantÃ©m a mesma fÃ³rmula para ETF', () => {
         const asset = { type: 'ETF', qty: 1.75, current_price: 19.2 };
         assert.equal(FinanceCore.assetCurrentValue(asset), 33.6);
       });
@@ -176,23 +176,23 @@ describe('FinanceCore', () => {
     describe('assetRentabPct', () => {
       const cases = [
         ['lucro', { qty: 10, avg_price: 100, current_price: 125 }],
-        ['prejuízo', { qty: 10, avg_price: 100, current_price: 80 }],
+        ['prejuÃ­zo', { qty: 10, avg_price: 100, current_price: 80 }],
         ['empate', { qty: 10, avg_price: 100, current_price: 100 }],
         ['custo zero', { qty: 10, avg_price: 0, current_price: 100 }],
         ['valor atual zero', { qty: 10, avg_price: 100, current_price: 0 }],
         ['quantidade zero', { qty: 0, avg_price: 100, current_price: 100 }],
-        ['strings numéricas', { qty: '10', avg_price: '100', current_price: '125' }],
-        ['não numéricos', { qty: 'abc', avg_price: 'def', current_price: 'ghi' }],
+        ['strings numÃ©ricas', { qty: '10', avg_price: '100', current_price: '125' }],
+        ['nÃ£o numÃ©ricos', { qty: 'abc', avg_price: 'def', current_price: 'ghi' }],
         ['NaN', { qty: NaN, avg_price: NaN, current_price: NaN }],
         ['Infinity', { qty: Infinity, avg_price: 100, current_price: 125 }],
-        ['prejuízo extremo', { qty: 10, avg_price: 100, current_price: 1 }],
+        ['prejuÃ­zo extremo', { qty: 10, avg_price: 100, current_price: 1 }],
       ];
       for(const [name, asset] of cases){
         test(name, () => {
           assert.equal(FinanceCore.assetRentabPct(asset), refRentabPct(asset));
         });
       }
-      test('não arredonda prematuramente', () => {
+      test('nÃ£o arredonda prematuramente', () => {
         const asset = { qty: 3, avg_price: 7, current_price: 10 };
         assert.equal(FinanceCore.assetRentabPct(asset), 42.857142857142854);
       });
@@ -208,10 +208,10 @@ describe('FinanceCore', () => {
 
     describe('assetJurosValue', () => {
       const cases = [
-        ['Ação', { type: 'Ação', qty: 10, avg_price: 100, current_price: 120 }],
+        ['AÃ§Ã£o', { type: 'AÃ§Ã£o', qty: 10, avg_price: 100, current_price: 120 }],
         ['FII', { type: 'FII', qty: 10, avg_price: 100, current_price: 120 }],
         ['ETF', { type: 'ETF', qty: 10, avg_price: 100, current_price: 120 }],
-        ['ativo incompleto', { type: 'Ação', qty: 10, avg_price: 100 }],
+        ['ativo incompleto', { type: 'AÃ§Ã£o', qty: 10, avg_price: 100 }],
         ['ativo zerado', { type: 'FII', qty: 0, avg_price: 0, current_price: 0 }],
       ];
       for(const [name, asset] of cases){
@@ -223,7 +223,7 @@ describe('FinanceCore', () => {
   });
 
   describe('renda fixa', () => {
-    test('configure recebe e usa as funções injetadas exatamente no ativo informado', () => {
+    test('configure recebe e usa as funÃ§Ãµes injetadas exatamente no ativo informado', () => {
       const seenIs = [];
       const seenRf = [];
       const isRendaFixaAsset = asset => {
@@ -288,7 +288,7 @@ describe('FinanceCore', () => {
       assert.equal(FinanceCore.assetRentabPct(asset), 10);
     });
 
-    test('RF com líquido delega current, lucro e rentabilidade corretamente', () => {
+    test('RF com lÃ­quido delega current, lucro e rentabilidade corretamente', () => {
       FinanceCore.configure({
         isRendaFixaAsset: asset => asset?.kind === 'rf',
         rfValues: () => ({ applied: 1000, current: 1075, profit: 75, rentab: 7.5 })
@@ -300,7 +300,7 @@ describe('FinanceCore', () => {
       assert.equal(FinanceCore.assetRentabPct(asset), 7.5);
     });
 
-    test('RF com prejuízo delega valor negativo sem ajustar o sinal', () => {
+    test('RF com prejuÃ­zo delega valor negativo sem ajustar o sinal', () => {
       FinanceCore.configure({
         isRendaFixaAsset: asset => asset?.kind === 'rf',
         rfValues: () => ({ applied: 1000, current: 900, profit: -100, rentab: -10 })
@@ -312,7 +312,7 @@ describe('FinanceCore', () => {
       assert.equal(FinanceCore.assetRentabPct(asset), -10);
     });
 
-    test('RF com empate mantém zero de lucro e rentabilidade', () => {
+    test('RF com empate mantÃ©m zero de lucro e rentabilidade', () => {
       FinanceCore.configure({
         isRendaFixaAsset: asset => asset?.kind === 'rf',
         rfValues: () => ({ applied: 1000, current: 1000, profit: 0, rentab: 0 })
@@ -324,7 +324,7 @@ describe('FinanceCore', () => {
       assert.equal(FinanceCore.assetRentabPct(asset), 0);
     });
 
-    test('RF com campos ausentes preserva null onde a fórmula atual já retorna null', () => {
+    test('RF com campos ausentes preserva null onde a fÃ³rmula atual jÃ¡ retorna null', () => {
       FinanceCore.configure({
         isRendaFixaAsset: asset => asset?.kind === 'rf',
         rfValues: () => ({ applied: 0, current: null, profit: null, rentab: null })
@@ -336,7 +336,7 @@ describe('FinanceCore', () => {
       assert.equal(FinanceCore.assetRentabPct(asset), null);
     });
 
-    test('RF com valores inválidos não força um resultado melhorado', () => {
+    test('RF com valores invÃ¡lidos nÃ£o forÃ§a um resultado melhorado', () => {
       FinanceCore.configure({
         isRendaFixaAsset: asset => asset?.kind === 'rf',
         rfValues: () => ({ applied: Number.NaN, current: Number.NaN, profit: Number.NaN, rentab: Number.NaN })
@@ -370,19 +370,19 @@ describe('FinanceCore', () => {
     });
   });
 
-  describe('equivalência com comportamento anterior', () => {
+  describe('equivalÃªncia com comportamento anterior', () => {
     const cases = [
-      ['ação', { type: 'Ação', qty: 12, avg_price: 10.5, current_price: 11.5 }],
+      ['aÃ§Ã£o', { type: 'AÃ§Ã£o', qty: 12, avg_price: 10.5, current_price: 11.5 }],
       ['FII', { type: 'FII', qty: 3, avg_price: 100, current_price: 111 }],
       ['ETF', { type: 'ETF', qty: 1.5, avg_price: 20, current_price: 21.5 }],
-      ['ativo incompleto', { type: 'Ação', qty: 2, avg_price: 0, current_price: 0 }],
+      ['ativo incompleto', { type: 'AÃ§Ã£o', qty: 2, avg_price: 0, current_price: 0 }],
       ['ativo zerado', { type: 'FII', qty: 0, avg_price: 0, current_price: 0 }],
       ['renda fixa com bruto', { type: 'Renda Fixa', rf_gross_value: 1100, fixed_initial_value: 1000 }],
-      ['renda fixa com líquido', { type: 'Renda Fixa', rf_liquid_value: 1075, fixed_initial_value: 1000, rf_profit_value: 75 }],
+      ['renda fixa com lÃ­quido', { type: 'Renda Fixa', rf_liquid_value: 1075, fixed_initial_value: 1000, rf_profit_value: 75 }],
       ['renda fixa com lucro', { type: 'Renda Fixa', rf_liquid_value: 1040, fixed_initial_value: 1000, rf_profit_value: 40 }],
-      ['renda fixa com prejuízo', { type: 'Renda Fixa', rf_liquid_value: 900, fixed_initial_value: 1000, rf_profit_value: -100 }],
+      ['renda fixa com prejuÃ­zo', { type: 'Renda Fixa', rf_liquid_value: 900, fixed_initial_value: 1000, rf_profit_value: -100 }],
       ['custo zero', { type: 'Renda Fixa', rf_profit_value: 10 }],
-      ['entrada inválida', { type: 'Ação', qty: 'abc', avg_price: 'xyz', current_price: 'zzz' }],
+      ['entrada invÃ¡lida', { type: 'AÃ§Ã£o', qty: 'abc', avg_price: 'xyz', current_price: 'zzz' }],
     ];
     for(const [name, asset] of cases){
       test(name, () => {
@@ -392,8 +392,8 @@ describe('FinanceCore', () => {
   });
 
   describe('pureza e determinismo', () => {
-    test('não muta um ativo normal recebido', () => {
-      const asset = { type: 'Ação', qty: '3', avg_price: '10.5', current_price: '12.75', label: 'x' };
+    test('nÃ£o muta um ativo normal recebido', () => {
+      const asset = { type: 'AÃ§Ã£o', qty: '3', avg_price: '10.5', current_price: '12.75', label: 'x' };
       const snap = snapshot(asset);
       FinanceCore.assetAppliedValue(asset);
       FinanceCore.assetCurrentValue(asset);
@@ -402,7 +402,7 @@ describe('FinanceCore', () => {
       assert.deepStrictEqual(asset, snap);
     });
 
-    test('não muta um ativo de renda fixa recebido', () => {
+    test('nÃ£o muta um ativo de renda fixa recebido', () => {
       FinanceCore.configure({
         isRendaFixaAsset: asset => asset?.kind === 'rf',
         rfValues: asset => ({ applied: 1000, current: 1040, profit: 40, rentab: 4, marker: asset.marker })
@@ -416,9 +416,9 @@ describe('FinanceCore', () => {
       assert.deepStrictEqual(asset, snap);
     });
 
-    test('mantém determinismo para uma sequência de entradas variadas', () => {
+    test('mantÃ©m determinismo para uma sequÃªncia de entradas variadas', () => {
       const inputs = [
-        { type: 'Ação', qty: 5, avg_price: 10, current_price: 12 },
+        { type: 'AÃ§Ã£o', qty: 5, avg_price: 10, current_price: 12 },
         { type: 'FII', qty: 2.5, avg_price: 17, current_price: 19 },
         { kind: 'rf', ticker: 'RF-D1' },
       ];

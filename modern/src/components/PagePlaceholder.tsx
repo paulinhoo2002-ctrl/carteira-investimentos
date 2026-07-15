@@ -1,4 +1,4 @@
-import type { DemoCard, ModernPage } from '../types/navigation';
+import type { DemoCard, ModernPage } from '../types/navigation.mjs';
 
 interface PagePlaceholderProps {
   cardData?: DemoCard[];

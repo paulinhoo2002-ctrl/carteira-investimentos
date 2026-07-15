@@ -19,7 +19,7 @@ const bridgeModulePath = path.join(
   'src',
   'features',
   'reports',
-  'reportsReadonlyBridge.ts',
+  'reportsReadonlyBridge.mjs',
 );
 
 async function loadControllerModule() {
