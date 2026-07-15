@@ -151,7 +151,12 @@ function assertViteCopy(viteConfigTs) {
 
 function assertPackageScripts(packageJson) {
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-contract-architecture\.test\.js/);
-  assert.match(packageJson.scripts.test, /npm run test:modern/);
+  assert.match(packageJson.scripts.test, /tests\/readonly-contract-architecture\.test\.js/);
+  assert.equal(
+    packageJson.scripts.test.includes('npm run test:modern'),
+    false,
+    'npm test nao deve depender da suite moderna completa',
+  );
 }
 
 function assertDocsNoDuplicateList(docs) {

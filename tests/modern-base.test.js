@@ -250,7 +250,11 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
   assert.match(navigationTs, /Snapshot de leitura segura/);
   assert.equal(packageJson.scripts.build, "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"");
-  assert.equal(packageJson.scripts.test.includes('test:modern'), true);
+  assert.equal(packageJson.scripts.test.includes('test:modern'), false);
+  assert.equal(
+    packageJson.scripts.test.includes('tests/readonly-contract-architecture.test.js'),
+    true,
+  );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js');
