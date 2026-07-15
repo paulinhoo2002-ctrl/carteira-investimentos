@@ -60,6 +60,14 @@ function assertNoForbiddenTokens(text, label) {
   }
 }
 
+function assertNoCompleteReadonlyPageList(text, label) {
+  assert.equal(
+    containsAllReadonlyPageIds(text),
+    false,
+    `${label} nao pode conter a lista completa de IDs readonly`,
+  );
+}
+
 function assertCanonicalContract(contractJs) {
   assert.match(contractJs, /getReadonlyReportPageContract/);
   assert.match(contractJs, /createReadonlyReportPageContractSafeFallback/);
@@ -205,6 +213,20 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     'modern/src/App.tsx': snapshot.appTsx,
     'modern/src/bootstrap/mountModernApp.ts': snapshot.mountModernAppTs,
   });
+  assertNoCompleteReadonlyPageList(snapshot.indexHtml, 'index.html');
+  assertNoCompleteReadonlyPageList(snapshot.hostHtml, 'modern/host.html');
+  assertNoCompleteReadonlyPageList(snapshot.modernIndexHtml, 'modern/index.html');
+  assertNoCompleteReadonlyPageList(snapshot.mainTsx, 'modern/src/main.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.hostEntryTsx, 'modern/src/host-entry.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.hostTsx, 'modern/src/host.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.mountModernAppTs, 'modern/src/bootstrap/mountModernApp.ts');
+  assertNoCompleteReadonlyPageList(snapshot.modernReportsRuntimeTs, 'modern/src/bootstrap/modernReportsRuntime.ts');
+  assertNoCompleteReadonlyPageList(snapshot.appTsx, 'modern/src/App.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.bridgeTs, 'modern/src/features/reports/reportsReadonlyBridge.ts');
+  assertNoCompleteReadonlyPageList(snapshot.adapterTs, 'modern/src/features/reports/reportsSnapshotAdapter.ts');
+  assertNoCompleteReadonlyPageList(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
+  assertNoCompleteReadonlyPageList(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
 
   assertNoForbiddenTokens(snapshot.indexHtml, 'index.html');
   assertNoForbiddenTokens(snapshot.hostHtml, 'modern/host.html');
@@ -238,6 +260,20 @@ test('guardrail pega fallback local, lista duplicada, shell acoplado, candidato 
   assert.throws(() =>
     assertDocsNoDuplicateList(`IDs permitidos:\n- overview\n- assets\n- fixed-income\n- provents\n- contributions\n- reports\n- settings`),
   );
+
+  const duplicateList = `
+const allowedPages = [
+  'overview',
+  'assets',
+  'fixed-income',
+  'provents',
+  'contributions',
+  'reports',
+  'settings',
+];
+`;
+
+  assert.throws(() => assertNoCompleteReadonlyPageList(duplicateList, 'consumer ficticio'));
 
   assert.throws(() =>
     assertHostHtmlOrder(`<script type="module" src="/src/host-entry.tsx"></script>\n<script src="../readonly-report-page-contract.js" defer></script>`),
