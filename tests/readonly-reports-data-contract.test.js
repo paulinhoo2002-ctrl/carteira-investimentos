@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
 const contractModulePath = path.join(
@@ -10,7 +9,7 @@ const contractModulePath = path.join(
   'src',
   'features',
   'reports',
-  'reportsReadonlyContract.ts',
+  'reportsReadonlyContract.js',
 );
 const bridgeModulePath = path.join(
   __dirname,
@@ -19,7 +18,7 @@ const bridgeModulePath = path.join(
   'src',
   'features',
   'reports',
-  'reportsReadonlyBridge.ts',
+  'reportsReadonlyBridge.js',
 );
 const adapterModulePath = path.join(
   __dirname,
@@ -28,19 +27,19 @@ const adapterModulePath = path.join(
   'src',
   'features',
   'reports',
-  'reportsSnapshotAdapter.ts',
+  'reportsSnapshotAdapter.js',
 );
 
 async function loadContractModule() {
-  return import(pathToFileURL(contractModulePath).href);
+  return require(contractModulePath);
 }
 
 async function loadBridgeModule() {
-  return import(pathToFileURL(bridgeModulePath).href);
+  return require(bridgeModulePath);
 }
 
 async function loadAdapterModule() {
-  return import(pathToFileURL(adapterModulePath).href);
+  return require(adapterModulePath);
 }
 
 function createSnapshot(overrides = {}) {
