@@ -52,7 +52,7 @@ Base de referencia desta fase:
 - resultado principal: roadmap e auditoria ajustados com precisao historica e tecnica;
 - apenas documentacao alterada;
 - zero mudanca funcional;
-- rollback: `git revert cfe83ce0a075218f088cfab01ed3bbe9dbb5eda8`.
+- rollback: `git revert 5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`.
 
 ### Estado atual
 

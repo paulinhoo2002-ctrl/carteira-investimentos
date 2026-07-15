@@ -655,7 +655,8 @@ Recomendacao para a Fase 184:
 
 Contrato canonico:
 
-- modulo central: `modern/src/features/reports/reportsReadonlyContract.ts`;
+- runtime: `modern/src/features/reports/reportsReadonlyContract.mjs`;
+- tipagem: `modern/src/features/reports/reportsReadonlyContract.d.ts`;
 - versao minima: `version: 1`;
 - formato atual: `version`, `generatedAt`, `notice`, `summary`, `items`;
 - validacao runtime simples: `isReadOnlyReportsSnapshot()` e `normalizeReadOnlyReportsSnapshot()`;
