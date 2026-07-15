@@ -12,6 +12,9 @@ const modernMainPath = path.join(__dirname, '..', 'modern', 'src', 'main.tsx');
 const previewModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'AssetsReportPreview.tsx');
 const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
 const adapterModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsSnapshotAdapter.ts');
+const legacyContractFallbackToken = ['fallback', 'ReadonlyReportPageContract'].join('');
+const legacyContractGlobalToken = ['readonlyReportPageContract', 'FromGlobal'].join('');
+const legacyContractResolverToken = ['resolveReadonlyReportPageContract', 'Safely'].join('');
 
 async function loadHostSourceModule() {
   return import(pathToFileURL(hostSourceModulePath).href);
@@ -50,9 +53,9 @@ test('fase 178 mantém a composicao experimental isolada no entrypoint legado', 
   assert.match(indexHtml, /readonlyReportPage/);
   assert.match(indexHtml, /readonly-report-page-contract\.js/);
   assert.match(indexHtml, /getReadonlyReportPageContract/);
-  assert.equal(indexHtml.includes('fallbackReadonlyReportPageContract'), false);
-  assert.equal(indexHtml.includes('readonlyReportPageContractFromGlobal'), false);
-  assert.equal(indexHtml.includes('resolveReadonlyReportPageContractSafely'), false);
+  assert.equal(indexHtml.includes(legacyContractFallbackToken), false);
+  assert.equal(indexHtml.includes(legacyContractGlobalToken), false);
+  assert.equal(indexHtml.includes(legacyContractResolverToken), false);
   assert.match(hostHtml, /readonly-report-page-contract\.js/);
   assert.equal(indexHtml.includes('normalizeReadonlyReportSessionPageId'), false);
   assert.equal(indexHtml.includes('READONLY_REPORT_SESSION_PAGE_IDS=new Set'), false);

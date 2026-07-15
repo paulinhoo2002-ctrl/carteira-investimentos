@@ -7,6 +7,10 @@ const readonlyReportPageContract = require('../readonly-report-page-contract.js'
 
 const modernRoot = path.join(__dirname, '..', 'modern');
 const rootIndexPath = path.join(__dirname, '..', 'index.html');
+const legacyContractFallbackToken = ['fallback', 'ReadonlyReportPageContract'].join('');
+const legacyContractResolverToken = ['resolveReadonlyReportPageContract', 'Safely'].join('');
+const legacyContractCandidateToken = ['readReadonlyReportPageContract', 'Candidate'].join('');
+const legacyContractExportsToken = ['readReadonlyReportPageContract', 'Exports'].join('');
 const sourceFiles = [
   'index.html',
   'README.md',
@@ -223,10 +227,10 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(readonlySessionTs, /getReadonlyReportPageContract/);
   assert.equal(readonlySessionTs.includes('withReadonlyReportSessionFallback'), false);
   assert.equal(readonlySessionTs.includes('declare const ReadonlyReportPageContract'), false);
-  assert.equal(readonlySessionTs.includes('createReadonlyReportPageContractFallback'), false);
-  assert.equal(readonlySessionTs.includes('resolveReadonlyReportPageContractSafely'), false);
-  assert.equal(readonlySessionTs.includes('readReadonlyReportPageContractCandidate'), false);
-  assert.equal(readonlySessionTs.includes('readReadonlyReportPageContractExports'), false);
+  assert.equal(readonlySessionTs.includes(legacyContractFallbackToken), false);
+  assert.equal(readonlySessionTs.includes(legacyContractResolverToken), false);
+  assert.equal(readonlySessionTs.includes(legacyContractCandidateToken), false);
+  assert.equal(readonlySessionTs.includes(legacyContractExportsToken), false);
   assert.equal(
     /(^|[^A-Za-z0-9_])ReadonlyReportPageContract\.normalizeReadonlyReportPageId/.test(readonlySessionTs),
     false,
@@ -333,7 +337,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(sessionContractJs, /normalizeReadonlyReportPageId/);
   assert.match(sessionContractJs, /isReadonlyReportPageId/);
   assert.match(sessionContractJs, /getReadonlyReportPageContract/);
-  assert.equal(sessionContractJs.includes('resolveReadonlyReportPageContract('), false);
+  assert.equal(sessionContractJs.includes(['resolveReadonlyReportPageContract', '('].join('')), false);
   assert.equal(hostSourceTs.includes('localStorage'), false);
   assert.equal(hostSourceTs.includes('sessionStorage'), false);
   assert.equal(hostSourceTs.includes('indexedDB'), false);

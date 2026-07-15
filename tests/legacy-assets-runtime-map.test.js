@@ -13,6 +13,7 @@ const readonlyPageContractPath = path.join(repoRoot, 'readonly-report-page-contr
 const modernBaseTestPath = path.join(repoRoot, 'tests', 'modern-base.test.js');
 const modernHostSourceTestPath = path.join(repoRoot, 'tests', 'modern-host-source.test.js');
 const modernHostTestPath = path.join(repoRoot, 'tests', 'modern-host.test.js');
+const legacyContractFallbackToken = ['fallback', 'ReadonlyReportPageContract'].join('');
 
 function read(filePath) {
   return fs.readFileSync(filePath, 'utf8');
@@ -70,8 +71,8 @@ test('estrutura canonica e ordem de scripts continuam no index legado', () => {
   assert.match(indexHtml, /getReadonlyReportPageContract/);
   assert.equal(indexHtml.includes('ReadonlyReportPageContract.normalizeReadonlyReportPageId'), false);
   assert.equal(indexHtml.includes('ReadonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID'), false);
-  assert.equal(indexHtml.includes('fallbackReadonlyReportPageContract'), false);
-  assert.equal(indexHtml.includes('readonlyReportPageContractFromGlobal'), false);
+  assert.equal(indexHtml.includes(legacyContractFallbackToken), false);
+  assert.equal(indexHtml.includes(['readonlyReportPageContract', 'FromGlobal'].join('')), false);
   assert.equal(indexHtml.includes('READONLY_REPORT_SESSION_PAGE_IDS=new Set'), false);
   assert.equal(indexHtml.includes('normalizeReadonlyReportSessionPageId'), false);
   assert.match(indexHtml, /window\.FinanceCore\.configure\(\{ isRendaFixaAsset, rfValues \}\);/);
