@@ -3769,8 +3769,8 @@ function readonlyReportSessionPageIdFromLocation(){
       return readonlyReportPageContract.normalizeReadonlyReportPageId(new URLSearchParams(location.search).get('readonlyReportPage'));
     }
   }catch(e){
-    return 'reports';
   }
+  return 'reports';
 }
 function isActiveWalletHostMode(){
   try{

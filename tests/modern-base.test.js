@@ -225,6 +225,11 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(readonlySessionTs, /buildReadonlyReportSessionSearch/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionUrl/);
   assert.match(readonlySessionTs, /getReadonlyReportPageContract/);
+  assert.match(
+    readonlySessionTs,
+    /getReadonlyReportPageContract\?\.\([\s\n]*readonlyReportPageContract,?[\s\n]*\)/,
+  );
+  assert.equal(readonlySessionTs.includes('getReadonlyReportPageContract?.()'), false);
   assert.equal(readonlySessionTs.includes('withReadonlyReportSessionFallback'), false);
   assert.equal(readonlySessionTs.includes('declare const ReadonlyReportPageContract'), false);
   assert.equal(readonlySessionTs.includes(legacyContractFallbackToken), false);

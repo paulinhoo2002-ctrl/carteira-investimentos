@@ -15,7 +15,9 @@ const readonlyReportPageContract =
     };
   };
 
-const resolvedReadonlyReportPageContract = readonlyReportPageContract.getReadonlyReportPageContract?.();
+const resolvedReadonlyReportPageContract = readonlyReportPageContract.getReadonlyReportPageContract?.(
+  readonlyReportPageContract,
+);
 
 function normalizePageId(value: string | null, fallback: ModernPageId): ModernPageId {
   return resolvedReadonlyReportPageContract?.normalizeReadonlyReportPageId(value, fallback) ?? 'reports';

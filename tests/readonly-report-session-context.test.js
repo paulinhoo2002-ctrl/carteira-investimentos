@@ -101,10 +101,10 @@ test('readonly report session contract resolver usa fallback seguro quando contr
     assert.equal(absentContract.normalizeReadonlyReportPageId('invalid', null), 'reports');
     assert.equal(absentContract.normalizeReadonlyReportPageId('invalid', undefined), 'reports');
     assert.deepEqual(readReadonlyReportSessionContext('?readonlyReportPage=assets'), {
-      pageId: 'reports',
+      pageId: 'assets',
     });
     assert.deepEqual(readReadonlyReportSessionContext('', 'overview'), {
-      pageId: 'reports',
+      pageId: 'overview',
     });
 
     const partialContract = readonlyReportPageContract.getReadonlyReportPageContract({
@@ -168,6 +168,44 @@ test('readonly report session contract resolver usa fallback seguro quando contr
     });
 
     assert.equal(ignoredGlobalContract.normalizeReadonlyReportPageId('assets', 'reports'), 'reports');
+  } finally {
+    if (originalGlobalContract === undefined) {
+      delete globalThis.ReadonlyReportPageContract;
+    } else {
+      globalThis.ReadonlyReportPageContract = originalGlobalContract;
+    }
+  }
+});
+
+test('readonly report session context usa candidato importado mesmo sem global e ignora global adulterado', async () => {
+  const originalGlobalContract = globalThis.ReadonlyReportPageContract;
+
+  globalThis.ReadonlyReportPageContract = {
+    getReadonlyReportPageContract() {
+      return {
+        DEFAULT_READONLY_REPORT_PAGE_ID: 'reports',
+        normalizeReadonlyReportPageId() {
+          return 'reports';
+        },
+      };
+    },
+  };
+
+  try {
+    const { readReadonlyReportSessionContext } = await loadModule('explicit-candidate');
+
+    assert.deepEqual(readReadonlyReportSessionContext('?readonlyReportPage=assets'), {
+      pageId: 'assets',
+    });
+    assert.deepEqual(readReadonlyReportSessionContext('?readonlyReportPage=invalid', 'overview'), {
+      pageId: 'overview',
+    });
+    assert.deepEqual(readReadonlyReportSessionContext('?readonlyReportPage=invalid', 'invalid'), {
+      pageId: 'reports',
+    });
+    assert.deepEqual(readReadonlyReportSessionContext('?readonlyReportPage= REPORTS ', 'assets'), {
+      pageId: 'assets',
+    });
   } finally {
     if (originalGlobalContract === undefined) {
       delete globalThis.ReadonlyReportPageContract;

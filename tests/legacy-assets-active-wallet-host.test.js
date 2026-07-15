@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
@@ -32,6 +33,34 @@ function assertDeepFrozen(snapshot) {
   for (const item of snapshot.items) {
     assert.equal(Object.isFrozen(item), true);
   }
+}
+
+function extractReadonlyReportSessionPageIdFromLocation(indexHtml) {
+  const startMarker = 'function readonlyReportSessionPageIdFromLocation(){';
+  const endMarker = 'function isActiveWalletHostMode(){';
+  const startIndex = indexHtml.indexOf(startMarker);
+
+  assert.notEqual(startIndex, -1, 'Função readonlyReportSessionPageIdFromLocation precisa existir');
+
+  const endIndex = indexHtml.indexOf(endMarker, startIndex);
+
+  assert.notEqual(endIndex, -1, 'Fim da função readonlyReportSessionPageIdFromLocation precisa existir');
+
+  return indexHtml.slice(startIndex, endIndex);
+}
+
+function runReadonlyReportSessionPageIdFromLocation(indexHtml, globals = {}, search = '?readonlyReportPage=assets') {
+  const source = extractReadonlyReportSessionPageIdFromLocation(indexHtml);
+  const context = vm.createContext({
+    URLSearchParams,
+    location: {
+      pathname: '/index.html',
+      search,
+    },
+    ...globals,
+  });
+
+  return vm.runInContext(`${source}\nreadonlyReportSessionPageIdFromLocation();`, context);
 }
 
 test('fase 178 mantém a composicao experimental isolada no entrypoint legado', () => {
@@ -83,6 +112,50 @@ test('fase 178 mantém a composicao experimental isolada no entrypoint legado', 
   assert.equal(previewTsx.includes('createConnectedReportsDemoSource'), false);
   assert.equal(bridgeTs.includes('S.assets'), false);
   assert.equal(adapterTs.includes('S.assets'), false);
+});
+
+test('fallback legado readonly retorna reports quando contrato global falta, falha ou vem incompleto', () => {
+  const indexHtml = normalize(fs.readFileSync(indexHtmlPath, 'utf8'));
+
+  assert.equal(runReadonlyReportSessionPageIdFromLocation(indexHtml, {}), 'reports');
+  assert.equal(
+    runReadonlyReportSessionPageIdFromLocation(indexHtml, { ReadonlyReportPageContract: {} }),
+    'reports',
+  );
+  assert.equal(
+    runReadonlyReportSessionPageIdFromLocation(indexHtml, {
+      ReadonlyReportPageContract: {
+        getReadonlyReportPageContract() {
+          return {};
+        },
+      },
+    }),
+    'reports',
+  );
+  assert.equal(
+    runReadonlyReportSessionPageIdFromLocation(indexHtml, {
+      ReadonlyReportPageContract: {
+        getReadonlyReportPageContract() {
+          throw new Error('boom');
+        },
+      },
+    }),
+    'reports',
+  );
+  assert.equal(
+    runReadonlyReportSessionPageIdFromLocation(indexHtml, {
+      ReadonlyReportPageContract: {
+        getReadonlyReportPageContract() {
+          return {
+            normalizeReadonlyReportPageId(value) {
+              return value === 'assets' ? 'assets' : 'reports';
+            },
+          };
+        },
+      },
+    }),
+    'assets',
+  );
 });
 
 test('provider readonly experimental lê a coleção atual e preserva snapshots imutáveis', async () => {
