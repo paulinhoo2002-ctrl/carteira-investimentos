@@ -49,7 +49,8 @@ test('fase 178 mantém a composicao experimental isolada no entrypoint legado', 
   assert.match(indexHtml, /function isReadonlyReportsExperimentalEntryEnabled\(\)\{\s*return isLocalTestMode\(\) && !isActiveWalletHostMode\(\);\s*\}/);
   assert.match(indexHtml, /readonlyReportPage/);
   assert.match(indexHtml, /readonly-report-page-contract\.js/);
-  assert.match(indexHtml, /ReadonlyReportPageContract\.normalizeReadonlyReportPageId/);
+  assert.match(indexHtml, /readonlyReportPageContractFromGlobal/);
+  assert.match(indexHtml, /resolveReadonlyReportPageContract/);
   assert.match(hostHtml, /readonly-report-page-contract\.js/);
   assert.equal(indexHtml.includes('normalizeReadonlyReportSessionPageId'), false);
   assert.equal(indexHtml.includes('READONLY_REPORT_SESSION_PAGE_IDS=new Set'), false);

@@ -35,6 +35,7 @@ test('readonly report session context aceita estado visual valido e rejeita inva
     readonlyReportPageContract.READONLY_REPORT_PAGE_IDS,
     MODERN_PAGES.map((page) => page.id),
   );
+  assert.equal(typeof readonlyReportPageContract.resolveReadonlyReportPageContract, 'function');
   assert.equal(readonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID, 'reports');
   assert.equal(readonlyReportPageContract.isReadonlyReportPageId('reports'), true);
   assert.equal(readonlyReportPageContract.isReadonlyReportPageId('invalid'), false);
@@ -72,4 +73,75 @@ test('readonly report session context aceita estado visual valido e rejeita inva
   assert.equal(legacyOnlyUrl.searchParams.get('testMode'), '1');
   assert.equal(legacyOnlyUrl.searchParams.get('readonlyReportPage'), 'contributions');
   assert.equal(legacyOnlyUrl.searchParams.get('activeWalletHost'), null);
+});
+
+test('readonly report session contract resolver usa fallback seguro quando contrato invalido ou ausente', () => {
+  const resolveReadonlyReportPageContract = readonlyReportPageContract.resolveReadonlyReportPageContract;
+  const originalGlobalContract = globalThis.ReadonlyReportPageContract;
+
+  try {
+    delete globalThis.ReadonlyReportPageContract;
+
+    const absentContract = resolveReadonlyReportPageContract(undefined);
+    assert.equal(absentContract.DEFAULT_READONLY_REPORT_PAGE_ID, 'reports');
+    assert.equal(absentContract.normalizeReadonlyReportPageId('invalid', 'assets'), 'reports');
+    assert.equal(absentContract.normalizeReadonlyReportPageId('invalid', ''), 'reports');
+    assert.equal(absentContract.normalizeReadonlyReportPageId('invalid', null), 'reports');
+    assert.equal(absentContract.normalizeReadonlyReportPageId('invalid', undefined), 'reports');
+
+    const partialContract = resolveReadonlyReportPageContract({
+      READONLY_REPORT_PAGE_IDS: ['reports'],
+      DEFAULT_READONLY_REPORT_PAGE_ID: 'reports',
+      isReadonlyReportPageId: null,
+      normalizeReadonlyReportPageId: null,
+    });
+
+    assert.equal(partialContract.DEFAULT_READONLY_REPORT_PAGE_ID, 'reports');
+    assert.equal(partialContract.normalizeReadonlyReportPageId('assets', 'overview'), 'reports');
+
+    const invalidNormalizerContract = resolveReadonlyReportPageContract({
+      READONLY_REPORT_PAGE_IDS: ['overview', 'assets', 'fixed-income', 'provents', 'contributions', 'reports', 'settings'],
+      DEFAULT_READONLY_REPORT_PAGE_ID: 'reports',
+      isReadonlyReportPageId(value) {
+        return value === 'reports';
+      },
+      normalizeReadonlyReportPageId() {
+        throw new Error('boom');
+      },
+    });
+
+    assert.equal(invalidNormalizerContract.normalizeReadonlyReportPageId('assets', 'overview'), 'reports');
+
+    const invalidFallbackContract = resolveReadonlyReportPageContract({
+      READONLY_REPORT_PAGE_IDS: ['overview', 'assets', 'fixed-income', 'provents', 'contributions', 'reports', 'settings'],
+      DEFAULT_READONLY_REPORT_PAGE_ID: 'reports',
+      isReadonlyReportPageId(value) {
+        return value === 'reports';
+      },
+      normalizeReadonlyReportPageId(value, fallback) {
+        return String(value ?? '').trim() === 'reports' ? 'reports' : String(fallback ?? '').trim();
+      },
+    });
+
+    assert.equal(invalidFallbackContract.normalizeReadonlyReportPageId('invalid', 'invalid'), 'reports');
+
+    const adulteratedContract = resolveReadonlyReportPageContract({
+      READONLY_REPORT_PAGE_IDS: ['overview', 'assets', 'fixed-income', 'provents', 'contributions', 'reports', 'settings'],
+      DEFAULT_READONLY_REPORT_PAGE_ID: 'reports',
+      isReadonlyReportPageId(value) {
+        return value === 'reports' || value === 'invalid';
+      },
+      normalizeReadonlyReportPageId(value, fallback) {
+        return String(value ?? '').trim() === 'invalid' ? 'invalid' : String(fallback ?? '').trim();
+      },
+    });
+
+    assert.equal(adulteratedContract.normalizeReadonlyReportPageId('invalid', 'reports'), 'reports');
+  } finally {
+    if (originalGlobalContract === undefined) {
+      delete globalThis.ReadonlyReportPageContract;
+    } else {
+      globalThis.ReadonlyReportPageContract = originalGlobalContract;
+    }
+  }
 });

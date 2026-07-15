@@ -137,6 +137,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(mountTsx, /Adapter moderno invalido\./);
   assert.match(mountTsx, /Componente moderno invalido\./);
   assert.match(mountTsx, /Elemento root nao encontrado para a base moderna\./);
+  assert.equal(hostHtml.includes('type="module" src="../readonly-report-page-contract.js"'), false);
   assert.match(runtimeTs, /createConnectedReportsAdapter/);
   assert.match(runtimeTs, /createConnectedReportsDemoSource/);
   assert.match(runtimeTs, /reportsSource \?\? createConnectedReportsDemoSource\(\)/);
@@ -219,8 +220,14 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(readonlySessionTs, /readReadonlyReportSessionContext/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionSearch/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionUrl/);
-  assert.match(readonlySessionTs, /ReadonlyReportPageContract/);
+  assert.match(readonlySessionTs, /resolveReadonlyReportPageContract/);
+  assert.match(readonlySessionTs, /readReadonlyReportPageContractCandidate/);
   assert.equal(readonlySessionTs.includes('withReadonlyReportSessionFallback'), false);
+  assert.equal(readonlySessionTs.includes('declare const ReadonlyReportPageContract'), false);
+  assert.equal(
+    /(^|[^A-Za-z0-9_])ReadonlyReportPageContract\.normalizeReadonlyReportPageId/.test(readonlySessionTs),
+    false,
+  );
   assert.equal(navigationTs.includes('MODERN_PAGE_IDS'), false);
   assert.deepEqual(
     readonlyReportPageContract.READONLY_REPORT_PAGE_IDS,

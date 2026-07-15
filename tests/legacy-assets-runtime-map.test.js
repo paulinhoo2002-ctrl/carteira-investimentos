@@ -67,8 +67,10 @@ test('estrutura canonica e ordem de scripts continuam no index legado', () => {
   assert.match(indexHtml, /function reportAssetRows\(\)\{/);
   assert.match(indexHtml, /return \(S\.assets\|\|\[\]\)\.map\(asset=>buildReportAssetRow\(asset,\{/);
   assert.match(indexHtml, /assetAppliedValue,\s*assetCurrentValue,\s*metaTicker,\s*normalizeType/);
-  assert.match(indexHtml, /ReadonlyReportPageContract\.normalizeReadonlyReportPageId/);
-  assert.match(indexHtml, /ReadonlyReportPageContract\.DEFAULT_READONLY_REPORT_PAGE_ID/);
+  assert.match(indexHtml, /readonlyReportPageContractFromGlobal/);
+  assert.match(indexHtml, /resolveReadonlyReportPageContract/);
+  assert.equal(indexHtml.includes('ReadonlyReportPageContract.normalizeReadonlyReportPageId'), false);
+  assert.equal(indexHtml.includes('ReadonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID'), false);
   assert.equal(indexHtml.includes('READONLY_REPORT_SESSION_PAGE_IDS=new Set'), false);
   assert.equal(indexHtml.includes('normalizeReadonlyReportSessionPageId'), false);
   assert.match(indexHtml, /window\.FinanceCore\.configure\(\{ isRendaFixaAsset, rfValues \}\);/);

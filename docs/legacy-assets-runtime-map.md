@@ -528,3 +528,51 @@ Recomendacao para a Fase 181:
 
 - reutilizar este contrato unico para qualquer nova validacao de pagina readonly;
 - nao reintroduzir listas equivalentes em pontos separados.
+
+## Fase 181 - carregamento resiliente do contrato readonly
+
+Risco anterior:
+
+- o legado, o host experimental e o contexto readonly dependiam demais da ordem de carga do `ReadonlyReportPageContract`;
+- quando o contrato faltava, vinha parcial ou era adulterado, o consumo podia quebrar com `ReferenceError` antes de cair no fallback seguro.
+
+Resolvedor:
+
+- `readonly-report-page-contract.js` passou a expor `resolveReadonlyReportPageContract(...)`;
+- o contrato continua canonico, mas agora o consumidor pode validar a referencia em runtime antes de usar;
+- o `readonlyReportSessionContext.ts` usa o resolvedor para evitar acesso nu ao contrato.
+
+Validacao:
+
+- contrato valido segue igual;
+- contrato ausente cai em `reports`;
+- contrato parcial cai em `reports`;
+- normalizador que lança nao quebra o React;
+- contrato adulterado nao aceita pagina desconhecida;
+- Node sem DOM continua funcional.
+
+Consumo:
+
+- o legado usa o contrato via `globalThis` protegido por resolucao segura;
+- o host moderno usa a mesma protecao antes do bootstrap;
+- o shell independente continua fora dessa dependencia;
+- nenhum novo estado, persistencia ou lista paralela foi criado.
+
+Seguranca:
+
+- somente leitura;
+- sem storage, Firebase, Auth, sync, backup ou polling;
+- sem dados financeiros na URL;
+- sem tela branca por falha de contrato;
+- fallback oficial continua sendo `reports`.
+
+Rollback:
+
+- remover o resolvedor novo;
+- restaurar o acesso direto apenas onde o contrato estiver garantido;
+- manter o contrato canonico e as fases anteriores intactas.
+
+Recomendacao para a Fase 182:
+
+- manter o contrato readonly com validacao explicita em qualquer novo ponto de consumo;
+- nao voltar ao acesso nu em runtime.
