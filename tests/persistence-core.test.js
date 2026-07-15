@@ -203,11 +203,11 @@ test('parseStoredState parses valid JSON, defaults empty input, and rejects inva
 
 test('serializeStoredState roundtrips special characters without normalization', () => {
   const state = makeState();
-  state.wallets[0].name = 'Carteira Joao & Acao "Especial"\nLinha 2\t📈💰';
+  state.wallets[0].name = 'Carteira Joao & Acao "Especial"\nLinha 2\tðŸ“ˆðŸ’°';
   state.assets[0].ticker = 'PETR4 "Preferencial"';
   state.assets[0].description = 'Linha 1\nLinha 2\tC:\\Investimentos\\Backup';
   state.aportes[0].note = '';
-  state.learnMeta.PETR4.description = 'cedilha ç, aspas "sim", barra \\ e emoji 📈💰';
+  state.learnMeta.PETR4.description = 'cedilha cÌ§, aspas "sim", barra \\ e emoji ðŸ“ˆðŸ’°';
   const stored = PersistenceCore.buildStoredState(state, normalizeGoals);
   const parsed = PersistenceCore.parseStoredState(PersistenceCore.serializeStoredState(state, normalizeGoals));
   assert.deepEqual(parsed, stored);

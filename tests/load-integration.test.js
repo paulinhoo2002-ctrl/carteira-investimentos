@@ -89,7 +89,7 @@ function makeInitialState(overrides = {}) {
         rfEvents: [{ id: 'old-rf', ticker: 'OLD3' }],
         divGoal: 7,
         goals: { seed: true },
-        learnMeta: { OLD3: { type: 'Ação' } }
+        learnMeta: { OLD3: { type: 'AÃ§Ã£o' } }
       }
     ],
     activeWalletId: 'seed-wallet',
@@ -111,7 +111,7 @@ function makeInitialState(overrides = {}) {
     irpfYear: 2024,
     irpfStep: 2,
     goals: { seed: true },
-    learnMeta: { OLD3: { type: 'Ação' } },
+    learnMeta: { OLD3: { type: 'AÃ§Ã£o' } },
     brapiToken: 'existing-token',
     autoProvDirty: false,
     ...overrides
@@ -208,7 +208,7 @@ function backupKeys(snapshot, prefix) {
   return Object.keys(snapshot).filter(key => key.startsWith(prefix));
 }
 
-test('load recupera estado válido, aplica config e sincroniza a carteira ativa', () => {
+test('load recupera estado vÃ¡lido, aplica config e sincroniza a carteira ativa', () => {
   const storedState = {
     wallets: [
       {
@@ -220,7 +220,7 @@ test('load recupera estado válido, aplica config e sincroniza a carteira ativa'
         rfEvents: [{ id: 'rf1', ticker: 'PETR4' }],
         divGoal: 55,
         goals: { carteira: true },
-        learnMeta: { PETR4: { type: 'Ação' } }
+        learnMeta: { PETR4: { type: 'AÃ§Ã£o' } }
       }
     ],
     activeWalletId: 'w1',
@@ -236,7 +236,7 @@ test('load recupera estado válido, aplica config e sincroniza a carteira ativa'
     irpfYear: 2025,
     irpfStep: 4,
     goals: { carteira: true },
-    learnMeta: { PETR4: { type: 'Ação' } }
+    learnMeta: { PETR4: { type: 'AÃ§Ã£o' } }
   };
   const storedConfig = { brapiToken: 'cfg-token', divGoal: 99 };
   const harness = makeHarness({
@@ -267,7 +267,7 @@ test('load recupera estado válido, aplica config e sincroniza a carteira ativa'
   assert.equal(harness.warnings.length, 0);
 });
 
-test('load preserva estado atual quando o storage principal está ausente e a configuração existe', () => {
+test('load preserva estado atual quando o storage principal estÃ¡ ausente e a configuraÃ§Ã£o existe', () => {
   const initialState = makeInitialState();
   const harness = makeHarness({
     initialState,
@@ -287,7 +287,7 @@ test('load preserva estado atual quando o storage principal está ausente e a co
   assert.equal(harness.debugErrors.length, 0);
 });
 
-test('load faz backup do JSON inválido do estado principal e mantém o app funcional', () => {
+test('load faz backup do JSON invÃ¡lido do estado principal e mantÃ©m o app funcional', () => {
   const initialState = makeInitialState();
   const harness = makeHarness({
     initialState,
@@ -313,7 +313,7 @@ test('load faz backup do JSON inválido do estado principal e mantém o app func
   assert.equal(harness.counters.save, 0);
 });
 
-test('load preserva o estado financeiro quando a configuração está inválida e volta para o token padrão', () => {
+test('load preserva o estado financeiro quando a configuraÃ§Ã£o estÃ¡ invÃ¡lida e volta para o token padrÃ£o', () => {
   const storedState = {
     assets: [{ ticker: 'ITSA4', qty: 5 }],
     aportes: [{ id: 'a2', ticker: 'ITSA4', valor: 500 }],
@@ -343,7 +343,7 @@ test('load preserva o estado financeiro quando a configuração está inválida 
   assert.equal(harness.counters.save, 0);
 });
 
-test('load preserva estado atual e não propaga mais a falha histórica de localStorage.getItem no estado principal', () => {
+test('load preserva estado atual e nÃ£o propaga mais a falha histÃ³rica de localStorage.getItem no estado principal', () => {
   const readError = new Error('state read failed');
   const initialState = makeInitialState();
   const harness = makeHarness({

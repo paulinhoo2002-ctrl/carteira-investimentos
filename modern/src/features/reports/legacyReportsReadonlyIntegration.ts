@@ -1,7 +1,10 @@
-import { createReadOnlyReportsBridge, type ReadOnlyReportsBridge, type ReadOnlyReportsSource } from './reportsReadonlyBridge.ts';
-import { createReadOnlyReportsAdapter, type ReadOnlyReportsAdapter } from './reportsSnapshotAdapter.ts';
+import type { ReadOnlyReportsBridge, ReadOnlyReportsSource } from './reportsReadonlyBridge.mjs';
+import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter.mjs';
+import { createReadOnlyReportsBridge } from './reportsReadonlyBridge.mjs';
+import { createReadOnlyReportsAdapter } from './reportsSnapshotAdapter.mjs';
 
 const CONNECTED_REPORTS_DEMO_SNAPSHOT = {
+  version: 1,
   generatedAt: '2026-07-14T10:30:00.000Z',
   notice: 'Snapshot legado somente leitura. React nao escreve na fonte.',
   summary: {

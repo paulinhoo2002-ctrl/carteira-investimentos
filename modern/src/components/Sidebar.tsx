@@ -1,4 +1,4 @@
-import type { ModernPage, ModernPageId } from '../types/navigation';
+import type { ModernPage, ModernPageId } from '../types/navigation.mjs';
 
 interface SidebarProps {
   activePageId: ModernPageId;

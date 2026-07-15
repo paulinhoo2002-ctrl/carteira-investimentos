@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { ReportsRefreshController } from '../features/reports/reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from '../features/reports/reportsSnapshotAdapter';
-import type { ModernPageId } from '../types/navigation';
+import type { ModernPageId } from '../types/navigation.mjs';
 import type { ComponentType } from 'react';
 
 interface MountModernAppOptions {

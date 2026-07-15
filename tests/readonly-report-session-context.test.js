@@ -13,7 +13,7 @@ const modulePath = path.join(
   'reports',
   'readonlyReportSessionContext.ts',
 );
-const navigationModulePath = path.join(__dirname, '..', 'modern', 'src', 'types', 'navigation.ts');
+const navigationModulePath = path.join(__dirname, '..', 'modern', 'src', 'types', 'navigation.mjs');
 
 async function loadModule(cacheKey = '') {
   const suffix = cacheKey ? `?${cacheKey}` : '';

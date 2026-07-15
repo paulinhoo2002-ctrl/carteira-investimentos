@@ -5,7 +5,8 @@ import { Sidebar } from './components/Sidebar';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
 import type { ReportsRefreshController } from './features/reports/reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './features/reports/reportsSnapshotAdapter';
-import { MODERN_PAGES, OVERVIEW_CARDS, type ModernPageId } from './types/navigation';
+import type { ModernPageId } from './types/navigation.mjs';
+import { MODERN_PAGES, OVERVIEW_CARDS } from './types/navigation.mjs';
 
 interface AppProps {
   reportsAdapter: ReadOnlyReportsAdapter;

@@ -1,6 +1,6 @@
 import { createConnectedReportsAdapter, createConnectedReportsDemoSource } from '../features/reports/legacyReportsReadonlyIntegration.ts';
-import type { ReadOnlyReportsAdapter } from '../features/reports/reportsSnapshotAdapter.ts';
-import type { ReadOnlyReportsSource } from '../features/reports/reportsReadonlyBridge.ts';
+import type { ReadOnlyReportsAdapter } from '../features/reports/reportsSnapshotAdapter.mjs';
+import type { ReadOnlyReportsSource } from '../features/reports/reportsReadonlyBridge.mjs';
 
 export interface ModernReportsRuntimeOptions {
   readonly reportsSource?: ReadOnlyReportsSource | null;

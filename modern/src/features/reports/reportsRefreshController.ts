@@ -1,4 +1,8 @@
-import { createReadOnlyReportsBridge, READ_ONLY_REPORTS_FALLBACK_SNAPSHOT, type ReadOnlyReportsSnapshot, type ReadOnlyReportsSource } from './reportsReadonlyBridge.ts';
+import type { ReadOnlyReportsSnapshot, ReadOnlyReportsSource } from './reportsReadonlyBridge.mjs';
+import {
+  createReadOnlyReportsBridge,
+  READ_ONLY_REPORTS_FALLBACK_SNAPSHOT,
+} from './reportsReadonlyBridge.mjs';
 
 export type ReportsReadonlyOriginMode = 'real-wallet' | 'empty-wallet' | 'fallback-readonly' | 'demo-source';
 

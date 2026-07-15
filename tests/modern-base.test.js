@@ -30,16 +30,17 @@ const sourceFiles = [
   'src/components/AppHeader.tsx',
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
-  'src/features/reports/reportsReadonlyBridge.ts',
+  'src/features/reports/reportsReadonlyContract.mjs',
+  'src/features/reports/reportsReadonlyBridge.mjs',
   'src/features/reports/legacyReportsReadonlyIntegration.ts',
   'src/features/reports/AssetsReportPreview.tsx',
-  'src/features/reports/reportsSnapshotAdapter.ts',
+  'src/features/reports/reportsSnapshotAdapter.mjs',
   'src/features/reports/readonlyReportSessionContext.ts',
-  'src/types/navigation.ts',
+  'src/types/navigation.mjs',
 ];
 
 const hostExperimentalFiles = ['src/bootstrap/hostLegacyReportsReadonlySource.ts'];
-const navigationModulePath = path.join(__dirname, '..', 'modern', 'src', 'types', 'navigation.ts');
+const navigationModulePath = path.join(__dirname, '..', 'modern', 'src', 'types', 'navigation.mjs');
 
 function read(relativePath) {
   return fs.readFileSync(path.join(modernRoot, relativePath), 'utf8');
@@ -78,12 +79,15 @@ test('modern shell exists and stays isolated', async () => {
   const headerTsx = read('src/components/AppHeader.tsx');
   const sidebarTsx = read('src/components/Sidebar.tsx');
   const placeholderTsx = read('src/components/PagePlaceholder.tsx');
-  const reportsBridgeTs = read('src/features/reports/reportsReadonlyBridge.ts');
+  const reportsBridgeTs = read('src/features/reports/reportsReadonlyBridge.mjs');
+  const reportsBridgeTypes = read('src/features/reports/reportsReadonlyBridge.d.ts');
   const reportsIntegrationTs = read('src/features/reports/legacyReportsReadonlyIntegration.ts');
   const reportsPreviewTsx = read('src/features/reports/AssetsReportPreview.tsx');
-  const reportsAdapterTs = read('src/features/reports/reportsSnapshotAdapter.ts');
+  const reportsAdapterTs = read('src/features/reports/reportsSnapshotAdapter.mjs');
+  const reportsAdapterTypes = read('src/features/reports/reportsSnapshotAdapter.d.ts');
   const readonlySessionTs = read('src/features/reports/readonlyReportSessionContext.ts');
-  const navigationTs = read('src/types/navigation.ts');
+  const navigationTs = read('src/types/navigation.mjs');
+  const navigationTypes = read('src/types/navigation.d.ts');
   const sessionContractJs = fs.readFileSync(path.join(__dirname, '..', 'readonly-report-page-contract.js'), 'utf8');
   const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
   const { MODERN_PAGES } = await loadNavigationModule();
@@ -193,13 +197,18 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(sidebarTsx, /aria-current=\{isActive \? 'page' : undefined\}/);
   assert.match(sidebarTsx, /Secoes da base moderna/);
   assert.match(placeholderTsx, /Funcionalidade real ainda nao foi migrada\./);
-  assert.match(reportsBridgeTs, /READ_ONLY_REPORT_CATEGORIES/);
-  assert.match(reportsBridgeTs, /READ_ONLY_REPORT_TRENDS/);
-  assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /READ_ONLY_REPORT_CATEGORIES/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /READ_ONLY_REPORT_TRENDS/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /READ_ONLY_REPORTS_CONTRACT_VERSION/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /normalizeReadOnlyReportsSnapshot/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /isReadOnlyReportsSnapshot/);
+  assert.match(reportsBridgeTs, /reportsReadonlyContract/);
   assert.match(reportsBridgeTs, /createReadOnlyReportsBridge/);
   assert.match(reportsBridgeTs, /readSnapshot\(\)/);
-  assert.match(reportsBridgeTs, /itemCount !== value\.items\.length/);
-  assert.match(reportsBridgeTs, /Number\.isFinite/);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_BRIDGE/);
+  assert.match(reportsBridgeTs, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
+  assert.match(reportsBridgeTs, /normalizeReadOnlyReportsSnapshot/);
   assert.match(reportsBridgeTs, /catch/);
   assert.match(reportsIntegrationTs, /createLegacyReportsReadonlyBoundary/);
   assert.match(reportsIntegrationTs, /createConnectedReportsBridge/);
@@ -213,13 +222,24 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(reportsPreviewTsx, /snapshot\.notice/);
   assert.match(reportsPreviewTsx, /snapshot\.summary\.totalValue/);
   assert.match(reportsPreviewTsx, /snapshot\.items\.map/);
-  assert.match(reportsAdapterTs, /createReadOnlyReportsBridge/);
-  assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_BRIDGE/);
-  assert.match(reportsAdapterTs, /export type \{ ReadOnlyReportCategory, ReadOnlyReportItem, ReadOnlyReportTrend, ReadOnlyReportsSnapshot \}/);
-  assert.match(reportsAdapterTs, /export interface ReadOnlyReportsAdapter/);
+  assert.match(reportsAdapterTs, /reportsReadonlyBridge/);
   assert.match(reportsAdapterTs, /createReadOnlyReportsAdapter/);
   assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_ADAPTER/);
   assert.match(reportsAdapterTs, /ReadOnlyReportsBridge/);
+  assert.match(reportsAdapterTypes, /ReadOnlyReportCategory/);
+  assert.match(reportsAdapterTypes, /ReadOnlyReportItem/);
+  assert.match(reportsAdapterTypes, /ReadOnlyReportTrend/);
+  assert.match(reportsAdapterTypes, /ReadOnlyReportsSnapshot/);
+  assert.match(reportsAdapterTypes, /export interface ReadOnlyReportsAdapter/);
+  assert.match(navigationTs, /MODERN_PAGES/);
+  assert.match(navigationTs, /OVERVIEW_CARDS/);
+  assert.equal(navigationTs.includes('MODERN_PAGE_IDS'), false);
+  assert.match(navigationTypes, /ModernPageId/);
+  assert.match(navigationTypes, /ModernPage/);
+  assert.match(navigationTypes, /export declare const MODERN_PAGES/);
+  assert.match(navigationTypes, /export declare const OVERVIEW_CARDS/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /READ_ONLY_REPORTS_CONTRACT_VERSION/);
+  assert.match(read('src/features/reports/reportsReadonlyContract.mjs'), /normalizeReadOnlyReportsSnapshot/);
   assert.match(readonlySessionTs, /readonlyReportPage/);
   assert.match(readonlySessionTs, /readReadonlyReportSessionContext/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionSearch/);
@@ -240,7 +260,6 @@ test('modern shell exists and stays isolated', async () => {
     /(^|[^A-Za-z0-9_])ReadonlyReportPageContract\.normalizeReadonlyReportPageId/.test(readonlySessionTs),
     false,
   );
-  assert.equal(navigationTs.includes('MODERN_PAGE_IDS'), false);
   assert.deepEqual(
     readonlyReportPageContract.READONLY_REPORT_PAGE_IDS,
     MODERN_PAGES.map((page) => page.id),
@@ -251,13 +270,19 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(navigationTs, /Snapshot de leitura segura/);
   assert.equal(packageJson.scripts.build, "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"");
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
+  assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
+  assert.match(packageJson.scripts.test, /tests\/readonly-reports-data-contract\.test\.js/);
   assert.equal(
     packageJson.scripts.test.includes('tests/readonly-contract-architecture.test.js'),
     true,
   );
+  assert.equal(
+    packageJson.scripts.test.includes('tests/readonly-reports-data-contract.test.js'),
+    true,
+  );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -386,30 +411,30 @@ test('modern shell exists and stays isolated', async () => {
 });
 
 test('modern shell exposes seven navigation options', () => {
-  const navigationTs = read('src/types/navigation.ts');
+  const navigationTs = read('src/types/navigation.mjs');
+  const navigationTypes = read('src/types/navigation.d.ts');
   const labels = ['Visao geral', 'Ativos', 'Renda fixa', 'Proventos', 'Aportes', 'Relatorios', 'Configuracoes'];
 
   for (const label of labels) {
     assert.match(navigationTs, new RegExp(label));
   }
 
-  assert.match(navigationTs, /export type ModernPageId/);
-  assert.match(navigationTs, /export interface ModernPage/);
-  assert.match(navigationTs, /export const MODERN_PAGES/);
-  assert.match(navigationTs, /export const OVERVIEW_CARDS/);
+  assert.match(navigationTypes, /ModernPageId/);
+  assert.match(navigationTypes, /ModernPage/);
+  assert.match(navigationTypes, /export declare const MODERN_PAGES/);
+  assert.match(navigationTypes, /export declare const OVERVIEW_CARDS/);
+  assert.match(navigationTs, /MODERN_PAGES/);
+  assert.match(navigationTs, /OVERVIEW_CARDS/);
 });
 
 test('modern reports adapter returns frozen read-only snapshot', () => {
-  const bridgeFile = read('src/features/reports/reportsReadonlyBridge.ts');
-  const adapterFile = read('src/features/reports/reportsSnapshotAdapter.ts');
+  const bridgeFile = read('src/features/reports/reportsReadonlyBridge.mjs');
+  const adapterFile = read('src/features/reports/reportsSnapshotAdapter.mjs');
 
   assert.match(bridgeFile, /READ_ONLY_REPORTS_FALLBACK_SNAPSHOT/);
   assert.match(bridgeFile, /createReadOnlyReportsBridge/);
-  assert.match(bridgeFile, /cloneReadOnlyReportsSnapshot/);
-  assert.match(bridgeFile, /isReadOnlyReportsSnapshot/);
-  assert.match(bridgeFile, /deepFreeze/);
-  assert.match(bridgeFile, /React nao escreve na fonte/);
-  assert.match(bridgeFile, /readonly/);
+  assert.match(bridgeFile, /normalizeReadOnlyReportsSnapshot/);
+  assert.match(bridgeFile, /READ_ONLY_REPORTS_BRIDGE/);
   assert.match(adapterFile, /READ_ONLY_REPORTS_ADAPTER/);
   assert.match(adapterFile, /createReadOnlyReportsAdapter/);
   assert.match(adapterFile, /ReadOnlyReportsBridge/);

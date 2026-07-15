@@ -650,3 +650,65 @@ Recomendacao para a Fase 184:
 
 - manter o teste central como alarme de regressao;
 - atualizar os guardrails sempre que a arquitetura readonly mudar de forma legitima.
+
+## Fase 185 - contrato tipado e versionado dos dados de relatorio readonly
+
+Contrato canonico:
+
+- runtime: `modern/src/features/reports/reportsReadonlyContract.mjs`;
+- tipagem: `modern/src/features/reports/reportsReadonlyContract.d.ts`;
+- versao minima: `version: 1`;
+- formato atual: `version`, `generatedAt`, `notice`, `summary`, `items`;
+- validacao runtime simples: `isReadOnlyReportsSnapshot()` e `normalizeReadOnlyReportsSnapshot()`;
+- fallback seguro: `READ_ONLY_REPORTS_FALLBACK_SNAPSHOT`.
+
+Politica de compatibilidade:
+
+- payload com `version: 1` e aceito;
+- payload sem `version`, mas estruturalmente valido, normaliza para `version: 1`;
+- versao futura desconhecida cai no fallback seguro;
+- payload parcial ou estruturalmente invalido cai no fallback seguro;
+- `notice` ausente continua sendo tratado como invalido se deixar de ser string.
+
+Responsabilidades:
+
+- produtor legado: `createLegacyAssetsReadonlyProvider()` / `createLegacyReportsReadonlySource()`;
+- ponte: `createReadOnlyReportsBridge()`;
+- adaptador: `createReadOnlyReportsAdapter()`;
+- runtime: `createModernReportsRuntime()`;
+- UI: `App` e `AssetsReportPreview` apenas leem.
+
+Imutabilidade:
+
+- snapshot, summary e items sao congelados;
+- clone seguro evita referencia mutavel do payload de origem;
+- o snapshot anterior continua intacto em refresh com erro.
+
+Seguranca:
+
+- sem escrita;
+- sem storage, Firebase, Auth, sync ou backup;
+- sem calculo financeiro no moderno;
+- sem dados financeiros em URL, console ou estado novo.
+
+Testes:
+
+- contrato v1 valido;
+- payload sem versao;
+- versao desconhecida;
+- payload nulo, vazio, parcial e item invalido;
+- snapshot congelado;
+- mutacao posterior nao altera snapshot;
+- bridge e adapter preservam a versao;
+- guardrail impede validacao local duplicada.
+
+Fallback e rollback:
+
+- o fallback permanece versionado e seguro;
+- reverter a fase remove o modulo de contrato, os testes associados e a doc desta fase;
+- o legado e as fases anteriores permanecem intactos.
+
+Recomendacao para a Fase 186:
+
+- reutilizar o contrato versionado como fronteira readonly ja protegida;
+- nao reintroduzir validacao local em consumidores.

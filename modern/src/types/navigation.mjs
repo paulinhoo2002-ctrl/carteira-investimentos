@@ -1,27 +1,4 @@
-export type ModernPageId =
-  | 'overview'
-  | 'assets'
-  | 'fixed-income'
-  | 'provents'
-  | 'contributions'
-  | 'reports'
-  | 'settings';
-
-export interface ModernPage {
-  id: ModernPageId;
-  label: string;
-  title: string;
-  description: string;
-  hint: string;
-}
-
-export interface DemoCard {
-  label: string;
-  value: string;
-  hint: string;
-}
-
-export const MODERN_PAGES: ModernPage[] = [
+export const MODERN_PAGES = [
   {
     id: 'overview',
     label: 'Visao geral',
@@ -73,7 +50,7 @@ export const MODERN_PAGES: ModernPage[] = [
   },
 ];
 
-export const OVERVIEW_CARDS: DemoCard[] = [
+export const OVERVIEW_CARDS = [
   {
     label: 'Patrimonio',
     value: 'Nao conectado',

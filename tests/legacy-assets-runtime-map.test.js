@@ -33,6 +33,7 @@ test('documentacao referencia arquivos e funcoes reais', () => {
     'report-asset-row.js',
     'legacy/reports-readonly-source.js',
     'readonly-report-page-contract.js',
+    'reportsReadonlyContract.mjs',
     'reportAssetRows()',
     'buildReportAssetRow()',
     'assetAppliedValue()',
@@ -43,12 +44,16 @@ test('documentacao referencia arquivos e funcoes reais', () => {
     'Fase 178 - navegacao controlada para o relatorio readonly real',
     'Fase 179 - contexto visual de sessao no relatorio readonly',
     'Fase 180 - contrato unico das paginas readonly seguras',
+    'Fase 185 - contrato tipado e versionado dos dados de relatorio readonly',
     'readonlyReportPage',
     'getReadonlyReportPageContract',
     'READONLY_REPORT_PAGE_IDS',
     'DEFAULT_READONLY_REPORT_PAGE_ID',
     'normalizeReadonlyReportPageId',
     'isReadonlyReportPageId',
+    'READ_ONLY_REPORTS_CONTRACT_VERSION',
+    'normalizeReadOnlyReportsSnapshot',
+    'ReadOnlyReportsSnapshot',
   ].forEach((token) => {
     assert.ok(doc.includes(token), `Documento deve citar ${token}`);
   });

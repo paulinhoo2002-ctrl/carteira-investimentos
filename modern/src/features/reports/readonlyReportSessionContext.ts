@@ -1,5 +1,5 @@
 import * as readonlyReportPageContractModule from '../../../../readonly-report-page-contract.js';
-import type { ModernPageId } from '../../types/navigation';
+import type { ModernPageId } from '../../types/navigation.mjs';
 
 export interface ReadonlyReportSessionContext {
   readonly pageId: ModernPageId;

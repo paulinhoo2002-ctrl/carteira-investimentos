@@ -29,6 +29,14 @@ export default defineConfig({
   optimizeDeps: {
     include: [resolve(rootDir, '..', 'legacy', 'reports-readonly-source.js'), resolve(rootDir, '..', 'report-asset-row.js')],
   },
+  ssr: {
+    external: [
+      /\/src\/features\/reports\/reportsReadonlyContract\.js$/,
+      /\/src\/features\/reports\/reportsReadonlyBridge\.js$/,
+      /\/src\/features\/reports\/reportsSnapshotAdapter\.js$/,
+      /\/src\/types\/navigation\.js$/,
+    ],
+  },
   server: {
     fs: {
       allow: [resolve(rootDir, '..')],

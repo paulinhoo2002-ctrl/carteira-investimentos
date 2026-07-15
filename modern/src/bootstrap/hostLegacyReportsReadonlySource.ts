@@ -1,4 +1,4 @@
-import type { ReadOnlyReportsSource } from '../features/reports/reportsReadonlyBridge.ts';
+import type { ReadOnlyReportsSource } from '../features/reports/reportsReadonlyBridge.mjs';
 
 export interface HostLegacyReportAsset {
   readonly ticker: string;
@@ -109,14 +109,32 @@ function hostMetaTicker(ticker: string) {
   };
 }
 
-function hostNormalizeType(value: unknown, fallback = 'Ação'): 'Ação' | 'FII' | 'ETF' {
+function normalizeHostReportType(value: unknown): 'Ação' | 'FII' | 'ETF' | '' {
   const normalized = String(value ?? '').trim();
 
-  if (normalized === 'Ação' || normalized === 'FII' || normalized === 'ETF') {
+  if (!normalized) {
+    return '';
+  }
+
+  if (normalized === 'FII' || normalized === 'ETF') {
     return normalized;
   }
 
-  return fallback as 'Ação' | 'FII' | 'ETF';
+  const normalizedUpper = normalized.toUpperCase();
+  if (
+    normalizedUpper === 'AÇÃO' ||
+    normalizedUpper === 'ACAO' ||
+    normalized === 'Ação' ||
+    normalized === 'AÃ§Ã£o'
+  ) {
+    return 'Ação';
+  }
+
+  return '';
+}
+
+function hostNormalizeType(value: unknown, fallback = 'Ação'): 'Ação' | 'FII' | 'ETF' {
+  return normalizeHostReportType(value) || normalizeHostReportType(fallback) || 'Ação';
 }
 
 function deepFreeze<T>(value: T): T {

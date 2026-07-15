@@ -3,8 +3,8 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
-const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.ts');
-const adapterModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsSnapshotAdapter.ts');
+const bridgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsReadonlyBridge.mjs');
+const adapterModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'reportsSnapshotAdapter.mjs');
 
 async function loadBridgeModule() {
   return import(pathToFileURL(bridgeModulePath).href);
@@ -16,6 +16,7 @@ async function loadAdapterModule() {
 
 function createValidSnapshot(overrides = {}) {
   return {
+    version: 1,
     generatedAt: '15/07/2026, 10:30',
     notice: 'Snapshot preparado por fonte de teste',
     summary: {
@@ -52,6 +53,7 @@ function createValidSnapshot(overrides = {}) {
 }
 
 function assertDeepFrozen(snapshot) {
+  assert.equal(snapshot.version, 1);
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
@@ -77,6 +79,27 @@ test('snapshot valido e aceito pela ponte somente leitura', async () => {
   assertDeepFrozen(snapshot);
 });
 
+test('snapshot sem versao continua aceito e normaliza para v1', async () => {
+  const { createReadOnlyReportsBridge } = await loadBridgeModule();
+  const sourceSnapshot = createValidSnapshot();
+  delete sourceSnapshot.version;
+  const bridge = createReadOnlyReportsBridge({
+    getSnapshot() {
+      return sourceSnapshot;
+    },
+  });
+
+  const snapshot = bridge.readSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.deepEqual(snapshot, {
+    ...sourceSnapshot,
+    version: 1,
+  });
+  assert.notEqual(snapshot, sourceSnapshot);
+  assertDeepFrozen(snapshot);
+});
+
 test('snapshot ausente usa fallback', async () => {
   const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT, createReadOnlyReportsBridge } = await loadBridgeModule();
   const bridge = createReadOnlyReportsBridge();
@@ -95,7 +118,7 @@ test('fonte que retorna null usa fallback', async () => {
   assert.deepEqual(bridge.readSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
 });
 
-test('fonte que lança excecao usa fallback', async () => {
+test('fonte que lanÃ§a excecao usa fallback', async () => {
   const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT, createReadOnlyReportsBridge } = await loadBridgeModule();
   const bridge = createReadOnlyReportsBridge({
     getSnapshot() {
@@ -231,6 +254,20 @@ test('category invalida usa fallback', async () => {
           },
         ],
       });
+    },
+  });
+
+  assert.deepEqual(bridge.readSnapshot(), READ_ONLY_REPORTS_FALLBACK_SNAPSHOT);
+});
+
+test('versao desconhecida usa fallback', async () => {
+  const { READ_ONLY_REPORTS_FALLBACK_SNAPSHOT, createReadOnlyReportsBridge } = await loadBridgeModule();
+  const bridge = createReadOnlyReportsBridge({
+    getSnapshot() {
+      return {
+        ...createValidSnapshot(),
+        version: 2,
+      };
     },
   });
 
