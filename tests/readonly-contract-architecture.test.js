@@ -151,7 +151,7 @@ function assertViteCopy(viteConfigTs) {
 
 function assertPackageScripts(packageJson) {
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-contract-architecture\.test\.js/);
-  assert.match(packageJson.scripts.test, /tests\/readonly-contract-architecture\.test\.js/);
+  assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
   assert.equal(
     packageJson.scripts.test.includes('npm run test:modern'),
     false,
