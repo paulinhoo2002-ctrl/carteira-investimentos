@@ -538,9 +538,9 @@ Risco anterior:
 
 Resolvedor:
 
-- `readonly-report-page-contract.js` passou a expor `resolveReadonlyReportPageContract(...)`;
-- o contrato continua canonico, mas agora o consumidor pode validar a referencia em runtime antes de usar;
-- o `readonlyReportSessionContext.ts` usa o resolvedor para evitar acesso nu ao contrato.
+- `readonly-report-page-contract.js` passou a expor `getReadonlyReportPageContract(...)`;
+- o contrato continua canonico e tambem concentra a busca segura do candidato no ambiente;
+- o `readonlyReportSessionContext.ts` passou a pedir o contrato seguro pela API publica.
 
 Validacao:
 
@@ -553,8 +553,8 @@ Validacao:
 
 Consumo:
 
-- o legado usa o contrato via `globalThis` protegido por resolucao segura;
-- o host moderno usa a mesma protecao antes do bootstrap;
+- o legado usa `ReadonlyReportPageContract.getReadonlyReportPageContract()` via `globalThis` protegido;
+- o host moderno usa a mesma API publica antes do bootstrap;
 - o shell independente continua fora dessa dependencia;
 - nenhum novo estado, persistencia ou lista paralela foi criado.
 
@@ -572,7 +572,40 @@ Rollback:
 - restaurar o acesso direto apenas onde o contrato estiver garantido;
 - manter o contrato canonico e as fases anteriores intactas.
 
-Recomendacao para a Fase 182:
+## Fase 182 - fronteira unica de consumo do contrato readonly
 
-- manter o contrato readonly com validacao explicita em qualquer novo ponto de consumo;
-- nao voltar ao acesso nu em runtime.
+Objetivo:
+
+- remover fallback funcional local dos consumidores;
+- manter uma unica API publica para obter o contrato readonly seguro;
+- preservar comportamento valido, ausente, parcial e adulterado.
+
+Fronteira canonica:
+
+- `readonly-report-page-contract.js` concentra validacao, fallback e resolucao;
+- `READONLY_REPORT_PAGE_IDS` continua sendo a unica lista completa de IDs permitidos;
+- `DEFAULT_READONLY_REPORT_PAGE_ID` continua sendo `reports`;
+- `isReadonlyReportPageId(value)` valida apenas IDs permitidos;
+- `normalizeReadonlyReportPageId(value, fallback)` normaliza e cai em `reports` quando necessario;
+- `getReadonlyReportPageContract(candidate?)` e a unica porta publica;
+- consumidores apenas chamam essa API e caem em `reports` se a fronteira nao puder resolver.
+
+Responsabilidades:
+
+- contrato canonico: validar, normalizar e devolver fallback minimo quando preciso;
+- legado: carregar o script canonico e pedir o contrato seguro;
+- moderno: importar o mesmo contrato e pedir o contrato seguro;
+- shell independente: continuar sem contexto de sessao.
+
+Fallback:
+
+- fora do contrato canonico, o unico literal permitido continua sendo `reports`;
+- nenhum consumidor recria contrato parcial, lista de IDs ou resolvedor proprio.
+
+Rollback:
+
+- reverter o commit desta fase e voltar os consumidores para a barreira funcional anterior.
+
+Recomendacao para a Fase 183:
+
+- manter a API publica unica e nao reintroduzir resolucao local em consumidores.

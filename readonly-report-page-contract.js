@@ -115,7 +115,7 @@
     return true;
   }
 
-  function createReadonlyReportPageContractFallback() {
+  function createReadonlyReportPageContractSafeFallback() {
     const fallbackDefault = DEFAULT_READONLY_REPORT_PAGE_ID;
 
     return Object.freeze({
@@ -135,8 +135,28 @@
     });
   }
 
-  function resolveReadonlyReportPageContract(candidate) {
-    return isReadonlyReportPageContract(candidate) ? candidate : createReadonlyReportPageContractFallback();
+  function readReadonlyReportPageContractGlobalCandidate() {
+    try {
+      if (typeof globalThis === 'undefined') {
+        return undefined;
+      }
+
+      return globalThis.ReadonlyReportPageContract;
+    } catch {
+      return undefined;
+    }
+  }
+
+  function getReadonlyReportPageContract(candidate) {
+    const contractCandidate = arguments.length > 0 ? candidate : readReadonlyReportPageContractGlobalCandidate();
+
+    try {
+      return isReadonlyReportPageContract(contractCandidate)
+        ? contractCandidate
+        : createReadonlyReportPageContractSafeFallback();
+    } catch {
+      return createReadonlyReportPageContractSafeFallback();
+    }
   }
 
   return Object.freeze({
@@ -145,6 +165,6 @@
     isReadonlyReportPageId,
     normalizeReadonlyReportPageId,
     isReadonlyReportPageContract,
-    resolveReadonlyReportPageContract,
+    getReadonlyReportPageContract,
   });
 });

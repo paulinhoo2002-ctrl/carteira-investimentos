@@ -7,6 +7,10 @@ const readonlyReportPageContract = require('../readonly-report-page-contract.js'
 
 const modernRoot = path.join(__dirname, '..', 'modern');
 const rootIndexPath = path.join(__dirname, '..', 'index.html');
+const legacyContractFallbackToken = ['fallback', 'ReadonlyReportPageContract'].join('');
+const legacyContractResolverToken = ['resolveReadonlyReportPageContract', 'Safely'].join('');
+const legacyContractCandidateToken = ['readReadonlyReportPageContract', 'Candidate'].join('');
+const legacyContractExportsToken = ['readReadonlyReportPageContract', 'Exports'].join('');
 const sourceFiles = [
   'index.html',
   'README.md',
@@ -220,10 +224,18 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(readonlySessionTs, /readReadonlyReportSessionContext/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionSearch/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionUrl/);
-  assert.match(readonlySessionTs, /resolveReadonlyReportPageContract/);
-  assert.match(readonlySessionTs, /readReadonlyReportPageContractCandidate/);
+  assert.match(readonlySessionTs, /getReadonlyReportPageContract/);
+  assert.match(
+    readonlySessionTs,
+    /getReadonlyReportPageContract\?\.\([\s\n]*readonlyReportPageContract,?[\s\n]*\)/,
+  );
+  assert.equal(readonlySessionTs.includes('getReadonlyReportPageContract?.()'), false);
   assert.equal(readonlySessionTs.includes('withReadonlyReportSessionFallback'), false);
   assert.equal(readonlySessionTs.includes('declare const ReadonlyReportPageContract'), false);
+  assert.equal(readonlySessionTs.includes(legacyContractFallbackToken), false);
+  assert.equal(readonlySessionTs.includes(legacyContractResolverToken), false);
+  assert.equal(readonlySessionTs.includes(legacyContractCandidateToken), false);
+  assert.equal(readonlySessionTs.includes(legacyContractExportsToken), false);
   assert.equal(
     /(^|[^A-Za-z0-9_])ReadonlyReportPageContract\.normalizeReadonlyReportPageId/.test(readonlySessionTs),
     false,
@@ -329,6 +341,8 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(sessionContractJs, /DEFAULT_READONLY_REPORT_PAGE_ID/);
   assert.match(sessionContractJs, /normalizeReadonlyReportPageId/);
   assert.match(sessionContractJs, /isReadonlyReportPageId/);
+  assert.match(sessionContractJs, /getReadonlyReportPageContract/);
+  assert.equal(sessionContractJs.includes(['resolveReadonlyReportPageContract', '('].join('')), false);
   assert.equal(hostSourceTs.includes('localStorage'), false);
   assert.equal(hostSourceTs.includes('sessionStorage'), false);
   assert.equal(hostSourceTs.includes('indexedDB'), false);
