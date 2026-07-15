@@ -3758,11 +3758,32 @@ function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
 function isReadonlyReportsExperimentalEntryEnabled(){
   return isLocalTestMode() && !isActiveWalletHostMode();
 }
+function fallbackReadonlyReportPageContract(){
+  const defaultPageId='reports';
+  return {
+    DEFAULT_READONLY_REPORT_PAGE_ID: defaultPageId,
+    normalizeReadonlyReportPageId(value, fallback=defaultPageId){
+      const normalizedValue=String(value ?? '').trim();
+      if(normalizedValue===defaultPageId) return defaultPageId;
+      const normalizedFallback=String(fallback ?? '').trim();
+      return normalizedFallback===defaultPageId ? defaultPageId : defaultPageId;
+    }
+  };
+}
+function readonlyReportPageContractFromGlobal(){
+  try{
+    const contract=typeof globalThis!=='undefined' ? globalThis.ReadonlyReportPageContract : undefined;
+    if(contract && typeof contract.resolveReadonlyReportPageContract==='function'){
+      return contract.resolveReadonlyReportPageContract(contract);
+    }
+  }catch(e){}
+  return fallbackReadonlyReportPageContract();
+}
 function readonlyReportSessionPageIdFromLocation(){
   try{
-    return ReadonlyReportPageContract.normalizeReadonlyReportPageId(new URLSearchParams(location.search).get('readonlyReportPage'));
+    return readonlyReportPageContractFromGlobal().normalizeReadonlyReportPageId(new URLSearchParams(location.search).get('readonlyReportPage'));
   }catch(e){
-    return ReadonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID;
+    return 'reports';
   }
 }
 function isActiveWalletHostMode(){
