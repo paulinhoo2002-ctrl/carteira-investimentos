@@ -1,26 +1,18 @@
 import type { ModernPageId } from '../../types/navigation';
 
+declare const ReadonlyReportPageContract: {
+  readonly READONLY_REPORT_PAGE_IDS: readonly ModernPageId[];
+  readonly DEFAULT_READONLY_REPORT_PAGE_ID: ModernPageId;
+  readonly normalizeReadonlyReportPageId: (value: string | null, fallback?: ModernPageId) => ModernPageId;
+};
+
 export interface ReadonlyReportSessionContext {
   readonly pageId: ModernPageId;
 }
 
 const SESSION_PAGE_PARAM = 'readonlyReportPage';
-const SESSION_PAGE_IDS = new Set<ModernPageId>([
-  'overview',
-  'assets',
-  'fixed-income',
-  'provents',
-  'contributions',
-  'reports',
-  'settings',
-]);
-
-function isModernPageId(value: string | null): value is ModernPageId {
-  return typeof value === 'string' && SESSION_PAGE_IDS.has(value as ModernPageId);
-}
-
 function normalizePageId(value: string | null, fallback: ModernPageId): ModernPageId {
-  return isModernPageId(value) ? value : fallback;
+  return ReadonlyReportPageContract.normalizeReadonlyReportPageId(value, fallback) as ModernPageId;
 }
 
 export function readReadonlyReportSessionContext(
@@ -68,11 +60,4 @@ export function buildReadonlyReportSessionUrl(
   url.hash = '';
 
   return url.toString();
-}
-
-export function withReadonlyReportSessionFallback(
-  currentSearch: string | URLSearchParams | null | undefined,
-  fallbackPageId: ModernPageId = 'reports',
-): ReadonlyReportSessionContext {
-  return readReadonlyReportSessionContext(currentSearch, fallbackPageId);
 }

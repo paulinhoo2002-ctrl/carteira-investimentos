@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const test = require('node:test');
+const readonlyReportPageContract = require('../readonly-report-page-contract.js');
 
 const modernRoot = path.join(__dirname, '..', 'modern');
 const rootIndexPath = path.join(__dirname, '..', 'index.html');
@@ -33,6 +35,7 @@ const sourceFiles = [
 ];
 
 const hostExperimentalFiles = ['src/bootstrap/hostLegacyReportsReadonlySource.ts'];
+const navigationModulePath = path.join(__dirname, '..', 'modern', 'src', 'types', 'navigation.ts');
 
 function read(relativePath) {
   return fs.readFileSync(path.join(modernRoot, relativePath), 'utf8');
@@ -46,7 +49,11 @@ function allSourceText() {
     .join('\n');
 }
 
-test('modern shell exists and stays isolated', () => {
+async function loadNavigationModule() {
+  return import(pathToFileURL(navigationModulePath).href);
+}
+
+test('modern shell exists and stays isolated', async () => {
   for (const file of sourceFiles) {
     assert.equal(fs.existsSync(path.join(modernRoot, file)), true, `Missing file: ${file}`);
   }
@@ -73,7 +80,9 @@ test('modern shell exists and stays isolated', () => {
   const reportsAdapterTs = read('src/features/reports/reportsSnapshotAdapter.ts');
   const readonlySessionTs = read('src/features/reports/readonlyReportSessionContext.ts');
   const navigationTs = read('src/types/navigation.ts');
+  const sessionContractJs = fs.readFileSync(path.join(__dirname, '..', 'readonly-report-page-contract.js'), 'utf8');
   const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  const { MODERN_PAGES } = await loadNavigationModule();
 
   assert.match(indexHtml, /<title>Carteira de Investimentos \| Shell moderno isolado<\/title>/);
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
@@ -86,6 +95,7 @@ test('modern shell exists and stays isolated', () => {
   assert.match(readme, /# Shell moderno isolado/);
   assert.match(readme, /Host experimental/);
   assert.match(readme, /Relatorios consome snapshot somente leitura por ponte e adaptador explicitos/);
+  assert.match(hostHtml, /readonly-report-page-contract\.js/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /readReadonlyReportSessionContext/);
@@ -209,6 +219,13 @@ test('modern shell exists and stays isolated', () => {
   assert.match(readonlySessionTs, /readReadonlyReportSessionContext/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionSearch/);
   assert.match(readonlySessionTs, /buildReadonlyReportSessionUrl/);
+  assert.match(readonlySessionTs, /ReadonlyReportPageContract/);
+  assert.equal(readonlySessionTs.includes('withReadonlyReportSessionFallback'), false);
+  assert.equal(navigationTs.includes('MODERN_PAGE_IDS'), false);
+  assert.deepEqual(
+    readonlyReportPageContract.READONLY_REPORT_PAGE_IDS,
+    MODERN_PAGES.map((page) => page.id),
+  );
   assert.match(navigationTs, /Visao geral/);
   assert.match(navigationTs, /Configuracoes/);
   assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
@@ -299,6 +316,12 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(readonlySessionTs.includes('auth'), false);
   assert.equal(/\bsync\b/.test(readonlySessionTs), false);
   assert.equal(readonlySessionTs.includes('backup'), false);
+  assert.equal(readonlySessionTs.includes('READONLY_REPORT_PAGE_IDS=new Set'), false);
+  assert.equal(indexHtml.includes('READONLY_REPORT_SESSION_PAGE_IDS=new Set'), false);
+  assert.match(sessionContractJs, /READONLY_REPORT_PAGE_IDS/);
+  assert.match(sessionContractJs, /DEFAULT_READONLY_REPORT_PAGE_ID/);
+  assert.match(sessionContractJs, /normalizeReadonlyReportPageId/);
+  assert.match(sessionContractJs, /isReadonlyReportPageId/);
   assert.equal(hostSourceTs.includes('localStorage'), false);
   assert.equal(hostSourceTs.includes('sessionStorage'), false);
   assert.equal(hostSourceTs.includes('indexedDB'), false);
@@ -323,6 +346,18 @@ test('modern shell exists and stays isolated', () => {
   assert.equal(mountTsx.includes('BroadcastChannel'), false);
   assert.equal(mountTsx.includes('CustomEvent'), false);
   assert.equal(mountTsx.includes('window.'), false);
+  assert.equal(sessionContractJs.includes('localStorage'), false);
+  assert.equal(sessionContractJs.includes('sessionStorage'), false);
+  assert.equal(sessionContractJs.includes('indexedDB'), false);
+  assert.equal(sessionContractJs.includes('firebase'), false);
+  assert.equal(sessionContractJs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(sessionContractJs), false);
+  assert.equal(sessionContractJs.includes('backup'), false);
+  assert.equal(sessionContractJs.includes('setInterval'), false);
+  assert.equal(sessionContractJs.includes('setTimeout'), false);
+  assert.equal(sessionContractJs.includes('requestAnimationFrame'), false);
+  assert.equal(sessionContractJs.includes('MutationObserver'), false);
+  assert.equal(sessionContractJs.includes('WebSocket'), false);
 });
 
 test('modern shell exposes seven navigation options', () => {

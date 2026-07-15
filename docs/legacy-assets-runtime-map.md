@@ -481,3 +481,50 @@ Rollback:
 - remover a sincronizacao minima do host experimental;
 - remover os testes e a documentacao da Fase 179;
 - manter os contratos readonly anteriores intactos.
+
+## Fase 180 - contrato unico das paginas readonly seguras
+
+Fonte canonica:
+
+- `readonly-report-page-contract.js` concentra a lista imutavel de paginas permitidas e a normalizacao segura reutilizada pelo legado e pelo moderno.
+- O contrato e carregado pelo `index.html` legado e pelo `modern/host.html`; o modulo moderno de contexto readonly le o contrato exposto em runtime quando a sessao experimental esta ativa.
+
+IDs permitidos:
+
+- `overview`
+- `assets`
+- `fixed-income`
+- `provents`
+- `contributions`
+- `reports`
+- `settings`
+
+Fallback:
+
+- `reports`
+
+Consumo:
+
+- o legado usa `ReadonlyReportPageContract.normalizeReadonlyReportPageId(...)` para abrir e retornar do host readonly experimental;
+- o modulo moderno de contexto de sessao usa o mesmo contrato em runtime para ler, validar e reescrever `readonlyReportPage`;
+- `modern/host.html` carrega o contrato antes do bootstrap do host moderno;
+- `modern/src/types/navigation.ts` continua com a navegacao moderna local e nao carrega contrato de sessao.
+
+Seguranca:
+
+- o contrato carrega apenas IDs visuais;
+- nao preserva dados financeiros, snapshot, diagnostico, storage, Firebase, Auth, sync ou backup;
+- valores vazios ou invalidos caem no fallback seguro;
+- o shell independente continua sem depender do contexto de sessao.
+
+Rollback:
+
+- remover `readonly-report-page-contract.js`;
+- reverter as referencias no `index.html` e no `modern/host.html`;
+- remover os testes e a documentacao desta fase;
+- manter a URL readonlyReportPage e o comportamento da fase 179 intactos.
+
+Recomendacao para a Fase 181:
+
+- reutilizar este contrato unico para qualquer nova validacao de pagina readonly;
+- nao reintroduzir listas equivalentes em pontos separados.

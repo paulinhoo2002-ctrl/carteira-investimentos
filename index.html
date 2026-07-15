@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<script src="readonly-report-page-contract.js"></script>
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
@@ -3757,16 +3758,11 @@ function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
 function isReadonlyReportsExperimentalEntryEnabled(){
   return isLocalTestMode() && !isActiveWalletHostMode();
 }
-const READONLY_REPORT_SESSION_PAGE_IDS=new Set(['overview','assets','fixed-income','provents','contributions','reports','settings']);
-function normalizeReadonlyReportSessionPageId(value, fallback='reports'){
-  const normalized=String(value||'').trim();
-  return READONLY_REPORT_SESSION_PAGE_IDS.has(normalized) ? normalized : fallback;
-}
 function readonlyReportSessionPageIdFromLocation(){
   try{
-    return normalizeReadonlyReportSessionPageId(new URLSearchParams(location.search).get('readonlyReportPage'), 'reports');
+    return ReadonlyReportPageContract.normalizeReadonlyReportPageId(new URLSearchParams(location.search).get('readonlyReportPage'));
   }catch(e){
-    return 'reports';
+    return ReadonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID;
   }
 }
 function isActiveWalletHostMode(){
