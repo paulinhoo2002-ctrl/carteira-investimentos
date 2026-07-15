@@ -13,9 +13,14 @@ const modulePath = path.join(
   'reports',
   'readonlyReportSessionContext.ts',
 );
+const navigationModulePath = path.join(__dirname, '..', 'modern', 'src', 'types', 'navigation.ts');
 
 async function loadModule() {
   return import(pathToFileURL(modulePath).href);
+}
+
+async function loadNavigationModule() {
+  return import(pathToFileURL(navigationModulePath).href);
 }
 
 test('readonly report session context aceita estado visual valido e rejeita invalido', async () => {
@@ -24,21 +29,25 @@ test('readonly report session context aceita estado visual valido e rejeita inva
     buildReadonlyReportSessionUrl,
     readReadonlyReportSessionContext,
   } = await loadModule();
+  const { MODERN_PAGES } = await loadNavigationModule();
 
-  assert.deepEqual(readonlyReportPageContract.READONLY_REPORT_PAGE_IDS, [
-    'overview',
-    'assets',
-    'fixed-income',
-    'provents',
-    'contributions',
-    'reports',
-    'settings',
-  ]);
+  assert.deepEqual(
+    readonlyReportPageContract.READONLY_REPORT_PAGE_IDS,
+    MODERN_PAGES.map((page) => page.id),
+  );
   assert.equal(readonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID, 'reports');
   assert.equal(readonlyReportPageContract.isReadonlyReportPageId('reports'), true);
   assert.equal(readonlyReportPageContract.isReadonlyReportPageId('invalid'), false);
   assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId(' assets '), 'assets');
   assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('', 'overview'), 'overview');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('invalid', 'assets'), 'assets');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('invalid', 'invalid'), 'reports');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('invalid', ''), 'reports');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('invalid', null), 'reports');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('invalid', undefined), 'reports');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('assets', 'invalid'), 'assets');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId(' assets ', ' reports '), 'assets');
+  assert.equal(readonlyReportPageContract.normalizeReadonlyReportPageId('REPORTS', 'assets'), 'assets');
 
   assert.deepEqual(readReadonlyReportSessionContext('?readonlyReportPage=assets'), {
     pageId: 'assets',

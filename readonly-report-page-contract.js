@@ -31,8 +31,15 @@
   }
 
   function normalizeReadonlyReportPageId(value, fallback = DEFAULT_READONLY_REPORT_PAGE_ID) {
-    const normalized = String(value ?? '').trim();
-    return isReadonlyReportPageId(normalized) ? normalized : fallback;
+    const normalizedValue = String(value ?? '').trim();
+    if (isReadonlyReportPageId(normalizedValue)) {
+      return normalizedValue;
+    }
+
+    const normalizedFallback = String(fallback ?? '').trim();
+    return isReadonlyReportPageId(normalizedFallback)
+      ? normalizedFallback
+      : DEFAULT_READONLY_REPORT_PAGE_ID;
   }
 
   return Object.freeze({

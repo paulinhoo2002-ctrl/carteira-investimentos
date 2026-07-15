@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const test = require('node:test');
+const readonlyReportPageContract = require('../readonly-report-page-contract.js');
 
 const modernRoot = path.join(__dirname, '..', 'modern');
 const rootIndexPath = path.join(__dirname, '..', 'index.html');
@@ -33,6 +35,7 @@ const sourceFiles = [
 ];
 
 const hostExperimentalFiles = ['src/bootstrap/hostLegacyReportsReadonlySource.ts'];
+const navigationModulePath = path.join(__dirname, '..', 'modern', 'src', 'types', 'navigation.ts');
 
 function read(relativePath) {
   return fs.readFileSync(path.join(modernRoot, relativePath), 'utf8');
@@ -46,7 +49,11 @@ function allSourceText() {
     .join('\n');
 }
 
-test('modern shell exists and stays isolated', () => {
+async function loadNavigationModule() {
+  return import(pathToFileURL(navigationModulePath).href);
+}
+
+test('modern shell exists and stays isolated', async () => {
   for (const file of sourceFiles) {
     assert.equal(fs.existsSync(path.join(modernRoot, file)), true, `Missing file: ${file}`);
   }
@@ -75,6 +82,7 @@ test('modern shell exists and stays isolated', () => {
   const navigationTs = read('src/types/navigation.ts');
   const sessionContractJs = fs.readFileSync(path.join(__dirname, '..', 'readonly-report-page-contract.js'), 'utf8');
   const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  const { MODERN_PAGES } = await loadNavigationModule();
 
   assert.match(indexHtml, /<title>Carteira de Investimentos \| Shell moderno isolado<\/title>/);
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
@@ -213,7 +221,11 @@ test('modern shell exists and stays isolated', () => {
   assert.match(readonlySessionTs, /buildReadonlyReportSessionUrl/);
   assert.match(readonlySessionTs, /ReadonlyReportPageContract/);
   assert.equal(readonlySessionTs.includes('withReadonlyReportSessionFallback'), false);
-  assert.match(navigationTs, /MODERN_PAGE_IDS/);
+  assert.equal(navigationTs.includes('MODERN_PAGE_IDS'), false);
+  assert.deepEqual(
+    readonlyReportPageContract.READONLY_REPORT_PAGE_IDS,
+    MODERN_PAGES.map((page) => page.id),
+  );
   assert.match(navigationTs, /Visao geral/);
   assert.match(navigationTs, /Configuracoes/);
   assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
