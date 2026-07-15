@@ -215,6 +215,7 @@ function assertViteCopy(viteConfigTs) {
 }
 
 function assertPackageScripts(packageJson) {
+  assert.match(packageJson.scripts['test:modern'], /tests\/modern-assets-readonly-page\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-contract-architecture\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-reports-data-contract\.test\.js/);
   assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
@@ -257,6 +258,8 @@ function loadArchitectureSnapshot() {
     modernReportsRuntimeTs: read('modern/src/bootstrap/modernReportsRuntime.ts'),
     appTsx: read('modern/src/App.tsx'),
     assetsPreviewTsx: read('modern/src/features/reports/AssetsReportPreview.tsx'),
+    assetsReadonlyTsx: read('modern/src/features/reports/AssetsReadonlyPage.tsx'),
+    readonlyViewModelTs: read('modern/src/features/reports/readonlyReportsViewModel.ts'),
     dataContractJs: read('modern/src/features/reports/reportsReadonlyContract.mjs'),
     dataContractTypes: read('modern/src/features/reports/reportsReadonlyContract.d.ts'),
     bridgeJs: read('modern/src/features/reports/reportsReadonlyBridge.mjs'),
@@ -310,6 +313,8 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     'modern/src/main.tsx': snapshot.mainTsx,
     'modern/src/App.tsx': snapshot.appTsx,
     'modern/src/bootstrap/mountModernApp.ts': snapshot.mountModernAppTs,
+    'modern/src/features/reports/AssetsReadonlyPage.tsx': snapshot.assetsReadonlyTsx,
+    'modern/src/features/reports/readonlyReportsViewModel.ts': snapshot.readonlyViewModelTs,
   });
   assertReadOnlyReportsContract(snapshot.dataContractJs);
   assertImportsReadOnlyReportsContract(
@@ -332,6 +337,8 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoCompleteReadonlyPageList(snapshot.modernReportsRuntimeTs, 'modern/src/bootstrap/modernReportsRuntime.ts');
   assertNoCompleteReadonlyPageList(snapshot.appTsx, 'modern/src/App.tsx');
   assertNoCompleteReadonlyPageList(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.assetsReadonlyTsx, 'modern/src/features/reports/AssetsReadonlyPage.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.readonlyViewModelTs, 'modern/src/features/reports/readonlyReportsViewModel.ts');
   assertNoCompleteReadonlyPageList(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
   assertNoCompleteReadonlyPageList(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoCompleteReadonlyPageList(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
@@ -347,6 +354,8 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoLocalReadOnlyReportsContract(snapshot.modernReportsRuntimeTs, 'modern/src/bootstrap/modernReportsRuntime.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.appTsx, 'modern/src/App.tsx');
   assertNoLocalReadOnlyReportsContract(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.assetsReadonlyTsx, 'modern/src/features/reports/AssetsReadonlyPage.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.readonlyViewModelTs, 'modern/src/features/reports/readonlyReportsViewModel.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.navigationJs, 'modern/src/types/navigation.mjs');
@@ -366,6 +375,8 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoForbiddenTokens(snapshot.modernReportsRuntimeTs, 'modern/src/bootstrap/modernReportsRuntime.ts');
   assertNoForbiddenTokens(snapshot.appTsx, 'modern/src/App.tsx');
   assertNoForbiddenTokens(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
+  assertNoForbiddenTokens(snapshot.assetsReadonlyTsx, 'modern/src/features/reports/AssetsReadonlyPage.tsx');
+  assertNoForbiddenTokens(snapshot.readonlyViewModelTs, 'modern/src/features/reports/readonlyReportsViewModel.ts');
   assertNoForbiddenTokens(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
   assertNoForbiddenTokens(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoForbiddenTokens(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');

@@ -184,7 +184,8 @@ test('preview estatica usa adapter recebido e nao mostra botao experimental', as
 
     assert.equal(calls, 1);
     assert.match(html, /Snapshot customizado do adapter/);
-    assert.match(html, /Atualizacao ficticia: 2026-07-14T11:00:00.000Z/);
+    assert.match(html, /Atualizacao ficticia:/);
+    assert.match(html, /Atualizacao ficticia: 14 de jul\. de 2026, 11:00/);
     assert.equal(html.includes('assets-report__diagnostic'), false);
     assert.equal(html.includes('Atualizar previa'), false);
     assert.equal(html.includes('button'), false);

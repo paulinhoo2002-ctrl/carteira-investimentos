@@ -27,9 +27,11 @@ const sourceFiles = [
   'src/styles.css',
   'src/bootstrap/modernReportsRuntime.ts',
   'src/features/reports/reportsRefreshController.ts',
+  'src/features/reports/AssetsReadonlyPage.tsx',
   'src/components/AppHeader.tsx',
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
+  'src/features/reports/readonlyReportsViewModel.ts',
   'src/features/reports/reportsReadonlyContract.mjs',
   'src/features/reports/reportsReadonlyBridge.mjs',
   'src/features/reports/legacyReportsReadonlyIntegration.ts',
@@ -75,6 +77,8 @@ test('modern shell exists and stays isolated', async () => {
   const stylesCss = read('src/styles.css');
   const runtimeTs = read('src/bootstrap/modernReportsRuntime.ts');
   const refreshControllerTs = read('src/features/reports/reportsRefreshController.ts');
+  const assetsReadonlyTsx = read('src/features/reports/AssetsReadonlyPage.tsx');
+  const readonlyViewModelTs = read('src/features/reports/readonlyReportsViewModel.ts');
   const viteConfigTs = read('vite.config.ts');
   const headerTsx = read('src/components/AppHeader.tsx');
   const sidebarTsx = read('src/components/Sidebar.tsx');
@@ -121,6 +125,8 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(appTsx, /initialPageId\?: ModernPageId/);
   assert.match(appTsx, /onActivePageIdChange\?: \(pageId: ModernPageId\) => void/);
   assert.match(appTsx, /adapter=\{reportsAdapter\}/);
+  assert.match(appTsx, /AssetsReadonlyPage/);
+  assert.match(appTsx, /activePageId === 'assets'/);
   assert.match(appTsx, /activePageId === 'reports'/);
   assert.match(mainTsx, /mountModernApp/);
   assert.match(mainTsx, /createModernReportsRuntime/);
@@ -222,6 +228,24 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(reportsPreviewTsx, /snapshot\.notice/);
   assert.match(reportsPreviewTsx, /snapshot\.summary\.totalValue/);
   assert.match(reportsPreviewTsx, /snapshot\.items\.map/);
+  assert.match(reportsPreviewTsx, /formatReadonlyDateTime/);
+  assert.match(reportsPreviewTsx, /formatReadonlyCurrency/);
+  assert.match(reportsPreviewTsx, /formatReadonlyPercent/);
+  assert.match(reportsPreviewTsx, /formatReadonlyQuantity/);
+  assert.match(assetsReadonlyTsx, /AssetsReadonlyPage/);
+  assert.match(assetsReadonlyTsx, /createReadonlyAssetsViewModel/);
+  assert.match(assetsReadonlyTsx, /Voltar ao legado/);
+  assert.match(assetsReadonlyTsx, /Atualizar prévia/);
+  assert.match(assetsReadonlyTsx, /Maiores posições/);
+  assert.match(assetsReadonlyTsx, /Distribuição por categoria/);
+  assert.match(assetsReadonlyTsx, /Lista de ativos/);
+  assert.match(assetsReadonlyTsx, /aria-live="polite"/);
+  assert.match(assetsReadonlyTsx, /ReadonlyAssetsSortKey/);
+  assert.match(readonlyViewModelTs, /createReadonlyAssetsViewModel/);
+  assert.match(readonlyViewModelTs, /formatReadonlyCurrency/);
+  assert.match(readonlyViewModelTs, /formatReadonlyPercent/);
+  assert.match(readonlyViewModelTs, /formatReadonlyQuantity/);
+  assert.match(readonlyViewModelTs, /formatReadonlyDateTime/);
   assert.match(reportsAdapterTs, /reportsReadonlyBridge/);
   assert.match(reportsAdapterTs, /createReadOnlyReportsAdapter/);
   assert.match(reportsAdapterTs, /READ_ONLY_REPORTS_ADAPTER/);
@@ -282,7 +306,7 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
