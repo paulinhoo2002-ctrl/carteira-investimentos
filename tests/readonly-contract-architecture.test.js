@@ -199,6 +199,12 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertPackageScripts(snapshot.packageJson);
   assertDocsNoDuplicateList(snapshot.docs);
   assertModernDistIgnored();
+  assertShellIsolation({
+    'modern/index.html': snapshot.modernIndexHtml,
+    'modern/src/main.tsx': snapshot.mainTsx,
+    'modern/src/App.tsx': snapshot.appTsx,
+    'modern/src/bootstrap/mountModernApp.ts': snapshot.mountModernAppTs,
+  });
 
   assertNoForbiddenTokens(snapshot.indexHtml, 'index.html');
   assertNoForbiddenTokens(snapshot.hostHtml, 'modern/host.html');
