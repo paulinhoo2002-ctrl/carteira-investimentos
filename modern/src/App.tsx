@@ -10,10 +10,17 @@ import { MODERN_PAGES, OVERVIEW_CARDS, type ModernPageId } from './types/navigat
 interface AppProps {
   reportsAdapter: ReadOnlyReportsAdapter;
   reportsRefreshController?: ReportsRefreshController | null;
+  initialPageId?: ModernPageId;
+  onActivePageIdChange?: (pageId: ModernPageId) => void;
 }
 
-export function App({ reportsAdapter, reportsRefreshController }: AppProps) {
-  const [activePageId, setActivePageId] = useState<ModernPageId>('overview');
+export function App({
+  reportsAdapter,
+  reportsRefreshController,
+  initialPageId = 'overview',
+  onActivePageIdChange,
+}: AppProps) {
+  const [activePageId, setActivePageId] = useState<ModernPageId>(initialPageId);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const activePage = MODERN_PAGES.find((page) => page.id === activePageId) ?? MODERN_PAGES[0];
@@ -43,6 +50,7 @@ export function App({ reportsAdapter, reportsRefreshController }: AppProps) {
   const handlePageChange = (pageId: ModernPageId) => {
     setActivePageId(pageId);
     setIsMenuOpen(false);
+    onActivePageIdChange?.(pageId);
   };
 
   return (

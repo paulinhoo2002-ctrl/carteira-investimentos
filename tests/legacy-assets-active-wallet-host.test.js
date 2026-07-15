@@ -47,6 +47,8 @@ test('fase 178 mantém a composicao experimental isolada no entrypoint legado', 
   assert.match(indexHtml, /if\(!isActiveWalletHostMode\(\)\)\{\n  setInterval\(/);
   assert.match(indexHtml, /isReadonlyReportsExperimentalEntryEnabled/);
   assert.match(indexHtml, /function isReadonlyReportsExperimentalEntryEnabled\(\)\{\s*return isLocalTestMode\(\) && !isActiveWalletHostMode\(\);\s*\}/);
+  assert.match(indexHtml, /readonlyReportPage/);
+  assert.match(indexHtml, /normalizeReadonlyReportSessionPageId/);
   assert.match(indexHtml, /readonlyReportsExperimentalHostUrl/);
   assert.match(indexHtml, /readonlyReportsLegacyReturnUrl/);
   assert.match(indexHtml, /openReadonlyReportsExperimentalHost/);

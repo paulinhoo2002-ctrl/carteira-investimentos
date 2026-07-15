@@ -44,6 +44,8 @@ Quando o app roda em `localhost` ou `127.0.0.1` com `testMode=1`, a tela de Rela
 
 Essa entrada abre o host readonly da carteira ativa com `activeWalletHost=1&testMode=1` e inclui retorno explicito ao legado.
 
+O contexto visual preservado na sessao e somente a pagina moderna selecionada. O valor fica em `readonlyReportPage` na URL experimental durante a navegacao e volta para o legado junto com o retorno. Valores invalidos caem no padrao seguro e o shell independente continua sem usar esse contexto.
+
 ## PRINCIPIOS DO PROJETO
 
 - UX em primeiro lugar.

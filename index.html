@@ -3757,6 +3757,18 @@ function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
 function isReadonlyReportsExperimentalEntryEnabled(){
   return isLocalTestMode() && !isActiveWalletHostMode();
 }
+const READONLY_REPORT_SESSION_PAGE_IDS=new Set(['overview','assets','fixed-income','provents','contributions','reports','settings']);
+function normalizeReadonlyReportSessionPageId(value, fallback='reports'){
+  const normalized=String(value||'').trim();
+  return READONLY_REPORT_SESSION_PAGE_IDS.has(normalized) ? normalized : fallback;
+}
+function readonlyReportSessionPageIdFromLocation(){
+  try{
+    return normalizeReadonlyReportSessionPageId(new URLSearchParams(location.search).get('readonlyReportPage'), 'reports');
+  }catch(e){
+    return 'reports';
+  }
+}
 function isActiveWalletHostMode(){
   try{
     return (location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('activeWalletHost')==='1' && new URLSearchParams(location.search).get('testMode')==='1';
@@ -3769,32 +3781,29 @@ function readonlyReportsExperimentalHostUrl(){
     const url=new URL(location.href);
     url.searchParams.set('activeWalletHost','1');
     url.searchParams.set('testMode','1');
+    url.searchParams.set('readonlyReportPage', readonlyReportSessionPageIdFromLocation());
     url.hash='';
     return url.toString();
   }catch(e){
-    return `${location.pathname}?activeWalletHost=1&testMode=1`;
+    return `${location.pathname}?activeWalletHost=1&testMode=1&readonlyReportPage=${encodeURIComponent(readonlyReportSessionPageIdFromLocation())}`;
   }
 }
 function readonlyReportsLegacyReturnUrl(){
   try{
     const url=new URL(location.href);
     url.searchParams.delete('activeWalletHost');
+    url.searchParams.set('readonlyReportPage', readonlyReportSessionPageIdFromLocation());
     url.searchParams.set('testMode','1');
     url.hash='';
     return url.toString();
   }catch(e){
-    return `${location.pathname}?testMode=1`;
+    return `${location.pathname}?testMode=1&readonlyReportPage=${encodeURIComponent(readonlyReportSessionPageIdFromLocation())}`;
   }
 }
 function openReadonlyReportsExperimentalHost(){
   location.assign(readonlyReportsExperimentalHostUrl());
 }
 function returnFromReadonlyReportsExperimentalHost(){
-  if(window.history.length>1){
-    window.history.back();
-    return;
-  }
-
   location.assign(readonlyReportsLegacyReturnUrl());
 }
 function installReadonlyReportsExperimentalBanner(targetRoot){

@@ -64,6 +64,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostHtml, /host-entry\.tsx/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
+  assert.match(hostTsx, /readReadonlyReportSessionContext/);
+  assert.match(hostTsx, /buildReadonlyReportSessionSearch/);
   assert.match(hostTsx, /createReportsRefreshController/);
   assert.match(hostTsx, /createNullReportsSource/);
   assert.match(hostTsx, /strictSourceWiring/);
@@ -105,6 +107,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(mountTsx, /mountedRoots/);
   assert.match(runtimeTs, /createConnectedReportsDemoSource/);
   assert.match(appTsx, /reportsAdapter: ReadOnlyReportsAdapter/);
+  assert.match(appTsx, /initialPageId\?: ModernPageId/);
+  assert.match(appTsx, /onActivePageIdChange\?: \(pageId: ModernPageId\) => void/);
 
   for (const forbidden of [
     'legacy/reports-readonly-source.js',

@@ -38,7 +38,9 @@ test('documentacao referencia arquivos e funcoes reais', () => {
     'normalizeType()',
     'Plano para a Fase 174',
     'Fase 178 - navegacao controlada para o relatorio readonly real',
-    'Relatório experimental somente leitura',
+    'Fase 179 - contexto visual de sessao no relatorio readonly',
+    'readonlyReportPage',
+    'RelatÃ³rio experimental somente leitura',
     'activeWalletHost=1&testMode=1',
     'Voltar ao legado',
   ].forEach((token) => {
@@ -46,7 +48,7 @@ test('documentacao referencia arquivos e funcoes reais', () => {
   });
 });
 
-test('estrutura canônica e ordem de scripts continuam no index legado', () => {
+test('estrutura canÃ´nica e ordem de scripts continuam no index legado', () => {
   const indexHtml = read(indexHtmlPath);
 
   assert.match(indexHtml, /<script src="finance-core\.js"><\/script>/);
@@ -61,7 +63,7 @@ test('estrutura canônica e ordem de scripts continuam no index legado', () => {
   assert.match(indexHtml, /window\.FinanceCore\.configure\(\{ isRendaFixaAsset, rfValues \}\);/);
 });
 
-test('funcoes financeiras canônicas permanecem disponiveis', () => {
+test('funcoes financeiras canÃ´nicas permanecem disponiveis', () => {
   const financeCore = read(financeCorePath);
 
   [
