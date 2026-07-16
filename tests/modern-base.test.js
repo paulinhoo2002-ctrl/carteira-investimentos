@@ -28,7 +28,19 @@ const sourceFiles = [
   'src/bootstrap/modernReportsRuntime.ts',
   'src/bootstrap/hostIncomeReadonlySource.ts',
   'src/bootstrap/modernIncomeRuntime.ts',
+  'src/bootstrap/hostContributionsReadonlySource.ts',
+  'src/bootstrap/modernContributionsRuntime.ts',
   'src/features/income/incomeRefreshController.ts',
+  'src/features/contributions/ContributionsReadonlyPage.tsx',
+  'src/features/contributions/readonlyContributionsViewModel.ts',
+  'src/features/contributions/contributionsReadonlyContract.mjs',
+  'src/features/contributions/contributionsReadonlyContract.d.ts',
+  'src/features/contributions/contributionsReadonlyBridge.mjs',
+  'src/features/contributions/contributionsReadonlyBridge.d.ts',
+  'src/features/contributions/contributionsSnapshotAdapter.mjs',
+  'src/features/contributions/contributionsSnapshotAdapter.d.ts',
+  'src/features/contributions/legacyContributionsReadonlyIntegration.ts',
+  'src/features/contributions/contributionsRefreshController.ts',
   'src/features/reports/reportsRefreshController.ts',
   'src/features/reports/AssetsReadonlyPage.tsx',
   'src/features/income/IncomeReadonlyPage.tsx',
@@ -117,6 +129,18 @@ test('modern shell exists and stays isolated', async () => {
   const incomeSourceTs = read('src/bootstrap/hostIncomeReadonlySource.ts');
   const incomeRuntimeTs = read('src/bootstrap/modernIncomeRuntime.ts');
   const incomeRefreshControllerTs = read('src/features/income/incomeRefreshController.ts');
+  const contributionsReadonlyTsx = read('src/features/contributions/ContributionsReadonlyPage.tsx');
+  const contributionsViewModelTs = read('src/features/contributions/readonlyContributionsViewModel.ts');
+  const contributionsContractTs = read('src/features/contributions/contributionsReadonlyContract.mjs');
+  const contributionsContractTypes = read('src/features/contributions/contributionsReadonlyContract.d.ts');
+  const contributionsBridgeTs = read('src/features/contributions/contributionsReadonlyBridge.mjs');
+  const contributionsBridgeTypes = read('src/features/contributions/contributionsReadonlyBridge.d.ts');
+  const contributionsAdapterTs = read('src/features/contributions/contributionsSnapshotAdapter.mjs');
+  const contributionsAdapterTypes = read('src/features/contributions/contributionsSnapshotAdapter.d.ts');
+  const contributionsIntegrationTs = read('src/features/contributions/legacyContributionsReadonlyIntegration.ts');
+  const contributionsSourceTs = read('src/bootstrap/hostContributionsReadonlySource.ts');
+  const contributionsRuntimeTs = read('src/bootstrap/modernContributionsRuntime.ts');
+  const contributionsRefreshControllerTs = read('src/features/contributions/contributionsRefreshController.ts');
   const readonlyViewModelTs = read('src/features/reports/readonlyReportsViewModel.ts');
   const viteConfigTs = read('vite.config.ts');
   const headerTsx = read('src/components/AppHeader.tsx');
@@ -206,6 +230,28 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(fixedIncomeSourceTs.includes('toNumber(..., 0)'), false);
   assert.match(fixedIncomeRuntimeTs, /createModernFixedIncomeRuntime/);
   assert.match(incomeRuntimeTs, /createModernIncomeRuntime/);
+  assert.match(contributionsReadonlyTsx, /ContributionsReadonlyPage/);
+  assert.match(contributionsReadonlyTsx, /Atualizar aportes/);
+  assert.match(contributionsReadonlyTsx, /Sugestao explicavel/);
+  assert.match(contributionsReadonlyTsx, /Voltar ao legado/);
+  assert.match(contributionsViewModelTs, /createReadonlyContributionsViewModel/);
+  assert.match(contributionsViewModelTs, /formatReadonlyCurrencyOrMissing/);
+  assert.match(contributionsViewModelTs, /displayContributionIdentity/);
+  assert.match(contributionsContractTs, /CONTRIBUTIONS_READONLY_CONTRACT_VERSION/);
+  assert.match(contributionsContractTs, /normalizeReadonlyContributionsSnapshot/);
+  assert.match(contributionsContractTypes, /ReadOnlyContributionsSnapshot/);
+  assert.match(contributionsContractTypes, /ReadOnlyContributionItem/);
+  assert.match(contributionsBridgeTs, /createContributionsReadonlyBridge/);
+  assert.match(contributionsBridgeTypes, /ReadOnlyContributionsSource/);
+  assert.match(contributionsAdapterTs, /createContributionsReadonlyAdapter/);
+  assert.match(contributionsAdapterTypes, /ReadOnlyContributionsAdapter/);
+  assert.match(contributionsIntegrationTs, /createConnectedContributionsDemoSource/);
+  assert.match(contributionsIntegrationTs, /createLegacyContributionsReadonlyBoundary/);
+  assert.match(contributionsSourceTs, /createHostContributionsReadonlySource/);
+  assert.match(contributionsRuntimeTs, /createModernContributionsRuntime/);
+  assert.match(contributionsRuntimeTs, /contributionsRefreshController/);
+  assert.match(contributionsRefreshControllerTs, /createContributionsRefreshController/);
+  assert.match(contributionsRefreshControllerTs, /subscribe/);
   assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
   assert.equal(hostSourceTs.includes('globalThis'), false);
   assert.match(mountTsx, /export function mountModernApp/);
@@ -407,6 +453,8 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.match(navigationTs, /Visao geral/);
   assert.match(navigationTs, /Configuracoes/);
+  assert.match(navigationTs, /Aportes e sugestao explicavel/);
+  assert.match(navigationTs, /Leitura readonly dedicada/);
   assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
   assert.match(navigationTs, /Snapshot de leitura segura/);
   assert.equal(packageJson.scripts.build, "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"");
@@ -423,7 +471,7 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/modern-contributions-explainable-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();

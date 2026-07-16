@@ -1,4 +1,5 @@
 import { App } from './App';
+import { createHostContributionsReadonlySource } from './bootstrap/hostContributionsReadonlySource';
 import { createHostFixedIncomeReadonlySource } from './bootstrap/hostFixedIncomeReadonlySource';
 import { createHostIncomeReadonlySource } from './bootstrap/hostIncomeReadonlySource';
 import {
@@ -9,6 +10,7 @@ import {
   hostNormalizeType,
 } from './bootstrap/hostLegacyReportsReadonlySource';
 import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRuntime';
+import { createModernContributionsRuntime } from './bootstrap/modernContributionsRuntime';
 import { createModernIncomeRuntime } from './bootstrap/modernIncomeRuntime';
 import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
@@ -34,6 +36,7 @@ const rootElement = typeof document !== 'undefined' ? document.getElementById('r
 export interface HostBootstrapOptions {
   readonly rootElement?: HTMLElement | null;
   readonly getAssets?: () => readonly HostLegacyReportAsset[];
+  readonly getContributionsSnapshot?: () => unknown;
   readonly getFixedIncomeAssets?: () => readonly HostFixedIncomeAsset[];
   readonly getIncomeSnapshot?: HostIncomeReadonlySourceOptions['getIncomeSnapshot'];
   readonly legacyModule?: Record<string, unknown> | null;
@@ -58,7 +61,7 @@ function createHostExperimentalAssets(revision: number) {
     {
       ticker: 'PETR4',
       name: 'Petrobras',
-      type: 'AÃ§Ã£o',
+      type: 'Acao',
       sector: 'Energia',
       qty: 10,
       avg_price: 20,
@@ -164,6 +167,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   }
 
   const hasInjectedAssets = typeof options.getAssets === 'function';
+  const hasInjectedContributionsSnapshot = typeof options.getContributionsSnapshot === 'function';
   const hasInjectedFixedIncomeAssets = typeof options.getFixedIncomeAssets === 'function';
   const hasInjectedIncomeSnapshot = typeof options.getIncomeSnapshot === 'function';
   const sessionContextEnabled =
@@ -221,6 +225,12 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
       })
       : null;
 
+  const contributionsSource = hasInjectedContributionsSnapshot
+    ? createHostContributionsReadonlySource({
+        getContributionsSnapshot: options.getContributionsSnapshot,
+      })
+    : null;
+
   const incomeSource = hasInjectedIncomeSnapshot
     ? createHostIncomeReadonlySource({
         getIncomeSnapshot: options.getIncomeSnapshot,
@@ -264,6 +274,9 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   const modernFixedIncomeRuntime = createModernFixedIncomeRuntime({
     fixedIncomeSource: fixedIncomeSource ?? undefined,
   });
+  const modernContributionsRuntime = createModernContributionsRuntime({
+    contributionsSource: contributionsSource ?? undefined,
+  });
   const modernIncomeRuntime = createModernIncomeRuntime({
     incomeSource: incomeSource ?? undefined,
   });
@@ -272,9 +285,11 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     rootElement: targetRoot,
     reportsAdapter: modernReportsRuntime.reportsAdapter,
     fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
+    contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
     incomeAdapter: modernIncomeRuntime.incomeAdapter,
     AppComponent: App,
     reportsRefreshController,
+    contributionsRefreshController: modernContributionsRuntime.contributionsRefreshController,
     incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
       initialPageId: initialSessionContext?.pageId ?? 'overview',
       onActivePageIdChange(pageId: ModernPageId) {
@@ -297,6 +312,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     reportsRefreshController,
     reportsAdapter: modernReportsRuntime.reportsAdapter,
     fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
+    contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
     incomeAdapter: modernIncomeRuntime.incomeAdapter,
   };
 }

@@ -4628,6 +4628,186 @@ async function bootstrapExperimentalActiveWalletHost(){
         items,
       };
     }
+    ,
+    getContributionsSnapshot(){
+      const aportes = Array.isArray(S.aportes) ? S.aportes : [];
+      const analysis = prudentContributionAnalysis();
+      const toNullableContributionNumber = value => {
+        const parsed = typeof value === 'number' ? value : typeof value === 'string' && value.trim() ? Number(value) : Number.NaN;
+        return Number.isFinite(parsed) ? parsed : null;
+      };
+      const toText = value => String(value || '').trim() || null;
+      const items = aportes.map((p, index) => {
+        const ticker = toText(p?.ticker);
+        const assetName = toText(p?.name || p?.product || p?.title || ticker);
+        const assetClass = toText(p?.type || p?.assetClass || p?.class || p?.category);
+        const date = toText(p?.date || p?.createdAt || p?.updatedAt || p?.rf_application_date || p?.rf_aporte_date);
+        return {
+          id: p?.id == null ? null : String(p.id),
+          sourceEventId: toText(p?.sourceEventId || p?.eventId || p?.source_id),
+          assetId: toText(p?.assetId || ticker || assetName),
+          date,
+          ticker,
+          assetName,
+          assetClass,
+          amount: toNullableContributionNumber(p?.value ?? p?.amount ?? p?.totalValue ?? p?.total),
+          quantity: toNullableContributionNumber(p?.qty ?? p?.quantity),
+          unitPrice: toNullableContributionNumber(p?.price ?? p?.unitPrice),
+          operation: toText(p?.operation || p?.op || p?.transactionType),
+          source: toText(p?.source || p?.origin || p?.fixed_source),
+          note: toText(p?.note || p?.observation || p?.decision || p?.comment),
+          createdAt: toText(p?.createdAt || p?.created_at),
+          updatedAt: toText(p?.updatedAt || p?.updated_at),
+        };
+      }).filter(item => (
+        item.id !== null
+        || item.sourceEventId !== null
+        || item.assetId !== null
+        || item.ticker !== null
+        || item.assetName !== null
+        || item.assetClass !== null
+        || item.date !== null
+        || item.operation !== null
+        || item.source !== null
+        || item.note !== null
+        || item.createdAt !== null
+        || item.updatedAt !== null
+        || Number.isFinite(item.amount)
+        || Number.isFinite(item.quantity)
+        || Number.isFinite(item.unitPrice)
+      ));
+      const latestContributionDate = items
+        .map(item => item.date)
+        .filter(Boolean)
+        .sort((a, b) => String(b).localeCompare(String(a)))
+        [0] || null;
+      const classMap = new Map();
+      for (const item of items) {
+        const label = String(item.assetClass || 'Sem classe').trim() || 'Sem classe';
+        const current = classMap.get(label);
+        const nextDate = item.date && /^\d{4}-\d{2}-\d{2}$/.test(item.date) ? item.date : null;
+        if (!current) {
+          classMap.set(label, { label, itemCount: 1, latestContributionDate: nextDate });
+          continue;
+        }
+        classMap.set(label, {
+          label,
+          itemCount: current.itemCount + 1,
+          latestContributionDate: nextDate && (!current.latestContributionDate || nextDate > current.latestContributionDate)
+            ? nextDate
+            : current.latestContributionDate,
+        });
+      }
+      const monthMap = new Map();
+      for (const item of items) {
+        const date = item.date && /^\d{4}-\d{2}-\d{2}$/.test(item.date) ? item.date : null;
+        if (!date) continue;
+        const monthKey = date.slice(0, 7);
+        const current = monthMap.get(monthKey);
+        const label = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthKey}-01T00:00:00.000Z`));
+        if (!current) {
+          monthMap.set(monthKey, { monthKey, label, itemCount: 1 });
+          continue;
+        }
+        monthMap.set(monthKey, { monthKey, label: current.label, itemCount: current.itemCount + 1 });
+      }
+      const evaluated = Array.isArray(analysis?.evaluated) ? analysis.evaluated : [];
+      const candidates = (Array.isArray(analysis?.candidates) ? analysis.candidates : []).map((row, index) => {
+        const signal = row?.signal || {};
+        const toneMap = {
+          ok: 'positive',
+          info: 'neutral',
+          warn: 'muted',
+          danger: 'negative',
+          muted: 'muted',
+        };
+        const criteria = Array.isArray(row?.criteria) ? row.criteria : [];
+        return {
+          assetId: toText(row?.asset?.ticker || row?.ticker || row?.assetId || ''),
+          ticker: toText(row?.ticker),
+          assetName: toText(row?.asset?.name || row?.asset?.product || row?.asset?.title || row?.assetName || row?.ticker || ''),
+          assetClass: toText(row?.type || row?.assetClass || row?.asset?.type || ''),
+          sector: toText(row?.sector || row?.asset?.sector || ''),
+          score: (() => {
+            const score = Number(row?.score);
+            return Number.isFinite(score) ? score : null;
+          })(),
+          share: Number.isFinite(row?.share) ? Number(row.share) : null,
+          pct: Number.isFinite(row?.pct) ? Number(row.pct) : null,
+          dy: Number.isFinite(row?.dy) ? Number(row.dy) : null,
+          idealWeightPct: Number.isFinite(row?.ideal) ? Number(row.ideal) : Number.isFinite(row?.idealWeightPct) ? Number(row.idealWeightPct) : null,
+          typeGapPct: Number.isFinite(row?.typeGap) ? Number(row.typeGap) : Number.isFinite(row?.typeGapPct) ? Number(row.typeGapPct) : null,
+          signalLabel: toText(signal?.label || 'Sem sinal') || 'Sem sinal',
+          signalTone: toneMap[String(signal?.tone || '').trim()] || 'muted',
+          reasons: criteria.length
+            ? criteria.map((criterion, criterionIndex) => ({
+                code: criterionIndex === 0 ? 'signal' : `criterion-${criterionIndex}`,
+                label: criterionIndex === 0 ? toText(signal?.label || criterion) || 'Sem sinal' : toText(criterion) || `criterio-${criterionIndex}`,
+                detail: toText(criterion) || 'Sem detalhe',
+                sourceField: criterionIndex === 0 ? 'signal.label' : 'criteria',
+                value: toText(criterion) || null,
+                unit: null,
+              }))
+            : signal?.label
+              ? [{
+                  code: 'signal',
+                  label: toText(signal.label) || 'Sem sinal',
+                  detail: toText(signal.label) || 'Sem sinal',
+                  sourceField: 'signal.label',
+                  value: toText(signal.label) || null,
+                  unit: null,
+                }]
+              : [],
+          warnings: String(signal?.tone || '') === 'danger' || String(signal?.tone || '') === 'warn'
+            ? [toText(signal?.label || '') || 'Alerta do legado']
+            : [],
+        };
+      }).filter(candidate => Boolean(candidate.ticker || candidate.assetId || candidate.assetName));
+      const itemCount = items.length;
+      const classDistribution = [...classMap.values()].sort((a, b) => b.itemCount - a.itemCount || String(a.label).localeCompare(String(b.label), 'pt-BR'));
+      const monthDistribution = [...monthMap.values()].sort((a, b) => String(b.monthKey).localeCompare(String(a.monthKey)));
+      const suggestionStatus = candidates.length > 0 ? 'available' : (Number(analysis?.insufficient || 0) > 0 ? 'insufficient-data' : 'unavailable');
+      return {
+        version: 1,
+        originMode: itemCount > 0 ? 'real-wallet' : 'empty-wallet',
+        originLabel: itemCount > 0 ? 'Carteira ativa real' : 'Carteira ativa vazia',
+        generatedAt: new Date().toISOString(),
+        notice: 'Snapshot legado somente leitura de aportes. React nao escreve na fonte.',
+        summary: {
+          itemCount,
+          classCount: classDistribution.length,
+          monthCount: monthDistribution.length,
+          candidateCount: candidates.length,
+          insufficientCount: Number(analysis?.insufficient || 0),
+          avoidedCount: Number(analysis?.avoided || 0),
+          latestContributionDate,
+        },
+        items,
+        classDistribution,
+        monthDistribution,
+        suggestion: {
+          status: suggestionStatus,
+          generatedAt: new Date().toISOString(),
+          strategyName: 'Analise prudente do legado',
+          candidates,
+          warnings: Number(analysis?.avoided || 0) > 0 ? ['Alguns sinais foram evitados por concentracao'] : [],
+          inputs: [
+            'S.aportes',
+            'prudentContributionAnalysis()',
+            'assetAnalysisRows()',
+            'allocationGoalItems()',
+            'allocationActualByType()',
+            'assetContributionSignal()',
+          ],
+          limitations: [
+            'Nao executa compra',
+            'Nao recalcula nova recomendacao',
+            'Nao altera pesos ou metas',
+            'Nao usa cotacao externa',
+          ],
+        },
+      };
+    }
   });
   setTimeout(()=>{
     try{ delete window.buildReportAssetRow; }catch(e){}

@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { PagePlaceholder } from './components/PagePlaceholder';
 import { Sidebar } from './components/Sidebar';
+import { ContributionsReadonlyPage } from './features/contributions/ContributionsReadonlyPage';
+import type { ContributionsRefreshController } from './features/contributions/contributionsRefreshController.ts';
+import type { ReadOnlyContributionsAdapter } from './features/contributions/contributionsSnapshotAdapter.mjs';
 import { IncomeReadonlyPage } from './features/income/IncomeReadonlyPage';
 import type { IncomeRefreshController } from './features/income/incomeRefreshController.ts';
 import type { ReadOnlyIncomeAdapter } from './features/income/incomeSnapshotAdapter.mjs';
@@ -18,8 +21,10 @@ interface AppProps {
   reportsAdapter: ReadOnlyReportsAdapter;
   fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
   incomeAdapter: ReadOnlyIncomeAdapter;
+  contributionsAdapter: ReadOnlyContributionsAdapter;
   reportsRefreshController?: ReportsRefreshController | null;
   incomeRefreshController?: IncomeRefreshController | null;
+  contributionsRefreshController?: ContributionsRefreshController | null;
   initialPageId?: ModernPageId;
   onActivePageIdChange?: (pageId: ModernPageId) => void;
 }
@@ -28,8 +33,10 @@ export function App({
   reportsAdapter,
   fixedIncomeAdapter,
   incomeAdapter,
+  contributionsAdapter,
   reportsRefreshController,
   incomeRefreshController,
+  contributionsRefreshController,
   initialPageId = 'overview',
   onActivePageIdChange,
 }: AppProps) {
@@ -97,6 +104,11 @@ export function App({
             <FixedIncomeReadonlyPage adapter={fixedIncomeAdapter} />
           ) : activePageId === 'provents' ? (
             <IncomeReadonlyPage adapter={incomeAdapter} refreshController={incomeRefreshController} />
+          ) : activePageId === 'contributions' ? (
+            <ContributionsReadonlyPage
+              adapter={contributionsAdapter}
+              refreshController={contributionsRefreshController}
+            />
           ) : activePageId === 'reports' ? (
             <AssetsReportPreview adapter={reportsAdapter} refreshController={reportsRefreshController} />
           ) : (

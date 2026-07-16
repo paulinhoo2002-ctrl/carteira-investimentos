@@ -39,6 +39,8 @@ const runtimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap
 const fixedIncomeRuntimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernFixedIncomeRuntime.ts');
 const incomeSourceModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'hostIncomeReadonlySource.ts');
 const incomeRuntimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernIncomeRuntime.ts');
+const contributionsSourceModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'hostContributionsReadonlySource.ts');
+const contributionsRuntimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernContributionsRuntime.ts');
 const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
 
 async function loadMountModule() {
@@ -59,6 +61,14 @@ async function loadIncomeSourceModule() {
 
 async function loadIncomeRuntimeModule() {
   return import(pathToFileURL(incomeRuntimeModulePath).href);
+}
+
+async function loadContributionsSourceModule() {
+  return import(pathToFileURL(contributionsSourceModulePath).href);
+}
+
+async function loadContributionsRuntimeModule() {
+  return import(pathToFileURL(contributionsRuntimeModulePath).href);
 }
 
 async function loadRefreshControllerModule() {
@@ -83,7 +93,10 @@ test('host experimental exists and keeps modern app isolated', () => {
   const fixedIncomeRuntimeTs = fs.readFileSync(fixedIncomeRuntimeModulePath, 'utf8');
   const incomeSourceTs = fs.readFileSync(incomeSourceModulePath, 'utf8');
   const incomeRuntimeTs = fs.readFileSync(incomeRuntimeModulePath, 'utf8');
+  const mainTsx = fs.readFileSync(path.join(__dirname, '..', 'modern', 'src', 'main.tsx'), 'utf8');
   const refreshControllerTs = fs.readFileSync(refreshControllerModulePath, 'utf8');
+  const contributionsSourceTs = fs.readFileSync(contributionsSourceModulePath, 'utf8');
+  const contributionsRuntimeTs = fs.readFileSync(contributionsRuntimeModulePath, 'utf8');
   const appTsx = fs.readFileSync(appModulePath, 'utf8');
 
   assert.match(hostHtml, /Host experimental/);
@@ -101,16 +114,20 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /buildReportAssetRowModule/);
   assert.match(hostTsx, /createHostFixedIncomeReadonlySource/);
   assert.match(hostTsx, /createHostIncomeReadonlySource/);
+  assert.match(hostTsx, /createHostContributionsReadonlySource/);
   assert.match(hostTsx, /createModernFixedIncomeRuntime/);
   assert.match(hostTsx, /createModernIncomeRuntime/);
+  assert.match(hostTsx, /createModernContributionsRuntime/);
   assert.match(hostTsx, /fixedIncomeAdapter/);
   assert.match(hostTsx, /incomeAdapter/);
+  assert.match(hostTsx, /contributionsAdapter/);
   assert.match(hostTsx, /createHostExperimentalAssets/);
   assert.match(hostTsx, /experimentalAssets/);
   assert.match(hostTsx, /createModernReportsRuntime/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /AppComponent: App/);
   assert.match(hostTsx, /reportsRefreshController/);
+  assert.match(hostTsx, /contributionsRefreshController/);
   assert.match(hostTsx, /bootstrapHost/);
   assert.match(hostTsx, /isHostPage/);
   assert.match(read('src/host-entry.tsx'), /bootstrapHost/);
@@ -128,6 +145,12 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(incomeRuntimeTs, /createModernIncomeRuntime/);
   assert.match(incomeRuntimeTs, /incomeAdapter/);
   assert.match(incomeRuntimeTs, /incomeRefreshController/);
+  assert.match(contributionsSourceTs, /createHostContributionsReadonlySource/);
+  assert.match(contributionsRuntimeTs, /createModernContributionsRuntime/);
+  assert.match(contributionsRuntimeTs, /contributionsAdapter/);
+  assert.match(contributionsRuntimeTs, /contributionsRefreshController/);
+  assert.equal(contributionsSourceTs.includes('score: Number(row?.score) || 0'), false);
+  assert.equal(contributionsRuntimeTs.includes('score: Number(row?.score) || 0'), false);
   assert.match(
     rootIndexHtml,
     /function isActiveWalletHostMode\(\)\{\s*try\{\s*return \(location\.hostname==='localhost' \|\| location\.hostname==='127\.0\.0\.1'\) && new URLSearchParams\(location\.search\)\.get\('activeWalletHost'\)==='1' && new URLSearchParams\(location\.search\)\.get\('testMode'\)==='1';/,
@@ -144,14 +167,19 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(mountTsx, /Elemento root nao encontrado para a base moderna\./);
   assert.match(mountTsx, /Adapter moderno invalido\./);
   assert.match(mountTsx, /Adapter moderno de renda fixa invalido\./);
+  assert.match(mountTsx, /Adapter moderno de aportes invalido\./);
   assert.match(mountTsx, /Componente moderno invalido\./);
   assert.match(mountTsx, /Base moderna ja montada neste root\./);
   assert.match(mountTsx, /WeakMap/);
   assert.match(mountTsx, /mountedRoots/);
   assert.match(runtimeTs, /createConnectedReportsDemoSource/);
   assert.match(appTsx, /reportsAdapter: ReadOnlyReportsAdapter/);
+  assert.match(appTsx, /contributionsAdapter: ReadOnlyContributionsAdapter/);
   assert.match(appTsx, /initialPageId\?: ModernPageId/);
   assert.match(appTsx, /onActivePageIdChange\?: \(pageId: ModernPageId\) => void/);
+  assert.match(appTsx, /ContributionsReadonlyPage/);
+  assert.match(mainTsx, /createModernContributionsRuntime/);
+  assert.match(mainTsx, /contributionsAdapter/);
   assert.equal(hostSourceTs.includes('READONLY_REPORT_PAGE_IDS=new Set'), false);
   for (const forbidden of [
     'legacy/reports-readonly-source.js',
@@ -235,6 +263,30 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(incomeRuntimeTs.includes('requestAnimationFrame'), false);
   assert.equal(incomeRuntimeTs.includes('MutationObserver'), false);
   assert.equal(incomeRuntimeTs.includes('WebSocket'), false);
+  assert.equal(contributionsSourceTs.includes('localStorage'), false);
+  assert.equal(contributionsSourceTs.includes('sessionStorage'), false);
+  assert.equal(contributionsSourceTs.includes('indexedDB'), false);
+  assert.equal(contributionsSourceTs.includes('firebase'), false);
+  assert.equal(contributionsSourceTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(contributionsSourceTs), false);
+  assert.equal(contributionsSourceTs.includes('backup'), false);
+  assert.equal(contributionsSourceTs.includes('setInterval'), false);
+  assert.equal(contributionsSourceTs.includes('setTimeout'), false);
+  assert.equal(contributionsSourceTs.includes('requestAnimationFrame'), false);
+  assert.equal(contributionsSourceTs.includes('MutationObserver'), false);
+  assert.equal(contributionsSourceTs.includes('WebSocket'), false);
+  assert.equal(contributionsRuntimeTs.includes('localStorage'), false);
+  assert.equal(contributionsRuntimeTs.includes('sessionStorage'), false);
+  assert.equal(contributionsRuntimeTs.includes('indexedDB'), false);
+  assert.equal(contributionsRuntimeTs.includes('firebase'), false);
+  assert.equal(contributionsRuntimeTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(contributionsRuntimeTs), false);
+  assert.equal(contributionsRuntimeTs.includes('backup'), false);
+  assert.equal(contributionsRuntimeTs.includes('setInterval'), false);
+  assert.equal(contributionsRuntimeTs.includes('setTimeout'), false);
+  assert.equal(contributionsRuntimeTs.includes('requestAnimationFrame'), false);
+  assert.equal(contributionsRuntimeTs.includes('MutationObserver'), false);
+  assert.equal(contributionsRuntimeTs.includes('WebSocket'), false);
 });
 
 test('mountModernApp controlled errors and repeat mount guard', async () => {
@@ -268,6 +320,19 @@ test('mountModernApp controlled errors and repeat mount guard', async () => {
         reportsAdapter: { getSnapshot() {} },
         fixedIncomeAdapter: { getSnapshot() {} },
         incomeAdapter: { getSnapshot() {} },
+        contributionsAdapter: null,
+      }),
+    /Adapter moderno de aportes invalido\./,
+  );
+
+  assert.throws(
+    () =>
+      mountModernApp({
+        rootElement: {},
+        reportsAdapter: { getSnapshot() {} },
+        fixedIncomeAdapter: { getSnapshot() {} },
+        incomeAdapter: { getSnapshot() {} },
+        contributionsAdapter: { getSnapshot() {} },
         AppComponent: null,
       }),
     /Componente moderno invalido\./,
