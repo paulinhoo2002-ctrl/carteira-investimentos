@@ -23,7 +23,9 @@ test('aba dividendos preserva Total e rolagem horizontal controlada', () => {
   assert.match(indexHtml, /\.hist-monthly\{min-width:1140px\}/);
   assert.match(indexHtml, /<th>Total<\/th>/);
   assert.match(indexHtml, /div-monthly-scroll-note/);
-  assert.match(overviewBlock, /\$\{dividendOverviewRecentPanel\(rows\)\}\s*\$\{dividendGoalProgress\(\)\}/s);
+  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{monthlySection\}\s*\$\{dividendOverviewRecentPanel\(rows\)\}/s);
+  assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
+  assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
 });
 

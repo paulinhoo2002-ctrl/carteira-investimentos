@@ -20846,22 +20846,6 @@ function dividendSummaryCards(){
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
   </div>`;
 }
-function dividendGoalProgress(){
-  const stats=passiveIncomeGoalStats();
-  const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.total||0;
-  const pct=stats.target>0?current/stats.target*100:0;
-  const goalNote=stats.target>0?`${pct.toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current))} neste mês.`:'Defina uma meta mensal na aba Metas para acompanhar o progresso.';
-  return dividendCompactSectionHeader(
-    'goal',
-    'Meta de renda passiva',
-    'Detalhes da meta mensal',
-    `<div class="div-goal-panel">
-      <div class="div-goal-top"><div><div class="div-goal-title">Meta de renda passiva</div><div class="div-goal-sub">Leitura detalhada da meta mensal atual.</div></div></div>
-      <div class="div-goal-track"><div class="div-goal-fill" style="width:${Math.min(100,pct).toFixed(1)}%"></div></div>
-      <div class="div-goal-sub" style="margin-top:6px">${goalNote}</div>
-    </div>`
-  );
-}
 function dividendOverviewRecentPanel(rows){
   const limit=6;
   return dividendCompactSectionHeader(
@@ -20927,14 +20911,10 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendMonthlyTimeline()
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
-  const overviewBody=`<div class="div-overview-grid">
-    <div class="div-overview-main">
-      ${dividendSummaryCards()}
-    </div>
-    <div class="div-overview-side">
-      ${dividendOverviewRecentPanel(rows)}
-      ${dividendGoalProgress()}
-    </div>
+  const overviewBody=`<div class="div-overview-main">
+    ${dividendSummaryCards()}
+    ${monthlySection}
+    ${dividendOverviewRecentPanel(rows)}
   </div>`;
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
