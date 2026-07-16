@@ -279,11 +279,12 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /\| 188 \|[^|]*\| Concluida \| `#188` \| `2c6489fb190e215fd69074071aceba8cf2638e39` \|/);
   assert.match(roadmap, /\| 189 \|[^|]*\| Concluida \| `#189` \| `0372cc4e04d66f713474b8d0b41ef2750d380061` \|/);
   assert.match(roadmap, /\| 190 \|[^|]*\| Concluida \| `#190` \| `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` \|/);
-  assert.match(roadmap, /- HEAD \/ `origin\/main`: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`/);
+  assert.match(roadmap, /- HEAD \/ `origin\/main`: `9762faa4f42fc1c584866436131a4cdec3926565`/);
   assert.match(roadmap, /- PR `#192`: merged e closed \(encerramento funcional da fase 192\)/);
-  assert.match(roadmap, /- fase atual: nenhuma/);
+  assert.match(roadmap, /- fase atual: 194/);
   assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 189');
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
+  assert.match(roadmap, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
   assert.match(roadmap, /- nao existe Fase 191 funcional\./);
 
   const phase186 = extractRoadmapPhaseSection(roadmap, '### Fase 186', '### Fase 185');
@@ -293,21 +294,21 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.equal(phase186.includes('0df41a41b9c6ba3d435044f60e69b3fa86cac27c'), false, 'Fase 186 nao pode citar SHA da Fase 187 como fechamento');
 }
 
-function assertRoadmapCurrentPhase192State(roadmap) {
+function assertRoadmapCurrentPhase194State(roadmap) {
   const currentState = extractRoadmapPhaseSection(roadmap, '### Estado atual', '### Fase 189');
 
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
-  assert.match(currentState, /- situacao: Fase 192 concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- fase atual: 194;/);
+  assert.match(currentState, /- branch atual: feat\/dividends-final-polish;/);
+  assert.match(currentState, /- SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`;/);
+  assert.match(currentState, /- situacao: Fase 194 em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;/);
   assert.match(currentState, /- a fase 190 permanece concluida;/);
   assert.match(currentState, /- a PR #191 foi apenas o encerramento documental;/);
   assert.match(currentState, /- nao existe Fase 191 funcional\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(currentState.includes('ciclo de modernizacao readonly encerrado'), false, 'Estado atual nao pode ficar encerrado');
-  assert.equal(currentState.includes('em desenvolvimento'), false, 'Estado atual nao pode registrar fase ativa');
+  assert.equal(currentState.includes('em desenvolvimento'), true, 'Estado atual precisa registrar fase ativa');
 
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
   assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);
@@ -317,15 +318,16 @@ function assertRoadmapCurrentPhase192State(roadmap) {
   assert.match(roadmap, /- titulo: `feat: refina visual da aba dividendos`;/);
   assert.match(roadmap, /- modo: squash;/);
   assert.match(roadmap, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
-  assert.match(roadmap, /- situacao: Fase 192 concluida e aguardando nova autorizacao;/);
-  assert.match(roadmap, /- PR atual: nenhuma;/);
-  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmap, /- situacao: Fase 194 em desenvolvimento;/);
+  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;/);
   assert.match(roadmap, /- nao existe Fase 191 funcional\./);
   assert.match(roadmap, /- a fase 190 permanece concluida;/);
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
+  assert.match(roadmap, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
   assert.match(roadmap, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(roadmap.includes('Fase 191 -'), false, 'Roadmap nao pode criar fase 191 funcional');
-  assert.equal(roadmap.includes('Fase 193'), false, 'Roadmap nao pode abrir Fase 193');
+  assert.equal(roadmap.includes('Fase 193 -'), false, 'Roadmap nao pode abrir Fase 193 funcional');
 }
 
 function assertModernDistIgnored() {
@@ -413,7 +415,7 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     readonlyReportsBridgeRuntimeFilename,
     readonlyReportsAdapterRuntimeFilename,
   ]) {
-    assert.equal(fs.existsSync(path.join(reportsRoot, file)), true, `${file} precisa existir como runtime canÃ´nico`);
+    assert.equal(fs.existsSync(path.join(reportsRoot, file)), true, `${file} precisa existir como runtime canonico`);
   }
 
   for (const file of [
@@ -429,7 +431,7 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     incomeReadonlyBridgeRuntimeFilename,
     incomeReadonlyAdapterRuntimeFilename,
   ]) {
-    assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', file)), true, `${file} precisa existir como runtime canÃƒÂ´nico`);
+    assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', file)), true, `${file} precisa existir como runtime canonico`);
   }
 
   for (const file of [
@@ -444,7 +446,7 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', incomeReadonlyViewModelFilename)), true, `${incomeReadonlyViewModelFilename} precisa existir`);
   assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', incomeRefreshControllerFilename)), true, `${incomeRefreshControllerFilename} precisa existir`);
 
-  assert.equal(fs.existsSync(path.join(typesRoot, modernNavigationRuntimeFilename)), true, 'navigation.mjs precisa existir como runtime canÃ´nico');
+  assert.equal(fs.existsSync(path.join(typesRoot, modernNavigationRuntimeFilename)), true, 'navigation.mjs precisa existir como runtime canonico');
   assert.equal(fs.existsSync(path.join(typesRoot, modernNavigationTypesFilename)), true, 'navigation.d.ts precisa existir como tipagem');
 
   assertCanonicalContract(snapshot.contractJs);
@@ -455,7 +457,7 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertPackageScripts(snapshot.packageJson);
   assertDocsNoDuplicateList(snapshot.docs);
   assertRoadmapPhaseShas(snapshot.roadmap);
-  assertRoadmapCurrentPhase192State(snapshot.roadmap);
+  assertRoadmapCurrentPhase194State(snapshot.roadmap);
   assertModernDistIgnored();
   assert.equal(fs.existsSync(path.join(repoRoot, 'docs', 'modern-architecture-inventory.md')), true, 'Inventario arquitetural precisa existir');
   assert.equal(fs.existsSync(path.join(repoRoot, 'docs', 'adr', 'ADR-001-modernization-strategy.md')), true, 'ADR da estrategia precisa existir');

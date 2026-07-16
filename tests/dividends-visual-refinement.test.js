@@ -19,7 +19,7 @@ test('aba dividendos preserva Total e rolagem horizontal controlada', () => {
 
   assert.match(indexHtml, /div-monthly-table-wrap/);
   assert.match(indexHtml, /div-monthly-table-scroll/);
-  assert.match(indexHtml, /aria-label="Tabela de histórico mensal com rolagem horizontal"/);
+  assert.match(indexHtml, /aria-label="Tabela de hist.*rico mensal com rolagem horizontal"/);
   assert.match(indexHtml, /\.hist-monthly\{min-width:1140px\}/);
   assert.match(indexHtml, /<th>Total<\/th>/);
   assert.match(indexHtml, /div-monthly-scroll-note/);
@@ -29,7 +29,7 @@ test('aba dividendos preserva Total e rolagem horizontal controlada', () => {
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
 });
 
-test('roadmap registra a fase 192 e preserva o encerramento documental da 191', () => {
+test('roadmap registra a fase 194 e preserva o encerramento documental da 192', () => {
   const roadmapPath = path.join(repoRoot, 'docs', 'project-phases-roadmap.md');
   const roadmapBuffer = fs.readFileSync(roadmapPath);
   const roadmap = roadmapBuffer.toString('utf8');
@@ -39,12 +39,14 @@ test('roadmap registra a fase 192 e preserva o encerramento documental da 191', 
     false,
     'docs/project-phases-roadmap.md nao pode conter BOM',
   );
-  assert.match(roadmap, /fase atual: nenhuma/);
-  assert.match(roadmap, /branch atual: main/);
-  assert.match(roadmap, /SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`/);
-  assert.match(roadmap, /situacao: Fase 192 concluida e aguardando nova autorizacao/);
-  assert.match(roadmap, /PR atual: nenhuma/);
+  assert.match(roadmap, /fase atual: 194/);
+  assert.match(roadmap, /branch atual: feat\/dividends-final-polish/);
+  assert.match(roadmap, /SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`/);
+  assert.match(roadmap, /situacao: Fase 194 em desenvolvimento/);
+  assert.match(roadmap, /PR atual: pendente/);
+  assert.match(roadmap, /implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes/);
   assert.match(roadmap, /a PR #191 foi apenas o encerramento documental/);
+  assert.match(roadmap, /a PR #193 foi apenas o encerramento documental da fase 192/);
   assert.match(roadmap, /nao existe Fase 191 funcional/);
   assert.match(roadmap, /PR `#192`: merged e closed \(encerramento funcional da fase 192\)/);
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
@@ -56,8 +58,12 @@ test('roadmap registra a fase 192 e preserva o encerramento documental da 191', 
   assert.match(roadmap, /- modo: squash;/);
   assert.match(roadmap, /- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;/);
   assert.match(roadmap, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
-  assert.match(roadmap, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
-  assert.match(roadmap, /a fase 190 permanece concluida/);
+  assert.match(roadmap, /## 15\. Fase 194 - finalizacao objetiva da aba Dividendos/);
+  assert.match(roadmap, /- situacao: Fase 194 em desenvolvimento;/);
+  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;/);
+  assert.match(roadmap, /- estado: Concluida;/);
+  assert.match(roadmap, /- PR: `#192`;/);
   assert.equal(roadmap.includes('Fase 191 -'), false);
-  assert.equal(roadmap.includes('Fase 193'), false);
+  assert.equal(roadmap.includes('Fase 193 -'), false);
 });
