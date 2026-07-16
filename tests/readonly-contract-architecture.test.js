@@ -261,6 +261,30 @@ function assertDocsNoDuplicateList(docs) {
   assert.equal(repeatedList.test(docs), false, 'Docs nao podem repetir a lista completa readonly');
 }
 
+function extractRoadmapPhaseSection(roadmap, startMarker, endMarker) {
+  const start = roadmap.indexOf(startMarker);
+  assert.equal(start >= 0, true, `${startMarker} precisa existir no roadmap`);
+
+  const end = roadmap.indexOf(endMarker, start + startMarker.length);
+  assert.equal(end > start, true, `${endMarker} precisa existir depois de ${startMarker}`);
+
+  return roadmap.slice(start, end);
+}
+
+function assertRoadmapPhaseShas(roadmap) {
+  assert.match(roadmap, /\| 186 \|[^|]*\| Concluida \| `#186` \| `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f` \|/);
+  assert.match(roadmap, /\| 187 \|[^|]*\| Concluida \| `#187` \| `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` \|/);
+
+  const phase186 = extractRoadmapPhaseSection(roadmap, '### Fase 186', '### Fase 185');
+
+  assert.match(phase186, /- SHA final na main: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`;/);
+  assert.match(phase186, /- rollback: `git revert 6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`/);
+  assert.equal(phase186.includes('0df41a41b9c6ba3d435044f60e69b3fa86cac27c'), false, 'Fase 186 nao pode citar SHA da Fase 187 como fechamento');
+
+  assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 188');
+  assert.match(roadmap, /head de revisao: consultavel na PR #188/);
+}
+
 function assertModernDistIgnored() {
   const listed = execFileSync('git', ['ls-files', 'modern/dist'], {
     cwd: repoRoot,
@@ -321,6 +345,7 @@ function loadArchitectureSnapshot() {
     navigationTypes: read('modern/src/types/navigation.d.ts'),
     readonlySessionTs: read('modern/src/features/reports/readonlyReportSessionContext.ts'),
     viteConfigTs: read('modern/vite.config.ts'),
+    roadmap: read('docs/project-phases-roadmap.md'),
     docs: read('docs/legacy-assets-runtime-map.md'),
     packageJson,
   };
@@ -377,6 +402,7 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertViteCopy(snapshot.viteConfigTs);
   assertPackageScripts(snapshot.packageJson);
   assertDocsNoDuplicateList(snapshot.docs);
+  assertRoadmapPhaseShas(snapshot.roadmap);
   assertModernDistIgnored();
   assertShellIsolation({
     'modern/index.html': snapshot.modernIndexHtml,
