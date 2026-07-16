@@ -243,6 +243,7 @@ function assertPackageScripts(packageJson) {
   assert.match(packageJson.scripts['test:modern'], /tests\/modern-assets-readonly-page\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/modern-fixed-income-readonly-page\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/modern-income-readonly-page\.test\.js/);
+  assert.match(packageJson.scripts['test:modern'], /tests\/modern-contributions-explainable-page\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-contract-architecture\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-reports-data-contract\.test\.js/);
   assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
@@ -281,8 +282,8 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(phase186, /- rollback: `git revert 6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`/);
   assert.equal(phase186.includes('0df41a41b9c6ba3d435044f60e69b3fa86cac27c'), false, 'Fase 186 nao pode citar SHA da Fase 187 como fechamento');
 
-  assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 188');
-  assert.match(roadmap, /head de revisao: consultavel na PR #188/);
+  assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 189');
+  assert.match(roadmap, /head de revisao: consultavel na PR #189/);
 }
 
 function assertModernDistIgnored() {

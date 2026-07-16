@@ -30,9 +30,9 @@ export const MODERN_PAGES = [
   {
     id: 'contributions',
     label: 'Aportes',
-    title: 'Aportes',
-    description: 'Area de apoio para aportes e entradas futuras sem regras financeiras nesta fase.',
-    hint: 'Fluxo em preparacao',
+    title: 'Aportes e sugestao explicavel',
+    description: 'Consulta somente leitura de aportes e sugestao explicavel produzida pelo legado.',
+    hint: 'Leitura readonly dedicada',
   },
   {
     id: 'reports',

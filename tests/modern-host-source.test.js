@@ -44,6 +44,22 @@ const incomeRuntimeModulePath = path.join(
   'bootstrap',
   'modernIncomeRuntime.ts',
 );
+const contributionsSourceModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'bootstrap',
+  'hostContributionsReadonlySource.ts',
+);
+const contributionsRuntimeModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'bootstrap',
+  'modernContributionsRuntime.ts',
+);
 const legacyModulePath = path.join(__dirname, '..', 'legacy', 'reports-readonly-source.js');
 
 async function loadHostSourceModule() {
@@ -72,6 +88,14 @@ async function loadIncomeSourceModule() {
 
 async function loadIncomeRuntimeModule() {
   return import(pathToFileURL(incomeRuntimeModulePath).href);
+}
+
+async function loadContributionsSourceModule() {
+  return import(pathToFileURL(contributionsSourceModulePath).href);
+}
+
+async function loadContributionsRuntimeModule() {
+  return import(pathToFileURL(contributionsRuntimeModulePath).href);
 }
 
 function assertDeepFrozen(snapshot) {
@@ -424,4 +448,209 @@ test('host income runtime usa demo quando origem real nao existe', async () => {
   assert.equal(snapshot.summary.totalReceived, 748.51);
   assert.equal(runtime.incomeRefreshController, null);
   assertDeepFrozen(snapshot);
+});
+
+test('host contributions source preserva snapshot injetado e mutacao da origem', async () => {
+  const { createHostContributionsReadonlySource } = await loadContributionsSourceModule();
+
+  let contributions = [
+    {
+      id: 'ap-001',
+      sourceEventId: 'evt-001',
+      sourceEventKind: 'aporte',
+      assetId: 'PETR4',
+      date: '2026-06-15',
+      ticker: 'PETR4',
+      assetName: 'Petrobras',
+      assetClass: 'Acao',
+      amount: 1000,
+      quantity: 10,
+      unitPrice: 100,
+      operation: 'compra',
+      source: 'demo',
+      note: 'Aporte demo',
+      createdAt: '2026-06-15T10:30:00.000Z',
+      updatedAt: null,
+    },
+  ];
+
+  const source = createHostContributionsReadonlySource({
+    getContributionsSnapshot() {
+      return {
+        version: 1,
+        originMode: 'real-wallet',
+        originLabel: 'Carteira ativa real',
+        generatedAt: '2026-07-14T10:30:00.000Z',
+        notice: 'Snapshot legado somente leitura de aportes. React nao escreve na fonte.',
+        summary: {
+          itemCount: contributions.length,
+          classCount: 1,
+          monthCount: 1,
+          candidateCount: 1,
+          insufficientCount: 0,
+          avoidedCount: 0,
+          latestContributionDate: '2026-06-15',
+        },
+        items: contributions,
+        classDistribution: [{ label: 'Acao', itemCount: 1, latestContributionDate: '2026-06-15' }],
+        monthDistribution: [{ monthKey: '2026-06', label: 'Junho de 2026', itemCount: 1 }],
+        suggestion: {
+          status: 'available',
+          generatedAt: '2026-07-14T10:30:00.000Z',
+          strategyName: 'Analise prudente do legado',
+          candidates: [
+            {
+              assetId: 'PETR4',
+              ticker: 'PETR4',
+              assetName: 'Petrobras',
+              assetClass: 'Acao',
+              sector: 'Energia',
+              score: 42,
+              share: 8.5,
+              pct: 4.2,
+              dy: 5.7,
+              idealWeightPct: 12,
+              typeGapPct: 3.4,
+              signalLabel: 'Pode estudar aporte',
+              signalTone: 'positive',
+              reasons: [
+                {
+                  code: 'signal',
+                  label: 'Pode estudar aporte',
+                  detail: 'Sinal prudente favoravel ao estudo',
+                  sourceField: 'signal.label',
+                  value: 'Pode estudar aporte',
+                  unit: null,
+                },
+              ],
+              warnings: [],
+            },
+          ],
+          warnings: [],
+          inputs: ['S.aportes', 'prudentContributionAnalysis()'],
+          limitations: ['Nao executa compra'],
+        },
+      };
+    },
+  });
+
+  const firstSnapshot = source.getSnapshot();
+  assert.equal(firstSnapshot.summary.itemCount, 1);
+  assert.equal(firstSnapshot.items[0].sourceEventKind, 'aporte');
+  assert.equal(Object.isFrozen(firstSnapshot), true);
+  assert.equal(Object.isFrozen(firstSnapshot.items), true);
+
+  contributions = [
+    {
+      ...contributions[0],
+      amount: 1200,
+      note: 'Aporte atualizado',
+    },
+  ];
+
+  const secondSnapshot = source.getSnapshot();
+  assert.equal(secondSnapshot.items[0].amount, 1200);
+  assert.equal(secondSnapshot.items[0].note, 'Aporte atualizado');
+  assert.notDeepEqual(secondSnapshot, firstSnapshot);
+});
+
+test('host contributions source retorna fallback controlado quando leitura falha', async () => {
+  const { createHostContributionsReadonlySource } = await loadContributionsSourceModule();
+
+  const source = createHostContributionsReadonlySource({
+    getContributionsSnapshot() {
+      throw new Error('boom');
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.originMode, 'fallback-readonly');
+  assert.equal(snapshot.summary.itemCount, 0);
+  assert.equal(snapshot.items.length, 0);
+  assertDeepFrozen(snapshot);
+});
+
+test('host contributions runtime usa demo quando origem real nao existe', async () => {
+  const { createModernContributionsRuntime } = await loadContributionsRuntimeModule();
+  const runtime = createModernContributionsRuntime();
+
+  assert.equal(runtime.contributionsRefreshController, null);
+  assert.equal(typeof runtime.contributionsAdapter.getSnapshot, 'function');
+  assert.equal(runtime.contributionsAdapter.getSnapshot().version, 1);
+  assert.equal(runtime.contributionsAdapter.getSnapshot().originMode, 'fallback-readonly');
+  assertDeepFrozen(runtime.contributionsAdapter.getSnapshot());
+});
+
+test('host contributions runtime cria controller quando origem real existe', async () => {
+  const { createModernContributionsRuntime } = await loadContributionsRuntimeModule();
+  let contributions = [
+    {
+      id: 'ap-001',
+      sourceEventId: 'evt-001',
+      sourceEventKind: 'aporte',
+      assetId: 'PETR4',
+      date: '2026-06-15',
+      ticker: 'PETR4',
+      assetName: 'Petrobras',
+      assetClass: 'Acao',
+      amount: 1000,
+      quantity: 10,
+      unitPrice: 100,
+      operation: 'compra',
+      source: 'demo',
+      note: 'Aporte demo',
+      createdAt: '2026-06-15T10:30:00.000Z',
+      updatedAt: null,
+    },
+  ];
+
+  const runtime = createModernContributionsRuntime({
+    contributionsSource: {
+      getSnapshot() {
+        return {
+          version: 1,
+          originMode: 'real-wallet',
+          originLabel: 'Carteira ativa real',
+          generatedAt: '2026-07-14T10:30:00.000Z',
+          notice: 'Snapshot legado somente leitura de aportes. React nao escreve na fonte.',
+          summary: {
+            itemCount: contributions.length,
+            classCount: 1,
+            monthCount: 1,
+            candidateCount: 0,
+            insufficientCount: 0,
+            avoidedCount: 0,
+            latestContributionDate: '2026-06-15',
+          },
+          items: contributions,
+          classDistribution: [{ label: 'Acao', itemCount: 1, latestContributionDate: '2026-06-15' }],
+          monthDistribution: [{ monthKey: '2026-06', label: 'Junho de 2026', itemCount: 1 }],
+          suggestion: {
+            status: 'unavailable',
+            generatedAt: '2026-07-14T10:30:00.000Z',
+            strategyName: null,
+            candidates: [],
+            warnings: [],
+            inputs: [],
+            limitations: ['Nao executa compra'],
+          },
+        };
+      },
+    },
+  });
+
+  assert.equal(typeof runtime.contributionsRefreshController?.refresh, 'function');
+  assert.equal(runtime.contributionsAdapter.getSnapshot().items[0].amount, 1000);
+
+  contributions = [
+    {
+      ...contributions[0],
+      amount: 1500,
+    },
+  ];
+
+  runtime.contributionsRefreshController?.refresh();
+  assert.equal(runtime.contributionsAdapter.getSnapshot().items[0].amount, 1500);
 });

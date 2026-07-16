@@ -4,10 +4,10 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 188
-- branch atual: `feat/modern-income-readonly-page`
-- SHA-base: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`
-- situacao: em revisao - draft
+- fase atual: 189
+- branch atual: `feat/modern-contributions-explainable-page`
+- SHA-base: `2c6489fb190e215fd69074071aceba8cf2638e39`
+- situacao: em desenvolvimento
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -21,9 +21,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`
+- HEAD / `origin/main`: `2c6489fb190e215fd69074071aceba8cf2638e39`
 - workspace: limpo no inicio desta fase
-- PR `#187`: merged e closed
+- PR `#188`: merged e closed
 
 ## 1. Historico confirmado das fases readonly
 
@@ -43,8 +43,9 @@ Base de referencia desta fase:
 | 185 | Contrato readonly tipado e versionado dos dados de relatorio | Concluida | `#185` | `3a80972310773e20dbf73a101c745f6f7f3b7c9d` | `docs/legacy-assets-runtime-map.md`, `modern/src/features/reports/reportsReadonlyContract.mjs`, `modern/src/features/reports/reportsReadonlyContract.d.ts`, `modern/src/features/reports/reportsReadonlyBridge.mjs`, `modern/src/features/reports/reportsReadonlyBridge.d.ts`, `modern/src/features/reports/reportsSnapshotAdapter.mjs`, `modern/src/features/reports/reportsSnapshotAdapter.d.ts`, `tests/readonly-contract-architecture.test.js`, `tests/readonly-reports-data-contract.test.js` | contrato readonly versionado, validado, imutavel e com runtime canonico unico | tipagem mais explicita, sem mudar o fluxo funcional | reverter `3a80972310773e20dbf73a101c745f6f7f3b7c9d` |
 | 186 | Ativos moderno readonly | Concluida | `#186` | `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f` | `docs/project-phases-roadmap.md`, `modern/src/features/reports/AssetsReadonlyPage.tsx`, `modern/src/features/reports/readonlyReportsViewModel.ts`, `tests/modern-assets-readonly-page.test.js`, `tests/modern-host.test.js`, `tests/modern-reports-integration.test.js`, `tests/modern-reports-refresh.test.js` | pagina moderna readonly de Ativos com resumo, filtros, ordenacao, destaques, distribuicao, tabela desktop e cards mobile | leitura ainda depende de snapshot readonly e do controller quando presente | reverter `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f` |
 | 187 | Renda Fixa readonly | Concluida | `#187` | `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` | `docs/project-phases-roadmap.md`, `modern/src/features/fixed-income/fixedIncomeReadonlyContract.mjs`, `modern/src/features/fixed-income/fixedIncomeReadonlyContract.d.ts`, `modern/src/features/fixed-income/fixedIncomeReadonlyBridge.mjs`, `modern/src/features/fixed-income/fixedIncomeReadonlyBridge.d.ts`, `modern/src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs`, `modern/src/features/fixed-income/fixedIncomeSnapshotAdapter.d.ts`, `modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx`, `modern/src/features/fixed-income/readonlyFixedIncomeViewModel.ts`, `tests/modern-fixed-income-readonly-page.test.js`, `tests/modern-host-source.test.js`, `tests/modern-host.test.js`, `tests/readonly-contract-architecture.test.js` | contrato, provider e pagina readonly de renda fixa, preservando ausencia versus zero e sem recalcular totais financeiros | schema real podia ter campos ausentes, combinados ou sem ticker | reverter `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` |
+| 188 | Proventos e renda mensal readonly | Concluida | `#188` | `2c6489fb190e215fd69074071aceba8cf2638e39` | `docs/project-phases-roadmap.md`, `index.html`, `modern/src/features/income/IncomeReadonlyPage.tsx`, `modern/src/features/income/incomeReadonlyContract.d.ts`, `modern/src/features/income/incomeReadonlyContract.mjs`, `modern/src/features/income/legacyIncomeReadonlyIntegration.ts`, `modern/src/features/income/readonlyIncomeViewModel.ts`, `tests/modern-base.test.js`, `tests/modern-host-source.test.js`, `tests/modern-income-readonly-page.test.js`, `tests/readonly-contract-architecture.test.js` | contrato, provider e pagina readonly de proventos com `receivedValue`, ausencia versus zero preservada, itens vazios rejeitados e nenhuma soma financeira nova no moderno | semantica de p.value precisava ser auditada e a camada moderna nao podia duplicar bruto e liquido | reverter `2c6489fb190e215fd69074071aceba8cf2638e39` |
 
-## 2. Fechamento da Fase 187 e abertura da Fase 188
+## 2. Fechamento da Fase 188 e abertura da Fase 189
 
 ### Fase 186
 
@@ -63,38 +64,49 @@ Base de referencia desta fase:
 - SHA final na main: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
 - titulo do commit final: `feat: formaliza contrato readonly dos dados de relatorio`;
 - modo: squash;
-- resultado: contrato readonly versionado, validado, imutavel e com runtime canonico unico;
+- resultado principal: contrato readonly tipado e versionado dos dados de relatorio com runtime canônico unico;
 - rollback: `git revert 3a80972310773e20dbf73a101c745f6f7f3b7c9d`.
-
-### Estado atual
-
-- fase atual: 188;
-- nome da fase: Proventos e renda mensal readonly;
-- branch: `feat/modern-income-readonly-page`;
-- SHA-base: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`;
-- situacao: em revisao - draft;
-- PR: `#188`;
-- head de revisao: consultavel na PR #188;
-- SHA final na main: pendente de merge;
-- regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
-
-### Fase 188
-
-- objetivo: criar pagina moderna readonly para consulta de proventos recebidos e renda mensal da carteira, consumindo dados reais existentes no legado por uma fronteira readonly explicita;
-- entregaveis: contrato e provider readonly dedicados, pagina moderna de Proventos e renda mensal, resumo com totais oficiais ou nulos, lista, filtros visuais, agrupamento mensal, destaques, estados vazios/erro/fallback, testes e smokes;
-- fora de escopo: cadastro, edicao, exclusao, importacao, previsao, projecao, calculo tributario novo, dividend yield novo, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
-- riscos: schema legado misto ou incompleto, ausencia de informacoes em parte dos registros, divergencia entre bruto e liquido, regressao de acessibilidade/responsividade, derivacao visual excessiva;
-- criterios de conclusao: build, testes e smokes verdes; nenhuma duplicacao de formula financeira; nenhuma escrita moderna; nenhum acesso a `S.proventos` em `modern/src`; `modern/dist` continua fora do indice; rollback simples e reversivel;
-- rollback: remover a pagina, os testes e a documentacao desta fase, mantendo contrato, bridge, adapter, host e fases anteriores intactos.
 
 ### Fase 187
 
-- objetivo: descobrir, validar e expor com seguranca o schema real de renda fixa no legado por uma fronteira readonly dedicada, sem assumir o contrato de Ativos;
-- entregaveis: contrato e provider readonly dedicados, pagina moderna de Renda Fixa, resumo com campos reais ou nulos, lista, filtros visuais, destaques, distribuicao, estados vazios/erro/fallback, testes e smokes;
-- fora de escopo: edicao, cadastro, exclusao, resgate, simulacao, aporte, novo calculo financeiro, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
-- riscos: schema legado incompleto ou misto, ausencia de ticker em parte dos registros, divergencia entre campo combinado e campos separados de imposto, regressao de acessibilidade/responsividade, derivacao visual excessiva;
-- criterios de conclusao: build/teste/smoke verdes, nenhum recalculo financeiro no provider, ausencia versus zero preservada, nenhum acesso a S.assets em modern/src, modern/dist fora do indice, rollback simples;
-- rollback: remover pagina, testes, provider e doc desta fase, mantendo contrato, bridge, adapter e fases anteriores intactos.
+- estado: Concluida;
+- PR: `#187`;
+- SHA final na main: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`;
+- titulo do commit final: `feat: cria pagina moderna readonly de renda fixa`;
+- modo: squash;
+- resultado principal: contrato, provider e pagina readonly de renda fixa, preservando ausencia versus zero e sem recalcular totais financeiros;
+- rollback: `git revert 0df41a41b9c6ba3d435044f60e69b3fa86cac27c`.
+
+### Fase 188
+
+- estado: Concluida;
+- PR: `#188`;
+- SHA final na main: `2c6489fb190e215fd69074071aceba8cf2638e39`;
+- titulo do commit final: `feat: cria pagina moderna readonly de proventos`;
+- modo: squash;
+- resultado principal: contrato, provider e pagina readonly de proventos com `receivedValue`, ausencia versus zero preservada, itens vazios rejeitados e nenhuma soma financeira nova no moderno;
+- rollback: `git revert 2c6489fb190e215fd69074071aceba8cf2638e39`.
+
+### Estado atual
+
+- fase atual: 189;
+- nome da fase: Aportes e sugestao explicavel;
+- branch: `feat/modern-contributions-explainable-page`;
+- SHA-base: `2c6489fb190e215fd69074071aceba8cf2638e39`;
+- situacao: em desenvolvimento;
+- PR: pendente;
+- head de revisao: consultavel na PR #189;
+- SHA final na main: pendente de merge;
+- regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
+
+### Fase 189
+
+- objetivo: criar uma experiencia moderna somente leitura para consultar aportes ja registrados e a sugestao explicavel ja produzida pelo legado, sem executar compra ou persistir decisao;
+- entregaveis: contrato readonly dedicado, provider readonly legado, pagina moderna readonly com lista, filtros locais, agrupamentos visuais, sugestao explicavel, estados vazios/fallback/erro, testes e smokes;
+- fora de escopo: compra, cadastro, edicao, exclusao, persistencia de aporte, nova recomendacao financeira, novo ranking, rebalanceamento automatico, calculo de preco-teto, cotacao externa, projecao de retorno, dividendos, venda sugerida, storage, Firebase, Auth, sync, backup, polling, fetch externo, nova dependencia, alteracao do contrato readonly canonico de outras fases ou do fluxo principal;
+- riscos: schema legado misto ou incompleto, parte dos registros sem explicacao estruturada, regressao de acessibilidade/responsividade em listas grandes e paineis densos, excesso de derivacao visual sem fonte oficial, stale snapshot se o refresh controlado nao for usado na composicao host;
+- criterios de conclusao: build, testes e smokes verdes, nenhuma duplicacao de formula financeira, nenhuma escrita moderna, nenhum acesso direto ao estado legado dentro do React, `modern/dist` continua fora do indice, rollback simples e reversivel;
+- rollback: remover o componente dedicado, os testes e a documentacao desta fase, mantendo contrato, bridge, adapter, host e fases anteriores intactos.
 
 ## 2. Ordem consolidada das fases readonly
 
@@ -335,40 +347,39 @@ Riscos classificados:
 | Ausencia de dados financeiros na URL | `tests/legacy-assets-active-wallet-host.test.js`, `tests/readonly-report-session-context.test.js` | alta | nenhuma relevante |
 | Ausencia de dados financeiros no console | `tests/modern-host.smoke.test.js`, `tests/modern-host.test.js` | media/alta | smoke local ainda depende de browser e ambiente |
 
-## 10. Fase 187 - renda fixa readonly
+## 10. Fase 189 - aportes e sugestao explicavel readonly
 
 Objetivo:
 
-- descobrir e espelhar com seguranca o schema real atual da renda fixa no legado;
-- criar uma pagina moderna de Renda Fixa completa, responsiva e somente leitura;
-- consumir dados reais por fronteira readonly explicita, sem assumir o contrato de Ativos;
-- manter o legado como fonte de verdade e o runtime canonicamente versionado.
+- criar uma experiencia moderna somente leitura para consultar aportes ja registrados;
+- expor a sugestao ou indicacao de aporte ja produzida pelo legado, com justificativa clara e rastreavel;
+- manter o legado como unica fonte de verdade, sem executar compra ou persistir decisao;
+- usar fronteira readonly explicita, com contrato, provider, bridge, adapter, runtime e pagina dedicados quando necessario.
 
 Entregaveis:
 
-- contrato readonly dedicado para renda fixa com versionamento explicito;
-- resumo com valores aplicados, brutos, liquidos, ganhos ou perdas, IR e IOF quando existirem;
-- lista completa de titulos com nome, subtipo, emissor, datas, rentabilidade, indexador, liquidez e indisponibilidade;
-- filtros e ordenacoes apenas visuais, se existirem no contrato real;
-- destaques e agrupamentos visuais por vencimento, subtipo ou outra leitura segura presente no legado;
-- leitura inicial sincronica pelo adapter/controller; nao existe loading transitorio separado nesta fase; refresh preserva o ultimo snapshot valido; fallback e erro sao tratados; loading assincronico so deve existir se uma futura fonte realmente exigir;
-- testes estruturais, de renderizacao, de schema, de fallback e de responsividade;
-- smokes do shell, do host e da integracao com o contrato readonly.
+- contrato readonly dedicado para aportes com versionamento explicito, clone defensivo e deep freeze;
+- provider readonly legado que apenas lê aportes reais e a sugestao oficial ja produzida;
+- pagina moderna readonly com lista, filtros locais, agrupamentos visuais, explicabilidade, estados vazios, fallback e erro;
+- resumo com contagem e sinais oficiais do legado, sem recalcular alocacao, deficit, ranking financeiro ou preco-teto;
+- visualizacao da sugestao com razoes, avisos, limitacoes e rastreabilidade do dado;
+- testes estruturais, de contrato, de integracao, de renderizacao, de fallback e de responsividade;
+- smokes do shell, do host e da integracao com a fronteira readonly.
 
 Fora de escopo:
 
-- edicao, cadastro, exclusao, resgate, simulacao, compra, venda, aporte ou sugestao de aporte;
-- novo calculo financeiro;
-- acesso direto a `S.assets` em `modern/src`;
-- storage, Firebase, Auth, sync, backup, polling ou fetch externo;
-- nova dependencia, novo roteador ou persistencia moderna;
-- alteracao do contrato readonly canonico ou do fluxo principal.
+- compra, cadastro, edicao, exclusao ou persistencia de aporte;
+- nova recomendacao financeira, novo ranking ou nova pontuacao;
+- rebalanceamento automatico, selecao autonoma de ativo ou calculo de preco-teto;
+- cotacao externa, projeção de retorno, dividendos ou venda sugerida;
+- storage, Firebase, Auth, sync, backup, polling, fetch externo ou nova dependencia;
+- alteracao do contrato readonly canonico de outras fases ou do fluxo principal.
 
 Riscos:
 
-- divergencia entre o schema real legado e a representacao visual se o contrato refletir campos inexistentes ou incompletos;
-- regressao de responsividade ou acessibilidade em listas grandes;
-- excesso de derivacao visual sem necessidade;
+- schema legado misto ou incompleto, com parte dos registros sem explicacao estruturada;
+- regressao de acessibilidade ou responsividade em listas grandes e paines densos;
+- excesso de derivacao visual sem fonte oficial;
 - stale snapshot se o refresh controlado nao for usado na composicao host.
 
 Criterios de conclusao:
@@ -376,7 +387,7 @@ Criterios de conclusao:
 - build, testes e smokes verdes;
 - nenhuma duplicacao de formula financeira;
 - nenhuma escrita moderna;
-- nenhum acesso a `S.assets` em `modern/src`;
+- nenhum acesso direto ao estado legado dentro do React;
 - `modern/dist` continua fora do indice;
 - rollback simples e reversivel.
 
@@ -389,9 +400,7 @@ Rollback:
 
 Manter a sequencia oficial:
 
-1. 188: Proventos e renda mensal readonly
-2. 189: Aportes e sugestao explicavel
-3. 190: decisao arquitetural
+1. 190: decisao arquitetural e revisao estrategica
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
