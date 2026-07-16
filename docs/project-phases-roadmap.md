@@ -72,7 +72,7 @@ Base de referencia desta fase:
 - SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
 - situacao: em revisao — draft;
 - PR: #186;
-- head atual da branch: commit publicado nesta fase;
+- head atual da branch: `19dac158af47693edb2ab33ca3c80c49b732339f`;
 - SHA final na main: pendente de merge;
 
 ### Fase 186
