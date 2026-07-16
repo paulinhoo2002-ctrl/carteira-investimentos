@@ -33,14 +33,15 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.equal(roadmap.startsWith('# Project Phases Roadmap'), true);
   assertNoMojibake(roadmap, 'roadmap');
 
-  assert.match(roadmap, /- fase atual: 192;/);
-  assert.match(roadmap, /- branch atual: `feat\/dividends-visual-refinement`/);
-  assert.match(roadmap, /- SHA-base: `b86169016207362981ffedddeaa456fb908d1841`/);
-  assert.match(roadmap, /- HEAD \/ `origin\/main`: `b86169016207362981ffedddeaa456fb908d1841`/);
-  assert.match(roadmap, /- situacao: em desenvolvimento/);
-  assert.match(roadmap, /- PR atual: pendente/);
-  assert.match(roadmap, /- implementacao ativa: aba Dividendos/);
+  assert.match(roadmap, /- fase atual: nenhuma/);
+  assert.match(roadmap, /- branch atual: main/);
+  assert.match(roadmap, /- SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`/);
+  assert.match(roadmap, /- HEAD \/ `origin\/main`: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`/);
+  assert.match(roadmap, /- situacao: Fase 192 concluida e aguardando nova autorizacao/);
+  assert.match(roadmap, /- PR atual: nenhuma/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma/);
   assert.match(roadmap, /- a fase 190 permanece concluida;/);
+  assert.match(roadmap, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
   assert.match(roadmap, /- nao existe Fase 191 funcional\./);
   assert.match(roadmap, /\| 189 \| Aportes e sugestao explicavel readonly \| Concluida \| `#189` \| `0372cc4e04d66f713474b8d0b41ef2750d380061` \|/);
@@ -51,6 +52,16 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(roadmap, /- matriz de decisao com criterios, notas e justificativa;/);
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
   assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);
+  assert.match(roadmap, /- estado: Concluida;/);
+  assert.match(roadmap, /- PR: `#192`;/);
+  assert.match(roadmap, /- SHA final na main: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
+  assert.match(roadmap, /- titulo: `feat: refina visual da aba dividendos`;/);
+  assert.match(roadmap, /- modo: squash;/);
+  assert.match(roadmap, /- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;/);
+  assert.match(roadmap, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
+  assert.match(roadmap, /- situacao: Fase 192 concluida e aguardando nova autorizacao;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
 
   assertNoMojibake(inventory, 'inventario');
   assert.match(inventory, /Inventario arquitetural da modernizacao/);

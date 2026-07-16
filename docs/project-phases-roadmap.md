@@ -4,12 +4,12 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 192
-- branch atual: `feat/dividends-visual-refinement`
-- SHA-base: `b86169016207362981ffedddeaa456fb908d1841`
-- situacao: em desenvolvimento
-- PR atual: pendente
-- implementacao ativa: aba Dividendos
+- fase atual: nenhuma;
+- branch atual: main;
+- SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`
+- situacao: Fase 192 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -19,11 +19,13 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - nao iniciar a fase seguinte antes de fechar a atual
 - preservacao de dados, schema, Firebase/Auth e compatibilidade continua obrigatoria
 - `modern/dist` fora do indice
+- Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `b86169016207362981ffedddeaa456fb908d1841`
+- HEAD / `origin/main`: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`
+- PR `#192`: merged e closed (encerramento funcional da fase 192)
 - workspace: limpo no inicio desta fase
 - PR `#191`: merged e closed (encerramento documental da fase 190)
 
@@ -93,16 +95,17 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: 192;
-- nome da fase: Refinamento visual e responsivo da aba Dividendos;
-- branch atual: `feat/dividends-visual-refinement`;
-- SHA-base: `b86169016207362981ffedddeaa456fb908d1841`;
-- situacao: em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: aba Dividendos;
+- fase atual: nenhuma;
+- nome da fase: nenhuma;
+- branch atual: main;
+- SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;
+- situacao: Fase 192 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
 - a fase 190 permanece concluida;
 - a PR #191 foi apenas o encerramento documental;
 - nao existe Fase 191 funcional.
+- Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
 ### Fase 189
@@ -457,44 +460,11 @@ Rollback desta fase:
 
 ## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos
 
-Objetivo:
-
-- corrigir o corte da coluna Total no historico mensal;
-- melhorar a hierarquia visual da aba Dividendos;
-- reforcar a leitura em desktop, tablet e mobile sem alterar calculos financeiros.
-
-Entregaveis:
-
-- wrapper proprio para a tabela mensal com rolagem horizontal controlada;
-- cabecalho e blocos de resumo mais claros;
-- distribuicao e historico mensal com largura e contraste melhores;
-- testes visuais e de guardrail para a pagina Dividendos.
-
-Fora de escopo:
-
-- alterar cadastro, edicao, exclusao, schema, Firebase/Auth, storage, sync, backup, importacao/exportacao;
-- criar calculo financeiro novo;
-- duplicar soma de dividendos;
-- criar previsao, projecao ou recomendacao financeira;
-- adicionar dependencia;
-- fazer deploy manual.
-
-Riscos:
-
-- regressao de overflow horizontal se wrappers forem mal configurados;
-- excesso de densidade visual em telas menores;
-- divergencia entre hierarquia visual nova e a leitura historica da aba.
-
-Criterios de conclusao:
-
-- Total visivel ou acessivel por rolagem horizontal controlada;
-- layout responsivo validado nas larguras exigidas;
-- acessibilidade preservada;
-- nenhum calculo financeiro novo;
-- testes e builds verdes;
-- `modern/dist` fora do indice.
-
-Rollback:
-
-- remover os ajustes de layout desta fase e os testes/documentacao desta linha de evolucao;
-- manter dados, calculos e comportamento funcional intactos.
+- estado: Concluida;
+- PR: `#192`;
+- SHA final na main: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;
+- titulo: `feat: refina visual da aba dividendos`;
+- modo: squash;
+- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;
+- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;
+- observacao: fase encerrada; sem fase ativa.
