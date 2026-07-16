@@ -4,12 +4,12 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma
-- branch atual: `main`
-- SHA-base: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`
-- situacao: ciclo de modernizacao readonly encerrado e aguardando nova autorizacao
-- PR atual: nenhuma
-- implementacao ativa: nenhuma
+- fase atual: 192
+- branch atual: `feat/dividends-visual-refinement`
+- SHA-base: `b86169016207362981ffedddeaa456fb908d1841`
+- situacao: em desenvolvimento
+- PR atual: pendente
+- implementacao ativa: aba Dividendos
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -23,9 +23,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`
+- HEAD / `origin/main`: `b86169016207362981ffedddeaa456fb908d1841`
 - workspace: limpo no inicio desta fase
-- PR `#190`: merged e closed
+- PR `#191`: merged e closed (encerramento documental da fase 190)
 
 ## 1. Historico confirmado das fases readonly
 
@@ -93,15 +93,16 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: nenhuma;
-- nome da fase: nenhuma;
-- branch atual: main;
-- SHA-base: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`;
-- situacao: ciclo de modernizacao readonly encerrado e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
-- a fase 190 fechou com a PR #190 e registra a decisao arquitetural;
-- nenhuma nova fase funcional e aberta nesta documentacao antes da decisao ser aprovada.
+- fase atual: 192;
+- nome da fase: Refinamento visual e responsivo da aba Dividendos;
+- branch atual: `feat/dividends-visual-refinement`;
+- SHA-base: `b86169016207362981ffedddeaa456fb908d1841`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: aba Dividendos;
+- a fase 190 permanece concluida;
+- a PR #191 foi apenas o encerramento documental;
+- nao existe Fase 191 funcional.
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
 ### Fase 189
@@ -134,6 +135,7 @@ Ordem oficial atual:
 15. 188 - proventos e renda mensal readonly
 16. 189 - aportes e sugestao explicavel readonly
 17. 190 - decisao arquitetural da modernizacao
+18. 192 - refinamento visual e responsivo da aba Dividendos
 
 Mudanca de ordem relevante:
 
@@ -141,6 +143,8 @@ Mudanca de ordem relevante:
 - a fase 184 encerra o ciclo de documentacao e auditoria, sem nova funcionalidade;
 - a fase 185 formaliza o contrato de dados readonly sem mudar o fluxo funcional;
 - a fase 190 nao inicia escrita moderna, apenas consolida a decisao com evidencias.
+- a fase 191 foi apenas documental, sem fase funcional;
+- a fase 192 e a proxima fase funcional autorizada.
 
 ## 3. Auditoria da fronteira readonly
 
@@ -412,7 +416,7 @@ A decisao desta fase define o proximo passo formal.
 
 - Se a opcao escolhida mantiver o modelo hibrido, as proximas fases continuam readonly e graduais.
 - Se houver escrita moderna futura, ela precisa nascer em fase propria, com comando versionado, idempotencia, autorizacao, confirmacao explicita, log de auditoria, backup e rollback.
-- Nenhuma nova fase funcional e aberta nesta documentacao antes da decisao ser aprovada.
+- A fase 192 e a proxima fase funcional registrada nesta documentacao, sem abrir escrita moderna.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
@@ -450,3 +454,47 @@ Rollback desta fase:
 - remover `docs/project-phases-roadmap.md` e os documentos de decisao desta fase;
 - manter codigo de producao intacto;
 - se necessario, reverter apenas ajustes documentais adicionais da fase.
+
+## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos
+
+Objetivo:
+
+- corrigir o corte da coluna Total no historico mensal;
+- melhorar a hierarquia visual da aba Dividendos;
+- reforcar a leitura em desktop, tablet e mobile sem alterar calculos financeiros.
+
+Entregaveis:
+
+- wrapper proprio para a tabela mensal com rolagem horizontal controlada;
+- cabecalho e blocos de resumo mais claros;
+- distribuicao e historico mensal com largura e contraste melhores;
+- testes visuais e de guardrail para a pagina Dividendos.
+
+Fora de escopo:
+
+- alterar cadastro, edicao, exclusao, schema, Firebase/Auth, storage, sync, backup, importacao/exportacao;
+- criar calculo financeiro novo;
+- duplicar soma de dividendos;
+- criar previsao, projecao ou recomendacao financeira;
+- adicionar dependencia;
+- fazer deploy manual.
+
+Riscos:
+
+- regressao de overflow horizontal se wrappers forem mal configurados;
+- excesso de densidade visual em telas menores;
+- divergencia entre hierarquia visual nova e a leitura historica da aba.
+
+Criterios de conclusao:
+
+- Total visivel ou acessivel por rolagem horizontal controlada;
+- layout responsivo validado nas larguras exigidas;
+- acessibilidade preservada;
+- nenhum calculo financeiro novo;
+- testes e builds verdes;
+- `modern/dist` fora do indice.
+
+Rollback:
+
+- remover os ajustes de layout desta fase e os testes/documentacao desta linha de evolucao;
+- manter dados, calculos e comportamento funcional intactos.

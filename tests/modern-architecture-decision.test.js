@@ -20,7 +20,7 @@ function assertNoMojibake(text, label) {
   }
 }
 
-test('documentacao da fase 190 e limpa e rastreavel', () => {
+test('documentacao da estrategia e limpa e rastreavel', () => {
   const roadmap = readText('docs/project-phases-roadmap.md');
   const inventory = readText('docs/modern-architecture-inventory.md');
   const adr = readText('docs/adr/ADR-001-modernization-strategy.md');
@@ -33,20 +33,24 @@ test('documentacao da fase 190 e limpa e rastreavel', () => {
   assert.equal(roadmap.startsWith('# Project Phases Roadmap'), true);
   assertNoMojibake(roadmap, 'roadmap');
 
-  assert.match(roadmap, /- fase atual: 190;/);
-  assert.match(roadmap, /- branch atual: `docs\/modern-architecture-decision`/);
-  assert.match(roadmap, /- SHA-base: `0372cc4e04d66f713474b8d0b41ef2750d380061`/);
-  assert.match(roadmap, /- HEAD \/ `origin\/main`: `0372cc4e04d66f713474b8d0b41ef2750d380061`/);
+  assert.match(roadmap, /- fase atual: 192;/);
+  assert.match(roadmap, /- branch atual: `feat\/dividends-visual-refinement`/);
+  assert.match(roadmap, /- SHA-base: `b86169016207362981ffedddeaa456fb908d1841`/);
+  assert.match(roadmap, /- HEAD \/ `origin\/main`: `b86169016207362981ffedddeaa456fb908d1841`/);
   assert.match(roadmap, /- situacao: em desenvolvimento/);
-  assert.match(roadmap, /- PR: pendente/);
-  assert.match(roadmap, /- head de revisao: pendente/);
-  assert.match(roadmap, /- SHA final na main: pendente de merge/);
+  assert.match(roadmap, /- PR atual: pendente/);
+  assert.match(roadmap, /- implementacao ativa: aba Dividendos/);
+  assert.match(roadmap, /- a fase 190 permanece concluida;/);
+  assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
+  assert.match(roadmap, /- nao existe Fase 191 funcional\./);
   assert.match(roadmap, /\| 189 \| Aportes e sugestao explicavel readonly \| Concluida \| `#189` \| `0372cc4e04d66f713474b8d0b41ef2750d380061` \|/);
   assert.equal(roadmap.includes('futura PR'), false, 'roadmap nao pode falar em futura PR');
   assert.match(roadmap, /## 10\. Fase 190 - decisao arquitetural da modernizacao/);
   assert.match(roadmap, /- inventario arquitetural consolidado com fronteiras, responsabilidades e riscos;/);
   assert.match(roadmap, /- ADR com a estrategia recomendada e as opcoes avaliadas;/);
   assert.match(roadmap, /- matriz de decisao com criterios, notas e justificativa;/);
+  assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
+  assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);
 
   assertNoMojibake(inventory, 'inventario');
   assert.match(inventory, /Inventario arquitetural da modernizacao/);
