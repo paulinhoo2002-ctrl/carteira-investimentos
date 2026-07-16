@@ -7,7 +7,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - fase atual: 186
 - branch atual: `feat/modern-assets-readonly-page`
 - SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`
-- situacao: em revisao â€” draft
+- situacao: em revisao - draft
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -70,7 +70,7 @@ Base de referencia desta fase:
 - nome da fase: Ativos moderno readonly;
 - branch: `feat/modern-assets-readonly-page`;
 - SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
-- situacao: em revisao â€” draft;
+- situacao: em revisao - draft;
 - PR: #186;
 - head de revisao: consultavel na PR `#186`;
 - SHA final na main: pendente de merge;
