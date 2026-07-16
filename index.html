@@ -1705,6 +1705,13 @@ details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
 .div-monthly-table-block[open] .div-monthly-toggle .when-closed{display:none}
 .div-monthly-body{padding:10px 12px 12px}
 .div-monthly-filters{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.div-monthly-table-wrap{border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden}
+.div-monthly-table-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;padding:0 2px 4px;scrollbar-gutter:stable both-edges}
+.div-monthly-table-scroll:focus{outline:2px solid rgba(96,165,250,.55);outline-offset:2px}
+.div-monthly-scroll-note{display:none;margin-top:8px;font-size:10px;line-height:1.35;color:var(--muted)}
+.hist-monthly{min-width:1140px}
+.hist-monthly th,.hist-monthly td{padding:10px 11px}
+.hist-monthly th:last-child,.hist-monthly td:last-child{padding-right:16px}
 .div-monthly-filter{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:6px 10px;font-size:10px;font-weight:850;white-space:nowrap}
 .div-monthly-filter.on{color:#c7d2fe;border-color:rgba(99,102,241,.4);background:rgba(79,70,229,.16)}
 html[data-theme="light"] .div-collapsible-summary{background:rgba(255,255,255,.75)}
@@ -1758,6 +1765,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .div-monthly-head-side{align-items:flex-end;gap:6px}
   .div-monthly-body{padding:9px 10px 10px}
   .div-monthly-filters{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+  .div-monthly-scroll-note{display:block}
   .div-upcoming-summary{grid-template-columns:1fr;gap:5px}
   .div-upcoming-card{padding:8px;min-height:68px;border-radius:11px}
   .div-upcoming-value{font-size:12px}
@@ -20801,10 +20809,15 @@ function dividendMonthlyTableBlock(rows){
         <button class="div-monthly-filter" onclick="setDividendFilter('all')">Tipo de ativo</button>
         <button class="div-monthly-filter" onclick="setDividendViewMode('asset')">Ativos</button>
       </div>
-      <div class="tw"><div class="ts"><table class="hist-monthly" style="min-width:1040px">
-        <thead><tr><th>Ano</th>${months.map(month=>`<th>${month}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
-        <tbody>${tableRows||'<tr><td colspan="15" style="text-align:center;padding:18px;color:#2e3f58">Sem histórico mensal no período selecionado.</td></tr>'}</tbody>
-      </table></div></div>
+      <div class="div-monthly-table-wrap">
+        <div class="div-monthly-table-scroll" tabindex="0" role="region" aria-label="Tabela de histórico mensal com rolagem horizontal">
+          <table class="hist-monthly">
+            <thead><tr><th>Ano</th>${months.map(month=>`<th>${month}</th>`).join('')}<th>Média</th><th>Total</th></tr></thead>
+            <tbody>${tableRows||'<tr><td colspan="15" style="text-align:center;padding:18px;color:#2e3f58">Sem histórico mensal no período selecionado.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="div-monthly-scroll-note">Dica: deslize horizontalmente para ver Média e Total completos.</div>
     </div>
   </details>`;
 }
@@ -20832,22 +20845,6 @@ function dividendSummaryCards(){
     <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0?`${((current.total/stats.target)*100).toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current.total))}`:'Lida da aba Metas'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
   </div>`;
-}
-function dividendGoalProgress(){
-  const stats=passiveIncomeGoalStats();
-  const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.total||0;
-  const pct=stats.target>0?current/stats.target*100:0;
-  const goalNote=stats.target>0?`${pct.toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current))} neste mês.`:'Defina uma meta mensal na aba Metas para acompanhar o progresso.';
-  return dividendCompactSectionHeader(
-    'goal',
-    'Meta de renda passiva',
-    'Detalhes da meta mensal',
-    `<div class="div-goal-panel">
-      <div class="div-goal-top"><div><div class="div-goal-title">Meta de renda passiva</div><div class="div-goal-sub">Leitura detalhada da meta mensal atual.</div></div></div>
-      <div class="div-goal-track"><div class="div-goal-fill" style="width:${Math.min(100,pct).toFixed(1)}%"></div></div>
-      <div class="div-goal-sub" style="margin-top:6px">${goalNote}</div>
-    </div>`
-  );
 }
 function dividendOverviewRecentPanel(rows){
   const limit=6;
@@ -20914,13 +20911,10 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendMonthlyTimeline()
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
-  const overviewBody=`<div class="div-overview-grid">
-    <div class="div-overview-main">
-      ${dividendSummaryCards()}
-    </div>
-    <div class="div-overview-side">
-      ${dividendOverviewRecentPanel(rows)}
-    </div>
+  const overviewBody=`<div class="div-overview-main">
+    ${dividendSummaryCards()}
+    ${monthlySection}
+    ${dividendOverviewRecentPanel(rows)}
   </div>`;
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
@@ -20937,7 +20931,6 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     ${frmD()}
     ${mode!=='overview'?dividendFilterTabs():''}
     ${body}
-    ${mode==='overview'?dividendGoalProgress():''}
     ${renderProventoRfLinkModal()}
   </div>`;
 }
