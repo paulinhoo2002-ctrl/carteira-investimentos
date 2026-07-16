@@ -10,8 +10,8 @@ export const MODERN_PAGES = [
     id: 'assets',
     label: 'Ativos',
     title: 'Ativos',
-    description: 'Area reservada para a futura migracao dos ativos, sem filtros ou calculos nesta fase.',
-    hint: 'Lista e analises futuras',
+    description: 'Consulta somente leitura dos ativos da carteira, com filtros e distribuicao visual.',
+    hint: 'Lista readonly atual',
   },
   {
     id: 'fixed-income',

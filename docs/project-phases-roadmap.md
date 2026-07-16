@@ -4,10 +4,10 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 185
-- branch atual: `feat/typed-readonly-reports-contract`
-- SHA-base: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`
-- situacao: em revisao — draft
+- fase atual: 186
+- branch atual: `feat/modern-assets-readonly-page`
+- SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`
+- situacao: em revisao - draft
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -21,9 +21,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`
+- HEAD / `origin/main`: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`
 - workspace: limpo no inicio desta fase
-- PR `#184`: merged e closed
+- PR `#185`: merged e closed
 
 ## 1. Historico confirmado das fases readonly
 
@@ -41,7 +41,7 @@ Base de referencia desta fase:
 | 183 | Guardrails automaticos da arquitetura readonly | Concluida | `#183` | `cc6d4d4fcb964da2f451743993e1cfc44698a25c` | `docs/legacy-assets-runtime-map.md`, `package.json`, `tests/modern-base.test.js`, `tests/readonly-contract-architecture.test.js` | guardrails de arquitetura passaram a rodar no CI sem duplicar a suite moderna completa | warnings CJS e `MODULE_TYPELESS_PACKAGE_JSON` continuam aceitos | reverter merge da fase |
 | 184 | Auditoria da fronteira readonly e mapa oficial de evolucao | Concluida | `#184` | `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512` | `docs/project-phases-roadmap.md` | documentacao ajustada; sem mudanca funcional; apenas roadmap e auditoria | risco residual apenas documental se novas fases legitimas nao atualizarem o mapa | reverter `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512` |
 
-## 2. Fechamento da Fase 184 e abertura da Fase 185
+## 2. Fechamento da Fase 185 e abertura da Fase 186
 
 ### Fase 184
 
@@ -54,23 +54,36 @@ Base de referencia desta fase:
 - zero mudanca funcional;
 - rollback: `git revert 5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`.
 
-### Estado atual
-
-- fase atual: 185;
-- nome da fase: Contrato tipado e versionado dos dados de relatorio readonly;
-- branch: `feat/typed-readonly-reports-contract`;
-- SHA-base: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`;
-- situacao: em revisao — draft;
-- PR: `#185` em draft; head na branch `feat/typed-readonly-reports-contract`.
-
 ### Fase 185
 
-- objetivo: formalizar e proteger o contrato de dados readonly entregue pelo legado ao moderno, sem alterar calculos financeiros, persistencia, autenticacao, sincronizacao ou comportamento visual;
-- entregaveis: contrato tipado, versao minima, validacao runtime simples, fallback seguro, imutabilidade, testes de compatibilidade, guardrail de arquitetura e roadmap atualizado;
-- fora de escopo: nova tela, mudanca visual relevante, migracao funcional, escrita moderna, novo Firebase, novo banco, persistencia nova, sincronizacao nova, alteracao de formulas, automacao de compra/aporte, dependencia nova e correcao dos warnings CJS/Vite;
-- riscos: divergencia entre contrato e consumidores, payload legado sem versao, versao desconhecida, mutacao por referencia e deriva de documentacao;
-- rollback: reverter o commit da fase e remover o contrato / testes adicionados, mantendo o legado intacto;
-- criterios de conclusao: contrato v1 validado, fallback seguro, imutabilidade, bridge e adapter consumindo o contrato, guardrails atualizados, builds / testes / smokes verdes e PR em draft pronta para revisao.
+- estado: Concluida;
+- PR: `#185`;
+- SHA final na main: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
+- titulo do commit final: `feat: formaliza contrato readonly dos dados de relatorio`;
+- modo: squash;
+- resultado: contrato readonly versionado, validado, imutavel e com runtime canonico unico;
+- rollback: `git revert 3a80972310773e20dbf73a101c745f6f7f3b7c9d`.
+
+### Estado atual
+
+- fase atual: 186;
+- nome da fase: Ativos moderno readonly;
+- branch: `feat/modern-assets-readonly-page`;
+- SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
+- situacao: em revisao - draft;
+- PR: #186;
+- head de revisao: consultavel na PR `#186`;
+- SHA final na main: pendente de merge;
+- regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
+
+### Fase 186
+
+- objetivo: criar pagina moderna readonly de Ativos completa, responsiva e somente leitura, usando exclusivamente o snapshot versionado da Fase 185;
+- entregaveis: componente dedicado, resumo, lista, filtros, destaques, distribuicao, estados vazios/erro/fallback, testes e smokes;
+- fora de escopo: edicao, cadastro, exclusao, aporte, novo calculo financeiro, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
+- riscos: divergencia com o snapshot versionado, regressao de acessibilidade/responsividade, listas grandes sem bom escaneamento, derivacao visual excessiva;
+- criterios de conclusao: build/teste/smoke verdes, nenhuma duplicacao de formula financeira, nenhum acesso a S.assets em modern/src, modern/dist fora do indice, rollback simples;
+- rollback: remover a pagina, os testes e a doc desta fase, mantendo contrato e runtime anteriores intactos.
 
 ## 2. Ordem consolidada das fases readonly
 
@@ -88,6 +101,7 @@ Ordem oficial atual:
 10. 183 - guardrails automaticos da arquitetura readonly
 11. 184 - auditoria da fronteira readonly e mapa oficial
 12. 185 - contrato tipado e versionado dos dados de relatorio readonly
+13. 186 - ativos moderno readonly
 
 Mudanca de ordem relevante:
 
@@ -310,31 +324,65 @@ Riscos classificados:
 | Ausencia de dados financeiros na URL | `tests/legacy-assets-active-wallet-host.test.js`, `tests/readonly-report-session-context.test.js` | alta | nenhuma relevante |
 | Ausencia de dados financeiros no console | `tests/modern-host.smoke.test.js`, `tests/modern-host.test.js` | media/alta | smoke local ainda depende de browser e ambiente |
 
-## 10. Criterios para Fase 185
+## 10. Fase 186 - ativos moderno readonly
 
-Para abrir a Fase 185 com risco controlado, o documento atual recomenda que existam:
+Objetivo:
 
-- produtor identificado: `createHostLegacyReportsReadonlySource()` / `createLegacyAssetsReadonlyProvider()`
-- consumidor identificado: `createReadOnlyReportsAdapter()` + `App`
-- formato atual documentado: `ReadOnlyReportsSnapshot`
-- campos obrigatorios conhecidos: `generatedAt`, `notice`, `summary`, `items`
-- fallback documentado: `READ_ONLY_REPORTS_FALLBACK_SNAPSHOT` e fallback `reports` do contrato de pagina
-- nenhuma escrita moderna
-- nenhum calculo financeiro duplicado
-- testes mapeados
-- riscos de compatibilidade listados
-- proposta de versionamento minimo antes de mudar o contrato
-- rollback simples
+- criar a pagina moderna de Ativos completa, responsiva e somente leitura;
+- reutilizar exclusivamente o snapshot versionado da Fase 185;
+- permitir consulta rapida sem edicao, cadastro, exclusao ou aporte;
+- manter o legado como fonte de verdade e o runtime canonicamente versionado.
+
+Entregaveis:
+
+- componente dedicado para a pagina de Ativos readonly;
+- resumo com patrimonio total, quantidade, variacao media, maior alta e maior queda;
+- lista completa de ativos com ticker, nome, categoria, quantidade, preco medio, valor atual, variacao, participacao e tendencia;
+- filtros locais por busca, categoria e ordenacao;
+- destaques de maiores altas, maiores quedas e maiores posicoes;
+- distribuicao visual por categoria;
+- leitura inicial sincronica pelo adapter/controller; nao existe loading transitorio separado nesta fase; refresh preserva o ultimo snapshot valido; fallback e erro sao tratados; loading assincronico so deve existir se uma futura fonte realmente exigir;
+- testes estruturais, de renderizacao, de filtro, de ordenacao e de responsividade;
+- smokes do shell, do host e da integracao com o contrato readonly.
+
+Fora de escopo:
+
+- edicao, cadastro, exclusao, compra, venda, aporte ou sugestao de aporte;
+- novo calculo financeiro;
+- acesso direto a `S.assets` em `modern/src`;
+- storage, Firebase, Auth, sync, backup, polling ou fetch externo;
+- nova dependencia, novo roteador ou persistencia moderna;
+- alteracao do contrato readonly canonico ou do fluxo principal.
+
+Riscos:
+
+- divergencia entre o snapshot e a representacao visual se o filtro ou a ordenacao forem implementados fora do contrato;
+- regressao de responsividade ou acessibilidade em listas grandes;
+- excesso de derivacao visual sem necessidade;
+- stale snapshot se o refresh controlado nao for usado na composicao host.
+
+Criterios de conclusao:
+
+- build, testes e smokes verdes;
+- nenhuma duplicacao de formula financeira;
+- nenhuma escrita moderna;
+- nenhum acesso a `S.assets` em `modern/src`;
+- `modern/dist` continua fora do indice;
+- rollback simples e reversivel.
+
+Rollback:
+
+- remover o componente dedicado, os testes e a documentacao desta fase;
+- manter contrato, bridge, adapter, host e fases anteriores intactos.
 
 ## 11. Proximas fases
 
 Manter a sequencia oficial:
 
-1. 186: Ativos moderno readonly
-2. 187: Renda Fixa readonly
-3. 188: Proventos e renda mensal
-4. 189: Aportes e sugestao explicavel
-5. 190: decisao arquitetural
+1. 187: Renda Fixa readonly
+2. 188: Proventos e renda mensal
+3. 189: Aportes e sugestao explicavel
+4. 190: decisao arquitetural
 
 ## 12. Radar estrategico - mudancas de alto impacto
 

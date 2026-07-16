@@ -31,7 +31,7 @@ browserTest('modern shell smoke navigation', async () => {
     await runViewportScenario(browser, { width: 1366, height: 768 }, async (page) => {
       await assertPageReady(page);
       await page.locator('.sidebar__item').nth(1).click();
-      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
+      await assertAssetsPage(page);
       await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Ativos');
 
       await page.locator('.sidebar__item').nth(5).click();
@@ -60,7 +60,7 @@ browserTest('modern shell smoke navigation', async () => {
       await menuButton.press('Enter');
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'true');
       await page.locator('#modern-sidebar .sidebar__item').nth(1).press('Enter');
-      await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
+      await assertAssetsPage(page);
       await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Ativos');
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
 
@@ -138,6 +138,27 @@ async function assertPageReady(page) {
   await page.locator('.sidebar__item').count().then((count) => {
     assert.equal(count, 7);
   });
+}
+
+async function assertAssetsPage(page) {
+  const isMobile = await page.evaluate(() => window.innerWidth <= 430);
+  await assert.equal(await page.locator('h2#page-assets').textContent(), 'Ativos');
+  await assert.equal(await page.locator('.assets-readonly__legacy-link').getAttribute('href'), '/index.html');
+  await assert.equal(await page.locator('.assets-readonly__controls input[type="search"]').count(), 1);
+  await assert.equal(await page.locator('.assets-readonly__controls select').count(), 2);
+  await assert.equal(await page.locator('.assets-readonly__summary .overview-card').count(), 5);
+  await assert.equal(await page.locator('.assets-readonly__distribution-row').count(), 3);
+  if (isMobile) {
+    await assert.equal(await page.locator('.assets-report__mobile-list').isVisible(), true);
+    await assert.equal(await page.locator('.assets-report__mobile-card').count(), 3);
+  } else {
+    await assert.equal(await page.locator('.assets-report__table').count(), 1);
+  }
+  await page.locator('.assets-readonly__controls input[type="search"]').fill('BOVA');
+  await assert.match(await page.locator('.assets-readonly__results').textContent(), /1 resultado/);
+  await page.locator('.assets-readonly__controls input[type="search"]').fill('');
+  await page.locator('.assets-readonly__controls select').nth(0).selectOption({ label: 'ETF demo' });
+  await assert.match(await page.locator('.assets-readonly__results').textContent(), /1 resultado/);
 }
 
 async function assertReportsPreview(page) {

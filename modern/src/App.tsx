@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { PagePlaceholder } from './components/PagePlaceholder';
 import { Sidebar } from './components/Sidebar';
+import { AssetsReadonlyPage } from './features/reports/AssetsReadonlyPage';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
 import type { ReportsRefreshController } from './features/reports/reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './features/reports/reportsSnapshotAdapter';
@@ -76,7 +77,12 @@ export function App({
         ) : null}
 
         <main className="modern-main" id="modern-main">
-          {activePageId === 'reports' ? (
+          {activePageId === 'assets' ? (
+            <AssetsReadonlyPage
+              adapter={reportsAdapter}
+              refreshController={reportsRefreshController}
+            />
+          ) : activePageId === 'reports' ? (
             <AssetsReportPreview adapter={reportsAdapter} refreshController={reportsRefreshController} />
           ) : (
             <PagePlaceholder

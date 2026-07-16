@@ -4,34 +4,18 @@ import type {
   ReportsRefreshController,
 } from './reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
+import {
+  formatReadonlyCurrency,
+  formatReadonlyDateTime,
+  formatReadonlyPercent,
+  formatReadonlyQuantity,
+} from './readonlyReportsViewModel';
 
 const trendLabel = {
   positive: 'Positivo',
   neutral: 'Neutro',
   negative: 'Negativo',
 } as const;
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('pt-BR', {
-    currency: 'BRL',
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    style: 'currency',
-  }).format(value);
-}
-
-function formatPercent(value: number) {
-  return `${value > 0 ? '+' : ''}${value.toLocaleString('pt-BR', {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  })}%`;
-}
-
-function formatQuantity(value: number) {
-  return value.toLocaleString('pt-BR', {
-    maximumFractionDigits: 4,
-  });
-}
 
 interface AssetsReportPreviewProps {
   adapter: ReadOnlyReportsAdapter;
@@ -71,7 +55,7 @@ function AssetsReportPreviewContent({
         </div>
         <div className="assets-report__refresh">
           <p className="assets-report__updated" aria-live="polite">
-            Atualizacao ficticia: {snapshot.generatedAt}
+            Atualizacao ficticia: {formatReadonlyDateTime(snapshot.generatedAt)}
           </p>
           {showRefreshButton ? (
             <button className="assets-report__refresh-button" type="button" onClick={onRefresh}>
@@ -108,7 +92,7 @@ function AssetsReportPreviewContent({
       <div className="assets-report__summary" aria-label="Resumo demonstrativo da previa de relatorios">
         <article className="overview-card">
           <p className="overview-card__label">Total demonstrativo</p>
-          <p className="overview-card__value">{formatCurrency(snapshot.summary.totalValue)}</p>
+          <p className="overview-card__value">{formatReadonlyCurrency(snapshot.summary.totalValue)}</p>
           <p className="overview-card__hint">Soma ficticia dos valores atuais</p>
         </article>
         <article className="overview-card">
@@ -118,7 +102,7 @@ function AssetsReportPreviewContent({
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Variacao media</p>
-          <p className="overview-card__value">{formatPercent(snapshot.summary.averageVariationPct)}</p>
+          <p className="overview-card__value">{formatReadonlyPercent(snapshot.summary.averageVariationPct)}</p>
           <p className="overview-card__hint">Media simples ficticia</p>
         </article>
       </div>
@@ -156,11 +140,11 @@ function AssetsReportPreviewContent({
                   <span className="assets-report__name">{item.name}</span>
                 </th>
                 <td>{item.category}</td>
-                <td className="number-cell">{formatQuantity(item.quantity)}</td>
-                <td className="number-cell">{formatCurrency(item.averagePrice)}</td>
-                <td className="number-cell">{formatCurrency(item.currentValue)}</td>
-                <td className="number-cell">{formatPercent(item.variationPct)}</td>
-                <td className="number-cell">{formatPercent(item.allocationPct).replace('+', '')}</td>
+                <td className="number-cell">{formatReadonlyQuantity(item.quantity)}</td>
+                <td className="number-cell">{formatReadonlyCurrency(item.averagePrice)}</td>
+                <td className="number-cell">{formatReadonlyCurrency(item.currentValue)}</td>
+                <td className="number-cell">{formatReadonlyPercent(item.variationPct)}</td>
+                <td className="number-cell">{formatReadonlyPercent(item.allocationPct, { signed: false })}</td>
                 <td>
                   <span className="trend-badge" data-trend={item.trend}>
                     {trendLabel[item.trend]}
@@ -186,23 +170,23 @@ function AssetsReportPreviewContent({
               </div>
               <div>
                 <dt>Quantidade</dt>
-                <dd>{formatQuantity(item.quantity)}</dd>
+              <dd>{formatReadonlyQuantity(item.quantity)}</dd>
               </div>
               <div>
                 <dt>Preco medio</dt>
-                <dd>{formatCurrency(item.averagePrice)}</dd>
+              <dd>{formatReadonlyCurrency(item.averagePrice)}</dd>
               </div>
               <div>
                 <dt>Valor atual</dt>
-                <dd>{formatCurrency(item.currentValue)}</dd>
+              <dd>{formatReadonlyCurrency(item.currentValue)}</dd>
               </div>
               <div>
                 <dt>Variacao</dt>
-                <dd>{formatPercent(item.variationPct)}</dd>
+              <dd>{formatReadonlyPercent(item.variationPct)}</dd>
               </div>
               <div>
                 <dt>Participacao</dt>
-                <dd>{formatPercent(item.allocationPct).replace('+', '')}</dd>
+              <dd>{formatReadonlyPercent(item.allocationPct, { signed: false })}</dd>
               </div>
               <div>
                 <dt>Estado</dt>

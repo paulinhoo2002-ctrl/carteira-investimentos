@@ -298,7 +298,7 @@ Contrato:
 
 Refresh:
 
-- o botao `Atualizar previa` continua controlado pelo host experimental;
+- o botao `Atualizar ativos` continua controlado pelo host experimental;
 - cada refresh relê `S.assets` por meio de `getAssets`;
 - o ultimo snapshot valido e preservado em erro;
 - nao existe polling, timer ou callback global novo.
@@ -712,3 +712,67 @@ Recomendacao para a Fase 186:
 
 - reutilizar o contrato versionado como fronteira readonly ja protegida;
 - nao reintroduzir validacao local em consumidores.
+
+## Fase 186 - pagina moderna readonly de ativos
+
+Objetivo:
+
+- criar uma pagina moderna de Ativos somente leitura para consultar o snapshot versionado da Fase 185;
+- manter o legado como fonte de verdade e o moderno apenas como visualizacao;
+- evitar qualquer edicao, cadastro, exclusao, aporte ou calculo financeiro novo.
+
+Consumo:
+
+- fonte de dados: `ReadOnlyReportsSnapshot` recebido pelo adapter readonly;
+- runtime canonico: `modern/src/features/reports/reportsReadonlyContract.mjs`;
+- tipagem canonica: `modern/src/features/reports/reportsReadonlyContract.d.ts`;
+- bridge e adapter existentes continuam sendo a fronteira tecnica entre snapshot e UI;
+- a pagina nova usa o mesmo snapshot readonly do relatorio e nao chama `S.assets`.
+
+Componentes envolvidos:
+
+- `modern/src/features/reports/AssetsReadonlyPage.tsx`;
+- `modern/src/features/reports/readonlyReportsViewModel.ts`;
+- `modern/src/features/reports/AssetsReportPreview.tsx` para compartilhamento dos formatadores;
+- `modern/src/App.tsx` para selecionar a pagina de Ativos;
+- `modern/src/bootstrap/modernReportsRuntime.ts` e `modern/src/bootstrap/mountModernApp.ts` permanecem como runtime de montagem.
+
+Estados visuais:
+
+- snapshot real validado;
+- carteira vazia;
+- fallback readonly por erro;
+- busca sem resultado;
+- filtro sem resultado;
+- leitura inicial sincronica pelo adapter/controller; nao existe loading transitorio separado nesta fase; refresh preserva o ultimo snapshot valido; fallback e erro sao tratados; loading assincronico so deve existir se uma futura fonte realmente exigir.
+
+Derivacoes visuais permitidas:
+
+- ordenacao local por valor atual, variacao, participacao e ticker;
+- filtro por categoria e busca por ticker ou nome;
+- maiores altas, maiores quedas e maiores posicoes a partir dos campos ja fornecidos;
+- distribuicao por categoria como agregacao visual do snapshot ja calculado.
+
+Seguranca e isolamento:
+
+- sem acesso a `S.assets` em `modern/src`;
+- sem storage, Firebase, Auth, sync, backup, polling ou fetch;
+- sem nova persistencia;
+- sem nova fonte de verdade financeira;
+- sem duplicacao de formula financeira;
+- sem dados financeiros em URL, hash, console ou `data-*`.
+
+Acessibilidade e responsividade:
+
+- cabeçalhos hierarquicos;
+- labels nos filtros;
+- tabela no desktop e cards no mobile;
+- foco visivel;
+- leitura por teclado;
+- `aria-live` apenas para feedback relevante;
+- layout sem overflow horizontal em telas pequenas.
+
+Rollback:
+
+- remover a pagina de Ativos readonly, os formatadores/view-models, os testes e a documentacao desta fase;
+- manter o contrato readonly versionado, o host experimental e o shell independente como estavam.
