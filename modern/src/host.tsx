@@ -1,4 +1,5 @@
 import { App } from './App';
+import { createHostFixedIncomeReadonlySource } from './bootstrap/hostFixedIncomeReadonlySource';
 import {
   createHostLegacyReportsReadonlySource,
   hostAssetAppliedValue,
@@ -6,9 +7,11 @@ import {
   hostMetaTicker,
   hostNormalizeType,
 } from './bootstrap/hostLegacyReportsReadonlySource';
+import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRuntime';
 import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
 import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
+import type { HostFixedIncomeAsset } from './bootstrap/hostFixedIncomeReadonlySource';
 import {
   buildReadonlyReportSessionSearch,
   readReadonlyReportSessionContext,
@@ -28,6 +31,7 @@ const rootElement = typeof document !== 'undefined' ? document.getElementById('r
 export interface HostBootstrapOptions {
   readonly rootElement?: HTMLElement | null;
   readonly getAssets?: () => readonly HostLegacyReportAsset[];
+  readonly getFixedIncomeAssets?: () => readonly HostFixedIncomeAsset[];
   readonly legacyModule?: Record<string, unknown> | null;
   readonly buildReportAssetRowModule?: Record<string, unknown> | null;
   readonly getGeneratedAt?: () => string;
@@ -156,6 +160,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   }
 
   const hasInjectedAssets = typeof options.getAssets === 'function';
+  const hasInjectedFixedIncomeAssets = typeof options.getFixedIncomeAssets === 'function';
   const sessionContextEnabled =
     typeof location !== 'undefined' &&
     (location.hostname === 'localhost' || location.hostname === '127.0.0.1') &&
@@ -203,6 +208,19 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     return null;
   })();
 
+  const fixedIncomeSource = hasInjectedFixedIncomeAssets
+    ? createHostFixedIncomeReadonlySource({
+        getAssets: options.getFixedIncomeAssets,
+        getGeneratedAt:
+          options.getGeneratedAt ??
+          (() =>
+            hasInjectedFixedIncomeAssets
+              ? new Date().toISOString()
+              : new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString()),
+        notice: options.notice ?? 'Snapshot legado somente leitura de renda fixa. React nao escreve na fonte.',
+      })
+    : null;
+
   const fallbackHostReportsSource = await createHostLegacyReportsReadonlySource({
       legacyModule: injectedLegacyModule ?? undefined,
       getAssets: options.getAssets ?? (() => experimentalAssets),
@@ -233,14 +251,18 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
       : () => {
           experimentalRevision += 1;
           experimentalAssets = createHostExperimentalAssets(experimentalRevision);
-        },
+      },
   });
 
   const modernReportsRuntime = createModernReportsRuntime({ reportsSource: reportsRefreshController });
+  const modernFixedIncomeRuntime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: fixedIncomeSource ?? undefined,
+  });
 
   mountModernApp({
     rootElement: targetRoot,
     reportsAdapter: modernReportsRuntime.reportsAdapter,
+    fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
     AppComponent: App,
     reportsRefreshController,
       initialPageId: initialSessionContext?.pageId ?? 'overview',
@@ -263,6 +285,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   return {
     reportsRefreshController,
     reportsAdapter: modernReportsRuntime.reportsAdapter,
+    fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
   };
 }
 

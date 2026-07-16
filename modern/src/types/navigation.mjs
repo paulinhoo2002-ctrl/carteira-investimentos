@@ -16,9 +16,9 @@ export const MODERN_PAGES = [
   {
     id: 'fixed-income',
     label: 'Renda fixa',
-    title: 'Renda fixa',
-    description: 'Espaco preparado para os blocos de renda fixa sem leitura de dados reais.',
-    hint: 'Painel futuro',
+    title: 'Renda fixa readonly',
+    description: 'Consulta somente leitura da renda fixa da carteira, com leitura segura do snapshot.',
+    hint: 'Leitura dedicada',
   },
   {
     id: 'provents',

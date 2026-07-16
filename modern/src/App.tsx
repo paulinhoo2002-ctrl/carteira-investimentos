@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { PagePlaceholder } from './components/PagePlaceholder';
 import { Sidebar } from './components/Sidebar';
+import { FixedIncomeReadonlyPage } from './features/fixed-income/FixedIncomeReadonlyPage';
 import { AssetsReadonlyPage } from './features/reports/AssetsReadonlyPage';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
 import type { ReportsRefreshController } from './features/reports/reportsRefreshController';
+import type { ReadOnlyFixedIncomeAdapter } from './features/fixed-income/fixedIncomeSnapshotAdapter.mjs';
 import type { ReadOnlyReportsAdapter } from './features/reports/reportsSnapshotAdapter';
 import type { ModernPageId } from './types/navigation.mjs';
 import { MODERN_PAGES, OVERVIEW_CARDS } from './types/navigation.mjs';
 
 interface AppProps {
   reportsAdapter: ReadOnlyReportsAdapter;
+  fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
   reportsRefreshController?: ReportsRefreshController | null;
   initialPageId?: ModernPageId;
   onActivePageIdChange?: (pageId: ModernPageId) => void;
@@ -18,6 +21,7 @@ interface AppProps {
 
 export function App({
   reportsAdapter,
+  fixedIncomeAdapter,
   reportsRefreshController,
   initialPageId = 'overview',
   onActivePageIdChange,
@@ -82,6 +86,8 @@ export function App({
               adapter={reportsAdapter}
               refreshController={reportsRefreshController}
             />
+          ) : activePageId === 'fixed-income' ? (
+            <FixedIncomeReadonlyPage adapter={fixedIncomeAdapter} />
           ) : activePageId === 'reports' ? (
             <AssetsReportPreview adapter={reportsAdapter} refreshController={reportsRefreshController} />
           ) : (
