@@ -235,7 +235,9 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(assetsReadonlyTsx, /AssetsReadonlyPage/);
   assert.match(assetsReadonlyTsx, /createReadonlyAssetsViewModel/);
   assert.match(assetsReadonlyTsx, /Voltar ao legado/);
-  assert.match(assetsReadonlyTsx, /Atualizar prévia/);
+  assert.match(assetsReadonlyTsx, /Atualizar ativos/);
+  assert.match(assetsReadonlyTsx, /Nenhum ativo em alta/);
+  assert.match(assetsReadonlyTsx, /Nenhum ativo em queda/);
   assert.match(assetsReadonlyTsx, /Maiores posições/);
   assert.match(assetsReadonlyTsx, /Distribuição por categoria/);
   assert.match(assetsReadonlyTsx, /Lista de ativos/);

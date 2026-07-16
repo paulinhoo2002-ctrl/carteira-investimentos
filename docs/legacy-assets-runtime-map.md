@@ -298,7 +298,7 @@ Contrato:
 
 Refresh:
 
-- o botao `Atualizar previa` continua controlado pelo host experimental;
+- o botao `Atualizar ativos` continua controlado pelo host experimental;
 - cada refresh relê `S.assets` por meio de `getAssets`;
 - o ultimo snapshot valido e preservado em erro;
 - nao existe polling, timer ou callback global novo.
@@ -744,7 +744,7 @@ Estados visuais:
 - fallback readonly por erro;
 - busca sem resultado;
 - filtro sem resultado;
-- loading apenas quando o host ou o controller ainda estao compondo a leitura.
+- leitura inicial sincronica pelo adapter/controller; nao existe loading transitorio separado nesta fase; refresh preserva o ultimo snapshot valido; fallback e erro sao tratados; loading assincronico so deve existir se uma futura fonte realmente exigir.
 
 Derivacoes visuais permitidas:
 

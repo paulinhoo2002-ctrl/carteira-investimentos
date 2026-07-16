@@ -55,6 +55,18 @@ function sortItems(items: readonly ReadOnlyReportItem[], sortBy: ReadonlyAssetsS
   return sorted;
 }
 
+function sortPositiveItems(items: readonly ReadOnlyReportItem[]) {
+  return [...items]
+    .filter((item) => item.variationPct > 0)
+    .sort((a, b) => b.variationPct - a.variationPct || compareTicker(a, b));
+}
+
+function sortNegativeItems(items: readonly ReadOnlyReportItem[]) {
+  return [...items]
+    .filter((item) => item.variationPct < 0)
+    .sort((a, b) => a.variationPct - b.variationPct || compareTicker(a, b));
+}
+
 function uniqueCategories(items: readonly ReadOnlyReportItem[]) {
   return [...new Set(items.map((item) => item.category))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
@@ -143,10 +155,8 @@ export function createReadonlyAssetsViewModel(
   });
 
   const sortedFilteredItems = sortItems(filteredItems, filters.sortBy);
-  const topGainers = sortItems(snapshot.items, 'variationPct').slice(0, 3);
-  const topLosers = [...snapshot.items]
-    .sort((a, b) => a.variationPct - b.variationPct || compareTicker(a, b))
-    .slice(0, 3);
+  const topGainers = sortPositiveItems(snapshot.items).slice(0, 3);
+  const topLosers = sortNegativeItems(snapshot.items).slice(0, 3);
   const topPositions = sortItems(snapshot.items, 'currentValue').slice(0, 3);
   const distribution = createCategoryDistribution(snapshot.items);
 

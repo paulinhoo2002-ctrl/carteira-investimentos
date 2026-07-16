@@ -63,6 +63,12 @@ function AssetsReadonlyPageContent({
     [category, query, snapshot, sortBy],
   );
 
+  const hasSnapshotItems = viewModel.itemCount > 0;
+  const topGainLabel = hasSnapshotItems ? 'Nenhum ativo em alta' : 'Sem ativos';
+  const topGainHint = hasSnapshotItems ? 'Nenhum ativo com variacao positiva' : 'Snapshot vazio';
+  const topLossLabel = hasSnapshotItems ? 'Nenhum ativo em queda' : 'Sem ativos';
+  const topLossHint = hasSnapshotItems ? 'Nenhum ativo com variacao negativa' : 'Snapshot vazio';
+
   const topGain = viewModel.topGainers[0] ?? null;
   const topLoss = viewModel.topLosers[0] ?? null;
 
@@ -91,7 +97,7 @@ function AssetsReadonlyPageContent({
           </a>
           {showRefreshButton ? (
             <button className="assets-report__refresh-button" type="button" onClick={onRefresh}>
-              Atualizar prévia
+              Atualizar ativos
             </button>
           ) : null}
         </div>
@@ -180,19 +186,19 @@ function AssetsReadonlyPageContent({
         <article className="overview-card">
           <p className="overview-card__label">Maior alta</p>
           <p className="overview-card__value">
-            {topGain ? summarizeItemLabel(topGain.ticker, topGain.name) : 'Sem ativos'}
+            {topGain ? summarizeItemLabel(topGain.ticker, topGain.name) : topGainLabel}
           </p>
           <p className="overview-card__hint">
-            {topGain ? formatReadonlyPercent(topGain.variationPct) : 'Snapshot vazio'}
+            {topGain ? formatReadonlyPercent(topGain.variationPct) : topGainHint}
           </p>
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Maior queda</p>
           <p className="overview-card__value">
-            {topLoss ? summarizeItemLabel(topLoss.ticker, topLoss.name) : 'Sem ativos'}
+            {topLoss ? summarizeItemLabel(topLoss.ticker, topLoss.name) : topLossLabel}
           </p>
           <p className="overview-card__hint">
-            {topLoss ? formatReadonlyPercent(topLoss.variationPct) : 'Snapshot vazio'}
+            {topLoss ? formatReadonlyPercent(topLoss.variationPct) : topLossHint}
           </p>
         </article>
       </div>
@@ -206,15 +212,23 @@ function AssetsReadonlyPageContent({
         </div>
 
         <div className="assets-readonly__top-list">
-          {viewModel.topPositions.map((item, index) => (
-            <article className="overview-card" key={item.ticker}>
-              <p className="overview-card__label">Posição {index + 1}</p>
-              <p className="overview-card__value">{summarizeItemLabel(item.ticker, item.name)}</p>
-              <p className="overview-card__hint">
-                {formatReadonlyCurrency(item.currentValue)} · {formatReadonlyPercent(item.allocationPct, { signed: false })}
-              </p>
+          {viewModel.topPositions.length > 0 ? (
+            viewModel.topPositions.map((item, index) => (
+              <article className="overview-card" key={item.ticker}>
+                <p className="overview-card__label">Posição {index + 1}</p>
+                <p className="overview-card__value">{summarizeItemLabel(item.ticker, item.name)}</p>
+                <p className="overview-card__hint">
+                  {formatReadonlyCurrency(item.currentValue)} · {formatReadonlyPercent(item.allocationPct, { signed: false })}
+                </p>
+              </article>
+            ))
+          ) : (
+            <article className="overview-card" aria-live="polite">
+              <p className="overview-card__label">Sem ativos</p>
+              <p className="overview-card__value">Snapshot vazio</p>
+              <p className="overview-card__hint">Nenhuma posição readonly para exibir.</p>
             </article>
-          ))}
+          )}
         </div>
       </section>
 
@@ -227,25 +241,33 @@ function AssetsReadonlyPageContent({
         </div>
 
         <div className="assets-readonly__distribution-list">
-          {viewModel.distribution.map((entry) => (
-            <div className="assets-readonly__distribution-row" key={entry.category}>
-              <div className="assets-readonly__distribution-row-head">
-                <strong>{entry.category}</strong>
-                <span>
-                  {formatReadonlyPercent(entry.allocationPct, { signed: false })} · {entry.itemCount} ativos
-                </span>
+          {viewModel.distribution.length > 0 ? (
+            viewModel.distribution.map((entry) => (
+              <div className="assets-readonly__distribution-row" key={entry.category}>
+                <div className="assets-readonly__distribution-row-head">
+                  <strong>{entry.category}</strong>
+                  <span>
+                    {formatReadonlyPercent(entry.allocationPct, { signed: false })} · {entry.itemCount} ativos
+                  </span>
+                </div>
+                <div
+                  className="assets-readonly__distribution-track"
+                  aria-label={`${entry.category}: ${formatReadonlyPercent(entry.allocationPct, { signed: false })}`}
+                >
+                  <span
+                    className="assets-readonly__distribution-fill"
+                    style={{ width: `${Math.max(0, Math.min(entry.allocationPct, 100))}%` }}
+                  />
+                </div>
               </div>
-              <div
-                className="assets-readonly__distribution-track"
-                aria-label={`${entry.category}: ${formatReadonlyPercent(entry.allocationPct, { signed: false })}`}
-              >
-                <span
-                  className="assets-readonly__distribution-fill"
-                  style={{ width: `${Math.max(0, Math.min(entry.allocationPct, 100))}%` }}
-                />
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <article className="overview-card" aria-live="polite">
+              <p className="overview-card__label">Sem distribuicao</p>
+              <p className="overview-card__value">Snapshot vazio</p>
+              <p className="overview-card__hint">Nenhuma categoria readonly para exibir.</p>
+            </article>
+          )}
         </div>
       </section>
 

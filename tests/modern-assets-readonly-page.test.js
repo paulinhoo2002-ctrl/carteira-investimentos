@@ -83,6 +83,21 @@ function createSnapshot(overrides = {}) {
   };
 }
 
+function createSnapshotFromItems(items, overrides = {}) {
+  const totalValue = items.reduce((sum, item) => sum + item.currentValue, 0);
+
+  return createSnapshot({
+    summary: {
+      totalValue,
+      itemCount: items.length,
+      averageVariationPct:
+        items.length > 0 ? items.reduce((sum, item) => sum + item.variationPct, 0) / items.length : 0,
+    },
+    items,
+    ...overrides,
+  });
+}
+
 test('view model readonly de ativos deriva lista, filtros e destaques do snapshot', async () => {
   const { createReadonlyAssetsViewModel } = await loadViewModelModule();
   const snapshot = createSnapshot();
@@ -110,6 +125,113 @@ test('view model readonly de ativos deriva lista, filtros e destaques do snapsho
       ['ETF demo', 1],
     ],
   );
+});
+
+test('view model readonly de ativos separa altas e quedas por sinal', async () => {
+  const { createReadonlyAssetsViewModel } = await loadViewModelModule();
+
+  const onlyPositive = createSnapshotFromItems([
+    {
+      ticker: 'AAA1',
+      name: 'Alta 1',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 10,
+      currentValue: 110,
+      variationPct: 10,
+      allocationPct: 40,
+      trend: 'positive',
+    },
+    {
+      ticker: 'BBB1',
+      name: 'Alta 2',
+      category: 'ETF demo',
+      quantity: 1,
+      averagePrice: 10,
+      currentValue: 120,
+      variationPct: 20,
+      allocationPct: 30,
+      trend: 'positive',
+    },
+  ]);
+
+  const onlyNegative = createSnapshotFromItems([
+    {
+      ticker: 'CCC1',
+      name: 'Queda 1',
+      category: 'FII demo',
+      quantity: 1,
+      averagePrice: 10,
+      currentValue: 90,
+      variationPct: -10,
+      allocationPct: 60,
+      trend: 'negative',
+    },
+    {
+      ticker: 'DDD1',
+      name: 'Queda 2',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 10,
+      currentValue: 80,
+      variationPct: -20,
+      allocationPct: 40,
+      trend: 'negative',
+    },
+  ]);
+
+  const onlyNeutral = createSnapshotFromItems([
+    {
+      ticker: 'EEE1',
+      name: 'Neutra 1',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 10,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 100,
+      trend: 'neutral',
+    },
+  ]);
+
+  const vmPositive = createReadonlyAssetsViewModel(onlyPositive, {
+    query: '',
+    category: 'all',
+    sortBy: 'currentValue',
+  });
+  assert.equal(vmPositive.topGainers.length, 2);
+  assert.equal(vmPositive.topLosers.length, 0);
+  assert(vmPositive.topGainers.every((item) => item.variationPct > 0));
+
+  const vmNegative = createReadonlyAssetsViewModel(onlyNegative, {
+    query: '',
+    category: 'all',
+    sortBy: 'currentValue',
+  });
+  assert.equal(vmNegative.topGainers.length, 0);
+  assert.equal(vmNegative.topLosers.length, 2);
+  assert(vmNegative.topLosers.every((item) => item.variationPct < 0));
+
+  const vmNeutral = createReadonlyAssetsViewModel(onlyNeutral, {
+    query: '',
+    category: 'all',
+    sortBy: 'currentValue',
+  });
+  assert.equal(vmNeutral.topGainers.length, 0);
+  assert.equal(vmNeutral.topLosers.length, 0);
+
+  const vmEmpty = createReadonlyAssetsViewModel(
+    createSnapshotFromItems([], {
+      summary: { totalValue: 0, itemCount: 0, averageVariationPct: 0 },
+    }),
+    {
+      query: '',
+      category: 'all',
+      sortBy: 'currentValue',
+    },
+  );
+  assert.equal(vmEmpty.topGainers.length, 0);
+  assert.equal(vmEmpty.topLosers.length, 0);
 });
 
 test('pagina readonly de ativos renderiza snapshot e aceita refresh controller', async () => {
@@ -140,7 +262,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     assert.match(staticHtml, /Somente leitura\. Nada aqui escreve ou altera a carteira\./);
     assert.match(staticHtml, /Snapshot customizado do adapter/);
     assert.match(staticHtml, /Voltar ao legado/);
-    assert.equal(staticHtml.includes('Atualizar prévia'), false);
+    assert.equal(staticHtml.includes('Atualizar ativos'), false);
     assert.equal(staticHtml.includes('assets-readonly__legacy-link'), true);
 
     let revision = 0;
@@ -209,9 +331,99 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
       }),
     );
 
-    assert.match(before, /Atualizar prévia/);
+    assert.match(before, /Atualizar ativos/);
     assert.match(before, /Leitura pronta|Leitura atualizada/);
     assert.match(before, /2026-07-14T10:30:00.000Z/);
+
+    const onlyPositiveHtml = renderToStaticMarkup(
+      React.createElement(AssetsReadonlyPage, {
+        adapter: {
+          getSnapshot() {
+            return createSnapshotFromItems([
+              {
+                ticker: 'AAA1',
+                name: 'Alta 1',
+                category: 'Acao demo',
+                quantity: 1,
+                averagePrice: 10,
+                currentValue: 110,
+                variationPct: 10,
+                allocationPct: 100,
+                trend: 'positive',
+              },
+            ]);
+          },
+        },
+      }),
+    );
+
+    assert.match(onlyPositiveHtml, /Nenhum ativo em queda/);
+    assert.doesNotMatch(onlyPositiveHtml, /Sem ativos/);
+
+    const onlyNegativeHtml = renderToStaticMarkup(
+      React.createElement(AssetsReadonlyPage, {
+        adapter: {
+          getSnapshot() {
+            return createSnapshotFromItems([
+              {
+                ticker: 'BBB1',
+                name: 'Queda 1',
+                category: 'FII demo',
+                quantity: 1,
+                averagePrice: 10,
+                currentValue: 90,
+                variationPct: -10,
+                allocationPct: 100,
+                trend: 'negative',
+              },
+            ]);
+          },
+        },
+      }),
+    );
+
+    assert.match(onlyNegativeHtml, /Nenhum ativo em alta/);
+
+    const onlyNeutralHtml = renderToStaticMarkup(
+      React.createElement(AssetsReadonlyPage, {
+        adapter: {
+          getSnapshot() {
+            return createSnapshotFromItems([
+              {
+                ticker: 'CCC1',
+                name: 'Neutra 1',
+                category: 'ETF demo',
+                quantity: 1,
+                averagePrice: 10,
+                currentValue: 100,
+                variationPct: 0,
+                allocationPct: 100,
+                trend: 'neutral',
+              },
+            ]);
+          },
+        },
+      }),
+    );
+
+    assert.match(onlyNeutralHtml, /Nenhum ativo em alta/);
+    assert.match(onlyNeutralHtml, /Nenhum ativo em queda/);
+
+    const emptyHtml = renderToStaticMarkup(
+      React.createElement(AssetsReadonlyPage, {
+        adapter: {
+          getSnapshot() {
+            return createSnapshotFromItems([], {
+              summary: { totalValue: 0, itemCount: 0, averageVariationPct: 0 },
+            });
+          },
+        },
+      }),
+    );
+
+    assert.match(emptyHtml, /Sem ativos/);
+    assert.match(emptyHtml, /Snapshot vazio/);
+    assert.match(emptyHtml, /Sem distribuicao/);
 
     controller.refresh();
 

@@ -1,4 +1,4 @@
-﻿# Project Phases Roadmap
+# Project Phases Roadmap
 
 Registro oficial e versionado da evolucao readonly do projeto.
 
@@ -7,7 +7,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - fase atual: 186
 - branch atual: `feat/modern-assets-readonly-page`
 - SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`
-- situacao: em desenvolvimento
+- situacao: em revisao — draft
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -70,8 +70,10 @@ Base de referencia desta fase:
 - nome da fase: Ativos moderno readonly;
 - branch: `feat/modern-assets-readonly-page`;
 - SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
-- situacao: em desenvolvimento;
-- PR: ainda nao aberta.
+- situacao: em revisao — draft;
+- PR: #186;
+- head atual da branch: commit publicado nesta fase;
+- SHA final na main: pendente de merge;
 
 ### Fase 186
 
@@ -338,7 +340,7 @@ Entregaveis:
 - filtros locais por busca, categoria e ordenacao;
 - destaques de maiores altas, maiores quedas e maiores posicoes;
 - distribuicao visual por categoria;
-- estados de carregando, snapshot real, carteira vazia, fallback, erro de refresh e resultado vazio;
+- leitura inicial sincronica pelo adapter/controller; nao existe loading transitorio separado nesta fase; refresh preserva o ultimo snapshot valido; fallback e erro sao tratados; loading assincronico so deve existir se uma futura fonte realmente exigir;
 - testes estruturais, de renderizacao, de filtro, de ordenacao e de responsividade;
 - smokes do shell, do host e da integracao com o contrato readonly.
 
