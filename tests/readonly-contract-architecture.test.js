@@ -286,6 +286,27 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /head de revisao: consultavel na PR #189/);
 }
 
+function assertRoadmapCurrentPhase189State(roadmap) {
+  const currentState = extractRoadmapPhaseSection(roadmap, '### Estado atual', '## 2. Ordem consolidada das fases readonly');
+  const phase189 = extractRoadmapPhaseSection(roadmap, '## 10. Fase 189 - aportes e sugestao explicavel readonly', '## 11. Proximas fases');
+
+  assert.match(currentState, /- fase atual: 189/);
+  assert.match(currentState, /- nome da fase: Aportes e sugestao explicavel/);
+  assert.match(currentState, /- branch: `feat\/modern-contributions-explainable-page`;/);
+  assert.match(currentState, /- SHA-base: `2c6489fb190e215fd69074071aceba8cf2638e39`;/);
+  assert.match(currentState, /- situacao: em revisao - draft;/);
+  assert.match(currentState, /- PR: `#189`;/);
+  assert.match(currentState, /- head de revisao: consultavel na PR #189;/);
+  assert.match(currentState, /- SHA final na main: pendente de merge;/);
+  assert.equal(currentState.includes('situacao: em desenvolvimento'), false, 'Estado atual da Fase 189 nao pode ficar em desenvolvimento');
+  assert.equal(currentState.includes('PR: pendente'), false, 'Estado atual da Fase 189 nao pode usar PR pendente');
+
+  assert.match(phase189, /prudentContributionAnalysis\(\)/);
+  assert.match(phase189, /leitura deterministica e sem efeitos colaterais/);
+  assert.match(phase189, /o moderno nao executa nem replica a estrategia/);
+  assert.equal(phase189.includes('resultado oficial ja produzido pelo legado'), false, 'Fase 189 nao pode afirmar resultado armazenado separado');
+}
+
 function assertModernDistIgnored() {
   const listed = execFileSync('git', ['ls-files', 'modern/dist'], {
     cwd: repoRoot,
@@ -410,6 +431,7 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertPackageScripts(snapshot.packageJson);
   assertDocsNoDuplicateList(snapshot.docs);
   assertRoadmapPhaseShas(snapshot.roadmap);
+  assertRoadmapCurrentPhase189State(snapshot.roadmap);
   assertModernDistIgnored();
   assertShellIsolation({
     'modern/index.html': snapshot.modernIndexHtml,

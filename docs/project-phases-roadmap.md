@@ -7,7 +7,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - fase atual: 189
 - branch atual: `feat/modern-contributions-explainable-page`
 - SHA-base: `2c6489fb190e215fd69074071aceba8cf2638e39`
-- situacao: em desenvolvimento
+- situacao: em revisao - draft
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -93,15 +93,15 @@ Base de referencia desta fase:
 - nome da fase: Aportes e sugestao explicavel;
 - branch: `feat/modern-contributions-explainable-page`;
 - SHA-base: `2c6489fb190e215fd69074071aceba8cf2638e39`;
-- situacao: em desenvolvimento;
-- PR: pendente;
+- situacao: em revisao - draft;
+- PR: `#189`;
 - head de revisao: consultavel na PR #189;
 - SHA final na main: pendente de merge;
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
 ### Fase 189
 
-- objetivo: criar uma experiencia moderna somente leitura para consultar aportes ja registrados e a sugestao explicavel ja produzida pelo legado, sem executar compra ou persistir decisao;
+- objetivo: criar uma experiencia moderna somente leitura para consultar aportes ja registrados; a fronteira legada consulta `prudentContributionAnalysis()`, auditada como leitura deterministica e sem efeitos colaterais, e o moderno nao executa nem replica a estrategia;
 - entregaveis: contrato readonly dedicado, provider readonly legado, pagina moderna readonly com lista, filtros locais, agrupamentos visuais, sugestao explicavel, estados vazios/fallback/erro, testes e smokes;
 - fora de escopo: compra, cadastro, edicao, exclusao, persistencia de aporte, nova recomendacao financeira, novo ranking, rebalanceamento automatico, calculo de preco-teto, cotacao externa, projecao de retorno, dividendos, venda sugerida, storage, Firebase, Auth, sync, backup, polling, fetch externo, nova dependencia, alteracao do contrato readonly canonico de outras fases ou do fluxo principal;
 - riscos: schema legado misto ou incompleto, parte dos registros sem explicacao estruturada, regressao de acessibilidade/responsividade em listas grandes e paineis densos, excesso de derivacao visual sem fonte oficial, stale snapshot se o refresh controlado nao for usado na composicao host;
@@ -351,15 +351,15 @@ Riscos classificados:
 
 Objetivo:
 
-- criar uma experiencia moderna somente leitura para consultar aportes ja registrados;
-- expor a sugestao ou indicacao de aporte ja produzida pelo legado, com justificativa clara e rastreavel;
+- criar uma experiencia moderna somente leitura para consultar aportes ja registrados; a fronteira legada consulta `prudentContributionAnalysis()`, auditada como leitura deterministica e sem efeitos colaterais, e o moderno nao executa nem replica a estrategia;
+- expor a sugestao ou indicacao de aporte com justificativa clara e rastreavel, sem afirmar cache ou resultado separado;
 - manter o legado como unica fonte de verdade, sem executar compra ou persistir decisao;
 - usar fronteira readonly explicita, com contrato, provider, bridge, adapter, runtime e pagina dedicados quando necessario.
 
 Entregaveis:
 
 - contrato readonly dedicado para aportes com versionamento explicito, clone defensivo e deep freeze;
-- provider readonly legado que apenas lê aportes reais e a sugestao oficial ja produzida;
+- provider readonly legado que consulta `prudentContributionAnalysis()` como leitura deterministica e sem efeitos colaterais;
 - pagina moderna readonly com lista, filtros locais, agrupamentos visuais, explicabilidade, estados vazios, fallback e erro;
 - resumo com contagem e sinais oficiais do legado, sem recalcular alocacao, deficit, ranking financeiro ou preco-teto;
 - visualizacao da sugestao com razoes, avisos, limitacoes e rastreabilidade do dado;
