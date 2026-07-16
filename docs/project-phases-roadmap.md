@@ -4,10 +4,10 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 187
-- branch atual: `feat/modern-fixed-income-readonly-page`
-- SHA-base: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`
-- situacao: em revisao - draft
+- fase atual: 188
+- branch atual: `feat/modern-income-readonly-page`
+- SHA-base: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`
+- situacao: em desenvolvimento
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -21,9 +21,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`
+- HEAD / `origin/main`: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`
 - workspace: limpo no inicio desta fase
-- PR `#186`: merged e closed
+- PR `#187`: merged e closed
 
 ## 1. Historico confirmado das fases readonly
 
@@ -40,19 +40,21 @@ Base de referencia desta fase:
 | 182 | Fronteira unica de consumo do contrato readonly | Concluida | `#182` | `1ba344206aa4d59247a5d7e97d4759a173eedb1d` | `docs/legacy-assets-runtime-map.md`, `index.html`, `modern/src/features/reports/readonlyReportSessionContext.ts`, `readonly-report-page-contract.js`, `tests/legacy-assets-active-wallet-host.test.js`, `tests/legacy-assets-runtime-map.test.js`, `tests/modern-base.test.js`, `tests/readonly-report-session-context.test.js` | removeu listas funcionais duplicadas no consumo; fallback `reports` permaneceu unico | ainda nao existia guardrail automatico contra reintroducao de listas, fallbacks ou resolvedores locais | reverter merge da fase |
 | 183 | Guardrails automaticos da arquitetura readonly | Concluida | `#183` | `cc6d4d4fcb964da2f451743993e1cfc44698a25c` | `docs/legacy-assets-runtime-map.md`, `package.json`, `tests/modern-base.test.js`, `tests/readonly-contract-architecture.test.js` | guardrails de arquitetura passaram a rodar no CI sem duplicar a suite moderna completa | warnings CJS e `MODULE_TYPELESS_PACKAGE_JSON` continuam aceitos | reverter merge da fase |
 | 184 | Auditoria da fronteira readonly e mapa oficial de evolucao | Concluida | `#184` | `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512` | `docs/project-phases-roadmap.md` | documentacao ajustada; sem mudanca funcional; apenas roadmap e auditoria | risco residual apenas documental se novas fases legitimas nao atualizarem o mapa | reverter `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512` |
+| 185 | Contrato readonly tipado e versionado dos dados de relatorio | Concluida | `#185` | `3a80972310773e20dbf73a101c745f6f7f3b7c9d` | `docs/legacy-assets-runtime-map.md`, `modern/src/features/reports/reportsReadonlyContract.mjs`, `modern/src/features/reports/reportsReadonlyContract.d.ts`, `modern/src/features/reports/reportsReadonlyBridge.mjs`, `modern/src/features/reports/reportsReadonlyBridge.d.ts`, `modern/src/features/reports/reportsSnapshotAdapter.mjs`, `modern/src/features/reports/reportsSnapshotAdapter.d.ts`, `tests/readonly-contract-architecture.test.js`, `tests/readonly-reports-data-contract.test.js` | contrato readonly versionado, validado, imutavel e com runtime canonico unico | tipagem mais explicita, sem mudar o fluxo funcional | reverter `3a80972310773e20dbf73a101c745f6f7f3b7c9d` |
+| 186 | Ativos moderno readonly | Concluida | `#186` | `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` | `docs/project-phases-roadmap.md`, `modern/src/features/reports/AssetsReadonlyPage.tsx`, `modern/src/features/reports/readonlyReportsViewModel.ts`, `tests/modern-assets-readonly-page.test.js`, `tests/modern-host.test.js`, `tests/modern-reports-integration.test.js`, `tests/modern-reports-refresh.test.js` | pagina moderna readonly de Ativos com resumo, filtros, ordenacao, destaques, distribuicao, tabela desktop e cards mobile | leitura ainda depende de snapshot readonly e do controller quando presente | reverter `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` |
+| 187 | Renda Fixa readonly | Concluida | `#187` | `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` | `docs/project-phases-roadmap.md`, `modern/src/features/fixed-income/fixedIncomeReadonlyContract.mjs`, `modern/src/features/fixed-income/fixedIncomeReadonlyContract.d.ts`, `modern/src/features/fixed-income/fixedIncomeReadonlyBridge.mjs`, `modern/src/features/fixed-income/fixedIncomeReadonlyBridge.d.ts`, `modern/src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs`, `modern/src/features/fixed-income/fixedIncomeSnapshotAdapter.d.ts`, `modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx`, `modern/src/features/fixed-income/readonlyFixedIncomeViewModel.ts`, `tests/modern-fixed-income-readonly-page.test.js`, `tests/modern-host-source.test.js`, `tests/modern-host.test.js`, `tests/readonly-contract-architecture.test.js` | contrato, provider e pagina readonly de renda fixa, preservando ausencia versus zero e sem recalcular totais financeiros | schema real podia ter campos ausentes, combinados ou sem ticker | reverter `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` |
 
-## 2. Fechamento da Fase 186 e abertura da Fase 187
+## 2. Fechamento da Fase 187 e abertura da Fase 188
 
-### Fase 184
+### Fase 186
 
 - estado: Concluida;
-- PR: `#184`;
-- SHA final real da main: `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`;
-- titulo do commit final: `docs: corrige precisao do roadmap readonly`;
-- resultado principal: roadmap e auditoria ajustados com precisao historica e tecnica;
-- apenas documentacao alterada;
-- zero mudanca funcional;
-- rollback: `git revert 5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512`.
+- PR: `#186`;
+- SHA final na main: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`;
+- titulo do commit final: `feat: cria pagina moderna readonly de ativos`;
+- modo: squash;
+- resultado principal: pagina moderna readonly de Ativos com resumo, filtros, ordenacao, destaques, distribuicao, tabela desktop e cards mobile;
+- rollback: `git revert 0df41a41b9c6ba3d435044f60e69b3fa86cac27c`.
 
 ### Fase 185
 
@@ -66,25 +68,24 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: 187;
-- nome da fase: Renda Fixa readonly;
-- branch: `feat/modern-fixed-income-readonly-page`;
-- SHA-base: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`;
-- situacao: em revisao - draft;
-- PR: `#187`;
-- head de revisao: consultavel na PR `#187`;
+- fase atual: 188;
+- nome da fase: Proventos e renda mensal readonly;
+- branch: `feat/modern-income-readonly-page`;
+- SHA-base: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`;
+- situacao: em desenvolvimento;
+- PR: `#188`;
+- head de revisao: consultavel na futura PR;
 - SHA final na main: pendente de merge;
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
-### Fase 186
+### Fase 188
 
-- estado: Concluida;
-- PR: #186;
-- SHA final na main: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`;
-- titulo: `feat: cria pagina moderna readonly de ativos`;
-- modo: squash;
-- resultado: pagina moderna readonly de Ativos com resumo, filtros, ordenacao, destaques, distribuicao, tabela desktop e cards mobile;
-- rollback: `git revert 6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`.
+- objetivo: criar pagina moderna readonly para consulta de proventos recebidos e renda mensal da carteira, consumindo dados reais existentes no legado por uma fronteira readonly explicita;
+- entregaveis: contrato e provider readonly dedicados, pagina moderna de Proventos e renda mensal, resumo com totais oficiais ou nulos, lista, filtros visuais, agrupamento mensal, destaques, estados vazios/erro/fallback, testes e smokes;
+- fora de escopo: cadastro, edicao, exclusao, importacao, previsao, projecao, calculo tributario novo, dividend yield novo, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
+- riscos: schema legado misto ou incompleto, ausencia de informacoes em parte dos registros, divergencia entre bruto e liquido, regressao de acessibilidade/responsividade, derivacao visual excessiva;
+- criterios de conclusao: build, testes e smokes verdes; nenhuma duplicacao de formula financeira; nenhuma escrita moderna; nenhum acesso a `S.proventos` em `modern/src`; `modern/dist` continua fora do indice; rollback simples e reversivel;
+- rollback: remover a pagina, os testes e a documentacao desta fase, mantendo contrato, bridge, adapter, host e fases anteriores intactos.
 
 ### Fase 187
 
@@ -388,10 +389,9 @@ Rollback:
 
 Manter a sequencia oficial:
 
-1. 187: Renda Fixa readonly
-2. 188: Proventos e renda mensal
-3. 189: Aportes e sugestao explicavel
-4. 190: decisao arquitetural
+1. 188: Proventos e renda mensal readonly
+2. 189: Aportes e sugestao explicavel
+3. 190: decisao arquitetural
 
 ## 12. Radar estrategico - mudancas de alto impacto
 

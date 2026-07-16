@@ -26,8 +26,20 @@ const sourceFiles = [
   'src/bootstrap/hostBootstrap.ts',
   'src/styles.css',
   'src/bootstrap/modernReportsRuntime.ts',
+  'src/bootstrap/hostIncomeReadonlySource.ts',
+  'src/bootstrap/modernIncomeRuntime.ts',
+  'src/features/income/incomeRefreshController.ts',
   'src/features/reports/reportsRefreshController.ts',
   'src/features/reports/AssetsReadonlyPage.tsx',
+  'src/features/income/IncomeReadonlyPage.tsx',
+  'src/features/income/readonlyIncomeViewModel.ts',
+  'src/features/income/incomeReadonlyContract.mjs',
+  'src/features/income/incomeReadonlyContract.d.ts',
+  'src/features/income/incomeReadonlyBridge.mjs',
+  'src/features/income/incomeReadonlyBridge.d.ts',
+  'src/features/income/incomeSnapshotAdapter.mjs',
+  'src/features/income/incomeSnapshotAdapter.d.ts',
+  'src/features/income/legacyIncomeReadonlyIntegration.ts',
   'src/components/AppHeader.tsx',
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
@@ -62,7 +74,7 @@ function read(relativePath) {
 function allSourceText() {
   return sourceFiles
     .filter((file) => !hostExperimentalFiles.includes(file))
-    .filter((file) => file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.css') || file.endsWith('.html') || file.endsWith('.md'))
+    .filter((file) => file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.mjs') || file.endsWith('.css') || file.endsWith('.html') || file.endsWith('.md'))
     .map((file) => read(file))
     .join('\n');
 }
@@ -96,6 +108,15 @@ test('modern shell exists and stays isolated', async () => {
   const fixedIncomeContractTs = read('src/features/fixed-income/fixedIncomeReadonlyContract.mjs');
   const fixedIncomeBridgeTs = read('src/features/fixed-income/fixedIncomeReadonlyBridge.mjs');
   const fixedIncomeAdapterTs = read('src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs');
+  const incomeReadonlyTsx = read('src/features/income/IncomeReadonlyPage.tsx');
+  const incomeViewModelTs = read('src/features/income/readonlyIncomeViewModel.ts');
+  const incomeContractTs = read('src/features/income/incomeReadonlyContract.mjs');
+  const incomeBridgeTs = read('src/features/income/incomeReadonlyBridge.mjs');
+  const incomeAdapterTs = read('src/features/income/incomeSnapshotAdapter.mjs');
+  const incomeIntegrationTs = read('src/features/income/legacyIncomeReadonlyIntegration.ts');
+  const incomeSourceTs = read('src/bootstrap/hostIncomeReadonlySource.ts');
+  const incomeRuntimeTs = read('src/bootstrap/modernIncomeRuntime.ts');
+  const incomeRefreshControllerTs = read('src/features/income/incomeRefreshController.ts');
   const readonlyViewModelTs = read('src/features/reports/readonlyReportsViewModel.ts');
   const viteConfigTs = read('vite.config.ts');
   const headerTsx = read('src/components/AppHeader.tsx');
@@ -128,6 +149,8 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(hostHtml, /readonly-report-page-contract\.js/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
+  assert.match(hostTsx, /createHostIncomeReadonlySource/);
+  assert.match(hostTsx, /createModernIncomeRuntime/);
   assert.match(hostTsx, /readReadonlyReportSessionContext/);
   assert.match(hostTsx, /buildReadonlyReportSessionSearch/);
   assert.match(hostTsx, /createReportsRefreshController/);
@@ -139,28 +162,36 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(hostTsx, /buildReportAssetRowModule/);
   assert.match(appTsx, /interface AppProps/);
   assert.match(appTsx, /reportsAdapter: ReadOnlyReportsAdapter/);
+  assert.match(appTsx, /incomeAdapter: ReadOnlyIncomeAdapter/);
   assert.match(appTsx, /reportsRefreshController\?\:/);
+  assert.match(appTsx, /incomeRefreshController\?\:/);
   assert.match(appTsx, /initialPageId\?: ModernPageId/);
   assert.match(appTsx, /onActivePageIdChange\?: \(pageId: ModernPageId\) => void/);
   assert.match(appTsx, /adapter=\{reportsAdapter\}/);
   assert.match(appTsx, /AssetsReadonlyPage/);
+  assert.match(appTsx, /IncomeReadonlyPage/);
   assert.match(appTsx, /activePageId === 'assets'/);
   assert.match(appTsx, /activePageId === 'reports'/);
+  assert.match(appTsx, /activePageId === 'provents'/);
   assert.match(mainTsx, /mountModernApp/);
   assert.match(mainTsx, /createModernReportsRuntime/);
   assert.match(mainTsx, /createModernFixedIncomeRuntime/);
+  assert.match(mainTsx, /createModernIncomeRuntime/);
   assert.match(mainTsx, /const modernReportsRuntime = createModernReportsRuntime\(\);/);
   assert.match(mainTsx, /const modernFixedIncomeRuntime = createModernFixedIncomeRuntime\(\);/);
+  assert.match(mainTsx, /const modernIncomeRuntime = createModernIncomeRuntime\(\);/);
   assert.match(mainTsx, /mountModernApp\(\{/);
   assert.match(mainTsx, /AppComponent: App/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /createModernReportsRuntime/);
   assert.match(hostTsx, /createModernFixedIncomeRuntime/);
+  assert.match(hostTsx, /createModernIncomeRuntime/);
   assert.match(hostTsx, /bootstrapHost/);
   assert.match(hostTsx, /isHostPage/);
   assert.match(hostTsx, /AppComponent: App/);
   assert.match(hostTsx, /reportsRefreshController/);
   assert.match(hostTsx, /fixedIncomeAdapter/);
+  assert.match(hostTsx, /incomeAdapter/);
   assert.match(read('src/host-entry.tsx'), /bootstrapHost/);
   assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
   assert.match(hostSourceTs, /buildReportAssetRow/);
@@ -168,10 +199,13 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(fixedIncomeSourceTs, /createHostFixedIncomeReadonlySource/);
   assert.match(fixedIncomeSourceTs, /HOST_FIXED_INCOME_NOTICE/);
   assert.match(fixedIncomeSourceTs, /combinedTaxValue/);
+  assert.match(incomeSourceTs, /createHostIncomeReadonlySource/);
+  assert.match(incomeSourceTs, /getIncomeSnapshot/);
   assert.equal(fixedIncomeSourceTs.includes('reduce('), false);
   assert.equal(fixedIncomeSourceTs.includes('roundToCents'), false);
   assert.equal(fixedIncomeSourceTs.includes('toNumber(..., 0)'), false);
   assert.match(fixedIncomeRuntimeTs, /createModernFixedIncomeRuntime/);
+  assert.match(incomeRuntimeTs, /createModernIncomeRuntime/);
   assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
   assert.equal(hostSourceTs.includes('globalThis'), false);
   assert.match(mountTsx, /export function mountModernApp/);
@@ -263,8 +297,43 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(reportsPreviewTsx, /formatReadonlyQuantity/);
   assert.match(assetsReadonlyTsx, /AssetsReadonlyPage/);
   assert.match(assetsReadonlyTsx, /createReadonlyAssetsViewModel/);
+  assert.match(incomeReadonlyTsx, /IncomeReadonlyPage/);
+  assert.match(incomeReadonlyTsx, /Atualizar proventos/);
+  assert.match(incomeReadonlyTsx, /Lista de proventos/);
+  assert.match(incomeReadonlyTsx, /Distribuicao mensal/);
+  assert.match(incomeReadonlyTsx, /Destaques/);
+  assert.match(incomeReadonlyTsx, /aria-live="polite"/);
+  assert.match(incomeReadonlyTsx, /IncomeReadonlyPageContent/);
+  assert.match(incomeReadonlyTsx, /Nenhum pagamento informado/);
+  assert.match(incomeReadonlyTsx, /Nenhum pagador informado/);
+  assert.match(incomeReadonlyTsx, /Sem meses informados/);
   assert.match(fixedIncomeReadonlyTsx, /FixedIncomeReadonlyPage/);
   assert.match(fixedIncomeReadonlyTsx, /createReadonlyFixedIncomeViewModel/);
+  assert.match(incomeViewModelTs, /createReadonlyIncomeViewModel/);
+  assert.match(incomeViewModelTs, /monthlyBuckets/);
+  assert.match(incomeViewModelTs, /topPayments/);
+  assert.match(incomeViewModelTs, /topPayers/);
+  assert.match(incomeViewModelTs, /formatReadonlyMoneyOrMissing/);
+  assert.match(incomeContractTs, /INCOME_READONLY_CONTRACT_VERSION/);
+  assert.match(incomeContractTs, /INCOME_READONLY_FALLBACK_SNAPSHOT/);
+  assert.match(incomeContractTs, /normalizeReadonlyIncomeSnapshot/);
+  assert.match(incomeContractTs, /isReadonlyIncomeSnapshot/);
+  assert.match(incomeContractTs, /paymentCount/);
+  assert.match(incomeContractTs, /grossValue/);
+  assert.match(incomeContractTs, /netValue/);
+  assert.match(incomeContractTs, /taxValue/);
+  assert.match(incomeBridgeTs, /createIncomeReadonlyBridge/);
+  assert.match(incomeBridgeTs, /readSnapshot\(\)/);
+  assert.match(incomeAdapterTs, /createIncomeReadonlyAdapter/);
+  assert.match(incomeAdapterTs, /getSnapshot\(\)/);
+  assert.match(incomeIntegrationTs, /createConnectedIncomeAdapter/);
+  assert.match(incomeIntegrationTs, /createLegacyIncomeReadonlyBoundary/);
+  assert.match(incomeIntegrationTs, /createConnectedIncomeBridge/);
+  assert.match(incomeRefreshControllerTs, /createIncomeRefreshController/);
+  assert.match(incomeRefreshControllerTs, /INCOME_READONLY_FALLBACK_SNAPSHOT/);
+  assert.match(incomeRefreshControllerTs, /refresh/);
+  assert.match(incomeRefreshControllerTs, /subscribe/);
+  assert.match(incomeRefreshControllerTs, /getState/);
   assert.match(fixedIncomeViewModelTs, /createReadonlyFixedIncomeViewModel/);
   assert.match(fixedIncomeViewModelTs, /topProfitItems/);
   assert.match(fixedIncomeViewModelTs, /topLossItems/);
@@ -352,7 +421,7 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -378,6 +447,11 @@ test('modern shell exists and stays isolated', async () => {
   }
 
   for (const file of [appTsx, mainTsx, hostTsx, headerTsx, sidebarTsx, placeholderTsx, reportsPreviewTsx, reportsAdapterTs, navigationTs]) {
+    assert.equal(/from\s+['"`]\.\.\/\.\.\//.test(file), false, 'Legacy import path found');
+    assert.equal(/from\s+['"`]\/(?!node_modules)/.test(file), false, 'Absolute import path found');
+  }
+
+  for (const file of [incomeReadonlyTsx, incomeViewModelTs, incomeContractTs, incomeBridgeTs, incomeAdapterTs, incomeIntegrationTs, incomeSourceTs, incomeRuntimeTs, incomeRefreshControllerTs]) {
     assert.equal(/from\s+['"`]\.\.\/\.\.\//.test(file), false, 'Legacy import path found');
     assert.equal(/from\s+['"`]\/(?!node_modules)/.test(file), false, 'Absolute import path found');
   }
@@ -431,6 +505,77 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(fixedIncomeAdapterTs.includes('auth'), false);
   assert.equal(/\bsync\b/.test(fixedIncomeAdapterTs), false);
   assert.equal(fixedIncomeAdapterTs.includes('backup'), false);
+  assert.equal(incomeReadonlyTsx.includes('localStorage'), false);
+  assert.equal(incomeReadonlyTsx.includes('sessionStorage'), false);
+  assert.equal(incomeReadonlyTsx.includes('indexedDB'), false);
+  assert.equal(incomeReadonlyTsx.includes('firebase'), false);
+  assert.equal(incomeReadonlyTsx.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeReadonlyTsx), false);
+  assert.equal(incomeReadonlyTsx.includes('backup'), false);
+  assert.equal(incomeReadonlyTsx.includes('setInterval'), false);
+  assert.equal(incomeReadonlyTsx.includes('setTimeout'), false);
+  assert.equal(incomeReadonlyTsx.includes('requestAnimationFrame'), false);
+  assert.equal(incomeReadonlyTsx.includes('MutationObserver'), false);
+  assert.equal(incomeReadonlyTsx.includes('WebSocket'), false);
+  assert.equal(incomeViewModelTs.includes('localStorage'), false);
+  assert.equal(incomeViewModelTs.includes('sessionStorage'), false);
+  assert.equal(incomeViewModelTs.includes('indexedDB'), false);
+  assert.equal(incomeViewModelTs.includes('firebase'), false);
+  assert.equal(incomeViewModelTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeViewModelTs), false);
+  assert.equal(incomeViewModelTs.includes('backup'), false);
+  assert.equal(incomeViewModelTs.includes('setInterval'), false);
+  assert.equal(incomeViewModelTs.includes('setTimeout'), false);
+  assert.equal(incomeViewModelTs.includes('requestAnimationFrame'), false);
+  assert.equal(incomeViewModelTs.includes('MutationObserver'), false);
+  assert.equal(incomeViewModelTs.includes('WebSocket'), false);
+  assert.equal(incomeContractTs.includes('localStorage'), false);
+  assert.equal(incomeContractTs.includes('sessionStorage'), false);
+  assert.equal(incomeContractTs.includes('indexedDB'), false);
+  assert.equal(incomeContractTs.includes('firebase'), false);
+  assert.equal(incomeContractTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeContractTs), false);
+  assert.equal(incomeContractTs.includes('backup'), false);
+  assert.equal(incomeBridgeTs.includes('localStorage'), false);
+  assert.equal(incomeBridgeTs.includes('sessionStorage'), false);
+  assert.equal(incomeBridgeTs.includes('indexedDB'), false);
+  assert.equal(incomeBridgeTs.includes('firebase'), false);
+  assert.equal(incomeBridgeTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeBridgeTs), false);
+  assert.equal(incomeBridgeTs.includes('backup'), false);
+  assert.equal(incomeAdapterTs.includes('localStorage'), false);
+  assert.equal(incomeAdapterTs.includes('sessionStorage'), false);
+  assert.equal(incomeAdapterTs.includes('indexedDB'), false);
+  assert.equal(incomeAdapterTs.includes('firebase'), false);
+  assert.equal(incomeAdapterTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeAdapterTs), false);
+  assert.equal(incomeAdapterTs.includes('backup'), false);
+  assert.equal(incomeIntegrationTs.includes('localStorage'), false);
+  assert.equal(incomeIntegrationTs.includes('sessionStorage'), false);
+  assert.equal(incomeIntegrationTs.includes('indexedDB'), false);
+  assert.equal(incomeIntegrationTs.includes('firebase'), false);
+  assert.equal(incomeIntegrationTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeIntegrationTs), false);
+  assert.equal(incomeIntegrationTs.includes('backup'), false);
+  assert.equal(incomeSourceTs.includes('localStorage'), false);
+  assert.equal(incomeSourceTs.includes('sessionStorage'), false);
+  assert.equal(incomeSourceTs.includes('indexedDB'), false);
+  assert.equal(incomeSourceTs.includes('firebase'), false);
+  assert.equal(incomeSourceTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeSourceTs), false);
+  assert.equal(incomeSourceTs.includes('backup'), false);
+  assert.equal(incomeRefreshControllerTs.includes('localStorage'), false);
+  assert.equal(incomeRefreshControllerTs.includes('sessionStorage'), false);
+  assert.equal(incomeRefreshControllerTs.includes('indexedDB'), false);
+  assert.equal(incomeRefreshControllerTs.includes('firebase'), false);
+  assert.equal(incomeRefreshControllerTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeRefreshControllerTs), false);
+  assert.equal(incomeRefreshControllerTs.includes('backup'), false);
+  assert.equal(incomeRefreshControllerTs.includes('setInterval'), false);
+  assert.equal(incomeRefreshControllerTs.includes('setTimeout'), false);
+  assert.equal(incomeRefreshControllerTs.includes('requestAnimationFrame'), false);
+  assert.equal(incomeRefreshControllerTs.includes('MutationObserver'), false);
+  assert.equal(incomeRefreshControllerTs.includes('WebSocket'), false);
   assert.equal(mountTsx.includes('legacy/reports-readonly-source.js'), false);
   assert.equal(mountTsx.includes('@legacy-reports-readonly-source'), false);
   assert.equal(mountTsx.includes("from '../App'"), false);

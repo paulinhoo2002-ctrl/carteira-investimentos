@@ -40,6 +40,15 @@ const readonlyReportsBridgeRuntimeFilename = 'reportsReadonlyBridge.mjs';
 const readonlyReportsBridgeTypesFilename = 'reportsReadonlyBridge.d.ts';
 const readonlyReportsAdapterRuntimeFilename = 'reportsSnapshotAdapter.mjs';
 const readonlyReportsAdapterTypesFilename = 'reportsSnapshotAdapter.d.ts';
+const incomeReadonlyContractRuntimeFilename = 'incomeReadonlyContract.mjs';
+const incomeReadonlyContractTypesFilename = 'incomeReadonlyContract.d.ts';
+const incomeReadonlyBridgeRuntimeFilename = 'incomeReadonlyBridge.mjs';
+const incomeReadonlyBridgeTypesFilename = 'incomeReadonlyBridge.d.ts';
+const incomeReadonlyAdapterRuntimeFilename = 'incomeSnapshotAdapter.mjs';
+const incomeReadonlyAdapterTypesFilename = 'incomeSnapshotAdapter.d.ts';
+const incomeReadonlyPageFilename = 'IncomeReadonlyPage.tsx';
+const incomeReadonlyViewModelFilename = 'readonlyIncomeViewModel.ts';
+const incomeRefreshControllerFilename = 'incomeRefreshController.ts';
 const modernNavigationRuntimeFilename = 'navigation.mjs';
 const modernNavigationTypesFilename = 'navigation.d.ts';
 
@@ -217,6 +226,7 @@ function assertViteCopy(viteConfigTs) {
 function assertPackageScripts(packageJson) {
   assert.match(packageJson.scripts['test:modern'], /tests\/modern-assets-readonly-page\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/modern-fixed-income-readonly-page\.test\.js/);
+  assert.match(packageJson.scripts['test:modern'], /tests\/modern-income-readonly-page\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-contract-architecture\.test\.js/);
   assert.match(packageJson.scripts['test:modern'], /tests\/readonly-reports-data-contract\.test\.js/);
   assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
@@ -263,6 +273,8 @@ function loadArchitectureSnapshot() {
     readonlyViewModelTs: read('modern/src/features/reports/readonlyReportsViewModel.ts'),
     fixedIncomeReadonlyTsx: read('modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx'),
     fixedIncomeViewModelTs: read('modern/src/features/fixed-income/readonlyFixedIncomeViewModel.ts'),
+    incomeReadonlyTsx: read('modern/src/features/income/IncomeReadonlyPage.tsx'),
+    incomeViewModelTs: read('modern/src/features/income/readonlyIncomeViewModel.ts'),
     fixedIncomeContractJs: read('modern/src/features/fixed-income/fixedIncomeReadonlyContract.mjs'),
     fixedIncomeContractTypes: read('modern/src/features/fixed-income/fixedIncomeReadonlyContract.d.ts'),
     fixedIncomeBridgeJs: read('modern/src/features/fixed-income/fixedIncomeReadonlyBridge.mjs'),
@@ -272,6 +284,16 @@ function loadArchitectureSnapshot() {
     fixedIncomeIntegrationTs: read('modern/src/features/fixed-income/legacyFixedIncomeReadonlyIntegration.ts'),
     fixedIncomeSourceTs: read('modern/src/bootstrap/hostFixedIncomeReadonlySource.ts'),
     fixedIncomeRuntimeTs: read('modern/src/bootstrap/modernFixedIncomeRuntime.ts'),
+    incomeContractJs: read('modern/src/features/income/incomeReadonlyContract.mjs'),
+    incomeContractTypes: read('modern/src/features/income/incomeReadonlyContract.d.ts'),
+    incomeBridgeJs: read('modern/src/features/income/incomeReadonlyBridge.mjs'),
+    incomeBridgeTypes: read('modern/src/features/income/incomeReadonlyBridge.d.ts'),
+    incomeAdapterJs: read('modern/src/features/income/incomeSnapshotAdapter.mjs'),
+    incomeAdapterTypes: read('modern/src/features/income/incomeSnapshotAdapter.d.ts'),
+    incomeIntegrationTs: read('modern/src/features/income/legacyIncomeReadonlyIntegration.ts'),
+    incomeSourceTs: read('modern/src/bootstrap/hostIncomeReadonlySource.ts'),
+    incomeRuntimeTs: read('modern/src/bootstrap/modernIncomeRuntime.ts'),
+    incomeRefreshControllerTs: read('modern/src/features/income/incomeRefreshController.ts'),
     dataContractJs: read('modern/src/features/reports/reportsReadonlyContract.mjs'),
     dataContractTypes: read('modern/src/features/reports/reportsReadonlyContract.d.ts'),
     bridgeJs: read('modern/src/features/reports/reportsReadonlyBridge.mjs'),
@@ -309,6 +331,26 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     assert.equal(fs.existsSync(path.join(reportsRoot, file)), true, `${file} precisa existir como tipagem`);
   }
 
+  for (const file of [
+    incomeReadonlyContractRuntimeFilename,
+    incomeReadonlyBridgeRuntimeFilename,
+    incomeReadonlyAdapterRuntimeFilename,
+  ]) {
+    assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', file)), true, `${file} precisa existir como runtime canÃƒÂ´nico`);
+  }
+
+  for (const file of [
+    incomeReadonlyContractTypesFilename,
+    incomeReadonlyBridgeTypesFilename,
+    incomeReadonlyAdapterTypesFilename,
+  ]) {
+    assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', file)), true, `${file} precisa existir como tipagem`);
+  }
+
+  assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', incomeReadonlyPageFilename)), true, `${incomeReadonlyPageFilename} precisa existir`);
+  assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', incomeReadonlyViewModelFilename)), true, `${incomeReadonlyViewModelFilename} precisa existir`);
+  assert.equal(fs.existsSync(path.join(modernRoot, 'src', 'features', 'income', incomeRefreshControllerFilename)), true, `${incomeRefreshControllerFilename} precisa existir`);
+
   assert.equal(fs.existsSync(path.join(typesRoot, modernNavigationRuntimeFilename)), true, 'navigation.mjs precisa existir como runtime canÃ´nico');
   assert.equal(fs.existsSync(path.join(typesRoot, modernNavigationTypesFilename)), true, 'navigation.d.ts precisa existir como tipagem');
 
@@ -329,6 +371,8 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
     'modern/src/features/reports/readonlyReportsViewModel.ts': snapshot.readonlyViewModelTs,
     'modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx': snapshot.fixedIncomeReadonlyTsx,
     'modern/src/features/fixed-income/readonlyFixedIncomeViewModel.ts': snapshot.fixedIncomeViewModelTs,
+    'modern/src/features/income/IncomeReadonlyPage.tsx': snapshot.incomeReadonlyTsx,
+    'modern/src/features/income/readonlyIncomeViewModel.ts': snapshot.incomeViewModelTs,
   });
   assertReadOnlyReportsContract(snapshot.dataContractJs);
   assertImportsReadOnlyReportsContract(
@@ -353,6 +397,15 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoCompleteReadonlyPageList(snapshot.assetsPreviewTsx, 'modern/src/features/reports/AssetsReportPreview.tsx');
   assertNoCompleteReadonlyPageList(snapshot.assetsReadonlyTsx, 'modern/src/features/reports/AssetsReadonlyPage.tsx');
   assertNoCompleteReadonlyPageList(snapshot.readonlyViewModelTs, 'modern/src/features/reports/readonlyReportsViewModel.ts');
+  assertNoCompleteReadonlyPageList(snapshot.incomeReadonlyTsx, 'modern/src/features/income/IncomeReadonlyPage.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.incomeViewModelTs, 'modern/src/features/income/readonlyIncomeViewModel.ts');
+  assertNoCompleteReadonlyPageList(snapshot.incomeContractJs, 'modern/src/features/income/incomeReadonlyContract.mjs');
+  assertNoCompleteReadonlyPageList(snapshot.incomeBridgeJs, 'modern/src/features/income/incomeReadonlyBridge.mjs');
+  assertNoCompleteReadonlyPageList(snapshot.incomeAdapterJs, 'modern/src/features/income/incomeSnapshotAdapter.mjs');
+  assertNoCompleteReadonlyPageList(snapshot.incomeIntegrationTs, 'modern/src/features/income/legacyIncomeReadonlyIntegration.ts');
+  assertNoCompleteReadonlyPageList(snapshot.incomeSourceTs, 'modern/src/bootstrap/hostIncomeReadonlySource.ts');
+  assertNoCompleteReadonlyPageList(snapshot.incomeRuntimeTs, 'modern/src/bootstrap/modernIncomeRuntime.ts');
+  assertNoCompleteReadonlyPageList(snapshot.incomeRefreshControllerTs, 'modern/src/features/income/incomeRefreshController.ts');
   assertNoCompleteReadonlyPageList(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
   assertNoCompleteReadonlyPageList(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoCompleteReadonlyPageList(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
@@ -378,6 +431,15 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoLocalReadOnlyReportsContract(snapshot.fixedIncomeIntegrationTs, 'modern/src/features/fixed-income/legacyFixedIncomeReadonlyIntegration.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.fixedIncomeSourceTs, 'modern/src/bootstrap/hostFixedIncomeReadonlySource.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.fixedIncomeRuntimeTs, 'modern/src/bootstrap/modernFixedIncomeRuntime.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeReadonlyTsx, 'modern/src/features/income/IncomeReadonlyPage.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeViewModelTs, 'modern/src/features/income/readonlyIncomeViewModel.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeContractJs, 'modern/src/features/income/incomeReadonlyContract.mjs');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeBridgeJs, 'modern/src/features/income/incomeReadonlyBridge.mjs');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeAdapterJs, 'modern/src/features/income/incomeSnapshotAdapter.mjs');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeIntegrationTs, 'modern/src/features/income/legacyIncomeReadonlyIntegration.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeSourceTs, 'modern/src/bootstrap/hostIncomeReadonlySource.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeRuntimeTs, 'modern/src/bootstrap/modernIncomeRuntime.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.incomeRefreshControllerTs, 'modern/src/features/income/incomeRefreshController.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.navigationJs, 'modern/src/types/navigation.mjs');
@@ -410,6 +472,15 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoForbiddenTokens(snapshot.fixedIncomeIntegrationTs, 'modern/src/features/fixed-income/legacyFixedIncomeReadonlyIntegration.ts');
   assertNoForbiddenTokens(snapshot.fixedIncomeSourceTs, 'modern/src/bootstrap/hostFixedIncomeReadonlySource.ts');
   assertNoForbiddenTokens(snapshot.fixedIncomeRuntimeTs, 'modern/src/bootstrap/modernFixedIncomeRuntime.ts');
+  assertNoForbiddenTokens(snapshot.incomeReadonlyTsx, 'modern/src/features/income/IncomeReadonlyPage.tsx');
+  assertNoForbiddenTokens(snapshot.incomeViewModelTs, 'modern/src/features/income/readonlyIncomeViewModel.ts');
+  assertNoForbiddenTokens(snapshot.incomeContractJs, 'modern/src/features/income/incomeReadonlyContract.mjs');
+  assertNoForbiddenTokens(snapshot.incomeBridgeJs, 'modern/src/features/income/incomeReadonlyBridge.mjs');
+  assertNoForbiddenTokens(snapshot.incomeAdapterJs, 'modern/src/features/income/incomeSnapshotAdapter.mjs');
+  assertNoForbiddenTokens(snapshot.incomeIntegrationTs, 'modern/src/features/income/legacyIncomeReadonlyIntegration.ts');
+  assertNoForbiddenTokens(snapshot.incomeSourceTs, 'modern/src/bootstrap/hostIncomeReadonlySource.ts');
+  assertNoForbiddenTokens(snapshot.incomeRuntimeTs, 'modern/src/bootstrap/modernIncomeRuntime.ts');
+  assertNoForbiddenTokens(snapshot.incomeRefreshControllerTs, 'modern/src/features/income/incomeRefreshController.ts');
   assertNoForbiddenTokens(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
   assertNoForbiddenTokens(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoForbiddenTokens(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');

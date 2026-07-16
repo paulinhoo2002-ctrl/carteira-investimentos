@@ -4572,12 +4572,62 @@ async function bootstrapExperimentalActiveWalletHost(){
                 source: 'host-experimental',
                 updated_at: String(asset?.updated_at || '2026-07-14T10:30:00.000Z'),
               };
-            })
+        })
         : [];
     }
     ,
     getFixedIncomeAssets(){
       return Array.isArray(S.assets) ? S.assets : [];
+    },
+    getIncomeSnapshot(){
+      const proventos = Array.isArray(S.proventos) ? S.proventos : [];
+      const stats = proventoStats();
+      const incomeStats = passiveIncomeGoalStats();
+      const toNullableIncomeNumber = value => {
+        const parsed = typeof value === 'number' ? value : typeof value === 'string' && value.trim() ? Number(value) : Number.NaN;
+        return Number.isFinite(parsed) ? parsed : null;
+      };
+      const items = proventos.map((p, index) => {
+        const paymentDate = proventoDividendPaymentDate(p);
+        const ticker = String(p?.ticker || '').trim() || null;
+        const name = String(p?.assetName || p?.name || ticker || '').trim() || null;
+        const type = proventoTipoCanonical(p?.eventType || p?.type);
+        const value = toNullableIncomeNumber(p?.value);
+        const note = String(p?.note || p?.observation || '').trim() || null;
+        const source = String(p?.source || p?.origin || '').trim() || null;
+        const sourceEventKind = String(p?.sourceEventKind || '').trim() || null;
+        const sourceEventId = String(p?.sourceEventId || '').trim() || null;
+        const competenceDate = String(p?.competenceDate || p?.competencia || p?.dataCompetencia || '').trim() || null;
+        return {
+          id: p?.id == null ? null : String(p.id),
+          ticker,
+          name,
+          type,
+          paymentDate: paymentDate ? toISODate(paymentDate) : null,
+          competenceDate,
+          grossValue: value,
+          netValue: value,
+          taxValue: toNullableIncomeNumber(p?.taxValue),
+          quantity: toNullableIncomeNumber(p?.quantity),
+          note,
+          source,
+          sourceEventKind,
+          sourceEventId,
+        };
+      });
+      return {
+        version: 1,
+        generatedAt: new Date().toISOString(),
+        notice: 'Snapshot readonly de proventos. React nao escreve na fonte.',
+        summary: {
+          totalReceived: items.length > 0 ? stats.total : null,
+          monthTotal: items.length > 0 ? stats.mes : null,
+          yearTotal: items.length > 0 ? stats.ano : null,
+          averageMonthly: items.length > 0 && Number.isFinite(incomeStats.monthlyAvg) ? incomeStats.monthlyAvg : null,
+          paymentCount: items.length,
+        },
+        items,
+      };
     }
   });
   setTimeout(()=>{
