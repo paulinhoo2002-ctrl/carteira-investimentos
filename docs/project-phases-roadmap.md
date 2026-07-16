@@ -7,7 +7,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - fase atual: 188
 - branch atual: `feat/modern-income-readonly-page`
 - SHA-base: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`
-- situacao: em desenvolvimento
+- situacao: em revisao - draft
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -72,7 +72,7 @@ Base de referencia desta fase:
 - nome da fase: Proventos e renda mensal readonly;
 - branch: `feat/modern-income-readonly-page`;
 - SHA-base: `0df41a41b9c6ba3d435044f60e69b3fa86cac27c`;
-- situacao: em desenvolvimento;
+- situacao: em revisao - draft;
 - PR: `#188`;
 - head de revisao: consultavel na futura PR;
 - SHA final na main: pendente de merge;

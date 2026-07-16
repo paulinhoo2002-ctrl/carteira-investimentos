@@ -341,8 +341,7 @@ test('host income source usa snapshot injetado e preserva mutabilidade da origem
       type: 'Dividendo',
       paymentDate: '2026-06-15',
       competenceDate: '2026-06-01',
-      grossValue: null,
-      netValue: 320,
+      receivedValue: 320,
       taxValue: null,
       quantity: null,
       note: 'Demo',
@@ -372,7 +371,7 @@ test('host income source usa snapshot injetado e preserva mutabilidade da origem
 
   const firstSnapshot = source.getSnapshot();
   assert.equal(firstSnapshot.summary.paymentCount, 1);
-  assert.equal(firstSnapshot.items[0].netValue, 320);
+  assert.equal(firstSnapshot.items[0].receivedValue, 320);
   assert.equal(Object.isFrozen(firstSnapshot), true);
   assert.equal(Object.isFrozen(firstSnapshot.summary), true);
   assert.equal(Object.isFrozen(firstSnapshot.items), true);
@@ -380,13 +379,13 @@ test('host income source usa snapshot injetado e preserva mutabilidade da origem
   incomeEvents = [
     {
       ...incomeEvents[0],
-      netValue: 450,
+      receivedValue: 450,
     },
   ];
 
   const secondSnapshot = source.getSnapshot();
   assert.equal(secondSnapshot.summary.paymentCount, 1);
-  assert.equal(secondSnapshot.items[0].netValue, 450);
+  assert.equal(secondSnapshot.items[0].receivedValue, 450);
   assert.notDeepEqual(secondSnapshot, firstSnapshot);
   assertDeepFrozen(secondSnapshot);
 });

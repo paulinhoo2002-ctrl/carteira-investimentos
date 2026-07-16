@@ -1,7 +1,7 @@
 import type { ReadOnlyIncomeItem, ReadOnlyIncomeSnapshot } from './incomeReadonlyContract.mjs';
 import { formatReadonlyCurrency, formatReadonlyDateTime } from '../reports/readonlyReportsViewModel.ts';
 
-export type ReadonlyIncomeSortKey = 'paymentDate' | 'netValue' | 'ticker' | 'type';
+export type ReadonlyIncomeSortKey = 'paymentDate' | 'receivedValue' | 'ticker' | 'type';
 
 export interface ReadonlyIncomePageFilters {
   readonly query: string;
@@ -14,13 +14,11 @@ export interface ReadonlyIncomePageFilters {
 export interface ReadonlyIncomeMonthBucket {
   readonly monthKey: string;
   readonly label: string;
-  readonly totalValue: number | null;
   readonly paymentCount: number;
 }
 
 export interface ReadonlyIncomePayerBucket {
   readonly label: string;
-  readonly totalValue: number | null;
   readonly paymentCount: number;
 }
 
@@ -77,7 +75,7 @@ function formatMonthLabel(date: Date) {
 }
 
 function getDisplayedValue(item: ReadOnlyIncomeItem) {
-  return item.netValue ?? item.grossValue;
+  return item.receivedValue;
 }
 
 function sortItems(items: readonly ReadOnlyIncomeItem[], sortBy: ReadonlyIncomeSortKey) {
@@ -91,7 +89,7 @@ function sortItems(items: readonly ReadOnlyIncomeItem[], sortBy: ReadonlyIncomeS
 
         return bDate - aDate || compareText(formatText(a.ticker), formatText(b.ticker));
       }
-      case 'netValue':
+      case 'receivedValue':
         return (getDisplayedValue(b) ?? Number.NEGATIVE_INFINITY) - (getDisplayedValue(a) ?? Number.NEGATIVE_INFINITY) ||
           compareText(formatText(a.ticker), formatText(b.ticker));
       case 'ticker':
@@ -134,7 +132,7 @@ function uniqueMonths(items: readonly ReadOnlyIncomeItem[]) {
 }
 
 function buildMonthlyBuckets(items: readonly ReadOnlyIncomeItem[]) {
-  const buckets = new Map<string, { label: string; totalValue: number | null; paymentCount: number }>();
+  const buckets = new Map<string, { label: string; paymentCount: number }>();
 
   for (const item of items) {
     const date = parseDate(item.paymentDate);
@@ -144,15 +142,10 @@ function buildMonthlyBuckets(items: readonly ReadOnlyIncomeItem[]) {
 
     const monthKey = formatMonthKey(date);
     const current = buckets.get(monthKey);
-    const amount = getDisplayedValue(item);
 
     if (current) {
       buckets.set(monthKey, {
         label: current.label,
-        totalValue:
-          typeof current.totalValue === 'number' && typeof amount === 'number'
-            ? current.totalValue + amount
-            : current.totalValue ?? amount ?? null,
         paymentCount: current.paymentCount + 1,
       });
       continue;
@@ -160,7 +153,6 @@ function buildMonthlyBuckets(items: readonly ReadOnlyIncomeItem[]) {
 
     buckets.set(monthKey, {
       label: formatMonthLabel(date),
-      totalValue: amount ?? null,
       paymentCount: 1,
     });
   }
@@ -169,28 +161,29 @@ function buildMonthlyBuckets(items: readonly ReadOnlyIncomeItem[]) {
     .map(([monthKey, bucket]) => ({
       monthKey,
       label: bucket.label,
-      totalValue: bucket.totalValue,
       paymentCount: bucket.paymentCount,
     }))
     .sort((a, b) => b.monthKey.localeCompare(a.monthKey));
 }
 
 function buildTopPayers(items: readonly ReadOnlyIncomeItem[]) {
-  const totals = new Map<string, { label: string; totalValue: number | null; paymentCount: number }>();
+  const totals = new Map<string, { label: string; paymentCount: number }>();
 
   for (const item of items) {
-    const label = formatText(item.name) !== 'Nao informado' ? formatText(item.name) : formatText(item.ticker);
+    const label =
+      formatText(item.name) !== 'Nao informado'
+        ? formatText(item.name)
+        : formatText(item.ticker) !== 'Nao informado'
+          ? formatText(item.ticker)
+          : formatText(item.sourceEventId) !== 'Nao informado'
+            ? formatText(item.sourceEventId)
+            : formatText(item.id);
     const key = `${label}::${formatText(item.type)}`;
     const current = totals.get(key);
-    const amount = getDisplayedValue(item);
 
     if (current) {
       totals.set(key, {
         label,
-        totalValue:
-          typeof current.totalValue === 'number' && typeof amount === 'number'
-            ? current.totalValue + amount
-            : current.totalValue ?? amount ?? null,
         paymentCount: current.paymentCount + 1,
       });
       continue;
@@ -198,16 +191,12 @@ function buildTopPayers(items: readonly ReadOnlyIncomeItem[]) {
 
     totals.set(key, {
       label,
-      totalValue: amount ?? null,
       paymentCount: 1,
     });
   }
 
   return [...totals.values()].sort((a, b) => {
-    const aValue = typeof a.totalValue === 'number' ? a.totalValue : Number.NEGATIVE_INFINITY;
-    const bValue = typeof b.totalValue === 'number' ? b.totalValue : Number.NEGATIVE_INFINITY;
-
-    return bValue - aValue || compareText(a.label, b.label);
+    return b.paymentCount - a.paymentCount || compareText(a.label, b.label);
   });
 }
 
@@ -279,7 +268,7 @@ export function createReadonlyIncomeViewModel(
   const monthlyBuckets = buildMonthlyBuckets(filteredItems);
   const topPayments = sortItems(
     filteredItems.filter((item) => typeof getDisplayedValue(item) === 'number'),
-    'netValue',
+    'receivedValue',
   ).slice(0, 3);
   const topPayers = buildTopPayers(filteredItems).slice(0, 3);
 

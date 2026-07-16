@@ -42,20 +42,19 @@ function hasSupportedVersion(value) {
 
 function hasReadonlyIncomePayload(value) {
   return (
-    isNullableString(value.id) ||
-    isNullableString(value.ticker) ||
-    isNullableString(value.name) ||
-    isNullableString(value.type) ||
-    isNullableString(value.paymentDate) ||
-    isNullableString(value.competenceDate) ||
-    isNullableNumber(value.grossValue) ||
-    isNullableNumber(value.netValue) ||
-    isNullableNumber(value.taxValue) ||
-    isNullableNumber(value.quantity) ||
-    isNullableString(value.note) ||
-    isNullableString(value.source) ||
-    isNullableString(value.sourceEventKind) ||
-    isNullableString(value.sourceEventId)
+    isNonEmptyString(value.id) ||
+    isNonEmptyString(value.ticker) ||
+    isNonEmptyString(value.name) ||
+    isNonEmptyString(value.type) ||
+    isNonEmptyString(value.paymentDate) ||
+    isNonEmptyString(value.competenceDate) ||
+    isFiniteNumber(value.receivedValue) ||
+    isFiniteNumber(value.taxValue) ||
+    isFiniteNumber(value.quantity) ||
+    isNonEmptyString(value.note) ||
+    isNonEmptyString(value.source) ||
+    isNonEmptyString(value.sourceEventKind) ||
+    isNonEmptyString(value.sourceEventId)
   );
 }
 
@@ -88,8 +87,7 @@ function isReadonlyIncomeItem(value) {
     isNullableString(value.type) &&
     isNullableString(value.paymentDate) &&
     isNullableString(value.competenceDate) &&
-    isNullableNumber(value.grossValue) &&
-    isNullableNumber(value.netValue) &&
+    isNullableNumber(value.receivedValue) &&
     isNullableNumber(value.taxValue) &&
     isNullableNumber(value.quantity) &&
     isNullableString(value.note) &&
@@ -121,8 +119,7 @@ function cloneReadonlyIncomeItem(item) {
     type: item.type,
     paymentDate: item.paymentDate,
     competenceDate: item.competenceDate,
-    grossValue: item.grossValue,
-    netValue: item.netValue,
+    receivedValue: item.receivedValue,
     taxValue: item.taxValue,
     quantity: item.quantity,
     note: item.note,

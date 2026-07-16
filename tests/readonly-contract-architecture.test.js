@@ -81,12 +81,28 @@ function assertNoForbiddenTokens(text, label) {
   }
 }
 
+function assertIncomeFilesUseReceivedValueOnly(text, label) {
+  assert.equal(text.includes('grossValue'), false, `${label} nao pode conter grossValue`);
+  assert.equal(text.includes('netValue'), false, `${label} nao pode conter netValue`);
+  assert.match(text, /receivedValue/);
+}
+
 function assertNoCompleteReadonlyPageList(text, label) {
   assert.equal(
     containsAllReadonlyPageIds(text),
     false,
     `${label} nao pode conter a lista completa de IDs readonly`,
   );
+}
+
+function assertIncomeSnapshotBuilderUsesReceivedValueOnly(indexHtml) {
+  const start = indexHtml.indexOf('getIncomeSnapshot(){');
+  const end = indexHtml.indexOf('setTimeout(()=>{', start);
+  const block = start >= 0 && end > start ? indexHtml.slice(start, end) : indexHtml;
+
+  assert.equal(block.includes('grossValue: value'), false, 'getIncomeSnapshot nao pode duplicar grossValue');
+  assert.equal(block.includes('netValue: value'), false, 'getIncomeSnapshot nao pode duplicar netValue');
+  assert.match(block, /receivedValue: value/);
 }
 
 function assertCanonicalContract(contractJs) {
@@ -411,6 +427,8 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoCompleteReadonlyPageList(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoCompleteReadonlyPageList(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
 
+  assertIncomeSnapshotBuilderUsesReceivedValueOnly(snapshot.indexHtml);
+
   assertNoLocalReadOnlyReportsContract(snapshot.indexHtml, 'index.html');
   assertNoLocalReadOnlyReportsContract(snapshot.hostHtml, 'modern/host.html');
   assertNoLocalReadOnlyReportsContract(snapshot.modernIndexHtml, 'modern/index.html');
@@ -443,6 +461,11 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoLocalReadOnlyReportsContract(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.navigationJs, 'modern/src/types/navigation.mjs');
+
+  assertIncomeFilesUseReceivedValueOnly(snapshot.incomeReadonlyTsx, 'modern/src/features/income/IncomeReadonlyPage.tsx');
+  assertIncomeFilesUseReceivedValueOnly(snapshot.incomeViewModelTs, 'modern/src/features/income/readonlyIncomeViewModel.ts');
+  assertIncomeFilesUseReceivedValueOnly(snapshot.incomeContractJs, 'modern/src/features/income/incomeReadonlyContract.mjs');
+  assertIncomeFilesUseReceivedValueOnly(snapshot.incomeIntegrationTs, 'modern/src/features/income/legacyIncomeReadonlyIntegration.ts');
 
   assertTypeDeclarationsNoRuntime(snapshot.dataContractTypes, 'modern/src/features/reports/reportsReadonlyContract.d.ts');
   assertTypeDeclarationsNoRuntime(snapshot.bridgeTypes, 'modern/src/features/reports/reportsReadonlyBridge.d.ts');

@@ -305,7 +305,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(incomeReadonlyTsx, /aria-live="polite"/);
   assert.match(incomeReadonlyTsx, /IncomeReadonlyPageContent/);
   assert.match(incomeReadonlyTsx, /Nenhum pagamento informado/);
-  assert.match(incomeReadonlyTsx, /Nenhum pagador informado/);
+  assert.match(incomeReadonlyTsx, /Nenhum lancamento informado/);
   assert.match(incomeReadonlyTsx, /Sem meses informados/);
   assert.match(fixedIncomeReadonlyTsx, /FixedIncomeReadonlyPage/);
   assert.match(fixedIncomeReadonlyTsx, /createReadonlyFixedIncomeViewModel/);
@@ -319,9 +319,10 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(incomeContractTs, /normalizeReadonlyIncomeSnapshot/);
   assert.match(incomeContractTs, /isReadonlyIncomeSnapshot/);
   assert.match(incomeContractTs, /paymentCount/);
-  assert.match(incomeContractTs, /grossValue/);
-  assert.match(incomeContractTs, /netValue/);
+  assert.match(incomeContractTs, /receivedValue/);
   assert.match(incomeContractTs, /taxValue/);
+  assert.equal(incomeContractTs.includes('grossValue'), false);
+  assert.equal(incomeContractTs.includes('netValue'), false);
   assert.match(incomeBridgeTs, /createIncomeReadonlyBridge/);
   assert.match(incomeBridgeTs, /readSnapshot\(\)/);
   assert.match(incomeAdapterTs, /createIncomeReadonlyAdapter/);
@@ -329,6 +330,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(incomeIntegrationTs, /createConnectedIncomeAdapter/);
   assert.match(incomeIntegrationTs, /createLegacyIncomeReadonlyBoundary/);
   assert.match(incomeIntegrationTs, /createConnectedIncomeBridge/);
+  assert.match(incomeIntegrationTs, /receivedValue/);
   assert.match(incomeRefreshControllerTs, /createIncomeRefreshController/);
   assert.match(incomeRefreshControllerTs, /INCOME_READONLY_FALLBACK_SNAPSHOT/);
   assert.match(incomeRefreshControllerTs, /refresh/);

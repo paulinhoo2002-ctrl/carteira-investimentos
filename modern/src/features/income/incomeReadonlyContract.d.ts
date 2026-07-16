@@ -20,8 +20,7 @@ export interface ReadOnlyIncomeItem {
   readonly type: string | null;
   readonly paymentDate: string | null;
   readonly competenceDate: string | null;
-  readonly grossValue: number | null;
-  readonly netValue: number | null;
+  readonly receivedValue: number | null;
   readonly taxValue: number | null;
   readonly quantity: number | null;
   readonly note: string | null;

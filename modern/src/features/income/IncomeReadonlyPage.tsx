@@ -24,7 +24,7 @@ interface IncomeReadonlyPageContentProps {
 
 const sortLabels: Record<ReadonlyIncomeSortKey, string> = {
   paymentDate: 'Data de pagamento',
-  netValue: 'Valor liquido',
+  receivedValue: 'Valor recebido',
   ticker: 'Ticker',
   type: 'Tipo',
 };
@@ -238,14 +238,14 @@ function IncomeReadonlyPageContent({
           <p className="overview-card__label">Maior pagamento</p>
           <p className="overview-card__value">{topPayment ? summarizeItemLabel(topPayment) : 'Nao informado'}</p>
           <p className="overview-card__hint">
-            {topPayment ? renderAmount(topPayment.netValue ?? topPayment.grossValue) : 'Sem valor informado'}
+            {topPayment ? renderAmount(topPayment.receivedValue) : 'Sem valor recebido'}
           </p>
         </article>
         <article className="overview-card">
-          <p className="overview-card__label">Maior pagador</p>
+          <p className="overview-card__label">Mais lancamentos</p>
           <p className="overview-card__value">{topPayer ? topPayer.label : 'Nao informado'}</p>
           <p className="overview-card__hint">
-            {topPayer ? renderAmount(topPayer.totalValue) : 'Sem agrupamento suficiente'}
+            {topPayer ? `${topPayer.paymentCount} lancamento${topPayer.paymentCount === 1 ? '' : 's'}` : 'Sem agrupamento suficiente'}
           </p>
         </article>
         <article className="overview-card">
@@ -264,15 +264,15 @@ function IncomeReadonlyPageContent({
         </div>
 
         <div className="fixed-income-readonly__highlight-grid">
-          <article className="overview-card">
-            <p className="overview-card__label">Maiores pagamentos</p>
-            {viewModel.topPayments.length > 0 ? (
-              <ul className="fixed-income-readonly__compact-list">
+        <article className="overview-card">
+          <p className="overview-card__label">Maiores pagamentos</p>
+          {viewModel.topPayments.length > 0 ? (
+            <ul className="fixed-income-readonly__compact-list">
                 {viewModel.topPayments.map((item) => (
                   <li key={item.id ?? item.sourceEventId ?? item.ticker ?? item.name ?? item.paymentDate ?? summarizeItemLabel(item)}>
                     <strong>{summarizeItemLabel(item)}</strong>
                     <span>
-                      {renderAmount(item.netValue ?? item.grossValue)} · {formatReadonlyDateTime(item.paymentDate ?? snapshot.generatedAt)}
+                      {renderAmount(item.receivedValue)} · {formatReadonlyDateTime(item.paymentDate ?? snapshot.generatedAt)}
                     </span>
                   </li>
                 ))}
@@ -283,20 +283,18 @@ function IncomeReadonlyPageContent({
           </article>
 
           <article className="overview-card">
-            <p className="overview-card__label">Maiores pagadores</p>
+            <p className="overview-card__label">Mais lancamentos</p>
             {viewModel.topPayers.length > 0 ? (
               <ul className="fixed-income-readonly__compact-list">
                 {viewModel.topPayers.map((item) => (
-                  <li key={`${item.label}-${item.totalValue ?? 'na'}`}>
+                  <li key={`${item.label}-${item.paymentCount}`}>
                     <strong>{item.label}</strong>
-                    <span>
-                      {renderAmount(item.totalValue)} · {item.paymentCount} lancamento{item.paymentCount === 1 ? '' : 's'}
-                    </span>
+                    <span>{item.paymentCount} lancamento{item.paymentCount === 1 ? '' : 's'}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="overview-card__hint">Nenhum pagador informado.</p>
+              <p className="overview-card__hint">Nenhum lancamento informado.</p>
             )}
           </article>
 
@@ -307,9 +305,7 @@ function IncomeReadonlyPageContent({
                 {viewModel.monthlyBuckets.slice(0, 3).map((item) => (
                   <li key={item.monthKey}>
                     <strong>{item.label}</strong>
-                    <span>
-                      {renderAmount(item.totalValue)} · {item.paymentCount} lancamento{item.paymentCount === 1 ? '' : 's'}
-                    </span>
+                    <span>{item.paymentCount} lancamento{item.paymentCount === 1 ? '' : 's'}</span>
                   </li>
                 ))}
               </ul>
@@ -349,30 +345,21 @@ function IncomeReadonlyPageContent({
         <div className="fixed-income-readonly__distribution-list">
           {viewModel.monthlyBuckets.length > 0 ? (
             viewModel.monthlyBuckets.map((entry) => {
-              const maxValue = Math.max(...viewModel.monthlyBuckets.map((bucket) => bucket.totalValue ?? 0), 0);
-              const ratio = maxValue > 0 && typeof entry.totalValue === 'number' ? (entry.totalValue / maxValue) * 100 : 0;
+              const maxCount = Math.max(...viewModel.monthlyBuckets.map((bucket) => bucket.paymentCount ?? 0), 0);
+              const ratio = maxCount > 0 ? (entry.paymentCount / maxCount) * 100 : 0;
 
               return (
                 <div className="fixed-income-readonly__distribution-row" key={entry.monthKey}>
                   <div className="fixed-income-readonly__distribution-row-head">
                     <strong>{entry.label}</strong>
-                    <span>
-                      {formatReadonlyMoneyOrMissing(entry.totalValue)} · {entry.paymentCount} lancamento{entry.paymentCount === 1 ? '' : 's'}
-                    </span>
+                    <span>{entry.paymentCount} lancamento{entry.paymentCount === 1 ? '' : 's'}</span>
                   </div>
-                  {entry.totalValue === null ? (
-                    <p className="overview-card__hint">Participacao nao informada.</p>
-                  ) : (
-                    <div
-                      className="fixed-income-readonly__distribution-track"
-                      aria-label={`${entry.label}: ${formatReadonlyMoneyOrMissing(entry.totalValue)}`}
-                    >
-                      <span
-                        className="fixed-income-readonly__distribution-fill"
-                        style={{ width: `${Math.max(0, Math.min(ratio, 100))}%` }}
-                      />
-                    </div>
-                  )}
+                  <div className="fixed-income-readonly__distribution-track" aria-label={`${entry.label}: ${entry.paymentCount} lancamentos`}>
+                    <span
+                      className="fixed-income-readonly__distribution-fill"
+                      style={{ width: `${Math.max(0, Math.min(ratio, 100))}%` }}
+                    />
+                  </div>
                 </div>
               );
             })
@@ -405,10 +392,7 @@ function IncomeReadonlyPageContent({
                     <th scope="col">Pagamento</th>
                     <th scope="col">Competencia</th>
                     <th className="number-cell" scope="col">
-                      Bruto
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Liquido
+                      Recebido
                     </th>
                     <th className="number-cell" scope="col">
                       Imposto
@@ -429,8 +413,7 @@ function IncomeReadonlyPageContent({
                       <td>{item.type ?? 'Nao informado'}</td>
                       <td>{formatReadonlyDateTime(item.paymentDate ?? snapshot.generatedAt)}</td>
                       <td>{item.competenceDate ? formatReadonlyDateTime(item.competenceDate) : 'Nao informado'}</td>
-                      <td className="number-cell">{renderAmount(item.grossValue)}</td>
-                      <td className="number-cell">{renderAmount(item.netValue)}</td>
+                      <td className="number-cell">{renderAmount(item.receivedValue)}</td>
                       <td className="number-cell">{renderAmount(item.taxValue)}</td>
                       <td className="number-cell">{item.quantity === null ? 'Nao informado' : item.quantity.toLocaleString('pt-BR')}</td>
                       <td>{item.note ?? 'Nao informado'}</td>
@@ -464,12 +447,8 @@ function IncomeReadonlyPageContent({
                       <dd>{item.competenceDate ? formatReadonlyDateTime(item.competenceDate) : 'Nao informado'}</dd>
                     </div>
                     <div>
-                      <dt>Bruto</dt>
-                      <dd>{renderAmount(item.grossValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>Liquido</dt>
-                      <dd>{renderAmount(item.netValue)}</dd>
+                      <dt>Recebido</dt>
+                      <dd>{renderAmount(item.receivedValue)}</dd>
                     </div>
                     <div>
                       <dt>Imposto</dt>

@@ -69,8 +69,7 @@ function createSnapshot(overrides = {}) {
         type: 'Dividendo',
         paymentDate: '2026-06-15',
         competenceDate: null,
-        grossValue: null,
-        netValue: 320,
+        receivedValue: 320,
         taxValue: null,
         quantity: null,
         note: 'Demo de provento recebido',
@@ -85,8 +84,7 @@ function createSnapshot(overrides = {}) {
         type: 'JCP',
         paymentDate: '2026-06-27',
         competenceDate: null,
-        grossValue: null,
-        netValue: 215.41,
+        receivedValue: 215.41,
         taxValue: null,
         quantity: null,
         note: 'Demo de JCP',
@@ -101,8 +99,7 @@ function createSnapshot(overrides = {}) {
         type: 'Rendimento',
         paymentDate: '2026-07-05',
         competenceDate: null,
-        grossValue: null,
-        netValue: 168.5,
+        receivedValue: 168.5,
         taxValue: null,
         quantity: null,
         note: 'Demo de rendimento',
@@ -117,8 +114,7 @@ function createSnapshot(overrides = {}) {
         type: 'Juros de Renda Fixa',
         paymentDate: '2026-07-14',
         competenceDate: null,
-        grossValue: null,
-        netValue: 44.6,
+        receivedValue: 44.6,
         taxValue: null,
         quantity: null,
         note: 'Demo de renda fixa',
@@ -183,13 +179,146 @@ test('contrato readonly de proventos aceita snapshot valido e preserva zero e nu
   assert.equal(snapshot.summary.averageMonthly, 62.38);
   assert.equal(snapshot.summary.paymentCount, 4);
   assert.equal(snapshot.items.length, 4);
-  assert.equal(snapshot.items[0].netValue, 320);
-  assert.equal(snapshot.items[0].grossValue, null);
+  assert.equal(snapshot.items[0].receivedValue, 320);
   assert.equal(snapshot.items[0].taxValue, null);
   assert.equal(snapshot.items[0].quantity, null);
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
+});
+
+test('contrato readonly de proventos rejeita item vazio e aceita identidade minima, zero real e evento', async () => {
+  const { normalizeReadonlyIncomeSnapshot, INCOME_READONLY_FALLBACK_SNAPSHOT } = await loadContractModule();
+
+  const emptySnapshot = normalizeReadonlyIncomeSnapshot({
+    version: 1,
+    generatedAt: '2026-07-14T10:30:00.000Z',
+    notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
+    summary: {
+      totalReceived: null,
+      monthTotal: null,
+      yearTotal: null,
+      averageMonthly: null,
+      paymentCount: 1,
+    },
+    items: [
+      {
+        id: null,
+        ticker: null,
+        name: null,
+        type: null,
+        paymentDate: null,
+        competenceDate: null,
+        receivedValue: null,
+        taxValue: null,
+        quantity: null,
+        note: null,
+        source: null,
+        sourceEventKind: null,
+        sourceEventId: null,
+      },
+    ],
+  });
+
+  const idOnlySnapshot = normalizeReadonlyIncomeSnapshot({
+    version: 1,
+    generatedAt: '2026-07-14T10:30:00.000Z',
+    notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
+    summary: {
+      totalReceived: null,
+      monthTotal: null,
+      yearTotal: null,
+      averageMonthly: null,
+      paymentCount: 1,
+    },
+    items: [
+      {
+        id: 'inc-id-only',
+        ticker: null,
+        name: null,
+        type: null,
+        paymentDate: null,
+        competenceDate: null,
+        receivedValue: null,
+        taxValue: null,
+        quantity: null,
+        note: null,
+        source: null,
+        sourceEventKind: null,
+        sourceEventId: null,
+      },
+    ],
+  });
+
+  const sourceEventOnlySnapshot = normalizeReadonlyIncomeSnapshot({
+    version: 1,
+    generatedAt: '2026-07-14T10:30:00.000Z',
+    notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
+    summary: {
+      totalReceived: null,
+      monthTotal: null,
+      yearTotal: null,
+      averageMonthly: null,
+      paymentCount: 1,
+    },
+    items: [
+      {
+        id: null,
+        ticker: null,
+        name: null,
+        type: null,
+        paymentDate: null,
+        competenceDate: null,
+        receivedValue: null,
+        taxValue: null,
+        quantity: null,
+        note: null,
+        source: null,
+        sourceEventKind: null,
+        sourceEventId: 'evt-1',
+      },
+    ],
+  });
+
+  const zeroSnapshot = normalizeReadonlyIncomeSnapshot({
+    version: 1,
+    generatedAt: '2026-07-14T10:30:00.000Z',
+    notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
+    summary: {
+      totalReceived: 0,
+      monthTotal: 0,
+      yearTotal: 0,
+      averageMonthly: 0,
+      paymentCount: 1,
+    },
+    items: [
+      {
+        id: 'inc-zero',
+        ticker: 'PETR4',
+        name: 'Petrobras',
+        type: 'Dividendo',
+        paymentDate: '2026-06-15',
+        competenceDate: null,
+        receivedValue: 0,
+        taxValue: null,
+        quantity: null,
+        note: 'Zero real',
+        source: 'demo',
+        sourceEventKind: 'payment',
+        sourceEventId: 'evt-zero',
+      },
+    ],
+  });
+
+  assert.equal(emptySnapshot, INCOME_READONLY_FALLBACK_SNAPSHOT);
+  assert.equal(Object.isFrozen(idOnlySnapshot), true);
+  assert.equal(idOnlySnapshot.items[0].id, 'inc-id-only');
+  assert.equal(sourceEventOnlySnapshot.items[0].sourceEventId, 'evt-1');
+  assert.equal(zeroSnapshot.items[0].receivedValue, 0);
+  assert.equal(zeroSnapshot.summary.totalReceived, 0);
+  assert.equal(zeroSnapshot.summary.monthTotal, 0);
+  assert.equal(zeroSnapshot.summary.yearTotal, 0);
+  assert.equal(zeroSnapshot.summary.averageMonthly, 0);
 });
 
 test('view model preserva ausencias, agrupa mes a mes e nao muta snapshot', async () => {
@@ -215,6 +344,7 @@ test('view model preserva ausencias, agrupa mes a mes e nao muta snapshot', asyn
   assert.equal(viewModel.monthlyBuckets[0].paymentCount, 1);
   assert.equal(viewModel.topPayments[0].ticker, 'BBAS3');
   assert.equal(viewModel.topPayers[0].label, 'Banco do Brasil');
+  assert.equal(viewModel.topPayers[0].paymentCount, 1);
   assert.equal(formatReadonlyMoneyOrMissing(null), 'Nao informado');
   assert.match(formatReadonlyMoneyOrMissing(0), /R\$ 0,00/);
   assert.equal(Object.isFrozen(snapshot), false);
@@ -325,12 +455,12 @@ test('runtime e host source de proventos usam fonte real e fallback controlado',
 
   incomeSnapshot = {
     ...incomeSnapshot,
-    items: incomeSnapshot.items.map((item) => (item.id === 'inc-004' ? { ...item, netValue: 50.1 } : item)),
+    items: incomeSnapshot.items.map((item) => (item.id === 'inc-004' ? { ...item, receivedValue: 50.1 } : item)),
   };
 
   const secondSnapshot = source.getSnapshot();
   assert.notEqual(secondSnapshot, firstSnapshot);
-  assert.equal(secondSnapshot.items.find((item) => item.id === 'inc-004')?.netValue, 50.1);
+  assert.equal(secondSnapshot.items.find((item) => item.id === 'inc-004')?.receivedValue, 50.1);
 
   const invalidSource = createHostIncomeReadonlySource({
     getIncomeSnapshot() {
