@@ -279,8 +279,9 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /\| 188 \|[^|]*\| Concluida \| `#188` \| `2c6489fb190e215fd69074071aceba8cf2638e39` \|/);
   assert.match(roadmap, /\| 189 \|[^|]*\| Concluida \| `#189` \| `0372cc4e04d66f713474b8d0b41ef2750d380061` \|/);
   assert.match(roadmap, /\| 190 \|[^|]*\| Concluida \| `#190` \| `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` \|/);
-  assert.match(roadmap, /- HEAD \/ `origin\/main`: `b86169016207362981ffedddeaa456fb908d1841`/);
-  assert.match(roadmap, /- fase atual: 192;/);
+  assert.match(roadmap, /- HEAD \/ `origin\/main`: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`/);
+  assert.match(roadmap, /- PR `#192`: merged e closed \(encerramento funcional da fase 192\)/);
+  assert.match(roadmap, /- fase atual: nenhuma/);
   assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 189');
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
   assert.match(roadmap, /- nao existe Fase 191 funcional\./);
@@ -295,28 +296,36 @@ function assertRoadmapPhaseShas(roadmap) {
 function assertRoadmapCurrentPhase192State(roadmap) {
   const currentState = extractRoadmapPhaseSection(roadmap, '### Estado atual', '### Fase 189');
 
-  assert.match(currentState, /- fase atual: 192;/);
-  assert.match(currentState, /- nome da fase: Refinamento visual e responsivo da aba Dividendos;/);
-  assert.match(currentState, /- branch atual: `feat\/dividends-visual-refinement`;/);
-  assert.match(currentState, /- SHA-base: `b86169016207362981ffedddeaa456fb908d1841`;/);
-  assert.match(currentState, /- situacao: em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
-  assert.match(currentState, /- implementacao ativa: aba Dividendos;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
+  assert.match(currentState, /- situacao: Fase 192 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
   assert.match(currentState, /- a fase 190 permanece concluida;/);
   assert.match(currentState, /- a PR #191 foi apenas o encerramento documental;/);
   assert.match(currentState, /- nao existe Fase 191 funcional\./);
-  assert.equal(currentState.includes('fase atual: nenhuma'), false, 'Estado atual nao pode ficar vazio');
+  assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(currentState.includes('ciclo de modernizacao readonly encerrado'), false, 'Estado atual nao pode ficar encerrado');
-  assert.equal(currentState.includes('em desenvolvimento'), true, 'Estado atual deve registrar a fase ativa');
+  assert.equal(currentState.includes('em desenvolvimento'), false, 'Estado atual nao pode registrar fase ativa');
 
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
   assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);
-  assert.match(roadmap, /- fase atual: 192;/);
-  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- estado: Concluida;/);
+  assert.match(roadmap, /- PR: `#192`;/);
+  assert.match(roadmap, /- SHA final na main: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
+  assert.match(roadmap, /- titulo: `feat: refina visual da aba dividendos`;/);
+  assert.match(roadmap, /- modo: squash;/);
+  assert.match(roadmap, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
+  assert.match(roadmap, /- situacao: Fase 192 concluida e aguardando nova autorizacao;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- nao existe Fase 191 funcional\./);
   assert.match(roadmap, /- a fase 190 permanece concluida;/);
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
+  assert.match(roadmap, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(roadmap.includes('Fase 191 -'), false, 'Roadmap nao pode criar fase 191 funcional');
+  assert.equal(roadmap.includes('Fase 193'), false, 'Roadmap nao pode abrir Fase 193');
 }
 
 function assertModernDistIgnored() {
