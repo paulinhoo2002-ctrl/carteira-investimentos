@@ -4,10 +4,12 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 190
-- branch atual: `docs/modern-architecture-decision`
-- SHA-base: `0372cc4e04d66f713474b8d0b41ef2750d380061`
-- situacao: em desenvolvimento
+- fase atual: nenhuma
+- branch atual: `main`
+- SHA-base: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`
+- situacao: ciclo de modernizacao readonly encerrado e aguardando nova autorizacao
+- PR atual: nenhuma
+- implementacao ativa: nenhuma
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -21,9 +23,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `0372cc4e04d66f713474b8d0b41ef2750d380061`
+- HEAD / `origin/main`: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`
 - workspace: limpo no inicio desta fase
-- PR `#189`: merged e closed
+- PR `#190`: merged e closed
 
 ## 1. Historico confirmado das fases readonly
 
@@ -45,8 +47,9 @@ Base de referencia desta fase:
 | 187 | Renda Fixa readonly | Concluida | `#187` | `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` | `docs/project-phases-roadmap.md`, `modern/src/features/fixed-income/fixedIncomeReadonlyContract.mjs`, `modern/src/features/fixed-income/fixedIncomeReadonlyContract.d.ts`, `modern/src/features/fixed-income/fixedIncomeReadonlyBridge.mjs`, `modern/src/features/fixed-income/fixedIncomeReadonlyBridge.d.ts`, `modern/src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs`, `modern/src/features/fixed-income/fixedIncomeSnapshotAdapter.d.ts`, `modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx`, `modern/src/features/fixed-income/readonlyFixedIncomeViewModel.ts`, `tests/modern-fixed-income-readonly-page.test.js`, `tests/modern-host-source.test.js`, `tests/modern-host.test.js`, `tests/readonly-contract-architecture.test.js` | contrato, provider e pagina readonly de renda fixa, preservando ausencia versus zero e sem recalcular totais financeiros | schema real podia ter campos ausentes, combinados ou sem ticker | reverter `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` |
 | 188 | Proventos e renda mensal readonly | Concluida | `#188` | `2c6489fb190e215fd69074071aceba8cf2638e39` | `docs/project-phases-roadmap.md`, `index.html`, `modern/src/features/income/IncomeReadonlyPage.tsx`, `modern/src/features/income/incomeReadonlyContract.d.ts`, `modern/src/features/income/incomeReadonlyContract.mjs`, `modern/src/features/income/legacyIncomeReadonlyIntegration.ts`, `modern/src/features/income/readonlyIncomeViewModel.ts`, `tests/modern-base.test.js`, `tests/modern-host-source.test.js`, `tests/modern-income-readonly-page.test.js`, `tests/readonly-contract-architecture.test.js` | contrato, provider e pagina readonly de proventos com `receivedValue`, ausencia versus zero preservada, itens vazios rejeitados e nenhuma soma financeira nova no moderno | semantica de p.value precisava ser auditada e a camada moderna nao podia duplicar bruto e liquido | reverter `2c6489fb190e215fd69074071aceba8cf2638e39` |
 | 189 | Aportes e sugestao explicavel readonly | Concluida | `#189` | `0372cc4e04d66f713474b8d0b41ef2750d380061` | `docs/project-phases-roadmap.md`, `index.html`, `modern/src/App.tsx`, `modern/src/bootstrap/hostContributionsReadonlySource.ts`, `modern/src/bootstrap/modernContributionsRuntime.ts`, `modern/src/bootstrap/mountModernApp.ts`, `modern/src/features/contributions/ContributionsReadonlyPage.tsx`, `modern/src/features/contributions/contributionsReadonlyBridge.d.ts`, `modern/src/features/contributions/contributionsReadonlyBridge.mjs`, `modern/src/features/contributions/contributionsReadonlyContract.d.ts`, `modern/src/features/contributions/contributionsReadonlyContract.mjs`, `modern/src/features/contributions/contributionsRefreshController.ts`, `modern/src/features/contributions/contributionsSnapshotAdapter.d.ts`, `modern/src/features/contributions/contributionsSnapshotAdapter.mjs`, `modern/src/features/contributions/legacyContributionsReadonlyIntegration.ts`, `modern/src/features/contributions/readonlyContributionsViewModel.ts`, `modern/src/host.tsx`, `modern/src/main.tsx`, `modern/src/types/navigation.mjs`, `package.json`, `tests/modern-base.test.js`, `tests/modern-contributions-explainable-page.test.js`, `tests/modern-host-source.test.js`, `tests/modern-host.test.js`, `tests/readonly-contract-architecture.test.js` | pagina moderna readonly de aportes e sugestao explicavel, com score null versus zero, item vazio rejeitado e sem soma financeira nova no moderno | estrategia continua no legado e a camada moderna nao pode criar justificativa financeira artificial | reverter `0372cc4e04d66f713474b8d0b41ef2750d380061` |
+| 190 | Decisao arquitetural da modernizacao | Concluida | `#190` | `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` | `docs/adr/ADR-001-modernization-strategy.md`, `docs/modern-architecture-inventory.md`, `docs/modernization-decision-matrix.md`, `docs/project-phases-roadmap.md`, `tests/modern-architecture-decision.test.js`, `tests/readonly-contract-architecture.test.js` | expansao readonly gradual e decisao arquitetural registrada, com legado como fonte de verdade | risco residual documental se novas fases nao atualizarem o mapa e as evidencias | reverter `git revert 1e72ef28350f10835a8fd92cbdadcebdb969b8cf` |
 
-## 2. Fechamento da Fase 189 e abertura da Fase 190
+## 2. Fechamento da Fase 190 e encerramento do ciclo readonly
 
 ### Fase 186
 
@@ -90,14 +93,15 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: 190;
-- nome da fase: Decisao arquitetural da modernizacao;
-- branch: `docs/modern-architecture-decision`;
-- SHA-base: `0372cc4e04d66f713474b8d0b41ef2750d380061`;
-- situacao: em desenvolvimento;
-- PR: pendente;
-- head de revisao: pendente;
-- SHA final na main: pendente de merge;
+- fase atual: nenhuma;
+- nome da fase: nenhuma;
+- branch atual: main;
+- SHA-base: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`;
+- situacao: ciclo de modernizacao readonly encerrado e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- a fase 190 fechou com a PR #190 e registra a decisao arquitetural;
+- nenhuma nova fase funcional e aberta nesta documentacao antes da decisao ser aprovada.
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
 ### Fase 189
@@ -133,7 +137,6 @@ Ordem oficial atual:
 
 Mudanca de ordem relevante:
 
-- a fase 189 fechou com a PR #189 e a fase 190 registra a decisao arquitetural;
 - a validacao automatica protege a arquitetura consolidada, nao substitui o contrato;
 - a fase 184 encerra o ciclo de documentacao e auditoria, sem nova funcionalidade;
 - a fase 185 formaliza o contrato de dados readonly sem mudar o fluxo funcional;

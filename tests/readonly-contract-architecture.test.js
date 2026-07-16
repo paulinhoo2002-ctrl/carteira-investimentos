@@ -277,8 +277,10 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /\| 187 \|[^|]*\| Concluida \| `#187` \| `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` \|/);
   assert.match(roadmap, /\| 188 \|[^|]*\| Concluida \| `#188` \| `2c6489fb190e215fd69074071aceba8cf2638e39` \|/);
   assert.match(roadmap, /\| 189 \|[^|]*\| Concluida \| `#189` \| `0372cc4e04d66f713474b8d0b41ef2750d380061` \|/);
-  assert.match(roadmap, /- HEAD \/ `origin\/main`: `0372cc4e04d66f713474b8d0b41ef2750d380061`/);
+  assert.match(roadmap, /\| 190 \|[^|]*\| Concluida \| `#190` \| `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` \|/);
+  assert.match(roadmap, /- HEAD \/ `origin\/main`: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`/);
   assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 189');
+  assert.equal(roadmap.includes('Fase 191'), false, 'Roadmap nao pode abrir Fase 191 neste encerramento');
 
   const phase186 = extractRoadmapPhaseSection(roadmap, '### Fase 186', '### Fase 185');
 
@@ -287,30 +289,33 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.equal(phase186.includes('0df41a41b9c6ba3d435044f60e69b3fa86cac27c'), false, 'Fase 186 nao pode citar SHA da Fase 187 como fechamento');
 }
 
-function assertRoadmapCurrentPhase190State(roadmap) {
+function assertRoadmapClosedPhase190State(roadmap) {
   const currentState = extractRoadmapPhaseSection(roadmap, '### Estado atual', '### Fase 189');
-  const phase190 = extractRoadmapPhaseSection(roadmap, '## 10. Fase 190 - decisao arquitetural da modernizacao', '## 11. Proximas fases');
 
-  assert.match(currentState, /- fase atual: 190/);
-  assert.match(currentState, /- nome da fase: Decisao arquitetural da modernizacao/);
-  assert.match(currentState, /- branch: `docs\/modern-architecture-decision`;/);
-  assert.match(currentState, /- SHA-base: `0372cc4e04d66f713474b8d0b41ef2750d380061`;/);
-  assert.match(currentState, /- situacao: em desenvolvimento;/);
-  assert.match(currentState, /- PR: pendente;/);
-  assert.match(currentState, /- head de revisao: pendente;/);
-  assert.match(currentState, /- SHA final na main: pendente de merge;/);
-  assert.match(currentState, /- branch: `docs\/modern-architecture-decision`;/);
-  assert.match(currentState, /- fase atual: 190;/);
-  assert.equal(currentState.includes('fase atual: 189'), false, 'Estado atual da Fase 190 nao pode ficar na fase 189');
-  assert.equal(currentState.includes('PR: `#189`'), false, 'Estado atual da Fase 190 nao pode usar PR 189');
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `1e72ef28350f10835a8fd92cbdadcebdb969b8cf`;/);
+  assert.match(currentState, /- situacao: ciclo de modernizacao readonly encerrado e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.equal(currentState.includes('fase atual: 190'), false, 'Estado atual nao pode ficar na Fase 190 aberta');
+  assert.equal(currentState.includes('em desenvolvimento'), false, 'Estado atual nao pode permanecer em desenvolvimento');
+  assert.equal(currentState.includes('em revisao - draft'), false, 'Estado atual nao pode permanecer em revisao');
+  assert.equal(currentState.includes('pendente de merge'), false, 'Estado atual nao pode permanecer pendente de merge');
+  assert.equal(currentState.includes('PR: pendente'), false, 'Estado atual nao pode manter PR pendente');
+  assert.equal(currentState.includes('head de revisao: pendente'), false, 'Estado atual nao pode manter head pendente');
 
-  assert.match(phase190, /auditar consolidado do frontend legado e das paginas modernas readonly/);
-  assert.match(phase190, /inventario arquitetural consolidado com fronteiras, responsabilidades e riscos/);
-  assert.match(phase190, /ADR com a estrategia recomendada e as opcoes avaliadas/);
-  assert.match(phase190, /matriz de decisao com criterios, notas e justificativa/);
-  assert.match(phase190, /nenhuma escrita moderna/);
-  assert.match(phase190, /rollback simples e reversivel/);
-  assert.equal(phase190.includes('prudentContributionAnalysis()'), false, 'Fase 190 nao pode reaproveitar a explicacao da Fase 189');
+  const phase190Row = roadmap.match(/\| 190 \|[^\r\n]*/)?.[0] ?? '';
+
+  assert.match(phase190Row, /\| 190 \|[^|]*\| Concluida \| `#190` \| `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` \|/);
+  assert.match(phase190Row, /Decisao arquitetural da modernizacao/);
+  assert.match(phase190Row, /expansao readonly gradual e decisao arquitetural registrada, com legado como fonte de verdade/);
+  assert.match(phase190Row, /reverter `git revert 1e72ef28350f10835a8fd92cbdadcebdb969b8cf`/);
+  assert.equal(phase190Row.includes('pendente de merge'), false, 'Fase 190 historica nao pode ficar pendente de merge');
+  assert.equal(phase190Row.includes('em desenvolvimento'), false, 'Fase 190 historica nao pode ficar em desenvolvimento');
+  assert.equal(phase190Row.includes('em revisao - draft'), false, 'Fase 190 historica nao pode ficar em revisao');
+  assert.equal(phase190Row.includes('prudentContributionAnalysis()'), false, 'Fase 190 nao pode reaproveitar a explicacao da Fase 189');
+  assert.equal(phase190Row.includes('Fase 191'), false, 'Fase 190 historica nao pode abrir Fase 191');
 }
 
 function assertModernDistIgnored() {
@@ -440,7 +445,7 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertPackageScripts(snapshot.packageJson);
   assertDocsNoDuplicateList(snapshot.docs);
   assertRoadmapPhaseShas(snapshot.roadmap);
-  assertRoadmapCurrentPhase190State(snapshot.roadmap);
+  assertRoadmapClosedPhase190State(snapshot.roadmap);
   assertModernDistIgnored();
   assert.equal(fs.existsSync(path.join(repoRoot, 'docs', 'modern-architecture-inventory.md')), true, 'Inventario arquitetural precisa existir');
   assert.equal(fs.existsSync(path.join(repoRoot, 'docs', 'adr', 'ADR-001-modernization-strategy.md')), true, 'ADR da estrategia precisa existir');
