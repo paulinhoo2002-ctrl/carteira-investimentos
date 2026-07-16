@@ -107,7 +107,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
   assert.equal(hostSourceTs.includes('globalThis'), false);
   assert.match(fixedIncomeSourceTs, /createHostFixedIncomeReadonlySource/);
-  assert.match(fixedIncomeSourceTs, /taxValue/);
+  assert.match(fixedIncomeSourceTs, /combinedTaxValue/);
   assert.match(fixedIncomeRuntimeTs, /createModernFixedIncomeRuntime/);
   assert.match(
     rootIndexHtml,

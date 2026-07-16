@@ -70,9 +70,9 @@ Base de referencia desta fase:
 - nome da fase: Renda Fixa readonly;
 - branch: `feat/modern-fixed-income-readonly-page`;
 - SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
-- situacao: em desenvolvimento;
-- PR: futura;
-- head de revisao: consultavel na futura PR;
+- situacao: em revisao - draft;
+- PR: `#187`;
+- head de revisao: consultavel na PR `#187`;
 - SHA final na main: pendente de merge;
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
@@ -88,12 +88,12 @@ Base de referencia desta fase:
 
 ### Fase 187
 
-- objetivo: criar pagina moderna readonly de Ativos completa, responsiva e somente leitura, usando exclusivamente o snapshot versionado da Fase 185;
-- entregaveis: componente dedicado, resumo, lista, filtros, destaques, distribuicao, estados vazios/erro/fallback, testes e smokes;
-- fora de escopo: edicao, cadastro, exclusao, aporte, novo calculo financeiro, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
-- riscos: divergencia com o snapshot versionado, regressao de acessibilidade/responsividade, listas grandes sem bom escaneamento, derivacao visual excessiva;
-- criterios de conclusao: build/teste/smoke verdes, nenhuma duplicacao de formula financeira, nenhum acesso a S.assets em modern/src, modern/dist fora do indice, rollback simples;
-- rollback: remover a pagina, os testes e a doc desta fase, mantendo contrato e runtime anteriores intactos.
+- objetivo: descobrir, validar e expor com seguranca o schema real de renda fixa no legado por uma fronteira readonly dedicada, sem assumir o contrato de Ativos;
+- entregaveis: contrato e provider readonly dedicados, pagina moderna de Renda Fixa, resumo com campos reais ou nulos, lista, filtros visuais, destaques, distribuicao, estados vazios/erro/fallback, testes e smokes;
+- fora de escopo: edicao, cadastro, exclusao, resgate, simulacao, aporte, novo calculo financeiro, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
+- riscos: schema legado incompleto ou misto, ausencia de ticker em parte dos registros, divergencia entre campo combinado e campos separados de imposto, regressao de acessibilidade/responsividade, derivacao visual excessiva;
+- criterios de conclusao: build/teste/smoke verdes, nenhum recalculo financeiro no provider, ausencia versus zero preservada, nenhum acesso a S.assets em modern/src, modern/dist fora do indice, rollback simples;
+- rollback: remover pagina, testes, provider e doc desta fase, mantendo contrato, bridge, adapter e fases anteriores intactos.
 
 ## 2. Ordem consolidada das fases readonly
 

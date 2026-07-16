@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import type { ReadOnlyFixedIncomeAdapter } from './fixedIncomeSnapshotAdapter.mjs';
+import type { ReadOnlyFixedIncomeAdapter, ReadOnlyFixedIncomeItem } from './fixedIncomeSnapshotAdapter.mjs';
 import {
   createReadonlyFixedIncomeViewModel,
+  displayIdentity,
   formatCount,
-  formatReadonlyCurrency,
   formatReadonlyDate,
-  formatReadonlyPercent,
+  formatReadonlyMoney,
+  formatReadonlyPercentOrMissing,
   formatText,
   type ReadonlyFixedIncomeSortKey,
 } from './readonlyFixedIncomeViewModel.ts';
@@ -18,11 +19,31 @@ const sortLabels: Record<ReadonlyFixedIncomeSortKey, string> = {
   liquidValue: 'Valor líquido',
   profitValue: 'Ganho / perda',
   maturityDate: 'Vencimento',
-  ticker: 'Ticker',
+  ticker: 'Identificação',
 };
 
-function summarizeItemLabel(ticker: string, name: string) {
-  return `${ticker} · ${name}`;
+function summarizeItemLabel(item: ReadOnlyFixedIncomeItem) {
+  const ticker = formatText(item.ticker);
+  const name = formatText(item.name);
+  const identity = displayIdentity(item);
+
+  if (item.ticker && item.name) {
+    return `${ticker} · ${name}`;
+  }
+
+  return identity;
+}
+
+function renderMoney(value: number | null | undefined) {
+  return formatReadonlyMoney(value);
+}
+
+function renderStatusLabel(hasItems: boolean, itemCount: number) {
+  if (!hasItems) {
+    return 'Carteira de renda fixa vazia nesta leitura readonly.';
+  }
+
+  return `${formatCount(itemCount)} título${itemCount === 1 ? '' : 's'} de renda fixa somente leitura`;
 }
 
 function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProps) {
@@ -56,7 +77,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
             Renda fixa
           </h2>
           <p className="page-shell__description">
-            Somente leitura. Valores e vencimentos vem do legado por fronteira readonly explicita.
+            Somente leitura. O legado fornece os campos reais e a tela apenas apresenta o snapshot congelado.
           </p>
         </div>
 
@@ -78,9 +99,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
       <p className="fixed-income-readonly__notice">{snapshot.notice}</p>
 
       <p className="fixed-income-readonly__status" role="status" aria-live="polite">
-        {viewModel.itemCount > 0
-          ? `${formatCount(viewModel.itemCount)} título${viewModel.itemCount === 1 ? '' : 's'} de renda fixa somente leitura`
-          : 'Carteira de renda fixa vazia nesta leitura readonly.'}
+        {renderStatusLabel(hasItems, viewModel.itemCount)}
       </p>
 
       <section className="fixed-income-readonly__filters" aria-labelledby="fixed-income-filters">
@@ -93,9 +112,9 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
 
         <div className="fixed-income-readonly__controls">
           <label className="fixed-income-readonly__control">
-            <span>Buscar por ticker, nome ou emissor</span>
+            <span>Buscar por ticker, nome, ID ou emissor</span>
             <input
-              aria-label="Buscar por ticker, nome ou emissor"
+              aria-label="Buscar por ticker, nome, ID ou emissor"
               placeholder="CDB, banco, vencimento..."
               type="search"
               value={query}
@@ -141,28 +160,43 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
       <div className="overview-grid fixed-income-readonly__summary" aria-label="Resumo readonly da renda fixa">
         <article className="overview-card">
           <p className="overview-card__label">Valor aplicado</p>
-          <p className="overview-card__value">{formatReadonlyCurrency(viewModel.totalApplied)}</p>
-          <p className="overview-card__hint">Somatorio já entregue pelo legado</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalApplied)}</p>
+          <p className="overview-card__hint">Somente valor já informado pelo legado</p>
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Valor bruto</p>
-          <p className="overview-card__value">{formatReadonlyCurrency(viewModel.totalGross)}</p>
-          <p className="overview-card__hint">Leitura agregada do snapshot</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalGross)}</p>
+          <p className="overview-card__hint">Leitura direta do snapshot readonly</p>
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Valor líquido</p>
-          <p className="overview-card__value">{formatReadonlyCurrency(viewModel.totalLiquid)}</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalLiquid)}</p>
           <p className="overview-card__hint">Sem recálculo moderno</p>
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Ganho / perda</p>
-          <p className="overview-card__value">{formatReadonlyCurrency(viewModel.totalProfit)}</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalProfit)}</p>
           <p className="overview-card__hint">Leitura agregada da fonte readonly</p>
         </article>
         <article className="overview-card">
-          <p className="overview-card__label">IR / IOF</p>
-          <p className="overview-card__value">{formatReadonlyCurrency(viewModel.totalTaxValue)}</p>
-          <p className="overview-card__hint">Tributo combinado fornecido pelo legado</p>
+          <p className="overview-card__label">IR</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalIrValue)}</p>
+          <p className="overview-card__hint">Somente quando o legado informar</p>
+        </article>
+        <article className="overview-card">
+          <p className="overview-card__label">IOF</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalIofValue)}</p>
+          <p className="overview-card__hint">Somente quando o legado informar</p>
+        </article>
+        <article className="overview-card">
+          <p className="overview-card__label">IR / IOF combinado</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalCombinedTaxValue)}</p>
+          <p className="overview-card__hint">Preserva campo legado combinado quando existir</p>
+        </article>
+        <article className="overview-card">
+          <p className="overview-card__label">Valor indisponível</p>
+          <p className="overview-card__value">{renderMoney(viewModel.totalUnavailableValue)}</p>
+          <p className="overview-card__hint">Não recalculado localmente</p>
         </article>
         <article className="overview-card">
           <p className="overview-card__label">Quantidade de títulos</p>
@@ -184,17 +218,17 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
             <p className="overview-card__label">Maiores valores líquidos</p>
             {viewModel.topLiquidItems.length > 0 ? (
               <ul className="fixed-income-readonly__compact-list">
-              {viewModel.topLiquidItems.map((item) => (
-                <li key={item.ticker}>
-                  <strong>{summarizeItemLabel(item.ticker, item.name)}</strong>
-                  <span>
-                      {formatReadonlyCurrency(item.liquidValue)} · {formatText(item.maturityStatus)}
-                  </span>
-                </li>
-              ))}
+                {viewModel.topLiquidItems.map((item) => (
+                  <li key={item.id ?? item.ticker ?? item.name ?? item.subtype ?? item.maturityDate ?? summarizeItemLabel(item)}>
+                    <strong>{summarizeItemLabel(item)}</strong>
+                    <span>
+                      {renderMoney(item.liquidValue)} · {formatText(item.maturityStatus)}
+                    </span>
+                  </li>
+                ))}
               </ul>
             ) : (
-              <p className="overview-card__hint">Sem titulos para destacar.</p>
+              <p className="overview-card__hint">Nenhum valor líquido informado.</p>
             )}
           </article>
 
@@ -203,8 +237,8 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
             {viewModel.topMaturityItems.length > 0 ? (
               <ul className="fixed-income-readonly__compact-list">
                 {viewModel.topMaturityItems.map((item) => (
-                  <li key={item.ticker}>
-                    <strong>{summarizeItemLabel(item.ticker, item.name)}</strong>
+                  <li key={item.id ?? item.ticker ?? item.name ?? item.subtype ?? item.applicationDate ?? summarizeItemLabel(item)}>
+                    <strong>{summarizeItemLabel(item)}</strong>
                     <span>
                       {formatText(item.maturityStatus)} · {formatReadonlyDate(item.maturityDate)}
                     </span>
@@ -212,7 +246,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                 ))}
               </ul>
             ) : (
-              <p className="overview-card__hint">Sem titulos para destacar.</p>
+              <p className="overview-card__hint">Sem vencimento informado.</p>
             )}
           </article>
 
@@ -221,14 +255,14 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
             {viewModel.topProfitItems.length > 0 ? (
               <ul className="fixed-income-readonly__compact-list">
                 {viewModel.topProfitItems.map((item) => (
-                  <li key={item.ticker}>
-                    <strong>{summarizeItemLabel(item.ticker, item.name)}</strong>
-                    <span>{formatReadonlyCurrency(item.profitValue)}</span>
+                  <li key={item.id ?? item.ticker ?? item.name ?? item.subtype ?? item.applicationDate ?? summarizeItemLabel(item)}>
+                    <strong>{summarizeItemLabel(item)}</strong>
+                    <span>{renderMoney(item.profitValue)}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="overview-card__hint">Nenhum titulo com ganho positivo.</p>
+              <p className="overview-card__hint">Nenhum título em alta.</p>
             )}
           </article>
 
@@ -237,14 +271,14 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
             {viewModel.topLossItems.length > 0 ? (
               <ul className="fixed-income-readonly__compact-list">
                 {viewModel.topLossItems.map((item) => (
-                  <li key={item.ticker}>
-                    <strong>{summarizeItemLabel(item.ticker, item.name)}</strong>
-                    <span>{formatReadonlyCurrency(item.profitValue)}</span>
+                  <li key={item.id ?? item.ticker ?? item.name ?? item.subtype ?? item.applicationDate ?? summarizeItemLabel(item)}>
+                    <strong>{summarizeItemLabel(item)}</strong>
+                    <span>{renderMoney(item.profitValue)}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="overview-card__hint">Nenhum titulo com perda negativa.</p>
+              <p className="overview-card__hint">Nenhum título em queda.</p>
             )}
           </article>
         </div>
@@ -255,7 +289,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
           <h3 className="fixed-income-readonly__section-title" id="fixed-income-distribution">
             Distribuição por subtipo
           </h3>
-          <p className="fixed-income-readonly__section-note">Agregação visual baseada nas posições já fornecidas.</p>
+          <p className="fixed-income-readonly__section-note">Agregação visual baseada nos valores já fornecidos.</p>
         </div>
 
         <div className="fixed-income-readonly__distribution-list">
@@ -265,18 +299,24 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                 <div className="fixed-income-readonly__distribution-row-head">
                   <strong>{entry.subtype}</strong>
                   <span>
-                    {formatReadonlyPercent(entry.allocationPct, { signed: false })} · {entry.itemCount} títulos
+                    {entry.allocationPct === null
+                      ? `Não informado · ${entry.itemCount} títulos`
+                      : `${formatReadonlyPercentOrMissing(entry.allocationPct, { signed: false })} · ${entry.itemCount} títulos`}
                   </span>
                 </div>
-                <div
-                  className="fixed-income-readonly__distribution-track"
-                  aria-label={`${entry.subtype}: ${formatReadonlyPercent(entry.allocationPct, { signed: false })}`}
-                >
-                  <span
-                    className="fixed-income-readonly__distribution-fill"
-                    style={{ width: `${Math.max(0, Math.min(entry.allocationPct, 100))}%` }}
-                  />
-                </div>
+                {entry.allocationPct === null ? (
+                  <p className="overview-card__hint">Participação não informada.</p>
+                ) : (
+                  <div
+                    className="fixed-income-readonly__distribution-track"
+                    aria-label={`${entry.subtype}: ${formatReadonlyPercentOrMissing(entry.allocationPct, { signed: false })}`}
+                  >
+                    <span
+                      className="fixed-income-readonly__distribution-fill"
+                      style={{ width: `${Math.max(0, Math.min(entry.allocationPct, 100))}%` }}
+                    />
+                  </div>
+                )}
               </div>
             ))
           ) : (
@@ -304,7 +344,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                 <caption>Lista readonly dos títulos de renda fixa</caption>
                 <thead>
                   <tr>
-                    <th scope="col">Título</th>
+                    <th scope="col">Identificação</th>
                     <th scope="col">Subtipo</th>
                     <th scope="col">Emissor</th>
                     <th scope="col">Aplicação</th>
@@ -324,22 +364,28 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       Ganho / perda
                     </th>
                     <th className="number-cell" scope="col">
-                      IR / IOF
+                      IR
+                    </th>
+                    <th className="number-cell" scope="col">
+                      IOF
+                    </th>
+                    <th className="number-cell" scope="col">
+                      IR / IOF combinado
                     </th>
                     <th scope="col">Liquidez</th>
                     <th className="number-cell" scope="col">
                       Indisp.
                     </th>
-                    <th scope="col">Vencimento</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Observação</th>
                   </tr>
                 </thead>
                 <tbody>
                   {viewModel.filteredItems.map((item) => (
-                    <tr key={item.ticker}>
+                    <tr key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
                       <th scope="row">
-                        <span className="assets-report__ticker">{item.ticker}</span>
-                        <span className="assets-report__name">{item.name}</span>
+                        {item.ticker ? <span className="assets-report__ticker">{item.ticker}</span> : null}
+                        <span className="assets-report__name">{displayIdentity(item)}</span>
                       </th>
                       <td>{formatText(item.subtype)}</td>
                       <td>{formatText(item.issuer)}</td>
@@ -347,13 +393,15 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       <td>{formatReadonlyDate(item.maturityDate)}</td>
                       <td>{formatText(item.contractedRate)}</td>
                       <td>{formatText(item.indexer)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.appliedValue)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.grossValue)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.liquidValue)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.profitValue)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.taxValue)}</td>
+                      <td className="number-cell">{renderMoney(item.appliedValue)}</td>
+                      <td className="number-cell">{renderMoney(item.grossValue)}</td>
+                      <td className="number-cell">{renderMoney(item.liquidValue)}</td>
+                      <td className="number-cell">{renderMoney(item.profitValue)}</td>
+                      <td className="number-cell">{renderMoney(item.irValue)}</td>
+                      <td className="number-cell">{renderMoney(item.iofValue)}</td>
+                      <td className="number-cell">{renderMoney(item.combinedTaxValue)}</td>
                       <td>{formatText(item.liquidity)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.unavailableValue)}</td>
+                      <td className="number-cell">{renderMoney(item.unavailableValue)}</td>
                       <td>
                         <span className="fixed-income-readonly__status-badge" data-status={item.maturityStatus}>
                           {item.maturityStatus}
@@ -368,10 +416,10 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
 
             <div className="fixed-income-readonly__mobile-list" aria-label="Lista mobile dos titulos de renda fixa">
               {viewModel.filteredItems.map((item) => (
-                <article className="fixed-income-readonly__mobile-card" key={item.ticker}>
+                <article className="fixed-income-readonly__mobile-card" key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
                   <div>
-                    <h4 className="assets-report__ticker">{item.ticker}</h4>
-                    <p className="assets-report__name">{item.name}</p>
+                    {item.ticker ? <h4 className="assets-report__ticker">{item.ticker}</h4> : null}
+                    <p className="assets-report__name">{displayIdentity(item)}</p>
                     <p className="fixed-income-readonly__mobile-subtitle">{formatText(item.subtype)}</p>
                   </div>
                   <dl>
@@ -397,23 +445,31 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                     </div>
                     <div>
                       <dt>Aplicado</dt>
-                      <dd>{formatReadonlyCurrency(item.appliedValue)}</dd>
+                      <dd>{renderMoney(item.appliedValue)}</dd>
                     </div>
                     <div>
                       <dt>Bruto</dt>
-                      <dd>{formatReadonlyCurrency(item.grossValue)}</dd>
+                      <dd>{renderMoney(item.grossValue)}</dd>
                     </div>
                     <div>
                       <dt>Líquido</dt>
-                      <dd>{formatReadonlyCurrency(item.liquidValue)}</dd>
+                      <dd>{renderMoney(item.liquidValue)}</dd>
                     </div>
                     <div>
                       <dt>Ganho / perda</dt>
-                      <dd>{formatReadonlyCurrency(item.profitValue)}</dd>
+                      <dd>{renderMoney(item.profitValue)}</dd>
                     </div>
                     <div>
-                      <dt>IR / IOF</dt>
-                      <dd>{formatReadonlyCurrency(item.taxValue)}</dd>
+                      <dt>IR</dt>
+                      <dd>{renderMoney(item.irValue)}</dd>
+                    </div>
+                    <div>
+                      <dt>IOF</dt>
+                      <dd>{renderMoney(item.iofValue)}</dd>
+                    </div>
+                    <div>
+                      <dt>IR / IOF combinado</dt>
+                      <dd>{renderMoney(item.combinedTaxValue)}</dd>
                     </div>
                     <div>
                       <dt>Liquidez</dt>
@@ -421,10 +477,10 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                     </div>
                     <div>
                       <dt>Indisp.</dt>
-                      <dd>{formatReadonlyCurrency(item.unavailableValue)}</dd>
+                      <dd>{renderMoney(item.unavailableValue)}</dd>
                     </div>
                     <div>
-                      <dt>Vencimento</dt>
+                      <dt>Status</dt>
                       <dd>
                         <span className="fixed-income-readonly__status-badge" data-status={item.maturityStatus}>
                           {item.maturityStatus}

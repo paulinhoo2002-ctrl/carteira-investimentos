@@ -848,7 +848,7 @@ button {
 
 .fixed-income-readonly__table {
   width: 100%;
-  min-width: 1540px;
+  min-width: 1760px;
   border-collapse: collapse;
   color: var(--color-text);
 }
@@ -945,19 +945,17 @@ button {
   color: #fecaca;
 }
 
-.fixed-income-readonly__status-badge[data-status='Proximos 30 dias'],
-.fixed-income-readonly__status-badge[data-status='Proximos 90 dias'] {
+.fixed-income-readonly__status-badge[data-status='Próximo'] {
   border-color: rgba(250, 204, 21, 0.48);
   color: #fef3c7;
 }
 
-.fixed-income-readonly__status-badge[data-status='Proximos 12 meses'] {
+.fixed-income-readonly__status-badge[data-status='A vencer'] {
   border-color: rgba(125, 182, 255, 0.42);
   color: #dbeafe;
 }
 
-.fixed-income-readonly__status-badge[data-status='Acima de 12 meses'],
-.fixed-income-readonly__status-badge[data-status='Sem vencimento'] {
+.fixed-income-readonly__status-badge[data-status='Sem informação'] {
   border-color: rgba(52, 211, 153, 0.4);
   color: #bbf7d0;
 }

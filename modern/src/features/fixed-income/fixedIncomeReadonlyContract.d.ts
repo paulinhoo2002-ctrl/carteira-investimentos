@@ -1,43 +1,46 @@
 export declare const FIXED_INCOME_READONLY_CONTRACT_VERSION: 1;
 export declare const FIXED_INCOME_READONLY_MATURITY_STATUSES: readonly [
   'Vencido',
-  'Proximos 30 dias',
-  'Proximos 90 dias',
-  'Proximos 12 meses',
-  'Acima de 12 meses',
-  'Sem vencimento',
+  'Próximo',
+  'A vencer',
+  'Sem informação',
 ];
 
 export type FixedIncomeReadonlyContractVersion = typeof FIXED_INCOME_READONLY_CONTRACT_VERSION;
 export type FixedIncomeReadonlyMaturityStatus = (typeof FIXED_INCOME_READONLY_MATURITY_STATUSES)[number];
 
 export interface ReadOnlyFixedIncomeItem {
-  readonly ticker: string;
-  readonly name: string;
-  readonly subtype: string;
-  readonly issuer: string;
-  readonly applicationDate: string;
-  readonly maturityDate: string;
-  readonly contractedRate: string;
-  readonly indexer: string;
-  readonly appliedValue: number;
-  readonly grossValue: number;
-  readonly liquidValue: number;
-  readonly profitValue: number;
-  readonly taxValue: number;
-  readonly liquidity: string;
-  readonly unavailableValue: number;
+  readonly id: string | null;
+  readonly ticker: string | null;
+  readonly name: string | null;
+  readonly subtype: string | null;
+  readonly issuer: string | null;
+  readonly applicationDate: string | null;
+  readonly maturityDate: string | null;
+  readonly contractedRate: string | null;
+  readonly indexer: string | null;
+  readonly appliedValue: number | null;
+  readonly grossValue: number | null;
+  readonly liquidValue: number | null;
+  readonly profitValue: number | null;
+  readonly irValue: number | null;
+  readonly iofValue: number | null;
+  readonly combinedTaxValue: number | null;
+  readonly liquidity: string | null;
+  readonly unavailableValue: number | null;
   readonly maturityStatus: FixedIncomeReadonlyMaturityStatus;
-  readonly note: string;
+  readonly note: string | null;
 }
 
 export interface ReadOnlyFixedIncomeSummary {
-  readonly totalApplied: number;
-  readonly totalGross: number;
-  readonly totalLiquid: number;
-  readonly totalProfit: number;
-  readonly totalTaxValue: number;
-  readonly totalUnavailableValue: number;
+  readonly totalApplied: number | null;
+  readonly totalGross: number | null;
+  readonly totalLiquid: number | null;
+  readonly totalProfit: number | null;
+  readonly totalIrValue: number | null;
+  readonly totalIofValue: number | null;
+  readonly totalCombinedTaxValue: number | null;
+  readonly totalUnavailableValue: number | null;
   readonly itemCount: number;
 }
 

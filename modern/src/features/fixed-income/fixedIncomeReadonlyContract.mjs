@@ -1,11 +1,9 @@
 export const FIXED_INCOME_READONLY_CONTRACT_VERSION = 1;
 export const FIXED_INCOME_READONLY_MATURITY_STATUSES = [
   'Vencido',
-  'Proximos 30 dias',
-  'Proximos 90 dias',
-  'Proximos 12 meses',
-  'Acima de 12 meses',
-  'Sem vencimento',
+  'Próximo',
+  'A vencer',
+  'Sem informação',
 ];
 
 export const FIXED_INCOME_READONLY_FALLBACK_SNAPSHOT = deepFreeze({
@@ -13,12 +11,14 @@ export const FIXED_INCOME_READONLY_FALLBACK_SNAPSHOT = deepFreeze({
   generatedAt: '1970-01-01T00:00:00.000Z',
   notice: 'Snapshot readonly de renda fixa indisponivel. React nao escreve na fonte.',
   summary: {
-    totalApplied: 0,
-    totalGross: 0,
-    totalLiquid: 0,
-    totalProfit: 0,
-    totalTaxValue: 0,
-    totalUnavailableValue: 0,
+    totalApplied: null,
+    totalGross: null,
+    totalLiquid: null,
+    totalProfit: null,
+    totalIrValue: null,
+    totalIofValue: null,
+    totalCombinedTaxValue: null,
+    totalUnavailableValue: null,
     itemCount: 0,
   },
   items: [],
@@ -32,12 +32,16 @@ function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.trim().length > 0;
+function isNullableNumber(value) {
+  return value === null || isFiniteNumber(value);
 }
 
-function isString(value) {
-  return typeof value === 'string';
+function isNullableString(value) {
+  return value === null || typeof value === 'string';
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function isReadonlyFixedIncomeMaturityStatus(value) {
@@ -50,16 +54,22 @@ function isReadonlyFixedIncomeSummary(value) {
   }
 
   return (
-    isFiniteNumber(value.totalApplied) &&
-    isFiniteNumber(value.totalGross) &&
-    isFiniteNumber(value.totalLiquid) &&
-    isFiniteNumber(value.totalProfit) &&
-    isFiniteNumber(value.totalTaxValue) &&
-    isFiniteNumber(value.totalUnavailableValue) &&
+    isNullableNumber(value.totalApplied) &&
+    isNullableNumber(value.totalGross) &&
+    isNullableNumber(value.totalLiquid) &&
+    isNullableNumber(value.totalProfit) &&
+    isNullableNumber(value.totalIrValue) &&
+    isNullableNumber(value.totalIofValue) &&
+    isNullableNumber(value.totalCombinedTaxValue) &&
+    isNullableNumber(value.totalUnavailableValue) &&
     isFiniteNumber(value.itemCount) &&
     Number.isInteger(value.itemCount) &&
     value.itemCount >= 0
   );
+}
+
+function hasFixedIncomeIdentity(value) {
+  return isNonEmptyString(value.id) || isNonEmptyString(value.ticker) || isNonEmptyString(value.name);
 }
 
 function isReadonlyFixedIncomeItem(value) {
@@ -68,23 +78,27 @@ function isReadonlyFixedIncomeItem(value) {
   }
 
   return (
-    isNonEmptyString(value.ticker) &&
-    isNonEmptyString(value.name) &&
-    isString(value.subtype) &&
-    isString(value.issuer) &&
-    isString(value.applicationDate) &&
-    isString(value.maturityDate) &&
-    isString(value.contractedRate) &&
-    isString(value.indexer) &&
-    isFiniteNumber(value.appliedValue) &&
-    isFiniteNumber(value.grossValue) &&
-    isFiniteNumber(value.liquidValue) &&
-    isFiniteNumber(value.profitValue) &&
-    isFiniteNumber(value.taxValue) &&
-    isString(value.liquidity) &&
-    isFiniteNumber(value.unavailableValue) &&
+    hasFixedIncomeIdentity(value) &&
+    isNullableString(value.id) &&
+    isNullableString(value.ticker) &&
+    isNullableString(value.name) &&
+    isNullableString(value.subtype) &&
+    isNullableString(value.issuer) &&
+    isNullableString(value.applicationDate) &&
+    isNullableString(value.maturityDate) &&
+    isNullableString(value.contractedRate) &&
+    isNullableString(value.indexer) &&
+    isNullableNumber(value.appliedValue) &&
+    isNullableNumber(value.grossValue) &&
+    isNullableNumber(value.liquidValue) &&
+    isNullableNumber(value.profitValue) &&
+    isNullableNumber(value.irValue) &&
+    isNullableNumber(value.iofValue) &&
+    isNullableNumber(value.combinedTaxValue) &&
+    isNullableString(value.liquidity) &&
+    isNullableNumber(value.unavailableValue) &&
     isReadonlyFixedIncomeMaturityStatus(value.maturityStatus) &&
-    isString(value.note)
+    isNullableString(value.note)
   );
 }
 
@@ -104,6 +118,7 @@ function deepFreeze(value) {
 
 function cloneReadonlyFixedIncomeItem(item) {
   return {
+    id: item.id,
     ticker: item.ticker,
     name: item.name,
     subtype: item.subtype,
@@ -116,7 +131,9 @@ function cloneReadonlyFixedIncomeItem(item) {
     grossValue: item.grossValue,
     liquidValue: item.liquidValue,
     profitValue: item.profitValue,
-    taxValue: item.taxValue,
+    irValue: item.irValue,
+    iofValue: item.iofValue,
+    combinedTaxValue: item.combinedTaxValue,
     liquidity: item.liquidity,
     unavailableValue: item.unavailableValue,
     maturityStatus: item.maturityStatus,
@@ -134,7 +151,9 @@ function cloneReadonlyFixedIncomeSnapshot(snapshot) {
       totalGross: snapshot.summary.totalGross,
       totalLiquid: snapshot.summary.totalLiquid,
       totalProfit: snapshot.summary.totalProfit,
-      totalTaxValue: snapshot.summary.totalTaxValue,
+      totalIrValue: snapshot.summary.totalIrValue,
+      totalIofValue: snapshot.summary.totalIofValue,
+      totalCombinedTaxValue: snapshot.summary.totalCombinedTaxValue,
       totalUnavailableValue: snapshot.summary.totalUnavailableValue,
       itemCount: snapshot.summary.itemCount,
     },

@@ -211,15 +211,10 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   const fixedIncomeSource = hasInjectedFixedIncomeAssets
     ? createHostFixedIncomeReadonlySource({
         getAssets: options.getFixedIncomeAssets,
-        getGeneratedAt:
-          options.getGeneratedAt ??
-          (() =>
-            hasInjectedFixedIncomeAssets
-              ? new Date().toISOString()
-              : new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString()),
+        getGeneratedAt: options.getGeneratedAt ?? (() => new Date().toISOString()),
         notice: options.notice ?? 'Snapshot legado somente leitura de renda fixa. React nao escreve na fonte.',
       })
-    : null;
+      : null;
 
   const fallbackHostReportsSource = await createHostLegacyReportsReadonlySource({
       legacyModule: injectedLegacyModule ?? undefined,
