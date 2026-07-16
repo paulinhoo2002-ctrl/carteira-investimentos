@@ -4575,6 +4575,10 @@ async function bootstrapExperimentalActiveWalletHost(){
             })
         : [];
     }
+    ,
+    getFixedIncomeAssets(){
+      return Array.isArray(S.assets) ? S.assets : [];
+    }
   });
   setTimeout(()=>{
     try{ delete window.buildReportAssetRow; }catch(e){}

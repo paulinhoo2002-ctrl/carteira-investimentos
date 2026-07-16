@@ -613,6 +613,353 @@ button {
   color: var(--color-text-muted);
 }
 
+.fixed-income-readonly {
+  align-content: start;
+}
+
+.fixed-income-readonly__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+
+.fixed-income-readonly__header-actions {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+}
+
+.fixed-income-readonly__meta {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+  text-align: right;
+}
+
+.fixed-income-readonly__meta-label {
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fixed-income-readonly__legacy-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform var(--motion-fast),
+    border-color var(--motion-fast),
+    background-color var(--motion-fast);
+}
+
+.fixed-income-readonly__legacy-link:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover-strong);
+}
+
+.fixed-income-readonly__legacy-link:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.fixed-income-readonly__notice {
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.fixed-income-readonly__status {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+}
+
+.fixed-income-readonly__filters,
+.fixed-income-readonly__distribution,
+.fixed-income-readonly__highlights,
+.fixed-income-readonly__list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.fixed-income-readonly__section-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.fixed-income-readonly__section-title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.fixed-income-readonly__section-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.fixed-income-readonly__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.8fr) minmax(180px, 0.8fr);
+  gap: var(--space-3);
+}
+
+.fixed-income-readonly__control {
+  display: grid;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.fixed-income-readonly__control input,
+.fixed-income-readonly__control select {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.fixed-income-readonly__control input:focus-visible,
+.fixed-income-readonly__control select:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.fixed-income-readonly__results {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+}
+
+.fixed-income-readonly__highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.fixed-income-readonly__compact-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fixed-income-readonly__compact-list li {
+  display: grid;
+  gap: 3px;
+}
+
+.fixed-income-readonly__compact-list strong {
+  font-size: 0.98rem;
+}
+
+.fixed-income-readonly__compact-list span {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.fixed-income-readonly__distribution-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.fixed-income-readonly__distribution-row {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+
+.fixed-income-readonly__distribution-row-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--color-text-muted);
+  font-size: 0.93rem;
+}
+
+.fixed-income-readonly__distribution-row-head strong {
+  color: var(--color-text);
+}
+
+.fixed-income-readonly__distribution-track {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+}
+
+.fixed-income-readonly__distribution-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.95), rgba(125, 182, 255, 0.88));
+}
+
+.fixed-income-readonly__empty {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px dashed var(--color-border-active);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+
+.fixed-income-readonly__empty-title {
+  margin: 0;
+  font-weight: 800;
+}
+
+.fixed-income-readonly__empty-body {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.fixed-income-readonly__table-wrap {
+  overflow-x: auto;
+}
+
+.fixed-income-readonly__table {
+  width: 100%;
+  min-width: 1760px;
+  border-collapse: collapse;
+  color: var(--color-text);
+}
+
+.fixed-income-readonly__table caption {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-weight: 700;
+  text-align: left;
+}
+
+.fixed-income-readonly__table th,
+.fixed-income-readonly__table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.fixed-income-readonly__table thead th {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.fixed-income-readonly__table tbody tr {
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.fixed-income-readonly__table tbody tr + tr {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.fixed-income-readonly__mobile-list {
+  display: none;
+}
+
+.fixed-income-readonly__mobile-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+
+.fixed-income-readonly__mobile-card h4,
+.fixed-income-readonly__mobile-card p,
+.fixed-income-readonly__mobile-card dl {
+  margin: 0;
+}
+
+.fixed-income-readonly__mobile-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.fixed-income-readonly__mobile-card dl {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.fixed-income-readonly__mobile-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.fixed-income-readonly__mobile-card dt {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.fixed-income-readonly__mobile-card dd {
+  margin: 0;
+  max-width: 58%;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.fixed-income-readonly__status-badge {
+  display: inline-flex;
+  min-width: 118px;
+  justify-content: center;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.fixed-income-readonly__status-badge[data-status='Vencido'] {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fecaca;
+}
+
+.fixed-income-readonly__status-badge[data-status='Próximo'] {
+  border-color: rgba(250, 204, 21, 0.48);
+  color: #fef3c7;
+}
+
+.fixed-income-readonly__status-badge[data-status='A vencer'] {
+  border-color: rgba(125, 182, 255, 0.42);
+  color: #dbeafe;
+}
+
+.fixed-income-readonly__status-badge[data-status='Sem informação'] {
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #bbf7d0;
+}
+
 .assets-report__summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -817,7 +1164,16 @@ button {
     display: grid;
   }
 
+  .fixed-income-readonly__header,
+  .fixed-income-readonly__section-title-row {
+    display: grid;
+  }
+
   .assets-readonly__header-actions {
+    justify-items: start;
+  }
+
+  .fixed-income-readonly__header-actions {
     justify-items: start;
   }
 
@@ -825,8 +1181,17 @@ button {
     text-align: left;
   }
 
+  .fixed-income-readonly__meta {
+    text-align: left;
+  }
+
   .assets-readonly__controls,
   .assets-readonly__top-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fixed-income-readonly__controls,
+  .fixed-income-readonly__highlight-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -867,7 +1232,20 @@ button {
     gap: var(--space-3);
   }
 
+  .fixed-income-readonly__table-wrap {
+    display: none;
+  }
+
+  .fixed-income-readonly__mobile-list {
+    display: grid;
+    gap: var(--space-3);
+  }
+
   .assets-readonly__distribution-row-head {
+    display: grid;
+  }
+
+  .fixed-income-readonly__distribution-row-head {
     display: grid;
   }
 }

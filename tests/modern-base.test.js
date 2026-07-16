@@ -38,6 +38,17 @@ const sourceFiles = [
   'src/features/reports/AssetsReportPreview.tsx',
   'src/features/reports/reportsSnapshotAdapter.mjs',
   'src/features/reports/readonlyReportSessionContext.ts',
+  'src/bootstrap/hostFixedIncomeReadonlySource.ts',
+  'src/bootstrap/modernFixedIncomeRuntime.ts',
+  'src/features/fixed-income/FixedIncomeReadonlyPage.tsx',
+  'src/features/fixed-income/readonlyFixedIncomeViewModel.ts',
+  'src/features/fixed-income/fixedIncomeReadonlyContract.mjs',
+  'src/features/fixed-income/fixedIncomeReadonlyContract.d.ts',
+  'src/features/fixed-income/fixedIncomeReadonlyBridge.mjs',
+  'src/features/fixed-income/fixedIncomeReadonlyBridge.d.ts',
+  'src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs',
+  'src/features/fixed-income/fixedIncomeSnapshotAdapter.d.ts',
+  'src/features/fixed-income/legacyFixedIncomeReadonlyIntegration.ts',
   'src/types/navigation.mjs',
 ];
 
@@ -73,11 +84,18 @@ test('modern shell exists and stays isolated', async () => {
   const mainTsx = read('src/main.tsx');
   const hostTsx = read('src/host.tsx');
   const hostSourceTs = read('src/bootstrap/hostLegacyReportsReadonlySource.ts');
+  const fixedIncomeSourceTs = read('src/bootstrap/hostFixedIncomeReadonlySource.ts');
   const mountTsx = read('src/bootstrap/mountModernApp.ts');
+  const fixedIncomeRuntimeTs = read('src/bootstrap/modernFixedIncomeRuntime.ts');
   const stylesCss = read('src/styles.css');
   const runtimeTs = read('src/bootstrap/modernReportsRuntime.ts');
   const refreshControllerTs = read('src/features/reports/reportsRefreshController.ts');
   const assetsReadonlyTsx = read('src/features/reports/AssetsReadonlyPage.tsx');
+  const fixedIncomeReadonlyTsx = read('src/features/fixed-income/FixedIncomeReadonlyPage.tsx');
+  const fixedIncomeViewModelTs = read('src/features/fixed-income/readonlyFixedIncomeViewModel.ts');
+  const fixedIncomeContractTs = read('src/features/fixed-income/fixedIncomeReadonlyContract.mjs');
+  const fixedIncomeBridgeTs = read('src/features/fixed-income/fixedIncomeReadonlyBridge.mjs');
+  const fixedIncomeAdapterTs = read('src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs');
   const readonlyViewModelTs = read('src/features/reports/readonlyReportsViewModel.ts');
   const viteConfigTs = read('vite.config.ts');
   const headerTsx = read('src/components/AppHeader.tsx');
@@ -130,19 +148,30 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(appTsx, /activePageId === 'reports'/);
   assert.match(mainTsx, /mountModernApp/);
   assert.match(mainTsx, /createModernReportsRuntime/);
+  assert.match(mainTsx, /createModernFixedIncomeRuntime/);
   assert.match(mainTsx, /const modernReportsRuntime = createModernReportsRuntime\(\);/);
+  assert.match(mainTsx, /const modernFixedIncomeRuntime = createModernFixedIncomeRuntime\(\);/);
   assert.match(mainTsx, /mountModernApp\(\{/);
   assert.match(mainTsx, /AppComponent: App/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /createModernReportsRuntime/);
+  assert.match(hostTsx, /createModernFixedIncomeRuntime/);
   assert.match(hostTsx, /bootstrapHost/);
   assert.match(hostTsx, /isHostPage/);
   assert.match(hostTsx, /AppComponent: App/);
   assert.match(hostTsx, /reportsRefreshController/);
+  assert.match(hostTsx, /fixedIncomeAdapter/);
   assert.match(read('src/host-entry.tsx'), /bootstrapHost/);
   assert.match(hostSourceTs, /createLegacyReportsReadonlySource/);
   assert.match(hostSourceTs, /buildReportAssetRow/);
   assert.match(hostSourceTs, /HOST_LEGACY_REPORTS_ASSETS/);
+  assert.match(fixedIncomeSourceTs, /createHostFixedIncomeReadonlySource/);
+  assert.match(fixedIncomeSourceTs, /HOST_FIXED_INCOME_NOTICE/);
+  assert.match(fixedIncomeSourceTs, /combinedTaxValue/);
+  assert.equal(fixedIncomeSourceTs.includes('reduce('), false);
+  assert.equal(fixedIncomeSourceTs.includes('roundToCents'), false);
+  assert.equal(fixedIncomeSourceTs.includes('toNumber(..., 0)'), false);
+  assert.match(fixedIncomeRuntimeTs, /createModernFixedIncomeRuntime/);
   assert.equal(hostSourceTs.includes('loadBuildReportAssetRowModule'), false);
   assert.equal(hostSourceTs.includes('globalThis'), false);
   assert.match(mountTsx, /export function mountModernApp/);
@@ -234,6 +263,21 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(reportsPreviewTsx, /formatReadonlyQuantity/);
   assert.match(assetsReadonlyTsx, /AssetsReadonlyPage/);
   assert.match(assetsReadonlyTsx, /createReadonlyAssetsViewModel/);
+  assert.match(fixedIncomeReadonlyTsx, /FixedIncomeReadonlyPage/);
+  assert.match(fixedIncomeReadonlyTsx, /createReadonlyFixedIncomeViewModel/);
+  assert.match(fixedIncomeViewModelTs, /createReadonlyFixedIncomeViewModel/);
+  assert.match(fixedIncomeViewModelTs, /topProfitItems/);
+  assert.match(fixedIncomeViewModelTs, /topLossItems/);
+  assert.match(fixedIncomeContractTs, /combinedTaxValue/);
+  assert.match(fixedIncomeContractTs, /totalCombinedTaxValue/);
+  assert.match(fixedIncomeContractTs, /irValue/);
+  assert.match(fixedIncomeContractTs, /iofValue/);
+  assert.match(fixedIncomeContractTs, /Sem informação/);
+  assert.match(fixedIncomeContractTs, /Próximo/);
+  assert.match(fixedIncomeContractTs, /A vencer/);
+  assert.equal(fixedIncomeViewModelTs.includes('reduce('), false);
+  assert.equal(fixedIncomeViewModelTs.includes('roundToCents'), false);
+  assert.equal(fixedIncomeViewModelTs.includes('toNumber(..., 0)'), false);
   assert.match(assetsReadonlyTsx, /Voltar ao legado/);
   assert.match(assetsReadonlyTsx, /Atualizar ativos/);
   assert.match(assetsReadonlyTsx, /Nenhum ativo em alta/);
@@ -308,7 +352,7 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -347,6 +391,46 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(hostTsx.includes('report-asset-row.js'), false);
   assert.equal(reportsPreviewTsx.includes('createConnectedReportsDemoSource'), false);
   assert.equal(reportsPreviewTsx.includes('STATIC_REPORTS_SNAPSHOT'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('localStorage'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('sessionStorage'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('indexedDB'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('firebase'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(fixedIncomeReadonlyTsx), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('backup'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('setInterval'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('setTimeout'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('requestAnimationFrame'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('MutationObserver'), false);
+  assert.equal(fixedIncomeReadonlyTsx.includes('WebSocket'), false);
+  assert.equal(fixedIncomeViewModelTs.includes('localStorage'), false);
+  assert.equal(fixedIncomeViewModelTs.includes('sessionStorage'), false);
+  assert.equal(fixedIncomeViewModelTs.includes('indexedDB'), false);
+  assert.equal(fixedIncomeViewModelTs.includes('firebase'), false);
+  assert.equal(fixedIncomeViewModelTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(fixedIncomeViewModelTs), false);
+  assert.equal(fixedIncomeViewModelTs.includes('backup'), false);
+  assert.equal(fixedIncomeContractTs.includes('localStorage'), false);
+  assert.equal(fixedIncomeContractTs.includes('sessionStorage'), false);
+  assert.equal(fixedIncomeContractTs.includes('indexedDB'), false);
+  assert.equal(fixedIncomeContractTs.includes('firebase'), false);
+  assert.equal(fixedIncomeContractTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(fixedIncomeContractTs), false);
+  assert.equal(fixedIncomeContractTs.includes('backup'), false);
+  assert.equal(fixedIncomeBridgeTs.includes('localStorage'), false);
+  assert.equal(fixedIncomeBridgeTs.includes('sessionStorage'), false);
+  assert.equal(fixedIncomeBridgeTs.includes('indexedDB'), false);
+  assert.equal(fixedIncomeBridgeTs.includes('firebase'), false);
+  assert.equal(fixedIncomeBridgeTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(fixedIncomeBridgeTs), false);
+  assert.equal(fixedIncomeBridgeTs.includes('backup'), false);
+  assert.equal(fixedIncomeAdapterTs.includes('localStorage'), false);
+  assert.equal(fixedIncomeAdapterTs.includes('sessionStorage'), false);
+  assert.equal(fixedIncomeAdapterTs.includes('indexedDB'), false);
+  assert.equal(fixedIncomeAdapterTs.includes('firebase'), false);
+  assert.equal(fixedIncomeAdapterTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(fixedIncomeAdapterTs), false);
+  assert.equal(fixedIncomeAdapterTs.includes('backup'), false);
   assert.equal(mountTsx.includes('legacy/reports-readonly-source.js'), false);
   assert.equal(mountTsx.includes('@legacy-reports-readonly-source'), false);
   assert.equal(mountTsx.includes("from '../App'"), false);

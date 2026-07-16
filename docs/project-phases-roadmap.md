@@ -4,9 +4,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 186
-- branch atual: `feat/modern-assets-readonly-page`
-- SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`
+- fase atual: 187
+- branch atual: `feat/modern-fixed-income-readonly-page`
+- SHA-base: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`
 - situacao: em revisao - draft
 - uma branch por fase
 - uma PR por objetivo
@@ -21,9 +21,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`
+- HEAD / `origin/main`: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`
 - workspace: limpo no inicio desta fase
-- PR `#185`: merged e closed
+- PR `#186`: merged e closed
 
 ## 1. Historico confirmado das fases readonly
 
@@ -41,7 +41,7 @@ Base de referencia desta fase:
 | 183 | Guardrails automaticos da arquitetura readonly | Concluida | `#183` | `cc6d4d4fcb964da2f451743993e1cfc44698a25c` | `docs/legacy-assets-runtime-map.md`, `package.json`, `tests/modern-base.test.js`, `tests/readonly-contract-architecture.test.js` | guardrails de arquitetura passaram a rodar no CI sem duplicar a suite moderna completa | warnings CJS e `MODULE_TYPELESS_PACKAGE_JSON` continuam aceitos | reverter merge da fase |
 | 184 | Auditoria da fronteira readonly e mapa oficial de evolucao | Concluida | `#184` | `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512` | `docs/project-phases-roadmap.md` | documentacao ajustada; sem mudanca funcional; apenas roadmap e auditoria | risco residual apenas documental se novas fases legitimas nao atualizarem o mapa | reverter `5a1e0e82a0b65463fe28aa2dd8155b5b2b21b512` |
 
-## 2. Fechamento da Fase 185 e abertura da Fase 186
+## 2. Fechamento da Fase 186 e abertura da Fase 187
 
 ### Fase 184
 
@@ -66,24 +66,34 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: 186;
-- nome da fase: Ativos moderno readonly;
-- branch: `feat/modern-assets-readonly-page`;
-- SHA-base: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
+- fase atual: 187;
+- nome da fase: Renda Fixa readonly;
+- branch: `feat/modern-fixed-income-readonly-page`;
+- SHA-base: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`;
 - situacao: em revisao - draft;
-- PR: #186;
-- head de revisao: consultavel na PR `#186`;
+- PR: `#187`;
+- head de revisao: consultavel na PR `#187`;
 - SHA final na main: pendente de merge;
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
 ### Fase 186
 
-- objetivo: criar pagina moderna readonly de Ativos completa, responsiva e somente leitura, usando exclusivamente o snapshot versionado da Fase 185;
-- entregaveis: componente dedicado, resumo, lista, filtros, destaques, distribuicao, estados vazios/erro/fallback, testes e smokes;
-- fora de escopo: edicao, cadastro, exclusao, aporte, novo calculo financeiro, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
-- riscos: divergencia com o snapshot versionado, regressao de acessibilidade/responsividade, listas grandes sem bom escaneamento, derivacao visual excessiva;
-- criterios de conclusao: build/teste/smoke verdes, nenhuma duplicacao de formula financeira, nenhum acesso a S.assets em modern/src, modern/dist fora do indice, rollback simples;
-- rollback: remover a pagina, os testes e a doc desta fase, mantendo contrato e runtime anteriores intactos.
+- estado: Concluida;
+- PR: #186;
+- SHA final na main: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`;
+- titulo: `feat: cria pagina moderna readonly de ativos`;
+- modo: squash;
+- resultado: pagina moderna readonly de Ativos com resumo, filtros, ordenacao, destaques, distribuicao, tabela desktop e cards mobile;
+- rollback: `git revert 6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`.
+
+### Fase 187
+
+- objetivo: descobrir, validar e expor com seguranca o schema real de renda fixa no legado por uma fronteira readonly dedicada, sem assumir o contrato de Ativos;
+- entregaveis: contrato e provider readonly dedicados, pagina moderna de Renda Fixa, resumo com campos reais ou nulos, lista, filtros visuais, destaques, distribuicao, estados vazios/erro/fallback, testes e smokes;
+- fora de escopo: edicao, cadastro, exclusao, resgate, simulacao, aporte, novo calculo financeiro, storage, Firebase/Auth, fetch externo, sync, backup, persistencia moderna, novo roteador, nova dependencia;
+- riscos: schema legado incompleto ou misto, ausencia de ticker em parte dos registros, divergencia entre campo combinado e campos separados de imposto, regressao de acessibilidade/responsividade, derivacao visual excessiva;
+- criterios de conclusao: build/teste/smoke verdes, nenhum recalculo financeiro no provider, ausencia versus zero preservada, nenhum acesso a S.assets em modern/src, modern/dist fora do indice, rollback simples;
+- rollback: remover pagina, testes, provider e doc desta fase, mantendo contrato, bridge, adapter e fases anteriores intactos.
 
 ## 2. Ordem consolidada das fases readonly
 
@@ -324,30 +334,29 @@ Riscos classificados:
 | Ausencia de dados financeiros na URL | `tests/legacy-assets-active-wallet-host.test.js`, `tests/readonly-report-session-context.test.js` | alta | nenhuma relevante |
 | Ausencia de dados financeiros no console | `tests/modern-host.smoke.test.js`, `tests/modern-host.test.js` | media/alta | smoke local ainda depende de browser e ambiente |
 
-## 10. Fase 186 - ativos moderno readonly
+## 10. Fase 187 - renda fixa readonly
 
 Objetivo:
 
-- criar a pagina moderna de Ativos completa, responsiva e somente leitura;
-- reutilizar exclusivamente o snapshot versionado da Fase 185;
-- permitir consulta rapida sem edicao, cadastro, exclusao ou aporte;
+- descobrir e espelhar com seguranca o schema real atual da renda fixa no legado;
+- criar uma pagina moderna de Renda Fixa completa, responsiva e somente leitura;
+- consumir dados reais por fronteira readonly explicita, sem assumir o contrato de Ativos;
 - manter o legado como fonte de verdade e o runtime canonicamente versionado.
 
 Entregaveis:
 
-- componente dedicado para a pagina de Ativos readonly;
-- resumo com patrimonio total, quantidade, variacao media, maior alta e maior queda;
-- lista completa de ativos com ticker, nome, categoria, quantidade, preco medio, valor atual, variacao, participacao e tendencia;
-- filtros locais por busca, categoria e ordenacao;
-- destaques de maiores altas, maiores quedas e maiores posicoes;
-- distribuicao visual por categoria;
+- contrato readonly dedicado para renda fixa com versionamento explicito;
+- resumo com valores aplicados, brutos, liquidos, ganhos ou perdas, IR e IOF quando existirem;
+- lista completa de titulos com nome, subtipo, emissor, datas, rentabilidade, indexador, liquidez e indisponibilidade;
+- filtros e ordenacoes apenas visuais, se existirem no contrato real;
+- destaques e agrupamentos visuais por vencimento, subtipo ou outra leitura segura presente no legado;
 - leitura inicial sincronica pelo adapter/controller; nao existe loading transitorio separado nesta fase; refresh preserva o ultimo snapshot valido; fallback e erro sao tratados; loading assincronico so deve existir se uma futura fonte realmente exigir;
-- testes estruturais, de renderizacao, de filtro, de ordenacao e de responsividade;
+- testes estruturais, de renderizacao, de schema, de fallback e de responsividade;
 - smokes do shell, do host e da integracao com o contrato readonly.
 
 Fora de escopo:
 
-- edicao, cadastro, exclusao, compra, venda, aporte ou sugestao de aporte;
+- edicao, cadastro, exclusao, resgate, simulacao, compra, venda, aporte ou sugestao de aporte;
 - novo calculo financeiro;
 - acesso direto a `S.assets` em `modern/src`;
 - storage, Firebase, Auth, sync, backup, polling ou fetch externo;
@@ -356,7 +365,7 @@ Fora de escopo:
 
 Riscos:
 
-- divergencia entre o snapshot e a representacao visual se o filtro ou a ordenacao forem implementados fora do contrato;
+- divergencia entre o schema real legado e a representacao visual se o contrato refletir campos inexistentes ou incompletos;
 - regressao de responsividade ou acessibilidade em listas grandes;
 - excesso de derivacao visual sem necessidade;
 - stale snapshot se o refresh controlado nao for usado na composicao host.

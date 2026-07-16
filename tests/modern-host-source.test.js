@@ -11,7 +11,23 @@ const hostSourceModulePath = path.join(
   'bootstrap',
   'hostLegacyReportsReadonlySource.ts',
 );
+const fixedIncomeSourceModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'bootstrap',
+  'hostFixedIncomeReadonlySource.ts',
+);
 const runtimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernReportsRuntime.ts');
+const fixedIncomeRuntimeModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'bootstrap',
+  'modernFixedIncomeRuntime.ts',
+);
 const legacyModulePath = path.join(__dirname, '..', 'legacy', 'reports-readonly-source.js');
 
 async function loadHostSourceModule() {
@@ -24,6 +40,14 @@ async function loadLegacyModule() {
 
 async function loadRuntimeModule() {
   return import(pathToFileURL(runtimeModulePath).href);
+}
+
+async function loadFixedIncomeSourceModule() {
+  return import(pathToFileURL(fixedIncomeSourceModulePath).href);
+}
+
+async function loadFixedIncomeRuntimeModule() {
+  return import(pathToFileURL(fixedIncomeRuntimeModulePath).href);
 }
 
 function assertDeepFrozen(snapshot) {
@@ -142,4 +166,142 @@ test('host source reflete a colecao atual injetada por dependencia explicita', a
   assert.notDeepEqual(secondSnapshot, firstSnapshot);
   assert.equal(Object.isFrozen(firstSnapshot), true);
   assert.equal(Object.isFrozen(secondSnapshot), true);
+});
+
+test('host fixed income source usa carteira ativa e relÃª a colecao atual', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  let assets = [
+    {
+      ticker: 'CDB26',
+      name: 'CDB 2026',
+      type: 'Renda Fixa',
+      sector: 'Renda Fixa',
+      rf_subtype: 'CDB',
+      fixed_issuer: 'Banco Teste',
+      rf_application_date: '2026-01-12',
+      rf_maturity_date: '2026-07-20',
+      rf_contract_rate: 'CDI + 0,95% aa',
+      fixed_indexer: 'CDI',
+      rf_applied_value: 4000,
+      rf_gross_value: 4128.2,
+      rf_liquid_value: 4120.4,
+      rf_profit_value: 120.4,
+      rf_ir_iof: 7.8,
+      rf_unavailable_value: 0,
+      rf_note: 'Demo CDB',
+    },
+  ];
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return assets;
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const firstSnapshot = source.getSnapshot();
+  assert.equal(firstSnapshot.summary.totalApplied, null);
+  assert.equal(firstSnapshot.summary.totalCombinedTaxValue, null);
+  assert.equal(firstSnapshot.items[0].maturityStatus, 'Próximo');
+  assert.equal(firstSnapshot.items[0].appliedValue, 4000);
+  assert.equal(firstSnapshot.items[0].irValue, null);
+  assert.equal(firstSnapshot.items[0].iofValue, null);
+  assert.equal(firstSnapshot.items[0].combinedTaxValue, 7.8);
+  assertDeepFrozen(firstSnapshot);
+
+  assets = [
+    {
+      ...assets[0],
+      rf_liquid_value: 4300,
+      rf_profit_value: 300,
+      rf_ir_iof: 10,
+    },
+  ];
+
+  const secondSnapshot = source.getSnapshot();
+  assert.equal(secondSnapshot.summary.totalLiquid, null);
+  assert.equal(secondSnapshot.summary.totalCombinedTaxValue, null);
+  assert.equal(secondSnapshot.items[0].liquidValue, 4300);
+  assert.equal(secondSnapshot.items[0].irValue, null);
+  assert.equal(secondSnapshot.items[0].iofValue, null);
+  assert.equal(secondSnapshot.items[0].combinedTaxValue, 10);
+  assert.notDeepEqual(secondSnapshot, firstSnapshot);
+  assertDeepFrozen(secondSnapshot);
+});
+
+test('host fixed income source retorna fallback controlado quando leitura falha', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      throw new Error('boom');
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.generatedAt, '1970-01-01T00:00:00.000Z');
+  assert.equal(snapshot.summary.itemCount, 0);
+  assert.equal(snapshot.summary.totalCombinedTaxValue, null);
+  assert.equal(snapshot.items.length, 0);
+  assertDeepFrozen(snapshot);
+});
+
+test('host fixed income runtime usa demo quando origem real nao existe', async () => {
+  const { createModernFixedIncomeRuntime } = await loadFixedIncomeRuntimeModule();
+
+  const runtime = createModernFixedIncomeRuntime();
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.items.length, 3);
+  assert.equal(snapshot.summary.totalCombinedTaxValue, 50);
+  assertDeepFrozen(snapshot);
+});
+
+test('host fixed income source rejeita candidatos que nao sao renda fixa', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          ticker: 'PETR4',
+          name: 'Petrobras',
+          type: 'Ação',
+          sector: 'Energia',
+        },
+        {
+          ticker: 'MXRF11',
+          name: 'Maxi Renda',
+          type: 'FII',
+          sector: 'Fundos Imobiliários',
+        },
+        {
+          ticker: 'BOVA11',
+          name: 'BOVA11',
+          type: 'ETF',
+          sector: 'ETFs',
+        },
+        {
+          name: 'Registro incompleto',
+          type: 'Outro',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.items.length, 0);
+  assert.equal(snapshot.summary.itemCount, 0);
+  assert.equal(snapshot.summary.totalCombinedTaxValue, null);
+  assertDeepFrozen(snapshot);
 });
