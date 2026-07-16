@@ -149,6 +149,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(contributionsRuntimeTs, /createModernContributionsRuntime/);
   assert.match(contributionsRuntimeTs, /contributionsAdapter/);
   assert.match(contributionsRuntimeTs, /contributionsRefreshController/);
+  assert.equal(contributionsSourceTs.includes('score: Number(row?.score) || 0'), false);
+  assert.equal(contributionsRuntimeTs.includes('score: Number(row?.score) || 0'), false);
   assert.match(
     rootIndexHtml,
     /function isActiveWalletHostMode\(\)\{\s*try\{\s*return \(location\.hostname==='localhost' \|\| location\.hostname==='127\.0\.0\.1'\) && new URLSearchParams\(location\.search\)\.get\('activeWalletHost'\)==='1' && new URLSearchParams\(location\.search\)\.get\('testMode'\)==='1';/,

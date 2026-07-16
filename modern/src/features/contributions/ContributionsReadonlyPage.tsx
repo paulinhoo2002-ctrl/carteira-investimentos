@@ -12,7 +12,9 @@ import {
   formatReadonlyDate,
   formatReadonlyDateTime,
   formatReadonlyQuantity,
+  formatReadonlyScoreOrMissing,
   formatReadonlyTextOrMissing,
+  sortContributionCandidatesByScore,
   type ReadonlyContributionsSortKey,
 } from './readonlyContributionsViewModel.ts';
 
@@ -132,6 +134,10 @@ function ContributionsReadonlyPageContent({
   const hasItems = snapshot.items.length > 0;
   const latestItem = viewModel.latestItem;
   const suggestion = snapshot.suggestion;
+  const sortedCandidates = useMemo(
+    () => sortContributionCandidatesByScore(snapshot.suggestion.candidates).slice(0, 3),
+    [snapshot.suggestion.candidates],
+  );
   const suggestionIntro =
     suggestion.inputs.length > 0
       ? `Entradas: ${suggestion.inputs.join(' - ')}`
@@ -345,13 +351,13 @@ function ContributionsReadonlyPageContent({
             <p className="overview-card__hint">{suggestionWarnings}</p>
           </article>
 
-          {snapshot.suggestion.candidates.length > 0 ? (
-            snapshot.suggestion.candidates.slice(0, 3).map((candidate, index) => (
+          {sortedCandidates.length > 0 ? (
+            sortedCandidates.map((candidate, index) => (
               <article className="overview-card" key={`${candidate.ticker ?? candidate.assetId ?? index}`}>
                 <p className="overview-card__label">Candidato {index + 1}</p>
                 <p className="overview-card__value">{summarizeCandidate(candidate)}</p>
                 <p className="overview-card__hint">
-                  {candidate.signalLabel} - score {candidate.score.toFixed(1)}
+                  {candidate.signalLabel} - score {formatReadonlyScoreOrMissing(candidate.score)}
                 </p>
                 <p className="overview-card__hint">
                   Classe: {formatReadonlyTextOrMissing(candidate.assetClass)} - Sinal: {candidate.signalTone}
@@ -367,7 +373,7 @@ function ContributionsReadonlyPageContent({
                     ))}
                   </ul>
                 ) : (
-                  <p className="overview-card__hint">Sem razoes detalhadas informadas.</p>
+                  <p className="overview-card__hint">O legado nao forneceu uma justificativa detalhada.</p>
                 )}
                 {candidate.warnings.length > 0 ? (
                   <p className="overview-card__hint">Alertas: {candidate.warnings.join(' - ')}</p>

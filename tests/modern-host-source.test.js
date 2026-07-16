@@ -505,7 +505,7 @@ test('host contributions source preserva snapshot injetado e mutacao da origem',
               assetName: 'Petrobras',
               assetClass: 'Acao',
               sector: 'Energia',
-              score: 42,
+              score: null,
               share: 8.5,
               pct: 4.2,
               dy: 5.7,
@@ -537,6 +537,7 @@ test('host contributions source preserva snapshot injetado e mutacao da origem',
   const firstSnapshot = source.getSnapshot();
   assert.equal(firstSnapshot.summary.itemCount, 1);
   assert.equal(firstSnapshot.items[0].sourceEventKind, 'aporte');
+  assert.equal(firstSnapshot.suggestion.candidates[0].score, null);
   assert.equal(Object.isFrozen(firstSnapshot), true);
   assert.equal(Object.isFrozen(firstSnapshot.items), true);
 
@@ -619,7 +620,7 @@ test('host contributions runtime cria controller quando origem real existe', asy
             itemCount: contributions.length,
             classCount: 1,
             monthCount: 1,
-            candidateCount: 0,
+            candidateCount: 1,
             insufficientCount: 0,
             avoidedCount: 0,
             latestContributionDate: '2026-06-15',
@@ -631,7 +632,34 @@ test('host contributions runtime cria controller quando origem real existe', asy
             status: 'unavailable',
             generatedAt: '2026-07-14T10:30:00.000Z',
             strategyName: null,
-            candidates: [],
+            candidates: [
+              {
+                assetId: 'PETR4',
+                ticker: 'PETR4',
+                assetName: 'Petrobras',
+                assetClass: 'Acao',
+                sector: 'Energia',
+                score: 0,
+                share: 8.5,
+                pct: 4.2,
+                dy: 5.7,
+                idealWeightPct: 12,
+                typeGapPct: 3.4,
+                signalLabel: 'Pode estudar aporte',
+                signalTone: 'positive',
+                reasons: [
+                  {
+                    code: 'signal',
+                    label: 'Pode estudar aporte',
+                    detail: 'Sinal prudente favoravel ao estudo',
+                    sourceField: 'signal.label',
+                    value: 'Pode estudar aporte',
+                    unit: null,
+                  },
+                ],
+                warnings: [],
+              },
+            ],
             warnings: [],
             inputs: [],
             limitations: ['Nao executa compra'],
@@ -643,6 +671,7 @@ test('host contributions runtime cria controller quando origem real existe', asy
 
   assert.equal(typeof runtime.contributionsRefreshController?.refresh, 'function');
   assert.equal(runtime.contributionsAdapter.getSnapshot().items[0].amount, 1000);
+  assert.equal(runtime.contributionsAdapter.getSnapshot().suggestion.candidates[0].score, 0);
 
   contributions = [
     {

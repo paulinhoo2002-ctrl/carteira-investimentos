@@ -4728,7 +4728,10 @@ async function bootstrapExperimentalActiveWalletHost(){
           assetName: toText(row?.asset?.name || row?.asset?.product || row?.asset?.title || row?.assetName || row?.ticker || ''),
           assetClass: toText(row?.type || row?.assetClass || row?.asset?.type || ''),
           sector: toText(row?.sector || row?.asset?.sector || ''),
-          score: Number(row?.score) || 0,
+          score: (() => {
+            const score = Number(row?.score);
+            return Number.isFinite(score) ? score : null;
+          })(),
           share: Number.isFinite(row?.share) ? Number(row.share) : null,
           pct: Number.isFinite(row?.pct) ? Number(row.pct) : null,
           dy: Number.isFinite(row?.dy) ? Number(row.dy) : null,

@@ -48,7 +48,7 @@ export interface ReadOnlyContributionSuggestionCandidate {
   readonly assetName: string | null;
   readonly assetClass: string | null;
   readonly sector: string | null;
-  readonly score: number;
+  readonly score: number | null;
   readonly share: number | null;
   readonly pct: number | null;
   readonly dy: number | null;

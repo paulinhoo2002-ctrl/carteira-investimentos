@@ -475,6 +475,70 @@ test('view model readonly de aportes filtra e ordena sem soma financeira', async
   assert.equal(viewModel.latestItem?.ticker, 'BOVA11');
 });
 
+test('score readonly preserva null e zero sem tratar ausente como zero', async () => {
+  const { formatReadonlyScoreOrMissing, sortContributionCandidatesByScore } = await loadViewModelModule();
+
+  assert.equal(formatReadonlyScoreOrMissing(null), 'Nao informado');
+  assert.equal(formatReadonlyScoreOrMissing(0), '0');
+  assert.equal(formatReadonlyScoreOrMissing(8.5), '8,5');
+
+  const ordered = sortContributionCandidatesByScore([
+    {
+      assetId: 'NULL',
+      ticker: 'NULL',
+      assetName: 'Sem score',
+      assetClass: 'Acao',
+      sector: null,
+      score: null,
+      share: null,
+      pct: null,
+      dy: null,
+      idealWeightPct: null,
+      typeGapPct: null,
+      signalLabel: 'Acompanhar',
+      signalTone: 'neutral',
+      reasons: [],
+      warnings: [],
+    },
+    {
+      assetId: 'ZERO',
+      ticker: 'ZERO',
+      assetName: 'Score zero',
+      assetClass: 'Acao',
+      sector: null,
+      score: 0,
+      share: null,
+      pct: null,
+      dy: null,
+      idealWeightPct: null,
+      typeGapPct: null,
+      signalLabel: 'Acompanhar',
+      signalTone: 'neutral',
+      reasons: [],
+      warnings: [],
+    },
+    {
+      assetId: 'ALTA',
+      ticker: 'ALTA',
+      assetName: 'Score alto',
+      assetClass: 'Acao',
+      sector: null,
+      score: 12,
+      share: null,
+      pct: null,
+      dy: null,
+      idealWeightPct: null,
+      typeGapPct: null,
+      signalLabel: 'Acompanhar',
+      signalTone: 'neutral',
+      reasons: [],
+      warnings: [],
+    },
+  ]);
+
+  assert.deepEqual(ordered.map((item) => item.score), [12, 0, null]);
+});
+
 test('pagina readonly de aportes renderiza snapshot valido e refresh controlado', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
@@ -531,6 +595,34 @@ test('pagina readonly de aportes renderiza snapshot valido e refresh controlado'
 
     assert.equal(controller.getSnapshot().items[0].amount, 1500);
     assert.match(refreshedHtml, /1\.500,00/);
+
+    const scoreSnapshot = createSnapshot();
+    scoreSnapshot.suggestion = {
+      ...scoreSnapshot.suggestion,
+      candidates: [
+        {
+          ...scoreSnapshot.suggestion.candidates[0],
+          score: null,
+          reasons: [],
+        },
+        {
+          ...scoreSnapshot.suggestion.candidates[1],
+          score: 0,
+          reasons: [],
+        },
+      ],
+    };
+
+    const scoreHtml = renderToStaticMarkup(
+      React.createElement(ContributionsReadonlyPage, {
+        adapter: createAdapter(scoreSnapshot),
+      }),
+    );
+
+    assert.match(scoreHtml, /score 0/);
+    assert.match(scoreHtml, /Nao informado/);
+    assert.ok(scoreHtml.indexOf('score 0') < scoreHtml.indexOf('Nao informado'));
+    assert.match(scoreHtml, /O legado nao forneceu uma justificativa detalhada\./);
   } finally {
     await viteServer.close();
   }

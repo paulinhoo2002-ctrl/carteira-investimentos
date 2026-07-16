@@ -116,7 +116,7 @@ function isReadonlyContributionCandidate(value) {
     isNullableString(value.assetName) &&
     isNullableString(value.assetClass) &&
     isNullableString(value.sector) &&
-    isFiniteNumber(value.score) &&
+    isNullableNumber(value.score) &&
     isNullableNumber(value.share) &&
     isNullableNumber(value.pct) &&
     isNullableNumber(value.dy) &&

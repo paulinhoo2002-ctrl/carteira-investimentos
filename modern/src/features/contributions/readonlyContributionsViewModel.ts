@@ -2,6 +2,7 @@ import type {
   ReadOnlyContributionClassDistributionItem,
   ReadOnlyContributionItem,
   ReadOnlyContributionMonthDistributionItem,
+  ReadOnlyContributionSuggestionCandidate,
   ReadOnlyContributionsSnapshot,
 } from './contributionsReadonlyContract.mjs';
 
@@ -95,6 +96,25 @@ function formatDateKey(value: string | null | undefined) {
 }
 
 function compareNullableNumber(a: number | null | undefined, b: number | null | undefined) {
+  const left = Number.isFinite(a as number) ? Number(a) : null;
+  const right = Number.isFinite(b as number) ? Number(b) : null;
+
+  if (left === null && right === null) {
+    return 0;
+  }
+
+  if (left === null) {
+    return 1;
+  }
+
+  if (right === null) {
+    return -1;
+  }
+
+  return right - left;
+}
+
+function compareNullableScoreDesc(a: number | null | undefined, b: number | null | undefined) {
   const left = Number.isFinite(a as number) ? Number(a) : null;
   const right = Number.isFinite(b as number) ? Number(b) : null;
 
@@ -274,6 +294,16 @@ export function formatReadonlyQuantity(value: number | null | undefined) {
   });
 }
 
+export function formatReadonlyScoreOrMissing(value: number | null | undefined) {
+  if (!Number.isFinite(value as number)) {
+    return 'Nao informado';
+  }
+
+  return Number(value).toLocaleString('pt-BR', {
+    maximumFractionDigits: 2,
+  });
+}
+
 export function formatReadonlyTextOrMissing(value: string | null | undefined) {
   const normalized = normalizeText(value);
   return normalized || 'Nao informado';
@@ -281,6 +311,17 @@ export function formatReadonlyTextOrMissing(value: string | null | undefined) {
 
 export function displayContributionIdentity(item: ReadOnlyContributionItem) {
   return normalizeText(item.ticker) || normalizeText(item.assetName) || normalizeText(item.assetId) || 'Sem identificacao';
+}
+
+export function sortContributionCandidatesByScore(
+  candidates: readonly ReadOnlyContributionSuggestionCandidate[],
+) {
+  return [...candidates].sort(
+    (a, b) =>
+      compareNullableScoreDesc(a.score, b.score) ||
+      compareText(normalizeText(a.ticker), normalizeText(b.ticker)) ||
+      compareText(normalizeText(a.assetName), normalizeText(b.assetName)),
+  );
 }
 
 export function createReadonlyContributionsViewModel(

@@ -335,6 +335,12 @@ function loadArchitectureSnapshot() {
     incomeSourceTs: read('modern/src/bootstrap/hostIncomeReadonlySource.ts'),
     incomeRuntimeTs: read('modern/src/bootstrap/modernIncomeRuntime.ts'),
     incomeRefreshControllerTs: read('modern/src/features/income/incomeRefreshController.ts'),
+    contributionsReadonlyTsx: read('modern/src/features/contributions/ContributionsReadonlyPage.tsx'),
+    contributionsViewModelTs: read('modern/src/features/contributions/readonlyContributionsViewModel.ts'),
+    contributionsContractJs: read('modern/src/features/contributions/contributionsReadonlyContract.mjs'),
+    contributionsIntegrationTs: read('modern/src/features/contributions/legacyContributionsReadonlyIntegration.ts'),
+    contributionsSourceTs: read('modern/src/bootstrap/hostContributionsReadonlySource.ts'),
+    contributionsRuntimeTs: read('modern/src/bootstrap/modernContributionsRuntime.ts'),
     dataContractJs: read('modern/src/features/reports/reportsReadonlyContract.mjs'),
     dataContractTypes: read('modern/src/features/reports/reportsReadonlyContract.d.ts'),
     bridgeJs: read('modern/src/features/reports/reportsReadonlyBridge.mjs'),
@@ -449,6 +455,12 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoCompleteReadonlyPageList(snapshot.incomeSourceTs, 'modern/src/bootstrap/hostIncomeReadonlySource.ts');
   assertNoCompleteReadonlyPageList(snapshot.incomeRuntimeTs, 'modern/src/bootstrap/modernIncomeRuntime.ts');
   assertNoCompleteReadonlyPageList(snapshot.incomeRefreshControllerTs, 'modern/src/features/income/incomeRefreshController.ts');
+  assertNoCompleteReadonlyPageList(snapshot.contributionsReadonlyTsx, 'modern/src/features/contributions/ContributionsReadonlyPage.tsx');
+  assertNoCompleteReadonlyPageList(snapshot.contributionsViewModelTs, 'modern/src/features/contributions/readonlyContributionsViewModel.ts');
+  assertNoCompleteReadonlyPageList(snapshot.contributionsContractJs, 'modern/src/features/contributions/contributionsReadonlyContract.mjs');
+  assertNoCompleteReadonlyPageList(snapshot.contributionsIntegrationTs, 'modern/src/features/contributions/legacyContributionsReadonlyIntegration.ts');
+  assertNoCompleteReadonlyPageList(snapshot.contributionsSourceTs, 'modern/src/bootstrap/hostContributionsReadonlySource.ts');
+  assertNoCompleteReadonlyPageList(snapshot.contributionsRuntimeTs, 'modern/src/bootstrap/modernContributionsRuntime.ts');
   assertNoCompleteReadonlyPageList(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
   assertNoCompleteReadonlyPageList(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoCompleteReadonlyPageList(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
@@ -485,6 +497,12 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoLocalReadOnlyReportsContract(snapshot.incomeSourceTs, 'modern/src/bootstrap/hostIncomeReadonlySource.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.incomeRuntimeTs, 'modern/src/bootstrap/modernIncomeRuntime.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.incomeRefreshControllerTs, 'modern/src/features/income/incomeRefreshController.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.contributionsReadonlyTsx, 'modern/src/features/contributions/ContributionsReadonlyPage.tsx');
+  assertNoLocalReadOnlyReportsContract(snapshot.contributionsViewModelTs, 'modern/src/features/contributions/readonlyContributionsViewModel.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.contributionsContractJs, 'modern/src/features/contributions/contributionsReadonlyContract.mjs');
+  assertNoLocalReadOnlyReportsContract(snapshot.contributionsIntegrationTs, 'modern/src/features/contributions/legacyContributionsReadonlyIntegration.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.contributionsSourceTs, 'modern/src/bootstrap/hostContributionsReadonlySource.ts');
+  assertNoLocalReadOnlyReportsContract(snapshot.contributionsRuntimeTs, 'modern/src/bootstrap/modernContributionsRuntime.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.readonlySessionTs, 'modern/src/features/reports/readonlyReportSessionContext.ts');
   assertNoLocalReadOnlyReportsContract(snapshot.navigationJs, 'modern/src/types/navigation.mjs');
@@ -531,10 +549,21 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertNoForbiddenTokens(snapshot.incomeSourceTs, 'modern/src/bootstrap/hostIncomeReadonlySource.ts');
   assertNoForbiddenTokens(snapshot.incomeRuntimeTs, 'modern/src/bootstrap/modernIncomeRuntime.ts');
   assertNoForbiddenTokens(snapshot.incomeRefreshControllerTs, 'modern/src/features/income/incomeRefreshController.ts');
+  assertNoForbiddenTokens(snapshot.contributionsReadonlyTsx, 'modern/src/features/contributions/ContributionsReadonlyPage.tsx');
+  assertNoForbiddenTokens(snapshot.contributionsViewModelTs, 'modern/src/features/contributions/readonlyContributionsViewModel.ts');
+  assertNoForbiddenTokens(snapshot.contributionsContractJs, 'modern/src/features/contributions/contributionsReadonlyContract.mjs');
+  assertNoForbiddenTokens(snapshot.contributionsIntegrationTs, 'modern/src/features/contributions/legacyContributionsReadonlyIntegration.ts');
+  assertNoForbiddenTokens(snapshot.contributionsSourceTs, 'modern/src/bootstrap/hostContributionsReadonlySource.ts');
+  assertNoForbiddenTokens(snapshot.contributionsRuntimeTs, 'modern/src/bootstrap/modernContributionsRuntime.ts');
   assertNoForbiddenTokens(snapshot.bridgeJs, 'modern/src/features/reports/reportsReadonlyBridge.mjs');
   assertNoForbiddenTokens(snapshot.adapterJs, 'modern/src/features/reports/reportsSnapshotAdapter.mjs');
   assertNoForbiddenTokens(snapshot.integrationTs, 'modern/src/features/reports/legacyReportsReadonlyIntegration.ts');
   assertNoForbiddenTokens(snapshot.navigationJs, 'modern/src/types/navigation.mjs');
+
+  assert.equal(snapshot.indexHtml.includes('score: Number(row?.score) || 0'), false, 'index.html nao pode tratar score ausente como zero');
+  assert.match(snapshot.contributionsContractJs, /isNullableNumber\(value\.score\)/);
+  assert.equal(snapshot.contributionsReadonlyTsx.includes('candidate.score.toFixed(1)'), false, 'contributions page nao pode exigir score numerico');
+  assert.match(snapshot.contributionsReadonlyTsx, /O legado nao forneceu uma justificativa detalhada\./);
 
   assert.equal(fs.existsSync(path.join(modernRoot, 'src/features/reports/reportsReadonlyContract.ts')), false, 'reportsReadonlyContract.ts nao pode permanecer');
   assert.equal(fs.existsSync(path.join(modernRoot, 'src/features/reports/reportsReadonlyBridge.ts')), false, 'reportsReadonlyBridge.ts nao pode permanecer');
