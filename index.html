@@ -1541,6 +1541,11 @@ body.modal-open{overflow:hidden}
 .div-asset-sub{font-size:9px;color:var(--muted);margin-top:3px}
 .div-asset-stat span{display:block;font-size:8px;color:var(--muted);text-transform:uppercase}
 .div-asset-stat strong{display:block;font-size:11px;color:var(--text);margin-top:3px}
+.div-asset-summary{display:flex;flex-direction:column;gap:8px}
+.div-asset-more{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
+.div-asset-more>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;cursor:pointer;font-weight:850;color:var(--text)}
+.div-asset-more>summary::-webkit-details-marker{display:none}
+.div-asset-more-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--border)}
 .div-month-card{display:grid;grid-template-columns:90px minmax(120px,1fr) 100px minmax(120px,1fr) 110px;gap:10px;align-items:center;border:1px solid var(--border);border-radius:13px;background:var(--panel-2);padding:11px}
 .div-month-name{font-size:12px;font-weight:900;color:var(--text);text-transform:capitalize}
 .div-month-stat-label{font-size:8px;color:var(--muted);text-transform:uppercase}
@@ -1640,6 +1645,10 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
 .div-receipt-name,.div-receipt-note{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .div-receipt-note{white-space:normal;line-height:1.2}
 .div-receipt-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.div-receipt-actions{display:flex;align-items:center;gap:6px;flex:none}
+.div-receipt-edit,.div-receipt-trash{width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.div-receipt-actions{display:flex;align-items:center;gap:6px;flex:none}
+.div-receipt-edit,.div-receipt-trash{width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .div-receipt-value{font-size:12px;font-weight:900;color:var(--success);white-space:nowrap}
 .div-receipt-source{font-size:8px;color:var(--muted);line-height:1.2}
 .div-type-badge{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:8px;font-weight:900;border:1px solid var(--border);white-space:nowrap}
@@ -1656,6 +1665,16 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
 .div-asset-sub{font-size:9px;color:var(--muted);margin-top:3px}
 .div-asset-stat span{display:block;font-size:8px;color:var(--muted);text-transform:uppercase}
 .div-asset-stat strong{display:block;font-size:11px;color:var(--text);margin-top:3px}
+.div-asset-summary{display:flex;flex-direction:column;gap:8px}
+.div-asset-more{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
+.div-asset-more>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;cursor:pointer;font-weight:850;color:var(--text)}
+.div-asset-more>summary::-webkit-details-marker{display:none}
+.div-asset-more-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--border)}
+.div-asset-summary{display:flex;flex-direction:column;gap:8px}
+.div-asset-more{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
+.div-asset-more>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;cursor:pointer;font-weight:850;color:var(--text)}
+.div-asset-more>summary::-webkit-details-marker{display:none}
+.div-asset-more-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--border)}
 .div-month-card{display:grid;grid-template-columns:90px minmax(120px,1fr) 100px minmax(120px,1fr) 120px;gap:10px;align-items:center;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:12px;box-shadow:0 10px 24px rgba(2,6,23,.08)}
 .div-month-card.current{border-color:rgba(34,197,94,.35);box-shadow:0 12px 28px rgba(34,197,94,.08)}
 .div-month-name{font-size:12px;font-weight:900;color:var(--text);text-transform:capitalize}
@@ -1664,8 +1683,14 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
 .div-month-stat-value.gn{color:var(--success)}
 .div-month-progress{height:7px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden;margin-top:7px}
 .div-month-progress > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#10b981)}
+.div-timeline-shell{display:flex;flex-direction:column;gap:8px}
+.div-timeline-summary{border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:10px 12px;box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.div-timeline-summary-title{font-size:12px;font-weight:900;color:var(--text)}
+.div-timeline-summary-sub,.div-timeline-summary-meta{font-size:9px;color:var(--muted);line-height:1.35;margin-top:3px}
 .div-timeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .div-timeline-card{border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:11px;min-height:102px;box-shadow:0 10px 24px rgba(2,6,23,.08)}
+.div-timeline-card.current{border-color:rgba(34,197,94,.35);box-shadow:0 12px 28px rgba(34,197,94,.1)}
+.div-timeline-card.current{border-color:rgba(34,197,94,.35);box-shadow:0 12px 28px rgba(34,197,94,.1)}
 .div-timeline-month{font-size:10px;font-weight:900;color:var(--text);text-transform:capitalize}
 .div-timeline-value{font-size:14px;font-weight:900;color:var(--success);margin-top:9px}
 .div-timeline-sub{font-size:9px;color:var(--muted);margin-top:4px}
@@ -20027,17 +20052,19 @@ function apTab(){
 // ══════════════════════════════════════
 function frmD(){
   if(!S.showD) return'';
+  const draft= S.editDId ? (S._fd||S.proventos.find(p=>String(p.id)===String(S.editDId))||{}) : {};
+  const editing=!!S.editDId;
   return`<div class="fc">
-    <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">💵 Registrar provento recebido</div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:#c4b5fd">${editing?'✏️ Editar provento recebido':'💵 Registrar provento recebido'}</div>
     <div class="fg">
-      <div><div class="fl">Data do pagamento</div><input id="d-dt" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-      <div><div class="fl">Ticker</div><input id="d-ti" placeholder="ex: MXRF11" oninput="this.value=this.value.toUpperCase()"></div>
-      <div><div class="fl">Valor recebido (R$)</div><input id="d-va" type="text" placeholder="ex: 35,80"></div>
-      <div><div class="fl">Tipo</div><select id="d-ty"><option>Rendimento</option><option>Dividendo</option><option>JCP</option><option>Amortização</option><option>Outro</option></select></div>
+      <div><div class="fl">Data do pagamento</div><input id="d-dt" type="date" value="${esc(inputDateValue(draft.date||new Date().toISOString().slice(0,10)))}"></div>
+      <div><div class="fl">Ticker</div><input id="d-ti" placeholder="ex: MXRF11" oninput="this.value=this.value.toUpperCase()" value="${esc(String(draft.ticker||''))}"></div>
+      <div><div class="fl">Valor recebido (R$)</div><input id="d-va" type="text" placeholder="ex: 35,80" value="${esc(draft.value!=null?String(draft.value):'')}"></div>
+      <div><div class="fl">Tipo</div><select id="d-ty">${['Rendimento','Dividendo','JCP','Amortização','Outro'].map(type=>`<option ${String(draft.type||'Rendimento')===type?'selected':''}>${type}</option>`).join('')}</select></div>
     </div>
-    <div style="margin-top:10px"><div class="fl">Observação</div><input id="d-ob" placeholder="opcional: mês de competência, pagamento especial..."></div>
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="d-ob" placeholder="opcional: mês de competência, pagamento especial..." value="${esc(String(draft.note||''))}"></div>
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn bsv" onclick="svD()">Salvar provento</button>
+      <button class="btn bsv" onclick="svD()">${editing?'Salvar alterações':'Salvar provento'}</button>
       <button class="btn bgh" onclick="clD()">Cancelar</button>
     </div>
   </div>`;
@@ -20682,6 +20709,8 @@ function dividendRecentList(rows,limit=0){
     const tone=dividendTypeTone(row.type, row.origin);
     const originLabel=String(row.origin || row.assetClass || row.assetType || row.source || 'Manual').trim();
     const deleteAction=isRf ? `removeRfEvent(${JSON.stringify(row.id)})` : `rmD(${JSON.stringify(row.id)})`;
+    const editAction=`editDividendReceipt(${JSON.stringify(row.id)})`;
+    const noteText=String(row.note || '').trim();
     const rfGrid=isRf ? `<div class="div-rf-money-grid">
       <div class="div-rf-money-item"><span>Bruto</span><strong>${fmt(row.grossValue ?? row.value)}</strong></div>
       <div class="div-rf-money-item"><span>IR</span><strong>${fmt(row.ir||0)}</strong></div>
@@ -20696,14 +20725,18 @@ function dividendRecentList(rows,limit=0){
           <span class="div-type-badge ${tone}">${esc(row.type)}</span>
           <span class="div-type-badge ${isRf ? 'renda-fixa' : 'outro'}">${esc(originLabel)}</span>
         </div>
-        <div class="div-receipt-title"><span class="div-receipt-ticker">${esc(row.ticker)}</span><span class="div-receipt-name">${esc(row.name)}</span></div>
+        <div class="div-receipt-title" title="${esc([row.date, row.ticker, row.name, row.type, row.value].filter(Boolean).join(' · '))}"><span class="div-receipt-ticker">${esc(row.ticker)}</span><span class="div-receipt-name">${esc(row.name)}</span></div>
+        ${noteText ? `<div class="div-receipt-note" title="${esc(noteText)}">${esc(noteText)}</div>` : ''}
       </div>
       <div class="div-receipt-value">${fmt(row.value)}</div>
     </div>
     ${rfGrid}
     <div class="div-receipt-foot">
-      <div class="div-receipt-source">${esc(row.source)}${row.note?` · ${esc(row.note)}`:''}</div>
-      <button class="bdi div-receipt-trash" onclick="${deleteAction}" title="Remover provento">🗑️</button>
+      <div class="div-receipt-source" title="${esc([row.source, row.note].filter(Boolean).join(' · '))}">${esc(row.source)}${row.note?` · ${esc(row.note)}`:''}</div>
+      <div class="div-receipt-actions">
+        <button class="bdi div-receipt-edit" onclick="${editAction}" title="Editar provento" aria-label="Editar provento">✏️</button>
+        <button class="bdi div-receipt-trash" onclick="${deleteAction}" title="Remover provento" aria-label="Remover provento">🗑️</button>
+      </div>
     </div>
   </article>`;}).join('')}${footer}</div>`;
 }
@@ -20717,10 +20750,13 @@ function dividendsByAssetView(rows){
     if(row.date>group.lastDate) group.lastDate=row.date;
   });
   const total=rows.reduce((sum,row)=>sum+row.value,0);
-  const html=[...groups.values()].sort((a,b)=>b.total-a.total).map((group,index)=>{
+  const ordered=[...groups.values()].sort((a,b)=>b.total-a.total);
+  const visible=ordered.slice(0,5);
+  const hidden=ordered.slice(5);
+  const renderGroup=(group,index)=> {
     const share=total>0?group.total/total*100:0;
     return `<details class="div-asset-group">
-      <summary>
+      <summary title="${esc([group.ticker, group.name, fmt(group.total), group.count, share.toFixed(1)].join(' · '))}" aria-label="${esc(`${group.ticker || group.name || 'Ativo'} · ${fmt(group.total)} · ${group.count} lançamento(s)`)}">
         <div class="div-asset-rank">#${index+1}</div>
         <div><div class="div-asset-name">${esc(group.ticker)}</div><div class="div-asset-sub">${esc(group.name)} · ${share.toFixed(1)}% do período</div></div>
         <div class="div-asset-stat"><span>Total recebido</span><strong>${fmt(group.total)}</strong></div>
@@ -20731,8 +20767,16 @@ function dividendsByAssetView(rows){
       </summary>
       <div class="ag-body">${dividendRecentList(group.rows)}</div>
     </details>`;
-  }).join('');
-  return html?`<div class="div-asset-list">${html}</div>`:dividendEmptyState('Nenhum ativo com proventos encontrado.', 'Tente mudar a visão, os filtros ou a busca.');
+  };
+  const moreHidden=hidden.length ? `<details class="div-asset-more">
+    <summary>Ver mais ativos (${hidden.length})</summary>
+    <div class="div-asset-more-body">${hidden.map((group,index)=>renderGroup(group,index+visible.length)).join('')}</div>
+  </details>` : '';
+  const html=visible.map((group,index)=>renderGroup(group,index)).join('');
+  return html?`<div class="div-asset-list">
+    <div class="div-asset-summary" aria-label="Distribuição por ativo com base nos valores oficiais recebidos">${html}</div>
+    ${moreHidden}
+  </div>`:dividendEmptyState('Nenhum ativo com proventos encontrado.', 'Tente mudar a visão, os filtros ou a busca.');
 }
 function dividendMonthlyRows(rows=dividendPremiumRows()){
   const map=new Map();
@@ -20824,12 +20868,21 @@ function dividendMonthlyTableBlock(rows){
 function dividendMonthlyTimeline(){
   const stats=passiveIncomeGoalStats();
   const goal=stats.target;
-  return `<div class="div-timeline">${stats.byMonth.map(row=>{
+  if(!stats.byMonth.length) return dividendEmptyState('Sem evolução mensal no período selecionado.', 'Mude o filtro de período ou a busca para ver meses com dados.');
+  const currentLabel=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.label || '';
+  return `<div class="div-timeline-shell">
+    <div class="div-timeline-summary">
+      <div class="div-timeline-summary-title">Evolução mensal oficial</div>
+      <div class="div-timeline-summary-sub">Valores já gravados, com o mês atual destacado e sem projeção nova.</div>
+      <div class="div-timeline-summary-meta">${stats.byMonth.length} mês(es) · ${fmt(stats.total12)} no período${currentLabel?` · destaque para ${esc(currentLabel)}`:''}</div>
+    </div>
+    <div class="div-timeline">${stats.byMonth.map(row=>{
     const dt=new Date(`${row.key}-01T12:00:00`);
     const reached=goal>0&&row.total>=goal;
     const pct=goal>0?Math.min(100,row.total/goal*100):0;
-    return `<div class="div-timeline-card"><div class="div-timeline-month">${esc(dt.toLocaleDateString('pt-BR',{month:'long',year:'2-digit'}))}</div><div class="div-timeline-value">${fmt(row.total)}</div><div class="div-timeline-sub">${row.count} lançamento(s) · ${goal>0?(reached?'meta atingida':'abaixo da meta'):'sem meta definida'}</div><div class="div-timeline-progress"><div style="width:${pct.toFixed(1)}%"></div></div></div>`;
-  }).join('')}</div>`;
+    const label=dt.toLocaleDateString('pt-BR',{month:'long',year:'2-digit'});
+    return `<article class="div-timeline-card${row.key===stats.currentMonthKey?' current':''}" title="${esc(`${label} · ${fmt(row.total)} · ${row.count} lançamento(s) · ${goal>0?(reached?'meta atingida':'abaixo da meta'):'sem meta definida'}`)}" aria-label="${esc(`${label} com ${fmt(row.total)} recebidos em ${row.count} lançamento(s)`)}"><div class="div-timeline-month">${esc(label)}</div><div class="div-timeline-value">${fmt(row.total)}</div><div class="div-timeline-sub">${row.count} lançamento(s) · ${goal>0?(reached?'meta atingida':'abaixo da meta'):'sem meta definida'}</div><div class="div-timeline-progress"><div style="width:${pct.toFixed(1)}%"></div></div></article>`;
+  }).join('')}</div></div>`;
 }
 function dividendSummaryCards(){
   const stats=passiveIncomeGoalStats();
@@ -22106,8 +22159,17 @@ function tgD(){
   S.showD=!S.showD;
   render();
 }
-function clD(){ withScrollPreserved(()=>{ S.showD=false; render(); }); }
+function clD(){ withScrollPreserved(()=>{ S.showD=false; S.editDId=null; S._fd=null; render(); }); }
+function editDividendReceipt(id){
+  const item=(S.proventos||[]).find(p=>String(p.id)===String(id));
+  if(!item) return;
+  S.editDId=item.id;
+  S._fd={...item};
+  S.showD=true;
+  render();
+}
 function svD(){
+  const wasEdit=!!S.editDId;
   const ti=document.getElementById('d-ti')?.value?.trim().toUpperCase();
   const va=parseNum(document.getElementById('d-va')?.value);
   const ty=document.getElementById('d-ty')?.value||'Rendimento';
@@ -22115,16 +22177,19 @@ function svD(){
   const rawDt=document.getElementById('d-dt')?.value||'';
   const dt=rawDt?brDate(rawDt):new Date().toLocaleDateString('pt-BR');
   if(!ti||va<=0){ alert('Preencha Ticker e Valor recebido.'); return; }
-  S.proventos.unshift({id:Date.now(), ticker:ti, value:va, type:ty, date:dt, note:ob});
+  const next={...(S.editDId ? (S._fd||S.proventos.find(p=>String(p.id)===String(S.editDId))||{}) : {}), id:S.editDId||Date.now(), ticker:ti, value:va, type:ty, date:dt, note:ob};
+  if(S.editDId){ S.proventos=S.proventos.map(p=>String(p.id)===String(S.editDId)?next:p); }
+  else { S.proventos.unshift(next); }
   rememberScroll();
-  S.showD=false; save();
-  toast(`✅ Provento de ${ti} registrado: ${fmt(va)}`);
+  S.showD=false; S.editDId=null; S._fd=null; save();
+  toast(`✅ Provento de ${ti} ${wasEdit?'salvo':'registrado'}!`);
   render();
   markProventosDirty();
 }
 function rmD(id){
   if(!confirm('Remover este provento?')) return;
   S.proventos=S.proventos.filter(p=>p.id!==id);
+  if(String(S.editDId||'')===String(id)){ S.editDId=null; S._fd=null; S.showD=false; }
   save(); toast('🗑️ Provento removido.'); render();
   markProventosDirty();
 }

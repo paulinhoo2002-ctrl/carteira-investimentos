@@ -4,12 +4,12 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- branch atual: main;
-- SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`
-- situacao: Fase 192 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
+- fase atual: 194;
+- branch atual: feat/dividends-final-polish;
+- SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`
+- situacao: Fase 194 em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -24,8 +24,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`
+- HEAD / `origin/main`: `9762faa4f42fc1c584866436131a4cdec3926565`
 - PR `#192`: merged e closed (encerramento funcional da fase 192)
+- PR `#193`: merged e closed (encerramento documental da fase 192)
 - workspace: limpo no inicio desta fase
 - PR `#191`: merged e closed (encerramento documental da fase 190)
 
@@ -95,15 +96,16 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: nenhuma;
-- nome da fase: nenhuma;
-- branch atual: main;
-- SHA-base: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;
-- situacao: Fase 192 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
+- fase atual: 194;
+- nome da fase: Finalizacao objetiva da aba Dividendos;
+- branch atual: feat/dividends-final-polish;
+- SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`;
+- situacao: Fase 194 em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;
 - a fase 190 permanece concluida;
 - a PR #191 foi apenas o encerramento documental;
+- a PR #193 foi apenas o encerramento documental da fase 192;
 - nao existe Fase 191 funcional.
 - Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
@@ -468,3 +470,38 @@ Rollback desta fase:
 - resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;
 - rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;
 - observacao: fase encerrada; sem fase ativa.
+
+## 15. Fase 194 - finalizacao objetiva da aba Dividendos
+
+Objetivo:
+- melhorar o grafico de evolucao mensal;
+- organizar a distribuicao por ativo;
+- melhorar a lista de recebimentos recentes;
+- concluir a aba Dividendos sem ampliar o escopo.
+
+Estado atual:
+
+- fase atual: 194;
+- nome da fase: Finalizacao objetiva da aba Dividendos;
+- branch atual: feat/dividends-final-polish;
+- SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;
+- PR `#193`: merged e closed (encerramento documental da fase 192);
+- a fase 192 permanece concluida;
+- a fase 193 foi documental, sem fase funcional;
+- a fase 194 e a proxima fase funcional autorizada.
+
+Entregas:
+- grafico de evolucao mensal legivel e acessivel;
+- distribuicao por ativo organizada com primeira visao limitada e opcao segura de expandir;
+- lista de recebimentos recentes com edicao e exclusao preservadas, leitura clara e sem scroll horizontal global.
+
+Critérios de conclusao:
+- grafico, distribuicao e recebimentos revisados no desktop e no mobile;
+- Historico mensal, coluna Total, coluna Media e demais areas fora do escopo preservados;
+- nenhum calculo financeiro novo;
+- nenhuma dependencia nova;
+- testes e verificacoes da fase verdes;
+- rollback simples, mantendo as fases readonly anteriores intactas.
