@@ -275,36 +275,42 @@ function extractRoadmapPhaseSection(roadmap, startMarker, endMarker) {
 function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /\| 186 \|[^|]*\| Concluida \| `#186` \| `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f` \|/);
   assert.match(roadmap, /\| 187 \|[^|]*\| Concluida \| `#187` \| `0df41a41b9c6ba3d435044f60e69b3fa86cac27c` \|/);
+  assert.match(roadmap, /\| 188 \|[^|]*\| Concluida \| `#188` \| `2c6489fb190e215fd69074071aceba8cf2638e39` \|/);
+  assert.match(roadmap, /\| 189 \|[^|]*\| Concluida \| `#189` \| `0372cc4e04d66f713474b8d0b41ef2750d380061` \|/);
+  assert.match(roadmap, /- HEAD \/ `origin\/main`: `0372cc4e04d66f713474b8d0b41ef2750d380061`/);
+  assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 189');
 
   const phase186 = extractRoadmapPhaseSection(roadmap, '### Fase 186', '### Fase 185');
 
   assert.match(phase186, /- SHA final na main: `6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`;/);
   assert.match(phase186, /- rollback: `git revert 6cb1fc3a67530cfe0fd44d79c4fd2f83fd89660f`/);
   assert.equal(phase186.includes('0df41a41b9c6ba3d435044f60e69b3fa86cac27c'), false, 'Fase 186 nao pode citar SHA da Fase 187 como fechamento');
-
-  assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 189');
-  assert.match(roadmap, /head de revisao: consultavel na PR #189/);
 }
 
-function assertRoadmapCurrentPhase189State(roadmap) {
-  const currentState = extractRoadmapPhaseSection(roadmap, '### Estado atual', '## 2. Ordem consolidada das fases readonly');
-  const phase189 = extractRoadmapPhaseSection(roadmap, '## 10. Fase 189 - aportes e sugestao explicavel readonly', '## 11. Proximas fases');
+function assertRoadmapCurrentPhase190State(roadmap) {
+  const currentState = extractRoadmapPhaseSection(roadmap, '### Estado atual', '### Fase 189');
+  const phase190 = extractRoadmapPhaseSection(roadmap, '## 10. Fase 190 - decisao arquitetural da modernizacao', '## 11. Proximas fases');
 
-  assert.match(currentState, /- fase atual: 189/);
-  assert.match(currentState, /- nome da fase: Aportes e sugestao explicavel/);
-  assert.match(currentState, /- branch: `feat\/modern-contributions-explainable-page`;/);
-  assert.match(currentState, /- SHA-base: `2c6489fb190e215fd69074071aceba8cf2638e39`;/);
-  assert.match(currentState, /- situacao: em revisao - draft;/);
-  assert.match(currentState, /- PR: `#189`;/);
-  assert.match(currentState, /- head de revisao: consultavel na PR #189;/);
+  assert.match(currentState, /- fase atual: 190/);
+  assert.match(currentState, /- nome da fase: Decisao arquitetural da modernizacao/);
+  assert.match(currentState, /- branch: `docs\/modern-architecture-decision`;/);
+  assert.match(currentState, /- SHA-base: `0372cc4e04d66f713474b8d0b41ef2750d380061`;/);
+  assert.match(currentState, /- situacao: em desenvolvimento;/);
+  assert.match(currentState, /- PR: pendente;/);
+  assert.match(currentState, /- head de revisao: pendente;/);
   assert.match(currentState, /- SHA final na main: pendente de merge;/);
-  assert.equal(currentState.includes('situacao: em desenvolvimento'), false, 'Estado atual da Fase 189 nao pode ficar em desenvolvimento');
-  assert.equal(currentState.includes('PR: pendente'), false, 'Estado atual da Fase 189 nao pode usar PR pendente');
+  assert.match(currentState, /- branch: `docs\/modern-architecture-decision`;/);
+  assert.match(currentState, /- fase atual: 190;/);
+  assert.equal(currentState.includes('fase atual: 189'), false, 'Estado atual da Fase 190 nao pode ficar na fase 189');
+  assert.equal(currentState.includes('PR: `#189`'), false, 'Estado atual da Fase 190 nao pode usar PR 189');
 
-  assert.match(phase189, /prudentContributionAnalysis\(\)/);
-  assert.match(phase189, /leitura deterministica e sem efeitos colaterais/);
-  assert.match(phase189, /o moderno nao executa nem replica a estrategia/);
-  assert.equal(phase189.includes('resultado oficial ja produzido pelo legado'), false, 'Fase 189 nao pode afirmar resultado armazenado separado');
+  assert.match(phase190, /auditar consolidado do frontend legado e das paginas modernas readonly/);
+  assert.match(phase190, /inventario arquitetural consolidado com fronteiras, responsabilidades e riscos/);
+  assert.match(phase190, /ADR com a estrategia recomendada e as opcoes avaliadas/);
+  assert.match(phase190, /matriz de decisao com criterios, notas e justificativa/);
+  assert.match(phase190, /nenhuma escrita moderna/);
+  assert.match(phase190, /rollback simples e reversivel/);
+  assert.equal(phase190.includes('prudentContributionAnalysis()'), false, 'Fase 190 nao pode reaproveitar a explicacao da Fase 189');
 }
 
 function assertModernDistIgnored() {
@@ -374,6 +380,9 @@ function loadArchitectureSnapshot() {
     readonlySessionTs: read('modern/src/features/reports/readonlyReportSessionContext.ts'),
     viteConfigTs: read('modern/vite.config.ts'),
     roadmap: read('docs/project-phases-roadmap.md'),
+    modernArchitectureInventory: read('docs/modern-architecture-inventory.md'),
+    modernArchitectureDecision: read('docs/adr/ADR-001-modernization-strategy.md'),
+    modernizationDecisionMatrix: read('docs/modernization-decision-matrix.md'),
     docs: read('docs/legacy-assets-runtime-map.md'),
     packageJson,
   };
@@ -431,8 +440,11 @@ test('arquitetura readonly consolidada continua unica e guardrails entram no npm
   assertPackageScripts(snapshot.packageJson);
   assertDocsNoDuplicateList(snapshot.docs);
   assertRoadmapPhaseShas(snapshot.roadmap);
-  assertRoadmapCurrentPhase189State(snapshot.roadmap);
+  assertRoadmapCurrentPhase190State(snapshot.roadmap);
   assertModernDistIgnored();
+  assert.equal(fs.existsSync(path.join(repoRoot, 'docs', 'modern-architecture-inventory.md')), true, 'Inventario arquitetural precisa existir');
+  assert.equal(fs.existsSync(path.join(repoRoot, 'docs', 'adr', 'ADR-001-modernization-strategy.md')), true, 'ADR da estrategia precisa existir');
+  assert.equal(fs.existsSync(path.join(repoRoot, 'docs', 'modernization-decision-matrix.md')), true, 'Matriz de decisao precisa existir');
   assertShellIsolation({
     'modern/index.html': snapshot.modernIndexHtml,
     'modern/src/main.tsx': snapshot.mainTsx,
