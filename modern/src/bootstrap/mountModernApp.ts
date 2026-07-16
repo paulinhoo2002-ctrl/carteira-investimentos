@@ -1,5 +1,7 @@
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import type { IncomeRefreshController } from '../features/income/incomeRefreshController.ts';
+import type { ReadOnlyIncomeAdapter } from '../features/income/incomeSnapshotAdapter.mjs';
 import type { ReadOnlyFixedIncomeAdapter } from '../features/fixed-income/fixedIncomeSnapshotAdapter.mjs';
 import type { ReportsRefreshController } from '../features/reports/reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from '../features/reports/reportsSnapshotAdapter';
@@ -10,13 +12,17 @@ interface MountModernAppOptions {
   readonly rootElement: HTMLElement | null | undefined;
   readonly reportsAdapter: ReadOnlyReportsAdapter | null | undefined;
   readonly fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter | null | undefined;
+  readonly incomeAdapter: ReadOnlyIncomeAdapter | null | undefined;
   readonly reportsRefreshController?: ReportsRefreshController | null | undefined;
+  readonly incomeRefreshController?: IncomeRefreshController | null | undefined;
   readonly initialPageId?: ModernPageId;
   readonly onActivePageIdChange?: (pageId: ModernPageId) => void;
   readonly AppComponent?: ComponentType<{
     reportsAdapter: ReadOnlyReportsAdapter;
     fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
+    incomeAdapter: ReadOnlyIncomeAdapter;
     reportsRefreshController?: ReportsRefreshController | null | undefined;
+    incomeRefreshController?: IncomeRefreshController | null | undefined;
     initialPageId?: ModernPageId;
     onActivePageIdChange?: (pageId: ModernPageId) => void;
   }> | null | undefined;
@@ -33,7 +39,9 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
     rootElement,
     reportsAdapter,
     fixedIncomeAdapter,
+    incomeAdapter,
     reportsRefreshController,
+    incomeRefreshController,
     initialPageId,
     onActivePageIdChange,
     AppComponent,
@@ -49,6 +57,10 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
 
   if (!fixedIncomeAdapter || typeof fixedIncomeAdapter.getSnapshot !== 'function') {
     throw new Error('Adapter moderno de renda fixa invalido.');
+  }
+
+  if (!incomeAdapter || typeof incomeAdapter.getSnapshot !== 'function') {
+    throw new Error('Adapter moderno de proventos invalido.');
   }
 
   if (!AppComponent) {
@@ -68,7 +80,9 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
         React.createElement(AppComponent, {
           reportsAdapter,
           fixedIncomeAdapter,
+          incomeAdapter,
           reportsRefreshController,
+          incomeRefreshController,
           initialPageId,
           onActivePageIdChange,
         }),

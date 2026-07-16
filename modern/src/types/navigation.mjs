@@ -23,9 +23,9 @@ export const MODERN_PAGES = [
   {
     id: 'provents',
     label: 'Proventos',
-    title: 'Proventos',
-    description: 'Tela reservada para proventos, historico e recebimentos da carteira moderna.',
-    hint: 'Recebimentos futuros',
+    title: 'Proventos e renda mensal',
+    description: 'Consulta somente leitura de proventos e renda mensal, com snapshot validado e congelado.',
+    hint: 'Leitura readonly atual',
   },
   {
     id: 'contributions',

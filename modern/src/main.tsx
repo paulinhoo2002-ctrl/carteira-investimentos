@@ -1,5 +1,6 @@
 import { App } from './App';
 import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRuntime';
+import { createModernIncomeRuntime } from './bootstrap/modernIncomeRuntime';
 import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
 import './styles.css';
@@ -12,10 +13,13 @@ if (!rootElement) {
 
 const modernReportsRuntime = createModernReportsRuntime();
 const modernFixedIncomeRuntime = createModernFixedIncomeRuntime();
+const modernIncomeRuntime = createModernIncomeRuntime();
 
 mountModernApp({
   rootElement,
   reportsAdapter: modernReportsRuntime.reportsAdapter,
   fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
+  incomeAdapter: modernIncomeRuntime.incomeAdapter,
   AppComponent: App,
+  incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
 });

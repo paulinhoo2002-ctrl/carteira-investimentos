@@ -28,6 +28,22 @@ const fixedIncomeRuntimeModulePath = path.join(
   'bootstrap',
   'modernFixedIncomeRuntime.ts',
 );
+const incomeSourceModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'bootstrap',
+  'hostIncomeReadonlySource.ts',
+);
+const incomeRuntimeModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'bootstrap',
+  'modernIncomeRuntime.ts',
+);
 const legacyModulePath = path.join(__dirname, '..', 'legacy', 'reports-readonly-source.js');
 
 async function loadHostSourceModule() {
@@ -48,6 +64,14 @@ async function loadFixedIncomeSourceModule() {
 
 async function loadFixedIncomeRuntimeModule() {
   return import(pathToFileURL(fixedIncomeRuntimeModulePath).href);
+}
+
+async function loadIncomeSourceModule() {
+  return import(pathToFileURL(incomeSourceModulePath).href);
+}
+
+async function loadIncomeRuntimeModule() {
+  return import(pathToFileURL(incomeRuntimeModulePath).href);
 }
 
 function assertDeepFrozen(snapshot) {
@@ -303,5 +327,101 @@ test('host fixed income source rejeita candidatos que nao sao renda fixa', async
   assert.equal(snapshot.items.length, 0);
   assert.equal(snapshot.summary.itemCount, 0);
   assert.equal(snapshot.summary.totalCombinedTaxValue, null);
+  assertDeepFrozen(snapshot);
+});
+
+test('host income source usa snapshot injetado e preserva mutabilidade da origem', async () => {
+  const { createHostIncomeReadonlySource } = await loadIncomeSourceModule();
+
+  let incomeEvents = [
+    {
+      id: 'inc-001',
+      ticker: 'PETR4',
+      name: 'Petrobras',
+      type: 'Dividendo',
+      paymentDate: '2026-06-15',
+      competenceDate: '2026-06-01',
+      receivedValue: 320,
+      taxValue: null,
+      quantity: null,
+      note: 'Demo',
+      source: 'host-experimental',
+      sourceEventKind: 'payment',
+      sourceEventId: '1',
+    },
+  ];
+
+  const source = createHostIncomeReadonlySource({
+    getIncomeSnapshot() {
+      return {
+        version: 1,
+        generatedAt: '2026-07-14T10:30:00.000Z',
+        notice: 'Snapshot readonly de proventos. React nao escreve na fonte.',
+        summary: {
+          totalReceived: 320,
+          monthTotal: 320,
+          yearTotal: 320,
+          averageMonthly: 320,
+          paymentCount: incomeEvents.length,
+        },
+        items: incomeEvents,
+      };
+    },
+  });
+
+  const firstSnapshot = source.getSnapshot();
+  assert.equal(firstSnapshot.summary.paymentCount, 1);
+  assert.equal(firstSnapshot.items[0].receivedValue, 320);
+  assert.equal(Object.isFrozen(firstSnapshot), true);
+  assert.equal(Object.isFrozen(firstSnapshot.summary), true);
+  assert.equal(Object.isFrozen(firstSnapshot.items), true);
+
+  incomeEvents = [
+    {
+      ...incomeEvents[0],
+      receivedValue: 450,
+    },
+  ];
+
+  const secondSnapshot = source.getSnapshot();
+  assert.equal(secondSnapshot.summary.paymentCount, 1);
+  assert.equal(secondSnapshot.items[0].receivedValue, 450);
+  assert.notDeepEqual(secondSnapshot, firstSnapshot);
+  assertDeepFrozen(secondSnapshot);
+});
+
+test('host income source retorna fallback controlado quando leitura falha', async () => {
+  const { createHostIncomeReadonlySource } = await loadIncomeSourceModule();
+
+  const source = createHostIncomeReadonlySource({
+    getIncomeSnapshot() {
+      throw new Error('boom');
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.generatedAt, '1970-01-01T00:00:00.000Z');
+  assert.equal(snapshot.summary.paymentCount, 0);
+  assert.equal(snapshot.summary.totalReceived, null);
+  assert.equal(snapshot.summary.monthTotal, null);
+  assert.equal(snapshot.summary.yearTotal, null);
+  assert.equal(snapshot.summary.averageMonthly, null);
+  assert.equal(snapshot.items.length, 0);
+  assertDeepFrozen(snapshot);
+});
+
+test('host income runtime usa demo quando origem real nao existe', async () => {
+  const { createModernIncomeRuntime } = await loadIncomeRuntimeModule();
+
+  const runtime = createModernIncomeRuntime();
+  const snapshot = runtime.incomeAdapter.getSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.items.length, 4);
+  assert.equal(snapshot.summary.paymentCount, 4);
+  assert.equal(snapshot.summary.totalReceived, 748.51);
+  assert.equal(runtime.incomeRefreshController, null);
   assertDeepFrozen(snapshot);
 });

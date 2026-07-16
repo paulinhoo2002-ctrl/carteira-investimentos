@@ -37,6 +37,8 @@ const refreshControllerModulePath = path.join(
 const mountModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'mountModernApp.ts');
 const runtimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernReportsRuntime.ts');
 const fixedIncomeRuntimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernFixedIncomeRuntime.ts');
+const incomeSourceModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'hostIncomeReadonlySource.ts');
+const incomeRuntimeModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'modernIncomeRuntime.ts');
 const appModulePath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
 
 async function loadMountModule() {
@@ -49,6 +51,14 @@ async function loadRuntimeModule() {
 
 async function loadFixedIncomeRuntimeModule() {
   return import(pathToFileURL(fixedIncomeRuntimeModulePath).href);
+}
+
+async function loadIncomeSourceModule() {
+  return import(pathToFileURL(incomeSourceModulePath).href);
+}
+
+async function loadIncomeRuntimeModule() {
+  return import(pathToFileURL(incomeRuntimeModulePath).href);
 }
 
 async function loadRefreshControllerModule() {
@@ -71,6 +81,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   const mountTsx = fs.readFileSync(mountModulePath, 'utf8');
   const runtimeTs = fs.readFileSync(runtimeModulePath, 'utf8');
   const fixedIncomeRuntimeTs = fs.readFileSync(fixedIncomeRuntimeModulePath, 'utf8');
+  const incomeSourceTs = fs.readFileSync(incomeSourceModulePath, 'utf8');
+  const incomeRuntimeTs = fs.readFileSync(incomeRuntimeModulePath, 'utf8');
   const refreshControllerTs = fs.readFileSync(refreshControllerModulePath, 'utf8');
   const appTsx = fs.readFileSync(appModulePath, 'utf8');
 
@@ -88,8 +100,11 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /strictSourceWiring/);
   assert.match(hostTsx, /buildReportAssetRowModule/);
   assert.match(hostTsx, /createHostFixedIncomeReadonlySource/);
+  assert.match(hostTsx, /createHostIncomeReadonlySource/);
   assert.match(hostTsx, /createModernFixedIncomeRuntime/);
+  assert.match(hostTsx, /createModernIncomeRuntime/);
   assert.match(hostTsx, /fixedIncomeAdapter/);
+  assert.match(hostTsx, /incomeAdapter/);
   assert.match(hostTsx, /createHostExperimentalAssets/);
   assert.match(hostTsx, /experimentalAssets/);
   assert.match(hostTsx, /createModernReportsRuntime/);
@@ -109,6 +124,10 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(fixedIncomeSourceTs, /createHostFixedIncomeReadonlySource/);
   assert.match(fixedIncomeSourceTs, /combinedTaxValue/);
   assert.match(fixedIncomeRuntimeTs, /createModernFixedIncomeRuntime/);
+  assert.match(incomeSourceTs, /createHostIncomeReadonlySource/);
+  assert.match(incomeRuntimeTs, /createModernIncomeRuntime/);
+  assert.match(incomeRuntimeTs, /incomeAdapter/);
+  assert.match(incomeRuntimeTs, /incomeRefreshController/);
   assert.match(
     rootIndexHtml,
     /function isActiveWalletHostMode\(\)\{\s*try\{\s*return \(location\.hostname==='localhost' \|\| location\.hostname==='127\.0\.0\.1'\) && new URLSearchParams\(location\.search\)\.get\('activeWalletHost'\)==='1' && new URLSearchParams\(location\.search\)\.get\('testMode'\)==='1';/,
@@ -195,6 +214,27 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(fixedIncomeSourceTs.includes('requestAnimationFrame'), false);
   assert.equal(fixedIncomeSourceTs.includes('MutationObserver'), false);
   assert.equal(fixedIncomeSourceTs.includes('WebSocket'), false);
+  assert.equal(incomeSourceTs.includes('localStorage'), false);
+  assert.equal(incomeSourceTs.includes('sessionStorage'), false);
+  assert.equal(incomeSourceTs.includes('indexedDB'), false);
+  assert.equal(incomeSourceTs.includes('firebase'), false);
+  assert.equal(incomeSourceTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeSourceTs), false);
+  assert.equal(incomeSourceTs.includes('backup'), false);
+  assert.equal(incomeSourceTs.includes('document'), false);
+  assert.equal(incomeSourceTs.includes('window'), false);
+  assert.equal(incomeRuntimeTs.includes('localStorage'), false);
+  assert.equal(incomeRuntimeTs.includes('sessionStorage'), false);
+  assert.equal(incomeRuntimeTs.includes('indexedDB'), false);
+  assert.equal(incomeRuntimeTs.includes('firebase'), false);
+  assert.equal(incomeRuntimeTs.includes('auth'), false);
+  assert.equal(/\bsync\b/.test(incomeRuntimeTs), false);
+  assert.equal(incomeRuntimeTs.includes('backup'), false);
+  assert.equal(incomeRuntimeTs.includes('setInterval'), false);
+  assert.equal(incomeRuntimeTs.includes('setTimeout'), false);
+  assert.equal(incomeRuntimeTs.includes('requestAnimationFrame'), false);
+  assert.equal(incomeRuntimeTs.includes('MutationObserver'), false);
+  assert.equal(incomeRuntimeTs.includes('WebSocket'), false);
 });
 
 test('mountModernApp controlled errors and repeat mount guard', async () => {
@@ -211,7 +251,13 @@ test('mountModernApp controlled errors and repeat mount guard', async () => {
   );
 
   assert.throws(
-    () => mountModernApp({ rootElement: {}, reportsAdapter: { getSnapshot() {} }, fixedIncomeAdapter: null }),
+    () =>
+      mountModernApp({
+        rootElement: {},
+        reportsAdapter: { getSnapshot() {} },
+        fixedIncomeAdapter: null,
+        incomeAdapter: { getSnapshot() {} },
+      }),
     /Adapter moderno de renda fixa invalido\./,
   );
 
@@ -221,6 +267,7 @@ test('mountModernApp controlled errors and repeat mount guard', async () => {
         rootElement: {},
         reportsAdapter: { getSnapshot() {} },
         fixedIncomeAdapter: { getSnapshot() {} },
+        incomeAdapter: { getSnapshot() {} },
         AppComponent: null,
       }),
     /Componente moderno invalido\./,
@@ -243,6 +290,37 @@ test('fixed income host runtime keeps demo source available', async () => {
   assert.equal(typeof runtime.fixedIncomeAdapter.getSnapshot, 'function');
   assert.equal(runtime.fixedIncomeAdapter.getSnapshot().version, 1);
   assert.match(read('src/host.tsx'), /createModernFixedIncomeRuntime/);
+});
+
+test('income host runtime keeps demo source available', async () => {
+  const { createModernIncomeRuntime } = await loadIncomeRuntimeModule();
+  const runtime = createModernIncomeRuntime();
+
+  assert.equal(typeof runtime.incomeAdapter.getSnapshot, 'function');
+  assert.equal(runtime.incomeAdapter.getSnapshot().version, 1);
+  assert.equal(runtime.incomeRefreshController, null);
+  assert.match(read('src/host.tsx'), /createModernIncomeRuntime/);
+});
+
+test('income host source keeps fallback controlled when reading fails', async () => {
+  const { createHostIncomeReadonlySource } = await loadIncomeSourceModule();
+
+  const source = createHostIncomeReadonlySource({
+    getIncomeSnapshot() {
+      throw new Error('boom');
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.summary.paymentCount, 0);
+  assert.equal(snapshot.items.length, 0);
+  assert.equal(snapshot.summary.totalReceived, null);
+  assert.equal(snapshot.summary.monthTotal, null);
+  assert.equal(snapshot.summary.yearTotal, null);
+  assert.equal(snapshot.summary.averageMonthly, null);
+  assert.equal(Object.isFrozen(snapshot), true);
 });
 
 test('refresh controller keeps snapshot frozen and preserves listeners', async () => {
