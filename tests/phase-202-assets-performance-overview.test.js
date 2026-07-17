@@ -101,7 +101,7 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
   assert.match(phaseDoc, /- nenhuma dependencia nova;/);
   assert.match(phaseDoc, /- shell moderno readonly;/);
   assert.match(phaseDoc, /- Fase 204 nao iniciada\./);
-  assert.match(phaseDoc, /## Conclusao funcional/);
+  assert.match(phaseDoc, /^### Conclusão funcional$/m);
   assert.match(phaseDoc, /- nova area Ativos -> Desempenho;/);
   assert.match(phaseDoc, /- melhores e piores ativos;/);
   assert.match(phaseDoc, /- resultado em reais e percentual;/);
@@ -111,7 +111,9 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
   assert.match(phaseDoc, /- base completa exige valor atual e valor aplicado;/);
   assert.match(phaseDoc, /- zero real preservado;/);
   assert.match(phaseDoc, /- funcoes financeiras oficiais reutilizadas\./);
-  assert.match(phaseDoc, /## Sequencia futura/);
+  assert.match(phaseDoc, /^### Riscos observados$/m);
+  assert.match(phaseDoc, /^### Validações registradas$/m);
+  assert.match(phaseDoc, /^### Sequência futura$/m);
   assert.match(phaseDoc, /Fase 204 - Evolucao patrimonial/);
   assert.match(phaseDoc, /Fase 206 - Metas financeiras/);
   assert.match(phaseDoc, /Fase 208 - Qualidade dos dados/);

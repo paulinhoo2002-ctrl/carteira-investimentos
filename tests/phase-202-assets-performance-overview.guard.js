@@ -68,7 +68,8 @@ function assertPhase202RoadmapClosed(roadmap) {
   assert.match(phase202, /- nenhuma dependencia nova;/);
   assert.match(phase202, /- shell moderno readonly;/);
   assert.match(phase202, /- Fase 204 nao iniciada\./);
-  assert.match(phase202, /## Conclusao funcional/);
+  assert.match(phase202, /^### Conclusão funcional$/m);
+  assert.equal(/^## Conclusao funcional$/m.test(phase202), false, 'Conclusao funcional nao pode voltar para nivel 2');
   assert.match(phase202, /- nova area Ativos -> Desempenho;/);
   assert.match(phase202, /- melhores e piores ativos;/);
   assert.match(phase202, /- resultado em reais e percentual;/);
@@ -78,8 +79,10 @@ function assertPhase202RoadmapClosed(roadmap) {
   assert.match(phase202, /- base completa exige valor atual e valor aplicado;/);
   assert.match(phase202, /- zero real preservado;/);
   assert.match(phase202, /- funcoes financeiras oficiais reutilizadas\./);
-  assert.match(phase202, /## Riscos observados/);
-  assert.match(phase202, /## Validacoes registradas/);
+  assert.match(phase202, /^### Riscos observados$/m);
+  assert.equal(/^## Riscos observados$/m.test(phase202), false, 'Riscos observados nao pode voltar para nivel 2');
+  assert.match(phase202, /^### Validações registradas$/m);
+  assert.equal(/^## Validacoes registradas$/m.test(phase202), false, 'Validacoes registradas nao pode voltar para nivel 2');
 }
 
 function assertPhase202FutureSequence(roadmap) {
@@ -111,7 +114,7 @@ function assertPhase202FutureSequence(roadmap) {
     '- reduzir complexidade desnecessaria;',
     '- evitar reescrita ampla sem beneficio comprovado;',
     '- estado: planejada e nao autorizada.',
-    '- a sequencia pode ser reordenada somente por decisao explicita;',
+    '- a sequencia pode ser reordenada somente por risco encontrado na auditoria;',
     '- nenhuma dessas fases esta automaticamente autorizada;',
     '- cada fase exige objetivo, branch, PR, validacao e autorizacao;',
     '- nao existe Fase 199 funcional;',
@@ -123,6 +126,7 @@ function assertPhase202FutureSequence(roadmap) {
     assert.equal(section.includes(line), true, `Sequencia futura precisa conter: ${line}`);
   }
   assert.equal(section.includes('### Fase 202 - Painel consolidado de desempenho dos ativos'), false, 'Sequencia futura nao pode citar a Fase 202 ativa');
+  assert.equal(section.includes('- a sequencia pode ser reordenada somente por decisao explicita;'), false, 'Sequencia futura nao pode usar a regra antiga');
 }
 
 module.exports = {

@@ -14,7 +14,7 @@
 - shell moderno readonly;
 - Fase 204 nao iniciada.
 
-## Conclusao funcional
+### Conclusão funcional
 
 - nova area Ativos -> Desempenho;
 - melhores e piores ativos;
@@ -26,13 +26,13 @@
 - zero real preservado;
 - funcoes financeiras oficiais reutilizadas.
 
-## Riscos observados
+### Riscos observados
 
 - regressao visual em 768px se a tela for alterada sem revisao;
 - confusao entre zero e dado ausente se a regra de base for relaxada;
 - overflow horizontal se a lista consolidada crescer sem adaptacao responsiva.
 
-## Validacoes registradas
+### Validações registradas
 
 - `node --test tests/phase-202-assets-performance-overview.test.js`;
 - `node --test tests/phase-202-assets-performance-overview.guard.js`;
@@ -49,7 +49,7 @@
 - `npm run test:modern`;
 - `git diff --check`.
 
-## Sequencia futura
+### Sequência futura
 
 Preservada e nao autorizada:
 

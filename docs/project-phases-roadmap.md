@@ -479,7 +479,7 @@ Estado final:
 - resultado: painel consolidado de desempenho dos ativos concluido;
 - nenhuma Fase 204 ativa.
 
-## Conclusao funcional
+### Conclusão funcional
 
 - nova area Ativos -> Desempenho;
 - melhores e piores ativos;
@@ -491,13 +491,13 @@ Estado final:
 - zero real preservado;
 - funcoes financeiras oficiais reutilizadas.
 
-## Riscos observados
+### Riscos observados
 
 - regressao visual em 768px se a tela for alterada sem revisao;
 - confusao entre zero e dado ausente se a regra de base for relaxada;
 - overflow horizontal se a lista consolidada crescer sem adaptacao responsiva.
 
-## Validacoes registradas
+### Validações registradas
 
 - `node --test tests/phase-202-assets-performance-overview.test.js`;
 - `node --test tests/phase-202-assets-performance-overview.guard.js`;
@@ -514,7 +514,7 @@ Estado final:
 - `npm run test:modern`;
 - `git diff --check`.
 
-## Sequencia futura
+### Sequência futura
 
 Preservada e nao autorizada:
 
@@ -525,7 +525,7 @@ Preservada e nao autorizada:
 - Fase 212 - Desempenho e manutencao tecnica.
 
 Nenhuma dessas fases esta iniciada ou autorizada por esta documentacao.
-- a sequencia pode ser reordenada somente por decisao explicita;
+- a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
@@ -591,7 +591,7 @@ Planejadas e nao autorizadas:
 - evitar reescrita ampla sem beneficio comprovado;
 - estado: planejada e nao autorizada.
 
-- a sequencia pode ser reordenada somente por decisao explicita;
+- a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
