@@ -9,85 +9,90 @@ function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
 }
 
-test('aba dividendos preserva Total e rolagem horizontal controlada', () => {
+function section(text, startMarker, endMarker) {
+  const start = text.indexOf(startMarker);
+  assert.equal(start >= 0, true, `${startMarker} precisa existir`);
+  const end = text.indexOf(endMarker, start + startMarker.length);
+  assert.equal(end > start, true, `${endMarker} precisa existir depois de ${startMarker}`);
+  return text.slice(start, end);
+}
+
+test('aba dividendos preserva ordem visual confiavel', () => {
   const indexHtml = read('index.html');
+  const roadmap = read('docs/project-phases-roadmap.md');
+  const phase200Doc = read('docs/phase-200-dividends-trustworthy-overview.md');
+
+  assert.match(indexHtml, /function dividendMonthlyTimeline\(\)/);
+  assert.match(indexHtml, /passiveIncomeGoalStats\(\)/);
+  assert.match(indexHtml, /div-timeline-summary-title/);
+  assert.match(indexHtml, /div-timeline-card\.current/);
+  assert.match(indexHtml, /div-monthly-table-block/);
+  assert.match(indexHtml, /div-monthly-scroll-note/);
+
   const overviewStart = indexHtml.indexOf('const overviewBody=');
   const bodyStart = indexHtml.indexOf('const body=', overviewStart);
   const overviewBlock = overviewStart >= 0 && bodyStart > overviewStart
     ? indexHtml.slice(overviewStart, bodyStart)
     : indexHtml;
 
-  assert.match(indexHtml, /div-monthly-table-wrap/);
-  assert.match(indexHtml, /div-monthly-table-scroll/);
-  assert.match(indexHtml, /aria-label="Tabela de hist.*rico mensal com rolagem horizontal"/);
-  assert.match(indexHtml, /\.hist-monthly\{min-width:1140px\}/);
-  assert.match(indexHtml, /<th>Total<\/th>/);
-  assert.match(indexHtml, /div-monthly-scroll-note/);
-  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{monthlySection\}\s*\$\{dividendOverviewRecentPanel\(rows\)\}/s);
+  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{monthlySection\}/s);
+  assert.equal(overviewBlock.includes('${dividendOverviewRecentPanel(rows)}'), false);
+  assert.equal(overviewBlock.includes('Histórico recente'), false);
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
   assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
-});
 
-test('roadmap registra a fase 194 e preserva o encerramento documental da 192', () => {
-  const roadmapPath = path.join(repoRoot, 'docs', 'project-phases-roadmap.md');
-  const roadmapBuffer = fs.readFileSync(roadmapPath);
-  const roadmap = roadmapBuffer.toString('utf8');
+  assert.match(indexHtml, /@media\(max-width:768px\)\{/);
+  assert.match(indexHtml, /div-premium-metrics\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/);
+  assert.match(indexHtml, /div-timeline\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/);
+  assert.match(indexHtml, /aria-label="Tabela de hist.*rico mensal com rolagem horizontal"/);
 
-  assert.equal(
-    roadmapBuffer.slice(0, 3).equals(Buffer.from([0xef, 0xbb, 0xbf])),
-    false,
-    'docs/project-phases-roadmap.md nao pode conter BOM',
-  );
-  assert.match(roadmap, /fase atual: nenhuma/);
-  assert.match(roadmap, /branch atual: main/);
-  assert.match(roadmap, /SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`/);
-  assert.match(roadmap, /situacao: Fase 198 concluida e aguardando nova autorizacao/);
-  assert.match(roadmap, /PR atual: nenhuma/);
-  assert.match(roadmap, /implementacao ativa: nenhuma/);
-  assert.match(roadmap, /PR `#198` merged e closed \(encerramento da auditoria\)/);
-  assert.match(roadmap, /resultado da auditoria: apto com ressalvas/);
-  assert.match(roadmap, /risco residual principal: responsividade em 768px/);
-  assert.match(roadmap, /Fase 194 concluida pela PR #194/);
-  assert.match(roadmap, /a PR #191 foi apenas o encerramento documental/);
-  assert.match(roadmap, /a PR #193 foi apenas o encerramento documental da fase 192/);
-  assert.match(roadmap, /nao existe Fase 191 funcional/);
-  assert.match(roadmap, /PR `#194`: merged e closed \(encerramento funcional da fase 194\)/);
-  assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
-  assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);
-  assert.match(roadmap, /- estado: Concluida;/);
-  assert.match(roadmap, /- PR: `#192`;/);
-  assert.match(roadmap, /- SHA final na main: `bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
-  assert.match(roadmap, /- titulo: `feat: refina visual da aba dividendos`;/);
-  assert.match(roadmap, /- modo: squash;/);
-  assert.match(roadmap, /- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;/);
-  assert.match(roadmap, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
-  assert.match(roadmap, /## 15\. Fase 194 - finalizacao objetiva da aba Dividendos/);
-  assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- fase atual: nenhuma;/);
-  assert.match(roadmap, /- situacao: Fase 194 concluida;/);
-  assert.match(roadmap, /- PR atual: nenhuma;/);
-  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
-  assert.match(roadmap, /- PR `#194`: merged e closed \(encerramento funcional da fase 194\);/);
-  assert.match(roadmap, /- a fase 195 nao existe sem autorizacao explicita\./);
-  assert.match(roadmap, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
-  assert.match(roadmap, /- fase atual: nenhuma;/);
-  assert.match(roadmap, /- situacao: Fase 196 concluida;/);
-  assert.match(roadmap, /- PR atual: nenhuma;/);
-  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
-  assert.match(roadmap, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
-  assert.match(roadmap, /- estado: Concluida;/);
-  assert.match(roadmap, /- PR: `#192`;/);
-  assert.match(roadmap, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
-  assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- fase atual: nenhuma;/);
-  assert.match(roadmap, /- situacao: Fase 198 concluida;/);
-  assert.match(roadmap, /- PR atual: nenhuma;/);
-  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
-  assert.match(roadmap, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
-  assert.match(roadmap, /- resultado: apto com ressalvas;/);
-  assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
-  assert.equal(roadmap.includes('Fase 195 -'), false);
-  assert.equal(roadmap.includes('Fase 191 -'), false);
-  assert.equal(roadmap.includes('Fase 193 -'), false);
+  const currentState = section(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
+  assert.match(currentState, /- fase atual: 200;/);
+  assert.match(currentState, /- nome: Refinamento confiavel da tela de Dividendos;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
+  assert.match(currentState, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
+  assert.match(currentState, /- situacao: em desenvolvimento;/);
+  assert.match(currentState, /- redefinicao: autorizada explicitamente;/);
+  assert.match(currentState, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
+  assert.match(currentState, /- risco residual principal: responsividade em 768px;/);
+  assert.match(currentState, /- nenhuma Fase 199 funcional;/);
+
+  assert.match(roadmap, /## 18\. Fase 200 - refinamento confiavel da tela de Dividendos/);
+  assert.match(roadmap, /## 11\. Sequencia planejada apos a Fase 200/);
+  assert.match(roadmap, /- a Fase 200 foi redefinida por decisao explicita;/);
+  assert.match(roadmap, /- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;/);
+  assert.match(roadmap, /- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212\./);
+
+  const phase200Start = roadmap.indexOf('## 18. Fase 200 - refinamento confiavel da tela de Dividendos');
+  assert.equal(phase200Start >= 0, true, 'Secao da Fase 200 precisa existir');
+  const phase200 = roadmap.slice(phase200Start);
+  assert.match(phase200, /Objetivo:/);
+  assert.match(phase200, /- revisar a composicao de "Recebido no mes" com dados oficiais, sem novo calculo financeiro;/);
+  assert.match(phase200, /- remover "Historico recente" da visao geral;/);
+  assert.match(phase200, /- manter "Historico mensal" como primeira secao principal da pagina;/);
+  assert.match(phase200, /- corrigir o comportamento em 768px sem mexer em schema, dependencias ou fontes de verdade;/);
+  assert.match(phase200, /- preservar edicao, exclusao, filtros, historico e acessibilidade\./);
+  assert.match(phase200, /- redefinicao: autorizada explicitamente;/);
+  assert.match(phase200, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
+  assert.match(phase200, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
+  assert.match(phase200, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
+  assert.match(phase200, /- situacao: em desenvolvimento;/);
+  assert.match(phase200, /- PR atual: pendente;/);
+  assert.match(phase200, /- head de revisao: consultavel na futura PR;/);
+  assert.match(phase200, /- SHA final na main: pendente de merge;/);
+  assert.match(phase200, /- validacao visual em desktop, tablet e mobile sem overflow horizontal global;/);
+  assert.match(phase200Doc, /- "Recebido no mes" fica claro e auditavel;/);
+  assert.match(phase200Doc, /- "Historico recente" sai da visao geral;/);
+  assert.match(phase200Doc, /- "Historico mensal" fica logo abaixo dos cards de resumo;/);
+  assert.match(phase200Doc, /- esta fase foi redefinida por decisao explicita;/);
+  assert.match(phase200Doc, /- o objetivo anterior de painel consolidado de desempenho dos ativos nao foi cancelado;/);
+  assert.match(phase200Doc, /- esse objetivo foi movido para a Fase 202, ainda nao autorizada;/);
+  assert.match(phase200Doc, /- nenhuma funcionalidade de desempenho de ativos foi iniciada;/);
+  assert.match(phase200, /- `Recebido no mes` claramente explicado e sem ambiguidade de composicao;/);
+  assert.match(phase200, /- `Historico mensal` em destaque na visao geral;/);
+  assert.match(phase200, /- `Historico recente` fora da visao geral;/);
+  assert.match(phase200, /- nenhum dado funcional removido\./);
 });

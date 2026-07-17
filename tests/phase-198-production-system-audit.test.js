@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const test = require('node:test');
+const { assertPhase200FutureSequence } = require('./phase-200-future-sequence.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -23,28 +24,42 @@ function section(text, startMarker, endMarker) {
   return text.slice(start, end);
 }
 
-test('fase 198 ativa e sequencia planejada registrada', () => {
+test('fase 198 continua registrada e a fase 200 assume o estado atual', () => {
   const roadmap = read('docs/project-phases-roadmap.md');
   const audit = read('docs/phase-198-production-system-audit.md');
-  const sequence = section(roadmap, '## 11. Sequencia planejada apos a Fase 198', '## 12. Radar estrategico - mudancas de alto impacto');
+  const phase200Doc = read('docs/phase-200-dividends-trustworthy-overview.md');
+  const sequence = section(roadmap, '## 11. Sequencia planejada apos a Fase 200', '## 12. Radar estrategico - mudancas de alto impacto');
   const phase198 = roadmap.slice(roadmap.indexOf('## 17. Fase 198 - auditoria geral do sistema em producao'));
-  const audit198 = audit;
+  const phase200Start = roadmap.indexOf('## 18. Fase 200 - refinamento confiavel da tela de Dividendos');
+  assert.equal(phase200Start >= 0, true, 'Secao da Fase 200 precisa existir');
+  const phase200 = roadmap.slice(phase200Start);
 
   assertUtf8WithoutBom('docs/project-phases-roadmap.md');
   assertUtf8WithoutBom('docs/phase-198-production-system-audit.md');
+  assertUtf8WithoutBom('docs/phase-200-dividends-trustworthy-overview.md');
   assert.equal(roadmap.startsWith('# Project Phases Roadmap'), true);
   assert.equal(audit.startsWith('# Fase 198 - Auditoria geral do sistema em producao'), true);
-  assert.match(roadmap, /- fase atual: nenhuma;/);
-  assert.match(roadmap, /- branch atual: main;/);
-  assert.match(roadmap, /- SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;/);
-  assert.match(roadmap, /- situacao: Fase 198 concluida e aguardando nova autorizacao;/);
-  assert.match(roadmap, /- PR atual: nenhuma;/);
-  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.equal(phase200Doc.startsWith('# Fase 200 - Refinamento confiavel da tela de Dividendos'), true);
+
+  assert.match(roadmap, /- fase atual: 200;/);
+  assert.match(roadmap, /- nome: Refinamento confiavel da tela de Dividendos;/);
+  assert.match(roadmap, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
+  assert.match(roadmap, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
+  assert.match(roadmap, /- situacao: em desenvolvimento;/);
+  assert.match(roadmap, /- redefinicao: autorizada explicitamente;/);
+  assert.match(roadmap, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
+  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
+  assert.match(roadmap, /- head de revisao: consultavel na futura PR;/);
+  assert.match(roadmap, /- SHA final na main: pendente de merge;/);
   assert.match(roadmap, /- PR `#198` merged e closed \(encerramento da auditoria\);/);
   assert.match(roadmap, /- resultado da auditoria: apto com ressalvas;/);
   assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
   assert.match(roadmap, /- nenhuma Fase 199 funcional;/);
-  assert.match(roadmap, /- nenhuma Fase 200 ativa;/);
+  assert.match(roadmap, /- a Fase 200 foi redefinida por decisao explicita;/);
+  assert.match(roadmap, /- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;/);
+  assert.match(roadmap, /- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212\./);
+
   assert.match(phase198, /Estado final:/);
   assert.match(phase198, /- fase atual: nenhuma;/);
   assert.match(phase198, /- branch original: `audit\/phase-198-production-system-review`;/);
@@ -65,26 +80,43 @@ test('fase 198 ativa e sequencia planejada registrada', () => {
   assert.match(phase198, /768px com overflow estrutural e faixa vazia lateral/);
   assert.match(phase198, /apto com ressalvas/i);
   assert.match(phase198, /Fase 200 pode seguir depois de correcoes pontuais/);
-  assert.match(audit198, /Resumo executivo/);
-  assert.match(audit198, /Escopo examinado/);
-  assert.match(audit198, /Evidencias/);
-  assert.match(audit198, /AUD-198-01/);
-  assert.match(audit198, /AUD-198-02/);
-  assert.match(audit198, /AUD-198-03/);
-  assert.match(audit198, /Seguranca dos dados/);
-  assert.match(audit198, /Qualidade visual/);
-  assert.match(audit198, /Performance/);
-  assert.match(audit198, /Classificacao final: apto com ressalvas\./i);
-  assert.match(audit198, /Backlog priorizado/);
-  assert.match(audit198, /Recomendacao para a Fase 200/);
-  assert.match(sequence, /### Fase 200 - Painel consolidado de desempenho dos ativos/);
-  assert.match(sequence, /### Fase 202 - Evolucao patrimonial/);
-  assert.match(sequence, /### Fase 204 - Metas financeiras/);
-  assert.match(sequence, /### Fase 206 - Qualidade dos dados/);
-  assert.match(sequence, /### Fase 208 - Relatorio executivo mensal/);
-  assert.match(sequence, /### Fase 210 - Desempenho e manutencao tecnica/);
+
+  assert.match(phase200, /Objetivo:/);
+  assert.match(phase200, /- revisar a composicao de "Recebido no mes" com dados oficiais, sem novo calculo financeiro;/);
+  assert.match(phase200, /- remover "Historico recente" da visao geral;/);
+  assert.match(phase200, /- manter "Historico mensal" como primeira secao principal da pagina;/);
+  assert.match(phase200, /- corrigir o comportamento em 768px sem mexer em schema, dependencias ou fontes de verdade;/);
+  assert.match(phase200, /- preservar edicao, exclusao, filtros, historico e acessibilidade\./);
+  assert.match(phase200, /- redefinicao: autorizada explicitamente;/);
+  assert.match(phase200, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
+  assert.match(phase200Doc, /- esta fase foi redefinida por decisao explicita;/);
+  assert.match(phase200Doc, /- o objetivo anterior de painel consolidado de desempenho dos ativos nao foi cancelado;/);
+  assert.match(phase200Doc, /- esse objetivo foi movido para a Fase 202, ainda nao autorizada;/);
+  assert.match(phase200Doc, /- nenhuma funcionalidade de desempenho de ativos foi iniciada;/);
+  assert.match(phase200, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
+  assert.match(phase200, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
+  assert.match(phase200, /- situacao: em desenvolvimento;/);
+  assert.match(phase200, /- PR atual: pendente;/);
+  assert.match(phase200, /- head de revisao: consultavel na futura PR;/);
+  assert.match(phase200, /- SHA final na main: pendente de merge;/);
+  assert.match(phase200, /- validacao visual em desktop, tablet e mobile sem overflow horizontal global;/);
+  assert.match(phase200Doc, /- "Recebido no mes" fica claro e auditavel;/);
+  assert.match(phase200Doc, /- "Historico recente" sai da visao geral;/);
+  assert.match(phase200Doc, /- "Historico mensal" fica logo abaixo dos cards de resumo;/);
+  assert.match(phase200, /- `Recebido no mes` claramente explicado e sem ambiguidade de composicao;/);
+  assert.match(phase200, /- `Historico mensal` em destaque na visao geral;/);
+  assert.match(phase200, /- `Historico recente` fora da visao geral;/);
+  assert.match(phase200, /- nenhum dado funcional removido\./);
+  assert.match(phase200, /Rollback:/);
+
+  assert.match(phase200Doc, /Recebido no mes/);
+  assert.match(phase200Doc, /Historico recente/);
+  assert.match(phase200Doc, /Historico mensal/);
+  assert.match(phase200Doc, /768px/);
+  assert.match(phase200Doc, /Rollback/);
+
   assert.match(sequence, /nao existe Fase 199 funcional/);
-  assert.match(sequence, /nao abrir a Fase 200 nesta execucao/);
+  assertPhase200FutureSequence(roadmap);
   assert.equal(roadmap.includes('Fase 199 -'), false, 'Roadmap nao pode abrir Fase 199 funcional');
   assert.equal(roadmap.includes('- Fase 198 aberta para auditoria geral do sistema em producao;'), false, 'Roadmap nao pode manter Fase 198 aberta');
   assert.equal(execFileSync('git', ['ls-files', 'modern/dist'], { cwd: repoRoot, encoding: 'utf8' }).trim(), '', 'modern/dist nao pode entrar no indice');

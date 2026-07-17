@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { assertPhase200FutureSequence } = require('./phase-200-future-sequence.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -41,26 +42,28 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.equal(roadmap.startsWith('# Project Phases Roadmap'), true);
   assertNoMojibake(roadmap, 'roadmap');
 
-  const currentState = section(roadmap, '### Estado atual', '### Fase 189');
+  const currentState = section(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase192 = section(roadmap, '## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos', '## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
 
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;/);
-  assert.match(currentState, /- situacao: Fase 198 concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- fase atual: 200;/);
+  assert.match(currentState, /- nome: Refinamento confiavel da tela de Dividendos;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
+  assert.match(currentState, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
+  assert.match(currentState, /- situacao: em desenvolvimento;/);
+  assert.match(currentState, /- redefinicao: autorizada explicitamente;/);
+  assert.match(currentState, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
+  assert.match(currentState, /- head de revisao: consultavel na futura PR;/);
+  assert.match(currentState, /- SHA final na main: pendente de merge;/);
   assert.match(currentState, /- PR `#198` merged e closed \(encerramento da auditoria\);/);
   assert.match(currentState, /- resultado da auditoria: apto com ressalvas;/);
   assert.match(currentState, /- risco residual principal: responsividade em 768px;/);
+  assert.match(currentState, /- nenhuma Fase 199 funcional;/);
   assert.match(currentState, /- Fase 194 concluida pela PR #194;/);
-  assert.match(currentState, /- a fase 190 permanece concluida;/);
-  assert.match(currentState, /- a PR #191 foi apenas o encerramento documental;/);
-  assert.match(currentState, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
-  assert.match(currentState, /- nao existe Fase 191 funcional\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(currentState.includes('ciclo de modernizacao readonly encerrado'), false);
-  assert.equal(currentState.includes('em desenvolvimento'), false);
+  assert.equal(currentState.includes('Fase 200 ativa'), false);
   assert.equal(currentState.includes('Fase 195'), false);
 
   assert.match(phase192, /- estado: Concluida;/);
@@ -70,8 +73,8 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(phase192, /- modo: squash;/);
   assert.match(phase192, /- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;/);
   assert.match(phase192, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
+  assertPhase200FutureSequence(roadmap);
 
-  assert.equal(roadmap.includes('futura PR'), false, 'roadmap nao pode falar em futura PR');
   assert.match(roadmap, /## 10\. Fase 190 - decisao arquitetural da modernizacao/);
   assert.match(roadmap, /- inventario arquitetural consolidado com fronteiras, responsabilidades e riscos;/);
   assert.match(roadmap, /- ADR com a estrategia recomendada e as opcoes avaliadas;/);
@@ -99,6 +102,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(roadmap, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
   assert.match(roadmap, /- resultado: apto com ressalvas;/);
   assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
+  assert.match(roadmap, /## 18\. Fase 200 - refinamento confiavel da tela de Dividendos/);
 
   assertNoMojibake(inventory, 'inventario');
   assert.match(inventory, /Inventario arquitetural da modernizacao/);
