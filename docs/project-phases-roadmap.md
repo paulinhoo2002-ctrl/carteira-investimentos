@@ -4,21 +4,21 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 200;
-- nome: Refinamento confiavel da tela de Dividendos;
-- branch atual: `feat/phase-200-dividends-trustworthy-overview`;
-- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;
-- situacao: em desenvolvimento;
-- redefinicao: autorizada explicitamente;
-- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;
-- PR atual: pendente;
-- implementacao ativa: refinamento confiavel da tela de Dividendos;
-- head de revisao: consultavel na futura PR;
-- SHA final na main: pendente de merge;
+- fase atual: nenhuma;
+- branch atual: main;
+- SHA-base: `3c784714265505efa763e624bbaf8bacaa467ba0`;
+- situacao: Fase 200 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
 - PR `#198` merged e closed (encerramento da auditoria);
 - resultado da auditoria: apto com ressalvas;
 - risco residual principal: responsividade em 768px;
 - nenhuma Fase 199 funcional;
+- PR `#200` merged e closed;
+- SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
+- resultado: refinamento confiavel da tela de Dividendos concluido;
+- correcao de 768px registrada como concluida;
+- nenhuma Fase 202 ativa.
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -35,8 +35,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `8951891a0ffa15edade8867a3e7078ac63c09b73`
-- PR `#197`: merged e closed (encerramento documental da fase 196)
+- HEAD / `origin/main`: `3c784714265505efa763e624bbaf8bacaa467ba0`
+- PR `#200`: merged e closed (encerramento funcional da fase 200)
+- PR `#198`: merged e closed (encerramento da auditoria)
 - PR `#196`: merged e closed (encerramento funcional da fase 196)
 - PR `#195`: merged e closed (encerramento documental da fase 194)
 - workspace: limpo no inicio desta fase
@@ -447,7 +448,7 @@ Rollback:
 
 Planejadas e nao autorizadas:
 
-### Fase 202 - Painel consolidado de desempenho dos ativos
+### Fase 202 — Painel consolidado de desempenho dos ativos
 
 - objetivo: mostrar melhores e piores ativos;
 - resultado em reais e percentual;
@@ -457,35 +458,35 @@ Planejadas e nao autorizadas:
 - nao duplicar calculos financeiros;
 - estado: planejada e nao autorizada.
 
-### Fase 204 - Evolucao patrimonial
+### Fase 204 — Evolução patrimonial
 
 - objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;
 - usar somente historico real disponivel;
 - nao inventar valores passados;
 - estado: planejada e nao autorizada.
 
-### Fase 206 - Metas financeiras
+### Fase 206 — Metas financeiras
 
 - objetivo: acompanhar meta de R$ 1 milhao e renda passiva de R$ 4 mil mensais;
 - separar valores reais de projecoes;
 - nao misturar meta com simulacao;
 - estado: planejada e nao autorizada.
 
-### Fase 208 - Qualidade dos dados
+### Fase 208 — Qualidade dos dados
 
 - objetivo: localizar registros incompletos, duplicados ou inconsistentes;
 - diferenciar zero de ausente;
 - nao corrigir automaticamente;
 - estado: planejada e nao autorizada.
 
-### Fase 210 - Relatorio executivo mensal
+### Fase 210 — Relatório executivo mensal
 
 - objetivo: consolidar patrimonio, aportes, dividendos, distribuicao, desempenho e metas;
 - permitir impressao ou PDF;
 - preservar as fontes oficiais dos calculos;
 - estado: planejada e nao autorizada.
 
-### Fase 212 - Desempenho e manutencao tecnica
+### Fase 212 — Desempenho e manutenção técnica
 
 - objetivo: melhorar desempenho e manutencao;
 - revisar cache e service worker;
@@ -695,23 +696,31 @@ Objetivo:
 - manter "Historico mensal" como primeira secao principal da pagina;
 - corrigir o comportamento em 768px sem mexer em schema, dependencias ou fontes de verdade;
 - preservar edicao, exclusao, filtros, historico e acessibilidade.
-- redefinicao: autorizada explicitamente;
-- o objetivo anterior de painel consolidado de desempenho dos ativos foi movido para a Fase 202;
-- nenhuma funcionalidade de desempenho de ativos foi iniciada.
 
-Estado atual:
+Redefinicao autorizada:
+- esta fase foi redefinida por decisao explicita;
+- o objetivo anterior de painel consolidado de desempenho dos ativos nao foi cancelado;
+- esse objetivo foi movido para a Fase 202, ainda nao autorizada;
+- nenhuma funcionalidade de desempenho de ativos foi iniciada;
 
-- fase atual: 200;
-- nome: Refinamento confiavel da tela de Dividendos;
-- branch atual: `feat/phase-200-dividends-trustworthy-overview`;
-- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;
-- situacao: em desenvolvimento;
-- redefinicao: autorizada explicitamente;
-- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;
-- PR atual: pendente;
-- implementacao ativa: refinamento confiavel da tela de Dividendos;
-- head de revisao: consultavel na futura PR;
-- SHA final na main: pendente de merge;
+Estado final:
+
+- fase concluida;
+- branch original: `feat/phase-200-dividends-trustworthy-overview`;
+- PR: `#200`;
+- modo: squash;
+- SHA final: `3c784714265505efa763e624bbaf8bacaa467ba0`;
+- implementacao ativa: nenhuma;
+- resultado: concluido;
+- nenhuma formula financeira nova;
+- nenhuma alteracao de schema;
+- nenhuma dependencia nova;
+- nenhuma Fase 202 iniciada.
+
+Conclusao:
+- refinamento confiavel da tela de Dividendos concluido;
+- correcao de 768px registrada como concluida;
+- nenhuma Fase 202 ativa.
 
 Escopo:
 - usar apenas dados e calculos oficiais ja existentes;
