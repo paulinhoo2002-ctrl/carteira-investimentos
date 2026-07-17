@@ -44,12 +44,12 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   const currentState = section(roadmap, '### Estado atual', '### Fase 189');
   const phase192 = section(roadmap, '## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos', '## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
 
-  assert.match(currentState, /- fase atual: 196;/);
-  assert.match(currentState, /- branch atual: `test\/fix-basic-ui-theme-bootstrap`;/);
-  assert.match(currentState, /- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;/);
-  assert.match(currentState, /- situacao: em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
-  assert.match(currentState, /- implementacao ativa: correcao do harness de teste, sem alteracao funcional;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`;/);
+  assert.match(currentState, /- situacao: Fase 196 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
   assert.match(currentState, /- Fase 194 concluida pela PR #194;/);
   assert.match(currentState, /- a fase 190 permanece concluida;/);
   assert.match(currentState, /- a PR #191 foi apenas o encerramento documental;/);
@@ -57,7 +57,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(currentState, /- nao existe Fase 191 funcional\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(currentState.includes('ciclo de modernizacao readonly encerrado'), false);
-  assert.equal(currentState.includes('em desenvolvimento'), true);
+  assert.equal(currentState.includes('em desenvolvimento'), false);
   assert.equal(currentState.includes('Fase 195'), false);
 
   assert.match(phase192, /- estado: Concluida;/);
@@ -81,6 +81,12 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#194`: merged e closed \(encerramento funcional da fase 194\);/);
   assert.match(roadmap, /- a fase 195 nao existe sem autorizacao explicita\./);
+  assert.match(roadmap, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
+  assert.match(roadmap, /- situacao: Fase 196 concluida;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmap, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
 
   assertNoMojibake(inventory, 'inventario');
   assert.match(inventory, /Inventario arquitetural da modernizacao/);
