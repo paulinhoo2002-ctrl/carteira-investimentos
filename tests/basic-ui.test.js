@@ -17,8 +17,19 @@ function extractSnippet(startMarker, endMarker) {
   return html.slice(start, end);
 }
 
-function extractThemeBootstrap() {
-  return extractSnippet('(()=>{try{', '</script>\n<style>');
+function extractThemeBootstrap(html = readIndexHtml()) {
+  const startMarker = '(()=>{try{';
+  const start = html.indexOf(startMarker);
+  assert.notEqual(start, -1, `Start marker not found: ${startMarker}`);
+
+  const endMarker = '</script>';
+  const end = html.indexOf(endMarker, start);
+  assert.notEqual(end, -1, `End marker not found: ${endMarker}`);
+
+  const afterScript = html.slice(end + endMarker.length);
+  assert.match(afterScript, /^[\t \r\n]*<style\b/i, 'Style tag not found after theme bootstrap');
+
+  return html.slice(start, end);
 }
 
 function extractUiBundle() {
@@ -232,6 +243,34 @@ test('bootstrap local com testMode ativa modo de teste e nÃ£o lÃª tema salvo
   assert.equal(harness.documentElement.style.colorScheme, 'dark');
   assert.equal(harness.storageReads, 0);
   assert.deepEqual(harness.meta.setAttributeCalls, []);
+});
+
+test('extractThemeBootstrap tolera LF, CRLF e style com atributos', () => {
+  const samples = [
+    {
+      html: '<script>\n(()=>{try{window.__LOCAL_TEST_MODE__=true;})();</script>\n<style id="theme"></style>',
+      expected: '(()=>{try{window.__LOCAL_TEST_MODE__=true;})();'
+    },
+    {
+      html: '<script>\r\n(()=>{try{window.__LOCAL_TEST_MODE__=true;})();</script>\r\n   <style data-theme="dark"></style>',
+      expected: '(()=>{try{window.__LOCAL_TEST_MODE__=true;})();'
+    }
+  ];
+
+  for (const sample of samples) {
+    assert.equal(extractThemeBootstrap(sample.html), sample.expected);
+  }
+});
+
+test('extractThemeBootstrap falha com mensagens claras quando marcadores somem', () => {
+  assert.throws(
+    () => extractThemeBootstrap('<script>console.log(1);</script><style></style>'),
+    /Start marker not found: \(\(\)=>\{try\{/
+  );
+  assert.throws(
+    () => extractThemeBootstrap('<script>(()=>{try{window.__LOCAL_TEST_MODE__=true;})();</style>'),
+    /End marker not found: <\/script>/
+  );
 });
 
 test('documento mantÃ©m tÃ­tulo principal da aplicaÃ§Ã£o', () => {

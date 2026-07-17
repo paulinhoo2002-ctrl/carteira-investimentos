@@ -4,12 +4,12 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- branch atual: main;
-- SHA-base: `78e7da439cd8a041f13498d0924d1f107acf72e3`;
-- situacao: Fase 194 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
+- fase atual: 196;
+- branch atual: `test/fix-basic-ui-theme-bootstrap`;
+- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: correcao do harness de teste, sem alteracao funcional;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
 - uma PR por objetivo
@@ -25,11 +25,10 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `9762faa4f42fc1c584866436131a4cdec3926565`
-- PR `#192`: merged e closed (encerramento funcional da fase 192)
-- PR `#193`: merged e closed (encerramento documental da fase 192)
+- HEAD / `origin/main`: `ead79bddada44c74842398e53f6171764fc6ecdf`
+- PR `#195`: merged e closed (encerramento documental da fase 194)
 - workspace: limpo no inicio desta fase
-- PR `#191`: merged e closed (encerramento documental da fase 190)
+- PR `#194`: merged e closed (encerramento funcional da fase 194)
 
 ## 1. Historico confirmado das fases readonly
 
@@ -72,7 +71,7 @@ Base de referencia desta fase:
 - SHA final na main: `3a80972310773e20dbf73a101c745f6f7f3b7c9d`;
 - titulo do commit final: `feat: formaliza contrato readonly dos dados de relatorio`;
 - modo: squash;
-- resultado principal: contrato readonly tipado e versionado dos dados de relatorio com runtime canônico unico;
+- resultado principal: contrato readonly tipado e versionado dos dados de relatorio com runtime canonico unico;
 - rollback: `git revert 3a80972310773e20dbf73a101c745f6f7f3b7c9d`.
 
 ### Fase 187
@@ -97,13 +96,13 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: nenhuma;
-- nome da fase: Finalizacao objetiva da aba Dividendos;
-- branch atual: main;
-- SHA-base: `78e7da439cd8a041f13498d0924d1f107acf72e3`;
-- situacao: Fase 194 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
+- fase atual: 196;
+- nome da fase: estabilizacao do teste basico da interface;
+- branch atual: `test/fix-basic-ui-theme-bootstrap`;
+- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: correcao do harness de teste, sem alteracao funcional;
 - Fase 194 concluida pela PR #194;
 - a fase 190 permanece concluida;
 - a PR #191 foi apenas o encerramento documental;
@@ -119,7 +118,7 @@ Base de referencia desta fase:
 - entregaveis: contrato readonly dedicado, provider readonly legado, pagina moderna readonly com lista, filtros locais, agrupamentos visuais, sugestao explicavel, estados vazios/fallback/erro, testes e smokes;
 - fora de escopo: compra, cadastro, edicao, exclusao, persistencia de aporte, nova recomendacao financeira, novo ranking, rebalanceamento automatico, calculo de preco-teto, cotacao externa, projecao de retorno, dividendos, venda sugerida, storage, Firebase, Auth, sync, backup, polling, fetch externo, nova dependencia, alteracao do contrato readonly canonico de outras fases ou do fluxo principal;
 - riscos: schema legado misto ou incompleto, parte dos registros sem explicacao estruturada, regressao de acessibilidade/responsividade em listas grandes e paineis densos, excesso de derivacao visual sem fonte oficial, stale snapshot se o refresh controlado nao for usado na composicao host;
-- criterios de conclusao: build, testes e smokes verdes, nenhuma duplicacao de formula financeira, nenhuma escrita moderna, nenhum acesso direto ao estado legado dentro do React, `modern/dist` continua fora do indice, rollback simples e reversivel;
+Criterios de conclusao:
 - rollback: remover o componente dedicado, os testes e a documentacao desta fase, mantendo contrato, bridge, adapter, host e fases anteriores intactos.
 
 ## 2. Ordem consolidada das fases readonly
@@ -144,6 +143,7 @@ Ordem oficial atual:
 16. 189 - aportes e sugestao explicavel readonly
 17. 190 - decisao arquitetural da modernizacao
 18. 192 - refinamento visual e responsivo da aba Dividendos
+19. 196 - estabilizacao do teste basico da interface
 
 Mudanca de ordem relevante:
 
@@ -152,7 +152,7 @@ Mudanca de ordem relevante:
 - a fase 185 formaliza o contrato de dados readonly sem mudar o fluxo funcional;
 - a fase 190 nao inicia escrita moderna, apenas consolida a decisao com evidencias.
 - a fase 191 foi apenas documental, sem fase funcional;
-- a fase 192 e a proxima fase funcional autorizada.
+- a fase 196 e a fase atual, restrita a teste/documentacao; nenhuma fase funcional nova foi aberta sem autorizacao.
 
 ## 3. Auditoria da fronteira readonly
 
@@ -424,7 +424,7 @@ A decisao desta fase define o proximo passo formal.
 
 - Se a opcao escolhida mantiver o modelo hibrido, as proximas fases continuam readonly e graduais.
 - Se houver escrita moderna futura, ela precisa nascer em fase propria, com comando versionado, idempotencia, autorizacao, confirmacao explicita, log de auditoria, backup e rollback.
-- A fase 192 e a proxima fase funcional registrada nesta documentacao, sem abrir escrita moderna.
+- A fase 196 nao altera comportamento funcional e nao abre fase 197.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
@@ -504,10 +504,53 @@ Entregas:
 - lista de recebimentos recentes com edicao e exclusao preservadas, leitura clara e sem scroll horizontal global.
 - evidencias validadas: 390px em coluna sem rolagem horizontal global; 1366px com 12 meses, tooltips acessiveis, distribuicao ordenada, expansao funcionando e recebimentos completos; 1920px com layout estavel, sem overflow horizontal e sem erros no console; preview publico exigiu acesso Google; validacao visual final executada em localhost autorizado; nenhuma alteracao de codigo foi necessaria depois da validacao visual.
 
-Critérios de conclusao:
+Criterios de conclusao:
 - grafico, distribuicao e recebimentos revisados no desktop e no mobile;
 - Historico mensal, coluna Total, coluna Media e demais areas fora do escopo preservados;
 - nenhum calculo financeiro novo;
 - nenhuma dependencia nova;
 - testes e verificacoes da fase verdes;
 - rollback simples, mantendo as fases readonly anteriores intactas.
+
+## 16. Fase 196 - estabilizacao do teste basico da interface
+
+Objetivo:
+- corrigir a falha preexistente de `tests/basic-ui.test.js`;
+- tornar a extracao do bootstrap de tema resistente a espacos, indentacao e quebras de linha;
+- preservar o comportamento funcional do app.
+
+Estado:
+
+- fase atual: 196;
+- nome da fase: estabilizacao do teste basico da interface;
+- branch: `test/fix-basic-ui-theme-bootstrap`;
+- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: correcao do harness de teste, sem alteracao funcional;
+- a fase 197 nao existe sem autorizacao explicita.
+
+Escopo:
+- corrigir somente o teste, nao o HTML funcional;
+- manter o bootstrap de tema verificavel com extracao estrutural;
+- preservar `__LOCAL_TEST_MODE__`, `carteira_theme` e a leitura de tema local;
+- nao alterar calculos, Firebase/Auth, storage, schema ou dependencias.
+
+Validacoes planejadas:
+- `node --test tests/basic-ui.test.js`;
+- `npm test`;
+- `npm run build`;
+- `npm run build:modern`;
+- `npm run test:modern`;
+- `node --test tests/dividends-final-polish.test.js`;
+- `node --test tests/dividends-visual-refinement.test.js`;
+- `node --test tests/modern-architecture-decision.test.js`;
+- `node --test tests/readonly-contract-architecture.test.js`;
+- `git diff --check`;
+- `git status --short`;
+- `git diff --name-only origin/main...HEAD`;
+- `git ls-files modern/dist`.
+
+Rollback:
+- reverter apenas `tests/basic-ui.test.js` e a entrada documental desta fase;
+- manter comportamento funcional e fases anteriores intactos.

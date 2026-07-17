@@ -56,12 +56,12 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.equal(roadmapPhase194Start >= 0, true, 'Seção da Fase 194 precisa existir');
   const roadmapPhase194 = roadmap.slice(roadmapPhase194Start);
 
-  assert.match(roadmapCurrent, /- fase atual: nenhuma;/);
-  assert.match(roadmapCurrent, /- branch atual: main;/);
-  assert.match(roadmapCurrent, /- SHA-base: `78e7da439cd8a041f13498d0924d1f107acf72e3`;/);
-  assert.match(roadmapCurrent, /- situacao: Fase 194 concluida e aguardando nova autorizacao;/);
-  assert.match(roadmapCurrent, /- PR atual: nenhuma;/);
-  assert.match(roadmapCurrent, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmapCurrent, /- fase atual: 196;/);
+  assert.match(roadmapCurrent, /- branch atual: `test\/fix-basic-ui-theme-bootstrap`;/);
+  assert.match(roadmapCurrent, /- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;/);
+  assert.match(roadmapCurrent, /- situacao: em desenvolvimento;/);
+  assert.match(roadmapCurrent, /- PR atual: pendente;/);
+  assert.match(roadmapCurrent, /- implementacao ativa: correcao do harness de teste, sem alteracao funcional;/);
   assert.match(roadmapCurrent, /- Fase 194 concluida pela PR #194;/);
   assert.match(roadmapCurrent, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
   assert.match(roadmapCurrent, /- a fase 195 nao existe sem autorizacao explicita\./);
