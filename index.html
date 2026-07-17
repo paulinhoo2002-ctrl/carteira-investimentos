@@ -15672,19 +15672,6 @@ function hasOwnFiniteNumber(source, keys){
     return Number.isFinite(num);
   });
 }
-function firstOwnFiniteNumber(source, keys){
-  if(!source || typeof source!=='object') return null;
-  for(const key of keys){
-    if(!Object.prototype.hasOwnProperty.call(source,key)) continue;
-    const raw=source[key];
-    if(raw==null) continue;
-    const text=String(raw).trim();
-    if(!text) continue;
-    const num=Number(text.replace(',', '.'));
-    if(Number.isFinite(num)) return num;
-  }
-  return null;
-}
 function assetPerformanceOverviewRows(){
   const assets=Array.isArray(S.assets) ? S.assets : [];
   const portfolioTotal=assets.reduce((sum,a)=>{
@@ -15705,16 +15692,18 @@ function assetPerformanceOverviewRows(){
       : ['avg_price','applied_value'];
     const hasCurrentSource=hasOwnFiniteNumber(asset, currentKeys);
     const hasAppliedSource=hasOwnFiniteNumber(asset, appliedKeys);
+    const hasAnyFinancialSource=hasCurrentSource || hasAppliedSource;
+    const hasPerformanceData=hasCurrentSource && hasAppliedSource;
     const current=hasCurrentSource ? assetCurrentValue(asset) : null;
     const applied=hasAppliedSource ? assetAppliedValue(asset) : null;
-    const result=hasCurrentSource && hasAppliedSource ? assetJurosValue(asset) : null;
-    const resultPct=hasCurrentSource && hasAppliedSource
+    const result=hasPerformanceData ? assetJurosValue(asset) : null;
+    const resultPct=hasPerformanceData
       ? (applied===0 ? (current===0 ? 0 : null) : assetRentabPct(asset))
       : null;
     const share=Number.isFinite(current) && portfolioTotal>0 ? (current/portfolioTotal)*100 : null;
-    let statusLabel='Dados incompletos';
+    let statusLabel='Dados insuficientes';
     let statusTone='muted';
-    if(hasCurrentSource || hasAppliedSource){
+    if(hasPerformanceData){
       if(result>0){ statusLabel='Positivo'; statusTone='ok'; }
       else if(result<0){ statusLabel='Negativo'; statusTone='danger'; }
       else if(result===0){ statusLabel='Estavel'; statusTone='info'; }
@@ -15734,7 +15723,8 @@ function assetPerformanceOverviewRows(){
       share,
       hasCurrentSource,
       hasAppliedSource,
-      hasPerformanceData: hasCurrentSource || hasAppliedSource,
+      hasAnyFinancialSource,
+      hasPerformanceData,
       statusLabel,
       statusTone
     };
