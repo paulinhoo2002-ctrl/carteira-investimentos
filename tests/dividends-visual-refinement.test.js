@@ -39,13 +39,15 @@ test('roadmap registra a fase 194 e preserva o encerramento documental da 192', 
     false,
     'docs/project-phases-roadmap.md nao pode conter BOM',
   );
-  assert.match(roadmap, /fase atual: 198/);
-  assert.match(roadmap, /nome: Auditoria geral do sistema em producao/);
-  assert.match(roadmap, /branch atual: audit\/phase-198-production-system-review/);
-  assert.match(roadmap, /SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`/);
-  assert.match(roadmap, /situacao: em auditoria/);
-  assert.match(roadmap, /PR atual: pendente/);
-  assert.match(roadmap, /implementacao ativa: auditoria e diagnostico, sem nova funcionalidade/);
+  assert.match(roadmap, /fase atual: nenhuma/);
+  assert.match(roadmap, /branch atual: main/);
+  assert.match(roadmap, /SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`/);
+  assert.match(roadmap, /situacao: Fase 198 concluida e aguardando nova autorizacao/);
+  assert.match(roadmap, /PR atual: nenhuma/);
+  assert.match(roadmap, /implementacao ativa: nenhuma/);
+  assert.match(roadmap, /PR `#198` merged e closed \(encerramento da auditoria\)/);
+  assert.match(roadmap, /resultado da auditoria: apto com ressalvas/);
+  assert.match(roadmap, /risco residual principal: responsividade em 768px/);
   assert.match(roadmap, /Fase 194 concluida pela PR #194/);
   assert.match(roadmap, /a PR #191 foi apenas o encerramento documental/);
   assert.match(roadmap, /a PR #193 foi apenas o encerramento documental da fase 192/);
@@ -77,6 +79,14 @@ test('roadmap registra a fase 194 e preserva o encerramento documental da 192', 
   assert.match(roadmap, /- estado: Concluida;/);
   assert.match(roadmap, /- PR: `#192`;/);
   assert.match(roadmap, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
+  assert.match(roadmap, /Estado final:/);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
+  assert.match(roadmap, /- situacao: Fase 198 concluida;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmap, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
+  assert.match(roadmap, /- resultado: apto com ressalvas;/);
+  assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
   assert.equal(roadmap.includes('Fase 195 -'), false);
   assert.equal(roadmap.includes('Fase 191 -'), false);
   assert.equal(roadmap.includes('Fase 193 -'), false);

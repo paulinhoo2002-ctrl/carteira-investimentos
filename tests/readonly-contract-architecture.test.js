@@ -282,7 +282,7 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /- HEAD \/ `origin\/main`: `977cd624648c957a10cd8df5fa265313f630ce05`/);
   assert.match(roadmap, /- PR `#197`: merged e closed \(encerramento documental da fase 196\)/);
   assert.match(roadmap, /- PR `#194`: merged e closed \(encerramento funcional da fase 194\)/);
-  assert.match(roadmap, /- fase atual: 198;/);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
   assert.equal(roadmap.includes('futura PR'), false, 'Roadmap nao pode usar referencia futura para a PR da Fase 189');
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
   assert.match(roadmap, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
@@ -298,14 +298,15 @@ function assertRoadmapPhaseShas(roadmap) {
 function assertRoadmapCurrentPhase198State(roadmap) {
   const currentState = extractRoadmapPhaseSection(roadmap, '### Estado atual', '### Fase 189');
 
-  assert.match(currentState, /- fase atual: 198;/);
-  assert.match(currentState, /- nome: Auditoria geral do sistema em producao;/);
-  assert.match(currentState, /- branch atual: audit\/phase-198-production-system-review;/);
-  assert.match(currentState, /- SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`;/);
-  assert.match(currentState, /- situacao: em auditoria;/);
-  assert.match(currentState, /- PR atual: pendente;/);
-  assert.match(currentState, /- implementacao ativa: auditoria e diagnostico, sem nova funcionalidade;/);
-  assert.match(currentState, /- Fase 198 aberta para auditoria geral do sistema em producao;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;/);
+  assert.match(currentState, /- situacao: Fase 198 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- PR `#198` merged e closed \(encerramento da auditoria\);/);
+  assert.match(currentState, /- resultado da auditoria: apto com ressalvas;/);
+  assert.match(currentState, /- risco residual principal: responsividade em 768px;/);
   assert.match(currentState, /- Fase 194 concluida pela PR #194;/);
   assert.match(currentState, /- a fase 190 permanece concluida;/);
   assert.match(currentState, /- a PR #191 foi apenas o encerramento documental;/);
@@ -316,7 +317,7 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.equal(currentState.includes('em desenvolvimento'), false, 'Estado atual nao pode ficar em desenvolvimento');
   assert.equal(currentState.includes('Fase 194 concluida'), true, 'Estado atual precisa registrar o encerramento da fase 194');
   assert.equal(currentState.includes('Fase 196'), true, 'Estado atual precisa registrar a fase 196 concluida');
-  assert.equal(currentState.includes('Fase 198'), true, 'Estado atual precisa registrar a fase 198 ativa');
+  assert.equal(currentState.includes('Fase 198'), true, 'Estado atual precisa registrar a fase 198 concluida');
   assert.equal(currentState.includes('Fase 195'), false, 'Roadmap nao pode abrir Fase 195');
 
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
@@ -349,6 +350,14 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
   assert.match(roadmap, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
+  assert.match(roadmap, /Estado final:/);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
+  assert.match(roadmap, /- situacao: Fase 198 concluida;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmap, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
+  assert.match(roadmap, /- resultado: apto com ressalvas;/);
+  assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
 }
 
 function assertModernDistIgnored() {
