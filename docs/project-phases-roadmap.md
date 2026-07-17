@@ -4,12 +4,13 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 194;
-- branch atual: feat/dividends-final-polish;
-- SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`
-- situacao: Fase 194 em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;
+- fase atual: nenhuma;
+- branch atual: main;
+- SHA-base: `78e7da439cd8a041f13498d0924d1f107acf72e3`;
+- situacao: Fase 194 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- Fase 194 concluida pela PR #194;
 - uma branch por fase
 - uma PR por objetivo
 - Caveman: ativo
@@ -96,17 +97,19 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: 194;
+- fase atual: nenhuma;
 - nome da fase: Finalizacao objetiva da aba Dividendos;
-- branch atual: feat/dividends-final-polish;
-- SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`;
-- situacao: Fase 194 em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;
+- branch atual: main;
+- SHA-base: `78e7da439cd8a041f13498d0924d1f107acf72e3`;
+- situacao: Fase 194 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- Fase 194 concluida pela PR #194;
 - a fase 190 permanece concluida;
 - a PR #191 foi apenas o encerramento documental;
 - a PR #193 foi apenas o encerramento documental da fase 192;
 - nao existe Fase 191 funcional.
+- a fase 195 nao existe sem autorizacao explicita.
 - Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 - regra de governanca: SHAs de base e SHAs finais da main ficam no roadmap; heads transitorios ficam no historico da PR e nao sao autorreferenciados no documento versionado;
 
@@ -479,24 +482,27 @@ Objetivo:
 - melhorar a lista de recebimentos recentes;
 - concluir a aba Dividendos sem ampliar o escopo.
 
-Estado atual:
+Estado final:
 
-- fase atual: 194;
+- fase atual: nenhuma;
 - nome da fase: Finalizacao objetiva da aba Dividendos;
-- branch atual: feat/dividends-final-polish;
+- branch original: feat/dividends-final-polish;
 - SHA-base: `9762faa4f42fc1c584866436131a4cdec3926565`;
-- situacao: em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: grafico, distribuicao por ativo e recebimentos recentes;
+- situacao: Fase 194 concluida;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- PR `#194`: merged e closed (encerramento funcional da fase 194);
 - PR `#193`: merged e closed (encerramento documental da fase 192);
 - a fase 192 permanece concluida;
 - a fase 193 foi documental, sem fase funcional;
-- a fase 194 e a proxima fase funcional autorizada.
+- a fase 194 nao deixa fase funcional ativa;
+- a fase 195 nao existe sem autorizacao explicita.
 
 Entregas:
 - grafico de evolucao mensal legivel e acessivel;
 - distribuicao por ativo organizada com primeira visao limitada e opcao segura de expandir;
 - lista de recebimentos recentes com edicao e exclusao preservadas, leitura clara e sem scroll horizontal global.
+- evidencias validadas: 390px em coluna sem rolagem horizontal global; 1366px com 12 meses, tooltips acessiveis, distribuicao ordenada, expansao funcionando e recebimentos completos; 1920px com layout estavel, sem overflow horizontal e sem erros no console; preview publico exigiu acesso Google; validacao visual final executada em localhost autorizado; nenhuma alteracao de codigo foi necessaria depois da validacao visual.
 
 Critérios de conclusao:
 - grafico, distribuicao e recebimentos revisados no desktop e no mobile;
