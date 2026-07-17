@@ -3727,6 +3727,8 @@ let S = {
   irpfFinalOpen:false,
   activeAssetsGroup:'',
   assetsInnerTab:'patrimonio',
+  assetsPerformanceClassFilter:'all',
+  assetsPerformanceSort:'result-desc',
   assetSort:{},
   dashPeriod:12, dashType:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
@@ -4497,8 +4499,9 @@ function load(){
         if(Array.isArray(d.proventos)) S.proventos = d.proventos;
         if(Array.isArray(d.rfEvents))  S.rfEvents  = normalizeRfEvents(d.rfEvents);
       }
-      if(d.tab)                       S.tab       = d.tab==='ranking' ? 'ativos' : d.tab==='renda-fixa' ? 'ativos' : d.tab;
+      if(d.tab)                       S.tab       = d.tab==='ranking' ? 'ativos' : ['renda-fixa','desempenho'].includes(d.tab) ? 'ativos' : d.tab;
       if(d.tab==='renda-fixa')        S.assetsInnerTab = 'renda-fixa';
+      if(d.tab==='desempenho')        S.assetsInnerTab = 'desempenho';
       if(d.divGoal !== undefined)     S.divGoal   = Number(d.divGoal)||0;
       if(d.hideValues !== undefined)  S.hideValues = !!d.hideValues;
       if(d.apHistoryOpen !== undefined) S.apHistoryOpen = !!d.apHistoryOpen;
@@ -15657,12 +15660,281 @@ function assetAnalysisBlock(rowsInput){
     </div>
   </div>`;
 }
+function hasOwnFiniteNumber(source, keys){
+  if(!source || typeof source!=='object') return false;
+  return keys.some(key=>{
+    if(!Object.prototype.hasOwnProperty.call(source,key)) return false;
+    const raw=source[key];
+    if(raw==null) return false;
+    const text=String(raw).trim();
+    if(!text) return false;
+    const num=Number(text.replace(',', '.'));
+    return Number.isFinite(num);
+  });
+}
+function assetPerformanceOverviewRows(){
+  const assets=Array.isArray(S.assets) ? S.assets : [];
+  const portfolioTotal=assets.reduce((sum,a)=>{
+    const current=assetCurrentValue(a);
+    return sum + (Number.isFinite(current) ? current : 0);
+  },0);
+  return assets.map((asset, index)=>{
+    const ticker=String(asset?.ticker||'').trim().toUpperCase();
+    const name=assetRfName(asset) || String(asset?.name||asset?.title||asset?.product||'').trim();
+    const type=normalizeType(asset?.type || metaTicker(asset?.ticker).type || 'Ação','Ação');
+    const isRF=type==='Renda Fixa';
+    const sector=String(asset?.sector||'').trim() || '—';
+    const currentKeys=isRF
+      ? ['rf_liquid_value','fixed_current_value','rf_gross_value','current_value','current_price']
+      : ['current_price','current_value'];
+    const appliedKeys=isRF
+      ? ['rf_applied_value','fixed_initial_value','avg_price','applied_value']
+      : ['avg_price','applied_value'];
+    const hasCurrentSource=hasOwnFiniteNumber(asset, currentKeys);
+    const hasAppliedSource=hasOwnFiniteNumber(asset, appliedKeys);
+    const hasAnyFinancialSource=hasCurrentSource || hasAppliedSource;
+    const hasPerformanceData=hasCurrentSource && hasAppliedSource;
+    const current=hasCurrentSource ? assetCurrentValue(asset) : null;
+    const applied=hasAppliedSource ? assetAppliedValue(asset) : null;
+    const result=hasPerformanceData ? assetJurosValue(asset) : null;
+    const resultPct=hasPerformanceData
+      ? (applied===0 ? (current===0 ? 0 : null) : assetRentabPct(asset))
+      : null;
+    const share=Number.isFinite(current) && portfolioTotal>0 ? (current/portfolioTotal)*100 : null;
+    let statusLabel='Dados insuficientes';
+    let statusTone='muted';
+    if(hasPerformanceData){
+      if(result>0){ statusLabel='Positivo'; statusTone='ok'; }
+      else if(result<0){ statusLabel='Negativo'; statusTone='danger'; }
+      else if(result===0){ statusLabel='Estavel'; statusTone='info'; }
+    }
+    return {
+      index,
+      ticker,
+      name,
+      label: ticker || name || 'Sem ticker',
+      type,
+      typeKey: normTypeKey(type),
+      sector,
+      applied,
+      current,
+      result,
+      resultPct,
+      share,
+      hasCurrentSource,
+      hasAppliedSource,
+      hasAnyFinancialSource,
+      hasPerformanceData,
+      statusLabel,
+      statusTone
+    };
+  });
+}
+function assetPerformanceOverviewSortRows(rows, sortBy){
+  const list=[...rows];
+  const sort=String(sortBy||'result-desc');
+  const compareText=(a,b)=>String(a.label||a.ticker||'').localeCompare(String(b.label||b.ticker||''),'pt-BR',{sensitivity:'base'});
+  const compareNumber=(a,b,field,desc=true)=>{
+    const av=Number(a?.[field]);
+    const bv=Number(b?.[field]);
+    const aValid=Number.isFinite(av);
+    const bValid=Number.isFinite(bv);
+    if(aValid!==bValid) return aValid ? -1 : 1;
+    if(!aValid) return compareText(a,b);
+    if(av===bv) return compareText(a,b);
+    return desc ? (bv-av) : (av-bv);
+  };
+  list.sort((a,b)=>{
+    if(sort==='result-asc') return compareNumber(a,b,'result',false);
+    if(sort==='pct-desc') return compareNumber(a,b,'resultPct',true);
+    if(sort==='pct-asc') return compareNumber(a,b,'resultPct',false);
+    if(sort==='current-desc') return compareNumber(a,b,'current',true);
+    if(sort==='current-asc') return compareNumber(a,b,'current',false);
+    if(sort==='share-desc') return compareNumber(a,b,'share',true);
+    if(sort==='ticker-asc') return compareText(a,b);
+    return compareNumber(a,b,'result',true);
+  });
+  return list;
+}
+function assetPerformanceOverviewRowHtml(row, compact=false){
+  const resultWidth=Number.isFinite(row.resultPct) ? Math.max(8, Math.min(100, Math.abs(row.resultPct))) : 8;
+  const currentText=Number.isFinite(row.current) ? fmt(row.current) : '—';
+  const appliedText=Number.isFinite(row.applied) ? fmt(row.applied) : '—';
+  const resultText=Number.isFinite(row.result) ? fmt(row.result) : '—';
+  const resultPctText=Number.isFinite(row.resultPct) ? fmtP(row.resultPct) : '—';
+  const shareText=Number.isFinite(row.share) ? row.share.toFixed(1)+'%' : '—';
+  const subLine=`${esc(row.type)}${row.sector && row.sector !== '—' ? ` · ${esc(row.sector)}` : ''}`;
+  const sourceLine=Number.isFinite(row.current) || Number.isFinite(row.applied)
+    ? `Aplicado ${appliedText} · Atual ${currentText}`
+    : 'Dados insuficientes';
+  return `<div class="perf-row ${compact ? 'comp' : ''}">
+    <div class="perf-left">
+      <div class="perf-top">
+        <div class="perf-ticker">${esc(row.label)}</div>
+        <div class="perf-val">${esc(subLine)}</div>
+      </div>
+      <div class="perf-bar"><div class="perf-fill" style="width:${resultWidth.toFixed(0)}%"></div></div>
+    </div>
+    <div style="text-align:right;min-width:0">
+      <div class="perf-pct">${resultPctText}</div>
+      <div class="perf-amt">${resultText}</div>
+      <div class="perf-val" style="margin-top:2px">${esc(sourceLine)} · ${shareText} da carteira</div>
+      <div class="analysis-pill ${esc(row.statusTone)}" style="display:inline-flex;margin-top:6px">${esc(row.statusLabel)}</div>
+    </div>
+  </div>`;
+}
+function assetPerformanceOverviewPanel(){
+  const rows=assetPerformanceOverviewRows();
+  const classFilter=String(S.assetsPerformanceClassFilter||'all');
+  const sortBy=String(S.assetsPerformanceSort||'result-desc');
+  const filteredRows=rows.filter(row=>classFilter==='all' || row.type===classFilter);
+  const orderedRows=assetPerformanceOverviewSortRows(filteredRows, sortBy);
+  const validRows=orderedRows.filter(row=>row.hasPerformanceData);
+  const positiveRows=validRows.filter(row=>Number.isFinite(row.result) && row.result>0).slice(0,4);
+  const negativeRows=validRows.filter(row=>Number.isFinite(row.result) && row.result<0).slice(0,4);
+  const insufficientRows=rows.filter(row=>!row.hasPerformanceData);
+  const zeroRows=validRows.filter(row=>Number.isFinite(row.result) && row.result===0);
+  const topPositive=[...validRows].filter(row=>Number.isFinite(row.result) && row.result>0).sort((a,b)=>b.result-a.result || (b.resultPct||0)-(a.resultPct||0))[0] || null;
+  const topNegative=[...validRows].filter(row=>Number.isFinite(row.result) && row.result<0).sort((a,b)=>a.result-b.result || (a.resultPct||0)-(b.resultPct||0))[0] || null;
+  const portfolio=cx();
+  const summaryCards=[
+    { label:'Carteira atual', value:fmt(portfolio.tC), sub:'Valor oficial da carteira', tone:'info' },
+    { label:'Resultado consolidado', value:fmt(portfolio.tG), sub:'Diferença entre atual e aplicado', tone:portfolio.tG>=0 ? 'ok' : 'danger' },
+    { label:'Rentabilidade', value:portfolio.tI>0 ? fmtP(portfolio.tGP) : '—', sub:'Baseada no capital aplicado', tone:portfolio.tGP>=0 ? 'ok' : 'danger' },
+    { label:'Sem base', value:String(insufficientRows.length), sub:'Ativos sem leitura oficial suficiente', tone:insufficientRows.length ? 'warn' : 'muted' }
+  ];
+  const classOptions=['all', ...TYPE_ORDER].filter((type,idx,arr)=>arr.indexOf(type)===idx);
+  const sortOptions=[
+    ['result-desc','Resultado maior'],
+    ['result-asc','Resultado menor'],
+    ['pct-desc','Rentabilidade maior'],
+    ['pct-asc','Rentabilidade menor'],
+    ['current-desc','Valor atual maior'],
+    ['current-asc','Valor atual menor'],
+    ['share-desc','Maior peso'],
+    ['ticker-asc','Ticker A-Z']
+  ];
+  const bestBody=positiveRows.length
+    ? positiveRows.map(row=>assetPerformanceOverviewRowHtml(row,true)).join('')
+    : '<div class="perf-empty">Nenhum ativo com resultado positivo na visao atual.</div>';
+  const worstBody=negativeRows.length
+    ? negativeRows.map(row=>assetPerformanceOverviewRowHtml(row,true)).join('')
+    : '<div class="perf-empty">Nenhum ativo com resultado negativo na visao atual.</div>';
+  const listBody=orderedRows.length
+    ? orderedRows.map(row=>assetPerformanceOverviewRowHtml(row)).join('')
+    : '<div class="perf-empty">Nenhum ativo combina com os filtros atuais.</div>';
+  return `<div class="asset-inner-panel">
+    <div class="sh">
+      <div>
+        <div class="st">Painel consolidado de desempenho dos ativos</div>
+        <div class="mu" style="font-size:12px;margin-top:4px">Leitura oficial de resultado em reais e percentual. Zero real permanece 0; ausencia fica como sem base.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="analysis-pill info">${rows.length} ativos</span>
+        <span class="analysis-pill ${insufficientRows.length ? 'warn' : 'ok'}">${insufficientRows.length ? `${insufficientRows.length} sem base` : 'Base completa'}</span>
+      </div>
+    </div>
+    <div class="analysis-summary">
+      ${summaryCards.map(card=>assetSummaryCard(card.label, card.value, card.sub, card.tone)).join('')}
+    </div>
+    <div class="perf-card comp" style="margin-top:10px">
+      <div class="perf-title" style="margin-bottom:0">
+        <div>
+          <div class="perf-h">Filtros oficiais</div>
+          <div class="perf-sub">Filtre por classe e ordene por resultado, rentabilidade ou valor atual.</div>
+        </div>
+        <div class="perf-badge">${validRows.length} com leitura</div>
+      </div>
+      <div class="dash-filters" style="margin-top:2px">
+        ${classOptions.map(type=>`<button class="dash-chip ${classFilter===type?'on':''}" onclick="setAssetsPerformanceClassFilter(${JSON.stringify(type)})">${esc(type==='all' ? 'Todas as classes' : type)}</button>`).join('')}
+      </div>
+      <div class="perf-grid" style="margin-top:8px;grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div style="display:grid;gap:6px">
+          <div class="fl" style="margin-bottom:0">Ordenacao</div>
+          <select id="assets-performance-sort" onchange="setAssetsPerformanceSort(this.value)" style="width:100%;min-width:0">
+            ${sortOptions.map(([value,label])=>`<option value="${value}" ${sortBy===value?'selected':''}>${esc(label)}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:grid;gap:6px">
+          <div class="fl" style="margin-bottom:0">Visao da base</div>
+          <div class="analysis-pill muted" style="justify-content:center;min-height:38px;align-items:center">${validRows.length} linhas consolidadas${zeroRows.length ? ` · ${zeroRows.length} empate(s)` : ''}</div>
+        </div>
+      </div>
+      <div class="mu" style="font-size:11px;line-height:1.4;margin-top:2px">Fontes oficiais: aplicado, atual, resultado e rentabilidade do legado. Nao duplica calculo financeiro; so lê o que ja existe.</div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-card hi">
+        <div class="perf-title">
+          <div>
+            <div class="perf-h">Melhores ativos</div>
+            <div class="perf-sub">Maior resultado positivo na visao atual.</div>
+          </div>
+          <div class="perf-badge">${topPositive ? esc(topPositive.label) : '—'}</div>
+        </div>
+        <div class="perf-list">${bestBody}</div>
+      </div>
+      <div class="perf-card lo">
+        <div class="perf-title">
+          <div>
+            <div class="perf-h">Piores ativos</div>
+            <div class="perf-sub">Maior resultado negativo na visao atual.</div>
+          </div>
+          <div class="perf-badge">${topNegative ? esc(topNegative.label) : '—'}</div>
+        </div>
+        <div class="perf-list">${worstBody}</div>
+      </div>
+      <div class="perf-card comp">
+        <div class="perf-title">
+          <div>
+            <div class="perf-h">Leitura da base</div>
+            <div class="perf-sub">Resumo do que o legado ja calcula sem inventar formula nova.</div>
+          </div>
+          <div class="perf-badge">${filteredRows.length} filtrados</div>
+        </div>
+        <div class="perf-comp-body">
+          <div class="perf-comp-side" style="min-width:0">
+            <div class="dashboard-legend">
+              <div class="dashboard-legend-item"><span class="dashboard-legend-dot" style="background:#34d399"></span>Lucro <strong>${validRows.filter(row=>Number.isFinite(row.result) && row.result>0).length}</strong></div>
+              <div class="dashboard-legend-item"><span class="dashboard-legend-dot" style="background:#f87171"></span>Prejuizo <strong>${validRows.filter(row=>Number.isFinite(row.result) && row.result<0).length}</strong></div>
+              <div class="dashboard-legend-item"><span class="dashboard-legend-dot" style="background:#60a5fa"></span>Empate <strong>${zeroRows.length}</strong></div>
+              <div class="dashboard-legend-item"><span class="dashboard-legend-dot" style="background:#fbbf24"></span>Sem base <strong>${insufficientRows.length}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="perf-card comp" style="margin-top:10px">
+      <div class="perf-title">
+        <div>
+          <div class="perf-h">Lista consolidada</div>
+          <div class="perf-sub">Ordenada por ${sortOptions.find(([value])=>value===sortBy)?.[1] || 'Resultado maior'}. Filtros aplicados acima.</div>
+        </div>
+        <div class="perf-badge">${orderedRows.length} ativos</div>
+      </div>
+      <div class="perf-list">${listBody}</div>
+    </div>
+  </div>`;
+}
 function setAssetsAnalysisRankingMode(mode){
   S.assetsAnalysisRankingMode = ['positions','concentration','best','worst','opportunity'].includes(mode) ? mode : 'positions';
   render();
 }
 function setAssetsInnerTab(tab){
-  S.assetsInnerTab = ['analise','renda-fixa'].includes(tab) ? tab : 'patrimonio';
+  S.assetsInnerTab = ['analise','desempenho','renda-fixa'].includes(tab) ? tab : 'patrimonio';
+  if(S.assetsInnerTab==='desempenho'){
+    S.assetsPerformanceClassFilter = ['all', ...TYPE_ORDER].includes(String(S.assetsPerformanceClassFilter||'all')) ? String(S.assetsPerformanceClassFilter||'all') : 'all';
+    S.assetsPerformanceSort = ['result-desc','result-asc','pct-desc','pct-asc','current-desc','current-asc','share-desc','ticker-asc'].includes(String(S.assetsPerformanceSort||'result-desc')) ? String(S.assetsPerformanceSort||'result-desc') : 'result-desc';
+  }
+  render();
+}
+function setAssetsPerformanceClassFilter(value){
+  const allowed=['all', ...TYPE_ORDER];
+  S.assetsPerformanceClassFilter = allowed.includes(String(value||'')) ? String(value) : 'all';
+  render();
+}
+function setAssetsPerformanceSort(value){
+  const allowed=['result-desc','result-asc','pct-desc','pct-asc','current-desc','current-asc','share-desc','ticker-asc'];
+  S.assetsPerformanceSort = allowed.includes(String(value||'')) ? String(value) : 'result-desc';
   render();
 }
 function isDividendSectionOpen(section){
@@ -17939,6 +18211,7 @@ function content(){
   if(S.tab==='aportes')   return apTab();
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
+  if(S.tab==='desempenho')return ativos();
   if(S.tab==='renda-fixa')return ativos();
   if(S.tab==='irpf')      return irpfTabPremium();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
@@ -19401,7 +19674,7 @@ function frmA(){
   </div>`;
 }
 function ativos(){
-  const innerTab=['analise','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
+  const innerTab=['analise','desempenho','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const assetMetricsCache=new Map();
   const getAssetMetrics=a=>{
     if(assetMetricsCache.has(a)) return assetMetricsCache.get(a);
@@ -19616,9 +19889,10 @@ function ativos(){
   <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
     <button class="asset-inner-tab ${innerTab==='patrimonio'?'on':''}" onclick="setAssetsInnerTab('patrimonio')" role="tab" aria-selected="${innerTab==='patrimonio'?'true':'false'}">Patrimônio</button>
     <button class="asset-inner-tab ${innerTab==='analise'?'on':''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab==='analise'?'true':'false'}">Análise</button>
+    <button class="asset-inner-tab ${innerTab==='desempenho'?'on':''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab==='desempenho'?'true':'false'}">Desempenho</button>
     <button class="asset-inner-tab ${innerTab==='renda-fixa'?'on':''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab==='renda-fixa'?'true':'false'}">Renda Fixa</button>
   </div>
-  ${innerTab==='analise' ? analysisPanel : innerTab==='renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : patrimonyPanel}`;
+  ${innerTab==='analise' ? analysisPanel : innerTab==='desempenho' ? assetPerformanceOverviewPanel() : innerTab==='renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : patrimonyPanel}`;
 }
 // APORTES
 // ══════════════════════════════════════
@@ -21916,12 +22190,13 @@ function mobileMenuDrawer(){
 }
 function go(t){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
-  const nextTab=t==='renda-fixa' ? 'ativos' : t;
+  const nextTab=['renda-fixa','desempenho'].includes(t) ? 'ativos' : t;
   S.tab=nextTab;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
   if(t==='aportes') S.aportesViewMode='resumo';
   if(t==='renda-fixa') S.assetsInnerTab='renda-fixa';
+  if(t==='desempenho') S.assetsInnerTab='desempenho';
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();

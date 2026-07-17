@@ -4,21 +4,18 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- branch atual: main;
-- SHA-base: `3c784714265505efa763e624bbaf8bacaa467ba0`;
-- situacao: Fase 200 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
-- PR `#198` merged e closed (encerramento da auditoria);
-- resultado da auditoria: apto com ressalvas;
-- risco residual principal: responsividade em 768px;
-- nenhuma Fase 199 funcional;
+- fase atual: 202;
+- branch atual: `feat/phase-202-assets-performance-overview`;
+- SHA-base: `9cb53a259dbafefe92704f976c31264698651a09`;
+- situacao: Fase 202 em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: painel consolidado de desempenho dos ativos;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
-- nenhuma Fase 202 ativa.
+- nenhuma Fase 199 funcional;
+- nenhuma Fase 204 ativa;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -34,8 +31,8 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 Base de referencia desta fase:
 
-- branch: `main`
-- HEAD / `origin/main`: `3c784714265505efa763e624bbaf8bacaa467ba0`
+- branch: `feat/phase-202-assets-performance-overview`
+- HEAD / `origin/main`: `9cb53a259dbafefe92704f976c31264698651a09`
 - PR `#200`: merged e closed (encerramento funcional da fase 200)
 - PR `#198`: merged e closed (encerramento da auditoria)
 - PR `#196`: merged e closed (encerramento funcional da fase 196)
@@ -444,49 +441,80 @@ Rollback:
 - remover os documentos de decisao e o teste documental desta fase;
 - manter contrato, bridge, adapter, host, shell moderno readonly e fases anteriores intactos.
 
-## 11. Sequencia planejada apos a Fase 200
+## 19. Fase 202 - Painel consolidado de desempenho dos ativos
 
-Planejadas e nao autorizadas:
+Objetivo:
 
-### Fase 202 — Painel consolidado de desempenho dos ativos
-
-- objetivo: mostrar melhores e piores ativos;
+- mostrar melhores e piores ativos;
 - resultado em reais e percentual;
 - filtros por classe;
 - ordenacao;
 - usar somente numeros oficiais existentes;
-- nao duplicar calculos financeiros;
-- estado: planejada e nao autorizada.
+- nao duplicar calculos financeiros.
 
-### Fase 204 — Evolução patrimonial
+Estado atual:
+
+- fase atual: 202;
+- nome da fase: Painel consolidado de desempenho dos ativos;
+- branch original: `feat/phase-202-assets-performance-overview`;
+- SHA-base: `9cb53a259dbafefe92704f976c31264698651a09`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: painel consolidado de desempenho dos ativos;
+- nenhuma Fase 204 ativa.
+
+Escopo:
+
+- leitura consolidada de desempenho;
+- comparacao rapida entre ativos;
+- explicabilidade sobre fonte oficial, dados suficientes e zero versus ausente;
+- responsividade em 390px, 768px, 1366px e 1920px;
+- sem nova formula financeira.
+
+Fora de escopo:
+
+- duplicar calculos oficiais;
+- inventar cotacao, preco medio ou patrimonio;
+- alterar schema, Firebase/Auth, storage ou dependencias;
+- iniciar a Fase 204.
+
+Rollback:
+
+- reverter os commits da fase e remover os documentos criados por ela.
+
+## 11. Sequencia planejada apos a Fase 202
+
+Planejadas e nao autorizadas:
+
+### Fase 204 - Evolucao patrimonial
 
 - objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;
 - usar somente historico real disponivel;
 - nao inventar valores passados;
 - estado: planejada e nao autorizada.
 
-### Fase 206 — Metas financeiras
+### Fase 206 - Metas financeiras
 
 - objetivo: acompanhar meta de R$ 1 milhao e renda passiva de R$ 4 mil mensais;
 - separar valores reais de projecoes;
 - nao misturar meta com simulacao;
 - estado: planejada e nao autorizada.
 
-### Fase 208 — Qualidade dos dados
+### Fase 208 - Qualidade dos dados
 
 - objetivo: localizar registros incompletos, duplicados ou inconsistentes;
 - diferenciar zero de ausente;
 - nao corrigir automaticamente;
 - estado: planejada e nao autorizada.
 
-### Fase 210 — Relatório executivo mensal
+### Fase 210 - Relatorio executivo mensal
 
 - objetivo: consolidar patrimonio, aportes, dividendos, distribuicao, desempenho e metas;
 - permitir impressao ou PDF;
 - preservar as fontes oficiais dos calculos;
 - estado: planejada e nao autorizada.
 
-### Fase 212 — Desempenho e manutenção técnica
+### Fase 212 - Desempenho e manutencao tecnica
 
 - objetivo: melhorar desempenho e manutencao;
 - revisar cache e service worker;
@@ -499,8 +527,7 @@ Planejadas e nao autorizadas:
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
 - a Fase 200 foi redefinida por decisao explicita;
-- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;
-- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212.
+- a sequencia futura planejada inclui 204, 206, 208, 210 e 212.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 

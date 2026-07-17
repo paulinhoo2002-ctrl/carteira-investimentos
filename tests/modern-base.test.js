@@ -461,6 +461,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
   assert.match(packageJson.scripts.test, /tests\/readonly-reports-data-contract\.test\.js/);
+  assert.match(packageJson.scripts.test, /tests\/phase-202-assets-performance-overview\.test\.js/);
   assert.match(packageJson.scripts.test, /tests\/dividends-visual-refinement\.test\.js/);
   assert.equal(
     packageJson.scripts.test.includes('tests/readonly-contract-architecture.test.js'),
@@ -468,6 +469,10 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.equal(
     packageJson.scripts.test.includes('tests/readonly-reports-data-contract.test.js'),
+    true,
+  );
+  assert.equal(
+    packageJson.scripts.test.includes('tests/phase-202-assets-performance-overview.test.js'),
     true,
   );
   assert.equal(
