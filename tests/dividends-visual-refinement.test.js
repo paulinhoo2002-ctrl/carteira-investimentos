@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { assertPhase200FutureSequence, assertPhase200RoadmapClosed } = require('./phase-200-future-sequence.guard');
+const { assertPhase202FutureSequence, assertPhase202RoadmapOpen } = require('./phase-202-assets-performance-overview.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -48,8 +48,8 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.match(indexHtml, /div-timeline\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/);
   assert.match(indexHtml, /aria-label="Tabela de hist.*rico mensal com rolagem horizontal"/);
 
-  assertPhase200RoadmapClosed(roadmap);
-  assertPhase200FutureSequence(roadmap);
+  assertPhase202RoadmapOpen(roadmap);
+  assertPhase202FutureSequence(roadmap);
 
   const phase200DocState = section(phase200Doc, '## Estado final', '## Redefinicao autorizada');
   const phase200DocRedef = section(phase200Doc, '## Redefinicao autorizada', '## Escopo');
