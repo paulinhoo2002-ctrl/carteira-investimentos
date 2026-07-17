@@ -56,12 +56,12 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.equal(roadmapPhase194Start >= 0, true, 'Seção da Fase 194 precisa existir');
   const roadmapPhase194 = roadmap.slice(roadmapPhase194Start);
 
-  assert.match(roadmapCurrent, /- fase atual: 196;/);
-  assert.match(roadmapCurrent, /- branch atual: `test\/fix-basic-ui-theme-bootstrap`;/);
-  assert.match(roadmapCurrent, /- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;/);
-  assert.match(roadmapCurrent, /- situacao: em desenvolvimento;/);
-  assert.match(roadmapCurrent, /- PR atual: pendente;/);
-  assert.match(roadmapCurrent, /- implementacao ativa: correcao do harness de teste, sem alteracao funcional;/);
+  assert.match(roadmapCurrent, /- fase atual: nenhuma;/);
+  assert.match(roadmapCurrent, /- branch atual: main;/);
+  assert.match(roadmapCurrent, /- SHA-base: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`;/);
+  assert.match(roadmapCurrent, /- situacao: Fase 196 concluida e aguardando nova autorizacao;/);
+  assert.match(roadmapCurrent, /- PR atual: nenhuma;/);
+  assert.match(roadmapCurrent, /- implementacao ativa: nenhuma;/);
   assert.match(roadmapCurrent, /- Fase 194 concluida pela PR #194;/);
   assert.match(roadmapCurrent, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
   assert.match(roadmapCurrent, /- a fase 195 nao existe sem autorizacao explicita\./);
@@ -84,6 +84,12 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.match(roadmapPhase194, /- a fase 194 nao deixa fase funcional ativa;/);
   assert.match(roadmapPhase194, /- a fase 195 nao existe sem autorizacao explicita\./);
   assert.match(roadmapPhase194, /evidencias validadas: 390px em coluna sem rolagem horizontal global;/);
+  assert.match(roadmapPhase194, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
+  assert.match(roadmapPhase194, /- fase atual: nenhuma;/);
+  assert.match(roadmapPhase194, /- situacao: Fase 196 concluida;/);
+  assert.match(roadmapPhase194, /- PR atual: nenhuma;/);
+  assert.match(roadmapPhase194, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmapPhase194, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
 
   assert.match(roadmap, /- estado: Concluida;/);
   assert.match(roadmap, /- PR: `#192`;/);

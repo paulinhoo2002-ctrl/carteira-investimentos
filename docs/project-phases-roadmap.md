@@ -4,12 +4,12 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 196;
-- branch atual: `test/fix-basic-ui-theme-bootstrap`;
-- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;
-- situacao: em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: correcao do harness de teste, sem alteracao funcional;
+- fase atual: nenhuma;
+- branch atual: main;
+- SHA-base: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`;
+- situacao: Fase 196 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
 - uma PR por objetivo
@@ -25,7 +25,8 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `ead79bddada44c74842398e53f6171764fc6ecdf`
+- HEAD / `origin/main`: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`
+- PR `#196`: merged e closed (encerramento funcional da fase 196)
 - PR `#195`: merged e closed (encerramento documental da fase 194)
 - workspace: limpo no inicio desta fase
 - PR `#194`: merged e closed (encerramento funcional da fase 194)
@@ -96,13 +97,13 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: 196;
+- fase atual: nenhuma;
 - nome da fase: estabilizacao do teste basico da interface;
-- branch atual: `test/fix-basic-ui-theme-bootstrap`;
-- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;
-- situacao: em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: correcao do harness de teste, sem alteracao funcional;
+- branch atual: main;
+- SHA-base: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`;
+- situacao: Fase 196 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
 - Fase 194 concluida pela PR #194;
 - a fase 190 permanece concluida;
 - a PR #191 foi apenas o encerramento documental;
@@ -519,37 +520,41 @@ Objetivo:
 - tornar a extracao do bootstrap de tema resistente a espacos, indentacao e quebras de linha;
 - preservar o comportamento funcional do app.
 
-Estado:
+Estado final:
 
-- fase atual: 196;
+- fase atual: nenhuma;
 - nome da fase: estabilizacao do teste basico da interface;
-- branch: `test/fix-basic-ui-theme-bootstrap`;
+- branch original: `test/fix-basic-ui-theme-bootstrap`;
 - SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;
-- situacao: em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: correcao do harness de teste, sem alteracao funcional;
+- situacao: Fase 196 concluida;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- PR `#196`: merged e closed (encerramento funcional da fase 196);
 - a fase 197 nao existe sem autorizacao explicita.
+
+Resultado principal:
+- extracao do bootstrap de tema estabilizada sem alterar o HTML funcional;
+- suporte a LF, CRLF, espacos e `style` com atributos preservado;
+- `tests/basic-ui.test.js` voltou a ficar verde;
+- `npm test` voltou a ficar verde.
+
+Evidencias validadas:
+- `node --test tests/basic-ui.test.js` verde;
+- `npm test` verde;
+- `npm run build` verde;
+- `npm run build:modern` verde;
+- `npm run test:modern` verde;
+- `git diff --check` verde;
+- `modern/dist` fora do indice;
+- nenhuma alteracao funcional;
+- nenhuma dependencia nova;
+- nenhum deploy manual.
 
 Escopo:
 - corrigir somente o teste, nao o HTML funcional;
 - manter o bootstrap de tema verificavel com extracao estrutural;
 - preservar `__LOCAL_TEST_MODE__`, `carteira_theme` e a leitura de tema local;
 - nao alterar calculos, Firebase/Auth, storage, schema ou dependencias.
-
-Validacoes planejadas:
-- `node --test tests/basic-ui.test.js`;
-- `npm test`;
-- `npm run build`;
-- `npm run build:modern`;
-- `npm run test:modern`;
-- `node --test tests/dividends-final-polish.test.js`;
-- `node --test tests/dividends-visual-refinement.test.js`;
-- `node --test tests/modern-architecture-decision.test.js`;
-- `node --test tests/readonly-contract-architecture.test.js`;
-- `git diff --check`;
-- `git status --short`;
-- `git diff --name-only origin/main...HEAD`;
-- `git ls-files modern/dist`.
 
 Rollback:
 - reverter apenas `tests/basic-ui.test.js` e a entrada documental desta fase;
