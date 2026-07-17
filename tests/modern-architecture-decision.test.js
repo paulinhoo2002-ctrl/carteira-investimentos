@@ -44,12 +44,12 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   const currentState = section(roadmap, '### Estado atual', '### Fase 189');
   const phase192 = section(roadmap, '## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos', '## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
 
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `78e7da439cd8a041f13498d0924d1f107acf72e3`;/);
-  assert.match(currentState, /- situacao: Fase 194 concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- fase atual: 196;/);
+  assert.match(currentState, /- branch atual: `test\/fix-basic-ui-theme-bootstrap`;/);
+  assert.match(currentState, /- SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`;/);
+  assert.match(currentState, /- situacao: em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: correcao do harness de teste, sem alteracao funcional;/);
   assert.match(currentState, /- Fase 194 concluida pela PR #194;/);
   assert.match(currentState, /- a fase 190 permanece concluida;/);
   assert.match(currentState, /- a PR #191 foi apenas o encerramento documental;/);
@@ -57,7 +57,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(currentState, /- nao existe Fase 191 funcional\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(currentState.includes('ciclo de modernizacao readonly encerrado'), false);
-  assert.equal(currentState.includes('em desenvolvimento'), false);
+  assert.equal(currentState.includes('em desenvolvimento'), true);
   assert.equal(currentState.includes('Fase 195'), false);
 
   assert.match(phase192, /- estado: Concluida;/);

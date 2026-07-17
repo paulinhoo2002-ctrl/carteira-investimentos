@@ -39,17 +39,17 @@ test('roadmap registra a fase 194 e preserva o encerramento documental da 192', 
     false,
     'docs/project-phases-roadmap.md nao pode conter BOM',
   );
-  assert.match(roadmap, /fase atual: nenhuma/);
-  assert.match(roadmap, /branch atual: main/);
-  assert.match(roadmap, /SHA-base: `78e7da439cd8a041f13498d0924d1f107acf72e3`/);
-  assert.match(roadmap, /situacao: Fase 194 concluida e aguardando nova autorizacao/);
-  assert.match(roadmap, /PR atual: nenhuma/);
-  assert.match(roadmap, /implementacao ativa: nenhuma/);
+  assert.match(roadmap, /fase atual: 196/);
+  assert.match(roadmap, /branch atual: `test\/fix-basic-ui-theme-bootstrap`/);
+  assert.match(roadmap, /SHA-base: `ead79bddada44c74842398e53f6171764fc6ecdf`/);
+  assert.match(roadmap, /situacao: em desenvolvimento/);
+  assert.match(roadmap, /PR atual: pendente/);
+  assert.match(roadmap, /implementacao ativa: correcao do harness de teste, sem alteracao funcional/);
   assert.match(roadmap, /Fase 194 concluida pela PR #194/);
   assert.match(roadmap, /a PR #191 foi apenas o encerramento documental/);
   assert.match(roadmap, /a PR #193 foi apenas o encerramento documental da fase 192/);
   assert.match(roadmap, /nao existe Fase 191 funcional/);
-  assert.match(roadmap, /PR `#192`: merged e closed \(encerramento funcional da fase 192\)/);
+  assert.match(roadmap, /PR `#194`: merged e closed \(encerramento funcional da fase 194\)/);
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
   assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);
   assert.match(roadmap, /- estado: Concluida;/);
