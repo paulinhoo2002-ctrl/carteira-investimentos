@@ -2,20 +2,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { assertPhase200FutureSequence } = require('./phase-200-future-sequence.guard');
+const { assertPhase200FutureSequence, assertPhase200RoadmapClosed } = require('./phase-200-future-sequence.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
-}
-
-function assertSection(text, startMarker, endMarker) {
-  const start = text.indexOf(startMarker);
-  assert.equal(start >= 0, true, `${startMarker} precisa existir`);
-  const end = text.indexOf(endMarker, start + startMarker.length);
-  assert.equal(end > start, true, `${endMarker} precisa existir depois de ${startMarker}`);
-  return text.slice(start, end);
 }
 
 test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
@@ -56,26 +48,11 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
 
-  const roadmapCurrent = assertSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const roadmapPhase194Start = roadmap.indexOf('## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
   assert.equal(roadmapPhase194Start >= 0, true, 'Secao da Fase 194 precisa existir');
   const roadmapPhase194 = roadmap.slice(roadmapPhase194Start);
 
-  assert.match(roadmapCurrent, /- fase atual: 200;/);
-  assert.match(roadmapCurrent, /- nome: Refinamento confiavel da tela de Dividendos;/);
-  assert.match(roadmapCurrent, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
-  assert.match(roadmapCurrent, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
-  assert.match(roadmapCurrent, /- situacao: em desenvolvimento;/);
-  assert.match(roadmapCurrent, /- redefinicao: autorizada explicitamente;/);
-  assert.match(roadmapCurrent, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
-  assert.match(roadmapCurrent, /- PR atual: pendente;/);
-  assert.match(roadmapCurrent, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
-  assert.match(roadmapCurrent, /- PR `#198` merged e closed \(encerramento da auditoria\);/);
-  assert.match(roadmapCurrent, /- resultado da auditoria: apto com ressalvas;/);
-  assert.match(roadmapCurrent, /- risco residual principal: responsividade em 768px;/);
-  assert.match(roadmapCurrent, /- nenhuma Fase 199 funcional;/);
-  assert.match(roadmapCurrent, /- Fase 194 concluida pela PR #194;/);
-  assert.match(roadmapCurrent, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
+  assertPhase200RoadmapClosed(roadmap);
 
   assert.match(roadmapPhase194, /Objetivo:/);
   assert.match(roadmapPhase194, /- melhorar o grafico de evolucao mensal;/);

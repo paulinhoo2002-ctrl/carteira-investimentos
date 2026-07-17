@@ -1,17 +1,30 @@
 # Fase 200 - Refinamento confiavel da tela de Dividendos
 
-## Contexto
+## Estado final
 
-A tela de Dividendos ja mostra dados oficiais do legado e precisa de um refinamento confiavel para deixar claro o que entra em "Recebido no mes", remover o destaque redundante de "Historico recente" da visao geral e manter o "Historico mensal" como a primeira secao principal da pagina.
+- fase concluida;
+- branch original: `feat/phase-200-dividends-trustworthy-overview`;
+- PR: `#200`;
+- modo: squash;
+- SHA final: `3c784714265505efa763e624bbaf8bacaa467ba0`;
+- implementacao ativa: nenhuma;
+- resultado: concluido;
+- nenhuma formula financeira nova;
+- nenhuma alteracao de schema;
+- nenhuma dependencia nova;
+- nenhuma Fase 202 iniciada.
 
 ## Redefinicao autorizada
 
 - esta fase foi redefinida por decisao explicita;
 - o objetivo anterior de painel consolidado de desempenho dos ativos nao foi cancelado;
 - esse objetivo foi movido para a Fase 202, ainda nao autorizada;
-- a prioridade imediata e tratar o risco real identificado em 768px e deixar a tela de Dividendos mais confiavel;
+- motivo: tratar primeiro o risco real identificado em 768px e melhorar a confiabilidade da tela de Dividendos;
 - nenhuma funcionalidade de desempenho de ativos foi iniciada;
-- nenhuma mudanca silenciosa de escopo permanece.
+
+## Contexto
+
+A tela de Dividendos foi refinada com dados oficiais do legado para deixar claro o que entra em "Recebido no mes", remover o destaque redundante de "Historico recente" da visao geral e manter o "Historico mensal" como a primeira secao principal da pagina.
 
 ## Objetivo
 
@@ -41,7 +54,7 @@ A tela de Dividendos ja mostra dados oficiais do legado e precisa de um refiname
 - copiar outra interface ou site;
 - alterar schema, Firebase/Auth, storage, cache ou dependencias;
 - remover edicao, exclusao ou filtros;
-- iniciar a Fase 201 ou qualquer fase futura sem autorizacao.
+- iniciar a Fase 202 ou qualquer fase futura sem autorizacao.
 
 ## Riscos
 
@@ -60,8 +73,14 @@ A tela de Dividendos ja mostra dados oficiais do legado e precisa de um refiname
 - nenhum numero financeiro novo e criado;
 - `npm run build`, `npm test`, `npm run build:modern` e `npm run test:modern` passam.
 
+## Conclusao
+
+- refinamento confiavel da tela de Dividendos concluido;
+- correcao de 768px registrada como concluida;
+- nenhuma Fase 202 ativa.
+
 ## Rollback
 
-- reverter os ajustes da fase 200;
+- reverter os ajustes documentais desta fase;
 - remover este documento e os testes desta entrega;
 - manter as fases readonly anteriores e o legado intactos.
