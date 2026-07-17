@@ -53,6 +53,8 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.match(currentState, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
   assert.match(currentState, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
   assert.match(currentState, /- situacao: em desenvolvimento;/);
+  assert.match(currentState, /- redefinicao: autorizada explicitamente;/);
+  assert.match(currentState, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
   assert.match(currentState, /- PR atual: pendente;/);
   assert.match(currentState, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
   assert.match(currentState, /- risco residual principal: responsividade em 768px;/);
@@ -60,7 +62,9 @@ test('aba dividendos preserva ordem visual confiavel', () => {
 
   assert.match(roadmap, /## 18\. Fase 200 - refinamento confiavel da tela de Dividendos/);
   assert.match(roadmap, /## 11\. Sequencia planejada apos a Fase 200/);
-  assert.match(roadmap, /- a Fase 200 e a fase atual; a sequencia futura comeca em 202\./);
+  assert.match(roadmap, /- a Fase 200 foi redefinida por decisao explicita;/);
+  assert.match(roadmap, /- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;/);
+  assert.match(roadmap, /- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212\./);
 
   const phase200Start = roadmap.indexOf('## 18. Fase 200 - refinamento confiavel da tela de Dividendos');
   assert.equal(phase200Start >= 0, true, 'Secao da Fase 200 precisa existir');
@@ -71,6 +75,8 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.match(phase200, /- manter "Historico mensal" como primeira secao principal da pagina;/);
   assert.match(phase200, /- corrigir o comportamento em 768px sem mexer em schema, dependencias ou fontes de verdade;/);
   assert.match(phase200, /- preservar edicao, exclusao, filtros, historico e acessibilidade\./);
+  assert.match(phase200, /- redefinicao: autorizada explicitamente;/);
+  assert.match(phase200, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
   assert.match(phase200, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
   assert.match(phase200, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
   assert.match(phase200, /- situacao: em desenvolvimento;/);
@@ -81,6 +87,10 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.match(phase200Doc, /- "Recebido no mes" fica claro e auditavel;/);
   assert.match(phase200Doc, /- "Historico recente" sai da visao geral;/);
   assert.match(phase200Doc, /- "Historico mensal" fica logo abaixo dos cards de resumo;/);
+  assert.match(phase200Doc, /- esta fase foi redefinida por decisao explicita;/);
+  assert.match(phase200Doc, /- o objetivo anterior de painel consolidado de desempenho dos ativos nao foi cancelado;/);
+  assert.match(phase200Doc, /- esse objetivo foi movido para a Fase 202, ainda nao autorizada;/);
+  assert.match(phase200Doc, /- nenhuma funcionalidade de desempenho de ativos foi iniciada;/);
   assert.match(phase200, /- `Recebido no mes` claramente explicado e sem ambiguidade de composicao;/);
   assert.match(phase200, /- `Historico mensal` em destaque na visao geral;/);
   assert.match(phase200, /- `Historico recente` fora da visao geral;/);

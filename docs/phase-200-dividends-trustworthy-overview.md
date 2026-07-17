@@ -4,6 +4,15 @@
 
 A tela de Dividendos ja mostra dados oficiais do legado e precisa de um refinamento confiavel para deixar claro o que entra em "Recebido no mes", remover o destaque redundante de "Historico recente" da visao geral e manter o "Historico mensal" como a primeira secao principal da pagina.
 
+## Redefinicao autorizada
+
+- esta fase foi redefinida por decisao explicita;
+- o objetivo anterior de painel consolidado de desempenho dos ativos nao foi cancelado;
+- esse objetivo foi movido para a Fase 202, ainda nao autorizada;
+- a prioridade imediata e tratar o risco real identificado em 768px e deixar a tela de Dividendos mais confiavel;
+- nenhuma funcionalidade de desempenho de ativos foi iniciada;
+- nenhuma mudanca silenciosa de escopo permanece.
+
 ## Objetivo
 
 - explicar a composicao de "Recebido no mes" com base em registros oficiais;

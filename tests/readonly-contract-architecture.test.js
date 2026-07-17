@@ -286,13 +286,17 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
   assert.match(roadmap, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
   assert.match(roadmap, /- situacao: em desenvolvimento;/);
+  assert.match(roadmap, /- redefinicao: autorizada explicitamente;/);
+  assert.match(roadmap, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
   assert.match(roadmap, /- PR atual: pendente;/);
   assert.match(roadmap, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
   assert.match(roadmap, /- PR `#198` merged e closed \(encerramento da auditoria\);/);
   assert.match(roadmap, /- resultado da auditoria: apto com ressalvas;/);
   assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
   assert.match(roadmap, /- nenhuma Fase 199 funcional;/);
-  assert.match(roadmap, /- a Fase 200 e a fase atual; a sequencia futura comeca em 202\./);
+  assert.match(roadmap, /- a Fase 200 foi redefinida por decisao explicita;/);
+  assert.match(roadmap, /- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;/);
+  assert.match(roadmap, /- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212\./);
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
   assert.match(roadmap, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
   assert.match(roadmap, /- nao existe Fase 191 funcional\./);
@@ -368,7 +372,15 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
   assert.match(roadmap, /## 18\. Fase 200 - refinamento confiavel da tela de Dividendos/);
   assert.match(roadmap, /## 11\. Sequencia planejada apos a Fase 200/);
-  assert.match(roadmap, /- a Fase 200 e a fase atual; a sequencia futura comeca em 202\./);
+  assert.match(roadmap, /### Fase 202 - Evolucao patrimonial/);
+  assert.match(roadmap, /### Fase 204 - Metas financeiras/);
+  assert.match(roadmap, /### Fase 206 - Qualidade dos dados/);
+  assert.match(roadmap, /### Fase 208 - Relatorio executivo mensal/);
+  assert.match(roadmap, /### Fase 210 - Desempenho e manutencao tecnica/);
+  assert.match(roadmap, /### Fase 212 - Desempenho e manutencao tecnica/);
+  assert.match(roadmap, /- a Fase 200 foi redefinida por decisao explicita;/);
+  assert.match(roadmap, /- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;/);
+  assert.match(roadmap, /- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212\./);
 }
 
 function assertModernDistIgnored() {

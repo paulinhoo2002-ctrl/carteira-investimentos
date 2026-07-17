@@ -49,6 +49,8 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(currentState, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
   assert.match(currentState, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
   assert.match(currentState, /- situacao: em desenvolvimento;/);
+  assert.match(currentState, /- redefinicao: autorizada explicitamente;/);
+  assert.match(currentState, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
   assert.match(currentState, /- PR atual: pendente;/);
   assert.match(currentState, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
   assert.match(currentState, /- head de revisao: consultavel na futura PR;/);
@@ -70,6 +72,12 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(phase192, /- modo: squash;/);
   assert.match(phase192, /- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;/);
   assert.match(phase192, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
+  assert.match(roadmap, /22\. 202 - painel consolidado de desempenho dos ativos/);
+  assert.match(roadmap, /23\. 204 - evolucao patrimonial/);
+  assert.match(roadmap, /24\. 206 - metas financeiras/);
+  assert.match(roadmap, /25\. 208 - qualidade dos dados/);
+  assert.match(roadmap, /26\. 210 - relatorio executivo mensal/);
+  assert.match(roadmap, /27\. 212 - desempenho e manutencao tecnica/);
 
   assert.match(roadmap, /## 10\. Fase 190 - decisao arquitetural da modernizacao/);
   assert.match(roadmap, /- inventario arquitetural consolidado com fronteiras, responsabilidades e riscos;/);

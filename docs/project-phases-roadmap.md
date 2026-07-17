@@ -9,6 +9,8 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - branch atual: `feat/phase-200-dividends-trustworthy-overview`;
 - SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;
 - situacao: em desenvolvimento;
+- redefinicao: autorizada explicitamente;
+- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;
 - PR atual: pendente;
 - implementacao ativa: refinamento confiavel da tela de Dividendos;
 - head de revisao: consultavel na futura PR;
@@ -161,6 +163,12 @@ Ordem oficial atual:
 19. 196 - estabilizacao do teste basico da interface
 20. 198 - auditoria geral do sistema em producao
 21. 200 - refinamento confiavel da tela de Dividendos
+22. 202 - painel consolidado de desempenho dos ativos
+23. 204 - evolucao patrimonial
+24. 206 - metas financeiras
+25. 208 - qualidade dos dados
+26. 210 - relatorio executivo mensal
+27. 212 - desempenho e manutencao tecnica
 
 Mudanca de ordem relevante:
 
@@ -443,7 +451,8 @@ Planejadas e nao autorizadas:
 
 - objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;
 - dados: usar somente historico real disponivel;
-- restricao: nao inventar valores passados.
+- restricao: nao inventar valores passados;
+- estado: planejada e nao autorizada.
 
 ### Fase 204 - Metas financeiras
 
@@ -465,6 +474,12 @@ Planejadas e nao autorizadas:
 
 ### Fase 210 - Desempenho e manutencao tecnica
 
+- objetivo: consolidar relatorio executivo mensal com visao mensal, impressao e PDF sem novos calculos;
+- dados: evidencias oficiais de patrimonio, aportes, dividendos, distribuicao, desempenho e metas;
+- restricao: preservar fontes oficiais dos calculos;
+
+### Fase 212 - Desempenho e manutencao tecnica
+
 - objetivo: melhorar desempenho e manutencao, revisar cache e service worker e reduzir complexidade desnecessaria;
 - dados: evidencias de performance e manutencao;
 - restricao: evitar reescrita ampla sem beneficio comprovado.
@@ -473,7 +488,9 @@ Planejadas e nao autorizadas:
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
-- a Fase 200 e a fase atual; a sequencia futura comeca em 202.
+- a Fase 200 foi redefinida por decisao explicita;
+- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;
+- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
@@ -669,6 +686,9 @@ Objetivo:
 - manter "Historico mensal" como primeira secao principal da pagina;
 - corrigir o comportamento em 768px sem mexer em schema, dependencias ou fontes de verdade;
 - preservar edicao, exclusao, filtros, historico e acessibilidade.
+- redefinicao: autorizada explicitamente;
+- o objetivo anterior de painel consolidado de desempenho dos ativos foi movido para a Fase 202;
+- nenhuma funcionalidade de desempenho de ativos foi iniciada.
 
 Estado atual:
 
@@ -677,6 +697,8 @@ Estado atual:
 - branch atual: `feat/phase-200-dividends-trustworthy-overview`;
 - SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;
 - situacao: em desenvolvimento;
+- redefinicao: autorizada explicitamente;
+- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;
 - PR atual: pendente;
 - implementacao ativa: refinamento confiavel da tela de Dividendos;
 - head de revisao: consultavel na futura PR;

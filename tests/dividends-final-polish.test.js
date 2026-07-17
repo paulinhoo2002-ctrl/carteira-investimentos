@@ -65,6 +65,8 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.match(roadmapCurrent, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
   assert.match(roadmapCurrent, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
   assert.match(roadmapCurrent, /- situacao: em desenvolvimento;/);
+  assert.match(roadmapCurrent, /- redefinicao: autorizada explicitamente;/);
+  assert.match(roadmapCurrent, /- objetivo anterior: Painel consolidado de desempenho dos ativos adiado para a Fase 202;/);
   assert.match(roadmapCurrent, /- PR atual: pendente;/);
   assert.match(roadmapCurrent, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
   assert.match(roadmapCurrent, /- PR `#198` merged e closed \(encerramento da auditoria\);/);
@@ -92,6 +94,12 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.match(roadmapPhase194, /- a fase 194 nao deixa fase funcional ativa;/);
   assert.match(roadmapPhase194, /- a fase 195 nao existe sem autorizacao explicita\./);
   assert.match(roadmapPhase194, /evidencias validadas: 390px em coluna sem rolagem horizontal global;/);
+  assert.match(roadmap, /22\. 202 - painel consolidado de desempenho dos ativos/);
+  assert.match(roadmap, /23\. 204 - evolucao patrimonial/);
+  assert.match(roadmap, /24\. 206 - metas financeiras/);
+  assert.match(roadmap, /25\. 208 - qualidade dos dados/);
+  assert.match(roadmap, /26\. 210 - relatorio executivo mensal/);
+  assert.match(roadmap, /27\. 212 - desempenho e manutencao tecnica/);
   assert.match(roadmapPhase194, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
   assert.match(roadmapPhase194, /- fase atual: nenhuma;/);
   assert.match(roadmapPhase194, /- situacao: Fase 196 concluida;/);
