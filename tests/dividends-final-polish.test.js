@@ -43,7 +43,7 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
 
   assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{monthlySection\}/s);
   assert.equal(overviewBlock.includes('${dividendOverviewRecentPanel(rows)}'), false);
-  assert.equal(overviewBlock.includes('HistÃ³rico recente'), false);
+  assert.equal(overviewBlock.includes('Histórico recente'), false);
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
   assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
