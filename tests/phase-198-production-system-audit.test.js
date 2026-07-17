@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const test = require('node:test');
+const { assertPhase200FutureSequence } = require('./phase-200-future-sequence.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -114,16 +115,8 @@ test('fase 198 continua registrada e a fase 200 assume o estado atual', () => {
   assert.match(phase200Doc, /768px/);
   assert.match(phase200Doc, /Rollback/);
 
-  assert.match(sequence, /### Fase 202 - Evolucao patrimonial/);
-  assert.match(sequence, /### Fase 204 - Metas financeiras/);
-  assert.match(sequence, /### Fase 206 - Qualidade dos dados/);
-  assert.match(sequence, /### Fase 208 - Relatorio executivo mensal/);
-  assert.match(sequence, /### Fase 210 - Desempenho e manutencao tecnica/);
-  assert.match(sequence, /### Fase 212 - Desempenho e manutencao tecnica/);
   assert.match(sequence, /nao existe Fase 199 funcional/);
-  assert.match(sequence, /a Fase 200 foi redefinida por decisao explicita;/);
-  assert.match(sequence, /o painel consolidado de desempenho dos ativos foi movido para a Fase 202;/);
-  assert.match(sequence, /a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212\./);
+  assertPhase200FutureSequence(roadmap);
   assert.equal(roadmap.includes('Fase 199 -'), false, 'Roadmap nao pode abrir Fase 199 funcional');
   assert.equal(roadmap.includes('- Fase 198 aberta para auditoria geral do sistema em producao;'), false, 'Roadmap nao pode manter Fase 198 aberta');
   assert.equal(execFileSync('git', ['ls-files', 'modern/dist'], { cwd: repoRoot, encoding: 'utf8' }).trim(), '', 'modern/dist nao pode entrar no indice');

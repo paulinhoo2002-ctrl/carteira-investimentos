@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const test = require('node:test');
+const { assertPhase200FutureSequence } = require('./phase-200-future-sequence.guard');
 
 const repoRoot = path.join(__dirname, '..');
 const modernRoot = path.join(repoRoot, 'modern');
@@ -372,15 +373,7 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
   assert.match(roadmap, /## 18\. Fase 200 - refinamento confiavel da tela de Dividendos/);
   assert.match(roadmap, /## 11\. Sequencia planejada apos a Fase 200/);
-  assert.match(roadmap, /### Fase 202 - Evolucao patrimonial/);
-  assert.match(roadmap, /### Fase 204 - Metas financeiras/);
-  assert.match(roadmap, /### Fase 206 - Qualidade dos dados/);
-  assert.match(roadmap, /### Fase 208 - Relatorio executivo mensal/);
-  assert.match(roadmap, /### Fase 210 - Desempenho e manutencao tecnica/);
-  assert.match(roadmap, /### Fase 212 - Desempenho e manutencao tecnica/);
-  assert.match(roadmap, /- a Fase 200 foi redefinida por decisao explicita;/);
-  assert.match(roadmap, /- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;/);
-  assert.match(roadmap, /- a sequencia futura planejada inclui 202, 204, 206, 208, 210 e 212\./);
+  assertPhase200FutureSequence(roadmap);
 }
 
 function assertModernDistIgnored() {

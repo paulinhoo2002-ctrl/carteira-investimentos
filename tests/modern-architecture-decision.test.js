@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { assertPhase200FutureSequence } = require('./phase-200-future-sequence.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -72,12 +73,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(phase192, /- modo: squash;/);
   assert.match(phase192, /- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;/);
   assert.match(phase192, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
-  assert.match(roadmap, /22\. 202 - painel consolidado de desempenho dos ativos/);
-  assert.match(roadmap, /23\. 204 - evolucao patrimonial/);
-  assert.match(roadmap, /24\. 206 - metas financeiras/);
-  assert.match(roadmap, /25\. 208 - qualidade dos dados/);
-  assert.match(roadmap, /26\. 210 - relatorio executivo mensal/);
-  assert.match(roadmap, /27\. 212 - desempenho e manutencao tecnica/);
+  assertPhase200FutureSequence(roadmap);
 
   assert.match(roadmap, /## 10\. Fase 190 - decisao arquitetural da modernizacao/);
   assert.match(roadmap, /- inventario arquitetural consolidado com fronteiras, responsabilidades e riscos;/);

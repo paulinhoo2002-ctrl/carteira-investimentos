@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { assertPhase200FutureSequence } = require('./phase-200-future-sequence.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -94,12 +95,7 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.match(roadmapPhase194, /- a fase 194 nao deixa fase funcional ativa;/);
   assert.match(roadmapPhase194, /- a fase 195 nao existe sem autorizacao explicita\./);
   assert.match(roadmapPhase194, /evidencias validadas: 390px em coluna sem rolagem horizontal global;/);
-  assert.match(roadmap, /22\. 202 - painel consolidado de desempenho dos ativos/);
-  assert.match(roadmap, /23\. 204 - evolucao patrimonial/);
-  assert.match(roadmap, /24\. 206 - metas financeiras/);
-  assert.match(roadmap, /25\. 208 - qualidade dos dados/);
-  assert.match(roadmap, /26\. 210 - relatorio executivo mensal/);
-  assert.match(roadmap, /27\. 212 - desempenho e manutencao tecnica/);
+  assertPhase200FutureSequence(roadmap);
   assert.match(roadmapPhase194, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
   assert.match(roadmapPhase194, /- fase atual: nenhuma;/);
   assert.match(roadmapPhase194, /- situacao: Fase 196 concluida;/);

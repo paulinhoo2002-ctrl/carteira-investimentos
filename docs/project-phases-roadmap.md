@@ -447,42 +447,51 @@ Rollback:
 
 Planejadas e nao autorizadas:
 
-### Fase 202 - Evolucao patrimonial
+### Fase 202 - Painel consolidado de desempenho dos ativos
 
-- objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;
-- dados: usar somente historico real disponivel;
-- restricao: nao inventar valores passados;
+- objetivo: mostrar melhores e piores ativos;
+- resultado em reais e percentual;
+- filtros por classe;
+- ordenacao;
+- usar somente numeros oficiais existentes;
+- nao duplicar calculos financeiros;
 - estado: planejada e nao autorizada.
 
-### Fase 204 - Metas financeiras
+### Fase 204 - Evolucao patrimonial
 
-- objetivo: acompanhar meta de R$ 1 milhao e meta de renda passiva de R$ 4 mil mensais;
-- dados: mostrar progresso real e separar valores reais de projecoes;
-- restricao: nao misturar meta com simulacao.
+- objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;
+- usar somente historico real disponivel;
+- nao inventar valores passados;
+- estado: planejada e nao autorizada.
 
-### Fase 206 - Qualidade dos dados
+### Fase 206 - Metas financeiras
+
+- objetivo: acompanhar meta de R$ 1 milhao e renda passiva de R$ 4 mil mensais;
+- separar valores reais de projecoes;
+- nao misturar meta com simulacao;
+- estado: planejada e nao autorizada.
+
+### Fase 208 - Qualidade dos dados
 
 - objetivo: localizar registros incompletos, duplicados ou inconsistentes;
-- dados: diferenciar zero de ausente;
-- restricao: nao corrigir automaticamente.
+- diferenciar zero de ausente;
+- nao corrigir automaticamente;
+- estado: planejada e nao autorizada.
 
-### Fase 208 - Relatorio executivo mensal
+### Fase 210 - Relatorio executivo mensal
 
 - objetivo: consolidar patrimonio, aportes, dividendos, distribuicao, desempenho e metas;
-- dados: permitir impressao ou PDF;
-- restricao: preservar fontes oficiais dos calculos.
-
-### Fase 210 - Desempenho e manutencao tecnica
-
-- objetivo: consolidar relatorio executivo mensal com visao mensal, impressao e PDF sem novos calculos;
-- dados: evidencias oficiais de patrimonio, aportes, dividendos, distribuicao, desempenho e metas;
-- restricao: preservar fontes oficiais dos calculos;
+- permitir impressao ou PDF;
+- preservar as fontes oficiais dos calculos;
+- estado: planejada e nao autorizada.
 
 ### Fase 212 - Desempenho e manutencao tecnica
 
-- objetivo: melhorar desempenho e manutencao, revisar cache e service worker e reduzir complexidade desnecessaria;
-- dados: evidencias de performance e manutencao;
-- restricao: evitar reescrita ampla sem beneficio comprovado.
+- objetivo: melhorar desempenho e manutencao;
+- revisar cache e service worker;
+- reduzir complexidade desnecessaria;
+- evitar reescrita ampla sem beneficio comprovado;
+- estado: planejada e nao autorizada.
 
 - a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
