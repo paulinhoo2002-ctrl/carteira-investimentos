@@ -37,6 +37,7 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.match(indexHtml, /Hist.*rico mensal/);
   assert.match(indexHtml, /<th>Total<\/th>/);
   assert.match(indexHtml, /<th>M.*dia<\/th>/);
+  assert.match(indexHtml, /function dividendOverviewRecentPanel\(rows\)/);
   assert.equal(indexHtml.includes('score: Number(row?.score) || 0'), false);
   assert.equal(indexHtml.includes('current.totalValue + amount'), false);
   assert.equal(indexHtml.includes('reduce((sum,row)=>sum+row.value,0)'), true, 'calculos oficiais antigos permanecem');
@@ -47,27 +48,31 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
     ? indexHtml.slice(overviewStart, bodyStart)
     : indexHtml;
 
+  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{monthlySection\}/s);
+  assert.equal(overviewBlock.includes('${dividendOverviewRecentPanel(rows)}'), false);
+  assert.equal(overviewBlock.includes('Histórico recente'), false);
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
   assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
 
-  const roadmapCurrent = assertSection(roadmap, '### Estado atual', '### Fase 189');
+  const roadmapCurrent = assertSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const roadmapPhase194Start = roadmap.indexOf('## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
-  assert.equal(roadmapPhase194Start >= 0, true, 'Seção da Fase 194 precisa existir');
+  assert.equal(roadmapPhase194Start >= 0, true, 'Secao da Fase 194 precisa existir');
   const roadmapPhase194 = roadmap.slice(roadmapPhase194Start);
 
-  assert.match(roadmapCurrent, /- fase atual: nenhuma;/);
-  assert.match(roadmapCurrent, /- branch atual: main;/);
-  assert.match(roadmapCurrent, /- SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;/);
-  assert.match(roadmapCurrent, /- situacao: Fase 198 concluida e aguardando nova autorizacao;/);
-  assert.match(roadmapCurrent, /- PR atual: nenhuma;/);
-  assert.match(roadmapCurrent, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmapCurrent, /- fase atual: 200;/);
+  assert.match(roadmapCurrent, /- nome: Refinamento confiavel da tela de Dividendos;/);
+  assert.match(roadmapCurrent, /- branch atual: `feat\/phase-200-dividends-trustworthy-overview`;/);
+  assert.match(roadmapCurrent, /- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;/);
+  assert.match(roadmapCurrent, /- situacao: em desenvolvimento;/);
+  assert.match(roadmapCurrent, /- PR atual: pendente;/);
+  assert.match(roadmapCurrent, /- implementacao ativa: refinamento confiavel da tela de Dividendos;/);
   assert.match(roadmapCurrent, /- PR `#198` merged e closed \(encerramento da auditoria\);/);
   assert.match(roadmapCurrent, /- resultado da auditoria: apto com ressalvas;/);
   assert.match(roadmapCurrent, /- risco residual principal: responsividade em 768px;/);
+  assert.match(roadmapCurrent, /- nenhuma Fase 199 funcional;/);
   assert.match(roadmapCurrent, /- Fase 194 concluida pela PR #194;/);
-  assert.match(roadmapCurrent, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
-  assert.match(roadmapCurrent, /- a fase 195 nao existe sem autorizacao explicita\./);
+  assert.match(roadmapCurrent, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
 
   assert.match(roadmapPhase194, /Objetivo:/);
   assert.match(roadmapPhase194, /- melhorar o grafico de evolucao mensal;/);
@@ -93,18 +98,14 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.match(roadmapPhase194, /- PR atual: nenhuma;/);
   assert.match(roadmapPhase194, /- implementacao ativa: nenhuma;/);
   assert.match(roadmapPhase194, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
-  assert.match(roadmap, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
-  assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- fase atual: nenhuma;/);
-  assert.match(roadmap, /- situacao: Fase 198 concluida;/);
-  assert.match(roadmap, /- PR atual: nenhuma;/);
-  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
-  assert.match(roadmap, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
-  assert.match(roadmap, /- resultado: apto com ressalvas;/);
-  assert.match(roadmap, /- risco residual principal: responsividade em 768px;/);
-
-  assert.match(roadmap, /- estado: Concluida;/);
-  assert.match(roadmap, /- PR: `#192`;/);
-  assert.equal(roadmap.includes('Fase 193 -'), false);
-  assert.equal(roadmap.includes('Fase 195 -'), false);
+  assert.match(roadmapPhase194, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
+  assert.match(roadmapPhase194, /Estado final:/);
+  assert.match(roadmapPhase194, /- fase atual: nenhuma;/);
+  assert.match(roadmapPhase194, /- situacao: Fase 198 concluida;/);
+  assert.match(roadmapPhase194, /- PR atual: nenhuma;/);
+  assert.match(roadmapPhase194, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmapPhase194, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
+  assert.match(roadmapPhase194, /- resultado: apto com ressalvas;/);
+  assert.match(roadmapPhase194, /- risco residual principal: responsividade em 768px;/);
+  assert.match(roadmap, /## 18\. Fase 200 - refinamento confiavel da tela de Dividendos/);
 });

@@ -4,17 +4,19 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- branch atual: main;
-- SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;
-- situacao: Fase 198 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
+- fase atual: 200;
+- nome: Refinamento confiavel da tela de Dividendos;
+- branch atual: `feat/phase-200-dividends-trustworthy-overview`;
+- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: refinamento confiavel da tela de Dividendos;
+- head de revisao: consultavel na futura PR;
+- SHA final na main: pendente de merge;
 - PR `#198` merged e closed (encerramento da auditoria);
 - resultado da auditoria: apto com ressalvas;
 - risco residual principal: responsividade em 768px;
 - nenhuma Fase 199 funcional;
-- nenhuma Fase 200 ativa;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -31,7 +33,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `977cd624648c957a10cd8df5fa265313f630ce05`
+- HEAD / `origin/main`: `8951891a0ffa15edade8867a3e7078ac63c09b73`
 - PR `#197`: merged e closed (encerramento documental da fase 196)
 - PR `#196`: merged e closed (encerramento funcional da fase 196)
 - PR `#195`: merged e closed (encerramento documental da fase 194)
@@ -158,6 +160,7 @@ Ordem oficial atual:
 18. 192 - refinamento visual e responsivo da aba Dividendos
 19. 196 - estabilizacao do teste basico da interface
 20. 198 - auditoria geral do sistema em producao
+21. 200 - refinamento confiavel da tela de Dividendos
 
 Mudanca de ordem relevante:
 
@@ -432,15 +435,9 @@ Rollback:
 - remover os documentos de decisao e o teste documental desta fase;
 - manter contrato, bridge, adapter, host, shell moderno readonly e fases anteriores intactos.
 
-## 11. Sequencia planejada apos a Fase 198
+## 11. Sequencia planejada apos a Fase 200
 
 Planejadas e nao autorizadas:
-
-### Fase 200 - Painel consolidado de desempenho dos ativos
-
-- objetivo: mostrar melhores e piores ativos, resultado em reais e percentual, filtros por classe e ordenacao;
-- dados: usar somente numeros oficiais existentes;
-- restricao: nao duplicar calculos financeiros.
 
 ### Fase 202 - Evolucao patrimonial
 
@@ -476,7 +473,7 @@ Planejadas e nao autorizadas:
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
-- nao abrir a Fase 200 nesta execucao.
+- a Fase 200 e a fase atual; a sequencia futura comeca em 202.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
@@ -663,3 +660,48 @@ Riscos:
 Conclusao:
 - apto com ressalvas;
 - Fase 200 pode seguir depois de correcoes pontuais de responsividade e da documentacao operacional do preview autenticado.
+
+## 18. Fase 200 - refinamento confiavel da tela de Dividendos
+
+Objetivo:
+- revisar a composicao de "Recebido no mes" com dados oficiais, sem novo calculo financeiro;
+- remover "Historico recente" da visao geral;
+- manter "Historico mensal" como primeira secao principal da pagina;
+- corrigir o comportamento em 768px sem mexer em schema, dependencias ou fontes de verdade;
+- preservar edicao, exclusao, filtros, historico e acessibilidade.
+
+Estado atual:
+
+- fase atual: 200;
+- nome: Refinamento confiavel da tela de Dividendos;
+- branch atual: `feat/phase-200-dividends-trustworthy-overview`;
+- SHA-base: `8951891a0ffa15edade8867a3e7078ac63c09b73`;
+- situacao: em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: refinamento confiavel da tela de Dividendos;
+- head de revisao: consultavel na futura PR;
+- SHA final na main: pendente de merge;
+
+Escopo:
+- usar apenas dados e calculos oficiais ja existentes;
+- manter a tela modernizada readonly como fonte visual, sem duplicar o legado;
+- evitar qualquer nova formula aproximada ou copia de referencia externa;
+- manter a area de Recebimentos com historico completo separado da visao geral.
+
+Fora de escopo:
+- criar novas formulas financeiras;
+- alterar schema, Firebase/Auth, storage, dependencias ou calculos historicos;
+- mudar o comportamento de edicao, exclusao ou filtros ja existentes;
+- introduzir uma nova fase funcional intermediaria.
+
+Criterios de conclusao:
+- `npm run build`, `npm test`, `npm run build:modern` e `npm run test:modern` verdes;
+- validacao visual em desktop, tablet e mobile sem overflow horizontal global;
+- `Recebido no mes` claramente explicado e sem ambiguidade de composicao;
+- `Historico mensal` em destaque na visao geral;
+- `Historico recente` fora da visao geral;
+- nenhum dado funcional removido.
+
+Rollback:
+- reverter apenas os ajustes desta fase e remover a documentacao e os testes desta entrega;
+- manter o restante do legado e as fases readonly anteriores intactos.

@@ -1566,6 +1566,10 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
   .div-asset-group>summary{grid-template-columns:minmax(150px,1fr) repeat(2,minmax(95px,.65fr)) auto}
   .div-asset-group>summary .div-asset-stat:nth-of-type(3),.div-asset-group>summary .div-asset-stat:nth-of-type(4){display:none}
 }
+@media(max-width:768px){
+  .div-premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .div-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media(max-width:640px){
   .div-premium{gap:9px;padding-bottom:22px}
   .div-premium-hero{padding:12px;border-radius:13px}
@@ -20893,7 +20897,7 @@ function dividendSummaryCards(){
     ? `${fmt(audit.summary.quebrados)} vínculos quebrados · ${fmt(audit.summary.possiveis)} possíveis duplicidades`
     : 'Nenhuma revisão pendente.';
   return `<div class="div-premium-metrics">
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido no mês</div><div class="div-premium-metric-value good">${fmt(current.total)}</div><div class="div-premium-metric-sub">${current.count} lançamento(s)</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido no mês</div><div class="div-premium-metric-value good">${fmt(current.total)}</div><div class="div-premium-metric-sub">Soma dos lançamentos oficiais do mês atual · ${current.count} lançamento(s)</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Média mensal ${fmt(stats.monthlyAvg)} · projeção anual ${fmt(stats.annualProjection)}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0?`${((current.total/stats.target)*100).toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current.total))}`:'Lida da aba Metas'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
@@ -20967,7 +20971,6 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const overviewBody=`<div class="div-overview-main">
     ${dividendSummaryCards()}
     ${monthlySection}
-    ${dividendOverviewRecentPanel(rows)}
   </div>`;
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
