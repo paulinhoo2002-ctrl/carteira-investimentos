@@ -4,14 +4,17 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 198;
-- nome: Auditoria geral do sistema em producao;
-- branch atual: audit/phase-198-production-system-review;
-- SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`;
-- situacao: em auditoria;
-- PR atual: pendente;
-- implementacao ativa: auditoria e diagnostico, sem nova funcionalidade;
-- Fase 198 aberta para auditoria geral do sistema em producao;
+- fase atual: nenhuma;
+- branch atual: main;
+- SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;
+- situacao: Fase 198 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- PR `#198` merged e closed (encerramento da auditoria);
+- resultado da auditoria: apto com ressalvas;
+- risco residual principal: responsividade em 768px;
+- nenhuma Fase 199 funcional;
+- nenhuma Fase 200 ativa;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -101,14 +104,17 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: 198;
-- nome: Auditoria geral do sistema em producao;
-- branch atual: audit/phase-198-production-system-review;
-- SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`;
-- situacao: em auditoria;
-- PR atual: pendente;
-- implementacao ativa: auditoria e diagnostico, sem nova funcionalidade;
-- Fase 198 aberta para auditoria geral do sistema em producao;
+- fase atual: nenhuma;
+- branch atual: main;
+- SHA-base: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;
+- situacao: Fase 198 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- PR `#198` merged e closed (encerramento da auditoria);
+- resultado da auditoria: apto com ressalvas;
+- risco residual principal: responsividade em 768px;
+- nenhuma Fase 199 funcional;
+- nenhuma Fase 200 ativa;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - a fase 190 permanece concluida;
@@ -612,18 +618,21 @@ Objetivo:
 - produzir evidencias e backlog priorizado;
 - decidir se o sistema esta apto para a Fase 200.
 
-Estado atual:
+Estado final:
 
-- fase atual: 198;
+- fase atual: nenhuma;
 - nome: Auditoria geral do sistema em producao;
-- branch atual: `audit/phase-198-production-system-review`;
+- branch original: `audit/phase-198-production-system-review`;
 - SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`;
-- situacao: em auditoria;
-- PR atual: pendente;
-- implementacao ativa: auditoria e diagnostico, sem nova funcionalidade;
+- SHA final: `e358994bbc4270d0694990b4f3a713f0c20b0cba`;
+- situacao: Fase 198 concluida;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- PR `#198`: merged e closed (encerramento da auditoria);
 - Caveman: ativo;
 - Impeccable: ativo;
-- Fase 198 aberta para auditoria geral do sistema em producao;
+- resultado: apto com ressalvas;
+- risco residual principal: responsividade em 768px;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - a fase 190 permanece concluida;
