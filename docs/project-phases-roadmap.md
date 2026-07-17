@@ -4,12 +4,15 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- branch atual: main;
-- SHA-base: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`;
-- situacao: Fase 196 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
+- fase atual: 198;
+- nome: Auditoria geral do sistema em producao;
+- branch atual: audit/phase-198-production-system-review;
+- SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`;
+- situacao: em auditoria;
+- PR atual: pendente;
+- implementacao ativa: auditoria e diagnostico, sem nova funcionalidade;
+- Fase 198 aberta para auditoria geral do sistema em producao;
+- Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
 - uma PR por objetivo
@@ -25,7 +28,8 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: `main`
-- HEAD / `origin/main`: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`
+- HEAD / `origin/main`: `977cd624648c957a10cd8df5fa265313f630ce05`
+- PR `#197`: merged e closed (encerramento documental da fase 196)
 - PR `#196`: merged e closed (encerramento funcional da fase 196)
 - PR `#195`: merged e closed (encerramento documental da fase 194)
 - workspace: limpo no inicio desta fase
@@ -97,13 +101,15 @@ Base de referencia desta fase:
 
 ### Estado atual
 
-- fase atual: nenhuma;
-- nome da fase: estabilizacao do teste basico da interface;
-- branch atual: main;
-- SHA-base: `b3be9414ddb3c6bac555f72049fbfc6195d02ea3`;
-- situacao: Fase 196 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
+- fase atual: 198;
+- nome: Auditoria geral do sistema em producao;
+- branch atual: audit/phase-198-production-system-review;
+- SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`;
+- situacao: em auditoria;
+- PR atual: pendente;
+- implementacao ativa: auditoria e diagnostico, sem nova funcionalidade;
+- Fase 198 aberta para auditoria geral do sistema em producao;
+- Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - a fase 190 permanece concluida;
 - a PR #191 foi apenas o encerramento documental;
@@ -145,6 +151,7 @@ Ordem oficial atual:
 17. 190 - decisao arquitetural da modernizacao
 18. 192 - refinamento visual e responsivo da aba Dividendos
 19. 196 - estabilizacao do teste basico da interface
+20. 198 - auditoria geral do sistema em producao
 
 Mudanca de ordem relevante:
 
@@ -419,13 +426,51 @@ Rollback:
 - remover os documentos de decisao e o teste documental desta fase;
 - manter contrato, bridge, adapter, host, shell moderno readonly e fases anteriores intactos.
 
-## 11. Proximas fases
+## 11. Sequencia planejada apos a Fase 198
 
-A decisao desta fase define o proximo passo formal.
+Planejadas e nao autorizadas:
 
-- Se a opcao escolhida mantiver o modelo hibrido, as proximas fases continuam readonly e graduais.
-- Se houver escrita moderna futura, ela precisa nascer em fase propria, com comando versionado, idempotencia, autorizacao, confirmacao explicita, log de auditoria, backup e rollback.
-- A fase 196 nao altera comportamento funcional e nao abre fase 197.
+### Fase 200 - Painel consolidado de desempenho dos ativos
+
+- objetivo: mostrar melhores e piores ativos, resultado em reais e percentual, filtros por classe e ordenacao;
+- dados: usar somente numeros oficiais existentes;
+- restricao: nao duplicar calculos financeiros.
+
+### Fase 202 - Evolucao patrimonial
+
+- objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;
+- dados: usar somente historico real disponivel;
+- restricao: nao inventar valores passados.
+
+### Fase 204 - Metas financeiras
+
+- objetivo: acompanhar meta de R$ 1 milhao e meta de renda passiva de R$ 4 mil mensais;
+- dados: mostrar progresso real e separar valores reais de projecoes;
+- restricao: nao misturar meta com simulacao.
+
+### Fase 206 - Qualidade dos dados
+
+- objetivo: localizar registros incompletos, duplicados ou inconsistentes;
+- dados: diferenciar zero de ausente;
+- restricao: nao corrigir automaticamente.
+
+### Fase 208 - Relatorio executivo mensal
+
+- objetivo: consolidar patrimonio, aportes, dividendos, distribuicao, desempenho e metas;
+- dados: permitir impressao ou PDF;
+- restricao: preservar fontes oficiais dos calculos.
+
+### Fase 210 - Desempenho e manutencao tecnica
+
+- objetivo: melhorar desempenho e manutencao, revisar cache e service worker e reduzir complexidade desnecessaria;
+- dados: evidencias de performance e manutencao;
+- restricao: evitar reescrita ampla sem beneficio comprovado.
+
+- a sequencia pode ser reordenada somente por risco encontrado na auditoria;
+- nenhuma dessas fases esta automaticamente autorizada;
+- cada fase exige objetivo, branch, PR, validacao e autorizacao;
+- nao existe Fase 199 funcional;
+- nao abrir a Fase 200 nesta execucao.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
@@ -559,3 +604,53 @@ Escopo:
 Rollback:
 - reverter apenas `tests/basic-ui.test.js` e a entrada documental desta fase;
 - manter comportamento funcional e fases anteriores intactos.
+
+## 17. Fase 198 - auditoria geral do sistema em producao
+
+Objetivo:
+- auditar funcionamento, dados, seguranca, interface, acessibilidade, performance e manutencao;
+- produzir evidencias e backlog priorizado;
+- decidir se o sistema esta apto para a Fase 200.
+
+Estado atual:
+
+- fase atual: 198;
+- nome: Auditoria geral do sistema em producao;
+- branch atual: `audit/phase-198-production-system-review`;
+- SHA-base: `977cd624648c957a10cd8df5fa265313f630ce05`;
+- situacao: em auditoria;
+- PR atual: pendente;
+- implementacao ativa: auditoria e diagnostico, sem nova funcionalidade;
+- Caveman: ativo;
+- Impeccable: ativo;
+- Fase 198 aberta para auditoria geral do sistema em producao;
+- Fase 196 concluida pela PR #196;
+- Fase 194 concluida pela PR #194;
+- a fase 190 permanece concluida;
+- a PR #191 foi apenas o encerramento documental;
+- a PR #193 foi apenas o encerramento documental da fase 192;
+- nao existe Fase 191 funcional;
+- a fase 195 nao existe sem autorizacao explicita;
+- Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
+
+Evidencias validadas:
+- `node --test tests/basic-ui.test.js` verde;
+- `npm test` verde;
+- `npm run build` verde;
+- `npm run build:modern` verde;
+- `npm run test:modern` verde;
+- `git diff --check` verde;
+- `modern/dist` fora do indice;
+- producao fresca bloqueada por autenticao Google;
+- localhost autorizado validado com sucesso;
+- 390px, 1366px e 1920px sem regressao critica;
+- 768px com overflow estrutural e faixa vazia lateral.
+
+Riscos:
+- responsividade tablet em 768px;
+- validacao publica limitada pelo gate de autenticacao;
+- warnings recorrentes de build/runtime.
+
+Conclusao:
+- apto com ressalvas;
+- Fase 200 pode seguir depois de correcoes pontuais de responsividade e da documentacao operacional do preview autenticado.
