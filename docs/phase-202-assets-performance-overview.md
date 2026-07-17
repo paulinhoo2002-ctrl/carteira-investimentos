@@ -1,74 +1,68 @@
 # Fase 202 - Painel consolidado de desempenho dos ativos
 
-## Contexto
+## Estado final
 
-A Fase 200 resolveu o refinamento visual da aba Dividendos e deixou claro um risco real em 768px. A Fase 202 entra para dar uma leitura confiavel do desempenho dos ativos sem criar formulas novas ou duplicar calculos oficiais.
+- fase concluida;
+- branch original: `feat/phase-202-assets-performance-overview`;
+- PR: `#202`;
+- modo: squash;
+- SHA final: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
+- implementacao ativa: nenhuma;
+- nenhuma formula financeira nova;
+- nenhuma alteracao de schema;
+- nenhuma dependencia nova;
+- shell moderno readonly;
+- Fase 204 nao iniciada.
 
-## Objetivo
+## Conclusao funcional
 
-Criar um painel consolidado para identificar:
-
-- ativos mais positivos;
-- ativos mais negativos;
-- resultado em reais;
-- resultado percentual;
+- nova area Ativos -> Desempenho;
+- melhores e piores ativos;
+- resultado em reais e percentual;
 - filtros por classe;
 - ordenacao;
-- explicacao clara sobre a fonte oficial de cada valor.
+- dados insuficientes tratados explicitamente;
+- base completa exige valor atual e valor aplicado;
+- zero real preservado;
+- funcoes financeiras oficiais reutilizadas.
 
-## Fontes oficiais
+## Riscos observados
 
-O painel usa somente calculos e sinais ja existentes no legado, principalmente:
+- regressao visual em 768px se a tela for alterada sem revisao;
+- confusao entre zero e dado ausente se a regra de base for relaxada;
+- overflow horizontal se a lista consolidada crescer sem adaptacao responsiva.
 
-- `assetCurrentValue()`;
-- `assetAppliedValue()`;
-- `assetJurosValue()`;
-- `assetRentabPct()`;
-- `TYPE_ORDER`;
-- `sortAssetsByGroup()`;
-- `cx()`;
-- `assetAnalysisRows()`.
+## Validacoes registradas
 
-## Escopo
+- `node --test tests/phase-202-assets-performance-overview.test.js`;
+- `node --test tests/phase-202-assets-performance-overview.guard.js`;
+- `node --test tests/basic-ui.test.js`;
+- `node --test tests/dividends-final-polish.test.js`;
+- `node --test tests/dividends-visual-refinement.test.js`;
+- `node --test tests/phase-198-production-system-audit.test.js`;
+- `node --test tests/readonly-contract-architecture.test.js`;
+- `node --test tests/modern-architecture-decision.test.js`;
+- `node --test tests/phase-200-future-sequence.guard.js`;
+- `npm test`;
+- `npm run build`;
+- `npm run build:modern`;
+- `npm run test:modern`;
+- `git diff --check`.
 
-- nova aba interna em `Ativos`, chamada `Desempenho`;
-- resumo com ativos analisados, resultado consolidado e base suficiente;
-- lista consolidada com resultado em reais e percentual;
-- filtros por classe oficial;
-- ordenacao por resultado, percentual, valor atual e ticker;
-- explicabilidade sobre valor investido, valor atual, zero e dado ausente;
-- responsividade em 390px, 768px, 1366px e 1920px;
-- shell moderno permanece readonly.
+## Sequencia futura
 
-## Fora de escopo
+Preservada e nao autorizada:
 
-- criar nova formula financeira;
-- inventar preco medio, cotacao ou patrimonio;
-- duplicar calculos oficiais;
-- alterar schema, Firebase/Auth, storage ou dependencias;
-- mover a tela para o shell moderno;
-- iniciar a Fase 204.
+- Fase 204 - Evolucao patrimonial;
+- Fase 206 - Metas financeiras;
+- Fase 208 - Qualidade dos dados;
+- Fase 210 - Relatorio executivo mensal;
+- Fase 212 - Desempenho e manutencao tecnica.
 
-## Riscos
-
-- regressao visual em 768px;
-- confusao entre zero e dado ausente;
-- exibicao de resultado sem base oficial;
-- duplicacao acidental de formula do legado;
-- overflow horizontal em telas menores.
-
-## Criterios de conclusao
-
-- painel visivel e funcional no legado;
-- dados oficiais preservados;
-- zero continua diferente de ausente;
-- filtros e ordenacao operando sem alterar o calculo;
-- leitura confiavel em desktop, tablet e mobile;
-- `modern/dist` fora do indice;
-- testes e builds verdes.
+Nenhuma dessas fases esta iniciada ou autorizada por esta documentacao.
 
 ## Rollback
 
-- remover os arquivos criados pela fase;
-- reverter somente os commits desta fase;
-- manter as fases readonly anteriores intactas.
+- reverter os commits da Fase 202;
+- remover os arquivos documentais desta fase;
+- manter contratos readonly e fases anteriores intactos.

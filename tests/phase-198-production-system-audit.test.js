@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const test = require('node:test');
-const { assertPhase202FutureSequence, assertPhase202RoadmapOpen } = require('./phase-202-assets-performance-overview.guard');
+const { assertPhase202FutureSequence, assertPhase202RoadmapClosed } = require('./phase-202-assets-performance-overview.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -46,12 +46,17 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   const currentState = section(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase192 = section(roadmap, '## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos', '## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
 
-  assert.match(currentState, /- fase atual: 202;/);
-  assert.match(currentState, /- branch atual: `feat\/phase-202-assets-performance-overview`;/);
-  assert.match(currentState, /- SHA-base: `9cb53a259dbafefe92704f976c31264698651a09`;/);
-  assert.match(currentState, /- situacao: Fase 202 em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
-  assert.match(currentState, /- implementacao ativa: painel consolidado de desempenho dos ativos;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
+  assert.match(currentState, /- situacao: Fase 202 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- PR `#202` merged e closed \(encerramento funcional da fase 202\);/);
+  assert.match(currentState, /- modo de merge: squash;/);
+  assert.match(currentState, /- SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
+  assert.match(currentState, /- resultado: painel consolidado de desempenho dos ativos concluido;/);
+  assert.match(currentState, /- nenhuma Fase 204 ativa;/);
   assert.match(currentState, /- PR `#200` merged e closed;/);
   assert.match(currentState, /- SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;/);
   assert.match(currentState, /- resultado: refinamento confiavel da tela de Dividendos concluido;/);
@@ -70,7 +75,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(phase192, /- modo: squash;/);
   assert.match(phase192, /- resultado: correcao da coluna Total, rolagem horizontal controlada, Historico mensal reposicionado, card redundante de meta removido e hierarquia visual melhorada;/);
   assert.match(phase192, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
-  assertPhase202RoadmapOpen(roadmap);
+  assertPhase202RoadmapClosed(roadmap);
   assertPhase202FutureSequence(roadmap);
 
   assert.match(roadmap, /## 10\. Fase 190 - decisao arquitetural da modernizacao/);

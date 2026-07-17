@@ -4,7 +4,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const vm = require('node:vm');
 const test = require('node:test');
-const { assertPhase202FutureSequence, assertPhase202RoadmapOpen } = require('./phase-202-assets-performance-overview.guard');
+const { assertPhase202FutureSequence, assertPhase202RoadmapClosed } = require('./phase-202-assets-performance-overview.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -85,20 +85,39 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
   assertNoMojibake(roadmap, 'roadmap');
   assertNoMojibake(phaseDoc, 'phaseDoc');
 
-  assertPhase202RoadmapOpen(roadmap);
+  assertPhase202RoadmapClosed(roadmap);
   assertPhase202FutureSequence(roadmap);
 
   assert.match(phaseDoc, /# Fase 202 - Painel consolidado de desempenho dos ativos/);
-  assert.match(phaseDoc, /## Contexto/);
-  assert.match(phaseDoc, /## Objetivo/);
-  assert.match(phaseDoc, /## Fontes oficiais/);
-  assert.match(phaseDoc, /## Escopo/);
-  assert.match(phaseDoc, /## Fora de escopo/);
-  assert.match(phaseDoc, /## Riscos/);
-  assert.match(phaseDoc, /## Criterios de conclusao/);
-  assert.match(phaseDoc, /## Rollback/);
-  assert.match(phaseDoc, /shell moderno permanece readonly/);
-  assert.match(phaseDoc, /- iniciar a Fase 204\./);
+  assert.match(phaseDoc, /## Estado final/);
+  assert.match(phaseDoc, /- fase concluida;/);
+  assert.match(phaseDoc, /- branch original: `feat\/phase-202-assets-performance-overview`;/);
+  assert.match(phaseDoc, /- PR: `#202`;/);
+  assert.match(phaseDoc, /- modo: squash;/);
+  assert.match(phaseDoc, /- SHA final: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
+  assert.match(phaseDoc, /- implementacao ativa: nenhuma;/);
+  assert.match(phaseDoc, /- nenhuma formula financeira nova;/);
+  assert.match(phaseDoc, /- nenhuma alteracao de schema;/);
+  assert.match(phaseDoc, /- nenhuma dependencia nova;/);
+  assert.match(phaseDoc, /- shell moderno readonly;/);
+  assert.match(phaseDoc, /- Fase 204 nao iniciada\./);
+  assert.match(phaseDoc, /## Conclusao funcional/);
+  assert.match(phaseDoc, /- nova area Ativos -> Desempenho;/);
+  assert.match(phaseDoc, /- melhores e piores ativos;/);
+  assert.match(phaseDoc, /- resultado em reais e percentual;/);
+  assert.match(phaseDoc, /- filtros por classe;/);
+  assert.match(phaseDoc, /- ordenacao;/);
+  assert.match(phaseDoc, /- dados insuficientes tratados explicitamente;/);
+  assert.match(phaseDoc, /- base completa exige valor atual e valor aplicado;/);
+  assert.match(phaseDoc, /- zero real preservado;/);
+  assert.match(phaseDoc, /- funcoes financeiras oficiais reutilizadas\./);
+  assert.match(phaseDoc, /## Sequencia futura/);
+  assert.match(phaseDoc, /Fase 204 - Evolucao patrimonial/);
+  assert.match(phaseDoc, /Fase 206 - Metas financeiras/);
+  assert.match(phaseDoc, /Fase 208 - Qualidade dos dados/);
+  assert.match(phaseDoc, /Fase 210 - Relatorio executivo mensal/);
+  assert.match(phaseDoc, /Fase 212 - Desempenho e manutencao tecnica/);
+  assert.match(phaseDoc, /Nenhuma dessas fases esta iniciada ou autorizada por esta documentacao\./);
 
   assert.match(indexHtml, /function assetPerformanceOverviewPanel\(\)/);
   assert.match(indexHtml, /function hasOwnFiniteNumber\(source, keys\)/);

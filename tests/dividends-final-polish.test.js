@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { assertPhase202FutureSequence, assertPhase202RoadmapOpen } = require('./phase-202-assets-performance-overview.guard');
+const { assertPhase202FutureSequence, assertPhase202RoadmapClosed } = require('./phase-202-assets-performance-overview.guard');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -52,7 +52,7 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.equal(roadmapPhase194Start >= 0, true, 'Secao da Fase 194 precisa existir');
   const roadmapPhase194 = roadmap.slice(roadmapPhase194Start);
 
-  assertPhase202RoadmapOpen(roadmap);
+  assertPhase202RoadmapClosed(roadmap);
 
   assert.match(roadmapPhase194, /Objetivo:/);
   assert.match(roadmapPhase194, /- melhorar o grafico de evolucao mensal;/);

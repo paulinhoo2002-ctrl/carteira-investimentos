@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const test = require('node:test');
-const { assertPhase202FutureSequence, assertPhase202RoadmapOpen } = require('./phase-202-assets-performance-overview.guard');
+const { assertPhase202FutureSequence, assertPhase202RoadmapClosed } = require('./phase-202-assets-performance-overview.guard');
 
 const repoRoot = path.join(__dirname, '..');
 const modernRoot = path.join(repoRoot, 'modern');
@@ -280,7 +280,7 @@ function assertRoadmapPhaseShas(roadmap) {
   assert.match(roadmap, /\| 188 \|[^|]*\| Concluida \| `#188` \| `2c6489fb190e215fd69074071aceba8cf2638e39` \|/);
   assert.match(roadmap, /\| 189 \|[^|]*\| Concluida \| `#189` \| `0372cc4e04d66f713474b8d0b41ef2750d380061` \|/);
   assert.match(roadmap, /\| 190 \|[^|]*\| Concluida \| `#190` \| `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` \|/);
-  assertPhase202RoadmapOpen(roadmap);
+  assertPhase202RoadmapClosed(roadmap);
 
   const phase186 = extractRoadmapPhaseSection(roadmap, '### Fase 186', '### Fase 185');
 
@@ -292,7 +292,7 @@ function assertRoadmapPhaseShas(roadmap) {
 function assertRoadmapCurrentPhase198State(roadmap) {
   const currentState = extractRoadmapPhaseSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
 
-  assertPhase202RoadmapOpen(roadmap);
+  assertPhase202RoadmapClosed(roadmap);
 
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
   assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);
