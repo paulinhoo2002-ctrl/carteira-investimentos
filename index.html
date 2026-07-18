@@ -1363,6 +1363,9 @@ body.modal-open{overflow:hidden}
 .passive-goal-grid.main{grid-template-columns:repeat(4,minmax(0,1fr))}
 .passive-goal-grid.summary{grid-template-columns:repeat(5,minmax(120px,1fr))}
 .passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dashboard-home-goals .financial-goals-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.dashboard-home-goals .financial-goal-card{justify-content:flex-start}
+.dashboard-home-goals .financial-goal-progress{margin-top:2px;height:8px}
 .passive-goal-card{background:#0b1020;border:1px solid #182033;border-radius:12px;padding:10px;min-height:72px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
 .passive-goal-card .passive-goal-kicker{font-size:10px;color:#94a3b8;line-height:1.2}
 .passive-goal-card .passive-goal-value{font-size:15px;font-weight:900;color:#edf3ff;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2132,6 +2135,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .pdf-report-checklist{grid-template-columns:1fr;gap:7px}
   .passive-goal-grid.main,.passive-goal-grid.secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .passive-goal-grid.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dashboard-home-goals .financial-goals-grid{grid-template-columns:1fr}
   .passive-goal-empty{padding:9px 10px}
   .passive-goal-card{min-height:66px;padding:9px}
   .passive-goal-card .passive-goal-value{font-size:13px}
@@ -18314,6 +18318,7 @@ function prudentContributionAnalysis(){
 function dashboardSnapshot(analysisRows){
   const portfolio=cx();
   const income=passiveIncomeGoalStats();
+  const financialGoals=financialGoalsSnapshot();
   const analysis=Array.isArray(analysisRows) ? analysisRows : assetAnalysisRows();
   const byType={};
   (S.assets||[]).forEach(a=>{
@@ -18343,6 +18348,7 @@ function dashboardSnapshot(analysisRows){
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
     recent:{month:recentIncome.month,total:recentIncome.total,count:recentIncome.count,best:recentIncome.best,payers:recentIncome.payers},
     concentration,positives,negatives,insufficient,concentrated,
+    financialGoals,
     contribution:prudentContributionAnalysis()
   };
 }
@@ -18418,7 +18424,116 @@ function dashboardPassiveIncomePanel(data){
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
   </div>`;
 }
-function setDashboardHighlightsTab(tab){
+function financialGoalsTone(metrics){
+  if(!metrics?.hasCurrent) return 'muted';
+  if(!metrics?.hasTarget) return 'muted';
+  if(metrics.reached) return 'ok';
+  if((Number(metrics.percent)||0)>=75) return 'info';
+  if((Number(metrics.percent)||0)>=40) return 'warn';
+  return 'danger';
+}
+function financialGoalsBarColor(tone){
+  return tone==='ok' ? '#34d399' : tone==='info' ? '#60a5fa' : tone==='warn' ? '#fbbf24' : '#f87171';
+}
+function financialGoalsBar(metrics,label,tone){
+  const width=metrics?.hasTarget ? Math.max(0, Math.min(100, Number(metrics.barPercent)||0)).toFixed(1) : '0.0';
+  const text=!metrics?.hasCurrent
+    ? 'Patrimônio atual indisponível'
+    : !metrics?.hasTarget
+      ? 'Meta nao configurada'
+      : metrics.reached
+        ? `Meta atingida, ${(Number(metrics.percent)||0).toFixed(1)}% alcancado`
+        : `${(Number(metrics.percent)||0).toFixed(1)}% alcancado`;
+  const valueNow=metrics?.hasTarget && metrics?.hasCurrent ? ` aria-valuenow="${Math.max(0, Math.min(100, Number(metrics.barPercent)||0)).toFixed(1)}"` : '';
+  return `<div class="dbt financial-goal-progress" role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100"${valueNow} aria-valuetext="${esc(text)}"><div class="dbf" style="width:${width}%;background:${financialGoalsBarColor(tone)}"></div></div>`;
+}
+function dashboardFinancialGoalsPanel(data){
+  const goals=data?.financialGoals || financialGoalsSnapshot();
+  const normalizedGoals=normalizeGoals(S.goals||{});
+  const portfolioCurrent=goals.hasPortfolioData ? Number(goals.portfolioCurrent ?? goals.portfolio?.tC ?? 0) : null;
+  const patrimonyConfigured=Number(normalizedGoals?.patrimonio?.target)||0;
+  const incomeConfigured=Number(normalizedGoals?.proventos?.monthly)||0;
+  const patrimonyTarget=patrimonyConfigured>0 ? patrimonyConfigured : 1000000;
+  const incomeTarget=incomeConfigured>0 ? incomeConfigured : 4000;
+  const patrimonyMetrics=goalProgressMetrics(portfolioCurrent, patrimonyTarget);
+  const incomeCurrent=Number(goals.currentIncome)||0;
+  const incomeMetrics=goalProgressMetrics(incomeCurrent, incomeTarget);
+  const patrimonyTone=financialGoalsTone(patrimonyMetrics);
+  const incomeTone=financialGoalsTone(incomeMetrics);
+  const patrimonyCurrentLabel=patrimonyMetrics.hasCurrent ? fmt(portfolioCurrent) : 'Patrimônio atual indisponível';
+  const patrimonyTargetLabel=fmt(patrimonyTarget);
+  const patrimonyStatus=!patrimonyMetrics.hasCurrent
+    ? 'Patrimônio atual indisponível'
+    : patrimonyMetrics.reached
+      ? 'Meta atingida'
+      : patrimonyMetrics.hasTarget
+        ? `${(Number(patrimonyMetrics.percent)||0).toFixed(1)}% alcançado`
+        : 'Meta não configurada';
+  const patrimonyGap=!patrimonyMetrics.hasCurrent
+    ? 'Revise os valores e cotações cadastrados para acompanhar esta meta.'
+    : patrimonyMetrics.reached
+      ? (patrimonyMetrics.excess>0 ? `${fmt(patrimonyMetrics.excess)} acima da meta` : 'Meta atingida')
+      : patrimonyMetrics.hasTarget
+        ? `Faltam ${fmt(patrimonyMetrics.missing)}`
+        : 'Meta não configurada';
+  const patrimonyMeta=patrimonyConfigured>0 ? 'Meta cadastrada na aba Metas' : 'Meta não configurada · sugestão visual';
+  const patrimonySource=patrimonyConfigured>0 ? 'Patrimônio atual estimado da carteira' : 'Patrimônio sugerido apenas como referência visual';
+  const incomeTargetLabel=fmt(incomeTarget);
+  const incomeStatus=incomeMetrics.reached
+    ? 'Meta atingida'
+    : incomeMetrics.hasTarget
+      ? `${(Number(incomeMetrics.percent)||0).toFixed(1)}% alcançado`
+      : 'Meta não configurada';
+  const incomeGap=incomeMetrics.reached
+    ? (incomeMetrics.excess>0 ? `${fmt(incomeMetrics.excess)} acima da meta` : 'Meta atingida')
+    : incomeMetrics.hasTarget
+      ? `Faltam ${fmt(incomeMetrics.missing)}`
+      : 'Meta não configurada';
+  const incomeMeta=incomeConfigured>0 ? 'Meta cadastrada na aba Metas' : 'Meta não configurada · sugestão visual';
+  const incomeHistorySummary=goals.historySummary || {};
+  const latestMonth=goals.latestMonth || null;
+  const previousMonth=goals.previousMonth || null;
+  const currentMonthLabel=goals.currentMonthLabel || 'mês atual';
+  const currentMonthCount=Number(goals.currentIncomeCount)||0;
+  const trendLabel=latestMonth ? `${latestMonth.label} · ${latestMonth.count} lançamento(s)` : 'Sem base real para tendência';
+  const trendDetail=latestMonth && previousMonth
+    ? `${latestMonth.diff >= 0 ? '+' : '-'}${fmt(Math.abs(latestMonth.diff||0))}${Number.isFinite(latestMonth.diffPct) ? ` (${latestMonth.diffPct >= 0 ? '+' : ''}${latestMonth.diffPct.toFixed(1)}%)` : ''} vs ${previousMonth.label}`
+    : 'Sem comparação oficial anterior';
+  const incomeAverage=incomeHistorySummary.monthCount > 0 ? fmt(incomeHistorySummary.avg) : '—';
+  const incomeBestMonth=incomeHistorySummary.best ? `${incomeHistorySummary.best.label} · ${fmt(incomeHistorySummary.best.total)}` : '—';
+  const incomeCurrentLabel=fmt(incomeCurrent);
+  const incomeCurrentStatus=goals.currentMonthGroup?.count > 0 ? `${currentMonthCount} lançamento(s) em ${currentMonthLabel}` : 'R$ 0,00 recebidos neste mês';
+  return `<div class="premium-panel dashboard-home-goals">
+    <div class="premium-panel-head">
+      <div><div class="premium-panel-title">Metas financeiras</div><div class="premium-panel-sub">Acompanhe seu progresso patrimonial e sua renda passiva usando os dados reais da carteira.</div></div>
+      <div class="premium-panel-badge">Leitura executiva</div>
+    </div>
+    <div class="passive-goal-grid financial-goals-grid">
+      <article class="passive-goal-card financial-goal-card ${patrimonyTone}">
+        <div class="passive-goal-kicker">Meta patrimonial</div>
+        <div class="passive-goal-value">${patrimonyCurrentLabel}</div>
+        <div class="passive-goal-sub">Meta ${patrimonyTargetLabel}${patrimonyConfigured>0 ? '' : ' · sugerida visualmente'}</div>
+        ${financialGoalsBar(patrimonyMetrics, 'Progresso da meta patrimonial', patrimonyTone)}
+        <div class="passive-goal-sub">${patrimonyStatus}</div>
+        <div class="passive-goal-sub">${patrimonyGap}</div>
+        <div class="passive-goal-sub">${patrimonyMeta}</div>
+        <div class="passive-goal-sub">${patrimonySource}</div>
+      </article>
+      <article class="passive-goal-card financial-goal-card ${incomeTone}">
+        <div class="passive-goal-kicker">Meta de renda passiva</div>
+        <div class="passive-goal-value">${incomeCurrentLabel}</div>
+        <div class="passive-goal-sub">Meta ${incomeTargetLabel}${incomeConfigured>0 ? '' : ' · sugerida visualmente'}</div>
+        ${financialGoalsBar(incomeMetrics, 'Progresso da meta de renda passiva', incomeTone)}
+        <div class="passive-goal-sub">${incomeStatus}</div>
+        <div class="passive-goal-sub">${incomeGap}</div>
+        <div class="passive-goal-sub">Média real ${incomeAverage} · Melhor mês ${incomeBestMonth}</div>
+        <div class="passive-goal-sub">${incomeCurrentStatus} · Último mês ${trendLabel} · ${trendDetail}</div>
+        <div class="passive-goal-sub">${incomeMeta}</div>
+      </article>
+    </div>
+    <div class="premium-panel-actions"><button class="btn bgh" onclick="go('metas')">Ver Metas</button></div>
+  </div>`;
+}function setDashboardHighlightsTab(tab){
   const next=tab==='low' ? 'low' : 'high';
   if(S.dashboardHighlightsTab===next) return;
   S.dashboardHighlightsTab=next;
@@ -19534,6 +19649,7 @@ function dash(){
   return `<div class="premium-dashboard">
     <div class="dashboard-home-grid">
       ${dashboardHomeSummaryPanel(data)}
+      ${dashboardFinancialGoalsPanel(data)}
       ${dashboardPassiveIncomePanel(data)}
       ${dashboardHomeHighlightsPanel()}
       ${dashboardHomeCompositionPanel(data)}
@@ -20508,6 +20624,80 @@ function goalProgressText(current,target){
 }
 const ALLOC_CHOICES = ['Ação','FII','ETF','BDR','Renda Fixa','Stock','Reit','Fundos de Investimento'];
 const ALLOC_COLORS = ['#4f8cff','#7cfc9a','#ffd86b','#ff6b81','#8b5cf6','#22c55e','#38bdf8','#f59e0b'];
+function goalProgressMetrics(current,target){
+  const currentValue=Number(current);
+  const targetValue=Number(target);
+  const hasCurrent=current!==null && current!==undefined && current!=='' && Number.isFinite(currentValue);
+  const hasTarget=Number.isFinite(targetValue) && targetValue>0;
+  const safeCurrent=hasCurrent ? Math.max(0, currentValue) : null;
+  const safeTarget=hasTarget ? targetValue : null;
+  const percent=hasCurrent && hasTarget ? (safeCurrent/safeTarget)*100 : null;
+  const barPercent=hasTarget ? Math.max(0, Math.min(100, Number(percent)||0)) : 0;
+  const missing=hasCurrent && hasTarget ? Math.max(safeTarget-safeCurrent, 0) : null;
+  const excess=hasCurrent && hasTarget ? Math.max(safeCurrent-safeTarget, 0) : null;
+  const reached=hasCurrent && hasTarget ? safeCurrent>=safeTarget : false;
+  return {hasCurrent,hasTarget,current:safeCurrent,target:safeTarget,percent,barPercent,missing,excess,reached};
+}
+function financialGoalsHasPortfolioData(portfolio){
+  if(!portfolio || typeof portfolio!=='object') return false;
+  const hasFiniteSummary=['tI','tC','tG','tGP'].some(key=>Number.isFinite(Number(portfolio[key])));
+  if(!hasFiniteSummary) return false;
+  const assets=Array.isArray(S.assets) ? S.assets : [];
+  return assets.some(asset=>[
+    asset?.current,
+    asset?.currentValue,
+    asset?.marketValue,
+    asset?.liquidValue,
+    asset?.applied,
+    asset?.appliedValue,
+    asset?.initialValue,
+    asset?.balance,
+    asset?.rf_current_value,
+    asset?.rf_gross_value,
+    asset?.rf_liquid_value,
+    asset?.rf_applied_value,
+    asset?.fixed_current_value,
+    asset?.fixed_gross_value,
+    asset?.fixed_liquid_value,
+    asset?.fixed_initial_value,
+  ].some(value=>Number.isFinite(Number(value))));
+}
+function financialGoalsSnapshot(){
+  const portfolio=cx();
+  const hasPortfolioData=financialGoalsHasPortfolioData(portfolio);
+  const goals=normalizeGoals(S.goals||{});
+  const historyRows=dividendMonthlyHistoryRows();
+  const historyGroups=dividendMonthlyHistoryGroupRows(historyRows);
+  const historySummary=dividendMonthlyHistorySummary(historyGroups);
+  const currentMonthKey=passiveIncomeMonthKey(new Date());
+  const currentMonthGroup=historyGroups.find(row=>row.key===currentMonthKey)||null;
+  const latestMonth=historyGroups[0]||null;
+  const previousMonth=historyGroups[1]||null;
+  const currentIncome=Number(currentMonthGroup?.total)||0;
+  const currentIncomeCount=Number(currentMonthGroup?.count)||0;
+  const currentMonthLabel=currentMonthGroup?.label || new Date(`${currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const patrimonyTarget=Math.max(0, Number(goals?.patrimonio?.target)||0);
+  const portfolioCurrent=hasPortfolioData ? Number(portfolio.tC)||0 : null;
+  const incomeTarget=passiveIncomeGoalTarget();
+  return {
+    portfolio,
+    goals,
+    hasPortfolioData,
+    portfolioCurrent,
+    historyRows,
+    historyGroups,
+    historySummary,
+    currentMonthKey,
+    currentMonthGroup,
+    currentMonthLabel,
+    latestMonth,
+    previousMonth,
+    currentIncome,
+    currentIncomeCount,
+    patrimonyTarget,
+    incomeTarget,
+  };
+}
 function normalizeAllocationItems(items){
   const defaults = [
     {type:'FII', pct:40},
