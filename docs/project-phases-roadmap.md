@@ -4,22 +4,23 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- branch atual: main;
-- SHA-base: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
-- situacao: Fase 202 concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
+- fase atual: 204;
+- branch atual: `docs/phase-204-evolution-audit`;
+- SHA-base: `2f69f0623717d09e670b82f711588f9d1cc50909`;
+- situacao: auditoria documental em desenvolvimento;
+- PR atual: pendente;
 - implementacao ativa: nenhuma;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
 - resultado: painel consolidado de desempenho dos ativos concluido;
-- nenhuma Fase 204 ativa;
+- Fase 204 ativa somente como auditoria documental;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
 - nenhuma Fase 199 funcional;
+- nenhuma alteracao funcional autorizada;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -31,12 +32,13 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - nao iniciar a fase seguinte antes de fechar a atual
 - preservacao de dados, schema, Firebase/Auth e compatibilidade continua obrigatoria
 - `modern/dist` fora do indice
+- Fases 206, 208, 210 e 212 continuam planejadas e nao autorizadas.
 - Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`
+- HEAD / `origin/main`: `2f69f0623717d09e670b82f711588f9d1cc50909`
 - PR `#202`: merged e closed (encerramento funcional da fase 202)
 - PR `#200`: merged e closed (encerramento funcional da fase 200)
 - PR `#198`: merged e closed (encerramento da auditoria)
@@ -167,7 +169,7 @@ Ordem oficial atual:
 20. 198 - auditoria geral do sistema em producao
 21. 200 - refinamento confiavel da tela de Dividendos
 22. 202 - painel consolidado de desempenho dos ativos
-23. 204 - evolucao patrimonial
+23. 204 - auditoria de evolucao patrimonial e dashboard executivo
 24. 206 - metas financeiras
 25. 208 - qualidade dos dados
 26. 210 - relatorio executivo mensal
@@ -551,16 +553,78 @@ Rollback:
 
 - reverter os commits da fase e remover os documentos criados por ela.
 
+## 20. Fase 204 - Auditoria de evolucao patrimonial e dashboard executivo
+
+Objetivo:
+- auditar o historico real disponivel para evolucao patrimonial sem inventar snapshots retroativos;
+- separar o que pode ser mostrado agora no dashboard executivo usando apenas numeros oficiais;
+- classificar cada recurso entre implementavel agora, parcial, futuro ou nao recomendado;
+- registrar uma proposta visual futura sem copiar identidade visual de outro produto.
+
+Estado atual:
+
+- fase atual: 204;
+- nome: Auditoria de evolucao patrimonial e dashboard executivo;
+- branch atual: `docs/phase-204-evolution-audit`;
+- SHA-base: `2f69f0623717d09e670b82f711588f9d1cc50909`;
+- situacao: auditoria documental em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: nenhuma;
+- nenhuma alteracao funcional autorizada;
+- Fases 206, 208, 210 e 212 continuam planejadas e nao autorizadas.
+
+Inventario resumido:
+
+- dados reais presentes: `S.assets`, `S.aportes`, `S.proventos`, `S.rfEvents`, `S.goals`, backup/exportacao e relatorio atual;
+- fontes oficiais reutilizaveis: `cx()`, `assetAnalysisRows()`, `rfIntelligenceSnapshot()`, `passiveIncomeGoalStats()`, `proventoStats()`, `proventoResumo()`, `reportsSnapshot()`, `dashboardSnapshot()`;
+- serie historica de patrimonio persistida: nao confirmada;
+- backup/exportacao: snapshot do estado atual, nao serie temporal de patrimonio;
+- `patrimonySnapshot()`: leitura estimada a partir do estado atual e dos aportes, nao historico patrimonial verificado.
+
+Classificacao tecnica:
+
+- A: resumo patrimonial atual, composicao por classe, melhores e piores ativos, renda passiva atual, renda fixa atual;
+- B: leituras parciais a partir de eventos com data, como aportes, proventos e movimentacoes de renda fixa;
+- C: coleta de snapshots daqui para frente, sem preenchimento retroativo;
+- D: reconstruir patrimonio historico completo sem snapshots ou inventar valores passados.
+
+Conclusao tecnica:
+
+- recomendacao: Opcao 4 - adiar o grafico patrimonial;
+- primeiro passo seguro: dashboard executivo com numeros oficiais atuais;
+- segundo passo seguro: historico mensal premium com dados reais ja registrados;
+- terceiro passo possivel: evolucao patrimonial somente se uma coleta de snapshots for autorizada.
+
+Proposta de PRs futuras:
+
+- PR funcional 204A - Dashboard executivo: destaques da carteira, melhores e piores ativos, composicao por classe, reutilizando apenas calculos oficiais;
+- PR funcional 204B - Historico mensal premium: bloco aberto por padrao, expansao progressiva, filtros e consolidacao visual;
+- PR funcional 204C - Evolucao patrimonial: somente se o historico real ou snapshots futuros justificarem.
+
+Critérios de aceite:
+
+- nenhuma implementacao funcional nesta fase;
+- nenhuma formula financeira nova;
+- nenhum schema novo;
+- nenhum dado retroativo inventado;
+- inventario, classificacao e recomendacao presentes;
+- rollback simples e documental.
+
+Conclusao Caveman:
+
+- menor passo seguro: nao inventar patrimonio passado e nao misturar estimativa com historico real.
+
+Conclusao Impeccable:
+
+- decisao baseada em evidencias;
+- fontes oficiais identificadas;
+- riscos e limites explicitados;
+- proposta visual futura coerente e acessivel;
+- UTF-8 sem BOM e sem mojibake.
+
 ## 11. Sequencia planejada apos a Fase 202
 
 Planejadas e nao autorizadas:
-
-### Fase 204 - Evolucao patrimonial
-
-- objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;
-- usar somente historico real disponivel;
-- nao inventar valores passados;
-- estado: planejada e nao autorizada.
 
 ### Fase 206 - Metas financeiras
 
@@ -591,12 +655,13 @@ Planejadas e nao autorizadas:
 - evitar reescrita ampla sem beneficio comprovado;
 - estado: planejada e nao autorizada.
 
+- a Fase 204 esta em auditoria documental e nao faz parte desta sequencia planejada;
 - a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
 - a Fase 200 foi redefinida por decisao explicita;
-- a sequencia futura planejada inclui 204, 206, 208, 210 e 212.
+- a sequencia futura planejada inclui 206, 208, 210 e 212.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
