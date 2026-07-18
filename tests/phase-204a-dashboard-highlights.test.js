@@ -23,6 +23,10 @@ function extractDashboardHighlightsSnippet() {
   return extractSnippet('function setDashboardHighlightsTab(tab){', 'function dashboardHomeCompositionPanel(data){');
 }
 
+function extractGoSnippet() {
+  return extractSnippet('function go(t){', 'function clA(){');
+}
+
 function makeContext(rows, overrides = {}) {
   const counters = { renders: 0 };
   const context = {
@@ -39,9 +43,10 @@ function makeContext(rows, overrides = {}) {
     render() {
       counters.renders += 1;
     },
-    go() {
-      counters.renders += 1;
+    save() {
+      counters.saves = (counters.saves || 0) + 1;
     },
+    runAutoProventosGratis() {},
     assetPerformanceOverviewRows() {
       return rows;
     },
@@ -101,8 +106,13 @@ test('destaques da carteira renderiza abas, estado vazio e atalho para desempenh
   assert.match(htmlHigh, /Maiores baixas/);
   assert.match(htmlHigh, /AAA3/);
   assert.match(htmlHigh, /R\$1850\.00/);
-  assert.match(htmlHigh, /go\('desempenho'\)/);
   assert.equal(htmlHigh.includes('Maiores pagadores do mes'), false);
+
+  const navContext = makeContext(rows).context;
+  vm.runInNewContext(extractGoSnippet(), navContext);
+  navContext.go('desempenho');
+  assert.equal(navContext.S.tab, 'ativos');
+  assert.equal(navContext.S.assetsInnerTab, 'desempenho');
 
   context.setDashboardHighlightsTab('low');
   assert.equal(context.S.dashboardHighlightsTab, 'low');

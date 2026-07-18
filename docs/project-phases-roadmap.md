@@ -9,8 +9,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - branch atual: `feat/phase-204a-dashboard-highlights`;
 - SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
 - situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
+- PR atual: `#205`;
 - implementacao ativa: card Destaques da carteira;
+- alteracao funcional autorizada exclusivamente para a Fase 204A;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -25,7 +26,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - correcao de 768px registrada como concluida;
 - 204B, 204C, 206, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
-- nenhuma alteracao funcional autorizada;
+- alteracao funcional autorizada exclusivamente para a Fase 204A;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -43,7 +44,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `2f69f0623717d09e670b82f711588f9d1cc50909`
+- HEAD / `origin/main`: `122a3506420b64c2be8df5950c3f01749f74e75d`
 - PR `#204`: merged e closed (encerramento documental da fase 204)
 - PR `#202`: merged e closed (encerramento funcional da fase 202)
 - PR `#200`: merged e closed (encerramento funcional da fase 200)
@@ -657,7 +658,7 @@ Estado atual:
 - branch atual: `feat/phase-204a-dashboard-highlights`;
 - SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
 - situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
+- PR atual: `#205`;
 - implementacao ativa: card Destaques da carteira;
 - Fase 204 documental concluida;
 - 204B, 204C, 206, 208, 210 e 212 nao autorizadas.

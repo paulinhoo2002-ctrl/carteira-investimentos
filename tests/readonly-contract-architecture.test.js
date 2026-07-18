@@ -306,7 +306,7 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.match(roadmap, /Estado final:/);
   assert.match(roadmap, /- fase atual: 204A;/);
   assert.match(roadmap, /- situacao: Fase 194 concluida;/);
-  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- PR atual: `#205`;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#194`: merged e closed \(encerramento funcional da fase 194\);/);
   assert.match(roadmap, /- a fase 195 nao existe sem autorizacao explicita\./);
@@ -321,14 +321,14 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.match(roadmap, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
   assert.match(roadmap, /- fase atual: 204A;/);
   assert.match(roadmap, /- situacao: Fase 196 concluida;/);
-  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- PR atual: `#205`;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
   assert.match(roadmap, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
   assert.match(roadmap, /Estado final:/);
   assert.match(roadmap, /- fase atual: 204A;/);
   assert.match(roadmap, /- situacao: Fase 198 concluida;/);
-  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- PR atual: `#205`;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
   assert.match(roadmap, /- resultado: apto com ressalvas;/);

@@ -49,7 +49,7 @@ test('fase 204 fica registrada como auditoria documental', () => {
   assert.match(currentState, /- branch atual: `feat\/phase-204a-dashboard-highlights`;/);
   assert.match(currentState, /- SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;/);
   assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- PR atual: `#205`;/);
   assert.match(currentState, /- implementacao ativa: card Destaques da carteira;/);
   assert.match(currentState, /- PR `#204` merged e closed \(encerramento documental da fase 204\);/);
   assert.match(currentState, /- SHA final da Fase 204: `122a3506420b64c2be8df5950c3f01749f74e75d`;/);
@@ -103,7 +103,7 @@ test('fase 204 fica registrada como auditoria documental', () => {
   assert.match(phase204a, /- branch atual: `feat\/phase-204a-dashboard-highlights`;/);
   assert.match(phase204a, /- SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;/);
   assert.match(phase204a, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(phase204a, /- PR atual: pendente;/);
+  assert.match(phase204a, /- PR atual: `#205`;/);
   assert.match(phase204a, /- implementacao ativa: card Destaques da carteira;/);
   assert.match(phase204a, /- Fase 204 documental concluida;/);
   assert.match(phase204a, /- 204B, 204C, 206, 208, 210 e 212 nao autorizadas[.;]/);
