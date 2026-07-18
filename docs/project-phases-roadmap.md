@@ -4,14 +4,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 204B;
-- nome: Historico mensal premium de dividendos;
-- branch atual: `feat/phase-204b-monthly-income-history`;
-- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#207`;
-- implementacao ativa: historico mensal premium;
-- alteracao funcional autorizada exclusivamente para a Fase 204B;
+- fase atual: nenhuma;
+- nome: nenhuma;
+- branch atual: main;
+- SHA-base: `06d921b78a9411a709726a8f4cad8725bcb56899`;
+- situacao: Fase 204B concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- nenhuma alteracao funcional autorizada;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -25,11 +25,16 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - SHA final da Fase 204A: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
 - resultado: Dashboard executivo com Destaques da carteira concluido;
 - Fase 204A funcional e documentalmente concluida;
-- Fase 204B ativa;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
+- PR `#207` merged e closed (encerramento funcional da Fase 204B);
+- modo de merge da Fase 204B: squash;
+- SHA final da Fase 204B: `06d921b78a9411a709726a8f4cad8725bcb56899`;
+- resultado: Historico mensal premium de dividendos concluido;
+- Fase 204B funcional e documentalmente encerrada;
+- Fases 204A e 204B funcional e documentalmente encerradas;
 - 204C, 206, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
 - Fase 196 concluida pela PR #196;
@@ -49,7 +54,8 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `63b7206be2908e8f6eca5c8590948513c3d55005`
+- HEAD / `origin/main`: `06d921b78a9411a709726a8f4cad8725bcb56899`
+- PR `#207`: merged e closed (encerramento funcional da Fase 204B)
 - PR `#205`: merged e closed (encerramento funcional da Fase 204A)
 - PR `#204`: merged e closed (encerramento documental da fase 204)
 - PR `#202`: merged e closed (encerramento funcional da fase 202)
@@ -83,6 +89,7 @@ Base de referencia desta fase:
 | 189 | Aportes e sugestao explicavel readonly | Concluida | `#189` | `0372cc4e04d66f713474b8d0b41ef2750d380061` | `docs/project-phases-roadmap.md`, `index.html`, `modern/src/App.tsx`, `modern/src/bootstrap/hostContributionsReadonlySource.ts`, `modern/src/bootstrap/modernContributionsRuntime.ts`, `modern/src/bootstrap/mountModernApp.ts`, `modern/src/features/contributions/ContributionsReadonlyPage.tsx`, `modern/src/features/contributions/contributionsReadonlyBridge.d.ts`, `modern/src/features/contributions/contributionsReadonlyBridge.mjs`, `modern/src/features/contributions/contributionsReadonlyContract.d.ts`, `modern/src/features/contributions/contributionsReadonlyContract.mjs`, `modern/src/features/contributions/contributionsRefreshController.ts`, `modern/src/features/contributions/contributionsSnapshotAdapter.d.ts`, `modern/src/features/contributions/contributionsSnapshotAdapter.mjs`, `modern/src/features/contributions/legacyContributionsReadonlyIntegration.ts`, `modern/src/features/contributions/readonlyContributionsViewModel.ts`, `modern/src/host.tsx`, `modern/src/main.tsx`, `modern/src/types/navigation.mjs`, `package.json`, `tests/modern-base.test.js`, `tests/modern-contributions-explainable-page.test.js`, `tests/modern-host-source.test.js`, `tests/modern-host.test.js`, `tests/readonly-contract-architecture.test.js` | pagina moderna readonly de aportes e sugestao explicavel, com score null versus zero, item vazio rejeitado e sem soma financeira nova no moderno | estrategia continua no legado e a camada moderna nao pode criar justificativa financeira artificial | reverter `0372cc4e04d66f713474b8d0b41ef2750d380061` |
 | 190 | Decisao arquitetural da modernizacao | Concluida | `#190` | `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` | `docs/adr/ADR-001-modernization-strategy.md`, `docs/modern-architecture-inventory.md`, `docs/modernization-decision-matrix.md`, `docs/project-phases-roadmap.md`, `tests/modern-architecture-decision.test.js`, `tests/readonly-contract-architecture.test.js` | expansao readonly gradual e decisao arquitetural registrada, com legado como fonte de verdade | risco residual documental se novas fases nao atualizarem o mapa e as evidencias | reverter `git revert 1e72ef28350f10835a8fd92cbdadcebdb969b8cf` |
 | 204A | Dashboard executivo com destaques da carteira | Concluida | `#205` | `8ab97be06a3b377c6fe1911cb42e2d57a6546275` | `index.html`, `docs/phase-204a-dashboard-highlights.md`, `tests/phase-204a-dashboard-highlights.test.js`, `tests/phase-204a-dashboard-highlights.guard.js` | reutilizacao da base oficial da Fase 202 sem formula financeira nova | destaques dependem da disponibilidade e completude dos dados atuais | `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275` |
+| 204B | Historico mensal premium de dividendos | Concluida | `#207` | `06d921b78a9411a709726a8f4cad8725bcb56899` | `index.html`, `docs/phase-204b-monthly-income-history.md`, `tests/phase-204b-monthly-income-history.test.js`, `tests/phase-204b-monthly-income-history.guard.js` | consolidacao somente de proventos reais com data oficial nao futura, sem historico inventado | contrato atual nao possui status persistido separado de previsto e recebido | `git revert 06d921b78a9411a709726a8f4cad8725bcb56899` |
 
 ## 2. Fechamento da Fase 190 e encerramento do ciclo readonly
 
@@ -760,16 +767,23 @@ Objetivo:
 - nao preencher meses retroativamente;
 - nao misturar proventos futuros, previstos, estimados ou renda fixa.
 
-Estado atual:
+Estado final:
 
-- fase atual: 204B;
-- branch atual: `feat/phase-204b-monthly-income-history`;
+- fase concluida;
+- branch original: `feat/phase-204b-monthly-income-history`;
 - SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#207`;
-- implementacao ativa: historico mensal premium;
-- alteracao funcional autorizada exclusivamente para a Fase 204B;
+- PR `#207` merged e closed;
+- modo: squash;
+- SHA final: `06d921b78a9411a709726a8f4cad8725bcb56899`;
+- titulo final: `feat: cria historico mensal premium de dividendos`;
+- nenhuma implementacao ativa;
+- nenhuma formula financeira nova;
+- nenhum schema novo;
+- nenhum snapshot;
+- nenhuma evolucao patrimonial;
+- nenhum deploy manual;
 - Fase 204A funcional e documentalmente concluida;
+- Fase 204B funcional e documentalmente encerrada;
 - 204C, 206, 208, 210 e 212 nao autorizadas.
 
 Inventario tecnico:
@@ -840,8 +854,7 @@ Testes:
 
 Rollback:
 
-- rollback pre-merge da branch: `git revert 313c71146181a58157e6236ef3305ca259d6ca5f`;
-- depois do squash merge, o encerramento documental deve registrar o SHA final da main;
+- rollback final: `git revert 06d921b78a9411a709726a8f4cad8725bcb56899`;
 
 Conclusao Caveman:
 
@@ -852,6 +865,26 @@ Conclusao Impeccable:
 - consolidacao rastreavel, acessivel e responsiva;
 - sem inventar historico;
 - sem regressao funcional.
+
+## Encerramento
+
+- PR `#207`;
+- squash;
+- SHA final: `06d921b78a9411a709726a8f4cad8725bcb56899`;
+- data de encerramento: `2026-07-18`;
+- 4 testes funcionais principais aprovados;
+- cobertura interna contempla recebidos, filtros, agrupamento, expansao e comparacao segura;
+- builds verdes;
+- validacao visual executada;
+- contrato de recebimento preservado;
+- zero e ausente preservados;
+- nenhuma formula financeira nova;
+- nenhum schema;
+- nenhum snapshot;
+- nenhum deploy manual;
+- rollback final: `git revert 06d921b78a9411a709726a8f4cad8725bcb56899`;
+- 204C nao iniciada;
+- Fase 206 nao iniciada.
 
 ## 11. Sequencia planejada apos a Fase 202
 
@@ -887,6 +920,7 @@ Planejadas e nao autorizadas:
 - estado: planejada e nao autorizada.
 
 - a Fase 204A foi concluida e nao faz parte desta sequencia planejada;
+- a Fase 204B foi concluida e nao faz parte desta sequencia planejada;
 - a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;

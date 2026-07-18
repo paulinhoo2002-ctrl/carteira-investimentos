@@ -17,28 +17,29 @@ function assertRoadmap204AClosed(roadmap) {
   const phase204a = extractSection(roadmap, '## 21. Fase 204A - Dashboard executivo com destaques da carteira', '## 11. Sequencia planejada apos a Fase 202');
   const futureSequence = extractSection(roadmap, '## 11. Sequencia planejada apos a Fase 202', '## 12. Radar estrategico - mudancas de alto impacto');
 
-  assert.match(currentState, /- fase atual: 204B;/);
-  assert.match(currentState, /- nome: Historico mensal premium de dividendos;/);
-  assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
-  assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
-  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: `#207`;/);
-  assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
-  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- nome: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `06d921b78a9411a709726a8f4cad8725bcb56899`;/);
+  assert.match(currentState, /- situacao: Fase 204B concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
-  assert.match(currentState, /- modo de merge: squash;/);
-  assert.match(currentState, /- SHA final da Fase 204A: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;/);
-  assert.match(currentState, /- resultado: Dashboard executivo com Destaques da carteira concluido;/);
-  assert.match(currentState, /- PR `#204` merged e closed \(encerramento documental da fase 204\);/);
-  assert.match(currentState, /- Fase 204 documental concluida;/);
-  assert.match(currentState, /- Fase 204A funcional( e documentalmente)? concluida;/);
+  assert.match(currentState, /- PR `#207` merged e closed \(encerramento funcional da Fase 204B\);/);
+  assert.match(currentState, /- modo de merge da Fase 204B: squash;/);
+  assert.match(currentState, /- SHA final da Fase 204B: `06d921b78a9411a709726a8f4cad8725bcb56899`;/);
+  assert.match(currentState, /- resultado: Historico mensal premium de dividendos concluido;/);
+  assert.match(currentState, /- Fase 204A funcional e documentalmente concluida;/);
+  assert.match(currentState, /- Fase 204B funcional e documentalmente encerrada;/);
   assert.match(currentState, /- 204C, 206, 208, 210 e 212 nao autorizadas[.;]/);
   assert.match(currentState, /- Fases 206, 208, 210 e 212 continuam planejadas e nao autorizadas\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(currentState.includes('card Destaques da carteira'), false);
 
   assert.match(baseRef, /- branch: main/);
-  assert.match(baseRef, /- HEAD \/ `origin\/main`: `63b7206be2908e8f6eca5c8590948513c3d55005`/);
+  assert.match(baseRef, /- HEAD \/ `origin\/main`: `06d921b78a9411a709726a8f4cad8725bcb56899`/);
+  assert.match(baseRef, /- PR `#207`: merged e closed \(encerramento funcional da Fase 204B\)/);
   assert.match(baseRef, /- PR `#205`: merged e closed \(encerramento funcional da Fase 204A\)/);
   assert.match(baseRef, /- PR `#204`: merged e closed \(encerramento documental da fase 204\)/);
   assert.match(baseRef, /- workspace: limpo apos o merge/);
@@ -72,7 +73,7 @@ function assertRoadmap204AClosed(roadmap) {
   assert.match(phase204a, /git revert `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;/);
 
   assert.match(futureSequence, /- a Fase 204A foi concluida e nao faz parte desta sequencia planejada;/);
-  assert.equal(futureSequence.includes('- a Fase 204A esta em implementacao funcional e nao faz parte desta sequencia planejada;'), false);
+  assert.match(futureSequence, /- a Fase 204B foi concluida e nao faz parte desta sequencia planejada;/);
   assert.match(futureSequence, /- a sequencia pode ser reordenada somente por risco encontrado na auditoria;/);
   assert.match(futureSequence, /- nenhuma dessas fases esta automaticamente autorizada;/);
   assert.match(futureSequence, /- cada fase exige objetivo, branch, PR, validacao e autorizacao;/);
@@ -114,7 +115,7 @@ function readUtf8WithoutBom(relativePath) {
   assert.equal(buffer.length >= 3 && buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf, false, `${relativePath} nao pode ter BOM`);
 
   const text = buffer.toString('utf8');
-  assert.equal(text.includes('�'), false, `${relativePath} nao pode conter mojibake`);
+  assert.equal(text.includes('ï¿½'), false, `${relativePath} nao pode conter mojibake`);
   return text;
 }
 
@@ -128,9 +129,14 @@ test('fase 204A fica documentariamente encerrada', () => {
     roadmap,
     /\| 204A \| Dashboard executivo com destaques da carteira \| Concluida \| `#205` \| `8ab97be06a3b377c6fe1911cb42e2d57a6546275` \| `index\.html`, `docs\/phase-204a-dashboard-highlights\.md`, `tests\/phase-204a-dashboard-highlights\.test\.js`, `tests\/phase-204a-dashboard-highlights\.guard\.js` \| reutilizacao da base oficial da Fase 202 sem formula financeira nova \| destaques dependem da disponibilidade e completude dos dados atuais \| `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275` \|/,
   );
-  assert.match(roadmap, /- fase atual: 204B;/);
-  assert.match(roadmap, /- PR atual: `#207`;/);
-  assert.match(roadmap, /- implementacao ativa: historico mensal premium;/);
+  assert.match(
+    roadmap,
+    /\| 204B \| Historico mensal premium de dividendos \| Concluida \| `#207` \| `06d921b78a9411a709726a8f4cad8725bcb56899` \| `index\.html`, `docs\/phase-204b-monthly-income-history\.md`, `tests\/phase-204b-monthly-income-history\.test\.js`, `tests\/phase-204b-monthly-income-history\.guard\.js` \| consolidacao somente de proventos reais com data oficial nao futura, sem historico inventado \| contrato atual nao possui status persistido separado de previsto e recebido \| `git revert 06d921b78a9411a709726a8f4cad8725bcb56899` \|/,
+  );
+  assert.match(roadmap, /- fase atual: nenhuma;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmap, /- nenhuma alteracao funcional autorizada;/);
   assert.match(roadmap, /- 204C, 206, 208, 210 e 212 nao autorizadas[.;]/);
 });
 
