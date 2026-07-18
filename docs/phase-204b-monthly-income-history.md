@@ -149,11 +149,9 @@ Se nenhuma dessas datas for valida, o lancamento fica fora do historico mensal.
 
 ## Rollback
 
-Rollback pre-merge da branch:
+Rollback final:
 
-`git revert 313c71146181a58157e6236ef3305ca259d6ca5f`
-
-Depois do squash merge, o encerramento documental deve registrar o SHA final da main.
+`git revert 06d921b78a9411a709726a8f4cad8725bcb56899`
 
 ## Conclusao Caveman
 
@@ -168,3 +166,22 @@ Depois do squash merge, o encerramento documental deve registrar o SHA final da 
 - acessibilidade preservada
 - responsividade preservada
 - sem inventar historico
+
+## Encerramento
+
+- PR `#207`;
+- squash;
+- SHA final: `06d921b78a9411a709726a8f4cad8725bcb56899`;
+- data de encerramento: `2026-07-18`;
+- 39 testes aprovados;
+- builds verdes;
+- validacao visual executada em 390px, 768px, 1366px e 1920px;
+- contrato de recebimento preservado;
+- zero e ausente preservados;
+- nenhuma formula financeira nova;
+- nenhum schema novo;
+- nenhum snapshot;
+- nenhum deploy manual;
+- rollback final: `git revert 06d921b78a9411a709726a8f4cad8725bcb56899`;
+- 204C nao iniciada;
+- Fase 206 nao iniciada.
