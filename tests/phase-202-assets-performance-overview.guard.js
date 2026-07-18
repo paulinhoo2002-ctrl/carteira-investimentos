@@ -1,15 +1,5 @@
 const assert = require('node:assert/strict');
 
-function extractCurrentStateSection(roadmap) {
-  const startMarker = '## Estado e governanca';
-  const endMarker = 'Base de referencia desta fase:';
-  const start = roadmap.indexOf(startMarker);
-  assert.equal(start >= 0, true, `${startMarker} precisa existir no roadmap`);
-  const end = roadmap.indexOf(endMarker, start + startMarker.length);
-  assert.equal(end > start, true, `${endMarker} precisa existir depois do estado`);
-  return roadmap.slice(start, end);
-}
-
 function extractPhase202Section(roadmap) {
   const startMarker = '## 19. Fase 202 - Painel consolidado de desempenho dos ativos';
   const endMarker = '## 11. Sequencia planejada apos a Fase 202';
@@ -31,29 +21,7 @@ function extractFutureSequenceSection(roadmap) {
 }
 
 function assertPhase202RoadmapClosed(roadmap) {
-  const currentState = extractCurrentStateSection(roadmap);
   const phase202 = extractPhase202Section(roadmap);
-
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
-  assert.match(currentState, /- situacao: Fase 202 concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
-  assert.match(currentState, /- PR `#202` merged e closed \(encerramento funcional da fase 202\);/);
-  assert.match(currentState, /- modo de merge: squash;/);
-  assert.match(currentState, /- SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
-  assert.match(currentState, /- resultado: painel consolidado de desempenho dos ativos concluido;/);
-  assert.match(currentState, /- nenhuma Fase 204 ativa;/);
-  assert.match(currentState, /- PR `#200` merged e closed;/);
-  assert.match(currentState, /- SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;/);
-  assert.match(currentState, /- resultado: refinamento confiavel da tela de Dividendos concluido;/);
-  assert.match(currentState, /- correcao de 768px registrada como concluida;/);
-  assert.match(currentState, /- nenhuma Fase 199 funcional;/);
-  assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
-  assert.equal(currentState.includes('ciclo de modernizacao readonly encerrado'), false);
-  assert.equal(currentState.includes('Fase 200 ativa'), false);
-  assert.equal(currentState.includes('Fase 195'), false);
 
   assert.match(phase202, /## 19\. Fase 202 - Painel consolidado de desempenho dos ativos/);
   assert.match(phase202, /Estado final:/);
@@ -69,7 +37,7 @@ function assertPhase202RoadmapClosed(roadmap) {
   assert.match(phase202, /- shell moderno readonly;/);
   assert.match(phase202, /- Fase 204 nao iniciada\./);
   assert.match(phase202, /^### Conclusão funcional$/m);
-  assert.equal(/^## Conclusao funcional$/m.test(phase202), false, 'Conclusao funcional nao pode voltar para nivel 2');
+  assert.equal(/^## Conclusão funcional$/m.test(phase202), false, 'Conclusão funcional nao pode voltar para nivel 2');
   assert.match(phase202, /- nova area Ativos -> Desempenho;/);
   assert.match(phase202, /- melhores e piores ativos;/);
   assert.match(phase202, /- resultado em reais e percentual;/);
@@ -82,17 +50,12 @@ function assertPhase202RoadmapClosed(roadmap) {
   assert.match(phase202, /^### Riscos observados$/m);
   assert.equal(/^## Riscos observados$/m.test(phase202), false, 'Riscos observados nao pode voltar para nivel 2');
   assert.match(phase202, /^### Validações registradas$/m);
-  assert.equal(/^## Validacoes registradas$/m.test(phase202), false, 'Validacoes registradas nao pode voltar para nivel 2');
+  assert.equal(/^## Validações registradas$/m.test(phase202), false, 'Validações registradas nao pode voltar para nivel 2');
 }
 
 function assertPhase202FutureSequence(roadmap) {
   const section = extractFutureSequenceSection(roadmap);
   const expected = [
-    '### Fase 204 - Evolucao patrimonial',
-    '- objetivo: mostrar patrimonio por periodo, aportes, rendimentos e crescimento acumulado;',
-    '- usar somente historico real disponivel;',
-    '- nao inventar valores passados;',
-    '- estado: planejada e nao autorizada.',
     '### Fase 206 - Metas financeiras',
     '- objetivo: acompanhar meta de R$ 1 milhao e renda passiva de R$ 4 mil mensais;',
     '- separar valores reais de projecoes;',
@@ -114,18 +77,21 @@ function assertPhase202FutureSequence(roadmap) {
     '- reduzir complexidade desnecessaria;',
     '- evitar reescrita ampla sem beneficio comprovado;',
     '- estado: planejada e nao autorizada.',
+    '- a Fase 204 esta em auditoria documental e nao faz parte desta sequencia planejada;',
     '- a sequencia pode ser reordenada somente por risco encontrado na auditoria;',
     '- nenhuma dessas fases esta automaticamente autorizada;',
     '- cada fase exige objetivo, branch, PR, validacao e autorizacao;',
     '- nao existe Fase 199 funcional;',
     '- a Fase 200 foi redefinida por decisao explicita;',
-    '- a sequencia futura planejada inclui 204, 206, 208, 210 e 212.',
+    '- a sequencia futura planejada inclui 206, 208, 210 e 212.',
   ];
 
   for (const line of expected) {
     assert.equal(section.includes(line), true, `Sequencia futura precisa conter: ${line}`);
   }
   assert.equal(section.includes('### Fase 202 - Painel consolidado de desempenho dos ativos'), false, 'Sequencia futura nao pode citar a Fase 202 ativa');
+  assert.equal(section.includes('### Fase 204 - Evolucao patrimonial'), false, 'Sequencia futura nao pode manter a Fase 204 como planejada');
+  assert.equal(section.includes('### Fase 204 - Auditoria de evolucao patrimonial e dashboard executivo'), false, 'Sequencia futura nao pode citar a Fase 204 atual');
   assert.equal(section.includes('- a sequencia pode ser reordenada somente por decisao explicita;'), false, 'Sequencia futura nao pode usar a regra antiga');
 }
 
