@@ -4,14 +4,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 204A;
-- nome: Dashboard executivo com destaques da carteira;
-- branch atual: `feat/phase-204a-dashboard-highlights`;
-- SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#205`;
-- implementacao ativa: card Destaques da carteira;
-- alteracao funcional autorizada exclusivamente para a Fase 204A;
+- fase atual: nenhuma;
+- nome: nenhuma;
+- branch atual: main;
+- SHA-base: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- situacao: Fase 204A concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- nenhuma alteracao funcional autorizada;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -20,13 +20,17 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - SHA final da Fase 204: `122a3506420b64c2be8df5950c3f01749f74e75d`;
 - resultado: auditoria de evolucao patrimonial e dashboard executivo concluida;
 - Fase 204 documental concluida;
+- PR `#205` merged e closed (encerramento funcional da Fase 204A);
+- modo de merge: squash;
+- SHA final da Fase 204A: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- resultado: Dashboard executivo com Destaques da carteira concluido;
+- Fase 204A funcional concluida;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
 - 204B, 204C, 206, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
-- alteracao funcional autorizada exclusivamente para a Fase 204A;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -44,15 +48,17 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `122a3506420b64c2be8df5950c3f01749f74e75d`
+- HEAD / `origin/main`: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`
+- PR `#205`: merged e closed (encerramento funcional da Fase 204A)
 - PR `#204`: merged e closed (encerramento documental da fase 204)
 - PR `#202`: merged e closed (encerramento funcional da fase 202)
 - PR `#200`: merged e closed (encerramento funcional da fase 200)
 - PR `#198`: merged e closed (encerramento da auditoria)
 - PR `#196`: merged e closed (encerramento funcional da fase 196)
 - PR `#195`: merged e closed (encerramento documental da fase 194)
-- workspace: limpo no inicio desta fase
+- workspace: limpo apos o merge
 - PR `#194`: merged e closed (encerramento funcional da fase 194)
+- modern/dist fora do indice
 
 ## 1. Historico confirmado das fases readonly
 
@@ -621,7 +627,7 @@ Proposta de PRs futuras:
 - PR funcional 204B - Historico mensal premium: bloco aberto por padrao, expansao progressiva, filtros e consolidacao visual;
 - PR funcional 204C - Evolucao patrimonial: somente se o historico real ou snapshots futuros justificarem.
 
-Critérios de aceite:
+Criterios de aceite:
 
 - nenhuma implementacao funcional nesta fase;
 - nenhuma formula financeira nova;
@@ -651,17 +657,21 @@ Objetivo:
 - reutilizar apenas os calculos oficiais da Fase 202;
 - nao criar formula financeira nova.
 
-Estado atual:
+Estado final:
 
-- fase atual: 204A;
-- nome: Dashboard executivo com destaques da carteira;
-- branch atual: `feat/phase-204a-dashboard-highlights`;
+- fase concluida;
+- branch original: `feat/phase-204a-dashboard-highlights`;
 - SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#205`;
-- implementacao ativa: card Destaques da carteira;
-- Fase 204 documental concluida;
+- PR `#205` merged e closed;
+- modo: squash;
+- SHA final: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- titulo: `feat: cria destaques da carteira no dashboard`;
+- nenhuma implementacao ativa;
+- nenhuma formula financeira nova;
+- nenhum schema novo;
+- nenhum deploy manual;
 - 204B, 204C, 206, 208, 210 e 212 nao autorizadas.
+- Fase 204A funcional concluida;
 
 Fonte oficial:
 
@@ -710,14 +720,26 @@ Testes:
 - verificacao de abas, texto e acao `Ver todos`;
 - confirmacao de que zero e base incompleta ficam fora do ranking.
 
+Resultado final:
+
+- card Destaques da carteira integrado;
+- Maiores altas e Maiores baixas;
+- tres ativos por aba;
+- Ver todos abre Ativos -> Desempenho;
+- dados oficiais da Fase 202 reutilizados;
+- zero e ausente preservados;
+- base incompleta fora do ranking;
+- 390px e 768px empilhados sem overflow;
+- 1366px e 1920px lado a lado;
+- shell moderno readonly preservado.
+
 Rollback:
 
-- remover a secao da Fase 204A, a documentacao dedicada e os testes associados;
-- manter a Fase 204 documental e as fases anteriores intactas.
+- git revert `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
 
 Conclusao Caveman:
 
-- menor passo seguro: mostrar destaques prontos sem recalcular nada.
+- menor passo seguro: destacar dado pronto, sem recalculo novo.
 
 Conclusao Impeccable:
 
@@ -760,7 +782,7 @@ Planejadas e nao autorizadas:
 - evitar reescrita ampla sem beneficio comprovado;
 - estado: planejada e nao autorizada.
 
-- a Fase 204A esta em implementacao funcional e nao faz parte desta sequencia planejada;
+- a Fase 204A foi concluida e nao faz parte desta sequencia planejada;
 - a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;

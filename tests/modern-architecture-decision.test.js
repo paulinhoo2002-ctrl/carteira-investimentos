@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { assertRoadmap204AClosed } = require('./phase-204a-documentary-closure.guard');
 const { assertPhase202FutureSequence, assertPhase202RoadmapClosed } = require('./phase-202-assets-performance-overview.guard');
 
 const repoRoot = path.join(__dirname, '..');
@@ -42,16 +43,9 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.equal(roadmap.startsWith('# Project Phases Roadmap'), true);
   assertNoMojibake(roadmap, 'roadmap');
 
+  assertRoadmap204AClosed(roadmap);
   const currentState = section(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase192 = section(roadmap, '## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos', '## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
-
-  assert.match(currentState, /- fase atual: 204A;/);
-  assert.match(currentState, /- nome: Dashboard executivo com destaques da carteira;/);
-  assert.match(currentState, /- branch atual: `feat\/phase-204a-dashboard-highlights`;/);
-  assert.match(currentState, /- SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;/);
-  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: `#205`;/);
-  assert.match(currentState, /- implementacao ativa: card Destaques da carteira;/);
   assert.match(currentState, /- PR `#202` merged e closed \(encerramento funcional da fase 202\);/);
   assert.match(currentState, /- modo de merge: squash;/);
   assert.match(currentState, /- SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
@@ -89,23 +83,23 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(roadmap, /- matriz de decisao com criterios, notas e justificativa;/);
   assert.match(roadmap, /## 15\. Fase 194 - finalizacao objetiva da aba Dividendos/);
   assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- fase atual: 204A;/);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
   assert.match(roadmap, /- situacao: Fase 194 concluida;/);
-  assert.match(roadmap, /- PR atual: `#205`;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#194`: merged e closed \(encerramento funcional da fase 194\);/);
   assert.match(roadmap, /- a fase 195 nao existe sem autorizacao explicita\./);
   assert.match(roadmap, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
-  assert.match(roadmap, /- fase atual: 204A;/);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
   assert.match(roadmap, /- situacao: Fase 196 concluida;/);
-  assert.match(roadmap, /- PR atual: `#205`;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
   assert.match(roadmap, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
   assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- fase atual: 204A;/);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
   assert.match(roadmap, /- situacao: Fase 198 concluida;/);
-  assert.match(roadmap, /- PR atual: `#205`;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#198`: merged e closed \(encerramento da auditoria\);/);
   assert.match(roadmap, /- resultado: apto com ressalvas;/);
