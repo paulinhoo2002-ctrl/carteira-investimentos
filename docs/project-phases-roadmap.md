@@ -4,14 +4,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 204A;
-- nome: Dashboard executivo com destaques da carteira;
-- branch atual: `feat/phase-204a-dashboard-highlights`;
-- SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#205`;
-- implementacao ativa: card Destaques da carteira;
-- alteracao funcional autorizada exclusivamente para a Fase 204A;
+- fase atual: nenhuma;
+- nome: nenhuma;
+- branch atual: main;
+- SHA-base: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- situacao: Fase 204A concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- nenhuma alteracao funcional autorizada;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -20,13 +20,17 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - SHA final da Fase 204: `122a3506420b64c2be8df5950c3f01749f74e75d`;
 - resultado: auditoria de evolucao patrimonial e dashboard executivo concluida;
 - Fase 204 documental concluida;
+- PR `#205` merged e closed (encerramento funcional da Fase 204A);
+- modo de merge: squash;
+- SHA final da Fase 204A: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- resultado: Dashboard executivo com Destaques da carteira concluido;
+- Fase 204A funcional concluida;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
 - 204B, 204C, 206, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
-- alteracao funcional autorizada exclusivamente para a Fase 204A;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -44,15 +48,17 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `122a3506420b64c2be8df5950c3f01749f74e75d`
+- HEAD / `origin/main`: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`
+- PR `#205`: merged e closed (encerramento funcional da Fase 204A)
 - PR `#204`: merged e closed (encerramento documental da fase 204)
 - PR `#202`: merged e closed (encerramento funcional da fase 202)
 - PR `#200`: merged e closed (encerramento funcional da fase 200)
 - PR `#198`: merged e closed (encerramento da auditoria)
 - PR `#196`: merged e closed (encerramento funcional da fase 196)
 - PR `#195`: merged e closed (encerramento documental da fase 194)
-- workspace: limpo no inicio desta fase
+- workspace: limpo apos o merge
 - PR `#194`: merged e closed (encerramento funcional da fase 194)
+- modern/dist fora do indice
 
 ## 1. Historico confirmado das fases readonly
 
@@ -75,6 +81,7 @@ Base de referencia desta fase:
 | 188 | Proventos e renda mensal readonly | Concluida | `#188` | `2c6489fb190e215fd69074071aceba8cf2638e39` | `docs/project-phases-roadmap.md`, `index.html`, `modern/src/features/income/IncomeReadonlyPage.tsx`, `modern/src/features/income/incomeReadonlyContract.d.ts`, `modern/src/features/income/incomeReadonlyContract.mjs`, `modern/src/features/income/legacyIncomeReadonlyIntegration.ts`, `modern/src/features/income/readonlyIncomeViewModel.ts`, `tests/modern-base.test.js`, `tests/modern-host-source.test.js`, `tests/modern-income-readonly-page.test.js`, `tests/readonly-contract-architecture.test.js` | contrato, provider e pagina readonly de proventos com `receivedValue`, ausencia versus zero preservada, itens vazios rejeitados e nenhuma soma financeira nova no moderno | semantica de p.value precisava ser auditada e a camada moderna nao podia duplicar bruto e liquido | reverter `2c6489fb190e215fd69074071aceba8cf2638e39` |
 | 189 | Aportes e sugestao explicavel readonly | Concluida | `#189` | `0372cc4e04d66f713474b8d0b41ef2750d380061` | `docs/project-phases-roadmap.md`, `index.html`, `modern/src/App.tsx`, `modern/src/bootstrap/hostContributionsReadonlySource.ts`, `modern/src/bootstrap/modernContributionsRuntime.ts`, `modern/src/bootstrap/mountModernApp.ts`, `modern/src/features/contributions/ContributionsReadonlyPage.tsx`, `modern/src/features/contributions/contributionsReadonlyBridge.d.ts`, `modern/src/features/contributions/contributionsReadonlyBridge.mjs`, `modern/src/features/contributions/contributionsReadonlyContract.d.ts`, `modern/src/features/contributions/contributionsReadonlyContract.mjs`, `modern/src/features/contributions/contributionsRefreshController.ts`, `modern/src/features/contributions/contributionsSnapshotAdapter.d.ts`, `modern/src/features/contributions/contributionsSnapshotAdapter.mjs`, `modern/src/features/contributions/legacyContributionsReadonlyIntegration.ts`, `modern/src/features/contributions/readonlyContributionsViewModel.ts`, `modern/src/host.tsx`, `modern/src/main.tsx`, `modern/src/types/navigation.mjs`, `package.json`, `tests/modern-base.test.js`, `tests/modern-contributions-explainable-page.test.js`, `tests/modern-host-source.test.js`, `tests/modern-host.test.js`, `tests/readonly-contract-architecture.test.js` | pagina moderna readonly de aportes e sugestao explicavel, com score null versus zero, item vazio rejeitado e sem soma financeira nova no moderno | estrategia continua no legado e a camada moderna nao pode criar justificativa financeira artificial | reverter `0372cc4e04d66f713474b8d0b41ef2750d380061` |
 | 190 | Decisao arquitetural da modernizacao | Concluida | `#190` | `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` | `docs/adr/ADR-001-modernization-strategy.md`, `docs/modern-architecture-inventory.md`, `docs/modernization-decision-matrix.md`, `docs/project-phases-roadmap.md`, `tests/modern-architecture-decision.test.js`, `tests/readonly-contract-architecture.test.js` | expansao readonly gradual e decisao arquitetural registrada, com legado como fonte de verdade | risco residual documental se novas fases nao atualizarem o mapa e as evidencias | reverter `git revert 1e72ef28350f10835a8fd92cbdadcebdb969b8cf` |
+| 204A | Dashboard executivo com destaques da carteira | Concluida | `#205` | `8ab97be06a3b377c6fe1911cb42e2d57a6546275` | `index.html`, `docs/phase-204a-dashboard-highlights.md`, `tests/phase-204a-dashboard-highlights.test.js`, `tests/phase-204a-dashboard-highlights.guard.js` | reutilizacao da base oficial da Fase 202 sem formula financeira nova | destaques dependem da disponibilidade e completude dos dados atuais | `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275` |
 
 ## 2. Fechamento da Fase 190 e encerramento do ciclo readonly
 
@@ -621,7 +628,7 @@ Proposta de PRs futuras:
 - PR funcional 204B - Historico mensal premium: bloco aberto por padrao, expansao progressiva, filtros e consolidacao visual;
 - PR funcional 204C - Evolucao patrimonial: somente se o historico real ou snapshots futuros justificarem.
 
-Critérios de aceite:
+Criterios de aceite:
 
 - nenhuma implementacao funcional nesta fase;
 - nenhuma formula financeira nova;
@@ -651,17 +658,21 @@ Objetivo:
 - reutilizar apenas os calculos oficiais da Fase 202;
 - nao criar formula financeira nova.
 
-Estado atual:
+Estado final:
 
-- fase atual: 204A;
-- nome: Dashboard executivo com destaques da carteira;
-- branch atual: `feat/phase-204a-dashboard-highlights`;
+- fase concluida;
+- branch original: `feat/phase-204a-dashboard-highlights`;
 - SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#205`;
-- implementacao ativa: card Destaques da carteira;
-- Fase 204 documental concluida;
+- PR `#205` merged e closed;
+- modo: squash;
+- SHA final: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- titulo: `feat: cria destaques da carteira no dashboard`;
+- nenhuma implementacao ativa;
+- nenhuma formula financeira nova;
+- nenhum schema novo;
+- nenhum deploy manual;
 - 204B, 204C, 206, 208, 210 e 212 nao autorizadas.
+- Fase 204A funcional concluida;
 
 Fonte oficial:
 
@@ -710,14 +721,26 @@ Testes:
 - verificacao de abas, texto e acao `Ver todos`;
 - confirmacao de que zero e base incompleta ficam fora do ranking.
 
+Resultado final:
+
+- card Destaques da carteira integrado;
+- Maiores altas e Maiores baixas;
+- tres ativos por aba;
+- Ver todos abre Ativos -> Desempenho;
+- dados oficiais da Fase 202 reutilizados;
+- zero e ausente preservados;
+- base incompleta fora do ranking;
+- 390px e 768px empilhados sem overflow;
+- 1366px e 1920px lado a lado;
+- shell moderno readonly preservado.
+
 Rollback:
 
-- remover a secao da Fase 204A, a documentacao dedicada e os testes associados;
-- manter a Fase 204 documental e as fases anteriores intactas.
+- git revert `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
 
 Conclusao Caveman:
 
-- menor passo seguro: mostrar destaques prontos sem recalcular nada.
+- menor passo seguro: destacar dado pronto, sem recalculo novo.
 
 Conclusao Impeccable:
 
@@ -760,7 +783,7 @@ Planejadas e nao autorizadas:
 - evitar reescrita ampla sem beneficio comprovado;
 - estado: planejada e nao autorizada.
 
-- a Fase 204A esta em implementacao funcional e nao faz parte desta sequencia planejada;
+- a Fase 204A foi concluida e nao faz parte desta sequencia planejada;
 - a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;

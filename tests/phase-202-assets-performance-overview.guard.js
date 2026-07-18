@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { assertRoadmap204AClosed } = require('./phase-204a-documentary-closure.guard');
 
 function extractPhase202Section(roadmap) {
   const startMarker = '## 19. Fase 202 - Painel consolidado de desempenho dos ativos';
@@ -22,6 +23,7 @@ function extractFutureSequenceSection(roadmap) {
 
 function assertPhase202RoadmapClosed(roadmap) {
   const phase202 = extractPhase202Section(roadmap);
+  assertRoadmap204AClosed(roadmap);
 
   assert.match(phase202, /## 19\. Fase 202 - Painel consolidado de desempenho dos ativos/);
   assert.match(phase202, /Estado final:/);
@@ -77,7 +79,7 @@ function assertPhase202FutureSequence(roadmap) {
     '- reduzir complexidade desnecessaria;',
     '- evitar reescrita ampla sem beneficio comprovado;',
     '- estado: planejada e nao autorizada.',
-    '- a Fase 204A esta em implementacao funcional e nao faz parte desta sequencia planejada;',
+    '- a Fase 204A foi concluida e nao faz parte desta sequencia planejada;',
     '- a sequencia pode ser reordenada somente por risco encontrado na auditoria;',
     '- nenhuma dessas fases esta automaticamente autorizada;',
     '- cada fase exige objetivo, branch, PR, validacao e autorizacao;',

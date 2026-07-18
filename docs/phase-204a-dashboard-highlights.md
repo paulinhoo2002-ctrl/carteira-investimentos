@@ -89,3 +89,18 @@
 - acessibilidade e responsividade consideradas;
 - nenhuma formula nova;
 - UTF-8 sem BOM e sem mojibake.
+
+## Encerramento
+
+- PR `#205`;
+- titulo: `feat: cria destaques da carteira no dashboard`;
+- modo: squash;
+- SHA final: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- data do encerramento: `2026-07-18`;
+- testes e builds verdes;
+- validacao visual concluida em 390px, 768px, 1366px e 1920px;
+- nenhuma formula financeira nova;
+- nenhum schema novo;
+- nenhum deploy manual;
+- rollback: `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
+- 204B nao iniciada.
