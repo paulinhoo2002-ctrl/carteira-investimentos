@@ -28,5 +28,7 @@ test('fase 204B fica documentariamente encerrada', () => {
   const documentation = readUtf8WithoutBom('docs/phase-204b-monthly-income-history.md');
 
   assertPhase204BMonthlyIncomeHistory(roadmap, documentation);
+  assert.match(documentation, /4 testes funcionais principais aprovados;/);
+  assert.match(documentation, /cobertura interna contempla recebidos, filtros, agrupamento, expansao e comparacao segura;/);
+  assert.equal(documentation.includes('39 testes aprovados'), false);
 });
-

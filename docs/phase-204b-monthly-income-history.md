@@ -173,7 +173,8 @@ Rollback final:
 - squash;
 - SHA final: `06d921b78a9411a709726a8f4cad8725bcb56899`;
 - data de encerramento: `2026-07-18`;
-- 39 testes aprovados;
+- 4 testes funcionais principais aprovados;
+- cobertura interna contempla recebidos, filtros, agrupamento, expansao e comparacao segura;
 - builds verdes;
 - validacao visual executada em 390px, 768px, 1366px e 1920px;
 - contrato de recebimento preservado;
