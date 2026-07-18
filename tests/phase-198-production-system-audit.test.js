@@ -48,13 +48,14 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   const currentState = section(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase192 = section(roadmap, '## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos', '## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
 
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- nome: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;/);
-  assert.match(currentState, /- situacao: Fase 204A concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- fase atual: 204B;/);
+  assert.match(currentState, /- nome: Historico mensal premium de dividendos;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
+  assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: `#207`;/);
+  assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
   assert.match(currentState, /- PR `#202` merged e closed \(encerramento funcional da fase 202\);/);
   assert.match(currentState, /- modo de merge: squash;/);
   assert.match(currentState, /- SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
@@ -63,7 +64,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(currentState, /- SHA final da Fase 204: `122a3506420b64c2be8df5950c3f01749f74e75d`;/);
   assert.match(currentState, /- resultado: auditoria de evolucao patrimonial e dashboard executivo concluida;/);
   assert.match(currentState, /- Fase 204 documental concluida;/);
-  assert.match(currentState, /- 204B, 204C, 206, 208, 210 e 212 nao autorizadas;/);
+  assert.match(currentState, /- 204C, 206, 208, 210 e 212 nao autorizadas;/);
   assert.match(currentState, /- PR `#200` merged e closed;/);
   assert.match(currentState, /- SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;/);
   assert.match(currentState, /- resultado: refinamento confiavel da tela de Dividendos concluido;/);

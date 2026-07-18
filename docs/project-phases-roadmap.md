@@ -4,14 +4,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- nome: nenhuma;
-- branch atual: main;
-- SHA-base: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
-- situacao: Fase 204A concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
-- nenhuma alteracao funcional autorizada;
+- fase atual: 204B;
+- nome: Historico mensal premium de dividendos;
+- branch atual: `feat/phase-204b-monthly-income-history`;
+- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;
+- situacao: implementacao funcional em desenvolvimento;
+- PR atual: `#207`;
+- implementacao ativa: historico mensal premium;
+- alteracao funcional autorizada exclusivamente para a Fase 204B;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -24,12 +24,13 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - modo de merge: squash;
 - SHA final da Fase 204A: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`;
 - resultado: Dashboard executivo com Destaques da carteira concluido;
-- Fase 204A funcional concluida;
+- Fase 204A funcional e documentalmente concluida;
+- Fase 204B ativa;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
-- 204B, 204C, 206, 208, 210 e 212 nao autorizadas;
+- 204C, 206, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
@@ -48,7 +49,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `8ab97be06a3b377c6fe1911cb42e2d57a6546275`
+- HEAD / `origin/main`: `63b7206be2908e8f6eca5c8590948513c3d55005`
 - PR `#205`: merged e closed (encerramento funcional da Fase 204A)
 - PR `#204`: merged e closed (encerramento documental da fase 204)
 - PR `#202`: merged e closed (encerramento funcional da fase 202)
@@ -749,6 +750,108 @@ Conclusao Impeccable:
 - acessibilidade e responsividade consideradas;
 - nenhuma formula nova;
 - encoding preservado em UTF-8 sem BOM.
+
+## 22. Fase 204B - Historico mensal premium de dividendos
+
+Objetivo:
+- melhorar a visualizacao do historico mensal de proventos realmente recebidos;
+- manter o bloco aberto por padrao;
+- usar consolidacao mensal real, filtros simples e expansao progressiva;
+- nao preencher meses retroativamente;
+- nao misturar proventos futuros, previstos, estimados ou renda fixa.
+
+Estado atual:
+
+- fase atual: 204B;
+- branch atual: `feat/phase-204b-monthly-income-history`;
+- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;
+- situacao: implementacao funcional em desenvolvimento;
+- PR atual: `#207`;
+- implementacao ativa: historico mensal premium;
+- alteracao funcional autorizada exclusivamente para a Fase 204B;
+- Fase 204A funcional e documentalmente concluida;
+- 204C, 206, 208, 210 e 212 nao autorizadas.
+
+Inventario tecnico:
+
+- `S.proventos`;
+- `proventoDividendPaymentDate()`;
+- `proventoStats()`;
+- `proventoResumo()`;
+- `dividendMonthlyHistoryRows()`;
+- `dividendMonthlyHistoryOptions()`;
+- `dividendMonthlyHistoryFilterRows()`;
+- `dividendMonthlyHistoryGroupRows()`;
+- `dividendMonthlyHistorySummary()`;
+- `dividendMonthlyHistoryEntry()`;
+- `dividendMonthlyHistoryPremium()`.
+
+Fonte oficial:
+
+- data oficial de recebimento: resultado de `proventoDividendPaymentDate()`;
+- valor oficial: `p.value` valido e finito;
+- ticker oficial: `p.ticker`;
+- tipo oficial: `proventoTipoCanonical(p.eventType || p.type)`;
+- somente recebidos entram na consolidacao mensal;
+- entradas com data invalida, futuro, valor ausente ou renda fixa ficam fora.
+- nao existe status persistido separado para previsto/recebido nesta fase; a leitura oficial usa a data de pagamento nao futura e as exclusoes oficiais.
+
+Regras:
+
+- zero real continua valido;
+- ausente nao vira zero;
+- meses vazios nao sao inventados;
+- periodo, ativo e tipo combinam entre si;
+- expansao usa `aria-expanded`;
+- uma linha mensal nao edita nem exclui registros.
+
+Layout e acessibilidade:
+
+- bloco aberto por padrao;
+- resumo superior com total, media, melhor mes e meses com recebimentos;
+- lista inicial limitada;
+- botao `Mostrar mais` e `Mostrar menos`;
+- desktop em tabela compacta por linha;
+- mobile em cards empilhados;
+- sem rolagem horizontal global;
+- foco visivel e acionamento por teclado.
+
+Performance:
+
+- consolidacao unica por renderizacao;
+- sem timer e sem observador novo;
+- limite inicial de 6 meses;
+- expansao progressiva em blocos de 6 meses;
+- sem nova dependencia.
+
+Riscos:
+
+- duplicar regra financeira se o historico voltar a usar tabela anual;
+- overflow em 768px se os cards nao quebrarem corretamente;
+- confusao entre recebido real e futuras previsoes se o filtro falhar.
+
+Testes:
+
+- guardrail documental da Fase 204B;
+- cobertura de recebidos, filtros, expansao, estados vazios, ordem e limite inicial;
+- confirmacao de zero versus ausente;
+- ausencia de formula nova;
+- ausencia de schema novo.
+
+Rollback:
+
+- rollback pre-merge da branch: `git revert 313c71146181a58157e6236ef3305ca259d6ca5f`;
+- depois do squash merge, o encerramento documental deve registrar o SHA final da main;
+
+Conclusao Caveman:
+
+- usar apenas dados reais ja gravados e apresentar o minimo necessario.
+
+Conclusao Impeccable:
+
+- consolidacao rastreavel, acessivel e responsiva;
+- sem inventar historico;
+- sem regressao funcional.
 
 ## 11. Sequencia planejada apos a Fase 202
 

@@ -13,6 +13,11 @@ function read(relativePath) {
 test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   const indexHtml = read('index.html');
   const roadmap = read('docs/project-phases-roadmap.md');
+  const currentStateStart = roadmap.indexOf('## Estado e governanca');
+  const currentStateEnd = roadmap.indexOf('Base de referencia desta fase:', currentStateStart);
+  const currentState = currentStateStart >= 0 && currentStateEnd > currentStateStart
+    ? roadmap.slice(currentStateStart, currentStateEnd)
+    : roadmap;
 
   assert.match(indexHtml, /function dividendMonthlyTimeline\(\)/);
   assert.match(indexHtml, /passiveIncomeGoalStats\(\)/);
@@ -47,6 +52,14 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
   assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
+  assert.match(currentState, /- fase atual: 204B;/);
+  assert.match(currentState, /- nome: Historico mensal premium de dividendos;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
+  assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: `#207`;/);
+  assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
 
   const roadmapPhase194Start = roadmap.indexOf('## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
   assert.equal(roadmapPhase194Start >= 0, true, 'Secao da Fase 194 precisa existir');

@@ -293,6 +293,14 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   const currentState = extractRoadmapPhaseSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
 
   assertPhase202RoadmapClosed(roadmap);
+  assert.match(currentState, /- fase atual: 204B;/);
+  assert.match(currentState, /- nome: Historico mensal premium de dividendos;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
+  assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: `#207`;/);
+  assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
 
   assert.match(roadmap, /18\. 192 - refinamento visual e responsivo da aba Dividendos/);
   assert.match(roadmap, /## 14\. Fase 192 - refinamento visual e responsivo da aba Dividendos/);

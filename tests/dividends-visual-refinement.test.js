@@ -22,6 +22,11 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   const indexHtml = read('index.html');
   const roadmap = read('docs/project-phases-roadmap.md');
   const phase200Doc = read('docs/phase-200-dividends-trustworthy-overview.md');
+  const currentStateStart = roadmap.indexOf('## Estado e governanca');
+  const currentStateEnd = roadmap.indexOf('Base de referencia desta fase:', currentStateStart);
+  const currentState = currentStateStart >= 0 && currentStateEnd > currentStateStart
+    ? roadmap.slice(currentStateStart, currentStateEnd)
+    : roadmap;
 
   assert.match(indexHtml, /function dividendMonthlyTimeline\(\)/);
   assert.match(indexHtml, /passiveIncomeGoalStats\(\)/);
@@ -42,11 +47,22 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
   assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
+  assert.match(currentState, /- fase atual: 204B;/);
+  assert.match(currentState, /- nome: Historico mensal premium de dividendos;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
+  assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: `#207`;/);
+  assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
 
   assert.match(indexHtml, /@media\(max-width:768px\)\{/);
   assert.match(indexHtml, /div-premium-metrics\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/);
   assert.match(indexHtml, /div-timeline\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/);
-  assert.match(indexHtml, /aria-label="Tabela de hist.*rico mensal com rolagem horizontal"/);
+  assert.match(indexHtml, /div-month-history-toggle/);
+  assert.match(indexHtml, /div-month-history-body/);
+  assert.match(indexHtml, /div-month-history-summary/);
+  assert.match(indexHtml, /div-monthly-table-block/);
 
   assertPhase202RoadmapClosed(roadmap);
   assertPhase202FutureSequence(roadmap);
