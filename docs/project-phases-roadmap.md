@@ -4,21 +4,26 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 204;
-- branch atual: `docs/phase-204-evolution-audit`;
-- SHA-base: `2f69f0623717d09e670b82f711588f9d1cc50909`;
-- situacao: auditoria documental em desenvolvimento;
+- fase atual: 204A;
+- nome: Dashboard executivo com destaques da carteira;
+- branch atual: `feat/phase-204a-dashboard-highlights`;
+- SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
+- situacao: implementacao funcional em desenvolvimento;
 - PR atual: pendente;
-- implementacao ativa: nenhuma;
+- implementacao ativa: card Destaques da carteira;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
 - resultado: painel consolidado de desempenho dos ativos concluido;
-- Fase 204 ativa somente como auditoria documental;
+- PR `#204` merged e closed (encerramento documental da fase 204);
+- SHA final da Fase 204: `122a3506420b64c2be8df5950c3f01749f74e75d`;
+- resultado: auditoria de evolucao patrimonial e dashboard executivo concluida;
+- Fase 204 documental concluida;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
+- 204B, 204C, 206, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
 - nenhuma alteracao funcional autorizada;
 - Fase 196 concluida pela PR #196;
@@ -39,6 +44,7 @@ Base de referencia desta fase:
 
 - branch: main
 - HEAD / `origin/main`: `2f69f0623717d09e670b82f711588f9d1cc50909`
+- PR `#204`: merged e closed (encerramento documental da fase 204)
 - PR `#202`: merged e closed (encerramento funcional da fase 202)
 - PR `#200`: merged e closed (encerramento funcional da fase 200)
 - PR `#198`: merged e closed (encerramento da auditoria)
@@ -561,17 +567,30 @@ Objetivo:
 - classificar cada recurso entre implementavel agora, parcial, futuro ou nao recomendado;
 - registrar uma proposta visual futura sem copiar identidade visual de outro produto.
 
-Estado atual:
+Estado final:
 
-- fase atual: 204;
-- nome: Auditoria de evolucao patrimonial e dashboard executivo;
-- branch atual: `docs/phase-204-evolution-audit`;
+- fase concluida;
+- branch original: `docs/phase-204-evolution-audit`;
 - SHA-base: `2f69f0623717d09e670b82f711588f9d1cc50909`;
-- situacao: auditoria documental em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: nenhuma;
-- nenhuma alteracao funcional autorizada;
-- Fases 206, 208, 210 e 212 continuam planejadas e nao autorizadas.
+- PR `#204` merged e closed (encerramento documental da fase 204);
+- SHA final da Fase 204: `122a3506420b64c2be8df5950c3f01749f74e75d`;
+- conclusao: apto com ressalvas;
+- risco residual principal: responsividade em 768px;
+- nenhuma implementacao ativa;
+- Fase 204 documental concluida;
+- 204B, 204C, 206, 208, 210 e 212 nao autorizadas.
+
+Resultado principal:
+
+- sistema funcional;
+- nenhuma regressao critica comprovada;
+- nenhuma perda de dados detectada;
+- contratos readonly preservados;
+- testes e builds verdes;
+- risco medio confirmado em 768px;
+- autenticacao Google preservada;
+- warnings de build/runtime registrados;
+- sequencia futura preservada.
 
 Inventario resumido:
 
@@ -622,6 +641,91 @@ Conclusao Impeccable:
 - proposta visual futura coerente e acessivel;
 - UTF-8 sem BOM e sem mojibake.
 
+## 21. Fase 204A - Dashboard executivo com destaques da carteira
+
+Objetivo:
+- substituir o card `Maiores pagadores do mes` do Dashboard por `Destaques da carteira`;
+- manter `Composicao por classe` ao lado;
+- mostrar abas `Maiores altas` e `Maiores baixas`;
+- reutilizar apenas os calculos oficiais da Fase 202;
+- nao criar formula financeira nova.
+
+Estado atual:
+
+- fase atual: 204A;
+- nome: Dashboard executivo com destaques da carteira;
+- branch atual: `feat/phase-204a-dashboard-highlights`;
+- SHA-base: `122a3506420b64c2be8df5950c3f01749f74e75d`;
+- situacao: implementacao funcional em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: card Destaques da carteira;
+- Fase 204 documental concluida;
+- 204B, 204C, 206, 208, 210 e 212 nao autorizadas.
+
+Fonte oficial:
+
+- `assetPerformanceOverviewRows()`;
+- `assetCurrentValue()`;
+- `assetAppliedValue()`;
+- `assetJurosValue()`;
+- `assetRentabPct()`;
+- `cx()`;
+- `TYPE_ORDER`;
+- `sortAssetsByGroup()`.
+
+Regras de inclusao:
+
+- valor atual disponivel;
+- valor aplicado disponivel;
+- zero real continua valido;
+- dado ausente continua diferente de zero;
+- ativo com base incompleta fica fora do ranking.
+
+Regras de ordenacao:
+
+- Maiores altas: resultado percentual desc, resultado em reais desc, ticker asc;
+- Maiores baixas: resultado percentual asc, resultado em reais asc, ticker asc;
+- resultado exatamente zero nao entra em nenhuma aba.
+
+Layout e acessibilidade:
+
+- duas abas internas;
+- estado inicial em `Maiores altas`;
+- acao `Ver todos` para `Ativos -> Desempenho`;
+- leitura confortavel em 390px, 768px, 1366px e 1920px;
+- sem overflow horizontal relevante;
+- foco visivel e navegacao por teclado.
+
+Riscos:
+
+- excesso de altura se os itens nao forem limitados;
+- regressao de 768px se a area nao respeitar o empilhamento responsivo;
+- duplicacao de formula se o ranking deixar de usar a base oficial.
+
+Testes:
+
+- guardrail documental da Fase 204A;
+- cobertura da ordenacao de altas e baixas;
+- verificacao de abas, texto e acao `Ver todos`;
+- confirmacao de que zero e base incompleta ficam fora do ranking.
+
+Rollback:
+
+- remover a secao da Fase 204A, a documentacao dedicada e os testes associados;
+- manter a Fase 204 documental e as fases anteriores intactas.
+
+Conclusao Caveman:
+
+- menor passo seguro: mostrar destaques prontos sem recalcular nada.
+
+Conclusao Impeccable:
+
+- navegacao clara;
+- dados oficiais reaproveitados;
+- acessibilidade e responsividade consideradas;
+- nenhuma formula nova;
+- encoding preservado em UTF-8 sem BOM.
+
 ## 11. Sequencia planejada apos a Fase 202
 
 Planejadas e nao autorizadas:
@@ -655,7 +759,7 @@ Planejadas e nao autorizadas:
 - evitar reescrita ampla sem beneficio comprovado;
 - estado: planejada e nao autorizada.
 
-- a Fase 204 esta em auditoria documental e nao faz parte desta sequencia planejada;
+- a Fase 204A esta em implementacao funcional e nao faz parte desta sequencia planejada;
 - a sequencia pode ser reordenada somente por risco encontrado na auditoria;
 - nenhuma dessas fases esta automaticamente autorizada;
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;

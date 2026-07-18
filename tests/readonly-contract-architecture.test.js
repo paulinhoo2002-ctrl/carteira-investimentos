@@ -304,7 +304,7 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.match(roadmap, /- rollback: `git revert bfbc1924ea12925f2b0003a57ba9ebe26fbd031e`;/);
   assert.match(roadmap, /## 15\. Fase 194 - finalizacao objetiva da aba Dividendos/);
   assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- fase atual: 204;/);
+  assert.match(roadmap, /- fase atual: 204A;/);
   assert.match(roadmap, /- situacao: Fase 194 concluida;/);
   assert.match(roadmap, /- PR atual: pendente;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
@@ -319,14 +319,14 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.equal(roadmap.includes('Fase 191 -'), false, 'Roadmap nao pode criar fase 191 funcional');
   assert.equal(roadmap.includes('Fase 193 -'), false, 'Roadmap nao pode abrir Fase 193 funcional');
   assert.match(roadmap, /## 16\. Fase 196 - estabilizacao do teste basico da interface/);
-  assert.match(roadmap, /- fase atual: 204;/);
+  assert.match(roadmap, /- fase atual: 204A;/);
   assert.match(roadmap, /- situacao: Fase 196 concluida;/);
   assert.match(roadmap, /- PR atual: pendente;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- PR `#196`: merged e closed \(encerramento funcional da fase 196\);/);
   assert.match(roadmap, /## 17\. Fase 198 - auditoria geral do sistema em producao/);
   assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- fase atual: 204;/);
+  assert.match(roadmap, /- fase atual: 204A;/);
   assert.match(roadmap, /- situacao: Fase 198 concluida;/);
   assert.match(roadmap, /- PR atual: pendente;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
