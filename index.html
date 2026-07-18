@@ -14710,12 +14710,22 @@ function dataQualityNormalizeTicker(value){
 }
 function dataQualityNumberState(value){
   if(value===null || value===undefined || value==='') return {state:'missing', value:null};
-  const raw=typeof value==='number'
-    ? value
-    : Number(String(value).trim().replace(/R\$|%|\s/g,'').replace(/\./g,'').replace(',', '.'));
-  if(!Number.isFinite(raw)) return {state:'invalid', value:null};
-  if(raw===0) return {state:'zero', value:0};
-  return {state:'value', value:raw};
+  if(typeof value==='number'){
+    if(!Number.isFinite(value)) return {state:'invalid', value:null};
+    if(value===0) return {state:'zero', value:0};
+    return {state:'value', value};
+  }
+  const text=String(value).trim();
+  if(!text) return {state:'missing', value:null};
+  const raw=text.replace(/R\$|%|\s/g,'');
+  if(!raw) return {state:'missing', value:null};
+  const validText=/^[+-]?(?:\d+(?:[.,]\d+)?|\d{1,3}(?:\.\d{3})+(?:,\d+)?)$/.test(raw);
+  if(!validText) return {state:'invalid', value:null};
+  const parsed=parseNum(raw);
+  if(!Number.isFinite(parsed)) return {state:'invalid', value:null};
+  const numberValue = parsed;
+  if(numberValue===0) return {state:'zero', value:0};
+  return {state:'value', value:numberValue};
 }
 function dataQualityTypeState(value){
   const raw=String(value ?? '').trim();
