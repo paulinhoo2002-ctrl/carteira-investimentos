@@ -117,6 +117,8 @@ test('fase 206 fica documentada e encerrada com governanca rastreavel', () => {
 
   assertPhase206Roadmap(roadmap);
   assertPhase206Documentation(doc);
+  assert.match(roadmap, /- a sequencia futura planejada inclui 204C, 208, 210 e 212\./);
+  assert.equal(roadmap.includes('a sequencia futura planejada inclui 204, 208, 210 e 212.'), false);
   assert.equal(roadmap.includes('Fase 206 funcional em desenvolvimento;'), false);
   assert.equal(roadmap.includes('PR atual: `#209`;'), false);
   assert.equal(doc.includes('Nenhuma fase futura esta automaticamente autorizada.'), false);

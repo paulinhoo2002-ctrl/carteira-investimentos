@@ -85,7 +85,8 @@ function assertRoadmap204AClosed(roadmap) {
   assert.match(futureSequence, /- nao existe Fase 199 funcional;/);
   assert.match(futureSequence, /- a Fase 200 foi redefinida por decisao explicita;/);
   assert.match(futureSequence, /- a Fase 206 foi concluida e nao faz parte desta sequencia planejada;/);
-  assert.match(futureSequence, /- a sequencia futura planejada inclui 204, 208, 210 e 212\./);
+  assert.match(futureSequence, /- a sequencia futura planejada inclui 204C, 208, 210 e 212\./);
+  assert.equal(futureSequence.includes('- a sequencia futura planejada inclui 204, 208, 210 e 212.'), false);
   assert.equal(futureSequence.includes('### Fase 204A - Dashboard executivo com destaques da carteira'), false);
 }
 

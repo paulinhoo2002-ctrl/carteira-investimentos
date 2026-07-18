@@ -997,7 +997,7 @@ Planejadas e nao autorizadas:
 - nao existe Fase 199 funcional;
 - a Fase 200 foi redefinida por decisao explicita;
 - a Fase 206 foi concluida e nao faz parte desta sequencia planejada;
-- a sequencia futura planejada inclui 204, 208, 210 e 212.
+- a sequencia futura planejada inclui 204C, 208, 210 e 212.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
