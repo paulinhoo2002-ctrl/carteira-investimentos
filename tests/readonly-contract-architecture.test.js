@@ -293,14 +293,14 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   const currentState = extractRoadmapPhaseSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
 
   assertPhase202RoadmapClosed(roadmap);
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- nome: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
-  assert.match(currentState, /- situacao: Fase 206 concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
-  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
+  assert.match(currentState, /- fase atual: 208;/);
+  assert.match(currentState, /- nome: Qualidade dos dados;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-208-data-quality`;/);
+  assert.match(currentState, /- SHA-base: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: auditoria de qualidade dos dados;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 208;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
   assert.match(currentState, /- PR `#207` merged e closed \(encerramento funcional da Fase 204B\);/);
   assert.match(currentState, /- modo de merge da Fase 204B: squash;/);
@@ -334,7 +334,7 @@ function assertRoadmapCurrentPhase198State(roadmap) {
   assert.match(roadmap, /- a fase 190 permanece concluida;/);
   assert.match(roadmap, /- a PR #191 foi apenas o encerramento documental;/);
   assert.match(roadmap, /- a PR #193 foi apenas o encerramento documental da fase 192;/);
-  assert.match(roadmap, /Fases 208, 210 e 212 continuam planejadas e nao autorizadas\./);
+  assert.match(roadmap, /Fases 210 e 212 continuam planejadas e nao autorizadas\./);
   assert.match(roadmap, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(roadmap.includes('Fase 191 -'), false, 'Roadmap nao pode criar fase 191 funcional');
   assert.equal(roadmap.includes('Fase 193 -'), false, 'Roadmap nao pode abrir Fase 193 funcional');

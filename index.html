@@ -755,6 +755,19 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .data-audit-empty{padding:28px 16px;text-align:center;border:1px dashed var(--border);border-radius:13px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.5}
 .data-audit-areas{display:flex;gap:6px;flex-wrap:wrap}
 .data-audit-area-pill{font-size:9px;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:4px 7px}
+.data-quality-issue{display:grid;grid-template-columns:108px minmax(120px,1.2fr) minmax(150px,1.4fr) minmax(120px,.8fr) minmax(170px,1.1fr) auto;gap:10px;align-items:start;padding:11px;border:1px solid var(--border);border-radius:12px;background:var(--surface);min-width:0}
+.data-quality-issue.critical{border-left:3px solid #f87171}
+.data-quality-issue.warning{border-left:3px solid #fbbf24}
+.data-quality-issue.info{border-left:3px solid #60a5fa}
+.data-quality-entity{min-width:0;display:flex;flex-direction:column;gap:3px}
+.data-quality-entity-type{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+.data-quality-entity-label{font-size:11px;color:var(--text);font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.data-quality-field,.data-quality-problem,.data-quality-recommendation{font-size:10px;line-height:1.45;color:var(--muted)}
+.data-quality-problem{color:var(--text)}
+.data-quality-field strong,.data-quality-problem strong,.data-quality-recommendation strong{color:var(--text)}
+.data-quality-action{display:flex;justify-content:flex-end;align-items:flex-start}
+.data-quality-action .btn{white-space:nowrap}
+.data-quality-empty-health{padding:28px 16px;text-align:center;border:1px dashed var(--border);border-radius:13px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.5}
 .premium-mobile-only{display:none}
 .perf-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
 .perf-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px 12px 10px}
@@ -2590,6 +2603,16 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .data-audit-alert>div:nth-child(5){grid-column:1/-1}
   .data-audit-problem{font-size:10px}
   .data-audit-impact,.data-audit-fix{font-size:9px}
+  .data-quality-issue{grid-template-columns:1fr 1fr;gap:7px;padding:9px}
+  .data-quality-issue>div:nth-child(2),
+  .data-quality-issue>div:nth-child(3),
+  .data-quality-issue>div:nth-child(4),
+  .data-quality-issue>div:nth-child(5),
+  .data-quality-issue>div:nth-child(6){grid-column:1/-1}
+  .data-quality-entity-label{font-size:10px}
+  .data-quality-field,.data-quality-problem,.data-quality-recommendation{font-size:9px}
+  .data-quality-action{justify-content:flex-start}
+  .data-quality-action .btn{width:100%}
 }
 @media(max-width:640px){
   html,body,#root{width:100%;max-width:100%;overflow-x:hidden}
@@ -14668,6 +14691,606 @@ function dataAuditTab(){
     </div>
   </div>`;
 }
+
+const DATA_QUALITY_CATEGORIES=['Ativos','Dividendos','Renda Fixa','Metas','Movimentacoes','Duplicidades','Moedas','Configuracoes'];
+const DATA_QUALITY_ENTITY_TYPES=['Ativo','Provento','Renda Fixa','Meta','Movimentacao'];
+
+function dataQualitySeverityLabel(severity){
+  return severity==='critical' ? 'Critico' : severity==='warning' ? 'Atencao' : 'Info';
+}
+function dataQualitySeverityRank(severity){
+  return severity==='critical' ? 3 : severity==='warning' ? 2 : severity==='info' ? 1 : 0;
+}
+function dataQualityText(value, fallback='—'){
+  const text=String(value ?? '').trim();
+  return text || fallback;
+}
+function dataQualityNormalizeTicker(value){
+  return cleanAssetCode(String(value ?? '').trim()).toUpperCase();
+}
+function dataQualityNumberState(value){
+  if(value===null || value===undefined || value==='') return {state:'missing', value:null};
+  const raw=typeof value==='number'
+    ? value
+    : Number(String(value).trim().replace(/R\$|%|\s/g,'').replace(/\./g,'').replace(',', '.'));
+  if(!Number.isFinite(raw)) return {state:'invalid', value:null};
+  if(raw===0) return {state:'zero', value:0};
+  return {state:'value', value:raw};
+}
+function dataQualityTypeState(value){
+  const raw=String(value ?? '').trim();
+  if(!raw) return {state:'missing', value:''};
+  if(TYPE_CHOICES.includes(raw)) return {state:'value', value:raw};
+  const key=normTypeKey(raw);
+  if(TYPE_ALIAS_LOOKUP[key]) return {state:'value', value:TYPE_ALIAS_LOOKUP[key]};
+  const compact=key.replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  if(TYPE_ALIAS_LOOKUP[compact]) return {state:'value', value:TYPE_ALIAS_LOOKUP[compact]};
+  if(compact==='FUNDO DE INVESTIMENTO' || compact==='FUNDOS DE INVESTIMENTO') return {state:'value', value:'Fundos de Investimento'};
+  if(compact==='RENDA FIXA') return {state:'value', value:'Renda Fixa'};
+  if(compact==='TESOURO DIRETO') return {state:'value', value:'Tesouro Direto'};
+  if(compact==='RESERVA DE EMERGENCIA') return {state:'value', value:'Reserva de emergência'};
+  if(compact==='STOCK' || compact==='STOCKS') return {state:'value', value:'Stock'};
+  if(compact==='REIT' || compact==='REITS') return {state:'value', value:'Reit'};
+  return {state:'invalid', value:raw};
+}
+function dataQualityDateState(value){
+  const dt=parseAnyDate(value);
+  return dt instanceof Date && !Number.isNaN(dt.getTime()) ? {state:'value', value:dt} : {state:'invalid', value:null};
+}
+function dataQualityRecordKey(parts){
+  return parts.map(part=>String(part ?? '').trim()).join('|');
+}
+function dataQualityRouteForEntity(entityType, category){
+  if(category==='Dividendos') return 'dividendos';
+  if(category==='Renda Fixa') return 'renda-fixa';
+  if(category==='Metas') return 'metas';
+  if(category==='Movimentacoes') return 'aportes';
+  if(category==='Duplicidades') return 'ativos';
+  if(entityType==='Meta') return 'metas';
+  if(entityType==='Provento') return 'dividendos';
+  if(entityType==='Renda Fixa') return 'renda-fixa';
+  if(entityType==='Movimentacao') return 'aportes';
+  return 'ativos';
+}
+function dataQualityActionLabel(route){
+  if(route==='dividendos') return 'Abrir Dividendos';
+  if(route==='renda-fixa') return 'Abrir Renda Fixa';
+  if(route==='metas') return 'Abrir Metas';
+  if(route==='aportes') return 'Abrir Aportes';
+  if(route==='relatorios') return 'Abrir Relatorios';
+  return 'Abrir Ativos';
+}
+function dataQualityIssueRecord(record, issue){
+  const route=record.route || dataQualityRouteForEntity(record.entityType, record.category);
+  const item=dataQualityText(record.entityLabel);
+  const actionLabel=record.actionLabel || dataQualityActionLabel(route);
+  return {
+    id:`dq-${record.entityType}-${record.entityIndex}-${issue.severity}-${issue.field}`,
+    severity:issue.severity,
+    category:issue.category || record.category,
+    entityType:issue.entityType || record.entityType,
+    entityIndex:record.entityIndex,
+    entityLabel:item,
+    field:dataQualityText(issue.field),
+    message:dataQualityText(issue.message),
+    recommendation:dataQualityText(issue.recommendation),
+    route,
+    actionLabel,
+    area:record.category,
+    item,
+    problem:dataQualityText(issue.message),
+    impact:dataQualityText(issue.message),
+    fix:dataQualityText(issue.recommendation),
+    suggestion:dataQualityText(issue.recommendation)
+  };
+}
+function dataQualityCreateRecord({category, entityType, entityIndex, entityLabel, route, actionLabel}){
+  return {
+    category,
+    entityType,
+    entityIndex,
+    entityLabel,
+    route,
+    actionLabel,
+    issues:[],
+    fields:{}
+  };
+}
+function dataQualityPush(record, severity, field, message, recommendation){
+  record.issues.push({
+    severity,
+    field,
+    message,
+    recommendation
+  });
+}
+function dataQualityWarnMissing(record, field, message, recommendation){
+  dataQualityPush(record, 'warning', field, message, recommendation);
+}
+function dataQualityInfo(record, field, message, recommendation){
+  dataQualityPush(record, 'info', field, message, recommendation);
+}
+function dataQualityCritical(record, field, message, recommendation){
+  dataQualityPush(record, 'critical', field, message, recommendation);
+}
+function dataQualityAssetKey(asset){
+  const ticker=dataQualityNormalizeTicker(asset?.ticker);
+  const type=normalizeType(asset?.type||asset?.category||'','');
+  const currency=String(asset?.currency||asset?.moeda||asset?.currencyCode||'').trim().toUpperCase();
+  const account=String(asset?.account||asset?.broker||asset?.institution||asset?.wallet||'').trim().toUpperCase();
+  return dataQualityRecordKey([ticker, type, currency, account]);
+}
+function dataQualityProventoKey(prov){
+  const ticker=dataQualityNormalizeTicker(prov?.ticker||prov?.assetName||prov?.name);
+  const dt=proventoDividendPaymentDate(prov);
+  const date=dt ? toISODate(dt) : String(prov?.dataPagamento||prov?.paymentDate||prov?.pagamento||prov?.data||prov?.date||'').trim();
+  const type=proventoTipoCanonical(prov?.eventType||prov?.type);
+  const valueState=dataQualityNumberState(prov?.value);
+  const currency=String(prov?.currency||prov?.moeda||prov?.currencyCode||'').trim().toUpperCase();
+  return dataQualityRecordKey([ticker, date, type, valueState.value!=null ? valueState.value.toFixed(2) : String(prov?.value||''), currency]);
+}
+function dataQualityMovementKey(move){
+  const ticker=dataQualityNormalizeTicker(move?.ticker||move?.assetName||move?.name);
+  const date=String(move?.date||move?.paymentDate||move?.dataPagamento||'').trim();
+  const type=dataQualityText(move?.type||move?.eventType||move?.movement||move?.category);
+  const valueState=dataQualityNumberState(move?.value ?? move?.grossValue ?? move?.netValue ?? move?.totalValue);
+  return dataQualityRecordKey([ticker, date, type, valueState.value!=null ? valueState.value.toFixed(2) : String(move?.value ?? move?.grossValue ?? move?.netValue ?? move?.totalValue ?? '')]);
+}
+function dataQualityAnalyzeAssets(){
+  const records=[];
+  (Array.isArray(S.assets) ? S.assets : []).forEach((asset,index)=>{
+    const isRf=isRendaFixaAsset(asset);
+    const entityType=isRf ? 'Renda Fixa' : 'Ativo';
+    const category=isRf ? 'Renda Fixa' : 'Ativos';
+    const route=isRf ? 'renda-fixa' : 'ativos';
+    const actionLabel=dataQualityActionLabel(route);
+    const record=dataQualityCreateRecord({
+      category,
+      entityType,
+      entityIndex:index+1,
+      entityLabel:dataQualityText(asset?.ticker || asset?.name || asset?.product || asset?.title, `Ativo ${index+1}`),
+      route,
+      actionLabel
+    });
+
+    const rawTicker=String(asset?.ticker ?? '').trim();
+    const normalizedTicker=dataQualityNormalizeTicker(rawTicker);
+    const rawType=String(asset?.type ?? asset?.category ?? '').trim();
+    const typeState=dataQualityTypeState(rawType);
+    const normalizedType=typeState.value || '';
+    const rawName=String(asset?.name || asset?.product || asset?.title || '').trim();
+    const qtyState=dataQualityNumberState(asset?.qty);
+    const avgState=dataQualityNumberState(asset?.avg_price);
+    const currentState=dataQualityNumberState(asset?.current_price);
+    const currency=String(asset?.currency||asset?.moeda||asset?.currencyCode||'').trim();
+    const account=String(asset?.account||asset?.broker||asset?.institution||asset?.wallet||'').trim();
+    const isCashLike=/CAIXA|CASH|SALDO|RESERVA/.test(normTypeKey(rawType || rawName || ''));
+
+    if(!rawTicker && !isCashLike) dataQualityCritical(record, 'ticker', 'Ticker ausente no ativo.', 'Informe um ticker ou codigo valido para permitir conferencia e ranking.');
+    if(rawTicker && normalizedTicker !== rawTicker.toUpperCase()) dataQualityInfo(record, 'ticker', 'Ticker possui espacos ou grafia inconsistente.', 'Use o ticker padronizado sem espacos extras ou caracteres de apoio.');
+    if(!rawName) dataQualityWarnMissing(record, 'name', 'Nome do ativo ausente.', 'Preencha um nome legivel para facilitar a conferencia.');
+    if(typeState.state==='missing' || typeState.state==='invalid') dataQualityCritical(record, 'type', 'Tipo do ativo ausente ou invalido.', 'Informe a classe oficial do ativo antes de usar os relatorios.');
+    if(qtyState.state==='missing' || qtyState.state==='invalid' || qtyState.value<0 || (!isCashLike && qtyState.value===0)) dataQualityCritical(record, 'qty', 'Quantidade ausente, invalida ou zerada.', 'Revise a quantidade para evitar distorcao em valor atual e resultado.');
+    if(avgState.state==='missing' || avgState.state==='invalid' || avgState.value<0) dataQualityCritical(record, 'avg_price', 'Preco medio ou custo de aquisicao ausente ou invalido.', 'Informe um preco medio confiavel.');
+    if(currentState.state==='missing' || currentState.state==='invalid' || currentState.value<0) dataQualityWarnMissing(record, 'current_price', 'Preco atual ou valor de referencia ausente ou invalido.', 'Atualize a cotacao ou o valor atual quando aplicavel.');
+    if(!currency) dataQualityWarnMissing(record, 'currency', 'Moeda ausente.', 'Informe a moeda do cadastro quando houver suporte a multicurrency.');
+
+    if(isRf){
+      const values=rfValues(asset);
+      const subtype=String(asset?.rf_subtype||asset?.fixed_subtype||asset?.bondType||asset?.sector||'').trim();
+      const rate=String(asset?.rf_contract_rate||asset?.fixed_rate||asset?.rate||'').trim();
+      const maturity=String(asset?.rf_maturity_date||asset?.fixed_maturity_date||asset?.maturityDate||asset?.vencimento||'').trim();
+      const maturityState=dataQualityDateState(maturity);
+      const issuer=String(asset?.fixed_issuer||asset?.issuer||asset?.institution||asset?.broker||'').trim();
+      if(!subtype) dataQualityWarnMissing(record, 'rf_subtype', 'Subtipo de renda fixa ausente.', 'Informe o subtipo para leitura e agrupamento correto.');
+      if(!(Number(values.applied)>0)) dataQualityCritical(record, 'rf_applied_value', 'Valor aplicado de renda fixa ausente ou zerado.', 'Informe o valor efetivamente aplicado.');
+      if(!(values.hasExplicitCurrent && Number(values.current)>0)) dataQualityWarnMissing(record, 'rf_current_value', 'Valor atual bruto ou liquido nao informado.', 'Informe o valor atual apresentado pela instituicao.');
+      if(!rate) dataQualityWarnMissing(record, 'rf_contract_rate', 'Taxa contratada ausente.', 'Informe a taxa do titulo, como CDI, IPCA ou prefixado.');
+      if(!(maturity && maturityState.state==='value')) dataQualityWarnMissing(record, 'rf_maturity_date', 'Data de vencimento ausente ou invalida.', 'Informe a data de vencimento correta.');
+      if(!issuer) dataQualityInfo(record, 'fixed_issuer', 'Emissor ou instituicao nao informado.', 'Preencha o emissor para facilitar a conferencia manual.');
+      if(values.current!=null && values.applied>0 && Number.isFinite(values.current) && values.current < 0) dataQualityCritical(record, 'rf_current_value', 'Valor atual negativo incoerente em renda fixa.', 'Revise o valor atual informado.');
+      if(Number(values.applied)>0 && !(Number(values.current)>0) && !values.hasExplicitCurrent) dataQualityWarnMissing(record, 'rf_current_value', 'Renda fixa sem valor atual explicito.', 'Complete o valor atual para leitura confiavel.');
+    }
+
+    records.push(record);
+  });
+
+  const groups=new Map();
+  records.forEach(record=>{
+    const key=record.category==='Ativos' || record.category==='Renda Fixa' ? dataQualityAssetKey(S.assets[record.entityIndex-1]) : '';
+    if(!key || key==='||||') return;
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(record);
+  });
+  for(const group of groups.values()){
+    if(group.length<2) continue;
+    const label=group[0].entityLabel;
+    group.forEach((record, position)=>{
+      record.issues.push({
+        severity:'info',
+        category:'Duplicidades',
+        field:'duplicate',
+        message:`Possivel duplicidade com ${group.length-1} registro(s) parecido(s).`,
+        recommendation:`Compare ticker, tipo, moeda e corretora com ${label}.`
+      });
+      record.fields.duplicateGroup=position+1;
+    });
+  }
+
+  return records;
+}
+function dataQualityAnalyzeProventos(){
+  const records=[];
+  const today=new Date();
+  today.setHours(23,59,59,999);
+  const groups=new Map();
+  (Array.isArray(S.proventos) ? S.proventos : []).forEach((prov,index)=>{
+    const paymentDt=proventoDividendPaymentDate(prov);
+    const rawDate=String(prov?.dataPagamento||prov?.paymentDate||prov?.pagamento||prov?.data||prov?.date||'').trim();
+    const ticker=dataQualityNormalizeTicker(prov?.ticker||prov?.assetName||prov?.name);
+    const canonical=proventoTipoCanonical(prov?.eventType||prov?.type);
+    const sourceKind=String(prov?.sourceEventKind||'').trim().toLowerCase();
+    const currency=String(prov?.currency||prov?.moeda||prov?.currencyCode||'').trim();
+    const isRfLike=sourceKind==='rf' || canonical==='Juros de Renda Fixa' || canonical==='Juros';
+    const category=isRfLike ? 'Renda Fixa' : 'Dividendos';
+    const route=isRfLike ? 'renda-fixa' : 'dividendos';
+    const record=dataQualityCreateRecord({
+      category,
+      entityType:'Provento',
+      entityIndex:index+1,
+      entityLabel:dataQualityText(prov?.ticker || prov?.assetName || prov?.name, `Provento ${index+1}`),
+      route,
+      actionLabel:dataQualityActionLabel(route)
+    });
+    const valueState=dataQualityNumberState(prov?.value);
+    const statusText=rfPosNorm(`${prov?.status||prov?.received||prov?.paid||prov?.scheduled||prov?.future||prov?.state||''}`);
+
+    if(!rawDate || !paymentDt) dataQualityCritical(record, 'date', 'Data oficial de provento invalida.', 'Informe a data real de pagamento.');
+    else if(paymentDt > today) dataQualityWarnMissing(record, 'date', 'Provento com data futura.', 'Confirme se este registro e previsto ou foi importado com data incorreta.');
+    if(!ticker) dataQualityWarnMissing(record, 'ticker', 'Ticker do provento ausente.', 'Informe o ticker ou o ativo de origem.');
+    if(valueState.state==='missing' || valueState.state==='invalid' || valueState.value<0) dataQualityCritical(record, 'value', 'Valor do provento ausente ou invalido.', 'Revise o valor recebido.');
+    if(valueState.state==='zero') dataQualityInfo(record, 'value', 'Valor real zero mantido como informacao valida.', 'Zero real nao e ausencia, mas deve ser conferido com o informe.');
+    if(!canonical || canonical==='Outro') dataQualityWarnMissing(record, 'type', 'Tipo de provento pouco definido.', 'Classifique o evento com o tipo oficial disponivel.');
+    if(!currency) dataQualityWarnMissing(record, 'currency', 'Moeda ausente no provento.', 'Informe a moeda se houver suporte real no cadastro.');
+    if(statusText && /PREV|SCHED|FUTU|AGUARD|PEND|NOT RECEIV|NAO RECEB|NAO PAGO/.test(statusText)) dataQualityWarnMissing(record, 'status', 'Status indica que o provento nao foi recebido ainda.', 'Mantem a separacao entre previsto e recebido.');
+    if(prov?.excludedFromIncomeTotals===true) dataQualityInfo(record, 'excludedFromIncomeTotals', 'Registro excluido oficialmente dos totais de renda.', 'A exclusao oficial e preservada pela auditoria.');
+
+    const key=dataQualityProventoKey(prov);
+    if(key && key!=='||||'){
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(record);
+    }
+    records.push(record);
+  });
+  for(const group of groups.values()){
+    if(group.length<2) continue;
+    group.forEach(record=>{
+      record.issues.push({
+        severity:'info',
+        category:'Duplicidades',
+        field:'duplicate',
+        message:`Possivel duplicidade com ${group.length-1} registro(s) parecido(s).`,
+        recommendation:'Compare ticker, data, tipo e valor antes de alterar qualquer cadastro.'
+      });
+    });
+  }
+  return records;
+}
+function dataQualityAnalyzeRfEvents(){
+  const records=[];
+  const groups=new Map();
+  (Array.isArray(S.rfEvents) ? S.rfEvents : []).forEach((event,index)=>{
+    const record=dataQualityCreateRecord({
+      category:'Renda Fixa',
+      entityType:'Movimentacao',
+      entityIndex:index+1,
+      entityLabel:dataQualityText(event?.ticker || event?.assetName || `Evento RF ${index+1}`),
+      route:'renda-fixa',
+      actionLabel:'Abrir Renda Fixa'
+    });
+    const dateState=dataQualityDateState(event?.date);
+    const ticker=dataQualityNormalizeTicker(event?.ticker||event?.assetName);
+    const valueState=dataQualityNumberState(event?.grossValue ?? event?.netValue ?? event?.value);
+    const typeText=dataQualityText(event?.type || event?.eventType);
+    if(dateState.state!=='value') dataQualityCritical(record, 'date', 'Evento de renda fixa com data invalida.', 'Corrija a data oficial do evento.');
+    if(!ticker) dataQualityCritical(record, 'ticker', 'Ticker do evento de renda fixa ausente.', 'Informe o ativo vinculado ao evento.');
+    if(valueState.state==='missing' || valueState.state==='invalid' || valueState.value<0) dataQualityCritical(record, 'value', 'Valor do evento de renda fixa ausente ou invalido.', 'Revise o valor bruto ou liquido do evento.');
+    if(!typeText) dataQualityWarnMissing(record, 'type', 'Tipo do evento de renda fixa ausente.', 'Informe o tipo do evento para revisao.');
+    if(event?.assetId && !String(event.assetId).trim()) dataQualityInfo(record, 'assetId', 'Ligacao com ativo de renda fixa ausente.', 'Vincule o evento a um ativo se a referencia existir.');
+    const key=dataQualityMovementKey(event);
+    if(key && key!=='||||'){
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(record);
+    }
+    records.push(record);
+  });
+  for(const group of groups.values()){
+    if(group.length<2) continue;
+    group.forEach(record=>{
+      record.issues.push({
+        severity:'info',
+        category:'Duplicidades',
+        field:'duplicate',
+        message:`Possivel duplicidade com ${group.length-1} registro(s) parecido(s).`,
+        recommendation:'Confirme se o evento ja nao foi importado ou vinculado.'
+      });
+    });
+  }
+  return records;
+}
+function dataQualityAnalyzeMovements(){
+  const records=[];
+  const groups=new Map();
+  (Array.isArray(S.aportes) ? S.aportes : []).forEach((move,index)=>{
+    const typeText=String(move?.type||move?.kind||'').trim();
+    const isNeutral=typeof isNeutralMovement==='function' ? isNeutralMovement(move) : false;
+    const record=dataQualityCreateRecord({
+      category:'Movimentacoes',
+      entityType:'Movimentacao',
+      entityIndex:index+1,
+      entityLabel:dataQualityText(move?.ticker || move?.name || move?.title, `Movimentacao ${index+1}`),
+      route:isNeutral ? 'relatorios' : 'aportes',
+      actionLabel:isNeutral ? 'Abrir Relatorios' : 'Abrir Aportes'
+    });
+    const dateState=dataQualityDateState(move?.date);
+    const ticker=dataQualityNormalizeTicker(move?.ticker||move?.name||move?.title);
+    const qtyState=dataQualityNumberState(move?.qty);
+    const priceState=dataQualityNumberState(move?.price);
+    const totalState=dataQualityNumberState(move?.totalValue ?? move?.value ?? (Number.isFinite(qtyState.value) && Number.isFinite(priceState.value) ? qtyState.value * priceState.value : null));
+    if(dateState.state!=='value') dataQualityCritical(record, 'date', 'Movimentacao com data invalida.', 'Corrija a data para preservar a ordem cronologica.');
+    if(!ticker && !isNeutral) dataQualityCritical(record, 'ticker', 'Ticker da movimentacao ausente.', 'Informe o ativo ou titulo relacionado.');
+    if(qtyState.state==='missing' || qtyState.state==='invalid' || qtyState.value<0) dataQualityCritical(record, 'qty', 'Quantidade ausente ou invalida na movimentacao.', 'Revise a quantidade usada no movimento.');
+    if(priceState.state==='missing' || priceState.state==='invalid' || priceState.value<0) dataQualityCritical(record, 'price', 'Preco ausente ou invalido na movimentacao.', 'Revise o preco unitario do movimento.');
+    if(totalState.state==='missing' || totalState.state==='invalid' || totalState.value<0) dataQualityWarnMissing(record, 'totalValue', 'Valor total ausente ou invalido na movimentacao.', 'Confirme o valor total com o comprovante.');
+    if(!typeText) dataQualityWarnMissing(record, 'type', 'Tipo da movimentacao ausente.', 'Classifique o movimento corretamente.');
+    if(String(move?.currency||move?.moeda||'').trim()==='') dataQualityWarnMissing(record, 'currency', 'Moeda ausente na movimentacao.', 'Informe a moeda quando houver multiplas moedas.');
+    const key=dataQualityMovementKey(move);
+    if(key && key!=='||||'){
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(record);
+    }
+    records.push(record);
+  });
+  for(const group of groups.values()){
+    if(group.length<2) continue;
+    group.forEach(record=>{
+      record.issues.push({
+        severity:'info',
+        category:'Duplicidades',
+        field:'duplicate',
+        message:`Possivel duplicidade com ${group.length-1} registro(s) parecido(s).`,
+        recommendation:'Confirme a data, o ticker e o valor antes de salvar ou excluir.'
+      });
+    });
+  }
+  return records;
+}
+function dataQualityAnalyzeGoals(){
+  const records=[];
+  const goals=normalizeGoals(S.goals||{});
+  const rawGoals=S.goals && typeof S.goals==='object' ? S.goals : {};
+  const legadoMonthly=Number(S.divGoal);
+  const patrimonyTarget=rawGoals?.patrimonio?.target;
+  const incomeTarget=rawGoals?.proventos?.monthly;
+  const patrimonyRecord=dataQualityCreateRecord({
+    category:'Metas',
+    entityType:'Meta',
+    entityIndex:1,
+    entityLabel:'Meta patrimonial',
+    route:'metas',
+    actionLabel:'Abrir Metas'
+  });
+  const patrimonyState=dataQualityNumberState(patrimonyTarget);
+  if(patrimonyTarget===undefined || patrimonyTarget===null || patrimonyTarget==='') dataQualityWarnMissing(patrimonyRecord, 'patrimonio.target', 'Meta patrimonial ausente.', 'Defina a meta patrimonial para acompanhar o progresso.');
+  else if(patrimonyState.state==='invalid' || patrimonyState.value<0) dataQualityWarnMissing(patrimonyRecord, 'patrimonio.target', 'Meta patrimonial invalida.', 'Revise o valor da meta patrimonial.');
+  else if(patrimonyState.state==='zero') dataQualityWarnMissing(patrimonyRecord, 'patrimonio.target', 'Meta patrimonial zerada.', 'Meta zero costuma indicar configuracao incompleta.');
+  records.push(patrimonyRecord);
+
+  const incomeRecord=dataQualityCreateRecord({
+    category:'Metas',
+    entityType:'Meta',
+    entityIndex:2,
+    entityLabel:'Meta de renda passiva',
+    route:'metas',
+    actionLabel:'Abrir Metas'
+  });
+  const incomeState=dataQualityNumberState(incomeTarget);
+  if(incomeTarget===undefined || incomeTarget===null || incomeTarget==='') dataQualityWarnMissing(incomeRecord, 'proventos.monthly', 'Meta de renda passiva ausente.', 'Defina o objetivo mensal de dividendos.');
+  else if(incomeState.state==='invalid' || incomeState.value<0) dataQualityWarnMissing(incomeRecord, 'proventos.monthly', 'Meta de renda passiva invalida.', 'Revise o valor da meta mensal.');
+  else if(incomeState.state==='zero') dataQualityWarnMissing(incomeRecord, 'proventos.monthly', 'Meta de renda passiva zerada.', 'Meta zero costuma indicar configuracao incompleta.');
+  if(Number.isFinite(legadoMonthly) && legadoMonthly>0 && Number.isFinite(incomeState.value) && Math.abs(legadoMonthly-incomeState.value)>0.01) dataQualityInfo(incomeRecord, 'legacyGoal', 'Campo legado de meta de renda passiva difere da meta atual.', 'Mantenha a meta atual na aba Metas e revise backups antigos antes de restaurar.');
+  records.push(incomeRecord);
+
+  if(goals?.ativos && typeof goals.ativos==='object'){
+    const ticker=String(goals.ativos?.ticker||'').trim();
+    const type=String(goals.ativos?.type||'').trim();
+    const record=dataQualityCreateRecord({
+      category:'Metas',
+      entityType:'Meta',
+      entityIndex:3,
+      entityLabel:'Meta de ativos',
+      route:'metas',
+      actionLabel:'Abrir Metas'
+    });
+    if(!ticker) dataQualityInfo(record, 'ativos.ticker', 'Ticker da meta de ativos nao definido.', 'Preencha o ticker quando usar a meta de ativos.');
+    if(!type) dataQualityInfo(record, 'ativos.type', 'Tipo da meta de ativos nao definido.', 'Preencha o tipo quando usar a meta de ativos.');
+    records.push(record);
+  }
+
+  return records;
+}
+function dataQualitySnapshot(){
+  const records=[
+    ...dataQualityAnalyzeAssets(),
+    ...dataQualityAnalyzeProventos(),
+    ...dataQualityAnalyzeRfEvents(),
+    ...dataQualityAnalyzeMovements(),
+    ...dataQualityAnalyzeGoals()
+  ];
+  const issues=[];
+  const severityCounts={critical:0, warning:0, info:0};
+  const categoryCounts={};
+  const entityTypeCounts={};
+  const affected=new Map();
+  const recordWorst=new Map();
+  records.forEach(record=>{
+    let worst=0;
+    record.issues.forEach(issue=>{
+      const normalizedIssue=dataQualityIssueRecord(record, issue);
+      issues.push(normalizedIssue);
+      severityCounts[issue.severity]=(severityCounts[issue.severity]||0)+1;
+      categoryCounts[normalizedIssue.category]=(categoryCounts[normalizedIssue.category]||0)+1;
+      entityTypeCounts[normalizedIssue.entityType]=(entityTypeCounts[normalizedIssue.entityType]||0)+1;
+      affected.set(normalizedIssue.category, (affected.get(normalizedIssue.category)||0)+1);
+      worst=Math.max(worst, dataQualitySeverityRank(issue.severity));
+    });
+    recordWorst.set(record, worst);
+  });
+  let validRecords=0;
+  let warningRecords=0;
+  let criticalRecords=0;
+  let infoRecords=0;
+  records.forEach(record=>{
+    const worst=recordWorst.get(record)||0;
+    if(worst<=0) validRecords++;
+    else if(worst===3) criticalRecords++;
+    else {
+      warningRecords++;
+      if(worst===1) infoRecords++;
+    }
+  });
+  const totalRecords=records.length;
+  const summary={
+    totalRecords,
+    validRecords,
+    warningRecords,
+    criticalRecords,
+    infoRecords,
+    issueCount:issues.length
+  };
+  const affectedList=[...affected.entries()].sort((a,b)=>b[1]-a[1] || String(a[0]).localeCompare(String(b[0]),'pt-BR'));
+  const score=totalRecords>0 ? Math.max(0, Math.round((validRecords/totalRecords)*100)) : 100;
+  return {
+    summary,
+    issues,
+    alerts:issues,
+    counts:severityCounts,
+    areas:categoryCounts,
+    severityCounts,
+    categoryCounts,
+    entityTypeCounts,
+    affected:affectedList,
+    checks:totalRecords,
+    failed:totalRecords-validRecords,
+    score
+  };
+}
+function setDataQualitySeverity(value){
+  S.dataQualitySeverity=String(value||'all');
+  S.dataAuditSeverity=S.dataQualitySeverity;
+  render();
+}
+function setDataQualityCategory(value){
+  S.dataQualityCategory=String(value||'all');
+  S.dataAuditArea=S.dataQualityCategory;
+  render();
+}
+function setDataQualityEntityType(value){
+  S.dataQualityEntityType=String(value||'all');
+  render();
+}
+function rerunDataQuality(){
+  S.dataQualityRunAt=new Date();
+  S.dataAuditRunAt=S.dataQualityRunAt;
+  render();
+  toast('Auditoria reexecutada. Nenhum dado foi alterado.');
+}
+function dataAuditSeverityLabel(severity){ return dataQualitySeverityLabel(severity); }
+function renderDataQualityIssueCard(issue){
+  const route=issue.route || dataQualityRouteForEntity(issue.entityType, issue.category);
+  const actionLabel=issue.actionLabel || dataQualityActionLabel(route);
+  const action=`go(${JSON.stringify(route)})`;
+  return `<article class="data-quality-issue ${esc(issue.severity)}">
+    <div class="data-quality-issue-top">
+      <span class="data-quality-severity ${esc(issue.severity)}">${esc(dataQualitySeverityLabel(issue.severity))}</span>
+      <span class="data-quality-category">${esc(issue.category)}</span>
+    </div>
+    <div class="data-quality-entity">${esc(issue.entityType)} · ${esc(issue.entityLabel)}</div>
+    <div class="data-quality-field">${esc(issue.field)}</div>
+    <div class="data-quality-problem">${esc(issue.message)}</div>
+    <div class="data-quality-recommendation">${esc(issue.recommendation)}</div>
+    <div class="data-quality-action"><button class="btn bgh" onclick="${action}">${esc(actionLabel)}</button></div>
+  </article>`;
+}
+function dataQualityTab(){
+  const snapshot=dataQualitySnapshot();
+  const severity=String(S.dataQualitySeverity || S.dataAuditSeverity || 'all');
+  const category=String(S.dataQualityCategory || S.dataAuditArea || 'all');
+  const entityType=String(S.dataQualityEntityType || 'all');
+  const filtered=snapshot.issues.filter(issue=>
+    (severity==='all' || issue.severity===severity) &&
+    (category==='all' || issue.category===category) &&
+    (entityType==='all' || issue.entityType===entityType)
+  );
+  const healthy=snapshot.summary.criticalRecords===0 && snapshot.summary.warningRecords===0 && snapshot.summary.infoRecords===0;
+  const severityChips=[['all','Todos'],['critical','Criticos'],['warning','Atencao'],['info','Info']]
+    .map(([value,label])=>`<button class="data-quality-chip ${severity===value?'on':''}" onclick="setDataQualitySeverity('${value}')">${esc(label)}</button>`).join('');
+  const categoryChips=[['all','Todas'],...DATA_QUALITY_CATEGORIES.map(value=>[value,value])]
+    .map(([value,label])=>`<button class="data-quality-chip ${category===value?'on':''}" onclick="setDataQualityCategory(${JSON.stringify(value)})">${esc(label)}</button>`).join('');
+  const typeChips=[['all','Todos'],...DATA_QUALITY_ENTITY_TYPES.map(value=>[value,value])]
+    .map(([value,label])=>`<button class="data-quality-chip ${entityType===value?'on':''}" onclick="setDataQualityEntityType(${JSON.stringify(value)})">${esc(label)}</button>`).join('');
+  const runAt=S.dataQualityRunAt instanceof Date ? S.dataQualityRunAt : (S.dataAuditRunAt instanceof Date ? S.dataAuditRunAt : new Date());
+  const summaryCards=[
+    ['Registros analisados', snapshot.summary.totalRecords, 'dados inspecionados'],
+    ['Sem problemas', snapshot.summary.validRecords, 'registros sem achados relevantes'],
+    ['Atencao', snapshot.summary.warningRecords, 'registros com observacoes'],
+    ['Criticos', snapshot.summary.criticalRecords, 'registros que exigem revisao urgente']
+  ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'critical':'ok'}"><div class="data-quality-card-label">${esc(label)}</div><div class="data-quality-card-value">${esc(String(value))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
+  const healthyState=healthy
+    ? `<div class="data-quality-empty-health"><div><div class="data-quality-empty-title">Dados consistentes</div><div class="data-quality-empty-note">Nenhum problema relevante foi encontrado nos registros analisados.</div></div></div>`
+    : '';
+  const emptyState=filtered.length
+    ? filtered.map(renderDataQualityIssueCard).join('')
+    : healthy
+      ? healthyState
+      : `<div class="data-quality-empty">Nenhum problema encontrado para os filtros selecionados.</div><div style="margin-top:8px"><button class="btn bgh" onclick="setDataQualitySeverity('all');setDataQualityCategory('all');setDataQualityEntityType('all')">Limpar filtros</button></div>`;
+  return `<div class="data-quality-shell">
+    <section class="data-quality-hero">
+      <div class="data-quality-head">
+        <div>
+          <div class="data-quality-title">Qualidade dos dados</div>
+          <div class="data-quality-sub">Revise registros que podem comprometer relatórios e calculos. Nenhuma correcao e feita automaticamente.</div>
+        </div>
+        <div class="data-quality-actions">
+          <button class="btn bgh" onclick="rerunDataQuality()">Reexecutar auditoria</button>
+        </div>
+      </div>
+      <div class="data-quality-summary">
+        ${summaryCards}
+      </div>
+    </section>
+    <div class="data-quality-filters">
+      <div class="data-quality-filter-group"><span class="data-quality-filter-label">Severidade</span>${severityChips}</div>
+      <div class="data-quality-filter-group"><span class="data-quality-filter-label">Categoria</span>${categoryChips}</div>
+      <div class="data-quality-filter-group"><span class="data-quality-filter-label">Tipo de registro</span>${typeChips}</div>
+    </div>
+    <div class="data-quality-areas">
+      ${snapshot.affected.length ? snapshot.affected.map(([name,count])=>`<span class="data-quality-area-pill">${esc(name)} · ${count}</span>`).join('') : '<span class="data-quality-area-pill">Nenhum problema encontrado</span>'}
+      <span class="data-quality-area-pill">Executada às ${runAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+      <span class="data-quality-area-pill">${filtered.length} exibido${filtered.length===1?'':'s'}</span>
+    </div>
+    <div class="data-quality-list">
+      ${emptyState}
+    </div>
+  </div>`;
+}
+function dataAuditAlerts(){ return dataQualitySnapshot().alerts; }
+function dataAuditSnapshot(){ return dataQualitySnapshot(); }
+function setDataAuditSeverity(value){ return setDataQualitySeverity(value); }
+function setDataAuditArea(value){ return setDataQualityCategory(value); }
+function rerunDataAudit(){ return rerunDataQuality(); }
+function renderAuditAlertCard(alert){ return renderDataQualityIssueCard(alert); }
+function dataAuditTab(){ return dataQualityTab(); }
 
 function rentBenchRate(name){
   return Number(RENT_BENCH[String(name||'CDI').toUpperCase()] ?? RENT_BENCH.CDI);

@@ -27,21 +27,21 @@ function assertPhase206Roadmap(roadmap) {
   const currentState = extractSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase206 = extractSection(roadmap, '## 23. Fase 206 - Metas financeiras', '## 11. Sequencia planejada apos a Fase 202');
 
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- nome: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
-  assert.match(currentState, /- situacao: Fase 206 concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
-  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
+  assert.match(currentState, /- fase atual: 208;/);
+  assert.match(currentState, /- nome: Qualidade dos dados;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-208-data-quality`;/);
+  assert.match(currentState, /- SHA-base: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: auditoria de qualidade dos dados;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 208;/);
   assert.match(currentState, /- PR `#209` merged e closed \(encerramento funcional da Fase 206\);/);
   assert.match(currentState, /- modo de merge da Fase 206: squash;/);
   assert.match(currentState, /- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
   assert.match(currentState, /- resultado: acompanhamento de metas financeiras concluido;/);
   assert.match(currentState, /- Fases 204A, 204B e 206 funcional e documentalmente encerradas;/);
-  assert.match(currentState, /- 204C, 208, 210 e 212 nao autorizadas[.;]/);
-  assert.match(currentState, /- Fases 208, 210 e 212 continuam planejadas e nao autorizadas\./);
+  assert.match(currentState, /- 204C, 210 e 212 nao autorizadas[.;]/);
+  assert.match(currentState, /- Fases 210 e 212 continuam planejadas e nao autorizadas\./);
 
   assert.match(phase206, /Estado final:/);
   assert.match(phase206, /- fase concluida;/);
@@ -58,7 +58,7 @@ function assertPhase206Roadmap(roadmap) {
   assert.match(phase206, /- nenhuma evolucao patrimonial historica;/);
   assert.match(phase206, /- nenhum deploy manual;/);
   assert.match(phase206, /- shell moderno readonly preservado;/);
-  assert.match(phase206, /- 204C, 208, 210 e 212 nao autorizadas;/);
+  assert.match(phase206, /- 204C, 210 e 212 nao autorizadas;/);
   assert.match(phase206, /- meta patrimonial acompanhada;/);
   assert.match(phase206, /- meta de renda passiva acompanhada;/);
   assert.match(phase206, /- valores reais separados das metas;/);
@@ -117,7 +117,8 @@ test('fase 206 fica documentada e encerrada com governanca rastreavel', () => {
 
   assertPhase206Roadmap(roadmap);
   assertPhase206Documentation(doc);
-  assert.match(roadmap, /- a sequencia futura planejada inclui 204C, 208, 210 e 212\./);
+  assert.match(roadmap, /- a sequencia futura planejada inclui 204C, 210 e 212\./);
+  assert.equal(roadmap.includes('a sequencia futura planejada inclui 204C, 208, 210 e 212.'), false);
   assert.equal(roadmap.includes('a sequencia futura planejada inclui 204, 208, 210 e 212.'), false);
   assert.equal(roadmap.includes('Fase 206 funcional em desenvolvimento;'), false);
   assert.equal(roadmap.includes('PR atual: `#209`;'), false);
