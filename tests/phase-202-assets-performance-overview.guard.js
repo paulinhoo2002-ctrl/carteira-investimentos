@@ -77,7 +77,7 @@ function assertPhase202FutureSequence(roadmap) {
     '- reduzir complexidade desnecessaria;',
     '- evitar reescrita ampla sem beneficio comprovado;',
     '- estado: planejada e nao autorizada.',
-    '- a Fase 204 esta em auditoria documental e nao faz parte desta sequencia planejada;',
+    '- a Fase 204A esta em implementacao funcional e nao faz parte desta sequencia planejada;',
     '- a sequencia pode ser reordenada somente por risco encontrado na auditoria;',
     '- nenhuma dessas fases esta automaticamente autorizada;',
     '- cada fase exige objetivo, branch, PR, validacao e autorizacao;',
