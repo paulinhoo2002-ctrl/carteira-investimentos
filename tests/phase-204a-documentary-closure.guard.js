@@ -1,4 +1,7 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const test = require('node:test');
 
 function extractSection(text, startMarker, endMarker) {
   const start = text.indexOf(startMarker);
@@ -103,6 +106,33 @@ function assertPhase204ADocumentation(audit) {
   assert.match(audit, /rollback: `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275`;/);
   assert.match(audit, /204B nao iniciada\./);
 }
+
+function readUtf8WithoutBom(relativePath) {
+  const filePath = path.join(__dirname, '..', relativePath);
+  const buffer = fs.readFileSync(filePath);
+
+  assert.equal(buffer.length >= 3 && buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf, false, `${relativePath} nao pode ter BOM`);
+
+  const text = buffer.toString('utf8');
+  assert.equal(text.includes('�'), false, `${relativePath} nao pode conter mojibake`);
+  return text;
+}
+
+test('fase 204A fica documentariamente encerrada', () => {
+  const roadmap = readUtf8WithoutBom('docs/project-phases-roadmap.md');
+  const documentation = readUtf8WithoutBom('docs/phase-204a-dashboard-highlights.md');
+
+  assertRoadmap204AClosed(roadmap);
+  assertPhase204ADocumentation(documentation);
+  assert.match(
+    roadmap,
+    /\| 204A \| Dashboard executivo com destaques da carteira \| Concluida \| `#205` \| `8ab97be06a3b377c6fe1911cb42e2d57a6546275` \| `index\.html`, `docs\/phase-204a-dashboard-highlights\.md`, `tests\/phase-204a-dashboard-highlights\.test\.js`, `tests\/phase-204a-dashboard-highlights\.guard\.js` \| reutilizacao da base oficial da Fase 202 sem formula financeira nova \| destaques dependem da disponibilidade e completude dos dados atuais \| `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275` \|/,
+  );
+  assert.match(roadmap, /- fase atual: nenhuma;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmap, /- 204B, 204C, 206, 208, 210 e 212 nao autorizadas[.;]/);
+});
 
 module.exports = {
   assertPhase204ADocumentation,
