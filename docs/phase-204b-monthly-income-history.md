@@ -147,7 +147,7 @@ Se nenhuma dessas datas for valida, o lancamento fica fora do historico mensal.
 - `tests/phase-204b-monthly-income-history.guard.js`
 - validacao cruzada com as fases readonly anteriores
 
-## Rollback
+## Rollback final
 
 Rollback final:
 

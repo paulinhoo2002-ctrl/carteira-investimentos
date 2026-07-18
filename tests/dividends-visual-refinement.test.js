@@ -47,14 +47,14 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
   assert.equal(overviewBlock.includes('${dividendGoalProgress()}'), false);
   assert.equal(overviewBlock.includes("${mode==='overview'?dividendGoalProgress():''}"), false);
-  assert.match(currentState, /- fase atual: 206;/);
-  assert.match(currentState, /- nome: Metas financeiras;/);
-  assert.match(currentState, /- branch atual: `feat\/phase-206-financial-goals`;/);
-  assert.match(currentState, /- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;/);
-  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: `#209`;/);
-  assert.match(currentState, /- implementacao ativa: metas financeiras;/);
-  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 206;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- nome: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
+  assert.match(currentState, /- situacao: Fase 206 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
   assert.match(currentState, /- PR `#207` merged e closed \(encerramento funcional da Fase 204B\);/);
   assert.match(currentState, /- modo de merge da Fase 204B: squash;/);
@@ -62,7 +62,11 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.match(currentState, /- resultado: Historico mensal premium de dividendos concluido;/);
   assert.match(currentState, /- Fase 204A funcional e documentalmente concluida;/);
   assert.match(currentState, /- Fase 204B funcional e documentalmente encerrada;/);
-  assert.match(currentState, /- Fase 206 funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR `#209` merged e closed \(encerramento funcional da Fase 206\);/);
+  assert.match(currentState, /- modo de merge da Fase 206: squash;/);
+  assert.match(currentState, /- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
+  assert.match(currentState, /- resultado: acompanhamento de metas financeiras concluido;/);
+  assert.match(currentState, /- Fases 204A, 204B e 206 funcional e documentalmente encerradas;/);
 
   assert.match(indexHtml, /@media\(max-width:768px\)\{/);
   assert.match(indexHtml, /div-premium-metrics\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/);

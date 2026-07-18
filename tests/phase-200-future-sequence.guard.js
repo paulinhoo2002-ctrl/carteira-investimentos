@@ -67,8 +67,8 @@ function assertPhase200FutureSequence(roadmap) {
     '- evitar reescrita ampla sem beneficio comprovado;',
     '- estado: planejada e nao autorizada.',
     '- a Fase 204A foi concluida e nao faz parte desta sequencia planejada;',
-    '- a Fase 206 esta em desenvolvimento e nao faz parte desta sequencia planejada;',
-    '- a sequencia futura planejada inclui 208, 210 e 212.',
+    '- a Fase 206 foi concluida e nao faz parte desta sequencia planejada;',
+    '- a sequencia futura planejada inclui 204, 208, 210 e 212.',
     '- a Fase 200 foi redefinida por decisao explicita;',
     '- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;',
   ];

@@ -31,14 +31,14 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   const currentState = extractSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase204b = extractSection(roadmap, '## 22. Fase 204B - Historico mensal premium de dividendos', '## 11. Sequencia planejada apos a Fase 202');
 
-  assert.match(currentState, /- fase atual: 206;/);
-  assert.match(currentState, /- nome: Metas financeiras;/);
-  assert.match(currentState, /- branch atual: `feat\/phase-206-financial-goals`;/);
-  assert.match(currentState, /- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;/);
-  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: `#209`;/);
-  assert.match(currentState, /- implementacao ativa: metas financeiras;/);
-  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 206;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- nome: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
+  assert.match(currentState, /- situacao: Fase 206 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
   assert.match(currentState, /- PR `#207` merged e closed \(encerramento funcional da Fase 204B\);/);
   assert.match(currentState, /- modo de merge da Fase 204B: squash;/);
@@ -46,7 +46,11 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   assert.match(currentState, /- resultado: Historico mensal premium de dividendos concluido;/);
   assert.match(currentState, /- Fase 204A funcional e documentalmente concluida;/);
   assert.match(currentState, /- Fase 204B funcional e documentalmente encerrada;/);
-  assert.match(currentState, /- Fase 206 funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR `#209` merged e closed \(encerramento funcional da Fase 206\);/);
+  assert.match(currentState, /- modo de merge da Fase 206: squash;/);
+  assert.match(currentState, /- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
+  assert.match(currentState, /- resultado: acompanhamento de metas financeiras concluido;/);
+  assert.match(currentState, /- Fases 204A, 204B e 206 funcional e documentalmente encerradas;/);
   assert.match(currentState, /- 204C, 208, 210 e 212 nao autorizadas[.;]/);
   assert.match(currentState, /- Fases 208, 210 e 212 continuam planejadas e nao autorizadas\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
@@ -89,7 +93,7 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   assert.match(documentation, /## Performance/);
   assert.match(documentation, /## Riscos/);
   assert.match(documentation, /## Testes/);
-  assert.match(documentation, /## Rollback/);
+  assert.match(documentation, /## Rollback final/);
   assert.match(documentation, /## Conclusao Caveman/);
   assert.match(documentation, /## Conclusao Impeccable/);
   assert.match(documentation, /## Encerramento/);
@@ -108,7 +112,7 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   assert.match(documentation, /Nenhum provento recebido ainda\./);
   assert.match(documentation, /Nenhum recebimento encontrado para os filtros selecionados\./);
   assert.match(documentation, /sem inventar historico/i);
-  assert.equal(documentation.includes('Rollback final:'), true);
+  assert.equal(documentation.includes('Rollback final'), true);
   assert.equal(documentation.includes('git revert 06d921b78a9411a709726a8f4cad8725bcb56899'), true);
   assert.equal(documentation.includes('git revert 313c71146181a58157e6236ef3305ca259d6ca5f'), false);
   assert.equal(documentation.includes('\uFFFD'), false);

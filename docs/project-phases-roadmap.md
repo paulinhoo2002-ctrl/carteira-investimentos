@@ -4,14 +4,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 206;
-- nome: Metas financeiras;
-- branch atual: `feat/phase-206-financial-goals`;
-- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#209`;
-- implementacao ativa: metas financeiras;
-- alteracao funcional autorizada exclusivamente para a Fase 206;
+- fase atual: nenhuma;
+- nome: nenhuma;
+- branch atual: main;
+- SHA-base: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;
+- situacao: Fase 206 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- nenhuma alteracao funcional autorizada;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -34,8 +34,11 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - SHA final da Fase 204B: `06d921b78a9411a709726a8f4cad8725bcb56899`;
 - resultado: Historico mensal premium de dividendos concluido;
 - Fase 204B funcional e documentalmente encerrada;
-- Fases 204A e 204B funcional e documentalmente encerradas;
-- Fase 206 funcional em desenvolvimento;
+- PR `#209` merged e closed (encerramento funcional da Fase 206);
+- modo de merge da Fase 206: squash;
+- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;
+- resultado: acompanhamento de metas financeiras concluido;
+- Fases 204A, 204B e 206 funcional e documentalmente encerradas;
 - 204C, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
 - Fase 196 concluida pela PR #196;
@@ -50,12 +53,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - preservacao de dados, schema, Firebase/Auth e compatibilidade continua obrigatoria
 - `modern/dist` fora do indice
 - Fases 208, 210 e 212 continuam planejadas e nao autorizadas.
+- Fase 206 concluida e nao faz parte desta sequencia planejada.
 - Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`
+- HEAD / `origin/main`: `8225262a27bdfc4a58c526b2e7d8c113774f638b`
+- PR `#209`: merged e closed (encerramento funcional da Fase 206)
 - PR `#207`: merged e closed (encerramento funcional da Fase 204B)
 - PR `#205`: merged e closed (encerramento funcional da Fase 204A)
 - PR `#204`: merged e closed (encerramento documental da fase 204)
@@ -91,6 +96,7 @@ Base de referencia desta fase:
 | 190 | Decisao arquitetural da modernizacao | Concluida | `#190` | `1e72ef28350f10835a8fd92cbdadcebdb969b8cf` | `docs/adr/ADR-001-modernization-strategy.md`, `docs/modern-architecture-inventory.md`, `docs/modernization-decision-matrix.md`, `docs/project-phases-roadmap.md`, `tests/modern-architecture-decision.test.js`, `tests/readonly-contract-architecture.test.js` | expansao readonly gradual e decisao arquitetural registrada, com legado como fonte de verdade | risco residual documental se novas fases nao atualizarem o mapa e as evidencias | reverter `git revert 1e72ef28350f10835a8fd92cbdadcebdb969b8cf` |
 | 204A | Dashboard executivo com destaques da carteira | Concluida | `#205` | `8ab97be06a3b377c6fe1911cb42e2d57a6546275` | `index.html`, `docs/phase-204a-dashboard-highlights.md`, `tests/phase-204a-dashboard-highlights.test.js`, `tests/phase-204a-dashboard-highlights.guard.js` | reutilizacao da base oficial da Fase 202 sem formula financeira nova | destaques dependem da disponibilidade e completude dos dados atuais | `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275` |
 | 204B | Historico mensal premium de dividendos | Concluida | `#207` | `06d921b78a9411a709726a8f4cad8725bcb56899` | `index.html`, `docs/phase-204b-monthly-income-history.md`, `tests/phase-204b-monthly-income-history.test.js`, `tests/phase-204b-monthly-income-history.guard.js` | consolidacao somente de proventos reais com data oficial nao futura, sem historico inventado | contrato atual nao possui status persistido separado de previsto e recebido | `git revert 06d921b78a9411a709726a8f4cad8725bcb56899` |
+| 206 | Metas financeiras | Concluida | `#209` | `8225262a27bdfc4a58c526b2e7d8c113774f638b` | `index.html`, `docs/phase-206-financial-goals.md`, `tests/phase-206-financial-goals.test.js`, `tests/phase-206-financial-goals.guard.js` | reutilizacao das metas persistidas, `cx()` e historico mensal real sem formula financeira concorrente | validacao visual completa depende de acesso autenticado ao Dashboard | `git revert 8225262a27bdfc4a58c526b2e7d8c113774f638b` |
 
 ## 2. Fechamento da Fase 190 e encerramento do ciclo readonly
 
@@ -193,10 +199,9 @@ Ordem oficial atual:
 21. 200 - refinamento confiavel da tela de Dividendos
 22. 202 - painel consolidado de desempenho dos ativos
 23. 204 - auditoria de evolucao patrimonial e dashboard executivo
-24. 206 - metas financeiras
-25. 208 - qualidade dos dados
-26. 210 - relatorio executivo mensal
-27. 212 - desempenho e manutencao tecnica
+24. 208 - qualidade dos dados
+25. 210 - relatorio executivo mensal
+26. 212 - desempenho e manutencao tecnica
 
 Mudanca de ordem relevante:
 
@@ -895,18 +900,49 @@ Objetivo:
 - separar realidade, meta e eventual projeção;
 - preservar zero, dado ausente e ausência de histórico inventado.
 
-Estado atual:
+Estado final:
 
-- fase atual: 206;
-- nome: Metas financeiras;
-- branch atual: `feat/phase-206-financial-goals`;
+- fase concluida;
+- fase atual: nenhuma;
+- nome: nenhuma;
+- branch atual: main;
 - SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: `#209`;
-- implementacao ativa: metas financeiras;
-- alteracao funcional autorizada exclusivamente para a Fase 206;
+- situacao: Fase 206 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- nenhuma implementacao ativa;
+- nenhuma alteracao funcional autorizada;
+- branch original: `feat/phase-206-financial-goals`;
+- PR `#209` merged e closed;
+- modo squash;
+- modo de merge da Fase 206: squash;
+- SHA final: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;
+- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;
+- titulo final: `feat: cria acompanhamento de metas financeiras`;
 - Fase 204B funcional e documentalmente encerrada;
+- nenhuma formula financeira concorrente;
+- nenhum schema novo;
+- nenhum snapshot;
+- nenhuma evolucao patrimonial historica;
+- nenhum deploy manual;
+- shell moderno readonly preservado;
 - 204C, 208, 210 e 212 nao autorizadas;
+
+Resultado final:
+
+- meta patrimonial acompanhada;
+- meta de renda passiva acompanhada;
+- valores reais separados das metas;
+- projeção adiada;
+- painel anterior de renda passiva preservado;
+- zero versus ausente preservado;
+- barra limitada visualmente a 100%;
+- percentual textual pode superar 100%;
+- valor faltante nunca negativo;
+- meta atingida tratada;
+- acessibilidade com progressbar e ARIA;
+- fontes oficiais reutilizadas;
+- nenhuma soma patrimonial paralela;
+- nenhuma reconstrução histórica.
 
 Decisao tecnica:
 - reutilizacao das metas persistidas e dos helpers oficiais atuais;
@@ -960,8 +996,8 @@ Planejadas e nao autorizadas:
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
 - a Fase 200 foi redefinida por decisao explicita;
-- a Fase 206 esta em desenvolvimento e nao faz parte desta sequencia planejada;
-- a sequencia futura planejada inclui 208, 210 e 212.
+- a Fase 206 foi concluida e nao faz parte desta sequencia planejada;
+- a sequencia futura planejada inclui 204C, 208, 210 e 212.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
