@@ -217,6 +217,21 @@ function buildRows(now) {
       dataPagamento: monthAt(now, 0, 14).toISOString(),
     },
     {
+      id: 'zero-only',
+      ticker: 'ZERO0',
+      type: 'Dividendo',
+      value: 0,
+      dataPagamento: monthAt(now, 8, 14).toISOString(),
+    },
+    {
+      id: 'legacy-status',
+      ticker: 'LEG1',
+      type: 'Dividendo',
+      value: 25,
+      dataPagamento: monthAt(now, 1, 9).toISOString(),
+      status: 'previsto',
+    },
+    {
       id: 'precedence',
       ticker: 'PRI1',
       type: 'Dividendo',
@@ -232,7 +247,7 @@ function buildRows(now) {
   return rows;
 }
 
-test('seleciona somente recebidos e respeita a data oficial', () => {
+test('seleciona somente recebidos e confirma contrato oficial sem status separado', () => {
   const now = new Date();
   const context = makeContext(buildRows(now));
   const rows = context.dividendMonthlyHistoryRows(context.S.proventos);
@@ -246,6 +261,10 @@ test('seleciona somente recebidos e respeita a data oficial', () => {
   assert.equal(rows.some(row => row.value === 0), true);
   assert.equal(rows.some(row => row.value < 0), false);
   assert.equal(rows.some(row => row.ticker === ''), false);
+  assert.equal(rows.some(row => row.id === 'legacy-status'), true);
+  const legacyStatus = rows.find(row => row.id === 'legacy-status');
+  assert.equal(legacyStatus.monthKey, `${monthAt(now, 1, 9).getFullYear()}-${String(monthAt(now, 1, 9).getMonth() + 1).padStart(2, '0')}`);
+  assert.equal(Object.prototype.hasOwnProperty.call(legacyStatus, 'status'), false);
   const precedence = rows.find(row => row.id === 'precedence');
   assert.equal(precedence.date, iso(monthAt(now, 2, 11)));
   assert.equal(precedence.monthKey, `${monthAt(now, 2, 11).getFullYear()}-${String(monthAt(now, 2, 11).getMonth() + 1).padStart(2, '0')}`);
@@ -309,13 +328,15 @@ test('expansao mensal e comparacao segura nao quebram', () => {
     }),
   );
   const current = rows[0];
-  const comparison = context.dividendMonthlyHistoryComparisonText(current);
+  const zeroMonth = rows.find(row => row.total === 0);
+  assert.equal(!!zeroMonth, true);
+  const comparison = context.dividendMonthlyHistoryComparisonText(zeroMonth);
 
   assert.equal(typeof comparison, 'string');
   assert.equal(comparison.includes('Infinity'), false);
   assert.equal(comparison.includes('NaN'), false);
   assert.match(comparison, /^([+-]R\$ \d+\.\d{2}|Sem base anterior|Compara\u00e7\u00e3o indispon\u00edvel)( \([+-]?\d+(\.\d+)?%\))?$/);
-  assert.equal(rows[1].total, 0);
+  assert.equal(rows.some(row => row.total === 0), true);
   assert.equal(comparison.includes('%'), false);
 
   context.S.dividendMonthlyHistoryExpanded = [current.key];

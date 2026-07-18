@@ -22,7 +22,7 @@ function assertRoadmap204AClosed(roadmap) {
   assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
   assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
   assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- PR atual: `#207`;/);
   assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
   assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
@@ -129,7 +129,7 @@ test('fase 204A fica documentariamente encerrada', () => {
     /\| 204A \| Dashboard executivo com destaques da carteira \| Concluida \| `#205` \| `8ab97be06a3b377c6fe1911cb42e2d57a6546275` \| `index\.html`, `docs\/phase-204a-dashboard-highlights\.md`, `tests\/phase-204a-dashboard-highlights\.test\.js`, `tests\/phase-204a-dashboard-highlights\.guard\.js` \| reutilizacao da base oficial da Fase 202 sem formula financeira nova \| destaques dependem da disponibilidade e completude dos dados atuais \| `git revert 8ab97be06a3b377c6fe1911cb42e2d57a6546275` \|/,
   );
   assert.match(roadmap, /- fase atual: 204B;/);
-  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- PR atual: `#207`;/);
   assert.match(roadmap, /- implementacao ativa: historico mensal premium;/);
   assert.match(roadmap, /- 204C, 206, 208, 210 e 212 nao autorizadas[.;]/);
 });

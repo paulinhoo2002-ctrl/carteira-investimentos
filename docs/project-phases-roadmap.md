@@ -9,7 +9,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - branch atual: `feat/phase-204b-monthly-income-history`;
 - SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;
 - situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
+- PR atual: `#207`;
 - implementacao ativa: historico mensal premium;
 - alteracao funcional autorizada exclusivamente para a Fase 204B;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
@@ -766,7 +766,7 @@ Estado atual:
 - branch atual: `feat/phase-204b-monthly-income-history`;
 - SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;
 - situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
+- PR atual: `#207`;
 - implementacao ativa: historico mensal premium;
 - alteracao funcional autorizada exclusivamente para a Fase 204B;
 - Fase 204A funcional e documentalmente concluida;
@@ -794,6 +794,7 @@ Fonte oficial:
 - tipo oficial: `proventoTipoCanonical(p.eventType || p.type)`;
 - somente recebidos entram na consolidacao mensal;
 - entradas com data invalida, futuro, valor ausente ou renda fixa ficam fora.
+- nao existe status persistido separado para previsto/recebido nesta fase; a leitura oficial usa a data de pagamento nao futura e as exclusoes oficiais.
 
 Regras:
 
@@ -839,7 +840,8 @@ Testes:
 
 Rollback:
 
-- `git revert 63b7206be2908e8f6eca5c8590948513c3d55005`;
+- rollback pre-merge da branch: `git revert 313c71146181a58157e6236ef3305ca259d6ca5f`;
+- depois do squash merge, o encerramento documental deve registrar o SHA final da main;
 
 Conclusao Caveman:
 

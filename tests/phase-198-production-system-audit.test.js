@@ -53,7 +53,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
   assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
   assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- PR atual: `#207`;/);
   assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
   assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
   assert.match(currentState, /- PR `#202` merged e closed \(encerramento funcional da fase 202\);/);

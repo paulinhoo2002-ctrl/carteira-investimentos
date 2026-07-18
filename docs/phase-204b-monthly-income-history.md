@@ -35,6 +35,7 @@ Melhorar a visualizacao do historico mensal de proventos efetivamente recebidos,
 - tipo oficial: `eventType` ou `type`, normalizado por `proventoTipoCanonical()`
 - somente recebidos entram na consolidacao mensal
 - proventos futuros, previstos, estimados ou de renda fixa ficam fora
+- nao existe status persistido separado para previsto/recebido nesta fonte; o contrato oficial usa a data de pagamento nao futura e as exclusoes oficiais
 
 ## Data oficial usada
 
@@ -148,7 +149,11 @@ Se nenhuma dessas datas for valida, o lancamento fica fora do historico mensal.
 
 ## Rollback
 
-`git revert 63b7206be2908e8f6eca5c8590948513c3d55005`
+Rollback pre-merge da branch:
+
+`git revert 313c71146181a58157e6236ef3305ca259d6ca5f`
+
+Depois do squash merge, o encerramento documental deve registrar o SHA final da main.
 
 ## Conclusao Caveman
 

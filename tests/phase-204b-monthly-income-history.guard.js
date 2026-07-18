@@ -36,7 +36,7 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   assert.match(currentState, /- branch atual: `feat\/phase-204b-monthly-income-history`;/);
   assert.match(currentState, /- SHA-base: `63b7206be2908e8f6eca5c8590948513c3d55005`;/);
   assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- PR atual: `#207`;/);
   assert.match(currentState, /- implementacao ativa: historico mensal premium;/);
   assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 204B;/);
   assert.match(currentState, /- Fase 204A funcional e documentalmente concluida;/);
@@ -84,6 +84,7 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   assert.match(documentation, /## Conclusao Caveman/);
   assert.match(documentation, /## Conclusao Impeccable/);
   assert.match(documentation, /data oficial de recebimento/);
+  assert.match(documentation, /nao existe status persistido separado para previsto\/recebido nesta fonte/);
   assert.match(documentation, /Regras de inclusao e exclusao/);
   assert.match(documentation, /Agrupamento mensal/);
   assert.match(documentation, /Zero versus ausente/);
@@ -97,6 +98,8 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   assert.match(documentation, /Nenhum provento recebido ainda\./);
   assert.match(documentation, /Nenhum recebimento encontrado para os filtros selecionados\./);
   assert.match(documentation, /sem inventar historico/i);
+  assert.equal(documentation.includes('Rollback pre-merge da branch:'), true);
+  assert.equal(documentation.includes('git revert 313c71146181a58157e6236ef3305ca259d6ca5f'), true);
   assert.equal(documentation.includes('\uFFFD'), false);
 }
 
