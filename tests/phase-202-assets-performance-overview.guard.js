@@ -30,43 +30,59 @@ function extractFutureSequenceSection(roadmap) {
   return roadmap.slice(start, end);
 }
 
-function assertPhase202RoadmapOpen(roadmap) {
+function assertPhase202RoadmapClosed(roadmap) {
   const currentState = extractCurrentStateSection(roadmap);
   const phase202 = extractPhase202Section(roadmap);
 
-  assert.match(currentState, /- fase atual: 202;/);
-  assert.match(currentState, /- branch atual: `feat\/phase-202-assets-performance-overview`;/);
-  assert.match(currentState, /- SHA-base: `9cb53a259dbafefe92704f976c31264698651a09`;/);
-  assert.match(currentState, /- situacao: Fase 202 em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
-  assert.match(currentState, /- implementacao ativa: painel consolidado de desempenho dos ativos;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
+  assert.match(currentState, /- situacao: Fase 202 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- PR `#202` merged e closed \(encerramento funcional da fase 202\);/);
+  assert.match(currentState, /- modo de merge: squash;/);
+  assert.match(currentState, /- SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
+  assert.match(currentState, /- resultado: painel consolidado de desempenho dos ativos concluido;/);
+  assert.match(currentState, /- nenhuma Fase 204 ativa;/);
   assert.match(currentState, /- PR `#200` merged e closed;/);
   assert.match(currentState, /- SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;/);
   assert.match(currentState, /- resultado: refinamento confiavel da tela de Dividendos concluido;/);
   assert.match(currentState, /- correcao de 768px registrada como concluida;/);
   assert.match(currentState, /- nenhuma Fase 199 funcional;/);
-  assert.match(currentState, /- nenhuma Fase 204 ativa[.;]/);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
+  assert.equal(currentState.includes('ciclo de modernizacao readonly encerrado'), false);
+  assert.equal(currentState.includes('Fase 200 ativa'), false);
+  assert.equal(currentState.includes('Fase 195'), false);
 
   assert.match(phase202, /## 19\. Fase 202 - Painel consolidado de desempenho dos ativos/);
-  assert.match(phase202, /- fase atual: 202;/);
-  assert.match(phase202, /- nome da fase: Painel consolidado de desempenho dos ativos;/);
+  assert.match(phase202, /Estado final:/);
+  assert.match(phase202, /- fase concluida;/);
   assert.match(phase202, /- branch original: `feat\/phase-202-assets-performance-overview`;/);
-  assert.match(phase202, /- SHA-base: `9cb53a259dbafefe92704f976c31264698651a09`;/);
-  assert.match(phase202, /- situacao: em desenvolvimento;/);
-  assert.match(phase202, /- PR atual: pendente;/);
-  assert.match(phase202, /- implementacao ativa: painel consolidado de desempenho dos ativos;/);
-  assert.match(phase202, /- nenhuma Fase 204 ativa[.;]/);
-  assert.match(phase202, /- leitura consolidada de desempenho;/);
-  assert.match(phase202, /- comparacao rapida entre ativos;/);
-  assert.match(phase202, /- explicabilidade sobre fonte oficial, dados suficientes e zero versus ausente;/);
-  assert.match(phase202, /- responsividade em 390px, 768px, 1366px e 1920px;/);
-  assert.match(phase202, /- sem nova formula financeira\./);
-  assert.match(phase202, /- duplicar calculos oficiais;/);
-  assert.match(phase202, /- inventar cotacao, preco medio ou patrimonio;/);
-  assert.match(phase202, /- alterar schema, Firebase\/Auth, storage ou dependencias;/);
-  assert.match(phase202, /- iniciar a Fase 204\./);
-  assert.match(phase202, /- reverter os commits da fase e remover os documentos criados por ela\./);
+  assert.match(phase202, /- PR: `#202`;/);
+  assert.match(phase202, /- modo: squash;/);
+  assert.match(phase202, /- SHA final: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;/);
+  assert.match(phase202, /- implementacao ativa: nenhuma;/);
+  assert.match(phase202, /- nenhuma formula financeira nova;/);
+  assert.match(phase202, /- nenhuma alteracao de schema;/);
+  assert.match(phase202, /- nenhuma dependencia nova;/);
+  assert.match(phase202, /- shell moderno readonly;/);
+  assert.match(phase202, /- Fase 204 nao iniciada\./);
+  assert.match(phase202, /^### Conclusão funcional$/m);
+  assert.equal(/^## Conclusao funcional$/m.test(phase202), false, 'Conclusao funcional nao pode voltar para nivel 2');
+  assert.match(phase202, /- nova area Ativos -> Desempenho;/);
+  assert.match(phase202, /- melhores e piores ativos;/);
+  assert.match(phase202, /- resultado em reais e percentual;/);
+  assert.match(phase202, /- filtros por classe;/);
+  assert.match(phase202, /- ordenacao;/);
+  assert.match(phase202, /- dados insuficientes tratados explicitamente;/);
+  assert.match(phase202, /- base completa exige valor atual e valor aplicado;/);
+  assert.match(phase202, /- zero real preservado;/);
+  assert.match(phase202, /- funcoes financeiras oficiais reutilizadas\./);
+  assert.match(phase202, /^### Riscos observados$/m);
+  assert.equal(/^## Riscos observados$/m.test(phase202), false, 'Riscos observados nao pode voltar para nivel 2');
+  assert.match(phase202, /^### Validações registradas$/m);
+  assert.equal(/^## Validacoes registradas$/m.test(phase202), false, 'Validacoes registradas nao pode voltar para nivel 2');
 }
 
 function assertPhase202FutureSequence(roadmap) {
@@ -110,9 +126,10 @@ function assertPhase202FutureSequence(roadmap) {
     assert.equal(section.includes(line), true, `Sequencia futura precisa conter: ${line}`);
   }
   assert.equal(section.includes('### Fase 202 - Painel consolidado de desempenho dos ativos'), false, 'Sequencia futura nao pode citar a Fase 202 ativa');
+  assert.equal(section.includes('- a sequencia pode ser reordenada somente por decisao explicita;'), false, 'Sequencia futura nao pode usar a regra antiga');
 }
 
 module.exports = {
-  assertPhase202RoadmapOpen,
+  assertPhase202RoadmapClosed,
   assertPhase202FutureSequence,
 };

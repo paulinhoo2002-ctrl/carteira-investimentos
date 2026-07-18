@@ -4,18 +4,22 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 202;
-- branch atual: `feat/phase-202-assets-performance-overview`;
-- SHA-base: `9cb53a259dbafefe92704f976c31264698651a09`;
-- situacao: Fase 202 em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: painel consolidado de desempenho dos ativos;
+- fase atual: nenhuma;
+- branch atual: main;
+- SHA-base: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
+- situacao: Fase 202 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- PR `#202` merged e closed (encerramento funcional da fase 202);
+- modo de merge: squash;
+- SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
+- resultado: painel consolidado de desempenho dos ativos concluido;
+- nenhuma Fase 204 ativa;
 - PR `#200` merged e closed;
 - SHA final da Fase 200: `3c784714265505efa763e624bbaf8bacaa467ba0`;
 - resultado: refinamento confiavel da tela de Dividendos concluido;
 - correcao de 768px registrada como concluida;
 - nenhuma Fase 199 funcional;
-- nenhuma Fase 204 ativa;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
 - uma branch por fase
@@ -31,8 +35,9 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 Base de referencia desta fase:
 
-- branch: `feat/phase-202-assets-performance-overview`
-- HEAD / `origin/main`: `9cb53a259dbafefe92704f976c31264698651a09`
+- branch: main
+- HEAD / `origin/main`: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`
+- PR `#202`: merged e closed (encerramento funcional da fase 202)
 - PR `#200`: merged e closed (encerramento funcional da fase 200)
 - PR `#198`: merged e closed (encerramento da auditoria)
 - PR `#196`: merged e closed (encerramento funcional da fase 196)
@@ -452,16 +457,80 @@ Objetivo:
 - usar somente numeros oficiais existentes;
 - nao duplicar calculos financeiros.
 
-Estado atual:
+Estado final:
 
-- fase atual: 202;
-- nome da fase: Painel consolidado de desempenho dos ativos;
+- fase concluida;
+- fase atual: nenhuma;
 - branch original: `feat/phase-202-assets-performance-overview`;
-- SHA-base: `9cb53a259dbafefe92704f976c31264698651a09`;
-- situacao: em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: painel consolidado de desempenho dos ativos;
+- PR: `#202`;
+- modo: squash;
+- branch atual: main;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- PR `#202`: merged e closed;
+- modo de merge: squash;
+- SHA final: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
+- SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
+- nenhuma formula financeira nova;
+- nenhuma alteracao de schema;
+- nenhuma dependencia nova;
+- shell moderno readonly;
+- Fase 204 nao iniciada.
+- resultado: painel consolidado de desempenho dos ativos concluido;
 - nenhuma Fase 204 ativa.
+
+### Conclusão funcional
+
+- nova area Ativos -> Desempenho;
+- melhores e piores ativos;
+- resultado em reais e percentual;
+- filtros por classe;
+- ordenacao;
+- dados insuficientes tratados explicitamente;
+- base completa exige valor atual e valor aplicado;
+- zero real preservado;
+- funcoes financeiras oficiais reutilizadas.
+
+### Riscos observados
+
+- regressao visual em 768px se a tela for alterada sem revisao;
+- confusao entre zero e dado ausente se a regra de base for relaxada;
+- overflow horizontal se a lista consolidada crescer sem adaptacao responsiva.
+
+### Validações registradas
+
+- `node --test tests/phase-202-assets-performance-overview.test.js`;
+- `node --test tests/phase-202-assets-performance-overview.guard.js`;
+- `node --test tests/basic-ui.test.js`;
+- `node --test tests/dividends-final-polish.test.js`;
+- `node --test tests/dividends-visual-refinement.test.js`;
+- `node --test tests/phase-198-production-system-audit.test.js`;
+- `node --test tests/readonly-contract-architecture.test.js`;
+- `node --test tests/modern-architecture-decision.test.js`;
+- `node --test tests/phase-200-future-sequence.guard.js`;
+- `npm test`;
+- `npm run build`;
+- `npm run build:modern`;
+- `npm run test:modern`;
+- `git diff --check`.
+
+### Sequência futura
+
+Preservada e nao autorizada:
+
+- Fase 204 - Evolucao patrimonial;
+- Fase 206 - Metas financeiras;
+- Fase 208 - Qualidade dos dados;
+- Fase 210 - Relatorio executivo mensal;
+- Fase 212 - Desempenho e manutencao tecnica.
+
+Nenhuma dessas fases esta iniciada ou autorizada por esta documentacao.
+- a sequencia pode ser reordenada somente por risco encontrado na auditoria;
+- nenhuma dessas fases esta automaticamente autorizada;
+- cada fase exige objetivo, branch, PR, validacao e autorizacao;
+- nao existe Fase 199 funcional;
+- a Fase 200 foi redefinida por decisao explicita;
+- a sequencia futura planejada inclui 204, 206, 208, 210 e 212.
 
 Escopo:
 
