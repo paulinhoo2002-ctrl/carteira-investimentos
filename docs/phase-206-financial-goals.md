@@ -127,9 +127,9 @@
 - `tests/phase-206-financial-goals.guard.js`
 - validacao cruzada com fases readonly anteriores e com o historico mensal premium.
 
-## Rollback
+## Rollback final
 
-- reverter o commit desta fase;
+- `git revert 8225262a27bdfc4a58c526b2e7d8c113774f638b`
 - remover a documentacao e os testes novos;
 - manter intactos os helpers oficiais reutilizados.
 
@@ -146,4 +146,27 @@
 - progresso claro;
 - meta, realidade e projecao separados;
 - acessibilidade e responsividade preservadas.
+
+## Encerramento
+
+- PR `#209`;
+- squash;
+- SHA final `8225262a27bdfc4a58c526b2e7d8c113774f638b`;
+- data de encerramento: 18/07/2026;
+- 5 testes funcionais da fase aprovados;
+- 1 guardrail documental/arquitetural aprovado;
+- `npm test` com 95 testes aprovados;
+- builds verdes;
+- Vercel success antes do merge;
+- validacao visual completa bloqueada pelo gate de autenticacao;
+- painel antigo preservado;
+- metas financeiras adicionadas;
+- fontes oficiais preservadas;
+- nenhuma formula financeira concorrente;
+- nenhum schema;
+- nenhum snapshot;
+- nenhum deploy manual;
+- rollback final;
+- Fase 208 nao iniciada;
+- 204C, 210 e 212 nao iniciadas.
 
