@@ -126,7 +126,7 @@ Funcoes reais que ja existem e podem ser reaproveitadas:
 
 Essas fases permanecem planejadas e nao autorizadas.
 
-## Criterios de aceite
+## Critérios de aceite
 
 - A auditoria nao cria interface funcional.
 - A auditoria nao altera schema, Firebase/Auth, storage ou dependencias.

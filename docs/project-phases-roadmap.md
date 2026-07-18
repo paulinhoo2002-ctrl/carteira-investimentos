@@ -5,7 +5,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 ## Estado e governanca
 
 - fase atual: 204;
-- branch atual: main;
+- branch atual: `docs/phase-204-evolution-audit`;
 - SHA-base: `2f69f0623717d09e670b82f711588f9d1cc50909`;
 - situacao: auditoria documental em desenvolvimento;
 - PR atual: pendente;
@@ -601,7 +601,7 @@ Proposta de PRs futuras:
 - PR funcional 204B - Historico mensal premium: bloco aberto por padrao, expansao progressiva, filtros e consolidacao visual;
 - PR funcional 204C - Evolucao patrimonial: somente se o historico real ou snapshots futuros justificarem.
 
-Critrios de aceite:
+Critérios de aceite:
 
 - nenhuma implementacao funcional nesta fase;
 - nenhuma formula financeira nova;

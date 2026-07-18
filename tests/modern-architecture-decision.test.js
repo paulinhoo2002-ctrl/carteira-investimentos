@@ -46,7 +46,7 @@ test('documentacao da estrategia e limpa e rastreavel', () => {
   const phase192 = section(roadmap, '## 14. Fase 192 - refinamento visual e responsivo da aba Dividendos', '## 15. Fase 194 - finalizacao objetiva da aba Dividendos');
 
   assert.match(currentState, /- fase atual: 204;/);
-  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- branch atual: `docs\/phase-204-evolution-audit`;/);
   assert.match(currentState, /- SHA-base: `2f69f0623717d09e670b82f711588f9d1cc50909`;/);
   assert.match(currentState, /- situacao: auditoria documental em desenvolvimento;/);
   assert.match(currentState, /- PR atual: pendente;/);

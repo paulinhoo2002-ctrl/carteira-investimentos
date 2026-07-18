@@ -44,7 +44,7 @@ test('fase 204 fica registrada como auditoria documental', () => {
   const futureSequence = section(roadmap, '## 11. Sequencia planejada apos a Fase 202', '## 12. Radar estrategico - mudancas de alto impacto');
 
   assert.match(currentState, /- fase atual: 204;/);
-  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- branch atual: `docs\/phase-204-evolution-audit`;/);
   assert.match(currentState, /- SHA-base: `2f69f0623717d09e670b82f711588f9d1cc50909`;/);
   assert.match(currentState, /- situacao: auditoria documental em desenvolvimento;/);
   assert.match(currentState, /- PR atual: pendente;/);
@@ -111,7 +111,7 @@ test('fase 204 fica registrada como auditoria documental', () => {
   assert.match(audit, /## Proposta visual/);
   assert.match(audit, /## Recomendacao tecnica/);
   assert.match(audit, /## Sequencia de PRs futuras/);
-  assert.match(audit, /## Criterios de aceite/);
+  assert.match(audit, /## Critérios de aceite/);
   assert.match(audit, /## Rollback/);
   assert.match(audit, /## Conclusao Caveman/);
   assert.match(audit, /## Conclusao Impeccable/);
