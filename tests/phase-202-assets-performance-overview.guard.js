@@ -58,11 +58,6 @@ function assertPhase202RoadmapClosed(roadmap) {
 function assertPhase202FutureSequence(roadmap) {
   const section = extractFutureSequenceSection(roadmap);
   const expected = [
-    '### Fase 206 - Metas financeiras',
-    '- objetivo: acompanhar meta de R$ 1 milhao e renda passiva de R$ 4 mil mensais;',
-    '- separar valores reais de projecoes;',
-    '- nao misturar meta com simulacao;',
-    '- estado: planejada e nao autorizada.',
     '### Fase 208 - Qualidade dos dados',
     '- objetivo: localizar registros incompletos, duplicados ou inconsistentes;',
     '- diferenciar zero de ausente;',
@@ -85,7 +80,8 @@ function assertPhase202FutureSequence(roadmap) {
     '- cada fase exige objetivo, branch, PR, validacao e autorizacao;',
     '- nao existe Fase 199 funcional;',
     '- a Fase 200 foi redefinida por decisao explicita;',
-    '- a sequencia futura planejada inclui 206, 208, 210 e 212.',
+    '- a Fase 206 esta em desenvolvimento e nao faz parte desta sequencia planejada;',
+    '- a sequencia futura planejada inclui 208, 210 e 212.',
   ];
 
   for (const line of expected) {

@@ -31,14 +31,14 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   const currentState = extractSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase204b = extractSection(roadmap, '## 22. Fase 204B - Historico mensal premium de dividendos', '## 11. Sequencia planejada apos a Fase 202');
 
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- nome: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `06d921b78a9411a709726a8f4cad8725bcb56899`;/);
-  assert.match(currentState, /- situacao: Fase 204B concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
-  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
+  assert.match(currentState, /- fase atual: 206;/);
+  assert.match(currentState, /- nome: Metas financeiras;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-206-financial-goals`;/);
+  assert.match(currentState, /- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: metas financeiras;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 206;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
   assert.match(currentState, /- PR `#207` merged e closed \(encerramento funcional da Fase 204B\);/);
   assert.match(currentState, /- modo de merge da Fase 204B: squash;/);
@@ -46,8 +46,9 @@ function assertPhase204BMonthlyIncomeHistory(roadmap, documentation) {
   assert.match(currentState, /- resultado: Historico mensal premium de dividendos concluido;/);
   assert.match(currentState, /- Fase 204A funcional e documentalmente concluida;/);
   assert.match(currentState, /- Fase 204B funcional e documentalmente encerrada;/);
-  assert.match(currentState, /- 204C, 206, 208, 210 e 212 nao autorizadas[.;]/);
-  assert.match(currentState, /- Fases 206, 208, 210 e 212 continuam planejadas e nao autorizadas\./);
+  assert.match(currentState, /- Fase 206 funcional em desenvolvimento;/);
+  assert.match(currentState, /- 204C, 208, 210 e 212 nao autorizadas[.;]/);
+  assert.match(currentState, /- Fases 208, 210 e 212 continuam planejadas e nao autorizadas\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
 
   assert.match(phase204b, /## 22\. Fase 204B - Historico mensal premium de dividendos/);

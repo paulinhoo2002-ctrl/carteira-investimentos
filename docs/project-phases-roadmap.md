@@ -4,14 +4,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: nenhuma;
-- nome: nenhuma;
-- branch atual: main;
-- SHA-base: `06d921b78a9411a709726a8f4cad8725bcb56899`;
-- situacao: Fase 204B concluida e aguardando nova autorizacao;
-- PR atual: nenhuma;
-- implementacao ativa: nenhuma;
-- nenhuma alteracao funcional autorizada;
+- fase atual: 206;
+- nome: Metas financeiras;
+- branch atual: `feat/phase-206-financial-goals`;
+- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;
+- situacao: implementacao funcional em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: metas financeiras;
+- alteracao funcional autorizada exclusivamente para a Fase 206;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -35,7 +35,8 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - resultado: Historico mensal premium de dividendos concluido;
 - Fase 204B funcional e documentalmente encerrada;
 - Fases 204A e 204B funcional e documentalmente encerradas;
-- 204C, 206, 208, 210 e 212 nao autorizadas;
+- Fase 206 funcional em desenvolvimento;
+- 204C, 208, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
 - Fase 196 concluida pela PR #196;
 - Fase 194 concluida pela PR #194;
@@ -48,13 +49,13 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - nao iniciar a fase seguinte antes de fechar a atual
 - preservacao de dados, schema, Firebase/Auth e compatibilidade continua obrigatoria
 - `modern/dist` fora do indice
-- Fases 206, 208, 210 e 212 continuam planejadas e nao autorizadas.
+- Fases 208, 210 e 212 continuam planejadas e nao autorizadas.
 - Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `06d921b78a9411a709726a8f4cad8725bcb56899`
+- HEAD / `origin/main`: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`
 - PR `#207`: merged e closed (encerramento funcional da Fase 204B)
 - PR `#205`: merged e closed (encerramento funcional da Fase 204A)
 - PR `#204`: merged e closed (encerramento documental da fase 204)
@@ -886,16 +887,49 @@ Conclusao Impeccable:
 - 204C nao iniciada;
 - Fase 206 nao iniciada.
 
+## 23. Fase 206 - Metas financeiras
+
+Objetivo:
+- acompanhar meta patrimonial de R$ 1.000.000 e meta de renda passiva de R$ 4.000 mensais;
+- usar somente fontes oficiais atuais;
+- separar realidade, meta e eventual projeção;
+- preservar zero, dado ausente e ausência de histórico inventado.
+
+Estado atual:
+
+- fase atual: 206;
+- nome: Metas financeiras;
+- branch atual: `feat/phase-206-financial-goals`;
+- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;
+- situacao: implementacao funcional em desenvolvimento;
+- PR atual: pendente;
+- implementacao ativa: metas financeiras;
+- alteracao funcional autorizada exclusivamente para a Fase 206;
+- Fase 204B funcional e documentalmente encerrada;
+- 204C, 208, 210 e 212 nao autorizadas;
+
+Decisao tecnica:
+- reutilizacao das metas persistidas e dos helpers oficiais atuais;
+- patrimonio atual confiavel vem de `cx()`;
+- renda passiva atual confiavel vem do histórico mensal real da Fase 204B;
+- nenhuma nova formula financeira;
+- nenhuma criacao de snapshot;
+- nenhuma evolucao patrimonial historica.
+
+Critérios de aceite:
+- meta patrimonial com progresso real, valor faltante e estado atingido;
+- meta de renda passiva com recebimentos reais do mes atual e estado atingido;
+- barras com `role="progressbar"` e atributos ARIA;
+- zero preservado;
+- ausente nao vira zero;
+- sem overflow horizontal relevante;
+- sem schema novo;
+- sem dependencia nova;
+- shell moderno readonly preservado.
+
 ## 11. Sequencia planejada apos a Fase 202
 
 Planejadas e nao autorizadas:
-
-### Fase 206 - Metas financeiras
-
-- objetivo: acompanhar meta de R$ 1 milhao e renda passiva de R$ 4 mil mensais;
-- separar valores reais de projecoes;
-- nao misturar meta com simulacao;
-- estado: planejada e nao autorizada.
 
 ### Fase 208 - Qualidade dos dados
 
@@ -926,7 +960,8 @@ Planejadas e nao autorizadas:
 - cada fase exige objetivo, branch, PR, validacao e autorizacao;
 - nao existe Fase 199 funcional;
 - a Fase 200 foi redefinida por decisao explicita;
-- a sequencia futura planejada inclui 206, 208, 210 e 212.
+- a Fase 206 esta em desenvolvimento e nao faz parte desta sequencia planejada;
+- a sequencia futura planejada inclui 208, 210 e 212.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
