@@ -9,7 +9,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - branch atual: `feat/phase-206-financial-goals`;
 - SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;
 - situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
+- PR atual: `#209`;
 - implementacao ativa: metas financeiras;
 - alteracao funcional autorizada exclusivamente para a Fase 206;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
@@ -902,7 +902,7 @@ Estado atual:
 - branch atual: `feat/phase-206-financial-goals`;
 - SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;
 - situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
+- PR atual: `#209`;
 - implementacao ativa: metas financeiras;
 - alteracao funcional autorizada exclusivamente para a Fase 206;
 - Fase 204B funcional e documentalmente encerrada;

@@ -39,7 +39,22 @@ function extractGoalsSnippet() {
 }
 
 function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
+  const calls = {
+    cx: 0,
+    historyRows: 0,
+    historyGroupRows: 0,
+    historySummary: 0,
+    dashboardSnapshot: 0,
+    dashboardSummaryPanel: 0,
+    dashboardPassiveIncomePanel: 0,
+    dashboardHighlightsPanel: 0,
+    dashboardCompositionPanel: 0,
+    assetAnalysisRows: 0,
+    assetPerformanceOverviewRows: 0,
+    pie: 0,
+  };
   const state = {
+    calls,
     S: { goals, assets },
     lastGo: null,
     renderCount: 0,
@@ -59,10 +74,51 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
     passiveIncomeMonthKey(date) {
       return monthKey(date);
     },
+    dashboardSnapshot(analysisRows) {
+      calls.dashboardSnapshot += 1;
+      return {
+        analysisRows,
+        portfolio: state.cx(),
+        financialGoals: state.financialGoalsSnapshot(),
+        income: { target: Number(state.S?.goals?.proventos?.monthly) || 0, monthlyAvg: 0 },
+        recent: { month: monthKey(new Date()), total: 0 },
+        typeRows: [],
+      };
+    },
+    dashboardHomeSummaryPanel() {
+      calls.dashboardSummaryPanel += 1;
+      return '<section class="dashboard-home-summary">Resumo patrimonial</section>';
+    },
+    dashboardPassiveIncomePanel() {
+      calls.dashboardPassiveIncomePanel += 1;
+      return '<section class="dashboard-passive-income">Renda passiva</section>';
+    },
+    dashboardHomeHighlightsPanel() {
+      calls.dashboardHighlightsPanel += 1;
+      return '<section class="dashboard-home-highlights">Destaques da carteira</section>';
+    },
+    dashboardHomeCompositionPanel() {
+      calls.dashboardCompositionPanel += 1;
+      return '<section class="dashboard-home-composition">Composição por classe</section>';
+    },
+    assetAnalysisRows() {
+      calls.assetAnalysisRows += 1;
+      return [];
+    },
+    assetPerformanceOverviewRows() {
+      calls.assetPerformanceOverviewRows += 1;
+      return [];
+    },
+    pie() {
+      calls.pie += 1;
+      return [];
+    },
     dividendMonthlyHistoryRows() {
+      calls.historyRows += 1;
       return historyRows;
     },
     dividendMonthlyHistoryGroupRows(rows) {
+      calls.historyGroupRows += 1;
       const grouped = new Map();
       rows.forEach((row) => {
         if (!grouped.has(row.monthKey)) {
@@ -92,6 +148,7 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
       });
     },
     dividendMonthlyHistorySummary(groups) {
+      calls.historySummary += 1;
       const total = groups.reduce((sum, row) => sum + row.total, 0);
       const monthCount = groups.length;
       const avg = monthCount ? total / monthCount : null;
@@ -99,6 +156,7 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
       return { total, monthCount, avg, best };
     },
     cx() {
+      calls.cx += 1;
       const totalApplied = assets.reduce((sum, asset) => sum + (Number(asset.applied) || 0), 0);
       const totalCurrent = assets.reduce((sum, asset) => sum + (Number(asset.current) || 0), 0);
       return {
@@ -144,6 +202,91 @@ function buildHistoryRows(now) {
     { monthKey: monthKey(new Date(now.getFullYear(), now.getMonth() - 2, 12)), date: new Date(now.getFullYear(), now.getMonth() - 2, 12).toISOString(), ticker: 'DDD4', name: 'DDD4', type: 'Rendimento', value: 1000 },
   ];
 }
+
+test('dashboard keeps passive income panel and adds financial goals', () => {
+  const ctx = buildContext({
+    goals: {
+      patrimonio: { target: 1000000 },
+      proventos: { monthly: 4000 },
+    },
+    assets: [{ current: 620000, applied: 500000 }],
+    historyRows: buildHistoryRows(new Date()),
+  });
+
+  const html = ctx.dash();
+  assert.match(html, /dashboard-home-summary/);
+  assert.match(html, /dashboard-home-goals/);
+  assert.match(html, /dashboard-passive-income/);
+  assert.match(html, /dashboard-home-highlights/);
+  assert.match(html, /dashboard-home-composition/);
+  assert.ok(html.indexOf('dashboard-home-summary') < html.indexOf('dashboard-home-goals'));
+  assert.ok(html.indexOf('dashboard-home-goals') < html.indexOf('dashboard-passive-income'));
+  assert.ok(html.indexOf('dashboard-passive-income') < html.indexOf('dashboard-home-highlights'));
+  assert.ok(html.indexOf('dashboard-home-highlights') < html.indexOf('dashboard-home-composition'));
+  assert.equal(ctx.calls.dashboardSnapshot, 1);
+  assert.equal(ctx.calls.dashboardSummaryPanel, 1);
+  assert.equal(ctx.calls.dashboardPassiveIncomePanel, 1);
+});
+
+test('financial goals snapshot uses cx and official history helpers', () => {
+  const ctx = buildContext({
+    goals: {
+      patrimonio: { target: 1000000 },
+      proventos: { monthly: 4000 },
+    },
+    assets: [{ current: 123, applied: 45 }],
+    historyRows: buildHistoryRows(new Date()),
+  });
+
+  let cxCalls = 0;
+  ctx.cx = () => {
+    cxCalls += 1;
+    return { tI: 11, tC: 22, tG: 11, tGP: 100 };
+  };
+
+  const snapshot = ctx.financialGoalsSnapshot();
+  assert.equal(cxCalls, 1);
+  assert.equal(snapshot.portfolioCurrent, 22);
+  assert.equal(snapshot.hasPortfolioData, true);
+  assert.equal(ctx.calls.historyRows, 1);
+  assert.equal(ctx.calls.historyGroupRows, 1);
+  assert.equal(ctx.calls.historySummary, 1);
+  assert.equal(snapshot.historySummary.total, 5800);
+  assert.equal(snapshot.historySummary.monthCount, 3);
+  assert.equal(snapshot.historySummary.best.total, 2800);
+  assert.equal(snapshot.currentIncome, 2800);
+  assert.equal(snapshot.currentIncomeCount, 2);
+});
+
+test('portfolio availability distinguishes real zero from absence', () => {
+  const activeZero = buildContext({
+    assets: [{ current: 0, applied: 0 }],
+    historyRows: [],
+  });
+  assert.equal(activeZero.financialGoalsHasPortfolioData({ tI: 0, tC: 0, tG: 0, tGP: 0 }), true);
+  assert.equal(activeZero.financialGoalsSnapshot().hasPortfolioData, true);
+
+  const fixedIncomeOnly = buildContext({
+    assets: [{ type: 'Renda Fixa', rf_current_value: 0, rf_applied_value: 0 }],
+    historyRows: [],
+  });
+  assert.equal(fixedIncomeOnly.financialGoalsHasPortfolioData({ tI: 0, tC: 0, tG: 0, tGP: 0 }), true);
+  assert.equal(fixedIncomeOnly.financialGoalsSnapshot().hasPortfolioData, true);
+
+  const absent = buildContext({
+    assets: [],
+    historyRows: [],
+  });
+  assert.equal(absent.financialGoalsHasPortfolioData({ tI: 0, tC: 0, tG: 0, tGP: 0 }), false);
+  assert.equal(absent.financialGoalsSnapshot().hasPortfolioData, false);
+
+  const invalid = buildContext({
+    assets: [{ current: 'abc', applied: Infinity }],
+    historyRows: [],
+  });
+  assert.equal(invalid.financialGoalsHasPortfolioData({ tI: 0, tC: 0, tG: 0, tGP: 0 }), false);
+  assert.equal(invalid.financialGoalsSnapshot().hasPortfolioData, false);
+});
 
 test('metas financeiras calculam progresso, limite e estado executivo', () => {
   const ctx = buildContext({

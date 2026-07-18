@@ -32,7 +32,7 @@ function assertPhase206Roadmap(roadmap) {
   assert.match(currentState, /- branch atual: `feat\/phase-206-financial-goals`;/);
   assert.match(currentState, /- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;/);
   assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- PR atual: `#209`;/);
   assert.match(currentState, /- implementacao ativa: metas financeiras;/);
   assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 206;/);
   assert.match(currentState, /- Fase 206 funcional em desenvolvimento;/);
@@ -86,6 +86,7 @@ test('fase 206 fica documentada e com governanca rastreavel', () => {
   assertPhase206Roadmap(roadmap);
   assertPhase206Documentation(doc);
   assert.equal(roadmap.includes('Fase 206 funcional em desenvolvimento;'), true);
+  assert.equal(roadmap.includes('PR atual: `#209`;'), true);
   assert.equal(doc.includes('Nenhuma fase futura esta automaticamente autorizada.'), false);
   assert.equal(doc.includes('\uFFFD'), false);
 });

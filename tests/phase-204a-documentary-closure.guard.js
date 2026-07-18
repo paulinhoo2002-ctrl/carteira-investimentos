@@ -22,7 +22,7 @@ function assertRoadmap204AClosed(roadmap) {
   assert.match(currentState, /- branch atual: `feat\/phase-206-financial-goals`;/);
   assert.match(currentState, /- SHA-base: `95383ba6f75be0fc7bc70472b1ec039bc9bf7308`;/);
   assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- PR atual: `#209`;/);
   assert.match(currentState, /- implementacao ativa: metas financeiras;/);
   assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 206;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
@@ -136,7 +136,7 @@ test('fase 204A fica documentariamente encerrada', () => {
     /\| 204B \| Historico mensal premium de dividendos \| Concluida \| `#207` \| `06d921b78a9411a709726a8f4cad8725bcb56899` \| `index\.html`, `docs\/phase-204b-monthly-income-history\.md`, `tests\/phase-204b-monthly-income-history\.test\.js`, `tests\/phase-204b-monthly-income-history\.guard\.js` \| consolidacao somente de proventos reais com data oficial nao futura, sem historico inventado \| contrato atual nao possui status persistido separado de previsto e recebido \| `git revert 06d921b78a9411a709726a8f4cad8725bcb56899` \|/,
   );
   assert.match(roadmap, /- fase atual: 206;/);
-  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- PR atual: `#209`;/);
   assert.match(roadmap, /- implementacao ativa: metas financeiras;/);
   assert.match(roadmap, /- alteracao funcional autorizada exclusivamente para a Fase 206;/);
   assert.match(roadmap, /- 204C, 208, 210 e 212 nao autorizadas[.;]/);

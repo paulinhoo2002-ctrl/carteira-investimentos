@@ -19650,6 +19650,7 @@ function dash(){
     <div class="dashboard-home-grid">
       ${dashboardHomeSummaryPanel(data)}
       ${dashboardFinancialGoalsPanel(data)}
+      ${dashboardPassiveIncomePanel(data)}
       ${dashboardHomeHighlightsPanel()}
       ${dashboardHomeCompositionPanel(data)}
     </div>
@@ -20637,9 +20638,33 @@ function goalProgressMetrics(current,target){
   const reached=hasCurrent && hasTarget ? safeCurrent>=safeTarget : false;
   return {hasCurrent,hasTarget,current:safeCurrent,target:safeTarget,percent,barPercent,missing,excess,reached};
 }
+function financialGoalsHasPortfolioData(portfolio){
+  if(!portfolio || typeof portfolio!=='object') return false;
+  const hasFiniteSummary=['tI','tC','tG','tGP'].some(key=>Number.isFinite(Number(portfolio[key])));
+  if(!hasFiniteSummary) return false;
+  const assets=Array.isArray(S.assets) ? S.assets : [];
+  return assets.some(asset=>[
+    asset?.current,
+    asset?.currentValue,
+    asset?.marketValue,
+    asset?.liquidValue,
+    asset?.applied,
+    asset?.appliedValue,
+    asset?.initialValue,
+    asset?.balance,
+    asset?.rf_current_value,
+    asset?.rf_gross_value,
+    asset?.rf_liquid_value,
+    asset?.rf_applied_value,
+    asset?.fixed_current_value,
+    asset?.fixed_gross_value,
+    asset?.fixed_liquid_value,
+    asset?.fixed_initial_value,
+  ].some(value=>Number.isFinite(Number(value))));
+}
 function financialGoalsSnapshot(){
   const portfolio=cx();
-  const hasPortfolioData=Array.isArray(S.assets) && S.assets.length>0;
+  const hasPortfolioData=financialGoalsHasPortfolioData(portfolio);
   const goals=normalizeGoals(S.goals||{});
   const historyRows=dividendMonthlyHistoryRows();
   const historyGroups=dividendMonthlyHistoryGroupRows(historyRows);
