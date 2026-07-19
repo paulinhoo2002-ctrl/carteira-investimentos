@@ -203,7 +203,7 @@ function buildHistoryRows(now) {
   ];
 }
 
-test('dashboard keeps passive income panel and adds financial goals', () => {
+test('dashboard keeps passive income panel without rendering financial goals block', () => {
   const ctx = buildContext({
     goals: {
       patrimonio: { target: 1000000 },
@@ -215,12 +215,12 @@ test('dashboard keeps passive income panel and adds financial goals', () => {
 
   const html = ctx.dash();
   assert.match(html, /dashboard-home-summary/);
-  assert.match(html, /dashboard-home-goals/);
+  assert.doesNotMatch(html, /dashboard-home-goals/);
+  assert.doesNotMatch(html, /Metas financeiras/);
   assert.match(html, /dashboard-passive-income/);
   assert.match(html, /dashboard-home-highlights/);
   assert.match(html, /dashboard-home-composition/);
-  assert.ok(html.indexOf('dashboard-home-summary') < html.indexOf('dashboard-home-goals'));
-  assert.ok(html.indexOf('dashboard-home-goals') < html.indexOf('dashboard-passive-income'));
+  assert.ok(html.indexOf('dashboard-home-summary') < html.indexOf('dashboard-passive-income'));
   assert.ok(html.indexOf('dashboard-passive-income') < html.indexOf('dashboard-home-highlights'));
   assert.ok(html.indexOf('dashboard-home-highlights') < html.indexOf('dashboard-home-composition'));
   assert.equal(ctx.calls.dashboardSnapshot, 1);
