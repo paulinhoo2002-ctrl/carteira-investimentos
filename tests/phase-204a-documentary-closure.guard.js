@@ -17,14 +17,14 @@ function assertRoadmap204AClosed(roadmap) {
   const phase204a = extractSection(roadmap, '## 21. Fase 204A - Dashboard executivo com destaques da carteira', '## 11. Sequencia planejada apos a Fase 202');
   const futureSequence = extractSection(roadmap, '## 11. Sequencia planejada apos a Fase 202', '## 12. Radar estrategico - mudancas de alto impacto');
 
-  assert.match(currentState, /- fase atual: nenhuma;/);
-  assert.match(currentState, /- nome: nenhuma;/);
-  assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
-  assert.match(currentState, /- situacao: Fase 206 concluida e aguardando nova autorizacao;/);
-  assert.match(currentState, /- PR atual: nenhuma;/);
-  assert.match(currentState, /- implementacao ativa: nenhuma;/);
-  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
+  assert.match(currentState, /- fase atual: 208;/);
+  assert.match(currentState, /- nome: Qualidade dos dados;/);
+  assert.match(currentState, /- branch atual: `feat\/phase-208-data-quality`;/);
+  assert.match(currentState, /- SHA-base: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`;/);
+  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
+  assert.match(currentState, /- PR atual: pendente;/);
+  assert.match(currentState, /- implementacao ativa: auditoria de qualidade dos dados;/);
+  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 208;/);
   assert.match(currentState, /- PR `#205` merged e closed \(encerramento funcional da Fase 204A\);/);
   assert.match(currentState, /- PR `#207` merged e closed \(encerramento funcional da Fase 204B\);/);
   assert.match(currentState, /- modo de merge da Fase 204B: squash;/);
@@ -37,13 +37,26 @@ function assertRoadmap204AClosed(roadmap) {
   assert.match(currentState, /- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
   assert.match(currentState, /- resultado: acompanhamento de metas financeiras concluido;/);
   assert.match(currentState, /- Fases 204A, 204B e 206 funcional e documentalmente encerradas;/);
-  assert.match(currentState, /- 204C, 208, 210 e 212 nao autorizadas[.;]/);
-  assert.match(currentState, /- Fases 208, 210 e 212 continuam planejadas e nao autorizadas\./);
+  assert.match(currentState, /- 204C, 210 e 212 nao autorizadas[.;]/);
+  assert.match(currentState, /- nenhuma Fase 199 funcional;/);
+  assert.match(currentState, /- Fase 196 concluida pela PR #196;/);
+  assert.match(currentState, /- Fase 194 concluida pela PR #194;/);
+  assert.match(currentState, /- uma branch por fase/);
+  assert.match(currentState, /- uma PR por objetivo/);
+  assert.match(currentState, /- Caveman: ativo/);
+  assert.match(currentState, /- Impeccable: ativo/);
+  assert.match(currentState, /- sem merge sem autorizacao/);
+  assert.match(currentState, /- sem deploy manual/);
+  assert.match(currentState, /- nao iniciar a fase seguinte antes de fechar a atual/);
+  assert.match(currentState, /- preservacao de dados, schema, Firebase\/Auth e compatibilidade continua obrigatoria/);
+  assert.match(currentState, /- `modern\/dist` fora do indice/);
+  assert.match(currentState, /- Fases 210 e 212 continuam planejadas e nao autorizadas\./);
+  assert.match(currentState, /- Fase 208 ativa e nao faz parte desta sequencia planejada\./);
   assert.match(currentState, /Qualquer proxima fase exige definicao de objetivo e autorizacao explicita\./);
   assert.equal(currentState.includes('card Destaques da carteira'), false);
 
   assert.match(baseRef, /- branch: main/);
-  assert.match(baseRef, /- HEAD \/ `origin\/main`: `8225262a27bdfc4a58c526b2e7d8c113774f638b`/);
+  assert.match(baseRef, /- HEAD \/ `origin\/main`: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`/);
   assert.match(baseRef, /- PR `#207`: merged e closed \(encerramento funcional da Fase 204B\)/);
   assert.match(baseRef, /- PR `#205`: merged e closed \(encerramento funcional da Fase 204A\)/);
   assert.match(baseRef, /- PR `#204`: merged e closed \(encerramento documental da fase 204\)/);
@@ -85,7 +98,9 @@ function assertRoadmap204AClosed(roadmap) {
   assert.match(futureSequence, /- nao existe Fase 199 funcional;/);
   assert.match(futureSequence, /- a Fase 200 foi redefinida por decisao explicita;/);
   assert.match(futureSequence, /- a Fase 206 foi concluida e nao faz parte desta sequencia planejada;/);
-  assert.match(futureSequence, /- a sequencia futura planejada inclui 204C, 208, 210 e 212\./);
+  assert.match(futureSequence, /- a Fase 208 esta ativa e nao faz parte desta sequencia planejada;/);
+  assert.match(futureSequence, /- a sequencia futura planejada inclui 204C, 210 e 212\./);
+  assert.equal(futureSequence.includes('- a sequencia futura planejada inclui 204C, 208, 210 e 212.'), false);
   assert.equal(futureSequence.includes('- a sequencia futura planejada inclui 204, 208, 210 e 212.'), false);
   assert.equal(futureSequence.includes('### Fase 204A - Dashboard executivo com destaques da carteira'), false);
 }
@@ -140,11 +155,11 @@ test('fase 204A fica documentariamente encerrada', () => {
     roadmap,
     /\| 204B \| Historico mensal premium de dividendos \| Concluida \| `#207` \| `06d921b78a9411a709726a8f4cad8725bcb56899` \| `index\.html`, `docs\/phase-204b-monthly-income-history\.md`, `tests\/phase-204b-monthly-income-history\.test\.js`, `tests\/phase-204b-monthly-income-history\.guard\.js` \| consolidacao somente de proventos reais com data oficial nao futura, sem historico inventado \| contrato atual nao possui status persistido separado de previsto e recebido \| `git revert 06d921b78a9411a709726a8f4cad8725bcb56899` \|/,
   );
-  assert.match(roadmap, /- fase atual: nenhuma;/);
-  assert.match(roadmap, /- PR atual: nenhuma;/);
-  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
-  assert.match(roadmap, /- nenhuma alteracao funcional autorizada;/);
-  assert.match(roadmap, /- 204C, 208, 210 e 212 nao autorizadas[.;]/);
+  assert.match(roadmap, /- fase atual: 208;/);
+  assert.match(roadmap, /- PR atual: pendente;/);
+  assert.match(roadmap, /- implementacao ativa: auditoria de qualidade dos dados;/);
+  assert.match(roadmap, /- alteracao funcional autorizada exclusivamente para a Fase 208;/);
+  assert.match(roadmap, /- 204C, 210 e 212 nao autorizadas[.;]/);
 });
 
 module.exports = {
