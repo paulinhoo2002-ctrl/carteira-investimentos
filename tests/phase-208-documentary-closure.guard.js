@@ -37,8 +37,7 @@ test('fase 208 encerrada documentalmente no roadmap', () => {
   assert.match(roadmap, /- SHA final da Fase 208: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
   assert.match(roadmap, /- Fase 208 funcional e documentalmente encerrada;/);
   assert.match(roadmap, /- 204C, 210 e 212 nao autorizadas;/);
-  assert.match(roadmap, /futuras melhorias visuais no Dashboard e em Dividendos sao apenas intencao/i);
-  assert.match(roadmap, /nenhuma fase visual definitiva foi numerada ou autorizada/i);
+  assert.match(roadmap, /- Fases 208 e 214 concluidas e nao fazem parte desta sequencia planejada\./);
 
   assert.match(doc, /- status: concluida;/);
   assert.match(doc, /- PR funcional: `#211`;/);
