@@ -2614,6 +2614,19 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .data-quality-action{justify-content:flex-start}
   .data-quality-action .btn{width:100%}
 }
+@media(min-width:641px) and (max-width:900px){
+  .data-quality-issue{grid-template-columns:1fr 1fr;gap:8px;padding:10px;min-width:0}
+  .data-quality-issue>div:nth-child(2),
+  .data-quality-issue>div:nth-child(3),
+  .data-quality-issue>div:nth-child(4),
+  .data-quality-issue>div:nth-child(5),
+  .data-quality-issue>div:nth-child(6){grid-column:1/-1;min-width:0}
+  .data-quality-field,
+  .data-quality-problem,
+  .data-quality-recommendation{overflow-wrap:anywhere}
+  .data-quality-action{justify-content:flex-start}
+  .data-quality-action .btn{width:100%;white-space:normal}
+}
 @media(max-width:640px){
   html,body,#root{width:100%;max-width:100%;overflow-x:hidden}
   .wrap,.wrap>*,.card,.cc,.sec,.ag,.fc,.asset-inner-panel,.analysis-shell,

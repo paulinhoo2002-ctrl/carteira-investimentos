@@ -59,3 +59,12 @@ test('fase 208 documentada com governanca e sem persistencia de auditoria', () =
   assert.equal(indexHtml.includes('dataQualitySnapshot(){'), true);
   assert.equal(indexHtml.includes('dataQualityTab(){'), true);
 });
+
+test('auditoria de qualidade evita grid desktop no breakpoint tablet', () => {
+  const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html')).toString('utf8');
+
+  assert.match(indexHtml, /@media\(min-width:641px\) and \(max-width:900px\)/);
+  assert.match(indexHtml, /\.data-quality-issue\{[^}]*grid-template-columns:1fr 1fr[^}]*min-width:0/);
+  assert.match(indexHtml, /\.data-quality-issue>div:nth-child\(6\)[^}]*grid-column:1\/-1/);
+  assert.match(indexHtml, /\.data-quality-action \.btn\{[^}]*width:100%[^}]*white-space:normal/);
+});
