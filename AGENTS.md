@@ -43,7 +43,7 @@ conservadora que nao altere o que ja foi documentado em outros lugares.
 - Performance (sem recalculo redundante, sem listener orfao).
 - Riscos (dados, persistencia, compatibilidade).
 - Regressoes (manuais e funcionais).
-- Testar somente os arquivos diretamente relacionados com a mudanca.
+- Testar somente os arquivos diretamente relacionados com a mudanca e tambem as suites gerais exigidas pela fase, pelo `docs/project-phases-roadmap.md` ou pela governanca do projeto (build, `npm.cmd test`, smoke/guard documental quando aplicavel). Esta regra nao pode ser usada para pular testes, builds ou guards obrigatorios.
 - Revisar o diff completo antes de commit.
 
 ## Interface Design
@@ -116,6 +116,11 @@ Antes de trocar de maquina:
 - Nao rodar `npm audit fix` fora de fase especifica autorizada.
 - Nao expor tokens, credenciais ou dados reais no chat ou em codigo.
 - Nao pedir que o usuario envie tokens pelo chat.
+- Agentes nao podem executar `git credential fill`, `git credential-manager get` ou comandos equivalentes para extrair tokens ou senhas armazenados.
+- Agentes nao podem ler, imprimir, copiar, transformar ou reutilizar credenciais do Windows Credential Manager, do Git credential helper ou de qualquer outro cofre do sistema.
+- A autenticacao deve ocorrer somente pelos fluxos normais e interativos do Git, GitHub Desktop ou ferramenta oficialmente conectada ao repositorio.
+- Se uma operacao exigir autenticacao indisponivel, realizar apenas a parte possivel e reportar a limitacao ao usuario.
+- Nunca contornar falta de `gh`, de token ou de autenticacao extraindo credenciais armazenadas.
 
 ## Areas protegidas
 
