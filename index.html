@@ -2018,6 +2018,66 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-premium-empty{padding:16px 10px;border-radius:11px}
 .div-premium .div-empty-title{font-size:11px}
 .div-premium .div-empty-sub{font-size:8px}
+.div-premium .div-premium-hero{background:var(--panel);border-color:var(--border);box-shadow:none}
+.div-premium .div-premium-hero:after{opacity:0}
+.div-premium .div-premium-title{font-size:16px;line-height:1.2}
+.div-premium .div-premium-sub{font-size:11px;line-height:1.4;color:var(--muted)}
+.div-premium .div-premium-hero-pill,
+.div-premium .div-premium-status{font-size:10px;padding:6px 9px}
+.div-premium .div-premium-hero-pill strong{font-size:11px}
+.div-premium .div-premium-tab,
+.div-premium .div-premium-chip{font-size:10px;padding:7px 10px;min-height:32px;box-shadow:none}
+.div-premium .div-premium-tab.on,
+.div-premium .div-premium-chip.on{background:var(--surface-2)}
+.div-premium .div-premium-toolbar,
+.div-premium .div-overview-panel,
+.div-premium .div-collapsible,
+.div-premium .div-monthly-table-block,
+.div-premium .div-month-history-body,
+.div-premium .div-timeline-summary,
+.div-premium .div-upcoming-group{box-shadow:none;background:var(--panel)}
+.div-premium .div-premium-metric,
+.div-premium .div-receipt-card,
+.div-premium .div-asset-group,
+.div-premium .div-month-card,
+.div-premium .div-timeline-card,
+.div-premium .div-upcoming-card{background:var(--panel-2);box-shadow:none}
+.div-premium .div-month-card.current,
+.div-premium .div-timeline-card.current,
+.div-premium .div-month-history-row.current{box-shadow:none}
+.div-premium .div-premium-metric-label,
+.div-premium .div-month-stat-label,
+.div-premium .div-asset-stat span,
+.div-premium .div-upcoming-label{font-size:10px;line-height:1.25;letter-spacing:.035em}
+.div-premium .div-premium-metric-sub,
+.div-premium .div-goal-sub,
+.div-premium .div-collapsible-sub,
+.div-premium .div-collapsible-meta,
+.div-premium .div-receipt-date,
+.div-premium .div-receipt-name,
+.div-premium .div-receipt-note,
+.div-premium .div-receipt-source,
+.div-premium .div-recent-more,
+.div-premium .div-asset-sub,
+.div-premium .div-timeline-sub,
+.div-premium .div-empty-sub,
+.div-premium .div-upcoming-group-sub,
+.div-premium .div-upcoming-subline,
+.div-premium .div-upcoming-note{font-size:10px;line-height:1.35;color:var(--muted)}
+.div-premium .div-premium-metric-value,
+.div-premium .div-receipt-value,
+.div-premium .div-month-stat-value,
+.div-premium .div-upcoming-value{font-size:13px}
+.div-premium .div-month-name,
+.div-premium .div-receipt-ticker,
+.div-premium .div-asset-name,
+.div-premium .div-timeline-value{font-size:12px}
+.div-premium .div-collapsible-title,
+.div-premium .div-timeline-summary-title,
+.div-premium .div-empty-title{font-size:12px}
+.div-premium .div-month-card,
+.div-premium .div-receipt-card,
+.div-premium .div-timeline-card{padding:10px;gap:7px}
 .rf-proventos-table th:nth-child(3),.rf-proventos-table td:nth-child(3),
 .rf-proventos-table th:nth-child(4),.rf-proventos-table td:nth-child(4),
 .rf-proventos-table th:nth-child(6),.rf-proventos-table td:nth-child(6),
@@ -20295,7 +20355,6 @@ function dash(){
   return `<div class="premium-dashboard">
     <div class="dashboard-home-grid">
       ${dashboardHomeSummaryPanel(data)}
-      ${dashboardFinancialGoalsPanel(data)}
       ${dashboardPassiveIncomePanel(data)}
       ${dashboardHomeHighlightsPanel()}
       ${dashboardHomeCompositionPanel(data)}
