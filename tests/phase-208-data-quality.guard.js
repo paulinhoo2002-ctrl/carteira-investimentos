@@ -21,15 +21,17 @@ test('fase 208 documentada com governanca e sem persistencia de auditoria', () =
   const doc = readUtf8WithoutBom('docs/phase-208-data-quality.md');
   const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html')).toString('utf8');
 
-  assert.match(roadmap, /- fase atual: 208;/);
-  assert.match(roadmap, /- nome: Qualidade dos dados;/);
-  assert.match(roadmap, /- branch atual: `feat\/phase-208-data-quality`;/);
-  assert.match(roadmap, /- SHA-base: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`;/);
-  assert.match(roadmap, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(roadmap, /- PR atual: pendente;/);
-  assert.match(roadmap, /- implementacao ativa: auditoria de qualidade dos dados;/);
-  assert.match(roadmap, /- alteracao funcional autorizada exclusivamente para a Fase 208;/);
-  assert.match(roadmap, /- Fase 208 ativa e nao faz parte desta sequencia planejada\./);
+  assert.match(roadmap, /- fase atual: nenhuma;/);
+  assert.match(roadmap, /- nome: nenhuma;/);
+  assert.match(roadmap, /- branch atual: main;/);
+  assert.match(roadmap, /- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
+  assert.match(roadmap, /- situacao: Fase 208 concluida e aguardando nova autorizacao;/);
+  assert.match(roadmap, /- PR atual: nenhuma;/);
+  assert.match(roadmap, /- implementacao ativa: nenhuma;/);
+  assert.match(roadmap, /- nenhuma alteracao funcional autorizada;/);
+  assert.match(roadmap, /- Fase 208 concluida e nao faz parte desta sequencia planejada\./);
+  assert.match(roadmap, /- PR `#211` merged e closed \(encerramento funcional da Fase 208\);/);
+  assert.match(roadmap, /- SHA final da Fase 208: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
   assert.match(roadmap, /- Fases 210 e 212 continuam planejadas e nao autorizadas\./);
   assert.match(roadmap, /- a sequencia futura planejada inclui 204C, 210 e 212\./);
   assert.equal(roadmap.includes('a sequencia futura planejada inclui 204C, 208, 210 e 212.'), false);

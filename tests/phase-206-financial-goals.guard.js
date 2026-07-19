@@ -27,14 +27,14 @@ function assertPhase206Roadmap(roadmap) {
   const currentState = extractSection(roadmap, '## Estado e governanca', 'Base de referencia desta fase:');
   const phase206 = extractSection(roadmap, '## 23. Fase 206 - Metas financeiras', '## 11. Sequencia planejada apos a Fase 202');
 
-  assert.match(currentState, /- fase atual: 208;/);
-  assert.match(currentState, /- nome: Qualidade dos dados;/);
-  assert.match(currentState, /- branch atual: `feat\/phase-208-data-quality`;/);
-  assert.match(currentState, /- SHA-base: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`;/);
-  assert.match(currentState, /- situacao: implementacao funcional em desenvolvimento;/);
-  assert.match(currentState, /- PR atual: pendente;/);
-  assert.match(currentState, /- implementacao ativa: auditoria de qualidade dos dados;/);
-  assert.match(currentState, /- alteracao funcional autorizada exclusivamente para a Fase 208;/);
+  assert.match(currentState, /- fase atual: nenhuma;/);
+  assert.match(currentState, /- nome: nenhuma;/);
+  assert.match(currentState, /- branch atual: main;/);
+  assert.match(currentState, /- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
+  assert.match(currentState, /- situacao: Fase 208 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- PR atual: nenhuma;/);
+  assert.match(currentState, /- implementacao ativa: nenhuma;/);
+  assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
   assert.match(currentState, /- PR `#209` merged e closed \(encerramento funcional da Fase 206\);/);
   assert.match(currentState, /- modo de merge da Fase 206: squash;/);
   assert.match(currentState, /- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
