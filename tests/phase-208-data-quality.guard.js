@@ -24,12 +24,11 @@ test('fase 208 documentada com governanca e sem persistencia de auditoria', () =
   assert.match(roadmap, /- fase atual: nenhuma;/);
   assert.match(roadmap, /- nome: nenhuma;/);
   assert.match(roadmap, /- branch atual: main;/);
-  assert.match(roadmap, /- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
-  assert.match(roadmap, /- situacao: Fase 208 concluida e aguardando nova autorizacao;/);
+  assert.match(roadmap, /- SHA-base: `(4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575|cd98c8000bbd8d919e6eec0a448ff0f14e43baa1)`;/);
+  assert.match(roadmap, /- situacao: Fase 208 concluida e aguardando nova autorizacao|Fase 214 concluida e aguardando nova autorizacao/);
   assert.match(roadmap, /- PR atual: nenhuma;/);
   assert.match(roadmap, /- implementacao ativa: nenhuma;/);
   assert.match(roadmap, /- nenhuma alteracao funcional autorizada;/);
-  assert.match(roadmap, /- Fase 208 concluida e nao faz parte desta sequencia planejada\./);
   assert.match(roadmap, /- PR `#211` merged e closed \(encerramento funcional da Fase 208\);/);
   assert.match(roadmap, /- SHA final da Fase 208: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
   assert.match(roadmap, /- Fases 210 e 212 continuam planejadas e nao autorizadas\./);

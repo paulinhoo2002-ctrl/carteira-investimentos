@@ -30,8 +30,8 @@ function assertPhase206Roadmap(roadmap) {
   assert.match(currentState, /- fase atual: nenhuma;/);
   assert.match(currentState, /- nome: nenhuma;/);
   assert.match(currentState, /- branch atual: main;/);
-  assert.match(currentState, /- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
-  assert.match(currentState, /- situacao: Fase 208 concluida e aguardando nova autorizacao;/);
+  assert.match(currentState, /- SHA-base: `(4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575|cd98c8000bbd8d919e6eec0a448ff0f14e43baa1)`;/);
+  assert.match(currentState, /- situacao: Fase 208 concluida e aguardando nova autorizacao|Fase 214 concluida e aguardando nova autorizacao/);
   assert.match(currentState, /- PR atual: nenhuma;/);
   assert.match(currentState, /- implementacao ativa: nenhuma;/);
   assert.match(currentState, /- nenhuma alteracao funcional autorizada;/);
@@ -39,7 +39,7 @@ function assertPhase206Roadmap(roadmap) {
   assert.match(currentState, /- modo de merge da Fase 206: squash;/);
   assert.match(currentState, /- SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;/);
   assert.match(currentState, /- resultado: acompanhamento de metas financeiras concluido;/);
-  assert.match(currentState, /- Fases 204A, 204B e 206 funcional e documentalmente encerradas;/);
+  assert.match(currentState, /- Fases 204A, 204B e 206 funcional e documentalmente encerradas|Fases 204A, 204B, 206 e 214 funcional e documentalmente encerradas/);
   assert.match(currentState, /- 204C, 210 e 212 nao autorizadas[.;]/);
   assert.match(currentState, /- Fases 210 e 212 continuam planejadas e nao autorizadas\./);
 

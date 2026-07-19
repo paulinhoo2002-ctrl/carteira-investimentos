@@ -7,10 +7,16 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - fase atual: nenhuma;
 - nome: nenhuma;
 - branch atual: main;
-- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
-- situacao: Fase 208 concluida e aguardando nova autorizacao;
+- SHA-base: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;
+- situacao: Fase 214 concluida e aguardando nova autorizacao;
 - PR atual: nenhuma;
 - implementacao ativa: nenhuma;
+- PR funcional da Fase 214: `#213`;
+- modo de merge da Fase 214: squash;
+- SHA final da Fase 214: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;
+- branch oficial apos integracao: `main`;
+- resultado da Fase 214: simplificacao visual do Dashboard e melhoria de legibilidade da tela Dividendos;
+- nenhuma implementacao ativa;
 - nenhuma alteracao funcional autorizada;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
@@ -38,7 +44,7 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - modo de merge da Fase 206: squash;
 - SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;
 - resultado: acompanhamento de metas financeiras concluido;
-- Fases 204A, 204B e 206 funcional e documentalmente encerradas;
+- Fases 204A, 204B, 206 e 214 funcional e documentalmente encerradas;
 - PR `#211` merged e closed (encerramento funcional da Fase 208);
 - modo de merge da Fase 208: squash;
 - SHA final da Fase 208: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
@@ -58,14 +64,16 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - preservacao de dados, schema, Firebase/Auth e compatibilidade continua obrigatoria
 - `modern/dist` fora do indice
 - Fases 210 e 212 continuam planejadas e nao autorizadas.
-- Fase 208 concluida e nao faz parte desta sequencia planejada.
-- futuras melhorias visuais no Dashboard e em Dividendos sao apenas intencao, sem autorizacao e sem fase numerada.
+- Fases 208 e 214 concluidas e nao fazem parte desta sequencia planejada.
+- a intencao de reduzir o tamanho e o acoplamento do `index.html` continua registrada apenas como intencao, sem fase numerada ou autorizada nesta PR.
 - Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`
+- HEAD / `origin/main`: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`
+- PR `#213`: merged e closed (encerramento funcional da Fase 214)
+- PR `#212`: merged e closed (encerramento documental da Fase 208)
 - PR `#211`: merged e closed (encerramento funcional da Fase 208)
 - PR `#210`: merged e closed (correcao documental da Fase 206)
 - PR `#209`: merged e closed (encerramento funcional da Fase 206)
@@ -1058,14 +1066,10 @@ Conclusao Impeccable:
 
 Decisoes futuras registradas sem autorizacao:
 
-- remover o bloco Metas financeiras do Dashboard em fase propria;
-- preservar os dados persistidos e a tela especifica de Metas;
-- melhorar a legibilidade da tela Dividendos;
-- usar Interface Design para hierarquia, contraste, tipografia e espacamento;
-- usar Playwright para validacao visual;
-- avaliar Skill Creator em fase propria;
-- nao misturar essa futura melhoria visual com a Fase 208;
-- nenhuma fase visual definitiva foi numerada ou autorizada.
+- a intencao de reduzir o `index.html` por extracoes pequenas, testadas e reversiveis segue como intencao registrada, sem fase numerada ou autorizada;
+- nenhuma iniciativa paralela nao autorizada;
+- futuras melhorias visuais que exijam mudanca funcional aguardam nova fase;
+- Skill Creator segue em intencao, sem fase autonoma.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 
@@ -1310,3 +1314,106 @@ Criterios de conclusao:
 Rollback:
 - reverter apenas os ajustes desta fase e remover a documentacao e os testes desta entrega;
 - manter o restante do legado e as fases readonly anteriores intactos.
+
+## 25. Fase 214 - Dashboard enxuto e legibilidade de Dividendos
+
+Objetivo:
+- remover do Dashboard o bloco "Metas financeiras", preservando os dados persistidos e a tela especifica de Metas;
+- melhorar a legibilidade da tela Dividendos;
+- aplicar tamanho minimo visivel de 10px em Dividendos;
+- preservar filtros de Periodo, Ativo e Tipo;
+- preservar abas e visao geral;
+- preservar historico mensal, ultimos 5 anos e expansao de 5 em 5 anos;
+- preservar Mostrar mais e Mostrar menos;
+- Playwright aprovado em 390px, 768px, 1366px e 1920px;
+- sem overflow horizontal.
+
+Estado final:
+- fase concluida;
+- branch original: `style/phase-214-dashboard-dividends-readability`;
+- SHA-base: `454edf021b26de9aa819e6c82c46e5b33a5dd6a1`;
+- PR funcional: `#213`;
+- modo de merge: squash;
+- SHA final na main: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;
+- branch oficial apos integracao: `main`;
+- titulo do commit final: `style: simplifica dashboard e melhora leitura de dividendos`;
+- implementacao ativa: nenhuma;
+- nenhuma formula financeira nova;
+- nenhuma alteracao de schema;
+- nenhuma alteracao de persistencia;
+- nenhuma alteracao de Firebase/Auth;
+- nenhuma alteracao de sincronizacao;
+- nenhuma alteracao de backups;
+- nenhum deploy manual;
+- `modern/src` inalterado;
+- `modern/dist` fora do indice.
+
+Resultado principal:
+- bloco visual "Metas financeiras" removido somente do Dashboard;
+- dados, calculos e tela especifica de Metas preservados;
+- tela Dividendos com melhor legibilidade;
+- fonte visivel minima de 10px em Dividendos;
+- filtros de Periodo, Ativo e Tipo preservados;
+- abas e visao geral preservadas;
+- historico mensal preservado;
+- ultimos 5 anos preservados;
+- expansao de 5 em 5 anos preservada;
+- Mostrar mais e Mostrar menos preservados;
+- sem overflow horizontal em 390px, 768px, 1366px e 1920px;
+- testes e builds aprovados.
+
+Fonte oficial:
+- `cx()`;
+- `proventoDividendPaymentDate()`;
+- `proventoStats()`;
+- `proventoResumo()`;
+- `dividendMonthlyHistoryRows()`;
+- `dividendMonthlyHistoryGroupRows()`;
+- `dividendMonthlyHistorySummary()`;
+- `passiveIncomeGoalStats()`.
+
+Preservacao obrigatoria:
+- 204C, 210 e 212 permanecem nao autorizadas;
+- schema inalterado;
+- Firebase/Auth inalterado;
+- sincronizacao inalterada;
+- backups inalterados;
+- `modern/src` inalterado;
+- `modern/dist` fora do indice.
+
+Intencao futura nao autorizada:
+- "Reduzir progressivamente o tamanho e o acoplamento do `index.html` por extracoes pequenas, testadas e reversiveis, sem reconstrucao ampla e sem alterar dados, calculos, schema ou persistencia.";
+- apenas intencao;
+- sem fase numerada ou autorizada;
+- nenhuma referencia a Fase 216 nesta PR.
+
+Criterios de conclusao:
+- nenhuma alteracao funcional nesta PR;
+- zero e ausente preservados;
+- abas, visao geral e historico mensal preservados;
+- nenhum dado oficial removido;
+- nenhuma formula paralela;
+- nenhum recalculo paralelo;
+- nenhuma dependencia nova;
+- nenhum schema novo;
+- nenhum deploy manual;
+- `modern/dist` fora do indice;
+- Playwright aprovado em 390px, 768px, 1366px e 1920px;
+- testes e builds verdes.
+
+Conclusao Caveman:
+- menor passo seguro: remover duplicacao visual do Dashboard e melhorar a legibilidade existente de Dividendos.
+
+Conclusao Impeccable:
+- nenhuma formula financeira nova;
+- zero versus ausente preservado;
+- nenhuma dado removido;
+- fontes oficiais reutilizadas;
+- validacao visual registrada em 390px, 768px, 1366px e 1920px;
+- sem regressao funcional;
+- sem regressao de responsividade.
+
+Rollback:
+- reverter o squash merge da Fase 214:
+  `git revert cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;
+- preservar este documento ate que a decisao seja revertida ou que nova fase decida o destino.
