@@ -18,6 +18,14 @@ function readUtf8WithoutBom(relativePath) {
   return text;
 }
 
+function extractSection(text, startMarker, endMarker) {
+  const start = text.indexOf(startMarker);
+  if (start < 0) return '';
+  const end = text.indexOf(endMarker, start + startMarker.length);
+  if (end < 0) return text.slice(start);
+  return text.slice(start, end);
+}
+
 test('fase 214 encerrada documentalmente no roadmap', () => {
   const roadmap = readUtf8WithoutBom('docs/project-phases-roadmap.md');
   const doc = readUtf8WithoutBom('docs/phase-214-dashboard-dividends-readability.md');
@@ -38,7 +46,8 @@ test('fase 214 encerrada documentalmente no roadmap', () => {
 
   assert.match(roadmap, /## 25\. Fase 214 - Dashboard enxuto e legibilidade de Dividendos/);
   assert.match(roadmap, /Estado final:/);
-  assert.match(roadmap, /- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;/);
+  assert.match(roadmap, /- branch original: `style\/phase-214-dashboard-dividends-readability`;/);
+  assert.match(roadmap, /- SHA-base: `454edf021b26de9aa819e6c82c46e5b33a5dd6a1`;/);
   assert.match(roadmap, /- PR funcional: `#213`;/);
   assert.match(roadmap, /- modo de merge: squash;/);
   assert.match(roadmap, /- SHA final na main: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;/);
@@ -95,9 +104,22 @@ test('fase 214 encerrada documentalmente no roadmap', () => {
   assert.match(doc, /## Conclusao Impeccable/);
   assert.match(doc, /## Status final/);
   assert.match(doc, /- PR funcional: `#213`;/);
+  assert.match(doc, /- SHA-base: `454edf021b26de9aa819e6c82c46e5b33a5dd6a1`;/);
   assert.match(doc, /- SHA final na main: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;/);
+  assert.match(doc, /- branch original: `style\/phase-214-dashboard-dividends-readability`;/);
   assert.match(doc, /- branch oficial apos integracao: `main`;/);
   assert.match(doc, /git revert cd98c8000bbd8d919e6eec0a448ff0f14e43baa1/);
+
+  const testsSection = extractSection(doc, '## Testes', '## Rollback');
+  assert.match(testsSection, /node --test tests\/dividends-visual-refinement\.test\.js/);
+  assert.match(testsSection, /node --test tests\/phase-206-financial-goals\.test\.js/);
+  assert.match(testsSection, /node --test tests\/basic-ui\.test\.js/);
+  assert.match(testsSection, /npm\.cmd test/);
+  assert.match(testsSection, /npm\.cmd run build/);
+  assert.match(testsSection, /git diff --check/);
+  assert.match(testsSection, /Playwright validado em 390px, 768px, 1366px e 1920px/);
+  assert.equal(testsSection.includes('npm run build:modern'), false, 'Testes nao podem listar npm run build:modern sem evidencia versionada');
+  assert.equal(testsSection.includes('npm run test:modern'), false, 'Testes nao podem listar npm run test:modern sem evidencia versionada');
   assert.match(doc, /Reduzir progressivamente o tamanho e o acoplamento do `index\.html` por extracoes pequenas/i);
   assert.match(doc, /nenhuma fase numerada ou autorizada para este objetivo nesta PR/);
   assert.match(doc, /Playwright validado em 390px, 768px, 1366px e 1920px;/);

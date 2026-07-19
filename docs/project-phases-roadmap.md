@@ -1330,8 +1330,8 @@ Objetivo:
 
 Estado final:
 - fase concluida;
-- branch original: `feat/phase-214-dashboard-dividends-readability`;
-- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
+- branch original: `style/phase-214-dashboard-dividends-readability`;
+- SHA-base: `454edf021b26de9aa819e6c82c46e5b33a5dd6a1`;
 - PR funcional: `#213`;
 - modo de merge: squash;
 - SHA final na main: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;

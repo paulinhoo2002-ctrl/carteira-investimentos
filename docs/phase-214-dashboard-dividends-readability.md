@@ -4,7 +4,9 @@
 - status: concluida;
 - PR funcional: `#213`;
 - modo de merge: squash;
+- SHA-base: `454edf021b26de9aa819e6c82c46e5b33a5dd6a1`;
 - SHA final na main: `cd98c8000bbd8d919e6eec0a448ff0f14e43baa1`;
+- branch original: `style/phase-214-dashboard-dividends-readability`;
 - branch oficial apos integracao: `main`;
 - resultado: simplificacao visual do Dashboard e melhoria de legibilidade da tela Dividendos;
 - testes e builds verdes;
@@ -90,15 +92,15 @@ Sem duplicacao de calculos oficiais. Sem fonte paralela.
 - sem observador novo.
 
 ## Testes
-- `node --test tests/phase-208-documentary-closure.guard.js`;
-- `node --test tests/phase-214-documentary-closure.guard.js`;
-- `node --test tests/basic-ui.test.js`;
 - `node --test tests/dividends-visual-refinement.test.js`;
-- `npm test`;
-- `npm run build`;
-- `npm run build:modern`;
-- `npm run test:modern`;
-- `git diff --check`.
+- `node --test tests/phase-206-financial-goals.test.js`;
+- `node --test tests/basic-ui.test.js`;
+- `npm.cmd test`;
+- `npm.cmd run build`;
+- `git diff --check`;
+- Playwright validado em 390px, 768px, 1366px e 1920px.
+
+Somente os testes acima foram comprobadamente executados.
 
 ## Rollback
 - reverter o squash merge da Fase 214:
@@ -109,7 +111,8 @@ Sem duplicacao de calculos oficiais. Sem fonte paralela.
 - "Reduzir progressivamente o tamanho e o acoplamento do `index.html` por extracoes pequenas, testadas e reversiveis, sem reconstrucao ampla e sem alterar dados, calculos, schema ou persistencia.";
 - apenas intencao;
 - nenhuma fase numerada ou autorizada para este objetivo nesta PR;
-- nenhuma referencia a Fase 216 nesta PR.
+- nenhuma referencia a Fase 216 nesta PR;
+- sem evidencia versionada objetiva de execucao de `npm run build:modern` ou `npm run test:modern` para esta fase; portanto, esses comandos nao constam da lista de testes comprovadamente executados nesta fase.
 
 ## Conclusao Caveman
 - menor passo seguro: remover duplicacao visual do Dashboard e melhorar a legibilidade existente de Dividendos.
