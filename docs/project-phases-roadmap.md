@@ -4,14 +4,14 @@ Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
 
-- fase atual: 208;
-- nome: Qualidade dos dados;
-- branch atual: `feat/phase-208-data-quality`;
-- SHA-base: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: auditoria de qualidade dos dados;
-- alteracao funcional autorizada exclusivamente para a Fase 208;
+- fase atual: nenhuma;
+- nome: nenhuma;
+- branch atual: main;
+- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
+- situacao: Fase 208 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- nenhuma alteracao funcional autorizada;
 - PR `#202` merged e closed (encerramento funcional da fase 202);
 - modo de merge: squash;
 - SHA final da Fase 202: `e0be50c5d809c32d90ed5dcbc5124e53e928e697`;
@@ -39,6 +39,11 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - SHA final da Fase 206: `8225262a27bdfc4a58c526b2e7d8c113774f638b`;
 - resultado: acompanhamento de metas financeiras concluido;
 - Fases 204A, 204B e 206 funcional e documentalmente encerradas;
+- PR `#211` merged e closed (encerramento funcional da Fase 208);
+- modo de merge da Fase 208: squash;
+- SHA final da Fase 208: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
+- resultado: auditoria de qualidade dos dados concluida;
+- Fase 208 funcional e documentalmente encerrada;
 - 204C, 210 e 212 nao autorizadas;
 - nenhuma Fase 199 funcional;
 - Fase 196 concluida pela PR #196;
@@ -53,13 +58,15 @@ Registro oficial e versionado da evolucao readonly do projeto.
 - preservacao de dados, schema, Firebase/Auth e compatibilidade continua obrigatoria
 - `modern/dist` fora do indice
 - Fases 210 e 212 continuam planejadas e nao autorizadas.
-- Fase 208 ativa e nao faz parte desta sequencia planejada.
+- Fase 208 concluida e nao faz parte desta sequencia planejada.
+- futuras melhorias visuais no Dashboard e em Dividendos sao apenas intencao, sem autorizacao e sem fase numerada.
 - Qualquer proxima fase exige definicao de objetivo e autorizacao explicita.
 
 Base de referencia desta fase:
 
 - branch: main
-- HEAD / `origin/main`: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`
+- HEAD / `origin/main`: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`
+- PR `#211`: merged e closed (encerramento funcional da Fase 208)
 - PR `#210`: merged e closed (correcao documental da Fase 206)
 - PR `#209`: merged e closed (encerramento funcional da Fase 206)
 - PR `#207`: merged e closed (encerramento funcional da Fase 204B)
@@ -991,7 +998,7 @@ Planejadas e nao autorizadas:
 - nao existe Fase 199 funcional;
 - a Fase 200 foi redefinida por decisao explicita;
 - a Fase 206 foi concluida e nao faz parte desta sequencia planejada;
-- a Fase 208 esta ativa e nao faz parte desta sequencia planejada;
+- a Fase 208 foi concluida e nao faz parte desta sequencia planejada;
 - a sequencia futura planejada inclui 204C, 210 e 212.
 
 ## 24. Fase 208 - Qualidade dos dados
@@ -1001,15 +1008,20 @@ Objetivo:
 - localizar registros incompletos, valores invalidos, campos ausentes, duplicidades e diferenca entre zero e ausente;
 - orientar a revisao manual sem qualquer correcao automatica.
 
-Estado atual:
+Estado final:
 
-- fase atual: 208;
+- fase atual: nenhuma;
 - branch original: `feat/phase-208-data-quality`;
-- SHA-base: `8c8f2c47a5fd07f4af80f952709dd1fc8866bf49`;
-- situacao: implementacao funcional em desenvolvimento;
-- PR atual: pendente;
-- implementacao ativa: auditoria de qualidade dos dados;
-- alteracao funcional autorizada exclusivamente para a Fase 208;
+- SHA-base: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
+- situacao: Fase 208 concluida e aguardando nova autorizacao;
+- PR atual: nenhuma;
+- implementacao ativa: nenhuma;
+- nenhuma alteracao funcional autorizada;
+- PR funcional: `#211`;
+- modo de merge: squash;
+- SHA final da Fase 208: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
+- resultado: auditoria de qualidade dos dados concluida;
+- Fase 208 funcional e documentalmente encerrada;
 - Fase 206 funcional e documentalmente encerrada;
 - 204C, 210 e 212 nao autorizadas.
 
@@ -1043,6 +1055,17 @@ Conclusao Impeccable:
 - severidades claras;
 - navegacao manual;
 - sem regressao funcional.
+
+Decisoes futuras registradas sem autorizacao:
+
+- remover o bloco Metas financeiras do Dashboard em fase propria;
+- preservar os dados persistidos e a tela especifica de Metas;
+- melhorar a legibilidade da tela Dividendos;
+- usar Interface Design para hierarquia, contraste, tipografia e espacamento;
+- usar Playwright para validacao visual;
+- avaliar Skill Creator em fase propria;
+- nao misturar essa futura melhoria visual com a Fase 208;
+- nenhuma fase visual definitiva foi numerada ou autorizada.
 
 ## 12. Radar estrategico - mudancas de alto impacto
 

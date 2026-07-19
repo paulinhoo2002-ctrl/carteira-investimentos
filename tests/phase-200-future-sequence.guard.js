@@ -63,7 +63,7 @@ function assertPhase200FutureSequence(roadmap) {
     '- estado: planejada e nao autorizada.',
     '- a Fase 204A foi concluida e nao faz parte desta sequencia planejada;',
     '- a Fase 206 foi concluida e nao faz parte desta sequencia planejada;',
-    '- a Fase 208 esta ativa e nao faz parte desta sequencia planejada;',
+    '- a Fase 208 foi concluida e nao faz parte desta sequencia planejada;',
     '- a sequencia futura planejada inclui 204C, 210 e 212.',
     '- a Fase 200 foi redefinida por decisao explicita;',
     '- o painel consolidado de desempenho dos ativos foi movido para a Fase 202;',
@@ -75,7 +75,7 @@ function assertPhase200FutureSequence(roadmap) {
   assert.equal(section.includes('### Fase 204 - Evolucao patrimonial'), false, 'Sequencia futura nao pode manter a Fase 204 como planejada');
   assert.equal(section.includes('### Fase 204 - Auditoria de evolucao patrimonial e dashboard executivo'), false, 'Sequencia futura nao pode citar a Fase 204 atual');
   assert.equal(section.includes('- a sequencia pode ser reordenada somente por decisao explicita;'), false, 'Sequencia futura nao pode usar a regra antiga');
-  assert.equal(section.includes('### Fase 208 - Qualidade dos dados'), false, 'Sequencia futura nao pode citar a Fase 208 ativa como futura');
+  assert.equal(section.includes('### Fase 208 - Qualidade dos dados'), false, 'Sequencia futura nao pode citar a Fase 208 encerrada como futura');
 }
 
 module.exports = {

@@ -1,5 +1,14 @@
 # Fase 208 - Qualidade dos dados
 
+## Status final
+- status: concluida;
+- PR funcional: `#211`;
+- modo de merge: squash;
+- SHA final na main: `4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`;
+- resultado: auditoria readonly de qualidade dos dados concluida;
+- Vercel aprovado;
+- testes e builds verdes.
+
 ## Objetivo
 - auditar a base atual em modo somente leitura;
 - localizar registros incompletos, valores invalidos, campos ausentes, duplicidades e diferenca entre zero e ausente;
@@ -60,6 +69,10 @@
 - o resultado nao e persistido;
 - nenhum dado de `S` e alterado;
 - o snapshot serve apenas para leitura e navegacao manual.
+- sem snapshot persistido;
+- sem alteracao de dados;
+- sem schema novo;
+- sem formula financeira concorrente.
 
 ## Zero versus ausente
 - `0` numerico e valor real valido;
@@ -68,6 +81,8 @@
 - `NaN` e `Infinity` sao invalidos;
 - ausencia nao vira zero;
 - zero nao vira erro automaticamente.
+- zero preservado;
+- ausencia diferenciada de zero.
 
 ## Severidades
 - `Critico`: impede interpretacao financeira confiavel;
@@ -79,6 +94,7 @@
 - proventos: ticker + data oficial + tipo + valor + moeda;
 - renda fixa e movimentos: identificadores oficiais disponiveis;
 - nunca unir, apagar ou editar automaticamente.
+- possiveis duplicidades sao sinalizadas sem correcao automatica.
 
 ## Riscos de falso positivo
 - ticker com espacos ou grafia inconsistente pode gerar alerta informativo;
@@ -107,11 +123,14 @@
 - Abrir Dividendos;
 - Abrir Renda Fixa;
 - Abrir Metas.
+- navegacao manual preservada.
 
 ## Responsividade
 - 390px: cards empilhados e sem rolagem horizontal;
 - 768px: filtros quebram em mais de uma linha se necessario;
 - 1366px e 1920px: densidade executiva sem linhas excessivamente longas.
+- Playwright validado em 390px, 768px, 1366px e 1920px;
+- overflow de 768px corrigido.
 
 ## Performance
 - analise unica por renderizacao;
@@ -131,9 +150,8 @@
 - `npm run test:modern`.
 
 ## Rollback
-- `git revert` do commit desta fase;
-- remover apenas a documentacao e os testes da Fase 208;
-- manter o codigo de producao intacto.
+- reverter o squash merge da Fase 208:
+  `git revert 4c73ed85f1f602b89fc3f7fe1a42e3d34d0a2575`.
 
 ## Conclusao Caveman
 - menor passo seguro: observar a base sem corrigir automaticamente.
