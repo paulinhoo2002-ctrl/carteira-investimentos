@@ -209,6 +209,10 @@ function buildAssets(){
 /** Compacta HTML em texto visível (sem tags) para asserções de conteúdo. */
 function stripHtml(html){ return String(html).replace(/<[^>]*>/g,'').replace(/\s+/g,' '); }
 
+function countMatches(text, pattern){
+  return (String(text).match(pattern) || []).length;
+}
+
 /**
  * Extrai o HTML de UMA linha (`<tr>...</tr>`) da tabela de Renda Fixa, identificada
  * pelo ticker. Retorna string ('' se não encontrada), permitindo isolá-la do resto
@@ -221,6 +225,16 @@ function extractRfTableRow(html, ticker){
   const trs = String(html).match(trRe) || [];
   for (const t of trs){
     if (new RegExp(escaped,'i').test(t)) return stripHtml(t);
+  }
+  return '';
+}
+
+function extractRawRfTableRow(html, ticker){
+  const escaped = String(ticker||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const trRe = /<tr[^>]*>[\s\S]*?<\/tr>/g;
+  const trs = String(html).match(trRe) || [];
+  for (const t of trs){
+    if (new RegExp(escaped,'i').test(t)) return t;
   }
   return '';
 }
@@ -293,6 +307,25 @@ test('Home: dashboardHighlightsRows deve usar a mesma fonte/ordem/top5 de assetA
   assert.ok(homePick.length > 0, 'Home deve listar ao menos uma alta');
   assert.deepEqual(homePick, analysisPick,
     `Home e Análise (top 3) devem listar ticker, resultado e rentabilidade canônica. Home=${JSON.stringify(homePick)} Análise=${JSON.stringify(analysisPick)}`);
+});
+
+test('RF: cada linha da tabela mantem todas as celulas dentro de um unico tr', () => {
+  const ctx = buildContext(buildAssets());
+  loadPrincipalFns(ctx);
+
+  const html = ctx.rendaFixaTab();
+  for (const ticker of ['RF01', 'RF02', 'RF03', 'RF04']) {
+    const rowHtml = extractRawRfTableRow(html, ticker);
+    assert.ok(rowHtml, `${ticker} deve existir em uma linha da tabela RF`);
+    assert.equal(countMatches(rowHtml, /<tr\b/g), 1, `${ticker} deve abrir um unico <tr>`);
+    assert.equal(countMatches(rowHtml, /<\/tr>/g), 1, `${ticker} deve fechar um unico </tr>`);
+    assert.equal(countMatches(rowHtml, /<td\b/g), 10, `${ticker} deve manter as 10 celulas esperadas dentro do <tr>`);
+    assert.match(rowHtml, /Sem eventos de renda fixa|evento/, `${ticker} deve manter recebido liquido dentro do <tr>`);
+    assert.match(rowHtml, /resultado total/, `${ticker} deve manter resultado com eventos dentro do <tr>`);
+    const lineEnd = rowHtml.lastIndexOf('</tr>');
+    const afterLine = rowHtml.slice(lineEnd + '</tr>'.length);
+    assert.equal(/<td\b/.test(afterLine), false, `${ticker} nao pode ter <td> orfao apos </tr>`);
+  }
 });
 
 test('Home: dashboardHighlightsRows deve usar a mesma fonte/ordem/top5 de assetAnalysisRows (baixas)', () => {

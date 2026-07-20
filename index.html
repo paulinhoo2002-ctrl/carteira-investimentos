@@ -20066,8 +20066,7 @@ function rendaFixaTab(){
                     : `<div class="rf-strong">${fmt(row.profit)}</div><div class="rf-mini">Resultado de mercado</div>`
                   }
                 </td>
-              </tr>
-              <td class="rf-right">
+      <td class="rf-right">
         <div class="rf-strong">${fmt(row.receivedNet)}</div>
         <div class="rf-mini">${row.eventCount>0 ? `${row.eventCount} evento${row.eventCount===1?'':'s'} · bruto ${fmt(row.receivedGross)} · IR ${fmt(row.receivedIr)} · IOF ${fmt(row.receivedIof)}` : 'Sem eventos de renda fixa'}</div>
       </td>
