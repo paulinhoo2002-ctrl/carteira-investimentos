@@ -47,7 +47,12 @@ function makeContext(rows, overrides = {}) {
       counters.saves = (counters.saves || 0) + 1;
     },
     runAutoProventosGratis() {},
-    assetPerformanceOverviewRows() {
+    // PR fix/assets-highlights-and-rf-result: dashboardHighlightsRows agora
+    // consome assetAnalysisRows() (fonte canônica da aba Análise). O mock
+    // precisa fornecer o shape real produzido por essa fonte: profit, pct,
+    // applied, current, type, sector e hasPerformanceData. Mantém as
+    // asserções existentes no painel (ticker, result, resultPct).
+    assetAnalysisRows() {
       return rows;
     },
     ...overrides,
@@ -58,14 +63,14 @@ function makeContext(rows, overrides = {}) {
 
 test('destaques da carteira usa dados oficiais e ordenacao correta', () => {
   const rows = [
-    { ticker: 'AAA3', type: 'Acao', sector: 'Banco', resultPct: 18.5, result: 1850, hasPerformanceData: true },
-    { ticker: 'AAB3', type: 'FII', sector: 'Imobiliario', resultPct: 18.5, result: 1600, hasPerformanceData: true },
-    { ticker: 'AAC3', type: 'ETF', sector: 'Indice', resultPct: 12.0, result: 1200, hasPerformanceData: true },
-    { ticker: 'AAD3', type: 'Acao', sector: 'Energia', resultPct: 0, result: 0, hasPerformanceData: true },
-    { ticker: 'BAA3', type: 'Acao', sector: 'Banco', resultPct: -4.2, result: -420, hasPerformanceData: true },
-    { ticker: 'BAB3', type: 'FII', sector: 'Imobiliario', resultPct: -4.2, result: -500, hasPerformanceData: true },
-    { ticker: 'BAC3', type: 'Renda Fixa', sector: 'Credito', resultPct: -9.1, result: -910, hasPerformanceData: true },
-    { ticker: 'BAD3', type: 'Acao', sector: 'Banco', resultPct: 7, result: 700, hasPerformanceData: false },
+    { ticker: 'AAA3', type: 'Acao', sector: 'Banco', profit: 1850, pct: 18.5, applied: 10000, current: 11850, hasPerformanceData: true },
+    { ticker: 'AAB3', type: 'FII', sector: 'Imobiliario', profit: 1600, pct: 18.5, applied: 8648, current: 10248, hasPerformanceData: true },
+    { ticker: 'AAC3', type: 'ETF', sector: 'Indice', profit: 1200, pct: 12.0, applied: 10000, current: 11200, hasPerformanceData: true },
+    { ticker: 'AAD3', type: 'Acao', sector: 'Energia', profit: 0, pct: 0, applied: 5000, current: 5000, hasPerformanceData: true },
+    { ticker: 'BAA3', type: 'Acao', sector: 'Banco', profit: -420, pct: -4.2, applied: 10000, current: 9580, hasPerformanceData: true },
+    { ticker: 'BAB3', type: 'FII', sector: 'Imobiliario', profit: -500, pct: -4.2, applied: 11904, current: 11404, hasPerformanceData: true },
+    { ticker: 'BAC3', type: 'Renda Fixa', sector: 'Credito', profit: -910, pct: -9.1, applied: 10000, current: 9090, hasPerformanceData: true },
+    { ticker: 'BAD3', type: 'Acao', sector: 'Banco', profit: 700, pct: 7, applied: 10000, current: 10700, hasPerformanceData: false }
   ];
   const { context } = makeContext(rows);
 
@@ -85,14 +90,14 @@ test('destaques da carteira usa dados oficiais e ordenacao correta', () => {
 
 test('destaques da carteira renderiza abas, estado vazio e atalho para desempenho', () => {
   const rows = [
-    { ticker: 'AAA3', type: 'Acao', sector: 'Banco', resultPct: 18.5, result: 1850, hasPerformanceData: true },
-    { ticker: 'AAB3', type: 'FII', sector: 'Imobiliario', resultPct: 12.1, result: 1210, hasPerformanceData: true },
-    { ticker: 'AAC3', type: 'ETF', sector: 'Indice', resultPct: 7.9, result: 790, hasPerformanceData: true },
-    { ticker: 'BAA3', type: 'Acao', sector: 'Banco', resultPct: -4.2, result: -420, hasPerformanceData: true },
-    { ticker: 'BAB3', type: 'FII', sector: 'Imobiliario', resultPct: -5.5, result: -550, hasPerformanceData: true },
-    { ticker: 'BAC3', type: 'Renda Fixa', sector: 'Credito', resultPct: -9.1, result: -910, hasPerformanceData: true },
-    { ticker: 'ZERO1', type: 'Acao', sector: 'Energia', resultPct: 0, result: 0, hasPerformanceData: true },
-    { ticker: 'INCM1', type: 'Acao', sector: 'Energia', resultPct: 7, result: 700, hasPerformanceData: false },
+    { ticker: 'AAA3', type: 'Acao', sector: 'Banco', profit: 1850, pct: 18.5, applied: 10000, current: 11850, hasPerformanceData: true },
+    { ticker: 'AAB3', type: 'FII', sector: 'Imobiliario', profit: 1210, pct: 12.1, applied: 10000, current: 11210, hasPerformanceData: true },
+    { ticker: 'AAC3', type: 'ETF', sector: 'Indice', profit: 790, pct: 7.9, applied: 10000, current: 10790, hasPerformanceData: true },
+    { ticker: 'BAA3', type: 'Acao', sector: 'Banco', profit: -420, pct: -4.2, applied: 10000, current: 9580, hasPerformanceData: true },
+    { ticker: 'BAB3', type: 'FII', sector: 'Imobiliario', profit: -550, pct: -5.5, applied: 10000, current: 9450, hasPerformanceData: true },
+    { ticker: 'BAC3', type: 'Renda Fixa', sector: 'Credito', profit: -910, pct: -9.1, applied: 10000, current: 9090, hasPerformanceData: true },
+    { ticker: 'ZERO1', type: 'Acao', sector: 'Energia', profit: 0, pct: 0, applied: 5000, current: 5000, hasPerformanceData: true },
+    { ticker: 'INCM1', type: 'Acao', sector: 'Energia', profit: 700, pct: 7, applied: 10000, current: 10700, hasPerformanceData: false }
   ];
   const { context, counters } = makeContext(rows);
 
