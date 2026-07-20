@@ -1,22 +1,12 @@
 /**
  * Testes de paridade entre Home (destaques) e Análise, e de exibição de
- * renda fixa na aba Ativos (sub-aba Renda Fixa). Estes testes comprovam os
- * dois bugs corrigidos pelo PR `fix/assets-highlights-and-rf-result`:
+ * renda fixa na aba Ativos (sub-aba Renda Fixa).
  *
- *   Bug 1 — Home e Análise usam fontes diferentes para "Maiores altas/baixas".
- *           Hoje a Home consome `assetPerformanceOverviewRows()` com filtro
- *           próprio (exclui resultado 0, exige hasPerformanceData) enquanto
- *           a Análise usa `assetAnalysisRows()` com outro filtro
- *           (pct>0/pct<0 && current>0, top 5). Isso produz listas divergentes.
- *
- *   Bug 2 — A sub-aba Renda Fixa da aba Ativos sempre renderiza
- *           `fmt(row.profit)` e `fmtP(row.pct)`. Quando o título não tem
- *           valor atual explícito, `rfValues` retorna current=applied e
- *           profit=0; a UI mostra "lucro R$ 0,00" como se fosse legítimo,
- *           mascarando a ausência de dado. Deveria mostrar
- *           "Atualização necessária" preservando o valor aplicado.
- *
- * Etapa RED: estes testes devem falhar antes da implementação da correção.
+ * Estado atual:
+ * - Home e Análise compartilham `assetAnalysisRows()`;
+ * - este teste protege paridade de fonte, ordenação e limites;
+ * - RF sem valor atual explícito mostra "Atualização necessária";
+ * - RF com lucro, prejuízo e zero legítimo mantém valores canônicos.
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
