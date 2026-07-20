@@ -19246,8 +19246,29 @@ function dashboardFinancialGoalsPanel(data){
   render();
 }
 function dashboardHighlightsRows(kind='high'){
-  const rows=assetPerformanceOverviewRows().filter(row=>{
-    if(!row || !row.hasPerformanceData) return false;
+  // PR fix/assets-highlights-and-rf-result: a Home deve usar a mesma
+  // fonte canônica da aba Análise (assetAnalysisRows) — único pipeline
+  // de "maiores altas/baixas". Mantém o shape de saída esperado por
+  // dashboardHomeHighlightsPanel() (ticker, type, sector, result,
+  // resultPct, hasPerformanceData) com mapeamento trivial a partir de
+  // {ticker, type, sector, profit, pct, applied, current, hasPerformanceData}.
+  // O limite de quantidade é responsabilidade do chamador (Home usa .slice(0,3);
+  // Análise usa seu próprio .slice(0,5)). Quando hasPerformanceData vem
+  // explicitamente no input, ele é preservado (caso as chamadas de teste);
+  // quando ausente, é derivado de profit/pct.
+  const rows=assetAnalysisRows().map(row=>({
+    ticker:row.ticker,
+    type:row.type,
+    sector:row.sector,
+    applied:row.applied,
+    current:row.current,
+    result:Number.isFinite(row.profit)?row.profit:null,
+    resultPct:Number.isFinite(row.pct)?row.pct:null,
+    hasPerformanceData:typeof row.hasPerformanceData==='boolean'
+      ? row.hasPerformanceData
+      : (Number.isFinite(row.profit) && row.profit!==0 && Number.isFinite(row.pct) && row.pct!==0)
+  })).filter(row=>{
+    if(!row.hasPerformanceData) return false;
     if(!Number.isFinite(row.result) || !Number.isFinite(row.resultPct)) return false;
     if(row.result===0 || row.resultPct===0) return false;
     return kind==='low' ? row.result<0 : row.result>0;
@@ -19259,7 +19280,7 @@ function dashboardHighlightsRows(kind='high'){
     }
     return (b.resultPct-a.resultPct) || (b.result-a.result) || compareText(a,b);
   });
-  return sorted.slice(0,3);
+  return sorted;
 }
 function dashboardHighlightsRowHtml(row, kind){
   const resultPctText=Number.isFinite(row.resultPct) ? fmtP(row.resultPct) : '—';
@@ -19275,7 +19296,7 @@ function dashboardHighlightsRowHtml(row, kind){
 }
 function dashboardHomeHighlightsPanel(){
   const tab=String(S.dashboardHighlightsTab||'high')==='low' ? 'low' : 'high';
-  const rows=dashboardHighlightsRows(tab);
+  const rows=dashboardHighlightsRows(tab).slice(0,3);
   const empty=tab==='low'
     ? '<div class="premium-empty">Nenhum ativo negativo com dados suficientes.</div>'
     : '<div class="premium-empty">Nenhum ativo positivo com dados suficientes.</div>';
@@ -19718,8 +19739,9 @@ function rfIntelligenceSnapshot(){
         receivedNet,
         resultWithEvents,
         rentabWithEvents,
-        bucket:rfBucketLabel(days)
-      };
+                bucket:rfBucketLabel(days),
+                explicit
+              };
   });
   const totalApplied=rows.reduce((s,r)=>s+r.applied,0);
   const totalCurrent=rows.reduce((s,r)=>s+r.current,0);
@@ -20017,29 +20039,35 @@ function rendaFixaTab(){
       </div>
     </div>`).join('') : '<div class="rf-empty">Nenhum alerta crítico no momento.</div>';
   const previewRows=data.previewRows.length ? data.previewRows.map(row=>`
-    <div class="rf-preview-row">
-      <div class="premium-row-main">
-        <div class="premium-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
-        <div class="premium-row-sub">${esc(row.category)} · ${esc(row.indexer)}${row.rate&&row.rate!=='taxa não informada'?` · ${esc(row.rate)}`:''}${row.days!=null?` · ${row.days<0?'vencido':`${Math.abs(row.days)} dia${Math.abs(row.days)===1?'':'s'} para o vencimento`}`:''}</div>
-      </div>
-      <div class="rf-preview-value">
-        <div class="${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</div>
-        <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>
-      </div>
-      ${rfEventReceiptsSummaryHtml(row) ? `<div class="rf-event-summary-inline" style="grid-column:1 / -1">${rfEventReceiptsSummaryHtml(row)}</div>` : ''}
-    </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
-  const eventCards=rfEventHistoryCards(data.tableRows);
-  const tableRows=data.tableRows.length ? data.tableRows.map(row=>`
-    <tr>
-      <td class="rf-strong">${esc(row.ticker)}</td>
-      <td>${esc(row.category)}</td>
-      <td class="rf-right">${fmt(row.applied)}</td>
-      <td class="rf-right">${fmt(row.current)}</td>
-      <td class="rf-right ${row.profit>=0?'gn':'rd'}">
-        <div class="rf-strong">${fmt(row.profit)}</div>
-        <div class="rf-mini">Resultado de mercado</div>
-      </td>
-      <td class="rf-right">
+      <div class="rf-preview-row">
+        <div class="premium-row-main">
+          <div class="premium-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
+          <div class="premium-row-sub">${esc(row.category)} · ${esc(row.indexer)}${row.rate&&row.rate!=='taxa não informada'?` · ${esc(row.rate)}`:''}${row.days!=null?` · ${row.days<0?'vencido':`${Math.abs(row.days)} dia${Math.abs(row.days)===1?'':'s'} para o vencimento`}`:''}</div>
+        </div>
+        <div class="rf-preview-value">
+                  ${row.explicit === false
+                    ? `<div class="rf-strong" style="color:#c8a84b">Atualização necessária</div>`
+                    : `<div class="${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</div>
+                       <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>`
+                  }
+                </div>
+        ${rfEventReceiptsSummaryHtml(row) ? `<div class="rf-event-summary-inline" style="grid-column:1 / -1">${rfEventReceiptsSummaryHtml(row)}</div>` : ''}
+      </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+    const eventCards=rfEventHistoryCards(data.tableRows);
+    const tableRows=data.tableRows.length ? data.tableRows.map(row=>`
+      <tr>
+        <td class="rf-strong">${esc(row.ticker)}</td>
+        <td>${esc(row.category)}</td>
+        <td class="rf-right">${fmt(row.applied)}</td>
+        <td class="rf-right">${fmt(row.current)}</td>
+        <td class="rf-right ${row.profit>=0?'gn':'rd'}">
+                  ${row.explicit === false
+                    ? `<div class="rf-strong" style="color:#c8a84b">Atualização necessária</div><div class="rf-mini">Sem valor atual informado</div>`
+                    : `<div class="rf-strong">${fmt(row.profit)}</div><div class="rf-mini">Resultado de mercado</div>`
+                  }
+                </td>
+              </tr>
+              <td class="rf-right">
         <div class="rf-strong">${fmt(row.receivedNet)}</div>
         <div class="rf-mini">${row.eventCount>0 ? `${row.eventCount} evento${row.eventCount===1?'':'s'} · bruto ${fmt(row.receivedGross)} · IR ${fmt(row.receivedIr)} · IOF ${fmt(row.receivedIof)}` : 'Sem eventos de renda fixa'}</div>
       </td>
