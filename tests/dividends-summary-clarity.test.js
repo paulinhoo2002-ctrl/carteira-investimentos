@@ -129,11 +129,73 @@ test('CSS media query duplicata removida', () => {
   assert.equal(occurrences.length, 0, 'Nao deve ter .div-exec-overview duplicado no @media 768px');
 });
 
-test('helper visual sem duplicar calculo financeiro', () => {
+test('dividendDistributionRow sem duplicar calculo financeiro', () => {
   const indexHtml = read('index.html');
-  const fn = indexHtml.slice(indexHtml.indexOf('function dividendDistributionRow('), indexHtml.indexOf('function dividendDistributionPanel('));
+  const fnStart = indexHtml.indexOf('function dividendDistributionRow(');
+  const fnEnd = indexHtml.indexOf('function dividendDistributionMonths(', fnStart);
+  assert.ok(fnStart >= 0);
+  assert.ok(fnEnd > fnStart);
+  const fn = indexHtml.slice(fnStart, fnEnd);
   assert.equal(fn.includes('passiveIncomeGoalStats'), false);
   assert.equal(fn.includes('proventoHistoricoMensal'), false);
   assert.equal(fn.includes('dividendMonthlyHistorySummary'), false);
   assert.equal(fn.includes('dividendMonthlyHistoryGroupRows'), false);
+});
+
+test('dividendDistributionMonths usa fontes canonicas', () => {
+  const indexHtml = read('index.html');
+  const fnStart = indexHtml.indexOf('function dividendDistributionMonths(');
+  const fnEnd = indexHtml.indexOf('function dividendDistributionPanel(', fnStart);
+  assert.ok(fnStart >= 0);
+  assert.ok(fnEnd > fnStart);
+  const fn = indexHtml.slice(fnStart, fnEnd);
+  assert.ok(fn.includes('passiveIncomeGoalStats'));
+  assert.ok(fn.includes('dividendMonthlyHistoryRows'));
+  assert.ok(fn.includes('passiveIncomeRollingMonthKeys'));
+});
+
+test('dividendDistributionPanel inclui seletor de periodo', () => {
+  const indexHtml = read('index.html');
+  const fnStart = indexHtml.indexOf('function dividendDistributionPanel(');
+  const fnEnd = indexHtml.indexOf('function dividendOverviewRecentPanel(', fnStart);
+  assert.ok(fnStart >= 0);
+  assert.ok(fnEnd > fnStart);
+  const fn = indexHtml.slice(fnStart, fnEnd);
+  assert.ok(fn.includes('div-dist-periods'));
+  assert.ok(fn.includes('12m'));
+  assert.ok(fn.includes('24m'));
+  assert.ok(fn.includes('36m'));
+  assert.ok(fn.includes('all'));
+  assert.ok(fn.includes('setDividendDistributionPeriod'));
+});
+
+test('dividendDistributionRow isAbsent renderiza — sem NaN', () => {
+  const ctx = makeContext();
+  ctx.S.dividendDistributionPeriod = '24m';
+  const row = ctx.dividendDistributionRow({key:'2020-01', total:0, isAbsent:true}, 100);
+  assert.ok(row.includes('div-dist-value zero'));
+  assert.ok(row.includes('—'));
+  assert.equal(row.includes('NaN'), false);
+  assert.equal(row.includes('undefined'), false);
+});
+
+test('dividendDistributionRow isAbsent=false zero renderiza R$ 0,00', () => {
+  const ctx = makeContext();
+  const row = ctx.dividendDistributionRow({key:'2026-06', total:0, isAbsent:false}, 200);
+  assert.ok(row.includes('div-dist-fill empty'));
+  assert.ok(row.includes('div-dist-value zero'));
+  assert.match(row, /R\$\s*0,00/);
+  assert.equal(row.includes('NaN'), false);
+});
+
+test('dividendMonthlyHistoryPremium startOpen=false nao tem open attr', () => {
+  const indexHtml = read('index.html');
+  assert.ok(indexHtml.includes("function dividendMonthlyHistoryPremium(rows,startOpen=false){"));
+  assert.ok(indexHtml.includes("dividendMonthlyTableBlock(rows, mode!=='overview')"));
+});
+
+test('dividendDistributionPeriod estado default e reset', () => {
+  const indexHtml = read('index.html');
+  assert.ok(indexHtml.includes("dividendDistributionPeriod:'12m'"));
+  assert.ok(indexHtml.includes("S.dividendDistributionPeriod='12m'"));
 });
