@@ -342,12 +342,14 @@ test('dividendAnnualMatrixData media null quando todos meses sao ausentes/futuro
   }
 });
 
-test('layout tab dedicado tem div-monthly-tab', () => {
+test('layout tab dedicado tem div-monthly-tab sem metrics', () => {
   const indexHtml = read('index.html');
   assert.match(indexHtml, /class="div-monthly-tab"/);
   assert.match(indexHtml, /class="div-monthly-tab-head"/);
-  assert.match(indexHtml, /class="div-monthly-tab-metrics"/);
   assert.match(indexHtml, /class="div-monthly-tab-toolbar"/);
+  assert.match(indexHtml, /class="div-mat-toggle"/);
+  assert.equal(indexHtml.includes('div-monthly-tab-metrics'), false, 'KPIs duplicados removidos da aba dedicada');
+  assert.match(indexHtml, /view==='list'\s*\?\s*.*\s*:\s*/);
 });
 
 test('toggle button aparece dentro do tab head', () => {

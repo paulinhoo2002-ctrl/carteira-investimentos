@@ -116,21 +116,21 @@ viewports.forEach(vp => {
       await page.evaluate(() => go('dividendos'));
       await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 5000 });
 
-      // Historico mensal comeca oculto na visao geral
+      // Historico mensal comeca oculto na visao geral (agora fora do grid)
       const startCollapsed = await page.evaluate(() => {
-        const details = document.querySelector('.div-exec-overview .div-monthly-table-block');
+        const details = document.querySelector('.div-premium .div-monthly-table-block');
         return details && !details.hasAttribute('open');
       });
       assert.equal(startCollapsed, true, `Historico mensal overview nao comeca oculto em ${vp.label}`);
 
       // Mostrar expande
       await page.evaluate(() => {
-        const details = document.querySelector('.div-exec-overview .div-monthly-table-block');
+        const details = document.querySelector('.div-premium .div-monthly-table-block');
         if (details) details.querySelector('summary').click();
       });
       await page.waitForTimeout(200);
       const afterClick = await page.evaluate(() => {
-        const details = document.querySelector('.div-exec-overview .div-monthly-table-block');
+        const details = document.querySelector('.div-premium .div-monthly-table-block');
         return details && details.hasAttribute('open');
       });
       assert.equal(afterClick, true, `Historico mensal nao expandiu ao clicar em ${vp.label}`);
