@@ -92,3 +92,95 @@ viewports.forEach(vp => {
     }
   });
 });
+
+viewports.forEach(vp => {
+  test(`dividends overview monthly collapsed + distribution period - ${vp.label}`, async () => {
+    const exe = resolveBrowser();
+    if (!exe) return;
+
+    const h = await startServer(path.join(__dirname, '..'));
+    const { chromium } = await import('playwright-core');
+    const browser = await chromium.launch({ executablePath: exe, headless: true });
+    try {
+      const ctx = await browser.newContext({
+        viewport: { width: vp.w, height: vp.h },
+        hasTouch: vp.w <= 430,
+        isMobile: vp.w <= 430,
+      });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+      page.on('pageerror', err => errors.push(err.message));
+
+      await page.goto(h.url, { waitUntil: 'networkidle' });
+      await page.evaluate(() => go('dividendos'));
+      await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 5000 });
+
+      // Historico mensal comeca oculto na visao geral (agora fora do grid)
+      const startCollapsed = await page.evaluate(() => {
+        const details = document.querySelector('.div-premium .div-monthly-table-block');
+        return details && !details.hasAttribute('open');
+      });
+      assert.equal(startCollapsed, true, `Historico mensal overview nao comeca oculto em ${vp.label}`);
+
+      // Mostrar expande
+      await page.evaluate(() => {
+        const details = document.querySelector('.div-premium .div-monthly-table-block');
+        if (details) details.querySelector('summary').click();
+      });
+      await page.waitForTimeout(200);
+      const afterClick = await page.evaluate(() => {
+        const details = document.querySelector('.div-premium .div-monthly-table-block');
+        return details && details.hasAttribute('open');
+      });
+      assert.equal(afterClick, true, `Historico mensal nao expandiu ao clicar em ${vp.label}`);
+
+      // Seletor de periodo na distribuicao
+      const selectorExists = await page.evaluate(() => {
+        const p = document.querySelector('.div-dist-periods');
+        return p && p.textContent.includes('12 meses') && p.textContent.includes('24 meses')
+          && p.textContent.includes('36 meses') && p.textContent.includes('Todos');
+      });
+      assert.equal(selectorExists, true, `Seletor periodo ausente em ${vp.label}`);
+
+      // Trocar para 24 meses
+      await page.evaluate(() => setDividendDistributionPeriod('24m'));
+      await page.waitForTimeout(200);
+      const period24 = await page.evaluate(() => {
+        const chips = document.querySelectorAll('.div-dist-periods .div-premium-chip');
+        return Array.from(chips).find(c => c.classList.contains('on') && c.textContent.includes('24'));
+      });
+      assert.notEqual(period24, null, `Periodo 24m nao ativo em ${vp.label}`);
+
+      // Trocar para Todos
+      await page.evaluate(() => setDividendDistributionPeriod('all'));
+      await page.waitForTimeout(200);
+      const periodAll = await page.evaluate(() => {
+        const chips = document.querySelectorAll('.div-dist-periods .div-premium-chip');
+        return Array.from(chips).find(c => c.classList.contains('on') && c.textContent.includes('Todos'));
+      });
+      assert.notEqual(periodAll, null, `Periodo all nao ativo em ${vp.label}`);
+
+      // Scroll container presente se >12 meses
+      const scrollLogic = await page.evaluate(() => {
+        const period = String(S.dividendDistributionPeriod || '12m');
+        const months = document.querySelectorAll('.div-dist-rows .div-dist-row');
+        return period !== '12m' && months.length > 12;
+      });
+      if (scrollLogic) {
+        const hasScroll = await page.evaluate(() => document.querySelectorAll('.div-dist-scroll').length > 0);
+        assert.equal(hasScroll, true, `Scroll container ausente com Todos em ${vp.label}`);
+      }
+
+      // Sem overflow horizontal
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+      assert.equal(overflow, false, `Overflow horizontal em ${vp.label}`);
+      assert.equal(errors.length, 0, `Erros no console em ${vp.label}: ${errors.join(' | ')}`);
+
+      await ctx.close();
+    } finally {
+      await browser.close();
+      h.server.close();
+    }
+  });
+});

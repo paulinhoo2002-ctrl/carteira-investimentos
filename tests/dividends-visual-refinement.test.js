@@ -41,7 +41,9 @@ test('aba dividendos preserva ordem visual confiavel', () => {
     ? indexHtml.slice(overviewStart, bodyStart)
     : indexHtml;
 
-  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{monthlySection\}/s);
+  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}/);
+  assert.match(overviewBlock, /div-exec-overview.*div-exec-kpis.*div-exec-main.*dividendDistributionPanel\(dfStats\)/s);
+  assert.match(overviewBlock, /<\/div><\/div>\$\{monthlySection\}`;?\s*$/);
   assert.equal(overviewBlock.includes('${dividendOverviewRecentPanel(rows)}'), false);
   assert.equal(overviewBlock.includes('Histórico recente'), false);
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
