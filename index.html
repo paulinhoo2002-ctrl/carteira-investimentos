@@ -1599,7 +1599,6 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
   .div-asset-group>summary .div-asset-stat:nth-of-type(3),.div-asset-group>summary .div-asset-stat:nth-of-type(4){display:none}
 }
 @media(max-width:768px){
-  .div-exec-overview{grid-template-columns:1fr}
   .div-premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
   .div-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
@@ -22526,7 +22525,22 @@ function dividendSummaryCards(){
     <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Média mensal ${fmt(stats.monthlyAvg)} · projeção anual ${fmt(stats.annualProjection)}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0?`${((current.total/stats.target)*100).toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current.total))}`:'Lida da aba Metas'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
-  </div>`;
+    </div>`;
+}
+function dividendDistributionRow(month, maxVal){
+  const pct=maxVal>0?Math.max(0.5,Math.min(100,month.total/maxVal*100)):0;
+  const isZero=month.total===0;
+  const cls='div-dist-fill'+(isZero?' empty':'');
+  const width=pct>0?`${pct.toFixed(1)}%`:maxVal===0?'100%':'0%';
+  const valCls='div-dist-value'+(isZero?' zero':'');
+  const dt=new Date(month.key+'-01T12:00:00');
+  const label=dt.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
+  return `<div class="div-dist-row"><div class="div-dist-month">${esc(label)}</div><div class="div-dist-track"><div class="${cls}" style="width:${width}"></div></div><div class="${valCls}">${fmt(month.total)}</div></div>`;
+}
+function dividendDistributionPanel(stats){
+  const months=(stats.byMonth||[]).slice(-12);
+  const maxVal=months.reduce((max,m)=>Math.max(max,m.total),0);
+  return `<div class="div-dist-panel"><div class="div-dist-head"><div><div class="div-dist-title">Distribuição mensal</div><div class="div-dist-sub">Últimos 12 meses · comparativo proporcional</div></div></div><div class="div-dist-rows">${months.map(m=>dividendDistributionRow(m,maxVal)).join('')}</div></div>`;
 }
 function dividendOverviewRecentPanel(rows){
   const limit=6;
@@ -22593,10 +22607,11 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendMonthlyTimeline()
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
-  const overviewBody=`<div class="div-overview-main">
+  const dfStats=passiveIncomeGoalStats();
+  const overviewBody=`<div class="div-exec-overview"><div class="div-exec-kpis">
     ${dividendSummaryCards()}
     ${monthlySection}
-  </div>`;
+  </div>${dividendDistributionPanel(dfStats)}</div>`;
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
