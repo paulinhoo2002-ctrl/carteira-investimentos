@@ -1817,6 +1817,47 @@ details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
 .hist-monthly th:last-child,.hist-monthly td:last-child{padding-right:16px}
 .div-monthly-filter{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);padding:6px 10px;font-size:10px;font-weight:850;white-space:nowrap}
 .div-monthly-filter.on{color:#c7d2fe;border-color:rgba(99,102,241,.4);background:rgba(79,70,229,.16)}
+.div-monthly-body{display:grid;gap:10px;padding:10px}
+.div-monthly-summaryline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;border:1px solid var(--border);border-radius:12px;background:rgba(15,23,42,.5);padding:10px}
+.div-monthly-summary-item{display:grid;gap:5px;min-width:0}
+.div-monthly-summary-item span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.div-monthly-summary-item strong{font-size:13px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.div-monthly-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+.div-monthly-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-width:0}
+.div-month-filter{display:grid;gap:5px;min-width:0}
+.div-month-filter-label{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.div-month-filter-shell{position:relative}
+.div-month-filter-shell select{width:100%;min-height:36px;padding:0 34px 0 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;appearance:none}
+.div-month-filter-actions{display:flex;align-items:end;justify-content:flex-end}
+.div-monthly-toggle-group{display:inline-flex;gap:4px;border:1px solid var(--border);border-radius:999px;padding:3px;background:var(--surface);justify-self:end}
+.div-monthly-toggle-btn{border:0;border-radius:999px;background:transparent;color:var(--muted);padding:6px 10px;font-size:10px;font-weight:850;cursor:pointer;white-space:nowrap}
+.div-monthly-toggle-btn.on{background:rgba(72,216,200,.16);color:var(--text)}
+.div-monthly-content{display:grid;gap:10px}
+.div-year-list{display:grid;gap:10px}
+.div-year-card{display:grid;gap:10px;border:1px solid var(--border);border-radius:12px;background:rgba(15,23,42,.58);padding:10px}
+.div-year-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.div-year-card-copy{display:grid;gap:3px;min-width:0}
+.div-year-card-year{font-size:15px;font-weight:900;letter-spacing:-.02em}
+.div-year-card-meta,.div-year-card-sub{font-size:10px;color:var(--muted);line-height:1.35}
+.div-year-card-toggle{min-height:32px;padding:0 10px;font-size:11px}
+.div-year-card-months{display:grid;gap:6px;padding-top:2px}
+.div-year-month{display:grid;grid-template-columns:54px minmax(0,1fr);gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid rgba(148,163,184,.08)}
+.div-year-month:first-child{border-top:0;padding-top:0}
+.div-year-month-label{color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.div-year-month-value{text-align:right;font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap}
+.div-year-month.zero .div-year-month-value{color:rgba(237,243,255,.7)}
+.div-year-month.future .div-year-month-value,.div-year-month.absent .div-year-month-value{color:rgba(167,183,207,.66)}
+.div-month-dist{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+.div-month-dist>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;cursor:pointer}
+.div-month-dist>summary::-webkit-details-marker{display:none}
+.div-month-dist[open]>summary{border-bottom:1px solid var(--border)}
+.div-month-dist-summary{min-width:0}
+.div-month-dist-title{font-size:11px;font-weight:900;color:var(--text);line-height:1.2}
+.div-month-dist-sub{font-size:9px;color:var(--muted);line-height:1.25;margin-top:2px}
+.div-month-dist-action{font-size:9px;font-weight:850;color:var(--text);border:1px solid var(--border);border-radius:999px;background:var(--surface);padding:5px 8px;white-space:nowrap}
+.div-month-dist-body{display:grid;gap:8px;padding:8px 10px 10px}
+.div-empty-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.hidden{display:none !important}
 html[data-theme="light"] .div-collapsible-summary{background:rgba(255,255,255,.75)}
 html[data-theme="light"] .div-collapsible[open] .div-collapsible-summary{background:linear-gradient(180deg,#fff,#f8fafc)}
 html[data-theme="light"] .div-collapsible-chev{background:#fff}
@@ -1862,6 +1903,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-dist-track{height:9px;border-radius:999px;background:rgba(148,163,184,.12);overflow:hidden;position:relative}
 @media(max-width:1000px){
   .div-premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .div-monthly-summaryline{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:640px){
   .div-premium-hero{padding:11px!important;border-radius:13px!important}
@@ -1878,9 +1920,22 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .div-premium-hero-meta{gap:6px!important}
   .div-premium-hero-pill,.div-premium-status{width:100%!important;justify-content:flex-start!important}
   .div-premium-progress{width:100%!important}
+  .div-monthly-body{padding:9px 10px calc(96px + env(safe-area-inset-bottom))!important}
+  .div-monthly-summaryline{grid-template-columns:1fr 1fr;gap:7px;padding:9px}
+  .div-monthly-summary-item strong{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.22}
+  .div-monthly-toolbar{grid-template-columns:1fr;gap:8px}
+  .div-monthly-filters{grid-template-columns:1fr;gap:7px}
+  .div-monthly-toggle-group{justify-self:start}
+  .div-year-card{padding:9px;border-radius:11px}
+  .div-year-card-head{display:block}
+  .div-year-card-toggle{margin-top:8px;width:100%}
+  .div-year-month{grid-template-columns:54px minmax(0,1fr);gap:8px;padding:5px 0}
+  .div-month-dist>summary{padding:8px 9px}
+  .div-month-dist-body{padding:8px 9px 9px}
 }
 @media(max-width:360px){
   .div-premium-metrics{grid-template-columns:1fr!important}
+  .div-monthly-summaryline{grid-template-columns:1fr}
 }
 @media(max-width:1000px){
   .div-premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -3957,7 +4012,7 @@ let S = {
   dividendMonthlyHistoryType:'all',
   dividendMonthlyHistoryLimit:6,
   dividendMonthlyHistoryExpanded:[],
-  dividendMonthlyHistoryView:'list',
+  dividendMonthlyHistoryView:'auto',
   dividendDistributionPeriod:'12m',
   showImportedDividendsDetails:false,
   dividendQueryMonth:'',
@@ -4191,7 +4246,7 @@ function applyLocalTestFixture(){
   S.dividendMonthlyHistoryType='all';
   S.dividendMonthlyHistoryLimit=6;
   S.dividendMonthlyHistoryExpanded=[];
-  S.dividendMonthlyHistoryView='list';
+  S.dividendMonthlyHistoryView='auto';
   S.dividendDistributionPeriod='12m';
   S.proventoReviewOpen=false;
   S.proventoAudit={month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]};
@@ -22236,6 +22291,14 @@ function dividendMonthlyHistorySummary(groups){
   const best=groups.reduce((acc,row)=>!acc || row.total>acc.total ? row : acc, null);
   return {total, monthCount, avg, best};
 }
+function dividendViewportIsCompact(){
+  return typeof window!=='undefined' && typeof window.innerWidth==='number' && window.innerWidth>0 ? window.innerWidth<=820 : false;
+}
+function dividendMonthlyHistoryViewMode(){
+  const view=String(S.dividendMonthlyHistoryView||'auto');
+  if(view==='list' || view==='matrix') return view;
+  return dividendViewportIsCompact() ? 'list' : 'matrix';
+}
 function dividendMonthlyHistoryComparisonText(row){
   if(!row.previousKey) return 'Sem base anterior';
   if(!Number.isFinite(row.diff)) return 'Comparação indisponível';
@@ -22245,13 +22308,126 @@ function dividendMonthlyHistoryComparisonText(row){
   return `${diffLabel} (${row.diffPct>=0?'+':''}${row.diffPct.toFixed(1)}%)`;
 }
 function dividendMonthlyHistoryToggleMonth(monthKey){
-  const key=String(monthKey||'').trim();
+  const raw=String(monthKey||'').trim();
+  const key=/^\d{4}-\d{2}$/.test(raw) ? raw.slice(0,4) : raw;
   if(!key) return;
   const next=new Set(Array.isArray(S.dividendMonthlyHistoryExpanded) ? S.dividendMonthlyHistoryExpanded.map(String) : []);
   if(next.has(key)) next.delete(key);
   else next.add(key);
   S.dividendMonthlyHistoryExpanded=[...next];
   render();
+}
+function dividendMonthlyHistoryYearRows(rows){
+  const monthLabels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const currentYear=new Date().getFullYear();
+  return dividendAnnualMatrixData(rows).map(year=>{
+    const validMonths=year.months.filter(month=>!month.isBeforeFirst && !month.isFuture);
+    const bestMonth=validMonths.reduce((best,month)=>{
+      if(!best) return month;
+      if(month.total>best.total) return month;
+      if(month.total===best.total && month.month<best.month) return month;
+      return best;
+    }, null);
+    return {
+      year: year.year,
+      total: year.annualTotal,
+      average: year.annualMean,
+      validCount: validMonths.length,
+      bestMonth,
+      isCurrent: year.year===currentYear,
+      months: year.months.map((month,index)=>{
+        let kind='value';
+        let valueText=fmt(month.total);
+        if(month.isFuture){
+          kind='future';
+          valueText='—';
+        } else if(month.isBeforeFirst){
+          kind='absent';
+          valueText='—';
+        } else if(month.total===0){
+          kind='zero';
+          valueText=fmt(0);
+        }
+        return {
+          key: month.key,
+          label: monthLabels[index],
+          kind,
+          total: month.total,
+          hasData: !!month.hasData,
+          valueText,
+        };
+      }),
+    };
+  });
+}
+function dividendMonthlyHistoryYearMonthRow(month){
+  const tone=month.kind || 'value';
+  return `<div class="div-year-month ${esc(tone)}">
+    <div class="div-year-month-label">${esc(month.label)}</div>
+    <div class="div-year-month-value">${esc(month.valueText)}</div>
+  </div>`;
+}
+function dividendMonthlyHistoryYearCard(year, compact=false, expanded=false){
+  const bodyId=`div-year-${year.year}`;
+  const open=compact ? expanded : true;
+  const bestMonth=year.bestMonth ? `${esc(year.bestMonth.label)} · ${fmt(year.bestMonth.total)}` : 'Sem mês válido';
+  return `<article class="div-year-card${year.isCurrent ? ' current' : ''}" data-open="${open ? 'true' : 'false'}">
+    <div class="div-year-card-head">
+      <div class="div-year-card-copy">
+        <div class="div-year-card-year">${year.year}</div>
+        <div class="div-year-card-meta">Média ${fmt(year.average)} · Total ${fmt(year.total)} · ${year.validCount} mês(es) válidos</div>
+        <div class="div-year-card-sub">Melhor mês: ${bestMonth}</div>
+      </div>
+      ${compact ? `<button class="btn bgh div-year-card-toggle" type="button" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${esc(bodyId)}" onclick="dividendMonthlyHistoryToggleMonth('${esc(String(year.year))}')">${open ? 'Ocultar meses' : 'Ver meses'}</button>` : ''}
+    </div>
+    <div class="div-year-card-months${open ? '' : ' hidden'}" id="${esc(bodyId)}">
+      ${year.months.map(month=>dividendMonthlyHistoryYearMonthRow(month)).join('')}
+    </div>
+  </article>`;
+}
+function dividendMonthlyHistorySummaryLine(summary, groups){
+  const bestLabel=summary.best ? `${esc(summary.best.label)} · ${fmt(summary.best.total)}` : '—';
+  const averageLabel=summary.avg===null ? '—' : fmt(summary.avg);
+  const totalLabel=fmt(summary.total);
+  const trend=groups.length>1 && groups[0] && groups[1]
+    ? `${groups[0].total>=groups[1].total?'+':'-'}${fmt(Math.abs(groups[0].total-groups[1].total))}`
+    : 'Sem base anterior';
+  return `<div class="div-monthly-summaryline" aria-label="Resumo do período">
+    <div class="div-monthly-summary-item"><span>Total no período</span><strong>${totalLabel}</strong></div>
+    <div class="div-monthly-summary-item"><span>Média mensal</span><strong>${averageLabel}</strong></div>
+    <div class="div-monthly-summary-item"><span>Melhor mês</span><strong>${bestLabel}</strong></div>
+    <div class="div-monthly-summary-item"><span>Tendência recente</span><strong>${esc(trend)}</strong></div>
+  </div>`;
+}
+function dividendMonthlyHistoryDistributionRows(rows){
+  const matrix=dividendAnnualMatrixData(rows);
+  const focus=matrix[0] || null;
+  if(!focus) return [];
+  return focus.months.map(month=>({
+    key:month.key,
+    total:month.total,
+    isAbsent:month.isBeforeFirst,
+    isFuture:month.isFuture,
+  }));
+}
+function dividendMonthlyHistoryDistributionPanel(rows, compact=false){
+  const months=dividendMonthlyHistoryDistributionRows(rows);
+  if(!months.length) return dividendEmptyState('Nenhuma distribuição mensal disponível.', 'Ajuste os filtros para ver os meses com dados.');
+  const maxVal=months.reduce((max,m)=>Math.max(max,m.total),0);
+  const focusYear=String(months[0]?.key||'').slice(0,4);
+  const yearLabel=focusYear ? ` · ${focusYear}` : '';
+  return `<details class="div-month-dist"${compact ? '' : ' open'}>
+    <summary>
+      <div class="div-month-dist-summary">
+        <div class="div-month-dist-title">Distribuição mensal${yearLabel}</div>
+        <div class="div-month-dist-sub">${compact ? 'Ação para abrir' : 'Gráfico complementar por mês, sem competir com a tabela.'}</div>
+      </div>
+      <div class="div-month-dist-action">${compact ? 'Ver distribuição mensal' : 'Complemento visual'}</div>
+    </summary>
+    <div class="div-month-dist-body">
+      ${[...months].map(month=>dividendDistributionRow(month,maxVal)).join('')}
+    </div>
+  </details>`;
 }
 function setDividendMonthlyHistoryPeriod(value){ S.dividendMonthlyHistoryPeriod=String(value||'all'); render(); }
 function setDividendMonthlyHistoryTicker(value){ S.dividendMonthlyHistoryTicker=String(value||'all').trim()||'all'; render(); }
@@ -22266,6 +22442,102 @@ function clearDividendMonthlyHistoryFilters(){
   S.dividendMonthlyHistoryType='all';
   S.dividendMonthlyHistoryLimit=6;
   render();
+}
+function dividendMonthlyHistoryV4(rows,startOpen=false){
+  const sourceRows=dividendMonthlyHistoryRows(rows);
+  if(!sourceRows.length){
+    return `<details class="div-monthly-table-block"${startOpen ? ' open' : ''}>
+      <summary>
+        <div class="div-monthly-head-main">
+          <div class="div-monthly-title">Histórico mensal</div>
+          <div class="div-monthly-sub">Acompanhe os proventos efetivamente recebidos ao longo do tempo.</div>
+        </div>
+        <div class="div-monthly-head-side">
+          <div class="div-monthly-total">0 mês(es)</div>
+          <div class="div-monthly-toggle"><span class="when-open">Ocultar</span><span class="when-closed">Mostrar</span></div>
+        </div>
+      </summary>
+      <div class="div-monthly-body">${dividendEmptyState('Nenhum provento recebido ainda.', 'Cadastre seus recebimentos para acompanhar o histórico mensal.')}</div>
+    </details>`;
+  }
+  const options=dividendMonthlyHistoryOptions(sourceRows);
+  const filtered=dividendMonthlyHistoryFilterRows(sourceRows,{
+    period:S.dividendMonthlyHistoryPeriod,
+    ticker:S.dividendMonthlyHistoryTicker,
+    type:S.dividendMonthlyHistoryType,
+  });
+  const groups=dividendMonthlyHistoryGroupRows(filtered);
+  const summary=dividendMonthlyHistorySummary(groups);
+  const yearRows=dividendMonthlyHistoryYearRows(filtered);
+  const view=dividendMonthlyHistoryViewMode();
+  const compact=dividendViewportIsCompact();
+  const summaryLine=dividendMonthlyHistorySummaryLine(summary, groups);
+  const filters=`<div class="div-monthly-toolbar">
+      <div class="div-monthly-filters" role="group" aria-label="Filtros do histórico mensal">
+        <label class="div-month-filter">
+          <span class="div-month-filter-label">Período</span>
+          <span class="div-month-filter-shell">
+            <select onchange="setDividendMonthlyHistoryPeriod(this.value)">
+              <option value="all" ${String(S.dividendMonthlyHistoryPeriod||'all')==='all'?'selected':''}>Todos</option>
+              <option value="12m" ${String(S.dividendMonthlyHistoryPeriod||'all')==='12m'?'selected':''}>Últimos 12 meses</option>
+              <option value="current" ${String(S.dividendMonthlyHistoryPeriod||'all')==='current'?'selected':''}>Ano atual</option>
+              <option value="previous" ${String(S.dividendMonthlyHistoryPeriod||'all')==='previous'?'selected':''}>Ano anterior</option>
+              ${options.years.map(year=>`<option value="year:${year}" ${String(S.dividendMonthlyHistoryPeriod||'all')===`year:${year}`?'selected':''}>${year}</option>`).join('')}
+            </select>
+          </span>
+        </label>
+        <label class="div-month-filter">
+          <span class="div-month-filter-label">Tipo de provento</span>
+          <span class="div-month-filter-shell">
+            <select onchange="setDividendMonthlyHistoryType(this.value)">
+              <option value="all" ${String(S.dividendMonthlyHistoryType||'all')==='all'?'selected':''}>Todos os tipos</option>
+              ${options.types.map(type=>`<option value="${esc(type)}" ${String(S.dividendMonthlyHistoryType||'all')===String(type)?'selected':''}>${esc(type)}</option>`).join('')}
+            </select>
+          </span>
+        </label>
+        <label class="div-month-filter">
+          <span class="div-month-filter-label">Ativo</span>
+          <span class="div-month-filter-shell">
+            <select onchange="setDividendMonthlyHistoryTicker(this.value)">
+              <option value="all" ${String(S.dividendMonthlyHistoryTicker||'all')==='all'?'selected':''}>Todos os ativos</option>
+              ${options.tickers.map(ticker=>`<option value="${esc(ticker)}" ${String(S.dividendMonthlyHistoryTicker||'all')===String(ticker)?'selected':''}>${esc(ticker)}</option>`).join('')}
+            </select>
+          </span>
+        </label>
+        <div class="div-month-filter-actions">
+          <button class="btn bgh" type="button" onclick="clearDividendMonthlyHistoryFilters()">Limpar filtros</button>
+        </div>
+      </div>
+      <div class="div-monthly-toggle-group" role="group" aria-label="Alternar visualização">
+        <button class="div-monthly-toggle-btn${view==='list'?' on':''}" type="button" aria-pressed="${view==='list'}" onclick="setDividendMonthlyHistoryView('list')">Lista</button>
+        <button class="div-monthly-toggle-btn${view==='matrix'?' on':''}" type="button" aria-pressed="${view==='matrix'}" onclick="setDividendMonthlyHistoryView('matrix')">Matriz</button>
+      </div>
+    </div>`;
+  const listContent=yearRows.length
+    ? `<div class="div-year-list">${yearRows.map(year=>dividendMonthlyHistoryYearCard(year, compact, compact ? (Array.isArray(S.dividendMonthlyHistoryExpanded) && S.dividendMonthlyHistoryExpanded.map(String).includes(String(year.year))) || year.isCurrent : true)).join('')}</div>`
+    : `<div class="div-premium-empty"><div class="div-empty-title">Nenhum recebimento encontrado para os filtros selecionados.</div><div class="div-empty-sub">Ajuste os filtros ou limpe a busca para ver meses com dados.</div><div class="div-empty-actions"><button class="btn bgh" type="button" onclick="clearDividendMonthlyHistoryFilters()">Limpar filtros</button></div></div>`;
+  const matrixRows=dividendAnnualMatrixData(filtered);
+  const matrixContent=matrixRows.length ? dividendAnnualMatrixView(matrixRows) : `<div class="div-premium-empty"><div class="div-empty-title">Nenhum dado disponível para a matriz anual.</div><div class="div-empty-sub">Ajuste os filtros para ver anos e meses com recebimentos.</div><div class="div-empty-actions"><button class="btn bgh" type="button" onclick="clearDividendMonthlyHistoryFilters()">Limpar filtros</button></div></div>`;
+  const distributionPanel=dividendMonthlyHistoryDistributionPanel(filtered, compact);
+  const content=view==='list' ? listContent : matrixContent;
+  return `<details class="div-monthly-table-block"${startOpen ? ' open' : ''}>
+    <summary>
+      <div class="div-monthly-head-main">
+        <div class="div-monthly-title">Histórico mensal</div>
+        <div class="div-monthly-sub">Acompanhe os proventos efetivamente recebidos ao longo do tempo.</div>
+      </div>
+      <div class="div-monthly-head-side">
+        <div class="div-monthly-total">${summary.monthCount} mês(es)</div>
+        <div class="div-monthly-toggle"><span class="when-open">Ocultar</span><span class="when-closed">Mostrar</span></div>
+      </div>
+    </summary>
+    <div class="div-monthly-body">
+      ${summaryLine}
+      ${filters}
+      <div class="div-monthly-content">${content}</div>
+      ${distributionPanel}
+    </div>
+  </details>`;
 }
 function dividendMonthlyHistoryEntry(row, expanded=false){
   const compare=dividendMonthlyHistoryComparisonText(row);
@@ -22624,7 +22896,7 @@ function dividendMonthlyHistoryPremium(rows,startOpen=false){
   </div>`;
 }
 function dividendMonthlyTableBlock(rows,startOpen=false){
-  return dividendMonthlyHistoryPremium(rows,startOpen);
+  return dividendMonthlyHistoryV4(rows,startOpen);
 }
 function dividendAnnualMatrixData(rows){
   if(!rows.length) return [];
@@ -22722,7 +22994,7 @@ function dividendSummaryCards(){
 function dividendDistributionRow(month, maxVal){
   const dt=new Date(month.key+'-01T12:00:00');
   const label=dt.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
-  if(month.isAbsent){
+  if(month.isAbsent || month.isFuture){
     return `<div class="div-dist-row"><div class="div-dist-month">${esc(label)}</div><div class="div-dist-track"><div class="div-dist-fill empty"></div></div><div class="div-dist-value zero">—</div></div>`;
   }
   const pct=maxVal>0?Math.max(0.5,Math.min(100,month.total/maxVal*100)):0;
