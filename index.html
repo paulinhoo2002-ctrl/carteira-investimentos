@@ -2677,7 +2677,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   border-color:#2d2a5e;background:rgba(79,70,229,.15);color:#a5b4fc
 }
 @media(max-width:640px){
-  .wrap{padding-bottom:112px!important}
+  .wrap{padding-bottom:calc(160px + env(safe-area-inset-bottom))!important}
   .premium-dashboard{gap:8px;padding-bottom:22px;min-width:0}
   .premium-dashboard *{min-width:0}
   .premium-consultive-grid{grid-template-columns:1fr!important;gap:7px!important}
@@ -3989,7 +3989,7 @@ let S = {
   assetsPerformanceClassFilter:'all',
   assetsPerformanceSort:'result-desc',
   assetSort:{},
-  dashPeriod:12, dashType:'all', dashboardHighlightsTab:'high',
+  dashPeriod:12, dashType:'all', dashboardHighlightsTab:'high', dashboardHighlightsClassFilter:'all',
   rentPeriod:'all', rentType:'all', rentBench:'CDI',
   reportsPeriod:'12m',
   reportCardPdfType:null,
@@ -4013,7 +4013,9 @@ let S = {
   dividendMonthlyHistoryLimit:6,
   dividendMonthlyHistoryExpanded:[],
   dividendMonthlyHistoryView:'auto',
+  dividendMonthlyHistoryExpandedYears:false,
   dividendDistributionPeriod:'12m',
+  dividendDistributionOpen:false,
   showImportedDividendsDetails:false,
   dividendQueryMonth:'',
   dividendQueryType:'all',
@@ -4247,7 +4249,9 @@ function applyLocalTestFixture(){
   S.dividendMonthlyHistoryLimit=6;
   S.dividendMonthlyHistoryExpanded=[];
   S.dividendMonthlyHistoryView='auto';
+  S.dividendMonthlyHistoryExpandedYears=false;
   S.dividendDistributionPeriod='12m';
+  S.dividendDistributionOpen=false;
   S.proventoReviewOpen=false;
   S.proventoAudit={month:'', eventType:'all', ticker:'', onlyDuplicates:false, selectedIds:[]};
   S.aportesViewMode='resumo';
@@ -19398,7 +19402,24 @@ function dashboardFinancialGoalsPanel(data){
   S.dashboardHighlightsTab=next;
   render();
 }
-function dashboardHighlightsRows(kind='high'){
+function setDashboardHighlightsClassFilter(value){
+  const next=['all','acao','fii','etf'].includes(String(value||'')) ? String(value) : 'all';
+  if(S.dashboardHighlightsClassFilter===next) return;
+  S.dashboardHighlightsClassFilter=next;
+  render();
+}
+function dashboardHighlightsClassKey(value){
+  const raw=String(value||'')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .trim()
+    .toUpperCase();
+  if(raw==='ACAO' || raw==='ACOES') return 'acao';
+  if(raw==='FII' || raw==='FIIS' || raw==='FUNDO IMOBILIARIO' || raw==='FUNDOS IMOBILIARIOS') return 'fii';
+  if(raw==='ETF' || raw==='ETFS') return 'etf';
+  return '';
+}
+function dashboardHighlightsRows(kind='high', classFilter='all'){
   // PR fix/assets-highlights-and-rf-result: a Home deve usar a mesma
   // fonte canônica da aba Análise (assetAnalysisRows) — único pipeline
   // de "maiores altas/baixas". Mantém o shape de saída esperado por
@@ -19409,12 +19430,16 @@ function dashboardHighlightsRows(kind='high'){
   // Análise usa seu próprio .slice(0,5)). Quando hasPerformanceData vem
   // explicitamente no input, ele é preservado (caso as chamadas de teste);
   // quando ausente, é derivado de profit/pct.
+  const normalizedClassFilter=['all','acao','fii','etf'].includes(String(classFilter||'all'))
+    ? String(classFilter||'all')
+    : 'all';
   const rows=assetAnalysisRows().map(row=>({
     ticker:row.ticker,
     type:row.type,
     sector:row.sector,
     applied:row.applied,
     current:row.current,
+    classKey:dashboardHighlightsClassKey(row.type),
     result:Number.isFinite(row.profit)?row.profit:null,
     resultPct:Number.isFinite(row.pct)?row.pct:null,
     hasPerformanceData:typeof row.hasPerformanceData==='boolean'
@@ -19424,14 +19449,16 @@ function dashboardHighlightsRows(kind='high'){
     if(!row.hasPerformanceData) return false;
     if(!Number.isFinite(row.result) || !Number.isFinite(row.resultPct)) return false;
     if(row.result===0 || row.resultPct===0) return false;
+    if(!row.classKey) return false;
+    if(normalizedClassFilter!=='all' && row.classKey!==normalizedClassFilter) return false;
     return kind==='low' ? row.result<0 : row.result>0;
   });
   const compareText=(a,b)=>String(a.ticker||a.label||'').localeCompare(String(b.ticker||b.label||''),'pt-BR',{sensitivity:'base'});
   const sorted=[...rows].sort((a,b)=>{
     if(kind==='low'){
-      return (a.resultPct-b.resultPct) || (a.result-b.result) || compareText(a,b);
+      return (a.resultPct-b.resultPct) || (Math.abs(b.result)-Math.abs(a.result)) || compareText(a,b);
     }
-    return (b.resultPct-a.resultPct) || (b.result-a.result) || compareText(a,b);
+    return (b.resultPct-a.resultPct) || (Math.abs(b.result)-Math.abs(a.result)) || compareText(a,b);
   });
   return sorted;
 }
@@ -19449,14 +19476,18 @@ function dashboardHighlightsRowHtml(row, kind){
 }
 function dashboardHomeHighlightsPanel(){
   const tab=String(S.dashboardHighlightsTab||'high')==='low' ? 'low' : 'high';
-  const rows=dashboardHighlightsRows(tab).slice(0,3);
+  const classFilter=['all','acao','fii','etf'].includes(String(S.dashboardHighlightsClassFilter||'all'))
+    ? String(S.dashboardHighlightsClassFilter||'all')
+    : 'all';
+  const rows=dashboardHighlightsRows(tab, classFilter).slice(0,5);
   const empty=tab==='low'
     ? '<div class="premium-empty">Nenhum ativo negativo com dados suficientes.</div>'
     : '<div class="premium-empty">Nenhum ativo positivo com dados suficientes.</div>';
   const body=rows.length ? rows.map(row=>dashboardHighlightsRowHtml(row, tab)).join('') : empty;
   const badge=tab==='low'
-    ? `${dashboardHighlightsRows('low').length} baixas`
-    : `${dashboardHighlightsRows('high').length} altas`;
+    ? `${Math.min(5, rows.length)} baixas`
+    : `${Math.min(5, rows.length)} altas`;
+  const classFilters=[['all','Todos'],['acao','Ações'],['fii','FIIs'],['etf','ETFs']];
   return `<div class="premium-panel dashboard-home-highlights">
     <div class="premium-panel-head">
       <div><div class="premium-panel-title">Destaques da carteira</div><div class="premium-panel-sub">Desempenho atual dos seus ativos</div></div>
@@ -19465,6 +19496,9 @@ function dashboardHomeHighlightsPanel(){
     <div class="asset-inner-tabs dashboard-highlights-tabs" role="tablist" aria-label="Destaques da carteira">
       <button type="button" class="asset-inner-tab ${tab==='high'?'on':''}" onclick="setDashboardHighlightsTab('high')" role="tab" aria-selected="${tab==='high'?'true':'false'}">Maiores altas</button>
       <button type="button" class="asset-inner-tab ${tab==='low'?'on':''}" onclick="setDashboardHighlightsTab('low')" role="tab" aria-selected="${tab==='low'?'true':'false'}">Maiores baixas</button>
+    </div>
+    <div class="dash-filters" style="margin-top:8px" role="group" aria-label="Filtrar destaques por categoria">
+      ${classFilters.map(([value,label])=>`<button type="button" class="dash-chip ${classFilter===value?'on':''}" onclick="setDashboardHighlightsClassFilter('${value}')">${label}</button>`).join('')}
     </div>
     <div class="premium-exec-list">${body}</div>
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('desempenho')">Ver todos</button></div>
@@ -22399,6 +22433,18 @@ function dividendMonthlyHistorySummaryLine(summary, groups){
     <div class="div-monthly-summary-item"><span>Tendência recente</span><strong>${esc(trend)}</strong></div>
   </div>`;
 }
+function setDividendMonthlyHistoryExpandedYears(next){
+  const value=!!next;
+  if(S.dividendMonthlyHistoryExpandedYears===value) return;
+  S.dividendMonthlyHistoryExpandedYears=value;
+  render();
+}
+function setDividendDistributionOpen(next){
+  const value=!!next;
+  if(S.dividendDistributionOpen===value) return;
+  S.dividendDistributionOpen=value;
+  render();
+}
 function dividendMonthlyHistoryDistributionRows(rows){
   const matrix=dividendAnnualMatrixData(rows);
   const focus=matrix[0] || null;
@@ -22441,6 +22487,7 @@ function clearDividendMonthlyHistoryFilters(){
   S.dividendMonthlyHistoryTicker='all';
   S.dividendMonthlyHistoryType='all';
   S.dividendMonthlyHistoryLimit=6;
+  S.dividendMonthlyHistoryExpandedYears=false;
   render();
 }
 function dividendMonthlyHistoryV4(rows,startOpen=false){
@@ -22471,6 +22518,11 @@ function dividendMonthlyHistoryV4(rows,startOpen=false){
   const yearRows=dividendMonthlyHistoryYearRows(filtered);
   const view=dividendMonthlyHistoryViewMode();
   const compact=dividendViewportIsCompact();
+  const historyExpanded=!!S.dividendMonthlyHistoryExpandedYears;
+  const visibleYearLimit=5;
+  const visibleYearRows=historyExpanded ? yearRows : yearRows.slice(0, visibleYearLimit);
+  const matrixRows=dividendAnnualMatrixData(filtered);
+  const visibleMatrixRows=historyExpanded ? matrixRows : matrixRows.slice(0, visibleYearLimit);
   const summaryLine=dividendMonthlyHistorySummaryLine(summary, groups);
   const filters=`<div class="div-monthly-toolbar">
       <div class="div-monthly-filters" role="group" aria-label="Filtros do histórico mensal">
@@ -22513,12 +22565,13 @@ function dividendMonthlyHistoryV4(rows,startOpen=false){
         <button class="div-monthly-toggle-btn${view==='matrix'?' on':''}" type="button" aria-pressed="${view==='matrix'}" onclick="setDividendMonthlyHistoryView('matrix')">Matriz</button>
       </div>
     </div>`;
-  const listContent=yearRows.length
-    ? `<div class="div-year-list">${yearRows.map(year=>dividendMonthlyHistoryYearCard(year, compact, compact ? (Array.isArray(S.dividendMonthlyHistoryExpanded) && S.dividendMonthlyHistoryExpanded.map(String).includes(String(year.year))) || year.isCurrent : true)).join('')}</div>`
+  const listContent=visibleYearRows.length
+    ? `<div class="div-year-list" id="div-month-history-years">${visibleYearRows.map(year=>dividendMonthlyHistoryYearCard(year, compact, compact ? (Array.isArray(S.dividendMonthlyHistoryExpanded) && S.dividendMonthlyHistoryExpanded.map(String).includes(String(year.year))) || year.isCurrent : true)).join('')}</div>`
     : `<div class="div-premium-empty"><div class="div-empty-title">Nenhum recebimento encontrado para os filtros selecionados.</div><div class="div-empty-sub">Ajuste os filtros ou limpe a busca para ver meses com dados.</div><div class="div-empty-actions"><button class="btn bgh" type="button" onclick="clearDividendMonthlyHistoryFilters()">Limpar filtros</button></div></div>`;
-  const matrixRows=dividendAnnualMatrixData(filtered);
-  const matrixContent=matrixRows.length ? dividendAnnualMatrixView(matrixRows) : `<div class="div-premium-empty"><div class="div-empty-title">Nenhum dado disponível para a matriz anual.</div><div class="div-empty-sub">Ajuste os filtros para ver anos e meses com recebimentos.</div><div class="div-empty-actions"><button class="btn bgh" type="button" onclick="clearDividendMonthlyHistoryFilters()">Limpar filtros</button></div></div>`;
-  const distributionPanel=dividendMonthlyHistoryDistributionPanel(filtered, compact);
+  const matrixContent=visibleMatrixRows.length ? `<div id="div-month-history-years">${dividendAnnualMatrixView(visibleMatrixRows)}</div>` : `<div class="div-premium-empty"><div class="div-empty-title">Nenhum dado disponível para a matriz anual.</div><div class="div-empty-sub">Ajuste os filtros para ver anos e meses com recebimentos.</div><div class="div-empty-actions"><button class="btn bgh" type="button" onclick="clearDividendMonthlyHistoryFilters()">Limpar filtros</button></div></div>`;
+  const historyToggle=yearRows.length>visibleYearLimit
+    ? `<div class="div-monthly-scroll-note" style="margin-top:0">${historyExpanded ? `${visibleYearRows.length} de ${yearRows.length} ano(s) visível(is)` : `${visibleYearRows.length} de ${yearRows.length} ano(s) visível(is)`} · <button class="btn bgh" type="button" aria-expanded="${historyExpanded?'true':'false'}" aria-controls="div-month-history-years" onclick="setDividendMonthlyHistoryExpandedYears(${historyExpanded ? 'false' : 'true'})">${historyExpanded ? 'Mostrar menos' : 'Ver histórico completo'}</button></div>`
+    : '';
   const content=view==='list' ? listContent : matrixContent;
   return `<details class="div-monthly-table-block"${startOpen ? ' open' : ''}>
     <summary>
@@ -22535,7 +22588,7 @@ function dividendMonthlyHistoryV4(rows,startOpen=false){
       ${summaryLine}
       ${filters}
       <div class="div-monthly-content">${content}</div>
-      ${distributionPanel}
+      ${historyToggle}
     </div>
   </details>`;
 }
@@ -22904,7 +22957,7 @@ function dividendAnnualMatrixData(rows){
   const currentYear=now.getFullYear();
   const currentMonth=now.getMonth()+1;
   const monthNames=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const years=[...new Set(rows.map(r=>Number(r.monthKey.split('-')[0])))].sort((a,b)=>b-a).slice(0,5);
+  const years=[...new Set(rows.map(r=>Number(r.monthKey.split('-')[0])))].sort((a,b)=>b-a);
   if(!years.length) return [];
   const sortedKeys=[...new Set(rows.map(r=>r.monthKey))].sort();
   const firstDataKey=sortedKeys[0];
@@ -23042,15 +23095,50 @@ function dividendDistributionMonths(period){
   }).sort((a,b)=>String(a.key).localeCompare(String(b.key)));
 }
 function dividendDistributionPanel(stats){
-  const periods=[['12m','12 meses'],['24m','24 meses'],['36m','36 meses'],['all','Todos']];
-  const period=String(S.dividendDistributionPeriod||'12m');
-  const months=period==='12m'
-    ? (stats.byMonth||[]).slice(-12).map(m=>({...m,isAbsent:false}))
-    : dividendDistributionMonths(period);
-  const maxVal=months.reduce((max,m)=>Math.max(max,m.total),0);
-  const isLong=period!=='12m' && months.length>12;
-  const selector=`<div class="div-dist-periods">${periods.map(([id,label])=>`<button class="div-premium-chip ${period===id?'on':''}" onclick="setDividendDistributionPeriod('${id}')">${label}</button>`).join('')}</div>`;
-  return `<div class="div-dist-panel"><div class="div-dist-head"><div><div class="div-dist-title">Distribuição mensal</div><div class="div-dist-sub">${isLong?`${months.length} meses · comparativo proporcional`:'Últimos 12 meses · comparativo proporcional'}</div></div>${selector}</div><div class="div-dist-rows${isLong?' div-dist-scroll':''}">${[...months].reverse().map(m=>dividendDistributionRow(m,maxVal)).join('')}</div></div>`;
+  const fallbackByMonth=Array.isArray(stats?.byMonth) ? stats.byMonth : [];
+  const sourceRows=dividendMonthlyHistoryRows();
+  const baseRows=sourceRows.length ? sourceRows : fallbackByMonth.map(month=>{
+    const key=String(month.key||'').trim();
+    const dt=new Date(`${key}-01T12:00:00`);
+    return {
+      key,
+      monthKey:key,
+      paymentDt:dt,
+      ticker:String(month.ticker||month.best?.ticker||'GERAL').trim() || 'GERAL',
+      name:String(month.name||month.best?.name||'Distribuição mensal').trim() || 'Distribuição mensal',
+      type:String(month.type||month.best?.type||'Dividendo').trim() || 'Dividendo',
+      value:Number(month.total)||0,
+    };
+  }).filter(row=>row && row.monthKey && row.paymentDt instanceof Date && !Number.isNaN(row.paymentDt.getTime()));
+  const filtered=dividendMonthlyHistoryFilterRows(baseRows,{
+    period:S.dividendMonthlyHistoryPeriod,
+    ticker:S.dividendMonthlyHistoryTicker,
+    type:S.dividendMonthlyHistoryType,
+  });
+  const groups=dividendMonthlyHistoryGroupRows(filtered);
+  const summary=dividendMonthlyHistorySummary(groups);
+  const years=[...new Set(filtered.map(row=>row.paymentDt.getFullYear()))].sort((a,b)=>b-a);
+  const yearLabel=years.length ? (years.length===1 ? `${years[0]}` : `${years[0]}–${years[years.length-1]}`) : 'Sem base real';
+  const open=!!S.dividendDistributionOpen;
+  const bodyId='div-month-dist-body';
+  const maxVal=groups.reduce((max,m)=>Math.max(max,m.total),0);
+  const rows=groups.length
+    ? groups.map(group=>dividendDistributionRow({key:group.key,total:group.total,isAbsent:false,isFuture:false}, maxVal)).join('')
+    : '<div class="div-premium-empty" style="padding:14px 12px"><div class="div-empty-title">Nenhuma distribuição disponível.</div><div class="div-empty-sub">Ajuste os filtros do histórico mensal para ver os meses filtrados.</div></div>';
+  return `<div class="div-dist-panel">
+    <div class="div-dist-head">
+      <div class="div-month-dist-summary">
+        <div class="div-dist-title">Distribuição mensal</div>
+        <div class="div-dist-sub">${open ? `Ano(s) filtrado(s): ${esc(yearLabel)} · ${summary.monthCount} mês(es)` : `Leitura complementar dos meses filtrados · ${esc(yearLabel)}`}</div>
+      </div>
+      <button type="button" class="btn bgh" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${bodyId}" onclick="setDividendDistributionOpen(${open ? 'false' : 'true'})">${open ? 'Ocultar distribuição' : 'Ver distribuição mensal'}</button>
+    </div>
+    <div id="${bodyId}"${open ? '' : ' class="hidden"'}>
+      <div class="div-dist-body">
+        <div class="div-dist-rows${groups.length>12 ? ' div-dist-scroll' : ''}">${rows}</div>
+      </div>
+    </div>
+  </div>`;
 }
 function dividendOverviewRecentPanel(rows){
   const limit=6;

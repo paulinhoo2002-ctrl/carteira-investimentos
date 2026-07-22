@@ -19,15 +19,20 @@ function escapeHtml(value) {
 
 function makeContext() {
   const indexHtml = read('index.html');
-  const fnStart = indexHtml.indexOf('function dividendDistributionRow(');
+  const fnStart = indexHtml.indexOf('function dividendMonthlyHistoryRows(');
   const fnEnd = indexHtml.indexOf('function dividendOverviewRecentPanel(', fnStart);
-  assert.ok(fnStart >= 0, 'dividendDistributionRow precisa existir');
+  assert.ok(fnStart >= 0, 'dividendMonthlyHistoryRows precisa existir');
   assert.ok(fnEnd > fnStart, 'dividendOverviewRecentPanel precisa existir depois');
   const snippet = indexHtml.slice(fnStart, fnEnd);
 
   const context = {
     console,
-    S: {},
+    S: {
+      dividendMonthlyHistoryPeriod: 'all',
+      dividendMonthlyHistoryTicker: 'all',
+      dividendMonthlyHistoryType: 'all',
+      dividendDistributionOpen: false,
+    },
     fmt(value) {
       return Number(value ?? 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
     },
@@ -84,13 +89,27 @@ test('dividendDistributionPanel gera no maximo 12 meses ordem cronologica', () =
   assert.equal(html.includes('undefined'), false);
 });
 
-test('dividendDistributionPanel aceita menos de 12 meses', () => {
+test('dividendDistributionPanel usa recolhimento e filtros atuais', () => {
   const ctx = makeContext();
-  const byMonth = months12.slice(-3).map((key, i) => makeMonth(key, (i + 1) * 50));
-  const stats = { byMonth };
-  const html = ctx.dividendDistributionPanel(stats);
-  const rowCount = (html.match(/<div class="div-dist-row">/g) || []).length;
-  assert.equal(rowCount, 3);
+  ctx.dividendMonthlyHistoryRows = () => [
+    { monthKey: '2026-01', paymentDt: new Date('2026-01-15T12:00:00'), ticker: 'AAA1', type: 'Dividendo', value: 120 },
+    { monthKey: '2026-02', paymentDt: new Date('2026-02-15T12:00:00'), ticker: 'BBB2', type: 'JCP', value: 80 },
+    { monthKey: '2025-12', paymentDt: new Date('2025-12-15T12:00:00'), ticker: 'CCC3', type: 'Rendimento', value: 40 },
+  ];
+
+  const collapsed = ctx.dividendDistributionPanel({ byMonth: months12.map((key, i) => makeMonth(key, i * 10)) });
+  assert.match(collapsed, /Distribuição mensal/);
+  assert.match(collapsed, /Ver distribuição mensal/);
+  assert.match(collapsed, /aria-expanded="false"/);
+  assert.match(collapsed, /aria-controls="div-month-dist-body"/);
+  assert.equal(collapsed.includes('div-dist-periods'), false);
+  assert.match(collapsed, /class="hidden"/);
+
+  ctx.S.dividendDistributionOpen = true;
+  const expanded = ctx.dividendDistributionPanel({ byMonth: months12.map((key, i) => makeMonth(key, i * 10)) });
+  assert.match(expanded, /Ocultar distribuição/);
+  assert.match(expanded, /aria-expanded="true"/);
+  assert.equal((expanded.match(/div-dist-row/g) || []).length >= 3, true);
 });
 
 test('overviewBody usa div-exec-overview com distribution panel', () => {
@@ -161,12 +180,11 @@ test('dividendDistributionPanel inclui seletor de periodo', () => {
   assert.ok(fnStart >= 0);
   assert.ok(fnEnd > fnStart);
   const fn = indexHtml.slice(fnStart, fnEnd);
-  assert.ok(fn.includes('div-dist-periods'));
-  assert.ok(fn.includes('12m'));
-  assert.ok(fn.includes('24m'));
-  assert.ok(fn.includes('36m'));
-  assert.ok(fn.includes('all'));
-  assert.ok(fn.includes('setDividendDistributionPeriod'));
+  assert.ok(fn.includes('div-month-dist-body'));
+  assert.ok(fn.includes('Ver distribuição mensal'));
+  assert.ok(fn.includes('Ocultar distribuição'));
+  assert.ok(fn.includes('aria-controls'));
+  assert.equal(fn.includes('div-dist-periods'), false);
 });
 
 test('dividendDistributionRow isAbsent renderiza — sem NaN', () => {
@@ -198,4 +216,6 @@ test('dividendDistributionPeriod estado default e reset', () => {
   const indexHtml = read('index.html');
   assert.ok(indexHtml.includes("dividendDistributionPeriod:'12m'"));
   assert.ok(indexHtml.includes("S.dividendDistributionPeriod='12m'"));
+  assert.ok(indexHtml.includes("dividendDistributionOpen:false"));
+  assert.ok(indexHtml.includes("S.dividendDistributionOpen=false"));
 });
