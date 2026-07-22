@@ -1,11 +1,11 @@
 # Component Library Plan
 
-Sprint 3.2.1 -> piloto Button + Input.
+Sprint 3.2.2 -> Select oficial.
 
 ## Objetivo
 
-Criar a base inicial da Component Library sem migrar tudo de uma vez.
-Button e Input entram primeiro porque aparecem muito, sao simples de validar e reduzem risco.
+Dar o passo seguinte da Component Library sem migrar tudo de uma vez.
+Select entra agora porque e frequente, simples de validar e fecha um gap claro de consistencia nos filtros.
 
 ## Arquitetura
 
@@ -18,32 +18,30 @@ Button e Input entram primeiro porque aparecem muito, sao simples de validar e r
 - `modern/src/components/Button/Button.css`
 - `modern/src/components/Input/Input.tsx`
 - `modern/src/components/Input/Input.css`
+- `modern/src/components/Select/Select.tsx`
+- `modern/src/components/Select/Select.css`
 
-## Piloto Button + Input
+## Piloto Select oficial
 
 ### Fluxo piloto
 
 - tela: `modern/src/features/reports/AssetsReadonlyPage.tsx`
-- botao: atualizar ativos
-- campo: busca por ticker ou nome
+- filtro: categoria
+- filtro: ordenacao
 - risco: baixo
 - comportamento preservado: filtro local, refresh readonly, ordem visual e snapshot intactos
+- Button e Input continuam no fluxo ja validado
 
-### Button
+### Select
 
-- variantes: primary, secondary, ghost, danger, icon
-- tamanhos: sm, md, lg
-- estados: default, hover, focus-visible, active, disabled, loading
-- contrato pequeno e previsivel
-- icon-only exige nome acessivel
-
-### Input
-
-- label obrigatorio
+- label obrigatoria
 - helper text
 - erro textual
-- prefixo e sufixo opcionais
-- readonly e disabled distintos
+- disabled
+- required
+- native HTML select
+- sem dropdown custom
+- sem readonly artificial
 - sem mascara monetaria no componente base
 
 ## Regras
@@ -54,21 +52,21 @@ Button e Input entram primeiro porque aparecem muito, sao simples de validar e r
 - sem dependencia nova
 - sem redesign de tela
 - sem migracao em massa
+- CSS por componente continua o padrao
 
 ## Testes
 
-- Button: render, variantes, tamanhos, disabled, loading, aria-busy, icon-only
-- Input: label, helper, erro, aria-describedby, aria-invalid, disabled, readonly, required
-- fluxo piloto: AssetsReadonlyPage usando Button + Input sem mudar comportamento
+- Select: label, helper, erro, aria-describedby, aria-invalid, disabled, required, native option rendering
+- fluxo piloto: AssetsReadonlyPage usando Select sem mudar comportamento
+- Button/Input continuam cobertos pela onda anterior
 
 ## Criterios de conclusao
 
-- Button e Input prontos para uso
+- Select oficial pronto para uso
 - fluxo piloto preservado
 - testes verdes
 - sem regressao visual ou funcional
 
 ## Proxima onda
 
-- Select
 - Badge

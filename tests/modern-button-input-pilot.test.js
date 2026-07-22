@@ -152,6 +152,7 @@ test('Input carrega label, helper e erro com contrato acessivel', async () => {
 });
 
 test('AssetsReadonlyPage usa Button e Input no fluxo piloto', async () => {
+  // Mantem piloto Button/Input separado do Select oficial.
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',

@@ -4,6 +4,7 @@ import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 import type { ReadOnlyReportsSnapshot } from './reportsReadonlyContract.mjs';
 import { Button } from '../../components/Button/Button';
 import { Input } from '../../components/Input/Input';
+import { Select } from '../../components/Select/Select';
 import {
   createReadonlyAssetsViewModel,
   formatReadonlyCurrency,
@@ -135,28 +136,28 @@ function AssetsReadonlyPageContent({
             value={query}
           />
 
-          <label className="assets-readonly__control">
-            <span>Categoria</span>
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
+          <Select className="assets-readonly__control" id="assets-readonly-category" label="Categoria" value={category} onChange={(event) => setCategory(event.target.value)}>
               <option value="all">Todas</option>
               {viewModel.categories.map((itemCategory) => (
                 <option key={itemCategory} value={itemCategory}>
                   {itemCategory}
                 </option>
               ))}
-            </select>
-          </label>
+          </Select>
 
-          <label className="assets-readonly__control">
-            <span>Ordenar por</span>
-            <select value={sortBy} onChange={(event) => setSortBy(event.target.value as ReadonlyAssetsSortKey)}>
+          <Select
+            className="assets-readonly__control"
+            id="assets-readonly-sort"
+            label="Ordenar por"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value as ReadonlyAssetsSortKey)}
+          >
               {Object.entries(sortLabels).map(([key, label]) => (
                 <option key={key} value={key}>
                   {label}
                 </option>
               ))}
-            </select>
-          </label>
+          </Select>
         </div>
 
         <p className="assets-readonly__results" aria-live="polite">
