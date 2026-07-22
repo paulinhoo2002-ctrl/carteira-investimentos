@@ -588,8 +588,8 @@ button {
   font-size: 0.92rem;
 }
 
-.assets-readonly__control input,
-.assets-readonly__control select {
+.assets-readonly__control > input,
+.assets-readonly__control > select {
   min-height: 44px;
   padding: 0 var(--space-3);
   border: 1px solid var(--color-border);
@@ -598,8 +598,8 @@ button {
   color: var(--color-text);
 }
 
-.assets-readonly__control input:focus-visible,
-.assets-readonly__control select:focus-visible {
+.assets-readonly__control > input:focus-visible,
+.assets-readonly__control > select:focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }

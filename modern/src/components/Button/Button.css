@@ -1,0 +1,161 @@
+.ui-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    transform var(--motion-fast),
+    border-color var(--motion-fast),
+    background-color var(--motion-fast),
+    color var(--motion-fast);
+}
+.ui-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover-strong);
+}
+
+.ui-button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.ui-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+}
+
+.ui-button__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-button__label {
+  white-space: nowrap;
+}
+
+.ui-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.ui-button__spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 1em;
+  opacity: 0;
+}
+
+.ui-button__spinner > span {
+  width: 100%;
+  height: 100%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.92;
+  animation: ui-button-spin 0.8s linear infinite;
+}
+
+.ui-button.is-loading .ui-button__spinner {
+  opacity: 1;
+}
+
+.ui-button[data-size='sm'] {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.ui-button[data-size='md'] {
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.ui-button[data-size='lg'] {
+  min-height: 46px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+.ui-button[data-variant='primary'] {
+  border-color: transparent;
+  background: var(--primary);
+  color: #fff;
+}
+
+.ui-button[data-variant='primary']:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 88%, #fff 12%);
+}
+
+.ui-button[data-variant='secondary'] {
+  border-color: var(--color-border-active);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.ui-button[data-variant='ghost'] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.ui-button[data-variant='ghost']:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--text);
+}
+
+.ui-button[data-variant='danger'] {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(248, 113, 113, 0.14);
+  color: #fecaca;
+}
+
+.ui-button[data-variant='danger']:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.56);
+}
+
+.ui-button[data-variant='icon'] {
+  min-width: 40px;
+  padding: 0 10px;
+}
+
+.ui-button[data-variant='icon'] .ui-button__label {
+  white-space: nowrap;
+}
+
+@keyframes ui-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-button,
+  .ui-button__spinner > span {
+    transition: none;
+    animation: none;
+  }
+}
