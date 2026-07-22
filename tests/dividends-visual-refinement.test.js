@@ -78,10 +78,10 @@ test('aba dividendos preserva ordem visual confiavel', () => {
   assert.match(indexHtml, /div-month-history-summary/);
   assert.match(indexHtml, /div-monthly-table-block/);
   assert.match(indexHtml, /div-premium \.div-premium-hero\{background:var\(--panel\);border-color:var\(--border\);box-shadow:none\}/);
-  assert.match(indexHtml, /div-premium \.div-premium-tab,\s*\.div-premium \.div-premium-chip\{font-size:10px;padding:7px 10px;min-height:32px;box-shadow:none\}/);
-  assert.match(indexHtml, /div-premium \.div-premium-metric-label,[\s\S]*?font-size:10px;line-height:1\.25;letter-spacing:\.035em/);
-  assert.match(indexHtml, /div-premium \.div-premium-metric-sub,[\s\S]*?font-size:10px;line-height:1\.35;color:var\(--muted\)/);
-  assert.match(indexHtml, /div-premium \.div-month-card,\s*\.div-premium \.div-receipt-card,\s*\.div-premium \.div-timeline-card\{padding:10px;gap:7px\}/);
+  assert.match(indexHtml, /div-premium \.div-premium-tab,\s*\.div-premium \.div-premium-chip\{font-size:9px;padding:6px 9px;min-height:30px;box-shadow:none\}/);
+  assert.match(indexHtml, /div-premium \.div-premium-metric-label,[\s\S]*?font-size:9px;line-height:1\.18;letter-spacing:\.03em/);
+  assert.match(indexHtml, /div-premium \.div-premium-metric-sub,[\s\S]*?font-size:9px;line-height:1\.25;color:var\(--muted\)/);
+  assert.match(indexHtml, /div-premium \.div-month-card,\s*\.div-premium \.div-receipt-card,\s*\.div-premium \.div-timeline-card\{padding:8px 9px;gap:5px\}/);
 
   assertPhase202RoadmapClosed(roadmap);
   assertPhase202FutureSequence(roadmap);
