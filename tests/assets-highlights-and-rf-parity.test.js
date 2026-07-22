@@ -40,7 +40,7 @@ function num(v){ const n=Number(v); return Number.isFinite(n) ? n : 0; }
  */
 function buildContext(assets){
   const ctx = {
-    S: { assets, hideValues:false }
+    S: { assets, hideValues:false, dashboardHighlightsTab:'high', dashboardHighlightsClassFilter:'all' }
   };
 
   // Helpers de data (usados por rfIntelligenceSnapshot)
@@ -75,6 +75,17 @@ function buildContext(assets){
   // Helpers de normalização usados por assetAnalysisRows
   ctx.normalizeType = (value, fallback='Ação') => String(value ?? fallback).trim() || 'Ação';
   ctx.metaTicker = (ticker) => ({ type:'Ação', sector:'—' });
+  ctx.dashboardHighlightsClassKey = function(value){
+    const raw=String(value||'')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .trim()
+      .toUpperCase();
+    if(raw==='ACAO' || raw==='ACOES') return 'acao';
+    if(raw==='FII' || raw==='FIIS' || raw==='FUNDO IMOBILIARIO' || raw==='FUNDOS IMOBILIARIOS') return 'fii';
+    if(raw==='ETF' || raw==='ETFS') return 'etf';
+    return '';
+  };
 
   // Extrai isRendaFixaAsset e rfValues do index.html
   const isRf = extractFunctionBlock(INDEX_HTML, 'function isRendaFixaAsset(a){', 'function rfValues(a){');
@@ -156,7 +167,7 @@ function loadPrincipalFns(ctx){
       ];
     }
   `, ctx);
-  const dashboardHighlights = extractFunctionBlock(INDEX_HTML, 'function dashboardHighlightsRows(kind=\'high\'){', 'function dashboardHighlightsRowHtml(');
+  const dashboardHighlights = extractFunctionBlock(INDEX_HTML, 'function dashboardHighlightsRows(kind=\'high\', classFilter=\'all\'){', 'function dashboardHighlightsRowHtml(');
   vm.runInNewContext(dashboardHighlights, ctx);
   const rfSnapshot = extractFunctionBlock(INDEX_HTML, 'function rfIntelligenceSnapshot(){', 'function rendaFixaTab()');
   vm.runInNewContext(rfSnapshot, ctx);
@@ -275,7 +286,7 @@ test('Home: dashboardHighlightsRows deve usar a mesma fonte/ordem/top5 de assetA
   // Ordenação canônica da Análise (top 5 — limite existente em assetAnalysisBlock).
   const analysisRows = ctx.assetAnalysisRows();
   const positives = analysisRows
-    .filter(r => Number.isFinite(r.pct) && r.pct > 0 && r.current > 0)
+    .filter(r => Number.isFinite(r.pct) && r.pct > 0 && r.current > 0 && ctx.dashboardHighlightsClassKey(r.type))
     .sort((a,b) => b.pct - a.pct || b.current - a.current)
     .slice(0,5);
 
@@ -324,7 +335,7 @@ test('Home: dashboardHighlightsRows deve usar a mesma fonte/ordem/top5 de assetA
 
   const analysisRows = ctx.assetAnalysisRows();
   const negatives = analysisRows
-    .filter(r => Number.isFinite(r.pct) && r.pct < 0 && r.current > 0)
+    .filter(r => Number.isFinite(r.pct) && r.pct < 0 && r.current > 0 && ctx.dashboardHighlightsClassKey(r.type))
     .sort((a,b) => a.pct - b.pct || b.current - a.current)
     .slice(0,5);
 
@@ -351,7 +362,7 @@ test('Home: ativo positivo aparece igual à Análise (ticker e rentabilidade)', 
 
   const analysisRows = ctx.assetAnalysisRows();
   const positives = analysisRows
-    .filter(r => Number.isFinite(r.pct) && r.pct > 0 && r.current > 0)
+    .filter(r => Number.isFinite(r.pct) && r.pct > 0 && r.current > 0 && ctx.dashboardHighlightsClassKey(r.type))
     .sort((a,b) => b.pct - a.pct || b.current - a.current)
     .slice(0,5);
 
@@ -374,7 +385,7 @@ test('Home: ativo negativo aparece igual à Análise (ticker e rentabilidade)', 
 
   const analysisRows = ctx.assetAnalysisRows();
   const negatives = analysisRows
-    .filter(r => Number.isFinite(r.pct) && r.pct < 0 && r.current > 0)
+    .filter(r => Number.isFinite(r.pct) && r.pct < 0 && r.current > 0 && ctx.dashboardHighlightsClassKey(r.type))
     .sort((a,b) => a.pct - b.pct || b.current - a.current)
     .slice(0,5);
 

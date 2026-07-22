@@ -87,10 +87,10 @@ test('dividendAnnualMatrixData retorna array vazio para input vazio', () => {
   assert.equal(result.length, 0);
 });
 
-test('dividendAnnualMatrixData maximo 5 anos decrescente', () => {
+test('dividendAnnualMatrixData retorna todos os anos em ordem decrescente', () => {
   const ctx = makeMatrixContext();
   const result = ctx.dividendAnnualMatrixData(sixYearData);
-  assert.ok(result.length <= 5);
+  assert.equal(result.length, 6);
   const years = result.map(r => r.year);
   for (let i = 1; i < years.length; i++) {
     assert.ok(years[i] < years[i - 1], `Anos devem estar em ordem decrescente: ${years}`);
