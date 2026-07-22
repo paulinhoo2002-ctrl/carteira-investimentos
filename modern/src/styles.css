@@ -1,14 +1,47 @@
 :root {
   color-scheme: dark;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-family-base);
   line-height: 1.5;
   font-weight: 400;
-  color: var(--color-text);
-  background: var(--color-background);
+  color: var(--text);
+  background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --color-bg-canvas: var(--color-background);
+  --color-bg-surface: var(--color-surface);
+  --color-bg-surface-2: var(--color-background-soft);
+  --color-bg-panel: var(--color-surface);
+  --color-bg-panel-2: var(--color-surface-soft);
+  --color-border-default: var(--color-border);
+  --color-border-soft: var(--color-border-subtle);
+  --color-text-primary: var(--color-text);
+  --color-text-secondary: var(--color-text-muted);
+  --color-text-tertiary: var(--color-text-soft);
+  --color-accent-primary: #4f46e5;
+  --color-accent-success: #34d399;
+  --color-accent-warning: #fbbf24;
+  --color-accent-danger: #f87171;
+  --color-accent-info: #60a5fa;
+  --font-family-base: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-display: 34px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.1;
+  --line-height-heading: 1.2;
+  --line-height-body: 1.5;
+  --line-height-relaxed: 1.65;
+  --space-9: 48px;
+  --space-10: 64px;
+  --radius-xs: 10px;
   --color-background: #08111d;
   --color-background-soft: #0c1727;
   --color-surface: rgba(13, 20, 34, 0.96);
@@ -43,11 +76,36 @@
   --radius-lg: 20px;
   --radius-xl: 24px;
   --radius-pill: 999px;
+  --shadow-1: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-2: 0 10px 24px rgba(0, 0, 0, 0.18);
+  --shadow-3: 0 18px 50px rgba(0, 0, 0, 0.28);
   --shadow-shell: 0 16px 36px rgba(2, 6, 23, 0.38);
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 180ms;
+  --motion-duration-slow: 240ms;
   --motion-fast: 160ms ease;
   --motion-menu: 200ms ease;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --z-content: 0;
+  --z-sticky: 20;
+  --z-dropdown: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+  --z-toast: 400;
   --layout-mobile-menu-width: 320px;
   --layout-sidebar-width: 280px;
+  --bg: var(--color-bg-canvas);
+  --panel: var(--color-bg-panel);
+  --surface: var(--color-bg-surface);
+  --border: var(--color-border-default);
+  --text: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --primary: var(--color-accent-primary);
+  --success: var(--color-accent-success);
+  --warning: var(--color-accent-warning);
+  --danger: var(--color-accent-danger);
 }
 
 *,
@@ -70,6 +128,11 @@ body {
     radial-gradient(circle at top right, var(--color-accent-glow-soft), transparent 30%),
     linear-gradient(180deg, var(--color-background) 0%, var(--color-background-soft) 100%);
   color: var(--color-text);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 button,
@@ -1255,6 +1318,9 @@ button {
   *::before,
   *::after {
     scroll-behavior: auto;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 
   .modern-menu-button,
