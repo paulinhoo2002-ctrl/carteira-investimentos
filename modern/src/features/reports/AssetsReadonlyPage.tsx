@@ -2,6 +2,8 @@ import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { ReportsReadonlyDiagnostics, ReportsRefreshController } from './reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 import type { ReadOnlyReportsSnapshot } from './reportsReadonlyContract.mjs';
+import { Button } from '../../components/Button/Button';
+import { Input } from '../../components/Input/Input';
 import {
   createReadonlyAssetsViewModel,
   formatReadonlyCurrency,
@@ -96,9 +98,9 @@ function AssetsReadonlyPageContent({
             Voltar ao legado
           </a>
           {showRefreshButton ? (
-            <button className="assets-report__refresh-button" type="button" onClick={onRefresh}>
+            <Button className="assets-report__refresh-button" type="button" variant="secondary" onClick={onRefresh}>
               Atualizar ativos
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
@@ -122,15 +124,16 @@ function AssetsReadonlyPageContent({
         </div>
 
         <div className="assets-readonly__controls">
-          <label className="assets-readonly__control">
-            <span>Buscar por ticker ou nome</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="PETR4, Maxi Renda..."
-            />
-          </label>
+          <Input
+            className="assets-readonly__control"
+            helperText="Apenas estado visual local, sem persistencia."
+            id="assets-readonly-search"
+            label="Buscar por ticker ou nome"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="PETR4, Maxi Renda..."
+            type="search"
+            value={query}
+          />
 
           <label className="assets-readonly__control">
             <span>Categoria</span>
