@@ -3,6 +3,7 @@ import type { ReportsReadonlyDiagnostics, ReportsRefreshController } from './rep
 import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 import type { ReadOnlyReportsSnapshot } from './reportsReadonlyContract.mjs';
 import { Button } from '../../components/Button/Button';
+import { Badge } from '../../components/Badge/Badge';
 import { Input } from '../../components/Input/Input';
 import { Select } from '../../components/Select/Select';
 import {
@@ -40,6 +41,31 @@ const diagnosticStatusLabel: Record<ReportsReadonlyDiagnostics['refreshStatus'],
   fallback: 'Fallback readonly ativo',
   error: 'Ultimo snapshot valido preservado',
 };
+
+const diagnosticStatusVariant: Record<ReportsReadonlyDiagnostics['refreshStatus'], 'neutral' | 'positive' | 'warning' | 'negative'> = {
+  idle: 'neutral',
+  updated: 'positive',
+  fallback: 'warning',
+  error: 'negative',
+};
+
+const trendBadgeVariant: Record<'positive' | 'negative' | 'neutral', 'positive' | 'negative' | 'neutral'> = {
+  positive: 'positive',
+  negative: 'negative',
+  neutral: 'neutral',
+};
+
+function categoryBadgeVariant(category: string) {
+  if (/etf/i.test(category)) {
+    return 'info' as const;
+  }
+
+  if (/fii/i.test(category)) {
+    return 'neutral' as const;
+  }
+
+  return 'positive' as const;
+}
 
 function summarizeItemLabel(ticker: string, name: string) {
   return `${ticker} · ${name}`;
@@ -317,16 +343,20 @@ function AssetsReadonlyPageContent({
                         <span className="assets-report__ticker">{item.ticker}</span>
                         <span className="assets-report__name">{item.name}</span>
                       </th>
-                      <td>{item.category}</td>
+                      <td>
+                        <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
+                          {item.category}
+                        </Badge>
+                      </td>
                       <td className="number-cell">{formatReadonlyQuantity(item.quantity)}</td>
                       <td className="number-cell">{formatReadonlyCurrency(item.averagePrice)}</td>
                       <td className="number-cell">{formatReadonlyCurrency(item.currentValue)}</td>
                       <td className="number-cell">{formatReadonlyPercent(item.variationPct)}</td>
                       <td className="number-cell">{formatReadonlyPercent(item.allocationPct, { signed: false })}</td>
                       <td>
-                        <span className="trend-badge" data-trend={item.trend}>
+                        <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
                           {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
-                        </span>
+                        </Badge>
                       </td>
                     </tr>
                   ))}
@@ -344,7 +374,11 @@ function AssetsReadonlyPageContent({
                   <dl>
                     <div>
                       <dt>Categoria</dt>
-                      <dd>{item.category}</dd>
+                      <dd>
+                        <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
+                          {item.category}
+                        </Badge>
+                      </dd>
                     </div>
                     <div>
                       <dt>Quantidade</dt>
@@ -369,9 +403,9 @@ function AssetsReadonlyPageContent({
                     <div>
                       <dt>Tendência</dt>
                       <dd>
-                        <span className="trend-badge" data-trend={item.trend}>
+                        <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
                           {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
-                        </span>
+                        </Badge>
                       </dd>
                     </div>
                   </dl>
