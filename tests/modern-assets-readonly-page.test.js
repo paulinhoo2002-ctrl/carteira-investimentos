@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
@@ -16,6 +17,7 @@ const viewModelModulePath = path.join(
   'readonlyReportsViewModel.ts',
 );
 const pageModulePath = path.join(__dirname, '..', 'modern', 'src', 'features', 'reports', 'AssetsReadonlyPage.tsx');
+const badgeModulePath = path.join(__dirname, '..', 'modern', 'src', 'components', 'Badge', 'Badge.tsx');
 const controllerModulePath = path.join(
   __dirname,
   '..',
@@ -444,5 +446,53 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     assert.match(after, /MXRF11/);
   } finally {
     await viteServer.close();
+  }
+});
+
+test('Badge oficial renderiza variantes e a pagina pilotada usa o componente', async () => {
+  const viteServer = await createServer({
+    configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
+    logLevel: 'error',
+    server: { middlewareMode: true },
+  });
+
+  try {
+    const { Badge } = await viteServer.ssrLoadModule('/src/components/Badge/Badge.tsx');
+
+    const warningHtml = renderToStaticMarkup(
+      React.createElement(Badge, { size: 'md', variant: 'warning' }, 'Indisponível'),
+    );
+    const neutralHtml = renderToStaticMarkup(React.createElement(Badge, null, 'Categoria'));
+
+    assert.match(warningHtml, /ui-badge/);
+    assert.match(warningHtml, /ui-badge--warning/);
+    assert.match(warningHtml, /ui-badge--md/);
+    assert.match(neutralHtml, /ui-badge--neutral/);
+    assert.match(neutralHtml, /ui-badge--sm/);
+
+    const { AssetsReadonlyPage } = await viteServer.ssrLoadModule('/src/features/reports/AssetsReadonlyPage.tsx');
+    const html = renderToStaticMarkup(
+      React.createElement(AssetsReadonlyPage, {
+        adapter: {
+          getSnapshot() {
+            return createSnapshot();
+          },
+        },
+      }),
+    );
+
+    assert.match(html, /ui-badge/);
+    assert.match(html, /ui-badge--positive|ui-badge--negative|ui-badge--info|ui-badge--neutral/);
+    assert.equal(html.includes('trend-badge'), false);
+  } finally {
+    await viteServer.close();
+  }
+});
+
+test('Badge oficial nao expõe API interativa por contrato de fonte', () => {
+  const source = fs.readFileSync(badgeModulePath, 'utf8');
+
+  for (const forbidden of ['onClick', 'selected', 'dismissible', 'removable', 'href', 'loading', 'menu', 'tooltip']) {
+    assert.equal(source.includes(forbidden), false, `Forbidden API found: ${forbidden}`);
   }
 });

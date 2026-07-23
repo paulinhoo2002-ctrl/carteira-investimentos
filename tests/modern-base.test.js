@@ -53,6 +53,8 @@ const sourceFiles = [
   'src/features/income/incomeSnapshotAdapter.d.ts',
   'src/features/income/legacyIncomeReadonlyIntegration.ts',
   'src/components/AppHeader.tsx',
+  'src/components/Badge/Badge.tsx',
+  'src/components/Badge/Badge.css',
   'src/components/Sidebar.tsx',
   'src/components/PagePlaceholder.tsx',
   'src/features/reports/readonlyReportsViewModel.ts',
