@@ -399,8 +399,11 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(fixedIncomeViewModelTs.includes('toNumber(..., 0)'), false);
   assert.match(assetsReadonlyTsx, /Voltar ao legado/);
   assert.match(assetsReadonlyTsx, /Atualizar ativos/);
-  assert.match(assetsReadonlyTsx, /Nenhum ativo em alta/);
-  assert.match(assetsReadonlyTsx, /Nenhum ativo em queda/);
+  assert.match(assetsReadonlyTsx, /Total exibido/);
+  assert.match(assetsReadonlyTsx, /Resultado agregado/);
+  assert.match(assetsReadonlyTsx, /Rentabilidade/);
+  assert.match(assetsReadonlyTsx, /aria-controls="assets-readonly-highlights-panel"/);
+  assert.match(assetsReadonlyTsx, /aria-controls="assets-readonly-distribution-panel"/);
   assert.match(assetsReadonlyTsx, /Maiores posições/);
   assert.match(assetsReadonlyTsx, /Distribuição por categoria/);
   assert.match(assetsReadonlyTsx, /Lista de ativos/);

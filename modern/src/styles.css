@@ -549,6 +549,7 @@ button {
 }
 
 .assets-readonly__filters,
+.assets-readonly__summary,
 .assets-readonly__distribution,
 .assets-readonly__highlights,
 .assets-readonly__list {
@@ -608,6 +609,50 @@ button {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.94rem;
+}
+
+.assets-readonly__summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.assets-readonly__summary-card {
+  display: grid;
+  gap: 6px;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+
+.assets-readonly__summary-label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.assets-readonly__summary-value {
+  margin: 0;
+  font-size: 1.14rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.assets-readonly__summary-hint {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 0.9rem;
+}
+
+.assets-readonly__auxiliary-panel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.assets-readonly__auxiliary-panel[hidden] {
+  display: none;
 }
 
 .assets-readonly__top-list {
@@ -1124,10 +1169,17 @@ button {
 .assets-report__mobile-card {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding: var(--space-3);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);
   background: var(--color-surface-soft);
+}
+
+.assets-report__mobile-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: flex-start;
 }
 
 .assets-report__mobile-card h3,
@@ -1149,6 +1201,7 @@ button {
   display: flex;
   justify-content: space-between;
   gap: var(--space-3);
+  align-items: baseline;
 }
 
 .assets-report__mobile-card dt {
@@ -1253,6 +1306,10 @@ button {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .assets-readonly__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .fixed-income-readonly__controls,
   .fixed-income-readonly__highlight-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1274,6 +1331,19 @@ button {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .assets-readonly__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .assets-readonly__summary-card {
+    padding: var(--space-3);
+  }
+
+  .assets-readonly__summary-value {
+    font-size: 1.02rem;
+  }
+
   .assets-report__header {
     display: grid;
   }
@@ -1293,6 +1363,14 @@ button {
   .assets-report__mobile-list {
     display: grid;
     gap: var(--space-3);
+  }
+
+  .assets-report__mobile-card-head {
+    align-items: center;
+  }
+
+  .assets-report__mobile-card dd {
+    max-width: 64%;
   }
 
   .fixed-income-readonly__table-wrap {

@@ -107,11 +107,13 @@ test('view model readonly de ativos deriva lista, filtros e destaques do snapsho
   const viewModel = createReadonlyAssetsViewModel(snapshot, {
     query: 'renda',
     category: 'FII demo',
-    sortBy: 'currentValue',
+    sortBy: 'currentValueDesc',
   });
 
-  assert.equal(viewModel.itemCount, 3);
-  assert.equal(viewModel.totalValue, 900);
+  assert.equal(viewModel.summary.totalValue, 450);
+  assert.equal(viewModel.summary.itemCount, 1);
+  assert.equal(viewModel.summary.totalResult, -50);
+  assert.equal(viewModel.summary.rentabilityPct, -10);
   assert.equal(viewModel.averageVariationPct, 0.14);
   assert.deepEqual(viewModel.categories, ['Acao demo', 'ETF demo', 'FII demo']);
   assert.equal(viewModel.filteredItems.length, 1);
@@ -126,6 +128,99 @@ test('view model readonly de ativos deriva lista, filtros e destaques do snapsho
       ['Acao demo', 1],
       ['ETF demo', 1],
     ],
+  );
+});
+
+test('view model readonly de ativos calcula resumo visivel e ordena por resultado, rentabilidade e nome', async () => {
+  const {
+    calculateReadonlyAssetResult,
+    calculateReadonlyAssetRentabilityPct,
+    createReadonlyAssetsViewModel,
+    createReadonlyAssetsSummary,
+  } = await loadViewModelModule();
+
+  const items = [
+    {
+      ticker: 'AAA1',
+      name: 'Ativo Alpha',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 130,
+      variationPct: 30,
+      allocationPct: 40,
+      trend: 'positive',
+    },
+    {
+      ticker: 'BBB1',
+      name: 'Ativo Bravo',
+      category: 'FII demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 140,
+      variationPct: 40,
+      allocationPct: 35,
+      trend: 'positive',
+    },
+    {
+      ticker: 'CCC1',
+      name: 'Ativo Charlie',
+      category: 'ETF demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 120,
+      variationPct: 20,
+      allocationPct: 25,
+      trend: 'positive',
+    },
+  ];
+
+  const snapshot = createSnapshotFromItems(items);
+  const summary = createReadonlyAssetsSummary(items);
+
+  assert.equal(calculateReadonlyAssetResult(items[0]), 30);
+  assert.equal(calculateReadonlyAssetRentabilityPct(items[0]), 30);
+  assert.equal(summary.totalValue, 390);
+  assert.equal(summary.itemCount, 3);
+  assert.equal(summary.totalResult, 90);
+  assert.equal(summary.rentabilityPct, 30);
+
+  const resultDesc = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'resultDesc',
+  });
+  const resultAsc = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'resultAsc',
+  });
+  const rentabilityDesc = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'rentabilityPctDesc',
+  });
+  const nameSorted = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'name',
+  });
+
+  assert.deepEqual(
+    resultDesc.filteredItems.map((item) => item.ticker),
+    ['BBB1', 'AAA1', 'CCC1'],
+  );
+  assert.deepEqual(
+    resultAsc.filteredItems.map((item) => item.ticker),
+    ['CCC1', 'AAA1', 'BBB1'],
+  );
+  assert.deepEqual(
+    rentabilityDesc.filteredItems.map((item) => item.ticker),
+    ['BBB1', 'AAA1', 'CCC1'],
+  );
+  assert.deepEqual(
+    nameSorted.filteredItems.map((item) => item.ticker),
+    ['AAA1', 'BBB1', 'CCC1'],
   );
 });
 
@@ -199,7 +294,7 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
   const vmPositive = createReadonlyAssetsViewModel(onlyPositive, {
     query: '',
     category: 'all',
-    sortBy: 'currentValue',
+    sortBy: 'currentValueDesc',
   });
   assert.equal(vmPositive.topGainers.length, 2);
   assert.equal(vmPositive.topLosers.length, 0);
@@ -208,7 +303,7 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
   const vmNegative = createReadonlyAssetsViewModel(onlyNegative, {
     query: '',
     category: 'all',
-    sortBy: 'currentValue',
+    sortBy: 'currentValueDesc',
   });
   assert.equal(vmNegative.topGainers.length, 0);
   assert.equal(vmNegative.topLosers.length, 2);
@@ -217,7 +312,7 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
   const vmNeutral = createReadonlyAssetsViewModel(onlyNeutral, {
     query: '',
     category: 'all',
-    sortBy: 'currentValue',
+    sortBy: 'currentValueDesc',
   });
   assert.equal(vmNeutral.topGainers.length, 0);
   assert.equal(vmNeutral.topLosers.length, 0);
@@ -229,7 +324,7 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
     {
       query: '',
       category: 'all',
-      sortBy: 'currentValue',
+      sortBy: 'currentValueDesc',
     },
   );
   assert.equal(vmEmpty.topGainers.length, 0);
@@ -334,8 +429,19 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     );
 
     assert.match(before, /Atualizar ativos/);
+    assert.equal((before.match(/Atualizar ativos/g) ?? []).length, 1);
     assert.match(before, /Leitura pronta|Leitura atualizada/);
     assert.match(before, /2026-07-14T10:30:00.000Z/);
+    assert.match(before, /Total exibido/);
+    assert.match(before, /Quantidade/);
+    assert.match(before, /Resultado agregado/);
+    assert.match(before, /Rentabilidade/);
+    assert.match(before, /Valor da posi/);
+    assert.equal(before.includes('Maior alta'), false);
+    assert.equal(before.includes('Maior queda'), false);
+    assert.match(before, /aria-controls="assets-readonly-highlights-panel"/);
+    assert.match(before, /aria-controls="assets-readonly-distribution-panel"/);
+    assert.match(before, /aria-expanded="false"/);
 
     const onlyPositiveHtml = renderToStaticMarkup(
       React.createElement(AssetsReadonlyPage, {
@@ -359,8 +465,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
       }),
     );
 
-    assert.match(onlyPositiveHtml, /Nenhum ativo em queda/);
-    assert.doesNotMatch(onlyPositiveHtml, /Sem ativos/);
+    assert.match(onlyPositiveHtml, /Resultado agregado/);
 
     const onlyNegativeHtml = renderToStaticMarkup(
       React.createElement(AssetsReadonlyPage, {
@@ -384,7 +489,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
       }),
     );
 
-    assert.match(onlyNegativeHtml, /Nenhum ativo em alta/);
+    assert.match(onlyNegativeHtml, /Rentabilidade/);
 
     const onlyNeutralHtml = renderToStaticMarkup(
       React.createElement(AssetsReadonlyPage, {
@@ -408,8 +513,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
       }),
     );
 
-    assert.match(onlyNeutralHtml, /Nenhum ativo em alta/);
-    assert.match(onlyNeutralHtml, /Nenhum ativo em queda/);
+    assert.match(onlyNeutralHtml, /Valor da posi/);
 
     const emptyHtml = renderToStaticMarkup(
       React.createElement(AssetsReadonlyPage, {
@@ -426,6 +530,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     assert.match(emptyHtml, /Sem ativos/);
     assert.match(emptyHtml, /Snapshot vazio/);
     assert.match(emptyHtml, /Sem distribuicao/);
+    assert.match(emptyHtml, /Total exibido/);
 
     controller.refresh();
 
@@ -444,6 +549,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     assert.match(after, /R\$\s*910,00/);
     assert.match(after, /PETR4/);
     assert.match(after, /MXRF11/);
+    assert.match(after, /Resultado agregado/);
   } finally {
     await viteServer.close();
   }

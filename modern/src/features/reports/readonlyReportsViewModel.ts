@@ -1,6 +1,14 @@
 import type { ReadOnlyReportItem, ReadOnlyReportsSnapshot } from './reportsReadonlyContract.mjs';
 
-export type ReadonlyAssetsSortKey = 'currentValue' | 'variationPct' | 'allocationPct' | 'ticker';
+export type ReadonlyAssetsSortKey =
+  | 'currentValueDesc'
+  | 'currentValueAsc'
+  | 'rentabilityPctDesc'
+  | 'rentabilityPctAsc'
+  | 'resultDesc'
+  | 'resultAsc'
+  | 'ticker'
+  | 'name';
 
 export interface ReadonlyAssetsPageFilters {
   readonly query: string;
@@ -15,6 +23,13 @@ export interface ReadonlyAssetCategoryDistribution {
   readonly itemCount: number;
 }
 
+export interface ReadonlyAssetsSummary {
+  readonly totalValue: number;
+  readonly itemCount: number;
+  readonly totalResult: number;
+  readonly rentabilityPct: number;
+}
+
 export interface ReadonlyAssetsViewModel {
   readonly query: string;
   readonly selectedCategory: string;
@@ -25,10 +40,41 @@ export interface ReadonlyAssetsViewModel {
   readonly topLosers: readonly ReadOnlyReportItem[];
   readonly topPositions: readonly ReadOnlyReportItem[];
   readonly distribution: readonly ReadonlyAssetCategoryDistribution[];
-  readonly totalValue: number;
-  readonly itemCount: number;
+  readonly summary: ReadonlyAssetsSummary;
   readonly averageVariationPct: number;
   readonly hasResults: boolean;
+}
+
+export function calculateReadonlyAssetInvestedValue(item: ReadOnlyReportItem) {
+  return item.quantity * item.averagePrice;
+}
+
+export function calculateReadonlyAssetResult(item: ReadOnlyReportItem) {
+  return item.currentValue - calculateReadonlyAssetInvestedValue(item);
+}
+
+export function calculateReadonlyAssetRentabilityPct(item: ReadOnlyReportItem) {
+  const investedValue = calculateReadonlyAssetInvestedValue(item);
+
+  if (investedValue <= 0) {
+    return 0;
+  }
+
+  return (calculateReadonlyAssetResult(item) / investedValue) * 100;
+}
+
+export function createReadonlyAssetsSummary(items: readonly ReadOnlyReportItem[]): ReadonlyAssetsSummary {
+  const totalValue = items.reduce((sum, item) => sum + item.currentValue, 0);
+  const itemCount = items.length;
+  const totalResult = items.reduce((sum, item) => sum + calculateReadonlyAssetResult(item), 0);
+  const investedValue = items.reduce((sum, item) => sum + calculateReadonlyAssetInvestedValue(item), 0);
+
+  return {
+    totalValue,
+    itemCount,
+    totalResult,
+    rentabilityPct: investedValue > 0 ? (totalResult / investedValue) * 100 : 0,
+  };
 }
 
 function compareTicker(a: ReadOnlyReportItem, b: ReadOnlyReportItem) {
@@ -40,13 +86,21 @@ function sortItems(items: readonly ReadOnlyReportItem[], sortBy: ReadonlyAssetsS
 
   sorted.sort((a, b) => {
     switch (sortBy) {
-      case 'variationPct':
-        return b.variationPct - a.variationPct || compareTicker(a, b);
-      case 'allocationPct':
-        return b.allocationPct - a.allocationPct || compareTicker(a, b);
+      case 'currentValueAsc':
+        return a.currentValue - b.currentValue || compareTicker(a, b);
+      case 'rentabilityPctDesc':
+        return calculateReadonlyAssetRentabilityPct(b) - calculateReadonlyAssetRentabilityPct(a) || compareTicker(a, b);
+      case 'rentabilityPctAsc':
+        return calculateReadonlyAssetRentabilityPct(a) - calculateReadonlyAssetRentabilityPct(b) || compareTicker(a, b);
+      case 'resultDesc':
+        return calculateReadonlyAssetResult(b) - calculateReadonlyAssetResult(a) || compareTicker(a, b);
+      case 'resultAsc':
+        return calculateReadonlyAssetResult(a) - calculateReadonlyAssetResult(b) || compareTicker(a, b);
       case 'ticker':
         return compareTicker(a, b);
-      case 'currentValue':
+      case 'name':
+        return a.name.localeCompare(b.name, 'pt-BR') || compareTicker(a, b);
+      case 'currentValueDesc':
       default:
         return b.currentValue - a.currentValue || compareTicker(a, b);
     }
@@ -157,7 +211,7 @@ export function createReadonlyAssetsViewModel(
   const sortedFilteredItems = sortItems(filteredItems, filters.sortBy);
   const topGainers = sortPositiveItems(snapshot.items).slice(0, 3);
   const topLosers = sortNegativeItems(snapshot.items).slice(0, 3);
-  const topPositions = sortItems(snapshot.items, 'currentValue').slice(0, 3);
+  const topPositions = sortItems(snapshot.items, 'currentValueDesc').slice(0, 3);
   const distribution = createCategoryDistribution(snapshot.items);
 
   return {
@@ -170,8 +224,7 @@ export function createReadonlyAssetsViewModel(
     topLosers,
     topPositions,
     distribution,
-    totalValue: snapshot.summary.totalValue,
-    itemCount: snapshot.summary.itemCount,
+    summary: createReadonlyAssetsSummary(sortedFilteredItems),
     averageVariationPct: snapshot.summary.averageVariationPct,
     hasResults: sortedFilteredItems.length > 0,
   };
