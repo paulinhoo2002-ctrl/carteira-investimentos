@@ -217,7 +217,7 @@ function loadRuntime(state) {
     extractBetween(indexHtml, 'function dataQualitySnapshot(){', 'function dashboardPassiveIncomePanel(data){'),
     extractBetween(indexHtml, 'function dashboardPassiveIncomePanel(data){', 'function goalProgressText(current,target){'),
     extractBetween(indexHtml, 'function goalProgressText(current,target){', 'function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.proventos : []){'),
-    extractBetween(indexHtml, 'function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.proventos : []){', 'function dividendMonthlyHistoryPremium(rows){'),
+    extractBetween(indexHtml, 'function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.proventos : []){', 'function dividendMonthlyHistoryPremium(rows,startOpen=false){'),
   ];
 
   for (const block of blocks) {
@@ -437,10 +437,18 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
     return originalCx(...args);
   };
   const snapshot = snapshotRuntime.financialGoalsSnapshot();
+  const officialStats = snapshotRuntime.proventoStats();
+  const officialResumo = snapshotRuntime.proventoResumo();
 
   assert.equal(JSON.stringify(snapshot.historyRows), JSON.stringify(rows));
   assert.equal(JSON.stringify(snapshot.historyGroups), JSON.stringify(groups));
   assert.equal(JSON.stringify(snapshot.historySummary), JSON.stringify(summary));
+  assert.equal(JSON.stringify(officialResumo.summary), JSON.stringify(summary));
+  assert.equal(officialStats.total, summary.total);
+  assert.equal(officialStats.mes, 100);
+  assert.equal(officialStats.ano, 150);
+  assert.equal(officialResumo.meses.reduce((acc, row) => acc + row.valor, 0), summary.total);
+  assert.equal(officialResumo.anos.reduce((acc, row) => acc + row.valor, 0), summary.total);
   assert.equal(snapshot.currentIncome, 100);
   assert.equal(snapshot.currentIncomeCount, 1);
   assert.equal(snapshot.currentMonthGroup.total, 100);
@@ -498,10 +506,52 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   });
   assert.match(passiveHtml, /Renda passiva/);
   assert.match(passiveHtml, /Recebido no m[eê]s/);
+  assert.match(passiveHtml, /M[eé]dia 12 meses/);
   assert.match(goalsHtml, /Metas financeiras/);
   assert.match(goalsHtml, /Patrim[oô]nio atual/);
   assert.match(goalsHtml, /Meta de renda passiva/);
+  assert.match(goalsHtml, /M[eé]dia mensal hist[oó]rica/);
+  assert.match(goalsHtml, /Melhor m[eê]s hist[oó]rico/);
   assert.match(goalsHtml, /role="progressbar"/);
   assert.match(goalsHtml, /go\('metas'\)/);
   assert.match(passiveHtml, /go\('dividendos'\)/);
+});
+test('proventos oficiais normalizam strings e excluem registros invalidos', () => {
+  const runtime = loadRuntime({
+    assets: [],
+    proventos: [
+      { ticker: 'AAA1', value: '1234.56', date: '2026-07-10', type: 'Dividendo' },
+      { ticker: 'BBB2', value: '1234,56', date: '2026-06-10', type: 'JCP' },
+      { ticker: 'CCC3', value: '0', date: '2026-06-11', type: 'Dividendo' },
+      { ticker: 'DDD4', value: null, date: '2026-06-12', type: 'Dividendo' },
+      { ticker: 'EEE5', value: undefined, date: '2026-06-13', type: 'Dividendo' },
+      { ticker: 'FFF6', value: -10, date: '2026-07-10', type: 'Dividendo' },
+      { ticker: 'GGG7', value: 50, date: 'bad-date', type: 'Dividendo' },
+      { ticker: '', value: 10, date: '2026-07-10', type: 'Dividendo' },
+      { ticker: 'HHH8', value: 10, date: '2028-01-01', type: 'Dividendo' },
+      { ticker: 'RF1', value: 10, date: '2026-07-10', type: 'Juros de Renda Fixa', sourceEventKind: 'rf' },
+    ],
+    rfEvents: [],
+    aportes: [],
+    goals: {},
+    divGoal: 3000,
+  });
+
+  const rows = runtime.dividendMonthlyHistoryRows();
+  const groups = runtime.dividendMonthlyHistoryGroupRows(rows);
+  const summary = runtime.dividendMonthlyHistorySummary(groups);
+  const stats = runtime.proventoStats();
+  const resumo = runtime.proventoResumo();
+
+  assert.equal(rows.some((row) => row.ticker === 'AAA1' && row.value === 1234.56), true);
+  assert.equal(rows.some((row) => row.ticker === 'BBB2' && row.value === 1234.56), true);
+  assert.equal(rows.some((row) => row.value === 0), true);
+  assert.equal(rows.some((row) => row.value < 0), false);
+  assert.equal(rows.some((row) => row.ticker === ''), false);
+  assert.equal(rows.some((row) => row.ticker === 'RF1'), false);
+  assert.equal(summary.total, 2469.12);
+  assert.equal(stats.total, summary.total);
+  assert.equal(JSON.stringify(resumo.summary), JSON.stringify(summary));
+  assert.equal(resumo.meses.reduce((acc, row) => acc + row.valor, 0), summary.total);
+  assert.equal(resumo.anos.reduce((acc, row) => acc + row.valor, 0), summary.total);
 });
