@@ -217,6 +217,7 @@ function loadRuntime(state) {
     extractBetween(indexHtml, 'function dataQualitySnapshot(){', 'function dashboardPassiveIncomePanel(data){'),
     extractBetween(indexHtml, 'function dashboardPassiveIncomePanel(data){', 'function goalProgressText(current,target){'),
     extractBetween(indexHtml, 'function goalProgressText(current,target){', 'function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.proventos : []){'),
+    extractBetween(indexHtml, 'function proventoResumo(){', 'function passiveIncomeRollingMonthKeys(baseDate=new Date(), count=12){'),
     extractBetween(indexHtml, 'function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.proventos : []){', 'function dividendMonthlyHistoryPremium(rows,startOpen=false){'),
   ];
 
@@ -593,4 +594,83 @@ test('proventos oficiais normalizam strings e excluem registros invalidos', () =
   assert.equal(JSON.stringify(resumo.summary), JSON.stringify(summary));
   assert.equal(resumo.meses.reduce((acc, row) => acc + row.valor, 0), summary.total);
   assert.equal(resumo.anos.reduce((acc, row) => acc + row.valor, 0), summary.total);
+});
+test('proventoResumoTipos e proventoResumoPorAtivo derivam do historico oficial', () => {
+  const runtime = loadRuntime({
+    assets: [
+      { ticker: 'AAA1', name: 'Alpha', type: 'AÃ§Ã£o', qty: 1, avg_price: 10, current_price: 12, currency: 'BRL' },
+      { ticker: 'BBB2', name: 'Beta', type: 'FII', qty: 1, avg_price: 8, current_price: 9, currency: 'BRL' },
+    ],
+    proventos: [
+      { ticker: 'RAW9', value: 999, date: '2026-07-10', type: 'Dividendo' },
+    ],
+    rfEvents: [],
+    aportes: [],
+    goals: {},
+  });
+
+  const officialRows = [
+    {
+      ticker: 'AAA1',
+      name: 'Alpha',
+      type: 'Dividendo',
+      value: 100,
+      date: '2026-07-10',
+    },
+    {
+      ticker: 'AAA1',
+      name: 'Alpha',
+      type: 'JCP',
+      value: 0,
+      date: '2026-07-09',
+    },
+    {
+      ticker: 'BBB2',
+      name: 'Beta',
+      type: 'Rendimento',
+      value: 80,
+      date: '2026-06-11',
+    },
+  ];
+
+  runtime.dividendMonthlyHistoryRows = () => officialRows.map((row) => ({ ...row }));
+
+  const tiposSource = runtime.proventoResumoTipos.toString();
+  const porAtivoSource = runtime.proventoResumoPorAtivo.toString();
+  assert.match(tiposSource, /dividendMonthlyHistoryRows\(\)/);
+  assert.match(porAtivoSource, /dividendMonthlyHistoryRows\(\)/);
+  assert.equal(tiposSource.includes('S.proventos'), false);
+  assert.equal(porAtivoSource.includes('S.proventos'), false);
+  assert.equal(tiposSource.includes('passiveIncomeGoalStats'), false);
+  assert.equal(porAtivoSource.includes('passiveIncomeGoalStats'), false);
+
+  const tipos = runtime.proventoResumoTipos();
+  const porAtivo = runtime.proventoResumoPorAtivo();
+
+  assert.equal(tipos.total, 180);
+  assert.equal(tipos.count, 3);
+  assert.equal(tipos.tipos.Dividendo, 100);
+  assert.equal(tipos.tipos.JCP, 0);
+  assert.equal(tipos.tipos.Rendimento, 80);
+  assert.equal(tipos.tipos['Juros de Renda Fixa'], 0);
+  assert.equal(tipos.tipos.Reembolso, 0);
+  assert.equal(tipos.tipos.Outro, 0);
+
+  assert.equal(porAtivo.length, 2);
+  assert.equal(porAtivo[0].ticker, 'AAA1');
+  assert.equal(porAtivo[0].name, 'AAA1 · Alpha');
+  assert.equal(porAtivo[0].assetName, 'Alpha');
+  assert.equal(porAtivo[0].total, 100);
+  assert.equal(porAtivo[0].count, 2);
+  assert.equal(porAtivo[0].lastDate, '2026-07-10');
+  assert.equal(porAtivo[1].ticker, 'BBB2');
+  assert.equal(porAtivo[1].name, 'BBB2 · Beta');
+  assert.equal(porAtivo[1].assetName, 'Beta');
+  assert.equal(porAtivo[1].total, 80);
+  assert.equal(porAtivo[1].count, 1);
+  assert.equal(porAtivo[1].lastDate, '2026-06-11');
+  assert.equal(JSON.stringify(runtime.S.proventos), JSON.stringify([
+    { ticker: 'RAW9', value: 999, date: '2026-07-10', type: 'Dividendo' },
+  ]));
+  assert.equal(runtime.proventoRankingPagadores().length, 2);
 });
