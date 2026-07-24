@@ -552,3 +552,82 @@ ativo invalido | filtrado | sem leitura | shape apenas | `assetPerformanceOvervi
 - Firebase
 - schema
 - persistencia
+
+## Sprint 3.6.6 - Fechamento da auditoria de fontes oficiais
+
+### Escopo
+
+- encerramento documental da fase 3.6;
+- nenhuma refatoracao ampla nova;
+- foco em mapa oficial, consumidores, aliases e guardrails.
+
+### Mapa final de fontes oficiais
+
+| Dominio | Metrica / fonte oficial | Derivados / aliases | Consumidores principais | Horizonte | Risco |
+|---|---|---|---|---|---|
+| Patrimonio | `cx()` | `patrimonySnapshot()`, `dashboardSnapshot()`, `financialGoalsSnapshot()`, `reportsSnapshot()` | Dashboard, Patrimonio, Metas, Relatorios, readonly | atual / snapshot | alto se houver recalc paralelo |
+| Ativos | `assetAnalysisRows()` | `assetPerformanceOverviewRows()` como adaptador legado | Dashboard, Ativos, Relatorios, readonly | carteira atual | medio, por shape legado |
+| Renda Fixa | `fixedIncomeOfficialValues()` + `rfValues()` | `rfIntelligenceSnapshot()`, `assetRfCurrentValueMeta()`, `assetNeedsRFUpdate()` | Renda Fixa, Ativos, Relatorios, auditoria | posicao atual | alto se leitor divergir de aplicado/liquido/bruto |
+| Proventos | `dividendMonthlyHistoryRows()` -> `dividendMonthlyHistoryGroupRows()` -> `dividendMonthlyHistorySummary()` | `proventoHistoricoOficial()`, `proventoResumo()`, `proventoStats()`, `proventoResumoTipos()`, `proventoResumoPorAtivo()`, `proventoRankingPagadores()` | Dividendos, Metas, Relatorios, auditoria | historico completo / 12M quando explicitado | alto se horizonte nao for rotulado |
+| Dashboard | `dashboardHighlightsRows()` / `dashboardSnapshot()` | `dashboardPassiveIncomePanel()`, `dashboardFinancialGoalsPanel()` | Home / Dashboard | atual | medio, se usar agregados paralelos |
+| Relatorios | `reportsSnapshot()` | `createReadOnlyReportsBridge()`, `createReadOnlyReportsAdapter()`, `createReadonlyAssetsViewModel()` | Relatorios, snapshot readonly, modern | snapshot atual | medio, por ponte e shape legado |
+| Auditoria | `dataQualitySnapshot()` | `dataAuditSnapshot()`, `dataAuditAlerts()`, `rerunDataAudit()` | Tela de auditoria | leitura atual | baixo, diagnostico somente leitura |
+
+### Matriz de consumidores
+
+| Fonte | Derivados | Consumidores | Horizonte | Alias legado | Risco |
+|---|---|---|---|---|---|
+| `cx()` | `patrimonySnapshot()`, `dashboardSnapshot()`, `reportsSnapshot()` | Dashboard, Metas, Relatorios, Patrimonio | atual | `FinanceCore` | alto se recalculado fora do nucleo |
+| `assetAnalysisRows()` | `assetPerformanceOverviewRows()`, `dashboardHighlightsRows()` | Dashboard, Ativos, readonly | carteira atual | shape legado no painel de desempenho | medio |
+| `fixedIncomeOfficialValues()` | `rfValues()` | Renda Fixa, Ativos, Relatorios, auditoria | posicao atual | `rfValues()` | alto se status de zero/ausencia mudar |
+| `dividendMonthlyHistoryRows()` -> grupo -> resumo | `proventoHistoricoOficial()`, `proventoStats()`, `proventoResumo()`, `proventoResumoTipos()`, `proventoResumoPorAtivo()` | Dividendos, Metas, Relatorios | historico completo | aliases legados de proventos | alto se horizonte nao for claro |
+| `passiveIncomeGoalStats()` | `passiveIncomeDividendSummaryBlock()`, `passiveIncomeGoalBlock()`, `dashboardPassiveIncomePanel()` | Dashboard, Metas, Relatorios | ultimos 12 meses | resumo 12M | medio |
+| `reportsSnapshot()` | bridge + adapter readonly | modern reports, PDF, relatorios legados | snapshot atual | adaptacao readonly | medio |
+| `createReadonlyAssetsViewModel()` | view model readonly | `AssetsReadonlyPage` | snapshot atual | legado readonly | medio |
+| `dataQualitySnapshot()` | `dataAuditSnapshot()`, `dataAuditAlerts()` | Auditoria | leitura atual | alias de compatibilidade | baixo |
+
+### Duplicacoes remanescentes
+
+- `proventoResumoMensalTipos()` ainda e leitura legada do array bruto.
+- `proventoResumoPorTipo()` ainda e leitura legada do array bruto.
+- nao foram encontrados novos caminhos paralelos relevantes em `reportsSnapshot()` ou `createReadonlyAssetsViewModel()`.
+
+### Aliases mantidos
+
+- `rfValues()` -> `fixedIncomeOfficialValues()`
+- `proventoStats()` -> `proventoHistoricoOficial()`
+- `proventoResumo()` -> resumo oficial do historico mensal
+- `dataAuditSnapshot()` -> `dataQualitySnapshot()`
+- `dataAuditAlerts()` -> `dataQualitySnapshot().alerts`
+
+### Funcoes candidatas a remocao futura
+
+- `proventoResumoMensalTipos()`
+- `proventoResumoPorTipo()`
+
+Nao remover agora: dependem de compatibilidade legada e ainda podem ser consumidas.
+
+### Guardrails
+
+- `tests/phase-208-data-quality.test.js`
+- `tests/phase-202-assets-performance-overview.test.js`
+- `tests/assets-highlights-and-rf-parity.test.js`
+- `tests/readonly-contract-architecture.test.js`
+- `tests/readonly-reports-data-contract.test.js`
+
+Contratos protegidos:
+- `reportsSnapshot()` agrega fontes oficiais sem recalculo paralelo;
+- `assetPerformanceOverviewRows()` deriva da analise oficial;
+- `proventoResumoTipos()` e `proventoResumoPorAtivo()` derivam do historico oficial;
+- `rfValues()` continua alias compativel;
+- `passiveIncomeGoalStats()` continua exclusivo de 12 meses.
+
+### Conclusao da fase 3.6
+
+- fontes oficiais mapeadas e verificadas;
+- consumidores principais identificados;
+- aliases classificados;
+- duplicacoes remanescentes registradas;
+- contratos legados preservados;
+- riscos residuais documentados;
+- fase 3.7 pode seguir como estabilidade e persistencia, sem abrir refatoracao ampla.

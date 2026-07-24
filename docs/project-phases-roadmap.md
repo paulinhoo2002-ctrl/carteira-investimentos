@@ -1009,6 +1009,12 @@ Planejadas e nao autorizadas:
 - a Fase 208 foi concluida e nao faz parte desta sequencia planejada;
 - a sequencia futura planejada inclui 204C, 210 e 212.
 
+### Sprint 3.7 - Estabilidade e persistencia
+
+- objetivo: consolidar estabilidade, consistencia de dados e controles de persistencia;
+- estado: planejada e nao autorizada;
+- nao iniciar sem autorizacao explicita e sem fechar o escopo documental anterior.
+
 ## 24. Fase 208 - Qualidade dos dados
 
 Objetivo:
