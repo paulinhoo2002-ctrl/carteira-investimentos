@@ -31,8 +31,18 @@ function extractFunctionBlock(source, startMarker, endMarker) {
   return source.slice(start, end);
 }
 
+function num(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function loadAssetPerformanceOverviewRows(assets) {
   const indexHtml = read('index.html');
+  const analysisSource = extractFunctionBlock(
+    indexHtml,
+    'function assetAnalysisRows(){',
+    'function assetConcentrationAlert(',
+  );
   const hasOwnFiniteNumberSource = extractFunctionBlock(
     indexHtml,
     'function hasOwnFiniteNumber(source, keys){',
@@ -47,16 +57,87 @@ function loadAssetPerformanceOverviewRows(assets) {
   const context = {
     S: { assets },
     assetCurrentValue(asset) {
-      return asset?.currentPrice ?? asset?.current_price ?? asset?.currentValue ?? asset?.current_value ?? null;
+      if (asset?.currentPrice != null || asset?.current_price != null || asset?.currentValue != null || asset?.current_value != null) {
+        return num(asset?.qty) * num(asset?.currentPrice ?? asset?.current_price ?? asset?.currentValue ?? asset?.current_value);
+      }
+      return null;
     },
     assetAppliedValue(asset) {
-      return asset?.appliedPrice ?? asset?.applied_price ?? asset?.appliedValue ?? asset?.applied_value ?? null;
+      if (asset?.appliedPrice != null || asset?.applied_price != null || asset?.appliedValue != null || asset?.applied_value != null) {
+        return num(asset?.qty) * num(asset?.appliedPrice ?? asset?.applied_price ?? asset?.appliedValue ?? asset?.applied_value);
+      }
+      return num(asset?.qty) * num(asset?.avg_price);
     },
     assetJurosValue(asset) {
       return asset?.result ?? null;
     },
     assetRentabPct(asset) {
-      return asset?.resultPct ?? null;
+      if (Number.isFinite(Number(asset?.resultPct))) {
+        return Number(asset.resultPct);
+      }
+      const avg = num(asset?.avg_price);
+      const cur = num(asset?.current_price);
+      if (avg > 0 && cur > 0) return ((cur - avg) / avg) * 100;
+      return null;
+    },
+    assetRfName() {
+      return '';
+    },
+    normalizeType(value, fallback) {
+      return value || fallback || 'Ação';
+    },
+    metaTicker() {
+      return { type: 'Ação' };
+    },
+    normTypeKey(value) {
+      return String(value || '').toLowerCase();
+    },
+  };
+
+  return vm.runInNewContext(`${analysisSource}\n${hasOwnFiniteNumberSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
+}
+
+function loadAssetPerformanceOverviewRowsFromAnalysis(assets, analysisRowsOrFactory) {
+  const indexHtml = read('index.html');
+  const hasOwnFiniteNumberSource = extractFunctionBlock(
+    indexHtml,
+    'function hasOwnFiniteNumber(source, keys){',
+    'function assetPerformanceOverviewRows(){',
+  );
+  const rowsSource = extractFunctionBlock(
+    indexHtml,
+    'function assetPerformanceOverviewRows(){',
+    'function assetPerformanceOverviewSortRows(rows, sortBy){',
+  );
+
+  const context = {
+    S: { assets },
+    assetAnalysisRows() {
+      return typeof analysisRowsOrFactory === 'function' ? analysisRowsOrFactory() : analysisRowsOrFactory;
+    },
+    assetCurrentValue(asset) {
+      if (asset?.currentPrice != null || asset?.current_price != null || asset?.currentValue != null || asset?.current_value != null) {
+        return num(asset?.qty) * num(asset?.currentPrice ?? asset?.current_price ?? asset?.currentValue ?? asset?.current_value);
+      }
+      return null;
+    },
+    assetAppliedValue(asset) {
+      if (asset?.appliedPrice != null || asset?.applied_price != null || asset?.appliedValue != null || asset?.applied_value != null) {
+        return num(asset?.qty) * num(asset?.appliedPrice ?? asset?.applied_price ?? asset?.appliedValue ?? asset?.applied_value);
+      }
+      return num(asset?.qty) * num(asset?.avg_price);
+    },
+    assetJurosValue(asset) {
+      return asset?.result ?? null;
+    },
+    assetRentabPct(asset) {
+      if (Number.isFinite(Number(asset?.resultPct))) {
+        return Number(asset.resultPct);
+      }
+      const avg = num(asset?.avg_price);
+      const cur = num(asset?.current_price);
+      if (avg > 0 && cur > 0) return ((cur - avg) / avg) * 100;
+      return null;
     },
     assetRfName() {
       return '';
@@ -124,6 +205,8 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
   assert.match(indexHtml, /function assetPerformanceOverviewPanel\(\)/);
   assert.match(indexHtml, /function hasOwnFiniteNumber\(source, keys\)/);
   assert.match(indexHtml, /function assetPerformanceOverviewSortRows\(rows, sortBy\)/);
+  assert.match(indexHtml, /const analysisRows=assetAnalysisRows\(\);/);
+  assert.equal(indexHtml.includes('const portfolioTotal=assets.reduce((sum,a)=>'), false, 'painel 202 nao pode manter pipeline independente');
   assert.equal(indexHtml.includes('function firstOwnFiniteNumber(source, keys){'), false, 'helper sem uso deve sair');
   assert.match(indexHtml, /setAssetsInnerTab\('desempenho'\)/);
   assert.match(indexHtml, /if\(t==='desempenho'\) S\.assetsInnerTab='desempenho';/);
@@ -167,12 +250,12 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
 
 test('fase 202 trata base completa e incompleta sem inverter a semantica', () => {
   const rows = loadAssetPerformanceOverviewRows([
-    { ticker: 'AAA1', name: 'Completo positivo', type: 'Acao', current_price: 120, avg_price: 100, result: 20, resultPct: 20 },
+    { ticker: 'AAA1', name: 'Completo positivo', type: 'Acao', qty: 1, current_price: 120, avg_price: 100, result: 20, resultPct: 20 },
     { ticker: 'BBB1', name: 'So aplicado', type: 'Acao', avg_price: 100, result: 999, resultPct: 999 },
     { ticker: 'CCC1', name: 'So atual', type: 'Acao', current_price: 120, result: 999, resultPct: 999 },
     { ticker: 'DDD1', name: 'Sem base', type: 'Acao' },
-    { ticker: 'EEE1', name: 'Zero real', type: 'Acao', current_price: 0, avg_price: 0, result: 0, resultPct: 0 },
-    { ticker: 'FFF1', name: 'Aplicado zero', type: 'Acao', current_price: 10, avg_price: 0, result: 10, resultPct: null },
+    { ticker: 'EEE1', name: 'Zero real', type: 'Acao', qty: 1, current_price: 0, avg_price: 0, result: 0, resultPct: 0 },
+    { ticker: 'FFF1', name: 'Aplicado zero', type: 'Acao', qty: 1, current_price: 10, avg_price: 0, result: 10, resultPct: null },
   ])();
 
   assert.equal(rows.length, 6);
@@ -228,4 +311,56 @@ test('fase 202 trata base completa e incompleta sem inverter a semantica', () =>
   assert.equal(positiveRows.length, 2);
   assert.equal(negativeRows.length, 0);
   assert.equal(stableRows.length, 1);
+});
+
+test('fase 202 assetPerformanceOverviewRows deriva da fonte oficial de analise e preserva incompletos', () => {
+  let analysisCalls = 0;
+  const rows = loadAssetPerformanceOverviewRowsFromAnalysis(
+    [
+      { ticker: 'AAA1', name: 'Divergente bruto', type: 'Acao', sector: 'Tecnologia', qty: 10, avg_price: 999, current_price: 999 },
+      { ticker: 'BBB1', name: 'Zero real', type: 'Acao', sector: 'Bancos', qty: 0, avg_price: 0, current_price: 0 },
+      { ticker: '', name: 'Sem base', type: 'Acao', sector: 'Saude' },
+    ],
+    () => {
+      analysisCalls += 1;
+      return [
+        { ticker: 'AAA1', type: 'Acao', sector: 'Tecnologia', applied: 100, current: 120, profit: 20, pct: 20, share: 60, dy: 0 },
+        { ticker: 'BBB1', type: 'Acao', sector: 'Bancos', applied: 0, current: 0, profit: 0, pct: 0, share: 0, dy: 0 },
+      ];
+    },
+  )();
+
+  assert.equal(analysisCalls, 1);
+  assert.equal(rows.length, 3);
+
+  assert.equal(rows[0].ticker, 'AAA1');
+  assert.equal(rows[0].current, 120);
+  assert.equal(rows[0].applied, 100);
+  assert.equal(rows[0].result, 20);
+  assert.equal(rows[0].resultPct, 20);
+  assert.equal(rows[0].share, 60);
+  assert.equal(rows[0].hasPerformanceData, true);
+  assert.equal(rows[0].statusLabel, 'Positivo');
+
+  assert.equal(rows[1].ticker, 'BBB1');
+  assert.equal(rows[1].current, 0);
+  assert.equal(rows[1].applied, 0);
+  assert.equal(rows[1].result, 0);
+  assert.equal(rows[1].resultPct, 0);
+  assert.equal(rows[1].share, 0);
+  assert.equal(rows[1].hasPerformanceData, true);
+  assert.equal(rows[1].statusLabel, 'Estavel');
+
+  assert.equal(rows[2].ticker, '');
+  assert.equal(rows[2].current, null);
+  assert.equal(rows[2].applied, null);
+  assert.equal(rows[2].result, null);
+  assert.equal(rows[2].resultPct, null);
+  assert.equal(rows[2].share, null);
+  assert.equal(rows[2].hasPerformanceData, false);
+  assert.equal(rows[2].statusLabel, 'Dados insuficientes');
+
+  const ordered = rows.filter((row) => row.hasPerformanceData);
+  assert.deepEqual(ordered.map((row) => row.ticker), ['AAA1', 'BBB1']);
+  assert.deepEqual(rows.filter((row) => !row.hasPerformanceData).map((row) => row.ticker), ['']);
 });

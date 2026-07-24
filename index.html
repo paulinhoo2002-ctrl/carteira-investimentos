@@ -16702,10 +16702,9 @@ function hasOwnFiniteNumber(source, keys){
 }
 function assetPerformanceOverviewRows(){
   const assets=Array.isArray(S.assets) ? S.assets : [];
-  const portfolioTotal=assets.reduce((sum,a)=>{
-    const current=assetCurrentValue(a);
-    return sum + (Number.isFinite(current) ? current : 0);
-  },0);
+  const analysisRows=assetAnalysisRows();
+  const analysisPortfolioTotal=analysisRows.reduce((sum,row)=>sum + (Number.isFinite(row.current) ? row.current : 0),0);
+  let analysisCursor=0;
   return assets.map((asset, index)=>{
     const ticker=String(asset?.ticker||'').trim().toUpperCase();
     const name=assetRfName(asset) || String(asset?.name||asset?.title||asset?.product||'').trim();
@@ -16721,14 +16720,18 @@ function assetPerformanceOverviewRows(){
     const hasCurrentSource=hasOwnFiniteNumber(asset, currentKeys);
     const hasAppliedSource=hasOwnFiniteNumber(asset, appliedKeys);
     const hasAnyFinancialSource=hasCurrentSource || hasAppliedSource;
+    const rawCurrent=hasCurrentSource ? assetCurrentValue(asset) : null;
+    const rawApplied=hasAppliedSource ? assetAppliedValue(asset) : null;
+    const shouldConsumeAnalysis=Boolean(ticker) || (Number.isFinite(rawCurrent) && rawCurrent>0) || (Number.isFinite(rawApplied) && rawApplied>0);
+    const canonical=shouldConsumeAnalysis ? (analysisRows[analysisCursor++] || null) : null;
     const hasPerformanceData=hasCurrentSource && hasAppliedSource;
-    const current=hasCurrentSource ? assetCurrentValue(asset) : null;
-    const applied=hasAppliedSource ? assetAppliedValue(asset) : null;
-    const result=hasPerformanceData ? assetJurosValue(asset) : null;
+    const current=hasCurrentSource ? (canonical ? canonical.current : rawCurrent) : null;
+    const applied=hasAppliedSource ? (canonical ? canonical.applied : rawApplied) : null;
+    const result=hasPerformanceData ? (canonical ? canonical.profit : assetJurosValue(asset)) : null;
     const resultPct=hasPerformanceData
-      ? (applied===0 ? (current===0 ? 0 : null) : assetRentabPct(asset))
+      ? (applied===0 ? (current===0 ? 0 : null) : (canonical ? canonical.pct : assetRentabPct(asset)))
       : null;
-    const share=Number.isFinite(current) && portfolioTotal>0 ? (current/portfolioTotal)*100 : null;
+    const share=canonical ? canonical.share : (Number.isFinite(current) && analysisPortfolioTotal>0 ? (current/analysisPortfolioTotal)*100 : null);
     let statusLabel='Dados insuficientes';
     let statusTone='muted';
     if(hasPerformanceData){
