@@ -227,26 +227,26 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .asset-insight-value{text-align:right;font-size:11px;font-weight:850;white-space:nowrap}
 .asset-premium-empty{padding:12px;border:1px dashed var(--border);border-radius:10px;background:var(--surface-2);color:var(--muted);font-size:10px;line-height:1.45}
 .rebalance-shell{display:flex;flex-direction:column;gap:12px}
-.rebalance-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:16px;padding:15px;background:linear-gradient(135deg,#10182a 0%,#0b1020 58%,#11162a 100%)}
+.rebalance-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:14px;padding:12px 13px 13px;background:linear-gradient(135deg,#10182a 0%,#0b1020 58%,#11162a 100%)}
 .rebalance-hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-90px;top:-100px;background:rgba(99,102,241,.12);filter:blur(4px);pointer-events:none}
-.rebalance-title{font-size:16px;font-weight:900;color:#edf3ff;position:relative;z-index:1}
-.rebalance-subtitle{max-width:820px;font-size:12px;color:#94a3b8;line-height:1.5;margin-top:5px;position:relative;z-index:1}
-.rebalance-form{display:grid;grid-template-columns:minmax(220px,360px) auto;gap:10px;align-items:end;margin-top:14px;position:relative;z-index:1}
+.rebalance-title{font-size:15px;font-weight:900;color:#edf3ff;position:relative;z-index:1}
+.rebalance-subtitle{max-width:820px;font-size:12px;color:#94a3b8;line-height:1.45;margin-top:4px;position:relative;z-index:1}
+.rebalance-form{display:grid;grid-template-columns:minmax(220px,320px) auto;gap:10px;align-items:end;margin-top:12px;position:relative;z-index:1}
 .rebalance-form .fg{margin:0}
-.rebalance-form .btn{min-height:39px}
-.rebalance-safety{font-size:11px;line-height:1.45;color:#94a3b8;border:1px solid #1d2940;background:rgba(9,12,21,.62);border-radius:11px;padding:9px 10px}
-.rebalance-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.rebalance-summary-card{min-height:72px;padding:10px 11px;border:1px solid #182033;border-radius:12px;background:#0b1020;display:flex;flex-direction:column;justify-content:space-between;gap:5px}
+.rebalance-form .btn{min-height:38px;min-width:126px;padding:8px 14px}
+.rebalance-safety{font-size:10px;line-height:1.4;color:#94a3b8;border:1px solid #1d2940;background:rgba(9,12,21,.55);border-radius:10px;padding:8px 9px}
+.rebalance-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.rebalance-summary-card{min-height:64px;padding:9px 10px;border:1px solid #182033;border-radius:11px;background:#0b1020;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
 .rebalance-summary-label{font-size:10px;color:#94a3b8}
-.rebalance-summary-value{font-size:15px;font-weight:900;color:#edf3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rebalance-summary-note{font-size:10px;color:#64748b;line-height:1.35}
+.rebalance-summary-value{font-size:14px;font-weight:900;color:#edf3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rebalance-summary-note{font-size:10px;color:#64748b;line-height:1.3}
 .rebalance-study{display:flex;flex-direction:column;gap:8px}
 .rebalance-study-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .rebalance-study-title{font-size:12px;font-weight:800;color:#edf3ff}
-.rebalance-study-sub{font-size:10px;color:#7489a4;line-height:1.4;margin-top:2px}
-.rebalance-study-labels,.rebalance-study-row{display:grid;grid-template-columns:minmax(0,1.15fr) .8fr .8fr .7fr minmax(0,1.25fr) .9fr minmax(0,1.8fr);gap:8px;align-items:center}
-.rebalance-study-labels{padding:0 9px;font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
-.rebalance-study-row{padding:10px 9px;border:1px solid #182033;border-radius:12px;background:#090c15}
+.rebalance-study-sub{font-size:10px;color:#7489a4;line-height:1.35;margin-top:2px}
+.rebalance-study-labels,.rebalance-study-row{display:grid;grid-template-columns:minmax(0,1.15fr) .8fr .8fr .7fr minmax(0,1.25fr) .9fr minmax(0,1.8fr);gap:7px;align-items:center}
+.rebalance-study-labels{padding:0 8px;font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+.rebalance-study-row{padding:9px 8px;border:1px solid #182033;border-radius:11px;background:#090c15}
 .rebalance-study-asset{min-width:0}
 .rebalance-study-ticker{font-size:12px;font-weight:900;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rebalance-study-type{font-size:10px;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -254,9 +254,35 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .rebalance-study-stat-label{display:none;font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
 .rebalance-study-stat-value{font-size:11px;font-weight:800;color:#d7e1ef}
 .rebalance-study-value{color:#60a5fa;font-size:12px;font-weight:900}
-.rebalance-study-criteria{font-size:10px;color:#94a3b8;line-height:1.4}
-.rebalance-empty{padding:16px;border:1px dashed #26344b;border-radius:13px;background:#0b1020;color:#94a3b8;font-size:12px;line-height:1.5}
-.rebalance-dy-note{font-size:10px;color:#64748b;line-height:1.4}
+.rebalance-study-criteria{font-size:10px;color:#94a3b8;line-height:1.35}
+.rebalance-empty{padding:13px;border:1px dashed #26344b;border-radius:12px;background:#0b1020;color:#94a3b8;font-size:12px;line-height:1.45}
+.rebalance-dy-note{font-size:10px;color:#64748b;line-height:1.35}
+.ai-shell{display:flex;flex-direction:column;gap:12px}
+.ai-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ai-head-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.ai-title{font-size:16px;font-weight:900;color:#edf3ff;line-height:1.15}
+.ai-subtitle{font-size:12px;line-height:1.45;color:#94a3b8;max-width:760px}
+.ai-cta{min-width:152px;white-space:nowrap;align-self:flex-start}
+.ai-modebar{display:flex;gap:8px;flex-wrap:wrap}
+.ai-modebar .btn{padding:7px 10px;font-size:12px;white-space:nowrap}
+.ai-result{display:flex;flex-direction:column;gap:10px}
+.ai-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ai-card-title{font-size:13px;font-weight:900;color:#edf3ff;line-height:1.2}
+.ai-card-summary{font-size:12px;line-height:1.5;color:#bfd0e7;margin-top:4px}
+.ai-mode-pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#c4b5fd;background:rgba(99,102,241,.12);border:1px solid #2d2a7a;border-radius:999px;padding:5px 8px;white-space:nowrap}
+.ai-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ai-metric{border:1px solid #182033;background:#0b1020;border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;gap:4px}
+.ai-metric-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em}
+.ai-metric-value{font-size:14px;font-weight:900;color:#edf3ff;line-height:1.15}
+.ai-metric-note{font-size:10px;color:#64748b;line-height:1.35}
+.ai-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.ai-section{border:1px solid #182033;background:#090c15;border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;gap:6px}
+.ai-section-title{font-size:11px;font-weight:800;color:#edf3ff}
+.ai-list{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.ai-list li{font-size:12px;line-height:1.45;color:#bfd0e7}
+.ai-empty,.ai-loading,.ai-error{border:1px dashed #26344b;border-radius:12px;background:#0b1020;padding:13px 12px;font-size:12px;line-height:1.45;color:#bfd0e7}
+.ai-error{border-color:#7f1d1d;color:#fecaca;background:rgba(127,29,29,.16)}
+.ai-loading{border-style:solid}
 .dashboard-hero{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .dash-card{min-height:124px;padding:12px 14px 10px;display:flex;flex-direction:column;justify-content:space-between}
 .dash-head{display:flex;align-items:flex-start;gap:10px}
@@ -349,6 +375,8 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
   .rebalance-study-row{grid-template-columns:repeat(3,minmax(0,1fr))}
   .rebalance-study-asset,.rebalance-study-criteria{grid-column:1/-1}
   .rebalance-study-stat-label{display:block;margin-bottom:2px}
+  .ai-head{align-items:flex-start}
+  .ai-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
   .premium-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
   .premium-dashboard-grid{grid-template-columns:1fr}
   .premium-radar{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -375,6 +403,14 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
   .analysis-ranking-signal{grid-column:auto;justify-content:flex-start}
   .analysis-ranking-stat{align-items:flex-start;gap:1px}
   .analysis-ranking-value{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+  .ai-shell{gap:8px}
+  .ai-head{flex-direction:column;align-items:stretch}
+  .ai-cta{width:100%;min-width:0}
+  .ai-modebar{gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .ai-modebar::-webkit-scrollbar{display:none}
+  .ai-metrics{grid-template-columns:1fr}
+  .ai-grid{grid-template-columns:1fr}
+  .ai-card-head{flex-direction:column;align-items:flex-start}
   .asset-inner-tabs{gap:6px;margin:2px 0 10px}
   .asset-inner-tab{padding:7px 10px;font-size:11px}
   .asset-premium-analysis{gap:8px;padding-bottom:22px}
@@ -2859,9 +2895,10 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
     overflow-wrap:break-word;word-break:normal
   }
   .mu,.cs,.air,.backup-note,.backup-warning,.rebalance-safety,
-  .patrimony-reading-text,.patrimony-composition-text{
+  .patrimony-reading-text,.patrimony-composition-text,.ai-subtitle,.ai-loading,.ai-empty,.ai-error,.ai-metric-note,.ai-card-summary,.ai-list li{
     overflow-wrap:break-word;word-break:normal
   }
+  .ai-cta{min-width:0}
   .asset-inner-tabs{
     flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;padding:2px 0 3px;
@@ -4066,7 +4103,10 @@ let S = {
     proventos:{types:['Ação','FII','ETF','BDR','Stock'], monthly:0}
   },
   aiText:'', aiLoad:false,
-  aiFocus:'geral',
+  aiStatus:'idle',
+  aiResult:null,
+  aiError:'',
+  aiFocus:'overview',
   editId:null, editPId:null, showA:false, showP:false, showD:false,
   quickMovementOpen:false,
   quickMovementDraft:null,
@@ -24171,15 +24211,15 @@ function rentabilidadeTab(){
 function ajudarTab(){
   return`<div class="rebalance-shell">
   <div class="rebalance-hero">
-    <div class="rebalance-title">⚖️ Sugestão prudente de aporte</div>
-    <div class="rebalance-subtitle">Simulação para apoiar estudo de aporte, considerando concentração, desempenho, DY e metas da carteira. Não é recomendação de compra.</div>
+    <div class="rebalance-title">⚖️ Sugestão de aporte</div>
+    <div class="rebalance-subtitle">Simulação prudente com base em concentração, desempenho, dividendos e metas.</div>
     <div class="rebalance-form">
       <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500"></div></div>
-      <button class="btn bp" onclick="calcRebalance()">Simular aporte</button>
+      <button class="btn bp" onclick="calcRebalance()">Simular</button>
     </div>
   </div>
   <div class="rebalance-safety">Esta análise é apenas apoio de organização da carteira. Não é recomendação de compra, venda ou manutenção.</div>
-  <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha os valores atuais preenchidos para usar a simulação prudente.</div>':'<div class="rebalance-empty">Informe um valor e clique em Simular aporte. O resultado mostrará somente ativos que atendam aos critérios prudentes.</div>'}</div>
+  <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha a carteira atualizada para gerar a simulação.</div>':'<div class="rebalance-empty">Informe um valor maior que zero e mantenha a carteira atualizada para gerar a simulação.</div>'}</div>
   </div>`;
 }
 function calcRebalance(){
@@ -24236,27 +24276,374 @@ function calcRebalance(){
 // ══════════════════════════════════════
 // IA LOCAL
 // ══════════════════════════════════════
-function iaTab(){
-  const res=S.aiText
-    ?`<div class="aic">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#312e81,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:17px">🤖</div>
-        <span style="font-size:14px;font-weight:700;color:#c4b5fd">Análise da carteira</span>
+function aiNormalizeFocus(mode){
+  return ({
+    overview:'overview',
+    geral:'overview',
+    income:'income',
+    renda:'income',
+    rebalance:'rebalance',
+    rebalancear:'rebalance',
+    concentration:'concentration',
+    concentracao:'concentration'
+  })[String(mode||'').toLowerCase()] || 'overview';
+}
+function aiModeMeta(mode){
+  const focus=aiNormalizeFocus(mode);
+  return ({
+    overview:{title:'Visão geral', cta:'Gerar visão geral'},
+    income:{title:'Priorizar renda', cta:'Analisar renda'},
+    rebalance:{title:'Rebalancear', cta:'Analisar rebalanceamento'},
+    concentration:{title:'Concentração', cta:'Analisar concentração'},
+  }[focus]) || {title:'Visão geral', cta:'Gerar visão geral'};
+}
+function aiFormatValue(value, fallback='—'){
+  const n=Number(value);
+  return Number.isFinite(n) ? fmt(n) : fallback;
+}
+function aiFormatPct(value, fallback='—'){
+  const n=Number(value);
+  return Number.isFinite(n) ? fmtP(n) : fallback;
+}
+function aiMetricCard(metric){
+  return `<div class="ai-metric">
+    <div class="ai-metric-label">${esc(metric.label || '')}</div>
+    <div class="ai-metric-value">${metric.value == null ? '—' : metric.value}</div>
+    ${metric.note ? `<div class="ai-metric-note">${esc(metric.note)}</div>` : ''}
+  </div>`;
+}
+function aiListBlock(title, items, emptyText){
+  const list=Array.isArray(items) ? items.filter(Boolean) : [];
+  return `<section class="ai-section">
+    <div class="ai-section-title">${esc(title)}</div>
+    ${list.length ? `<ul class="ai-list">${list.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>` : `<div class="ai-empty">${esc(emptyText || 'Sem itens para mostrar.')}</div>`}
+  </section>`;
+}
+function aiRenderState(){
+  if(S.aiStatus==='loading') return `<div class="ai-loading">Analisando sua carteira...</div>`;
+  if(S.aiStatus==='error') return `<div class="ai-error">${esc(S.aiError || 'Não foi possível gerar esta análise. Revise os dados da carteira e tente novamente.')}</div>`;
+  if(S.aiStatus==='success' && S.aiResult){
+    const emptyMessage=String(S.aiResult.emptyMessage || '').trim();
+    if(emptyMessage && !(S.aiResult.metrics || []).length && !(S.aiResult.positives || []).length && !(S.aiResult.warnings || []).length && !(S.aiResult.actions || []).length){
+      return `<div class="ai-empty">${esc(emptyMessage)}</div>`;
+    }
+    return aiRenderResult(S.aiResult);
+  }
+  return `<div class="ai-empty">Escolha um tipo de análise e clique no botão para gerar o diagnóstico.</div>`;
+}
+function aiRenderResult(result){
+  const metrics=Array.isArray(result.metrics) ? result.metrics : [];
+  const positives=Array.isArray(result.positives) ? result.positives : [];
+  const warnings=Array.isArray(result.warnings) ? result.warnings : [];
+  const actions=Array.isArray(result.actions) ? result.actions : [];
+  return `<div class="ai-result">
+    <div class="ai-card-head">
+      <div style="min-width:0">
+        <div class="ai-card-title">${esc(result.title || aiModeMeta(result.mode).title)}</div>
+        ${result.summary ? `<div class="ai-card-summary">${esc(result.summary)}</div>` : ''}
       </div>
-      <div class="air">${esc(S.aiText)}</div>
-      <div style="margin-top:16px;padding-top:12px;border-top:1px solid #161e2e;font-size:11px;color:#2e3f58">⚠️ Análise automática e informativa. Não constitui recomendação. Consulte um profissional CFP/CNPI.</div>
-    </div>`
-    :`<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">🤖<br><br>Clique no botão para análise personalizada da sua carteira.</div>`;
+      <div class="ai-mode-pill">${esc(aiModeMeta(result.mode).title)}</div>
+    </div>
+    ${metrics.length ? `<div class="ai-metrics">${metrics.map(aiMetricCard).join('')}</div>` : ''}
+    <div class="ai-grid">
+      ${aiListBlock('Pontos positivos', positives, 'Sem pontos positivos suficientes no momento.')}
+      ${aiListBlock('Pontos de atenção', warnings, 'Sem pontos de atenção relevantes no momento.')}
+      ${aiListBlock('Ações prudentes', actions, 'Sem ações prudentes no momento.')}
+    </div>
+    ${result.priority ? `<div class="ai-empty"><strong>Prioridade atual:</strong> ${esc(result.priority)}</div>` : ''}
+  </div>`;
+}
+function generateOverviewAnalysis(){
+  const portfolio=cx();
+  const analysisRows=assetAnalysisRows();
+  const highlightsHigh=dashboardHighlightsRows('high','all').slice(0,5);
+  const highlightsLow=dashboardHighlightsRows('low','all').slice(0,5);
+  const quality=dataQualitySnapshot();
+  const income=passiveIncomeGoalStats();
+  const total=Number(portfolio.tC)||0;
+  const invested=Number(portfolio.tI)||0;
+  const profit=Number(portfolio.tG)||0;
+  const rentPct=Number(portfolio.tGP)||0;
+  if(!analysisRows.length || total<=0){
+    return {
+      mode:'overview',
+      title:'Visão geral',
+      summary:'',
+      metrics:[],
+      positives:[],
+      warnings:[],
+      priority:'',
+      actions:[],
+      emptyMessage:'Sem dados suficientes para analisar a carteira. Cadastre ativos válidos.'
+    };
+  }
+  const byType=new Map();
+  analysisRows.forEach(row=>{
+    const current=Number(row.current);
+    if(!Number.isFinite(current) || current<=0) return;
+    const type=String(row.type||'Ação').trim() || 'Ação';
+    byType.set(type, (byType.get(type)||0) + current);
+  });
+  const typeRows=[...byType.entries()].sort((a,b)=>b[1]-a[1]);
+  const dominant=typeRows[0] || null;
+  const dominantShare=dominant ? total>0 ? (dominant[1]/total)*100 : 0 : 0;
+  const incompleteCount=(quality.issues||[]).filter(issue=>{
+    const text=`${issue?.message||''} ${issue?.recommendation||''} ${issue?.field||''}`.toLowerCase();
+    return /incomplet|desatualiz|ausent|inválid|inval|cotação|cotacao/.test(text);
+  }).length;
+  const highList=highlightsHigh.map(row=>`${row.ticker || row.label || '—'} · ${aiFormatPct(row.resultPct)} · ${aiFormatValue(row.result)}`);
+  const lowList=highlightsLow.map(row=>`${row.ticker || row.label || '—'} · ${aiFormatPct(row.resultPct)} · ${aiFormatValue(row.result)}`);
+  const qualityLabel=`${quality.summary?.criticalRecords||0} críticos · ${quality.summary?.warningRecords||0} alertas`;
+  return {
+    mode:'overview',
+    title:'Visão geral',
+    summary:`Patrimônio atual ${fmt(total)} · Resultado ${fmt(profit)} · Rentabilidade ${fmtP(rentPct)}`,
+    metrics:[
+      {label:'Patrimônio aplicado', value:fmt(invested), note:'Base oficial da carteira'},
+      {label:'Patrimônio atual', value:fmt(total), note:dominant ? `Maior classe: ${dominant[0]} (${dominantShare.toFixed(1)}%)` : 'Sem concentração calculável'},
+      {label:'Ganho / perda', value:fmt(profit), note:profit>=0 ? 'Saldo positivo consolidado' : 'Saldo negativo consolidado'},
+      {label:'Qualidade dos dados', value:quality.score!=null ? `${quality.score}/100` : '—', note:qualityLabel},
+      {label:'Renda passiva 12M', value:aiFormatValue(income.monthlyAvg), note:income.target>0 ? `Meta ${fmt(income.target)}/mês` : 'Meta não configurada'},
+    ],
+    positives: highList.length ? highList.slice(0,3) : ['Sem destaques positivos suficientes no momento.'],
+    warnings: [
+      ...(lowList.length ? lowList.slice(0,3) : []),
+      ...(incompleteCount ? [`${incompleteCount} registro(s) com dados incompletos ou desatualizados`] : ['Nenhum alerta grave identificado']),
+    ],
+    priority: dominant ? `Revisar concentração em ${dominant[0]}.` : 'Rever base antes de tirar conclusões.',
+    actions:[
+      'Acompanhar classes abaixo do peso ideal.',
+      'Revisar ativos com dados incompletos antes de novas decisões.'
+    ],
+    emptyMessage:'Sem dados suficientes para analisar a carteira. Cadastre ativos válidos.'
+  };
+}
+function generateIncomeAnalysis(){
+  const stats=passiveIncomeGoalStats();
+  const history=proventoHistoricoOficial();
+  const historySummary=history.summary || dividendMonthlyHistorySummary(history.groups || []);
+  const payers=proventoResumoPorAtivo();
+  if(!stats.hasData || !(stats.target>0)){
+    return {
+      mode:'income',
+      title:'Priorizar renda',
+      summary:'',
+      metrics:[],
+      positives:[],
+      warnings:[],
+      priority:'',
+      actions:[],
+      emptyMessage:'Sem base suficiente de proventos ou meta de renda para analisar o foco.'
+    };
+  }
+  const monthsWithData=(stats.byMonth || []).filter(month=>Number(month?.total)||0).length;
+  const topPayer=stats.topPayers?.[0] || payers[0] || null;
+  const topShare=stats.total12>0 && topPayer ? ((Number(topPayer.total)||0)/stats.total12)*100 : 0;
+  const historyBest=historySummary.best ? `${historySummary.best.label || historySummary.best.mes || '—'} · ${fmt(historySummary.best.total || 0)}` : '—';
+  return {
+    mode:'income',
+    title:'Priorizar renda',
+    summary:`Renda 12M ${fmt(stats.total12)} · Média ${fmt(stats.monthlyAvg)} · Meta ${fmt(stats.target)}`,
+    metrics:[
+      {label:'Renda dos últimos 12 meses', value:fmt(stats.total12), note:'Janela oficial de 12 meses'},
+      {label:'Média mensal 12M', value:fmt(stats.monthlyAvg), note:`Faltam ${fmt(stats.missing)}/mês para a meta`},
+      {label:'Meta mensal', value:fmt(stats.target), note:'Meta oficial cadastrada'},
+      {label:'Meses com provento', value:`${monthsWithData}/12`, note:'Regularidade da janela oficial'},
+      {label:'Melhor mês histórico', value:historyBest, note:`Histórico completo: ${historySummary.monthCount || 0} mês(es)`},
+    ],
+    positives: payers.slice(0,3).map(row=>`${row.ticker || row.key || '—'} · ${fmt(row.total || 0)} · ${row.count || 0} pagamento(s)`),
+    warnings: [
+      topPayer ? `Maior pagador responde por ${topShare.toFixed(1)}% dos proventos 12M.` : 'Sem pagadores suficientes para avaliar concentração.',
+      stats.missing > 0 ? `Faltam ${fmt(stats.missing)}/mês para atingir a meta.` : 'Meta alcançada ou superada.',
+    ],
+    priority: stats.missing > 0 ? 'Reduzir distância da meta com renda recorrente e pulverização.' : 'Preservar regularidade e evitar concentração excessiva.',
+    actions:[
+      'Acompanhar os 5 maiores pagadores.',
+      'Reforçar ativos com histórico recorrente, sem concentrar demais a renda.'
+    ],
+    emptyMessage:'Sem base suficiente de proventos ou meta de renda para analisar o foco.'
+  };
+}
+function generateRebalanceAnalysis(){
+  const goals=allocationGoalItems();
+  const actual=allocationActualByType();
+  const analysisRows=assetAnalysisRows();
+  const prudence=prudentContributionAnalysis();
+  const totalActual=Number(actual.total)||0;
+  if(!goals.length || !analysisRows.length || totalActual<=0){
+    return {
+      mode:'rebalance',
+      title:'Rebalancear',
+      summary:'',
+      metrics:[],
+      positives:[],
+      warnings:[],
+      priority:'',
+      actions:[],
+      emptyMessage:'Sem metas cadastradas para comparar alocação atual com o alvo.'
+    };
+  }
+  const rows=goals.map(item=>{
+    const target=Number(item.pct)||0;
+    const current=totalActual>0 ? ((Number(actual.map?.[item.type])||0)/totalActual)*100 : 0;
+    const diff=current-target;
+    return {type:item.type, target, current, diff};
+  }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff) || b.target-a.target);
+  const above=rows.filter(row=>row.diff>0);
+  const below=rows.filter(row=>row.diff<0);
+  const worst=rows[0] || null;
+  const prudentCandidates=(prudence.candidates || []).slice(0,3).map(row=>`${row.ticker || '—'} · ${row.signal?.label || '—'} · ${fmt(row.score || 0)}`);
+  return {
+    mode:'rebalance',
+    title:'Rebalancear',
+    summary:`Alocação atual ${fmt(totalActual)} · ${rows.length} meta(s) cadastrada(s)`,
+    metrics:[
+      {label:'Classes comparadas', value:String(rows.length), note:'Atual x meta oficial'},
+      {label:'Classes acima da meta', value:String(above.length), note:above.length ? above.map(r=>r.type).join(' · ') : 'Nenhuma'},
+      {label:'Classes abaixo da meta', value:String(below.length), note:below.length ? below.map(r=>r.type).join(' · ') : 'Nenhuma'},
+      {label:'Maior desvio', value:worst ? `${worst.type} ${worst.diff>=0?'+':''}${worst.diff.toFixed(1)} p.p.` : '—', note:worst ? `Meta ${worst.target.toFixed(1)}% · Atual ${worst.current.toFixed(1)}%` : 'Sem base'},
+    ],
+    positives: below.slice(0,3).map(r=>`${r.type} abaixo da meta em ${Math.abs(r.diff).toFixed(1)} p.p.`),
+    warnings: above.slice(0,3).map(r=>`${r.type} acima da meta em ${r.diff.toFixed(1)} p.p.`),
+    priority: worst ? (worst.diff<0 ? `Reforçar ${worst.type} no próximo aporte.` : `Segurar ${worst.type} antes de ampliar posição.`) : 'Sem metas para priorizar.',
+    actions:[
+      worst ? `Direcionar novos aportes para ${worst.diff<0 ? worst.type : (below[0]?.type || worst.type)}.` : 'Definir metas de alocação para orientar próximos aportes.',
+      prudentCandidates.length ? `Estudo prudente por ativo: ${prudentCandidates.join(' · ')}` : 'Estudo prudente sem candidatos claros no momento.'
+    ],
+    rows,
+    emptyMessage:'Sem metas cadastradas para comparar alocação atual com o alvo.'
+  };
+}
+function generateConcentrationAnalysis(){
+  const analysisRows=assetAnalysisRows().filter(row=>Number.isFinite(row.current) && row.current>0);
+  const portfolio=cx();
+  const payers=proventoResumoPorAtivo();
+  const total=Number(portfolio.tC)||0;
+  if(!analysisRows.length || total<=0){
+    return {
+      mode:'concentration',
+      title:'Concentração',
+      summary:'',
+      metrics:[],
+      positives:[],
+      warnings:[],
+      priority:'',
+      actions:[],
+      emptyMessage:'Carteira sem base suficiente para medir concentração.'
+    };
+  }
+  const sorted=[...analysisRows].sort((a,b)=>b.current-a.current || b.share-a.share || String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  const top5=sorted.slice(0,5);
+  const top5Share=top5.reduce((sum,row)=>sum + (Number(row.share)||0),0);
+  const topAsset=top5[0] || null;
+  const byClass=new Map();
+  const bySector=new Map();
+  sorted.forEach(row=>{
+    const current=Number(row.current)||0;
+    const type=String(row.type||'Ação').trim() || 'Ação';
+    const sector=String(row.sector||'Sem setor').trim() || 'Sem setor';
+    byClass.set(type, (byClass.get(type)||0) + current);
+    bySector.set(sector, (bySector.get(sector)||0) + current);
+  });
+  const dominantClass=[...byClass.entries()].sort((a,b)=>b[1]-a[1])[0] || null;
+  const dominantSector=[...bySector.entries()].sort((a,b)=>b[1]-a[1])[0] || null;
+  const payoutRows=payers.slice(0,5);
+  const payoutTotal=payers.reduce((sum,row)=>sum + (Number(row.total)||0),0);
+  const payoutShare=payoutRows[0] && payoutTotal>0 ? ((Number(payoutRows[0].total)||0)/payoutTotal)*100 : 0;
+  const level=topAsset ? (topAsset.share<=10 ? 'Confortável' : topAsset.share<=15 ? 'Atenção' : 'Elevada') : 'Sem base';
+  const top5Text=top5.map(row=>`${row.ticker || '—'} · ${row.type || '—'} · ${aiFormatPct(row.share)}`).join(' · ');
+  return {
+    mode:'concentration',
+    title:'Concentração',
+    summary:`Maior ativo ${topAsset ? `${topAsset.ticker} · ${aiFormatPct(topAsset.share)}` : '—'} · Top 5 ${top5Share.toFixed(1)}% da carteira`,
+    metrics:[
+      {label:'Maior ativo', value:topAsset ? `${topAsset.ticker} ${aiFormatPct(topAsset.share)}` : '—', note: topAsset ? `${topAsset.type} · ${topAsset.sector || 'Sem setor'}` : 'Sem base'},
+      {label:'Top 5 ativos', value:`${top5Share.toFixed(1)}%`, note:'Peso combinado da carteira'},
+      {label:'Concentração por classe', value:dominantClass ? dominantClass[0] : '—', note:dominantClass ? `${dominantClass[1].toFixed(1)}% da carteira` : 'Sem base'},
+      {label:'Concentração dos proventos', value:payoutRows[0] ? `${payoutRows[0].ticker || '—'}` : '—', note:payoutRows[0] ? `${payoutShare.toFixed(1)}% dos proventos` : 'Sem base'},
+      {label:'Nível de atenção', value:level, note:topAsset ? `Referência: ${topAsset.share<=10 ? 'até 10%' : topAsset.share<=15 ? '10% a 15%' : 'acima de 15%'}` : 'Sem base'},
+    ],
+    positives: top5.slice(0,3).map(row=>`${row.ticker} · ${row.type} · ${aiFormatPct(row.share)}`),
+    warnings: [
+      topAsset ? `Maior posição em nível ${level.toLowerCase()}.` : 'Carteira sem base suficiente para medir concentração.',
+      dominantSector ? `Setor dominante: ${dominantSector[0]}` : 'Sem setor dominante calculável.',
+      top5Text ? `Top 5 combinados: ${top5Share.toFixed(1)}%` : ''
+    ].filter(Boolean),
+    priority: topAsset ? `${topAsset.share>15 ? 'Concentração elevada em' : 'Acompanhar'} ${topAsset.ticker}.` : 'Sem base suficiente para concentração.',
+    actions:[
+      'Distribuir novos aportes entre classes abaixo do peso.',
+      'Revisar posições críticas e dependência de poucos ativos.'
+    ],
+    emptyMessage:'Carteira sem base suficiente para medir concentração.'
+  };
+}
+function aiModeGenerators(mode){
+  return ({
+    overview:generateOverviewAnalysis,
+    income:generateIncomeAnalysis,
+    rebalance:generateRebalanceAnalysis,
+    concentration:generateConcentrationAnalysis,
+  })[aiNormalizeFocus(mode)] || generateOverviewAnalysis;
+}
+function aiResultMarkup(){
+  const meta=aiModeMeta(S.aiFocus);
+  const result=S.aiResult;
+  if(!result) return `<div class="ai-empty">Escolha um tipo de análise e clique no botão para gerar o diagnóstico.</div>`;
+  return aiRenderResult(result);
+}
+function iaTab(){
+  const focus=aiNormalizeFocus(S.aiFocus);
+  const meta=aiModeMeta(focus);
   const focusButtons=[
-    ['geral','Visão geral'],
-    ['renda','Priorizar renda'],
-    ['rebalancear','Rebalancear'],
-    ['concentracao','Concentração'],
-  ].map(([mode,label])=>`<button class="btn ${String(S.aiFocus||'geral')===mode?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="setAIFocus('${mode}')">${label}</button>`).join(' ');
-  return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">Análise automática da carteira</div>
-  <div class="mu" style="font-size:13px;margin-bottom:18px">Análise local com base nos dados cadastrados — sem enviar sua carteira para servidores externos.</div>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">${focusButtons}</div>
-  <button class="btn bp" onclick="getAI()" style="display:flex;align-items:center;gap:8px;margin-bottom:18px">✨ Gerar análise</button>${res}`;
+    ['overview','Visão geral'],
+    ['income','Priorizar renda'],
+    ['rebalance','Rebalancear'],
+    ['concentration','Concentração'],
+  ].map(([mode,label])=>`<button type="button" class="btn ${focus===mode?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="setAIFocus('${mode}')" aria-selected="${focus===mode?'true':'false'}" role="tab">${label}</button>`).join(' ');
+  return `<div class="ai-shell">
+    <div class="ai-head">
+      <div class="ai-head-copy">
+        <div class="ai-title">Análise da carteira</div>
+        <div class="ai-subtitle">Análise local com base nos dados cadastrados, sem enviar sua carteira para servidores externos.</div>
+      </div>
+      <button class="btn bp ai-cta" onclick="getAI()" ${S.aiStatus==='loading'?'disabled':''}>${esc(meta.cta)}</button>
+    </div>
+    <div class="ai-modebar" role="tablist" aria-label="Modo da análise">${focusButtons}</div>
+    <div class="aic" aria-live="polite">${aiRenderState()}</div>
+  </div>`;
+}
+function setAIFocus(mode){
+  S.aiFocus=aiNormalizeFocus(mode);
+  S.aiStatus='idle';
+  S.aiResult=null;
+  S.aiText='';
+  S.aiError='';
+  S.aiLoad=false;
+  save();
+  render();
+}
+function getAI(){
+  const focus=aiNormalizeFocus(S.aiFocus);
+  const generator=aiModeGenerators(focus);
+  S.aiLoad=true;
+  S.aiStatus='loading';
+  S.aiError='';
+  render();
+  try{
+    const result=generator();
+    S.aiResult={...result, mode:aiNormalizeFocus(result?.mode || focus)};
+    S.aiText=S.aiResult.summary || S.aiResult.title || '';
+    S.aiStatus='success';
+  }catch(err){
+    S.aiResult=null;
+    S.aiText='';
+    S.aiError=err instanceof Error ? err.message : String(err || 'Erro desconhecido');
+    S.aiStatus='error';
+  }finally{
+    S.aiLoad=false;
+    render();
+  }
+  return S.aiResult;
 }
 
 // ══════════════════════════════════════
@@ -24641,109 +25028,6 @@ function setAportesPage(page){
   render();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-function setAIFocus(mode){
-  S.aiFocus = ['geral','renda','rebalancear','concentracao'].includes(mode) ? mode : 'geral';
-  save();
-  if(S.assets.length){ getAI(); return; }
-  render();
-}
-
-function getAI(){
-  const{tC,tI,tGP,mD,aD,avgDY,tG}=cx();
-  const rec=proventoStats();
-  if(!S.assets.length){ S.aiText='Cadastre seus ativos primeiro para gerar uma análise.'; render(); return; }
-  const focus=String(S.aiFocus||'geral');
-  const porTipo={},por=S.assets.map(a=>({ticker:a.ticker,type:a.type,valor:assetCurrentValue(a),divMes:(assetCurrentValue(a)*(a.dy/100))/12,dy:Number(a.dy)||0,var:a.avg_price>0?((a.current_price-a.avg_price)/a.avg_price)*100:0,sector:String(a.sector||'').trim()||'—'})).sort((a,b)=>b.valor-a.valor);
-  por.forEach(a=>{const ty=normalizeType(a.type||'Ação','Ação'); porTipo[ty]=(porTipo[ty]||0)+a.valor;});
-  const maior=por[0],maiorPct=tC>0?(maior.valor/tC)*100:0;
-  const pior=por[por.length-1];
-  const top3=por.slice(0,3);
-  const top3Pct=tC>0?(top3.reduce((s,a)=>s+a.valor,0)/tC)*100:0;
-  const fiisPct=tC>0?((porTipo['FII']||0)/tC)*100:0,acoesPct=tC>0?((porTipo['Ação']||0)/tC)*100:0;
-  const divGoal=Number(S.divGoal)||0,faltaDiv=Math.max(0,divGoal-mD);
-  const alvoPat=divGoal>0&&avgDY>0?(divGoal*12)/(avgDY/100):0;
-  const lucroTotal=tG + rec.total;
-  const retornoTotalPct=tI>0?(lucroTotal/tI)*100:0;
-  const allocItems=allocationGoalItems();
-  const allocTarget=Object.fromEntries(allocItems.map(it=>[it.type, Number(it.pct)||0]));
-  const atualByType=S.assets.reduce((acc,a)=>{
-    const ty=normalizeType(a.type||'Ação','Ação');
-    const v=(Number(a.qty)||0)*(Number(a.current_price)||0);
-    acc[ty]=(acc[ty]||0)+v;
-    return acc;
-  },{});
-  const allocTotal=Object.values(atualByType).reduce((s,v)=>s+v,0);
-  const allocDiffs=Object.keys(allocTarget).map(ty=>{
-    const actual=allocTotal>0 ? ((atualByType[ty]||0)/allocTotal)*100 : 0;
-    return {type:ty, target:allocTarget[ty], actual, diff:actual-(allocTarget[ty]||0)};
-  }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff));
-  const worstAlloc=allocDiffs[0];
-  const benchmark=String(S.rentBench||'CDI');
-  const rentData=rentabilityHistory(String(S.rentType||'all'), String(S.rentPeriod||'all'), benchmark);
-  const rentGap=(rentData.current?.cumReturn||0)-(rentData.currentBench||0);
-  const L=[];
-  L.push('📊 ANÁLISE RÁPIDA DA CARTEIRA');
-  L.push(`Patrimônio atual: ${fmt(tC)} | Resultado total: ${fmtP(retornoTotalPct)}`);
-  L.push(`Lucro total: ${fmt(lucroTotal)} (ganho de capital + proventos)`);
-  L.push(`Renda passiva estimada: ${fmt(mD)}/mês (${fmt(aD)}/ano)`);
-  L.push(`Proventos recebidos: ${fmt(rec.mes)} no mês · ${fmt(rec.ano)} no ano · ${fmt(rec.total)} total`);
-  L.push(`DY médio da carteira: ${avgDY.toFixed(2)}%`);
-  L.push(`Top 3 posições concentram ${top3Pct.toFixed(1)}% da carteira.`);
-  if(focus==='renda') L.push(`Foco atual: renda passiva e proventos.`);
-  if(focus==='rebalancear') L.push(`Foco atual: rebalanceamento e aportes abaixo da meta.`);
-  if(focus==='concentracao') L.push(`Foco atual: concentração e risco da carteira.`);
-  L.push('');
-  L.push('⚖️ ALOCAÇÃO ATUAL');
-  Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).forEach(([tipo,valor])=>L.push(`• ${tipo}: ${((valor/tC)*100).toFixed(1)}% (${fmt(valor)})`));
-  if(worstAlloc) L.push(`• Maior desvio da meta: ${worstAlloc.type} com ${worstAlloc.diff>=0?'+':''}${worstAlloc.diff.toFixed(1)} p.p.`);
-  L.push('');
-  L.push('🔎 O QUE OBSERVAR');
-  if(maiorPct>20) L.push(`• Concentração alta em ${maior.ticker}: ${maiorPct.toFixed(1)}% da carteira.`);
-  else L.push(`• Maior posição: ${maior.ticker} com ${maiorPct.toFixed(1)}% — concentração sob controle.`);
-  if(S.assets.length<8) L.push('• Poucos ativos. Para renda passiva consistente, 10+ ativos de setores diferentes ajudam a reduzir risco.');
-  if(fiisPct>60) L.push('• FIIs com peso muito alto (>60%). Isso aumenta a sensibilidade a juros e imóveis.');
-  if(acoesPct>70) L.push('• Ações com peso muito alto. A renda tende a oscilar mais com resultados trimestrais.');
-  if(avgDY>12) L.push('• DY médio elevado (>12%). Vale conferir se os rendimentos são recorrentes e não pontuais.');
-  if(avgDY>0&&avgDY<5) L.push('• DY médio baixo. Novos aportes em ativos de renda podem acelerar a renda passiva.');
-  if(rentGap!==0) L.push(`• ${rentGap>=0?'Acima':'Abaixo'} do ${benchmark} em ${fmtP(rentGap)} no recorte atual de rentabilidade.`);
-  L.push('');
-  if(divGoal>0){
-    L.push(`💰 OBJETIVO: ${fmt(divGoal)}/mês`);
-    if(mD>=divGoal) L.push(`• ✅ Objetivo atingido! Foco agora é sustentabilidade e diversificação da renda.`);
-    else{ L.push(`• Falta ${fmt(faltaDiv)}/mês para o objetivo.`); if(alvoPat>0) L.push(`• Patrimônio estimado para atingir o objetivo com DY atual: ${fmt(alvoPat)} (falta ${fmt(Math.max(0,alvoPat-tC))})`); }
-    L.push('');
-  }
-  L.push('✅ PRIORIDADES PARA O PRÓXIMO APORTE');
-  if(allocDiffs.length){
-    allocDiffs.slice(0,3).forEach(a=>{
-      if(Math.abs(a.diff)<0.5) return;
-      if(a.diff<0) L.push(`• Reforçar ${a.type}: está ${Math.abs(a.diff).toFixed(1)} p.p. abaixo da meta.`);
-      else L.push(`• Segurar ${a.type}: está ${a.diff.toFixed(1)} p.p. acima da meta.`);
-    });
-  }
-  if(maiorPct>20) L.push(`• Evite aumentar ${maior.ticker} agora; ela já lidera a concentração.`);
-  if(top3Pct>70) L.push('• Top 3 posições muito concentradas. Considere distribuir os próximos aportes entre categorias abaixo da meta.');
-  if(pior) L.push(`• Posição menor e potencialmente negligenciada: ${pior.ticker} (${fmt(pior.valor)}) pode merecer revisão.`);
-  if(focus==='renda'){
-    L.push('• Priorize ativos com proventos recorrentes e boa previsibilidade de fluxo.');
-    if(avgDY>0) L.push(`• Com DY médio atual de ${avgDY.toFixed(2)}%, a renda estimada continua sensível a novas compras nessa taxa.`);
-  }
-  if(focus==='rebalancear'){
-    const under=allocDiffs.filter(a=>a.diff<0).sort((a,b)=>a.diff-b.diff)[0];
-    if(under) L.push(`• Comece pelo maior déficit: ${under.type} está ${Math.abs(under.diff).toFixed(1)} p.p. abaixo da meta.`);
-    L.push('• Seus próximos aportes podem servir para aproximar a carteira do desenho-alvo sem vender nada.');
-  }
-  if(focus==='concentracao'){
-    L.push(`• ${top3Pct.toFixed(1)}% da carteira está no top 3. Vale olhar se isso está confortável para seu perfil.`);
-    if(maiorPct>20) L.push(`• ${maior.ticker} sozinho já representa ${maiorPct.toFixed(1)}%.`);
-  }
-  L.push('• Registre o motivo de cada compra na aba Aportes para acompanhar a estratégia ao longo do tempo.');
-  if(focus==='renda') L.push('• Quando olhar um ativo novo, compare sempre contribuição mensal estimada, volatilidade e peso na carteira.');
-  L.push('');
-  L.push('⚠️ Análise automática. Não constitui recomendação de investimento. Consulte um profissional habilitado.');
-  S.aiText=L.join('\n'); render();
-}
-
 function bind(){
   document.querySelectorAll('.fc input:not([disabled]),.fc select').forEach(el=>{
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ if(S.quickMovementOpen) saveQuickMovement(); else if(S.showA) svA(); else if(S.showP) svP(); else if(S.showD) svD(); } });
