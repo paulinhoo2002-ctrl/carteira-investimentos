@@ -431,3 +431,124 @@ Sem alteracao funcional nesta etapa.
 - Firebase
 - schema
 - persistencia
+
+## Sprint 3.6.5 - Paridade de performance de ativos
+
+### Problema original
+
+- `assetAnalysisRows()` era a fonte oficial da analise de ativos.
+- `assetPerformanceOverviewRows()` ainda mantinha pipeline proprio para os mesmos valores de desempenho.
+- isso abria risco de divergencia em valor aplicado, valor atual, ganho/perda, rentabilidade e ordenacao.
+
+### Funcoes auditadas
+
+- `assetAnalysisRows()`
+- `assetPerformanceOverviewRows()`
+- `assetPerformanceOverviewPanel()`
+- `dashboardHighlightsRows()`
+- `dashboardFinancialGoalsPanel()`
+- `reportsSnapshot()`
+- `createReadonlyAssetsViewModel()`
+
+### Consumidores
+
+- `assetPerformanceOverviewPanel()`
+- `dashboardHighlightsRows()`
+- `dashboardHomeHighlightsPanel()`
+- `reportsSnapshot()`
+- `createReadonlyAssetsViewModel()`
+- testes da fase 202
+- testes de destaques
+- testes readonly
+
+### Matriz de paridade
+
+Metrica | assetAnalysisRows() | assetPerformanceOverviewRows() | Divergencia | Fonte oficial
+---|---|---|---|---
+ticker | sim | sim | nao | `assetAnalysisRows()`
+nome | nao exposto | sim | shape apenas | `assetPerformanceOverviewRows()`
+tipo | sim | sim | nao | `assetAnalysisRows()`
+quantidade | nao exposto | nao exposto | nao | `assetPerformanceOverviewRows()`
+preco medio | nao exposto | nao exposto | nao | `assetPerformanceOverviewRows()`
+preco atual | nao exposto | nao exposto | nao | `assetPerformanceOverviewRows()`
+valor aplicado | sim | sim | nao | `assetAnalysisRows()`
+valor atual | sim | sim | nao | `assetAnalysisRows()`
+ganho/perda | sim | sim | nao | `assetAnalysisRows()`
+rentabilidade percentual | sim | sim | nao | `assetAnalysisRows()`
+participacao | sim | sim | nao | `assetAnalysisRows()`
+posicao positiva/negativa | nao exposto | sim | shape apenas | `assetPerformanceOverviewRows()`
+ordenacao | nao exposto | sim | nao | `assetPerformanceOverviewRows()`
+ativo sem preco | sim | sim | nao | `assetPerformanceOverviewRows()`
+ativo sem quantidade | sim | sim | nao | `assetPerformanceOverviewRows()`
+ativo com zero real | sim | sim | nao | `assetPerformanceOverviewRows()`
+ativo invalido | filtrado | sem leitura | shape apenas | `assetPerformanceOverviewRows()`
+
+### Fonte oficial confirmada
+
+- `assetAnalysisRows()` permanece como fonte oficial para os calculos de mercado.
+- `assetPerformanceOverviewRows()` agora adapta o shape legada a partir das linhas oficiais.
+
+### Contratos preservados
+
+- nome da funcao mantido;
+- tipo de retorno mantido;
+- classificacao de ganho/perda mantida;
+- compatibilidade com `assetPerformanceOverviewPanel()` mantida;
+- carteira vazia continua valida;
+- ativos invalidos continuam sem leitura confiavel;
+- zero real continua valido;
+- nenhum `NaN` ou `Infinity` exposto.
+
+### Estrategia de adaptacao
+
+- reutilizar `assetAnalysisRows()` como base oficial;
+- adaptar apenas o shape exigido pela UI legada;
+- preservar estados de dados insuficientes;
+- manter ordenacao e filtros existentes do painel.
+
+### Testes
+
+- caracterizacao de paridade entre linhas oficiais e adaptacao legada;
+- preservacao de zero real;
+- preservacao de rows incompletos;
+- painel legado continua funcionando;
+- dashboardHighlightsRows() continua usando a fonte oficial da analise;
+- reportsSnapshot() e readonly moderno sem regressao;
+- suite geral mantida verde.
+
+### Compatibilidade legada
+
+- `assetPerformanceOverviewRows()` mantida;
+- `assetPerformanceOverviewPanel()` mantido;
+- `dashboardHighlightsRows()` sem regressao;
+- `reportsSnapshot()` sem recalculo paralelo novo;
+- `createReadonlyAssetsViewModel()` sem alteracao.
+
+### Riscos remanescentes
+
+- a semantica de estados incompletos continua dependente das chaves oficiais do legado;
+- `assetPerformanceOverviewRows()` ainda precisa conviver com o painel legado ate futura limpeza;
+- qualquer mudanca futura em `assetAnalysisRows()` exige revalidacao da adaptacao.
+
+### Ordem sugerida de limpeza
+
+1. manter a analise canonica em `assetAnalysisRows()`;
+2. monitorar o painel legado de desempenho;
+3. revisar futuros consumidores que ainda dependam do shape antigo;
+4. evitar remover a API publica nesta fase.
+
+### Arquivos envolvidos
+
+- `index.html`
+- `tests/phase-202-assets-performance-overview.test.js`
+- `docs/sprint-3-6-portfolio-data-audit.md`
+
+### Fora do escopo
+
+- `reportsSnapshot()`
+- `createReadonlyAssetsViewModel()`
+- `modern/src`
+- `modern/dist`
+- Firebase
+- schema
+- persistencia
