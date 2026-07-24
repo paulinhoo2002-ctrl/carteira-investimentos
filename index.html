@@ -12214,13 +12214,22 @@ function cx(){
   return{tI,tC,tG,tGP,mD,aD,avgDY};
 }
 function proventoStats(){
-  const now=new Date(); let mes=0,ano=0,total=0;
-  S.proventos.forEach(p=>{
-    const v=Number(p.value)||0; total+=v;
-    const dt=parseAnyDate(p.date);
-    if(dt&&dt.getFullYear()===now.getFullYear()){ ano+=v; if(dt.getMonth()===now.getMonth()) mes+=v; }
+  const {rows, summary}=proventoHistoricoOficial();
+  const now=new Date();
+  const currentYear=now.getFullYear();
+  const currentMonth=now.getMonth();
+  let mes=0;
+  let ano=0;
+  rows.forEach(row=>{
+    const dt=row?.paymentDt instanceof Date ? row.paymentDt : parseAnyDate(row?.date);
+    const value=Number(row?.value)||0;
+    if(!dt || !Number.isFinite(value)) return;
+    if(dt.getFullYear()===currentYear){
+      ano+=value;
+      if(dt.getMonth()===currentMonth) mes+=value;
+    }
   });
-  return{mes,ano,total};
+  return{mes,ano,total:summary.total};
 }
 function lucroTotalComProventos(){
   const {tG}=cx();
@@ -12236,20 +12245,29 @@ function retornoTotalComProventosPct(){
 // SYNC ATIVOS ← APORTES
 // ══════════════════════════════════════
 function proventoResumo(){
-  const meses=new Map(),anos=new Map();
-  S.proventos.forEach(p=>{
-    const dt=parseAnyDate(p.date),v=Number(p.value)||0;
-    if(!dt||v<=0) return;
-    const y=dt.getFullYear(),m=String(dt.getMonth()+1).padStart(2,'0');
-    const mk=`${y}-${m}`;
-    if(!meses.has(mk)) meses.set(mk,{key:mk,ano:y,mes:dt.toLocaleDateString('pt-BR',{month:'long'}),valor:0,count:0});
-    const mr=meses.get(mk); mr.valor+=v; mr.count++;
-    if(!anos.has(y)) anos.set(y,{ano:y,valor:0,count:0});
-    const ar=anos.get(y); ar.valor+=v; ar.count++;
+  const {rows, groups, summary}=proventoHistoricoOficial();
+  const meses=groups.map(group=>({
+    key:group.key,
+    ano:group.dt.getFullYear(),
+    mes:group.dt.toLocaleDateString('pt-BR',{month:'long'}),
+    valor:group.total,
+    count:group.count,
+  }));
+  const anos=new Map();
+  rows.forEach(row=>{
+    const dt=row?.paymentDt instanceof Date ? row.paymentDt : parseAnyDate(row?.date);
+    const value=Number(row?.value)||0;
+    if(!dt || !Number.isFinite(value)) return;
+    const year=dt.getFullYear();
+    if(!anos.has(year)) anos.set(year,{ano:year,valor:0,count:0});
+    const ar=anos.get(year);
+    ar.valor+=value;
+    ar.count++;
   });
   return{
-    meses:[...meses.values()].sort((a,b)=>b.key.localeCompare(a.key)),
-    anos:[...anos.values()].sort((a,b)=>b.ano-a.ano)
+    meses,
+    anos:[...anos.values()].sort((a,b)=>b.ano-a.ano),
+    summary,
   };
 }
 function proventoTipoCanonical(value){
@@ -12618,26 +12636,29 @@ function passiveIncomeProgressCard({tone='muted', kicker='', value='—', sub=''
   </div>`;
 }
 function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
-  const rec=proventoStats();
-  const bestPayer=stats.bestPayer || null;
-  const bestLabel=bestPayer ? esc(bestPayer.ticker || bestPayer.name || '—') : '—';
-  const bestSub=bestPayer ? `${fmt(bestPayer.total)} recebidos nos últimos 12 meses` : 'Nenhum pagador encontrado';
-  const avgLabel=stats.hasData ? fmt(stats.monthlyAvg) : '—';
+  const resumo=proventoResumo();
+  const historicalSummary=resumo.summary || { total: 0, avg: null, monthCount: 0, best: null };
+  const totalHistoricalLabel=fmt(historicalSummary.total||0);
+  const avgHistoricalLabel=historicalSummary.avg!=null ? fmt(historicalSummary.avg) : '—';
   const total12Label=stats.hasData ? fmt(stats.total12) : '—';
+  const avg12Label=stats.hasData ? fmt(stats.monthlyAvg) : '—';
+  const bestMonthLabel=historicalSummary.best
+    ? `${historicalSummary.best.label || historicalSummary.best.mes || '—'} · ${fmt(historicalSummary.best.total || 0)}`
+    : '—';
   return `<div class="cc passive-goal-shell" style="margin-bottom:8px;padding:10px 10px 9px">
     <div class="sh passive-goal-head" style="margin-bottom:4px;gap:10px">
       <div style="min-width:0">
-        <div class="st">Resumo de proventos realizados</div>
-        <div class="mu" style="font-size:11px;margin-top:2px">Indicadores reais e históricos já creditados na conta.</div>
+        <div class="st">Resumo de proventos oficiais</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">Fonte oficial: histórico mensal para total e média histórica; janela 12M para meta mensal.</div>
       </div>
-      <div class="passive-goal-badge ${stats.hasData ? 'info' : 'muted'}">${stats.hasData ? `${fmt(rec.total)} acumulados` : 'Sem histórico'}</div>
+      <div class="passive-goal-badge ${stats.hasData || historicalSummary.monthCount > 0 ? 'info' : 'muted'}">${historicalSummary.monthCount > 0 ? `${historicalSummary.monthCount} mês(es)` : 'Sem histórico'}</div>
     </div>
     <div class="passive-goal-grid summary">
-      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Recebido no mês', value:fmt(rec.mes), sub:'Valor real recebido no mês atual'})}
-      ${passiveIncomeMetricCard({tone:'info', kicker:'Recebido no ano', value:fmt(rec.ano), sub:'Somatório do ano corrente'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Média mensal 12M', value:avgLabel, sub:'Histórico real dos últimos 12 meses'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Total recebido 12M', value:total12Label, sub:'Soma dos últimos 12 meses'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'ok':'muted', kicker:'Melhor pagador', value:bestLabel, sub:'Maior pagador nos últimos 12 meses'})}
+      ${passiveIncomeMetricCard({tone:historicalSummary.total>0?'ok':'muted', kicker:'Total histórico', value:totalHistoricalLabel, sub:'Soma oficial dos meses elegíveis'})}
+      ${passiveIncomeMetricCard({tone:historicalSummary.avg!=null?'info':'muted', kicker:'Média mensal histórica', value:avgHistoricalLabel, sub:'Total histórico dividido pelos meses do histórico'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Total nos últimos 12 meses', value:total12Label, sub:'Soma oficial da janela de 12 meses'})}
+      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Média mensal nos últimos 12 meses', value:avg12Label, sub:'Total 12M dividido por 12'})}
+      ${passiveIncomeMetricCard({tone:historicalSummary.best?'ok':'muted', kicker:'Melhor mês histórico', value:bestMonthLabel, sub:'Mês com maior total no histórico'})}
     </div>
   </div>`;
 }
@@ -19421,7 +19442,7 @@ function dashboardFinancialGoalsPanel(data){
         ${financialGoalsBar(incomeMetrics, 'Progresso da meta de renda passiva', incomeTone)}
         <div class="passive-goal-sub">${incomeStatus}</div>
         <div class="passive-goal-sub">${incomeGap}</div>
-        <div class="passive-goal-sub">Média real ${incomeAverage} · Melhor mês ${incomeBestMonth}</div>
+        <div class="passive-goal-sub">Média mensal histórica ${incomeAverage} · Melhor mês histórico ${incomeBestMonth}</div>
         <div class="passive-goal-sub">${incomeCurrentStatus} · Último mês ${trendLabel} · ${trendDetail}</div>
         <div class="passive-goal-sub">${incomeMeta}</div>
       </article>
@@ -22270,8 +22291,9 @@ function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.provento
   return rows.map((p,index)=>{
     const paymentDt=proventoDividendPaymentDate(p);
     if(!(paymentDt instanceof Date) || Number.isNaN(paymentDt.getTime()) || paymentDt>limitDate) return null;
-    if(p?.value===null || p?.value===undefined || p?.value==='') return null;
-    const rawValue=Number(p?.value);
+    const valueState=dataQualityNumberState(p?.value);
+    if(valueState.state==='missing' || valueState.state==='invalid') return null;
+    const rawValue=Number(valueState.value);
     if(!Number.isFinite(rawValue) || rawValue<0) return null;
     const sourceKind=String(p?.sourceEventKind||'').trim().toLowerCase();
     const canonical=proventoTipoCanonical(p?.eventType||p?.type);
@@ -22356,6 +22378,12 @@ function dividendMonthlyHistorySummary(groups){
   const avg=monthCount>0 ? total/monthCount : null;
   const best=groups.reduce((acc,row)=>!acc || row.total>acc.total ? row : acc, null);
   return {total, monthCount, avg, best};
+}
+function proventoHistoricoOficial(){
+  const rows=dividendMonthlyHistoryRows();
+  const groups=dividendMonthlyHistoryGroupRows(rows);
+  const summary=dividendMonthlyHistorySummary(groups);
+  return {rows, groups, summary};
 }
 function dividendViewportIsCompact(){
   return typeof window!=='undefined' && typeof window.innerWidth==='number' && window.innerWidth>0 ? window.innerWidth<=820 : false;
