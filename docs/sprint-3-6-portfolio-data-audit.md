@@ -371,3 +371,63 @@ Sem alteracao funcional nesta etapa.
 
 - registros antigos com `current_price` zerado continuam tratados como sem fonte atual explicita
 - `dataQualityAnalyzeRfEvents()` e `rfEventTotals()` continuam como trilha separada de eventos
+
+## Sprint 3.6.4 - Limpeza gradual de duplicacoes legadas
+
+### Funcoes encontradas
+
+- `proventoResumoTipos()`
+- `proventoResumoPorAtivo()`
+- `proventoResumo()`
+- `proventoResumoPorTipo()`
+- `proventoResumoMensalTipos()`
+- `proventoRankingPagadores()`
+- `proventoHistoricoOficial()`
+- `dividendMonthlyHistoryRows()`
+- `dividendMonthlyHistoryGroupRows()`
+- `dividendMonthlyHistorySummary()`
+
+### Classificacao
+
+- Fonte oficial: `dividendMonthlyHistoryRows()` -> `dividendMonthlyHistoryGroupRows()` -> `dividendMonthlyHistorySummary()`
+- Alias compativel: `proventoResumo()`
+- Consumidor: `proventoRankingPagadores()`
+- Duplicacao reduzia: `proventoResumoTipos()` e `proventoResumoPorAtivo()` agora derivam do historico oficial
+- Candidatas a remocao futura: `proventoResumoMensalTipos()` e `proventoResumoPorTipo()`
+
+### Riscos
+
+- `proventoResumoMensalTipos()` ainda mantem leitura legada do array bruto.
+- `proventoResumoPorTipo()` ainda mantem leitura legada do array bruto.
+- qualquer futuro ajuste em labels ou ordenacao desses resumos deve preservar a mesma fonte oficial.
+
+### Ordem sugerida de limpeza
+
+1. validar caracterizacao dos dois resumos migrados;
+2. monitorar paridade com `proventoResumo()` e `proventoRankingPagadores()`;
+3. revisar `proventoResumoMensalTipos()`;
+4. revisar `proventoResumoPorTipo()`.
+
+### Testes
+
+- caracterizacao dos resumos de tipo e por ativo via historico oficial;
+- preservacao de shape, labels, fallbacks e ordenacao;
+- ignorancia de `S.proventos` bruto nas duas funcoes migradas;
+- paridade com dados oficiais stubados;
+- suite geral mantida verde com 98 testes aprovados.
+
+### Arquivos envolvidos
+
+- `index.html`
+- `tests/phase-208-data-quality.test.js`
+
+### Fora do escopo
+
+- `passiveIncomeGoalStats()`
+- `assetPerformanceOverviewRows()`
+- `reportsSnapshot()`
+- `modern/src`
+- `modern/dist`
+- Firebase
+- schema
+- persistencia

@@ -12377,10 +12377,10 @@ function proventoResumoTipos(){
       Outro:0
     }
   };
-  (S.proventos||[]).forEach(p=>{
-    const value=Number(p.value)||0;
-    if(value<=0) return;
-    const type=proventoTipoCanonical(p.eventType||p.type);
+  const rows=dividendMonthlyHistoryRows();
+  rows.forEach(row=>{
+    const value=row?.value ?? 0;
+    const type=Object.prototype.hasOwnProperty.call(base.tipos, row?.type) ? row.type : 'Outro';
     base.total+=value;
     base.count++;
     base.tipos[type]=(base.tipos[type]||0)+value;
@@ -12655,20 +12655,24 @@ function proventoAssetMeta(p){
 }
 function proventoResumoPorAtivo(){
   const map=new Map();
-  (S.proventos||[]).forEach(p=>{
-    const value=Number(p.value)||0;
-    if(value<=0) return;
-    const meta=proventoAssetMeta(p);
-    const key=String(p.ticker||meta.title||'').toUpperCase() || meta.title;
+  const rows=dividendMonthlyHistoryRows();
+  rows.forEach(item=>{
+    const value=item?.value ?? 0;
+    const meta=proventoAssetMeta({
+      ticker:item?.ticker,
+      assetName:item?.name,
+      eventType:item?.type,
+      type:item?.type
+    });
+    const key=String(item?.ticker||meta.title||'').toUpperCase() || meta.title;
     if(!map.has(key)){
-      map.set(key,{key,ticker:String(p.ticker||'').toUpperCase()||'—',name:meta.title||'—',type:meta.type||'Ação',total:0,count:0,lastDate:'',assetName:p.assetName||''});
+      map.set(key,{key,ticker:String(item?.ticker||'').toUpperCase()||'—',name:meta.title||'—',type:meta.type||'Ação',total:0,count:0,lastDate:'',assetName:item?.name||''});
     }
-    const row=map.get(key);
-    row.total+=value;
-    row.count++;
-    const dt=parseAnyDate(p.date);
-    const iso=dt?toISODate(dt):'';
-    if(iso && iso>row.lastDate) row.lastDate=iso;
+    const agg=map.get(key);
+    agg.total+=value;
+    agg.count++;
+    const date=String(item?.date||'').trim();
+    if(date && date>agg.lastDate) agg.lastDate=date;
   });
   return [...map.values()].sort((a,b)=>b.total-a.total);
 }
