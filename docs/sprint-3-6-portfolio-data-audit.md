@@ -304,3 +304,70 @@ Sem alteracao funcional nesta etapa.
 - nenhum ajuste em schema
 - nenhuma alteracao em Firebase ou persistencia
 - nenhuma dependencia nova
+
+## Sprint 3.6.2 - Fonte oficial de Renda Fixa
+
+### Problema confirmado
+
+- `rfValues()` usava fallback amplo demais e misturava fonte explicita, valor legado e ausencia na mesma leitura.
+- `assetRfCurrentValueMeta()`, `assetNeedsRFUpdate()`, `rfIntelligenceSnapshot()` e `dataQualityAnalyzeAssets()` podiam enxergar a mesma posicao com legendas diferentes.
+- `rf_applied_value`, `rf_liquid_value`, `rf_gross_value` e `current_price` precisavam de uma leitura oficial unica, sem mascarar a ausencia real.
+
+### Fonte oficial
+
+- Helper novo: `fixedIncomeOfficialValues()`
+- Alias compativel: `rfValues()`
+- Rotina de rotulo: `assetRfCurrentValueMeta()`
+- Rotina de alerta: `assetNeedsRFUpdate()`
+- Consumidores diretos: `assetAppliedValue()`, `assetCurrentValue()`, `assetJurosValue()`, `assetRentabPct()`, `cx()`, `rfIntelligenceSnapshot()`, `reportsSnapshot()` e `dataQualitySnapshot()`
+
+### Ordem oficial de leitura
+
+1. valor aplicado informado
+2. valor aplicado legado
+3. valor aplicado derivado de quantidade x preco medio
+4. valor liquido informado
+5. valor liquido legado
+6. valor bruto informado
+7. valor bruto legado
+8. valor atual informado / current_price legado
+9. valor aplicado como fallback de compatibilidade quando nao ha fonte atual explicita
+
+### Comportamento de valor indisponivel
+
+- zero aplicado continua valido;
+- valor atual sem fonte explicita continua como atualizacao necessaria;
+- fonte atual explicita vence o fallback;
+- campos invalidos e ausentes nao entram na leitura oficial;
+- Renda Fixa continua fora do historico de dividendos.
+
+### Funcoes alteradas
+
+- `fixedIncomeOfficialValues()`
+- `rfValues()`
+- `assetRfCurrentValueMeta()`
+- `assetNeedsRFUpdate()`
+- `dataQualityAnalyzeAssets()`
+- `tests/phase-208-data-quality.test.js`
+
+### Compatibilidade preservada
+
+- `FinanceCore` continua recebendo `rfValues()`
+- consumidores antigos continuam recebendo `applied`, `current`, `profit` e `rentab`
+- nenhuma API publica nova foi exigida
+- nenhum schema novo
+- nenhuma alteracao em Firebase ou persistencia
+
+### Testes
+
+- helper oficial parseia strings com ponto, virgula e agrupamento
+- `rfValues()` continua alias compativel
+- zero aplicado nao vira erro
+- valor atual sem fonte explicita segue como alerta
+- resumo, metas e relatorios continuam coerentes com a mesma fonte
+- 98 testes aprovados
+
+### Riscos remanescentes
+
+- registros antigos com `current_price` zerado continuam tratados como sem fonte atual explicita
+- `dataQualityAnalyzeRfEvents()` e `rfEventTotals()` continuam como trilha separada de eventos

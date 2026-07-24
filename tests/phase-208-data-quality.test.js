@@ -356,6 +356,45 @@ test('fase 208 helpers destacam dados invalidos sem corromper estado', () => {
   assert.equal(healthyContext.dataAuditTab(), healthyContext.dataQualityTab());
 });
 
+test('renda fixa oficial usa uma unica fonte e preserva fallback compatível', () => {
+  const runtime = loadRuntime({
+    assets: [
+      { ticker: 'RF01', name: 'RF oficial', type: 'Renda Fixa', qty: 1, avg_price: 0, current_price: 0, rf_applied_value: '1.234,56', rf_liquid_value: '1.500,00', rf_gross_value: '1.600,00', rf_ir_iof: '100,00', rf_maturity_date: '2027-01-01', rf_contract_rate: 'CDI + 1,00%' },
+      { ticker: 'RF02', name: 'RF fallback', type: 'Renda Fixa', qty: '2', avg_price: '500,00', current_price: 0, rf_applied_value: '', rf_liquid_value: '', rf_gross_value: '1.100,00', rf_ir_iof: '0', rf_maturity_date: '2027-01-01', rf_contract_rate: 'CDI + 1,00%' },
+      { ticker: 'RF03', name: 'RF zerada', type: 'Renda Fixa', qty: 1, avg_price: 0, current_price: 0, rf_applied_value: '0', rf_liquid_value: '0', rf_gross_value: '0', rf_ir_iof: '0', rf_maturity_date: '2027-01-01', rf_contract_rate: 'CDI + 1,00%' },
+    ],
+    proventos: [],
+    rfEvents: [],
+    aportes: [],
+    goals: {},
+  });
+
+  const official = runtime.fixedIncomeOfficialValues(runtime.S.assets[0]);
+  const fallback = runtime.fixedIncomeOfficialValues(runtime.S.assets[1]);
+  const zero = runtime.fixedIncomeOfficialValues(runtime.S.assets[2]);
+
+  assert.deepEqual(runtime.rfValues(runtime.S.assets[0]), official);
+  assert.equal(official.applied, 1234.56);
+  assert.equal(official.current, 1500);
+  assert.equal(official.hasExplicitCurrent, true);
+  assert.equal(Number(official.profit.toFixed(2)), 265.44);
+  assert.equal(Math.abs(official.rentab - 21.5) < 0.2, true);
+
+  assert.equal(fallback.applied, 1000);
+  assert.equal(fallback.current, 1100);
+  assert.equal(fallback.hasExplicitCurrent, true);
+  assert.equal(runtime.assetNeedsRFUpdate(runtime.S.assets[1]), false);
+
+  assert.equal(zero.applied, 0);
+  assert.equal(zero.current, 0);
+  assert.equal(zero.hasExplicitCurrent, false);
+  assert.equal(runtime.assetNeedsRFUpdate(runtime.S.assets[2]), true);
+
+  const snapshot = runtime.dataQualitySnapshot();
+  assert.equal(snapshot.issues.some((issue) => issue.category === 'Renda Fixa' && issue.field === 'rf_applied_value' && issue.severity === 'critical'), false);
+  assert.equal(snapshot.issues.some((issue) => issue.category === 'Renda Fixa' && issue.field === 'rf_current_value'), true);
+});
+
 test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', () => {
   const emptyRuntime = loadRuntime({
     assets: [],
