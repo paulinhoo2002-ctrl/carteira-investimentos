@@ -11474,36 +11474,123 @@ function saveQuickMovement(){
 function isRendaFixaAsset(a){
   return normalizeType(a?.type||metaTicker(a?.ticker).type||'Ação','Ação') === 'Renda Fixa';
 }
-function rfValues(a){
-  const qty=Number(a?.qty)||0;
-  const avg=Number(a?.avg_price)||0;
-  const currentStored=Number(a?.current_price)||0;
-  const appliedRaw=Number(a?.rf_applied_value ?? a?.fixed_initial_value ?? a?.appliedValue ?? a?.initialValue ?? 0)||0;
-  const grossRaw=Number(a?.rf_gross_value ?? a?.fixed_gross_value ?? a?.marketValue ?? a?.currentValue ?? 0)||0;
-  const liquidRaw=Number(a?.rf_liquid_value ?? a?.fixed_current_value ?? a?.liquidValue ?? 0)||0;
-  const irIof=Number(a?.rf_ir_iof ?? a?.ir_iof ?? a?.iriof ?? 0)||0;
-  const unavailable=Number(a?.rf_unavailable_value ?? a?.unavailableValue ?? 0)||0;
-  const manualProfitRaw = a?.rf_profit_value;
-  const manualProfitSource = String(a?.rf_profit_source || '').toLowerCase();
-  const fixedInitial=Number(a?.fixed_initial_value)||0;
-  const fixedCurrent=Number(a?.fixed_current_value)||0;
-  const fixedGross=Number(a?.fixed_gross_value)||0;
-  const applied=appliedRaw>0 ? appliedRaw : fixedInitial>0 ? fixedInitial : qty*avg;
-  const liquidCandidate=liquidRaw>0 ? liquidRaw : fixedCurrent>0 ? fixedCurrent : currentStored>0 ? currentStored : 0;
-  const grossCandidate=grossRaw>0 ? grossRaw : fixedGross>0 ? fixedGross : 0;
-  const current=liquidCandidate>0 ? liquidCandidate : grossCandidate>0 ? grossCandidate : (applied>0 ? applied : null);
-  const hasExplicitCurrent = liquidCandidate>0 || grossCandidate>0 || fixedCurrent>0 || (currentStored>0 && Math.abs(currentStored-applied) > 0.0001);
-  const derivedProfit=Number.isFinite(current) && applied>0 ? current-applied : null;
-  const hasManualProfit = manualProfitRaw!==undefined && manualProfitRaw!==null && String(manualProfitRaw).trim()!=='' && manualProfitSource!=='derived';
-  const profit = hasManualProfit ? Number(manualProfitRaw)||0 : derivedProfit;
+function parseRendaFixaNumberState(value){
+  if(value===null || value===undefined || value==='') return {state:'missing', value:null};
+  if(typeof value==='number'){
+    if(!Number.isFinite(value)) return {state:'invalid', value:null};
+    if(value===0) return {state:'zero', value:0};
+    return {state:'value', value};
+  }
+  const text=String(value).trim();
+  if(!text) return {state:'missing', value:null};
+  const raw=text.replace(/R\$|%|\s/g,'');
+  if(!raw) return {state:'missing', value:null};
+  const validText=/^[+-]?(?:\d+(?:[.,]\d+)?|\d{1,3}(?:\.\d{3})+(?:,\d+)?)$/.test(raw);
+  if(!validText) return {state:'invalid', value:null};
+  const normalized=raw.includes(',') && raw.includes('.') ? raw.replace(/\./g,'').replace(',','.') : raw.includes(',') ? raw.replace(',','.') : raw;
+  const parsed=Number(normalized);
+  if(!Number.isFinite(parsed)) return {state:'invalid', value:null};
+  if(parsed===0) return {state:'zero', value:0};
+  return {state:'value', value:parsed};
+}
+function parseRendaFixaPositiveState(value){
+  const state=parseRendaFixaNumberState(value);
+  if(state.state==='value' && state.value<0) return {state:'invalid', value:null};
+  return state;
+}
+function pickRendaFixaState(options, allowZero=true){
+  for(const option of options){
+    if(!option || option.state==='missing' || option.state==='invalid') continue;
+    if(!allowZero && option.state==='zero') continue;
+    return option;
+  }
+  return {state:'missing', value:null, source:'', label:''};
+}
+function fixedIncomeOfficialValues(a){
+  const qtyState=parseRendaFixaPositiveState(a?.qty);
+  const avgState=parseRendaFixaPositiveState(a?.avg_price);
+  const currentStoredState=parseRendaFixaPositiveState(a?.current_price);
+  const appliedState=pickRendaFixaState([
+    {...parseRendaFixaPositiveState(a?.rf_applied_value), source:'rf_applied_value', label:'valor aplicado informado'},
+    {...parseRendaFixaPositiveState(a?.fixed_initial_value), source:'fixed_initial_value', label:'valor aplicado legado'},
+    {...parseRendaFixaPositiveState(a?.appliedValue), source:'appliedValue', label:'valor aplicado legado'},
+    {...parseRendaFixaPositiveState(a?.initialValue), source:'initialValue', label:'valor aplicado legado'},
+    (qtyState.state!=='missing' && avgState.state!=='missing' && qtyState.state!=='invalid' && avgState.state!=='invalid')
+      ? {state:(qtyState.value===0 || avgState.value===0) ? 'zero' : 'value', value:qtyState.value * avgState.value, source:'derived', label:'quantidade x preço médio'}
+      : null
+  ], true);
+  const liquidState=pickRendaFixaState([
+    {...parseRendaFixaPositiveState(a?.rf_liquid_value), source:'rf_liquid_value', label:'valor líquido informado'},
+    {...parseRendaFixaPositiveState(a?.fixed_current_value), source:'fixed_current_value', label:'valor líquido legado'},
+    {...parseRendaFixaPositiveState(a?.liquidValue), source:'liquidValue', label:'valor líquido legado'}
+  ], false);
+  const grossState=pickRendaFixaState([
+    {...parseRendaFixaPositiveState(a?.rf_gross_value), source:'rf_gross_value', label:'valor bruto informado'},
+    {...parseRendaFixaPositiveState(a?.fixed_gross_value), source:'fixed_gross_value', label:'valor bruto legado'},
+    {...parseRendaFixaPositiveState(a?.marketValue), source:'marketValue', label:'valor bruto legado'},
+    {...parseRendaFixaPositiveState(a?.currentValue), source:'currentValue', label:'valor atual informado'},
+    {...parseRendaFixaPositiveState(a?.current_price), source:'current_price', label:'valor atual informado'}
+  ], false);
+  const explicitCurrentState=pickRendaFixaState([liquidState, grossState], false);
+  const currentState=explicitCurrentState.state!=='missing'
+    ? explicitCurrentState
+    : (appliedState.state!=='missing'
+      ? {state:appliedState.state, value:appliedState.value, source:'applied-fallback', label:'valor aplicado'}
+      : {state:'missing', value:null, source:'', label:''});
+  const irIof=parseRendaFixaPositiveState(a?.rf_ir_iof ?? a?.ir_iof ?? a?.iriof ?? 0);
+  const unavailable=parseRendaFixaPositiveState(a?.rf_unavailable_value ?? a?.unavailableValue ?? 0);
+  const manualProfitRaw=a?.rf_profit_value;
+  const manualProfitSource=String(a?.rf_profit_source || '').toLowerCase();
+  const hasManualProfit=manualProfitRaw!==undefined && manualProfitRaw!==null && String(manualProfitRaw).trim()!=='' && manualProfitSource!=='derived';
+  const profitState=hasManualProfit ? parseRendaFixaNumberState(manualProfitRaw) : {state:'missing', value:null, source:'', label:''};
+  const applied=appliedState.value;
+  const current=currentState.value;
+  const fixedInitial=parseRendaFixaPositiveState(a?.fixed_initial_value).value;
+  const fixedCurrent=parseRendaFixaPositiveState(a?.fixed_current_value).value;
+  const gross=grossState.value;
+  const liquid=liquidState.value;
+  const profit=hasManualProfit
+    ? profitState.value
+    : (Number.isFinite(current) && Number.isFinite(applied) ? current - applied : null);
   const rentab=(Number.isFinite(profit) && applied>0) ? (profit/applied)*100 : null;
-  return { qty, avg, applied, current, currentStored, fixedInitial, fixedCurrent, gross: grossCandidate, liquid: liquidCandidate, irIof, unavailable, profit, rentab, hasExplicitCurrent, hasManualProfit };
+  const hasExplicitCurrent=explicitCurrentState.state!=='missing';
+  const currentSource=explicitCurrentState.state!=='missing'
+    ? explicitCurrentState.label
+    : (appliedState.state!=='missing' ? 'valor aplicado' : 'estimado');
+  return {
+    qty: qtyState.value ?? 0,
+    avg: avgState.value ?? 0,
+    applied: applied ?? 0,
+    current: current ?? null,
+    currentStored: currentStoredState.value ?? 0,
+    fixedInitial: fixedInitial ?? 0,
+    fixedCurrent: fixedCurrent ?? 0,
+    gross: gross ?? 0,
+    liquid: liquid ?? 0,
+    irIof: irIof.value ?? 0,
+    unavailable: unavailable.value ?? 0,
+    profit,
+    rentab,
+    hasExplicitCurrent,
+    hasManualProfit,
+    appliedState,
+    currentState,
+    grossState,
+    liquidState,
+    currentStoredState,
+    currentSource,
+    appliedSource: appliedState.label || (qtyState.state!=='missing' && avgState.state!=='missing' ? 'quantidade x preço médio' : ''),
+    hasExplicitApplied: appliedState.source !== 'derived' && appliedState.state !== 'missing'
+  };
+}
+function rfValues(a){
+  return fixedIncomeOfficialValues(a);
 }
 function assetRfCurrentValueMeta(a){
   if(!isRendaFixaAsset(a)) return {source:'', origin:''};
   const v=rfValues(a);
   const imported=rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source);
-  const source=v.liquid>0 ? 'valor líquido informado' : v.gross>0 ? 'valor bruto informado' : v.applied>0 ? 'valor aplicado' : 'estimado';
+  const source=v.currentSource || (v.applied>0 ? 'valor aplicado' : 'estimado');
   return { source, origin: imported ? 'importado da B3' : '' };
 }
 function assetAppliedValue(a){
@@ -11524,10 +11611,7 @@ function assetRentabPct(a){
 }
 function assetNeedsRFUpdate(a){
   if(!isRendaFixaAsset(a)) return false;
-  const v=rfValues(a);
-  const sameAsApplied = Number.isFinite(v.current) && Number.isFinite(v.applied) && Math.abs(v.current - v.applied) < 0.0001;
-  const zeroProfit = !Number.isFinite(v.profit) || Math.abs(v.profit) < 0.0001;
-  return (!v.liquid && !v.gross) || (sameAsApplied && zeroProfit);
+  return !rfValues(a).hasExplicitCurrent;
 }
 if(window.FinanceCore?.configure){
   window.FinanceCore.configure({ isRendaFixaAsset, rfValues });
@@ -14805,14 +14889,14 @@ function dataAuditAlerts(){
       const maturityDate=parseAnyDate(maturity);
       const issuer=String(asset?.fixed_issuer||asset?.issuer||asset?.institution||asset?.broker||'').trim();
       check(!!subtype,['warning','Renda Fixa',item,'Título sem tipo/subtipo definido.','Dificulta agrupamento e leitura da carteira de renda fixa.','Informe se é CDB, LCI, LCA, Tesouro, Debênture ou outro.']);
-      check(Number(values.applied)>0,['critical','Renda Fixa',item,'Valor aplicado ausente ou zerado.','Impede calcular ganho e rentabilidade da posição.','Informe o valor efetivamente aplicado.']);
-      check(!!values.hasExplicitCurrent&&Number(values.current)>0,['warning','Renda Fixa',item,'Valor atual, bruto ou líquido não informado.','O app usa o valor aplicado como referência e não acompanha o rendimento real.','Informe o valor atual apresentado pela corretora ou instituição.']);
+      check(values.appliedState.state!=='missing' && values.appliedState.state!=='invalid',['critical','Renda Fixa',item,'Valor aplicado ausente ou inválido.','Impede calcular ganho e rentabilidade da posição.','Informe o valor efetivamente aplicado.']);
+      check(!!values.hasExplicitCurrent,['warning','Renda Fixa',item,'Valor atual, bruto ou líquido não informado.','O app usa o valor aplicado como referência e não acompanha o rendimento real.','Informe o valor atual apresentado pela corretora ou instituição.']);
       check(!!rate,['warning','Renda Fixa',item,'Taxa contratada ausente.','Impede uma leitura completa do título e estimativas futuras.','Informe a taxa, como 100% CDI, IPCA + taxa ou prefixado.']);
       check(!!maturity&&!!maturityDate,['warning','Renda Fixa',item,'Data de vencimento ausente ou inválida.','Impede alertas de vencimento e planejamento de liquidez.','Informe a data de vencimento correta.']);
       if(maturityDate && maturityDate.getTime()<new Date().setHours(0,0,0,0)){
         add('warning','Renda Fixa',item,'Título vencido sem baixa ou status claro.','Pode manter valor vencido como posição ativa.','Confirme resgate, liquidação ou atualização da posição.');
       }
-      if(!(Number(values.applied)>0 && Number(values.current)>0 && rate && maturityDate)){
+      if(!(values.appliedState.state!=='missing' && values.hasExplicitCurrent && rate && maturityDate)){
         add('info','Renda Fixa',item,'Dados insuficientes para estimativa completa.','A projeção até o vencimento fica limitada.','Complete valor, taxa e vencimento usando o informe da instituição.');
       }
       check(!!issuer,['info','IRPF',item,'Renda fixa sem instituição ou emissor.','Pode dificultar a descrição e conferência com o informe oficial.','Informe instituição, banco ou emissor do título.']);
@@ -15176,8 +15260,8 @@ function dataQualityAnalyzeAssets(){
       const maturityState=dataQualityDateState(maturity);
       const issuer=String(asset?.fixed_issuer||asset?.issuer||asset?.institution||asset?.broker||'').trim();
       if(!subtype) dataQualityWarnMissing(record, 'rf_subtype', 'Subtipo de renda fixa ausente.', 'Informe o subtipo para leitura e agrupamento correto.');
-      if(!(Number(values.applied)>0)) dataQualityCritical(record, 'rf_applied_value', 'Valor aplicado de renda fixa ausente ou zerado.', 'Informe o valor efetivamente aplicado.');
-      if(!(values.hasExplicitCurrent && Number(values.current)>0)) dataQualityWarnMissing(record, 'rf_current_value', 'Valor atual bruto ou liquido nao informado.', 'Informe o valor atual apresentado pela instituicao.');
+      if(values.appliedState.state==='missing' || values.appliedState.state==='invalid') dataQualityCritical(record, 'rf_applied_value', 'Valor aplicado de renda fixa ausente ou invalido.', 'Informe o valor efetivamente aplicado.');
+      if(!values.hasExplicitCurrent) dataQualityWarnMissing(record, 'rf_current_value', 'Valor atual bruto ou liquido nao informado.', 'Informe o valor atual apresentado pela instituicao.');
       if(!rate) dataQualityWarnMissing(record, 'rf_contract_rate', 'Taxa contratada ausente.', 'Informe a taxa do titulo, como CDI, IPCA ou prefixado.');
       if(!(maturity && maturityState.state==='value')) dataQualityWarnMissing(record, 'rf_maturity_date', 'Data de vencimento ausente ou invalida.', 'Informe a data de vencimento correta.');
       if(!issuer) dataQualityInfo(record, 'fixed_issuer', 'Emissor ou instituicao nao informado.', 'Preencha o emissor para facilitar a conferencia manual.');
