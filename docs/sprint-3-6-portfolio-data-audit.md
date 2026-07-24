@@ -371,3 +371,100 @@ Sem alteracao funcional nesta etapa.
 
 - registros antigos com `current_price` zerado continuam tratados como sem fonte atual explicita
 - `dataQualityAnalyzeRfEvents()` e `rfEventTotals()` continuam como trilha separada de eventos
+
+## Sprint 3.6.3 - Consistencia de Relatorios e Snapshots
+
+### Divergencia auditada
+
+Nenhuma divergencia funcional nova foi encontrada entre:
+
+- `reportsSnapshot()`
+- `createReadonlyAssetsViewModel()`
+- `dashboardFinancialGoalsPanel()`
+- `dashboardHighlightsRows()`
+- `cx()`
+- `assetAnalysisRows()`
+- `assetPerformanceOverviewRows()`
+- `proventoResumoTipos()`
+- `proventoResumoPorAtivo()`
+- os bridges de reports readonly e suas camadas adaptadoras
+
+O que foi confirmado nesta etapa:
+
+- o snapshot de relatorios continua sendo agregacao de fontes oficiais;
+- o bridge moderno apenas normaliza e congela o snapshot recebido;
+- o readonly moderno nao recalcula carteira, renda passiva ou destaques por conta propria;
+- os caminhos de Dashboard, Relatorios e readonly seguem a mesma base oficial para patrimonio, proventos, renda fixa e destaques.
+
+### Matriz de paridade
+
+| Metrica | Fonte oficial | Dashboard | Relatorios | Moderno readonly | Divergencia |
+|---|---|---|---|---|---|
+| Patrimonio total | `cx()` | usa | usa | usa como base de snapshot | nenhuma nova |
+| Total de ativos de mercado | `assetAnalysisRows()` | usa | usa em leitura agregada | usa via snapshot readonly | nenhuma nova |
+| Total de Renda Fixa | `fixedIncomeOfficialValues()` / `rfIntelligenceSnapshot()` | usa | usa | usa via bridge readonly | nenhuma nova |
+| Valor aplicado total | `cx()` / `assetAnalysisRows()` | usa | usa | usa via snapshot readonly | nenhuma nova |
+| Valor atual | `cx()` / `assetAnalysisRows()` | usa | usa | usa via snapshot readonly | nenhuma nova |
+| Ganho / perda | `cx().tG` / `assetAnalysisRows()` | usa | usa | usa via snapshot readonly | nenhuma nova |
+| Rentabilidade | `cx().tGP` / `assetAnalysisRows()` | usa | usa | usa via snapshot readonly | nenhuma nova |
+| Dividendos historicos | `dividendMonthlyHistorySummary()` | usa | usa | nao recalcula | nenhuma nova |
+| Dividendos em 12 meses | `passiveIncomeGoalStats()` | usa | usa | nao recalcula | nenhuma nova |
+| Quantidade de ativos | `cx()` / `createReadonlyAssetsViewModel()` | usa | usa | usa | nenhuma nova |
+| Distribuicao por categoria | `dashboardSnapshot()` / `createReadonlyAssetsViewModel()` | usa | usa | usa | nenhuma nova |
+| Maiores altas | `dashboardHighlightsRows()` | usa | usa | usa como leitura derivada | nenhuma nova |
+| Maiores baixas | `dashboardHighlightsRows()` | usa | usa | usa como leitura derivada | nenhuma nova |
+
+### Fonte oficial e consumidores
+
+- Patrimonio: `cx()`
+- Renda Fixa: `fixedIncomeOfficialValues()`
+- Historico completo de proventos: `dividendMonthlyHistorySummary()`
+- Proventos dos ultimos 12 meses: `passiveIncomeGoalStats()`
+- Altas e baixas: `dashboardHighlightsRows()`
+- Auditoria: `dataQualitySnapshot()`
+- readonly moderno: `reportsSnapshot()` -> `createReadonlyAssetsViewModel()` via bridge
+
+### Funcao do snapshot de relatorios
+
+- `reportsSnapshot()` segue como snapshot agregador.
+- Ele nao cria calculos paralelos para patrimonio, renda passiva, renda fixa ou auditoria.
+- Ele apenas consolida fontes oficiais ja auditadas.
+- `createReadonlyAssetsViewModel()` continua recebendo um snapshot ja normalizado e aplica apenas filtro, ordenacao e distribuicao de leitura.
+
+### Duplicacoes mantidas
+
+- `proventoResumoTipos()` permanece como leitura legada compatível.
+- `proventoResumoPorAtivo()` permanece como leitura legada compatível.
+- Ambas continuam candidatas a revisao posterior, mas sem prova de remocao nesta etapa.
+
+### Consumidores migrados
+
+- `reportsSnapshot()` continua como agregador oficial do legado.
+- `createReadOnlyReportsBridge()` e `createReadOnlyReportsAdapter()` continuam como porta de entrada do readonly moderno.
+- `createReadonlyAssetsViewModel()` continua sendo o consumidor de leitura da camada moderna sem recalculo paralelo.
+
+### Testes
+
+- patrimonio igual entre Dashboard e snapshot de relatorios;
+- renda fixa igual entre Dashboard, relatorios e readonly;
+- proventos historicos e 12M consistentes com as fontes oficiais;
+- readonly sem efeitos colaterais;
+- objeto original nao alterado;
+- bridge e adapter continuam apenas normalizando e congelando o snapshot;
+- 98 testes aprovados.
+
+### Riscos remanescentes
+
+- `proventoResumoTipos()` e `proventoResumoPorAtivo()` ainda sao fontes legadas separadas e podem precisar de revisao futura se virarem divergencia real.
+- A leitura readonly moderna continua dependente da qualidade do snapshot recebido.
+- Renda Fixa ja esta centralizada, mas qualquer novo alias legado pode reabrir divergencias se for introduzido fora do contrato oficial.
+
+### Fora do escopo
+
+- nenhuma alteracao em schema
+- nenhuma alteracao em Firebase
+- nenhuma alteracao em persistencia
+- nenhuma dependencia nova
+- nenhuma alteracao em modern/dist
+- nenhuma migracao ampla de telas
+- nenhuma nova formula financeira

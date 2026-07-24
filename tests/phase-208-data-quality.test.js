@@ -213,6 +213,7 @@ function loadRuntime(state) {
   const sandbox = createSandbox(state);
   const context = vm.createContext(sandbox);
   const blocks = [
+    extractBetween(indexHtml, 'function rfPositionImportSourceTag(src){', 'function cleanupB3PositionSummaryAssets(){'),
     extractBetween(indexHtml, 'function isRendaFixaAsset(a){', 'function dataQualitySnapshot(){'),
     extractBetween(indexHtml, 'function dataQualitySnapshot(){', 'function dashboardPassiveIncomePanel(data){'),
     extractBetween(indexHtml, 'function dashboardPassiveIncomePanel(data){', 'function goalProgressText(current,target){'),
@@ -554,6 +555,58 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   assert.match(goalsHtml, /role="progressbar"/);
   assert.match(goalsHtml, /go\('metas'\)/);
   assert.match(passiveHtml, /go\('dividendos'\)/);
+});
+
+test('reportsSnapshot reaproveita fontes oficiais e nao recalcula bases paralelas', () => {
+  const runtime = loadRuntime({
+    assets: [
+      { ticker: 'PETR4', name: 'Petrobras', type: 'AÃ§Ã£o', qty: 100, avg_price: 10, current_price: 12, appliedValue: 10, currentValue: 12, currency: 'BRL' },
+      { ticker: 'CDB001', name: 'CDB oficial', type: 'Renda Fixa', qty: 1, avg_price: 1000, current_price: 1030, appliedValue: 1000, currentValue: 1030, rf_applied_value: 1000, rf_liquid_value: 1030, rf_maturity_date: '2027-01-01' },
+    ],
+    proventos: [
+      { ticker: 'PETR4', value: 100, date: '2026-07-10', eventType: 'Dividendo' },
+      { ticker: 'PETR4', value: 50, date: '2026-06-10', eventType: 'JCP' },
+      { ticker: 'RF1', value: 10, date: '2026-07-10', eventType: 'Juros de Renda Fixa', sourceEventKind: 'rf' },
+    ],
+    rfEvents: [
+      { ticker: 'CDB001', date: '2026-07-10', value: 30, type: 'Juros', grossValue: 30, netValue: 30 },
+    ],
+    aportes: [
+      { ticker: 'PETR4', date: '2026-07-01', totalValue: 1000 },
+      { ticker: 'CDB001', date: '2026-07-01', totalValue: 1000 },
+    ],
+    goals: {
+      patrimonio: { target: 1000 },
+      proventos: { monthly: 4000 },
+    },
+  });
+
+  const portfolio = runtime.cx();
+  const income = runtime.passiveIncomeGoalStats();
+  const fixed = runtime.rfIntelligenceSnapshot();
+  const audit = runtime.dataAuditSnapshot();
+  const snapshot = runtime.reportsSnapshot();
+  const filteredProventos = runtime.S.proventos.filter((entry) => runtime.reportsDateAllowed(entry.date));
+  const filteredAportes = runtime.S.aportes.filter((entry) => runtime.reportsDateAllowed(entry.date));
+
+  assert.equal(snapshot.portfolio.tC, portfolio.tC);
+  assert.equal(snapshot.portfolio.tI, portfolio.tI);
+  assert.equal(snapshot.portfolio.tG, portfolio.tG);
+  assert.equal(snapshot.portfolio.tGP, portfolio.tGP);
+  assert.equal(snapshot.income.monthlyAvg, income.monthlyAvg);
+  assert.equal(snapshot.income.total12, income.total12);
+  assert.equal(snapshot.fixed.current, fixed.current);
+  assert.equal(snapshot.fixed.applied, fixed.applied);
+  assert.equal(snapshot.fixedCount, fixed.assets.length);
+  assert.equal(snapshot.auditCount, audit.alerts.length);
+  assert.equal(snapshot.assetsCount, runtime.S.assets.length);
+  assert.equal(snapshot.proventosCount, filteredProventos.length);
+  assert.equal(snapshot.aportesCount, filteredAportes.length);
+  assert.equal(JSON.stringify(runtime.S.assets), JSON.stringify([
+    { ticker: 'PETR4', name: 'Petrobras', type: 'AÃ§Ã£o', qty: 100, avg_price: 10, current_price: 12, appliedValue: 10, currentValue: 12, currency: 'BRL' },
+    { ticker: 'CDB001', name: 'CDB oficial', type: 'Renda Fixa', qty: 1, avg_price: 1000, current_price: 1030, appliedValue: 1000, currentValue: 1030, rf_applied_value: 1000, rf_liquid_value: 1030, rf_maturity_date: '2027-01-01' },
+  ]));
+  assert.match(snapshot.periodLabel, /12 meses|Ano atual|Todos os dados/);
 });
 test('proventos oficiais normalizam strings e excluem registros invalidos', () => {
   const runtime = loadRuntime({
