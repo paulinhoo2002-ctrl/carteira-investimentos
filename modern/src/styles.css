@@ -555,9 +555,11 @@ button {
 .assets-readonly__summary,
 .assets-readonly__distribution,
 .assets-readonly__highlights,
-.assets-readonly__list {
+.assets-readonly__list,
+.assets-report__list {
   display: grid;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .assets-readonly__section-title-row {
@@ -1078,7 +1080,10 @@ button {
 }
 
 .assets-report__table-wrap {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 .assets-report__table {
