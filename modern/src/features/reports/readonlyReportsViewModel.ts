@@ -30,6 +30,12 @@ export interface ReadonlyAssetsSummary {
   readonly rentabilityPct: number;
 }
 
+export interface ReadonlyAssetPrudentSignal {
+  readonly label: string;
+  readonly reason: string;
+  readonly badgeVariant: 'neutral' | 'positive' | 'negative' | 'info' | 'warning';
+}
+
 export interface ReadonlyAssetsViewModel {
   readonly query: string;
   readonly selectedCategory: string;
@@ -61,6 +67,70 @@ export function calculateReadonlyAssetRentabilityPct(item: ReadOnlyReportItem) {
   }
 
   return (calculateReadonlyAssetResult(item) / investedValue) * 100;
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function hasText(value: unknown) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isReadonlyAssetDataComplete(item: ReadOnlyReportItem) {
+  return (
+    hasText(item.ticker) &&
+    hasText(item.name) &&
+    hasText(item.category) &&
+    isFiniteNumber(item.quantity) &&
+    isFiniteNumber(item.averagePrice) &&
+    isFiniteNumber(item.currentValue) &&
+    isFiniteNumber(item.variationPct) &&
+    isFiniteNumber(item.allocationPct)
+  );
+}
+
+export function createReadonlyAssetPrudentSignal(item: ReadOnlyReportItem): ReadonlyAssetPrudentSignal {
+  if (!isReadonlyAssetDataComplete(item)) {
+    return {
+      badgeVariant: 'warning',
+      label: 'Dados incompletos',
+      reason: 'Faltam dados essenciais para avaliar o sinal.',
+    };
+  }
+
+  const participationPct = item.allocationPct;
+  const rentabilityPct = calculateReadonlyAssetRentabilityPct(item);
+
+  if (participationPct >= 15) {
+    return {
+      badgeVariant: 'warning',
+      label: 'Concentração alta',
+      reason: `Participação de ${formatReadonlyPercent(participationPct, { signed: false })} na carteira.`,
+    };
+  }
+
+  if (rentabilityPct <= -20 || rentabilityPct >= 25) {
+    return {
+      badgeVariant: 'warning',
+      label: 'Aguardar',
+      reason: `Rentabilidade em ${formatReadonlyPercent(rentabilityPct)} sai da faixa prudente.`,
+    };
+  }
+
+  if (participationPct < 15 && rentabilityPct > -20 && rentabilityPct <= -5) {
+    return {
+      badgeVariant: 'info',
+      label: 'Atrativo para aporte',
+      reason: `Participação baixa e retorno em ${formatReadonlyPercent(rentabilityPct)}.`,
+    };
+  }
+
+  return {
+    badgeVariant: 'neutral',
+    label: 'Neutro',
+    reason: 'Caso completo sem sinal forte.',
+  };
 }
 
 export function createReadonlyAssetsSummary(items: readonly ReadOnlyReportItem[]): ReadonlyAssetsSummary {

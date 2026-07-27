@@ -117,7 +117,10 @@
 html,
 body,
 #root {
+  width: 100%;
+  max-width: 100vw;
   min-height: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -552,9 +555,11 @@ button {
 .assets-readonly__summary,
 .assets-readonly__distribution,
 .assets-readonly__highlights,
-.assets-readonly__list {
+.assets-readonly__list,
+.assets-report__list {
   display: grid;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .assets-readonly__section-title-row {
@@ -1075,12 +1080,15 @@ button {
 }
 
 .assets-report__table-wrap {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 .assets-report__table {
   width: 100%;
-  min-width: 860px;
+  min-width: 980px;
   border-collapse: collapse;
   color: var(--color-text);
 }
@@ -1162,6 +1170,24 @@ button {
   color: #fecaca;
 }
 
+.assets-report__signal-cell {
+  min-width: 196px;
+}
+
+.assets-report__signal {
+  display: grid;
+  gap: 6px;
+  align-items: start;
+  max-width: 24ch;
+}
+
+.assets-report__signal-reason {
+  color: var(--color-text-muted);
+  font-size: 0.87rem;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
 .assets-report__mobile-list {
   display: none;
 }
@@ -1216,6 +1242,13 @@ button {
   text-align: right;
 }
 
+.assets-report__signal-value {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  max-width: none;
+}
+
 .modern-footnote {
   padding: 0 var(--space-7) var(--space-7);
   color: var(--color-text-soft);
@@ -1254,12 +1287,14 @@ button {
   }
 
   .modern-sidebar[data-open='true'] {
+    display: block;
     transform: translateX(0);
     visibility: visible;
     pointer-events: auto;
   }
 
   .modern-sidebar[data-open='false'] {
+    display: none;
     visibility: hidden;
     pointer-events: none;
   }
@@ -1371,6 +1406,10 @@ button {
 
   .assets-report__mobile-card dd {
     max-width: 64%;
+  }
+
+  .assets-report__signal {
+    max-width: 100%;
   }
 
   .fixed-income-readonly__table-wrap {
