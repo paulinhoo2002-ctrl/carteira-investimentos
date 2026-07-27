@@ -224,6 +224,131 @@ test('view model readonly de ativos calcula resumo visivel e ordena por resultad
   );
 });
 
+test('sinal prudente readonly de ativos classifica precedencia e casos limite', async () => {
+  const { createReadonlyAssetPrudentSignal, createReadonlyAssetsViewModel } = await loadViewModelModule();
+
+  const baseItem = {
+    ticker: 'AAA1',
+    name: 'Ativo Alpha',
+    category: 'Acao demo',
+    quantity: 1,
+    averagePrice: 100,
+    currentValue: 100,
+    variationPct: 0,
+    allocationPct: 10,
+    trend: 'neutral',
+  };
+
+  assert.deepEqual(createReadonlyAssetPrudentSignal(baseItem), {
+    badgeVariant: 'neutral',
+    label: 'Neutro',
+    reason: 'Caso completo sem sinal forte.',
+  });
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 90, allocationPct: 10 }).label,
+    'Atrativo para aporte',
+  );
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 95, allocationPct: 10 }).label,
+    'Atrativo para aporte',
+  );
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 95.01, allocationPct: 10 }).label,
+    'Neutro',
+  );
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 90, allocationPct: 14.99 }).label,
+    'Atrativo para aporte',
+  );
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 80, allocationPct: 10 }).label,
+    'Aguardar',
+  );
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 80.01, allocationPct: 10 }).label,
+    'Atrativo para aporte',
+  );
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 124.99, allocationPct: 10 }).label, 'Neutro');
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 125, allocationPct: 10 }).label, 'Aguardar');
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, allocationPct: 15 }).label, 'Concentração alta');
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 90, allocationPct: 15 }).label, 'Concentração alta');
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 100, allocationPct: 0 }).label, 'Neutro');
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 95, allocationPct: 14.99 }).label,
+    'Atrativo para aporte',
+  );
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 95, allocationPct: 10 }).reason.includes('%'), true);
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 95, allocationPct: 10 }).badgeVariant, 'info');
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: Number.NaN }).label, 'Dados incompletos');
+  assert.equal(
+    createReadonlyAssetPrudentSignal({ ...baseItem, allocationPct: Number.POSITIVE_INFINITY }).label,
+    'Dados incompletos',
+  );
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: 100, allocationPct: Number.NaN }).label, 'Dados incompletos');
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, currentValue: undefined }).label, 'Dados incompletos');
+  assert.equal(createReadonlyAssetPrudentSignal({ ...baseItem, name: '' }).label, 'Dados incompletos');
+
+  const signalCases = [
+    {
+      item: baseItem,
+      expected: {
+        label: 'Neutro',
+        badgeVariant: 'neutral',
+      },
+    },
+    {
+      item: { ...baseItem, currentValue: 95, allocationPct: 10 },
+      expected: {
+        label: 'Atrativo para aporte',
+        badgeVariant: 'info',
+      },
+    },
+    {
+      item: { ...baseItem, currentValue: 80, allocationPct: 10 },
+      expected: {
+        label: 'Aguardar',
+        badgeVariant: 'warning',
+      },
+    },
+    {
+      item: { ...baseItem, currentValue: 100, allocationPct: 15 },
+      expected: {
+        label: 'Concentração alta',
+        badgeVariant: 'warning',
+      },
+    },
+    {
+      item: { ...baseItem, currentValue: undefined },
+      expected: {
+        label: 'Dados incompletos',
+        badgeVariant: 'warning',
+      },
+    },
+  ];
+
+  for (const { item, expected } of signalCases) {
+    const signal = createReadonlyAssetPrudentSignal(item);
+    assert.equal(signal.label, expected.label);
+    assert.equal(signal.badgeVariant, expected.badgeVariant);
+    assert.equal(typeof signal.reason, 'string');
+    assert.ok(signal.reason.length > 0);
+  }
+
+  const emptyViewModel = createReadonlyAssetsViewModel(
+    createSnapshotFromItems([], {
+      summary: { totalValue: 0, itemCount: 0, averageVariationPct: 0 },
+    }),
+    {
+      query: '',
+      category: 'all',
+      sortBy: 'currentValueDesc',
+    },
+  );
+
+  assert.equal(emptyViewModel.filteredItems.length, 0);
+  assert.equal(emptyViewModel.hasResults, false);
+});
+
 test('view model readonly de ativos separa altas e quedas por sinal', async () => {
   const { createReadonlyAssetsViewModel } = await loadViewModelModule();
 
@@ -436,6 +561,8 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     assert.match(before, /Quantidade/);
     assert.match(before, /Resultado agregado/);
     assert.match(before, /Rentabilidade/);
+    assert.match(before, /Sinal/);
+    assert.match(before, /Concentração alta|Atrativo para aporte|Neutro|Dados incompletos/);
     assert.match(before, /Valor da posi/);
     assert.equal(before.includes('Maior alta'), false);
     assert.equal(before.includes('Maior queda'), false);
@@ -466,6 +593,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     );
 
     assert.match(onlyPositiveHtml, /Resultado agregado/);
+    assert.match(onlyPositiveHtml, /Sinal/);
 
     const onlyNegativeHtml = renderToStaticMarkup(
       React.createElement(AssetsReadonlyPage, {
@@ -490,6 +618,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     );
 
     assert.match(onlyNegativeHtml, /Rentabilidade/);
+    assert.match(onlyNegativeHtml, /Sinal/);
 
     const onlyNeutralHtml = renderToStaticMarkup(
       React.createElement(AssetsReadonlyPage, {
@@ -514,6 +643,7 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
     );
 
     assert.match(onlyNeutralHtml, /Valor da posi/);
+    assert.match(onlyNeutralHtml, /Sinal/);
 
     const emptyHtml = renderToStaticMarkup(
       React.createElement(AssetsReadonlyPage, {

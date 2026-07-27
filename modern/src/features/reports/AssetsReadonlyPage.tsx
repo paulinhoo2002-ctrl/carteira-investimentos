@@ -9,6 +9,7 @@ import { Select } from '../../components/Select/Select';
 import {
   calculateReadonlyAssetResult,
   calculateReadonlyAssetRentabilityPct,
+  createReadonlyAssetPrudentSignal,
   createReadonlyAssetsSummary,
   createReadonlyAssetsViewModel,
   formatReadonlyCurrency,
@@ -102,6 +103,14 @@ function AssetsReadonlyPageContent({
   );
 
   const summary = useMemo(() => createReadonlyAssetsSummary(viewModel.filteredItems), [viewModel.filteredItems]);
+  const itemsWithSignals = useMemo(
+    () =>
+      viewModel.filteredItems.map((item) => ({
+        item,
+        signal: createReadonlyAssetPrudentSignal(item),
+      })),
+    [viewModel.filteredItems],
+  );
 
   return (
     <section className="page-shell assets-readonly" aria-labelledby="page-assets">
@@ -350,11 +359,12 @@ function AssetsReadonlyPageContent({
                     <th className="number-cell" scope="col">
                       Rentabilidade
                     </th>
+                    <th scope="col">Sinal</th>
                     <th scope="col">Tendência</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {viewModel.filteredItems.map((item) => (
+                  {itemsWithSignals.map(({ item, signal }) => (
                     <tr key={item.ticker}>
                       <th scope="row">
                         <span className="assets-report__ticker">{item.ticker}</span>
@@ -370,6 +380,14 @@ function AssetsReadonlyPageContent({
                       <td className="number-cell">{formatReadonlyCurrency(item.currentValue)}</td>
                       <td className="number-cell">{formatReadonlyCurrency(calculateReadonlyAssetResult(item))}</td>
                       <td className="number-cell">{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</td>
+                      <td className="assets-report__signal-cell">
+                        <div className="assets-report__signal">
+                          <Badge size="sm" variant={signal.badgeVariant}>
+                            {signal.label}
+                          </Badge>
+                          <span className="assets-report__signal-reason">{signal.reason}</span>
+                        </div>
+                      </td>
                       <td>
                         <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
                           {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
@@ -382,7 +400,7 @@ function AssetsReadonlyPageContent({
             </div>
 
             <div className="assets-report__mobile-list" aria-label="Lista mobile dos ativos readonly">
-              {viewModel.filteredItems.map((item) => (
+              {itemsWithSignals.map(({ item, signal }) => (
                 <article className="assets-report__mobile-card" key={item.ticker}>
                   <div className="assets-report__mobile-card-head">
                     <div>
@@ -405,6 +423,15 @@ function AssetsReadonlyPageContent({
                     <div>
                       <dt>Rentabilidade</dt>
                       <dd>{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</dd>
+                    </div>
+                    <div>
+                      <dt>Sinal</dt>
+                      <dd className="assets-report__signal-value">
+                        <Badge size="sm" variant={signal.badgeVariant}>
+                          {signal.label}
+                        </Badge>
+                        <span className="assets-report__signal-reason">{signal.reason}</span>
+                      </dd>
                     </div>
                     <div>
                       <dt>Quantidade</dt>
