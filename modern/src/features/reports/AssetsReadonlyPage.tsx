@@ -16,6 +16,8 @@ import {
   formatReadonlyDateTime,
   formatReadonlyPercent,
   formatReadonlyQuantity,
+  SIGNAL_PRIORITY_ORDER,
+  type ReadonlyAssetSignalKey,
   type ReadonlyAssetsSortKey,
 } from './readonlyReportsViewModel';
 
@@ -41,6 +43,25 @@ const sortLabels: Record<ReadonlyAssetsSortKey, string> = {
   resultAsc: 'Menor resultado',
   ticker: 'Ticker',
   name: 'Nome',
+  signalPriority: 'Prioridade do sinal',
+};
+
+const signalLabels: Record<ReadonlyAssetSignalKey, string> = {
+  all: 'Todos',
+  incomplete: 'Dados incompletos',
+  concentration: 'Concentração alta',
+  wait: 'Aguardar',
+  attractive: 'Atrativo para aporte',
+  neutral: 'Neutro',
+};
+
+const signalBadgeVariant: Record<ReadonlyAssetSignalKey, 'neutral' | 'info' | 'warning'> = {
+  all: 'neutral',
+  incomplete: 'warning',
+  concentration: 'warning',
+  wait: 'warning',
+  attractive: 'info',
+  neutral: 'neutral',
 };
 
 const diagnosticStatusLabel: Record<ReportsReadonlyDiagnostics['refreshStatus'], string> = {
@@ -79,6 +100,11 @@ function summarizeItemLabel(ticker: string, name: string) {
   return `${ticker} · ${name}`;
 }
 
+function sanitizeTickerForId(ticker: string): string {
+  const sanitized = String(ticker).trim().replace(/[^A-Za-z0-9_-]/g, '-');
+  return sanitized.length > 0 ? sanitized : 'asset';
+}
+
 function AssetsReadonlyPageContent({
   diagnostics,
   errorMessage,
@@ -88,6 +114,7 @@ function AssetsReadonlyPageContent({
 }: AssetsReadonlyPageContentProps) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
+  const [signal, setSignal] = useState<ReadonlyAssetSignalKey>('all');
   const [sortBy, setSortBy] = useState<ReadonlyAssetsSortKey>('currentValueDesc');
   const [topPositionsOpen, setTopPositionsOpen] = useState(false);
   const [distributionOpen, setDistributionOpen] = useState(false);
@@ -98,8 +125,9 @@ function AssetsReadonlyPageContent({
         query,
         category,
         sortBy,
+        signal,
       }),
-    [category, query, snapshot, sortBy],
+    [category, query, signal, snapshot, sortBy],
   );
 
   const summary = useMemo(() => createReadonlyAssetsSummary(viewModel.filteredItems), [viewModel.filteredItems]);
@@ -184,6 +212,20 @@ function AssetsReadonlyPageContent({
 
           <Select
             className="assets-readonly__control"
+            id="assets-readonly-signal"
+            label="Filtrar por sinal"
+            value={signal}
+            onChange={(event) => setSignal(event.target.value as ReadonlyAssetSignalKey)}
+          >
+              {(SIGNAL_PRIORITY_ORDER as readonly ReadonlyAssetSignalKey[]).map((key) => (
+                <option key={key} value={key}>
+                  {signalLabels[key]}
+                </option>
+              ))}
+          </Select>
+
+          <Select
+            className="assets-readonly__control"
             id="assets-readonly-sort"
             label="Ordenar por"
             value={sortBy}
@@ -230,6 +272,25 @@ function AssetsReadonlyPageContent({
           <p className="assets-readonly__summary-hint">Retorno sobre custo exibido.</p>
         </article>
       </div>
+
+      <section className="assets-readonly__signal-counts" aria-labelledby="assets-signal-counts-title">
+        <div className="assets-readonly__section-title-row">
+          <h3 className="assets-readonly__section-title" id="assets-signal-counts-title">
+            Contagem por sinal
+          </h3>
+          <p className="assets-readonly__section-note">Calculada antes do filtro por sinal; respeita busca e categoria.</p>
+        </div>
+        <ul className="assets-readonly__signal-counts-list" aria-label="Contagem de ativos por sinal">
+          {SIGNAL_PRIORITY_ORDER.map((key) => (
+            <li key={key} className="assets-readonly__signal-counts-item" data-signal={key}>
+              <Badge size="sm" variant={signalBadgeVariant[key]}>
+                {signalLabels[key]}
+              </Badge>
+              <span className="assets-readonly__signal-counts-value">{viewModel.signalCounts[key]}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section className="assets-readonly__highlights" aria-labelledby="assets-highlights">
         <div className="assets-readonly__section-title-row">
@@ -364,94 +425,106 @@ function AssetsReadonlyPageContent({
                   </tr>
                 </thead>
                 <tbody>
-                  {itemsWithSignals.map(({ item, signal }) => (
-                    <tr key={item.ticker}>
-                      <th scope="row">
-                        <span className="assets-report__ticker">{item.ticker}</span>
-                        <span className="assets-report__name">{item.name}</span>
-                      </th>
-                      <td>
-                        <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
-                          {item.category}
-                        </Badge>
-                      </td>
-                      <td className="number-cell">{formatReadonlyQuantity(item.quantity)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.averagePrice)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(item.currentValue)}</td>
-                      <td className="number-cell">{formatReadonlyCurrency(calculateReadonlyAssetResult(item))}</td>
-                      <td className="number-cell">{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</td>
-                      <td className="assets-report__signal-cell">
-                        <div className="assets-report__signal">
-                          <Badge size="sm" variant={signal.badgeVariant}>
-                            {signal.label}
+                  {itemsWithSignals.map(({ item, signal }) => {
+                    const signalDescriptionId = `assets-readonly-signal-reason-${sanitizeTickerForId(item.ticker)}`;
+                    return (
+                      <tr key={item.ticker}>
+                        <th scope="row">
+                          <span className="assets-report__ticker">{item.ticker}</span>
+                          <span className="assets-report__name">{item.name}</span>
+                        </th>
+                        <td>
+                          <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
+                            {item.category}
                           </Badge>
-                          <span className="assets-report__signal-reason">{signal.reason}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
-                          {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="number-cell">{formatReadonlyQuantity(item.quantity)}</td>
+                        <td className="number-cell">{formatReadonlyCurrency(item.averagePrice)}</td>
+                        <td className="number-cell">{formatReadonlyCurrency(item.currentValue)}</td>
+                        <td className="number-cell">{formatReadonlyCurrency(calculateReadonlyAssetResult(item))}</td>
+                        <td className="number-cell">{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</td>
+                        <td className="assets-report__signal-cell">
+                          <div aria-describedby={signalDescriptionId} className="assets-report__signal">
+                            <Badge size="sm" variant={signal.badgeVariant}>
+                              {signal.label}
+                            </Badge>
+                            <span className="assets-report__signal-reason" id={signalDescriptionId}>
+                              {signal.reason}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
+                            {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
             <div className="assets-report__mobile-list" aria-label="Lista mobile dos ativos readonly">
-              {itemsWithSignals.map(({ item, signal }) => (
-                <article className="assets-report__mobile-card" key={item.ticker}>
-                  <div className="assets-report__mobile-card-head">
-                    <div>
-                      <h4 className="assets-report__ticker">{item.ticker}</h4>
-                      <p className="assets-report__name">{item.name}</p>
+              {itemsWithSignals.map(({ item, signal }) => {
+                const signalDescriptionId = `assets-readonly-signal-reason-mobile-${sanitizeTickerForId(item.ticker)}`;
+                return (
+                  <article className="assets-report__mobile-card" key={item.ticker}>
+                    <div className="assets-report__mobile-card-head">
+                      <div>
+                        <h4 className="assets-report__ticker">{item.ticker}</h4>
+                        <p className="assets-report__name">{item.name}</p>
+                      </div>
+                      <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
+                        {item.category}
+                      </Badge>
                     </div>
-                    <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
-                      {item.category}
-                    </Badge>
-                  </div>
-                  <dl>
-                    <div>
-                      <dt>Valor da posição</dt>
-                      <dd>{formatReadonlyCurrency(item.currentValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>Resultado</dt>
-                      <dd>{formatReadonlyCurrency(calculateReadonlyAssetResult(item))}</dd>
-                    </div>
-                    <div>
-                      <dt>Rentabilidade</dt>
-                      <dd>{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</dd>
-                    </div>
-                    <div>
-                      <dt>Sinal</dt>
-                      <dd className="assets-report__signal-value">
-                        <Badge size="sm" variant={signal.badgeVariant}>
-                          {signal.label}
-                        </Badge>
-                        <span className="assets-report__signal-reason">{signal.reason}</span>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Quantidade</dt>
-                      <dd>{formatReadonlyQuantity(item.quantity)}</dd>
-                    </div>
-                    <div>
-                      <dt>Preço médio</dt>
-                      <dd>{formatReadonlyCurrency(item.averagePrice)}</dd>
-                    </div>
-                    <div>
-                      <dt>Tendência</dt>
-                      <dd>
-                        <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
-                          {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
-                        </Badge>
-                      </dd>
-                    </div>
-                  </dl>
-                </article>
-              ))}
+                    <dl>
+                      <div>
+                        <dt>Valor da posição</dt>
+                        <dd>{formatReadonlyCurrency(item.currentValue)}</dd>
+                      </div>
+                      <div>
+                        <dt>Resultado</dt>
+                        <dd>{formatReadonlyCurrency(calculateReadonlyAssetResult(item))}</dd>
+                      </div>
+                      <div>
+                        <dt>Rentabilidade</dt>
+                        <dd>{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</dd>
+                      </div>
+                      <div>
+                        <dt>Sinal</dt>
+                        <dd className="assets-report__signal-value">
+                          <div aria-describedby={signalDescriptionId} className="assets-report__signal">
+                            <Badge size="sm" variant={signal.badgeVariant}>
+                              {signal.label}
+                            </Badge>
+                            <span className="assets-report__signal-reason" id={signalDescriptionId}>
+                              {signal.reason}
+                            </span>
+                          </div>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Quantidade</dt>
+                        <dd>{formatReadonlyQuantity(item.quantity)}</dd>
+                      </div>
+                      <div>
+                        <dt>Preço médio</dt>
+                        <dd>{formatReadonlyCurrency(item.averagePrice)}</dd>
+                      </div>
+                      <div>
+                        <dt>Tendência</dt>
+                        <dd>
+                          <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
+                            {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
+                          </Badge>
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                );
+              })}
             </div>
           </>
         ) : (
