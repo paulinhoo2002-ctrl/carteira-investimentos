@@ -2,24 +2,23 @@ import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { ReportsReadonlyDiagnostics, ReportsRefreshController } from './reportsRefreshController';
 import type { ReadOnlyReportsAdapter } from './reportsSnapshotAdapter';
 import type { ReadOnlyReportsSnapshot } from './reportsReadonlyContract.mjs';
-import { Button } from '../../components/Button/Button';
-import { Badge } from '../../components/Badge/Badge';
-import { Input } from '../../components/Input/Input';
-import { Select } from '../../components/Select/Select';
 import {
-  calculateReadonlyAssetResult,
-  calculateReadonlyAssetRentabilityPct,
   createReadonlyAssetPrudentSignal,
   createReadonlyAssetsSummary,
   createReadonlyAssetsViewModel,
-  formatReadonlyCurrency,
-  formatReadonlyDateTime,
-  formatReadonlyPercent,
-  formatReadonlyQuantity,
-  SIGNAL_PRIORITY_ORDER,
   type ReadonlyAssetSignalKey,
   type ReadonlyAssetsSortKey,
 } from './readonlyReportsViewModel';
+import { diagnosticStatusLabel } from './readonlyReportsConstants';
+import { AssetsReadonlyHeader } from './components/AssetsReadonlyHeader';
+import { AssetsReadonlyFilters } from './components/AssetsReadonlyFilters';
+import { AssetsReadonlySummaryGrid } from './components/AssetsReadonlySummaryGrid';
+import { AssetsReadonlySignalCounts } from './components/AssetsReadonlySignalCounts';
+import { AssetsReadonlyTopPositions } from './components/AssetsReadonlyTopPositions';
+import { AssetsReadonlyDistribution } from './components/AssetsReadonlyDistribution';
+import { AssetsReadonlyTable } from './components/AssetsReadonlyTable';
+import { AssetsReadonlyMobileCards } from './components/AssetsReadonlyMobileCards';
+import { AssetsReadonlyEmptyState } from './components/AssetsReadonlyEmptyState';
 
 interface AssetsReadonlyPageProps {
   adapter: ReadOnlyReportsAdapter;
@@ -32,77 +31,6 @@ interface AssetsReadonlyPageContentProps {
   errorMessage: string | null;
   onRefresh?: () => void;
   showRefreshButton: boolean;
-}
-
-const sortLabels: Record<ReadonlyAssetsSortKey, string> = {
-  currentValueDesc: 'Maior valor da posicao',
-  currentValueAsc: 'Menor valor da posicao',
-  rentabilityPctDesc: 'Maior rentabilidade',
-  rentabilityPctAsc: 'Menor rentabilidade',
-  resultDesc: 'Maior resultado',
-  resultAsc: 'Menor resultado',
-  ticker: 'Ticker',
-  name: 'Nome',
-  signalPriority: 'Prioridade do sinal',
-};
-
-const signalLabels: Record<ReadonlyAssetSignalKey, string> = {
-  all: 'Todos',
-  incomplete: 'Dados incompletos',
-  concentration: 'Concentração alta',
-  wait: 'Aguardar',
-  attractive: 'Atrativo para aporte',
-  neutral: 'Neutro',
-};
-
-const signalBadgeVariant: Record<ReadonlyAssetSignalKey, 'neutral' | 'info' | 'warning'> = {
-  all: 'neutral',
-  incomplete: 'warning',
-  concentration: 'warning',
-  wait: 'warning',
-  attractive: 'info',
-  neutral: 'neutral',
-};
-
-const diagnosticStatusLabel: Record<ReportsReadonlyDiagnostics['refreshStatus'], string> = {
-  idle: 'Leitura pronta',
-  updated: 'Leitura atualizada',
-  fallback: 'Fallback readonly ativo',
-  error: 'Ultimo snapshot valido preservado',
-};
-
-const diagnosticStatusVariant: Record<ReportsReadonlyDiagnostics['refreshStatus'], 'neutral' | 'positive' | 'warning' | 'negative'> = {
-  idle: 'neutral',
-  updated: 'positive',
-  fallback: 'warning',
-  error: 'negative',
-};
-
-const trendBadgeVariant: Record<'positive' | 'negative' | 'neutral', 'positive' | 'negative' | 'neutral'> = {
-  positive: 'positive',
-  negative: 'negative',
-  neutral: 'neutral',
-};
-
-function categoryBadgeVariant(category: string) {
-  if (/etf/i.test(category)) {
-    return 'info' as const;
-  }
-
-  if (/fii/i.test(category)) {
-    return 'neutral' as const;
-  }
-
-  return 'positive' as const;
-}
-
-function summarizeItemLabel(ticker: string, name: string) {
-  return `${ticker} · ${name}`;
-}
-
-function sanitizeTickerForId(ticker: string): string {
-  const sanitized = String(ticker).trim().replace(/[^A-Za-z0-9_-]/g, '-');
-  return sanitized.length > 0 ? sanitized : 'asset';
 }
 
 function AssetsReadonlyPageContent({
@@ -142,34 +70,12 @@ function AssetsReadonlyPageContent({
 
   return (
     <section className="page-shell assets-readonly" aria-labelledby="page-assets">
-      <div className="assets-readonly__header">
-        <div>
-          <p className="page-shell__eyebrow">Ativos</p>
-          <h2 className="page-shell__title" id="page-assets">
-            Ativos
-          </h2>
-          <p className="page-shell__description">Somente leitura. Nada aqui escreve ou altera a carteira.</p>
-        </div>
-
-        <div className="assets-readonly__header-actions">
-          <p className="assets-readonly__meta">
-            <span className="assets-readonly__meta-label">Snapshot</span>
-            <time dateTime={snapshot.generatedAt}>{formatReadonlyDateTime(snapshot.generatedAt)}</time>
-          </p>
-          <p className="assets-readonly__meta">
-            <span className="assets-readonly__meta-label">Origem segura</span>
-            <span>{diagnostics?.originLabel ?? 'Snapshot somente leitura validado'}</span>
-          </p>
-          <a className="assets-readonly__legacy-link" href="/index.html">
-            Voltar ao legado
-          </a>
-          {showRefreshButton ? (
-            <Button className="assets-report__refresh-button" type="button" variant="secondary" onClick={onRefresh}>
-              Atualizar ativos
-            </Button>
-          ) : null}
-        </div>
-      </div>
+      <AssetsReadonlyHeader
+        snapshot={snapshot}
+        originLabel={diagnostics?.originLabel ?? 'Snapshot somente leitura validado'}
+        showRefreshButton={showRefreshButton}
+        onRefresh={onRefresh}
+      />
 
       <p className="assets-report__notice">{snapshot.notice}</p>
 
@@ -181,212 +87,36 @@ function AssetsReadonlyPageContent({
             : `${viewModel.summary.itemCount} ativos somente leitura`}
       </p>
 
-      <section className="assets-readonly__filters" aria-labelledby="assets-filters">
-        <div className="assets-readonly__section-title-row">
-          <h3 className="assets-readonly__section-title" id="assets-filters">
-            Filtros
-          </h3>
-          <p className="assets-readonly__section-note">Apenas estado visual local, sem persistência.</p>
-        </div>
+      <AssetsReadonlyFilters
+        query={query}
+        category={category}
+        signal={signal}
+        sortBy={sortBy}
+        categories={viewModel.categories}
+        resultCount={viewModel.filteredItems.length}
+        totalItemCount={snapshot.items.length}
+        hasResults={viewModel.hasResults}
+        onQueryChange={setQuery}
+        onCategoryChange={setCategory}
+        onSignalChange={setSignal}
+        onSortChange={setSortBy}
+      />
 
-        <div className="assets-readonly__controls">
-          <Input
-            className="assets-readonly__control"
-            helperText="Apenas estado visual local, sem persistencia."
-            id="assets-readonly-search"
-            label="Buscar por ticker ou nome"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="PETR4, Maxi Renda..."
-            type="search"
-            value={query}
-          />
+      <AssetsReadonlySummaryGrid summary={summary} />
 
-          <Select className="assets-readonly__control" id="assets-readonly-category" label="Categoria" value={category} onChange={(event) => setCategory(event.target.value)}>
-              <option value="all">Todas</option>
-              {viewModel.categories.map((itemCategory) => (
-                <option key={itemCategory} value={itemCategory}>
-                  {itemCategory}
-                </option>
-              ))}
-          </Select>
+      <AssetsReadonlySignalCounts counts={viewModel.signalCounts} />
 
-          <Select
-            className="assets-readonly__control"
-            id="assets-readonly-signal"
-            label="Filtrar por sinal"
-            value={signal}
-            onChange={(event) => setSignal(event.target.value as ReadonlyAssetSignalKey)}
-          >
-              {(SIGNAL_PRIORITY_ORDER as readonly ReadonlyAssetSignalKey[]).map((key) => (
-                <option key={key} value={key}>
-                  {signalLabels[key]}
-                </option>
-              ))}
-          </Select>
+      <AssetsReadonlyTopPositions
+        open={topPositionsOpen}
+        onOpenChange={setTopPositionsOpen}
+        items={viewModel.topPositions}
+      />
 
-          <Select
-            className="assets-readonly__control"
-            id="assets-readonly-sort"
-            label="Ordenar por"
-            value={sortBy}
-            onChange={(event) => setSortBy(event.target.value as ReadonlyAssetsSortKey)}
-          >
-              {Object.entries(sortLabels).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-          </Select>
-        </div>
-
-        <p className="assets-readonly__results" aria-live="polite">
-          {viewModel.hasResults
-            ? `${viewModel.filteredItems.length} resultado${viewModel.filteredItems.length === 1 ? '' : 's'} encontrado${
-                viewModel.filteredItems.length === 1 ? '' : 's'
-              }`
-            : snapshot.items.length === 0
-              ? 'Carteira vazia nesta leitura readonly.'
-              : 'Nenhum ativo corresponde aos filtros atuais.'}
-        </p>
-      </section>
-
-      <div className="assets-readonly__summary" aria-label="Resumo readonly dos ativos">
-        <article className="assets-readonly__summary-card">
-          <p className="assets-readonly__summary-label">Total exibido</p>
-          <p className="assets-readonly__summary-value">{formatReadonlyCurrency(summary.totalValue)}</p>
-          <p className="assets-readonly__summary-hint">Somente itens visíveis nesta leitura.</p>
-        </article>
-        <article className="assets-readonly__summary-card">
-          <p className="assets-readonly__summary-label">Quantidade</p>
-          <p className="assets-readonly__summary-value">{summary.itemCount}</p>
-          <p className="assets-readonly__summary-hint">Contagem atual do filtro.</p>
-        </article>
-        <article className="assets-readonly__summary-card">
-          <p className="assets-readonly__summary-label">Resultado agregado</p>
-          <p className="assets-readonly__summary-value">{formatReadonlyCurrency(summary.totalResult)}</p>
-          <p className="assets-readonly__summary-hint">Diferença entre posição e custo.</p>
-        </article>
-        <article className="assets-readonly__summary-card">
-          <p className="assets-readonly__summary-label">Rentabilidade</p>
-          <p className="assets-readonly__summary-value">{formatReadonlyPercent(summary.rentabilityPct)}</p>
-          <p className="assets-readonly__summary-hint">Retorno sobre custo exibido.</p>
-        </article>
-      </div>
-
-      <section className="assets-readonly__signal-counts" aria-labelledby="assets-signal-counts-title">
-        <div className="assets-readonly__section-title-row">
-          <h3 className="assets-readonly__section-title" id="assets-signal-counts-title">
-            Contagem por sinal
-          </h3>
-          <p className="assets-readonly__section-note">Calculada antes do filtro por sinal; respeita busca e categoria.</p>
-        </div>
-        <ul className="assets-readonly__signal-counts-list" aria-label="Contagem de ativos por sinal">
-          {SIGNAL_PRIORITY_ORDER.map((key) => (
-            <li key={key} className="assets-readonly__signal-counts-item" data-signal={key}>
-              <Badge size="sm" variant={signalBadgeVariant[key]}>
-                {signalLabels[key]}
-              </Badge>
-              <span className="assets-readonly__signal-counts-value">{viewModel.signalCounts[key]}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="assets-readonly__highlights" aria-labelledby="assets-highlights">
-        <div className="assets-readonly__section-title-row">
-          <div>
-            <h3 className="assets-readonly__section-title" id="assets-highlights">
-              Maiores posições
-            </h3>
-            <p className="assets-readonly__section-note">Top 3 por valor da posição.</p>
-          </div>
-          <Button
-            aria-controls="assets-readonly-highlights-panel"
-            aria-expanded={topPositionsOpen}
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setTopPositionsOpen((value) => !value)}
-          >
-            {topPositionsOpen ? 'Ocultar' : 'Ver maiores'}
-          </Button>
-        </div>
-
-        <div className="assets-readonly__auxiliary-panel" id="assets-readonly-highlights-panel" hidden={!topPositionsOpen}>
-          <div className="assets-readonly__top-list">
-            {viewModel.topPositions.length > 0 ? (
-              viewModel.topPositions.map((item, index) => (
-                <article className="overview-card" key={item.ticker}>
-                  <p className="overview-card__label">Posição {index + 1}</p>
-                  <p className="overview-card__value">{summarizeItemLabel(item.ticker, item.name)}</p>
-                  <p className="overview-card__hint">
-                    {formatReadonlyCurrency(item.currentValue)} · {formatReadonlyPercent(item.allocationPct, { signed: false })}
-                  </p>
-                </article>
-              ))
-            ) : (
-              <article className="overview-card" aria-live="polite">
-                <p className="overview-card__label">Sem ativos</p>
-                <p className="overview-card__value">Snapshot vazio</p>
-                <p className="overview-card__hint">Nenhuma posição readonly para exibir.</p>
-              </article>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="assets-readonly__distribution" aria-labelledby="assets-distribution">
-        <div className="assets-readonly__section-title-row">
-          <div>
-            <h3 className="assets-readonly__section-title" id="assets-distribution">
-              Distribuição por categoria
-            </h3>
-            <p className="assets-readonly__section-note">Agregação visual baseada nas participações já calculadas.</p>
-          </div>
-          <Button
-            aria-controls="assets-readonly-distribution-panel"
-            aria-expanded={distributionOpen}
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setDistributionOpen((value) => !value)}
-          >
-            {distributionOpen ? 'Ocultar' : 'Ver distribuição'}
-          </Button>
-        </div>
-
-        <div className="assets-readonly__auxiliary-panel" id="assets-readonly-distribution-panel" hidden={!distributionOpen}>
-          <div className="assets-readonly__distribution-list">
-            {viewModel.distribution.length > 0 ? (
-              viewModel.distribution.map((entry) => (
-                <div className="assets-readonly__distribution-row" key={entry.category}>
-                  <div className="assets-readonly__distribution-row-head">
-                    <strong>{entry.category}</strong>
-                    <span>
-                      {formatReadonlyPercent(entry.allocationPct, { signed: false })} · {entry.itemCount} ativos
-                    </span>
-                  </div>
-                  <div
-                    className="assets-readonly__distribution-track"
-                    aria-label={`${entry.category}: ${formatReadonlyPercent(entry.allocationPct, { signed: false })}`}
-                  >
-                    <span
-                      className="assets-readonly__distribution-fill"
-                      style={{ width: `${Math.max(0, Math.min(entry.allocationPct, 100))}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <article className="overview-card" aria-live="polite">
-                <p className="overview-card__label">Sem distribuicao</p>
-                <p className="overview-card__value">Snapshot vazio</p>
-                <p className="overview-card__hint">Nenhuma categoria readonly para exibir.</p>
-              </article>
-            )}
-          </div>
-        </div>
-      </section>
+      <AssetsReadonlyDistribution
+        open={distributionOpen}
+        onOpenChange={setDistributionOpen}
+        entries={viewModel.distribution}
+      />
 
       <section className="assets-readonly__list" aria-labelledby="assets-list">
         <div className="assets-readonly__section-title-row">
@@ -398,146 +128,12 @@ function AssetsReadonlyPageContent({
 
         {viewModel.filteredItems.length > 0 ? (
           <>
-            <div className="assets-report__table-wrap">
-              <table className="assets-report__table">
-                <caption>Lista readonly dos ativos da carteira</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Ativo</th>
-                    <th scope="col">Categoria</th>
-                    <th className="number-cell" scope="col">
-                      Quantidade
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Preço médio
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Valor da posição
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Resultado
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Rentabilidade
-                    </th>
-                    <th scope="col">Sinal</th>
-                    <th scope="col">Tendência</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {itemsWithSignals.map(({ item, signal }) => {
-                    const signalDescriptionId = `assets-readonly-signal-reason-${sanitizeTickerForId(item.ticker)}`;
-                    return (
-                      <tr key={item.ticker}>
-                        <th scope="row">
-                          <span className="assets-report__ticker">{item.ticker}</span>
-                          <span className="assets-report__name">{item.name}</span>
-                        </th>
-                        <td>
-                          <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
-                            {item.category}
-                          </Badge>
-                        </td>
-                        <td className="number-cell">{formatReadonlyQuantity(item.quantity)}</td>
-                        <td className="number-cell">{formatReadonlyCurrency(item.averagePrice)}</td>
-                        <td className="number-cell">{formatReadonlyCurrency(item.currentValue)}</td>
-                        <td className="number-cell">{formatReadonlyCurrency(calculateReadonlyAssetResult(item))}</td>
-                        <td className="number-cell">{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</td>
-                        <td className="assets-report__signal-cell">
-                          <div aria-describedby={signalDescriptionId} className="assets-report__signal">
-                            <Badge size="sm" variant={signal.badgeVariant}>
-                              {signal.label}
-                            </Badge>
-                            <span className="assets-report__signal-reason" id={signalDescriptionId}>
-                              {signal.reason}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
-                            {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <AssetsReadonlyTable items={itemsWithSignals} />
 
-            <div className="assets-report__mobile-list" aria-label="Lista mobile dos ativos readonly">
-              {itemsWithSignals.map(({ item, signal }) => {
-                const signalDescriptionId = `assets-readonly-signal-reason-mobile-${sanitizeTickerForId(item.ticker)}`;
-                return (
-                  <article className="assets-report__mobile-card" key={item.ticker}>
-                    <div className="assets-report__mobile-card-head">
-                      <div>
-                        <h4 className="assets-report__ticker">{item.ticker}</h4>
-                        <p className="assets-report__name">{item.name}</p>
-                      </div>
-                      <Badge size="sm" variant={categoryBadgeVariant(item.category)}>
-                        {item.category}
-                      </Badge>
-                    </div>
-                    <dl>
-                      <div>
-                        <dt>Valor da posição</dt>
-                        <dd>{formatReadonlyCurrency(item.currentValue)}</dd>
-                      </div>
-                      <div>
-                        <dt>Resultado</dt>
-                        <dd>{formatReadonlyCurrency(calculateReadonlyAssetResult(item))}</dd>
-                      </div>
-                      <div>
-                        <dt>Rentabilidade</dt>
-                        <dd>{formatReadonlyPercent(calculateReadonlyAssetRentabilityPct(item))}</dd>
-                      </div>
-                      <div>
-                        <dt>Sinal</dt>
-                        <dd className="assets-report__signal-value">
-                          <div aria-describedby={signalDescriptionId} className="assets-report__signal">
-                            <Badge size="sm" variant={signal.badgeVariant}>
-                              {signal.label}
-                            </Badge>
-                            <span className="assets-report__signal-reason" id={signalDescriptionId}>
-                              {signal.reason}
-                            </span>
-                          </div>
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Quantidade</dt>
-                        <dd>{formatReadonlyQuantity(item.quantity)}</dd>
-                      </div>
-                      <div>
-                        <dt>Preço médio</dt>
-                        <dd>{formatReadonlyCurrency(item.averagePrice)}</dd>
-                      </div>
-                      <div>
-                        <dt>Tendência</dt>
-                        <dd>
-                          <Badge size="sm" variant={trendBadgeVariant[item.trend]}>
-                            {item.trend === 'positive' ? 'Positivo' : item.trend === 'negative' ? 'Negativo' : 'Neutro'}
-                          </Badge>
-                        </dd>
-                      </div>
-                    </dl>
-                  </article>
-                );
-              })}
-            </div>
+            <AssetsReadonlyMobileCards items={itemsWithSignals} />
           </>
         ) : (
-          <div className="assets-readonly__empty" role="status" aria-live="polite">
-            <p className="assets-readonly__empty-title">
-              {snapshot.items.length === 0 ? 'Carteira vazia nesta leitura readonly.' : 'Nenhum ativo encontrado.'}
-            </p>
-            <p className="assets-readonly__empty-body">
-              {snapshot.items.length === 0
-                ? 'O snapshot de leitura chegou vazio, mas continua válido e congelado.'
-                : 'Ajuste a busca, a categoria ou a ordenação para ver os itens novamente.'}
-            </p>
-          </div>
+          <AssetsReadonlyEmptyState snapshotIsEmpty={snapshot.items.length === 0} />
         )}
       </section>
     </section>
