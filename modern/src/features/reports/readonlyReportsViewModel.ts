@@ -8,12 +8,38 @@ export type ReadonlyAssetsSortKey =
   | 'resultDesc'
   | 'resultAsc'
   | 'ticker'
-  | 'name';
+  | 'name'
+  | 'signalPriority';
+
+export type ReadonlyAssetSignalKey =
+  | 'all'
+  | 'incomplete'
+  | 'concentration'
+  | 'wait'
+  | 'attractive'
+  | 'neutral';
+
+export interface ReadonlyAssetSignalCounts {
+  readonly incomplete: number;
+  readonly concentration: number;
+  readonly wait: number;
+  readonly attractive: number;
+  readonly neutral: number;
+}
+
+export const SIGNAL_PRIORITY_ORDER: readonly ReadonlyAssetSignalKey[] = [
+  'incomplete',
+  'concentration',
+  'wait',
+  'attractive',
+  'neutral',
+];
 
 export interface ReadonlyAssetsPageFilters {
   readonly query: string;
   readonly category: string;
   readonly sortBy: ReadonlyAssetsSortKey;
+  readonly signal: ReadonlyAssetSignalKey;
 }
 
 export interface ReadonlyAssetCategoryDistribution {
@@ -40,12 +66,14 @@ export interface ReadonlyAssetsViewModel {
   readonly query: string;
   readonly selectedCategory: string;
   readonly sortBy: ReadonlyAssetsSortKey;
+  readonly selectedSignal: ReadonlyAssetSignalKey;
   readonly categories: readonly string[];
   readonly filteredItems: readonly ReadOnlyReportItem[];
   readonly topGainers: readonly ReadOnlyReportItem[];
   readonly topLosers: readonly ReadOnlyReportItem[];
   readonly topPositions: readonly ReadOnlyReportItem[];
   readonly distribution: readonly ReadonlyAssetCategoryDistribution[];
+  readonly signalCounts: ReadonlyAssetSignalCounts;
   readonly summary: ReadonlyAssetsSummary;
   readonly averageVariationPct: number;
   readonly hasResults: boolean;
@@ -133,6 +161,47 @@ export function createReadonlyAssetPrudentSignal(item: ReadOnlyReportItem): Read
   };
 }
 
+function getSignalKeyFromLabel(label: string): ReadonlyAssetSignalKey {
+  if (label === 'Dados incompletos') return 'incomplete';
+  if (label === 'Concentração alta') return 'concentration';
+  if (label === 'Aguardar') return 'wait';
+  if (label === 'Atrativo para aporte') return 'attractive';
+  return 'neutral';
+}
+
+function createSignalCounts(items: readonly ReadOnlyReportItem[]): ReadonlyAssetSignalCounts {
+  const counts: Record<ReadonlyAssetSignalKey, number> = {
+    incomplete: 0,
+    concentration: 0,
+    wait: 0,
+    attractive: 0,
+    neutral: 0,
+    all: 0,
+  };
+
+  for (const item of items) {
+    const key = getSignalKeyFromLabel(createReadonlyAssetPrudentSignal(item).label);
+    counts[key] += 1;
+  }
+
+  return {
+    incomplete: counts.incomplete,
+    concentration: counts.concentration,
+    wait: counts.wait,
+    attractive: counts.attractive,
+    neutral: counts.neutral,
+  };
+}
+
+const SIGNAL_PRIORITY_RANK: Record<ReadonlyAssetSignalKey, number> = {
+  all: -1,
+  incomplete: 0,
+  concentration: 1,
+  wait: 2,
+  attractive: 3,
+  neutral: 4,
+};
+
 export function createReadonlyAssetsSummary(items: readonly ReadOnlyReportItem[]): ReadonlyAssetsSummary {
   const totalValue = items.reduce((sum, item) => sum + item.currentValue, 0);
   const itemCount = items.length;
@@ -170,6 +239,11 @@ function sortItems(items: readonly ReadOnlyReportItem[], sortBy: ReadonlyAssetsS
         return compareTicker(a, b);
       case 'name':
         return a.name.localeCompare(b.name, 'pt-BR') || compareTicker(a, b);
+      case 'signalPriority': {
+        const aKey = getSignalKeyFromLabel(createReadonlyAssetPrudentSignal(a).label);
+        const bKey = getSignalKeyFromLabel(createReadonlyAssetPrudentSignal(b).label);
+        return SIGNAL_PRIORITY_RANK[aKey] - SIGNAL_PRIORITY_RANK[bKey] || compareTicker(a, b);
+      }
       case 'currentValueDesc':
       default:
         return b.currentValue - a.currentValue || compareTicker(a, b);
@@ -263,8 +337,10 @@ export function createReadonlyAssetsViewModel(
 ): ReadonlyAssetsViewModel {
   const query = filters.query.trim().toLowerCase();
   const selectedCategory = filters.category;
+  const selectedSignal = filters.signal;
   const categories = uniqueCategories(snapshot.items);
-  const filteredItems = snapshot.items.filter((item) => {
+
+  const itemsAfterSearchAndCategory = snapshot.items.filter((item) => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
 
     if (!matchesCategory) {
@@ -278,6 +354,15 @@ export function createReadonlyAssetsViewModel(
     return item.ticker.toLowerCase().includes(query) || item.name.toLowerCase().includes(query);
   });
 
+  const signalCounts = createSignalCounts(itemsAfterSearchAndCategory);
+
+  const filteredItems =
+    selectedSignal === 'all'
+      ? itemsAfterSearchAndCategory
+      : itemsAfterSearchAndCategory.filter(
+          (item) => getSignalKeyFromLabel(createReadonlyAssetPrudentSignal(item).label) === selectedSignal,
+        );
+
   const sortedFilteredItems = sortItems(filteredItems, filters.sortBy);
   const topGainers = sortPositiveItems(snapshot.items).slice(0, 3);
   const topLosers = sortNegativeItems(snapshot.items).slice(0, 3);
@@ -288,12 +373,14 @@ export function createReadonlyAssetsViewModel(
     query,
     selectedCategory,
     sortBy: filters.sortBy,
+    selectedSignal,
     categories,
     filteredItems: sortedFilteredItems,
     topGainers,
     topLosers,
     topPositions,
     distribution,
+    signalCounts,
     summary: createReadonlyAssetsSummary(sortedFilteredItems),
     averageVariationPct: snapshot.summary.averageVariationPct,
     hasResults: sortedFilteredItems.length > 0,

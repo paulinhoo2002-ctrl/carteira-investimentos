@@ -108,6 +108,7 @@ test('view model readonly de ativos deriva lista, filtros e destaques do snapsho
     query: 'renda',
     category: 'FII demo',
     sortBy: 'currentValueDesc',
+    signal: 'all',
   });
 
   assert.equal(viewModel.summary.totalValue, 450);
@@ -189,21 +190,25 @@ test('view model readonly de ativos calcula resumo visivel e ordena por resultad
     query: '',
     category: 'all',
     sortBy: 'resultDesc',
+    signal: 'all',
   });
   const resultAsc = createReadonlyAssetsViewModel(snapshot, {
     query: '',
     category: 'all',
     sortBy: 'resultAsc',
+    signal: 'all',
   });
   const rentabilityDesc = createReadonlyAssetsViewModel(snapshot, {
     query: '',
     category: 'all',
     sortBy: 'rentabilityPctDesc',
+    signal: 'all',
   });
   const nameSorted = createReadonlyAssetsViewModel(snapshot, {
     query: '',
     category: 'all',
     sortBy: 'name',
+    signal: 'all',
   });
 
   assert.deepEqual(
@@ -342,6 +347,7 @@ test('sinal prudente readonly de ativos classifica precedencia e casos limite', 
       query: '',
       category: 'all',
       sortBy: 'currentValueDesc',
+      signal: 'all',
     },
   );
 
@@ -420,6 +426,7 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
     query: '',
     category: 'all',
     sortBy: 'currentValueDesc',
+    signal: 'all',
   });
   assert.equal(vmPositive.topGainers.length, 2);
   assert.equal(vmPositive.topLosers.length, 0);
@@ -429,6 +436,7 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
     query: '',
     category: 'all',
     sortBy: 'currentValueDesc',
+    signal: 'all',
   });
   assert.equal(vmNegative.topGainers.length, 0);
   assert.equal(vmNegative.topLosers.length, 2);
@@ -438,6 +446,7 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
     query: '',
     category: 'all',
     sortBy: 'currentValueDesc',
+    signal: 'all',
   });
   assert.equal(vmNeutral.topGainers.length, 0);
   assert.equal(vmNeutral.topLosers.length, 0);
@@ -450,10 +459,279 @@ test('view model readonly de ativos separa altas e quedas por sinal', async () =
       query: '',
       category: 'all',
       sortBy: 'currentValueDesc',
+      signal: 'all',
     },
   );
   assert.equal(vmEmpty.topGainers.length, 0);
   assert.equal(vmEmpty.topLosers.length, 0);
+});
+
+test('view model readonly filtra por sinal e expoe contadores por sinal', async () => {
+  const { createReadonlyAssetsViewModel } = await loadViewModelModule();
+
+  const items = [
+    {
+      ticker: 'AAA1',
+      name: 'Neutro A',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+    {
+      ticker: 'BBB1',
+      name: 'Atrativo B',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 90,
+      variationPct: -10,
+      allocationPct: 10,
+      trend: 'negative',
+    },
+    {
+      ticker: 'CCC1',
+      name: 'Aguardar C',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 80,
+      variationPct: -20,
+      allocationPct: 10,
+      trend: 'negative',
+    },
+    {
+      ticker: 'DDD1',
+      name: 'Concentracao D',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 20,
+      trend: 'neutral',
+    },
+    {
+      ticker: 'EEE1',
+      name: 'Incompleto E',
+      category: '',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+  ];
+
+  const snapshot = createSnapshotFromItems(items);
+
+  const all = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'currentValueDesc',
+    signal: 'all',
+  });
+
+  assert.equal(all.filteredItems.length, 5);
+  assert.deepEqual(all.signalCounts, {
+    incomplete: 1,
+    concentration: 1,
+    wait: 1,
+    attractive: 1,
+    neutral: 1,
+  });
+
+  const attractiveOnly = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'currentValueDesc',
+    signal: 'attractive',
+  });
+  assert.equal(attractiveOnly.filteredItems.length, 1);
+  assert.equal(attractiveOnly.filteredItems[0].ticker, 'BBB1');
+
+  const concentrationOnly = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'currentValueDesc',
+    signal: 'concentration',
+  });
+  assert.equal(concentrationOnly.filteredItems.length, 1);
+  assert.equal(concentrationOnly.filteredItems[0].ticker, 'DDD1');
+
+  const incompleteOnly = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'currentValueDesc',
+    signal: 'incomplete',
+  });
+  assert.equal(incompleteOnly.filteredItems.length, 1);
+  assert.equal(incompleteOnly.filteredItems[0].ticker, 'EEE1');
+});
+
+test('contadores por sinal respeitam busca e categoria antes do filtro de sinal', async () => {
+  const { createReadonlyAssetsViewModel } = await loadViewModelModule();
+
+  const items = [
+    {
+      ticker: 'AAA1',
+      name: 'Atrativo A',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 90,
+      variationPct: -10,
+      allocationPct: 10,
+      trend: 'negative',
+    },
+    {
+      ticker: 'BBB1',
+      name: 'Atrativo B',
+      category: 'FII demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 90,
+      variationPct: -10,
+      allocationPct: 10,
+      trend: 'negative',
+    },
+    {
+      ticker: 'CCC1',
+      name: 'Neutro C',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+  ];
+
+  const snapshot = createSnapshotFromItems(items);
+
+  const filteredByCategory = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'Acao demo',
+    sortBy: 'currentValueDesc',
+    signal: 'all',
+  });
+
+  assert.deepEqual(filteredByCategory.signalCounts, {
+    incomplete: 0,
+    concentration: 0,
+    wait: 0,
+    attractive: 1,
+    neutral: 1,
+  });
+  assert.equal(filteredByCategory.filteredItems.length, 2);
+
+  const filteredByQuery = createReadonlyAssetsViewModel(snapshot, {
+    query: 'BBB1',
+    category: 'all',
+    sortBy: 'currentValueDesc',
+    signal: 'all',
+  });
+
+  assert.deepEqual(filteredByQuery.signalCounts, {
+    incomplete: 0,
+    concentration: 0,
+    wait: 0,
+    attractive: 1,
+    neutral: 0,
+  });
+  assert.equal(filteredByQuery.filteredItems.length, 1);
+  assert.equal(filteredByQuery.filteredItems[0].ticker, 'BBB1');
+
+  const filteredWithSignal = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'Acao demo',
+    sortBy: 'currentValueDesc',
+    signal: 'attractive',
+  });
+  assert.equal(filteredWithSignal.signalCounts.attractive, 1);
+  assert.equal(filteredWithSignal.filteredItems.length, 1);
+  assert.equal(filteredWithSignal.filteredItems[0].ticker, 'AAA1');
+});
+
+test('ordenacao por prioridade do sinal usa precedencia prudente e desempata por ticker', async () => {
+  const { createReadonlyAssetsViewModel } = await loadViewModelModule();
+
+  const items = [
+    {
+      ticker: 'ZZZ1',
+      name: 'Neutro Z',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+    {
+      ticker: 'BBB1',
+      name: 'Atrativo B',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 90,
+      variationPct: -10,
+      allocationPct: 10,
+      trend: 'negative',
+    },
+    {
+      ticker: 'AAA1',
+      name: 'Concentracao A',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 20,
+      trend: 'neutral',
+    },
+    {
+      ticker: 'CCC1',
+      name: 'Neutro C',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+    {
+      ticker: 'DDD1',
+      name: 'Incompleto D',
+      category: '',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+  ];
+
+  const snapshot = createSnapshotFromItems(items);
+
+  const sorted = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'signalPriority',
+    signal: 'all',
+  });
+
+  assert.deepEqual(
+    sorted.filteredItems.map((item) => item.ticker),
+    ['DDD1', 'AAA1', 'BBB1', 'CCC1', 'ZZZ1'],
+  );
 });
 
 test('pagina readonly de ativos renderiza snapshot e aceita refresh controller', async () => {
@@ -683,6 +961,180 @@ test('pagina readonly de ativos renderiza snapshot e aceita refresh controller',
   } finally {
     await viteServer.close();
   }
+});
+
+test('pagina readonly expoe filtro de sinal, contagens e aria-describedby no badge', async () => {
+  const viteServer = await createServer({
+    configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
+    logLevel: 'error',
+    server: { middlewareMode: true },
+  });
+
+  try {
+    const { AssetsReadonlyPage } = await viteServer.ssrLoadModule('/src/features/reports/AssetsReadonlyPage.tsx');
+
+    const html = renderToStaticMarkup(
+      React.createElement(AssetsReadonlyPage, {
+        adapter: {
+          getSnapshot() {
+            return createSnapshot();
+          },
+        },
+      }),
+    );
+
+    assert.match(html, /Filtrar por sinal/);
+    assert.match(html, /assets-readonly-signal/);
+    assert.match(html, /Contagem por sinal/);
+    assert.match(html, /assets-readonly__signal-counts/);
+
+    assert.match(html, /aria-describedby="assets-readonly-signal-reason-/);
+    assert.match(html, /Prioridade do sinal/);
+
+    const ariaIdMatches = html.match(/aria-describedby="assets-readonly-signal-reason-[^"]+"/g) ?? [];
+    const mobileAriaIdMatches = html.match(/id="assets-readonly-signal-reason-mobile-[^"]+"/g) ?? [];
+    assert.ok(ariaIdMatches.length > 0);
+    assert.ok(mobileAriaIdMatches.length > 0);
+  } finally {
+    await viteServer.close();
+  }
+});
+
+test('pagina readonly sanitiza ticker para gerar IDs validos de aria-describedby', async () => {
+  const viteServer = await createServer({
+    configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
+    logLevel: 'error',
+    server: { middlewareMode: true },
+  });
+
+  try {
+    const { AssetsReadonlyPage } = await viteServer.ssrLoadModule('/src/features/reports/AssetsReadonlyPage.tsx');
+
+    const snapshotWithSpecialTickers = {
+      generatedAt: '2026-07-14T10:30:00.000Z',
+      notice: 'Snapshot teste.',
+      summary: { totalValue: 1000, itemCount: 4, averageVariationPct: 0 },
+      items: [
+        {
+          ticker: 'MXRF11.SA',
+          name: 'Maxi Renda SA',
+          category: 'Acao demo',
+          quantity: 1,
+          averagePrice: 10,
+          currentValue: 10,
+          variationPct: 0,
+          allocationPct: 10,
+          trend: 'neutral',
+        },
+        {
+          ticker: 'MGLU3/4',
+          name: 'Magazine Luiza',
+          category: 'Acao demo',
+          quantity: 1,
+          averagePrice: 10,
+          currentValue: 10,
+          variationPct: 0,
+          allocationPct: 10,
+          trend: 'neutral',
+        },
+        {
+          ticker: 'BOVA 11',
+          name: 'Bova com espaco',
+          category: 'ETF demo',
+          quantity: 1,
+          averagePrice: 10,
+          currentValue: 10,
+          variationPct: 0,
+          allocationPct: 10,
+          trend: 'neutral',
+        },
+        {
+          ticker: '   ',
+          name: 'Ativo sem ticker valido',
+          category: 'Acao demo',
+          quantity: 1,
+          averagePrice: 10,
+          currentValue: 10,
+          variationPct: 0,
+          allocationPct: 10,
+          trend: 'neutral',
+        },
+      ],
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(AssetsReadonlyPage, {
+        adapter: {
+          getSnapshot() {
+            return snapshotWithSpecialTickers;
+          },
+        },
+      }),
+    );
+
+    assert.match(html, /id="assets-readonly-signal-reason-MXRF11-SA"/);
+    assert.match(html, /id="assets-readonly-signal-reason-mobile-MXRF11-SA"/);
+
+    assert.match(html, /id="assets-readonly-signal-reason-MGLU3-4"/);
+    assert.match(html, /id="assets-readonly-signal-reason-mobile-MGLU3-4"/);
+
+    assert.match(html, /id="assets-readonly-signal-reason-BOVA-11"/);
+    assert.match(html, /id="assets-readonly-signal-reason-mobile-BOVA-11"/);
+
+    const fallbackMatches = html.match(/id="assets-readonly-signal-reason(-mobile)?-asset"/g) ?? [];
+    assert.ok(fallbackMatches.length >= 2, 'Esperava pelo menos 2 IDs com fallback "asset" (desktop + mobile)');
+
+    assert.equal(html.includes('id="assets-readonly-signal-reason-MXRF11.SA"'), false);
+    assert.equal(html.includes('id="assets-readonly-signal-reason-MGLU3/4"'), false);
+
+    const ariaIds = html.match(/aria-describedby="assets-readonly-signal-reason[^"]*"/g) ?? [];
+    const uniqueAriaIds = new Set(ariaIds);
+    assert.equal(ariaIds.length, uniqueAriaIds.size, 'aria-describedby nao deve repetir IDs');
+  } finally {
+    await viteServer.close();
+  }
+});
+
+test('ordenacao por prioridade do sinal nao altera a lista quando ja vem filtrada por sinal', async () => {
+  const { createReadonlyAssetsViewModel } = await loadViewModelModule();
+
+  const items = [
+    {
+      ticker: 'AAA1',
+      name: 'Neutro A',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+    {
+      ticker: 'BBB1',
+      name: 'Neutro B',
+      category: 'Acao demo',
+      quantity: 1,
+      averagePrice: 100,
+      currentValue: 100,
+      variationPct: 0,
+      allocationPct: 10,
+      trend: 'neutral',
+    },
+  ];
+
+  const snapshot = createSnapshotFromItems(items);
+
+  const viewModel = createReadonlyAssetsViewModel(snapshot, {
+    query: '',
+    category: 'all',
+    sortBy: 'signalPriority',
+    signal: 'neutral',
+  });
+
+  assert.equal(viewModel.filteredItems.length, 2);
+  assert.equal(viewModel.selectedSignal, 'neutral');
+  assert.equal(viewModel.signalCounts.neutral, 2);
 });
 
 test('Badge oficial renderiza variantes e a pagina pilotada usa o componente', async () => {
