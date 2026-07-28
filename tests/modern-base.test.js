@@ -43,6 +43,13 @@ const sourceFiles = [
   'src/features/contributions/contributionsRefreshController.ts',
   'src/features/reports/reportsRefreshController.ts',
   'src/features/reports/AssetsReadonlyPage.tsx',
+  'src/features/reports/components/AssetsReadonlyHeader.tsx',
+  'src/features/reports/components/AssetsReadonlyFilters.tsx',
+  'src/features/reports/components/AssetsReadonlySummaryGrid.tsx',
+  'src/features/reports/components/AssetsReadonlySignalCounts.tsx',
+  'src/features/reports/components/AssetsReadonlyTopPositions.tsx',
+  'src/features/reports/components/AssetsReadonlyDistribution.tsx',
+  'src/features/reports/components/AssetsReadonlyEmptyState.tsx',
   'src/features/income/IncomeReadonlyPage.tsx',
   'src/features/income/readonlyIncomeViewModel.ts',
   'src/features/income/incomeReadonlyContract.mjs',
@@ -117,6 +124,16 @@ test('modern shell exists and stays isolated', async () => {
   const runtimeTs = read('src/bootstrap/modernReportsRuntime.ts');
   const refreshControllerTs = read('src/features/reports/reportsRefreshController.ts');
   const assetsReadonlyTsx = read('src/features/reports/AssetsReadonlyPage.tsx');
+  const assetsReadonlyComponentsTsx = [
+    'src/features/reports/components/AssetsReadonlyHeader.tsx',
+    'src/features/reports/components/AssetsReadonlyFilters.tsx',
+    'src/features/reports/components/AssetsReadonlySummaryGrid.tsx',
+    'src/features/reports/components/AssetsReadonlySignalCounts.tsx',
+    'src/features/reports/components/AssetsReadonlyTopPositions.tsx',
+    'src/features/reports/components/AssetsReadonlyDistribution.tsx',
+    'src/features/reports/components/AssetsReadonlyEmptyState.tsx',
+  ].map(read).join('\n');
+  const assetsReadonlyCombinedTsx = `${assetsReadonlyTsx}\n${assetsReadonlyComponentsTsx}`;
   const fixedIncomeReadonlyTsx = read('src/features/fixed-income/FixedIncomeReadonlyPage.tsx');
   const fixedIncomeViewModelTs = read('src/features/fixed-income/readonlyFixedIncomeViewModel.ts');
   const fixedIncomeContractTs = read('src/features/fixed-income/fixedIncomeReadonlyContract.mjs');
@@ -397,18 +414,22 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(fixedIncomeViewModelTs.includes('reduce('), false);
   assert.equal(fixedIncomeViewModelTs.includes('roundToCents'), false);
   assert.equal(fixedIncomeViewModelTs.includes('toNumber(..., 0)'), false);
-  assert.match(assetsReadonlyTsx, /Voltar ao legado/);
-  assert.match(assetsReadonlyTsx, /Atualizar ativos/);
-  assert.match(assetsReadonlyTsx, /Total exibido/);
-  assert.match(assetsReadonlyTsx, /Resultado agregado/);
-  assert.match(assetsReadonlyTsx, /Rentabilidade/);
-  assert.match(assetsReadonlyTsx, /aria-controls="assets-readonly-highlights-panel"/);
-  assert.match(assetsReadonlyTsx, /aria-controls="assets-readonly-distribution-panel"/);
-  assert.match(assetsReadonlyTsx, /Maiores posições/);
-  assert.match(assetsReadonlyTsx, /Distribuição por categoria/);
-  assert.match(assetsReadonlyTsx, /Lista de ativos/);
-  assert.match(assetsReadonlyTsx, /aria-live="polite"/);
-  assert.match(assetsReadonlyTsx, /ReadonlyAssetsSortKey/);
+  // Os textos visíveis (ex.: "Voltar ao legado", "Maiores posições") foram
+  // extraídos do `AssetsReadonlyPage.tsx` para componentes em
+  // `AssetsReadonlyComponentsTsx`. As asserções a seguir continuam verificando
+  // os mesmos textos, agora considerando o conjunto page+componentes.
+  assert.match(assetsReadonlyCombinedTsx, /Voltar ao legado/);
+  assert.match(assetsReadonlyCombinedTsx, /Atualizar ativos/);
+  assert.match(assetsReadonlyCombinedTsx, /Total exibido/);
+  assert.match(assetsReadonlyCombinedTsx, /Resultado agregado/);
+  assert.match(assetsReadonlyCombinedTsx, /Rentabilidade/);
+  assert.match(assetsReadonlyCombinedTsx, /aria-controls="assets-readonly-highlights-panel"/);
+  assert.match(assetsReadonlyCombinedTsx, /aria-controls="assets-readonly-distribution-panel"/);
+  assert.match(assetsReadonlyCombinedTsx, /Maiores posições/);
+  assert.match(assetsReadonlyCombinedTsx, /Distribuição por categoria/);
+  assert.match(assetsReadonlyCombinedTsx, /Lista de ativos/);
+  assert.match(assetsReadonlyCombinedTsx, /aria-live="polite"/);
+  assert.match(assetsReadonlyCombinedTsx, /ReadonlyAssetsSortKey/);
   assert.match(readonlyViewModelTs, /createReadonlyAssetsViewModel/);
   assert.match(readonlyViewModelTs, /formatReadonlyCurrency/);
   assert.match(readonlyViewModelTs, /formatReadonlyPercent/);
