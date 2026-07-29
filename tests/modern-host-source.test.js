@@ -251,8 +251,8 @@ test('host fixed income source usa carteira ativa e relÃª a colecao atual', as
   });
 
   const firstSnapshot = source.getSnapshot();
-  assert.equal(firstSnapshot.summary.totalApplied, null);
-  assert.equal(firstSnapshot.summary.totalCombinedTaxValue, null);
+  assert.equal(firstSnapshot.summary.totalApplied, 4000);
+  assert.equal(firstSnapshot.summary.totalCombinedTaxValue, 7.8);
   assert.equal(firstSnapshot.items[0].maturityStatus, 'Próximo');
   assert.equal(firstSnapshot.items[0].appliedValue, 4000);
   assert.equal(firstSnapshot.items[0].irValue, null);
@@ -270,8 +270,8 @@ test('host fixed income source usa carteira ativa e relÃª a colecao atual', as
   ];
 
   const secondSnapshot = source.getSnapshot();
-  assert.equal(secondSnapshot.summary.totalLiquid, null);
-  assert.equal(secondSnapshot.summary.totalCombinedTaxValue, null);
+  assert.equal(secondSnapshot.summary.totalLiquid, 4300);
+  assert.equal(secondSnapshot.summary.totalCombinedTaxValue, 10);
   assert.equal(secondSnapshot.items[0].liquidValue, 4300);
   assert.equal(secondSnapshot.items[0].irValue, null);
   assert.equal(secondSnapshot.items[0].iofValue, null);
@@ -352,6 +352,267 @@ test('host fixed income source rejeita candidatos que nao sao renda fixa', async
   assert.equal(snapshot.summary.itemCount, 0);
   assert.equal(snapshot.summary.totalCombinedTaxValue, null);
   assertDeepFrozen(snapshot);
+});
+
+test('host fixed income summary agrega todos os valores quando presentes', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          ticker: 'CDB01',
+          name: 'CDB Um',
+          type: 'Renda Fixa',
+          rf_applied_value: 1000,
+          rf_gross_value: 1100,
+          rf_liquid_value: 1090,
+          rf_profit_value: 90,
+          ir_value: 10,
+          iof_value: 0,
+          rf_ir_iof: 10,
+          rf_unavailable_value: 0,
+          rf_maturity_date: '2026-12-15',
+        },
+        {
+          ticker: 'CDB02',
+          name: 'CDB Dois',
+          type: 'Renda Fixa',
+          rf_applied_value: 2000,
+          rf_gross_value: 2200,
+          rf_liquid_value: 2180,
+          rf_profit_value: 180,
+          ir_value: 20,
+          iof_value: 0,
+          rf_ir_iof: 20,
+          rf_unavailable_value: 0,
+          rf_maturity_date: '2027-06-15',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.summary.totalApplied, 3000);
+  assert.equal(snapshot.summary.totalGross, 3300);
+  assert.equal(snapshot.summary.totalLiquid, 3270);
+  assert.equal(snapshot.summary.totalProfit, 270);
+  assert.equal(snapshot.summary.totalIrValue, 30);
+  assert.equal(snapshot.summary.totalIofValue, 0);
+  assert.equal(snapshot.summary.totalCombinedTaxValue, 30);
+  assert.equal(snapshot.summary.totalUnavailableValue, 0);
+  assert.equal(snapshot.summary.itemCount, 2);
+});
+
+test('host fixed income summary retorna null para campos sem nenhum valor numerico', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          ticker: 'CDB01',
+          name: 'CDB Um',
+          type: 'Renda Fixa',
+          rf_application_date: '2026-01-12',
+          rf_maturity_date: '2026-12-15',
+          rf_contract_rate: '100% CDI',
+        },
+        {
+          ticker: 'CDB02',
+          name: 'CDB Dois',
+          type: 'Renda Fixa',
+          rf_application_date: '2026-03-01',
+          rf_maturity_date: '2027-06-15',
+          rf_contract_rate: '110% CDI',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.summary.totalApplied, null);
+  assert.equal(snapshot.summary.totalGross, null);
+  assert.equal(snapshot.summary.totalLiquid, null);
+  assert.equal(snapshot.summary.totalProfit, null);
+  assert.equal(snapshot.summary.totalIrValue, null);
+  assert.equal(snapshot.summary.totalIofValue, null);
+  assert.equal(snapshot.summary.totalCombinedTaxValue, null);
+  assert.equal(snapshot.summary.totalUnavailableValue, null);
+  assert.equal(snapshot.summary.itemCount, 2);
+});
+
+test('host fixed income summary retorna soma parcial quando alguns campos sao null', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          ticker: 'CDB01',
+          name: 'CDB Um',
+          type: 'Renda Fixa',
+          rf_applied_value: 1000,
+          rf_gross_value: 1100,
+        },
+        {
+          ticker: 'CDB02',
+          name: 'CDB Dois',
+          type: 'Renda Fixa',
+          rf_applied_value: 2000,
+          rf_gross_value: null,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.summary.totalApplied, 3000);
+  assert.equal(snapshot.summary.totalGross, 1100);
+  assert.equal(snapshot.summary.totalLiquid, null);
+  assert.equal(snapshot.summary.itemCount, 2);
+});
+
+test('host fixed income summary retorna 0 para campo quando todos os valores sao zero', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          ticker: 'CDB01',
+          name: 'CDB Um',
+          type: 'Renda Fixa',
+          rf_applied_value: 0,
+          rf_gross_value: 0,
+          rf_liquid_value: 0,
+        },
+        {
+          ticker: 'CDB02',
+          name: 'CDB Dois',
+          type: 'Renda Fixa',
+          rf_applied_value: 0,
+          rf_gross_value: 0,
+          rf_liquid_value: 0,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.summary.totalApplied, 0);
+  assert.equal(snapshot.summary.totalGross, 0);
+  assert.equal(snapshot.summary.totalLiquid, 0);
+  assert.equal(snapshot.summary.itemCount, 2);
+});
+
+test('host fixed income summary preserva imutabilidade dos items', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const assets = [
+    {
+      ticker: 'CDB01',
+      name: 'CDB Um',
+      type: 'Renda Fixa',
+      rf_applied_value: 1000,
+      rf_gross_value: 1100,
+    },
+  ];
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return assets;
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshotBefore = source.getSnapshot();
+  const itemsBefore = snapshotBefore.items;
+  const snapshotAfter = source.getSnapshot();
+  const itemsAfter = snapshotAfter.items;
+
+  assert.equal(itemsBefore.length, 1);
+  assert.equal(itemsBefore[0].appliedValue, 1000);
+
+  assert.equal(itemsAfter.length, 1);
+  assert.equal(itemsAfter[0].appliedValue, 1000);
+
+  assert.notEqual(snapshotBefore, snapshotAfter);
+  assert.equal(snapshotAfter.summary.totalApplied, 1000);
+  assert.equal(Object.isFrozen(snapshotAfter.items), true);
+  assert.equal(Object.isFrozen(snapshotAfter.items[0]), true);
+});
+
+test('host fixed income summary trata IR, IOF e combinedTax como campos independentes', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          ticker: 'CDB01',
+          name: 'CDB Um',
+          type: 'Renda Fixa',
+          ir_value: 15,
+          iof_value: 5,
+          rf_ir_iof: 25,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.summary.totalIrValue, 15);
+  assert.equal(snapshot.summary.totalIofValue, 5);
+  assert.equal(snapshot.summary.totalCombinedTaxValue, 25);
+  assert.notEqual(snapshot.summary.totalCombinedTaxValue, 20);
+});
+
+test('host fixed income summary com items vazios retorna todos null', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+
+  assert.equal(snapshot.summary.totalApplied, null);
+  assert.equal(snapshot.summary.totalGross, null);
+  assert.equal(snapshot.summary.totalLiquid, null);
+  assert.equal(snapshot.summary.totalProfit, null);
+  assert.equal(snapshot.summary.totalIrValue, null);
+  assert.equal(snapshot.summary.totalIofValue, null);
+  assert.equal(snapshot.summary.totalCombinedTaxValue, null);
+  assert.equal(snapshot.summary.totalUnavailableValue, null);
+  assert.equal(snapshot.summary.itemCount, 0);
 });
 
 test('host income source usa snapshot injetado e preserva mutabilidade da origem', async () => {

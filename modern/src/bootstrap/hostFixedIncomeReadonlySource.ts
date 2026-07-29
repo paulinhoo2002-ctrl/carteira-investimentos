@@ -151,16 +151,32 @@ function mapFixedIncomeAsset(asset: HostFixedIncomeAsset, generatedAt: string) {
   };
 }
 
+function sumItemField<T>(items: readonly T[], accessor: (item: T) => unknown): number | null {
+  let sum = 0;
+  let found = false;
+
+  for (let i = 0; i < items.length; i++) {
+    const value = accessor(items[i]);
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      sum += value;
+      found = true;
+    }
+  }
+
+  return found ? sum : null;
+}
+
 function buildSummary(items: readonly ReturnType<typeof mapFixedIncomeAsset>[]) {
   return {
-    totalApplied: null,
-    totalGross: null,
-    totalLiquid: null,
-    totalProfit: null,
-    totalIrValue: null,
-    totalIofValue: null,
-    totalCombinedTaxValue: null,
-    totalUnavailableValue: null,
+    totalApplied: sumItemField(items, (item) => item.appliedValue),
+    totalGross: sumItemField(items, (item) => item.grossValue),
+    totalLiquid: sumItemField(items, (item) => item.liquidValue),
+    totalProfit: sumItemField(items, (item) => item.profitValue),
+    totalIrValue: sumItemField(items, (item) => item.irValue),
+    totalIofValue: sumItemField(items, (item) => item.iofValue),
+    totalCombinedTaxValue: sumItemField(items, (item) => item.combinedTaxValue),
+    totalUnavailableValue: sumItemField(items, (item) => item.unavailableValue),
     itemCount: items.length,
   };
 }
