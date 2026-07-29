@@ -51,6 +51,16 @@ const sourceFiles = [
   'src/features/reports/components/AssetsReadonlyDistribution.tsx',
   'src/features/reports/components/AssetsReadonlyEmptyState.tsx',
   'src/features/income/IncomeReadonlyPage.tsx',
+  'src/features/income/components/IncomeReadonlyHeader.tsx',
+  'src/features/income/components/IncomeReadonlyFilters.tsx',
+  'src/features/income/components/IncomeReadonlySummaryGrid.tsx',
+  'src/features/income/components/IncomeReadonlyRecentHighlights.tsx',
+  'src/features/income/components/IncomeReadonlyMonthlyDistribution.tsx',
+  'src/features/income/components/IncomeReadonlyEmptyState.tsx',
+  'src/features/income/components/IncomeReadonlyTable.tsx',
+  'src/features/income/components/IncomeReadonlyMobileCards.tsx',
+  'src/features/income/components/shared/incomeReadonlySharedProps.ts',
+  'src/features/income/components/shared/summarizeItemLabel.ts',
   'src/features/income/readonlyIncomeViewModel.ts',
   'src/features/income/incomeReadonlyContract.mjs',
   'src/features/income/incomeReadonlyContract.d.ts',
@@ -140,6 +150,19 @@ test('modern shell exists and stays isolated', async () => {
   const fixedIncomeBridgeTs = read('src/features/fixed-income/fixedIncomeReadonlyBridge.mjs');
   const fixedIncomeAdapterTs = read('src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs');
   const incomeReadonlyTsx = read('src/features/income/IncomeReadonlyPage.tsx');
+  const incomeReadonlyComponentsTsx = [
+    'src/features/income/components/IncomeReadonlyHeader.tsx',
+    'src/features/income/components/IncomeReadonlyFilters.tsx',
+    'src/features/income/components/IncomeReadonlySummaryGrid.tsx',
+    'src/features/income/components/IncomeReadonlyRecentHighlights.tsx',
+    'src/features/income/components/IncomeReadonlyMonthlyDistribution.tsx',
+    'src/features/income/components/IncomeReadonlyEmptyState.tsx',
+    'src/features/income/components/IncomeReadonlyTable.tsx',
+    'src/features/income/components/IncomeReadonlyMobileCards.tsx',
+    'src/features/income/components/shared/incomeReadonlySharedProps.ts',
+    'src/features/income/components/shared/summarizeItemLabel.ts',
+  ].map(read).join('\n');
+  const incomeReadonlyCombinedTsx = `${incomeReadonlyTsx}\n${incomeReadonlyComponentsTsx}`;
   const incomeViewModelTs = read('src/features/income/readonlyIncomeViewModel.ts');
   const incomeContractTs = read('src/features/income/incomeReadonlyContract.mjs');
   const incomeBridgeTs = read('src/features/income/incomeReadonlyBridge.mjs');
@@ -362,16 +385,20 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(reportsPreviewTsx, /formatReadonlyQuantity/);
   assert.match(assetsReadonlyTsx, /AssetsReadonlyPage/);
   assert.match(assetsReadonlyTsx, /createReadonlyAssetsViewModel/);
+  // As visibilidades textuais (ex.: "Atualizar proventos") foram extraidas do
+  // `IncomeReadonlyPage.tsx` para componentes em `incomeReadonlyComponentsTsx`.
+  // As assertoes a seguir conferem o produto completo combinando pagina e
+  // componentes extraidos.
+  assert.match(incomeReadonlyCombinedTsx, /Atualizar proventos/);
+  assert.match(incomeReadonlyCombinedTsx, /Lista de proventos/);
+  assert.match(incomeReadonlyCombinedTsx, /Distribuicao mensal/);
+  assert.match(incomeReadonlyCombinedTsx, /Destaques/);
+  assert.match(incomeReadonlyCombinedTsx, /aria-live="polite"/);
   assert.match(incomeReadonlyTsx, /IncomeReadonlyPage/);
-  assert.match(incomeReadonlyTsx, /Atualizar proventos/);
-  assert.match(incomeReadonlyTsx, /Lista de proventos/);
-  assert.match(incomeReadonlyTsx, /Distribuicao mensal/);
-  assert.match(incomeReadonlyTsx, /Destaques/);
-  assert.match(incomeReadonlyTsx, /aria-live="polite"/);
   assert.match(incomeReadonlyTsx, /IncomeReadonlyPageContent/);
-  assert.match(incomeReadonlyTsx, /Nenhum pagamento informado/);
-  assert.match(incomeReadonlyTsx, /Nenhum lancamento informado/);
-  assert.match(incomeReadonlyTsx, /Sem meses informados/);
+  assert.match(incomeReadonlyCombinedTsx, /Nenhum pagamento informado/);
+  assert.match(incomeReadonlyCombinedTsx, /Nenhum lancamento informado/);
+  assert.match(incomeReadonlyCombinedTsx, /Sem meses informados/);
   assert.match(fixedIncomeReadonlyTsx, /FixedIncomeReadonlyPage/);
   assert.match(fixedIncomeReadonlyTsx, /createReadonlyFixedIncomeViewModel/);
   assert.match(incomeViewModelTs, /createReadonlyIncomeViewModel/);
