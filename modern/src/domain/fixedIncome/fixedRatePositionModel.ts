@@ -2,7 +2,6 @@ import {
   type FixedIncomeMovementResult,
   type FixedIncomeMovementErrorCode,
   type FixedIncomeMovementSummary,
-  type FixedIncomeMovementSuccess,
 } from './movementModel.ts';
 import {
   type FixedRateCalculationErrorCode,
