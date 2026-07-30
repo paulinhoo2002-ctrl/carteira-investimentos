@@ -465,3 +465,14 @@ test('host experimental strict wiring fails with explicit error', async () => {
     await viteServer.close();
   }
 });
+
+test('index.html composition root: getGeneratedAt capturado antes do bootstrapHost', () => {
+  const rootIndex = fs.readFileSync(rootIndexPath, 'utf8');
+
+  assert.match(rootIndex, /const fixedIncomeGeneratedAt = new Date\(\)\.toISOString\(\);/);
+  assert.match(rootIndex, /getGeneratedAt\(\)\s*\{\s*return fixedIncomeGeneratedAt;\s*\},/);
+  assert.match(rootIndex, /getRfEvents\(\)\s*\{[^}]*return S\.rfEvents;\s*\},/);
+
+  const newDateDirect = /getGeneratedAt\(\)\s*\{[^}]*return new Date\(\)\.toISOString\(\);?\s*\}/;
+  assert.equal(newDateDirect.test(rootIndex), false, 'getGeneratedAt nao deve usar new Date() direto no composition root');
+});

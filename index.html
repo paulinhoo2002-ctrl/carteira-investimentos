@@ -4935,6 +4935,7 @@ async function bootstrapExperimentalActiveWalletHost(){
     document.body.appendChild(targetRoot);
   }
   installReadonlyReportsExperimentalBanner(targetRoot);
+  const fixedIncomeGeneratedAt = new Date().toISOString();
   const bootstrapPromise = bootstrapHost({
     rootElement: targetRoot,
     legacyModule: legacyReadonlySourceModule,
@@ -4970,6 +4971,9 @@ async function bootstrapExperimentalActiveWalletHost(){
     },
     getRfEvents() {
       return S.rfEvents;
+    },
+    getGeneratedAt() {
+      return fixedIncomeGeneratedAt;
     },
     getIncomeSnapshot(){
       const proventos = Array.isArray(S.proventos) ? S.proventos : [];
