@@ -116,6 +116,9 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /createHostIncomeReadonlySource/);
   assert.match(hostTsx, /createHostContributionsReadonlySource/);
   assert.match(hostTsx, /createModernFixedIncomeRuntime/);
+  assert.match(hostTsx, /buildFixedIncomeReadonlySupplementMap/);
+  assert.match(hostTsx, /getRfEvents/);
+  assert.match(hostTsx, /fixedIncomeValuationSupplementMap/);
   assert.match(hostTsx, /createModernIncomeRuntime/);
   assert.match(hostTsx, /createModernContributionsRuntime/);
   assert.match(hostTsx, /fixedIncomeAdapter/);

@@ -4968,6 +4968,9 @@ async function bootstrapExperimentalActiveWalletHost(){
     getFixedIncomeAssets(){
       return Array.isArray(S.assets) ? S.assets : [];
     },
+    getRfEvents() {
+      return S.rfEvents;
+    },
     getIncomeSnapshot(){
       const proventos = Array.isArray(S.proventos) ? S.proventos : [];
       const stats = proventoStats();

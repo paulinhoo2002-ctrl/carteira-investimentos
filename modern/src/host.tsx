@@ -29,6 +29,7 @@ import {
 } from './features/reports/reportsRefreshController.ts';
 import type { HostLegacyReportAsset } from './bootstrap/hostLegacyReportsReadonlySource';
 import type { ModernPageId } from './types/navigation.mjs';
+import { buildFixedIncomeReadonlySupplementMap } from './features/fixed-income/fixedIncomeReadonlySupplementBuilder.ts';
 import './styles.css';
 
 const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null;
@@ -39,6 +40,7 @@ export interface HostBootstrapOptions {
   readonly getContributionsSnapshot?: () => unknown;
   readonly getFixedIncomeAssets?: () => readonly HostFixedIncomeAsset[];
   readonly getIncomeSnapshot?: HostIncomeReadonlySourceOptions['getIncomeSnapshot'];
+  readonly getRfEvents?: () => readonly unknown[];
   readonly legacyModule?: Record<string, unknown> | null;
   readonly buildReportAssetRowModule?: Record<string, unknown> | null;
   readonly getGeneratedAt?: () => string;
@@ -270,9 +272,24 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
       },
   });
 
+  const canBuildFixedIncomeValuationSupplement =
+    typeof options.getFixedIncomeAssets === 'function' &&
+    typeof options.getRfEvents === 'function' &&
+    typeof options.getGeneratedAt === 'function';
+
+  const fixedIncomeValuationSupplementMap =
+    canBuildFixedIncomeValuationSupplement
+      ? buildFixedIncomeReadonlySupplementMap({
+          getAssets: options.getFixedIncomeAssets,
+          getRfEvents: options.getRfEvents,
+          getGeneratedAt: options.getGeneratedAt,
+        })
+      : {};
+
   const modernReportsRuntime = createModernReportsRuntime({ reportsSource: reportsRefreshController });
   const modernFixedIncomeRuntime = createModernFixedIncomeRuntime({
     fixedIncomeSource: fixedIncomeSource ?? undefined,
+    fixedIncomeValuationSupplementMap,
   });
   const modernContributionsRuntime = createModernContributionsRuntime({
     contributionsSource: contributionsSource ?? undefined,
