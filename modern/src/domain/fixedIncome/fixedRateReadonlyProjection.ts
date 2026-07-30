@@ -32,7 +32,7 @@ export function projectFixedRateReadonlyItem(
 export function isEligibleForProjection(
   indexer: string | null | undefined,
 ): boolean {
-  return typeof indexer === 'string' && indexer.toUpperCase() === 'PREFIXADO';
+  return indexer === 'PREFIXADO';
 }
 
 export function isValidValuationSupplement(

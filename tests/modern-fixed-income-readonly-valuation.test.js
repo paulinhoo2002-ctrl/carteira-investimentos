@@ -222,7 +222,7 @@ describe('fixedIncomeReadonlyValuation - enrichFixedIncomeReadonlySnapshot', () 
     assert.equal(enriched.items[0].appliedValue, 500);
   });
 
-  it('15. summary recalcula totalCombinedTaxValue mesmo com projecao', async () => {
+  it('15. totalCombinedTaxValue preservado do summary original apos projecao', async () => {
     const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
     const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', combinedTaxValue: 15 });
     const snapshot = makeSnapshot({ items: [item] });
@@ -240,6 +240,108 @@ describe('fixedIncomeReadonlyValuation - enrichFixedIncomeReadonlySnapshot', () 
       [ASSET_ID]: okSupplement({ rfEvents: [{ id: 'e1', assetId: ASSET_ID, date: '2026-01-15', principalDelta: 'INVALIDO' }] }),
     });
     assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('17. totalApplied null quando item tem appliedValue null', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: null });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalApplied, null);
+  });
+
+  it('18. totalApplied null quando item tem appliedValue undefined', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: undefined });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalApplied, null);
+  });
+
+  it('19. totalGross null quando item tem grossValue NaN', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', grossValue: NaN });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalGross, null);
+  });
+
+  it('20. totalProfit null quando item tem profitValue Infinity', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', profitValue: Infinity });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalProfit, null);
+  });
+
+  it('21. lista vazia gera zero para totais recalculados', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalApplied, 0);
+    assert.equal(enriched.summary.totalGross, 0);
+    assert.equal(enriched.summary.totalProfit, 0);
+  });
+
+  it('22. zero entra corretamente na soma', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem('rf-a', { indexer: 'CDI', appliedValue: 0, grossValue: 0, profitValue: 0 });
+    const item2 = makeItem('rf-b', { indexer: 'CDI', appliedValue: 100, grossValue: 200, profitValue: 100 });
+    const snapshot = makeSnapshot({ items: [item, item2] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalApplied, 100);
+    assert.equal(enriched.summary.totalGross, 200);
+    assert.equal(enriched.summary.totalProfit, 100);
+  });
+
+  it('23. totalLiquid preservado do summary original', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: 999 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [ASSET_ID]: okSupplement(),
+    });
+    assert.equal(enriched.summary.totalLiquid, snapshot.summary.totalLiquid);
+  });
+
+  it('24. totalIrValue preservado do summary original', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [makeItem('rf-a', { indexer: 'CDI', irValue: 50 })] });
+    snapshot.summary.totalIrValue = 50;
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalIrValue, 50);
+  });
+
+  it('25. totalIofValue preservado do summary original', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [makeItem('rf-a', { indexer: 'CDI', iofValue: 30 })] });
+    snapshot.summary.totalIofValue = 30;
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalIofValue, 30);
+  });
+
+  it('26. totalUnavailableValue preservado do summary original', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [makeItem('rf-a', { indexer: 'CDI', unavailableValue: 200 })] });
+    snapshot.summary.totalUnavailableValue = 200;
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.totalUnavailableValue, 200);
+  });
+
+  it('27. campos desconhecidos do summary sao preservados', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [] });
+    snapshot.summary.extraSummaryField = 'survive';
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.summary.extraSummaryField, 'survive');
+  });
+
+  it('28. campos desconhecidos do snapshot sao preservados', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [] });
+    snapshot.extraSnapshotField = 'survive';
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.extraSnapshotField, 'survive');
   });
 });
 
@@ -260,5 +362,76 @@ describe('fixedIncomeReadonlyValuation - snapshot imutabilidade', () => {
     const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
     assert.equal(enriched.version, 1);
     assert.equal(enriched.notice, snapshot.notice);
+  });
+
+  it('3. snapshot retornado esta congelado', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const items = [
+      makeItem('rf-a', { indexer: 'CDI' }),
+      makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: 999 }),
+    ];
+    const snapshot = makeSnapshot({ items });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [ASSET_ID]: okSupplement(),
+    });
+    assert.equal(Object.isFrozen(enriched), true);
+  });
+
+  it('4. array de items retornado esta congelado', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const items = [
+      makeItem('rf-a', { indexer: 'CDI' }),
+      makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: 999 }),
+    ];
+    const snapshot = makeSnapshot({ items });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [ASSET_ID]: okSupplement(),
+    });
+    assert.equal(Object.isFrozen(enriched.items), true);
+  });
+
+  it('5. summary retornado esta congelado', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [makeItem('rf-a', { indexer: 'CDI' })] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(Object.isFrozen(enriched.summary), true);
+  });
+
+  it('6. cada item retornado esta congelado (item CDI clonado)', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const snapshot = makeSnapshot({ items: [makeItem('rf-a', { indexer: 'CDI' })] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(Object.isFrozen(enriched.items[0]), true);
+  });
+
+  it('7. item PREFIXADO enriquecido retornado congelado', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: 999 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [ASSET_ID]: okSupplement(),
+    });
+    assert.equal(Object.isFrozen(enriched.items[0]), true);
+  });
+
+  it('8. supplementMap de entrada nao e mutado', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: 999 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const map = { [ASSET_ID]: okSupplement() };
+    Object.freeze(map);
+    Object.freeze(map[ASSET_ID]);
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, map);
+    assert.equal(enriched.items[0].appliedValue, 1000);
+  });
+
+  it('9. erro esperado do dominio preserva legado sem catch amplo', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(ASSET_ID, { indexer: 'PREFIXADO', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [ASSET_ID]: okSupplement({ annualRate: -0.05 }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
   });
 });

@@ -157,9 +157,9 @@ describe('fixedRateReadonlyProjection - isEligibleForProjection', () => {
     assert.equal(isEligibleForProjection('PREFIXADO'), true);
   });
 
-  it('2. retorna true para prefixado minusculo', async () => {
+  it('2. retorna false para prefixado minusculo', async () => {
     const { isEligibleForProjection } = await loadProjection();
-    assert.equal(isEligibleForProjection('prefixado'), true);
+    assert.equal(isEligibleForProjection('prefixado'), false);
   });
 
   it('3. retorna false para CDI', async () => {
@@ -187,9 +187,14 @@ describe('fixedRateReadonlyProjection - isEligibleForProjection', () => {
     assert.equal(isEligibleForProjection(''), false);
   });
 
-  it('8. retorna true para PreFiXaDo com case misto', async () => {
+  it('8. retorna false para PreFiXaDo com case misto', async () => {
     const { isEligibleForProjection } = await loadProjection();
-    assert.equal(isEligibleForProjection('PreFiXaDo'), true);
+    assert.equal(isEligibleForProjection('PreFiXaDo'), false);
+  });
+
+  it('9. retorna false para Prefixado capitalizado', async () => {
+    const { isEligibleForProjection } = await loadProjection();
+    assert.equal(isEligibleForProjection('Prefixado'), false);
   });
 });
 
@@ -239,7 +244,7 @@ describe('fixedRateReadonlyProjection - isValidValuationSupplement', () => {
     assert.equal(isValidValuationSupplement(0.12, 252, undefined), false);
   });
 
-  it('10. retorna false para annualRate zero (valido, edge case)', async () => {
+  it('10. retorna true para annualRate zero (valido, edge case)', async () => {
     const { isValidValuationSupplement } = await loadProjection();
     assert.equal(isValidValuationSupplement(0, 252, []), true);
   });

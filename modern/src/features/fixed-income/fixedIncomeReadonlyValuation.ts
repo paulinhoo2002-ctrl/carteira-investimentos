@@ -11,55 +11,49 @@ export interface FixedIncomeValuationSupplement {
   readonly rfEvents: readonly unknown[];
 }
 
-export type FixedIncomeValuationSupplementMap = Record<string, FixedIncomeValuationSupplement>;
+export type FixedIncomeValuationSupplementMap = Readonly<Record<string, Readonly<FixedIncomeValuationSupplement>>>;
 
-import type { ReadOnlyFixedIncomeSummary } from './fixedIncomeReadonlyContract.mjs';
-
-function sumItemField(
+function sumItemFieldStrict(
   items: readonly ReadOnlyFixedIncomeItem[],
   accessor: (item: ReadOnlyFixedIncomeItem) => unknown,
 ): number | null {
+  if (items.length === 0) return 0;
   let sum = 0;
-  let found = false;
   for (let i = 0; i < items.length; i++) {
     const value = accessor(items[i]);
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      sum += value;
-      found = true;
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return null;
     }
+    sum += value;
   }
-  return found ? sum : null;
+  return sum;
 }
 
 function enrichItem(
   item: ReadOnlyFixedIncomeItem,
   supplement: FixedIncomeValuationSupplement,
 ): ReadOnlyFixedIncomeItem {
-  try {
-    const projection = projectFixedRateReadonlyItem({
-      rfEvents: supplement.rfEvents,
-      assetId: item.id ?? '',
-      annualRate: supplement.annualRate,
-      elapsedBusinessDays: supplement.elapsedBusinessDays,
-    });
+  const projection = projectFixedRateReadonlyItem({
+    rfEvents: supplement.rfEvents,
+    assetId: item.id ?? '',
+    annualRate: supplement.annualRate,
+    elapsedBusinessDays: supplement.elapsedBusinessDays,
+  });
 
-    if (!projection) {
-      return { ...item };
-    }
-
-    return {
-      ...item,
-      appliedValue: projection.appliedValue,
-      grossValue: projection.grossValue,
-      profitValue: projection.profitValue,
-    };
-  } catch {
-    return { ...item };
+  if (!projection) {
+    return Object.freeze({ ...item });
   }
+
+  return Object.freeze({
+    ...item,
+    appliedValue: projection.appliedValue,
+    grossValue: projection.grossValue,
+    profitValue: projection.profitValue,
+  });
 }
 
 function cloneItem(item: ReadOnlyFixedIncomeItem): ReadOnlyFixedIncomeItem {
-  return { ...item };
+  return Object.freeze({ ...item });
 }
 
 export function enrichFixedIncomeReadonlySnapshot(
@@ -88,23 +82,17 @@ export function enrichFixedIncomeReadonlySnapshot(
     return enrichItem(item, supplement);
   });
 
-  const enrichedSummary: ReadOnlyFixedIncomeSummary = {
-    totalApplied: sumItemField(enrichedItems, (item) => item.appliedValue),
-    totalGross: sumItemField(enrichedItems, (item) => item.grossValue),
-    totalLiquid: sumItemField(enrichedItems, (item) => item.liquidValue),
-    totalProfit: sumItemField(enrichedItems, (item) => item.profitValue),
-    totalIrValue: sumItemField(enrichedItems, (item) => item.irValue),
-    totalIofValue: sumItemField(enrichedItems, (item) => item.iofValue),
-    totalCombinedTaxValue: sumItemField(enrichedItems, (item) => item.combinedTaxValue),
-    totalUnavailableValue: sumItemField(enrichedItems, (item) => item.unavailableValue),
+  const enrichedSummary = Object.freeze({
+    ...snapshot.summary,
+    totalApplied: sumItemFieldStrict(enrichedItems, (item) => item.appliedValue),
+    totalGross: sumItemFieldStrict(enrichedItems, (item) => item.grossValue),
+    totalProfit: sumItemFieldStrict(enrichedItems, (item) => item.profitValue),
     itemCount: enrichedItems.length,
-  };
+  });
 
-  return {
-    version: snapshot.version,
-    generatedAt: snapshot.generatedAt,
-    notice: snapshot.notice,
+  return Object.freeze({
+    ...snapshot,
     summary: enrichedSummary,
-    items: enrichedItems,
-  };
+    items: Object.freeze(enrichedItems),
+  });
 }
