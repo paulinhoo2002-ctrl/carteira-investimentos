@@ -1,7 +1,9 @@
-import type { ReadOnlyFixedIncomeBridge, ReadOnlyFixedIncomeSource } from './fixedIncomeReadonlyContract.mjs';
+import type { ReadOnlyFixedIncomeBridge, ReadOnlyFixedIncomeSource, ReadOnlyFixedIncomeSnapshot } from './fixedIncomeReadonlyContract.mjs';
 import type { ReadOnlyFixedIncomeAdapter } from './fixedIncomeSnapshotAdapter.mjs';
+import type { FixedIncomeValuationSupplementMap } from './fixedIncomeReadonlyValuation.ts';
 import { createFixedIncomeReadonlyBridge } from './fixedIncomeReadonlyBridge.mjs';
 import { createFixedIncomeReadonlyAdapter } from './fixedIncomeSnapshotAdapter.mjs';
+import { enrichFixedIncomeReadonlySnapshot } from './fixedIncomeReadonlyValuation.ts';
 
 function deepFreeze<T>(value: T): T {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
@@ -132,14 +134,34 @@ export function createLegacyFixedIncomeReadonlyBoundary(
   };
 }
 
+export function createValuedFixedIncomeReadonlySource(
+  source: ReadOnlyFixedIncomeSource | null | undefined,
+  supplementMap: FixedIncomeValuationSupplementMap = {},
+): ReadOnlyFixedIncomeSource {
+  const boundary = createLegacyFixedIncomeReadonlyBoundary(source);
+
+  return {
+    getSnapshot() {
+      const raw = boundary.getSnapshot();
+      if (!raw || typeof raw !== 'object') {
+        return raw;
+      }
+      return enrichFixedIncomeReadonlySnapshot(raw as ReadOnlyFixedIncomeSnapshot, supplementMap);
+    },
+  };
+}
+
 export function createConnectedFixedIncomeBridge(
   source: ReadOnlyFixedIncomeSource | null | undefined,
+  supplementMap: FixedIncomeValuationSupplementMap = {},
 ): ReadOnlyFixedIncomeBridge {
-  return createFixedIncomeReadonlyBridge(createLegacyFixedIncomeReadonlyBoundary(source));
+  const valuedSource = createValuedFixedIncomeReadonlySource(source, supplementMap);
+  return createFixedIncomeReadonlyBridge(valuedSource);
 }
 
 export function createConnectedFixedIncomeAdapter(
   source: ReadOnlyFixedIncomeSource | null | undefined,
+  supplementMap: FixedIncomeValuationSupplementMap = {},
 ): ReadOnlyFixedIncomeAdapter {
-  return createFixedIncomeReadonlyAdapter(createConnectedFixedIncomeBridge(source));
+  return createFixedIncomeReadonlyAdapter(createConnectedFixedIncomeBridge(source, supplementMap));
 }

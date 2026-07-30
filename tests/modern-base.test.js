@@ -92,6 +92,8 @@ const sourceFiles = [
   'src/features/fixed-income/fixedIncomeSnapshotAdapter.mjs',
   'src/features/fixed-income/fixedIncomeSnapshotAdapter.d.ts',
   'src/features/fixed-income/legacyFixedIncomeReadonlyIntegration.ts',
+  'src/features/fixed-income/fixedIncomeReadonlyValuation.ts',
+  'src/domain/fixedIncome/fixedRateReadonlyProjection.ts',
   'src/types/navigation.mjs',
 ];
 
@@ -534,7 +536,7 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/modern-contributions-explainable-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/modern-fixed-income-fixed-rate-engine.test.js tests/modern-fixed-income-movement-model.test.js tests/modern-fixed-income-legacy-rfevents-adapter.test.js tests/modern-fixed-income-fixed-rate-position.test.js tests/modern-fixed-income-legacy-fixed-rate-position.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/modern-contributions-explainable-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/modern-fixed-income-fixed-rate-engine.test.js tests/modern-fixed-income-movement-model.test.js tests/modern-fixed-income-legacy-rfevents-adapter.test.js tests/modern-fixed-income-fixed-rate-position.test.js tests/modern-fixed-income-legacy-fixed-rate-position.test.js tests/modern-fixed-income-readonly-projection.test.js tests/modern-fixed-income-readonly-valuation.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
