@@ -2,6 +2,7 @@ export const MODERN_PAGES = [
   {
     id: 'overview',
     label: 'Visao geral',
+    displayLabel: 'Início',
     title: 'Visao geral',
     description: 'Painel de entrada da base moderna. A navegacao e local e ainda nao se conecta ao legado.',
     hint: 'Shell inicial em demonstracao',
@@ -9,6 +10,7 @@ export const MODERN_PAGES = [
   {
     id: 'assets',
     label: 'Ativos',
+    displayLabel: 'Ativos',
     title: 'Ativos',
     description: 'Consulta somente leitura dos ativos da carteira, com filtros e distribuicao visual.',
     hint: 'Lista readonly atual',
@@ -16,6 +18,7 @@ export const MODERN_PAGES = [
   {
     id: 'fixed-income',
     label: 'Renda fixa',
+    displayLabel: 'Renda Fixa',
     title: 'Renda fixa readonly',
     description: 'Consulta somente leitura da renda fixa da carteira, com leitura segura do snapshot.',
     hint: 'Leitura dedicada',
@@ -23,6 +26,7 @@ export const MODERN_PAGES = [
   {
     id: 'provents',
     label: 'Proventos',
+    displayLabel: 'Dividendos',
     title: 'Proventos e renda mensal',
     description: 'Consulta somente leitura de proventos e renda mensal, com snapshot validado e congelado.',
     hint: 'Leitura readonly atual',
@@ -30,6 +34,7 @@ export const MODERN_PAGES = [
   {
     id: 'contributions',
     label: 'Aportes',
+    displayLabel: 'Aportes',
     title: 'Aportes e sugestao explicavel',
     description: 'Consulta somente leitura de aportes e sugestao explicavel produzida pelo legado.',
     hint: 'Leitura readonly dedicada',
@@ -37,6 +42,7 @@ export const MODERN_PAGES = [
   {
     id: 'reports',
     label: 'Relatorios',
+    displayLabel: 'Relatórios',
     title: 'Previa somente leitura de Relatorios',
     description: 'Snapshot somente leitura controlado por adaptador explicito, sem escrita ou acesso ao legado.',
     hint: 'Snapshot de leitura segura',
@@ -44,9 +50,42 @@ export const MODERN_PAGES = [
   {
     id: 'settings',
     label: 'Configuracoes',
+    displayLabel: 'Configurações',
     title: 'Configuracoes',
     description: 'Pagina de preferencias da base moderna, sem persistencia ou integracao externa.',
     hint: 'Preferencias locais',
+  },
+  {
+    id: 'returns',
+    label: 'Rentabilidade',
+    displayLabel: 'Rentabilidade',
+    title: 'Rentabilidade',
+    description: 'Consulta somente leitura de rentabilidade da carteira, com leitura segura do snapshot.',
+    hint: 'Leitura readonly planejada',
+  },
+  {
+    id: 'goals',
+    label: 'Metas',
+    displayLabel: 'Metas',
+    title: 'Metas',
+    description: 'Consulta somente leitura de metas da carteira, com leitura segura do snapshot.',
+    hint: 'Leitura readonly planejada',
+  },
+  {
+    id: 'net-worth',
+    label: 'Patrimonio',
+    displayLabel: 'Patrimônio',
+    title: 'Patrimonio',
+    description: 'Consulta somente leitura do patrimonio da carteira, com leitura segura do snapshot.',
+    hint: 'Leitura readonly planejada',
+  },
+  {
+    id: 'rebalance',
+    label: 'Rebalancear',
+    displayLabel: 'Rebalancear',
+    title: 'Rebalancear',
+    description: 'Consulta somente leitura de rebalanceamento da carteira, com leitura segura do snapshot.',
+    hint: 'Leitura readonly planejada',
   },
 ];
 

@@ -256,6 +256,24 @@ button {
   margin: 0;
 }
 
+.modern-sidebar__group {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.modern-sidebar__group + .modern-sidebar__group {
+  margin-top: var(--space-4);
+}
+
+.modern-sidebar__group-title {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .sidebar__item {
   width: 100%;
   border: 1px solid transparent;
@@ -1291,6 +1309,14 @@ button {
   background: var(--color-backdrop);
 }
 
+.modern-bottom-nav {
+  display: none;
+}
+
+.modern-more-sheet {
+  display: none;
+}
+
 @media (max-width: 1023px) {
   .modern-header {
     padding: var(--space-5) var(--space-4) var(--space-3);
@@ -1378,6 +1404,138 @@ button {
   .fixed-income-readonly__controls,
   .fixed-income-readonly__highlight-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .modern-bottom-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: var(--z-sticky);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: 0 -8px 24px rgba(2, 6, 23, 0.32);
+  }
+
+  .modern-bottom-nav__item {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    transition:
+      background-color var(--motion-fast),
+      border-color var(--motion-fast),
+      color var(--motion-fast);
+  }
+
+  .modern-bottom-nav__item:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-text);
+  }
+
+  .modern-bottom-nav__item[data-active='true'] {
+    border-color: var(--color-border-active);
+    background: linear-gradient(180deg, var(--color-surface-active-start), var(--color-surface-active-end));
+    color: var(--color-text);
+  }
+
+  .modern-bottom-nav__item:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .modern-bottom-nav__label {
+    display: block;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .modern-more-sheet[data-open='true'] {
+    display: flex;
+    align-items: flex-end;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    background: var(--color-backdrop);
+  }
+
+  .modern-more-sheet__panel {
+    width: 100%;
+    max-height: 78vh;
+    overflow-y: auto;
+    padding: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .modern-more-sheet__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .modern-more-sheet__title {
+    margin: 0;
+    color: var(--color-text-soft);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .modern-more-sheet__close {
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-active);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 700;
+    transition:
+      transform var(--motion-fast),
+      border-color var(--motion-fast),
+      background-color var(--motion-fast);
+  }
+
+  .modern-more-sheet__close:hover {
+    transform: translateY(-1px);
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-hover-strong);
+  }
+
+  .modern-more-sheet__close:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .modern-more-sheet__list {
+    display: grid;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .modern-footnote {
+    padding-bottom: 84px;
   }
 }
 

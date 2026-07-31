@@ -32,6 +32,10 @@
     'contributions',
     'reports',
     'settings',
+    'returns',
+    'goals',
+    'net-worth',
+    'rebalance',
   ]);
 
   const DEFAULT_READONLY_REPORT_PAGE_ID = 'reports';

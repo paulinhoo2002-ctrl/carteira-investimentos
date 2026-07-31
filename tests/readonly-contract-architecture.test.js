@@ -16,6 +16,10 @@ const readonlyPageIds = [
   'contributions',
   'reports',
   'settings',
+  'returns',
+  'goals',
+  'net-worth',
+  'rebalance',
 ];
 
 const contractFilename = ['readonly-report-page-contract', '.js'].join('');
@@ -676,6 +680,10 @@ const allowedPages = [
   'contributions',
   'reports',
   'settings',
+  'returns',
+  'goals',
+  'net-worth',
+  'rebalance',
 ];
 `;
 
