@@ -776,3 +776,27 @@ Rollback:
 
 - remover a pagina de Ativos readonly, os formatadores/view-models, os testes e a documentacao desta fase;
 - manter o contrato readonly versionado, o host experimental e o shell independente como estavam.
+
+## Fase shell de navegacao agrupada (bloco 1 do shell moderno responsivo)
+
+Objetivo:
+
+- organizar os IDs visuais em grupos PRIMARY, SECONDARY, MOBILE_BOTTOM e MOBILE_MORE sem duplicar a lista canonica em outros lugares.
+
+Origem da verdade:
+
+- o conjunto completo de IDs permanece sob guarda do contrato canonico (`readonly-report-page-contract.js`) e do catalogo visual (`MODERN_PAGES` em `modern/src/types/navigation.mjs`);
+- o modulo `shellNavigation.mjs` apenas agrupa IDs ja validados contra `MODERN_PAGES` e nao introduz listas paralelas;
+- placeholders estruturais minimos para os IDs novos; nenhuma regra financeira, persistencia ou integracao nova.
+
+Guardrails preservados:
+
+- `DEFAULT_READONLY_REPORT_PAGE_ID` continua `reports`;
+- fallback de sessao em `modern/src/host.tsx` continua `reports`;
+- deep-links via `?readonlyReportPage=` continuam funcionando;
+- nenhum ID novo entra em `assets` do legado, em Firebase, em `localStorage` ou em qualquer fonte persistente.
+
+Rollback:
+
+- remover os placeholders novos, `BottomNav`, `MoreSheet`, o agrupamento do `Sidebar` e o modulo `shellNavigation.mjs`;
+- manter o contrato canonico, o catalogo visual e o host experimental como estavam.

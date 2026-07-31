@@ -41,3 +41,13 @@ Esse modo continua somente leitura. Ele injeta os ativos do legado apenas na com
 - a tela de Relatorios consome snapshot somente leitura por ponte e adaptador explicitos;
 - nao acessa sistemas externos ou armazenamento persistente;
 - o build sai em `modern/dist`.
+
+## Navegacao
+
+O shell visual organiza os IDs em grupos para desktop e mobile:
+
+- `PRIMARY` e `SECONDARY` no sidebar (desktop e drawer mobile);
+- `MOBILE_BOTTOM` na barra inferior fixa (<1024px) com item virtual `more`;
+- `MOBILE_MORE` no painel `Mais` acessivel pelo botao `more` da barra inferior.
+
+A lista completa de IDs vive no contrato canonico (`readonly-report-page-contract.js`) e no catalogo visual (`MODERN_PAGES` em `modern/src/types/navigation.mjs`). O modulo `modern/src/types/shellNavigation.mjs` apenas agrupa IDs ja validados contra `MODERN_PAGES` e nao introduz listas paralelas.

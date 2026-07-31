@@ -5,11 +5,16 @@ export type ModernPageId =
   | 'provents'
   | 'contributions'
   | 'reports'
-  | 'settings';
+  | 'settings'
+  | 'returns'
+  | 'goals'
+  | 'net-worth'
+  | 'rebalance';
 
 export interface ModernPage {
   id: ModernPageId;
   label: string;
+  displayLabel: string;
   title: string;
   description: string;
   hint: string;
