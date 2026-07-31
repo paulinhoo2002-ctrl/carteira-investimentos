@@ -486,3 +486,310 @@ test('asset id numerico e event.assetId numerico correspondente: matching funcio
   assert.ok(item, 'item enriquecido presente');
   assert.equal(item.appliedValue, 100, 'projecao aplicada corretamente');
 });
+
+function createCdiAsset(overrides = {}) {
+  return {
+    id: 'rf-cdi01',
+    ticker: 'CDI01',
+    name: 'CDB CDI 2026',
+    type: 'Renda Fixa',
+    rf_subtype: 'CDB',
+    fixed_issuer: 'Banco CDI',
+    rf_application_date: '2026-01-09',
+    rf_maturity_date: '2026-12-15',
+    rf_contract_rate: '100% CDI',
+    fixed_indexer: 'CDI',
+    rf_applied_value: 5000,
+    rf_gross_value: 5200,
+    rf_liquid_value: 5180,
+    rf_profit_value: 200,
+    rf_ir_iof: 20,
+    rf_unavailable_value: 0,
+    rf_note: 'Teste CDB CDI vertical',
+    ...overrides,
+  };
+}
+
+function createCdiDailyFactors() {
+  return [
+    { date: '2026-01-09', factor: 1.0004 },
+    { date: '2026-01-10', factor: 1.0003 },
+    { date: '2026-01-13', factor: 1.0005 },
+  ];
+}
+
+test('supplement map CDI: getGeneratedAt injetado produz mapa nao vazio com ativo CDI', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const asset = createCdiAsset();
+
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [],
+    getGeneratedAt: () => GENERATED_AT,
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 1, 'deve ter 1 entrada no mapa');
+  assert.ok('rf-cdi01' in result, 'deve conter assetId do ativo CDI');
+  assert.equal(result['rf-cdi01'].kind, 'CDI', 'kind deve ser CDI');
+  assert.equal(result['rf-cdi01'].contract.kind, 'CDI_PERCENTAGE', 'contract.kind deve ser CDI_PERCENTAGE');
+  assert.equal(result['rf-cdi01'].contract.cdiPercentage, 1, 'cdiPercentage = 1 para 100% CDI');
+  assert.ok(Object.isFrozen(result), 'mapa externo congelado');
+  assert.ok(Object.isFrozen(result['rf-cdi01']), 'entrada do suplemento congelada');
+  assert.ok(Object.isFrozen(result['rf-cdi01'].contract), 'contract congelado');
+  assert.ok(Object.isFrozen(result['rf-cdi01'].dailyFactors), 'array de fatores congelado');
+});
+
+test('cadeia completa CDI: getGeneratedAt flui do composition root ate o snapshot enriquecido', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = createCdiAsset();
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [],
+    getGeneratedAt: () => GENERATED_AT,
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [asset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste vertical CDI',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  assert.ok(snapshot, 'snapshot deve existir');
+  assert.ok(Array.isArray(snapshot.items), 'items deve ser array');
+  assert.ok(snapshot.items.length > 0, 'deve conter pelo menos um item');
+
+  const cdiItem = snapshot.items.find(i => i.id === 'rf-cdi01');
+  assert.ok(cdiItem, 'item CDI deve estar presente no snapshot');
+  assert.equal(cdiItem.indexer, 'CDI', 'indexer deve ser CDI');
+
+  assert.ok(cdiItem.appliedValue > 0, 'appliedValue deve ser positivo');
+  assert.ok(cdiItem.grossValue > cdiItem.appliedValue, 'grossValue > appliedValue (projecao aplicada)');
+  assert.equal(cdiItem.profitValue, cdiItem.grossValue - cdiItem.appliedValue, 'profitValue = grossValue - appliedValue');
+
+  assert.equal(snapshot.summary.itemCount, 1, 'summary reflete contagem correta');
+  assert.equal(snapshot.summary.totalApplied, cdiItem.appliedValue, 'summary.totalApplied igual ao appliedValue enriquecido');
+  assert.equal(snapshot.summary.totalGross, cdiItem.grossValue, 'summary.totalGross igual ao grossValue enriquecido');
+  assert.equal(snapshot.summary.totalProfit, cdiItem.profitValue, 'summary.totalProfit igual ao profitValue enriquecido');
+
+  assert.ok(Object.isFrozen(snapshot.items), 'itens do snapshot congelados');
+  assert.ok(Object.isFrozen(snapshot.summary), 'summary do snapshot congelado');
+});
+
+test('runtime CDI sem supplementMap preserva fallback legado', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = createCdiAsset();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [asset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste vertical CDI sem suplemento',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  assert.ok(snapshot, 'snapshot deve existir mesmo sem suplemento');
+  assert.ok(snapshot.items.length > 0, 'deve conter itens');
+
+  const item = snapshot.items.find(i => i.id === 'rf-cdi01');
+  assert.ok(item, 'CDI asset presente');
+
+  assert.equal(item.appliedValue, 5000, 'appliedValue legado preservado (5000)');
+  assert.equal(item.grossValue, 5200, 'grossValue legado preservado (5200)');
+  assert.equal(item.profitValue, 200, 'profitValue legado preservado (200)');
+
+  assert.equal(snapshot.summary.totalApplied, 5000, 'summary.totalApplied = 5000 (legado)');
+  assert.equal(snapshot.summary.totalGross, 5200, 'summary.totalGross = 5200 (legado)');
+});
+
+test('nenhum estado de entrada mutado pelo supplement builder CDI', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+
+  const asset = createCdiAsset();
+  const assets = [asset];
+  const factors = createCdiDailyFactors();
+  const factorsBefore = factors.map(f => ({ ...f }));
+
+  buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => assets,
+    getRfEvents: () => [],
+    getGeneratedAt: () => GENERATED_AT,
+    getCdiDailyFactors: () => factors,
+  });
+
+  assert.deepEqual(asset, { ...createCdiAsset() }, 'asset nao mutado');
+  assert.deepEqual(factors, factorsBefore, 'fatores CDI nao mutados');
+  assert.strictEqual(assets[0], asset, 'referencia do array assets preservada');
+});
+
+test('cadeia completa CDI: nenhum estado de entrada mutado pelo fluxo source + suplemento', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = createCdiAsset();
+  const assets = [asset];
+  const factors = createCdiDailyFactors();
+  const factorsBefore = factors.map(f => ({ ...f }));
+
+  const assetBefore = { ...asset };
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => assets,
+    getRfEvents: () => [],
+    getGeneratedAt: () => GENERATED_AT,
+    getCdiDailyFactors: () => factors,
+  });
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => assets,
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste imutabilidade vertical CDI',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  runtime.fixedIncomeAdapter.getSnapshot();
+
+  assert.deepEqual(asset, assetBefore, 'asset nao mutado apos fluxo completo');
+  assert.deepEqual(factors, factorsBefore, 'fatores CDI nao mutados apos fluxo completo');
+});
+
+test('asset CDI com spread: supplementMap produz entrada correta e snapshot enriquecido', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = createCdiAsset({ rf_contract_rate: 'CDI + 2%' });
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [],
+    getGeneratedAt: () => GENERATED_AT,
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(supplementMap).length, 1, 'deve ter 1 entrada');
+  assert.equal(supplementMap['rf-cdi01'].kind, 'CDI');
+  assert.equal(supplementMap['rf-cdi01'].contract.kind, 'CDI_PLUS_SPREAD', 'contract.kind deve ser CDI_PLUS_SPREAD');
+  assert.equal(supplementMap['rf-cdi01'].contract.annualSpreadRate, 0.02, 'annualSpreadRate = 0.02');
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [asset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste CDI com spread',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  const item = snapshot.items.find(i => i.id === 'rf-cdi01');
+  assert.ok(item, 'item CDI deve estar presente');
+  assert.ok(item.appliedValue > 0, 'appliedValue projetado');
+  assert.ok(item.grossValue > item.appliedValue, 'grossValue > appliedValue');
+});
+
+test('asset CDI e PREFIXADO: ambos enriquecidos corretamente na cadeia completa', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const cdiAsset = createCdiAsset();
+  const prefixadoAsset = createPrefixadoAsset();
+  const event = createRfEvent({ assetId: 'rf-cdb26' });
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [cdiAsset, prefixadoAsset],
+    getRfEvents: () => [event],
+    getGeneratedAt: () => GENERATED_AT,
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(supplementMap).length, 2, 'deve ter 2 entradas');
+  assert.equal(supplementMap['rf-cdi01'].kind, 'CDI');
+  assert.equal(supplementMap['rf-cdi01'].contract.kind, 'CDI_PERCENTAGE', 'CDI contract.kind');
+  assert.equal(supplementMap['rf-cdb26'].kind, 'FIXED_RATE');
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [cdiAsset, prefixadoAsset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste misto CDI + PREFIXADO',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  assert.equal(snapshot.items.length, 2, 'deve conter 2 itens');
+
+  const cdiItem = snapshot.items.find(i => i.id === 'rf-cdi01');
+  const prefixadoItem = snapshot.items.find(i => i.id === 'rf-cdb26');
+
+  assert.ok(cdiItem, 'item CDI presente');
+  assert.ok(prefixadoItem, 'item PREFIXADO presente');
+
+  assert.ok(cdiItem.appliedValue > 0, 'CDI appliedValue projetado');
+  assert.ok(cdiItem.grossValue > cdiItem.appliedValue, 'CDI grossValue > appliedValue');
+  assert.equal(prefixadoItem.appliedValue, 100, 'PREFIXADO appliedValue = sum(principalDelta)');
+  assert.ok(prefixadoItem.grossValue > prefixadoItem.appliedValue, 'PREFIXADO grossValue > appliedValue');
+
+  assert.equal(snapshot.summary.totalApplied, cdiItem.appliedValue + prefixadoItem.appliedValue, 'summary totalApplied soma correta');
+});
+
+test('asset CDI com contrato invalido: fallback legado preservado na cadeia completa', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = createCdiAsset({ rf_contract_rate: 'PREFIXADO 10%' });
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [],
+    getGeneratedAt: () => GENERATED_AT,
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(supplementMap).length, 0, 'supplementMap deve ser vazio');
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [asset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste CDI contrato invalido',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  const item = snapshot.items.find(i => i.id === 'rf-cdi01');
+  assert.ok(item, 'item presente');
+  assert.equal(item.appliedValue, 5000, 'valores legados preservados');
+  assert.equal(item.grossValue, 5200, 'valores legados preservados');
+});

@@ -4,12 +4,24 @@ import {
   isEligibleForProjection,
   isValidValuationSupplement,
 } from '../../domain/fixedIncome/fixedRateReadonlyProjection.ts';
+import type { CdiContract } from '../../domain/fixedIncome/cdiContractParser.ts';
+import { calculateCdiValue } from '../../domain/fixedIncome/cdiRateEngine.ts';
+import type { CdiDailyFactor } from '../../domain/fixedIncome/cdiRateEngine.ts';
 
-export interface FixedIncomeValuationSupplement {
+export interface FixedRateValuationSupplement {
+  readonly kind: 'FIXED_RATE';
   readonly annualRate: number;
   readonly elapsedBusinessDays: number;
   readonly rfEvents: readonly unknown[];
 }
+
+export interface CdiValuationSupplement {
+  readonly kind: 'CDI';
+  readonly contract: CdiContract;
+  readonly dailyFactors: readonly CdiDailyFactor[];
+}
+
+export type FixedIncomeValuationSupplement = FixedRateValuationSupplement | CdiValuationSupplement;
 
 export type FixedIncomeValuationSupplementMap = Readonly<Record<string, Readonly<FixedIncomeValuationSupplement>>>;
 
@@ -29,9 +41,9 @@ function sumItemFieldStrict(
   return sum;
 }
 
-function enrichItem(
+function enrichFixedRateItem(
   item: ReadOnlyFixedIncomeItem,
-  supplement: FixedIncomeValuationSupplement,
+  supplement: FixedRateValuationSupplement,
 ): ReadOnlyFixedIncomeItem {
   const projection = projectFixedRateReadonlyItem({
     rfEvents: supplement.rfEvents,
@@ -52,6 +64,38 @@ function enrichItem(
   });
 }
 
+function enrichCdiItem(
+  item: ReadOnlyFixedIncomeItem,
+  supplement: CdiValuationSupplement,
+): ReadOnlyFixedIncomeItem {
+  const cdiResult = calculateCdiValue({
+    contract: supplement.contract,
+    dailyFactors: supplement.dailyFactors,
+    principal: item.appliedValue ?? 0,
+  });
+
+  if (!cdiResult.ok) {
+    return Object.freeze({ ...item });
+  }
+
+  return Object.freeze({
+    ...item,
+    appliedValue: cdiResult.principal,
+    grossValue: cdiResult.grossValue,
+    profitValue: cdiResult.grossProfit,
+  });
+}
+
+function enrichItem(
+  item: ReadOnlyFixedIncomeItem,
+  supplement: FixedIncomeValuationSupplement,
+): ReadOnlyFixedIncomeItem {
+  if (supplement.kind === 'CDI') {
+    return enrichCdiItem(item, supplement);
+  }
+  return enrichFixedRateItem(item, supplement);
+}
+
 function cloneItem(item: ReadOnlyFixedIncomeItem): ReadOnlyFixedIncomeItem {
   return Object.freeze({ ...item });
 }
@@ -61,10 +105,6 @@ export function enrichFixedIncomeReadonlySnapshot(
   supplementMap: FixedIncomeValuationSupplementMap,
 ): ReadOnlyFixedIncomeSnapshot {
   const enrichedItems = snapshot.items.map((item) => {
-    if (!isEligibleForProjection(item.indexer)) {
-      return cloneItem(item);
-    }
-
     const assetId = item.id;
     if (!assetId || typeof assetId !== 'string' || !assetId.trim()) {
       return cloneItem(item);
@@ -75,11 +115,19 @@ export function enrichFixedIncomeReadonlySnapshot(
       return cloneItem(item);
     }
 
+    if (supplement.kind === 'CDI') {
+      return enrichCdiItem(item, supplement);
+    }
+
+    if (!isEligibleForProjection(item.indexer)) {
+      return cloneItem(item);
+    }
+
     if (!isValidValuationSupplement(supplement.annualRate, supplement.elapsedBusinessDays, supplement.rfEvents)) {
       return cloneItem(item);
     }
 
-    return enrichItem(item, supplement);
+    return enrichFixedRateItem(item, supplement);
   });
 
   const enrichedSummary = Object.freeze({

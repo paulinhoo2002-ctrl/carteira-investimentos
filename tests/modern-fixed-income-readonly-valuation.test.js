@@ -435,3 +435,245 @@ describe('fixedIncomeReadonlyValuation - snapshot imutabilidade', () => {
     assert.equal(enriched.items[0].appliedValue, 500);
   });
 });
+
+const CDI_ASSET_ID = 'rf-cdi01';
+
+function cdiFactors(overrides = {}) {
+  return [
+    { date: '2026-01-12', factor: 1.0004, ...overrides },
+    { date: '2026-01-13', factor: 1.0003, ...overrides },
+    { date: '2026-01-14', factor: 1.0005, ...overrides },
+  ];
+}
+
+function cdiSupplement(overrides = {}) {
+  return {
+    kind: 'CDI',
+    contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+    dailyFactors: cdiFactors(),
+    ...overrides,
+  };
+}
+
+describe('fixedIncomeReadonlyValuation - CDI enrichment', () => {
+  it('1. item CDI com supplement valido projeta valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000, grossValue: 999, profitValue: 999 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement(),
+    });
+    assert.ok(enriched.items[0].appliedValue > 0);
+    assert.ok(enriched.items[0].grossValue > enriched.items[0].appliedValue);
+    assert.equal(enriched.items[0].profitValue, enriched.items[0].grossValue - enriched.items[0].appliedValue);
+  });
+
+  it('2. item CDI sem supplement preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500, grossValue: 550, profitValue: 50 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.items[0].appliedValue, 500);
+    assert.equal(enriched.items[0].grossValue, 550);
+    assert.equal(enriched.items[0].profitValue, 50);
+  });
+
+  it('3. items mistos: PREFIXADO e CDI projetados corretamente', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const prefixado = makeItem('rf-pref', { indexer: 'PREFIXADO', appliedValue: 999, grossValue: 999, profitValue: 999 });
+    const cdi = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000, grossValue: 999, profitValue: 999 });
+    const snapshot = makeSnapshot({ items: [prefixado, cdi] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      'rf-pref': okSupplement({ annualRate: 0.12, elapsedBusinessDays: 252, rfEvents: [{ id: 'e1', assetId: 'rf-pref', date: '2026-01-15', principalDelta: 1000 }] }),
+      [CDI_ASSET_ID]: cdiSupplement(),
+    });
+    assert.equal(enriched.items[0].appliedValue, 1000);
+    assert.equal(enriched.items[0].grossValue, 1120);
+    assert.ok(enriched.items[1].appliedValue > 0);
+    assert.ok(enriched.items[1].grossValue > enriched.items[1].appliedValue);
+  });
+
+  it('4. item CDI com contrato invalido preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: -1 } }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('5. item CDI com fator invalido preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ dailyFactors: [{ date: '2026-01-12', factor: 0 }] }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('6. item CDI com fator NaN preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ dailyFactors: [{ date: '2026-01-12', factor: NaN }] }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('7. item CDI com fator Infinity preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ dailyFactors: [{ date: '2026-01-12', factor: Infinity }] }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('8. item CDI com fatores duplicados preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ dailyFactors: [
+        { date: '2026-01-12', factor: 1.0004 },
+        { date: '2026-01-12', factor: 1.0003 },
+      ] }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('9. item CDI com fatores fora de ordem preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ dailyFactors: [
+        { date: '2026-01-14', factor: 1.0005 },
+        { date: '2026-01-12', factor: 1.0004 },
+      ] }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('10. item CDI com fator invalido (data formato) preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ dailyFactors: [{ date: '12/01/2026', factor: 1.0004 }] }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('11. item CDI com fator invalido (dia 32) preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ dailyFactors: [{ date: '2026-01-32', factor: 1.0004 }] }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('12. item CDI com spread projeta valores corretamente', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000, grossValue: 999, profitValue: 999 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ contract: { kind: 'CDI_PLUS_SPREAD', annualSpreadRate: 0.02 } }),
+    });
+    assert.ok(enriched.items[0].appliedValue > 0);
+    assert.ok(enriched.items[0].grossValue > enriched.items[0].appliedValue);
+  });
+
+  it('13. summary recalcula agregados com valores CDI projetados', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000, grossValue: 999, profitValue: 999 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement(),
+    });
+    assert.equal(enriched.summary.totalApplied, enriched.items[0].appliedValue);
+    assert.equal(enriched.summary.totalGross, enriched.items[0].grossValue);
+    assert.equal(enriched.summary.totalProfit, enriched.items[0].profitValue);
+  });
+
+  it('14. item CDI com id null preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(null, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {});
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('15. item CDI com supplement de outro assetId preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 500 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      'other-asset': cdiSupplement(),
+    });
+    assert.equal(enriched.items[0].appliedValue, 500);
+  });
+
+  it('16. item CDI sem appliedValue usa 0 como principal', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: null });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement(),
+    });
+    assert.equal(enriched.items[0].appliedValue, 0);
+    assert.equal(enriched.items[0].grossValue, 0);
+    assert.equal(enriched.items[0].profitValue, 0);
+  });
+
+  it('17. liquidValue nunca e alterado pela projecao CDI', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000, liquidValue: 1050 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement(),
+    });
+    assert.equal(enriched.items[0].liquidValue, 1050);
+  });
+
+  it('18. snapshot original nao e modificado por projecao CDI', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const before = snapshot.items[0].appliedValue;
+    enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement(),
+    });
+    assert.equal(snapshot.items[0].appliedValue, before);
+  });
+
+  it('19. snapshot CDI retornado esta congelado', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement(),
+    });
+    assert.equal(Object.isFrozen(enriched), true);
+    assert.equal(Object.isFrozen(enriched.items), true);
+    assert.equal(Object.isFrozen(enriched.items[0]), true);
+  });
+
+  it('20. item CDI com cdiPercentage 0 (contrato invalido) preserva valores', async () => {
+    const { enrichFixedIncomeReadonlySnapshot } = await loadValuation();
+    const item = makeItem(CDI_ASSET_ID, { indexer: 'CDI', appliedValue: 1000, grossValue: 1100, profitValue: 100 });
+    const snapshot = makeSnapshot({ items: [item] });
+    const enriched = enrichFixedIncomeReadonlySnapshot(snapshot, {
+      [CDI_ASSET_ID]: cdiSupplement({ contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 0 } }),
+    });
+    assert.equal(enriched.items[0].appliedValue, 1000);
+    assert.equal(enriched.items[0].grossValue, 1100, 'contrato invalido preserva grossValue original');
+    assert.equal(enriched.items[0].profitValue, 100, 'contrato invalido preserva profitValue original');
+  });
+});
