@@ -311,3 +311,403 @@ test('buildFixedIncomeReadonlySupplementMap: nao muta eventos de entrada', async
   assert.equal(Object.isFrozen(events), false);
   assert.equal(events[0].assetId, 'rf-cdb26');
 });
+
+function createCdiAsset(overrides = {}) {
+  return {
+    id: 'rf-cdi01',
+    ticker: 'CDI01',
+    name: 'CDB CDI 2026',
+    type: 'Renda Fixa',
+    rf_subtype: 'CDB',
+    fixed_issuer: 'Banco CDI',
+    rf_application_date: '2026-01-12',
+    rf_maturity_date: '2026-12-15',
+    rf_contract_rate: '100% CDI',
+    fixed_indexer: 'CDI',
+    rf_applied_value: 5000,
+    rf_gross_value: 5200,
+    rf_liquid_value: 5180,
+    rf_profit_value: 200,
+    rf_ir_iof: 20,
+    rf_unavailable_value: 0,
+    rf_note: 'Teste CDB CDI',
+    ...overrides,
+  };
+}
+
+function createCdiDailyFactors(overrides = {}) {
+  return [
+    { date: '2026-01-12', factor: 1.0004, ...overrides },
+    { date: '2026-01-13', factor: 1.0003, ...overrides },
+    { date: '2026-01-14', factor: 1.0005, ...overrides },
+  ];
+}
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com contrato e fatores validos entra no map', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.ok(result['rf-cdi01']);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+  assert.equal(result['rf-cdi01'].contract.kind, 'CDI_PERCENTAGE');
+  assert.equal(result['rf-cdi01'].contract.cdiPercentage, 1);
+  assert.equal(result['rf-cdi01'].dailyFactors.length, 3);
+  assert.ok(Object.isFrozen(result['rf-cdi01'].contract), 'contract congelado');
+  assert.ok(Object.isFrozen(result['rf-cdi01'].dailyFactors), 'dailyFactors congelado');
+  assert.equal(result['rf-cdi01'].cdiPercentage, undefined, 'campo paralelo cdiPercentage ausente');
+  assert.equal(result['rf-cdi01'].rate, undefined, 'campo paralelo rate ausente');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread entra no map', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI + 2%' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.ok(result['rf-cdi01']);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+  assert.equal(result['rf-cdi01'].contract.kind, 'CDI_PLUS_SPREAD');
+  assert.equal(result['rf-cdi01'].contract.annualSpreadRate, 0.02);
+  assert.ok(Object.isFrozen(result['rf-cdi01'].contract), 'contract congelado');
+  assert.equal(result['rf-cdi01'].cdiPercentage, undefined, 'campo paralelo cdiPercentage ausente');
+  assert.equal(result['rf-cdi01'].rate, undefined, 'campo paralelo rate ausente');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI sem getCdiDailyFactors nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com getCdiDailyFactors retornando null nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => null,
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com contrato invalido nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: 'PREFIXADO 10%' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage invalido nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: '6 CDI' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage zero nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: '0% CDI' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread negativo nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI - 1%' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread maior que 1 nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI + 200%' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI e PREFIXADO no mesmo map', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset(), createPrefixadoAsset()],
+    getRfEvents: () => [createRfEvent()],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 2);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+  assert.equal(result['rf-cdb26'].kind, 'FIXED_RATE');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: fatores CDI congelados no map', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.isFrozen(result['rf-cdi01'].dailyFactors), true);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI sem id nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ id: undefined })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com indexer invalido nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ fixed_indexer: 'IPCA' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: fatores CDI preservados sem mutacao', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const factors = createCdiDailyFactors();
+  const factorsCopy = [...factors];
+
+  buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => factors,
+  });
+
+  assert.deepEqual(factors, factorsCopy);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com array fatores vazio cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+  assert.equal(result['rf-cdi01'].dailyFactors.length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (factor nao numero) cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: 'invalido' }],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (factor <= 0) cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: 0 }],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (factor NaN) cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: NaN }],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com data fator invalida (formato) cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [{ date: '12/01/2026', factor: 1.0004 }],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com data fator invalida (dia 32) cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [{ date: '2026-01-32', factor: 1.0004 }],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator Infinity cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: Infinity }],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fatores duplicados cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [
+      { date: '2026-01-12', factor: 1.0004 },
+      { date: '2026-01-12', factor: 1.0003 },
+    ],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+  assert.equal(result['rf-cdi01'].dailyFactors.length, 2);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fatores nao ordenados cria supplement (validacao no engine)', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => [
+      { date: '2026-01-14', factor: 1.0005 },
+      { date: '2026-01-12', factor: 1.0004 },
+    ],
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].kind, 'CDI');
+  assert.equal(result['rf-cdi01'].dailyFactors.length, 2);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: erro de getCdiDailyFactors propaga', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  assert.throws(
+    () => {
+      buildFixedIncomeReadonlySupplementMap({
+        getAssets: () => [createCdiAsset()],
+        getRfEvents: () => [],
+        getGeneratedAt: () => '2026-07-14',
+        getCdiDailyFactors: () => { throw new Error('boom'); },
+      });
+    },
+    /boom/,
+  );
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage maximo valido (5) entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: '500% CDI' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].contract.kind, 'CDI_PERCENTAGE');
+  assert.equal(result['rf-cdi01'].contract.cdiPercentage, 5);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage 5.1 nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: '510% CDI' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread maximo valido (1) entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI + 100%' })],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    getCdiDailyFactors: () => createCdiDailyFactors(),
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].contract.kind, 'CDI_PLUS_SPREAD');
+  assert.equal(result['rf-cdi01'].contract.annualSpreadRate, 1);
+});

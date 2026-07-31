@@ -3,11 +3,14 @@ import { parseContractRate } from '../../domain/fixedIncome/fixedIncomeRateParse
 import { countWeekdays } from '../../domain/fixedIncome/fixedIncomeWeekdays.ts';
 import type { FixedIncomeValuationSupplementMap } from './fixedIncomeReadonlyValuation.ts';
 import { resolveFixedIncomeAssetId, normalizeEventAssetId } from './fixedIncomeAssetIdentity.ts';
+import { parseCdiContract } from '../../domain/fixedIncome/cdiContractParser.ts';
+import type { CdiDailyFactor } from '../../domain/fixedIncome/cdiRateEngine.ts';
 
 export interface BuildSupplementOptions {
   readonly getAssets: () => readonly HostFixedIncomeAsset[];
   readonly getRfEvents?: () => readonly unknown[];
   readonly getGeneratedAt: () => string;
+  readonly getCdiDailyFactors?: () => readonly unknown[];
 }
 
 function toText(value: unknown): string | null {
@@ -74,8 +77,9 @@ export function buildFixedIncomeReadonlySupplementMap(
   const assets = options.getAssets();
   const rfEventsRaw = options.getRfEvents?.();
   const generatedAt = options.getGeneratedAt();
+  const cdiDailyFactorsRaw = options.getCdiDailyFactors?.();
 
-  if (!Array.isArray(rfEventsRaw) || !isValidDateString(generatedAt)) {
+  if (!isValidDateString(generatedAt)) {
     return Object.freeze({});
   }
 
@@ -93,36 +97,56 @@ export function buildFixedIncomeReadonlySupplementMap(
     }
 
     const indexer = extractIndexer(asset);
-    if (indexer !== 'PREFIXADO') {
-      continue;
-    }
 
-    const applicationDate = extractApplicationDate(asset);
-    if (!applicationDate) {
-      continue;
-    }
+    if (indexer === 'PREFIXADO') {
+      if (!Array.isArray(rfEventsRaw)) {
+        continue;
+      }
 
-    const contractedRate = extractContractedRate(asset);
-    const annualRate = parseContractRate(contractedRate);
-    if (annualRate === null) {
-      continue;
-    }
+      const applicationDate = extractApplicationDate(asset);
+      if (!applicationDate) {
+        continue;
+      }
 
-    const elapsedBusinessDays = countWeekdays(applicationDate, generatedAt);
-    if (elapsedBusinessDays === null) {
-      continue;
-    }
+      const contractedRate = extractContractedRate(asset);
+      const annualRate = parseContractRate(contractedRate);
+      if (annualRate === null) {
+        continue;
+      }
 
-    const matchedEvents = matchEventsByAssetId(rfEventsRaw, assetId);
-    if (matchedEvents.length === 0) {
-      continue;
-    }
+      const elapsedBusinessDays = countWeekdays(applicationDate, generatedAt);
+      if (elapsedBusinessDays === null) {
+        continue;
+      }
 
-    map[assetId] = Object.freeze({
-      annualRate,
-      elapsedBusinessDays,
-      rfEvents: Object.freeze(matchedEvents),
-    });
+      const matchedEvents = matchEventsByAssetId(rfEventsRaw, assetId);
+      if (matchedEvents.length === 0) {
+        continue;
+      }
+
+      map[assetId] = Object.freeze({
+        kind: 'FIXED_RATE' as const,
+        annualRate,
+        elapsedBusinessDays,
+        rfEvents: Object.freeze(matchedEvents),
+      });
+    } else if (indexer === 'CDI') {
+      const contractedRate = extractContractedRate(asset);
+      const cdiContract = parseCdiContract(contractedRate);
+      if (!cdiContract.ok) {
+        continue;
+      }
+
+      if (!Array.isArray(cdiDailyFactorsRaw)) {
+        continue;
+      }
+
+      map[assetId] = Object.freeze({
+        kind: 'CDI' as const,
+        contract: cdiContract.contract,
+        dailyFactors: Object.freeze(cdiDailyFactorsRaw as readonly CdiDailyFactor[]),
+      });
+    }
   }
 
   return Object.freeze(map) as FixedIncomeValuationSupplementMap;
