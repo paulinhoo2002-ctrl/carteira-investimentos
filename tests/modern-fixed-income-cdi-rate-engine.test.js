@@ -159,7 +159,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'DUPLICATE_FACTOR_DATE');
+      assert.equal(result.error, 'DUPLICATE_FACTOR_DATE');
       assert.equal(result.factorIndex, 1);
     });
 
@@ -175,7 +175,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'UNSORTED_FACTOR_DATES');
+      assert.equal(result.error, 'UNSORTED_FACTOR_DATES');
       assert.equal(result.factorIndex, 1);
     });
 
@@ -188,7 +188,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_DATE');
+      assert.equal(result.error, 'INVALID_FACTOR_DATE');
       assert.equal(result.factorIndex, 0);
     });
 
@@ -201,7 +201,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'NON_FINITE_RESULT');
+      assert.equal(result.error, 'NON_FINITE_RESULT');
     });
 
     it('14. fator zero e rejeitado', async () => {
@@ -213,7 +213,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_VALUE');
+      assert.equal(result.error, 'INVALID_FACTOR_VALUE');
       assert.equal(result.factorIndex, 0);
     });
 
@@ -226,7 +226,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_VALUE');
+      assert.equal(result.error, 'INVALID_FACTOR_VALUE');
     });
 
     it('16. data invalida 2026-04-31', async () => {
@@ -238,7 +238,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_DATE');
+      assert.equal(result.error, 'INVALID_FACTOR_DATE');
     });
 
     it('17. data formato invalido 2026/01/02', async () => {
@@ -250,12 +250,58 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_DATE');
+      assert.equal(result.error, 'INVALID_FACTOR_DATE');
+    });
+
+    it('18. 2024-02-29 e valida (bissexto)', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [{ date: '2024-02-29', factor: 1.0004 }],
+      });
+
+      assert.equal(result.ok, true);
+    });
+
+    it('19. 2025-02-29 e invalida (nao bissexto)', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [{ date: '2025-02-29', factor: 1.0004 }],
+      });
+
+      assert.equal(result.ok, false);
+      assert.equal(result.error, 'INVALID_FACTOR_DATE');
+    });
+
+    it('20. 2026-01-31 e valida', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [{ date: '2026-01-31', factor: 1.0004 }],
+      });
+
+      assert.equal(result.ok, true);
+    });
+
+    it('21. 2026-04-31 e invalida (abril tem 30 dias)', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [{ date: '2026-04-31', factor: 1.0004 }],
+      });
+
+      assert.equal(result.ok, false);
+      assert.equal(result.error, 'INVALID_FACTOR_DATE');
     });
   });
 
   describe('Validacao de entrada', () => {
-    it('18. principal negativo', async () => {
+    it('22. principal negativo', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: -1,
@@ -264,10 +310,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_PRINCIPAL');
+      assert.equal(result.error, 'INVALID_PRINCIPAL');
     });
 
-    it('19. principal NaN', async () => {
+    it('23. principal NaN', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: NaN,
@@ -276,10 +322,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_PRINCIPAL');
+      assert.equal(result.error, 'INVALID_PRINCIPAL');
     });
 
-    it('20. principal Infinity', async () => {
+    it('24. principal Infinity', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: Infinity,
@@ -288,10 +334,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_PRINCIPAL');
+      assert.equal(result.error, 'INVALID_PRINCIPAL');
     });
 
-    it('21. cdiPercentage zero', async () => {
+    it('25. cdiPercentage zero', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -300,10 +346,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_CONTRACT');
+      assert.equal(result.error, 'INVALID_CONTRACT');
     });
 
-    it('22. cdiPercentage acima do limite', async () => {
+    it('26. cdiPercentage acima do limite', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -312,10 +358,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_CONTRACT');
+      assert.equal(result.error, 'INVALID_CONTRACT');
     });
 
-    it('23. annualSpreadRate negativo', async () => {
+    it('27. annualSpreadRate negativo', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -324,10 +370,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_CONTRACT');
+      assert.equal(result.error, 'INVALID_CONTRACT');
     });
 
-    it('24. annualSpreadRate acima do limite', async () => {
+    it('28. annualSpreadRate acima do limite', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -336,10 +382,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_CONTRACT');
+      assert.equal(result.error, 'INVALID_CONTRACT');
     });
 
-    it('25. dailyFactors nao e array', async () => {
+    it('29. dailyFactors nao e array', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -348,18 +394,18 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTORS');
+      assert.equal(result.error, 'INVALID_FACTORS');
     });
 
-    it('26. input nao e objeto', async () => {
+    it('30. input nao e objeto', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue('invalid');
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_INPUT');
+      assert.equal(result.error, 'INVALID_INPUT');
     });
 
-    it('27. item nao e objeto', async () => {
+    it('31. item nao e objeto', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -368,11 +414,11 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTORS');
+      assert.equal(result.error, 'INVALID_FACTORS');
       assert.equal(result.factorIndex, 0);
     });
 
-    it('28. date nao e string', async () => {
+    it('32. date nao e string', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -381,10 +427,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_DATE');
+      assert.equal(result.error, 'INVALID_FACTOR_DATE');
     });
 
-    it('29. fator NaN', async () => {
+    it('33. fator NaN', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -393,10 +439,10 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_VALUE');
+      assert.equal(result.error, 'INVALID_FACTOR_VALUE');
     });
 
-    it('30. fator Infinity', async () => {
+    it('34. fator Infinity', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -405,12 +451,12 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       });
 
       assert.equal(result.ok, false);
-      assert.equal(result.code, 'INVALID_FACTOR_VALUE');
+      assert.equal(result.error, 'INVALID_FACTOR_VALUE');
     });
   });
 
   describe('Propriedades', () => {
-    it('31. o array nao e ordenado nem mutado', async () => {
+    it('35. o array nao e ordenado nem mutado', async () => {
       const { calculateCdiValue } = await loadEngine();
       const factors = [
         { date: '2026-01-02', factor: 1.0004 },
@@ -428,7 +474,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       assert.equal(factors[1].date, '2026-01-03');
     });
 
-    it('32. resultado e congelado', async () => {
+    it('36. resultado de sucesso e congelado', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -439,15 +485,17 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       assert.equal(Object.isFrozen(result), true);
     });
 
-    it('33. contrato retornado pelo parser e congelado', async () => {
+    it('37. contrato retornado pelo parser e congelado', async () => {
       const { parseCdiContract } = await import(
         pathToFileURL(path.join(__dirname, '..', 'modern', 'src', 'domain', 'fixedIncome', 'cdiContractParser.ts')).href
       );
       const r = parseCdiContract('95% CDI');
+      assert.equal(r.ok, true);
       assert.equal(Object.isFrozen(r), true);
+      assert.equal(Object.isFrozen(r.contract), true);
     });
 
-    it('34. determinismo', async () => {
+    it('38. determinismo', async () => {
       const { calculateCdiValue } = await loadEngine();
       const input = {
         principal: 10000,
@@ -463,7 +511,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       assert.equal(r1.accumulatedFactor, r2.accumulatedFactor);
     });
 
-    it('35. campos de sucesso', async () => {
+    it('39. campos de sucesso', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -483,7 +531,7 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       assert.equal(result.appliedDays, 2);
     });
 
-    it('36. resultado de erro inclui factorIndex quando aplicavel', async () => {
+    it('40. resultado de erro inclui factorIndex quando aplicavel', async () => {
       const { calculateCdiValue } = await loadEngine();
       const result = calculateCdiValue({
         principal: 10000,
@@ -497,6 +545,78 @@ describe('cdiRateEngine - calculateCdiValue', () => {
       assert.equal(result.ok, false);
       assert.equal(typeof result.factorIndex, 'number');
       assert.equal(result.factorIndex, 1);
+    });
+
+    it('41. resultado de erro INVALID_INPUT e congelado', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue('invalid');
+      assert.equal(Object.isFrozen(result), true);
+    });
+
+    it('42. resultado de erro INVALID_PRINCIPAL e congelado', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: -1,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [],
+      });
+      assert.equal(Object.isFrozen(result), true);
+    });
+
+    it('43. resultado de erro INVALID_FACTORS com factorIndex e congelado', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: ['invalid'],
+      });
+      assert.equal(Object.isFrozen(result), true);
+    });
+
+    it('44. resultado de erro INVALID_FACTOR_DATE e congelado', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [{ date: '2026-02-30', factor: 1.0004 }],
+      });
+      assert.equal(Object.isFrozen(result), true);
+    });
+
+    it('45. resultado de erro NON_FINITE_RESULT e congelado', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 1e200,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 5 },
+        dailyFactors: [{ date: '2026-01-02', factor: 1e200 }],
+      });
+      assert.equal(Object.isFrozen(result), true);
+    });
+
+    it('46. resultado de erro DUPLICATE_FACTOR_DATE e congelado', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [
+          { date: '2026-01-02', factor: 1.0004 },
+          { date: '2026-01-02', factor: 1.0003 },
+        ],
+      });
+      assert.equal(Object.isFrozen(result), true);
+    });
+
+    it('47. resultado de erro UNSORTED_FACTOR_DATES e congelado', async () => {
+      const { calculateCdiValue } = await loadEngine();
+      const result = calculateCdiValue({
+        principal: 10000,
+        contract: { kind: 'CDI_PERCENTAGE', cdiPercentage: 1 },
+        dailyFactors: [
+          { date: '2026-01-03', factor: 1.0004 },
+          { date: '2026-01-02', factor: 1.0003 },
+        ],
+      });
+      assert.equal(Object.isFrozen(result), true);
     });
   });
 });

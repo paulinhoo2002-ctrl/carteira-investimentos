@@ -33,7 +33,7 @@ export type CdiValueErrorCode =
 
 export type CdiValueError = Readonly<{
   ok: false;
-  code: CdiValueErrorCode;
+  error: CdiValueErrorCode;
   factorIndex?: number;
 }>;
 
@@ -45,6 +45,13 @@ function isFiniteNumber(v: unknown): v is number {
   return typeof v === 'number' && Number.isFinite(v);
 }
 
+function createError(error: CdiValueErrorCode, factorIndex?: number): CdiValueError {
+  if (factorIndex !== undefined) {
+    return Object.freeze({ ok: false, error, factorIndex });
+  }
+  return Object.freeze({ ok: false, error });
+}
+
 function validateDate(dateStr: string): boolean {
   if (!STRICT_DATE.test(dateStr)) {
     return false;
@@ -52,7 +59,7 @@ function validateDate(dateStr: string): boolean {
   const y = Number(dateStr.slice(0, 4));
   const m = Number(dateStr.slice(5, 7));
   const d = Number(dateStr.slice(8, 10));
-  return m >= 1 && m <= 12 && d >= 1 && d <= new Date(y, m, 0).getUTCDate();
+  return m >= 1 && m <= 12 && d >= 1 && d <= new Date(Date.UTC(y, m, 0)).getUTCDate();
 }
 
 function validateContract(contract: unknown): boolean {
@@ -73,21 +80,21 @@ export function calculateCdiValue(
   input: CalculateCdiValueInput,
 ): CdiValueResult {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) {
-    return { ok: false, code: 'INVALID_INPUT' };
+    return createError('INVALID_INPUT');
   }
 
   const { principal, contract, dailyFactors } = input as Record<string, unknown>;
 
   if (!isFiniteNumber(principal) || principal < 0) {
-    return { ok: false, code: 'INVALID_PRINCIPAL' };
+    return createError('INVALID_PRINCIPAL');
   }
 
   if (!validateContract(contract)) {
-    return { ok: false, code: 'INVALID_CONTRACT' };
+    return createError('INVALID_CONTRACT');
   }
 
   if (!Array.isArray(dailyFactors)) {
-    return { ok: false, code: 'INVALID_FACTORS' };
+    return createError('INVALID_FACTORS');
   }
 
   const factors = dailyFactors as readonly CdiDailyFactor[];
@@ -96,16 +103,16 @@ export function calculateCdiValue(
   for (let i = 0; i < n; i++) {
     const f = factors[i];
     if (typeof f !== 'object' || f === null || Array.isArray(f)) {
-      return { ok: false, code: 'INVALID_FACTORS', factorIndex: i };
+      return createError('INVALID_FACTORS', i);
     }
     if (typeof f.date !== 'string') {
-      return { ok: false, code: 'INVALID_FACTOR_DATE', factorIndex: i };
+      return createError('INVALID_FACTOR_DATE', i);
     }
     if (!validateDate(f.date)) {
-      return { ok: false, code: 'INVALID_FACTOR_DATE', factorIndex: i };
+      return createError('INVALID_FACTOR_DATE', i);
     }
     if (!isFiniteNumber(f.factor) || (f.factor as number) <= 0) {
-      return { ok: false, code: 'INVALID_FACTOR_VALUE', factorIndex: i };
+      return createError('INVALID_FACTOR_VALUE', i);
     }
   }
 
@@ -113,14 +120,14 @@ export function calculateCdiValue(
   const seen = new Set<string>();
   for (let i = 0; i < n; i++) {
     if (seen.has(dates[i])) {
-      return { ok: false, code: 'DUPLICATE_FACTOR_DATE', factorIndex: i };
+      return createError('DUPLICATE_FACTOR_DATE', i);
     }
     seen.add(dates[i]);
   }
 
   for (let i = 1; i < n; i++) {
     if (dates[i] <= dates[i - 1]) {
-      return { ok: false, code: 'UNSORTED_FACTOR_DATES', factorIndex: i };
+      return createError('UNSORTED_FACTOR_DATES', i);
     }
   }
 
@@ -146,7 +153,7 @@ export function calculateCdiValue(
     accumulatedFactor *= contractDailyFactor;
 
     if (!isFiniteNumber(accumulatedFactor)) {
-      return { ok: false, code: 'NON_FINITE_RESULT', factorIndex: i };
+      return createError('NON_FINITE_RESULT', i);
     }
   }
 
@@ -154,7 +161,7 @@ export function calculateCdiValue(
   const grossProfit = grossValue - principal;
 
   if (!isFiniteNumber(grossValue) || !isFiniteNumber(grossProfit)) {
-    return { ok: false, code: 'NON_FINITE_RESULT' };
+    return createError('NON_FINITE_RESULT');
   }
 
   return Object.freeze<CdiValueSuccess>({
