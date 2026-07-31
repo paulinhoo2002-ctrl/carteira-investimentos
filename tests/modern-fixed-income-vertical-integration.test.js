@@ -15,6 +15,9 @@ const runtimeModulePath = path.join(
 const identityModulePath = path.join(
   __dirname, '..', 'modern', 'src', 'features', 'fixed-income', 'fixedIncomeAssetIdentity.ts',
 );
+const providerModulePath = path.join(
+  __dirname, '..', 'modern', 'src', 'domain', 'fixedIncome', 'cdiDailyFactorProvider.ts',
+);
 
 function loadBuilder() {
   return import(pathToFileURL(builderModulePath).href);
@@ -27,6 +30,9 @@ function loadRuntime() {
 }
 function loadIdentity() {
   return import(pathToFileURL(identityModulePath).href);
+}
+function loadProvider() {
+  return import(pathToFileURL(providerModulePath).href);
 }
 
 function createPrefixadoAsset(overrides = {}) {
@@ -512,21 +518,22 @@ function createCdiAsset(overrides = {}) {
 
 function createCdiDailyFactors() {
   return [
-    { date: '2026-01-09', factor: 1.0004 },
-    { date: '2026-01-10', factor: 1.0003 },
-    { date: '2026-01-13', factor: 1.0005 },
+    { date: '2026-01-10', factor: 1.0004 },
+    { date: '2026-01-13', factor: 1.0003 },
+    { date: '2026-01-14', factor: 1.0005 },
   ];
 }
 
 test('supplement map CDI: getGeneratedAt injetado produz mapa nao vazio com ativo CDI', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const asset = createCdiAsset();
 
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [asset],
     getRfEvents: () => [],
     getGeneratedAt: () => GENERATED_AT,
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 1, 'deve ter 1 entrada no mapa');
@@ -544,6 +551,7 @@ test('cadeia completa CDI: getGeneratedAt flui do composition root ate o snapsho
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
   const { createHostFixedIncomeReadonlySource } = await loadHostSource();
   const { createModernFixedIncomeRuntime } = await loadRuntime();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
 
   const asset = createCdiAsset();
 
@@ -551,7 +559,7 @@ test('cadeia completa CDI: getGeneratedAt flui do composition root ate o snapsho
     getAssets: () => [asset],
     getRfEvents: () => [],
     getGeneratedAt: () => GENERATED_AT,
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   const source = createHostFixedIncomeReadonlySource({
@@ -620,6 +628,7 @@ test('runtime CDI sem supplementMap preserva fallback legado', async () => {
 
 test('nenhum estado de entrada mutado pelo supplement builder CDI', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
 
   const asset = createCdiAsset();
   const assets = [asset];
@@ -630,7 +639,7 @@ test('nenhum estado de entrada mutado pelo supplement builder CDI', async () => 
     getAssets: () => assets,
     getRfEvents: () => [],
     getGeneratedAt: () => GENERATED_AT,
-    getCdiDailyFactors: () => factors,
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(factors),
   });
 
   assert.deepEqual(asset, { ...createCdiAsset() }, 'asset nao mutado');
@@ -642,6 +651,7 @@ test('cadeia completa CDI: nenhum estado de entrada mutado pelo fluxo source + s
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
   const { createHostFixedIncomeReadonlySource } = await loadHostSource();
   const { createModernFixedIncomeRuntime } = await loadRuntime();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
 
   const asset = createCdiAsset();
   const assets = [asset];
@@ -654,7 +664,7 @@ test('cadeia completa CDI: nenhum estado de entrada mutado pelo fluxo source + s
     getAssets: () => assets,
     getRfEvents: () => [],
     getGeneratedAt: () => GENERATED_AT,
-    getCdiDailyFactors: () => factors,
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(factors),
   });
 
   const source = createHostFixedIncomeReadonlySource({
@@ -678,6 +688,7 @@ test('asset CDI com spread: supplementMap produz entrada correta e snapshot enri
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
   const { createHostFixedIncomeReadonlySource } = await loadHostSource();
   const { createModernFixedIncomeRuntime } = await loadRuntime();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
 
   const asset = createCdiAsset({ rf_contract_rate: 'CDI + 2%' });
 
@@ -685,7 +696,7 @@ test('asset CDI com spread: supplementMap produz entrada correta e snapshot enri
     getAssets: () => [asset],
     getRfEvents: () => [],
     getGeneratedAt: () => GENERATED_AT,
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(supplementMap).length, 1, 'deve ter 1 entrada');
@@ -715,6 +726,7 @@ test('asset CDI e PREFIXADO: ambos enriquecidos corretamente na cadeia completa'
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
   const { createHostFixedIncomeReadonlySource } = await loadHostSource();
   const { createModernFixedIncomeRuntime } = await loadRuntime();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
 
   const cdiAsset = createCdiAsset();
   const prefixadoAsset = createPrefixadoAsset();
@@ -724,7 +736,7 @@ test('asset CDI e PREFIXADO: ambos enriquecidos corretamente na cadeia completa'
     getAssets: () => [cdiAsset, prefixadoAsset],
     getRfEvents: () => [event],
     getGeneratedAt: () => GENERATED_AT,
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(supplementMap).length, 2, 'deve ter 2 entradas');
@@ -764,6 +776,7 @@ test('asset CDI com contrato invalido: fallback legado preservado na cadeia comp
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
   const { createHostFixedIncomeReadonlySource } = await loadHostSource();
   const { createModernFixedIncomeRuntime } = await loadRuntime();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
 
   const asset = createCdiAsset({ rf_contract_rate: 'PREFIXADO 10%' });
 
@@ -771,7 +784,7 @@ test('asset CDI com contrato invalido: fallback legado preservado na cadeia comp
     getAssets: () => [asset],
     getRfEvents: () => [],
     getGeneratedAt: () => GENERATED_AT,
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(supplementMap).length, 0, 'supplementMap deve ser vazio');

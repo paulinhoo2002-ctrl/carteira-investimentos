@@ -17,6 +17,20 @@ async function loadBuilder() {
   return import(pathToFileURL(builderModulePath).href);
 }
 
+const providerModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'domain',
+  'fixedIncome',
+  'cdiDailyFactorProvider.ts',
+);
+
+async function loadProvider() {
+  return import(pathToFileURL(providerModulePath).href);
+}
+
 function createPrefixadoAsset(overrides = {}) {
   return {
     id: 'rf-cdb26',
@@ -337,19 +351,20 @@ function createCdiAsset(overrides = {}) {
 
 function createCdiDailyFactors(overrides = {}) {
   return [
-    { date: '2026-01-12', factor: 1.0004, ...overrides },
-    { date: '2026-01-13', factor: 1.0003, ...overrides },
-    { date: '2026-01-14', factor: 1.0005, ...overrides },
+    { date: '2026-01-13', factor: 1.0004, ...overrides },
+    { date: '2026-01-14', factor: 1.0003, ...overrides },
+    { date: '2026-01-15', factor: 1.0005, ...overrides },
   ];
 }
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com contrato e fatores validos entra no map', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -366,11 +381,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com contrato e fatores va
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread entra no map', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI + 2%' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -383,36 +399,25 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread entra no map',
   assert.equal(result['rf-cdi01'].rate, undefined, 'campo paralelo rate ausente');
 });
 
-test('buildFixedIncomeReadonlySupplementMap: ativo CDI sem getCdiDailyFactors nao entra', async () => {
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI sem cdiDailyFactorProvider nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
   });
 
   assert.equal(Object.keys(result).length, 0);
 });
 
-test('buildFixedIncomeReadonlySupplementMap: ativo CDI com getCdiDailyFactors retornando null nao entra', async () => {
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com contract invalido nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
-  const result = buildFixedIncomeReadonlySupplementMap({
-    getAssets: () => [createCdiAsset()],
-    getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => null,
-  });
-
-  assert.equal(Object.keys(result).length, 0);
-});
-
-test('buildFixedIncomeReadonlySupplementMap: ativo CDI com contrato invalido nao entra', async () => {
-  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: 'PREFIXADO 10%' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -420,11 +425,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com contrato invalido nao
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage invalido nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: '6 CDI' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -432,11 +438,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage invalid
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage zero nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: '0% CDI' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -444,11 +451,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage zero na
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread negativo nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI - 1%' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -456,11 +464,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread negativo nao e
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread maior que 1 nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI + 200%' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -468,11 +477,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread maior que 1 na
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI e PREFIXADO no mesmo map', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset(), createPrefixadoAsset()],
     getRfEvents: () => [createRfEvent()],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 2);
@@ -482,11 +492,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI e PREFIXADO no mesmo map'
 
 test('buildFixedIncomeReadonlySupplementMap: fatores CDI congelados no map', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.isFrozen(result['rf-cdi01'].dailyFactors), true);
@@ -494,11 +505,12 @@ test('buildFixedIncomeReadonlySupplementMap: fatores CDI congelados no map', asy
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI sem id nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ id: undefined })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -506,11 +518,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI sem id nao entra', async 
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com indexer invalido nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ fixed_indexer: 'IPCA' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -518,40 +531,41 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com indexer invalido nao 
 
 test('buildFixedIncomeReadonlySupplementMap: fatores CDI preservados sem mutacao', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const factors = createCdiDailyFactors();
   const factorsCopy = [...factors];
 
   buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => factors,
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(factors),
   });
 
   assert.deepEqual(factors, factorsCopy);
 });
 
-test('buildFixedIncomeReadonlySupplementMap: ativo CDI com array fatores vazio cria supplement (validacao no engine)', async () => {
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com array fatores vazio nao entra (NO_FACTORS_AVAILABLE)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([]),
   });
 
-  assert.equal(Object.keys(result).length, 1);
-  assert.equal(result['rf-cdi01'].kind, 'CDI');
-  assert.equal(result['rf-cdi01'].dailyFactors.length, 0);
+  assert.equal(Object.keys(result).length, 0);
 });
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (factor nao numero) cria supplement (validacao no engine)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: 'invalido' }],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([{ date: '2026-01-13', factor: 'invalido' }]),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -560,11 +574,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (facto
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (factor <= 0) cria supplement (validacao no engine)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: 0 }],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([{ date: '2026-01-13', factor: 0 }]),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -573,37 +588,39 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (facto
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator invalido (factor NaN) cria supplement (validacao no engine)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: NaN }],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([{ date: '2026-01-13', factor: NaN }]),
   });
 
   assert.equal(Object.keys(result).length, 1);
   assert.equal(result['rf-cdi01'].kind, 'CDI');
 });
 
-test('buildFixedIncomeReadonlySupplementMap: ativo CDI com data fator invalida (formato) cria supplement (validacao no engine)', async () => {
+test('buildFixedIncomeReadonlySupplementMap: ativo CDI com data fator invalida (formato) nao entra (fora do intervalo)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [{ date: '12/01/2026', factor: 1.0004 }],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([{ date: '12/01/2026', factor: 1.0004 }]),
   });
 
-  assert.equal(Object.keys(result).length, 1);
-  assert.equal(result['rf-cdi01'].kind, 'CDI');
+  assert.equal(Object.keys(result).length, 0);
 });
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com data fator invalida (dia 32) cria supplement (validacao no engine)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [{ date: '2026-01-32', factor: 1.0004 }],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([{ date: '2026-01-32', factor: 1.0004 }]),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -612,11 +629,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com data fator invalida (
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator Infinity cria supplement (validacao no engine)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [{ date: '2026-01-12', factor: Infinity }],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([{ date: '2026-01-13', factor: Infinity }]),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -625,14 +643,15 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fator Infinity cria s
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fatores duplicados cria supplement (validacao no engine)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [
-      { date: '2026-01-12', factor: 1.0004 },
-      { date: '2026-01-12', factor: 1.0003 },
-    ],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([
+      { date: '2026-01-13', factor: 1.0004 },
+      { date: '2026-01-13', factor: 1.0003 },
+    ]),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -642,14 +661,15 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fatores duplicados cr
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fatores nao ordenados cria supplement (validacao no engine)', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset()],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => [
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([
       { date: '2026-01-14', factor: 1.0005 },
-      { date: '2026-01-12', factor: 1.0004 },
-    ],
+      { date: '2026-01-13', factor: 1.0004 },
+    ]),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -657,15 +677,17 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com fatores nao ordenados
   assert.equal(result['rf-cdi01'].dailyFactors.length, 2);
 });
 
-test('buildFixedIncomeReadonlySupplementMap: erro de getCdiDailyFactors propaga', async () => {
+test('buildFixedIncomeReadonlySupplementMap: erro do provider propaga', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
   assert.throws(
     () => {
       buildFixedIncomeReadonlySupplementMap({
         getAssets: () => [createCdiAsset()],
         getRfEvents: () => [],
-        getGeneratedAt: () => '2026-07-14',
-        getCdiDailyFactors: () => { throw new Error('boom'); },
+        getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+        cdiDailyFactorProvider: {
+          getFactors: () => { throw new Error('boom'); },
+        },
       });
     },
     /boom/,
@@ -674,11 +696,12 @@ test('buildFixedIncomeReadonlySupplementMap: erro de getCdiDailyFactors propaga'
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage maximo valido (5) entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: '500% CDI' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 1);
@@ -688,11 +711,12 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage maximo 
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage 5.1 nao entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: '510% CDI' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 0);
@@ -700,14 +724,122 @@ test('buildFixedIncomeReadonlySupplementMap: ativo CDI com cdiPercentage 5.1 nao
 
 test('buildFixedIncomeReadonlySupplementMap: ativo CDI com spread maximo valido (1) entra', async () => {
   const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
   const result = buildFixedIncomeReadonlySupplementMap({
     getAssets: () => [createCdiAsset({ rf_contract_rate: 'CDI + 100%' })],
     getRfEvents: () => [],
-    getGeneratedAt: () => '2026-07-14',
-    getCdiDailyFactors: () => createCdiDailyFactors(),
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
   });
 
   assert.equal(Object.keys(result).length, 1);
   assert.equal(result['rf-cdi01'].contract.kind, 'CDI_PLUS_SPREAD');
   assert.equal(result['rf-cdi01'].contract.annualSpreadRate, 1);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: generatedAt com offset que muda dia UTC define toDate', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14T23:00:00-03:00',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider([
+      { date: '2026-01-13', factor: 1.0004 },
+      { date: '2026-07-15', factor: 1.0002 },
+    ]),
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(result['rf-cdi01'].dailyFactors.length, 2);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: generatedAt sem timezone nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14T12:00:00',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: generatedAt YYYY-MM-DD puro nao entra', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createStaticCdiDailyFactorProvider } = await loadProvider();
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14',
+    cdiDailyFactorProvider: createStaticCdiDailyFactorProvider(createCdiDailyFactors()),
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: query recebida pelo provider esta congelada', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  let capturedQuery;
+  const provider = {
+    getFactors(query) {
+      capturedQuery = query;
+      return { ok: true, factors: createCdiDailyFactors() };
+    },
+  };
+
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: provider,
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(Object.isFrozen(capturedQuery), true);
+});
+
+test('buildFixedIncomeReadonlySupplementMap: query exata fromDate applicationDate toDate UTC generatedAt', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  let capturedQuery;
+  const provider = {
+    getFactors(query) {
+      capturedQuery = query;
+      return { ok: true, factors: createCdiDailyFactors() };
+    },
+  };
+
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => '2026-07-14T12:00:00.000Z',
+    cdiDailyFactorProvider: provider,
+  });
+
+  assert.equal(Object.keys(result).length, 1);
+  assert.equal(capturedQuery.fromDate, '2026-01-12');
+  assert.equal(capturedQuery.toDate, '2026-07-14');
+});
+
+test('buildFixedIncomeReadonlySupplementMap: provider nao chamado com generatedAt invalido', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  let called = false;
+  const provider = {
+    getFactors() {
+      called = true;
+      return { ok: true, factors: createCdiDailyFactors() };
+    },
+  };
+
+  const result = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [createCdiAsset()],
+    getRfEvents: () => [],
+    getGeneratedAt: () => 'not-a-date',
+    cdiDailyFactorProvider: provider,
+  });
+
+  assert.equal(Object.keys(result).length, 0);
+  assert.equal(called, false);
 });

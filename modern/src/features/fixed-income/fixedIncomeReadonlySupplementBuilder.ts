@@ -4,13 +4,13 @@ import { countWeekdays } from '../../domain/fixedIncome/fixedIncomeWeekdays.ts';
 import type { FixedIncomeValuationSupplementMap } from './fixedIncomeReadonlyValuation.ts';
 import { resolveFixedIncomeAssetId, normalizeEventAssetId } from './fixedIncomeAssetIdentity.ts';
 import { parseCdiContract } from '../../domain/fixedIncome/cdiContractParser.ts';
-import type { CdiDailyFactor } from '../../domain/fixedIncome/cdiRateEngine.ts';
+import type { CdiDailyFactorProvider } from '../../domain/fixedIncome/cdiDailyFactorProvider.ts';
 
 export interface BuildSupplementOptions {
   readonly getAssets: () => readonly HostFixedIncomeAsset[];
   readonly getRfEvents?: () => readonly unknown[];
   readonly getGeneratedAt: () => string;
-  readonly getCdiDailyFactors?: () => readonly unknown[];
+  readonly cdiDailyFactorProvider?: CdiDailyFactorProvider;
 }
 
 function toText(value: unknown): string | null {
@@ -71,13 +71,36 @@ function isValidDateString(value: unknown): value is string {
   return Number.isFinite(ts);
 }
 
+function toUtcCalendarDate(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.exec(
+      trimmed,
+    );
+
+  if (!match) {
+    return null;
+  }
+
+  const timestamp = Date.parse(trimmed);
+  if (!Number.isFinite(timestamp)) {
+    return null;
+  }
+
+  return new Date(timestamp).toISOString().slice(0, 10);
+}
+
 export function buildFixedIncomeReadonlySupplementMap(
   options: BuildSupplementOptions,
 ): FixedIncomeValuationSupplementMap {
   const assets = options.getAssets();
   const rfEventsRaw = options.getRfEvents?.();
   const generatedAt = options.getGeneratedAt();
-  const cdiDailyFactorsRaw = options.getCdiDailyFactors?.();
 
   if (!isValidDateString(generatedAt)) {
     return Object.freeze({});
@@ -137,14 +160,36 @@ export function buildFixedIncomeReadonlySupplementMap(
         continue;
       }
 
-      if (!Array.isArray(cdiDailyFactorsRaw)) {
+      const applicationDate = extractApplicationDate(asset);
+      if (!applicationDate) {
+        continue;
+      }
+
+      const generatedAtDate = toUtcCalendarDate(generatedAt);
+      if (!generatedAtDate) {
+        continue;
+      }
+
+      const provider = options.cdiDailyFactorProvider;
+      if (!provider) {
+        continue;
+      }
+
+      const query = Object.freeze({
+        fromDate: applicationDate,
+        toDate: generatedAtDate,
+      });
+
+      const providerResult = provider.getFactors(query);
+
+      if (!providerResult.ok) {
         continue;
       }
 
       map[assetId] = Object.freeze({
         kind: 'CDI' as const,
         contract: cdiContract.contract,
-        dailyFactors: Object.freeze(cdiDailyFactorsRaw as readonly CdiDailyFactor[]),
+        dailyFactors: providerResult.factors,
       });
     }
   }
