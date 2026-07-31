@@ -2,6 +2,7 @@ import type { HostFixedIncomeAsset } from '../../bootstrap/hostFixedIncomeReadon
 import { parseContractRate } from '../../domain/fixedIncome/fixedIncomeRateParser.ts';
 import { countWeekdays } from '../../domain/fixedIncome/fixedIncomeWeekdays.ts';
 import type { FixedIncomeValuationSupplementMap } from './fixedIncomeReadonlyValuation.ts';
+import { resolveFixedIncomeAssetId, normalizeEventAssetId } from './fixedIncomeAssetIdentity.ts';
 
 export interface BuildSupplementOptions {
   readonly getAssets: () => readonly HostFixedIncomeAsset[];
@@ -18,9 +19,7 @@ function toText(value: unknown): string | null {
 }
 
 function extractAssetId(asset: HostFixedIncomeAsset): string | null {
-  return toText(
-    asset?.id ?? asset?.rf_id ?? asset?.fixed_id ?? asset?.assetId ?? asset?.sourceEventId,
-  );
+  return resolveFixedIncomeAssetId(asset);
 }
 
 function extractIndexer(asset: HostFixedIncomeAsset): string | null {
@@ -52,10 +51,7 @@ function matchEventsByAssetId(
     if (!event || typeof event !== 'object') {
       continue;
     }
-    const eventAssetId = toText(
-      (event as Record<string, unknown>).assetId ??
-        (event as Record<string, unknown>).asset_id,
-    );
+    const eventAssetId = normalizeEventAssetId(event);
     if (eventAssetId === assetId) {
       result.push(event);
     }

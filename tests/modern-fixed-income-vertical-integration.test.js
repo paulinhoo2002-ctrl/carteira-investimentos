@@ -12,6 +12,9 @@ const hostSourceModulePath = path.join(
 const runtimeModulePath = path.join(
   __dirname, '..', 'modern', 'src', 'bootstrap', 'modernFixedIncomeRuntime.ts',
 );
+const identityModulePath = path.join(
+  __dirname, '..', 'modern', 'src', 'features', 'fixed-income', 'fixedIncomeAssetIdentity.ts',
+);
 
 function loadBuilder() {
   return import(pathToFileURL(builderModulePath).href);
@@ -21,6 +24,9 @@ function loadHostSource() {
 }
 function loadRuntime() {
   return import(pathToFileURL(runtimeModulePath).href);
+}
+function loadIdentity() {
+  return import(pathToFileURL(identityModulePath).href);
 }
 
 function createPrefixadoAsset(overrides = {}) {
@@ -237,4 +243,246 @@ test('cadeia completa: nenhum estado de entrada mutado pelo fluxo source + suple
 
   assert.deepEqual(asset, assetBefore, 'asset nao mutado apos fluxo completo');
   assert.deepEqual(event, eventBefore, 'event nao mutado apos fluxo completo');
+});
+
+test('asset sem id, com rf_asset_id, evento com assetId correspondente: supplementMap nao vazio e snapshot enriquecido', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = {
+    rf_asset_id: 'rf-legacy-001',
+    ticker: 'LEGACY01',
+    name: 'Legacy CDB',
+    type: 'Renda Fixa',
+    rf_subtype: 'CDB',
+    fixed_issuer: 'Banco Legacy',
+    rf_application_date: '2026-01-09',
+    rf_maturity_date: '2026-12-15',
+    rf_contract_rate: '10% aa',
+    fixed_indexer: 'PREFIXADO',
+    rf_applied_value: 1000,
+    rf_gross_value: 1050,
+    rf_liquid_value: 1045,
+    rf_profit_value: 45,
+    rf_ir_iof: 5,
+    rf_unavailable_value: 0,
+    rf_note: 'Teste legacy rf_asset_id',
+  };
+  const event = {
+    id: 'evt-legacy-001',
+    assetId: 'rf-legacy-001',
+    ticker: 'LEGACY01',
+    date: '2026-01-12',
+    type: 'amortizacao',
+    grossValue: 100,
+    principalDelta: 100,
+    netValue: 100,
+    ir: 0,
+    iof: 0,
+    source: 'Test',
+    note: 'Amortizacao legacy',
+  };
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [event],
+    getGeneratedAt: () => GENERATED_AT,
+  });
+
+  assert.equal(Object.keys(supplementMap).length, 1, 'deve ter 1 entrada no mapa');
+  assert.ok('rf-legacy-001' in supplementMap, 'chave deve ser rf_asset_id');
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [asset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste rf_asset_id fallback',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  assert.ok(snapshot, 'snapshot deve existir');
+  const item = snapshot.items.find(i => i.id === 'rf-legacy-001');
+  assert.ok(item, 'item enriquecido deve estar presente');
+  assert.equal(item.indexer, 'PREFIXADO');
+  assert.equal(item.appliedValue, 100, 'appliedValue = sum(principalDelta)');
+});
+
+test('asset somente com sourceEventId: supplementMap vazio e fallback legado preservado', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = {
+    sourceEventId: 'evt-001',
+    ticker: 'NOID01',
+    name: 'No ID Asset',
+    type: 'Renda Fixa',
+    rf_subtype: 'CDB',
+    fixed_issuer: 'Banco X',
+    rf_application_date: '2026-01-09',
+    rf_maturity_date: '2026-12-15',
+    rf_contract_rate: '10% aa',
+    fixed_indexer: 'PREFIXADO',
+    rf_applied_value: 1000,
+    rf_gross_value: 1050,
+    rf_liquid_value: 1045,
+    rf_profit_value: 45,
+    rf_ir_iof: 5,
+    rf_unavailable_value: 0,
+    rf_note: 'Teste sourceEventId isolado',
+  };
+  const event = {
+    id: 'evt-001',
+    assetId: 'evt-001',
+    ticker: 'NOID01',
+    date: '2026-01-12',
+    type: 'amortizacao',
+    grossValue: 100,
+    principalDelta: 100,
+    netValue: 100,
+    ir: 0,
+    iof: 0,
+    source: 'Test',
+    note: 'Evento',
+  };
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [event],
+    getGeneratedAt: () => GENERATED_AT,
+  });
+
+  assert.equal(Object.keys(supplementMap).length, 0, 'supplementMap deve ser vazio pois sourceEventId nao e identidade de ativo');
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [asset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste sourceEventId isolado',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  const item = snapshot.items.find(i => i.ticker === 'NOID01');
+  assert.ok(item, 'item deve estar presente no snapshot (fallback legado)');
+  assert.equal(item.appliedValue, 1000, 'valores legados preservados');
+  assert.equal(item.grossValue, 1050, 'valores legados preservados');
+  assert.equal(item.profitValue, 45, 'valores legados preservados');
+});
+
+test('asset sem identidade, evento somente com ticker: supplementMap vazio e nenhum matching por ticker', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+
+  const asset = {
+    ticker: 'NOTICKER',
+    name: 'No Identity',
+    type: 'Renda Fixa',
+    rf_subtype: 'CDB',
+    fixed_issuer: 'Banco Y',
+    rf_application_date: '2026-01-09',
+    rf_maturity_date: '2026-12-15',
+    rf_contract_rate: '10% aa',
+    fixed_indexer: 'PREFIXADO',
+    rf_applied_value: 1000,
+    rf_gross_value: 1050,
+    rf_liquid_value: 1045,
+    rf_profit_value: 45,
+    rf_ir_iof: 5,
+    rf_unavailable_value: 0,
+    rf_note: 'Sem identidade',
+  };
+  const event = {
+    id: 'evt-ticker-only',
+    ticker: 'NOTICKER',
+    date: '2026-01-12',
+    type: 'amortizacao',
+    grossValue: 100,
+    principalDelta: 100,
+    netValue: 100,
+    ir: 0,
+    iof: 0,
+    source: 'Test',
+    note: 'Evento so ticker',
+  };
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [event],
+    getGeneratedAt: () => GENERATED_AT,
+  });
+
+  assert.equal(Object.keys(supplementMap).length, 0, 'supplementMap deve ser vazio sem identidade de ativo');
+});
+
+test('asset id numerico e event.assetId numerico correspondente: matching funciona apos normalizacao', async () => {
+  const { buildFixedIncomeReadonlySupplementMap } = await loadBuilder();
+  const { createHostFixedIncomeReadonlySource } = await loadHostSource();
+  const { createModernFixedIncomeRuntime } = await loadRuntime();
+
+  const asset = {
+    id: 1234567890,
+    ticker: 'NUM01',
+    name: 'Numeric ID CDB',
+    type: 'Renda Fixa',
+    rf_subtype: 'CDB',
+    fixed_issuer: 'Banco Numerico',
+    rf_application_date: '2026-01-09',
+    rf_maturity_date: '2026-12-15',
+    rf_contract_rate: '10% aa',
+    fixed_indexer: 'PREFIXADO',
+    rf_applied_value: 1000,
+    rf_gross_value: 1050,
+    rf_liquid_value: 1045,
+    rf_profit_value: 45,
+    rf_ir_iof: 5,
+    rf_unavailable_value: 0,
+    rf_note: 'Teste ID numerico',
+  };
+  const event = {
+    id: 'evt-numeric',
+    assetId: 1234567890,
+    ticker: 'NUM01',
+    date: '2026-01-12',
+    type: 'amortizacao',
+    grossValue: 100,
+    principalDelta: 100,
+    netValue: 100,
+    ir: 0,
+    iof: 0,
+    source: 'Test',
+    note: 'Evento ID numerico',
+  };
+
+  const supplementMap = buildFixedIncomeReadonlySupplementMap({
+    getAssets: () => [asset],
+    getRfEvents: () => [event],
+    getGeneratedAt: () => GENERATED_AT,
+  });
+
+  assert.equal(Object.keys(supplementMap).length, 1, 'deve ter 1 entrada');
+  assert.ok('1234567890' in supplementMap, 'chave deve ser string normalizada do numero');
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets: () => [asset],
+    getGeneratedAt: () => GENERATED_AT,
+    notice: 'Teste ID numerico',
+  });
+
+  const runtime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: source,
+    fixedIncomeValuationSupplementMap: supplementMap,
+  });
+
+  const snapshot = runtime.fixedIncomeAdapter.getSnapshot();
+  const item = snapshot.items.find(i => i.id === '1234567890');
+  assert.ok(item, 'item enriquecido presente');
+  assert.equal(item.appliedValue, 100, 'projecao aplicada corretamente');
 });
