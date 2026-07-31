@@ -6,6 +6,9 @@ import {
   createReadonlyAssetPrudentSignal,
   createReadonlyAssetsSummary,
   createReadonlyAssetsViewModel,
+  formatReadonlyCurrency,
+  formatReadonlyPercent,
+  formatReadonlyQuantity,
   type ReadonlyAssetSignalKey,
   type ReadonlyAssetsSortKey,
 } from './readonlyReportsViewModel';
@@ -19,6 +22,11 @@ import { AssetsReadonlyDistribution } from './components/AssetsReadonlyDistribut
 import { AssetsReadonlyTable } from './components/AssetsReadonlyTable';
 import { AssetsReadonlyMobileCards } from './components/AssetsReadonlyMobileCards';
 import { AssetsReadonlyEmptyState } from './components/AssetsReadonlyEmptyState';
+import { DashboardMetricCard } from '../shared/components/DashboardMetricCard/DashboardMetricCard';
+import { DashboardSection } from '../shared/components/DashboardSection/DashboardSection';
+import { AssetClassBadge } from '../shared/components/AssetClassBadge/AssetClassBadge';
+import { formatReadonlyCurrency, formatReadonlyPercent, formatReadonlyQuantity } from './readonlyReportsViewModel.ts';
+import type { ReadOnlyReportItem } from './reportsReadonlyContract.mjs';
 
 interface AssetsReadonlyPageProps {
   adapter: ReadOnlyReportsAdapter;
@@ -59,6 +67,7 @@ function AssetsReadonlyPageContent({
   );
 
   const summary = useMemo(() => createReadonlyAssetsSummary(viewModel.filteredItems), [viewModel.filteredItems]);
+  const totalSummary = useMemo(() => createReadonlyAssetsSummary(snapshot.items), [snapshot.items]);
   const itemsWithSignals = useMemo(
     () =>
       viewModel.filteredItems.map((item) => ({
@@ -87,6 +96,37 @@ function AssetsReadonlyPageContent({
             : `${viewModel.summary.itemCount} ativos somente leitura`}
       </p>
 
+      <DashboardSection title="Resumo da carteira" subtitle={`${snapshot.items.length} ativos no total`}>
+        <div className="assets-summary-cards">
+          <DashboardMetricCard
+            label="Total investido"
+            value={formatReadonlyCurrency(totalSummary.totalValue - totalSummary.totalResult)}
+            variant="primary"
+          />
+          <DashboardMetricCard
+            label="Valor atual"
+            value={formatReadonlyCurrency(totalSummary.totalValue)}
+            variant="primary"
+          />
+          <DashboardMetricCard
+            label="Resultado total"
+            value={formatReadonlyCurrency(totalSummary.totalResult)}
+            trend={totalSummary.totalResult !== 0 ? { value: totalSummary.rentabilityPct, label: 'rentabilidade' } : null}
+            variant={totalSummary.totalResult >= 0 ? 'success' : 'warning'}
+          />
+          <DashboardMetricCard
+            label="Rentabilidade"
+            value={formatReadonlyPercent(totalSummary.rentabilityPct, { signed: true })}
+            variant={totalSummary.rentabilityPct >= 0 ? 'success' : 'warning'}
+          />
+          <DashboardMetricCard
+            label="Ativos"
+            value={totalSummary.itemCount.toLocaleString('pt-BR')}
+            variant="info"
+          />
+        </div>
+      </DashboardSection>
+
       <AssetsReadonlyFilters
         query={query}
         category={category}
@@ -103,20 +143,41 @@ function AssetsReadonlyPageContent({
       />
 
       <AssetsReadonlySummaryGrid summary={summary} />
-
       <AssetsReadonlySignalCounts counts={viewModel.signalCounts} />
 
-      <AssetsReadonlyTopPositions
-        open={topPositionsOpen}
-        onOpenChange={setTopPositionsOpen}
-        items={viewModel.topPositions}
-      />
+      <DashboardSection title="Maiores posições" subtitle="Top 3 por valor atual" action={
+        <button
+          className="assets-readonly__toggle"
+          type="button"
+          onClick={() => setTopPositionsOpen((v) => !v)}
+          aria-expanded={topPositionsOpen}
+        >
+          {topPositionsOpen ? 'Recolher' : 'Expandir'}
+        </button>
+      }>
+        <AssetsReadonlyTopPositions
+          open={topPositionsOpen}
+          onOpenChange={setTopPositionsOpen}
+          items={viewModel.topPositions}
+        />
+      </DashboardSection>
 
-      <AssetsReadonlyDistribution
-        open={distributionOpen}
-        onOpenChange={setDistributionOpen}
-        entries={viewModel.distribution}
-      />
+      <DashboardSection title="Distribuição por classe" subtitle={`${viewModel.distribution.length} classes`} action={
+        <button
+          className="assets-readonly__toggle"
+          type="button"
+          onClick={() => setDistributionOpen((v) => !v)}
+          aria-expanded={distributionOpen}
+        >
+          {distributionOpen ? 'Recolher' : 'Expandir'}
+        </button>
+      }>
+        <AssetsReadonlyDistribution
+          open={distributionOpen}
+          onOpenChange={setDistributionOpen}
+          entries={viewModel.distribution}
+        />
+      </DashboardSection>
 
       <section className="assets-readonly__list" aria-labelledby="assets-list">
         <div className="assets-readonly__section-title-row">
@@ -129,7 +190,6 @@ function AssetsReadonlyPageContent({
         {viewModel.filteredItems.length > 0 ? (
           <>
             <AssetsReadonlyTable items={itemsWithSignals} />
-
             <AssetsReadonlyMobileCards items={itemsWithSignals} />
           </>
         ) : (

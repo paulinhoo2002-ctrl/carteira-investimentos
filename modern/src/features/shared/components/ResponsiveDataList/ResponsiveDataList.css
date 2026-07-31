@@ -1,0 +1,33 @@
+.responsive-data-list {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.responsive-data-list__desktop {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 1), minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.responsive-data-list__mobile {
+  display: none;
+  gap: var(--space-2);
+}
+
+@media (max-width: 1023px) {
+  .responsive-data-list__desktop {
+    display: none;
+  }
+
+  .responsive-data-list__mobile {
+    display: grid;
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 640px) {
+  .responsive-data-list {
+    gap: var(--space-2);
+  }
+}

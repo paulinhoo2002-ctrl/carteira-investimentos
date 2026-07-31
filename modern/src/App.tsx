@@ -7,19 +7,20 @@ import { Sidebar } from './components/Sidebar';
 import { ContributionsReadonlyPage } from './features/contributions/ContributionsReadonlyPage';
 import type { ContributionsRefreshController } from './features/contributions/contributionsRefreshController.ts';
 import type { ReadOnlyContributionsAdapter } from './features/contributions/contributionsSnapshotAdapter.mjs';
+import { FixedIncomeReadonlyPage } from './features/fixed-income/FixedIncomeReadonlyPage';
 import { GoalsPage } from './features/goals/GoalsPage';
 import { IncomeReadonlyPage } from './features/income/IncomeReadonlyPage';
 import type { IncomeRefreshController } from './features/income/incomeRefreshController.ts';
 import type { ReadOnlyIncomeAdapter } from './features/income/incomeSnapshotAdapter.mjs';
-import { FixedIncomeReadonlyPage } from './features/fixed-income/FixedIncomeReadonlyPage';
 import { NetWorthPage } from './features/net-worth/NetWorthPage';
+import { OverviewPage } from './features/overview/OverviewPage';
 import { RebalancePage } from './features/rebalance/RebalancePage';
 import { AssetsReadonlyPage } from './features/reports/AssetsReadonlyPage';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
+import { ReturnsPage } from './features/returns/ReturnsPage';
 import type { ReportsRefreshController } from './features/reports/reportsRefreshController';
 import type { ReadOnlyFixedIncomeAdapter } from './features/fixed-income/fixedIncomeSnapshotAdapter.mjs';
 import type { ReadOnlyReportsAdapter } from './features/reports/reportsSnapshotAdapter';
-import { ReturnsPage } from './features/returns/ReturnsPage';
 import type { ModernPageId } from './types/navigation.mjs';
 import { MODERN_PAGES, OVERVIEW_CARDS } from './types/navigation.mjs';
 
@@ -120,6 +121,8 @@ export function App({
             />
           ) : activePageId === 'reports' ? (
             <AssetsReportPreview adapter={reportsAdapter} refreshController={reportsRefreshController} />
+          ) : activePageId === 'overview' ? (
+            <OverviewPage reportsAdapter={reportsAdapter} incomeAdapter={incomeAdapter} />
           ) : activePageId === 'returns' ? (
             <ReturnsPage />
           ) : activePageId === 'goals' ? (

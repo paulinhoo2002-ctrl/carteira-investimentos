@@ -1618,6 +1618,213 @@ button {
   }
 }
 
+/* Dashboard components */
+.assets-summary-cards,
+.income-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 640px) {
+  .assets-summary-cards,
+  .income-summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.overview-grid,
+.income-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .overview-grid,
+  .income-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overview-sparkline-wrapper,
+.income-sparkline-wrapper {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+}
+
+.overview-sparkline {
+  width: 100%;
+  height: 180px;
+  max-width: 600px;
+}
+
+.income-type-distribution {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.income-type-item {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.income-type-item header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.income-upcoming-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.income-upcoming-row__asset {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.income-upcoming-row__asset strong {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.income-upcoming-row__type {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.income-upcoming-row__details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.income-upcoming-row__date {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.income-upcoming-row__value {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.income-upcoming-card {
+  display: grid;
+  gap: 4px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.income-upcoming-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.income-upcoming-card header strong {
+  font-size: 1rem;
+}
+
+.income-upcoming-card__type {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.income-upcoming-card__date {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.income-upcoming-card__value {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.income-type-distribution {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.assets-readonly__toggle,
+.fixed-income-readonly__toggle {
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 0.82rem;
+  transition:
+    transform var(--motion-fast),
+    border-color var(--motion-fast),
+    background-color var(--motion-fast);
+}
+
+.assets-readonly__toggle:hover,
+.fixed-income-readonly__toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover-strong);
+}
+
+.assets-readonly__toggle:focus-visible,
+.fixed-income-readonly__toggle:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .assets-summary-cards,
+  .income-summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .income-upcoming-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .income-upcoming-row__details {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

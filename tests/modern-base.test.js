@@ -111,6 +111,20 @@ const sourceFiles = [
   'src/features/goals/GoalsPage.tsx',
   'src/features/net-worth/NetWorthPage.tsx',
   'src/features/rebalance/RebalancePage.tsx',
+  'src/features/overview/OverviewPage.tsx',
+  'src/features/overview/OverviewPage.css',
+  'src/features/shared/components/AssetClassBadge/AssetClassBadge.tsx',
+  'src/features/shared/components/AssetClassBadge/AssetClassBadge.css',
+  'src/features/shared/components/ChartContainer/ChartContainer.tsx',
+  'src/features/shared/components/ChartContainer/ChartContainer.css',
+  'src/features/shared/components/DashboardMetricCard/DashboardMetricCard.tsx',
+  'src/features/shared/components/DashboardMetricCard/DashboardMetricCard.css',
+  'src/features/shared/components/DashboardSection/DashboardSection.tsx',
+  'src/features/shared/components/DashboardSection/DashboardSection.css',
+  'src/features/shared/components/EmptyState/EmptyState.tsx',
+  'src/features/shared/components/EmptyState/EmptyState.css',
+  'src/features/shared/components/ResponsiveDataList/ResponsiveDataList.tsx',
+  'src/features/shared/components/ResponsiveDataList/ResponsiveDataList.css',
 ];
 
 const hostExperimentalFiles = ['src/bootstrap/hostLegacyReportsReadonlySource.ts'];
