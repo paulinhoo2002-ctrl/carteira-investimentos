@@ -61,6 +61,15 @@ const contributionsRuntimeModulePath = path.join(
   'modernContributionsRuntime.ts',
 );
 const legacyModulePath = path.join(__dirname, '..', 'legacy', 'reports-readonly-source.js');
+const fixedIncomeIdentityModulePath = path.join(
+  __dirname,
+  '..',
+  'modern',
+  'src',
+  'features',
+  'fixed-income',
+  'fixedIncomeAssetIdentity.ts',
+);
 
 async function loadHostSourceModule() {
   return import(pathToFileURL(hostSourceModulePath).href);
@@ -96,6 +105,10 @@ async function loadContributionsSourceModule() {
 
 async function loadContributionsRuntimeModule() {
   return import(pathToFileURL(contributionsRuntimeModulePath).href);
+}
+
+async function loadFixedIncomeIdentityModule() {
+  return import(pathToFileURL(fixedIncomeIdentityModulePath).href);
 }
 
 function assertDeepFrozen(snapshot) {
@@ -943,4 +956,349 @@ test('host contributions runtime cria controller quando origem real existe', asy
 
   runtime.contributionsRefreshController?.refresh();
   assert.equal(runtime.contributionsAdapter.getSnapshot().items[0].amount, 1500);
+});
+
+test('host fixed income source: id numérico é normalizado para string', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          id: 1234567890,
+          ticker: 'CDB01',
+          name: 'CDB Um',
+          type: 'Renda Fixa',
+          rf_applied_value: 1000,
+          rf_gross_value: 1100,
+          rf_maturity_date: '2026-12-15',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, '1234567890');
+});
+
+test('host fixed income source: assetId fallback quando id ausente', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          assetId: 'fallback-asset-id',
+          ticker: 'CDB02',
+          name: 'CDB Dois',
+          type: 'Renda Fixa',
+          rf_applied_value: 2000,
+          rf_gross_value: 2200,
+          rf_maturity_date: '2027-06-15',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, 'fallback-asset-id');
+});
+
+test('host fixed income source: rf_asset_id fallback', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          rf_asset_id: 'legacy-rf-001',
+          ticker: 'CDB03',
+          name: 'CDB Tres',
+          type: 'Renda Fixa',
+          rf_applied_value: 3000,
+          rf_gross_value: 3300,
+          rf_maturity_date: '2027-12-15',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, 'legacy-rf-001');
+});
+
+test('host fixed income source: sourceEventId não é usado como identidade de ativo', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          sourceEventId: 'evt-001',
+          ticker: 'CDB04',
+          name: 'CDB Quatro',
+          type: 'Renda Fixa',
+          rf_applied_value: 4000,
+          rf_gross_value: 4400,
+          rf_maturity_date: '2028-06-15',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  // sourceEventId não é identidade de ativo: item tem id null mas ainda entra no snapshot pois tem ticker/name
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, null, 'id deve ser null pois sourceEventId não resolve identidade');
+});
+
+test('host fixed income source: id vence campos divergentes', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          id: 'primary-id',
+          assetId: 'different-asset-id',
+          rf_asset_id: 'different-rf-asset-id',
+          rf_id: 'different-rf-id',
+          fixed_id: 'different-fixed-id',
+          ticker: 'CDB05',
+          name: 'CDB Cinco',
+          type: 'Renda Fixa',
+          rf_applied_value: 5000,
+          rf_gross_value: 5500,
+          rf_maturity_date: '2028-12-15',
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-07-14T10:30:00.000Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, 'primary-id');
+});
+
+test('host fixed income source: id numérico é normalizado para string', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          id: 1234567890123,
+          ticker: 'CDB26',
+          name: 'CDB 2026',
+          type: 'Renda Fixa',
+          rf_subtype: 'CDB',
+          fixed_issuer: 'Banco Teste',
+          rf_application_date: '2026-01-09',
+          rf_maturity_date: '2026-12-15',
+          rf_contract_rate: '10% aa',
+          fixed_indexer: 'PREFIXADO',
+          rf_applied_value: 1000,
+          rf_gross_value: 1050,
+          rf_liquid_value: 1045,
+          rf_profit_value: 45,
+          rf_ir_iof: 5,
+          rf_unavailable_value: 0,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-01-20T12:00:00Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, '1234567890123');
+  assert.equal(typeof snapshot.items[0].id, 'string');
+});
+
+test('host fixed income source: assetId como fallback', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          assetId: 'asset-fallback-001',
+          ticker: 'CDB27',
+          name: 'CDB 2027',
+          type: 'Renda Fixa',
+          rf_subtype: 'CDB',
+          fixed_issuer: 'Banco Teste',
+          rf_application_date: '2027-01-09',
+          rf_maturity_date: '2027-12-15',
+          rf_contract_rate: '11% aa',
+          fixed_indexer: 'PREFIXADO',
+          rf_applied_value: 2000,
+          rf_gross_value: 2200,
+          rf_liquid_value: 2180,
+          rf_profit_value: 180,
+          rf_ir_iof: 20,
+          rf_unavailable_value: 0,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-01-20T12:00:00Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, 'asset-fallback-001');
+});
+
+test('host fixed income source: rf_asset_id como fallback', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          rf_asset_id: 'legacy-rf-asset-001',
+          ticker: 'CDB28',
+          name: 'CDB 2028',
+          type: 'Renda Fixa',
+          rf_subtype: 'CDB',
+          fixed_issuer: 'Banco Teste',
+          rf_application_date: '2028-01-09',
+          rf_maturity_date: '2028-12-15',
+          rf_contract_rate: '12% aa',
+          fixed_indexer: 'PREFIXADO',
+          rf_applied_value: 3000,
+          rf_gross_value: 3300,
+          rf_liquid_value: 3270,
+          rf_profit_value: 270,
+          rf_ir_iof: 30,
+          rf_unavailable_value: 0,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-01-20T12:00:00Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, 'legacy-rf-asset-001');
+});
+
+test('host fixed income source: sourceEventId NÃO é usado como identidade', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          sourceEventId: 'evt-001',
+          ticker: 'CDB29',
+          name: 'CDB 2029',
+          type: 'Renda Fixa',
+          rf_subtype: 'CDB',
+          fixed_issuer: 'Banco Teste',
+          rf_application_date: '2029-01-09',
+          rf_maturity_date: '2029-12-15',
+          rf_contract_rate: '13% aa',
+          fixed_indexer: 'PREFIXADO',
+          rf_applied_value: 4000,
+          rf_gross_value: 4400,
+          rf_liquid_value: 4360,
+          rf_profit_value: 360,
+          rf_ir_iof: 40,
+          rf_unavailable_value: 0,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-01-20T12:00:00Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  // sourceEventId não resolve identidade: item tem id null mas ainda entra no snapshot pois tem ticker/name
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, null, 'id deve ser null pois sourceEventId não resolve identidade');
+});
+
+test('host fixed income source: id vence campos divergentes', async () => {
+  const { createHostFixedIncomeReadonlySource } = await loadFixedIncomeSourceModule();
+
+  const source = createHostFixedIncomeReadonlySource({
+    getAssets() {
+      return [
+        {
+          id: 'winning-id',
+          assetId: 'losing-asset-id',
+          rf_asset_id: 'losing-rf-asset-id',
+          rf_id: 'losing-rf-id',
+          fixed_id: 'losing-fixed-id',
+          ticker: 'CDB30',
+          name: 'CDB 2030',
+          type: 'Renda Fixa',
+          rf_subtype: 'CDB',
+          fixed_issuer: 'Banco Teste',
+          rf_application_date: '2030-01-09',
+          rf_maturity_date: '2030-12-15',
+          rf_contract_rate: '14% aa',
+          fixed_indexer: 'PREFIXADO',
+          rf_applied_value: 5000,
+          rf_gross_value: 5500,
+          rf_liquid_value: 5450,
+          rf_profit_value: 450,
+          rf_ir_iof: 50,
+          rf_unavailable_value: 0,
+        },
+      ];
+    },
+    getGeneratedAt() {
+      return '2026-01-20T12:00:00Z';
+    },
+  });
+
+  const snapshot = source.getSnapshot();
+  assert.equal(snapshot.items.length, 1);
+  assert.equal(snapshot.items[0].id, 'winning-id');
+});
+
+test('resolver puro: determinismo e não-mutação', async () => {
+  const { resolveFixedIncomeAssetId, normalizeEventAssetId } = await loadFixedIncomeIdentityModule();
+
+  const asset = { id: 'test-123', assetId: 'other' };
+  const assetBefore = { ...asset };
+  const event = { assetId: 'test-123' };
+  const eventBefore = { ...event };
+
+  const result1 = resolveFixedIncomeAssetId(asset);
+  const result2 = resolveFixedIncomeAssetId(asset);
+  const eventResult = normalizeEventAssetId(event);
+
+  assert.equal(result1, 'test-123');
+  assert.equal(result1, result2, 'deve ser determinístico');
+  assert.equal(eventResult, 'test-123');
+  assert.deepEqual(asset, assetBefore, 'asset não mutado');
+  assert.deepEqual(event, eventBefore, 'event não mutado');
 });

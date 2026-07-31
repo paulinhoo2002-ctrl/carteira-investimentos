@@ -3,6 +3,7 @@ import {
   normalizeReadonlyFixedIncomeSnapshot,
 } from '../features/fixed-income/fixedIncomeReadonlyContract.mjs';
 import type { ReadOnlyFixedIncomeSource } from '../features/fixed-income/fixedIncomeReadonlyContract.mjs';
+import { resolveFixedIncomeAssetId } from '../features/fixed-income/fixedIncomeAssetIdentity.ts';
 
 export interface HostFixedIncomeAsset {
   readonly [key: string]: unknown;
@@ -117,7 +118,7 @@ function normalizeMaturityStatus(maturityDate: string | null, generatedAt: strin
 }
 
 function mapFixedIncomeAsset(asset: HostFixedIncomeAsset, generatedAt: string) {
-  const id = toText(asset?.id ?? asset?.rf_id ?? asset?.fixed_id ?? asset?.assetId ?? asset?.sourceEventId, null);
+  const id = resolveFixedIncomeAssetId(asset);
   const ticker = toText(asset?.ticker ?? asset?.symbol ?? asset?.code, null);
   const name = toText(asset?.rf_name ?? asset?.name ?? asset?.product ?? asset?.title ?? ticker ?? id, null);
 
