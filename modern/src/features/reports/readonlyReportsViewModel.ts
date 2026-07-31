@@ -269,7 +269,7 @@ function uniqueCategories(items: readonly ReadOnlyReportItem[]) {
   return [...new Set(items.map((item) => item.category))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 }
 
-function createCategoryDistribution(items: readonly ReadOnlyReportItem[]) {
+export function createCategoryDistribution(items: readonly ReadOnlyReportItem[]) {
   const distribution = new Map<
     string,
     ReadonlyAssetCategoryDistribution

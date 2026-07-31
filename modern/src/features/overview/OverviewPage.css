@@ -1,0 +1,304 @@
+.overview-page {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.overview-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 1023px) {
+  .overview-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .overview-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overview-sparkline-wrapper {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+}
+
+.overview-sparkline {
+  width: 100%;
+  height: 180px;
+  max-width: 600px;
+}
+
+.overview-allocation {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.overview-allocation__item {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.overview-allocation__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.overview-allocation__value {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.overview-allocation__bar {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-subtle);
+  overflow: hidden;
+}
+
+.overview-allocation__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-primary);
+  transition: width var(--motion-base);
+}
+
+.overview-allocation__detail {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.overview-asset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.overview-asset-row__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.overview-asset-row__main strong {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.overview-asset-row__values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.overview-asset-row__current {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.overview-asset-row__variation {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.overview-asset-row__variation.positive {
+  color: var(--color-accent-success);
+}
+
+.overview-asset-row__variation.negative {
+  color: var(--color-accent-danger);
+}
+
+.overview-asset-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.overview-asset-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.overview-asset-card header strong {
+  font-size: 1rem;
+}
+
+.overview-asset-card__info {
+  display: grid;
+  gap: 4px;
+}
+
+.overview-asset-card__info p {
+  margin: 0;
+}
+
+.overview-asset-card__value {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.overview-asset-card__variation {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.overview-asset-card__variation.positive {
+  color: var(--color-accent-success);
+}
+
+.overview-asset-card__variation.negative {
+  color: var(--color-accent-danger);
+}
+
+.overview-dividend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.overview-dividend-row__asset {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.overview-dividend-row__asset strong {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.overview-dividend-row__type {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.overview-dividend-row__details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.overview-dividend-row__date {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.overview-dividend-row__value {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.overview-dividend-card {
+  display: grid;
+  gap: 4px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.overview-dividend-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.overview-dividend-card header strong {
+  font-size: 1rem;
+}
+
+.overview-dividend-card__type {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.overview-dividend-card__date {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.overview-dividend-card__value {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 640px) {
+  .overview-metrics {
+    gap: var(--space-2);
+  }
+
+  .overview-grid {
+    gap: var(--space-3);
+  }
+
+  .overview-asset-row,
+  .overview-dividend-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .overview-asset-row__values,
+  .overview-dividend-row__details {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
