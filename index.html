@@ -703,6 +703,8 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .rf-event-editor{border:1px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:10px}
 .rf-event-editor-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .rf-event-editor-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rf-movement-balance{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:10px;color:var(--muted)}
+.rf-movement-balance strong{color:var(--text)}
 .rf-event-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:auto}
 .rf-event-table{width:100%;border-collapse:collapse;min-width:980px}
 .rf-event-table th,.rf-event-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:10px;vertical-align:top}
@@ -11705,10 +11707,12 @@ function rfManualCode(name, subtype, applicationDate, issuer){
   return code || `RF${Date.now()}`;
 }
 const RF_EVENT_TYPE_OPTIONS=[
+  ['aporte','Aporte'],
   ['juros','Juros / cupom'],
   ['amortizacao','Amortização'],
   ['premio','Prêmio'],
   ['resgate_parcial','Resgate parcial'],
+  ['resgate_total','Resgate total'],
   ['ir','IR'],
   ['iof','IOF'],
   ['outro','Outro']
@@ -11761,6 +11765,8 @@ function normalizeRfEventType(value){
   for(const candidate of candidates){
     const key=rfPosNorm(candidate).replace(/[^A-Z0-9]+/g,' ');
     if(key.includes('JUROS') || key.includes('CUPOM') || key.includes('RENDIMENTO')) return 'juros';
+    if(key.includes('APORTE') || key.includes('APLICACAO')) return 'aporte';
+    if(key.includes('RESGATE TOTAL')) return 'resgate_total';
     if(key.includes('AMORT')) return 'amortizacao';
     if(key.includes('PREMIO')) return 'premio';
     if(key.includes('RESGATE PARCIAL')) return 'resgate_parcial';
@@ -11802,6 +11808,7 @@ function rfEventNumber(value){
 function rfEventDuplicateKey(event){
   const ev=event&&typeof event==='object' ? event : {};
   const assetKey=String(ev.assetId||'').trim() || cleanAssetCode(String(ev.ticker||'')).toUpperCase();
+  const principal=rfEventNumber(ev.principalDelta);
   return [
     inputDateValue(ev.date||''),
     assetKey,
@@ -11809,7 +11816,8 @@ function rfEventDuplicateKey(event){
     rfEventNumber(ev.grossValue).toFixed(2),
     rfEventNumber(ev.ir).toFixed(2),
     rfEventNumber(ev.iof).toFixed(2),
-    rfEventNumber(ev.netValue).toFixed(2)
+    rfEventNumber(ev.netValue).toFixed(2),
+    ...(principal===0?[]:[principal.toFixed(2)])
   ].join('|');
 }
 function normalizeRfEventEntry(event){
@@ -12029,6 +12037,155 @@ function removeRfEvent(eventId){
   rememberScroll();
   save();
   toast('🗑️ Evento de renda fixa removido.');
+  render();
+}
+function rfPrincipalBalance(asset){
+  if(!asset || !isRendaFixaAsset(asset)){
+    return {state:'missing', value:0, source:'', label:'', hasExplicitApplied:false};
+  }
+  const vals=fixedIncomeOfficialValues(asset);
+  return {
+    state:vals.appliedState?.state||'missing',
+    value:Number(vals.applied)||0,
+    source:vals.appliedState?.source||'',
+    label:vals.appliedState?.label||'',
+    hasExplicitApplied:!!vals.hasExplicitApplied
+  };
+}
+function rfMoneyStrict(v){
+  if(v==null || String(v).trim()==='') return {empty:true, valid:true, value:0};
+  const raw=String(v).trim().replace(/R\$|%|\s/g,'');
+  const hasDot=raw.includes('.'), hasComma=raw.includes(',');
+  const normalized=hasDot&&hasComma ? raw.replace(/\./g,'').replace(',','.') : hasComma ? raw.replace(',','.') : raw;
+  if(!/^[+-]?\d*\.?\d*$/.test(normalized)) return {empty:false, valid:false, value:NaN};
+  const n=parseFloat(normalized);
+  if(!Number.isFinite(n)) return {empty:false, valid:false, value:NaN};
+  return {empty:false, valid:true, value:Number(n.toFixed(2))};
+}
+function rfMovementValidation(asset, input){
+  if(!asset) return {ok:false, error:'Ativo não encontrado.'};
+  if(!isRendaFixaAsset(asset)) return {ok:false, error:'O ativo não é renda fixa.'};
+  const raw=(input&&typeof input==='object')?input:{};
+  const saldo=rfPrincipalBalance(asset).value;
+  const date=inputDateValue(raw.date||'');
+  if(!date) return {ok:false, error:'Preencha a data da movimentação.'};
+  const normalizedType=normalizeRfEventType(raw);
+  const mode=['aporte','resgate_parcial','resgate_total'].includes(raw.mode)
+    ? raw.mode
+    : (normalizedType==='aporte' ? 'aporte' : normalizedType==='resgate_total' ? 'resgate_total' : normalizedType==='resgate_parcial' ? 'resgate_parcial' : '');
+  if(!mode) return {ok:false, error:'Escolha o tipo de movimentação.'};
+  const gross=rfMoneyStrict(raw.grossValue ?? raw.gross ?? raw.value);
+  if(!gross.valid) return {ok:false, error:'Valor bruto inválido.'};
+  if(gross.value<0) return {ok:false, error:'Valor bruto não pode ser negativo.'};
+  const ir=rfMoneyStrict(raw.ir ?? raw.irValue);
+  if(!ir.valid) return {ok:false, error:'Valor de IR inválido.'};
+  if(ir.value<0) return {ok:false, error:'IR não pode ser negativo.'};
+  const iof=rfMoneyStrict(raw.iof ?? raw.iofValue);
+  if(!iof.valid) return {ok:false, error:'Valor de IOF inválido.'};
+  if(iof.value<0) return {ok:false, error:'IOF não pode ser negativo.'};
+  const net=rfMoneyStrict(raw.netValue ?? raw.net);
+  if(net.valid && net.value<0) return {ok:false, error:'Valor líquido não pode ser negativo.'};
+  const principal=rfMoneyStrict(raw.principalDelta ?? raw.principal);
+  if(!principal.valid) return {ok:false, error:'Valor do principal inválido.'};
+  if(principal.empty || principal.value===0) return {ok:false, error:'Informe o valor do principal movimentado.'};
+  let principalDelta;
+  if(mode==='aporte'){
+    if(principal.value<0) return {ok:false, error:'Aporte deve usar valor positivo.'};
+    principalDelta=principal.value;
+  } else {
+    if(principal.value<0) return {ok:false, error:'Resgate deve usar valor positivo.'};
+    principalDelta=-principal.value;
+    if(mode==='resgate_total' && Math.abs(principal.value-saldo)>0.005){
+      return {ok:false, error:`O resgate total deve ser igual ao saldo atual (${fmt(saldo)}).`};
+    }
+    if(principal.value>saldo){
+      return {ok:false, error:`Saldo insuficiente: o saldo atual é ${fmt(saldo)}.`};
+    }
+  }
+  const novoSaldo=Number((saldo+principalDelta).toFixed(2));
+  if(novoSaldo<-0.005) return {ok:false, error:'Saldo insuficiente para este resgate.'};
+  const grossValue=Math.max(0, gross.value);
+  const irValue=Math.max(0, ir.value);
+  const iofValue=Math.max(0, iof.value);
+  const netValue=(net.empty || !net.valid) ? Number(Math.max(0, grossValue-irValue-iofValue).toFixed(2)) : net.value;
+  return {
+    ok:true,
+    saldo:Number(saldo.toFixed(2)),
+    novoSaldo,
+    event:{
+      assetId:rfAssetEventId(asset),
+      ticker:rfAssetEventTicker(asset),
+      date,
+      type:mode,
+      grossValue,
+      ir:irValue,
+      iof:iofValue,
+      netValue,
+      principalDelta:Number(principalDelta.toFixed(2)),
+      source:String(raw.source||'Manual').trim()||'Manual',
+      note:String(raw.note||'').trim(),
+      importRef:String(raw.importRef||'').trim()
+    }
+  };
+}
+function rfMovementNeedsBaseline(asset){
+  if(!isRendaFixaAsset(asset)) return false;
+  if(assetRfIndexerLabel(asset)!=='Prefixado') return false;
+  if(rfEventsForAsset(asset).length>0) return false;
+  if(!inputDateValue(assetRfApplicationDate(asset))) return false;
+  return rfPrincipalBalance(asset).value>0;
+}
+function rfMovementBaselineEvent(asset){
+  return {
+    assetId:rfAssetEventId(asset),
+    ticker:rfAssetEventTicker(asset),
+    date:inputDateValue(assetRfApplicationDate(asset)),
+    type:'aporte',
+    grossValue:0,
+    ir:0,
+    iof:0,
+    netValue:0,
+    principalDelta:Number((rfPrincipalBalance(asset).value).toFixed(2)),
+    source:'Migração',
+    note:'Saldo inicial anterior ao histórico de movimentações',
+    importRef:''
+  };
+}
+function saveRfMovimentacao(){
+  if(!canEditFromThisTab('salvar movimentação de renda fixa')) return;
+  const editor=S.rfMovementEditor;
+  if(!editor?.draft) return;
+  const asset=getRfAssetByEventId(editor.assetId);
+  if(!asset) return;
+  const result=rfMovementValidation(asset, editor.draft);
+  if(!result.ok){ alert(result.error); return; }
+  if(result.event.type==='resgate_total'){
+    if(!confirm(`Confirmar resgate total de ${fmt(result.saldo)} em ${brDate(result.event.date)}?\n\nO saldo do título passará a zero e a movimentação será registrada no histórico.`)) return;
+  }
+  const next=normalizeRfEventEntry(result.event);
+  const duplicate=(S.rfEvents||[]).map(normalizeRfEventEntry).find(event=>
+    (event.autoKey||rfEventDuplicateKey(event))===(next.autoKey||rfEventDuplicateKey(next))
+  );
+  if(duplicate){
+    alert('Já existe uma movimentação com a mesma data, ativo, tipo e valores.');
+    return;
+  }
+  const newEvents=(S.rfEvents||[]).map(normalizeRfEventEntry);
+  if(rfMovementNeedsBaseline(asset)){
+    newEvents.unshift(normalizeRfEventEntry(rfMovementBaselineEvent(asset)));
+  }
+  newEvents.unshift(next);
+  const novoSaldo=Number((result.saldo+next.principalDelta).toFixed(2));
+  const newAssets=(S.assets||[]).map(a=>{
+    if(rfAssetEventId(a)!==rfAssetEventId(asset)) return a;
+    return {...a, rf_applied_value:novoSaldo};
+  });
+  S.rfEvents=normalizeRfEvents(newEvents);
+  S.assets=newAssets;
+  S.rfMovementEditor=null;
+  rememberScroll();
+  save();
+  toast(`✅ Movimentação de ${result.event.ticker||'renda fixa'} registrada. Novo saldo: ${fmt(novoSaldo)}.`);
   render();
 }
 function parseNum(v){
@@ -20249,7 +20406,7 @@ function rfEventReceiptsSummaryHtml(row){
   const rentabWithEvents=row?.rentabWithEvents;
   return `
     <div><strong>Recebidos:</strong> bruto ${fmt(gross)} · IR ${fmt(ir)} · IOF ${fmt(iof)} · líquido ${fmt(net)}</div>
-    <div><strong>Com eventos:</strong> resultado ${fmt(resultWithEvents)} · rentab. ${fmtP(rentabWithEvents)}</div>
+    <div><strong>Com eventos:</strong> resultado ${fmt(resultWithEvents)} · rentab. ${rentabWithEvents!=null?fmtP(rentabWithEvents):'—'}</div>
   `;
 }
 function rfEventSeedActionHtml(row, totals){
@@ -20263,6 +20420,94 @@ function rfEventSeedActionHtml(row, totals){
 }
 function rfEventTypeOptionsHtml(selected){
   return RF_EVENT_TYPE_OPTIONS.map(([value,label])=>`<option value="${value}" ${normalizeRfEventType(selected)===value?'selected':''}>${esc(label)}</option>`).join('');
+}
+function rfMovementModeOptionsHtml(selected){
+  return [
+    ['aporte','Novo aporte'],
+    ['resgate_parcial','Resgate parcial'],
+    ['resgate_total','Resgate total']
+  ].map(([value,label])=>`<option value="${value}" ${selected===value?'selected':''}>${esc(label)}</option>`).join('');
+}
+function rfMovementEditorDomId(asset){
+  return 'rfmv-'+String(rfAssetEventId(asset)||'rf').replace(/[^A-Za-z0-9_-]+/g,'_');
+}
+function rfMovementDraftForAsset(asset, mode){
+  const saldo=rfPrincipalBalance(asset).value;
+  const m=['aporte','resgate_parcial','resgate_total'].includes(mode)?mode:'aporte';
+  return {
+    assetId:rfAssetEventId(asset),
+    ticker:rfAssetEventTicker(asset),
+    mode:m,
+    date:inputDateValue(new Date()),
+    principalDelta:m==='resgate_total' ? moneyInput(saldo) : '',
+    grossValue:'',
+    netValue:'',
+    ir:'0,00',
+    iof:'0,00',
+    source:'Manual',
+    note:''
+  };
+}
+function openRfMovementEditor(assetId, mode){
+  const asset=getRfAssetByEventId(assetId);
+  if(!asset) return;
+  S.rfMovementEditor={assetId:rfAssetEventId(asset), draft:rfMovementDraftForAsset(asset, mode)};
+  render();
+  const domId=rfMovementEditorDomId(asset);
+  requestAnimationFrame(()=>{
+    const el=document.getElementById(domId+'-date');
+    if(el && el.focus) el.focus();
+  });
+}
+function closeRfMovementEditor(){
+  S.rfMovementEditor=null;
+  render();
+}
+function setRfMovementEditorField(field, value){
+  if(!S.rfMovementEditor?.draft) return;
+  const nextDraft={...S.rfMovementEditor.draft, [field]:String(value??'')};
+  if(field==='mode' && value==='resgate_total'){
+    const asset=getRfAssetByEventId(S.rfMovementEditor.assetId);
+    if(asset) nextDraft.principalDelta=moneyInput(rfPrincipalBalance(asset).value);
+  }
+  S.rfMovementEditor={...S.rfMovementEditor, draft:nextDraft};
+  render();
+}
+function rfMovementEditorHtml(asset){
+  if(!S.rfMovementEditor || S.rfMovementEditor.assetId!==rfAssetEventId(asset)) return '';
+  const draft=S.rfMovementEditor.draft||rfMovementDraftForAsset(asset,'aporte');
+  const saldo=rfPrincipalBalance(asset).value;
+  const isTotal=draft.mode==='resgate_total';
+  const typed=parseNum(draft.principalDelta||'0');
+  const typedDelta=isTotal ? -saldo : (draft.mode==='aporte' ? typed : -typed);
+  const novoSaldo=Number(Math.max(0, saldo+typedDelta).toFixed(2));
+  const canSave=!!draft.date && (isTotal ? saldo>0 : typed>0);
+  const domId=rfMovementEditorDomId(asset);
+  return `<div class="rf-event-editor" data-rf-movement-editor="1">
+    <div class="rf-panel-head" style="margin-bottom:8px">
+      <div><div class="rf-panel-title">Movimentar título</div><div class="rf-panel-sub">Registra aporte ou resgate e atualiza o valor aplicado do título.</div></div>
+      <div class="rf-panel-badge">${esc(rfAssetEventTicker(asset)||'RF')}</div>
+    </div>
+    <div class="rf-event-editor-grid">
+      <div><label class="fl" for="${domId}-date">Data</label><input type="date" id="${domId}-date" aria-label="Data da movimentação" value="${esc(draft.date||'')}" onchange="setRfMovementEditorField('date', this.value)"></div>
+      <div><label class="fl" for="${domId}-mode">Tipo de movimentação</label><select id="${domId}-mode" aria-label="Tipo de movimentação" onchange="setRfMovementEditorField('mode', this.value)">${rfMovementModeOptionsHtml(draft.mode)}</select></div>
+      <div><label class="fl" for="${domId}-principal">Valor do principal</label><input type="text" inputmode="decimal" id="${domId}-principal" aria-label="Valor do principal movimentado" value="${esc(isTotal?moneyInput(saldo):draft.principalDelta)}" onchange="setRfMovementEditorField('principalDelta', this.value)" ${isTotal?'readonly':''} placeholder="0,00"></div>
+      <div><label class="fl" for="${domId}-ir">IR</label><input type="text" inputmode="decimal" id="${domId}-ir" aria-label="IR da movimentação" value="${esc(draft.ir||'0,00')}" onchange="setRfMovementEditorField('ir', this.value)"></div>
+      <div><label class="fl" for="${domId}-iof">IOF</label><input type="text" inputmode="decimal" id="${domId}-iof" aria-label="IOF da movimentação" value="${esc(draft.iof||'0,00')}" onchange="setRfMovementEditorField('iof', this.value)"></div>
+      <div><label class="fl" for="${domId}-gross">Valor bruto</label><input type="text" inputmode="decimal" id="${domId}-gross" aria-label="Valor bruto da movimentação" value="${esc(draft.grossValue||'')}" onchange="setRfMovementEditorField('grossValue', this.value)" placeholder="opcional"></div>
+      <div><label class="fl" for="${domId}-net">Valor líquido</label><input type="text" inputmode="decimal" id="${domId}-net" aria-label="Valor líquido da movimentação" value="${esc(draft.netValue||'')}" onchange="setRfMovementEditorField('netValue', this.value)" placeholder="opcional"></div>
+      <div><label class="fl" for="${domId}-source">Fonte</label><input type="text" id="${domId}-source" aria-label="Fonte da movimentação" value="${esc(draft.source||'Manual')}" onchange="setRfMovementEditorField('source', this.value)" placeholder="ex: Histórico manual XP"></div>
+      <div style="grid-column:1 / -1"><label class="fl" for="${domId}-note">Observação</label><input type="text" id="${domId}-note" aria-label="Observação da movimentação" value="${esc(draft.note||'')}" onchange="setRfMovementEditorField('note', this.value)" placeholder="ex: aporte manual"></div>
+    </div>
+    <div class="rf-movement-balance">
+      <div>Saldo atual: <strong>${fmt(saldo)}</strong></div>
+      <div>Saldo após: <strong>${fmt(novoSaldo)}</strong></div>
+    </div>
+    <div class="rf-event-editor-actions">
+      <button class="btn bgh" onclick="closeRfMovementEditor()">Cancelar</button>
+      <button class="btn bp" onclick="saveRfMovimentacao()" ${canSave?'':'disabled'}>Salvar movimentação</button>
+    </div>
+  </div>`;
 }
 function rfEventEditorHtml(asset){
   if(!S.rfEventEditor || S.rfEventEditor.assetId!==rfAssetEventId(asset)) return '';
@@ -20330,6 +20575,7 @@ function rfEventHistoryCards(rows){
           ${rfEventStatusBadge(row, totals)}
           ${rfEventSeedActionHtml(row, totals)}
           <button class="btn bgh" onclick='openRfEventEditor(${JSON.stringify(rfAssetEventId(asset))})'>+ Evento</button>
+          <button class="btn bgh" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")'>Movimentar</button>
         </div>
       </div>
       <div class="rf-event-summary">
@@ -20341,6 +20587,7 @@ function rfEventHistoryCards(rows){
       </div>
       <div class="rf-event-sub">${esc(expectedNote)}</div>
       ${rfEventEditorHtml(asset)}
+      ${rfMovementEditorHtml(asset)}
       <div class="rf-event-table-wrap">
         <table class="rf-event-table">
           <thead>
@@ -20450,7 +20697,7 @@ function rendaFixaTab(){
       </td>
       <td class="rf-right ${row.resultWithEvents>=0?'gn':'rd'}">
         <div class="rf-strong">${fmt(row.resultWithEvents)}</div>
-        <div class="rf-mini">${fmtP(row.rentabWithEvents)} · resultado total</div>
+        <div class="rf-mini">${row.rentabWithEvents!=null?fmtP(row.rentabWithEvents):'—'} · resultado total</div>
       </td>
       <td class="rf-right ${row.pct>=0?'gn':'rd'}">${fmtP(row.pct)}</td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
@@ -20550,7 +20797,7 @@ function rendaFixaTab(){
         </div>
       </div>
     </details>
-    <details class="sec" style="margin-top:2px">
+    <details class="sec" style="margin-top:2px"${(S.rfEventEditor||S.rfMovementEditor)?' open':''}>
       <summary>
         <div>
           <div class="sec-title">Histórico auditável por ativo</div>
