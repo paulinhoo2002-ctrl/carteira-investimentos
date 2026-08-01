@@ -1,0 +1,185 @@
+.networth-page {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.networth-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.networth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .networth-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.networth-allocation-row {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.networth-allocation-row__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.networth-allocation-row__value {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.networth-allocation-row__bar {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-subtle);
+  overflow: hidden;
+}
+
+.networth-allocation-row__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-primary);
+  transition: width var(--motion-base);
+}
+
+.networth-allocation-row__detail {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.networth-allocation-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.networth-allocation-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.networth-allocation-card__bar {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-subtle);
+  overflow: hidden;
+}
+
+.networth-allocation-card__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-primary);
+  transition: width var(--motion-base);
+}
+
+.networth-allocation-card__detail {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.networth-asset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.networth-asset-row__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.networth-asset-row__main strong {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.networth-asset-row__values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.networth-asset-row__current {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.networth-asset-row__alloc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.networth-asset-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.networth-asset-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.networth-asset-card header strong {
+  font-size: 1rem;
+}
+
+.networth-asset-card__value {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.networth-asset-card__alloc {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .networth-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .networth-grid {
+    grid-template-columns: 1fr;
+  }
+}

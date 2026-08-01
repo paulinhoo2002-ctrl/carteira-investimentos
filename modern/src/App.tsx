@@ -124,13 +124,13 @@ export function App({
           ) : activePageId === 'overview' ? (
             <OverviewPage reportsAdapter={reportsAdapter} incomeAdapter={incomeAdapter} />
           ) : activePageId === 'returns' ? (
-            <ReturnsPage />
+            <ReturnsPage reportsAdapter={reportsAdapter} />
           ) : activePageId === 'goals' ? (
             <GoalsPage />
           ) : activePageId === 'net-worth' ? (
-            <NetWorthPage />
+            <NetWorthPage reportsAdapter={reportsAdapter} />
           ) : activePageId === 'rebalance' ? (
-            <RebalancePage />
+            <RebalancePage reportsAdapter={reportsAdapter} />
           ) : (
             <PagePlaceholder
               cardData={activePageId === 'overview' ? OVERVIEW_CARDS : undefined}
