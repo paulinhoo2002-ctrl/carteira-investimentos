@@ -1,25 +1,43 @@
 const assert = require('node:assert/strict');
-const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
-
-const sharedBase = require('node:path').join(__dirname, '..', 'modern', 'src', 'features', 'shared', 'components');
+const { createServer } = require('vite');
 
 let DashboardMetricCard, DashboardSection, EmptyState, AssetClassBadge, ChartContainer, ResponsiveDataList;
 
+let viteServerPromise;
+function getViteServer() {
+  if (!viteServerPromise) {
+    viteServerPromise = createServer({
+      configFile: require('node:path').join(__dirname, '..', 'modern', 'vite.config.ts'),
+      logLevel: 'error',
+      server: { middlewareMode: true },
+    });
+  }
+  return viteServerPromise;
+}
+
+test.after(async () => {
+  if (viteServerPromise) {
+    const server = await viteServerPromise;
+    await server.close();
+  }
+});
+
 async function loadShared() {
-  const modMetric = await import(pathToFileURL(require('node:path').join(sharedBase, 'DashboardMetricCard', 'DashboardMetricCard.tsx')).href);
+  const viteServer = await getViteServer();
+  const modMetric = await viteServer.ssrLoadModule('/src/features/shared/components/DashboardMetricCard/DashboardMetricCard.tsx');
   DashboardMetricCard = modMetric.DashboardMetricCard;
-  const modSection = await import(pathToFileURL(require('node:path').join(sharedBase, 'DashboardSection', 'DashboardSection.tsx')).href);
+  const modSection = await viteServer.ssrLoadModule('/src/features/shared/components/DashboardSection/DashboardSection.tsx');
   DashboardSection = modSection.DashboardSection;
-  const modEmpty = await import(pathToFileURL(require('node:path').join(sharedBase, 'EmptyState', 'EmptyState.tsx')).href);
+  const modEmpty = await viteServer.ssrLoadModule('/src/features/shared/components/EmptyState/EmptyState.tsx');
   EmptyState = modEmpty.EmptyState;
-  const modBadge = await import(pathToFileURL(require('node:path').join(sharedBase, 'AssetClassBadge', 'AssetClassBadge.tsx')).href);
+  const modBadge = await viteServer.ssrLoadModule('/src/features/shared/components/AssetClassBadge/AssetClassBadge.tsx');
   AssetClassBadge = modBadge.AssetClassBadge;
-  const modChart = await import(pathToFileURL(require('node:path').join(sharedBase, 'ChartContainer', 'ChartContainer.tsx')).href);
+  const modChart = await viteServer.ssrLoadModule('/src/features/shared/components/ChartContainer/ChartContainer.tsx');
   ChartContainer = modChart.ChartContainer;
-  const modResp = await import(pathToFileURL(require('node:path').join(sharedBase, 'ResponsiveDataList', 'ResponsiveDataList.tsx')).href);
+  const modResp = await viteServer.ssrLoadModule('/src/features/shared/components/ResponsiveDataList/ResponsiveDataList.tsx');
   ResponsiveDataList = modResp.ResponsiveDataList;
 }
 

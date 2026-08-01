@@ -1,0 +1,5 @@
+.goals-page {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
