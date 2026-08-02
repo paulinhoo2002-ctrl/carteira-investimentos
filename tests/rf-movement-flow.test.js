@@ -516,3 +516,139 @@ test('saveRfMovimentacao respeita fonte manual e observacao', () => {
   assert.equal(event.source, 'XP');
   assert.equal(event.note, 'aporte em conta');
 });
+
+// ---- Entrega 1: resgate inteligente — endurecimento do contrato por testes ----
+
+test('resgate parcial mantem saldo positivo e exato', () => {
+  const asset = makeRfAsset();
+  const { context } = buildContext({ assets: [asset] });
+  const result = context.rfMovementValidation(asset, { date: '2026-06-01', mode: 'resgate_parcial', principalDelta: '300,00' });
+  assert.equal(result.ok, true);
+  assert.equal(result.saldo, 1000);
+  assert.equal(result.novoSaldo, 700);
+  assert.ok(result.novoSaldo > 0, 'apos resgate parcial o saldo deve continuar positivo');
+});
+
+test('resgate total preserva o ativo na carteira e zera o valor aplicado', () => {
+  const asset = makeRfAsset();
+  const { context } = buildContext({ assets: [asset] });
+  context.S.rfMovementEditor = { assetId: 'rf-asset-1', draft: { mode: 'resgate_total', date: '2026-06-01', principalDelta: '1000,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  assert.equal(context.S.assets.length, 1, 'o ativo nao pode ser removido da carteira');
+  assert.equal(context.S.assets[0].id, 'rf-asset-1');
+  assert.equal(context.S.assets[0].rf_applied_value, 0);
+});
+
+test('resgate total preserva o historico e vincula os eventos ao mesmo ativo', () => {
+  const asset = makeCdiAsset();
+  const { context } = buildContext({ assets: [asset] });
+  const mk = (mode, principal, date) => ({ assetId: 'rf-asset-cdi', draft: { mode, date, principalDelta: principal, grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: date } });
+  context.S.rfMovementEditor = mk('aporte', '500,00', '2026-05-01');
+  context.saveRfMovimentacao();
+  assert.equal(context.S.rfEvents.length, 1);
+  context.S.rfMovementEditor = mk('resgate_total', '1500,00', '2026-06-01');
+  context.saveRfMovimentacao();
+  assert.equal(context.S.rfEvents.length, 2);
+  assert.equal(context.S.rfEvents[0].type, 'resgate_total');
+  assert.equal(context.S.rfEvents[0].assetId, 'rf-asset-cdi');
+  assert.equal(context.S.rfEvents[0].principalDelta, -1500);
+  const previous = context.S.rfEvents.find(e => e.type === 'aporte');
+  assert.ok(previous, 'evento anterior deve permanecer no historico');
+  assert.equal(previous.assetId, 'rf-asset-cdi');
+  assert.equal(previous.principalDelta, 500);
+  assert.equal(context.S.assets[0].rf_applied_value, 0);
+});
+
+test('novo resgate parcial com saldo zero e rejeitado sem mutar estado', () => {
+  const asset = makeCdiAsset();
+  const { context, counters } = buildContext({ assets: [asset] });
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { mode: 'resgate_total', date: '2026-06-01', principalDelta: '1000,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  assert.equal(context.S.assets[0].rf_applied_value, 0);
+  const attempted = context.rfMovementValidation(context.S.assets[0], { date: '2026-07-01', mode: 'resgate_parcial', principalDelta: '100,00' });
+  assert.equal(attempted.ok, false);
+  assert.match(attempted.error, /insuficiente/i);
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { mode: 'resgate_parcial', date: '2026-07-01', principalDelta: '100,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  assert.equal(counters.alert, 1);
+  assert.equal(context.S.rfEvents.length, 1);
+  assert.equal(context.S.assets[0].rf_applied_value, 0);
+});
+
+test('novo resgate total com saldo zero e rejeitado sem mutar estado', () => {
+  const asset = makeCdiAsset();
+  const { context, counters } = buildContext({ assets: [asset] });
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { mode: 'resgate_total', date: '2026-06-01', principalDelta: '1000,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  assert.equal(context.S.assets[0].rf_applied_value, 0);
+  const attempted = context.rfMovementValidation(context.S.assets[0], { date: '2026-07-01', mode: 'resgate_total', principalDelta: '500,00' });
+  assert.equal(attempted.ok, false);
+  assert.match(attempted.error, /igual ao saldo/i);
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { mode: 'resgate_total', date: '2026-07-01', principalDelta: '500,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  assert.equal(counters.alert, 1);
+  assert.equal(context.S.rfEvents.length, 1);
+  assert.equal(context.S.assets[0].rf_applied_value, 0);
+});
+
+test('rfPrincipalBalance reflete exatamente o novo saldo apos resgate parcial', () => {
+  const asset = makeRfAsset();
+  const { context } = buildContext({ assets: [asset] });
+  context.S.rfMovementEditor = { assetId: 'rf-asset-1', draft: { mode: 'resgate_parcial', date: '2026-06-01', principalDelta: '300,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  const updated = context.S.assets[0];
+  assert.equal(updated.rf_applied_value, 700);
+  const balance = context.rfPrincipalBalance(updated);
+  assert.equal(balance.value, 700);
+  assert.equal(balance.value, updated.rf_applied_value);
+  assert.equal(balance.source, 'rf_applied_value');
+  assert.equal(balance.state, 'value');
+  assert.equal(balance.hasExplicitApplied, true);
+});
+
+test('fixedIncomeOfficialValues reflete o novo saldo apos resgate parcial', () => {
+  const asset = makeRfAsset();
+  const { context } = buildContext({ assets: [asset] });
+  context.S.rfMovementEditor = { assetId: 'rf-asset-1', draft: { mode: 'resgate_parcial', date: '2026-06-01', principalDelta: '300,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  const updated = context.S.assets[0];
+  const official = context.fixedIncomeOfficialValues(updated);
+  assert.equal(official.applied, 700);
+  assert.equal(official.applied, updated.rf_applied_value);
+  assert.equal(typeof official.applied, 'number');
+  assert.equal(official.appliedState.source, 'rf_applied_value');
+  assert.equal(official.appliedState.state, 'value');
+  assert.equal(official.gross, 0);
+  assert.equal(official.liquid, 0);
+  assert.notEqual(official.applied, official.gross, 'applied nao pode ser confundido com gross');
+});
+
+test('dupla submissao da mesma operacao nao cria evento duplicado', () => {
+  const asset = makeCdiAsset();
+  const { context, counters } = buildContext({ assets: [asset] });
+  const draft = { mode: 'resgate_parcial', date: '2026-06-01', principalDelta: '300,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' };
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft };
+  context.saveRfMovimentacao();
+  assert.equal(context.S.rfEvents.length, 1);
+  assert.equal(context.S.assets[0].rf_applied_value, 700);
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { ...draft } };
+  context.saveRfMovimentacao();
+  assert.equal(counters.alert, 1, 'a duplicata deve disparar alerta');
+  assert.equal(context.S.rfEvents.length, 1, 'o editor foi reaberto e mesmo assim nao pode criar novo evento');
+  assert.equal(context.S.assets[0].rf_applied_value, 700);
+});
+
+test('falha de validacao com saldo zero nao altera assets nem rfEvents (snapshot profundo)', () => {
+  const asset = makeCdiAsset();
+  const { context, counters } = buildContext({ assets: [asset] });
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { mode: 'resgate_total', date: '2026-06-01', principalDelta: '1000,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  assert.equal(context.S.assets[0].rf_applied_value, 0);
+  const assetsBefore = JSON.stringify(context.S.assets);
+  const eventsBefore = JSON.stringify(context.S.rfEvents);
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { mode: 'resgate_parcial', date: '2026-07-01', principalDelta: '50,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  assert.equal(counters.alert, 1);
+  assert.equal(JSON.stringify(context.S.assets), assetsBefore, 'assets nao pode mudar apos rejeicao');
+  assert.equal(JSON.stringify(context.S.rfEvents), eventsBefore, 'rfEvents nao pode mudar apos rejeicao');
+});
