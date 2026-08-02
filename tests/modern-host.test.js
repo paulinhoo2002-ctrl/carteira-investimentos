@@ -340,6 +340,20 @@ test('mountModernApp controlled errors and repeat mount guard', async () => {
       }),
     /Componente moderno invalido\./,
   );
+
+  assert.throws(
+    () =>
+      mountModernApp({
+        rootElement: {},
+        reportsAdapter: { getSnapshot() {} },
+        fixedIncomeAdapter: { getSnapshot() {} },
+        incomeAdapter: { getSnapshot() {} },
+        contributionsAdapter: { getSnapshot() {} },
+        goalsAdapter: null,
+        AppComponent: () => null,
+      }),
+    /Adapter moderno de metas invalido\./,
+  );
 });
 
 test('host runtime keeps demo source available', async () => {

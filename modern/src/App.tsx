@@ -8,7 +8,9 @@ import { ContributionsReadonlyPage } from './features/contributions/Contribution
 import type { ContributionsRefreshController } from './features/contributions/contributionsRefreshController.ts';
 import type { ReadOnlyContributionsAdapter } from './features/contributions/contributionsSnapshotAdapter.mjs';
 import { FixedIncomeReadonlyPage } from './features/fixed-income/FixedIncomeReadonlyPage';
-import { GoalsPage } from './features/goals/GoalsPage';
+import type { GoalsRefreshController } from './features/goals/goalsRefreshController';
+import { GoalsReadonlyPage } from './features/goals/GoalsReadonlyPage';
+import type { ReadOnlyGoalsAdapter } from './features/goals/goalsSnapshotAdapter.mjs';
 import { IncomeReadonlyPage } from './features/income/IncomeReadonlyPage';
 import type { IncomeRefreshController } from './features/income/incomeRefreshController.ts';
 import type { ReadOnlyIncomeAdapter } from './features/income/incomeSnapshotAdapter.mjs';
@@ -29,9 +31,11 @@ interface AppProps {
   fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
   incomeAdapter: ReadOnlyIncomeAdapter;
   contributionsAdapter: ReadOnlyContributionsAdapter;
+  goalsAdapter: ReadOnlyGoalsAdapter;
   reportsRefreshController?: ReportsRefreshController | null;
   incomeRefreshController?: IncomeRefreshController | null;
   contributionsRefreshController?: ContributionsRefreshController | null;
+  goalsRefreshController?: GoalsRefreshController | null;
   initialPageId?: ModernPageId;
   onActivePageIdChange?: (pageId: ModernPageId) => void;
 }
@@ -41,9 +45,11 @@ export function App({
   fixedIncomeAdapter,
   incomeAdapter,
   contributionsAdapter,
+  goalsAdapter,
   reportsRefreshController,
   incomeRefreshController,
   contributionsRefreshController,
+  goalsRefreshController,
   initialPageId = 'overview',
   onActivePageIdChange,
 }: AppProps) {
@@ -126,7 +132,7 @@ export function App({
           ) : activePageId === 'returns' ? (
             <ReturnsPage reportsAdapter={reportsAdapter} />
           ) : activePageId === 'goals' ? (
-            <GoalsPage />
+            <GoalsReadonlyPage adapter={goalsAdapter} refreshController={goalsRefreshController} />
           ) : activePageId === 'net-worth' ? (
             <NetWorthPage reportsAdapter={reportsAdapter} />
           ) : activePageId === 'rebalance' ? (

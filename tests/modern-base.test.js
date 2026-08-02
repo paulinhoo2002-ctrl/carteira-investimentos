@@ -110,8 +110,6 @@ const sourceFiles = [
   'src/features/returns/ReturnsPage.tsx',
   'src/features/returns/ReturnsPage.css',
   'src/features/returns/readonlyReturnsViewModel.ts',
-  'src/features/goals/GoalsPage.tsx',
-  'src/features/goals/GoalsPage.css',
   'src/features/net-worth/NetWorthPage.tsx',
   'src/features/net-worth/NetWorthPage.css',
   'src/features/net-worth/readonlyNetWorthViewModel.ts',
@@ -132,6 +130,19 @@ const sourceFiles = [
   'src/features/shared/components/EmptyState/EmptyState.css',
   'src/features/shared/components/ResponsiveDataList/ResponsiveDataList.tsx',
   'src/features/shared/components/ResponsiveDataList/ResponsiveDataList.css',
+  'src/bootstrap/hostGoalsReadonlySource.ts',
+  'src/bootstrap/modernGoalsRuntime.ts',
+  'src/features/goals/GoalsReadonlyPage.tsx',
+  'src/features/goals/GoalsReadonlyPage.css',
+  'src/features/goals/goalsReadonlyBridge.mjs',
+  'src/features/goals/goalsReadonlyBridge.d.ts',
+  'src/features/goals/goalsReadonlyContract.mjs',
+  'src/features/goals/goalsReadonlyContract.d.ts',
+  'src/features/goals/goalsRefreshController.ts',
+  'src/features/goals/goalsSnapshotAdapter.mjs',
+  'src/features/goals/goalsSnapshotAdapter.d.ts',
+  'src/features/goals/legacyGoalsReadonlyIntegration.ts',
+  'src/features/goals/readonlyGoalsViewModel.ts',
 ];
 
 const hostExperimentalFiles = ['src/bootstrap/hostLegacyReportsReadonlySource.ts'];
@@ -573,7 +584,7 @@ test('modern shell exists and stays isolated', async () => {
   );
   assert.equal(packageJson.scripts['dev:modern'], 'vite --config modern/vite.config.ts');
   assert.equal(packageJson.scripts['build:modern'], 'vite build --config modern/vite.config.ts');
-  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/modern-contributions-explainable-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/modern-fixed-income-fixed-rate-engine.test.js tests/modern-fixed-income-movement-model.test.js tests/modern-fixed-income-legacy-rfevents-adapter.test.js tests/modern-fixed-income-fixed-rate-position.test.js tests/modern-fixed-income-legacy-fixed-rate-position.test.js tests/modern-fixed-income-readonly-projection.test.js tests/modern-fixed-income-readonly-valuation.test.js tests/modern-fixed-income-rate-parser.test.js tests/modern-fixed-income-weekdays.test.js tests/modern-fixed-income-supplement-builder.test.js tests/modern-fixed-income-vertical-integration.test.js tests/modern-fixed-income-asset-identity.test.js tests/modern-fixed-income-cdi-contract-parser.test.js tests/modern-fixed-income-cdi-rate-engine.test.js tests/modern-fixed-income-cdi-daily-factor-provider.test.js tests/modern-shell-navigation.test.js tests/modern-overview-page.test.js tests/modern-dashboard-shared-components.test.js tests/modern-returns-page.test.js tests/modern-net-worth-page.test.js tests/modern-rebalance-page.test.js tests/modern-goals-page.test.js');
+  assert.equal(packageJson.scripts['test:modern'], 'node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/modern-contributions-explainable-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/modern-fixed-income-fixed-rate-engine.test.js tests/modern-fixed-income-movement-model.test.js tests/modern-fixed-income-legacy-rfevents-adapter.test.js tests/modern-fixed-income-fixed-rate-position.test.js tests/modern-fixed-income-legacy-fixed-rate-position.test.js tests/modern-fixed-income-readonly-projection.test.js tests/modern-fixed-income-readonly-valuation.test.js tests/modern-fixed-income-rate-parser.test.js tests/modern-fixed-income-weekdays.test.js tests/modern-fixed-income-supplement-builder.test.js tests/modern-fixed-income-vertical-integration.test.js tests/modern-fixed-income-asset-identity.test.js tests/modern-fixed-income-cdi-contract-parser.test.js tests/modern-fixed-income-cdi-rate-engine.test.js tests/modern-fixed-income-cdi-daily-factor-provider.test.js tests/modern-shell-navigation.test.js tests/modern-overview-page.test.js tests/modern-dashboard-shared-components.test.js tests/modern-returns-page.test.js tests/modern-net-worth-page.test.js tests/modern-rebalance-page.test.js tests/modern-goals-page.test.js tests/modern-goals-contract.test.js tests/modern-goals-bridge-adapter.test.js tests/modern-goals-source.test.js tests/modern-goals-runtime.test.js tests/modern-goals-viewmodel.test.js tests/modern-goals-page-readonly.test.js');
   assert.equal(fs.existsSync(path.join(modernRoot, 'dist')), true, 'Expected modern/dist to remain present after modern build');
 
   const allText = allSourceText();
@@ -841,7 +852,6 @@ test('paginas de analise permanecem readonly e honestas', () => {
   const netWorthViewModel = read('src/features/net-worth/readonlyNetWorthViewModel.ts');
   const rebalancePage = read('src/features/rebalance/RebalancePage.tsx');
   const rebalanceViewModel = read('src/features/rebalance/readonlyRebalanceViewModel.ts');
-  const goalsPage = read('src/features/goals/GoalsPage.tsx');
 
   assert.match(returnsPage, /reportsAdapter/);
   assert.match(returnsPage, /Histórico de rentabilidade indisponível/);
@@ -871,12 +881,7 @@ test('paginas de analise permanecem readonly e honestas', () => {
   assert.equal(rebalanceViewModel.includes('targetAllocationPct'), false);
   assert.equal(rebalanceViewModel.includes('deviationPct'), false);
   assert.equal(rebalanceViewModel.includes('score'), false);
-
-  assert.match(goalsPage, /Integração readonly de metas ainda não disponível/);
-  assert.match(goalsPage, /S\.goals/);
-  assert.equal(goalsPage.includes('R$'), false);
 });
-
 test('modern reports adapter returns frozen read-only snapshot', () => {
   const bridgeFile = read('src/features/reports/reportsReadonlyBridge.mjs');
   const adapterFile = read('src/features/reports/reportsSnapshotAdapter.mjs');

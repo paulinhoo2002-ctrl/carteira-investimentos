@@ -2,6 +2,8 @@ import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { ContributionsRefreshController } from '../features/contributions/contributionsRefreshController.ts';
 import type { ReadOnlyContributionsAdapter } from '../features/contributions/contributionsSnapshotAdapter.mjs';
+import type { GoalsRefreshController } from '../features/goals/goalsRefreshController';
+import type { ReadOnlyGoalsAdapter } from '../features/goals/goalsSnapshotAdapter.mjs';
 import type { IncomeRefreshController } from '../features/income/incomeRefreshController.ts';
 import type { ReadOnlyIncomeAdapter } from '../features/income/incomeSnapshotAdapter.mjs';
 import type { ReadOnlyFixedIncomeAdapter } from '../features/fixed-income/fixedIncomeSnapshotAdapter.mjs';
@@ -16,22 +18,26 @@ interface MountModernAppOptions {
   readonly fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter | null | undefined;
   readonly incomeAdapter: ReadOnlyIncomeAdapter | null | undefined;
   readonly contributionsAdapter: ReadOnlyContributionsAdapter | null | undefined;
+  readonly goalsAdapter: ReadOnlyGoalsAdapter | null | undefined;
   readonly reportsRefreshController?: ReportsRefreshController | null | undefined;
   readonly incomeRefreshController?: IncomeRefreshController | null | undefined;
   readonly contributionsRefreshController?: ContributionsRefreshController | null | undefined;
+  readonly goalsRefreshController?: GoalsRefreshController | null | undefined;
   readonly initialPageId?: ModernPageId;
   readonly onActivePageIdChange?: (pageId: ModernPageId) => void;
   readonly AppComponent?: ComponentType<{
-    reportsAdapter: ReadOnlyReportsAdapter;
-    fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
-    incomeAdapter: ReadOnlyIncomeAdapter;
-    contributionsAdapter: ReadOnlyContributionsAdapter;
-    reportsRefreshController?: ReportsRefreshController | null | undefined;
-    incomeRefreshController?: IncomeRefreshController | null | undefined;
-    contributionsRefreshController?: ContributionsRefreshController | null | undefined;
-    initialPageId?: ModernPageId;
-    onActivePageIdChange?: (pageId: ModernPageId) => void;
-  }> | null | undefined;
+  reportsAdapter: ReadOnlyReportsAdapter;
+  fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
+  incomeAdapter: ReadOnlyIncomeAdapter;
+  contributionsAdapter: ReadOnlyContributionsAdapter;
+  goalsAdapter: ReadOnlyGoalsAdapter;
+  reportsRefreshController?: ReportsRefreshController | null | undefined;
+  incomeRefreshController?: IncomeRefreshController | null | undefined;
+  contributionsRefreshController?: ContributionsRefreshController | null | undefined;
+  goalsRefreshController?: GoalsRefreshController | null | undefined;
+  initialPageId?: ModernPageId;
+  onActivePageIdChange?: (pageId: ModernPageId) => void;
+}> | null | undefined;
 }
 
 export interface ModernAppMount {
@@ -47,9 +53,11 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
     fixedIncomeAdapter,
     incomeAdapter,
     contributionsAdapter,
+    goalsAdapter,
     reportsRefreshController,
     incomeRefreshController,
     contributionsRefreshController,
+    goalsRefreshController,
     initialPageId,
     onActivePageIdChange,
     AppComponent,
@@ -79,6 +87,10 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
     throw new Error('Componente moderno invalido.');
   }
 
+  if (!goalsAdapter || typeof goalsAdapter.getSnapshot !== 'function') {
+    throw new Error('Adapter moderno de metas invalido.');
+  }
+
   if (mountedRoots.has(rootElement)) {
     throw new Error('Base moderna ja montada neste root.');
   }
@@ -86,22 +98,24 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
   const root = createRoot(rootElement);
   mountedRoots.set(rootElement, root);
   root.render(
-      React.createElement(
-        React.StrictMode,
-        null,
-        React.createElement(AppComponent, {
-          reportsAdapter,
-          fixedIncomeAdapter,
-          incomeAdapter,
-          contributionsAdapter,
-          reportsRefreshController,
-          incomeRefreshController,
-          contributionsRefreshController,
-          initialPageId,
-          onActivePageIdChange,
-        }),
-      ),
-    );
+    React.createElement(
+      React.StrictMode,
+      null,
+      React.createElement(AppComponent, {
+        reportsAdapter,
+        fixedIncomeAdapter,
+        incomeAdapter,
+        contributionsAdapter,
+        goalsAdapter,
+        reportsRefreshController,
+        incomeRefreshController,
+        contributionsRefreshController,
+        goalsRefreshController,
+        initialPageId,
+        onActivePageIdChange,
+      }),
+    ),
+  );
 
   return {
     unmount() {

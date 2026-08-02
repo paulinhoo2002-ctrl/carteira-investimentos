@@ -1,6 +1,7 @@
 import { App } from './App';
 import { createHostContributionsReadonlySource } from './bootstrap/hostContributionsReadonlySource';
 import { createHostFixedIncomeReadonlySource } from './bootstrap/hostFixedIncomeReadonlySource';
+import { createHostGoalsReadonlySource } from './bootstrap/hostGoalsReadonlySource';
 import { createHostIncomeReadonlySource } from './bootstrap/hostIncomeReadonlySource';
 import {
   createHostLegacyReportsReadonlySource,
@@ -11,6 +12,7 @@ import {
 } from './bootstrap/hostLegacyReportsReadonlySource';
 import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRuntime';
 import { createModernContributionsRuntime } from './bootstrap/modernContributionsRuntime';
+import { createModernGoalsRuntime } from './bootstrap/modernGoalsRuntime';
 import { createModernIncomeRuntime } from './bootstrap/modernIncomeRuntime';
 import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
@@ -39,6 +41,7 @@ export interface HostBootstrapOptions {
   readonly getAssets?: () => readonly HostLegacyReportAsset[];
   readonly getContributionsSnapshot?: () => unknown;
   readonly getFixedIncomeAssets?: () => readonly HostFixedIncomeAsset[];
+  readonly getGoalsSnapshot?: () => unknown;
   readonly getIncomeSnapshot?: HostIncomeReadonlySourceOptions['getIncomeSnapshot'];
   readonly getRfEvents?: () => readonly unknown[];
   readonly legacyModule?: Record<string, unknown> | null;
@@ -171,6 +174,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   const hasInjectedAssets = typeof options.getAssets === 'function';
   const hasInjectedContributionsSnapshot = typeof options.getContributionsSnapshot === 'function';
   const hasInjectedFixedIncomeAssets = typeof options.getFixedIncomeAssets === 'function';
+  const hasInjectedGoalsSnapshot = typeof options.getGoalsSnapshot === 'function';
   const hasInjectedIncomeSnapshot = typeof options.getIncomeSnapshot === 'function';
   const sessionContextEnabled =
     typeof location !== 'undefined' &&
@@ -239,6 +243,12 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
       })
     : null;
 
+  const goalsSource = hasInjectedGoalsSnapshot
+    ? createHostGoalsReadonlySource({
+        getGoalsSnapshot: options.getGoalsSnapshot,
+      })
+    : null;
+
   const fallbackHostReportsSource = await createHostLegacyReportsReadonlySource({
       legacyModule: injectedLegacyModule ?? undefined,
       getAssets: options.getAssets ?? (() => experimentalAssets),
@@ -297,6 +307,9 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   const modernIncomeRuntime = createModernIncomeRuntime({
     incomeSource: incomeSource ?? undefined,
   });
+  const modernGoalsRuntime = createModernGoalsRuntime({
+    goalsSource: goalsSource ?? undefined,
+  });
 
   mountModernApp({
     rootElement: targetRoot,
@@ -304,10 +317,12 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
     contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
     incomeAdapter: modernIncomeRuntime.incomeAdapter,
+    goalsAdapter: modernGoalsRuntime.goalsAdapter,
     AppComponent: App,
     reportsRefreshController,
     contributionsRefreshController: modernContributionsRuntime.contributionsRefreshController,
     incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
+    goalsRefreshController: modernGoalsRuntime.goalsRefreshController,
       initialPageId: initialSessionContext?.pageId ?? 'overview',
       onActivePageIdChange(pageId: ModernPageId) {
       if (!sessionContextEnabled) {
@@ -331,6 +346,7 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
     contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
     incomeAdapter: modernIncomeRuntime.incomeAdapter,
+    goalsAdapter: modernGoalsRuntime.goalsAdapter,
   };
 }
 
