@@ -5205,6 +5205,9 @@ async function bootstrapExperimentalActiveWalletHost(){
           ],
         },
       };
+    },
+    getGoalsSnapshot(){
+      return getGoalsSnapshot();
     }
   });
   setTimeout(()=>{
@@ -22054,6 +22057,161 @@ function financialGoalsSnapshot(){
     patrimonyTarget,
     incomeTarget,
   };
+}
+function getGoalsSnapshot(){
+  const rawGoals =
+    S.goals && typeof S.goals === 'object'
+      ? S.goals
+      : {};
+  const rawPatrimonio =
+    rawGoals.patrimonio &&
+    typeof rawGoals.patrimonio === 'object'
+      ? rawGoals.patrimonio
+      : {};
+  const rawAtivos =
+    rawGoals.ativos &&
+    typeof rawGoals.ativos === 'object'
+      ? rawGoals.ativos
+      : {};
+  const rawProventos =
+    rawGoals.proventos &&
+    typeof rawGoals.proventos === 'object'
+      ? rawGoals.proventos
+      : {};
+  const rawAllocation =
+    rawGoals.allocation &&
+    typeof rawGoals.allocation === 'object'
+      ? rawGoals.allocation
+      : {};
+  const hasPatrimonyGoal =
+    Number(rawPatrimonio.target) > 0 ||
+    Number(rawPatrimonio.aporte) > 0 ||
+    (
+      Object.prototype.hasOwnProperty.call(rawPatrimonio, 'annualVar') &&
+      Number(rawPatrimonio.annualVar) !== 0
+    );
+  const hasIncomeGoal =
+    Number(rawProventos.monthly) > 0 ||
+    Number(S.divGoal) > 0;
+  const hasAssetGoal =
+    Boolean(String(rawAtivos.ticker || '').trim()) ||
+    Number(rawAtivos.aporte) > 0 ||
+    Number(rawAtivos.finalValue) > 0;
+  const hasAllocationGoal =
+    Array.isArray(rawAllocation.items) &&
+    rawAllocation.items.length > 0;
+  const generatedAt = new Date().toISOString();
+  const snapshot = financialGoalsSnapshot();
+  const portfolioCurrent = snapshot.hasPortfolioData ? Number(snapshot.portfolioCurrent) : null;
+  const hasPortfolioData = snapshot.hasPortfolioData;
+  const patriTarget = hasPatrimonyGoal ? (Number(snapshot.goals?.patrimonio?.target) || 0) : 0;
+  const incomeTarget = hasIncomeGoal ? snapshot.incomeTarget : 0;
+  const patrimonyMetrics = goalProgressMetrics(portfolioCurrent, patriTarget);
+  const patrimonyTone = financialGoalsTone(patrimonyMetrics);
+  const incomeCurrent = Number(snapshot.currentIncome) || 0;
+  const incomeMetrics = goalProgressMetrics(incomeCurrent, incomeTarget);
+  const incomeTone = financialGoalsTone(incomeMetrics);
+  const incomeStats = passiveIncomeGoalStats();
+  const goals = snapshot.goals || {};
+  const originMode = hasPortfolioData ? 'real-wallet' : 'empty-wallet';
+  const originLabel = hasPortfolioData ? 'Carteira ativa (legado)' : 'Carteira vazia';
+  const notice = hasPortfolioData
+    ? 'Snapshot readonly de metas. React nao escreve na fonte.'
+    : 'Nenhuma carteira ativa. Configure uma carteira no legado para ver metas.';
+  const monthlyContribution = Number(goals.patrimonio?.aporte) || 0;
+  const annualVariation = Number(goals.patrimonio?.annualVar) || 0;
+  const assetGoal = {
+    type: String(goals.ativos?.type || 'Ação').trim(),
+    ticker: String(goals.ativos?.ticker || '').trim(),
+    monthlyContribution: Number(goals.ativos?.aporte) || 0,
+    annualVariation: Number(goals.ativos?.annualVar) || 10,
+    finalValue: Number(goals.ativos?.finalValue) || 0,
+  };
+  const allocationItems = hasAllocationGoal
+    ? goals.allocation.items.map(function(item) {
+        return {
+          type: String(item.type || '').trim(),
+          pct: Number.isFinite(Number(item.pct)) ? Number(item.pct) : 0,
+        };
+      })
+    : [];
+  const allowedTypes = Array.isArray(goals.proventos?.types)
+    ? goals.proventos.types.map(function(t) { return String(t || '').trim(); }).filter(Boolean)
+    : [];
+  const historyGroups = (snapshot.historyGroups || []).map(function(group) {
+    return {
+      key: String(group.key || ''),
+      label: String(group.label || ''),
+      total: Number(group.total) || 0,
+      count: Number(group.count) || 0,
+      diff: group.diff !== null && Number.isFinite(Number(group.diff)) ? Number(group.diff) : null,
+      diffPct: group.diffPct !== null && Number.isFinite(Number(group.diffPct)) ? Number(group.diffPct) : null,
+      isCurrent: Boolean(group.isCurrent),
+    };
+  });
+  const historySummary = {
+    total: Number(snapshot.historySummary?.total) || 0,
+    monthCount: Number(snapshot.historySummary?.monthCount) || 0,
+    avg: snapshot.historySummary?.avg !== null && Number.isFinite(Number(snapshot.historySummary?.avg))
+      ? Number(snapshot.historySummary?.avg)
+      : null,
+  };
+  var result = {
+    version: 1,
+    originMode: originMode,
+    originLabel: originLabel,
+    generatedAt: generatedAt,
+    notice: notice,
+    flags: {
+      hasPatrimonyGoal: hasPatrimonyGoal,
+      hasIncomeGoal: hasIncomeGoal,
+      hasAssetGoal: hasAssetGoal,
+      hasAllocationGoal: hasAllocationGoal,
+      hasPortfolioData: hasPortfolioData,
+    },
+    patrimony: {
+      hasCurrent: patrimonyMetrics.hasCurrent,
+      hasTarget: patrimonyMetrics.hasTarget,
+      current: patrimonyMetrics.current,
+      target: patrimonyMetrics.target,
+      percent: patrimonyMetrics.percent,
+      barPercent: patrimonyMetrics.barPercent,
+      missing: patrimonyMetrics.missing,
+      excess: patrimonyMetrics.excess,
+      reached: patrimonyMetrics.reached,
+      tone: patrimonyTone,
+      monthlyContribution: monthlyContribution,
+      annualVariation: annualVariation,
+    },
+    income: {
+      hasCurrent: incomeMetrics.hasCurrent,
+      hasTarget: incomeMetrics.hasTarget,
+      current: incomeMetrics.current,
+      target: incomeMetrics.target,
+      percent: incomeMetrics.percent,
+      barPercent: incomeMetrics.barPercent,
+      missing: incomeMetrics.missing,
+      excess: incomeMetrics.excess,
+      reached: incomeMetrics.reached,
+      tone: incomeTone,
+      currentMonthKey: String(snapshot.currentMonthKey || ''),
+      currentMonthLabel: String(snapshot.currentMonthLabel || ''),
+      currentMonthCount: Number(snapshot.currentIncomeCount) || 0,
+      monthlyAverage: incomeStats.monthlyAvg,
+      total12: incomeStats.total12,
+      hasData: Boolean(incomeStats.hasData),
+    },
+    assetGoal: assetGoal,
+    allocation: {
+      items: allocationItems,
+    },
+    allowedTypes: allowedTypes,
+    history: {
+      groups: historyGroups,
+      summary: historySummary,
+    },
+  };
+  return result;
 }
 function normalizeAllocationItems(items){
   const defaults = [

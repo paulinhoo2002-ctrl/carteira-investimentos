@@ -1,56 +1,28 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const React = require('react');
-const { renderToStaticMarkup } = require('react-dom/server');
-const { createServer } = require('vite');
 
-let GoalsPage;
+const appTsxPath = path.join(__dirname, '..', 'modern', 'src', 'App.tsx');
 
-let viteServerPromise;
-function getViteServer() {
-  if (!viteServerPromise) {
-    viteServerPromise = createServer({
-      configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
-      logLevel: 'error',
-      server: { middlewareMode: true },
-    });
-  }
-  return viteServerPromise;
+function readAppTsx() {
+  return fs.readFileSync(appTsxPath, 'utf8');
 }
 
-test.after(async () => {
-  if (viteServerPromise) {
-    const server = await viteServerPromise;
-    await server.close();
-  }
+test('App.tsx importa GoalsReadonlyPage no lugar do GoalsPage antigo', () => {
+  const appTsx = readAppTsx();
+
+  assert.match(appTsx, /import\s*{\s*GoalsReadonlyPage\s*}\s*from\s*['"]\.\/features\/goals\/GoalsReadonlyPage['"]/);
+  assert.equal(/import\s*{\s*GoalsPage\s*}\s*from/.test(appTsx), false, 'App.tsx nao deve importar GoalsPage');
 });
 
-async function loadModules() {
-  const goalsModule = await (await getViteServer()).ssrLoadModule('/src/features/goals/GoalsPage.tsx');
-  GoalsPage = goalsModule.GoalsPage;
-}
+test('App.tsx rota goals renderiza GoalsReadonlyPage com adapter e refreshController', () => {
+  const appTsx = readAppTsx();
 
-test('GoalsPage permanece placeholder honesto', async () => {
-  await loadModules();
-  const html = renderToStaticMarkup(React.createElement(GoalsPage));
-  assert.ok(html.includes('Integração readonly de metas ainda não disponível'));
-  assert.ok(html.includes('nenhuma leitura direta de S.goals'));
-  assert.ok(html.includes('nenhuma escrita'));
-});
+  const goalsRoute = appTsx.match(/activePageId\s*===\s*['"]goals['"]\s*\?\s*\(?\s*<GoalsReadonlyPage[\s\S]*?\/>/);
+  assert.ok(goalsRoute, 'Deve existir JSX <GoalsReadonlyPage .../> na rota goals');
 
-test('GoalsPage nao renderiza dados financeiros ficticios', async () => {
-  await loadModules();
-  const html = renderToStaticMarkup(React.createElement(GoalsPage));
-  assert.ok(!html.includes('R$'));
-  assert.ok(!html.includes('alcançada'));
-  assert.ok(!html.includes('progress'));
-});
-
-test('GoalsPage nao possui formularios de escrita', async () => {
-  await loadModules();
-  const html = renderToStaticMarkup(React.createElement(GoalsPage));
-  assert.ok(!html.includes('<input'));
-  assert.ok(!html.includes('<button'));
-  assert.ok(!html.includes('<form'));
+  assert.match(goalsRoute[0], /adapter=\{goalsAdapter\}/);
+  assert.match(goalsRoute[0], /refreshController=\{goalsRefreshController\}/);
+  assert.equal(/<GoalsPage\s/.test(appTsx), false, 'App.tsx nao deve renderizar JSX <GoalsPage');
 });

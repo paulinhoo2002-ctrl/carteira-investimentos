@@ -1,6 +1,7 @@
 import { App } from './App';
 import { createModernContributionsRuntime } from './bootstrap/modernContributionsRuntime';
 import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRuntime';
+import { createModernGoalsRuntime } from './bootstrap/modernGoalsRuntime';
 import { createModernIncomeRuntime } from './bootstrap/modernIncomeRuntime';
 import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { mountModernApp } from './bootstrap/mountModernApp';
@@ -16,6 +17,7 @@ const modernReportsRuntime = createModernReportsRuntime();
 const modernFixedIncomeRuntime = createModernFixedIncomeRuntime();
 const modernContributionsRuntime = createModernContributionsRuntime();
 const modernIncomeRuntime = createModernIncomeRuntime();
+const modernGoalsRuntime = createModernGoalsRuntime();
 
 mountModernApp({
   rootElement,
@@ -23,7 +25,9 @@ mountModernApp({
   fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
   contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
   incomeAdapter: modernIncomeRuntime.incomeAdapter,
+  goalsAdapter: modernGoalsRuntime.goalsAdapter,
   AppComponent: App,
   contributionsRefreshController: modernContributionsRuntime.contributionsRefreshController,
   incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
+  goalsRefreshController: modernGoalsRuntime.goalsRefreshController,
 });
