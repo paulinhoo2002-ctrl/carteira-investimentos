@@ -8061,9 +8061,9 @@ function extractInterBrokerNoteHeader(text){
   let noteNumber='';
   let tradeDate='';
   const directNotePatterns=[
-    /(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA\s*[:.-]?\s*(\d{5,12})/,
-    /NOTA\s*(?:N\.?|NR\.?)\s*[:.-]?\s*(\d{5,12})/,
-    new RegExp(`(\\d{5,12})\\s+FOLHA\\s+\\d+\\s+${tradeLabel}`)
+    /(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA\s*[:.-]?\s*(\d{1,12})/,
+    /NOTA\s*(?:N\.?|NR\.?)\s*[:.-]?\s*(\d{1,12})/,
+    new RegExp(`(\\d{1,12})\\s+FOLHA\\s+\\d+\\s+${tradeLabel}`)
   ];
   for(const pattern of directNotePatterns){
     const match=normalized.match(pattern);
@@ -8071,7 +8071,7 @@ function extractInterBrokerNoteHeader(text){
   }
   const directDatePatterns=[
     new RegExp(`${tradeLabel}\\s*[:.-]?\\s*(\\d{2}\\/\\d{2}\\/\\d{4})`),
-    /(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA[\s\S]{0,100}?(\d{5,12})[\s\S]{0,60}?(\d{2}\/\d{2}\/\d{4})/
+    /(\d{2}\/\d{2}\/\d{4})/
   ];
   for(const pattern of directDatePatterns){
     const match=normalized.match(pattern);
@@ -8088,14 +8088,14 @@ function extractInterBrokerNoteHeader(text){
     const lineNorm=notaNorm(headerLines[i]);
     const hasNoteLabel=noteLabelPattern.test(lineNorm);
     const hasTradeLabel=new RegExp(tradeLabel).test(lineNorm);
-    const hasHeaderValues=/\b\d{5,12}\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/.test(lineNorm);
+    const hasHeaderValues=/\b\d{1,12}\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/.test(lineNorm);
     if(!hasNoteLabel && !hasTradeLabel && !hasHeaderValues) continue;
     const windowText=headerLines.slice(i,Math.min(headerLines.length,i+4)).join(' ');
     const windowNorm=notaNorm(windowText);
     if(!noteNumber){
-      const afterLabel=windowNorm.match(/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA[\s:.-]*(?:FOLHA[\s:.-]*)?(?:DATA\s*(?:DO\s*)?PREGAO[\s:.-]*)?(\d{5,12})/);
-      const beforeSheet=windowNorm.match(/\b(\d{5,12})\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/);
-      const nextLineNumber=extractNextValue(headerLines,i+1,/^\d{5,12}$/);
+      const afterLabel=windowNorm.match(/(?:NR\.?|N\.?|NUMERO)\s*(?:DA\s*)?NOTA[\s:.-]*(?:FOLHA[\s:.-]*)?(?:DATA\s*(?:DO\s*)?PREGAO[\s:.-]*)?(\d{1,12})/);
+      const beforeSheet=windowNorm.match(/\b(\d{1,12})\s+(?:FOLHA\s+)?\d{1,3}(?:\s+DATA\s*(?:DO\s*)?PREGAO)?\s+\d{2}\/\d{2}\/\d{4}\b/);
+      const nextLineNumber=extractNextValue(headerLines,i+1,/^\d{1,12}$/);
       noteNumber=(afterLabel||beforeSheet||[])[1]||nextLineNumber||'';
     }
     if(!tradeDate){
@@ -8103,7 +8103,10 @@ function extractInterBrokerNoteHeader(text){
       tradeDate=(windowNorm.match(new RegExp(`${tradeLabel}[\\s:.-]*(\\d{2}\\/\\d{2}\\/\\d{4})`))||windowNorm.match(/\b(\d{2}\/\d{2}\/\d{4})\b/)||[])[1]||nextLineDate||'';
     }
   }
-  return {noteNumber,tradeDate};
+  // Extract account number (Conta corrente)
+  const accountMatch=raw.match(/conta\s*corrente\s*(\d{1,12})/i);
+  const account=accountMatch?accountMatch[1]:'';
+  return {noteNumber,tradeDate,account};
 }
 function parseInterBrokerNoteText(text){
   const raw=String(text||'').replace(/\u00a0/g,' ');
@@ -8111,7 +8114,7 @@ function parseInterBrokerNoteText(text){
   const warnings=[];
   const isInter=/NOTA DE CORRETAGEM/.test(normalized) && /INTER DTVM LTDA/.test(normalized);
   if(!isInter) warnings.push('O arquivo não foi identificado com segurança como nota de corretagem do Banco Inter.');
-  const {noteNumber,tradeDate}=extractInterBrokerNoteHeader(raw);
+  const {noteNumber,tradeDate,account}=extractInterBrokerNoteHeader(raw);
   const settlementDate=(normalized.match(/DATA\s*(?:DE\s*)?LIQUIDACAO\s*[:.-]?\s*(\d{2}\/\d{2}\/\d{4})/)||[])[1]||'';
   const broker='INTER DTVM LTDA.';
   const lines=raw.split(/\r?\n/).map(line=>line.replace(/\s+/g,' ').trim()).filter(Boolean);
@@ -8132,7 +8135,7 @@ function parseInterBrokerNoteText(text){
     valid:isInter && !!noteNumber && !!tradeDate && operations.length>0,
     noteNumber,tradeDate,settlementDate,broker,operations,rows,operationsTotal,netTotal,
     settlementFee,emoluments,transferFee,costs,warnings,
-    noteKey:[noteNumber,tradeDate,broker].join('|')
+    noteKey:[noteNumber,tradeDate,broker,account].join('|')
   };
 }
 function brokerNoteValidTicker(value){
@@ -8931,6 +8934,14 @@ function setBrokerNoteImportOption(field,value){
 function setBrokerNoteRowTicker(index,value){
   const row=S.brokerNoteImport?.parsed?.rows?.[index];
   if(!row) return;
+  // Preserve scroll and focus before mutation
+  const scrollContainer=document.querySelector('.broker-note-lines')||document.documentElement;
+  const prevScroll=scrollContainer.scrollTop;
+  const prevActive=document.activeElement;
+  const prevSelectionStart=typeof prevActive?.selectionStart==='number' ? prevActive.selectionStart : null;
+  const prevSelectionEnd=typeof prevActive?.selectionEnd==='number' ? prevActive.selectionEnd : null;
+  const prevRowIndex=prevActive?.closest?.('.broker-note-line')?.dataset?.rowIndex ?? String(index);
+
   row.ticker=String(value||'').trim().toUpperCase();
   row.recognized=brokerNoteValidTicker(row.ticker);
   if(row.recognized){
@@ -8940,6 +8951,20 @@ function setBrokerNoteRowTicker(index,value){
     row.sector=existing?.sector||meta.sector||row.sector||'';
   }
   render();
+  // Restore scroll and focus
+  scrollContainer.scrollTop=prevScroll;
+  const nextRow=document.querySelector(`.broker-note-line[data-row-index="${String(prevRowIndex).replace(/"/g,'&quot;')}"]`);
+  const nextInput=nextRow?.querySelector('input');
+  if(nextInput && typeof nextInput.focus==='function'){
+    nextInput.focus();
+    if(prevSelectionStart!==null && prevSelectionEnd!==null && typeof nextInput.setSelectionRange==='function'){
+      try{
+        nextInput.setSelectionRange(prevSelectionStart,prevSelectionEnd);
+      }catch(_error){}
+    }
+  }else if(prevActive && typeof prevActive.focus==='function'){
+    prevActive.focus();
+  }
 }
 function brokerNoteAdjustedRow(row,note,rateCosts){
   const baseTotal=Number(row.total)||0;
@@ -8957,7 +8982,7 @@ function brokerNoteValidationChecklist(note=S.brokerNoteImport?.parsed){
   const valuesMatch=operationsTotal>0 && Math.abs(rowsTotal-operationsTotal)<=0.05;
   const allTickers=rows.length>0 && rows.every(row=>brokerNoteValidTicker(row.ticker));
   return [
-    {id:'note',ok:!!note?.noteNumber,label:'Nota identificada',note:note?.noteNumber?`Nota ${note.noteNumber}`:'Número da nota ausente.'},
+    {id:'note',ok:note?.noteNumber!==undefined && note?.noteNumber!==null && String(note.noteNumber).trim()!=='',label:'Nota identificada',note:note?.noteNumber?`Nota ${note.noteNumber}`:'Número da nota ausente.'},
     {id:'date',ok:!!note?.tradeDate,label:'Data do pregão identificada',note:note?.tradeDate||'Data do pregão ausente.'},
     {id:'broker',ok:!!note?.broker,label:'Corretora identificada',note:note?.broker||'Corretora ausente.'},
     {id:'tickers',ok:allTickers,label:'Todos os ativos possuem ticker',note:allTickers?`${rows.length} ativo(s) identificado(s).`:`${rows.filter(row=>!brokerNoteValidTicker(row.ticker)).length} ticker(s) pendente(s).`},
@@ -9012,9 +9037,9 @@ function brokerNoteOperationsReviewHtml(note,rateCosts){
     const rowOk=tickerOk && Number(row.qty)>0 && Number(row.price)>0;
     const status=rowOk?'OK':tickerOk?'Revisar':'Pendente';
     const tone=rowOk?'ok':tickerOk?'warn':'error';
-    return `<div class="broker-note-line ${rowOk?'':'pending'}">
+    return `<div class="broker-note-line ${rowOk?'':'pending'}" data-row-index="${index}">
       <div><div class="broker-note-line-title">${esc(row.description||row.ticker||'Ativo não identificado')}</div><div class="broker-note-line-sub">Nome original da nota · ${row.lines} linha(s) consolidada(s) · ${esc(row.type||'Ação')} ${row.sector?`· ${esc(row.sector)}`:''}</div></div>
-      <div><div class="broker-note-field-label">Ticker identificado</div><input value="${esc(row.ticker||'')}" placeholder="Ex.: BBAS3" oninput="this.value=this.value.toUpperCase()" onchange="setBrokerNoteRowTicker(${index},this.value)"></div>
+      <div><div class="broker-note-field-label">Ticker identificado</div><input data-row-index="${index}" value="${esc(row.ticker||'')}" placeholder="Ex.: BBAS3" oninput="this.value=this.value.toUpperCase()" onchange="setBrokerNoteRowTicker(${index},this.value)"></div>
       <div><div class="broker-note-field-label">Tipo</div><div class="broker-note-line-value">${row.operation==='venda'?'Venda':'Compra'}</div></div>
       <div><div class="broker-note-field-label">Quantidade</div><div class="broker-note-line-value">${row.qty}</div></div>
       <div><div class="broker-note-field-label">Preço médio</div><div class="broker-note-line-value">${fmt(adjusted.adjustedPrice)}</div></div>
