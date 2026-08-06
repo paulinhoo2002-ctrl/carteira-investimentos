@@ -11648,7 +11648,7 @@ function saveQuickMovement(){
   }
   if(kind==='outro'){
     if(editId){
-      S.aportes=S.aportes.map(a=>a.id===editId?{...reg,id:editId}:a);
+      S.aportes=S.aportes.map(a=>String(a.id)===String(editId)?{...reg,id:editId}:a);
     }else{
       S.aportes.unshift(reg);
     }
@@ -21720,15 +21720,19 @@ function deleteMovementLaunch(id,sourceType){
   const type=String(sourceType||'aporte').toLowerCase();
   if(!confirm('Deseja excluir este lançamento? Esta ação não pode ser desfeita.')) return;
   if(type==='provento'){
-    S.proventos=(S.proventos||[]).filter(p=>p.id!==id);
+    const before=(S.proventos||[]).length;
+    S.proventos=(S.proventos||[]).filter(p=>String(p.id)!==String(id));
+    if(before===S.proventos.length){ toast('⚠️ Nenhum provento encontrado com esse identificador.','#f87171'); return; }
     save();
     toast('🗑️ Lançamento excluído.');
     markProventosDirty();
     render();
     return;
   }
-  S.aportes=(S.aportes||[]).filter(a=>a.id!==id);
-  if(S.editPId===id){ S.editPId=null; S.showP=false; S._fp=null; }
+  const before=(S.aportes||[]).length;
+  S.aportes=(S.aportes||[]).filter(a=>String(a.id)!==String(id));
+  if(before===S.aportes.length){ toast('⚠️ Nenhuma operação encontrada com esse identificador.','#f87171'); return; }
+  if(String(S.editPId||'')===String(id)){ S.editPId=null; S.showP=false; S._fp=null; }
   syncAssetsFromAportes(false);
   toast('🗑️ Lançamento excluído.');
   scheduleAutoProventosGratis('remove-aporte');
@@ -24105,7 +24109,7 @@ function dividendsLegacyTab(showGoal=false,pageTitle='Dividendos e Proventos'){
         <td>${esc(p.type||'Rendimento')}</td>
         <td class="gn" style="font-weight:700">${fmt(Number(p.value)||0)}</td>
         <td class="mu" style="font-size:12px">${noteDisplay(p.note||'—')}</td>
-        <td><button class="bdi" onclick="rmD(${p.id})">🗑️</button></td>
+        <td><button class="bdi" onclick="rmD(${JSON.stringify(p.id)})">🗑️</button></td>
       </tr>`).join('')
     : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#2e3f58">Nenhum provento registrado. Use "Buscar histórico grátis" ou "+ Registrar provento".</td></tr>';
 
@@ -25369,17 +25373,17 @@ function svA(){
 
 function clP(){ withScrollPreserved(()=>{ S.showP=false; S.editPId=null; S._fp=null; render(); }); }
 function edP(id){
-  const p=S.aportes.find(x=>x.id===id);
-  if(!p) return;
+  const p=(S.aportes||[]).find(x=>String(x.id)===String(id));
+  if(!p){ toast('⚠️ Nenhuma operação encontrada com esse identificador.','#f87171'); return; }
   if(isNeutralMovement(p)){
-    S.quickMovementEditId=id;
+    S.quickMovementEditId=p.id;
     S.quickMovementDraft={...quickMovementDefaultDraft('outro'), kind:'outro', date:inputDateValue(p.date||''), outroTitle:String(p.title||p.name||p.ticker||'').trim(), value:String(Number(p.totalValue||p.value||p.price||0)||''), outroCategory:String(p.sector||'Geral').trim()||'Geral', note:String(p.note||p.decision||'').trim()};
     S.quickMovementOpen=true;
     render();
     return;
   }
   S._fp={...p, typeManual:true};
-  S.editPId=id;
+  S.editPId=p.id;
   S.showP=true;
   render();
   setTimeout(applyMetaToAporte,50);
@@ -25459,7 +25463,7 @@ function svP(){
       quoteUpdatedAt:'',
       source:'manual-rf'
     };
-    if(S.editPId){ S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a); }
+    if(S.editPId){ S.aportes=S.aportes.map(a=>String(a.id)===String(S.editPId)?reg:a); }
     else { S.aportes.unshift(reg); }
     if(!isReserve) learnTickerMeta(ti, 'Renda Fixa', rfSubtype, true);
     rememberScroll();
@@ -25491,7 +25495,7 @@ function svP(){
     reg.reserveLabel=reserveTarget==='pessoal'?'Pessoal':'Bolsa';
     reg.sector=reserveTarget==='pessoal'?'Pessoal':'Bolsa';
   }
-  if(S.editPId){ S.aportes=S.aportes.map(a=>a.id===S.editPId?reg:a); }
+  if(S.editPId){ S.aportes=S.aportes.map(a=>String(a.id)===String(S.editPId)?reg:a); }
   else { S.aportes.unshift(reg); }
   rememberScroll();
   S.showP=false; S.editPId=null; S._fp=null;
@@ -25504,7 +25508,9 @@ function svP(){
 function rmP(id){
   const idStr=String(id);
   if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
-  S.aportes=S.aportes.filter(a=>String(a.id)!==idStr);
+  const before=(S.aportes||[]).length;
+  S.aportes=(S.aportes||[]).filter(a=>String(a.id)!==idStr);
+  if(before===S.aportes.length){ toast('⚠️ Nenhuma operação encontrada com esse identificador.','#f87171'); return; }
   if(String(S.editPId||'')===idStr){ S.editPId=null; S.showP=false; S._fp=null; }
   syncAssetsFromAportes(false);
   toast('🗑️ Operação removida.');
@@ -25522,7 +25528,7 @@ function tgD(){
 function clD(){ withScrollPreserved(()=>{ S.showD=false; S.editDId=null; S._fd=null; render(); }); }
 function editDividendReceipt(id){
   const item=(S.proventos||[]).find(p=>String(p.id)===String(id));
-  if(!item) return;
+  if(!item){ toast('⚠️ Nenhum provento encontrado com esse identificador.','#f87171'); return; }
   S.editDId=item.id;
   S._fd={...item};
   S.showD=true;
@@ -25548,7 +25554,9 @@ function svD(){
 }
 function rmD(id){
   if(!confirm('Remover este provento?')) return;
-  S.proventos=S.proventos.filter(p=>p.id!==id);
+  const before=(S.proventos||[]).length;
+  S.proventos=(S.proventos||[]).filter(p=>String(p.id)!==String(id));
+  if(before===S.proventos.length){ toast('⚠️ Nenhum provento encontrado com esse identificador.','#f87171'); return; }
   if(String(S.editDId||'')===String(id)){ S.editDId=null; S._fd=null; S.showD=false; }
   save(); toast('🗑️ Provento removido.'); render();
   markProventosDirty();
