@@ -6125,10 +6125,7 @@ function configMenu(){
         <div class="cfg-menu-group-title">Ações comuns</div>
         <button class="btn bgh" onclick="toggleThemeFromMenu()">${themeActionLabel()}</button>
         ${securityBtn}
-        <button class="btn bgh" onclick="openAllocationGoal();closeConfigMenus()">🎯 Distribuição da carteira</button>
         <button class="btn bgh" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
-        <button class="btn bgh" onclick="importB3Excel();closeConfigMenus()">📥 B3/Excel/PDF</button>
-        <button class="btn bgh" onclick="openBrokerNoteImport();closeConfigMenus()">🧾 Nota corretora</button>
       </div>
       <div class="cfg-menu-divider"></div>
       <div class="cfg-menu-group">
@@ -21562,6 +21559,7 @@ function ativos(){
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
       <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="openAllocationGoal()">🎯 Distribuição da carteira</button>
     </div>
   </div>
   <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
@@ -21992,10 +21990,16 @@ function apTab(){
           <input id="aporte-premium-search" value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
           ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
         </div>
-        <button class="btn bgh" onclick="openBrokerNoteImport()">Importar nota Inter</button>
         <button class="btn bp" onclick="openQuickMovement()">+ Nova movimentação</button>
         ${globalThis.PortfolioMovementPreview?.isEnabled?.() ? `<button class="btn bgh" onclick="globalThis.PortfolioMovementPreview.open()">Nova movimentação inteligente</button>` : ''}
       </div>
+    </div>
+    <div class="card" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:8px">Importações</div>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📥 B3</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📊 Excel</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📄 PDF</button>
+      <button class="btn bgh" style="font-size:12px;padding:7px 12px" onclick="openBrokerNoteImport()">🧾 Nota de corretagem</button>
     </div>
     ${frmP()}
     ${aporteViewModeTabs()}
@@ -24599,7 +24603,7 @@ function metasTab(){
     <div class="sec-body">
       <div class="tw"><div class="ts"><table>
         <thead><tr><th>Categoria</th><th>Meta</th><th>Atual</th><th>Diferença</th><th>Desvio</th></tr></thead>
-        <tbody>${allocRows || '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Configure a distribuição na aba Configurações.</td></tr>'}</tbody>
+        <tbody>${allocRows || '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Configure a distribuição na aba Ativos.</td></tr>'}</tbody>
       </table></div></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
         <button class="btn bgh" onclick="openAllocationGoal()">Abrir configurador</button>
