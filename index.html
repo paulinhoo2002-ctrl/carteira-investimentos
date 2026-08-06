@@ -6271,7 +6271,7 @@ function restoreScroll(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x, top:y, behavior:'auto'})));
 }
 function bodyModalLockActive(){
-  return !!(S.accessSettingsOpen || S.backupOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.mobileMenuOpen || S.mobileTopMenuOpen);
+  return !!(S.accessSettingsOpen || S.backupOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.showA || S.mobileMenuOpen || S.mobileTopMenuOpen);
 }
 function scrollPreserveActive(){
   return !!(bodyModalLockActive() || S.showA || S.showP || S.showD);
@@ -19588,6 +19588,7 @@ function app(){
   ${S.rfPositionReview?rfPositionReviewModal():''}
   ${S.b3ProventosReview?b3ProventosReviewModal():''}
   ${S.allocGoalOpen?allocationGoalModal():''}
+  ${S.showA&&S.editId?assetEditModal():''}
   ${S.quickMovementOpen?quickMovementModal():''}
 ${globalThis.PortfolioMovementPreview?.getState?.().open ? globalThis.PortfolioMovementPreview.renderHtml() : ''}`;
 }
@@ -21304,7 +21305,6 @@ function frmA(){
   const rfSubtype=assetRfSubtype(f);
   const rfSubtypeOptions=['CDB','LIG','LCI','LCA','Tesouro Direto','LC','LF','CRI','CRA','Debênture','Outro'].map(t=>`<option value="${t}" ${rfSubtype===t?'selected':''}>${t}</option>`).join('');
   return`<div class="fc">
-    <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:#c4b5fd">✏️ Editar dados do ativo</div>
     <div class="mu" style="font-size:12px;margin-bottom:12px">${isRF?'Renda Fixa: ajuste valor aplicado, valor atual, taxa contratada e vencimento aqui.':'Quantidade vem dos Aportes. Ajuste preço médio, cotação, DY, preço alvo e % ideal aqui.'}</div>
     <div class="fg">
       <div><div class="fl">${isRF?'Código interno':'Ticker'}</div><input value="${esc(f.ticker||'')}" disabled></div>
@@ -21345,6 +21345,19 @@ function frmA(){
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bsv" onclick="svA()">Salvar</button>
       <button class="btn bgh" onclick="clA()">Cancelar</button>
+    </div>
+  </div>`;
+}
+function assetEditModal(){
+  return `<div class="note-overlay" role="dialog" aria-modal="true" aria-label="Editar ativo" onclick="if(event.target===this)clA()">
+    <div class="note-modal" style="width:min(1000px,100%)">
+      <div class="note-head">
+        <div class="note-title">
+          <div><h3>✏️ Editar ativo</h3><p>Edite os dados do ativo. Confirme ao final para salvar as alterações.</p></div>
+          <button class="btn bgh" onclick="clA()">Cancelar</button>
+        </div>
+      </div>
+      <div class="note-body">${frmA()}</div>
     </div>
   </div>`;
 }
@@ -21445,7 +21458,7 @@ function ativos(){
           <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
          <td class="am" style="font-weight:600">${fmt(dm)}</td>
         <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via Brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado · atualize se necessário">Estimativa</span>':''}</td>
-          <td><button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">Editar</button></td>
+          <td><button class="bi" onclick="edA('${a.id}')" aria-label="Editar ativo">Editar</button></td>
        </tr>`;
      }).join('');
      const rfRows=sortedItems.map(a=>{
@@ -21490,7 +21503,7 @@ function ativos(){
          <td class="rf-right" style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'}">${Number.isFinite(rentab)?fmtP(rentab):'—'}</td>
          <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
          <td style="white-space:nowrap">
-           <button class="bi" onclick="edA(${a.id})" aria-label="Editar ativo">Editar</button>
+            <button class="bi" onclick="edA('${a.id}')" aria-label="Editar ativo">Editar</button>
          </td>
        </tr>`;
      }).join('');
@@ -21547,7 +21560,6 @@ function ativos(){
     </details>`;
   }).join('');
   const patrimonyPanel=`<div class="asset-inner-panel">
-    ${frmA()}
     <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
   </div>`;
   const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
@@ -25603,6 +25615,7 @@ function bind(){
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ if(S.quickMovementOpen) saveQuickMovement(); else if(S.showA) svA(); else if(S.showP) svP(); else if(S.showD) svD(); } });
   });
 }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && S.showA && S.editId) clA(); });
 
 function showPwaUpdateNotice(registration){
   if(!registration?.waiting || document.getElementById('pwa-update-notice')) return;
