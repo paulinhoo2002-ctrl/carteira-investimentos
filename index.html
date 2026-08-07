@@ -11487,8 +11487,34 @@ function closeQuickMovement(){
     S.quickMovementDraft=null;
     S.quickMovementEditId=null;
     S.quickMovementSaving=false;
+    S.rfMovementEditor=null;
     render();
   });
+}
+function rfExistingAssetOptionsHtml(){
+  const rfAssets=(S.assets||[]).filter(isRendaFixaAsset);
+  if(!rfAssets.length) return '<option value="">Nenhum título de renda fixa na carteira</option>';
+  return rfAssets.map(asset=>{
+    const saldo=rfPrincipalBalance(asset).value;
+    const venc=assetRfMaturityDate(asset);
+    const rentab=Number(rfValues(asset)?.rentab)||0;
+    const label=`${asset.ticker||asset.name||'RF'} · ${asset.name||asset.product||''} · Saldo ${fmt(saldo)}${venc?' · Venc '+venc:''} · Rentab ${fmtP(rentab)}`.trim();
+    return `<option value="${esc(rfAssetEventId(asset))}">${esc(label)}</option>`;
+  }).join('');
+}
+function openRfMovementFromAportes(){
+  const assetId=String(document.getElementById('qm-rf-existing-asset')?.value||'');
+  const mode=String(document.getElementById('qm-rf-existing-mode')?.value||'aporte');
+  if(!assetId || assetId==='Nenhum título de renda fixa na carteira'){
+    toast('Cadastre um título de renda fixa para movimentar.', '#f87171');
+    return;
+  }
+  const asset=getRfAssetByEventId(assetId);
+  if(!asset){
+    toast('Título de renda fixa não encontrado.', '#f87171');
+    return;
+  }
+  openRfMovementEditor(assetId, mode);
 }
 function setQuickMovementField(field, value){
   if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
@@ -11586,8 +11612,33 @@ function quickMovementModal(){
       <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" placeholder="ex: 34,25" value="${esc(draft.price||'')}" oninput="setQuickMovementField('price', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
-  const body=kind==='provento' ? proventoFields : kind==='renda-fixa' ? rfFields : kind==='outro' ? outroFields : (kind==='venda' ? saleFields : buySellFields);
-  const saveLabel=kind==='provento' ? 'Salvar provento' : kind==='renda-fixa' ? 'Salvar renda fixa' : kind==='outro' ? 'Salvar registro' : `Salvar ${quickMovementKindLabel(kind).toLowerCase()}`;
+  const rfMovEditorAsset=kind==='renda-fixa' && S.rfMovementEditor && S.rfMovementEditor.assetId ? getRfAssetByEventId(S.rfMovementEditor.assetId) : null;
+  const rfMovEditorActive=!!rfMovEditorAsset;
+  const rfMovementExistingBlock = `
+    <div class="fg" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:rgba(99,102,241,.06)">
+      <div style="font-size:13px;font-weight:800;color:#c7d2fe;margin-bottom:6px">Movimentar título existente</div>
+      <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:10px">Selecione um título de renda fixa já cadastrado para registrar aporte ou resgate.</div>
+      <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px;align-items:end">
+        <div><div class="fl">Título</div><select id="qm-rf-existing-asset" aria-label="Título de renda fixa">${rfExistingAssetOptionsHtml()}</select></div>
+        <div><div class="fl">Movimentação</div><select id="qm-rf-existing-mode" aria-label="Tipo de movimentação">${rfMovementModeOptionsHtml('aporte')}</select></div>
+        <div><button type="button" class="btn bsv" onclick="openRfMovementFromAportes()">Abrir movimentação</button></div>
+      </div>
+    </div>`;
+  const body = rfMovEditorActive
+    ? rfMovementEditorHtml(rfMovEditorAsset)
+    : (kind==='provento' ? proventoFields
+      : kind==='renda-fixa' ? (rfMovementExistingBlock + rfFields)
+      : kind==='outro' ? outroFields
+      : (kind==='venda' ? saleFields : buySellFields));
+  const saveLabel = rfMovEditorActive
+    ? ''
+    : (kind==='provento' ? 'Salvar provento'
+      : kind==='renda-fixa' ? 'Salvar renda fixa'
+      : kind==='outro' ? 'Salvar registro'
+      : `Salvar ${quickMovementKindLabel(kind).toLowerCase()}`);
+  const footerActions = rfMovEditorActive
+    ? `<button class="btn bgh" onclick="closeQuickMovement()">Fechar</button>`
+    : `<button class="btn bsv" onclick="saveQuickMovement()">${saveLabel}</button><button class="btn bgh" onclick="closeQuickMovement()">Cancelar</button>`;
   return `<div class="note-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) closeQuickMovement()">
     <div class="note-modal quick-movement-modal" style="max-width:1140px;max-height:90vh;display:flex;flex-direction:column">
       <div class="note-head">
@@ -11596,7 +11647,7 @@ function quickMovementModal(){
             <h3>Nova movimentação</h3>
             <p>Cadastro premium com destino certo para cada tipo, sem mexer nos cálculos consolidados.</p>
           </div>
-          <div class="note-pill">${quickMovementKindIcon(kind)} ${quickMovementKindLabel(kind)}</div>
+          <div class="note-pill">${quickMovementKindIcon(kind)} ${quickMovementKindLabel(kind)}${rfMovEditorActive?' · Movimentação':''}</div>
         </div>
       </div>
       <div class="sec-body" style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.85fr);gap:12px;align-items:start;overflow:auto;min-height:0">
@@ -11609,8 +11660,7 @@ function quickMovementModal(){
         <div id="quick-movement-preview">${quickMovementPreviewHtml()}</div>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 18px 18px;flex-wrap:wrap">
-        <button class="btn bsv" onclick="saveQuickMovement()">${saveLabel}</button>
-        <button class="btn bgh" onclick="closeQuickMovement()">Cancelar</button>
+        ${footerActions}
       </div>
     </div>
   </div>`;
