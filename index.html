@@ -4090,7 +4090,8 @@ document.write([
 <script src="report-asset-row.js"></script>
 <script src="legacy/reports-readonly-source.js"></script>
 <script>
-const QI           = 60;
+const QUOTE_REFRESH_INTERVAL = 5 * 60 * 1000;
+const QI = QUOTE_REFRESH_INTERVAL / 1000;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
 const RENT_BENCH   = { CDI:10.65, IPCA:4.50, IFIX:9.20, IBOV:11.00, SMLL:12.00, IDIV:10.00, IVVB11:13.00 };
 const TYPE_CHOICES = ['Ação','FII','ETF','Renda Fixa','Tesouro Direto','Reserva de emergência','BDR','Crypto','Stock','Reit','Fundos de Investimento'];
@@ -16665,7 +16666,9 @@ async function fetchQuotes(manual=false){
   if(!S.assets.length) return;
   if(S.qInFlight) return;
   S.qInFlight=true;
-  S.qLoad=true; render();
+  S.qLoad=true;
+  if(!bodyModalLockActive()) snapshotQuoteUi();
+  render();
 
   const eligibleAssets=(S.assets||[]).filter(a=>{
     return isMarketQuoteEligibleAsset(a);
@@ -16773,7 +16776,9 @@ async function fetchQuotes(manual=false){
   }
 
   S.qInFlight=false;
-  S.qLoad=false; S.cd=QI; render();
+  S.qLoad=false; S.cd=QI;
+  render();
+  disarmQuoteUi();
 }
 async function fetchAutoProventos(){
   if(!canEditFromThisTab('buscar proventos automáticos')) return;
@@ -19680,17 +19685,41 @@ function reportsTab(){
 // ══════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════
+let quoteUiArmed=false;
+let quoteUiSnapshot=null;
+function snapshotQuoteUi(){
+  quoteUiArmed=true;
+  const details=[];
+  try{
+    [...document.querySelectorAll('details')].forEach((el,i)=>{ if(el.open) details.push(i); });
+  }catch(e){}
+  quoteUiSnapshot={x:window.scrollX||0, y:bodyScrollLockY!==null?bodyScrollLockY:(window.scrollY||0), details};
+}
+function restoreQuoteUi(){
+  const snap=quoteUiSnapshot;
+  if(!snap) return;
+  try{
+    const els=[...document.querySelectorAll('details')];
+    snap.details.forEach(i=>{ if(els[i]) els[i].setAttribute('open',''); });
+  }catch(e){}
+  const x=Number(snap.x)||0, y=Number(snap.y)||0;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x,top:y,behavior:'auto'})));
+}
+function disarmQuoteUi(){ quoteUiArmed=false; quoteUiSnapshot=null; }
 function render(){
   const root=document.getElementById('root');
   if(!root) return;
   try{
     if(S._rmpTrace) console.log('[rmP] render() chamado');
+    const preserveQuoteUI=quoteUiArmed;
+    if(preserveQuoteUI) snapshotQuoteUi();
     const preserveScroll=scrollPreserveActive() || !!scrollRestorePoint;
-    if(preserveScroll && !scrollRestorePoint) rememberScroll();
+    if(preserveScroll && !scrollRestorePoint && !preserveQuoteUI) rememberScroll();
     syncBodyModalLock();
     root.innerHTML=withRenderCycleReportCache(()=>app());
     bind();
-    if(preserveScroll) restoreScroll();
+    if(preserveQuoteUI) restoreQuoteUi();
+    else if(preserveScroll) restoreScroll();
   }catch(error){
     debugError('render erro:',error);
     const failedTab=S.tab;
@@ -20816,7 +20845,7 @@ function rfMovementDraftForAsset(asset, mode){
     assetId:rfAssetEventId(asset),
     ticker:rfAssetEventTicker(asset),
     mode:m,
-    date:inputDateValue(new Date()),
+    date:new Date().toISOString().slice(0,10),
     principalDelta:m==='resgate_total' ? moneyInput(saldo) : '',
     grossValue:'',
     netValue:'',
@@ -20954,6 +20983,7 @@ function rfEventHistoryCards(rows){
           ${rfEventSeedActionHtml(row, totals)}
           <button class="btn bgh" onclick='openRfEventEditor(${JSON.stringify(rfAssetEventId(asset))})'>+ Evento</button>
           <button class="btn bgh" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")'>Movimentar</button>
+          <button class="btn bgh" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>
         </div>
       </div>
       <div class="rf-event-summary">
@@ -25525,7 +25555,7 @@ async function refreshCotacao(){
   if(info && a.quoteUpdatedAt) info.innerHTML = `⏱ ${new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR')} · <a href="javascript:refreshCotacao()" style="color:#60a5fa;text-decoration:none">atualizar agora</a>`;
     toast(`✅ Cotação de ${a.ticker} atualizada: ${fmt(a.current_price)}`);
 }
-function edA(id){ const a=S.assets.find(x=>x.id===id); if(!a)return; S._fa={...a}; S.editId=id; S.showA=true; render(); }
+function edA(id){ const a=S.assets.find(x=>String(x.id)===String(id)); if(!a)return; S._fa={...a}; S.editId=a.id; S.showA=true; render(); }
 function svA(){
   if(!S.editId) return;
   const editedAsset=S.assets.find(a=>a.id===S.editId);
