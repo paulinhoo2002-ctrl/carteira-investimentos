@@ -4240,6 +4240,7 @@ let S = {
   quickMovementOpen:false,
   quickMovementDraft:null,
   quickMovementEditId:null,
+  quickMovementSaving:false,
   brokerNoteImport:null,
   brokerNoteImportSuccess:null,
   noteReview:null,
@@ -4348,6 +4349,7 @@ function resetTransientRuntimeState(){
   S.quickMovementOpen=false;
   S.quickMovementDraft=null;
   S.quickMovementEditId=null;
+  S.quickMovementSaving=false;
   S.brokerNoteImport=null;
   S.brokerNoteImportSuccess=null;
   S.noteReview=null;
@@ -11200,6 +11202,11 @@ function quickMovementDefaultDraft(kind='compra'){
     kind:next,
     date:today,
     ticker:'',
+    assetId:'',
+    assetName:'',
+    saleType:'parcial',
+    saleAvailable:0,
+    saleAvgPrice:0,
     type:'Ação',
     sector:'',
     qty:'',
@@ -11207,7 +11214,6 @@ function quickMovementDefaultDraft(kind='compra'){
     value:'',
     note:'',
     eventType:'Rendimento',
-    assetName:'',
     rfName:'',
     rfSubtype:'CDB',
     rfAppDate:today,
@@ -11229,6 +11235,129 @@ function quickMovementDefaultDraft(kind='compra'){
 function quickMovementKindOptions(){
   return (TYPE_FORM_CHOICES||[]).filter(t=>!['Renda Fixa','Tesouro Direto'].includes(t));
 }
+const QUICK_SALE_TYPES = ['Ação','FII','ETF'];
+function quickMovementContract(){
+  return (typeof globalThis!=='undefined' && globalThis.PortfolioMovementContract) || (typeof PortfolioMovementContract!=='undefined' ? PortfolioMovementContract : null);
+}
+function quickMovementSellableAssets(){
+  const contract=quickMovementContract();
+  if(!contract || typeof contract.buildSellableAssets!=='function') return [];
+  try{
+    const list=contract.buildSellableAssets(S.assets||[]);
+    return list.filter(a=>QUICK_SALE_TYPES.includes(normalizeType(a.type,'')));
+  }catch(e){ return []; }
+}
+function quickMovementSaleAssetById(assetId){
+  const id=String(assetId||'').trim();
+  if(!id) return null;
+  const list=quickMovementSellableAssets();
+  return list.find(a=>String(a.assetId||'').trim()===id)||null;
+}
+function quickMovementSaleOptionsHtml(){
+  const draft=S.quickMovementDraft||quickMovementDefaultDraft();
+  const selected=String(draft.assetId||'').trim();
+  const list=quickMovementSellableAssets();
+  if(!list.length) return '<option value="" disabled>Nenhum ativo vendável disponível</option>';
+  return list.map(a=>`<option value="${esc(a.assetId)}" ${String(a.assetId).trim()===selected?'selected':''}>${esc(a.ticker)} — ${esc(a.name||a.ticker)} · ${esc(String(a.availableQuantity))} disp.</option>`).join('');
+}
+function selectQuickMovementSaleAsset(assetId){
+  if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
+  const draft=S.quickMovementDraft;
+  const asset=quickMovementSaleAssetById(assetId);
+  if(!asset){
+    draft.assetId='';
+    draft.ticker='';
+    draft.assetName='';
+    draft.type='Ação';
+    draft.sector='';
+    draft.saleAvailable=0;
+    draft.saleAvgPrice=0;
+    draft.qty='';
+  }else{
+    draft.assetId=asset.assetId;
+    draft.ticker=asset.ticker;
+    draft.assetName=asset.name||'';
+    draft.type=normalizeType(asset.type,'Ação');
+    draft.sector=asset.sector||'';
+    draft.saleAvailable=asset.availableQuantity||0;
+    draft.saleAvgPrice=asset.averagePrice||0;
+    draft.qty=draft.saleType==='total'?String(draft.saleAvailable):'';
+  }
+  refreshQuickMovementPreview();
+}
+function setQuickMovementSaleType(saleType){
+  if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
+  const draft=S.quickMovementDraft;
+  draft.saleType=saleType==='total'?'total':'parcial';
+  if(draft.saleType==='total' && draft.saleAvailable>0) draft.qty=String(draft.saleAvailable);
+  refreshQuickMovementPreview();
+}
+function quickMovementSalePreview(){
+  const draft=S.quickMovementDraft||quickMovementDefaultDraft();
+  const asset=quickMovementSaleAssetById(draft.assetId);
+  const contract=quickMovementContract();
+  if(!contract || typeof contract.buildVariableIncomeSalePreview!=='function') return {ok:false,error:'Preview de venda indisponível.'};
+  if(!asset) return {ok:false,error:'Selecione um ativo vendável.'};
+  return contract.buildVariableIncomeSalePreview(asset,{saleType:draft.saleType==='total'?'total':'partial',quantity:draft.qty,unitPrice:draft.price});
+}
+function quickMovementSaleInfoHtml(){
+  const draft=S.quickMovementDraft||quickMovementDefaultDraft();
+  const asset=quickMovementSaleAssetById(draft.assetId);
+  if(!asset) return '';
+  const dash='—';
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px">
+    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Ticker</div><div class="quick-movement-preview-value">${esc(asset.ticker||dash)}</div></div>
+    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Nome</div><div class="quick-movement-preview-value">${esc(asset.name||dash)}</div></div>
+    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Tipo</div><div class="quick-movement-preview-value">${esc(normalizeType(asset.type,'Ação'))}</div></div>
+    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Setor</div><div class="quick-movement-preview-value">${esc(asset.sector||dash)}</div></div>
+    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Disponível</div><div class="quick-movement-preview-value">${fmtN(asset.availableQuantity)}</div></div>
+    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Preço médio</div><div class="quick-movement-preview-value">${fmtRaw(asset.averagePrice)}</div></div>
+  </div>`;
+}
+function quickMovementSalePreviewHtml(){
+  const draft=S.quickMovementDraft||quickMovementDefaultDraft();
+  const preview=quickMovementSalePreview();
+  const asset=quickMovementSaleAssetById(draft.assetId);
+  const ticker=esc(String(asset?.ticker||draft.ticker||'—').trim().toUpperCase()||'—');
+  const saleTypeLabel=draft.saleType==='total'?'Vender tudo':'Venda parcial';
+  return `
+    <div class="quick-movement-preview-card">
+      <div class="quick-movement-preview-head">
+        <div>
+          <div class="quick-movement-preview-kicker">📤 ${saleTypeLabel}</div>
+          <div class="quick-movement-preview-sub">Venda de ativo da carteira.</div>
+        </div>
+        <span class="analysis-pill ${preview.ok?'warn':'muted'}">${esc(preview.ok?'Prévia válida':'Reveja os dados')}</span>
+      </div>
+      <div class="quick-movement-preview-grid">
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Ativo</div>
+          <div class="quick-movement-preview-value">${ticker}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Disponível</div>
+          <div class="quick-movement-preview-value">${preview.ok?fmtN(preview.quantityAvailable):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Quantidade vendida</div>
+          <div class="quick-movement-preview-value">${preview.ok?fmtN(preview.quantityToSell):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Saldo após</div>
+          <div class="quick-movement-preview-value">${preview.ok?fmtN(preview.quantityRemaining):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Preço unitário</div>
+          <div class="quick-movement-preview-value">${preview.ok?fmtRaw(preview.unitPrice):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Total</div>
+          <div class="quick-movement-preview-value">${preview.ok?fmtRaw(preview.estimatedGrossValue):'—'}</div>
+        </div>
+      </div>
+      <div class="quick-movement-preview-note">${preview.ok?'Saldo após a venda: '+fmtN(preview.quantityRemaining)+' unidade(s).':esc(preview.error||'')}</div>
+    </div>`;
+}
 function quickMovementSourceLabel(kind){
   const next=normalizeQuickMovementKind(kind);
   if(next==='provento') return 'Proventos';
@@ -11246,6 +11375,7 @@ function quickMovementImpactText(kind){
 function quickMovementPreviewHtml(){
   const draft=S.quickMovementDraft || quickMovementDefaultDraft();
   const kind=normalizeQuickMovementKind(draft.kind);
+  if(kind==='venda') return quickMovementSalePreviewHtml();
   const tone=quickMovementKindTone(kind);
   const lookup=findQuickMovementAssetByTicker(draft.ticker||draft.rfName||draft.outroTitle||'');
   const ticker=String(draft.ticker||draft.rfName||draft.outroTitle||'—').trim().toUpperCase() || '—';
@@ -11315,6 +11445,8 @@ function quickMovementPreviewHtml(){
 function refreshQuickMovementPreview(){
   const el=document.getElementById('quick-movement-preview');
   if(el) el.innerHTML=quickMovementPreviewHtml();
+  const info=document.getElementById('qm-sale-info');
+  if(info && typeof quickMovementSaleInfoHtml==='function') info.innerHTML=quickMovementSaleInfoHtml();
 }
 function openQuickMovement(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
@@ -11325,7 +11457,18 @@ function openQuickMovement(kind='compra'){
   S.editId=null;
   S.editPId=null;
   S.quickMovementEditId=null;
-  S.quickMovementDraft={...quickMovementDefaultDraft(next), ...current, kind:next, manualType:false, manualSector:false, manualName:false};
+  S.quickMovementSaving=false;
+  const nextDraft={...quickMovementDefaultDraft(next), ...current, kind:next, manualType:false, manualSector:false, manualName:false};
+  if(next==='venda'){
+    nextDraft.ticker='';
+    nextDraft.assetName='';
+  }else{
+    nextDraft.assetId='';
+    nextDraft.saleType='parcial';
+    nextDraft.saleAvailable=0;
+    nextDraft.saleAvgPrice=0;
+  }
+  S.quickMovementDraft=nextDraft;
   if(next!=='renda-fixa'){
     const lookup=findQuickMovementAssetByTicker(S.quickMovementDraft.ticker||S.quickMovementDraft.rfName||S.quickMovementDraft.outroTitle||'');
     if(lookup){
@@ -11342,6 +11485,7 @@ function closeQuickMovement(){
     S.quickMovementOpen=false;
     S.quickMovementDraft=null;
     S.quickMovementEditId=null;
+    S.quickMovementSaving=false;
     render();
   });
 }
@@ -11422,7 +11566,26 @@ function quickMovementModal(){
       <div><div class="fl">Categoria</div><input id="qm-outro-category" placeholder="ex: interno, ajuste, observação" value="${esc(draft.outroCategory||'Geral')}" oninput="setQuickMovementField('outroCategory', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-outro-note" placeholder="registro neutro, sem impacto nos cálculos" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
-  const body=kind==='provento' ? proventoFields : kind==='renda-fixa' ? rfFields : kind==='outro' ? outroFields : buySellFields;
+  const saleType=draft.saleType==='total'?'total':'parcial';
+  const saleFields = `
+    <div class="fg">
+      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
+      <div style="grid-column:span 2"><div class="fl">Ativo (somente posições com saldo)</div><select id="qm-sale-asset" onchange="selectQuickMovementSaleAsset(this.value)"><option value="">${quickMovementSellableAssets().length?'Selecione um ativo...':'Nenhum ativo vendável'}</option>${quickMovementSaleOptionsHtml()}</select></div>
+    </div>
+    <div id="qm-sale-info">${quickMovementSaleInfoHtml()}</div>
+    <div class="fg">
+      <div>
+        <div class="fl">Vender</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="dash-chip ${saleType==='parcial'?'on':''}" onclick="setQuickMovementSaleType('parcial')">Venda parcial</button>
+          <button type="button" class="dash-chip ${saleType==='total'?'on':''}" onclick="setQuickMovementSaleType('total')">Vender tudo</button>
+        </div>
+      </div>
+      <div id="qm-sale-qty-wrap" style="${saleType==='total'?'display:none':''}"><div class="fl">Quantidade (parcial)</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" oninput="setQuickMovementField('qty', this.value)"></div>
+      <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" placeholder="ex: 34,25" value="${esc(draft.price||'')}" oninput="setQuickMovementField('price', this.value)"></div>
+    </div>
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+  const body=kind==='provento' ? proventoFields : kind==='renda-fixa' ? rfFields : kind==='outro' ? outroFields : (kind==='venda' ? saleFields : buySellFields);
   const saveLabel=kind==='provento' ? 'Salvar provento' : kind==='renda-fixa' ? 'Salvar renda fixa' : kind==='outro' ? 'Salvar registro' : `Salvar ${quickMovementKindLabel(kind).toLowerCase()}`;
   return `<div class="note-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) closeQuickMovement()">
     <div class="note-modal quick-movement-modal" style="max-width:1140px;max-height:90vh;display:flex;flex-direction:column">
@@ -11604,6 +11767,35 @@ function quickMovementBuildAporteFromFields(kind){
       }
     };
   }
+  if(next==='venda'){
+    const draft=S.quickMovementDraft&&typeof S.quickMovementDraft==='object'?S.quickMovementDraft:{};
+    const asset=quickMovementSaleAssetById(draft.assetId);
+    const contract=quickMovementContract();
+    const dtVal=document.getElementById('qm-dt')?.value || draft.date || new Date().toISOString().slice(0,10);
+    const price=parseNum(document.getElementById('qm-price')?.value ?? draft.price);
+    const note=String(document.getElementById('qm-note')?.value ?? draft.note).trim();
+    if(!contract || typeof contract.buildVariableIncomeSalePreview!=='function') return {error:'Preview de venda indisponível.'};
+    if(!asset) return {error:'Selecione um ativo para vender.'};
+    const preview=contract.buildVariableIncomeSalePreview(asset,{saleType:draft.saleType==='total'?'total':'partial',quantity:draft.qty,unitPrice:price});
+    if(!preview.ok) return {error:preview.error||'Venda inválida.'};
+    return {
+      kind:next,
+      reg:{
+        id:Date.now(),
+        operation:'venda',
+        movementKind:'venda',
+        assetId:asset.assetId,
+        ticker:cleanAssetCode(asset.ticker),
+        qty:preview.quantityToSell,
+        price:preview.unitPrice,
+        date:brDate(dtVal),
+        decision:note,
+        type:normalizeType(asset.type,'Ação'),
+        sector:asset.sector||'',
+        saleType:preview.saleType
+      }
+    };
+  }
   const ticker=String(document.getElementById('qm-ti')?.value||'').trim().toUpperCase();
   const qty=Math.abs(parseNum(document.getElementById('qm-qty')?.value));
   const price=parseNum(document.getElementById('qm-price')?.value);
@@ -11630,47 +11822,79 @@ function quickMovementBuildAporteFromFields(kind){
 }
 function saveQuickMovement(){
   if(!canEditFromThisTab('salvar movimentação rápida')) return;
-  const kind=normalizeQuickMovementKind(S.quickMovementDraft?.kind);
-  const built=quickMovementBuildAporteFromFields(kind);
-  if(built.error){ alert(built.error); return; }
+  if(S.quickMovementSaving){
+    toast('⚠️ Gravação em andamento, aguarde...');
+    return;
+  }
+  S.quickMovementSaving=true;
+  let kind;
+  let built;
+  try{
+    kind=normalizeQuickMovementKind(S.quickMovementDraft?.kind);
+    built=quickMovementBuildAporteFromFields(kind);
+  }catch(e){
+    S.quickMovementSaving=false;
+    alert('Erro ao validar a movimentação.');
+    return;
+  }
+  if(built.error){
+    S.quickMovementSaving=false;
+    alert(built.error);
+    return;
+  }
   const reg=built.reg;
   const editId=S.quickMovementEditId;
   S.quickMovementOpen=false;
   S.quickMovementDraft=null;
   S.quickMovementEditId=null;
-  if(kind==='provento'){
-    S.proventos.unshift(reg);
-    save();
-    toast(`✅ Provento de ${reg.ticker} registrado!`);
-    render();
-    markProventosDirty();
-    return;
-  }
-  if(kind==='outro'){
-    if(editId){
-      S.aportes=S.aportes.map(a=>String(a.id)===String(editId)?{...reg,id:editId}:a);
-    }else{
-      S.aportes.unshift(reg);
+  let persisted=false;
+  try{
+    if(kind==='provento'){
+      S.proventos.unshift(reg);
+      save();
+      toast(`✅ Provento de ${reg.ticker} registrado!`);
+      render();
+      markProventosDirty();
+      persisted=true;
+      return;
     }
-    save();
-    toast('✅ Registro neutro salvo localmente.');
-    render();
-    return;
-  }
-  S.aportes.unshift(reg);
-  if(kind==='renda-fixa'){
-    learnTickerMeta(reg.ticker, 'Renda Fixa', reg.sector, true);
+    if(kind==='outro'){
+      if(editId){
+        S.aportes=S.aportes.map(a=>String(a.id)===String(editId)?{...reg,id:editId}:a);
+      }else{
+        S.aportes.unshift(reg);
+      }
+      save();
+      toast('✅ Registro neutro salvo localmente.');
+      render();
+      persisted=true;
+      return;
+    }
+    S.aportes.unshift(reg);
+    if(kind==='renda-fixa'){
+      learnTickerMeta(reg.ticker, 'Renda Fixa', reg.sector, true);
+      syncAssetsFromAportes(false);
+      toast(`✅ Lançamento de ${reg.name||reg.ticker} registrado!`);
+      fetchQuotes(false);
+      scheduleAutoProventosGratis('aporte-rf');
+      persisted=true;
+      return;
+    }
+    learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
     syncAssetsFromAportes(false);
-    toast(`✅ Lançamento de ${reg.name||reg.ticker} registrado!`);
+    toast(`✅ ${kind==='venda'?'Venda':'Compra'} de ${reg.ticker} registrada!`);
     fetchQuotes(false);
-    scheduleAutoProventosGratis('aporte-rf');
-    return;
+    scheduleAutoProventosGratis('aporte');
+    persisted=true;
+  }catch(e){
+    alert('Erro ao salvar a movimentação.');
+  }finally{
+    if(persisted){
+      setTimeout(()=>{ S.quickMovementSaving=false; },0);
+    }else{
+      S.quickMovementSaving=false;
+    }
   }
-  learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
-  syncAssetsFromAportes(false);
-  toast(`✅ ${kind==='venda'?'Venda':'Compra'} de ${reg.ticker} registrada!`);
-  fetchQuotes(false);
-  scheduleAutoProventosGratis('aporte');
 }
 function isRendaFixaAsset(a){
   return normalizeType(a?.type||metaTicker(a?.ticker).type||'Ação','Ação') === 'Renda Fixa';
