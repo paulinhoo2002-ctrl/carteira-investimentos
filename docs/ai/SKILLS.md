@@ -1,0 +1,106 @@
+# Skills locais do projeto
+
+Antes de iniciar tarefas, verificar se alguma skill local se aplica.
+Quando varias skills forem relevantes, combina-las na ordem mais adequada ao trabalho.
+
+## UI/UX
+
+### `interface-design`
+- Uso: UI/UX, layouts, hierarquia visual, espaçamento, responsividade e consistencia de design.
+- Quando usar: ao criar ou revisar telas, fluxos visuais, componentes e refinamento de interfaces.
+- Quando nao usar: backend, persistencia, automacao nao visual ou ajustes que nao mudam a experiencia da interface.
+- Combinacao recomendada: `playwright` para validar no navegador, `impeccable` para polish final, `caveman-review` para revisar o resultado.
+- Caminho local: `.agents/skills/interface-design/`
+- Observacao: esta skill ja existia no projeto antes da restauracao e diverge da biblioteca local em alguns arquivos auxiliares; ela foi preservada sem sobrescrita.
+
+### `impeccable`
+- Uso: polish visual, consistencia, clareza e revisao final da interface.
+- Quando usar: ao refinar uma UI ja montada e validar qualidade visual, composicao, acessibilidade e consistencia.
+- Quando nao usar: backend-only, persistencia ou tarefas sem interface.
+- Combinacao recomendada: `interface-design` antes da implementacao, `playwright` para validar, `caveman-review` para fechar.
+- Caminho local: `.agents/skills/impeccable/`
+
+## Navegador / testes visuais
+
+### `playwright`
+- Uso: validacao real em navegador, desktop/mobile, console, `pageerror` e `requestfailed`.
+- Quando usar: ao confirmar fluxos completos, regressoes visuais e comportamento interativo.
+- Quando nao usar: tarefas puramente documentais ou de texto sem fluxo de navegador.
+- Combinacao recomendada: `interface-design` para a direcao visual, `impeccable` para o polimento final.
+- Caminho local: `.agents/skills/playwright/`
+
+## Workflow
+
+### `caveman`
+- Uso: workflow tecnico, review, commit, stats e subtarefas relacionadas.
+- Quando usar: quando a tarefa pedir comunicacao ultra-condensada, revisao, fechamento tecnico, mensagens de commit ou apoio a subtarefas.
+- Quando nao usar: tarefas de interface que dependam de explicacao detalhada ou comunicacao normal.
+- Combinacao recomendada: `caveman-review` para revisar diff, `caveman-commit` para mensagem, `caveman-stats` para uso de token.
+- Caminho local: `.agents/skills/caveman/`
+
+### `caveman-review`
+- Uso: review de diff, comentario acionavel e fecho tecnico.
+- Quando usar: revisao final de PR, verificacao de regressao, apontamento de risco.
+- Quando nao usar: implementacao de feature ou analise visual detalhada.
+- Combinacao recomendada: `caveman` ou `impeccable`, conforme o tipo de tarefa.
+- Caminho local: `.agents/skills/caveman-review/`
+
+### `caveman-commit`
+- Uso: gerar mensagem de commit curta, clara e consistente.
+- Quando usar: fechamento de tarefa com commit local.
+- Quando nao usar: tarefas sem commit ou com mensagem ja definida.
+- Combinacao recomendada: `caveman-review` antes do commit.
+- Caminho local: `.agents/skills/caveman-commit/`
+
+### `caveman-compress`
+- Uso: comprimir memoria, notas e arquivos de orientacao longos sem perder conteudo tecnico.
+- Quando usar: sessao longa, handoff ou resumo de contexto.
+- Quando nao usar: tarefas curtas ou quando o texto precisar permanecer detalhado.
+- Combinacao recomendada: `caveman-help` para consulta rapida, `caveman-stats` para analise de uso.
+- Caminho local: `.agents/skills/caveman-compress/`
+
+### `caveman-help`
+- Uso: referencia rapida dos modos e comandos do ecossistema caveman.
+- Quando usar: quando for preciso lembrar variações, comandos ou formas de uso.
+- Quando nao usar: implementacao ou review direto.
+- Combinacao recomendada: `caveman` para executar e `caveman-stats` para medir.
+- Caminho local: `.agents/skills/caveman-help/`
+
+### `caveman-stats`
+- Uso: mostrar uso real de token e estimativas de economia.
+- Quando usar: quando for necessario medir custo de contexto ou comparar modos.
+- Quando nao usar: tarefas de implementacao ou review que nao precisem de medicao.
+- Combinacao recomendada: `caveman-compress` para reduzir contexto e `caveman-help` para referencia.
+- Caminho local: `.agents/skills/caveman-stats/`
+
+## Outras skills instaladas
+
+### `cavecrew`
+- Uso: decidir quando delegar para subagentes estilo caveman.
+- Quando usar: tarefas separaveis em pesquisa, edicao curta ou revisao delegada.
+- Quando nao usar: tarefas pequenas que ja cabem bem em um unico fluxo.
+- Combinacao recomendada: `caveman` para comunicacao compacta e `caveman-review` para fechamento.
+- Caminho local: `.agents/skills/cavecrew/`
+
+### `archify`
+- Uso: diagramas de arquitetura, workflow, sequencia, data-flow e lifecycle em HTML validado.
+- Quando usar: quando a tarefa pedir visualizacao estrutural, fluxos ou diagramas exploraveis.
+- Quando nao usar: UI comum, backend puro ou tarefas que nao precisam de diagrama.
+- Combinacao recomendada: `impeccable` para polish visual e `playwright` se a saida virar interface navegavel.
+- Caminho local: `.agents/skills/archify/`
+
+## Regra de selecao
+
+- Verificar primeiro se alguma skill local se aplica antes de iniciar uma tarefa.
+- Quando varias skills forem relevantes, combina-las.
+
+## Fluxos padrao
+
+### UI
+`interface-design` → implementacao → `playwright` → `impeccable` → `caveman-review`
+
+### Mudanca tecnica
+auditoria → implementacao → testes → `caveman-review` → `caveman-commit`
+
+### Sessao longa/confusa
+`caveman-compress` → novo chat/handoff
