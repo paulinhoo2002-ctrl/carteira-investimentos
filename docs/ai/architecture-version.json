@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "updated": "",
+  "baseline": "8fcb21d5842dc63afcd1ac4044489fe22ec15046",
+  "documents": [
+    "ARCHITECTURE.md",
+    "PROJECT_CONTEXT.md",
+    "DECISIONS.md"
+  ]
+}
