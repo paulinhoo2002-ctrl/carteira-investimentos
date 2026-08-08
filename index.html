@@ -11614,20 +11614,35 @@ function quickMovementModal(){
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfMovEditorAsset=kind==='renda-fixa' && S.rfMovementEditor && S.rfMovementEditor.assetId ? getRfAssetByEventId(S.rfMovementEditor.assetId) : null;
   const rfMovEditorActive=!!rfMovEditorAsset;
-  const rfMovementExistingBlock = `
-    <div class="fg" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:rgba(99,102,241,.06)">
+  const rfMovementExistingBlock = `    <div class="fg" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:rgba(99,102,241,.06)">
       <div style="font-size:13px;font-weight:800;color:#c7d2fe;margin-bottom:6px">Movimentar título existente</div>
       <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:10px">Selecione um título de renda fixa já cadastrado para registrar aporte ou resgate.</div>
+      <div id="rf-asset-select-container">
+        <div><div class="fl">Título</div><select id="qm-rf-existing-asset" aria-label="Título de renda fixa" onchange="updateRfAssetSummary(this)">${rfExistingAssetOptionsHtml()}</select></div>
+      </div>
+      <div id="rf-asset-summary" style="margin: 10px 0; display: none;">
+        <div class="rf-summary-item">
+          <div class="fl">Saldo atual</div>
+          <div class="fr" id="rf-asset-saldo">R$ 0,00</div>
+        </div>
+        <div class="rf-summary-item">
+          <div class="fl">Rentabilidade</div>
+          <div class="fr" id="rf-asset-rentab">0,00%</div>
+        </div>
+        <div class="rf-summary-item">
+          <div class="fl">Vencimento</div>
+          <div class="fr" id="rf-asset-venc"> — </div>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px;align-items:end">
-        <div><div class="fl">Título</div><select id="qm-rf-existing-asset" aria-label="Título de renda fixa">${rfExistingAssetOptionsHtml()}</select></div>
         <div><div class="fl">Movimentação</div><select id="qm-rf-existing-mode" aria-label="Tipo de movimentação">${rfMovementModeOptionsHtml('aporte')}</select></div>
-        <div><button type="button" class="btn bsv" onclick="openRfMovementFromAportes()">Abrir movimentação</button></div>
+        <div><button type="button" class="btn bsv" onclick="openRfMovementFromAportes()">Continuar →</button></div>
       </div>
     </div>`;
   const body = rfMovEditorActive
     ? rfMovementEditorHtml(rfMovEditorAsset)
     : (kind==='provento' ? proventoFields
-      : kind==='renda-fixa' ? (rfMovementExistingBlock + rfFields)
+      : kind==='renda-fixa' ? (rfMovementExistingBlock + `<div class="rf-new-title-section"><div style="font-size:13px;font-weight:800;color:#c7d2fe;margin-bottom:6px">Cadastrar novo título</div><div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:10px">Preencha os dados para cadastrar um novo título de renda fixa.</div>${rfFields}</div>`)
       : kind==='outro' ? outroFields
       : (kind==='venda' ? saleFields : buySellFields));
   const saveLabel = rfMovEditorActive
@@ -18820,7 +18835,33 @@ function buildReportCardPrintHtml(type){
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>${esc(title)} - ${esc(APP_NAME)}</title>
-    <style>${reportCardPdfPrintStyles()}</style>
+    <style>${reportCardPdfPrintStyles()}
+/* RF movement UX refinement */
+.rf-summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+  font-size: 14px;
+}
+.rf-summary-item .fl {
+  color: var(--muted);
+}
+.rf-summary-item .fr {
+  color: var(--text);
+  font-weight: 600;
+}
+.rf-new-title-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(99,102,241,.06);
+  margin-top: 20px;
+}
+.rf-new-title-section .mu {
+  color: var(--muted);
+}
+
+</style>
   </head>
   <body>
     <div class="report-print-root">${body}</div>
@@ -26052,6 +26093,36 @@ if(!isActiveWalletHostMode()){
     if(el) el.textContent=S.cd;
   },1000);
 }
-</script>
+
+
+function updateRfAssetSummary(selectElement) {
+  const assetId = selectElement.value;
+  const saldoEl = document.getElementById('rf-asset-saldo');
+  const rentabEl = document.getElementById('rf-asset-rentab');
+  const vencEl = document.getElementById('rf-asset-venc');
+  const summaryDiv = document.getElementById('rf-asset-summary');
+
+  if (!assetId || assetId === '') {
+    summaryDiv.style.display = 'none';
+    return;
+  }
+
+  // Find the asset in S.assets
+  const asset = S.assets.find(a => rfAssetEventId(a) === assetId);
+  if (!asset) {
+    summaryDiv.style.display = 'none';
+    return;
+  }
+
+  const saldo = rfPrincipalBalance(asset).value;
+  const rentab = Number(rfValues(asset)?.rentab) || 0;
+  const venc = assetRfMaturityDate(asset);
+
+  saldoEl.textContent = fmt(saldo);
+  rentabEl.textContent = fmtP(rentab);
+  vencEl.textContent = venc ? 'Venc ' + venc : ' — ';
+
+  summaryDiv.style.display = 'block'
+}</script>
 </body>
 </html>
