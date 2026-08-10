@@ -4067,6 +4067,66 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
   .pdf-report-checklist{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
   .pdf-report-footer{margin-top:14px}
 }
+  /* Dividendos UX P0: touch targets, contrast, focus - scoped to .div-premium */
+  /* Ensure minimum touch target size for interactive elements */
+  .div-premium .btn,
+  .div-premium button,
+  .div-premium input,
+  .div-premium select,
+  .div-premium .tab-menu > summary,
+  .div-premium [role="tab"],
+  .div-premium [role="checkbox"],
+  .div-premium [aria-label],
+  .div-premium .div-premium-tab,
+  .div-premium .div-premium-chip,
+  .div-premium .btn.bp {
+   min-height: 44px;
+   min-width: 44px;
+  }
+  /* Contrast: use theme variables for text */
+  .div-premium .btn,
+  .div-premium button,
+  .div-premium input,
+  .div-premium select,
+  .div-premium .tab-menu > summary,
+  .div-premium [role="tab"],
+  .div-premium [role="checkbox"],
+  .div-premium [aria-label],
+  .div-premium .div-premium-tab,
+  .div-premium .div-premium-chip,
+  .div-premium .btn.bp {
+   color: var(--text);
+  }
+  .div-premium .btn:hover,
+  .div-premium button:hover {
+   color: var(--text);
+  }
+  /* Muted text for secondary info */
+  .div-premium [class*="muted"],
+  .div-premium [class*="mu"] {
+   color: var(--muted);
+  }
+  /* Focus visible */
+  .div-premium .btn:focus-visible,
+  .div-premium button:focus-visible,
+  .div-premium input:focus-visible,
+  .div-premium select:focus-visible,
+  .div-premium .tab-menu > summary:focus-visible,
+  .div-premium [role="tab"]:focus-visible,
+  .div-premium [role="checkbox"]:focus-visible,
+  .div-premium [aria-label]:focus-visible,
+  .div-premium .div-premium-tab:focus-visible,
+  .div-premium .div-premium-chip:focus-visible,
+  .div-premium .btn.bp:focus-visible {
+   outline: 2px solid var(--primary);
+   outline-offset: 2px;
+  }
+  /* Ensure checkboxes have adequate size */
+  .div-premium input[type=checkbox] {
+   width: 18px;
+   height: 18px;
+  }
+
 </style>
 </head>
 <body>
