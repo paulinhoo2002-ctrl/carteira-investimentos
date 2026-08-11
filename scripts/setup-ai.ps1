@@ -13,6 +13,7 @@ $skillsLockPath = Join-Path $docsAiPath "skills.lock.json"
 $agentsSkillsPath = Join-Path $projectRoot ".agents/skills"
 $requiredSkills = @(
     "archify",
+    "frontend-design",
     "interface-design",
     "impeccable",
     "playwright",

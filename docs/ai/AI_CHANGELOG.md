@@ -4,6 +4,7 @@
 
 - PRs #266/#267 registrados: acessibilidade de Dividendos e correcoes RF com smoke funcional.
 - Registrados testMode em memoria, gate externo de build:modern e isolamento entre agentes.
+- Adotada a skill local `frontend-design` para planejamento e revisao de UI/UX, com validacao no lock e no setup-ai.
 
 Este documento registra mudanças relevantes na arquitetura e processo de IA do projeto.
 

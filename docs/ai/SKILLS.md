@@ -96,8 +96,24 @@ Quando varias skills forem relevantes, combina-las na ordem mais adequada ao tra
 
 ## Fluxos padrao
 
+### `frontend-design`
+
+- Uso: planejamento e revisao de UI com identidade visual, tipografia, composicao, espacos, estados e responsividade.
+- Quando usar: telas, modais, fluxos visuais ou refinamentos de usabilidade com impacto de interface.
+- Quando nao usar: regras financeiras, persistencia, backend ou tarefas sem impacto visual.
+- Combinacao recomendada: `interface-design`, `playwright`, `impeccable` e `caveman-review`.
+- Responsabilidade: composicao visual, frontend, responsividade, componentes e acabamento.
+- Caminho local: `.agents/skills/frontend-design/`
+
+### Responsabilidades da stack UI/UX
+
+- `interface-design`: fluxo, arquitetura da interface, hierarquia, estados e interacao.
+- `playwright`: validacao funcional e responsiva em navegador real.
+- `impeccable`: spacing, tipografia, contraste, acessibilidade e acabamento.
+- `caveman-review`: escopo, simplicidade, reversibilidade e seguranca do diff.
+
 ### UI
-`interface-design` → implementacao → `playwright` → `impeccable` → `caveman-review`
+`frontend-design` → `interface-design` → implementacao → `playwright` → `impeccable` → `caveman-review`
 
 ### Mudanca tecnica
 auditoria → implementacao → testes → `caveman-review` → `caveman-commit`
