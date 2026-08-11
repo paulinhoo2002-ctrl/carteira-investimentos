@@ -1042,6 +1042,15 @@ tbody tr{transition:background .1s}tbody tr:hover{background:var(--surface-2)}tb
 .bb3{background:var(--panel);color:#34d399;border:1px solid rgba(52,211,153,.22);font-size:12px;padding:7px 12px}
 .binst{background:var(--panel);color:#a5b4fc;border:1px solid rgba(99,102,241,.28);font-size:12px;padding:7px 12px}
 .bi{background:transparent;border:1px solid var(--border);border-radius:7px;padding:3px 9px;color:var(--muted);font-size:13px}
+.asset-actions{display:flex;align-items:center;gap:6px;min-width:220px;position:relative}
+.asset-action{min-height:44px;height:44px;padding:8px 12px;font-weight:800;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+.asset-action-menu{position:relative}
+.asset-action-menu-panel{display:none;position:absolute;right:0;top:calc(100% + 5px);z-index:20;min-width:150px;padding:6px;border:1px solid var(--border);border-radius:10px;background:var(--panel);box-shadow:0 12px 28px rgba(2,6,23,.24)}
+.asset-action-menu-panel.open{display:flex;flex-direction:column;gap:3px}
+.asset-action-menu-panel button{min-height:44px;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);text-align:left;font-weight:700;cursor:pointer}
+.asset-action-menu-panel button:hover,.asset-action-menu-panel button:focus-visible{background:var(--surface-2)}
+.asset-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:640px){.asset-actions{min-width:0;flex-wrap:wrap}.asset-action{flex:1 1 auto}.asset-action-menu-panel{right:auto;left:0}}
 .bdi{background:transparent;border:1px solid rgba(127,29,29,.5);border-radius:7px;padding:3px 9px;color:#f87171;font-size:13px}
 .fc{background:var(--card);border:1px solid rgba(79,70,229,.32);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 4px 20px rgba(99,102,241,.08)}
 .fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
@@ -21929,6 +21938,70 @@ function frmA(){
     </div>
   </div>`;
 }
+function openAssetQuickMovement(assetId, kind){
+  const asset=(S.assets||[]).find(item=>String(item.id)===String(assetId));
+  if(!asset) return;
+  openQuickMovement(kind);
+  const draft=S.quickMovementDraft||{};
+  if(kind==='venda'){
+    draft.assetId=String(asset.id);
+    draft.ticker=String(asset.ticker||'');
+    draft.assetName=String(asset.name||asset.ticker||'');
+    draft.type=normalizeType(asset.type||'Ação','Ação');
+    draft.sector=String(asset.sector||'');
+  }else{
+    draft.ticker=String(asset.ticker||'');
+    draft.assetName=String(asset.name||asset.ticker||'');
+    draft.type=normalizeType(asset.type||'Ação','Ação');
+    draft.sector=String(asset.sector||'');
+  }
+  S.quickMovementDraft=draft;
+  render();
+}
+function toggleAssetActionMenu(menuId, event){
+  event?.stopPropagation();
+  document.querySelectorAll('.asset-action-menu-panel.open').forEach(panel=>{
+    if(panel.id!==menuId) panel.classList.remove('open');
+  });
+  const menu=document.getElementById(menuId);
+  if(menu){
+    const open=!menu.classList.contains('open');
+    menu.classList.toggle('open', open);
+    const trigger=menu.parentElement?.querySelector('[aria-haspopup="menu"]');
+    if(trigger) trigger.setAttribute('aria-expanded', open?'true':'false');
+  }
+}
+function closeAssetActionMenus(){
+  document.querySelectorAll('.asset-action-menu-panel.open').forEach(menu=>{
+    menu.classList.remove('open');
+    const trigger=menu.parentElement?.querySelector('[aria-haspopup="menu"]');
+    if(trigger) trigger.setAttribute('aria-expanded','false');
+  });
+}
+if(typeof document!=='undefined' && typeof window!=='undefined' && !window.__assetActionMenuBound){
+  window.__assetActionMenuBound=true;
+  document.addEventListener('click', closeAssetActionMenus);
+  document.addEventListener('keydown', event=>{ if(event.key==='Escape') closeAssetActionMenus(); });
+}
+function assetActionMenuHtml(asset, isRF){
+  const id=String(asset.id||'');
+  const menuId=`asset-actions-menu-${id.replace(/[^a-zA-Z0-9_-]/g,'-')}`;
+  const primary=isRF
+    ? `<button type="button" class="btn bsv asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")'>Movimentar</button>`
+    : `<button type="button" class="btn bsv asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "compra")'>Comprar</button>`;
+  const secondary=isRF
+    ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
+    : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
+  return `<div class="asset-actions" data-asset-actions="${esc(id)}">
+    ${primary}${secondary}
+    <div class="asset-action-menu">
+      <button type="button" class="btn bgh asset-action" aria-label="Mais ações de ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>Mais</button>
+      <div id="${esc(menuId)}" class="asset-action-menu-panel" role="menu">
+        <button type="button" role="menuitem" onclick='edA(${JSON.stringify(id)}); closeAssetActionMenus()'>Editar ativo</button>
+      </div>
+    </div>
+  </div>`;
+}
 function assetEditModal(){
   return `<div class="note-overlay" role="dialog" aria-modal="true" aria-label="Editar ativo" onclick="if(event.target===this)clA()">
     <div class="note-modal" style="width:min(1000px,100%)">
@@ -22039,7 +22112,7 @@ function ativos(){
           <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
          <td class="am" style="font-weight:600">${fmt(dm)}</td>
         <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via Brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado · atualize se necessário">Estimativa</span>':''}</td>
-          <td><button class="bi" onclick="edA('${a.id}')" aria-label="Editar ativo">Editar</button></td>
+          <td>${assetActionMenuHtml(a, false)}</td>
        </tr>`;
      }).join('');
      const rfRows=sortedItems.map(a=>{
@@ -22083,9 +22156,7 @@ function ativos(){
          <td class="rf-right" style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#64748b'}">${Number.isFinite(profit)?fmt(profit):'—'}</td>
          <td class="rf-right" style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'}">${Number.isFinite(rentab)?fmtP(rentab):'—'}</td>
          <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
-         <td style="white-space:nowrap">
-            <button class="bi" onclick="edA('${a.id}')" aria-label="Editar ativo">Editar</button>
-         </td>
+         <td style="white-space:nowrap">${assetActionMenuHtml(a, true)}</td>
        </tr>`;
      }).join('');
 
