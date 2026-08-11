@@ -1,5 +1,10 @@
 # AI Changelog
 
+## 2026-08-11
+
+- PRs #266/#267 registrados: acessibilidade de Dividendos e correcoes RF com smoke funcional.
+- Registrados testMode em memoria, gate externo de build:modern e isolamento entre agentes.
+
 Este documento registra mudanças relevantes na arquitetura e processo de IA do projeto.
 
 ## Eventos
