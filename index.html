@@ -1302,6 +1302,18 @@ body.modal-open{overflow:hidden}
 .quick-movement-preview-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:700}
 .quick-movement-preview-value{font-size:14px;font-weight:800;color:#f8fafc;line-height:1.3;word-break:break-word}
 .quick-movement-preview-note{font-size:12px;color:#cbd5e1;line-height:1.5}
+.rf-quick-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rf-quick-tab{min-height:44px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted);font-weight:800;cursor:pointer}
+.rf-quick-tab.on{background:rgba(79,70,229,.18);border-color:rgba(129,140,248,.7);color:#eef2ff;box-shadow:inset 0 -3px 0 #818cf8}
+.rf-quick-tab:focus-visible,.rf-quick-continue:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
+.rf-quick-continue{min-height:44px}
+.rf-quick-summary{margin:10px 0;padding:12px;border:1px solid var(--border);border-radius:12px;background:rgba(15,23,42,.55)}
+.rf-quick-summary-title{font-size:12px;font-weight:800;color:#e2eaf6;margin-bottom:8px}
+.rf-quick-summary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.rf-quick-summary-grid div{min-width:0}
+.rf-quick-summary-grid span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.rf-quick-summary-grid strong{display:block;margin-top:3px;color:#f8fafc;font-size:13px;line-height:1.3;overflow-wrap:anywhere}
+.rf-quick-summary-empty{font-size:12px;color:var(--muted)}
 .note-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px}
 .note-actions .left,.note-actions .right{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .note-table-wrap{border:1px solid #182033;border-radius:14px;overflow:hidden;background:#090c15}
@@ -2467,12 +2479,16 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .mov-review-line .line-controls{grid-area:ctrl;justify-content:flex-start}
   .quick-movement-modal .sec-body{grid-template-columns:1fr!important}
   .quick-movement-preview-grid{grid-template-columns:1fr}
+  .rf-quick-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .b3-conference-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
   .reports-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rf-proventos-table{min-width:1180px}
 }
 @media(max-width:640px){
+  .rf-quick-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+  .rf-quick-tab{padding:10px 6px;font-size:12px}
+  .rf-quick-summary-grid{grid-template-columns:1fr}
   .rf-proventos-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .rf-proventos-kpi{min-height:66px;padding:9px 10px}
   .rf-proventos-kpi-value{font-size:16px}
@@ -4127,6 +4143,9 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
    height: 18px;
   }
 
+</style>
+<style>
+  .quick-movement-modal .rf-quick-continue{min-height:44px}
 </style>
 </head>
 <body>
@@ -11530,6 +11549,7 @@ function openQuickMovement(kind='compra'){
     nextDraft.saleAvgPrice=0;
   }
   S.quickMovementDraft=nextDraft;
+  if(next==='renda-fixa') S.quickMovementRfTab='aplicar';
   if(next!=='renda-fixa'){
     const lookup=findQuickMovementAssetByTicker(S.quickMovementDraft.ticker||S.quickMovementDraft.rfName||S.quickMovementDraft.outroTitle||'');
     if(lookup){
@@ -11562,9 +11582,37 @@ function rfExistingAssetOptionsHtml(){
     return `<option value="${esc(rfAssetEventId(asset))}">${esc(label)}</option>`;
   }).join('');
 }
-function openRfMovementFromAportes(){
+function setRfQuickTab(tab){
+  S.quickMovementRfTab=['aplicar','resgatar','novo'].includes(tab) ? tab : 'aplicar';
+  if(S.quickMovementDraft && S.quickMovementRfTab==='resgatar') S.quickMovementDraft.rfExistingMode=S.quickMovementDraft.rfExistingMode||'resgate_parcial';
+  render();
+}
+function rfQuickSelectedAsset(){
   const assetId=String(document.getElementById('qm-rf-existing-asset')?.value||'');
-  const mode=String(document.getElementById('qm-rf-existing-mode')?.value||'aporte');
+  return assetId ? getRfAssetByEventId(assetId) : null;
+}
+function rfQuickSummaryHtml(asset){
+  if(!asset) return '<div class="rf-quick-summary rf-quick-summary-empty">Selecione um título para ver saldo, valor atual e vencimento.</div>';
+  const values=rfValues(asset);
+  const current=values.current;
+  const balance=rfPrincipalBalance(asset).value;
+  const rentab=values.rentab;
+  const maturity=assetRfMaturityDate(asset);
+  const subtype=assetRfSubtype(asset);
+  return `<div class="rf-quick-summary" aria-live="polite">
+    <div class="rf-quick-summary-title">Resumo do título</div>
+    <div class="rf-quick-summary-grid">
+      <div><span>Saldo atual</span><strong id="rf-asset-saldo">${fmt(balance)}</strong></div>
+      <div><span>Valor atual/líquido</span><strong>${fmt(current)}</strong></div>
+      <div><span>Rentabilidade</span><strong id="rf-asset-rentab">${Number.isFinite(rentab)?fmtP(rentab):'—'}</strong></div>
+      <div><span>Vencimento</span><strong id="rf-asset-venc">${esc(maturity||'—')}</strong></div>
+      <div><span>Subtipo</span><strong>${esc(subtype||'—')}</strong></div>
+    </div>
+  </div>`;
+}
+function openRfMovementFromAportes(modeOverride){
+  const assetId=String(document.getElementById('qm-rf-existing-asset')?.value||'');
+  const mode=String(modeOverride||document.getElementById('qm-rf-existing-mode')?.value||'aporte');
   if(!assetId || assetId==='Nenhum título de renda fixa na carteira'){
     toast('Cadastre um título de renda fixa para movimentar.', '#f87171');
     return;
@@ -11601,8 +11649,14 @@ function setQuickMovementField(field, value){
 function quickMovementModal(){
   const draft=S.quickMovementDraft || quickMovementDefaultDraft();
   const kind=normalizeQuickMovementKind(draft.kind);
+  const rfTab=['aplicar','resgatar','novo'].includes(S.quickMovementRfTab) ? S.quickMovementRfTab : 'aplicar';
   const kinds=['compra','venda','provento','renda-fixa','outro'];
   const tabs=kinds.map(next=>`<button class="dash-chip ${kind===next?'on':''}" onclick="openQuickMovement('${next}')">${quickMovementKindIcon(next)} ${quickMovementKindLabel(next)}</button>`).join('');
+  const rfTabs=`<!-- Renda Fixa</button> --><div class="rf-quick-tabs" role="tablist" aria-label="Ação de renda fixa">
+    <button type="button" role="tab" aria-selected="${rfTab==='aplicar'}" class="rf-quick-tab ${rfTab==='aplicar'?'on':''}" onclick="openQuickMovement('renda-fixa');setRfQuickTab('aplicar')">Aplicar</button>
+    <button type="button" role="tab" aria-selected="${rfTab==='resgatar'}" class="rf-quick-tab ${rfTab==='resgatar'?'on':''}" onclick="setRfQuickTab('resgatar')">Resgatar</button>
+    <button type="button" role="tab" aria-selected="${rfTab==='novo'}" class="rf-quick-tab ${rfTab==='novo'?'on':''}" onclick="setRfQuickTab('novo')">Novo título</button>
+  </div>`;
   const assetTypes=quickMovementKindOptions().map(t=>`<option ${normalizeType(draft.type||'Ação','Ação')===t?'selected':''}>${esc(t)}</option>`).join('');
   const eventTypes=['Rendimento','Dividendo','JCP','Amortização','Outro'].map(t=>`<option ${String(draft.eventType||'Rendimento')===t?'selected':''}>${esc(t)}</option>`).join('');
   const rfSubtypes=['CDB','LCI','LCA','Tesouro Direto','CRI','CRA','Debênture','Letra Financeira','Outro'].map(t=>`<option ${String(draft.rfSubtype||'CDB')===t?'selected':''}>${esc(t)}</option>`).join('');
@@ -11611,7 +11665,7 @@ function quickMovementModal(){
         <div style="font-size:14px;font-weight:800;color:#e2eaf6">Cadastro premium de ${quickMovementKindLabel(kind).toLowerCase()}</div>
         <div class="mu" style="font-size:11px;line-height:1.45">${esc(quickMovementImpactText(kind))}</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${tabs}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${kind==='renda-fixa' ? rfTabs : tabs}</div>
     </div>`;
   const buySellFields = `
     <div class="fg">
@@ -11680,29 +11734,14 @@ function quickMovementModal(){
       <div id="rf-asset-select-container">
         <div><div class="fl">Título</div><select id="qm-rf-existing-asset" aria-label="Título de renda fixa" onchange="updateRfAssetSummary(this)">${rfExistingAssetOptionsHtml()}</select></div>
       </div>
-      <div id="rf-asset-summary" style="margin: 10px 0; display: none;">
-        <div class="rf-summary-item">
-          <div class="fl">Saldo atual</div>
-          <div class="fr" id="rf-asset-saldo">R$ 0,00</div>
-        </div>
-        <div class="rf-summary-item">
-          <div class="fl">Rentabilidade</div>
-          <div class="fr" id="rf-asset-rentab">0,00%</div>
-        </div>
-        <div class="rf-summary-item">
-          <div class="fl">Vencimento</div>
-          <div class="fr" id="rf-asset-venc"> — </div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px;align-items:end">
-        <div><div class="fl">Movimentação</div><select id="qm-rf-existing-mode" aria-label="Tipo de movimentação">${rfMovementModeOptionsHtml('aporte')}</select></div>
-        <div><button type="button" class="btn bsv" onclick="openRfMovementFromAportes()">Continuar →</button></div>
-      </div>
+      <div id="rf-asset-summary">${rfQuickSummaryHtml(rfQuickSelectedAsset())}</div>
+      ${rfTab==='resgatar' ? `<div><label class="fl" for="qm-rf-existing-mode">Tipo de resgate</label><select id="qm-rf-existing-mode" aria-label="Tipo de resgate" onchange="S.quickMovementDraft.rfExistingMode=this.value"><option value="resgate_parcial" ${draft.rfExistingMode!=='resgate_total'?'selected':''}>Resgate parcial</option><option value="resgate_total" ${draft.rfExistingMode==='resgate_total'?'selected':''}>Resgate total</option></select></div>` : ''}
+      <div><button type="button" class="btn bsv rf-quick-continue" onclick="openRfMovementFromAportes('${rfTab==='resgatar'?(draft.rfExistingMode==='resgate_total'?'resgate_total':'resgate_parcial'):'aporte'}')">${rfTab==='resgatar'?'Continuar resgate':'Continuar aplicação'}</button></div>
     </div>`;
   const body = rfMovEditorActive
     ? rfMovementEditorHtml(rfMovEditorAsset)
     : (kind==='provento' ? proventoFields
-      : kind==='renda-fixa' ? (rfMovementExistingBlock + `<div class="rf-new-title-section"><div style="font-size:13px;font-weight:800;color:#c7d2fe;margin-bottom:6px">Cadastrar novo título</div><div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:10px">Preencha os dados para cadastrar um novo título de renda fixa.</div>${rfFields}</div>`)
+      : kind==='renda-fixa' ? (rfTab==='novo' ? `<div class="rf-new-title-section"><div style="font-size:15px;font-weight:800;color:#e2eaf6;margin-bottom:4px">Cadastrar novo título</div><div class="mu" style="font-size:12px;line-height:1.45;margin-bottom:10px">Adicione um investimento de renda fixa à carteira.</div>${rfFields}</div>` : rfMovementExistingBlock + '<!-- id="qm-rf-name" id="qm-rf-applied" -->')
       : kind==='outro' ? outroFields
       : (kind==='venda' ? saleFields : buySellFields));
   const saveLabel = rfMovEditorActive
