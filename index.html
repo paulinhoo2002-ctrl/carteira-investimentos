@@ -1314,6 +1314,8 @@ body.modal-open{overflow:hidden}
 .quick-movement-preview-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:700}
 .quick-movement-preview-value{font-size:14px;font-weight:800;color:#f8fafc;line-height:1.3;word-break:break-word}
 .quick-movement-preview-note{font-size:12px;color:#cbd5e1;line-height:1.5}
+.quick-movement-modal .dash-chip:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
+.quick-movement-modal .fg input:focus-visible,.quick-movement-modal .fg select:focus-visible{outline:3px solid #fbbf24;outline-offset:1px}
 .rf-quick-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .rf-quick-tab{min-height:44px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--muted);font-weight:800;cursor:pointer}
 .rf-quick-tab.on{background:rgba(79,70,229,.18);border-color:rgba(129,140,248,.7);color:#eef2ff;box-shadow:inset 0 -3px 0 #818cf8}
@@ -11397,13 +11399,48 @@ function quickMovementSaleInfoHtml(){
   const asset=quickMovementSaleAssetById(draft.assetId);
   if(!asset) return '';
   const dash='—';
-  return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px">
-    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Ticker</div><div class="quick-movement-preview-value">${esc(asset.ticker||dash)}</div></div>
-    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Nome</div><div class="quick-movement-preview-value">${esc(asset.name||dash)}</div></div>
-    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Tipo</div><div class="quick-movement-preview-value">${esc(normalizeType(asset.type,'Ação'))}</div></div>
-    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Setor</div><div class="quick-movement-preview-value">${esc(asset.sector||dash)}</div></div>
-    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Disponível</div><div class="quick-movement-preview-value">${fmtN(asset.availableQuantity)}</div></div>
-    <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Preço médio</div><div class="quick-movement-preview-value">${fmtRaw(asset.averagePrice)}</div></div>
+  const current=Number(asset.estimatedPositionValue);
+  let rentab=null;
+  try{ const r=assetRentabPct(asset); if(Number.isFinite(r)) rentab=r; }catch(e){ rentab=null; }
+  return `<div style="margin-top:12px">
+    <div class="cl" style="margin-bottom:8px">Resumo do ativo</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Ticker</div><div class="quick-movement-preview-value">${esc(asset.ticker||dash)}</div></div>
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Nome</div><div class="quick-movement-preview-value">${esc(asset.name||dash)}</div></div>
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Tipo</div><div class="quick-movement-preview-value">${esc(normalizeType(asset.type,'Ação'))}</div></div>
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Setor</div><div class="quick-movement-preview-value">${esc(asset.sector||dash)}</div></div>
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Disponível</div><div class="quick-movement-preview-value">${fmtN(asset.availableQuantity)}</div></div>
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Preço médio</div><div class="quick-movement-preview-value">${fmtRaw(asset.averagePrice)}</div></div>
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Valor atual</div><div class="quick-movement-preview-value">${Number.isFinite(current)&&current>0?fmtRaw(current):dash}</div></div>
+      <div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Rentabilidade</div><div class="quick-movement-preview-value">${rentab!==null?fmtP(rentab):dash}</div></div>
+    </div>
+  </div>`;
+}
+function quickMovementAssetSummaryHtml(){
+  const draft=S.quickMovementDraft||quickMovementDefaultDraft();
+  const kind=normalizeQuickMovementKind(draft.kind);
+  if(kind==='venda') return '';
+  const lookup=findQuickMovementAssetByTicker(draft.ticker||draft.rfName||draft.outroTitle||'');
+  if(!lookup) return '';
+  const dash='—';
+  const position=Array.isArray(S.assets) ? S.assets.find(a=>cleanAssetCode(a?.ticker||'')===cleanAssetCode(String(lookup.ticker||''))) : null;
+  const positionQty=position ? (Number(position.qty)||0) : 0;
+  let current=null;
+  try{ const v=assetCurrentValueForDisplay(position); if(v!==null && Number.isFinite(v)) current=v; }catch(e){ current=null; }
+  let rentab=null;
+  try{ const r=assetRentabPct(position||lookup); if(Number.isFinite(r)) rentab=r; }catch(e){ rentab=null; }
+  const stats=[
+    `<div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Ticker</div><div class="quick-movement-preview-value">${esc(lookup.ticker||dash)}</div></div>`,
+    `<div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Nome</div><div class="quick-movement-preview-value">${esc(lookup.name||dash)}</div></div>`,
+    `<div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Tipo</div><div class="quick-movement-preview-value">${esc(normalizeType(lookup.type,'Ação'))}</div></div>`,
+    `<div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Setor</div><div class="quick-movement-preview-value">${esc(lookup.sector||dash)}</div></div>`
+  ];
+  if(position && positionQty>0) stats.push(`<div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Posição atual</div><div class="quick-movement-preview-value">${fmtN(positionQty)}</div></div>`);
+  if(current!==null && current>0) stats.push(`<div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Valor atual</div><div class="quick-movement-preview-value">${fmtRaw(current)}</div></div>`);
+  if(rentab!==null) stats.push(`<div class="quick-movement-preview-stat"><div class="quick-movement-preview-label">Rentabilidade</div><div class="quick-movement-preview-value">${fmtP(rentab)}</div></div>`);
+  return `<div style="margin-top:12px">
+    <div class="cl" style="margin-bottom:8px">Resumo do ativo</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">${stats.join('')}</div>
   </div>`;
 }
 function quickMovementSalePreviewHtml(){
@@ -11425,6 +11462,10 @@ function quickMovementSalePreviewHtml(){
         <div class="quick-movement-preview-stat">
           <div class="quick-movement-preview-label">Ativo</div>
           <div class="quick-movement-preview-value">${ticker}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Data</div>
+          <div class="quick-movement-preview-value">${esc(brDate(draft.date||''))}</div>
         </div>
         <div class="quick-movement-preview-stat">
           <div class="quick-movement-preview-label">Disponível</div>
@@ -11507,6 +11548,19 @@ function quickMovementPreviewHtml(){
       : lookupType || lookupSector
         ? `Encontrado: ${assetInfo}${assetSector ? ` · ${assetSector}` : ''}.`
         : `Destino: ${label}.`;
+  const compraExtra=kind==='compra' ? `
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Data</div>
+          <div class="quick-movement-preview-value">${esc(brDate(draft.date||''))}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Quantidade</div>
+          <div class="quick-movement-preview-value">${qty>0?fmtN(qty):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Preço unitário</div>
+          <div class="quick-movement-preview-value">${price>0?fmtRaw(price):'—'}</div>
+        </div>` : '';
   return `
     <div class="quick-movement-preview-card">
       <div class="quick-movement-preview-head">
@@ -11529,6 +11583,7 @@ function quickMovementPreviewHtml(){
           <div class="quick-movement-preview-label">${esc(totalLabel)}</div>
           <div class="quick-movement-preview-value">${fmt(total)}</div>
         </div>
+        ${compraExtra}
       </div>
       ${lookupType || lookupSector ? `<div class="quick-movement-preview-note">Tipo: ${esc(assetInfo || '—')} · Setor: ${esc(assetSector || '—')}</div>` : ''}
       <div class="quick-movement-preview-note">${esc(secondary)}</div>
@@ -11539,6 +11594,8 @@ function refreshQuickMovementPreview(){
   if(el) el.innerHTML=quickMovementPreviewHtml();
   const info=document.getElementById('qm-sale-info');
   if(info && typeof quickMovementSaleInfoHtml==='function') info.innerHTML=quickMovementSaleInfoHtml();
+  const summary=document.getElementById('quick-movement-asset-summary');
+  if(summary && typeof quickMovementAssetSummaryHtml==='function') summary.innerHTML=quickMovementAssetSummaryHtml();
 }
 function openQuickMovement(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
@@ -11663,7 +11720,7 @@ function quickMovementModal(){
   const kind=normalizeQuickMovementKind(draft.kind);
   const rfTab=['aplicar','resgatar','novo'].includes(S.quickMovementRfTab) ? S.quickMovementRfTab : 'aplicar';
   const kinds=['compra','venda','provento','renda-fixa','outro'];
-  const tabs=kinds.map(next=>`<button class="dash-chip ${kind===next?'on':''}" onclick="openQuickMovement('${next}')">${quickMovementKindIcon(next)} ${quickMovementKindLabel(next)}</button>`).join('');
+  const tabs=kinds.map(next=>`<button type="button" class="dash-chip ${kind===next?'on':''}" aria-pressed="${kind===next?'true':'false'}" onclick="openQuickMovement('${next}')">${quickMovementKindIcon(next)} ${quickMovementKindLabel(next)}</button>`).join('');
   const rfTabs=`<!-- Renda Fixa</button> --><div class="rf-quick-tabs" role="tablist" aria-label="Ação de renda fixa">
     <button type="button" role="tab" aria-selected="${rfTab==='aplicar'}" class="rf-quick-tab ${rfTab==='aplicar'?'on':''}" onclick="openQuickMovement('renda-fixa');setRfQuickTab('aplicar')">Aplicar</button>
     <button type="button" role="tab" aria-selected="${rfTab==='resgatar'}" class="rf-quick-tab ${rfTab==='resgatar'?'on':''}" onclick="setRfQuickTab('resgatar')">Resgatar</button>
@@ -11680,15 +11737,20 @@ function quickMovementModal(){
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${kind==='renda-fixa' ? rfTabs : tabs}</div>
     </div>`;
   const buySellFields = `
+    <div class="cl" style="margin-bottom:8px">Ativo</div>
     <div class="fg">
-      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
-      <div><div class="fl">Tipo de ativo</div><select id="qm-type" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
-      <div><div class="fl">Setor</div><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" oninput="setQuickMovementField('sector', this.value)"></div>
-      <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" oninput="setQuickMovementField('qty', this.value)"></div>
-      <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" placeholder="ex: 10,00" value="${esc(draft.price||'')}" oninput="setQuickMovementField('price', this.value)"></div>
+      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" aria-label="Data" oninput="setQuickMovementField('date', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" aria-label="Ticker" oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Tipo de ativo</div><select id="qm-type" aria-label="Tipo de ativo" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
+      <div><div class="fl">Setor</div><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" aria-label="Setor" oninput="setQuickMovementField('sector', this.value)"></div>
     </div>
-    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+    <div id="quick-movement-asset-summary">${kind==='compra'?quickMovementAssetSummaryHtml():''}</div>
+    <div class="cl" style="margin:12px 0 8px">Dados da operação</div>
+    <div class="fg">
+      <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade" oninput="setQuickMovementField('qty', this.value)"></div>
+      <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" placeholder="ex: 10,00" value="${esc(draft.price||'')}" aria-label="Preço unitário" oninput="setQuickMovementField('price', this.value)"></div>
+    </div>
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const proventoFields = `
     <div class="fg">
       <div><div class="fl">Data do pagamento</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
@@ -11721,23 +11783,25 @@ function quickMovementModal(){
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-outro-note" placeholder="registro neutro, sem impacto nos cálculos" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
   const saleType=draft.saleType==='total'?'total':'parcial';
   const saleFields = `
+    <div class="cl" style="margin-bottom:8px">Ativo</div>
     <div class="fg">
-      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
-      <div style="grid-column:span 2"><div class="fl">Ativo (somente posições com saldo)</div><select id="qm-sale-asset" onchange="selectQuickMovementSaleAsset(this.value)"><option value="">${quickMovementSellableAssets().length?'Selecione um ativo...':'Nenhum ativo vendável'}</option>${quickMovementSaleOptionsHtml()}</select></div>
+      <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" aria-label="Data" oninput="setQuickMovementField('date', this.value)"></div>
+      <div style="grid-column:span 2"><div class="fl">Ativo (somente posições com saldo)</div><select id="qm-sale-asset" aria-label="Ativo para venda" onchange="selectQuickMovementSaleAsset(this.value)"><option value="">${quickMovementSellableAssets().length?'Selecione um ativo...':'Nenhum ativo vendável'}</option>${quickMovementSaleOptionsHtml()}</select></div>
     </div>
     <div id="qm-sale-info">${quickMovementSaleInfoHtml()}</div>
+    <div class="cl" style="margin:12px 0 8px">Dados da operação</div>
     <div class="fg">
       <div>
         <div class="fl">Vender</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button type="button" class="dash-chip ${saleType==='parcial'?'on':''}" onclick="setQuickMovementSaleType('parcial')">Venda parcial</button>
-          <button type="button" class="dash-chip ${saleType==='total'?'on':''}" onclick="setQuickMovementSaleType('total')">Vender tudo</button>
+          <button type="button" class="dash-chip ${saleType==='parcial'?'on':''}" aria-pressed="${saleType==='parcial'?'true':'false'}" onclick="setQuickMovementSaleType('parcial')">Venda parcial</button>
+          <button type="button" class="dash-chip ${saleType==='total'?'on':''}" aria-pressed="${saleType==='total'?'true':'false'}" onclick="setQuickMovementSaleType('total')">Vender tudo</button>
         </div>
       </div>
-      <div id="qm-sale-qty-wrap" style="${saleType==='total'?'display:none':''}"><div class="fl">Quantidade (parcial)</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" oninput="setQuickMovementField('qty', this.value)"></div>
-      <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" placeholder="ex: 34,25" value="${esc(draft.price||'')}" oninput="setQuickMovementField('price', this.value)"></div>
+      <div id="qm-sale-qty-wrap" style="${saleType==='total'?'display:none':''}"><div class="fl">Quantidade (parcial)</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade parcial" oninput="setQuickMovementField('qty', this.value)"></div>
+      <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" placeholder="ex: 34,25" value="${esc(draft.price||'')}" aria-label="Preço unitário da venda" oninput="setQuickMovementField('price', this.value)"></div>
     </div>
-    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
+    <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfMovEditorAsset=kind==='renda-fixa' && S.rfMovementEditor && S.rfMovementEditor.assetId ? getRfAssetByEventId(S.rfMovementEditor.assetId) : null;
   const rfMovEditorActive=!!rfMovEditorAsset;
   const rfMovementExistingBlock = `    <div class="fg" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:rgba(99,102,241,.06)">
@@ -11761,11 +11825,11 @@ function quickMovementModal(){
     : (kind==='provento' ? 'Salvar provento'
       : kind==='renda-fixa' ? 'Salvar renda fixa'
       : kind==='outro' ? 'Salvar registro'
-      : `Salvar ${quickMovementKindLabel(kind).toLowerCase()}`);
+      : (kind==='venda' ? 'Confirmar venda' : 'Confirmar compra'));
   const footerActions = rfMovEditorActive
     ? `<button class="btn bgh" onclick="closeQuickMovement()">Fechar</button>`
     : `<button class="btn bsv" onclick="saveQuickMovement()">${saveLabel}</button><button class="btn bgh" onclick="closeQuickMovement()">Cancelar</button>`;
-  return `<div class="note-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) closeQuickMovement()">
+  return `<div class="note-overlay" role="dialog" aria-modal="true" aria-label="Nova movimentação" onclick="if(event.target===this) closeQuickMovement()">
     <div class="note-modal quick-movement-modal" style="max-width:1140px;max-height:90vh;display:flex;flex-direction:column">
       <div class="note-head">
         <div class="note-title">
@@ -11783,7 +11847,10 @@ function quickMovementModal(){
             <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">${body}</div>
           </div>
         </div>
-        <div id="quick-movement-preview">${quickMovementPreviewHtml()}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+          <div class="cl">Revisão</div>
+          <div id="quick-movement-preview">${quickMovementPreviewHtml()}</div>
+        </div>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 18px 18px;flex-wrap:wrap">
         ${footerActions}
