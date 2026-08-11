@@ -1,5 +1,13 @@
 # Workflow Oficial de Desenvolvimento
 
+## Stack UI/UX
+
+Para tarefas visuais, usar a sequencia:
+
+`frontend-design` -> `interface-design` -> `ui-ux-pro-max` -> implementacao -> `playwright` -> `impeccable` -> `caveman-review`
+
+`ui-ux-pro-max` fornece referencias de design system, dashboards, charts, tipografia, paletas e heuristicas. Ela nao autoriza mudancas financeiras, de schema ou persistencia.
+
 Este documento descreve o fluxo padrão de desenvolvimento seguido no projeto Carteira de Investimentos.
 
 ## Fluxo Padrão

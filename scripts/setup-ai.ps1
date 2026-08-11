@@ -23,7 +23,8 @@ $requiredSkills = @(
     "caveman-compress",
     "caveman-help",
     "caveman-stats",
-    "cavecrew"
+    "cavecrew",
+    "ui-ux-pro-max"
 )
 $requiredDocs = @(
     "AI_BASELINE.md",

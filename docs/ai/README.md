@@ -1,5 +1,11 @@
 # AI Documentation
 
+## Skill UI/UX adicional
+
+`ui-ux-pro-max` e a 13a skill oficial registrada. A integracao oficial do Codex fica em `.agents/skills/` e a do OpenCode em `.opencode/`; ambos os diretorios sao gerados pelo `uipro-cli` e permanecem locais/ignorados.
+
+Use-a como referencia complementar para design systems, dashboards, charts, tipografia, paletas, acessibilidade e responsividade. Ela nao pode alterar regras financeiras, `FinanceCore`, `PersistenceCore`, schema ou persistencia.
+
 Este é o ponto de entrada para qualquer agente novo que trabalhar com a infraestrutura de IA do projeto.
 
 ## Ordem Obrigatória de Leitura
