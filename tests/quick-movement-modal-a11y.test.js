@@ -63,7 +63,7 @@ test('venda mantém seletor de posição e chips com aria-pressed', () => {
 });
 
 test('CTA de salvar usa rótulos por tipo (confirmar compra/venda)', () => {
-  assert.match(MODAL_SOURCE, /'Salvar provento'/);
+  assert.match(MODAL_SOURCE, /'Registrar provento'/);
   assert.match(MODAL_SOURCE, /'Salvar renda fixa'/);
   assert.match(MODAL_SOURCE, /'Salvar registro'/);
   assert.match(MODAL_SOURCE, /\(kind==='venda' \? 'Confirmar venda' : 'Confirmar compra'\)/);
