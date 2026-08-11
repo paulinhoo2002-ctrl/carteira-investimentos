@@ -120,6 +120,7 @@ function buildContext(initialState = {}) {
     quickMovementSellableAssets: () => [],
     quickMovementSaleOptionsHtml: () => '',
     quickMovementSaleInfoHtml: () => '',
+    quickMovementAssetSummaryHtml: () => '',
     quickMovementPreviewHtml: () => ''
   };
 
