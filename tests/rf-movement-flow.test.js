@@ -69,7 +69,12 @@ function buildContext(initialState = {}) {
       ...initialState
     },
     window: {},
-    FinanceCore: {},
+    FinanceCore: {
+      assetAppliedValue: (a) => context.isRendaFixaAsset(a) ? context.rfValues(a).applied : (Number(a?.qty)||0)*(Number(a?.avg_price)||0),
+      assetCurrentValue: (a) => context.isRendaFixaAsset(a) ? context.rfValues(a).current : (Number(a?.qty)||0)*(Number(a?.current_price)||0),
+      assetJurosValue: (a) => context.isRendaFixaAsset(a) ? (Number.isFinite(context.rfValues(a).profit) ? context.rfValues(a).profit : null) : null,
+      assetRentabPct: (a) => context.isRendaFixaAsset(a) ? (Number.isFinite(context.rfValues(a).rentab) ? context.rfValues(a).rentab : null) : (((Number(a?.avg_price)||0)>0 && (Number(a?.current_price)||0)>0) ? ((Number(a?.current_price)||0)-(Number(a?.avg_price)||0))/(Number(a?.avg_price)||0)*100 : null)
+    },
     normalizeType: (value, fallback = 'Ação') => String(value ?? fallback).trim() || 'Ação',
     metaTicker: () => ({ type: 'Ação', sector: '—' }),
     inputDateValue,
@@ -276,6 +281,21 @@ test('saveRfMovimentacao de resgate parcial reduz o valor aplicado', () => {
   context.saveRfMovimentacao();
   assert.equal(context.S.assets[0].rf_applied_value, 700);
   assert.equal(context.S.rfEvents[0].principalDelta, -300);
+});
+
+test('saveRfMovimentacao de resgate parcial reduz também o valor atual para evitar lucro falso', () => {
+  const asset = makeRfAsset({ rf_gross_value: 1200, rf_liquid_value: 1100, fixed_current_value: 1100, current_price: 1100 });
+  const { context } = buildContext({ assets: [asset] });
+  context.S.rfMovementEditor = { assetId: 'rf-asset-1', draft: { mode: 'resgate_parcial', date: '2026-06-01', principalDelta: '300,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' } };
+  context.saveRfMovimentacao();
+  const updated = context.S.assets[0];
+  assert.equal(updated.rf_applied_value, 700);
+  assert.equal(updated.rf_liquid_value, 800);
+  assert.equal(updated.fixed_current_value, 800);
+  assert.equal(updated.current_price, 800);
+  assert.equal(context.assetCurrentValue(updated), 800);
+  assert.equal(context.assetJurosValue(updated), 100);
+  assert.equal(context.assetRentabPct(updated), 14.285714285714285);
 });
 
 test('saveRfMovimentacao de resgate total pede confirmacao e zera o valor aplicado', () => {

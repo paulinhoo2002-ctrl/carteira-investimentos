@@ -342,6 +342,54 @@ test('EDITAR: svA salva alteracoes e fecha o modal', () => {
   assert.equal(harness.context.S.assets[0].sector, 'Bancos');
 });
 
+test('EDITAR: svA mantem um ativo de renda fixa como renda fixa ao salvar', () => {
+  const harness = buildRfHarness();
+  const fields = {
+    'f-rf-name': { value: 'CDB Prefixado' },
+    'f-rf-subtype': { value: 'CDB' },
+    'f-rf-app-date': { value: '2026-01-10' },
+    'f-rf-due': { value: '2027-01-10' },
+    'f-rf-rate': { value: '12% a.a.' },
+    'f-rf-applied': { value: '700,00' },
+    'f-rf-gross': { value: '1200,00' },
+    'f-rf-liquid': { value: '1100,00' },
+    'f-rf-iriof': { value: '0,00' },
+    'f-rf-unavailable': { value: '0,00' },
+    'f-rf-profit': { value: '' },
+    'f-rf-note': { value: 'nota' }
+  };
+  harness.context.document = { getElementById: (id) => fields[id] || null, querySelector: () => null };
+  harness.context.S.assets = [{
+    id: 'rf-asset-1',
+    ticker: 'CDB-FIX-1',
+    name: 'CDB Prefixado',
+    type: 'Renda Fixa',
+    rf_subtype: 'CDB',
+    rf_yield_type: 'prefixado',
+    rf_contract_rate: '12% a.a.',
+    rf_application_date: '2026-01-10',
+    rf_applied_value: 700,
+    rf_gross_value: 1200,
+    rf_liquid_value: 1100,
+    fixed_initial_value: 1000,
+    fixed_current_value: 1100,
+    fixed_gross_value: 1200,
+    current_price: 1100,
+    avg_price: 1000,
+    sector: 'Renda Fixa'
+  }];
+
+  harness.edA('rf-asset-1');
+  harness.svA();
+
+  assert.equal(harness.context.S.assets[0].type, 'Renda Fixa');
+  assert.equal(harness.context.S.assets[0].rf_applied_value, 700);
+  assert.equal(harness.context.S.assets[0].rf_liquid_value, 1100);
+  assert.equal(harness.context.S.assets[0].fixed_current_value, 1100);
+  assert.equal(harness.context.S.assets[0].current_price, 1100);
+  assert.equal(harness.context.S.assets[0].sector, 'CDB');
+});
+
 test('EDITAR: clA fecha o modal (cancelar)', () => {
   const harness = buildRfHarness();
   harness.context.S.assets = [{ id: 123456, ticker: 'ITUB4', type: 'Ação' }];
