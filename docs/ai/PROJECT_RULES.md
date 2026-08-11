@@ -1,5 +1,13 @@
 # Regras Absolutas do Projeto
 
+## Limites da ui-ux-pro-max
+
+- `ui-ux-pro-max` e complementar a stack `frontend-design` -> `interface-design` -> implementacao -> `playwright` -> `impeccable` -> `caveman-review`.
+- Pode orientar UI, UX, layout, design system, charts visuais, hierarquia, tipografia, responsividade, acessibilidade e copy visual.
+- Nao pode criar ou alterar formulas financeiras, saldo, patrimonio, preco medio, resultado, rentabilidade, proventos, IR, IOF, RF, schema, `FinanceCore`, `PersistenceCore` ou persistencia.
+- Ao exibir dados financeiros, deve reutilizar as funcoes oficiais existentes e nunca criar fonte paralela.
+- A instalacao deve ser feita pelo CLI oficial; nao copiar ou adaptar manualmente os arquivos gerados.
+
 ## Regras Consolidadas dos PRs #266 e #267
 
 - CSS de acessibilidade deve ser escopado a tela ou componente da feature.

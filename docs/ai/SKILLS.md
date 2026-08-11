@@ -1,5 +1,17 @@
 # Skills locais do projeto
 
+### `ui-ux-pro-max`
+- Uso: inteligencia de design, padroes de UI/UX, design systems, dashboards, charts, tipografia, paletas e heuristicas responsivas.
+- Quando usar: ao revisar ou planejar UI, UX, dashboards, visualizacoes, componentes, acessibilidade e responsividade.
+- Quando nao usar: regras financeiras, persistencia, schema, backend ou automacao sem impacto visual.
+- Papel: complementar `frontend-design`, `interface-design`, `impeccable`, `playwright` e `caveman-review`; nao substitui nenhuma delas.
+- Instalacao oficial: `npm install -g ui-ux-pro-max-cli` e `uipro init --ai codex` ou `uipro init --ai opencode`.
+- Integracoes oficiais: Codex em `.agents/skills/`; OpenCode em `.opencode/skills/`.
+- O CLI tambem gera skills auxiliares oficiais (`banner-design`, `brand`, `design`, `design-system`, `slides` e `ui-styling`); nao duplicar manualmente.
+- Versao validada nesta infraestrutura: CLI `2.14.1`, skill/release `v2.14.1`.
+- Limites obrigatorios: nao alterar formulas, saldo, patrimonio, preco medio, resultado, rentabilidade, proventos, IR, IOF, RF, schema, `FinanceCore`, `PersistenceCore` ou persistencia.
+- Pode atuar somente em UI, UX, layout, design system, charts visuais, hierarquia, tipografia, responsividade, acessibilidade e copy visual.
+
 Antes de iniciar tarefas, verificar se alguma skill local se aplica.
 Quando varias skills forem relevantes, combina-las na ordem mais adequada ao trabalho.
 

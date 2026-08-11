@@ -1,5 +1,12 @@
 # Project Memory
 
+## ui-ux-pro-max
+
+- Instalacao oficial validada no clone de infraestrutura com `ui-ux-pro-max-cli` `2.14.1`.
+- Codex foi gerado em `.agents/skills/`; OpenCode em `.opencode/`.
+- O CLI gera a skill principal e auxiliares oficiais; nao duplicar manualmente em outros caminhos.
+- A skill foi exercitada com a busca oficial de design system para o Dashboard, sem alterar codigo da aplicacao.
+
 ## PR #266 - Dividendos
 
 - Acessibilidade: touch targets, focus-visible e contraste com tokens.

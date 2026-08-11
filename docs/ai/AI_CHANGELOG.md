@@ -2,6 +2,12 @@
 
 ## 2026-08-11
 
+- Registrada `ui-ux-pro-max` como 13a skill oficial, validada na versao `v2.14.1`.
+- Instalacoes oficiais geradas para Codex (`.agents/skills/`) e OpenCode (`.opencode/`).
+- Documentados o papel complementar da skill, o comando oficial e os limites contra alteracoes financeiras/persistencia.
+
+## 2026-08-11
+
 - PRs #266/#267 registrados: acessibilidade de Dividendos e correcoes RF com smoke funcional.
 - Registrados testMode em memoria, gate externo de build:modern e isolamento entre agentes.
 - Adotada a skill local `frontend-design` para planejamento e revisao de UI/UX, com validacao no lock e no setup-ai.

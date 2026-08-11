@@ -25,6 +25,7 @@ Thumbs.db
 
 # Codex / IA
 .agents/
+.opencode/
 skills-lock.json
 
 # Vercel
