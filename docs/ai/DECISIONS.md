@@ -2,6 +2,34 @@
 
 Este documento registra decisões arquiteturais que foram validadas pelo projeto e devem ser preservadas.
 
+## Decision 009
+**Titulo**: Isolamento de trabalho paralelo
+
+**Decisao**: Features criticas ou agentes simultaneos usam branch, worktree ou clone isolado. Cada agente confirma repositorio, branch, HEAD, status e `origin/main` antes de editar. Working tree suja de outra feature exige parada.
+
+**Status**: Ativo e vinculante
+
+## Decision 010
+**Titulo**: Semantica de testMode
+
+**Decisao**: `testMode` usa fixture em memoria. `save()` nao representa persistencia real e `reload` reinicializa o estado; smokes devem validar estado, UI e calculos na sessao sem exigir persistencia apos reload.
+
+**Status**: Ativo e vinculante
+
+## Decision 011
+**Titulo**: EPERM de build:modern no sandbox
+
+**Decisao**: EPERM ao manipular `modern/dist` somente no sandbox e bloqueio ambiental provisoriamente. Validar em PowerShell normal; nao alterar ACL, usar `takeown` ou desabilitar protecoes.
+
+**Status**: Ativo e vinculante
+
+## Decision 012
+**Titulo**: Coerencia contabil de RF
+
+**Decisao**: Reducao de principal nunca pode ser lucro. Apos resgate, principal e bases oficiais de valor atual permanecem coerentes. Edicao preserva o tipo oficial quando o modal nao permite editar tipo.
+
+**Status**: Ativo e vinculante
+
 ## Decision 001
 **Título**: Uso obrigatório do finance-core para cálculos financeiros
 

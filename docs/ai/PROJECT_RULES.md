@@ -1,5 +1,15 @@
 # Regras Absolutas do Projeto
 
+## Regras Consolidadas dos PRs #266 e #267
+
+- CSS de acessibilidade deve ser escopado a tela ou componente da feature.
+- Reducao de principal RF nunca e ganho; valores oficiais devem permanecer coerentes apos resgate.
+- Edicao de ativo deve preservar o tipo oficial quando o modal nao permite alterar tipo.
+- `testMode` usa memoria e nao comprova persistencia apos reload; nao relaxar as validacoes financeiras, visuais e de telemetria da sessao.
+- EPERM de `build:modern` restrito ao sandbox deve ser validado em PowerShell normal antes de qualquer diagnostico de ACL.
+- Trabalho paralelo exige branch, worktree ou clone isolado; confirmar repo, branch, HEAD, status e `origin/main` antes de editar.
+- Working tree suja de outra feature exige parada; nao usar `reset`, `clean`, `stash` ou `restore` sem autorizacao.
+
 Este documento contém as regras absolutas que devem ser seguidas por qualquer agente (humano ou IA) operando no repositório.
 
 ## Regras de Desenvolvimento
