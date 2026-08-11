@@ -630,6 +630,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .premium-action-share{font-size:10px;font-weight:850;color:#60a5fa;white-space:nowrap}
 .premium-panel-actions{display:flex;justify-content:flex-end;margin-top:9px}
 .premium-panel-actions .btn{padding:7px 10px;font-size:10px}
+.dashboard-home-income .premium-panel-actions .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .premium-note{font-size:9px;color:var(--muted);line-height:1.45;margin-top:8px}
 .rf-page{display:flex;flex-direction:column;gap:12px}
 .rf-hero{display:flex;flex-direction:column;gap:10px}
@@ -20319,7 +20320,7 @@ function dashboardPassiveIncomePanel(data){
       ${dashboardMetricCard('💵','Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#34d399','rgba(52,211,153,.14)')}
       ${dashboardMetricCard('📊','Média 12 meses',fmt(monthlyAvg),'Base usada para leitura da renda passiva','#60a5fa','rgba(96,165,250,.14)')}
       ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-      ${dashboardMetricCard('🧭','Falta para meta',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
+      ${dashboardMetricCard('🧭','Falta para meta — média 12M',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
     </div>
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
   </div>`;
