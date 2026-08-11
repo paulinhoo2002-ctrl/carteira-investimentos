@@ -45,6 +45,10 @@ Historical facts and permanent decisions from the project's evolution.
 
 ## Permanent Decisions
 
+- `frontend-design` passa a ser skill local padrao para telas, modais e refinamentos visuais.
+- Em tarefas de interface, combinar `frontend-design` com `interface-design`, `playwright`, `impeccable` e `caveman-review` conforme o escopo.
+- A skill orienta a apresentacao e a usabilidade, mas nao autoriza mudancas em regras financeiras, persistencia ou schema.
+
 - Nunca duplicar `saveRfMovimentacao`; sempre reutilizar a função oficial.
 - Sempre reutilizar `finance-core.js` para cálculos financeiros; nunca criar cálculos paralelos.
 - Renderização da UI deve ser baseada no estado global `S` (ou equivalente via persistence).

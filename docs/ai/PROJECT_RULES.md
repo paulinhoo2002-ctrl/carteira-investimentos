@@ -27,6 +27,31 @@ Este documento contém as regras absolutas que devem ser seguidas por qualquer a
 - **Respeitar AGENTS.md**: Seguir todas as diretrizes contidas em `AGENTS.md`.
 - **Usar skills locais quando aplicáveis**: Antes de iniciar uma tarefa, verificar se alguma skill local em `.agents/skills` se aplica e utilizá-la.
 
+## Regra de frontend-design
+
+- Usar `frontend-design` em telas, modais e refinamentos de UX com impacto visual.
+- Planejar direcao visual, hierarquia, tipografia, spacing, estados e responsividade antes de editar.
+- Combinar com `interface-design`, `playwright`, `impeccable` e `caveman-review` quando aplicavel.
+- Nao permitir que uma revisao visual altere regras financeiras, persistencia, schema ou areas protegidas.
+
+## Limites da stack UI/UX
+
+- `frontend-design` e `interface-design` nao podem criar regra financeira, calculo paralelo, persistencia, schema, fonte paralela de saldo ou rentabilidade, nem duplicar funcao oficial.
+- Ao exibir dados financeiros, a UI deve reutilizar as funcoes oficiais existentes.
+
+## Onboarding de continuidade
+
+Ao iniciar em computador novo, clone novo, chat novo ou agente novo:
+
+1. validar repositorio, branch, HEAD e status;
+2. ler `docs/ai`;
+3. executar `scripts/setup-ai.ps1`;
+4. verificar ou restaurar as skills locais;
+5. conferir `docs/ai/skills.lock.json`;
+6. somente depois iniciar implementacao.
+
+Uma skill nova relevante exige instalacao local, lock atualizado, documentacao, memoria e changelog.
+
 ## Regras de Documentação
 
 - **Manter documentação em docs/ai**: Toda documentação persistente de IA deve ficar em `docs/ai/`.

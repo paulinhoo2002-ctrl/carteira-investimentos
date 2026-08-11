@@ -122,6 +122,12 @@ flowchart TD
 - Para verificar regressões (manuais e funcionais)
 - **Não usar** como substituto de testes unitários ou Playwright
 
+### frontend-design
+- Antes da implementacao de telas, modais ou refinamentos de UX com impacto visual.
+- Para definir direcao visual, tipografia, composicao, spacing, estados e responsividade.
+- Deve respeitar o conceito aprovado e nao alterar regras financeiras, persistencia ou schema.
+- Combinar com `interface-design`, `playwright`, `impeccable` e `caveman-review` quando aplicavel.
+
 ### caveman-review
 - Para revisão de decisões técnicas e de implementação
 - Quando houver necessidade de comunicação ultra-compressa e focada
