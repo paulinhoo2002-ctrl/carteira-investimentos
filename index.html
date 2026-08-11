@@ -1207,6 +1207,11 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .es{text-align:center;padding:40px 20px;color:#3d5472;line-height:1.7}
 .ap-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0 0 12px}
 .ap-summary .card{min-width:0;min-height:78px;padding:10px 11px;display:flex;flex-direction:column;justify-content:space-between}
+.ap-summary .ap-summary-current{grid-column:span 6;min-height:104px}
+.ap-summary .ap-summary-core{grid-column:span 3;min-height:88px}
+.ap-summary .ap-summary-activity{grid-column:span 2}
+.ap-summary .ap-summary-current .cv{font-size:25px}
+.ap-summary .ap-summary-current .cs,.ap-summary .ap-summary-core .cs{white-space:normal}
 .ap-summary .cv{font-size:17px;line-height:1.05;word-break:break-word}
 .ap-summary .cl{font-size:10px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ap-summary .cs{font-size:10px;line-height:1.2;color:#7489a4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1226,6 +1231,7 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .aporte-view-tabs,.aporte-filter-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .aporte-view-tabs{padding:5px;border:1px solid var(--border);background:var(--panel);border-radius:14px;width:max-content;max-width:100%}
 .aporte-view-tab,.aporte-filter-chip{border:1px solid transparent;background:transparent;color:var(--muted);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:800;transition:.18s ease}
+.aporte-premium .ap-toolbar .btn,.aporte-premium .aporte-view-tab,.aporte-premium .aporte-filter-chip{min-height:44px}
 .aporte-view-tab:hover,.aporte-filter-chip:hover{color:var(--text);background:var(--surface)}
 .aporte-view-tab.on{color:#eef2ff;background:linear-gradient(135deg,#4f46e5,#6d5ce7);box-shadow:0 7px 18px rgba(79,70,229,.22)}
 .aporte-filter-row{padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--panel)}
@@ -2717,6 +2723,9 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .ap-summary .cl{font-size:9px!important;margin-bottom:3px!important}
   .ap-summary .cs{font-size:9px!important;line-height:1.1!important}
   .ap-summary > div{min-width:0}
+  .ap-summary .ap-summary-current{grid-column:1/-1;min-height:96px}
+  .ap-summary .ap-summary-core{grid-column:span 1;min-height:82px}
+  .ap-summary .ap-summary-activity{grid-column:span 1;min-height:72px}
   .ap-summary > div > div:nth-child(2){
     font-size:15px!important;
     line-height:1.06!important;
@@ -22417,12 +22426,12 @@ function apTab(){
       });
   const reserve=reserveStats();
   const summaryCards=S.aportes.length?`<div class="ap-summary">
-    <div class="card"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Soma dos ativos pelo valor atual</div></div>
-    <div class="card"><div class="cl">Capital investido</div><div class="cv" style="color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div><div class="cs">Compras - vendas</div></div>
-    <div class="card"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}${resultadoPct!=null?` <span class="cs" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'};font-size:11px">(${resultadoPct>=0?'+':''}${resultadoPct.toFixed(2)}%)</span>`:''}</div><div class="cs">Valor atual - capital investido</div></div>
-    <div class="card"><div class="cl">Compras realizadas</div><div class="cv" style="color:#818cf8">${fmt(compras)}</div><div class="cs">Total comprado</div></div>
-    <div class="card"><div class="cl">Vendas realizadas</div><div class="cv" style="color:#f87171">${fmt(vendas)}</div><div class="cs">Total vendido</div></div>
-    <div class="card"><div class="cl">Operações</div><div class="cv" style="color:#e2eaf6">${S.aportes.length}</div><div class="cs">Total de registros</div></div>
+    <div class="card ap-summary-current"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Soma dos ativos pelo valor atual</div></div>
+    <div class="card ap-summary-core"><div class="cl">Capital investido</div><div class="cv" style="color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div><div class="cs">Compras - vendas</div></div>
+    <div class="card ap-summary-core"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}${resultadoPct!=null?` <span class="cs" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'};font-size:11px">(${resultadoPct>=0?'+':''}${resultadoPct.toFixed(2)}%)</span>`:''}</div><div class="cs">Valor atual - capital investido</div></div>
+    <div class="card ap-summary-activity"><div class="cl">Compras realizadas</div><div class="cv" style="color:#818cf8">${fmt(compras)}</div><div class="cs">Total comprado</div></div>
+    <div class="card ap-summary-activity"><div class="cl">Vendas realizadas</div><div class="cv" style="color:#f87171">${fmt(vendas)}</div><div class="cs">Total vendido</div></div>
+    <div class="card ap-summary-activity"><div class="cl">Operações</div><div class="cv" style="color:#e2eaf6">${S.aportes.length}</div><div class="cs">Total de registros</div></div>
   </div>`:'';
   const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Capital investido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
   const reserveSummary=reserve.total>0?`<div class="cards" style="margin:0 0 12px">
