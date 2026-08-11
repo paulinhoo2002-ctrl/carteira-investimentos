@@ -12678,9 +12678,17 @@ function saveRfMovimentacao(){
   }
   newEvents.unshift(next);
   const novoSaldo=Number((result.saldo+next.principalDelta).toFixed(2));
+  const valorResgatado=Math.max(0,-next.principalDelta);
+  const zeraBase=next.type==='resgate_total';
   const newAssets=(S.assets||[]).map(a=>{
     if(rfAssetEventId(a)!==rfAssetEventId(asset)) return a;
-    return {...a, rf_applied_value:novoSaldo};
+    const base={...a, rf_applied_value:novoSaldo};
+    if(!zeraBase && valorResgatado<=0) return base;
+    const ajuste={};
+    ['rf_gross_value','fixed_gross_value','marketValue','currentValue','rf_liquid_value','fixed_current_value','liquidValue','current_price'].forEach(campo=>{
+      if(a[campo]!==undefined) ajuste[campo]=zeraBase?0:Math.max(0, Number(a[campo]||0)-valorResgatado);
+    });
+    return {...base, ...ajuste};
   });
   S.rfEvents=normalizeRfEvents(newEvents);
   S.assets=newAssets;
@@ -25714,7 +25722,8 @@ function svA(){
   const pt=parseNum(document.getElementById('f-pt')?.value);
   const ip=parseNum(document.getElementById('f-ip')?.value);
   const se=document.getElementById('f-se')?.value?.trim()||'';
-  const ty=normalizeType(document.getElementById('f-ty')?.value||'Ação','Ação');
+  const tyValue=document.getElementById('f-ty')?.value;
+  const ty=normalizeType(tyValue||(isRendaFixaAsset(editedAsset)?'Renda Fixa':(editedAsset?.type||'Ação')),'Ação');
   const isRF=ty==='Renda Fixa';
   S.assets=S.assets.map(a=>{
     if(a.id!==S.editId) return a;
