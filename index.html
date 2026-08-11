@@ -707,6 +707,18 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .rf-event-editor-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px}
 .rf-movement-balance{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:10px;color:var(--muted)}
 .rf-movement-balance strong{color:var(--text)}
+.rf-movement-summary{margin-top:10px;padding:9px 11px;border:1px solid rgba(96,165,250,.22);border-radius:10px;background:rgba(96,165,250,.08);display:flex;flex-direction:column;gap:5px}
+.rf-movement-summary-title{font-size:9px;font-weight:800;color:#60a5fa;text-transform:uppercase;letter-spacing:.05em}
+html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
+.rf-movement-summary-row{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted);line-height:1.4}
+.rf-movement-summary-row strong{color:var(--text);font-weight:600}
+.rf-field-hint{margin-top:4px;font-size:10px;color:var(--muted);line-height:1.4}
+.rf-field-error{margin-top:4px;font-size:10px;color:var(--danger);line-height:1.4}
+.rf-input-error{border-color:rgba(248,113,113,.55)!important}
+.rf-input-error:focus{border-color:#ef4444!important;box-shadow:0 0 0 3px rgba(248,113,113,.18)!important}
+.rf-event-editor input,.rf-event-editor select{min-height:44px}
+.rf-event-editor .btn,.rf-event-actions .btn{min-height:44px!important;display:inline-flex;align-items:center;justify-content:center}
+.rf-event-badge.zero{color:#34d399;border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.08)}
 
 
 /* Portfolio Movement Preview (Entrega 2B) */
@@ -21000,6 +21012,10 @@ function rfEventStatusBadge(row, totals){
   }
   return `<span class="rf-event-badge warn">${totals.count}/${seed.count} eventos</span>`;
 }
+function rfZeroBalanceBadge(asset){
+  if(!asset || rfPrincipalBalance(asset).value!==0) return '';
+  return `<span class="rf-event-badge zero">Saldo zerado</span>`;
+}
 function rfEventReceiptsSummaryHtml(row){
   const count=Number(row?.eventCount)||0;
   if(count<=0) return '';
@@ -21060,7 +21076,8 @@ function openRfMovementEditor(assetId, mode){
   render();
   const domId=rfMovementEditorDomId(asset);
   requestAnimationFrame(()=>{
-    const el=document.getElementById(domId+'-date');
+    const targetId=mode==='resgate_parcial' ? domId+'-principal' : domId+'-date';
+    const el=document.getElementById(targetId);
     if(el && el.focus) el.focus();
   });
 }
@@ -21083,20 +21100,49 @@ function rfMovementEditorHtml(asset){
   const draft=S.rfMovementEditor.draft||rfMovementDraftForAsset(asset,'aporte');
   const saldo=rfPrincipalBalance(asset).value;
   const isTotal=draft.mode==='resgate_total';
+  const isResgate=draft.mode==='resgate_parcial'||isTotal;
   const typed=parseNum(draft.principalDelta||'0');
+  const overSaldo=draft.mode==='resgate_parcial' && typed>saldo;
   const typedDelta=isTotal ? -saldo : (draft.mode==='aporte' ? typed : -typed);
-  const novoSaldo=Number(Math.max(0, saldo+typedDelta).toFixed(2));
-  const canSave=!!draft.date && (isTotal ? saldo>0 : typed>0);
+  const novoSaldo=Number((saldo+typedDelta).toFixed(2));
+  const saldoDepois=overSaldo ? '—' : fmt(novoSaldo);
+  const canSave=!!draft.date && (isTotal ? saldo>0 : (draft.mode==='aporte' ? typed>0 : typed>0&&!overSaldo));
   const domId=rfMovementEditorDomId(asset);
+  const principalLabel=isResgate?'Principal a resgatar':'Valor do principal';
+  const panelTitle=isResgate?'Resgatar título':'Movimentar título';
+  const panelSub=isResgate?'Confira o resumo abaixo e confirme o resgate para atualizar o valor aplicado do título.':'Registra aporte ou resgate e atualiza o valor aplicado do título.';
+  const ctaText=isResgate?'Confirmar resgate':'Salvar movimentação';
+  const principalError=overSaldo
+    ? `<span class="rf-field-error" id="${domId}-principal-error" role="alert">Valor maior que o saldo disponível. O saldo atual é ${fmt(saldo)}.</span>`
+    : '';
+  const totalHint=isTotal
+    ? `<div class="rf-field-hint" id="${domId}-principal-hint">Este resgate zera o principal aplicado deste título. Valor preenchido automaticamente.</div>`
+    : '';
+  const resumoRows=[];
+  if(isResgate){
+    resumoRows.push(['Título', rfAssetEventTicker(asset)||'RF']);
+    resumoRows.push(['Tipo', isTotal?'Resgate total':'Resgate parcial']);
+    resumoRows.push(['Principal', fmt(isTotal?saldo:typed)]);
+    resumoRows.push(['Saldo antes', fmt(saldo)]);
+    resumoRows.push(['Saldo após', overSaldo?'—':fmt(novoSaldo)]);
+    resumoRows.push(['Data', draft.date||'—']);
+    if(parseNum(draft.ir||'0')>0) resumoRows.push(['IR', fmt(parseNum(draft.ir))]);
+    if(parseNum(draft.iof||'0')>0) resumoRows.push(['IOF', fmt(parseNum(draft.iof))]);
+    if(String(draft.grossValue||'').trim()!=='') resumoRows.push(['Valor bruto', fmt(parseNum(draft.grossValue))]);
+    if(String(draft.netValue||'').trim()!=='') resumoRows.push(['Valor líquido', fmt(parseNum(draft.netValue))]);
+  }
+  const resumoHtml=isResgate
+    ? `<div class="rf-movement-summary" aria-live="polite"><div class="rf-movement-summary-title">Resumo do resgate</div>${resumoRows.map(([k,v])=>`<div class="rf-movement-summary-row"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div>`
+    : '';
   return `<div class="rf-event-editor" data-rf-movement-editor="1">
     <div class="rf-panel-head" style="margin-bottom:8px">
-      <div><div class="rf-panel-title">Movimentar título</div><div class="rf-panel-sub">Registra aporte ou resgate e atualiza o valor aplicado do título.</div></div>
+      <div><div class="rf-panel-title">${panelTitle}</div><div class="rf-panel-sub">${panelSub}</div></div>
       <div class="rf-panel-badge">${esc(rfAssetEventTicker(asset)||'RF')}</div>
     </div>
     <div class="rf-event-editor-grid">
       <div><label class="fl" for="${domId}-date">Data</label><input type="date" id="${domId}-date" aria-label="Data da movimentação" value="${esc(draft.date||'')}" onchange="setRfMovementEditorField('date', this.value)"></div>
       <div><label class="fl" for="${domId}-mode">Tipo de movimentação</label><select id="${domId}-mode" aria-label="Tipo de movimentação" onchange="setRfMovementEditorField('mode', this.value)">${rfMovementModeOptionsHtml(draft.mode)}</select></div>
-      <div><label class="fl" for="${domId}-principal">Valor do principal</label><input type="text" inputmode="decimal" id="${domId}-principal" aria-label="Valor do principal movimentado" value="${esc(isTotal?moneyInput(saldo):draft.principalDelta)}" onchange="setRfMovementEditorField('principalDelta', this.value)" ${isTotal?'readonly':''} placeholder="0,00"></div>
+      <div><label class="fl" for="${domId}-principal">${principalLabel}</label><input type="text" inputmode="decimal" id="${domId}-principal" aria-label="Valor do principal movimentado" value="${esc(isTotal?moneyInput(saldo):draft.principalDelta)}" onchange="setRfMovementEditorField('principalDelta', this.value)" ${isTotal?'readonly':''} placeholder="0,00"${overSaldo?` aria-describedby="${domId}-principal-error"`:''}${overSaldo?' class="rf-input-error"':''}>${principalError}${totalHint}</div>
       <div><label class="fl" for="${domId}-ir">IR</label><input type="text" inputmode="decimal" id="${domId}-ir" aria-label="IR da movimentação" value="${esc(draft.ir||'0,00')}" onchange="setRfMovementEditorField('ir', this.value)"></div>
       <div><label class="fl" for="${domId}-iof">IOF</label><input type="text" inputmode="decimal" id="${domId}-iof" aria-label="IOF da movimentação" value="${esc(draft.iof||'0,00')}" onchange="setRfMovementEditorField('iof', this.value)"></div>
       <div><label class="fl" for="${domId}-gross">Valor bruto</label><input type="text" inputmode="decimal" id="${domId}-gross" aria-label="Valor bruto da movimentação" value="${esc(draft.grossValue||'')}" onchange="setRfMovementEditorField('grossValue', this.value)" placeholder="opcional"></div>
@@ -21104,13 +21150,14 @@ function rfMovementEditorHtml(asset){
       <div><label class="fl" for="${domId}-source">Fonte</label><input type="text" id="${domId}-source" aria-label="Fonte da movimentação" value="${esc(draft.source||'Manual')}" onchange="setRfMovementEditorField('source', this.value)" placeholder="ex: Histórico manual XP"></div>
       <div style="grid-column:1 / -1"><label class="fl" for="${domId}-note">Observação</label><input type="text" id="${domId}-note" aria-label="Observação da movimentação" value="${esc(draft.note||'')}" onchange="setRfMovementEditorField('note', this.value)" placeholder="ex: aporte manual"></div>
     </div>
-    <div class="rf-movement-balance">
+    <div class="rf-movement-balance" aria-live="polite">
       <div>Saldo atual: <strong>${fmt(saldo)}</strong></div>
-      <div>Saldo após: <strong>${fmt(novoSaldo)}</strong></div>
+      <div>Saldo após: <strong>${saldoDepois}</strong></div>
     </div>
+    ${resumoHtml}
     <div class="rf-event-editor-actions">
       <button class="btn bgh" onclick="closeRfMovementEditor()">Cancelar</button>
-      <button class="btn bp" onclick="saveRfMovimentacao()" ${canSave?'':'disabled'}>Salvar movimentação</button>
+      <button class="btn bp" onclick="saveRfMovimentacao()" ${canSave?'':'disabled'}>${ctaText}</button>
     </div>
   </div>`;
 }
@@ -21177,7 +21224,7 @@ function rfEventHistoryCards(rows){
           <div class="rf-event-sub">${esc(row.category)} · ${esc(row.indexer)}${row.rate&&row.rate!=='taxa não informada'?` · ${esc(row.rate)}`:''}</div>
         </div>
         <div class="rf-event-actions">
-          ${rfEventStatusBadge(row, totals)}
+          ${rfEventStatusBadge(row, totals)}${rfZeroBalanceBadge(asset)}
           ${rfEventSeedActionHtml(row, totals)}
           <button class="btn bgh" onclick='openRfEventEditor(${JSON.stringify(rfAssetEventId(asset))})'>+ Evento</button>
           <button class="btn bgh" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")'>Movimentar</button>

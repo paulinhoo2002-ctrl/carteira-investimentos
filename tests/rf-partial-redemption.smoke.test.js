@@ -115,7 +115,7 @@ for (const viewport of viewports) {
       const principalInput = page.locator('.rf-event-editor input[aria-label="Valor do principal movimentado"]');
       await principalInput.fill(redemption.toFixed(2).replace('.', ','));
       await principalInput.press('Tab');
-      await page.locator('.rf-event-editor button').filter({ hasText: 'Salvar' }).click();
+      await page.locator('.rf-event-editor button').filter({ hasText: 'Confirmar resgate' }).click();
       await page.waitForFunction(() => !document.querySelector('.rf-event-editor'), { timeout: 5000 });
 
       const after = await page.evaluate(id => {

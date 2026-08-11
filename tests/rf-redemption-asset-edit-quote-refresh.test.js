@@ -169,8 +169,8 @@ test('RF: botao Salvar habilita com data preenchida e bloqueia sem data', () => 
 
   harness.context.S.rfMovementEditor = { assetId: '990001', draft: harness.rfMovementDraftForAsset(asset, 'resgate_total') };
   let html = harness.rfMovementEditorHtml(asset);
-  assert.ok(html.includes('Salvar movimentação'));
-  assert.equal(html.includes('disabled'), false, 'resgate total com data deve habilitar o botao Salvar');
+  assert.ok(html.includes('Confirmar resgate'));
+  assert.equal(html.includes('disabled'), false, 'resgate total com data deve habilitar o botao Confirmar resgate');
 
   harness.context.S.rfMovementEditor = { assetId: '990001', draft: { ...harness.rfMovementDraftForAsset(asset, 'resgate_total'), date: '' } };
   html = harness.rfMovementEditorHtml(asset);
