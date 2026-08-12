@@ -6,6 +6,10 @@
 
 Use-a como referencia complementar para design systems, dashboards, charts, tipografia, paletas, acessibilidade e responsividade. Ela nao pode alterar regras financeiras, `FinanceCore`, `PersistenceCore`, schema ou persistencia.
 
+## Skills de governanca (upstream `addyosmani/agent-skills` @ 0.6.6)
+
+Quatro skills do upstream oficial foram adicionadas em `.agents/skills/` (pinned tag `0.6.6`): `interview-me` (condicional), `source-driven-development` (fontes primarias), `doubt-driven-development` (obrigatoria no dominio financeiro sensivel) e `browser-testing-with-devtools` (complementa Playwright; MCP pendente). Detalhes, limites e hashes em `SKILLS.md`, `PROJECT_RULES.md` e `AI_CHANGELOG.md`.
+
 Este é o ponto de entrada para qualquer agente novo que trabalhar com a infraestrutura de IA do projeto.
 
 ## Ordem Obrigatória de Leitura

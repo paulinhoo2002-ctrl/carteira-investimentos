@@ -47,6 +47,15 @@ Este documento contém as regras absolutas que devem ser seguidas por qualquer a
 - `frontend-design` e `interface-design` nao podem criar regra financeira, calculo paralelo, persistencia, schema, fonte paralela de saldo ou rentabilidade, nem duplicar funcao oficial.
 - Ao exibir dados financeiros, a UI deve reutilizar as funcoes oficiais existentes.
 
+## Limites das skills de governanca (upstream `addyosmani/agent-skills` @ 0.6.6)
+
+- `interview-me` e condicional: usado somente sob ambiguidade material; nunca em CI/loop autonomo.
+- `source-driven-development` exige fonte primaria/oficial; nunca substituir silenciosamente valores internos da carteira por informacao externa; conflito com comportamento existente = PARAR e reportar.
+- `doubt-driven-development` e obrigatoria antes de consolidar mudancas no dominio financeiro sensivel; complementa testes, nao os substitui.
+- `browser-testing-with-devtools` diagnostica/entende runtime; Playwright transforma em prova automatizada; nao substitui Playwright.
+- Nenhuma das quatro skills autoriza mudanca de formula, persistencia, schema, `FinanceCore`, `PersistenceCore`, areas protegidas ou codigo de producao.
+- Dependencia opcional/pending: Chrome DevTools MCP (necessario por `browser-testing-with-devtools`) nao esta configurado; requer etapa propria.
+
 ## Onboarding de continuidade
 
 Ao iniciar em computador novo, clone novo, chat novo ou agente novo:

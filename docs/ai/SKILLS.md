@@ -101,6 +101,43 @@ Quando varias skills forem relevantes, combina-las na ordem mais adequada ao tra
 - Combinacao recomendada: `impeccable` para polish visual e `playwright` se a saida virar interface navegavel.
 - Caminho local: `.agents/skills/archify/`
 
+## Skills de governança (upstream `addyosmani/agent-skills` @ 0.6.6)
+
+Adicionadas em 2026-08-12, pinadas ao tag `0.6.6` (commit `bdf76c7c6b7b3b3e01bb15c9fdc42ac5351855c1`, licenca MIT).
+Destino: `.agents/skills/<skill>/`; referencia compartilhada preservada em `.agents/skills/references/orchestration-patterns.md` (necessaria por `doubt-driven-development`).
+
+### `interview-me`
+- Uso: extrair a intencao real por tras de requisitos ambíguos, uma pergunta por vez, ate ~95% de confianca.
+- Quando usar: pedido subespecificado ou ambíguo (ex.: "melhorar rentabilidade", "melhorar renda fixa", "criar projecao", "calcular rendimento", "melhorar preco medio") ou quando o usuario invocar explicitamente ("interview me").
+- Quando nao usar: typo, copy, CSS, troca de label, correcao mecanica ou pedido ja explicitamente especificado.
+- CONDICIONAL: nunca executar automaticamente em CI/loop autonomo.
+- Caminho local: `.agents/skills/interview-me/`
+
+### `source-driven-development`
+- Uso: fundamentar decisoes de implementacao em documentacao oficial atual (APIs, bibliotecas, Vercel, Firebase, B3, CVM, Banco Central, CDI, Selic, IPCA, formatos externos, tributacao quando aplicavel).
+- Regra da Carteira: FONTES FINANCEIRAS = fonte primaria/oficial; a fonte externa define o contrato; nao substituir silenciosamente valores internos da carteira por informacao externa.
+- Se a documentacao externa conflitar com o comportamento existente: PARAR e reportar o conflito.
+- Caminho local: `.agents/skills/source-driven-development/`
+
+### `doubt-driven-development`
+- Uso: revisao adversaria em contexto fresco antes de consolidar decisoes nao triviais.
+- OBRIGATORIA antes de consolidar mudancas em: patrimonio, rentabilidade, preco medio, dividendos, proventos, renda fixa, imposto, aportes, importacao, migracao, backup, persistencia, datas financeiras, arredondamentos, bruto/liquido.
+- Checklist: dupla contagem? zero versus ausencia? bruto versus liquido? aporte versus rendimento? provento contado duas vezes? resgate tratado como perda? mes/ano boundary? NaN/Infinity? arredondamento? migracao altera historico? backup roundtrip preserva patrimonio?
+- Complementa testes; nao substitui testes.
+- Referencia compartilhada: `.agents/skills/references/orchestration-patterns.md`.
+- Caminho local: `.agents/skills/doubt-driven-development/`
+
+### `browser-testing-with-devtools`
+- Uso: investigacao/runtime no navegador (DOM, console, network, computed styles, event handlers, focus, accessibility tree, performance, runtime errors, request failures).
+- Regra: DevTools diagnostica e entende; Playwright transforma comportamento em prova automatizada. NAO substitui Playwright.
+- Dependencia opcional/pending: Chrome DevTools MCP nao configurado neste ambiente (sem `.mcp.json`); etapa propria futura.
+- Caminho local: `.agents/skills/browser-testing-with-devtools/`
+
+Regras transversais das quatro skills:
+
+- Nenhuma das quatro skills recebe autoridade sobre areas protegidas.
+- `interview-me` e condicional; `source-driven-development` exige fontes primarias; `doubt-driven-development` e obrigatoria no dominio financeiro sensivel; `browser-testing-with-devtools` complementa Playwright.
+
 ## Regra de selecao
 
 - Verificar primeiro se alguma skill local se aplica antes de iniciar uma tarefa.
