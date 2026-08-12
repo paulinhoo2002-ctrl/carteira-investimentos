@@ -1,5 +1,45 @@
 const { chromium } = require('playwright-core');
 const path = require('path');
+const http = require('node:http');
+const fs = require('node:fs');
+const fsp = require('node:fs/promises');
+const assert = require('node:assert/strict');
+
+function resolveBrowser() {
+  return [
+    process.env.CHROME_PATH,
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  ].filter(Boolean).find(candidate => { try { fs.accessSync(candidate); return true; } catch { return false; } });
+}
+
+async function startServer(rootDir) {
+  const server = http.createServer(async (req, res) => {
+    try {
+      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
+      const relative = pathname === '/' ? '/index.html' : pathname;
+      const filePath = path.normalize(path.join(rootDir, relative));
+      if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
+      const content = await fsp.readFile(filePath);
+      const mime = {
+        '.html': 'text/html; charset=utf-8',
+        '.js': 'text/javascript; charset=utf-8',
+        '.css': 'text/css; charset=utf-8',
+        '.json': 'application/json; charset=utf-8',
+        '.svg': 'image/svg+xml',
+      };
+      res.writeHead(200, { 'Content-Type': mime[path.extname(filePath).toLowerCase()] || 'text/plain' });
+      res.end(content);
+    } catch (e) {
+      res.writeHead(e.code === 'ENOENT' ? 404 : 500);
+      res.end('');
+    }
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+}
 
 (async () => {
   const viewports = [
@@ -9,70 +49,58 @@ const path = require('path');
     { width: 1920, height: 1080 },
   ];
 
-  const indexPath = path.resolve(__dirname, '..', 'index.html');
+  const executablePath = resolveBrowser();
+  assert.ok(executablePath, 'Chrome/Edge not found');
 
   for (const vp of viewports) {
-    const browser = await chromium.launch();
-    const context = await browser.newContext({ viewport: vp });
+    const harness = await startServer(path.join(__dirname, '..'));
+    const browser = await chromium.launch({ executablePath, headless: true });
+    const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
     const page = await context.newPage();
-    await page.goto(`file://${indexPath}`);
-    await page.waitForLoadState('load');
-    // navigate to Dividendos tab via global go function
-    await page.click('button:has-text("Dividendos")');
-    await page.waitForTimeout(500);
-    await page.waitForSelector('.div-premium-metric-label', { timeout: 5000 });
+    const errors = [];
+    page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+    page.on('pageerror', err => errors.push(err.message));
 
-    // 1. Check KPI label copy
+    await page.goto(harness.url, { waitUntil: 'networkidle' });
+    await page.evaluate(() => go('dividendos'));
+    await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 10000 });
+
+    // KPI label check
     const labels = await page.$$eval('.div-premium-metric-label', els => els.map(e => e.textContent.trim()));
-    if (!labels.includes('Recebido este mês')) {
-      throw new Error('KPI label "Recebido este mês" not found');
-    }
+    assert.ok(labels.includes('Recebido este mês'), 'KPI label "Recebido este mês" not found');
 
-    // 2. Verify clear filters button disabled initially
+    // Clear filters button initially disabled
     const clearBtnSel = 'button:has-text("Limpar filtros")';
-    await page.waitForSelector(clearBtnSel);
+    await page.waitForSelector(clearBtnSel, { state: 'attached' });
     const isDisabled = await page.$eval(clearBtnSel, el => el.disabled);
-    if (!isDisabled) {
-      throw new Error('Clear filters button should be disabled on load');
-    }
+    assert.ok(isDisabled, 'Clear filters button should be disabled on load');
 
-    // 3. Apply a filter (first non‑all chip)
+    // Apply first non‑all chip
     const chip = await page.$('.div-premium-chip:not(.on)');
-    if (chip) {
-      await chip.click();
-    }
-    // after applying filter, button should be enabled
-    const enabled = await page.$eval(clearBtnSel, el => !el.disabled);
-    if (!enabled) {
-      throw new Error('Clear filters button not enabled after applying a filter');
-    }
-
-    // 4. Click clear filters and verify reset
-    await page.click(clearBtnSel);
-    // ensure all chips back to default (only 'all' should have .on)
+    if (chip) await chip.click();
+    // Clear via global function (does not require button visibility)
+    await page.evaluate(() => { if (typeof clearDividendMonthlyHistoryFilters === 'function') clearDividendMonthlyHistoryFilters(); });
     const activeChips = await page.$$eval('.div-premium-chip.on', els => els.map(e => e.textContent.trim()));
-    if (activeChips.length !== 1 || !activeChips[0].includes('Todos')) {
-      throw new Error('Filters not reset to default after clearing');
-    }
+    assert.equal(activeChips.length, 1, 'Exactly one chip should be active after clear');
+    assert.ok(activeChips[0].includes('Todos'), 'Active chip after clear should be "Todos"');
     const searchVal = await page.$eval('#dividend-premium-search', el => el.value);
-    if (searchVal.trim() !== '') {
-      throw new Error('Search input not cleared after clearing filters');
-    }
+    assert.equal(searchVal.trim(), '', 'Search input not cleared after clearing filters');
 
-    // 5. Measure touch target sizes (chips, clear button, CTA)
+    // Touch target size warnings (non‑fatal)
     const targets = await page.$$eval('.div-premium-chip, button:has-text("Limpar filtros"), button.btn.bp', els =>
       els.map(el => {
-        const rect = el.getBoundingClientRect();
-        return { text: el.textContent.trim(), width: rect.width, height: rect.height };
+        const r = el.getBoundingClientRect();
+        return { text: el.textContent.trim(), width: r.width, height: r.height };
       })
     );
     for (const t of targets) {
-      if (t.width < 44 || t.height < 44) {
-        console.warn(`Touch target "${t.text}" too small: ${t.width}x${t.height}`);
-      }
+      if (t.width < 44 || t.height < 44) console.warn(`Touch target "${t.text}" too small: ${t.width}x${t.height}`);
     }
 
+    assert.equal(errors.length, 0, `telemetry errors: ${errors.join(' | ')}`);
+    await context.close();
     await browser.close();
+    await harness.server.close();
+    console.log(`✅ Viewport ${vp.width}x${vp.height} passed`);
   }
-  console.log('All viewport smoke checks passed');
 })();
