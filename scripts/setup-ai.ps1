@@ -24,7 +24,11 @@ $requiredSkills = @(
     "caveman-help",
     "caveman-stats",
     "cavecrew",
-    "ui-ux-pro-max"
+    "ui-ux-pro-max",
+    "interview-me",
+    "source-driven-development",
+    "doubt-driven-development",
+    "browser-testing-with-devtools"
 )
 $requiredDocs = @(
     "AI_BASELINE.md",

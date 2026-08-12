@@ -8,6 +8,19 @@ Para tarefas visuais, usar a sequencia:
 
 `ui-ux-pro-max` fornece referencias de design system, dashboards, charts, tipografia, paletas e heuristicas. Ela nao autoriza mudancas financeiras, de schema ou persistencia.
 
+## Roteamento de habilidades (Carteira)
+
+- REQUISITO AMBIGUO → `interview-me` (condicional; nunca em CI/loop autonomo)
+- REGRA/API EXTERNA → `source-driven-development` (fontes primarias/oficiais; conflito com comportamento existente = PARAR e reportar)
+- CONTRATO/PLANO
+- IMPLEMENTACAO MINIMA + TESTES
+- MUDANCA FINANCEIRA SENSIVEL → `doubt-driven-development` (obrigatoria; complementa testes, nao substitui)
+- UI → `frontend-design`/`interface-design`/`ui-ux-pro-max`
+- RUNTIME → `browser-testing-with-devtools` (diagnostica) → `playwright` (prova automatizada)
+- REVIEW → `impeccable` → `caveman-review`
+
+Nenhuma das skills de governanca recebe autoridade sobre areas protegidas.
+
 Este documento descreve o fluxo padrão de desenvolvimento seguido no projeto Carteira de Investimentos.
 
 ## Fluxo Padrão
