@@ -22024,6 +22024,22 @@ function assetEditModal(){
     </div>
   </div>`;
 }
+function rfMovementFromAssetsModal(){
+  const editor=S.rfMovementEditor;
+  const asset=editor?.assetId ? getRfAssetByEventId(editor.assetId) : null;
+  if(!asset || S.quickMovementOpen) return '';
+  return `<div class="note-overlay" role="dialog" aria-modal="true" aria-label="Movimentação de renda fixa" onclick="if(event.target===this) closeRfMovementEditor()">
+    <div class="note-modal" style="max-width:900px">
+      <div class="note-head">
+        <div class="note-title">
+          <div><h3>Movimentação de renda fixa</h3><p>Registre aporte ou resgate e atualize o valor aplicado do título.</p></div>
+          <button class="btn bgh" onclick="closeRfMovementEditor()">Fechar</button>
+        </div>
+      </div>
+      <div class="note-body">${rfMovementEditorHtml(asset)}</div>
+    </div>
+  </div>`;
+}
 function ativos(){
   const innerTab=['analise','desempenho','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const assetMetricsCache=new Map();
@@ -22241,7 +22257,8 @@ function ativos(){
     <button class="asset-inner-tab ${innerTab==='desempenho'?'on':''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab==='desempenho'?'true':'false'}">Desempenho</button>
     <button class="asset-inner-tab ${innerTab==='renda-fixa'?'on':''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab==='renda-fixa'?'true':'false'}">Renda Fixa</button>
   </div>
-  ${innerTab==='analise' ? analysisPanel : innerTab==='desempenho' ? assetPerformanceOverviewPanel() : innerTab==='renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : patrimonyPanel}`;
+  ${innerTab==='analise' ? analysisPanel : innerTab==='desempenho' ? assetPerformanceOverviewPanel() : innerTab==='renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : patrimonyPanel}
+  ${innerTab==='patrimonio' ? rfMovementFromAssetsModal() : ''}`;
 }
 // APORTES
 // ══════════════════════════════════════
