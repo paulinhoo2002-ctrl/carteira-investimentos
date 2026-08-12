@@ -125,7 +125,7 @@ test('dividendSummaryCards ainda contem KPIs essenciais', () => {
   const fnStart = indexHtml.indexOf('function dividendSummaryCards()');
   const fnEnd = indexHtml.indexOf('function dividendDistributionRow(', fnStart);
   const fn = indexHtml.slice(fnStart, fnEnd);
-  assert.ok(fn.includes('Recebido no mês'));
+  assert.ok(fn.includes('Recebido este mês'));
   assert.ok(fn.includes('Total últimos 12 meses'));
   assert.ok(fn.includes('Meta mensal'));
   assert.ok(fn.includes('fmt(stats.total12)'));

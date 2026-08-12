@@ -17025,7 +17025,16 @@ async function fetchQuotes(manual=false){
               a.dy=Number(dyApi.toFixed(2));
               a.dySource='api';
             }
-          });
+  });
+
+function clearAllDividendFilters(){
+  S.dividendFilter='all';
+  S.dividendClassFilter='all';
+  S.dividendPeriod='all';
+  S.dividendSearch='';
+  render();
+}
+
           falhou.slice(i,i+20).forEach(t=>{ if(!recv.has(t)) semPreco.push(t); });
         }
       }catch(e){ debugWarn('fallback brapi:',e); }
@@ -24467,7 +24476,7 @@ function dividendSummaryCards(){
     ? `${fmt(audit.summary.quebrados)} vínculos quebrados · ${fmt(audit.summary.possiveis)} possíveis duplicidades`
     : 'Nenhuma revisão pendente.';
   return `<div class="div-premium-metrics">
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido no mês</div><div class="div-premium-metric-value good">${fmt(current.total)}</div><div class="div-premium-metric-sub">Soma dos lançamentos oficiais do mês atual · ${current.count} lançamento(s)</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido este mês</div><div class="div-premium-metric-value good">${fmt(current.total)}</div><div class="div-premium-metric-sub">Soma dos lançamentos oficiais do mês atual · ${current.count} lançamento(s)</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Média mensal ${fmt(stats.monthlyAvg)} · projeção anual ${fmt(stats.annualProjection)}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0?`${((current.total/stats.target)*100).toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current.total))}`:'Lida da aba Metas'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
@@ -24608,7 +24617,7 @@ function dividendFilterTabs(){
   const types=[['all','Todos'],['dividend','Dividendos'],['jcp','JCP'],['income','Rendimento FII'],['other','Outros']];
   const classes=[['all','Todas as classes'],['acao','Ação'],['fii','FII'],['etf','ETF'],['renda-fixa','Renda Fixa'],['outros','Outros']];
   const periods=[['all','Todo histórico'],['month','Este mês'],['12m','Últimos 12 meses']];
-  return `<div class="div-premium-toolbar"><div style="display:flex;flex-direction:column;gap:8px;min-width:0;flex:1 1 100%"><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div><div class="div-premium-filters">${types.map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}</div></div><details class="div-collapsible"><summary class="div-collapsible-summary"><div class="div-collapsible-main"><div class="div-collapsible-title">Mais filtros</div><div class="div-collapsible-sub">Classe e período</div></div><div class="div-collapsible-meta"><span class="when-closed">clique para abrir</span><span class="when-open">clique para ocultar</span></div><div class="div-collapsible-chev">▸</div></summary><div class="div-collapsible-body"><div class="div-premium-filters" style="flex-wrap:wrap;overflow:visible">${classes.map(([id,label])=>`<button class="div-premium-chip ${S.dividendClassFilter===id?'on':''}" onclick="setDividendClassFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Período</span>${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div></div></details></div></div>`;
+  return `<div class="div-premium-toolbar"><div style="display:flex;flex-direction:column;gap:8px;min-width:0;flex:1 1 100%"><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div><div class="div-premium-filters">${types.map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}</div></div><button type="button" class="btn bgh" style="min-height:44px;padding:8px 12px;font-size:11px" ${ (S.dividendFilter!=='all' || S.dividendClassFilter!=='all' || S.dividendPeriod!=='all' || (S.dividendSearch||'').trim()!=='') ? '' : 'disabled' } aria-label="Limpar filtros" onclick="clearAllDividendFilters()">Limpar filtros</button><details class="div-collapsible"><summary class="div-collapsible-summary"><div class="div-collapsible-main"><div class="div-collapsible-title">Mais filtros</div><div class="div-collapsible-sub">Classe e período</div></div><div class="div-collapsible-meta"><span class="when-closed">clique para abrir</span><span class="when-open">clique para ocultar</span></div><div class="div-collapsible-chev">▸</div></summary><div class="div-collapsible-body"><div class="div-premium-filters" style="flex-wrap:wrap;overflow:visible">${classes.map(([id,label])=>`<button class="div-premium-chip ${S.dividendClassFilter===id?'on':''}" onclick="setDividendClassFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Período</span>${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div></div></details></div></div>`;
 }
 function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const mode=['overview','received','asset','monthly','timeline','review'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
