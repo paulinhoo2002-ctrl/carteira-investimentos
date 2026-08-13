@@ -2038,7 +2038,8 @@ details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
 .div-month-filter-shell{position:relative}
 .div-month-filter-shell select{width:100%;min-height:36px;padding:0 34px 0 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;appearance:none}
 .div-month-filter-actions{display:flex;align-items:end;justify-content:flex-end}
-.div-monthly-toggle-group{display:inline-flex;gap:4px;border:1px solid var(--border);border-radius:999px;padding:3px;background:var(--surface);justify-self:end}
+.div-monthly-toggle-group{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:999px;padding:3px;background:var(--surface);justify-self:end}
+.div-monthly-toggle-label{font-size:10px;font-weight:800;color:var(--muted);padding:0 4px;white-space:nowrap}
 .div-monthly-toggle-btn{border:0;border-radius:999px;background:transparent;color:var(--muted);padding:6px 10px;font-size:10px;font-weight:850;cursor:pointer;white-space:nowrap}
 .div-monthly-toggle-btn.on{background:rgba(72,216,200,.16);color:var(--text)}
 .div-monthly-content{display:grid;gap:10px}
@@ -24016,6 +24017,7 @@ function dividendMonthlyHistoryV4(rows,startOpen=false){
         </div>
       </div>
       <div class="div-monthly-toggle-group" role="group" aria-label="Alternar visualização">
+        <span class="div-monthly-toggle-label">Visualização:</span>
         <button class="div-monthly-toggle-btn${view==='list'?' on':''}" type="button" aria-pressed="${view==='list'}" onclick="setDividendMonthlyHistoryView('list')">Lista</button>
         <button class="div-monthly-toggle-btn${view==='matrix'?' on':''}" type="button" aria-pressed="${view==='matrix'}" onclick="setDividendMonthlyHistoryView('matrix')">Matriz</button>
       </div>
@@ -24457,6 +24459,7 @@ function dividendAnnualMatrixView(data){
 function dividendAnnualMatrixToggleButton(){
   const view=String(S.dividendMonthlyHistoryView||'list');
   return `<div class="div-mat-toggle" role="group" aria-label="Visualização">
+    <span class="div-monthly-toggle-label">Visualização:</span>
     <button class="div-mat-toggle-btn${view==='list'?' on':''}" onclick="setDividendMonthlyHistoryView('list')" aria-pressed="${view==='list'}">Lista</button>
     <button class="div-mat-toggle-btn${view==='matrix'?' on':''}" onclick="setDividendMonthlyHistoryView('matrix')" aria-pressed="${view==='matrix'}">Matriz anual</button>
   </div>`;
