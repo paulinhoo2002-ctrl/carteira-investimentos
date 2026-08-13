@@ -658,11 +658,12 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .rf-bucket-list,.rf-type-list,.rf-alert-list,.rf-preview-list{display:flex;flex-direction:column;gap:7px}
 .rf-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:auto}
 .rf-table{width:100%;border-collapse:collapse;min-width:1120px}
-.rf-table th,.rf-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:top}
+.rf-table th,.rf-table td{padding:7px 7px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:top}
 .rf-table th{position:sticky;top:0;background:var(--surface);color:var(--muted);text-align:left;font-weight:800;z-index:1}
-.rf-table td{color:var(--text)}
+.rf-table td{color:var(--text);font-variant-numeric:tabular-nums}
 .rf-table tr:last-child td{border-bottom:0}
 .rf-table .rf-right{text-align:right;white-space:nowrap}
+.rf-table th.rf-right{white-space:normal}
 .rf-table .rf-strong{color:#edf3ff;font-weight:800}
 .rf-table .rf-muted{color:var(--muted)}
 .rf-summary-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 2px}
@@ -22163,16 +22164,16 @@ function ativos(){
        ].filter(Boolean).join('');
        return `<tr>
          <td>
-           <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
-             <div style="font-weight:800;color:#e2eaf6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name||a.ticker||'Renda Fixa')}</div>
-             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
+           <div style="display:flex;flex-direction:column;gap:4px;min-width:0;max-width:150px">
+             <div style="font-weight:800;color:#e2eaf6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(name||a.ticker||'Renda Fixa')}">${esc(name||a.ticker||'Renda Fixa')}</div>
+             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
              ${badges?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:1px">${badges}</div>`:''}
            </div>
          </td>
          <td>
-           <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
-             <div style="font-weight:700;color:#d7e1ef;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(subtype)}</div>
-             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(indexer)}</div>
+           <div style="display:flex;flex-direction:column;gap:4px;min-width:0;max-width:120px">
+             <div style="font-weight:700;color:#d7e1ef;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(subtype)}">${esc(subtype)}</div>
+             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(indexer)}">${esc(indexer)}</div>
            </div>
          </td>
          <td class="mu">${esc(appDate||'—')}</td>
