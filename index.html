@@ -6245,6 +6245,7 @@ function configMenu(){
       <div class="cfg-menu-group">
         <div class="cfg-menu-group-title">Ações comuns</div>
         <button class="btn bgh" onclick="toggleThemeFromMenu()">${themeActionLabel()}</button>
+        <button class="btn bgh" style="min-height:44px;line-height:1.15" onclick="checkForAppUpdate({manual:true});closeConfigMenus()">Verificar atualizações<span class="mu" style="display:block;margin-top:3px;text-align:left">Procura uma versão mais recente do aplicativo.</span></button>
         ${securityBtn}
         <button class="btn bgh" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
       </div>
@@ -26335,14 +26336,53 @@ function showPwaUpdateNotice(registration){
   const button=document.createElement('button');
   button.type='button';
   button.textContent='Atualizar agora';
-  button.style.cssText='flex:0 0 auto;border:0;border-radius:9px;padding:8px 10px;background:#38bdf8;color:#062033;font-weight:850;cursor:pointer';
-  button.addEventListener('click',()=>{
-    button.disabled=true;
-    button.textContent='Atualizando...';
-    registration.waiting?.postMessage({type:'SKIP_WAITING'});
-  });
-  notice.append(text,button);
+  button.style.cssText='flex:0 0 auto;min-height:44px;border:0;border-radius:9px;padding:8px 10px;background:#38bdf8;color:#062033;font-weight:850;cursor:pointer';
+  button.addEventListener('click',()=>requestPwaUpdate(registration, button));
+  const later=document.createElement('button');
+  later.type='button';
+  later.textContent='Depois';
+  later.style.cssText='flex:0 0 auto;min-height:44px;border:1px solid #334155;border-radius:9px;padding:8px 10px;background:transparent;color:#cbd5e1;font-weight:750;cursor:pointer';
+  later.addEventListener('click',()=>notice.remove());
+  notice.append(text,button,later);
   document.body.appendChild(notice);
+}
+function pwaHasActiveEdit(){
+  return !!(S.quickMovementOpen || S.showA || S.showP || S.showD || S.editId || S.editPId || S.editDId || S.rfMovementEditor || S.backupOpen || S.backupImportDraft || S.accessSettingsOpen || S.allocGoalOpen || S.pdfReportOpen || S.proventoReviewOpen || S.irpfFinalOpen);
+}
+function requestPwaUpdate(registration, button){
+  if(!registration?.waiting) return;
+  const continueUpdate=()=>{
+    if(button){ button.disabled=true; button.textContent='Atualizando...'; }
+    registration.waiting?.postMessage({type:'SKIP_WAITING'});
+  };
+  if(!pwaHasActiveEdit()){ continueUpdate(); return; }
+  const overlay=document.createElement('div');
+  overlay.className='note-overlay';
+  overlay.id='pwa-edit-update-confirm';
+  overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');
+  overlay.setAttribute('aria-label','Confirmar atualização');
+  overlay.innerHTML='<div class="note-modal" style="max-width:440px"><div class="note-head"><div><div class="note-title">Atualização disponível</div><div class="mu">Há uma edição em andamento. Atualizar agora pode descartar alterações ainda não salvas.</div></div></div><div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding:12px 16px 16px"><button type="button" class="btn bgh" data-pwa-later>Continuar editando</button><button type="button" class="btn bsv" data-pwa-confirm>Atualizar mesmo assim</button></div></div>';
+  document.body.appendChild(overlay);
+  overlay.querySelector('[data-pwa-later]').addEventListener('click',()=>overlay.remove());
+  overlay.querySelector('[data-pwa-confirm]').addEventListener('click',()=>{ overlay.remove(); continueUpdate(); });
+}
+async function checkForAppUpdate({manual=false}={}){
+  if(!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return {ok:false,reason:'unsupported'};
+  if(!navigator.onLine){ if(manual) toast('Sem conexão. A versão instalada continua disponível.'); return {ok:false,reason:'offline'}; }
+  const now=Date.now();
+  if(!manual && now-(window.__pwaLastUpdateCheck||0)<120000) return {ok:false,reason:'throttled'};
+  if(window.__pwaUpdateCheck) return window.__pwaUpdateCheck;
+  window.__pwaLastUpdateCheck=now;
+  window.__pwaUpdateCheck=(async()=>{
+    const registration=await navigator.serviceWorker.getRegistration();
+    if(!registration) return {ok:false,reason:'not-registered'};
+    await registration.update();
+    if(registration.waiting){ showPwaUpdateNotice(registration); return {ok:true,waiting:true}; }
+    if(manual) toast('Você já está usando a versão mais recente.');
+    return {ok:true,waiting:false};
+  })().catch(()=>({ok:false,reason:'update-failed'}));
+  try{return await window.__pwaUpdateCheck;}finally{window.__pwaUpdateCheck=null;}
 }
 function watchPwaUpdate(registration){
   if(registration.waiting && navigator.serviceWorker.controller) showPwaUpdateNotice(registration);
@@ -26416,10 +26456,15 @@ if(!isLocalTestMode() && !isActiveWalletHostMode() && 'serviceWorker' in navigat
   });
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then(reg=>{
+      window.__pwaRegistration=reg;
       watchPwaUpdate(reg);
       if(reg && reg.update) reg.update().catch(()=>{});
     }).catch(()=>{});
   });
+  const checkOnReturn=()=>checkForAppUpdate();
+  window.addEventListener('focus',checkOnReturn);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkOnReturn(); });
+  window.addEventListener('online',checkOnReturn);
 }
 if(!isActiveWalletHostMode()){
   setInterval(()=>{
