@@ -17036,14 +17036,6 @@ async function fetchQuotes(manual=false){
             }
   });
 
-function clearAllDividendFilters(){
-  S.dividendFilter='all';
-  S.dividendClassFilter='all';
-  S.dividendPeriod='all';
-  S.dividendSearch='';
-  render();
-}
-
           falhou.slice(i,i+20).forEach(t=>{ if(!recv.has(t)) semPreco.push(t); });
         }
       }catch(e){ debugWarn('fallback brapi:',e); }
@@ -24622,6 +24614,13 @@ function setDividendViewMode(mode){
 function setDividendFilter(value){ S.dividendFilter=['all','dividend','jcp','income','other'].includes(value)?value:'all'; render(); }
 function setDividendPeriod(value){ S.dividendPeriod=['all','month','12m'].includes(value)?value:'all'; render(); }
 function setDividendClassFilter(value){ S.dividendClassFilter=['all','acao','fii','etf','renda-fixa','outros'].includes(value)?value:'all'; render(); }
+function clearAllDividendFilters(){
+  S.dividendFilter='all';
+  S.dividendClassFilter='all';
+  S.dividendPeriod='all';
+  S.dividendSearch='';
+  render();
+}
 function setDividendDistributionPeriod(value){ S.dividendDistributionPeriod=['12m','24m','36m','all'].includes(value)?value:'12m'; render(); }
 function setDividendSearch(value){
   S.dividendSearch=String(value||'');
