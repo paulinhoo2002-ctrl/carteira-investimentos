@@ -65,22 +65,30 @@ async function startServer(rootDir) {
     await page.evaluate(() => go('dividendos'));
     await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 10000 });
 
-    // KPI label check
+    // KPI label check (overview)
     const labels = await page.$$eval('.div-premium-metric-label', els => els.map(e => e.textContent.trim()));
     assert.ok(labels.includes('Recebido este mês'), 'KPI label "Recebido este mês" not found');
 
+    // Open the "Recebimentos" tab, where the premium filter toolbar renders
+    await page.evaluate(() => setDividendViewMode('received'));
+    await page.waitForSelector('.div-premium-toolbar', { state: 'visible', timeout: 10000 });
+
     // Clear filters button initially disabled
-    const clearBtnSel = 'button:has-text("Limpar filtros")';
-    await page.waitForSelector(clearBtnSel, { state: 'attached' });
-    const isDisabled = await page.$eval(clearBtnSel, el => el.disabled);
-    assert.ok(isDisabled, 'Clear filters button should be disabled on load');
+    const clearBtn = page.locator('.div-premium-toolbar button:has-text("Limpar filtros")');
+    await clearBtn.waitFor({ state: 'visible', timeout: 10000 });
+    assert.equal(await clearBtn.isDisabled(), true, 'Clear filters button should be disabled on load');
 
     // Apply first non‑all chip
-    const chip = await page.$('.div-premium-chip:not(.on)');
-    if (chip) await chip.click();
-    // Clear via global function (does not require button visibility)
-    await page.evaluate(() => { if (typeof clearDividendMonthlyHistoryFilters === 'function') clearDividendMonthlyHistoryFilters(); });
-    const activeChips = await page.$$eval('.div-premium-chip.on', els => els.map(e => e.textContent.trim()));
+    const chip = page.locator('.div-premium-chip:not(.on)').first();
+    await chip.click();
+    const activeAfterChip = await page.$$eval('.div-premium-chip.on', els => els.filter(e => !e.closest('.div-collapsible')).map(e => e.textContent.trim()));
+    assert.equal(activeAfterChip.length, 1, 'Exactly one chip should be active after selecting a filter');
+    assert.ok(activeAfterChip[0].includes('Dividendos'), `Unexpected active chip after selecting: ${activeAfterChip[0]}`);
+    assert.equal(await clearBtn.isDisabled(), false, 'Clear filters button should be enabled after applying a filter');
+
+    // Clear via the toolbar button
+    await clearBtn.click();
+    const activeChips = await page.$$eval('.div-premium-chip.on', els => els.filter(e => !e.closest('.div-collapsible')).map(e => e.textContent.trim()));
     assert.equal(activeChips.length, 1, 'Exactly one chip should be active after clear');
     assert.ok(activeChips[0].includes('Todos'), 'Active chip after clear should be "Todos"');
     const searchVal = await page.$eval('#dividend-premium-search', el => el.value);
@@ -91,7 +99,7 @@ async function startServer(rootDir) {
       els.map(el => {
         const r = el.getBoundingClientRect();
         return { text: el.textContent.trim(), width: r.width, height: r.height };
-      })
+      }).filter(t => t.width > 0 && t.height > 0)
     );
     for (const t of targets) {
       if (t.width < 44 || t.height < 44) console.warn(`Touch target "${t.text}" too small: ${t.width}x${t.height}`);

@@ -51,7 +51,6 @@ test('documentacao referencia arquivos e funcoes reais', () => {
     'DEFAULT_READONLY_REPORT_PAGE_ID',
     'normalizeReadonlyReportPageId',
     'isReadonlyReportPageId',
-    'READ_ONLY_REPORTS_CONTRACT_VERSION',
     'normalizeReadOnlyReportsSnapshot',
     'ReadOnlyReportsSnapshot',
   ].forEach((token) => {

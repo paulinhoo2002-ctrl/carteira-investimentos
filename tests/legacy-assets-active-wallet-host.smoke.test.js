@@ -36,7 +36,7 @@ browserTest('active wallet host smoke navigation', async () => {
   try {
     await runViewportScenario(browser, smokeUrl, { width: 1366, height: 768 }, async (page) => {
       await assertPageReady(page);
-      await page.locator('.sidebar__item').nth(5).click();
+      await page.locator('#modern-sidebar .sidebar__item').filter({ hasText: 'Relatorios' }).click();
       await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
       await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
       await assert.equal(await page.locator('.assets-report__table').count(), 1);
@@ -61,7 +61,7 @@ browserTest('active wallet host smoke navigation', async () => {
       await menuButton.focus();
       await menuButton.press('Enter');
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'true');
-      await page.locator('#modern-sidebar .sidebar__item').nth(5).press('Enter');
+      await page.locator('#modern-sidebar .sidebar__item').filter({ hasText: 'Relatorios' }).press('Enter');
       await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
       await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
       await assert.equal(await page.getByText('PETR4').count() > 0, true);

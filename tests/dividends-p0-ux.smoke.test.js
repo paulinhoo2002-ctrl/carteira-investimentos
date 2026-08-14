@@ -103,7 +103,7 @@ viewports.forEach(vp => {
       const financialKpisBox = await financialKpis.boundingBox();
       assert.ok(financialKpisBox && financialKpisBox.width > 0 && financialKpisBox.height > 0, 'Financial KPI card has no bounding box');
       const kpisText = await financialKpis.textContent();
-      assert.ok(kpisText && kpisText.includes('Recebido no mês'), 'Financial content missing expected KPI text');
+      assert.ok(kpisText && kpisText.includes('Recebido este mês'), 'Financial content missing expected KPI text');
       assert.ok(kpisText && kpisText.includes('Total últimos 12 meses'), 'Financial content missing expected KPI text');
       // Click on the second tab (received)
       if (tabCount > 1) {
