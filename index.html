@@ -7954,6 +7954,10 @@ function cleanAssetCode(txt){
   s=s.replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim();
   return s.slice(0,38);
 }
+function normalizeMetadataTicker(value){
+  const raw=String(value||'').trim().toUpperCase().replace(/\.SA$/i,'');
+  return cleanAssetCode(raw);
+}
 function isRendaFixaText(v){
   const s=String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   return /(renda fixa|tesouro|cdb|lci|lca|cri|cra|debenture|debentures|letra financeira|lc\b|lf\b)/.test(s);
@@ -11302,22 +11306,13 @@ function quickMovementKindTone(kind){
   }[normalizeQuickMovementKind(kind)]) || 'muted';
 }
 function findQuickMovementAssetByTicker(ticker){
-  const tk=cleanAssetCode(ticker);
+  const tk=normalizeMetadataTicker(ticker);
   if(!tk) return null;
   const assets=Array.isArray(S.assets) ? S.assets : [];
-  const direct=assets.find(a=>cleanAssetCode(a?.ticker||'')===tk);
+  const direct=assets.find(a=>normalizeMetadataTicker(a?.ticker||'')===tk);
   if(direct) return direct;
-  const learned=learnedMetaFor(tk);
-  const meta=metaTicker(tk);
-  if((learned && (learned.type || learned.sector || learned.name)) || (meta && (meta.type || meta.sector))){
-    return {
-      ticker:tk,
-      name:String(learned?.name||meta?.name||'').trim(),
-      type:normalizeType(learned?.type||meta?.type||'', ''),
-      sector:String(learned?.sector||meta?.sector||'').trim()
-    };
-  }
-  return null;
+  const resolved=resolveAssetMetadata(tk);
+  return resolved.ticker ? resolved : null;
 }
 function quickMovementDefaultDraft(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
@@ -11995,7 +11990,7 @@ function quickMovementBuildAporteFromFields(kind){
     };
   }
   if(next==='provento'){
-    const ticker=String(document.getElementById('qm-ti')?.value||'').trim().toUpperCase();
+    const ticker=normalizeMetadataTicker(document.getElementById('qm-ti')?.value||'');
     const value=parseNum(document.getElementById('qm-value')?.value);
     const eventType=String(document.getElementById('qm-event')?.value||'Rendimento').trim() || 'Rendimento';
     const note=String(document.getElementById('qm-note')?.value||'').trim();
@@ -12073,12 +12068,16 @@ function quickMovementBuildAporteFromFields(kind){
       }
     };
   }
-  const ticker=String(document.getElementById('qm-ti')?.value||'').trim().toUpperCase();
+  const ticker=normalizeMetadataTicker(document.getElementById('qm-ti')?.value||'');
   const qty=Math.abs(parseNum(document.getElementById('qm-qty')?.value));
   const price=parseNum(document.getElementById('qm-price')?.value);
-  const lookup=findQuickMovementAssetByTicker(ticker);
-  const type=normalizeType(document.getElementById('qm-type')?.value||lookup?.type||metaTicker(ticker).type||'Ação','Ação');
-  const sector=String(document.getElementById('qm-sector')?.value||'').trim() || String(lookup?.sector||'').trim() || metaTicker(ticker).sector || '';
+  const draft=S.quickMovementDraft||{};
+  const resolved=resolveAssetMetadata(ticker,{manual:{
+    type:draft.manualType ? document.getElementById('qm-type')?.value : '',
+    sector:draft.manualSector ? document.getElementById('qm-sector')?.value : ''
+  }});
+  const type=normalizeType(resolved.type||'Ação','Ação');
+  const sector=String(resolved.sector||'').trim();
   const note=String(document.getElementById('qm-note')?.value||'').trim();
   if(!ticker || qty<=0 || price<=0) return {error:'Preencha ticker, quantidade e preço.'};
   return {
@@ -12087,7 +12086,7 @@ function quickMovementBuildAporteFromFields(kind){
       id:Date.now(),
       operation:next,
       movementKind:next,
-      ticker:cleanAssetCode(ticker),
+      ticker:resolved.ticker,
       qty,
       price,
       date:dt,
@@ -12922,7 +12921,7 @@ function typeQuickHint(type){
   return 'O tipo escolhido aqui é respeitado no lançamento e reaproveitado no aprendizado da carteira.';
 }
 function learnedMetaFor(ticker){
-  const t=cleanAssetCode(ticker||'');
+  const t=normalizeMetadataTicker(ticker||'');
   if(!t) return null;
   const m=S.learnMeta&&typeof S.learnMeta==='object' ? S.learnMeta[t] : null;
   if(!m) return null;
@@ -12932,7 +12931,7 @@ function learnedMetaFor(ticker){
   };
 }
 function learnTickerMeta(ticker, type, sector, force=false){
-  const t=cleanAssetCode(ticker||'');
+  const t=normalizeMetadataTicker(ticker||'');
   if(!t) return null;
   if(!S.learnMeta || typeof S.learnMeta!=='object') S.learnMeta={};
   const prev=S.learnMeta[t] || {};
@@ -13077,27 +13076,47 @@ function autoDY(){
   return updated;
 }
 
-function metaTicker(ticker){
-  const t=String(ticker||'').trim().toUpperCase();
-  const learned=learnedMetaFor(t);
-  if(learned?.type){
-    const learnedType=normalizeType(learned.type,'Ação');
-    const base=META[t];
-    const sector=learned.sector || (base && normalizeType(base[0],'Ação')===learnedType ? base[1] : '');
-    return {type:learnedType, sector};
-  }
+function inferTickerMetadata(ticker){
+  const t=normalizeMetadataTicker(ticker);
   if(isRendaFixaText(t)) return rfMetaFromText(t);
   if(META[t]) return{type:META[t][0],sector:META[t][1]};
   if(/^[A-Z]{4}11$/.test(t)) return{type:'FII',sector:'FII'};
   if(/^[A-Z]{4}[34]$/.test(t)) return{type:'Ação',sector:'Ação'};
-  return{type:'Ação',sector:''};
+  return{type:'',sector:''};
+}
+function resolveAssetMetadata(ticker, options={}){
+  const t=normalizeMetadataTicker(ticker);
+  if(!t) return {ticker:'',type:'',sector:'',source:'unknown'};
+  const manual=options.manual&&typeof options.manual==='object' ? options.manual : {};
+  const result={ticker:t,type:String(manual.type||'').trim(),sector:String(manual.sector||'').trim(),name:String(manual.name||'').trim(),source:'manual'};
+  const fill=(meta, source)=>{
+    if(!meta || typeof meta!=='object') return;
+    if(!result.type && meta.type) { result.type=normalizeType(meta.type,''); result.source=source; }
+    if(!result.sector && meta.sector) { result.sector=String(meta.sector).trim(); if(result.source==='manual') result.source=source; }
+    if(!result.name && meta.name) result.name=String(meta.name).trim();
+  };
+  const direct=(Array.isArray(S.assets)?S.assets:[]).find(a=>normalizeMetadataTicker(a?.ticker||'')===t);
+  fill(direct,'asset');
+  fill(learnedMetaFor(t),'learned');
+  const base=META[t];
+  if(base) fill({type:base[0],sector:base[1]},'catalog');
+  fill(inferTickerMetadata(t),'inference');
+  if(!result.type){ result.type='Ação'; result.source='unknown'; }
+  return result;
+}
+function metaTicker(ticker){
+  const resolved=resolveAssetMetadata(ticker);
+  return {type:resolved.type||'Ação',sector:resolved.sector||''};
 }
 function applyMetaToAporte(){
   const ti=(document.getElementById('p-ti')?.value||'').toUpperCase();
   const se=document.getElementById('p-se'); const ty=document.getElementById('p-ty');
   const rfSubtype=document.getElementById('p-rf-subtype');
   const manualType=!!S._fp?.typeManual;
-  let m=metaTicker(ti);
+  let m=resolveAssetMetadata(ti,{manual:{
+    type:manualType ? ty?.value : '',
+    sector:se?.dataset.manual ? se.value : ''
+  }});
   if(ty && ty.value==='Renda Fixa') m=rfMetaFromText(ti||se?.value||'Renda Fixa');
   if(ty && !manualType && (!ty.dataset.manual || !ty.value)) ty.value=normalizeType(m.type||'Ação','Ação');
   if(se && (!se.dataset.manual || !se.value)) se.value=m.sector||'';
