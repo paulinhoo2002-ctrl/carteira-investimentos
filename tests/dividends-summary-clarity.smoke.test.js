@@ -72,7 +72,7 @@ viewports.forEach(vp => {
 
       const kpisOk = await page.evaluate(() => {
         const k = document.querySelector('.div-exec-kpis');
-        return k && k.textContent.includes('Recebido no mês') && k.textContent.includes('Total últimos 12 meses');
+        return k && k.textContent.includes('Recebido este mês') && k.textContent.includes('Total últimos 12 meses');
       });
       assert.equal(kpisOk, true, `KPIs ausentes em ${vp.label}`);
 

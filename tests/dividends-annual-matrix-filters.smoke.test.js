@@ -80,23 +80,24 @@ viewports.forEach(vp => {
       });
       await page.waitForTimeout(300);
 
-      // Toggle matriz deve existir na aba dedicada
+      // Toggle de visualizacao deve existir na aba dedicada
       const toggleExists = await page.evaluate(() => {
-        const toggle = document.querySelector('.div-mat-toggle');
-        return toggle && toggle.querySelectorAll('button').length === 2;
+        const group = document.querySelector('.div-monthly-toggle-group');
+        return group && group.querySelectorAll('button').length === 2;
       });
-      assert.equal(toggleExists, true, `Toggle matriz ausente em ${vp.label}`);
+      assert.equal(toggleExists, true, `Toggle de visualizacao ausente em ${vp.label}`);
 
-      // Lista deve estar ativa por padrao
-      const listActive = await page.evaluate(() => {
-        const btn = document.querySelector('.div-mat-toggle-btn.on');
-        return btn && btn.textContent.includes('Lista');
-      });
-      assert.equal(listActive, true, `Lista nao ativa por padrao em ${vp.label}`);
+      // Estado 'auto': Lista ativa por padrao no compacto; Matriz no desktop
+      const defaultButton = vp.w <= 820 ? 'Lista' : 'Matriz';
+      const defaultActive = await page.evaluate((label) => {
+        const btn = [...document.querySelectorAll('.div-monthly-toggle-btn')].find(b => b.textContent.trim() === label);
+        return btn && btn.getAttribute('aria-pressed') === 'true';
+      }, defaultButton);
+      assert.equal(defaultActive, true, `Toggle "${defaultButton}" nao ativo por padrao em ${vp.label}`);
 
-      // Clicar em Matriz anual
+      // Clicar em Matriz
       await page.evaluate(() => {
-        const btns = document.querySelectorAll('.div-mat-toggle-btn');
+        const btns = document.querySelectorAll('.div-monthly-toggle-btn');
         const matrixBtn = Array.from(btns).find(b => b.textContent.includes('Matriz'));
         if (matrixBtn) matrixBtn.click();
       });
@@ -117,16 +118,25 @@ viewports.forEach(vp => {
       });
       assert.equal(columnsOk, true, `Colunas da matriz incorretas em ${vp.label}`);
 
+      // Valores monetarios presentes na matriz
+      const valuesOk = await page.evaluate(() => {
+        const table = document.querySelector('.div-mat-table');
+        if (!table) return false;
+        const cells = [...table.querySelectorAll('.mat-val, .mat-total')];
+        return cells.some(c => /R\$/.test(c.textContent));
+      });
+      assert.equal(valuesOk, true, `Valores monetarios ausentes na matriz em ${vp.label}`);
+
       // Alternar de volta para Lista
       await page.evaluate(() => {
-        const btns = document.querySelectorAll('.div-mat-toggle-btn');
-        const listBtn = Array.from(btns).find(b => b.textContent.includes('Lista'));
+        const btns = document.querySelectorAll('.div-monthly-toggle-btn');
+        const listBtn = Array.from(btns).find(b => b.textContent.trim() === 'Lista');
         if (listBtn) listBtn.click();
       });
       await page.waitForTimeout(300);
 
       const listRendered = await page.evaluate(() => {
-        return document.querySelector('.div-month-list') !== null;
+        return document.querySelector('.div-year-list') !== null;
       });
       assert.equal(listRendered, true, `Lista nao renderizou apos toggle em ${vp.label}`);
 
@@ -174,11 +184,11 @@ viewports.forEach(vp => {
       });
       await page.waitForTimeout(300);
 
-      // Mudar filtro periodo
+      // Mudar filtro periodo (12m)
       await page.evaluate(() => {
-        const selects = document.querySelectorAll('.div-monthly-tab-toolbar select');
+        const selects = document.querySelectorAll('.div-monthly-toolbar select');
         if (selects.length > 0) {
-          selects[0].value = 'all';
+          selects[0].value = '12m';
           selects[0].dispatchEvent(new Event('change', { bubbles: true }));
         }
       });
@@ -186,7 +196,7 @@ viewports.forEach(vp => {
 
       // Ativar matrix apos filtro
       await page.evaluate(() => {
-        const btns = document.querySelectorAll('.div-mat-toggle-btn');
+        const btns = document.querySelectorAll('.div-monthly-toggle-btn');
         const matrixBtn = Array.from(btns).find(b => b.textContent.includes('Matriz'));
         if (matrixBtn) matrixBtn.click();
       });
@@ -201,14 +211,14 @@ viewports.forEach(vp => {
       });
       if (!matrixStillOk) {
         const emptyState = await page.evaluate(() => {
-          return document.querySelector('.div-empty-state') !== null;
+          return document.querySelector('.div-premium-empty') !== null;
         });
         assert.equal(emptyState, true, `Matrix vazia sem empty state em ${vp.label}`);
       }
 
-      // Limpar filtros
+      // Limpar filtros do historico mensal
       await page.evaluate(() => {
-        const clearBtn = document.querySelector('.div-monthly-tab-toolbar .btn.bgh');
+        const clearBtn = document.querySelector('.div-monthly-toolbar .div-month-filter-actions .btn.bgh');
         if (clearBtn) clearBtn.click();
       });
       await page.waitForTimeout(200);
@@ -222,7 +232,7 @@ viewports.forEach(vp => {
 
       // Filtros ainda presentes
       const filtersPresent = await page.evaluate(() => {
-        return document.querySelectorAll('.div-monthly-tab-toolbar select').length >= 3;
+        return document.querySelectorAll('.div-monthly-toolbar select').length >= 3;
       });
       assert.equal(filtersPresent, true, `Filtros ausentes em ${vp.label}`);
 

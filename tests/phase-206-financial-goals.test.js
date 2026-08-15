@@ -344,7 +344,7 @@ test('metas financeiras calculam progresso, limite e estado executivo', () => {
   assert.match(html, /R\$ 2800\.00/);
   assert.match(html, /Faltam R\$ 380000\.00/);
   assert.match(html, /Faltam R\$ 1200\.00/);
-  assert.match(html, /Média real/);
+  assert.match(html, /Média mensal histórica/);
   assert.match(html, /Melhor mês/);
   assert.match(html, /role="progressbar"/);
   assert.match(html, /aria-valuemin="0"/);
