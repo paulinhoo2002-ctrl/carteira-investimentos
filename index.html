@@ -11392,7 +11392,11 @@ function quickMovementSaleOptionsHtml(){
 }
 function selectQuickMovementSaleAsset(assetId){
   if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
-  if(S.quickMovementErrorField==='qm-sale-asset'){ S.quickMovementError=null; S.quickMovementErrorField=''; }
+  if(S.quickMovementErrorField==='qm-sale-asset'){
+    S.quickMovementError=null;
+    S.quickMovementErrorField='';
+    refreshQuickMovementErrorVisual();
+  }
   const draft=S.quickMovementDraft;
   const asset=quickMovementSaleAssetById(assetId);
   if(!asset){
@@ -11752,11 +11756,40 @@ function openRfMovementFromAportes(modeOverride){
   }
   openRfMovementEditor(assetId, mode);
 }
+function refreshQuickMovementErrorVisual(){
+  const banner=document.getElementById('qm-error-banner');
+  if(!S.quickMovementError){
+    if(banner && banner.parentNode) banner.parentNode.removeChild(banner);
+  }else{
+    if(banner) banner.textContent=S.quickMovementError;
+    else if(document.querySelector('.quick-movement-modal .fc')){
+      const fc=document.querySelector('.quick-movement-modal .fc');
+      const div=document.createElement('div');
+      div.className='quick-movement-error';
+      div.id='qm-error-banner';
+      div.setAttribute('role','alert');
+      div.setAttribute('aria-live','assertive');
+      div.setAttribute('data-qm-error','1');
+      div.textContent=S.quickMovementError;
+      fc.insertBefore(div, fc.firstChild);
+    }
+  }
+  document.querySelectorAll('.quick-movement-modal [aria-invalid="true"]').forEach(function(el){
+    if(!S.quickMovementError || el.id!==S.quickMovementErrorField){
+      el.removeAttribute('aria-invalid');
+      el.removeAttribute('aria-describedby');
+    }
+  });
+}
 function setQuickMovementField(field, value){
   if(!S.quickMovementDraft || typeof S.quickMovementDraft!=='object') S.quickMovementDraft=quickMovementDefaultDraft();
   if(S.quickMovementError){
     const errId=String(S.quickMovementErrorField||'');
-    if(!errId || errId===quickMovementFieldId(field)){ S.quickMovementError=null; S.quickMovementErrorField=''; }
+    if(!errId || errId===quickMovementFieldId(field)){
+      S.quickMovementError=null;
+      S.quickMovementErrorField='';
+      refreshQuickMovementErrorVisual();
+    }
   }
   const next=normalizeQuickMovementKind(S.quickMovementDraft.kind);
   if(field==='ticker' || field==='rfName' || field==='outroTitle'){

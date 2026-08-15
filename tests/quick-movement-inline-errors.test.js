@@ -375,6 +375,7 @@ function fieldContext({ error = null, field = '', kind = 'compra' } = {}) {
     findQuickMovementAssetByTicker: () => null,
     normalizeType: (v, fallback = 'Ação') => String(v || '').trim() || fallback,
     refreshQuickMovementPreview: () => {},
+    refreshQuickMovementErrorVisual: () => {},
   };
   vm.runInNewContext(`${FIELD_SOURCE}\nthis.set = setQuickMovementField;`, context);
   return context;
