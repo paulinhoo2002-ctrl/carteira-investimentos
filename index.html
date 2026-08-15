@@ -11653,7 +11653,7 @@ function openQuickMovement(kind='compra'){
   S.editPId=null;
   S.quickMovementEditId=null;
   S.quickMovementSaving=false;
-  const nextDraft={...quickMovementDefaultDraft(next), ...current, kind:next, manualType:false, manualSector:false, manualName:false};
+  const nextDraft={...quickMovementDefaultDraft(next), ...current, kind:next};
   if(next==='venda'){
     nextDraft.ticker='';
     nextDraft.assetName='';
@@ -11668,9 +11668,9 @@ function openQuickMovement(kind='compra'){
   if(next!=='renda-fixa'){
     const lookup=findQuickMovementAssetByTicker(S.quickMovementDraft.ticker||S.quickMovementDraft.rfName||S.quickMovementDraft.outroTitle||'');
     if(lookup){
-      if(lookup.name && !S.quickMovementDraft.assetName) S.quickMovementDraft.assetName=lookup.name;
-      if(lookup.type) S.quickMovementDraft.type=normalizeType(lookup.type,S.quickMovementDraft.type||'Ação');
-      if(lookup.sector) S.quickMovementDraft.sector=String(lookup.sector).trim();
+      if(lookup.name && !S.quickMovementDraft.manualName) S.quickMovementDraft.assetName=lookup.name;
+      if(lookup.type && !S.quickMovementDraft.manualType) S.quickMovementDraft.type=normalizeType(lookup.type,S.quickMovementDraft.type||'Ação');
+      if(lookup.sector && !S.quickMovementDraft.manualSector) S.quickMovementDraft.sector=String(lookup.sector).trim();
     }
   }
   S.quickMovementOpen=true;
@@ -11744,7 +11744,13 @@ function setQuickMovementField(field, value){
   const next=normalizeQuickMovementKind(S.quickMovementDraft.kind);
   if(field==='ticker' || field==='rfName' || field==='outroTitle'){
     const normalized=field==='ticker' ? String(value||'').toUpperCase() : String(value||'');
+    const tickerChanged=field==='ticker' && normalizeMetadataTicker(S.quickMovementDraft.ticker||'')!==normalizeMetadataTicker(normalized);
     S.quickMovementDraft[field]=normalized;
+    if(tickerChanged){
+      S.quickMovementDraft.manualType=false;
+      S.quickMovementDraft.manualSector=false;
+      S.quickMovementDraft.manualName=false;
+    }
     if(field==='ticker'){
       const lookup=next!=='renda-fixa' ? findQuickMovementAssetByTicker(normalized) : null;
       if(lookup){
