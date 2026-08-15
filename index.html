@@ -11859,8 +11859,8 @@ function quickMovementModal(){
     <div id="quick-movement-asset-summary">${kind==='compra'?quickMovementAssetSummaryHtml():''}</div>
     <div class="cl" style="margin:12px 0 8px">Dados da operação</div>
     <div class="fg">
-      <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
-      <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" placeholder="ex: 10,00" value="${esc(draft.price||'')}" aria-label="Preço unitário"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
+      <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
+      <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 10,00" value="${esc(draft.price||'')}" aria-label="Preço unitário"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const proventoFields = `
@@ -11869,7 +11869,7 @@ function quickMovementModal(){
     <div class="fg">
       <div><div class="fl">Data do pagamento</div><input id="qm-dt" type="date" aria-label="Data do pagamento" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
       <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: MXRF11" aria-label="Ticker do ativo" value="${esc(draft.ticker||'')}"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
-      <div><div class="fl">Valor recebido (R$)</div><input id="qm-value" type="text" aria-label="Valor recebido" placeholder="ex: 35,80" value="${esc(draft.value||'')}"${qmErrOn('qm-value')} oninput="setQuickMovementField('value', this.value)"></div>
+      <div><div class="fl">Valor recebido (R$)</div><input id="qm-value" type="text" inputmode="decimal" aria-label="Valor recebido" placeholder="ex: 35,80" value="${esc(draft.value||'')}"${qmErrOn('qm-value')} oninput="setQuickMovementField('value', this.value)"></div>
       <div><div class="fl">Tipo</div><select id="qm-event" aria-label="Tipo do provento" onchange="setQuickMovementField('eventType', this.value)">${eventTypes}</select></div>
     </div>
     <div class="cl" style="margin:12px 0 8px">Dados do provento</div>
@@ -11881,18 +11881,18 @@ function quickMovementModal(){
       <div><div class="fl">Aplicação</div><input id="qm-rf-app-date" type="date" value="${esc(draft.rfAppDate||draft.date||new Date().toISOString().slice(0,10))}"${qmErrOn('qm-rf-app-date')} oninput="setQuickMovementField('rfAppDate', this.value)"></div>
       <div><div class="fl">Vencimento</div><input id="qm-rf-due" type="date" value="${esc(draft.rfDue||'')}" oninput="setQuickMovementField('rfDue', this.value)"></div>
       <div><div class="fl">Taxa contratada</div><input id="qm-rf-rate" placeholder="ex: CDI + 1,10%" value="${esc(draft.rfRate||'')}" oninput="setQuickMovementField('rfRate', this.value)"></div>
-      <div><div class="fl">Valor aplicado</div><input id="qm-rf-applied" type="text" placeholder="ex: 1000,00" value="${esc(draft.rfApplied||'')}"${qmErrOn('qm-rf-applied')} oninput="setQuickMovementField('rfApplied', this.value)"></div>
-      <div><div class="fl">Valor bruto</div><input id="qm-rf-gross" type="text" placeholder="ex: 1040,00" value="${esc(draft.rfGross||'')}" oninput="setQuickMovementField('rfGross', this.value)"></div>
-      <div><div class="fl">Valor líquido</div><input id="qm-rf-liquid" type="text" placeholder="ex: 1035,00" value="${esc(draft.rfLiquid||'')}" oninput="setQuickMovementField('rfLiquid', this.value)"></div>
-      <div><div class="fl">IR/IOF</div><input id="qm-rf-iriof" type="text" placeholder="ex: 5,00" value="${esc(draft.rfIrIof||'')}" oninput="setQuickMovementField('rfIrIof', this.value)"></div>
-      <div><div class="fl">Indisponível</div><input id="qm-rf-unavailable" type="text" placeholder="ex: 0,00" value="${esc(draft.rfUnavailable||'')}" oninput="setQuickMovementField('rfUnavailable', this.value)"></div>
+      <div><div class="fl">Valor aplicado</div><input id="qm-rf-applied" type="text" inputmode="decimal" placeholder="ex: 1000,00" value="${esc(draft.rfApplied||'')}"${qmErrOn('qm-rf-applied')} oninput="setQuickMovementField('rfApplied', this.value)"></div>
+      <div><div class="fl">Valor bruto</div><input id="qm-rf-gross" type="text" inputmode="decimal" placeholder="ex: 1040,00" value="${esc(draft.rfGross||'')}"${qmErrOn('qm-rf-gross')} oninput="setQuickMovementField('rfGross', this.value)"></div>
+      <div><div class="fl">Valor líquido</div><input id="qm-rf-liquid" type="text" inputmode="decimal" placeholder="ex: 1035,00" value="${esc(draft.rfLiquid||'')}"${qmErrOn('qm-rf-liquid')} oninput="setQuickMovementField('rfLiquid', this.value)"></div>
+      <div><div class="fl">IR/IOF</div><input id="qm-rf-iriof" type="text" inputmode="decimal" placeholder="ex: 5,00" value="${esc(draft.rfIrIof||'')}"${qmErrOn('qm-rf-iriof')} oninput="setQuickMovementField('rfIrIof', this.value)"></div>
+      <div><div class="fl">Indisponível</div><input id="qm-rf-unavailable" type="text" inputmode="decimal" placeholder="ex: 0,00" value="${esc(draft.rfUnavailable||'')}"${qmErrOn('qm-rf-unavailable')} oninput="setQuickMovementField('rfUnavailable', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-rf-note" placeholder="opcional: banco, indexador, razão do lançamento..." value="${esc(draft.rfNote||draft.note||'')}" oninput="setQuickMovementField('rfNote', this.value)"></div>`;
   const outroFields = `
     <div class="fg">
       <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date||new Date().toISOString().slice(0,10))}" oninput="setQuickMovementField('date', this.value)"></div>
       <div><div class="fl">Título</div><input id="qm-outro-title" placeholder="ex: ajuste interno, transferência, nota..." value="${esc(draft.outroTitle||draft.ticker||'')}"${qmErrOn('qm-outro-title')} oninput="setQuickMovementField('outroTitle', this.value)"></div>
-      <div><div class="fl">Valor</div><input id="qm-outro-value" type="text" placeholder="ex: 150,00" value="${esc(draft.value||'')}"${qmErrOn('qm-outro-value')} oninput="setQuickMovementField('value', this.value)"></div>
+      <div><div class="fl">Valor</div><input id="qm-outro-value" type="text" inputmode="decimal" placeholder="ex: 150,00" value="${esc(draft.value||'')}"${qmErrOn('qm-outro-value')} oninput="setQuickMovementField('value', this.value)"></div>
       <div><div class="fl">Categoria</div><input id="qm-outro-category" placeholder="ex: interno, ajuste, observação" value="${esc(draft.outroCategory||'Geral')}" oninput="setQuickMovementField('outroCategory', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-outro-note" placeholder="registro neutro, sem impacto nos cálculos" value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
@@ -11913,8 +11913,8 @@ function quickMovementModal(){
           <button type="button" class="dash-chip ${saleType==='total'?'on':''}" aria-pressed="${saleType==='total'?'true':'false'}" onclick="setQuickMovementSaleType('total')">Vender tudo</button>
         </div>
       </div>
-      <div id="qm-sale-qty-wrap" style="${saleType==='total'?'display:none':''}"><div class="fl">Quantidade (parcial)</div><input id="qm-qty" type="text" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade parcial"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
-      <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" placeholder="ex: 34,25" value="${esc(draft.price||'')}" aria-label="Preço unitário da venda"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
+      <div id="qm-sale-qty-wrap" style="${saleType==='total'?'display:none':''}"><div class="fl">Quantidade (parcial)</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade parcial"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
+      <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 34,25" value="${esc(draft.price||'')}" aria-label="Preço unitário da venda"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfMovEditorAsset=kind==='renda-fixa' && S.rfMovementEditor && S.rfMovementEditor.assetId ? getRfAssetByEventId(S.rfMovementEditor.assetId) : null;
@@ -12007,6 +12007,26 @@ function aporteMovementTone(a){
   if(kind==='reserva-entrada') return 'gn';
   return 'gn';
 }
+function parseQuickMovementNumber(value, options={}){
+  const required=options.required!==false;
+  const allowNegative=options.allowNegative===true;
+  const raw=String(value??'').trim();
+  if(!raw) return required ? {ok:false,value:0,error:'Preencha um número válido.',reason:'empty'} : {ok:true,value:0,error:'',reason:'empty'};
+  const pattern=allowNegative
+    ? /^[+-]?(?:(?:\d+)(?:[.,]\d+)?|\d{1,3}(?:\.\d{3})+(?:,\d+)?)$/
+    : /^\+?(?:(?:\d+)(?:[.,]\d+)?|\d{1,3}(?:\.\d{3})+(?:,\d+)?)$/;
+  if(/\s/.test(raw) || !pattern.test(raw)) return {ok:false,value:0,error:'Informe um número válido.',reason:'invalid'};
+  const normalized=raw.replace(/^\+/,'').replace(/^-/, '-').replace(/\./g, raw.includes(',') ? '' : '.').replace(',', '.');
+  const parsed=Number(normalized);
+  if(!Number.isFinite(parsed) || (!allowNegative && parsed<0)) return {ok:false,value:0,error:'Informe um número válido.',reason:'invalid'};
+  return {ok:true,value:parsed,error:'',reason:'value'};
+}
+function quickMovementNumberField(id, label, options={}){
+  const rawValue=options.value!==undefined ? options.value : document.getElementById(id)?.value;
+  const result=parseQuickMovementNumber(rawValue, options);
+  if(!result.ok) return {...result,error:result.reason==='empty' && options.emptyError ? options.emptyError : (options.invalidError || `${label}: ${result.error}`),field:id};
+  return result;
+}
 function quickMovementBuildAporteFromFields(kind){
   const next=normalizeQuickMovementKind(kind);
   const dt=brDate(document.getElementById('qm-dt')?.value || S.quickMovementDraft?.date || new Date().toISOString().slice(0,10));
@@ -12016,14 +12036,20 @@ function quickMovementBuildAporteFromFields(kind){
     const rfAppDate=inputDateValue(document.getElementById('qm-rf-app-date')?.value||dt);
     const rfDue=inputDateValue(document.getElementById('qm-rf-due')?.value||'');
     const rfRate=String(document.getElementById('qm-rf-rate')?.value||'').trim();
-    const rfApplied=parseNum(document.getElementById('qm-rf-applied')?.value);
-    const rfGross=parseNum(document.getElementById('qm-rf-gross')?.value);
-    const rfLiquid=parseNum(document.getElementById('qm-rf-liquid')?.value);
-    const rfIrIof=parseNum(document.getElementById('qm-rf-iriof')?.value);
-    const rfUnavailable=parseNum(document.getElementById('qm-rf-unavailable')?.value);
     const rfNote=String(document.getElementById('qm-rf-note')?.value||'').trim();
     if(!rfName) return {error:'Preencha o nome do ativo de renda fixa.', field:'qm-rf-name'};
     if(!rfAppDate) return {error:'Preencha a data da aplicação.', field:'qm-rf-app-date'};
+    const rfAppliedState=quickMovementNumberField('qm-rf-applied','Valor aplicado',{required:false});
+    const rfGrossState=quickMovementNumberField('qm-rf-gross','Valor bruto',{required:false});
+    const rfLiquidState=quickMovementNumberField('qm-rf-liquid','Valor líquido',{required:false});
+    const rfIrIofState=quickMovementNumberField('qm-rf-iriof','IR/IOF',{required:false,allowNegative:true});
+    const rfUnavailableState=quickMovementNumberField('qm-rf-unavailable','Valor indisponível',{required:false});
+    for(const state of [rfAppliedState,rfGrossState,rfLiquidState,rfIrIofState,rfUnavailableState]) if(!state.ok) return state;
+    const rfApplied=rfAppliedState.value;
+    const rfGross=rfGrossState.value;
+    const rfLiquid=rfLiquidState.value;
+    const rfIrIof=rfIrIofState.value;
+    const rfUnavailable=rfUnavailableState.value;
     if(!rfApplied && !rfGross && !rfLiquid) return {error:'Preencha ao menos um valor: aplicado, bruto ou líquido.', field:'qm-rf-applied'};
     const ticker=cleanAssetCode(String(document.getElementById('qm-rf-name')?.value||rfName||`${rfSubtype} ${rfAppDate}`));
     const value=Math.max(rfApplied, rfGross, rfLiquid);
@@ -12079,10 +12105,12 @@ function quickMovementBuildAporteFromFields(kind){
   }
   if(next==='provento'){
     const ticker=normalizeMetadataTicker(document.getElementById('qm-ti')?.value||'');
-    const value=parseNum(document.getElementById('qm-value')?.value);
+    const valueState=quickMovementNumberField('qm-value','Valor recebido');
     const eventType=String(document.getElementById('qm-event')?.value||'Rendimento').trim() || 'Rendimento';
     const note=String(document.getElementById('qm-note')?.value||'').trim();
     if(!ticker) return {error:'Preencha o ticker do provento.', field:'qm-ti'};
+    if(!valueState.ok) return valueState;
+    const value=valueState.value;
     if(value<=0) return {error:'Preencha um valor recebido maior que zero.', field:'qm-value'};
     return {
       kind:next,
@@ -12099,10 +12127,12 @@ function quickMovementBuildAporteFromFields(kind){
   }
   if(next==='outro'){
     const title=String(document.getElementById('qm-outro-title')?.value||'').trim();
-    const value=parseNum(document.getElementById('qm-outro-value')?.value);
+    const valueState=quickMovementNumberField('qm-outro-value','Valor');
     const category=String(document.getElementById('qm-outro-category')?.value||'Geral').trim()||'Geral';
     const note=String(document.getElementById('qm-outro-note')?.value||'').trim();
     if(!title) return {error:'Preencha o título do registro.', field:'qm-outro-title'};
+    if(!valueState.ok) return valueState;
+    const value=valueState.value;
     if(value<=0) return {error:'Preencha um valor maior que zero.', field:'qm-outro-value'};
     return {
       kind:next,
@@ -12132,12 +12162,19 @@ function quickMovementBuildAporteFromFields(kind){
     const asset=quickMovementSaleAssetById(draft.assetId);
     const contract=quickMovementContract();
     const dtVal=document.getElementById('qm-dt')?.value || draft.date || new Date().toISOString().slice(0,10);
-    const price=parseNum(document.getElementById('qm-price')?.value ?? draft.price);
+    const priceState=quickMovementNumberField('qm-price','Preço unitário',{value:document.getElementById('qm-price')?.value ?? draft.price});
     const note=String(document.getElementById('qm-note')?.value ?? draft.note).trim();
     if(!contract || typeof contract.buildVariableIncomeSalePreview!=='function') return {error:'Preview de venda indisponível.', field:''};
     if(!asset) return {error:'Selecione um ativo para vender.', field:'qm-sale-asset'};
+    const price=priceState.ok ? priceState.value : 0;
+    if(draft.saleType!=='total'){
+      const qtyState=quickMovementNumberField('qm-qty','Quantidade',{value:document.getElementById('qm-qty')?.value ?? draft.qty});
+      if(!qtyState.ok) return qtyState;
+      if(qtyState.value<=0) return {error:'Quantidade: informe um número maior que zero.', field:'qm-qty'};
+    }
     const preview=contract.buildVariableIncomeSalePreview(asset,{saleType:draft.saleType==='total'?'total':'partial',quantity:draft.qty,unitPrice:price});
     if(!preview.ok) return {error:preview.error||'Venda inválida.', field:preview.code==='INSUFFICIENT_QUANTITY'?'qm-qty':'qm-price'};
+    if(!priceState.ok) return priceState;
     return {
       kind:next,
       reg:{
@@ -12157,8 +12194,8 @@ function quickMovementBuildAporteFromFields(kind){
     };
   }
   const ticker=normalizeMetadataTicker(document.getElementById('qm-ti')?.value||'');
-  const qty=Math.abs(parseNum(document.getElementById('qm-qty')?.value));
-  const price=parseNum(document.getElementById('qm-price')?.value);
+  const qtyState=quickMovementNumberField('qm-qty','Quantidade',{emptyError:'Preencha uma quantidade válida maior que zero.',invalidError:'Quantidade: informe um número válido.'});
+  const priceState=quickMovementNumberField('qm-price','Preço unitário',{emptyError:'Preencha um preço unitário válido maior que zero.',invalidError:'Preço unitário: informe um número válido.'});
   const draft=S.quickMovementDraft||{};
   const resolved=resolveAssetMetadata(ticker,{manual:{
     type:draft.manualType ? document.getElementById('qm-type')?.value : '',
@@ -12168,8 +12205,12 @@ function quickMovementBuildAporteFromFields(kind){
   const sector=String(resolved.sector||'').trim();
   const note=String(document.getElementById('qm-note')?.value||'').trim();
   if(!ticker) return {error:'Preencha o ticker do ativo.', field:'qm-ti'};
-  if(qty<=0) return {error:'Preencha uma quantidade válida maior que zero.', field:'qm-qty'};
-  if(price<=0) return {error:'Preencha um preço unitário válido maior que zero.', field:'qm-price'};
+  if(!qtyState.ok) return qtyState;
+  if(qtyState.value<=0) return {error:'Preencha uma quantidade válida maior que zero.', field:'qm-qty'};
+  if(!priceState.ok) return priceState;
+  if(priceState.value<=0) return {error:'Preencha um preço unitário válido maior que zero.', field:'qm-price'};
+  const qty=qtyState.value;
+  const price=priceState.value;
   return {
     kind:next,
     reg:{

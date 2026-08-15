@@ -77,6 +77,8 @@ function makeBaseS(overrides = {}) {
 
 const helperCode = [
   extractFunctionSource('normalizeQuickMovementKind', 'function quickMovementKindLabel'),
+  extractFunctionSource('parseQuickMovementNumber', 'function quickMovementNumberField'),
+  extractFunctionSource('quickMovementNumberField', 'function quickMovementBuildAporteFromFields'),
   extractFunctionSource('parseNum', 'function moneyInput'),
   extractFunctionSource('inputDateValue', 'function brDate'),
   extractFunctionSource('brDate', 'function parseAnyDate'),
