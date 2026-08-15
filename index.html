@@ -1337,6 +1337,9 @@ body.modal-open{overflow:hidden}
 .quick-movement-preview-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:700}
 .quick-movement-preview-value{font-size:14px;font-weight:800;color:#f8fafc;line-height:1.3;word-break:break-word}
 .quick-movement-preview-note{font-size:12px;color:#cbd5e1;line-height:1.5}
+.quick-movement-meta-feedback{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-top:10px;min-width:0}
+.quick-movement-meta-feedback .analysis-pill{white-space:normal;text-align:left}
+.quick-movement-meta-feedback .quick-movement-preview-note{flex:1 1 200px;min-width:0}
 .quick-movement-modal .dash-chip:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
 .quick-movement-modal .fg input:focus-visible,.quick-movement-modal .fg select:focus-visible{outline:3px solid #fbbf24;outline-offset:1px}
 .quick-movement-modal .fg input,.quick-movement-modal .fg select{min-height:44px}
@@ -11441,6 +11444,22 @@ function quickMovementSaleInfoHtml(){
     </div>
   </div>`;
 }
+function quickMovementMetadataFeedbackHtml(ticker,type,sector,manualType,manualSector){
+  const t=String(ticker||'').trim();
+  if(!t) return '';
+  const resolved=resolveAssetMetadata(t,{manual:{
+    type:manualType ? String(type||'') : '',
+    sector:manualSector ? String(sector||'') : ''
+  }});
+  let source=manualType||manualSector ? 'manual' : String(resolved.source||'').trim();
+  if(!source || source==='unknown'){
+    return `<div class="quick-movement-meta-feedback quick-movement-meta-unknown" role="status"><span class="analysis-pill warn">Ticker não reconhecido</span><span class="quick-movement-preview-note">Revise tipo e setor antes de salvar.</span></div>`;
+  }
+  const labels={asset:'Identificado pela carteira',learned:'Identificado pelo histórico',catalog:'Identificado pelo catálogo',inference:'Identificado automaticamente',manual:'Definido manualmente'};
+  const label=labels[source];
+  if(!label) return '';
+  return `<div class="quick-movement-meta-feedback"><span class="analysis-pill ${source==='manual'?'muted':'info'}">${label}</span></div>`;
+}
 function quickMovementAssetSummaryHtml(){
   const draft=S.quickMovementDraft||quickMovementDefaultDraft();
   const kind=normalizeQuickMovementKind(draft.kind);
@@ -11466,6 +11485,7 @@ function quickMovementAssetSummaryHtml(){
   return `<div style="margin-top:12px">
     <div class="cl" style="margin-bottom:8px">Resumo do ativo</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">${stats.join('')}</div>
+    ${quickMovementMetadataFeedbackHtml(draft.ticker, draft.type, draft.sector, draft.manualType, draft.manualSector)}
   </div>`;
 }
 function quickMovementSalePreviewHtml(){
@@ -11610,6 +11630,7 @@ function quickMovementPreviewHtml(){
         </div>
         ${compraExtra}
       </div>
+      ${(kind==='compra'||kind==='provento') ? quickMovementMetadataFeedbackHtml(draft.ticker, draft.type, draft.sector, draft.manualType, draft.manualSector) : ''}
       ${lookupType || lookupSector ? `<div class="quick-movement-preview-note">Tipo: ${esc(assetInfo || '—')} · Setor: ${esc(assetSector || '—')}</div>` : ''}
       <div class="quick-movement-preview-note">${esc(secondary)}</div>
     </div>`;
