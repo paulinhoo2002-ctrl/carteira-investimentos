@@ -37,6 +37,13 @@ skills-lock.json
 # Extras locais
 *.tmp
 .codex-tmp/
+.freebuff/
+.hermes/
+.playwright-cli/
+*.db
+*.db-shm
+*.db-wal
+index_HEAD.html
 test-results/
 temp-smoke.spec.js
 backups/
