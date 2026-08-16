@@ -4210,6 +4210,50 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
 <style>
   .quick-movement-modal .rf-quick-continue{min-height:44px}
 </style>
+<style>
+  /* Safe-area iOS (notch / Dynamic Island / home indicator) - FASE B1.3.
+     env(safe-area-inset-*) retorna 0px fora de standalone/notch, portanto
+     estas regras sao inertes em navegador comum (sem espaco extra) e ativam
+     somente onde a area segura realmente existe. */
+  :root{
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-right:env(safe-area-inset-right,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+    --safe-left:env(safe-area-inset-left,0px);
+  }
+  .hdr{padding-top:calc(10px + var(--safe-top))}
+  .tabs{top:calc(58px + var(--safe-top))}
+  #investTopDrawer .mt-panel{top:calc(54px + var(--safe-top))}
+  .pdf-report-toolbar{top:var(--safe-top)}
+  .pdf-report-overlay{padding-top:calc(18px + var(--safe-top))}
+  .quick-movement-modal>div:last-child{padding-bottom:calc(18px + var(--safe-bottom))!important}
+  @media(min-width:901px) and (max-width:1180px){
+    .tabs{top:calc(52px + var(--safe-top))}
+  }
+  @media(max-width:640px){
+    .hdr{padding-top:calc(8px + var(--safe-top))!important}
+    .note-modal{max-height:calc(100dvh - var(--safe-top) - 6px)!important}
+    .pmp-panel{max-height:calc(min(96vh,100dvh - var(--safe-top) - 8px))}
+    .broker-note-confirm-bar{padding-bottom:calc(12px + var(--safe-bottom))}
+  }
+  @media(min-width:641px){
+    .toast{bottom:calc(20px + var(--safe-bottom))}
+    .note-overlay{padding-top:calc(22px + var(--safe-top));padding-bottom:calc(22px + var(--safe-bottom))}
+    .pmp-modal{padding-top:calc(16px + var(--safe-top));padding-bottom:calc(16px + var(--safe-bottom))}
+    #investMenuSheet{padding-bottom:calc(32px + var(--safe-bottom))}
+  }
+  @media(orientation:landscape){
+    .hdr{padding-left:calc(18px + var(--safe-left))!important;padding-right:calc(18px + var(--safe-right))!important}
+    .tabs-desktop{padding-left:calc(10px + var(--safe-left));padding-right:calc(10px + var(--safe-right))}
+    .tabs-mobile{padding-left:calc(8px + var(--safe-left));padding-right:calc(8px + var(--safe-right))}
+  }
+  @media(min-width:641px) and (max-width:900px) and (orientation:landscape){
+    .hdr{padding-left:calc(12px + var(--safe-left))!important;padding-right:calc(12px + var(--safe-right))!important}
+  }
+  @media(max-width:640px) and (orientation:landscape){
+    .hdr{padding-left:calc(10px + var(--safe-left))!important;padding-right:calc(10px + var(--safe-right))!important}
+  }
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -26506,7 +26550,7 @@ function showPwaUpdateNotice(registration){
   notice.setAttribute('role','status');
   notice.style.cssText=[
     'position:fixed',
-    `bottom:${window.matchMedia('(max-width:700px)').matches?'calc(76px + env(safe-area-inset-bottom))':'18px'}`,
+    `bottom:${window.matchMedia('(max-width:700px)').matches?'calc(76px + env(safe-area-inset-bottom))':'calc(18px + env(safe-area-inset-bottom))'}`,
     'left:50%',
     'transform:translateX(-50%)',
     'z-index:99999',
