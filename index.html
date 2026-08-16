@@ -236,7 +236,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .rebalance-subtitle{max-width:820px;font-size:12px;color:#94a3b8;line-height:1.45;margin-top:4px;position:relative;z-index:1}
 .rebalance-form{display:grid;grid-template-columns:minmax(220px,320px) auto;gap:10px;align-items:end;margin-top:12px;position:relative;z-index:1}
 .rebalance-form .fg{margin:0}
-.rebalance-form .btn{min-height:38px;min-width:126px;padding:8px 14px}
+.rebalance-form .btn{min-height:44px;min-width:126px;padding:8px 14px}
 .rebalance-safety{font-size:10px;line-height:1.4;color:#94a3b8;border:1px solid #1d2940;background:rgba(9,12,21,.55);border-radius:10px;padding:8px 9px}
 .rebalance-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
 .rebalance-summary-card{min-height:64px;padding:9px 10px;border:1px solid #182033;border-radius:11px;background:#0b1020;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
@@ -265,9 +265,9 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .ai-head-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
 .ai-title{font-size:16px;font-weight:900;color:#edf3ff;line-height:1.15}
 .ai-subtitle{font-size:12px;line-height:1.45;color:#94a3b8;max-width:760px}
-.ai-cta{min-width:152px;white-space:nowrap;align-self:flex-start}
+.ai-cta{min-width:152px;white-space:nowrap;align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .ai-modebar{display:flex;gap:8px;flex-wrap:wrap}
-.ai-modebar .btn{padding:7px 10px;font-size:12px;white-space:nowrap}
+.ai-modebar .btn{padding:7px 10px;font-size:12px;white-space:nowrap;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .ai-result{display:flex;flex-direction:column;gap:10px}
 .ai-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .ai-card-title{font-size:13px;font-weight:900;color:#edf3ff;line-height:1.2}
@@ -861,7 +861,8 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .irpf-title{font-size:18px;font-weight:900;color:var(--text);letter-spacing:-.02em}
 .irpf-sub{font-size:11px;color:var(--muted);line-height:1.45;margin-top:3px}
 .irpf-yearbox{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.irpf-yearbox .btn{padding:7px 10px;font-size:10px}
+.irpf-yearbox select{min-height:44px}
+.irpf-yearbox .btn{padding:7px 10px;font-size:10px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .irpf-badge{font-size:10px;font-weight:800;border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:5px 8px;white-space:nowrap;color:var(--muted)}
 .irpf-badge.ok{color:#34d399;border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08)}
 .irpf-badge.warn{color:#fbbf24;border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08)}
@@ -948,6 +949,10 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .data-quality-action{display:flex;justify-content:flex-end;align-items:flex-start}
 .data-quality-action .btn{white-space:nowrap}
 .data-quality-empty-health{padding:28px 16px;text-align:center;border:1px dashed var(--border);border-radius:13px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.5}
+.data-quality-chip{border:1px solid var(--border);background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 10px;font-size:10px;font-weight:750;line-height:1;white-space:nowrap;transition:all .15s;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+.data-quality-chip.on{background:rgba(79,70,229,.14);color:#a5b4fc;border-color:rgba(99,102,241,.35)}
+.data-quality-chip:hover{opacity:.9}
+.data-quality-actions .btn,.data-quality-action .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .premium-mobile-only{display:none}
 .perf-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
 .perf-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px 12px 10px}
@@ -996,7 +1001,7 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .rent-side{display:flex;flex-direction:column;gap:10px;height:100%}
 .rent-main{min-height:0;display:flex;flex-direction:column;gap:10px;height:100%}
 .rent-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;justify-content:stretch}
-.rent-filters select{min-width:0}
+.rent-filters select{min-width:0;min-height:44px}
 .rent-chartbox{background:#111828;border:1px solid #1d2940;border-radius:14px;padding:8px 8px 2px;overflow:hidden}
 .rent-card{flex:1;min-height:0;padding:11px 12px 9px}
 .rent-card .dash-value{margin-top:6px}
@@ -3136,7 +3141,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   }
   .irpf-yearbox>div{width:100%;justify-content:flex-start!important}
   .irpf-yearbox select{flex:1 1 150px;min-width:0!important}
-  .irpf-yearbox .btn{flex:1 1 auto;min-height:42px}
+  .irpf-yearbox .btn{flex:1 1 auto;min-height:44px}
   .irpf-summary-card{min-height:68px}
   .irpf-summary-card .analysis-summary-sub{display:none}
   .irpf-mobile-row{min-width:0}
@@ -3898,6 +3903,16 @@ html[data-theme="light"] .data-audit-chip{
   border-color:#d4deea!important;
 }
 html[data-theme="light"] .data-audit-chip.on{
+  background:rgba(67,83,234,.12)!important;
+  color:#2030a5!important;
+  border-color:rgba(67,83,234,.24)!important;
+}
+html[data-theme="light"] .data-quality-chip{
+  background:#f5f8fc!important;
+  color:#5f7086!important;
+  border-color:#d4deea!important;
+}
+html[data-theme="light"] .data-quality-chip.on{
   background:rgba(67,83,234,.12)!important;
   color:#2030a5!important;
   border-color:rgba(67,83,234,.24)!important;
