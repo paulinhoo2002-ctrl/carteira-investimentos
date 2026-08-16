@@ -59,6 +59,7 @@ test('builder nao transforma quantidade negativa em valor positivo', () => {
       'qm-dt': '2026-08-15', 'qm-ti': 'PETR4', 'qm-qty': '-10', 'qm-price': '10'
     })[id] || '' }; } },
     normalizeQuickMovementKind: value => String(value || 'compra'),
+    inputDateValue: value => String(value || ''),
     brDate: value => value,
     normalizeMetadataTicker: value => String(value || '').trim().toUpperCase(),
     normalizeType: (value, fallback = 'Ação') => String(value || '').trim() || fallback,
