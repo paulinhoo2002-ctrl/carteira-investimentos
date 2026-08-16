@@ -81,7 +81,7 @@ for (const viewport of viewports) {
         await dialog.locator('#qm-event').selectOption({ label: 'Dividendo' });
       });
       await dialog.locator('#qm-value').dispatchEvent('input');
-      await page.waitForTimeout(50);
+      await dialog.locator('#quick-movement-asset-summary').waitFor({ state: 'visible', timeout: 5000 });
       assert.equal(await dialog.locator('#quick-movement-asset-summary').count(), 1);
       assert.match(await dialog.locator('#quick-movement-preview').innerText(), /PETR4/);
       assert.match(await dialog.locator('#quick-movement-preview').innerText(), /120/);

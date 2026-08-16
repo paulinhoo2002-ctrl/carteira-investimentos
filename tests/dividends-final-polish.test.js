@@ -46,7 +46,7 @@ test('dividendos final polish usa fontes oficiais e preserva os fluxos', () => {
     ? indexHtml.slice(overviewStart, bodyStart)
     : indexHtml;
 
-  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{monthlySection\}/s);
+  assert.match(overviewBlock, /\$\{dividendSummaryCards\(\)\}\s*\$\{dividendDistributionPanel\(\)\}\s*\$\{monthlySection\}/s);
   assert.equal(overviewBlock.includes('${dividendOverviewRecentPanel(rows)}'), false);
   assert.equal(overviewBlock.includes('Histórico recente'), false);
   assert.equal(overviewBlock.includes('Meta de renda passiva'), false);
