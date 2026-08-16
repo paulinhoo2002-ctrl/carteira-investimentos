@@ -4254,6 +4254,32 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
     .hdr{padding-left:calc(10px + var(--safe-left))!important;padding-right:calc(10px + var(--safe-right))!important}
   }
 </style>
+<style>
+  /* Controles cortados em viewports estreitas - FASE B1.4.
+     Escopo: mobile/tablet pequeno; regras existentes e desktop intactos. */
+  @media(max-width:1024px){
+    /* Ativos: coluna de acoes sempre visivel (sticky a direita do scroll horizontal) */
+    .ag-table .tw table th:last-child,
+    .ag-table .tw table td:last-child,
+    .rf-table-wrap table th:last-child,
+    .rf-table-wrap table td:last-child{
+      position:sticky;right:0;background:var(--panel);z-index:2;
+      box-shadow:-8px 0 10px -8px rgba(2,6,23,.45)
+    }
+    html[data-theme="light"] .ag-table .tw table th:last-child,
+    html[data-theme="light"] .ag-table .tw table td:last-child,
+    html[data-theme="light"] .rf-table-wrap table th:last-child,
+    html[data-theme="light"] .rf-table-wrap table td:last-child{
+      background:#ffffff!important
+    }
+  }
+  @media(max-width:640px){
+    /* IA: botao Concentracao nunca fica cortado (quebra em linhas) */
+    .ai-modebar{flex-wrap:wrap;overflow-x:visible}
+    /* Dividendos: todas as abas visiveis sem depender de scroll oculto */
+    .div-premium-tabs{flex-wrap:wrap}
+  }
+</style>
 </head>
 <body>
 <div id="root"></div>
