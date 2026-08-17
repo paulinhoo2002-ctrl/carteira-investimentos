@@ -4,6 +4,19 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
+process.env.TZ = 'UTC';
+const FIXED_NOW = '2026-07-20T12:00:00.000Z';
+const NativeDate = Date;
+class FixedDate extends NativeDate {
+  constructor(...args) {
+    super(...(args.length ? args : [FIXED_NOW]));
+  }
+
+  static now() {
+    return NativeDate.parse(FIXED_NOW);
+  }
+}
+
 const repoRoot = path.join(__dirname, '..');
 const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
 
@@ -24,7 +37,7 @@ function createSandbox(state = {}) {
       info() {},
       debug() {},
     },
-    Date,
+    Date: FixedDate,
     Math,
     Number,
     String,
@@ -68,6 +81,9 @@ function createSandbox(state = {}) {
       if (!text) return '';
       text = text.replace(/[^A-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
       return text.slice(0, 38);
+    },
+    normalizeMetadataTicker(value) {
+      return sandbox.cleanAssetCode(String(value || '').trim().toUpperCase().replace(/\.SA$/i, ''));
     },
     normTypeKey(value) {
       return String(value || '')
