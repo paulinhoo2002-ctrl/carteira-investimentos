@@ -4393,6 +4393,397 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.22)"],
 html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
   background:#ffffff!important;
 }
+
+html[data-theme="light"] .div-goal-value{
+  color:#0d5c2a!important;
+}
+html[data-theme="light"] .rf-field-error{
+  color:#a01d1d!important;
+}
+html[data-theme="light"] .quick-movement-error{
+  background:rgba(160,29,29,.12)!important;
+  border-color:rgba(160,29,29,.3)!important;
+  color:#a01d1d!important;
+}
+
+html[data-theme="dark"] .rf-field-error,
+html[data-theme="dark"] .rf-field-error-meta,
+html[data-theme="dark"] .quick-movement-error{
+  color:#f87171!important;
+}
+
+/* ===== PHASE 7: VISUAL POLISH & CONSISTENCY ===== */
+
+/* Standardize page headings across all screens */
+.page-heading,
+.dashboard-page-heading h1,
+.patrimony-title,
+.div-premium-title,
+.rf-hero-title,
+.rebalance-title,
+.data-audit-title,
+.irpf-section-title,
+.premium-panel-title,
+.patrimony-panel-title,
+.rf-panel-title,
+.div-premium-head .div-premium-title,
+.rent-side .card.al .cl {
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: var(--text) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -.02em !important;
+}
+
+.page-sub,
+.dashboard-page-heading p,
+.patrimony-subtitle,
+.div-premium-sub,
+.rf-hero-sub,
+.rebalance-subtitle,
+.data-audit-sub,
+.irpf-section-sub,
+.premium-panel-sub,
+.patrimony-panel-sub,
+.rf-panel-sub,
+.rebalance-alloc-sub,
+.rebalance-study-sub {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+  line-height: 1.4 !important;
+  margin-top: 4px !important;
+}
+
+/* Standardize section headings */
+.sec-title,
+.ag-title,
+.patrimony-alloc-title,
+.rebalance-alloc-title,
+.analysis-card-title,
+.analysis-ranking-title,
+.asset-premium-title,
+.patrimony-panel-title,
+.div-overview-panel-title {
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  color: var(--text) !important;
+  line-height: 1.2 !important;
+}
+
+.sec-meta,
+.ag-sub,
+.patrimony-alloc-sub,
+.rebalance-alloc-sub,
+.analysis-card-meta,
+.analysis-ranking-meta,
+.asset-premium-sub,
+.patrimony-panel-sub,
+.div-overview-panel-sub {
+  font-size: 10px !important;
+  color: var(--muted) !important;
+  line-height: 1.35 !important;
+  margin-top: 2px !important;
+}
+
+/* Standardize KPI cards */
+.card .cl,
+.card .fl,
+.premium-panel-title,
+.patrimony-kpi-label,
+.div-goal-title,
+.rf-summary-label,
+.analysis-summary-kicker,
+.data-audit-card-label,
+.rebalance-summary-label,
+.metas-kpi-label,
+.patrimony-insight-label,
+.ap-summary .cl,
+.backup-card .cl {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+  color: var(--muted) !important;
+  margin-bottom: 4px !important;
+  line-height: 1.15 !important;
+}
+
+.card .cv,
+.patrimony-kpi-value,
+.div-goal-value,
+.rf-summary-value,
+.analysis-summary-value,
+.data-audit-card-value,
+.rebalance-summary-value,
+.metas-kpi-value,
+.patrimony-insight-value,
+.ap-summary .cv,
+.backup-card .cv {
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  line-height: 1.04 !important;
+  letter-spacing: -.01em !important;
+  color: var(--text) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.card .cs,
+.metas-kpi-sub,
+.patrimony-insight-note,
+.analysis-summary-sub,
+.rf-summary-sub {
+  font-size: 10px !important;
+  color: var(--muted) !important;
+  line-height: 1.2 !important;
+  margin-top: 4px !important;
+}
+
+/* Standardize card padding and spacing */
+.card,
+.premium-panel,
+.patrimony-panel,
+.rf-panel,
+.sec,
+.ag,
+.div-premium-card,
+.div-premium-row,
+.analysis-card,
+.analysis-ranking-card,
+.rebalance-summary-card,
+.irpf-summary-card,
+.data-audit-card,
+.backup-card,
+.ap-summary .card {
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  transition: border-color .2s, box-shadow .2s !important;
+}
+
+.card.al,
+.premium-panel.al,
+.patrimony-panel.al,
+.sec.al,
+.ag.al {
+  border-left: 3px solid !important;
+}
+
+/* Standardize gaps between sections */
+.wrap > * + *,
+.premium-dashboard-grid > * + *,
+.patrimony-grid > * + *,
+.div-premium > * + *,
+.rent-layout > * + *,
+.rebalance-shell > * + *,
+.data-audit-shell > * + *,
+.irpf-section + .irpf-section {
+  margin-top: 16px !important;
+}
+
+/* Standardize KPI grid gaps */
+.cards,
+.premium-metrics,
+.patrimony-kpis,
+.div-premium-kpis,
+.rf-metrics,
+.rf-summary-strip,
+.analysis-summary,
+.ap-summary,
+.backup-summary,
+.metas-shell .cards,
+.rebalance-summary {
+  gap: 10px !important;
+}
+
+/* Standardize button minimum height and padding */
+.btn {
+  min-height: 44px !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.btn.bp {
+  background: linear-gradient(135deg, #3730a3, #4f46e5) !important;
+  color: #c7d2fe !important;
+  box-shadow: 0 2px 14px rgba(99, 102, 241, .3) !important;
+}
+
+.btn.bgh {
+  background: var(--panel) !important;
+  color: var(--muted) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.btn.bdi {
+  background: transparent !important;
+  border: 1px solid rgba(127, 29, 29, .5) !important;
+  border-radius: 8px !important;
+  color: #f87171 !important;
+}
+
+.btn.bsv {
+  background: linear-gradient(135deg, #065f46, #047857) !important;
+  color: #6ee7b7 !important;
+  box-shadow: 0 2px 14px rgba(16, 185, 129, .2) !important;
+}
+
+/* Standardize input heights and padding */
+input, select, textarea {
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  font-size: 13px !important;
+  border-radius: 10px !important;
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  transition: border-color .15s, box-shadow .15s !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, .15) !important;
+}
+
+.fl {
+  font-size: 11px !important;
+  color: var(--muted) !important;
+  margin-bottom: 4px !important;
+  font-weight: 500 !important;
+}
+
+/* Standardize table styles */
+table {
+  font-size: 13px !important;
+}
+
+th {
+  padding: 10px 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+  color: var(--muted) !important;
+  background: var(--panel) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+td {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+tbody tr:hover {
+  background: var(--surface-2) !important;
+}
+
+/* Standardize empty states */
+.preview-empty,
+.analysis-empty,
+.evo-empty,
+.rf-empty,
+.premium-empty,
+.data-audit-empty,
+.rebalance-empty,
+.div-analysis-empty,
+.metas-empty {
+  padding: 20px !important;
+  border: 1px dashed var(--border) !important;
+  border-radius: 12px !important;
+  background: var(--surface-2) !important;
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+}
+
+/* Standardize badges */
+.bdg,
+.analysis-pill,
+.div-type-badge,
+.patrimony-panel-badge,
+.rf-panel-badge,
+.rf-hero-badge,
+.irpf-badge,
+.evo-badge,
+.evo-chip,
+.premium-panel-badge,
+.reports-filter button,
+.report-format,
+.passive-goal-badge {
+  border-radius: 999px !important;
+  padding: 4px 10px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+/* Toast positioning - ensure it doesn't cover important content */
+.toast {
+  z-index: 3000 !important;
+  pointer-events: none !important;
+  max-width: calc(100vw - 40px) !important;
+}
+
+@media (max-width: 640px) {
+  .toast {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+    max-width: none !important;
+  }
+}
+
+/* Ensure no horizontal overflow */
+.wrap,
+.premium-dashboard-grid,
+.patrimony-grid,
+.div-premium,
+.rent-layout,
+.rebalance-shell,
+.data-audit-shell,
+.irpf-section,
+.content {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Touch target minimum size */
+button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
+.cfg-menu-panel .btn, .wallet-menu .btn, .dash-chip,
+.div-premium-tab, .aporte-view-tab, .aporte-filter-chip,
+.data-audit-chip, .rf-quick-tab {
+  min-height: 44px !important;
+  min-width: 44px !important;
+}
+
+/* Safe area for mobile */
+@supports (padding: max(0px)) {
+  .hdr {
+    padding-top: max(10px, env(safe-area-inset-top)) !important;
+  }
+  .wrap {
+    padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+  }
+  .mobile-bottom-nav {
+    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
 .div-premium .div-premium-title{font-size:14px;line-height:1.12}
 .div-premium .div-premium-sub{font-size:10px;line-height:1.28}
 .div-premium .div-premium-metric-label{font-size:10px}
