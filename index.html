@@ -383,7 +383,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
   .premium-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
   .premium-dashboard-grid{grid-template-columns:1fr}
   .premium-radar{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .patrimony-grid{grid-template-columns:1fr}
+  .patrimony-grid{grid-template-columns:1fr;gap:8px}
   .patrimony-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dashboard-home-grid{grid-template-columns:1fr!important;gap:8px!important}
 }
@@ -438,38 +438,41 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
   .asset-performance-prices,.asset-insight-sub{font-size:8px}
   .asset-performance-pct,.asset-insight-value{font-size:10px}
   .patrimony-premium{gap:8px;padding-bottom:22px}
-  .patrimony-hero{padding:11px;border-radius:12px}
+  .patrimony-hero{padding:10px;border-radius:12px}
+  .patrimony-hero:after{width:80px;height:80px;right:-40px;top:-44px}
   .patrimony-head{display:block}
   .patrimony-title{font-size:14px}
-  .patrimony-subtitle{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .patrimony-reading{margin-top:8px;max-width:none;padding:8px}
+  .patrimony-subtitle{font-size:9px;white-space:normal;overflow:visible;text-overflow:clip}
+  .patrimony-reading{margin-top:6px;max-width:none;padding:7px}
   .patrimony-reading-label{font-size:8px}
-  .patrimony-reading-text{font-size:10px}
+  .patrimony-reading-text{font-size:9px}
   .patrimony-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
-  .patrimony-kpi{padding:8px}
-  .patrimony-kpi-label{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .patrimony-kpi-value{font-size:12px}
-  .patrimony-periods{gap:5px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
-  .patrimony-periods .dash-chip{flex:0 0 auto}
+  .patrimony-kpi{padding:8px;min-height:68px}
+  .patrimony-kpi-label{font-size:8px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2}
+  .patrimony-kpi-value{font-size:13px;white-space:normal;overflow:visible;text-overflow:clip;word-break:break-word}
+  .patrimony-periods{gap:5px;flex-wrap:wrap;overflow:visible;padding-bottom:2px}
+  .patrimony-periods .dash-chip{flex:0 0 44px;min-width:44px;min-height:44px;padding:8px 6px}
   .patrimony-grid{grid-template-columns:1fr;gap:7px}
   .patrimony-panel{padding:9px;border-radius:11px}
-  .patrimony-panel-head{align-items:center;margin-bottom:7px}
-  .patrimony-panel-title{font-size:10px}
-  .patrimony-panel-sub{display:none}
+  .patrimony-panel-head{display:block;margin-bottom:7px}
+  .patrimony-panel-title{font-size:11px;line-height:1.25}
+  .patrimony-panel-sub{display:block;font-size:9px}
   .patrimony-panel-badge{font-size:8px;padding:3px 6px}
-  .patrimony-month-list{gap:6px}
-  .patrimony-month-row{grid-template-columns:42px minmax(0,1fr) 84px;gap:6px}
-  .patrimony-month-label,.patrimony-month-value{font-size:9px}
-  .patrimony-insights{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-  .patrimony-insight{padding:8px}
+  .patrimony-panel-head .patrimony-panel-badge{display:inline-flex;margin-top:6px}
+  .patrimony-month-list{gap:5px;max-height:none;overflow:visible;padding-right:0}
+  .patrimony-month-row{grid-template-columns:48px minmax(0,1fr) auto;gap:6px;min-height:32px}
+  .patrimony-month-label,.patrimony-month-value{font-size:10px}
+  .patrimony-insights{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .patrimony-insight{padding:7px}
   .patrimony-insight-label{font-size:8px}
   .patrimony-insight-value{font-size:10px}
   .patrimony-insight-note{display:none}
   .patrimony-composition{grid-template-columns:1fr;gap:8px}
   .patrimony-composition-track{height:12px}
-  .patrimony-composition-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .patrimony-composition-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   .patrimony-composition-stat{padding:7px}
-  .patrimony-composition-label{font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .patrimony-composition-stat:last-child{grid-column:1/-1}
+  .patrimony-composition-label{font-size:8px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2}
   .patrimony-composition-value{font-size:9px}
   .patrimony-composition-text{font-size:9px;margin-top:7px}
   .rebalance-hero{padding:12px}
@@ -1057,7 +1060,7 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .premium-home-summary .premium-wallet-name{font-size:10px}
 .premium-home-summary .premium-wallet-value{font-size:9px}
 .dash-filters{display:flex;gap:6px;flex-wrap:wrap}
-.dash-chip{border:1px solid var(--border);background:var(--panel);color:var(--muted);border-radius:999px;padding:4px 9px;font-size:11px;line-height:1;font-weight:700;transition:all .15s;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.dash-chip{border:1px solid var(--border);background:var(--panel);color:var(--muted);border-radius:999px;padding:4px 9px;font-size:11px;line-height:1;font-weight:700;transition:all .15s;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
 .dash-chip:hover{opacity:.9;transform:translateY(-1px)}
 .dash-chip.on{background:rgba(79,70,229,.14);color:#a5b4fc;border-color:rgba(99,102,241,.35)}
 .rent-layout{display:grid;grid-template-columns:286px minmax(0,1fr);gap:12px;align-items:stretch}
@@ -1065,7 +1068,7 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .rent-main{min-height:0;display:flex;flex-direction:column;gap:10px;height:100%}
 .rent-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;justify-content:stretch}
 .rent-filters select{min-width:0;min-height:44px}
-.rent-chartbox{background:#111828;border:1px solid #1d2940;border-radius:14px;padding:8px 8px 2px;overflow:hidden}
+.rent-chartbox{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:8px 8px 2px;overflow:hidden}
 .rent-card{flex:1;min-height:0;padding:11px 12px 9px}
 .rent-card .dash-value{margin-top:6px}
 .rent-card .dash-foot{min-height:28px}
@@ -1239,50 +1242,63 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .evo-value{font-size:12px;color:#fbbf24;text-align:right;font-weight:800;letter-spacing:-.01em}
 .evo-empty{font-size:13px;padding:16px 0;text-align:center;color:#64748b}
 .patrimony-premium{display:flex;flex-direction:column;gap:10px}
-.patrimony-hero{position:relative;overflow:hidden;border:1px solid #1d2940;border-radius:16px;padding:14px;background:linear-gradient(135deg,#10182a,#0c1220 62%,#11182a)}
-.patrimony-hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-85px;top:-95px;background:rgba(52,211,153,.09);pointer-events:none}
+.patrimony-hero{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:16px;padding:16px 18px;background:linear-gradient(135deg,var(--surface),var(--surface-2) 62%,var(--surface))}
+.patrimony-hero:after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;right:-100px;top:-110px;background:rgba(52,211,153,.09);pointer-events:none}
 .patrimony-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
-.patrimony-title{font-size:16px;font-weight:900;color:#edf3ff}
-.patrimony-subtitle{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:3px}
-.patrimony-reading{max-width:440px;border:1px solid #27344b;border-radius:11px;background:rgba(9,12,21,.68);padding:9px 10px}
-.patrimony-reading-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.05em}
-.patrimony-reading-text{font-size:11px;font-weight:750;color:#dbe7f7;line-height:1.4;margin-top:3px}
+.patrimony-title{font-size:16px;font-weight:900;color:var(--text)}
+.patrimony-subtitle{font-size:10px;color:var(--muted);line-height:1.45;margin-top:3px}
+.patrimony-reading{max-width:440px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);padding:9px 10px}
+.patrimony-reading-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.patrimony-reading-text{font-size:11px;font-weight:750;color:var(--text);line-height:1.4;margin-top:3px}
 .patrimony-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;position:relative;z-index:1}
-.patrimony-kpi{min-width:0;border:1px solid #1d2940;border-radius:11px;background:rgba(9,12,21,.68);padding:9px}
-.patrimony-kpi-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
-.patrimony-kpi-value{font-size:15px;font-weight:900;color:#edf3ff;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patrimony-kpi{min-width:0;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);padding:9px}
+.patrimony-kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.patrimony-kpi-value{font-size:15px;font-weight:900;color:var(--text);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .patrimony-periods{display:flex;gap:6px;flex-wrap:wrap}
 .patrimony-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:10px}
-.patrimony-panel{border:1px solid #1d2940;border-radius:14px;background:#0d1320;padding:12px;min-width:0}
+.patrimony-panel{border:1px solid var(--border);border-radius:14px;background:var(--surface);padding:12px;min-width:0}
 .patrimony-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
-.patrimony-panel-title{font-size:12px;font-weight:850;color:#e2eaf6}
-.patrimony-panel-sub{font-size:9px;color:#7489a4;line-height:1.4;margin-top:2px}
-.patrimony-panel-badge{font-size:9px;color:#94a3b8;border:1px solid #27344b;background:#141d2f;border-radius:999px;padding:4px 7px;white-space:nowrap}
-.patrimony-month-list{display:flex;flex-direction:column;gap:7px}
+.patrimony-panel-title{font-size:12px;font-weight:850;color:var(--text)}
+.patrimony-panel-sub{font-size:9px;color:var(--muted);line-height:1.4;margin-top:2px}
+.patrimony-panel-badge{font-size:9px;color:var(--muted);border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:4px 7px;white-space:nowrap}
+.patrimony-month-list{display:flex;flex-direction:column;gap:7px;max-height:400px;overflow-y:auto;padding-right:4px}
 .patrimony-month-row{display:grid;grid-template-columns:52px minmax(0,1fr) 104px;gap:9px;align-items:center}
-.patrimony-month-label{font-size:10px;font-weight:800;color:#cbd5e1}
-.patrimony-month-track{height:7px;border:1px solid #1e2a3d;background:#111828;border-radius:999px;overflow:hidden}
-.patrimony-month-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#34d399,#86efac)}
-.patrimony-month-value{text-align:right;font-size:10px;font-weight:800;color:#fbbf24;white-space:nowrap}
+.patrimony-month-label{font-size:10px;font-weight:800;color:var(--text)}
+.patrimony-month-track{height:7px;border:1px solid var(--border);background:var(--surface);border-radius:999px;overflow:hidden}
+.patrimony-month-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--success),#86efac)}
+.patrimony-month-value{text-align:right;font-size:10px;font-weight:800;color:var(--warning);white-space:nowrap}
 .patrimony-insights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-.patrimony-insight{border:1px solid #182033;border-radius:10px;background:#090c15;padding:9px;min-width:0}
-.patrimony-insight-label{font-size:9px;color:#7489a4;line-height:1.25}
-.patrimony-insight-value{font-size:12px;font-weight:900;color:#e2eaf6;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.patrimony-insight-note{font-size:8px;color:#64748b;line-height:1.35;margin-top:3px}
+.patrimony-insight{border:1px solid var(--border);border-radius:10px;background:var(--surface-2);padding:9px;min-width:0}
+.patrimony-insight-label{font-size:9px;color:var(--muted);line-height:1.25}
+.patrimony-insight-value{font-size:12px;font-weight:900;color:var(--text);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patrimony-insight-note{font-size:8px;color:var(--muted);line-height:1.35;margin-top:3px}
 .patrimony-composition{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:12px;align-items:center}
-.patrimony-composition-track{height:15px;border:1px solid #27344b;background:#111828;border-radius:999px;overflow:hidden;display:flex}
-.patrimony-composition-applied{height:100%;background:linear-gradient(90deg,#6366f1,#818cf8)}
-.patrimony-composition-result{height:100%;background:linear-gradient(90deg,#22c55e,#86efac)}
+.patrimony-composition-track{height:15px;border:1px solid var(--border);background:var(--surface);border-radius:999px;overflow:hidden;display:flex}
+.patrimony-composition-applied{height:100%;background:linear-gradient(90deg,var(--primary),#818cf8)}
+.patrimony-composition-result{height:100%;background:linear-gradient(90deg,var(--success),#86efac)}
 .patrimony-composition-result.negative{background:repeating-linear-gradient(135deg,#ef4444 0 7px,#7f1d1d 7px 14px)}
 .patrimony-composition-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.patrimony-composition-chip{display:inline-flex;align-items:center;gap:6px;font-size:9px;color:#94a3b8}
+.patrimony-composition-chip{display:inline-flex;align-items:center;gap:6px;font-size:9px;color:var(--muted)}
 .patrimony-composition-dot{width:8px;height:8px;border-radius:3px;flex:none}
 .patrimony-composition-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.patrimony-composition-stat{border:1px solid #182033;border-radius:10px;background:#090c15;padding:8px;min-width:0}
-.patrimony-composition-label{font-size:8px;color:#7489a4;line-height:1.25}
-.patrimony-composition-value{font-size:11px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.patrimony-composition-text{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:9px}
+.patrimony-composition-stat{border:1px solid var(--border);border-radius:10px;background:var(--surface-2);padding:8px;min-width:0}
+.patrimony-composition-label{font-size:8px;color:var(--muted);line-height:1.25}
+.patrimony-composition-value{font-size:11px;font-weight:900;color:var(--text);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patrimony-composition-text{font-size:10px;color:var(--muted);line-height:1.45;margin-top:9px}
 .pleg{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.rent-side .card.al{transition:border-color .15s,box-shadow .15s}
+.rent-side .card.al:hover{border-color:color-mix(in srgb,var(--border) 60%,var(--primary));box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.rent-kpi-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.rent-kpi-value{font-size:20px;font-weight:900;line-height:1.1}
+.rent-kpi-foot{font-size:10px;color:var(--muted);line-height:1.35;margin-top:6px}
+.rent-table th{background:var(--surface);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.rent-table td{font-size:11px}
+.metas-kpi-card{padding:10px 12px;min-height:68px;border:1px solid var(--border);background:var(--surface)}
+.metas-kpi-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.metas-kpi-value{font-size:18px;font-weight:900;line-height:1.1}
+.metas-kpi-sub{font-size:9px;color:var(--muted);line-height:1.2;margin-top:4px}
+.page-heading{font-size:16px;font-weight:900;color:var(--text);margin-bottom:3px}
+.page-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:14px}
 .pli{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b}
 .pd{width:8px;height:8px;border-radius:2px}
 .gn{color:#34d399}.rd{color:#f87171}.am{color:#fbbf24}.pu{color:#818cf8}.bl{color:#60a5fa}.mu{color:#64748b}.di{color:#3d5472}
@@ -4349,6 +4365,23 @@ html[data-theme="light"] [style*="background:rgba(0,0,0,.35)"]{
     .ai-modebar{flex-wrap:wrap;overflow-x:visible}
     /* Dividendos: todas as abas visiveis sem depender de scroll oculto */
     .div-premium-tabs{flex-wrap:wrap}
+  }
+</style>
+<style>
+  /* Patrimonio mobile: leitura vertical e sem truncar valores principais. */
+  @media(max-width:640px){
+    .patrimony-hero{min-height:0!important;height:auto!important}
+    .patrimony-kpi-label,.patrimony-kpi-value{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+    .patrimony-grid{display:flex!important;flex-direction:column!important}
+    .patrimony-grid>.patrimony-panel{width:100%;order:initial}
+    .patrimony-panel-head{display:block!important}
+    .patrimony-month-list{max-height:none!important;overflow:visible!important}
+    .patrimony-month-row{grid-template-columns:48px minmax(0,1fr) auto!important}
+    .patrimony-insights{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    .patrimony-periods{flex-wrap:wrap!important;overflow:visible!important}
+    .patrimony-periods .dash-chip{width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important}
+    .patrimony-composition-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    .patrimony-composition-stat:last-child{grid-column:1/-1}
   }
 </style>
 </head>
@@ -22210,8 +22243,8 @@ function patrimonioTab(){
             ${tG>=0?`<div class="patrimony-composition-result" style="width:${positiveResultShare.toFixed(1)}%"></div>`:''}
           </div>
           <div class="patrimony-composition-legend">
-            <span class="patrimony-composition-chip"><span class="patrimony-composition-dot" style="background:#818cf8"></span>Capital aportado</span>
-            <span class="patrimony-composition-chip"><span class="patrimony-composition-dot" style="background:${tG>=0?'#34d399':'#f87171'}"></span>${tG>=0?'Ganho de capital':'Perda de capital'}</span>
+            <span class="patrimony-composition-chip"><span class="patrimony-composition-dot" style="background:var(--primary)"></span>Capital aportado</span>
+            <span class="patrimony-composition-chip"><span class="patrimony-composition-dot" style="background:${tG>=0?'var(--success)':'var(--danger)'}"></span>${tG>=0?'Ganho de capital':'Perda de capital'}</span>
           </div>
         </div>
         <div class="patrimony-composition-stats">
@@ -25621,63 +25654,71 @@ function metasTab(){
     const color=ALLOC_COLORS[idx%ALLOC_COLORS.length];
     const barWidth=Math.max(4, Math.min(100, Math.abs(diff)));
     return `<tr>
-      <td style="font-weight:700;color:#e2eaf6"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${color};margin-right:8px;vertical-align:middle"></span>${esc(it.type)}</td>
+      <td style="font-weight:700;color:var(--text)"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${color};margin-right:8px;vertical-align:middle"></span>${esc(it.type)}</td>
       <td>${target.toFixed(1)}%</td>
       <td>${actual.toFixed(1)}%</td>
       <td class="${diff>=0?'gn':'rd'}" style="font-weight:700">${diff>=0?'+':''}${diff.toFixed(1)}%</td>
-      <td><div class="bwr" style="width:110px"><div class="bfr" style="width:${barWidth}%;background:${diff>=0?'#34d399':'#f87171'}"></div></div></td>
+      <td><div class="bwr" style="width:110px"><div class="bfr" style="width:${barWidth}%;background:${diff>=0?'var(--success)':'var(--danger)'}"></div></div></td>
     </tr>`;
   }).join('');
 
+  const metaPatSummary=metaPatValor>0?`${fmt(tC)} de ${fmt(metaPatValor)} · ${metaPat.prog.toFixed(1)}%`:'Meta patrimonial não configurada';
+  const metaProSummary=passiveGoal?.hasTarget?`${fmt(passiveGoal.current||0)} de ${fmt(passiveGoal.target||0)} · ${fmtP(passiveGoal.percent||0)}`:'Meta de renda não configurada';
+
   return`<div class="metas-shell">
-  <div style="font-size:14px;font-weight:700;margin-bottom:2px">🎯 Metas</div>
-  <div class="mu">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
+  <div class="page-heading">🎯 Metas</div>
+  <div class="page-sub">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
   <div class="cards" style="margin-bottom:8px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="card al" style="border-left-color:#fbbf24;padding:10px 12px;min-height:64px"><div class="cl">Renda projetada/mês</div><div class="cv am" style="font-size:18px">${fmt(mD)}</div><div class="cs">Estimativa da carteira</div></div>
-    <div class="card al" style="border-left-color:#34d399;padding:10px 12px;min-height:64px"><div class="cl">Projeção anual</div><div class="cv gn" style="font-size:18px">${fmt(aD)}</div></div>
-    <div class="card al" style="border-left-color:#818cf8;padding:10px 12px;min-height:64px"><div class="cl">DY médio</div><div class="cv pu" style="font-size:18px">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;min-height:64px"><div class="cl">Total da carteira</div><div class="cv bl" style="font-size:18px">${fmt(tC)}</div></div>
+    <div class="card al metas-kpi-card" style="border-left-color:var(--warning)"><div class="metas-kpi-label">Renda projetada/mês</div><div class="metas-kpi-value" style="color:var(--warning)">${fmt(mD)}</div><div class="metas-kpi-sub">Estimativa da carteira</div></div>
+    <div class="card al metas-kpi-card" style="border-left-color:var(--success)"><div class="metas-kpi-label">Projeção anual</div><div class="metas-kpi-value" style="color:var(--success)">${fmt(aD)}</div></div>
+    <div class="card al metas-kpi-card" style="border-left-color:var(--primary)"><div class="metas-kpi-label">DY médio</div><div class="metas-kpi-value" style="color:var(--primary)">${avgDY.toFixed(2)}%</div></div>
+    <div class="card al metas-kpi-card" style="border-left-color:var(--primary)"><div class="metas-kpi-label">Total da carteira</div><div class="metas-kpi-value" style="color:var(--text)">${fmt(tC)}</div></div>
+  </div>
+
+  <div class="metas-summary-bar" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px">
+    <div style="flex:1;min-width:200px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
+    <div style="flex:1;min-width:200px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
   </div>
 
   ${passiveIncomeGoalBlock(passiveGoal, projCurrent)}
 
-  <details class="sec" style="margin-bottom:10px">
+  <details class="sec" open style="margin-bottom:10px">
     <summary>
       <div>
         <div class="sec-title">Meta de Patrimônio</div>
         <div class="sec-meta">${fmt(tC)} / ${fmt(metaPatValor||0)} · ${metaPat.prog.toFixed(1)}% de progresso</div>
       </div>
-      <div class="sec-meta">clique para abrir</div>
+      <div class="sec-meta">clique para recolher</div>
     </summary>
     <div class="sec-body">
       <div class="cg" style="gap:10px;grid-template-columns:1fr 1fr">
-        <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+        <div class="card al" style="border-left-color:var(--primary);padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
           <div class="fl">Meta de patrimônio</div>
           <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
           <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
         </div>
-        <div class="card al" style="border-left-color:#60a5fa;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+        <div class="card al" style="border-left-color:var(--primary);padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
           <div class="fl">Progresso</div>
           <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
             <div class="mu">Carteira atual</div>
-            <div style="font-size:16px;font-weight:800;color:#60a5fa">${metaPat.prog.toFixed(1)}%</div>
+            <div style="font-size:16px;font-weight:800;color:var(--primary)">${metaPat.prog.toFixed(1)}%</div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
             <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
             <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
           </div>
-          <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:#60a5fa"></div></div>
+          <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:var(--primary)"></div></div>
         </div>
       </div>
     </div>
   </details>
 
-  <details class="sec" style="margin-bottom:12px">
+  <details class="sec" open style="margin-bottom:12px">
     <summary>
       <div>
         <div class="sec-title">Distribuição da carteira</div>
-        <div class="sec-meta">${allocItems.length} categorias · clique para abrir</div>
+        <div class="sec-meta">${allocItems.length} categorias · clique para recolher</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <button class="btn bgh" onclick="event.stopPropagation();openAllocationGoal()">⚙️ Configurar</button>
@@ -25743,22 +25784,19 @@ function rentabilidadeTab(){
       title:'Rentabilidade total',
       value:fmtP(current.cumReturn||0),
       foot:`Inclui proventos recebidos · ${gap>=0?'Acima':'Abaixo'} do ${bench}: ${fmtP(gap||0)}`,
-      color:'#34d399',
-      icon:'📈'
+      color:'var(--success)',
     },
     {
       title:'Últimos 12 meses',
       value:fmtP(return12m||0),
       foot:`Variação acumulada no recorte de 12 meses · proventos: ${fmt(provCurrent)}`,
-      color:'#60a5fa',
-      icon:'🗓️'
+      color:'var(--primary)',
     },
     {
       title:'Último mês',
       value:fmtP(currentMonth||0),
       foot:'Mudança estimada no fechamento do mês',
-      color:(currentMonth||0)>=0?'#34d399':'#f87171',
-      icon:'📅'
+      color:(currentMonth||0)>=0?'var(--success)':'var(--danger)',
     },
   ];
   const concentrationNote=topAsset
@@ -25768,8 +25806,8 @@ function rentabilidadeTab(){
   const chartData=view.length?view:points;
   const chartLabels=chartData.map(p=>p.label);
   const chartSeries=[
-    {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'#8da2ff', fill:'rgba(141,162,255,.12)', width:2.5, points:false},
-    {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'#fbbf24', width:2.2, points:false},
+    {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--primary)', fill:'rgba(79,70,229,.12)', width:2.5, points:false},
+    {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'var(--warning)', width:2.2, points:false},
   ];
 
   const yearsRows=(data.years||[]).map(row=>{
@@ -25779,37 +25817,30 @@ function rentabilidadeTab(){
       return `<td class="${v>=0?'gn':'rd'}" style="font-weight:${Math.abs(v)>0.005?700:500}">${fmtP(v)}</td>`;
     }).join('');
     return `<tr>
-      <td style="font-weight:800;color:#e2eaf6">${row.year}</td>
+      <td style="font-weight:800;color:var(--text)">${row.year}</td>
       ${cells}
-      <td style="font-weight:800;color:#e2eaf6">${fmtP(row.annual||0)}</td>
-      <td style="font-weight:800;color:${(row.provAnnual||0)>=0?'#fbbf24':'#f87171'}">${fmt(row.provAnnual||0)}</td>
-      <td style="font-weight:800;color:${(row.provAcum||0)>=0?'#34d399':'#f87171'}">${fmt(row.provAcum||0)}</td>
-      <td style="font-weight:800;color:${(row.acum||0)>=0?'#34d399':'#f87171'}">${fmtP(row.acum||0)}</td>
+      <td style="font-weight:800;color:var(--text)">${fmtP(row.annual||0)}</td>
+      <td style="font-weight:800;color:${(row.provAnnual||0)>=0?'var(--warning)':'var(--danger)'}">${fmt(row.provAnnual||0)}</td>
+      <td style="font-weight:800;color:${(row.provAcum||0)>=0?'var(--success)':'var(--danger)'}">${fmt(row.provAcum||0)}</td>
+      <td style="font-weight:800;color:${(row.acum||0)>=0?'var(--success)':'var(--danger)'}">${fmtP(row.acum||0)}</td>
     </tr>`;
   }).join('');
 
-  const chartLegend=`<div class="pleg" style="margin-top:0">
-    <div class="pli"><span class="pd" style="background:#8da2ff"></span>Carteira</div>
-    <div class="pli"><span class="pd" style="background:#fbbf24"></span>${esc(bench)} estimado</div>
-    <div class="pli"><span class="pd" style="background:#64748b"></span>Baseado na posição atual</div>
+  const chartLegend=`<div class="pleg">
+    <div class="pli"><span class="pd" style="background:var(--primary)"></span>Carteira</div>
+    <div class="pli"><span class="pd" style="background:var(--warning)"></span>${esc(bench)} estimado</div>
+    <div class="pli"><span class="pd" style="background:var(--muted)"></span>Baseado na posição atual</div>
   </div>`;
 
-  return`<div style="font-size:15px;font-weight:700;margin-bottom:4px">📈 Rentabilidade</div>
-  <div class="mu" style="font-size:13px;margin-bottom:18px">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. A rentabilidade da carteira já soma os proventos recebidos no cálculo.</div>
+  return`<div class="page-heading">📈 Rentabilidade</div>
+  <div class="page-sub">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. A rentabilidade da carteira já soma os proventos recebidos no cálculo.</div>
 
   <div class="rent-layout">
     <div class="rent-side">
       ${sideCards.map(c=>`<div class="card al dash-card rent-card" style="border-left-color:${c.color}">
-        <div class="dash-head">
-          <div class="dash-ico">${c.icon}</div>
-          <div>
-            <div class="dash-kicker">${esc(c.title)}</div>
-          </div>
-        </div>
-        <div class="dash-value">
-          <div class="cv" style="color:${c.color}">${c.value}</div>
-        </div>
-        <div class="dash-foot">${esc(c.foot)}</div>
+        <div class="rent-kpi-label">${esc(c.title)}</div>
+        <div class="rent-kpi-value" style="color:${c.color}">${c.value}</div>
+        <div class="rent-kpi-foot">${esc(c.foot)}</div>
       </div>`).join('')}
     </div>
 
@@ -25817,7 +25848,7 @@ function rentabilidadeTab(){
       <div class="sh" style="margin-bottom:12px">
         <div>
           <div class="st">Rentabilidade comparada com índices</div>
-          <div class="mu" style="font-size:12px">Histórico estimado a partir dos dados lançados na carteira e dos proventos recebidos.</div>
+          <div class="mu" style="font-size:11px;margin-top:2px">Histórico estimado a partir dos dados lançados na carteira e dos proventos recebidos.</div>
         </div>
         <div class="rent-filters">
           <select onchange="setRentPeriod(this.value)">
@@ -25840,7 +25871,7 @@ function rentabilidadeTab(){
       <div class="rent-chartbox">
         ${points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
       </div>
-      <div class="mu" style="font-size:11px;margin-top:6px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</div>
+      <div class="mu" style="font-size:10px;margin-top:6px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</div>
     </div>
   </div>
 
