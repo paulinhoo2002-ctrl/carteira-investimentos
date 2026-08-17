@@ -36,7 +36,7 @@
 :root{
   --bg:#0b1220;
   --text:#f0f5ff;
-  --muted:#8b9bb1;
+  --muted:#7d8cad;
   --panel:#121d2f;
   --panel-2:#0f1a2c;
   --card:#121d2f;
@@ -44,9 +44,9 @@
   --surface-2:#0d1625;
   --border:#26344b;
   --primary:#4f46e5;
-  --success:#34d399;
-  --danger:#f87171;
-  --warning:#fbbf24;
+  --success:#22c55e;
+  --danger:#ef4444;
+  --warning:#f59e0b;
   --shadow:0 18px 50px rgba(0,0,0,.28);
   --scroll-track:#111c2e;
   --scroll-thumb:#32445b;
@@ -480,6 +480,9 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
   .rebalance-study-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .rebalance-study-asset,.rebalance-study-criteria{grid-column:1/-1}
   .premium-dashboard{gap:9px}
+  .dashboard-page-heading{align-items:flex-start;flex-direction:column;gap:6px}
+  .dashboard-page-heading h1{font-size:18px}
+  .dashboard-page-heading-meta{align-self:flex-start}
   .premium-dashboard-head{align-items:flex-start}
   .premium-dashboard-date{display:none}
   .premium-dashboard-title{font-size:16px}
@@ -539,6 +542,66 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .premium-exec-list{display:flex;flex-direction:column;gap:5px}
 .dashboard-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .dashboard-home-grid > *{min-width:0}
+.asset-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.asset-kpi-grid .analysis-summary-card{min-width:0;min-height:86px;padding:10px}
+.asset-kpi-grid .analysis-summary-value{font-size:17px}
+.asset-kpi-grid .analysis-summary-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aporte-premium .ap-summary{margin-top:2px}
+.aporte-premium .ap-summary .cl{font-size:11px}
+.aporte-premium .ap-summary .cv{font-size:18px}
+.aporte-premium .aporte-extract{overflow-x:auto}
+.aporte-contribution-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.aporte-contribution-grid .card{min-width:0;min-height:86px;padding:10px 11px}
+.aporte-contribution-grid .cv{font-size:19px;line-height:1.05;word-break:break-word}
+.aporte-contribution-grid .cs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aporte-summary-columns{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:12px;margin-bottom:12px}
+.aporte-summary-panel{min-width:0}
+.aporte-summary-panel .sh{margin-bottom:8px}
+.aporte-month-row{display:grid;grid-template-columns:66px minmax(0,1fr) 104px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.1)}
+.aporte-month-row:last-child{border-bottom:0}
+.aporte-month-track,.aporte-class-track{height:7px;border-radius:99px;background:rgba(148,163,184,.12);overflow:hidden}
+.aporte-month-fill,.aporte-class-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#60a5fa,#34d399)}
+.aporte-month-label,.aporte-month-value{font-size:11px;color:#b8c7dc}
+.aporte-month-value{text-align:right;font-weight:700;color:#e2eaf6}
+.aporte-contribution-list,.aporte-class-list{display:grid;gap:8px}
+.aporte-contribution-item{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.1)}
+.aporte-contribution-item:last-child{border-bottom:0}
+.aporte-contribution-date,.aporte-contribution-meta{font-size:10px;color:#7489a4}
+.aporte-contribution-name{font-size:12px;font-weight:700;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aporte-contribution-meta{margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aporte-contribution-total{font-size:12px;font-weight:800;color:#34d399;white-space:nowrap}
+.aporte-class-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.aporte-class-row .cl{font-size:11px}
+.aporte-class-row .cv{font-size:12px;font-weight:800;color:#e2eaf6}
+.aporte-class-track{grid-column:1/-1;height:5px}
+.wrap:has(.premium-dashboard),.wrap:has(.div-premium){max-width:1600px}
+.dashboard-page-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;padding:2px 2px 0}
+.dashboard-page-heading h1{margin:0;font-size:20px;line-height:1.15;letter-spacing:-.02em;color:var(--text)}
+.dashboard-page-heading p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+.dashboard-page-heading-meta{font-size:10px;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:6px 10px;white-space:nowrap}
+.dashboard-home-summary,.dashboard-home-income{height:100%}
+.div-monthly-table-block[open]{border:1px solid var(--border)}
+.div-monthly-table-block[open]>.div-monthly-body{max-height:none}
+.div-monthly-content{min-width:0;overflow-x:auto}
+.div-monthly-content .div-month-history-years,.div-monthly-content table{min-width:720px}
+.dashboard-home-highlights .dash-chip{min-width:44px}
+.dividend-lower-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.dividend-lower-grid>*{min-width:0}
+@media(min-width:901px){
+  .premium-dashboard .premium-metric-label{font-size:11px}
+  .premium-dashboard .premium-metric-value{font-size:19px}
+  .div-premium .div-premium-title{font-size:20px}
+  .div-premium .div-premium-sub{font-size:12px}
+  .div-premium .div-monthly-title{font-size:18px}
+  .div-premium .div-monthly-sub{font-size:11px}
+  .div-premium .div-monthly-summary-item span{font-size:11px}
+  .div-premium .div-monthly-summary-item strong{font-size:16px}
+  .div-premium .div-month-name{font-size:13px}
+  .div-premium .div-month-stat-value{font-size:14px}
+}
+@media(max-width:900px){.dividend-lower-grid{grid-template-columns:1fr}}
+@media(max-width:900px){.asset-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.asset-kpi-grid .analysis-summary-card:last-child{grid-column:1/-1}}
+@media(max-width:640px){.asset-kpi-grid{gap:7px}.asset-kpi-grid .analysis-summary-card{min-height:78px;padding:9px}.asset-kpi-grid .analysis-summary-value{font-size:15px}.asset-kpi-grid .analysis-summary-sub{font-size:10px}}
 .dashboard-home-performance.hi{order:5}
 .dashboard-home-performance.lo{order:6}
 .dashboard-home-performance .perf-list{gap:8px}
@@ -2631,6 +2694,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .tabs{top:58px;justify-content:flex-start;padding:0 8px}
   .div-line-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ap-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .aporte-contribution-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .aporte-summary-columns{grid-template-columns:1fr}
   .aporte-history-card{grid-template-columns:74px minmax(150px,1.4fr) minmax(105px,.8fr) minmax(110px,.8fr) auto}
   .aporte-history-card .aporte-history-meta:nth-of-type(4){display:none}
   .aporte-asset-group>summary{grid-template-columns:minmax(150px,1fr) repeat(2,minmax(90px,.7fr)) auto}
@@ -2747,6 +2812,12 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
     gap:10px 8px!important;
     padding:11px 12px!important
   }
+  .aporte-contribution-grid{gap:7px}
+  .aporte-contribution-grid .card{min-height:78px;padding:9px}
+  .aporte-contribution-grid .cv{font-size:16px}
+  .aporte-contribution-grid .cs{font-size:11px}
+  .aporte-month-row{grid-template-columns:52px minmax(0,1fr) 88px}
+  .aporte-contribution-item{grid-template-columns:52px minmax(0,1fr) auto}
    .ap-summary .cl{font-size:11px!important;margin-bottom:3px!important}
    .ap-summary .cs{font-size:11px!important;line-height:1.1!important}
   .ap-summary > div{min-width:0}
@@ -22018,6 +22089,7 @@ function dash(){
   const analysisRows=assetAnalysisRows();
   const data=dashboardSnapshot(analysisRows);
   return `<div class="premium-dashboard">
+    <div class="dashboard-page-heading"><div><h1>Dashboard</h1><p>Visão geral da sua carteira.</p></div><div class="dashboard-page-heading-meta">${data.analysis.length} ativos acompanhados</div></div>
     <div class="dashboard-home-grid">
       ${dashboardHomeSummaryPanel(data)}
       ${dashboardPassiveIncomePanel(data)}
@@ -22329,6 +22401,12 @@ function ativos(){
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const analysisRows=innerTab==='analise' ? assetAnalysisRows() : null;
   const analysis=innerTab==='analise' ? assetAnalysisBlock(analysisRows) : '';
+  const assetKpiRows=assetAnalysisRows();
+  const assetKpiApplied=assetKpiRows.reduce((sum,row)=>sum+Number(row.applied||0),0);
+  const assetKpiCurrent=assetKpiRows.reduce((sum,row)=>sum+Number(row.current||0),0);
+  const assetKpiProfit=assetKpiCurrent-assetKpiApplied;
+  const assetKpiYields=assetKpiRows.map(row=>Number(row.dy)).filter(Number.isFinite);
+  const assetKpiYield=assetKpiYields.length ? assetKpiYields.reduce((sum,value)=>sum+value,0)/assetKpiYields.length : null;
   const sections=groupNames.map((type,idx)=>{
     const groupKey=String(type||'').toLowerCase()
       .normalize('NFD')
@@ -22497,6 +22575,13 @@ function ativos(){
     </details>`;
   }).join('');
   const patrimonyPanel=`<div class="asset-inner-panel">
+    <div class="asset-kpi-grid" aria-label="Resumo dos ativos">
+      ${assetSummaryCard('Total investido',fmt(assetKpiApplied),'Capital aplicado na carteira','info')}
+      ${assetSummaryCard('Valor atual',fmt(assetKpiCurrent),'Valor estimado das posições','info')}
+      ${assetSummaryCard('Lucro/Prejuízo',fmt(assetKpiProfit),'Diferença entre atual e investido',assetKpiProfit>=0?'ok':'danger')}
+      ${assetSummaryCard('Yield médio',assetKpiYield==null?'—':`${assetKpiYield.toFixed(2)}%`,'Média dos yields cadastrados','info')}
+      ${assetSummaryCard('Quantidade de ativos',String(S.assets.length),'Posições cadastradas','muted')}
+    </div>
     <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
   </div>`;
   const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
@@ -22758,6 +22843,29 @@ function aporteFilterTabs(){
   const filters=[['todos','Todos'],['compra','Compra'],['venda','Venda'],['provento','Provento'],['renda-fixa','Renda Fixa'],['outro','Outro']];
   return `<div class="aporte-filter-row"><span class="aporte-filter-label">Filtrar</span>${filters.map(([id,label])=>`<button class="aporte-filter-chip ${S.aportesFilter===id?'on':''}" onclick="setAportesFilter('${id}')">${label}</button>`).join('')}</div>`;
 }
+function aporteInvestmentStats(rows=S.aportes||[]){
+  const included=rows.filter(row=>['compra','renda-fixa'].includes(aporteMovementKind(row))).map(row=>{
+    const qty=Math.abs(Number(row.qty)||0),price=Number(row.price)||0;
+    const value=Math.abs(Number(row.totalValue??row.value??(qty*price))||0);
+    const date=parseAnyDate(row.date||row.rf_application_date||row.fixed_application_date);
+    const type=normalizeType(row.type||row.asset_type||'',aporteMovementKind(row)==='renda-fixa'?'Renda Fixa':'Ação');
+    return {row,value,date,type,label:aporteMovementLabel(row)};
+  }).filter(item=>item.value>0);
+  const monthly=new Map();
+  const byClass=new Map();
+  included.forEach(item=>{
+    if(item.date){
+      const key=`${item.date.getFullYear()}-${String(item.date.getMonth()+1).padStart(2,'0')}`;
+      const current=monthly.get(key)||{key,label:item.date.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}),value:0};
+      current.value+=item.value; monthly.set(key,current);
+    }
+    byClass.set(item.type,(byClass.get(item.type)||0)+item.value);
+  });
+  const months=[...monthly.values()].sort((a,b)=>a.key.localeCompare(b.key));
+  const total=included.reduce((sum,item)=>sum+item.value,0);
+  const latest=[...included].sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0)).slice(0,5);
+  return {rows:included,total,average:months.length?total/months.length:0,largest:Math.max(0,...included.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest};
+}
 function apTab(){
   const isReserveRow=a=>{
     const type=normalizeType(a.type||a.asset_type||'','');
@@ -22780,21 +22888,32 @@ function apTab(){
         const hay=[a.date,a.ticker,a.name,a.product,a.title,a.rf_name,a.rf_subtype,a.rf_application_date,a.rf_maturity_date,a.rf_contract_rate,a.rf_note,a.rf_profit_value,a.type,a.asset_type,mm.type,a.sector,a.asset_sector,mm.sector,a.decision,a.operation,a.op,a.reserveTarget,a.issuer,a.bondType,a.indexer,a.rate,a.spread,a.dailyLiquidity,a.maturityDate,fmt(value),value.toFixed(2)]
           .filter(Boolean).join(' ').toLowerCase();
         return hay.includes(q);
-      });
+  });
   const reserve=reserveStats();
-  const summaryCards=S.aportes.length?`<div class="ap-summary">
-    <div class="card ap-summary-current"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Soma dos ativos pelo valor atual</div></div>
-    <div class="card ap-summary-core"><div class="cl">Capital investido</div><div class="cv" style="color:${liquido>=0?'#34d399':'#f87171'}">${fmt(liquido)}</div><div class="cs">Compras - vendas</div></div>
-    <div class="card ap-summary-core"><div class="cl">Resultado acumulado</div><div class="cv" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'}">${fmt(resultadoAcumulado)}${resultadoPct!=null?` <span class="cs" style="color:${resultadoAcumulado>=0?'#34d399':'#f87171'};font-size:11px">(${resultadoPct>=0?'+':''}${resultadoPct.toFixed(2)}%)</span>`:''}</div><div class="cs">Valor atual - capital investido</div></div>
-    <div class="card ap-summary-activity"><div class="cl">Compras realizadas</div><div class="cv" style="color:#818cf8">${fmt(compras)}</div><div class="cs">Total comprado</div></div>
-    <div class="card ap-summary-activity"><div class="cl">Vendas realizadas</div><div class="cv" style="color:#f87171">${fmt(vendas)}</div><div class="cs">Total vendido</div></div>
-    <div class="card ap-summary-activity"><div class="cl">Operações</div><div class="cv" style="color:#e2eaf6">${S.aportes.length}</div><div class="cs">Total de registros</div></div>
+  const contributionStats=aporteInvestmentStats(S.aportes);
+  const summaryCards=S.aportes.length?`<div class="aporte-contribution-grid">
+    <div class="card"><div class="cl">Total aportado</div><div class="cv" style="color:#34d399">${fmt(contributionStats.total)}</div><div class="cs">Compras e renda fixa</div></div>
+    <div class="card"><div class="cl">Média mensal</div><div class="cv" style="color:#60a5fa">${fmt(contributionStats.average)}</div><div class="cs">Meses com aporte</div></div>
+    <div class="card"><div class="cl">Maior aporte</div><div class="cv" style="color:#a78bfa">${fmt(contributionStats.largest)}</div><div class="cs">Maior entrada registrada</div></div>
+    <div class="card"><div class="cl">Meses com aportes</div><div class="cv" style="color:#e2eaf6">${contributionStats.months.length}</div><div class="cs">Histórico disponível</div></div>
   </div>`:'';
   const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Capital investido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
   const reserveSummary=reserve.total>0?`<div class="cards" style="margin:0 0 12px">
     <div class="card"><div class="cl">Reserva bolsa</div><div class="cv" style="color:#60a5fa">${fmt(reserve.bolsa)}</div><div class="cs">Oportunidade</div></div>
     <div class="card"><div class="cl">Reserva pessoal</div><div class="cv" style="color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
   </div>`:'';
+  const maxMonth=Math.max(1,...contributionStats.months.map(item=>item.value));
+  const monthlyHistory=contributionStats.months.length?`<section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Histórico mensal de aportes</div><div class="mu">Entradas de capital para investimentos</div></div></div>${contributionStats.months.map(item=>`<div class="aporte-month-row"><div class="aporte-month-label">${esc(item.label)}</div><div class="aporte-month-track"><div class="aporte-month-fill" style="width:${Math.max(4,(item.value/maxMonth)*100).toFixed(1)}%"></div></div><div class="aporte-month-value">${fmt(item.value)}</div></div>`).join('')}</section>`:'<section class="card aporte-summary-panel"><div class="st">Histórico mensal de aportes</div><div class="evo-empty">Registre compras ou renda fixa para acompanhar os aportes.</div></section>';
+  const latestContributions=contributionStats.latest.length?`<div class="aporte-contribution-list">${contributionStats.latest.map(item=>{const row=item.row;const ticker=String(row.ticker||row.name||row.title||'Movimentação').trim();const name=String(row.name||row.product||row.title||ticker).trim();const detail=[item.type,row.sector||row.asset_sector].filter(Boolean).join(' · ')||'Sem classificação';return`<div class="aporte-contribution-item"><div class="aporte-contribution-date">${esc(row.date||row.rf_application_date||'Sem data')}</div><div><div class="aporte-contribution-name">${esc(name||ticker)}</div><div class="aporte-contribution-meta">${esc(ticker)} · ${esc(detail)}</div></div><div class="aporte-contribution-total">${fmt(item.value)}</div></div>`}).join('')}</div>`:'<div class="evo-empty">Nenhum aporte de investimento registrado.</div>';
+  const classTotal=Math.max(1,contributionStats.total);
+  const classDistribution=contributionStats.classes.length?`<section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Aportes por classe</div><div class="mu">Distribuição das entradas confirmadas</div></div></div><div class="aporte-class-list">${contributionStats.classes.map(([type,value])=>`<div class="aporte-class-row"><div class="cl">${esc(type)}</div><div class="cv">${fmt(value)}</div><div class="aporte-class-track"><div class="aporte-class-fill" style="width:${Math.max(4,(value/classTotal)*100).toFixed(1)}%"></div></div></div>`).join('')}</div></section>`:'';
+  const contributionPanels=`<div class="aporte-summary-columns"><section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Últimos aportes</div><div class="mu">Compras e aplicações, sem vendas ou proventos</div></div></div>${latestContributions}</section>${classDistribution}</div>`;
+  const movementCards=`<div class="ap-summary">
+    <div class="card ap-summary-activity"><div class="cl">Compras realizadas</div><div class="cv" style="color:#818cf8">${fmt(compras)}</div><div class="cs">Total comprado</div></div>
+    <div class="card ap-summary-activity"><div class="cl">Vendas realizadas</div><div class="cv" style="color:#f87171">${fmt(vendas)}</div><div class="cs">Total vendido</div></div>
+    <div class="card ap-summary-activity"><div class="cl">Operações</div><div class="cv" style="color:#e2eaf6">${S.aportes.length}</div><div class="cs">Total de registros</div></div>
+    <div class="card ap-summary-activity"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Contexto patrimonial</div></div>
+  </div>`;
   const reserveItems=filtered.filter(a=>{
     const type=normalizeType(a.type||a.asset_type||'','');
     const op=String(a.operation||a.op||'').toLowerCase();
@@ -22930,7 +23049,7 @@ function apTab(){
     : mode==='categorias'
       ? categoriesContent
       : mode==='resumo'
-        ? `${summaryCards||'<div class="aporte-empty">Cadastre movimentações para visualizar o resumo.</div>'}${helpText}${reserveSummary}`
+        ? `${summaryCards||'<div class="aporte-empty">Cadastre movimentações para visualizar o resumo.</div>'}${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${movementCards}${reserveSummary}`
         : aporteExtractHtml(extractRows);
   return`<div class="aporte-premium">
     <div class="sh">
@@ -24922,7 +25041,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendAssetSummary(rows),
     dividendsByAssetView(rows)
   );
-  const monthlySection=dividendMonthlyTableBlock(rows, mode!=='overview');
+  const monthlySection=dividendMonthlyTableBlock(rows, true);
   const timelineSection=dividendCompactSectionHeader(
     'timeline',
     'Linha do tempo',
@@ -24931,7 +25050,8 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
   const dfStats=passiveIncomeGoalStats();
-  const overviewBody=`<div class="div-exec-overview"><div class="div-exec-kpis">${dividendSummaryCards()}</div><div class="div-exec-main">${dividendDistributionPanel(dfStats)}</div></div>${monthlySection}`;
+  const lowerBlocks=`<div class="dividend-lower-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline())}</div><div>${dividendCompactSectionHeader('asset','Quem mais pagou',dividendAssetSummary(rows),dividendsByAssetView(rows))}</div></div>`;
+  const overviewBody=`<div class="div-exec-overview"><div class="div-exec-kpis">${dividendSummaryCards()}</div></div>${monthlySection}${lowerBlocks}`;
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
@@ -24940,7 +25060,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     :overviewBody;
   return `<div class="div-premium">
     <div class="div-premium-hero">
-      <div class="div-premium-head"><div><div class="div-premium-title">${esc(pageTitle)}</div><div class="div-premium-sub">Resumo compacto para leitura rápida.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
+      <div class="div-premium-head"><div><div class="div-premium-title">Dividendos</div><div class="div-premium-sub">Acompanhe sua renda passiva mês a mês.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
       ${dividendHeroHeader(passiveIncomeGoalStats())}
       <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
     </div>

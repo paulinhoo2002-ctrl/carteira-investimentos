@@ -41,7 +41,7 @@ const viewports = [
 ];
 
 const metricLabels = ['Patrimônio atual', 'Total investido', 'Resultado geral', 'Rentabilidade', 'Recebido no mês', 'Média 12 meses', 'Meta mensal'];
-const aporteLabels = ['Valor atual da carteira', 'Capital investido', 'Resultado acumulado', 'Compras realizadas', 'Vendas realizadas', 'Operações'];
+const aporteLabels = ['Total aportado', 'Média mensal', 'Maior aporte', 'Meses com aportes'];
 
 for (const viewport of viewports) {
   test(`Dashboard/Aportes readability - ${viewport.label}`, async () => {
@@ -76,9 +76,9 @@ for (const viewport of viewports) {
       assert.equal(dashboard.overflow, false, `overflow Dashboard em ${viewport.label}`);
 
       await page.evaluate(() => { restoreLocalTestData(); go('aportes'); });
-      await page.waitForSelector('.ap-summary-current .cl', { state: 'visible', timeout: 5000 });
+      await page.waitForSelector('.aporte-contribution-grid .cl', { state: 'visible', timeout: 5000 });
       const summary = await page.evaluate(labels => {
-        const cards = [...document.querySelectorAll('.ap-summary-current, .ap-summary-core, .ap-summary-activity')];
+        const cards = [...document.querySelectorAll('.aporte-contribution-grid .card')];
         return { cardCount: cards.length, labelSize: parseFloat(getComputedStyle(cards[0].querySelector('.cl')).fontSize), subtextSize: parseFloat(getComputedStyle(cards[0].querySelector('.cs')).fontSize), values: cards.slice(0, labels.length).map(card => card.querySelector('.cv')?.textContent.trim() || '') };
       }, aporteLabels);
       await page.evaluate(() => setAportesViewMode('extrato'));
