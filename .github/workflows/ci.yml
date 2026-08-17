@@ -30,3 +30,13 @@ jobs:
 
       - name: Run build and tests
         run: npm test
+
+      - name: Build modern
+        run: npm run build:modern
+
+      - name: Reliability smokes
+        run: |
+          node --test tests/phase-208-data-quality.test.js
+          node --test tests/touch-targets.smoke.test.js
+          node --test tests/mobile-overflow-controls.smoke.test.js
+          node --test tests/tablet-tab-overflow.smoke.test.js
