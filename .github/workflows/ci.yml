@@ -34,7 +34,14 @@ jobs:
       - name: Build modern
         run: npm run build:modern
 
+      - name: Install Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium
+
       - name: Reliability smokes
+        env:
+          CHROME_PATH: /usr/bin/chromium
         run: |
           node --test tests/phase-208-data-quality.test.js
           node --test tests/touch-targets.smoke.test.js
