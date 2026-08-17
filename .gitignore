@@ -50,3 +50,6 @@ backups/
 _backups-seguros/
 *.bak
 index.backup*.html
+
+# Local visual validation artifacts
+artifacts/

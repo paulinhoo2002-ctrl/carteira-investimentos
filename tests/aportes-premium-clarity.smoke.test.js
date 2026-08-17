@@ -45,12 +45,10 @@ const viewports = [
 ];
 
 const labels = [
-  'Valor atual da carteira',
-  'Capital investido',
-  'Resultado acumulado',
-  'Compras realizadas',
-  'Vendas realizadas',
-  'Opera\u00e7\u00f5es',
+  'Total aportado',
+  'Média mensal',
+  'Maior aporte',
+  'Meses com aportes',
 ];
 
 for (const viewport of viewports) {
@@ -87,7 +85,7 @@ for (const viewport of viewports) {
           return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && box.width > 0 && box.height > 0;
         };
         const metrics = expectedLabels.map(label => {
-          const labelNode = [...document.querySelectorAll('.ap-summary .cl')].find(node => node.textContent.trim() === label);
+          const labelNode = [...document.querySelectorAll('.aporte-contribution-grid .cl')].find(node => node.textContent.trim() === label);
           const card = labelNode?.closest('.card');
           const value = card?.querySelector('.cv');
           const valueBox = value?.getBoundingClientRect();
@@ -119,7 +117,7 @@ for (const viewport of viewports) {
       const before = snapshot.metrics.map(metric => metric.value);
       await page.evaluate(() => go('dashboard'));
       await page.evaluate(() => go('aportes'));
-      await page.waitForSelector('.ap-summary', { state: 'visible', timeout: 5000 });
+      await page.waitForSelector('.aporte-contribution-grid', { state: 'visible', timeout: 5000 });
       const after = await readSnapshot();
       assert.deepEqual(after.metrics.map(metric => metric.value), before, `valores dos KPIs mudaram ao navegar em ${viewport.label}`);
       assert.equal(errors.length, 0, `console/pageerror em ${viewport.label}: ${errors.join(' | ')}`);

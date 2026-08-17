@@ -77,7 +77,7 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
     dashboardSnapshot(analysisRows) {
       calls.dashboardSnapshot += 1;
       return {
-        analysisRows,
+        analysis: analysisRows,
         portfolio: state.cx(),
         financialGoals: state.financialGoalsSnapshot(),
         income: { target: Number(state.S?.goals?.proventos?.monthly) || 0, monthlyAvg: 0 },

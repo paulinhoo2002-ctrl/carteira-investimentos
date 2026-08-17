@@ -112,12 +112,15 @@ test('dividendDistributionPanel usa recolhimento e filtros atuais', () => {
   assert.equal((expanded.match(/div-dist-row/g) || []).length >= 3, true);
 });
 
-test('overviewBody usa div-exec-overview com distribution panel', () => {
+test('overviewBody usa div-exec-overview sem exibir distribution panel', () => {
   const indexHtml = read('index.html');
   assert.match(indexHtml, /div-exec-overview/);
-  assert.match(indexHtml, /dividendDistributionPanel\(dfStats\)/);
+  assert.match(indexHtml, /function dividendDistributionPanel\(stats\)/);
   assert.match(indexHtml, /div-exec-kpis/);
-  assert.match(indexHtml, /div-dist-panel/);
+  const overviewStart=indexHtml.indexOf('const overviewBody=');
+  const bodyStart=indexHtml.indexOf('const body=',overviewStart);
+  const overviewBlock=indexHtml.slice(overviewStart,bodyStart);
+  assert.equal(overviewBlock.includes('dividendDistributionPanel(dfStats)'), false);
 });
 
 test('dividendSummaryCards ainda contem KPIs essenciais', () => {
@@ -206,10 +209,10 @@ test('dividendDistributionRow isAbsent=false zero renderiza R$ 0,00', () => {
   assert.equal(row.includes('NaN'), false);
 });
 
-test('dividendMonthlyHistoryPremium startOpen=false nao tem open attr', () => {
+test('historico mensal abre por padrao no overview', () => {
   const indexHtml = read('index.html');
   assert.ok(indexHtml.includes("function dividendMonthlyHistoryPremium(rows,startOpen=false){"));
-  assert.ok(indexHtml.includes("dividendMonthlyTableBlock(rows, mode!=='overview')"));
+  assert.ok(indexHtml.includes('dividendMonthlyTableBlock(rows, true)'));
 });
 
 test('dividendDistributionPeriod estado default e reset', () => {

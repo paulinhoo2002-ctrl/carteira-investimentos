@@ -240,7 +240,7 @@ function makeAnalysisHarness(overrides = {}) {
   const harness = makeAnalysisHarness();
   const { context } = harness;
 
-  assert.equal(harness.iaTab().includes('Análise da carteira'), true);
+  assert.equal(harness.iaTab().includes('Análise da Carteira'), true);
   assert.equal(harness.iaTab().includes('Gerar visão geral'), true);
 
   context.S.aiFocus = 'income';
@@ -321,7 +321,7 @@ test('getAI roteia por modo e produz loading/sucesso/erro', () => {
 test('ajudarTab e calcRebalance preservam contrato pÃºblico do aporte', () => {
   const harness = makeAnalysisHarness();
   const html = harness.ajudarTab();
-  assert.equal(html.includes('Sugestão de aporte'), true);
+  assert.equal(html.includes('Rebalanceamento'), true);
   assert.equal(html.includes('Simular</button>'), true);
 
   const { context, documentState } = harness;
