@@ -47,3 +47,4 @@ jobs:
           node --test tests/touch-targets.smoke.test.js
           node --test tests/mobile-overflow-controls.smoke.test.js
           node --test tests/tablet-tab-overflow.smoke.test.js
+          node --test tests/safe-area.smoke.test.js
