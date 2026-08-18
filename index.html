@@ -130,7 +130,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .asset-inner-tab{border:1px solid var(--border);background:var(--panel);color:var(--muted);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;transition:all .15s;min-height:44px}
 .asset-inner-tab:hover{opacity:.92;transform:translateY(-1px)}
 .asset-inner-tab.on{background:rgba(79,70,229,.14);color:#c7d2fe;border-color:rgba(99,102,241,.35)}
-.asset-inner-panel{display:flex;flex-direction:column;gap:12px}
+.asset-inner-panel{display:flex;flex-direction:column;gap:10px}
 .analysis-shell{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
 .analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .analysis-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px 10px;display:flex;flex-direction:column;gap:8px;min-height:0}
@@ -614,11 +614,11 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .premium-exec-list{display:flex;flex-direction:column;gap:5px}
 .dashboard-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .dashboard-home-grid > *{min-width:0}
-.asset-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
-.asset-kpi-grid .analysis-summary-card{min-width:0;min-height:86px;padding:10px}
+.asset-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.asset-kpi-grid .analysis-summary-card{min-width:0;min-height:78px;padding:9px}
 .asset-kpi-grid .analysis-summary-value{font-size:17px}
 .asset-kpi-grid .analysis-summary-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.asset-class-results{display:grid;gap:8px;margin:0 0 12px}.asset-class-results-title{font-size:12px;font-weight:800;color:#d7e1ef}.asset-class-result{padding:10px 12px;border:1px solid #1a2940;border-radius:10px;background:#101827}.asset-class-result-head,.asset-class-result-values{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.asset-class-result-head span,.asset-class-result-values span{font-size:11px;color:#91a4bf}.asset-class-result-values b{color:#e2eaf6;margin-left:3px}.asset-class-result-values .good b{color:#34d399}.asset-class-result-values .neg b{color:#f87171}.asset-class-result-values .neutral b{color:#c0cce0}
+.asset-class-results{display:grid;gap:8px;margin:0 0 8px}.asset-class-results-title{font-size:12px;font-weight:800;color:#d7e1ef}.asset-class-result{padding:10px 12px;border:1px solid #1a2940;border-radius:10px;background:#101827}.asset-class-result-head,.asset-class-result-values{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.asset-class-result-head span,.asset-class-result-values span{font-size:11px;color:#91a4bf}.asset-class-result-values b{color:#e2eaf6;margin-left:3px}.asset-class-result-values .good b{color:#34d399}.asset-class-result-values .neg b{color:#f87171}.asset-class-result-values .neutral b{color:#c0cce0}
 html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .aporte-premium .ap-summary{margin-top:2px}
 .aporte-premium .ap-summary .cl{font-size:11px}
@@ -23359,10 +23359,6 @@ function ativos(){
   const assetKpiCurrent=consolidated.current;
   const assetKpiProfit=consolidated.result;
   const assetKpiReturn=consolidated.returnPct;
-  const classSummary=consolidated.byClass.map(group=>`<div class="asset-class-result">
-    <div class="asset-class-result-head"><strong>${esc(group.className)}</strong><span>${group.incomplete?`${group.incomplete} sem dados completos`:`${group.complete} ativo${group.complete===1?'':'s'}`}</span></div>
-    <div class="asset-class-result-values"><span>Investido <b>${fmt(group.invested)}</b></span><span>Atual <b>${group.incomplete?'—':fmt(group.current)}</b></span><span class="${group.incomplete?'neutral':group.result>0?'good':group.result<0?'neg':'neutral'}">Resultado <b>${group.incomplete?'—':`${assetResultIndicator(group.result)} ${fmt(group.result)}`}</b></span><span>Rentab. <b>${group.incomplete||group.returnPct==null?'—':`${assetResultIndicator(group.returnPct)} ${fmtP(group.returnPct)}`}</b></span></div>
-  </div>`).join('');
   const sections=groupNames.map((type,idx)=>{
     const groupKey=String(type||'').toLowerCase()
       .normalize('NFD')
@@ -23538,7 +23534,6 @@ function ativos(){
       ${assetSummaryCard('Lucro/Prejuízo',fmt(assetKpiProfit),'Diferença entre atual e investido',assetKpiProfit>=0?'ok':'danger')}
       ${assetSummaryCard('Rentabilidade',assetKpiReturn==null?'—':fmtP(assetKpiReturn),'Resultado sobre o valor investido',assetKpiReturn==null?'muted':assetKpiReturn>=0?'ok':'danger')}
     </div>
-    <section class="asset-class-results" aria-label="Resultado por classe"><div class="asset-class-results-title">Resultado por classe</div>${classSummary||'<div class="mu">Nenhum ativo com dados suficientes.</div>'}</section>
     <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
   </div>`;
   const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
