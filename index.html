@@ -24449,6 +24449,32 @@ function rfEventByIdMap(){
   });
   return map;
 }
+function rfDividendReconciliationStatus(provento, rfEvents){
+  const sourceKind=String(provento?.sourceEventKind||'').trim().toLowerCase();
+  const sourceId=String(provento?.sourceEventId||'').trim();
+  const events=Array.isArray(rfEvents) ? rfEvents : [];
+  if(sourceKind==='rf' && sourceId){
+    return events.some(event=>String(event?.id||'').trim()===sourceId)
+      ? 'LINKED'
+      : 'BROKEN_LINK';
+  }
+  const ticker=String(provento?.ticker||'').trim().toUpperCase();
+  const date=inputDateValue(provento?.date||'');
+  const value=rfEventNumber(provento?.value);
+  const possible=events.some(event=>normalizeRfEventType(event)==='juros'
+    && String(event?.ticker||'').trim().toUpperCase()===ticker
+    && inputDateValue(event?.date||'')===date
+    && rfEventNumber(event?.netValue)===value);
+  if(sourceKind==='rf' || String(provento?.type||'').trim()==='Juros de Renda Fixa') return possible ? 'POSSIBLE_DUPLICATE' : 'UNLINKED';
+  return possible ? 'POSSIBLE_DUPLICATE' : 'UNLINKED';
+}
+function rfDividendLinkedEventIds(proventos, rfEvents){
+  const events=Array.isArray(rfEvents) ? rfEvents : [];
+  return new Set((Array.isArray(proventos) ? proventos : [])
+    .filter(provento=>rfDividendReconciliationStatus(provento, events)==='LINKED')
+    .map(provento=>String(provento.sourceEventId||'').trim())
+    .filter(Boolean));
+}
 function manualIncomeRfLinkStatus(row, rfMap=rfEventByIdMap()){
   const sourceEventKind=String(row?.sourceEventKind||'').trim().toLowerCase();
   const sourceEventId=String(row?.sourceEventId||'').trim();
@@ -24566,7 +24592,9 @@ function rfPassiveIncomeRows(){
 function passiveIncomeCombinedRows(){
   const rfMap=rfEventByIdMap();
   const manualRows=dividendManualRows(rfMap);
-  return [...manualRows.filter(row=>!row.excludedByRfLink), ...rfPassiveIncomeRows()];
+  const linkedEventIds=rfDividendLinkedEventIds(S.proventos, S.rfEvents);
+  const rfRows=rfPassiveIncomeRows().filter(row=>!linkedEventIds.has(String(row.id||'').trim()));
+  return [...manualRows.filter(row=>!row.excludedByRfLink), ...rfRows];
 }
 function passiveIncomeAllRows(){
   const rfMap=rfEventByIdMap();
