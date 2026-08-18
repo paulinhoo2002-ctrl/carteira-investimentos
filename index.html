@@ -10939,6 +10939,35 @@ function importRfEventRows(events){
     if(ev.status==='Duplicado'){ duplicates++; return; }
     if(ev.status!=='Novo provento' || ev.destination!=='Proventos'){ review++; return; }
     seen.add(ev.autoKey);
+
+    // Create RF event first to get canonical ID
+    const rfEvent=normalizeRfEventEntry({
+      ticker:ev.ticker,
+      assetName:ev.assetName,
+      date:ev.date,
+      type:ev.eventType,
+      value:Number(ev.value)||0,
+      source:'PosicaoDetalhada B3/XP',
+      autoKey:ev.autoKey
+    });
+
+    // Add to S.rfEvents
+    const rfEvents=(S.rfEvents||[]).map(normalizeRfEventEntry);
+    const existingIdx=rfEvents.findIndex(e=>String(e.autoKey||'')===String(rfEvent.autoKey||''));
+    if(existingIdx>=0){
+      rfEvents[existingIdx]=rfEvent;
+    }else{
+      rfEvents.unshift(rfEvent);
+    }
+    S.rfEvents=normalizeRfEvents(rfEvents);
+
+    // Check if provento already linked to this RF event
+    const alreadyLinked=(S.proventos||[]).some(p=>p.sourceEventKind==='rf' && String(p.sourceEventId||'')===String(rfEvent.id||''));
+    if(alreadyLinked){
+      duplicates++;
+      return;
+    }
+
     add.push({
       id:Date.now()+Math.floor(Math.random()*999999),
       date:b3MovementDateKey(ev.date),
@@ -10950,7 +10979,9 @@ function importRfEventRows(events){
       source:'PosicaoDetalhada B3/XP',
       autoKey:ev.autoKey,
       created_at:now,
-      note:`PosicaoDetalhada B3/XP · ${ev.eventType} · ${ev.assetName||ev.ticker}`
+      note:`PosicaoDetalhada B3/XP · ${ev.eventType} · ${ev.assetName||ev.ticker}`,
+      sourceEventKind:'rf',
+      sourceEventId:rfEvent.id
     });
     imported++;
   });
@@ -11226,6 +11257,31 @@ function importB3ProventosReview(){
       autoKey:b3ProventoSavedAutoKey(row),
       created_at:new Date().toISOString()
     };
+
+    // Try to link to existing RF event
+    const rfEvents=normalizeRfEvents(S.rfEvents||[]);
+    const matchingRfEvent=rfEvents.find(e=>{
+      const normType=normalizeRfEventType(e);
+      return String(e.ticker||'').toUpperCase()===ticker
+        && inputDateValue(e.date)===b3MovementDateKey(paymentDate)
+        && normType==='juros'
+        && rfEventNumber(e.netValue)===value;
+    });
+
+    if(matchingRfEvent){
+      importRow.sourceEventKind='rf';
+      importRow.sourceEventId=matchingRfEvent.id;
+    }
+
+    // Check if provento already linked to this RF event
+    if(importRow.sourceEventKind==='rf' && importRow.sourceEventId){
+      const alreadyLinked=(S.proventos||[]).some(p=>p.sourceEventKind==='rf' && String(p.sourceEventId||'')===String(importRow.sourceEventId||''));
+      if(alreadyLinked){
+        duplicates++;
+        return;
+      }
+    }
+
     const simpleKey=b3ApplySimpleKey(importRow);
     const dup=(next||[]).some(p=>{
       const sameKey=String(p.autoKey||'')===importRow.autoKey;
@@ -13632,7 +13688,32 @@ function saveRfEventEditor(){
   const index=list.findIndex(event=>String(event.id||'')===String(next.id||''));
   if(index>=0) list[index]=next;
   else list.unshift(next);
-  S.rfEvents=normalizeRfEvents(list);
+S.rfEvents=normalizeRfEvents(list);
+
+  // Create/update linked provento for juros events
+  const normType=normalizeRfEventType(next);
+  if(normType==='juros'){
+    const existingLinked=(S.proventos||[]).find(p=>p.sourceEventKind==='rf' && String(p.sourceEventId||'')===String(next.id||''));
+    const proventoData={
+      date:next.date,
+      ticker:next.ticker,
+      assetName:next.assetName,
+      type:'Juros de Renda Fixa',
+      eventType:next.type,
+      value:next.netValue,
+      source:'Renda Fixa',
+      sourceEventKind:'rf',
+      sourceEventId:next.id,
+      created_at:new Date().toISOString()
+    };
+    if(existingLinked){
+      Object.assign(existingLinked, proventoData);
+    }else{
+      proventoData.id=Date.now()+Math.floor(Math.random()*999999);
+      S.proventos=[proventoData, ...(S.proventos||[])];
+    }
+  }
+
   S.rfEventEditor=null;
   rememberScroll();
   save();
