@@ -614,10 +614,12 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .premium-exec-list{display:flex;flex-direction:column;gap:5px}
 .dashboard-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .dashboard-home-grid > *{min-width:0}
-.asset-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.asset-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .asset-kpi-grid .analysis-summary-card{min-width:0;min-height:86px;padding:10px}
 .asset-kpi-grid .analysis-summary-value{font-size:17px}
 .asset-kpi-grid .analysis-summary-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-class-results{display:grid;gap:8px;margin:0 0 12px}.asset-class-results-title{font-size:12px;font-weight:800;color:#d7e1ef}.asset-class-result{padding:10px 12px;border:1px solid #1a2940;border-radius:10px;background:#101827}.asset-class-result-head,.asset-class-result-values{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.asset-class-result-head span,.asset-class-result-values span{font-size:11px;color:#91a4bf}.asset-class-result-values b{color:#e2eaf6;margin-left:3px}.asset-class-result-values .good b{color:#34d399}.asset-class-result-values .neg b{color:#f87171}.asset-class-result-values .neutral b{color:#c0cce0}
+html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .aporte-premium .ap-summary{margin-top:2px}
 .aporte-premium .ap-summary .cl{font-size:11px}
 .aporte-premium .ap-summary .cv{font-size:18px}
@@ -672,7 +674,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
   .div-premium .div-month-stat-value{font-size:14px}
 }
 @media(max-width:900px){.dividend-lower-grid{grid-template-columns:1fr}}
-@media(max-width:900px){.asset-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.asset-kpi-grid .analysis-summary-card:last-child{grid-column:1/-1}}
+@media(max-width:900px){.asset-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.asset-kpi-grid{gap:7px}.asset-kpi-grid .analysis-summary-card{min-height:78px;padding:9px}.asset-kpi-grid .analysis-summary-value{font-size:15px}.asset-kpi-grid .analysis-summary-sub{font-size:10px}}
 .dashboard-home-performance.hi{order:5}
 .dashboard-home-performance.lo{order:6}
@@ -18612,6 +18614,44 @@ function assetContributionSignal(row){
   if(row.pct<0 && row.share>=20) return {label:'Aguardar', tone:'warn'};
   return {label:'Acompanhar', tone:'info'};
 }
+function assetResultIndicator(value){
+  if(!Number.isFinite(value) || value===0) return '→';
+  return value>0 ? '↑' : '↓';
+}
+function assetsPortfolioSummary(rows, deps={}){
+  const appliedOf=deps.assetAppliedValue||assetAppliedValue;
+  const currentOf=deps.assetCurrentValue||assetCurrentValue;
+  const rentabOf=deps.assetRentabPct||assetRentabPct;
+  const normalizeClass=deps.normalizeType||((value)=>String(value||'Outros').trim()||'Outros');
+  const source=Array.isArray(rows)?rows:[];
+  const byClass=new Map();
+  const assets=source.map(asset=>{
+    const applied=appliedOf(asset);
+    const current=currentOf(asset);
+    const hasApplied=Number.isFinite(applied);
+    const hasCurrent=Number.isFinite(current);
+    const result=hasApplied&&hasCurrent ? current-applied : null;
+    const returnPct=hasApplied&&hasCurrent&&applied!==0 ? rentabOf(asset) : null;
+    const assetClass=normalizeClass(asset?.type||asset?.assetClass||'Outros','Outros');
+    const row={asset,ticker:String(asset?.ticker||asset?.name||'').trim(),assetClass,
+      invested:hasApplied?applied:null,current:hasCurrent?current:null,result,
+      returnPct:Number.isFinite(returnPct)?returnPct:null};
+    if(!byClass.has(assetClass)) byClass.set(assetClass,{className:assetClass,invested:0,current:0,result:0,complete:0,incomplete:0,assets:[]});
+    const group=byClass.get(assetClass);
+    group.assets.push(row);
+    if(hasApplied&&hasCurrent){
+      group.invested+=applied; group.current+=current; group.result+=result; group.complete+=1;
+    }else group.incomplete+=1;
+    return row;
+  });
+  const complete=assets.filter(row=>row.invested!=null&&row.current!=null);
+  const invested=complete.reduce((sum,row)=>sum+row.invested,0);
+  const current=complete.reduce((sum,row)=>sum+row.current,0);
+  const result=current-invested;
+  return {assets,invested,current,result,returnPct:invested!==0?(result/invested)*100:null,
+    byClass:Array.from(byClass.values()).map(group=>({...group,
+      returnPct:group.invested!==0?(group.result/group.invested)*100:null}))};
+}
 function assetRankingModeLabel(mode){
   return ({
     positions:'Maiores posições',
@@ -23314,12 +23354,15 @@ function ativos(){
   const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
   const analysisRows=innerTab==='analise' ? assetAnalysisRows() : null;
   const analysis=innerTab==='analise' ? assetAnalysisBlock(analysisRows) : '';
-  const assetKpiRows=assetAnalysisRows();
-  const assetKpiApplied=assetKpiRows.reduce((sum,row)=>sum+Number(row.applied||0),0);
-  const assetKpiCurrent=assetKpiRows.reduce((sum,row)=>sum+Number(row.current||0),0);
-  const assetKpiProfit=assetKpiCurrent-assetKpiApplied;
-  const assetKpiYields=assetKpiRows.map(row=>Number(row.dy)).filter(Number.isFinite);
-  const assetKpiYield=assetKpiYields.length ? assetKpiYields.reduce((sum,value)=>sum+value,0)/assetKpiYields.length : null;
+  const consolidated=assetsPortfolioSummary(S.assets);
+  const assetKpiApplied=consolidated.invested;
+  const assetKpiCurrent=consolidated.current;
+  const assetKpiProfit=consolidated.result;
+  const assetKpiReturn=consolidated.returnPct;
+  const classSummary=consolidated.byClass.map(group=>`<div class="asset-class-result">
+    <div class="asset-class-result-head"><strong>${esc(group.className)}</strong><span>${group.incomplete?`${group.incomplete} sem dados completos`:`${group.complete} ativo${group.complete===1?'':'s'}`}</span></div>
+    <div class="asset-class-result-values"><span>Investido <b>${fmt(group.invested)}</b></span><span>Atual <b>${group.incomplete?'—':fmt(group.current)}</b></span><span class="${group.incomplete?'neutral':group.result>0?'good':group.result<0?'neg':'neutral'}">Resultado <b>${group.incomplete?'—':`${assetResultIndicator(group.result)} ${fmt(group.result)}`}</b></span><span>Rentab. <b>${group.incomplete||group.returnPct==null?'—':`${assetResultIndicator(group.returnPct)} ${fmtP(group.returnPct)}`}</b></span></div>
+  </div>`).join('');
   const sections=groupNames.map((type,idx)=>{
     const groupKey=String(type||'').toLowerCase()
       .normalize('NFD')
@@ -23381,6 +23424,7 @@ function ativos(){
             <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
             ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
          </td>
+         <td style="color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${Number.isFinite(juros)?`${assetResultIndicator(juros)} ${fmt(juros)}`:'—'}</td>
          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
           <td>${alvo>0?fmt(alvo):'—'}</td>
           <td style="font-weight:700;color:#e2eaf6">${marketValue!=null?fmt(marketValue):'—'}</td>
@@ -23448,8 +23492,8 @@ function ativos(){
         <div class="ag-stats">
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor aplicado':'Ativos'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gApplied):items.length}</div></div>
           <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor atual':'Valor total'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gTotal):fmt(gTotal)}</div></div>
-          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Resultado acumulado':'Variação'}</div><div class="ag-v" style="color:${type==='Renda Fixa'?(gJuros>=0?'#34d399':'#f87171'):(gVar>=0?'#34d399':'#f87171')}">${type==='Renda Fixa'?fmt(gJuros):fmtP(gVar)}</div></div>
-          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Rentab. acumulada':'Rentabilidade'}</div><div class="ag-v" style="color:${gDY>=0?'#34d399':'#f87171'}">${type==='Renda Fixa'?(gApplied>0?(gTotal-gApplied)/gApplied*100:0).toFixed(2)+'%':gDY.toFixed(2)+'%'} <small>${type==='Renda Fixa'?'':'DY'}</small></div></div>
+          <div class="ag-stat"><div class="ag-k">Resultado</div><div class="ag-v" style="color:${gVar==null?'#64748b':gVar>=0?'#34d399':'#f87171'}">${gVar==null?'—':fmt(gTotal-gCost)}</div></div>
+          <div class="ag-stat"><div class="ag-k">Rentabilidade</div><div class="ag-v" style="color:${gVar==null?'#64748b':gVar>=0?'#34d399':'#f87171'}">${gVar==null?'—':fmtP(gVar)}</div></div>
           <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${share.toFixed(1)}%</div></div>
         </div>
         <div class="ag-open">⌄</div>
@@ -23480,8 +23524,8 @@ function ativos(){
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th>${assetSortableHeader(type,'rentability','Rentab.')}</th><th>Alvo</th><th>${assetSortableHeader(type,'total','Total')}</th><th>${assetSortableHeader(type,'share','% Cart.')}</th><th>${assetSortableHeader(type,'ideal','% Ideal')}</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
-            <tbody>${rows||'<tr><td colspan="14" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
+              <th>Resultado</th><th>${assetSortableHeader(type,'rentability','Rentab.')}</th><th>Alvo</th><th>${assetSortableHeader(type,'total','Total')}</th><th>${assetSortableHeader(type,'share','% Cart.')}</th><th>${assetSortableHeader(type,'ideal','% Ideal')}</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="15" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>`}
       </div>
@@ -23492,9 +23536,9 @@ function ativos(){
       ${assetSummaryCard('Total investido',fmt(assetKpiApplied),'Capital aplicado na carteira','info')}
       ${assetSummaryCard('Valor atual',fmt(assetKpiCurrent),'Valor estimado das posições','info')}
       ${assetSummaryCard('Lucro/Prejuízo',fmt(assetKpiProfit),'Diferença entre atual e investido',assetKpiProfit>=0?'ok':'danger')}
-      ${assetSummaryCard('Yield médio',assetKpiYield==null?'—':`${assetKpiYield.toFixed(2)}%`,'Média dos yields cadastrados','info')}
-      ${assetSummaryCard('Quantidade de ativos',String(S.assets.length),'Posições cadastradas','muted')}
+      ${assetSummaryCard('Rentabilidade',assetKpiReturn==null?'—':fmtP(assetKpiReturn),'Resultado sobre o valor investido',assetKpiReturn==null?'muted':assetKpiReturn>=0?'ok':'danger')}
     </div>
+    <section class="asset-class-results" aria-label="Resultado por classe"><div class="asset-class-results-title">Resultado por classe</div>${classSummary||'<div class="mu">Nenhum ativo com dados suficientes.</div>'}</section>
     <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
   </div>`;
   const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
