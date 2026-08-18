@@ -17568,13 +17568,31 @@ function dataQualityAnalyzeGoals(){
 
   return records;
 }
+function dataQualityAnalyzeRfReconciliation(){
+  const records=[];
+  const snapshot=rfReconciliationSnapshot(S.rfEvents, S.proventos);
+  snapshot.issues.forEach((issue,index)=>{
+    const record=dataQualityCreateRecord({
+      category:'Renda Fixa',
+      entityType:'Renda Fixa',
+      entityIndex:index+1,
+      entityLabel:'Reconciliacao renda fixa x proventos',
+      route:'renda-fixa',
+      actionLabel:'Abrir Renda Fixa'
+    });
+    dataQualityPush(record, issue.severity, issue.field, issue.message, issue.recommendation);
+    records.push(record);
+  });
+  return records;
+}
 function dataQualitySnapshot(){
   const records=[
     ...dataQualityAnalyzeAssets(),
     ...dataQualityAnalyzeProventos(),
     ...dataQualityAnalyzeRfEvents(),
     ...dataQualityAnalyzeMovements(),
-    ...dataQualityAnalyzeGoals()
+    ...dataQualityAnalyzeGoals(),
+    ...dataQualityAnalyzeRfReconciliation()
   ];
   const issues=[];
   const severityCounts={critical:0, warning:0, info:0};
@@ -17671,6 +17689,25 @@ function renderDataQualityIssueCard(issue){
     <div class="data-quality-action"><button class="btn bgh" onclick="${action}">${esc(actionLabel)}</button></div>
   </article>`;
 }
+function dataQualityRfReconciliationSection(){
+  const snapshot=rfReconciliationSnapshot(S.rfEvents, S.proventos);
+  const cards=[
+    ['Vinculados', snapshot.counts.linked, 'proventos ligados a eventos RF'],
+    ['Apenas eventos RF', snapshot.counts.rfEventOnly, 'eventos sem provento correspondente'],
+    ['Links quebrados', snapshot.counts.brokenLink, 'proventos sem evento RF encontrado'],
+    ['Possiveis duplicidades', snapshot.counts.possibleDuplicate, 'mesmo ticker, data e valor'],
+    ['Legacy sem vinculo', snapshot.counts.legacyUnlinked, 'proventos RF sem link explicito']
+  ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'warning':'ok'}"><div class="data-quality-card-label">${esc(label)}</div><div class="data-quality-card-value">${esc(rfReconciliationText(value, 0))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
+  return `<section class="data-quality-hero rf-reconciliation-section">
+    <div class="data-quality-head">
+      <div>
+        <div class="data-quality-title">Reconciliacao de Renda Fixa</div>
+        <div class="data-quality-sub">Conferencia entre eventos de renda fixa e proventos manuais. Nenhum dado e alterado automaticamente.</div>
+      </div>
+    </div>
+    <div class="data-quality-summary">${cards}</div>
+  </section>`;
+}
 function dataQualityTab(){
   const snapshot=dataQualitySnapshot();
   const severity=String(S.dataQualitySeverity || S.dataAuditSeverity || 'all');
@@ -17720,6 +17757,7 @@ function dataQualityTab(){
         ${summaryCards}
       </div>
     </section>
+    ${dataQualityRfReconciliationSection()}
     <div class="data-quality-filters">
       <div class="data-quality-filter-group"><span class="data-quality-filter-label">Severidade</span>${severityChips}</div>
       <div class="data-quality-filter-group"><span class="data-quality-filter-label">Categoria</span>${categoryChips}</div>
@@ -24569,6 +24607,99 @@ function manualIncomeRfLinkStatus(row, rfMap=rfEventByIdMap()){
     excluded:linked,
     rfEvent,
     reason:linked ? 'JÃ¡ contabilizado em Renda Fixa' : broken ? 'VÃ­nculo de renda fixa nÃ£o encontrado' : ''
+  };
+}
+function rfReconciliationText(value, fallback){
+  if(value===undefined || value===null) return (fallback!==undefined ? fallback : '—');
+  if(typeof value==='number' && !Number.isFinite(value)) return (fallback!==undefined ? fallback : '—');
+  return String(value);
+}
+function rfReconciliationSnapshot(rfEvents, proventos){
+  const events=Array.isArray(rfEvents) ? rfEvents : [];
+  const provs=Array.isArray(proventos) ? proventos : [];
+  const linkedPairs=[];
+  const rfEventsWithoutProvento=[];
+  const brokenLinks=[];
+  const possibleDuplicates=[];
+  const legacyUnlinked=[];
+  const proventoOnly=[];
+  const eventBySourceId=new Map();
+  events.forEach(event=>{
+    const id=String(event?.id||'').trim();
+    if(id) eventBySourceId.set(id, event);
+  });
+  provs.forEach(provento=>{
+    const sourceKind=String(provento?.sourceEventKind||'').trim().toLowerCase();
+    const sourceId=String(provento?.sourceEventId||'').trim();
+    if(sourceKind==='rf' && sourceId){
+      const matched=eventBySourceId.get(sourceId)||null;
+      if(matched) linkedPairs.push({provento, rfEvent:matched});
+      else brokenLinks.push({provento, sourceId});
+      return;
+    }
+    const ticker=String(provento?.ticker||'').trim().toUpperCase();
+    const date=inputDateValue(provento?.date||'');
+    const value=rfEventNumber(provento?.value);
+    const matches=events.filter(event=>normalizeRfEventType(event)==='juros'
+      && String(event?.ticker||'').trim().toUpperCase()===ticker
+      && inputDateValue(event?.date||'')===date
+      && rfEventNumber(event?.netValue)===value);
+    const hasRfIntent=sourceKind==='rf' || String(provento?.type||provento?.eventType||'').trim().toUpperCase().includes('JUROS');
+    if(matches.length>1) possibleDuplicates.push({provento, matches});
+    else if(hasRfIntent) legacyUnlinked.push(provento);
+    else proventoOnly.push(provento);
+  });
+  const linkedEventIds=new Set(linkedPairs.map(pair=>String(pair.rfEvent?.id||'').trim()).filter(Boolean));
+  events.forEach(event=>{
+    const id=String(event?.id||'').trim();
+    if(id && linkedEventIds.has(id)) return;
+    const isJuros=normalizeRfEventType(event)==='juros';
+    if(String(event?.sourceKind||'').trim().toLowerCase()==='rf' || isJuros) rfEventsWithoutProvento.push(event);
+  });
+  const issues=[];
+  brokenLinks.forEach(item=>issues.push({
+    code:'RF_DIVIDEND_BROKEN_LINK',
+    severity:'warning',
+    field:'sourceEventId',
+    message:`Provento vinculado ao evento RF ${rfReconciliationText(item.sourceId)} nao encontrado.`,
+    recommendation:'Revise o vinculo: o evento de renda fixa pode ter sido removido ou importado com outro id.'
+  }));
+  possibleDuplicates.forEach(item=>issues.push({
+    code:'RF_DIVIDEND_POSSIBLE_DUPLICATE',
+    severity:'warning',
+    field:'duplicate',
+    message:`Provento pode duplicar ${item.matches.length} evento(s) de renda fixa com mesmo ticker, data e valor.`,
+    recommendation:'Confirme se o provento ja nao foi registrado e vinculado ao evento de renda fixa.'
+  }));
+  rfEventsWithoutProvento.forEach(event=>{
+    if(normalizeRfEventType(event)==='juros') issues.push({
+      code:'RF_EVENT_WITHOUT_PROVENTO',
+      severity:'info',
+      field:'eventType',
+      message:'Evento de renda fixa do tipo juros sem provento correspondente.',
+      recommendation:'Confirme se o pagamento deve gerar provento manual ou se ja foi registrado de outra forma.'
+    });
+  });
+  const healthy=brokenLinks.length===0 && possibleDuplicates.length===0;
+  return {
+    totalRfEvents:events.length,
+    totalProventos:provs.length,
+    linkedPairs,
+    rfEventsWithoutProvento,
+    brokenLinks,
+    possibleDuplicates,
+    legacyUnlinked,
+    proventoOnly,
+    issues,
+    healthy,
+    counts:{
+      linked:linkedPairs.length,
+      rfEventOnly:rfEventsWithoutProvento.length,
+      brokenLink:brokenLinks.length,
+      possibleDuplicate:possibleDuplicates.length,
+      legacyUnlinked:legacyUnlinked.length,
+      proventoOnly:proventoOnly.length
+    }
   };
 }
 function dividendManualRows(rfMap=rfEventByIdMap()){
