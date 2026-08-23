@@ -24132,18 +24132,10 @@ function ativos(){
             </div>
           </div>
 
-          <!-- Distribution Panel with Class Summary -->
-          <section class="assets-premium-distribution" aria-label="Distribuição da carteira por classe">
-            <div class="assets-premium-distribution-title">Distribuição da carteira</div>
-            <div class="assets-premium-distribution-list">
-              ${classSummaryHtml || '<div class="mu" style="padding:12px;color:var(--muted)">Nenhum ativo com dados suficientes.</div>'}
-            </div>
-          </section>
+                    <!-- Legacy accordion groups (for test compatibility) -->
+                                        <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
 
-          <!-- Legacy accordion groups (for test compatibility) -->
-                <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
-
-          <!-- Desktop Premium Table -->
+                                        <!-- Desktop Premium Table -->
           <div class="assets-premium-table-wrap" id="assets-premium-table-desktop">
             <table class="assets-premium-table">
               <thead>
