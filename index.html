@@ -20679,7 +20679,38 @@ function buildReportCardPrintHtml(type){
   color: var(--muted);
 }
 
-</style>
+
+@media (min-width:1181px) and (max-width:1535px) {
+    .sidebar { width: 180px; }
+    .main-content { margin-left: 180px; max-width: calc(100vw - 180px); }
+    .page-content { max-width: calc(100vw - 180px); }
+    .ag-table th,
+    .ag-table td {
+        padding: 3px 6px !important;
+    }
+}
+@media (min-width:1181px) and (max-width:1535px) {
+    .sidebar { width: 160px; }
+    .main-content { margin-left: 160px; max-width: calc(100vw - 160px); }
+    .page-content { max-width: calc(100vw - 160px); }
+    .ag-table th,
+    .ag-table td {
+        padding: 0px !important;
+    }
+}
+@media (min-width:1181px) and (max-width:1535px) {
+    .sidebar { width: 160px; }
+    .main-content { margin-left: 160px; max-width: calc(100vw - 160px); }
+    .page-content { max-width: calc(100vw - 160px); }
+    .ag-table .tw table {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+    .ag-table th,
+    .ag-table td {
+        padding: 0px !important;
+    }
+}</style>
   </head>
   <body>
     <div class="report-print-root">${body}</div>
