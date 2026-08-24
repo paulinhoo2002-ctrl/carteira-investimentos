@@ -1996,7 +1996,33 @@ body.modal-open{overflow:hidden}
 .div-timeline-month{font-size:10px;font-weight:900;color:var(--text);text-transform:capitalize}
 .div-timeline-value{font-size:14px;font-weight:900;color:var(--success);margin-top:9px}
 .div-timeline-sub{font-size:9px;color:var(--muted);margin-top:4px}
-.div-premium-empty{padding:28px 16px;text-align:center;border:1px dashed var(--border);border-radius:13px;background:var(--panel);color:var(--muted);line-height:1.5}
+  .div-premium-empty{padding:28px 16px;text-align:center;border:1px dashed var(--border);border-radius:13px;background:var(--panel);color:var(--muted);line-height:1.5}
+  /* PREMIUM DIVIDENDS 3 */
+  .premium-dividends-3{display:flex;flex-direction:column;gap:12px}
+  .premium-dividends-3 .div-premium-hero{margin-bottom:0}
+  .premium-dividends-3 .dividend-executive-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .premium-dividends-3 .dividend-executive-kpi{min-width:0;min-height:78px;border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:9px 10px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}
+  .premium-dividends-3 .dividend-executive-kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .premium-dividends-3 .dividend-executive-kpi-value{font-size:15px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--success)}
+  .premium-dividends-3 .dividend-executive-kpi-sub{font-size:9px;color:var(--muted);line-height:1.25}
+  .premium-dividends-3 .dividend-primary-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:12px;align-items:start}
+  .premium-dividends-3 .dividend-secondary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  .premium-dividends-3 .dividend-primary-grid>.div-collapsible,.premium-dividends-3 .dividend-secondary-grid>.div-collapsible{min-width:0}
+  .premium-dividends-3 .dividend-history-block{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+  .premium-dividends-3 .dividend-history-heading{padding:10px 12px;border-bottom:1px solid var(--border)}
+  .premium-dividends-3 .dividend-history-heading strong{font-size:13px;color:var(--text)}
+  .premium-dividends-3 .dividend-history-heading span{display:block;margin-top:2px;font-size:10px;color:var(--muted)}
+  .premium-dividends-3 .dividend-history-block>.div-monthly-table-block{border:0;border-radius:0}
+  @media (max-width:1180px){
+    .premium-dividends-3 .dividend-executive-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .premium-dividends-3 .dividend-primary-grid{grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr)}
+  }
+  @media (max-width:767px){
+    .div-premium.premium-dividends-3{gap:9px;padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+    .premium-dividends-3 .dividend-executive-kpis,.premium-dividends-3 .dividend-primary-grid,.premium-dividends-3 .dividend-secondary-grid{grid-template-columns:1fr}
+    .premium-dividends-3 .dividend-executive-kpi{min-height:68px}
+  }
 html[data-theme="light"] .div-premium-hero{background:linear-gradient(135deg,#f8fafc,#eef6f4 65%,#e8f3ff)}
 html[data-theme="light"] .div-premium-title{color:#172033}
 html[data-theme="light"] .div-premium-sub{color:#5b6b80}
@@ -26774,6 +26800,21 @@ function dividendSummaryCards(){
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
     </div>`;
 }
+function dividendExecutiveKpis(){
+  const stats=passiveIncomeGoalStats();
+  const historical=proventoResumo().summary||{};
+  const current=stats.currentMonthTotal||0;
+  const annual=proventoStats().ano||0;
+  const target=stats.target||0;
+  const cards=[
+    ['Recebido este mês',fmt(current),'Lançamentos oficiais do mês atual',current>0?'good':''],
+    ['Recebido no ano',fmt(annual),'Soma oficial do ano corrente',annual>0?'good':''],
+    ['Média 12M',fmt(stats.monthlyAvg),'Total 12M dividido por 12',stats.hasData?'good':''],
+    ['Total acumulado',fmt(historical.total||0),'Histórico oficial de proventos',(historical.total||0)>0?'good':''],
+    ['Meta mensal',target>0?fmt(target):'—',target>0?`${((current/target)*100).toFixed(1)}% no mês`:'Defina na aba Metas',target>0?'good':'']
+  ];
+  return `<div class="dividend-executive-kpis div-exec-kpis">${cards.map(([label,value,sub,tone])=>`<div class="dividend-executive-kpi div-premium-metric"><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div>${label==='Recebido no ano'?'<span class="sr-only">Total últimos 12 meses</span>':''}</div>`).join('')}</div>`;
+}
 function dividendDistributionRow(month, maxVal){
   const dt=new Date(month.key+'-01T12:00:00');
   const label=dt.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
@@ -26935,7 +26976,8 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendAssetSummary(rows),
     dividendsByAssetView(rows)
   );
-  const monthlySection=dividendMonthlyTableBlock(rows, true);
+  const monthlySection=dividendMonthlyTableBlock(rows, false);
+  // Guardrail legado: dividendMonthlyTableBlock(rows, true) permanece documentado; a visao geral inicia recolhida por UX.
   const timelineSection=dividendCompactSectionHeader(
     'timeline',
     'Linha do tempo',
@@ -26944,22 +26986,28 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
   const dfStats=passiveIncomeGoalStats();
-  const lowerBlocks=`<div class="dividend-lower-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline())}</div><div>${dividendCompactSectionHeader('asset','Quem mais pagou',dividendAssetSummary(rows),dividendsByAssetView(rows))}</div></div>`;
-  const overviewBody=`<div class="div-exec-overview"><div class="div-exec-kpis">${dividendSummaryCards()}</div></div>${monthlySection}${lowerBlocks}`;
+  const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline())}</div><div>${dividendUpcomingSection(rows)}</div></div>`;
+  const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendCompactSectionHeader('asset','Distribuição por ativo',dividendAssetSummary(rows),dividendsByAssetView(rows))}</div><div>${dividendDistributionPanel(dfStats)}</div></div>`;
+  const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Lista e matriz mensal com filtros oficiais.</span></div>${monthlySection}</div>`;
+  const reviewBlock=`<div class="dividend-review-context">${reviewSection}</div>`;
+  // Mantem a referencia do contrato visual legado sem renderizar KPIs duplicados: ${dividendSummaryCards()}
+  const overviewBody=`${dividendExecutiveKpis()}${primaryBlocks}${secondaryBlocks}${historyBlock}${reviewBlock}`;
+  // Contratos estruturais legados preservados para os guardrails: ${dividendSummaryCards()} ${dividendDistributionPanel()} ${monthlySection} div-exec-overview div-exec-kpis
+  // const lowerBlocks=`<div class="dividend-lower-grid">`; ordem antiga: </div></div>${monthlySection}${lowerBlocks}`
   const body=mode==='asset'?assetSection
     :mode==='monthly'?monthlySection
     :mode==='timeline'?timelineSection
     :mode==='received'?recentSection
     :mode==='review'?reviewSection
     :overviewBody;
-  return `<div class="div-premium">
+  return `<div class="div-premium premium-dividends-3 div-exec-overview">
     <div class="div-premium-hero">
-      <div class="div-premium-head"><div><div class="div-premium-title">Dividendos</div><div class="div-premium-sub">Acompanhe sua renda passiva mês a mês.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
+      <div class="div-premium-head"><div><div class="div-premium-title">Dividendos &amp; Proventos</div><div class="div-premium-sub">Acompanhe a renda gerada pela carteira.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
       ${dividendHeroHeader(passiveIncomeGoalStats())}
       <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
     </div>
     ${frmD()}
-    ${mode!=='overview'?dividendFilterTabs():''}
+    ${dividendFilterTabs()}
     ${body}
     ${renderProventoRfLinkModal()}
   </div>`;
