@@ -22,6 +22,22 @@ conservadora que nao altere o que ja foi documentado em outros lugares.
   preservar.
 - Nao reconstruir o sistema do zero em nome de modernizacao ampla.
 
+## AGENT STARTUP PROTOCOL
+
+Ao iniciar uma tarefa relevante neste repositorio:
+
+1. Leia este arquivo e `docs/ai/PROJECT_MEMORY.md`.
+2. Consulte `docs/ai/SKILLS.md` e a documentacao especifica da area.
+3. Confirme workspace, branch, HEAD, `origin/main` e working tree.
+4. Selecione Skills pelo problema, nao mecanicamente.
+5. Execute a mudanca com escopo controlado e preserve areas protegidas.
+6. Valide com os testes, build e navegador aplicaveis.
+7. Registre decisoes duradouras na memoria/documentacao apropriada.
+
+Fontes canonicas: arquitetura em `docs/ai/ARCHITECTURE.md`, estado e decisoes
+em `docs/ai/PROJECT_MEMORY.md`, mapa de Skills em `docs/ai/SKILLS.md` e
+autonomia em `docs/ai/AGENT_AUTONOMY.md`.
+
 ## Princípios Caveman
 
 - Mudancas minimas; preferir alteracoes pontuais e verificaveis.

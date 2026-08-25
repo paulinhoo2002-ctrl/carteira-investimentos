@@ -46,6 +46,22 @@ Financial semantics, persistence, merge and deploy remain protected gates.
 
 Historical facts and permanent decisions from the project's evolution.
 
+## Current Product Baseline
+
+- Produto: Carteira de Investimentos, SPA legada em `index.html`.
+- Baseline atual da `main`: Fase 12 concluida no merge `3e8026aa005ab281176d0a496896fb2318353341`.
+- Visual Master aprovado: padrao premium dark, sidebar lateral como navegacao principal e informacao financeira densa, clara e executiva.
+- Baseline visual: Dashboard, Dividendos, Ativos e Rentabilidade.
+- Numeros de referencias e mockups sao ilustrativos; dados reais da carteira sempre prevalecem.
+- Nao reintroduzir elementos removidos sem justificativa e evidencia de necessidade.
+- Metas, Rebalanceamento e demais telas devem manter a mesma linguagem sem alterar regras financeiras.
+- Dispositivos prioritarios: Samsung Galaxy S25 (~6,2 polegadas) e notebook Dell (~14 polegadas).
+- Viewports de validacao: 390x844, 430x932, 768x1024, 1366x768 e 1920x1080.
+
+Para a politica completa de autonomia, limites e continuidade entre agentes,
+consulte `docs/ai/AGENT_AUTONOMY.md`. Para selecionar ferramentas e Skills,
+consulte `docs/ai/SKILLS.md`.
+
 ## Pull Requests
 
 ### PR #260
