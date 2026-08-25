@@ -38,6 +38,15 @@ function extractGoalsSnippet() {
   return html.slice(start, end);
 }
 
+function extractDashboardConsultiveCardSnippet() {
+  const html = read('index.html');
+  const start = html.indexOf('function dashboardConsultiveCard(');
+  const end = html.indexOf('function dashboardHomeSummaryPanel(', start);
+  assert.notEqual(start, -1, 'dashboardConsultiveCard precisa existir');
+  assert.notEqual(end, -1, 'dashboardHomeSummaryPanel precisa existir depois do helper');
+  return html.slice(start, end);
+}
+
 function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
   const calls = {
     cx: 0,
@@ -190,6 +199,7 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
 
   state.globalThis = state;
   vm.createContext(state);
+  vm.runInContext(extractDashboardConsultiveCardSnippet(), state, { filename: 'dashboard-consultive-card-snippet.js' });
   vm.runInContext(extractGoalsSnippet(), state, { filename: 'financial-goals-snippet.js' });
   return state;
 }
@@ -203,7 +213,7 @@ function buildHistoryRows(now) {
   ];
 }
 
-test('dashboard keeps passive income panel without rendering financial goals block', () => {
+test('dashboard keeps passive income and financial goals panels in the current baseline', () => {
   const ctx = buildContext({
     goals: {
       patrimonio: { target: 1000000 },
@@ -214,17 +224,17 @@ test('dashboard keeps passive income panel without rendering financial goals blo
   });
 
   const html = ctx.dash();
-  assert.match(html, /dashboard-home-summary/);
-  assert.doesNotMatch(html, /dashboard-home-goals/);
-  assert.doesNotMatch(html, /Metas financeiras/);
+  assert.match(html, /dashboard-executive-kpis/);
+  assert.match(html, /dashboard-home-goals/);
+  assert.match(html, /Metas financeiras/);
   assert.match(html, /dashboard-passive-income/);
   assert.match(html, /dashboard-home-highlights/);
   assert.match(html, /dashboard-home-composition/);
-  assert.ok(html.indexOf('dashboard-home-summary') < html.indexOf('dashboard-passive-income'));
+  assert.ok(html.indexOf('dashboard-executive-kpis') < html.indexOf('dashboard-passive-income'));
   assert.ok(html.indexOf('dashboard-passive-income') < html.indexOf('dashboard-home-highlights'));
-  assert.ok(html.indexOf('dashboard-home-highlights') < html.indexOf('dashboard-home-composition'));
+  assert.ok(html.indexOf('dashboard-home-composition') < html.indexOf('dashboard-home-highlights'));
   assert.equal(ctx.calls.dashboardSnapshot, 1);
-  assert.equal(ctx.calls.dashboardSummaryPanel, 1);
+  assert.equal(ctx.calls.dashboardSummaryPanel, 0);
   assert.equal(ctx.calls.dashboardPassiveIncomePanel, 1);
 });
 
