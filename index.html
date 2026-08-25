@@ -26388,13 +26388,13 @@ function dividendUpcomingSection(rows,expanded=false){
         </div>
         <div class="div-upcoming-group-total">${fmt(group.total)}</div>
       </div>
-      <div class="div-upcoming-items">${group.rows.map(row=>`<div class="div-upcoming-item">
+      <div class="div-upcoming-items">${group.rows.slice(0,6).map(row=>`<div class="div-upcoming-item">
         <div class="div-upcoming-main">
           <div class="div-upcoming-title"><span class="div-upcoming-ticker">${esc(row.ticker)}</span><span class="div-type-badge ${dividendTypeTone(row.type)}">${esc(row.type)}</span></div>
           <div class="div-upcoming-subline">${esc(row.name)}${row.source ? ` · ${esc(row.source)}` : ''}${row.note ? ` · ${esc(row.note)}` : ''}</div>
         </div>
         <div class="div-upcoming-value">${fmt(row.value)}</div>
-      </div>`).join('')}</div>
+      </div>`).join('')}${group.rows.length>6?`<div class="div-recent-more">Mostrando 6 de ${group.rows.length} lançamentos</div>`:''}</div>
     </div>`).join('')}</div>` : `<div class="div-upcoming-empty">
       <div class="div-empty-title">Nenhum recebimento futuro encontrado nos proventos cadastrados.</div>
       <div class="div-empty-sub">Quando houver proventos com data de pagamento futura, eles aparecerão aqui.</div>
@@ -26515,7 +26515,7 @@ function dividendsByAssetView(rows){
         <div class="div-asset-stat"><span>Último pagamento</span><strong>${esc(group.lastDate||'—')}</strong></div>
         <div class="ag-open">⌄</div>
       </summary>
-      <div class="ag-body">${dividendRecentList(group.rows)}</div>
+      <div class="ag-body">${dividendRecentList(group.rows,6)}</div>
     </details>`;
   };
   const moreHidden=hidden.length ? `<details class="div-asset-more">
