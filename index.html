@@ -1721,6 +1721,45 @@ body.modal-open{overflow:hidden}
 .report-export-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
 .report-export-actions .btn{min-height:44px}
 .reports-footnote{padding:9px 11px;border:1px solid #1a273b;border-radius:12px;background:#0a101b;color:#8294ad;font-size:10px;line-height:1.45}
+/* PREMIUM REPORTS 5 */
+.reports-premium-shell{max-width:1240px;margin:0 auto;gap:12px}
+.reports-premium-hero{background:linear-gradient(135deg,rgba(34,211,238,.09),rgba(79,70,229,.08) 52%,rgba(15,23,42,.36))}
+.reports-premium-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.reports-export-cta{min-height:44px}
+.reports-premium-kpis{grid-template-columns:repeat(5,minmax(0,1fr));margin-top:14px}
+.reports-kpi-positive .value,.reports-positive{color:#34d399}
+.reports-kpi-negative .value,.reports-negative{color:#f87171}
+.reports-kpi-neutral .value,.reports-neutral{color:#cbd5e1}
+.reports-premium-main-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(280px,1fr);gap:12px}
+.reports-premium-secondary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.reports-panel{min-width:0;padding:14px;border:1px solid #1a2940;border-radius:15px;background:#0b111d;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.reports-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.reports-panel-head h2{margin:0;color:#edf3ff;font-size:14px;line-height:1.2}
+.reports-panel-head p{margin:4px 0 0;color:#8294ad;font-size:10px;line-height:1.4}
+.reports-badge{display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border:1px solid rgba(129,140,248,.24);border-radius:999px;background:rgba(79,70,229,.1);color:#c7d2fe;font-size:9px;font-weight:900;white-space:nowrap}
+.reports-badge-ok{border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08);color:#86efac}
+.reports-badge-warn{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.08);color:#fde68a}
+.reports-evolution-chart{height:190px;display:flex;align-items:flex-end;gap:8px;padding:12px 4px 0;border-bottom:1px solid #223149}
+.reports-evolution-bar-wrap{height:100%;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px}
+.reports-evolution-value{max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8294ad;font-size:9px}
+.reports-evolution-bar{width:min(34px,72%);min-height:4px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,#67e8f9,#4f46e5);box-shadow:0 5px 16px rgba(79,70,229,.22)}
+.reports-evolution-label{color:#71849f;font-size:9px;white-space:nowrap}
+.reports-panel-footer{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:6px;margin-top:10px;color:#8294ad;font-size:10px}
+.reports-panel-footer strong{color:#edf3ff;font-size:12px;text-align:right}
+.reports-data-list,.reports-stat-list{display:flex;flex-direction:column;gap:8px}
+.reports-data-row,.reports-stat-list>div{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#9aacbf;font-size:11px}
+.reports-data-row strong,.reports-stat-list strong{color:#edf3ff;font-size:12px;white-space:nowrap}
+.reports-data-row small{color:#8294ad;font-size:9px;font-weight:700}
+.reports-dot{display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:#67e8f9}.reports-dot-1{background:#818cf8}.reports-dot-2{background:#34d399}.reports-dot-3{background:#fbbf24}.reports-dot-4{background:#f472b6}.reports-dot-5{background:#fb7185}
+.reports-next-maturity{display:flex;flex-direction:column;gap:3px;margin-top:12px;padding-top:10px;border-top:1px solid #1c2a3f;color:#8294ad;font-size:10px}.reports-next-maturity strong{color:#edf3ff;font-size:11px}.reports-next-maturity small{color:#71849f}
+.reports-inline-link{display:inline-flex;margin-top:13px;color:#7dd3fc;font-size:10px;font-weight:900;text-decoration:none}.reports-inline-link:hover{text-decoration:underline}
+.reports-audit-count{display:flex;align-items:baseline;gap:7px;color:#fbbf24;font-size:25px;font-weight:900}.reports-audit-count span{color:#8294ad;font-size:10px;font-weight:600}
+.reports-details{border:1px solid #1a2940;border-radius:15px;background:#0b111d;overflow:hidden}.reports-details summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;color:#edf3ff;font-size:12px;font-weight:900;cursor:pointer;list-style:none}.reports-details summary::-webkit-details-marker{display:none}.reports-details summary span{color:#8294ad;font-size:10px;font-weight:600}.reports-details-body{padding:0 14px 13px;color:#8294ad;font-size:10px;line-height:1.5}.reports-details-body p{margin:0}
+.reports-export-grid{padding:0 14px 14px;grid-template-columns:repeat(3,minmax(0,1fr))}.reports-export-grid .report-export-card{background:#0e1725}
+.reports-empty{padding:18px 8px;color:#8294ad;font-size:11px;text-align:center}
+html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-details{background:#fff;border-color:#d9e2ec;box-shadow:none}html[data-theme="light"] .reports-panel-head h2,html[data-theme="light"] .reports-details summary,html[data-theme="light"] .reports-panel-footer strong,html[data-theme="light"] .reports-data-row strong,html[data-theme="light"] .reports-stat-list strong,html[data-theme="light"] .reports-next-maturity strong{color:#172033}html[data-theme="light"] .reports-panel-head p,html[data-theme="light"] .reports-data-row,html[data-theme="light"] .reports-stat-list>div,html[data-theme="light"] .reports-next-maturity,html[data-theme="light"] .reports-details-body{color:#52647b}html[data-theme="light"] .reports-evolution-chart{border-color:#d9e2ec}html[data-theme="light"] .reports-title{color:#172033}html[data-theme="light"] .reports-sub,html[data-theme="light"] .reports-evolution-label,html[data-theme="light"] .reports-evolution-value,html[data-theme="light"] .reports-kpi .sub,html[data-theme="light"] .reports-empty,html[data-theme="light"] .reports-footnote{color:#52647b}html[data-theme="light"] .reports-kpi .label{color:#52647b}html[data-theme="light"] .reports-kpi .value{color:#172033}html[data-theme="light"] .reports-kpi-positive .value,html[data-theme="light"] .reports-positive{color:#15803d}html[data-theme="light"] .reports-kpi-negative .value,html[data-theme="light"] .reports-negative{color:#b91c1c}html[data-theme="light"] .reports-kpi-neutral .value,html[data-theme="light"] .reports-neutral{color:#334155}html[data-theme="light"] .reports-filter button{border-color:#cbd5e1;background:#f8fafc;color:#334155}html[data-theme="light"] .reports-filter button.on{border-color:#818cf8;background:#eef2ff;color:#3730a3}html[data-theme="light"] .reports-badge{color:#3730a3;background:#eef2ff;border-color:#c7d2fe}html[data-theme="light"] .reports-badge-ok{color:#166534;background:#f0fdf4;border-color:#bbf7d0}html[data-theme="light"] .reports-badge-warn{color:#92400e;background:#fffbeb;border-color:#fde68a}
+@media(max-width:900px){.reports-premium-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.reports-premium-main-grid{grid-template-columns:1fr}.reports-premium-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-export-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.reports-premium-shell{padding-bottom:10px}.reports-premium-head-actions{width:100%;justify-content:stretch}.reports-premium-head-actions .reports-filter{flex:1}.reports-premium-head-actions .reports-filter button{flex:1;padding-left:7px;padding-right:7px}.reports-export-cta{width:100%}.reports-premium-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.reports-kpi{padding:9px}.reports-kpi .value{font-size:14px}.reports-premium-secondary-grid{grid-template-columns:1fr}.reports-evolution-chart{height:155px;gap:4px}.reports-evolution-value{display:none}.reports-panel-footer{grid-template-columns:1fr auto}.reports-panel-footer span:nth-of-type(2){grid-column:1}.reports-panel-footer strong:nth-of-type(2){grid-column:2;grid-row:2}.reports-details summary{align-items:flex-start;flex-direction:column;gap:4px}.reports-export-grid{grid-template-columns:1fr;padding-left:10px;padding-right:10px}}
 .reports-experiment-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid #24344d;border-radius:14px;background:linear-gradient(180deg,rgba(13,20,34,.98),rgba(10,16,27,.92));box-shadow:0 10px 28px rgba(0,0,0,.18)}
 .reports-experiment-entry__title{font-size:12px;font-weight:900;color:#edf3ff;line-height:1.2}
 .reports-experiment-entry__sub{max-width:66ch;margin-top:4px;color:#94a3b8;font-size:11px;line-height:1.45}
@@ -21781,29 +21820,24 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
 }
 function reportsTab(){
   const data=reportsSnapshot();
-  const completeFormats=['csv','json','pdf'];
-  const experimentalEntry=isReadonlyReportsExperimentalEntryEnabled()
-    ? `<section class="reports-experiment-entry" aria-labelledby="readonly-reports-experimental-title">
-        <div>
-          <div class="reports-experiment-entry__title" id="readonly-reports-experimental-title">Relatório experimental somente leitura</div>
-          <div class="reports-experiment-entry__sub">Abertura controlada em modo local. Abre o host readonly da carteira ativa e permite voltar ao legado sem escrita.</div>
-        </div>
-        <div class="reports-experiment-entry__actions">
-          <button class="reports-experiment-entry__button" type="button" onclick="openReadonlyReportsExperimentalHost()">Abrir relatório experimental</button>
-        </div>
-      </section>`
-    : '';
-  const cards=[
-    `<article class="report-export-card">
-      <div class="report-export-card-head">
-        <div class="report-export-icon">🖨️</div>
-        <div style="min-width:0"><div class="report-export-title">Relatório PDF Executivo</div><div class="report-export-desc">Prévia executiva para revisão com assessor: patrimônio, alocação, desempenho, proventos, renda fixa e auditoria.</div></div>
-      </div>
-      <div class="report-export-meta"><span class="report-format">PDF</span><span class="report-format">${esc(reportsPeriodLabel())}</span></div>
-      <div class="report-export-desc">Use a opção imprimir/salvar como PDF do navegador.</div>
-      <div class="report-export-actions"><button class="btn bp" onclick="openPdfReport()">Gerar PDF Executivo</button></div>
-    </article>`,
-    reportExportCard('🗂️','Carteira completa','Resumo, ativos, proventos, renda fixa, patrimônio, metas e auditoria.','complete',completeFormats),
+  const patrimony=patrimonySnapshot(reportsPeriod()==='all'?12:reportsPeriod()==='year'?new Date().getMonth()+1:12);
+  const allocation=allocationActualByType();
+  const allocationRows=Object.entries(allocation.map||{})
+    .map(([type,value])=>({type,value:Number(value)||0,share:allocation.total>0?((Number(value)||0)/allocation.total)*100:0}))
+    .sort((a,b)=>b.value-a.value);
+  const income=data.income||passiveIncomeGoalStats();
+  const fixed=data.fixed||rfIntelligenceSnapshot();
+  const nextFixed=(fixed.maturityRows||[])[0]||null;
+  const resultTone=Number(data.portfolio.tG)||0>0?'positive':Number(data.portfolio.tG)||0<0?'negative':'neutral';
+  const maxEvolution=Math.max(...patrimony.months.map(row=>Number(row.cumulative)||0),1);
+  const evolutionBars=patrimony.months.slice(-6).map(row=>{
+    const value=Number(row.cumulative)||0;
+    const height=Math.max(4,Math.round((Math.max(value,0)/maxEvolution)*100));
+    return `<div class="reports-evolution-bar-wrap"><div class="reports-evolution-value">${value?fmt(value):'—'}</div><div class="reports-evolution-bar" style="height:${height}%" title="${esc(row.label)}: ${fmt(value)}"></div><div class="reports-evolution-label">${esc(row.label)}</div></div>`;
+  }).join('');
+  const allocationList=allocationRows.length?allocationRows.slice(0,6).map((row,index)=>`<div class="reports-data-row"><span><i class="reports-dot reports-dot-${index%6}"></i>${esc(row.type)}</span><strong>${fmt(row.value)} <small>${row.share.toFixed(1)}%</small></strong></div>`).join(''):'<div class="reports-empty">Cadastre ativos para visualizar a distribuição.</div>';
+  const exportCards=[
+    reportExportCard('🗂️','Carteira completa','Resumo, ativos, proventos, renda fixa, patrimônio, metas e auditoria.','complete',['csv','json','pdf']),
     reportExportCard('💼','Ativos','Posições, preços, valores aplicados, valores atuais e resultados.','assets',['csv','json','pdf']),
     reportExportCard('💸','Dividendos e proventos','Recebimentos por ativo, evento, mês, fonte e observação.','proventos',['csv','json','pdf']),
     reportExportCard('🏦','Renda Fixa','Títulos, taxas, valores, vencimentos, fontes e alertas.','fixed',['csv','json','pdf']),
@@ -21812,33 +21846,46 @@ function reportsTab(){
     reportExportCard('🧾','IRPF auxiliar','Atalho para a exportação fiscal auxiliar já existente. Confira com informes oficiais.','irpf',['csv']),
     reportExportCard('📦','Dados completos em JSON','Relatório estruturado para consulta. Não é arquivo de restauração.','complete',['json'])
   ].join('');
-  return `<div class="reports-shell">
-    <section class="reports-hero">
+  const experimentalEntry=isReadonlyReportsExperimentalEntryEnabled()
+    ? `<section class="reports-experiment-entry" aria-labelledby="readonly-reports-experimental-title">
+        <div><div class="reports-experiment-entry__title" id="readonly-reports-experimental-title">Relatório experimental somente leitura</div><div class="reports-experiment-entry__sub">Abertura controlada em modo local, sem escrita na carteira.</div></div>
+        <button class="reports-experiment-entry__button" type="button" onclick="openReadonlyReportsExperimentalHost()">Abrir relatório experimental</button>
+      </section>` : '';
+  const auditTone=data.auditCount?'warn':'ok';
+  return `<div class="reports-shell reports-premium-shell">
+    <section class="reports-hero reports-premium-hero">
       <div class="reports-head">
-        <div>
-          <div class="reports-title">Relatórios e Exportações</div>
-          <div class="reports-sub">Gere arquivos organizados para análise e conferência. Esta área é somente leitura e não substitui o Backup e restauração.</div>
-        </div>
-        <div class="reports-filter">
+        <div><div class="reports-title">Relatórios</div><div class="reports-sub">Visão consolidada de patrimônio, resultado e renda.</div></div>
+        <div class="reports-premium-head-actions"><div class="reports-filter">
           <button class="${reportsPeriod()==='year'?'on':''}" onclick="setReportsPeriod('year')">Ano atual</button>
           <button class="${reportsPeriod()==='12m'?'on':''}" onclick="setReportsPeriod('12m')">Últimos 12 meses</button>
           <button class="${reportsPeriod()==='all'?'on':''}" onclick="setReportsPeriod('all')">Todos</button>
-        </div>
+        </div><button class="btn bp reports-export-cta" onclick="document.getElementById('reports-export-details')?.scrollIntoView({behavior:'smooth'})">Exportar</button></div>
       </div>
-      <div class="reports-kpis">
+      <div class="reports-kpis reports-premium-kpis">
         <div class="reports-kpi"><div class="label">Patrimônio atual</div><div class="value">${fmt(data.portfolio.tC)}</div><div class="sub">Estimativa pelos ativos cadastrados</div></div>
-        <div class="reports-kpi"><div class="label">Valor aplicado</div><div class="value">${fmt(data.portfolio.tI)}</div><div class="sub">Base consolidada da carteira</div></div>
-        <div class="reports-kpi"><div class="label">Renda média 12M</div><div class="value">${fmt(data.income.monthlyAvg)}</div><div class="sub">Histórico real de proventos</div></div>
-        <div class="reports-kpi"><div class="label">Ativos</div><div class="value">${data.assetsCount}</div><div class="sub">${data.fixedCount} título(s) de renda fixa</div></div>
-        <div class="reports-kpi"><div class="label">Proventos no filtro</div><div class="value">${data.proventosCount}</div><div class="sub">${esc(data.periodLabel)}</div></div>
-        <div class="reports-kpi"><div class="label">Renda Fixa</div><div class="value">${fmt(data.fixed.totalCurrent)}</div><div class="sub">Valor atual/líquido informado</div></div>
-        <div class="reports-kpi"><div class="label">Alertas de auditoria</div><div class="value">${data.auditCount}</div><div class="sub">Somente para conferência</div></div>
-        <div class="reports-kpi"><div class="label">Gerado em</div><div class="value">${new Date().toLocaleDateString('pt-BR')}</div><div class="sub">${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>
+        <div class="reports-kpi"><div class="label">Total aplicado</div><div class="value">${fmt(data.portfolio.tI)}</div><div class="sub">Base consolidada da carteira</div></div>
+        <div class="reports-kpi reports-kpi-${resultTone}"><div class="label">Resultado</div><div class="value">${fmt(data.portfolio.tG)}</div><div class="sub">${fmtP(data.portfolio.tGP)} sobre o aplicado</div></div>
+        <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(income.total12)}</div><div class="sub">Média 12M: ${fmt(income.monthlyAvg)}</div></div>
+        <div class="reports-kpi"><div class="label">Rentabilidade</div><div class="value">${fmtP(data.portfolio.tGP)}</div><div class="sub">Resultado sobre o capital</div></div>
       </div>
     </section>
-    <section class="reports-grid">${cards}</section>
+    <section class="reports-premium-main-grid">
+      <article class="reports-panel reports-evolution-panel"><div class="reports-panel-head"><div><h2>Evolução patrimonial</h2><p>Aplicado e patrimônio estimado no período selecionado.</p></div><span class="reports-badge">${esc(data.periodLabel)}</span></div>
+        <div class="reports-evolution-chart" aria-label="Evolução patrimonial dos últimos meses">${evolutionBars||'<div class="reports-empty">Sem histórico suficiente.</div>'}</div>
+        <div class="reports-panel-footer"><span>Último patrimônio</span><strong>${fmt(data.portfolio.tC)}</strong><span>Diferença</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong></div>
+      </article>
+      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Distribuição da carteira</h2><p>Valor atual por classe.</p></div><span class="reports-badge">${allocationRows.length} classes</span></div><div class="reports-data-list">${allocationList}</div></article>
+    </section>
+    <section class="reports-premium-secondary-grid">
+      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${income.hasData?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido em 12M</span><strong>${fmt(income.total12)}</strong></div><div><span>Média mensal</span><strong>${fmt(income.monthlyAvg)}</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
+      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda Fixa</h2><p>Resumo da valuation oficial.</p></div><span class="reports-badge">${fixed.assets?.length||0} posições</span></div><div class="reports-stat-list"><div><span>Valor atual</span><strong>${fmt(fixed.totalCurrent)}</strong></div><div><span>Total aplicado</span><strong>${fmt(fixed.totalApplied)}</strong></div><div><span>Resultado</span><strong class="reports-${Number(fixed.totalProfit)||0>=0?'positive':'negative'}">${fmt(fixed.totalProfit)}</strong></div></div><div class="reports-next-maturity">Próximo vencimento <strong>${nextFixed?esc(nextFixed.ticker||'Título RF'):'—'}</strong><small>${nextFixed?.due?nextFixed.due.toLocaleDateString('pt-BR'):'Nenhum vencimento futuro registrado.'}</small></div><a class="reports-inline-link" href="#" onclick="go('ativos');return false">Ver Renda Fixa</a></article>
+      <article class="reports-panel reports-audit-panel"><div class="reports-panel-head"><div><h2>Qualidade dos dados</h2><p>Conferência sem alterar registros.</p></div><span class="reports-badge reports-badge-${auditTone}">${data.auditCount?'Atenção':'Tudo certo'}</span></div><div class="reports-audit-count">${data.auditCount}<span>alertas para conferência</span></div><a class="reports-inline-link" href="#" onclick="go('auditoria');return false">Abrir Auditoria</a></article>
+    </section>
+    <details class="reports-details" open><summary>Histórico e detalhes <span>dados completos da carteira</span></summary><div class="reports-details-body"><p>Use as exportações para consultar posições, proventos, renda fixa, patrimônio e auditoria em formato estruturado.</p><div class="reports-secondary-kpis"><div class="reports-kpi"><div class="label">Ativos</div><div class="value">${data.assetsCount}</div><div class="sub">${data.fixedCount} título(s) de renda fixa</div></div><div class="reports-kpi"><div class="label">Renda Fixa</div><div class="value">${fmt(fixed.totalCurrent)}</div><div class="sub">Valor atual oficial</div></div><div class="reports-kpi"><div class="label">Alertas de auditoria</div><div class="value">${data.auditCount}</div><div class="sub">Somente para conferência</div></div></div></div></details>
+    <details class="reports-details" id="reports-export-details"><summary>Exportar relatórios <span>CSV, JSON e PDF conforme cada relatório</span></summary><div class="reports-grid reports-export-grid">${exportCards}</div></details>
     ${experimentalEntry}
-    <div class="reports-footnote">CSV usa ponto e vírgula, preserva acentos e abre corretamente no Excel em português. O JSON desta tela é um relatório de consulta; para restaurar dados em outro navegador, use Configurações → Backup e restauração.</div>
+    <div class="reports-footnote">Exportações são somente para consulta e não substituem o Backup e restauração.</div>
   </div>`;
 }
 
