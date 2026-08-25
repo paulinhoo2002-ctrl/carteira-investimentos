@@ -56,6 +56,8 @@ Historical facts and permanent decisions from the project's evolution.
 - Em tarefas de interface, combinar `frontend-design` com `interface-design`, `playwright`, `impeccable` e `caveman-review` conforme o escopo.
 - A skill orienta a apresentacao e a usabilidade, mas nao autoriza mudancas em regras financeiras, persistencia ou schema.
 
+- `docs/ai/AGENT_AUTONOMY.md` registra a politica de autonomia para Codex, OpenCode, Hermes Agent e outros agentes autorizados. Contem escopo, limites, areas protegidas, autonomia visual/UX, liberdade ampliada para Hermes, Browser Harness, correcoes, areas financeiras protegidas, dados, git, commits, push/merge/deploy, qualidade minima, direcao do produto e memoria persistente. Agentes devem consultar este documento antes de fases maiores.
+
 - Nunca duplicar `saveRfMovimentacao`; sempre reutilizar a função oficial.
 - Sempre reutilizar `finance-core.js` para cálculos financeiros; nunca criar cálculos paralelos.
 - Renderização da UI deve ser baseada no estado global `S` (ou equivalente via persistence).
