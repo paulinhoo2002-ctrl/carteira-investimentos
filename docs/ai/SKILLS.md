@@ -133,6 +133,16 @@ Destino: `.agents/skills/<skill>/`; referencia compartilhada preservada em `.age
 - Dependencia opcional/pending: Chrome DevTools MCP nao configurado neste ambiente (sem `.mcp.json`); etapa propria futura.
 - Caminho local: `.agents/skills/browser-testing-with-devtools/`
 
+### `browser-harness`
+- Uso: automacao e validacao real de navegador via CDP, incluindo DOM, runtime, responsividade, screenshots, overflow e regressao visual.
+- Quando usar: interacao real com a aplicacao, navegacao, inspecao de console/page errors, screenshots e fluxos browser.
+- Quando nao usar: regras financeiras, persistencia, schema ou tarefas sem interacao de navegador.
+- Origem oficial: `browser-use/browser-harness` (`https://github.com/browser-use/browser-harness`).
+- Instalacao validada: `browser-harness 0.1.9` via `uv tool install --python 3.12 --upgrade --force browser-harness`.
+- Caminho da skill: `.agents/skills/browser-harness/`.
+- Conexao: usar o navegador local via CDP; em falha, executar `browser-harness --doctor` e seguir `install.md` oficial.
+- Limite: ferramenta auxiliar de QA; nao autoriza alterar logica financeira, persistencia, schema ou arquivos protegidos.
+
 Regras transversais das quatro skills:
 
 - Nenhuma das quatro skills recebe autoridade sobre areas protegidas.
