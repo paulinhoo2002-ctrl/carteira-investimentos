@@ -22483,6 +22483,96 @@ function dashboardSnapshot(analysisRows){
     contribution:prudentContributionAnalysis()
   };
 }
+function portfolioInsightsSnapshot(source=null){
+  const data=source || (()=>{
+    const dashboard=dashboardSnapshot(assetAnalysisRows());
+    return {...dashboard,rf:rfIntelligenceSnapshot(),quality:dataQualitySnapshot()};
+  })();
+  const insights=[];
+  const severityRank={IMPORTANT:0,ATTENTION:1,INFO:2};
+  const add=(item)=>{
+    if(!item || !item.id || !item.title || !item.description) return;
+    insights.push({
+      id:String(item.id),
+      category:String(item.category||'general'),
+      severity:['INFO','ATTENTION','IMPORTANT'].includes(item.severity)?item.severity:'INFO',
+      title:String(item.title),
+      description:String(item.description),
+      evidence:item.evidence && typeof item.evidence==='object' ? {...item.evidence} : {},
+      relatedRoute:String(item.relatedRoute||'ia'),
+      actionLabel:String(item.actionLabel||'Ver detalhes')
+    });
+  };
+  const concentration=(data.concentration||[]).find(row=>Number.isFinite(Number(row?.share)) && Number(row.current)>0);
+  if(concentration){
+    add({
+      id:'concentration-top-asset',category:'concentration',severity:'INFO',title:'Maior concentração',
+      description:`${concentration.ticker||'Ativo'} representa ${Number(concentration.share).toFixed(1)}% da carteira.`,
+      evidence:{ticker:concentration.ticker||'',share:Number(concentration.share),value:Number(concentration.current)||0},
+      relatedRoute:'ativos',actionLabel:'Ver Ativos'
+    });
+  }
+  const dominantClass=(data.typeRows||[]).find(row=>Number(row.value)>0);
+  if(dominantClass){
+    add({
+      id:'concentration-dominant-class',category:'concentration',severity:'INFO',title:'Classe dominante',
+      description:`${dominantClass.type} concentra ${Number(dominantClass.share||0).toFixed(1)}% do patrimônio atual.`,
+      evidence:{type:dominantClass.type,value:Number(dominantClass.value)||0,share:Number(dominantClass.share)||0},
+      relatedRoute:'ativos',actionLabel:'Ver composição'
+    });
+  }
+  const rf=data.rf||{};
+  if(Number(rf.overdue)>0){
+    add({id:'rf-overdue',category:'fixed-income',severity:'IMPORTANT',title:'Vencimentos vencidos',description:`${Number(rf.overdue)} posição(ões) de Renda Fixa estão vencidas e merecem revisão.`,evidence:{count:Number(rf.overdue)},relatedRoute:'rendaFixa',actionLabel:'Revisar Renda Fixa'});
+  }else if(Number(rf.soon30)>0){
+    add({id:'rf-due-soon',category:'fixed-income',severity:'ATTENTION',title:'Vencimentos próximos',description:`${Number(rf.soon30)} posição(ões) vencem nos próximos 30 dias.`,evidence:{count:Number(rf.soon30),windowDays:30},relatedRoute:'rendaFixa',actionLabel:'Ver vencimentos'});
+  }else if(Number(rf.soon90)>0){
+    add({id:'rf-due-90',category:'fixed-income',severity:'INFO',title:'Agenda de vencimentos',description:`${Number(rf.soon90)} posição(ões) vencem nos próximos 90 dias.`,evidence:{count:Number(rf.soon90),windowDays:90},relatedRoute:'rendaFixa',actionLabel:'Ver vencimentos'});
+  }
+  if(Number(rf.missingDue)>0){
+    add({id:'rf-missing-maturity',category:'fixed-income',severity:'ATTENTION',title:'Renda Fixa sem vencimento',description:`${Number(rf.missingDue)} posição(ões) não possuem data de vencimento informada.`,evidence:{count:Number(rf.missingDue)},relatedRoute:'rendaFixa',actionLabel:'Completar cadastro'});
+  }
+  if(Number(rf.missingCurrent)>0){
+    add({id:'rf-missing-current',category:'data-quality',severity:'ATTENTION',title:'Valor atual de RF incompleto',description:`${Number(rf.missingCurrent)} posição(ões) dependem de revisão do valor atual informado.`,evidence:{count:Number(rf.missingCurrent)},relatedRoute:'rendaFixa',actionLabel:'Revisar valores'});
+  }
+  const income=data.income||{};
+  const currentIncome=Number(income.currentMonthTotal);
+  const averageIncome=Number(income.monthlyAvg);
+  if(income.hasData && Number.isFinite(currentIncome) && Number.isFinite(averageIncome) && averageIncome>0 && currentIncome<averageIncome){
+    add({id:'income-below-average',category:'passive-income',severity:'ATTENTION',title:'Renda passiva abaixo da média',description:`O mês atual soma ${fmt(currentIncome)}, abaixo da média 12M de ${fmt(averageIncome)}.`,evidence:{current:currentIncome,average:averageIncome},relatedRoute:'dividendos',actionLabel:'Ver Dividendos'});
+  }else if(income.hasData && Number.isFinite(currentIncome) && Number.isFinite(averageIncome) && currentIncome>averageIncome){
+    add({id:'income-above-average',category:'passive-income',severity:'INFO',title:'Renda passiva acima da média',description:`O mês atual soma ${fmt(currentIncome)}, acima da média 12M de ${fmt(averageIncome)}.`,evidence:{current:currentIncome,average:averageIncome},relatedRoute:'dividendos',actionLabel:'Ver evolução'});
+  }
+  if(Number(income.target)>0 && Number(income.missing)>0){
+    add({id:'income-goal-gap',category:'goals',severity:'ATTENTION',title:'Meta de renda ainda não alcançada',description:`A média 12M está ${fmt(Number(income.missing))} abaixo da meta mensal cadastrada.`,evidence:{target:Number(income.target),average:averageIncome,missing:Number(income.missing)},relatedRoute:'metas',actionLabel:'Ver Metas'});
+  }
+  const goals=data.financialGoals||{};
+  if(Number(goals.patrimonyTarget)>0 && goals.portfolioCurrent!=null && Number.isFinite(Number(goals.portfolioCurrent))){
+    const gap=Number(goals.patrimonyTarget)-Number(goals.portfolioCurrent);
+    add({id:gap<=0?'patrimony-goal-reached':'patrimony-goal-progress',category:'goals',severity:gap<=0?'INFO':'ATTENTION',title:gap<=0?'Meta patrimonial atingida':'Progresso da meta patrimonial',description:gap<=0?`O patrimônio atual atingiu a meta de ${fmt(Number(goals.patrimonyTarget))}.`:`Faltam ${fmt(gap)} para a meta patrimonial cadastrada.`,evidence:{target:Number(goals.patrimonyTarget),current:Number(goals.portfolioCurrent),missing:Math.max(0,gap)},relatedRoute:'metas',actionLabel:'Ver Metas'});
+  }
+  const quality=data.quality||{};
+  const issueCount=Number(quality.summary?.issueCount ?? quality.issueCount)||0;
+  if(issueCount>0){
+    add({id:'data-quality-review',category:'data-quality',severity:'ATTENTION',title:'Dados pedem revisão',description:`A auditoria encontrou ${issueCount} ocorrência(s) para conferir antes de tirar conclusões.`,evidence:{issueCount},relatedRoute:'auditoria',actionLabel:'Abrir Auditoria'});
+  }
+  const seen=new Set();
+  return insights.filter(item=>{if(seen.has(item.id)) return false; seen.add(item.id); return true;})
+    .sort((a,b)=>severityRank[a.severity]-severityRank[b.severity] || a.category.localeCompare(b.category,'pt-BR') || a.id.localeCompare(b.id));
+}
+function dashboardInsightsPanel(data){
+  const insights=Array.isArray(data?.insights) ? data.insights.slice(0,3) : [];
+  const severityLabel={IMPORTANT:'Importante',ATTENTION:'Atenção',INFO:'Info'};
+  const rows=insights.length ? insights.map(item=>`<div class="premium-exec-row">
+    <div class="premium-exec-left"><div class="premium-exec-title">${esc(item.title)}</div><div class="premium-exec-sub">${esc(item.description)}</div></div>
+    <div class="premium-exec-value ${item.severity==='IMPORTANT'?'rd':item.severity==='ATTENTION'?'am':'gn'}">${severityLabel[item.severity]}</div>
+  </div>`).join('') : '<div class="premium-empty">Nenhum ponto prioritário identificado na base atual.</div>';
+  return `<div class="premium-panel portfolio-insights-panel">
+    <div class="premium-panel-head"><div><div class="premium-panel-title">Insights da carteira</div><div class="premium-panel-sub">Observações derivadas dos dados atuais, sem recomendação de compra ou venda.</div></div><div class="premium-panel-badge">${insights.length} prioritário(s)</div></div>
+    <div class="premium-exec-list">${rows}</div>
+    <div class="premium-panel-actions"><button class="btn bgh" type="button" onclick="go('ia')">Ver todos</button></div>
+  </div>`;
+}
 function dashboardLatestSourceInfo(){
   const rows=[];
   const add=(item,label)=>{
@@ -24039,6 +24129,7 @@ function dashLegacy(){
 function dash(){
   const analysisRows=assetAnalysisRows();
   const data=dashboardSnapshot(analysisRows);
+  data.insights=portfolioInsightsSnapshot({...data,rf:rfIntelligenceSnapshot(),quality:dataQualitySnapshot()});
   const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   return `
     <div class="premium-dashboard index2027-dashboard">
@@ -24060,6 +24151,7 @@ function dash(){
         ${dashboardFinancialGoalsPanel(data)}
         ${dashboardHomeActionsPanel()}
         ${dashboardHomeAttentionPanel(data)}
+        ${dashboardInsightsPanel(data)}
       </div>
     </div>
   `;
