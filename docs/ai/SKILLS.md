@@ -1,5 +1,13 @@
 # Skills locais do projeto
 
+## SKILL SELECTION PROTOCOL
+
+1. Entenda o problema antes de escolher ferramentas.
+2. Consulte este catalogo e confirme o `SKILL.md` fisico.
+3. Selecione somente Skills realmente uteis.
+4. Combine Skills quando houver beneficio real, sem uso mecanico de todas.
+5. Registre uma Skill nova relevante quando ela for descoberta e validada.
+
 ## Mapa operacional
 
 Esta lista descreve as Skills fisicamente presentes em `.agents/skills`.

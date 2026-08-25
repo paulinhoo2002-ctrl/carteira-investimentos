@@ -90,8 +90,10 @@ Apos mudancas visuais, validar obrigatoriamente:
 - Uma branch por objetivo.
 - Uma PR por objetivo.
 - Nao misturar documentacao, visual e funcional na mesma PR.
-- Nao fazer merge sem autorizacao explicita do usuario.
-- Nao marcar Ready sem autorizacao explicita.
+- Em uma fase ja autorizada, analysis, implementacao, testes, browser validation,
+  commit, push, PR e correcoes legitimas de CI podem ocorrer autonomamente quando
+  forem parte natural do gate da fase. Consulte `docs/ai/AGENT_AUTONOMY.md`.
+- Merge e deploy manual continuam gates separados e exigem autorizacao explicita.
 - Nao fazer deploy manual sem autorizacao.
 - Nao iniciar a proxima fase automaticamente.
 - Sempre encerrar documentalmente as fases funcionais antes da proxima.
@@ -163,24 +165,11 @@ Nao alterar sem autorizacao explicita e fase especifica:
 - Nao alterar o bridge legado/moderno sem fase propria.
 - Nao substituir o legado sem paridade funcional comprovada e autorizacao.
 
-## Estado atual do projeto (snapshot)
+## Estado atual
 
-- Branch oficial: `main`.
-- SHA de referencia no momento da criacao deste arquivo:
-  `470d5682fe9831445b9cee5e457c0d21ad66fff5`.
-- Este SHA e um snapshot; nao precisa permanecer inalterado em trabalhos
-  futuros e nao deve ser tratado como gatilho de erro.
-- Fonte oficial e atualizada do estado das fases, do SHA da `main`, da
-  situacao documental e do que esta ou nao autorizado e
-  `docs/project-phases-roadmap.md`. Sempre consulte esse arquivo
-  antes de tomar decisoes sobre fases, PRs ou merge.
-- Fase 214: funcionalmente e documentalmente encerrada.
-- Fase atual: nenhuma.
-- Implementacao ativa: nenhuma.
-- Fases 204C, 210 e 212: continuam nao autorizadas.
-- Fase 216: nao iniciada.
-- Intencao registrada: reduzir progressivamente o tamanho e o acoplamento do
-  `index.html` continua como intencao, sem fase numerada ou autorizada.
+O estado factual de branch, SHA, PRs e fases deve ser consultado no Git e em
+`docs/ai/PROJECT_MEMORY.md` / `docs/project-phases-roadmap.md`. Este bootstrap
+nao conserva snapshots historicos de fases.
 
 ## Modularizacao futura da `index.html`
 

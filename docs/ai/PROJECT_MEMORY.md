@@ -57,6 +57,23 @@ Historical facts and permanent decisions from the project's evolution.
 - Metas, Rebalanceamento e demais telas devem manter a mesma linguagem sem alterar regras financeiras.
 - Dispositivos prioritarios: Samsung Galaxy S25 (~6,2 polegadas) e notebook Dell (~14 polegadas).
 - Viewports de validacao: 390x844, 430x932, 768x1024, 1366x768 e 1920x1080.
+- Breakpoints adicionais quando necessarios: 960x768, 1024x768, 1180x820 e 1181x820.
+
+### Fase 12 - estado consolidado
+
+- `PHASE_12_PIXEL_CLOSE_VISUAL_PARITY`: MERGED.
+- Merge commit: `3e8026aa005ab281176d0a496896fb2318353341`.
+- Production: SUCCESS.
+- Dashboard: executivo, sem voltar a uma evolucao patrimonial gigante.
+- Dividendos: resumo, evolucao e historico sao a hierarquia primaria.
+- Ativos: categorias compactas e inicialmente recolhidas.
+- Rentabilidade: KPIs e comparacao de indices como foco.
+- Rebalancear permanece compacto; Metas preserva a linguagem visual sem redesign gratuito.
+- Sidebar e navegacao lateral sao o padrao desktop principal.
+
+O Visual Master e baseline oficial ativo. Mudancas futuras devem corrigir bugs,
+responsividade, acessibilidade, densidade ou inconsistencias sem destruir a
+composicao aprovada.
 
 Para a politica completa de autonomia, limites e continuidade entre agentes,
 consulte `docs/ai/AGENT_AUTONOMY.md`. Para selecionar ferramentas e Skills,
