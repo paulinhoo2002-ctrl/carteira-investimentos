@@ -126,6 +126,14 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:11px 18px;font-size:13px;white-space:nowrap;flex:0 0 auto;transition:all .2s;min-height:44px}
 .tab:hover{color:var(--text)}.tab.on{border-bottom-color:var(--primary);color:#dbe4ff;font-weight:700}
 @media(max-width:1180px){.tabs-desktop{display:none}.tabs-mobile{display:flex;justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}.tab-menu-panel{left:8px;right:8px;min-width:0}}
+
+/* PHASE 9: desktop navigation stays focused on the primary work areas. */
+@media(min-width:1181px){
+  .hdr-right .wallet-menu,
+  .hdr-right .cfg-menu,
+  .hdr-right .binst,
+  .hdr-right .hdr-top-fab{display:none}
+}
 .wrap{padding:20px;max-width:1360px;margin:0 auto}
 @media(max-width:640px){.wrap{padding:14px}}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px}
@@ -22162,7 +22170,7 @@ function render(){
       </div>`;
   }
 }
-const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','🏛️ Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
 const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
@@ -22191,7 +22199,6 @@ function desktopTabs(){
       <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
     </div>
     ${navTabButton('dashboard','📊 Dashboard')}
-    ${navTabButton('patrimonio','🏛️ Patrimônio')}
     ${navTabButton('ativos','💼 Ativos')}
     ${navTabButton('aportes','💰 Aportes')}
     ${navTabButton('metas','🎯 Metas')}
@@ -28848,7 +28855,6 @@ function mobileMenuDrawer(){
       <div class="sheet-grip"></div>
       <div class="sheet-title">Mais seções</div>
       <div class="sheet-grid">
-        <button onclick="mobileMenuClose();go('patrimonio')"${S.tab==='patrimonio'?' aria-current="page"':''}>🏛️ Patrimônio</button>
         <button onclick="mobileMenuClose();go('rentabilidade')"${S.tab==='rentabilidade'?' aria-current="page"':''}>📈 Rentab.</button>
         <button onclick="mobileMenuClose();go('metas')"${S.tab==='metas'?' aria-current="page"':''}>🎯 Metas</button>
         <button onclick="mobileMenuClose();go('ajudar')"${S.tab==='ajudar'?' aria-current="page"':''}>⚖️ Rebalancear</button>
@@ -28863,6 +28869,7 @@ function mobileMenuDrawer(){
 }
 function go(t){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
+  if(t==='patrimonio') t='dashboard';
   const nextTab=['renda-fixa','desempenho'].includes(t) ? 'ativos' : t;
   S.tab=nextTab;
   S.mobileMenuOpen=false;
