@@ -18,6 +18,19 @@ Agents MUST NOT interrupt work to ask for authorization on every small, safe, re
 
 They MAY analyze, decide, implement, test, correct and refine autonomously when the change falls within the safe scope described below.
 
+## FULL EXECUTION AUTONOMY
+
+For an authorized phase, Codex, OpenCode and Hermes may complete the full local
+cycle without micro-prompts:
+
+```
+analysis -> implementation -> tests -> browser validation -> screenshots
+-> visual review -> safe corrections -> revalidation -> diff review
+```
+
+This includes local commits and push/PR when the phase explicitly reaches that
+gate. Merge and deploy remain owner-gated unless separately authorized.
+
 ---
 
 ## Work Principle

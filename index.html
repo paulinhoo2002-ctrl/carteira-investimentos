@@ -5284,6 +5284,55 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       @media(max-width:390px){.premium-rf-kpi-value{font-size:14px}.premium-rf-row-meta{max-width:190px}}
       </style>
 <style>
+/* PREMIUM SETTINGS 6 */
+.premium-settings-page{display:flex;flex-direction:column;gap:14px}
+.premium-settings-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:2px 2px 0}
+.premium-settings-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.premium-settings-title{margin:3px 0 0;font-size:22px;line-height:1.1;color:var(--text);font-weight:900;letter-spacing:-.025em}
+.premium-settings-subtitle{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.45}
+.premium-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.premium-settings-section{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
+.premium-settings-section-head{display:flex;align-items:center;gap:10px;padding:14px 15px 11px;border-bottom:1px solid var(--border)}
+.premium-settings-section-icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.premium-settings-section-title{color:var(--text);font-size:13px;font-weight:900}
+.premium-settings-section-sub{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.35}
+.premium-settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;border-bottom:1px solid var(--border);min-height:44px}
+.premium-settings-row:last-child{border-bottom:0}
+.premium-settings-row-info{min-width:0;flex:1}
+.premium-settings-row-label{color:var(--text);font-size:12px;font-weight:800}
+.premium-settings-row-desc{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.35}
+.premium-settings-row-action{flex:none}
+.premium-settings-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:10px;font-weight:800;border:1px solid}
+.premium-settings-badge.ok{color:#34d399;background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.22)}
+.premium-settings-badge.warn{color:#fbbf24;background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.22)}
+.premium-settings-badge.off{color:var(--muted);background:var(--surface);border-color:var(--border)}
+.premium-settings-badge.info{color:#a5b4fc;background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.22)}
+.premium-settings-toggle{position:relative;width:42px;height:24px;border-radius:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:background .2s,border-color .2s;flex-shrink:0}
+.premium-settings-toggle.on{background:rgba(99,102,241,.35);border-color:rgba(99,102,241,.45)}
+.premium-settings-toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.premium-settings-toggle.on::after{transform:translateX(18px);background:#a5b4fc}
+.premium-settings-danger{border-color:rgba(248,113,113,.2)}
+.premium-settings-danger .premium-settings-section-head{border-bottom-color:rgba(248,113,113,.15)}
+.premium-settings-danger .premium-settings-section-icon{background:rgba(248,113,113,.1);color:#f87171}
+.premium-settings-danger .premium-settings-row{border-bottom-color:rgba(248,113,113,.1)}
+.premium-settings-empty{padding:20px 15px;color:var(--muted);font-size:12px;text-align:center}
+.premium-settings-wallet-card{padding:12px 15px}
+.premium-settings-wallet-name{color:var(--text);font-size:15px;font-weight:900}
+.premium-settings-wallet-meta{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.35}
+.premium-settings-wallet-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
+.premium-settings-wallet-actions .btn{min-height:38px;font-size:11px;border-radius:10px}
+@media(max-width:1199px){.premium-settings-grid{grid-template-columns:1fr}}
+@media(max-width:767px){
+  .premium-settings-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+  .premium-settings-header{align-items:stretch;flex-direction:column;gap:10px}
+  .premium-settings-title{font-size:19px}
+  .premium-settings-section-head{padding:12px 12px 10px}
+  .premium-settings-row{padding:10px 12px}
+  .premium-settings-wallet-actions{grid-template-columns:1fr 1fr}
+}
+@media(max-width:390px){.premium-settings-title{font-size:17px}}
+</style>
+<style>
   .quick-movement-modal .rf-quick-continue{min-height:44px}
 </style>
 <style>
@@ -7518,6 +7567,166 @@ function backupManagerModal(){
 }
 function closeConfigMenus(){
   document.querySelectorAll('.cfg-menu[open]').forEach(d=>d.open=false);
+}
+function settingsTab(){
+  ensureWallets();
+  const wallets=S.wallets;
+  const activeW=activeWallet();
+  const activeIdx=activeWalletIndex();
+  const walletCount=wallets.length;
+  const totalAssets=(S.assets||[]).length;
+  const totalAportes=(S.aportes||[]).length;
+  const totalProventos=(S.proventos||[]).length;
+  const totalRf=(S.rfEvents||[]).length;
+  const themeLabel=THEME==='light'?'Tema Claro':'Tema Escuro';
+  const themeIcon=THEME==='light'?'🌤️':'🌙';
+  const cloudLabel=FB.user?(FB.cloudLoaded?'Online':'Conectando...'):(FB.ready?'Local':'Offline');
+  const cloudBadge=FB.user?(FB.cloudLoaded?'ok':'warn'):(FB.ready?'off':'off');
+  const userEmail=FB.user?FB.user.email:'';
+  const userName=FB.user?(FB.user.displayName||FB.user.email||''):'';
+  const pwaInstalled=!!PWA.installed;
+  const canSec=canManageSecurity();
+  const isTest=isLocalTestMode();
+  return `<div class="premium-settings-page">
+    <div class="premium-settings-header">
+      <div>
+        <div class="premium-settings-kicker">CONFIGURAÇÕES</div>
+        <h2 class="premium-settings-title">Preferências e administração</h2>
+        <div class="premium-settings-subtitle">Preferências, dados e administração da carteira.</div>
+      </div>
+    </div>
+    <div class="premium-settings-grid">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="premium-settings-section">
+          <div class="premium-settings-section-head">
+            <div class="premium-settings-section-icon" style="background:rgba(167,139,250,.1);color:#a78bfa">📁</div>
+            <div><div class="premium-settings-section-title">Conta e Carteira</div><div class="premium-settings-section-sub">Gerenciar carteiras e conta conectada</div></div>
+          </div>
+          ${isTest ? `
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Modo de teste local</div><div class="premium-settings-row-desc">Dados em memória. Sem Firebase, sem sync.</div></div>
+            <span class="premium-settings-badge warn">Teste</span>
+          </div>` : `
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">${esc(userName||'Sem conta')}</div><div class="premium-settings-row-desc">${FB.user?esc(userEmail):'Faça login para sincronizar na nuvem'}</div></div>
+            ${FB.user ? `<span class="premium-settings-badge ok">Conectado</span>` : `<button class="btn bp" onclick="signInGoogle()" style="font-size:11px;min-height:34px;padding:0 10px">Entrar Google</button>`}
+          </div>
+          ${FB.user ? `
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Nuvem</div><div class="premium-settings-row-desc">Status da sincronização</div></div>
+            <span class="premium-settings-badge ${cloudBadge}">${esc(cloudLabel)}</span>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Sincronizar agora</div><div class="premium-settings-row-desc">Enviar dados locais para a nuvem</div></div>
+            <button class="btn bgh" onclick="uploadLocalToCloud(true)" style="font-size:11px;min-height:34px;padding:0 10px">☁️ Enviar</button>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Sair da conta</div><div class="premium-settings-row-desc">Desconectar do Google</div></div>
+            <button class="btn bgh" onclick="signOutGoogle()" style="font-size:11px;min-height:34px;padding:0 10px">Sair</button>
+          </div>` : ''}
+          `}
+          <div class="premium-settings-wallet-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <div><div class="premium-settings-wallet-name">${esc(activeW?.name||'Carteira')}</div><div class="premium-settings-wallet-meta">${walletCount} carteira${walletCount!==1?'s':''} · ${totalAssets} ativo${totalAssets!==1?'s':''} · ${totalAportes} aporte${totalAportes!==1?'s':''} · ${totalProventos} provento${totalProventos!==1?'s':''} · ${totalRf} renda fixa${totalRf!==1?'s':''}</div></div>
+              <span class="premium-settings-badge info">Ativa</span>
+            </div>
+            ${walletCount>1 ? `
+            <select class="inp" style="width:100%;min-height:38px;padding:6px 10px;margin-top:10px;font-size:12px" onchange="switchWallet(this.value)">
+              ${wallets.map((w,i)=>`<option value="${esc(w.id)}" ${String(w.id)===String(activeW?.id)?'selected':''}>${esc(w.name)}${i===activeIdx?' ·':''}</option>`).join('')}
+            </select>` : ''}
+            <div class="premium-settings-wallet-actions">
+              <button class="btn bgh" onclick="createWallet()">➕ Nova</button>
+              <button class="btn bgh" onclick="duplicateWallet()">⧉ Duplicar</button>
+              <button class="btn bgh" onclick="renameWallet()">✏️ Renomear</button>
+              <button class="btn bgh" onclick="deleteWallet()">🗑️ Excluir</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="premium-settings-section premium-settings-danger">
+          <div class="premium-settings-section-head">
+            <div class="premium-settings-section-icon">⚠️</div>
+            <div><div class="premium-settings-section-title">Zona de risco</div><div class="premium-settings-section-sub">Ações destrutivas — exigem confirmação</div></div>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Resetar carteira ativa</div><div class="premium-settings-row-desc">Apagar todo o histórico, ativos e proventos desta carteira. Outras carteiras não são afetadas.</div></div>
+            <button class="btn bgh" onclick="resetPortfolio()" style="font-size:11px;min-height:34px;padding:0 10px;border-color:rgba(248,113,113,.25);color:#fca5a5">🧹 Reset</button>
+          </div>
+          ${isTest ? `
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Restaurar dados de teste</div><div class="premium-settings-row-desc">Reinicializa a fixture em memória com dados determinísticos.</div></div>
+            <button class="btn bgh" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>
+          </div>` : ''}
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="premium-settings-section">
+          <div class="premium-settings-section-head">
+            <div class="premium-settings-section-icon" style="background:rgba(96,165,250,.1);color:#60a5fa">🎨</div>
+            <div><div class="premium-settings-section-title">Aparência</div><div class="premium-settings-section-sub">Tema e preferências visuais</div></div>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Tema</div><div class="premium-settings-row-desc">${esc(themeLabel)}</div></div>
+            <button class="btn bgh" onclick="toggleTheme()" style="font-size:11px;min-height:34px;padding:0 10px">${esc(themeIcon)} Alternar</button>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</div><div class="premium-settings-row-desc">${S.hideValues?'Valores ocultos na carteira':'Valores visíveis normalmente'}</div></div>
+            <div class="premium-settings-toggle ${S.hideValues?'on':''}" onclick="toggleHideValues()" role="switch" aria-checked="${S.hideValues}" tabindex="0" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleHideValues()}"></div>
+          </div>
+        </div>
+
+        <div class="premium-settings-section">
+          <div class="premium-settings-section-head">
+            <div class="premium-settings-section-icon" style="background:rgba(52,211,153,.1);color:#34d399">💾</div>
+            <div><div class="premium-settings-section-title">Dados e Backup</div><div class="premium-settings-section-sub">Exportar, importar e restaurar dados</div></div>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Exportar backup</div><div class="premium-settings-row-desc">Gera um arquivo JSON com todos os dados da carteira ativa.</div></div>
+            <button class="btn bgh" onclick="exportBackup()" style="font-size:11px;min-height:34px;padding:0 10px">📤 Exportar</button>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Importar backup</div><div class="premium-settings-row-desc">Selecione um arquivo JSON e revise antes de restaurar.</div></div>
+            <button class="btn bgh" onclick="openBackupCenter()" style="font-size:11px;min-height:34px;padding:0 10px">📥 Importar</button>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Centro de backup</div><div class="premium-settings-row-desc">Visualizar resumo e gerenciar importação/exportação.</div></div>
+            <button class="btn bgh" onclick="openBackupCenter()" style="font-size:11px;min-height:34px;padding:0 10px">Abrir</button>
+          </div>
+        </div>
+
+        ${canSec ? `
+        <div class="premium-settings-section">
+          <div class="premium-settings-section-head">
+            <div class="premium-settings-section-icon" style="background:rgba(251,191,36,.1);color:#fbbf24">🔐</div>
+            <div><div class="premium-settings-section-title">Segurança</div><div class="premium-settings-section-sub">Controle de acesso ao aplicativo</div></div>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Controle de acesso</div><div class="premium-settings-row-desc">Defina quem entra e quem mantém a carteira sincronizada.</div></div>
+            <button class="btn bgh" onclick="openAccessSettings()" style="font-size:11px;min-height:34px;padding:0 10px">Configurar</button>
+          </div>
+        </div>` : ''}
+
+        <div class="premium-settings-section">
+          <div class="premium-settings-section-head">
+            <div class="premium-settings-section-icon" style="background:rgba(148,163,184,.1);color:#94a3b8">ℹ️</div>
+            <div><div class="premium-settings-section-title">Sobre</div><div class="premium-settings-section-sub">Informações do aplicativo</div></div>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">${esc(APP_NAME)}</div><div class="premium-settings-row-desc">${esc(isTest?'Modo de teste local · dados em memória':'Dados locais + Google/Firebase')}</div></div>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">PWA</div><div class="premium-settings-row-desc">${pwaInstalled?'App instalado no dispositivo':'Instale como aplicativo para acesso rápido'}</div></div>
+            ${pwaInstalled ? `<span class="premium-settings-badge ok">Instalado</span>` : (PWA.prompt ? `<button class="btn bgh" onclick="installPWA()" style="font-size:11px;min-height:34px;padding:0 10px">📲 Instalar</button>` : `<span class="premium-settings-badge off">Indisponível</span>`)}
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Atualizações</div><div class="premium-settings-row-desc">Verificar se há uma versão mais recente.</div></div>
+            <button class="btn bgh" onclick="checkForAppUpdate({manual:true})" style="font-size:11px;min-height:34px;padding:0 10px">🔄 Verificar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 function closeWalletMenus(){
   document.querySelectorAll('.wallet-menu[open]').forEach(d=>d.open=false);
@@ -21992,10 +22201,8 @@ function desktopTabs(){
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navTabButton('ia','🤖 IA')}
     <button class="tab side-theme" onclick="toggleTheme()" aria-label="Alternar entre tema escuro e claro" title="Alternar tema">🌗 Tema</button>
+    ${navTabButton('settings','⚙️ Configurações')}
     <div class="side-status">Cotações atualizadas às ${sideLu}</div>
-    <div class="side-settings">
-      <button class="tab" onclick="openConfigMenu();closeConfigMenus()" aria-label="Configurações">⚙️ Configurações</button>
-    </div>
   </nav>`;
 }
 function mobileTabs(){
@@ -22081,6 +22288,7 @@ function content(){
   if(S.tab==='auditoria') return dataAuditTab();
   if(S.tab==='relatorios')return reportsTab();
   if(S.tab==='ia')        return iaTab();
+  if(S.tab==='settings')  return settingsTab();
   return'';
 }
 
@@ -28629,7 +28837,7 @@ function mobileBottomNav(){
     <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"${S.tab==='ativos'?' aria-current="page"':''}><span class="ni">💼</span><span>Ativos</span></button>
     <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}><span class="ni">💰</span><span>Aportes</span></button>
     <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"${S.tab==='dividendos'?' aria-current="page"':''}><span class="ni">📅</span><span>Dividendos</span></button>
-    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','irpf'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()" aria-label="Abrir navegação complementar" aria-controls="investMenuDrawer" aria-expanded="${S.mobileMenuOpen?'true':'false'}"><span class="ni">☰</span><span>Menu</span></button>
+    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','irpf','settings'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()" aria-label="Abrir navegação complementar" aria-controls="investMenuDrawer" aria-expanded="${S.mobileMenuOpen?'true':'false'}"><span class="ni">☰</span><span>Menu</span></button>
   </nav>`;
 }
 function mobileMenuDrawer(){
@@ -28648,7 +28856,7 @@ function mobileMenuDrawer(){
         <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>📑 Relatórios</button>
         <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>🤖 IA</button>
         <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>🧾 IRPF</button>
-        <button onclick="mobileMenuClose();openConfigMenu()" style="min-height:44px">⚙️ Configurações</button>
+        <button onclick="mobileMenuClose();go('settings')"${S.tab==='settings'?' aria-current="page"':''}>⚙️ Configurações</button>
       </div>
     </div>
   </div>`;

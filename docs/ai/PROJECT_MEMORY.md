@@ -1,5 +1,12 @@
 # Project Memory
 
+## FULL EXECUTION AUTONOMY
+
+The operational policy for Codex, OpenCode and Hermes is maintained in
+`docs/ai/AGENT_AUTONOMY.md`. Authorized phases may proceed autonomously through
+analysis, implementation, tests, browser validation, correction and review.
+Financial semantics, persistence, merge and deploy remain protected gates.
+
 ## ui-ux-pro-max
 
 - Instalacao oficial validada no clone de infraestrutura com `ui-ux-pro-max-cli` `2.14.1`.

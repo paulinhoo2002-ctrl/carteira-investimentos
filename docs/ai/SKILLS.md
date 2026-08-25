@@ -1,5 +1,15 @@
 # Skills locais do projeto
 
+## FULL EXECUTION AUTONOMY
+
+Codex, OpenCode and Hermes may use the applicable local skills to complete an
+authorized phase end to end: analysis, implementation, tests, browser
+validation, screenshots, visual review, correction and revalidation. Consult
+`docs/ai/AGENT_AUTONOMY.md` for scope and protected-area limits.
+
+Browser Harness and Playwright are approved for real browser validation,
+responsive checks, runtime inspection and screenshots.
+
 ### `ui-ux-pro-max`
 - Uso: inteligencia de design, padroes de UI/UX, design systems, dashboards, charts, tipografia, paletas e heuristicas responsivas.
 - Quando usar: ao revisar ou planejar UI, UX, dashboards, visualizacoes, componentes, acessibilidade e responsividade.
