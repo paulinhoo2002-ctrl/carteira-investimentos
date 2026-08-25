@@ -1,3 +1,13 @@
+# CURRENT PROJECT STATE
+
+- Fase 12, `PHASE_12_PIXEL_CLOSE_VISUAL_PARITY`, foi merged em
+  `3e8026aa005ab281176d0a496896fb2318353341` e Production ficou SUCCESS.
+- O Visual Master premium e o baseline oficial das telas Dashboard, Dividendos,
+  Ativos e Rentabilidade.
+- Consulte `docs/ai/PROJECT_MEMORY.md` para estado e decisoes duradouras.
+
+## HISTORICAL PHASE LOG
+
 # Project Phases Roadmap
 
 Registro oficial e versionado da evolucao readonly do projeto.
