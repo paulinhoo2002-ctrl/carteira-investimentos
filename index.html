@@ -75,6 +75,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 button{cursor:pointer;font-family:inherit}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--scroll-track)}::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:2px}
 .hdr{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 4px 24px rgba(0,0,0,.28)}
+  @media(min-width:1536px){
+    .hdr{position:fixed;left:216px;right:0;width:auto;z-index:15}
+  }
 .hdr-logo{display:flex;align-items:center;gap:10px}
 .hdr-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 2px 12px rgba(99,102,241,.4)}
 .hdr-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
@@ -109,7 +112,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .cfg-menu>summary::-webkit-details-marker{display:none}
 .tabs{background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:58px;z-index:9;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs-desktop{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:6px;overflow:visible;padding:0 10px}
+.tabs-desktop{display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:6px;overflow-x:auto;overflow-y:hidden;padding:0 10px;scrollbar-width:thin}
 .tabs-mobile{display:none;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto}
 .tab-menu{position:relative;flex:0 0 auto}
 .tab-menu>summary{list-style:none;display:flex;align-items:center;gap:6px}
@@ -4600,7 +4603,7 @@ html[data-theme="dark"] .quick-movement-error{
 }
 
 /* Standardize gaps between sections */
-.wrap > * + *,
+.wrap > * + *:not(.rf-event-overlay),
 .premium-dashboard-grid > * + *,
 .patrimony-grid > * + *,
 .div-premium > * + *,
@@ -4947,8 +4950,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .shell{display:block}
   .shell-main{min-width:0}
   @media(min-width:1536px){
-    .tabs.tabs-desktop{position:fixed;top:58px;left:0;height:calc(100vh - 58px);width:216px;flex-direction:column;align-items:stretch;gap:2px;margin:0;padding:12px 10px 16px;border-bottom:0;border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;background:linear-gradient(180deg,var(--panel),var(--surface));scrollbar-width:thin;z-index:20}
+    .tabs.tabs-desktop{position:fixed;top:0;left:0;height:100vh;width:216px;flex-direction:column;align-items:stretch;gap:2px;margin:0;padding:12px 10px 16px;border-bottom:0;border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;background:linear-gradient(180deg,var(--panel),var(--surface));scrollbar-width:thin;z-index:20}
     .shell-main{margin-left:216px}
+    .hdr{left:216px;width:calc(100% - 216px)}
     .tabs-desktop .side-brand{display:flex;align-items:center;gap:9px;padding:2px 6px 12px;margin-bottom:8px;border-bottom:1px solid var(--border)}
     .side-brand-icon{width:32px;height:32px;border-radius:var(--pd-radius-sm);background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;box-shadow:0 2px 10px rgba(99,102,241,.35)}
     .side-brand-name{font-size:13px;font-weight:900;color:var(--text);letter-spacing:-.01em;line-height:1.1}
@@ -4966,6 +4970,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .tabs-desktop .tab-menu-panel{position:static;display:block;border:0;box-shadow:none;background:transparent;padding:2px 0 4px;left:auto;right:auto;min-width:0}
     .tabs-desktop .tab-menu-panel .tab{padding-left:24px;font-size:12px}
     .side-status{display:block;padding:10px 6px 0;margin-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);line-height:1.5}
+    .side-settings{display:block;padding:10px 6px 0;margin-top:auto;border-top:1px solid var(--border)}
+    .side-settings .tab{width:100%;text-align:left;border-bottom:0;border-radius:var(--pd-radius-sm);padding:9px 11px;font-size:12.5px;min-height:40px;color:var(--muted);background:none;border:none}
+    .side-settings .tab:hover{background:rgba(148,163,184,.08);color:var(--text)}
   }
   @media(max-width:1535px){.tabs-desktop .side-brand,.tabs-desktop .side-status,.tabs-desktop .side-theme{display:none}}
   @media print{.shell .tabs-desktop{display:none!important}}
@@ -5181,7 +5188,62 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .assets-premium-mobile-list{display:flex !important}
       }
 
-    </style>
+/* PREMIUM FIXED INCOME 4 */
+      .premium-rf-page{display:flex;flex-direction:column;gap:14px}
+      .premium-rf-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:2px 2px 0}
+      .premium-rf-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+      .premium-rf-title{margin:3px 0 0;font-size:22px;line-height:1.1;color:var(--text);font-weight:900;letter-spacing:-.025em}
+      .premium-rf-subtitle{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.45}
+      .premium-rf-header .btn{min-height:44px}
+      .premium-rf-header .btn.bs{background:var(--surface);border-color:var(--border);color:var(--text)}
+      .premium-rf-header .btn.bs:hover{background:var(--panel)}
+      .premium-rf-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+      .premium-rf-kpi{min-width:0;padding:12px 13px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(145deg,var(--panel),var(--surface));box-shadow:0 10px 24px rgba(0,0,0,.08)}
+      .premium-rf-kpi-label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+      .premium-rf-kpi-value{margin-top:7px;color:var(--text);font-size:17px;font-weight:900;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+      .premium-rf-kpi-note{margin-top:5px;color:var(--muted);font-size:10px;line-height:1.3}
+      .premium-rf-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(260px,1fr);gap:12px;align-items:start}
+      .premium-rf-panel{min-width:0;border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
+      .premium-rf-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 15px 11px;border-bottom:1px solid var(--border)}
+      .premium-rf-panel-title{color:var(--text);font-size:13px;font-weight:900}
+      .premium-rf-panel-sub{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35}
+      .premium-rf-panel-badge{flex:none;padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;font-weight:800}
+      .premium-rf-position-list,.premium-rf-maturity-list{display:flex;flex-direction:column}
+      .premium-rf-position-row,.premium-rf-maturity-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;border-bottom:1px solid var(--border)}
+      .premium-rf-position-row:last-child,.premium-rf-maturity-row:last-child{border-bottom:0}
+      .premium-rf-row-main{min-width:0;flex:1}
+      .premium-rf-row-title{color:var(--text);font-size:12px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .premium-rf-row-value{text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
+      .premium-rf-row-actions{flex:none;display:flex;align-items:center}
+      .premium-rf-row-actions .asset-action-menu-panel{right:0;left:auto}
+      .premium-rf-maturity-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+      .premium-rf-maturity-badge.danger{color:#fecaca;background:#3f1d24;border:1px solid rgba(248,113,113,.24)}
+      .premium-rf-maturity-badge.warn{color:#fde68a;background:#3d2f12;border:1px solid rgba(251,191,36,.24)}
+      .premium-rf-maturity-badge.info{color:#bfdbfe;background:#1e3a5f;border:1px solid rgba(96,165,250,.24)}
+      .premium-rf-maturity-badge.ok{color:#86efac;background:#14532d;border:1px solid rgba(52,211,153,.24)}
+      .premium-rf-maturity-badge.muted{color:var(--muted);background:var(--surface);border:1px solid var(--border)}
+      .premium-rf-empty{padding:24px 15px;color:var(--muted);font-size:12px;text-align:center}
+      .premium-rf-distribution{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+      .premium-rf-distribution .premium-rf-panel{min-width:0}
+      .premium-rf-distribution-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 15px;border-bottom:1px solid var(--border)}
+      .premium-rf-distribution-row:last-child{border-bottom:0}
+      .premium-rf-distribution-label{color:var(--text);font-size:11px;font-weight:750}
+      .premium-rf-distribution-value{color:var(--text);font-size:11px;font-weight:850;font-variant-numeric:tabular-nums;text-align:right}
+      @media(max-width:1199px){.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+      @media(max-width:767px){
+        .premium-rf-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+        .premium-rf-header{align-items:stretch;flex-direction:column;gap:10px}
+        .premium-rf-header .btn{width:100%}
+        .premium-rf-title{font-size:19px}
+        .premium-rf-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+        .premium-rf-kpi{padding:10px}
+        .premium-rf-kpi-value{font-size:15px}
+        .premium-rf-grid,.premium-rf-distribution{grid-template-columns:1fr}
+        .premium-rf-position-row,.premium-rf-maturity-row{padding:10px 12px}
+      }
+      @media(max-width:390px){.premium-rf-kpi-value{font-size:14px}.premium-rf-row-meta{max-width:190px}}
+      </style>
 <style>
   .quick-movement-modal .rf-quick-continue{min-height:44px}
 </style>
@@ -5320,6 +5382,79 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .dashboard-secondary-grid {
       grid-template-columns: minmax(0, 1.45fr) minmax(260px, 1fr);
     }
+  }
+
+  /* ===== Compact highlights panel ===== */
+  .dashboard-home-highlights {
+    max-height: 340px;
+  }
+  .dashboard-home-highlights .premium-panel-head {
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+  }
+  .dashboard-highlights-tabs {
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .dashboard-highlights-tabs .asset-inner-tab {
+    padding: 5px 10px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+  .dash-filters {
+    margin-top: 4px !important;
+    gap: 4px;
+  }
+  .dash-filters .dash-chip {
+    padding: 5px 8px;
+    font-size: 11px;
+    min-height: 32px;
+  }
+  .dashboard-home-highlights .premium-exec-list {
+    gap: 3px;
+  }
+  .dashboard-home-highlights .premium-exec-row {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  .dashboard-home-highlights .premium-panel-actions {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .dashboard-home-highlights .premium-panel-actions .btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  @media (max-width: 767px) {
+    .dashboard-home-highlights {
+      max-height: none;
+    }
+  }
+
+  /* ===== Todos os ativos collapsible ===== */
+  .assets-all-assets {
+    border: 1px solid var(--border);
+    border-radius: var(--pd-radius-lg);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .assets-all-assets-summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px 14px;
+    background: linear-gradient(180deg, var(--panel), var(--surface));
+    border-bottom: 1px solid var(--border);
+  }
+  .assets-all-assets-summary::-webkit-details-marker { display: none; }
+  .assets-all-assets[open] .assets-all-assets-chevron {
+    transform: rotate(180deg);
+  }
+  .assets-all-assets-body {
+    padding: 0 14px 14px;
+  }
+  @media (max-width: 767px) {
+    .assets-all-assets { margin-top: 12px; }
   }
 </style>
 
@@ -7404,6 +7539,17 @@ function configMenu(){
       </div>
     </div>
   </details>`;
+}
+function openConfigMenu(){
+  closeConfigMenus();
+  S.mobileMenuOpen=false;
+  S.mobileTopMenuOpen=false;
+  render();
+  // Open the config menu on next render cycle
+  setTimeout(()=>{
+    const summary = document.querySelector('details.cfg-menu summary');
+    if(summary) summary.click();
+  }, 0);
 }
 function hideValuesToggleButton(){
   return `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:44px;line-height:1;white-space:nowrap;border-radius:999px;letter-spacing:.2px;opacity:.96" onclick="toggleHideValues()"><span class="hdr-mobile-icon">${S.hideValues?'👁️':'🙈'}</span><span class="hdr-mobile-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</span></button>`;
@@ -21800,6 +21946,9 @@ function desktopTabs(){
     ${navTabButton('ia','🤖 IA')}
     <button class="tab side-theme" onclick="toggleTheme()" aria-label="Alternar entre tema escuro e claro" title="Alternar tema">🌗 Tema</button>
     <div class="side-status">Cotações atualizadas às ${sideLu}</div>
+    <div class="side-settings">
+      <button class="tab" onclick="openConfigMenu();closeConfigMenus()" aria-label="Configurações">⚙️ Configurações</button>
+    </div>
   </nav>`;
 }
 function mobileTabs(){
@@ -21825,7 +21974,6 @@ function app(){
       ${hideValuesToggleButton()}
       ${installBox()}
       ${walletSwitchBox()}
-      ${configMenu()}
       ${mobileTopActionButton()}
 
       <div style="text-align:right">
@@ -22705,6 +22853,7 @@ function rfIntelligenceSnapshot(){
       subtype:assetRfSubtype(a),
       indexer:assetRfIndexerLabel(a),
       rate:assetRfContractRate(a)||'taxa não informada',
+      issuer:String(a?.fixed_issuer||a?.issuer||'').trim(),
       applied,
       current,
       profit,
@@ -22763,6 +22912,17 @@ function rfIntelligenceSnapshot(){
     const value=subset.reduce((s,r)=>s+r.current,0);
     return {bucket,count:subset.length,value,share:totalCurrent>0 ? (value/totalCurrent)*100 : 0};
   }).filter(r=>r.count>0);
+  const issuerRows=[...new Set(rows.map(row=>row.issuer).filter(Boolean))].map(issuer=>{
+    const subset=rows.filter(row=>row.issuer===issuer);
+    const value=subset.reduce((s,row)=>s+row.current,0);
+    return {issuer,count:subset.length,value,share:totalCurrent>0 ? (value/totalCurrent)*100 : 0};
+  }).sort((a,b)=>b.value-a.value || a.issuer.localeCompare(b.issuer,'pt-BR'));
+  const indexerRows=[...new Set(rows.map(row=>row.indexer).filter(indexer=>indexer && indexer!=='—'))].map(indexer=>{
+    const subset=rows.filter(row=>row.indexer===indexer);
+    const value=subset.reduce((s,row)=>s+row.current,0);
+    return {indexer,count:subset.length,value,share:totalCurrent>0 ? (value/totalCurrent)*100 : 0};
+  }).sort((a,b)=>b.value-a.value || a.indexer.localeCompare(b.indexer,'pt-BR'));
+  const maturityRows=[...rows].filter(row=>row.days!=null && row.days>=0).sort((a,b)=>a.days-b.days || b.current-a.current).slice(0,6);
   const alertRows=rows
     .flatMap(r=>{
       const severity=r.days==null ? (r.explicit ? 3 : 2) : (r.days<0 ? 0 : r.days<=30 ? 1 : r.days<=90 ? 2 : 4);
@@ -22825,6 +22985,9 @@ function rfIntelligenceSnapshot(){
     missingRate,
     typeRows,
     bucketRows,
+    issuerRows,
+    indexerRows,
+    maturityRows,
     alertRows,
     previewRows,
     tableRows,
@@ -23114,12 +23277,68 @@ function rendaFixaTab(){
         ${attentionBadges || '<span class="note-pill">Nenhum evento próximo.</span>'}
       </div>
     </div>` : '';
+  const nextMaturity=data.maturityRows[0]||null;
+  const resultTone=data.totalProfit>=0?'#34d399':'#f87171';
   const kpis=[
-    dashboardMetricCard('💵','Valor aplicado total',fmt(data.totalApplied),count>0?'Capital informado na carteira':'Cadastre títulos para começar','#c4b5fd','rgba(129,140,248,.16)'),
-    dashboardMetricCard('🏦','Valor líquido total',fmt(data.totalCurrent),data.explicitCount===count ? 'Leitura com valores já informados' : `${data.explicitCount}/${count} títulos com valor atual explícito`,'#34d399','rgba(52,211,153,.14)'),
-    dashboardMetricCard('🎯','Rentabilidade estimada',count>0 ? fmtP(data.totalPct) : '—',count>0 ? 'Calculada com os valores já cadastrados' : 'Sem títulos cadastrados',count>0?(data.totalPct>=0?'#34d399':'#f87171'):'#94a3b8',count>0?(data.totalPct>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)'):'rgba(148,163,184,.12)'),
-    dashboardMetricCard('📅','Vencimentos próximos',count>0 ? (overdue>0 ? `${overdue} vencido${overdue===1?'':'s'}` : soon30>0 ? `${soon30} em 30 dias` : soon90>0 ? `${soon90} em 90 dias` : 'sem urgência') : '—',count>0 ? (data.missingDue ? `${data.missingDue} sem vencimento` : 'Sem eventos imediatos') : 'Cadastre títulos para ver alertas','#ffd76c','rgba(251,191,36,.12)')
-  ];
+    ['Valor atual RF',fmt(data.totalCurrent),data.explicitCount===count?'Valores atuais informados':`${data.explicitCount}/${count} explícitos`,'#34d399'],
+    ['Total aplicado',fmt(data.totalApplied),count?'Capital principal cadastrado':'Cadastre títulos','#a78bfa'],
+    ['Resultado',count?fmt(data.totalProfit):'—',count?`${fmtP(data.totalPct)} estimado`:'Sem posições',resultTone],
+    ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24'],
+    ['Posições abertas',String(count),count?'Títulos acompanhados':'Carteira vazia','#60a5fa']
+  ].map(([label,value,note,tone])=>`<div class="premium-rf-kpi" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label">${esc(label)}</div><div class="premium-rf-kpi-value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note">${esc(note)}</div></div>`);
+
+  function maturityBadge(days){
+    if(days===null || days===undefined) return '<span class="premium-rf-maturity-badge muted">Sem data</span>';
+    if(days<0) return '<span class="premium-rf-maturity-badge danger">Vencido</span>';
+    if(days<=30) return '<span class="premium-rf-maturity-badge warn">≤30 dias</span>';
+    if(days<=90) return '<span class="premium-rf-maturity-badge warn">≤90 dias</span>';
+    if(days<=365) return '<span class="premium-rf-maturity-badge info">≤12 meses</span>';
+    return '<span class="premium-rf-maturity-badge ok">>12 meses</span>';
+  }
+
+  const positionRows=data.previewRows.length ? data.previewRows.map(row=>{
+    const asset=data.assets.find(a=>a.ticker===row.ticker);
+    const getAssetEventId = (typeof rfAssetEventId === 'function') ? rfAssetEventId : (a)=>String(a?.id||a?.assetId||a?.rf_asset_id||'').trim();
+    const assetId=asset?getAssetEventId(asset):null;
+    const menuId=assetId?`rf-pos-menu-${assetId.replace(/[^a-zA-Z0-9_-]/g,'-')}`:'';
+    return `
+    <div class="premium-rf-position-row">
+      <div class="premium-rf-row-main">
+        <div class="premium-rf-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
+        <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}${row.issuer?` · ${esc(row.issuer)}`:''}</div>
+      </div>
+      <div class="premium-rf-row-value">
+        ${row.explicit===false?'Atualização necessária':fmt(row.current)}
+        <div class="premium-rf-row-meta">${row.explicit===false?'':fmt(row.profit)}</div>
+      </div>
+      ${assetId ? `
+      <div class="premium-rf-row-actions">
+        <div class="asset-action-menu" data-asset-actions="${esc(assetId)}">
+          <button type="button" class="btn bgh asset-action" aria-label="Mais ações para ${esc(row.ticker)}" aria-haspopup="menu" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
+          <div id="${esc(menuId)}" class="asset-action-menu-panel" role="menu">
+            <button type="button" role="menuitem" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "aporte"); closeAssetActionMenus()'>Atualizar valor</button>
+            <button type="button" role="menuitem" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "resgate_parcial"); closeAssetActionMenus()'>Resgatar</button>
+            <button type="button" role="menuitem" onclick='edA(${JSON.stringify(assetId)}); closeAssetActionMenus()'>Editar</button>
+            <button type="button" role="menuitem" onclick='closeAssetActionMenus()'>Ver histórico</button>
+          </div>
+        </div>
+      </div>` : ''}
+    </div>`}).join('') : '<div class="premium-rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+
+  const maturityRows=data.maturityRows.length ? data.maturityRows.map(row=>`
+    <div class="premium-rf-maturity-row">
+      <div class="premium-rf-row-main">
+        <div class="premium-rf-row-title">${esc(row.ticker)}</div>
+        <div class="premium-rf-row-meta">${row.due?row.due.toLocaleDateString('pt-BR'):'—'}${row.issuer?` · ${esc(row.issuer)}`:''}</div>
+      </div>
+      <div class="premium-rf-row-value">
+        ${maturityBadge(row.days)}
+        <div class="premium-rf-row-meta">${fmt(row.current)}</div>
+      </div>
+    </div>`).join('') : '<div class="premium-rf-empty">Nenhum vencimento futuro registrado.</div>';
+
+  const distributionRows=(rows,label)=>rows.length ? rows.map(row=>`<div class="premium-rf-distribution-row"><span class="premium-rf-distribution-label">${esc(row[label])}</span><span class="premium-rf-distribution-value">${fmt(row.value)} · ${row.share.toFixed(1)}%</span></div>`).join('') : '<div class="premium-rf-empty">Dados insuficientes para distribuir.</div>';
+
   const typeRows=data.typeRows.length ? data.typeRows.map(row=>`
     <div class="premium-income-row">
       <div class="premium-row-main">
@@ -23128,6 +23347,7 @@ function rendaFixaTab(){
       </div>
       <div class="premium-row-value">${fmt(row.value)}</div>
     </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+
   const bucketRows=data.bucketRows.length ? data.bucketRows.map(row=>`
     <div class="premium-income-row">
       <div class="premium-row-main">
@@ -23136,6 +23356,7 @@ function rendaFixaTab(){
       </div>
       <div class="premium-row-value">${fmt(row.value)}</div>
     </div>`).join('') : '<div class="rf-empty">Sem vencimentos cadastrados.</div>';
+
   const alertRows=data.alertRows.length ? data.alertRows.map(row=>`
     <div class="rf-preview-row">
       <div class="premium-row-main">
@@ -23147,6 +23368,7 @@ function rendaFixaTab(){
         <div class="premium-row-sub">${esc(row.rate||'taxa não informada')}</div>
       </div>
     </div>`).join('') : '<div class="rf-empty">Nenhum alerta crítico no momento.</div>';
+
   const previewRows=data.previewRows.length ? data.previewRows.map(row=>`
       <div class="rf-preview-row">
         <div class="premium-row-main">
@@ -23154,15 +23376,17 @@ function rendaFixaTab(){
           <div class="premium-row-sub">${esc(row.category)} · ${esc(row.indexer)}${row.rate&&row.rate!=='taxa não informada'?` · ${esc(row.rate)}`:''}${row.days!=null?` · ${row.days<0?'vencido':`${Math.abs(row.days)} dia${Math.abs(row.days)===1?'':'s'} para o vencimento`}`:''}</div>
         </div>
         <div class="rf-preview-value">
-                  ${row.explicit === false
-                    ? `<div class="rf-strong" style="color:#c8a84b">Atualização necessária</div>`
-                    : `<div class="${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</div>
-                       <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>`
-                  }
-                </div>
+                   ${row.explicit === false
+                     ? `<div class="rf-strong" style="color:#c8a84b">Atualização necessária</div>`
+                     : `<div class="${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</div>
+                        <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>`
+                   }
+                 </div>
         ${rfEventReceiptsSummaryHtml(row) ? `<div class="rf-event-summary-inline" style="grid-column:1 / -1">${rfEventReceiptsSummaryHtml(row)}</div>` : ''}
       </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+
     const eventCards=rfEventHistoryCards(data.tableRows);
+
     const tableRows=data.tableRows.length ? data.tableRows.map(row=>`
       <tr>
         <td class="rf-strong">${esc(row.ticker)}</td>
@@ -23187,69 +23411,55 @@ function rendaFixaTab(){
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
       <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span></td>
     </tr>`).join('') : '<tr><td colspan="10" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
-  return `<div class="rf-page">
-    <div class="rf-hero">
-      <div class="rf-hero-head">
-        <div>
-          <div class="rf-hero-title">💼 Renda Fixa</div>
-          <div class="rf-hero-sub">Acompanhe aplicações, vencimentos e resultado estimado.</div>
-        </div>
-        <div class="rf-hero-badge ${data.reading.tone}">${esc(data.reading.title)}</div>
-      </div>
-      <div class="rf-hero-note">${esc(data.reading.text)}</div>
-      <div class="rf-metrics">
-        ${kpis.join('')}
-      </div>
-      ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
-    </div>
 
+  return `<div class="rf-page premium-rf-page">
+    <div class="premium-rf-header">
+      <div><div class="premium-rf-kicker">Carteira · acompanhamento</div><div class="premium-rf-title">Renda Fixa</div><div class="premium-rf-subtitle">Visão consolidada das posições, vencimentos e movimentações.</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn bs" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">Atualizar valor</button>
+        <button type="button" class="btn bp" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">+ Nova aplicação</button>
+      </div>
+    </div>
+    <div class="premium-rf-kpis">${kpis.join('')}</div>
+    ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
     ${summaryStrip}
-
-    <div class="rf-grid">
-      <details class="sec" style="margin-top:0">
-        <summary>
-          <div>
-            <div class="sec-title">Tipos cadastrados</div>
-            <div class="sec-meta">Separação por subtipo para leitura rápida da renda fixa.</div>
-          </div>
-          <div class="sec-meta">${data.typeRows.length} tipos · clique para abrir</div>
-        </summary>
-        <div class="sec-body" style="padding-top:10px">
-          <div class="premium-income-list">${typeRows}</div>
-        </div>
-      </details>
-      <div class="rf-panel">
-        <div class="rf-panel-head">
-          <div><div class="rf-panel-title">Vencimentos</div><div class="rf-panel-sub">Vencidos, próximos 30/90 dias e horizonte de 12 meses.</div></div>
-          <div class="rf-panel-badge">${data.alertRows.length} alertas</div>
-        </div>
-        <div class="premium-income-list">${bucketRows}</div>
-        <div class="rf-note">${data.missingDue ? `${data.missingDue} título${data.missingDue===1?'':'s'} sem data de vencimento.` : 'Todas as posições têm vencimento informado ou não foram marcadas como tal.'}</div>
+    <div class="premium-rf-grid">
+      <div class="premium-rf-panel">
+        <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${count} posições</div></div>
+        <div class="premium-rf-position-list">${positionRows}</div>
+      </div>
+      <div class="premium-rf-panel">
+        <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Próximos vencimentos</div><div class="premium-rf-panel-sub">Datas registradas na carteira.</div></div><div class="premium-rf-panel-badge">${data.maturityRows.length}</div></div>
+        <div class="premium-rf-maturity-list">${maturityRows}</div>
       </div>
     </div>
-
-    <div class="rf-grid">
-      <div class="rf-panel">
-        <div class="rf-panel-head">
-          <div><div class="rf-panel-title">Alertas inteligentes</div><div class="rf-panel-sub">Itens que precisam de revisão antes de confiar no cálculo.</div></div>
-          <div class="rf-panel-badge">${data.alertRows.length} itens</div>
-        </div>
-        <div class="rf-preview-list">${alertRows}</div>
-      </div>
-      <details class="sec" style="margin-top:0">
-        <summary>
-          <div>
-            <div class="sec-title">Leitura por título</div>
-            <div class="sec-meta">Resultado estimado com base apenas nos valores já informados.</div>
-          </div>
-          <div class="sec-meta">${data.previewRows.length} destaques · clique para abrir</div>
-        </summary>
-        <div class="sec-body" style="padding-top:10px">
-          <div class="rf-preview-list">${previewRows}</div>
-          <div class="rf-note">A estimativa não inventa rendimento: se faltar valor atual, taxa ou vencimento, o ativo fica como dados incompletos.</div>
-        </div>
-      </details>
+    <div class="premium-rf-distribution">
+      <div class="premium-rf-panel"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por indexador</div><div class="premium-rf-panel-sub">Somente indexadores informados nos títulos.</div></div></div>${distributionRows(data.indexerRows,'indexer')}</div>
+      <div class="premium-rf-panel"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por emissor</div><div class="premium-rf-panel-sub">Somente emissores cadastrados.</div></div></div>${distributionRows(data.issuerRows,'issuer')}</div>
     </div>
+    <details class="sec" style="margin-top:0">
+      <summary><div><div class="sec-title">Detalhes e alertas</div><div class="sec-meta">Vencimentos, dados incompletos e leitura por título.</div></div><div class="sec-meta">${data.alertRows.length} alertas · clique para abrir</div></summary>
+      <div class="sec-body" style="padding-top:10px">
+        <div class="rf-grid">
+          <div class="rf-panel"><div class="rf-panel-head"><div><div class="rf-panel-title">Alertas inteligentes</div><div class="rf-panel-sub">Itens que precisam de revisão antes de confiar no cálculo.</div></div><div class="rf-panel-badge">${data.alertRows.length} itens</div></div><div class="rf-preview-list">${alertRows}</div></div>
+          <div class="rf-panel"><div class="rf-panel-head"><div><div class="rf-panel-title">Tipos cadastrados</div><div class="rf-panel-sub">Separação por subtipo.</div></div></div><div class="premium-income-list">${typeRows}</div></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="sec" style="margin-top:0">
+      <summary>
+        <div>
+          <div class="sec-title">Leitura por título</div>
+          <div class="sec-meta">Resultado estimado com base apenas nos valores já informados.</div>
+        </div>
+        <div class="sec-meta">${data.previewRows.length} destaques · clique para abrir</div>
+      </summary>
+      <div class="sec-body" style="padding-top:10px">
+        <div class="rf-preview-list">${previewRows}</div>
+        <div class="rf-note">A estimativa não inventa rendimento: se faltar valor atual, taxa ou vencimento, o ativo fica como dados incompletos.</div>
+      </div>
+    </details>
 
     <details class="sec" style="margin-top:2px">
       <summary>
@@ -23281,13 +23491,14 @@ function rendaFixaTab(){
         </div>
       </div>
     </details>
+
     <details class="sec" style="margin-top:2px"${(S.rfEventEditor||S.rfMovementEditor)?' open':''}>
       <summary>
         <div>
-          <div class="sec-title">Histórico auditável por ativo</div>
-          <div class="sec-meta">ledger de eventos de renda fixa sem alterar ainda os cálculos consolidados</div>
+          <div class="sec-title">Histórico de Renda Fixa</div>
+          <div class="sec-meta">auditoria de eventos de renda fixa sem alterar ainda os cálculos consolidados</div>
         </div>
-        <div class="sec-meta">${data.tableRows.length} títulos · clique para recolher</div>
+        <div class="sec-meta">${data.tableRows.length} títulos · clique para expandir</div>
       </summary>
       <div class="sec-body">
         ${eventCards}
@@ -23501,7 +23712,6 @@ function dash(){
       </div>
       ${executiveKPIs(data)}
       <div class="dashboard-primary-grid">
-        ${dashboardEvolutionPanel(data)}
         ${dashboardHomeCompositionPanel(data)}
       </div>
       <div class="dashboard-secondary-grid">
@@ -23848,8 +24058,8 @@ function rfMovementFromAssetsModal(){
   const editor=S.rfMovementEditor;
   const asset=editor?.assetId ? getRfAssetByEventId(editor.assetId) : null;
   if(!asset || S.quickMovementOpen) return '';
-  return `<div class="note-overlay" role="dialog" aria-modal="true" aria-label="Movimentação de renda fixa" onclick="if(event.target===this) closeRfMovementEditor()">
-    <div class="note-modal" style="max-width:900px">
+  return `<div class="note-overlay rf-event-overlay" role="dialog" aria-modal="true" aria-label="Movimentação de renda fixa" onclick="if(!event.target.closest('.note-modal')) closeRfMovementEditor()" onkeydown="if(event.key==='Escape') closeRfMovementEditor()">
+    <div class="note-modal" style="max-width:900px" onclick="event.stopPropagation()">
       <div class="note-head">
         <div class="note-title">
           <div><h3>Movimentação de renda fixa</h3><p>Registre aporte ou resgate e atualize o valor aplicado do título.</p></div>
@@ -24322,66 +24532,80 @@ function ativos(){
               <div class="assets-premium-kpi-value">${S.assets.length}</div>
               <div class="assets-premium-kpi-sub">Ativos na carteira</div>
             </div>
-          </div>
+</div>
 
                     <!-- Legacy accordion groups (for test compatibility) -->
-                                        <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
+                                    <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
 
-                                        <!-- Desktop Premium Table -->
-          <div class="assets-premium-table-wrap" id="assets-premium-table-desktop">
-            <table class="assets-premium-table">
-              <thead>
-                <tr>
-                  <th>Ticker</th>
-                  <th>Tipo</th>
-                  <th>Setor</th>
-                  <th>Qtd</th>
-                  <th>PM</th>
-                  <th>ATUAL</th>
-                  <th>Resultado</th>
-                  <th>Rentab.</th>
-                  <th>Alvo</th>
-                  <th>Total</th>
-                  <th>% Cart.</th>
-                  <th>% Ideal</th>
-                  <th>Div/mês</th>
-                  <th>DY</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                ${premiumTableRows || '<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--muted)">Nenhum ativo variável.</td></tr>'}
-              </tbody>
-            </table>
-          </div>
+                                    <!-- Todos os ativos (collapsible) -->
+          <details class="assets-all-assets" ontoggle="this.open ? null : null" style="margin-top:16px">
+            <summary class="assets-all-assets-summary">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <div>
+                  <div style="font-size:13px;font-weight:800;color:var(--text)">Todos os ativos</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px">${S.assets.length} ativos</div>
+                </div>
+                <span class="assets-all-assets-chevron" style="font-size:10px;color:var(--muted);transition:transform .2s">▾</span>
+              </div>
+            </summary>
+            <div class="assets-all-assets-body" style="padding-top:12px">
+              <!-- Desktop Premium Table -->
+              <div class="assets-premium-table-wrap" id="assets-premium-table-desktop">
+                <table class="assets-premium-table">
+                  <thead>
+                    <tr>
+                      <th>Ticker</th>
+                      <th>Tipo</th>
+                      <th>Setor</th>
+                      <th>Qtd</th>
+                      <th>PM</th>
+                      <th>ATUAL</th>
+                      <th>Resultado</th>
+                      <th>Rentab.</th>
+                      <th>Alvo</th>
+                      <th>Total</th>
+                      <th>% Cart.</th>
+                      <th>% Ideal</th>
+                      <th>Div/mês</th>
+                      <th>DY</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${premiumTableRows || '<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--muted)">Nenhum ativo variável.</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
 
-          <!-- RF Desktop Table (separate) -->
-          <div class="assets-premium-table-wrap" id="assets-premium-rf-table-desktop">
-            <table class="assets-premium-table" style="min-width:1080px">
-              <thead>
-                <tr>
-                  <th>Título</th>
-                  <th>Tipo / Indexador</th>
-                  <th>Aplicação</th>
-                  <th>Vencimento</th>
-                  <th>Valor aplicado</th>
-                  <th>Valor atual</th>
-                  <th>Resultado</th>
-                  <th>Rentabilidade</th>
-                  <th>% Cart.</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                ${premiumRfRows || '<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--muted)">Nenhum ativo de renda fixa.</td></tr>'}
-              </tbody>
-            </table>
-          </div>
+              <!-- RF Desktop Table (separate) -->
+              <div class="assets-premium-table-wrap" id="assets-premium-rf-table-desktop">
+                <table class="assets-premium-table" style="min-width:1080px">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Tipo / Indexador</th>
+                      <th>Aplicação</th>
+                      <th>Vencimento</th>
+                      <th>Valor aplicado</th>
+                      <th>Valor atual</th>
+                      <th>Resultado</th>
+                      <th>Rentabilidade</th>
+                      <th>% Cart.</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${premiumRfRows || '<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--muted)">Nenhum ativo de renda fixa.</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
 
-          <!-- Mobile Cards List -->
-          <div class="assets-premium-mobile-list" id="assets-premium-mobile-list">
-            ${mobileCardsHtml || '<div class="assets-premium-empty"><div class="assets-premium-empty-icon">📊</div><div class="assets-premium-empty-title">Nenhum ativo cadastrado</div><div class="assets-premium-empty-text">Registre compras na aba <strong>Aportes</strong> para começar a acompanhar sua carteira.</div><button class="btn bsv assets-premium-empty-action" onclick="go(\'aportes\')">Ir para Aportes</button></div>'}
-          </div>
+              <!-- Mobile Cards List -->
+              <div class="assets-premium-mobile-list" id="assets-premium-mobile-list">
+                ${mobileCardsHtml || '<div class="assets-premium-empty"><div class="assets-premium-empty-icon">📊</div><div class="assets-premium-empty-title">Nenhum ativo cadastrado</div><div class="assets-premium-empty-text">Registre compras na aba <strong>Aportes</strong> para começar a acompanhar sua carteira.</div><button class="btn bsv assets-premium-empty-action" onclick="go(\'aportes\')">Ir para Aportes</button></div>'}
+              </div>
+            </div>
+          </details>
         </div>`;
   const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
   return`<div class="sh">
@@ -28377,6 +28601,7 @@ function mobileMenuDrawer(){
         <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>📑 Relatórios</button>
         <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>🤖 IA</button>
         <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>🧾 IRPF</button>
+        <button onclick="mobileMenuClose();openConfigMenu()" style="min-height:44px">⚙️ Configurações</button>
       </div>
     </div>
   </div>`;

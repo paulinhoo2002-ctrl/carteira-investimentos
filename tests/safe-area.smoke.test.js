@@ -51,7 +51,11 @@ const viewports = [
 function expectations(v) {
   const w = v.width;
   const hdrTopBase = w <= 640 ? 8 : 10;
-  const tabsTopBase = w <= 900 ? 58 : w <= 1180 ? 52 : 58;
+  let tabsTopBase;
+  if (w >= 1536) tabsTopBase = 0;
+  else if (w <= 900) tabsTopBase = 58;
+  else if (w <= 1180) tabsTopBase = 52;
+  else tabsTopBase = 58;
   const hdrLeftBase = w <= 640 ? 10 : w <= 900 ? 12 : 18;
   return {
     hdrTop: hdrTopBase,
