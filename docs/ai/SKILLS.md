@@ -1,5 +1,60 @@
 # Skills locais do projeto
 
+## Mapa operacional
+
+Esta lista descreve as Skills fisicamente presentes em `.agents/skills`.
+Selecione pelo problema e combine somente as que agregarem valor.
+
+### DESIGN / UX
+
+- `interface-design`: hierarquia, fluxos, layout e responsividade. Usar em mudancas de interface; nao usar para dominio financeiro.
+- `frontend-design`: direcao visual e implementacao de telas. Usar para novas composicoes ou refinamentos.
+- `design-system`: tokens, componentes e consistencia de sistema. Usar quando a mudanca atravessar varias telas.
+- `impeccable`: polish, contraste, spacing, acessibilidade e revisao visual.
+- `ui-ux-pro-max`: pesquisa operacional de padroes, tipografia, paleta e dashboards.
+- `ui-styling`: orientacao de componentes UI quando a stack aplicavel exigir.
+
+### BROWSER / VALIDACAO VISUAL
+
+- `playwright`: prova automatizada em navegador real, viewports, interacoes e runtime.
+- `browser-harness`: CDP, screenshots, DOM, overflow e telemetria de navegador. Usar quando disponivel; e ferramenta de QA.
+- `browser-testing-with-devtools`: diagnostico de DOM, estilos, console, rede e eventos; complementar com Playwright para prova.
+
+### REVIEW / ENGINEERING
+
+- `caveman-review`: revisao final de escopo, simplicidade e riscos.
+- `doubt-driven-development`: revisao adversarial obrigatoria em decisoes financeiras, persistencia, datas e dados.
+- `source-driven-development`: decisoes baseadas em documentacao primaria/oficial.
+- `cavecrew`: decidir quando delegacao separada ajuda; nao e obrigatorio.
+
+### OUTRAS
+
+- `archify`: diagramas e documentacao arquitetural.
+- `interview-me`: esclarecer pedidos realmente ambiguos; nao executar automaticamente em loops.
+- `caveman`, `caveman-commit`, `caveman-compress`, `caveman-help` e `caveman-stats`: comunicacao, fechamento e manutencao de contexto.
+
+### Status e auditoria fisica
+
+Skills relevantes foram encontradas em `.agents/skills/`. Ha variantes/artefatos
+que nao devem ser tratados como fontes canonicas sem auditoria: `impeccable.bak`,
+`browser-harness-main` e seus subdiretorios internos. A fonte operacional local
+principal e o `SKILL.md` diretamente dentro de cada pasta da Skill.
+
+### Politica de selecao
+
+O agente deve escolher Skills pelo problema, nao carregar todas mecanicamente.
+Para UI, considerar `interface-design` + `frontend-design` + `impeccable`;
+para browser, `playwright` e/ou `browser-harness`; para revisao,
+`caveman-review`; para dominio financeiro, `doubt-driven-development` e
+`source-driven-development`. A lista nao concede permissao para alterar areas
+protegidas.
+
+### Evidencia da Fase 12
+
+As Skills efetivamente utilizadas na Fase 12 foram:
+`frontend-design`, `interface-design`, `impeccable`, `playwright`,
+`browser-harness` e `caveman-review`.
+
 ## FULL EXECUTION AUTONOMY
 
 Codex, OpenCode and Hermes may use the applicable local skills to complete an
