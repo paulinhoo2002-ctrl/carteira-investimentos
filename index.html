@@ -148,7 +148,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
   .tabs-desktop .tab-menu-panel{position:static;min-width:0;margin:3px 0 0;padding:3px 0 3px 10px;background:transparent;border:0;box-shadow:none}
   .tabs-desktop .tab-menu-panel button{min-height:36px;padding:7px 9px;font-size:11px;background:transparent;border:0}
   .tabs-desktop .hdr-mobile-btn{width:100%;min-height:40px;padding:9px 10px!important;border:1px solid rgba(148,163,184,.18);border-radius:8px;text-align:left;display:flex;align-items:center;gap:7px;font-size:12px!important;color:var(--muted)}
-  .tabs-desktop .side-theme{margin-top:auto;color:var(--muted);border:1px solid rgba(148,163,184,.18)}
+  .tabs-desktop .side-theme{margin-top:6px;color:var(--muted);border:1px solid rgba(148,163,184,.18);min-height:36px;padding:7px 10px}
   .tabs-desktop .side-status{margin:8px 4px 0;padding-top:9px;border-top:1px solid rgba(148,163,184,.14);font-size:9px;color:var(--muted);line-height:1.35}
   .wrap{max-width:1440px;padding:22px 24px 34px}
   .wrap:has(.premium-dashboard),.wrap:has(.div-premium){max-width:1440px}
@@ -170,6 +170,18 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .dashboard-master-secondary .perf-card{height:100%}
 .dashboard-master-primary .dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .dashboard-master-primary .dashboard-home-income .premium-metric{min-height:82px}
+@media(min-width:1181px){
+  .premium-dividends-3 .dividend-primary-grid{grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:10px}
+  .premium-dividends-3 .dividend-primary-grid .div-collapsible[open] .div-collapsible-body{padding:10px 12px}
+  .premium-dividends-3 .dividend-primary-grid .div-timeline{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:stretch;gap:6px;min-height:176px}
+  .premium-dividends-3 .dividend-primary-grid .div-timeline-card{min-width:0;padding:8px 5px;display:flex;flex-direction:column;justify-content:flex-end;gap:5px}
+  .premium-dividends-3 .dividend-primary-grid .div-timeline-value{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .premium-dividends-3 .dividend-primary-grid .div-timeline-sub{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .premium-dividends-3 .dividend-primary-grid .div-timeline-progress{margin-top:auto}
+  .premium-dividends-3 .dividend-executive-kpis{gap:7px}
+  .premium-dividends-3 .dividend-executive-kpi{min-height:72px}
+  .premium-dividends-3 .div-premium-hero{padding:11px 12px}
+}
 @media(max-width:1180px){
   .dashboard-master-primary,.dashboard-master-secondary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 }
@@ -26333,7 +26345,7 @@ function dividendUpcomingSummary(rows){
     ? `${upcoming.length} recebimento(s) · ${fmt(total)} previstos em 60 dias${next?` · próximo ${nextLabel}`:''}`
     : 'Nenhum recebimento futuro nos próximos 60 dias';
 }
-function dividendUpcomingSection(rows){
+function dividendUpcomingSection(rows,expanded=false){
   const upcoming=dividendUpcomingRows(rows);
   const total=upcoming.reduce((sum,row)=>sum+row.value,0);
   const next=upcoming[0];
@@ -26391,7 +26403,8 @@ function dividendUpcomingSection(rows){
     'upcoming',
     'Próximos recebimentos',
     dividendUpcomingSummary(rows),
-    body
+    body,
+    expanded
   );
 }
 function dividendMonthlySummary(rows){
@@ -26416,8 +26429,8 @@ function dividendTimelineSummary(rows){
   const total=stats.total12;
   return `${months} mês(es) · ${fmt(total)} no período`;
 }
-function dividendCompactSectionHeader(section,title,summary,body){
-  return `<details class="div-collapsible">
+function dividendCompactSectionHeader(section,title,summary,body,expanded=false){
+  return `<details class="div-collapsible"${expanded?' open':''}>
     <summary class="div-collapsible-summary">
       <div class="div-collapsible-main">
         <div class="div-collapsible-title">${esc(title)}</div>
@@ -27522,7 +27535,8 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     'received',
     'Últimos recebimentos',
     dividendRecentSummary(rows),
-    dividendRecentList(rows, mode==='received' ? 8 : 5)
+    dividendRecentList(rows, mode==='received' ? 8 : 5),
+    mode==='received'
   );
   const assetSection=dividendCompactSectionHeader(
     'asset',
@@ -27530,17 +27544,18 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendAssetSummary(rows),
     dividendsByAssetView(rows)
   );
-  const monthlySection=dividendMonthlyTableBlock(rows, false);
+  const monthlySection=dividendMonthlyTableBlock(rows, mode==='overview');
   // Guardrail legado: dividendMonthlyTableBlock(rows, true) permanece documentado; a visao geral inicia recolhida por UX.
   const timelineSection=dividendCompactSectionHeader(
     'timeline',
     'Linha do tempo',
     dividendTimelineSummary(rows),
-    dividendMonthlyTimeline()
+    dividendMonthlyTimeline(),
+    mode==='overview' || mode==='timeline'
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
   const dfStats=passiveIncomeGoalStats();
-  const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline())}</div><div>${dividendUpcomingSection(rows)}</div></div>`;
+  const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline(),true)}</div><div>${dividendUpcomingSection(rows,true)}</div></div>`;
   const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendCompactSectionHeader('asset','Distribuição por ativo',dividendAssetSummary(rows),dividendsByAssetView(rows))}</div><div>${dividendDistributionPanel(dfStats)}</div></div>`;
   const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Lista e matriz mensal com filtros oficiais.</span></div>${monthlySection}</div>`;
   const reviewBlock=`<div class="dividend-review-context">${reviewSection}</div>`;
@@ -27561,8 +27576,8 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
       <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
     </div>
     ${frmD()}
-    ${dividendFilterTabs()}
     ${body}
+    ${dividendFilterTabs()}
     ${renderProventoRfLinkModal()}
   </div>`;
 }
