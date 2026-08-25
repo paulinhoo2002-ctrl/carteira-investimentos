@@ -127,6 +127,58 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .tab:hover{color:var(--text)}.tab.on{border-bottom-color:var(--primary);color:#dbe4ff;font-weight:700}
 @media(max-width:1180px){.tabs-desktop{display:none}.tabs-mobile{display:flex;justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}.tab-menu-panel{left:8px;right:8px;min-width:0}}
 
+/* PHASE 11: visual master shell. Desktop navigation is the persistent sidebar;
+   mobile keeps the existing compact navigation and bottom actions. */
+@media(min-width:1181px){
+  .shell-main{margin-left:216px;min-height:100vh}
+  .hdr{height:0;padding:0;border:0;overflow:visible;box-shadow:none;background:transparent;position:relative}
+  .hdr-logo,.hdr-right{display:none}
+  .tabs-desktop{position:fixed;top:0;bottom:0;left:0;right:auto;inset-inline-end:auto;width:216px;height:100vh;display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:16px 10px 14px;overflow-y:auto;overflow-x:hidden;border:0;border-right:1px solid var(--border);background:linear-gradient(180deg,#0d1728 0%,#0a1220 100%);z-index:40}
+  .tabs-desktop .side-brand{margin:0 2px 14px;padding:0 7px 12px;border-bottom:1px solid rgba(148,163,184,.14)}
+  .tabs-desktop .side-brand-icon{width:32px;height:32px;border-radius:9px}
+  .tabs-desktop .side-brand-text{font-size:12px}
+  .tabs-desktop .side-brand-name{font-size:12px;font-weight:900}
+  .tabs-desktop .side-brand-sub{font-size:9px;color:var(--muted)}
+  .tabs-desktop .tab{width:100%;min-height:40px;padding:9px 10px;border:0;border-radius:8px;text-align:left;font-size:12px;display:flex;align-items:center;gap:7px}
+  .tabs-desktop .tab.on{background:rgba(99,102,241,.18);color:#c7d2fe}
+  .tabs-desktop .tab:hover{background:rgba(148,163,184,.08)}
+  .tabs-desktop .tab-menu{width:100%}
+  .tabs-desktop .tab-menu>summary{width:100%;min-height:40px;padding:9px 10px;border-radius:8px}
+  .tabs-desktop .tab-menu>summary.on{background:rgba(99,102,241,.18);color:#c7d2fe}
+  .tabs-desktop .tab-menu-panel{position:static;min-width:0;margin:3px 0 0;padding:3px 0 3px 10px;background:transparent;border:0;box-shadow:none}
+  .tabs-desktop .tab-menu-panel button{min-height:36px;padding:7px 9px;font-size:11px;background:transparent;border:0}
+  .tabs-desktop .hdr-mobile-btn{width:100%;min-height:40px;padding:9px 10px!important;border:1px solid rgba(148,163,184,.18);border-radius:8px;text-align:left;display:flex;align-items:center;gap:7px;font-size:12px!important;color:var(--muted)}
+  .tabs-desktop .side-theme{margin-top:auto;color:var(--muted);border:1px solid rgba(148,163,184,.18)}
+  .tabs-desktop .side-status{margin:8px 4px 0;padding-top:9px;border-top:1px solid rgba(148,163,184,.14);font-size:9px;color:var(--muted);line-height:1.35}
+  .wrap{max-width:1440px;padding:22px 24px 34px}
+  .wrap:has(.premium-dashboard),.wrap:has(.div-premium){max-width:1440px}
+}
+@media(min-width:1181px) and (max-width:1535px){
+  .tabs-desktop{width:200px}
+  .shell-main{margin-left:200px}
+}
+@media(min-width:1536px){.shell-main{margin-left:216px}.tabs-desktop{width:216px}}
+html[data-theme="light"] .tabs-desktop{background:linear-gradient(180deg,#17243a 0%,#101b2e 100%);color:#e8eef8}
+html[data-theme="light"] .tabs-desktop .tab{color:#cbd5e1}
+html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-desktop .tab-menu>summary.on{color:#ffffff;background:rgba(99,102,241,.35)}
+.dashboard-master-primary,.dashboard-master-secondary{display:grid;gap:12px;align-items:stretch}
+.dashboard-master-primary{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+.dashboard-master-secondary{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+.dashboard-master-primary>* ,.dashboard-master-secondary>*{min-width:0;height:100%}
+.dashboard-master-primary .premium-panel{padding:12px}
+.dashboard-master-primary .dashboard-home-highlights{max-height:none}
+.dashboard-master-secondary .perf-card{height:100%}
+.dashboard-master-primary .dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.dashboard-master-primary .dashboard-home-income .premium-metric{min-height:82px}
+@media(max-width:1180px){
+  .dashboard-master-primary,.dashboard-master-secondary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+}
+@media(max-width:640px){
+  .dashboard-master-primary,.dashboard-master-secondary{display:flex;flex-direction:column;gap:9px}
+  .dashboard-master-primary>* ,.dashboard-master-secondary>*{height:auto}
+  .dashboard-master-primary .dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 /* PHASE 9: desktop navigation stays focused on the primary work areas. */
 @media(min-width:1181px){
   .hdr-right .wallet-menu,
@@ -5021,7 +5073,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .side-settings .tab{width:100%;text-align:left;border-bottom:0;border-radius:var(--pd-radius-sm);padding:9px 11px;font-size:12.5px;min-height:40px;color:var(--muted);background:none;border:none}
     .side-settings .tab:hover{background:rgba(148,163,184,.08);color:var(--text)}
   }
-  @media(max-width:1535px){.tabs-desktop .side-brand,.tabs-desktop .side-status,.tabs-desktop .side-theme{display:none}}
+  @media(max-width:1535px){.tabs-desktop .side-status{display:none}}
   @media print{.shell .tabs-desktop{display:none!important}}
 
   /* ===== Dashboard premium: saudação e meta do cabeçalho ===== */
@@ -5551,6 +5603,19 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   }
   @media (max-width: 767px) {
     .assets-all-assets { margin-top: 12px; }
+  }
+</style>
+<style>
+  /* Phase 11: keep dense desktop tables inside the sidebar-adjusted content area. */
+  @media (min-width:1181px) and (max-width:1535px){
+    .ag-table .tw table{min-width:0;width:100%;table-layout:fixed}
+    .ag-table .tw table th,.ag-table .tw table td{overflow:hidden;text-overflow:ellipsis}
+    .ag-table .tw .asset-actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}
+    .ag-table .tw .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
+    .rf-table-wrap table{min-width:0;width:100%;table-layout:fixed}
+    .rf-table-wrap table th,.rf-table-wrap table td{overflow:hidden;text-overflow:ellipsis}
+    .rf-table-wrap .asset-actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}
+    .rf-table-wrap .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
   }
 </style>
 
@@ -22207,6 +22272,7 @@ function desktopTabs(){
     ${navTabButton('ajudar','⚖️ Rebalancear')}
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navTabButton('ia','🤖 IA')}
+    ${hideValuesToggleButton()}
     <button class="tab side-theme" onclick="toggleTheme()" aria-label="Alternar entre tema escuro e claro" title="Alternar tema">🌗 Tema</button>
     ${navTabButton('settings','⚙️ Configurações')}
     <div class="side-status">Cotações atualizadas às ${sideLu}</div>
@@ -22469,7 +22535,7 @@ function dashboardPassiveIncomePanel(data){
     const d=row.date instanceof Date&&!isNaN(row.date.getTime())?row.date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
     return `<div class="dash-receipt-row"><span class="dash-receipt-date">${d}</span><span class="dash-receipt-ticker">${esc(row.ticker||'Renda Fixa')}</span><span class="dash-receipt-rate">${esc(row.rate||'')}</span></div>`;
   }).join(''):'<div class="premium-empty">Sem vencimentos futuros registrados.</div>';
-  return `<div class="premium-panel dashboard-home-income">
+  return `<div class="premium-panel dashboard-home-income dashboard-income-card">
     <div class="premium-panel-head">
       <div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal.</div></div>
       <div class="premium-panel-badge">${esc(monthLabel)}</div>
@@ -23973,14 +24039,16 @@ function dash(){
         <div class="dashboard-page-heading-meta"><span>${data.analysis.length} ativos acompanhados</span></div>
       </div>
       ${executiveKPIs(data)}
-      <div class="dashboard-primary-grid">
+      <div class="dashboard-master-primary">
         ${dashboardHomeCompositionPanel(data)}
+        ${dashboardPassiveIncomePanel(data)}
+        ${dashboardHomeHighlightsPanel()}
       </div>
-      <div class="dashboard-secondary-grid">
-        ${dashboardIncomePanel(data)}
-        ${dashboardReceiptsPanel(data)}
+      <div class="dashboard-master-secondary">
+        ${dashboardFinancialGoalsPanel(data)}
+        ${dashboardHomeActionsPanel()}
+        ${dashboardHomeAttentionPanel(data)}
       </div>
-      ${dashboardHomeHighlightsPanel()}
     </div>
   `;
 }
