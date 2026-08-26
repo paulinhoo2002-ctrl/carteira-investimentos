@@ -25,12 +25,7 @@ function num(v) {
 
 function makeAnalysisHarness(overrides = {}) {
   const indexHtml = read("index.html");
-  const source = extractFunctionBlock(
-    indexHtml,
-    "function prudentContributionAnalysis(){",
-    "function bind(){",
-  );
-
+   const source = read("index.html");
   const renders = [];
   const saves = [];
   const documentState = {
@@ -231,7 +226,7 @@ function makeAnalysisHarness(overrides = {}) {
   };
 
   const exported = vm.runInNewContext(
-    `${source}\n({ prudentContributionAnalysis, ajudarTab, calcRebalance, iaTab, setAIFocus, getAI, generateOverviewAnalysis, generateIncomeAnalysis, generateRebalanceAnalysis, generateConcentrationAnalysis, aiModeMeta, aiNormalizeFocus });`,
+    `${source}\n({prudentContributionAnalysis, ajudarTab, calcRebalance, iaTab, setAIFocus, getAI, generateOverviewAnalysis, generateIncomeAnalysis, generateRebalanceAnalysis, generateConcentrationAnalysis, aiModeMeta, aiNormalizeFocus, normalizeGoals, portfolioInsightsSnapshot, financialGoalsSnapshot, dashboardSnapshot, priorityReviewSnapshot, passiveIncomeGoalTarget, passiveIncomeMonthKey});`,
     context,
   );
 
