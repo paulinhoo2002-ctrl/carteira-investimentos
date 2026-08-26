@@ -377,6 +377,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .ai-metric-note{font-size:10px;color:var(--muted);line-height:1.35}
 .ai-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
 .ai-section{border:1px solid var(--border);background:var(--surface-2);border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;gap:6px}
+.ai-priority-list{display:flex;flex-direction:column;gap:6px}.ai-priority-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.ai-priority-copy{display:flex;flex-direction:column;gap:3px;min-width:0}.ai-priority-copy strong{font-size:12px;color:var(--text)}.ai-priority-copy span{font-size:11px;color:var(--muted);line-height:1.35}.ai-priority-copy small{font-size:10px;color:var(--primary);font-weight:700}.ai-priority-severity{font-size:10px;font-weight:800;white-space:nowrap;color:var(--text)}.ai-priority-important{border-color:rgba(248,113,113,.45)}.ai-priority-attention{border-color:rgba(251,191,36,.4)}.rentability-context{display:flex;flex-direction:column;gap:3px;margin:10px 0;padding:9px 11px;border-left:3px solid var(--primary);background:var(--surface-2);border-radius:0 10px 10px 0;color:var(--muted);font-size:11px;line-height:1.4}.rentability-context strong{color:var(--text);font-size:12px}.rentability-context small{font-size:10px}
 .ai-section-title{font-size:11px;font-weight:800;color:var(--text)}
 .ai-list{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px}
 .ai-list li{font-size:12px;line-height:1.45;color:var(--text)}
@@ -4669,9 +4670,15 @@ html[data-theme="dark"] .quick-movement-error{
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-}
+  }
 
-.card .cs,
+  .aporte-contribution-grid .cv {
+    white-space: normal !important;
+    overflow: visible !important;
+    word-break: break-word !important;
+  }
+
+  .card .cs,
 .metas-kpi-sub,
 .patrimony-insight-note,
 .analysis-summary-sub,
@@ -4956,6 +4963,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .div-premium .div-dist-value{font-size:11px}
 .div-premium .div-mat-toggle-btn{font-size:10px}
 .div-premium .div-mat-table{font-size:11px;line-height:1.45;font-variant-numeric:tabular-nums}
+.div-premium .div-mat-table th{font-size:12px !important;font-weight:700 !important;padding:8px !important}
+.div-premium .div-mat-table td:not(.mat-year):not(.mat-mean):not(.mat-total){font-size:11px !important}
 .div-premium .div-mat-table th,
 .div-premium .div-mat-table td{padding:8px}
 @media print{
@@ -22149,7 +22158,7 @@ function reportsTab(){
   return `<div class="reports-shell reports-premium-shell">
     <section class="reports-hero reports-premium-hero">
       <div class="reports-head">
-        <div><div class="reports-title">Relatórios</div><div class="reports-sub">Visão consolidada de patrimônio, resultado e renda.</div></div>
+        <div><div class="reports-title">Relatórios</div><div class="reports-sub">Investigue períodos, histórico, distribuição e exportações. O Dashboard mostra o que está acontecendo agora.</div></div>
         <div class="reports-premium-head-actions"><div class="reports-filter">
           <button class="${reportsPeriod()==='year'?'on':''}" onclick="setReportsPeriod('year')">Ano atual</button>
           <button class="${reportsPeriod()==='12m'?'on':''}" onclick="setReportsPeriod('12m')">Últimos 12 meses</button>
@@ -22572,6 +22581,36 @@ function dashboardInsightsPanel(data){
     <div class="premium-exec-list">${rows}</div>
     <div class="premium-panel-actions"><button class="btn bgh" type="button" onclick="go('ia')">Ver todos</button></div>
   </div>`;
+}
+function priorityReviewSnapshot(source=null){
+  const items=Array.isArray(source) ? source : portfolioInsightsSnapshot();
+  const rank={IMPORTANT:0,ATTENTION:1,INFO:2};
+  const seen=new Set();
+  return items.filter(item=>{
+    if(!item?.id || seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  }).sort((a,b)=>rank[a.severity]-rank[b.severity] || a.category.localeCompare(b.category,'pt-BR') || a.id.localeCompare(b.id));
+}
+function profitabilityContext(data){
+  const current=Number(data?.cumReturn);
+  const benchmark=Number(data?.currentBench);
+  const benchmarkName=String(data?.bench||'CDI');
+  if(!Number.isFinite(current) || !Number.isFinite(benchmark)) return 'Compare os valores oficiais do período selecionado com a referência escolhida.';
+  const gap=current-benchmark;
+  const direction=gap>=0?'acima':'abaixo';
+  return `No período selecionado, sua carteira ficou ${fmtP(Math.abs(gap))} ${direction} do ${esc(benchmarkName)}. ${benchmarkName==='CDI'?'CDI é uma referência comum de renda fixa.':benchmarkName==='IPCA'?'IPCA é uma referência de inflação.':benchmarkName==='IBOV'?'IBOV é uma referência ampla de ações brasileiras.':'A comparação usa a referência selecionada.'}`;
+}
+function priorityReviewMarkup(items){
+  const labels={IMPORTANT:'Importante',ATTENTION:'Atenção',INFO:'Info'};
+  if(!items.length) return '<div class="ai-empty">Nenhum ponto prioritário identificado nos dados atuais.</div>';
+  return `<section class="ai-section priority-review" aria-labelledby="priority-review-title">
+    <div class="ai-section-title" id="priority-review-title">O que merece atenção</div>
+    <div class="ai-priority-list">${items.map(item=>`<article class="ai-priority-item ai-priority-${item.severity.toLowerCase()}">
+      <div class="ai-priority-copy"><strong>${esc(item.title)}</strong><span>${esc(item.description)}</span><small>${esc(item.actionLabel)}</small></div>
+      <span class="ai-priority-severity">${labels[item.severity]}</span>
+    </article>`).join('')}</div>
+  </section>`;
 }
 function dashboardLatestSourceInfo(){
   const rows=[];
@@ -28369,18 +28408,19 @@ function rentabilidadeTab(){
       color:(currentMonth||0)>=0?'var(--success)':'var(--danger)',
     },
   ];
-  const concentrationNote=topAsset
-    ? `Concentração: top 3 com ${top3Share.toFixed(1)}% da carteira. Maior posição: ${topAsset.ticker} com ${fmt(topAsset.value)} (${normalizeType(topAsset.type||'Ação','Ação')}).`
-    : 'Concentração: sem posições ainda.';
+    const concentrationNote=topAsset
+      ? `Concentração: top 3 com ${top3Share.toFixed(1)}% da carteira. Maior posição: ${topAsset.ticker} com ${fmt(topAsset.value)} (${normalizeType(topAsset.type||'Ação','Ação')}).`
+      : 'Concentração: sem posições ainda.';
 
-  const chartData=view.length?view:points;
-  const chartLabels=chartData.map(p=>p.label);
-  const chartSeries=[
-    {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--primary)', fill:'rgba(79,70,229,.12)', width:2.5, points:false},
-    {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'var(--warning)', width:2.2, points:false},
-  ];
+    const chartData=view.length?view:points;
+    const chartLabels=chartData.map(p=>p.label);
+    const chartSeries=[
+      {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--primary)', fill:'rgba(79,70,229,.12)', width:2.5, points:false},
+      {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'var(--warning)', width:2.2, points:false},
+    ];
+    const profitabilityNote=profitabilityContext({cumReturn:current.cumReturn,currentBench:benchNow,bench});
 
-  const yearsRows=(data.years||[]).map(row=>{
+    const yearsRows=(data.years||[]).map(row=>{
     const cells=row.months.map((p,idx)=>{
       if(!p) return `<td style="color:#2e3f58">-</td>`;
       const v=p.delta||0;
@@ -28403,9 +28443,10 @@ function rentabilidadeTab(){
   </div>`;
 
   return`<div class="page-heading">📈 Rentabilidade</div>
-  <div class="page-sub">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. A rentabilidade da carteira já soma os proventos recebidos no cálculo.</div>
+    <div class="page-sub">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. A rentabilidade da carteira já soma os proventos recebidos no cálculo.</div>
+    <div class="rentability-context" role="note"><strong>Como ler esta comparação</strong><span>${profitabilityNote}</span><small>IPCA representa inflação; IBOV representa uma referência ampla de ações brasileiras.</small></div>
 
-  <div class="rent-layout">
+    <div class="rent-layout">
     <div class="rent-side">
       ${sideCards.map(c=>`<div class="card al dash-card rent-card" style="border-left-color:${c.color}">
         <div class="rent-kpi-label">${esc(c.title)}</div>
@@ -28952,19 +28993,20 @@ function iaTab(){
     }).join('')}
   </div>`:'';
   return `<div class="ai-shell">
-    <div class="ai-head">
-      <div class="ai-head-copy">
-        <div class="ai-title">Análise da Carteira</div>
-        <div class="ai-subtitle">Insights e métricas da sua carteira, com base nos dados cadastrados.</div>
+      <div class="ai-head">
+        <div class="ai-head-copy">
+          <div class="ai-title">Análise da Carteira</div>
+          <div class="ai-subtitle">Insights e métricas da sua carteira, com base nos dados cadastrados.</div>
+        </div>
+        <button class="btn bp ai-cta" onclick="getAI()" ${S.aiStatus==='loading'?'disabled':''}>${esc(meta.cta)}</button>
       </div>
-      <button class="btn bp ai-cta" onclick="getAI()" ${S.aiStatus==='loading'?'disabled':''}>${esc(meta.cta)}</button>
-    </div>
-    <div class="ai-modebar" role="tablist" aria-label="Modo da análise">${focusButtons}</div>
-    ${metricsTable}
-    ${distributionBlock}
-    ${concentrationBlock}
-    <div class="aic" aria-live="polite">${aiRenderState()}</div>
-  </div>`;
+      <div class="ai-modebar" role="tablist" aria-label="Modo da análise">${focusButtons}</div>
+      ${priorityReviewMarkup(priorityReviewSnapshot())}
+      ${metricsTable}
+      ${distributionBlock}
+      ${concentrationBlock}
+      <div class="aic" aria-live="polite">${aiRenderState()}</div>
+    </div>`;
 }
 function setAIFocus(mode){
   S.aiFocus=aiNormalizeFocus(mode);
