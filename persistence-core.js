@@ -70,6 +70,21 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  function sanitizeBackupValue(value, seen = new WeakMap()) {
+    if (Array.isArray(value)) {
+      return value.map((item) => sanitizeBackupValue(item, seen));
+    }
+    if (!value || typeof value !== 'object') return value;
+    if (seen.has(value)) return seen.get(value);
+    const clean = {};
+    seen.set(value, clean);
+    Object.keys(value).forEach((key) => {
+      if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
+      clean[key] = sanitizeBackupValue(value[key], seen);
+    });
+    return clean;
+  }
+
   function buildStoredState(state = {}, normalizeGoalsFn) {
     const s = state && typeof state === 'object' ? state : {};
     return {
@@ -177,9 +192,9 @@
 
   function parseBackupRaw(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const meta = raw.meta && typeof raw.meta === 'object' ? raw.meta : null;
-    const data = raw.data && typeof raw.data === 'object' ? raw.data : raw;
-    const storage = raw.storage && typeof raw.storage === 'object' ? raw.storage : null;
+    const meta = raw.meta && typeof raw.meta === 'object' ? sanitizeBackupValue(raw.meta) : null;
+    const data = raw.data && typeof raw.data === 'object' ? sanitizeBackupValue(raw.data) : sanitizeBackupValue(raw);
+    const storage = raw.storage && typeof raw.storage === 'object' ? sanitizeBackupValue(raw.storage) : null;
     const hasKnown = Array.isArray(data.wallets) || Array.isArray(data.assets) || Array.isArray(data.aportes) || Array.isArray(data.proventos) || Array.isArray(data.rfEvents) || data.goals || data.divGoal !== undefined || data.learnMeta || data.brapiToken !== undefined;
     if (!hasKnown && !(meta && /carteira/i.test(String(meta.app || '')))) return null;
     return { meta, data, storage };
