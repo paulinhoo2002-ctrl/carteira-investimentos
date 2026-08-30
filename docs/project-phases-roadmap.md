@@ -1,5 +1,19 @@
 # CURRENT PROJECT STATE
 
+## Current verified state
+
+- `origin/main`: `4efc66ad0673c552934de2b4d42896148a11057f`.
+- No new product phase is authorized by this checkpoint; continue only from a
+  defined objective and a provenance review.
+- The repository is canonical project memory. Read `AGENTS.md`,
+  `docs/ai/PROJECT_MEMORY.md`, `docs/ai/SKILLS.md` and
+  `docs/ai/AGENT_AUTONOMY.md` before work.
+- Preserve financial semantics, persistence, Firebase/Auth, backup and the
+  modern readonly boundary. Visual changes require browser evidence and must
+  preserve financial readability.
+- Use maintenance by real evidence, not automatic phase creation. Stop for a
+  wrong workspace, unknown baseline, financial risk or destructive operation.
+
 - Fase 12, `PHASE_12_PIXEL_CLOSE_VISUAL_PARITY`, foi merged em
   `3e8026aa005ab281176d0a496896fb2318353341` e Production ficou SUCCESS.
 - O Visual Master premium e o baseline oficial das telas Dashboard, Dividendos,
