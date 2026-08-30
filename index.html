@@ -1248,6 +1248,67 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .rent-card{flex:1;min-height:0;padding:11px 12px 9px}
 .rent-card .dash-value{margin-top:6px}
 .rent-card .dash-foot{min-height:28px}
+.rent-premium{display:flex;flex-direction:column;gap:10px;min-width:0}
+.rent-premium .page-heading{margin-bottom:0}
+.rent-premium .page-sub{margin-bottom:2px;max-width:78ch}
+.rent-premium .rent-side{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;order:0}
+.rent-premium .rent-layout{display:flex;flex-direction:column;gap:10px}
+.rent-premium .rent-main{order:1}
+.rent-premium .rent-main{width:min(100%,1500px);align-self:center}
+.rent-premium .rent-main .sh{align-items:flex-start}
+.rent-premium .rent-filters{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.rent-premium .rent-filters select{min-width:112px}
+.rent-premium .rent-layout + details{order:2;margin-top:0!important}
+.rent-premium .rent-chartbox{min-height:300px}
+.rent-summary-preview{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:8px;
+}
+.rent-summary-chip{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface);
+  padding:9px 10px;
+  min-width:0;
+}
+.rent-summary-chip-label{
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--muted);
+  line-height:1.1;
+}
+.rent-summary-chip-value{
+  margin-top:3px;
+  font-size:14px;
+  font-weight:900;
+  color:var(--text);
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.rent-summary-chip-sub{
+  margin-top:2px;
+  font-size:10px;
+  color:var(--muted);
+  line-height:1.35;
+}
+@media(max-width:767px){
+  .rent-premium{gap:8px}
+  .rent-premium .rent-side{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .rent-premium .rent-card{padding:9px 10px}
+  .rent-premium .rent-card:first-child{grid-column:1/-1}
+  .rent-premium .rent-main .sh{flex-direction:column;gap:7px}
+  .rent-premium .rent-filters{width:100%;justify-content:stretch;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+  .rent-premium .rent-filters select{flex:1 0 130px;min-width:130px}
+  .rent-premium .rent-chartbox{min-height:190px}
+  .rent-premium .rent-layout + details{margin-top:0!important}
+  .rent-summary-preview{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 .rent-table th,.rent-table td{text-align:center;white-space:nowrap}
 .rent-table th:first-child,.rent-table td:first-child{text-align:left}
 .rent-table td{font-variant-numeric:tabular-nums}
@@ -28379,6 +28440,12 @@ function rentabilidadeTab(){
     {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--primary)', fill:'rgba(79,70,229,.12)', width:2.5, points:false},
     {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'var(--warning)', width:2.2, points:false},
   ];
+  const summaryPreview=[
+    {label:'Último mês', value:fmtP(currentMonth||0), sub:'Mudança estimada no fechamento do mês'},
+    {label:'Melhor ano', value:bestYear ? `${bestYear.year} · ${fmtP(bestYear.annual||0)}` : '—', sub:'Maior retorno anual'},
+    {label:'Pior ano', value:worstYear ? `${worstYear.year} · ${fmtP(worstYear.annual||0)}` : '—', sub:'Menor retorno anual'},
+    {label:'Meses analisados', value:`${data.totalMonths}`, sub:`Proventos 12M ${fmt(provCurrent)}`},
+  ];
 
   const yearsRows=(data.years||[]).map(row=>{
     const cells=row.months.map((p,idx)=>{
@@ -28402,7 +28469,7 @@ function rentabilidadeTab(){
     <div class="pli"><span class="pd" style="background:var(--muted)"></span>Baseado na posição atual</div>
   </div>`;
 
-  return`<div class="page-heading">📈 Rentabilidade</div>
+  return`<div class="rent-premium"><div class="page-heading">📈 Rentabilidade</div>
   <div class="page-sub">Controle da carteira com evolução mensal, comparação estimada e histórico por ano. A rentabilidade da carteira já soma os proventos recebidos no cálculo.</div>
 
   <div class="rent-layout">
@@ -28438,6 +28505,13 @@ function rentabilidadeTab(){
       </div>
 
       ${chartLegend}
+      <div class="rent-summary-preview" aria-label="Resumo do histórico mensal">
+        ${summaryPreview.map(item=>`<div class="rent-summary-chip">
+          <div class="rent-summary-chip-label">${esc(item.label)}</div>
+          <div class="rent-summary-chip-value">${esc(item.value)}</div>
+          <div class="rent-summary-chip-sub">${esc(item.sub)}</div>
+        </div>`).join('')}
+      </div>
       <div class="rent-chartbox">
         ${points.length ? lineChart(chartSeries, chartLabels) : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
       </div>
@@ -28459,7 +28533,7 @@ function rentabilidadeTab(){
         <tbody>${yearsRows||'<tr><td colspan="17" style="text-align:center;padding:20px;color:#2e3f58">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
       </table></div></div>
     </div>
-  </details>`;
+  </details></div>`;
 }
 
 function ajudarTab(){
