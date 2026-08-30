@@ -1,5 +1,29 @@
 # Agent Autonomy Policy
 
+## Startup safety lock
+
+Before any repository action, every agent MUST read `AGENTS.md`,
+`docs/ai/PROJECT_MEMORY.md`, `docs/ai/SKILLS.md` and this file, then verify:
+
+```text
+git rev-parse --show-toplevel = C:\Projetos\carteira-investimentos
+```
+
+The agent must also check `git status --short`, the current branch, `HEAD` and
+`origin/main`, and identify pre-existing changes before writing. A different
+workspace is `STOP_WRONG_PROJECT`; an unexpected baseline is
+`UNKNOWN_BASELINE`. Never repair the path by operating in another repository.
+
+## Continuity contract
+
+Critical project knowledge must live in versioned documentation, not only in a
+chat, agent memory, screenshot or temporary output. Final reports must state the
+task, findings, changes and reason, affected files, financial/data/security
+impact, tests/build/browser evidence, errors, limitations, risks, Git/PR/deploy
+state, pending items and the next decision. Reports must be concise, factual and
+must never invent PASS. Use `NEXT_RECOMMENDED_ACTION = NONE` when the work is
+complete.
+
 > **Permanent authorization for Codex, OpenCode, Hermes Agent and other authorized development agents operating in `C:\Projetos\carteira-investimentos`.**
 
 ---
