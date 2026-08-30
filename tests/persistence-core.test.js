@@ -354,6 +354,22 @@ test('parseBackupRaw preserves legacy acceptance and rejection rules', () => {
   assert.equal(PersistenceCore.parseBackupRaw({ divGoal: 9, brapiToken: 'abc' }).data.brapiToken, 'abc');
 });
 
+test('parseBackupRaw strips prototype-pollution keys while preserving normal data', () => {
+  const payload = JSON.parse('{"meta":{"app":"Carteira de Investimentos"},"data":{"wallets":[],"__proto__":{"polluted":true},"constructor":{"prototype":{"hacked":true}},"nested":{"prototype":{"sneaky":true},"ok":1}},"storage":{"civ5":{"__proto__":{"polluted":true},"ok":"yes"}}}');
+
+  const parsed = PersistenceCore.parseBackupRaw(payload);
+  assert.ok(parsed);
+  assert.equal(Object.prototype.polluted, undefined);
+  assert.equal(Object.prototype.hacked, undefined);
+  assert.equal(Object.prototype.sneaky, undefined);
+  assert.equal(Object.prototype.hasOwnProperty.call(parsed.data, '__proto__'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(parsed.data, 'constructor'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(parsed.data.nested, 'prototype'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(parsed.storage.civ5, '__proto__'), false);
+  assert.equal(parsed.data.nested.ok, 1);
+  assert.equal(parsed.storage.civ5.ok, 'yes');
+});
+
 test('backupStats matches the legacy helper-based fixed-income rule', () => {
   const isFixedAsset = asset => normalizeType(asset?.type || asset?.metaType || 'Acao', 'Acao') === 'Renda Fixa';
   const data = {
