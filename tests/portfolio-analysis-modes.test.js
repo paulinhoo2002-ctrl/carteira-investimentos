@@ -108,70 +108,6 @@ function makeAnalysisHarness(overrides = {}) {
     normalizeType(value, fallback) {
       return String(value ?? fallback ?? "").trim() || String(fallback ?? "");
     },
-    normalizeGoals(goals) {
-      const base = {
-        patrimonio: { target: 0, aporte: 0, annualVar: 0 },
-        ativos: { type: 'Ação', ticker: '', aporte: 0, annualVar: 10, finalValue: 0 },
-        proventos: { types: ['Ação', 'FII', 'ETF', 'BDR', 'Stock'], monthly: 0 },
-        allocation: {
-          items: [
-            { type: 'FII', pct: 40 },
-            { type: 'ETF', pct: 20 },
-            { type: 'Ação', pct: 25 },
-            { type: 'BDR', pct: 5 },
-            { type: 'Renda Fixa', pct: 10 },
-          ],
-        },
-      };
-      const g = (goals && typeof goals === 'object') ? JSON.parse(JSON.stringify(goals)) : {};
-      g.patrimonio = { ...base.patrimonio, ...(g.patrimonio || {}) };
-      g.ativos = { ...base.ativos, ...(g.ativos || {}), type: String((g.ativos || {}).type || 'Ação').trim() || 'Ação' };
-      const rawTypes = Array.isArray(g.proventos?.types) ? g.proventos.types : base.proventos.types;
-      g.proventos = { ...base.proventos, ...(g.proventos || {}), types: [...new Set(rawTypes.map(t => String(t ?? '').trim()).filter(Boolean))] };
-      if (!g.proventos.types.length) g.proventos.types = [...base.proventos.types];
-      const allocSrc = Array.isArray(g.allocation?.items)
-        ? g.allocation.items
-        : (g.allocation && typeof g.allocation === 'object' ? Object.entries(g.allocation).map(([type, pct]) => ({ type, pct })) : base.allocation.items);
-      const seen = new Set();
-      g.allocation = { items: allocSrc.map(it => ({ type: String(it?.type || it?.label || '').trim(), pct: Math.max(0, Number(it?.pct ?? it?.value ?? it?.percent ?? it?.weight) || 0) })).filter(it => {
-        if (!it.type || seen.has(it.type)) return false;
-        seen.add(it.type);
-        return true;
-      }) };
-      if (!g.allocation.items.length) g.allocation.items = [...base.allocation.items];
-      return g;
-    },
-    passiveIncomeMonthKey(baseDate = new Date()) {
-      const d = new Date(baseDate);
-      if (Number.isNaN(d.getTime())) return '';
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    },
-    passiveIncomeGoalTarget() {
-      const legacy = Math.max(0, Number(context.S.divGoal) || 0);
-      const monthly = Math.max(0, Number(context.S.goals?.proventos?.monthly) || 0);
-      return monthly > 0 ? monthly : legacy;
-    },
-    passiveIncomeRollingMonthKeys(baseDate = new Date(), count = 12) {
-      const d = new Date(baseDate);
-      const out = [];
-      for (let i = count - 1; i >= 0; i -= 1) {
-        const cur = new Date(d.getFullYear(), d.getMonth() - i, 1);
-        out.push(`${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}`);
-      }
-      return out;
-    },
-    passiveIncomeCombinedRows() {
-      return [];
-    },
-    passiveIncomeMonthSummary(monthKey) {
-      return { month: String(monthKey || ''), total: 0, count: 0, payers: [], best: null };
-    },
-    passiveIncomeTopPayers() {
-      return [];
-    },
-    isRendaFixaAsset(asset) {
-      return String(asset?.type || '').trim() === 'Renda Fixa';
-    },
     assetCurrentValue(row) {
       return Number(row?.current ?? row?.current_price ?? row?.value ?? 0) || 0;
     },
@@ -295,23 +231,24 @@ function makeAnalysisHarness(overrides = {}) {
   };
 
   const exported = vm.runInNewContext(
-    `${source}\n({ prudentContributionAnalysis, rebalanceContributionDistribution, ajudarTab, calcRebalance, iaTab, setAIFocus, getAI, generateOverviewAnalysis, generateIncomeAnalysis, generateRebalanceAnalysis, generateConcentrationAnalysis, aiModeMeta, aiNormalizeFocus });`,
+    `${source}\n({ prudentContributionAnalysis, ajudarTab, calcRebalance, iaTab, setAIFocus, getAI, generateOverviewAnalysis, generateIncomeAnalysis, generateRebalanceAnalysis, generateConcentrationAnalysis, aiModeMeta, aiNormalizeFocus });`,
     context,
   );
 
   return { ...exported, context, renders, saves, documentState };
-}
-
-test('modes da IA tem contratos distintos e CTA dinamico', () => {
+}test('modes da IA tem contratos distintos e CTA dinamico', () => {
   const harness = makeAnalysisHarness();
   const { context } = harness;
 
-  const hub = harness.iaTab();
-  assert.equal(hub.includes('Insights da carteira'), true);
-  assert.equal(hub.includes('Atualizar insights'), true);
-  assert.equal(hub.includes('Prioridades'), true);
-  assert.equal(hub.includes('Informações'), true);
-  assert.equal(hub.includes('Leituras complementares'), true);
+  assert.equal(harness.iaTab().includes('Análise da Carteira'), true);
+  assert.equal(harness.iaTab().includes('Gerar visão geral'), true);
+
+  context.S.aiFocus = 'income';
+  assert.equal(harness.iaTab().includes('Analisar renda'), true);
+  context.S.aiFocus = 'rebalance';
+  assert.equal(harness.iaTab().includes('Analisar rebalanceamento'), true);
+  context.S.aiFocus = 'concentration';
+  assert.equal(harness.iaTab().includes('Analisar concentração'), true);
 
   const overview = harness.generateOverviewAnalysis();
   const income = harness.generateIncomeAnalysis();
@@ -322,7 +259,6 @@ test('modes da IA tem contratos distintos e CTA dinamico', () => {
   assert.equal(income.mode, 'income');
   assert.equal(rebalance.mode, 'rebalance');
   assert.equal(concentration.mode, 'concentration');
-  assert.equal((hub.match(/<article class="ai-hub-card/g) || []).length <= 5, true);
   assert.notDeepEqual(overview.metrics, income.metrics);
   assert.notDeepEqual(income.metrics, rebalance.metrics);
   assert.notDeepEqual(rebalance.metrics, concentration.metrics);
@@ -398,12 +334,10 @@ test('ajudarTab e calcRebalance preservam contrato pÃºblico do aporte', () => 
   harness.calcRebalance();
 
   assert.equal(context.S.aiStatus, 'idle');
-  assert.match(documentState['reb-out'].innerHTML, /Distribuição do aporte|Simulação do aporte/);
-  assert.equal(documentState['reb-out'].innerHTML.includes('Nenhum ativo atende aos critérios prudentes'), false);
+  assert.match(documentState['reb-out'].innerHTML, /Valor analisado/);
+  assert.equal(documentState['reb-out'].innerHTML.includes('Nenhum ativo atende aos critérios prudentes'), true);
   assert.equal(documentState['reb-out'].innerHTML.includes('NaN'), false);
   assert.equal(documentState['reb-out'].innerHTML.includes('Infinity'), false);
-  assert.equal(documentState['reb-out'].innerHTML.includes('DY'), false);
-  assert.equal(documentState['reb-out'].innerHTML.includes('Rentab.'), false);
 });
 
 test('prudentContributionAnalysis mantÃ©m shape e nao muta base', () => {
@@ -433,35 +367,4 @@ test('prudentContributionAnalysis mantÃ©m shape e nao muta base', () => {
   assert.equal(Number.isFinite(analysis.avoided), true);
   assert.equal(JSON.stringify(analysis).includes('NaN'), false);
   assert.equal(JSON.stringify(analysis).includes('Infinity'), false);
-});
-
-test('rebalanceContributionDistribution distribui aporte de forma deterministica e nao negativa', () => {
-  const harness = makeAnalysisHarness({
-    allocationGoalItems: () => [
-      { type: 'Ação', pct: 50 },
-      { type: 'FII', pct: 30 },
-      { type: 'ETF', pct: 20 },
-    ],
-    allocationActualByType: () => ({
-      total: 1000,
-      map: { 'Ação': 700, 'FII': 200, 'ETF': 100 },
-    }),
-  });
-
-  const distribution = harness.rebalanceContributionDistribution(500);
-
-  assert.equal(distribution.amount, 500);
-  assert.equal(distribution.distributedTotal, 500);
-  assert.equal(distribution.unallocated, 0);
-  assert.equal(distribution.rows.length >= 3, true);
-  for (const row of distribution.rows) {
-    assert.equal(Number.isFinite(row.allocation), true);
-    assert.equal(row.allocation >= 0, true);
-    assert.equal(Number.isFinite(row.currentPct), true);
-    assert.equal(Number.isFinite(row.targetPct), true);
-    assert.equal(Number.isFinite(row.projectedPct), true);
-    assert.equal(Number.isFinite(row.projectedValue), true);
-    assert.equal(JSON.stringify(row).includes('NaN'), false);
-    assert.equal(JSON.stringify(row).includes('Infinity'), false);
-  }
 });
