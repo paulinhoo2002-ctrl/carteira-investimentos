@@ -353,6 +353,14 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-study-stat-label{display:none;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .rebalance-study-stat-value{font-size:11px;font-weight:800;color:var(--text)}
 .rebalance-study-value{color:var(--primary);font-size:12px;font-weight:900}
+.rebalance-asset-suggestions{display:flex;flex-direction:column;gap:8px;padding:11px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.rebalance-asset-group{display:flex;flex-direction:column;gap:5px}
+.rebalance-asset-group>strong{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.rebalance-asset-suggestion{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 8px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2)}
+.rebalance-asset-suggestion span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rebalance-asset-suggestion b{font-size:12px;color:var(--text)}
+.rebalance-asset-suggestion small{font-size:10px;color:var(--muted)}
+.rebalance-asset-suggestion>strong{font-size:12px;color:var(--primary);white-space:nowrap}
   .rebalance-study-criteria{font-size:10px;color:var(--muted);line-height:1.35}
 .rebalance-empty{padding:13px;border:1px dashed var(--border);border-radius:12px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.45}
 .rebalance-dy-note{font-size:10px;color:var(--muted);line-height:1.35}
@@ -22890,6 +22898,26 @@ function rebalanceContributionDistribution(contributionAmount, goals=null, actua
     unallocated:Number(Math.max(0, amount-distributed.reduce((sum,row)=>sum+row.allocation,0)).toFixed(2)),
   };
 }
+function rebalanceAssetSuggestions(distribution, assets=S.assets){
+  const source=Array.isArray(assets)?assets:[];
+  const totalCurrent=Math.max(0,Number(distribution?.totalCurrent)||0);
+  return (distribution?.rows||[]).filter(row=>Number(row.allocation)>0).map(row=>{
+    const candidates=source.filter(asset=>normalizeType(asset?.type||metaTicker(asset?.ticker).type||'Ação','Ação')===row.type)
+      .map(asset=>{
+        const current=assetCurrentValue(asset);
+        const target=Math.max(0,Number(asset?.ideal_pct)||0);
+        const currentPct=totalCurrent>0&&Number.isFinite(current)?(current/totalCurrent)*100:0;
+        return {asset,ticker:String(asset?.ticker||asset?.name||'').trim()||'Ativo sem identificação',currentPct,target,deficit:Math.max(0,target-currentPct)};
+      }).filter(item=>item.deficit>0).sort((a,b)=>b.deficit-a.deficit||a.ticker.localeCompare(b.ticker,'pt-BR'));
+    if(!candidates.length) return {...row,suggestions:[]};
+    const weight=candidates.reduce((sum,item)=>sum+item.deficit,0);
+    const cents=Math.max(0,Math.round(Number(row.allocation)*100));
+    const parts=candidates.map(item=>{const exact=cents*item.deficit/weight;const floor=Math.floor(exact);return {...item,cents:floor,remainder:exact-floor};});
+    let remaining=cents-parts.reduce((sum,item)=>sum+item.cents,0);
+    [...parts].sort((a,b)=>b.remainder-a.remainder||b.deficit-a.deficit||a.ticker.localeCompare(b.ticker,'pt-BR')).forEach(item=>{if(remaining>0){item.cents++;remaining--;}});
+    return {...row,suggestions:parts.map(item=>({ticker:item.ticker,amount:item.cents/100,currentPct:item.currentPct,target:item.target,deficit:item.deficit}))};
+  });
+}
 function dashboardSnapshot(analysisRows){
   const portfolio=cx();
   const income=passiveIncomeGoalStats();
@@ -29054,6 +29082,17 @@ function calcRebalance(){
       <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Peso futuro</div><div class="rebalance-study-stat-value">${projectedLabel}</div></div>
     </div>`;
   }).join('');
+  const assetSuggestions=rebalanceAssetSuggestions(distribution);
+  const suggestionGroups=assetSuggestions.filter(group=>group.suggestions.length);
+  const detailedCents=assetSuggestions.reduce((sum,group)=>sum+group.suggestions.reduce((groupSum,item)=>groupSum+Math.round(Number(item.amount)*100),0),0);
+  const allocatedCents=Math.round(Number(distribution.distributedTotal)*100);
+  const undetailedCents=Math.max(0,allocatedCents-detailedCents);
+  const detailNote=undetailedCents>0?`<div class="rebalance-study-sub">${fmt(undetailedCents/100)} permanece detalhado por classe porque não há meta individual oficial cadastrada.</div>`:'';
+  const suggestionHtml=suggestionGroups.length?`<section class="rebalance-asset-suggestions" aria-labelledby="rebalance-asset-suggestions-title">
+    <div class="rebalance-study-title" id="rebalance-asset-suggestions-title">Sugestões por ativo</div>
+    <div class="rebalance-study-sub">Detalhamento do aporte por ativos abaixo da meta, sem sugerir vendas.</div>${detailNote}
+    ${suggestionGroups.map(group=>`<div class="rebalance-asset-group"><strong>${esc(group.type)}</strong>${group.suggestions.map(item=>`<div class="rebalance-asset-suggestion"><span><b>${esc(item.ticker)}</b><small>${item.currentPct.toFixed(1)}% atual · ${item.target.toFixed(1)}% meta</small></span><strong>${fmt(item.amount)}</strong></div>`).join('')}</div>`).join('')}
+  </section>`:'<div class="rebalance-empty">Nenhum ativo abaixo da meta individual para detalhar este aporte.</div>';
   out.innerHTML=`${summary}
     <div class="rebalance-study">
       <div class="rebalance-study-head">
@@ -29066,7 +29105,7 @@ function calcRebalance(){
       <div class="rebalance-study-labels"><div>Classe</div><div>Atual</div><div>Meta</div><div>Diferença</div><div>Aporte sugerido</div><div>Peso futuro</div></div>
       ${studyRows}
       <div class="rebalance-dy-note">A distribuição usa apenas a alocação atual, a meta cadastrada e o valor do aporte. Não considera desempenho passado nem recomendação de mercado.</div>
-    </div>`;
+    </div>${suggestionHtml}`;
 }
 
 // ══════════════════════════════════════
