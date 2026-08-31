@@ -20389,6 +20389,17 @@ function reportsSnapshot(){
     const audit=dataAuditSnapshot();
     const filteredProventos=(S.proventos||[]).filter(p=>reportsDateAllowed(p.date));
     const filteredAportes=(S.aportes||[]).filter(a=>reportsDateAllowed(a.date));
+    const movementCounts=filteredAportes.reduce((counts,movement)=>{
+      const operation=String(movement?.movementKind||movement?.kind||movement?.operation||movement?.op||'').trim().toLowerCase();
+      const type=String(movement?.type||movement?.asset_type||'').trim().toLowerCase();
+      const kind=operation==='venda'||operation==='sell'?'venda':(operation==='provento'||operation==='dividendo'||operation==='dividendos'||operation==='jcp'||operation==='rendimento'?'provento':(operation==='renda-fixa'||type==='renda fixa'||type==='tesouro direto'?'renda-fixa':(operation==='outro'||operation==='neutro'||type==='outro'?'outro':'compra')));
+      if(kind==='venda') counts.vendas++;
+      else if(kind==='renda-fixa') counts.rendaFixa++;
+      else if(kind==='provento') counts.proventos++;
+      else if(kind==='compra') counts.compras++;
+      else counts.outros++;
+      return counts;
+    },{compras:0,vendas:0,rendaFixa:0,proventos:filteredProventos.length,outros:0});
     return {
       generatedAt:new Date().toISOString(),
       period:reportsPeriod(),
@@ -20400,6 +20411,7 @@ function reportsSnapshot(){
       assetsCount:(S.assets||[]).length,
       proventosCount:filteredProventos.length,
       aportesCount:filteredAportes.length,
+      movementCounts,
       fixedCount:fixed.assets.length,
       auditCount:audit.alerts.length
     };
@@ -22448,6 +22460,7 @@ function reportsTab(){
     .sort((a,b)=>b.value-a.value);
   const income=data.income||passiveIncomeGoalStats();
   const fixed=data.fixed||rfIntelligenceSnapshot();
+  const movementCounts=data.movementCounts||{};
   const nextFixed=(fixed.maturityRows||[])[0]||null;
   const resultTone=Number(data.portfolio.tG)||0>0?'positive':Number(data.portfolio.tG)||0<0?'negative':'neutral';
   const maxEvolution=Math.max(...patrimony.months.map(row=>Number(row.cumulative)||0),1);
@@ -22476,7 +22489,7 @@ function reportsTab(){
   return `<div class="reports-shell reports-premium-shell">
     <section class="reports-hero reports-premium-hero">
       <div class="reports-head">
-        <div><div class="reports-title">Relatórios</div><div class="reports-sub">Visão consolidada de patrimônio, resultado e renda.</div></div>
+        <div><div class="reports-title">Relatórios</div><div class="reports-sub">Análise, conferência e exportação da carteira.</div></div>
         <div class="reports-premium-head-actions"><div class="reports-filter">
           <button class="${reportsPeriod()==='year'?'on':''}" onclick="setReportsPeriod('year')">Ano atual</button>
           <button class="${reportsPeriod()==='12m'?'on':''}" onclick="setReportsPeriod('12m')">Últimos 12 meses</button>
@@ -22499,6 +22512,7 @@ function reportsTab(){
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Distribuição da carteira</h2><p>Valor atual por classe.</p></div><span class="reports-badge">${allocationRows.length} classes</span></div><div class="reports-data-list">${allocationList}</div></article>
     </section>
     <section class="reports-premium-secondary-grid">
+      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Movimentações do período</h2><p>Fluxo registrado, sem confundir venda ou resgate com aporte.</p></div><span class="reports-badge">${data.aportesCount+data.proventosCount} registros</span></div><div class="reports-stat-list"><div><span>Compras</span><strong>${movementCounts.compras||0}</strong></div><div><span>Vendas</span><strong>${movementCounts.vendas||0}</strong></div><div><span>Aplicações RF</span><strong>${movementCounts.rendaFixa||0}</strong></div><div><span>Proventos</span><strong>${movementCounts.proventos||0}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('aportes');return false">Conferir movimentações</a></article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${income.hasData?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido em 12M</span><strong>${fmt(income.total12)}</strong></div><div><span>Média mensal</span><strong>${fmt(income.monthlyAvg)}</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda Fixa</h2><p>Resumo da valuation oficial.</p></div><span class="reports-badge">${fixed.assets?.length||0} posições</span></div><div class="reports-stat-list"><div><span>Valor atual</span><strong>${fmt(fixed.totalCurrent)}</strong></div><div><span>Total aplicado</span><strong>${fmt(fixed.totalApplied)}</strong></div><div><span>Resultado</span><strong class="reports-${Number(fixed.totalProfit)||0>=0?'positive':'negative'}">${fmt(fixed.totalProfit)}</strong></div></div><div class="reports-next-maturity">Próximo vencimento <strong>${nextFixed?esc(nextFixed.ticker||'Título RF'):'—'}</strong><small>${nextFixed?.due?nextFixed.due.toLocaleDateString('pt-BR'):'Nenhum vencimento futuro registrado.'}</small></div><a class="reports-inline-link" href="#" onclick="go('ativos');return false">Ver Renda Fixa</a></article>
       <article class="reports-panel reports-audit-panel"><div class="reports-panel-head"><div><h2>Qualidade dos dados</h2><p>Conferência sem alterar registros.</p></div><span class="reports-badge reports-badge-${auditTone}">${data.auditCount?'Atenção':'Tudo certo'}</span></div><div class="reports-audit-count">${data.auditCount}<span>alertas para conferência</span></div><a class="reports-inline-link" href="#" onclick="go('auditoria');return false">Abrir Auditoria</a></article>
