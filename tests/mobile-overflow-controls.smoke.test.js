@@ -75,7 +75,7 @@ for (const viewport of viewports) {
 
       // IA: todos os modos visiveis, Concentracao nunca cortada, alvo >= 44px
       await page.evaluate(() => go('ia'));
-      await page.waitForSelector('.ai-modebar', { state: 'visible', timeout: 5000 });
+      await page.locator('.ai-modebar:visible').waitFor({ state: 'visible', timeout: 5000 });
       const ia = await page.evaluate(() => {
         const vw = window.innerWidth;
         const bar = document.querySelector('.ai-modebar');

@@ -212,7 +212,7 @@ test('dividendDistributionRow isAbsent=false zero renderiza R$ 0,00', () => {
 test('historico mensal abre por padrao no overview', () => {
   const indexHtml = read('index.html');
   assert.ok(indexHtml.includes("function dividendMonthlyHistoryPremium(rows,startOpen=false){"));
-  assert.ok(indexHtml.includes('dividendMonthlyTableBlock(rows, true)'));
+  assert.ok(indexHtml.includes('dividendMonthlyTableBlock(rows, mode===\'monthly\')'));
 });
 
 test('dividendDistributionPeriod estado default e reset', () => {

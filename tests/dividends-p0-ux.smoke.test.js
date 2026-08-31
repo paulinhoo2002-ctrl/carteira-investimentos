@@ -86,7 +86,7 @@ viewports.forEach(vp => {
       assert.ok(await registerBtn.isVisible() && await registerBtn.isEnabled(), 'Registrar provento button not visible or disabled');
 
       // 3. Tabs visíveis
-      const tabs = page.locator('.div-premium-tab');
+      const tabs = page.locator('.div-premium-tab:visible');
       const tabCount = await tabs.count();
       assert.ok(tabCount > 0, 'No tabs found');
       for (let i = 0; i < tabCount; i++) {
