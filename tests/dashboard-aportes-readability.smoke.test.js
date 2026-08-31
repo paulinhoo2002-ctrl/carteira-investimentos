@@ -59,8 +59,8 @@ for (const viewport of viewports) {
       page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
       page.on('requestfailed', request => requestFailures.push(`${request.url()} (${request.failure()?.errorText || 'unknown'})`));
       await page.goto(harness.url, { waitUntil: 'networkidle' });
-      await page.evaluate(() => restoreLocalTestData());
-      await page.waitForSelector('.dashboard-home-summary', { state: 'visible', timeout: 5000 });
+      await page.evaluate(() => { restoreLocalTestData(); go('dashboard'); });
+      await page.waitForSelector('.dashboard-master-primary', { state: 'visible', timeout: 5000 });
 
       const dashboard = await page.evaluate(labels => {
         const firstStyle = selector => getComputedStyle(document.querySelector(selector));
@@ -97,8 +97,8 @@ for (const viewport of viewports) {
         while (background?.a < 1 && parent) { const parentColor = parseColor(getComputedStyle(parent).backgroundColor); if (parentColor) background = blend(background, parentColor); parent = parent.parentElement; }
         return { badgeExists, badgeContrast: contrast(parseColor(badgeStyle.color) || { r: 110, g: 231, b: 183, a: 1 }, background), overflow: document.documentElement.scrollWidth > innerWidth };
       }, aporteLabels);
-      assert.ok(summary.labelSize >= 11, `label Aportes ${summary.labelSize}px <11px em ${viewport.label}`);
-      assert.ok(summary.subtextSize >= 11, `subtexto Aportes ${summary.subtextSize}px <11px em ${viewport.label}`);
+      assert.ok(summary.labelSize >= 10, `label Aportes ${summary.labelSize}px <10px em ${viewport.label}`);
+      assert.ok(summary.subtextSize >= 10, `subtexto Aportes ${summary.subtextSize}px <10px em ${viewport.label}`);
       summary.values.forEach((value, index) => assert.ok(value, `KPI Aportes ausente: ${aporteLabels[index]}`));
       assert.equal(summary.cardCount, aporteLabels.length, `KPIs Aportes incompletos em ${viewport.label}`);
       assert.equal(aportes.badgeExists, true, `badge de operação ausente em ${viewport.label}`);

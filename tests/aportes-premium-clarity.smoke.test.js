@@ -75,7 +75,7 @@ for (const viewport of viewports) {
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('aportes'));
       await page.waitForSelector('.aporte-premium', { state: 'visible', timeout: 5000 });
-      await page.waitForSelector('.ap-summary', { state: 'visible', timeout: 5000 });
+      await page.waitForSelector('.aporte-contribution-grid', { state: 'visible', timeout: 5000 });
 
       const readSnapshot = () => page.evaluate(expectedLabels => {
         const visible = element => {
@@ -89,7 +89,10 @@ for (const viewport of viewports) {
           const card = labelNode?.closest('.card');
           const value = card?.querySelector('.cv');
           const valueBox = value?.getBoundingClientRect();
-          return { label, visible: visible(card) && visible(value), value: value?.textContent.trim() || '', valueHeight: valueBox?.height || 0, overflow: value ? getComputedStyle(value).overflow : '' };
+          const cardBox = card?.getBoundingClientRect();
+          const style = value ? getComputedStyle(value) : null;
+          const clipped = !valueBox || !cardBox || valueBox.left < cardBox.left || valueBox.right > cardBox.right || valueBox.top < cardBox.top || valueBox.bottom > cardBox.bottom || (style?.textOverflow === 'ellipsis' && value.scrollWidth > value.clientWidth);
+          return { label, visible: visible(card) && visible(value), value: value?.textContent.trim() || '', valueHeight: valueBox?.height || 0, clipped };
         });
         const cta = [...document.querySelectorAll('.ap-toolbar .btn')].find(button => button.textContent.includes('Nova movimenta'));
         const tabs = [...document.querySelectorAll('.aporte-view-tab')];
