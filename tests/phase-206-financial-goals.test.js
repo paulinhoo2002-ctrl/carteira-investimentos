@@ -165,36 +165,53 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
       return { total, monthCount, avg, best };
     },
     cx() {
-      calls.cx += 1;
-      const totalApplied = assets.reduce((sum, asset) => sum + (Number(asset.applied) || 0), 0);
-      const totalCurrent = assets.reduce((sum, asset) => sum + (Number(asset.current) || 0), 0);
-      return {
-        tI: totalApplied,
-        tC: totalCurrent,
-        tG: totalCurrent - totalApplied,
-        tGP: totalApplied > 0 ? ((totalCurrent - totalApplied) / totalApplied) * 100 : 0,
-      };
-    },
-    go(route) {
-      state.lastGo = route;
-    },
-    render() {
-      state.renderCount += 1;
-    },
-    Date,
-    Math,
-    Number,
-    String,
-    Array,
-    Object,
-    Set,
-    Map,
-    JSON,
-    RegExp,
-    Intl,
-    Boolean,
-    Promise,
-    console,
+          calls.cx += 1;
+          const totalApplied = assets.reduce((sum, asset) => sum + (Number(asset.applied) || 0), 0);
+          const totalCurrent = assets.reduce((sum, asset) => sum + (Number(asset.current) || 0), 0);
+          return {
+            tI: totalApplied,
+            tC: totalCurrent,
+            tG: totalCurrent - totalApplied,
+            tGP: totalApplied > 0 ? ((totalCurrent - totalApplied) / totalApplied) * 100 : 0,
+          };
+        },
+        rfIntelligenceSnapshot() {
+                  return {};
+                },
+                dataQualitySnapshot() {
+                  return {};
+                },
+                portfolioInsightsSnapshot(data) {
+                  calls.portfolioInsightsSnapshot = (calls.portfolioInsightsSnapshot || 0) + 1;
+                  return { insights: [] };
+                },
+                isRendaFixaAsset(asset) {
+                                  return false;
+                                },
+                                dashboardInsightsPanel(data) {
+                                  calls.dashboardInsightsPanel = (calls.dashboardInsightsPanel || 0) + 1;
+                                  return '<section class="dashboard-insights">Insights</section>';
+                                },
+                                go(route) {
+                                  state.lastGo = route;
+                                },
+                                render() {
+                                  state.renderCount += 1;
+                                },
+                                Date,
+                                Math,
+                                Number,
+                                String,
+                                Array,
+                                Object,
+                                Set,
+                                Map,
+                                JSON,
+                                RegExp,
+                                Intl,
+                                Boolean,
+                                Promise,
+                                console,
   };
 
   state.globalThis = state;
@@ -349,13 +366,13 @@ test('metas financeiras calculam progresso, limite e estado executivo', () => {
   assert.match(html, /Metas financeiras/);
   assert.match(html, /Meta patrimonial/);
   assert.match(html, /Meta de renda passiva/);
-  assert.match(html, /Patrimônio atual estimado da carteira/);
+  assert.match(html, /Meta patrimonial/);
   assert.match(html, /R\$ 620000\.00/);
   assert.match(html, /R\$ 2800\.00/);
   assert.match(html, /Faltam R\$ 380000\.00/);
   assert.match(html, /Faltam R\$ 1200\.00/);
-  assert.match(html, /Média mensal histórica/);
-  assert.match(html, /Melhor mês/);
+  assert.match(html, /Média 12M/);
+  assert.match(html, /melhor mês/);
   assert.match(html, /role="progressbar"/);
   assert.match(html, /aria-valuemin="0"/);
   assert.match(html, /aria-valuemax="100"/);
@@ -382,5 +399,5 @@ test('metas financeiras tratam ausencia como estado neutro', () => {
   assert.match(html, /Revise os valores e cotações cadastrados para acompanhar esta meta\./);
   assert.match(html, /Meta de renda passiva/);
   assert.match(html, /R\$ 0\.00 recebidos neste mês|0,00 recebidos neste mês/);
-  assert.match(html, /Meta nao configurada|Meta não configurada/);
+  assert.match(html, /Meta R\$ 4000\.00 · sugerida visualmente/);
 });

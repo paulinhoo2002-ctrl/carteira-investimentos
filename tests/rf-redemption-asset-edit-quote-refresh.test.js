@@ -441,6 +441,28 @@ test('COTACAO: fetchQuotes arma e desarma a preservacao de UI', () => {
   assert.match(html, /if\(S\.qInFlight\) return;/, 'guarda de reentrada preservada');
 });
 
+test('COTACAO: atualizacao rejeita cotacao mais antiga quando o timestamp existe', () => {
+  const html = readIndexHtml();
+  const bundle = buildBundle(html, ['quoteProviderTimeMs', 'shouldApplyQuoteUpdate']);
+  const { quoteProviderTimeMs, shouldApplyQuoteUpdate } = vm.runInNewContext(
+    `${bundle}\n({ quoteProviderTimeMs, shouldApplyQuoteUpdate });`,
+    {}
+  );
+
+  assert.equal(quoteProviderTimeMs({ regularMarketTime: 1724842800 }), 1724842800 * 1000);
+  assert.equal(quoteProviderTimeMs({ postMarketTime: 1724842801 }), 1724842801 * 1000);
+  assert.equal(quoteProviderTimeMs({}), 0);
+
+  const asset = {
+    quoteMarketTime: '2026-08-28T12:00:00.000Z',
+    quoteUpdatedAt: '2026-08-28T12:00:00.000Z'
+  };
+  assert.equal(shouldApplyQuoteUpdate(asset, Date.parse('2026-08-28T11:59:59.000Z')), false);
+  assert.equal(shouldApplyQuoteUpdate(asset, Date.parse('2026-08-28T12:00:00.000Z')), true);
+  assert.equal(shouldApplyQuoteUpdate({ quoteUpdatedAt: '2026-08-28T12:00:00.000Z' }, Date.parse('2026-08-28T11:59:59.000Z')), true);
+  assert.equal(shouldApplyQuoteUpdate({}, 0), true);
+});
+
 test('COTACAO: o tick de 1s nao chama render (apenas decrementa cd)', () => {
   const html = readIndexHtml();
   assert.match(html, /S\.cd=Math\.max\(0,S\.cd-1\);/);
