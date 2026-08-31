@@ -81,6 +81,13 @@ for (const viewport of viewports) {
       for (const [screen, selectors] of Object.entries(confirmedTargets)) {
         await page.evaluate(s => { go(s); }, screen);
         await page.waitForTimeout(120);
+        if (screen === 'ia') {
+          await page.evaluate(() => {
+            const details = document.querySelector('.ai-compact-details');
+            if (details) details.open = true;
+          });
+          await page.waitForTimeout(40);
+        }
 
         const result = await page.evaluate((selectors) => {
           const visible = el => {

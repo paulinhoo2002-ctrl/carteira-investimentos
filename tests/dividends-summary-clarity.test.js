@@ -112,7 +112,7 @@ test('dividendDistributionPanel usa recolhimento e filtros atuais', () => {
   assert.equal((expanded.match(/div-dist-row/g) || []).length >= 3, true);
 });
 
-test('overviewBody usa div-exec-overview sem exibir distribution panel', () => {
+test('overviewBody usa div-exec-kpis sem distribution panel no layout simplificado', () => {
   const indexHtml = read('index.html');
   assert.match(indexHtml, /div-exec-overview/);
   assert.match(indexHtml, /function dividendDistributionPanel\(stats\)/);
@@ -209,10 +209,11 @@ test('dividendDistributionRow isAbsent=false zero renderiza R$ 0,00', () => {
   assert.equal(row.includes('NaN'), false);
 });
 
-test('historico mensal abre por padrao no overview', () => {
+test('historico mensal fica recolhido no overview e abre somente na visao mensal', () => {
   const indexHtml = read('index.html');
   assert.ok(indexHtml.includes("function dividendMonthlyHistoryPremium(rows,startOpen=false){"));
-  assert.ok(indexHtml.includes('dividendMonthlyTableBlock(rows, true)'));
+  assert.ok(indexHtml.includes("const monthlySection=dividendMonthlyTableBlock(rows, mode==='monthly');"));
+  assert.ok(indexHtml.includes('div-dividend-moreviews'));
 });
 
 test('dividendDistributionPeriod estado default e reset', () => {
