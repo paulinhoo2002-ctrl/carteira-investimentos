@@ -165,12 +165,22 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .dashboard-master-primary{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
 .dashboard-master-secondary{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
 .dashboard-master-primary>* ,.dashboard-master-secondary>*{min-width:0;height:100%}
+.dashboard-analytical-primary{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.9fr);gap:12px;align-items:stretch;margin-bottom:12px}
+.dashboard-analytical-primary>*{min-width:0}
+.dashboard-evolution-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:12px;min-height:300px}
+.dashboard-evolution-card.dashboard-evolution-empty{min-height:224px}
+.dashboard-evolution-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.dashboard-evolution-card svg{display:block;width:100%;height:238px}
 .dashboard-master-primary .premium-panel{padding:12px}
 .dashboard-master-primary .dashboard-home-highlights{max-height:none}
 .dashboard-master-secondary .perf-card{height:100%}
 .dashboard-master-primary .dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .dashboard-master-primary .dashboard-home-income .premium-metric{min-height:82px}
 @media(min-width:1181px){
+  .dashboard-master-primary{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr)}
+  .dashboard-master-primary{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+  .dashboard-master-primary .dashboard-home-income .premium-metric-value{font-size:15px;overflow:visible;text-overflow:clip}
+  .dashboard-master-primary .dashboard-home-income .premium-metric-label{font-size:10px;line-height:1.2}
   .premium-dividends-3 .dividend-primary-grid{grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:10px}
   .premium-dividends-3 .dividend-primary-grid .div-collapsible[open] .div-collapsible-body{padding:10px 12px}
   .premium-dividends-3 .dividend-primary-grid .div-timeline{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:stretch;gap:6px;min-height:176px}
@@ -178,6 +188,11 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .premium-dividends-3 .dividend-primary-grid .div-timeline-value{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .premium-dividends-3 .dividend-primary-grid .div-timeline-sub{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .premium-dividends-3 .dividend-primary-grid .div-timeline-progress{margin-top:auto}
+  .premium-dividends-3 .dividend-evolution-chart{display:block;width:100%;height:auto;min-height:210px}
+  .premium-dividends-3 .dividend-evolution-chart .chart-grid{stroke:var(--border);stroke-width:1}
+  .premium-dividends-3 .dividend-evolution-chart .chart-bar{fill:var(--primary);opacity:.88}
+  .premium-dividends-3 .dividend-evolution-chart .chart-bar.current{fill:var(--success)}
+  .premium-dividends-3 .dividend-evolution-chart text{fill:var(--muted);font-size:10px;font-family:inherit}
   .premium-dividends-3 .dividend-executive-kpis{gap:7px}
   .premium-dividends-3 .dividend-executive-kpi{min-height:72px}
   .premium-dividends-3 .div-premium-hero{padding:11px 12px}
@@ -188,6 +203,9 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 @media(max-width:640px){
   .dashboard-master-primary,.dashboard-master-secondary{display:flex;flex-direction:column;gap:9px}
   .dashboard-master-primary>* ,.dashboard-master-secondary>*{height:auto}
+  .dashboard-analytical-primary{display:flex;flex-direction:column;gap:9px;margin-bottom:9px}
+  .dashboard-evolution-card{min-height:0;padding:10px}
+  .dashboard-evolution-card svg{height:188px}
   .dashboard-master-primary .dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
@@ -313,8 +331,11 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-form .fg{margin:0}
 .rebalance-form .btn{min-height:44px;min-width:126px;padding:8px 14px}
 .rebalance-safety{font-size:10px;line-height:1.4;color:var(--muted);border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:8px 9px}
+.rebalance-quickline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;line-height:1.35;color:var(--text);border:1px solid rgba(96,165,250,.2);background:rgba(96,165,250,.06);border-radius:12px;padding:8px 10px}
+.rebalance-quickline strong{font-weight:900;color:var(--text)}
+.rebalance-quickline .rebalance-quickline-pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);border:1px solid rgba(99,102,241,.24);background:rgba(99,102,241,.1);border-radius:999px;padding:3px 7px;white-space:nowrap}
 .rebalance-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
-.rebalance-summary-card{min-height:64px;padding:9px 10px;border:1px solid var(--border);border-radius:11px;background:var(--surface);display:flex;flex-direction:column;justify-content:space-between;gap:4px}
+  .rebalance-summary-card{min-height:64px;padding:9px 10px;border:1px solid var(--border);border-radius:11px;background:var(--surface);display:flex;flex-direction:column;justify-content:space-between;gap:4px}
 .rebalance-summary-label{font-size:10px;color:var(--muted)}
 .rebalance-summary-value{font-size:14px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rebalance-summary-note{font-size:10px;color:var(--muted);line-height:1.3}
@@ -322,7 +343,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-study-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .rebalance-study-title{font-size:12px;font-weight:800;color:var(--text)}
 .rebalance-study-sub{font-size:10px;color:var(--muted);line-height:1.35;margin-top:2px}
-.rebalance-study-labels,.rebalance-study-row{display:grid;grid-template-columns:minmax(0,1.15fr) .8fr .8fr .7fr minmax(0,1.25fr) .9fr minmax(0,1.8fr);gap:7px;align-items:center}
+.rebalance-study-labels,.rebalance-study-row{display:grid;grid-template-columns:minmax(0,1.15fr) .75fr .75fr .75fr .95fr .95fr;gap:7px;align-items:center}
 .rebalance-study-labels{padding:0 8px;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .rebalance-study-row{padding:9px 8px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2)}
 .rebalance-study-asset{min-width:0}
@@ -332,7 +353,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-study-stat-label{display:none;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .rebalance-study-stat-value{font-size:11px;font-weight:800;color:var(--text)}
 .rebalance-study-value{color:var(--primary);font-size:12px;font-weight:900}
-.rebalance-study-criteria{font-size:10px;color:var(--muted);line-height:1.35}
+  .rebalance-study-criteria{font-size:10px;color:var(--muted);line-height:1.35}
 .rebalance-empty{padding:13px;border:1px dashed var(--border);border-radius:12px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.45}
 .rebalance-dy-note{font-size:10px;color:var(--muted);line-height:1.35}
 .rebalance-alloc{display:flex;flex-direction:column;gap:8px}
@@ -354,7 +375,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-alloc-bar.current{background:var(--primary)}
 .rebalance-alloc-bar.target{position:absolute;top:0;height:100%;width:2px;background:var(--text);border-radius:1px}
 .rebalance-alloc-empty{padding:13px;border:1px dashed var(--border);border-radius:12px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.45}
-.rebalance-about{display:flex;flex-direction:column;gap:6px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);padding:10px 12px}
+  .rebalance-about{display:flex;flex-direction:column;gap:6px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);padding:10px 12px}
 .rebalance-about-title{font-size:11px;font-weight:800;color:var(--text)}
 .rebalance-about-text{font-size:11px;color:var(--muted);line-height:1.45}
 .ai-shell{display:flex;flex-direction:column;gap:12px}
@@ -413,6 +434,43 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .ai-distribution-pct{font-size:11px;color:var(--muted);white-space:nowrap}
 .ai-distribution-bar-wrap{flex:1;min-width:60px;height:6px;border-radius:3px;background:var(--surface);overflow:hidden}
 .ai-distribution-bar{height:100%;border-radius:3px;transition:width .3s ease}
+.ai-hub-shell{gap:10px}
+.ai-hub-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ai-hub-summary-card{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;gap:4px}
+.ai-hub-summary-card.pri{background:linear-gradient(180deg,rgba(239,68,68,.08),rgba(15,23,42,.92))}
+.ai-hub-summary-card.att{background:linear-gradient(180deg,rgba(251,191,36,.08),rgba(15,23,42,.92))}
+.ai-hub-summary-card.inf{background:linear-gradient(180deg,rgba(96,165,250,.08),rgba(15,23,42,.92))}
+.ai-hub-summary-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ai-hub-summary-value{font-size:20px;font-weight:900;color:var(--text);line-height:1}
+.ai-hub-summary-note{font-size:10px;color:var(--muted);line-height:1.35}
+.ai-hub-sections{display:flex;flex-direction:column;gap:10px}
+.ai-hub-section{border:1px solid var(--border);background:var(--surface-2);border-radius:14px;padding:10px 11px;display:flex;flex-direction:column;gap:8px}
+.ai-hub-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ai-hub-section-title{font-size:12px;font-weight:900;color:var(--text)}
+.ai-hub-section-sub{font-size:10px;color:var(--muted);line-height:1.35;margin-top:2px}
+.ai-hub-section-badge{min-width:28px;height:28px;padding:0 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--text)}
+.ai-hub-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ai-hub-card{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ai-hub-card.ai-hub-important{border-color:rgba(248,113,113,.26)}
+.ai-hub-card.ai-hub-attention{border-color:rgba(251,191,36,.26)}
+.ai-hub-card.ai-hub-info{border-color:rgba(96,165,250,.26)}
+.ai-hub-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.ai-hub-card-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.ai-hub-card-title{font-size:12px;font-weight:900;color:var(--text);line-height:1.2}
+.ai-hub-card-desc{font-size:11px;color:var(--text);line-height:1.45}
+.ai-hub-card-evidence{font-size:10px;color:var(--muted);line-height:1.4}
+.ai-hub-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.ai-hub-card-route{font-size:10px;color:var(--muted)}
+.ai-hub-pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:999px;padding:4px 7px;white-space:nowrap}
+.ai-hub-cta{min-height:36px;padding:7px 10px;font-size:12px}
+.ai-compact-details{border:1px solid var(--border);border-radius:14px;background:var(--surface-2);overflow:hidden}
+.ai-compact-details>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:11px 12px;cursor:pointer}
+.ai-compact-details>summary::-webkit-details-marker{display:none}
+.ai-compact-summary-main{min-width:0;display:flex;flex-direction:column;gap:2px}
+.ai-compact-summary-title{font-size:12px;font-weight:900;color:var(--text)}
+.ai-compact-summary-sub{font-size:10px;color:var(--muted);line-height:1.35}
+.ai-compact-summary-meta{font-size:10px;color:var(--muted);border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:4px 7px;white-space:nowrap}
+.ai-compact-body{padding:0 12px 12px;display:flex;flex-direction:column;gap:10px}
 .dashboard-hero{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .dash-card{min-height:124px;padding:12px 14px 10px;display:flex;flex-direction:column;justify-content:space-between}
 .dash-head{display:flex;align-items:flex-start;gap:10px}
@@ -503,7 +561,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .rebalance-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rebalance-study-labels{display:none}
   .rebalance-study-row{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .rebalance-study-asset,.rebalance-study-criteria{grid-column:1/-1}
+  .rebalance-study-asset{grid-column:1/-1}
   .rebalance-study-stat-label{display:block;margin-bottom:2px}
   .rebalance-alloc-row{grid-template-columns:1fr .6fr .6fr .7fr}
   .rebalance-alloc-labels{display:none}
@@ -515,6 +573,9 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .ai-concentration-labels{display:none}
   .ai-concentration-item{display:grid;grid-template-columns:1fr .7fr .7fr;gap:4px;align-items:center}
   .ai-concentration-item .ai-concentration-ticker{grid-column:1/-1}
+  .ai-hub-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ai-hub-grid{grid-template-columns:1fr}
+  .ai-hub-card-foot{align-items:flex-start}
   .premium-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
   .premium-dashboard-grid{grid-template-columns:1fr}
   .premium-radar{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -546,6 +607,13 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .ai-cta{width:100%;min-width:0}
   .ai-modebar{gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
   .ai-modebar::-webkit-scrollbar{display:none}
+  .ai-hub-summary{grid-template-columns:1fr}
+  .ai-hub-grid{grid-template-columns:1fr}
+  .ai-hub-section{padding:9px 10px}
+  .ai-hub-card{padding:9px 10px}
+  .ai-hub-card-top{align-items:flex-start}
+  .ai-hub-card-foot{flex-direction:column;align-items:stretch}
+  .ai-hub-cta{width:100%}
   .ai-metrics{grid-template-columns:1fr}
   .ai-grid{grid-template-columns:1fr}
   .ai-card-head{flex-direction:column;align-items:flex-start}
@@ -621,7 +689,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .rebalance-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .rebalance-summary-card{min-height:66px;padding:9px}
   .rebalance-study-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .rebalance-study-asset,.rebalance-study-criteria{grid-column:1/-1}
+  .rebalance-study-asset{grid-column:1/-1}
   .rebalance-alloc-row{grid-template-columns:1fr}
   .rebalance-alloc-labels{display:none}
   .rebalance-alloc-item{display:grid;grid-template-columns:1fr;gap:4px}
@@ -1255,16 +1323,16 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .rent-premium .rent-layout{display:flex;flex-direction:column;gap:10px}
 .rent-premium .rent-main{order:1}
 .rent-premium .rent-main{width:min(100%,1500px);align-self:center}
-.rent-premium .rent-main .sh{align-items:flex-start}
+.rent-premium .rent-main .sh{align-items:flex-start;margin-bottom:4px}
 .rent-premium .rent-filters{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .rent-premium .rent-filters select{min-width:112px}
 .rent-premium .rent-layout + details{order:2;margin-top:0!important}
-.rent-premium .rent-chartbox{min-height:300px}
+.rent-premium .rent-chartbox{min-height:250px}
 .rent-summary-preview{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:8px;
-  margin-top:8px;
+  gap:7px;
+  margin-top:6px;
 }
 .rent-summary-chip{
   border:1px solid var(--border);
@@ -1307,26 +1375,28 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
   .rent-premium .rent-filters select{flex:1 0 130px;min-width:130px}
   .rent-premium .rent-chartbox{min-height:190px}
   .rent-premium .rent-layout + details{margin-top:0!important}
-  .rent-summary-preview{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rent-summary-preview{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:5px}
+  .rent-summary-chip{padding:8px 9px}
+  .rent-summary-chip-value{font-size:13px}
 }
 .rent-table th,.rent-table td{text-align:center;white-space:nowrap}
 .rent-table th:first-child,.rent-table td:first-child{text-align:left}
 .rent-table td{font-variant-numeric:tabular-nums}
 .rent-table td.rd,.rent-table td.gn{font-weight:700}
 .rent-table thead th{position:sticky;top:0;z-index:2}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color .2s,box-shadow .2s}
-.card.al{border-left:3px solid}.card:hover{border-color:rgba(79,70,229,.32);box-shadow:0 4px 20px rgba(0,0,0,.22)}
+.card{background:linear-gradient(180deg,var(--card),color-mix(in srgb, var(--card) 92%, var(--surface)));border:1px solid var(--border);border-radius:14px;padding:13px 15px;transition:border-color .2s,box-shadow .2s,transform .2s}
+.card.al{border-left:3px solid}.card:hover{border-color:rgba(79,70,229,.32);box-shadow:0 3px 8px rgba(0,0,0,.16);transform:translateY(-1px)}
 .cl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 .cv{font-size:21px;font-weight:700;margin-bottom:2px;letter-spacing:-.02em}.cs{font-size:11px;color:var(--muted)}
-.tw{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.tw{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 3px 8px rgba(0,0,0,.14)}
 .ts{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .ts::-webkit-scrollbar{height:0}
 .ts{scrollbar-width:none}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
 thead tr{background:var(--panel)}
-th{padding:9px 12px;text-align:left;color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
-td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
-tbody tr{transition:background .1s}tbody tr:hover{background:var(--surface-2)}tbody tr:last-child td{border-bottom:none}
+th{padding:10px 12px;text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);line-height:1.3}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);line-height:1.35}
+tbody tr{transition:background .1s}tbody tr:hover{background:color-mix(in srgb, var(--surface-2) 82%, var(--primary) 2%)}tbody tr:last-child td{border-bottom:none}
 .hist-monthly{min-width:1040px}
 .hist-monthly th,.hist-monthly td{text-align:center;white-space:nowrap}
 .hist-monthly th:first-child,.hist-monthly td:first-child{
@@ -1342,7 +1412,7 @@ tbody tr{transition:background .1s}tbody tr:hover{background:var(--surface-2)}tb
 .bfi{background:rgba(96,165,250,.08);color:#60a5fa;border:1px solid rgba(96,165,250,.18)}
 .bet{background:rgba(167,139,250,.08);color:#a78bfa;border:1px solid rgba(167,139,250,.18)}
 .bxx{background:rgba(148,163,184,.05);color:#64748b;border:1px solid rgba(148,163,184,.12)}
-.btn{border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;transition:all .15s}
+.btn{border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:600;transition:all .15s;min-height:40px;line-height:1.1}
 .touch-target-utility{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .touch-target-icon{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .rf-event-card td.actions .bi,.rf-event-card td.actions .bdi{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
@@ -1366,10 +1436,10 @@ tbody tr{transition:background .1s}tbody tr:hover{background:var(--surface-2)}tb
 .asset-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:640px){.asset-actions{min-width:0;flex-wrap:wrap}.asset-action{flex:0 0 auto}.asset-action-menu-panel{right:auto;left:0}}
 .bdi{background:transparent;border:1px solid rgba(127,29,29,.5);border-radius:7px;padding:3px 9px;color:#f87171;font-size:13px}
-.fc{background:var(--card);border:1px solid rgba(79,70,229,.32);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 4px 20px rgba(99,102,241,.08)}
+.fc{background:linear-gradient(180deg,var(--card),color-mix(in srgb, var(--card) 90%, var(--surface)));border:1px solid rgba(79,70,229,.32);border-radius:14px;padding:13px 14px;margin-bottom:14px;box-shadow:0 3px 8px rgba(99,102,241,.1)}
 .fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
 .fl{font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:500}
-input,select{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:8px 11px;color:var(--text);font-size:13px;width:100%;transition:border-color .15s,box-shadow .15s}
+input,select{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-size:13px;line-height:1.2;min-height:40px;width:100%;transition:border-color .15s,box-shadow .15s}
 input:focus,select:focus{border-color:#4f46e5;outline:none;box-shadow:0 0 0 3px rgba(79,70,229,.15)}
 input:disabled{opacity:.45;cursor:not-allowed}
 input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
@@ -1399,7 +1469,7 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 }
 .sec:hover,.ag:hover,.nota-review-group:hover,.b3-review-group:hover{
   border-color:color-mix(in srgb, var(--border) 84%, var(--primary));
-  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  box-shadow:0 3px 8px rgba(0,0,0,.16);
 }
 .sec{margin-top:0}
 .sec+ .sec{margin-top:12px}
@@ -1409,7 +1479,7 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  padding:12px 14px;
+  padding:13px 14px;
   cursor:pointer;
   min-height:54px;
   background:linear-gradient(180deg,var(--panel-2),var(--panel));
@@ -1556,6 +1626,15 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .aporte-premium .sh{margin-bottom:10px;gap:8px;align-items:flex-start}
 .aporte-premium .st{font-size:14px;line-height:1.1}
 .aporte-premium .mu{font-size:11px;line-height:1.35}
+.aporte-imports-panel{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px}
+.aporte-imports-panel summary{cursor:pointer;list-style:none;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.aporte-imports-panel summary::-webkit-details-marker{display:none}
+.aporte-imports-panel summary::after{content:' +';color:var(--primary);font-size:15px}
+.aporte-imports-panel[open] summary::after{content:' −'}
+.aporte-imports-panel .aporte-imports-options{display:flex;flex-wrap:wrap;gap:8px}
+.aporte-imports-panel .aporte-imports-label{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.aporte-imports-panel .btn{min-height:40px}
+@media(min-width:641px){.aporte-imports-panel summary{display:none}.aporte-imports-panel .aporte-imports-options{display:flex}}
 .aporte-premium .fc{padding:12px 13px;border-radius:14px;background:#0f1527;border-color:#233149;box-shadow:0 6px 24px rgba(0,0,0,.16)}
 .aporte-premium .fc .fg{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 .aporte-premium .fc .fl{font-size:10px;line-height:1.15;margin-bottom:3px}
@@ -2080,6 +2159,17 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 .div-premium-tab.on{color:#ecfdf5;border-color:rgba(52,211,153,.35);background:linear-gradient(180deg,rgba(16,185,129,.2),rgba(16,185,129,.12))}
 .div-premium-chip.on{color:#e0e7ff;border-color:rgba(99,102,241,.38);background:linear-gradient(180deg,rgba(79,70,229,.2),rgba(79,70,229,.12))}
 .div-premium-chip.subtle{opacity:.85;pointer-events:none}
+.div-dividend-toolbar{display:flex;flex-direction:column;gap:8px}
+.div-dividend-toolbar-main{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.div-dividend-toolbar-actions{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.div-dividend-more,.div-dividend-moreviews{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+.div-dividend-more>summary,.div-dividend-moreviews>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none}
+.div-dividend-more>summary::-webkit-details-marker,.div-dividend-moreviews>summary::-webkit-details-marker{display:none}
+.div-dividend-more-summary,.div-dividend-moreviews-summary{padding:7px 10px;font-size:10px;font-weight:850;color:var(--text)}
+.div-dividend-more-meta,.div-dividend-moreviews-meta{font-size:9px;color:var(--muted);font-weight:800}
+.div-dividend-more-body,.div-dividend-moreviews-body{padding:8px;display:grid;gap:8px}
+.div-dividend-more-group{display:grid;gap:6px}
+.div-dividend-more-label{font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
 .div-premium-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:8px}
 .div-premium-search{display:flex;align-items:center;gap:6px;flex:1 1 280px;max-width:560px;border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:6px 8px}
 .div-premium-search input{border:0;background:transparent;padding:0;min-width:0;width:100%;color:var(--text)}
@@ -2194,9 +2284,55 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
     .premium-dividends-3 .dividend-primary-grid{grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr)}
   }
   @media (max-width:767px){
-    .div-premium.premium-dividends-3{gap:9px;padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+    .div-premium.premium-dividends-3{gap:9px;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
     .premium-dividends-3 .dividend-executive-kpis,.premium-dividends-3 .dividend-primary-grid,.premium-dividends-3 .dividend-secondary-grid{grid-template-columns:1fr}
-    .premium-dividends-3 .dividend-executive-kpi{min-height:68px}
+    .premium-dividends-3 .dividend-executive-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+    .premium-dividends-3 .dividend-executive-kpi{min-height:58px;padding:7px 8px;gap:3px}
+    .premium-dividends-3 .dividend-executive-kpi:first-child{grid-column:1/-1}
+    .premium-dividends-3 .dividend-executive-kpi-label{font-size:8px}
+    .premium-dividends-3 .dividend-executive-kpi-value{font-size:13px}
+  .premium-dividends-3 .dividend-executive-kpi-sub{font-size:8px}
+  .premium-dividends-3 .div-premium-hero{padding:5px 7px}
+  .premium-dividends-3 .div-premium-head{gap:6px;align-items:center}
+  .premium-dividends-3 .div-premium-head{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center}
+  .premium-dividends-3 .div-premium-head>div{min-width:0;flex:1}
+    .premium-dividends-3 .div-premium-head .btn{width:auto!important;margin-top:0!important;flex:0 0 auto}
+    .premium-dividends-3 .div-premium-title{font-size:15px;line-height:1.1}
+  .premium-dividends-3 .div-premium-sub{font-size:9px;line-height:1.2}
+  .premium-dividends-3 .div-premium-head .btn{min-height:32px;padding:0 9px;font-size:10px;white-space:nowrap}
+  .premium-dividends-3 .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+  .premium-dividends-3 .div-premium-tab{padding:5px 7px;font-size:9px}
+  .premium-dividends-3 .div-dividend-toolbar-main,
+  .premium-dividends-3 .div-dividend-toolbar-actions{width:100%}
+  .premium-dividends-3 .div-dividend-toolbar-actions{align-items:stretch}
+  .premium-dividends-3 .div-premium-search{flex-basis:100%;max-width:none}
+  .premium-dividends-3 .div-dividend-types{width:100%}
+  .premium-dividends-3 .div-dividend-more,
+  .premium-dividends-3 .div-dividend-moreviews{width:100%}
+  .premium-dividends-3 .div-dividend-more-summary,
+  .premium-dividends-3 .div-dividend-moreviews-summary{padding:6px 9px}
+  .premium-dividends-3 .div-dividend-more-body,
+  .premium-dividends-3 .div-dividend-moreviews-body{padding:7px}
+  .premium-dividends-3 .div-dividend-more-group{gap:4px}
+  .premium-dividends-3 .dividend-evolution-chart{min-height:190px}
+  .premium-dividends-3 .div-upcoming-empty{padding:12px 10px}
+  .premium-dividends-3 .div-upcoming-empty .div-upcoming-empty-title{font-size:11px}
+  .premium-dividends-3 .dividend-review-context .div-audit-panel{padding:8px}
+  .premium-dividends-3 .div-premium-toolbar{padding:6px}
+    .test-mode-banner{padding:6px 9px!important;gap:6px!important;margin:4px 0 1px!important;align-items:center!important}
+    .test-mode-banner-title{font-size:9px!important;line-height:1.1!important}
+    .test-mode-banner-text{display:none!important}
+    .test-mode-banner button{min-height:36px!important;padding:0 10px!important;font-size:11px!important}
+    .premium-dividends-3 .dividend-review-context{font-size:11px}
+    .premium-dividends-3 .dividend-review-context .div-audit-panel{padding:10px}
+    .premium-dividends-3 .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    .premium-dividends-3 .dividend-executive-kpis{gap:4px}
+    .premium-dividends-3 .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .premium-dividends-3 .dividend-executive-kpi-sub{display:none}
+    .premium-dividends-3 .dividend-history-heading{padding:8px 10px}
+    .premium-dividends-3 .dividend-history-heading strong{font-size:12px}
+    .premium-dividends-3 .dividend-history-heading span{font-size:9px}
   }
 html[data-theme="light"] .div-premium-hero{background:linear-gradient(135deg,#f8fafc,#eef6f4 65%,#e8f3ff)}
 html[data-theme="light"] .div-premium-title{color:#172033}
@@ -2243,6 +2379,10 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
   .div-month-card{grid-template-columns:1fr 1fr;gap:7px;padding:10px}
   .div-month-name{grid-column:1/-1}
   .div-timeline{grid-template-columns:1fr;gap:7px}
+}
+@media(min-width:700px) and (max-width:1100px){
+  .rent-premium .rent-filters{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-flow:column;gap:6px;width:100%}
+  .rent-premium .rent-filters select{min-width:0;width:100%!important}
 }
 @media(max-width:360px){
   .div-premium-metrics{grid-template-columns:1fr}
@@ -2932,6 +3072,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .rf-proventos-table{display:none}
   .b3-preview-cards{display:grid;grid-template-columns:1fr;gap:8px}
   .reports-shell{gap:8px;padding-bottom:8px}
+  .reports-premium-shell{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
   .reports-hero{padding:11px;border-radius:14px}
   .reports-head{display:block}
   .reports-title{font-size:16px}
@@ -3149,6 +3290,11 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   }
   .aporte-premium{gap:8px;padding-bottom:22px}
   .aporte-premium .sh{margin-bottom:8px}
+  .aporte-imports-panel{gap:6px;padding:8px 10px}
+.aporte-imports-panel .aporte-imports-label{flex:1 0 100%;margin-right:0;font-size:10px}
+.aporte-imports-panel summary{flex:1 0 100%}
+.aporte-imports-panel .aporte-imports-options{width:100%;gap:6px}
+.aporte-imports-panel .btn{flex:1 1 calc(50% - 6px);min-width:0;padding-left:8px;padding-right:8px;font-size:11px}
   .aporte-premium .fc{padding:11px;border-radius:12px}
   .aporte-premium .fc .fg{gap:7px}
   .aporte-premium .fc .btn{min-height:36px;padding:8px 10px}
@@ -3199,6 +3345,9 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
     background:#111828;border-top:1px solid #1d2940;box-shadow:0 -8px 28px rgba(0,0,0,.45);
     z-index:50;padding:0 4px;padding-bottom:env(safe-area-inset-bottom);
   }
+  #root{height:100dvh;min-height:100dvh;display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}
+  #root>.shell{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #root>#investBottomNav{position:relative;inset:auto;width:100%;min-height:calc(62px + env(safe-area-inset-bottom));height:auto;flex:0 0 auto}
   #investBottomNav button{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
     border:0;background:transparent;color:#4a6080;font-size:9px;font-weight:700;cursor:pointer;
@@ -3209,14 +3358,16 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   #investBottomNav button.act .ni{transform:scale(1.2)}
   #investBottomNav .nav-center{margin-top:-16px}
   #investBottomNav .nav-center .ni{
-    width:50px;height:50px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:50%;
+    width:50px;height:50px;background:#25324a;border-radius:50%;
     display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 20px rgba(99,102,241,.5);
     border:3px solid #0a0f18;transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s ease;
   }
+  #investBottomNav .nav-center:not(.act) .ni{box-shadow:none;border-color:#182238}
   #investBottomNav .nav-center.act .ni,#investBottomNav .nav-center:hover .ni{
     transform:scale(1.08);box-shadow:0 10px 28px rgba(99,102,241,.6);
   }
-  #investBottomNav .nav-center span:last-child{font-size:9px;color:#818cf8;font-weight:800;margin-top:1px}
+  #investBottomNav .nav-center span:last-child{font-size:9px;color:#4a6080;font-weight:800;margin-top:1px}
+  #investBottomNav .nav-center.act span:last-child{color:#818cf8}
   .tabs{display:none!important}
   .wrap{padding:10px 10px 88px!important}
   .dashboard-hero{grid-template-columns:1fr!important;gap:8px!important}
@@ -3538,6 +3689,10 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .dividend-query-filters,.prov-audit-filters,.rent-filters{
     grid-template-columns:1fr!important
   }
+@media(min-width:700px) and (max-width:1100px){
+  .rent-premium .rent-filters{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;grid-auto-flow:column;gap:6px;width:100%}
+  .rent-premium .rent-filters select{min-width:0;width:100%!important}
+}
   .dividend-query-filters .fg,.prov-audit-filters .aud-field{min-width:0}
   .prov-audit-actions,.note-actions,.note-foot{align-items:stretch}
   .prov-audit-actions .btn,.note-actions .btn,.note-foot .btn{flex:1 1 140px}
@@ -5215,7 +5370,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .assets-premium-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media(max-width:480px){
-      .assets-premium-kpis{grid-template-columns:1fr}
+      .assets-premium-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .assets-premium-kpi:first-child{grid-column:1/-1}
     }
 
     /* Premium Table (Desktop) */
@@ -5582,6 +5738,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .dashboard-receipts-card {
     min-height: 340px;
   }
+  .dashboard-evolution-card.dashboard-evolution-empty {
+    min-height: 0;
+  }
   .dashboard-evolution-card > svg {
     height: 300px;
     margin-top: 8px;
@@ -5676,6 +5835,29 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   }
   @media (max-width: 767px) {
     .assets-all-assets { margin-top: 12px; }
+    .wrap > .sh{justify-content:flex-end;margin-bottom:6px}
+    .wrap > .sh > div:last-child{display:flex;flex-wrap:nowrap;gap:6px;width:100%;overflow-x:auto;padding-bottom:2px}
+    .wrap > .sh > div:last-child .btn{flex:0 0 auto;min-width:0;padding-left:10px;padding-right:10px;font-size:11px!important}
+    .asset-inner-panel > .sh > div:first-child{display:none}
+    .asset-inner-panel > .sh{justify-content:flex-end;margin-bottom:6px}
+    .asset-inner-panel > .sh > div:last-child{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
+    .asset-inner-panel > .sh > div:last-child .btn{min-width:0;padding-left:6px;padding-right:6px;font-size:11px!important}
+  }
+
+  /* Keep the primary position table readable; secondary fields remain in details/cards. */
+  .assets-premium-title-block{display:none}
+  @media (min-width: 769px){
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(3),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(3),
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(9),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(9),
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(12),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(12),
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(13),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(13),
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(14),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(14){display:none}
+    #assets-premium-table-desktop .assets-premium-table{min-width:0;table-layout:auto}
   }
 </style>
 <style>
@@ -5683,6 +5865,30 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   @media (min-width:1181px) and (max-width:1535px){
     .ag-table .tw table{min-width:0;width:100%;table-layout:fixed}
     .ag-table .tw table th,.ag-table .tw table td{overflow:hidden;text-overflow:ellipsis}
+    .ag-table .tw table th:nth-child(3),
+    .ag-table .tw table td:nth-child(3),
+    .ag-table .tw table th:nth-child(9),
+    .ag-table .tw table td:nth-child(9),
+    .ag-table .tw table th:nth-child(12),
+    .ag-table .tw table td:nth-child(12),
+    .ag-table .tw table th:nth-child(13),
+    .ag-table .tw table td:nth-child(13),
+    .ag-table .tw table th:nth-child(14),
+    .ag-table .tw table td:nth-child(14){display:none}
+    .ag-table .tw table th:nth-child(1),
+    .ag-table .tw table td:nth-child(1),
+    .ag-table .tw table th:nth-child(5),
+    .ag-table .tw table td:nth-child(5),
+    .ag-table .tw table th:nth-child(6),
+    .ag-table .tw table td:nth-child(6),
+    .ag-table .tw table th:nth-child(7),
+    .ag-table .tw table td:nth-child(7),
+    .ag-table .tw table th:nth-child(8),
+    .ag-table .tw table td:nth-child(8),
+    .ag-table .tw table th:nth-child(10),
+    .ag-table .tw table td:nth-child(10),
+    .ag-table .tw table th:nth-child(11),
+    .ag-table .tw table td:nth-child(11){overflow:visible;text-overflow:clip}
     .ag-table .tw .asset-actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}
     .ag-table .tw .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
     .rf-table-wrap table{min-width:0;width:100%;table-layout:fixed}
@@ -19052,6 +19258,15 @@ async function fetchQuotesYahoo(tickers){
   const j=await r.json();
   return Array.isArray(j.results)?j.results:[];
 }
+function quoteProviderTimeMs(q){
+  const raw = Number(q?.regularMarketTime ?? q?.postMarketTime ?? q?.preMarketTime ?? q?.marketTime ?? q?.timestamp ?? 0);
+  return Number.isFinite(raw) && raw > 0 ? raw * 1000 : 0;
+}
+function shouldApplyQuoteUpdate(asset, providerTimeMs){
+  const currentTimeMs = Number(new Date(asset?.quoteMarketTime || 0).getTime()) || 0;
+  if(providerTimeMs > 0 && currentTimeMs > 0 && providerTimeMs < currentTimeMs) return false;
+  return true;
+}
 async function fetchQuotes(manual=false){
   if(isLocalTestMode()){
     S.qLoad=false;
@@ -19084,12 +19299,19 @@ async function fetchQuotes(manual=false){
       if(!a) return;
       if(!isMarketQuoteEligibleAsset(a)) return;
 
+      const providerTimeMs=quoteProviderTimeMs(q);
+      if(!shouldApplyQuoteUpdate(a, providerTimeMs)){
+        semPreco.push(ticker);
+        return;
+      }
+
       const price=Number(q.regularMarketPrice ?? q.postMarketPrice ?? q.preMarketPrice ?? q.regularMarketPreviousClose);
       if(Number.isFinite(price)&&price>0){
         const prev=Number(a.current_price)||0;
         a.current_price=price;
         a.quoteSource='yahoo';
         a.quoteUpdatedAt=new Date().toISOString();
+        if(providerTimeMs>0) a.quoteMarketTime=new Date(providerTimeMs).toISOString();
         S.quotes[ticker]={
           price,
           change:Number(q.regularMarketChangePercent)||0,
@@ -19131,12 +19353,18 @@ async function fetchQuotes(manual=false){
             const a=S.assets.find(x=>String(x.ticker||'').toUpperCase()===sym);
             if(!a) return;
             if(!isMarketQuoteEligibleAsset(a)) return;
+            const providerTimeMs=quoteProviderTimeMs(q);
+            if(!shouldApplyQuoteUpdate(a, providerTimeMs)){
+              semPreco.push(sym);
+              return;
+            }
             const price=Number(q.regularMarketPrice??q.price??q.close??q.previousClose);
             if(Number.isFinite(price)&&price>0){
               const prev=Number(a.current_price)||0;
               a.current_price=price;
               a.quoteSource='brapi';
               a.quoteUpdatedAt=new Date().toISOString();
+              if(providerTimeMs>0) a.quoteMarketTime=new Date(providerTimeMs).toISOString();
               S.quotes[sym]={price,change:Number(q.regularMarketChangePercent)||0,flash:prev>0?(price>prev?'up':price<prev?'down':''):''};
               atualizados++;
             }
@@ -19546,6 +19774,44 @@ function assetContributionSignal(row){
 function assetResultIndicator(value){
   if(!Number.isFinite(value) || value===0) return '→';
   return value>0 ? '↑' : '↓';
+}
+function assetSignedMoneyText(value){
+  if(!Number.isFinite(value)) return '—';
+  return `${value>0?'+ ':value<0?'- ':''}${fmt(Math.abs(value))}`;
+}
+function assetRfDisplayState(a){
+  if(!isRendaFixaAsset(a)){
+    return {kind:'n/a', current:null, currentText:'—', currentNote:'', result:null, resultText:'—', resultNote:'', resultClass:'neutral'};
+  }
+  const v=rfValues(a);
+  const applied=Number.isFinite(v.applied) ? v.applied : null;
+  const current=Number.isFinite(v.current) ? v.current : null;
+  const currentState=String(v?.currentState?.state||'missing');
+  const currentSource=String(v?.currentState?.source||'');
+  const hasExplicitCurrent=!!v.hasExplicitCurrent;
+  let kind='missing';
+  let currentText='—';
+  let currentNote='Valor atual não informado';
+  if(currentState==='zero'){
+    kind='real-zero';
+    currentText=fmt(0);
+    currentNote='Zero real informado pela origem';
+  } else if(currentSource==='applied-fallback' || (!hasExplicitCurrent && applied!=null && current!=null)){
+    kind='fallback-applied';
+    currentText=fmt(applied ?? current ?? 0);
+    currentNote='Estimado pelo valor aplicado';
+  } else if(Number.isFinite(current)){
+    kind='current';
+    currentText=fmt(current);
+    currentNote=v.currentSource || 'Valor atual informado';
+  }
+  const result = kind==='fallback-applied' ? null : (Number.isFinite(current) && Number.isFinite(applied) ? current - applied : null);
+  const resultText = assetSignedMoneyText(result);
+  const resultClass = !Number.isFinite(result) ? 'neutral' : result>0 ? 'pos' : result<0 ? 'neg' : 'neutral';
+  const resultNote = kind==='fallback-applied'
+    ? 'Resultado não destacado quando o valor atual é estimado pelo aplicado'
+    : (Number.isFinite(result) ? 'Resultado de mercado' : 'Resultado indisponível');
+  return {kind,current,applied,currentText,currentNote,result,resultText,resultNote,resultClass};
 }
 function assetsPortfolioSummary(rows, deps={}){
   const appliedOf=deps.assetAppliedValue||assetAppliedValue;
@@ -22308,7 +22574,7 @@ function render(){
       </div>`;
   }
 }
-const NAV_TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','🤖 IA']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights']];
 const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
@@ -22344,7 +22610,7 @@ function desktopTabs(){
     ${navTabButton('rentabilidade','📈 Rentabilidade')}
     ${navTabButton('ajudar','⚖️ Rebalancear')}
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
-    ${navTabButton('ia','🤖 IA')}
+    ${navTabButton('ia','💡 Insights')}
     ${hideValuesToggleButton()}
     <button class="tab side-theme" onclick="toggleTheme()" aria-label="Alternar entre tema escuro e claro" title="Alternar tema">🌗 Tema</button>
     ${navTabButton('settings','⚙️ Configurações')}
@@ -22386,10 +22652,10 @@ function app(){
     </div>
   </div>
   ${isLocalTestMode()?`
-  <div style="margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(251,191,36,.28);border-radius:14px;background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.08));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">
+  <div class="test-mode-banner" style="margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(251,191,36,.28);border-radius:14px;background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.08));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">
     <div style="min-width:0">
-      <div style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#fde68a">Modo de teste local</div>
-      <div style="font-size:12px;line-height:1.45;color:#e5edf8">Dados determinísticos em memória. Sem Firebase, sem sync, sem importação/exportação e sem localStorage.</div>
+      <div class="test-mode-banner-title" style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#fde68a">Modo de teste local</div>
+      <div class="test-mode-banner-text" style="font-size:12px;line-height:1.45;color:#e5edf8">Dados determinísticos em memória. Sem Firebase, sem sync, sem importação/exportação e sem localStorage.</div>
     </div>
     <button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:44px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>
   </div>`:''}
@@ -22506,6 +22772,109 @@ function prudentContributionAnalysis(){
     .sort((a,b)=>b.score-a.score || a.share-b.share)
     .slice(0,5);
   return {rows:analysisRows,total,evaluated,candidates,insufficient,avoided};
+}
+function rebalanceContributionDistribution(contributionAmount, goals=null, actualState=null){
+  const amount=Math.max(0, Number(contributionAmount)||0);
+  const allocItems=Array.isArray(goals) && goals.length ? goals : allocationGoalItems();
+  const actual=actualState && typeof actualState==='object' ? actualState : allocationActualByType();
+  const currentMap=actual && typeof actual.map==='object' ? actual.map : {};
+  const totalCurrent=Math.max(0, Number(actual?.total)||0);
+  const totalTarget=allocItems.reduce((sum,item)=>sum+(Math.max(0, Number(item?.pct)||0)),0);
+  const futureTotal=totalCurrent+amount;
+  const rows=allocItems.map(item=>{
+    const type=String(item?.type||'').trim() || 'Sem tipo';
+    const targetPct=Math.max(0, Number(item?.pct)||0);
+    const currentValue=Math.max(0, Number(currentMap[type])||0);
+    const currentPct=totalCurrent>0 ? (currentValue/totalCurrent)*100 : 0;
+    const idealValue=futureTotal>0 ? (targetPct/100)*futureTotal : 0;
+    const needValue=Math.max(0, idealValue-currentValue);
+    return {
+      type,
+      currentValue,
+      currentPct,
+      targetPct,
+      gapPct: currentPct-targetPct,
+      idealValue,
+      needValue,
+    };
+  });
+  const normalizeWeights=(items, getter)=>{
+    const weights=items.map(item=>Math.max(0, Number(getter(item))||0));
+    const sum=weights.reduce((s,v)=>s+v,0);
+    if(sum>0) return {weights,sum};
+    const fallback=items.map(()=>1);
+    return {weights:fallback,sum:fallback.length||1};
+  };
+  let weightSource='target-gap';
+  let weightedRows=rows.map(row=>row.needValue);
+  let weightedSum=weightedRows.reduce((s,v)=>s+v,0);
+  if(!(weightedSum>0)){
+    if(totalTarget>0){
+      weightSource='target-allocation';
+      const normalized=normalizeWeights(rows,row=>row.targetPct);
+      weightedRows=normalized.weights;
+      weightedSum=normalized.sum;
+    }else if(totalCurrent>0){
+      weightSource='current-allocation';
+      const normalized=normalizeWeights(rows,row=>row.currentValue);
+      weightedRows=normalized.weights;
+      weightedSum=normalized.sum;
+    }else{
+      weightSource='equal-split';
+      weightedRows=rows.map(()=>1);
+      weightedSum=rows.length||1;
+    }
+  }
+  const amountCents=Math.round(amount*100);
+  const raw=rows.map((row,idx)=>{
+    const weight=Math.max(0, Number(weightedRows[idx])||0);
+    const exact=weightedSum>0 ? (amountCents*weight)/weightedSum : 0;
+    const floor=Math.floor(exact);
+    return {...row, allocationCents:floor, remainder:exact-floor};
+  });
+  let allocated=raw.reduce((sum,row)=>sum+row.allocationCents,0);
+  let remainder=amountCents-allocated;
+  const order=[...raw].sort((a,b)=>{
+    const needDiff=(b.needValue-a.needValue) || (b.targetPct-a.targetPct) || (a.type.localeCompare(b.type,'pt-BR'));
+    return needDiff;
+  });
+  for(let i=0; remainder>0 && order.length; i=(i+1)%order.length, remainder--){
+    order[i].allocationCents+=1;
+  }
+  const finalMap=new Map(raw.map(row=>[row.type, row]));
+  order.forEach(row=>{
+    const current=finalMap.get(row.type);
+    if(current) current.allocationCents=row.allocationCents;
+  });
+  const distributed=rows.map(row=>{
+    const current=finalMap.get(row.type) || row;
+    const allocation=current.allocationCents/100;
+    const projectedValue=row.currentValue+allocation;
+    const projectedPct=futureTotal>0 ? (projectedValue/futureTotal)*100 : 0;
+    return {
+      ...row,
+      allocation,
+      projectedValue,
+      projectedPct,
+    };
+  }).sort((a,b)=>b.needValue-a.needValue || b.allocation-a.allocation || a.type.localeCompare(b.type,'pt-BR'));
+  const distributedTotal=distributed.reduce((sum,row)=>sum+row.allocation,0);
+  const missing=amount-distributedTotal;
+  if(Math.abs(missing)>=0.01 && distributed.length){
+    distributed[0].allocation=Number((distributed[0].allocation+missing).toFixed(2));
+    distributed[0].projectedValue=Number((distributed[0].projectedValue+missing).toFixed(2));
+    distributed[0].projectedPct=futureTotal>0 ? (distributed[0].projectedValue/futureTotal)*100 : 0;
+  }
+  return {
+    amount,
+    totalCurrent,
+    totalTarget,
+    futureTotal,
+    weightSource,
+    rows:distributed,
+    distributedTotal:Number(distributed.reduce((sum,row)=>sum+row.allocation,0).toFixed(2)),
+    unallocated:Number(Math.max(0, amount-distributed.reduce((sum,row)=>sum+row.allocation,0)).toFixed(2)),
+  };
 }
 function dashboardSnapshot(analysisRows){
   const portfolio=cx();
@@ -22629,9 +22998,9 @@ function dashboardInsightsPanel(data){
     <div class="premium-exec-value ${item.severity==='IMPORTANT'?'rd':item.severity==='ATTENTION'?'am':'gn'}">${severityLabel[item.severity]}</div>
   </div>`).join('') : '<div class="premium-empty">Nenhum ponto prioritário identificado na base atual.</div>';
   return `<div class="premium-panel portfolio-insights-panel">
-    <div class="premium-panel-head"><div><div class="premium-panel-title">Insights da carteira</div><div class="premium-panel-sub">Observações derivadas dos dados atuais, sem recomendação de compra ou venda.</div></div><div class="premium-panel-badge">${insights.length} prioritário(s)</div></div>
+    <div class="premium-panel-head"><div><div class="premium-panel-title">Insights prioritários</div><div class="premium-panel-sub">Observações derivadas dos dados atuais, sem recomendação automática.</div></div><div class="premium-panel-badge">${insights.length} prioritário(s)</div></div>
     <div class="premium-exec-list">${rows}</div>
-    <div class="premium-panel-actions"><button class="btn bgh" type="button" onclick="go('ia')">Ver todos</button></div>
+    <div class="premium-panel-actions"><button class="btn bgh" type="button" onclick="go('ia')">Ver todos os insights</button></div>
   </div>`;
 }
 function dashboardLatestSourceInfo(){
@@ -22773,8 +23142,6 @@ function dashboardFinancialGoalsPanel(data){
       : patrimonyMetrics.hasTarget
         ? `Faltam ${fmt(patrimonyMetrics.missing)}`
         : 'Meta não configurada';
-  const patrimonyMeta=patrimonyConfigured>0 ? 'Meta cadastrada na aba Metas' : 'Meta não configurada · sugestão visual';
-  const patrimonySource=patrimonyConfigured>0 ? 'Patrimônio atual estimado da carteira' : 'Patrimônio sugerido apenas como referência visual';
   const incomeTargetLabel=fmt(incomeTarget);
   const incomeStatus=incomeMetrics.reached
     ? 'Meta atingida'
@@ -22786,7 +23153,6 @@ function dashboardFinancialGoalsPanel(data){
     : incomeMetrics.hasTarget
       ? `Faltam ${fmt(incomeMetrics.missing)}`
       : 'Meta não configurada';
-  const incomeMeta=incomeConfigured>0 ? 'Meta cadastrada na aba Metas' : 'Meta não configurada · sugestão visual';
   const incomeHistorySummary=goals.historySummary || {};
   const latestMonth=goals.latestMonth || null;
   const previousMonth=goals.previousMonth || null;
@@ -22813,8 +23179,7 @@ function dashboardFinancialGoalsPanel(data){
         ${financialGoalsBar(patrimonyMetrics, 'Progresso da meta patrimonial', patrimonyTone)}
         <div class="passive-goal-sub">${patrimonyStatus}</div>
         <div class="passive-goal-sub">${patrimonyGap}</div>
-        <div class="passive-goal-sub">${patrimonyMeta}</div>
-        <div class="passive-goal-sub">${patrimonySource}</div>
+        <div class="passive-goal-sub">Detalhe completo na tela de Metas.</div>
       </article>
       <article class="passive-goal-card financial-goal-card ${incomeTone}">
         <div class="passive-goal-kicker">Meta de renda passiva</div>
@@ -22823,9 +23188,9 @@ function dashboardFinancialGoalsPanel(data){
         ${financialGoalsBar(incomeMetrics, 'Progresso da meta de renda passiva', incomeTone)}
         <div class="passive-goal-sub">${incomeStatus}</div>
         <div class="passive-goal-sub">${incomeGap}</div>
-        <div class="passive-goal-sub">Média mensal histórica ${incomeAverage} · Melhor mês histórico ${incomeBestMonth}</div>
-        <div class="passive-goal-sub">${incomeCurrentStatus} · Último mês ${trendLabel} · ${trendDetail}</div>
-        <div class="passive-goal-sub">${incomeMeta}</div>
+        <div class="passive-goal-sub">Média 12M ${incomeAverage} · melhor mês ${incomeBestMonth}</div>
+        <div class="passive-goal-sub">${incomeCurrentStatus} · ${trendLabel} · ${trendDetail}</div>
+        <div class="passive-goal-sub">Detalhe completo na tela de Metas.</div>
       </article>
     </div>
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('metas')">Ver Metas</button></div>
@@ -23792,6 +24157,9 @@ function rendaFixaTab(){
     const getAssetEventId = (typeof rfAssetEventId === 'function') ? rfAssetEventId : (a)=>String(a?.id||a?.assetId||a?.rf_asset_id||'').trim();
     const assetId=asset?getAssetEventId(asset):null;
     const menuId=assetId?`rf-pos-menu-${assetId.replace(/[^a-zA-Z0-9_-]/g,'-')}`:'';
+    const display=row.explicit===false
+      ? {kind:'missing', currentText:'Atualização necessária', currentNote:'Valor atual não informado', resultClass:'neutral', resultText:'—'}
+      : {kind:'current', currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', resultClass:row.profit>=0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit)};
     return `
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
@@ -23799,8 +24167,9 @@ function rendaFixaTab(){
         <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}${row.issuer?` · ${esc(row.issuer)}`:''}</div>
       </div>
       <div class="premium-rf-row-value">
-        ${row.explicit===false?'Atualização necessária':fmt(row.current)}
-        <div class="premium-rf-row-meta">${row.explicit===false?'':fmt(row.profit)}</div>
+        ${display.currentText}
+        <div class="premium-rf-row-meta">${esc(display.currentNote)}</div>
+        <div class="premium-rf-row-meta ${display.resultClass}">${display.kind==='fallback-applied' ? '—' : display.resultText}</div>
       </div>
       ${assetId ? `
       <div class="premium-rf-row-actions">
@@ -23824,7 +24193,7 @@ function rendaFixaTab(){
       </div>
       <div class="premium-rf-row-value">
         ${maturityBadge(row.days)}
-        <div class="premium-rf-row-meta">${fmt(row.current)}</div>
+        <div class="premium-rf-row-meta">${row.explicit===false ? '—' : fmt(row.current)}</div>
       </div>
     </div>`).join('') : '<div class="premium-rf-empty">Nenhum vencimento futuro registrado.</div>';
 
@@ -23883,7 +24252,10 @@ function rendaFixaTab(){
         <td class="rf-strong">${esc(row.ticker)}</td>
         <td>${esc(row.category)}</td>
         <td class="rf-right">${fmt(row.applied)}</td>
-        <td class="rf-right">${fmt(row.current)}</td>
+        <td class="rf-right">
+          <div class="rf-strong">${row.explicit===false ? '—' : fmt(row.current)}</div>
+          <div class="rf-mini">${row.explicit===false ? 'Valor atual não informado' : 'Valor atual / líquido'}</div>
+        </td>
         <td class="rf-right ${row.profit>=0?'gn':'rd'}">
                   ${row.explicit === false
                     ? `<div class="rf-strong" style="color:#c8a84b">Atualização necessária</div><div class="rf-mini">Sem valor atual informado</div>`
@@ -23895,8 +24267,8 @@ function rendaFixaTab(){
         <div class="rf-mini">${row.eventCount>0 ? `${row.eventCount} evento${row.eventCount===1?'':'s'} · bruto ${fmt(row.receivedGross)} · IR ${fmt(row.receivedIr)} · IOF ${fmt(row.receivedIof)}` : 'Sem eventos de renda fixa'}</div>
       </td>
       <td class="rf-right ${row.resultWithEvents>=0?'gn':'rd'}">
-        <div class="rf-strong">${fmt(row.resultWithEvents)}</div>
-        <div class="rf-mini">${row.rentabWithEvents!=null?fmtP(row.rentabWithEvents):'—'} · resultado total</div>
+        <div class="rf-strong">${row.explicit===false ? '—' : fmt(row.resultWithEvents)}</div>
+        <div class="rf-mini">${row.explicit===false ? 'resultado total indisponível' : `${row.rentabWithEvents!=null?fmtP(row.rentabWithEvents):'—'} · resultado total`}</div>
       </td>
       <td class="rf-right ${row.pct>=0?'gn':'rd'}">${fmtP(row.pct)}</td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
@@ -24203,8 +24575,11 @@ function dash(){
         <div class="dashboard-page-heading-meta"><span>${data.analysis.length} ativos acompanhados</span></div>
       </div>
       ${executiveKPIs(data)}
-      <div class="dashboard-master-primary">
+      <div class="dashboard-analytical-primary">
+        ${dashboardEvolutionPanel(data)}
         ${dashboardHomeCompositionPanel(data)}
+      </div>
+      <div class="dashboard-master-primary">
         ${dashboardPassiveIncomePanel(data)}
         ${dashboardHomeHighlightsPanel()}
       </div>
@@ -24285,21 +24660,14 @@ function executiveKPIs(data){
 }
 function dashboardEvolutionPanel(data){
   const p=data?.portfolio||cx();
-  const snap=patrimonySnapshot(Number(S.dashPeriod)||12);
-  const vals=snap.months.map(m=>m.cumulative);
-  const hasData=vals.some(v=>v>0);
-  if(!hasData){
-    return `
-      <div class="dashboard-evolution-card">
-        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Aportes líquidos acumulados</div></div><span class="premium-panel-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
-        <div class="premium-empty">Registre movimentações na aba Aportes para acompanhar a evolução mensal.</div>
-      </div>
-    `;
-  }
   return `
-    <div class="dashboard-evolution-card">
-      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Aportes líquidos acumulados · janela de ${snap.count} meses.</div></div><span class="premium-panel-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
-      ${lineChart([{values:vals,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snap.months.map(m=>m.label))}
+    <div class="dashboard-evolution-card dashboard-evolution-empty">
+      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Patrimônio consolidado · histórico patrimonial ainda não disponível.</div></div><span class="premium-panel-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
+      <div class="premium-empty">Ainda não há série mensal confiável para desenhar a curva. Registre aportes e movimentações para liberar a evolução patrimonial.</div>
+      <div class="premium-panel-actions" style="margin-top:10px">
+        <button class="btn bp" onclick="go('aportes')">Registrar aporte</button>
+        <button class="btn bgh" onclick="go('ativos')">Ver ativos</button>
+      </div>
     </div>
   `;
 }
@@ -24820,6 +25188,7 @@ function ativos(){
       const result = marketValue - applied;
       const resultClass = result > 0 ? 'pos' : result < 0 ? 'neg' : 'neutral';
       const resultIndicator = result > 0 ? '↑' : result < 0 ? '↓' : '→';
+      const resultText = assetSignedMoneyText(result);
       const badgeClass = String(a.type||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]+/g,'-');
       return `<tr>
         <td class="col-ticker">${esc(a.ticker)}${qtag}</td>
@@ -24833,7 +25202,7 @@ function ativos(){
           <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
           ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
         </td>
-        <td class="col-result"><span class="result-indicator ${resultClass}">${resultIndicator} ${fmt(Math.abs(result))}</span></td>
+        <td class="col-result"><span class="result-indicator ${resultClass}">${resultIndicator} ${resultText}</span></td>
         <td class="col-rentab" style="color:${Number.isFinite(rentab)?(rentab>=0?'var(--success)':'var(--danger)'):'var(--muted)'};font-weight:700">${Number.isFinite(rentab)?fmtP(rentab):'—'}</td>
         <td class="col-alvo">${alvo>0?fmt(alvo):'—'}</td>
         <td class="col-total">${marketValue!=null?fmt(marketValue):'—'}</td>
@@ -24851,6 +25220,7 @@ function ativos(){
       const current = assetCurrentValue(a);
       const profit = assetJurosValue(a);
       const rentab = assetRentabPct(a);
+      const rfDisplay = assetRfDisplayState(a);
       const name = assetRfName(a);
       const subtype = assetRfSubtype(a);
       const indexer = assetRfIndexerLabel(a);
@@ -24866,7 +25236,7 @@ function ativos(){
         (iriof||a.rf_ir_iof===0)?`<span class="analysis-pill info">${esc(`IR/IOF: ${fmt(iriof)}`)}</span>`:'',
         note?`<span class="analysis-pill muted" title="${esc(note)}">${esc(`Obs.: ${note}`)}</span>`:''
       ].filter(Boolean).join('');
-      const result = current - applied;
+      const result = rfDisplay.kind==='fallback-applied' ? null : current - applied;
       const resultClass = Number.isFinite(profit) ? (profit > 0 ? 'pos' : profit < 0 ? 'neg' : 'neutral') : 'neutral';
       const resultIndicator = Number.isFinite(profit) ? (profit > 0 ? '↑' : profit < 0 ? '↓' : '→') : '→';
       return `<tr>
@@ -24886,9 +25256,15 @@ function ativos(){
         <td class="mu">${esc(appDate||'—')}</td>
         <td class="mu">${esc(dueDate||'—')}</td>
         <td class="rf-right" style="font-weight:700;color:#e2eaf6">${fmt(applied)}</td>
-        <td class="rf-right" style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'var(--success)':'var(--danger)'):'#e2eaf6'}">${fmt(current)}</td>
-        <td class="rf-right"><span class="result-indicator ${resultClass}">${resultIndicator} ${Number.isFinite(profit)?fmt(Math.abs(profit)):'—'}</span></td>
-        <td class="rf-right" style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'var(--success)':'var(--danger)'):'var(--muted)'}">${Number.isFinite(rentab)?fmtP(rentab):'—'}</td>
+        <td class="rf-right" style="font-weight:700;color:${rfDisplay.kind==='missing'?'#8da0bd':rfDisplay.kind==='fallback-applied'?'#d7e1ef':Number.isFinite(profit)?(profit>=0?'var(--success)':'var(--danger)'):'#e2eaf6'}">
+          <div class="rf-strong">${rfDisplay.currentText}</div>
+          <div class="rf-mini">${esc(rfDisplay.currentNote)}</div>
+        </td>
+        <td class="rf-right">
+          <span class="result-indicator ${rfDisplay.resultClass}">${resultIndicator} ${Number.isFinite(result)?assetSignedMoneyText(result):'—'}</span>
+          <div class="rf-mini">${esc(rfDisplay.resultNote)}</div>
+        </td>
+        <td class="rf-right" style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'var(--success)':'var(--danger)'):'var(--muted)'}">${rfDisplay.kind==='fallback-applied' ? '—' : (Number.isFinite(rentab)?fmtP(rentab):'—')}</td>
         <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
         <td style="white-space:nowrap">${assetActionMenuHtml(a, true)}</td>
       </tr>`;
@@ -25105,8 +25481,8 @@ function ativos(){
   const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
   return`<div class="sh">
     <div>
-      <div class="st">Meus Ativos (${S.assets.length})</div>
-      <div class="mu" style="font-size:12px;margin-top:4px">Ativos agrupados por categoria. Abra cada bloco para ver os detalhes e editar um item.</div>
+      <div class="st">Ativos</div>
+      <div class="mu" style="font-size:12px;margin-top:4px">${S.assets.length} ativos agrupados por categoria. Abra cada bloco para ver os detalhes e editar um item.</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
@@ -25115,7 +25491,6 @@ function ativos(){
     </div>
   </div>
   <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
-    <button class="asset-inner-tab ${innerTab==='patrimonio'?'on':''}" onclick="setAssetsInnerTab('patrimonio')" role="tab" aria-selected="${innerTab==='patrimonio'?'true':'false'}">Patrimônio</button>
     <button class="asset-inner-tab ${innerTab==='analise'?'on':''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab==='analise'?'true':'false'}">Análise</button>
     <button class="asset-inner-tab ${innerTab==='desempenho'?'on':''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab==='desempenho'?'true':'false'}">Desempenho</button>
     <button class="asset-inner-tab ${innerTab==='renda-fixa'?'on':''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab==='renda-fixa'?'true':'false'}">Renda Fixa</button>
@@ -25425,13 +25800,7 @@ function apTab(){
   const latestContributions=contributionStats.latest.length?`<div class="aporte-contribution-list">${contributionStats.latest.map(item=>{const row=item.row;const ticker=String(row.ticker||row.name||row.title||'Movimentação').trim();const name=String(row.name||row.product||row.title||ticker).trim();const detail=[item.type,row.sector||row.asset_sector].filter(Boolean).join(' · ')||'Sem classificação';return`<div class="aporte-contribution-item"><div class="aporte-contribution-date">${esc(row.date||row.rf_application_date||'Sem data')}</div><div><div class="aporte-contribution-name">${esc(name||ticker)}</div><div class="aporte-contribution-meta">${esc(ticker)} · ${esc(detail)}</div></div><div class="aporte-contribution-total">${fmt(item.value)}</div></div>`}).join('')}</div>`:'<div class="evo-empty">Nenhum aporte de investimento registrado.</div>';
   const classTotal=Math.max(1,contributionStats.total);
   const classDistribution=contributionStats.classes.length?`<section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Aportes por classe</div><div class="mu">Distribuição das entradas confirmadas</div></div></div><div class="aporte-class-list">${contributionStats.classes.map(([type,value])=>`<div class="aporte-class-row"><div class="cl">${esc(type)}</div><div class="cv">${fmt(value)}</div><div class="aporte-class-track"><div class="aporte-class-fill" style="width:${Math.max(4,(value/classTotal)*100).toFixed(1)}%"></div></div></div>`).join('')}</div></section>`:'';
-  const contributionPanels=`<div class="aporte-summary-columns"><section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Últimos aportes</div><div class="mu">Compras e aplicações, sem vendas ou proventos</div></div></div>${latestContributions}</section>${classDistribution}</div>`;
-  const movementCards=`<div class="ap-summary">
-    <div class="card ap-summary-activity"><div class="cl">Compras realizadas</div><div class="cv" style="color:#818cf8">${fmt(compras)}</div><div class="cs">Total comprado</div></div>
-    <div class="card ap-summary-activity"><div class="cl">Vendas realizadas</div><div class="cv" style="color:#f87171">${fmt(vendas)}</div><div class="cs">Total vendido</div></div>
-    <div class="card ap-summary-activity"><div class="cl">Operações</div><div class="cv" style="color:#e2eaf6">${S.aportes.length}</div><div class="cs">Total de registros</div></div>
-    <div class="card ap-summary-activity"><div class="cl">Valor atual da carteira</div><div class="cv" style="color:#e2eaf6">${fmt(valorAtualCarteira)}</div><div class="cs">Contexto patrimonial</div></div>
-  </div>`;
+  const contributionPanels=`<div class="aporte-summary-columns">${classDistribution}<section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Últimos aportes</div><div class="mu">Compras e aplicações, sem vendas ou proventos</div></div></div>${latestContributions}</section></div>`;
   const reserveItems=filtered.filter(a=>{
     const type=normalizeType(a.type||a.asset_type||'','');
     const op=String(a.operation||a.op||'').toLowerCase();
@@ -25563,12 +25932,12 @@ function apTab(){
     ? `${reserveDetails}<div class="ag-wrap">${sections||'<div class="aporte-empty">Nenhum lançamento encontrado para esta busca ou filtro.</div>'}</div>`
     : '<div class="aporte-empty">Nenhuma operação registrada ainda.</div>';
   const viewContent=mode==='ativo'
-    ? aporteByAssetHtml(extractRows)
-    : mode==='categorias'
-      ? categoriesContent
-      : mode==='resumo'
-        ? `${summaryCards||'<div class="aporte-empty">Cadastre movimentações para visualizar o resumo.</div>'}${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${movementCards}${reserveSummary}`
-        : aporteExtractHtml(extractRows);
+      ? aporteByAssetHtml(extractRows)
+      : mode==='categorias'
+        ? categoriesContent
+        : mode==='resumo'
+          ? `${summaryCards||'<div class="aporte-empty">Cadastre movimentações para visualizar o resumo.</div>'}${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${reserveSummary}`
+          : aporteExtractHtml(extractRows);
   return`<div class="aporte-premium">
     <div class="sh">
       <div>
@@ -25585,13 +25954,15 @@ function apTab(){
         ${globalThis.PortfolioMovementPreview?.isEnabled?.() ? `<button class="btn bgh" onclick="globalThis.PortfolioMovementPreview.open()">Nova movimentação inteligente</button>` : ''}
       </div>
     </div>
-    <div class="card" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:8px">Importações</div>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📥 B3</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📊 Excel</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📄 PDF</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openBrokerNoteImport()">🧾 Nota de corretagem</button>
-    </div>
+    <details class="card aportes-imports-panel">
+      <summary>Importar movimentações</summary>
+      <div class="aporte-imports-options">
+        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📥 B3</button>
+        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📊 Excel</button>
+        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📄 PDF</button>
+        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openBrokerNoteImport()">🧾 Nota de corretagem</button>
+      </div>
+    </details>
     ${frmP()}
     ${aporteViewModeTabs()}
     ${mode!=='resumo'?aporteFilterTabs():''}
@@ -25644,7 +26015,8 @@ function saveMetaPatrimonioTarget(){
   if(!canEditFromThisTab('salvar meta de patrimônio')) return;
   S.goals=S.goals||{};
   S.goals.patrimonio=S.goals.patrimonio||{};
-  S.goals.patrimonio.target=Number(document.getElementById('mp-head-target')?.value)||0;
+  const raw=Number(document.getElementById('mp-head-target')?.value);
+  S.goals.patrimonio.target=Number.isFinite(raw) ? Math.max(0, raw) : 0;
   save(); render();
 }
 function setMetaAssetType(type){
@@ -27488,22 +27860,24 @@ function setDividendMonthlyHistoryView(view){
 }
 function dividendMonthlyTimeline(){
   const stats=passiveIncomeGoalStats();
-  const goal=stats.target;
   if(!stats.byMonth.length) return dividendEmptyState('Sem evolução mensal no período selecionado.', 'Mude o filtro de período ou a busca para ver meses com dados.');
-  const currentLabel=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.label || '';
-  return `<div class="div-timeline-shell">
-    <div class="div-timeline-summary">
-      <div class="div-timeline-summary-title">Evolução mensal oficial</div>
-      <div class="div-timeline-summary-sub">Valores já gravados, com o mês atual destacado e sem projeção nova.</div>
-      <div class="div-timeline-summary-meta">${stats.byMonth.length} mês(es) · ${fmt(stats.total12)} no período${currentLabel?` · destaque para ${esc(currentLabel)}`:''}</div>
-    </div>
-    <div class="div-timeline">${stats.byMonth.map(row=>{
+  const max=Math.max(...stats.byMonth.map(row=>Number(row.total)||0),1);
+  const width=720,height=230,left=34,right=12,top=16,bottom=34;
+  const plotW=width-left-right,plotH=height-top-bottom;
+  const barW=Math.max(10,Math.min(34,(plotW/stats.byMonth.length)*.58));
+  const bars=stats.byMonth.map((row,index)=>{
+    const value=Math.max(0,Number(row.total)||0);
+    const x=left+(index+.5)*(plotW/stats.byMonth.length)-barW/2;
+    const barH=value/max*plotH;
+    const y=top+plotH-barH;
     const dt=new Date(`${row.key}-01T12:00:00`);
-    const reached=goal>0&&row.total>=goal;
-    const pct=goal>0?Math.min(100,row.total/goal*100):0;
-    const label=dt.toLocaleDateString('pt-BR',{month:'long',year:'2-digit'});
-    return `<article class="div-timeline-card${row.key===stats.currentMonthKey?' current':''}" title="${esc(`${label} · ${fmt(row.total)} · ${row.count} lançamento(s) · ${goal>0?(reached?'meta atingida':'abaixo da meta'):'sem meta definida'}`)}" aria-label="${esc(`${label} com ${fmt(row.total)} recebidos em ${row.count} lançamento(s)`)}"><div class="div-timeline-month">${esc(label)}</div><div class="div-timeline-value">${fmt(row.total)}</div><div class="div-timeline-sub">${row.count} lançamento(s) · ${goal>0?(reached?'meta atingida':'abaixo da meta'):'sem meta definida'}</div><div class="div-timeline-progress"><div style="width:${pct.toFixed(1)}%"></div></div></article>`;
-  }).join('')}</div></div>`;
+    const label=dt.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+    const active=row.key===stats.currentMonthKey;
+    return `<g class="dividend-chart-point" aria-label="${esc(`${label}: ${fmt(value)}`)}"><rect class="chart-bar${active?' current':''}" style="fill:${active?'#22c55e':'#4f46e5'}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(3,barH).toFixed(1)}" rx="4"><title>${esc(`${label}: ${fmt(value)}`)}</title></rect><text style="fill:#7d8cad" x="${(x+barW/2).toFixed(1)}" y="${height-10}" text-anchor="middle">${esc(label)}</text></g>`;
+  }).join('');
+  const currentLabel=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.label || '';
+  const grid=[0,.5,1].map(step=>{const y=top+plotH-step*plotH;return `<line class="chart-grid" style="stroke:#263650" x1="${left}" x2="${width-right}" y1="${y}" y2="${y}"/><text style="fill:#7d8cad" x="${left-6}" y="${y+3}" text-anchor="end">${esc(fmt(max*step))}</text>`}).join('');
+  return `<div class="dividend-timeline-summary"><div class="div-timeline-summary-title">Evolução mensal oficial</div><div class="div-timeline-summary-sub">Valores já gravados, com o mês atual destacado e sem projeção.</div><div class="div-timeline-summary-meta">${stats.byMonth.length} mês(es) · ${fmt(stats.total12)} no período${currentLabel?` · destaque para ${esc(currentLabel)}`:''}</div></div><svg class="dividend-evolution-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução mensal dos proventos">${grid}${bars}</svg>`;
 }
 function dividendSummaryCards(){
   const stats=passiveIncomeGoalStats();
@@ -27677,13 +28051,41 @@ function dividendFilterTabs(){
   const types=[['all','Todos'],['dividend','Dividendos'],['jcp','JCP'],['income','Rendimento FII'],['other','Outros']];
   const classes=[['all','Todas as classes'],['acao','Ação'],['fii','FII'],['etf','ETF'],['renda-fixa','Renda Fixa'],['outros','Outros']];
   const periods=[['all','Todo histórico'],['month','Este mês'],['12m','Últimos 12 meses']];
-  return `<div class="div-premium-toolbar"><div style="display:flex;flex-direction:column;gap:8px;min-width:0;flex:1 1 100%"><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap"><div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div><div class="div-premium-filters">${types.map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}</div></div><button type="button" class="btn bgh" style="min-height:44px;padding:8px 12px;font-size:11px" ${ (S.dividendFilter!=='all' || S.dividendClassFilter!=='all' || S.dividendPeriod!=='all' || (S.dividendSearch||'').trim()!=='') ? '' : 'disabled' } aria-label="Limpar filtros" onclick="clearAllDividendFilters()">Limpar filtros</button><details class="div-collapsible"><summary class="div-collapsible-summary"><div class="div-collapsible-main"><div class="div-collapsible-title">Mais filtros</div><div class="div-collapsible-sub">Classe e período</div></div><div class="div-collapsible-meta"><span class="when-closed">clique para abrir</span><span class="when-open">clique para ocultar</span></div><div class="div-collapsible-chev">▸</div></summary><div class="div-collapsible-body"><div class="div-premium-filters" style="flex-wrap:wrap;overflow:visible">${classes.map(([id,label])=>`<button class="div-premium-chip ${S.dividendClassFilter===id?'on':''}" onclick="setDividendClassFilter('${id}')">${label}</button>`).join('')}<span class="div-premium-chip subtle" style="pointer-events:none">Período</span>${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div></div></details></div></div>`;
+  const activeCount=[S.dividendFilter,S.dividendClassFilter,S.dividendPeriod].filter(v=>String(v||'all')!=='all').length;
+  return `<div class="div-premium-toolbar div-dividend-toolbar">
+    <div class="div-dividend-toolbar-main">
+      <div class="div-premium-search"><span>🔎</span><input id="dividend-premium-search" value="${esc(S.dividendSearch||'')}" oninput="setDividendSearch(this.value)" placeholder="Buscar ticker, nome, tipo, mês, ano, observação ou valor"></div>
+      <div class="div-premium-filters div-dividend-types">${types.slice(0,3).map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}</div>
+    </div>
+    <div class="div-dividend-toolbar-actions">
+      <button type="button" class="btn bgh" style="min-height:40px;padding:8px 12px;font-size:11px" ${ (S.dividendFilter!=='all' || S.dividendClassFilter!=='all' || S.dividendPeriod!=='all' || (S.dividendSearch||'').trim()!=='') ? '' : 'disabled' } aria-label="Limpar filtros" onclick="clearAllDividendFilters()">Limpar filtros</button>
+      <details class="div-dividend-more">
+        <summary class="div-dividend-more-summary"><span>Mais filtros</span><span class="div-dividend-more-meta">${activeCount} filtro(s)</span></summary>
+        <div class="div-dividend-more-body">
+          <div class="div-dividend-more-group">
+            <div class="div-dividend-more-label">Tipos extras</div>
+            <div class="div-premium-filters div-dividend-types">${types.slice(3).map(([id,label])=>`<button class="div-premium-chip ${S.dividendFilter===id?'on':''}" onclick="setDividendFilter('${id}')">${label}</button>`).join('')}</div>
+          </div>
+          <div class="div-dividend-more-group">
+            <div class="div-dividend-more-label">Classe</div>
+            <div class="div-premium-filters div-dividend-types" style="flex-wrap:wrap">${classes.map(([id,label])=>`<button class="div-premium-chip ${S.dividendClassFilter===id?'on':''}" onclick="setDividendClassFilter('${id}')">${label}</button>`).join('')}</div>
+          </div>
+          <div class="div-dividend-more-group">
+            <div class="div-dividend-more-label">Período</div>
+            <div class="div-premium-filters div-dividend-types" style="flex-wrap:wrap">${periods.map(([id,label])=>`<button class="div-premium-chip ${S.dividendPeriod===id?'on':''}" onclick="setDividendPeriod('${id}')">${label}</button>`).join('')}</div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>`;
 }
 function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const mode=['overview','received','asset','monthly','timeline','review'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
   S.dividendViewMode=mode;
   const rows=filteredDividendRows();
-  const tabs=[['overview','Visão geral'],['received','Recebimentos'],['asset','Por ativo'],['monthly','Histórico mensal'],['timeline','Linha do tempo'],['review','Revisão']];
+  const tabs=[['overview','Visão geral'],['received','Recebimentos'],['asset','Por ativo'],['review','Revisão']];
+  const extraViews=[['monthly','Histórico mensal'],['timeline','Linha do tempo']];
+  const extraViewsOpen=['monthly','timeline'].includes(mode);
   const recentSection=dividendCompactSectionHeader(
     'received',
     'Últimos recebimentos',
@@ -27697,8 +28099,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendAssetSummary(rows),
     dividendsByAssetView(rows)
   );
-  const monthlySection=dividendMonthlyTableBlock(rows, mode==='overview');
-  // Guardrail legado: dividendMonthlyTableBlock(rows, true) permanece documentado; a visao geral inicia recolhida por UX.
+  const monthlySection=dividendMonthlyTableBlock(rows, mode==='monthly');
   const timelineSection=dividendCompactSectionHeader(
     'timeline',
     'Linha do tempo',
@@ -27710,7 +28111,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const dfStats=passiveIncomeGoalStats();
   const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline(),true)}</div><div>${dividendUpcomingSection(rows,true)}</div></div>`;
   const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendCompactSectionHeader('asset','Distribuição por ativo',dividendAssetSummary(rows),dividendsByAssetView(rows))}</div><div>${dividendDistributionPanel(dfStats)}</div></div>`;
-  const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Lista e matriz mensal com filtros oficiais.</span></div>${monthlySection}</div>`;
+  const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Consulta mensal com filtros oficiais e leitura detalhada sob demanda.</span></div>${monthlySection}</div>`;
   const reviewBlock=`<div class="dividend-review-context">${reviewSection}</div>`;
   // Mantem a referencia do contrato visual legado sem renderizar KPIs duplicados: ${dividendSummaryCards()}
   const overviewBody=`${dividendExecutiveKpis()}${primaryBlocks}${secondaryBlocks}${historyBlock}${reviewBlock}`;
@@ -27726,7 +28127,13 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><div class="div-premium-title">Dividendos &amp; Proventos</div><div class="div-premium-sub">Acompanhe a renda gerada pela carteira.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
       ${dividendHeroHeader(passiveIncomeGoalStats())}
-      <div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
+      <div class="div-premium-tabs">
+        ${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}
+        <details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}>
+          <summary class="div-dividend-moreviews-summary"><span>+${extraViews.length}</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'mais'}</span></summary>
+          <div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
+        </details>
+      </div>
     </div>
     ${frmD()}
     ${body}
@@ -28300,7 +28707,7 @@ function metasTab(){
   <div class="page-heading">🎯 Metas</div>
   <div class="page-sub">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
-  <div class="cards" style="margin-bottom:8px;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))">
+  <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
     <div class="card al metas-kpi-card" style="border-left-color:var(--warning)"><div class="metas-kpi-label">Renda projetada/mês</div><div class="metas-kpi-value" style="color:var(--warning)">${fmt(mD)}</div><div class="metas-kpi-sub">Estimativa da carteira</div></div>
     <div class="card al metas-kpi-card" style="border-left-color:var(--success)"><div class="metas-kpi-label">Projeção anual</div><div class="metas-kpi-value" style="color:var(--success)">${fmt(aD)}</div></div>
     <div class="card al metas-kpi-card" style="border-left-color:var(--primary)"><div class="metas-kpi-label">DY médio</div><div class="metas-kpi-value" style="color:var(--primary)">${avgDY.toFixed(2)}%</div></div>
@@ -28308,8 +28715,8 @@ function metasTab(){
   </div>
 
   <div class="metas-summary-bar" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px">
-    <div style="flex:1;min-width:200px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
-    <div style="flex:1;min-width:200px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
+    <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
+    <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
   </div>
 
   ${passiveIncomeGoalBlock(passiveGoal, projCurrent)}
@@ -28324,12 +28731,13 @@ function metasTab(){
     </summary>
     <div class="sec-body">
       <div class="cg" style="gap:10px;grid-template-columns:1fr 1fr">
-        <div class="card al" style="border-left-color:var(--primary);padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+        <div class="card al" style="border-left-color:var(--primary);padding:12px;display:flex;flex-direction:column;gap:8px;min-height:0">
           <div class="fl">Meta de patrimônio</div>
-          <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor||''}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()">
+          <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" value="${metaPatValor}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()" style="min-height:44px;padding:8px 10px;font-size:14px">
           <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
+          ${metaPatValor > 0 ? `<div class="btn bgh" style="margin-top:4px" onclick="event.stopPropagation(); document.getElementById('mp-head-target').value=''; saveMetaPatrimonioTarget();">🗑️ Remover meta</div>` : ''}
         </div>
-        <div class="card al" style="border-left-color:var(--primary);padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:0">
+        <div class="card al" style="border-left-color:var(--primary);padding:12px;display:flex;flex-direction:column;gap:8px;min-height:0">
           <div class="fl">Progresso</div>
           <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
             <div class="mu">Carteira atual</div>
@@ -28339,7 +28747,7 @@ function metasTab(){
             <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
             <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
           </div>
-          <div class="dbt" style="height:7px;margin-top:0"><div class="dbf" style="width:${metaPat.prog.toFixed(1)}%;background:var(--primary)"></div></div>
+          <div class="dbt" style="height:8px;margin-top:4px;border-radius:4px;background:var(--border)"><div class="dbf" style="width:${Math.min(100, metaPat.prog.toFixed(1))}%;background:var(--primary);height:100%;border-radius:4px;transition:width 0.3s ease"></div></div>
         </div>
       </div>
     </div>
@@ -28361,7 +28769,7 @@ function metasTab(){
         <tbody>${allocRows || '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Configure a distribuição na aba Ativos.</td></tr>'}</tbody>
       </table></div></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
-        <button class="btn bgh" onclick="openAllocationGoal()">Abrir configurador</button>
+        <button class="btn bp" onclick="openAllocationGoal()">Configurar distribuição</button>
       </div>
     </div>
   </details>
@@ -28545,37 +28953,56 @@ function ajudarTab(){
     const diff=current-target;
     return {type:item.type,target,current,diff};
   }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff));
-  const allocSection=allocRows.length?`<div class="rebalance-alloc">
-    <div class="rebalance-alloc-head">
-      <div><div class="rebalance-alloc-title">Alocação atual vs ideal</div><div class="rebalance-alloc-sub">Comparação entre a distribuição real e as metas cadastradas.</div></div>
+  const topGap=allocRows[0]||null;
+  const aboveTarget=allocRows.filter(row=>row.diff>0).length;
+  const belowTarget=allocRows.filter(row=>row.diff<0).length;
+  const allocSection=allocRows.length?`<details class="sec rebalance-alloc-details">
+    <summary>
+      <div>
+        <div class="sec-title">Alocação atual vs ideal</div>
+        <div class="sec-meta">Atual x meta da carteira.</div>
+      </div>
+      <div class="sec-meta">${topGap ? `Abrir · ${esc(topGap.type)}` : 'Abrir detalhes'}</div>
+    </summary>
+    <div class="sec-body">
+      <div class="rebalance-alloc">
+        <div class="rebalance-alloc-head">
+          <div><div class="rebalance-alloc-title">Comparação entre a distribuição real e as metas cadastradas.</div></div>
+        </div>
+        <div class="rebalance-alloc-row rebalance-alloc-labels"><div>Classe</div><div>Atual</div><div>Meta</div><div>Diferença</div><div>Progresso</div></div>
+        ${allocRows.map(r=>{
+          const diffClass=r.diff>0?'pos':r.diff<0?'neg':'';
+          const pctClass=r.diff>0?'above':r.diff<0?'below':'';
+          const barWidth=Math.min(100,Math.max(2,r.current));
+          const targetLeft=Math.min(100,Math.max(0,r.target));
+          return `<div class="rebalance-alloc-item">
+            <div class="rebalance-alloc-class">${esc(r.type)}</div>
+            <div class="rebalance-alloc-pct ${pctClass}">${r.current.toFixed(1)}%</div>
+            <div class="rebalance-alloc-pct">${r.target.toFixed(1)}%</div>
+            <div class="rebalance-alloc-diff ${diffClass}">${r.diff>=0?'+':''}${r.diff.toFixed(1)} p.p.</div>
+            <div class="rebalance-alloc-bar-wrap"><div class="rebalance-alloc-bar current" style="width:${barWidth.toFixed(1)}%"></div><div class="rebalance-alloc-bar target" style="left:${targetLeft.toFixed(1)}%"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>
-    <div class="rebalance-alloc-row rebalance-alloc-labels"><div>Classe</div><div>Atual</div><div>Meta</div><div>Diferença</div><div>Progresso</div></div>
-    ${allocRows.map(r=>{
-      const diffClass=r.diff>0?'pos':r.diff<0?'neg':'';
-      const pctClass=r.diff>0?'above':r.diff<0?'below':'';
-      const barWidth=Math.min(100,Math.max(2,r.current));
-      const targetLeft=Math.min(100,Math.max(0,r.target));
-      return `<div class="rebalance-alloc-item">
-        <div class="rebalance-alloc-class">${esc(r.type)}</div>
-        <div class="rebalance-alloc-pct ${pctClass}">${r.current.toFixed(1)}%</div>
-        <div class="rebalance-alloc-pct">${r.target.toFixed(1)}%</div>
-        <div class="rebalance-alloc-diff ${diffClass}">${r.diff>=0?'+':''}${r.diff.toFixed(1)} p.p.</div>
-        <div class="rebalance-alloc-bar-wrap"><div class="rebalance-alloc-bar current" style="width:${barWidth.toFixed(1)}%"></div><div class="rebalance-alloc-bar target" style="left:${targetLeft.toFixed(1)}%"></div></div>
-      </div>`;
-    }).join('')}
-  </div>`:'';
+  </details>`:'';
   return`<div class="rebalance-shell">
   <div class="rebalance-hero">
     <div class="rebalance-title">Rebalanceamento</div>
-    <div class="rebalance-subtitle">Mantenha sua carteira alinhada aos seus objetivos.</div>
+    <div class="rebalance-subtitle">Veja onde o próximo aporte ajuda mais e quais classes estão mais distantes do plano.</div>
     <div class="rebalance-form">
       <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500" style="min-height:44px"></div></div>
       <button class="btn bp" onclick="calcRebalance()">Simular</button>
     </div>
   </div>
-  <div class="rebalance-safety">Esta análise é apenas apoio de organização da carteira. Não é recomendação de compra, venda ou manutenção.</div>
-  ${allocSection}
+  <div class="rebalance-quickline">
+    <span class="rebalance-quickline-pill">Leitura rápida</span>
+    ${topGap ? `<strong>${esc(topGap.type)}</strong> lidera o desalinhamento em <strong>${Math.abs(topGap.diff).toFixed(1)} p.p.</strong>` : 'Sem base suficiente para leitura rápida'}
+    ${allocRows.length ? `· <strong>${aboveTarget}</strong> acima da meta · <strong>${belowTarget}</strong> abaixo da meta` : ''}
+  </div>
+  <div class="rebalance-safety">Ferramenta de apoio de organização da carteira. Não é recomendação de compra, venda ou manutenção.</div>
   <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha a carteira atualizada para gerar a simulação.</div>':'<div class="rebalance-empty">Informe um valor maior que zero e mantenha a carteira atualizada para gerar a simulação.</div>'}</div>
+  ${allocSection}
   <div class="rebalance-about"><div class="rebalance-about-title">Sobre o rebalanceamento</div><div class="rebalance-about-text">O rebalanceamento é o processo de realocar recursos para manter a distribuição desejada entre classes de ativos. Ele ajuda a controlar riscos e manter a carteira alinhada aos seus objetivos de longo prazo. Esta ferramenta oferece uma simulação prudente, mas decisões de investimento devem considerar seu perfil completo.</div></div>
   </div>`;
 }
@@ -28583,50 +29010,48 @@ function calcRebalance(){
   const aporte=Number(document.getElementById('reb-val')?.value)||0;
   const out=document.getElementById('reb-out'); if(!out) return;
   if(aporte<=0){out.innerHTML='<div class="rebalance-empty">Digite um valor maior que zero para iniciar a simulação.</div>';return;}
-  const analysis=prudentContributionAnalysis();
-  if(!analysis.rows.length||analysis.total<=0){out.innerHTML='<div class="rebalance-empty">Dados insuficientes para analisar a carteira. Confira quantidade e valor atual dos ativos.</div>';return;}
-  const list=analysis.candidates;
-  const insufficient=analysis.insufficient;
-  const avoided=analysis.avoided;
+  const distribution=rebalanceContributionDistribution(aporte);
+  if(!distribution.rows.length||distribution.totalCurrent<=0){out.innerHTML='<div class="rebalance-empty">Dados insuficientes para analisar a carteira. Confira a alocação atual e as metas cadastradas.</div>';return;}
   const summary=`<div class="rebalance-summary">
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Valor analisado</div><div class="rebalance-summary-value">${fmt(aporte)}</div><div class="rebalance-summary-note">Base informada para a simulação.</div></div>
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Ativos para estudo</div><div class="rebalance-summary-value">${list.length}</div><div class="rebalance-summary-note">Até cinco opções que passaram pelos filtros.</div></div>
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Evitados por concentração</div><div class="rebalance-summary-value">${avoided}</div><div class="rebalance-summary-note">Peso acima do limite prudente.</div></div>
-    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Dados insuficientes</div><div class="rebalance-summary-value">${insufficient}</div><div class="rebalance-summary-note">Sem base completa para análise.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Aporte informado</div><div class="rebalance-summary-value">${fmt(distribution.amount)}</div><div class="rebalance-summary-note">Valor usado na distribuição.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Classes com meta</div><div class="rebalance-summary-value">${distribution.rows.length}</div><div class="rebalance-summary-note">Distribuição baseada no alvo oficial.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Distribuído</div><div class="rebalance-summary-value">${fmt(distribution.distributedTotal)}</div><div class="rebalance-summary-note">${distribution.weightSource.replace(/-/g,' ')}.</div></div>
+    <div class="rebalance-summary-card"><div class="rebalance-summary-label">Restante</div><div class="rebalance-summary-value">${fmt(distribution.unallocated)}</div><div class="rebalance-summary-note">${distribution.unallocated>0?'Diferença por arredondamento':'Aporte todo alocado'}</div></div>
   </div>`;
-  if(!list.length){
-    out.innerHTML=`${summary}<div class="rebalance-empty">Nenhum ativo atende aos critérios prudentes no momento. Revise concentração, metas e dados disponíveis antes de aportar.</div>`;
+  if(!distribution.rows.length){
+    out.innerHTML=`${summary}<div class="rebalance-empty">Sem metas cadastradas para distribuir o aporte no momento.</div>`;
     return;
   }
-  const scoreSum=list.reduce((sum,row)=>sum+row.score,0);
-  const studyRows=list.map(row=>{
-    const value=scoreSum>0 ? aporte*(row.score/scoreSum) : 0;
-    const pctClass=row.pct<0?'rd':row.pct>0?'gn':'';
+  const studyRows=distribution.rows.map(row=>{
+    const currentClass=row.gapPct>0?'below':row.gapPct<0?'above':'';
+    const currentLabel=row.currentPct.toFixed(1)+'%';
+    const targetLabel=row.targetPct.toFixed(1)+'%';
+    const gapLabel=`${row.gapPct>=0?'+':''}${Math.abs(row.gapPct).toFixed(1)} p.p.`;
+    const projectedLabel=row.projectedPct.toFixed(1)+'%';
     return `<div class="rebalance-study-row">
       <div class="rebalance-study-asset">
         <div class="rebalance-study-ticker">${esc(row.ticker)}</div>
         <div class="rebalance-study-type">${esc(row.type)}${row.sector&&row.sector!=='—'?` · ${esc(row.sector)}`:''}</div>
       </div>
-      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Peso atual</div><div class="rebalance-study-stat-value">${row.share.toFixed(1)}%</div></div>
-      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Rentab.</div><div class="rebalance-study-stat-value ${pctClass}">${fmtP(row.pct)}</div></div>
-      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">DY</div><div class="rebalance-study-stat-value">${row.dy>0?row.dy.toFixed(2)+'%':'—'}</div></div>
-      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Sinal prudente</div><span class="analysis-pill signal ${esc(row.signal.tone)}">${esc(row.signal.label)}</span></div>
-      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Valor para estudo</div><div class="rebalance-study-value">${fmt(value)}</div></div>
-      <div class="rebalance-study-criteria">${esc(row.criteria.slice(0,4).join(' · '))}</div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Atual</div><div class="rebalance-study-stat-value">${currentLabel}</div></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Meta</div><div class="rebalance-study-stat-value">${targetLabel}</div></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Diferença</div><div class="rebalance-study-stat-value ${currentClass}">${gapLabel}</div></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Aporte sugerido</div><div class="rebalance-study-value">${fmt(row.allocation)}</div></div>
+      <div class="rebalance-study-stat"><div class="rebalance-study-stat-label">Peso futuro</div><div class="rebalance-study-stat-value">${projectedLabel}</div></div>
     </div>`;
   }).join('');
   out.innerHTML=`${summary}
     <div class="rebalance-study">
       <div class="rebalance-study-head">
         <div>
-          <div class="rebalance-study-title">Simulação prudente</div>
-          <div class="rebalance-study-sub">Distribuição indicativa para estudo, sem ordem automática de execução.</div>
+          <div class="rebalance-study-title">Distribuição do aporte</div>
+          <div class="rebalance-study-sub">Cálculo determinístico com base na alocação atual, nas metas e no valor informado.</div>
         </div>
-        <span class="analysis-pill muted">${list.length} ativo${list.length===1?'':'s'}</span>
+        <span class="analysis-pill muted">${distribution.rows.length} classe${distribution.rows.length===1?'':'s'}</span>
       </div>
-      <div class="rebalance-study-labels"><div>Ativo</div><div>Peso atual</div><div>Rentab.</div><div>DY</div><div>Sinal prudente</div><div>Valor para estudo</div><div>Critérios considerados</div></div>
+      <div class="rebalance-study-labels"><div>Classe</div><div>Atual</div><div>Meta</div><div>Diferença</div><div>Aporte sugerido</div><div>Peso futuro</div></div>
       ${studyRows}
-      <div class="rebalance-dy-note">O DY é usado apenas como apoio. Qualidade do ativo, recorrência dos pagamentos e riscos devem ser avaliados separadamente.</div>
+      <div class="rebalance-dy-note">A distribuição usa apenas a alocação atual, a meta cadastrada e o valor do aporte. Não considera desempenho passado nem recomendação de mercado.</div>
     </div>`;
 }
 
@@ -28824,10 +29249,8 @@ function generateIncomeAnalysis(){
 function generateRebalanceAnalysis(){
   const goals=allocationGoalItems();
   const actual=allocationActualByType();
-  const analysisRows=assetAnalysisRows();
-  const prudence=prudentContributionAnalysis();
   const totalActual=Number(actual.total)||0;
-  if(!goals.length || !analysisRows.length || totalActual<=0){
+  if(!goals.length || totalActual<=0){
     return {
       mode:'rebalance',
       title:'Rebalancear',
@@ -28849,7 +29272,9 @@ function generateRebalanceAnalysis(){
   const above=rows.filter(row=>row.diff>0);
   const below=rows.filter(row=>row.diff<0);
   const worst=rows[0] || null;
-  const prudentCandidates=(prudence.candidates || []).slice(0,3).map(row=>`${row.ticker || '—'} · ${row.signal?.label || '—'} · ${fmt(row.score || 0)}`);
+  const amount=Number(S.rebalanceAmount || S.rebalanceValue || 0) || 0;
+  const preview=amount>0 ? rebalanceContributionDistribution(amount, goals, actual) : null;
+  const previewRows=(preview?.rows || []).slice(0,3).map(row=>`${row.type} · ${fmt(row.allocation)} · ${row.gapPct>=0?'+':''}${row.gapPct.toFixed(1)} p.p.`);
   return {
     mode:'rebalance',
     title:'Rebalancear',
@@ -28865,9 +29290,10 @@ function generateRebalanceAnalysis(){
     priority: worst ? (worst.diff<0 ? `Reforçar ${worst.type} no próximo aporte.` : `Segurar ${worst.type} antes de ampliar posição.`) : 'Sem metas para priorizar.',
     actions:[
       worst ? `Direcionar novos aportes para ${worst.diff<0 ? worst.type : (below[0]?.type || worst.type)}.` : 'Definir metas de alocação para orientar próximos aportes.',
-      prudentCandidates.length ? `Estudo prudente por ativo: ${prudentCandidates.join(' · ')}` : 'Estudo prudente sem candidatos claros no momento.'
+      previewRows.length ? `Distribuição sugerida: ${previewRows.join(' · ')}` : 'Distribuição pronta quando houver aporte informado.'
     ],
     rows,
+    preview,
     emptyMessage:'Sem metas cadastradas para comparar alocação atual com o alvo.'
   };
 }
@@ -28934,6 +29360,85 @@ function generateConcentrationAnalysis(){
     emptyMessage:'Carteira sem base suficiente para medir concentração.'
   };
 }
+function insightHubSeverityLabel(severity){
+  return ({
+    IMPORTANT:'Prioridade',
+    ATTENTION:'Atenção',
+    INFO:'Informação'
+  })[severity] || 'Informação';
+}
+function insightHubRouteLabel(route){
+  return ({
+    ativos:'Ver Ativos',
+    ajudar:'Ver Rebalancear',
+    dividendos:'Ver Dividendos',
+    metas:'Ver Metas',
+    relatorios:'Ver Relatórios',
+    auditoria:'Abrir Auditoria',
+    'renda-fixa':'Ver Renda Fixa',
+    ia:'Abrir visão completa'
+  })[String(route||'').toLowerCase()] || 'Ver detalhes';
+}
+function insightHubEvidence(item){
+  const e=item?.evidence||{};
+  const chunks=[];
+  const current=Number(e.current);
+  const average=Number(e.average);
+  const target=Number(e.target);
+  const missing=Number(e.missing);
+  const share=Number(e.share);
+  const count=Number(e.count ?? e.issueCount);
+  if(Number.isFinite(current) && Number.isFinite(average)){
+    chunks.push(`Atual ${fmt(current)} · Média 12M ${fmt(average)}`);
+  }
+  if(Number.isFinite(target) && Number.isFinite(missing)){
+    chunks.push(`Meta ${fmt(target)} · Falta ${fmt(missing)}`);
+  }
+  if(Number.isFinite(share)){
+    chunks.push(`${fmtP(share)} da carteira`);
+  }
+  if(Number.isFinite(count)){
+    chunks.push(`${count} ocorrência(s)`);
+  }
+  return chunks.length ? chunks.join(' · ') : 'Base oficial derivada da carteira';
+}
+function insightHubRouteCta(item){
+  const route=String(item?.relatedRoute||'').trim();
+  const label=String(item?.actionLabel||'').trim() || insightHubRouteLabel(route);
+  return {route:route || 'ia', label};
+}
+function insightHubItem(item){
+  const sev=String(item?.severity||'INFO');
+  const cta=insightHubRouteCta(item);
+  const evidence=insightHubEvidence(item);
+  return `<article class="ai-hub-card ai-hub-${sev.toLowerCase()}">
+    <div class="ai-hub-card-top">
+      <div class="ai-hub-card-copy">
+        <div class="ai-hub-card-title">${esc(item.title)}</div>
+        <div class="ai-hub-card-desc">${esc(item.description)}</div>
+      </div>
+      <span class="ai-hub-pill">${esc(insightHubSeverityLabel(sev))}</span>
+    </div>
+    <div class="ai-hub-card-evidence">${esc(evidence)}</div>
+    <div class="ai-hub-card-foot">
+      <div class="ai-hub-card-route">${esc(item.category || 'Carteira')} · ${esc(item.relatedRoute || 'ia')}</div>
+      <button class="btn bgh ai-hub-cta" type="button" onclick="go('${esc(cta.route)}')">${esc(cta.label)}</button>
+    </div>
+  </article>`;
+}
+function insightHubSection(title, items, emptyText){
+  const list=Array.isArray(items)?items:[];
+  return `<section class="ai-hub-section">
+    <div class="ai-hub-section-head">
+      <div>
+        <div class="ai-hub-section-title">${esc(title)}</div>
+        <div class="ai-hub-section-sub">${esc(list.length ? `${list.length} insight(s)` : emptyText)}</div>
+      </div>
+      <div class="ai-hub-section-badge">${list.length}</div>
+    </div>
+    ${list.length ? `<div class="ai-hub-grid">${list.map(insightHubItem).join('')}</div>` : `<div class="ai-empty">${esc(emptyText)}</div>`}
+  </section>`;
+}
 function aiModeGenerators(mode){
   return ({
     overview:generateOverviewAnalysis,
@@ -28949,95 +29454,53 @@ function aiResultMarkup(){
   return aiRenderResult(result);
 }
 function iaTab(){
-  const focus=aiNormalizeFocus(S.aiFocus);
-  const meta=aiModeMeta(focus);
-  const portfolio=cx();
-  const analysisRows=assetAnalysisRows();
-  const total=Number(portfolio.tC)||0;
-  const invested=Number(portfolio.tI)||0;
-  const profit=Number(portfolio.tG)||0;
-  const rentPct=Number(portfolio.tGP)||0;
-  const byClass=new Map();
-  const bySector=new Map();
-  analysisRows.forEach(row=>{
-    const current=Number(row.current)||0;
-    if(!Number.isFinite(current)||current<=0) return;
-    const type=String(row.type||'Ação').trim()||'Ação';
-    const sector=String(row.sector||'Sem setor').trim()||'Sem setor';
-    byClass.set(type,(byClass.get(type)||0)+current);
-    bySector.set(sector,(bySector.get(sector)||0)+current);
-  });
-  const classRows=[...byClass.entries()].sort((a,b)=>b[1]-a[1]).map(([type,value])=>({type,value,share:total>0?(value/total)*100:0}));
-  const maxClassShare=classRows.length?Math.max(...classRows.map(r=>r.share)):1;
-  const sorted=[...analysisRows].filter(r=>Number.isFinite(r.current)&&r.current>0).sort((a,b)=>b.current-a.current||b.share-a.share);
-  const top5=sorted.slice(0,5);
-  const top5Share=top5.reduce((sum,row)=>sum+(Number(row.share)||0),0);
-  const topAsset=top5[0]||null;
-  const concentrationLevel=topAsset?(topAsset.share<=10?'Confortável':topAsset.share<=15?'Atenção':'Elevada'):'Sem base';
-  const CLASS_COLORS=['var(--primary)','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+  const snapshot={...dashboardSnapshot(assetAnalysisRows()), rf:rfIntelligenceSnapshot(), quality:dataQualitySnapshot()};
+  const insights=portfolioInsightsSnapshot(snapshot);
+  const featured=insights.slice(0,5);
+  const priority=featured.filter(item=>item.severity==='IMPORTANT');
+  const attention=featured.filter(item=>item.severity==='ATTENTION');
+  const info=featured.filter(item=>item.severity==='INFO');
+  const counts=featured.reduce((acc,item)=>{ const key=item.severity==='IMPORTANT'?'pri':item.severity==='ATTENTION'?'att':'inf'; acc[key]+=1; return acc; },{pri:0,att:0,inf:0});
+  const hiddenCount=Math.max(0, insights.length-featured.length);
+  const emptyState=insights.length ? 'Nenhum ponto importante exige atenção agora.' : 'Sem base suficiente para gerar insights confiáveis.';
   const focusButtons=[
     ['overview','Visão geral'],
     ['income','Priorizar renda'],
     ['rebalance','Rebalancear'],
     ['concentration','Concentração'],
-  ].map(([mode,label])=>`<button type="button" class="btn ${focus===mode?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="setAIFocus('${mode}')" aria-selected="${focus===mode?'true':'false'}" role="tab">${label}</button>`).join(' ');
-  const metricsTable=total>0?`<div class="ai-section">
-    <div class="ai-section-title">Principais métricas</div>
-    <table class="ai-metrics-table">
-      <thead><tr><th>Métrica</th><th style="text-align:right">Carteira</th></tr></thead>
-      <tbody>
-        <tr><td class="metric-name">Patrimônio atual</td><td class="metric-value">${fmt(total)}</td></tr>
-        <tr><td class="metric-name">Capital aplicado</td><td class="metric-value">${fmt(invested)}</td></tr>
-        <tr><td class="metric-name">Resultado</td><td class="metric-value" style="color:${profit>=0?'var(--success)':'var(--danger)'}">${fmt(profit)}</td></tr>
-        <tr><td class="metric-name">Rentabilidade</td><td class="metric-value" style="color:${rentPct>=0?'var(--success)':'var(--danger)'}">${rentPct>0?fmtP(rentPct):'—'}</td></tr>
-        <tr><td class="metric-name">Ativos analisados</td><td class="metric-value">${analysisRows.length}</td></tr>
-      </tbody>
-    </table>
-  </div>`:'';
-  const concentrationBlock=top5.length?`<div class="ai-concentration">
-    <div class="ai-concentration-head">
-      <div><div class="ai-concentration-title">Concentração</div><div class="ai-concentration-sub">Top 5 posições representam ${top5Share.toFixed(1)}% da carteira. Nível: ${concentrationLevel}.</div></div>
-    </div>
-    <div class="ai-concentration-row ai-concentration-labels"><div>Ativo</div><div>Valor</div><div>% Carteira</div><div>Peso</div></div>
-    ${top5.map(row=>{
-      const barWidth=Math.min(100,Math.max(2,row.share||0));
-      return `<div class="ai-concentration-item">
-        <div class="ai-concentration-ticker">${esc(row.ticker)}</div>
-        <div class="ai-concentration-type">${esc(row.type)}${row.sector&&row.sector!=='—'?` · ${esc(row.sector)}`:''}</div>
-        <div class="ai-concentration-pct">${fmt(row.current)}</div>
-        <div class="ai-concentration-pct">${row.share!=null?row.share.toFixed(1)+'%':'—'}</div>
-        <div class="ai-concentration-bar-wrap"><div class="ai-concentration-bar" style="width:${barWidth.toFixed(1)}%"></div></div>
-      </div>`;
-    }).join('')}
-  </div>`:'';
-  const distributionBlock=classRows.length?`<div class="ai-distribution">
-    <div class="ai-distribution-head">
-      <div><div class="ai-distribution-title">Distribuição por classe</div><div class="ai-distribution-sub">Composição da carteira por tipo de ativo.</div></div>
-    </div>
-    ${classRows.map((r,i)=>{
-      const barWidth=Math.min(100,Math.max(2,r.share));
-      return `<div class="ai-distribution-row">
-        <div class="ai-distribution-dot" style="background:${CLASS_COLORS[i%CLASS_COLORS.length]}"></div>
-        <div class="ai-distribution-name">${esc(r.type)}</div>
-        <div class="ai-distribution-value">${fmt(r.value)}</div>
-        <div class="ai-distribution-pct">${r.share.toFixed(1)}%</div>
-        <div class="ai-distribution-bar-wrap"><div class="ai-distribution-bar" style="width:${barWidth.toFixed(1)}%;background:${CLASS_COLORS[i%CLASS_COLORS.length]}"></div></div>
-      </div>`;
-    }).join('')}
-  </div>`:'';
-  return `<div class="ai-shell">
+  ].map(([mode,label])=>`<button type="button" class="btn ${S.aiFocus===mode?'bp':'bgh'}" style="padding:7px 10px;font-size:12px" onclick="setAIFocus('${mode}')" aria-selected="${S.aiFocus===mode?'true':'false'}" role="tab">${label}</button>`).join(' ');
+  return `<div class="ai-shell ai-hub-shell">
     <div class="ai-head">
       <div class="ai-head-copy">
-        <div class="ai-title">Análise da Carteira</div>
-        <div class="ai-subtitle">Insights e métricas da sua carteira, com base nos dados cadastrados.</div>
+        <div class="ai-title">Insights da carteira</div>
+        <div class="ai-subtitle">O que merece atenção agora e por quê. Leitura determinística, explicável e sem recomendação automática.</div>
       </div>
-      <button class="btn bp ai-cta" onclick="getAI()" ${S.aiStatus==='loading'?'disabled':''}>${esc(meta.cta)}</button>
+      <button class="btn bp ai-cta" onclick="getAI()" ${S.aiStatus==='loading'?'disabled':''}>Atualizar insights</button>
     </div>
-    <div class="ai-modebar" role="tablist" aria-label="Modo da análise">${focusButtons}</div>
-    ${metricsTable}
-    ${distributionBlock}
-    ${concentrationBlock}
-    <div class="aic" aria-live="polite">${aiRenderState()}</div>
+    <div class="ai-hub-summary">
+      <div class="ai-hub-summary-card pri"><div class="ai-hub-summary-label">Prioridades</div><div class="ai-hub-summary-value">${counts.pri}</div><div class="ai-hub-summary-note">Pontos que merecem atenção imediata</div></div>
+      <div class="ai-hub-summary-card att"><div class="ai-hub-summary-label">Atenção</div><div class="ai-hub-summary-value">${counts.att}</div><div class="ai-hub-summary-note">Observações relevantes para revisar</div></div>
+      <div class="ai-hub-summary-card inf"><div class="ai-hub-summary-label">Informações</div><div class="ai-hub-summary-value">${counts.inf}</div><div class="ai-hub-summary-note">Contexto útil sem urgência</div></div>
+    </div>
+    <div class="ai-hub-sections">
+      ${insightHubSection('Prioridades', priority, emptyState)}
+      ${insightHubSection('Atenção', attention, emptyState)}
+      ${insightHubSection('Informações', info, emptyState)}
+    </div>
+    ${hiddenCount>0?`<div class="ai-empty">Mais ${hiddenCount} insight(s) seguem disponíveis na base, mas a tela prioriza apenas os cinco mais relevantes.</div>`:''}
+    <details class="ai-compact-details">
+      <summary>
+        <div class="ai-compact-summary-main">
+          <div class="ai-compact-summary-title">Leituras complementares</div>
+          <div class="ai-compact-summary-sub">Concentração, renda e rebalanceamento continuam disponíveis como leitura detalhada.</div>
+        </div>
+        <div class="ai-compact-summary-meta">abrir</div>
+      </summary>
+      <div class="ai-compact-body">
+        <div class="ai-modebar" role="tablist" aria-label="Modo da análise">${focusButtons}</div>
+        <div class="aic" aria-live="polite">${aiRenderState()}</div>
+      </div>
+    </details>
   </div>`;
 }
 function setAIFocus(mode){
@@ -29109,7 +29572,7 @@ function mobileMenuDrawer(){
         <button onclick="mobileMenuClose();go('ajudar')"${S.tab==='ajudar'?' aria-current="page"':''}>⚖️ Rebalancear</button>
         <button onclick="mobileMenuClose();go('auditoria')"${S.tab==='auditoria'?' aria-current="page"':''}>🔎 Auditoria</button>
         <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>📑 Relatórios</button>
-        <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>🤖 IA</button>
+        <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>💡 Insights</button>
         <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>🧾 IRPF</button>
         <button onclick="mobileMenuClose();go('settings')"${S.tab==='settings'?' aria-current="page"':''}>⚙️ Configurações</button>
       </div>
@@ -29641,6 +30104,8 @@ function updateRfAssetSummary(selectElement) {
   const vencEl = document.getElementById('rf-asset-venc');
   const summaryDiv = document.getElementById('rf-asset-summary');
 
+  if (!summaryDiv) return;
+
   if (!assetId || assetId === '') {
     summaryDiv.style.display = 'none';
     return;
@@ -29657,9 +30122,9 @@ function updateRfAssetSummary(selectElement) {
   const rentab = Number(rfValues(asset)?.rentab) || 0;
   const venc = assetRfMaturityDate(asset);
 
-  saldoEl.textContent = fmt(saldo);
-  rentabEl.textContent = fmtP(rentab);
-  vencEl.textContent = venc ? 'Venc ' + venc : ' — ';
+  if (saldoEl) saldoEl.textContent = fmt(saldo);
+  if (rentabEl) rentabEl.textContent = fmtP(rentab);
+  if (vencEl) vencEl.textContent = venc ? 'Venc ' + venc : ' — ';
 
   summaryDiv.style.display = 'block'
 }</script>
