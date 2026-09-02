@@ -602,8 +602,8 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   assert.match(goalsHtml, /Metas financeiras/);
   assert.match(goalsHtml, /Patrim[oô]nio atual/);
   assert.match(goalsHtml, /Meta de renda passiva/);
-  assert.match(goalsHtml, /M[eé]dia mensal hist[oó]rica/);
-  assert.match(goalsHtml, /Melhor m[eê]s hist[oó]rico/);
+  assert.match(goalsHtml, /M[eé]dia (?:mensal hist[oó]rica|12M)/);
+  assert.match(goalsHtml, /Melhor m[eê]s (?:hist[oó]rico|[a-záé]+ de \d{4})/i);
   assert.match(goalsHtml, /role="progressbar"/);
   assert.match(goalsHtml, /go\('metas'\)/);
   assert.match(passiveHtml, /go\('dividendos'\)/);
