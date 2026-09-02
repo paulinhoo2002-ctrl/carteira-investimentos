@@ -73,9 +73,17 @@ for (const viewport of viewports) {
 
       const pageOverflow = async () => page.evaluate(pageOverflowExpr());
 
-      // IA: todos os modos visiveis, Concentracao nunca cortada, alvo >= 44px
+      // IA: o modo-bar fica dentro de <details class="ai-compact-details"> (recolhido por padrao).
+      // O teste deve: (1) localizar o painel "Leituras complementares", (2) expandi-lo,
+      // (3) entao verificar os controles de modo quanto a overflow, viewport e altura minima.
       await page.evaluate(() => go('ia'));
-      await page.locator('.ai-modebar:visible').waitFor({ state: 'visible', timeout: 5000 });
+      const detailsLocator = page.locator('.ai-compact-details').first();
+      await detailsLocator.waitFor({ state: 'attached', timeout: 5000 });
+      assert.equal(await detailsLocator.evaluate(el => el.open), false, `details de Insights deveria iniciar recolhido em ${viewport.label}`);
+      assert.ok(await detailsLocator.locator('summary').isVisible(), `summary "Leituras complementares" nao visivel em ${viewport.label}`);
+      await detailsLocator.locator('summary').click();
+      await page.waitForSelector('.ai-modebar', { state: 'visible', timeout: 5000 });
+      assert.equal(await detailsLocator.evaluate(el => el.open), true, `details de Insights nao expandiu em ${viewport.label}`);
       const ia = await page.evaluate(() => {
         const vw = window.innerWidth;
         const bar = document.querySelector('.ai-modebar');

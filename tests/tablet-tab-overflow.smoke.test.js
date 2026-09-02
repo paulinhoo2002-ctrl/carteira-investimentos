@@ -37,7 +37,7 @@ async function startServer(rootDir) {
   return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
 }
 
-const mainTabs = ['Dashboard', 'Ativos', 'Aportes', 'Metas', 'Dividendos', 'Rentabilidade', 'Rebalancear', 'IA'];
+const mainTabs = ['Dashboard', 'Ativos', 'Aportes', 'Metas', 'Dividendos', 'Rentabilidade', 'Rebalancear', 'Insights'];
 const reportGroupItems = ['Relatórios', 'IRPF', 'Auditoria'];
 
 const viewports = [

@@ -48,7 +48,7 @@ const viewports = [
 ];
 
 const confirmedTargets = {
-  auditoria: ['.data-quality-chip', '.data-quality-actions .btn', '.data-quality-action .btn'],
+  auditoria: ['.data-quality-chip', '.data-quality-actions .btn'],
   ia: ['.ai-modebar .btn', '.ai-cta'],
   rentabilidade: ['.rent-filters select'],
   irpf: ['#irpf-year-report', '.irpf-yearbox .btn'],
@@ -81,12 +81,17 @@ for (const viewport of viewports) {
       for (const [screen, selectors] of Object.entries(confirmedTargets)) {
         await page.evaluate(s => { go(s); }, screen);
         await page.waitForTimeout(120);
+        if (screen === 'ia') {
+          await page.evaluate(() => { const details = document.querySelector('.ai-compact-details'); if (details) details.open = true; });
+          await page.waitForTimeout(60);
+        }
 
         const result = await page.evaluate((selectors) => {
           const visible = el => {
             const r = el.getBoundingClientRect();
             const cs = getComputedStyle(el);
-            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden';
+            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'
+              && !el.closest('details:not([open])');
           };
           const issues = [];
           const boxes = [];
@@ -129,7 +134,8 @@ for (const viewport of viewports) {
           const visible = el => {
             const r = el.getBoundingClientRect();
             const cs = getComputedStyle(el);
-            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden';
+            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'
+              && !el.closest('details:not([open])');
           };
           const issues = [];
           for (const sel of selectors) {

@@ -93,6 +93,45 @@ viewports.forEach(vp => {
   });
 });
 
+for (const vp of [{ w: 390, h: 844 }, { w: 430, h: 932 }]) {
+  test(`dividends mobile chart fits all official months - ${vp.w}px`, async () => {
+    const exe = resolveBrowser();
+    if (!exe) return;
+    const h = await startServer(path.join(__dirname, '..'));
+    const { chromium } = await import('playwright-core');
+    const browser = await chromium.launch({ executablePath: exe, headless: true });
+    try {
+      const ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, hasTouch: true, isMobile: true });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+      page.on('pageerror', err => errors.push(err.message));
+      await page.goto(h.url, { waitUntil: 'networkidle' });
+      await page.evaluate(() => go('dividendos'));
+      await page.waitForFunction(() => document.querySelector('.dividend-evolution-chart') !== null, { timeout: 5000 });
+      const proof = await page.evaluate(() => {
+        const svg = document.querySelector('.dividend-evolution-chart');
+        const rect = svg.getBoundingClientRect();
+        const bars = [...svg.querySelectorAll('.chart-bar')].map(bar => bar.getBoundingClientRect());
+        const labels = [...svg.querySelectorAll('text')].filter(text => !text.textContent.includes('R$'));
+        return {
+          bars: bars.length,
+          labels: labels.length,
+          firstVisible: bars[0].left >= rect.left && bars[0].right <= rect.right,
+          lastVisible: bars.at(-1).left >= rect.left && bars.at(-1).right <= rect.right,
+          withinViewport: rect.left >= 0 && rect.right <= window.innerWidth,
+        };
+      });
+      assert.deepEqual(proof, { bars: 12, labels: 12, firstVisible: true, lastVisible: true, withinViewport: true });
+      assert.equal(errors.length, 0, `Erros no console em ${vp.w}px: ${errors.join(' | ')}`);
+      await ctx.close();
+    } finally {
+      await browser.close();
+      h.server.close();
+    }
+  });
+}
+
 viewports.forEach(vp => {
   test(`dividends overview monthly collapsed + distribution toggle - ${vp.label}`, async () => {
     const exe = resolveBrowser();
@@ -116,12 +155,12 @@ viewports.forEach(vp => {
       await page.evaluate(() => go('dividendos'));
       await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 5000 });
 
-      // Historico mensal comeca oculto na visao geral (agora fora do grid)
+      // O historico fica visivel no desktop e progressivo no mobile.
       const startCollapsed = await page.evaluate(() => {
         const details = document.querySelector('.div-premium .div-monthly-table-block');
-        return details && !details.hasAttribute('open');
+        return details && details.hasAttribute('open');
       });
-      assert.equal(startCollapsed, true, `Historico mensal overview nao comeca oculto em ${vp.label}`);
+      assert.equal(startCollapsed, vp.w >= 768, `Historico mensal overview nao respeita a prioridade de ${vp.label}`);
 
       // Mostrar expande
       await page.evaluate(() => {
@@ -133,7 +172,7 @@ viewports.forEach(vp => {
         const details = document.querySelector('.div-premium .div-monthly-table-block');
         return details && details.hasAttribute('open');
       });
-      assert.equal(afterClick, true, `Historico mensal nao expandiu ao clicar em ${vp.label}`);
+      assert.equal(afterClick, vp.w < 768, `Historico mensal nao alternou corretamente em ${vp.label}`);
 
       const distCollapsed = await page.evaluate(() => {
         const button = document.querySelector('[aria-controls="div-month-dist-body"]');

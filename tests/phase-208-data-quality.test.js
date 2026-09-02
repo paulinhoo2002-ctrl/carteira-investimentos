@@ -369,8 +369,44 @@ test('fase 208 helpers destacam dados invalidos sem corromper estado', () => {
     healthyContext.renderDataQualityIssueCard({ severity: 'info', category: 'Renda Fixa', entityType: 'Renda Fixa', entityIndex: 3, entityLabel: 'CDB001', field: 'rf_maturity_date', message: 'Vencimento ausente', recommendation: 'Abrir Renda Fixa' }),
     healthyContext.renderDataQualityIssueCard({ severity: 'warning', category: 'Metas', entityType: 'Meta', entityIndex: 4, entityLabel: 'Metas', field: 'target', message: 'Meta ausente', recommendation: 'Abrir Metas' }),
   ];
-  assert.equal(routeCards.every((html) => /go\("(ativos|dividendos|renda-fixa|metas)"\)/.test(html)), true);
+  assert.equal(routeCards.every((html) => /dataQualityRunAction\(/.test(html)), true);
   assert.equal(healthyContext.dataAuditTab(), healthyContext.dataQualityTab());
+});
+
+test('fila operacional abre identidade exata e recua para rota segura quando stale', () => {
+  const runtime = loadRuntime({
+    assets: [
+      { id: 'asset-1', ticker: 'PETR4', name: 'Petrobras', type: 'Ação', qty: 1, avg_price: 10, current_price: 12, currency: 'BRL' },
+      { id: 'rf-1', ticker: 'CDB001', name: 'CDB 001', type: 'Renda Fixa', qty: 1, avg_price: 1000, current_price: 1050, currency: 'BRL', rf_applied_value: 1000, rf_liquid_value: 1050, rf_maturity_date: '2027-01-01', rf_contract_rate: 'CDI' },
+    ],
+    proventos: [{ id: 'income-1', ticker: 'PETR4', value: 10, date: '2026-07-10', type: 'Dividendo', currency: 'BRL' }],
+    rfEvents: [],
+    aportes: [{ id: 'move-1', ticker: 'PETR4', type: 'Ação', date: '2026-07-01', qty: 1, price: 10, totalValue: 10, currency: 'BRL' }],
+    goals: {},
+  });
+  const calls = [];
+  runtime.edA = (id) => calls.push(['asset', id]);
+  runtime.edP = (id) => calls.push(['movement', id]);
+  runtime.editDividendReceipt = (id) => calls.push(['income', id]);
+  runtime.go = (route) => calls.push(['route', route]);
+
+  const assetIssue = { category: 'Ativos', entityType: 'Ativo', entityIndex: 1, entityId: 'asset-1', identityKey: runtime.dataQualityAssetKey(runtime.S.assets[0]), route: 'ativos', actionLabel: 'Abrir Ativos' };
+  const movementIssue = { category: 'Movimentacoes', entityType: 'Movimentacao', entityIndex: 1, entityId: 'move-1', identityKey: runtime.dataQualityMovementKey(runtime.S.aportes[0]), route: 'aportes', actionLabel: 'Abrir Aportes' };
+  const incomeIssue = { category: 'Dividendos', entityType: 'Provento', entityIndex: 1, entityId: 'income-1', identityKey: runtime.dataQualityProventoKey(runtime.S.proventos[0]), route: 'dividendos', actionLabel: 'Abrir Dividendos' };
+  const rfIssue = { category: 'Renda Fixa', entityType: 'Renda Fixa', entityIndex: 2, entityId: 'rf-1', identityKey: runtime.dataQualityAssetKey(runtime.S.assets[1]), route: 'renda-fixa', actionLabel: 'Abrir Renda Fixa' };
+
+  runtime.dataQualityRunAction(assetIssue);
+  runtime.dataQualityRunAction(movementIssue);
+  runtime.dataQualityRunAction(incomeIssue);
+  runtime.dataQualityRunAction(rfIssue);
+  assert.deepEqual(calls, [['asset', 'asset-1'], ['movement', 'move-1'], ['income', 'income-1'], ['asset', 'rf-1']]);
+
+  calls.length = 0;
+  runtime.dataQualityRunAction({ ...assetIssue, entityId: 'asset-removed' });
+  assert.deepEqual(calls, [['route', 'ativos']]);
+  calls.length = 0;
+  runtime.dataQualityRunAction({ ...assetIssue, route: 'rota-invalida' });
+  assert.deepEqual(calls, []);
 });
 
 test('renda fixa oficial usa uma unica fonte e preserva fallback compatível', () => {
