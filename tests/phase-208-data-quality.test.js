@@ -219,6 +219,7 @@ function createSandbox(state = {}) {
     },
   };
 
+  sandbox.matchMedia = () => ({ matches: false, media: '', addListener() {}, removeListener() {} });
   sandbox.window = sandbox;
   sandbox.globalThis = sandbox;
   sandbox.self = sandbox;
