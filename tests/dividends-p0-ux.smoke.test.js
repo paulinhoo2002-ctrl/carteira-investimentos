@@ -86,7 +86,7 @@ viewports.forEach(vp => {
       assert.ok(await registerBtn.isVisible() && await registerBtn.isEnabled(), 'Registrar provento button not visible or disabled');
 
       // 3. Tabs visíveis
-      const tabs = page.locator('.div-premium-tab');
+      const tabs = page.locator('.div-premium-tab:visible');
       const tabCount = await tabs.count();
       assert.ok(tabCount > 0, 'No tabs found');
       for (let i = 0; i < tabCount; i++) {
@@ -120,9 +120,11 @@ viewports.forEach(vp => {
 
       // 5. Filtros utilizáveis (only if we switched to a tab that shows them)
       if (tabCount > 1) {
-        const chips = page.locator('.div-premium-toolbar .div-premium-search + .div-premium-filters .div-premium-chip');
+        const moreFilters = page.locator('.div-premium-toolbar details.div-dividend-more');
+        if (await moreFilters.count()) await moreFilters.locator('summary').click();
+        const chips = page.locator('.div-dividend-toolbar-main .div-premium-chip, .div-dividend-more-group:first-child .div-premium-chip');
         const chipCount = await chips.count();
-        // Expect exactly 5 type filter chips: Todos, Dividendos, JCP, Rendimento FII, Outros
+        // The first three type chips are primary; the two remaining official types live in More filters.
         assert.strictEqual(chipCount, 5, `Expected 5 type filter chips, found ${chipCount}`);
         const expectedLabels = ['Todos', 'Dividendos', 'JCP', 'Rendimento FII', 'Outros'];
         for (let i = 0; i < chipCount; i++) {

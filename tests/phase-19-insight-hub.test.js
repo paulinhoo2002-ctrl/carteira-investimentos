@@ -54,6 +54,50 @@ test('dashboardInsightsPanel mostra no maximo 3 insights e CTA para o hub comple
   assert.match(html, /Insights prioritários/);
 });
 
+test('dashboardInsightsPanel torna insights com rota em controles acessíveis', () => {
+  const dashboardInsightsPanel = loadDashboardInsightsPanel();
+  const html = dashboardInsightsPanel({
+    insights: [
+      { title: 'Meta', description: 'Falta conferir', severity: 'ATTENTION', relatedRoute: 'metas', actionLabel: 'Ver Metas' },
+      { title: 'Renda', description: 'Abaixo da média', severity: 'IMPORTANT', relatedRoute: 'dividendos', actionLabel: 'Ver Dividendos' },
+    ],
+  });
+  assert.equal((html.match(/dashboard-insight-action/g) || []).length, 2);
+  assert.match(html, /<button class="premium-exec-row dashboard-insight-action"/);
+  assert.match(html, /aria-label="Ver Metas: Meta"/);
+  assert.match(html, /onclick="go\('dividendos'\)"/);
+  assert.match(html, /Atenção/);
+  assert.match(html, /Importante/);
+});
+
+test('dashboardInsightsPanel não cria CTA para insight sem rota', () => {
+  const dashboardInsightsPanel = loadDashboardInsightsPanel();
+  const html = dashboardInsightsPanel({
+    insights: [
+      { title: 'Informativo', description: 'Sem ação', severity: 'INFO', actionLabel: 'Não inventar' },
+    ],
+  });
+  assert.equal((html.match(/dashboard-insight-action/g) || []).length, 0);
+  assert.doesNotMatch(html, /dashboard-insight-action[^>]*onclick=/);
+  assert.match(html, /Informativo/);
+});
+
+test('insights de Renda Fixa usam a rota canônica e permanecem acionáveis', () => {
+  assert.equal(INDEX_HTML.includes("relatedRoute:'rendaFixa'"), false);
+  assert.equal((INDEX_HTML.match(/relatedRoute:'renda-fixa'/g) || []).length, 5);
+  const dashboardInsightsPanel = loadDashboardInsightsPanel();
+  for (const [title, actionLabel] of [
+    ['Vencimentos vencidos', 'Revisar Renda Fixa'],
+    ['Vencimentos próximos', 'Ver vencimentos'],
+    ['Renda Fixa sem vencimento', 'Completar cadastro'],
+  ]) {
+    const html = dashboardInsightsPanel({
+      insights: [{ title, description: 'Revisar posição', severity: 'ATTENTION', relatedRoute: 'renda-fixa', actionLabel }],
+    });
+    assert.match(html, new RegExp(`onclick=\\"go\\('renda-fixa'\\)\\"`));
+    assert.match(html, new RegExp(`aria-label=\\"${actionLabel}: ${title}\\"`));
+  }
+});
 test('iaTab mantém o hub focado e limita a leitura principal a poucos cards', () => {
   const indexHtml = INDEX_HTML;
   const start = indexHtml.indexOf('function iaTab(){');

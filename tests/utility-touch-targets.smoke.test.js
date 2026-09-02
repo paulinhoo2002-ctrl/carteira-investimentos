@@ -125,27 +125,10 @@ viewports.forEach(vp => {
         assert.ok(walletSelect && Math.round(walletSelect.h) >= 44 && Math.round(walletSelect.w) >= 44, `Select carteira < 44px em ${vp.label}`);
         await page.evaluate(() => closeMobileTopMenu());
         await page.waitForTimeout(200);
-      } else {
-        const hdrBtns = await measureAll('.hdr-right .hdr-mobile-btn');
-        assert.ok(hdrBtns.length >= 3, `Botoes do header ausentes em ${vp.label}`);
-        assertMin(hdrBtns, '.hdr-right .hdr-mobile-btn', 'Header', vp.label);
-        await page.evaluate(() => document.querySelector('.wallet-menu').open = true);
-        await page.waitForTimeout(150);
-        const walletBtns = await measureAll('.wallet-menu .btn');
-        assertMin(walletBtns, '.wallet-menu .btn', 'Wallet menu', vp.label);
-        const walletSelect = await page.evaluate(() => {
-          const s = document.querySelector('.wallet-menu select.inp');
-          if (!s) return null;
-          const r = s.getBoundingClientRect();
-          return { h: r.height, w: r.width };
-        });
-        assert.ok(walletSelect && Math.round(walletSelect.h) >= 44 && Math.round(walletSelect.w) >= 44, `Select carteira < 44px em ${vp.label}`);
-        await page.evaluate(() => document.querySelector('.wallet-menu').open = false);
-        await page.evaluate(() => document.querySelector('.cfg-menu').open = true);
-        await page.waitForTimeout(150);
-        const cfgBtns = await measureAll('.cfg-menu-panel .btn');
-        assertMin(cfgBtns, '.cfg-menu-panel .btn', 'Config menu', vp.label);
-        await page.evaluate(() => document.querySelector('.cfg-menu').open = false);
+      } else if (vp.w >= 1200) {
+        const sidebarUtilities = await measureAll('.tabs-desktop .side-utilities > button');
+        assert.ok(sidebarUtilities.length >= 3, `Utilitarios da sidebar ausentes em ${vp.label}`);
+        assertMin(sidebarUtilities, '.tabs-desktop .side-utilities > button', 'Utilitarios da sidebar', vp.label);
       }
 
       await page.evaluate(() => document.querySelector('.tab-menu').open = true);

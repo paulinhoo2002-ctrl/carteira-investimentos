@@ -85,6 +85,36 @@ function makeAnalysisHarness(overrides = {}) {
         aiLoad: context.S.aiLoad,
       })));
     },
+    normalizeGoals(goals) {
+      return goals && typeof goals === "object" ? goals : {};
+    },
+    passiveIncomeMonthKey(value) {
+      return String(value ?? "");
+    },
+    passiveIncomeGoalTarget() {
+      return 0;
+    },
+    isRendaFixaAsset() {
+      return false;
+    },
+    rfValues() {
+      return { applied: 0, current: 0, hasExplicitCurrent: false };
+    },
+    parseAnyDate() {
+      return null;
+    },
+    assetRfMaturityDate() {
+      return null;
+    },
+    assetRfContractRate() {
+      return null;
+    },
+    assetRfName() {
+      return "";
+    },
+    passiveIncomeMonthSummary() {
+      return { month: "", total: 0, count: 0, best: null, payers: [] };
+    },
     render() {
       renders.push({
         aiFocus: context.S.aiFocus,
@@ -306,6 +336,15 @@ test('modes da IA tem contratos distintos e CTA dinamico', () => {
   const harness = makeAnalysisHarness();
   const { context } = harness;
 
+  assert.equal(harness.iaTab().includes('Insights da carteira'), true);
+  assert.equal(harness.iaTab().includes('Atualizar insights'), true);
+
+  context.S.aiFocus = 'income';
+  assert.equal(harness.iaTab().includes('Priorizar renda'), true);
+  context.S.aiFocus = 'rebalance';
+  assert.equal(harness.iaTab().includes('Rebalancear'), true);
+  context.S.aiFocus = 'concentration';
+  assert.equal(harness.iaTab().includes('Concentração'), true);
   const hub = harness.iaTab();
   assert.equal(hub.includes('Insights da carteira'), true);
   assert.equal(hub.includes('Atualizar insights'), true);
@@ -398,6 +437,8 @@ test('ajudarTab e calcRebalance preservam contrato pÃºblico do aporte', () => 
   harness.calcRebalance();
 
   assert.equal(context.S.aiStatus, 'idle');
+  assert.match(documentState['reb-out'].innerHTML, /Aporte informado/);
+  assert.equal(documentState['reb-out'].innerHTML.includes('Distribuição do aporte'), true);
   assert.match(documentState['reb-out'].innerHTML, /Distribuição do aporte|Simulação do aporte/);
   assert.equal(documentState['reb-out'].innerHTML.includes('Nenhum ativo atende aos critérios prudentes'), false);
   assert.equal(documentState['reb-out'].innerHTML.includes('NaN'), false);

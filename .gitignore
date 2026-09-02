@@ -53,3 +53,10 @@ index.backup*.html
 
 # Local visual validation artifacts
 artifacts/
+
+# Generated local audit and browser artifacts
+output/
+coverage/
+playwright-report/
+*.trace
+*.har

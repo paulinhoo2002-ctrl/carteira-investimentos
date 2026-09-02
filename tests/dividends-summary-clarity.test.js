@@ -212,7 +212,12 @@ test('dividendDistributionRow isAbsent=false zero renderiza R$ 0,00', () => {
 test('historico mensal fica recolhido no overview e abre somente na visao mensal', () => {
   const indexHtml = read('index.html');
   assert.ok(indexHtml.includes("function dividendMonthlyHistoryPremium(rows,startOpen=false){"));
-  assert.ok(indexHtml.includes("const monthlySection=dividendMonthlyTableBlock(rows, mode==='monthly');"));
+  assert.ok(indexHtml.includes('dividendMonthlyTableBlock(rows, mode===\'monthly\')'));
+  assert.equal(
+    indexHtml.includes("dividendMonthlyTableBlock(rows, mode==='monthly')")
+      || indexHtml.includes('dividendMonthlyTableBlock(rows, monthlyStartOpen)'),
+    true,
+  );
   assert.ok(indexHtml.includes('div-dividend-moreviews'));
 });
 

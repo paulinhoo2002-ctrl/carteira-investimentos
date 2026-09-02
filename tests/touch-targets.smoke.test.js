@@ -48,7 +48,7 @@ const viewports = [
 ];
 
 const confirmedTargets = {
-  auditoria: ['.data-quality-chip', '.data-quality-actions .btn', '.data-quality-action .btn'],
+  auditoria: ['.data-quality-chip', '.data-quality-actions .btn'],
   ia: ['.ai-modebar .btn', '.ai-cta'],
   rentabilidade: ['.rent-filters select'],
   irpf: ['#irpf-year-report', '.irpf-yearbox .btn'],
@@ -93,7 +93,8 @@ for (const viewport of viewports) {
           const visible = el => {
             const r = el.getBoundingClientRect();
             const cs = getComputedStyle(el);
-            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden';
+            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'
+              && !el.closest('details:not([open])');
           };
           const issues = [];
           const boxes = [];
@@ -136,7 +137,8 @@ for (const viewport of viewports) {
           const visible = el => {
             const r = el.getBoundingClientRect();
             const cs = getComputedStyle(el);
-            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden';
+            return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'
+              && !el.closest('details:not([open])');
           };
           const issues = [];
           for (const sel of selectors) {

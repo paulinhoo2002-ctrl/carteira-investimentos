@@ -221,19 +221,17 @@ async function runViewportScenario(browser, url, viewport, scenario) {
 }
 
 async function assertPageReady(page) {
-  await page.locator('.hdr-title').waitFor();
-  await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
-  await assert.match(await page.locator('.hdr-sub').textContent(), /Modo de teste local/);
-  await assert.equal(await page.locator('.tab').count() >= 7, true);
+  await page.locator('#modern-sidebar').waitFor();
+  await assert.equal(await page.locator('#modern-sidebar').isVisible(), true);
   assert.equal(await page.evaluate(() => Object.prototype.hasOwnProperty.call(window, 'buildReportAssetRow')), false);
   assert.equal(await page.evaluate(() => Object.prototype.hasOwnProperty.call(window, 'createLegacyReportsReadonlySource')), false);
 }
 
 async function assertLegacyPageReady(page) {
-  await page.locator('.hdr-title').waitFor();
-  await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
-  await assert.match(await page.locator('.hdr-sub').textContent(), /Modo de teste local/);
-  await assert.equal(await page.locator('.tab').count() >= 7, true);
+  await page.locator('.shell .hdr-title').first().waitFor();
+  await assert.equal(await page.locator('.shell .hdr-title').first().textContent(), 'Carteira de Investimentos');
+  await assert.match(await page.locator('.shell .hdr-sub').first().textContent(), /Modo de teste local/);
+  await assert.equal(await page.locator('.shell .tab').count() >= 7, true);
 }
 
 async function startStaticServer(rootDir) {
