@@ -77,7 +77,7 @@ test('RELATÓRIOS: navegação e estado inicial', async () => {
     await incomePanel.waitFor({ state: 'visible' });
     
     // Check fixed income panel
-    const fixedPanel = await page.locator('.reports-panel:has-text("Resumo da valuation")');
+    const fixedPanel = await page.locator('.reports-panel:has-text("Resumo da avaliação oficial")');
     await fixedPanel.waitFor({ state: 'visible' });
     
     // Check audit panel
@@ -223,7 +223,7 @@ test('RELATÓRIOS: renda fixa painel funcional', async () => {
     await page.evaluate(() => go('relatorios'));
     await waitForReportsShell(page);
     
-    const fixedPanel = await page.locator('.reports-panel:has-text("Resumo da valuation")');
+    const fixedPanel = await page.locator('.reports-panel:has-text("Resumo da avaliação oficial")');
     await fixedPanel.waitFor({ state: 'visible' });
     
     // Check stat list

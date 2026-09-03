@@ -108,3 +108,17 @@ Metas is closed for visual work unless explicitly authorized. Do not reopen
 Dashboard, Dividendos, Sidebar, Ativos, Renda Fixa, Aportes, Rentabilidade,
 Rebalancear or Metas. The next official mission is `RELATORIOS`, subject to a
 new scope and approval.
+
+`CANONICAL_VISUAL_MIGRATION_08=IMPLEMENTED` and
+`RELATORIOS_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+Relatorios recebeu apenas refinamento de hierarquia, densidade e separacao
+visual entre relatorios analiticos e backup/importacao. Nao marcar Relatorios
+como congelado antes da aprovacao visual explicita do usuario. Nao reabrir
+Sidebar, Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
+Rebalancear ou Metas.
+
+`CANONICAL_VISUAL_MIGRATION_08=COMPLETE` and `RELATORIOS_VISUAL=FROZEN`.
+Relatorios is closed for visual work unless explicitly authorized. Do not
+reopen Sidebar, Dashboard, Dividendos, Ativos, Renda Fixa, Aportes,
+Rentabilidade, Rebalancear, Metas or Relatorios. The next official candidate is
+`FUNDOS`, subject to a new explicit mission and approval.

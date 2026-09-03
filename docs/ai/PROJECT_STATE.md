@@ -282,3 +282,39 @@ start a feature, visual migration or release operation.
   de Metas e nao foi mascarado.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear e Sidebar permanecem congelados.
+
+## 2026-09-03 - Canonical visual migration 08: Relatorios
+
+- `RELATORIOS_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- Relatorios recebeu refinamento visual escopado: hierarquia analitica mais
+  clara, densidade compacta para desktop/mobile e CTA de exportacao explicito.
+- `REPORTS_ROUTE=relatorios`; `REPORTS_RENDERER=reportsTab()`;
+  `REPORT_DATA_SOURCE=reportsSnapshot()`.
+- `ANALYTICAL_REPORT != BACKUP`: exportacoes analiticas continuam usando os
+  exporters baseados em `reportsSnapshot()`, enquanto backup/importacao seguem
+  no fluxo separado de `backupManagerModal()` e `backupPayload()`.
+- Nenhum tipo de relatorio, calculo financeiro, persistencia, schema ou dado
+  real foi alterado. O smoke legado que esperava "Resumo da valuation" foi
+  alinhado ao texto atual "Resumo da avaliacao oficial".
+- Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-08/`.
+- Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
+  Rebalancear, Metas e Sidebar permanecem congelados.
+
+## 2026-09-03 - Relatorios visual freeze
+
+- `RELATORIOS_VISUAL=FROZEN`
+- O contrato aprovado mantém shell premium escuro, cabecalho compacto,
+  seletor de periodo, CTA analitico de exportacao, cinco KPIs financeiros,
+  evolucao patrimonial, distribuicao, movimentacoes, renda/proventos, renda
+  fixa, qualidade dos dados, historico e exportacoes explicitas.
+- `REPORT_DATA_SOURCE=reportsSnapshot()` e os tipos oficiais permanecem
+  `complete`, `assets`, `proventos`, `fixed`, `patrimony`, `audit` e `irpf`.
+- `ANALYTICAL_REPORT_BACKUP_SEPARATION=REQUIRED`: relatorio analitico,
+  exportacao de dados, backup e importacao continuam conceitos e fluxos
+  distintos. `backupManagerModal()` e `backupPayload()` permanecem preservados.
+- `STALE_REPORTS_HARNESS_FIX=VALID_STALE_HARNESS_FIX`: o smoke foi alinhado
+  de "Resumo da valuation" para "Resumo da avaliacao oficial" sem reverter a
+  terminologia atual do produto.
+- Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
+  Rebalancear, Metas e Sidebar permanecem congelados.
