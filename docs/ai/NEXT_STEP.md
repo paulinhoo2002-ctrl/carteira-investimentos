@@ -37,6 +37,16 @@ Sidebar, Ativos or Renda Fixa without explicit user authorization.
 The next official candidate is `APORTES`, subject to a new explicit mission
 scope and approval before implementation begins.
 
+`CANONICAL_VISUAL_MIGRATION_04 - APORTES` is implemented and ready for final
+user approval. The scope was limited to Aportes/Lançamentos; its official
+movement sources, handlers, identity contracts and persistence were preserved.
+After explicit user approval, `CANONICAL_VISUAL_MIGRATION_04=COMPLETE` and
+`APORTES_VISUAL=FROZEN`. Do not reopen Aportes, Dashboard, Dividendos, Sidebar,
+Ativos or Renda Fixa without explicit user authorization.
+
+The next official candidate is `RENTABILIDADE`, subject to a new explicit
+mission scope and approval before implementation begins.
+
 ## WHAT_NOT_TO_TOUCH
 
 Do not mix this repository with `C:\Projetos\carteira-2.0`. Do not start a

@@ -6855,6 +6855,29 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .aporte-premium .aporte-contribution-grid .cv{font-size:18px}
 .aporte-premium .aporte-summary-columns{gap:9px;margin-bottom:9px}
 .aporte-premium .aporte-summary-panel .sh{margin-bottom:5px}
+/* Canonical Aportes hierarchy: heading first, controls second. */
+.aporte-premium > .sh{margin-bottom:0}
+.aporte-premium > .sh .st{font-size:28px;line-height:1.05;letter-spacing:-.03em;color:var(--text)}
+.aporte-premium > .sh .mu{font-size:12px;line-height:1.35}
+.aporte-premium .aporte-executive-heading{align-items:baseline}
+.aporte-premium .aporte-executive-heading .st{font-size:16px;font-weight:750;color:var(--text)}
+.aporte-premium .aporte-contribution-grid{gap:8px;margin-bottom:8px}
+.aporte-premium .aporte-contribution-grid .card{background:var(--panel);border-color:rgba(148,163,184,.16);box-shadow:none}
+.aporte-premium .aporte-contribution-grid .cv,
+.aporte-premium .aporte-contribution-total,
+.aporte-premium .aporte-month-value,
+.aporte-premium .aporte-class-row .cv{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.aporte-premium .aporte-view-tab.on,
+.aporte-premium .aporte-filter-chip.on{color:#d1fae5;background:rgba(16,185,129,.14);border-color:rgba(52,211,153,.38);box-shadow:none}
+.aporte-premium .aporte-view-tab:focus-visible,
+.aporte-premium .aporte-filter-chip:focus-visible,
+.aporte-premium .ap-toolbar .btn:focus-visible,
+.aporte-premium .aportes-imports-panel>summary:focus-visible{outline:2px solid #34d399;outline-offset:2px}
+@media(min-width:768px){
+  .aporte-premium .ap-toolbar{gap:8px}
+  .aporte-premium .ap-toolbar .aporte-search{max-width:none}
+  .aporte-premium .aporte-summary-panel{padding:11px 13px}
+}
 .chart-data-point{cursor:pointer;outline:none}
 .chart-data-point:focus{outline:none}
 .chart-data-point:focus-visible{stroke:var(--success);stroke-width:2;stroke-dasharray:3 2}
@@ -6871,11 +6894,17 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .dashboard-master-secondary .premium-panel-title{font-size:12px}
   .dashboard-master-secondary .premium-panel-sub{font-size:9px}
   .aporte-premium{gap:7px}
+  .aporte-premium > .sh .st{font-size:22px}
+  .aporte-premium > .sh .mu{font-size:11px}
+  .aporte-premium .aporte-executive-heading{gap:4px;margin-bottom:0}
   .aporte-premium .aporte-contribution-grid{gap:5px;margin-bottom:6px}
   .aporte-premium .aporte-contribution-grid .card{min-height:64px;padding:7px 8px}
   .aporte-premium .aporte-contribution-grid .cv{font-size:16px}
   .aporte-premium .aporte-contribution-grid .cl{font-size:9px;margin-bottom:4px}
   .aporte-premium .aporte-contribution-grid .cs{font-size:9px}
+  .aporte-premium .ap-toolbar{gap:6px}
+  .aporte-premium .aporte-search{padding:5px 9px}
+  .aporte-premium .aporte-summary-panel{padding:9px 10px}
   .dividend-history-block .hist-monthly th,.dividend-history-block .hist-monthly td{padding-top:6px;padding-bottom:6px}
 }
 @media(min-width:1181px){
