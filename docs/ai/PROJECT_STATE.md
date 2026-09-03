@@ -113,3 +113,23 @@ start a feature, visual migration or release operation.
 - The frozen Sidebar contract preserves the dark shell, green active state,
   desktop navigation hierarchy, Reports grouping and mobile bottom navigation.
 - Future visual changes to these areas require explicit user authorization.
+
+## 2026-09-03 - Canonical visual migration 02: Ativos
+
+- `CANONICAL_VISUAL_MIGRATION_02=COMPLETE`
+- `ATIVOS_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- `ATIVOS_VISUAL=FROZEN`
+- Ativos now keeps the professional positions table open by default, with
+  individual result, rentabilidade and portfolio weight visible from the
+  official analysis rows.
+- Variable-asset result display uses the existing current-minus-applied
+  values already exposed by the product; fixed-income rows preserve the
+  official RF helpers and actions.
+- The RF desktop table is responsively contained at the notebook breakpoint;
+  its financial columns remain visible and the action family stays inside
+  the table bounds.
+- No financial engine, dataset, persistence, schema, handler or protected
+  modern frontend area changed. Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-02/`.
+- `ATIVOS_PERFORMANCE_FILTER=NOT_IMPLEMENTED`
+- `ATIVOS_PERFORMANCE_FILTER_CLASSIFICATION=NON_BLOCKING_FUTURE_ENHANCEMENT`

@@ -13,12 +13,17 @@ real data, identity contracts, handlers and `modern/src`.
 
 ## WHAT_IS_NEXT
 
-`CANONICAL_VISUAL_MIGRATION_02 - ATIVOS`: refine the asset screen using the
-frozen Dashboard and Dividendos canon. Target a dense professional asset
-table, visible individual results, filters, sorting, hover/popover and a
-mobile tap equivalent. Use the Ativos video/reference library for behavior
-only; do not copy external brand identity. Any work must preserve the
-official financial/data contracts.
+`CANONICAL_VISUAL_MIGRATION_02 - ATIVOS` is complete and frozen after user
+approval. The screen now follows the frozen Dashboard and Dividendos
+canon with a dense professional asset table, visible individual results,
+filters, sorting, hover/popover and a mobile tap equivalent. Use the Ativos
+video/reference library for behavior only; do not copy external brand
+identity. Any follow-up work must preserve the official financial/data
+contracts.
+
+Ativos is not to be reopened without explicit authorization. No next screen
+is selected automatically; the next roadmap item requires a new scope and
+explicit product authorization before work begins.
 
 The Dashboard, Dividendos and Sidebar visual contracts are now frozen and
 require explicit user authorization for redesign or reinterpretation. RF

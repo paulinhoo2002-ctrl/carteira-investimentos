@@ -5905,7 +5905,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .assets-premium-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;min-height:72px;transition:border-color .15s,box-shadow .15s}
     .assets-premium-kpi:hover{border-color:color-mix(in srgb, var(--border) 60%, var(--primary));box-shadow:0 2px 12px rgba(0,0,0,.12)}
     .assets-premium-kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;line-height:1.2}
-    .assets-premium-kpi-value{font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .assets-premium-kpi-value{font-size:clamp(13px,1.2vw,16px);font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;text-overflow:clip}
     .assets-premium-kpi-sub{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.25}
     .assets-premium-kpi.ok .assets-premium-kpi-value{color:var(--success)}
     .assets-premium-kpi.danger .assets-premium-kpi-value{color:var(--danger)}
@@ -6487,6 +6487,12 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .ag-table .tw .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
     .rf-table-wrap table{min-width:0;width:100%;table-layout:fixed}
     .rf-table-wrap table th,.rf-table-wrap table td{overflow:hidden;text-overflow:ellipsis}
+    #assets-premium-rf-table-desktop table,#assets-premium-rf-table-desktop .rf-table{min-width:0!important;width:100%;table-layout:fixed;font-size:10px}
+    #assets-premium-rf-table-desktop table th,#assets-premium-rf-table-desktop table td{min-width:0!important;padding:6px 5px;overflow:visible;text-overflow:clip;white-space:normal}
+    #assets-premium-rf-table-desktop table td:first-child{min-width:112px!important;white-space:normal}
+    #assets-premium-rf-table-desktop table th:last-child,#assets-premium-rf-table-desktop table td:last-child{width:220px!important;min-width:220px!important}
+    #assets-premium-rf-table-desktop .asset-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:3px}
+    #assets-premium-rf-table-desktop .asset-action{width:100%;min-width:0;padding:4px 3px;font-size:9px;white-space:normal}
     .rf-table-wrap .asset-actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}
     .rf-table-wrap .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
   }
@@ -26738,6 +26744,7 @@ function ativos(){
            const applied=m.appliedValue;
            const rentab=m.rentabPct;
            const juros=m.jurosValue;
+           const result= m.isRF ? juros : (Number.isFinite(m.currentValue)&&Number.isFinite(m.appliedValue) ? m.currentValue-m.appliedValue : null);
            const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
            const peso=portfolioTotal>0?(marketValue/portfolioTotal)*100:0;
        const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
@@ -26767,7 +26774,7 @@ function ativos(){
             <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
             ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
          </td>
-         <td style="color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${Number.isFinite(juros)?`${assetResultIndicator(juros)} ${fmt(juros)}`:'—'}</td>
+         <td style="color:${Number.isFinite(result)?(result>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${Number.isFinite(result)?`${assetResultIndicator(result)} ${assetSignedMoneyText(result)}`:'—'}</td>
          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
           <td>${alvo>0?fmt(alvo):'—'}</td>
           <td style="font-weight:700;color:#e2eaf6">${marketValue!=null?fmt(marketValue):'—'}</td>
@@ -27149,7 +27156,7 @@ function ativos(){
                     ${assetActions}
 
                                     <!-- Todos os ativos (collapsible) -->
-          <details class="assets-all-assets" ontoggle="this.open ? null : null" style="margin-top:16px">
+          <details class="assets-all-assets" open ontoggle="this.open ? null : null" style="margin-top:16px">
             <summary class="assets-all-assets-summary">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
                 <div>
