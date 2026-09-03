@@ -103,3 +103,19 @@
 - BOUNDARY: Future redesign or visual reinterpretation requires explicit user
   authorization. This freeze does not alter financial engines, persistence,
   schema, handlers or real data.
+
+## 2026-09-03 - Canonical Ativos frozen
+
+- DECISION: Freeze the approved Ativos visual implementation as the canonical
+  asset-screen baseline.
+- PRESERVED: Official asset-analysis and RF helper sources, PM/current/
+  applied/result/rentability/participation values, filters, sorting, actions,
+  identity contracts, persistence, schema and real data.
+- RESULT: `CANONICAL_VISUAL_MIGRATION_02=COMPLETE` and
+  `ATIVOS_VISUAL=FROZEN`.
+- KNOWN GAP: The main Ativos screen has no performance filter; classify it as
+  `NON_BLOCKING_FUTURE_ENHANCEMENT`, not as a release regression.
+- EVIDENCE: `qa-screenshots/canonical-visual-migration-02/final/`, focused
+  Ativos/RF tests and full required gates on 2026-09-03.
+- BOUNDARY: Dashboard, Dividendos, Sidebar and Ativos remain frozen unless
+  the user explicitly authorizes a new visual phase.
