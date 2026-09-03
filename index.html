@@ -200,7 +200,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .dashboard-master-primary{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr)}
   .dashboard-master-primary{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
   .dashboard-master-primary .dashboard-home-income .premium-metric-value{font-size:15px;overflow:visible;text-overflow:clip}
-  .dashboard-master-primary .dashboard-home-income .premium-metric-label{font-size:10px;line-height:1.2}
+  .dashboard-master-primary .dashboard-home-income .premium-metric-label{font-size:11px;line-height:1.2}
   .premium-dividends-3 .dividend-primary-grid{grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:10px}
   .premium-dividends-3 .dividend-primary-grid .div-collapsible[open] .div-collapsible-body{padding:10px 12px}
   .premium-dividends-3 .dividend-primary-grid .div-timeline{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:stretch;gap:6px;min-height:176px}
@@ -6499,8 +6499,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       border-radius:12px;
     }
     .index2027-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:15px}
-    .index2027-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:10px}
-    .index2027-dashboard .dashboard-executive-kpis .premium-metric-label{font-size:10px}
+    .index2027-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:11px}
+    .index2027-dashboard .dashboard-executive-kpis .premium-metric-label{font-size:11px}
     .index2027-dashboard .dashboard-executive-kpis .premium-metric:nth-child(1){grid-column:1/-1}
     .index2027-dashboard .dashboard-analytical-primary{gap:8px}
   }
@@ -6730,6 +6730,46 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 }
 .premium-financial-badge{max-width:none;overflow:visible;text-overflow:clip;white-space:normal;flex-shrink:0}
 .rebalance-study-type{white-space:normal;overflow:visible;text-overflow:clip}
+
+/* REAL_USE_REFINEMENT_02: keep the approved shell dense without reducing
+   financial readability or the existing 44px interaction targets. */
+.dashboard-master-secondary{margin-top:2px}
+.dashboard-master-secondary .premium-panel{padding:10px 12px}
+.dashboard-master-secondary .premium-panel-head{margin-bottom:6px}
+.dashboard-master-secondary .premium-panel-actions{margin-top:6px}
+.aporte-premium .aporte-contribution-grid .card{min-height:72px;padding:8px 10px}
+.aporte-premium .aporte-contribution-grid .cv{font-size:18px}
+.aporte-premium .aporte-summary-columns{gap:9px;margin-bottom:9px}
+.aporte-premium .aporte-summary-panel .sh{margin-bottom:5px}
+.chart-data-point{cursor:pointer;outline:none}
+.chart-data-point:focus{outline:none}
+.chart-data-point:focus-visible{stroke:var(--success);stroke-width:2;stroke-dasharray:3 2}
+.line-chart-tooltip{position:fixed;z-index:1000;max-width:220px;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface-strong,var(--panel));box-shadow:0 6px 16px rgba(0,0,0,.24);color:var(--text);font-size:11px;line-height:1.25;pointer-events:none}
+.line-chart-tooltip[hidden]{display:none}
+.dividend-history-block .div-monthly-table-block{margin-top:0}
+.dividend-history-block .div-monthly-table-block .sec-body{padding-top:8px}
+.dividend-history-block .hist-monthly th,.dividend-history-block .hist-monthly td{padding-top:7px;padding-bottom:7px}
+.premium-rf-position-row,.premium-rf-maturity-row{min-width:0}
+.premium-rf-row-value{min-width:0}
+@media(max-width:767px){
+  .dashboard-master-secondary{gap:7px;margin-top:0}
+  .dashboard-master-secondary .premium-panel{padding:9px 10px}
+  .dashboard-master-secondary .premium-panel-title{font-size:12px}
+  .dashboard-master-secondary .premium-panel-sub{font-size:9px}
+  .aporte-premium{gap:7px}
+  .aporte-premium .aporte-contribution-grid{gap:5px;margin-bottom:6px}
+  .aporte-premium .aporte-contribution-grid .card{min-height:64px;padding:7px 8px}
+  .aporte-premium .aporte-contribution-grid .cv{font-size:16px}
+  .aporte-premium .aporte-contribution-grid .cl{font-size:9px;margin-bottom:4px}
+  .aporte-premium .aporte-contribution-grid .cs{font-size:9px}
+  .dividend-history-block .hist-monthly th,.dividend-history-block .hist-monthly td{padding-top:6px;padding-bottom:6px}
+}
+@media(min-width:1181px){
+  .dashboard-master-secondary{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .dashboard-master-secondary>*{min-width:0}
+  .dashboard-master-secondary .dashboard-home-goals{grid-column:span 2}
+  .dashboard-master-secondary .dashboard-home-actions{grid-column:span 2}
+}
 </style>
 
 </head>
@@ -20086,7 +20126,28 @@ function rentabilityHistory(typeFilter='all', period='all', bench='CDI'){
   return { points, view, benchSeries, current, prev12, firstView, currentBench, return12m, lastMonth, aboveBench, years, totalMonths };
 }
 
-function lineChart(series, labels, chartClass=''){
+function showLineChartTooltip(node,event){
+  let tooltip=document.getElementById('line-chart-tooltip');
+  if(!tooltip){
+    tooltip=document.createElement('div');
+    tooltip.id='line-chart-tooltip';
+    tooltip.className='line-chart-tooltip';
+    tooltip.setAttribute('role','status');
+    document.body.appendChild(tooltip);
+  }
+  tooltip.textContent=node.getAttribute('data-chart-tooltip')||'';
+  tooltip.hidden=false;
+  const rect=node.getBoundingClientRect();
+  const x=event?.clientX||rect.left+rect.width/2;
+  const y=event?.clientY||rect.top;
+  tooltip.style.left=`${Math.max(8,Math.min(window.innerWidth-228,x+10))}px`;
+  tooltip.style.top=`${Math.max(8,y-42)}px`;
+}
+function hideLineChartTooltip(){
+  const tooltip=document.getElementById('line-chart-tooltip');
+  if(tooltip) tooltip.hidden=true;
+}
+function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
   const width=1080, height=260;
   const padL=50, padR=18, padT=14, padB=28;
   const all=series.flatMap(s=>s.values.map(v=>Number(v)||0));
@@ -20105,7 +20166,7 @@ function lineChart(series, labels, chartClass=''){
     const y=padT + ((height-padT-padB)/5)*i;
     const value=maxY - ((maxY-minY)/5)*i;
     grid.push(`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${width-padR}" y2="${y.toFixed(1)}" stroke="#161e2e" stroke-width="1"/>`);
-    grid.push(`<text x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="#64748b" font-size="10">${fmtP(value)}</text>`);
+    grid.push(`<text x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="#64748b" font-size="10">${valueFormatter(value)}</text>`);
   }
   const paths=series.map((s,idx)=>{
     const color=s.color||CLRS[idx%CLRS.length];
@@ -20114,10 +20175,16 @@ function lineChart(series, labels, chartClass=''){
     const pts=values.map((v,i)=>`${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`);
     const path=`M ${pts.join(' L ')}`;
     const area=`M ${xAt(0).toFixed(1)},${(height-padB).toFixed(1)} L ${pts.join(' L ')} L ${xAt(values.length-1).toFixed(1)},${(height-padB).toFixed(1)} Z`;
+    const pointsMarkup=values.map((v,i)=>{
+      const label=labels[i]||`Período ${i+1}`;
+      const tooltip=`${s.name||'Série'} · ${label}: ${valueFormatter(v)}`;
+      const visible=s.points===false?'':`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.5" fill="${color}" stroke="#090c15" stroke-width="1"/>`;
+      return `${visible}<circle class="chart-data-point" cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="8" fill="transparent" tabindex="0" focusable="true" aria-label="${esc(tooltip)}" data-chart-tooltip="${esc(tooltip)}" onpointerenter="showLineChartTooltip(this,event)" onpointerleave="hideLineChartTooltip()" onfocus="showLineChartTooltip(this,event)" onblur="hideLineChartTooltip()" onclick="showLineChartTooltip(this,event)"><title>${esc(tooltip)}</title></circle>`;
+    }).join('');
     return `
       <path d="${area}" fill="${s.fill||'none'}" opacity="${s.fill?1:0}"/>
-      <path d="${path}" fill="none" stroke="${color}" stroke-width="${s.width||2.2}" stroke-linecap="round" stroke-linejoin="round"/>
-      ${s.points===false?'':values.map((v,i)=>`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.5" fill="${color}" stroke="#090c15" stroke-width="1"/>`).join('')}
+      <path d="${path}" fill="none" stroke="${color}" stroke-width="${s.width||2.2}" stroke-linecap="round" stroke-linejoin="round"><title>${esc(s.name||'Série')}</title></path>
+      ${pointsMarkup}
     `;
   }).join('');
   const labelStep=Math.max(1, Math.ceil(labels.length/8));
@@ -24274,8 +24341,6 @@ function dashboardPassiveIncomePanel(data){
   const recent=data?.recent?.month===currentMonthKey ? data.recent : passiveIncomeMonthSummary(currentMonthKey);
   const monthReceived=Number(recent.total)||0;
   const monthLabel=new Date(`${currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-  const maturities=(Array.isArray(data?.fixed?.maturities)?data.fixed.maturities:[]).slice(0,4);
-  const receiptRows=maturities.length?maturities.map(dashboardRfMaturityRow).join(''):'<div class="premium-empty">Sem vencimentos futuros registrados.</div>';
   return `<div class="premium-panel dashboard-home-income dashboard-income-card">
     <div class="premium-panel-head">
       <div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal.</div></div>
@@ -24291,11 +24356,6 @@ function dashboardPassiveIncomePanel(data){
         </div>
         <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
       </div>
-      <aside class="dash-receipts" aria-label="Próximos recebimentos">
-        <div class="premium-panel-title">Próximos recebimentos</div>
-        ${receiptRows}
-        <div class="premium-note">Fonte: vencimentos futuros de Renda Fixa cadastrados.</div>
-      </aside>
     </div>
   </div>`;
 }
@@ -25841,12 +25901,6 @@ function dash(){
         ${dashboardPassiveIncomePanel(data)}
         ${dashboardHomeHighlightsPanel()}
       </div>
-      <div class="dashboard-master-secondary">
-        ${dashboardFinancialGoalsPanel(data)}
-        ${dashboardHomeActionsPanel()}
-        ${dashboardHomeAttentionPanel(data)}
-        ${dashboardInsightsPanel(data)}
-      </div>
     </div>
   `;
 }
@@ -25918,6 +25972,17 @@ function executiveKPIs(data){
 }
 function dashboardEvolutionPanel(data){
   const p=data?.portfolio||cx();
+  const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);
+  const values=snapshot.months.map(row=>row.cumulative);
+  const hasHistory=values.some(value=>Number.isFinite(value)&&value>0);
+  if(hasHistory){
+    return `
+      <div class="dashboard-evolution-card">
+        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Aportes líquidos acumulados · janela de ${snapshot.count} meses.</div></div><span class="premium-panel-badge premium-financial-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
+        ${lineChart([{name:'Aportes líquidos acumulados',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
+      </div>
+    `;
+  }
   return `
     <div class="dashboard-evolution-card dashboard-evolution-empty">
       <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Patrimônio consolidado · histórico patrimonial ainda não disponível.</div></div><span class="premium-panel-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
@@ -27270,7 +27335,7 @@ function apTab(){
       : mode==='categorias'
         ? categoriesContent
         : mode==='resumo'
-          ? `${summaryCards||'<div class="aporte-empty">Cadastre movimentações para visualizar o resumo.</div>'}${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${reserveSummary}`
+          ? `${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${reserveSummary}`
           : aporteExtractHtml(extractRows);
   const aporteToolbar=`<div class="ap-toolbar aporte-primary-toolbar">
         <button class="btn bp" onclick="openQuickMovement()">+ Nova movimentação</button>
@@ -29464,14 +29529,12 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     mode==='overview' || mode==='timeline'
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
-  const dfStats=passiveIncomeGoalStats();
   const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
   const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline(),true)}</div><div>${topAssetsSection}</div></div>`;
-  const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendDistributionPanel(dfStats)}</div><div>${dividendUpcomingSection(rows,false)}</div></div>`;
+  const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendUpcomingSection(rows,false)}</div></div>`;
   const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Consulta mensal com filtros oficiais e leitura detalhada sob demanda.</span></div>${monthlySection}</div>`;
-  const reviewBlock=`<div class="dividend-review-context">${reviewSection}</div>`;
   // Mantem a referencia do contrato visual legado sem renderizar KPIs duplicados: ${dividendSummaryCards()}
-  const overviewBody=`${dividendExecutiveKpis()}${primaryBlocks}${secondaryBlocks}${historyBlock}${dividendReviewQueue()}${reviewBlock}`;
+  const overviewBody=`${dividendExecutiveKpis()}${primaryBlocks}${secondaryBlocks}${historyBlock}`;
   // Contratos estruturais legados preservados para os guardrails: ${dividendSummaryCards()} ${dividendDistributionPanel()} ${monthlySection} div-exec-overview div-exec-kpis
   // const lowerBlocks=`<div class="dividend-lower-grid">`; ordem antiga: </div></div>${monthlySection}${lowerBlocks}`
   const body=mode==='asset'?assetSection
@@ -29493,7 +29556,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     </div>
     ${frmD()}
     ${body}
-    ${dividendFilterTabs()}
+    ${mode==='overview'?'':dividendFilterTabs()}
     ${renderProventoRfLinkModal()}
   </main>`;
 }

@@ -13,6 +13,17 @@ async function app(viewport = { width: 1366, height: 768 }) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.addInitScript(() => {
+    const NativeDate = Date;
+    const fixedNow = NativeDate.parse('2026-08-31T12:00:00-03:00');
+    class FixedDate extends NativeDate {
+      constructor(...args) {
+        super(...(args.length ? args : ['2026-08-31T12:00:00-03:00']));
+      }
+      static now() { return fixedNow; }
+    }
+    window.Date = FixedDate;
+  });
   await page.goto(harness.url, { waitUntil: 'networkidle' });
   await page.evaluate(() => { restoreLocalTestData(); go('relatorios'); });
   await page.waitForSelector('.reports-premium-shell', { timeout: 15000 });
