@@ -95,3 +95,16 @@ Small reversible diff, no protected-area change, official data paths preserved,
 tests/builds appropriate to scope, browser evidence at required viewports for
 UI work, `git diff --check` clean, and no commit/push/PR/merge/deploy without
 the phase's explicit authorization.
+
+`CANONICAL_VISUAL_MIGRATION_07=IMPLEMENTED` and
+`METAS_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+Do not freeze Metas until explicit user approval. Do not reopen Dashboard,
+Dividendos, Sidebar, Ativos, Renda Fixa, Aportes, Rentabilidade or Rebalancear.
+The next candidate after Metas is `RELATORIOS`, subject to a new mission and
+approval.
+
+`CANONICAL_VISUAL_MIGRATION_07=COMPLETE` and `METAS_VISUAL=FROZEN`.
+Metas is closed for visual work unless explicitly authorized. Do not reopen
+Dashboard, Dividendos, Sidebar, Ativos, Renda Fixa, Aportes, Rentabilidade,
+Rebalancear or Metas. The next official mission is `RELATORIOS`, subject to a
+new scope and approval.

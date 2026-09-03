@@ -7121,6 +7121,43 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 }
 </style>
 
+<style>
+/* Canonical migration 07: compact goals hierarchy without changing goal logic. */
+.metas-shell{gap:8px;padding-bottom:2px}
+.metas-shell .page-heading{margin-bottom:0;font-size:24px;line-height:1.05}
+.metas-shell .page-sub{margin-bottom:4px;max-width:72ch}
+.metas-shell .metas-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin-bottom:4px!important}
+.metas-shell .metas-kpi-card{min-width:0;min-height:66px;padding:9px 11px}
+.metas-shell .metas-kpi-value{font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;text-overflow:clip}
+.metas-shell .metas-kpi-sub{white-space:nowrap;overflow:visible;text-overflow:clip}
+.metas-shell .btn.bp{background:var(--success)!important;color:#04120b!important;box-shadow:none!important}
+.metas-shell .dbf{background:var(--success)!important}
+.metas-shell .metas-goal-section [style*="color:var(--primary)"]{color:var(--success)!important}
+.metas-shell .metas-summary-bar{gap:8px;padding:8px 10px;margin-bottom:4px}
+.metas-shell .metas-summary-bar>div{min-width:0!important}
+.metas-shell .metas-summary-bar>div>div:last-child{font-variant-numeric:tabular-nums;white-space:normal}
+.metas-shell .metas-goal-section{margin-bottom:4px!important}
+.metas-shell .metas-goal-section>summary{min-height:56px;padding:9px 11px}
+.metas-shell .metas-goal-section .sec-body{padding:9px 11px 10px}
+.metas-shell .metas-goal-section .sec-title{font-size:13px}
+.metas-shell .metas-goal-section .sec-meta{font-size:9px}
+.metas-shell .metas-goal-section input,.metas-shell .metas-goal-section select{font-variant-numeric:tabular-nums}
+.metas-shell .metas-goal-section .card.al{box-shadow:none}
+.metas-shell .metas-goal-section table{font-variant-numeric:tabular-nums}
+.metas-shell .metas-goal-section table th,.metas-shell .metas-goal-section table td{white-space:nowrap}
+.metas-shell .metas-goal-section table td:first-child{white-space:normal}
+@media(max-width:767px){
+  .metas-shell .page-heading{font-size:21px}
+  .metas-shell .metas-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .metas-shell .metas-kpi-card{padding:8px 9px;min-height:62px}
+  .metas-shell .metas-kpi-value{font-size:15px}
+  .metas-shell .metas-summary-bar{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+  .metas-shell .metas-goal-section>summary{padding:9px 10px}
+}
+@media(min-width:768px) and (max-width:1100px){
+  .metas-shell .metas-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
