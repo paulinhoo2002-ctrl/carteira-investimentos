@@ -48,7 +48,7 @@ const viewports = [
 ];
 
 const confirmedTargets = {
-  auditoria: ['.data-quality-chip', '.data-quality-actions .btn'],
+  auditoria: ['.data-audit-chip', '.data-audit-actions .btn'],
   ia: ['.ai-modebar .btn', '.ai-cta'],
   rentabilidade: ['.rent-filters select'],
   irpf: ['#irpf-year-report', '.irpf-yearbox .btn'],
