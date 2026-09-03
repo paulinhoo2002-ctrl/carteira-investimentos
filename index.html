@@ -6844,6 +6844,23 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 }
 .premium-financial-badge{max-width:none;overflow:visible;text-overflow:clip;white-space:normal;flex-shrink:0}
 .rebalance-study-type{white-space:normal;overflow:visible;text-overflow:clip}
+/* Canonical migration 06: keep rebalance analytical, compact and read-only. */
+.rebalance-shell .rebalance-hero{padding:13px 16px 15px;border-radius:12px}
+.rebalance-shell .rebalance-title{font-size:24px;line-height:1.05;color:var(--text)}
+.rebalance-shell .rebalance-subtitle{margin-top:5px;max-width:70ch}
+.rebalance-shell .rebalance-form{grid-template-columns:minmax(220px,320px) 140px 170px;gap:8px;margin-top:10px;justify-content:start}
+.rebalance-shell .rebalance-form .btn.bp{background:var(--success);color:#04120b;box-shadow:none}
+.rebalance-shell .rebalance-quickline-pill{color:var(--success);border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.1)}
+.rebalance-shell .rebalance-safety{border:0;background:transparent;padding:2px 2px;color:var(--muted)}
+.rebalance-shell .rebalance-alloc-bar.current{background:var(--success)}
+.rebalance-shell .rebalance-study-value{color:var(--success)}
+.rebalance-shell .rebalance-asset-suggestion>strong{color:var(--success)}
+@media(max-width:767px){
+  .rebalance-shell .rebalance-hero{padding:10px 12px 11px}
+  .rebalance-shell .rebalance-title{font-size:21px}
+  .rebalance-shell .rebalance-form{grid-template-columns:1fr;gap:6px;margin-top:8px}
+  .rebalance-shell .rebalance-form .btn{width:100%}
+}
 
 /* REAL_USE_REFINEMENT_02: keep the approved shell dense without reducing
    financial readability or the existing 44px interaction targets. */
@@ -6913,6 +6930,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .dashboard-master-secondary .dashboard-home-goals{grid-column:span 2}
   .dashboard-master-secondary .dashboard-home-actions{grid-column:span 2}
 }
+.rebalance-shell .rebalance-title{font-size:24px;line-height:1.05;color:var(--text)}
+.rebalance-shell .rebalance-form .btn.bp{background:var(--success)!important;color:#04120b!important;box-shadow:none!important}
+@media(max-width:767px){.rebalance-shell .rebalance-title{font-size:21px}}
 </style>
 
 <style>

@@ -60,6 +60,17 @@ frozen screen without explicit user authorization.
 The next official candidate is `REBALANCEAR`, subject to a new explicit mission
 scope and approval before implementation begins.
 
+`CANONICAL_VISUAL_MIGRATION_06 - REBALANCEAR` is implemented and ready for
+final user approval. The scope was limited to the read-only Rebalancear screen;
+allocation, target and suggestion contracts were preserved. Do not freeze the
+screen until explicit user approval. Do not reopen Dashboard, Dividendos,
+Sidebar, Ativos, Renda Fixa, Aportes or Rentabilidade.
+
+`CANONICAL_VISUAL_MIGRATION_06=COMPLETE` and `REBALANCEAR_VISUAL=FROZEN`.
+Rebalancear is closed for visual work unless explicitly authorized. The next
+official candidate is `METAS` or `RELATORIOS`, following the roadmap decision
+recorded for the next phase.
+
 ## WHAT_NOT_TO_TOUCH
 
 Do not mix this repository with `C:\Projetos\carteira-2.0`. Do not start a
