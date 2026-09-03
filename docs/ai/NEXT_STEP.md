@@ -13,10 +13,16 @@ real data, identity contracts, handlers and `modern/src`.
 
 ## WHAT_IS_NEXT
 
-`CANONICAL_VISUAL_MIGRATION_01`: replicate the approved references incrementally
-in the Sidebar, Dashboard and Dividendos, without changing financial engines.
-After approval, freeze `SIDEBAR_VISUAL`, `DASHBOARD_VISUAL` and
-`DIVIDENDS_VISUAL`, then evaluate the remaining screens one at a time.
+`CANONICAL_VISUAL_MIGRATION_02 - ATIVOS`: refine the asset screen using the
+frozen Dashboard and Dividendos canon. Target a dense professional asset
+table, visible individual results, filters, sorting, hover/popover and a
+mobile tap equivalent. Use the Ativos video/reference library for behavior
+only; do not copy external brand identity. Any work must preserve the
+official financial/data contracts.
+
+The Dashboard, Dividendos and Sidebar visual contracts are now frozen and
+require explicit user authorization for redesign or reinterpretation. RF
+orphan reconciliation is complete and required no recovery.
 
 ## WHAT_NOT_TO_TOUCH
 

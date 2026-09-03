@@ -115,21 +115,18 @@ test('destaques da carteira renderiza abas, estado vazio e atalho para desempenh
   const { context, counters } = makeContext(rows);
 
   const htmlHigh = context.dashboardHomeHighlightsPanel();
-  assert.match(htmlHigh, /Destaques da carteira/);
-  assert.match(htmlHigh, /Desempenho atual dos seus ativos/);
-  assert.match(htmlHigh, /role="tablist"/);
-  assert.match(htmlHigh, /role="tab"/);
-  assert.match(htmlHigh, /aria-selected="true"/);
+  assert.match(htmlHigh, /dashboard-highlight-panels/);
   assert.match(htmlHigh, /Maiores altas/);
   assert.match(htmlHigh, /Maiores baixas/);
   assert.match(htmlHigh, /AAA3/);
   assert.match(htmlHigh, /R\$1850\.00/);
-  assert.match(htmlHigh, /Todos/);
-  assert.match(htmlHigh, /Ações/);
-  assert.match(htmlHigh, /FIIs/);
-  assert.match(htmlHigh, /ETFs/);
-  assert.match(htmlHigh, /dash-chip/);
-  assert.equal((htmlHigh.match(/dashboard-highlight-row/g) || []).length, 5);
+  assert.match(htmlHigh, /dashboard-highlight-details/);
+  assert.match(htmlHigh, /dashboard-highlight-bar/);
+  assert.match(htmlHigh, /<span>PM<strong>/);
+  assert.match(htmlHigh, /<span>Atual<strong>/);
+  assert.match(htmlHigh, /class=\"gn\"/);
+  assert.equal(htmlHigh.includes('dashboard-highlight-toolbar'), false);
+  assert.equal((htmlHigh.match(/dashboard-highlight-row/g) || []).length, 10);
   assert.equal(htmlHigh.includes('Maiores pagadores do mes'), false);
 
   const navContext = makeContext(rows).context;
@@ -144,12 +141,13 @@ test('destaques da carteira renderiza abas, estado vazio e atalho para desempenh
 
   const htmlLow = context.dashboardHomeHighlightsPanel();
   assert.match(htmlLow, /BAC3/);
+  assert.match(htmlLow, /class=\"rd\"/);
   assert.equal(htmlLow.includes('Nenhum ativo negativo com dados suficientes.'), false);
   context.setDashboardHighlightsClassFilter('acao');
   const htmlAction = context.dashboardHomeHighlightsPanel();
   assert.equal(htmlAction.includes('Renda Fixa'), false);
-  assert.ok((htmlAction.match(/dashboard-highlight-row/g) || []).length <= 5);
-  assert.match(htmlAction, /Ações|Todos/);
+  assert.ok((htmlAction.match(/dashboard-highlight-row/g) || []).length <= 10);
+  assert.match(htmlAction, /Maiores altas/);
 
   context.setDashboardHighlightsTab('high');
   context.setDashboardHighlightsClassFilter('fii');

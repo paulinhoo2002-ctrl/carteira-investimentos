@@ -39,6 +39,15 @@ Snapshot date: 2026-09-03
 - `DASHBOARD_CANONICAL_REFERENCE=true`
 - `DIVIDENDS_CANONICAL_REFERENCE=true`
 - Canonical files live in `Refs/visual-canon/` and are not product data.
+- `VISUAL_REFERENCE_LIBRARY=READY`
+- `PRIMARY_CANON_COUNT=2`
+- `SECONDARY_REFERENCE_COUNT=1`
+- `SCREEN_REFERENCE_COUNT=4`
+- `PATTERN_REFERENCE_COUNT=0`
+- `REJECTED_CONFLICT_COUNT=0`
+- `DUPLICATE_COUNT=0`
+- `DUPLICATE_HASHES_REPORTED=true`
+- Full inventory and priority rules: `docs/ai/VISUAL_REFERENCE_INDEX.md`.
 
 ## Frozen boundaries
 
@@ -60,3 +69,47 @@ Do not change without an explicit phase and evidence:
 
 Use `docs/ai/NEXT_STEP.md`. This audit creates project memory only; it does not
 start a feature, visual migration or release operation.
+
+## 2026-09-03 - Canonical visual migration 01
+
+- `CANONICAL_VISUAL_MIGRATION_01=READY_FOR_FINAL_USER_APPROVAL`
+- `DASHBOARD_CANONICAL_IMPLEMENTATION=READY_FOR_USER_APPROVAL`
+- Dashboard and Dividendos received a scoped legacy CSS alignment against the
+  two primary canonical screenshots.
+- Dashboard desktop performance rows now follow the canonical PM/current/
+  variation/result/bar contract without increasing the approved height budget.
+- Final acceptance refined Dashboard vertical density and Dividendos semantic
+  KPI icons, flat Top ativos ranking and Total geral donut center.
+- Financial helpers, datasets, handlers, routes, persistence and protected
+  areas were preserved.
+- Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-01/acceptance-final/`; screens are
+  not frozen yet.
+
+## 2026-09-03 - RF orphan reconciliation
+
+- `RF_ORPHAN_RECONCILIATION=COMPLETE`
+- `RF_ORPHAN_RECOVERY_NEEDED=false`
+- The orphan chain `31d0d11e -> a87078ec -> 42c31355 -> 4e882816` contains
+  fixed-rate identity, readonly projection, supplement and test concepts that
+  are already present in the canonical state.
+- The canonical state is newer for CDI parsing, daily factors, valuation and
+  related integration coverage.
+- No product, financial, persistence, schema or real-data delta was recovered.
+
+## 2026-09-03 - Canonical visual freeze
+
+- `DASHBOARD_VISUAL=FROZEN`
+- `DIVIDENDS_VISUAL=FROZEN`
+- `SIDEBAR_VISUAL=FROZEN`
+- Frozen references: `Refs/visual-canon/dashboard-canonical.png` and
+  `Refs/visual-canon/dividendos-canonical.png`.
+- The frozen Dashboard contract preserves the five-KPI executive row,
+  patrimonio evolution, class composition, compact passive income, simultaneous
+  highs/lows, PM/current/variation/result and approved responsive density.
+- The frozen Dividendos contract preserves five semantic KPIs, monthly history,
+  multi-year income chart, compact top-assets ranking, annual total donut and
+  approved tooltip/mobile behavior.
+- The frozen Sidebar contract preserves the dark shell, green active state,
+  desktop navigation hierarchy, Reports grouping and mobile bottom navigation.
+- Future visual changes to these areas require explicit user authorization.
