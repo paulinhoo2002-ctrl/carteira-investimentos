@@ -249,3 +249,36 @@ start a feature, visual migration or release operation.
   Atual vs ideal. Termos transacionais nao foram introduzidos.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade e Sidebar
   permanecem congelados e sem alteracoes nesta fase.
+
+## 2026-09-03 - Canonical visual migration 07: Metas
+
+- `METAS_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- Metas recebeu refinamento visual escopado: KPIs compactos, resumo de metas
+  mais denso, progresso com leitura semantica e layout responsivo para desktop,
+  tablet e mobile.
+- A cadeia oficial permanece `S.goals` -> `financialGoalsSnapshot()` /
+  `getGoalsSnapshot()` -> `createHostGoalsReadonlySource` -> adapter/runtime
+  readonly. Nenhum estado paralelo, formula nova ou dado fake foi criado.
+- Os fluxos existentes de edicao, remocao, configuracao de alocacao e ponte
+  readonly foram preservados. Valores indisponiveis continuam explicitos.
+- Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
+  Rebalancear e Sidebar nao foram alterados por esta migracao.
+- Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-07/`.
+
+## 2026-09-03 - Metas visual freeze
+
+- `METAS_VISUAL=FROZEN`
+- O contrato aprovado mantém shell premium escuro, cabecalho compacto, quatro
+  KPIs no desktop, grade responsiva em duas colunas no mobile, faixas de status
+  de Patrimonio e Renda Passiva, progresso oficial e distribuicao da carteira.
+- `GOALS_SOURCE_OF_TRUTH=S.goals`
+- `GOALS_SNAPSHOT_SOURCE=financialGoalsSnapshot() / getGoalsSnapshot()`
+- `MODERN_GOALS_BRIDGE=createHostGoalsReadonlySource()`
+- Nao ha estado paralelo, dados fake ou formulas paralelas. Handlers oficiais de
+  edicao/remocao e a ponte moderna readonly permanecem preservados.
+- `METAS_FOCUSED_HARNESS_DEBT=phase-206-financial-goals missing rentabilityHistory in isolated harness`
+- O debito acima e `NON_BLOCKING_TEST_HARNESS_DEBT`; nao e evidencia de regressao
+  de Metas e nao foi mascarado.
+- Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
+  Rebalancear e Sidebar permanecem congelados.
