@@ -34,6 +34,29 @@ Ao iniciar uma tarefa relevante neste repositório:
 6. Valide com os testes, build e navegador aplicáveis.
 7. Registre decisões duradouras na memória/documentação apropriada.
 
+## PROJECT BOOTSTRAP
+
+Before doing ANY work in this repository:
+
+1. Read `docs/ai/PROJECT_STATE.md`.
+2. Read `docs/ai/NEXT_STEP.md`.
+3. Read `docs/ai/VISUAL_CANON.md` for UI work.
+4. Read `docs/ai/ARCHITECTURE_MAP.md` for code work.
+5. Read `docs/ai/PRODUCT_CONTRACTS.md` before financial or data changes.
+6. Read `docs/ai/TESTING_AND_RELEASE.md` before PR or release work.
+
+Do not rely on chat history as source of truth. Repository documentation is
+authoritative unless proven stale by Git or code evidence.
+
+DO NOT MIX WITH `C:\Projetos\carteira-2.0`. They are independent projects.
+
+Before UI work:
+
+1. Read `docs/ai/VISUAL_CANON.md`.
+2. Open both files in `Refs/visual-canon/`.
+3. Treat the screenshots as final visual targets.
+4. Do not reinterpret the approved design.
+
 Fontes canônicas: arquitetura em `docs/ai/ARCHITECTURE.md`, estado e decisões
 em `docs/ai/PROJECT_MEMORY.md`, mapa de Skills em `docs/ai/SKILLS.md`,
 roteamento de Skills em `docs/ai/SKILL_ROUTER.md`,
