@@ -98,7 +98,6 @@ test('insights de Renda Fixa usam a rota canônica e permanecem acionáveis', ()
     assert.match(html, new RegExp(`aria-label=\\"${actionLabel}: ${title}\\"`));
   }
 });
-
 test('iaTab mantém o hub focado e limita a leitura principal a poucos cards', () => {
   const indexHtml = INDEX_HTML;
   const start = indexHtml.indexOf('function iaTab(){');

@@ -2601,7 +2601,12 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
   .premium-dividends-3 .dividend-executive-kpi-value{font-size:15px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--success)}
   .premium-dividends-3 .dividend-executive-kpi-sub{font-size:9px;color:var(--muted);line-height:1.25}
-  .premium-dividends-3 .dividend-primary-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:12px;align-items:start}
+.premium-dividends-3 .dividend-primary-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:12px;align-items:start}
+.premium-dividends-3 .dividend-primary-grid>.div-collapsible{height:100%}
+.premium-dividends-3 .dividend-primary-grid .div-asset-list{max-height:360px;overflow:auto}
+.premium-dividends-3 .dividend-primary-grid .div-asset-group summary{grid-template-columns:24px minmax(0,1fr) auto;gap:8px;padding:10px 9px}
+  .premium-dividends-3 .dividend-primary-grid .div-asset-stat:not(.div-asset-total),.premium-dividends-3 .dividend-primary-grid .div-asset-group .ag-open{display:none}
+  .premium-dividends-3 .dividend-primary-grid .div-asset-total{display:block;text-align:right}
   .premium-dividends-3 .dividend-secondary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
   .premium-dividends-3 .dividend-primary-grid>.div-collapsible,.premium-dividends-3 .dividend-secondary-grid>.div-collapsible{min-width:0}
   .premium-dividends-3 .dividend-history-block{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
@@ -2609,6 +2614,42 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
   .premium-dividends-3 .dividend-history-heading strong{font-size:13px;color:var(--text)}
   .premium-dividends-3 .dividend-history-heading span{display:block;margin-top:2px;font-size:10px;color:var(--muted)}
   .premium-dividends-3 .dividend-history-block>.div-monthly-table-block{border:0;border-radius:0}
+  .premium-dividends-3 .div-premium-hero{border:0;border-radius:0;padding:0;background:transparent;box-shadow:none;overflow:visible}
+  .premium-dividends-3 .div-premium-hero:after{display:none}
+  .premium-dividends-3 .div-premium-head{align-items:flex-end;padding:2px 2px 0}
+  .premium-dividends-3 .div-premium-title{font-size:28px;letter-spacing:-.035em}
+  .premium-dividends-3 .div-premium-sub{font-size:13px;color:var(--muted);margin-top:5px}
+  .premium-dividends-3 .div-premium-head .btn{min-height:38px;padding:0 14px;border-radius:10px;font-size:11px;box-shadow:none}
+  .premium-dividends-3 .div-premium-hero-meta{margin-top:10px}
+  .premium-dividends-3 .div-premium-status{padding:4px 8px;font-size:9px;background:transparent;border:1px solid var(--border);color:var(--muted)}
+  .premium-dividends-3 .div-premium-tabs{margin-top:10px;padding:4px;border:1px solid var(--border);border-radius:11px;background:rgba(15,26,44,.7);width:max-content;max-width:100%}
+  .premium-dividends-3 .div-premium-tab{border:0;border-radius:8px;padding:7px 10px;font-size:10px;color:var(--muted)}
+  .premium-dividends-3 .div-premium-tab.on{background:rgba(34,197,94,.15);color:var(--success)}
+  .premium-dividends-3 .dividend-executive-kpi{min-height:104px;padding:13px 14px;border-radius:13px;position:relative;overflow:hidden;background:linear-gradient(145deg,var(--panel),rgba(15,26,44,.82))}
+  .premium-dividends-3 .dividend-executive-kpi:after{content:'';position:absolute;right:12px;top:25px;width:30px;height:30px;border-radius:50%;border:1px solid currentColor;opacity:.18}
+  .premium-dividends-3 .dividend-executive-kpi:nth-child(1){color:#22c55e}
+  .premium-dividends-3 .dividend-executive-kpi:nth-child(2){color:#38bdf8}
+  .premium-dividends-3 .dividend-executive-kpi:nth-child(3){color:#f59e0b}
+  .premium-dividends-3 .dividend-executive-kpi:nth-child(4){color:#a78bfa}
+  .premium-dividends-3 .dividend-executive-kpi:nth-child(5){color:#22d3ee}
+  .premium-dividends-3 .dividend-executive-kpi-value{font-size:21px;color:currentColor}
+  .premium-dividends-3 .dividend-executive-kpi-sub{color:var(--muted)}
+  .premium-dividends-3 .div-asset-group{border:0;border-bottom:1px solid rgba(148,163,184,.14);border-radius:0;background:transparent}
+  .premium-dividends-3 .div-asset-group>summary{padding:11px 4px;grid-template-columns:24px minmax(0,1fr) minmax(112px,1fr);}
+  .premium-dividends-3 .div-asset-group>summary:hover{background:rgba(255,255,255,.025)}
+  .premium-dividends-3 .div-asset-total{display:grid;grid-template-columns:minmax(54px,1fr) auto;align-items:center;gap:8px}
+  .premium-dividends-3 .div-asset-total span{display:none}
+  .premium-dividends-3 .div-asset-total strong{font-size:12px;white-space:nowrap;color:var(--text);order:2}
+  .premium-dividends-3 .div-asset-total:before{content:'';display:block;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--success),rgba(34,197,94,.28));width:var(--asset-share,100%);order:1}
+  .premium-dividends-3 .div-asset-summary{gap:0}
+  .premium-dividends-3 .div-asset-more{border:0;border-top:1px solid rgba(148,163,184,.14);border-radius:0;background:transparent}
+  .premium-dividends-3 .div-asset-more>summary{padding:12px 4px;color:var(--success)}
+  .premium-dividends-3 .dividend-evolution-chart{min-height:238px}
+  .premium-dividends-3 .dividend-history-heading{padding:13px 14px}
+  .premium-dividends-3 .dividend-history-block>.div-monthly-table-block{display:block}
+  .test-mode-banner{margin:4px 0 8px!important;padding:5px 8px!important;border-radius:8px!important;background:rgba(251,191,36,.06)!important;gap:8px!important;box-shadow:none!important}
+  .test-mode-banner-title{font-size:8px!important}
+  .test-mode-banner-text{font-size:9px!important;line-height:1.2!important}
   @media (max-width:1180px){
     .premium-dividends-3 .dividend-executive-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
     .premium-dividends-3 .dividend-primary-grid{grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr)}
@@ -2669,6 +2710,7 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
     .premium-dividends-3 .dividend-executive-kpi:first-child{min-height:46px}
     .premium-dividends-3 .dividend-primary-grid{gap:6px}
     .premium-dividends-3 .dividend-secondary-grid{gap:6px}
+    .premium-dividends-3 .div-premium-tabs{width:100%;overflow-x:auto}
   }
 html[data-theme="light"] .div-premium-hero{background:linear-gradient(135deg,#f8fafc,#eef6f4 65%,#e8f3ff)}
 html[data-theme="light"] .div-premium-title{color:#172033}
@@ -26770,6 +26812,11 @@ function ativos(){
       <h1 id="assets-page-title" class="st">Ativos</h1>
       <div class="mu" style="font-size:12px;margin-top:4px">${S.assets.length} ativos agrupados por categoria. Abra cada bloco para ver os detalhes e editar um item.</div>
     </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
+      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
+      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openAllocationGoal()">🎯 Distribuição da carteira</button>
+    </div>
   </div>
   <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
     <button class="asset-inner-tab ${innerTab==='analise'?'on':''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab==='analise'?'true':'false'}">Análise</button>
@@ -27223,7 +27270,7 @@ function apTab(){
       : mode==='categorias'
         ? categoriesContent
         : mode==='resumo'
-          ? `${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${reserveSummary}`
+          ? `${summaryCards||'<div class="aporte-empty">Cadastre movimentações para visualizar o resumo.</div>'}${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${reserveSummary}`
           : aporteExtractHtml(extractRows);
   const aporteToolbar=`<div class="ap-toolbar aporte-primary-toolbar">
         <button class="btn bp" onclick="openQuickMovement()">+ Nova movimentação</button>
@@ -28323,7 +28370,7 @@ function dividendsByAssetView(rows){
     const share=total>0?group.total/total*100:0;
     const barWidth=share>0?Math.min(100,share):0;
     return `<details class="div-asset-group">
-      <summary title="${esc([group.ticker, group.name, fmt(group.total), group.count, share.toFixed(1)].join(' · '))}" aria-label="${esc(`${group.ticker || group.name || 'Ativo'} · ${fmt(group.total)} · ${group.count} lançamento(s)`)}">
+      <summary style="--asset-share:${Math.max(8,Math.min(100,share)).toFixed(1)}%" title="${esc([group.ticker, group.name, fmt(group.total), group.count, share.toFixed(1)].join(' · '))}" aria-label="${esc(`${group.ticker || group.name || 'Ativo'} · ${fmt(group.total)} · ${group.count} lançamento(s)`)}">
         <div class="div-asset-rank">#${index+1}</div>
         <div><div class="div-asset-name">${esc(group.ticker)}</div><div class="div-asset-sub">${esc(group.name)} · ${share.toFixed(1)}% do total</div></div>
         <div class="div-asset-stat"><span>Recebido</span><strong>${fmt(group.total)}</strong></div>
@@ -30018,14 +30065,14 @@ function metasTab(){
   <h1 class="page-heading">🎯 Metas</h1>
   <div class="page-sub">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
-  <div class="metas-kpi-grid" style="display:grid">
+  <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
     <div class="card al metas-kpi-card" style="border-left-color:var(--warning)"><div class="metas-kpi-label">Renda projetada/mês</div><div class="metas-kpi-value" style="color:var(--warning)">${fmt(mD)}</div><div class="metas-kpi-sub">Estimativa da carteira</div></div>
     <div class="card al metas-kpi-card" style="border-left-color:var(--success)"><div class="metas-kpi-label">Projeção anual</div><div class="metas-kpi-value" style="color:var(--success)">${fmt(aD)}</div></div>
     <div class="card al metas-kpi-card" style="border-left-color:var(--primary)"><div class="metas-kpi-label">DY médio</div><div class="metas-kpi-value" style="color:var(--primary)">${avgDY.toFixed(2)}%</div></div>
     <div class="card al metas-kpi-card" style="border-left-color:var(--primary)"><div class="metas-kpi-label">Total da carteira</div><div class="metas-kpi-value" style="color:var(--text)">${fmt(tC)}</div></div>
   </div>
 
-  <div class="metas-summary-bar">
+  <div class="metas-summary-bar" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px">
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
   </div>

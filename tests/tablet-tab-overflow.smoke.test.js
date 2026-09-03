@@ -37,8 +37,34 @@ async function startServer(rootDir) {
   return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
 }
 
-const mainTabs = ['Dashboard', 'Ativos', 'Aportes', 'Metas', 'Dividendos', 'Rentabilidade', 'Rebalancear', 'Insights'];
+const mainTabs = [
+  { route: 'dashboard', label: 'Dashboard' },
+  { route: 'ativos', label: 'Ativos' },
+  { route: 'aportes', label: 'Aportes' },
+  { route: 'metas', label: 'Metas' },
+  { route: 'dividendos', label: 'Dividendos' },
+  { route: 'rentabilidade', label: 'Rentabilidade' },
+  { route: 'ajudar', label: 'Rebalancear' },
+  { route: 'ia', label: 'Insights' }
+];
 const reportGroupItems = ['Relatórios', 'IRPF', 'Auditoria'];
+
+function tabMatchesRoute(tab, route, label) {
+  const text = (tab.textContent || '').trim();
+  const onclick = tab.getAttribute('onclick') || '';
+  const routeKey = route.replace(/'/g, "\\'");
+  return text.includes(label) || onclick.includes(`go('${routeKey}')`);
+}
+
+const mobileMatchScript = (tabs) => {
+  const mobileTabs = [...document.querySelectorAll('.tabs-mobile button.tab')];
+  return tabs.map(tab => mobileTabs.some(btn => {
+    const text = (btn.textContent || '').trim();
+    const onclick = btn.getAttribute('onclick') || '';
+    const routeKey = tab.route.replace(/'/g, "\\'");
+    return text.includes(tab.label) || onclick.includes(`go('${routeKey}')`);
+  }));
+};
 
 const viewports = [
   { width: 960, height: 768, label: '960x768', desktopTabs: false },
@@ -90,8 +116,9 @@ for (const viewport of viewports) {
       assert.equal(result.mobileVisible, !viewport.desktopTabs, `tabs-mobile esperadas como ${!viewport.desktopTabs} em ${viewport.label}`);
 
       if (!viewport.desktopTabs) {
-        for (const label of mainTabs) {
-          assert.ok(result.mobileTabLabels.some(text => text.includes(label)), `tab '${label}' acessivel via tabs-mobile em ${viewport.label}`);
+        const matches = await page.evaluate(mobileMatchScript, mainTabs);
+        for (let i = 0; i < mainTabs.length; i++) {
+          assert.ok(matches[i], `tab '${mainTabs[i].label}' (${mainTabs[i].route}) acessivel via tabs-mobile em ${viewport.label}`);
         }
         assert.ok(result.groupLabel.includes('Relatórios'), `grupo 'Relatórios' acessivel via tabs-mobile em ${viewport.label}`);
         const groupItems = await page.evaluate(() => {
@@ -111,7 +138,7 @@ for (const viewport of viewports) {
         assert.equal(await page.evaluate(() => S.tab), 'dividendos', `navegacao por tab funciona em ${viewport.label}`);
       } else {
         const desktopCount = await page.evaluate(() => document.querySelectorAll('.tabs-desktop button.tab, .tabs-desktop summary.tab').length);
-        assert.ok(desktopCount >= mainTabs.length, `tabs desktop renderizadas em ${viewport.label}`);
+        assert.ok(desktopCount >= mainTabs.length + reportGroupItems.length, `tabs desktop renderizadas em ${viewport.label}`);
         await page.click('.tabs-desktop button.tab:text("Rentabilidade")');
         await page.waitForTimeout(60);
         assert.equal(await page.evaluate(() => S.tab), 'rentabilidade', `navegacao desktop funciona em ${viewport.label}`);
