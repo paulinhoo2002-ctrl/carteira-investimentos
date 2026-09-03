@@ -6111,7 +6111,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-row-meta.pos{color:var(--success)}
       .premium-rf-row-meta.neg{color:var(--danger)}
       .premium-rf-row-meta.neutral{color:var(--muted)}
-      .premium-rf-row-value{text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
+      .premium-rf-row-value{min-width:174px;text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
+      .premium-rf-row-financial{display:flex;align-items:baseline;justify-content:flex-end;gap:6px}
+      .premium-rf-row-financial-label{color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+      .premium-rf-row-results{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
       .premium-rf-row-actions{flex:none;display:flex;align-items:center}
       .premium-rf-row-actions .asset-action-menu-panel{right:0;left:auto}
       .premium-rf-maturity-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
@@ -6165,6 +6168,11 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-review-group.is-empty .premium-rf-review-list{display:none}
       }
       @media(max-width:390px){.premium-rf-kpi-value{font-size:14px}.premium-rf-row-meta{max-width:190px}}
+      @media(max-width:767px){
+        .premium-rf-row-value{min-width:0;max-width:51%;font-size:11px}
+        .premium-rf-row-results{gap:4px 8px}
+        .premium-rf-row-results .premium-rf-row-meta{font-size:9px}
+      }
       </style>
 <style>
 /* PREMIUM SETTINGS 6 */
@@ -25783,14 +25791,14 @@ function rendaFixaTab(){
     return '<span class="premium-rf-maturity-badge ok">>12 meses</span>';
   }
 
-  const positionRows=data.previewRows.length ? data.previewRows.map(row=>{
+  const positionRows=data.tableRows.length ? data.tableRows.map(row=>{
     const asset=(S.assets||[]).find(a=>String(a?.ticker||'').trim().toUpperCase()===String(row.ticker||'').trim().toUpperCase()) || data.assets.find(a=>a.ticker===row.ticker);
     const getAssetEventId = (typeof rfAssetEventId === 'function') ? rfAssetEventId : (a)=>String(a?.id||a?.assetId||a?.rf_asset_id||'').trim();
     const assetId=asset?getAssetEventId(asset):null;
     const menuId=assetId?`rf-pos-menu-${assetId.replace(/[^a-zA-Z0-9_-]/g,'-')}`:'';
     const display=row.explicit===false
-      ? {kind:'missing', currentText:'Atualização necessária', currentNote:'Valor atual não informado', resultClass:'neutral', resultText:'—'}
-      : {kind:'current', currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', resultClass:row.profit>=0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit)};
+      ? {kind:'missing', appliedText:fmt(row.applied), currentText:'Atualização necessária', currentNote:'Valor atual não informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:'neutral', resultText:'—', rentabilityText:'—'}
+      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>=0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
     return `
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
@@ -25798,9 +25806,14 @@ function rendaFixaTab(){
         <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}${row.issuer?` · ${esc(row.issuer)}`:''}</div>
       </div>
       <div class="premium-rf-row-value">
-        ${display.currentText}
+        <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
+        <div class="premium-rf-row-meta">Valor aplicado ${display.appliedText}</div>
         <div class="premium-rf-row-meta">${esc(display.currentNote)}</div>
-        <div class="premium-rf-row-meta ${display.resultClass}">${display.kind==='fallback-applied' ? '—' : display.resultText}</div>
+        <div class="premium-rf-row-meta">Vencimento ${esc(display.maturityText)}</div>
+        <div class="premium-rf-row-results">
+          <span class="premium-rf-row-meta ${display.resultClass}">Resultado ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
+          <span class="premium-rf-row-meta ${display.resultClass}">Rentab. ${display.rentabilityText}</span>
+        </div>
       </div>
       ${assetId ? `
       <div class="premium-rf-row-actions">
@@ -25847,7 +25860,7 @@ function rendaFixaTab(){
             <div class="premium-rf-review-item-main">
               <div class="premium-rf-review-item-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
               <div class="premium-rf-review-item-meta">${esc(row.category)} · ${esc(dueText)}</div>
-              <div class="premium-rf-review-item-value">${row.explicit===false?'Valor não informado':fmt(row.current)}</div>
+              <div class="premium-rf-review-item-value">${row.explicit===false?'Atualização necessária':fmt(row.current)}</div>
             </div>
             ${assetId?`<button type="button" class="premium-rf-review-action" onclick='edA(${JSON.stringify(assetId)})'>Revisar</button>`:''}
           </div>`;
@@ -25890,7 +25903,7 @@ function rendaFixaTab(){
         <div class="premium-row-sub">${esc(row.primaryIssue)}${row.days!=null?` · ${row.days<0?'vencido':`${Math.abs(row.days)} dia${Math.abs(row.days)===1?'':'s'}`}`:''}</div>
       </div>
       <div class="rf-preview-value">
-        <span class="analysis-pill ${row.severity<=1?'danger':row.severity===2?'warn':'muted'}">${esc(row.primaryIssue)}</span>
+        <span class="analysis-pill ${row.severity<=1?'danger':row.severity===2?'warn':'muted'}">${esc(row.primaryIssue==='Valor atual não informado'?'Atualização necessária':row.primaryIssue)}</span>
         <div class="premium-row-sub">${esc(row.rate||'taxa não informada')}</div>
       </div>
     </div>`).join('') : '<div class="rf-empty">Nenhum alerta crítico no momento.</div>';

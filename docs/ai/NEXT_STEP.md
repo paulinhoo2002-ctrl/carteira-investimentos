@@ -29,6 +29,14 @@ The Dashboard, Dividendos and Sidebar visual contracts are now frozen and
 require explicit user authorization for redesign or reinterpretation. RF
 orphan reconciliation is complete and required no recovery.
 
+`CANONICAL_VISUAL_MIGRATION_03 - RENDA FIXA` is complete and frozen after
+user approval. The dedicated screen preserves official RF helpers, events,
+identity contracts and review flows. Do not reopen Dashboard, Dividendos,
+Sidebar, Ativos or Renda Fixa without explicit user authorization.
+
+The next official candidate is `APORTES`, subject to a new explicit mission
+scope and approval before implementation begins.
+
 ## WHAT_NOT_TO_TOUCH
 
 Do not mix this repository with `C:\Projetos\carteira-2.0`. Do not start a

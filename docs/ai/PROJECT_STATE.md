@@ -133,3 +133,29 @@ start a feature, visual migration or release operation.
   `qa-screenshots/canonical-visual-migration-02/`.
 - `ATIVOS_PERFORMANCE_FILTER=NOT_IMPLEMENTED`
 - `ATIVOS_PERFORMANCE_FILTER_CLASSIFICATION=NON_BLOCKING_FUTURE_ENHANCEMENT`
+
+## 2026-09-03 - Canonical visual migration 03: Renda Fixa
+
+- `RENDA_FIXA_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- The dedicated `renda-fixa` view now exposes applied value, current value,
+  result, rentability and maturity in its compact position rows.
+- Incomplete current values remain explicitly marked for update and never
+  display a fabricated result.
+- The position list uses the existing official RF snapshot rows; no financial
+  formula, event ledger, persistence path, schema, handler or protected screen
+  changed. Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-03/`.
+- The screen is not frozen until explicit user approval.
+
+## 2026-09-03 - Fixed income visual freeze
+
+- `RENDA_FIXA_VISUAL=FROZEN`
+- `RF_SOURCE_OF_TRUTH=rfIntelligenceSnapshot()`
+- `RF_APPLIED_SOURCE=rfValues().applied`
+- `RF_CURRENT_SOURCE=rfValues().current`
+- `RF_RESULT_SOURCE=rfValues().profit`
+- `RF_RETURN_SOURCE=rfIntelligenceSnapshot().pct`
+- `RF_MATURITY_SOURCE=assetRfMaturityDate()`
+- The approved dedicated RF contract preserves explicit values, identity,
+  review/editor flows, official helpers and collapsed secondary sections.
+- `RF_SECONDARY_SECTIONS_DENSITY=ACCEPTED_COLLAPSED_STRUCTURE`
