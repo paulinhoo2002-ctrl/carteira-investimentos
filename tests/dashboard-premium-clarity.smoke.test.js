@@ -86,7 +86,8 @@ for (const viewport of viewports) {
       page.on('requestfailed', request => requestFailures.push(`${request.url()} (${request.failure()?.errorText || 'unknown'})`));
 
       await page.goto(harness.url, { waitUntil: 'networkidle' });
-      await page.waitForSelector('.dashboard-home-summary', { state: 'visible', timeout: 5000 });
+      await page.evaluate(() => go('dashboard'));
+      await page.waitForSelector('.dashboard-analytical-primary', { state: 'visible', timeout: 5000 });
       await page.waitForSelector('.dashboard-home-income', { state: 'visible', timeout: 5000 });
 
       const snapshot = await page.evaluate(labels => {
@@ -115,7 +116,7 @@ for (const viewport of viewports) {
             };
           }),
           overflow: document.documentElement.scrollWidth > window.innerWidth,
-          buttons: [...document.querySelectorAll('.dashboard-home-summary button, .dashboard-home-income button')]
+          buttons: [...document.querySelectorAll('.dashboard-analytical-primary button, .dashboard-home-income button')]
             .filter(visible)
             .map(button => ({ text: button.textContent.trim(), width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })),
         };
