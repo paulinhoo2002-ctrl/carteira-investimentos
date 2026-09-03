@@ -187,3 +187,31 @@ start a feature, visual migration or release operation.
 - `STALE_HARNESS_SELECTOR=.dashboard-master-primary`
 - `STALE_HARNESS_DEBT=NON_BLOCKING_TEST_HARNESS_DEBT`
 - Dashboard, Dividendos, Ativos, Renda Fixa and Sidebar remain frozen.
+
+## 2026-09-03 - Canonical visual migration 05: Rentabilidade
+
+- `RENTABILIDADE_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- Rentabilidade recebeu um refinamento visual escopado: título simples,
+  hierarquia compacta de performance e cores semânticas para carteira e
+  benchmark.
+- O renderer continua usando `rentabilityHistory(...)`, `assetRentabPct(...)`
+  e o benchmark interno existente; períodos, tooltips e fontes oficiais foram
+  preservados.
+- Dashboard, Dividendos, Ativos, Renda Fixa, Aportes e Sidebar não foram
+  alterados por esta migração. A tela Rentabilidade ainda não está congelada.
+- Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-05/`.
+
+## 2026-09-03 - Rentabilidade visual freeze
+
+- `RENTABILIDADE_VISUAL=FROZEN`
+- The approved contract preserves the compact dark shell, canonical KPI cards,
+  comparative performance chart, green portfolio series, blue benchmark series,
+  official period controls, exact-value tooltips and responsive mobile layout.
+- `RETURN_SOURCE=rentabilityHistory()`
+- `PERIOD_SOURCE=S.rentPeriod`
+- `BENCHMARK_SOURCE=RENT_BENCH / rentBenchSeries()`
+- `ASSET_RETURN_SOURCE=assetRentabPct()`
+- No parallel return formula, invented metric, fabricated benchmark data,
+  Finance Core, persistence or schema change was introduced.
+- Dashboard, Dividendos, Ativos, Renda Fixa, Aportes and Sidebar remain frozen.

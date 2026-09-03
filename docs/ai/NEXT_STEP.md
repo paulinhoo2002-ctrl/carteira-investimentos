@@ -47,6 +47,19 @@ Ativos or Renda Fixa without explicit user authorization.
 The next official candidate is `RENTABILIDADE`, subject to a new explicit
 mission scope and approval before implementation begins.
 
+`CANONICAL_VISUAL_MIGRATION_05 - RENTABILIDADE` is implemented and ready for
+final user approval. The scope was limited to Rentabilidade; official return,
+period, benchmark and asset-return sources were preserved. Do not freeze the
+screen until explicit user approval. Do not reopen Dashboard, Dividendos,
+Sidebar, Ativos, Renda Fixa or Aportes.
+
+After explicit user approval, `CANONICAL_VISUAL_MIGRATION_05=COMPLETE` and
+`RENTABILIDADE_VISUAL=FROZEN`. Do not reopen Rentabilidade or any previously
+frozen screen without explicit user authorization.
+
+The next official candidate is `REBALANCEAR`, subject to a new explicit mission
+scope and approval before implementation begins.
+
 ## WHAT_NOT_TO_TOUCH
 
 Do not mix this repository with `C:\Projetos\carteira-2.0`. Do not start a
