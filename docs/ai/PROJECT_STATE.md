@@ -159,3 +159,31 @@ start a feature, visual migration or release operation.
 - The approved dedicated RF contract preserves explicit values, identity,
   review/editor flows, official helpers and collapsed secondary sections.
 - `RF_SECONDARY_SECTIONS_DENSITY=ACCEPTED_COLLAPSED_STRUCTURE`
+
+## 2026-09-03 - Canonical visual migration 04: Aportes
+
+- `APORTES_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- Aportes recebeu um refinamento visual escopado: hierarquia do cabeçalho,
+  resumo 2x2 responsivo, estados ativos das abas/filtros, densidade das
+  superfícies e proteção de valores financeiros completos.
+- As fontes oficiais de movimentações, handlers, identidade de ativo,
+  duplicação permitida e persistência foram preservados.
+- Dashboard, Dividendos, Ativos, Renda Fixa e Sidebar não foram alterados por
+  esta migração. A tela Aportes ainda não está congelada.
+- Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-04/`.
+
+## 2026-09-03 - Aportes visual freeze
+
+- `APORTES_VISUAL=FROZEN`
+- The approved Aportes contract preserves the compact dark canonical shell,
+  responsive KPI grid, monthly contribution rhythm, search, existing tabs and
+  actions, class distribution, latest contributions and mobile bottom navigation.
+- Official movement/contribution sources, create/edit/delete behavior, identity
+  validation, wrong-record protection and the restricted duplicate-contribution
+  contract remain unchanged.
+- Critical financial values remain protected from ellipsis and the page has no
+  horizontal overflow at the approved mobile and desktop viewports.
+- `STALE_HARNESS_SELECTOR=.dashboard-master-primary`
+- `STALE_HARNESS_DEBT=NON_BLOCKING_TEST_HARNESS_DEBT`
+- Dashboard, Dividendos, Ativos, Renda Fixa and Sidebar remain frozen.
