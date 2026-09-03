@@ -66,8 +66,8 @@ async function startServer(rootDir) {
     await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 10000 });
 
     // KPI label check (overview)
-    const labels = await page.$$eval('.div-premium-metric-label', els => els.map(e => e.textContent.trim()));
-    assert.ok(labels.includes('Recebido este mês'), 'KPI label "Recebido este mês" not found');
+    const labels = await page.$$eval('.dividend-executive-kpi-label', els => els.map(e => e.textContent.trim()));
+    assert.ok(labels.includes('Recebido'), 'KPI label "Recebido" not found');
 
     // Open the "Recebimentos" tab, where the premium filter toolbar renders
     await page.evaluate(() => setDividendViewMode('received'));

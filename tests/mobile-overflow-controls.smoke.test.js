@@ -102,21 +102,16 @@ for (const viewport of viewports) {
       assert.ok(ia.allVisible, `algum modo da IA cortado em ${viewport.label}`);
       assert.equal(await pageOverflow(), 0, `pageOverflow na IA em ${viewport.label}`);
 
-      // Dividendos: todas as abas visiveis, ultima (Revisao) alcancavel
+      // Dividendos: o Overview canônico não exibe tabs; os modos internos
+      // continuam acessíveis pelo controlador oficial.
       await page.evaluate(() => go('dividendos'));
-      await page.waitForSelector('.div-premium-tabs', { state: 'visible', timeout: 5000 });
       const div = await page.evaluate(() => {
-        const vw = window.innerWidth;
-        const tabs = document.querySelector('.div-premium-tabs');
-        const list = [...tabs.querySelectorAll('.div-premium-tab')].map(btn => {
-          const r = btn.getBoundingClientRect();
-          return { text: btn.textContent.trim(), left: r.left, right: r.right, fullyInViewport: r.left >= -1 && r.right <= vw + 1 };
-        });
-        return { list, last: list[list.length - 1], allVisible: list.every(t => t.fullyInViewport) };
+        const before = document.querySelector('.div-premium-tabs');
+        setDividendViewMode('review');
+        return { overviewTabsAbsent: !before, reviewRendered: Boolean(document.querySelector('.div-premium')) };
       });
-      assert.equal(div.list.length, 6, `abas de dividendos incompletas em ${viewport.label}`);
-      assert.ok(div.allVisible, `alguma aba de dividendos cortada em ${viewport.label}`);
-      assert.ok(div.last.fullyInViewport, `aba Revisao cortada em ${viewport.label} (right=${Math.round(div.last.right)} vw=${viewport.width})`);
+      assert.equal(div.overviewTabsAbsent, true, `tabs antigas ainda visíveis em ${viewport.label}`);
+      assert.equal(div.reviewRendered, true, `modo Revisão inacessível em ${viewport.label}`);
       assert.equal(await pageOverflow(), 0, `pageOverflow em dividendos ${viewport.label}`);
 
       // Ativos: acoes (Comprar/Vender/Mais e Movimentar/Resgatar) visiveis e sem sobreposicao

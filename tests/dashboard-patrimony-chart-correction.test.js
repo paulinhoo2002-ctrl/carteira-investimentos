@@ -8,11 +8,11 @@ const start = source.indexOf('function dashboardEvolutionPanel(data){');
 const end = source.indexOf('\nfunction dashboardIncomePanel(data){', start);
 const panel = source.slice(start, end);
 
-test('evolucao patrimonial nao apresenta aportes como patrimonio historico', () => {
+test('evolucao patrimonial usa a serie real de aportes quando existe historico', () => {
   assert.ok(start >= 0 && end > start, 'painel patrimonial precisa existir');
   assert.match(panel, /histórico patrimonial ainda não disponível/i);
   assert.match(panel, /Patrimônio consolidado/);
-  assert.doesNotMatch(panel, /Aportes líquidos acumulados/);
-  assert.doesNotMatch(panel, /lineChart\(/);
-  assert.doesNotMatch(panel, /fmtP\(/);
+  assert.match(panel, /Aportes líquidos acumulados/);
+  assert.match(panel, /dashboard-patrimony-chart/);
+  assert.match(panel, /lineChart\(/);
 });

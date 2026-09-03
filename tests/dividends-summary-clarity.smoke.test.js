@@ -72,7 +72,7 @@ viewports.forEach(vp => {
 
       const kpisOk = await page.evaluate(() => {
         const k = document.querySelector('.div-exec-kpis');
-        return k && k.textContent.includes('Recebido este mês') && k.textContent.includes('Total últimos 12 meses');
+        return k && k.textContent.includes('Recebido') && k.textContent.includes('Média mensal');
       });
       assert.equal(kpisOk, true, `KPIs ausentes em ${vp.label}`);
 
@@ -117,17 +117,21 @@ for (const vp of [{ w: 390, h: 844 }, { w: 430, h: 932 }]) {
       const proof = await page.evaluate(() => {
         const svg = document.querySelector('.dividend-evolution-chart');
         const rect = svg.getBoundingClientRect();
-        const bars = [...svg.querySelectorAll('.chart-bar')].map(bar => bar.getBoundingClientRect());
+        const points = [...svg.querySelectorAll('.chart-data-point')].map(point => point.getBoundingClientRect());
         const labels = [...svg.querySelectorAll('text')].filter(text => !text.textContent.includes('R$'));
         return {
-          bars: bars.length,
+          points: points.length,
           labels: labels.length,
-          firstVisible: bars[0].left >= rect.left && bars[0].right <= rect.right,
-          lastVisible: bars.at(-1).left >= rect.left && bars.at(-1).right <= rect.right,
+          firstVisible: points[0].left >= rect.left && points[0].right <= rect.right,
+          lastVisible: points.at(-1).left >= rect.left && points.at(-1).right <= rect.right,
           withinViewport: rect.left >= 0 && rect.right <= window.innerWidth,
         };
       });
-      assert.deepEqual(proof, { bars: 12, labels: 12, firstVisible: true, lastVisible: true, withinViewport: true });
+      assert.equal(proof.points >= 12, true);
+      assert.equal(proof.labels, 12);
+      assert.equal(proof.firstVisible, true);
+      assert.equal(proof.lastVisible, true);
+      assert.equal(proof.withinViewport, true);
       assert.equal(errors.length, 0, `Erros no console em ${vp.w}px: ${errors.join(' | ')}`);
       await ctx.close();
     } finally {
@@ -160,24 +164,13 @@ test(`dividends overview monthly progressive disclosure - ${vp.label}`, async ()
       await page.evaluate(() => go('dividendos'));
       await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 5000 });
 
-      // O historico fica visivel no desktop e progressivo no mobile.
-      const startCollapsed = await page.evaluate(() => {
-        const details = document.querySelector('.div-premium .div-monthly-table-block');
-        return details && details.hasAttribute('open');
+      // O overview canônico mantém o histórico principal visível; no mobile,
+      // somente a tabela pode rolar internamente quando necessário.
+      const historyVisible = await page.evaluate(() => {
+        const history = document.querySelector('.div-premium .canon-div-history');
+        return Boolean(history && history.getBoundingClientRect().height > 0);
       });
-      assert.equal(startCollapsed, vp.w >= 768, `Historico mensal overview nao respeita a prioridade de ${vp.label}`);
-
-      // Mostrar expande
-      await page.evaluate(() => {
-        const details = document.querySelector('.div-premium .div-monthly-table-block');
-        if (details) details.querySelector('summary').click();
-      });
-      await page.waitForTimeout(200);
-      const afterClick = await page.evaluate(() => {
-        const details = document.querySelector('.div-premium .div-monthly-table-block');
-        return details && details.hasAttribute('open');
-      });
-      assert.equal(afterClick, vp.w < 768, `Historico mensal nao alternou corretamente em ${vp.label}`);
+      assert.equal(historyVisible, true, `Historico mensal ausente em ${vp.label}`);
 
       // Sem overflow horizontal
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
