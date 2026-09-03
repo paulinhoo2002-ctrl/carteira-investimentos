@@ -76,11 +76,16 @@ viewports.forEach(vp => {
       });
       assert.equal(kpisOk, true, `KPIs ausentes em ${vp.label}`);
 
-      const panelOk = await page.evaluate(() => {
-        const p = document.querySelector('.div-dist-panel');
-        return p && p.textContent.includes('Distribuição mensal');
-      });
-      assert.equal(panelOk, true, `Painel distribuicao ausente em ${vp.label}`);
+      const overviewContract = await page.evaluate(() => ({
+        distributionAbsent: !document.querySelector('.div-dist-panel'),
+        reviewAbsent: !document.querySelector('.div-review-queue'),
+        filtersAbsent: !document.querySelector('.div-overview-filters'),
+      }));
+      assert.deepEqual(overviewContract, {
+        distributionAbsent: true,
+        reviewAbsent: true,
+        filtersAbsent: true,
+      }, `A Visão geral deve conter apenas a leitura financeira principal em ${vp.label}`);
 
       const gridOk = await page.evaluate(() => !!document.querySelector('.div-exec-overview'));
       assert.equal(gridOk, true, `Grid exec-overview ausente em ${vp.label}`);
@@ -133,7 +138,7 @@ for (const vp of [{ w: 390, h: 844 }, { w: 430, h: 932 }]) {
 }
 
 viewports.forEach(vp => {
-  test(`dividends overview monthly collapsed + distribution toggle - ${vp.label}`, async () => {
+test(`dividends overview monthly progressive disclosure - ${vp.label}`, async () => {
     const exe = resolveBrowser();
     if (!exe) return;
 
@@ -173,25 +178,6 @@ viewports.forEach(vp => {
         return details && details.hasAttribute('open');
       });
       assert.equal(afterClick, vp.w < 768, `Historico mensal nao alternou corretamente em ${vp.label}`);
-
-      const distCollapsed = await page.evaluate(() => {
-        const button = document.querySelector('[aria-controls="div-month-dist-body"]');
-        const body = document.getElementById('div-month-dist-body');
-        return !!button && button.textContent.includes('Ver distribuição mensal') && body && body.classList.contains('hidden');
-      });
-      assert.equal(distCollapsed, true, `Distribuição mensal nao inicia recolhida em ${vp.label}`);
-
-      await page.evaluate(() => {
-        const button = document.querySelector('[aria-controls="div-month-dist-body"]');
-        if (button) button.click();
-      });
-      await page.waitForTimeout(250);
-      const distExpanded = await page.evaluate(() => {
-        const button = document.querySelector('[aria-controls="div-month-dist-body"]');
-        const body = document.getElementById('div-month-dist-body');
-        return !!button && button.textContent.includes('Ocultar distribuição') && body && !body.classList.contains('hidden');
-      });
-      assert.equal(distExpanded, true, `Distribuição mensal nao expande em ${vp.label}`);
 
       // Sem overflow horizontal
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
