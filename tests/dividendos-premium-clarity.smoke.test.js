@@ -82,14 +82,14 @@ async function startServer(rootDir) {
     const chip = page.locator('.div-premium-chip:not(.on)').first();
     await chip.click();
     const activeAfterChip = await page.$$eval('.div-premium-chip.on', els => els.filter(e => !e.closest('.div-collapsible')).map(e => e.textContent.trim()));
-    assert.equal(activeAfterChip.length, 1, 'Exactly one chip should be active after selecting a filter');
+    assert.equal(activeAfterChip.length, 3, 'Each independent filter group should keep one active chip');
     assert.ok(activeAfterChip[0].includes('Dividendos'), `Unexpected active chip after selecting: ${activeAfterChip[0]}`);
     assert.equal(await clearBtn.isDisabled(), false, 'Clear filters button should be enabled after applying a filter');
 
     // Clear via the toolbar button
     await clearBtn.click();
     const activeChips = await page.$$eval('.div-premium-chip.on', els => els.filter(e => !e.closest('.div-collapsible')).map(e => e.textContent.trim()));
-    assert.equal(activeChips.length, 1, 'Exactly one chip should be active after clear');
+    assert.equal(activeChips.length, 3, 'Each independent filter group should keep one active chip after clear');
     assert.ok(activeChips[0].includes('Todos'), 'Active chip after clear should be "Todos"');
     const searchVal = await page.$eval('#dividend-premium-search', el => el.value);
     assert.equal(searchVal.trim(), '', 'Search input not cleared after clearing filters');

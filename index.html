@@ -935,8 +935,9 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .dashboard-home-actions .premium-panel-actions{margin-top:8px}
 .dashboard-home-actions .premium-panel-actions .btn{width:100%}
 .premium-exec-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(148,163,184,.12)}
-.premium-exec-row.dashboard-insight-action{width:100%;margin:0;border:0;border-bottom:1px solid rgba(148,163,184,.12);border-radius:8px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.premium-exec-row.dashboard-insight-action,.premium-exec-row.dashboard-highlight-row{width:100%;margin:0;border:0;border-bottom:1px solid rgba(148,163,184,.12);border-radius:8px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;appearance:none;-webkit-appearance:none}
 .premium-exec-row.dashboard-insight-action:hover{background:rgba(34,197,94,.06)}
+.premium-exec-row.dashboard-highlight-row:hover{background:rgba(34,197,94,.06)}
 .premium-exec-row.dashboard-insight-action:focus-visible{outline:2px solid var(--accent,#22c55e);outline-offset:2px}
 .dashboard-insight-action .premium-exec-value::after{content:'→';margin-left:8px;color:var(--accent,#22c55e);font-size:12px}
 .premium-exec-row:last-child{border-bottom:0}
@@ -6590,6 +6591,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .premium-dividends-3 .dividend-primary-grid .div-collapsible{height:auto}
 .premium-dividends-3 .dividend-primary-grid>div{min-width:0}
 .premium-dividends-3 .dividend-evolution-chart{max-width:100%;min-width:0}
+.premium-dividends-3 .dividend-chart-wrap{position:relative;min-width:0}
+.premium-dividends-3 .dividend-chart-tooltip{position:absolute;z-index:3;max-width:min(220px,calc(100% - 12px));padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface-strong,var(--panel));box-shadow:0 6px 16px rgba(0,0,0,.24);color:var(--text);font-size:11px;line-height:1.25;pointer-events:none;white-space:normal}
+.premium-dividends-3 .dividend-chart-tooltip[hidden]{display:none}
 .premium-dividends-3 .dividend-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .premium-dividends-3 .div-upcoming-empty-compact{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--muted);font-size:10px;line-height:1.3}
 .premium-dividends-3 .div-upcoming-empty-compact strong{color:var(--text);font-size:11px;white-space:nowrap}
@@ -6724,6 +6728,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .rebalance-shell .rebalance-scenario-summary strong{white-space:normal;overflow-wrap:anywhere}
   .rebalance-shell .rebalance-scenario-class span{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}
 }
+.premium-financial-badge{max-width:none;overflow:visible;text-overflow:clip;white-space:normal;flex-shrink:0}
+.rebalance-study-type{white-space:normal;overflow:visible;text-overflow:clip}
 </style>
 
 </head>
@@ -8783,7 +8789,7 @@ function settingsTab(){
       <div>
         <div class="premium-settings-kicker">CONFIGURAÇÕES</div>
         <h2 class="premium-settings-title">Preferências e administração</h2>
-        <div class="premium-settings-subtitle">Preferências, dados e administração da carteira.</div>
+        <h1 class="premium-settings-subtitle">Preferências, dados e administração da carteira.</h1>
       </div>
     </div>
     <div class="premium-settings-grid">
@@ -8791,7 +8797,7 @@ function settingsTab(){
         <div class="premium-settings-section">
           <div class="premium-settings-section-head">
             <div class="premium-settings-section-icon" style="background:rgba(167,139,250,.1);color:#a78bfa">📁</div>
-            <div><div class="premium-settings-section-title">Conta e Carteira</div><div class="premium-settings-section-sub">Gerenciar carteiras e conta conectada</div></div>
+            <div><h2 class="premium-settings-section-title">Conta e Carteira</h2><div class="premium-settings-section-sub">Gerenciar carteiras e conta conectada</div></div>
           </div>
           ${isTest ? `
           <div class="premium-settings-row">
@@ -8837,7 +8843,7 @@ function settingsTab(){
         <div class="premium-settings-section premium-settings-danger">
           <div class="premium-settings-section-head">
             <div class="premium-settings-section-icon">⚠️</div>
-            <div><div class="premium-settings-section-title">Zona de risco</div><div class="premium-settings-section-sub">Ações destrutivas — exigem confirmação</div></div>
+            <div><h2 class="premium-settings-section-title">Zona de risco</h2><div class="premium-settings-section-sub">Ações destrutivas — exigem confirmação</div></div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Resetar carteira ativa</div><div class="premium-settings-row-desc">Apagar todo o histórico, ativos e proventos desta carteira. Outras carteiras não são afetadas.</div></div>
@@ -8855,7 +8861,7 @@ function settingsTab(){
         <div class="premium-settings-section">
           <div class="premium-settings-section-head">
             <div class="premium-settings-section-icon" style="background:rgba(96,165,250,.1);color:#60a5fa">🎨</div>
-            <div><div class="premium-settings-section-title">Aparência</div><div class="premium-settings-section-sub">Tema e preferências visuais</div></div>
+            <div><h2 class="premium-settings-section-title">Aparência</h2><div class="premium-settings-section-sub">Tema e preferências visuais</div></div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Tema</div><div class="premium-settings-row-desc">${esc(themeLabel)}</div></div>
@@ -8870,7 +8876,7 @@ function settingsTab(){
         <div class="premium-settings-section">
           <div class="premium-settings-section-head">
             <div class="premium-settings-section-icon" style="background:rgba(52,211,153,.1);color:#34d399">💾</div>
-            <div><div class="premium-settings-section-title">Dados e Backup</div><div class="premium-settings-section-sub">Exportar, importar e restaurar dados</div></div>
+            <div><h2 class="premium-settings-section-title">Dados e Backup</h2><div class="premium-settings-section-sub">Exportar, importar e restaurar dados</div></div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Exportar backup</div><div class="premium-settings-row-desc">Gera um arquivo JSON com todos os dados da carteira ativa.</div></div>
@@ -8890,7 +8896,7 @@ function settingsTab(){
         <div class="premium-settings-section">
           <div class="premium-settings-section-head">
             <div class="premium-settings-section-icon" style="background:rgba(251,191,36,.1);color:#fbbf24">🔐</div>
-            <div><div class="premium-settings-section-title">Segurança</div><div class="premium-settings-section-sub">Controle de acesso ao aplicativo</div></div>
+            <div><h2 class="premium-settings-section-title">Segurança</h2><div class="premium-settings-section-sub">Controle de acesso ao aplicativo</div></div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Controle de acesso</div><div class="premium-settings-row-desc">Defina quem entra e quem mantém a carteira sincronizada.</div></div>
@@ -8901,7 +8907,7 @@ function settingsTab(){
         <div class="premium-settings-section">
           <div class="premium-settings-section-head">
             <div class="premium-settings-section-icon" style="background:rgba(148,163,184,.1);color:#94a3b8">ℹ️</div>
-            <div><div class="premium-settings-section-title">Sobre</div><div class="premium-settings-section-sub">Informações do aplicativo</div></div>
+            <div><h2 class="premium-settings-section-title">Sobre</h2><div class="premium-settings-section-sub">Informações do aplicativo</div></div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">${esc(APP_NAME)}</div><div class="premium-settings-row-desc">${esc(isTest?'Modo de teste local · dados em memória':'Dados locais + Google/Firebase')}</div></div>
@@ -18499,7 +18505,7 @@ function irpfTabPremium(){
     <details class="sec irpf-section" ${open?'open':''} style="margin-top:12px">
       <summary>
         <div>
-          <div class="irpf-section-title">${esc(title)}</div>
+          <h1 class="irpf-section-title">${esc(title)}</h1>
           <div class="irpf-section-sub">${esc(sub)}</div>
         </div>
         <div class="irpf-section-badge">${esc(badge)}</div>
@@ -18547,7 +18553,7 @@ function irpfTabPremium(){
   const positionMobile=report.positions.map(p=>`
     <div class="irpf-mobile-row">
       <div>
-        <div class="premium-row-title">${esc(p.ticker||'—')}</div>
+        <h2 class="premium-row-title">${esc(p.ticker||'—')}</h2>
         <div class="premium-row-sub">${esc(bucketLabels[p.bucket]||p.bucket||'—')} · ${esc(p.type||'—')}</div>
         <div class="premium-row-sub">${esc(p.note||'IRPF usa custo de aquisição como referência principal.')}</div>
       </div>
@@ -18581,7 +18587,7 @@ function irpfTabPremium(){
   const proventoMobile=proventos.byAsset.length ? proventos.byAsset.map(r=>`
     <div class="irpf-mobile-row">
       <div>
-        <div class="premium-row-title">${esc(r.ticker||'—')}</div>
+        <h2 class="premium-row-title">${esc(r.ticker||'—')}</h2>
         <div class="premium-row-sub">${esc(r.assetName||'—')}</div>
         <div class="premium-row-sub">${Number(r.count||0)} lançamentos · Dividendos ${fmt(Number(r.dividendos)||0)} · JCP ${fmt(Number(r.jcp)||0)}</div>
       </div>
@@ -18616,7 +18622,7 @@ function irpfTabPremium(){
   const rfMobile=rfRows.length ? rfRows.map(r=>`
     <div class="irpf-mobile-row">
       <div>
-        <div class="premium-row-title">${esc(r.ticker||'—')}</div>
+        <h2 class="premium-row-title">${esc(r.ticker||'—')}</h2>
         <div class="premium-row-sub">${esc(r.name||'—')}</div>
         <div class="premium-row-sub">${esc(r.type||'—')} · ${esc(r.issuer||'—')}</div>
         <div class="premium-row-sub">${esc(r.app||'—')} · ${esc(r.due||'—')}</div>
@@ -18685,7 +18691,7 @@ function irpfTabPremium(){
     return `
     <div class="irpf-mobile-row">
       <div>
-        <div class="premium-row-title">${esc(bucketLabels[bucket]||bucket)}</div>
+        <h2 class="premium-row-title">${esc(bucketLabels[bucket]||bucket)}</h2>
         <div class="premium-row-sub">Resultado ${fmt(Number(t.realized)||0)} · Isento ${fmt(Number(t.exempt)||0)}</div>
         <div class="premium-row-sub">Prejuízo a compensar ${Number(t.carry)<0?fmt(Math.abs(Number(t.carry))):'—'}</div>
       </div>
@@ -18706,7 +18712,7 @@ function irpfTabPremium(){
       return `
       <div class="irpf-mobile-row">
         <div>
-          <div class="premium-row-title">${esc(m.label)}</div>
+          <h2 class="premium-row-title">${esc(m.label)}</h2>
           <div class="premium-row-sub">Resultado ${fmt(realized)} · Isento ${fmt(exempt)}</div>
           <div class="premium-row-sub">Prejuízo a compensar ${carry<0?fmt(Math.abs(carry)):'—'}</div>
         </div>
@@ -18757,7 +18763,7 @@ function irpfTabPremium(){
       <details class="sec irpf-section" style="margin-top:12px">
         <summary>
           <div>
-            <div class="irpf-section-title">Bens e Direitos</div>
+            <h2 class="irpf-section-title">Bens e Direitos</h2>
             <div class="irpf-section-sub">Custo de aquisição, quantidade e valor atual apenas como referência.</div>
           </div>
           <div class="irpf-section-badge">${summary.positions} posições · clique para exibir</div>
@@ -18782,7 +18788,7 @@ function irpfTabPremium(){
       <details class="sec irpf-section" style="margin-top:12px">
         <summary>
           <div>
-            <div class="irpf-section-title">Proventos do ano</div>
+            <h2 class="irpf-section-title">Proventos do ano</h2>
             <div class="irpf-section-sub">Dividendos, JCP, FIIs e outros eventos com total por ativo e por categoria.</div>
           </div>
           <div class="irpf-section-badge">${proventos.rows.length} lançamentos · clique para abrir</div>
@@ -18807,7 +18813,7 @@ function irpfTabPremium(){
       <details class="sec irpf-section" style="margin-top:12px">
         <summary>
           <div>
-            <div class="irpf-section-title">Ganhos de capital</div>
+            <h2 class="irpf-section-title">Ganhos de capital</h2>
             <div class="irpf-section-sub">Vendas, resultado, isenção, imposto estimado e prejuízo a compensar por classe e por mês.</div>
           </div>
           <div class="irpf-section-badge">${cgEmpty?'sem operações':`${fmt(cgTotals.sells||0)} em vendas · clique para abrir`}</div>
@@ -18846,7 +18852,7 @@ function irpfTabPremium(){
       <details class="sec irpf-section" style="margin-top:12px">
         <summary>
           <div>
-            <div class="irpf-section-title">Renda Fixa para IRPF</div>
+            <h2 class="irpf-section-title">Renda Fixa para IRPF</h2>
             <div class="irpf-section-sub">Títulos com valor aplicado, valor atual/líquido e alertas de conferência.</div>
           </div>
           <div class="irpf-section-badge">${rfRows.length} títulos · ${rfAlertRows} com alerta</div>
@@ -18871,7 +18877,7 @@ function irpfTabPremium(){
       <details class="sec irpf-section" style="margin-top:12px">
         <summary>
           <div>
-            <div class="irpf-section-title">Documentos disponíveis</div>
+            <h2 class="irpf-section-title">Documentos disponíveis</h2>
             <div class="irpf-section-sub">Arquivos gerados com os dados do ano selecionado para conferência externa.</div>
           </div>
           <div class="irpf-section-badge">2 documentos · clique para abrir</div>
@@ -18885,7 +18891,7 @@ function irpfTabPremium(){
       <details class="sec irpf-section" style="margin-top:12px">
         <summary>
           <div>
-            <div class="irpf-section-title">Alertas para conferência</div>
+            <h2 class="irpf-section-title">Alertas para conferência</h2>
             <div class="irpf-section-sub">Itens que merecem revisão antes de usar os dados na declaração.</div>
           </div>
           <div class="irpf-section-badge">${alerts.length} alerta${alerts.length===1?'':'s'} · clique para abrir</div>
@@ -19092,7 +19098,7 @@ function dataAuditTab(){
     <section class="data-audit-hero">
       <div class="data-audit-head">
         <div>
-          <div class="data-audit-title">Auditoria de Dados</div>
+          <h1 class="data-audit-title">Auditoria de Dados</h1>
           <div class="data-audit-sub">A auditoria não altera seus dados. Use esta tela para revisar cadastros incompletos. Dados incompletos podem afetar Dashboard, IRPF, Renda Fixa e Patrimônio.</div>
         </div>
         <div class="data-audit-actions">
@@ -19935,8 +19941,6 @@ function setDataAuditSeverity(value){ return setDataQualitySeverity(value); }
 function setDataAuditArea(value){ return setDataQualityCategory(value); }
 function rerunDataAudit(){ return rerunDataQuality(); }
 function renderAuditAlertCard(alert){ return renderDataQualityIssueCard(alert); }
-function dataAuditTab(){ return dataQualityTab(); }
-
 function rentBenchRate(name){
   return Number(RENT_BENCH[String(name||'CDI').toUpperCase()] ?? RENT_BENCH.CDI);
 }
@@ -20742,7 +20746,8 @@ function assetSortIndicator(type, field){
 }
 function assetSortableHeader(type, field, label){
   const indicator=assetSortIndicator(type, field) || ' ↕';
-  return `<span style="cursor:pointer;user-select:none" onclick='toggleAssetSort(${JSON.stringify(type)},${JSON.stringify(field)});event.stopPropagation()'>${esc(label)}${indicator}</span>`;
+  const action=`toggleAssetSort(${JSON.stringify(type)},${JSON.stringify(field)})`;
+  return `<span role="button" tabindex="0" aria-label="Ordenar por ${esc(label)}" style="cursor:pointer;user-select:none" onclick='${action};event.stopPropagation()' onkeydown='if(event.key===\"Enter\"||event.key===\" \" ){event.preventDefault();${action};event.stopPropagation()}'>${esc(label)}${indicator}</span>`;
 }
 function sortAssetsByGroup(type, items, portfolioTotal=0){
   const cfg=getAssetSortConfig(type);
@@ -20767,6 +20772,32 @@ function sortAssetsByGroup(type, items, portfolioTotal=0){
       const bq=Number(b.qty)||0;
       if(aq===bq) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
       return (aq-bq) * dirFactor;
+    }
+    if(cfg.field==='type'){
+      const at=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
+      const bt=normalizeType(b.type||metaTicker(b.ticker).type||'Ação','Ação');
+      if(at===bt) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return at.localeCompare(bt,'pt-BR',{sensitivity:'base'}) * dirFactor;
+    }
+    if(cfg.field==='pm'){
+      const ap=assetAppliedValue(a);
+      const bp=assetAppliedValue(b);
+      if(ap===bp) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (ap-bp) * dirFactor;
+    }
+    if(cfg.field==='current'){
+      const ac=assetCurrentValue(a);
+      const bc=assetCurrentValue(b);
+      if(ac===bc) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (ac-bc) * dirFactor;
+    }
+    if(cfg.field==='result'){
+      const ar=assetJurosValue(a);
+      const br=assetJurosValue(b);
+      const av=Number.isFinite(ar) ? ar : assetCurrentValue(a)-assetAppliedValue(a);
+      const bv=Number.isFinite(br) ? br : assetCurrentValue(b)-assetAppliedValue(b);
+      if(av===bv) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (av-bv) * dirFactor;
     }
     if(cfg.field==='share'){
       const total=Number(portfolioTotal)||0;
@@ -23596,7 +23627,7 @@ function reportsTab(){
   return `<div class="reports-shell reports-premium-shell">
     <section class="reports-hero reports-premium-hero">
       <div class="reports-head">
-        <div><div class="reports-title">Relatórios</div><div class="reports-sub">Análise, conferência e exportação da carteira.</div></div>
+        <div><h1 class="reports-title">Relatórios</h1><div class="reports-sub">Análise, conferência e exportação da carteira.</div></div>
         <div class="reports-premium-head-actions"><div class="reports-filter">
           <button class="${reportsPeriod()==='year'?'on':''}" onclick="setReportsPeriod('year')">Ano atual</button>
           <button class="${reportsPeriod()==='12m'?'on':''}" onclick="setReportsPeriod('12m')">Últimos 12 meses</button>
@@ -24231,7 +24262,7 @@ function dashboardHomeSummaryPanel(data){
       ${dashboardMetricCard('📈','Resultado geral',fmt(totalResult),totalCurrent>0?'Diferença entre aplicado e atual':'Sem base suficiente',totalResult>=0?'#34d399':'#f87171',totalResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
       ${dashboardMetricCard('🎯','Rentabilidade',totalApplied>0?fmtP(totalPct):'—',totalApplied>0?'Cálculo sobre o capital aplicado':'Sem capital informado',totalPct>=0?'#34d399':'#f87171',totalPct>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
     </div>
-    ${(()=>{const snap=patrimonySnapshot(Number(S.dashPeriod)||12);const vals=snap.months.map(m=>m.cumulative);if(!vals.some(v=>v>0))return `<div class="dash-evolution"><div class="dash-evolution-head"><div><div class="premium-panel-title">Evolução do patrimônio</div><div class="premium-panel-sub">Acompanhe a curva após registrar seus primeiros aportes.</div></div><span class="premium-panel-badge">Patrimônio atual ${fmt(p.tC)}</span></div><div class="premium-empty">Registre movimentações na aba Aportes para acompanhar a evolução mensal.</div></div>`;return `<div class="dash-evolution"><div class="dash-evolution-head"><div><div class="premium-panel-title">Evolução do patrimônio</div><div class="premium-panel-sub">Aportes líquidos acumulados · janela de ${snap.count} meses.</div></div><span class="premium-panel-badge">Patrimônio atual ${fmt(p.tC)}</span></div>${lineChart([{values:vals,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snap.months.map(m=>m.label))}</div>`;})()}
+    ${(()=>{const snap=patrimonySnapshot(Number(S.dashPeriod)||12);const vals=snap.months.map(m=>m.cumulative);if(!vals.some(v=>v>0))return `<div class="dash-evolution"><div class="dash-evolution-head"><div><div class="premium-panel-title">Evolução do patrimônio</div><div class="premium-panel-sub">Acompanhe a curva após registrar seus primeiros aportes.</div></div><span class="premium-panel-badge premium-financial-badge">Patrimônio atual ${fmt(p.tC)}</span></div><div class="premium-empty">Registre movimentações na aba Aportes para acompanhar a evolução mensal.</div></div>`;return `<div class="dash-evolution"><div class="dash-evolution-head"><div><div class="premium-panel-title">Evolução do patrimônio</div><div class="premium-panel-sub">Aportes líquidos acumulados · janela de ${snap.count} meses.</div></div><span class="premium-panel-badge premium-financial-badge">Patrimônio atual ${fmt(p.tC)}</span></div>${lineChart([{values:vals,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snap.months.map(m=>m.label))}</div>`;})()}
   </div>`;
 }
 function dashboardPassiveIncomePanel(data){
@@ -26453,7 +26484,8 @@ function ativos(){
     }).join('');
 
     // Build premium table rows (non-RF)
-    const premiumTableRows = displayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa').map(a => {
+    const premiumDisplayAssets = sortAssetsByGroup('Todos', displayAssets, total);
+    const premiumTableRows = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa').map(a => {
       const m = getAssetMetrics(a);
       const avg = Number(a.avg_price)||0;
       const currentUnit = m.currentUnit;
@@ -26502,7 +26534,7 @@ function ativos(){
     }).join('');
 
     // Build RF table rows
-    const premiumRfRows = displayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a => {
+    const premiumRfRows = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a => {
       const applied = assetAppliedValue(a);
       const current = assetCurrentValue(a);
       const profit = assetJurosValue(a);
@@ -26720,17 +26752,17 @@ function ativos(){
                   <caption class="sr-only">Posições atuais, custo, valor de mercado, resultado e peso na carteira</caption>
                   <thead>
                     <tr>
-                      <th>Ticker</th>
-                      <th>Tipo</th>
+                      <th>${assetSortableHeader('Todos','ticker','Ticker')}</th>
+                      <th>${assetSortableHeader('Todos','type','Tipo')}</th>
                       <th>Setor</th>
-                      <th>Qtd</th>
-                      <th>PM</th>
-                      <th>ATUAL</th>
-                      <th>Resultado</th>
-                      <th>Rentab.</th>
+                      <th>${assetSortableHeader('Todos','qty','Qtd')}</th>
+                      <th>${assetSortableHeader('Todos','pm','PM')}</th>
+                      <th>${assetSortableHeader('Todos','current','ATUAL')}</th>
+                      <th>${assetSortableHeader('Todos','result','Resultado')}</th>
+                      <th>${assetSortableHeader('Todos','rentability','Rentab.')}</th>
                       <th>Alvo</th>
-                      <th>Total</th>
-                      <th>% Cart.</th>
+                      <th>${assetSortableHeader('Todos','total','Total')}</th>
+                      <th>${assetSortableHeader('Todos','share','% Cart.')}</th>
                       <th>% Ideal</th>
                       <th>Div/mês</th>
                       <th>DY</th>
@@ -27252,7 +27284,7 @@ function apTab(){
   return`<div class="aporte-premium">
     <div class="sh">
       <div>
-        <div class="st">Aportes</div>
+        <h1 class="st">Aportes</h1>
         <div class="mu" style="font-size:12px;margin-top:4px">Acompanhe entradas, ritmo mensal e histórico da carteira.</div>
       </div>
     </div>
@@ -29174,7 +29206,8 @@ function dividendMonthlyTimeline(){
     const label=dt.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
     const active=row.key===stats.currentMonthKey;
     const pointLabel=row.label || `${label}/${dt.getFullYear()}`;
-    return `<g class="dividend-chart-point" tabindex="0" focusable="true" aria-label="${esc(`${pointLabel}: ${fmt(value)}`)}"><rect class="chart-bar${active?' current':''}" title="${esc(`${label}: ${fmt(value)}`)}" style="fill:${active?'var(--success)':'var(--primary)'}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(4,barH).toFixed(1)}" rx="4"><title>${esc(`${label}: ${fmt(value)}`)}</title></rect><text style="fill:var(--muted)" x="${(x+barW/2).toFixed(1)}" y="${height-18}" text-anchor="middle">${esc(label)}</text></g>`;
+    const tooltipText=`${pointLabel} · Proventos recebidos · ${fmt(value)}`;
+    return `<g class="dividend-chart-point" tabindex="0" focusable="true" data-tooltip="${esc(tooltipText)}" aria-label="${esc(tooltipText)}" onmouseenter="this.dataset.tooltipPinned='';showDividendChartTooltip(this)" onmouseleave="hideDividendChartTooltip(this)" onfocus="showDividendChartTooltip(this)" onblur="hideDividendChartTooltip(this)" onclick="showDividendChartTooltip(this);this.dataset.tooltipPinned='true'"><rect class="chart-bar${active?' current':''}" title="${esc(`${label}: ${fmt(value)}`)}" style="fill:${active?'var(--success)':'var(--primary)'}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(4,barH).toFixed(1)}" rx="4" onmouseenter="showDividendChartTooltip(this.parentElement)" onclick="showDividendChartTooltip(this.parentElement);this.parentElement.dataset.tooltipPinned='true'"><title>${esc(`${label}: ${fmt(value)}`)}</title></rect><text style="fill:var(--muted)" x="${(x+barW/2).toFixed(1)}" y="${height-18}" text-anchor="middle">${esc(label)}</text></g>`;
   }).join('');
   const currentLabel=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.label || '';
   const grid=[0,.25,.5,.75,1].map(step=>{
@@ -29182,7 +29215,23 @@ function dividendMonthlyTimeline(){
     const val=fmt(max*step);
     return `<line class="chart-grid" style="stroke:var(--border)" x1="${left}" x2="${width-right}" y1="${y}" y2="${y}"/><text style="fill:var(--muted)" x="${left-10}" y="${y+4}" text-anchor="end">${esc(val)}</text>`;
   }).join('');
-  return `<div class="dividend-timeline-summary"><div class="div-timeline-summary-title">Evolução mensal dos proventos</div><div class="div-timeline-summary-sub">Valores oficiais já gravados, mês atual destacado, sem projeção.</div><div class="div-timeline-summary-meta">${stats.byMonth.length} mês(es) · ${fmt(stats.total12)} no período${currentLabel?` · destaque para ${esc(currentLabel)}`:''}</div></div><svg class="dividend-evolution-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução mensal dos proventos recebidos">${grid}${bars}</svg>`;
+  return `<div class="dividend-timeline-summary"><div class="div-timeline-summary-title">Evolução mensal dos proventos</div><div class="div-timeline-summary-sub">Valores oficiais já gravados, mês atual destacado, sem projeção.</div><div class="div-timeline-summary-meta">${stats.byMonth.length} mês(es) · ${fmt(stats.total12)} no período${currentLabel?` · destaque para ${esc(currentLabel)}`:''}</div></div><div class="dividend-chart-wrap"><svg class="dividend-evolution-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução mensal dos proventos recebidos">${grid}${bars}</svg><div class="dividend-chart-tooltip" role="status" aria-live="polite" hidden></div></div>`;
+}
+function showDividendChartTooltip(point){
+  const wrap=point?.closest?.('.dividend-chart-wrap');
+  const tooltip=wrap?.querySelector?.('.dividend-chart-tooltip');
+  if(!tooltip) return;
+  tooltip.textContent=point.dataset.tooltip||point.getAttribute('aria-label')||'';
+  tooltip.hidden=false;
+  const pointRect=point.getBoundingClientRect();
+  const wrapRect=wrap.getBoundingClientRect();
+  const maxLeft=Math.max(6,wrapRect.width-tooltip.offsetWidth-6);
+  tooltip.style.left=`${Math.min(maxLeft,Math.max(6,pointRect.left-wrapRect.left+pointRect.width/2-tooltip.offsetWidth/2))}px`;
+  tooltip.style.top=`${Math.max(6,pointRect.top-wrapRect.top-tooltip.offsetHeight-8)}px`;
+}
+function hideDividendChartTooltip(point){
+  const tooltip=point?.closest?.('.dividend-chart-wrap')?.querySelector?.('.dividend-chart-tooltip');
+  if(tooltip && document.activeElement!==point && point?.dataset?.tooltipPinned!=='true') tooltip.hidden=true;
 }
 function dividendSummaryCards(){
   const stats=passiveIncomeGoalStats();
@@ -30013,7 +30062,7 @@ function metasTab(){
   const metaProSummary=passiveGoal?.hasTarget?`${fmt(passiveGoal.monthlyAvg||0)} média 12M · ${fmtP(passiveGoal.percent||0)} · Falta ${fmt(passiveGoal.missing||0)}/mês`:'Meta de renda não configurada';
 
   return`<div class="metas-shell">
-  <div class="page-heading">🎯 Metas</div>
+  <h1 class="page-heading">🎯 Metas</h1>
   <div class="page-sub">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
   <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
@@ -30031,7 +30080,7 @@ function metasTab(){
   <details class="sec metas-goal-section metas-patrimony-section" open style="margin-bottom:10px">
     <summary>
       <div>
-        <div class="sec-title">Meta de Patrimônio</div>
+        <h2 class="sec-title">Meta de Patrimônio</h2>
         <div class="sec-meta">${fmt(tC)} / ${fmt(metaPatValor||0)} · ${metaPat.prog.toFixed(1)}% de progresso</div>
       </div>
       <div class="sec-meta">Recolher</div>
@@ -30066,7 +30115,7 @@ function metasTab(){
   <details class="sec metas-goal-section" open style="margin-bottom:12px">
     <summary>
       <div>
-        <div class="sec-title">Distribuição da carteira</div>
+        <h2 class="sec-title">Distribuição da carteira</h2>
         <div class="sec-meta">${allocItems.length} categorias · clique para recolher</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
@@ -30194,7 +30243,7 @@ function rentabilidadeTab(){
     <div class="pli"><span class="pd" style="background:var(--muted)"></span>Baseado na posição atual</div>
   </div>`;
 
-  return`<div class="rent-premium"><div class="page-heading">📈 Rentabilidade</div>
+  return`<div class="rent-premium"><h1 class="page-heading">📈 Rentabilidade</h1>
   <div class="page-sub">Evolução e comparação da carteira, com proventos incluídos no cálculo.</div>
 
   <div class="rent-layout">
@@ -30327,7 +30376,7 @@ function ajudarTab(){
   const allocSection=allocRows.length?`<details class="sec rebalance-alloc-details">
     <summary>
       <div>
-        <div class="sec-title">Alocação atual vs ideal</div>
+        <h2 class="sec-title">Alocação atual vs ideal</h2>
         <div class="sec-meta">Atual x meta da carteira.</div>
       </div>
       <div class="sec-meta">${topGap ? `Abrir · ${esc(topGap.type)}` : 'Abrir detalhes'}</div>
@@ -30356,7 +30405,7 @@ function ajudarTab(){
   </details>`:'';
   return`<div class="rebalance-shell">
   <div class="rebalance-hero">
-    <div class="rebalance-title">Rebalanceamento</div>
+    <h1 class="rebalance-title">Rebalanceamento</h1>
     <div class="rebalance-subtitle">Veja onde o próximo aporte ajuda mais e quais classes estão mais distantes do plano.</div>
     <div class="rebalance-form">
       <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500" style="min-height:44px"></div></div>
@@ -30426,7 +30475,7 @@ function calcRebalance(){
     <div class="rebalance-study">
       <div class="rebalance-study-head">
         <div>
-          <div class="rebalance-study-title">Distribuição do aporte</div>
+          <h2 class="rebalance-study-title">Distribuição do aporte</h2>
           <div class="rebalance-study-sub">Cálculo determinístico com base na alocação atual, nas metas e no valor informado.</div>
         </div>
         <span class="analysis-pill muted">${distribution.rows.length} classe${distribution.rows.length===1?'':'s'}</span>

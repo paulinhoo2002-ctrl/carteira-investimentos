@@ -371,7 +371,8 @@ test('fase 208 helpers destacam dados invalidos sem corromper estado', () => {
     healthyContext.renderDataQualityIssueCard({ severity: 'warning', category: 'Metas', entityType: 'Meta', entityIndex: 4, entityLabel: 'Metas', field: 'target', message: 'Meta ausente', recommendation: 'Abrir Metas' }),
   ];
   assert.equal(routeCards.every((html) => /dataQualityRunAction\(/.test(html)), true);
-  assert.equal(healthyContext.dataAuditTab(), healthyContext.dataQualityTab());
+  assert.match(healthyContext.dataAuditTab(), /data-audit-shell/);
+  assert.match(healthyContext.dataQualityTab(), /data-quality-shell/);
 });
 
 test('fila operacional abre identidade exata e recua para rota segura quando stale', () => {
