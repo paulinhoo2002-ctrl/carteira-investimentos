@@ -215,3 +215,37 @@ start a feature, visual migration or release operation.
 - No parallel return formula, invented metric, fabricated benchmark data,
   Finance Core, persistence or schema change was introduced.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes and Sidebar remain frozen.
+
+## 2026-09-03 - Canonical visual migration 06: Rebalancear
+
+- `REBALANCEAR_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- Rebalancear recebeu refinamento visual escopado: hero mais compacto,
+  controles com largura estável, CTA de simulação sem roxo legado, leitura
+  rápida discreta e valores tabulares protegidos.
+- O fluxo continua read-only e usa `rebalanceContributionDistribution(...)`,
+  `allocationGoalItems()` e `allocationActualByType()` como fontes oficiais.
+- Simulações, sugestões e cenários não persistem operações nem alteram a
+  carteira. Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade e
+  Sidebar não foram alterados por esta migração.
+- Browser evidence is stored under
+  `qa-screenshots/canonical-visual-migration-06/`.
+
+## 2026-09-03 - Rebalancear visual freeze
+
+- `REBALANCEAR_VISUAL=FROZEN`
+- `REBALANCE_READ_ONLY=true`
+- `REBALANCE_ENGINE=rebalanceContributionDistribution()`
+- `TARGET_ALLOCATION_SOURCE=allocationGoalItems()`
+- `CURRENT_ALLOCATION_SOURCE=allocationActualByType()`
+- `SUGGESTION_SOURCE=rebalanceAssetSuggestions()`
+- O contrato congelado mantém hero de simulacao compacto, CTA primario verde,
+  comparacao Atual vs ideal, leitura rapida discreta, aviso analitico e layout
+  responsivo sem overflow horizontal.
+- A tela nao compra, vende, cria movimentos, altera carteira, altera metas ou
+  persiste operacoes durante simulacoes.
+- `FILTERS_WORK=NOT_IMPLEMENTED`; `SORTING_WORKS=ENGINE_DETERMINISTIC`;
+  `DETAIL_EXPANSION_WORKS=PASS`; `MODE_SWITCH_WORKS=PASS`.
+- A linguagem aprovada e analitica: Aporte sugerido, Prioridade, Desvio e
+  Atual vs ideal. Termos transacionais nao foram introduzidos.
+- Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade e Sidebar
+  permanecem congelados e sem alteracoes nesta fase.
