@@ -9753,6 +9753,7 @@ async function resetPortfolio(){
   S.assets=[];
   S.aportes=[];
   S.proventos=[];
+  S.rfEvents=[];
   S.divGoal=0;
   S.goals=normalizeGoals();
   S.learnMeta={};
@@ -9773,6 +9774,8 @@ async function resetPortfolio(){
   S.b3Review=null;
   S.b3MovementReview=null;
   S.rfPositionReview=null;
+  S.rfMovementEditor=null;
+  S.rfEventEditor=null;
   S.b3ProventosReview=null;
   syncWalletFromState();
   save();
