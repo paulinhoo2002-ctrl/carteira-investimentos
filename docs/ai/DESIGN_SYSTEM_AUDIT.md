@@ -560,3 +560,95 @@ Configurações without a separate backup/import safety review.
 The approved Wave C icon deltas for Metas and Auditoria remain separate from
 the design-system primitive maturity assessment and do not alter financial or
 persistence contracts.
+
+## Pilot 03 result: Renda Fixa
+
+`DESIGN_SYSTEM_PILOT_03_RF=PASS`
+
+The RF pilot was limited to proven visual primitives. The RF-specific row and
+editor patterns were deliberately not generalized.
+
+`PRIMITIVES_ADOPTED=KPI; PANEL_READONLY; BUTTON; BADGE; EMPTY_STATE`
+
+`RF_ROW_PATTERN=SCREEN_SPECIFIC`
+
+`RF_EDITOR_CHANGED=false`
+
+`RF_IDENTITY_LOGIC_CHANGED=false`
+
+`RF_FINANCE_LOGIC_CHANGED=false`
+
+`SCREEN_SPECIFIC_IDENTITY_PRESERVED=true`
+
+`VISUAL_PARITY_OR_IMPROVEMENT=true`
+
+`FUNCTIONAL_PARITY=true`
+
+Focused structural and RF regression tests passed. Browser validation at 390,
+430, 768, 1366 and 1920 confirmed no overflow, financial clipping, shell or
+bottom-navigation overlap, console errors, page errors or request failures.
+Cross-screen smoke kept Dashboard, Ativos, Aportes, Rentabilidade, Dividendos,
+Rebalancear, Análise, Relatórios, Metas, Auditoria, IRPF and Configurações
+non-blank and error-free.
+
+`DUPLICATED_RULES_REDUCED=0`
+
+`VISUAL_CONSISTENCY_GAIN=MODERATE`
+
+`MAINTENANCE_SIMPLIFICATION=true`
+
+`COUPLING_INCREASED=false`
+
+`DESIGN_SYSTEM_DECISION=EXPAND_CAREFULLY`
+
+Configurações remains blocked from adoption until its backup/import and danger
+zone safety boundaries receive a separate review.
+
+## Pilot 04 result: Configurações
+
+`DESIGN_SYSTEM_PILOT_04_SETTINGS=PASS`
+
+The dedicated safety audit classified Settings as
+`SAFE_WITH_RESTRICTIONS`. The pilot therefore adopted primitives only in
+Aparência, Ambiente de teste and Sobre. Backup/import, restore, reset, wallet
+deletion, security and synchronization were deliberately left with their
+existing screen-owned semantics.
+
+`PRIMITIVES_ADOPTED=PANEL;BUTTON;ICON_CONTAINER;BADGE`
+
+`KPI_PRIMITIVE_ADOPTED=false`
+
+`EMPTY_STATE_PRIMITIVE_ADOPTED=false`
+
+`HIGH_RISK_FLOWS_UNTOUCHED=true`
+
+`DESTRUCTIVE_SEMANTICS_PRESERVED=true`
+
+`BACKUP_SEMANTICS_CHANGED=false`
+
+`IMPORT_SEMANTICS_CHANGED=false`
+
+`IMPORT_ROLLBACK_CHANGED=false`
+
+`RESET_SEMANTICS_CHANGED=false`
+
+`RF_EVENTS_RESET_BEHAVIOR_PRESERVED=true`
+
+`SCHEMA_VALIDATION_CHANGED=false`
+
+`VISUAL_PARITY_OR_IMPROVEMENT=true`
+
+`FUNCTIONAL_PARITY=true`
+
+`SETTINGS_IDENTITY_PRESERVED=true`
+
+`DUPLICATED_RULES_REDUCED=0; CLASS_ADOPTION_IS_ADDITIVE`
+
+`MAINTENANCE_SIMPLIFICATION=true`
+
+`COUPLING_INCREASED=false`
+
+`DESIGN_SYSTEM_DECISION=KEEP_LIMITED`
+
+The next step is a measured global polish audit, not a broad primitive
+migration. Protected settings flows remain outside generic extraction.

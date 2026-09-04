@@ -210,3 +210,86 @@ and helpers preserved. Configurações remains behind a separate safety gate.
 The checkpoint intentionally leaves tables, charts, filter engines, sort
 headers, audit actions, RF-specific UI, rebalance visualization, editors and
 backup/import outside the shared primitive scope.
+
+## Pilot 03: Renda Fixa controlled adoption
+
+`DESIGN_SYSTEM_PILOT_03_RF=PASS`
+
+Renda Fixa adopted the visual primitives only at the shell level:
+
+- `.ds-kpi` on the five official summary metrics;
+- `.ds-panel.ds-panel--readonly` on review, position, maturity,
+  distribution and detail containers;
+- `.ds-button` variants on existing value/application/review actions;
+- `.ds-badge` on existing maturity, review-count and status states;
+- `.ds-empty-state` on real empty RF scenarios.
+
+`RF_ROW_PATTERN=SCREEN_SPECIFIC`
+
+The RF rows retain indexer, rate, issuer, applied value, current value,
+profit, maturity and liquidity/review context. `rfIntelligenceSnapshot()`,
+`rfValues()`, `assetRfMaturityDate()`, explicit `assetId` resolution and
+`edA()` remain unchanged. No RF calculation, identity matching, editor field,
+review logic, persistence or schema behavior was changed.
+
+`RF_FINANCE_LOGIC_CHANGED=false`
+
+`RF_EDITOR_CHANGED=false`
+
+`RF_IDENTITY_LOGIC_CHANGED=false`
+
+`VISUAL_PARITY_OR_IMPROVEMENT=true`
+
+`FUNCTIONAL_PARITY=true`
+
+`SCREEN_SPECIFIC_IDENTITY_PRESERVED=true`
+
+`DUPLICATED_RULES_REDUCED=0`
+
+`VISUAL_CONSISTENCY_GAIN=MODERATE`
+
+`MAINTENANCE_SIMPLIFICATION=true`
+
+`COUPLING_INCREASED=false`
+
+`DESIGN_SYSTEM_DECISION=EXPAND_CAREFULLY`
+
+The next candidate is Configurações, but only after its dedicated
+backup/import safety audit.
+
+## Pilot 04: Configurações controlled adoption
+
+`DESIGN_SYSTEM_PILOT_04_SETTINGS=PASS`
+
+The adoption is intentionally limited to safe, non-destructive areas:
+
+- `.ds-panel` on Aparência, Ambiente de teste and Sobre shells;
+- `.ds-button` variants on theme, test-fixture, PWA and update controls;
+- `.ds-icon-container` on safe informational section icons;
+- `.ds-badge` on existing informational PWA statuses.
+
+No KPI primitive was added because Configurações has no genuine KPI summary.
+No empty-state primitive was added because there is no empty state to normalize.
+
+Backup/import, restore, reset, wallet deletion, security and synchronization
+remain outside the shared primitive adoption. Existing handlers, confirmations,
+validation, rollback, RF event cleanup and persistence boundaries are unchanged.
+
+`HIGH_RISK_FLOWS_UNTOUCHED=true`
+
+`DESTRUCTIVE_SEMANTICS_PRESERVED=true`
+
+`BUTTON_HIERARCHY_PRESERVED=true`
+
+`VISUAL_PARITY_OR_IMPROVEMENT=true`
+
+`FUNCTIONAL_PARITY=true`
+
+`SETTINGS_IDENTITY_PRESERVED=true`
+
+`COUPLING_INCREASED=false`
+
+`DESIGN_SYSTEM_DECISION=KEEP_LIMITED`
+
+The pilot proves safe reuse in preference, test-fixture and informational
+sections without authorizing a generic migration of protected settings flows.

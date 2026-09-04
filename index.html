@@ -9623,14 +9623,14 @@ function settingsTab(){
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="premium-settings-section">
+        <div class="premium-settings-section ds-panel">
           <div class="premium-settings-section-head">
-            <div class="premium-settings-section-icon" style="background:rgba(96,165,250,.1);color:#60a5fa">🎨</div>
+            <div class="premium-settings-section-icon ds-icon-container" style="background:rgba(96,165,250,.1);color:#60a5fa">🎨</div>
             <div><h2 class="premium-settings-section-title">Aparência</h2><div class="premium-settings-section-sub">Tema e preferências visuais</div></div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Tema</div><div class="premium-settings-row-desc">${esc(themeLabel)}</div></div>
-            <button class="btn bgh" onclick="toggleTheme()" style="font-size:11px;min-height:34px;padding:0 10px">${esc(themeIcon)} Alternar</button>
+            <button class="btn bgh ds-button ds-button--ghost" onclick="toggleTheme()" style="font-size:11px;min-height:34px;padding:0 10px">${esc(themeIcon)} Alternar</button>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</div><div class="premium-settings-row-desc">${S.hideValues?'Valores ocultos na carteira':'Valores visíveis normalmente'}</div></div>
@@ -9639,14 +9639,14 @@ function settingsTab(){
         </div>
 
         ${isTest ? `
-        <div class="premium-settings-section">
+        <div class="premium-settings-section ds-panel">
           <div class="premium-settings-section-head">
-            <div class="premium-settings-section-icon" style="background:rgba(96,165,250,.1);color:#60a5fa">🧪</div>
+            <div class="premium-settings-section-icon ds-icon-container" style="background:rgba(96,165,250,.1);color:#60a5fa">🧪</div>
             <div><h2 class="premium-settings-section-title">Ambiente de teste</h2><div class="premium-settings-section-sub">Fixture local em memória; não altera dados reais</div></div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Restaurar dados de teste</div><div class="premium-settings-row-desc">Reinicializa a fixture em memória com dados determinísticos.</div></div>
-            <button class="btn bgh" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>
+            <button class="btn bgh ds-button ds-button--secondary" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>
           </div>
         </div>` : ''}
 
@@ -9681,9 +9681,9 @@ function settingsTab(){
           </div>
         </div>` : ''}
 
-        <div class="premium-settings-section">
+        <div class="premium-settings-section ds-panel">
           <div class="premium-settings-section-head">
-            <div class="premium-settings-section-icon" style="background:rgba(148,163,184,.1);color:#94a3b8">ℹ️</div>
+            <div class="premium-settings-section-icon ds-icon-container" style="background:rgba(148,163,184,.1);color:#94a3b8">ℹ️</div>
             <div><h2 class="premium-settings-section-title">Sobre</h2><div class="premium-settings-section-sub">Informações do aplicativo</div></div>
           </div>
           <div class="premium-settings-row">
@@ -9691,11 +9691,11 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">PWA</div><div class="premium-settings-row-desc">${pwaInstalled?'App instalado no dispositivo':'Instale como aplicativo para acesso rápido'}</div></div>
-            ${pwaInstalled ? `<span class="premium-settings-badge ok">Instalado</span>` : (PWA.prompt ? `<button class="btn bgh" onclick="installPWA()" style="font-size:11px;min-height:34px;padding:0 10px">📲 Instalar</button>` : `<span class="premium-settings-badge off">Indisponível</span>`)}
+            ${pwaInstalled ? `<span class="premium-settings-badge ds-badge ds-badge--positive ok">Instalado</span>` : (PWA.prompt ? `<button class="btn bgh ds-button ds-button--ghost" onclick="installPWA()" style="font-size:11px;min-height:34px;padding:0 10px">📲 Instalar</button>` : `<span class="premium-settings-badge ds-badge ds-badge--info off">Indisponível</span>`)}
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Atualizações</div><div class="premium-settings-row-desc">Verificar se há uma versão mais recente.</div></div>
-            <button class="btn bgh" onclick="checkForAppUpdate({manual:true})" style="font-size:11px;min-height:34px;padding:0 10px">🔄 Verificar</button>
+            <button class="btn bgh ds-button ds-button--ghost" onclick="checkForAppUpdate({manual:true})" style="font-size:11px;min-height:34px;padding:0 10px">🔄 Verificar</button>
           </div>
         </div>
       </div>
@@ -26356,15 +26356,15 @@ function rendaFixaTab(){
     ['Resultado',count?fmt(data.totalProfit):'—',count?`${fmtP(data.totalPct)} estimado`:'Sem posições',resultTone],
     ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24'],
     ['Posições abertas',String(count),count?'Títulos acompanhados':'Carteira vazia','#60a5fa']
-  ].map(([label,value,note,tone])=>`<div class="premium-rf-kpi" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label">${esc(label)}</div><div class="premium-rf-kpi-value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note">${esc(note)}</div></div>`);
+  ].map(([label,value,note,tone])=>`<div class="premium-rf-kpi ds-kpi" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label ds-kpi__label">${esc(label)}</div><div class="premium-rf-kpi-value ds-kpi__value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note ds-kpi__context">${esc(note)}</div></div>`);
 
   function maturityBadge(days){
-    if(days===null || days===undefined) return '<span class="premium-rf-maturity-badge muted">Sem data</span>';
-    if(days<0) return '<span class="premium-rf-maturity-badge danger">Vencido</span>';
-    if(days<=30) return '<span class="premium-rf-maturity-badge warn">≤30 dias</span>';
-    if(days<=90) return '<span class="premium-rf-maturity-badge warn">≤90 dias</span>';
-    if(days<=365) return '<span class="premium-rf-maturity-badge info">≤12 meses</span>';
-    return '<span class="premium-rf-maturity-badge ok">>12 meses</span>';
+    if(days===null || days===undefined) return '<span class="premium-rf-maturity-badge ds-badge muted">Sem data</span>';
+    if(days<0) return '<span class="premium-rf-maturity-badge ds-badge danger">Vencido</span>';
+    if(days<=30) return '<span class="premium-rf-maturity-badge ds-badge warn ds-badge--warning">≤30 dias</span>';
+    if(days<=90) return '<span class="premium-rf-maturity-badge ds-badge warn ds-badge--warning">≤90 dias</span>';
+    if(days<=365) return '<span class="premium-rf-maturity-badge ds-badge info ds-badge--info">≤12 meses</span>';
+    return '<span class="premium-rf-maturity-badge ds-badge ok ds-badge--positive">>12 meses</span>';
   }
 
   const positionRows=data.tableRows.length ? data.tableRows.map(row=>{
@@ -26403,7 +26403,7 @@ function rendaFixaTab(){
           </div>
         </div>
       </div>` : ''}
-    </div>`}).join('') : '<div class="premium-rf-empty">Nenhum título de renda fixa cadastrado.</div>';
+    </div>`}).join('') : '<div class="premium-rf-empty ds-empty-state">Nenhum título de renda fixa cadastrado.</div>';
 
   const maturityRows=data.maturityRows.length ? data.maturityRows.map(row=>`
     <div class="premium-rf-maturity-row">
@@ -26415,7 +26415,7 @@ function rendaFixaTab(){
         ${maturityBadge(row.days)}
         <div class="premium-rf-row-meta">${row.explicit===false ? '—' : fmt(row.current)}</div>
       </div>
-    </div>`).join('') : '<div class="premium-rf-empty">Nenhum vencimento futuro registrado.</div>';
+    </div>`).join('') : '<div class="premium-rf-empty ds-empty-state">Nenhum vencimento futuro registrado.</div>';
 
   const reviewGroups=rfMaturityReviewGroups(data);
   const reviewCount=reviewGroups.reduce((total,group)=>total+group.rows.length,0);
@@ -26438,18 +26438,18 @@ function rendaFixaTab(){
               <div class="premium-rf-review-item-meta">${esc(row.category)} · ${esc(dueText)}</div>
               <div class="premium-rf-review-item-value">${row.explicit===false?'Atualização necessária':fmt(row.current)}</div>
             </div>
-            ${assetId?`<button type="button" class="premium-rf-review-action" onclick='edA(${JSON.stringify(assetId)})'>Revisar</button>`:''}
+            ${assetId?`<button type="button" class="premium-rf-review-action ds-button ds-button--secondary" onclick='edA(${JSON.stringify(assetId)})'>Revisar</button>`:''}
           </div>`;
-        }).join('') : '<div class="premium-rf-review-empty">Nenhum título neste grupo.</div>'}
+        }).join('') : '<div class="premium-rf-review-empty ds-empty-state">Nenhum título neste grupo.</div>'}
       </div>
     </section>`).join('');
   const reviewQueueHtml=`
-    <section class="premium-rf-review-queue" aria-labelledby="rf-review-queue-title">
+    <section class="premium-rf-review-queue ds-panel ds-panel--readonly" aria-labelledby="rf-review-queue-title">
       <div class="premium-rf-review-queue-head">
         <div><div id="rf-review-queue-title" class="premium-rf-panel-title">Fila de conferência</div><div class="premium-rf-panel-sub">Revisão dos vencimentos registrados na carteira.</div></div>
-        <div class="premium-rf-panel-badge">${reviewCount} itens</div>
+        <div class="premium-rf-panel-badge ds-badge">${reviewCount} itens</div>
       </div>
-      <div class="premium-rf-review-groups">${reviewCount ? reviewQueue : '<div class="premium-rf-review-empty" style="padding:14px 15px">Nenhum ponto de conferência encontrado.</div>'}</div>
+      <div class="premium-rf-review-groups">${reviewCount ? reviewQueue : '<div class="premium-rf-review-empty ds-empty-state" style="padding:14px 15px">Nenhum ponto de conferência encontrado.</div>'}</div>
     </section>`;
 
   const distributionRows=(rows,label)=>rows.length ? rows.map(row=>`<div class="premium-rf-distribution-row"><span class="premium-rf-distribution-label">${esc(row[label])}</span><span class="premium-rf-distribution-value">${fmt(row.value)} · ${row.share.toFixed(1)}%</span></div>`).join('') : '<div class="premium-rf-empty">Dados insuficientes para distribuir.</div>';
@@ -26534,8 +26534,8 @@ function rendaFixaTab(){
     <div class="premium-rf-header">
       <div><div class="premium-rf-kicker">Carteira · acompanhamento</div><div class="premium-rf-title">Renda Fixa</div><div class="premium-rf-subtitle">Visão consolidada das posições, vencimentos e movimentações.</div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button type="button" class="btn bs" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">Atualizar valor</button>
-        <button type="button" class="btn bp" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">+ Nova aplicação</button>
+        <button type="button" class="btn bs ds-button ds-button--secondary" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">Atualizar valor</button>
+        <button type="button" class="btn bp ds-button ds-button--primary" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">+ Nova aplicação</button>
       </div>
     </div>
     <div class="premium-rf-kpis">${kpis.join('')}</div>
@@ -26543,30 +26543,30 @@ function rendaFixaTab(){
     ${summaryStrip}
     ${reviewQueueHtml}
     <div class="premium-rf-grid">
-      <div class="premium-rf-panel">
+      <div class="premium-rf-panel ds-panel ds-panel--readonly">
         <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${count} posições</div></div>
         <div class="premium-rf-position-list">${positionRows}</div>
       </div>
-      <div class="premium-rf-panel">
+      <div class="premium-rf-panel ds-panel ds-panel--readonly">
         <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Próximos vencimentos</div><div class="premium-rf-panel-sub">Datas registradas na carteira.</div></div><div class="premium-rf-panel-badge">${data.maturityRows.length}</div></div>
         <div class="premium-rf-maturity-list">${maturityRows}</div>
       </div>
     </div>
     <div class="premium-rf-distribution">
-      <div class="premium-rf-panel"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por indexador</div><div class="premium-rf-panel-sub">Somente indexadores informados nos títulos.</div></div></div>${distributionRows(data.indexerRows,'indexer')}</div>
-      <div class="premium-rf-panel"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por emissor</div><div class="premium-rf-panel-sub">Somente emissores cadastrados.</div></div></div>${distributionRows(data.issuerRows,'issuer')}</div>
+      <div class="premium-rf-panel ds-panel ds-panel--readonly"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por indexador</div><div class="premium-rf-panel-sub">Somente indexadores informados nos títulos.</div></div></div>${distributionRows(data.indexerRows,'indexer')}</div>
+      <div class="premium-rf-panel ds-panel ds-panel--readonly"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por emissor</div><div class="premium-rf-panel-sub">Somente emissores cadastrados.</div></div></div>${distributionRows(data.issuerRows,'issuer')}</div>
     </div>
-    <details class="sec" style="margin-top:0">
+    <details class="sec ds-panel ds-panel--readonly" style="margin-top:0">
       <summary><div><div class="sec-title">Detalhes e alertas</div><div class="sec-meta">Vencimentos, dados incompletos e leitura por título.</div></div><div class="sec-meta">${data.alertRows.length} alertas · clique para abrir</div></summary>
       <div class="sec-body" style="padding-top:10px">
         <div class="rf-grid">
-          <div class="rf-panel"><div class="rf-panel-head"><div><div class="rf-panel-title">Alertas inteligentes</div><div class="rf-panel-sub">Itens que precisam de revisão antes de confiar no cálculo.</div></div><div class="rf-panel-badge">${data.alertRows.length} itens</div></div><div class="rf-preview-list">${alertRows}</div></div>
-          <div class="rf-panel"><div class="rf-panel-head"><div><div class="rf-panel-title">Tipos cadastrados</div><div class="rf-panel-sub">Separação por subtipo.</div></div></div><div class="premium-income-list">${typeRows}</div></div>
+          <div class="rf-panel ds-panel ds-panel--readonly"><div class="rf-panel-head"><div><div class="rf-panel-title">Alertas inteligentes</div><div class="rf-panel-sub">Itens que precisam de revisão antes de confiar no cálculo.</div></div><div class="rf-panel-badge ds-badge">${data.alertRows.length} itens</div></div><div class="rf-preview-list">${alertRows}</div></div>
+          <div class="rf-panel ds-panel ds-panel--readonly"><div class="rf-panel-head"><div><div class="rf-panel-title">Tipos cadastrados</div><div class="rf-panel-sub">Separação por subtipo.</div></div></div><div class="premium-income-list">${typeRows}</div></div>
         </div>
       </div>
     </details>
 
-    <details class="sec" style="margin-top:0">
+    <details class="sec ds-panel ds-panel--readonly" style="margin-top:0">
       <summary>
         <div>
           <div class="sec-title">Leitura por título</div>
@@ -26580,7 +26580,7 @@ function rendaFixaTab(){
       </div>
     </details>
 
-    <details class="sec" style="margin-top:2px">
+    <details class="sec ds-panel ds-panel--readonly" style="margin-top:2px">
       <summary>
         <div>
           <div class="sec-title">Detalhamento dos títulos</div>
@@ -26611,7 +26611,7 @@ function rendaFixaTab(){
       </div>
     </details>
 
-    <details class="sec" style="margin-top:2px"${(S.rfEventEditor||S.rfMovementEditor)?' open':''}>
+    <details class="sec ds-panel ds-panel--readonly" style="margin-top:2px"${(S.rfEventEditor||S.rfMovementEditor)?' open':''}>
       <summary>
         <div>
           <div class="sec-title">Histórico de Renda Fixa</div>
