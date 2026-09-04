@@ -312,6 +312,24 @@ start a feature, visual migration or release operation.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
 
+## 2026-09-04 - Product usability improvements 02
+
+- `GLOBAL_SEARCH_REFINEMENT=FROZEN_FUNCTIONAL_IMPROVEMENT`
+- `CONTEXTUAL_NAVIGATION=FROZEN_FUNCTIONAL_IMPROVEMENT`
+- `ANALYSIS_SEARCHABLE=true`; `SEARCH_READ_ONLY=true`.
+- A busca global preserva `portfolioSearchOpen()` e os atalhos de teclado,
+  agrupa Análise em Navegação, exibe contagem/no-match explícito e não expõe
+  ações destrutivas.
+- Análise mantém links contextuais secundários para Ativos, Rentabilidade e
+  Rebalancear, sem alterar a identidade visual congelada.
+- A busca global permanece somente leitura e agora apresenta Análise como
+  destino no grupo Navegação, com aliases de análise, concentração, exposição
+  e desempenho, contador de resultados e estado explícito de no-match.
+- A Análise ganhou apenas links contextuais secundários para Ativos,
+  Rentabilidade e Rebalancear. Nenhum cálculo, persistência, schema ou tela
+  congelada foi redesenhado.
+- Evidência local: `qa-screenshots/product-usability-02/`.
+
 ## 2026-09-04 - Analysis and navigation freeze
 
 - `ANALYSIS_VISUAL=FROZEN`

@@ -6708,6 +6708,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .portfolio-search-trigger kbd{margin-left:auto;color:#71829a;font-size:10px;border:1px solid rgba(148,163,184,.2);border-radius:5px;padding:2px 5px}
 .portfolio-search-mobile-trigger{width:100%;min-height:46px;margin:0 0 12px;padding:11px 13px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(148,163,184,.06);color:#e2e8f0;text-align:left;font:inherit;cursor:pointer}
 .portfolio-search-mobile-trigger:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px}
+.analysis-context-links{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 12px}
+.analysis-context-links .btn{min-height:38px;padding:7px 11px;font-size:11px}
 .dashboard-context-action{appearance:none;border:0;width:100%;font:inherit;text-align:inherit;cursor:pointer}
 .dashboard-context-action:focus-visible{outline:2px solid rgba(125,211,252,.72);outline-offset:2px}
 .dashboard-context-cta{display:inline-flex;align-items:center;min-height:40px;margin-top:7px;padding:6px 10px;border:1px solid rgba(125,211,252,.24);border-radius:9px;background:rgba(56,189,248,.07);color:#9bdcff;font-size:11px;font-weight:750;cursor:pointer}
@@ -6720,6 +6722,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .portfolio-search-results{padding-left:8px;padding-right:8px}
   .portfolio-search-result{min-height:58px;padding:10px 9px}
   .portfolio-search-result-action{font-size:10px}
+  .analysis-context-links{gap:6px;margin:8px 0 10px}
+  .analysis-context-links .btn{flex:1 1 auto;min-height:42px}
 }
 /* Dividendos canon: the financial read leads, while secondary review stays
    available without competing with the chart and period context. */
@@ -24459,6 +24463,11 @@ function analysisDestination(){
         <div class="mu" style="font-size:12px;margin-top:4px">Exposição, desempenho e pontos de atenção a partir dos dados da carteira.</div>
       </div>
     </div>
+    <nav class="analysis-context-links" aria-label="Navegação contextual da análise">
+      <button type="button" class="btn bgh" onclick="go('ativos')">Ver ativos</button>
+      <button type="button" class="btn bgh" onclick="go('rentabilidade')">Ver rentabilidade</button>
+      <button type="button" class="btn bgh" onclick="go('rebalancear')">Abrir rebalanceamento</button>
+    </nav>
     ${assetAnalysisBlock(rows)}
   </section>`;
 }
@@ -31721,7 +31730,7 @@ function go(t){
 }  // ← FIX: salva tab ao navegar
 
 // Busca global somente em memoria: os registros continuam vindo das fontes oficiais.
-const PORTFOLIO_SEARCH_GROUPS={asset:'Ativos',rf:'Renda Fixa',movement:'Movimentações',dividend:'Dividendos',goal:'Metas',audit:'Auditoria',analysis:'Análise'};
+const PORTFOLIO_SEARCH_GROUPS={asset:'Ativos',rf:'Renda Fixa',movement:'Movimentações',dividend:'Dividendos',goal:'Metas',audit:'Auditoria',analysis:'Navegação'};
 function portfolioSearchText(value){
   return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
@@ -31823,7 +31832,7 @@ function renderPortfolioSearch(){
   root.className=`portfolio-search-root${open?' open':''}`;
   root.setAttribute('aria-hidden',open?'false':'true');
   if(!open){root.replaceChildren();return;}
-  root.innerHTML=`<div class="portfolio-search-backdrop" onclick="portfolioSearchClose()"></div><section class="portfolio-search-dialog" role="dialog" aria-modal="true" aria-labelledby="portfolio-search-title"><div class="portfolio-search-head"><div class="portfolio-search-input-wrap"><div style="font-size:22px;color:#7dd3fc" aria-hidden="true">⌕</div><div style="min-width:0;flex:1"><div class="portfolio-search-kicker" id="portfolio-search-title">Buscar na carteira</div><input id="portfolio-search-input" class="portfolio-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="Ticker, ativo, provento ou meta" value="${esc(S.portfolioSearchQuery)}" oninput="portfolioSearchInput(this.value)" aria-label="Buscar na carteira" aria-controls="portfolio-search-results"></div></div><button type="button" class="portfolio-search-close" onclick="portfolioSearchClose()" aria-label="Fechar busca">×</button></div><div class="portfolio-search-hint">Enter abre o resultado · Esc fecha · use ↑ ↓ para navegar</div><div id="portfolio-search-results" class="portfolio-search-results" role="region" aria-live="polite">${results.length?portfolioSearchGroupMarkup(results):`<div class="portfolio-search-empty">${portfolioSearchText(S.portfolioSearchQuery)?'Nenhum registro encontrado na carteira.':'Digite para buscar ativos, movimentações e conferências.'}</div>`}</div></section>`;
+  root.innerHTML=`<div class="portfolio-search-backdrop" onclick="portfolioSearchClose()"></div><section class="portfolio-search-dialog" role="dialog" aria-modal="true" aria-labelledby="portfolio-search-title"><div class="portfolio-search-head"><div class="portfolio-search-input-wrap"><div style="font-size:22px;color:#7dd3fc" aria-hidden="true">⌕</div><div style="min-width:0;flex:1"><div class="portfolio-search-kicker" id="portfolio-search-title">Buscar na carteira</div><input id="portfolio-search-input" class="portfolio-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="Ticker, ativo, provento ou meta" value="${esc(S.portfolioSearchQuery)}" oninput="portfolioSearchInput(this.value)" aria-label="Buscar na carteira" aria-controls="portfolio-search-results"></div></div><button type="button" class="portfolio-search-close" onclick="portfolioSearchClose()" aria-label="Fechar busca">×</button></div><div class="portfolio-search-hint">${results.length?`${results.length} resultado${results.length===1?'':'s'} · `:''}Enter abre o resultado · Esc fecha · use ↑ ↓ para navegar</div><div id="portfolio-search-results" class="portfolio-search-results" role="region" aria-live="polite">${results.length?portfolioSearchGroupMarkup(results):`<div class="portfolio-search-empty">${portfolioSearchText(S.portfolioSearchQuery)?'Nenhum resultado encontrado. Tente ticker, nome, tipo ou seção.':'Digite para buscar ativos, movimentações e conferências.'}</div>`}</div></section>`;
   requestAnimationFrame(()=>document.getElementById('portfolio-search-input')?.focus());
 }
 function portfolioSearchOpen(){

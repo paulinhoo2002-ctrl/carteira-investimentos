@@ -190,3 +190,20 @@
   `Mais seções` menu with accessible labels and touch targets.
 - BOUNDARY: No financial formulas, persistence, schema, real data or frozen
   visual surfaces were changed for this freeze.
+
+## 2026-09-04 - Product usability improvements 02
+
+- DECISION: Improve global search discovery and add only three contextual links
+  from Análise: Ativos, Rentabilidade and Rebalancear.
+- SEARCH: `portfolioSearchOpen()` remains the entrypoint and
+  `portfolioSearchBuildEntries()` remains the sole in-memory index over the
+  existing official sources. Search stays read-only; no destructive action was
+  exposed.
+- UX: Análise is grouped under Navegação, supports existing normalized aliases,
+  displays a result count and uses `Nenhum resultado encontrado.` for no-match.
+- SAFETY: Enter continues to use normal route/editor handlers; no financial
+  formula, persistence, schema, real data or frozen visual identity changed.
+- STATUS: `GLOBAL_SEARCH_REFINEMENT=FROZEN_FUNCTIONAL_IMPROVEMENT` and
+  `CONTEXTUAL_NAVIGATION=FROZEN_FUNCTIONAL_IMPROVEMENT` after user approval.
+- NEXT: `SECONDARY_SURFACE_REFINEMENT_01_IRPF`; Configurações, Backup, Import
+  and Restore remain a separate protected safety program.

@@ -161,6 +161,10 @@ improvement using the existing official result source. Remaining backlog is
 `P3` icon and empty-state consistency. Do not reopen frozen surfaces without
 explicit authorization.
 
-`NEXT_RECOMMENDED_ACTION=PRODUCT_USABILITY_IMPROVEMENTS_02`, focused on global
-search, safe contextual links between Análise, Rentabilidade and Rebalancear,
-and small navigation improvements without new financial logic.
+`PRODUCT_USABILITY_IMPROVEMENTS_02` is frozen as a functional improvement:
+global search discovery and contextual links passed focused and five-viewport
+browser QA without new financial logic.
+
+`NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_01_IRPF`. The following
+mission must remain separate from the protected Configurações, Backup, Import
+and Restore flows; those require a dedicated safety review.

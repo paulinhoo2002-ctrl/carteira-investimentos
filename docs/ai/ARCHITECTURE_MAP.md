@@ -90,3 +90,20 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
 - The mobile bottom navigation remains compact; Análise is available from the
   `Mais seções` sheet. Global search exposes the same route as a destination.
 - No analysis formulas, financial sources or persistence boundaries were added.
+
+## Global search and contextual navigation
+
+- `portfolioSearchOpen()` opens the read-only discovery dialog;
+  `portfolioSearchBuildEntries()` builds entries from existing assets, RF,
+  movements, dividends, goals and audit snapshots, plus the dedicated
+  `analise` route entry.
+- `portfolioSearchResults()` applies normalized exact/prefix/contains matching
+  and `portfolioSearchOpenEntry()` preserves normal route/editor behavior.
+- Análise exposes only lightweight contextual navigation to `ativos`,
+  `rentabilidade` and `rebalancear`; it does not introduce a second analysis
+  source or financial calculation.
+
+The global search and contextual navigation improvement is frozen as a
+functional UX contract. Future changes must preserve read-only discovery,
+normal route/editor handlers, and the separation between navigation entries and
+financial records.
