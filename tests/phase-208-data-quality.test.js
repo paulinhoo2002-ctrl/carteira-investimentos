@@ -411,6 +411,42 @@ test('fila operacional abre identidade exata e recua para rota segura quando sta
   assert.deepEqual(calls, []);
 });
 
+test('identidade exibida inclui contexto suficiente e nao permite alvo reordenado', () => {
+  const runtime = loadRuntime({
+    assets: [
+      { id: 'asset-1', ticker: 'PETR4', name: 'Petrobras', type: 'Ação', qty: 1, avg_price: 10, current_price: 12, currency: 'BRL' },
+      { id: 'asset-2', ticker: 'PETR4', name: 'Petrobras PN', type: 'Ação', qty: 2, avg_price: 11, current_price: 9, currency: 'BRL' },
+    ],
+    proventos: [], rfEvents: [], aportes: [], goals: {},
+  });
+  const snapshot = runtime.dataQualitySnapshot();
+  const record = snapshot.issues.find(issue => issue.entityId === 'asset-1');
+  assert.ok(record, 'fixture precisa produzir finding para o ativo');
+  assert.match(record.identitySummary, /PETR4/);
+  assert.match(record.identitySummary, /Ativo/);
+  assert.match(record.identitySummary, /ID asset-1/);
+  const calls = [];
+  runtime.edA = id => calls.push(id);
+  const issue = { ...record, entityIndex: 1 };
+  runtime.S.assets.reverse();
+  runtime.dataQualityRunAction(issue);
+  assert.deepEqual(calls, [], 'reordenacao nao pode abrir o registro adjacente');
+  assert.equal(runtime.lastRoute, 'ativos');
+});
+
+test('chave de identidade alterada recua para rota geral sem editar registro', () => {
+  const runtime = loadRuntime({
+    assets: [{ id: 'asset-1', ticker: 'PETR4', name: 'Petrobras', type: 'Ação', qty: 1, avg_price: 10, current_price: 12, currency: 'BRL' }],
+    proventos: [], rfEvents: [], aportes: [], goals: {},
+  });
+  const issue = { category: 'Ativos', entityType: 'Ativo', entityIndex: 1, entityId: 'asset-1', identityKey: 'PETR4|Ação|BRL|OUTRA-CONTA', route: 'ativos', actionLabel: 'Abrir Ativos' };
+  const calls = [];
+  runtime.edA = id => calls.push(['edit', id]);
+  runtime.go = route => calls.push(['route', route]);
+  runtime.dataQualityRunAction(issue);
+  assert.deepEqual(calls, [['route', 'ativos']]);
+});
+
 test('renda fixa oficial usa uma unica fonte e preserva fallback compatível', () => {
   const runtime = loadRuntime({
     assets: [

@@ -496,3 +496,12 @@ start a feature, visual migration or release operation.
 - O filtro de busca continua usando `portfolioSearchBuildEntries()` e as
   fontes oficiais existentes, sem formula, persistencia, schema ou dado real
   novo.
+
+
+## 2026-09-04 - Auditoria safety freeze
+
+AUDIT_SAFETY_REVIEW=FROZEN.
+Auditoria permanece na rota auditoria, renderizada por dataQualityTab() e alimentada por dataQualitySnapshot(). Os cartoes exibem referencia de identidade derivada do registro oficial, com tipo, contexto disponivel e ID quando presente, sem metadados ficticios.
+
+AUDIT_IDENTITY_CONTRACT=entityId + identityKey e AUDIT_WRONG_RECORD_PROTECTION=enabled: a acao so abre o editor quando ID e chave conferem com o estado atual; remocao, reordenacao, duplicidade ambigua ou registro stale recuam para a rota geral.
+Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao executa correcoes automaticamente e nao altera Finance Core, persistencia, schema ou dados reais.

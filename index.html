@@ -1354,6 +1354,7 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .data-quality-issue.warning{border-left:3px solid #fbbf24}
 .data-quality-issue.info{border-left:3px solid #60a5fa}
 .data-quality-entity{min-width:0;display:flex;flex-direction:column;gap:3px}
+.data-quality-identity{min-width:0;color:var(--muted);font-size:10px;line-height:1.35;overflow-wrap:anywhere}
 .data-quality-entity-type{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}
 .data-quality-entity-label{font-size:11px;color:var(--text);font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .data-quality-field,.data-quality-problem,.data-quality-recommendation{font-size:10px;line-height:1.45;color:var(--muted)}
@@ -19675,6 +19676,24 @@ function dataQualityRouteForEntity(entityType, category){
   if(entityType==='Movimentacao') return 'aportes';
   return 'ativos';
 }
+function dataQualityIssueIdentity(record, issue){
+  const index=Number(record?.entityIndex)-1;
+  let source=null;
+  if(record?.category==='Ativos' || record?.category==='Renda Fixa' && record?.entityType==='Renda Fixa') source=(S.assets||[])[index]||null;
+  else if(record?.category==='Dividendos') source=(S.proventos||[])[index]||null;
+  else if(record?.category==='Movimentacoes') source=(S.aportes||[])[index]||null;
+  else if(record?.category==='Renda Fixa' && record?.entityType==='Movimentacao') source=(S.rfEvents||[])[index]||null;
+  if(!source) return dataQualityText(record?.entityLabel);
+  const parts=[dataQualityText(record?.entityLabel), dataQualityText(record?.entityType)];
+  const date=source.date||source.paymentDate||source.dataPagamento||source.data||source.vencimento||source.rf_maturity_date||source.fixed_maturity_date||source.maturityDate;
+  const type=source.type||source.eventType||source.movement||source.category;
+  const value=source.totalValue ?? source.grossValue ?? source.netValue ?? source.value ?? source.currentValue ?? source.current_price;
+  if(date) parts.push(`Data ${dataQualityText(date)}`);
+  if(type) parts.push(dataQualityText(type));
+  if(value!==undefined && value!==null && value!=='') parts.push(`Valor ${dataQualityText(value)}`);
+  if(source.id!==undefined && source.id!==null && String(source.id).trim()) parts.push(`ID ${String(source.id).trim()}`);
+  return parts.join(' · ');
+}
 function dataQualityActionLabel(route){
   if(route==='dividendos') return 'Abrir Dividendos';
   if(route==='renda-fixa') return 'Abrir Renda Fixa';
@@ -19705,6 +19724,7 @@ function dataQualityIssueRecord(record, issue){
     impact:dataQualityText(issue.message),
     fix:dataQualityText(issue.recommendation),
     suggestion:dataQualityText(issue.recommendation),
+    identitySummary:dataQualityIssueIdentity(record, issue),
     entityId:record.entityId ?? null,
     identityKey:record.identityKey || ''
   };
@@ -20232,6 +20252,7 @@ function renderDataQualityIssueCard(issue){
       <span class="data-quality-category">${esc(issue.category)}</span>
     </div>
     <div class="data-quality-entity">${esc(issue.entityType)} · ${esc(issue.entityLabel)}</div>
+    <div class="data-quality-identity">Identificacao: ${esc(issue.identitySummary || issue.entityLabel)}</div>
     <div class="data-quality-field">${esc(issue.field)}</div>
     <div class="data-quality-problem">${esc(issue.message)}</div>
     <div class="data-quality-recommendation">${esc(issue.recommendation)}</div>
@@ -20253,6 +20274,7 @@ function renderDataQualityPriorityCard(issue){
   return `<article class="data-quality-issue ${esc(issue.severity)}">
     <div class="data-quality-issue-top"><span class="data-quality-severity ${esc(issue.severity)}">${esc(dataQualitySeverityLabel(issue.severity))}</span><span class="data-quality-category">${esc(issue.category)}</span></div>
     <div class="data-quality-entity"><span class="data-quality-entity-type">${esc(issue.entityType)}</span><span class="data-quality-entity-label" title="${esc(issue.entityLabel)}">${esc(issue.entityLabel)}</span></div>
+    <div class="data-quality-identity">Identificacao: ${esc(issue.identitySummary || issue.entityLabel)}</div>
     <div class="data-quality-problem">${esc(issue.message)}</div>
     ${actionHtml}
   </article>`;
