@@ -6095,6 +6095,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .assets-premium-filter-panel label{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:12px;color:var(--text);cursor:pointer;transition:all .15s;min-height:44px}
     .assets-premium-filter-panel label:hover{background:var(--panel);border-color:color-mix(in srgb, var(--border) 60%, var(--primary))}
     .assets-premium-filter-panel input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary)}
+    .assets-premium-filter-panel select{min-height:36px;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-size:12px}
+    .assets-premium-filter-panel .assets-performance-filter{display:flex;flex-direction:column;align-items:stretch;gap:5px;cursor:default}
+    .assets-premium-filter-panel .assets-clear-filter{width:100%;min-height:40px}
     .assets-page-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}
     .assets-page-actions .btn{min-height:40px}
 
@@ -6771,6 +6774,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .assets-premium-shell .assets-premium-controls .assets-premium-filters{order:2}
   .assets-premium-shell .assets-premium-controls .assets-review-filter{flex:1 1 100%;order:3;margin-top:0}
   .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{left:0;right:auto;top:calc(100% + 5px)}
+  .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{max-height:160px;overflow-y:auto}
   .assets-premium-shell .assets-page-actions{justify-content:flex-start;gap:5px;margin:7px 0 8px}
   .assets-premium-shell .assets-page-actions .btn{min-height:44px;padding:7px 9px!important;font-size:10px!important}
   .assets-premium-shell .asset-inner-tabs{margin:2px 0 7px}
@@ -7389,6 +7393,7 @@ let S = {
   assetsSearch:'',
   assetsSearchTimer:null,
   assetsFilterClasses:[],
+  assetsPerformanceFilter:'all',
   assetsFilterPanelOpen:false,
   assetReviewFilter:null,
 };
@@ -21212,6 +21217,29 @@ function setRentBench(bench){
     render();
   }
 
+  function setAssetsPerformanceFilter(value){
+    const allowed=['all','positive','negative','neutral'];
+    S.assetsPerformanceFilter=allowed.includes(String(value||'')) ? String(value) : 'all';
+    render();
+  }
+
+  function assetsFilterCount(){
+    return (S.assetsSearch ? 1 : 0)
+      + (S.assetsFilterClasses?.length ? 1 : 0)
+      + (S.assetsPerformanceFilter && S.assetsPerformanceFilter!=='all' ? 1 : 0)
+      + (assetReviewFilterIsActive() ? 1 : 0);
+  }
+
+  function clearAssetsFilters(){
+    clearTimeout(S.assetsSearchTimer);
+    S.assetsSearch='';
+    S.assetsFilterClasses=[];
+    S.assetsPerformanceFilter='all';
+    S.assetReviewFilter=null;
+    S.assetsFilterPanelOpen=false;
+    render();
+  }
+
   // Debounced search handler
   function onAssetsSearchInput(value){
     clearTimeout(S.assetsSearchTimer);
@@ -21241,6 +21269,17 @@ function setRentBench(bench){
       filtered = filtered.filter(a => {
         const type = normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
         return S.assetsFilterClasses.includes(type);
+      });
+    }
+    const performanceFilter=String(S.assetsPerformanceFilter||'all');
+    if(performanceFilter!=='all'){
+      const rowsByTicker=new Map(assetAnalysisRows().map(row=>[row.ticker,row]));
+      filtered=filtered.filter(asset=>{
+        const row=rowsByTicker.get(String(asset?.ticker||'').trim().toUpperCase());
+        if(!row || row.pct==null || !Number.isFinite(row.profit)) return false;
+        if(performanceFilter==='positive') return row.profit>0;
+        if(performanceFilter==='negative') return row.profit<0;
+        return row.profit===0;
       });
     }
     return filtered;
@@ -26844,13 +26883,16 @@ function ativos(){
       const assetKpiProfit=consolidated.result;
       const assetKpiReturn=consolidated.returnPct;
 
-            // Filter assets for display (search + class filter)
+            // Filter assets for display (search + class + performance filters)
             const displayAssets = filterAssetsForDisplay(S.assets);
+            const assetFiltersActive = !!S.assetsSearch || !!S.assetsFilterClasses?.length
+              || (S.assetsPerformanceFilter && S.assetsPerformanceFilter!=='all')
+              || reviewFilterActive;
             const portfolioTotal = reviewFilterActive
               ? total
               : displayAssets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
 
-            const sectionNames=reviewFilterActive
+            const sectionNames=assetFiltersActive
               ? groupNames.filter(type=>filterAssetsForDisplay(grouped.get(type)).length)
               : groupNames;
             const sections=sectionNames.map((type,idx)=>{
@@ -27238,17 +27280,28 @@ function ativos(){
     const reviewFilterUi=reviewFilterActive
       ? '<div class="assets-review-filter" role="status"><span>Dados incompletos · '+reviewFilterCount+'</span><button type="button" class="btn bgh" onclick="clearIncompleteAssetsReview()" aria-label="Limpar filtro de dados incompletos">Limpar filtro</button></div>'
       : '';
+    const activeAssetFilterCount=assetsFilterCount();
+    const assetsFilterEmpty=assetFiltersActive && !displayAssets.length;
+    const assetsFilterEmptyMessage='<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
+    const classFilterSet=new Set(S.assetsFilterClasses||[]);
     const assetControls=`<div class="assets-premium-controls">
-      <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" oninput="onAssetsSearchInput(this.value)"></div>
-      <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()">Filtros <span class="filter-count" id="assets-filter-count">0</span></button></div>
-      <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:none">
-        <label><input type="checkbox" checked onchange="applyAssetsFilter()"> Todas as classes</label>
-        <label><input type="checkbox" value="Ação" onchange="applyAssetsFilter()"> Ações</label>
-        <label><input type="checkbox" value="FII" onchange="applyAssetsFilter()"> FIIs</label>
-        <label><input type="checkbox" value="ETF" onchange="applyAssetsFilter()"> ETFs</label>
-        <label><input type="checkbox" value="Renda Fixa" onchange="applyAssetsFilter()"> Renda Fixa</label>
-        <label><input type="checkbox" value="BDR" onchange="applyAssetsFilter()"> BDRs</label>
-        <label><input type="checkbox" value="Crypto" onchange="applyAssetsFilter()"> Crypto</label>
+      <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch||'')}" oninput="onAssetsSearchInput(this.value)"></div>
+      <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen?'true':'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
+      <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen?'block':'none'}">
+        <label><input type="checkbox" ${classFilterSet.size===0?'checked':''} onchange="applyAssetsFilter()"> Todas as classes</label>
+        <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação')?'checked':''} onchange="applyAssetsFilter()"> Ações</label>
+        <label><input type="checkbox" value="FII" ${classFilterSet.has('FII')?'checked':''} onchange="applyAssetsFilter()"> FIIs</label>
+        <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF')?'checked':''} onchange="applyAssetsFilter()"> ETFs</label>
+        <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa')?'checked':''} onchange="applyAssetsFilter()"> Renda Fixa</label>
+        <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR')?'checked':''} onchange="applyAssetsFilter()"> BDRs</label>
+        <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto')?'checked':''} onchange="applyAssetsFilter()"> Crypto</label>
+        <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)">
+          <option value="all" ${S.assetsPerformanceFilter==='all'?'selected':''}>Todos</option>
+          <option value="positive" ${S.assetsPerformanceFilter==='positive'?'selected':''}>Positivos</option>
+          <option value="negative" ${S.assetsPerformanceFilter==='negative'?'selected':''}>Negativos</option>
+          <option value="neutral" ${S.assetsPerformanceFilter==='neutral'?'selected':''}>Neutros</option>
+        </select></label>
+        ${activeAssetFilterCount ? '<button type="button" class="btn bgh assets-clear-filter" onclick="clearAssetsFilters()">Limpar filtros</button>' : ''}
       </div>
       ${reviewFilterUi}
     </div>`;
@@ -27294,7 +27347,7 @@ function ativos(){
                     ${assetControls}
 
                     <!-- Legacy accordion groups (for test compatibility) -->
-                                    <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
+                                    <div class="ag-wrap">${assetsFilterEmpty ? assetsFilterEmptyMessage : sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
 
                     ${assetActions}
 

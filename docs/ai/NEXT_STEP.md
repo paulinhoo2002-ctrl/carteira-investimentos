@@ -155,6 +155,12 @@ Relatórios. Renda Fixa and Análise are dedicated destinations, not Ativos inne
 tabs. The mobile bottom navigation remains compact and exposes Análise through
 `Mais seções`.
 
-Backlog after this freeze: `P1` Ativos performance filter; `P2` safe contextual
-links and Configurações backup/import safety review; `P3` icon and empty-state
-consistency. Do not reopen frozen surfaces without explicit authorization.
+The P1 Ativos performance filter was implemented and frozen as a functional
+improvement using the existing official result source. Remaining backlog is
+`P2` safe contextual links and Configurações backup/import safety review, plus
+`P3` icon and empty-state consistency. Do not reopen frozen surfaces without
+explicit authorization.
+
+`NEXT_RECOMMENDED_ACTION=PRODUCT_USABILITY_IMPROVEMENTS_02`, focused on global
+search, safe contextual links between Análise, Rentabilidade and Rebalancear,
+and small navigation improvements without new financial logic.
