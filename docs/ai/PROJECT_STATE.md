@@ -131,8 +131,19 @@ start a feature, visual migration or release operation.
 - No financial engine, dataset, persistence, schema, handler or protected
   modern frontend area changed. Browser evidence is stored under
   `qa-screenshots/canonical-visual-migration-02/`.
-- `ATIVOS_PERFORMANCE_FILTER=NOT_IMPLEMENTED`
-- `ATIVOS_PERFORMANCE_FILTER_CLASSIFICATION=NON_BLOCKING_FUTURE_ENHANCEMENT`
+- `ATIVOS_PERFORMANCE_FILTER=IMPLEMENTED`
+- `ATIVOS_PERFORMANCE_FILTER_CLASSIFICATION=OFFICIAL_RESULT_SIGN`
+- `ATIVOS_PERFORMANCE_FILTER=FROZEN_FUNCTIONAL_IMPROVEMENT`
+- `INCOMPLETE_DATA_NOT_NEUTRAL=true`
+- `FILTER_COMBINATION_SUPPORTED=true`
+- `FILTER_COUNT_SUPPORTED=true`
+- `CLEAR_FILTERS_SUPPORTED=true`
+- O filtro combina busca, classe e ordenacao sem alterar a fonte oficial de
+  resultado; dados incompletos permanecem fora de Positivos, Negativos e
+  Neutros, sem serem convertidos em zero.
+- O estado vazio usa a mensagem explicita `Nenhum ativo corresponde aos
+  filtros.` e Limpar filtros restaura busca, classe, revisao e performance.
+- Evidencia local desta melhoria: `qa-screenshots/product-usability-01/`.
 
 ## 2026-09-03 - Canonical visual migration 03: Renda Fixa
 

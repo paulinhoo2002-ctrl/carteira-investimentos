@@ -120,6 +120,34 @@
 - BOUNDARY: Dashboard, Dividendos, Sidebar and Ativos remain frozen unless
   the user explicitly authorizes a new visual phase.
 
+## 2026-09-04 - Ativos performance filter
+
+- DECISION: Implement the compact Ativos performance filter with the semantic
+  states Todos, Positivos, Negativos and Neutros.
+- SOURCE: Classification reads the existing official `assetAnalysisRows()`
+  result path, preserving the established variable-asset valuation/result
+  contract; `assetJurosValue()` is not used for Acoes, FIIs or ETFs.
+- BEHAVIOR: Performance composes with search, class filtering and existing
+  sorting; the filter count includes it and Limpar filtros resets it.
+- SAFETY: Incomplete results are unclassified rather than neutral, valid zero
+  remains neutral, and no Finance Core, persistence, schema or real data was
+  changed.
+- EVIDENCE: Focused deterministic smoke plus browser QA at 390, 430, 768,
+  1366 and 1920 pixels; screenshots in
+  `qa-screenshots/product-usability-01/`.
+
+## 2026-09-04 - Freeze Ativos performance filter
+
+- `ATIVOS_PERFORMANCE_FILTER=FROZEN_FUNCTIONAL_IMPROVEMENT`
+- `INCOMPLETE_DATA_NOT_NEUTRAL=true`
+- `FILTER_COMBINATION_SUPPORTED=true`; `FILTER_COUNT_SUPPORTED=true`;
+  `CLEAR_FILTERS_SUPPORTED=true`.
+- The filter remains within the frozen Ativos identity and uses
+  `assetAnalysisRows()` as the official result source. No Finance Core,
+  persistence, schema or real-data contract was reopened.
+- Next mission: `PRODUCT_USABILITY_IMPROVEMENTS_02` for global search,
+  contextual navigation links and small navigation improvements only.
+
 ## 2026-09-04 - RF navigation duplication removed
 
 - DECISION: Remove only the `Renda Fixa` subtab from Ativos and keep the
