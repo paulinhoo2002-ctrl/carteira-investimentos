@@ -168,3 +168,10 @@ browser QA without new financial logic.
 `NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_01_IRPF`. The following
 mission must remain separate from the protected Configurações, Backup, Import
 and Restore flows; those require a dedicated safety review.
+
+`SECONDARY_SURFACE_REFINEMENT_01_IRPF=COMPLETE`. The next official mission is
+`SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`, keeping Configurações, Backup,
+Import and Restore outside this scope until a dedicated safety review.
+
+`IRPF_VISUAL=FROZEN`. Do not reopen IRPF without explicit authorization.
+`NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.

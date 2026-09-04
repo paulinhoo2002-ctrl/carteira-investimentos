@@ -207,3 +207,25 @@
   `CONTEXTUAL_NAVIGATION=FROZEN_FUNCTIONAL_IMPROVEMENT` after user approval.
 - NEXT: `SECONDARY_SURFACE_REFINEMENT_01_IRPF`; Configurações, Backup, Import
   and Restore remain a separate protected safety program.
+
+## 2026-09-04 - IRPF secondary surface refinement
+
+- DECISION: Keep the IRPF surface as an auxiliary fiscal report and apply only
+  a small readability correction to critical values on desktop/mobile.
+- PRESERVED: Existing `irpfBuildYearReport()`, year selection, CSV/PDF exports,
+  official fiscal wording and the separate backup/import flows.
+- RESULT: Summary and mobile financial values no longer apply ellipsis;
+  focused IRPF smoke and five-viewport browser QA passed.
+- BOUNDARY: No tax formula, Finance Core, persistence, schema or real data was
+  changed. Next surface is `SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.
+
+## 2026-09-04 - IRPF visual freeze
+
+- DECISION: Freeze the approved IRPF auxiliary report presentation.
+- CONTRACT: `IRPF_ROUTE=irpf`, `IRPF_RENDERER=irpfTabPremium()` and
+  `IRPF_DATA_SOURCE=irpfBuildYearReport()` remain canonical.
+- PRESERVED: year selection, CSV/PDF outputs, fiscal sections, explicit
+  incomplete-data messaging and the separation from backup/import flows.
+- RESULT: `IRPF_VISUAL=FROZEN`; no fiscal engine, persistence, schema or real
+  data changed. Next official mission is
+  `SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.

@@ -312,6 +312,30 @@ start a feature, visual migration or release operation.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
 
+## 2026-09-04 - Secondary surface refinement 01: IRPF
+
+- `SECONDARY_SURFACE_REFINEMENT_01_IRPF=IMPLEMENTED`
+- A tela IRPF mantém o caráter de relatório auxiliar e a separação entre
+  conferência fiscal, exportações e backup/importação.
+- A melhoria foi restrita à legibilidade: valores críticos não usam ellipsis
+  nos cards ou linhas móveis, preservando fonte, cálculos, ano-base, exports e
+  fluxos protegidos.
+- Smoke focado e browser QA em 390, 430, 768, 1366 e 1920 passaram sem
+  overflow, erros de console, page errors ou request failures.
+- Finance Core, persistência, schema e dados reais permaneceram inalterados.
+
+## 2026-09-04 - IRPF visual freeze
+
+- `SECONDARY_SURFACE_REFINEMENT_01_IRPF=COMPLETE`
+- `IRPF_VISUAL=FROZEN`
+- `IRPF_ROUTE=irpf`; `IRPF_RENDERER=irpfTabPremium()`;
+  `IRPF_DATA_SOURCE=irpfBuildYearReport()`.
+- O contrato aprovado mantém relatório auxiliar, seletor de ano-base, CSV,
+  PDF, cards de resumo, seções fiscais recolhíveis e layout móvel sem
+  ellipsis financeiro ou overflow horizontal.
+- `backupManagerModal()` e `backupPayload()` continuam separados do relatório
+  fiscal. Nenhum engine fiscal, persistência, schema ou dado real foi alterado.
+
 ## 2026-09-04 - Product usability improvements 02
 
 - `GLOBAL_SEARCH_REFINEMENT=FROZEN_FUNCTIONAL_IMPROVEMENT`
