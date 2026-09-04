@@ -505,3 +505,18 @@ Auditoria permanece na rota auditoria, renderizada por dataQualityTab() e alimen
 
 AUDIT_IDENTITY_CONTRACT=entityId + identityKey e AUDIT_WRONG_RECORD_PROTECTION=enabled: a acao so abre o editor quando ID e chave conferem com o estado atual; remocao, reordenacao, duplicidade ambigua ou registro stale recuam para a rota geral.
 Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao executa correcoes automaticamente e nao altera Finance Core, persistencia, schema ou dados reais.
+## 2026-09-04 - IRPF functional freeze
+
+- `IRPF_FUNCTIONAL_REVIEW=FROZEN`
+- `IRPF_MOBILE_PATTERN=FROZEN`; quantidade, PM, custo e valor de referência
+  permanecem acessíveis quando oficiais.
+- `IRPF_TAX_LOGIC_CHANGED=false`; `VALID_ZERO_PRESERVED=true`;
+  `MISSING_DATA_EXPLICIT=true`.
+- `IRPF_GROUPING_SOURCE=irpfTaxBucket() / irpfProventoCategory()`;
+  `IRPF_TOTALS_SOURCE=report.totals / irpfSummaryMetrics()`;
+  `IRPF_EXPORT_SOURCE=irpfExportCSV() / irpfExportPdf()`;
+  `IRPF_REFERENCE_PERIOD=S.irpfYear`.
+- IRPF permanece relatório auxiliar, somente leitura e não constitui declaração
+  automática. RF mantém `rfIntelligenceSnapshot()` e ativos variáveis não usam
+  helper de RF.
+- `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.

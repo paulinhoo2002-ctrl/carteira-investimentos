@@ -220,3 +220,15 @@ ações destrutivas diretamente.
 
 AUDIT_SAFETY_REVIEW=FROZEN.
 AUDIT_WRONG_RECORD_PROTECTION=FROZEN e AUDIT_IDENTITY_CONTRACT=FROZEN. Acoes exatas exigem revalidacao de ID e chave; registros stale recuam para a rota geral. Nao iniciar IRPF_PRODUCT_REVIEW automaticamente.
+## IRPF FUNCTIONAL FREEZE
+
+- `IRPF_FUNCTIONAL_REVIEW=FROZEN`
+- `IRPF_VISUAL=FROZEN`; `IRPF_MOBILE_PATTERN=FROZEN`;
+  `IRPF_TAX_LOGIC_CHANGED=false`.
+- O relatório continua auxiliar e somente leitura, usando
+  `irpfBuildYearReport(year)`, agrupamentos oficiais, totais oficiais e os
+  exportadores CSV/PDF existentes.
+- Zeros válidos permanecem distintos de ausência e dados incompletos continuam
+  explícitos.
+- `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
+- Não reabrir IRPF nem as superfícies congeladas sem autorização explícita.

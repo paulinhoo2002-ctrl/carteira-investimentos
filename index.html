@@ -19033,10 +19033,11 @@ function irpfTabPremium(){
       <div>
         <h2 class="premium-row-title">${esc(p.ticker||'—')}</h2>
         <div class="premium-row-sub">${esc(bucketLabels[p.bucket]||p.bucket||'—')} · ${esc(p.type||'—')}</div>
+        <div class="premium-row-sub">Qtd. ${Number(p.qty||0).toLocaleString('pt-BR',{maximumFractionDigits:8})} · PM ${fmt(Number(p.avg)||0)}</div>
         <div class="premium-row-sub">${esc(p.note||'IRPF usa custo de aquisição como referência principal.')}</div>
       </div>
       <div class="irpf-mobile-value">
-        ${fmt(Number(p.cost)||0)}
+        Custo ${fmt(Number(p.cost)||0)}
         <div class="premium-row-sub">${Number(p.marketValue)>0?`Ref. ${fmt(Number(p.marketValue)||0)}`:'Sem valor de referência'}</div>
       </div>
     </div>`).join('');

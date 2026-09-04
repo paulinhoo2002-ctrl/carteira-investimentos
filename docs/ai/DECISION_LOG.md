@@ -301,3 +301,18 @@
 - CONTRACT: AUDIT_ROUTE=auditoria, AUDIT_RENDERER=dataQualityTab(), AUDIT_DATA_SOURCE=dataQualitySnapshot(), severidade em issue.severity.
 - SAFETY: entityId + identityKey, fallback para rota geral quando stale/divergente, editor oficial somente para alvo exato e informativos somente leitura.
 - NEXT: IRPF_PRODUCT_REVIEW, sem push, PR, merge ou deploy nesta rodada.
+## 2026-09-04 - IRPF functional freeze
+
+- DECISION: congelar o contrato funcional e a legibilidade mobile do IRPF após
+  aprovação explícita do usuário.
+- CONTRACT: `IRPF_FUNCTIONAL_REVIEW=FROZEN`, com rota `irpf`, renderer
+  `irpfTabPremium()` e fonte `irpfBuildYearReport(year)`.
+- SAFETY: IRPF permanece auxiliar e somente leitura; CSV/PDF não são declaração
+  automática. Não houve nova lógica tributária, persistência, schema, backup/
+  importação ou alteração de dados reais.
+- DATA: zeros válidos continuam distintos de ausência; dados incompletos são
+  explicitados; RF mantém `rfIntelligenceSnapshot()` e ativos variáveis não
+  usam helper de RF.
+- MOBILE: `IRPF_MOBILE_PATTERN=FROZEN`, preservando quantidade, PM, custo e
+  valor de referência quando oficialmente disponíveis.
+- NEXT: `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.

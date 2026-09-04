@@ -38,6 +38,10 @@ test('IRPF preserva rota, leitura auxiliar, exportacoes e layout responsivo', as
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(harness.url, { waitUntil: 'networkidle' });
+    await page.evaluate(() => {
+      S.aportes = [{ date: '2026-01-10', ticker: 'PETR4', type: 'Ação', qty: 3, price: 10, operation: 'compra' }];
+      S.assets = [{ ticker: 'PETR4', type: 'Ação', qty: 3, avg_price: 10, current_price: 12 }];
+    });
     await page.evaluate(() => go('irpf'));
     const snapshot = await page.evaluate(() => ({
       route: S.tab,
@@ -49,6 +53,7 @@ test('IRPF preserva rota, leitura auxiliar, exportacoes e layout responsivo', as
       backupManager: typeof backupManagerModal === 'function',
       backupPayload: typeof backupPayload === 'function',
       mobileRows: document.querySelectorAll('.irpf-mobile-row').length,
+      positionMobile: [...document.querySelectorAll('.irpf-mobile-row')].some(row => row.textContent.includes('Qtd.') && row.textContent.includes('PM')),
     }));
     assert.equal(snapshot.route, 'irpf');
     assert.equal(snapshot.title, 'Relatório IRPF 2026');
@@ -59,6 +64,7 @@ test('IRPF preserva rota, leitura auxiliar, exportacoes e layout responsivo', as
     assert.equal(snapshot.backupManager, true);
     assert.equal(snapshot.backupPayload, true);
     assert.ok(snapshot.mobileRows >= 1);
+    assert.equal(snapshot.positionMobile, true);
   } finally {
     await browser.close();
     harness.server.close();
