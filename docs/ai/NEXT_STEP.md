@@ -214,3 +214,9 @@ reduzem a fricção sem reabrir telas congeladas. A busca não abre editores nem
 ações destrutivas diretamente.
 
 `NEXT_RECOMMENDED_ACTION=USER_REVIEW_PRODUCT_USABILITY_02`.
+
+
+## PRODUCT SAFETY REVIEW - AUDITORIA
+
+AUDIT_SAFETY_REVIEW=FROZEN.
+AUDIT_WRONG_RECORD_PROTECTION=FROZEN e AUDIT_IDENTITY_CONTRACT=FROZEN. Acoes exatas exigem revalidacao de ID e chave; registros stale recuam para a rota geral. Nao iniciar IRPF_PRODUCT_REVIEW automaticamente.

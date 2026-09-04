@@ -293,3 +293,11 @@
   Rebalancear; nenhuma nova formula, fonte financeira ou fluxo de persistencia
   foi criado.
 - VALIDATION: testes focados, suites completas e browser QA nas cinco larguras
+
+
+## 2026-09-04 - Auditoria safety freeze
+
+- DECISION: congelar o contrato funcional de seguranca da Auditoria sem alterar formula, persistencia, schema ou dados reais.
+- CONTRACT: AUDIT_ROUTE=auditoria, AUDIT_RENDERER=dataQualityTab(), AUDIT_DATA_SOURCE=dataQualitySnapshot(), severidade em issue.severity.
+- SAFETY: entityId + identityKey, fallback para rota geral quando stale/divergente, editor oficial somente para alvo exato e informativos somente leitura.
+- NEXT: IRPF_PRODUCT_REVIEW, sem push, PR, merge ou deploy nesta rodada.
