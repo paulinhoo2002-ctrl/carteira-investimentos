@@ -283,3 +283,13 @@
 - ACCESSIBILITY: o controle de ocultar valores recebeu nome acessivel e
   manteve suporte a foco, teclado e estado `aria-checked`.
 - RESULT: `CONFIGURACOES_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+
+## 2026-09-04 - Product usability improvements 02 follow-up
+
+- DECISION: manter a busca global como descoberta e navegacao somente leitura.
+- SAFETY: selecionar ativo, movimentacao ou provento na busca navega para a
+  area oficial, mas nao abre editor nem acao de mutacao.
+- CONTEXT: os links da Analise continuam restritos a Ativos, Rentabilidade e
+  Rebalancear; nenhuma nova formula, fonte financeira ou fluxo de persistencia
+  foi criado.
+- VALIDATION: testes focados, suites completas e browser QA nas cinco larguras

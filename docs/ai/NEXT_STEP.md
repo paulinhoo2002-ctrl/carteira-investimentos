@@ -204,3 +204,13 @@ sincronização e reset permanecem congelados.
 Configurações recebeu revisão visual e de hierarquia sem alterar os fluxos
 protegidos. A próxima decisão é a aprovação visual final do usuário; não
 marcar Configurações como congelada antes dessa aprovação.
+
+## PRODUCT USABILITY IMPROVEMENTS 02
+
+`GLOBAL_SEARCH_REFINEMENT=READY_FOR_FINAL_USER_APPROVAL` e
+`CONTEXTUAL_NAVIGATION=READY_FOR_FINAL_USER_APPROVAL`.
+A busca global permanece somente leitura e os links contextuais da Análise
+reduzem a fricção sem reabrir telas congeladas. A busca não abre editores nem
+ações destrutivas diretamente.
+
+`NEXT_RECOMMENDED_ACTION=USER_REVIEW_PRODUCT_USABILITY_02`.
