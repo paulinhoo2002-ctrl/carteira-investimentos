@@ -81,3 +81,12 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
   write-sensitive flows.
 - Visual changes must preserve handlers, IDs, route contracts, accessible
   focus, and the distinction between zero and missing data.
+
+## Analysis destination
+
+- `S.tab==='analise'` renders `analysisDestination()`.
+- `analysisDestination()` consumes the canonical `assetAnalysisRows()` source
+  and the existing `assetAnalysisBlock()` renderer.
+- The mobile bottom navigation remains compact; Análise is available from the
+  `Mais seções` sheet. Global search exposes the same route as a destination.
+- No analysis formulas, financial sources or persistence boundaries were added.

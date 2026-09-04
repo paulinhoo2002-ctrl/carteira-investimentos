@@ -341,7 +341,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .analysis-warn .analysis-bar-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
 .asset-premium-analysis{display:flex;flex-direction:column;gap:9px}
 .asset-premium-hero{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:15px;padding:12px;background:linear-gradient(135deg,var(--panel),var(--surface) 65%,var(--panel-2))}
-.asset-premium-hero:after{content:"";position:absolute;width:140px;height:140px;border-radius:50%;right:-72px;top:-78px;background:rgba(99,102,241,.13);pointer-events:none}
+.asset-premium-hero:after{content:"";position:absolute;width:140px;height:140px;border-radius:50%;right:-72px;top:-78px;background:rgba(52,211,153,.08);pointer-events:none}
 .asset-premium-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1}
 .asset-premium-title{font-size:15px;font-weight:900;color:#edf3ff}
 .asset-premium-sub{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:3px}
@@ -349,8 +349,8 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .asset-premium-kpi{padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:color-mix(in srgb, var(--surface) 82%, transparent);min-width:0}
 .asset-premium-kpi-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
 .asset-premium-kpi-value{font-size:13px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.asset-premium-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.asset-premium-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr))}
+.asset-premium-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.asset-premium-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
 .asset-premium-section{border:1px solid var(--border);border-radius:14px;background:var(--panel-2);overflow:hidden;min-width:0}
 .asset-premium-section>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 11px;cursor:pointer}
 .asset-premium-section>summary::-webkit-details-marker{display:none}
@@ -378,6 +378,8 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .asset-insight-sub{font-size:9px;color:#64748b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-insight-value{text-align:right;font-size:11px;font-weight:850;white-space:nowrap}
 .asset-premium-empty{padding:12px;border:1px dashed var(--border);border-radius:10px;background:var(--surface-2);color:var(--muted);font-size:10px;line-height:1.45}
+.asset-premium-analysis .analysis-ranking-value.pos{color:#34d399}
+.asset-premium-analysis .analysis-ranking-value{overflow:visible;text-overflow:clip}
 .rebalance-shell{display:flex;flex-direction:column;gap:12px}
 .rebalance-hero{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px 18px;background:linear-gradient(135deg,#10182a 0%,#0b1020 58%,#11162a 100%)}
 .rebalance-hero:after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;right:-100px;top:-110px;background:rgba(99,102,241,.12);filter:blur(6px);pointer-events:none}
@@ -709,7 +711,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .analysis-ranking-main{grid-column:auto}
   .analysis-ranking-signal{grid-column:auto;justify-content:flex-start}
   .analysis-ranking-stat{align-items:flex-start;gap:1px}
-  .analysis-ranking-value{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+  .analysis-ranking-value{white-space:normal;max-width:100%;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-size:11px}
   .ai-shell{gap:8px}
   .ai-head{flex-direction:column;align-items:stretch}
   .ai-cta{width:100%;min-width:0}
@@ -1352,6 +1354,7 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .data-quality-issue.warning{border-left:3px solid #fbbf24}
 .data-quality-issue.info{border-left:3px solid #60a5fa}
 .data-quality-entity{min-width:0;display:flex;flex-direction:column;gap:3px}
+.data-quality-identity{min-width:0;color:var(--muted);font-size:10px;line-height:1.35;overflow-wrap:anywhere}
 .data-quality-entity-type{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}
 .data-quality-entity-label{font-size:11px;color:var(--text);font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .data-quality-field,.data-quality-problem,.data-quality-recommendation{font-size:10px;line-height:1.45;color:var(--muted)}
@@ -6093,6 +6096,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .assets-premium-filter-panel label{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:12px;color:var(--text);cursor:pointer;transition:all .15s;min-height:44px}
     .assets-premium-filter-panel label:hover{background:var(--panel);border-color:color-mix(in srgb, var(--border) 60%, var(--primary))}
     .assets-premium-filter-panel input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary)}
+    .assets-premium-filter-panel select{min-height:36px;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-size:12px}
+    .assets-premium-filter-panel .assets-performance-filter{display:flex;flex-direction:column;align-items:stretch;gap:5px;cursor:default}
+    .assets-premium-filter-panel .assets-clear-filter{width:100%;min-height:40px}
     .assets-page-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}
     .assets-page-actions .btn{min-height:40px}
 
@@ -6769,6 +6775,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .assets-premium-shell .assets-premium-controls .assets-premium-filters{order:2}
   .assets-premium-shell .assets-premium-controls .assets-review-filter{flex:1 1 100%;order:3;margin-top:0}
   .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{left:0;right:auto;top:calc(100% + 5px)}
+  .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{max-height:160px;overflow-y:auto}
   .assets-premium-shell .assets-page-actions{justify-content:flex-start;gap:5px;margin:7px 0 8px}
   .assets-premium-shell .assets-page-actions .btn{min-height:44px;padding:7px 9px!important;font-size:10px!important}
   .assets-premium-shell .asset-inner-tabs{margin:2px 0 7px}
@@ -7387,6 +7394,7 @@ let S = {
   assetsSearch:'',
   assetsSearchTimer:null,
   assetsFilterClasses:[],
+  assetsPerformanceFilter:'all',
   assetsFilterPanelOpen:false,
   assetReviewFilter:null,
 };
@@ -19009,10 +19017,11 @@ function irpfTabPremium(){
       <div>
         <h2 class="premium-row-title">${esc(p.ticker||'—')}</h2>
         <div class="premium-row-sub">${esc(bucketLabels[p.bucket]||p.bucket||'—')} · ${esc(p.type||'—')}</div>
+        <div class="premium-row-sub">Qtd. ${Number(p.qty||0).toLocaleString('pt-BR',{maximumFractionDigits:8})} · PM ${fmt(Number(p.avg)||0)}</div>
         <div class="premium-row-sub">${esc(p.note||'IRPF usa custo de aquisição como referência principal.')}</div>
       </div>
       <div class="irpf-mobile-value">
-        ${fmt(Number(p.cost)||0)}
+        Custo ${fmt(Number(p.cost)||0)}
         <div class="premium-row-sub">${Number(p.marketValue)>0?`Ref. ${fmt(Number(p.marketValue)||0)}`:'Sem valor de referência'}</div>
       </div>
     </div>`).join('');
@@ -19652,6 +19661,24 @@ function dataQualityRouteForEntity(entityType, category){
   if(entityType==='Movimentacao') return 'aportes';
   return 'ativos';
 }
+function dataQualityIssueIdentity(record, issue){
+  const index=Number(record?.entityIndex)-1;
+  let source=null;
+  if(record?.category==='Ativos' || record?.category==='Renda Fixa' && record?.entityType==='Renda Fixa') source=(S.assets||[])[index]||null;
+  else if(record?.category==='Dividendos') source=(S.proventos||[])[index]||null;
+  else if(record?.category==='Movimentacoes') source=(S.aportes||[])[index]||null;
+  else if(record?.category==='Renda Fixa' && record?.entityType==='Movimentacao') source=(S.rfEvents||[])[index]||null;
+  if(!source) return dataQualityText(record?.entityLabel);
+  const parts=[dataQualityText(record?.entityLabel), dataQualityText(record?.entityType)];
+  const date=source.date||source.paymentDate||source.dataPagamento||source.data||source.vencimento||source.rf_maturity_date||source.fixed_maturity_date||source.maturityDate;
+  const type=source.type||source.eventType||source.movement||source.category;
+  const value=source.totalValue ?? source.grossValue ?? source.netValue ?? source.value ?? source.currentValue ?? source.current_price;
+  if(date) parts.push(`Data ${dataQualityText(date)}`);
+  if(type) parts.push(dataQualityText(type));
+  if(value!==undefined && value!==null && value!=='') parts.push(`Valor ${dataQualityText(value)}`);
+  if(source.id!==undefined && source.id!==null && String(source.id).trim()) parts.push(`ID ${String(source.id).trim()}`);
+  return parts.join(' · ');
+}
 function dataQualityActionLabel(route){
   if(route==='dividendos') return 'Abrir Dividendos';
   if(route==='renda-fixa') return 'Abrir Renda Fixa';
@@ -19682,6 +19709,7 @@ function dataQualityIssueRecord(record, issue){
     impact:dataQualityText(issue.message),
     fix:dataQualityText(issue.recommendation),
     suggestion:dataQualityText(issue.recommendation),
+    identitySummary:dataQualityIssueIdentity(record, issue),
     entityId:record.entityId ?? null,
     identityKey:record.identityKey || ''
   };
@@ -20209,6 +20237,7 @@ function renderDataQualityIssueCard(issue){
       <span class="data-quality-category">${esc(issue.category)}</span>
     </div>
     <div class="data-quality-entity">${esc(issue.entityType)} · ${esc(issue.entityLabel)}</div>
+    <div class="data-quality-identity">Identificacao: ${esc(issue.identitySummary || issue.entityLabel)}</div>
     <div class="data-quality-field">${esc(issue.field)}</div>
     <div class="data-quality-problem">${esc(issue.message)}</div>
     <div class="data-quality-recommendation">${esc(issue.recommendation)}</div>
@@ -20230,6 +20259,7 @@ function renderDataQualityPriorityCard(issue){
   return `<article class="data-quality-issue ${esc(issue.severity)}">
     <div class="data-quality-issue-top"><span class="data-quality-severity ${esc(issue.severity)}">${esc(dataQualitySeverityLabel(issue.severity))}</span><span class="data-quality-category">${esc(issue.category)}</span></div>
     <div class="data-quality-entity"><span class="data-quality-entity-type">${esc(issue.entityType)}</span><span class="data-quality-entity-label" title="${esc(issue.entityLabel)}">${esc(issue.entityLabel)}</span></div>
+    <div class="data-quality-identity">Identificacao: ${esc(issue.identitySummary || issue.entityLabel)}</div>
     <div class="data-quality-problem">${esc(issue.message)}</div>
     ${actionHtml}
   </article>`;
@@ -21210,6 +21240,29 @@ function setRentBench(bench){
     render();
   }
 
+  function setAssetsPerformanceFilter(value){
+    const allowed=['all','positive','negative','neutral'];
+    S.assetsPerformanceFilter=allowed.includes(String(value||'')) ? String(value) : 'all';
+    render();
+  }
+
+  function assetsFilterCount(){
+    return (S.assetsSearch ? 1 : 0)
+      + (S.assetsFilterClasses?.length ? 1 : 0)
+      + (S.assetsPerformanceFilter && S.assetsPerformanceFilter!=='all' ? 1 : 0)
+      + (assetReviewFilterIsActive() ? 1 : 0);
+  }
+
+  function clearAssetsFilters(){
+    clearTimeout(S.assetsSearchTimer);
+    S.assetsSearch='';
+    S.assetsFilterClasses=[];
+    S.assetsPerformanceFilter='all';
+    S.assetReviewFilter=null;
+    S.assetsFilterPanelOpen=false;
+    render();
+  }
+
   // Debounced search handler
   function onAssetsSearchInput(value){
     clearTimeout(S.assetsSearchTimer);
@@ -21239,6 +21292,17 @@ function setRentBench(bench){
       filtered = filtered.filter(a => {
         const type = normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
         return S.assetsFilterClasses.includes(type);
+      });
+    }
+    const performanceFilter=String(S.assetsPerformanceFilter||'all');
+    if(performanceFilter!=='all'){
+      const rowsByTicker=new Map(assetAnalysisRows().map(row=>[row.ticker,row]));
+      filtered=filtered.filter(asset=>{
+        const row=rowsByTicker.get(String(asset?.ticker||'').trim().toUpperCase());
+        if(!row || row.pct==null || !Number.isFinite(row.profit)) return false;
+        if(performanceFilter==='positive') return row.profit>0;
+        if(performanceFilter==='negative') return row.profit<0;
+        return row.profit===0;
       });
     }
     return filtered;
@@ -21676,8 +21740,8 @@ function assetAnalysisBlock(rowsInput){
       <div class="asset-premium-overview">
         <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Carteira analisada</div><div class="asset-premium-kpi-value">${fmt(total)}</div></div>
         <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Maior posição</div><div class="asset-premium-kpi-value">${esc(topPosition?.ticker||'—')}</div></div>
-        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Melhor desempenho</div><div class="asset-premium-kpi-value gn">${best?`${best.ticker} · ${fmtP(best.pct)}`:'—'}</div></div>
-        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Maior atenção</div><div class="asset-premium-kpi-value ${worst?'rd':''}">${worst?`${worst.ticker} · ${fmtP(worst.pct)}`:'—'}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Melhor desempenho</div><div class="asset-premium-kpi-value gn">${best?`${best.ticker} · ${fmtP(best.pct)}`:'Nenhum'}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Maior atenção</div><div class="asset-premium-kpi-value ${worst?'rd':''}">${worst?`${worst.ticker} · ${fmtP(worst.pct)}`:'Nenhuma'}</div></div>
       </div>
     </div>
     <div class="asset-premium-grid">
@@ -24305,8 +24369,8 @@ function desktopTabs(){
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     ${navItem('dashboard','Dashboard','📊',S.tab==='dashboard')}
     ${navItem('ativos','Ativos','💼',isAtivos&&innerTab==='patrimonio')}
-    ${navItemInner('renda-fixa','Renda Fixa','🧾',isAtivos&&innerTab==='renda-fixa')}
-    ${navItemInner('analise','Fundos','📁',isAtivos&&innerTab==='analise')}
+    ${navItem('renda-fixa','Renda Fixa','🧾',isAtivos&&innerTab==='renda-fixa')}
+    ${navItem('analise','Análise','📊',S.tab==='analise')}
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
     ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
     ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
@@ -24404,8 +24468,22 @@ function content(){
   if(S.tab==='auditoria') return dataAuditTab();
   if(S.tab==='relatorios')return reportsTab();
   if(S.tab==='ia')        return iaTab();
+  if(S.tab==='analise')  return analysisDestination();
   if(S.tab==='settings')  return settingsTab();
   return'';
+}
+
+function analysisDestination(){
+  const rows=assetAnalysisRows();
+  return `<section class="assets-premium-shell analysis-destination" aria-labelledby="analysis-page-title">
+    <div class="sh">
+      <div>
+        <h1 id="analysis-page-title" class="st">Análise da carteira</h1>
+        <div class="mu" style="font-size:12px;margin-top:4px">Exposição, desempenho e pontos de atenção a partir dos dados da carteira.</div>
+      </div>
+    </div>
+    ${assetAnalysisBlock(rows)}
+  </section>`;
 }
 
 // ══════════════════════════════════════
@@ -26828,13 +26906,16 @@ function ativos(){
       const assetKpiProfit=consolidated.result;
       const assetKpiReturn=consolidated.returnPct;
 
-            // Filter assets for display (search + class filter)
+            // Filter assets for display (search + class + performance filters)
             const displayAssets = filterAssetsForDisplay(S.assets);
+            const assetFiltersActive = !!S.assetsSearch || !!S.assetsFilterClasses?.length
+              || (S.assetsPerformanceFilter && S.assetsPerformanceFilter!=='all')
+              || reviewFilterActive;
             const portfolioTotal = reviewFilterActive
               ? total
               : displayAssets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
 
-            const sectionNames=reviewFilterActive
+            const sectionNames=assetFiltersActive
               ? groupNames.filter(type=>filterAssetsForDisplay(grouped.get(type)).length)
               : groupNames;
             const sections=sectionNames.map((type,idx)=>{
@@ -27222,17 +27303,28 @@ function ativos(){
     const reviewFilterUi=reviewFilterActive
       ? '<div class="assets-review-filter" role="status"><span>Dados incompletos · '+reviewFilterCount+'</span><button type="button" class="btn bgh" onclick="clearIncompleteAssetsReview()" aria-label="Limpar filtro de dados incompletos">Limpar filtro</button></div>'
       : '';
+    const activeAssetFilterCount=assetsFilterCount();
+    const assetsFilterEmpty=assetFiltersActive && !displayAssets.length;
+    const assetsFilterEmptyMessage='<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
+    const classFilterSet=new Set(S.assetsFilterClasses||[]);
     const assetControls=`<div class="assets-premium-controls">
-      <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" oninput="onAssetsSearchInput(this.value)"></div>
-      <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()">Filtros <span class="filter-count" id="assets-filter-count">0</span></button></div>
-      <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:none">
-        <label><input type="checkbox" checked onchange="applyAssetsFilter()"> Todas as classes</label>
-        <label><input type="checkbox" value="Ação" onchange="applyAssetsFilter()"> Ações</label>
-        <label><input type="checkbox" value="FII" onchange="applyAssetsFilter()"> FIIs</label>
-        <label><input type="checkbox" value="ETF" onchange="applyAssetsFilter()"> ETFs</label>
-        <label><input type="checkbox" value="Renda Fixa" onchange="applyAssetsFilter()"> Renda Fixa</label>
-        <label><input type="checkbox" value="BDR" onchange="applyAssetsFilter()"> BDRs</label>
-        <label><input type="checkbox" value="Crypto" onchange="applyAssetsFilter()"> Crypto</label>
+      <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch||'')}" oninput="onAssetsSearchInput(this.value)"></div>
+      <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen?'true':'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
+      <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen?'block':'none'}">
+        <label><input type="checkbox" ${classFilterSet.size===0?'checked':''} onchange="applyAssetsFilter()"> Todas as classes</label>
+        <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação')?'checked':''} onchange="applyAssetsFilter()"> Ações</label>
+        <label><input type="checkbox" value="FII" ${classFilterSet.has('FII')?'checked':''} onchange="applyAssetsFilter()"> FIIs</label>
+        <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF')?'checked':''} onchange="applyAssetsFilter()"> ETFs</label>
+        <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa')?'checked':''} onchange="applyAssetsFilter()"> Renda Fixa</label>
+        <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR')?'checked':''} onchange="applyAssetsFilter()"> BDRs</label>
+        <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto')?'checked':''} onchange="applyAssetsFilter()"> Crypto</label>
+        <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)">
+          <option value="all" ${S.assetsPerformanceFilter==='all'?'selected':''}>Todos</option>
+          <option value="positive" ${S.assetsPerformanceFilter==='positive'?'selected':''}>Positivos</option>
+          <option value="negative" ${S.assetsPerformanceFilter==='negative'?'selected':''}>Negativos</option>
+          <option value="neutral" ${S.assetsPerformanceFilter==='neutral'?'selected':''}>Neutros</option>
+        </select></label>
+        ${activeAssetFilterCount ? '<button type="button" class="btn bgh assets-clear-filter" onclick="clearAssetsFilters()">Limpar filtros</button>' : ''}
       </div>
       ${reviewFilterUi}
     </div>`;
@@ -27278,7 +27370,7 @@ function ativos(){
                     ${assetControls}
 
                     <!-- Legacy accordion groups (for test compatibility) -->
-                                    <div class="ag-wrap">${sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
+                                    <div class="ag-wrap">${assetsFilterEmpty ? assetsFilterEmptyMessage : sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
 
                     ${assetActions}
 
@@ -27367,9 +27459,7 @@ function ativos(){
     </div>
   </div>
   <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
-    <button class="asset-inner-tab ${innerTab==='analise'?'on':''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab==='analise'?'true':'false'}">Análise</button>
     <button class="asset-inner-tab ${innerTab==='desempenho'?'on':''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab==='desempenho'?'true':'false'}">Desempenho</button>
-    <button class="asset-inner-tab ${innerTab==='renda-fixa'?'on':''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab==='renda-fixa'?'true':'false'}">Renda Fixa</button>
   </div>
   ${innerTab==='analise' ? analysisPanel : innerTab==='desempenho' ? assetPerformanceOverviewPanel() : innerTab==='renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : patrimonyPanel}
   ${innerTab==='patrimonio' ? rfMovementFromAssetsModal() : ''}${innerTab==='renda-fixa' ? rfContextualHistoryModal() : ''}</section>`;
@@ -31604,7 +31694,7 @@ function mobileBottomNav(){
     <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"${S.tab==='ativos'?' aria-current="page"':''}><span class="ni">💼</span><span>Ativos</span></button>
     <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}><span class="ni">💰</span><span>Aportes</span></button>
     <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"${S.tab==='dividendos'?' aria-current="page"':''}><span class="ni">📅</span><span>Dividendos</span></button>
-    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','irpf','settings'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()" aria-label="Abrir navegação complementar" aria-controls="investMenuDrawer" aria-expanded="${S.mobileMenuOpen?'true':'false'}"><span class="ni">☰</span><span>Menu</span></button>
+    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','analise','irpf','settings'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()" aria-label="Abrir navegação complementar" aria-controls="investMenuDrawer" aria-expanded="${S.mobileMenuOpen?'true':'false'}"><span class="ni">☰</span><span>Menu</span></button>
   </nav>`;
 }
 function mobileMenuDrawer(){
@@ -31616,6 +31706,7 @@ function mobileMenuDrawer(){
       <div class="sheet-title">Mais seções</div>
       <button class="portfolio-search-mobile-trigger" type="button" onclick="mobileMenuClose();portfolioSearchOpen()">⌕&nbsp; Buscar na carteira</button>
       <div class="sheet-grid">
+        <button onclick="mobileMenuClose();go('analise')"${S.tab==='analise'?' aria-current="page"':''}>📊 Análise</button>
         <button onclick="mobileMenuClose();go('rentabilidade')"${S.tab==='rentabilidade'?' aria-current="page"':''}>📈 Rentab.</button>
         <button onclick="mobileMenuClose();go('metas')"${S.tab==='metas'?' aria-current="page"':''}>🎯 Metas</button>
         <button onclick="mobileMenuClose();go('ajudar')"${S.tab==='ajudar'?' aria-current="page"':''}>⚖️ Rebalancear</button>
@@ -31630,6 +31721,14 @@ function mobileMenuDrawer(){
 }
 function go(t){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
+  if(t==='analise'){
+    S.tab='analise';
+    S.mobileMenuOpen=false;
+    S.mobileTopMenuOpen=false;
+    save();
+    render();
+    return 0;
+  }
   if(t==='patrimonio') t='dashboard';
   const nextTab=['renda-fixa','desempenho'].includes(t) ? 'ativos' : t;
   S.tab=nextTab;
@@ -31645,7 +31744,7 @@ function go(t){
 }  // ← FIX: salva tab ao navegar
 
 // Busca global somente em memoria: os registros continuam vindo das fontes oficiais.
-const PORTFOLIO_SEARCH_GROUPS={asset:'Ativos',rf:'Renda Fixa',movement:'Movimentações',dividend:'Dividendos',goal:'Metas',audit:'Auditoria'};
+const PORTFOLIO_SEARCH_GROUPS={asset:'Ativos',rf:'Renda Fixa',movement:'Movimentações',dividend:'Dividendos',goal:'Metas',audit:'Auditoria',analysis:'Análise'};
 function portfolioSearchText(value){
   return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
@@ -31659,6 +31758,7 @@ function portfolioSearchValue(value){
 }
 function portfolioSearchBuildEntries(){
   const entries=[];
+  entries.push({kind:'analysis',id:'analise',title:'Análise da carteira',meta:'Exposição, desempenho e pontos de atenção',fields:['analise','análise','exposição','desempenho','concentração'],route:'analise',action:'Abrir Análise',source:null});
   (S.assets||[]).forEach(asset=>{
     const id=String(asset?.id??'').trim();
     const ticker=String(asset?.ticker||'').trim();
@@ -31771,18 +31871,17 @@ function portfolioSearchMove(delta){
   requestAnimationFrame(()=>document.getElementById('portfolio-search-input')?.focus());
 }
 function portfolioSearchOpenEntry(entry){
-  const source=entry?.source;
   if(entry.kind==='asset' || entry.kind==='rf'){
-    const current=(S.assets||[]).find(item=>String(item?.id??'')===String(source?.id??''));
-    if(current){go(entry.route); if(entry.kind==='asset') edA(current.id); else go('renda-fixa'); return;}
+    go(entry.route);
+    return;
   }
   if(entry.kind==='movement'){
-    const current=(S.aportes||[]).find(item=>String(item?.id??'')===String(source?.id??''));
-    if(current){go('aportes'); edP(current.id); return;}
+    go('aportes');
+    return;
   }
-  if(entry.kind==='dividend' && source?.id!=null){
-    const current=(S.proventos||[]).find(item=>String(item?.id??'')===String(source?.id??''));
-    if(current){go('dividendos'); editDividendReceipt(current.id); return;}
+  if(entry.kind==='dividend'){
+    go('dividendos');
+    return;
   }
   go(entry.route);
 }

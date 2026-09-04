@@ -77,7 +77,8 @@ for (const viewport of viewports) {
       await page.locator('.touch-target-utility').first().focus();
       assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('touch-target-utility')), true);
 
-      await page.evaluate(() => setAssetsInnerTab('renda-fixa'));
+      await page.evaluate(() => go('renda-fixa'));
+      assert.ok(await page.locator('.premium-rf-position-row').count(), 'Tela dedicada de Renda Fixa ausente');
       const move = page.locator('.asset-action', { hasText: 'Movimentar' }).first();
       if (await move.count()) {
         await move.click();

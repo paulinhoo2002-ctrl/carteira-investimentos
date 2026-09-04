@@ -122,3 +122,122 @@ Relatorios is closed for visual work unless explicitly authorized. Do not
 reopen Sidebar, Dashboard, Dividendos, Ativos, Renda Fixa, Aportes,
 Rentabilidade, Rebalancear, Metas or Relatorios. The next official candidate is
 `FUNDOS`, subject to a new explicit mission and approval.
+
+`FUNDOS_ANALISE_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+The scope is limited to the `ativos` analysis subsurface
+(`assetsInnerTab=analise`); the main Ativos screen remains frozen. Do not
+reopen any frozen screen without explicit user authorization. After approval,
+record `FUNDOS_ANALISE=COMPLETE`; the next roadmap candidate remains to be
+selected from the documented unfrozen surfaces.
+
+## POST_CANON_ROADMAP_AUDIT
+
+`RF_NAVIGATION_DECISION=REMOVE_RF_FROM_ATIVOS` was applied as a minimal
+navigation correction. The dedicated sidebar entry remains the single entry
+point for the full Renda Fixa experience; the RF summary inside `Todos os
+ativos` remains intentionally available. No frozen visual screen was
+redesigned.
+
+`PRODUCT_IMPROVEMENT_PHASE_02=ANALYSIS_DESTINATION_IMPLEMENTED`.
+Análise agora é uma rota própria e reutiliza `assetAnalysisRows()` /
+`assetAnalysisBlock()`; não há segundo motor analítico.
+
+`NEXT_OFFICIAL_MISSION=ANALYSIS_VISUAL_AND_PRODUCT_QA` remains the next
+roadmap item. After its approval, evaluate `CONFIGURACOES` only with an
+explicit backup/import safety review.
+
+## ANALYSIS_AND_NAVIGATION_FREEZE
+
+`ANALYSIS_VISUAL=FROZEN` and `NAVIGATION_ARCHITECTURE=FROZEN`.
+The canonical desktop structure is Dashboard, Ativos, Renda Fixa, Análise,
+Aportes/Lançamentos, Metas, Dividendos, Rentabilidade, Rebalancear and
+Relatórios. Renda Fixa and Análise are dedicated destinations, not Ativos inner
+tabs. The mobile bottom navigation remains compact and exposes Análise through
+`Mais seções`.
+
+The P1 Ativos performance filter was implemented and frozen as a functional
+improvement using the existing official result source. Remaining backlog is
+`P2` safe contextual links and Configurações backup/import safety review, plus
+`P3` icon and empty-state consistency. Do not reopen frozen surfaces without
+explicit authorization.
+
+`PRODUCT_USABILITY_IMPROVEMENTS_02` is frozen as a functional improvement:
+global search discovery and contextual links passed focused and five-viewport
+browser QA without new financial logic.
+
+`NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_01_IRPF`. The following
+mission must remain separate from the protected Configurações, Backup, Import
+and Restore flows; those require a dedicated safety review.
+
+`SECONDARY_SURFACE_REFINEMENT_01_IRPF=COMPLETE`. The next official mission is
+`SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`, keeping Configurações, Backup,
+Import and Restore outside this scope until a dedicated safety review.
+
+`IRPF_VISUAL=FROZEN`. Do not reopen IRPF without explicit authorization.
+`NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.
+
+`AUDITORIA_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+Auditoria recebeu refinamento restrito de hierarquia, priorizacao, filtros,
+estados vazios e acoes contextuais, sem alterar o contrato de identidade ou
+revalidacao. Nao marcar Auditoria como congelada antes da aprovacao visual
+explicita do usuario.
+
+`SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA=COMPLETE` e
+`AUDITORIA_VISUAL=FROZEN`. A proxima missao oficial e
+`PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, com revisao inicial de Configuracoes,
+Backup, Importacao, Restore, Conta/Nuvem e Zona de perigo. Nao alterar
+semantica de persistencia ou backup sem autorizacao explicita.
+
+## SAFETY HARDENING 01
+
+`SAFETY_HARDENING_01_RESET_AND_BACKUP_VALIDATION=COMPLETE`.
+Reset de carteira agora remove eventos e estados transitorios de Renda Fixa.
+Backups incompatíveis ou estruturalmente malformados são rejeitados antes da
+confirmação, sem migração automática desconhecida.
+
+`NEXT_OFFICIAL_MISSION=PRODUCT_SAFETY_REVIEW_02_CONFIGURACOES_VISUAL`.
+O próximo escopo é somente visual: hierarquia, agrupamento, avisos, zona de
+risco e UX mobile. Os contratos de backup, importação, restore, autenticação,
+sincronização e reset permanecem congelados.
+
+`PRODUCT_SAFETY_REVIEW_02_CONFIGURACOES_VISUAL=COMPLETE`.
+Configurações recebeu revisão visual e de hierarquia sem alterar os fluxos
+protegidos. A próxima decisão é a aprovação visual final do usuário; não
+marcar Configurações como congelada antes dessa aprovação.
+
+## PRODUCT USABILITY IMPROVEMENTS 02
+
+`GLOBAL_SEARCH_REFINEMENT=READY_FOR_FINAL_USER_APPROVAL` e
+`CONTEXTUAL_NAVIGATION=READY_FOR_FINAL_USER_APPROVAL`.
+A busca global permanece somente leitura e os links contextuais da Análise
+reduzem a fricção sem reabrir telas congeladas. A busca não abre editores nem
+ações destrutivas diretamente.
+
+`NEXT_RECOMMENDED_ACTION=USER_REVIEW_PRODUCT_USABILITY_02`.
+
+
+## PRODUCT SAFETY REVIEW - AUDITORIA
+
+AUDIT_SAFETY_REVIEW=FROZEN.
+AUDIT_WRONG_RECORD_PROTECTION=FROZEN e AUDIT_IDENTITY_CONTRACT=FROZEN. Acoes exatas exigem revalidacao de ID e chave; registros stale recuam para a rota geral. Nao iniciar IRPF_PRODUCT_REVIEW automaticamente.
+## IRPF FUNCTIONAL FREEZE
+
+- `IRPF_FUNCTIONAL_REVIEW=FROZEN`
+- `IRPF_VISUAL=FROZEN`; `IRPF_MOBILE_PATTERN=FROZEN`;
+  `IRPF_TAX_LOGIC_CHANGED=false`.
+- O relatório continua auxiliar e somente leitura, usando
+  `irpfBuildYearReport(year)`, agrupamentos oficiais, totais oficiais e os
+  exportadores CSV/PDF existentes.
+- Zeros válidos permanecem distintos de ausência e dados incompletos continuam
+  explícitos.
+- `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
+- Não reabrir IRPF nem as superfícies congeladas sem autorização explícita.
+
+## RELEASE CONSOLIDATION
+
+- `PRODUCT_USABILITY_RELEASE=READY_FOR_PR`.
+- A consolidação reúne somente as melhorias aprovadas de Análise, navegação de
+  Renda Fixa, filtro de performance, busca global, links contextuais,
+  segurança da Auditoria e relatório mobile do IRPF.
+- `NEXT_RECOMMENDED_ACTION=SETTINGS_SAFETY_REVIEW`.
+- Não iniciar o trabalho de Configurações antes da integração desta release.
