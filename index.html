@@ -6545,6 +6545,16 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     #assets-premium-table-desktop .assets-premium-table td:nth-child(14){display:none}
     #assets-premium-table-desktop .assets-premium-table{min-width:0;table-layout:auto}
   }
+  /* Analytical columns stay available on desktop; the table owns any horizontal scroll. */
+  @media (min-width: 768px){
+    #assets-premium-table-desktop .assets-premium-table{min-width:1320px;table-layout:auto}
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(3),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(3),
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(13),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(13),
+    #assets-premium-table-desktop .assets-premium-table th:nth-child(14),
+    #assets-premium-table-desktop .assets-premium-table td:nth-child(14){display:table-cell}
+  }
 </style>
 <style>
   /* Phase 11: keep dense desktop tables inside the sidebar-adjusted content area. */
@@ -7621,6 +7631,7 @@ let S = {
   assetsSearch:'',
   assetsSearchTimer:null,
   assetsFilterClasses:[],
+  assetsSectorFilter:'all',
   assetsPerformanceFilter:'all',
   assetsFilterPanelOpen:false,
   assetReviewFilter:null,
@@ -21495,9 +21506,17 @@ function setRentBench(bench){
     render();
   }
 
+  function setAssetsSectorFilter(value){
+    const sectors=[...new Set((S.assets||[]).map(a=>String(a?.sector||'').trim()).filter(Boolean))];
+    const normalized=String(value||'all');
+    S.assetsSectorFilter=normalized==='all'||sectors.includes(normalized) ? normalized : 'all';
+    render();
+  }
+
   function assetsFilterCount(){
     return (S.assetsSearch ? 1 : 0)
       + (S.assetsFilterClasses?.length ? 1 : 0)
+      + (S.assetsSectorFilter && S.assetsSectorFilter!=='all' ? 1 : 0)
       + (S.assetsPerformanceFilter && S.assetsPerformanceFilter!=='all' ? 1 : 0)
       + (assetReviewFilterIsActive() ? 1 : 0);
   }
@@ -21506,6 +21525,7 @@ function setRentBench(bench){
     clearTimeout(S.assetsSearchTimer);
     S.assetsSearch='';
     S.assetsFilterClasses=[];
+    S.assetsSectorFilter='all';
     S.assetsPerformanceFilter='all';
     S.assetReviewFilter=null;
     S.assetsFilterPanelOpen=false;
@@ -21542,6 +21562,9 @@ function setRentBench(bench){
         const type = normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
         return S.assetsFilterClasses.includes(type);
       });
+    }
+    if(S.assetsSectorFilter && S.assetsSectorFilter!=='all'){
+      filtered=filtered.filter(a=>String(a?.sector||'').trim()===String(S.assetsSectorFilter));
     }
     const performanceFilter=String(S.assetsPerformanceFilter||'all');
     if(performanceFilter!=='all'){
@@ -21596,8 +21619,10 @@ function assetSortIndicator(type, field){
 }
 function assetSortableHeader(type, field, label){
   const indicator=assetSortIndicator(type, field) || ' ↕';
+  const current=getAssetSortConfig(type);
+  const ariaSort=current.field===field ? (current.dir==='asc'?'ascending':'descending') : 'none';
   const action=`toggleAssetSort(${JSON.stringify(type)},${JSON.stringify(field)})`;
-  return `<span role="button" tabindex="0" aria-label="Ordenar por ${esc(label)}" style="cursor:pointer;user-select:none" onclick='${action};event.stopPropagation()' onkeydown='if(event.key===\"Enter\"||event.key===\" \" ){event.preventDefault();${action};event.stopPropagation()}'>${esc(label)}${indicator}</span>`;
+  return `<span role="button" tabindex="0" aria-sort="${ariaSort}" aria-label="Ordenar por ${esc(label)}" style="cursor:pointer;user-select:none" onclick='${action};event.stopPropagation()' onkeydown='if(event.key===\"Enter\"||event.key===\" \" ){event.preventDefault();${action};event.stopPropagation()}'>${esc(label)}${indicator}</span>`;
 }
 function sortAssetsByGroup(type, items, portfolioTotal=0){
   const cfg=getAssetSortConfig(type);
@@ -21642,10 +21667,43 @@ function sortAssetsByGroup(type, items, portfolioTotal=0){
       return (ac-bc) * dirFactor;
     }
     if(cfg.field==='result'){
-      const ar=assetJurosValue(a);
-      const br=assetJurosValue(b);
-      const av=Number.isFinite(ar) ? ar : assetCurrentValue(a)-assetAppliedValue(a);
-      const bv=Number.isFinite(br) ? br : assetCurrentValue(b)-assetAppliedValue(b);
+      const resultRows=new Map(assetAnalysisRows().map(row=>[row.ticker,row]));
+      const ar=resultRows.get(String(a?.ticker||'').trim().toUpperCase());
+      const br=resultRows.get(String(b?.ticker||'').trim().toUpperCase());
+      const av=ar?.pct!=null && Number.isFinite(ar.profit) ? ar.profit : null;
+      const bv=br?.pct!=null && Number.isFinite(br.profit) ? br.profit : null;
+      if(av==null || bv==null){
+        if(av==null && bv==null) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+        return av==null ? 1 : -1;
+      }
+      if(av===bv) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (av-bv) * dirFactor;
+    }
+    if(cfg.field==='sector'){
+      const as=String(a.sector||'').trim();
+      const bs=String(b.sector||'').trim();
+      if(as===bs) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return as.localeCompare(bs,'pt-BR',{sensitivity:'base'}) * dirFactor;
+    }
+    if(cfg.field==='divMonth'){
+      const aCurrent=assetCurrentValue(a), bCurrent=assetCurrentValue(b);
+      const aDy=Number(a.dy), bDy=Number(b.dy);
+      const av=Number.isFinite(aCurrent)&&Number.isFinite(aDy) ? aCurrent*aDy/1200 : null;
+      const bv=Number.isFinite(bCurrent)&&Number.isFinite(bDy) ? bCurrent*bDy/1200 : null;
+      if(av==null || bv==null){
+        if(av==null && bv==null) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+        return av==null ? 1 : -1;
+      }
+      if(av===bv) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+      return (av-bv) * dirFactor;
+    }
+    if(cfg.field==='dy'){
+      const av=Number.isFinite(Number(a.dy)) ? Number(a.dy) : null;
+      const bv=Number.isFinite(Number(b.dy)) ? Number(b.dy) : null;
+      if(av==null || bv==null){
+        if(av==null && bv==null) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
+        return av==null ? 1 : -1;
+      }
       if(av===bv) return String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'}) * dirFactor;
       return (av-bv) * dirFactor;
     }
@@ -27231,7 +27289,8 @@ function ativos(){
      const gTotal=items.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
      const gDivMes=items.reduce((s,a)=>{
        const cur=getAssetMetrics(a).currentValue;
-       return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
+       const dy=Number(a.dy);
+       return s + (Number.isFinite(cur) && Number.isFinite(dy) ? (cur*dy/100)/12 : 0);
      },0);
      const gJuros=items.reduce((s,a)=>{
        const j=getAssetMetrics(a).jurosValue;
@@ -27253,7 +27312,8 @@ function ativos(){
            const rentab=m.rentabPct;
            const juros=m.jurosValue;
            const result= m.isRF ? juros : (Number.isFinite(m.currentValue)&&Number.isFinite(m.appliedValue) ? m.currentValue-m.appliedValue : null);
-           const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
+           const dy=Number(a.dy);
+           const dm=Number.isFinite(marketValue)&&Number.isFinite(dy)?marketValue*dy/1200:null;
            const peso=portfolioTotal>0?(marketValue/portfolioTotal)*100:0;
        const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
        const q=S.quotes[a.ticker];
@@ -27288,8 +27348,8 @@ function ativos(){
           <td style="font-weight:700;color:#e2eaf6">${marketValue!=null?fmt(marketValue):'—'}</td>
          <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
           <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
-         <td class="am" style="font-weight:600">${fmt(dm)}</td>
-        <td class="mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via Brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado · atualize se necessário">Estimativa</span>':''}</td>
+         <td class="am" style="font-weight:600">${dm!=null?fmt(dm):'—'}</td>
+        <td class="mu">${Number.isFinite(dy)?dy+'%':'—'}${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via Brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado · atualize se necessário">Estimativa</span>':''}</td>
           <td>${assetActionMenuHtml(a, false, `group-${groupKey}`)}</td>
        </tr>`;
      }).join('');
@@ -27382,7 +27442,7 @@ function ativos(){
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th>Resultado</th><th>${assetSortableHeader(type,'rentability','Rentab.')}</th><th>Alvo</th><th>${assetSortableHeader(type,'total','Total')}</th><th>${assetSortableHeader(type,'share','% Cart.')}</th><th>${assetSortableHeader(type,'ideal','% Ideal')}</th><th>Div/mês</th><th>DY</th><th></th></tr></thead>
+              <th>Resultado</th><th>${assetSortableHeader(type,'rentability','Rentab.')}</th><th>Alvo</th><th>${assetSortableHeader(type,'total','Total')}</th><th>${assetSortableHeader(type,'share','% Cart.')}</th><th>${assetSortableHeader(type,'ideal','% Ideal')}</th><th>Div. est./mês</th><th>DY</th><th></th></tr></thead>
             <tbody>${rows||'<tr><td colspan="15" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>`}
@@ -27414,6 +27474,7 @@ function ativos(){
 
     // Build premium table rows (non-RF)
     const premiumDisplayAssets = sortAssetsByGroup('Todos', displayAssets, total);
+    const analysisByTicker = new Map(assetAnalysisRows().map(row=>[row.ticker,row]));
     const premiumTableRows = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa').map(a => {
       const m = getAssetMetrics(a);
       const avg = Number(a.avg_price)||0;
@@ -27422,7 +27483,8 @@ function ativos(){
       const applied = m.appliedValue;
       const rentab = m.rentabPct;
       const juros = m.jurosValue;
-      const dm = Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
+      const dy = Number(a.dy);
+      const dm = Number.isFinite(marketValue)&&Number.isFinite(dy)?marketValue*dy/1200:null;
       const peso = total>0?(marketValue/total)*100:0;
       const alvo = Number(a.price_target)||0, ideal = Number(a.ideal_pct)||0, diff = ideal>0?ideal-peso:0;
       const q = S.quotes[a.ticker];
@@ -27433,10 +27495,11 @@ function ativos(){
       const atualText = marketValue!=null?fmt(currentUnit):'—';
       const pmText = isRF?fmt(applied):(avg?fmt(avg):'—');
       const rfSource = isRF?assetRfCurrentValueMeta(a):null;
-      const result = marketValue - applied;
-      const resultClass = result > 0 ? 'pos' : result < 0 ? 'neg' : 'neutral';
-      const resultIndicator = result > 0 ? '↑' : result < 0 ? '↓' : '→';
-      const resultText = assetSignedMoneyText(result);
+      const analysisRow = analysisByTicker.get(String(a?.ticker||'').trim().toUpperCase());
+      const result = analysisRow?.pct!=null && Number.isFinite(analysisRow.profit) ? analysisRow.profit : null;
+      const resultClass = result==null ? 'neutral' : result > 0 ? 'pos' : result < 0 ? 'neg' : 'neutral';
+      const resultIndicator = result==null ? '→' : result > 0 ? '↑' : result < 0 ? '↓' : '→';
+      const resultText = Number.isFinite(result) ? assetSignedMoneyText(result) : '—';
       const badgeClass = String(a.type||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]+/g,'-');
       return `<tr>
         <td class="col-ticker">${esc(a.ticker)}${qtag}${reviewFilterActive?`<div class="asset-review-reason">${esc(assetReviewReasonText(a))}</div>`:''}</td>
@@ -27456,8 +27519,8 @@ function ativos(){
         <td class="col-total">${marketValue!=null?fmt(marketValue):'—'}</td>
         <td class="col-share bl">${peso.toFixed(1)}%</td>
         <td class="col-ideal ${ideal>0?(diff>0?'gn':'rd'):'mu'}">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
-        <td class="col-div am">${fmt(dm)}</td>
-        <td class="col-dy mu">${Number(a.dy)||0}%${a.dySource==='api'?'<span class="quote-source brapi" style="font-size:8px;margin-left:4px">API</span>':a.dySource==='proventos'?'<span class="quote-source yahoo" style="font-size:8px;margin-left:4px">Real</span>':a.dySource==='estimate'?'<span class="quote-source" style="font-size:8px;margin-left:4px;color:#fbbf24;background:rgba(251,191,36,.12)">Estimativa</span>':''}</td>
+        <td class="col-div am">${dm!=null?fmt(dm):'—'}</td>
+        <td class="col-dy mu">${Number.isFinite(dy)?dy+'%':'—'}${a.dySource==='api'?'<span class="quote-source brapi" style="font-size:8px;margin-left:4px">API</span>':a.dySource==='proventos'?'<span class="quote-source yahoo" style="font-size:8px;margin-left:4px">Real</span>':a.dySource==='estimate'?'<span class="quote-source" style="font-size:8px;margin-left:4px;color:#fbbf24;background:rgba(251,191,36,.12)">Estimativa</span>':''}</td>
         <td class="col-actions">${assetActionMenuHtml(a, false, 'primary')}</td>
       </tr>`;
     }).join('');
@@ -27527,6 +27590,8 @@ function ativos(){
       const applied = m.appliedValue;
       const rentab = m.rentabPct;
       const juros = m.jurosValue;
+      const dy = Number(a.dy);
+      const dm = Number.isFinite(marketValue)&&Number.isFinite(dy)?marketValue*dy/1200:null;
       const peso = total>0?(marketValue/total)*100:0;
       const isRF = m.isRF;
       const result = isRF ? juros : (marketValue - applied);
@@ -27587,8 +27652,8 @@ function ativos(){
             <div><div class="asset-premium-card-label">Setor</div><div class="asset-premium-card-value">${esc(a.sector||'—')}</div></div>
             <div><div class="asset-premium-card-label">Preço alvo</div><div class="asset-premium-card-value">${Number(a.price_target)?fmt(a.price_target):'—'}</div></div>
             <div><div class="asset-premium-card-label">% Ideal</div><div class="asset-premium-card-value">${Number(a.ideal_pct)?a.ideal_pct.toFixed(1)+'%':'—'}</div></div>
-            <div><div class="asset-premium-card-label">DY</div><div class="asset-premium-card-value">${Number(a.dy)?a.dy+'%':'—'}</div></div>
-            <div><div class="asset-premium-card-label">Div/mês</div><div class="asset-premium-card-value">${fmt((marketValue*(Number(a.dy)||0))/1200)}</div></div>
+            <div><div class="asset-premium-card-label">DY</div><div class="asset-premium-card-value">${Number.isFinite(dy)?dy+'%':'—'}</div></div>
+            <div><div class="asset-premium-card-label">Div. est./mês</div><div class="asset-premium-card-value">${dm!=null?fmt(dm):'—'}</div></div>
             <div><div class="asset-premium-card-label">Fonte cotação</div><div class="asset-premium-card-value">${a.quoteSource==='brapi'?'Brapi':a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='importado'?'Importado':'—'}</div></div>
           </div>
         </div>
@@ -27607,6 +27672,7 @@ function ativos(){
     const assetsFilterEmpty=assetFiltersActive && !displayAssets.length;
     const assetsFilterEmptyMessage='<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
     const classFilterSet=new Set(S.assetsFilterClasses||[]);
+    const sectorOptions=[...new Set((S.assets||[]).map(a=>String(a?.sector||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
     const assetControls=`<div class="assets-premium-controls">
       <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch||'')}" oninput="onAssetsSearchInput(this.value)"></div>
       <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen?'true':'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
@@ -27618,6 +27684,10 @@ function ativos(){
         <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa')?'checked':''} onchange="applyAssetsFilter()"> Renda Fixa</label>
         <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR')?'checked':''} onchange="applyAssetsFilter()"> BDRs</label>
         <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto')?'checked':''} onchange="applyAssetsFilter()"> Crypto</label>
+        <label class="assets-performance-filter"><span>Setor</span><select aria-label="Filtrar por setor" onchange="setAssetsSectorFilter(this.value)">
+          <option value="all" ${S.assetsSectorFilter==='all'?'selected':''}>Todos</option>
+          ${sectorOptions.map(sector=>`<option value="${esc(sector)}" ${S.assetsSectorFilter===sector?'selected':''}>${esc(sector)}</option>`).join('')}
+        </select></label>
         <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)">
           <option value="all" ${S.assetsPerformanceFilter==='all'?'selected':''}>Todos</option>
           <option value="positive" ${S.assetsPerformanceFilter==='positive'?'selected':''}>Positivos</option>
@@ -27701,7 +27771,7 @@ function ativos(){
                     <tr>
                       <th>${assetSortableHeader('Todos','ticker','Ticker')}</th>
                       <th>${assetSortableHeader('Todos','type','Tipo')}</th>
-                      <th>Setor</th>
+                      <th>${assetSortableHeader('Todos','sector','Setor')}</th>
                       <th>${assetSortableHeader('Todos','qty','Qtd')}</th>
                       <th>${assetSortableHeader('Todos','pm','PM')}</th>
                       <th>${assetSortableHeader('Todos','current','ATUAL')}</th>
@@ -27711,8 +27781,8 @@ function ativos(){
                       <th>${assetSortableHeader('Todos','total','Total')}</th>
                       <th>${assetSortableHeader('Todos','share','% Cart.')}</th>
                       <th>% Ideal</th>
-                      <th>Div/mês</th>
-                      <th>DY</th>
+                      <th>${assetSortableHeader('Todos','divMonth','Div. est./mês')}</th>
+                      <th>${assetSortableHeader('Todos','dy','DY')}</th>
                       <th></th>
                     </tr>
                   </thead>
