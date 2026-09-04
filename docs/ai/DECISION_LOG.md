@@ -328,3 +328,34 @@
   aprovacao visual de testes/builds.
 - Proximo alvo recomendado: `INVENTARIO_DE_REFERENCIAS`, sem iniciar nesta
   rodada. `SITE_REFINEMENT_WAVE_04` permanece fora deste commit.
+
+## 2026-09-04 - Ativos visual reference lock
+
+- `DECISION`: usar `Refs/visual-canon/Tela de aportes e ativos.png` como
+  referencia de tela para Ativos, sem reproduzir a arquitetura de Aportes.
+- `SCOPE`: ajustes locais de hierarquia, densidade, iconografia e legibilidade;
+  sem formulas, Finance Core, persistencia, schema ou dados reais.
+- `STATUS`: `ATIVOS_REFERENCE_LOCK=READY_FOR_FINAL_USER_APPROVAL`; a aprovacao
+  visual do usuario continua pendente.
+
+## 2026-09-04 - Ativos final reference polish
+
+- DECISION: a tabela de posicoes e o conteudo primario da tela de Ativos em
+  desktop. Os cards de categoria servem como leitura compacta e secundária.
+- DECISION: reutilizar `allocationActualByType()` para a alocacao por classe,
+  sem nova regra de negocio ou calculo de carteira. Em 1920px o modulo acompanha
+  a tabela; em notebook ele permanece logo apos as posicoes para nao comprimir
+  valores financeiros.
+- BOUNDARY: RF continua rota dedicada e resumo dentro de Todos os ativos;
+  Analise continua rota dedicada. Nenhuma aba interna foi reaberta.
+- STATUS: `ATIVOS_FINAL_REFERENCE_POLISH=READY_FOR_FINAL_USER_APPROVAL`.
+
+## 2026-09-04 - Ativos reference lock freeze
+
+- DECISION: congelar a reconstrução visual de Ativos após aprovação do usuário.
+- CONTRACT: `ATIVOS_PRIMARY_CONTENT=FROZEN`, `ATIVOS_DENSITY=FROZEN`,
+  `ATIVOS_ICON_LANGUAGE=FROZEN` e `ALLOCATION_PANEL=FROZEN`.
+- PRESERVED: filtros, busca, ordenação, expansão, menus contextuais com IDs
+  únicos, fontes oficiais de resultado, RF dedicado, resumo RF e rota dedicada
+  de Análise.
+- NEXT: `NEXT_VISUAL_TARGET=APORTES`; sem push, PR, merge ou deploy nesta rodada.

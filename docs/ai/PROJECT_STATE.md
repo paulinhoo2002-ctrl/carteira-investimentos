@@ -532,3 +532,36 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
   90.25, sem dimensao abaixo de 86.
 - `VISUAL_REFERENCE_LOCK_PROCESS=ACTIVE`: testes e builds validam o produto,
   mas nao substituem comparacao visual e aprovacao explicita.
+
+## ATIVOS VISUAL REFERENCE LOCK
+
+- `ATIVOS_REFERENCE_LOCK=READY_FOR_FINAL_USER_APPROVAL`.
+- A referencia desta rodada e `Refs/visual-canon/Tela de aportes e ativos.png`,
+  usada somente para a porcao de Ativos; os modulos de Aportes nao foram copiados.
+- O ajuste ficou restrito ao shell de Ativos: hierarquia das acoes, densidade dos
+  resumos de categoria, quebra segura de titulos RF e glyphs SVG locais.
+- Busca, filtros, ordenacao, expansao, rotas dedicadas e fontes financeiras
+  oficiais permanecem preservados. Nao marcar `ATIVOS_VISUAL=FROZEN` nesta rodada.
+
+## 2026-09-04 - Ativos final reference polish
+
+- `ATIVOS_FINAL_REFERENCE_POLISH=READY_FOR_FINAL_USER_APPROVAL`.
+- A tabela de posicoes foi promovida para o conteudo primario: os resumos por
+  classe agora sao compactos e a tabela aparece cedo em desktop.
+- `ATIVOS_ALLOCATION_SOURCE=allocationActualByType()`: o modulo visual de
+  alocacao somente apresenta o snapshot oficial e nao cria formula paralela.
+- Os icones SVG das categorias ficaram visiveis nos cinco breakpoints. Fontes
+  financeiras, filtros, ordenacao, expansao, RF dedicado e dados reais foram
+  preservados. Nao marcar `ATIVOS_VISUAL=FROZEN` antes da aprovacao explicita.
+
+## 2026-09-04 - Ativos reference lock freeze
+
+- `ATIVOS_VISUAL=FROZEN` e `ATIVOS_REFERENCE_LOCK=FROZEN` apos aprovacao visual
+  explicita do usuario.
+- `ATIVOS_PRIMARY_CONTENT=FROZEN`, `ATIVOS_DENSITY=FROZEN` e
+  `ATIVOS_ICON_LANGUAGE=FROZEN`.
+- `ALLOCATION_SOURCE=allocationActualByType()` e `ALLOCATION_PANEL=FROZEN`;
+  a tabela de posicoes permanece primaria no desktop e os cards de categoria
+  permanecem secundarios. RF continua com rota dedicada e resumo oficial em
+  Todos os ativos.
+- `NEXT_VISUAL_TARGET=APORTES`; nao reabrir Ativos sem autorizacao explicita.
