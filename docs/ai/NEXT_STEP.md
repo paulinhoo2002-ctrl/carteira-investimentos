@@ -122,3 +122,39 @@ Relatorios is closed for visual work unless explicitly authorized. Do not
 reopen Sidebar, Dashboard, Dividendos, Ativos, Renda Fixa, Aportes,
 Rentabilidade, Rebalancear, Metas or Relatorios. The next official candidate is
 `FUNDOS`, subject to a new explicit mission and approval.
+
+`FUNDOS_ANALISE_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+The scope is limited to the `ativos` analysis subsurface
+(`assetsInnerTab=analise`); the main Ativos screen remains frozen. Do not
+reopen any frozen screen without explicit user authorization. After approval,
+record `FUNDOS_ANALISE=COMPLETE`; the next roadmap candidate remains to be
+selected from the documented unfrozen surfaces.
+
+## POST_CANON_ROADMAP_AUDIT
+
+`RF_NAVIGATION_DECISION=REMOVE_RF_FROM_ATIVOS` was applied as a minimal
+navigation correction. The dedicated sidebar entry remains the single entry
+point for the full Renda Fixa experience; the RF summary inside `Todos os
+ativos` remains intentionally available. No frozen visual screen was
+redesigned.
+
+`PRODUCT_IMPROVEMENT_PHASE_02=ANALYSIS_DESTINATION_IMPLEMENTED`.
+Análise agora é uma rota própria e reutiliza `assetAnalysisRows()` /
+`assetAnalysisBlock()`; não há segundo motor analítico.
+
+`NEXT_OFFICIAL_MISSION=ANALYSIS_VISUAL_AND_PRODUCT_QA` remains the next
+roadmap item. After its approval, evaluate `CONFIGURACOES` only with an
+explicit backup/import safety review.
+
+## ANALYSIS_AND_NAVIGATION_FREEZE
+
+`ANALYSIS_VISUAL=FROZEN` and `NAVIGATION_ARCHITECTURE=FROZEN`.
+The canonical desktop structure is Dashboard, Ativos, Renda Fixa, Análise,
+Aportes/Lançamentos, Metas, Dividendos, Rentabilidade, Rebalancear and
+Relatórios. Renda Fixa and Análise are dedicated destinations, not Ativos inner
+tabs. The mobile bottom navigation remains compact and exposes Análise through
+`Mais seções`.
+
+Backlog after this freeze: `P1` Ativos performance filter; `P2` safe contextual
+links and Configurações backup/import safety review; `P3` icon and empty-state
+consistency. Do not reopen frozen surfaces without explicit authorization.

@@ -301,6 +301,69 @@ start a feature, visual migration or release operation.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
 
+## 2026-09-04 - Analysis and navigation freeze
+
+- `ANALYSIS_VISUAL=FROZEN`
+- `NAVIGATION_ARCHITECTURE=FROZEN`
+- `ANALYSIS_ROUTE=analise`; `ANALYSIS_DATA_SOURCE=assetAnalysisRows()`;
+  `CONCENTRATION_RULE_SOURCE=assetConcentrationAlert()`.
+- A Análise permanece uma área analítica dedicada, sem recomendação automática,
+  sem segundo motor e com estados vazios explícitos.
+- Renda Fixa e Análise não são subabas de Ativos. A entrada dedicada de Renda
+  Fixa, o resumo RF em Todos os ativos e o menu mobile compacto permanecem.
+- Backlog preservado: filtro de performance em Ativos (P1), links contextuais e
+  revisão de segurança de Configurações/backup/importação (P2), consistência de
+  ícones e estados vazios restantes (P3).
+
+## 2026-09-04 - Análise como destino próprio
+
+- `PRODUCT_IMPROVEMENT_MODE=ACTIVE`
+- `ANALYSIS_SIDEBAR_DECISION=DEDICATED_ROUTE_REUSING_OFFICIAL_RENDERER`
+- `ANALYSIS_ROUTE=analise`
+- `ANALYSIS_RENDERER=assetAnalysisBlock`
+- `ANALYSIS_DATA_SOURCE=assetAnalysisRows`
+- O atalho enganoso `Fundos` foi removido da navegação principal; o renderer
+  continua preservado e acessível pela rota dedicada.
+- `MOBILE_ANALYSIS_ACCESS=Mais`
+- `FUNDS_LABEL_DECISION=RENAME_TO_ANALISE`
+
+## 2026-09-04 - Product UX and navigation review
+
+- `RF_NAVIGATION_DECISION=REMOVE_RF_FROM_ATIVOS`: o atalho `Renda Fixa` das
+  subabas de Ativos foi removido porque reproduzia integralmente o renderer
+  oficial `rendaFixaTab()` e a mesma fila de revisao, vencimentos, posicoes,
+  resultados, rentabilidade e acoes.
+- A entrada `Renda Fixa` da sidebar permanece acessivel e agora navega
+  diretamente com `go('renda-fixa')`. O grupo de resumo de Renda Fixa dentro de
+  `Todos os ativos` permanece, pois oferece leitura consolidada por classe e
+  nao duplica a tela dedicada.
+- Nenhuma capacidade de RF foi perdida: edicao, review queue, vencimento,
+  emissor/indexador, resultado, rentabilidade, historico e acoes continuam no
+  renderer oficial. `RF_UNIQUE_FEATURE_LOSS_RISK=LOW`.
+- A alteracao e uma correcao minima de arquitetura de navegacao; a identidade
+  visual, tabela principal, filtros e layout congelado de Ativos permanecem
+  intactos.
+- O teste de touch targets foi alinhado para entrar pela rota oficial, sem
+  reintroduzir o seletor removido.
+- Recomendações futuras: concluir a aprovacao da subsuperficie Fundos/Analise;
+  depois auditar Configuracoes com revisao de seguranca para backup/importacao;
+  por fim revisar a nomenclatura `Fundos` versus `Analise` na sidebar sem
+  misturar essa decisao com telas congeladas.
+
+## 2026-09-04 - Fundos / Analise subsurface refinement
+
+- `FUNDOS_ANALISE_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`
+- A subsuperficie `ativos` com `assetsInnerTab=analise` recebeu apenas ajuste
+  de densidade e legibilidade: paineis nao esticam por conteudo vazio, o acento
+  visual segue a semantica verde e valores analiticos nao sofrem ellipsis em
+  mobile.
+- A analise continua derivando de `assetAnalysisRows()` e dos helpers oficiais;
+  nenhuma fonte financeira, formula, persistencia, schema ou dado real foi
+  alterado.
+- `ATIVOS_MAIN_CHANGED=false`; a tabela principal, filtros, cards de categoria,
+  RF-inside-Ativos e o layout congelado permanecem intactos.
+- Browser evidence is stored under `qa-screenshots/fundos-analise/`.
+
 ## 2026-09-03 - Relatorios visual freeze
 
 - `RELATORIOS_VISUAL=FROZEN`
