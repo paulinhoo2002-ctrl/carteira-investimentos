@@ -1561,6 +1561,25 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
   color:var(--muted);
   line-height:1.35;
 }
+.rent-secondary-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:10px;max-width:1500px;width:100%;align-self:center}
+.rent-distribution-panel,.rent-analysis-note{min-width:0;padding:11px 13px}
+.rent-distribution-panel .sh,.rent-analysis-note .sh{margin-bottom:8px}
+.rent-distribution-list{display:grid;gap:7px}
+.rent-distribution-row{min-width:0}
+.rent-distribution-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted)}
+.rent-distribution-head span{display:flex;align-items:center;gap:6px;min-width:0}
+.rent-distribution-head strong{color:var(--text);font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rent-distribution-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.rent-distribution-track{height:5px;margin-top:4px;border-radius:999px;background:var(--surface);overflow:hidden}
+.rent-distribution-track span{display:block;height:100%;border-radius:inherit;min-width:4px}
+.rent-analysis-note-list{display:grid;gap:8px}
+.rent-analysis-note-list>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:7px;border-bottom:1px solid rgba(148,163,184,.12);font-size:10px}
+.rent-analysis-note-list>div:last-child{padding-bottom:0;border-bottom:0}
+.rent-analysis-note-list span{color:var(--muted)}
+.rent-analysis-note-list strong{color:var(--text);font-variant-numeric:tabular-nums;text-align:right}
+@media(min-width:1100px){
+  .rent-premium .rent-side{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 @media(max-width:767px){
   .rent-premium{gap:6px}
   .rent-premium .page-sub{max-width:42ch;line-height:1.3}
@@ -1581,6 +1600,8 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
   .rent-summary-chip{padding:8px 9px}
   .rent-summary-chip-value{font-size:13px}
   .rent-summary-chip-sub{font-size:9px;line-height:1.25}
+  .rent-secondary-grid{grid-template-columns:1fr;gap:7px}
+  .rent-distribution-panel,.rent-analysis-note{padding:9px 10px}
 }
 @media(min-width:1100px){
   .rent-premium .rent-filters{flex-wrap:nowrap}
@@ -6981,6 +7002,28 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .aporte-premium .aporte-contribution-grid .card{min-height:72px;padding:8px 10px}
 .aporte-premium .aporte-contribution-grid .cv{font-size:18px}
 .aporte-premium .aporte-summary-columns{gap:9px;margin-bottom:9px}
+.aporte-premium .aporte-summary-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr);gap:9px;align-items:start}
+.aporte-premium .aporte-summary-layout > .aporte-summary-columns{grid-template-columns:1fr;margin:0}
+.aporte-premium .ap-toolbar .btn.bp{background:var(--success)!important;color:#04120b!important;box-shadow:none!important}
+.aporte-premium .ap-toolbar .btn.bp:hover{filter:brightness(1.06)}
+.aporte-premium .aporte-monthly-chart .sh{align-items:center}
+.aporte-chart-caption{font-size:9px;color:var(--muted);white-space:nowrap}
+.aporte-month-bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(34px,1fr));gap:7px;align-items:end;height:150px;padding:7px 1px 0;border-bottom:1px solid rgba(148,163,184,.16)}
+.aporte-month-bar-item{display:grid;grid-template-rows:20px 1fr 22px;gap:4px;min-width:0;height:100%;text-align:center}
+.aporte-month-bar-value{font-size:8px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aporte-month-bar-track{display:flex;align-items:end;justify-content:center;min-height:0;background:linear-gradient(to top,rgba(148,163,184,.09),transparent);border-radius:5px 5px 0 0}
+.aporte-month-bar-track span{display:block;width:min(24px,72%);min-height:8px;border-radius:5px 5px 1px 1px;background:linear-gradient(180deg,#34d399,#168f72)}
+.aporte-month-bar-label{font-size:8px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aporte-class-layout{display:grid;grid-template-columns:116px minmax(0,1fr);gap:12px;align-items:center}
+.aporte-class-donut{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;position:relative}
+.aporte-class-donut::after{content:'';position:absolute;inset:21px;border-radius:50%;background:var(--panel)}
+.aporte-class-donut span{position:relative;z-index:1;max-width:72px;text-align:center;font-size:10px;font-weight:900;color:var(--text);overflow-wrap:anywhere}
+.aporte-class-list{display:grid;gap:5px}
+.aporte-class-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:6px;padding-bottom:4px;border-bottom:1px solid rgba(148,163,184,.1)}
+.aporte-class-label{display:flex;align-items:center;gap:5px;min-width:0;font-size:10px;color:var(--muted)}
+.aporte-class-label i{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.aporte-class-row .cv{font-size:10px!important;font-weight:800}
+.aporte-class-share{font-size:9px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .aporte-premium .aporte-summary-panel .sh{margin-bottom:5px}
 /* Canonical Aportes hierarchy: heading first, controls second. */
 .aporte-premium > .sh{margin-bottom:0}
@@ -7004,6 +7047,18 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .aporte-premium .ap-toolbar{gap:8px}
   .aporte-premium .ap-toolbar .aporte-search{max-width:none}
   .aporte-premium .aporte-summary-panel{padding:11px 13px}
+}
+@media(max-width:1099px){
+  .aporte-premium .aporte-summary-layout{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .aporte-premium .aporte-month-bars{height:132px;gap:4px}
+  .aporte-premium .aporte-month-bar-value{font-size:7px}
+  .aporte-premium .aporte-month-bar-label{font-size:7px}
+  .aporte-premium .aporte-class-layout{grid-template-columns:86px minmax(0,1fr);gap:8px}
+  .aporte-premium .aporte-class-donut{width:78px;height:78px}
+  .aporte-premium .aporte-class-donut::after{inset:16px}
+  .aporte-premium .aporte-class-donut span{font-size:8px;max-width:58px}
 }
 .chart-data-point{cursor:pointer;outline:none}
 .chart-data-point:focus{outline:none}
@@ -27972,10 +28027,11 @@ function apTab(){
     <div class="card"><div class="cl">Reserva pessoal</div><div class="cv" style="color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
   </div>`:'';
   const maxMonth=Math.max(1,...contributionStats.months.map(item=>item.value));
-  const monthlyHistory=contributionStats.months.length?`<section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Histórico mensal de aportes</div><div class="mu">Entradas de capital para investimentos</div></div></div>${contributionStats.months.map(item=>`<div class="aporte-month-row"><div class="aporte-month-label">${esc(item.label)}</div><div class="aporte-month-track"><div class="aporte-month-fill" style="width:${Math.max(4,(item.value/maxMonth)*100).toFixed(1)}%"></div></div><div class="aporte-month-value">${fmt(item.value)}</div></div>`).join('')}</section>`:'<section class="card aporte-summary-panel"><div class="st">Histórico mensal de aportes</div><div class="evo-empty">Registre compras ou renda fixa para acompanhar os aportes.</div></section>';
+  const monthlyHistory=contributionStats.months.length?`<section class="card aporte-summary-panel aporte-monthly-chart"><div class="sh"><div><div class="st">Histórico mensal de aportes</div><div class="mu">Entradas de capital para investimentos</div></div><span class="aporte-chart-caption">${contributionStats.months.length} meses</span></div><div class="aporte-month-bars" role="img" aria-label="Aportes mensais por período">${contributionStats.months.map(item=>`<div class="aporte-month-bar-item"><div class="aporte-month-bar-value">${fmt(item.value)}</div><div class="aporte-month-bar-track"><span style="height:${Math.max(8,(item.value/maxMonth)*100).toFixed(1)}%"></span></div><div class="aporte-month-bar-label">${esc(item.label)}</div></div>`).join('')}</div></section>`:'<section class="card aporte-summary-panel"><div class="st">Histórico mensal de aportes</div><div class="evo-empty">Registre compras ou renda fixa para acompanhar os aportes.</div></section>';
   const latestContributions=contributionStats.latest.length?`<div class="aporte-contribution-list">${contributionStats.latest.map(item=>{const row=item.row;const ticker=String(row.ticker||row.name||row.title||'Movimentação').trim();const name=String(row.name||row.product||row.title||ticker).trim();const detail=[item.type,row.sector||row.asset_sector].filter(Boolean).join(' · ')||'Sem classificação';return`<div class="aporte-contribution-item"><div class="aporte-contribution-date">${esc(row.date||row.rf_application_date||'Sem data')}</div><div><div class="aporte-contribution-name">${esc(name||ticker)}</div><div class="aporte-contribution-meta">${esc(ticker)} · ${esc(detail)}</div></div><div class="aporte-contribution-total">${fmt(item.value)}</div></div>`}).join('')}</div>`:'<div class="evo-empty">Nenhum aporte de investimento registrado.</div>';
   const classTotal=Math.max(1,contributionStats.total);
-  const classDistribution=contributionStats.classes.length?`<section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Aportes por classe</div><div class="mu">Distribuição das entradas confirmadas</div></div></div><div class="aporte-class-list">${contributionStats.classes.map(([type,value])=>`<div class="aporte-class-row"><div class="cl">${esc(type)}</div><div class="cv">${fmt(value)}</div><div class="aporte-class-track"><div class="aporte-class-fill" style="width:${Math.max(4,(value/classTotal)*100).toFixed(1)}%"></div></div></div>`).join('')}</div></section>`:'';
+  const classSlices=contributionStats.classes.map(([type,value],idx)=>`${ALLOC_COLORS[idx%ALLOC_COLORS.length]} ${contributionStats.total>0?(value/contributionStats.total)*100:0}%`).join(',');
+  const classDistribution=contributionStats.classes.length?`<section class="card aporte-summary-panel aporte-class-panel"><div class="sh"><div><div class="st">Aportes por classe</div><div class="mu">Distribuição das entradas confirmadas</div></div></div><div class="aporte-class-layout"><div class="aporte-class-donut" style="background:conic-gradient(${classSlices})"><span>${fmt(contributionStats.total)}</span></div><div class="aporte-class-list">${contributionStats.classes.map(([type,value],idx)=>`<div class="aporte-class-row"><div class="aporte-class-label"><i style="background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></i><span>${esc(type)}</span></div><div class="cv">${fmt(value)}</div><div class="aporte-class-share">${contributionStats.total>0?((value/contributionStats.total)*100).toFixed(1):'0.0'}%</div></div>`).join('')}</div></div></section>`:'';
   const contributionPanels=`<div class="aporte-summary-columns">${classDistribution}<section class="card aporte-summary-panel"><div class="sh"><div><div class="st">Últimos aportes</div><div class="mu">Compras e aplicações, sem vendas ou proventos</div></div></div>${latestContributions}</section></div>`;
   const reserveItems=filtered.filter(a=>{
     const type=normalizeType(a.type||a.asset_type||'','');
@@ -28108,12 +28164,15 @@ function apTab(){
   const categoriesContent=S.aportes.length
     ? `${reserveDetails}<div class="ag-wrap">${sections||'<div class="aporte-empty">Nenhum lançamento encontrado para esta busca ou filtro.</div>'}</div>`
     : '<div class="aporte-empty">Nenhuma operação registrada ainda.</div>';
+  const resumoContent=contributionStats.rows.length
+    ? `<div class="aporte-summary-layout">${monthlyHistory}${contributionPanels}</div>`
+    : `${helpText}${reserveSummary}`;
   const viewContent=mode==='ativo'
       ? aporteByAssetHtml(extractRows)
       : mode==='categorias'
         ? categoriesContent
         : mode==='resumo'
-          ? `${helpText}${contributionStats.rows.length?`${monthlyHistory}${contributionPanels}`:''}${reserveSummary}`
+          ? `${helpText}${resumoContent}${reserveSummary}`
           : aporteExtractHtml(extractRows);
   const aporteToolbar=`<div class="ap-toolbar aporte-primary-toolbar">
         <button class="btn bp" onclick="openQuickMovement()">+ Nova movimentação</button>
@@ -31096,6 +31155,10 @@ function rentabilidadeTab(){
     const diff=actual-(allocTarget[ty]||0);
     return {ty, actual, target:allocTarget[ty]||0, diff};
   }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff))[0];
+  const allocationSnapshot=allocationActualByType();
+  const distributionRows=Object.entries(allocationSnapshot.map||{})
+    .filter(([,value])=>Number(value)>0)
+    .sort((a,b)=>Number(b[1])-Number(a[1]));
   const sideCards=[
     {
       title:'Rentabilidade total',
@@ -31114,6 +31177,12 @@ function rentabilidadeTab(){
       value:fmtP(currentMonth||0),
       foot:'Mudança estimada no fechamento do mês',
       color:(currentMonth||0)>=0?'var(--success)':'var(--danger)',
+    },
+    {
+      title:'Patrimônio atual',
+      value:fmt(current.currentValue||0),
+      foot:'Valor atual das posições no recorte',
+      color:'#22d3ee',
     },
   ];
   const concentrationNote=topAsset
@@ -31203,6 +31272,21 @@ function rentabilidadeTab(){
       </div>
       <div class="rent-context-note"><span class="mu" style="font-size:10px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</span>${topAssetAction}</div>
     </div>
+  </div>
+
+  <div class="rent-secondary-grid">
+    <section class="card rent-distribution-panel" aria-label="Distribuição atual da carteira">
+      <div class="sh"><div><div class="st">Distribuição por tipo de ativo</div><div class="mu">Composição atual usando o snapshot oficial da carteira.</div></div></div>
+      ${distributionRows.length ? `<div class="rent-distribution-list">${distributionRows.map(([label,value],idx)=>{const pct=allocationSnapshot.total>0?(Number(value)/allocationSnapshot.total)*100:0;return `<div class="rent-distribution-row"><div class="rent-distribution-head"><span><i class="rent-distribution-dot" style="background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></i>${esc(label)}</span><strong>${pct.toFixed(1)}% · ${fmt(value)}</strong></div><div class="rent-distribution-track"><span style="width:${Math.max(4,pct).toFixed(1)}%;background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></span></div></div>`}).join('')}</div>` : '<div class="evo-empty">Nenhuma posição disponível para distribuir.</div>'}
+    </section>
+    <section class="card rent-analysis-note" aria-label="Leitura analítica da rentabilidade">
+      <div class="sh"><div><div class="st">Leitura analítica</div><div class="mu">Contexto para interpretar o retorno exibido.</div></div></div>
+      <div class="rent-analysis-note-list">
+        <div><span>Base de cálculo</span><strong>Capital aplicado</strong></div>
+        <div><span>Proventos no recorte</span><strong>${fmt(provCurrent)}</strong></div>
+        <div><span>Comparação</span><strong>${esc(bench)} oficial</strong></div>
+      </div>
+    </section>
   </div>
 
   <details class="sec" style="margin-top:14px">
