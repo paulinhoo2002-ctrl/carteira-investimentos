@@ -139,7 +139,7 @@ for (const viewport of viewports) {
       } else {
         const desktopCount = await page.evaluate(() => document.querySelectorAll('.tabs-desktop button.tab, .tabs-desktop summary.tab').length);
         assert.ok(desktopCount >= mainTabs.length + reportGroupItems.length, `tabs desktop renderizadas em ${viewport.label}`);
-        await page.click('.tabs-desktop button.tab:text("Rentabilidade")');
+        await page.click('.tabs-desktop button.tab[onclick="go(\'rentabilidade\')"]');
         await page.waitForTimeout(60);
         assert.equal(await page.evaluate(() => S.tab), 'rentabilidade', `navegacao desktop funciona em ${viewport.label}`);
       }
