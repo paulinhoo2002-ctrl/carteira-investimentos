@@ -1361,6 +1361,8 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .data-quality-field strong,.data-quality-problem strong,.data-quality-recommendation strong{color:var(--text)}
 .data-quality-action{display:flex;justify-content:flex-end;align-items:flex-start}
 .data-quality-action .btn{white-space:nowrap}
+.data-quality-action-level{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 6px;border:1px solid var(--border);border-radius:999px;color:#93c5fd;font-size:9px;font-weight:800;white-space:nowrap}
+.data-quality-action-level.muted{color:var(--muted);align-self:start}
 .data-quality-empty-health{padding:28px 16px;text-align:center;border:1px dashed var(--border);border-radius:13px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.5}
 .data-quality-chip{border:1px solid var(--border);background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 10px;font-size:10px;font-weight:750;line-height:1;white-space:nowrap;transition:all .15s;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
 .data-quality-chip.on{background:rgba(79,70,229,.14);color:#a5b4fc;border-color:rgba(99,102,241,.35)}
@@ -20213,7 +20215,7 @@ function renderDataQualityIssueCard(issue){
       const route=issue.route || dataQualityRouteForEntity(issue.entityType, issue.category);
       return route ? {level:3, route, label:issue.actionLabel||dataQualityActionLabel(route)} : {level:4, route:'', label:''};
     })();
-  const actionHtml=action.level===4 ? '' : `<div class="data-quality-action"><button class="btn bgh" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label)}</button></div>`;
+  const actionHtml=action.level===4 ? `<div class="data-quality-action-level muted">Informativo</div>` : `<div class="data-quality-action"><span class="data-quality-action-level">${dataQualityActionLevelLabel(action.level)}</span><button class="btn bgh" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label)}</button></div>`;
   return `<article class="data-quality-issue ${esc(issue.severity)}">
     <div class="data-quality-issue-top">
       <span class="data-quality-severity ${esc(issue.severity)}">${esc(dataQualitySeverityLabel(issue.severity))}</span>
@@ -20237,7 +20239,7 @@ function renderDataQualityPriorityCard(issue){
   const action=typeof dataQualityResolveAction==='function'
     ? dataQualityResolveAction(issue)
     : {level:4,label:''};
-  const actionHtml=action.level===4 ? '' : `<div class="data-quality-action"><button class="btn bgh" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label)}</button></div>`;
+  const actionHtml=action.level===4 ? `<div class="data-quality-action-level muted">Informativo</div>` : `<div class="data-quality-action"><span class="data-quality-action-level">${dataQualityActionLevelLabel(action.level)}</span><button class="btn bgh" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label)}</button></div>`;
   return `<article class="data-quality-issue ${esc(issue.severity)}">
     <div class="data-quality-issue-top"><span class="data-quality-severity ${esc(issue.severity)}">${esc(dataQualitySeverityLabel(issue.severity))}</span><span class="data-quality-category">${esc(issue.category)}</span></div>
     <div class="data-quality-entity"><span class="data-quality-entity-type">${esc(issue.entityType)}</span><span class="data-quality-entity-label" title="${esc(issue.entityLabel)}">${esc(issue.entityLabel)}</span></div>
@@ -20316,7 +20318,7 @@ function dataQualityTab(){
     : healthy
       ? healthyState
       : `<div class="data-quality-empty">Nenhum problema encontrado para os filtros selecionados.</div><div style="margin-top:8px"><button class="btn bgh" onclick="setDataQualitySeverity('all');setDataQualityCategory('all');setDataQualityEntityType('all')">Limpar filtros</button></div>`;
-  return `<div class="data-quality-shell">
+  return `<div class="data-quality-shell data-audit-shell">
     <section class="data-quality-hero">
       <div class="data-quality-head">
         <div>
@@ -20357,6 +20359,10 @@ function dataQualityTab(){
     </div>
   </div>`;
 }
+function dataQualityActionLevelLabel(level){
+  return Number(level)===1 ? 'Exato' : Number(level)===2 ? 'Contexto' : Number(level)===3 ? 'Geral' : 'Informativo';
+}
+function dataAuditTab(){ return dataQualityTab(); }
 function dataAuditAlerts(){ return dataQualitySnapshot().alerts; }
 function dataAuditSnapshot(){ return dataQualitySnapshot(); }
 function assetReviewQualityData(snapshot=dataQualitySnapshot()){

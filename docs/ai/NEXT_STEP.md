@@ -175,3 +175,9 @@ Import and Restore outside this scope until a dedicated safety review.
 
 `IRPF_VISUAL=FROZEN`. Do not reopen IRPF without explicit authorization.
 `NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.
+
+`SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA=COMPLETE` e
+`AUDITORIA_VISUAL=FROZEN`. A proxima missao oficial e
+`PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, com revisao inicial de Configuracoes,
+Backup, Importacao, Restore, Conta/Nuvem e Zona de perigo. Nao alterar
+semantica de persistencia ou backup sem autorizacao explicita.

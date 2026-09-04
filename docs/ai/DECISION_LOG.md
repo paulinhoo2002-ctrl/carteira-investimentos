@@ -229,3 +229,17 @@
 - RESULT: `IRPF_VISUAL=FROZEN`; no fiscal engine, persistence, schema or real
   data changed. Next official mission is
   `SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.
+
+## 2026-09-04 - Auditoria visual and safety freeze
+
+- DECISION: congelar a apresentacao da Auditoria e o contrato de seguranca das
+  acoes apos aprovacao visual e de seguranca do usuario.
+- CONTRACT: `AUDIT_ROUTE=auditoria`, `AUDIT_RENDERER=dataQualityTab()` e
+  `AUDIT_DATA_SOURCE=dataQualitySnapshot()`; `dataAuditTab()` permanece alias.
+- SAFETY: niveis `EXACT`, `CONTEXT`, `GENERAL` e `INFO` nao foram
+  reinterpretados. Revalidacao de identidade, protecao contra registro
+  incorreto e fallback seguro continuam obrigatorios.
+- RESULT: `AUDITORIA_VISUAL=FROZEN` e `AUDITORIA_ACTION_SAFETY=FROZEN`, sem
+  alteracao de Finance Core, persistencia, schema ou dados reais.
+- NEXT: `PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, review-first e separado de
+  qualquer mudanca em backup/importacao/restore.

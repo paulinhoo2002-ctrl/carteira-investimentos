@@ -434,3 +434,16 @@ start a feature, visual migration or release operation.
   terminologia atual do produto.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
+
+## 2026-09-04 - Auditoria visual freeze
+
+- `AUDITORIA_VISUAL=FROZEN` e `AUDITORIA_ACTION_SAFETY=FROZEN`.
+- `AUDIT_ROUTE=auditoria`, `AUDIT_RENDERER=dataQualityTab()` e
+  `AUDIT_DATA_SOURCE=dataQualitySnapshot()` permanecem canonicos; `dataAuditTab()`
+  e mantido como alias de compatibilidade.
+- O contrato congela niveis `EXACT`, `CONTEXT`, `GENERAL` e `INFO`, com
+  revalidacao de identidade, protecao contra registro incorreto e fallback
+  seguro. Nao existe reparo automatico ou mutacao em lote.
+- A proxima frente e `PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, inicialmente
+  review-first para Configuracoes, Backup, Importacao, Restore, Conta/Nuvem e
+  Zona de perigo.
