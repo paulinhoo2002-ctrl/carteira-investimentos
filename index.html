@@ -31848,18 +31848,17 @@ function portfolioSearchMove(delta){
   requestAnimationFrame(()=>document.getElementById('portfolio-search-input')?.focus());
 }
 function portfolioSearchOpenEntry(entry){
-  const source=entry?.source;
   if(entry.kind==='asset' || entry.kind==='rf'){
-    const current=(S.assets||[]).find(item=>String(item?.id??'')===String(source?.id??''));
-    if(current){go(entry.route); if(entry.kind==='asset') edA(current.id); else go('renda-fixa'); return;}
+    go(entry.route);
+    return;
   }
   if(entry.kind==='movement'){
-    const current=(S.aportes||[]).find(item=>String(item?.id??'')===String(source?.id??''));
-    if(current){go('aportes'); edP(current.id); return;}
+    go('aportes');
+    return;
   }
-  if(entry.kind==='dividend' && source?.id!=null){
-    const current=(S.proventos||[]).find(item=>String(item?.id??'')===String(source?.id??''));
-    if(current){go('dividendos'); editDividendReceipt(current.id); return;}
+  if(entry.kind==='dividend'){
+    go('dividendos');
+    return;
   }
   go(entry.route);
 }

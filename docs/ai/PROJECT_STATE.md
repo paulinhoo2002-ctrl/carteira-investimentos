@@ -392,3 +392,16 @@ start a feature, visual migration or release operation.
   terminologia atual do produto.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
+
+## 2026-09-04 - Product usability improvements 02 follow-up
+
+- `GLOBAL_SEARCH_REFINEMENT=READY_FOR_FINAL_USER_APPROVAL`.
+- A busca global permanece somente navegacional: resultados de ativos,
+  movimentacoes e proventos levam as suas areas oficiais sem abrir editores ou
+  expor acoes destrutivas diretamente na busca.
+- `CONTEXTUAL_NAVIGATION=READY_FOR_FINAL_USER_APPROVAL`; os tres links de
+  contexto da Analise permanecem limitados a Ativos, Rentabilidade e
+  Rebalancear.
+- O filtro de busca continua usando `portfolioSearchBuildEntries()` e as
+  fontes oficiais existentes, sem formula, persistencia, schema ou dado real
+  novo.

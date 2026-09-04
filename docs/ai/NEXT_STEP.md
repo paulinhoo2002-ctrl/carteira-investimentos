@@ -161,6 +161,56 @@ improvement using the existing official result source. Remaining backlog is
 `P3` icon and empty-state consistency. Do not reopen frozen surfaces without
 explicit authorization.
 
-`NEXT_RECOMMENDED_ACTION=PRODUCT_USABILITY_IMPROVEMENTS_02`, focused on global
-search, safe contextual links between Análise, Rentabilidade and Rebalancear,
-and small navigation improvements without new financial logic.
+`PRODUCT_USABILITY_IMPROVEMENTS_02` is frozen as a functional improvement:
+global search discovery and contextual links passed focused and five-viewport
+browser QA without new financial logic.
+
+`NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_01_IRPF`. The following
+mission must remain separate from the protected Configurações, Backup, Import
+and Restore flows; those require a dedicated safety review.
+
+`SECONDARY_SURFACE_REFINEMENT_01_IRPF=COMPLETE`. The next official mission is
+`SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`, keeping Configurações, Backup,
+Import and Restore outside this scope until a dedicated safety review.
+
+`IRPF_VISUAL=FROZEN`. Do not reopen IRPF without explicit authorization.
+`NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.
+
+`AUDITORIA_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+Auditoria recebeu refinamento restrito de hierarquia, priorizacao, filtros,
+estados vazios e acoes contextuais, sem alterar o contrato de identidade ou
+revalidacao. Nao marcar Auditoria como congelada antes da aprovacao visual
+explicita do usuario.
+
+`SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA=COMPLETE` e
+`AUDITORIA_VISUAL=FROZEN`. A proxima missao oficial e
+`PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, com revisao inicial de Configuracoes,
+Backup, Importacao, Restore, Conta/Nuvem e Zona de perigo. Nao alterar
+semantica de persistencia ou backup sem autorizacao explicita.
+
+## SAFETY HARDENING 01
+
+`SAFETY_HARDENING_01_RESET_AND_BACKUP_VALIDATION=COMPLETE`.
+Reset de carteira agora remove eventos e estados transitorios de Renda Fixa.
+Backups incompatíveis ou estruturalmente malformados são rejeitados antes da
+confirmação, sem migração automática desconhecida.
+
+`NEXT_OFFICIAL_MISSION=PRODUCT_SAFETY_REVIEW_02_CONFIGURACOES_VISUAL`.
+O próximo escopo é somente visual: hierarquia, agrupamento, avisos, zona de
+risco e UX mobile. Os contratos de backup, importação, restore, autenticação,
+sincronização e reset permanecem congelados.
+
+`PRODUCT_SAFETY_REVIEW_02_CONFIGURACOES_VISUAL=COMPLETE`.
+Configurações recebeu revisão visual e de hierarquia sem alterar os fluxos
+protegidos. A próxima decisão é a aprovação visual final do usuário; não
+marcar Configurações como congelada antes dessa aprovação.
+
+## PRODUCT USABILITY IMPROVEMENTS 02
+
+`GLOBAL_SEARCH_REFINEMENT=READY_FOR_FINAL_USER_APPROVAL` e
+`CONTEXTUAL_NAVIGATION=READY_FOR_FINAL_USER_APPROVAL`.
+A busca global permanece somente leitura e os links contextuais da Análise
+reduzem a fricção sem reabrir telas congeladas. A busca não abre editores nem
+ações destrutivas diretamente.
+
+`NEXT_RECOMMENDED_ACTION=USER_REVIEW_PRODUCT_USABILITY_02`.

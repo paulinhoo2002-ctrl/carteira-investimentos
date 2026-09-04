@@ -63,3 +63,10 @@ test('consulta vazia nao cria resultados nem altera estado', () => {
   const { portfolioSearchResults } = loadSearch();
   assert.equal(portfolioSearchResults('').length, 0);
 });
+
+test('busca permanece somente navegacional e nao abre editores', () => {
+  const searchSource = source.slice(start, end);
+  assert.doesNotMatch(searchSource, /portfolioSearchOpenEntry[\s\S]*edA\(/);
+  assert.doesNotMatch(searchSource, /portfolioSearchOpenEntry[\s\S]*edP\(/);
+  assert.doesNotMatch(searchSource, /portfolioSearchOpenEntry[\s\S]*editDividendReceipt\(/);
+});
