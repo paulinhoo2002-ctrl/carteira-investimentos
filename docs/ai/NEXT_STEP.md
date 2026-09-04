@@ -232,3 +232,12 @@ AUDIT_WRONG_RECORD_PROTECTION=FROZEN e AUDIT_IDENTITY_CONTRACT=FROZEN. Acoes exa
   explícitos.
 - `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
 - Não reabrir IRPF nem as superfícies congeladas sem autorização explícita.
+
+## RELEASE CONSOLIDATION
+
+- `PRODUCT_USABILITY_RELEASE=READY_FOR_PR`.
+- A consolidação reúne somente as melhorias aprovadas de Análise, navegação de
+  Renda Fixa, filtro de performance, busca global, links contextuais,
+  segurança da Auditoria e relatório mobile do IRPF.
+- `NEXT_RECOMMENDED_ACTION=SETTINGS_SAFETY_REVIEW`.
+- Não iniciar o trabalho de Configurações antes da integração desta release.

@@ -429,3 +429,15 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
   automática. RF mantém `rfIntelligenceSnapshot()` e ativos variáveis não usam
   helper de RF.
 - `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
+
+## 2026-09-04 - Product usability release consolidation
+
+- `PRODUCT_USABILITY_RELEASE=READY_FOR_PR`.
+- Escopo consolidado: Análise dedicada, simplificação da navegação de Renda
+  Fixa, filtro de performance em Ativos, busca global somente leitura, links
+  contextuais, proteção de identidade da Auditoria e refinamento mobile do
+  relatório IRPF.
+- Finance Core, semântica de persistência, schema, backup/importação,
+  autenticação, sincronização em nuvem e dados reais permanecem inalterados.
+- `NEXT_RECOMMENDED_ACTION=SETTINGS_SAFETY_REVIEW`; não iniciar Configurações
+  nesta consolidação.

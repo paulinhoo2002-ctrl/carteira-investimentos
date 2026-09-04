@@ -316,3 +316,15 @@
 - MOBILE: `IRPF_MOBILE_PATTERN=FROZEN`, preservando quantidade, PM, custo e
   valor de referência quando oficialmente disponíveis.
 - NEXT: `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
+
+## 2026-09-04 - Product usability release consolidation
+
+- DECISION: consolidar em uma única integração limpa somente os cinco commits
+  aprovados do ciclo de usabilidade, sobre `origin/main` após o PR #350.
+- SCOPE: Análise dedicada, navegação RF sem duplicação, filtro de performance,
+  busca global read-only, navegação contextual, Auditoria com identidade exata
+  e refinamento mobile do IRPF.
+- SAFETY: não houve alteração em Finance Core, persistência, schema,
+  backup/importação, autenticação, cloud sync ou dados reais.
+- RESULT: `PRODUCT_USABILITY_RELEASE=READY_FOR_PR`; o próximo trabalho é
+  `SETTINGS_SAFETY_REVIEW`, sem iniciá-lo nesta integração.
