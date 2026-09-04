@@ -316,3 +316,15 @@
 - MOBILE: `IRPF_MOBILE_PATTERN=FROZEN`, preservando quantidade, PM, custo e
   valor de referência quando oficialmente disponíveis.
 - NEXT: `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
+
+## 2026-09-04 - Dashboard final freeze and reference process
+
+- `DASHBOARD_VISUAL=FROZEN`, `DASHBOARD_REFERENCE_LOCK=FROZEN` e
+  `DASHBOARD_CHART_INTERACTION=FROZEN` apos aprovacao do usuario.
+- `PRIMARY_CANON=Refs/visual-canon/dashboard-canonical.png` permanece alvo
+  estrutural; `Tela Principal.png` e apenas `SECONDARY_QUALITY_REFERENCE`.
+- `VISUAL_REFERENCE_LOCK_PROCESS=ACTIVE`: comparar referencia primaria,
+  declarar escopo, registrar evidencias nos cinco breakpoints e separar
+  aprovacao visual de testes/builds.
+- Proximo alvo recomendado: `INVENTARIO_DE_REFERENCIAS`, sem iniciar nesta
+  rodada. `SITE_REFINEMENT_WAVE_04` permanece fora deste commit.

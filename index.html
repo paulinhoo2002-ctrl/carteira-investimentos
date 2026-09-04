@@ -7138,8 +7138,8 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 <style>
 /* Final dashboard height pass: desktop-only density, mobile remains untouched. */
 @media (min-width:1181px){
-  .canon-dashboard .dashboard-evolution-card{height:190px;padding:8px}
-  .canon-dashboard .dashboard-evolution-card svg{height:138px}
+  .canon-dashboard .dashboard-evolution-card{height:214px;padding:10px}
+  .canon-dashboard .dashboard-evolution-card svg{height:162px;margin-top:3px}
   .canon-dashboard .dashboard-home-composition{height:205px;padding:8px}
   .canon-dashboard .dashboard-home-composition-body{grid-template-columns:126px minmax(0,1fr);gap:8px;height:148px}
   .canon-dashboard .dashboard-home-composition-pie{transform:scale(.78);transform-origin:top center}
@@ -7159,6 +7159,70 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
     .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details span{white-space:nowrap}
     .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details strong{display:inline;margin-left:3px}
     .canon-dashboard .dashboard-highlight-row .dashboard-highlight-bar{margin-top:0}
+}
+</style>
+
+<style>
+/* Dashboard executive review: make the existing chart interaction legible. */
+.canon-dashboard .dashboard-patrimony-chart .chart-data-point:hover,
+.canon-dashboard .dashboard-patrimony-chart .chart-data-point:focus-visible{
+  fill:rgba(52,211,153,.22);
+  stroke:var(--canon-green);
+  stroke-width:2;
+}
+.canon-dashboard .dashboard-patrimony-chart .chart-data-point:focus-visible{
+  stroke-dasharray:3 2;
+}
+</style>
+
+<style>
+/* Dashboard reference lock: quality and depth, scoped to the executive home. */
+@media (min-width:1181px){
+  .shell-main:has(.canon-dashboard) .wrap{max-width:none}
+  .canon-dashboard .dashboard-page-heading{padding-bottom:6px}
+  .canon-dashboard .dashboard-page-heading h1{font-size:30px;line-height:1.08}
+  .canon-dashboard .dashboard-page-heading p{font-size:13px}
+  .canon-dashboard .dashboard-executive-kpis{gap:12px;margin:4px 0 14px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{height:96px;padding:13px 14px;border-radius:13px;background:linear-gradient(145deg,#111d31,#0c1728);box-shadow:0 10px 24px rgba(2,8,23,.18)}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-label{font-size:11px;letter-spacing:.045em}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:21px;line-height:1.15}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:11px}
+  .canon-dashboard .dashboard-analytical-primary{gap:14px}
+  .canon-dashboard .dashboard-evolution-card{height:252px;padding:14px;border-radius:14px;background:linear-gradient(160deg,#0e1a2b,#091522);box-shadow:0 12px 30px rgba(2,8,23,.2)}
+  .canon-dashboard .dashboard-home-composition{height:252px;padding:14px;border-radius:14px;background:linear-gradient(160deg,#111d31,#0b1727);box-shadow:0 12px 30px rgba(2,8,23,.2)}
+  .canon-dashboard .dashboard-evolution-header{margin-bottom:7px}
+  .canon-dashboard .dashboard-evolution-header .premium-panel-title,.canon-dashboard .dashboard-home-composition .premium-panel-title{font-size:16px;letter-spacing:-.01em}
+  .canon-dashboard .dashboard-evolution-header .premium-panel-sub,.canon-dashboard .dashboard-home-composition .premium-panel-sub{font-size:11px;line-height:1.35}
+  .canon-dashboard .dashboard-evolution-card svg{height:194px;margin-top:4px}
+  .canon-dashboard .dashboard-home-composition-body{grid-template-columns:150px minmax(0,1fr);gap:14px;height:184px}
+  .canon-dashboard .dashboard-home-composition-pie{transform:scale(.94)}
+  .canon-dashboard .canon-dash-row-c .dashboard-income-card{padding:10px 12px;border-radius:14px;background:linear-gradient(160deg,#111d31,#0b1727)}
+  .canon-dashboard .canon-dash-row-c .premium-metric{height:88px;padding:9px 10px}
+  .canon-dashboard .canon-dash-row-c .premium-metric-value{font-size:17px}
+  .canon-dashboard .dashboard-highlight-column{padding:14px 16px;border-radius:14px;background:linear-gradient(160deg,#111d31,#0b1727)}
+}
+.canon-dashboard .premium-metric-icon{color:var(--metric-color)}
+.canon-dashboard .dashboard-metric-glyph{display:grid;place-items:center;width:17px;height:17px}
+.canon-dashboard .dashboard-metric-glyph svg{display:block;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.canon-dashboard .dashboard-patrimony-chart .chart-data-point{transition:fill .12s ease,stroke .12s ease}
+.canon-dashboard .dashboard-patrimony-chart text{font-size:12px}
+.canon-dashboard .dashboard-patrimony-chart line{stroke:rgba(100,116,139,.2)!important}
+.canon-dashboard .dashboard-patrimony-chart path[fill="none"]{stroke-width:3px}
+.canon-dashboard .dashboard-patrimony-chart path:not([fill="none"]){opacity:.58}
+.canon-dashboard .canon-dash-meta .dash-chip{background:rgba(15,29,48,.72);border-color:rgba(100,116,139,.32);font-variant-numeric:tabular-nums}
+.canon-dashboard .canon-dash-meta .dash-chip:hover{border-color:var(--canon-green);color:var(--canon-text)}
+.canon-dashboard .canon-dash-meta .dash-chip.on{box-shadow:0 0 0 2px rgba(16,217,129,.12)}
+.line-chart-tooltip.dashboard-chart-tooltip{padding:9px 11px;white-space:pre-line;line-height:1.4;font-variant-numeric:tabular-nums;border-color:rgba(52,211,153,.42);box-shadow:0 10px 24px rgba(2,8,23,.34)}
+@media (max-width:767px){
+  .canon-dashboard .dashboard-page-heading h1{font-size:24px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{height:auto;min-height:84px;overflow:visible}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-note,
+  .canon-dashboard .canon-dash-row-c .premium-metric-note{white-space:normal;overflow:visible;text-overflow:clip}
+  .canon-dashboard .dashboard-evolution-card{padding:11px;border-radius:13px}
+  .canon-dashboard .dashboard-evolution-header .premium-panel-title{font-size:14px}
+  .canon-dashboard .dashboard-evolution-card svg{height:190px}
+  .canon-dashboard .dashboard-patrimony-chart text{font-size:11px}
+  .canon-dashboard .canon-dash-meta .dash-chip{min-height:44px}
 }
 </style>
 
@@ -20604,8 +20668,14 @@ function showLineChartTooltip(node,event){
   const rect=node.getBoundingClientRect();
   const x=event?.clientX||rect.left+rect.width/2;
   const y=event?.clientY||rect.top;
-  tooltip.style.left=`${Math.max(8,Math.min(window.innerWidth-228,x+10))}px`;
-  tooltip.style.top=`${Math.max(8,y-42)}px`;
+  const chart=node.closest('.dashboard-patrimony-chart');
+  tooltip.classList.toggle('dashboard-chart-tooltip',!!chart);
+  const bounds=chart?.getBoundingClientRect();
+  const minX=bounds ? bounds.left+8 : 8;
+  const maxX=bounds ? Math.max(minX,bounds.right-228) : window.innerWidth-228;
+  const minY=bounds ? bounds.top+8 : 8;
+  tooltip.style.left=`${Math.max(minX,Math.min(maxX,x+10))}px`;
+  tooltip.style.top=`${Math.max(minY,y-42)}px`;
 }
 function hideLineChartTooltip(){
   const tooltip=document.getElementById('line-chart-tooltip');
@@ -26266,6 +26336,18 @@ function rendaFixaTab(){
     </details>
   </div>`;
 }
+function dashboardMetricIcon(name){
+  const paths={
+    wallet:'<path d="M3 6.5h14v10H3z"/><path d="M3 6.5V5a2 2 0 0 1 2-2h9"/><path d="M13 11h4"/>',
+    cash:'<rect x="3" y="5" width="14" height="10" rx="2"/><circle cx="10" cy="10" r="2"/><path d="M5 8h.01M15 12h.01"/>',
+    trend:'<path d="M3 14l4-4 3 2 5-6"/><path d="M11 6h4v4"/>',
+    percent:'<path d="M6 14L14 6"/><circle cx="6" cy="6" r="1.5"/><circle cx="14" cy="14" r="1.5"/>',
+    bars:'<path d="M5 17V9M10 17V5M15 17v-8"/>',
+    target:'<circle cx="10" cy="10" r="6"/><circle cx="10" cy="10" r="2"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3"/>',
+    flag:'<path d="M5 17V3"/><path d="M5 4h9l-2 3 2 3H5"/>'
+  };
+  return `<span class="dashboard-metric-glyph" aria-hidden="true"><svg viewBox="0 0 20 20">${paths[name]||paths.wallet}</svg></span>`;
+}
 function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)'){
   return `<div class="premium-metric" style="--metric-color:${tone};--metric-glow:${glow}">
     <div class="premium-metric-top"><div class="premium-metric-icon">${icon}</div><div class="premium-metric-label">${esc(label)}</div></div>
@@ -26547,11 +26629,11 @@ function executiveKPIs(data){
   const monthReceived=Number(recent.total)||0;
   return `
     <div class="dashboard-executive-kpis">
-      ${dashboardMetricCard('💼','Patrimônio atual',fmt(totalCurrent),totalCurrent>0?'Valor estimado da carteira':'Cadastre ativos para começar','#c4b5fd','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard('💵','Total investido',fmt(totalApplied),totalApplied>0?'Capital informado na carteira':'Sem aportes registrados','#34d399','rgba(52,211,153,.14)')}
-      ${dashboardMetricCard('📈','Resultado geral',fmt(totalResult),totalCurrent>0?'Diferença entre aplicado e atual':'Sem base suficiente',totalResult>=0?'#34d399':'#f87171',totalResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
-      ${dashboardMetricCard('🎯','Rentabilidade',totalApplied>0?fmtP(totalPct):'—',totalApplied>0?'Cálculo sobre o capital aplicado':'Sem capital informado',totalPct>=0?'#34d399':'#f87171',totalPct>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
-      ${dashboardMetricCard('💰','Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',fmt(totalCurrent),totalCurrent>0?'Valor estimado da carteira':'Cadastre ativos para começar','#c4b5fd','rgba(129,140,248,.16)')}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Total investido',fmt(totalApplied),totalApplied>0?'Capital informado na carteira':'Sem aportes registrados','#34d399','rgba(52,211,153,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado geral',fmt(totalResult),totalCurrent>0?'Diferença entre aplicado e atual':'Sem base suficiente',totalResult>=0?'#34d399':'#f87171',totalResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('percent'),'Rentabilidade',totalApplied>0?fmtP(totalPct):'—',totalApplied>0?'Cálculo sobre o capital aplicado':'Sem capital informado',totalPct>=0?'#34d399':'#f87171',totalPct>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#10b981','rgba(16,185,129,.14)')}
     </div>
   `;
 }
@@ -26592,10 +26674,10 @@ function dashboardIncomePanel(data){
     <div class="dashboard-income-card">
       <div class="dashboard-income-header"><div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal</div></div><div class="premium-panel-badge">${esc(monthLabel)}</div></div>
       <div class="dashboard-income-grid"><div class="premium-metrics">
-        ${dashboardMetricCard('💵','Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#34d399','rgba(52,211,153,.14)')}
-        ${dashboardMetricCard('📊','Média 12 meses',fmt(monthlyAvg),'Base usada para leitura da renda passiva','#60a5fa','rgba(96,165,250,.14)')}
-        ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-        ${dashboardMetricCard('🧭','Falta para meta — média 12M',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#34d399','rgba(52,211,153,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',fmt(monthlyAvg),'Base usada para leitura da renda passiva','#60a5fa','rgba(96,165,250,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('target'),'Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
       </div></div>
     </div>
   `;

@@ -520,3 +520,15 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
   automática. RF mantém `rfIntelligenceSnapshot()` e ativos variáveis não usam
   helper de RF.
 - `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
+
+## 2026-09-04 - Dashboard visual freeze
+
+- `DASHBOARD_VISUAL=FROZEN`.
+- `DASHBOARD_REFERENCE_LOCK=FROZEN` e `DASHBOARD_CHART_INTERACTION=FROZEN`.
+- `DASHBOARD_PRIMARY_CANON=Refs/visual-canon/dashboard-canonical.png`.
+  `Tela Principal.png` permanece referencia secundaria de acabamento e nao
+  altera a arquitetura executiva do Dashboard.
+- A aprovacao usou comparacao explicita com o canon primario: media final
+  90.25, sem dimensao abaixo de 86.
+- `VISUAL_REFERENCE_LOCK_PROCESS=ACTIVE`: testes e builds validam o produto,
+  mas nao substituem comparacao visual e aprovacao explicita.

@@ -57,6 +57,15 @@ Screenshots are local evidence and must not be committed when temporary.
   rather than treating an inaccessible authenticated screen as a product error.
 - Never edit real data during smoke validation.
 
+## Visual reference approval gate
+
+Visual freezes require explicit comparison against the screen's
+`PRIMARY_CANON`, concise local screenshot evidence, and browser validation at
+all five canonical widths. A passing test/build suite confirms functional and
+build health; it does not by itself constitute visual approval. Secondary
+quality references may refine finish only when they do not conflict with the
+primary information architecture.
+
 ## Rollback safety
 
 Use Git history and the existing backup/import contracts. Do not delete or

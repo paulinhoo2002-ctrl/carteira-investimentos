@@ -232,3 +232,17 @@ AUDIT_WRONG_RECORD_PROTECTION=FROZEN e AUDIT_IDENTITY_CONTRACT=FROZEN. Acoes exa
   explícitos.
 - `NEXT_RECOMMENDED_ACTION=RELEASE_CONSOLIDATION`.
 - Não reabrir IRPF nem as superfícies congeladas sem autorização explícita.
+
+## DASHBOARD VISUAL FREEZE
+
+`DASHBOARD_VISUAL=FROZEN`, `DASHBOARD_REFERENCE_LOCK=FROZEN` e
+`DASHBOARD_CHART_INTERACTION=FROZEN` apos aprovacao visual explicita.
+O alvo estrutural permanente e `Refs/visual-canon/dashboard-canonical.png`;
+`Tela Principal.png` permanece somente referencia secundaria de acabamento.
+Nao reabrir o Dashboard sem autorizacao explicita.
+
+`VISUAL_REFERENCE_LOCK_PROCESS=ACTIVE`: toda nova aprovacao visual deve
+comparar com a referencia primaria, registrar escopo e validar browser nos
+cinco breakpoints; testes/builds nao equivalem a aprovacao visual.
+
+`NEXT_VISUAL_TARGET=INVENTARIO_DE_REFERENCIAS`; nao iniciar automaticamente.
