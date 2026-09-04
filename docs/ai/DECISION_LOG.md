@@ -119,3 +119,46 @@
   Ativos/RF tests and full required gates on 2026-09-03.
 - BOUNDARY: Dashboard, Dividendos, Sidebar and Ativos remain frozen unless
   the user explicitly authorizes a new visual phase.
+
+## 2026-09-04 - RF navigation duplication removed
+
+- DECISION: Remove only the `Renda Fixa` subtab from Ativos and keep the
+  dedicated sidebar entry.
+- EVIDENCE: Both entry points rendered the same official `rendaFixaTab()` with
+  identical RF KPIs, review queue, maturity groups, position rows and actions.
+- PRESERVED: The RF summary card/group inside `Todos os ativos`; the dedicated
+  RF renderer; `go('renda-fixa')`; `rfIntelligenceSnapshot()`; official RF
+  helpers; editing, review, maturity, history and explicit asset actions.
+- RISK: `RF_UNIQUE_FEATURE_LOSS_RISK=LOW`; no financial, persistence, schema or
+  real-data contract changed.
+- CLASSIFICATION: Minimal navigation/architecture correction, not a visual
+  redesign of the frozen Ativos screen.
+
+## 2026-09-04 - Análise promoted to a dedicated destination
+
+- `ANALYSIS_ROUTE_DECISION=DEDICATED_ROUTE`
+- `ANALYSIS_ROUTE=analise`
+- `ANALYSIS_RENDERER=assetAnalysisBlock`
+- `ANALYSIS_DATA_SOURCE=assetAnalysisRows`
+- `ANALYSIS_FEATURE_LOSS=0`
+- `MOBILE_ANALYSIS_ACCESS=Mais`
+- `FUNDS_LABEL_DECISION=RENAME_TO_ANALISE`
+- WHY: the existing analysis was hidden as an Ativos inner state and exposed
+  under the misleading `Fundos` label. A direct route improves information
+  architecture without duplicating calculations or persistence.
+- PRESERVED: financial helpers, datasets, asset actions, storage, schema,
+  frozen screens and the original analysis renderer.
+
+## 2026-09-04 - Freeze Analysis and navigation architecture
+
+- DECISION: Freeze the dedicated Análise route and the approved navigation
+  architecture.
+- CONTRACT: `ANALYSIS_ROUTE=analise`, `assetAnalysisRows()` remains the sole
+  analysis source, and `assetConcentrationAlert()` remains the concentration
+  rule source.
+- NAVIGATION: Renda Fixa and Análise are dedicated destinations; neither is an
+  Ativos inner tab. The RF summary inside `Todos os ativos` remains available.
+- MOBILE: The bottom navigation stays compact; Análise is available from the
+  `Mais seções` menu with accessible labels and touch targets.
+- BOUNDARY: No financial formulas, persistence, schema, real data or frozen
+  visual surfaces were changed for this freeze.
