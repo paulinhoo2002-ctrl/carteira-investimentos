@@ -230,6 +230,20 @@
   data changed. Next official mission is
   `SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.
 
+## 2026-09-04 - Auditoria secondary surface refinement
+
+- DECISION: ativar `dataQualityTab()` como renderer efetivo da rota
+  `auditoria`, preservando `dataAuditTab()` como alias publico de compatibilidade.
+- SOURCE: `dataQualitySnapshot()` e seus analisadores oficiais continuam como
+  unica fonte de achados, severidade, categoria e identidade.
+- SAFETY: `dataQualityResolveAction()` permanece responsavel por revalidacao
+  de identidade, fallback de rota e bloqueio de registro incorreto; nenhuma
+  acao destrutiva ou reparo automatico foi criado.
+- UX: a fila prioritaria exibe primeiro os achados mais relevantes, filtros
+  secundarios ficam em disclosure e o mobile reduz a exposicao inicial sem
+  esconder a fila completa.
+- STATUS: `AUDITORIA_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+
 ## 2026-09-04 - Auditoria visual and safety freeze
 
 - DECISION: congelar a apresentacao da Auditoria e o contrato de seguranca das
@@ -243,3 +257,29 @@
   alteracao de Finance Core, persistencia, schema ou dados reais.
 - NEXT: `PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, review-first e separado de
   qualquer mudanca em backup/importacao/restore.
+
+## 2026-09-04 - Safety hardening 01
+
+- DECISION: endurecer reset de carteira e validação de backup sem redesign de
+  Configurações.
+- RESET: `resetPortfolio()` limpa `S.rfEvents`, `rfMovementEditor` e
+  `rfEventEditor`, mantendo confirmação, palavra de segurança e escopo da
+  carteira ativa.
+- BACKUP: `parseBackupRaw()` aceita payloads atuais versão 1 e formatos legados
+  reconhecidos, mas rejeita versão incompatível, meta/data/storage inválidos e
+  campos conhecidos com tipos incorretos antes da confirmação.
+- SAFETY: `applyStorageTransaction()` e rollback permanecem inalterados; nenhum
+  reset ou importação real foi executado.
+- TESTS: baseline atualizado para `ROOT=75/75`, `MODERN=750/750`,
+  `FINANCE=80/80` e `PERSISTENCE=32/32`.
+- NEXT: `PRODUCT_SAFETY_REVIEW_02_CONFIGURACOES_VISUAL`.
+
+## 2026-09-04 - Configuracoes visual e hierarquia de seguranca
+
+- DECISION: separar visualmente a fixture local da `Zona de risco` e tornar
+  explicita a diferenca entre backup restauravel e relatorio analitico.
+- SCOPE: apenas `settingsTab()`; nenhum handler de backup, importacao,
+  restore, reset, autenticacao ou sincronizacao foi modificado.
+- ACCESSIBILITY: o controle de ocultar valores recebeu nome acessivel e
+  manteve suporte a foco, teclado e estado `aria-checked`.
+- RESULT: `CONFIGURACOES_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.

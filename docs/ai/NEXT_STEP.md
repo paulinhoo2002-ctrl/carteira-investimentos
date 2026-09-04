@@ -176,8 +176,31 @@ Import and Restore outside this scope until a dedicated safety review.
 `IRPF_VISUAL=FROZEN`. Do not reopen IRPF without explicit authorization.
 `NEXT_OFFICIAL_MISSION=SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA`.
 
+`AUDITORIA_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+Auditoria recebeu refinamento restrito de hierarquia, priorizacao, filtros,
+estados vazios e acoes contextuais, sem alterar o contrato de identidade ou
+revalidacao. Nao marcar Auditoria como congelada antes da aprovacao visual
+explicita do usuario.
+
 `SECONDARY_SURFACE_REFINEMENT_02_AUDITORIA=COMPLETE` e
 `AUDITORIA_VISUAL=FROZEN`. A proxima missao oficial e
 `PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, com revisao inicial de Configuracoes,
 Backup, Importacao, Restore, Conta/Nuvem e Zona de perigo. Nao alterar
 semantica de persistencia ou backup sem autorizacao explicita.
+
+## SAFETY HARDENING 01
+
+`SAFETY_HARDENING_01_RESET_AND_BACKUP_VALIDATION=COMPLETE`.
+Reset de carteira agora remove eventos e estados transitorios de Renda Fixa.
+Backups incompatíveis ou estruturalmente malformados são rejeitados antes da
+confirmação, sem migração automática desconhecida.
+
+`NEXT_OFFICIAL_MISSION=PRODUCT_SAFETY_REVIEW_02_CONFIGURACOES_VISUAL`.
+O próximo escopo é somente visual: hierarquia, agrupamento, avisos, zona de
+risco e UX mobile. Os contratos de backup, importação, restore, autenticação,
+sincronização e reset permanecem congelados.
+
+`PRODUCT_SAFETY_REVIEW_02_CONFIGURACOES_VISUAL=COMPLETE`.
+Configurações recebeu revisão visual e de hierarquia sem alterar os fluxos
+protegidos. A próxima decisão é a aprovação visual final do usuário; não
+marcar Configurações como congelada antes dessa aprovação.

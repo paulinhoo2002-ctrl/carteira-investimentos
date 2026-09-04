@@ -9316,11 +9316,6 @@ function settingsTab(){
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Resetar carteira ativa</div><div class="premium-settings-row-desc">Apagar todo o histórico, ativos e proventos desta carteira. Outras carteiras não são afetadas.</div></div>
             <button class="btn bgh" onclick="resetPortfolio()" style="font-size:11px;min-height:34px;padding:0 10px;border-color:rgba(248,113,113,.25);color:#fca5a5">🧹 Reset</button>
           </div>
-          ${isTest ? `
-          <div class="premium-settings-row">
-            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Restaurar dados de teste</div><div class="premium-settings-row-desc">Reinicializa a fixture em memória com dados determinísticos.</div></div>
-            <button class="btn bgh" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>
-          </div>` : ''}
         </div>
       </div>
 
@@ -9336,9 +9331,21 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</div><div class="premium-settings-row-desc">${S.hideValues?'Valores ocultos na carteira':'Valores visíveis normalmente'}</div></div>
-            <div class="premium-settings-toggle ${S.hideValues?'on':''}" onclick="toggleHideValues()" role="switch" aria-checked="${S.hideValues}" tabindex="0" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleHideValues()}"></div>
+            <div class="premium-settings-toggle ${S.hideValues?'on':''}" onclick="toggleHideValues()" role="switch" aria-label="${S.hideValues?'Mostrar valores':'Ocultar valores'}" aria-checked="${S.hideValues}" tabindex="0" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleHideValues()}"></div>
           </div>
         </div>
+
+        ${isTest ? `
+        <div class="premium-settings-section">
+          <div class="premium-settings-section-head">
+            <div class="premium-settings-section-icon" style="background:rgba(96,165,250,.1);color:#60a5fa">🧪</div>
+            <div><h2 class="premium-settings-section-title">Ambiente de teste</h2><div class="premium-settings-section-sub">Fixture local em memória; não altera dados reais</div></div>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Restaurar dados de teste</div><div class="premium-settings-row-desc">Reinicializa a fixture em memória com dados determinísticos.</div></div>
+            <button class="btn bgh" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>
+          </div>
+        </div>` : ''}
 
         <div class="premium-settings-section">
           <div class="premium-settings-section-head">
@@ -9346,7 +9353,7 @@ function settingsTab(){
             <div><h2 class="premium-settings-section-title">Dados e Backup</h2><div class="premium-settings-section-sub">Exportar, importar e restaurar dados</div></div>
           </div>
           <div class="premium-settings-row">
-            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Exportar backup</div><div class="premium-settings-row-desc">Gera um arquivo JSON com todos os dados da carteira ativa.</div></div>
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Exportar backup</div><div class="premium-settings-row-desc">Gera uma cópia restaurável em JSON; não é um relatório analítico.</div></div>
             <button class="btn bgh" onclick="exportBackup()" style="font-size:11px;min-height:34px;padding:0 10px">📤 Exportar</button>
           </div>
           <div class="premium-settings-row">

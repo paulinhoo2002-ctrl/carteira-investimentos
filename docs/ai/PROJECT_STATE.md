@@ -312,6 +312,55 @@ start a feature, visual migration or release operation.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
 
+## 2026-09-04 - Product safety review 02: Configuracoes visual
+
+- `CONFIGURACOES_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+- A hierarquia visual separa a Zona de risco do Ambiente de teste local;
+  a fixture em memoria nao e uma operacao destrutiva sobre dados reais.
+- A exportacao de backup identifica explicitamente uma copia restauravel e
+  permanece distinta de relatorio analitico, importacao e restore.
+- Backup, importacao, restore, reset, autenticacao, sincronizacao, Finance
+  Core, persistencia, schema e dados reais nao foram alterados nesta fase.
+
+## 2026-09-04 - Safety hardening 01
+
+- `RESET_PORTFOLIO_RF_CLEANUP=FROZEN_SAFETY_CONTRACT`: `resetPortfolio()` limpa
+  `S.rfEvents` e os estados transitorios de editor/review de Renda Fixa sem
+  ampliar o reset para dados globais ou de conta.
+- `BACKUP_STRUCTURAL_VALIDATION=FROZEN_SAFETY_CONTRACT` e
+  `BACKUP_VERSION_VALIDATION=FROZEN_SAFETY_CONTRACT`: `parseBackupRaw()` rejeita
+  envelopes, tipos e versoes incompatíveis antes da confirmação, preservando
+  compatibilidade legada reconhecida.
+- `PERSISTENCE_TESTS=32/32`: o baseline subiu de 31 para 32 pela cobertura de
+  reset RF, versões incompatíveis e estruturas de backup malformadas.
+- Configurações não recebeu alteração visual; preview, confirmação,
+  `PersistenceCore.applyStorageTransaction()` e rollback permanecem ativos.
+
+## 2026-09-04 - Auditoria secondary surface refinement
+
+- `AUDITORIA_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+- A rota `auditoria` passou a consumir o renderer de qualidade de dados, com
+  resumo de severidade, priorizacao, filtros progressivos, estado limpo e
+  acoes contextuais seguras.
+- Os niveis de acao continuam distinguindo `exact`, `context`, `general` e
+  `info`; a revalidacao de identidade e a protecao contra registro incorreto
+  permanecem no resolvedor oficial.
+- Nenhum reparo automatico, mutacao em lote, formula financeira, persistencia,
+  schema ou dado real foi alterado.
+
+## 2026-09-04 - Auditoria visual freeze
+
+- `AUDITORIA_VISUAL=FROZEN` e `AUDITORIA_ACTION_SAFETY=FROZEN`.
+- `AUDIT_ROUTE=auditoria`, `AUDIT_RENDERER=dataQualityTab()` e
+  `AUDIT_DATA_SOURCE=dataQualitySnapshot()` permanecem canonicos; `dataAuditTab()`
+  e mantido como alias de compatibilidade.
+- O contrato congela niveis `EXACT`, `CONTEXT`, `GENERAL` e `INFO`, com
+  revalidacao de identidade, protecao contra registro incorreto e fallback
+  seguro. Nao existe reparo automatico ou mutacao em lote.
+- A proxima frente e `PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, inicialmente
+  review-first para Configuracoes, Backup, Importacao, Restore, Conta/Nuvem e
+  Zona de perigo.
+
 ## 2026-09-04 - Secondary surface refinement 01: IRPF
 
 - `SECONDARY_SURFACE_REFINEMENT_01_IRPF=IMPLEMENTED`
@@ -434,16 +483,3 @@ start a feature, visual migration or release operation.
   terminologia atual do produto.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
-
-## 2026-09-04 - Auditoria visual freeze
-
-- `AUDITORIA_VISUAL=FROZEN` e `AUDITORIA_ACTION_SAFETY=FROZEN`.
-- `AUDIT_ROUTE=auditoria`, `AUDIT_RENDERER=dataQualityTab()` e
-  `AUDIT_DATA_SOURCE=dataQualitySnapshot()` permanecem canonicos; `dataAuditTab()`
-  e mantido como alias de compatibilidade.
-- O contrato congela niveis `EXACT`, `CONTEXT`, `GENERAL` e `INFO`, com
-  revalidacao de identidade, protecao contra registro incorreto e fallback
-  seguro. Nao existe reparo automatico ou mutacao em lote.
-- A proxima frente e `PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, inicialmente
-  review-first para Configuracoes, Backup, Importacao, Restore, Conta/Nuvem e
-  Zona de perigo.
