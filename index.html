@@ -293,6 +293,11 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .analysis-item-ticker{font-weight:800;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .analysis-item-desc{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .analysis-item-right{text-align:right;flex:none}
+.wave-b-icon{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;flex:none;color:var(--primary);border:1px solid rgba(96,165,250,.22);border-radius:7px;background:rgba(96,165,250,.08)}
+.wave-b-icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.wave-b-heading{display:flex;align-items:center;gap:7px;min-width:0}
+.wave-b-heading .wave-b-icon{width:20px;height:20px;border-radius:6px}
+.wave-b-heading .wave-b-icon svg{width:12px;height:12px}
 .analysis-item-val{font-size:12px;font-weight:800;white-space:nowrap}
 .analysis-item-sub{font-size:10px;color:var(--muted);white-space:nowrap}
 .analysis-bar{height:6px;border-radius:999px;background:var(--panel);overflow:hidden;margin-top:2px}
@@ -345,7 +350,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .asset-premium-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1}
 .asset-premium-title{font-size:15px;font-weight:900;color:#edf3ff}
 .asset-premium-sub{font-size:10px;color:#94a3b8;line-height:1.45;margin-top:3px}
-.asset-premium-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px;position:relative;z-index:1}
+.asset-premium-overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:9px;position:relative;z-index:1}
 .asset-premium-kpi{padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:color-mix(in srgb, var(--surface) 82%, transparent);min-width:0}
 .asset-premium-kpi-label{font-size:9px;color:#7489a4;text-transform:uppercase;letter-spacing:.04em}
 .asset-premium-kpi-value{font-size:13px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -389,6 +394,21 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-form .fg{margin:0}
 .rebalance-form .btn{min-height:44px;min-width:126px;padding:8px 14px}
 .rebalance-safety{font-size:10px;line-height:1.4;color:var(--muted);border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:8px 9px}
+.rebalance-insight-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.rebalance-insight-card{min-width:0;padding:9px 10px;border:1px solid var(--border);border-radius:11px;background:var(--surface)}
+.rebalance-insight-top{display:flex;align-items:center;gap:6px}
+.rebalance-insight-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.rebalance-insight-value{margin-top:4px;font-size:14px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere}
+.rebalance-insight-note{margin-top:3px;font-size:10px;color:var(--muted);line-height:1.3}
+.rebalance-insight-value.attention{color:var(--warning)}
+.rebalance-insight-value.ok{color:var(--success)}
+.rebalance-insight-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.rebalance-insight-card{min-width:0;padding:9px 10px;border:1px solid var(--border);border-radius:11px;background:var(--surface)}
+.rebalance-insight-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.rebalance-insight-value{margin-top:4px;font-size:14px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere}
+.rebalance-insight-note{margin-top:3px;font-size:10px;color:var(--muted);line-height:1.3}
+.rebalance-insight-value.attention{color:var(--warning)}
+.rebalance-insight-value.ok{color:var(--success)}
 .rebalance-quickline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;line-height:1.35;color:var(--text);border:1px solid rgba(96,165,250,.2);background:rgba(96,165,250,.06);border-radius:12px;padding:8px 10px}
 .rebalance-quickline strong{font-weight:900;color:var(--text)}
 .rebalance-quickline .rebalance-quickline-pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);border:1px solid rgba(99,102,241,.24);background:rgba(99,102,241,.1);border-radius:999px;padding:3px 7px;white-space:nowrap}
@@ -669,6 +689,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .asset-premium-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
   .asset-premium-grid,.asset-premium-grid.compact{grid-template-columns:1fr}
   .rebalance-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rebalance-insight-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rebalance-study-labels{display:none}
   .rebalance-study-row{grid-template-columns:repeat(3,minmax(0,1fr))}
   .rebalance-study-asset{grid-column:1/-1}
@@ -797,6 +818,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .rebalance-form{grid-template-columns:1fr}
   .rebalance-form .btn{width:100%}
   .rebalance-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .rebalance-insight-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .rebalance-summary-card{min-height:66px;padding:9px}
   .rebalance-study-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .rebalance-study-asset{grid-column:1/-1}
@@ -2689,7 +2711,7 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
   .premium-dividends-3 .dividend-executive-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
   .premium-dividends-3 .dividend-executive-kpi{min-width:0;min-height:78px;border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:9px 10px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}
   .premium-dividends-3 .dividend-executive-kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-  .premium-dividends-3 .dividend-executive-kpi-value{font-size:15px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .premium-dividends-3 .dividend-executive-kpi-value{font-size:15px;font-weight:900;color:var(--text);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
   .premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--success)}
   .premium-dividends-3 .dividend-executive-kpi-sub{font-size:9px;color:var(--muted);line-height:1.25}
 .premium-dividends-3 .dividend-primary-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:12px;align-items:start}
@@ -4141,6 +4163,9 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   }
   textarea{resize:vertical}
   .sh{align-items:flex-start;gap:8px}
+  .analysis-destination>.sh{justify-content:flex-start}
+  .analysis-destination>.sh>div:first-child{display:block;width:auto;overflow:visible;flex-wrap:initial;gap:0}
+  .analysis-destination>.sh .mu{white-space:normal;overflow:visible;text-overflow:clip}
   .sh>div{min-width:0}
   .st,.ct,.sec-title,.asset-premium-title,.patrimony-title,.rf-hero-title,
   .irpf-title,.rebalance-title,.premium-dashboard-title{
@@ -6790,6 +6815,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .assets-premium-shell>.sh>div:first-child{min-width:0}
 .assets-premium-shell>.sh>div:last-child{gap:6px!important}
 .assets-premium-shell>.sh>div:last-child .btn{min-height:38px;padding:7px 10px!important;font-size:11px!important}
+.analysis-destination>.sh{justify-content:flex-start}
+.analysis-destination>.sh>div:first-child{display:block!important;width:auto!important;overflow:visible!important;flex-wrap:initial!important;gap:0!important}
+.analysis-destination>.sh .mu{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
 .assets-premium-shell .assets-premium-controls{display:flex;align-items:center;gap:8px;position:relative;margin:0 0 10px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 320px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-filters{flex:0 0 auto}
@@ -21887,9 +21915,10 @@ function assetRankingListHtml(rows, mode){
 }
 function assetPremiumSection(title, subtitle, count, body, tone='muted'){
   const mobile=typeof window!=='undefined' && window.matchMedia && window.matchMedia('(max-width:640px)').matches;
+  const icon=title.includes('alta')?'trend':title.includes('baixa')?'attention':title.includes('posição')?'ranking':title.includes('concentra')?'concentration':title.includes('incompleto')?'readonly':'attention';
   return `<details class="asset-premium-section" ${mobile?'':'open'}>
     <summary>
-      <div style="min-width:0"><div class="asset-premium-section-title">${esc(title)}</div><div class="asset-premium-section-sub">${esc(subtitle)}</div></div>
+      <div style="min-width:0"><div class="asset-premium-section-title wave-b-heading">${waveBIcon(icon)}<span>${esc(title)}</span></div><div class="asset-premium-section-sub">${esc(subtitle)}</div></div>
       <span class="asset-premium-section-meta analysis-pill ${esc(tone)}">${count} ${count===1?'ativo':'ativos'}</span>
     </summary>
     <div class="asset-premium-body">${body}</div>
@@ -21959,10 +21988,11 @@ function assetAnalysisBlock(rowsInput){
         <div class="analysis-pill">${rows.length} analisados</div>
       </div>
       <div class="asset-premium-overview">
-        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Carteira analisada</div><div class="asset-premium-kpi-value">${fmt(total)}</div></div>
-        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Maior posição</div><div class="asset-premium-kpi-value">${esc(topPosition?.ticker||'—')}</div></div>
-        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Melhor desempenho</div><div class="asset-premium-kpi-value gn">${best?`${best.ticker} · ${fmtP(best.pct)}`:'Nenhum'}</div></div>
-        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label">Maior atenção</div><div class="asset-premium-kpi-value ${worst?'rd':''}">${worst?`${worst.ticker} · ${fmtP(worst.pct)}`:'Nenhuma'}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label wave-b-heading">${waveBIcon('analysis')}<span>Carteira analisada</span></div><div class="asset-premium-kpi-value">${fmt(total)}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label wave-b-heading">${waveBIcon('ranking')}<span>Maior posição</span></div><div class="asset-premium-kpi-value">${esc(topPosition?.ticker||'—')}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label wave-b-heading">${waveBIcon('trend')}<span>Melhor desempenho</span></div><div class="asset-premium-kpi-value gn">${best?`${best.ticker} · ${fmtP(best.pct)}`:'Nenhum'}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label wave-b-heading">${waveBIcon('attention')}<span>Maior atenção</span></div><div class="asset-premium-kpi-value ${worst?'rd':''}">${worst?`${worst.ticker} · ${fmtP(worst.pct)}`:'Nenhuma'}</div></div>
+        <div class="asset-premium-kpi"><div class="asset-premium-kpi-label wave-b-heading">${waveBIcon('concentration')}<span>Maior concentração</span></div><div class="asset-premium-kpi-value ${topConcentration?'am':''}">${topConcentration?`${topConcentration.ticker} · ${topConcentration.share.toFixed(1)}%`:'Nenhuma'}</div></div>
       </div>
     </div>
     <div class="asset-premium-grid">
@@ -26479,6 +26509,25 @@ function dashboardMetricIcon(name){
   };
   return `<span class="dashboard-metric-glyph" aria-hidden="true"><svg viewBox="0 0 20 20">${paths[name]||paths.wallet}</svg></span>`;
 }
+function waveBIcon(name){
+  const map={
+    income:'cash',
+    history:'bars',
+    trend:'trend',
+    target:'target',
+    ranking:'flag',
+    concentration:'wallet',
+    attention:'flag',
+    analysis:'trend',
+    allocation:'bars',
+    readonly:'shield'
+  };
+  const paths={
+    shield:'<path d="M10 2.5l6 2.2v4.1c0 3.7-2.4 6.6-6 8.2-3.6-1.6-6-4.5-6-8.2V4.7z"/><path d="M7.2 10l1.8 1.8 3.8-4"/>'
+  };
+  if(name==='readonly') return `<span class="wave-b-icon" aria-hidden="true"><svg viewBox="0 0 20 20">${paths.shield}</svg></span>`;
+  return dashboardMetricIcon(map[name]||name).replace('dashboard-metric-glyph','wave-b-icon');
+}
 function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)'){
   return `<div class="premium-metric" style="--metric-color:${tone};--metric-glow:${glow}">
     <div class="premium-metric-top"><div class="premium-metric-icon">${icon}</div><div class="premium-metric-label">${esc(label)}</div></div>
@@ -30149,13 +30198,13 @@ function dividendExecutiveKpis(){
   const portfolioTotal=(S.assets||[]).reduce((s,a)=>s+(assetCurrentValue(a)||0),0);
   const yieldNow=(portfolioTotal>0 && stats.total12>0) ? (stats.total12/portfolioTotal*100) : null;
   const cards=[
-    ['Recebido','💵',fmt(receivedThisMonth),'Mês atual · lançamentos oficiais',receivedThisMonth>0?'good':'',''],
-    ['Média mensal','▥',fmt(monthlyAvg),'Base dos últimos 12 meses',monthlyAvg>0?'good':'','blue'],
-    ['Último mês','▣',fmt(lastMonth),'Mês anterior completo',lastMonth>0?'good':'','orange'],
-    ['Projeção anual','◎',fmt(annualProjection),'Média 12M × 12',annualProjection>0?'good':'','purple'],
-    ['Yield atual','%',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'','cyan']
+    ['Recebido','income',fmt(receivedThisMonth),'Mês atual · lançamentos oficiais',receivedThisMonth>0?'good':'',''],
+    ['Média mensal','history',fmt(monthlyAvg),'Base dos últimos 12 meses',monthlyAvg>0?'good':'','blue'],
+    ['Último mês','trend',fmt(lastMonth),'Mês anterior completo',lastMonth>0?'good':'','orange'],
+    ['Projeção anual','target',fmt(annualProjection),'Média 12M × 12',annualProjection>0?'good':'','purple'],
+    ['Yield atual','percent',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'','cyan']
   ];
-  return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,icon,value,sub,tone,color])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><span class="dividend-executive-kpi-icon ${color}" aria-hidden="true">${icon}</span><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div></article>`).join('')}</div></section>`;
+  return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,icon,value,sub,tone,color])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><span class="dividend-executive-kpi-icon ${color}" aria-hidden="true">${waveBIcon(icon)}</span><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div></article>`).join('')}</div></section>`;
 }
 function dividendDistributionRow(month, maxVal){
   const dt=new Date(month.key+'-01T12:00:00');
@@ -30386,22 +30435,22 @@ function canonDividendOverview(rows, kpisHtml){
       <div class="canon-div-kpi-row">${kpisHtml}</div>
       <div class="dividend-history-block canon-div-history">
         <div class="dividend-history-heading">
-          <div><strong>Histórico mensal</strong><span>Ano · Jan–Dez · Média · Total, com os valores oficiais já gravados.</span></div>
+          <div><strong class="wave-b-heading">${waveBIcon('history')}<span>Histórico mensal</span></strong><span>Ano · Jan–Dez · Média · Total, com os valores oficiais já gravados.</span></div>
           ${canonDividendYearChips(rows)}
         </div>
         ${table}
       </div>
       <div class="canon-div-lower">
         <div class="premium-panel canon-div-panel canon-div-evolution">
-          <div class="premium-panel-head"><div><div class="premium-panel-title">Evolução da renda</div><div class="premium-panel-sub">Renda passiva mês a mês.</div></div></div>
+          <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('trend')}<span>Evolução da renda</span></div><div class="premium-panel-sub">Renda passiva mês a mês.</div></div></div>
           ${dividendMonthlyTimeline(filteredRows)}
         </div>
         <div class="premium-panel canon-div-panel canon-div-top">
-          <div class="premium-panel-head"><div><div class="premium-panel-title">Top ativos</div><div class="premium-panel-sub">Maiores contribuintes de proventos.</div></div></div>
+          <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('ranking')}<span>Top ativos</span></div><div class="premium-panel-sub">Maiores contribuintes de proventos.</div></div></div>
           ${dividendsByAssetView(filteredRows)}
         </div>
         <div class="premium-panel canon-div-panel canon-div-yearsum">
-          <div class="premium-panel-head"><div><div class="premium-panel-title">Resumo por ano</div><div class="premium-panel-sub">Valor total recebido em cada ano.</div></div></div>
+          <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('bars')}<span>Resumo por ano</span></div><div class="premium-panel-sub">Valor total recebido em cada ano.</div></div></div>
           ${canonDividendYearSummary(filteredRows)}
         </div>
       </div>
@@ -31369,7 +31418,14 @@ function ajudarTab(){
   const topGap=allocRows[0]||null;
   const aboveTarget=allocRows.filter(row=>row.diff>0).length;
   const belowTarget=allocRows.filter(row=>row.diff<0).length;
-  const allocSection=allocRows.length?`<details class="sec rebalance-alloc-details">
+  const desktopAllocationOpen=typeof window==='undefined'||!window.matchMedia||!window.matchMedia('(max-width:640px)').matches;
+  const rebalanceInsight=`<section class="rebalance-insight-strip" aria-label="Resumo da alocação">
+    <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('allocation')}<div class="rebalance-insight-label">Classes analisadas</div></div><div class="rebalance-insight-value">${allocRows.length||'—'}</div><div class="rebalance-insight-note">Metas oficiais disponíveis</div></article>
+    <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('attention')}<div class="rebalance-insight-label">Maior desvio</div></div><div class="rebalance-insight-value ${topGap?'attention':''}">${topGap?`${esc(topGap.type)} · ${topGap.diff>=0?'+':''}${topGap.diff.toFixed(1)} p.p.`:'—'}</div><div class="rebalance-insight-note">Diferença entre atual e meta</div></article>
+    <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('target')}<div class="rebalance-insight-label">Abaixo da meta</div></div><div class="rebalance-insight-value ${belowTarget?'attention':'ok'}">${allocRows.length?belowTarget:'—'}</div><div class="rebalance-insight-note">Classes que pedem aporte</div></article>
+    <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('readonly')}<div class="rebalance-insight-label">Modo da ferramenta</div></div><div class="rebalance-insight-value ok">Readonly</div><div class="rebalance-insight-note">Nenhuma operação é executada</div></article>
+  </section>`;
+  const allocSection=allocRows.length?`<details class="sec rebalance-alloc-details" ${desktopAllocationOpen?'open':''}>
     <summary>
       <div>
         <h2 class="sec-title">Alocação atual vs ideal</h2>
@@ -31388,7 +31444,7 @@ function ajudarTab(){
           const pctClass=r.diff>0?'above':r.diff<0?'below':'';
           const barWidth=Math.min(100,Math.max(2,r.current));
           const targetLeft=Math.min(100,Math.max(0,r.target));
-          return `<div class="rebalance-alloc-item">
+          return `<div class="rebalance-alloc-item rebalance-alloc-row">
             <div class="rebalance-alloc-class">${esc(r.type)}</div>
             <div class="rebalance-alloc-pct ${pctClass}">${r.current.toFixed(1)}%</div>
             <div class="rebalance-alloc-pct">${r.target.toFixed(1)}%</div>
@@ -31409,6 +31465,7 @@ function ajudarTab(){
       <button type="button" class="btn bgh" onclick="toggleRebalanceScenarioComparison()">Comparar cenários</button>
     </div>
   </div>
+  ${rebalanceInsight}
   <div class="rebalance-quickline">
     <span class="rebalance-quickline-pill">Leitura rápida</span>
     ${topGap ? `<strong>${esc(topGap.type)}</strong> tem o maior desvio: <strong>${topGap.diff>=0?'+':''}${topGap.diff.toFixed(1)} p.p.</strong> ${topGap.diff>0?'acima da meta':topGap.diff<0?'abaixo da meta':'na meta'}` : 'Sem base suficiente para leitura rápida'}
@@ -31471,7 +31528,7 @@ function calcRebalance(){
     <div class="rebalance-study">
       <div class="rebalance-study-head">
         <div>
-          <h2 class="rebalance-study-title">Distribuição do aporte</h2>
+          <h2 class="rebalance-study-title wave-b-heading">${waveBIcon('allocation')}<span>Distribuição do aporte</span></h2>
           <div class="rebalance-study-sub">Cálculo determinístico com base na alocação atual, nas metas e no valor informado.</div>
         </div>
         <span class="analysis-pill muted">${distribution.rows.length} classe${distribution.rows.length===1?'':'s'}</span>
