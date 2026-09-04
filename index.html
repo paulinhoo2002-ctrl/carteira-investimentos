@@ -86,6 +86,28 @@
   --canon-cyan:#20cbd5;
   --canon-radius:12px;
   --canon-tabular:1;
+  /* Opt-in design-system aliases. Existing screen tokens remain canonical. */
+  --ds-surface:var(--surface);
+  --ds-surface-elevated:var(--panel);
+  --ds-surface-subtle:var(--surface-2);
+  --ds-border:var(--border);
+  --ds-text-primary:var(--text);
+  --ds-text-secondary:var(--muted);
+  --ds-positive:var(--success);
+  --ds-negative:var(--danger);
+  --ds-warning:var(--warning);
+  --ds-info:#60a5fa;
+  --ds-accent:var(--primary);
+  --ds-radius-card:var(--radius-lg);
+  --ds-radius-control:var(--radius-md);
+  --ds-space-1:var(--sp-1);
+  --ds-space-2:var(--sp-2);
+  --ds-space-3:var(--sp-3);
+  --ds-space-4:var(--sp-4);
+  --ds-space-5:var(--sp-5);
+  --ds-space-6:var(--sp-6);
+  --ds-control-height:var(--control-min-h);
+  --ds-icon-size:22px;
 }
 html[data-theme="light"]{
   color-scheme:light;
@@ -122,7 +144,55 @@ html[data-theme="light"]{
   --canon-cyan:#0e9aa8;
   --canon-radius:12px;
   --canon-tabular:1;
+  --ds-surface:var(--surface);
+  --ds-surface-elevated:var(--panel);
+  --ds-surface-subtle:var(--surface-2);
+  --ds-border:var(--border);
+  --ds-text-primary:var(--text);
+  --ds-text-secondary:var(--muted);
+  --ds-positive:var(--success);
+  --ds-negative:var(--danger);
+  --ds-warning:var(--warning);
+  --ds-info:#2f6fd1;
+  --ds-accent:var(--primary);
+  --ds-radius-card:var(--radius-lg);
+  --ds-radius-control:var(--radius-md);
+  --ds-space-1:var(--sp-1);
+  --ds-space-2:var(--sp-2);
+  --ds-space-3:var(--sp-3);
+  --ds-space-4:var(--sp-4);
+  --ds-space-5:var(--sp-5);
+  --ds-space-6:var(--sp-6);
+  --ds-control-height:var(--control-min-h);
+  --ds-icon-size:22px;
 }
+.ds-kpi{display:flex;min-width:0;flex-direction:column;justify-content:space-between;gap:var(--ds-space-2);padding:10px 12px;border:1px solid var(--ds-border);border-radius:var(--ds-radius-card);background:var(--ds-surface)}
+.ds-kpi__label{display:flex;min-width:0;align-items:center;gap:var(--ds-space-2);color:var(--ds-text-secondary);font-size:9px;font-weight:700;line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
+.ds-kpi__value{color:var(--ds-text-primary);font-size:18px;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ds-kpi__context{color:var(--ds-text-secondary);font-size:9px;line-height:1.2}
+.ds-kpi--positive .ds-kpi__value{color:var(--ds-positive)}
+.ds-kpi--negative .ds-kpi__value{color:var(--ds-negative)}
+.ds-kpi--warning .ds-kpi__value{color:var(--ds-warning)}
+.ds-kpi--informational .ds-kpi__value{color:var(--ds-info)}
+.ds-panel{min-width:0;border:1px solid var(--ds-border);border-radius:var(--ds-radius-card);background:var(--ds-surface)}
+.ds-panel--compact{padding:var(--ds-space-5) var(--ds-space-6)}
+.ds-panel--readonly{background:var(--ds-surface-subtle)}
+.ds-panel--danger{border-color:color-mix(in srgb,var(--ds-negative) 42%,var(--ds-border))}
+.ds-button{display:inline-flex;min-height:var(--ds-control-height);align-items:center;justify-content:center;gap:var(--ds-space-2);border:1px solid transparent;border-radius:var(--ds-radius-control);padding:8px 12px;font:inherit;font-size:12px;font-weight:800;line-height:1.15}
+.ds-button--primary{background:var(--ds-accent);color:#fff}
+.ds-button--secondary{border-color:var(--ds-border);background:var(--ds-surface-elevated);color:var(--ds-text-secondary)}
+.ds-button--ghost{background:transparent;color:var(--ds-text-secondary)}
+.ds-button--danger{border-color:color-mix(in srgb,var(--ds-negative) 32%,var(--ds-border));background:color-mix(in srgb,var(--ds-negative) 10%,transparent);color:var(--ds-negative)}
+.ds-button--icon{width:var(--ds-control-height);padding:0}
+.ds-button:focus-visible{outline:2px solid var(--ds-info);outline-offset:2px}
+.ds-icon-container{display:inline-flex;width:var(--ds-icon-size);height:var(--ds-icon-size);flex:none;align-items:center;justify-content:center}
+.ds-icon-container svg{width:14px;height:14px}
+.ds-badge{display:inline-flex;min-height:24px;align-items:center;justify-content:center;border:1px solid var(--ds-border);border-radius:var(--radius-pill);padding:0 8px;background:var(--ds-surface-elevated);color:var(--ds-text-secondary);font-size:9px;font-weight:900;line-height:1.1;white-space:nowrap}
+.ds-badge--positive{border-color:color-mix(in srgb,var(--ds-positive) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-positive) 8%,transparent);color:var(--ds-positive)}
+.ds-badge--negative{border-color:color-mix(in srgb,var(--ds-negative) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-negative) 8%,transparent);color:var(--ds-negative)}
+.ds-badge--warning{border-color:color-mix(in srgb,var(--ds-warning) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-warning) 8%,transparent);color:var(--ds-warning)}
+.ds-badge--info{border-color:color-mix(in srgb,var(--ds-info) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-info) 8%,transparent);color:var(--ds-info)}
+.ds-empty-state{padding:var(--ds-space-6) var(--ds-space-4);border:1px dashed var(--ds-border);border-radius:var(--ds-radius-control);background:var(--ds-surface-subtle);color:var(--ds-text-secondary);font-size:11px;line-height:1.45;text-align:center}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:14px;overflow-x:hidden;transition:background .2s ease,color .2s ease}
 button{cursor:pointer;font-family:inherit}
@@ -17355,7 +17425,7 @@ function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
         <div class="st">Resumo de proventos oficiais</div>
         <div class="mu" style="font-size:11px;margin-top:2px">Fonte oficial: histórico mensal para total e média histórica; janela 12M para meta mensal.</div>
       </div>
-      <div class="passive-goal-badge ${stats.hasData || historicalSummary.monthCount > 0 ? 'info' : 'muted'}">${historicalSummary.monthCount > 0 ? `${historicalSummary.monthCount} mês(es)` : 'Sem histórico'}</div>
+      <div class="passive-goal-badge ds-badge ${stats.hasData || historicalSummary.monthCount > 0 ? 'info' : 'muted'}">${historicalSummary.monthCount > 0 ? `${historicalSummary.monthCount} mês(es)` : 'Sem histórico'}</div>
     </div>
     <div class="passive-goal-grid summary">
       ${passiveIncomeMetricCard({tone:historicalSummary.total>0?'ok':'muted', kicker:'Total histórico', value:totalHistoricalLabel, sub:'Soma oficial dos meses elegíveis'})}
@@ -17496,7 +17566,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="st">Meta de Renda Passiva</div>
             <div class="mu" style="font-size:11px;margin-top:2px">Meta mensal lida da aba <strong style="color:#e2eaf6">Metas</strong> e calculada com base nos proventos já gravados em <strong style="color:#e2eaf6">S.proventos</strong>.</div>
           </div>
-          <div class="passive-goal-badge ${topTone}">${hasGoal ? (stats.hasData ? `${avgProg.prog.toFixed(1)}% da meta` : 'Dados insuficientes') : 'Sem meta'}</div>
+          <div class="passive-goal-badge ds-badge ${topTone}">${hasGoal ? (stats.hasData ? `${avgProg.prog.toFixed(1)}% da meta` : 'Dados insuficientes') : 'Sem meta'}</div>
         </div>
         <div class="mu" style="font-size:11px;margin:0 0 2px;line-height:1.35">${esc(guidance)}</div>
         ${!hasGoal ? `<div class="passive-goal-empty">
@@ -17504,7 +17574,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="passive-goal-empty-title">Meta não definida</div>
             <div class="passive-goal-empty-note">Defina sua meta de renda passiva na aba Metas.</div>
           </div>
-          <div class="passive-goal-badge muted">Sem meta cadastrada</div>
+          <div class="passive-goal-badge ds-badge muted">Sem meta cadastrada</div>
         </div>` : ''}
         <div class="passive-goal-grid main">
           <div class="passive-goal-card ${hasGoal ? 'info' : 'muted'}" style="justify-content:flex-start;gap:6px">
@@ -19214,13 +19284,13 @@ function irpfTabPremium(){
   const rfMissingMaturity=rfRows.filter(r=>Array.isArray(r.alerts)&&r.alerts.includes('Sem vencimento')).length;
   const bucketLabels={Ações:'Ações',FII:'FIIs',ETF:'ETFs',BDR:'BDRs','Renda Fixa':'Renda Fixa'};
   const section=(title, sub, badge, body, open=false)=>`
-    <details class="sec irpf-section" ${open?'open':''} style="margin-top:12px">
+    <details class="sec irpf-section ds-panel ds-panel--readonly" ${open?'open':''} style="margin-top:12px">
       <summary>
         <div>
           <h1 class="irpf-section-title">${esc(title)}</h1>
           <div class="irpf-section-sub">${esc(sub)}</div>
         </div>
-        <div class="irpf-section-badge">${esc(badge)}</div>
+        <div class="irpf-section-badge ds-badge">${esc(badge)}</div>
       </summary>
       <div class="irpf-section-body">${body}</div>
     </details>`;
@@ -19234,10 +19304,10 @@ function irpfTabPremium(){
     {tone:'warn', label:'Renda fixa', value:fmt(summary.rf||0), note:'Valor aplicado em títulos informados'},
     {tone:summary.positions>0?'info':'muted', label:'Ativos com posição', value:String(summary.positions||0), note:`${summary.positions||0} ativos na carteira`},
   ].map(card=>`
-    <div class="irpf-summary-card ${card.tone}">
-      <div class="analysis-summary-kicker">${esc(card.label)}</div>
-      <div class="analysis-summary-value">${esc(card.value)}</div>
-      <div class="analysis-summary-sub">${esc(card.note)}</div>
+    <div class="irpf-summary-card ds-kpi ${card.tone}">
+      <div class="analysis-summary-kicker ds-kpi__label">${esc(card.label)}</div>
+      <div class="analysis-summary-value ds-kpi__value">${esc(card.value)}</div>
+      <div class="analysis-summary-sub ds-kpi__context">${esc(card.note)}</div>
     </div>`).join('');
   const bucketCards=report.bucketOrder.map(bucket=>{
     const rows=(assets.buckets[bucket]||[]);
@@ -19245,10 +19315,10 @@ function irpfTabPremium(){
     const market=rows.reduce((sum,p)=>sum+Number(p.marketValue||0),0);
     const label=bucketLabels[bucket]||bucket;
     return `
-      <div class="irpf-summary-card muted">
-        <div class="analysis-summary-kicker">${esc(label)}</div>
-        <div class="analysis-summary-value">${rows.length}</div>
-        <div class="analysis-summary-sub">Custo ${fmt(applied)} · ref. ${fmt(market)}</div>
+      <div class="irpf-summary-card muted ds-kpi">
+        <div class="analysis-summary-kicker ds-kpi__label">${esc(label)}</div>
+        <div class="analysis-summary-value ds-kpi__value">${rows.length}</div>
+        <div class="analysis-summary-sub ds-kpi__context">Custo ${fmt(applied)} · ref. ${fmt(market)}</div>
       </div>`;
   }).join('');
   const positionRows=report.positions.map(p=>`
@@ -19281,10 +19351,10 @@ function irpfTabPremium(){
     {label:'FIIs', value:summary.fii||0, tone:'info', note:'Rendimentos de FIIs'},
     {label:'Outros', value:proventoOthers, tone:'muted', note:'Eventos fora das categorias principais'},
   ].map(card=>`
-    <div class="irpf-summary-card ${card.tone}">
-      <div class="analysis-summary-kicker">${esc(card.label)}</div>
-      <div class="analysis-summary-value">${fmt(card.value)}</div>
-      <div class="analysis-summary-sub">${esc(card.note)}</div>
+    <div class="irpf-summary-card ds-kpi ${card.tone}">
+      <div class="analysis-summary-kicker ds-kpi__label">${esc(card.label)}</div>
+      <div class="analysis-summary-value ds-kpi__value">${fmt(card.value)}</div>
+      <div class="analysis-summary-sub ds-kpi__context">${esc(card.note)}</div>
     </div>`).join('');
   const proventoRows=proventos.byAsset.length ? proventos.byAsset.map(r=>`
     <tr>
@@ -19308,17 +19378,17 @@ function irpfTabPremium(){
         ${fmt(Number(r.total)||0)}
         <div class="premium-row-sub">FIIs ${fmt(Number(r.fii)||0)} · Outros ${fmt(Number(r.outros)||0)}</div>
       </div>
-    </div>`).join('') : '<div class="premium-empty">Sem proventos lançados no ano selecionado.</div>';
+    </div>`).join('') : '<div class="premium-empty ds-empty-state">Sem proventos lançados no ano selecionado.</div>';
   const rfSummaryCards=[
     {label:'Total aplicado em RF', value:fmt(summary.rf||0), tone:'warn', note:'Base declarada em títulos de renda fixa'},
     {label:'Títulos de RF', value:String(rfRows.length), tone:'info', note:'Itens com leitura auxiliar para IRPF'},
     {label:'Com alertas', value:String(rfAlertRows), tone:rfAlertRows?'warn':'ok', note:'Sem vencimento, taxa ou valor atual'},
     {label:'Sem valor atual', value:String(rfMissingCurrent), tone:rfMissingCurrent?'warn':'ok', note:'Informe o valor bruto ou líquido da corretora'},
   ].map(card=>`
-    <div class="irpf-summary-card ${card.tone}">
-      <div class="analysis-summary-kicker">${esc(card.label)}</div>
-      <div class="analysis-summary-value">${esc(card.value)}</div>
-      <div class="analysis-summary-sub">${esc(card.note)}</div>
+    <div class="irpf-summary-card ds-kpi ${card.tone}">
+      <div class="analysis-summary-kicker ds-kpi__label">${esc(card.label)}</div>
+      <div class="analysis-summary-value ds-kpi__value">${esc(card.value)}</div>
+      <div class="analysis-summary-sub ds-kpi__context">${esc(card.note)}</div>
     </div>`).join('');
   const rfRowsHtml=rfRows.length ? rfRows.map(r=>`
     <tr>
@@ -19344,17 +19414,17 @@ function irpfTabPremium(){
         ${fmt(Number(r.applied)||0)}
         <div class="premium-row-sub">${fmt(Number(r.current)||0)} · ${(r.alerts||[]).join(' · ')||'sem alertas'}</div>
       </div>
-    </div>`).join('') : '<div class="premium-empty">Sem títulos de renda fixa classificados para o ano selecionado.</div>';
+    </div>`).join('') : '<div class="premium-empty ds-empty-state">Sem títulos de renda fixa classificados para o ano selecionado.</div>';
   const alertCards=alerts.length ? alerts.map(a=>`
-    <div class="irpf-summary-card ${a.tone==='danger'?'danger':a.tone==='warn'?'warn':a.tone==='ok'?'ok':'muted'}">
-      <div class="analysis-summary-kicker">${esc(a.label)}</div>
-      <div class="analysis-summary-value">${esc(a.value)}</div>
-      <div class="analysis-summary-sub">${esc(a.hint)}</div>
+    <div class="irpf-summary-card ds-kpi ${a.tone==='danger'?'danger':a.tone==='warn'?'warn':a.tone==='ok'?'ok':'muted'}">
+      <div class="analysis-summary-kicker ds-kpi__label">${esc(a.label)}</div>
+      <div class="analysis-summary-value ds-kpi__value">${esc(a.value)}</div>
+      <div class="analysis-summary-sub ds-kpi__context">${esc(a.hint)}</div>
     </div>`).join('') : `
-      <div class="irpf-summary-card ok">
-        <div class="analysis-summary-kicker">Conferência limpa</div>
-        <div class="analysis-summary-value">Sem alertas</div>
-        <div class="analysis-summary-sub">Os dados principais estão completos para revisão.</div>
+      <div class="irpf-summary-card ok ds-kpi ds-kpi--positive">
+        <div class="analysis-summary-kicker ds-kpi__label">Conferência limpa</div>
+        <div class="analysis-summary-value ds-kpi__value">Sem alertas</div>
+        <div class="analysis-summary-sub ds-kpi__context">Os dados principais estão completos para revisão.</div>
       </div>`;
   const cgTotals=report.totals||{};
   const cgKpis=[
@@ -19440,23 +19510,23 @@ function irpfTabPremium(){
     {label:'Resumo em CSV', icon:'⬇️', sub:'Exporta operações, bens e proventos do ano para conferência externa em planilha.', action:'irpfExportCSV()'},
     {label:'Relatório em PDF', icon:'🖨️', sub:'Gera o relatório auxiliar de IRPF para arquivo ou impressão.', action:'irpfExportPdf()'}
   ].map(d=>`
-    <div class="irpf-summary-card info">
-      <div class="analysis-summary-kicker">${esc(d.label)}</div>
-      <div class="analysis-summary-value">${esc(d.icon)}</div>
-      <div class="analysis-summary-sub">${esc(d.sub)}</div>
-      <button class="btn bgh" onclick="${d.action}" style="margin-top:8px;min-height:44px">Baixar</button>
+      <div class="irpf-summary-card info ds-kpi">
+      <div class="analysis-summary-kicker ds-kpi__label">${esc(d.label)}</div>
+      <div class="analysis-summary-value ds-kpi__value">${esc(d.icon)}</div>
+      <div class="analysis-summary-sub ds-kpi__context">${esc(d.sub)}</div>
+      <button class="btn bgh ds-button ds-button--secondary" onclick="${d.action}" style="margin-top:8px;min-height:44px">Baixar</button>
     </div>`).join('');
   return `
     <div class="irpf-shell">
       <div class="irpf-head">
         <div style="min-width:0">
-          <div class="irpf-badge">Relatório auxiliar de IRPF</div>
+          <div class="irpf-badge ds-badge ds-badge--info">Relatório auxiliar de IRPF</div>
           <div class="irpf-title" style="margin-top:7px">Relatório IRPF ${year}</div>
           <div class="irpf-sub">Ferramenta de conferência para bens, proventos e renda fixa. Use como apoio e valide sempre com os informes oficiais da corretora e documentos fiscais.</div>
           <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px">
-            <span class="irpf-badge ${summary.alerts ? 'warn':'ok'}">${summary.alerts} alerta${summary.alerts===1?'':'s'}</span>
-            <span class="irpf-badge">${summary.positions} ativo${summary.positions===1?'':'s'} com posição</span>
-            <span class="irpf-badge">Base: custo de aquisição</span>
+            <span class="irpf-badge ds-badge ${summary.alerts ? 'warn ds-badge--warning':'ok ds-badge--positive'}">${summary.alerts} alerta${summary.alerts===1?'':'s'}</span>
+            <span class="irpf-badge ds-badge">${summary.positions} ativo${summary.positions===1?'':'s'} com posição</span>
+            <span class="irpf-badge ds-badge">Base: custo de aquisição</span>
           </div>
         </div>
         <div class="irpf-yearbox">
@@ -19464,8 +19534,8 @@ function irpfTabPremium(){
             <select id="irpf-year-report" onchange="setIrpfYear(this.value)" style="min-width:160px">
               ${years.map(y=>`<option value="${y}" ${Number(y)===Number(year)?'selected':''}>${y}</option>`).join('')}
             </select>
-            <button class="btn bp" onclick="irpfExportCSV()">⬇️ CSV</button>
-            <button class="btn bgh" onclick="irpfExportPdf()">🖨️ PDF</button>
+            <button class="btn bp ds-button ds-button--primary" onclick="irpfExportCSV()">⬇️ CSV</button>
+            <button class="btn bgh ds-button ds-button--secondary" onclick="irpfExportPdf()">🖨️ PDF</button>
           </div>
           <div class="irpf-sub" style="text-align:right">Ano-base ${year} · ${proventos.rows.length} proventos · ${rfRows.length} títulos RF</div>
         </div>
@@ -19473,13 +19543,13 @@ function irpfTabPremium(){
 
       <div class="irpf-summary">${summaryCards}</div>
 
-      <details class="sec irpf-section" style="margin-top:12px">
+      <details class="sec irpf-section ds-panel ds-panel--readonly" style="margin-top:12px">
         <summary>
           <div>
             <h2 class="irpf-section-title">Bens e Direitos</h2>
             <div class="irpf-section-sub">Custo de aquisição, quantidade e valor atual apenas como referência.</div>
           </div>
-          <div class="irpf-section-badge">${summary.positions} posições · clique para exibir</div>
+          <div class="irpf-section-badge ds-badge">${summary.positions} posições · clique para exibir</div>
         </summary>
         <div class="irpf-section-body">
           <div class="irpf-section-grid">${bucketCards}</div>
@@ -19493,18 +19563,18 @@ function irpfTabPremium(){
               <tbody>${positionRows || '<tr><td colspan="8" class="irpf-muted" style="text-align:center;padding:18px">Sem posições para o ano selecionado.</td></tr>'}</tbody>
             </table>
           </div>
-          <div class="irpf-mobile-list">${positionMobile || '<div class="premium-empty">Sem posições para o ano selecionado.</div>'}</div>
+          <div class="irpf-mobile-list">${positionMobile || '<div class="premium-empty ds-empty-state">Sem posições para o ano selecionado.</div>'}</div>
           <div class="irpf-sub">IRPF normalmente usa custo de aquisição. O valor de mercado serve apenas como referência visual para a conferência.</div>
         </div>
       </details>
 
-      <details class="sec irpf-section" style="margin-top:12px">
+      <details class="sec irpf-section ds-panel ds-panel--readonly" style="margin-top:12px">
         <summary>
           <div>
             <h2 class="irpf-section-title">Proventos do ano</h2>
             <div class="irpf-section-sub">Dividendos, JCP, FIIs e outros eventos com total por ativo e por categoria.</div>
           </div>
-          <div class="irpf-section-badge">${proventos.rows.length} lançamentos · clique para abrir</div>
+          <div class="irpf-section-badge ds-badge">${proventos.rows.length} lançamentos · clique para abrir</div>
         </summary>
         <div class="irpf-section-body">
           <div class="irpf-section-grid">${proventoCategoryCards}</div>
@@ -19523,18 +19593,18 @@ function irpfTabPremium(){
         </div>
       </details>
 
-      <details class="sec irpf-section" style="margin-top:12px">
+      <details class="sec irpf-section ds-panel ds-panel--readonly" style="margin-top:12px">
         <summary>
           <div>
             <h2 class="irpf-section-title">Ganhos de capital</h2>
             <div class="irpf-section-sub">Vendas, resultado, isenção, imposto estimado e prejuízo a compensar por classe e por mês.</div>
           </div>
-          <div class="irpf-section-badge">${cgEmpty?'sem operações':`${fmt(cgTotals.sells||0)} em vendas · clique para abrir`}</div>
+          <div class="irpf-section-badge ds-badge">${cgEmpty?'sem operações':`${fmt(cgTotals.sells||0)} em vendas · clique para abrir`}</div>
         </summary>
         <div class="irpf-section-body">
           <div class="irpf-section-grid">${cgKpis}</div>
           ${cgEmpty
-            ? `<div class="premium-empty">Sem operações de compra ou venda no ano selecionado.</div>`
+            ? `<div class="premium-empty ds-empty-state">Sem operações de compra ou venda no ano selecionado.</div>`
             : `<div class="irpf-table-wrap">
               <table class="irpf-table">
                 <thead>
@@ -19562,13 +19632,13 @@ function irpfTabPremium(){
         </div>
       </details>
 
-      <details class="sec irpf-section" style="margin-top:12px">
+      <details class="sec irpf-section ds-panel ds-panel--readonly" style="margin-top:12px">
         <summary>
           <div>
             <h2 class="irpf-section-title">Renda Fixa para IRPF</h2>
             <div class="irpf-section-sub">Títulos com valor aplicado, valor atual/líquido e alertas de conferência.</div>
           </div>
-          <div class="irpf-section-badge">${rfRows.length} títulos · ${rfAlertRows} com alerta</div>
+          <div class="irpf-section-badge ds-badge">${rfRows.length} títulos · ${rfAlertRows} com alerta</div>
         </summary>
         <div class="irpf-section-body">
           <div class="irpf-section-grid">${rfSummaryCards}</div>
@@ -19587,13 +19657,13 @@ function irpfTabPremium(){
         </div>
       </details>
 
-      <details class="sec irpf-section" style="margin-top:12px">
+      <details class="sec irpf-section ds-panel ds-panel--readonly" style="margin-top:12px">
         <summary>
           <div>
             <h2 class="irpf-section-title">Documentos disponíveis</h2>
             <div class="irpf-section-sub">Arquivos gerados com os dados do ano selecionado para conferência externa.</div>
           </div>
-          <div class="irpf-section-badge">2 documentos · clique para abrir</div>
+          <div class="irpf-section-badge ds-badge">2 documentos · clique para abrir</div>
         </summary>
         <div class="irpf-section-body">
           <div class="irpf-section-grid">${documentCards}</div>
@@ -19601,13 +19671,13 @@ function irpfTabPremium(){
         </div>
       </details>
 
-      <details class="sec irpf-section" style="margin-top:12px">
+      <details class="sec irpf-section ds-panel ds-panel--readonly" style="margin-top:12px">
         <summary>
           <div>
             <h2 class="irpf-section-title">Alertas para conferência</h2>
             <div class="irpf-section-sub">Itens que merecem revisão antes de usar os dados na declaração.</div>
           </div>
-          <div class="irpf-section-badge">${alerts.length} alerta${alerts.length===1?'':'s'} · clique para abrir</div>
+          <div class="irpf-section-badge ds-badge">${alerts.length} alerta${alerts.length===1?'':'s'} · clique para abrir</div>
         </summary>
         <div class="irpf-section-body">
           <div class="irpf-section-grid">${alertCards}</div>
@@ -20522,7 +20592,7 @@ function dataQualityRfReconciliationSection(){
     ['Links quebrados', snapshot.counts.brokenLink, 'proventos sem evento RF encontrado'],
     ['Possiveis duplicidades', snapshot.counts.possibleDuplicate, 'mesmo ticker, data e valor'],
     ['Legacy sem vinculo', snapshot.counts.legacyUnlinked, 'proventos RF sem link explicito']
-  ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'warning':'ok'}"><div class="data-quality-card-label">${esc(label)}</div><div class="data-quality-card-value">${esc(rfReconciliationText(value, 0))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
+  ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'warning':'ok'}"><div class="data-quality-card-label wave-b-heading">${waveBIcon(index===2||index===3?'attention':'readonly')}<span>${esc(label)}</span></div><div class="data-quality-card-value">${esc(rfReconciliationText(value, 0))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
   return `<section class="data-quality-hero rf-reconciliation-section">
     <div class="data-quality-head">
       <div>
@@ -20572,7 +20642,7 @@ function dataQualityTab(){
     ['Atencao', snapshot.summary.warningRecords, 'registros com observacoes'],
     ['Criticos', snapshot.summary.criticalRecords, 'registros que exigem revisao urgente'],
     ['Integridade', `${snapshot.score}%`, 'indice de registros validos']
-  ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'critical':index===4?integrityTone:'ok'}"><div class="data-quality-card-label">${esc(label)}</div><div class="data-quality-card-value">${esc(String(value))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
+  ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'critical':index===4?integrityTone:'ok'}"><div class="data-quality-card-label wave-b-heading">${waveBIcon(index===2||index===3?'attention':index===1?'readonly':'analysis')}<span>${esc(label)}</span></div><div class="data-quality-card-value">${esc(String(value))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
   const healthyState=healthy
     ? `<div class="data-quality-empty-health"><div><div class="data-quality-empty-title">Dados consistentes</div><div class="data-quality-empty-note">Nenhum problema relevante foi encontrado nos registros analisados.</div></div></div>`
     : '';
@@ -20589,7 +20659,7 @@ function dataQualityTab(){
     <section class="data-quality-hero">
       <div class="data-quality-head">
         <div>
-          <div class="data-quality-title">Auditoria</div>
+          <div class="data-quality-title wave-b-heading">${waveBIcon('readonly')}<span>Auditoria</span></div>
           <div class="data-quality-sub">Rastreabilidade e integridade dos dados da carteira. Revise registros que podem comprometer relatórios e calculos. Nenhuma correcao e feita automaticamente.</div>
         </div>
         <div class="data-quality-actions">
@@ -26583,8 +26653,8 @@ function waveBIcon(name){
   const paths={
     shield:'<path d="M10 2.5l6 2.2v4.1c0 3.7-2.4 6.6-6 8.2-3.6-1.6-6-4.5-6-8.2V4.7z"/><path d="M7.2 10l1.8 1.8 3.8-4"/>'
   };
-  if(name==='readonly') return `<span class="wave-b-icon" aria-hidden="true"><svg viewBox="0 0 20 20">${paths.shield}</svg></span>`;
-  return dashboardMetricIcon(map[name]||name).replace('dashboard-metric-glyph','wave-b-icon');
+  if(name==='readonly') return `<span class="wave-b-icon ds-icon-container" aria-hidden="true"><svg viewBox="0 0 20 20">${paths.shield}</svg></span>`;
+  return dashboardMetricIcon(map[name]||name).replace('dashboard-metric-glyph','wave-b-icon ds-icon-container');
 }
 function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)'){
   return `<div class="premium-metric" style="--metric-color:${tone};--metric-glow:${glow}">
@@ -31152,17 +31222,17 @@ function metasTab(){
   const metaProSummary=passiveGoal?.hasTarget?`${fmt(passiveGoal.monthlyAvg||0)} média 12M · ${fmtP(passiveGoal.percent||0)} · Falta ${fmt(passiveGoal.missing||0)}/mês`:'Meta de renda não configurada';
 
   return`<div class="metas-shell">
-  <h1 class="page-heading">🎯 Metas</h1>
+  <h1 class="page-heading wave-b-heading">${waveBIcon('target')}<span>Metas</span></h1>
   <div class="page-sub">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
   <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
-    <div class="card al metas-kpi-card" style="border-left-color:var(--warning)"><div class="metas-kpi-label">Renda projetada/mês</div><div class="metas-kpi-value" style="color:var(--warning)">${fmt(mD)}</div><div class="metas-kpi-sub">Estimativa da carteira</div></div>
-    <div class="card al metas-kpi-card" style="border-left-color:var(--success)"><div class="metas-kpi-label">Projeção anual</div><div class="metas-kpi-value" style="color:var(--success)">${fmt(aD)}</div></div>
-    <div class="card al metas-kpi-card" style="border-left-color:var(--primary)"><div class="metas-kpi-label">DY médio</div><div class="metas-kpi-value" style="color:var(--primary)">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al metas-kpi-card" style="border-left-color:var(--primary)"><div class="metas-kpi-label">Total da carteira</div><div class="metas-kpi-value" style="color:var(--text)">${fmt(tC)}</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${fmt(mD)}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${fmt(aD)}</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${avgDY.toFixed(2)}%</div></div>
+    <div class="card al metas-kpi-card ds-kpi" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('wallet')}<span>Total da carteira</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--text)">${fmt(tC)}</div></div>
   </div>
 
-  <div class="metas-summary-bar" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px">
+  <div class="metas-summary-bar ds-panel ds-panel--compact" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px">
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
   </div>
@@ -31170,7 +31240,7 @@ function metasTab(){
   <details class="sec metas-goal-section metas-patrimony-section" open style="margin-bottom:10px">
     <summary>
       <div>
-        <h2 class="sec-title">Meta de Patrimônio</h2>
+        <h2 class="sec-title wave-b-heading">${waveBIcon('target')}<span>Meta de Patrimônio</span></h2>
         <div class="sec-meta">${fmt(tC)} / ${fmt(metaPatValor||0)} · ${metaPat.prog.toFixed(1)}% de progresso</div>
       </div>
       <div class="sec-meta">Recolher</div>
@@ -31181,7 +31251,7 @@ function metasTab(){
           <div class="fl">Meta de patrimônio</div>
           <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" aria-label="Meta de patrimônio" value="${metaPatValor}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()" style="min-height:44px;padding:8px 10px;font-size:14px">
           <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
-          ${metaPatValor > 0 ? `<div class="btn bgh" style="margin-top:4px" onclick="event.stopPropagation(); document.getElementById('mp-head-target').value=''; saveMetaPatrimonioTarget();">🗑️ Remover meta</div>` : ''}
+          ${metaPatValor > 0 ? `<div class="btn bgh ds-button ds-button--secondary" style="margin-top:4px" onclick="event.stopPropagation(); document.getElementById('mp-head-target').value=''; saveMetaPatrimonioTarget();">${waveBIcon('attention')} Remover meta</div>` : ''}
         </div>
         <div class="card al" style="border-left-color:var(--primary);padding:12px;display:flex;flex-direction:column;gap:8px;min-height:0">
           <div class="fl">Progresso</div>
@@ -31194,7 +31264,7 @@ function metasTab(){
             <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
           </div>
           <div class="dbt" style="height:8px;margin-top:4px;border-radius:4px;background:var(--border)"><div class="dbf" style="width:${Math.min(100, metaPat.prog.toFixed(1))}%;background:var(--primary);height:100%;border-radius:4px;transition:width 0.3s ease"></div></div>
-          ${metaPatValor > 0 ? `<div class="goal-context-action-row"><button type="button" class="btn bgh goal-context-action" onclick="go('aportes')">Registrar aporte</button></div>` : ''}
+          ${metaPatValor > 0 ? `<div class="goal-context-action-row"><button type="button" class="btn bgh ds-button ds-button--secondary goal-context-action" onclick="go('aportes')">Registrar aporte</button></div>` : ''}
         </div>
       </div>
     </div>
@@ -31205,11 +31275,11 @@ function metasTab(){
   <details class="sec metas-goal-section" open style="margin-bottom:12px">
     <summary>
       <div>
-        <h2 class="sec-title">Distribuição da carteira</h2>
+        <h2 class="sec-title wave-b-heading">${waveBIcon('allocation')}<span>Distribuição da carteira</span></h2>
         <div class="sec-meta">${allocItems.length} categorias · clique para recolher</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
-        <button class="btn bgh" onclick="event.stopPropagation();openAllocationGoal()">⚙️ Configurar</button>
+        <button class="btn bgh ds-button ds-button--secondary" onclick="event.stopPropagation();openAllocationGoal()">${waveBIcon('readonly')} Configurar</button>
       </div>
     </summary>
     <div class="sec-body">
@@ -31218,8 +31288,8 @@ function metasTab(){
         <tbody>${allocRows || '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Configure a distribuição na aba Ativos.</td></tr>'}</tbody>
       </table></div></div>
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
-        ${allocationConfigured ? `<button type="button" class="btn bgh goal-context-action" onclick="go('ajudar')">Ver Rebalancear</button>` : ''}
-        <button class="btn bp" onclick="openAllocationGoal()">Configurar distribuição</button>
+        ${allocationConfigured ? `<button type="button" class="btn bgh ds-button ds-button--secondary goal-context-action" onclick="go('ajudar')">Ver Rebalancear</button>` : ''}
+        <button class="btn bp ds-button ds-button--primary" onclick="openAllocationGoal()">Configurar distribuição</button>
       </div>
     </div>
   </details>
