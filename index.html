@@ -6988,7 +6988,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .tabs-desktop .tab.on,.tabs-desktop .tab-menu>summary.on{background:rgba(16,217,129,.11);color:var(--canon-green)}
   .tabs-desktop .tab.on::before{background:var(--canon-green)}
   .tabs-desktop .tab-menu-panel{padding-left:10px}
-  .wrap{max-width:1500px;padding:20px 20px 30px}
+  .wrap{max-width:1500px;padding:20px 28px 30px}
 }
 
 /* The local fixture banner is diagnostic, not part of the product shell. */
@@ -31746,6 +31746,7 @@ function mobileMenuDrawer(){
 }
 function go(t){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
+  if(t==='assets') t='ativos';
   if(t==='analise'){
     S.tab='analise';
     S.mobileMenuOpen=false;
