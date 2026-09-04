@@ -608,7 +608,7 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   assert.match(goalsHtml, /Melhor m[eê]s (?:hist[oó]rico|[a-záé]+ de \d{4})/i);
   assert.match(goalsHtml, /role="progressbar"/);
   assert.match(goalsHtml, /go\('metas'\)/);
-  assert.match(passiveHtml, /go\('dividendos'\)/);
+  assert.match(passiveHtml, /dashboard-home-income/);
 });
 test('proventos oficiais normalizam strings e excluem registros invalidos', () => {
   const runtime = loadRuntime({

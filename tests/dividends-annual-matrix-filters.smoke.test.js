@@ -65,19 +65,8 @@ viewports.forEach(vp => {
       await page.evaluate(() => go('dividendos'));
       await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 5000 });
 
-      // Navegar para aba Historico mensal dedicado
-      const tabExists = await page.evaluate(() => {
-        const tabs = document.querySelectorAll('.div-premium-tab');
-        return Array.from(tabs).some(t => t.textContent.includes('Histórico'));
-      });
-      assert.equal(tabExists, true, `Aba Historico mensal ausente em ${vp.label}`);
-
-      // Clicar na aba Historico
-      await page.evaluate(() => {
-        const tabs = document.querySelectorAll('.div-premium-tab');
-        const tab = Array.from(tabs).find(t => t.textContent.includes('Histórico'));
-        if (tab) tab.click();
-      });
+      // O Overview canônico não exibe tabs; a rota interna continua testável.
+      await page.evaluate(() => setDividendViewMode('monthly'));
       await page.waitForTimeout(300);
 
       // Toggle de visualizacao deve existir na aba dedicada
@@ -176,12 +165,8 @@ viewports.forEach(vp => {
       await page.evaluate(() => go('dividendos'));
       await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 5000 });
 
-      // Navegar para Historico
-      await page.evaluate(() => {
-        const tabs = document.querySelectorAll('.div-premium-tab');
-        const tab = Array.from(tabs).find(t => t.textContent.includes('Histórico'));
-        if (tab) tab.click();
-      });
+      // O Overview canônico não exibe tabs; a rota interna continua testável.
+      await page.evaluate(() => setDividendViewMode('monthly'));
       await page.waitForTimeout(300);
 
       // Mudar filtro periodo (12m)

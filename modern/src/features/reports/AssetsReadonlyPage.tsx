@@ -25,7 +25,6 @@ import { AssetsReadonlyEmptyState } from './components/AssetsReadonlyEmptyState'
 import { DashboardMetricCard } from '../shared/components/DashboardMetricCard/DashboardMetricCard';
 import { DashboardSection } from '../shared/components/DashboardSection/DashboardSection';
 import { AssetClassBadge } from '../shared/components/AssetClassBadge/AssetClassBadge';
-import { formatReadonlyCurrency, formatReadonlyPercent, formatReadonlyQuantity } from './readonlyReportsViewModel.ts';
 import type { ReadOnlyReportItem } from './reportsReadonlyContract.mjs';
 
 interface AssetsReadonlyPageProps {

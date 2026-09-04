@@ -67,6 +67,25 @@
   --control-min-h:44px;
   --scroll-track:#111c2e;
   --scroll-thumb:#32445b;
+  /* ═══ CANONICAL VISUAL SYSTEM (approved) ═══
+     Frozen baseline for Dashboard + Dividendos + sidebar.
+     Scoped vars so other screens keep their current look until
+     the frozen system is propagated to them in later missions. */
+  --canon-bg:#06101b;
+  --canon-sidebar:#07111d;
+  --canon-panel:#0a1522;
+  --canon-panel-2:#0c1826;
+  --canon-border:#1b2a3a;
+  --canon-text:#f4f7fb;
+  --canon-muted:#8794a8;
+  --canon-green:#10d981;
+  --canon-blue:#3292ff;
+  --canon-red:#ff4d5f;
+  --canon-purple:#a855f7;
+  --canon-orange:#ff9f0a;
+  --canon-cyan:#20cbd5;
+  --canon-radius:12px;
+  --canon-tabular:1;
 }
 html[data-theme="light"]{
   color-scheme:light;
@@ -88,6 +107,21 @@ html[data-theme="light"]{
   --shadow-md:0 8px 24px rgba(15,23,42,.08);
   --scroll-track:#cfd9e4;
   --scroll-thumb:#73889d;
+  --canon-bg:#eef3f7;
+  --canon-sidebar:#e6edf3;
+  --canon-panel:#ffffff;
+  --canon-panel-2:#f4f8fb;
+  --canon-border:#c3cfd9;
+  --canon-text:#13202b;
+  --canon-muted:#5f7384;
+  --canon-green:#0e9e63;
+  --canon-blue:#2f6fd1;
+  --canon-red:#d43a47;
+  --canon-purple:#8b3fd0;
+  --canon-orange:#e07f00;
+  --canon-cyan:#0e9aa8;
+  --canon-radius:12px;
+  --canon-tabular:1;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:14px;overflow-x:hidden;transition:background .2s ease,color .2s ease}
@@ -199,6 +233,8 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 @media(min-width:1181px){
   .dashboard-master-primary{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr)}
   .dashboard-master-primary{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+  .dashboard-master-primary{align-items:start}
+  .dashboard-master-primary>*{height:auto}
   .dashboard-master-primary .dashboard-home-income .premium-metric-value{font-size:15px;overflow:visible;text-overflow:clip}
   .dashboard-master-primary .dashboard-home-income .premium-metric-label{font-size:11px;line-height:1.2}
   .premium-dividends-3 .dividend-primary-grid{grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:10px}
@@ -946,6 +982,7 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .premium-exec-sub{font-size:8px;color:var(--muted);line-height:1.25;margin-top:2px}
 .premium-exec-value{font-size:9px;font-weight:900;color:var(--text);text-align:right;white-space:nowrap}
 .premium-exec-value .gn,.premium-exec-value .am,.premium-exec-value .rd{display:block}
+.dashboard-highlight-row .dashboard-highlight-details,.dashboard-highlight-row .dashboard-highlight-bar{display:none}
 .premium-compact-details{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
 .premium-compact-details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px}
 .premium-compact-details>summary::-webkit-details-marker{display:none}
@@ -2300,6 +2337,34 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 .reports-experiment-entry__button{min-height:44px;padding:0 12px;border:1px solid rgba(79,70,229,.45);border-radius:999px;background:rgba(79,70,229,.14);color:#dbe4ff;font-weight:800;transition:transform .16s ease,border-color .16s ease,background-color .16s ease}
 .reports-experiment-entry__button:hover{transform:translateY(-1px);border-color:rgba(125,182,255,.56);background:rgba(79,70,229,.22)}
 .reports-experiment-entry__button:focus-visible{outline:3px solid #eef3ff;outline-offset:3px}
+/* Relatorios: keep analysis primary and exports explicit without changing data contracts. */
+.reports-premium-shell{max-width:1320px;gap:10px}
+.reports-premium-shell .reports-hero{padding:15px 16px;border-color:#20304a;background:var(--surface)!important}
+.reports-premium-shell .reports-title{font-size:20px;letter-spacing:-.02em}
+.reports-premium-shell .reports-sub{color:#8fa2ba}
+.reports-premium-shell .reports-filter{padding:3px;border:1px solid #1f3047;border-radius:12px;background:#09111d}
+.reports-premium-shell .reports-filter button{border:0;border-radius:9px;background:transparent;color:#8fa2ba}
+.reports-premium-shell .reports-filter button.on{background:rgba(16,185,129,.16);color:#86efac;box-shadow:inset 0 0 0 1px rgba(16,185,129,.24)}
+.reports-premium-shell .btn.reports-export-cta{border-color:rgba(16,185,129,.45)!important;background:#059669!important;color:#ecfdf5!important;box-shadow:none!important}
+.reports-premium-shell .btn.reports-export-cta:hover{background:#10b981!important}
+.reports-premium-shell .reports-panel{padding:13px 14px;background:#0a121f}
+.reports-premium-shell .reports-panel-head{margin-bottom:10px}
+.reports-premium-shell .reports-premium-main-grid{grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr)}
+.reports-premium-shell .reports-details{border-color:#20304a}
+.reports-premium-shell .reports-export-details{border-color:rgba(56,189,248,.28);background:#0a1421}
+.reports-premium-shell .reports-export-details summary{color:#dbeafe}
+.reports-premium-shell .reports-export-details summary span{color:#7dd3fc}
+.reports-premium-shell .reports-footnote{border-color:#20304a;background:#09111d}
+html[data-theme="light"] .reports-premium-shell .reports-filter{background:#f8fafc;border-color:#d9e2ec}
+html[data-theme="light"] .reports-premium-shell .reports-filter button{color:#52647b}
+html[data-theme="light"] .reports-premium-shell .reports-filter button.on{background:#ecfdf5;color:#166534;box-shadow:inset 0 0 0 1px #86efac}
+@media(max-width:560px){
+  .reports-premium-shell .reports-hero{padding:12px 10px}
+  .reports-premium-shell .reports-title{font-size:18px}
+  .reports-premium-shell .reports-premium-main-grid{grid-template-columns:1fr}
+  .reports-premium-shell .reports-filter{width:100%;justify-content:stretch}
+  .reports-premium-shell .reports-filter button{flex:1;min-width:0}
+}
 .pdf-report-overlay{position:fixed;inset:0;z-index:1200;background:rgba(2,6,14,.94);overflow:auto;padding:18px}
 .pdf-report-toolbar{position:sticky;top:0;z-index:3;max-width:1040px;margin:0 auto 10px;padding:10px 12px;border:1px solid #263650;border-radius:14px;background:rgba(10,16,27,.96);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pdf-report-toolbar-text{font-size:11px;color:#91a3bc;line-height:1.4}
@@ -5868,7 +5933,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .assets-premium-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;min-height:72px;transition:border-color .15s,box-shadow .15s}
     .assets-premium-kpi:hover{border-color:color-mix(in srgb, var(--border) 60%, var(--primary));box-shadow:0 2px 12px rgba(0,0,0,.12)}
     .assets-premium-kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;line-height:1.2}
-    .assets-premium-kpi-value{font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .assets-premium-kpi-value{font-size:clamp(13px,1.2vw,16px);font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;text-overflow:clip}
     .assets-premium-kpi-sub{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.25}
     .assets-premium-kpi.ok .assets-premium-kpi-value{color:var(--success)}
     .assets-premium-kpi.danger .assets-premium-kpi-value{color:var(--danger)}
@@ -6071,7 +6136,13 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-row-main{min-width:0;flex:1}
       .premium-rf-row-title{color:var(--text);font-size:12px;font-weight:850;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
       .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-row-value{text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
+      .premium-rf-row-meta.pos{color:var(--success)}
+      .premium-rf-row-meta.neg{color:var(--danger)}
+      .premium-rf-row-meta.neutral{color:var(--muted)}
+      .premium-rf-row-value{min-width:174px;text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
+      .premium-rf-row-financial{display:flex;align-items:baseline;justify-content:flex-end;gap:6px}
+      .premium-rf-row-financial-label{color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+      .premium-rf-row-results{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
       .premium-rf-row-actions{flex:none;display:flex;align-items:center}
       .premium-rf-row-actions .asset-action-menu-panel{right:0;left:auto}
       .premium-rf-maturity-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
@@ -6125,6 +6196,11 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-review-group.is-empty .premium-rf-review-list{display:none}
       }
       @media(max-width:390px){.premium-rf-kpi-value{font-size:14px}.premium-rf-row-meta{max-width:190px}}
+      @media(max-width:767px){
+        .premium-rf-row-value{min-width:0;max-width:51%;font-size:11px}
+        .premium-rf-row-results{gap:4px 8px}
+        .premium-rf-row-results .premium-rf-row-meta{font-size:9px}
+      }
       </style>
 <style>
 /* PREMIUM SETTINGS 6 */
@@ -6447,6 +6523,12 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .ag-table .tw .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
     .rf-table-wrap table{min-width:0;width:100%;table-layout:fixed}
     .rf-table-wrap table th,.rf-table-wrap table td{overflow:hidden;text-overflow:ellipsis}
+    #assets-premium-rf-table-desktop table,#assets-premium-rf-table-desktop .rf-table{min-width:0!important;width:100%;table-layout:fixed;font-size:10px}
+    #assets-premium-rf-table-desktop table th,#assets-premium-rf-table-desktop table td{min-width:0!important;padding:6px 5px;overflow:visible;text-overflow:clip;white-space:normal}
+    #assets-premium-rf-table-desktop table td:first-child{min-width:112px!important;white-space:normal}
+    #assets-premium-rf-table-desktop table th:last-child,#assets-premium-rf-table-desktop table td:last-child{width:220px!important;min-width:220px!important}
+    #assets-premium-rf-table-desktop .asset-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:3px}
+    #assets-premium-rf-table-desktop .asset-action{width:100%;min-width:0;padding:4px 3px;font-size:9px;white-space:normal}
     .rf-table-wrap .asset-actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}
     .rf-table-wrap .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
   }
@@ -6507,6 +6589,66 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   @media (max-width:360px){
     .index2027-dashboard .dashboard-executive-kpis{grid-template-columns:1fr}
     .index2027-dashboard .dashboard-executive-kpis .premium-metric:nth-child(1){grid-column:auto}
+  }
+  /* ===== Canonical visual lock overrides (scoped, non-destructive) ===== */
+  .canon-dashboard{--canon-gap:14px}
+  .canon-dash-head .dashboard-page-heading-meta{gap:10px}
+  .canon-dash-meta .canon-last-update{font-size:11px;color:var(--canon-muted)}
+  .canon-dash-row-b{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.85fr);gap:var(--canon-gap);margin-bottom:var(--canon-gap)}
+  .canon-dash-row-c{display:block;margin-bottom:var(--canon-gap)}
+  .canon-dash-row-c .dashboard-income-card{border:1px solid var(--canon-border);border-radius:16px}
+  .canon-dash-row-d{display:block;margin-bottom:var(--canon-gap)}
+  .canon-donut-seg-wrap{position:relative}
+  .canon-donut-tooltip{position:absolute;background:var(--canon-panel);border:1px solid var(--canon-border);color:var(--canon-text);font-size:12px;padding:8px 10px;border-radius:9px;max-width:190px;white-space:pre-line;font-variant-numeric:tabular-nums;box-shadow:0 6px 16px rgba(0,0,0,.35);pointer-events:none}
+  .canon-donut-tooltip:not([hidden]){display:block}
+  /* Sidebar active state == canonical dark green + left accent */
+  .tabs-desktop .tab{position:relative}
+  .tabs-desktop .tab::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px;background:transparent}
+  .tabs-desktop .tab.on{background:var(--canon-green-active,#0f3d2a);color:var(--canon-green,#10d981)}
+  .tabs-desktop .tab.on::before{background:var(--canon-green,#10d981)}
+  .tabs-desktop .tab.on:hover{background:var(--canon-green-active-hi,#174f38);color:var(--canon-green,#10d981)}
+  @media (max-width:767px){
+    .canon-dash-row-b{grid-template-columns:1fr;gap:12px}
+    .canon-dash-row-d{grid-template-columns:1fr;gap:12px}
+    .canon-perf-row{grid-template-columns:minmax(0,1fr) auto;gap:10px}
+    .canon-dash-meta{flex-wrap:wrap}
+  }
+  /* ===== Canonical Dividendos ===== */
+  .canon-dividends{display:flex;flex-direction:column;gap:16px}
+  .canon-div-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .canon-div-control-label{font-size:12px;color:var(--canon-muted)}
+  .canon-year-chips{display:flex;gap:6px;flex-wrap:wrap}
+  .canon-year-chip{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--canon-border);background:var(--canon-panel-2);color:var(--canon-muted);cursor:pointer}
+  .canon-year-chip:hover{border-color:var(--canon-green);color:var(--canon-text)}
+  .canon-year-chip.on{background:var(--canon-green-active,#0f3d2a);border-color:var(--canon-green);color:var(--canon-green)}
+  .canon-div-export{margin-left:auto}
+  .canon-div-kpi-row .dividend-executive-kpis{display:block}
+  .dividend-kpis-canon-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+  .canon-kpi-card{background:linear-gradient(160deg,var(--canon-panel),var(--canon-panel-2));border:1px solid var(--canon-border);border-radius:14px;padding:14px;min-height:0}
+  .canon-div-history{background:linear-gradient(160deg,var(--canon-panel),var(--canon-panel-2));border:1px solid var(--canon-border);border-radius:16px;padding:16px}
+  .canon-div-lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr) minmax(0,1.32fr);gap:16px}
+  .canon-div-panel{background:linear-gradient(160deg,var(--canon-panel),var(--canon-panel-2));border:1px solid var(--canon-border);border-radius:16px}
+  .canon-div-panel .premium-panel-head,.canon-div-history .dividend-history-heading{margin-bottom:12px}
+  .canon-year-summary-body{display:grid;grid-template-columns:180px minmax(0,1fr);gap:8px;align-items:center}
+  .canon-year-summary-donut{display:flex;align-items:center;justify-content:center}
+  .canon-year-summary-list{display:flex;flex-direction:column;gap:10px}
+  .canon-year-sum-row{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:10px;font-size:12px}
+  .canon-year-sum-year{font-weight:700;color:var(--canon-text)}
+  .canon-year-sum-track{height:8px;border-radius:4px;background:color-mix(in sRGB,var(--canon-border) 55%,#000);overflow:hidden}
+  .canon-year-sum-track i{display:block;height:100%;background:var(--canon-green);border-radius:4px}
+  .canon-year-sum-val{font-weight:700;color:var(--canon-text);font-variant-numeric:tabular-nums}
+  .canon-year-sum-count{grid-column:1/-1;color:var(--canon-muted);font-size:11px}
+  @media (max-width:1180px) and (min-width:768px){
+    .dividend-kpis-canon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .canon-div-lower{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  }
+  @media (max-width:767px){
+    .dividend-kpis-canon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .canon-div-lower{grid-template-columns:1fr}
+    .canon-year-sum-row{grid-template-columns:44px 1fr auto}
+    .canon-year-summary-body{grid-template-columns:1fr}
+    .canon-div-controls .canon-div-export{margin-left:0}
+    .canon-donut-seg-wrap{margin:0 auto}
   }
 </style>
 
@@ -6730,6 +6872,23 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 }
 .premium-financial-badge{max-width:none;overflow:visible;text-overflow:clip;white-space:normal;flex-shrink:0}
 .rebalance-study-type{white-space:normal;overflow:visible;text-overflow:clip}
+/* Canonical migration 06: keep rebalance analytical, compact and read-only. */
+.rebalance-shell .rebalance-hero{padding:13px 16px 15px;border-radius:12px}
+.rebalance-shell .rebalance-title{font-size:24px;line-height:1.05;color:var(--text)}
+.rebalance-shell .rebalance-subtitle{margin-top:5px;max-width:70ch}
+.rebalance-shell .rebalance-form{grid-template-columns:minmax(220px,320px) 140px 170px;gap:8px;margin-top:10px;justify-content:start}
+.rebalance-shell .rebalance-form .btn.bp{background:var(--success);color:#04120b;box-shadow:none}
+.rebalance-shell .rebalance-quickline-pill{color:var(--success);border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.1)}
+.rebalance-shell .rebalance-safety{border:0;background:transparent;padding:2px 2px;color:var(--muted)}
+.rebalance-shell .rebalance-alloc-bar.current{background:var(--success)}
+.rebalance-shell .rebalance-study-value{color:var(--success)}
+.rebalance-shell .rebalance-asset-suggestion>strong{color:var(--success)}
+@media(max-width:767px){
+  .rebalance-shell .rebalance-hero{padding:10px 12px 11px}
+  .rebalance-shell .rebalance-title{font-size:21px}
+  .rebalance-shell .rebalance-form{grid-template-columns:1fr;gap:6px;margin-top:8px}
+  .rebalance-shell .rebalance-form .btn{width:100%}
+}
 
 /* REAL_USE_REFINEMENT_02: keep the approved shell dense without reducing
    financial readability or the existing 44px interaction targets. */
@@ -6741,6 +6900,29 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .aporte-premium .aporte-contribution-grid .cv{font-size:18px}
 .aporte-premium .aporte-summary-columns{gap:9px;margin-bottom:9px}
 .aporte-premium .aporte-summary-panel .sh{margin-bottom:5px}
+/* Canonical Aportes hierarchy: heading first, controls second. */
+.aporte-premium > .sh{margin-bottom:0}
+.aporte-premium > .sh .st{font-size:28px;line-height:1.05;letter-spacing:-.03em;color:var(--text)}
+.aporte-premium > .sh .mu{font-size:12px;line-height:1.35}
+.aporte-premium .aporte-executive-heading{align-items:baseline}
+.aporte-premium .aporte-executive-heading .st{font-size:16px;font-weight:750;color:var(--text)}
+.aporte-premium .aporte-contribution-grid{gap:8px;margin-bottom:8px}
+.aporte-premium .aporte-contribution-grid .card{background:var(--panel);border-color:rgba(148,163,184,.16);box-shadow:none}
+.aporte-premium .aporte-contribution-grid .cv,
+.aporte-premium .aporte-contribution-total,
+.aporte-premium .aporte-month-value,
+.aporte-premium .aporte-class-row .cv{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.aporte-premium .aporte-view-tab.on,
+.aporte-premium .aporte-filter-chip.on{color:#d1fae5;background:rgba(16,185,129,.14);border-color:rgba(52,211,153,.38);box-shadow:none}
+.aporte-premium .aporte-view-tab:focus-visible,
+.aporte-premium .aporte-filter-chip:focus-visible,
+.aporte-premium .ap-toolbar .btn:focus-visible,
+.aporte-premium .aportes-imports-panel>summary:focus-visible{outline:2px solid #34d399;outline-offset:2px}
+@media(min-width:768px){
+  .aporte-premium .ap-toolbar{gap:8px}
+  .aporte-premium .ap-toolbar .aporte-search{max-width:none}
+  .aporte-premium .aporte-summary-panel{padding:11px 13px}
+}
 .chart-data-point{cursor:pointer;outline:none}
 .chart-data-point:focus{outline:none}
 .chart-data-point:focus-visible{stroke:var(--success);stroke-width:2;stroke-dasharray:3 2}
@@ -6757,11 +6939,17 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .dashboard-master-secondary .premium-panel-title{font-size:12px}
   .dashboard-master-secondary .premium-panel-sub{font-size:9px}
   .aporte-premium{gap:7px}
+  .aporte-premium > .sh .st{font-size:22px}
+  .aporte-premium > .sh .mu{font-size:11px}
+  .aporte-premium .aporte-executive-heading{gap:4px;margin-bottom:0}
   .aporte-premium .aporte-contribution-grid{gap:5px;margin-bottom:6px}
   .aporte-premium .aporte-contribution-grid .card{min-height:64px;padding:7px 8px}
   .aporte-premium .aporte-contribution-grid .cv{font-size:16px}
   .aporte-premium .aporte-contribution-grid .cl{font-size:9px;margin-bottom:4px}
   .aporte-premium .aporte-contribution-grid .cs{font-size:9px}
+  .aporte-premium .ap-toolbar{gap:6px}
+  .aporte-premium .aporte-search{padding:5px 9px}
+  .aporte-premium .aporte-summary-panel{padding:9px 10px}
   .dividend-history-block .hist-monthly th,.dividend-history-block .hist-monthly td{padding-top:6px;padding-bottom:6px}
 }
 @media(min-width:1181px){
@@ -6770,8 +6958,234 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .dashboard-master-secondary .dashboard-home-goals{grid-column:span 2}
   .dashboard-master-secondary .dashboard-home-actions{grid-column:span 2}
 }
+.rebalance-shell .rebalance-title{font-size:24px;line-height:1.05;color:var(--text)}
+.rebalance-shell .rebalance-form .btn.bp{background:var(--success)!important;color:#04120b!important;box-shadow:none!important}
+@media(max-width:767px){.rebalance-shell .rebalance-title{font-size:21px}}
 </style>
 
+<style>
+/* Canonical migration 01: scoped shell and composition alignment. */
+@media (min-width:1181px){
+    .canon-dashboard.premium-dashboard{gap:7px}
+  .tabs-desktop{width:194px;padding:18px 10px 14px;gap:3px;background:var(--canon-sidebar);border-right-color:var(--canon-border)}
+  .shell-main{margin-left:194px}
+  .tabs-desktop .side-brand{margin:0 2px 12px;padding:0 7px 12px}
+  .tabs-desktop .side-brand-icon{width:32px;height:32px;background:var(--canon-green);box-shadow:none}
+  .tabs-desktop .tab,.tabs-desktop .tab-menu>summary{min-height:40px;padding:9px 10px;border-radius:8px;color:var(--canon-text)}
+  .tabs-desktop .tab.on,.tabs-desktop .tab-menu>summary.on{background:rgba(16,217,129,.11);color:var(--canon-green)}
+  .tabs-desktop .tab.on::before{background:var(--canon-green)}
+  .tabs-desktop .tab-menu-panel{padding-left:10px}
+  .wrap{max-width:1500px;padding:20px 20px 30px}
+}
+
+/* The local fixture banner is diagnostic, not part of the product shell. */
+body:has(.test-mode-banner) .test-mode-banner{display:none!important}
+
+.canon-dashboard{width:100%;max-width:none;gap:12px}
+.canon-dashboard .dashboard-page-heading{padding:0 2px 2px;align-items:flex-end}
+.canon-dashboard .dashboard-page-heading h1{font-size:28px;letter-spacing:-.04em}
+.canon-dashboard .dashboard-page-heading p{font-size:12px;margin-top:5px;color:var(--canon-muted)}
+.canon-dashboard .canon-dash-meta{display:flex;flex-direction:row;align-items:center;gap:6px;border:0;background:transparent;padding:0}
+.canon-dashboard .canon-dash-meta .dash-chip{min-height:38px;padding:7px 11px;border-radius:9px}
+.canon-dashboard .canon-dash-meta .dash-chip.on{background:var(--canon-green);border-color:var(--canon-green);color:#04130c}
+.canon-dashboard .canon-last-update{margin-left:4px}
+.canon-dashboard .dashboard-executive-kpis{gap:10px;margin:0}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{min-height:0;height:78px;padding:8px 10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-top{gap:8px}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-icon{width:30px;height:30px;border-radius:9px}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-label{font-size:10px;color:var(--canon-muted)}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:20px;line-height:1.2;font-variant-numeric:tabular-nums}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:10px;color:var(--canon-muted)}
+.canon-dashboard .dashboard-analytical-primary{grid-template-columns:minmax(0,1.55fr) minmax(310px,.95fr);gap:12px;margin:0}
+  .canon-dashboard .dashboard-evolution-card{min-height:0;height:220px;padding:10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
+  .canon-dashboard .dashboard-home-composition{min-height:0;height:245px;padding:10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
+.canon-dashboard .dashboard-evolution-header,.canon-dashboard .dashboard-income-header{margin-bottom:8px}
+  .canon-dashboard .dashboard-evolution-card svg{height:160px;margin-top:2px}
+.canon-dashboard .dashboard-home-composition-body{grid-template-columns:142px minmax(0,1fr);gap:12px}
+.canon-dashboard .dashboard-home-composition-pie{transform:scale(.88)}
+.canon-dashboard .dashboard-class-row{padding:5px 0}
+.canon-dashboard .dashboard-class-value,.canon-dashboard .dashboard-class-share{font-size:10px;font-variant-numeric:tabular-nums}
+  .canon-dashboard .canon-dash-row-c .dashboard-income-card{min-height:0;padding:6px 8px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
+.canon-dashboard .canon-dash-row-c .dash-income-grid{grid-template-columns:1fr}
+.canon-dashboard .canon-dash-row-c .dash-income-main{width:100%}
+.canon-dashboard .dashboard-income-grid .premium-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .canon-dashboard .canon-dash-row-c .premium-metric{min-height:0;height:72px;padding:6px 8px;border:1px solid var(--canon-border);border-radius:10px;background:var(--canon-panel-2)}
+  .canon-dashboard .dashboard-income-grid .premium-metric-value{font-size:15px}
+.canon-dashboard .canon-dash-row-d .dashboard-highlight-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.canon-dashboard .dashboard-highlight-toolbar{grid-column:1/-1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--canon-text);font-size:13px;font-weight:800}
+.canon-dashboard .dashboard-highlight-toolbar .dash-chip{min-height:32px;padding:5px 9px;font-size:10px}
+.canon-dashboard .dashboard-highlight-toolbar .dash-chip.on{background:rgba(16,217,129,.11);border-color:rgba(16,217,129,.35);color:var(--canon-green)}
+.canon-dashboard .dashboard-highlight-column{min-width:0;padding:13px 14px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
+.canon-dashboard .dashboard-highlight-column-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.canon-dashboard .dashboard-highlight-column-head strong{font-size:15px;color:var(--canon-text)}
+.canon-dashboard .dashboard-highlight-column-head span{font-size:10px;color:var(--canon-muted)}
+  .canon-dashboard .dashboard-highlight-column .premium-exec-row{padding:5px 7px;min-height:34px;border-bottom:1px solid rgba(27,42,58,.8)}
+  .canon-dashboard .dashboard-highlight-column .dashboard-context-action{min-height:0!important;height:35px}
+  .canon-dashboard .dashboard-highlight-column .premium-exec-title{font-size:12px;line-height:1.1}
+  .canon-dashboard .dashboard-highlight-column .premium-exec-sub,.canon-dashboard .dashboard-highlight-column .premium-exec-value{font-size:9px;line-height:1.1}
+
+.premium-dividends-3{gap:12px;width:100%;max-width:none}
+.premium-dividends-3 .div-premium-hero{padding:0;border:0;background:transparent;box-shadow:none}
+.premium-dividends-3 .div-premium-head{padding:0 2px;align-items:flex-end}
+.premium-dividends-3 .div-premium-title{font-size:28px;line-height:1.1}
+.premium-dividends-3 .div-premium-sub{font-size:12px;margin-top:5px;color:var(--canon-muted)}
+.premium-dividends-3 .div-premium-head .btn{min-height:40px;padding:0 14px;border-radius:9px;background:var(--canon-green);color:#04130c;box-shadow:none}
+.premium-dividends-3 .div-premium-canon-actions{display:flex;align-items:center;gap:8px}
+.premium-dividends-3 .div-premium-canon-actions .canon-year-chips{margin:0}
+.premium-dividends-3 .div-premium-canon-actions .canon-year-chip{min-height:40px}
+.premium-dividends-3 .div-premium-canon-actions .btn{min-height:40px}
+.premium-dividends-3 .div-premium-tabs{width:max-content;max-width:100%;margin-top:9px;padding:3px;border:1px solid var(--canon-border);border-radius:10px;background:var(--canon-panel)}
+.premium-dividends-3 .div-premium-tab{min-height:36px;padding:7px 11px;border-radius:7px;color:var(--canon-muted)}
+.premium-dividends-3 .div-premium-tab.on{background:rgba(16,217,129,.11);color:var(--canon-green)}
+.premium-dividends-3 .canon-dividends{gap:12px}
+.premium-dividends-3 .canon-div-controls{gap:8px;min-height:38px}
+.premium-dividends-3 .canon-year-chips{gap:5px}
+.premium-dividends-3 .canon-year-chip{min-height:38px;padding:7px 12px;border-radius:9px;background:transparent}
+.premium-dividends-3 .canon-year-chip.on{background:var(--canon-green);border-color:var(--canon-green);color:#04130c}
+.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.premium-dividends-3 .canon-kpi-card{min-height:86px;padding:12px 13px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
+.premium-dividends-3 .dividend-executive-kpi-label{font-size:10px;color:var(--canon-muted)}
+.premium-dividends-3 .dividend-executive-kpi-value{font-size:20px;line-height:1.1;color:var(--canon-text);font-variant-numeric:tabular-nums}
+.premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--canon-green)}
+.premium-dividends-3 .dividend-executive-kpi-sub{font-size:10px;color:var(--canon-muted)}
+.premium-dividends-3 .dividend-executive-kpi{position:relative}
+.premium-dividends-3 .dividend-executive-kpi-icon{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-size:16px;background:rgba(16,217,129,.12);color:var(--canon-green)}
+.premium-dividends-3 .dividend-executive-kpi-icon.blue{background:rgba(47,155,255,.14);color:#2f9bff}
+.premium-dividends-3 .dividend-executive-kpi-icon.orange{background:rgba(255,159,28,.14);color:#ff9f1c}
+.premium-dividends-3 .dividend-executive-kpi-icon.purple{background:rgba(165,107,255,.14);color:#a56bff}
+.premium-dividends-3 .dividend-executive-kpi-icon.cyan{background:rgba(27,182,176,.14);color:#1bb6b0}
+.premium-dividends-3 .dividend-executive-kpi-label,.premium-dividends-3 .dividend-executive-kpi-value,.premium-dividends-3 .dividend-executive-kpi-sub{padding-right:38px}
+.premium-dividends-3 .canon-div-history{padding:0;overflow:hidden;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel)}
+.premium-dividends-3 .canon-div-history .dividend-history-heading{padding:12px 14px;margin:0;border-bottom:1px solid var(--canon-border)}
+.premium-dividends-3 .canon-div-history .dividend-history-heading strong{font-size:15px}
+.premium-dividends-3 .canon-div-history .div-monthly-content{padding:0 8px 6px}
+.premium-dividends-3 .canon-div-history .div-monthly-content table{min-width:0;width:100%}
+.premium-dividends-3 .canon-div-lower{grid-template-columns:minmax(0,1.35fr) minmax(0,.95fr) minmax(0,1.15fr);gap:12px}
+.premium-dividends-3 .canon-div-panel{min-height:286px;padding:13px 14px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
+.premium-dividends-3 .canon-div-panel .premium-panel-head{margin-bottom:8px}
+.premium-dividends-3 .dividend-timeline-summary{margin-bottom:4px}
+.premium-dividends-3 .div-timeline-summary-title{font-size:13px;font-weight:800;color:var(--canon-text)}
+.premium-dividends-3 .dividend-evolution-chart{min-height:0;height:auto;max-height:230px}
+.premium-dividends-3 .canon-year-summary-body{grid-template-columns:140px minmax(0,1fr);gap:8px}
+.premium-dividends-3 .canon-year-summary-list{gap:7px}
+.premium-dividends-3 .canon-year-sum-row{grid-template-columns:42px minmax(0,1fr) auto;gap:7px;font-size:11px}
+.premium-dividends-3 .canon-div-top .div-asset-group{border:0;border-bottom:1px solid rgba(148,163,184,.13);border-radius:0;background:transparent}
+.premium-dividends-3 .canon-div-top .div-asset-group:last-child{border-bottom:0}
+.premium-dividends-3 .canon-div-top .div-asset-group>summary{padding:7px 0;grid-template-columns:24px minmax(0,1fr) auto;gap:8px}
+.premium-dividends-3 .canon-div-top .div-asset-group>summary:hover{background:transparent}
+.premium-dividends-3 .canon-div-top .div-asset-stat:not(.div-asset-total),.premium-dividends-3 .canon-div-top .div-asset-group .ag-open{display:none}
+
+@media (max-width:767px){
+  .canon-dashboard{gap:9px}
+  .canon-dashboard .dashboard-page-heading{align-items:flex-start;gap:4px}
+  .canon-dashboard .dashboard-page-heading h1,.premium-dividends-3 .div-premium-title{font-size:22px}
+  .canon-dashboard .canon-dash-meta{width:100%;overflow-x:auto;padding-bottom:1px}
+  .canon-dashboard .canon-dash-meta .dash-chip{min-height:36px}
+  .canon-dashboard .dashboard-executive-kpis{gap:7px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{min-height:76px;padding:9px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:16px}
+  .canon-dashboard .dashboard-analytical-primary{display:flex;flex-direction:column;gap:9px}
+  .canon-dashboard .dashboard-evolution-card,.canon-dashboard .dashboard-home-composition{min-height:0;padding:11px}
+  .canon-dashboard .dashboard-evolution-card,.canon-dashboard .dashboard-home-composition{height:auto}
+  .canon-dashboard .dashboard-evolution-card svg{height:190px}
+  .canon-dashboard .dashboard-home-composition-body{grid-template-columns:110px minmax(0,1fr);gap:8px}
+  .canon-dashboard .dashboard-home-composition-pie{transform:scale(.72)}
+  .canon-dashboard .canon-dash-row-c .dashboard-income-card{padding:11px}
+  .canon-dashboard .dashboard-income-grid .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .canon-dashboard .dashboard-income-grid .premium-metric{min-height:68px;padding:8px}
+  .canon-dashboard .canon-dash-row-c .premium-metric{height:auto;min-height:54px;padding:8px}
+  .canon-dashboard .dashboard-income-grid .premium-metric-value{font-size:14px}
+  .canon-dashboard .canon-dash-row-d .dashboard-highlight-panels{grid-template-columns:1fr;gap:9px}
+  .canon-dashboard .dashboard-highlight-column{padding:11px}
+  .canon-dashboard .dashboard-highlight-column .dashboard-context-action{height:auto;min-height:44px!important}
+  .premium-dividends-3{gap:9px;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+  .premium-dividends-3 .div-premium-head{align-items:flex-start;gap:8px}
+  .premium-dividends-3 .div-premium-canon-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}
+  .premium-dividends-3 .div-premium-canon-actions .canon-year-chips{overflow-x:auto;flex-wrap:nowrap;max-width:calc(100% - 92px)}
+  .premium-dividends-3 .div-premium-head .btn{min-height:44px;padding:0 10px;font-size:10px}
+  .premium-dividends-3 .div-premium-tabs{width:100%;overflow-x:auto}
+  .premium-dividends-3 .div-premium-tab{min-height:44px;padding:8px 10px}
+  .premium-dividends-3 .canon-div-controls{align-items:stretch}
+  .premium-dividends-3 .canon-div-export{margin-left:0}
+  .premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .premium-dividends-3 .canon-kpi-card{min-height:72px;padding:9px}
+  .premium-dividends-3 .dividend-executive-kpi-icon{right:9px;top:9px;width:26px;height:26px;font-size:13px}
+  .premium-dividends-3 .dividend-executive-kpi-label,.premium-dividends-3 .dividend-executive-kpi-value,.premium-dividends-3 .dividend-executive-kpi-sub{padding-right:30px}
+  .premium-dividends-3 .dividend-executive-kpi-value{font-size:15px}
+  .premium-dividends-3 .canon-div-history{overflow:hidden}
+  .premium-dividends-3 .canon-div-history .div-monthly-content{overflow-x:auto}
+  .premium-dividends-3 .canon-div-history .div-monthly-content table{min-width:720px}
+  .premium-dividends-3 .canon-div-lower{grid-template-columns:1fr;gap:9px}
+  .premium-dividends-3 .canon-div-panel{min-height:0;padding:11px}
+  .premium-dividends-3 .canon-year-summary-body{grid-template-columns:1fr}
+  .premium-dividends-3 .dividend-evolution-chart{max-height:none}
+}
+</style>
+
+<style>
+/* Final dashboard height pass: desktop-only density, mobile remains untouched. */
+@media (min-width:1181px){
+  .canon-dashboard .dashboard-evolution-card{height:190px;padding:8px}
+  .canon-dashboard .dashboard-evolution-card svg{height:138px}
+  .canon-dashboard .dashboard-home-composition{height:205px;padding:8px}
+  .canon-dashboard .dashboard-home-composition-body{grid-template-columns:126px minmax(0,1fr);gap:8px;height:148px}
+  .canon-dashboard .dashboard-home-composition-pie{transform:scale(.78);transform-origin:top center}
+  .canon-dashboard .canon-dash-row-c .dashboard-income-card{padding:6px 8px}
+  .canon-dashboard .canon-dash-row-c .premium-metric{height:56px;padding:5px 7px}
+  .canon-dashboard .canon-dash-row-c .premium-metric-value{font-size:15px}
+    .canon-dashboard .dashboard-highlight-column .premium-exec-row{height:29px;padding:2px 7px}
+    .canon-dashboard .dashboard-highlight-column .dashboard-context-action{height:29px}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:center;min-width:190px;font-size:9px;color:var(--canon-muted);font-variant-numeric:tabular-nums}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details strong{display:block;color:var(--canon-text);font-size:10px;font-weight:800}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-bar{display:block;width:100%;height:3px;margin-top:2px;border-radius:999px;background:rgba(148,163,184,.16);overflow:hidden}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-bar span{display:block;height:100%;border-radius:inherit;background:var(--canon-green)}
+    .canon-dashboard .dashboard-highlight-column.low .dashboard-highlight-bar span{background:var(--canon-red)}
+    .canon-dashboard .dashboard-highlight-column .dashboard-highlight-row{display:grid;grid-template-columns:minmax(86px,1.05fr) minmax(176px,1.1fr) minmax(70px,1fr) max-content;align-items:center;gap:8px}
+    .canon-dashboard .dashboard-highlight-row .premium-exec-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details{display:flex;gap:10px;min-width:176px}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details span{white-space:nowrap}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details strong{display:inline;margin-left:3px}
+    .canon-dashboard .dashboard-highlight-row .dashboard-highlight-bar{margin-top:0}
+}
+</style>
+
+<style>
+/* Canonical migration 07: compact goals hierarchy without changing goal logic. */
+.metas-shell{gap:8px;padding-bottom:2px}
+.metas-shell .page-heading{margin-bottom:0;font-size:24px;line-height:1.05}
+.metas-shell .page-sub{margin-bottom:4px;max-width:72ch}
+.metas-shell .metas-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin-bottom:4px!important}
+.metas-shell .metas-kpi-card{min-width:0;min-height:66px;padding:9px 11px}
+.metas-shell .metas-kpi-value{font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;text-overflow:clip}
+.metas-shell .metas-kpi-sub{white-space:nowrap;overflow:visible;text-overflow:clip}
+.metas-shell .btn.bp{background:var(--success)!important;color:#04120b!important;box-shadow:none!important}
+.metas-shell .dbf{background:var(--success)!important}
+.metas-shell .metas-goal-section [style*="color:var(--primary)"]{color:var(--success)!important}
+.metas-shell .metas-summary-bar{gap:8px;padding:8px 10px;margin-bottom:4px}
+.metas-shell .metas-summary-bar>div{min-width:0!important}
+.metas-shell .metas-summary-bar>div>div:last-child{font-variant-numeric:tabular-nums;white-space:normal}
+.metas-shell .metas-goal-section{margin-bottom:4px!important}
+.metas-shell .metas-goal-section>summary{min-height:56px;padding:9px 11px}
+.metas-shell .metas-goal-section .sec-body{padding:9px 11px 10px}
+.metas-shell .metas-goal-section .sec-title{font-size:13px}
+.metas-shell .metas-goal-section .sec-meta{font-size:9px}
+.metas-shell .metas-goal-section input,.metas-shell .metas-goal-section select{font-variant-numeric:tabular-nums}
+.metas-shell .metas-goal-section .card.al{box-shadow:none}
+.metas-shell .metas-goal-section table{font-variant-numeric:tabular-nums}
+.metas-shell .metas-goal-section table th,.metas-shell .metas-goal-section table td{white-space:nowrap}
+.metas-shell .metas-goal-section table td:first-child{white-space:normal}
+@media(max-width:767px){
+  .metas-shell .page-heading{font-size:21px}
+  .metas-shell .metas-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .metas-shell .metas-kpi-card{padding:8px 9px;min-height:62px}
+  .metas-shell .metas-kpi-value{font-size:15px}
+  .metas-shell .metas-summary-bar{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+  .metas-shell .metas-goal-section>summary{padding:9px 10px}
+}
+@media(min-width:768px) and (max-width:1100px){
+  .metas-shell .metas-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -20175,9 +20589,9 @@ function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
     const pts=values.map((v,i)=>`${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`);
     const path=`M ${pts.join(' L ')}`;
     const area=`M ${xAt(0).toFixed(1)},${(height-padB).toFixed(1)} L ${pts.join(' L ')} L ${xAt(values.length-1).toFixed(1)},${(height-padB).toFixed(1)} Z`;
-    const pointsMarkup=values.map((v,i)=>{
+const pointsMarkup=values.map((v,i)=>{
       const label=labels[i]||`Período ${i+1}`;
-      const tooltip=`${s.name||'Série'} · ${label}: ${valueFormatter(v)}`;
+      const tooltip=s.tooltipLabel ? `${label}\n${s.tooltipLabel}\n${valueFormatter(v)}` : `${s.name||'Série'} · ${label}: ${valueFormatter(v)}`;
       const visible=s.points===false?'':`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.5" fill="${color}" stroke="#090c15" stroke-width="1"/>`;
       return `${visible}<circle class="chart-data-point" cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="8" fill="transparent" tabindex="0" focusable="true" aria-label="${esc(tooltip)}" data-chart-tooltip="${esc(tooltip)}" onpointerenter="showLineChartTooltip(this,event)" onpointerleave="hideLineChartTooltip()" onfocus="showLineChartTooltip(this,event)" onblur="hideLineChartTooltip()" onclick="showLineChartTooltip(this,event)"><title>${esc(tooltip)}</title></circle>`;
     }).join('');
@@ -20683,6 +21097,62 @@ function pie(data, colors=CLRS){
     <text x="90" y="86" text-anchor="middle" fill="#e2eaf6" font-size="15" font-weight="700">${data.length}</text>
     <text x="90" y="103" text-anchor="middle" fill="#64748b" font-size="10">ativos</text>
   </svg>`;
+}
+function canonDonutTooltipHide(){ const t=document.querySelector('.canon-donut-seg-wrap .canon-donut-tooltip'); if(t&&document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('canon-donut-seg')) return; if(t) t.hidden=true; }
+function canonDonutInteractive(data, opts={}){
+  const colors=opts.colors||['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6','#a78bfa','#f9a8d4'];
+  const total=data.reduce((s,d)=>s+(Number(d.value)||0),0);
+  const innerR=opts.inner||38;
+  const outR=74;
+  const cx=90,cy=90;
+  if(!total) return '<div class="canon-donut-empty">Sem dados de composição.</div>';
+  const segId=`donut-${opts.id||'c'}`;
+  let arc='',a=-Math.PI/2,idx=0;
+  const segs=data.map(d=>{
+    const ang=(Number(d.value)||0)/total*2*Math.PI;
+    if(ang<=0){ return ''; }
+    const x1=cx+outR*Math.cos(a),y1=cy+outR*Math.sin(a);
+    const x2=cx+outR*Math.cos(a+ang),y2=cy+outR*Math.sin(a+ang);
+    const ix1=cx+innerR*Math.cos(a+ang),iy1=cy+innerR*Math.sin(a+ang);
+    const ix2=cx+innerR*Math.cos(a),iy2=cy+innerR*Math.sin(a);
+    const large=ang>Math.PI?1:0;
+    const pctTxt=((Number(d.value)||0)/total*100).toFixed(1);
+    const tt=`${d.name}\n${opts.fmt?opts.fmt(d.value):'R$ '+(Number(d.value)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}\n${pctTxt}%`;
+    const color=colors[(opts.offset||0)+idx++%colors.length]||colors[(opts.offset||0)+idx-1];
+    const seg=(
+      `<path class="canon-donut-seg" tabindex="0" focusable="true" role="img" aria-label="${esc(tt)}" data-tt="${esc(tt)}"
+        d="M${x1.toFixed(1)},${y1.toFixed(1)} A${outR},${outR} 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} L${ix1.toFixed(1)},${iy1.toFixed(1)} A${innerR},${innerR} 0 ${large},0 ${ix2.toFixed(1)},${iy2.toFixed(1)} Z"
+        fill="${color}" stroke="#06101b" stroke-width="2"
+        onpointerenter="canonDonutShowTooltip(this)" onpointerleave="canonDonutTooltipHide()"
+        onfocus="canonDonutShowTooltip(this)" onblur="canonDonutTooltipHide()"
+        onclick="canonDonutShowTooltip(this)"></path>`
+    );
+    a+=ang;
+    return seg;
+  }).filter(Boolean).join('');
+  const centerText=opts.centerText||`${data.length}`;
+  const centerSub=opts.centerSub||'classes';
+  return `<div class="canon-donut-seg-wrap" style="position:relative">
+    <svg viewBox="0 0 180 180" width="180" height="180" style="display:block;margin:0 auto;overflow:visible">
+      ${segs}
+      <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#0a1522" stroke="#1b2a3a" stroke-width="2"></circle>
+      <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#f4f7fb" font-size="15" font-weight="700">${esc(centerText)}</text>
+      <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#8794a8" font-size="10">${esc(centerSub)}</text>
+    </svg>
+    <div class="canon-donut-tooltip" role="status" aria-live="polite" hidden></div>
+  </div>`;
+}
+function canonDonutShowTooltip(seg){
+  const wrap=seg.closest('.canon-donut-seg-wrap');
+  if(!wrap) return;
+  const tip=wrap.querySelector('.canon-donut-tooltip');
+  if(!tip) return;
+  tip.textContent=seg.dataset.tt||seg.getAttribute('aria-label')||'';
+  tip.hidden=false;
+  const er=seg.getBoundingClientRect(),wr=wrap.getBoundingClientRect();
+  const maxLeft=Math.max(6,wr.width-tip.offsetWidth-6);
+  tip.style.left=`${Math.min(maxLeft,Math.max(6,er.left-wr.left+er.width/2-tip.offsetWidth/2))}px`;
+  tip.style.top=`${Math.max(6,er.top-wr.top-8)}px`;
 }
 function setDashPeriod(period){
   S.dashPeriod=Math.max(3, Number(period)||12);
@@ -23817,27 +24287,36 @@ function navTabGroup(label, items, idSuffix='main'){
     </div>
   </details>`;
 }
+function goAssetInner(tab){
+  setAssetsInnerTab(tab);
+  go('ativos');
+}
 function desktopTabs(){
   const sideLu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
-  return `<nav class="tabs tabs-desktop" aria-label="Navegação principal da carteira">
+  const isAtivos=S.tab==='ativos';
+  const innerTab=String(S.assetsInnerTab||'patrimonio');
+  const navItem=(key,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
+  const navItemInner=(tooltip,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="goAssetInner('${tooltip}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
+  return `<nav class="tabs tabs-desktop" aria-label="Navegacion principal de la carteira">
     <div class="side-brand">
       <div class="side-brand-icon" aria-hidden="true">📈</div>
       <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
-    ${navTabButton('dashboard','📊 Dashboard')}
-    ${navTabButton('ativos','💼 Ativos')}
-    ${navTabButton('aportes','💰 Aportes')}
-    ${navTabButton('metas','🎯 Metas')}
-    ${navTabButton('dividendos','📅 Dividendos')}
-    ${navTabButton('rentabilidade','📈 Rentabilidade')}
-    ${navTabButton('ajudar','⚖️ Rebalancear')}
+    ${navItem('dashboard','Dashboard','📊',S.tab==='dashboard')}
+    ${navItem('ativos','Ativos','💼',isAtivos&&innerTab==='patrimonio')}
+    ${navItemInner('renda-fixa','Renda Fixa','🧾',isAtivos&&innerTab==='renda-fixa')}
+    ${navItemInner('analise','Fundos','📁',isAtivos&&innerTab==='analise')}
+    ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
+    ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
+    ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
-    ${navTabButton('ia','💡 Insights')}
+    ${navItem('metas','Metas','🎯',S.tab==='metas')}
+    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
+    ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
     <div class="side-utilities" aria-label="Preferências da carteira">
       ${hideValuesToggleButton('sidebar')}
       <button class="tab side-theme side-utility" onclick="toggleTheme()" aria-label="Alternar entre tema escuro e claro" title="Alternar tema">🌗 Tema</button>
-      ${navTabButton('settings','⚙️ Configurações')}
     </div>
     <div class="side-status">Cotações atualizadas às ${sideLu}</div>
   </nav>`;
@@ -24354,7 +24833,6 @@ function dashboardPassiveIncomePanel(data){
           ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
           ${dashboardMetricCard('🧭','Falta para meta — média 12M',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
         </div>
-        <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>
       </div>
     </div>
   </div>`;
@@ -24535,11 +25013,18 @@ function dashboardHighlightsRowHtml(row, kind){
   const resultText=Number.isFinite(row.result) ? fmt(row.result) : '—';
   const signTone=kind==='low' ? 'rd' : 'gn';
   const ticker=String(row.ticker||'').trim();
+  const asset=Array.isArray(S.assets) ? S.assets.find(item=>String(item?.ticker||'').trim().toUpperCase()===ticker.toUpperCase()) : null;
+  const avgPrice=Number(asset?.avg_price);
+  const currentPrice=Number(asset?.current_price);
+  const assetName=String(asset?.name||asset?.title||asset?.product||'').trim();
+  const barWidth=Number.isFinite(row.resultPct) ? Math.max(8,Math.min(100,Math.abs(row.resultPct))) : 8;
   const content=`
     <div class="premium-exec-left">
       <div class="premium-exec-title">${esc(ticker||row.label||'—')}</div>
-      <div class="premium-exec-sub">${esc(row.type||'—')}</div>
+      <div class="premium-exec-sub">${esc(assetName||row.type||'—')}</div>
     </div>
+    <div class="dashboard-highlight-details"><span>PM<strong>${avgPrice>0?fmt(avgPrice):'—'}</strong></span><span>Atual<strong>${currentPrice>0?fmt(currentPrice):'—'}</strong></span></div>
+    <div class="dashboard-highlight-bar" aria-hidden="true"><span style="width:${barWidth.toFixed(0)}%"></span></div>
     <div class="premium-exec-value"><span class="${signTone}">${esc(resultPctText)}</span><span class="${signTone}">${esc(resultText)}</span></div>`;
   const exactAsset=typeof dashboardAssetByTicker==='function' ? dashboardAssetByTicker(ticker) : null;
   return exactAsset
@@ -24547,40 +25032,26 @@ function dashboardHighlightsRowHtml(row, kind){
     : `<div class="premium-exec-row dashboard-highlight-row">${content}</div>`;
 }
 function dashboardHomeHighlightsPanel(){
-  const tab=String(S.dashboardHighlightsTab||'high')==='low' ? 'low' : 'high';
   const classFilter=['all','acao','fii','etf'].includes(String(S.dashboardHighlightsClassFilter||'all'))
-    ? String(S.dashboardHighlightsClassFilter||'all')
-    : 'all';
-  const rows=dashboardHighlightsRows(tab, classFilter).slice(0,5);
-  const empty=tab==='low'
-    ? '<div class="premium-empty">Nenhum ativo negativo com dados suficientes.</div>'
-    : '<div class="premium-empty">Nenhum ativo positivo com dados suficientes.</div>';
-  const body=rows.length ? rows.map(row=>dashboardHighlightsRowHtml(row, tab)).join('') : empty;
-  const badge=tab==='low'
-    ? `${Math.min(5, rows.length)} baixas`
-    : `${Math.min(5, rows.length)} altas`;
-  const classFilters=[['all','Todos'],['acao','Ações'],['fii','FIIs'],['etf','ETFs']];
-  return `<div class="premium-panel dashboard-home-highlights">
-    <div class="premium-panel-head">
-      <div><div class="premium-panel-title">Destaques da carteira</div><div class="premium-panel-sub">Desempenho atual dos seus ativos</div></div>
-      <div class="premium-panel-badge">${esc(badge)}</div>
-    </div>
-    <div class="asset-inner-tabs dashboard-highlights-tabs" role="tablist" aria-label="Destaques da carteira">
-      <button type="button" class="asset-inner-tab ${tab==='high'?'on':''}" onclick="setDashboardHighlightsTab('high')" role="tab" aria-selected="${tab==='high'?'true':'false'}">Maiores altas</button>
-      <button type="button" class="asset-inner-tab ${tab==='low'?'on':''}" onclick="setDashboardHighlightsTab('low')" role="tab" aria-selected="${tab==='low'?'true':'false'}">Maiores baixas</button>
-    </div>
-    <div class="dash-filters" style="margin-top:8px" role="group" aria-label="Filtrar destaques por categoria">
-      ${classFilters.map(([value,label])=>`<button type="button" class="dash-chip ${classFilter===value?'on':''}" onclick="setDashboardHighlightsClassFilter('${value}')">${label}</button>`).join('')}
-    </div>
-    <div class="premium-exec-list">${body}</div>
-    <div class="premium-panel-actions"><button class="btn bgh touch-target-utility" onclick="go('desempenho')">Ver todos</button></div>
+    ? String(S.dashboardHighlightsClassFilter||'all') : 'all';
+  const renderColumn=(kind,title,empty)=>{
+    const rows=dashboardHighlightsRows(kind,classFilter).slice(0,5);
+    const body=rows.length ? rows.map(row=>dashboardHighlightsRowHtml(row,kind)).join('') : `<div class="premium-empty">${empty}</div>`;
+    return `<section class="dashboard-highlight-column ${kind}">
+      <div class="dashboard-highlight-column-head"><strong>${title}</strong><span>${rows.length} ativos</span></div>
+      <div class="premium-exec-list">${body}</div>
+    </section>`;
+  };
+  return `<div class="dashboard-highlight-panels">
+    ${renderColumn('high','Maiores altas','Nenhum ativo positivo com dados suficientes.')}
+    ${renderColumn('low','Maiores baixas','Nenhum ativo negativo com dados suficientes.')}
   </div>`;
 }
 function dashboardHomeCompositionPanel(data){
   const rows=Array.isArray(data?.typeRows) ? data.typeRows : [];
   const total=Number(data?.portfolio?.tC)||0;
-  const palette=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6'];
-  const pieData=pie(rows.map(row=>({name:row.type,value:row.value})),palette);
+  const palette=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff','#22c8a6','#a78bfa','#f9a8d4'];
+  const pieData=canonDonutInteractive(rows.map(row=>({name:row.type,value:row.value} )),{colors:palette,fmt,centerText:total>0?fmt(total):'—',centerSub:'patrimônio'});
   const body=rows.length
     ? rows.map((row,idx)=>{
         const pct=Number(row.share)||0;
@@ -25434,14 +25905,14 @@ function rendaFixaTab(){
     return '<span class="premium-rf-maturity-badge ok">>12 meses</span>';
   }
 
-  const positionRows=data.previewRows.length ? data.previewRows.map(row=>{
+  const positionRows=data.tableRows.length ? data.tableRows.map(row=>{
     const asset=(S.assets||[]).find(a=>String(a?.ticker||'').trim().toUpperCase()===String(row.ticker||'').trim().toUpperCase()) || data.assets.find(a=>a.ticker===row.ticker);
     const getAssetEventId = (typeof rfAssetEventId === 'function') ? rfAssetEventId : (a)=>String(a?.id||a?.assetId||a?.rf_asset_id||'').trim();
     const assetId=asset?getAssetEventId(asset):null;
     const menuId=assetId?`rf-pos-menu-${assetId.replace(/[^a-zA-Z0-9_-]/g,'-')}`:'';
     const display=row.explicit===false
-      ? {kind:'missing', currentText:'Atualização necessária', currentNote:'Valor atual não informado', resultClass:'neutral', resultText:'—'}
-      : {kind:'current', currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', resultClass:row.profit>=0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit)};
+      ? {kind:'missing', appliedText:fmt(row.applied), currentText:'Atualização necessária', currentNote:'Valor atual não informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:'neutral', resultText:'—', rentabilityText:'—'}
+      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>=0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
     return `
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
@@ -25449,9 +25920,14 @@ function rendaFixaTab(){
         <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}${row.issuer?` · ${esc(row.issuer)}`:''}</div>
       </div>
       <div class="premium-rf-row-value">
-        ${display.currentText}
+        <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
+        <div class="premium-rf-row-meta">Valor aplicado ${display.appliedText}</div>
         <div class="premium-rf-row-meta">${esc(display.currentNote)}</div>
-        <div class="premium-rf-row-meta ${display.resultClass}">${display.kind==='fallback-applied' ? '—' : display.resultText}</div>
+        <div class="premium-rf-row-meta">Vencimento ${esc(display.maturityText)}</div>
+        <div class="premium-rf-row-results">
+          <span class="premium-rf-row-meta ${display.resultClass}">Resultado ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
+          <span class="premium-rf-row-meta ${display.resultClass}">Rentab. ${display.rentabilityText}</span>
+        </div>
       </div>
       ${assetId ? `
       <div class="premium-rf-row-actions">
@@ -25498,7 +25974,7 @@ function rendaFixaTab(){
             <div class="premium-rf-review-item-main">
               <div class="premium-rf-review-item-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
               <div class="premium-rf-review-item-meta">${esc(row.category)} · ${esc(dueText)}</div>
-              <div class="premium-rf-review-item-value">${row.explicit===false?'Valor não informado':fmt(row.current)}</div>
+              <div class="premium-rf-review-item-value">${row.explicit===false?'Atualização necessária':fmt(row.current)}</div>
             </div>
             ${assetId?`<button type="button" class="premium-rf-review-action" onclick='edA(${JSON.stringify(assetId)})'>Revisar</button>`:''}
           </div>`;
@@ -25541,7 +26017,7 @@ function rendaFixaTab(){
         <div class="premium-row-sub">${esc(row.primaryIssue)}${row.days!=null?` · ${row.days<0?'vencido':`${Math.abs(row.days)} dia${Math.abs(row.days)===1?'':'s'}`}`:''}</div>
       </div>
       <div class="rf-preview-value">
-        <span class="analysis-pill ${row.severity<=1?'danger':row.severity===2?'warn':'muted'}">${esc(row.primaryIssue)}</span>
+        <span class="analysis-pill ${row.severity<=1?'danger':row.severity===2?'warn':'muted'}">${esc(row.primaryIssue==='Valor atual não informado'?'Atualização necessária':row.primaryIssue)}</span>
         <div class="premium-row-sub">${esc(row.rate||'taxa não informada')}</div>
       </div>
     </div>`).join('') : '<div class="rf-empty">Nenhum alerta crítico no momento.</div>';
@@ -25882,23 +26358,29 @@ function dash(){
   const data=dashboardSnapshot(analysisRows);
   data.insights=portfolioInsightsSnapshot({...data,rf:rfIntelligenceSnapshot(),quality:dataQualitySnapshot()});
   const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const periodOpts=[3,6,12,24];
+  const dashMeta=new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   return `
-    <div class="premium-dashboard index2027-dashboard">
-      <div class="dashboard-page-heading">
+    <div class="premium-dashboard index2027-dashboard canon-dashboard">
+      <div class="dashboard-page-heading canon-dash-head">
         <div>
-          <div class="dash-hello-kicker">Visão consolidada</div>
-          <h1>Olá, Paulo!</h1>
+          <h1>Visão consolidada</h1>
           <p>Resumo geral da sua carteira · ${esc(hoje)}</p>
         </div>
-        <div class="dashboard-page-heading-meta"><span>${data.analysis.length} ativos acompanhados</span></div>
+        <div class="dashboard-page-heading-meta canon-dash-meta">
+          ${periodOpts.map(period=>`<button class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})">${period}M</button>`).join('')}
+          <span class="canon-last-update">Últ. ${dashMeta} · ${data.analysis.length} ativos</span>
+        </div>
       </div>
       ${executiveKPIs(data)}
-      <div class="dashboard-analytical-primary">
+      <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
         ${dashboardHomeCompositionPanel(data)}
       </div>
-      <div class="dashboard-master-primary">
+      <div class="canon-dash-row-c">
         ${dashboardPassiveIncomePanel(data)}
+      </div>
+      <div class="canon-dash-row-d">
         ${dashboardHomeHighlightsPanel()}
       </div>
     </div>
@@ -25979,7 +26461,7 @@ function dashboardEvolutionPanel(data){
     return `
       <div class="dashboard-evolution-card">
         <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Aportes líquidos acumulados · janela de ${snapshot.count} meses.</div></div><span class="premium-panel-badge premium-financial-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
-        ${lineChart([{name:'Aportes líquidos acumulados',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
+        ${lineChart([{name:'Aportes líquidos acumulados',tooltipLabel:'Patrimônio',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
@@ -26389,6 +26871,7 @@ function ativos(){
            const applied=m.appliedValue;
            const rentab=m.rentabPct;
            const juros=m.jurosValue;
+           const result= m.isRF ? juros : (Number.isFinite(m.currentValue)&&Number.isFinite(m.appliedValue) ? m.currentValue-m.appliedValue : null);
            const dm=Number.isFinite(marketValue)?(marketValue*(Number(a.dy)||0))/1200:0;
            const peso=portfolioTotal>0?(marketValue/portfolioTotal)*100:0;
        const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
@@ -26418,7 +26901,7 @@ function ativos(){
             <div style="font-size:10px;color:#3d5472;font-weight:500;margin-top:2px">${qs} · ${qt}</div>
             ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
          </td>
-         <td style="color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${Number.isFinite(juros)?`${assetResultIndicator(juros)} ${fmt(juros)}`:'—'}</td>
+         <td style="color:${Number.isFinite(result)?(result>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${Number.isFinite(result)?`${assetResultIndicator(result)} ${assetSignedMoneyText(result)}`:'—'}</td>
          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
           <td>${alvo>0?fmt(alvo):'—'}</td>
           <td style="font-weight:700;color:#e2eaf6">${marketValue!=null?fmt(marketValue):'—'}</td>
@@ -26800,7 +27283,7 @@ function ativos(){
                     ${assetActions}
 
                                     <!-- Todos os ativos (collapsible) -->
-          <details class="assets-all-assets" ontoggle="this.open ? null : null" style="margin-top:16px">
+          <details class="assets-all-assets" open ontoggle="this.open ? null : null" style="margin-top:16px">
             <summary class="assets-all-assets-summary">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
                 <div>
@@ -29255,32 +29738,22 @@ function setDividendMonthlyHistoryView(view){
   S.dividendMonthlyHistoryView=['list','matrix'].includes(view)?view:'list';
   render();
 }
-function dividendMonthlyTimeline(){
-  const stats=passiveIncomeGoalStats();
-  if(!stats.byMonth.length) return dividendEmptyState('Sem evolução mensal no período selecionado.', 'Mude o filtro de período ou a busca para ver meses com dados.');
-  const max=Math.max(...stats.byMonth.map(row=>Number(row.total)||0),1);
-  const width=1080,height=300,left=48,right=24,top=24,bottom=56;
-  const plotW=width-left-right,plotH=height-top-bottom;
-  const barW=Math.max(14,Math.min(42,(plotW/stats.byMonth.length)*.68));
-  const bars=stats.byMonth.map((row,index)=>{
-    const value=Math.max(0,Number(row.total)||0);
-    const x=left+(index+.5)*(plotW/stats.byMonth.length)-barW/2;
-    const barH=value/max*plotH;
-    const y=top+plotH-barH;
-    const dt=new Date(`${row.key}-01T12:00:00`);
-    const label=dt.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
-    const active=row.key===stats.currentMonthKey;
-    const pointLabel=row.label || `${label}/${dt.getFullYear()}`;
-    const tooltipText=`${pointLabel} · Proventos recebidos · ${fmt(value)}`;
-    return `<g class="dividend-chart-point" tabindex="0" focusable="true" data-tooltip="${esc(tooltipText)}" aria-label="${esc(tooltipText)}" onmouseenter="this.dataset.tooltipPinned='';showDividendChartTooltip(this)" onmouseleave="hideDividendChartTooltip(this)" onfocus="showDividendChartTooltip(this)" onblur="hideDividendChartTooltip(this)" onclick="showDividendChartTooltip(this);this.dataset.tooltipPinned='true'"><rect class="chart-bar${active?' current':''}" title="${esc(`${label}: ${fmt(value)}`)}" style="fill:${active?'var(--success)':'var(--primary)'}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(4,barH).toFixed(1)}" rx="4" onmouseenter="showDividendChartTooltip(this.parentElement)" onclick="showDividendChartTooltip(this.parentElement);this.parentElement.dataset.tooltipPinned='true'"><title>${esc(`${label}: ${fmt(value)}`)}</title></rect><text style="fill:var(--muted)" x="${(x+barW/2).toFixed(1)}" y="${height-18}" text-anchor="middle">${esc(label)}</text></g>`;
-  }).join('');
-  const currentLabel=stats.byMonth.find(row=>row.key===stats.currentMonthKey)?.label || '';
-  const grid=[0,.25,.5,.75,1].map(step=>{
-    const y=top+plotH-step*plotH;
-    const val=fmt(max*step);
-    return `<line class="chart-grid" style="stroke:var(--border)" x1="${left}" x2="${width-right}" y1="${y}" y2="${y}"/><text style="fill:var(--muted)" x="${left-10}" y="${y+4}" text-anchor="end">${esc(val)}</text>`;
-  }).join('');
-  return `<div class="dividend-timeline-summary"><div class="div-timeline-summary-title">Evolução mensal dos proventos</div><div class="div-timeline-summary-sub">Valores oficiais já gravados, mês atual destacado, sem projeção.</div><div class="div-timeline-summary-meta">${stats.byMonth.length} mês(es) · ${fmt(stats.total12)} no período${currentLabel?` · destaque para ${esc(currentLabel)}`:''}</div></div><div class="dividend-chart-wrap"><svg class="dividend-evolution-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução mensal dos proventos recebidos">${grid}${bars}</svg><div class="dividend-chart-tooltip" role="status" aria-live="polite" hidden></div></div>`;
+function dividendMonthlyTimeline(rows=filteredDividendRows()){
+  const matrix=dividendAnnualMatrixData(Array.isArray(rows)?rows:[]);
+  if(!matrix.length) return dividendEmptyState('Sem evolução mensal no período selecionado.', 'Mude o filtro de período ou a busca para ver meses com dados.');
+  const years=matrix.slice(0,5);
+  const monthLabels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const colors=['#10d981','#2f9bff','#a56bff','#ff9f1c','#1bb6b0'];
+  const series=years.map((year,index)=>({
+    name:String(year.year),
+    tooltipLabel:'Proventos',
+    values:monthLabels.map((_,monthIndex)=>Number(year.months?.[monthIndex]?.total)||0),
+    color:colors[index%colors.length],
+    width:index===0?2.5:1.8
+  }));
+  const total=matrix.reduce((sum,row)=>sum+(Number(row.annualTotal)||0),0);
+  const chart=lineChart(series,monthLabels,'dividend-line-chart',fmt).replace('class="dividend-line-chart"','class="dividend-line-chart dividend-evolution-chart"');
+  return `<div class="dividend-timeline-summary"><div class="div-timeline-summary-title">Evolução mensal dos proventos</div><div class="div-timeline-summary-sub">Valores oficiais já gravados por ano, sem projeção.</div><div class="div-timeline-summary-meta">${years.length} série(s) · ${fmt(total)} no período</div></div><div class="dividend-chart-wrap dividend-line-chart-wrap">${chart}</div>`;
 }
 function showDividendChartTooltip(point){
   const wrap=point?.closest?.('.dividend-chart-wrap');
@@ -29319,13 +29792,16 @@ function dividendExecutiveKpis(){
   const monthlyAvg=stats.monthlyAvg||0;
   const lastMonth=stats.byMonth.length>1 ? stats.byMonth[stats.byMonth.length-2]?.total||0 : 0;
   const annualProjection=stats.annualProjection||0;
+  const portfolioTotal=(S.assets||[]).reduce((s,a)=>s+(assetCurrentValue(a)||0),0);
+  const yieldNow=(portfolioTotal>0 && stats.total12>0) ? (stats.total12/portfolioTotal*100) : null;
   const cards=[
-    ['Recebido este mês',fmt(receivedThisMonth),'Mês atual · lançamentos oficiais',receivedThisMonth>0?'good':''],
-    ['Total últimos 12 meses',fmt(stats.total12),'Média mensal '+fmt(monthlyAvg),stats.total12>0?'good':''],
-    ['Último mês',fmt(lastMonth),'Mês anterior completo',lastMonth>0?'good':''],
-    ['Projeção anual',fmt(annualProjection),'Baseada na média 12M × 12',annualProjection>0?'good':'']
+    ['Recebido','💵',fmt(receivedThisMonth),'Mês atual · lançamentos oficiais',receivedThisMonth>0?'good':'',''],
+    ['Média mensal','▥',fmt(monthlyAvg),'Base dos últimos 12 meses',monthlyAvg>0?'good':'','blue'],
+    ['Último mês','▣',fmt(lastMonth),'Mês anterior completo',lastMonth>0?'good':'','orange'],
+    ['Projeção anual','◎',fmt(annualProjection),'Média 12M × 12',annualProjection>0?'good':'','purple'],
+    ['Yield atual','%',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'','cyan']
   ];
-  return `<section class="dividend-executive-kpis div-exec-kpis" aria-label="Resumo financeiro de dividendos">${cards.map(([label,value,sub,tone])=>`<article class="dividend-executive-kpi div-premium-metric"><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div></article>`).join('')}</section>`;
+  return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,icon,value,sub,tone,color])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><span class="dividend-executive-kpi-icon ${color}" aria-hidden="true">${icon}</span><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div></article>`).join('')}</div></section>`;
 }
 function dividendDistributionRow(month, maxVal){
   const dt=new Date(month.key+'-01T12:00:00');
@@ -29497,6 +29973,86 @@ function dividendFilterTabs(){
     </div>
   </div>`;
 }
+function setDividendYearFilter(year){
+  const valid=(year==='all'||/^\d{4}$/.test(String(year)));
+  S.dividendYearFilter=valid?String(year):'all';
+  render();
+}
+function canonDividendYearChips(rows){
+  const years=[...new Set(rows.map(r=>Number(r.monthKey&&r.monthKey.split('-')[0])||r.paymentDt?.getFullYear()).filter(y=>Number.isFinite(y)))].sort((a,b)=>b-a);
+  const current=String(S.dividendYearFilter||'all');
+  const chips=years.map(y=>`<button type="button" class="canon-year-chip ${current===String(y)?'on':''}" onclick="setDividendYearFilter(${y})">${y}</button>`).join('');
+  return `<div class="canon-year-chips" role="group" aria-label="Filtrar por ano">${chips}<button type="button" class="canon-year-chip ${current==='all'?'on':''}" onclick="setDividendYearFilter('all')">Todos</button></div>`;
+}
+function canonDividendYearSummary(rows){
+  const now=new Date();
+  const currentMonth=now.getMonth()+1;
+  const groups=new Map();
+  rows.forEach(r=>{
+    const y=Number(r.monthKey&&r.monthKey.split('-')[0]);
+    if(!Number.isFinite(y)) return;
+    const m=Number(r.monthKey.split('-')[1]);
+    if(y>now.getFullYear() || (y===now.getFullYear() && m>currentMonth)) return;
+    const g=groups.get(y)||{year:y,total:0,count:0};
+    g.total+=r.value; g.count++;
+    groups.set(y,g);
+  });
+  const ordered=[...groups.values()].sort((a,b)=>b.year-a.year);
+  if(!ordered.length) return `<div class="premium-empty">Sem histórico anual ainda.</div>`;
+  const total=ordered.reduce((s,g)=>s+g.total,0);
+  const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',centerText:fmt(total),centerSub:'Total geral'});
+  return `<div class="canon-year-summary-body">
+    <div class="canon-year-summary-donut">${donut}</div>
+    <div class="canon-year-summary-list">${ordered.map(g=>{
+      const share=total>0?g.total/total*100:0;
+      return `<div class="canon-year-sum-row">
+        <span class="canon-year-sum-year">${g.year}</span>
+        <span class="canon-year-sum-track"><i style="width:${Math.max(2,Math.min(100,share)).toFixed(1)}%"></i></span>
+        <span class="canon-year-sum-val">${fmt(g.total)}</span>
+        <span class="canon-year-sum-count">${share.toFixed(1)}% · ${g.count} lançamento(s)</span>
+      </div>`;
+    }).join('')}</div>
+  </div>`;
+}
+function canonDividendOverview(rows, kpisHtml){
+  const filteredRows=rows.filter(r=>{
+    const y=Number(r.monthKey&&r.monthKey.split('-')[0]);
+    const filter=String(S.dividendYearFilter||'all');
+    return filter==='all'||String(y)===filter;
+  });
+  const matrix=dividendAnnualMatrixData(filteredRows);
+  const yearFilteredMatrix=String(S.dividendYearFilter||'all')!=='all'
+    ? matrix.filter(row=>String(row.year)===String(S.dividendYearFilter))
+    : matrix;
+  const table=yearFilteredMatrix.length
+    ? dividendAnnualMatrixView(yearFilteredMatrix)
+    : `<div class="premium-empty">Nenhum recebimento registrado no período selecionado.</div>`;
+  return `
+    <div class="canon-dividends">
+      <div class="canon-div-kpi-row">${kpisHtml}</div>
+      <div class="dividend-history-block canon-div-history">
+        <div class="dividend-history-heading">
+          <div><strong>Histórico mensal</strong><span>Ano · Jan–Dez · Média · Total, com os valores oficiais já gravados.</span></div>
+          ${canonDividendYearChips(rows)}
+        </div>
+        ${table}
+      </div>
+      <div class="canon-div-lower">
+        <div class="premium-panel canon-div-panel canon-div-evolution">
+          <div class="premium-panel-head"><div><div class="premium-panel-title">Evolução da renda</div><div class="premium-panel-sub">Renda passiva mês a mês.</div></div></div>
+          ${dividendMonthlyTimeline(filteredRows)}
+        </div>
+        <div class="premium-panel canon-div-panel canon-div-top">
+          <div class="premium-panel-head"><div><div class="premium-panel-title">Top ativos</div><div class="premium-panel-sub">Maiores contribuintes de proventos.</div></div></div>
+          ${dividendsByAssetView(filteredRows)}
+        </div>
+        <div class="premium-panel canon-div-panel canon-div-yearsum">
+          <div class="premium-panel-head"><div><div class="premium-panel-title">Resumo por ano</div><div class="premium-panel-sub">Valor total recebido em cada ano.</div></div></div>
+          ${canonDividendYearSummary(filteredRows)}
+        </div>
+      </div>
+    </div>`;
+}
 function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const mode=['overview','received','asset','monthly','timeline','review'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
   S.dividendViewMode=mode;
@@ -29529,12 +30085,12 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     mode==='overview' || mode==='timeline'
   );
   const reviewSection=renderProventoRfLinkAuditPanel();
-  const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
+const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
   const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline(),true)}</div><div>${topAssetsSection}</div></div>`;
   const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendUpcomingSection(rows,false)}</div></div>`;
   const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Consulta mensal com filtros oficiais e leitura detalhada sob demanda.</span></div>${monthlySection}</div>`;
   // Mantem a referencia do contrato visual legado sem renderizar KPIs duplicados: ${dividendSummaryCards()}
-  const overviewBody=`${dividendExecutiveKpis()}${primaryBlocks}${secondaryBlocks}${historyBlock}`;
+  const overviewBody=canonDividendOverview(rows, dividendExecutiveKpis());
   // Contratos estruturais legados preservados para os guardrails: ${dividendSummaryCards()} ${dividendDistributionPanel()} ${monthlySection} div-exec-overview div-exec-kpis
   // const lowerBlocks=`<div class="dividend-lower-grid">`; ordem antiga: </div></div>${monthlySection}${lowerBlocks}`
   const body=mode==='asset'?assetSection
@@ -29543,16 +30099,14 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     :mode==='received'?recentSection
     :mode==='review'?reviewSection
     :overviewBody;
+  const overviewHeaderActions=mode==='overview'
+    ? `<div class="div-premium-canon-actions">${canonDividendYearChips(rows)}<button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`
+    : `<button class="btn bp" onclick="tgD()">+ Registrar provento</button>`;
+  const modeNavigation=mode==='overview' ? '' : `<div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}<details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}><summary class="div-dividend-moreviews-summary"><span>+${extraViews.length}</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'mais'}</span></summary><div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div></details></div>`;
   return `<main class="div-premium premium-dividends-3 div-exec-overview" aria-labelledby="dividends-page-title">
     <div class="div-premium-hero">
-      <div class="div-premium-head"><div><h1 id="dividends-page-title" class="div-premium-title">Dividendos &amp; Proventos</h1><div class="div-premium-sub">Acompanhe a renda gerada pela carteira.</div></div><button class="btn bp" onclick="tgD()">+ Registrar provento</button></div>
-      <div class="div-premium-tabs">
-        ${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}
-        <details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}>
-          <summary class="div-dividend-moreviews-summary"><span>+${extraViews.length}</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'mais'}</span></summary>
-          <div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div>
-        </details>
-      </div>
+      <div class="div-premium-head"><div><h1 id="dividends-page-title" class="div-premium-title">Dividendos</h1><div class="div-premium-sub">Acompanhe sua renda passiva mês a mês.</div></div>${overviewHeaderActions}</div>
+      ${modeNavigation}
     </div>
     ${frmD()}
     ${body}
@@ -30258,7 +30812,7 @@ function rentabilidadeTab(){
       title:'Últimos 12 meses',
       value:fmtP(return12m||0),
       foot:`Variação acumulada no recorte de 12 meses · proventos: ${fmt(provCurrent)}`,
-      color:'var(--primary)',
+      color:'#60a5fa',
     },
     {
       title:'Último mês',
@@ -30274,8 +30828,8 @@ function rentabilidadeTab(){
   const chartData=view.length?view:points;
   const chartLabels=chartData.map(p=>p.label);
   const chartSeries=[
-    {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--primary)', fill:'rgba(79,70,229,.12)', width:2.5, points:false},
-    {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'var(--warning)', width:2.2, points:false},
+    {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--success)', fill:'rgba(34,197,94,.12)', width:2.5, points:false},
+    {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'#60a5fa', width:2.2, points:false},
   ];
   const summaryPreview=[
     {label:'Último mês', value:fmtP(currentMonth||0), sub:'Mudança estimada no fechamento do mês'},
@@ -30301,12 +30855,12 @@ function rentabilidadeTab(){
   }).join('');
 
   const chartLegend=`<div class="pleg">
-    <div class="pli"><span class="pd" style="background:var(--primary)"></span>Carteira</div>
-    <div class="pli"><span class="pd" style="background:var(--warning)"></span>${esc(bench)} estimado</div>
+    <div class="pli"><span class="pd" style="background:var(--success)"></span>Carteira</div>
+    <div class="pli"><span class="pd" style="background:#60a5fa"></span>${esc(bench)} estimado</div>
     <div class="pli"><span class="pd" style="background:var(--muted)"></span>Baseado na posição atual</div>
   </div>`;
 
-  return`<div class="rent-premium"><h1 class="page-heading">📈 Rentabilidade</h1>
+  return`<div class="rent-premium"><h1 class="page-heading">Rentabilidade</h1>
   <div class="page-sub">Evolução e comparação da carteira, com proventos incluídos no cálculo.</div>
 
   <div class="rent-layout">
