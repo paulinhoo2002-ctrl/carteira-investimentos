@@ -42,6 +42,17 @@ const viewports = [
   { w: 1920, h: 1080, label: '1920x1080' },
 ];
 
+async function navigateToDividendos(page) {
+  try {
+    await page.evaluate(() => go('dividendos'));
+  } catch (error) {
+    const message = String(error?.message || error);
+    if (!/Execution context was destroyed|frame was detached/i.test(message)) {
+      throw error;
+    }
+  }
+}
+
 viewports.forEach(vp => {
   test(`dividendos matriz legibilidade - ${vp.label}`, async () => {
     const exe = resolveBrowser();
@@ -62,7 +73,7 @@ viewports.forEach(vp => {
       page.on('pageerror', err => errors.push(err.message));
 
       await page.goto(h.url, { waitUntil: 'networkidle' });
-      await page.evaluate(() => go('dividendos'));
+      await navigateToDividendos(page);
       await page.waitForFunction(() => document.querySelector('.div-premium') !== null, { timeout: 5000 });
 
       // O Overview canônico não exibe tabs; a rota interna continua testável.
