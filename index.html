@@ -1732,7 +1732,7 @@ tbody tr{transition:background .1s}tbody tr:hover{background:color-mix(in srgb, 
 .bfi{background:rgba(96,165,250,.08);color:#60a5fa;border:1px solid rgba(96,165,250,.18)}
 .bet{background:rgba(167,139,250,.08);color:#a78bfa;border:1px solid rgba(167,139,250,.18)}
 .bxx{background:rgba(148,163,184,.05);color:#64748b;border:1px solid rgba(148,163,184,.12)}
-.btn{border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:600;transition:all .15s;min-height:40px;line-height:1.1}
+.btn{border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:600;transition-property:background-color,border-color,color,box-shadow,opacity,transform;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,.8,.2,1);min-height:40px;line-height:1.1}
 .touch-target-utility{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .touch-target-icon{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .rf-event-card td.actions .bi,.rf-event-card td.actions .bdi{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
@@ -7498,6 +7498,86 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 }
 @media(min-width:768px) and (max-width:1100px){
   .metas-shell .metas-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+</style>
+
+<style id="apple-pass-wave-1">
+/* Apple Pass Wave 1: interaction-only baseline. No layout or handler changes. */
+:root{
+  --apple-pass-motion-duration:160ms;
+  --apple-pass-motion-ease:cubic-bezier(.2,.8,.2,1);
+}
+
+button,
+a,
+input,
+select,
+textarea,
+summary,
+[role="button"],
+[role="tab"],
+[role="menuitem"]{
+  transition-property:background-color,border-color,color,box-shadow,opacity,transform;
+  transition-duration:var(--apple-pass-motion-duration);
+  transition-timing-function:var(--apple-pass-motion-ease);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible{
+  outline:2px solid color-mix(in srgb,var(--primary) 76%,#fff);
+  outline-offset:2px;
+}
+
+.btn:active,
+.bi:active,
+.bdi:active,
+.asset-action:active,
+.dash-chip:active,
+.tab:active,
+.asset-inner-tab:active,
+.div-premium-tab:active,
+.aporte-view-tab:active,
+.aporte-filter-chip:active,
+.data-audit-chip:active,
+.rf-quick-tab:active{
+  transform:translateY(1px);
+}
+
+.mobile-bottom-nav button:active,
+.tabs-desktop button:active,
+.sidebar button:active{
+  filter:brightness(.96);
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+  .btn:hover,
+  .btn:active,
+  .bi:active,
+  .bdi:active,
+  .asset-action:active,
+  .dash-chip:active,
+  .tab:active,
+  .asset-inner-tab:active,
+  .div-premium-tab:active,
+  .aporte-view-tab:active,
+  .aporte-filter-chip:active,
+  .data-audit-chip:active,
+  .rf-quick-tab:active{
+    transform:none!important;
+  }
 }
 </style>
 </head>
