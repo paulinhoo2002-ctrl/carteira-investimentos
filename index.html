@@ -33278,5 +33278,62 @@ function updateRfAssetSummary(selectElement) {
   .metas-shell .metas-kpi-card{min-height:62px;padding:8px 10px}
 }
 </style>
+<style>
+/* Phase 3.2.3: visual hierarchy refinement for Dashboard and Ativos. */
+.canon-dashboard .premium-metric:after{display:none}
+.canon-dashboard .dashboard-receipts-card .dash-receipt-row{
+  appearance:none;-webkit-appearance:none;background:transparent;color:var(--canon-text);
+  border:0;border-bottom:1px solid rgba(148,163,184,.12);border-radius:0;text-align:left;
+}
+.canon-dashboard .dashboard-receipts-card button.dash-receipt-row{width:100%;font:inherit;cursor:pointer}
+.canon-dashboard .dashboard-receipts-card .dash-receipt-row:hover{background:rgba(16,217,129,.05)}
+.canon-dashboard .dashboard-receipts-card .dash-receipt-row:focus-visible{outline:2px solid var(--canon-green);outline-offset:2px}
+.canon-dashboard .dashboard-receipts-card .dash-receipt-row:last-child{border-bottom:0}
+
+@media (min-width:1181px) and (max-width:1535px){
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{height:78px;padding:8px 10px}
+  .canon-dashboard .dashboard-analytical-primary{gap:10px}
+  .canon-dashboard .dashboard-evolution-card{height:210px;padding:9px}
+  .canon-dashboard .dashboard-evolution-card svg{height:151px}
+  .canon-dashboard .dashboard-home-composition{height:214px;padding:9px}
+  .canon-dashboard .dashboard-home-composition-body{height:153px;grid-template-columns:128px minmax(0,1fr);gap:8px}
+  .canon-dashboard .canon-dash-row-c .premium-metric{height:66px;padding:6px 8px}
+  .canon-dashboard .dashboard-highlight-column{padding:10px 11px}
+  .assets-premium-shell .ag-wrap{gap:7px}
+  .assets-premium-shell .ag>summary{padding:8px 10px}
+  .assets-premium-shell .ag-stats{gap:5px}
+  .assets-premium-shell .ag-v{font-size:10px;letter-spacing:-.03em;white-space:nowrap;overflow:visible;text-overflow:clip}
+  .assets-premium-shell .assets-allocation-panel{padding:11px}
+}
+
+@media (max-width:767px){
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{min-height:70px;padding:8px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-note{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}
+  .canon-dashboard .dashboard-evolution-card svg{height:174px}
+  .canon-dashboard .canon-dash-row-c .dashboard-income-card{padding:9px}
+  .canon-dashboard .dashboard-income-grid .premium-metric{min-height:62px;padding:7px}
+  .canon-dashboard .canon-dash-row-c .premium-metric{min-height:54px;padding:7px}
+  .canon-dashboard .dashboard-highlight-column .premium-exec-row.dashboard-highlight-row{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 8px;align-items:center;padding:6px 7px;min-height:44px
+  }
+  .canon-dashboard .dashboard-highlight-row .premium-exec-left{min-width:0}
+  .canon-dashboard .dashboard-highlight-row .premium-exec-value{align-self:center;max-width:46%;white-space:normal}
+  .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details{
+    display:grid;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;
+    min-width:0;font-size:9px;color:var(--canon-muted);font-variant-numeric:tabular-nums
+  }
+  .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details strong{display:block;color:var(--canon-text);font-size:10px;font-weight:800}
+  .canon-dashboard .dashboard-highlight-row .dashboard-highlight-bar{
+    display:block;grid-column:1/-1;width:100%;height:3px;margin-top:0;border-radius:999px;background:rgba(148,163,184,.16);overflow:hidden
+  }
+  .canon-dashboard .dashboard-highlight-row .dashboard-highlight-bar span{display:block;height:100%;border-radius:inherit;background:var(--canon-green)}
+  .canon-dashboard .dashboard-highlight-column.low .dashboard-highlight-bar span{background:var(--canon-red)}
+  .assets-premium-shell .asset-premium-card-head{padding:9px 10px}
+  .assets-premium-shell .asset-premium-card-body{padding:8px 10px;gap:5px 10px}
+  .assets-premium-shell .asset-premium-card-actions{padding:7px 10px;gap:5px}
+  .assets-premium-shell .asset-premium-card-action{min-height:44px;padding:8px 6px}
+  .assets-premium-shell .asset-premium-card-expanded{padding:0 10px 9px}
+}
+</style>
 </body>
 </html>
