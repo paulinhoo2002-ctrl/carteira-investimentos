@@ -132,3 +132,34 @@ focus and no-mutation assertions.
 - `MERGE=false`
 - `PRODUCTION_DEPLOY=false`
 - `NEXT_RECOMMENDED_ACTION=Review the external limitations, then authorize a separate PR/CI decision; do not merge or deploy automatically.`
+
+## PR Preparation
+
+- `RF_ARCHITECTURE_DOC_RECONCILED=true`
+- `DOC_FIX_COMMIT_SHA=a558727de6cc40be027ef1611c7f24d98029839d`
+- `APPROVED_FEATURE_INTEGRITY=PASS`
+- `UNEXPECTED_PR_FILES=0`
+- `SECRET_LEAKS_DETECTED=0`
+- `TEMP_FILES_IN_PR=0`
+- `PR_OPENED=true`
+- `PR_NUMBER=352`
+- `PR_URL=https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/352`
+- `PR_TITLE=feat: integrate visual product north star`
+- `PR_BASE=main`
+- `PR_HEAD=release/visual-product-integration`
+- `CI_STATUS=PENDING`
+- `CI_CHECKS=Build and test in progress; Vercel Preview Comments passed; Vercel deployment passed.`
+- `PR_PREVIEW_STATUS=PASS_WITH_LIMITATION; Ready deployment protected by Vercel Authentication.`
+- `PR_PREVIEW_URL=https://carteira-investimentos-git-1cd2cf-paulinhoo2002-ctrls-projects.vercel.app`
+- `SAFE_AUTHENTICATED_PREVIEW_AVAILABLE=false; no authorized preview account or safe test namespace was identified.`
+- `MARKET_RISK=MEDIUM`
+- `PDF_RISK=MEDIUM`
+- `FIREBASE_RISK=HIGH`
+- `SECURITY_RISK=HIGH`
+- `PWA_RISK=MEDIUM`
+- `EXTERNAL_LIMITATIONS=Authenticated Preview remains unavailable; market, authenticated PDF/CDN, Firebase writes, security persistence and authenticated PWA behavior remain untested.`
+- `PR_READINESS=WAITING_FOR_CI`
+- `MERGE=false`
+- `PRODUCTION_DEPLOY=false`
+- `SAFE_TO_REMOVE_WORKTREE=false`
+- `CANONICAL_WORKSPACE_UNTOUCHED=true`
