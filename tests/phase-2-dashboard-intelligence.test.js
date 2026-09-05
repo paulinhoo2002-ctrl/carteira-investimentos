@@ -58,3 +58,16 @@ test('assets analysis exposes sector concentration from the shared portfolio hel
   assert.match(analysis, /Exposição por setor/);
   assert.doesNotMatch(analysis, /FinanceCore|localStorage|save\(/);
 });
+
+test('desktop navigation keeps launches near assets', () => {
+  const navigation = extract('function desktopTabs(){', 'function mobileTabs(){');
+  assert.ok(navigation.indexOf("navItem('ativos'") < navigation.indexOf("navItem('aportes'") );
+  assert.ok(navigation.indexOf("navItem('aportes'") < navigation.indexOf("navItem('renda-fixa'") );
+});
+
+test('assets result cells preserve positive, negative and neutral semantics', () => {
+  assert.match(source, /\.assets-premium-table \.result-indicator\.pos\{color:var\(--success\)\}/);
+  assert.match(source, /\.assets-premium-table \.result-indicator\.neg\{color:var\(--danger\)\}/);
+  assert.match(source, /\.assets-premium-table \.result-indicator\.neutral\{color:var\(--muted\)\}/);
+  assert.match(source, /result > 0 \? 'pos' : result < 0 \? 'neg' : 'neutral'/);
+});

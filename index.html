@@ -6127,6 +6127,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     /* Result indicators - not color only */
     .assets-premium-table .result-pos{color:var(--success)}
     .assets-premium-table .result-neg{color:var(--danger)}
+    .assets-premium-table .result-indicator.pos{color:var(--success)}
+    .assets-premium-table .result-indicator.neg{color:var(--danger)}
+    .assets-premium-table .result-indicator.neutral{color:var(--muted)}
     .assets-premium-table .result-indicator::before{content:'↑';margin-right:3px}
     .assets-premium-table .result-neg .result-indicator::before{content:'↓'}
     .assets-premium-table .result-neutral .result-indicator::before{content:'→'}
@@ -25007,6 +25010,7 @@ function desktopTabs(){
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     ${navItem('dashboard','Dashboard','📊',S.tab==='dashboard')}
     ${navItem('ativos','Ativos','💼',isAtivos&&innerTab==='patrimonio')}
+    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
     ${navItem('renda-fixa','Renda Fixa','🧾',isAtivos&&innerTab==='renda-fixa')}
     ${navItem('analise','Análise','📊',S.tab==='analise')}
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
@@ -25014,7 +25018,6 @@ function desktopTabs(){
     ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navItem('metas','Metas','🎯',S.tab==='metas')}
-    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
     <div class="side-utilities" aria-label="Preferências da carteira">
       ${hideValuesToggleButton('sidebar')}
