@@ -426,6 +426,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .asset-premium-kpi-value{font-size:13px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-premium-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .asset-premium-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.asset-analysis-sector-grid>*{grid-column:1/-1}
 .asset-premium-section{border:1px solid var(--border);border-radius:14px;background:var(--panel-2);overflow:hidden;min-width:0}
 .asset-premium-section>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 11px;cursor:pointer}
 .asset-premium-section>summary::-webkit-details-marker{display:none}
@@ -22319,6 +22320,7 @@ function assetAnalysisBlock(rowsInput){
   const negatives=enriched.filter(r=>Number.isFinite(r.pct)&&r.pct<0&&r.current>0).sort((a,b)=>a.pct-b.pct||b.current-a.current).slice(0,5);
   const positions=[...enriched].filter(r=>r.current>0).sort((a,b)=>b.current-a.current).slice(0,5);
   const concentrations=[...enriched].filter(r=>Number.isFinite(r.share)&&r.share>10).sort((a,b)=>b.share-a.share).slice(0,5);
+  const sectors=portfolioSectorConcentrationRows(rows).slice(0,5);
   const incomplete=enriched.filter(r=>!r.ticker||r.pct==null||!Number.isFinite(r.current)||r.current<=0||!Number.isFinite(r.applied)||r.applied<=0).slice(0,5);
   const attention=enriched.filter(r=>{
     const signal=assetContributionSignal(r);
@@ -22354,6 +22356,9 @@ function assetAnalysisBlock(rowsInput){
       ${assetPremiumSection('Maiores concentrações','Posições acima de 10% do patrimônio.',concentrations.length,concentrations.length?concentrations.map(r=>assetInsightRowHtml(r,'concentration')).join(''):'<div class="asset-premium-empty">Nenhum ativo acima do limite de atenção.</div>',topConcentration?assetConcentrationAlert(topConcentration.share).tone:'ok')}
       ${assetPremiumSection('Dados incompletos','Ativos que pedem revisão de base.',incomplete.length,incomplete.length?incomplete.map(r=>assetInsightRowHtml(r,'incomplete')).join(''):'<div class="asset-premium-empty">Todos os ativos possuem dados suficientes.</div>','muted')}
       ${assetPremiumSection('Merecem atenção','Risco, queda ou concentração.',attention.length,attention.length?attention.map(r=>assetInsightRowHtml(r,'attention')).join(''):'<div class="asset-premium-empty">Nenhum alerta relevante com os critérios atuais.</div>','warn')}
+    </div>
+    <div class="asset-premium-grid compact asset-analysis-sector-grid">
+      ${assetPremiumSection('Exposição por setor','Distribuição do valor atual por setor informado.',sectors.length,sectors.length?sectors.map(row=>`<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.sector)}</div><div class="asset-insight-sub">Valor atual · leitura de concentração</div></div><div class="asset-insight-value bl">${row.share.toFixed(1)}%</div></div>`).join(''):'<div class="asset-premium-empty">Nenhum setor informado nos ativos atuais.</div>','info')}
     </div>
   </div>`;
 }
@@ -25345,7 +25350,7 @@ function dashboardSnapshot(analysisRows){
   const concentrated=concentration.filter(r=>r.share>10).slice(0,3);
   return {
     portfolio,income,analysis,typeRows,variableValue,
-    sectorRows:dashboardSectorConcentrationRows(analysis),
+    sectorRows:portfolioSectorConcentrationRows(analysis),
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
     recent:{month:recentIncome.month,total:recentIncome.total,count:recentIncome.count,best:recentIncome.best,payers:recentIncome.payers},
     concentration,positives,negatives,insufficient,concentrated,
@@ -25353,7 +25358,7 @@ function dashboardSnapshot(analysisRows){
     contribution:prudentContributionAnalysis()
   };
 }
-function dashboardSectorConcentrationRows(analysisRows){
+function portfolioSectorConcentrationRows(analysisRows){
   const totals=new Map();
   let total=0;
   (Array.isArray(analysisRows)?analysisRows:[]).forEach(row=>{

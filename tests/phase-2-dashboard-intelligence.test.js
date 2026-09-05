@@ -15,11 +15,11 @@ function extract(startMarker, endMarker) {
 }
 
 test('dashboard sector concentration uses current values and ignores incomplete sectors', () => {
-  const snippet = extract('function dashboardSectorConcentrationRows(', 'function dashboardAssetByTicker(');
+  const snippet = extract('function portfolioSectorConcentrationRows(', 'function dashboardAssetByTicker(');
   const context = {};
-  vm.runInNewContext(`${snippet}\ndashboardSectorConcentrationRows;`, context);
+  vm.runInNewContext(`${snippet}\nportfolioSectorConcentrationRows;`, context);
 
-  assert.deepEqual(JSON.parse(JSON.stringify(context.dashboardSectorConcentrationRows([
+  assert.deepEqual(JSON.parse(JSON.stringify(context.portfolioSectorConcentrationRows([
     { sector: 'Bancos', current: 600 },
     { sector: 'Bancos', current: 400 },
     { sector: 'Energia', current: 500 },
@@ -33,8 +33,8 @@ test('dashboard sector concentration uses current values and ignores incomplete 
 });
 
 test('dashboard snapshot exposes sector concentration without a parallel financial source', () => {
-  const snapshot = extract('function dashboardSnapshot(analysisRows){', 'function dashboardSectorConcentrationRows(');
-  assert.match(snapshot, /sectorRows:dashboardSectorConcentrationRows\(analysis\)/);
+  const snapshot = extract('function dashboardSnapshot(analysisRows){', 'function portfolioSectorConcentrationRows(');
+  assert.match(snapshot, /sectorRows:portfolioSectorConcentrationRows\(analysis\)/);
   assert.doesNotMatch(snapshot, /FinanceCore|localStorage|save\(/);
 });
 
@@ -50,4 +50,11 @@ test('dashboard creates a sector concentration insight using an existing route',
   assert.match(insights, /concentration-top-sector/);
   assert.match(insights, /relatedRoute:'ativos'/);
   assert.match(insights, /assetAnalysisRows/);
+});
+
+test('assets analysis exposes sector concentration from the shared portfolio helper', () => {
+  const analysis = extract('function assetAnalysisBlock(rowsInput){', 'function hasOwnFiniteNumber(');
+  assert.match(analysis, /portfolioSectorConcentrationRows\(rows\)/);
+  assert.match(analysis, /Exposição por setor/);
+  assert.doesNotMatch(analysis, /FinanceCore|localStorage|save\(/);
 });
