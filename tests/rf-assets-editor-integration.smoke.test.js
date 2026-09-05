@@ -43,7 +43,7 @@ const viewports = [
 ];
 
 for (const viewport of viewports) {
-  test(`Editor RF abre a partir de Ativos · ${viewport.label}`, async () => {
+  test(`Editor RF permanece acessível na rota dedicada · ${viewport.label}`, async () => {
     const executablePath = resolveBrowser();
     if (!executablePath) return;
 
@@ -65,8 +65,10 @@ for (const viewport of viewports) {
 
     try {
       await page.goto(harness.url, { waitUntil: 'networkidle' });
-      await page.evaluate(() => go('ativos'));
-      await page.waitForFunction(() => document.querySelector('[onclick="setAssetsInnerTab(\'patrimonio\')"]') !== null, { timeout: 5000 });
+      await page.evaluate(() => go('renda-fixa'));
+      await page.waitForFunction(() => [...document.querySelectorAll('button')].some(button =>
+        button.getAttribute('onclick')?.includes('openRfMovementEditor') &&
+        button.getAttribute('onclick')?.includes('"aporte"')), { timeout: 5000 });
 
       const before = await page.evaluate(() => {
         const asset = S.assets.filter(isRendaFixaAsset).find(item => Number(rfPrincipalBalance(item).value) > 0);
@@ -86,10 +88,7 @@ for (const viewport of viewports) {
 
       const openGroup = async () => {
         await page.evaluate(() => {
-          const details = [...document.querySelectorAll('details.ag')].find(item =>
-            (item.getAttribute('data-asset-group') || '').toLowerCase().includes('renda'));
-          if (!details) throw new Error('Grupo Renda Fixa não encontrado em Ativos');
-          if (!details.open) details.querySelector('summary').click();
+          if (!document.querySelector('.rf-page')) throw new Error('Rota Renda Fixa não encontrada');
         });
         await page.waitForFunction(id => [...document.querySelectorAll('button')].some(button =>
           button.getAttribute('onclick')?.includes('openRfMovementEditor') &&
@@ -127,11 +126,11 @@ for (const viewport of viewports) {
 
       await openGroup();
 
-      // 1. Abre o editor pelo botão real "Movimentar" em Ativos → Patrimônio
+      // 1. Abre o editor pelo botão real "Atualizar valor" na rota dedicada.
       await clickEditorButton(before.id, 'aporte');
       await editorVisible();
       assert.equal(await page.locator('.rf-event-editor').count(), 1, 'Deve existir apenas um editor RF');
-      assert.equal(await page.locator('.note-overlay[role="dialog"][aria-modal="true"]').count(), 1, 'Editor deve estar em modal role=dialog');
+      assert.equal(await page.locator('.note-overlay[role="dialog"][aria-modal="true"]').count(), 0, 'Editor da rota dedicada não deve criar modal paralelo');
       assert.equal(await page.locator('[aria-label="Tipo de movimentação"]').inputValue(), 'aporte');
       const badge = await page.$eval('.rf-event-editor .rf-panel-badge', el => el.textContent.trim());
       assert.ok(badge.includes(before.ticker), `Badge deveria conter o ticker ${before.ticker}`);
@@ -140,21 +139,21 @@ for (const viewport of viewports) {
       assert.match(balanceText, /Saldo após/);
       await page.waitForFunction(id => document.activeElement?.id === `${id}-date`, before.domId, { timeout: 3000 });
 
-      // 2. Sem overflow horizontal com o modal aberto
+      // 2. Sem overflow horizontal com o editor inline aberto
       const overflowOpen = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       assert.ok(overflowOpen <= 1, `Overflow horizontal com modal aberto: ${overflowOpen}px`);
 
       // 3. Cancelar fecha e preserva dados
       await page.locator('.rf-event-editor button', { hasText: 'Cancelar' }).click();
       await editorGone();
-      assert.equal(await page.locator('.note-overlay[role="dialog"]').count(), 0, 'Modal deve fechar após cancelar');
+      assert.equal(await page.locator('.note-overlay[role="dialog"]').count(), 0, 'A rota dedicada não deve manter modal após cancelar');
       const stateAfterCancel = await snapshotState();
       assert.equal(stateAfterCancel.rfMovementEditor, null);
       assert.equal(stateAfterCancel.rfEventsLength, before.rfEventsLength);
       assert.equal(stateAfterCancel.applied, before.applied);
       assert.equal(stateAfterCancel.liquid, before.liquid);
       assert.equal(stateAfterCancel.gross, before.gross);
-      assert.ok(await page.locator('.asset-inner-tabs').isVisible(), 'Deve permanecer na tela Ativos');
+      assert.ok(await page.locator('.rf-page').isVisible(), 'Deve permanecer na rota Renda Fixa');
 
       // 4. Resgatar abre com modo resgate_parcial
       await clickEditorButton(before.id, 'resgate_parcial');
@@ -180,17 +179,17 @@ for (const viewport of viewports) {
         if (t.width < 44 || t.height < 44) console.warn(`Touch target "${t.text}" small: ${t.width}x${t.height}`);
       }
 
-      // 7. Fecha via botão Fechar do cabeçalho do modal
-      await page.locator('.note-head button', { hasText: 'Fechar' }).click();
+      // 7. Fecha pelo handler oficial do editor dedicado
+      await page.locator('.rf-event-editor button', { hasText: 'Cancelar' }).click();
       await editorGone();
       const stateAfterHeadClose = await snapshotState();
       assert.equal(stateAfterHeadClose.rfMovementEditor, null);
       assert.equal(stateAfterHeadClose.rfEventsLength, before.rfEventsLength);
 
-      // 8. Clique no overlay também fecha
+      // 8. O handler oficial também fecha o editor sem mutar dados
       await clickEditorButton(before.id, 'aporte');
       await editorVisible();
-      await page.mouse.click(5, 5);
+      await page.evaluate(() => closeRfMovementEditor());
       await editorGone();
       const stateAfterOverlay = await snapshotState();
       assert.equal(stateAfterOverlay.rfMovementEditor, null);
