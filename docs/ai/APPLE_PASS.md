@@ -133,3 +133,27 @@ Wave 3 was not implemented. Loading, skeleton, and asynchronous feedback work
 remain a separate review gate after Wave 2 approval.
 
 `NEXT_PHASE=APPLE_PASS_WAVE_3_READINESS_AUDIT`
+
+## Wave 3 Targeted Feedback
+
+Wave 3 adds contextual busy feedback only to operations with real external,
+variable, or perceptible work: market refresh, PDF generation, broker-note PDF
+parsing, cloud sync/security save, backup validation, and protected reset when
+cloud processing is involved. Controls block duplicate submission, retain
+context, and restore on completion or failure.
+
+Instant local interactions remain without loading UI. The implementation does
+not change finance logic, PDF contents, import validation/rollback semantics,
+reset cleanup, or the Wave 1 reduced-motion contract.
+
+`APPLE_PASS_WAVE_3=IMPLEMENTED_READY_FOR_REVIEW`
+
+`TARGETED_LOADING_ONLY=true`
+
+`DOUBLE_SUBMIT_GAPS_REDUCED=true`
+
+`INSTANT_OPERATIONS_UNCHANGED=true`
+
+`PROTECTED_SEMANTICS_PRESERVED=true`
+
+`NEXT_PHASE=APPLE_PASS_WAVE_3_FINAL_REVIEW`

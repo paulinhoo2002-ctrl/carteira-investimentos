@@ -416,3 +416,39 @@ protected-flow change. Browser evidence and full gates remain the release
 criteria for this separate review.
 
 `NEXT_PHASE=APPLE_PASS_WAVE_3_READINESS_AUDIT`
+
+## Wave 3 Readiness Audit
+
+The Wave 3 readiness audit was completed as documentation only. Real
+asynchronous work exists in market refresh, cloud synchronization, PDF
+generation, file parsing/import review, and protected restore/reset flows.
+Local filters, sorting, search, tabs, simulations, simple saves, and local
+CSV/JSON generation should remain free of artificial loading UI.
+
+See APPLE_PASS_WAVE_3_AUDIT.md for the operation inventory, latency matrix,
+busy-state gaps, skeleton exclusions, accessibility requirements, and proposed
+five-operation implementation scope.
+
+APPLE_PASS_WAVE_3_READINESS=READY_FOR_TARGETED_IMPLEMENTATION
+APPLE_PASS_WAVE_3_IMPLEMENTED_AT_READINESS_AUDIT=false
+PRODUCT_FILES_CHANGED_AT_READINESS_AUDIT=false
+
+## Wave 3 Targeted Feedback Implementation
+
+Wave 3 now has a scoped implementation ready for review. Busy states are
+contextual to market refresh, PDF generation/printing, broker-note parsing,
+cloud sync, security save, backup validation, and protected reset processing.
+No global loading overlay, artificial delay, fake progress, new skeleton, or
+loading state was added to instant local operations.
+
+WAVE_3_TARGETED_LOADING_ONLY=true
+DOUBLE_SUBMIT_GAPS_REDUCED=true
+ASYNC_FEEDBACK_CLARITY_IMPROVED=true
+INSTANT_OPERATIONS_UNCHANGED=true
+PROTECTED_SEMANTICS_PRESERVED=true
+REDUCED_MOTION_LOADING_SAFE=true
+GLOBAL_LOADING_OVERLAY=false
+ARTIFICIAL_DELAY=false
+FAKE_PROGRESS=false
+PRODUCT_FILES_CHANGED=true
+NEXT_PHASE=APPLE_PASS_WAVE_3_FINAL_REVIEW

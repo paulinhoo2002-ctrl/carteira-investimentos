@@ -7653,7 +7653,8 @@ const firebaseConfig = {
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
-  lastCloudSignature:'', authResolved:false, access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
+  lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
+  access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
 
 let THEME = 'dark';
@@ -7754,6 +7755,8 @@ let S = {
   accessSettingsOpen:false,
   backupOpen:false,
   backupImportDraft:null,
+  backupImportValidating:false,
+  pdfBusy:false,
   pdfReportOpen:false,
   goals:{
     patrimonio:{target:0, aporte:0, annualVar:0},
@@ -9311,6 +9314,12 @@ async function uploadLocalToCloud(show=true){
   }
   const ref=portfolioRef();
   if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return; }
+  if(FB.syncInFlight){
+    if(show) toast('Sincronização já em andamento.','#fbbf24');
+    return;
+  }
+  FB.syncInFlight=true;
+  render();
   try{
     const payload=cloudPayload();
     payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -9325,6 +9334,9 @@ async function uploadLocalToCloud(show=true){
     logCloudSyncError(e);
     if(show) toast(`Lançamento salvo localmente, mas não sincronizado com a nuvem. ${cloudSyncErrorMessage(e)}`,'#f87171');
     if(FB.user && FB.cloudLoaded && FB.access.allowed && navigator.onLine!==false && isTransientCloudError(e)) scheduleCloudRetry();
+  }finally{
+    FB.syncInFlight=false;
+    render();
   }
 }
 async function signInGoogle(){
@@ -9362,7 +9374,7 @@ function authBox(){
   const photo=FB.user.photoURL?`<img src="${esc(FB.user.photoURL)}" style="width:24px;height:24px;border-radius:50%;border:1px solid #1e2a3d">`:'<div style="width:24px;height:24px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center;font-size:12px">👤</div>';
   return `<div style="display:flex;align-items:center;gap:4px;background:#0a0e18;border:1px solid #1c2738;border-radius:999px;padding:3px 4px">
     ${photo}<span class="hdr-mobile-user" style="font-size:10px;color:#b3c2d6;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-    <button class="bi hdr-mobile-btn" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149"><span class="hdr-mobile-icon">☁️</span></button>
+    <button class="bi hdr-mobile-btn" title="Enviar dados locais para a nuvem" onclick="uploadLocalToCloud(true)" aria-busy="${FB.syncInFlight?'true':'false'}" ${FB.syncInFlight?'disabled':''} style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149"><span class="hdr-mobile-icon">${FB.syncInFlight?'⏳':'☁️'}</span></button>
     <button class="bi hdr-mobile-btn" title="Sair" onclick="signOutGoogle()" style="width:20px;height:20px;padding:0;font-size:10px;opacity:.85;border-color:#233149"><span class="hdr-mobile-icon">⎋</span></button>
   </div>`;
 }
@@ -9433,7 +9445,7 @@ function closeAccessSettings(){
     render();
   });
 }
-async function saveAccessSettings(){
+async function saveAccessSettings(event){
   if(!canEditFromThisTab('salvar segurança')) return;
   if(!FB.db || !FB.user){
     toast('Entre com Google para salvar a segurança.','#fbbf24');
@@ -9459,6 +9471,14 @@ async function saveAccessSettings(){
     updatedAtLocal:new Date().toISOString(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
+  if(FB.securitySaving) return;
+  FB.securitySaving=true;
+  const button=event?.currentTarget || document.querySelector('[data-security-save]');
+  if(button){
+    button.disabled=true;
+    button.setAttribute('aria-busy','true');
+    button.textContent='Salvando segurança...';
+  }
   try{
     await FB.db.collection('meta').doc('access').set(cfg,{merge:true});
     FB.access.cfg = cfg;
@@ -9470,6 +9490,13 @@ async function saveAccessSettings(){
   }catch(e){
     debugWarn(e);
     toast('❌ Não foi possível salvar a segurança.','#f87171');
+  }finally{
+    FB.securitySaving=false;
+    if(button && button.isConnected){
+      button.disabled=false;
+      button.setAttribute('aria-busy','false');
+      button.textContent='Salvar segurança';
+    }
   }
 }
 function accessSettingsModal(){
@@ -9481,7 +9508,7 @@ function accessSettingsModal(){
   const allowedDomains = listToText(cfg.allowedDomains || []);
   const message = esc(cfg.message || 'Acesso restrito a usuários aprovados.');
   return `<div class="note-overlay" onclick="if(event.target===this) closeAccessSettings()">
-    <div class="note-modal" style="max-width:740px;max-height:84vh;display:flex;flex-direction:column">
+    <div class="note-modal" style="max-width:740px;max-height:84vh;display:flex;flex-direction:column" aria-busy="${FB.securitySaving?'true':'false'}">
       <div class="note-head" style="padding:13px 16px 11px">
         <div class="note-title">
           <div>
@@ -9539,7 +9566,7 @@ function accessSettingsModal(){
       </div>
       <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
         <button class="btn bgh" onclick="closeAccessSettings()">Cancelar</button>
-        <button class="btn bp" onclick="saveAccessSettings()">Salvar segurança</button>
+        <button class="btn bp" data-security-save onclick="saveAccessSettings(event)" ${FB.securitySaving?'disabled':''}>${FB.securitySaving?'Salvando segurança...':'Salvar segurança'}</button>
       </div>
     </div>
   </div>`;
@@ -9551,7 +9578,7 @@ function backupManagerModal(){
   const draft=S.backupImportDraft;
   const draftStats=draft ? draft.summary : null;
   return `<div class="note-overlay" onclick="if(event.target===this) closeBackupCenter()">
-    <div class="note-modal" style="max-width:900px;max-height:86vh;display:flex;flex-direction:column">
+    <div class="note-modal" style="max-width:900px;max-height:86vh;display:flex;flex-direction:column" aria-busy="${S.backupImportValidating?'true':'false'}">
       <div class="note-head" style="padding:13px 16px 11px">
         <div class="note-title">
           <div>
@@ -9588,7 +9615,7 @@ function backupManagerModal(){
                 <div class="st">Importação</div>
                 <div class="mu" style="font-size:11px;margin-top:2px">Selecione um backup e revise o resumo antes de substituir os dados.</div>
               </div>
-              <button class="btn bimp" onclick="triggerBackupImport()">Selecionar arquivo</button>
+              <button class="btn bimp" onclick="triggerBackupImport()" ${S.backupImportValidating?'disabled':''}>${S.backupImportValidating?'Validando...':'Selecionar arquivo'}</button>
             </div>
             ${draft?`
               <div class="backup-grid">
@@ -9602,7 +9629,7 @@ function backupManagerModal(){
               <div class="backup-note">Metas configuradas: ${draftStats.goals} · Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}</div>
               <div class="backup-note" style="margin-top:2px">Meta de patrimônio e outras preferências também serão restauradas se existirem no arquivo.</div>
             `:`
-              <div class="backup-note">Nenhum arquivo carregado ainda. Selecione um JSON de backup para ver a prévia antes de importar.</div>
+              <div class="backup-note" role="status" aria-live="polite">${S.backupImportValidating?'Validando o arquivo selecionado...':'Nenhum arquivo carregado ainda. Selecione um JSON de backup para ver a prévia antes de importar.'}</div>
             `}
           </div>
         </div>
@@ -9611,11 +9638,11 @@ function backupManagerModal(){
       <div style="display:flex;justify-content:space-between;gap:8px;padding:0 16px 16px;flex-wrap:wrap">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn bgh" onclick="closeBackupCenter()">Fechar</button>
-          <button class="btn bgh" onclick="triggerBackupImport()">Selecionar outro arquivo</button>
+          <button class="btn bgh" onclick="triggerBackupImport()" ${S.backupImportValidating?'disabled':''}>Selecionar outro arquivo</button>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn bgh" onclick="cancelBackupImport()">Cancelar importação</button>
-          <button class="btn bp" onclick="confirmBackupImport()" ${draft ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>Importar backup</button>
+          <button class="btn bp" onclick="confirmBackupImport()" ${draft && !S.backupImportValidating ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>${S.backupImportValidating?'Validando...':'Importar backup'}</button>
         </div>
       </div>
     </div>
@@ -9674,7 +9701,7 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Sincronizar agora</div><div class="premium-settings-row-desc">Enviar dados locais para a nuvem</div></div>
-            <button class="btn bgh" onclick="uploadLocalToCloud(true)" style="font-size:11px;min-height:34px;padding:0 10px">☁️ Enviar</button>
+            <button class="btn bgh" onclick="uploadLocalToCloud(true)" aria-busy="${FB.syncInFlight?'true':'false'}" ${FB.syncInFlight?'disabled':''} style="font-size:11px;min-height:34px;padding:0 10px">${FB.syncInFlight?'⏳ Sincronizando...':'☁️ Enviar'}</button>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Sair da conta</div><div class="premium-settings-row-desc">Desconectar do Google</div></div>
@@ -9706,7 +9733,7 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Resetar carteira ativa</div><div class="premium-settings-row-desc">Apagar todo o histórico, ativos e proventos desta carteira. Outras carteiras não são afetadas.</div></div>
-            <button class="btn bgh" onclick="resetPortfolio()" style="font-size:11px;min-height:34px;padding:0 10px;border-color:rgba(248,113,113,.25);color:#fca5a5">🧹 Reset</button>
+            <button class="btn bgh" onclick="resetPortfolio(event)" aria-busy="${RESET_IN_FLIGHT?'true':'false'}" ${RESET_IN_FLIGHT?'disabled':''} style="font-size:11px;min-height:34px;padding:0 10px;border-color:rgba(248,113,113,.25);color:#fca5a5">${RESET_IN_FLIGHT?'⏳ Resetando...':'🧹 Reset'}</button>
           </div>
         </div>
       </div>
@@ -9846,7 +9873,7 @@ function configMenu(){
       <div class="cfg-menu-divider"></div>
       <div class="cfg-menu-group">
         <div class="cfg-menu-group-title">Ação crítica</div>
-        <button class="btn bgh cfg-danger" onclick="resetPortfolio();closeConfigMenus()">🧹 Reset</button>
+        <button class="btn bgh cfg-danger" onclick="resetPortfolio(event);closeConfigMenus()" aria-busy="${RESET_IN_FLIGHT?'true':'false'}" ${RESET_IN_FLIGHT?'disabled':''}>${RESET_IN_FLIGHT?'⏳ Resetando...':'🧹 Reset'}</button>
       </div>
     </div>
   </details>`;
@@ -10123,6 +10150,9 @@ function cancelBackupImport(){
 }
 document.getElementById('imp-file').addEventListener('change',e=>{
   const f=e.target.files[0]; if(!f) return;
+  S.backupImportValidating=true;
+  S.backupOpen=true;
+  render();
   const r=new FileReader();
   r.onload=ev=>{
     try{
@@ -10138,12 +10168,23 @@ document.getElementById('imp-file').addEventListener('change',e=>{
       render();
     }catch(err){
       toast('Arquivo inválido. Selecione um backup em JSON.', '#f87171');
+    }finally{
+      S.backupImportValidating=false;
+      render();
     }
+  };
+  r.onerror=()=>{
+    S.backupImportValidating=false;
+    toast('Não foi possível ler o arquivo selecionado.', '#f87171');
+    render();
   };
   r.readAsText(f); e.target.value='';
 });
 
+let RESET_IN_FLIGHT=false;
 async function resetPortfolio(){
+  const event=arguments[0];
+  if(resetPortfolio._inFlight) return;
   if(!canEditFromThisTab('limpar carteira')) return;
   const total=(S.assets?.length||0)+(S.aportes?.length||0)+(S.proventos?.length||0);
   const current=activeWallet();
@@ -10151,43 +10192,57 @@ async function resetPortfolio(){
   if(!ok) return;
   const typed=prompt('Para confirmar, digite LIMPAR');
   if((typed||'').trim().toUpperCase()!=='LIMPAR') return;
-  S.assets=[];
-  S.aportes=[];
-  S.proventos=[];
-  S.rfEvents=[];
-  S.divGoal=0;
-  S.goals=normalizeGoals();
-  S.learnMeta={};
-  S.apHistoryOpen=true;
-  S.apSearch='';
-  clearTimeout(S.apSearchTimer);
-  S.apSearchTimer=null;
-  S.rentPeriod='all';
-  S.rentType='all';
-  S.rentBench='CDI';
-  S.tab='dashboard';
-  S.showA=false; S.editId=null; S._fa=null;
-  S.showP=false; S.editPId=null; S._fp=null;
-  S.showD=false; S.editDId=null; S._fd=null;
-  S.brokerNoteImport=null;
-  S.brokerNoteImportSuccess=null;
-  S.noteReview=null;
-  S.b3Review=null;
-  S.b3MovementReview=null;
-  S.rfPositionReview=null;
-  S.rfMovementEditor=null;
-  S.rfEventEditor=null;
-  S.b3ProventosReview=null;
-  syncWalletFromState();
-  save();
-  saveConfig();
-  if(FB.user){
-    try{
-      await uploadLocalToCloud(false);
-    }catch(e){}
+  resetPortfolio._inFlight=true;
+  if(typeof RESET_IN_FLIGHT!=='undefined') RESET_IN_FLIGHT=true;
+  const button=event?.currentTarget;
+  const showBusy=!!FB.user;
+  if(button && showBusy){
+    button.disabled=true;
+    button.setAttribute('aria-busy','true');
+    button.textContent='⏳ Resetando...';
   }
-  render();
-  toast('🧹 Carteira resetada e pronta para começar do zero.');
+  try{
+    S.assets=[];
+    S.aportes=[];
+    S.proventos=[];
+    S.rfEvents=[];
+    S.divGoal=0;
+    S.goals=normalizeGoals();
+    S.learnMeta={};
+    S.apHistoryOpen=true;
+    S.apSearch='';
+    clearTimeout(S.apSearchTimer);
+    S.apSearchTimer=null;
+    S.rentPeriod='all';
+    S.rentType='all';
+    S.rentBench='CDI';
+    S.tab='dashboard';
+    S.showA=false; S.editId=null; S._fa=null;
+    S.showP=false; S.editPId=null; S._fp=null;
+    S.showD=false; S.editDId=null; S._fd=null;
+    S.brokerNoteImport=null;
+    S.brokerNoteImportSuccess=null;
+    S.noteReview=null;
+    S.b3Review=null;
+    S.b3MovementReview=null;
+    S.rfPositionReview=null;
+    S.rfMovementEditor=null;
+    S.rfEventEditor=null;
+    S.b3ProventosReview=null;
+    syncWalletFromState();
+    save();
+    saveConfig();
+    if(FB.user){
+      try{
+        await uploadLocalToCloud(false);
+      }catch(e){}
+    }
+    render();
+    toast('🧹 Carteira resetada e pronta para começar do zero.');
+  }finally{
+    resetPortfolio._inFlight=false;
+    if(typeof RESET_IN_FLIGHT!=='undefined') RESET_IN_FLIGHT=false;
+  }
 }
 
 // ══════════════════════════════════════
@@ -12998,7 +13053,7 @@ function brokerNoteImportModal(){
   const readTone=!note?.valid?'error':pending||duplicateInfo.duplicate?'warn':'ok';
   const readLabel=!note?.valid?'Erro':pending||duplicateInfo.duplicate?'Atenção':'Leitura válida';
   return `<div class="note-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) closeBrokerNoteImport()">
-    <div class="note-modal" style="max-width:1180px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="note-modal" style="max-width:1180px;max-height:90vh;display:flex;flex-direction:column" aria-busy="${state.status==='loading'?'true':'false'}">
       <div class="note-head">
         <div class="note-title">
           <div><h3>🧾 Importar nota PDF do Inter</h3><p>O PDF é lido localmente no navegador e nada é enviado para serviços externos.</p></div>
@@ -13008,7 +13063,7 @@ function brokerNoteImportModal(){
       <div class="note-body" style="overflow:auto">
         <div class="broker-note-upload">
           <div><div class="broker-note-upload-title">Importe notas de corretagem PDF do Banco Inter</div><div class="broker-note-upload-sub">${state.fileName?`Arquivo selecionado: ${esc(state.fileName)}`:'Escolha um PDF com texto selecionável. Nenhum dado será salvo nesta etapa.'}</div></div>
-          <button class="btn bgh" onclick="chooseBrokerNotePdf()">${state.fileName?'Escolher outro PDF':'Selecionar PDF'}</button>
+          <button class="btn bgh" onclick="chooseBrokerNotePdf()" ${state.status==='loading'?'disabled':''}>${state.status==='loading'?'⏳ Validando...':state.fileName?'Escolher outro PDF':'Selecionar PDF'}</button>
         </div>
         ${state.message?`<div class="broker-note-status ${statusClass}" style="margin-top:10px">${esc(state.message)}</div>`:''}
         ${note?`
@@ -22919,11 +22974,20 @@ function scheduleReportModalFocusRestore(){
   const schedule=typeof requestAnimationFrame==='function' ? requestAnimationFrame : (fn)=>fn();
   schedule(()=>restoreReportModalFocusOrigin());
 }
+function setPdfBusy(busy){
+  S.pdfBusy=!!busy;
+  render();
+}
 async function downloadExecutivePdf(){
+  if(S.pdfBusy) return;
+  S.pdfBusy=true;
+  render();
   console.log('[PDF DIRETO] Gerando Relatório Executivo via jsPDF');
   valueVisibilityDepth++;
+  let phase='biblioteca';
   try{
     await ensurePdfLibraries();
+    phase='geração';
     const { jsPDF } = window.jspdf || {};
     if(!jsPDF) throw new Error('jsPDF indisponível');
     const doc = new jsPDF('p','mm','a4');
@@ -23344,9 +23408,13 @@ async function downloadExecutivePdf(){
     doc.save(reportFilename('relatorio-executivo','pdf'));
   }catch(error){
     debugError('downloadExecutivePdf erro:',error);
-    toast('Não foi possível gerar o Relatório Executivo.','#f87171');
+    toast(phase==='biblioteca'
+      ? 'Não foi possível carregar a biblioteca do PDF. Verifique a conexão e tente novamente.'
+      : 'Não foi possível gerar o Relatório Executivo.','#f87171');
   }finally{
     valueVisibilityDepth--;
+    S.pdfBusy=false;
+    render();
   }
 }
 function openReportCardPdf(type){
@@ -23373,9 +23441,14 @@ function closeReportCardPdf(){
   });
 }
 async function downloadCompletePortfolioPdf(){
+  if(S.pdfBusy) return;
+  S.pdfBusy=true;
+  render();
   valueVisibilityDepth++;
+  let phase='biblioteca';
   try{
     const JsPDF=await ensurePdfLibraries();
+    phase='geração';
     const payload=buildReportPayload('complete');
     const summary=payload.summary||{};
     const portfolio=summary.portfolio||{};
@@ -23602,9 +23675,13 @@ async function downloadCompletePortfolioPdf(){
     toast('✅ PDF da carteira completa gerado.');
   }catch(error){
     debugError('downloadCompletePortfolioPdf erro:',error);
-    toast('Não foi possível gerar o PDF da carteira completa.','#f87171');
+    toast(phase==='biblioteca'
+      ? 'Não foi possível carregar a biblioteca do PDF. Verifique a conexão e tente novamente.'
+      : 'Não foi possível gerar o PDF da carteira completa.','#f87171');
   }finally{
     valueVisibilityDepth--;
+    S.pdfBusy=false;
+    render();
   }
 }
 function printReportCardPdf(){
@@ -23615,9 +23692,14 @@ function printReportCardPdf(){
       downloadCompletePortfolioPdf();
       return;
     }
+    if(S.pdfBusy) return;
+    S.pdfBusy=true;
+    render();
     const html=buildReportCardPrintHtml(type);
     const win=window.open('','_blank','noopener,noreferrer,width=900,height=700');
     if(!win){
+      S.pdfBusy=false;
+      render();
       alert('Não foi possível abrir a janela de impressão. Verifique se o navegador bloqueou pop-ups.');
       return;
     }
@@ -23628,9 +23710,13 @@ function printReportCardPdf(){
     win.onload=function(){
       win.focus();
       setTimeout(()=>{ try{ win.print(); }catch(error){ debugError('printReportCardPdf print erro:',error); } },300);
+      S.pdfBusy=false;
+      render();
     };
   }catch(error){
     debugError('printReportCardPdf erro:',error);
+    S.pdfBusy=false;
+    render();
     toast('Não foi possível abrir a impressão neste navegador.','#f87171');
   }
 }
@@ -23932,7 +24018,7 @@ function reportCardPdfLayout({title, subtitle, periodLabel, generatedAt, callout
       <div class="pdf-report-toolbar-text"><strong>Prévia do PDF - ${esc(title)}</strong><br>Use a opção imprimir/salvar como PDF do navegador.</div>
       <div class="pdf-report-toolbar-actions">
         <button class="btn bgh" onclick="closeReportCardPdf()">Voltar</button>
-        <button class="btn bp" onclick="${primaryActionOnclick}">${esc(primaryActionLabel)}</button>
+        <button class="btn bp" onclick="${primaryActionOnclick}" aria-busy="${S.pdfBusy?'true':'false'}" ${S.pdfBusy?'disabled':''}>${S.pdfBusy?'⏳ Gerando PDF...':esc(primaryActionLabel)}</button>
       </div>
     </div>
     <article class="pdf-report-page">
@@ -24487,7 +24573,7 @@ function reportPdfPreview(){
         <div class="pdf-report-toolbar-text"><strong>Prévia do Relatório PDF Executivo</strong><br>Baixe o PDF direto pelo botão abaixo.</div>
         <div class="pdf-report-toolbar-actions">
           <button class="btn bgh" onclick="closePdfReport()">Voltar</button>
-          <button class="btn bp" onclick="downloadExecutivePdf()">Baixar PDF Executivo</button>
+          <button class="btn bp" onclick="downloadExecutivePdf()" aria-busy="${S.pdfBusy?'true':'false'}" ${S.pdfBusy?'disabled':''}>${S.pdfBusy?'⏳ Gerando PDF...':'Baixar PDF Executivo'}</button>
         </div>
       </div>
       <article class="pdf-report-page">
@@ -24635,7 +24721,7 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
     <div class="report-export-actions">
       ${formats.includes('csv')?`<button class="btn bgh" onclick="exportReportCSV('${type}')">Exportar CSV</button>`:''}
       ${jsonOnly?`<button class="btn bsv" onclick="exportReportJSON('${type}')">Exportar JSON</button>`:''}
-      ${formats.includes('pdf')?`<button class="btn bp" onclick="${pdfAction}">Gerar PDF</button>`:''}
+      ${formats.includes('pdf')?`<button class="btn bp" onclick="${pdfAction}" aria-busy="${S.pdfBusy?'true':'false'}" ${S.pdfBusy?'disabled':''}>${S.pdfBusy?'⏳ Gerando PDF...':'Gerar PDF'}</button>`:''}
     </div>
   </article>`;
 }
@@ -27821,7 +27907,7 @@ function ativos(){
 
     const assetActions=`<div class="assets-page-actions" aria-label="Ações da carteira">
       <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
+      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)" aria-busy="${S.qInFlight?'true':'false'}" ${S.qInFlight?'disabled':''}>${S.qInFlight?'⏳ Atualizando...':'🔄 Atualizar mercado'}</button>
       <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openAllocationGoal()">🎯 Distribuição da carteira</button>
     </div>`;
     const reviewFilterUi=reviewFilterActive
@@ -27992,7 +28078,7 @@ function ativos(){
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)">🔄 Atualizar mercado</button>
+      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)" aria-busy="${S.qInFlight?'true':'false'}" ${S.qInFlight?'disabled':''}>${S.qInFlight?'⏳ Atualizando...':'🔄 Atualizar mercado'}</button>
       <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openAllocationGoal()">🎯 Distribuição da carteira</button>
     </div>
   </div>
