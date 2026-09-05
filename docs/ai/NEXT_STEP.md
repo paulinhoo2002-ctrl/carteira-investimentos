@@ -241,3 +241,40 @@ AUDIT_WRONG_RECORD_PROTECTION=FROZEN e AUDIT_IDENTITY_CONTRACT=FROZEN. Acoes exa
   segurança da Auditoria e relatório mobile do IRPF.
 - `NEXT_RECOMMENDED_ACTION=SETTINGS_SAFETY_REVIEW`.
 - Não iniciar o trabalho de Configurações antes da integração desta release.
+## DASHBOARD VISUAL FREEZE
+
+`DASHBOARD_VISUAL=FROZEN`, `DASHBOARD_REFERENCE_LOCK=FROZEN` e
+`DASHBOARD_CHART_INTERACTION=FROZEN` apos aprovacao visual explicita.
+O alvo estrutural permanente e `Refs/visual-canon/dashboard-canonical.png`;
+`Tela Principal.png` permanece somente referencia secundaria de acabamento.
+Nao reabrir o Dashboard sem autorizacao explicita.
+
+`VISUAL_REFERENCE_LOCK_PROCESS=ACTIVE`: toda nova aprovacao visual deve
+comparar com a referencia primaria, registrar escopo e validar browser nos
+cinco breakpoints; testes/builds nao equivalem a aprovacao visual.
+
+`NEXT_VISUAL_TARGET=INVENTARIO_DE_REFERENCIAS`; nao iniciar automaticamente.
+
+## 2026-09-04 - Ativos visual reference lock
+
+- `NEXT_VISUAL_TARGET=ATIVOS`.
+- `ATIVOS_REFERENCE_LOCK=READY_FOR_FINAL_USER_APPROVAL`.
+- Referencia: `Refs/visual-canon/Tela de aportes e ativos.png`, somente a
+  porcao de Ativos.
+- Nao marcar Ativos como FROZEN antes da aprovacao visual explicita.
+
+## 2026-09-04 - Ativos final reference polish
+
+- `ATIVOS_FINAL_REFERENCE_POLISH=READY_FOR_FINAL_USER_APPROVAL`.
+- Confirmar visualmente a hierarquia final: KPIs, filtros, resumos compactos,
+  tabela primaria e alocacao por classe usam a referencia de Ativos, sem copiar
+  os modulos de Aportes.
+- Aguardar aprovacao do usuario; sem commit, push, PR, merge ou deploy.
+
+## 2026-09-04 - Ativos reference lock freeze
+
+- `ATIVOS_VISUAL=FROZEN` e `ATIVOS_REFERENCE_LOCK=FROZEN` apos aprovacao explicita.
+- `ATIVOS_PRIMARY_CONTENT=FROZEN`, `ATIVOS_DENSITY=FROZEN` e
+  `ATIVOS_ICON_LANGUAGE=FROZEN`.
+- `NEXT_VISUAL_TARGET=APORTES`; usar a porcao de Aportes de
+  `Refs/visual-canon/Tela de aportes e ativos.png` sem reabrir Ativos.

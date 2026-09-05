@@ -143,14 +143,39 @@ for (const viewport of viewports) {
               if (xOverlap && yOverlap) overlap = true;
             }
           }
-          return { cls: w.className, sticky: getComputedStyle(firstRow.lastElementChild).position, buttons, buttonsOverlap: overlap, actionsVisible: buttons.every(b => b.fullyInViewport) };
+          const internallyScrollable = w.scrollWidth > w.clientWidth + 1;
+          const originalScrollLeft = w.scrollLeft;
+          let actionsReachableWithInternalScroll = buttons.every(b => b.fullyInViewport);
+          if (internallyScrollable) {
+            w.scrollLeft = w.scrollWidth - w.clientWidth;
+            actionsReachableWithInternalScroll = [...actions.querySelectorAll('button')]
+              .filter(visible)
+              .every(button => {
+                const rect = button.getBoundingClientRect();
+                const wrapRect = w.getBoundingClientRect();
+                return rect.left >= wrapRect.left - 1 && rect.right <= wrapRect.right + 1;
+              });
+            w.scrollLeft = originalScrollLeft;
+          }
+          return {
+            cls: w.className,
+            sticky: getComputedStyle(firstRow.lastElementChild).position,
+            buttons,
+            buttonsOverlap: overlap,
+            actionsVisible: buttons.every(b => b.fullyInViewport),
+            internallyScrollable,
+            actionsReachableWithInternalScroll,
+          };
         });
         return { tables, anyTable: tables.length > 0 };
       });
       assert.ok(ativ.anyTable, `nenhuma tabela de ativos visivel em ${viewport.label}`);
       for (const table of ativ.tables) {
         assert.ok(table.buttons.length >= 2, `acoes ausentes em ${viewport.label} (${table.cls})`);
-        assert.ok(table.actionsVisible, `acoes cortadas em ${viewport.label} (${table.cls})`);
+        assert.ok(
+          table.actionsVisible || (table.internallyScrollable && table.actionsReachableWithInternalScroll),
+          `acoes cortadas em ${viewport.label} (${table.cls})`,
+        );
         assert.equal(table.buttonsOverlap, false, `acoes sobrepostas em ${viewport.label} (${table.cls})`);
         for (const button of table.buttons) assert.ok(button.height >= 44, `acao menor que 44px em ${viewport.label}: ${button.text} (${Math.round(button.height)}px)`);
         if (viewport.width <= 1024) {

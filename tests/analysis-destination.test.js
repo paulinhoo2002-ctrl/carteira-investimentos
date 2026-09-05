@@ -14,6 +14,7 @@ test('Análise é uma rota dedicada que reutiliza o pipeline oficial', () => {
 test('Análise é acessível no mobile e na busca global', () => {
   assert.match(source, /go\('analise'\)/);
   assert.match(source, /PORTFOLIO_SEARCH_GROUPS=.*analysis:'Análise'/);
+  assert.match(source, /PORTFOLIO_SEARCH_GROUPS=.*analysis:'Análise'/);
   assert.match(source, /kind:'analysis',id:'analise'.*route:'analise'/);
   assert.match(source, /'ia','analise','irpf','settings'/);
   assert.doesNotMatch(source, /class="asset-inner-tab[^>]*>Análise<\/button>/);

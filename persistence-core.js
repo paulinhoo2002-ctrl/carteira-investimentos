@@ -190,13 +190,49 @@
     };
   }
 
+  function isRecord(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function hasValidBackupDataShape(data) {
+    if (!isRecord(data)) return false;
+    const arrayFields = ['wallets', 'assets', 'aportes', 'proventos', 'rfEvents'];
+    if (arrayFields.some(field => Object.prototype.hasOwnProperty.call(data, field) && !Array.isArray(data[field]))) return false;
+    if (Object.prototype.hasOwnProperty.call(data, 'goals') && !isRecord(data.goals)) return false;
+    if (Object.prototype.hasOwnProperty.call(data, 'learnMeta') && !isRecord(data.learnMeta)) return false;
+    if (Object.prototype.hasOwnProperty.call(data, 'divGoal') && (!Number.isFinite(Number(data.divGoal)) || typeof data.divGoal === 'boolean')) return false;
+    if (Object.prototype.hasOwnProperty.call(data, 'brapiToken') && typeof data.brapiToken !== 'string') return false;
+    return true;
+  }
+
+  function hasValidBackupStorageShape(storage) {
+    if (storage === null || storage === undefined) return true;
+    if (!isRecord(storage)) return false;
+    const knownKeys = ['civ5', 'civ5_cfg'];
+    return knownKeys.some(key => Object.prototype.hasOwnProperty.call(storage, key) && isRecord(storage[key]));
+  }
+
   function parseBackupRaw(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const meta = raw.meta && typeof raw.meta === 'object' ? sanitizeBackupValue(raw.meta) : null;
-    const data = raw.data && typeof raw.data === 'object' ? sanitizeBackupValue(raw.data) : sanitizeBackupValue(raw);
-    const storage = raw.storage && typeof raw.storage === 'object' ? sanitizeBackupValue(raw.storage) : null;
+    const hasMetaEnvelope = Object.prototype.hasOwnProperty.call(raw, 'meta');
+    const hasDataEnvelope = Object.prototype.hasOwnProperty.call(raw, 'data');
+    const hasStorageEnvelope = Object.prototype.hasOwnProperty.call(raw, 'storage');
+    if (hasMetaEnvelope && !isRecord(raw.meta)) return null;
+    if (hasDataEnvelope && !isRecord(raw.data)) return null;
+    if (hasStorageEnvelope && !isRecord(raw.storage)) return null;
+    const meta = hasMetaEnvelope ? sanitizeBackupValue(raw.meta) : null;
+    const data = hasDataEnvelope ? sanitizeBackupValue(raw.data) : sanitizeBackupValue(raw);
+    const storage = hasStorageEnvelope ? sanitizeBackupValue(raw.storage) : null;
+    const app = String(meta?.app || '').trim();
+    const hasRecognizedApp = /carteira/i.test(app);
+    if (meta && meta.app !== undefined && !hasRecognizedApp) return null;
+    if (meta && meta.backupVersion !== undefined) {
+      const version = Number(meta.backupVersion);
+      if (!Number.isInteger(version) || version !== 1) return null;
+    }
+    if (!hasValidBackupDataShape(data) || !hasValidBackupStorageShape(storage)) return null;
     const hasKnown = Array.isArray(data.wallets) || Array.isArray(data.assets) || Array.isArray(data.aportes) || Array.isArray(data.proventos) || Array.isArray(data.rfEvents) || data.goals || data.divGoal !== undefined || data.learnMeta || data.brapiToken !== undefined;
-    if (!hasKnown && !(meta && /carteira/i.test(String(meta.app || '')))) return null;
+    if (!hasKnown && !hasRecognizedApp) return null;
     return { meta, data, storage };
   }
 

@@ -75,3 +75,19 @@ truncate a critical financial value.
 `VISUAL_DESIGN_FREEDOM=0` means do not invent a third visual language.
 `VISUAL_IMPLEMENTATION_FREEDOM=100` means implementation may use the existing
 canon flexibly when preserving product structure, data and accessibility.
+
+## Visual Reference Lock Process
+
+`VISUAL_REFERENCE_LOCK_PROCESS=ACTIVE`.
+
+Every visual approval must identify the primary canon, keep secondary
+references subordinate, state the protected information architecture, and
+record the changed scope. Browser evidence at 390, 430, 768, 1366 and 1920
+must cover overflow, clipping, console/page/request errors and the relevant
+interaction states. Tests and builds are necessary gates, but they do not
+replace visual comparison or explicit user approval.
+
+For Dashboard, the permanent structural target is
+`Refs/visual-canon/dashboard-canonical.png`. `Tela Principal.png` is only a
+secondary quality reference and must not change the executive-home purpose or
+copy another screen's information architecture.

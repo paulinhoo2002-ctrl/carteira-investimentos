@@ -354,6 +354,18 @@ test('parseBackupRaw preserves legacy acceptance and rejection rules', () => {
   assert.equal(PersistenceCore.parseBackupRaw({ divGoal: 9, brapiToken: 'abc' }).data.brapiToken, 'abc');
 });
 
+test('parseBackupRaw rejects incompatible versions and malformed known fields', () => {
+  const valid = { meta: { app: 'Carteira de Investimentos', backupVersion: 1 }, data: { wallets: [] }, storage: { civ5: { wallets: [] } } };
+  assert.equal(PersistenceCore.parseBackupRaw({ ...valid, meta: { ...valid.meta, backupVersion: 2 } }), null);
+  assert.equal(PersistenceCore.parseBackupRaw({ ...valid, data: { assets: 'not-an-array' } }), null);
+  assert.equal(PersistenceCore.parseBackupRaw({ ...valid, storage: { civ5: [] } }), null);
+  assert.equal(PersistenceCore.parseBackupRaw({ meta: { app: 'Carteira de Investimentos', backupVersion: 'future' }, data: {} }), null);
+  assert.equal(PersistenceCore.parseBackupRaw({ meta: { app: 'Outra coisa', backupVersion: 1 }, data: { assets: [] } }), null);
+  assert.equal(PersistenceCore.parseBackupRaw({ meta: [], data: { assets: [] } }), null);
+  assert.equal(PersistenceCore.parseBackupRaw({ meta: { app: 'Carteira de Investimentos' }, data: null }), null);
+  assert.equal(PersistenceCore.parseBackupRaw({ meta: { app: 'Carteira de Investimentos' }, data: { assets: [] }, storage: [] }), null);
+});
+
 test('parseBackupRaw strips prototype-pollution keys while preserving normal data', () => {
   const payload = JSON.parse('{"meta":{"app":"Carteira de Investimentos"},"data":{"wallets":[],"__proto__":{"polluted":true},"constructor":{"prototype":{"hacked":true}},"nested":{"prototype":{"sneaky":true},"ok":1}},"storage":{"civ5":{"__proto__":{"polluted":true},"ok":"yes"}}}');
 
