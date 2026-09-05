@@ -30,6 +30,14 @@ resolution preserved the main security/data contracts and the approved feature
 surface. Mechanical union artifacts were then corrected surgically where they
 caused duplicate declarations, duplicate markup, or invalid syntax.
 
+## RF Architecture Evidence
+
+- `CURRENT_RF_ARCHITECTURE=Ativos remains the variable-asset route; Renda Fixa is entered through the dedicated renda-fixa route and keeps its official RF renderer/editor.`
+- `ARCHITECTURE_DOC_EVIDENCE=PRODUCT_CONTRACTS.md accepts renda-fixa as the current route; the merged ARCHITECTURE_MAP.md contains one stale sentence calling RF an Ativos inner tab and should be corrected in a documentation-only follow-up.`
+- `PRODUCT_CODE_EVIDENCE=go('renda-fixa'), supportedRoutes including renda-fixa, RF page content, official RF values and openRfMovementEditor handlers.`
+- `OLD_PATRIMONY_ASSERTION_MEANING=the old harness used patrimonio as the entry point for RF editor access, not a global patrimony calculation.`
+- `CURRENT_CANONICAL_ASSERTION=go('renda-fixa') resolves a meaningful RF surface, preserves RF identity/value visibility, and opens the official editor without duplicating RF inside Ativos.`
+
 The integration merge was completed in `2e8971f`. The two mechanical smoke
 harness repairs that were already pending after conflict resolution were
 recorded separately in `78b60eb`.
