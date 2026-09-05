@@ -15113,6 +15113,26 @@ function findQuickMovementAssetByTicker(ticker){
   const resolved=resolveAssetMetadata(tk);
   return resolved.ticker ? resolved : null;
 }
+function quickMovementAssetPickerOptionsHtml(){
+  const seen=new Set(), options=[];
+  const candidates=[...(Array.isArray(S.assets)?S.assets:[]), ...(Array.isArray(S.aportes)?S.aportes:[])];
+  candidates.forEach(item=>{
+    const ticker=normalizeMetadataTicker(item?.ticker||item?.name||item?.title||'');
+    if(!ticker || seen.has(ticker)) return;
+    seen.add(ticker);
+    const name=String(item?.name||item?.product||item?.title||'').trim();
+    const type=normalizeType(item?.type||item?.asset_type||metaTicker(ticker).type||'Ação','Ação');
+    options.push(`<option value="${esc(ticker)}" label="${esc([name,type].filter(Boolean).join(' · '))}"></option>`);
+  });
+  return options.join('');
+}
+function quickMovementSuccessText(reg,kind){
+  const label=quickMovementKindLabel(kind);
+  const asset=String(reg?.ticker||reg?.name||'Movimentação').trim();
+  const date=String(reg?.date||'').trim() || 'sem data';
+  const amount=kind==='provento' ? Number(reg?.value)||0 : Number(reg?.qty||0)*Number(reg?.price||0);
+  return `✅ Lançamento registrado · ${label} · ${asset} · ${fmt(amount)} · ${date}`;
+}
 function quickMovementDefaultDraft(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
   const today=new Date().toISOString().slice(0,10);
@@ -15638,9 +15658,10 @@ function quickMovementModal(){
     </div>`;
   const buySellFields = `
     <div class="cl" style="margin-bottom:8px">Ativo</div>
+    <datalist id="qm-asset-options">${quickMovementAssetPickerOptionsHtml()}</datalist>
     <div class="fg">
       <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date!==undefined?draft.date:new Date().toISOString().slice(0,10))}" aria-label="Data"${qmErrOn('qm-dt')} oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" aria-label="Ticker"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" aria-label="Ticker" aria-describedby="qm-asset-picker-hint"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
       <div><div class="fl">Tipo de ativo</div><select id="qm-type" aria-label="Tipo de ativo" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
       <div><div class="fl">Setor</div><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" aria-label="Setor" oninput="setQuickMovementField('sector', this.value)"></div>
     </div>
@@ -15650,16 +15671,19 @@ function quickMovementModal(){
       <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
       <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 10,00" value="${esc(draft.price||'')}" aria-label="Preço unitário"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
     </div>
+    <div id="qm-asset-picker-hint" class="quick-movement-preview-note" style="margin-top:6px">Digite o ticker ou escolha um ativo já cadastrado para preencher tipo e setor.</div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const proventoFields = `
     <div class="cl" style="margin-bottom:8px">Ativo</div>
+    <datalist id="qm-asset-options">${quickMovementAssetPickerOptionsHtml()}</datalist>
     <div id="quick-movement-asset-summary">${quickMovementAssetSummaryHtml()}</div>
     <div class="fg">
       <div><div class="fl">Data do pagamento</div><input id="qm-dt" type="date" aria-label="Data do pagamento" value="${esc(draft.date!==undefined?draft.date:new Date().toISOString().slice(0,10))}"${qmErrOn('qm-dt')} oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: MXRF11" aria-label="Ticker do ativo" value="${esc(draft.ticker||'')}"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: MXRF11" aria-label="Ticker do ativo" aria-describedby="qm-asset-picker-hint" value="${esc(draft.ticker||'')}"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
       <div><div class="fl">Valor recebido (R$)</div><input id="qm-value" type="text" inputmode="decimal" aria-label="Valor recebido" placeholder="ex: 35,80" value="${esc(draft.value||'')}"${qmErrOn('qm-value')} oninput="setQuickMovementField('value', this.value)"></div>
       <div><div class="fl">Tipo</div><select id="qm-event" aria-label="Tipo do provento" onchange="setQuickMovementField('eventType', this.value)">${eventTypes}</select></div>
     </div>
+    <div id="qm-asset-picker-hint" class="quick-movement-preview-note" style="margin-top:6px">Busque pelo ticker; os dados conhecidos do ativo aparecem na revisão.</div>
     <div class="cl" style="margin:12px 0 8px">Dados do provento</div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" aria-label="Observação" placeholder="opcional: competência, evento especial..." value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfFields = `
@@ -16082,7 +16106,7 @@ function saveQuickMovement(){
     if(kind==='provento'){
       S.proventos.unshift(reg);
       save();
-      toast(`✅ Provento de ${reg.ticker} registrado!`);
+      toast(quickMovementSuccessText(reg,kind));
       render();
       markProventosDirty();
       persisted=true;
@@ -16095,7 +16119,7 @@ function saveQuickMovement(){
         S.aportes.unshift(reg);
       }
       save();
-      toast('✅ Registro neutro salvo localmente.');
+      toast(quickMovementSuccessText(reg,kind));
       render();
       persisted=true;
       return;
@@ -16104,7 +16128,7 @@ function saveQuickMovement(){
     if(kind==='renda-fixa'){
       learnTickerMeta(reg.ticker, 'Renda Fixa', reg.sector, true);
       syncAssetsFromAportes(false);
-      toast(`✅ Lançamento de ${reg.name||reg.ticker} registrado!`);
+      toast(quickMovementSuccessText(reg,kind));
       fetchQuotes(false);
       scheduleAutoProventosGratis('aporte-rf');
       persisted=true;
@@ -16112,7 +16136,7 @@ function saveQuickMovement(){
     }
     learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
     syncAssetsFromAportes(false);
-    toast(`✅ ${kind==='venda'?'Venda':'Compra'} de ${reg.ticker} registrada!`);
+    toast(quickMovementSuccessText(reg,kind));
     fetchQuotes(false);
     scheduleAutoProventosGratis('aporte');
     persisted=true;
