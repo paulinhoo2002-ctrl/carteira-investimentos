@@ -21861,7 +21861,7 @@ function clearAssetsFilters(){
     const normalized=String(value||'').trim().toLowerCase();
     S.assetsSearchTimer = setTimeout(() => {
       S.assetsSearch = normalized;
-      if(!normalized) S.activeAssetsGroup='';
+      S.activeAssetsGroup='';
       render();
     }, 150);
   }
@@ -27719,7 +27719,7 @@ function ativos(){
          : `font-weight:600;color:${currentUnit>=avg?'#34d399':'#f87171'}`;
        return`<tr>
          <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}${reviewFilterActive?`<div class="asset-review-reason">${esc(assetReviewReasonText(a))}</div>`:''}</td>
-         <td><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
+         <td><div class="asset-group-table-name">${esc(a.name||a.ticker||'—')}</div><span class="bdg ${bdg(a.type)}">${esc(a.type)}</span></td>
           <td class="mu">${esc(a.sector||'—')}</td>
          <td>${a.qty}</td>
          <td>${pmText}</td>
@@ -27731,15 +27731,42 @@ function ativos(){
          </td>
          <td style="color:${Number.isFinite(result)?(result>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${Number.isFinite(result)?`${assetResultIndicator(result)} ${assetSignedMoneyText(result)}`:'—'}</td>
          <td style="color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'};font-weight:700">${rentText}</td>
-          <td>${alvo>0?fmt(alvo):'—'}</td>
           <td style="font-weight:700;color:#e2eaf6">${marketValue!=null?fmt(marketValue):'—'}</td>
          <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
-          <td class="${ideal>0?(diff>0?'gn':'rd'):'mu'}" style="font-weight:600">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
-         <td class="am" style="font-weight:600">${dm!=null?fmt(dm):'—'}</td>
         <td class="mu">${Number.isFinite(dy)?dy+'%':'—'}${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via Brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado · atualize se necessário">Estimativa</span>':''}</td>
+          <td class="am" style="font-weight:600">${dm!=null?fmt(dm):'—'}</td>
           <td>${assetActionMenuHtml(a, false, `group-${groupKey}`)}</td>
        </tr>`;
      }).join('');
+     const mobileGroupCards=sortedDisplayItems
+       .filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa')
+       .map(a=>{
+         const m=getAssetMetrics(a);
+         const avg=Number(a.avg_price)||0;
+         const currentUnit=m.currentUnit;
+         const marketValue=m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
+         const applied=m.appliedValue;
+         const peso=portfolioTotal>0?(marketValue/portfolioTotal)*100:0;
+         const result=m.isRF ? m.jurosValue : (Number.isFinite(m.currentValue)&&Number.isFinite(m.appliedValue) ? m.currentValue-m.appliedValue : null);
+         const resultPct=m.isRF ? m.rentabPct : (applied>0&&Number.isFinite(result)?(result/applied)*100:null);
+         const resultClass=Number.isFinite(result)?(result>0?'pos':result<0?'neg':'neutral'):'neutral';
+         const resultPctClass=Number.isFinite(resultPct)?(resultPct>0?'pos':resultPct<0?'neg':'neutral'):'neutral';
+         return `<details class="asset-premium-card" data-ticker="${esc(a.ticker)}">
+           <summary class="asset-premium-card-head">
+             <div class="asset-premium-card-ticker">${esc(a.ticker)} <span class="assets-premium-badge">${esc(a.type)}</span></div>
+             <div class="asset-premium-card-result"><div class="asset-premium-card-result-current">${marketValue!=null?fmt(marketValue):'—'}</div><div class="asset-premium-card-result-money ${resultClass}">${Number.isFinite(result)?assetSignedMoneyText(result):'—'}</div><div class="asset-premium-card-result-pct ${resultPctClass}">${Number.isFinite(resultPct)?fmtP(resultPct):'—'}</div></div>
+           </summary>
+           <div class="asset-premium-card-body">
+             <div class="asset-premium-card-row full"><div class="asset-premium-card-label">Nome</div><div class="asset-premium-card-value accent">${esc(a.name||a.ticker||'—')}</div></div>
+             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Qtd</div><div class="asset-premium-card-value">${a.qty}</div></div>
+             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Participação</div><div class="asset-premium-card-value">${peso.toFixed(1)}%</div></div>
+             <div class="asset-premium-card-row"><div class="asset-premium-card-label">PM</div><div class="asset-premium-card-value">${avg?fmt(avg):'—'}</div></div>
+             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Atual</div><div class="asset-premium-card-value accent">${currentUnit?fmt(currentUnit):'—'}</div></div>
+           </div>
+           <div class="asset-premium-card-actions"><button class="asset-premium-card-action primary" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "compra")'>Comprar</button><button class="asset-premium-card-action" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "venda")'>Vender</button><button class="asset-premium-card-action" onclick='edA(${JSON.stringify(String(a.id))})'>Editar</button></div>
+           <div class="asset-premium-card-expanded"><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;padding-top:10px"><div><div class="asset-premium-card-label">Setor</div><div class="asset-premium-card-value">${esc(a.sector||'—')}</div></div><div><div class="asset-premium-card-label">Preço alvo</div><div class="asset-premium-card-value">${Number(a.price_target)?fmt(a.price_target):'—'}</div></div><div><div class="asset-premium-card-label">DY</div><div class="asset-premium-card-value">${Number.isFinite(Number(a.dy))?Number(a.dy)+'%':'—'}</div></div></div></div>
+         </details>`;
+       }).join('');
          const rfRows=sortedDisplayItems.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a=>{
        const applied=assetAppliedValue(a);
        const current=assetCurrentValue(a);
@@ -27814,17 +27841,17 @@ function ativos(){
             </div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
-            <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Tipo</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
+            <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Nome</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
               <th>
                 <div style="display:flex;align-items:center;gap:5px">
                   ATUAL
                   <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
                 </div>
               </th>
-              <th>Resultado</th><th>${assetSortableHeader(type,'rentability','Rentab.')}</th><th>Alvo</th><th>${assetSortableHeader(type,'total','Total')}</th><th>${assetSortableHeader(type,'share','% Cart.')}</th><th>${assetSortableHeader(type,'ideal','% Ideal')}</th><th>Div. est./mês</th><th>DY</th><th></th></tr></thead>
-            <tbody>${rows||'<tr><td colspan="15" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
+              <th>Valor atual</th><th>Resultado R$</th><th>Resultado %</th><th>DY</th><th>Div. est./mês</th><th>Participação</th><th>Ações</th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="13" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
-        </div>`}
+        </div>${type==='Renda Fixa' ? '' : `<div class="ag-mobile-list">${mobileGroupCards||'<div class="assets-premium-empty">Nenhum ativo nesta categoria.</div>'}</div>`}`}
       </div>
     </details>`;
   }).join('');
@@ -33333,6 +33360,52 @@ function updateRfAssetSummary(selectElement) {
   .assets-premium-shell .asset-premium-card-actions{padding:7px 10px;gap:5px}
   .assets-premium-shell .asset-premium-card-action{min-height:44px;padding:8px 6px}
   .assets-premium-shell .asset-premium-card-expanded{padding:0 10px 9px}
+}
+</style>
+<style>
+/* Phase 3.2.4: desktop Ativos uses full-width category rows and contained tables. */
+.assets-premium-shell .ag-mobile-list{display:none}
+@media (min-width:1181px){
+  .assets-premium-shell .ag-wrap{
+    display:flex!important;flex-direction:column;gap:8px;width:100%;
+  }
+  .assets-premium-shell .ag{width:100%;min-width:0}
+  .assets-premium-shell .ag>summary{
+    display:grid;grid-template-columns:minmax(240px,1.1fr) minmax(0,3fr) 32px;
+    align-items:center;gap:12px;padding:10px 14px;min-height:64px;
+  }
+  .assets-premium-shell .ag-left{grid-column:1;grid-row:1;min-width:0;width:auto}
+  .assets-premium-shell .ag-stats{
+    grid-column:2;grid-row:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:10px;width:100%;min-width:0;flex:initial;
+  }
+  .assets-premium-shell .ag-stat:first-child,.assets-premium-shell .ag-stat:nth-child(5){display:block}
+  .assets-premium-shell .ag-k{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .assets-premium-shell .ag-v{font-size:12px;white-space:nowrap;overflow:visible;text-overflow:clip;font-variant-numeric:tabular-nums}
+  .assets-premium-shell .ag-open{grid-column:3;grid-row:1;width:30px;height:30px}
+  .assets-premium-shell .ag-body{padding:0 12px 12px;width:100%;box-sizing:border-box}
+  .assets-premium-shell .ag-table,.assets-premium-shell .ag-table .tw,.assets-premium-shell .ag-table .ts{width:100%;max-width:100%}
+  .assets-premium-shell .ag-table .ts{overflow-x:auto}
+  .assets-premium-shell .ag-table table{width:100%;min-width:1280px;table-layout:auto}
+  .assets-premium-shell .ag-table th,.assets-premium-shell .ag-table td{padding:8px 9px;white-space:nowrap;vertical-align:middle}
+  .assets-premium-shell .ag-table th:nth-child(1),.assets-premium-shell .ag-table td:nth-child(1){min-width:90px}
+  .assets-premium-shell .ag-table th:nth-child(2),.assets-premium-shell .ag-table td:nth-child(2){min-width:180px}
+  .assets-premium-shell .ag-table th:nth-child(3),.assets-premium-shell .ag-table td:nth-child(3){min-width:120px}
+  .assets-premium-shell .ag-table th:nth-child(4),.assets-premium-shell .ag-table td:nth-child(4){min-width:55px}
+  .assets-premium-shell .ag-table th:nth-child(5),.assets-premium-shell .ag-table td:nth-child(5){min-width:80px}
+  .assets-premium-shell .ag-table th:nth-child(6),.assets-premium-shell .ag-table td:nth-child(6){min-width:130px}
+  .assets-premium-shell .ag-table th:nth-child(7),.assets-premium-shell .ag-table td:nth-child(7){min-width:105px}
+  .assets-premium-shell .ag-table th:nth-child(8),.assets-premium-shell .ag-table td:nth-child(8){min-width:110px}
+  .assets-premium-shell .ag-table th:nth-child(9),.assets-premium-shell .ag-table td:nth-child(9){min-width:85px}
+  .assets-premium-shell .ag-table th:nth-child(10),.assets-premium-shell .ag-table td:nth-child(10){min-width:65px}
+  .assets-premium-shell .ag-table th:nth-child(11),.assets-premium-shell .ag-table td:nth-child(11){min-width:110px}
+  .assets-premium-shell .ag-table th:nth-child(12),.assets-premium-shell .ag-table td:nth-child(12){min-width:85px}
+  .assets-premium-shell .ag-table th:nth-child(13),.assets-premium-shell .ag-table td:nth-child(13){min-width:120px}
+  .assets-premium-shell .asset-group-table-name{font-weight:700;color:var(--text);line-height:1.2;margin-bottom:4px;white-space:nowrap}
+}
+@media (max-width:767px){
+  .assets-premium-shell .ag-table{display:none!important}
+  .assets-premium-shell .ag-mobile-list{display:flex;flex-direction:column;gap:8px}
 }
 </style>
 </body>
