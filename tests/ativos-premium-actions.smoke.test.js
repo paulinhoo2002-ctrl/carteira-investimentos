@@ -38,6 +38,7 @@ async function startServer(rootDir) {
 
 const viewports = [
   { width: 390, height: 844, label: '390x844' },
+  { width: 430, height: 932, label: '430x932' },
   { width: 768, height: 1024, label: '768x1024' },
   { width: 1366, height: 768, label: '1366x768' },
   { width: 1920, height: 1080, label: '1920x1080' },
@@ -80,6 +81,9 @@ for (const viewport of viewports) {
           width: button.getBoundingClientRect().width,
           height: button.getBoundingClientRect().height,
         }));
+        const categoryIcons = [...document.querySelectorAll('.assets-premium-shell .ag-ico svg')].filter(visible);
+        const desktopTable = document.querySelector('#assets-premium-table-desktop');
+        const allocation = document.querySelector('.assets-allocation-panel');
         return {
           normalRows: rows.length,
           rfRows: rfRows.length,
@@ -91,6 +95,9 @@ for (const viewport of viewports) {
           hasRedeem: actions.some(action => action.text === 'Resgatar'),
           hasMenu: actions.some(action => action.text === 'Mais'),
           actions,
+          categoryIconsVisible: categoryIcons.length,
+          allocationVisible: Boolean(allocation && visible(allocation)),
+          desktopTableVisible: Boolean(desktopTable && visible(desktopTable)),
           overflow: document.documentElement.scrollWidth > window.innerWidth,
         };
       });
@@ -103,10 +110,15 @@ for (const viewport of viewports) {
       assert.equal(snapshot.hasRedeem, true, `Resgatar ausente em ${viewport.label}`);
       assert.equal(snapshot.hasMenu, true, `menu contextual ausente em ${viewport.label}`);
       assert.equal(snapshot.overflow, false, `overflow horizontal em ${viewport.label}`);
+      assert.ok(snapshot.categoryIconsVisible > 0, `icone SVG de categoria ausente em ${viewport.label}`);
+      assert.equal(snapshot.allocationVisible, true, `alocacao por classe ausente em ${viewport.label}`);
+      if (viewport.width >= 1366) assert.equal(snapshot.desktopTableVisible, true, `tabela principal ausente em ${viewport.label}`);
       for (const action of snapshot.actions) assert.ok(action.width >= 44 && action.height >= 44, `acao menor que 44px: ${action.text} (${action.width}x${action.height}) em ${viewport.label}`);
 
       const beforeData = { normal: snapshot.normalIdentity, rf: snapshot.rfIdentity };
-      const firstMenu = page.locator('.asset-action-menu').first();
+       const firstMenu = page.locator(viewport.width >= 1000
+         ? '#assets-premium-table-desktop .asset-action-menu'
+         : '.ag[open] .asset-action-menu').first();
       await firstMenu.locator('button[aria-haspopup="menu"]').click();
       await assert.doesNotReject(async () => firstMenu.locator('.asset-action-menu-panel.open').waitFor({ state: 'visible', timeout: 1000 }));
       await page.keyboard.press('Escape');

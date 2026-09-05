@@ -312,6 +312,97 @@ start a feature, visual migration or release operation.
 - Dashboard, Dividendos, Ativos, Renda Fixa, Aportes, Rentabilidade,
   Rebalancear, Metas e Sidebar permanecem congelados.
 
+## 2026-09-04 - Product safety review 02: Configuracoes visual
+
+- `CONFIGURACOES_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+- A hierarquia visual separa a Zona de risco do Ambiente de teste local;
+  a fixture em memoria nao e uma operacao destrutiva sobre dados reais.
+- A exportacao de backup identifica explicitamente uma copia restauravel e
+  permanece distinta de relatorio analitico, importacao e restore.
+- Backup, importacao, restore, reset, autenticacao, sincronizacao, Finance
+  Core, persistencia, schema e dados reais nao foram alterados nesta fase.
+
+## 2026-09-04 - Safety hardening 01
+
+- `RESET_PORTFOLIO_RF_CLEANUP=FROZEN_SAFETY_CONTRACT`: `resetPortfolio()` limpa
+  `S.rfEvents` e os estados transitorios de editor/review de Renda Fixa sem
+  ampliar o reset para dados globais ou de conta.
+- `BACKUP_STRUCTURAL_VALIDATION=FROZEN_SAFETY_CONTRACT` e
+  `BACKUP_VERSION_VALIDATION=FROZEN_SAFETY_CONTRACT`: `parseBackupRaw()` rejeita
+  envelopes, tipos e versoes incompatíveis antes da confirmação, preservando
+  compatibilidade legada reconhecida.
+- `PERSISTENCE_TESTS=32/32`: o baseline subiu de 31 para 32 pela cobertura de
+  reset RF, versões incompatíveis e estruturas de backup malformadas.
+- Configurações não recebeu alteração visual; preview, confirmação,
+  `PersistenceCore.applyStorageTransaction()` e rollback permanecem ativos.
+
+## 2026-09-04 - Auditoria secondary surface refinement
+
+- `AUDITORIA_CANONICAL_IMPLEMENTATION=READY_FOR_FINAL_USER_APPROVAL`.
+- A rota `auditoria` passou a consumir o renderer de qualidade de dados, com
+  resumo de severidade, priorizacao, filtros progressivos, estado limpo e
+  acoes contextuais seguras.
+- Os niveis de acao continuam distinguindo `exact`, `context`, `general` e
+  `info`; a revalidacao de identidade e a protecao contra registro incorreto
+  permanecem no resolvedor oficial.
+- Nenhum reparo automatico, mutacao em lote, formula financeira, persistencia,
+  schema ou dado real foi alterado.
+
+## 2026-09-04 - Auditoria visual freeze
+
+- `AUDITORIA_VISUAL=FROZEN` e `AUDITORIA_ACTION_SAFETY=FROZEN`.
+- `AUDIT_ROUTE=auditoria`, `AUDIT_RENDERER=dataQualityTab()` e
+  `AUDIT_DATA_SOURCE=dataQualitySnapshot()` permanecem canonicos; `dataAuditTab()`
+  e mantido como alias de compatibilidade.
+- O contrato congela niveis `EXACT`, `CONTEXT`, `GENERAL` e `INFO`, com
+  revalidacao de identidade, protecao contra registro incorreto e fallback
+  seguro. Nao existe reparo automatico ou mutacao em lote.
+- A proxima frente e `PRODUCT_SAFETY_REVIEW_01_CONFIGURACOES`, inicialmente
+  review-first para Configuracoes, Backup, Importacao, Restore, Conta/Nuvem e
+  Zona de perigo.
+
+## 2026-09-04 - Secondary surface refinement 01: IRPF
+
+- `SECONDARY_SURFACE_REFINEMENT_01_IRPF=IMPLEMENTED`
+- A tela IRPF mantém o caráter de relatório auxiliar e a separação entre
+  conferência fiscal, exportações e backup/importação.
+- A melhoria foi restrita à legibilidade: valores críticos não usam ellipsis
+  nos cards ou linhas móveis, preservando fonte, cálculos, ano-base, exports e
+  fluxos protegidos.
+- Smoke focado e browser QA em 390, 430, 768, 1366 e 1920 passaram sem
+  overflow, erros de console, page errors ou request failures.
+- Finance Core, persistência, schema e dados reais permaneceram inalterados.
+
+## 2026-09-04 - IRPF visual freeze
+
+- `SECONDARY_SURFACE_REFINEMENT_01_IRPF=COMPLETE`
+- `IRPF_VISUAL=FROZEN`
+- `IRPF_ROUTE=irpf`; `IRPF_RENDERER=irpfTabPremium()`;
+  `IRPF_DATA_SOURCE=irpfBuildYearReport()`.
+- O contrato aprovado mantém relatório auxiliar, seletor de ano-base, CSV,
+  PDF, cards de resumo, seções fiscais recolhíveis e layout móvel sem
+  ellipsis financeiro ou overflow horizontal.
+- `backupManagerModal()` e `backupPayload()` continuam separados do relatório
+  fiscal. Nenhum engine fiscal, persistência, schema ou dado real foi alterado.
+
+## 2026-09-04 - Product usability improvements 02
+
+- `GLOBAL_SEARCH_REFINEMENT=FROZEN_FUNCTIONAL_IMPROVEMENT`
+- `CONTEXTUAL_NAVIGATION=FROZEN_FUNCTIONAL_IMPROVEMENT`
+- `ANALYSIS_SEARCHABLE=true`; `SEARCH_READ_ONLY=true`.
+- A busca global preserva `portfolioSearchOpen()` e os atalhos de teclado,
+  agrupa Análise em Navegação, exibe contagem/no-match explícito e não expõe
+  ações destrutivas.
+- Análise mantém links contextuais secundários para Ativos, Rentabilidade e
+  Rebalancear, sem alterar a identidade visual congelada.
+- A busca global permanece somente leitura e agora apresenta Análise como
+  destino no grupo Navegação, com aliases de análise, concentração, exposição
+  e desempenho, contador de resultados e estado explícito de no-match.
+- A Análise ganhou apenas links contextuais secundários para Ativos,
+  Rentabilidade e Rebalancear. Nenhum cálculo, persistência, schema ou tela
+  congelada foi redesenhado.
+- Evidência local: `qa-screenshots/product-usability-02/`.
+
 ## 2026-09-04 - Analysis and navigation freeze
 
 - `ANALYSIS_VISUAL=FROZEN`
@@ -441,3 +532,47 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
   autenticação, sincronização em nuvem e dados reais permanecem inalterados.
 - `NEXT_RECOMMENDED_ACTION=SETTINGS_SAFETY_REVIEW`; não iniciar Configurações
   nesta consolidação.
+## 2026-09-04 - Dashboard visual freeze
+
+- `DASHBOARD_VISUAL=FROZEN`.
+- `DASHBOARD_REFERENCE_LOCK=FROZEN` e `DASHBOARD_CHART_INTERACTION=FROZEN`.
+- `DASHBOARD_PRIMARY_CANON=Refs/visual-canon/dashboard-canonical.png`.
+  `Tela Principal.png` permanece referencia secundaria de acabamento e nao
+  altera a arquitetura executiva do Dashboard.
+- A aprovacao usou comparacao explicita com o canon primario: media final
+  90.25, sem dimensao abaixo de 86.
+- `VISUAL_REFERENCE_LOCK_PROCESS=ACTIVE`: testes e builds validam o produto,
+  mas nao substituem comparacao visual e aprovacao explicita.
+
+## ATIVOS VISUAL REFERENCE LOCK
+
+- `ATIVOS_REFERENCE_LOCK=READY_FOR_FINAL_USER_APPROVAL`.
+- A referencia desta rodada e `Refs/visual-canon/Tela de aportes e ativos.png`,
+  usada somente para a porcao de Ativos; os modulos de Aportes nao foram copiados.
+- O ajuste ficou restrito ao shell de Ativos: hierarquia das acoes, densidade dos
+  resumos de categoria, quebra segura de titulos RF e glyphs SVG locais.
+- Busca, filtros, ordenacao, expansao, rotas dedicadas e fontes financeiras
+  oficiais permanecem preservados. Nao marcar `ATIVOS_VISUAL=FROZEN` nesta rodada.
+
+## 2026-09-04 - Ativos final reference polish
+
+- `ATIVOS_FINAL_REFERENCE_POLISH=READY_FOR_FINAL_USER_APPROVAL`.
+- A tabela de posicoes foi promovida para o conteudo primario: os resumos por
+  classe agora sao compactos e a tabela aparece cedo em desktop.
+- `ATIVOS_ALLOCATION_SOURCE=allocationActualByType()`: o modulo visual de
+  alocacao somente apresenta o snapshot oficial e nao cria formula paralela.
+- Os icones SVG das categorias ficaram visiveis nos cinco breakpoints. Fontes
+  financeiras, filtros, ordenacao, expansao, RF dedicado e dados reais foram
+  preservados. Nao marcar `ATIVOS_VISUAL=FROZEN` antes da aprovacao explicita.
+
+## 2026-09-04 - Ativos reference lock freeze
+
+- `ATIVOS_VISUAL=FROZEN` e `ATIVOS_REFERENCE_LOCK=FROZEN` apos aprovacao visual
+  explicita do usuario.
+- `ATIVOS_PRIMARY_CONTENT=FROZEN`, `ATIVOS_DENSITY=FROZEN` e
+  `ATIVOS_ICON_LANGUAGE=FROZEN`.
+- `ALLOCATION_SOURCE=allocationActualByType()` e `ALLOCATION_PANEL=FROZEN`;
+  a tabela de posicoes permanece primaria no desktop e os cards de categoria
+  permanecem secundarios. RF continua com rota dedicada e resumo oficial em
+  Todos os ativos.
+- `NEXT_VISUAL_TARGET=APORTES`; nao reabrir Ativos sem autorizacao explicita.
