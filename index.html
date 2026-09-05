@@ -1004,6 +1004,8 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .dashboard-page-heading p{margin:4px 0 0;font-size:11px;color:var(--muted)}
 .dashboard-page-heading-meta{font-size:10px;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:6px 10px;white-space:nowrap}
 .dashboard-home-summary,.dashboard-home-income{height:auto}
+.dashboard-intelligence-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:stretch}
+.dashboard-intelligence-grid>*{min-width:0;height:100%}
 .div-monthly-table-block[open]{border:1px solid var(--border)}
 .div-monthly-table-block[open]>.div-monthly-body{max-height:none}
 .div-monthly-content{min-width:0;overflow-x:auto}
@@ -1652,6 +1654,9 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
   font-size:10px;
   color:var(--muted);
   line-height:1.35;
+}
+@media(max-width:900px){
+  .dashboard-intelligence-grid{grid-template-columns:1fr}
 }
 .rent-secondary-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:10px;max-width:1500px;width:100%;align-self:center}
 .rent-distribution-panel,.rent-analysis-note{min-width:0;padding:11px 13px}
@@ -25336,12 +25341,27 @@ function dashboardSnapshot(analysisRows){
   const concentrated=concentration.filter(r=>r.share>10).slice(0,3);
   return {
     portfolio,income,analysis,typeRows,variableValue,
+    sectorRows:dashboardSectorConcentrationRows(analysis),
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
     recent:{month:recentIncome.month,total:recentIncome.total,count:recentIncome.count,best:recentIncome.best,payers:recentIncome.payers},
     concentration,positives,negatives,insufficient,concentrated,
     financialGoals,
     contribution:prudentContributionAnalysis()
   };
+}
+function dashboardSectorConcentrationRows(analysisRows){
+  const totals=new Map();
+  let total=0;
+  (Array.isArray(analysisRows)?analysisRows:[]).forEach(row=>{
+    const sector=String(row?.sector||'').trim();
+    const current=Number(row?.current);
+    if(!sector || sector==='—' || !Number.isFinite(current) || current<=0) return;
+    totals.set(sector,(totals.get(sector)||0)+current);
+    total+=current;
+  });
+  return [...totals.entries()]
+    .map(([sector,current])=>({sector,current,share:total>0?(current/total)*100:0}))
+    .sort((a,b)=>b.current-a.current || a.sector.localeCompare(b.sector,'pt-BR'));
 }
 function dashboardAssetByTicker(ticker){
   const needle=String(ticker||'').trim().toUpperCase();
@@ -25406,6 +25426,15 @@ function portfolioInsightsSnapshot(source=null){
       description:`${dominantClass.type} concentra ${Number(dominantClass.share||0).toFixed(1)}% do patrimônio atual.`,
       evidence:{type:dominantClass.type,value:Number(dominantClass.value)||0,share:Number(dominantClass.share)||0},
       relatedRoute:'ativos',actionLabel:'Ver composição'
+    });
+  }
+  const dominantSector=(data.sectorRows||[]).find(row=>Number(row.current)>0);
+  if(dominantSector){
+    add({
+      id:'concentration-top-sector',category:'concentration',severity:'INFO',title:'Maior concentração setorial',
+      description:`${dominantSector.sector} representa ${Number(dominantSector.share).toFixed(1)}% da carteira por valor atual.`,
+      evidence:{sector:dominantSector.sector,share:Number(dominantSector.share),value:Number(dominantSector.current)||0},
+      relatedRoute:'ativos',actionLabel:'Ver composição por setor'
     });
   }
   const rf=data.rf||{};
@@ -27119,6 +27148,10 @@ function dash(){
       </div>
       <div class="canon-dash-row-d">
         ${dashboardHomeHighlightsPanel()}
+      </div>
+      <div class="dashboard-intelligence-grid canon-dash-row-e">
+        ${dashboardReceiptsPanel(data)}
+        ${dashboardInsightsPanel(data)}
       </div>
     </div>
   `;
