@@ -39,8 +39,8 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
 
 - Global session state is `S` in `index.html`.
 - Main routing is handled by `go(t)`.
-- Renda Fixa is the canonical `renda-fixa` inner tab of Ativos, not a second
-  application entrypoint.
+- Renda Fixa is the canonical dedicated `renda-fixa` route, separate from the
+  Ativos route; it is not an Ativos inner tab or a duplicated application.
 - Asset opening uses canonical handlers such as `edA(id)`; do not infer an
   identity from a non-unique ticker.
 - Test mode is activated only on local hosts with `?testMode=1` and uses an
@@ -61,7 +61,7 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
 |---|---|---|---|
 | Dashboard | `dashboard` | `dashboardHomeSummaryPanel`, `dashboardHomeCompositionPanel`, `dashboardEvolutionPanel` | portfolio snapshot, income, highlights |
 | Ativos | `ativos` | `ativos()` | positions, classes, asset actions |
-| Renda Fixa | `renda-fixa` | `rendaFixaTab()` inside Ativos | RF positions, events, maturity |
+| Renda Fixa | `renda-fixa` | `rendaFixaTab()` on the dedicated route | RF positions, events, maturity |
 | Aportes | `aportes` | contributions renderer and pagination helpers | movements/contributions |
 | Metas | `metas` | `metasTab()` | goals and progress |
 | Dividendos | `dividendos` | dividend renderer and `proventoStats()` | dividends and history |
