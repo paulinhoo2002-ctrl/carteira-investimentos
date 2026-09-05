@@ -2595,6 +2595,7 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
 .metas-shell .cards .card.al .cv{font-size:16px;line-height:1.04}
 .metas-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .metas-summary-bar{display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px}
+.metas-projection-note{font-size:10px;line-height:1.4;color:var(--muted);padding:8px 10px;border:1px solid rgba(96,165,250,.2);border-radius:10px;background:rgba(96,165,250,.05);margin:-2px 0 10px}
 .metas-goal-section>summary{min-height:64px}
 .metas-goal-section>summary .sec-meta{white-space:normal;overflow:visible;text-overflow:clip}
 .metas-goal-section .sec-meta strong{color:var(--text)}
@@ -31506,6 +31507,9 @@ function metasTab(){
 
   const metaPatSummary=metaPatValor>0?`${fmt(tC)} atual · ${metaPat.prog.toFixed(1)}% · Falta ${fmt(metaPat.falta)}`:'Meta patrimonial não configurada';
   const metaProSummary=passiveGoal?.hasTarget?`${fmt(passiveGoal.monthlyAvg||0)} média 12M · ${fmtP(passiveGoal.percent||0)} · Falta ${fmt(passiveGoal.missing||0)}/mês`:'Meta de renda não configurada';
+  const metaProjectionNote=metaPatValor>0
+    ? `Prazo estimado com aporte mensal de ${fmt(metaPatAporte)} e variação anual de ${metaPatVar.toFixed(1)}%. É uma simulação baseada nas premissas cadastradas, não uma garantia de resultado.`
+    : 'Configure uma meta patrimonial, aporte mensal e variação anual para visualizar um prazo estimado.';
 
   return`<div class="metas-shell">
   <h1 class="page-heading wave-b-heading">${waveBIcon('target')}<span>Metas</span></h1>
@@ -31522,6 +31526,7 @@ function metasTab(){
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
   </div>
+  <div class="metas-projection-note" role="note">${esc(metaProjectionNote)} A renda projetada/mês continua sendo uma estimativa da carteira; a média 12M usa proventos já recebidos.</div>
 
   <details class="sec metas-goal-section metas-patrimony-section" open style="margin-bottom:10px">
     <summary>
