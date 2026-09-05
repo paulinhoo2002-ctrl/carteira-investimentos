@@ -426,6 +426,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .asset-premium-kpi-value{font-size:13px;font-weight:900;color:#e2eaf6;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-premium-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .asset-premium-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.asset-analysis-sector-grid>*{grid-column:1/-1}
 .asset-premium-section{border:1px solid var(--border);border-radius:14px;background:var(--panel-2);overflow:hidden;min-width:0}
 .asset-premium-section>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 11px;cursor:pointer}
 .asset-premium-section>summary::-webkit-details-marker{display:none}
@@ -994,6 +995,10 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .aporte-contribution-name{font-size:12px;font-weight:700;color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .aporte-contribution-meta{margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .aporte-contribution-total{font-size:12px;font-weight:800;color:#34d399;white-space:nowrap}
+.aporte-contribution-actions{display:flex;justify-content:flex-end;margin-top:4px}
+.aporte-repeat-btn{border:1px solid rgba(96,165,250,.28);background:rgba(96,165,250,.08);color:#93c5fd;border-radius:8px;padding:4px 7px;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
+.aporte-repeat-btn:hover{background:rgba(96,165,250,.16);border-color:rgba(96,165,250,.5)}
+.aporte-repeat-btn:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 .aporte-class-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
 .aporte-class-row .cl{font-size:11px}
 .aporte-class-row .cv{font-size:12px;font-weight:800;color:#e2eaf6}
@@ -1004,6 +1009,8 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .dashboard-page-heading p{margin:4px 0 0;font-size:11px;color:var(--muted)}
 .dashboard-page-heading-meta{font-size:10px;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:6px 10px;white-space:nowrap}
 .dashboard-home-summary,.dashboard-home-income{height:auto}
+.dashboard-intelligence-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:stretch}
+.dashboard-intelligence-grid>*{min-width:0;height:100%}
 .div-monthly-table-block[open]{border:1px solid var(--border)}
 .div-monthly-table-block[open]>.div-monthly-body{max-height:none}
 .div-monthly-content{min-width:0;overflow-x:auto}
@@ -1652,6 +1659,9 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
   font-size:10px;
   color:var(--muted);
   line-height:1.35;
+}
+@media(max-width:900px){
+  .dashboard-intelligence-grid{grid-template-columns:1fr}
 }
 .rent-secondary-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:10px;max-width:1500px;width:100%;align-self:center}
 .rent-distribution-panel,.rent-analysis-note{min-width:0;padding:11px 13px}
@@ -2585,6 +2595,7 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
 .metas-shell .cards .card.al .cv{font-size:16px;line-height:1.04}
 .metas-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .metas-summary-bar{display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px}
+.metas-projection-note{font-size:10px;line-height:1.4;color:var(--muted);padding:8px 10px;border:1px solid rgba(96,165,250,.2);border-radius:10px;background:rgba(96,165,250,.05);margin:-2px 0 10px}
 .metas-goal-section>summary{min-height:64px}
 .metas-goal-section>summary .sec-meta{white-space:normal;overflow:visible;text-overflow:clip}
 .metas-goal-section .sec-meta strong{color:var(--text)}
@@ -6116,6 +6127,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     /* Result indicators - not color only */
     .assets-premium-table .result-pos{color:var(--success)}
     .assets-premium-table .result-neg{color:var(--danger)}
+    .assets-premium-table .result-indicator.pos{color:var(--success)}
+    .assets-premium-table .result-indicator.neg{color:var(--danger)}
+    .assets-premium-table .result-indicator.neutral{color:var(--muted)}
     .assets-premium-table .result-indicator::before{content:'↑';margin-right:3px}
     .assets-premium-table .result-neg .result-indicator::before{content:'↓'}
     .assets-premium-table .result-neutral .result-indicator::before{content:'→'}
@@ -6626,6 +6640,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     #assets-premium-table-desktop .assets-premium-table td:nth-child(14){display:table-cell}
   }
 </style>
+
 <style>
   /* Phase 11: keep dense desktop tables inside the sidebar-adjusted content area. */
   @media (min-width:1181px) and (max-width:1535px){
@@ -15098,6 +15113,26 @@ function findQuickMovementAssetByTicker(ticker){
   const resolved=resolveAssetMetadata(tk);
   return resolved.ticker ? resolved : null;
 }
+function quickMovementAssetPickerOptionsHtml(){
+  const seen=new Set(), options=[];
+  const candidates=[...(Array.isArray(S.assets)?S.assets:[]), ...(Array.isArray(S.aportes)?S.aportes:[])];
+  candidates.forEach(item=>{
+    const ticker=normalizeMetadataTicker(item?.ticker||item?.name||item?.title||'');
+    if(!ticker || seen.has(ticker)) return;
+    seen.add(ticker);
+    const name=String(item?.name||item?.product||item?.title||'').trim();
+    const type=normalizeType(item?.type||item?.asset_type||metaTicker(ticker).type||'Ação','Ação');
+    options.push(`<option value="${esc(ticker)}" label="${esc([name,type].filter(Boolean).join(' · '))}"></option>`);
+  });
+  return options.join('');
+}
+function quickMovementSuccessText(reg,kind){
+  const label=quickMovementKindLabel(kind);
+  const asset=String(reg?.ticker||reg?.name||'Movimentação').trim();
+  const date=String(reg?.date||'').trim() || 'sem data';
+  const amount=kind==='provento' ? Number(reg?.value)||0 : Number(reg?.qty||0)*Number(reg?.price||0);
+  return `✅ Lançamento registrado · ${label} · ${asset} · ${fmt(amount)} · ${date}`;
+}
 function quickMovementDefaultDraft(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
   const today=new Date().toISOString().slice(0,10);
@@ -15623,9 +15658,10 @@ function quickMovementModal(){
     </div>`;
   const buySellFields = `
     <div class="cl" style="margin-bottom:8px">Ativo</div>
+    <datalist id="qm-asset-options">${quickMovementAssetPickerOptionsHtml()}</datalist>
     <div class="fg">
       <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date!==undefined?draft.date:new Date().toISOString().slice(0,10))}" aria-label="Data"${qmErrOn('qm-dt')} oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" aria-label="Ticker"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" aria-label="Ticker" aria-describedby="qm-asset-picker-hint"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
       <div><div class="fl">Tipo de ativo</div><select id="qm-type" aria-label="Tipo de ativo" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
       <div><div class="fl">Setor</div><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" aria-label="Setor" oninput="setQuickMovementField('sector', this.value)"></div>
     </div>
@@ -15635,16 +15671,19 @@ function quickMovementModal(){
       <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
       <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 10,00" value="${esc(draft.price||'')}" aria-label="Preço unitário"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
     </div>
+    <div id="qm-asset-picker-hint" class="quick-movement-preview-note" style="margin-top:6px">Digite o ticker ou escolha um ativo já cadastrado para preencher tipo e setor.</div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const proventoFields = `
     <div class="cl" style="margin-bottom:8px">Ativo</div>
+    <datalist id="qm-asset-options">${quickMovementAssetPickerOptionsHtml()}</datalist>
     <div id="quick-movement-asset-summary">${quickMovementAssetSummaryHtml()}</div>
     <div class="fg">
       <div><div class="fl">Data do pagamento</div><input id="qm-dt" type="date" aria-label="Data do pagamento" value="${esc(draft.date!==undefined?draft.date:new Date().toISOString().slice(0,10))}"${qmErrOn('qm-dt')} oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" placeholder="ex: MXRF11" aria-label="Ticker do ativo" value="${esc(draft.ticker||'')}"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: MXRF11" aria-label="Ticker do ativo" aria-describedby="qm-asset-picker-hint" value="${esc(draft.ticker||'')}"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
       <div><div class="fl">Valor recebido (R$)</div><input id="qm-value" type="text" inputmode="decimal" aria-label="Valor recebido" placeholder="ex: 35,80" value="${esc(draft.value||'')}"${qmErrOn('qm-value')} oninput="setQuickMovementField('value', this.value)"></div>
       <div><div class="fl">Tipo</div><select id="qm-event" aria-label="Tipo do provento" onchange="setQuickMovementField('eventType', this.value)">${eventTypes}</select></div>
     </div>
+    <div id="qm-asset-picker-hint" class="quick-movement-preview-note" style="margin-top:6px">Busque pelo ticker; os dados conhecidos do ativo aparecem na revisão.</div>
     <div class="cl" style="margin:12px 0 8px">Dados do provento</div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" aria-label="Observação" placeholder="opcional: competência, evento especial..." value="${esc(draft.note||'')}" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfFields = `
@@ -16067,7 +16106,7 @@ function saveQuickMovement(){
     if(kind==='provento'){
       S.proventos.unshift(reg);
       save();
-      toast(`✅ Provento de ${reg.ticker} registrado!`);
+      toast(quickMovementSuccessText(reg,kind));
       render();
       markProventosDirty();
       persisted=true;
@@ -16080,7 +16119,7 @@ function saveQuickMovement(){
         S.aportes.unshift(reg);
       }
       save();
-      toast('✅ Registro neutro salvo localmente.');
+      toast(quickMovementSuccessText(reg,kind));
       render();
       persisted=true;
       return;
@@ -16089,7 +16128,7 @@ function saveQuickMovement(){
     if(kind==='renda-fixa'){
       learnTickerMeta(reg.ticker, 'Renda Fixa', reg.sector, true);
       syncAssetsFromAportes(false);
-      toast(`✅ Lançamento de ${reg.name||reg.ticker} registrado!`);
+      toast(quickMovementSuccessText(reg,kind));
       fetchQuotes(false);
       scheduleAutoProventosGratis('aporte-rf');
       persisted=true;
@@ -16097,7 +16136,7 @@ function saveQuickMovement(){
     }
     learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
     syncAssetsFromAportes(false);
-    toast(`✅ ${kind==='venda'?'Venda':'Compra'} de ${reg.ticker} registrada!`);
+    toast(quickMovementSuccessText(reg,kind));
     fetchQuotes(false);
     scheduleAutoProventosGratis('aporte');
     persisted=true;
@@ -21804,22 +21843,25 @@ function setRentBench(bench){
       + (assetReviewFilterIsActive() ? 1 : 0);
   }
 
-  function clearAssetsFilters(){
+function clearAssetsFilters(){
     clearTimeout(S.assetsSearchTimer);
     S.assetsSearch='';
     S.assetsFilterClasses=[];
     S.assetsSectorFilter='all';
     S.assetsPerformanceFilter='all';
     S.assetReviewFilter=null;
+    S.activeAssetsGroup='';
     S.assetsFilterPanelOpen=false;
     render();
-  }
+}
 
   // Debounced search handler
   function onAssetsSearchInput(value){
     clearTimeout(S.assetsSearchTimer);
+    const normalized=String(value||'').trim().toLowerCase();
     S.assetsSearchTimer = setTimeout(() => {
-      S.assetsSearch = value.trim().toLowerCase();
+      S.assetsSearch = normalized;
+      if(!normalized) S.activeAssetsGroup='';
       render();
     }, 150);
   }
@@ -22310,6 +22352,7 @@ function assetAnalysisBlock(rowsInput){
   const negatives=enriched.filter(r=>Number.isFinite(r.pct)&&r.pct<0&&r.current>0).sort((a,b)=>a.pct-b.pct||b.current-a.current).slice(0,5);
   const positions=[...enriched].filter(r=>r.current>0).sort((a,b)=>b.current-a.current).slice(0,5);
   const concentrations=[...enriched].filter(r=>Number.isFinite(r.share)&&r.share>10).sort((a,b)=>b.share-a.share).slice(0,5);
+  const sectors=portfolioSectorConcentrationRows(rows).slice(0,5);
   const incomplete=enriched.filter(r=>!r.ticker||r.pct==null||!Number.isFinite(r.current)||r.current<=0||!Number.isFinite(r.applied)||r.applied<=0).slice(0,5);
   const attention=enriched.filter(r=>{
     const signal=assetContributionSignal(r);
@@ -22345,6 +22388,9 @@ function assetAnalysisBlock(rowsInput){
       ${assetPremiumSection('Maiores concentrações','Posições acima de 10% do patrimônio.',concentrations.length,concentrations.length?concentrations.map(r=>assetInsightRowHtml(r,'concentration')).join(''):'<div class="asset-premium-empty">Nenhum ativo acima do limite de atenção.</div>',topConcentration?assetConcentrationAlert(topConcentration.share).tone:'ok')}
       ${assetPremiumSection('Dados incompletos','Ativos que pedem revisão de base.',incomplete.length,incomplete.length?incomplete.map(r=>assetInsightRowHtml(r,'incomplete')).join(''):'<div class="asset-premium-empty">Todos os ativos possuem dados suficientes.</div>','muted')}
       ${assetPremiumSection('Merecem atenção','Risco, queda ou concentração.',attention.length,attention.length?attention.map(r=>assetInsightRowHtml(r,'attention')).join(''):'<div class="asset-premium-empty">Nenhum alerta relevante com os critérios atuais.</div>','warn')}
+    </div>
+    <div class="asset-premium-grid compact asset-analysis-sector-grid">
+      ${assetPremiumSection('Exposição por setor','Distribuição do valor atual por setor informado.',sectors.length,sectors.length?sectors.map(row=>`<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.sector)}</div><div class="asset-insight-sub">Valor atual · leitura de concentração</div></div><div class="asset-insight-value bl">${row.share.toFixed(1)}%</div></div>`).join(''):'<div class="asset-premium-empty">Nenhum setor informado nos ativos atuais.</div>','info')}
     </div>
   </div>`;
 }
@@ -24981,7 +25027,6 @@ function goAssetInner(tab){
 function desktopTabs(){
   const sideLu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
   const isAtivos=S.tab==='ativos';
-  const innerTab=String(S.assetsInnerTab||'patrimonio');
   const navItem=(key,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
   const navItemInner=(tooltip,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="goAssetInner('${tooltip}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
   return `<nav class="tabs tabs-desktop" aria-label="Navegacion principal de la carteira">
@@ -24991,15 +25036,15 @@ function desktopTabs(){
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     ${navItem('dashboard','Dashboard','📊',S.tab==='dashboard')}
-    ${navItem('ativos','Ativos','💼',isAtivos&&innerTab==='patrimonio')}
-    ${navItem('renda-fixa','Renda Fixa','🧾',isAtivos&&innerTab==='renda-fixa')}
+    ${navItem('ativos','Ativos','💼',isAtivos)}
+    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
+    ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
     ${navItem('analise','Análise','📊',S.tab==='analise')}
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
     ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
     ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navItem('metas','Metas','🎯',S.tab==='metas')}
-    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
     <div class="side-utilities" aria-label="Preferências da carteira">
       ${hideValuesToggleButton('sidebar')}
@@ -25084,7 +25129,7 @@ function content(){
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
   if(S.tab==='desempenho')return ativos();
-  if(S.tab==='renda-fixa')return ativos();
+  if(S.tab==='renda-fixa')return rendaFixaTab();
   if(S.tab==='irpf')      return irpfTabPremium();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
@@ -25336,12 +25381,27 @@ function dashboardSnapshot(analysisRows){
   const concentrated=concentration.filter(r=>r.share>10).slice(0,3);
   return {
     portfolio,income,analysis,typeRows,variableValue,
+    sectorRows:portfolioSectorConcentrationRows(analysis),
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
     recent:{month:recentIncome.month,total:recentIncome.total,count:recentIncome.count,best:recentIncome.best,payers:recentIncome.payers},
     concentration,positives,negatives,insufficient,concentrated,
     financialGoals,
     contribution:prudentContributionAnalysis()
   };
+}
+function portfolioSectorConcentrationRows(analysisRows){
+  const totals=new Map();
+  let total=0;
+  (Array.isArray(analysisRows)?analysisRows:[]).forEach(row=>{
+    const sector=String(row?.sector||'').trim();
+    const current=Number(row?.current);
+    if(!sector || sector==='—' || !Number.isFinite(current) || current<=0) return;
+    totals.set(sector,(totals.get(sector)||0)+current);
+    total+=current;
+  });
+  return [...totals.entries()]
+    .map(([sector,current])=>({sector,current,share:total>0?(current/total)*100:0}))
+    .sort((a,b)=>b.current-a.current || a.sector.localeCompare(b.sector,'pt-BR'));
 }
 function dashboardAssetByTicker(ticker){
   const needle=String(ticker||'').trim().toUpperCase();
@@ -25406,6 +25466,15 @@ function portfolioInsightsSnapshot(source=null){
       description:`${dominantClass.type} concentra ${Number(dominantClass.share||0).toFixed(1)}% do patrimônio atual.`,
       evidence:{type:dominantClass.type,value:Number(dominantClass.value)||0,share:Number(dominantClass.share)||0},
       relatedRoute:'ativos',actionLabel:'Ver composição'
+    });
+  }
+  const dominantSector=(data.sectorRows||[]).find(row=>Number(row.current)>0);
+  if(dominantSector){
+    add({
+      id:'concentration-top-sector',category:'concentration',severity:'INFO',title:'Maior concentração setorial',
+      description:`${dominantSector.sector} representa ${Number(dominantSector.share).toFixed(1)}% da carteira por valor atual.`,
+      evidence:{sector:dominantSector.sector,share:Number(dominantSector.share),value:Number(dominantSector.current)||0},
+      relatedRoute:'ativos',actionLabel:'Ver composição por setor'
     });
   }
   const rf=data.rf||{};
@@ -27120,6 +27189,10 @@ function dash(){
       <div class="canon-dash-row-d">
         ${dashboardHomeHighlightsPanel()}
       </div>
+      <div class="dashboard-intelligence-grid canon-dash-row-e">
+        ${dashboardReceiptsPanel(data)}
+        ${dashboardInsightsPanel(data)}
+      </div>
     </div>
   `;
 }
@@ -27614,7 +27687,7 @@ function ativos(){
         const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
         const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
         const share=portfolioTotal>0?(gTotal/portfolioTotal)*100:0;
-         const isOpen=S.activeAssetsGroup===type;
+         const isOpen=S.activeAssetsGroup===type || (!S.activeAssetsGroup && !!S.assetsSearch && idx===0);
               const sortedDisplayItems=sortAssetsByGroup(type, displayItems, portfolioTotal);
               const rows=sortedDisplayItems.map(a=>{
            const m=getAssetMetrics(a);
@@ -27732,21 +27805,13 @@ function ativos(){
       </summary>
       <div class="ag-body">
         ${type==='Renda Fixa'
-          ? `<div class="rf-table-wrap"><table class="rf-table" style="min-width:1120px">
-              <thead><tr>
-                <th>Título</th>
-                <th>Tipo / Indexador</th>
-                <th>Aplicação</th>
-                <th>Vencimento</th>
-                <th class="rf-right">Valor aplicado</th>
-                <th class="rf-right">Valor atual / líquido</th>
-                <th class="rf-right">Resultado</th>
-                <th class="rf-right">Rentabilidade</th>
-                <th class="rf-right">% na carteira</th>
-                <th>Ações</th>
-              </tr></thead>
-              <tbody>${rfRows||'<tr><td colspan="10" style="text-align:center;padding:18px;color:#7489a4">Nenhum ativo de renda fixa nesta categoria.</td></tr>'}</tbody>
-            </table></div>`
+          ? `<div class="rf-category-summary" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px;border:1px solid rgba(96,165,250,.18);border-radius:12px;background:rgba(96,165,250,.05)">
+              <div>
+                <div style="font-weight:800;color:#e2eaf6">Gestão detalhada em Renda Fixa</div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:4px">Consulte vencimentos, taxas e movimentações na rota dedicada.</div>
+              </div>
+              <button class="btn bgh touch-target-utility" onclick="go('renda-fixa')">Ver Renda Fixa</button>
+            </div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
             <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Tipo</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
@@ -27839,8 +27904,9 @@ function ativos(){
       </tr>`;
     }).join('');
 
-    // Build RF table rows
-    const premiumRfRows = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a => {
+    // Renda Fixa tem rota própria; Ativos mostra apenas seu resumo de categoria.
+    const premiumRfRows = '';
+    /* const premiumRfRowsLegacy = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a => {
       const applied = assetAppliedValue(a);
       const current = assetCurrentValue(a);
       const profit = assetJurosValue(a);
@@ -27893,10 +27959,10 @@ function ativos(){
         <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
         <td style="white-space:nowrap">${assetActionMenuHtml(a, true, 'primary-rf')}</td>
       </tr>`;
-    }).join('');
+    }).join(''); */
 
-    // Mobile cards for all assets
-    const mobileCardsHtml = displayAssets.map(a => {
+    // Mobile cards for ativos variáveis; a gestão de RF permanece dedicada.
+    const mobileCardsHtml = displayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa').map(a => {
       const m = getAssetMetrics(a);
       const avg = Number(a.avg_price)||0;
       const currentUnit = m.currentUnit;
@@ -28066,7 +28132,7 @@ function ativos(){
 
                                     <!-- Todos os ativos (collapsible) -->
           <div class="assets-primary-layout">
-          <details class="assets-all-assets" open ontoggle="this.open ? null : null">
+          <details class="assets-all-assets" ontoggle="this.open ? null : null">
             <summary class="assets-all-assets-summary">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
                 <div>
@@ -28102,30 +28168,6 @@ function ativos(){
                   </thead>
                   <tbody>
                     ${premiumTableRows || '<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--muted)">Nenhum ativo variável.</td></tr>'}
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- RF Desktop Table (separate) -->
-              <div class="assets-premium-table-wrap" id="assets-premium-rf-table-desktop" aria-label="Posições de renda fixa">
-                <table class="assets-premium-table" style="min-width:1080px">
-                  <caption class="sr-only">Títulos de renda fixa, valores, resultado, rentabilidade e peso na carteira</caption>
-                  <thead>
-                    <tr>
-                      <th>Título</th>
-                      <th>Tipo / Indexador</th>
-                      <th>Aplicação</th>
-                      <th>Vencimento</th>
-                      <th>Valor aplicado</th>
-                      <th>Valor atual</th>
-                      <th>Resultado</th>
-                      <th>Rentabilidade</th>
-                      <th>% Cart.</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${premiumRfRows || '<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--muted)">Nenhum ativo de renda fixa.</td></tr>'}
                   </tbody>
                 </table>
               </div>
@@ -28461,7 +28503,7 @@ function apTab(){
   </div>`:'';
   const maxMonth=Math.max(1,...contributionStats.months.map(item=>item.value));
   const monthlyHistory=contributionStats.months.length?`<section class="card aporte-summary-panel aporte-monthly-chart"><div class="sh"><div><div class="st">Histórico mensal de aportes</div><div class="mu">Entradas de capital para investimentos</div></div><span class="aporte-chart-caption">${contributionStats.months.length} meses</span></div><div class="aporte-month-bars" role="img" aria-label="Aportes mensais por período">${contributionStats.months.map(item=>`<div class="aporte-month-bar-item"><div class="aporte-month-bar-value">${fmt(item.value)}</div><div class="aporte-month-bar-track"><span style="height:${Math.max(8,(item.value/maxMonth)*100).toFixed(1)}%"></span></div><div class="aporte-month-bar-label">${esc(item.label)}</div></div>`).join('')}</div></section>`:'<section class="card aporte-summary-panel"><div class="st">Histórico mensal de aportes</div><div class="evo-empty">Registre compras ou renda fixa para acompanhar os aportes.</div></section>';
-  const latestContributions=contributionStats.latest.length?`<div class="aporte-contribution-list">${contributionStats.latest.map(item=>{const row=item.row;const ticker=String(row.ticker||row.name||row.title||'Movimentação').trim();const name=String(row.name||row.product||row.title||ticker).trim();const detail=[item.type,row.sector||row.asset_sector].filter(Boolean).join(' · ')||'Sem classificação';return`<div class="aporte-contribution-item"><div class="aporte-contribution-date">${esc(row.date||row.rf_application_date||'Sem data')}</div><div><div class="aporte-contribution-name">${esc(name||ticker)}</div><div class="aporte-contribution-meta">${esc(ticker)} · ${esc(detail)}</div></div><div class="aporte-contribution-total">${fmt(item.value)}</div></div>`}).join('')}</div>`:'<div class="evo-empty">Nenhum aporte de investimento registrado.</div>';
+  const latestContributions=contributionStats.latest.length?`<div class="aporte-contribution-list">${contributionStats.latest.map(item=>{const row=item.row;const ticker=String(row.ticker||row.name||row.title||'Movimentação').trim();const name=String(row.name||row.product||row.title||ticker).trim();const detail=[item.type,row.sector||row.asset_sector].filter(Boolean).join(' · ')||'Sem classificação';const canRepeat=aporteMovementKind(row)==='compra';return`<div class="aporte-contribution-item"><div class="aporte-contribution-date">${esc(row.date||row.rf_application_date||'Sem data')}</div><div><div class="aporte-contribution-name">${esc(name||ticker)}</div><div class="aporte-contribution-meta">${esc(ticker)} · ${esc(detail)}</div></div><div><div class="aporte-contribution-total">${fmt(item.value)}</div>${canRepeat?`<div class="aporte-contribution-actions"><button type="button" class="aporte-repeat-btn" onclick='repeatContribution(${JSON.stringify(row.id)})' aria-label="Repetir aporte de ${esc(ticker)}">Repetir</button></div>`:''}</div></div>`}).join('')}</div>`:'<div class="evo-empty">Nenhum aporte de investimento registrado.</div>';
   const classTotal=Math.max(1,contributionStats.total);
   const classSlices=contributionStats.classes.map(([type,value],idx)=>`${ALLOC_COLORS[idx%ALLOC_COLORS.length]} ${contributionStats.total>0?(value/contributionStats.total)*100:0}%`).join(',');
   const classDistribution=contributionStats.classes.length?`<section class="card aporte-summary-panel aporte-class-panel"><div class="sh"><div><div class="st">Aportes por classe</div><div class="mu">Distribuição das entradas confirmadas</div></div></div><div class="aporte-class-layout"><div class="aporte-class-donut" style="background:conic-gradient(${classSlices})"><span>${fmt(contributionStats.total)}</span></div><div class="aporte-class-list">${contributionStats.classes.map(([type,value],idx)=>`<div class="aporte-class-row"><div class="aporte-class-label"><i style="background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></i><span>${esc(type)}</span></div><div class="cv">${fmt(value)}</div><div class="aporte-class-share">${contributionStats.total>0?((value/contributionStats.total)*100).toFixed(1):'0.0'}%</div></div>`).join('')}</div></div></section>`:'';
@@ -31464,6 +31506,9 @@ function metasTab(){
 
   const metaPatSummary=metaPatValor>0?`${fmt(tC)} atual · ${metaPat.prog.toFixed(1)}% · Falta ${fmt(metaPat.falta)}`:'Meta patrimonial não configurada';
   const metaProSummary=passiveGoal?.hasTarget?`${fmt(passiveGoal.monthlyAvg||0)} média 12M · ${fmtP(passiveGoal.percent||0)} · Falta ${fmt(passiveGoal.missing||0)}/mês`:'Meta de renda não configurada';
+  const metaProjectionNote=metaPatValor>0
+    ? `Prazo estimado com aporte mensal de ${fmt(metaPatAporte)} e variação anual de ${metaPatVar.toFixed(1)}%. É uma simulação baseada nas premissas cadastradas, não uma garantia de resultado.`
+    : 'Configure uma meta patrimonial, aporte mensal e variação anual para visualizar um prazo estimado.';
 
   return`<div class="metas-shell">
   <h1 class="page-heading wave-b-heading">${waveBIcon('target')}<span>Metas</span></h1>
@@ -31480,6 +31525,7 @@ function metasTab(){
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
     <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
   </div>
+  <div class="metas-projection-note" role="note">${esc(metaProjectionNote)} A renda projetada/mês continua sendo uma estimativa da carteira; a média 12M usa proventos já recebidos.</div>
 
   <details class="sec metas-goal-section metas-patrimony-section" open style="margin-bottom:10px">
     <summary>
@@ -32461,12 +32507,20 @@ function go(t){
     return 0;
   }
   if(t==='patrimonio') t='dashboard';
-  const nextTab=['renda-fixa','desempenho'].includes(t) ? 'ativos' : t;
-  S.tab=nextTab;
+  if(t==='ativos'){
+    S.assetsInnerTab='patrimonio';
+    S.activeAssetsGroup='';
+  }
+  if(t==='renda-fixa'){
+    S.tab='renda-fixa';
+  }else if(t==='desempenho'){
+    S.tab='ativos';
+    S.assetsInnerTab='desempenho';
+  }else{
+    S.tab=t;
+  }
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
-  if(t==='renda-fixa') S.assetsInnerTab='renda-fixa';
-  if(t==='desempenho') S.assetsInnerTab='desempenho';
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();
@@ -33177,5 +33231,52 @@ function updateRfAssetSummary(selectElement) {
 
   summaryDiv.style.display = 'block'
 }</script>
+<style>
+@media (min-width:1181px){
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-value{white-space:nowrap;overflow:visible;line-height:1.25}
+}
+/* Phase 3.1: compact desktop pass for 14-inch notebooks. Mobile and wide desktop stay unchanged. */
+@media (min-width:1181px) and (max-width:1535px){
+  .tabs-desktop{width:184px;padding:16px 9px 12px;gap:2px}
+  .shell-main{margin-left:184px}
+  .tabs-desktop .side-brand{margin-bottom:10px;padding-bottom:10px}
+  .tabs-desktop .tab,.tabs-desktop .tab-menu>summary{min-height:37px;padding:8px 9px}
+  .tabs-desktop .tab-menu-panel .tab{min-height:34px;padding:7px 9px}
+  .wrap{max-width:none;padding:16px 20px 24px}
+  .sh{margin-bottom:10px;gap:6px}
+  .card{padding:11px 13px}
+  .cards{gap:8px;margin-bottom:12px}
+  .premium-dashboard,.aporte-premium,.premium-dividends-3,.rent-premium,.metas-shell{gap:9px}
+  .canon-dashboard .dashboard-page-heading h1,.premium-dividends-3 .div-premium-title{font-size:27px}
+  .canon-dashboard .dashboard-page-heading p,.premium-dividends-3 .div-premium-sub{margin-top:3px}
+  .canon-dashboard .dashboard-page-heading{padding-bottom:2px}
+  .canon-dashboard .dashboard-executive-kpis{gap:9px;margin:0 0 10px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{height:86px;padding:10px 11px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:20px}
+  .canon-dashboard .dashboard-evolution-card{height:226px;padding:11px}
+  .canon-dashboard .dashboard-evolution-card svg{height:176px;margin-top:2px}
+  .canon-dashboard .dashboard-home-composition{height:226px;padding:11px}
+  .canon-dashboard .dashboard-home-composition-body{height:166px;grid-template-columns:136px minmax(0,1fr);gap:10px}
+  .canon-dashboard .canon-dash-row-c .dashboard-income-card{padding:8px 10px}
+  .canon-dashboard .canon-dash-row-c .premium-metric{height:76px;padding:7px 8px}
+  .canon-dashboard .canon-dash-row-c .premium-metric-value{font-size:16px}
+  .canon-dashboard .dashboard-highlight-column{padding:11px 12px}
+  .premium-dividends-3 .dividend-kpis-canon-grid{gap:8px}
+  .premium-dividends-3 .canon-kpi-card{min-height:78px;padding:10px 11px}
+  .premium-dividends-3 .dividend-executive-kpi-value{font-size:19px}
+  .aporte-premium .aporte-contribution-grid{gap:8px;margin-bottom:8px}
+  .aporte-premium .aporte-contribution-grid .card{min-height:78px;padding:9px 10px}
+  .aporte-premium .ap-toolbar{gap:7px}
+  .aporte-premium .aporte-summary-panel{padding:10px 11px}
+  .aporte-premium .aporte-monthly-chart .aporte-month-bars{min-height:188px}
+  .assets-premium-shell>.sh{margin-bottom:6px}
+  .assets-premium-shell .assets-premium-kpis{gap:8px}
+  .assets-premium-shell .assets-premium-kpi{min-height:68px;padding:9px 10px}
+  .assets-premium-shell .assets-premium-table th,.assets-premium-shell .assets-premium-table td{padding-top:8px;padding-bottom:8px}
+  .rent-premium .rent-main .sh{margin-bottom:3px}
+  .metas-shell .metas-kpi-grid{gap:7px!important}
+  .metas-shell .metas-kpi-card{min-height:62px;padding:8px 10px}
+}
+</style>
 </body>
 </html>
