@@ -33,14 +33,6 @@ test('filtro de performance preserva estados oficiais e combina filtros', async 
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(harness.url, { waitUntil: 'networkidle' });
-    const result = await page.evaluate(() => {
-      S.assets = [
-        { id: 'positive', ticker: 'POS', type: 'FII', qty: 1, avg_price: 100, current_price: 120 },
-        { id: 'negative', ticker: 'NEG', type: 'FII', qty: 1, avg_price: 100, current_price: 80 },
-        { id: 'neutral', ticker: 'NEU', type: 'Ação', qty: 1, avg_price: 100, current_price: 100 },
-        { id: 'incomplete', ticker: 'INC', type: 'ETF', qty: 1, avg_price: 0, current_price: 50 },
-      ];
-      S.assetsSearch=''; S.assetsFilterClasses=[]; S.assetReviewFilter=null;
     await page.setViewportSize({ width: 1366, height: 768 });
     const result = await page.evaluate(() => {
       S.assets = [
@@ -59,10 +51,6 @@ test('filtro de performance preserva estados oficiais e combina filtros', async 
       const classAndPerformance = filterAssetsForDisplay(S.assets).map(asset => asset.id);
       S.assetsFilterClasses=[]; S.assetsSearch='pos';
       const searchAndPerformance = filterAssetsForDisplay(S.assets).map(asset => asset.id);
-      S.assetsSearch=''; S.assetsFilterClasses=[]; S.assetsPerformanceFilter='negative';
-      const countBeforeClear = assetsFilterCount();
-      clearAssetsFilters();
-      return { positive, negative, neutral, all, classAndPerformance, searchAndPerformance, countBeforeClear, cleared: { search: S.assetsSearch, classes: S.assetsFilterClasses, performance: S.assetsPerformanceFilter } };
       S.assetsSearch=''; S.assetsPerformanceFilter='all'; S.assetsSectorFilter='Bancos';
       const sectorOnly = filterAssetsForDisplay(S.assets).map(asset => asset.id);
       S.assetsPerformanceFilter='positive'; S.assetsSectorFilter='all'; S.assetsFilterClasses=['FII'];
@@ -98,8 +86,8 @@ test('filtro de performance preserva estados oficiais e combina filtros', async 
     assert.deepEqual(result.all, ['positive', 'negative', 'neutral', 'incomplete']);
     assert.deepEqual(result.classAndPerformance, ['positive']);
     assert.deepEqual(result.searchAndPerformance, ['positive']);
-    assert.equal(result.countBeforeClear, 1);
-    assert.deepEqual(result.cleared, { search: '', classes: [], performance: 'all' });
+    assert.equal(result.countBeforeClear, 2);
+    assert.deepEqual(result.cleared, { search: '', classes: [], sector: 'all', performance: 'all' });
     assert.deepEqual(result.sectorOnly, ['positive', 'neutral']);
     assert.deepEqual(result.composed, ['positive']);
     assert.deepEqual(result.resultAsc, ['negative', 'neutral', 'positive', 'incomplete']);
