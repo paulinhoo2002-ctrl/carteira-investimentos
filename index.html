@@ -21843,22 +21843,25 @@ function setRentBench(bench){
       + (assetReviewFilterIsActive() ? 1 : 0);
   }
 
-  function clearAssetsFilters(){
+function clearAssetsFilters(){
     clearTimeout(S.assetsSearchTimer);
     S.assetsSearch='';
     S.assetsFilterClasses=[];
     S.assetsSectorFilter='all';
     S.assetsPerformanceFilter='all';
     S.assetReviewFilter=null;
+    S.activeAssetsGroup='';
     S.assetsFilterPanelOpen=false;
     render();
-  }
+}
 
   // Debounced search handler
   function onAssetsSearchInput(value){
     clearTimeout(S.assetsSearchTimer);
+    const normalized=String(value||'').trim().toLowerCase();
     S.assetsSearchTimer = setTimeout(() => {
-      S.assetsSearch = value.trim().toLowerCase();
+      S.assetsSearch = normalized;
+      if(!normalized) S.activeAssetsGroup='';
       render();
     }, 150);
   }
@@ -25024,7 +25027,6 @@ function goAssetInner(tab){
 function desktopTabs(){
   const sideLu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
   const isAtivos=S.tab==='ativos';
-  const innerTab=String(S.assetsInnerTab||'patrimonio');
   const navItem=(key,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
   const navItemInner=(tooltip,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="goAssetInner('${tooltip}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
   return `<nav class="tabs tabs-desktop" aria-label="Navegacion principal de la carteira">
@@ -25034,9 +25036,9 @@ function desktopTabs(){
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     ${navItem('dashboard','Dashboard','📊',S.tab==='dashboard')}
-    ${navItem('ativos','Ativos','💼',isAtivos&&innerTab==='patrimonio')}
+    ${navItem('ativos','Ativos','💼',isAtivos)}
     ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
-    ${navItem('renda-fixa','Renda Fixa','🧾',isAtivos&&innerTab==='renda-fixa')}
+    ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
     ${navItem('analise','Análise','📊',S.tab==='analise')}
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
     ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
@@ -25127,7 +25129,7 @@ function content(){
   if(S.tab==='metas')     return metasTab();
   if(S.tab==='dividendos')return divs2();
   if(S.tab==='desempenho')return ativos();
-  if(S.tab==='renda-fixa')return ativos();
+  if(S.tab==='renda-fixa')return rendaFixaTab();
   if(S.tab==='irpf')      return irpfTabPremium();
   if(S.tab==='rentabilidade') return rentabilidadeTab();
   if(S.tab==='ajudar')    return ajudarTab();
@@ -27685,7 +27687,7 @@ function ativos(){
         const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
         const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
         const share=portfolioTotal>0?(gTotal/portfolioTotal)*100:0;
-         const isOpen=S.activeAssetsGroup===type;
+         const isOpen=S.activeAssetsGroup===type || (!S.activeAssetsGroup && !!S.assetsSearch && idx===0);
               const sortedDisplayItems=sortAssetsByGroup(type, displayItems, portfolioTotal);
               const rows=sortedDisplayItems.map(a=>{
            const m=getAssetMetrics(a);
@@ -27803,21 +27805,13 @@ function ativos(){
       </summary>
       <div class="ag-body">
         ${type==='Renda Fixa'
-          ? `<div class="rf-table-wrap"><table class="rf-table" style="min-width:1120px">
-              <thead><tr>
-                <th>Título</th>
-                <th>Tipo / Indexador</th>
-                <th>Aplicação</th>
-                <th>Vencimento</th>
-                <th class="rf-right">Valor aplicado</th>
-                <th class="rf-right">Valor atual / líquido</th>
-                <th class="rf-right">Resultado</th>
-                <th class="rf-right">Rentabilidade</th>
-                <th class="rf-right">% na carteira</th>
-                <th>Ações</th>
-              </tr></thead>
-              <tbody>${rfRows||'<tr><td colspan="10" style="text-align:center;padding:18px;color:#7489a4">Nenhum ativo de renda fixa nesta categoria.</td></tr>'}</tbody>
-            </table></div>`
+          ? `<div class="rf-category-summary" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px;border:1px solid rgba(96,165,250,.18);border-radius:12px;background:rgba(96,165,250,.05)">
+              <div>
+                <div style="font-weight:800;color:#e2eaf6">Gestão detalhada em Renda Fixa</div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:4px">Consulte vencimentos, taxas e movimentações na rota dedicada.</div>
+              </div>
+              <button class="btn bgh touch-target-utility" onclick="go('renda-fixa')">Ver Renda Fixa</button>
+            </div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
             <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Tipo</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
@@ -27910,8 +27904,9 @@ function ativos(){
       </tr>`;
     }).join('');
 
-    // Build RF table rows
-    const premiumRfRows = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a => {
+    // Renda Fixa tem rota própria; Ativos mostra apenas seu resumo de categoria.
+    const premiumRfRows = '';
+    /* const premiumRfRowsLegacy = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a => {
       const applied = assetAppliedValue(a);
       const current = assetCurrentValue(a);
       const profit = assetJurosValue(a);
@@ -27964,10 +27959,10 @@ function ativos(){
         <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
         <td style="white-space:nowrap">${assetActionMenuHtml(a, true, 'primary-rf')}</td>
       </tr>`;
-    }).join('');
+    }).join(''); */
 
-    // Mobile cards for all assets
-    const mobileCardsHtml = displayAssets.map(a => {
+    // Mobile cards for ativos variáveis; a gestão de RF permanece dedicada.
+    const mobileCardsHtml = displayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa').map(a => {
       const m = getAssetMetrics(a);
       const avg = Number(a.avg_price)||0;
       const currentUnit = m.currentUnit;
@@ -28137,7 +28132,7 @@ function ativos(){
 
                                     <!-- Todos os ativos (collapsible) -->
           <div class="assets-primary-layout">
-          <details class="assets-all-assets" open ontoggle="this.open ? null : null">
+          <details class="assets-all-assets" ontoggle="this.open ? null : null">
             <summary class="assets-all-assets-summary">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
                 <div>
@@ -28173,30 +28168,6 @@ function ativos(){
                   </thead>
                   <tbody>
                     ${premiumTableRows || '<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--muted)">Nenhum ativo variável.</td></tr>'}
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- RF Desktop Table (separate) -->
-              <div class="assets-premium-table-wrap" id="assets-premium-rf-table-desktop" aria-label="Posições de renda fixa">
-                <table class="assets-premium-table" style="min-width:1080px">
-                  <caption class="sr-only">Títulos de renda fixa, valores, resultado, rentabilidade e peso na carteira</caption>
-                  <thead>
-                    <tr>
-                      <th>Título</th>
-                      <th>Tipo / Indexador</th>
-                      <th>Aplicação</th>
-                      <th>Vencimento</th>
-                      <th>Valor aplicado</th>
-                      <th>Valor atual</th>
-                      <th>Resultado</th>
-                      <th>Rentabilidade</th>
-                      <th>% Cart.</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${premiumRfRows || '<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--muted)">Nenhum ativo de renda fixa.</td></tr>'}
                   </tbody>
                 </table>
               </div>
@@ -32536,12 +32507,20 @@ function go(t){
     return 0;
   }
   if(t==='patrimonio') t='dashboard';
-  const nextTab=['renda-fixa','desempenho'].includes(t) ? 'ativos' : t;
-  S.tab=nextTab;
+  if(t==='ativos'){
+    S.assetsInnerTab='patrimonio';
+    S.activeAssetsGroup='';
+  }
+  if(t==='renda-fixa'){
+    S.tab='renda-fixa';
+  }else if(t==='desempenho'){
+    S.tab='ativos';
+    S.assetsInnerTab='desempenho';
+  }else{
+    S.tab=t;
+  }
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
-  if(t==='renda-fixa') S.assetsInnerTab='renda-fixa';
-  if(t==='desempenho') S.assetsInnerTab='desempenho';
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   save();

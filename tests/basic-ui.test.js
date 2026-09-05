@@ -315,8 +315,7 @@ test('go trata renda fixa como aba interna de ativos e fecha menus mÃ³veis', (
 
   harness.go('renda-fixa');
 
-  assert.equal(harness.context.S.tab, 'ativos');
-  assert.equal(harness.context.S.assetsInnerTab, 'renda-fixa');
+  assert.equal(harness.context.S.tab, 'renda-fixa');
   assert.equal(harness.context.S.mobileMenuOpen, false);
   assert.equal(harness.context.S.mobileTopMenuOpen, false);
 });

@@ -209,7 +209,7 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
   assert.equal(indexHtml.includes('const portfolioTotal=assets.reduce((sum,a)=>'), false, 'painel 202 nao pode manter pipeline independente');
   assert.equal(indexHtml.includes('function firstOwnFiniteNumber(source, keys){'), false, 'helper sem uso deve sair');
   assert.match(indexHtml, /setAssetsInnerTab\('desempenho'\)/);
-  assert.match(indexHtml, /if\(t==='desempenho'\) S\.assetsInnerTab='desempenho';/);
+  assert.match(indexHtml, /else if\(t==='desempenho'\)\{\s*S\.tab='ativos';\s*S\.assetsInnerTab='desempenho';/);
   assert.match(indexHtml, /if\(S\.tab==='desempenho'\)return ativos\(\);/);
   assert.match(indexHtml, /const hasPerformanceData=hasCurrentSource && hasAppliedSource;/);
   assert.match(indexHtml, /Painel consolidado de desempenho dos ativos/);
