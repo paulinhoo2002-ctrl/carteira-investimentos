@@ -6,11 +6,12 @@ Wave 1.
 **Repository state audited:**
 
 - Branch: `feat/visual-product-north-star`
-- HEAD: `24a5917e6193c458a261368edf1b3bc42ef57df3`
+- HEAD base: `abe6bdac6ba2d528651a7134ab3fa7dfa33ec7e1`
 - `origin/main`: `d3170e9fda8f9a1b9b9746cc950ceb5445c3d3c2`
 - Upstream: `origin/feat/visual-product-north-star`
 - Product files changed by the read-only audit: `false`
 - Wave 1 implementation change: `index.html` CSS-only interaction contract.
+- Wave 2 working-tree change: `index.html` screen-local responsive spacing only.
 
 ## Decision
 
@@ -362,3 +363,56 @@ motion, and responsive polish with protected-surface regression coverage.
 
 Wave 1 does not change dependencies, schema, persistence, or data. It remains
 subject to browser review before any commit or release action.
+
+## Wave 2 Audit Result
+
+`APPLE_PASS_WAVE_2=FROZEN`
+
+`SCREENS_AUDITED=13`
+
+`SCREENS_CHANGED=Rentabilidade`
+
+`SCREENS_UNCHANGED=Dashboard,Ativos,Renda Fixa,Análise,Dividendos,Rebalancear,Relatórios,Metas,IRPF,Auditoria,Aportes,Configurações`
+
+`SCREEN_CHANGE_MATRIX=`
+
+| Surface | Result | Evidence | Risk |
+| --- | --- | --- | --- |
+| Rentabilidade | `TARGETED_POLISH` | Mobile KPI rhythm corrected at 390/430px; desktop grid preserved. | Low; CSS-only, screen-local selector. |
+| Dashboard | `NO_CHANGE` | No visible spacing, alignment, wrapping, or density gap justified a change. | None. |
+| Ativos | `NO_CHANGE` | Dense financial table and frozen result/filter semantics remain authoritative. | Protected. |
+| Renda Fixa | `NO_CHANGE` | RF identity, maturity, and editor patterns remain protected. | Protected. |
+| Análise | `NO_CHANGE` | Existing analytical hierarchy and mobile scanability were sufficient. | Protected. |
+| Dividendos | `NO_CHANGE` | Chart/table balance and dividend semantics were sufficient. | Protected. |
+| Rebalancear | `NO_CHANGE` | Read-only allocation and suggestion semantics remain protected. | Protected. |
+| Relatórios | `NO_CHANGE` | Analytical/export separation remains protected. | Protected. |
+| Metas | `NO_CHANGE` | Goal progress hierarchy and responsive layout were sufficient. | Protected. |
+| IRPF | `NO_CHANGE` | Fiscal grouping, year, and export semantics remain protected. | High. |
+| Auditoria | `NO_CHANGE` | Identity, severity, and action safety remain protected. | High. |
+| Aportes | `NO_CHANGE` | Movement identity and action layout showed no justified local gap. | Protected. |
+| Configurações | `NO_CHANGE` | Backup/import/reset/security hierarchy was not touched. | High. |
+
+`SPACING_OUTLIERS_FIXED=1`
+
+`ALIGNMENT_OUTLIERS_FIXED=0`
+
+`RESPONSIVE_GAPS_FIXED=1`
+
+`FIRST_SCREEN_DENSITY_IMPROVED=true`
+
+`TABLET_COMPOSITION_IMPROVED=not needed`
+
+`DESKTOP_BALANCE_IMPROVED=preserved`
+
+`CHANGE_JUSTIFIED_BY_VISIBLE_GAP=true`
+
+`APPLE_PASS_WAVE_1_REGRESSION=PASS`
+
+`APPLE_PASS_WAVE_3_READY=READY_FOR_SEPARATE_REVIEW`
+
+Wave 2 deliberately did not introduce a new breakpoint, component system,
+loading behavior, skeleton behavior, icon migration, financial calculation, or
+protected-flow change. Browser evidence and full gates remain the release
+criteria for this separate review.
+
+`NEXT_PHASE=APPLE_PASS_WAVE_3_READINESS_AUDIT`

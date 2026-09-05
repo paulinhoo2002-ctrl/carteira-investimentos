@@ -92,3 +92,44 @@ financial clipping, console errors, page errors, and request failures.
 
 No future wave is implied by this document. Each requires its own scope and
 protected-flow regression review.
+
+## Wave 2 Result
+
+`APPLE_PASS_WAVE_2=FROZEN`
+
+Wave 2 remained a screen-local micro-polish pass. The only justified change was
+in Rentabilidade: on 390px and 430px layouts, the final summary KPI now spans
+the mobile row instead of remaining alone in half of a two-column row. This
+corrects the visible first-screen rhythm without changing the desktop grid,
+metric selection, chart semantics, or route behavior.
+
+`SCREENS_AUDITED=13`
+
+`SCREENS_CHANGED=Rentabilidade`
+
+`SCREENS_UNCHANGED=Dashboard,Ativos,Renda Fixa,Análise,Dividendos,Rebalancear,Relatórios,Metas,IRPF,Auditoria,Aportes,Configurações`
+
+`CHANGE_TYPE=responsive spacing/density correction`
+
+`FINANCIAL_VALUE_ALIGNMENT_VALID=true`
+
+`NO_CHANGE_SCREENS_PRESERVED=true`
+
+`ICON_MIGRATION=false`
+
+`LOADING_SYSTEM_CHANGED=false`
+
+`SKELETON_SYSTEM_ADDED=false`
+
+`FINANCE_CORE_CHANGED=false`
+
+`PERSISTENCE_CHANGED=false`
+
+`SCHEMA_CHANGED=false`
+
+`REAL_DATA_CHANGED=false`
+
+Wave 3 was not implemented. Loading, skeleton, and asynchronous feedback work
+remain a separate review gate after Wave 2 approval.
+
+`NEXT_PHASE=APPLE_PASS_WAVE_3_READINESS_AUDIT`
