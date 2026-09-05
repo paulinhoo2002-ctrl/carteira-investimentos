@@ -94,9 +94,41 @@ focus and no-mutation assertions.
 ## Decision
 
 - `RELEASE_BLOCKERS=0`
-- `RELEASE_READINESS=READY_FOR_PREVIEW_PUSH`
-- `INTEGRATION_BRANCH_PUSHED=false`
+- `RELEASE_READINESS=GO_WITH_EXTERNAL_LIMITATIONS`
+- `INTEGRATION_BRANCH_PUSHED=true`
+- `PUSH_STATUS=PASS`
+- `PUSH_SHA=ac1e36f93add5ccb8f11dd9374929b3ec3fdf870`
+- `REMOTE_BRANCH=origin/release/visual-product-integration`
+- `VERCEL_PREVIEW_STATUS=PASS`
+- `VERCEL_PREVIEW_URL=https://carteira-investimentos-3cppl7djf-paulinhoo2002-ctrls-projects.vercel.app`
+- `VERCEL_BUILD_STATUS=success`
+- `PREVIEW_BASELINE=PASS_WITH_LIMITATION; preview returned HTTP 200 and manifest/service-worker capability, but Vercel deployment protection presented its hosted login before the application shell.`
+- `AUTH_PREVIEW_VALIDATION=PASS_WITH_LIMITATION; hosted Vercel authentication blocked application-route access, and ?testMode=1 did not expose fixtures or bypass the hosted gate.`
+- `TESTMODE_CANNOT_BYPASS_PREVIEW_AUTH=true`
+- `MARKET_EXTERNAL_VALIDATION=NOT_TESTED; blocked by hosted authentication and no portfolio mutation was attempted.`
+- `PDF_EXTERNAL_VALIDATION=NOT_TESTED; blocked by hosted authentication; no PDF was generated externally.`
+- `FIREBASE_ENVIRONMENT=hosted preview configuration not exercised`
+- `SAFE_TEST_SCOPE_AVAILABLE=false`
+- `FIREBASE_EXTERNAL_VALIDATION=NOT_TESTED; no isolated Firebase account/namespace was identified, so no write was attempted.`
+- `SECURITY_EXTERNAL_VALIDATION=NOT_TESTED; no credential, PIN, authentication or recovery state was changed.`
+- `PWA_PREVIEW_VALIDATION=PASS_WITH_LIMITATION; manifest loaded and ServiceWorker API was available, but no active registration/update cycle could be certified behind the hosted gate.`
+- `EXTERNAL_FAILURE_RECOVERY=NOT_TESTED for real external flows; local TestMode lifecycle guards remain green.`
+- `BROWSER_HARNESS_AVAILABLE=false; Playwright fallback used because the repository browser-harness executable is unavailable in this environment.`
+- `BROWSER_390=PASS_WITH_LIMITATION; HTTP 200, no page errors/request failures, Vercel auth gate visible.`
+- `BROWSER_1366=PASS_WITH_LIMITATION; HTTP 200, no page errors/request failures, Vercel auth gate visible.`
+- `OVERFLOW=0_OR_NOT_OBSERVED`
+- `FINANCIAL_CLIPPING=NOT_OBSERVABLE_BEHIND_AUTH_GATE`
+- `SHELL_OVERLAP=NOT_OBSERVABLE_BEHIND_AUTH_GATE`
+- `BOTTOM_NAV_OVERLAP=NOT_OBSERVABLE_BEHIND_AUTH_GATE`
+- `CONSOLE_ERRORS=Vercel auth-provider 403/429 and provider-account warning only; no application page error observed`
+- `PAGE_ERRORS=0`
+- `REQUEST_FAILURES=0`
+- `PROTECTED_FLOW_GUARDS_VISIBLE=true; destructive flows were not executed.`
+- `ARCHITECTURE_MAP_RF_STALE_DOC=true`
+- `PREVIEW_RELEASE_GATE=PASS_WITH_LIMITATIONS`
+- `RELEASE_READINESS=GO_WITH_EXTERNAL_LIMITATIONS`
+- `SAFE_TO_REMOVE_WORKTREE=false`
 - `PR=false`
 - `MERGE=false`
 - `PRODUCTION_DEPLOY=false`
-- `NEXT_RECOMMENDED_ACTION=Continue the separately authorized preview-push and external validation sequence; do not push or merge automatically.`
+- `NEXT_RECOMMENDED_ACTION=Review the external limitations, then authorize a separate PR/CI decision; do not merge or deploy automatically.`
