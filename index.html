@@ -33499,6 +33499,8 @@ function updateRfAssetSummary(selectElement) {
 @media (min-width:1181px){
   /* Full historical asset contract: keep every column in the contained
      scroller and let the final action column remain discoverable. */
+  .assets-premium-shell .ag-body{padding:0 0 14px}
+  .assets-premium-shell .ag-table .ts{border:1px solid var(--border);border-radius:12px;background:var(--panel)}
   .assets-premium-shell .ag-table .tw table{
     min-width:1580px;
     width:max-content;
@@ -33518,9 +33520,14 @@ function updateRfAssetSummary(selectElement) {
   }
   .assets-premium-shell .ag-table .tw table th,
   .assets-premium-shell .ag-table .tw table td{
+    padding:10px 10px;
+    line-height:1.25;
     overflow:visible;
     text-overflow:clip;
   }
+  .assets-premium-shell .ag-table caption{padding:8px 12px 7px;text-align:center;color:var(--text);font-size:12px;font-weight:600}
+  .assets-premium-shell .ag-table .asset-actions{gap:5px}
+  .assets-premium-shell .ag-table .asset-action{height:40px;min-height:40px;padding:7px 9px;font-size:11px}
 }
 </style>
 </body>
