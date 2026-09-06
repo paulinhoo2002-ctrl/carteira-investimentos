@@ -288,6 +288,16 @@ cinco breakpoints; testes/builds nao equivalem a aprovacao visual.
   estão verdes localmente.
 - O próximo passo é uma branch limpa de release baseada no `origin/main`; este
   checkpoint não autoriza merge ou deploy.
-- O backlog restante da Phase 3.3 é o atalho contextual transação -> ativo,
-  que requer decisão de produto. Busca global, maturidade de RF e segurança de
-  uso mobile já estão implementadas ou cobertas.
+- O atalho contextual transação -> ativo foi implementado nesta branch com
+  identidade exata, sem matching aproximado e sem mutação financeira. Busca
+  global, maturidade de RF e segurança de uso mobile permanecem cobertas.
+
+## PHASE_3_3_PRODUCTIVITY_CHECKPOINT
+
+- `TRANSACTION_TO_ASSET=IMPLEMENTED_READ_ONLY`
+- `EXPLICIT_ASSET_IDENTITY=true`
+- `APPROXIMATE_MATCHING=false`
+- Ações de busca continuam somente leitura; Ativos, Renda Fixa, Dividendos,
+  Metas, Auditoria e Análise mantêm suas rotas oficiais.
+- `PUSH=false`, `PR=false`, `MERGE=false`, `DEPLOY=false` para a branch local
+  `feature/phase-3-3-productivity-final`.

@@ -400,7 +400,17 @@
 - MOBILE: rolagem real em 390x844 e 430x932 revelou KPIs, histórico, gráfico,
   top pagadores e resumo anual sem conteúdo encoberto pela navegação inferior.
 - BACKLOG: busca global, alertas de qualidade/maturidade, RF e fricção mobile
-  já possuem cobertura/implementação; atalhos transação -> ativo permanecem
-  fora desta rodada por exigirem decisão de produto e escopo protegido.
+  já possuem cobertura/implementação. O atalho transação -> ativo foi autorizado
+  nesta fase como navegação somente leitura por identidade exata.
 - SAFETY: Finance Core, Persistence Core, schema, backup/import, auth/cloud e
   dados reais permaneceram intocados.
+
+## 2026-09-06 - Phase 3.3 productivity hardening
+
+- DECISION: resultados de movimentação na busca global mantêm a abertura oficial
+  de Aportes e passam a oferecer `Ver ativo` somente quando `assetId` explícito
+  ou ticker exato único resolve um ativo atual.
+- SAFETY: matching aproximado, criação automática de ativo e mutação financeira
+  são proibidos; a ação usa `openRentabilityAsset()` e preserva o editor oficial.
+- STATUS: `TRANSACTION_TO_ASSET=FROZEN_FUNCTIONAL_IMPROVEMENT`;
+  `EXPLICIT_ASSET_IDENTITY=true`; `APPROXIMATE_MATCHING=false`.
