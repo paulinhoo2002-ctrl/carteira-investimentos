@@ -583,9 +583,9 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
 - `ATIVOS_INFORMATION_CONTRACT=FROZEN`.
 - `ATIVOS_ACTION_CONTRACT=FROZEN`.
 - `ATIVOS_RF_OVERVIEW_CONTRACT=FROZEN`.
-- A referencia historica aprovada e a evidencia local temporaria registrada em
-  `docs/ai/VISUAL_REFERENCE_INDEX.md`; a imagem exata nao e duplicada no
-  repositorio.
+- A referencia historica aprovada esta persistida em
+  `Refs/visual-canon/ativos-rich-canonical.png`, com hash registrado em
+  `docs/ai/VISUAL_REFERENCE_INDEX.md`.
 - A tabela desktop rica preserva as quinze informacoes/acoes aprovadas e a
   experiencia mobile preserva os mesmos dados por cards progressivos.
 - Os bloqueios de regressao existentes cobrem categorias agrupadas,
