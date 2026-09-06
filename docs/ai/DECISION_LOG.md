@@ -1,5 +1,18 @@
 # Decision Log
 
+## 2026-09-06 - Phase 3 final release and lifelong usability audit
+
+- DECISION: release readiness requires the repeated local gates and full browser
+  matrix, not historical reports alone.
+- DECISION: do not globally enlarge auxiliary text or rewrite legacy CSS; no
+  critical financial information or action was harmed by the measured findings.
+- DECISION: keep Patrimônio as a monthly list and backup-age visibility as a
+  protected backlog item; neither has a safe source for invented data.
+- EVIDENCE: 7 viewports x 5 routes without overflow, page errors or request
+  failures; root 78/78, modern 750/750, finance 80/80 and persistence 32/32.
+- SAFETY: Finance Core, Persistence Core, schema, backup/import, auth/cloud and
+  real data remained untouched.
+
 ## 2026-09-03 - Legacy app remains authoritative
 
 - DECISION: Treat `index.html` as the source of truth for the real product.

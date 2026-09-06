@@ -1,5 +1,16 @@
 # Testing and Release
 
+## Phase 3 final usability gate (2026-09-06)
+
+- Required widths: 390, 430, 768, 1366, 1440, 1536 and 1920 px.
+- Audited routes: Dashboard, Ativos, Aportes, Dividendos and Renda Fixa.
+- Route state, page errors, request failures and document/body width were
+  clean at every audited combination.
+- No critical mobile action was below 44 px. A small desktop sort-label span is
+  auxiliary text inside its control, not an action failure.
+- Interactive chart checks remain semantic: focusable data points, labels,
+  titles and tooltips. Synthetic Ativos timings are a trend baseline.
+
 ## Test commands
 
 | Suite | Command | Purpose | Baseline |

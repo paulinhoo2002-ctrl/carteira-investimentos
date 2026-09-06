@@ -1,5 +1,18 @@
 # Next Step
 
+## PHASE_3_FINAL_AUDIT_CHECKPOINT_2026_09_06
+
+- Publish `release/phase-3-3-final` and open the review PR after the green local
+  gates; do not merge or deploy manually.
+- Immediate backlog: evaluate backup-age visibility without touching the backup
+  engine, and monitor global-search adoption and large-portfolio timings.
+- Phase 4: prioritize only improvements backed by existing data sources and an
+  approved visual contract.
+- Phase 5: consider virtualization only after evidence of degradation in real
+  data or a measured threshold breach.
+- Measure later: real-portfolio performance, transaction-to-asset usage and
+  comprehension of empty/error states.
+
 ## WHERE_WE_ARE
 
 Project memory has been consolidated for the legacy SPA plus isolated modern
