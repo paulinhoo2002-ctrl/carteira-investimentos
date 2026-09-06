@@ -33422,10 +33422,42 @@ function updateRfAssetSummary(selectElement) {
   .assets-premium-shell .ag-table th:nth-child(12),.assets-premium-shell .ag-table td:nth-child(12){min-width:85px}
   .assets-premium-shell .ag-table th:nth-child(13),.assets-premium-shell .ag-table td:nth-child(13){min-width:120px}
   .assets-premium-shell .asset-group-table-name{font-weight:700;color:var(--text);line-height:1.2;margin-bottom:4px;white-space:nowrap}
+  .assets-premium-shell .ag-table table{min-width:1080px}
+  .assets-premium-shell .ag-table th,.assets-premium-shell .ag-table td{padding-left:7px;padding-right:7px}
+  .assets-premium-shell .ag-table th:nth-child(2),.assets-premium-shell .ag-table td:nth-child(2){min-width:72px}
+  .assets-premium-shell .ag-table th:nth-child(10),.assets-premium-shell .ag-table td:nth-child(10){min-width:92px}
+  .assets-premium-shell .ag-table th:nth-child(11),.assets-premium-shell .ag-table td:nth-child(11){min-width:78px}
+  .assets-premium-shell .ag-table th:last-child,.assets-premium-shell .ag-table td:last-child{min-width:238px;width:238px}
 }
 @media (max-width:767px){
   .assets-premium-shell .ag-table{display:none!important}
   .assets-premium-shell .ag-mobile-list{display:flex;flex-direction:column;gap:8px}
+  .assets-premium-shell .asset-premium-card-expanded{
+    padding:10px 12px 12px;
+    background:var(--surface);
+  }
+  .assets-premium-shell .asset-premium-card-expanded>div{
+    row-gap:8px!important;
+  }
+  .assets-premium-shell .asset-premium-card-actions{
+    position:relative;
+    z-index:1;
+  }
+}
+@media (min-width:768px){
+  /* Keep the action affordance visible while analytical columns scroll inside
+     the category table at notebook widths. */
+  .assets-premium-shell .ag-table .tw table th:last-child,
+  .assets-premium-shell .ag-table .tw table td:last-child{
+    position:sticky;
+    right:0;
+    z-index:3;
+    background:var(--panel);
+    box-shadow:-8px 0 12px rgba(2,6,23,.18);
+  }
+  .assets-premium-shell .ag-table .tw table th:last-child{
+    z-index:4;
+  }
 }
 </style>
 </body>
