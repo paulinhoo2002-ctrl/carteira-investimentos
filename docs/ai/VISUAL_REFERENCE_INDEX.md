@@ -107,3 +107,17 @@ exclusive and follow the priority rules in `docs/ai/VISUAL_CANON.md`.
 - `UNCLASSIFIED_IMAGES=0`
 - `DUPLICATE_HASHES_REPORTED=true`
 - `DUPLICATE_COUNT=0`
+
+## 2026-09-05 - Ativos canonical lock evidence
+
+- `ATIVOS_PRIMARY_CANON=EXTERNAL_APPROVED_SCREEN_REFERENCE`.
+- Approved rich historical evidence:
+  `C:\Users\Paulo Sergio\AppData\Local\Temp\codex-clipboard-f51a3c6a-96c1-4257-8748-48c9be1615ac.png`.
+- SHA-256:
+  `544BA45C667D15E12ADD6081CC9687F399F2A3B5C5421EF1289FCEFAC48084D5`.
+- The exact historical image is not stored under `Refs/visual-canon/`; this
+  temporary evidence is recorded for traceability and is not product data or a
+  committed release asset.
+- Target contract: rich desktop positions table with Ticker, Tipo, Setor, Qtd,
+  PM, Atual, Resultado, Rentab., Alvo, Total, % Cart., % Ideal, Div./mês, DY,
+  Comprar, Vender and Mais/Editar.
