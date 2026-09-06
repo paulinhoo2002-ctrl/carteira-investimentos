@@ -6856,6 +6856,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .portfolio-search-group-title{padding:7px 10px;color:#7f93ad;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .portfolio-search-result{width:100%;min-height:52px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid transparent;border-radius:11px;background:transparent;color:#edf4ff;text-align:left;cursor:pointer}
 .portfolio-search-result:hover,.portfolio-search-result:focus-visible,.portfolio-search-result.selected{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.3);outline:none}
+.portfolio-search-result-row{display:flex;align-items:stretch;gap:6px}
+.portfolio-search-result-row>.portfolio-search-result{flex:1;min-width:0}
+.portfolio-search-result-context{flex:0 0 auto;align-self:center;min-height:40px;padding:7px 9px;border:1px solid rgba(125,211,252,.24);border-radius:9px;background:rgba(56,189,248,.06);color:#9bdcff;font:inherit;font-size:10px;font-weight:750;cursor:pointer;white-space:nowrap}
+.portfolio-search-result-context:hover,.portfolio-search-result-context:focus-visible{background:rgba(56,189,248,.14);border-color:rgba(125,211,252,.55);outline:2px solid rgba(125,211,252,.42);outline-offset:2px}
 .portfolio-search-result-title{display:block;font-size:13px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .portfolio-search-result-meta{display:block;margin-top:3px;color:#8ea0b8;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .portfolio-search-result-action{color:#7dd3fc;font-size:11px;white-space:nowrap}
@@ -32625,6 +32629,17 @@ function portfolioSearchValue(value){
   const n=Number(value);
   return Number.isFinite(n)&&n!==0 ? fmt(n) : '';
 }
+function portfolioSearchAssetForMovement(move){
+  const explicitId=[move?.assetId,move?.asset_id,move?.assetID].map(value=>String(value??'').trim()).find(Boolean)||'';
+  if(explicitId){
+    const byId=(S.assets||[]).filter(asset=>String(asset?.id??'').trim()===explicitId);
+    return byId.length===1 ? byId[0] : null;
+  }
+  const ticker=String(move?.ticker||'').trim().toUpperCase();
+  if(!ticker) return null;
+  const byTicker=(S.assets||[]).filter(asset=>String(asset?.ticker||'').trim().toUpperCase()===ticker);
+  return byTicker.length===1 ? byTicker[0] : null;
+}
 function portfolioSearchBuildEntries(){
   const entries=[];
   entries.push({kind:'analysis',id:'analise',title:'Análise da carteira',meta:'Exposição, desempenho e pontos de atenção',fields:['analise','análise','exposição','desempenho','concentração'],route:'analise',action:'Abrir Análise',source:null});
@@ -32646,10 +32661,11 @@ function portfolioSearchBuildEntries(){
     const ticker=String(move?.ticker||'').trim();
     const name=String(move?.name||move?.product||move?.title||ticker||'Movimentação').trim();
     const date=portfolioSearchDate(move?.date);
+    const relatedAsset=portfolioSearchAssetForMovement(move);
     entries.push({kind:'movement',id,title:ticker?`${ticker} · ${name}`:name,
       meta:['Movimentação',date,portfolioSearchValue(move?.totalValue??move?.value??(Number(move?.qty)||0)*(Number(move?.price)||0))].filter(Boolean).join(' · '),
       fields:[id,ticker,name,move?.product,move?.title,move?.type,move?.asset_type,move?.sector,move?.operation,move?.decision,move?.note,move?.date],
-      route:'aportes',action:'Abrir movimentação',source:move});
+      route:'aportes',action:'Abrir movimentação',contextAction:relatedAsset?'Ver ativo':'',relatedAssetId:relatedAsset?.id||'',relatedAssetTicker:relatedAsset?.ticker||'',source:move});
   });
   (S.proventos||[]).forEach(receipt=>{
     const id=String(receipt?.id??'').trim();
@@ -32704,7 +32720,9 @@ function portfolioSearchGroupMarkup(results){
   });
   return groups.map(group=>`<section class="portfolio-search-group" aria-labelledby="portfolio-search-group-${group.kind}"><div class="portfolio-search-group-title" id="portfolio-search-group-${group.kind}">${PORTFOLIO_SEARCH_GROUPS[group.kind]}</div>${group.items.map((entry,index)=>{
     const resultIndex=results.indexOf(entry);
-    return `<button type="button" class="portfolio-search-result${resultIndex===Number(S.portfolioSearchIndex)?' selected':''}" data-search-index="${resultIndex}" onclick="portfolioSearchSelect(${resultIndex})" aria-label="${esc(`${entry.action}: ${entry.title}`)}" aria-selected="${resultIndex===Number(S.portfolioSearchIndex)?'true':'false'}"><span><span class="portfolio-search-result-title">${esc(entry.title)}</span><span class="portfolio-search-result-meta">${esc(entry.meta||'Registro da carteira')}</span></span><span class="portfolio-search-result-action">${esc(entry.action)}</span></button>`;
+    const primary=`<button type="button" class="portfolio-search-result${resultIndex===Number(S.portfolioSearchIndex)?' selected':''}" data-search-index="${resultIndex}" onclick="portfolioSearchSelect(${resultIndex})" aria-label="${esc(`${entry.action}: ${entry.title}`)}" aria-selected="${resultIndex===Number(S.portfolioSearchIndex)?'true':'false'}"><span><span class="portfolio-search-result-title">${esc(entry.title)}</span><span class="portfolio-search-result-meta">${esc(entry.meta||'Registro da carteira')}</span></span><span class="portfolio-search-result-action">${esc(entry.action)}</span></button>`;
+    const context=entry.contextAction&&entry.relatedAssetId ? `<button type="button" class="portfolio-search-result-context" onclick="portfolioSearchContextSelect(${resultIndex}, event)" aria-label="${esc(`${entry.contextAction}: ${entry.title}`)}">${esc(entry.contextAction)}</button>` : '';
+    return `<div class="portfolio-search-result-row">${primary}${context}</div>`;
   }).join('')}</section>`).join('');
 }
 function renderPortfolioSearch(){
@@ -32753,6 +32771,15 @@ function portfolioSearchOpenEntry(entry){
     return;
   }
   go(entry.route);
+}
+function portfolioSearchContextSelect(index,event){
+  event?.preventDefault();
+  event?.stopPropagation();
+  const results=portfolioSearchResults(S.portfolioSearchQuery);
+  const entry=results[Number(index)];
+  if(!entry?.relatedAssetId) return;
+  portfolioSearchClose();
+  openRentabilityAsset(entry.relatedAssetId,entry.relatedAssetTicker||'');
 }
 function portfolioSearchSelect(index){
   const results=portfolioSearchResults(S.portfolioSearchQuery);
