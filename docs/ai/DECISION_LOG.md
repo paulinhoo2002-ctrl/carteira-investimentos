@@ -386,3 +386,21 @@
   únicos, fontes oficiais de resultado, RF dedicado, resumo RF e rota dedicada
   de Análise.
 - NEXT: `NEXT_VISUAL_TARGET=APORTES`; sem push, PR, merge ou deploy nesta rodada.
+
+## 2026-09-06 - Phase 3.3 Dividendos hardening
+
+- DECISION: manter o Dividendos canônico aprovado como contrato congelado;
+  nenhuma nova direção visual foi criada.
+- TESTS: os 12 smoke tests legados foram migrados individualmente para o
+  contrato atual: chips independentes por grupo, matriz `.div-mat-table` e
+  lançamento operacional disponível na visão `Recebimentos`.
+- COVERAGE: cinco KPIs, filtros anuais, matriz Jan-Dez, valores futuros e
+  ausentes explícitos, evolução, top pagadores, resumo anual, exportação,
+  responsividade e fluxo de registro continuam protegidos.
+- MOBILE: rolagem real em 390x844 e 430x932 revelou KPIs, histórico, gráfico,
+  top pagadores e resumo anual sem conteúdo encoberto pela navegação inferior.
+- BACKLOG: busca global, alertas de qualidade/maturidade, RF e fricção mobile
+  já possuem cobertura/implementação; atalhos transação -> ativo permanecem
+  fora desta rodada por exigirem decisão de produto e escopo protegido.
+- SAFETY: Finance Core, Persistence Core, schema, backup/import, auth/cloud e
+  dados reais permaneceram intocados.
