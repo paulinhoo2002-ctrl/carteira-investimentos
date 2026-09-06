@@ -1,5 +1,18 @@
 # Decision Log
 
+## 2026-09-06 - Phase 3 final release and lifelong usability audit
+
+- DECISION: release readiness requires the repeated local gates and full browser
+  matrix, not historical reports alone.
+- DECISION: do not globally enlarge auxiliary text or rewrite legacy CSS; no
+  critical financial information or action was harmed by the measured findings.
+- DECISION: keep Patrimônio as a monthly list and backup-age visibility as a
+  protected backlog item; neither has a safe source for invented data.
+- EVIDENCE: 7 viewports x 5 routes without overflow, page errors or request
+  failures; root 78/78, modern 750/750, finance 80/80 and persistence 32/32.
+- SAFETY: Finance Core, Persistence Core, schema, backup/import, auth/cloud and
+  real data remained untouched.
+
 ## 2026-09-03 - Legacy app remains authoritative
 
 - DECISION: Treat `index.html` as the source of truth for the real product.
@@ -400,7 +413,17 @@
 - MOBILE: rolagem real em 390x844 e 430x932 revelou KPIs, histórico, gráfico,
   top pagadores e resumo anual sem conteúdo encoberto pela navegação inferior.
 - BACKLOG: busca global, alertas de qualidade/maturidade, RF e fricção mobile
-  já possuem cobertura/implementação; atalhos transação -> ativo permanecem
-  fora desta rodada por exigirem decisão de produto e escopo protegido.
+  já possuem cobertura/implementação. O atalho transação -> ativo foi autorizado
+  nesta fase como navegação somente leitura por identidade exata.
 - SAFETY: Finance Core, Persistence Core, schema, backup/import, auth/cloud e
   dados reais permaneceram intocados.
+
+## 2026-09-06 - Phase 3.3 productivity hardening
+
+- DECISION: resultados de movimentação na busca global mantêm a abertura oficial
+  de Aportes e passam a oferecer `Ver ativo` somente quando `assetId` explícito
+  ou ticker exato único resolve um ativo atual.
+- SAFETY: matching aproximado, criação automática de ativo e mutação financeira
+  são proibidos; a ação usa `openRentabilityAsset()` e preserva o editor oficial.
+- STATUS: `TRANSACTION_TO_ASSET=FROZEN_FUNCTIONAL_IMPROVEMENT`;
+  `EXPLICIT_ASSET_IDENTITY=true`; `APPROXIMATE_MATCHING=false`.

@@ -1,5 +1,22 @@
 # Project State
 
+## 2026-09-06 - Phase 3 final usability audit checkpoint
+
+- Release branch `release/phase-3-3-final` is based on `origin/main` at
+  `e9abe758` and contains the three authorized productivity commits.
+- Browser matrix for Dashboard, Ativos, Aportes, Dividendos and Renda Fixa
+  passed at 390, 430, 768, 1366, 1440, 1536 and 1920 px with no overflow,
+  page errors or request failures.
+- Mobile critical controls were touch-safe. Small desktop chart/metadata text
+  is auxiliary and was not enlarged with a broad CSS rewrite.
+- Charts with supported series expose focusable points, labels, titles and
+  tooltips; Patrimônio remains an explicit monthly list without invented chart
+  history.
+- Backup export age remains a protected backlog item because no real export
+  timestamp source is exposed by the product.
+- In-memory Ativos benchmark: 50=44.4 ms; 200=155.1 ms; 500=379.8 ms;
+  1000=978.3 ms. Reassess virtualization only with realistic data evidence.
+
 Snapshot date: 2026-09-03
 
 ## Identity

@@ -1,5 +1,17 @@
 # Product Contracts
 
+## Phase 3 lifelong usability findings (2026-09-06)
+
+- Critical mobile actions measured at or above 44 px in the audited routes and
+  widths. Auxiliary chart/metadata labels are not a reason for blanket sizing.
+- Interactive series expose keyboard-focusable points and readable
+  labels/tooltips; screens without a supported series use an explicit list or
+  empty state instead of invented history.
+- The UI may warn that backup export age cannot be confirmed, but must not infer
+  or fabricate a timestamp. Backup age remains protected backlog.
+- Synthetic render timings are monitoring evidence only, not a new financial or
+  persistence behavior and not sufficient alone to justify virtualization.
+
 ## Core rule
 
 The UI consumes canonical values. It does not recalculate, approximate or

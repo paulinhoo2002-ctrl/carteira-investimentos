@@ -1,5 +1,18 @@
 # Next Step
 
+## PHASE_3_FINAL_AUDIT_CHECKPOINT_2026_09_06
+
+- Publish `release/phase-3-3-final` and open the review PR after the green local
+  gates; do not merge or deploy manually.
+- Immediate backlog: evaluate backup-age visibility without touching the backup
+  engine, and monitor global-search adoption and large-portfolio timings.
+- Phase 4: prioritize only improvements backed by existing data sources and an
+  approved visual contract.
+- Phase 5: consider virtualization only after evidence of degradation in real
+  data or a measured threshold breach.
+- Measure later: real-portfolio performance, transaction-to-asset usage and
+  comprehension of empty/error states.
+
 ## WHERE_WE_ARE
 
 Project memory has been consolidated for the legacy SPA plus isolated modern
@@ -288,6 +301,16 @@ cinco breakpoints; testes/builds nao equivalem a aprovacao visual.
   estão verdes localmente.
 - O próximo passo é uma branch limpa de release baseada no `origin/main`; este
   checkpoint não autoriza merge ou deploy.
-- O backlog restante da Phase 3.3 é o atalho contextual transação -> ativo,
-  que requer decisão de produto. Busca global, maturidade de RF e segurança de
-  uso mobile já estão implementadas ou cobertas.
+- O atalho contextual transação -> ativo foi implementado nesta branch com
+  identidade exata, sem matching aproximado e sem mutação financeira. Busca
+  global, maturidade de RF e segurança de uso mobile permanecem cobertas.
+
+## PHASE_3_3_PRODUCTIVITY_CHECKPOINT
+
+- `TRANSACTION_TO_ASSET=IMPLEMENTED_READ_ONLY`
+- `EXPLICIT_ASSET_IDENTITY=true`
+- `APPROXIMATE_MATCHING=false`
+- Ações de busca continuam somente leitura; Ativos, Renda Fixa, Dividendos,
+  Metas, Auditoria e Análise mantêm suas rotas oficiais.
+- `PUSH=false`, `PR=false`, `MERGE=false`, `DEPLOY=false` para a branch local
+  `feature/phase-3-3-productivity-final`.
