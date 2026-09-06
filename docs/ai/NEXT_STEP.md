@@ -278,3 +278,16 @@ cinco breakpoints; testes/builds nao equivalem a aprovacao visual.
   `ATIVOS_ICON_LANGUAGE=FROZEN`.
 - `NEXT_VISUAL_TARGET=APORTES`; usar a porcao de Aportes de
   `Refs/visual-canon/Tela de aportes e ativos.png` sem reabrir Ativos.
+
+## CURRENT_PHASE_3_3_LOCAL_CHECKPOINT
+
+- Dividendos permanece congelado com contrato canônico de cinco KPIs, matriz
+  histórica, evolução mensal, top pagadores, resumo anual, filtros, exportação
+  e adaptação responsiva.
+- Os smoke tests legados de Dividendos foram migrados para o contrato atual e
+  estão verdes localmente.
+- O próximo passo é uma branch limpa de release baseada no `origin/main`; este
+  checkpoint não autoriza merge ou deploy.
+- O backlog restante da Phase 3.3 é o atalho contextual transação -> ativo,
+  que requer decisão de produto. Busca global, maturidade de RF e segurança de
+  uso mobile já estão implementadas ou cobertas.

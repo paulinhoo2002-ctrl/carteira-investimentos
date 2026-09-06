@@ -104,6 +104,22 @@
   authorization. This freeze does not alter financial engines, persistence,
   schema, handlers or real data.
 
+## 2026-09-06 - Dividendos canonical wave frozen
+
+- DECISION: Preserve the primary Dividendos canon as the product contract while
+  correcting the desktop typography conflict and protecting the existing
+  official data/rendering paths.
+- PRESERVED: `passiveIncomeGoalStats()`, `dividendMonthlyHistoryRows()`,
+  `dividendAnnualMatrixData()`, existing export/review/filter/tooltip handlers,
+  persistence, schema, Finance Core and real data.
+- RESULT: five KPIs, monthly history, multi-year evolution, top assets and
+  annual summary remain the approved hierarchy across desktop and mobile.
+- STATUS: `DIVIDENDOS_VISUAL=FROZEN`,
+  `DIVIDENDOS_INFORMATION_CONTRACT=FROZEN`,
+  `DIVIDENDOS_INTERACTION_CONTRACT=FROZEN`.
+- EVIDENCE: `Refs/visual-canon/dividendos-canonical.png`, focused regression
+  lock and browser evidence under `qa-screenshots/dividendos-final/`.
+
 ## 2026-09-03 - Canonical Ativos frozen
 
 - DECISION: Freeze the approved Ativos visual implementation as the canonical
@@ -370,3 +386,21 @@
   únicos, fontes oficiais de resultado, RF dedicado, resumo RF e rota dedicada
   de Análise.
 - NEXT: `NEXT_VISUAL_TARGET=APORTES`; sem push, PR, merge ou deploy nesta rodada.
+
+## 2026-09-06 - Phase 3.3 Dividendos hardening
+
+- DECISION: manter o Dividendos canônico aprovado como contrato congelado;
+  nenhuma nova direção visual foi criada.
+- TESTS: os 12 smoke tests legados foram migrados individualmente para o
+  contrato atual: chips independentes por grupo, matriz `.div-mat-table` e
+  lançamento operacional disponível na visão `Recebimentos`.
+- COVERAGE: cinco KPIs, filtros anuais, matriz Jan-Dez, valores futuros e
+  ausentes explícitos, evolução, top pagadores, resumo anual, exportação,
+  responsividade e fluxo de registro continuam protegidos.
+- MOBILE: rolagem real em 390x844 e 430x932 revelou KPIs, histórico, gráfico,
+  top pagadores e resumo anual sem conteúdo encoberto pela navegação inferior.
+- BACKLOG: busca global, alertas de qualidade/maturidade, RF e fricção mobile
+  já possuem cobertura/implementação; atalhos transação -> ativo permanecem
+  fora desta rodada por exigirem decisão de produto e escopo protegido.
+- SAFETY: Finance Core, Persistence Core, schema, backup/import, auth/cloud e
+  dados reais permaneceram intocados.
