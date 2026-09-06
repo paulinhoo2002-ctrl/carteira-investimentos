@@ -92,11 +92,11 @@ for (const vp of viewports) {
       // Provar estado filtrado
       const filtered = await page.evaluate(() => ({
         filter: S.dividendFilter,
-        activeChips: [...document.querySelectorAll('.div-premium-chip.on')].filter(e => !e.closest('.div-collapsible')).map(e => e.textContent.trim()),
+        activeTypeChips: [...document.querySelectorAll('.div-dividend-toolbar-main .div-premium-chip.on')].map(e => e.textContent.trim()),
+        activeChips: [...document.querySelectorAll('.div-premium-chip.on')].map(e => e.textContent.trim()),
       }));
       assert.equal(filtered.filter, 'dividend', 'Filtro aplicado deve ser "dividend"');
-      assert.equal(filtered.activeChips.length, 1, 'Deve haver exatamente um chip ativo');
-      assert.ok(filtered.activeChips[0].includes('Dividendos'), `Chip ativo inesperado: ${filtered.activeChips[0]}`);
+      assert.deepEqual(filtered.activeTypeChips, ['Dividendos'], 'Deve haver exatamente um tipo ativo');
       assert.equal(await clearBtn.isDisabled(), false, 'Limpar filtros deve habilitar apos aplicar filtro');
 
       // Clicar no botao REAL (mesmo handler onclick do index.html)
@@ -109,14 +109,13 @@ for (const vp of viewports) {
         classFilter: S.dividendClassFilter,
         period: S.dividendPeriod,
         search: S.dividendSearch,
-        activeChips: [...document.querySelectorAll('.div-premium-chip.on')].filter(e => !e.closest('.div-collapsible')).map(e => e.textContent.trim()),
+        activeChips: [...document.querySelectorAll('.div-premium-chip.on')].map(e => e.textContent.trim()),
       }));
       assert.equal(cleared.filter, 'all', 'dividendFilter deve voltar a "all"');
       assert.equal(cleared.classFilter, 'all', 'dividendClassFilter deve voltar a "all"');
       assert.equal(cleared.period, 'all', 'dividendPeriod deve voltar a "all"');
       assert.equal(String(cleared.search || '').trim(), '', 'dividendSearch deve voltar a vazio');
-      assert.equal(cleared.activeChips.length, 1, 'Deve haver um chip ativo apos limpar');
-      assert.ok(cleared.activeChips[0].includes('Todos'), `Chip ativo apos limpar deve ser "Todos": ${cleared.activeChips[0]}`);
+      assert.deepEqual(cleared.activeChips, ['Todos', 'Todas as classes', 'Todo histórico'], 'Cada grupo deve voltar ao estado neutro');
 
       // Botao volta a desabilitado
       assert.equal(await clearBtn.isDisabled(), true, 'Limpar filtros deve voltar a desabilitado');

@@ -60,32 +60,25 @@ for (const viewport of viewports) {
     try {
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('dividendos'));
-      await page.waitForSelector('.div-monthly-table-block', { state: 'attached' });
+      await page.waitForSelector('.canon-div-history .div-mat-table', { state: 'attached' });
       const before = await page.evaluate(() => ({
-        view: S.dividendMonthlyHistoryView,
         total: S.proventos.reduce((sum, item) => sum + Number(item.valor || 0), 0),
         records: S.proventos.length,
+        headers: [...document.querySelectorAll('.canon-div-history .div-mat-table thead th')].map(cell => cell.textContent.trim()),
+        rows: document.querySelectorAll('.canon-div-history .div-mat-table tbody tr').length,
+        futureCells: document.querySelectorAll('.canon-div-history .div-mat-table .mat-future').length,
+        absentCells: document.querySelectorAll('.canon-div-history .div-mat-table .mat-absent').length,
       }));
-      assert.equal(before.view, 'auto', 'default visual deve permanecer auto/Lista');
-      await page.evaluate(() => document.querySelector('.div-monthly-table-block summary').click());
-      const toggleState = await page.evaluate(() => {
-        const group = document.querySelector('.div-monthly-toggle-group');
-        const buttons = [...group.querySelectorAll('button')];
-        return { text: group.textContent.replace(/\s+/g, ' '), buttons: buttons.map(button => ({ text: button.textContent.trim(), pressed: button.getAttribute('aria-pressed'), rect: button.getBoundingClientRect().toJSON() })) };
-      });
-      assert.match(toggleState.text, /Visualiza.+Lista.+Matriz/);
-      const defaultButton = viewport.width <= 820 ? 'Lista' : 'Matriz';
-      assert.equal(toggleState.buttons.find(button => button.text === defaultButton).pressed, 'true');
-      for (const button of toggleState.buttons) assert.ok(button.rect.width >= 44 && button.rect.height >= 44, `${button.text} menor que 44px`);
+      assert.deepEqual(before.headers, ['Ano', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Média', 'Total']);
+      assert.ok(before.rows > 0, 'A matriz deve exibir ao menos um ano');
+      assert.ok(before.futureCells + before.absentCells > 0, 'Ausência/futuro deve permanecer explícita');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'overflow horizontal');
-      await page.evaluate(() => [...document.querySelectorAll('.div-monthly-toggle-btn')].find(button => button.textContent.trim() === 'Matriz').click());
+      const yearButtons = page.locator('.canon-div-history .canon-year-chip');
+      assert.ok(await yearButtons.count() >= 2, 'Filtro anual precisa existir');
+      await yearButtons.filter({ hasText: '2026' }).click();
       await page.waitForTimeout(50);
-      assert.equal(await page.evaluate(() => S.dividendMonthlyHistoryView), 'matrix');
-      const matrixPressed = await page.evaluate(() => [...document.querySelectorAll('.div-monthly-toggle-btn')].find(button => button.textContent.trim() === 'Matriz')?.getAttribute('aria-pressed'));
-      assert.equal(matrixPressed, 'true');
-      await page.evaluate(() => [...document.querySelectorAll('.div-monthly-toggle-btn')].find(button => button.textContent.trim() === 'Lista').click());
-      await page.waitForTimeout(50);
-      assert.equal(await page.evaluate(() => S.dividendMonthlyHistoryView), 'list');
+      assert.equal(await page.locator('.canon-div-history .canon-year-chip.on').innerText(), '2026');
+      assert.ok(await page.locator('.canon-div-history .div-mat-table tbody tr').count() >= 1);
       const after = await page.evaluate(() => ({
         total: S.proventos.reduce((sum, item) => sum + Number(item.valor || 0), 0),
         records: S.proventos.length,

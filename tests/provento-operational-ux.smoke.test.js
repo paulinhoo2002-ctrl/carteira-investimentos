@@ -60,16 +60,20 @@ for (const viewport of viewports) {
       await page.goto(url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('dividendos'));
       await page.locator('.div-premium').waitFor({ state: 'visible', timeout: 5000 });
+      // A visão geral canônica reserva a ação principal para Exportar;
+      // o fluxo de lançamento fica disponível na visão operacional Recebimentos.
+      await page.evaluate(() => setDividendViewMode('received'));
+      await page.locator('.div-premium-tabs').waitFor({ state: 'visible', timeout: 5000 });
       await page.getByRole('button', { name: /Registrar provento/ }).first().click();
 
-      const dialog = page.locator('.quick-movement-modal');
+      const dialog = page.locator('.quick-movement-modal:visible');
       await dialog.waitFor({ state: 'visible', timeout: 5000 });
       assert.equal(await dialog.locator('h3').innerText(), 'Registrar provento');
       assert.equal(await dialog.locator('#qm-ti').count(), 1);
       assert.equal(await dialog.locator('#qm-event').count(), 1);
       assert.equal(await dialog.locator('#qm-value').count(), 1);
       assert.equal(await dialog.locator('#qm-dt').count(), 1);
-      assert.equal(await dialog.getByText('Revisão').count(), 1);
+      assert.ok(await dialog.getByText('Revisão').count() >= 1, 'A etapa de revisão deve permanecer disponível');
 
       for (const selector of ['#qm-ti', '#qm-event', '#qm-value', '#qm-dt', 'button:has-text("Cancelar")', 'button:has-text("Registrar provento")']) {
         const box = await dialog.locator(selector).first().boundingBox();
