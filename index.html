@@ -33459,6 +33459,32 @@ function updateRfAssetSummary(selectElement) {
     z-index:4;
   }
 }
+@media (min-width:1181px){
+  /* Full historical asset contract: keep every column in the contained
+     scroller and let the final action column remain discoverable. */
+  .assets-premium-shell .ag-table .tw table{
+    min-width:1580px;
+    width:max-content;
+    table-layout:auto;
+  }
+  .assets-premium-shell .ag-table .tw table th:nth-child(3),
+  .assets-premium-shell .ag-table .tw table td:nth-child(3),
+  .assets-premium-shell .ag-table .tw table th:nth-child(9),
+  .assets-premium-shell .ag-table .tw table td:nth-child(9),
+  .assets-premium-shell .ag-table .tw table th:nth-child(12),
+  .assets-premium-shell .ag-table .tw table td:nth-child(12),
+  .assets-premium-shell .ag-table .tw table th:nth-child(13),
+  .assets-premium-shell .ag-table .tw table td:nth-child(13),
+  .assets-premium-shell .ag-table .tw table th:nth-child(14),
+  .assets-premium-shell .ag-table .tw table td:nth-child(14){
+    display:table-cell;
+  }
+  .assets-premium-shell .ag-table .tw table th,
+  .assets-premium-shell .ag-table .tw table td{
+    overflow:visible;
+    text-overflow:clip;
+  }
+}
 </style>
 </body>
 </html>
