@@ -576,3 +576,18 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
   permanecem secundarios. RF continua com rota dedicada e resumo oficial em
   Todos os ativos.
 - `NEXT_VISUAL_TARGET=APORTES`; nao reabrir Ativos sem autorizacao explicita.
+
+## 2026-09-05 - Ativos canonical rich contract lock
+
+- `ATIVOS_VISUAL=FROZEN`.
+- `ATIVOS_INFORMATION_CONTRACT=FROZEN`.
+- `ATIVOS_ACTION_CONTRACT=FROZEN`.
+- `ATIVOS_RF_OVERVIEW_CONTRACT=FROZEN`.
+- A referencia historica aprovada esta persistida em
+  `Refs/visual-canon/ativos-rich-canonical.png`, com hash registrado em
+  `docs/ai/VISUAL_REFERENCE_INDEX.md`.
+- A tabela desktop rica preserva as quinze informacoes/acoes aprovadas e a
+  experiencia mobile preserva os mesmos dados por cards progressivos.
+- Os bloqueios de regressao existentes cobrem categorias agrupadas,
+  recolhimento padrao, campos ricos, acoes, RF, CTA de rebalanceamento e
+  sintaxe inline. As areas protegidas permanecem inalteradas.

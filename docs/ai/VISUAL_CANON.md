@@ -91,3 +91,27 @@ For Dashboard, the permanent structural target is
 `Refs/visual-canon/dashboard-canonical.png`. `Tela Principal.png` is only a
 secondary quality reference and must not change the executive-home purpose or
 copy another screen's information architecture.
+
+## 2026-09-05 - Ativos canonical rich experience lock
+
+- `ATIVOS_VISUAL=FROZEN`.
+- `ATIVOS_INFORMATION_CONTRACT=FROZEN`.
+- `ATIVOS_ACTION_CONTRACT=FROZEN`.
+- `ATIVOS_RF_OVERVIEW_CONTRACT=FROZEN`.
+- Desktop expanded variable-asset rows preserve Ticker, Tipo, Setor, Qtd, PM,
+  Atual, Resultado R$, Resultado %, Rentab., Alvo, Valor total, % carteira,
+  % ideal, Div. est./mês, DY and row actions.
+- Row actions remain directly reachable as Comprar, Vender and Mais/Editar.
+  Editing uses explicit asset identity and preserves existing fields, including
+  sector, target price and `ideal_pct`; approximate asset matching is banned.
+- Result semantics remain positive green, negative red, zero neutral and
+  missing `—`. Accumulated portfolio result remains distinct from daily quote
+  variation.
+- Grouped Ativos preserves a rich Renda Fixa overview while full management
+  remains on the dedicated `renda-fixa` route. The overview preserves title,
+  type/indexer, application, maturity, applied/current value, result,
+  rentability, portfolio share and Movimentar/Resgatar/Mais actions.
+- Mobile uses rich cards rather than the desktop table and preserves primary
+  and secondary financial details plus Comprar/Vender/Editar actions.
+- `ATIVOS_PRIMARY_CANON=Refs/visual-canon/ativos-rich-canonical.png`.
+- `ATIVOS_PRIMARY_CANON_SHA256=544BA45C667D15E12ADD6081CC9687F399F2A3B5C5421EF1289FCEFAC48084D5`.

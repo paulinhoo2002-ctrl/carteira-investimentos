@@ -58,3 +58,33 @@ Allowed without a financial phase: CSS, layout, typography, spacing, semantic
 labels, accessible focus, responsive disclosure and rendering of existing
 values. Not allowed: new formulas, inferred identities, new persistence,
 schema changes, write handlers, or changes to zero-versus-absence behavior.
+
+## Ativos canonical information and action contract
+
+The Ativos rich experience is frozen. Any future visual refactor must preserve
+the following fields in expanded desktop variable-asset rows:
+
+- Ticker, Tipo, Setor, Qtd, PM, Atual;
+- Resultado R$, Resultado %, Rentab., Alvo and Valor total;
+- % carteira, % ideal, Div. est./mês and DY;
+- Comprar, Vender and Mais/Editar.
+
+The action contract requires explicit `asset.id` identity. Editing must keep
+sector, target price, `ideal_pct` and all other existing asset fields. Matching
+an asset approximately by label or ticker is not allowed:
+`APPROXIMATE_ASSET_MATCHING=false`.
+
+Result presentation is semantic and preserves the distinction between
+accumulated portfolio result and daily quote variation: positive is green,
+negative is red, zero is neutral and missing is `—`.
+
+Grouped Ativos retains a rich Renda Fixa overview with title, type/indexer,
+application, maturity, applied/current value, result, rentability, portfolio
+share and Movimentar/Resgatar/Mais. Full RF management remains exclusively on
+the dedicated `renda-fixa` route:
+`RF_DEDICATED_ROUTE=true`, `RF_RICH_OVERVIEW_IN_ASSETS=true`,
+`RF_FULL_MANAGEMENT_IN_ASSETS=false`.
+
+Mobile is a progressive disclosure contract, not a reduced data contract. Rich
+cards preserve ticker, name, value, result, result %, quantity, PM, current,
+share, sector, target, ideal %, dividend/month, DY and Comprar/Vender/Editar.

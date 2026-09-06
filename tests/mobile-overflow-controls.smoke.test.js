@@ -117,7 +117,7 @@ for (const viewport of viewports) {
       // Ativos: acoes (Comprar/Vender/Mais e Movimentar/Resgatar) visiveis e sem sobreposicao
       await page.evaluate(() => go('ativos'));
       await page.waitForSelector('.ag', { state: 'visible', timeout: 5000 });
-      await page.locator('.ag').first().locator('summary').click();
+      await page.locator('.ag').first().locator(':scope > summary').click();
       await page.waitForTimeout(150);
       const ativ = await page.evaluate(() => {
         const vw = window.innerWidth;
@@ -126,7 +126,21 @@ for (const viewport of viewports) {
           const style = getComputedStyle(element);
           return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
         };
-        const wrappers = [...document.querySelectorAll('.ag-table .tw, .rf-table-wrap')].filter(w => visible(w) && w.querySelector('tbody tr'));
+        const mobile = vw <= 767;
+        const openGroup = document.querySelector('.ag[open]');
+        if (mobile) {
+          const cards = [...(openGroup?.querySelectorAll(':scope > .ag-body .asset-premium-card') || [])].filter(visible);
+          return {
+            mobile: true,
+            cards: cards.length,
+            actions: cards.slice(0, 1).map(card => [...card.querySelectorAll('.asset-premium-card-actions button')].filter(visible).map(button => {
+              const r = button.getBoundingClientRect();
+              return { text: button.textContent.trim(), left: r.left, right: r.right, height: r.height, fullyInViewport: r.left >= -1 && r.right <= vw + 1 };
+            })),
+            pageWidth: Math.max(document.scrollingElement.scrollWidth, document.body?.scrollWidth || 0),
+          };
+        }
+        const wrappers = [...document.querySelectorAll('.ag[open] .ag-table .tw, .ag[open] .rf-table-wrap')].filter(w => visible(w) && w.querySelector('tbody tr'));
         const tables = wrappers.map(w => {
           const firstRow = w.querySelector('tbody tr');
           const actions = firstRow.querySelector('.asset-actions');
@@ -167,8 +181,16 @@ for (const viewport of viewports) {
             actionsReachableWithInternalScroll,
           };
         });
-        return { tables, anyTable: tables.length > 0 };
+        return { mobile: false, tables, anyTable: tables.length > 0 };
       });
+      if (ativ.mobile) {
+        assert.ok(ativ.cards > 0, `nenhum card rico de ativo visivel em ${viewport.label}`);
+        const mobileActions = ativ.actions[0] || [];
+        assert.ok(mobileActions.length >= 3, `acoes Comprar/Vender/Editar ausentes em ${viewport.label}`);
+        assert.ok(mobileActions.every(button => button.fullyInViewport), `acao de ativo cortada em ${viewport.label}`);
+        assert.ok(mobileActions.every(button => button.height >= 44), `acao menor que 44px em ${viewport.label}`);
+        assert.equal(ativ.pageWidth - viewport.width, 0, `pageOverflow em cards de ativos ${viewport.label}`);
+      } else {
       assert.ok(ativ.anyTable, `nenhuma tabela de ativos visivel em ${viewport.label}`);
       for (const table of ativ.tables) {
         assert.ok(table.buttons.length >= 2, `acoes ausentes em ${viewport.label} (${table.cls})`);
@@ -178,11 +200,8 @@ for (const viewport of viewports) {
         );
         assert.equal(table.buttonsOverlap, false, `acoes sobrepostas em ${viewport.label} (${table.cls})`);
         for (const button of table.buttons) assert.ok(button.height >= 44, `acao menor que 44px em ${viewport.label}: ${button.text} (${Math.round(button.height)}px)`);
-        if (viewport.width <= 1024) {
-          assert.equal(table.sticky, 'sticky', `coluna de acoes nao sticky em ${viewport.label} (${table.cls})`);
-        } else {
-          assert.equal(table.sticky, 'static', `sticky indevido em desktop ${viewport.label} (${table.cls})`);
-        }
+        assert.equal(table.sticky, 'sticky', `coluna de acoes nao sticky em ${viewport.label} (${table.cls})`);
+      }
       }
       assert.equal(await pageOverflow(), 0, `pageOverflow em ativos ${viewport.label}`);
 
