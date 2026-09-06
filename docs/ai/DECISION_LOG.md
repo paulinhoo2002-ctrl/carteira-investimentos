@@ -104,6 +104,22 @@
   authorization. This freeze does not alter financial engines, persistence,
   schema, handlers or real data.
 
+## 2026-09-06 - Dividendos canonical wave frozen
+
+- DECISION: Preserve the primary Dividendos canon as the product contract while
+  correcting the desktop typography conflict and protecting the existing
+  official data/rendering paths.
+- PRESERVED: `passiveIncomeGoalStats()`, `dividendMonthlyHistoryRows()`,
+  `dividendAnnualMatrixData()`, existing export/review/filter/tooltip handlers,
+  persistence, schema, Finance Core and real data.
+- RESULT: five KPIs, monthly history, multi-year evolution, top assets and
+  annual summary remain the approved hierarchy across desktop and mobile.
+- STATUS: `DIVIDENDOS_VISUAL=FROZEN`,
+  `DIVIDENDOS_INFORMATION_CONTRACT=FROZEN`,
+  `DIVIDENDOS_INTERACTION_CONTRACT=FROZEN`.
+- EVIDENCE: `Refs/visual-canon/dividendos-canonical.png`, focused regression
+  lock and browser evidence under `qa-screenshots/dividendos-final/`.
+
 ## 2026-09-03 - Canonical Ativos frozen
 
 - DECISION: Freeze the approved Ativos visual implementation as the canonical

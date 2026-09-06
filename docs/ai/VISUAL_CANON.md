@@ -115,3 +115,22 @@ copy another screen's information architecture.
   and secondary financial details plus Comprar/Vender/Editar actions.
 - `ATIVOS_PRIMARY_CANON=Refs/visual-canon/ativos-rich-canonical.png`.
 - `ATIVOS_PRIMARY_CANON_SHA256=544BA45C667D15E12ADD6081CC9687F399F2A3B5C5421EF1289FCEFAC48084D5`.
+
+## 2026-09-06 - Dividendos canonical wave
+
+- `DIVIDENDOS_VISUAL=FROZEN`.
+- `DIVIDENDOS_INFORMATION_CONTRACT=FROZEN`.
+- `DIVIDENDOS_INTERACTION_CONTRACT=FROZEN`.
+- Primary reference remains `Refs/visual-canon/dividendos-canonical.png`; older
+  indexed Dividendos images remain subordinate screen/pattern references.
+- KPI source: `dividendExecutiveKpis()` backed by `passiveIncomeGoalStats()`;
+  annual projection is the existing official 12-month projection, not a new
+  forecast.
+- Historical source: `dividendMonthlyHistoryRows()` and
+  `dividendAnnualMatrixData()`; absent and future months remain explicit as
+  `—`, while valid zero remains `R$ 0,00`.
+- Approved hierarchy: header/year controls, five KPIs, monthly history, income
+  evolution, top assets and annual summary. Existing export, review, filter,
+  tooltip and action handlers remain preserved.
+- No fake data, new financial formula, persistence, schema or real-data path is
+  permitted in future Dividendos visual work.
