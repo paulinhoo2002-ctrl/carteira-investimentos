@@ -26,3 +26,8 @@ test('Phase 3.2.5D: menu secundário de ativos escapa do empilhamento da tabela'
   assert.match(source, /menu\.style\.position='fixed'/);
   assert.match(source, /menu\.__assetMenuParent\.insertBefore\(menu,menu\.__assetMenuNextSibling\)/);
 });
+
+test('Phase 3.2.5E: grouped e todos os ativos preservam o cabeçalho histórico', () => {
+  assert.equal((source.match(/class="assets-table-caption"/g) || []).length, 2);
+  assert.match(source, /class="assets-table-caption">Posições atuais, custo, valor de mercado, resultado e peso na carteira<\/caption>/);
+});

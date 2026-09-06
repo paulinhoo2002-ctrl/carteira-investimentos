@@ -6949,6 +6949,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .assets-premium-shell .ag-k{line-height:1.1;white-space:normal}
 .assets-premium-shell .ag-open{width:28px;height:28px}
 .assets-premium-shell #assets-premium-rf-table-desktop td:first-child>div>div{max-width:none;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+.assets-premium-shell .assets-table-caption{caption-side:top;padding:9px 12px 8px;color:#8ea4c3;background:var(--panel);font-size:12px;font-weight:700;letter-spacing:.01em;text-align:center}
 .assets-premium-shell .assets-all-assets{margin-top:10px!important}
 .assets-premium-shell .assets-primary-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:start}
 .assets-premium-shell .assets-primary-layout .assets-all-assets{margin-top:0!important}
@@ -27896,6 +27897,7 @@ function ativos(){
             </div>`
           : `<div class="ag-table">
           <div class="tw"><div class="ts"><table>
+            <caption class="assets-table-caption">Posições atuais, custo, valor de mercado, resultado e peso na carteira</caption>
             <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Tipo</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
               <th>
                 <div style="display:flex;align-items:center;gap:5px">
@@ -28228,7 +28230,7 @@ function ativos(){
               <!-- Desktop Premium Table -->
               <div class="assets-premium-table-wrap" id="assets-premium-table-desktop" aria-label="Posições de ativos variáveis">
                 <table class="assets-premium-table">
-                  <caption class="sr-only">Posições atuais, custo, valor de mercado, resultado e peso na carteira</caption>
+                  <caption class="assets-table-caption">Posições atuais, custo, valor de mercado, resultado e peso na carteira</caption>
                   <thead>
                     <tr>
                       <th>${assetSortableHeader('Todos','ticker','Ticker')}</th>
