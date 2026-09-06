@@ -42,7 +42,7 @@ test('busca global encontra Análise, respeita teclado, no-match e links context
     assert.equal(await page.locator('#portfolio-search-input').count(), 1);
     await page.locator('#portfolio-search-input').fill('analise');
     assert.match(await page.locator('#portfolio-search-results').innerText(), /Análise da carteira/);
-    assert.match(await page.locator('#portfolio-search-results').innerText(), /NAVEGAÇÃO/i);
+    assert.match(await page.locator('#portfolio-search-results').innerText(), /ANÁLISE/i);
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('Enter');
@@ -50,6 +50,14 @@ test('busca global encontra Análise, respeita teclado, no-match e links context
     assert.equal(await page.locator('.analysis-context-links').count(), 1);
     await page.getByRole('button', { name: 'Ver rentabilidade' }).click();
     assert.equal(await page.evaluate(() => S.tab), 'rentabilidade');
+    await page.keyboard.press('Control+KeyK');
+    await page.locator('#portfolio-search-input').fill('ap-001');
+    assert.equal(await page.locator('.portfolio-search-result-context').count(), 1);
+    await page.locator('.portfolio-search-result-context').click();
+    assert.equal(await page.evaluate(() => S.tab), 'ativos');
+    assert.equal(await page.evaluate(() => String(S.editId)), await page.evaluate(() => String(S.assets.find(asset => asset.ticker === 'PETR4')?.id)));
+    assert.equal(await page.evaluate(() => S.showA), true);
+    await page.evaluate(() => clA());
     await page.keyboard.press('Control+KeyK');
     await page.locator('#portfolio-search-input').fill('nao-existe-xyz');
     assert.match(await page.locator('#portfolio-search-results').innerText(), /Nenhum resultado encontrado\./);
