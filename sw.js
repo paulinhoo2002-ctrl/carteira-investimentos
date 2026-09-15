@@ -1,4 +1,7 @@
-const CACHE_NAME = 'carteira-investimentos-v16';
+const CACHE_NAME = 'carteira-investimentos-v17';
+const CRITICAL_RUNTIME_PATHS = new Set([
+  '/protected-local-cloud-authority.js',
+]);
 const APP_SHELL = [
   './',
   './index.html',
@@ -60,6 +63,21 @@ self.addEventListener('fetch', (event) => {
         const cached = await caches.match(request, { ignoreSearch: true })
           || await caches.match('./index.html')
           || await caches.match('./');
+        return cached || Response.error();
+      }
+    })());
+    return;
+  }
+
+  if (CRITICAL_RUNTIME_PATHS.has(url.pathname)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const fresh = await fetch(request, { cache: 'no-store' });
+        if (fresh.ok && fresh.type === 'basic') await cache.put(request, fresh.clone());
+        return fresh;
+      } catch (_) {
+        const cached = await cache.match(request);
         return cached || Response.error();
       }
     })());

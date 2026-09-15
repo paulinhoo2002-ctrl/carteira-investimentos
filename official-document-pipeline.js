@@ -1,0 +1,5 @@
+/* Official document pipeline: fetch, hash, parse, and expose review-safe evidence. */
+(function(root,factory){const api=factory(root);if(typeof module!=='undefined'&&module.exports)module.exports=api;if(root)root.OfficialDocumentPipeline=api;})(typeof window!=='undefined'?window:globalThis,function(root){
+  async function processDocument({url,metadata={},fetcher=root?.OfficialDocumentFetcher,parser=root?.OfficialDocumentParser}={}){if(!fetcher||!parser)return {ok:false,status:'PIPELINE_NOT_CONFIGURED'};const document=await fetcher.fetchDocument({url});if(!document.ok)return {ok:false,status:document.status,document};if(!document.text)return {ok:false,status:'DOCUMENT_TEXT_REVIEW_REQUIRED',document};const parsed=parser.parseOfficialDocument({text:document.text,metadata:{...metadata,sourceUrl:document.url}});return {...parsed,documentHash:document.sha256,contentType:document.contentType,documentUrl:document.url,parserVersion:'official-document-parser-v1'};}
+  return {processDocument};
+});
