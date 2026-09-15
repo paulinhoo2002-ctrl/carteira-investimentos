@@ -8731,7 +8731,9 @@ function applyEditLockState(lock, mode){
   const changed = EDIT_LOCK_STATE.ownerId!==next.ownerId || EDIT_LOCK_STATE.updatedAt!==next.updatedAt || EDIT_LOCK_STATE.mode!==next.mode || EDIT_LOCK_STATE.stale!==next.stale;
   EDIT_LOCK_STATE = next;
   if(!changed) return false;
-  if(next.mode==='owner' || isProtectedReadOnlyQaBoot()) startCloudSync();
+  if(next.mode==='owner' || next.mode==='readonly' || isProtectedReadOnlyQaBoot()) {
+    startCloudSync({readOnlyOnly: next.mode==='readonly' && !isProtectedReadOnlyQaBoot()});
+  }
   else stopCloudSync(false);
   render();
   return true;
@@ -9949,7 +9951,7 @@ function initFirebase(){
           });
           return;
         }
-        startCloudSync();
+        startCloudSync({readOnlyOnly: !isEditOwner() && !isProtectedReadOnlyQaBoot()});
       }else{
         FB.access.loading = false;
         FB.access.loaded = false;
@@ -10347,8 +10349,10 @@ async function applyCloudData(d){
   FB.lastCloudSignature=after;
   return before!==after;
 }
-function startCloudSync(){
-  if(isLocalTestMode() || isAuthoritativeLocalRecoveryBoot() || (!isEditOwner() && !isProtectedReadOnlyQaBoot())) return;
+function startCloudSync({readOnlyOnly=false}={}){
+  if(isLocalTestMode() || isAuthoritativeLocalRecoveryBoot()) return;
+  if(readOnlyOnly && (isEditOwner() || isProtectedReadOnlyQaBoot())) return;
+  if(!readOnlyOnly && !isEditOwner() && !isProtectedReadOnlyQaBoot()) return;
   const ref=portfolioRef();
   if(!ref) return;
   stopCloudSync(false);
@@ -10356,7 +10360,7 @@ function startCloudSync(){
   FB.unsub=ref.onSnapshot(async snap=>{
     try{
       if(!snap.exists){
-        if(hasLocalData()) await uploadLocalToCloud(false,{allowMissingCloud:true});
+        if(!readOnlyOnly && hasLocalData()) await uploadLocalToCloud(false,{allowMissingCloud:true});
         FB.cloudLoaded=true;
         bindProtectedRealPilotSession();
         if(FB.pendingCloudSave) queueCloudSave();
