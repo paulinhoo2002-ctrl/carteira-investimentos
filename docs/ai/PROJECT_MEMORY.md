@@ -1239,3 +1239,16 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Gate local V92: `tests/import-center-core.test.js` 5/5, root 205/205,
   modern 750/750, finance 80/80, persistence 32/32, build moderno e smoke
   browser sem overflow/erros relevantes. Evidência visual fica em `.qa-state/`.
+
+## V93 — inteligência de relatórios (15/09/2026)
+
+- A branch `feature/v93-reports-intelligence` adiciona `portfolio-report-model.js`,
+  uma camada pura para consolidar resumo, patrimônio, performance, renda,
+  alocação, concentração, ativos, proventos e qualidade dos dados.
+- O modelo preserva `null`/indisponibilidade, explicita status, proveniência,
+  frescor e cobertura, e não acessa storage, rede, Firebase ou o ledger. A tela
+  de Relatórios reutiliza o domínio legado e exibe uma leitura executiva sem
+  duplicar fórmulas.
+- A cobertura do Import Center permanece verde; TWR/XIRR continuam mostrando
+  coleta/insuficiência quando não há evidência bastante. Nenhuma lógica
+  financeira, persistência ou cloud foi alterada.
