@@ -1,5 +1,9 @@
 # Carteira Investimentos — Skill Router
 
+O catálogo operacional detalhado por momento está em
+`docs/ai/SKILL_OPERATIONAL_CATALOG.md`; este arquivo mantém as regras compactas
+de roteamento e limites.
+
 OFFICIAL_WORKSPACE:
 C:\Projetos\carteira-investimentos
 
@@ -12,6 +16,15 @@ Padrão
 DEFAULT_SKILLS:
 []
 
+SKILL_DISCOVERY_REQUIRED:
+true
+
+TOKEN_ECONOMY_REQUIRED:
+true
+
+ZERO_RECURRING_COST_BY_DEFAULT:
+true
+
 MAX_SKILLS_NORMAL:
 2
 
@@ -22,6 +35,39 @@ Princípio:
 "Use o menor conjunto de skills necessário para completar a missão."
 
 ---
+
+## ROTEAMENTO PRINCIPAL POR TAREFA
+
+| Categoria | Skills primárias | Modelo | Esforço | Escalar quando |
+|---|---|---|---|---|
+| FINANCIAL_LOGIC | `doubt-driven-development`, `source-driven-development` | 5.6 Sol | High | invariantes, arredondamento ou identidade divergirem |
+| PERSISTENCE / RECOVERY / DATA_MIGRATION | `doubt-driven-development`, `caveman-review` | 5.6 Sol | High | houver escrita, rollback ou mudança de schema |
+| FIREBASE / AUTH / LOCAL_CLOUD_SYNC | `firebase-security-rules-auditor`, `doubt-driven-development` | 5.6 Sol | High | permissões, divergência ou sincronização mudarem |
+| SECURITY | `firebase-security-rules-auditor`, `source-driven-development` | 5.6 Sol | High | risco de acesso, privilégio ou dado sensível |
+| UI_UX / VISUAL_POLISH | `interface-design` ou `impeccable`, `web-quality-audit` | 5.6 Terra | Medium | UI tocar em dados, persistência ou auth |
+| RESPONSIVE / ACCESSIBILITY / WEB_QUALITY | `web-quality-audit`, `playwright` | 5.6 Terra/Luna | Medium | erro de runtime ou fluxo protegido |
+| BROWSER_QA / E2E / REGRESSION_TESTING | `browser-harness`, `playwright` | 5.6 Luna | Medium | sessão/auth/CDP falhar repetidamente |
+| DOCUMENTATION / ARCHITECTURE_DOCS | `archify` quando visual ajudar, `caveman-review` | 5.6 Luna | Low/Medium | decisão arquitetural não for trivial |
+| SKILL_DISCOVERY | `find-skills` | 5.6 Luna | Low | apenas quando a capacidade não existir localmente |
+| CONTEXT_COMPRESSION / TOKEN_ECONOMY | `caveman-compress`, `caveman-stats` | 5.6 Luna | Low | nunca remover invariantes, IDs, hashes ou autorizações |
+| CODE_REVIEW / SELECTIVE_COMMITS | `caveman-review`, `caveman-commit` | 5.6 Luna | Medium | sempre antes de integração/commit autorizado |
+
+## REGRA DE BOOT AUTOMÁTICO
+
+Em toda missão substancial, declarar antes de agir:
+
+```text
+MODEL_SELECTED=
+EFFORT_SELECTED=
+SKILLS_CONSIDERED=
+SKILLS_USED=
+SKILLS_NOT_USED=
+SKILL_GAPS_FOUND=
+SCOPE_GUARD=
+```
+
+`find-skills` deve ser usado no início de missões grandes, sem instalação
+automática. Skills não concedem autorização sobre áreas protegidas.
 
 ## TRACKS DE UI (MUTUAMENTE EXCLUSIVOS DURANTE A MESMA FASE)
 
@@ -57,6 +103,8 @@ Nunca carregar os três simultaneamente.
 | `archify` | Quando um diagrama realmente ajudar (arquitetura, workflow, sequence, dataflow, lifecycle) |
 | `slides` / `banner-design` | Não usar em tarefas normais do produto |
 | `browser-harness` | Não usar se Playwright/DevTools já resolverem |
+| `firebase-security-rules-auditor` | Firestore rules, ownership, create/update, tipos, limites e privilégio; não usar para editar ou fazer deploy |
+| `web-quality-audit` | Auditoria baseada em evidências de acessibilidade, performance, SEO, práticas web e navegação assistida |
 | `cavecrew` | Decidir quando delegação separada ajuda; não é obrigatório |
 | `interview-me` | Pedido subespecificado ou ambíguo; nunca executar automaticamente em loops/CI |
 
@@ -110,3 +158,18 @@ Transformar os princípios úteis de economia em regra curta de governança:
 - Não reler docs estáveis em toda missão
 - Não repetir análise feita no mesmo handoff
 - Não listar dezenas de detalhes se o usuário precisa apenas da decisão
+
+## Skills externas aprovadas — perfil seguro (2026-09-14)
+
+| Skill | Usar quando | Guardrails |
+|---|---|---|
+| `planning-with-files` | Missões longas e retomadas | Planos somente em `.qa-state/plans/<MISSION>/`; hooks desligados; não autoriza execução ou entrega. |
+| `mantis-threat-model`, `mantis-architecture`, `mantis-structural-index` | Threat model, arquitetura e índice | Análise estática/manual; sem pipeline autônomo, rede ou dados reais. |
+| `mantis-review`, `mantis-critic` | Revisar achados | `reproduce`/`patch` desabilitados por padrão; isolamento e autorização separados. |
+| `mantis-report` | Consolidar relatório | Somente relatório; não aplicar patches nem commitar. |
+| `deep-research` | Pesquisa externa multifuente | Fontes verificáveis; zero custo recorrente por padrão. |
+| `fact-checker` | Verificar afirmação específica | Citar fontes, contradições e data; helper manual. |
+| `source-tracker` | Citações/bibliografia | Banco em `.qa-state/source-tracker/`; health-check manual, sem cron. |
+
+`Agent Reach` não foi instalado. Mantis `reproduce`, `patch`, `chain`,
+`researcher`, `pipeline` e `meta-agent` permanecem rejeitados nesta fase.
