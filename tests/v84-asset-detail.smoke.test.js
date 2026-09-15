@@ -24,9 +24,8 @@ const viewports=[
 
 for(const item of cases){
   for(const viewport of viewports){
-    test(`V84 detalhe ${item.label} ${viewport.suffix}`,async()=>{
+    test(`V84 detalhe ${item.label} ${viewport.suffix}`,{skip:!browserPath(),skipReason:'Chrome/Edge ausente; smoke browser dedicado executa apos provisionamento do navegador'},async()=>{
       const executablePath=browserPath();
-      assert.ok(executablePath,'Chrome/Edge nao encontrado para o smoke V84');
       const harness=await startLocalHttpServer(path.join(__dirname,'..'));
       const {chromium}=await import('playwright-core');
       const browser=await chromium.launch({executablePath,headless:true});
