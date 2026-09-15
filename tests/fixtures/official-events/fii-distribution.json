@@ -1,0 +1,7 @@
+{
+  "sourceFamily":"ADMINISTRATOR_RI",
+  "asset":"FUND11",
+  "documentType":"Aviso de Distribuição",
+  "text":"Rendimento por cota: R$ 1,25. Data-base: 15 de setembro de 2026. Pagamento: 25/09/2026.",
+  "expected":{"eventType":"FII_INCOME","valuePerUnitGross":1.25,"baseDate":"2026-09-15","paymentDate":"2026-09-25"}
+}

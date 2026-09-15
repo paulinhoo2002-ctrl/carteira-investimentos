@@ -1,0 +1,7 @@
+{
+  "sourceFamily":"CVM_IPE",
+  "asset":"ABCD3",
+  "documentType":"Aviso aos Acionistas",
+  "text":"Dividendo por ação: R$ 0,50. Data-base: 10/09/2026. Data de pagamento: 20/09/2026.",
+  "expected":{"eventType":"DIVIDEND","valuePerUnitGross":0.5,"baseDate":"2026-09-10","paymentDate":"2026-09-20","confidence":"EXACT_OFFICIAL_TEXT"}
+}

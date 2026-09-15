@@ -1,0 +1,7 @@
+{
+  "sourceFamily":"CVM_IPE",
+  "asset":"ABCD3",
+  "documentType":"Comunicado",
+  "text":"O rendimento anteriormente anunciado fica cancelado e sem efeito.",
+  "expected":{"status":"CANCELLED"}
+}
