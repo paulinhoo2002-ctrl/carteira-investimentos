@@ -1112,12 +1112,12 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 
 ## V79 — memória viva e continuidade (15/09/2026)
 
-- `CURRENT_HEAD_FUNCTIONAL=4e1ac338c8507ffb656bf0c274559a4e4cf4d990`;
-  `MEMORY_UPDATED_FOR_HEAD=4e1ac338c8507ffb656bf0c274559a4e4cf4d990`.
+- `CURRENT_HEAD_FUNCTIONAL=25c5854177a9db88dba76a87d2d66d49dc59feb0`;
+  `MEMORY_UPDATED_FOR_HEAD=25c5854177a9db88dba76a87d2d66d49dc59feb0`.
 - A memória canônica foi organizada em documentos especializados sob
   `docs/ai/`, sem incluir segredos, cookies, credenciais ou dados privados de
   linha.
-- O último marco funcional é `4e1ac338c8507ffb656bf0c274559a4e4cf4d990`;
+- O último marco funcional é `25c5854177a9db88dba76a87d2d66d49dc59feb0`;
   V79 é documentação/governança e não altera runtime financeiro.
 - Estado financeiro protegido continua `431/330/101`, 99 referências,
   `2709626` cents e fingerprint `06df1e4ea0adf48cdba16c6eab62c39641a75f6800fe0e296b5846213bd201c2`.

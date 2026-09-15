@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "project": {"name": "carteira-investimentos", "workspace": "C:/Projetos/carteira-investimentos", "canonicalBranch": "feature/phase-4-automation-foundation"},
+  "git": {"currentFunctionalHead": "25c5854177a9db88dba76a87d2d66d49dc59feb0", "memoryUpdatedForHead": "25c5854177a9db88dba76a87d2d66d49dc59feb0"},
+  "financialBaseline": {"counts": "431/330/101", "references": 99, "financialCents": 2709626, "fingerprint": "06df1e4ea0adf48cdba16c6eab62c39641a75f6800fe0e296b5846213bd201c2", "mutationAuthorized": false},
+  "runtime": {"origin": "http://127.0.0.1:4173", "protectedUrl": "http://127.0.0.1:4173/index.html?protectedReadOnlyQa=1", "cdpPort": 9233, "authorityRuntime": "V2", "serviceWorkerCache": "carteira-investimentos-v17"},
+  "features": {"modeAActive": true, "autoRealization": false, "dailySnapshots": true, "publicEvents": true, "portableData": true},
+  "providers": {"market": "Yahoo Chart", "officialEvents": "CVM IPE", "fixedIncomeBenchmark": "BCB SGS CDI series 12", "brapi": "optional"},
+  "performance": {"trackingStartDate": "2026-09-15", "twrStatus": "TRACKING_STARTED", "xirrStatus": "TRACKING_STARTED_NO_EXTERNAL_FLOWS", "realExternalFlowCount": 0},
+  "fixedIncome": {"positions": 5, "manualOnly": 1, "autoCdiShadow": 2, "unsupported": 2, "freshness": "STALE_OR_UNKNOWN"},
+  "brokerImport": {"inter": "working", "xp": "fixture-required", "btg": "fixture-required", "previewFirst": true},
+  "qa": {"status": "authenticated-stabilized", "cloudWrites": 0, "canonicalProfile": "qa-browser-authenticated"},
+  "tests": {"root": "360/360", "modern": "750/750", "finance": "80/80", "persistence": "32/32"},
+  "openWork": ["fixed-income freshness/valuation", "XP fixture", "BTG fixture", "official FII/FIAGRO coverage", "TWR/XIRR history"],
+  "blockers": ["manual RF timestamps incomplete", "XP/BTG layouts unknown"],
+  "nextAction": "Improve fixed-income as-of/valuation and dashboard safely.",
+  "lastUpdatedAt": "2026-09-15"
+}

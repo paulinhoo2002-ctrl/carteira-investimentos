@@ -2,7 +2,7 @@
 
 ## Estado canônico V79 — 2026-09-15
 
-- `CURRENT_HEAD` funcional: `4e1ac338c8507ffb656bf0c274559a4e4cf4d990`
+- `CURRENT_HEAD` funcional: `25c5854177a9db88dba76a87d2d66d49dc59feb0`
 - `CURRENT_BRANCH`: `feature/phase-4-automation-foundation`
 - `LATEST_COMPLETED_MISSION`: V78
 - `FINANCIAL_BASELINE`: `431/330/101`, 99 referências, `2709626` cents,
