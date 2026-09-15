@@ -1,0 +1,7 @@
+{
+  "sourceFamily":"ISSUER_RI",
+  "asset":"ABCD3",
+  "documentType":"Comunicado JCP",
+  "text":"JCP. Parcela 1/2 valor R$ 0,10 pagamento 20/09/2026. Parcela 2/2 valor R$ 0,10 pagamento 20/10/2026.",
+  "expected":{"eventType":"JCP","installments":2,"valuePerUnitGross":0.1}
+}

@@ -1,0 +1,9 @@
+/* Deterministic public issuer/fund identity mapping. No fuzzy match is authoritative. */
+(function(root,factory){const api=factory();if(typeof module!=='undefined'&&module.exports)module.exports=api;if(root)root.IssuerMapping=api;})(typeof window!=='undefined'?window:globalThis,function(){
+  const clean=v=>String(v??'').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,240);
+  const ticker=v=>clean(v).toUpperCase().replace(/[^A-Z0-9]/g,'');
+  function normalize(record={}){return {ticker:ticker(record.ticker||record.symbol),assetType:clean(record.assetType||record.type),issuerName:clean(record.issuerName),issuerLegalName:clean(record.issuerLegalName),cnpj:clean(record.cnpj),cvmCode:clean(record.cvmCode),fundCnpj:clean(record.fundCnpj),isin:clean(record.isin),source:clean(record.source||'official'),confidence:clean(record.confidence||'UNVERIFIED'),lastValidatedAt:clean(record.lastValidatedAt)}}
+  function create(records=[]){const byTicker=new Map();for(const record of Array.isArray(records)?records:[]){const n=normalize(record);if(n.ticker)byTicker.set(n.ticker,n);}return {resolve:(value)=>byTicker.get(ticker(value))||null,all:()=>[...byTicker.values()].map(x=>({...x})),coverage:(assets=[])=>(()=>{const list=Array.isArray(assets)?assets:[],mapped=list.filter(a=>byTicker.has(ticker(a.ticker||a.symbol))).length;return {total:list.length,mapped,percent:list.length?Math.round(mapped*10000/list.length)/100:0};})(),reviewQueue:(assets=[])=>(Array.isArray(assets)?assets:[]).filter(a=>!byTicker.has(ticker(a.ticker||a.symbol))).map(a=>({ticker:ticker(a.ticker||a.symbol),reason:'NO_DETERMINISTIC_PUBLIC_IDENTITY'}))};}
+  function serialize(records){return JSON.stringify((Array.isArray(records)?records:[]).map(normalize).sort((a,b)=>a.ticker.localeCompare(b.ticker)));}
+  return {normalize,ticker,create,serialize};
+});

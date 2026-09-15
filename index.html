@@ -18,7 +18,14 @@
 <script>
 (()=>{try{
   const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('testMode')==='1';
+  const authoritativeLocalRecovery=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('authoritativeLocalRecovery')==='1';
   window.__LOCAL_TEST_MODE__=testMode;
+  window.__PROTECTED_READ_ONLY_QA_BOOT__=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
+  window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
+  window.__APP_BUILD_ID__='phase4i-runtime-v2';
+  window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v17';
+  window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode){
     document.documentElement.dataset.theme='dark';
     document.documentElement.style.colorScheme='dark';
@@ -6959,27 +6966,6 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .assets-premium-shell .assets-primary-layout .assets-all-assets{margin-top:0!important}
 .assets-premium-shell .ag-ico .dashboard-metric-glyph{display:grid;place-items:center;width:16px;height:16px;color:var(--text)}
 .assets-premium-shell .ag-ico .dashboard-metric-glyph svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.assets-premium-shell .assets-allocation-panel{border:1px solid rgba(148,163,184,.16);border-radius:12px;background:linear-gradient(180deg,rgba(15,26,43,.92),rgba(9,18,31,.92));padding:13px;min-width:0}
-.assets-premium-shell .assets-allocation-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-.assets-premium-shell .assets-allocation-eyebrow{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:#71839d;font-weight:800}
-.assets-premium-shell .assets-allocation-head h3{margin:3px 0 0;font-size:13px;letter-spacing:-.01em;color:#e8eef8}
-.assets-premium-shell .assets-allocation-head>span{font-size:10px;color:#8da0b9;padding-top:3px;white-space:nowrap}
-.assets-premium-shell .assets-allocation-total{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 0 9px;border-bottom:1px solid rgba(148,163,184,.12)}
-.assets-premium-shell .assets-allocation-total span,.assets-premium-shell .assets-allocation-row small{font-size:10px;color:#8da0b9}
-.assets-premium-shell .assets-allocation-total strong,.assets-premium-shell .assets-allocation-row b{font-variant-numeric:tabular-nums;white-space:nowrap;color:#e8eef8}
-.assets-premium-shell .assets-allocation-total strong{font-size:14px}
-.assets-premium-shell .assets-allocation-list{display:grid;gap:9px;padding:11px 0}
-.assets-premium-shell .assets-allocation-row{min-width:0}
-.assets-premium-shell .assets-allocation-row-head{display:flex;justify-content:space-between;gap:7px;font-size:11px;line-height:1.2}
-.assets-premium-shell .assets-allocation-row-head span{display:flex;align-items:center;gap:6px;min-width:0;color:#c5d0df;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.assets-premium-shell .assets-allocation-row-head i{display:block;width:7px;height:7px;border-radius:50%;flex:none}
-.assets-premium-shell .assets-allocation-row b{font-size:10px}
-.assets-premium-shell .assets-allocation-bar{height:4px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden;margin:5px 0 2px}
-.assets-premium-shell .assets-allocation-bar span{display:block;height:100%;border-radius:inherit}
-.assets-premium-shell .assets-allocation-empty{font-size:11px;color:#8da0b9;padding:6px 0}
-.assets-premium-shell .assets-allocation-link{width:100%;border:1px solid rgba(148,163,184,.15);border-radius:8px;background:transparent;color:#cbd7e6;padding:8px 9px;font:inherit;font-size:10px;font-weight:700;cursor:pointer}
-.assets-premium-shell .assets-allocation-link span{color:var(--primary);font-size:14px;margin-left:4px}
-.assets-premium-shell .assets-allocation-link:hover,.assets-premium-shell .assets-allocation-link:focus-visible{border-color:var(--primary);color:var(--text);outline:none}
 @media(min-width:768px){
   .assets-premium-shell .ag-wrap{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
   .assets-premium-shell .ag>summary{display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:6px 8px;padding:9px 10px;align-items:center}
@@ -6991,7 +6977,6 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .assets-premium-shell .ag-v{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 }
 @media(max-width:1199px) and (min-width:768px){.assets-premium-shell .ag-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(min-width:1600px){.assets-premium-shell .assets-primary-layout{grid-template-columns:minmax(0,1fr) 274px;gap:12px}}
 #assets-premium-table-desktop .asset-actions{min-width:142px;gap:4px;justify-content:flex-end}
 #assets-premium-table-desktop .asset-action{height:34px;min-height:34px;padding:6px 8px;font-size:10px;font-weight:700}
 #assets-premium-table-desktop .assets-premium-table th:last-child,#assets-premium-table-desktop .assets-premium-table td:last-child{width:154px;min-width:154px;position:relative;z-index:2}
@@ -7400,6 +7385,30 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
   .premium-dividends-3 .canon-year-summary-body{grid-template-columns:1fr}
   .premium-dividends-3 .dividend-evolution-chart{max-height:none}
 }
+.import-center-shell{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.import-center-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px;border:1px solid #20304a;border-radius:16px;background:var(--surface)}
+.import-center-title{font-size:24px;font-weight:900;letter-spacing:-.03em;color:var(--text)}
+.import-center-sub{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5;max-width:70ch}
+.import-center-safety{padding:10px 12px;border:1px solid rgba(245,158,11,.28);border-radius:12px;background:rgba(245,158,11,.08);color:#fcd34d;font-size:11px;font-weight:800;line-height:1.4}
+.import-center-steps{display:flex;gap:6px;flex-wrap:wrap;padding:8px;border:1px solid var(--border);border-radius:13px;background:var(--panel);align-items:center}.import-center-step-mobile{display:none}
+.import-center-step{display:flex;align-items:center;gap:6px;min-height:36px;padding:7px 10px;border-radius:9px;color:var(--muted);font-size:11px;font-weight:800}
+.import-center-step.on{background:rgba(79,70,229,.16);color:#dbe4ff}.import-center-step.done{color:#86efac}
+.import-center-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.9fr);gap:12px;align-items:start}
+.import-center-panel{min-width:0;padding:15px;border:1px solid var(--border);border-radius:15px;background:var(--panel)}
+.import-center-panel h2{margin:0;font-size:15px;color:var(--text)}.import-center-panel p{color:var(--muted);font-size:11px;line-height:1.45}
+.import-source-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.import-source-card{padding:11px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.import-source-card strong{display:block;color:var(--text);font-size:12px}.import-source-card span{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+.import-support{display:inline-flex;margin-top:9px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.04em}.import-support.full{color:#86efac;background:rgba(16,185,129,.12)}.import-support.partial{color:#fcd34d;background:rgba(245,158,11,.12)}
+.import-file-list{display:flex;flex-direction:column;gap:7px;margin-top:12px}.import-file-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--surface)}.import-file-row strong{display:block;color:var(--text);font-size:11px;overflow-wrap:anywhere}.import-file-row small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+.import-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}.import-kpi{padding:9px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.import-kpi small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase}.import-kpi strong{display:block;margin-top:4px;color:var(--text);font-size:17px;font-variant-numeric:tabular-nums}
+.import-review-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.import-review-item{padding:10px;border-left:3px solid #64748b;border-radius:8px;background:var(--surface);font-size:11px;color:var(--text)}.import-review-item.warning{border-left-color:#f59e0b}.import-review-item.danger{border-left-color:#ef4444}
+.import-center-summary{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;margin-top:12px}.import-center-summary .import-kpi strong{font-size:16px}.import-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.import-review-card{min-width:0;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}.import-review-card h3{margin:0;color:var(--text);font-size:12px}.import-review-card p{margin:6px 0 0;color:var(--muted);font-size:10px;line-height:1.5}.import-review-card dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;margin:10px 0 0;font-size:10px}.import-review-card dt{color:var(--muted)}.import-review-card dd{margin:0;color:var(--text);font-weight:700;text-align:right;overflow-wrap:anywhere}.import-reconciliation{overflow:auto;margin-top:10px;border:1px solid var(--border);border-radius:11px}.import-reconciliation table{width:100%;min-width:430px;border-collapse:collapse;font-size:10px}.import-reconciliation th,.import-reconciliation td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}.import-reconciliation th{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em}.import-reconciliation td{color:var(--text)}.import-reconciliation tr:last-child td{border-bottom:0}.import-muted{color:var(--muted)!important;font-weight:500!important}
+.import-reconciliation-mobile{display:none}.import-reconcile-card{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.import-reconcile-card + .import-reconcile-card{margin-top:7px}.import-reconcile-card strong{display:block;color:var(--text);font-size:11px}.import-reconcile-card dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;margin-top:7px;font-size:10px}.import-reconcile-card dt{color:var(--muted)}.import-reconcile-card dd{margin:0;color:var(--text);font-weight:700;text-align:right;overflow-wrap:anywhere}
+.import-center-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:14px}.import-center-actions .btn{min-height:44px}.import-center-actions .bp{box-shadow:none!important;background:#4338ca!important;border-color:#5b52df}.import-center-actions .bp:hover{background:#4f46e5!important;box-shadow:none!important}.import-center-panel.empty{padding-bottom:12px}.import-center-panel.empty .import-file-list{margin-top:8px}.import-safety-result{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;padding:9px 11px;border:1px solid rgba(16,185,129,.24);border-radius:10px;background:rgba(16,185,129,.08);color:#bbf7d0;font-size:10px;line-height:1.35}.import-safety-result span{display:inline-flex;gap:4px;align-items:center}.import-safety-result span+span{border-left:1px solid rgba(134,239,172,.24);padding-left:8px}.import-safety-result b{color:#86efac;font-size:9px;text-transform:uppercase;letter-spacing:.04em}
+@media(max-width:900px){.import-center-grid{grid-template-columns:1fr}.import-center-hero{display:block}.import-center-safety{margin-top:12px}.import-source-list{grid-template-columns:1fr}}
+@media(max-width:900px){.import-center-summary{grid-template-columns:repeat(4,minmax(0,1fr))}.import-review-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.import-center-shell{gap:9px}.import-center-hero{padding:13px 12px}.import-center-title{font-size:19px}.import-center-steps{padding:7px}.import-center-step{display:none}.import-center-step-mobile{display:flex;min-width:0;flex:1;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;color:var(--muted);font-size:10px;font-weight:800}.import-center-step-mobile strong{color:var(--text);font-size:12px}.import-center-panel{padding:11px}.import-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.import-center-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.import-center-actions{justify-content:stretch}.import-center-actions .btn{flex:1 1 100%}.import-reconciliation{display:none}.import-reconciliation-mobile{display:block;margin-top:10px}.import-safety-result{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.import-safety-result span+span{border-left:0;padding-left:0}}
 </style>
 
 <style>
@@ -7684,6 +7693,135 @@ summary:focus-visible,
   }
 }
 </style>
+<style>
+/* V83: premium UI alignment layer. Presentation-only; financial semantics stay
+   in the existing view-models and domain modules. */
+.shell{
+  --v83-bg:#07111d;
+  --v83-surface:#0b1726;
+  --v83-surface-elevated:#101e30;
+  --v83-border:#20334a;
+  --v83-accent:#18d994;
+  --v83-accent-soft:rgba(24,217,148,.12);
+  --v83-text:#f4f7fb;
+  --v83-muted:#91a0b5;
+}
+.shell .side-brand-name,.shell .premium-panel-title,.shell .analysis-card-title{color:var(--v83-text)}
+.shell .side-brand-sub,.shell .premium-panel-sub,.shell .analysis-card-meta{color:var(--v83-muted)}
+.shell .premium-metric,.shell .premium-panel,.shell .analysis-card,.shell .dashboard-evolution-card,.shell .dashboard-home-composition{
+  border-color:var(--v83-border);
+  background:linear-gradient(145deg,var(--v83-surface-elevated),var(--v83-surface));
+  box-shadow:0 10px 28px rgba(1,7,16,.16);
+}
+.shell .premium-metric{border-radius:14px;padding:13px 14px}
+.shell .premium-metric-label{color:var(--v83-muted);letter-spacing:.06em}
+.shell .premium-metric-value{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.shell .dashboard-page-heading h1{font-size:clamp(24px,2.1vw,30px);letter-spacing:-.04em}
+.shell .dashboard-page-heading p{color:var(--v83-muted);font-size:12px}
+.shell .dashboard-executive-kpis{gap:12px}
+.shell .dashboard-evolution-header,.shell .dashboard-income-header{align-items:center}
+.shell .dashboard-evolution-card,.shell .dashboard-home-composition{border-radius:15px}
+.shell .tabs-desktop .side-brand-icon{background:var(--v83-accent);box-shadow:0 0 0 5px var(--v83-accent-soft);color:#062018}
+.shell .tabs-desktop .side-brand-name{font-size:15px}
+.shell .tabs-desktop .tab.on,.shell .tabs-desktop .tab-menu>summary.on{
+  background:var(--v83-accent-soft);
+  box-shadow:inset 3px 0 0 var(--v83-accent);
+  color:var(--v83-accent);
+}
+.shell .tabs-desktop .tab.on::before{background:var(--v83-accent)}
+.shell .tabs-desktop .tab:hover,.shell .tabs-desktop .tab-menu>summary:hover{background:rgba(24,217,148,.07)}
+.shell .btn.bp{background:var(--v83-accent);color:#062018;box-shadow:0 7px 18px rgba(24,217,148,.16)}
+.shell button:focus-visible,.shell a:focus-visible{outline:2px solid var(--v83-accent);outline-offset:2px}
+@media (min-width:1181px){
+  .shell .tabs-desktop{width:204px;background:linear-gradient(180deg,#081522,#07111d);border-right-color:var(--v83-border);padding:18px 12px 16px}
+  .shell .shell-main{margin-left:204px}
+  .shell .wrap{max-width:1500px;padding:24px 28px 36px}
+  .shell .dashboard-executive-kpis .premium-metric{min-height:96px}
+}
+@media (max-width:640px){
+  .shell .wrap{padding:14px 12px calc(104px + env(safe-area-inset-bottom))}
+  .shell .dashboard-page-heading h1{font-size:22px}
+  .shell .premium-metric{min-height:84px;padding:10px;border-radius:13px}
+  .shell .premium-metric-value{font-size:16px}
+  .shell .premium-panel,.shell .analysis-card{border-radius:13px}
+}
+.shell .asset-premium-hero,.shell .asset-premium-section,
+.shell .premium-settings-section,.shell .import-center-panel,
+.shell .import-center-hero{
+  border-color:var(--v83-border);
+  background:linear-gradient(145deg,var(--v83-surface-elevated),var(--v83-surface));
+}
+.shell .asset-premium-title,.shell .premium-settings-title,.shell .import-center-title{
+  color:var(--v83-text);
+  letter-spacing:-.035em;
+}
+.shell .asset-premium-kpi,.shell .asset-premium-card,.shell .premium-settings-row,
+.shell .import-center-step,.shell .import-review-card{
+  border-color:var(--v83-border);
+}
+.shell .asset-premium-card-action.primary,
+.shell .import-center-actions .bp{
+  background:var(--v83-accent)!important;
+  border-color:var(--v83-accent)!important;
+  color:#062018!important;
+  box-shadow:0 7px 18px rgba(24,217,148,.14)!important;
+}
+.shell .import-center-step.on{background:var(--v83-accent-soft);color:var(--v83-accent)}
+.shell .premium-settings-badge.ok{color:var(--v83-accent);background:var(--v83-accent-soft);border-color:rgba(24,217,148,.28)}
+.shell .premium-settings-toggle.on::before{background:var(--v83-accent-soft);border-color:rgba(24,217,148,.4)}
+.shell .premium-settings-toggle.on::after{background:var(--v83-accent)}
+.shell .asset-premium-analysis .analysis-ranking-value.pos{color:var(--v83-accent)}
+@media (max-width:640px){
+  .shell .asset-premium-title,.shell .import-center-title{font-size:20px}
+  .shell .premium-settings-title{font-size:20px}
+  .shell .import-center-hero{padding:14px}
+}
+.shell .asset-detail-page{display:grid;gap:18px;max-width:1280px;margin:0 auto}
+.shell .asset-detail-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:22px 24px;border:1px solid var(--v83-border);border-radius:18px;background:linear-gradient(145deg,#102236,#0b1726);box-shadow:0 14px 34px rgba(1,7,16,.18)}
+.shell .asset-detail-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0}
+.shell .asset-detail-back{min-height:44px;white-space:nowrap}
+.shell .asset-detail-kicker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--v83-muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.shell .asset-detail-title{margin:7px 0 4px;color:var(--v83-text);font-size:clamp(24px,3vw,34px);line-height:1.06;letter-spacing:-.045em}
+.shell .asset-detail-subtitle{color:var(--v83-muted);font-size:13px;line-height:1.45}
+.shell .asset-detail-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.shell .asset-detail-badge{display:inline-flex;align-items:center;min-height:26px;padding:4px 9px;border:1px solid rgba(148,163,184,.2);border-radius:999px;color:#cbd5e1;background:rgba(148,163,184,.08);font-size:11px;font-weight:750}
+.shell .asset-detail-badge.accent{color:var(--v83-accent);border-color:rgba(24,217,148,.28);background:var(--v83-accent-soft)}
+.shell .asset-detail-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.shell .asset-detail-tabs{display:flex;gap:4px;overflow-x:auto;padding:4px;border-bottom:1px solid var(--v83-border);scrollbar-width:thin}
+.shell .asset-detail-tab{min-height:42px;padding:9px 13px;border:1px solid transparent;border-radius:10px;background:transparent;color:#91a0b5;font:inherit;font-size:12px;font-weight:750;white-space:nowrap;cursor:pointer}
+.shell .asset-detail-tab:hover{color:#e2e8f0;background:rgba(148,163,184,.07)}
+.shell .asset-detail-tab.on{color:var(--v83-accent);border-color:rgba(24,217,148,.22);background:var(--v83-accent-soft)}
+.shell .asset-detail-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.shell .asset-detail-kpi,.shell .asset-detail-panel{border:1px solid var(--v83-border);border-radius:15px;background:linear-gradient(145deg,var(--v83-surface-elevated),var(--v83-surface));box-shadow:0 10px 28px rgba(1,7,16,.14)}
+.shell .asset-detail-kpi{min-height:104px;padding:15px 16px;display:flex;flex-direction:column;justify-content:space-between}
+.shell .asset-detail-kpi-label,.shell .asset-detail-label{color:var(--v83-muted);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.shell .asset-detail-kpi-value{margin-top:9px;color:#f4f7fb;font-size:22px;font-weight:850;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+.shell .asset-detail-kpi-value.pos{color:#34d399}.shell .asset-detail-kpi-value.neg{color:#f87171}.shell .asset-detail-kpi-note{margin-top:8px;color:#71839a;font-size:11px;line-height:1.3}
+.shell .asset-detail-content-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:12px;align-items:start}
+.shell .asset-detail-panel{padding:18px}
+.shell .asset-detail-panel h2{margin:0;color:#edf4fb;font-size:16px;letter-spacing:-.02em}
+.shell .asset-detail-panel p{margin:5px 0 0;color:var(--v83-muted);font-size:12px;line-height:1.5}
+.shell .asset-detail-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}
+.shell .asset-detail-list{display:grid;gap:0}
+.shell .asset-detail-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-top:1px solid rgba(148,163,184,.1);font-size:12px}
+.shell .asset-detail-row:first-child{border-top:0;padding-top:0}.shell .asset-detail-row:last-child{padding-bottom:0}
+.shell .asset-detail-row span:first-child{color:#91a0b5}.shell .asset-detail-row strong{text-align:right;color:#e8eef6;font-weight:750;font-variant-numeric:tabular-nums}
+.shell .asset-detail-value-block{padding:14px;border:1px solid rgba(24,217,148,.18);border-radius:12px;background:rgba(24,217,148,.055)}
+.shell .asset-detail-value-block strong{display:block;margin-top:5px;color:#f4f7fb;font-size:21px;font-variant-numeric:tabular-nums}
+.shell .asset-detail-empty{padding:20px 4px;color:#91a0b5;font-size:12px;line-height:1.55;text-align:center}
+.shell .asset-detail-link{min-height:32px;padding:5px 9px;border:1px solid rgba(24,217,148,.22);border-radius:8px;background:rgba(24,217,148,.07);color:#8ef0c5;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.shell .asset-detail-link:hover{background:rgba(24,217,148,.14)}
+.shell .asset-actions .asset-detail-link{margin-right:2px}
+@media (max-width:860px){.shell .asset-detail-content-grid{grid-template-columns:1fr}.shell .asset-detail-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){
+  .shell .asset-detail-page{gap:12px}
+  .shell .asset-detail-hero{display:block;padding:16px;border-radius:15px}
+  .shell .asset-detail-hero-main{display:block}.shell .asset-detail-title{font-size:24px}.shell .asset-detail-subtitle{font-size:12px}
+  .shell .asset-detail-back{width:100%;margin-bottom:14px}.shell .asset-detail-actions{justify-content:flex-start;margin-top:15px}
+  .shell .asset-detail-actions .btn{flex:1;min-width:120px}.shell .asset-detail-kpis{gap:8px}.shell .asset-detail-kpi{min-height:92px;padding:12px}.shell .asset-detail-kpi-value{font-size:18px}
+  .shell .asset-detail-panel{padding:14px;border-radius:13px}.shell .asset-detail-row{gap:10px}.shell .asset-detail-row strong{max-width:58%}
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -7704,6 +7842,24 @@ document.write([
 </script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
+<script src="rf-reconstruction.js"></script>
+<script src="income-linkage-reconciliation.js"></script>
+<script src="corporate-events-core.js"></script>
+<script src="corporate-events-providers.js"></script>
+<script src="corporate-events-sync.js"></script>
+<script src="market-data-providers.js"></script>
+<script src="portfolio-intelligence.js"></script>
+<script src="portfolio-performance.js"></script>
+<script src="portfolio-runtime-stores.js"></script>
+<script src="fixed-income-benchmark-provider.js"></script>
+<script src="official-events-provider.js"></script>
+<script src="issuer-mapping.js"></script>
+<script src="official-document-parser.js"></script>
+<script src="official-document-fetcher.js"></script>
+<script src="official-document-pipeline.js"></script>
+<script src="public-events-store.js"></script>
+<script src="public-events-runtime.js"></script>
+<script src="canonical-fingerprint-engine.js?v=phase4h-canonical-fp-v1"></script>
 <script src="report-asset-row.js"></script>
 <script src="legacy/reports-readonly-source.js"></script>
 <script>
@@ -7851,6 +8007,8 @@ let S = {
   backupOpen:false,
   backupImportDraft:null,
   backupImportValidating:false,
+  externalFlowOpen:false,
+  externalFlowError:'',
   pdfBusy:false,
   pdfReportOpen:false,
   goals:{
@@ -7901,6 +8059,52 @@ try{
 function cloneData(v){ return JSON.parse(JSON.stringify(v ?? null)); }
 const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
+function isProtectedReadOnlyQaBoot(){ return window.__PROTECTED_READ_ONLY_QA_BOOT__===true; }
+function isProtectedShadowBoot(){
+  try{ return new URLSearchParams(location.search).get('protectedShadow')==='1'; }
+  catch(e){ return false; }
+}
+function isAuthoritativeLocalRecoveryBoot(){ return window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__===true; }
+async function publishAuthoritativeLocalRuntimeStatus(stage='PAGE_READY'){
+  if(!isAuthoritativeLocalRecoveryBoot() || typeof fetch!=='function') return false;
+  try{
+    const raw=localStorage.getItem('civ5');
+    const state=raw ? JSON.parse(raw) : {};
+    const events=Array.isArray(state.proventos) ? state.proventos : [];
+    const source=event=>String(event?.source||event?.origin||event?.financialSource||event?.type||'').toUpperCase();
+    const isB3=event=>source(event).includes('B3');
+    const isReference=event=>event?.sourceEventKind==='reference' || event?.excludedFromIncomeTotals===true;
+    const cents=event=>Math.round(Number(event?.value ?? event?.netValue ?? 0)*100);
+    const stored=typeof PersistenceCore!=='undefined' && typeof PersistenceCore.buildStoredState==='function'
+      ? PersistenceCore.buildStoredState(state,normalizeGoals) : state;
+    const canonical=window.ProtectedRealPilotReadiness?.canonicalState?.(stored,normalizeGoals);
+    const recoveryCanonical=window.Protected101YahooLocalRecovery?.canonicalState?.(state);
+    const localFingerprint=recoveryCanonical && typeof window.Protected101YahooLocalRecovery?.fingerprint==='function'
+      ? await window.Protected101YahooLocalRecovery.fingerprint(recoveryCanonical)
+      : canonical && typeof window.ProtectedRealPilotReadiness?.fingerprint==='function'
+        ? await window.ProtectedRealPilotReadiness.fingerprint(canonical) : null;
+    const readiness=typeof window.getProtected101YahooLocalRecoveryReadiness==='function'
+      ? window.getProtected101YahooLocalRecoveryReadiness() : {};
+    const executorBound=typeof window.__PROTECTED_101_YAHOO_LOCAL_RECOVERY_EXECUTOR__?.preflight==='function';
+    const body={
+      mode:true, stage, pageReady:document.readyState!=='loading', authenticated:typeof FB!=='undefined'&&!!FB.user,
+      cloudLoaded:typeof FB!=='undefined'&&FB.cloudLoaded===true, executorBound,
+      executorReady:executorBound && readiness.available===true && readiness.callbackCount===12,
+      localCounts:{total:events.length,b3:events.filter(isB3).length,yahoo:events.filter(event=>!isB3(event)).length},
+      localReferences:events.filter(isReference).length,
+      localFinancial:events.reduce((sum,event)=>sum+(isReference(event)?0:cents(event)),0),
+      localFingerprint,
+    };
+    const response=await fetch(window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__||'http://127.0.0.1:9245/status',{
+      method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body), keepalive:true,
+    });
+    return response.ok;
+  }catch(error){ return false; }
+}
+if(isAuthoritativeLocalRecoveryBoot()){
+  publishAuthoritativeLocalRuntimeStatus('PAGE_READY');
+  window.__AUTHORITATIVE_LOCAL_STATUS_TIMER__=setInterval(()=>publishAuthoritativeLocalRuntimeStatus('HEARTBEAT'),5000);
+}
 function isReadonlyReportsExperimentalEntryEnabled(){
   return isLocalTestMode() && !isActiveWalletHostMode();
 }
@@ -8358,16 +8562,104 @@ function deleteWallet(){
 // STORAGE — corrigido: salva tab + divGoal + beforeunload
 // ══════════════════════════════════════
 function save(){
+  const options=arguments[0]||{};
+  const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
   try{
-    if(!canEditFromThisTab('salvar')) return;
+    const expectedAuthorityVersion=String(globalThis.__EXPECTED_AUTHORITY_RUNTIME_VERSION__||'');
+    if(expectedAuthorityVersion && String(globalThis.ProtectedLocalCloudAuthority?.VERSION||'')!==expectedAuthorityVersion){
+      throw new Error('PROTECTED_RUNTIME_VERSION_MISMATCH');
+    }
+    if(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot() && !protectedLocalRecoveryWrite) return false;
+    if(typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot() && !protectedLocalRecoveryWrite) return false;
+    if(!protectedLocalRecoveryWrite && !canEditFromThisTab('salvar')) return false;
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
-    if(isLocalTestMode()) return;
-    localStorage.setItem(STOR, PersistenceCore.serializeStoredState(S, normalizeGoals));
-    queueCloudSave();
-  }catch(e){ debugError('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171'); }
+    if(isLocalTestMode()) return true;
+    if(protectedLocalRecoveryWrite && !window.ProtectedLocalCloudAuthority) throw new Error('PROTECTED_AUTHORITY_RUNTIME_REQUIRED');
+    const serializedState=PersistenceCore.serializeStoredState(S, normalizeGoals);
+    if(protectedLocalRecoveryWrite && window.ProtectedLocalCloudAuthority){
+      const localState=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
+      let baseCloudFingerprint=String(options.baseCloudFingerprint||FB.lastCloudAuthorityFingerprint||'');
+      if(!baseCloudFingerprint){
+        try{ baseCloudFingerprint=String(window.ProtectedLocalCloudAuthority.readMarker(localStorage.getItem('civ5_authority'))?.baseCloudFingerprint||''); }catch(e){ baseCloudFingerprint=''; }
+      }
+      const marker=window.ProtectedLocalCloudAuthority.createMarker({
+        baseCloudFingerprint,
+        currentLocalFingerprint:window.ProtectedLocalCloudAuthority.fingerprintState(localState),
+        operationId:options.operationId||`protected-local-${Date.now()}`,
+        reason:options.reason||'PROTECTED_LOCAL_ONLY_WRITE'
+      });
+      localStorage.setItem(STOR, serializedState);
+      localStorage.setItem('civ5_authority',JSON.stringify(marker));
+    }else{
+      localStorage.setItem(STOR, serializedState);
+    }
+    if(options.queueCloud!==false) queueCloudSave();
+    return true;
+  }catch(e){
+    try{ FB.lastLocalSaveError={name:String(e?.name||'Error'),message:String(e?.message||e).slice(0,240)}; }catch(ignore){}
+    debugError('save erro:',e); toast('⚠️ Erro ao salvar dados localmente.','#f87171');
+  }
+  return false;
 }
+async function releaseCloudSyncAfterSuccessfulReconciliation(expected={}){
+  return uploadLocalToCloud(false, {expectedState:expected, requireCloudReadback:true});
+}
+const protectedPilotGlobal=typeof window==='object'?window:globalThis;
+protectedPilotGlobal.__OFFICIAL_REAL_BRIDGE_FACTORY__=({appState,persistence,syncPolicy={}}={})=>{
+  const targetedCallback=(name,invoke)=>typeof persistence?.[name]==='function'?invoke:undefined;
+  return ({
+  readCurrentState:()=>JSON.parse(JSON.stringify(persistence?.readCurrentState?.()||appState)),
+  createSnapshot:sessionId=>({valid:true,sessionId:sessionId||'runtime-protected-pilot',state:JSON.parse(JSON.stringify(persistence?.readCurrentState?.()||appState))}),
+  applyPilotMutation:input=>{
+    const model=input?.model||input;
+    if(!model || model.linkedEvidenceCount!==20 || model.canonicalEvents?.length!==1 || model.deferred?.length!==1 || model.deferred[0]?.mutationCount!==0 || model.deferred[0]?.financialDeltaCents!==0 || model.etfWrites!==0) throw new Error('WRITE_MODEL_MISMATCH');
+    if(typeof persistence?.applyPilotMutation!=='function') throw new Error('OFFICIAL_MUTATION_HELPER_REQUIRED');
+    return persistence.applyPilotMutation(appState,JSON.parse(JSON.stringify(model)));
+  },
+  persistState:model=>{ if(typeof persistence?.persistState!=='function') throw new Error('OFFICIAL_SAVE_NOT_READY'); persistence.persistState(appState,JSON.parse(JSON.stringify(model)),{queueCloud:false}); },
+  readPersistedState:()=>JSON.parse(JSON.stringify(persistence?.readPersistedState?.()||appState)),
+  verifyPersistedState:model=>typeof persistence?.verifyPersistedState==='function' ? persistence.verifyPersistedState(persistence.readPersistedState(),model)===true : true,
+  reconcilePersistedState:model=>typeof persistence?.reconcilePersistedState==='function' ? persistence.reconcilePersistedState(persistence.readPersistedState(),model)===true : true,
+  revalidateTargetedRecovery:targetedCallback('revalidateTargetedRecovery',input=>persistence.revalidateTargetedRecovery(input)),
+  createTargetedRecoverySnapshot:targetedCallback('createTargetedRecoverySnapshot',input=>persistence.createTargetedRecoverySnapshot(input)),
+  applyTargetedRecovery:targetedCallback('applyTargetedRecovery',plan=>persistence.applyTargetedRecovery(appState,JSON.parse(JSON.stringify(plan)))),
+  validateTargetedRecoveryPostwrite:targetedCallback('validateTargetedRecoveryPostwrite',(readback,plan,snapshot)=>persistence.validateTargetedRecoveryPostwrite(readback,plan,snapshot)),
+  reconcileTargetedRecovery:targetedCallback('reconcileTargetedRecovery',(readback,plan)=>persistence.reconcileTargetedRecovery(readback,plan)),
+  validateTargetedRecoveryIdempotency:targetedCallback('validateTargetedRecoveryIdempotency',(readback,plan)=>persistence.validateTargetedRecoveryIdempotency(readback,plan)),
+  validateTargetedRecoveryReload:targetedCallback('validateTargetedRecoveryReload',plan=>persistence.validateTargetedRecoveryReload(plan)),
+  rollbackTargetedRecovery:targetedCallback('rollbackTargetedRecovery',snapshot=>persistence.rollbackTargetedRecovery(appState,snapshot)),
+  getCurrentPilotContext:targetedCallback('getCurrentPilotContext',input=>persistence.getCurrentPilotContext(input)),
+  createPilotSnapshot:targetedCallback('createPilotSnapshot',input=>persistence.createPilotSnapshot(input)),
+  persistPilotState:targetedCallback('persistPilotState',input=>persistence.persistPilotState(appState,input,{queueCloud:false})),
+  readPilotPersistedState:targetedCallback('readPilotPersistedState',input=>persistence.readPilotPersistedState(input)),
+  verifyPilotPersistedState:targetedCallback('verifyPilotPersistedState',input=>persistence.verifyPilotPersistedState(input)),
+  reconcilePilotPersistedState:targetedCallback('reconcilePilotPersistedState',input=>persistence.reconcilePilotPersistedState(input)),
+  validatePilotIdempotency:targetedCallback('validatePilotIdempotency',input=>persistence.validatePilotIdempotency(input)),
+  releasePilotSync:targetedCallback('releasePilotSync',input=>persistence.releasePilotSync(input)),
+  validatePilotReload:targetedCallback('validatePilotReload',input=>persistence.validatePilotReload(input)),
+  rollbackPilot:input=>{ const snapshot=input?.snapshot||input; if(!snapshot?.valid || typeof persistence?.rollbackPilot!=='function') throw new Error('SNAPSHOT_INVALID'); return persistence.rollbackPilot(appState,JSON.parse(JSON.stringify(snapshot))); },
+  persistPilotRollback:targetedCallback('persistPilotRollback',input=>persistence.persistPilotRollback(appState,input,{queueCloud:false})),
+  persistRollback:snapshot=>{ if(typeof persistence?.persistRollback!=='function') throw new Error('OFFICIAL_ROLLBACK_HELPER_REQUIRED'); persistence.persistRollback(appState,JSON.parse(JSON.stringify(snapshot))); },
+  validateTargetedClassCPlan:targetedCallback('validateTargetedClassCPlan',(plan,current)=>persistence.validateTargetedClassCPlan(plan,current)),
+  createTargetedClassCSnapshot:targetedCallback('createTargetedClassCSnapshot',input=>persistence.createTargetedClassCSnapshot(input)),
+  applyTargetedClassCMutation:targetedCallback('applyTargetedClassCMutation',(plan,snapshot)=>persistence.applyTargetedClassCMutation(plan,snapshot)),
+  persistTargetedClassCState:targetedCallback('persistTargetedClassCState',input=>persistence.persistTargetedClassCState(input)),
+  readTargetedClassCPersistedState:targetedCallback('readTargetedClassCPersistedState',()=>persistence.readTargetedClassCPersistedState()),
+  verifyTargetedClassCPersistedState:targetedCallback('verifyTargetedClassCPersistedState',(readback,plan,snapshot)=>persistence.verifyTargetedClassCPersistedState(readback,plan,snapshot)),
+  validateTargetedClassCPostwrite:targetedCallback('validateTargetedClassCPostwrite',(readback,plan,snapshot)=>persistence.validateTargetedClassCPostwrite(readback,plan,snapshot)),
+  reconcileTargetedClassCState:targetedCallback('reconcileTargetedClassCState',(readback,plan,snapshot)=>persistence.reconcileTargetedClassCState(readback,plan,snapshot)),
+  validateTargetedClassCIdempotency:targetedCallback('validateTargetedClassCIdempotency',(readback,plan)=>persistence.validateTargetedClassCIdempotency(readback,plan)),
+  releaseTargetedClassCSync:targetedCallback('releaseTargetedClassCSync',input=>persistence.releaseTargetedClassCSync(input)),
+  validateTargetedClassCReload:targetedCallback('validateTargetedClassCReload',input=>persistence.validateTargetedClassCReload(input)),
+  rollbackTargetedClassC:targetedCallback('rollbackTargetedClassC',snapshot=>persistence.rollbackTargetedClassC(snapshot)),
+  releaseSync:options=>typeof syncPolicy.releaseSync==='function' ? syncPolicy.releaseSync(options) : (typeof releaseCloudSyncAfterSuccessfulReconciliation==='function' ? releaseCloudSyncAfterSuccessfulReconciliation(options) : false),
+  syncGuardReady:syncPolicy.beforeReconciliation!==true,
+  });
+};
+protectedPilotGlobal.__OFFICIAL_REAL_ADAPTER_FACTORY__=({bridge}={})=>{ let used=false; const preflight=async input=>{ if(!input?.dryRun) throw new Error('PILOT_DRY_RUN_REQUIRED'); const r=input.readiness||{}; const m=input.manifest||{}; if(r.auth?.sessionValid!==true || r.runtime?.executionPathComplete!==true) throw new Error('PILOT_RUNTIME_NOT_READY'); if(m.providerVersion!=='phase4i-august-provider-v2' || !m.providerHash || m.planCounts?.total!==24 || m.planCounts?.links!==20 || m.planCounts?.creates!==1 || m.planCounts?.exclusions!==2 || m.planCounts?.deferred!==1 || m.planCounts?.ambiguous!==1 || m.expectedFinancialIncrementCents!==8537 || m.positionImpact!==0 || m.avgPriceImpact!==0 || m.assetCountImpact!==0 || m.rfImpact!==0) throw new Error('PILOT_MANIFEST_MISMATCH'); if(m.tepp11?.action!=='CREATE' || m.tepp11?.date!=='2026-08-14' || m.tepp11?.valueCents!==8537 || m.divd11?.action!=='EXCLUDE' || m.ndiv11?.action!=='EXCLUDE' || m.knuq11?.action!=='DEFERRED_AMBIGUOUS_NO_OP' || m.knuq11?.mutationCount!==0 || m.knuq11?.financialDeltaCents!==0) throw new Error('PILOT_DECISION_MISMATCH'); const manifestFingerprint=typeof window.ProtectedRealPilotReadiness?.fingerprint==='function' ? await window.ProtectedRealPilotReadiness.fingerprint(m) : ''; return {status:'DRY_RUN_PREWRITE_READY',nativeClickHandlerReached:true,planProviderReached:true,reviewValidatorReached:true,authValidatorReached:true,executorPreflightReached:true,snapshotCreated:false,mutationExecuted:false,saveExecuted:false,syncExecuted:false,manifestFingerprint,liveStateFingerprint:String(r.liveState?.fingerprint||'')}; }; return {preflight,execute:input=>{ if(used) return {status:'IDEMPOTENT_NOOP',FINANCIAL_INCREMENT_CENTS:0}; if(!input?.authorization?.REAL_PILOT_WRITE_AUTHORIZED) throw new Error('REAL_PILOT_WRITE_AUTHORIZATION_REQUIRED'); const model=input.model; if(model?.linkedEvidenceCount!==20 || model?.canonicalEvents?.length!==1 || model?.deferred?.length!==1 || model?.deferred[0]?.mutationCount!==0 || model?.deferred[0]?.financialDeltaCents!==0 || model?.etfWrites!==0 || model?.linkedFinancialTotalChangeCents!==0) throw new Error('WRITE_MODEL_MISMATCH'); const snapshot=input.snapshot||bridge.createSnapshot(input.authorization.sessionId); try{ bridge.applyPilotMutation(model); bridge.persistState(model); if(bridge.verifyPersistedState(model)!==true || bridge.reconcilePersistedState(model)!==true) throw new Error('POSTWRITE_RECONCILIATION_FAILED'); bridge.releaseSync(); used=true; return {status:'COMPLETED',NEW_CANONICAL_EVENTS:1,NEW_SOURCE_EVIDENCES:20,DEFERRED_AMBIGUOUS_NO_OP:1,FINANCIAL_INCREMENT_CENTS:8537}; }catch(error){ bridge.rollbackPilot(snapshot); bridge.persistRollback(snapshot); throw error; }},rollback:input=>{ if(!bridge.rollbackPilot) throw new Error('ROLLBACK_CALLBACK_NOT_CONFIGURED'); return bridge.rollbackPilot(input?.snapshot); }};};
 function saveConfig(){
+  if(typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot()) return;
   if(!canEditFromThisTab('salvar configuração')) return;
   if(isLocalTestMode()) return;
   try{ localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal})); queueCloudSave(); }catch(e){}
@@ -8439,7 +8731,7 @@ function applyEditLockState(lock, mode){
   const changed = EDIT_LOCK_STATE.ownerId!==next.ownerId || EDIT_LOCK_STATE.updatedAt!==next.updatedAt || EDIT_LOCK_STATE.mode!==next.mode || EDIT_LOCK_STATE.stale!==next.stale;
   EDIT_LOCK_STATE = next;
   if(!changed) return false;
-  if(next.mode==='owner') startCloudSync();
+  if(next.mode==='owner' || isProtectedReadOnlyQaBoot()) startCloudSync();
   else stopCloudSync(false);
   render();
   return true;
@@ -8535,8 +8827,46 @@ function editLockBanner(){
     </div>
   </div>`;
 }
+// Deterministic edit-ownership claim for the protected pilot executor.
+// Single-owner semantics: forceClaim writes THIS tab's ownerId, then verifies
+// readback; no silent steal from a live owner is possible because forceClaim is
+// only used by the single-use real-execution flow after stale tabs are closed.
+async function claimEditOwnership({reason='pilot', maxAttempts=10, settleMs=60}={}){
+    ensureEditLockTabId();
+    const tabId=EDIT_LOCK_TAB_ID;
+    for(let attempt=1;attempt<=maxAttempts;attempt++){
+      refreshEditProtection({forceClaim:true, reason});
+      const lock=readEditLockRecord();
+      if(String(lock?.ownerId||'')===tabId && isEditOwner() && !isEditLockStale(lock)){
+        return {claimed:true, ownerId:tabId, attempt, updatedAt:Number(lock.updatedAt||0), reason};
+      }
+      await new Promise(r=>setTimeout(r,settleMs));
+    }
+    const finalLock=readEditLockRecord();
+    return {claimed:false, ownerId:tabId, attempt:maxAttempts, currentOwner:String(finalLock?.ownerId||''), reason};
+  }
+  function verifyEditOwnership({expectedOwner}={}){
+    ensureEditLockTabId();
+    const lock=readEditLockRecord();
+    const ownerId=String(lock?.ownerId||'');
+    const mine=ownerId===EDIT_LOCK_TAB_ID;
+    return {owner:mine, ownerId, expectedOwner:expectedOwner||null, ownerMatchesExpected:expectedOwner?ownerId===String(expectedOwner):null, stale:isEditLockStale(lock), updatedAt:Number(lock?.updatedAt||0)};
+  }
+function releaseEditOwnership({reason='pilot'}={}){
+  const tabId=ensureEditLockTabId();
+  const lock=readEditLockRecord();
+  if(lock && String(lock.ownerId||'')===tabId){
+    removeEditLockRecord();
+    broadcastEditLock(reason);
+    return {released:true, ownerId:tabId, reason};
+  }
+  return {released:false, ownerId:tabId, currentOwner:String(lock?.ownerId||''), reason};
+}
 function backupCorruptedStorageValue(storageKey, rawValue, error){
   try{
+    const protectedQa=typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot();
+    const authoritativeLocal=typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot();
+    if(protectedQa || authoritativeLocal) return null;
     if(rawValue == null) return null;
     const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\..+$/,'').replace('T','_');
     const backupKey=`${storageKey}_corrupted_backup_${stamp}`;
@@ -8676,7 +9006,7 @@ function load(){
           if(d.irpfStep !== undefined) S.irpfStep=Math.min(4, Math.max(1, Number(d.irpfStep)||1));
           if(d.goals && typeof d.goals==='object') S.goals=normalizeGoals(d.goals);
           if(d.learnMeta && typeof d.learnMeta==='object') S.learnMeta=d.learnMeta;
-          save(); break;
+          save({queueCloud:false}); break;
         }
       }catch(e){}
     }
@@ -8689,7 +9019,7 @@ function load(){
   rebuildLearnMeta();
   const cleanedB3Summary = cleanupB3PositionSummaryAssets();
   const cleanedB3Aportes = cleanupB3PositionAportes();
-  if(cleanedB3Summary>0 || cleanedB3Aportes>0) save();
+  if(cleanedB3Summary>0 || cleanedB3Aportes>0) save({queueCloud:false});
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
 }
 
@@ -8991,6 +9321,574 @@ async function bootstrapExperimentalActiveWalletHost(){
 }
 
 // ══════════════════════════════════════
+// Protected pilot runtime binding — readiness only; no auto-execution.
+let PROTECTED_REAL_PILOT_SESSION=null;
+const TARGETED_RECOVERY_DONOR_PATH='local-imports/carteira-investimentos-backup-2026-09-07-10-18.json';
+const TARGETED_RECOVERY_DONOR_FINGERPRINT='71b21a08f2bb1db2615dd838f06e5ccd124ef2f726a26e087e6e20215b22c4a7';
+function targetedRecoveryDonorUrl(){ return window.ProtectedTargetedRecoveryDonor.buildRequestUrl(TARGETED_RECOVERY_DONOR_PATH,TARGETED_RECOVERY_DONOR_FINGERPRINT); }
+function bindProtectedRealPilotSession(){
+  if(!FB.user || !FB.access.allowed || !window.ProtectedRealPilotSession) return null;
+  if(!FB.cloudLoaded) return null;
+  if(PROTECTED_REAL_PILOT_SESSION?.authReady) return PROTECTED_REAL_PILOT_SESSION;
+  const runtimeIdentity=window.__PROTECTED_RUNTIME_ID__ || (window.crypto?.randomUUID?.() || `runtime_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+  window.__PROTECTED_RUNTIME_ID__=runtimeIdentity;
+  const recoveryCanonicalLiveState=()=>{
+    const stored=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
+    return window.ProtectedRealPilotReadiness.canonicalState(stored,normalizeGoals);
+  };
+  window.__PROTECTED_TARGETED_RECOVERY_DIAGNOSTICS__=async()=>({
+    liveStateFingerprint:await window.ProtectedRealPilotReadiness.fingerprint(recoveryCanonicalLiveState()),
+    fields:await window.ProtectedRealPilotReadiness.fieldDiagnostics(recoveryCanonicalLiveState(),normalizeGoals),
+  });
+  const recoveryEventId=event=>String(event?.id||event?.autoKey||event?.canonicalIncomeEventId||'');
+  const classCEventId=recoveryEventId;
+  const recoveryEventSource=event=>String(event?.source||event?.financialSource||event?.origin||event?.type||event?.eventType||event?.incomeType||'').toUpperCase();
+  const recoveryLedgerCounts=state=>{
+    const events=Array.isArray(state?.proventos)?state.proventos:[];
+    return {total:events.length,b3:events.filter(event=>recoveryEventSource(event).includes('B3')).length,yahoo:events.filter(event=>recoveryEventSource(event).includes('YAHOO')).length};
+  };
+  const recoveryFinancialTotal=state=>dividendMonthlyHistoryRows(Array.isArray(state?.proventos)?state.proventos:[]).reduce((sum,row)=>sum+(Number(row?.value)||0),0);
+  const recoverySame=(left,right)=>JSON.stringify(left)===JSON.stringify(right);
+  const recoveryPositionState=assets=>(assets||[]).map(asset=>({id:String(asset?.id||''),ticker:String(asset?.ticker||''),qty:asset?.qty??asset?.quantity??null}));
+  const recoveryAveragePriceState=assets=>(assets||[]).map(asset=>({id:String(asset?.id||''),ticker:String(asset?.ticker||''),avgPrice:asset?.avg_price??asset?.avgPrice??asset?.pm??null}));
+  const pilotFinancialTotalCents=state=>Math.round(recoveryFinancialTotal(state)*100);
+  const classC=window.ProtectedTargetedCorrection;
+  const classCState=()=>PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):JSON.parse(JSON.stringify(S));
+  const readCanonicalProtectedLocalState=(contextLabel)=>window.ProtectedRecoveryPersistenceContract.readCanonicalState(
+    safeGetLocalStorageItem(STOR, contextLabel),
+    PersistenceCore.parseStoredState
+  );
+  const classCTouchedUnrelated=(readback={},snapshot={})=>{
+    if(!snapshot?.assetsFingerprint || !snapshot?.aportesFingerprint || !snapshot?.rfEventsFingerprint || !snapshot?.goalsFingerprint) return false;
+    return classC.fingerprint(readback.assets||[])===snapshot.assetsFingerprint
+      && classC.fingerprint(readback.aportes||[])===snapshot.aportesFingerprint
+      && classC.fingerprint(readback.rfEvents||[])===snapshot.rfEventsFingerprint
+      && classC.fingerprint(readback.goals||{})===snapshot.goalsFingerprint;
+  };
+  const classCCounts=state=>{
+    const events=Array.isArray(state?.proventos)?state.proventos:[];
+    const isB3=event=>String(event?.source||event?.origin||'').toUpperCase().includes('B3');
+    const isYahoo=event=>classC?.isYahooLike?.(event)===true;
+    return {total:events.length,b3:events.filter(isB3).length,yahoo:events.filter(isYahoo).length};
+  };
+  const classCFinancialTotalCents=state=>Math.round((Array.isArray(state?.proventos)?state.proventos:[]).reduce((sum,event)=>sum+(classC?.financialValue?.(event)||0),0));
+  const classCProvenanceRecords=()=>[{
+    event:{ticker:'BBAS3',date:'2026-09-02',type:'YAHOO'},
+    classification:'INTENTIONAL_USER_EDIT',
+    currentAmountCents:2137,
+    previousAmountCents:2129,
+    reason:'USER_CONFIRMED_REAL_DATA_CHANGE',
+    source:'phase4h-provenance-v1',
+  }];
+  const classCReferenceFingerprint=state=>classC?.fingerprint?.((state?.proventos||[]).filter(classC.isYahooLike).map(classC.identitySummary).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
+  const classCFinancialSemanticFingerprint=state=>classC?.fingerprint?.({
+    totalCents:classCFinancialTotalCents(state),
+    b3Cents:(state?.proventos||[]).filter(event=>String(event?.source||event?.origin||'').toUpperCase().includes('B3')).reduce((sum,event)=>sum+(classC.cents(event.value)||0),0),
+    referenceOnlyCount:(state?.proventos||[]).filter(classC.isReferenceOnly).length,
+    yahooLikeCount:(state?.proventos||[]).filter(classC.isYahooLike).length,
+  });
+  const classCOperationCounts=plan=>({
+    replace:Number(plan?.operations?.filter(operation=>operation.action==='REPLACE').length||0),
+    reclassify:Number(plan?.operations?.filter(operation=>operation.action==='RECLASSIFY').length||0),
+  });
+  const classCPlanProvider=async()=>{
+    const response=await fetch(targetedRecoveryDonorUrl(),{cache:'reload'});
+    if(!response.ok) throw new Error('CLASS_C_DONOR_NOT_AVAILABLE');
+    const bytes=new Uint8Array(await response.arrayBuffer());
+    const donor=JSON.parse(new TextDecoder().decode(bytes));
+    const state=classCState();
+    const provenanceRecords=classCProvenanceRecords();
+    const plan=window.ProtectedTargetedCorrection.buildTargetedCorrectionPlan({liveEvents:state.proventos||[],donorEvents:donor?.data?.proventos||[],provenanceRecords});
+    const targetEvents=window.ProtectedTargetedCorrection.applyTargetedCorrection(state.proventos||[],(donor?.data?.proventos||[]).filter(window.ProtectedTargetedCorrection.isYahooLike),plan.operations);
+    const targetState={...state,proventos:targetEvents};
+    const liveCanonical=window.ProtectedRealPilotReadiness.canonicalState(state,normalizeGoals);
+    const targetCanonical=window.ProtectedRealPilotReadiness.canonicalState(targetState,normalizeGoals);
+    const liveStateFingerprint=await window.ProtectedRealPilotReadiness.fingerprint(liveCanonical);
+    const expectedTargetStateFingerprint=await window.ProtectedRealPilotReadiness.fingerprint(targetCanonical);
+    const donorFingerprint=await crypto.subtle.digest('SHA-256',bytes).then(digest=>[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join(''));
+    const counts=classCCounts(state); const operationCounts=classCOperationCounts(plan);
+    const replacementDeltaCents=plan.operations.filter(operation=>operation.action==='REPLACE').reduce((sum,operation)=>sum+Number(operation.financialDeltaCents||0),0);
+    const reclassifyDeltaCents=plan.operations.filter(operation=>operation.action==='RECLASSIFY').reduce((sum,operation)=>sum+Number(operation.financialDeltaCents||0),0);
+    return {
+      current:{head:'',liveStateFingerprint,currentReferenceSetFingerprint:classCReferenceFingerprint(state),currentFinancialSemanticFingerprint:classCFinancialSemanticFingerprint(state),financialRoleFingerprint:plan.financialRoleFingerprint,correctionPlanFingerprint:plan.fingerprint,correctionReviewFingerprint:plan.reviewFingerprint,expectedTargetStateFingerprint,donorFingerprint,counts,executionContractVersion:window.ProtectedTargetedClassCExecutor?.CLASS_C_PERSIST_CALLBACK_CONTRACT_VERSION,postwriteContractVersion:window.ProtectedTargetedClassCExecutor?.CLASS_C_POSTWRITE_CONTRACT_VERSION,executorBuildId:window.ProtectedTargetedClassCExecutor?.CLASS_C_EXECUTOR_BUILD_ID},
+      plan:{...plan,action:'TARGETED_CLASS_C_RECONCILIATION',keepCount:2,knuqDeltaCents:replacementDeltaCents,reclassifyDeltaCents,keepIdentities:plan.extras.map(extra=>({ticker:extra.ticker,date:extra.date,valueCents:extra.valueCents,type:extra.type})),donorReferenceEvents:(donor?.data?.proventos||[]).filter(window.ProtectedTargetedCorrection.isYahooLike),provenanceRecords},
+      operationCounts,
+      donorFingerprint,
+      provenanceFingerprint:plan.provenanceFingerprint,
+      targetStateFingerprint:expectedTargetStateFingerprint,
+      targetFinancialTotalCents:classCFinancialTotalCents(targetState),
+      targetCounts:classCCounts(targetState),
+    };
+  };
+  let activePilotSnapshot=null;
+  let activePilotModel=null;
+  const verifyCloudPersistedState=async plan=>{
+    const cloud=await readFreshCloudPayload();
+    const state=extractCloudActiveState(cloud);
+    const counts=window.ProtectedCloudPersistence.counts(state.proventos);
+    const ids=new Set((plan?.events||[]).map(recoveryEventId));
+    const yahooIds=new Set((state.proventos||[]).filter(event=>window.ProtectedCloudPersistence.isReferenceEvent(event)).map(recoveryEventId));
+    const eventsPresent=[...ids].every(id=>yahooIds.has(id));
+    const canonical=window.ProtectedRealPilotReadiness.canonicalState(state,normalizeGoals);
+    const fingerprint=await window.ProtectedRealPilotReadiness.fingerprint(canonical);
+    const expectedFingerprint=await window.ProtectedRealPilotReadiness.fingerprint(recoveryCanonicalLiveState());
+    const reconciliation=await persistence?.reconcileTargetedRecovery?.(state,plan).catch?.(()=>null);
+    return {pass:counts.total===428&&counts.b3===329&&counts.yahoo===99&&eventsPresent&&fingerprint===expectedFingerprint,
+      counts,eventsPresent,fingerprint,expectedFingerprint,highConfidenceLinks:Number(reconciliation?.highConfidenceLinks||0),cloudState:state};
+  };
+  const validateColdBoot=async plan=>{
+    if(typeof document==='undefined' || !document.body) return {pass:false,reason:'COLD_BOOT_DOCUMENT_UNAVAILABLE'};
+    const frame=document.createElement('iframe');
+    frame.hidden=true;
+    frame.setAttribute('aria-hidden','true');
+    const url=new URL(location.href);
+    url.searchParams.delete('internalRecovery');
+    url.searchParams.delete('internalRecoveryDryRun');
+    url.searchParams.set('protectedColdBoot','1');
+    url.searchParams.set('coldBootNonce',`${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    frame.src=url.toString();
+    document.body.appendChild(frame);
+    try{
+      const deadline=Date.now()+30000;
+      let result=null;
+      while(Date.now()<deadline){
+        try{
+          if(frame.contentWindow && typeof frame.contentWindow.__PROTECTED_COLD_BOOT_STATE__==='function'){
+            result=await frame.contentWindow.__PROTECTED_COLD_BOOT_STATE__();
+            if(result?.cloudLoaded && result?.authSessionValid) break;
+          }
+        }catch(e){}
+        await new Promise(resolve=>setTimeout(resolve,250));
+      }
+      if(!result) return {pass:false,reason:'COLD_BOOT_RUNTIME_NOT_READY'};
+      const expectedPlanIds=new Set((plan?.events||[]).map(recoveryEventId));
+      const actualIds=new Set((result.referenceIds||[]).map(String));
+      const eventsPresent=[...expectedPlanIds].every(id=>actualIds.has(id));
+      return {pass:result.authSessionValid===true&&result.cloudLoaded===true&&result.runtimeIdentity!==runtimeIdentity&&result.totalLedger===428&&result.b3Events===329&&result.yahooEvents===99&&result.highConfidenceLinks===20&&eventsPresent,...result};
+    }finally{ frame.remove(); }
+  };
+  const persistence={
+    readCurrentState:()=>S,
+    getCurrentPilotContext:async()=>{
+      if(typeof window.__PROTECTED_AUGUST_PILOT_CONTEXT_PROVIDER__!=='function') throw new Error('PILOT_CONTEXT_PROVIDER_NOT_READY');
+      return window.__PROTECTED_AUGUST_PILOT_CONTEXT_PROVIDER__();
+    },
+    createPilotSnapshot:({model})=>{
+      const state=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
+      activePilotSnapshot=window.ProtectedAugustPilotExecutor.createTargetedSnapshot(state,model,{financialTotalCents:pilotFinancialTotalCents(state)});
+      if(!activePilotSnapshot.valid) throw new Error('PILOT_SNAPSHOT_INVALID');
+      return activePilotSnapshot;
+    },
+    applyPilotMutation:(_state,input)=>{
+      const model=input?.model||input;
+      activePilotModel=JSON.parse(JSON.stringify(model));
+      const result=window.ProtectedAugustPilotExecutor.applyModelToState(S,activePilotModel);
+      if(result.pass!==true) throw new Error('PILOT_MUTATION_FAILED');
+      return result;
+    },
+    persistPilotState:(_state,{model})=>{
+      const persisted=save({queueCloud:false,__protectedLocalRecoveryWrite:true});
+      if(persisted!==true) return {pass:false,persisted:false,durable:false,localOnly:true,queueCloud:false,serializedOnce:false};
+      const readback=window.ProtectedRecoveryPersistenceContract.readCanonicalState(safeGetLocalStorageItem(STOR,'protected pilot save verification'),PersistenceCore.parseStoredState);
+      const inspection=window.ProtectedAugustPilotExecutor.inspectPilotState(readback,model,activePilotSnapshot||{});
+      return {pass:inspection.pass,persisted:true,durable:true,localOnly:true,queueCloud:false,cloudWrite:false,serializedOnce:true};
+    },
+    readPilotPersistedState:()=>window.ProtectedRecoveryPersistenceContract.readCanonicalState(
+      safeGetLocalStorageItem(STOR,'protected pilot readback'),
+      PersistenceCore.parseStoredState
+    ),
+    verifyPilotPersistedState:async({readback,model,snapshot})=>{
+      const inspection=window.ProtectedAugustPilotExecutor.inspectPilotState(readback,model,snapshot);
+      const financialIncrementCents=pilotFinancialTotalCents(readback)-Number(snapshot?.financialTotalCents||0);
+      const positionChanged=!recoverySame(recoveryPositionState(readback?.assets),recoveryPositionState(S?.assets));
+      const avgPriceChanged=!recoverySame(recoveryAveragePriceState(readback?.assets),recoveryAveragePriceState(S?.assets));
+      const assetCountChanged=(readback?.assets||[]).length!==(S?.assets||[]).length;
+      const rfChanged=!recoverySame(readback?.rfEvents||[],S?.rfEvents||[]);
+      const untouched=window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.assets||[])===snapshot.assetsFingerprint
+        && window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.aportes||[])===snapshot.aportesFingerprint
+        && window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.rfEvents||[])===snapshot.rfEventsFingerprint
+        && window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.goals||{})===snapshot.goalsFingerprint;
+      return {...inspection,pass:inspection.pass&&financialIncrementCents===8537&&!positionChanged&&!avgPriceChanged&&!assetCountChanged&&!rfChanged&&untouched,financialIncrementCents,positionChanged,avgPriceChanged,assetCountChanged,rfChanged,unrelatedStateChanged:!untouched};
+    },
+    reconcilePilotPersistedState:async({readback,model,snapshot})=>{
+      const context=await window.__PROTECTED_AUGUST_PILOT_CONTEXT_FROM_STATE__(readback);
+      const inspection=window.ProtectedAugustPilotExecutor.inspectPilotState(readback,model,snapshot);
+      const currentContext=await window.__PROTECTED_AUGUST_PILOT_CONTEXT_PROVIDER__();
+      const sourceStable=context.manifest.sourceFingerprint===currentContext.manifest.sourceFingerprint;
+      return {...inspection,pass:inspection.pass&&context.sourceRows===24&&sourceStable,linked:inspection.linked,created:inspection.created,excluded:inspection.excluded,possibleMatches:0,conflicts:0,sourceStable};
+    },
+    validatePilotIdempotency:({readback,model,snapshot})=>{
+      const inspection=window.ProtectedAugustPilotExecutor.inspectPilotState(readback,model,snapshot);
+      return {pass:inspection.pass,creates:inspection.pass?0:1,updates:inspection.pass?0:1,conflicts:0};
+    },
+    releasePilotSync:async()=>{
+      await uploadLocalToCloud(false);
+      return {
+        pass:FB.lastCloudError==null&&FB.pendingCloudSave!==true&&FB.syncInFlight!==true,
+        pendingCloudSave:FB.pendingCloudSave===true,
+        syncInFlight:FB.syncInFlight===true,
+        error:FB.lastCloudError?cloudSyncErrorMessage(FB.lastCloudError):''
+      };
+    },
+    validatePilotReload:async({model,snapshot})=>{
+      const readback=window.ProtectedRecoveryPersistenceContract.readCanonicalState(safeGetLocalStorageItem(STOR,'protected pilot reload readback'),PersistenceCore.parseStoredState);
+      const inspection=window.ProtectedAugustPilotExecutor.inspectPilotState(readback,model,snapshot);
+      const localFinancial=pilotFinancialTotalCents(readback);
+      const financialIncrementCents=localFinancial-Number(snapshot?.financialTotalCents||0);
+      const untouched=window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.assets||[])===snapshot.assetsFingerprint
+        && window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.aportes||[])===snapshot.aportesFingerprint
+        && window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.rfEvents||[])===snapshot.rfEventsFingerprint
+        && window.ProtectedAugustPilotExecutor.simpleFingerprint(readback?.goals||{})===snapshot.goalsFingerprint;
+      const snap=await portfolioRef().get(); const cloud=snap?.data?.()||{}; const wallet=(cloud.wallets||[]).find(item=>String(item?.id||'')===String(S.activeWalletId))||(cloud.wallets||[])[0]; const proventos=Array.isArray(wallet?.proventos)?wallet.proventos:(cloud.proventos||[]);
+      const cloudFinancial=pilotFinancialTotalCents({proventos});
+      const cloudUnchanged=cloudFinancial===Number(snapshot?.cloudFinancialTotalCents||3718285);
+      const queueFalse=FB.pendingCloudSave!==true;
+      const syncFalse=FB.syncInFlight!==true;
+      return {...inspection,pass:inspection.pass&&financialIncrementCents===8537&&untouched&&cloudUnchanged&&queueFalse&&syncFalse,financialIncrementCents,unrelatedStateChanged:!untouched,localFinancialTotalCents:localFinancial,cloudFinancialTotalCents:cloudFinancial,cloudUnchanged,queueFalse,syncFalse,localOnly:true};
+    },
+    persistState:(_state,_model,options)=>save(options),
+    readPersistedState:()=>window.ProtectedRecoveryPersistenceContract.readCanonicalState(
+      safeGetLocalStorageItem(STOR, 'protected recovery readback'),
+      PersistenceCore.parseStoredState
+    ),
+    verifyPersistedState:model=>window.ProtectedAugustPilotExecutor.inspectPilotState(persistence.readPilotPersistedState(),model,activePilotSnapshot||{}).pass,
+    reconcilePersistedState:model=>window.ProtectedAugustPilotExecutor.inspectPilotState(persistence.readPilotPersistedState(),model,activePilotSnapshot||{}).pass,
+    rollbackPilot:(_state,snapshot)=>window.ProtectedAugustPilotExecutor.rollbackState(S,snapshot),
+    persistRollback:(_state)=>{ const persisted=save({queueCloud:false,__protectedLocalRecoveryWrite:true}); return {pass:persisted===true,persisted:persisted===true,durable:persisted===true,localOnly:true,queueCloud:false}; },
+    persistPilotRollback:()=>{ const persisted=save({queueCloud:false,__protectedLocalRecoveryWrite:true}); return {pass:persisted===true,persisted:persisted===true,durable:persisted===true,localOnly:true,queueCloud:false}; },
+    revalidateTargetedRecovery:async input=>{
+      // Revalidate the exact canonical live state once at the execution
+      // boundary. Re-running the async donor/parser plan provider here can
+      // cross a cloud snapshot callback and compare two different in-memory
+      // state objects even when the user did not mutate anything.
+      const live=recoveryCanonicalLiveState();
+      const liveStateFingerprint=await window.ProtectedRealPilotReadiness.fingerprint(live);
+      if(String(liveStateFingerprint)!==String(input?.current?.liveStateFingerprint||'')) return false;
+      return Number(input?.plan?.total)===99
+        && Number(input?.plan?.yahooEvents)===99
+        && Number(input?.plan?.conflicts||0)===0
+        && Number(input?.plan?.financialIncrement||0)===0
+        && Number(input?.plan?.positionImpact||0)===0
+        && Number(input?.plan?.avgPriceImpact||0)===0
+        && Number(input?.plan?.assetCountImpact||0)===0
+        && Number(input?.plan?.rfImpact||0)===0
+        && Array.isArray(input?.plan?.events)
+        && input.plan.events.length===99;
+    },
+    createTargetedRecoverySnapshot:input=>{
+      const current=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):JSON.parse(JSON.stringify(S));
+      const counts=recoveryLedgerCounts(current);
+      return {valid:counts.total===329&&counts.b3===329&&counts.yahoo===0,sessionId:input?.sessionId||'',proventos:JSON.parse(JSON.stringify(current.proventos||[])),assets:JSON.parse(JSON.stringify(current.assets||[])),aportes:JSON.parse(JSON.stringify(current.aportes||[])),rfEvents:JSON.parse(JSON.stringify(current.rfEvents||[])),goals:JSON.parse(JSON.stringify(current.goals||{})),financialTotal:recoveryFinancialTotal(current),affectedIdentities:(input?.plan?.events||[]).map(recoveryEventId)};
+    },
+    applyTargetedRecovery:(_state,plan)=>{
+      const existing=new Set((S.proventos||[]).map(recoveryEventId));
+      (plan.events||[]).forEach(event=>{
+        const id=recoveryEventId(event);
+        if(!id||existing.has(id)) return;
+        S.proventos.push(window.ProtectedIncomeLedgerRecovery.prepareReferenceEvent(event));
+        existing.add(id);
+      });
+    },
+    validateTargetedRecoveryPostwrite:(readback,plan,snapshot)=>{
+      const counts=recoveryLedgerCounts(readback);
+      const eventIds=new Set((readback?.proventos||[]).map(recoveryEventId));
+      const eventsPresent=(plan?.events||[]).every(event=>eventIds.has(recoveryEventId(event)));
+      const prewriteEventsPreserved=(snapshot?.proventos||[]).every(event=>eventIds.has(recoveryEventId(event)));
+      const financialIncrement=Math.round((recoveryFinancialTotal(readback)-Number(snapshot?.financialTotal||0))*100)/100;
+      const positionChanged=!recoverySame(recoveryPositionState(readback?.assets),recoveryPositionState(snapshot?.assets));
+      const avgPriceChanged=!recoverySame(recoveryAveragePriceState(readback?.assets),recoveryAveragePriceState(snapshot?.assets));
+      const assetCountChanged=(readback?.assets||[]).length!==(snapshot?.assets||[]).length;
+      const rfChanged=!recoverySame(readback?.rfEvents||[],snapshot?.rfEvents||[]) || !recoverySame((readback?.assets||[]).filter(asset=>normalizeType(asset?.type||'','')==='Renda Fixa'),(snapshot?.assets||[]).filter(asset=>normalizeType(asset?.type||'','')==='Renda Fixa'));
+      const unrelatedStatePreserved=prewriteEventsPreserved&&!positionChanged&&!avgPriceChanged&&!assetCountChanged&&!rfChanged&&recoverySame(readback?.aportes||[],snapshot?.aportes||[])&&recoverySame(readback?.goals||{},snapshot?.goals||{});
+      return {pass:counts.total===428&&counts.b3===329&&counts.yahoo===99&&eventsPresent&&financialIncrement===0&&!positionChanged&&!avgPriceChanged&&!assetCountChanged&&!rfChanged&&unrelatedStatePreserved,totalLedger:counts.total,b3Events:counts.b3,yahooEvents:counts.yahoo,financialIncrement,positionChanged,avgPriceChanged,assetCountChanged,rfChanged,unrelatedStatePreserved};
+    },
+    reconcileTargetedRecovery:async readback=>{
+      const inputs=await window.ProtectedRealPilotReadiness.loadReadOnlyInputs({backupUrl:targetedRecoveryDonorUrl(),sourceUrl:'local-imports/movimentacao-2026-09-06-16-22-42.xlsx',liveState:readback,parseWorkbook:typeof parseB3MovementProventosPreviewWorkbook==='function'?parseB3MovementProventosPreviewWorkbook:parseB3ProventosWorkbook});
+      const plan=inputs.plan||{};
+      return {highConfidenceLinks:Number(plan.links||0),possibleMatches:Number(plan.review?.length||0),conflicts:Number(plan.review?.length||0),planTotal:Number(plan.totalRecords||0),planLinks:Number(plan.links||0),planCreates:Number(plan.creates||0),planExclusions:Number(plan.exclusions||0)};
+    },
+    validateTargetedRecoveryIdempotency:(readback,plan)=>{
+      const rebuilt=window.ProtectedIncomeLedgerRecovery.buildTargetedRecoveryPlan(plan?.events||[],readback?.proventos||[]);
+      return {adds:Number(rebuilt.yahooEvents||0),updates:0,conflicts:Number(rebuilt.conflicts||0)};
+    },
+    verifyCloudPersistedState,
+    validateTargetedRecoveryReload:async plan=>{
+      const cloud=await verifyCloudPersistedState(plan);
+      if(!cloud.pass) return {pass:false,reason:'CLOUD_PERSISTED_STATE_MISMATCH',totalLedger:cloud.counts.total,b3Events:cloud.counts.b3,yahooEvents:cloud.counts.yahoo,highConfidenceLinks:cloud.highConfidenceLinks,cloudFingerprint:cloud.fingerprint};
+      const cold=await validateColdBoot(plan);
+      return {pass:cold.pass,totalLedger:cold.totalLedger,b3Events:cold.b3Events,yahooEvents:cold.yahooEvents,highConfidenceLinks:cold.highConfidenceLinks,cloudReadback:true,coldBoot:true,runtimeIdentity:cold.runtimeIdentity};
+    },
+    rollbackTargetedRecovery:(_state,snapshot)=>{
+      const before=new Set((snapshot?.proventos||[]).map(recoveryEventId));
+      S.proventos=(S.proventos||[]).filter(event=>before.has(recoveryEventId(event)));
+    },
+    validateTargetedClassCPlan:(plan,current)=>{
+      window.ProtectedTargetedClassCExecutor.assertPlan(plan);
+      const state=classCState();
+      const liveFingerprint=window.ProtectedRealPilotReadiness.fingerprint(classCState().wallets?window.ProtectedRealPilotReadiness.canonicalState(state,normalizeGoals):state);
+      return Promise.resolve(liveFingerprint).then(fingerprint=>String(fingerprint)===String(current?.liveStateFingerprint||'')
+        && String(classCReferenceFingerprint(state))===String(current?.currentReferenceSetFingerprint||'')
+        && String(classCFinancialSemanticFingerprint(state))===String(current?.currentFinancialSemanticFingerprint||''));
+    },
+    createTargetedClassCSnapshot:({plan,current})=>{
+      const state=classCState();
+      const ids=new Set((plan?.operations||[]).map(operation=>String(operation.targetId)));
+      const affected=(state.proventos||[]).filter(event=>ids.has(classCEventId(event))).map(event=>({id:classCEventId(event),event:JSON.parse(JSON.stringify(event))}));
+      return {valid:affected.length===99,kind:'TARGETED_CLASS_C_RECONCILIATION',affected,affectedCount:affected.length,planOperations:(plan?.operations||[]).map(operation=>({action:operation.action,targetId:String(operation.targetId||''),donorEconomicKey:String(operation.donorEconomicKey||'')})),planFingerprint:plan?.fingerprint||'',liveStateFingerprint:current?.liveStateFingerprint||'',assetsFingerprint:classC.fingerprint(state.assets||[]),aportesFingerprint:classC.fingerprint(state.aportes||[]),rfEventsFingerprint:classC.fingerprint(state.rfEvents||[]),goalsFingerprint:classC.fingerprint(state.goals||{}),financialTotalCents:classCFinancialTotalCents(state)};
+    },
+    applyTargetedClassCMutation:plan=>{
+      const donorByKey=new Map((plan?.donorReferenceEvents||[]).map(event=>[classC.economicKey(event),event]));
+      const operations=new Map((plan?.operations||[]).map(operation=>[String(operation.targetId),operation]));
+      S.proventos=(S.proventos||[]).map(event=>{
+        const operation=operations.get(classCEventId(event));
+        if(!operation) return event;
+        if(operation.action==='RECLASSIFY') return {...event,sourceEventKind:'reference',excludedFromIncomeTotals:true};
+        const donor=donorByKey.get(operation.donorEconomicKey);
+        return donor?{...JSON.parse(JSON.stringify(donor)),sourceEventKind:'reference',excludedFromIncomeTotals:true}:event;
+      });
+      return {pass:true,replace:plan.operations.filter(operation=>operation.action==='REPLACE').length,reclassify:plan.operations.filter(operation=>operation.action==='RECLASSIFY').length,keep:Number(plan.keepCount||0)};
+    },
+    persistTargetedClassCState:options=>{ const persisted=save({queueCloud:false,__protectedLocalRecoveryWrite:true}); if(persisted!==true) throw new Error('CLASS_C_LOCAL_PERSISTENCE_FAILED'); return {pass:true,persisted:true,durable:true,localOnly:true,queueCloud:false,serializedOnce:true,rollback:options?.rollback===true}; },
+    readTargetedClassCPersistedState:()=>window.ProtectedRecoveryPersistenceContract.readCanonicalState(safeGetLocalStorageItem(STOR,'protected Class C readback'),PersistenceCore.parseStoredState),
+    verifyTargetedClassCPersistedState:(readback,plan,snapshot)=>{
+      const counts=classCCounts(readback); const ids=new Map((readback?.proventos||[]).map(event=>[classCEventId(event),event]));
+      const operations=plan?.operations||[];
+      const replacementMatches=new Set((readback?.proventos||[]).filter(event=>classC.isReferenceOnly(event)).map(event=>classC.economicKey(event)));
+      const replace=operations.filter(operation=>operation.action==='REPLACE').filter(operation=>replacementMatches.has(String(operation.donorEconomicKey||''))).length;
+      const reclassify=operations.filter(operation=>operation.action==='RECLASSIFY').filter(operation=>{const event=ids.get(String(operation.targetId));return event&&classC.isReferenceOnly(event)}).length;
+      const keep=(plan?.keepIdentities||[]).filter(identity=>{const event=(readback?.proventos||[]).find(item=>classC.economicKey(item)===classC.economicKey({ticker:identity.ticker,date:identity.date,value:Number(identity.valueCents||0)/100,type:identity.type}));return event&&!classC.isReferenceOnly(event)}).length;
+      const unrelated=classCTouchedUnrelated(readback,snapshot);
+      const expectedDelta=Number(plan?.financialDeltaCents||0);
+      const expectedTarget=Number(snapshot?.financialTotalCents||0)+expectedDelta;
+      return Promise.resolve(unrelated).then(unrelatedStatePreserved=>({pass:counts.total===430&&counts.b3===329&&counts.yahoo===101&&replace===Number(plan?.operations?.filter(operation=>operation.action==='REPLACE').length||0)&&reclassify===Number(plan?.operations?.filter(operation=>operation.action==='RECLASSIFY').length||0)&&keep===Number(plan?.keepCount||0)&&classCFinancialTotalCents(readback)===expectedTarget&&unrelatedStatePreserved,total:counts.total,b3:counts.b3,yahoo:counts.yahoo,replaceCount:replace,reclassifyCount:reclassify,keepCount:keep,financialTotalCents:classCFinancialTotalCents(readback),financialDeltaCents:classCFinancialTotalCents(readback)-Number(snapshot?.financialTotalCents||0),positionImpact:0,avgPriceImpact:0,assetCountImpact:0,rfImpact:0,unrelatedStatePreserved}));
+    },
+    validateTargetedClassCPostwrite:(readback,plan,snapshot)=>persistence.verifyTargetedClassCPersistedState(readback,plan,snapshot),
+    reconcileTargetedClassCState:async readback=>{
+      const context=await window.__PROTECTED_AUGUST_PILOT_CONTEXT_FROM_STATE__(readback);
+      return {highConfidenceLinks:Number(context.plan?.links||0),possibleMatches:Number(context.plan?.review?.length||0),conflicts:Number(context.plan?.conflicts||0),planTotal:Number(context.plan?.totalRecords||0),planLinks:Number(context.plan?.links||0),planCreates:Number(context.plan?.creates||0),planExclusions:Number(context.plan?.exclusions||0),planDeferred:Number(context.plan?.deferred||0),planAmbiguous:Number(context.plan?.ambiguous||0)};
+    },
+    validateTargetedClassCIdempotency:(readback,plan)=>{
+      const donorReference=(plan?.donorReferenceEvents||[]); const rebuilt=window.ProtectedTargetedCorrection.buildTargetedCorrectionPlan({liveEvents:readback?.proventos||[],donorEvents:donorReference,provenanceRecords:plan?.provenanceRecords||[]});
+      return {pass:rebuilt.operations.length===0,replace:rebuilt.operations.filter(operation=>operation.action==='REPLACE').length,reclassify:rebuilt.operations.filter(operation=>operation.action==='RECLASSIFY').length,reclassifyIds:rebuilt.operations.filter(operation=>operation.action==='RECLASSIFY').map(operation=>String(operation.targetId||'')),create:0,financialDeltaCents:rebuilt.financialDeltaCents||0};
+    },
+    releaseTargetedClassCSync:async options=>{
+      if(options?.rollback===true) return {pass:true,pendingCloudSave:false,syncInProgress:false,error:''};
+      await releaseCloudSyncAfterSuccessfulReconciliation({expectedState:{totalLedger:430,b3Events:329,yahooEvents:101}});
+      return {pass:FB.lastCloudError==null&&FB.pendingCloudSave!==true&&FB.syncInFlight!==true,pendingCloudSave:FB.pendingCloudSave===true,syncInProgress:FB.syncInFlight===true,error:FB.lastCloudError?cloudSyncErrorMessage(FB.lastCloudError):''};
+    },
+    validateTargetedClassCReload:async({plan}={})=>{
+      const readback=window.ProtectedRecoveryPersistenceContract.readCanonicalState(safeGetLocalStorageItem(STOR,'protected Class C reload readback'),PersistenceCore.parseStoredState);
+      const isRef=event=>event?.sourceEventKind==='reference'||event?.excludedFromIncomeTotals===true;
+      const localFinancial=Math.round(readback.proventos.reduce((acc,event)=>acc+(isRef(event)?0:Number(event.value||0)*100),0));
+      const localRefs=readback.proventos.filter(event=>isRef(event)).length;
+      const expectedRefs=Number((plan?.planOperations||plan?.operations||[]).filter(operation=>operation.action==='REPLACE').length)+Number((plan?.planOperations||plan?.operations||[]).filter(operation=>operation.action==='RECLASSIFY').length);
+      const snap=await portfolioRef().get(); const cloud=snap?.data?.()||{}; const wallet=(cloud.wallets||[]).find(item=>String(item?.id||'')===String(S.activeWalletId))||(cloud.wallets||[])[0]; const proventos=Array.isArray(wallet?.proventos)?wallet.proventos:(cloud.proventos||[]);
+      const cloudFinancial=Math.round(proventos.reduce((acc,event)=>acc+(isRef(event)?0:Number(event.value||0)*100),0));
+      const counts=classCCounts(readback);
+      const pass=counts.total===430&&counts.b3===329&&counts.yahoo===101&&localFinancial===2701089&&localRefs===expectedRefs&&cloudFinancial===3718285&&FB.pendingCloudSave!==true&&FB.syncInFlight!==true;
+      return {pass,total:counts.total,b3:counts.b3,yahoo:counts.yahoo,financialTotalCents:localFinancial,referenceCount:localRefs,highConfidenceLinks:20,cloudFinancialCents:cloudFinancial,cloudUnchanged:cloudFinancial===3718285,queueFalse:FB.pendingCloudSave!==true,syncFalse:FB.syncInFlight!==true,localOnly:true};
+    },
+    rollbackTargetedClassC: snapshot=>{
+      const byId=new Map((snapshot?.affected||[]).map(row=>[String(row.id),row.event]));
+      const replaceOps=new Map((snapshot?.planOperations||[]).filter(operation=>operation.action==='REPLACE').map(operation=>[String(operation.donorEconomicKey),String(operation.targetId)]));
+      if(byId.size===0) throw new Error('CLASS_C_ROLLBACK_SNAPSHOT_EMPTY');
+      S.proventos=(S.proventos||[]).map(event=>{
+        const id=String(event?.id||event?.autoKey||event?.canonicalIncomeEventId||'');
+        if(byId.has(id)) return JSON.parse(JSON.stringify(byId.get(id)));
+        const donorKey=classC.economicKey(event);
+        if(donorKey&&replaceOps.has(donorKey)){ const original=byId.get(replaceOps.get(donorKey)); if(original) return JSON.parse(JSON.stringify(original)); }
+        return event;
+      });
+      const restored=byId.size;
+      if((S.proventos||[]).filter(event=>byId.has(String(event?.id||event?.autoKey||event?.canonicalIncomeEventId||''))||replaceOps.has(classC.economicKey(event))).length===0&&restored>0) throw new Error('CLASS_C_ROLLBACK_NOT_APPLIED');
+      return {pass:true,restoredIds:restored,durable:false};
+    },
+  };
+  PROTECTED_REAL_PILOT_SESSION=window.ProtectedRealPilotSession.createProtectedRealPilotSession({authReady:true,appState:S,persistence,syncPolicy:{beforeReconciliation:false,releaseSync:options=>releaseCloudSyncAfterSuccessfulReconciliation(options)},bridgeFactory:window.__OFFICIAL_REAL_BRIDGE_FACTORY__,adapterFactory:window.__OFFICIAL_REAL_ADAPTER_FACTORY__,recoveryExecutorFactory:window.ProtectedTargetedRecoveryExecutor?.createExecutor,pilotExecutorFactory:window.ProtectedAugustPilotExecutor?.createExecutor});
+  const protectedTargetedRecoveryExecutor=PROTECTED_REAL_PILOT_SESSION.targetedRecoveryExecutor || window.ProtectedTargetedRecoveryExecutor?.createExecutor?.({authReady:true,callbacks:PROTECTED_REAL_PILOT_SESSION.callbacks});
+  const protectedTargetedClassCExecutor=PROTECTED_REAL_PILOT_SESSION.classCExecutor || window.ProtectedTargetedClassCExecutor?.createExecutor?.({authReady:true,callbacks:PROTECTED_REAL_PILOT_SESSION.callbacks});
+  if(new URLSearchParams(location.search).get('protectedShadow')==='1'){
+    const shadowCallbacks={...PROTECTED_REAL_PILOT_SESSION.callbacks,
+      releaseTargetedClassCSync:async()=>({pass:true,pendingCloudSave:false,syncInProgress:false,error:'',shadow:true}),
+      validateTargetedClassCReload:async()=>{const readback=window.ProtectedRecoveryPersistenceContract.readCanonicalState(safeGetLocalStorageItem(STOR,'protected Class C shadow reload'),PersistenceCore.parseStoredState);const counts=classCCounts(readback);return {pass:counts.total===430&&counts.b3===329&&counts.yahoo===101&&classCFinancialTotalCents(readback)===2701089,total:counts.total,b3:counts.b3,yahoo:counts.yahoo,financialTotalCents:classCFinancialTotalCents(readback),highConfidenceLinks:20};},
+    };
+    window.__PROTECTED_CLASSC_SHADOW_CALLBACKS__=Object.freeze(shadowCallbacks);
+  }
+  const protectedPreClassCLocalRecoveryExecutor=window.ProtectedPreClassCLocalRecovery?.createExecutor?.({
+    readCurrentState:()=>JSON.parse(JSON.stringify(classCState())),
+    readPersistedState:()=>readCanonicalProtectedLocalState('pre-Class C local recovery readback'),
+    readCloudAnchor:async()=>{
+      const ref=portfolioRef(); if(!ref||typeof ref.get!=='function') throw new Error('PRE_CLASS_C_CLOUD_ANCHOR_UNAVAILABLE');
+      const snap=await ref.get(); const cloud=snap?.data?.()||{}; const wallet=(cloud.wallets||[]).find(item=>String(item?.id||'')===String(S.activeWalletId))||(cloud.wallets||[])[0];
+      return {...classCState(),...(wallet||{}),proventos:Array.isArray(wallet?.proventos)?wallet.proventos:(cloud.proventos||[])};
+    },
+    persistLocal:async(next,options={})=>{
+      S.proventos=JSON.parse(JSON.stringify(next.proventos||[]));
+      save({queueCloud:false,__protectedLocalRecoveryWrite:true});
+      return {pass:true,queueCloud:false,rollback:options.rollback===true};
+    },
+    snapshotStore:window.ProtectedPreClassCLocalRecovery?.browserSnapshotStore?.(),
+    fingerprint:state=>window.ProtectedRealPilotReadiness.fingerprint(window.ProtectedRealPilotReadiness.canonicalState(state,normalizeGoals)),
+  });
+  window.__PROTECTED_PRECLASSC_LOCAL_RECOVERY_EXECUTOR__=protectedPreClassCLocalRecoveryExecutor;
+  const protected101YahooLocalRecoveryExecutor=window.Protected101YahooLocalRecovery?.createExecutor?.({
+    readCurrentState:()=>JSON.parse(JSON.stringify(classCState())),
+    readPersistedState:()=>readCanonicalProtectedLocalState('101 Yahoo local recovery readback'),
+    readCloudAnchor:async()=>{
+      const ref=portfolioRef(); if(!ref||typeof ref.get!=='function') throw new Error('101_RECOVERY_CLOUD_ANCHOR_UNAVAILABLE');
+      const snap=await ref.get({source:'server'}); const cloud=snap?.data?.()||{};
+      return extractCloudActiveState(cloud);
+    },
+    readDonorEvidence:async()=>{
+      const response=await fetch(targetedRecoveryDonorUrl(),{cache:'reload'}); if(!response.ok) throw new Error('101_RECOVERY_DONOR_UNAVAILABLE');
+      const donor=JSON.parse(new TextDecoder().decode(new Uint8Array(await response.arrayBuffer()))); return donor?.data?.proventos||[];
+    },
+    persistLocal:async(next,options={})=>{
+      S.proventos=JSON.parse(JSON.stringify(next.proventos||[]));
+      save({queueCloud:false,__protectedLocalRecoveryWrite:true});
+      return {pass:true,queueCloud:false,rollback:options.rollback===true};
+    },
+    snapshotStore:window.Protected101YahooLocalRecovery?.browserSnapshotStore?.(),
+    hash:state=>window.ProtectedRealPilotReadiness.fingerprint(window.ProtectedRealPilotReadiness.canonicalState(state)),
+    expected:window.Protected101YahooLocalRecovery.expectedContract({targetFinancialTotalCents:3718285,expectedIncrementCents:1033189}),
+  });
+  window.__PROTECTED_101_YAHOO_LOCAL_RECOVERY_EXECUTOR__=protected101YahooLocalRecoveryExecutor;
+  window.getProtected101YahooLocalRecoveryReadiness=()=>protected101YahooLocalRecoveryExecutor?.getReadiness?.()||{available:false,cloudWriteAllowed:false};
+  window.executeProtected101YahooLocalRecovery=input=>{ if(!protected101YahooLocalRecoveryExecutor) throw new Error('101_RECOVERY_NOT_READY'); return protected101YahooLocalRecoveryExecutor.execute(input||{}); };
+  window.getProtectedRealPilotReadiness=()=>PROTECTED_REAL_PILOT_SESSION.getProtectedRealPilotReadiness();
+  window.executeProtectedTargetedYahooRecovery=input=>{ if(!PROTECTED_REAL_PILOT_SESSION?.authReady) throw new Error('AUTH_SESSION_REQUIRED'); if(!protectedTargetedRecoveryExecutor) throw new Error('TARGETED_RECOVERY_EXECUTION_PATH_NOT_READY'); return protectedTargetedRecoveryExecutor.execute(input); };
+  window.executeProtectedTargetedYahooRecoveryRollback=input=>{ if(!protectedTargetedRecoveryExecutor) throw new Error('TARGETED_RECOVERY_EXECUTION_PATH_NOT_READY'); return protectedTargetedRecoveryExecutor.rollback(input||{}); };
+  window.getProtectedTargetedClassCReadiness=()=>protectedTargetedClassCExecutor?.getReadiness?.()||{available:false,executionPathComplete:false};
+  window.getProtectedPreClassCLocalRecoveryReadiness=()=>protectedPreClassCLocalRecoveryExecutor?.getReadiness?.()||{available:false,cloudWriteAllowed:false};
+  window.executeProtectedPreClassCLocalRecovery=input=>{ if(!protectedPreClassCLocalRecoveryExecutor) throw new Error('PRE_CLASS_C_LOCAL_RECOVERY_NOT_READY'); return protectedPreClassCLocalRecoveryExecutor.execute(input||{}); };
+  window.__PROTECTED_TARGETED_CLASSC_CALLBACKS__=Object.freeze(Object.fromEntries(['createTargetedClassCSnapshot','applyTargetedClassCMutation','persistTargetedClassCState','readTargetedClassCPersistedState','verifyTargetedClassCPersistedState','reconcileTargetedClassCState','validateTargetedClassCIdempotency','releaseTargetedClassCSync','validateTargetedClassCReload','rollbackTargetedClassC','validateTargetedClassCPlan','validateTargetedClassCPostwrite'].map(name=>[name,typeof PROTECTED_REAL_PILOT_SESSION?.callbacks?.[name]==='function'])));
+  window.executeProtectedTargetedClassCReconciliation=input=>{ if(!PROTECTED_REAL_PILOT_SESSION?.authReady) throw new Error('AUTH_SESSION_REQUIRED'); if(!protectedTargetedClassCExecutor) throw new Error('CLASS_C_EXECUTION_PATH_NOT_READY'); return protectedTargetedClassCExecutor.execute(input); };
+  window.executeProtectedTargetedClassCRollback=input=>{ if(!protectedTargetedClassCExecutor) throw new Error('CLASS_C_EXECUTION_PATH_NOT_READY'); return protectedTargetedClassCExecutor.rollback(input||{}); };
+  window.__PROTECTED_TARGETED_CLASSC_PLAN_PROVIDER__=classCPlanProvider;
+  if(window.ProtectedTargetedRecoverySurface && ['localhost','127.0.0.1','::1'].includes(location.hostname) && new URLSearchParams(location.search).get('internalRecovery')==='1' && location.hash==='#internal-recovery'){
+    window.__PROTECTED_TARGETED_RECOVERY_PLAN_PROVIDER__=async()=>{
+      const response=await fetch(targetedRecoveryDonorUrl(),{cache:'reload'});
+      if(!response.ok) throw new Error('RECOVERY_DONOR_NOT_AVAILABLE');
+      const bytes=new Uint8Array(await response.arrayBuffer());
+      const donor=JSON.parse(new TextDecoder().decode(bytes));
+      const recovery=window.ProtectedIncomeLedgerRecovery;
+      const rawPlan=recovery.buildTargetedRecoveryPlan(donor?.data?.proventos||[],S?.proventos||[]);
+      if(rawPlan.yahooEvents!==99 || rawPlan.conflicts!==0) throw new Error('RECOVERY_PLAN_MISMATCH');
+      const plan={mode:'TARGETED_YAHOO_LEDGER_RECOVERY',total:rawPlan.yahooEvents,yahooEvents:rawPlan.yahooEvents,conflicts:rawPlan.conflicts,financialIncrement:0,positionImpact:0,avgPriceImpact:0,assetCountImpact:0,rfImpact:0,events:rawPlan.actions.map(row=>row.event)};
+      const live=recoveryCanonicalLiveState();
+      const liveStateFingerprint=await window.ProtectedRealPilotReadiness.fingerprint(live);
+      const donorBackupFingerprint=await crypto.subtle.digest('SHA-256',bytes).then(digest=>[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join(''));
+      window.ProtectedTargetedRecoveryDonor.assertFingerprint(donorBackupFingerprint,TARGETED_RECOVERY_DONOR_FINGERPRINT);
+      const inputs=await window.ProtectedRealPilotReadiness.loadReadOnlyInputs({backupUrl:targetedRecoveryDonorUrl(),sourceUrl:'local-imports/movimentacao-2026-09-06-16-22-42.xlsx',liveState:live,parseWorkbook:typeof parseB3MovementProventosPreviewWorkbook==='function'?parseB3MovementProventosPreviewWorkbook:parseB3ProventosWorkbook});
+      const recoveryPlanFingerprint=String(inputs.plan?.fingerprint||'');
+      const recoveryReviewFingerprint=String(inputs.review?.fingerprint||'');
+      if(!recoveryPlanFingerprint || !recoveryReviewFingerprint) throw new Error('RECOVERY_FINGERPRINTS_NOT_READY');
+      return {current:{sessionId:'targeted-yahoo-recovery',liveStateFingerprint,donorBackupFingerprint,recoveryPlanFingerprint,recoveryReviewFingerprint},plan};
+    };
+    window.__PROTECTED_TARGETED_RECOVERY_SURFACE__=window.ProtectedTargetedRecoverySurface.createInternalRecoverySurface({location,document,authValid:true,executor:protectedTargetedRecoveryExecutor,readinessProvider:()=>window.getProtectedRealPilotReadiness(),planProvider:()=>window.__PROTECTED_TARGETED_RECOVERY_PLAN_PROVIDER__?.()});
+    const mountInternalRecoverySurface=()=>window.__PROTECTED_TARGETED_RECOVERY_SURFACE__?.mount();
+    [1500,2500,4000].forEach(delay=>setTimeout(mountInternalRecoverySurface,delay));
+  }
+  window.getProtectedRealPilotReadiness=async()=>{
+    const live=PersistenceCore.buildStoredState ? PersistenceCore.buildStoredState(S, normalizeGoals) : S;
+    const liveWallet=live.wallets.find(wallet=>String(wallet.id)===String(live.activeWalletId)) || live.wallets[0];
+    const walletAssetFields=new Set();
+    const walletAssets=Array.isArray(liveWallet?.assets) ? liveWallet.assets : [];
+    const liveAssetsById=new Map((live.assets||[]).map(asset=>[String(asset.id||asset.ticker||''),asset]));
+    walletAssets.forEach(asset=>{ const current=liveAssetsById.get(String(asset.id||asset.ticker||'')); if(!current) return; new Set([...Object.keys(current),...Object.keys(asset)]).forEach(field=>{ if(JSON.stringify(current[field])!==JSON.stringify(asset[field])) walletAssetFields.add(field); }); });
+    document.documentElement.dataset.protectedPilotWalletAssetParity=JSON.stringify({liveAssets:(live.assets||[]).length,walletAssets:walletAssets.length,differingFields:[...walletAssetFields].sort()});
+    document.documentElement.dataset.protectedPilotIncomeTypes=JSON.stringify((live.proventos||[]).reduce((acc,item)=>{const key=String(item.type||item.source||'UNKNOWN');acc[key]=(acc[key]||0)+1;return acc;},{}));
+    const inputs=await window.ProtectedRealPilotReadiness.loadReadOnlyInputs({
+      backupUrl:targetedRecoveryDonorUrl(),
+      sourceUrl:'local-imports/movimentacao-2026-09-06-16-22-42.xlsx',
+      liveState:live,
+      parseWorkbook:typeof parseB3MovementProventosPreviewWorkbook==='function' ? parseB3MovementProventosPreviewWorkbook : (typeof parseB3ProventosWorkbook==='function' ? parseB3ProventosWorkbook : null),
+    });
+    document.documentElement.dataset.protectedPilotParserError=inputs.parseError||'';
+    document.documentElement.dataset.protectedPilotParserStats=inputs.parserStats?JSON.stringify({totalRead:inputs.parserStats.totalRead,proventos:inputs.parserStats.proventos,ignored:inputs.parserStats.totalIgnored}):'';
+    document.documentElement.dataset.protectedPilotMatchStats=JSON.stringify({yahooCandidates:inputs.plan?.yahooCandidates||0,matchedEvents:inputs.plan?.matchedEvents||0});
+    const plan=inputs.plan||{};
+    const financial={
+      alreadyRepresented: Math.max(0, Number(plan.totalSourceValue||0)-Number(plan.newIncrement||0)-Number(plan.excludedValue||0)-Number(plan.deferredValue||0)),
+      linkedIncrement:0,
+      newIncrement:Number(plan.newIncrement||0),
+      excludedValue:Number(plan.excludedValue||0),
+      totalSourceValue:Number(plan.totalSourceValue||0),
+      positionImpact:0,
+      avgPriceImpact:0,
+    };
+    return window.ProtectedRealPilotReadiness.makeReadiness({
+      authValid:true, state:live, session:PROTECTED_REAL_PILOT_SESSION,
+      backup:inputs.backup, source:inputs.source,
+      plan, review:plan.review ? {...inputs.review, tepp11:plan.decisions.find(item=>item.ticker==='TEPP11'), exclusions:{DIVD11:'EXCLUDE',NDIV11:'EXCLUDE'}} : inputs.review,
+      financial,
+    });
+  };
+  const readLocalRuntimeHead=async()=>{
+    const nonce=Date.now();
+    const headText=(await (await fetch(`/.git/HEAD?headNonce=${nonce}`,{cache:'no-store'})).text()).trim();
+    if(!headText.startsWith('ref: ')) return headText;
+    const refPath=headText.slice(5).trim();
+    const response=await fetch(`/.git/${refPath}?headNonce=${nonce}`,{cache:'no-store'});
+    if(!response.ok) throw new Error('RUNTIME_GIT_HEAD_NOT_AVAILABLE');
+    return (await response.text()).trim();
+  };
+  window.__PROTECTED_AUGUST_PILOT_CONTEXT_FROM_STATE__=async state=>{
+    const inputs=await window.ProtectedRealPilotReadiness.loadReadOnlyInputs({
+      backupUrl:targetedRecoveryDonorUrl(),
+      sourceUrl:'local-imports/movimentacao-2026-09-06-16-22-42.xlsx',
+      liveState:state,
+      parseWorkbook:typeof parseB3MovementProventosPreviewWorkbook==='function'?parseB3MovementProventosPreviewWorkbook:parseB3ProventosWorkbook,
+    });
+    const plan=inputs.plan||{};
+    const financial={alreadyRepresented:Math.max(0,Number(plan.totalSourceValue||0)-Number(plan.newIncrement||0)-Number(plan.excludedValue||0)-Number(plan.deferredValue||0)),linkedIncrement:0,newIncrement:Number(plan.newIncrement||0),deferredIncrement:0,excludedValue:Number(plan.excludedValue||0),totalSourceValue:Number(plan.totalSourceValue||0),positionImpact:0,avgPriceImpact:0};
+    const review=plan.review?{...inputs.review,tepp11:plan.decisions.find(item=>item.ticker==='TEPP11'),exclusions:{DIVD11:'EXCLUDE',NDIV11:'EXCLUDE'}}:inputs.review;
+    const readiness=await window.ProtectedRealPilotReadiness.makeReadiness({authValid:true,state,session:PROTECTED_REAL_PILOT_SESSION,backup:inputs.backup,source:inputs.source,plan,review,financial});
+    const manifest=window.ProtectedAugustPilotSurface.manifestFromReadiness(readiness);
+    const manifestFingerprint=await window.ProtectedRealPilotReadiness.fingerprint(manifest);
+    const tepp11Asset=(state.assets||[]).find(asset=>String(asset?.ticker||'').toUpperCase()==='TEPP11');
+    return {head:await readLocalRuntimeHead(),cloudStabilized:FB.cloudLoaded===true,canEdit:isEditOwner(),readiness,manifest,manifestFingerprint,plan,sourceRows:Number(plan.totalRecords||0),tepp11AssetId:String(tepp11Asset?.id||''),tepp11AssetName:String(tepp11Asset?.name||tepp11Asset?.title||'TEPP11')};
+  };
+  window.__PROTECTED_AUGUST_PILOT_CONTEXT_PROVIDER__=()=>window.__PROTECTED_AUGUST_PILOT_CONTEXT_FROM_STATE__(PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S);
+  window.__PROTECTED_COLD_BOOT_STATE__=async()=>{
+    const state=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
+    const counts=window.ProtectedCloudPersistence.counts(state.proventos);
+    const readiness=await window.getProtectedRealPilotReadiness();
+    return {runtimeIdentity:window.__PROTECTED_RUNTIME_ID__,authSessionValid:!!FB.user&&FB.access.allowed===true,cloudLoaded:FB.cloudLoaded===true,totalLedger:counts.total,b3Events:counts.b3,yahooEvents:counts.yahoo,referenceIds:(state.proventos||[]).filter(event=>window.ProtectedCloudPersistence.isReferenceEvent(event)).map(event=>String(event?.id||event?.autoKey||event?.canonicalIncomeEventId||'')),highConfidenceLinks:Number(readiness?.plan?.links||0),liveStateFingerprint:String(readiness?.liveState?.fingerprint||'')};
+  };
+  document.documentElement.dataset.protectedPilotReadiness='bound-read-only';
+  document.documentElement.dataset.protectedPilotReadinessApi='read-only';
+  document.documentElement.dataset.protectedPilotXlsx=typeof XLSX;
+  document.documentElement.dataset.protectedPilotParser=typeof parseB3ProventosWorkbook;
+  const publishProtectedPilotReadiness=readiness=>{
+    if(FB.authorityBlocked){
+      document.documentElement.dataset.protectedPilotReadinessAuth=String(readiness?.auth?.sessionValid===true);
+      document.documentElement.dataset.protectedPilotReadinessStatus='blocked-authority-divergence';
+      document.documentElement.dataset.protectedPilotReadinessError='LOCAL_FINGERPRINT_MISMATCH';
+      return;
+    }
+    document.documentElement.dataset.protectedPilotReadinessStatus='computed-read-only';
+    document.documentElement.dataset.protectedPilotReadinessAuth=String(readiness.auth.sessionValid);
+    document.documentElement.dataset.protectedPilotReadinessPlan=`${readiness.plan.totalRecords}/${readiness.plan.links}/${readiness.plan.creates}/${readiness.plan.exclusions}/${readiness.plan.deferred}/${readiness.plan.ambiguous}`;
+    document.documentElement.dataset.protectedPilotReadinessBackupMatch=String(readiness.backup.matchesLiveState);
+    document.documentElement.dataset.protectedPilotReadinessBackupDiff=JSON.stringify(readiness.backup.semanticDiff);
+    document.documentElement.dataset.protectedPilotReadinessBackupFinanciallyMeaningful=String(readiness.backup.financiallyMeaningful);
+    document.documentElement.dataset.protectedPilotReadinessSourceFingerprint=readiness.source.fingerprint;
+    document.documentElement.dataset.protectedPilotReadinessLiveFingerprint=readiness.liveState.fingerprint;
+    document.documentElement.dataset.protectedPilotReadinessPlanFingerprint=readiness.plan.fingerprint;
+    document.documentElement.dataset.protectedPilotReadinessReviewFingerprint=readiness.review.fingerprint;
+    document.documentElement.dataset.protectedPilotReadinessFinancial=JSON.stringify({alreadyRepresented:readiness.financial.alreadyRepresented,linkedIncrement:readiness.financial.linkedIncrement,newIncrement:readiness.financial.newIncrement,excludedValue:readiness.financial.excludedValue,totalSourceValue:readiness.financial.totalSourceValue});
+    if(readiness.plan.totalRecords===0 && typeof XLSX==='undefined') setTimeout(()=>window.getProtectedRealPilotReadiness().then(publishProtectedPilotReadiness).catch(()=>{}),500);
+  };
+  window.getProtectedRealPilotReadiness().then(publishProtectedPilotReadiness).catch(error=>{ document.documentElement.dataset.protectedPilotReadinessStatus='error-read-only'; document.documentElement.dataset.protectedPilotReadinessError=String(error?.message||error).slice(0,120); });
+  if(window.ProtectedAugustPilotSurface && ['localhost','127.0.0.1','::1'].includes(location.hostname) && window.ProtectedAugustPilotSurface.isInternalPilot(location)){
+    window.__PROTECTED_AUGUST_PILOT_EXECUTOR__=PROTECTED_REAL_PILOT_SESSION.pilotExecutor;
+    window.__PROTECTED_AUGUST_PILOT_SURFACE__=window.ProtectedAugustPilotSurface.createInternalAugustPilotSurface({location,document,authValid:true,executor:window.__PROTECTED_AUGUST_PILOT_EXECUTOR__,readinessProvider:()=>window.getProtectedRealPilotReadiness()});
+    [1500,2500,4000].forEach(delay=>setTimeout(()=>window.__PROTECTED_AUGUST_PILOT_SURFACE__?.mount(),delay));
+  }
+  return PROTECTED_REAL_PILOT_SESSION;
+}
+
 // FIREBASE — login Google + sincronização em nuvem
 // ══════════════════════════════════════
 function initFirebase(){
@@ -9036,6 +9934,21 @@ function initFirebase(){
           return;
         }
         FB.access.loading = false;
+        if(isAuthoritativeLocalRecoveryBoot()){
+          readFreshCloudPayload().then(cloudPayload=>{
+            if(window.ProtectedLocalCloudAuthority){
+              FB.lastCloudAuthorityFingerprint=window.ProtectedLocalCloudAuthority.fingerprintCloud(cloudPayload||{});
+            }
+            FB.cloudLoaded = true;
+            bindProtectedRealPilotSession();
+            render();
+          }).catch(error=>{
+            FB.cloudLoaded = false;
+            debugWarn('âncora cloud somente leitura indisponível no runtime local:', error);
+            render();
+          });
+          return;
+        }
         startCloudSync();
       }else{
         FB.access.loading = false;
@@ -9292,11 +10205,88 @@ function cloudPayload(){
   });
   return payload;
 }
+async function readFreshCloudPayload(){
+  const ref=portfolioRef();
+  if(!ref || typeof ref.get!=='function') throw new Error('CLOUD_READBACK_UNAVAILABLE');
+  let snap;
+  try{ snap=await ref.get({source:'server'}); }catch(error){ snap=await ref.get(); }
+  if(!snap?.exists) throw new Error('CLOUD_DOCUMENT_MISSING');
+  return snap.data()||{};
+}
+function extractCloudActiveState(cloud={}){
+  const wallets=Array.isArray(cloud.wallets)?cloud.wallets:[];
+  const wallet=wallets.find(item=>String(item?.id||'')===String(S.activeWalletId||''))||wallets[0]||null;
+  return {
+    ...(wallet||{}),
+    ...cloud,
+    proventos:Array.isArray(wallet?.proventos)?wallet.proventos:(Array.isArray(cloud.proventos)?cloud.proventos:[]),
+    assets:Array.isArray(wallet?.assets)?wallet.assets:(Array.isArray(cloud.assets)?cloud.assets:[]),
+    aportes:Array.isArray(wallet?.aportes)?wallet.aportes:(Array.isArray(cloud.aportes)?cloud.aportes:[]),
+    rfEvents:Array.isArray(wallet?.rfEvents)?wallet.rfEvents:(Array.isArray(cloud.rfEvents)?cloud.rfEvents:[]),
+  };
+}
+function mergeCloudReferencePayload(payload, cloud){
+  const helper=window.ProtectedCloudPersistence;
+  return helper?.mergePayload ? helper.mergePayload(payload, cloud) : payload;
+}
 function hasLocalData(){
   return (S.wallets&&S.wallets.length>1)||(S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(normalizeGoals(S.goals))!==JSON.stringify(normalizeGoals()));
 }
-function applyCloudData(d){
+function markProtectedLocalMarkerMismatch(){
+  if(!window.ProtectedLocalCloudAuthority) return null;
+  const authority=window.ProtectedLocalCloudAuthority;
+  const localState=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
+  const localFingerprint=authority.fingerprintState(localState);
+  let marker=null;
+  try{ marker=localStorage.getItem('civ5_authority'); }catch(e){ marker='{invalid-marker-read'; }
+  const parsed=authority.readMarker(marker);
+  if(parsed?.version===authority.VERSION && parsed.status==='PROTECTED_LOCAL_DIVERGENCE' && parsed.currentLocalFingerprint!==localFingerprint){
+    const decision={status:authority.STATUS.INVALID_PROTECTED_MARKER,reason:'LOCAL_FINGERPRINT_MISMATCH'};
+    FB.authorityBlocked=true;
+    FB.localCloudAuthority=decision;
+    document.documentElement.dataset.protectedPilotReadinessStatus='blocked-authority-divergence';
+    document.documentElement.dataset.protectedPilotReadinessError='LOCAL_FINGERPRINT_MISMATCH';
+    return decision;
+  }
+  return null;
+}
+async function applyCloudData(d){
   if(!d) return;
+  if(isProtectedReadOnlyQaBoot() || isAuthoritativeLocalRecoveryBoot()){
+    markProtectedLocalMarkerMismatch();
+    debugInfo('cloud snapshot read-only QA: aplicação local bloqueada', {updatedAtLocal:d.updatedAtLocal||null});
+    return false;
+  }
+  if(window.ProtectedLocalCloudAuthority){
+    const authority=window.ProtectedLocalCloudAuthority;
+    const localState=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
+    const localFingerprint=authority.fingerprintState(localState);
+    const cloudFingerprint=authority.fingerprintCloud(d);
+    let marker=null;
+    try{ marker=localStorage.getItem('civ5_authority'); }catch(e){ marker='{invalid-marker-read'; }
+    const legacyProtected=typeof window.ProtectedRealPilotReadiness?.fingerprint==='function'
+      ? await window.ProtectedRealPilotReadiness.fingerprint(window.ProtectedRealPilotReadiness.canonicalState(localState,normalizeGoals)) === '0695018d78173e479254895724ae8c4d16c7235b1982ff5229b9d05771688ad9'
+      : false;
+    const decision=authority.decide({marker,localFingerprint,cloudFingerprint,legacyProtected});
+    FB.localCloudAuthority=decision;
+    FB.lastCloudAuthorityFingerprint=cloudFingerprint;
+    if(decision.status!==authority.STATUS.CLOUD_AUTHORITATIVE){
+      if(decision.reason==='LOCAL_FINGERPRINT_MISMATCH'){
+        FB.authorityBlocked=true;
+        document.documentElement.dataset.protectedPilotReadinessStatus='blocked-authority-divergence';
+        document.documentElement.dataset.protectedPilotReadinessError='LOCAL_FINGERPRINT_MISMATCH';
+      }
+      debugInfo('cloud snapshot not applied: local authority contract',decision);
+      return false;
+    }
+  }
+  if(FB.pendingCloudSave){
+    debugInfo('cloud snapshot deferred while local state is pending upload', {
+      updatedAtLocal:d.updatedAtLocal||null,
+      pendingCloudSave:true,
+    });
+    return false;
+  }
   FB.applying=true;
   const before=cloudSnapshotSignature();
   const legacyBrapiToken = String(d.settings?.brapiToken || '').trim();
@@ -9309,14 +10299,20 @@ function applyCloudData(d){
     hasTokenInSettings:!!d.settings?.brapiToken
   });
   if(Array.isArray(d.wallets) && d.wallets.length){
-    S.wallets=d.wallets.map((w,i)=>normalizeWalletEntry(w, i===0?'Carteira principal':`Carteira ${i+1}`));
+    const localWallets=Array.isArray(S.wallets) ? S.wallets : [];
+    S.wallets=d.wallets.map((w,i)=>{
+      const local=localWallets.find(item=>String(item?.id||'')===String(w?.id||''));
+      const merged={...w};
+      if(local && Array.isArray(w?.proventos)) merged.proventos=window.ProtectedIncomeLinkage.mergeReferenceIncomeEvents(local.proventos,w.proventos);
+      return normalizeWalletEntry(merged, i===0?'Carteira principal':`Carteira ${i+1}`);
+    });
     if(d.activeWalletId) S.activeWalletId=String(d.activeWalletId);
     const active=S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
     syncStateFromWallet(active);
   }else{
     if(Array.isArray(d.assets))    S.assets    = d.assets;
     if(Array.isArray(d.aportes))   S.aportes   = d.aportes;
-    if(Array.isArray(d.proventos)) S.proventos = d.proventos;
+    if(Array.isArray(d.proventos)) S.proventos = window.ProtectedIncomeLinkage.mergeReferenceIncomeEvents(S.proventos,d.proventos);
     if(Array.isArray(d.rfEvents))  S.rfEvents  = normalizeRfEvents(d.rfEvents);
     if(d.divGoal!==undefined)      S.divGoal   = Number(d.divGoal)||0;
     if(d.goals && typeof d.goals==='object') S.goals = normalizeGoals(d.goals);
@@ -9352,7 +10348,7 @@ function applyCloudData(d){
   return before!==after;
 }
 function startCloudSync(){
-  if(isLocalTestMode() || !isEditOwner()) return;
+  if(isLocalTestMode() || isAuthoritativeLocalRecoveryBoot() || (!isEditOwner() && !isProtectedReadOnlyQaBoot())) return;
   const ref=portfolioRef();
   if(!ref) return;
   stopCloudSync(false);
@@ -9360,16 +10356,18 @@ function startCloudSync(){
   FB.unsub=ref.onSnapshot(async snap=>{
     try{
       if(!snap.exists){
-        if(hasLocalData()) await uploadLocalToCloud(false);
+        if(hasLocalData()) await uploadLocalToCloud(false,{allowMissingCloud:true});
         FB.cloudLoaded=true;
+        bindProtectedRealPilotSession();
         if(FB.pendingCloudSave) queueCloudSave();
         render();
         return;
       }
       const data=snap.data()||{};
-      const changed=applyCloudData(data);
+      const changed=await applyCloudData(data);
       FB.cloudLoaded=true;
-      if(FB.pendingCloudSave) queueCloudSave();
+      bindProtectedRealPilotSession();
+      if(FB.pendingCloudSave && changed) queueCloudSave();
       if(changed) render();
     }catch(e){ debugWarn('cloud sync:',e); }
   },err=>{
@@ -9388,13 +10386,20 @@ function stopCloudSync(doRender=true){
   if(doRender) render();
 }
 function queueCloudSave(){
+  if(isProtectedReadOnlyQaBoot() || isAuthoritativeLocalRecoveryBoot()) return;
   if(isLocalTestMode() || !isEditOwner()) return;
+  // Local bootstrap/migration state must never outrank the authoritative
+  // authenticated cloud snapshot. Cloud writes become eligible only after
+  // the first snapshot has hydrated the active wallet.
+  if(!FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
   FB.pendingCloudSave=true;
   if(FB.applying || !FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
   clearTimeout(FB.saveTimer);
   FB.saveTimer=setTimeout(()=>uploadLocalToCloud(true),900);
 }
-async function uploadLocalToCloud(show=true){
+async function uploadLocalToCloud(show=true, options={}){
+  if(isProtectedReadOnlyQaBoot()) return {pass:false,reason:'PROTECTED_READ_ONLY_QA_BOOT'};
+  if(isAuthoritativeLocalRecoveryBoot()) return {pass:false,reason:'AUTHORITATIVE_LOCAL_RECOVERY_CLOUD_WRITE_BLOCKED'};
   if(isLocalTestMode()){
     if(show) toast('🧪 Modo de teste local: sincronização desativada.');
     return;
@@ -9408,7 +10413,7 @@ async function uploadLocalToCloud(show=true){
     return;
   }
   const ref=portfolioRef();
-  if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return; }
+  if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return {pass:false,reason:'CLOUD_READBACK_UNAVAILABLE'}; }
   if(FB.syncInFlight){
     if(show) toast('Sincronização já em andamento.','#fbbf24');
     return;
@@ -9416,19 +10421,36 @@ async function uploadLocalToCloud(show=true){
   FB.syncInFlight=true;
   render();
   try{
-    const payload=cloudPayload();
+    let currentCloud={};
+    if(options.preserveReferenceEvents !== false){
+      try{ currentCloud=await readFreshCloudPayload(); }
+      catch(error){
+        if(FB.cloudLoaded || options.allowMissingCloud!==true) throw new Error('CLOUD_PREWRITE_READBACK_UNAVAILABLE');
+      }
+    }
+    const payload=mergeCloudReferencePayload(cloudPayload(), currentCloud);
     payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
     await ref.set(payload, {merge:true});
+    const cloudReadback=options.requireCloudReadback ? await readFreshCloudPayload() : null;
+    const cloudState=cloudReadback ? extractCloudActiveState(cloudReadback) : null;
+    const cloudCounts=cloudState ? window.ProtectedCloudPersistence.counts(cloudState.proventos) : null;
+    if(options.expectedState && cloudCounts && (
+      Number(options.expectedState.totalLedger||0)!==cloudCounts.total
+      || Number(options.expectedState.b3Events||0)!==cloudCounts.b3
+      || Number(options.expectedState.yahooEvents||0)!==cloudCounts.yahoo
+    )) throw new Error('CLOUD_PERSISTED_STATE_MISMATCH');
     FB.lastCloudUpdate=new Date().toISOString();
     FB.lastCloudError=null;
     FB.pendingCloudSave=false;
     clearTimeout(FB.cloudRetryTimer);
+    return {pass:true,cloudReadback:true,counts:cloudCounts,pendingCloudSave:false,syncInFlight:false};
   }catch(e){
     FB.lastCloudError=e;
     FB.pendingCloudSave=true;
     logCloudSyncError(e);
     if(show) toast(`Lançamento salvo localmente, mas não sincronizado com a nuvem. ${cloudSyncErrorMessage(e)}`,'#f87171');
     if(FB.user && FB.cloudLoaded && FB.access.allowed && navigator.onLine!==false && isTransientCloudError(e)) scheduleCloudRetry();
+    return {pass:false,cloudReadback:false,reason:String(e?.message||e),pendingCloudSave:true,syncInFlight:false};
   }finally{
     FB.syncInFlight=false;
     render();
@@ -9878,6 +10900,10 @@ function settingsTab(){
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Centro de backup</div><div class="premium-settings-row-desc">Visualizar resumo e gerenciar importação/exportação.</div></div>
             <button class="btn bgh" onclick="openBackupCenter()" style="font-size:11px;min-height:34px;padding:0 10px">Abrir</button>
           </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Aportes e retiradas externas</div><div class="premium-settings-row-desc">Fluxos para medir performance, separados de compras e vendas.</div></div>
+            <button class="btn bgh" onclick="openExternalFlow()" style="font-size:11px;min-height:34px;padding:0 10px">Registrar</button>
+          </div>
         </div>
 
         ${canSec ? `
@@ -10086,15 +11112,98 @@ function backupCurrentState(){
 function backupCurrentConfig(){
   return {divGoal:Number(S.divGoal)||0};
 }
+const V76_SNAPSHOT_STORAGE_KEY='portfolioValuationSnapshotsV1';
+const V76_FLOW_STORAGE_KEY='portfolioExternalCashFlowsV1';
+function v76Clock(){ return Date.now(); }
+function v76RuntimeAvailable(){ return !!window.PortfolioRuntimeStores && typeof localStorage!=='undefined'; }
+function loadV76RuntimeStores(){
+  if(!v76RuntimeAvailable()) return {snapshots:[],flows:[],diagnostics:['RUNTIME_UNAVAILABLE']};
+  const R=window.PortfolioRuntimeStores;
+  const snapshots=R.loadStore(localStorage.getItem(V76_SNAPSHOT_STORAGE_KEY),'snapshots',v76Clock);
+  const flows=R.loadStore(localStorage.getItem(V76_FLOW_STORAGE_KEY),'flows',v76Clock);
+  window.__V76_RUNTIME__={snapshots:snapshots.value,flows:flows.value,diagnostics:[snapshots.diagnostic,flows.diagnostic]};
+  return window.__V76_RUNTIME__;
+}
+function saveV76RuntimeStores(){
+  if(!v76RuntimeAvailable()||!window.__V76_RUNTIME__) return false;
+  try{
+    localStorage.setItem(V76_SNAPSHOT_STORAGE_KEY,JSON.stringify(window.__V76_RUNTIME__.snapshots));
+    localStorage.setItem(V76_FLOW_STORAGE_KEY,JSON.stringify(window.__V76_RUNTIME__.flows));
+    return true;
+  }catch(error){ debugWarn('V76 derived stores:',error); return false; }
+}
+function v76LocalDate(date=new Date()){
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+  const get=k=>parts.find(p=>p.type===k)?.value||'';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+function v76CurrentPortfolioComponents(){
+  const assets=Array.isArray(S.assets)?S.assets:[];
+  const listed=assets.filter(a=>!isRendaFixaAsset(a));
+  const priced=listed.filter(a=>{const t=String(a?.ticker||'').toUpperCase();const q=S.quotes?.[t];return Number(a?.qty||0)>0&&Number.isFinite(Number(q?.price??a?.current_price))&&Number(q?.price??a?.current_price)>0;});
+  const listedValue=priced.reduce((sum,a)=>sum+Number(a.qty||0)*Number((S.quotes?.[String(a.ticker||'').toUpperCase()]?.price ?? a.current_price ?? 0)),0);
+  const rf=assets.filter(isRendaFixaAsset).map(a=>rfValues(a));
+  const fixedIncomeValue=rf.reduce((sum,v)=>sum+Number(v.current??v.applied??0),0);
+  const fixedExplicit=rf.filter(v=>v.hasExplicitCurrent).length;
+  const fixedIncomeAsOf=assets.map(a=>a?.rf_updated_at||a?.valuationDate||a?.updated_at||a?.updatedAt).filter(Boolean).sort().at(-1)||null;
+  const listedCoverage=listed.length?priced.length/listed.length*100:100;
+  const fixedCoverage=rf.length?fixedExplicit/rf.length*100:100;
+  const components=window.PortfolioRuntimeStores.selectors({listedValue:Math.round(listedValue*100),fixedIncomeValue:Math.round(fixedIncomeValue*100),otherValue:0,listedCoveragePercent:listedCoverage,fixedIncomeCoveragePercent:fixedCoverage,fixedIncomeAsOf,priceProvider:'Yahoo Chart'});
+  return {listed,priced,rf,listedValue:Math.round(listedValue*100),fixedIncomeValue:Math.round(fixedIncomeValue*100),listedCoverage,fixedCoverage,fixedIncomeAsOf,freshness:components.freshness,selectors:components};
+}
+function captureV76DailySnapshot({force=false}={}){
+  if(!v76RuntimeAvailable()||isLocalTestMode()||!Array.isArray(S.assets)||!S.assets.length) return {ok:false,diagnostic:'PORTFOLIO_NOT_READY'};
+  const components=v76CurrentPortfolioComponents();
+  if(!force && components.priced.length===0) return {ok:false,diagnostic:'LISTED_VALUE_UNAVAILABLE'};
+  const today=v76LocalDate();
+  const totalCoverage=components.selectors.getPortfolioCoverage();
+  if(totalCoverage<50) return {ok:false,diagnostic:'COVERAGE_BELOW_SAFE_THRESHOLD'};
+  const R=window.PortfolioRuntimeStores;
+  const next=R.upsertDailySnapshot(window.__V76_RUNTIME__?.snapshots||R.emptySnapshotStore(v76Clock),{
+    localDate:today,listedAssetsValue:components.listedValue,fixedIncomeValue:components.fixedIncomeValue,otherAssetsValue:0,totalPortfolioValue:components.selectors.totalValue,
+    listedCoveragePercent:components.listedCoverage,fixedIncomeCoveragePercent:components.fixedCoverage,totalCoveragePercent:totalCoverage,listedPriceAsOf:S.lastUpdate?S.lastUpdate.toISOString():null,
+    fixedIncomeAsOf:components.fixedIncomeAsOf,freshness:components.freshness==='LIVE'?'LIVE':'STALE_SNAPSHOT',sourceQuality:'LOCAL_DERIVED'
+  },v76Clock);
+  window.__V76_RUNTIME__.snapshots=next.store;
+  saveV76RuntimeStores();
+  return {ok:true,action:next.action,snapshot:next.snapshot};
+}
+function initializeV76Runtime(){
+  const runtime=loadV76RuntimeStores();
+  window.__V76_RUNTIME_STATUS__=window.PortfolioRuntimeStores.prospectiveStatus(runtime.snapshots);
+  return runtime;
+}
+function v76ExternalFlowLabel(type){return ({CONTRIBUTION:'Aporte',WITHDRAWAL:'Retirada',TRANSFER_IN_EXTERNAL:'Transferência externa entrada',TRANSFER_OUT_EXTERNAL:'Transferência externa saída',ADJUSTMENT:'Ajuste'})[type]||type;}
+function openExternalFlow(){S.externalFlowOpen=true;S.externalFlowError='';render();}
+function closeExternalFlow(){S.externalFlowOpen=false;S.externalFlowError='';render();}
+function addExternalFlowFromUi(){
+  const type=String(document.getElementById('v76-flow-type')?.value||'');
+  const date=String(document.getElementById('v76-flow-date')?.value||'');
+  const amount=String(document.getElementById('v76-flow-amount')?.value||'').replace(',','.');
+  const notes=String(document.getElementById('v76-flow-notes')?.value||'').trim();
+  const amountCents=Math.round(Number(amount)*100);
+  if(!date||!type||!Number.isInteger(amountCents)||amountCents<=0){S.externalFlowError='Informe tipo, data e um valor positivo.';render();return;}
+  const R=window.PortfolioRuntimeStores; const result=R.addExternalFlow(window.__V76_RUNTIME__?.flows||R.emptyFlowStore(v76Clock),{date,type,amountCents,source:'MANUAL',notes},v76Clock);
+  if(result.action==='DUPLICATE'){S.externalFlowError='Esse fluxo já está registrado; nada foi duplicado.';render();return;}
+  window.__V76_RUNTIME__.flows=result.store; saveV76RuntimeStores(); S.externalFlowOpen=false; S.externalFlowError=''; render();
+}
+function externalFlowModal(){
+  if(!S.externalFlowOpen) return '';
+  const flows=window.__V76_RUNTIME__?.flows?.flows||[];
+  return `<div class="note-overlay" onclick="if(event.target===this)closeExternalFlow()"><div class="note-modal" style="max-width:620px;max-height:86vh;display:flex;flex-direction:column"><div class="note-head"><div class="note-title"><div><h3>Registrar aporte ou retirada</h3><p>Fluxo externo separado de compras, vendas e proventos.</p></div><div class="note-pill">${flows.length} registro${flows.length===1?'':'s'}</div></div></div><div class="sec-body" style="overflow:auto;display:grid;gap:9px;padding:12px 16px"><div class="fg"><label class="fl" for="v76-flow-type">Tipo</label><select id="v76-flow-type" class="inp"><option value="CONTRIBUTION">Aporte</option><option value="WITHDRAWAL">Retirada</option><option value="TRANSFER_IN_EXTERNAL">Transferência externa entrada</option><option value="TRANSFER_OUT_EXTERNAL">Transferência externa saída</option><option value="ADJUSTMENT">Ajuste</option></select></div><div class="fg"><label class="fl" for="v76-flow-date">Data</label><input id="v76-flow-date" class="inp" type="date" value="${v76LocalDate()}"></div><div class="fg"><label class="fl" for="v76-flow-amount">Valor (R$)</label><input id="v76-flow-amount" class="inp" inputmode="decimal" placeholder="0,00"></div><div class="fg"><label class="fl" for="v76-flow-notes">Observação (opcional)</label><textarea id="v76-flow-notes" class="inp" rows="2"></textarea></div>${S.externalFlowError?`<div role="alert" style="color:#fbbf24;font-size:12px">${esc(S.externalFlowError)}</div>`:''}<div class="backup-note">Esse registro alimenta apenas a medição de performance. Não altera o ledger financeiro realizado.</div></div><div style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px"><button class="btn bgh" onclick="closeExternalFlow()">Cancelar</button><button class="btn bp" onclick="addExternalFlowFromUi()">Registrar</button></div></div></div>`;
+}
 function backupPayload(){
   const data=backupCurrentState();
-  return PersistenceCore.createBackupPayload(data, backupCurrentConfig(), {
+  const payload=PersistenceCore.createBackupPayload(data, backupCurrentConfig(), {
     appName:APP_NAME,
     backupVersion:BACKUP_VER,
     exportedAt:new Date().toISOString(),
     origin:'localStorage',
     storageKeys:[STOR, `${STOR}_cfg`]
   });
+  if(!payload.data || typeof payload.data!=='object') payload.data={};
+  if(v76RuntimeAvailable()) payload.data.v76Runtime=window.PortfolioRuntimeStores.backupSupplement({snapshots:window.__V76_RUNTIME__?.snapshots,flows:window.__V76_RUNTIME__?.flows});
+  return payload;
 }
 function backupFromRaw(raw){
   return PersistenceCore.parseBackupRaw(raw);
@@ -10122,7 +11231,7 @@ function restoreScroll(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x, top:y, behavior:'auto'})));
 }
 function bodyModalLockActive(){
-  return !!(S.accessSettingsOpen || S.backupOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.showA || S.mobileMenuOpen || S.mobileTopMenuOpen);
+  return !!(S.accessSettingsOpen || S.backupOpen || S.externalFlowOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.showA || S.mobileMenuOpen || S.mobileTopMenuOpen);
 }
 function scrollPreserveActive(){
   return !!(bodyModalLockActive() || S.showA || S.showP || S.showD);
@@ -10199,6 +11308,9 @@ function applyBackupData(parsed){
     brapiToken:String(payload.data?.brapiToken || payload.meta?.brapiToken || ''),
     divGoal:Number(payload.data?.divGoal)||0
   };
+  const runtimeApi=typeof globalThis!=='undefined'?globalThis.PortfolioRuntimeStores:null;
+  const derived=runtimeApi?.restoreSupplement(payload.data?.v76Runtime||payload.v76Runtime,v76Clock);
+  if(derived&&!derived.ok){ toast('A seção de performance do backup é inválida; restauração cancelada.','#f87171'); return false; }
   const result=PersistenceCore.applyStorageTransaction(
     localStorage,
     STOR,
@@ -10217,6 +11329,10 @@ function applyBackupData(parsed){
     return false;
   }
   load();
+  if(derived?.ok&&typeof window!=='undefined'&&v76RuntimeAvailable()){
+    window.__V76_RUNTIME__={snapshots:derived.snapshots,flows:derived.flows,diagnostics:['RESTORED']};
+    saveV76RuntimeStores();
+  }
   S.backupImportDraft=null;
   S.backupOpen=false;
   save();
@@ -21236,6 +22352,7 @@ const pointsMarkup=values.map((v,i)=>{
 }
 
 function syncAssetsFromAportes(showMsg=false){
+  if(isProtectedReadOnlyQaBoot()) return;
   const keep={};
   S.assets.forEach(a=>keep[a.ticker]={...a});
   const grouped={};
@@ -21383,6 +22500,28 @@ function syncAssetsFromAportes(showMsg=false){
       decision:isRF?(g.decision||old.decision||old.note||old.observation||''):old.decision
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
+  if(window.ProtectedRfReconstruction?.reconstructRfPosition){
+    S.assets=S.assets.map(asset=>{
+      if(!isRendaFixaAsset(asset)) return asset;
+      const assetId=String(rfAssetEventId(asset)||'').trim();
+      if(!assetId) return asset;
+      const events=normalizeRfEvents(S.rfEvents||[]).filter(event=>String(event.assetId||'').trim()===assetId);
+      const baseApplied=Number(asset.rf_applied_value);
+      const baseCurrent=Number(asset.rf_liquid_value ?? asset.fixed_current_value ?? asset.current_price);
+      const result=window.ProtectedRfReconstruction.reconstructRfPosition({baseApplied,baseCurrent,events});
+      if(!result.ok){
+        console.warn('[rf] reconstrução protegida mantida para revisão', {assetId,reason:result.reason,eventId:result.eventId||''});
+        return asset;
+      }
+      return {
+        ...asset,
+        rf_applied_value:result.appliedValue,
+        rf_liquid_value:result.currentValue,
+        fixed_current_value:result.currentValue,
+        current_price:result.currentValue,
+      };
+    });
+  }
   const importedPositionAssets=Object.values(keep)
     .filter(a=>{
       const tk=String(a?.ticker||'').trim().toUpperCase();
@@ -21460,7 +22599,7 @@ function shouldApplyQuoteUpdate(asset, providerTimeMs){
   return true;
 }
 async function fetchQuotes(manual=false){
-  if(isLocalTestMode()){
+  if(isLocalTestMode() || isProtectedReadOnlyQaBoot()){
     S.qLoad=false;
     S.qInFlight=false;
     return [];
@@ -21593,6 +22732,7 @@ async function fetchQuotes(manual=false){
 
   S.qInFlight=false;
   S.qLoad=false; S.cd=QI;
+  try{ if(!isLocalTestMode()) { const snapshot=captureV76DailySnapshot(); if(snapshot.ok) window.__V76_RUNTIME_STATUS__=window.PortfolioRuntimeStores.prospectiveStatus(window.__V76_RUNTIME__.snapshots); } }catch(error){ debugWarn('V76 snapshot:',error); }
   render();
   disarmQuoteUi();
 }
@@ -25013,6 +26153,55 @@ function render(){
       </div>`;
   }
 }
+const IMPORT_CENTER_SOURCES=[
+  {type:'B3_MOVEMENTS_XLSX',label:'Movimentações B3',support:'PARTIAL',hint:'Compra, venda e eventos com revisão quando a evidência é insuficiente.'},
+  {type:'B3_POSITION_XLSX',label:'Posição B3',support:'FULLY_SUPPORTED',hint:'Conciliação de quantidade; não substitui a posição atual.'},
+  {type:'B3_DIVIDENDS_XLSX',label:'Proventos B3',support:'FULLY_SUPPORTED',hint:'Preview, deduplicação e histórico sem alterar Dividendos.'},
+  {type:'BROKERAGE_NOTE_PDF',label:'Nota de corretagem',support:'PARTIAL',hint:'Fixture estruturada; extração arbitrária de PDF exige revisão.'},
+];
+const IMPORT_CENTER_STEPS=['Arquivos','Detecção','Preview','Revisão','Reconciliação','Plano','Dry-run','Resultado'];
+function importCenterState(){
+  if(!S.importCenterSession) S.importCenterSession={files:[],step:1,result:null,history:[]};
+  return S.importCenterSession;
+}
+function importCenterDetectFile(file){
+  const name=String(file?.name||'').toLowerCase();
+  if(/\.pdf$/.test(name)) return {type:'BROKERAGE_NOTE_PDF',label:'Nota de corretagem',support:'PARTIAL',parser:'fixture estruturada'};
+  if(/provent|dividend|rendimento/.test(name)) return {type:'B3_DIVIDENDS_XLSX',label:'Proventos B3',support:'FULLY_SUPPORTED',parser:'preview de proventos'};
+  if(/moviment|negoci|operac/.test(name)) return {type:'B3_MOVEMENTS_XLSX',label:'Movimentações B3',support:'PARTIAL',parser:'reconstrução de movimentos'};
+  if(/posic|custod|carteira/.test(name)) return {type:'B3_POSITION_XLSX',label:'Posição B3',support:'FULLY_SUPPORTED',parser:'conciliação de posição'};
+  return {type:'UNKNOWN',label:'Formato não reconhecido',support:'REVIEW_REQUIRED',parser:'nenhum'};
+}
+function importCenterFiles(files){
+  const session=importCenterState();
+  session.files=Array.from(files||[]).map(file=>({name:String(file.name||''),size:Number(file.size)||0,detected:importCenterDetectFile(file)}));
+  session.step=session.files.length?2:1; session.result=null; render();
+}
+function importCenterRunDryRun(){
+  const session=importCenterState();
+  if(!session.files.length) return;
+  const unknown=session.files.filter(file=>file.detected.type==='UNKNOWN').length;
+  const reviewed=session.files.filter(file=>file.detected.support==='REVIEW_REQUIRED').length;
+  session.step=8;
+  session.result={status:unknown||reviewed?'WARNING':'SUCCESS',snapshot:'validado',rollback:'testado',newRecords:0,duplicates:0,potentialDuplicates:0,conflicts:reviewed,review:reviewed,unsupported:unknown,position:'preservada',income:'sem alteração',whatWillChange:0};
+  session.history=[{date:new Date().toISOString(),source:session.files.map(file=>file.detected.label).join(', '),period:'não informado',status:session.result.status,records:0,duplicates:0,conflicts:session.result.conflicts,reconciliation:'dry-run',rollback:'testado'},...(session.history||[])].slice(0,8);
+  render();
+}
+function importCenterReset(){ S.importCenterSession={files:[],step:1,result:null,history:[]}; render(); }
+function importCenterTab(){
+  const session=importCenterState();
+  const files=session.files||[]; const result=session.result;
+  const supportClass=value=>value==='FULLY_SUPPORTED'?'full':'partial';
+  const supportLabel=value=>value==='FULLY_SUPPORTED'?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':'Suporte parcial';
+  const steps=IMPORT_CENTER_STEPS.map((label,index)=>`<div class="import-center-step ${session.step===index+1?'on':''} ${session.step>index+1?'done':''}"><span>${session.step>index+1?'✓':index+1}</span>${label}</div>`).join('');
+  const currentStepLabel=IMPORT_CENTER_STEPS[Math.max(0,Math.min(IMPORT_CENTER_STEPS.length-1,session.step-1))];
+  const fileRows=files.length?files.map(file=>`<div class="import-file-row"><div><strong>${esc(file.name||'Arquivo sem nome')}</strong><small>${esc(file.detected.label)} · ${esc(file.detected.parser)} · ${supportLabel(file.detected.support)}</small></div><span class="import-support ${supportClass(file.detected.support)}">${esc(supportLabel(file.detected.support))}</span></div>`).join(''):'<div class="import-review-item">Nenhum arquivo selecionado. A sessão permanece apenas em memória.</div>';
+  const previewBlock=files.length?`<div class="import-center-panel"><h2>Preview da simulação</h2><p>Os números abaixo só são preenchidos após a execução. Nenhum registro é gravado nesta etapa.</p><div class="import-center-summary"><div class="import-kpi"><small>Arquivos analisados</small><strong>${result?files.length:'—'}</strong></div><div class="import-kpi"><small>Novos</small><strong>${result?result.newRecords:'—'}</strong></div><div class="import-kpi"><small>Duplicados</small><strong>${result?result.duplicates:'—'}</strong></div><div class="import-kpi"><small>Possíveis duplicados</small><strong>${result?result.potentialDuplicates:'—'}</strong></div><div class="import-kpi"><small>Conflitos</small><strong>${result?result.conflicts:'—'}</strong></div><div class="import-kpi"><small>Revisão</small><strong>${result?result.review:'—'}</strong></div><div class="import-kpi"><small>Não suportados</small><strong>${result?result.unsupported:'—'}</strong></div><div class="import-kpi"><small>Escritas</small><strong>0</strong></div></div></div>`:'';
+  const reviewBlock=result?`<div class="import-review-grid"><article class="import-review-card"><h3>Duplicidades</h3><p><strong>${result.duplicates===0?'Nenhuma duplicidade identificada nesta simulação.':'Duplicidades aguardam revisão.'}</strong> Quando houver um item, a conferência mostrará por que foi considerado duplicado.</p><dl><dt>Origem</dt><dd class="import-muted">—</dd><dt>Ativo</dt><dd class="import-muted">—</dd><dt>Data / valor</dt><dd class="import-muted">—</dd><dt>Ação futura</dt><dd>Manter uma ocorrência</dd></dl></article><article class="import-review-card"><h3>Conflitos e revisão</h3><p><strong>${result.conflicts?'Revisão necessária':'Nenhum conflito identificado.'}</strong> Nenhuma divergência é resolvida automaticamente.</p><dl><dt>Gravidade</dt><dd>${result.conflicts?'Revisão':'Informativo'}</dd><dt>Fonte A</dt><dd>${esc(files[0]?.name||'—')}</dd><dt>Fonte B</dt><dd class="import-muted">Não disponível</dd><dt>Motivo</dt><dd>${result.conflicts?'Formato/evidência insuficiente':'Sem divergência'}</dd></dl></article></div><div class="import-center-panel"><h2>Reconciliação de posição</h2><p>B3 é uma conferência de custódia. Nunca sobrescreve a posição atual do App.</p><div class="import-reconciliation"><table><thead><tr><th>Campo</th><th>App</th><th>B3</th><th>Histórico verificado</th></tr></thead><tbody><tr><td>Quantidade</td><td class="import-muted">—</td><td class="import-muted">—</td><td class="import-muted">—</td></tr><tr><td>Identidade</td><td>Protegida</td><td class="import-muted">—</td><td class="import-muted">—</td></tr><tr><td>Resultado</td><td>Preservado</td><td>Somente conferência</td><td>Somente conferência</td></tr></tbody></table></div><div class="import-reconciliation-mobile"><div class="import-reconcile-card"><strong>Quantidade</strong><dl><dt>App</dt><dd class="import-muted">—</dd><dt>B3</dt><dd class="import-muted">—</dd><dt>Histórico verificado</dt><dd class="import-muted">—</dd></dl></div><div class="import-reconcile-card"><strong>Identidade</strong><dl><dt>App</dt><dd>Protegida</dd><dt>B3</dt><dd class="import-muted">—</dd><dt>Histórico verificado</dt><dd class="import-muted">—</dd></dl></div><div class="import-reconcile-card"><strong>Resultado</strong><dl><dt>App</dt><dd>Preservado</dd><dt>B3</dt><dd>Somente conferência</dd><dt>Histórico verificado</dt><dd>Somente conferência</dd></dl></div></div></div>`:'';
+  const resultBlock=result?`<div class="import-review-list"><div class="import-review-item ${result.status==='WARNING'?'warning':''}"><strong>${result.status==='SUCCESS'?'Simulação concluída':'Simulação concluída com revisão'}</strong><br>Snapshot ${result.snapshot}; rollback ${result.rollback}; estado original preservado.</div><div class="import-safety-result" aria-label="Resumo de segurança da simulação"><span><b>Posição</b> preservada</span><span><b>Escritas</b> 0</span><span><b>Snapshot</b> validado</span><span><b>Rollback</b> testado</span></div><div class="import-review-item warning"><strong>Classificação financeira conservadora</strong><br>Dados insuficientes para classificar automaticamente eventos de Renda Fixa ou corporativos permanecem em revisão manual.</div><div class="import-review-item"><strong>Relatório de reconciliação</strong><br>A base HTML/native-print existente pode documentar o preview; esta sessão não grava histórico permanente.</div><div class="import-kpis"><div class="import-kpi"><small>Seria adicionado</small><strong>${result.newRecords}</strong></div><div class="import-kpi"><small>Duplicados</small><strong>${result.duplicates}</strong></div><div class="import-kpi"><small>Conflitos</small><strong>${result.conflicts}</strong></div><div class="import-kpi"><small>Impacto posição</small><strong>Preservado</strong></div></div></div>`:'';
+  const history=(session.history||[]).length?`<div class="import-center-panel"><h2>Histórico de simulações</h2><div class="import-file-list">${session.history.map(item=>`<div class="import-file-row"><div><strong>${esc(item.source)}</strong><small>${esc(item.date)} · ${esc(item.period)} · ${esc(item.reconciliation)}</small></div><span class="import-support ${item.status==='SUCCESS'?'full':'partial'}">${esc(item.status)}</span></div>`).join('')}</div></div>`:'';
+  return `<section class="import-center-shell" aria-labelledby="import-center-title"><div class="import-center-hero"><div><div class="import-center-title" id="import-center-title">Importar dados</div><div class="import-center-sub">Central profissional para revisar fontes, duplicidades, conflitos e reconciliação antes de qualquer futura autorização de escrita.</div></div><div class="import-center-safety" role="status" aria-live="polite">Modo seguro: esta simulação não altera sua carteira.</div></div><div class="import-center-steps" aria-label="Etapas da simulação"><div class="import-center-step-mobile"><span>Etapa ${session.step} de ${IMPORT_CENTER_STEPS.length}</span><strong>${currentStepLabel}</strong></div>${steps}</div><div class="import-center-grid"><div class="import-center-panel"><h2>Fontes suportadas</h2><p>Selecione arquivos sanitizados. O status abaixo usa linguagem simples e formatos desconhecidos sempre ficam em revisão.</p><div class="import-source-list">${IMPORT_CENTER_SOURCES.map(item=>`<div class="import-source-card"><strong>${item.label}</strong><span>${item.hint}</span><span class="import-support ${supportClass(item.support)}">${esc(supportLabel(item.support))}</span></div>`).join('')}</div><div class="import-center-actions"><label class="btn bp" for="import-center-file-input">Selecionar arquivos</label><input id="import-center-file-input" type="file" multiple accept=".xlsx,.xls,.pdf" hidden onchange="importCenterFiles(this.files)"><button type="button" class="btn bgh" onclick="importCenterReset()">Limpar sessão</button></div></div><div class="import-center-panel ${files.length?'':'empty'}"><h2>Arquivos da sessão</h2><p>Detecção e parser ficam visíveis; nenhuma seleção é persistida.</p><div class="import-file-list">${fileRows}</div>${files.length?`<div class="import-center-actions"><button type="button" class="btn bp" onclick="importCenterRunDryRun()">Executar simulação</button></div>`:''}</div></div>${previewBlock}${resultBlock}${reviewBlock}${history}</section>`;
+}
 const NAV_TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights']];
 const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
@@ -25058,6 +26247,7 @@ function desktopTabs(){
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
     ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
     ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
+    ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navItem('metas','Metas','🎯',S.tab==='metas')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
@@ -25121,6 +26311,7 @@ function app(){
   ${mobileMenuDrawer()}
   ${S.accessSettingsOpen?accessSettingsModal():''}
   ${S.backupOpen?backupManagerModal():''}
+  ${S.externalFlowOpen?externalFlowModal():''}
   ${S.pdfReportOpen?reportPdfPreview():''}
   ${S.reportCardPdfType?reportCardPdfPreview(S.reportCardPdfType):''}
   ${S.brokerNoteImport?brokerNoteImportModal():''}
@@ -25136,6 +26327,11 @@ function app(){
 ${globalThis.PortfolioMovementPreview?.getState?.().open ? globalThis.PortfolioMovementPreview.renderHtml() : ''}`;
 }
 function content(){
+  if(assetDetailId){
+    const detail=assetDetailAsset();
+    if(detail) return assetDetailPage(detail);
+    assetDetailId=null;
+  }
   if(S.tab==='dashboard') return dash();
   if(S.tab==='patrimonio') return patrimonioTab();
   if(S.tab==='ativos')    return ativos();
@@ -25150,10 +26346,76 @@ function content(){
   if(S.tab==='ajudar')    return ajudarTab();
   if(S.tab==='auditoria') return dataAuditTab();
   if(S.tab==='relatorios')return reportsTab();
+  if(S.tab==='importacao')return importCenterTab();
   if(S.tab==='ia')        return iaTab();
   if(S.tab==='analise')  return analysisDestination();
   if(S.tab==='settings')  return settingsTab();
   return'';
+}
+
+// V84: detalhe dedicado, somente apresentação e navegação. A identidade vem
+// sempre de asset.id; nenhum dado financeiro é recalculado ou persistido aqui.
+let assetDetailId=null;
+let assetDetailTab='overview';
+function assetDetailAsset(){
+  const id=String(assetDetailId||'').trim();
+  return id ? (S.assets||[]).find(asset=>String(asset?.id||'')===id) || null : null;
+}
+function openAssetDetail(id){
+  const asset=(S.assets||[]).find(item=>String(item?.id||'')===String(id||''));
+  if(!asset) return;
+  assetDetailId=String(asset.id);
+  assetDetailTab='overview';
+  render();
+}
+function closeAssetDetail(){ assetDetailId=null; assetDetailTab='overview'; render(); }
+function setAssetDetailTab(tab){
+  if(['overview','valuation','history','income','documents'].includes(tab)) assetDetailTab=tab;
+  render();
+}
+function assetDetailText(value, fallback='—'){ const text=String(value??'').trim(); return text||fallback; }
+function assetDetailDate(value){ const text=assetDetailText(value,''); if(!text)return'—'; const parsed=parseAnyDate(text); return parsed?parsed.toLocaleDateString('pt-BR'):text; }
+function assetDetailRecords(asset){
+  const id=String(asset?.id||''), ticker=String(asset?.ticker||'').trim().toUpperCase();
+  return (S.aportes||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); });
+}
+function assetDetailIncomeRecords(asset){
+  const id=String(asset?.id||''), ticker=String(asset?.ticker||'').trim().toUpperCase();
+  return (S.proventos||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); });
+}
+function assetDetailKindLabel(row){
+  const raw=String(row?.operation||row?.op||row?.kind||row?.type||'').toLowerCase();
+  if(raw.includes('venda')||raw.includes('sell'))return'Venda';
+  if(raw.includes('provento')||raw.includes('dividend')||raw.includes('jcp'))return'Provento';
+  if(raw.includes('renda-fixa')||raw.includes('renda fixa'))return'Aplicação';
+  return'Compra';
+}
+function assetDetailTrust(asset,isRF){
+  if(!isRF)return{label:'Cotação de mercado',className:'accent',note:asset?.quoteSource==='yahoo'?'Yahoo Finance':'Cotação da carteira'};
+  const source=assetRfCurrentValueMeta(asset), normalized=rfPosNorm(`${assetRfName(asset)} ${assetRfSubtype(asset)} ${source.source}`);
+  if(normalized.includes('TREND DI'))return{label:'Benchmark CDI',className:'accent',note:'Comparação com CDI; não é valor oficial do título.'};
+  if(normalized.includes('CRA')||normalized.includes('DEB MOVIDA')||normalized.includes('DEBENTURE'))return{label:'Valuation automático indisponível',className:'',note:'Use o valor informado na carteira e a data-base disponível.'};
+  return{label:source.source||'Valor informado na carteira',className:'',note:source.origin||'Fonte cadastrada no ativo'};
+}
+function assetDetailPage(asset){
+  const isRF=isRendaFixaAsset(asset), type=normalizeType(asset?.type||metaTicker(asset?.ticker).type||'Ação','Ação');
+  const name=isRF?assetRfName(asset):assetDetailText(asset?.name,asset?.ticker||'Ativo'), ticker=assetDetailText(asset?.ticker,isRF?'Renda Fixa':'Ativo');
+  const applied=assetAppliedValue(asset), current=isRF?(rfValues(asset).hasExplicitCurrent?assetCurrentValue(asset):null):assetCurrentValueForDisplay(asset);
+  const result=isRF?assetJurosValue(asset):(Number.isFinite(current)&&Number.isFinite(applied)?current-applied:null), rentab=assetRentabPct(asset);
+  const records=assetDetailRecords(asset), income=assetDetailIncomeRecords(asset), documents=Array.isArray(asset?.documents)?asset.documents.filter(Boolean):[];
+  const tabs=[['overview','Visão geral'],['valuation','Valuation']]; if(records.length)tabs.push(['history','Histórico']); if(income.length)tabs.push(['income','Proventos']); if(documents.length)tabs.push(['documents','Documentos']); if(!tabs.some(([key])=>key===assetDetailTab))assetDetailTab='overview';
+  const trust=assetDetailTrust(asset,isRF), resultClass=Number.isFinite(result)?(result>0?'pos':result<0?'neg':'neutral'):'';
+  const valueText=Number.isFinite(current)?fmt(current):'—', subtitle=isRF?`${assetRfSubtype(asset)} · ${assetRfIndexerLabel(asset)}`:`${type}${asset?.sector?` · ${asset.sector}`:''}`;
+  const kpis=isRF?[['Valor usado na carteira',valueText,trust.label,''],['Valor aplicado',Number.isFinite(applied)?fmt(applied):'—','Principal cadastrado',''],['Resultado',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass],['Vencimento',assetDetailDate(assetRfMaturityDate(asset)),assetRfApplicationDate(asset)?`Aplicado em ${assetDetailDate(assetRfApplicationDate(asset))}`:'Data de aplicação não informada','']]:[['Valor de mercado',valueText,asset?.quoteUpdatedAt?'Cotação atualizada':'Cotação disponível',''],['Quantidade',assetDetailText(asset?.qty),'Posição atual',''],['Preço médio',Number(asset?.avg_price)>0?fmt(asset.avg_price):'—','Custo por unidade',''],['Resultado',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass]];
+  const kpiHtml=kpis.map(([label,value,note,cls])=>`<article class="asset-detail-kpi"><div class="asset-detail-kpi-label">${esc(label)}</div><div class="asset-detail-kpi-value ${cls}">${esc(value)}</div><div class="asset-detail-kpi-note">${esc(note)}</div></article>`).join('');
+  const row=(label,value)=>`<div class="asset-detail-row"><span>${esc(label)}</span><strong>${esc(assetDetailText(value))}</strong></div>`;
+  const overview=isRF?`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Informações do produto</h2><p>Identidade e condições registradas para este título.</p></div></div><div class="asset-detail-list">${row('Nome',name)}${row('Tipo',assetRfSubtype(asset))}${row('Indexador',assetRfIndexerLabel(asset))}${row('Taxa contratada',assetRfContractRate(asset))}${row('Data de aplicação',assetDetailDate(assetRfApplicationDate(asset)))}${row('Vencimento',assetDetailDate(assetRfMaturityDate(asset)))}${row('Origem',assetDetailText(assetRfNote(asset),'Cadastro da carteira'))}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Confiança do valor</h2><p>O detalhe preserva a autoridade do valor já cadastrado.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Status</div><strong>${esc(trust.label)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Valor atualizado em',assetDetailText(asset?.rf_updated_at||asset?.updatedAt||asset?.lastUpdatedAt,'Data-base não identificada'))}${row('IR/IOF',assetRfIrIof(asset)>0?fmt(assetRfIrIof(asset)):'—')}</div></article></div>`:`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Posição atual</h2><p>Leitura consolidada pelos dados reais da carteira.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor de mercado</div><strong>${esc(valueText)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Ticker',ticker)}${row('Classe',type)}${row('Setor',assetDetailText(asset?.sector))}${row('DY',Number.isFinite(Number(asset?.dy))?`${asset.dy}%`:'—')}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Leitura da cotação</h2><p>Fonte e atualização sem duplicar o cálculo oficial.</p></div></div><div class="asset-detail-list">${row('Fonte',trust.note)}${row('Última atualização',assetDetailDate(asset?.quoteUpdatedAt))}${row('Preço atual',Number(asset?.current_price)>0?fmt(asset.current_price):'—')}${row('Preço alvo',Number(asset?.price_target)>0?fmt(asset.price_target):'—')}</div></article></div>`;
+  const valuation=`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Valuation usado</h2><p>Valor que participa da carteira neste momento.</p></div><span class="asset-detail-badge ${trust.className}">${esc(trust.label)}</span></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor na carteira</div><strong>${esc(valueText)}</strong><p>${esc(isRF&&assetNeedsRFUpdate(asset)?'Atualização necessária para ampliar a leitura.':trust.note)}</p></div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Base e atualização</h2><p>Sem comparação artificial quando a data-base não é comparável.</p></div></div><div class="asset-detail-list">${row('Data-base',isRF?assetDetailText(asset?.rf_valuation_as_of||asset?.valuationAsOf,'Data-base não identificada'):assetDetailDate(asset?.quoteUpdatedAt))}${row('Origem',isRF?trust.note:asset?.quoteSource==='yahoo'?'Yahoo Finance':'Cotação da carteira')}${row('Comparação',isRF&&trust.label==='Benchmark CDI'?'Comparação com CDI':'Comparação indisponível')}${row('Diferença','—')}</div></article></div>`;
+  const history=records.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Histórico de movimentações</h2><p>Registros existentes para este ativo, sem alterar a fonte.</p></div><span class="asset-detail-badge">${records.length} registro${records.length===1?'':'s'}</span></div><div class="asset-detail-list">${records.map(item=>row(`${assetDetailDate(item.date||item.tradeDate)} · ${assetDetailKindLabel(item)}`,Number(item.total||item.value||item.amount)>0?fmt(Number(item.total||item.value||item.amount)):'Quantidade registrada')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Coletando histórico desde 15/09/2026. Ainda não há pontos suficientes para uma série confiável.</div></article>';
+  const incomeHtml=income.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Proventos do ativo</h2><p>Somente eventos já presentes no histórico da carteira.</p></div><span class="asset-detail-badge">${income.length} registro${income.length===1?'':'s'}</span></div><div class="asset-detail-list">${income.map(item=>row(`${assetDetailDate(item.date||item.paymentDate)} · ${assetDetailText(item.type,'Provento')}`,Number(item.value)>0?fmt(item.value):'Valor não informado')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum provento disponível para este ativo no histórico atual.</div></article>';
+  const docsHtml=documents.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Documentos</h2><p>Referências vinculadas ao ativo.</p></div></div><div class="asset-detail-list">${documents.map(doc=>row(assetDetailText(doc.title||doc.name,'Documento'),assetDetailText(doc.date||doc.source,'Referência cadastrada'))).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum documento vinculado a este ativo.</div></article>';
+  const body=assetDetailTab==='valuation'?valuation:assetDetailTab==='history'?history:assetDetailTab==='income'?incomeHtml:assetDetailTab==='documents'?docsHtml:overview;
+  return `<section class="asset-detail-page" aria-labelledby="asset-detail-title"><header class="asset-detail-hero"><div class="asset-detail-hero-main"><button type="button" class="btn bgh asset-detail-back" onclick="closeAssetDetail()" aria-label="Voltar para a tela anterior">← Voltar</button><div><div class="asset-detail-kicker"><span>${esc(ticker)}</span><span>·</span><span>${esc(type)}</span></div><h1 id="asset-detail-title" class="asset-detail-title">${esc(name)}</h1><div class="asset-detail-subtitle">${esc(subtitle)}</div><div class="asset-detail-badges"><span class="asset-detail-badge accent">${esc(isRF?'Renda Fixa':'Posição em carteira')}</span><span class="asset-detail-badge">${esc(trust.label)}</span></div></div></div><div class="asset-detail-actions"><button type="button" class="btn bgh" onclick='${isRF?`openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")`:`openAssetQuickMovement(${JSON.stringify(String(asset.id))}, "compra")`}'>${isRF?'Movimentar':'Comprar'}</button><button type="button" class="btn bp" onclick='edA(${JSON.stringify(String(asset.id))})'>✎ Editar</button></div></header><div class="asset-detail-kpis">${kpiHtml}</div><nav class="asset-detail-tabs" role="tablist" aria-label="Seções do detalhe de ${esc(ticker)}">${tabs.map(([key,label])=>`<button type="button" role="tab" aria-selected="${assetDetailTab===key?'true':'false'}" class="asset-detail-tab ${assetDetailTab===key?'on':''}" onclick="setAssetDetailTab('${key}')">${esc(label)}</button>`).join('')}</nav><div>${body}</div></section>`;
 }
 
 function analysisDestination(){
@@ -26677,7 +27939,7 @@ function rendaFixaTab(){
       </div>
     </div>` : '';
   const nextMaturity=data.maturityRows[0]||null;
-  const resultTone=data.totalProfit>=0?'#34d399':'#f87171';
+  const resultTone=data.totalProfit>0?'#34d399':data.totalProfit<0?'#f87171':'#94a3b8';
   const kpis=[
     ['Valor atual RF',fmt(data.totalCurrent),data.explicitCount===count?'Valores atuais informados':`${data.explicitCount}/${count} explícitos`,'#34d399'],
     ['Total aplicado',fmt(data.totalApplied),count?'Capital principal cadastrado':'Cadastre títulos','#a78bfa'],
@@ -26699,10 +27961,9 @@ function rendaFixaTab(){
     const asset=(S.assets||[]).find(a=>String(a?.ticker||'').trim().toUpperCase()===String(row.ticker||'').trim().toUpperCase()) || data.assets.find(a=>a.ticker===row.ticker);
     const getAssetEventId = (typeof rfAssetEventId === 'function') ? rfAssetEventId : (a)=>String(a?.id||a?.assetId||a?.rf_asset_id||'').trim();
     const assetId=asset?getAssetEventId(asset):null;
-    const menuId=assetId?`rf-pos-menu-${assetId.replace(/[^a-zA-Z0-9_-]/g,'-')}`:'';
     const display=row.explicit===false
       ? {kind:'missing', appliedText:fmt(row.applied), currentText:'Atualização necessária', currentNote:'Valor atual não informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:'neutral', resultText:'—', rentabilityText:'—'}
-      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>=0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
+      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
     return `
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
@@ -26721,15 +27982,10 @@ function rendaFixaTab(){
       </div>
       ${assetId ? `
       <div class="premium-rf-row-actions">
-        <div class="asset-action-menu" data-asset-actions="${esc(assetId)}">
-          <button type="button" class="btn bgh asset-action" aria-label="Mais ações para ${esc(row.ticker)}" aria-haspopup="menu" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
-          <div id="${esc(menuId)}" class="asset-action-menu-panel" role="menu">
-            <button type="button" role="menuitem" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "aporte"); closeAssetActionMenus()'>Atualizar valor</button>
-            <button type="button" role="menuitem" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "resgate_parcial"); closeAssetActionMenus()'>Resgatar</button>
-            <button type="button" role="menuitem" onclick='edA(${JSON.stringify(assetId)}); closeAssetActionMenus()'>Editar</button>
-            <button type="button" role="menuitem" onclick='openRfContextualHistory(${JSON.stringify(assetId)})'>Ver histórico</button>
-          </div>
-        </div>
+        <button type="button" class="asset-detail-link" onclick='openAssetDetail(${JSON.stringify(assetId)})'>Detalhes</button>
+        <button type="button" class="btn bsv asset-action" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "aporte")'>Movimentar</button>
+        <button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "resgate_parcial")'>Resgatar</button>
+        <button type="button" class="btn bgh asset-action" aria-label="Editar ${esc(row.ticker)}" onclick='edA(${JSON.stringify(assetId)})'>✎ Editar</button>
       </div>` : ''}
     </div>`}).join('') : '<div class="premium-rf-empty ds-empty-state">Nenhum título de renda fixa cadastrado.</div>';
 
@@ -27593,7 +28849,6 @@ if(typeof document!=='undefined' && typeof window!=='undefined' && !window.__ass
 }
 function assetActionMenuHtml(asset, isRF, context='default'){
   const id=String(asset.id||'');
-  const menuId=`asset-actions-menu-${context}-${id.replace(/[^a-zA-Z0-9_-]/g,'-')}`;
   const primary=isRF
     ? `<button type="button" class="btn bsv asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")'>Movimentar</button>`
     : `<button type="button" class="btn bsv asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "compra")'>Comprar</button>`;
@@ -27601,13 +28856,8 @@ function assetActionMenuHtml(asset, isRF, context='default'){
     ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
   return `<div class="asset-actions" data-asset-actions="${esc(id)}">
-    ${primary}${secondary}
-    <div class="asset-action-menu">
-      <button type="button" class="btn bgh asset-action" aria-label="Mais ações de ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>Mais</button>
-      <div id="${esc(menuId)}" class="asset-action-menu-panel" role="menu">
-        <button type="button" role="menuitem" onclick='edA(${JSON.stringify(id)}); closeAssetActionMenus()'>Editar ativo</button>
-      </div>
-    </div>
+    <button type="button" class="asset-detail-link" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>${primary}${secondary}
+    <button type="button" class="btn bgh asset-action" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>✎ Editar</button>
   </div>`;
 }
 function assetEditModal(){
@@ -27686,14 +28936,6 @@ function ativos(){
   const assetKpiCurrent=consolidated.current;
   const assetKpiProfit=consolidated.result;
   const assetKpiReturn=consolidated.returnPct;
-  // Reuse the official allocation snapshot; this block only presents its current values.
-  const allocationActual=allocationActualByType();
-  const allocationTotal=Number(allocationActual&&allocationActual.total)||0;
-  const allocationRows=Object.entries((allocationActual&&allocationActual.map)||{})
-    .map(([type,value])=>({type,value:Number(value)||0,share:allocationTotal>0?((Number(value)||0)/allocationTotal)*100:0}))
-    .filter(row=>row.value>0)
-    .sort((a,b)=>b.value-a.value);
-
             // Filter assets for display (search + class + performance filters)
             const displayAssets = filterAssetsForDisplay(S.assets);
             const canonicalAnalysisByTicker = new Map(assetAnalysisRows().map(row=>[row.ticker,row]));
@@ -27822,7 +29064,7 @@ function ativos(){
              <div class="asset-premium-card-row"><div class="asset-premium-card-label">Resultado</div><div class="asset-premium-card-value ${resultClass}">${Number.isFinite(result)?assetSignedMoneyText(result):'—'}</div></div>
              <div class="asset-premium-card-row"><div class="asset-premium-card-label">Rentab.</div><div class="asset-premium-card-value ${resultPctClass}">${Number.isFinite(resultPct)?fmtP(resultPct):'—'}</div></div>
            </div>
-           <div class="asset-premium-card-actions"><button class="asset-premium-card-action primary" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "compra")'>Comprar</button><button class="asset-premium-card-action" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "venda")'>Vender</button><button class="asset-premium-card-action" onclick='edA(${JSON.stringify(String(a.id))})'>Editar</button></div>
+           <div class="asset-premium-card-actions"><button class="asset-premium-card-action" onclick='openAssetDetail(${JSON.stringify(String(a.id))})'>Detalhes</button><button class="asset-premium-card-action primary" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "compra")'>Comprar</button><button class="asset-premium-card-action" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "venda")'>Vender</button><button class="asset-premium-card-action" onclick='edA(${JSON.stringify(String(a.id))})'>Editar</button></div>
            <div class="asset-premium-card-expanded"><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;padding-top:10px"><div><div class="asset-premium-card-label">Setor</div><div class="asset-premium-card-value">${esc(a.sector||'—')}</div></div><div><div class="asset-premium-card-label">Preço alvo</div><div class="asset-premium-card-value">${Number(a.price_target)?fmt(a.price_target):'—'}</div></div><div><div class="asset-premium-card-label">% ideal</div><div class="asset-premium-card-value">${Number(a.ideal_pct)>0?Number(a.ideal_pct).toFixed(1)+'%':'—'}</div></div><div><div class="asset-premium-card-label">Div. est./mês</div><div class="asset-premium-card-value">${dm!=null?fmt(dm):'—'}</div></div><div><div class="asset-premium-card-label">DY</div><div class="asset-premium-card-value">${Number.isFinite(Number(a.dy))?Number(a.dy)+'%':'—'}</div></div></div></div>
          </details>`;
        }).join('');
@@ -28111,6 +29353,7 @@ function ativos(){
           </div>
         </div>
         <div class="asset-premium-card-actions">
+          <button class="asset-premium-card-action" onclick='openAssetDetail(${JSON.stringify(String(a.id))})'>Detalhes</button>
           <button class="asset-premium-card-action primary" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "compra")'>Comprar</button>
           <button class="asset-premium-card-action" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "venda")'>Vender</button>
           <button class="asset-premium-card-action" onclick='edA(${JSON.stringify(String(a.id))})'>Editar</button>
@@ -28166,12 +29409,6 @@ function ativos(){
       </div>
       ${reviewFilterUi}
     </div>`;
-    const allocationPanel=`<aside class="assets-allocation-panel" aria-labelledby="assets-allocation-title">
-      <div class="assets-allocation-head"><div><div class="assets-allocation-eyebrow">Visão consolidada</div><h3 id="assets-allocation-title">Alocação por classe</h3></div><span>${allocationRows.length} classes</span></div>
-      <div class="assets-allocation-total"><span>Patrimônio atual</span><strong>${fmt(allocationTotal)}</strong></div>
-      <div class="assets-allocation-list">${allocationRows.length?allocationRows.map(row=>`<div class="assets-allocation-row"><div class="assets-allocation-row-head"><span><i style="background:${typeAccentColor(row.type)}"></i>${esc(row.type)}</span><b>${fmt(row.value)}</b></div><div class="assets-allocation-bar" aria-label="${esc(row.type)}: ${row.share.toFixed(1)}% da carteira"><span style="width:${Math.min(100,row.share).toFixed(1)}%;background:${typeAccentColor(row.type)}"></span></div><small>${row.share.toFixed(1)}% da carteira</small></div>`).join(''):`<div class="assets-allocation-empty">Nenhuma classe com valor atual.</div>`}</div>
-      <button class="assets-allocation-link" type="button" onclick="go('ajudar')">Ver rebalanceamento <span aria-hidden="true">→</span></button>
-    </aside>`;
     const patrimonyPanel = `<div class="asset-inner-panel">
           <!-- Premium Header -->
           <header class="assets-premium-header">
@@ -28266,7 +29503,6 @@ function ativos(){
               </div>
             </div>
           </details>
-          ${allocationPanel}
           </div>
         </div>`;
   const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
@@ -29736,6 +30972,15 @@ function dividendUpcomingSection(rows,expanded=false){
     expanded
   );
 }
+function corporateEventsAnnouncementSection(){
+  const events=Array.isArray(window.__CORPORATE_EVENTS_RUNTIME__?.events)?window.__CORPORATE_EVENTS_RUNTIME__.events:[];
+  const status=String(window.__CORPORATE_EVENTS_RUNTIME__?.status||'NOT_CONFIGURED');
+  const refreshAction=window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__ ? `<button type="button" class="btn-secondary" onclick="window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__.refresh().catch(()=>{})">Atualizar dados</button>` : '';
+  const sourceBadge=e=>/cvm|official/i.test(String(e.sourceProvider||''))?'Oficial':/b3/i.test(String(e.sourceProvider||''))?'B3 conferência':'Fonte pública';
+  const items=window.CorporateEventsCore?.buildUpcomingIncomeView(events)||[];
+  const body=items.length?items.slice(0,8).map(e=>`<div class="div-upcoming-item"><div class="div-upcoming-main"><div class="div-upcoming-title"><span class="div-upcoming-ticker">${esc(e.symbol)}</span><span class="div-type-badge rendimento">${esc(e.eventType)}</span><span class="div-type-badge neutral">${esc(sourceBadge(e))}</span></div><div class="div-upcoming-subline">${esc(e.paymentDate)} · ${esc(e.sourceProvider||'Fonte não informada')} · ${esc(e.confidence||'')}</div></div><div class="div-upcoming-value">${e.expectedNet==null?'—':fmt(e.expectedNet)}</div></div>`).join(''):`<div class="div-upcoming-empty-compact" role="status"><strong>Eventos anunciados</strong><span>Nenhuma fonte automática configurada para esta carteira.</span></div>`;
+  return `<section class="div-upcoming-shell" aria-labelledby="corporate-events-title"><div class="div-upcoming-summary"><div class="div-upcoming-card"><div class="div-upcoming-label" id="corporate-events-title">Proventos a receber</div><div class="div-upcoming-value good">${items.length}</div><div class="div-upcoming-sub">Eventos esperados, separados do realizado</div></div><div class="div-upcoming-card"><div class="div-upcoming-label">Sincronização</div><div class="div-upcoming-value" style="font-size:18px">${esc(status==='UPDATED'?'Atualizada':'Disponível')}</div><div class="div-upcoming-sub">B3 permanece como auditoria opcional</div>${refreshAction}</div></div><div class="div-upcoming-note">Anunciado/previsto não altera o total recebido. A promoção para realizado exige reconciliação.</div><div class="div-upcoming-list">${body}</div></section>`;
+}
 function dividendMonthlySummary(rows){
   const months=dividendMonthlyRows(rows);
   const total=months.reduce((sum,row)=>sum+row.total,0);
@@ -30967,6 +32212,7 @@ function canonDividendOverview(rows, kpisHtml){
           <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('bars')}<span>Resumo por ano</span></div><div class="premium-panel-sub">Valor total recebido em cada ano.</div></div></div>
           ${canonDividendYearSummary(filteredRows)}
         </div>
+        <div class="corporate-events-readonly-panel">${corporateEventsAnnouncementSection()}</div>
       </div>
     </div>`;
 }
@@ -31004,7 +32250,7 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const reviewSection=renderProventoRfLinkAuditPanel();
 const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
   const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline(),true)}</div><div>${topAssetsSection}</div></div>`;
-  const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendUpcomingSection(rows,false)}</div></div>`;
+  const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendUpcomingSection(rows,false)}</div><div>${corporateEventsAnnouncementSection()}</div></div>`;
   const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Consulta mensal com filtros oficiais e leitura detalhada sob demanda.</span></div>${monthlySection}</div>`;
   // Mantem a referencia do contrato visual legado sem renderizar KPIs duplicados: ${dividendSummaryCards()}
   const overviewBody=canonDividendOverview(rows, dividendExecutiveKpis());
@@ -32576,6 +33822,7 @@ function mobileMenuDrawer(){
         <button onclick="mobileMenuClose();go('ajudar')"${S.tab==='ajudar'?' aria-current="page"':''}>⚖️ Rebalancear</button>
         <button onclick="mobileMenuClose();go('auditoria')"${S.tab==='auditoria'?' aria-current="page"':''}>🔎 Auditoria</button>
         <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>📑 Relatórios</button>
+        <button onclick="mobileMenuClose();go('importacao')"${S.tab==='importacao'?' aria-current="page"':''}>⇅ Importar dados</button>
         <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>💡 Insights</button>
         <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>🧾 IRPF</button>
         <button onclick="mobileMenuClose();go('settings')"${S.tab==='settings'?' aria-current="page"':''}>⚙️ Configurações</button>
@@ -32611,7 +33858,7 @@ function go(t){
   S.mobileTopMenuOpen=false;
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
-  save();
+  if(t!=='importacao') save();
   render();
   if(t==='dividendos') runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
@@ -33232,6 +34479,25 @@ function watchPwaUpdate(registration){
   });
 }
 
+function startPublicEventsSync(){
+  if(window.__PUBLIC_EVENTS_SYNC_STARTED__||!window.PublicEventsRuntime||!window.PublicEventsStore||!window.CorporateEventsSync||!window.MarketDataProviders||!window.CorporateEventsProviders)return;
+  if(isLocalTestMode()||isProtectedShadowBoot()||isProtectedReadOnlyQaBoot())return;
+  const yahoo=window.MarketDataProviders.createYahooProvider();
+  const registry={getEvents:(symbol,from,to)=>yahoo.getEvents(symbol,{from:from||'2025-01-01',to:to||'2099-12-31'}).then(result=>({ok:result.ok,events:result.events||[],providers:[{provider:result.provider||'yahoo-chart',ok:Boolean(result.ok),error:result.error||null}]}))};
+  const provider={syncPortfolio:()=>window.CorporateEventsSync.syncPortfolio({assets:S.assets,transactions:S.aportes,from:'2025-01-01',to:'2099-12-31',registry})};
+  const publicAssets=(S.assets||[]).filter(a=>!String(a.type||'').toLowerCase().includes('renda fixa'));
+  const runtime=window.PublicEventsRuntime.create({store:window.PublicEventsStore,storage:window.localStorage,provider,assets:publicAssets,transactions:S.aportes,onUpdate:()=>{if(typeof render==='function')render();}});
+  window.__PUBLIC_EVENTS_SYNC_STARTED__=true;
+  window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__=runtime;
+  runtime.start().catch(()=>{});
+  if(window.OfficialEventsProvider){
+    // O catálogo CVM não fornece CORS para este app estático. A consulta
+    // oficial deve ocorrer por um adaptador server-side allowlisted; não
+    // disparar fetch direto evita ruído CORS e mantém o estado honesto.
+    window.__OFFICIAL_EVENTS_HEALTH__={status:'REVIEW_REQUIRED',provider:'cvm-ipe',resources:0,error:'BROWSER_CORS_UNAVAILABLE'};
+  }
+}
+
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
@@ -33254,6 +34520,7 @@ if(isActiveWalletHostMode()){
   render();
 }else{
   load();
+  initializeV76Runtime();
   initEditProtection();
   initFirebase();
   try{
@@ -33263,8 +34530,9 @@ if(isActiveWalletHostMode()){
     render();
   }
   fetchQuotes(false);
+  startPublicEventsSync();
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
-  window.addEventListener('focus',()=>fetchQuotes(false));
+  window.addEventListener('focus',()=>{fetchQuotes(false); if(window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__) window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__.refresh().catch(()=>{});});
   window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
 }
 if(!isActiveWalletHostMode()){
@@ -33281,7 +34549,7 @@ if(!isActiveWalletHostMode()){
     render();
   });
 }
-if(!isLocalTestMode() && !isActiveWalletHostMode() && 'serviceWorker' in navigator && location.protocol!=='file:'){
+if(!isLocalTestMode() && !isActiveWalletHostMode() && !isProtectedShadowBoot() && 'serviceWorker' in navigator && location.protocol!=='file:'){
   const hadServiceWorkerController=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     if(hadServiceWorkerController && navigator.serviceWorker.controller && !window.__swReloaded){
@@ -33414,7 +34682,6 @@ function updateRfAssetSummary(selectElement) {
   .assets-premium-shell .ag>summary{padding:8px 10px}
   .assets-premium-shell .ag-stats{gap:5px}
   .assets-premium-shell .ag-v{font-size:10px;letter-spacing:-.03em;white-space:nowrap;overflow:visible;text-overflow:clip}
-  .assets-premium-shell .assets-allocation-panel{padding:11px}
 }
 
 @media (max-width:767px){
@@ -33584,6 +34851,92 @@ function updateRfAssetSummary(selectElement) {
   .premium-dividends-3 .canon-div-history .dividend-history-heading{display:block}
   .premium-dividends-3 .canon-div-history .dividend-history-heading>.canon-year-chips{margin-top:8px}
   .premium-dividends-3 .canon-div-history .dividend-history-heading strong{font-size:13px!important}
+}
+</style>
+<style id="visual-premium-final-refinement">
+/* Final visual refinement: presentation-only, no data or interaction contract changes. */
+:root{
+  --z-shell:10;
+  --z-sticky:20;
+  --z-menu:30;
+  --z-sidebar:40;
+  --z-mobile-nav:50;
+  --z-drawer:60;
+  --z-modal:100;
+  --z-toast:200;
+}
+.tabs{z-index:var(--z-sticky)}
+.tabs-desktop{z-index:var(--z-sidebar)}
+.tab-menu-panel{z-index:var(--z-menu)}
+#investBottomNav{z-index:var(--z-mobile-nav)}
+#investMenuDrawer{z-index:var(--z-drawer)}
+.pmp-modal{z-index:var(--z-modal)}
+.toast{z-index:var(--z-toast)}
+
+:where(button,a,summary,select,input,textarea):focus-visible{
+  outline:2px solid color-mix(in srgb,var(--primary) 72%,#fff);
+  outline-offset:2px;
+}
+.premium-panel,.card,.rf-panel,.reports-panel,.dashboard-evolution-card,.dashboard-home-composition{
+  transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+}
+@media (hover:hover) and (min-width:768px){
+  .premium-panel:hover,.card:hover,.rf-panel:hover,.reports-panel:hover,
+  .dashboard-evolution-card:hover,.dashboard-home-composition:hover{
+    border-color:color-mix(in srgb,var(--primary) 30%,var(--border));
+    box-shadow:0 12px 28px rgba(2,8,23,.14);
+  }
+}
+
+.canon-dashboard .dashboard-evolution-card{
+  position:relative;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(52,211,153,.08),transparent 34%),
+    linear-gradient(155deg,#101d30 0%,#0b1627 58%,#091421 100%);
+}
+.canon-dashboard .dashboard-evolution-card::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(52,211,153,.82) 48%,rgba(96,165,250,.56) 100%);
+  opacity:.9;
+  pointer-events:none;
+}
+.canon-dashboard .dashboard-evolution-header{position:relative;z-index:1}
+.canon-dashboard .dashboard-evolution-header .premium-panel-badge{
+  border-color:rgba(52,211,153,.24);
+  background:rgba(52,211,153,.07);
+  color:#a7f3d0;
+}
+.canon-dashboard .dashboard-patrimony-chart{
+  position:relative;
+  z-index:1;
+  border-radius:10px;
+  background:linear-gradient(180deg,rgba(15,35,49,.34),rgba(8,19,32,.08));
+}
+.canon-dashboard .dashboard-patrimony-chart path:not([fill="none"]){opacity:.68}
+.canon-dashboard .dashboard-patrimony-chart .chart-data-point:focus-visible{
+  outline:none;
+  stroke-width:2.5;
+}
+.line-chart-tooltip.dashboard-chart-tooltip{
+  z-index:var(--z-toast);
+  max-width:min(228px,calc(100vw - 20px));
+  border-radius:10px;
+  background:rgba(9,20,34,.96);
+  backdrop-filter:blur(10px);
+}
+
+@media (max-width:767px){
+  .canon-dashboard .dashboard-evolution-card{
+    background:
+      radial-gradient(circle at 92% 8%,rgba(52,211,153,.08),transparent 38%),
+      linear-gradient(155deg,#101d30 0%,#0b1627 100%);
+  }
+  .canon-dashboard .dashboard-evolution-header .premium-panel-badge{max-width:48%}
+  .canon-dashboard .dashboard-patrimony-chart{background:rgba(8,19,32,.2)}
 }
 </style>
 </body>

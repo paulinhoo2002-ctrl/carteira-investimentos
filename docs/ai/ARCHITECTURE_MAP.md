@@ -55,6 +55,52 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
 - Backup, import, migration and cloud sync remain centralized. UI code must
   call existing boundaries rather than serialize a second shape.
 
+## Phase 4I protected August pilot
+
+```text
+internal localhost surface
+  -> protected session / 12-callback bridge
+  -> protected August executor (dry-run and real shared entrypoint)
+  -> targeted snapshot
+  -> 20 linkage metadata updates + 1 TEPP11 event
+  -> 1 explicit KNUQ11 deferred ambiguity (no-op, zero financial delta)
+  -> official local-only save -> readback -> invariants
+  -> reconciliation -> idempotency -> cloud sync -> cloud reload validation
+```
+
+## Governance and cost routing
+
+O catálogo versionado e o router são a fonte operacional para agentes futuros.
+Missões grandes começam com `find-skills`; Firebase/Auth/Firestore, permissões
+cloud, sincronização local/cloud e protected writes usam
+`firebase-security-rules-auditor`; UI, acessibilidade, responsividade,
+performance e QA web usam `web-quality-audit`. Essas Skills não substituem os
+contratos financeiros, de persistência ou autorização.
+
+A operação normal busca custo recorrente zero. Dados do usuário, exportações
+manuais da corretora, fontes gratuitas aprovadas e processamento local são
+preferidos; B3, market data, IA, SaaS, banco ou hospedagem pagos não são
+requisitos normais sem autorização explícita.
+
+The executor is fail-closed and authorization-bound to HEAD plus live, source,
+plan, review, provider and manifest fingerprints. DIVD11 and NDIV11 are audit
+exclusions, not ledger writes. KNUQ11 remains visible in the source accounting
+but never enters the mutation model without independent identity evidence.
+Rollback restores only the 20 touched records and removes the one created
+TEPP11 event.
+
+## Cost and data-source architecture
+
+- Normal personal operation should have zero recurring cost whenever technically
+  possible.
+- Prefer existing user data, manually exported broker/B3 files, already-approved
+  free sources, local processing and local cache/persistence.
+- A paid B3 feed, paid market-data subscription, paid AI API, unnecessary SaaS,
+  paid database or paid hosting must never become a normal runtime dependency
+  without explicit authorization.
+- External AI/model review is optional engineering assistance, never a runtime,
+  validation or maintenance requirement.
+
 ## Screen map
 
 | Screen/tab | Route/entry | Current renderer evidence | Data focus |
@@ -106,4 +152,51 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
 The global search and contextual navigation improvement is frozen as a
 functional UX contract. Future changes must preserve read-only discovery,
 normal route/editor handlers, and the separation between navigation entries and
-financial records.
+  financial records.
+
+## Phase 4H Class C protected path
+
+`protected-targeted-classc-executor.js` e separado do executor aditivo Yahoo.
+Ele aceita apenas o contrato persistente REPLACE/RECLASSIFY/KEEP, usa o conjunto
+oficial de callbacks e recusa autorizacao ou wiring incompleto. O caminho e
+surface/plan provider -> preflight Class C -> snapshot direcionado ->
+mutation/save/readback/reconciliation/idempotency -> sync/reload; o ramo real
+continua bloqueado por autorizacao explicita.
+
+### Phase 4H local pre-Class-C recovery
+
+`protected-preclassc-local-recovery.js` implementa o caminho distinto
+`TARGETED_PRE_CLASS_C_LOCAL_RECOVERY`. Ele usa a leitura cloud somente como
+ancora de destino, cria snapshot local persistido dos 99 registros afetados e
+dos hashes de estado nao relacionado, aplica somente a divergencia local,
+valida readback independente e faz rollback por identidade/slot original.
+O dry-run encerra antes do snapshot; nenhum callback de cloud e exposto. O
+prewrite correspondente e `tools/qa/phase4h-preclassc-recovery-prewrite.js`.
+
+### V49 autoridade local/cloud e durabilidade do perfil QA
+
+`protected-local-cloud-authority.js` canonicaliza os seis campos financeiros
+persistidos e calcula SHA-256 síncrono, idêntico ao fingerprint autoritativo de
+recovery, para o marcador versionado. `applyCloudData` só aplica
+cloud quando a decisão é `CLOUD_AUTHORITATIVE`; divergência protegida preserva
+local e mudança independente vira `CONFLICT`. Marcador inválido falha fechado.
+
+O perfil QA persistente é externo ao repositório, usa `Default` e não deve ser
+recriado. O stop comprova `user-data-dir`, perfil e porta em `chrome://version`,
+fecha por `Browser.close` via CDP e aguarda o endpoint sumir; não existe fallback
+por `taskkill`, pois término forçado pode perder Local Storage/LevelDB recente.
+
+`protected-recovery-authorization-contract.js` separa gates PREAUTH, que são
+prováveis sem mutação, dos gates POSTWRITE que necessariamente dependem do alvo
+real persistido. O alvo ausente antes da autorização é o preestado esperado,
+não um blocker. Reinício integral duplo e paridade multitab continuam gates
+obrigatórios após a única restauração local autorizada.
+
+### V50 boot real e marcador V2
+
+O recovery protegido lê o payload cloud somente como base e registra seu
+fingerprint antes de qualquer save protegido. Esse save falha fechado sem a
+autoridade V2 ou fingerprint cloud válido. O launcher QA inclui `--disable-gpu`
+após o erro comprovado `GPU process isn't usable` do Chrome 153 neste Windows.
+Boots protegidos reais não escrevem `civ5` nem `civ5_authority`; writes
+auxiliares do Firebase/Chrome não são writes da carteira.

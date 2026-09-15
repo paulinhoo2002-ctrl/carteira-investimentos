@@ -12,7 +12,10 @@
 
 ## INVENTÁRIO FÍSICO REAL — RECONCILIADO
 
-**Total: 28 pastas em `.agents/skills/` contendo SKILL.md**
+**Inventário reconciliado em 2026-09-12:** 29 pastas de primeiro nível e 32
+arquivos `SKILL.md` recursivos. A tabela também preserva uma pasta de
+referência sem `SKILL.md`; os três arquivos recursivos adicionais estão dentro
+de cópias upstream e não são Skills operacionais independentes.
 
 | # | PASTA | TIPO | STATUS | OBSERVAÇÃO |
 |---|-------|------|--------|------------|
@@ -44,8 +47,14 @@
 | 26 | `source-driven-development` | REAL_SKILL | Ativo | Decisões baseadas em doc oficial |
 | 27 | `ui-styling` | REAL_SKILL | Condicional | shadcn/ui + Tailwind |
 | 28 | `ui-ux-pro-max` | REAL_SKILL | **SOB DEMANDA** | Design system amplo, pesquisa estruturada |
+| 29 | `firebase-security-rules-auditor` | REAL_SKILL | **ALTO RISCO** | Auditoria red-team de regras Firestore; nunca edita permissões automaticamente |
+| 30 | `web-quality-audit` | REAL_SKILL | **SOB DEMANDA** | Qualidade web, acessibilidade, performance, SEO e browser QA |
 
-**REAL_SKILL_COUNT = 24** (excluindo: archify-main, browser-harness-main, impeccable.bak, references)
+**REAL_SKILL_COUNT = 26** (excluindo cópias upstream/backup e referências)
+
+`find-skills` é uma Skill global disponível ao agente, não uma pasta física
+deste repositório. `deploy-to-vercel` existe localmente, mas só pode ser usado
+quando houver pedido explícito de deploy; não faz parte do roteamento normal.
 
 ---
 
@@ -54,7 +63,8 @@
 ### CORE (sempre disponíveis, carregar conforme SKILL_ROUTER)
 ```
 interface-design, frontend-design, impeccable, playwright, browser-testing-with-devtools,
-source-driven-development, doubt-driven-development, design-system, caveman, caveman-review,
+source-driven-development, doubt-driven-development, design-system,
+firebase-security-rules-auditor, web-quality-audit, caveman, caveman-review,
 caveman-commit, caveman-compress, archify
 ```
 
@@ -118,6 +128,10 @@ impeccable.bak → backup impeccable
 ---
 
 ## EVIDÊNCIA DE USO RECENTE
+
+O mapa detalhado de uso por momento do projeto está em
+`docs/ai/SKILL_OPERATIONAL_CATALOG.md`. Ele é a fonte operacional para decidir
+qual Skill carregar sem duplicar cópias upstream nem usar todas mecanicamente.
 
 Skills efetivamente utilizadas nas iterações do Visual North Star (Fase 12+):
 `frontend-design`, `interface-design`, `impeccable`, `playwright`, `browser-harness`, `caveman-review`, `source-driven-development`, `doubt-driven-development`.

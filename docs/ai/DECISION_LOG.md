@@ -1,5 +1,84 @@
 # Decision Log
 
+## 2026-09-06 - Phase 4 automation foundation
+
+- DECISION: treat quote refresh, supported import preview, RF maturity alerts,
+  duplicate detection and exact-identity navigation as existing automation
+  anchors, not new parallel engines.
+- DECISION: keep automatic persistent dividend insertion, cloud backup, sync
+  conflict changes and provider migration outside this wave.
+- SAFETY: no silent financial write, automatic buy/sell, approximate matching or
+  background external fetch without explicit scope.
+- STATUS: `PHASE_4_FOUNDATION=READY_FOR_REVIEW`; no publication, PR, merge or
+  deploy was performed.
+
+## 2026-09-06 - Phase 4A read-only import foundation
+
+- DECISION: add only pure import identity/fingerprint/reconciliation helpers;
+  keep the existing B3/broker parser and preview flow unchanged.
+- CONTRACT: explicit assetId > ISIN > exact ticker/code > exact normalized
+  security identity; approximate matching remains forbidden.
+- SAFETY: fingerprints are deterministic, reconciliation is ephemeral, and no
+  real import write, financial calculation, persistence or schema change exists.
+- TESTS: exact identity, malformed values, same-source fingerprints,
+  duplicate confidence and quantity reconciliation are covered.
+
+## 2026-09-06 - Phase 4B historical B3 preview foundation
+
+- DECISION: keep historical B3 income, movement, custody and brokerage-note
+  analysis in a read-only preview model and reuse the Phase 4A identity engine.
+- CONTRACT: current position, transaction history, income history, custody
+  history and corporate events remain separate domains; unknown and unsupported
+  events never become automatic writes.
+- SAFETY: duplicate, conflict and review states remain explicit; current
+  quantities, average prices, targets, metadata and persisted history are not
+  changed.
+- TESTS: source detection, supported income normalization, batch/file
+  idempotency, historical totals, reconciliation, movement taxonomy, custody
+  matching, brokerage-note identity, report readiness and 1k/5k/10k scaling are
+  covered.
+
+## 2026-09-06 - Phase 4C historical reconstruction
+
+- DECISION: add a read-only cross-source reconstruction layer instead of
+  redefining the current portfolio from historical imports.
+- CONTRACT: only verified BUY/SELL events contribute to expected position;
+  transfers, lending, unknown events, unsupported corporate events and
+  unconfirmed subscriptions remain outside the position calculation.
+- SAFETY: economic-event duplicates, source conflicts, position differences and
+  coverage gaps remain explicit review states; no automatic resolution or write
+  path exists.
+- TESTS: taxonomy, verified-history reconstruction, cross-source matching,
+  three-way reconciliation, explanations, 2019-2026 coverage, conflict/session
+  reports, corporate-event audit and 10k/25k/50k scale are covered.
+
+## 2026-09-06 - Phase 4D professional brokerage/reporting foundation
+
+- DECISION: model brokerage notes, operations, fees, position protection and
+  report contracts in a read-only canonical layer; Inter is supported, B3 is
+  partial and untested brokers remain unknown.
+- CONTRACT: note and operation identities are deterministic, economic events
+  are linked without persistence, and fees remain unallocated at note level.
+- SAFETY: B3/app positions cannot overwrite each other, average price is not
+  recalculated, and conflicting note content stays critical/review-required.
+- TESTS: note identity, operation deduplication, fee safety, financial
+  cross-checks, position protection, event graph, severity, reporting and
+  100/500/1000 plus 10k/50k scale are covered.
+
+## 2026-09-06 - Phase 4H first real pilot preparation
+
+- DECISION: prepare, but do not execute, a small first pilot around one
+  calendar month of `B3_DIVIDENDS_XLSX` after real export evidence exists.
+- CONTRACT: only explicit `EQUITY_DIVIDEND`, `JCP` and `FII_INCOME` are eligible
+  for the first pilot; RF interest/coupon is read-only optional and excluded
+  from the first pilot. Principal, ambiguous RF/corporate events and unknown
+  events block automatic classification.
+- SAFETY: the manual row review, exact identity, duplicate states, backup and
+  targeted snapshot sequence, zero position/average-price impact, same-file
+  reimport and rollback proof are defined. No real write entrypoint is enabled.
+- STATUS: `CAN_EXECUTE_REAL_PILOT_WRITE=false`, `FULL_HISTORY_IMPORT_READY=false`,
+  no live file or real data was used.
+
 ## 2026-09-06 - Phase 3 final release and lifelong usability audit
 
 - DECISION: release readiness requires the repeated local gates and full browser
@@ -427,3 +506,50 @@
   são proibidos; a ação usa `openRentabilityAsset()` e preserva o editor oficial.
 - STATUS: `TRANSACTION_TO_ASSET=FROZEN_FUNCTIONAL_IMPROVEMENT`;
   `EXPLICIT_ASSET_IDENTITY=true`; `APPROXIMATE_MATCHING=false`.
+
+## 2026-09-06 - Phase 4H.7 source linkage shadow proof
+
+- DECISION: adopt `ONE_ECONOMIC_INCOME_EVENT` for coexistence between B3
+  payment evidence and Yahoo market-reference evidence.
+- SOURCE: B3 is the financial source of truth; Yahoo cannot create a second
+  receipt when it can be linked to the same event.
+- HISTORICAL FIXTURE RESULT: this phase reported 21 high-confidence
+  cross-source pairs, zero exact links and no silent many-to-one links. V39
+  later proved that the 21st pair (KNUQ11) lacked independent identity and
+  superseded the executable contract with 20 links plus one deferred ambiguity.
+- PRESERVATION: TEPP11 remains a new B3-only event of `R$ 85,37`; DIVD11 and
+  NDIV11 remain ETF review items. Existing records and audit history remain
+  untouched.
+- SAFETY: the proof is in-memory with sanitized fixtures only. No schema,
+  persistence, financial formula, private data or real pilot write changed.
+- NEXT: any durable source-evidence linkage requires separate schema,
+  persistence, migration-preview and rollback authorization.
+
+## 2026-09-06 - Phase 4H.8 completion and governance correction
+
+- STATUS: `PHASE_4H_8=COMPLETE` in test-mode only; additive source linkage is
+  covered without changing production readers or persistence core.
+- HISTORICAL FIXTURE FINANCE: this phase treated `R$ 2.488,47` as 21 linked
+  events. V39 supersedes that synthetic count: only 20 links are identity-safe;
+  KNUQ11 is one visible deferred no-op. Linked/deferred evidence contributes
+  `R$ 0,00`; only TEPP11 contributes `R$ 85,37`.
+- GOVERNANCE: preserve `df9daa3` exactly and record it as a partial H8 commit;
+  its Phase 4H.7 message label is historically inaccurate and is not rewritten.
+- SAFETY: no private files, real backup, XLSX, schema, persistence, finance,
+  UI or real user data entered the completion commits.
+
+## 2026-09-07 - Phase 4H protected recovery read-back contract
+
+- DECISION: `PersistenceCore` remains the sole JSON serializer/parser. The
+  protected recovery adapter may unwrap and type-check the storage envelope,
+  but must never parse an object or coerce one with `String(...)`.
+- CONTRACT: `safeGetLocalStorageItem()` returns `{ok,value}`;
+  `value` must be `string|null`; read-back returns a plain canonical object.
+  Wrong types, malformed JSON, double encoding and promise-like values fail
+  closed before sync.
+- INCIDENT: V6 reached mutation and therefore consumed its single-use
+  authorization. A read-back type mismatch raised `"[object Object]" is not
+  valid JSON`; targeted rollback restored `329/329/0`; cloud sync stayed
+  blocked.
+- NEXT: use a fresh authenticated manifest and a new explicit single-use
+  authorization. V6 must never be retried.

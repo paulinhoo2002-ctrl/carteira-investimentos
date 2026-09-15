@@ -13,10 +13,15 @@
     "test:backup-restore": "node --test tests/backup-restore-integration.test.js",
     "test:load": "node --test tests/load-integration.test.js",
     "test:roundtrip": "node --test tests/save-load-roundtrip.test.js",
+    "qa:serve:legacy": "python.exe -m http.server 4173 --bind 127.0.0.1",
+    "qa:smoke": "node tools/qa/browser-smoke.js",
+    "qa:all": "npm run build && npm run test:qa-harness && npm run qa:smoke",
+    "qa:start-server": "python.exe -m http.server 4173 --bind 127.0.0.1",
+    "qa:all-safe": "npm run build && npm run test:qa-harness && npm run qa:smoke",
     "test:extraction": "node --test tests/report-asset-row.test.js",
     "test:ui": "node --test tests/basic-ui.test.js",
     "test:performance": "node --test tests/performance-reports.test.js",
-    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui && npm run test:performance && node --test tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/phase-202-assets-performance-overview.test.js tests/dividends-visual-refinement.test.js tests/dividends-summary-clarity.test.js tests/phase-204a-dashboard-highlights.test.js tests/assets-highlights-and-rf-parity.test.js tests/dividends-annual-matrix-filters.test.js tests/portfolio-analysis-modes.test.js tests/phase-3-3-dividendos-canonical.test.js tests/phase-3-3-productivity.test.js"
+    "test": "npm run build && npm run test:finance && npm run test:persistence && npm run test:backup-restore && npm run test:load && npm run test:roundtrip && npm run test:extraction && npm run test:ui && npm run test:performance && node --test tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/phase-202-assets-performance-overview.test.js tests/dividends-visual-refinement.test.js tests/dividends-summary-clarity.test.js tests/phase-204a-dashboard-highlights.test.js tests/assets-highlights-and-rf-parity.test.js tests/dividends-annual-matrix-filters.test.js tests/portfolio-analysis-modes.test.js tests/phase-3-3-dividendos-canonical.test.js tests/phase-3-3-productivity.test.js tests/phase-4-automation-safety.test.js tests/phase-4a-import-foundation.test.js tests/phase-4b-historical-import.test.js tests/phase-4c-historical-reconstruction.test.js tests/phase-4d-brokerage-professional.test.js tests/phase-4g-import-center.test.js tests/rf-reconstruction.test.js tests/income-linkage-reconciliation.test.js tests/corporate-events-core.test.js tests/corporate-events-providers.test.js tests/corporate-events-sync.test.js tests/fixed-income-benchmark-provider.test.js tests/market-data-providers.test.js tests/official-document-parser.test.js tests/official-events-runtime.test.js tests/portfolio-performance.test.js tests/portfolio-runtime-stores.test.js tests/rf-income-classifier.test.js tests/v84-asset-detail.smoke.test.js"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -28,6 +33,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "playwright-core": "^1.61.1",
     "typescript": "^5.6.3",
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "websocket": "^1.0.35"
   }
 }

@@ -22,9 +22,22 @@
 | Static build | `npm run build` | Required legacy files exist | PASS in recent release validation |
 | Modern build | `npm run build:modern` | Vite production build | PASS in recent release validation; warnings do not replace investigation |
 | Diff hygiene | `git diff --check` | Whitespace/error guard | Required before commit/review |
+| Phase 4I prewrite | `npm run qa:phase4i:prewrite` | Authenticated native click plus protected sandbox; no real write | Required before a pilot authorization |
+| Phase 4I browser | `npm run qa:phase4i:browser` | Authenticated surface at seven viewports via local QA CDP | Required for the protected surface gate |
 
 Counts above are recorded baselines from the latest project state, not a claim
 that this documentation-only audit reran every suite.
+
+The Phase 4I prewrite command must report no snapshot, mutation, save or sync.
+The local static server may return an expected 404 for `/api/yahoo-quote`; the
+Phase 4I browser check records it separately and fails only on errors relevant
+to the protected surface.
+
+For August provider v2, every readiness/prewrite/manifest must preserve the
+exact accounting `24 = 20 linked + 1 new + 2 excluded + 1 deferred ambiguous`.
+KNUQ11 must remain `DEFERRED_AMBIGUOUS_NO_OP` with zero mutation and zero
+financial delta. Tests must reject a forced 21st link, proximity-only matching,
+missing provider bindings and any hidden/deleted source row.
 
 ## Browser QA contract
 
@@ -82,3 +95,60 @@ primary information architecture.
 Use Git history and the existing backup/import contracts. Do not delete or
 rewrite historical files to make a check pass. A failure in a protected domain
 is a stop-and-report event, not a visual workaround.
+
+## Recovery PREAUTH and POSTWRITE gate
+
+`protected-recovery-authorization-contract.js` is the executable gate source.
+PREAUTH validates identity, hashes, plan, rollback, marker serialization and
+durability in a disposable persistent profile; it does not require the real
+target to exist. After the one authorized local write, POSTWRITE requires two
+complete `Browser.close` lifecycles, restart on the same profile and origin,
+target and marker survival, stale-cloud blocking, three-tab parity, unchanged
+cloud and false queue/sync flags. Reload or a new tab without full browser
+process termination is not durability certification.
+# QA autenticado persistente
+
+Use o perfil canônico `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated`
+com CDP localhost na porta 9233. Os comandos são:
+
+- `npm.cmd run qa:browser:start`: inicia ou reutiliza o navegador QA canônico.
+- `npm.cmd run qa:browser:stop`: encerra somente a instância identificada nessa
+  porta depois de provar `user-data-dir`, `Default` e porta em
+  `chrome://version`; usa somente CDP `Browser.close` e espera o CDP encerrar.
+- `npm.cmd run qa:auth:status`: verifica navegador, CDP, autenticação, cloud e
+  aba autoritativa sem modificar dados.
+- `npm.cmd run qa:auth:pending`: mostra gates autenticados pendentes.
+- `npm.cmd run qa:auth:resume`: reexecuta somente os gates pendentes quando a
+  autenticação voltou; sem login, preserva a fila e retorna `AUTH_INTERACTION_PENDING`.
+
+Autenticação ausente não bloqueia suites unitárias, fixtures, sandbox, builds,
+QA visual não autenticado ou análise estática. Somente leituras Firebase,
+cold boot autenticado e prewrite real são deferred. `.qa-state/` é local e
+  ignorado; nunca deve conter cookies, tokens ou dados privados.
+
+## Root hygiene gate (2026-09-12, V5R)
+
+- Check: `node scripts/root-hygiene-check.js` (fails if `.browser-harness-*`
+  dirs appear in repo root).
+- All browser-harness temp state MUST be created outside the repo, under
+  `%TEMP%\CarteiraInvestimentos\browser-harness\`. The central policy lives in
+  `tools/qa/harness-paths.js` (`HarnessPaths.envFor()`); QA scripts must import
+  it instead of defaulting to `process.cwd()`.
+- Canonical QA profile stays at
+  `%LOCALAPPDATA%\CarteiraInvestimentos\qa-browser-authenticated` (outside repo).
+- See `docs/ai/ROOT_HYGIENE.md` for allowed root categories and writer policy.
+
+## Class C read-only gate
+
+`npm.cmd run qa:phase4h:classc-prewrite` conecta ao navegador QA autenticado,
+reconstroi o plano donor e executa o executor oficial Class C tres vezes em
+dry-run. Deve retornar passes identicos, 12 callbacks callable, 4/95/2
+ operacoes, estado sem mutacao e nenhuma persistencia/sync. O comando nunca
+ consome autorizacao nem executa correcao real.
+
+## V50 boot hydration gate
+
+Registrar fingerprint e marcador iniciais e confirmar que o boot QA protegido
+não escreve `civ5` ou `civ5_authority`. Durabilidade exige duas reinicializações
+completas no mesmo perfil; writes auxiliares do Firebase/Chrome não contam
+como mutação financeira.

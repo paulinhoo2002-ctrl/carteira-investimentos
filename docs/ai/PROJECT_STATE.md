@@ -1,5 +1,133 @@
 # Project State
 
+## Estado canônico V79 — 2026-09-15
+
+- `CURRENT_HEAD` funcional: `25c5854177a9db88dba76a87d2d66d49dc59feb0`
+- `CURRENT_BRANCH`: `feature/phase-4-automation-foundation`
+- `LATEST_COMPLETED_MISSION`: V78
+- `FINANCIAL_BASELINE`: `431/330/101`, 99 referências, `2709626` cents,
+  FP `06df1e4ea0adf48cdba16c6eab62c39641a75f6800fe0e296b5846213bd201c2`
+- `QA_STATUS`: canonical 4173/9233 authenticated and stabilized after V77
+- `MARKET_DATA_STATUS`: Yahoo Chart, 36/36, tokenless
+- `CORPORATE_EVENT_STATUS`: public cache/sync/parser active, coverage partial
+- `FIXED_INCOME_STATUS`: 5 positions; 2 CDI shadow candidates; stale/unknown
+- `PERFORMANCE_STATUS`: tracking since 2026-09-15; TWR/XIRR collecting history
+- `BROKER_IMPORT_STATUS`: Inter deterministic; XP/BTG fixture-required
+- `DASHBOARD_STATUS`: working, maturity partial
+- `OPEN_BLOCKERS`: RF freshness, XP/BTG fixtures, future event coverage
+- `NEXT_RECOMMENDED_WORK`: improve RF as-of/valuation and dashboard safely
+- `LAST_UPDATED_AT`: `2026-09-15`
+
+## 2026-09-09 - Runtime local autoritativo para recovery protegido
+
+- O runtime local autoritativo usa o perfil real do Chrome `Default` e a chave
+  canônica `localStorage['civ5']`; o launcher não abre o perfil enquanto ele
+  estiver bloqueado pelo Chrome pessoal e não encerra processos sozinho.
+- O modo `authoritativeLocalRecovery=1` mantém leitura/listener cloud para
+  diagnóstico, mas bloqueia apply cloud, save local normal, fila/upload/sync e
+  consumo de autorização. O recovery 101 continua separado do QA cloud
+  somente-leitura e da fonte forense.
+- Foram adicionados launcher local, launcher QA protegido, status read-only e
+  teste de isolamento. A recuperação real não foi executada; após a mudança de
+  HEAD, qualquer autorização anterior precisa ser substituída por nova
+  autorização single-use.
+
+## 2026-09-09 - Phase 4H live 101-source gate
+
+- The protected QA runtime is valid on the disposable profile
+  `.qa-profile-recovery` at CDP `9244`; personal Chrome was not used.
+- Cloud read is authenticated and read-only: `430/329/101`, financial total
+  `3718277` cents, fingerprint `cf9b16...`; local forensic state is
+  `329/329/0`, financial total `2685096` cents, fingerprint `e1ad958f...`.
+- The exact cloud-only source set has `101` records: `95` exact donor matches,
+  `4` KNUQ variants and `2` post-donor events. Fresh deterministic source-set
+  fingerprints are `eee04bae63a3969e7591b22bc50ef28f95be39f7eff7102e4a99907681dc8bf4`
+  and classification fingerprint
+  `d5776b75af941ac805069958f05095b738c2996c776993408fedcf64f7c16210`.
+- The historical donor hash remains unreproducible and is not a mandatory
+  authorization dependency because the current 101 identities and classes are
+  independently proven. Three protected read-only prewrites passed identically.
+- No real recovery, rollback, reconciliation write, sync, Class C write or
+  August pilot was executed. The next step is a new explicit single-use
+  authorization bound to the final HEAD and these fresh source-set hashes.
+
+## 2026-09-08 - QA autenticado persistente e gates não bloqueantes
+
+- O navegador QA canônico usa o perfil persistente
+  `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated` e CDP
+  localhost na porta 9233. O launcher reutiliza uma instância saudável e evita
+  perfis aleatórios.
+- `npm.cmd run qa:auth:status` é somente leitura. Quando a sessão Google/Firebase
+  não está disponível, `npm.cmd run qa:auth:resume` continua o fluxo sem escrita
+  e registra somente nomes de gates, HEAD e timestamps em `.qa-state/`.
+- Nenhum cookie, token, credencial ou payload privado é persistido pelo estado
+  pendente. Gates autenticados reais podem ser retomados depois do login normal;
+  testes, builds, fixtures e QA não autenticado continuam normalmente.
+
+## 2026-09-06 - Phase 4 automation foundation
+
+- `feature/phase-4-automation-foundation` starts from merged `origin/main`
+  `56e5488b`.
+- Existing safe automation anchors are preserved: quote `qInFlight`, supported
+  import preview/duplicate checks, backup validation/rollback, RF maturity
+  alerts, and exact-identity contextual navigation.
+- Phase 4 safety contract is documented in
+  `docs/ai/PHASE_4_AUTOMATION_MAP.md`.
+- No frozen screen, financial semantics, persistence, schema, backup/import,
+  cloud/auth or real data was changed in the foundation checkpoint.
+- Phase 4A now has a pure read-only import foundation in `import-foundation.js`
+  with exact identity, deterministic fingerprints and ephemeral reconciliation.
+- Phase 4B now adds `historical-import-preview.js` for read-only B3 income
+  preview, historical deduplication, movement classification, custody snapshot
+  reconciliation, brokerage-note identity checks and import report modeling.
+  Real import write remains disabled.
+- Phase 4C now adds `historical-reconstruction.js` for read-only cross-source
+  economic-event deduplication, verified-history expected positions, three-way
+  reconciliation, conflict review and coverage reporting. Unknown or
+  unverified events have zero position impact.
+- Phase 4D now adds `brokerage-professional.js` for canonical Inter-note
+  normalization, note/operation idempotency, fee safety, cross-source event
+  linkage, position protection and professional report contracts. No write or
+  automatic fee allocation is enabled.
+- Phase 4E now adds `protected-import-transaction.js` as a test-fixture-only
+  coordinator for preview, confirmation, stale-state blocking, snapshots,
+  exact deduplication, idempotency, targeted rollback and reconciliation. It
+  does not touch persistence, real profiles, Firebase or real user data.
+- Phase 4F now adds `protected-import-pipeline.js`, composing the existing
+  import, reconstruction, brokerage and protected-write foundations into a
+  deterministic isolated dry-run. It exercises the real Phase 4E coordinator,
+  cross-source deduplication, rollback and printable reconciliation without
+  adding a route, changing frozen screens or writing real portfolio data.
+- Phase 4G now adds the isolated `Importar dados` review center in `index.html`.
+  It presents the existing source contract, detection, preview, duplicate and
+  conflict counts, reconciliation, rollback evidence and ephemeral simulation
+  history. The UI is explicitly test-mode only and does not call persistence,
+  Firebase, localStorage or a real portfolio profile.
+- Phase 4G keeps B3 movements and arbitrary brokerage PDFs partial/review-only,
+  keeps unknown/RF/corporate evidence gaps manual, and reuses the existing
+  HTML/native-print reporting foundation. No frozen screen or financial
+  semantics were changed.
+- Phase 4G.2 freezes the import-center visual canon: compact mobile step
+  indicator, sober primary actions, compact empty session state and a visible
+  safety result strip for preserved position, zero writes, validated snapshot
+  and tested rollback.
+- Phase 4H.7 proves a read-only shadow linkage policy for Yahoo reference
+  events and B3 payment evidence. The 21 August 2026 cross-source pairs remain
+  high-confidence rather than exact links; TEPP11 remains a B3-only candidate.
+  No ledger migration, schema change, persistence write or real pilot write was
+  performed. Durable linkage remains a separately authorized future boundary.
+- Phase 4H.8 is complete after the current implementation and governance
+  commits. The additive test-mode model preserves legacy proventos, stores one
+  canonical event with multiple source evidences, and keeps real persistence
+  and UI semantics unchanged. The August financial increment is `R$ 85,37`;
+  `R$ 2.488,47` is already represented value, not an increment.
+- Governance correction: `df9daa3` remains unchanged and is recorded as a
+  partial H8 commit despite its inaccurate Phase 4H.7 message label.
+- Phase 4H.8.1 defines and tests the manual-review, fingerprint freshness,
+  single-session authorization, financial-increment and rollback gates for a
+  future pilot. The real-write gate remains hard-disabled and no production
+  persistence path is changed.
+
 ## 2026-09-06 - Phase 3 final usability audit checkpoint
 
 - Release branch `release/phase-3-3-final` is based on `origin/main` at
@@ -608,3 +736,183 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
 - Os bloqueios de regressao existentes cobrem categorias agrupadas,
   recolhimento padrao, campos ricos, acoes, RF, CTA de rebalanceamento e
   sintaxe inline. As areas protegidas permanecem inalteradas.
+
+## 2026-09-06 - Phase 4H real pilot preparation
+
+- `REAL_PILOT_SOURCE=B3_DIVIDENDS_XLSX`; first pilot is limited to one
+  calendar month selected after real export evidence is reviewed.
+- `REAL_PILOT_WRITE_ENABLED=false`, `REAL_USER_DATA_WRITE=false` and
+  `CAN_EXECUTE_REAL_PILOT_WRITE=false` remain hard-disabled. No live file,
+  real user data or persistent write was used.
+- The read-only contract covers exact identity, manual verification, explicit
+  supported income types, corporate-event blocking, targeted snapshot/backup,
+  same-file reimport and rollback proof. Position and average price impact are
+  required to remain zero.
+- Implementation is isolated in `real-pilot-contract.js`; tests use only
+  sanitized fixtures and existing import/classification engines.
+
+## 2026-09-07 - Phase 4H targeted recovery runtime stabilization
+
+- The V5 real targeted Yahoo recovery authorization was correctly blocked before
+  snapshot/mutation because the protected session could bind before the first
+  cloud snapshot had been applied. The surface displayed the pre-cloud
+  fingerprint while the executor preflight observed the post-`applyCloudData`
+  state.
+- The protected session now binds only after `FB.cloudLoaded=true` and guards
+  against duplicate binding. The internal surface also performs a read-only
+  preflight parity check across live, donor, plan and review fingerprints before
+  enabling its control.
+- Static server requirement for legacy `index.html` is
+  `python.exe -m http.server 4173 --bind 127.0.0.1`; Vite is not valid evidence
+  for this runtime. The 12-callback protected recovery contract remains
+  fail-closed and all runtime lifecycle checks are green.
+- Current read-only manifest remains: live `0a3d0c56...aebaabe47`, donor
+  `71b21a08...15b22c4a7`, recovery plan `690138e1...d41cc4a5`, review
+  `c3ab3a17...05df9da4`; plan `99/99/0`, expected post-recovery ledger
+  `428/329/99`, financial increment `0`, and 21 post-recovery links.
+- No real recovery or August pilot was executed. A new single-use recovery
+  authorization is required; the previous V5 authorization is not reusable.
+
+## 2026-09-07 - Phase 4H click-time fingerprint parity
+
+- `RECOVERY_LIVE_STATE_MISMATCH_ROOT_CAUSE=CANONICAL_REPRESENTATION_MISMATCH`:
+  readiness hashed the protected canonical state while the recovery plan
+  provider hashed the broader stored-state representation and used separate
+  plan/review serializations.
+- Surface, plan provider and executor preflight now share the canonical live
+  state provider and one click-time prepared preflight. The executor rechecks
+  that same live fingerprint without rebuilding the asynchronous plan.
+- The internal localhost-only surface supports an explicit
+  `internalRecoveryDryRun=1` validation path that reaches the real prewrite
+  gates but skips snapshot, mutation, save and sync. No real recovery or
+  August pilot was executed.
+- Static legacy runtime evidence remains authoritative only from
+  `python.exe -m http.server 4173 --bind 127.0.0.1`; Vite is not valid for
+  this lifecycle. Donor bytes remain `71b21a08...15b22c4a7`, with 428/329/99.
+
+## 2026-09-07 - Permanent Phase 4H QA harness
+
+- Reusable tooling lives in `tools/qa/` and the `qa:*` npm scripts. It uses a
+  dedicated ignored browser profile and localhost-only CDP; cookies, tokens
+  and credentials are never copied or logged.
+- `qa:smoke` covers the unauthenticated legacy browser at 390, 430, 768, 1366,
+  1440, 1536 and 1920px. Protected browser proof remains local-only and needs
+  normal authentication in the dedicated profile.
+- `qa:auth-smoke` exercises the protected native-click dry-run and stops before
+  snapshot, mutation, save and sync. It is not a recovery authorization.
+- CI runs the harness contract and unauthenticated smoke using synthetic/local
+  state only. No real portfolio, backup or authenticated account is used in CI.
+
+## 2026-09-07 - Phase 4H native browser proof
+
+- Chrome for Testing foi rejeitado pelo Google como navegador inseguro para
+  login; a solução usa Chrome estável, perfil QA fora do projeto e CDP local.
+- Chrome QA autenticado foi validado em `127.0.0.1:9232` com perfil
+  `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-profile-chrome`.
+- Playwright native dry-run alcançou surface, plan provider, executor
+  preflight e authorization validator em três execuções idênticas; snapshot,
+  mutação, save e sync permaneceram falsos.
+- Fingerprint vivo fresco: `2ca97731ed9b06fbf4d0930f38d89cb2118c8f5823d8d1a68d3e3ea2058db5f6`;
+  donor `71b21a08f2bb1db2615dd838f06e5ccd124ef2f726a26e087e6e20215b22c4a7`;
+  plano `690138e1f973e8a600907e0f7d87b2897fa352eb608b63d1725ca971d41cc4a5`;
+  review `c3ab3a17db2c4e4d6c3a34474a65843e32c6b6e6add2698ce0efff0a05df9da4`.
+- Estado vivo: 329/329/0; recovery previsto: 99/99/0; incremento
+  financeiro: zero. Nenhuma recuperação real ou piloto de agosto foi executado.
+
+## 2026-09-07 - Phase 4H recovery persistence serialization fix
+
+- A autorização V6 foi consumida porque o executor entrou no caminho de
+  mutação/local-save. O read-back falhou com `"[object Object]" is not valid
+  JSON`; o rollback direcionado restaurou o estado `329/329/0` e nenhum sync
+  cloud foi liberado.
+- Causa raiz: `safeGetLocalStorageItem()` devolve `{ok, value}`, mas o callback
+  protegido passava o envelope inteiro a `PersistenceCore.parseStoredState()`,
+  cujo contrato exige `string|null`.
+- O contrato corrigido é fail-closed: storage retorna envelope;
+  `ProtectedRecoveryPersistenceContract` valida o envelope e entrega somente
+  `value` ao parser; `PersistenceCore` continua sendo o único dono da
+  desserialização canônica.
+- Commit funcional: `5a19fbd24aa3bb5f6379d605ad19933fad579a63`.
+  Testes sintéticos cobrem roundtrip, forward/rollback, tipos inválidos e sync
+  bloqueado. O navegador autenticado executou três ciclos de clique dry-run +
+  read-back oficial sem escrita real e sem nova ocorrência de `[object Object]`.
+- Recovery real continua pendente. Nunca reutilizar a autorização V6; qualquer
+  execução que alcance mutação consome sua autorização mesmo quando rollback
+  restaura o estado.
+
+## 2026-09-08 - Phase 4H forensic 430 baseline
+
+- A leitura autenticada confirmou `430/329/101` em runtime, local e cloud.
+  Não houve escrita nesta perícia; o restore autorizado foi cancelado antes
+  do snapshot por divergência do manifesto `329/329/0`.
+- Os 101 registros têm `eventType=Yahoo`, mas não têm `source`,
+  `sourceEventKind` ou `excludedFromIncomeTotals`. O contador anterior usava
+  apenas metadados de source e reportava Yahoo zero; os classificadores agora
+  consideram também `eventType`/`incomeType` genericamente.
+- Identidades sanitizadas contra o donor: 95 presentes, 4 ausentes e 6
+  extras, sem duplicatas exatas. A reconciliação atual é `24/20/1/2`, com 20
+  links e 1 review.
+- Cold boot preservou as mesmas 101 identidades. Os 4 ausentes e 6 extras
+  precisam de revisão de origem antes de qualquer restore ou cleanup real.
+- Recovery Yahoo e piloto de agosto permanecem sem execução.
+
+## 2026-09-08 - Phase 4H targeted correction forensic manifest
+
+- Estado atual autoritativo autenticado: runtime/local/cloud `430/329/101`.
+  Os 101 sao Yahoo-like por `eventType=Yahoo`; 99 sao referencias esperadas
+  e dois sao eventos financeiros pos-donor de 08/09/2026.
+- Donor: `local-imports/carteira-investimentos-backup-2026-09-07-10-18.json`,
+  `428/329/99`, fingerprint
+  `71b21a08f2bb1db2615dd838f06e5ccd124ef2f726a26e087e6e20215b22c4a7`.
+  Comparacao: 95 identidades exatas, quatro variantes KNUQ11 por valor e dois
+  extras pos-donor: FATN11 `12480` cents e DIVD11 `3513` cents.
+- Os seis extras carregam nota/autoKey do caminho Auto Yahoo e estao presentes
+  em runtime, local e cloud. A proveniencia temporal exata e
+  `STRONGLY_SUPPORTED`, nao `PROVEN`.
+- Marcadores de referencia sao necessarios para 99 registros, nao para os dois
+  extras financeiros. Plano sintetico: `4 REPLACE + 95 RECLASSIFY`, alvo
+  `430/329/101`, 99 referencias, delta `-1017188` cents, posicao/PM/ativos/RF
+  inalterados. O snapshot histórico registrou links `21/0/0` e agosto
+  `24/21/1/2`; V39 classificou essa contagem como sintética. O contrato atual é
+  `24/20/1/2/1 deferred`, sem vínculo artificial para KNUQ11.
+- Fingerprints do planejador: `754201a8e0da5fbf2d7e0021770e653acb9cf811a90dd9b59ec03542ff6ea407`
+  e review `3167552ee63e76f35708525f13ad9f496182edc4db79cc9ed03c06276e41eb6f`.
+  `qa:phase4h:reconcile-prewrite` compara runtime/local/cloud e simula o alvo
+  em memoria, sem gravar, salvar ou sincronizar.
+
+## 2026-09-08 - Phase 4H official Class C executor
+
+- O executor oficial Class C foi implementado localmente e permanece sem
+  execucao real. Ele aceita somente `TARGETED_CLASS_C_RECONCILIATION` com 4
+  REPLACE, 95 RECLASSIFY e 2 KEEP.
+- Os 12 callbacks atravessam a fabrica oficial, com snapshot/rollback
+  direcionados, persistencia canonica, readback, invariantes, reconciliacao,
+  idempotencia e gates de sync/reload. O prewrite autenticado passou 3/3 de
+  forma identica e sem mutacao; ainda exige nova autorizacao single-use.
+
+- A primeira tentativa autorizada de Class C foi cancelada antes do snapshot,
+  sem consumo de autorização, porque o callback oficial referenciava
+  `classCEventId` sem declarar o helper. O helper agora é o alias explícito do
+  identificador canônico de evento; a regressão do snapshot comprova 99 alvos,
+  metadados de integridade e rollback sandbox. Nenhuma correção real foi executada.
+## 2026-09-09 - Phase 4H additive 101-event local recovery preparation
+
+- O estado local canônico da origem `127.0.0.1:4173` foi reconstituído somente
+  por cópia forense read-only do LevelDB: `329/329/0`, sem referências e total
+  financeiro de `2685096` centavos. O cloud autenticado anteriormente observado
+  contém `430/329/101`, sem referências e total de `3718277` centavos.
+- A divergência cloud-only comprovada é de 101 eventos Yahoo: 95 coincidem
+  exatamente com a evidência donor disponível, 4 são variantes KNUQ por valor e
+  2 são eventos pós-donor (FATN11 e DIVD11). Portanto não foi congelado o rótulo
+  incorreto de “99 matches exatos”. A impressão donor autorizada histórica ainda
+  não é reproduzível com os arquivos locais disponíveis.
+- Foi criado o executor separado `TARGETED_101_YAHOO_LOCAL_RECOVERY`, aditivo e
+  local-only (`queueCloud:false`), com preflight, snapshot persistente, readback,
+  rollback, idempotência e 12 callbacks verificáveis. O executor não é Class C,
+  não é o recovery antigo e não expõe escritor cloud.
+- O caminho read-only está disponível em
+  `npm.cmd run qa:phase4h:101-recovery-prewrite`. Ele não cria snapshot, não
+  salva, não sincroniza e não consome autorização.
+- Nenhuma recuperação real, rollback real, Class C, piloto de agosto ou sync foi
+  executado. A prova live final permanece pendente porque o perfil QA perdeu a
+  sessão autenticada (`AUTH_SESSION_VALID=false`, CDP 9233 indisponível).
