@@ -1209,3 +1209,17 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
   Trend DI continua descrito como comparação com CDI, nunca como valor oficial.
 - Evidência visual e funcional: `tests/v84-asset-detail.smoke.test.js` e
   `.qa-state/v84-ui/`. Nenhuma alteração financeira, de persistência ou cloud.
+
+## V88 — consolidação do estado limpo (15/09/2026)
+
+- A branch `integration/clean-state-v1` foi criada diretamente de
+  `origin/main` em `56e5488b95cf2ec9736297d67e2c3622e9527916` e reconstruiu
+  seletivamente o runtime funcional, testes duráveis e documentação da branch
+  de produto.
+- Scripts, testes e ferramentas de recuperação, prewrite, Class C, pilotos e
+  evidências privadas não foram incluídos no estado executável limpo. A
+  superfície financeira continua protegida; não houve escrita financeira,
+  cloud, push, PR, merge ou deploy.
+- Os commits locais da consolidação são `e5c1eac9`, `31c52ede` e `b62ad2d8`.
+  O próximo passo exato é revisar este branch limpo e, mediante autorização
+  separada, integrá-lo à linha de desenvolvimento apropriada.
