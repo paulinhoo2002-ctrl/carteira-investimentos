@@ -7862,6 +7862,8 @@ document.write([
 <script src="canonical-fingerprint-engine.js?v=phase4h-canonical-fp-v1"></script>
 <script src="report-asset-row.js"></script>
 <script src="legacy/reports-readonly-source.js"></script>
+<script src="import-foundation.js"></script>
+<script src="import-center-core.js"></script>
 <script>
 const QUOTE_REFRESH_INTERVAL = 5 * 60 * 1000;
 const QI = QUOTE_REFRESH_INTERVAL / 1000;
@@ -26165,12 +26167,10 @@ function importCenterState(){
   return S.importCenterSession;
 }
 function importCenterDetectFile(file){
-  const name=String(file?.name||'').toLowerCase();
-  if(/\.pdf$/.test(name)) return {type:'BROKERAGE_NOTE_PDF',label:'Nota de corretagem',support:'PARTIAL',parser:'fixture estruturada'};
-  if(/provent|dividend|rendimento/.test(name)) return {type:'B3_DIVIDENDS_XLSX',label:'Proventos B3',support:'FULLY_SUPPORTED',parser:'preview de proventos'};
-  if(/moviment|negoci|operac/.test(name)) return {type:'B3_MOVEMENTS_XLSX',label:'Movimentações B3',support:'PARTIAL',parser:'reconstrução de movimentos'};
-  if(/posic|custod|carteira/.test(name)) return {type:'B3_POSITION_XLSX',label:'Posição B3',support:'FULLY_SUPPORTED',parser:'conciliação de posição'};
-  return {type:'UNKNOWN',label:'Formato não reconhecido',support:'REVIEW_REQUIRED',parser:'nenhum'};
+  const detected=globalThis.ImportCenterCore?.detectImportFile?.({name:file?.name||''}) || {sourceType:'UNKNOWN',provider:'UNKNOWN',support:'REVIEW_REQUIRED',parser:null,requiresReview:true};
+  const labels={BROKERAGE_NOTE_PDF:'Nota de corretagem',B3_DIVIDENDS_XLSX:'Proventos B3',B3_MOVEMENTS_XLSX:'Movimentações B3',B3_POSITION_XLSX:'Posição B3',UNKNOWN:'Formato não reconhecido'};
+  const parsers={BROKERAGE_NOTE_PDF:'preview de nota',B3_DIVIDENDS_XLSX:'preview de proventos',B3_MOVEMENTS_XLSX:'reconstrução de movimentos',B3_POSITION_XLSX:'conciliação de posição'};
+  return {type:detected.sourceType,label:labels[detected.sourceType]||labels.UNKNOWN,support:detected.support==='SUPPORTED'?(detected.sourceType==='BROKERAGE_NOTE_PDF'?'PARTIAL':'FULLY_SUPPORTED'):detected.support==='FIXTURE_REQUIRED'?'PARTIAL':'REVIEW_REQUIRED',parser:detected.parser||parsers[detected.sourceType]||'nenhum',provider:detected.provider,confidence:detected.confidence,requiresReview:detected.requiresReview};
 }
 function importCenterFiles(files){
   const session=importCenterState();
@@ -26192,7 +26192,7 @@ function importCenterTab(){
   const session=importCenterState();
   const files=session.files||[]; const result=session.result;
   const supportClass=value=>value==='FULLY_SUPPORTED'?'full':'partial';
-  const supportLabel=value=>value==='FULLY_SUPPORTED'?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':'Suporte parcial';
+  const supportLabel=value=>value==='FULLY_SUPPORTED'?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':value==='FIXTURE_REQUIRED'?'Fixture necessária':'Suporte parcial';
   const steps=IMPORT_CENTER_STEPS.map((label,index)=>`<div class="import-center-step ${session.step===index+1?'on':''} ${session.step>index+1?'done':''}"><span>${session.step>index+1?'✓':index+1}</span>${label}</div>`).join('');
   const currentStepLabel=IMPORT_CENTER_STEPS[Math.max(0,Math.min(IMPORT_CENTER_STEPS.length-1,session.step-1))];
   const fileRows=files.length?files.map(file=>`<div class="import-file-row"><div><strong>${esc(file.name||'Arquivo sem nome')}</strong><small>${esc(file.detected.label)} · ${esc(file.detected.parser)} · ${supportLabel(file.detected.support)}</small></div><span class="import-support ${supportClass(file.detected.support)}">${esc(supportLabel(file.detected.support))}</span></div>`).join(''):'<div class="import-review-item">Nenhum arquivo selecionado. A sessão permanece apenas em memória.</div>';
