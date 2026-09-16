@@ -2438,6 +2438,15 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 @media(max-width:900px){.reports-premium-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.reports-premium-main-grid{grid-template-columns:1fr}.reports-premium-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-export-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.reports-premium-shell{padding-bottom:10px}.reports-premium-head-actions{width:100%;justify-content:stretch}.reports-premium-head-actions .reports-filter{flex:1}.reports-premium-head-actions .reports-filter button{flex:1;padding-left:7px;padding-right:7px}.reports-export-cta{width:100%}.reports-premium-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.reports-kpi{padding:9px}.reports-kpi .value{font-size:14px}.reports-premium-secondary-grid{grid-template-columns:1fr}.reports-evolution-chart{height:155px;gap:4px}.reports-evolution-value{display:none}.reports-panel-footer{grid-template-columns:1fr auto}.reports-panel-footer span:nth-of-type(2){grid-column:1}.reports-panel-footer strong:nth-of-type(2){grid-column:2;grid-row:2}.reports-details summary{align-items:flex-start;flex-direction:column;gap:4px}.reports-export-grid{grid-template-columns:1fr;padding-left:10px;padding-right:10px}}
 @media(max-width:560px){.reports-export-context{margin-left:10px;margin-right:10px}.reports-export-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.reports-intelligence-strip{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;padding:12px 14px;border:1px solid #20304a;border-radius:15px;background:#0a121f;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.reports-intelligence-strip>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.reports-intelligence-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#71849f}
+.reports-intelligence-strip strong{font-size:14px;color:#e5edf8;line-height:1.2;font-variant-numeric:tabular-nums}
+.reports-intelligence-strip small{color:#8294ad;font-size:10px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="light"] .reports-intelligence-strip{background:#fff;border-color:#d9e2ec}
+html[data-theme="light"] .reports-intelligence-strip strong{color:#172033}
+html[data-theme="light"] .reports-intelligence-strip small,.reports-intelligence-label{color:#52647b}
+@media(max-width:560px){.reports-intelligence-strip{grid-template-columns:1fr;gap:9px;padding:11px}.reports-intelligence-strip small{white-space:normal}}
 .reports-premium-shell .reports-premium-hero{
   background:var(--surface)!important;
   box-shadow:none!important;
@@ -7850,6 +7859,7 @@ document.write([
 <script src="market-data-providers.js"></script>
 <script src="portfolio-intelligence.js"></script>
 <script src="portfolio-performance.js"></script>
+<script src="portfolio-report-model.js"></script>
 <script src="portfolio-runtime-stores.js"></script>
 <script src="fixed-income-benchmark-provider.js"></script>
 <script src="official-events-provider.js"></script>
@@ -7862,6 +7872,8 @@ document.write([
 <script src="canonical-fingerprint-engine.js?v=phase4h-canonical-fp-v1"></script>
 <script src="report-asset-row.js"></script>
 <script src="legacy/reports-readonly-source.js"></script>
+<script src="import-foundation.js"></script>
+<script src="import-center-core.js"></script>
 <script>
 const QUOTE_REFRESH_INTERVAL = 5 * 60 * 1000;
 const QI = QUOTE_REFRESH_INTERVAL / 1000;
@@ -26020,6 +26032,20 @@ function reportExportContext(data){
 }
 function reportsTab(){
   const data=reportsSnapshot();
+  const reportAssets=reportAssetRows();
+  const reportFixed=reportFixedIncomeRows();
+  const reportValuesComplete=[...reportAssets,...reportFixed].every(row=>Number.isFinite(Number(row.current))&&Number(row.current)>=0);
+  const intelligence=globalThis.PortfolioReportModel?.buildPortfolioReportModel?.({
+    summary:data,
+    assets:reportAssets,
+    fixedIncome:reportFixed,
+    proventos:reportProventoRows(),
+    allocation:Object.entries(allocationActualByType().map||{}).map(([type,value])=>({type,value})),
+    performance:globalThis.__V76_RUNTIME_STATUS__||{},
+    valueCoverage:reportValuesComplete?100:null,
+    freshness:'LEGACY_CURRENT_VALUES',
+    provenance:{summary:'cálculos do domínio legado',performance:'snapshots locais quando disponíveis'}
+  });
   const patrimony=patrimonySnapshot(reportsPeriod()==='all'?12:reportsPeriod()==='year'?new Date().getMonth()+1:12);
   const allocation=allocationActualByType();
   const allocationRows=Object.entries(allocation.map||{})
@@ -26053,6 +26079,8 @@ function reportsTab(){
         <button class="reports-experiment-entry__button" type="button" onclick="openReadonlyReportsExperimentalHost()">Abrir relatório experimental</button>
       </section>` : '';
   const auditTone=data.auditCount?'warn':'ok';
+  const intelligenceStatus=intelligence?.sections?.performance?.status==='AVAILABLE'?'Disponível':intelligence?.sections?.performance?.status==='TRACKING_STARTED'?'Coletando histórico':'Indisponível';
+  const intelligenceCoverage=intelligence?.coverage?.value===null?'Cobertura não informada':`${intelligence.coverage.value.toFixed(0)}% dos valores reportados`;
   return `<div class="reports-shell reports-premium-shell">
     <section class="reports-hero reports-premium-hero">
       <div class="reports-head">
@@ -26070,6 +26098,11 @@ function reportsTab(){
         <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(income.total12)}</div><div class="sub">Média 12M: ${fmt(income.monthlyAvg)}</div></div>
         <div class="reports-kpi"><div class="label">Rentabilidade</div><div class="value">${fmtP(data.portfolio.tGP)}</div><div class="sub">Resultado sobre o capital</div></div>
       </div>
+    </section>
+    <section class="reports-intelligence-strip" aria-label="Inteligência do relatório">
+      <div><span class="reports-intelligence-label">Leitura executiva</span><strong>${esc(intelligenceStatus)}</strong><small>${esc(intelligence?.sections?.performance?.reason||'Os indicadores usam as fontes canônicas do domínio.')}</small></div>
+      <div><span class="reports-intelligence-label">Cobertura</span><strong>${esc(intelligenceCoverage)}</strong><small>${esc(intelligence?.coverage?.freshness==='LEGACY_CURRENT_VALUES'?'Valores atuais da carteira cadastrada.':'Atualização conforme a fonte disponível.')}</small></div>
+      <div><span class="reports-intelligence-label">Escopo</span><strong>${intelligence?.sections?.assets?.items?.length||0} ativos</strong><small>Relatório somente leitura · sem alteração de dados</small></div>
     </section>
     <section class="reports-premium-main-grid">
       <article class="reports-panel reports-evolution-panel"><div class="reports-panel-head"><div><h2>Evolução patrimonial</h2><p>Aplicado e patrimônio estimado no período selecionado.</p></div><span class="reports-badge">${esc(data.periodLabel)}</span></div>
@@ -26169,12 +26202,10 @@ function importCenterState(){
   return S.importCenterSession;
 }
 function importCenterDetectFile(file){
-  const name=String(file?.name||'').toLowerCase();
-  if(/\.pdf$/.test(name)) return {type:'BROKERAGE_NOTE_PDF',label:'Nota de corretagem',support:'PARTIAL',parser:'fixture estruturada'};
-  if(/provent|dividend|rendimento/.test(name)) return {type:'B3_DIVIDENDS_XLSX',label:'Proventos B3',support:'FULLY_SUPPORTED',parser:'preview de proventos'};
-  if(/moviment|negoci|operac/.test(name)) return {type:'B3_MOVEMENTS_XLSX',label:'Movimentações B3',support:'PARTIAL',parser:'reconstrução de movimentos'};
-  if(/posic|custod|carteira/.test(name)) return {type:'B3_POSITION_XLSX',label:'Posição B3',support:'FULLY_SUPPORTED',parser:'conciliação de posição'};
-  return {type:'UNKNOWN',label:'Formato não reconhecido',support:'REVIEW_REQUIRED',parser:'nenhum'};
+  const detected=globalThis.ImportCenterCore?.detectImportFile?.({name:file?.name||''}) || {sourceType:'UNKNOWN',provider:'UNKNOWN',support:'REVIEW_REQUIRED',parser:null,requiresReview:true};
+  const labels={BROKERAGE_NOTE_PDF:'Nota de corretagem',B3_DIVIDENDS_XLSX:'Proventos B3',B3_MOVEMENTS_XLSX:'Movimentações B3',B3_POSITION_XLSX:'Posição B3',UNKNOWN:'Formato não reconhecido'};
+  const parsers={BROKERAGE_NOTE_PDF:'preview de nota',B3_DIVIDENDS_XLSX:'preview de proventos',B3_MOVEMENTS_XLSX:'reconstrução de movimentos',B3_POSITION_XLSX:'conciliação de posição'};
+  return {type:detected.sourceType,label:labels[detected.sourceType]||labels.UNKNOWN,support:detected.support==='SUPPORTED'?(detected.sourceType==='BROKERAGE_NOTE_PDF'?'PARTIAL':'FULLY_SUPPORTED'):detected.support==='FIXTURE_REQUIRED'?'PARTIAL':'REVIEW_REQUIRED',parser:detected.parser||parsers[detected.sourceType]||'nenhum',provider:detected.provider,confidence:detected.confidence,requiresReview:detected.requiresReview};
 }
 function importCenterFiles(files){
   const session=importCenterState();
@@ -26196,7 +26227,7 @@ function importCenterTab(){
   const session=importCenterState();
   const files=session.files||[]; const result=session.result;
   const supportClass=value=>value==='FULLY_SUPPORTED'?'full':'partial';
-  const supportLabel=value=>value==='FULLY_SUPPORTED'?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':'Suporte parcial';
+  const supportLabel=value=>value==='FULLY_SUPPORTED'?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':value==='FIXTURE_REQUIRED'?'Fixture necessária':'Suporte parcial';
   const steps=IMPORT_CENTER_STEPS.map((label,index)=>`<div class="import-center-step ${session.step===index+1?'on':''} ${session.step>index+1?'done':''}"><span>${session.step>index+1?'✓':index+1}</span>${label}</div>`).join('');
   const currentStepLabel=IMPORT_CENTER_STEPS[Math.max(0,Math.min(IMPORT_CENTER_STEPS.length-1,session.step-1))];
   const fileRows=files.length?files.map(file=>`<div class="import-file-row"><div><strong>${esc(file.name||'Arquivo sem nome')}</strong><small>${esc(file.detected.label)} · ${esc(file.detected.parser)} · ${supportLabel(file.detected.support)}</small></div><span class="import-support ${supportClass(file.detected.support)}">${esc(supportLabel(file.detected.support))}</span></div>`).join(''):'<div class="import-review-item">Nenhum arquivo selecionado. A sessão permanece apenas em memória.</div>';

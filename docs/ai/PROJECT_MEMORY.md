@@ -1223,3 +1223,32 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Os commits locais da consolidação são `e5c1eac9`, `31c52ede` e `b62ad2d8`.
   O próximo passo exato é revisar este branch limpo e, mediante autorização
   separada, integrá-lo à linha de desenvolvimento apropriada.
+
+## V92 — endurecimento do contrato do Import Center (15/09/2026)
+
+- A branch `feature/v92-import-center-hardening` parte do `origin/main`
+  `72919996675d66a25fc5de2d78f11802542ffddd` e adiciona o módulo puro
+  `import-center-core.js`.
+- O core unifica detecção conservadora, registry de parser, normalização
+  canônica, validação, identidade de trade, dedupe/conflict review, sessão e
+  preview/confirm gate. Preview e confirmação continuam com zero escrita
+  financeira; `save()`, Firebase, localStorage e o ledger não são chamados.
+- Inter permanece suportado pela implementação existente; XP e BTG ficam
+  explicitamente `FIXTURE_REQUIRED`, sem layout inventado. O Import Center
+  visual continua simulação/test-mode e B3 continua opcional.
+- Gate local V92: `tests/import-center-core.test.js` 5/5, root 205/205,
+  modern 750/750, finance 80/80, persistence 32/32, build moderno e smoke
+  browser sem overflow/erros relevantes. Evidência visual fica em `.qa-state/`.
+
+## V93 — inteligência de relatórios (15/09/2026)
+
+- A branch `feature/v93-reports-intelligence` adiciona `portfolio-report-model.js`,
+  uma camada pura para consolidar resumo, patrimônio, performance, renda,
+  alocação, concentração, ativos, proventos e qualidade dos dados.
+- O modelo preserva `null`/indisponibilidade, explicita status, proveniência,
+  frescor e cobertura, e não acessa storage, rede, Firebase ou o ledger. A tela
+  de Relatórios reutiliza o domínio legado e exibe uma leitura executiva sem
+  duplicar fórmulas.
+- A cobertura do Import Center permanece verde; TWR/XIRR continuam mostrando
+  coleta/insuficiência quando não há evidência bastante. Nenhuma lógica
+  financeira, persistência ou cloud foi alterada.
