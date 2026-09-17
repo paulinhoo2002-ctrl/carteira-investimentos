@@ -26,6 +26,13 @@ Status: ativo. Valor manual/importado é autoridade. CDI pode ser estimado em
 sombra pelo BCB SGS; IPCA+/CRA/debêntures sem metadados suficientes ficam
 manuais.
 
+V173 formaliza a seleção legada sem alterar seus números: `selectFixedIncomeValuation`
+expõe campo vencedor, proveniência, autoridade conservadora, modo, as-of e
+qualidade como metadados derivados em runtime. O fallback para valor aplicado
+permanece compatível, mas é explicitamente `LEGACY_FALLBACK` e não valuation de
+mercado. Datas desconhecidas permanecem nulas; não há migração ou escrita em
+leitura.
+
 ## ADR-006 — parser fail-closed
 
 Status: ativo. Parser oficial/importador só promove campos determinísticos;
