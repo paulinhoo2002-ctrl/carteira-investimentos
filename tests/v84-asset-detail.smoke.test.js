@@ -26,13 +26,16 @@ for(const item of cases){
   for(const viewport of viewports){
     test(`V84 detalhe ${item.label} ${viewport.suffix}`,{skip:!browserPath(),skipReason:'Chrome/Edge ausente; smoke browser dedicado executa apos provisionamento do navegador'},async()=>{
       const executablePath=browserPath();
-      const harness=await startLocalHttpServer(path.join(__dirname,'..'));
       const {chromium}=await import('playwright-core');
-      const browser=await chromium.launch({executablePath,headless:true});
+      let harness;
+      let browser;
+      let context;
       const errors=[];
       const failures=[];
       try{
-        const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},hasTouch:viewport.width<=430,isMobile:viewport.width<=430});
+        harness=await startLocalHttpServer(path.join(__dirname,'..'));
+        browser=await chromium.launch({executablePath,headless:true});
+        context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},hasTouch:viewport.width<=430,isMobile:viewport.width<=430});
         const page=await context.newPage();
         page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
         page.on('pageerror',error=>errors.push(`pageerror: ${error.message}`));
@@ -81,10 +84,13 @@ for(const item of cases){
         }
         await page.waitForSelector('.asset-detail-page',{timeout:3000});
         await page.screenshot({path:path.join('.qa-state','v84-ui',`${item.final}-${viewport.suffix}.png`),fullPage:true});
-        await context.close();
       }finally{
-        await browser.close();
-        harness.server.close();
+        await context?.close().catch(()=>{});
+        await browser?.close().catch(()=>{});
+        if(harness?.server?.listening){
+          harness.server.closeAllConnections?.();
+          await new Promise(resolve=>harness.server.close(resolve));
+        }
       }
       assert.deepEqual(errors,[],`console/pageerror: ${errors.join(' | ')}`);
       assert.deepEqual(failures,[],`request failures: ${failures.join(' | ')}`);
