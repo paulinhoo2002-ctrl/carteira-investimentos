@@ -17,6 +17,13 @@ Cada resultado conserva documento, URL, hash, trecho de evidência e versão do
 parser. Eventos entram no cache público local; o ledger realizado não é
 chamado. Promoção financeira continua manual (`MODE_A`).
 
+No V166, `official-events-provider.js` também expõe a passagem de documentos
+determinísticos para `official-document-pipeline.js`; `corporate-events-sync.js`
+retorna contagens explícitas de descoberta, parsing, normalização, duplicatas,
+correções, cancelamentos e erros. O store público faz upsert por identidade
+determinística, portanto uma segunda sincronização não cria candidato
+duplicado nem altera o ledger financeiro.
+
 ## V72 — famílias e corpus
 
 O parser mantém um modelo único e expõe wrappers composáveis para aviso
