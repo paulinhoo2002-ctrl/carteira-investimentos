@@ -7877,6 +7877,7 @@ document.write([
 <script src="legacy/reports-readonly-source.js"></script>
 <script src="import-foundation.js"></script>
 <script src="import-center-core.js"></script>
+<script src="fixed-income-valuation.js"></script>
 <script src="import-center-context.js"></script>
 <script src="import-center-preview-renderer.js"></script>
 <script src="import-center-file-list-renderer.js"></script>
@@ -17376,7 +17377,7 @@ function pickRendaFixaState(options, allowZero=true){
   }
   return {state:'missing', value:null, source:'', label:''};
 }
-function fixedIncomeOfficialValues(a){
+function fixedIncomeLegacyValues(a){
   const qtyState=parseRendaFixaPositiveState(a?.qty);
   const avgState=parseRendaFixaPositiveState(a?.avg_price);
   const currentStoredState=parseRendaFixaPositiveState(a?.current_price);
@@ -17453,6 +17454,12 @@ function fixedIncomeOfficialValues(a){
     hasExplicitApplied: appliedState.source !== 'derived' && appliedState.state !== 'missing'
   };
 }
+function fixedIncomeOfficialValues(a){
+  const host=typeof window!=='undefined' ? window : (typeof globalThis!=='undefined' ? globalThis : null);
+  const selector=host?.FixedIncomeValuation?.selectFixedIncomeValuation;
+  if(typeof selector!=='function') return fixedIncomeLegacyValues(a);
+  return selector(a,{legacyResolver:fixedIncomeLegacyValues}).legacy;
+}
 function rfValues(a){
   return fixedIncomeOfficialValues(a);
 }
@@ -17461,7 +17468,20 @@ function assetRfCurrentValueMeta(a){
   const v=rfValues(a);
   const imported=rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source);
   const source=v.currentSource || (v.applied>0 ? 'valor aplicado' : 'estimado');
-  return { source, origin: imported ? 'importado da B3' : '' };
+  const host=typeof window!=='undefined' ? window : (typeof globalThis!=='undefined' ? globalThis : null);
+  const selection=host?.FixedIncomeValuation?.selectFixedIncomeValuation
+    ? host.FixedIncomeValuation.selectFixedIncomeValuation(a,{legacyResolver:fixedIncomeLegacyValues})
+    : null;
+  return {
+    source,
+    origin: imported ? 'importado da B3' : '',
+    authority: selection?.authority || 'UNKNOWN',
+    provenance: selection?.provenance || 'UNKNOWN',
+    quality: selection?.quality || 'UNKNOWN',
+    valuationAsOf: selection?.valuationAsOf || null,
+    sourceAsOf: selection?.sourceAsOf || null,
+    isFallback: selection?.isFallback === true
+  };
 }
 function assetAppliedValue(a){
   return FinanceCore.assetAppliedValue(a);
