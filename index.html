@@ -7197,8 +7197,9 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .chart-data-point{cursor:pointer;outline:none}
 .chart-data-point:focus{outline:none}
 .chart-data-point:focus-visible{stroke:var(--success);stroke-width:2;stroke-dasharray:3 2}
-.line-chart-tooltip{position:fixed;z-index:1000;max-width:220px;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface-strong,var(--panel));box-shadow:0 6px 16px rgba(0,0,0,.24);color:var(--text);font-size:11px;line-height:1.25;pointer-events:none}
+.line-chart-tooltip{position:fixed;z-index:1000;max-width:220px;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface-strong,var(--panel));box-shadow:0 6px 16px rgba(0,0,0,.24);color:var(--text);font-size:11px;line-height:1.25;white-space:pre-line;pointer-events:none}
 .line-chart-tooltip[hidden]{display:none}
+.chart-crosshair{pointer-events:none;opacity:.8}
 .dividend-history-block .div-monthly-table-block{margin-top:0}
 .dividend-history-block .div-monthly-table-block .sec-body{padding-top:8px}
 .dividend-history-block .hist-monthly th,.dividend-history-block .hist-monthly td{padding-top:7px;padding-bottom:7px}
@@ -22347,8 +22348,19 @@ function showLineChartTooltip(node,event){
     tooltip.setAttribute('role','status');
     document.body.appendChild(tooltip);
   }
-  tooltip.textContent=node.getAttribute('data-chart-tooltip')||'';
+  const svg=node.closest('svg');
+  const chartIndex=node.getAttribute('data-chart-index');
+  const periodPoints=svg && chartIndex!==null ? [...svg.querySelectorAll(`[data-chart-index="${chartIndex}"]`)] : [];
+  tooltip.textContent=periodPoints.length
+    ? periodPoints.map(point=>point.getAttribute('data-chart-tooltip')).filter(Boolean).filter((value,index,values)=>values.indexOf(value)===index).join('\n')
+    : (node.getAttribute('data-chart-tooltip')||'');
   tooltip.hidden=false;
+  document.querySelectorAll('.chart-crosshair').forEach(line=>{ line.hidden=true; });
+  const crosshair=svg?.querySelector('.chart-crosshair');
+  if(crosshair){
+    const x=node.getAttribute('data-chart-x');
+    crosshair.setAttribute('x1',x); crosshair.setAttribute('x2',x); crosshair.hidden=false;
+  }
   const rect=node.getBoundingClientRect();
   const x=event?.clientX||rect.left+rect.width/2;
   const y=event?.clientY||rect.top;
@@ -22364,6 +22376,7 @@ function showLineChartTooltip(node,event){
 function hideLineChartTooltip(){
   const tooltip=document.getElementById('line-chart-tooltip');
   if(tooltip) tooltip.hidden=true;
+  document.querySelectorAll('.chart-crosshair').forEach(line=>{ line.hidden=true; });
 }
 function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
   const width=1080, height=260;
@@ -22379,6 +22392,12 @@ function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
   const xStep=(width-padL-padR)/Math.max(1, labels.length-1);
   const yAt=v=>height-padB-(((v-minY)/(maxY-minY))*(height-padT-padB));
   const xAt=i=>padL + i*xStep;
+  const chartTooltips=labels.map((label,i)=>series.map(s=>{
+    if(!Array.isArray(s.values) || i>=s.values.length) return '';
+    const value=s.values[i];
+    const name=s.tooltipLabel||s.name||'Série';
+    return `${label}\n${name}\n${valueFormatter(value)}`;
+  }).filter(Boolean).join('\n'));
   const grid=[];
   for(let i=0;i<=5;i++){
     const y=padT + ((height-padT-padB)/5)*i;
@@ -22395,9 +22414,9 @@ function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
     const area=`M ${xAt(0).toFixed(1)},${(height-padB).toFixed(1)} L ${pts.join(' L ')} L ${xAt(values.length-1).toFixed(1)},${(height-padB).toFixed(1)} Z`;
 const pointsMarkup=values.map((v,i)=>{
       const label=labels[i]||`Período ${i+1}`;
-      const tooltip=s.tooltipLabel ? `${label}\n${s.tooltipLabel}\n${valueFormatter(v)}` : `${s.name||'Série'} · ${label}: ${valueFormatter(v)}`;
+      const tooltip=chartTooltips[i] || (s.tooltipLabel ? `${label}\n${s.tooltipLabel}\n${valueFormatter(v)}` : `${s.name||'Série'} · ${label}: ${valueFormatter(v)}`);
       const visible=s.points===false?'':`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.5" fill="${color}" stroke="#090c15" stroke-width="1"/>`;
-      return `${visible}<circle class="chart-data-point" cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="8" fill="transparent" tabindex="0" focusable="true" aria-label="${esc(tooltip)}" data-chart-tooltip="${esc(tooltip)}" onpointerenter="showLineChartTooltip(this,event)" onpointerleave="hideLineChartTooltip()" onfocus="showLineChartTooltip(this,event)" onblur="hideLineChartTooltip()" onclick="showLineChartTooltip(this,event)"><title>${esc(tooltip)}</title></circle>`;
+      return `${visible}<circle class="chart-data-point" cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="8" fill="transparent" tabindex="0" focusable="true" aria-label="${esc(tooltip)}" data-chart-index="${i}" data-chart-x="${xAt(i).toFixed(1)}" data-chart-tooltip="${esc(tooltip)}" onpointerenter="showLineChartTooltip(this,event)" onpointermove="showLineChartTooltip(this,event)" onpointerleave="hideLineChartTooltip()" onfocus="showLineChartTooltip(this,event)" onblur="hideLineChartTooltip()" onclick="showLineChartTooltip(this,event)"><title>${esc(tooltip)}</title></circle>`;
     }).join('');
     return `
       <path d="${area}" fill="${s.fill||'none'}" opacity="${s.fill?1:0}"/>
@@ -22411,6 +22430,7 @@ const pointsMarkup=values.map((v,i)=>{
   const preserveAttr=chartClass ? ' preserveAspectRatio="none"' : '';
   return `<svg${classAttr} viewBox="0 0 ${width} ${height}" width="100%" height="${height}"${preserveAttr} style="display:block;overflow:visible">
     ${grid.join('')}
+    <line class="chart-crosshair" x1="${padL}" y1="${padT}" x2="${padL}" y2="${height-padB}" stroke="var(--muted,#64748b)" stroke-width="1" stroke-dasharray="3 4" hidden/>
     ${paths}
     ${xLabels}
   </svg>`;
@@ -23099,7 +23119,8 @@ function clearAssetsFilters(){
         const ticker = String(a.ticker||'').toLowerCase();
         const name = String(a.name||'').toLowerCase();
         const type = String(a.type||'').toLowerCase();
-        return ticker.includes(q) || name.includes(q) || type.includes(q);
+        const sector = String(a.sector||'').toLowerCase();
+        return ticker.includes(q) || name.includes(q) || type.includes(q) || sector.includes(q);
       });
     }
     if(S.assetsFilterClasses && S.assetsFilterClasses.length > 0){
