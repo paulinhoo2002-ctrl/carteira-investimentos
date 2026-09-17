@@ -20,7 +20,9 @@
   const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('testMode')==='1';
   const authoritativeLocalRecovery=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('authoritativeLocalRecovery')==='1';
   window.__LOCAL_TEST_MODE__=testMode;
-  window.__PROTECTED_READ_ONLY_QA_BOOT__=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
+  // Explicit QA mode only reduces capabilities: reads/rendering remain allowed,
+  // while persistence, cloud writes and financial mutations fail closed.
+  window.__PROTECTED_READ_ONLY_QA_BOOT__=new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
@@ -8679,6 +8681,7 @@ protectedPilotGlobal.__OFFICIAL_REAL_BRIDGE_FACTORY__=({appState,persistence,syn
 };
 protectedPilotGlobal.__OFFICIAL_REAL_ADAPTER_FACTORY__=({bridge}={})=>{ let used=false; const preflight=async input=>{ if(!input?.dryRun) throw new Error('PILOT_DRY_RUN_REQUIRED'); const r=input.readiness||{}; const m=input.manifest||{}; if(r.auth?.sessionValid!==true || r.runtime?.executionPathComplete!==true) throw new Error('PILOT_RUNTIME_NOT_READY'); if(m.providerVersion!=='phase4i-august-provider-v2' || !m.providerHash || m.planCounts?.total!==24 || m.planCounts?.links!==20 || m.planCounts?.creates!==1 || m.planCounts?.exclusions!==2 || m.planCounts?.deferred!==1 || m.planCounts?.ambiguous!==1 || m.expectedFinancialIncrementCents!==8537 || m.positionImpact!==0 || m.avgPriceImpact!==0 || m.assetCountImpact!==0 || m.rfImpact!==0) throw new Error('PILOT_MANIFEST_MISMATCH'); if(m.tepp11?.action!=='CREATE' || m.tepp11?.date!=='2026-08-14' || m.tepp11?.valueCents!==8537 || m.divd11?.action!=='EXCLUDE' || m.ndiv11?.action!=='EXCLUDE' || m.knuq11?.action!=='DEFERRED_AMBIGUOUS_NO_OP' || m.knuq11?.mutationCount!==0 || m.knuq11?.financialDeltaCents!==0) throw new Error('PILOT_DECISION_MISMATCH'); const manifestFingerprint=typeof window.ProtectedRealPilotReadiness?.fingerprint==='function' ? await window.ProtectedRealPilotReadiness.fingerprint(m) : ''; return {status:'DRY_RUN_PREWRITE_READY',nativeClickHandlerReached:true,planProviderReached:true,reviewValidatorReached:true,authValidatorReached:true,executorPreflightReached:true,snapshotCreated:false,mutationExecuted:false,saveExecuted:false,syncExecuted:false,manifestFingerprint,liveStateFingerprint:String(r.liveState?.fingerprint||'')}; }; return {preflight,execute:input=>{ if(used) return {status:'IDEMPOTENT_NOOP',FINANCIAL_INCREMENT_CENTS:0}; if(!input?.authorization?.REAL_PILOT_WRITE_AUTHORIZED) throw new Error('REAL_PILOT_WRITE_AUTHORIZATION_REQUIRED'); const model=input.model; if(model?.linkedEvidenceCount!==20 || model?.canonicalEvents?.length!==1 || model?.deferred?.length!==1 || model?.deferred[0]?.mutationCount!==0 || model?.deferred[0]?.financialDeltaCents!==0 || model?.etfWrites!==0 || model?.linkedFinancialTotalChangeCents!==0) throw new Error('WRITE_MODEL_MISMATCH'); const snapshot=input.snapshot||bridge.createSnapshot(input.authorization.sessionId); try{ bridge.applyPilotMutation(model); bridge.persistState(model); if(bridge.verifyPersistedState(model)!==true || bridge.reconcilePersistedState(model)!==true) throw new Error('POSTWRITE_RECONCILIATION_FAILED'); bridge.releaseSync(); used=true; return {status:'COMPLETED',NEW_CANONICAL_EVENTS:1,NEW_SOURCE_EVIDENCES:20,DEFERRED_AMBIGUOUS_NO_OP:1,FINANCIAL_INCREMENT_CENTS:8537}; }catch(error){ bridge.rollbackPilot(snapshot); bridge.persistRollback(snapshot); throw error; }},rollback:input=>{ if(!bridge.rollbackPilot) throw new Error('ROLLBACK_CALLBACK_NOT_CONFIGURED'); return bridge.rollbackPilot(input?.snapshot); }};};
 function saveConfig(){
+  if(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot()) return;
   if(typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot()) return;
   if(!canEditFromThisTab('salvar configuração')) return;
   if(isLocalTestMode()) return;
@@ -8715,6 +8718,7 @@ function readEditLockRecord(){
   }
 }
 function writeEditLockRecord(lock){
+  if(isProtectedReadOnlyQaBoot()) return false;
   try{
     localStorage.setItem(EDIT_LOCK_KEY, JSON.stringify(lock));
     return true;
@@ -8723,6 +8727,7 @@ function writeEditLockRecord(lock){
   }
 }
 function removeEditLockRecord(){
+  if(isProtectedReadOnlyQaBoot()) return false;
   try{ localStorage.removeItem(EDIT_LOCK_KEY); }catch(e){}
 }
 function isEditLockStale(lock){
@@ -8795,6 +8800,7 @@ function assumeEditControl(){
   toast('✅ Edição assumida nesta aba.');
 }
 function releaseEditProtection(reason='pagehide'){
+  if(isProtectedReadOnlyQaBoot()) return;
   const tabId=ensureEditLockTabId();
   const lock=readEditLockRecord();
   if(lock && String(lock.ownerId||'')===tabId){
@@ -8804,6 +8810,11 @@ function releaseEditProtection(reason='pagehide'){
 }
 function initEditProtection(){
   ensureEditLockTabId();
+  if(isProtectedReadOnlyQaBoot()){
+    EDIT_LOCK_STATE={ownerId:'',updatedAt:0,mode:'readonly',stale:false};
+    startCloudSync({readOnlyOnly:true});
+    return;
+  }
   if(!EDIT_LOCK_CHANNEL && 'BroadcastChannel' in window){
     try{
       EDIT_LOCK_CHANNEL=new BroadcastChannel(EDIT_LOCK_CHANNEL_NAME);
@@ -8924,11 +8935,14 @@ function stripAutoProventos(){
   return before-(S.proventos?.length||0);
 }
 function scheduleAutoProventosGratis(reason='change'){
+  if(isProtectedReadOnlyQaBoot()) return false;
   markProventosDirty();
   clearTimeout(S.autoProvTimer);
   S.autoProvTimer=setTimeout(()=>runAutoProventosGratis(reason), 1400);
+  return true;
 }
 async function runAutoProventosGratis(reason='change'){
+  if(isProtectedReadOnlyQaBoot()) return false;
   if(S.autoProvRunning) return;
   if(!S.autoProvDirty && reason!=='force') return;
   if(!isEditOwner()) return;
@@ -9934,7 +9948,9 @@ function initFirebase(){
     FB.auth = firebase.auth();
     FB.db   = firebase.firestore();
     FB.ready = true;
-    try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+    if(!isProtectedReadOnlyQaBoot()){
+      try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+    }
     FB.auth.onAuthStateChanged(async user=>{
       FB.authResolved = true;
       FB.user = user || null;
@@ -9971,7 +9987,7 @@ function initFirebase(){
           });
           return;
         }
-        startCloudSync({readOnlyOnly: !isEditOwner() && !isProtectedReadOnlyQaBoot()});
+        startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
       }else{
         FB.access.loading = false;
         FB.access.loaded = false;
@@ -10040,6 +10056,7 @@ async function loadAccessControl(user){
   }
 }
 async function recordAccessAttempt(user, allowed, reason=''){
+  if(isProtectedReadOnlyQaBoot()) return {ok:false,reason:'PROTECTED_READ_ONLY_QA_BOOT'};
   try{
     if(!FB.db || !user?.uid) return;
     const ref = FB.db.collection('users').doc(user.uid);
@@ -10358,11 +10375,13 @@ async function applyCloudData(d){
     console.warn('[settings] brapiToken legado migrado apenas para armazenamento local.');
   }
   rebuildLearnMeta();
-  try{
-    syncWalletFromState();
-    localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
-    localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
-  }catch(e){}
+  if(!isProtectedReadOnlyQaBoot()){
+    try{
+      syncWalletFromState();
+      localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
+      localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
+    }catch(e){}
+  }
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
   FB.applying=false;
   const after=cloudSnapshotSignature();
@@ -10371,8 +10390,9 @@ async function applyCloudData(d){
 }
 function startCloudSync({readOnlyOnly=false}={}){
   if(isLocalTestMode() || isAuthoritativeLocalRecoveryBoot()) return;
-  if(readOnlyOnly && (isEditOwner() || isProtectedReadOnlyQaBoot())) return;
-  if(!readOnlyOnly && !isEditOwner() && !isProtectedReadOnlyQaBoot()) return;
+  if(isProtectedReadOnlyQaBoot() && !readOnlyOnly) return;
+  if(readOnlyOnly && isEditOwner()) return;
+  if(!readOnlyOnly && !isEditOwner()) return;
   const ref=portfolioRef();
   if(!ref) return;
   stopCloudSync(false);
@@ -11149,6 +11169,7 @@ function loadV76RuntimeStores(){
   return window.__V76_RUNTIME__;
 }
 function saveV76RuntimeStores(){
+  if(isProtectedReadOnlyQaBoot()) return false;
   if(!v76RuntimeAvailable()||!window.__V76_RUNTIME__) return false;
   try{
     localStorage.setItem(V76_SNAPSHOT_STORAGE_KEY,JSON.stringify(window.__V76_RUNTIME__.snapshots));
@@ -33891,9 +33912,9 @@ function go(t){
   S.mobileTopMenuOpen=false;
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
-  if(t!=='importacao') save();
+  if(t!=='importacao' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) save();
   render();
-  if(t==='dividendos') runAutoProventosGratis('tab');
+  if(t==='dividendos' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
 
 // Busca global somente em memoria: os registros continuam vindo das fontes oficiais.
