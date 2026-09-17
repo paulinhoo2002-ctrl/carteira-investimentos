@@ -26204,7 +26204,7 @@ const IMPORT_CENTER_SOURCES=[
   {type:'BROKERAGE_NOTE_PDF',label:'Nota de corretagem',support:'PARTIAL',hint:'Fixture estruturada; extração arbitrária de PDF exige revisão.'},
 ];
 const IMPORT_CENTER_STEPS=['Arquivos','Detecção','Preview','Revisão','Reconciliação','Plano','Dry-run','Resultado'];
-const IMPORT_CENTER_CONTEXT=ImportCenterContext.create({readState:()=>importCenterState(),escapeText:esc,getSources:()=>IMPORT_CENTER_SOURCES,getSteps:()=>IMPORT_CENTER_STEPS});
+const IMPORT_CENTER_CONTEXT=typeof ImportCenterContext==='undefined' ? null : ImportCenterContext.create({readState:()=>importCenterState(),escapeText:esc,getSources:()=>IMPORT_CENTER_SOURCES,getSteps:()=>IMPORT_CENTER_STEPS});
 function importCenterState(){
   if(!S.importCenterSession) S.importCenterSession={files:[],step:1,result:null,history:[]};
   return S.importCenterSession;

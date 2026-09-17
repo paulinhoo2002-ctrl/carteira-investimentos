@@ -20,7 +20,7 @@ const context = contextApi.create({ readState: () => ({ files: [], step: 1, resu
 test('current-main Import Center keeps explicit context and renderer graph', () => {
   assert.match(source, /<script src="import-center-core\.js"><\/script>/);
   assert.match(source, /<script src="import-center-view\.js"><\/script>/);
-  assert.match(source, /IMPORT_CENTER_CONTEXT=ImportCenterContext\.create/);
+  assert.match(source, /IMPORT_CENTER_CONTEXT=typeof ImportCenterContext==='undefined' \? null : ImportCenterContext\.create/);
   assert.match(source, /ImportCenterView\.render\(/);
   assert.doesNotMatch(source, /onchange="importCenterFiles/);
   assert.doesNotMatch(source, /onclick="importCenterReset/);
