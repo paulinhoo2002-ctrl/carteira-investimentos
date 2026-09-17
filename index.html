@@ -7834,6 +7834,45 @@ summary:focus-visible,
   .shell .asset-detail-panel{padding:14px;border-radius:13px}.shell .asset-detail-row{gap:10px}.shell .asset-detail-row strong{max-width:58%}
 }
 </style>
+<style id="v182f-premium-ux-system">
+  /* V182F: presentation-only consistency layer. No data, storage or event semantics. */
+  :root{
+    --ux-positive:var(--success,#16a34a);
+    --ux-negative:var(--danger,#dc2626);
+    --ux-neutral:var(--muted,#94a3b8);
+    --ux-focus:color-mix(in srgb,var(--primary,#4f46e5) 72%,white);
+    --ux-control-h:44px;
+  }
+  body{-webkit-font-smoothing:antialiased}
+  .premium-dashboard,.assets-premium-shell,.rent-premium,.patrimony-premium,.div-premium,
+  .goals-premium,.reports-premium-shell{font-variant-numeric:tabular-nums}
+  :where(button,input,select,[role="button"]):focus-visible{
+    outline:2px solid var(--ux-focus);outline-offset:2px
+  }
+  :where(.assets-premium-filter-btn,.assets-premium-search-input,.assets-premium-filter-panel select,
+    .rent-premium .rent-filters select,.div-premium-search input){min-height:var(--ux-control-h)}
+  :where(.assets-premium-table th,.assets-premium-table td){font-variant-numeric:tabular-nums}
+  :where(.assets-premium-table thead th){position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
+  :where(.assets-premium-table tbody tr):focus-within{background:color-mix(in srgb,var(--primary,#4f46e5) 10%,transparent)}
+  :where(.result-pos,.result-indicator.pos,.fin-positive){color:var(--ux-positive)}
+  :where(.result-neg,.result-indicator.neg,.fin-negative){color:var(--ux-negative)}
+  :where(.result-neutral,.result-indicator.neutral,.fin-neutral){color:var(--ux-neutral)}
+  :where(.premium-panel,.assets-premium-kpi,.rent-card,.dividend-executive-kpi){
+    border-color:color-mix(in srgb,var(--border,#263650) 82%,transparent)
+  }
+  @media (min-width:1400px){
+    .wrap:has(.premium-dashboard),.wrap:has(.div-premium),.wrap:has(.rent-premium),.wrap:has(.patrimony-premium){max-width:1680px}
+    .rent-premium .rent-main{width:min(100%,1600px)}
+  }
+  @media (max-width:560px){
+    :where(.assets-premium-filter-btn,.assets-premium-search-input,.assets-premium-filter-panel select,
+      .rent-premium .rent-filters select,.div-premium-search input){min-height:44px}
+    .assets-premium-table-wrap{border-radius:10px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+  }
+</style>
 </head>
 <body>
 <div id="root"></div>
