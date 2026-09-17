@@ -7856,6 +7856,7 @@ document.write([
 <script src="corporate-events-core.js"></script>
 <script src="corporate-events-providers.js"></script>
 <script src="corporate-events-sync.js"></script>
+<script src="corporate-events-parity.js"></script>
 <script src="market-data-providers.js"></script>
 <script src="portfolio-intelligence.js"></script>
 <script src="portfolio-performance.js"></script>
@@ -34526,10 +34527,18 @@ function startPublicEventsSync(){
   window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__=runtime;
   runtime.start().catch(()=>{});
   if(window.OfficialEventsProvider){
+    const officialProvider=window.OfficialEventsProvider.createCvmIpeProvider();
+    if(window.OfficialDocumentPipeline && window.CorporateEventsSync){
+      window.__OFFICIAL_EVENTS_PIPELINE__={
+        mode:'SHADOW_READ_ONLY',
+        provider:officialProvider,
+        processDocuments:(documents,previousEvents=[])=>window.CorporateEventsSync.syncOfficialDocuments({documents,pipeline:window.OfficialDocumentPipeline,previousEvents})
+      };
+    }
     // O catálogo CVM não fornece CORS para este app estático. A consulta
     // oficial deve ocorrer por um adaptador server-side allowlisted; não
     // disparar fetch direto evita ruído CORS e mantém o estado honesto.
-    window.__OFFICIAL_EVENTS_HEALTH__={status:'REVIEW_REQUIRED',provider:'cvm-ipe',resources:0,error:'BROWSER_CORS_UNAVAILABLE'};
+    window.__OFFICIAL_EVENTS_HEALTH__={status:'REVIEW_REQUIRED',provider:'cvm-ipe',mode:'SHADOW_READ_ONLY',pipelineConfigured:Boolean(window.__OFFICIAL_EVENTS_PIPELINE__),resources:0,error:'BROWSER_CORS_UNAVAILABLE'};
   }
 }
 

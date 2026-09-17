@@ -46,6 +46,22 @@ texto ambíguo fica em revisão. Ações, JCP, FII, parcelas e cancelamentos sã
 representados como evidência read-only. Nenhum resultado escreve `civ5`, ledger
 realizado ou Firebase.
 
+## V166 — integração shadow e paridade
+
+`official-events-provider.js` pode entregar documentos determinísticos ao
+pipeline oficial existente; a camada de sincronização apenas normaliza,
+deduplica e classifica candidatos. `public-events-store.js` mantém esses
+candidatos em uma chave local separada, preserva proveniência e faz upsert
+idempotente. `corporate-events-parity.js` reconcilia projeções por ticker,
+tipo, data e centavos, explicando diferenças de data-base, referências,
+cancelamentos e eventos shadow sem alterar qualquer linha realizada.
+
+O autosync público continua limitado a cache/background refresh. O catálogo
+CVM em browser estático permanece `REVIEW_REQUIRED` quando CORS não permite a
+leitura; isso não é convertido em sucesso ou em zero eventos. A aprovação e a
+realização continuam fora do pipeline (`candidate -> review -> approval ->
+realization`).
+
 ## Estados
 
 `DISCOVERED → ANNOUNCED → ELIGIBILITY_KNOWN → EXPECTED → PAYMENT_DUE →
