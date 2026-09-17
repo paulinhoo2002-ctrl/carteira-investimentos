@@ -50,5 +50,5 @@ test('Import center exposes review, reconciliation and rollback states accessibl
 });
 
 test('Import navigation does not invoke the normal persistence save on entry', () => {
-  assert.match(source, /if\(t!=='importacao'\) save\(\);/);
+  assert.match(source, /if\(t!=='importacao' && \!\(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot\(\)\)\) save\(\);/);
 });
