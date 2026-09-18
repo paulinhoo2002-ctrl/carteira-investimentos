@@ -12,7 +12,7 @@
     const supportLabel=value=>value==='FULLY_SUPPORTED'?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':value==='FIXTURE_REQUIRED'?'Fixture necessária':'Suporte parcial';
     const stepLabels=context.getSteps();
     const currentStepLabel=stepLabels[Math.max(0,Math.min(stepLabels.length-1,Number(session.step)||1)-1)];
-    const steps=stepLabels.map((label,index)=>`<div class="import-center-step ${session.step===index+1?'on':''} ${session.step>index+1?'done':''}"><span>${session.step>index+1?'✓':index+1}</span>${context.escapeText(label)}</div>`).join('');
+    const steps=stepLabels.map((label,index)=>`<div class="import-center-step ${session.step===index+1?'on':''} ${session.step>index+1?'done':''}"${session.step===index+1?' aria-current="step"':''}><span>${session.step>index+1?'✓':index+1}</span>${context.escapeText(label)}</div>`).join('');
     const fileRows=renderers.fileList.render({files,escapeText:context.escapeText,supportLabel});
     const sourceListHtml=renderers.sourceList.render({items:context.getSources(),escapeText:context.escapeText,supportLabel});
     const previewStatusHtml=renderers.preview.render({files,result,history:Array.isArray(session.history)?session.history:[],escapeText:context.escapeText,supportLabel});

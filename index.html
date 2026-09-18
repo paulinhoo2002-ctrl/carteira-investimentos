@@ -7886,7 +7886,7 @@ summary:focus-visible,
 </head>
 <body>
 <div id="root"></div>
-<div id="toast-area"></div>
+<div id="toast-area" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="portfolio-search-root" class="portfolio-search-root" aria-hidden="true"></div>
 <input type="file" id="imp-file" accept=".json" style="display:none">
 <input type="file" id="b3-file" accept=".xlsx,.xls,.csv,.pdf" style="display:none">
@@ -8639,6 +8639,10 @@ function save(){
   const options=arguments[0]||{};
   const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
   try{
+    if(isLocalTestMode()){
+      syncWalletFromState();
+      return true;
+    }
     const expectedAuthorityVersion=String(globalThis.__EXPECTED_AUTHORITY_RUNTIME_VERSION__||'');
     if(expectedAuthorityVersion && String(globalThis.ProtectedLocalCloudAuthority?.VERSION||'')!==expectedAuthorityVersion){
       throw new Error('PROTECTED_RUNTIME_VERSION_MISMATCH');
@@ -8648,7 +8652,6 @@ function save(){
     if(!protectedLocalRecoveryWrite && !canEditFromThisTab('salvar')) return false;
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
-    if(isLocalTestMode()) return true;
     if(protectedLocalRecoveryWrite && !window.ProtectedLocalCloudAuthority) throw new Error('PROTECTED_AUTHORITY_RUNTIME_REQUIRED');
     const serializedState=PersistenceCore.serializeStoredState(S, normalizeGoals);
     if(protectedLocalRecoveryWrite && window.ProtectedLocalCloudAuthority){
