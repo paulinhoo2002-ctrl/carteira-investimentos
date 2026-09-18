@@ -2413,6 +2413,9 @@ body.modal-open{overflow:hidden}
 .reports-evolution-value{max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8294ad;font-size:9px}
 .reports-evolution-bar{width:min(34px,72%);min-height:4px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,#67e8f9,#4f46e5);box-shadow:0 5px 16px rgba(79,70,229,.22)}
 .reports-evolution-label{color:#71849f;font-size:9px;white-space:nowrap}
+.reports-evolution-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:10px 0 0;padding:0;list-style:none}
+.reports-evolution-summary li{display:flex;flex-direction:column;gap:3px;min-width:0;padding:7px 8px;border:1px solid #1a2940;border-radius:9px;background:#0d1625;color:#71849f;font-size:9px}
+.reports-evolution-summary strong{color:#edf3ff;font-size:10px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .reports-panel-footer{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:6px;margin-top:10px;color:#8294ad;font-size:10px}
 .reports-panel-footer strong{color:#edf3ff;font-size:12px;text-align:right}
 .reports-data-list,.reports-stat-list{display:flex;flex-direction:column;gap:8px}
@@ -2439,6 +2442,7 @@ html[data-theme="light"] .reports-export-context{background:#f8fafc;border-color
 html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-details{background:#fff;border-color:#d9e2ec;box-shadow:none}html[data-theme="light"] .reports-panel-head h2,html[data-theme="light"] .reports-details summary,html[data-theme="light"] .reports-panel-footer strong,html[data-theme="light"] .reports-data-row strong,html[data-theme="light"] .reports-stat-list strong,html[data-theme="light"] .reports-next-maturity strong{color:#172033}html[data-theme="light"] .reports-panel-head p,html[data-theme="light"] .reports-data-row,html[data-theme="light"] .reports-stat-list>div,html[data-theme="light"] .reports-next-maturity,html[data-theme="light"] .reports-details-body{color:#52647b}html[data-theme="light"] .reports-evolution-chart{border-color:#d9e2ec}html[data-theme="light"] .reports-title{color:#172033}html[data-theme="light"] .reports-sub,html[data-theme="light"] .reports-evolution-label,html[data-theme="light"] .reports-evolution-value,html[data-theme="light"] .reports-kpi .sub,html[data-theme="light"] .reports-empty,html[data-theme="light"] .reports-footnote{color:#52647b}html[data-theme="light"] .reports-kpi .label{color:#52647b}html[data-theme="light"] .reports-kpi .value{color:#172033}html[data-theme="light"] .reports-kpi-positive .value,html[data-theme="light"] .reports-positive{color:#15803d}html[data-theme="light"] .reports-kpi-negative .value,html[data-theme="light"] .reports-negative{color:#b91c1c}html[data-theme="light"] .reports-kpi-neutral .value,html[data-theme="light"] .reports-neutral{color:#334155}html[data-theme="light"] .reports-filter button{border-color:#cbd5e1;background:#f8fafc;color:#334155}html[data-theme="light"] .reports-filter button.on{border-color:#818cf8;background:#eef2ff;color:#3730a3}html[data-theme="light"] .reports-badge{color:#3730a3;background:#eef2ff;border-color:#c7d2fe}html[data-theme="light"] .reports-badge-ok{color:#166534;background:#f0fdf4;border-color:#bbf7d0}html[data-theme="light"] .reports-badge-warn{color:#92400e;background:#fffbeb;border-color:#fde68a}
 @media(max-width:900px){.reports-premium-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.reports-premium-main-grid{grid-template-columns:1fr}.reports-premium-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-export-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.reports-premium-shell{padding-bottom:10px}.reports-premium-head-actions{width:100%;justify-content:stretch}.reports-premium-head-actions .reports-filter{flex:1}.reports-premium-head-actions .reports-filter button{flex:1;padding-left:7px;padding-right:7px}.reports-export-cta{width:100%}.reports-premium-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.reports-kpi{padding:9px}.reports-kpi .value{font-size:14px}.reports-premium-secondary-grid{grid-template-columns:1fr}.reports-evolution-chart{height:155px;gap:4px}.reports-evolution-value{display:none}.reports-panel-footer{grid-template-columns:1fr auto}.reports-panel-footer span:nth-of-type(2){grid-column:1}.reports-panel-footer strong:nth-of-type(2){grid-column:2;grid-row:2}.reports-details summary{align-items:flex-start;flex-direction:column;gap:4px}.reports-export-grid{grid-template-columns:1fr;padding-left:10px;padding-right:10px}}
+@media(max-width:560px){.reports-evolution-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}}
 @media(max-width:560px){.reports-export-context{margin-left:10px;margin-right:10px}.reports-export-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .reports-intelligence-strip{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;padding:12px 14px;border:1px solid #20304a;border-radius:15px;background:#0a121f;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
 .reports-intelligence-strip>div{min-width:0;display:flex;flex-direction:column;gap:3px}
@@ -7822,6 +7826,9 @@ summary:focus-visible,
 .shell .asset-detail-row span:first-child{color:#91a0b5}.shell .asset-detail-row strong{text-align:right;color:#e8eef6;font-weight:750;font-variant-numeric:tabular-nums}
 .shell .asset-detail-value-block{padding:14px;border:1px solid rgba(24,217,148,.18);border-radius:12px;background:rgba(24,217,148,.055)}
 .shell .asset-detail-value-block strong{display:block;margin-top:5px;color:#f4f7fb;font-size:21px;font-variant-numeric:tabular-nums}
+.shell .asset-detail-interpretation{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;border:1px solid rgba(96,165,250,.22);border-radius:12px;background:rgba(96,165,250,.06);color:var(--v83-muted);font-size:11px;line-height:1.4}
+.shell .asset-detail-interpretation strong{color:#dbeafe;font-size:11px;font-weight:850}
+.shell .asset-detail-interpretation span+span{padding-left:10px;border-left:1px solid rgba(148,163,184,.18)}
 .shell .asset-detail-empty{padding:20px 4px;color:#91a0b5;font-size:12px;line-height:1.55;text-align:center}
 .shell .asset-detail-link{min-height:32px;padding:5px 9px;border:1px solid rgba(24,217,148,.22);border-radius:8px;background:rgba(24,217,148,.07);color:#8ef0c5;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
 .shell .asset-detail-link:hover{background:rgba(24,217,148,.14)}
@@ -7834,6 +7841,7 @@ summary:focus-visible,
   .shell .asset-detail-back{width:100%;margin-bottom:14px}.shell .asset-detail-actions{justify-content:flex-start;margin-top:15px}
   .shell .asset-detail-actions .btn{flex:1;min-width:120px}.shell .asset-detail-kpis{gap:8px}.shell .asset-detail-kpi{min-height:92px;padding:12px}.shell .asset-detail-kpi-value{font-size:18px}
   .shell .asset-detail-panel{padding:14px;border-radius:13px}.shell .asset-detail-row{gap:10px}.shell .asset-detail-row strong{max-width:58%}
+  .shell .asset-detail-interpretation{align-items:flex-start;flex-direction:column;gap:4px;padding:10px 12px}.shell .asset-detail-interpretation span+span{padding-left:0;border-left:0}
 }
 </style>
 <style id="v182f-premium-ux-system">
@@ -22470,7 +22478,16 @@ const pointsMarkup=values.map((v,i)=>{
   const xLabels=labels.map((l,i)=>`<text x="${xAt(i).toFixed(1)}" y="${height-10}" text-anchor="middle" fill="${i%labelStep===0||i===labels.length-1?'#64748b':'transparent'}" font-size="10">${esc(l)}</text>`).join('');
   const classAttr=chartClass ? ` class="${chartClass}"` : '';
   const preserveAttr=chartClass ? ' preserveAspectRatio="none"' : '';
-  return `<svg${classAttr} viewBox="0 0 ${width} ${height}" width="100%" height="${height}"${preserveAttr} style="display:block;overflow:visible">
+  const chartId=`chart-${String(chartClass||'series').replace(/[^a-zA-Z0-9_-]+/g,'-')}-${labels.length}`;
+  const firstLabel=labels[0]||'primeiro período';
+  const lastLabel=labels[labels.length-1]||'último período';
+  const firstSeries=series[0]||{};
+  const firstValue=Array.isArray(firstSeries.values)&&firstSeries.values.length?valueFormatter(firstSeries.values[0]):'—';
+  const lastValue=Array.isArray(firstSeries.values)&&firstSeries.values.length?valueFormatter(firstSeries.values[firstSeries.values.length-1]):'—';
+  const chartSummary=`${firstSeries.name||firstSeries.tooltipLabel||'Série principal'}: ${firstLabel}, ${firstValue}; ${lastLabel}, ${lastValue}.`;
+  return `<svg${classAttr} role="img" aria-labelledby="${chartId}-title ${chartId}-desc" viewBox="0 0 ${width} ${height}" width="100%" height="${height}"${preserveAttr} style="display:block;overflow:visible">
+    <title id="${chartId}-title">${esc(firstSeries.name||firstSeries.tooltipLabel||'Gráfico de evolução')}</title>
+    <desc id="${chartId}-desc">${esc(chartSummary)}</desc>
     ${grid.join('')}
     <line class="chart-crosshair" x1="${padL}" y1="${padT}" x2="${padL}" y2="${height-padB}" stroke="var(--muted,#64748b)" stroke-width="1" stroke-dasharray="3 4" hidden/>
     ${paths}
@@ -26174,6 +26191,7 @@ function reportsTab(){
     const height=Math.max(4,Math.round((Math.max(value,0)/maxEvolution)*100));
     return `<div class="reports-evolution-bar-wrap"><div class="reports-evolution-value">${value?fmt(value):'—'}</div><div class="reports-evolution-bar" style="height:${height}%" title="${esc(row.label)}: ${fmt(value)}"></div><div class="reports-evolution-label">${esc(row.label)}</div></div>`;
   }).join('');
+  const evolutionSummary=patrimony.months.slice(-6).map(row=>`<li><span>${esc(row.label)}</span><strong>${Number(row.cumulative)>0?fmt(row.cumulative):'—'}</strong></li>`).join('');
   const allocationList=allocationRows.length?allocationRows.slice(0,6).map((row,index)=>`<div class="reports-data-row"><span><i class="reports-dot reports-dot-${index%6}"></i>${esc(row.type)}</span><strong>${fmt(row.value)} <small>${row.share.toFixed(1)}%</small></strong></div>`).join(''):'<div class="reports-empty">Cadastre ativos para visualizar a distribuição.</div>';
   const exportCards=[
     reportExportCard('🗂️','Carteira completa','Resumo, ativos, proventos, renda fixa, patrimônio, metas e auditoria.','complete',['csv','json','pdf']),
@@ -26218,7 +26236,7 @@ function reportsTab(){
     </section>
     <section class="reports-premium-main-grid">
       <article class="reports-panel reports-evolution-panel"><div class="reports-panel-head"><div><h2>Evolução patrimonial</h2><p>Aplicado e patrimônio estimado no período selecionado.</p></div><span class="reports-badge">${esc(data.periodLabel)}</span></div>
-        <div class="reports-evolution-chart" aria-label="Evolução patrimonial dos últimos meses">${evolutionBars||'<div class="reports-empty">Sem histórico suficiente.</div>'}</div>
+        <div class="reports-evolution-chart" aria-label="Evolução patrimonial dos últimos meses">${evolutionBars||'<div class="reports-empty">Sem histórico suficiente.</div>'}</div><ul class="reports-evolution-summary" aria-label="Resumo textual da evolução patrimonial">${evolutionSummary||'<li><span>Histórico</span><strong>—</strong></li>'}</ul>
         <div class="reports-panel-footer"><span>Último patrimônio</span><strong>${fmt(data.portfolio.tC)}</strong><span>Diferença</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong></div>
       </article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Distribuição da carteira</h2><p>Valor atual por classe.</p></div><span class="reports-badge">${allocationRows.length} classes</span></div><div class="reports-data-list">${allocationList}</div></article>
@@ -26551,8 +26569,9 @@ function assetDetailPage(asset){
   const history=records.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Histórico de movimentações</h2><p>Registros existentes para este ativo, sem alterar a fonte.</p></div><span class="asset-detail-badge">${records.length} registro${records.length===1?'':'s'}</span></div><div class="asset-detail-list">${records.map(item=>row(`${assetDetailDate(item.date||item.tradeDate)} · ${assetDetailKindLabel(item)}`,Number(item.total||item.value||item.amount)>0?fmt(Number(item.total||item.value||item.amount)):'Quantidade registrada')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Coletando histórico desde 15/09/2026. Ainda não há pontos suficientes para uma série confiável.</div></article>';
   const incomeHtml=income.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Proventos do ativo</h2><p>Somente eventos já presentes no histórico da carteira.</p></div><span class="asset-detail-badge">${income.length} registro${income.length===1?'':'s'}</span></div><div class="asset-detail-list">${income.map(item=>row(`${assetDetailDate(item.date||item.paymentDate)} · ${assetDetailText(item.type,'Provento')}`,Number(item.value)>0?fmt(item.value):'Valor não informado')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum provento disponível para este ativo no histórico atual.</div></article>';
   const docsHtml=documents.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Documentos</h2><p>Referências vinculadas ao ativo.</p></div></div><div class="asset-detail-list">${documents.map(doc=>row(assetDetailText(doc.title||doc.name,'Documento'),assetDetailText(doc.date||doc.source,'Referência cadastrada'))).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum documento vinculado a este ativo.</div></article>';
+  const interpretation=`<aside class="asset-detail-interpretation" aria-label="Como ler esta posição"><strong>Como ler esta posição</strong><span>${esc(trust.note)}</span><span>Valor considerado: ${esc(valueText)}</span><span>Resultado disponível: ${Number.isFinite(result)?esc(assetSignedMoneyText(result)):'—'}</span></aside>`;
   const body=assetDetailTab==='valuation'?valuation:assetDetailTab==='history'?history:assetDetailTab==='income'?incomeHtml:assetDetailTab==='documents'?docsHtml:overview;
-  return `<section class="asset-detail-page" aria-labelledby="asset-detail-title"><header class="asset-detail-hero"><div class="asset-detail-hero-main"><button type="button" class="btn bgh asset-detail-back" onclick="closeAssetDetail()" aria-label="Voltar para a tela anterior">← Voltar</button><div><div class="asset-detail-kicker"><span>${esc(ticker)}</span><span>·</span><span>${esc(type)}</span></div><h1 id="asset-detail-title" class="asset-detail-title">${esc(name)}</h1><div class="asset-detail-subtitle">${esc(subtitle)}</div><div class="asset-detail-badges"><span class="asset-detail-badge accent">${esc(isRF?'Renda Fixa':'Posição em carteira')}</span><span class="asset-detail-badge">${esc(trust.label)}</span></div></div></div><div class="asset-detail-actions"><button type="button" class="btn bgh" onclick='${isRF?`openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")`:`openAssetQuickMovement(${JSON.stringify(String(asset.id))}, "compra")`}'>${isRF?'Movimentar':'Comprar'}</button><button type="button" class="btn bp" onclick='edA(${JSON.stringify(String(asset.id))})'>✎ Editar</button></div></header><div class="asset-detail-kpis">${kpiHtml}</div><nav class="asset-detail-tabs" role="tablist" aria-label="Seções do detalhe de ${esc(ticker)}">${tabs.map(([key,label])=>`<button type="button" role="tab" aria-selected="${assetDetailTab===key?'true':'false'}" class="asset-detail-tab ${assetDetailTab===key?'on':''}" onclick="setAssetDetailTab('${key}')">${esc(label)}</button>`).join('')}</nav><div>${body}</div></section>`;
+  return `<section class="asset-detail-page" aria-labelledby="asset-detail-title"><header class="asset-detail-hero"><div class="asset-detail-hero-main"><button type="button" class="btn bgh asset-detail-back" onclick="closeAssetDetail()" aria-label="Voltar para a tela anterior">← Voltar</button><div><div class="asset-detail-kicker"><span>${esc(ticker)}</span><span>·</span><span>${esc(type)}</span></div><h1 id="asset-detail-title" class="asset-detail-title">${esc(name)}</h1><div class="asset-detail-subtitle">${esc(subtitle)}</div><div class="asset-detail-badges"><span class="asset-detail-badge accent">${esc(isRF?'Renda Fixa':'Posição em carteira')}</span><span class="asset-detail-badge">${esc(trust.label)}</span></div></div></div><div class="asset-detail-actions"><button type="button" class="btn bgh" onclick='${isRF?`openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")`:`openAssetQuickMovement(${JSON.stringify(String(asset.id))}, "compra")`}'>${isRF?'Movimentar':'Comprar'}</button><button type="button" class="btn bp" onclick='edA(${JSON.stringify(String(asset.id))})'>✎ Editar</button></div></header><div class="asset-detail-kpis">${kpiHtml}</div><nav class="asset-detail-tabs" role="tablist" aria-label="Seções do detalhe de ${esc(ticker)}">${tabs.map(([key,label])=>`<button type="button" role="tab" aria-selected="${assetDetailTab===key?'true':'false'}" class="asset-detail-tab ${assetDetailTab===key?'on':''}" onclick="setAssetDetailTab('${key}')">${esc(label)}</button>`).join('')}</nav><div>${interpretation}${body}</div></section>`;
 }
 
 function analysisDestination(){
@@ -26968,6 +26987,19 @@ function dashboardLatestSourceInfo(){
     label:top.label,
     date:top.date ? top.date.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) : '—'
   };
+}
+function dashboardFreshnessLabel(source){
+  if(!source) return 'Sem origem recente identificada.';
+  const sourceName=String(source.source||'Origem não informada').trim()||'Origem não informada';
+  const date=String(source.date||'—').trim()||'—';
+  return `${sourceName} · observado em ${date}`;
+}
+function dashboardSourceRoute(source){
+  const label=String(source?.label||'').toLowerCase();
+  if(label.includes('provento')) return 'dividendos';
+  if(label.includes('aporte')) return 'aportes';
+  if(label.includes('ativo')) return 'ativos';
+  return '';
 }
 function dashboardConsultiveCard(title,status,text,action='',tone='muted',actionHtml=''){
   return `<div class="premium-consultive-card">
@@ -27509,6 +27541,7 @@ function dashboardDataQuality(data,audit){
   const info=Number(audit?.counts?.info)||0;
   const incomplete=Number(data?.insufficient?.length)||0;
   const fixedMissing=Number(data?.fixed?.missing)||0;
+  const sourceRoute=dashboardSourceRoute(source);
   const suggestion=incomplete>0
     ? 'Completar dados para melhorar a leitura.'
     : auditCount>0
@@ -27518,7 +27551,7 @@ function dashboardDataQuality(data,audit){
     <div class="premium-panel-head"><div><div class="premium-panel-title">Qualidade dos dados</div><div class="premium-panel-sub">Resumo enxuto da base atual.</div></div><div class="premium-panel-badge">${auditCount} alertas</div></div>
     <div class="premium-exec-list">
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Status geral</div><div class="premium-exec-sub">${suggestion}</div></div><div class="premium-exec-value ${auditCount>0?'am':'gn'}">${auditCount>0?'Atenção':'OK'}</div></div>
-      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Última origem</div><div class="premium-exec-sub">${source?`${source.label} · ${source.date}`:'Nenhuma detectada'}</div></div><div class="premium-exec-value">${source?source.source:'—'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Origem e frescor</div><div class="premium-exec-sub">${esc(dashboardFreshnessLabel(source))}</div>${source&&sourceRoute?`<button type="button" class="dashboard-context-cta" onclick="go('${sourceRoute}')" aria-label="Abrir ${esc(source.label)} em ${sourceRoute}">Conferir ${esc(source.label)}</button>`:''}</div><div class="premium-exec-value">${source?esc(source.source):'—'}</div></div>
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Alertas</div><div class="premium-exec-sub">${critical} críticos · ${warning} atenção · ${info} info</div></div><div class="premium-exec-value">${auditCount}</div></div>
     </div>
     <details class="premium-compact-details">
