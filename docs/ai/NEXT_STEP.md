@@ -1,5 +1,25 @@
 # Next Step
 
+## Current boot state — V197
+
+- `CURRENT_MAIN_SHA=253c73bfcacfaac9102bea09887b5879f341a0a6`
+- `LAST_MERGED_PR=373`
+- `LAST_RELEASE=V196 product feedback and Import Center accessibility`
+- `CURRENT_ACTIVE_MISSION=V197`
+- `ACTIVE_BRANCH=feature/v197-agent-memory-product-evolution`
+- `ACTIVE_WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v197-agent-product`
+- `PR=374`
+- `PR_HEAD=87f1507391f5141734a49b312ba53a8891011f2b`
+- `PR_CI=GREEN`
+- `MERGE_STATUS=HUMAN_AUTHORIZATION_REQUIRED`
+- `CURRENT_PRODUCT_PRIORITY=Dashboard, Ativos, Dividendos, Rentabilidade e navegação`
+- `CURRENT_BLOCKERS=browser-harness pode estar ausente; usar Playwright/CDP`
+- `DEFERRED_HIGH_VALUE_ITEMS=Renda Fixa e Relatórios após P1; auditoria npm sem rede`
+- `LAST_VALIDATION=215/215 tests, 22/22 UI tests, build PASS, browser matrix clean`
+- `LAST_UPDATED=2026-09-18`
+
+O histórico abaixo permanece como evidência; este snapshot é o estado transitório atual.
+
 ## PHASE_4I_V39_KNUQ_DEFERRED_2026-09-12
 
 - August source accounting is `20 linked + 1 new + 2 excluded + 1 deferred

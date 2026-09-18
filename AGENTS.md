@@ -265,3 +265,20 @@ verdade; qualquer índice MCP é derivado e não autoriza alterações.
 Até nova orientação, este `AGENTS.md` não substitui nem altera qualquer
 documento oficial existente: ele somente consolida as regras que Hermes,
 Codex e outros agentes devem seguir no fluxo diário.
+
+## V197 compact boot contract
+
+Toda sessão deve confirmar identidade Git, ler `docs/ai/PROJECT_MEMORY.md`,
+`docs/ai/NEXT_STEP.md` e `.agents/SKILL_ROUTER.md`, descobrir Skills, sempre
+considerar Superpowers, selecionar o menor conjunto relevante, executar,
+validar delta e atualizar `NEXT_STEP.md`. Memória durável só recebe fatos
+permanentes.
+
+Precedência: AGENTS.md → semântica protegida → gates humanos → segurança
+financeira/persistência/Git → PROJECT_MEMORY → DECISIONS → SKILL_ROUTER →
+SKILL.md → preferência da missão. Superpowers nunca autoriza writes, merge,
+deploy ou mudança protegida.
+
+Políticas: `SUPERPOWERS_ALWAYS_CONSIDERED=true`,
+`MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`, `REUSE_GREEN_EVIDENCE=true`,
+`SAME_FAILURE_TWICE=PIVOT` e `FUTURE_MISSIONS_DO_NOT_REPEAT_STABLE_GOVERNANCE=true`.

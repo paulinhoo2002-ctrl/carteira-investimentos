@@ -6777,6 +6777,13 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   }
   /* ===== Canonical visual lock overrides (scoped, non-destructive) ===== */
   .canon-dashboard{--canon-gap:14px}
+  .dashboard-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 var(--canon-gap)}
+  .dashboard-quick-action{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:8px 11px;border:1px solid var(--canon-border);border-radius:10px;background:var(--canon-panel);color:var(--canon-text);font:inherit;text-align:left;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+  .dashboard-quick-action:hover{border-color:rgba(52,211,153,.45);background:rgba(16,217,129,.06);transform:translateY(-1px)}
+  .dashboard-quick-action:focus-visible{outline:2px solid var(--canon-green);outline-offset:2px}
+  .dashboard-quick-action-title{display:block;font-size:12px;font-weight:800;line-height:1.2}
+  .dashboard-quick-action-sub{display:block;margin-top:2px;color:var(--canon-muted);font-size:10px;line-height:1.2}
+  .dashboard-quick-action-arrow{color:var(--canon-green);font-size:18px;line-height:1}
   .canon-dash-head .dashboard-page-heading-meta{gap:10px}
   .canon-dash-meta .canon-last-update{font-size:11px;color:var(--canon-muted)}
   .canon-dash-row-b{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.85fr);gap:var(--canon-gap);margin-bottom:var(--canon-gap)}
@@ -7359,6 +7366,8 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 }
 
 @media (max-width:767px){
+  .dashboard-quick-actions{grid-template-columns:1fr;gap:6px;margin-bottom:9px}
+  .dashboard-quick-action{min-height:44px}
   .canon-dashboard{gap:9px}
   .canon-dashboard .dashboard-page-heading{align-items:flex-start;gap:4px}
   .canon-dashboard .dashboard-page-heading h1,.premium-dividends-3 .div-premium-title{font-size:22px}
@@ -28618,11 +28627,12 @@ function dash(){
           <p>Resumo geral da sua carteira · ${esc(hoje)}</p>
         </div>
         <div class="dashboard-page-heading-meta canon-dash-meta">
-          ${periodOpts.map(period=>`<button class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})">${period}M</button>`).join('')}
+          ${periodOpts.map(period=>`<button type="button" class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})" aria-label="Mostrar evolução de ${period} meses" aria-pressed="${Number(S.dashPeriod)===period?'true':'false'}">${period}M</button>`).join('')}
           <span class="canon-last-update">Últ. ${dashMeta} · ${data.analysis.length} ativos</span>
         </div>
       </div>
       ${executiveKPIs(data)}
+      ${dashboardQuickActions()}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
         ${dashboardHomeCompositionPanel(data)}
@@ -28639,6 +28649,17 @@ function dash(){
       </div>
     </div>
   `;
+}
+
+function dashboardQuickActions(){
+  const actions=[
+    ['ativos','Ativos','Posições e concentração','→'],
+    ['dividendos','Dividendos','Histórico de proventos','→'],
+    ['rentabilidade','Rentabilidade','Evolução e benchmarks','→']
+  ];
+  return `<nav class="dashboard-quick-actions" aria-label="Atalhos da análise">
+    ${actions.map(([route,title,subtitle,arrow])=>`<button type="button" class="dashboard-quick-action" onclick="go('${route}')" aria-label="Abrir ${title}: ${subtitle}"><span><span class="dashboard-quick-action-title">${title}</span><span class="dashboard-quick-action-sub">${subtitle}</span></span><span class="dashboard-quick-action-arrow" aria-hidden="true">${arrow}</span></button>`).join('')}
+  </nav>`;
 }
 
 function patrimonySnapshot(period=Number(S.dashPeriod)||12){
