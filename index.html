@@ -6302,6 +6302,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-row-main{min-width:0;flex:1}
       .premium-rf-row-title{color:var(--text);font-size:12px;font-weight:850;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
       .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+      .premium-rf-provenance{display:inline-flex;align-items:center;margin-right:4px;padding:2px 5px;border:1px solid currentColor;border-radius:999px;font-size:8px;font-weight:800;line-height:1.1;white-space:nowrap}
+      .premium-rf-provenance.ok{color:#86efac}.premium-rf-provenance.info{color:#7dd3fc}.premium-rf-provenance.warn{color:#fcd34d}.premium-rf-provenance.muted{color:var(--muted)}
       .premium-rf-row-meta.pos{color:var(--success)}
       .premium-rf-row-meta.neg{color:var(--danger)}
       .premium-rf-row-meta.neutral{color:var(--muted)}
@@ -7918,6 +7920,7 @@ document.write([
 <script src="import-foundation.js"></script>
 <script src="import-center-core.js"></script>
 <script src="fixed-income-valuation.js"></script>
+<script src="fixed-income-display.js"></script>
 <script src="import-center-context.js"></script>
 <script src="import-center-preview-renderer.js"></script>
 <script src="import-center-file-list-renderer.js"></script>
@@ -28097,7 +28100,7 @@ function rendaFixaTab(){
     const assetId=asset?getAssetEventId(asset):null;
     const display=row.explicit===false
       ? {kind:'missing', appliedText:fmt(row.applied), currentText:'Atualização necessária', currentNote:'Valor atual não informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:'neutral', resultText:'—', rentabilityText:'—'}
-      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:row.currentMeta?.source || 'Valor atual informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
+      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta)?.note || row.currentMeta?.source || 'Valor atual informado'), provenance:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta) || {label:'Valor informado',tone:'ok'}), maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
     return `
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
@@ -28107,7 +28110,7 @@ function rendaFixaTab(){
       <div class="premium-rf-row-value">
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
         <div class="premium-rf-row-meta">Valor aplicado ${display.appliedText}</div>
-        <div class="premium-rf-row-meta">${esc(display.currentNote)}</div>
+        <div class="premium-rf-row-meta"><span class="premium-rf-provenance ${esc(display.provenance?.tone||'muted')}">${esc(display.provenance?.label||'Valor informado')}</span> ${esc(display.currentNote)}</div>
         <div class="premium-rf-row-meta">Vencimento ${esc(display.maturityText)}</div>
         <div class="premium-rf-row-results">
           <span class="premium-rf-row-meta ${display.resultClass}">Resultado ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
@@ -28250,7 +28253,7 @@ function rendaFixaTab(){
 
   return `<div class="rf-page premium-rf-page">
     <div class="premium-rf-header">
-      <div><div class="premium-rf-kicker">Carteira · acompanhamento</div><div class="premium-rf-title">Renda Fixa</div><div class="premium-rf-subtitle">Visão consolidada das posições, vencimentos e movimentações.</div></div>
+      <div><div class="premium-rf-kicker">Carteira · acompanhamento</div><h1 class="premium-rf-title">Renda Fixa</h1><div class="premium-rf-subtitle">Visão consolidada das posições, vencimentos e movimentações.</div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button type="button" class="btn bs ds-button ds-button--secondary" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">Atualizar valor</button>
         <button type="button" class="btn bp ds-button ds-button--primary" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">+ Nova aplicação</button>
