@@ -4,6 +4,33 @@ O catálogo operacional detalhado por momento está em
 `docs/ai/SKILL_OPERATIONAL_CATALOG.md`; este arquivo mantém as regras compactas
 de roteamento e limites.
 
+## PRÉ-REQUISITO DE IDENTIDADE E BOOT
+
+Antes de qualquer ação substancial, confirme o PROJECT IDENTITY GATE definido
+em `AGENTS.md`: raiz Git, remote, branch, HEAD, Git comum da worktree,
+`origin/main` e ausência de uso do projeto proibido
+`C:\Projetos\carteira-2.0`. Caminhos válidos ficam sob
+`C:\Projetos\carteira-investimentos` ou
+`C:\Projetos\carteira-investimentos.worktrees\*`.
+
+`CANONICAL_PROJECT_ROOT=C:\Projetos\carteira-investimentos`
+`CANONICAL_WORKTREE_ROOT=C:\Projetos\carteira-investimentos.worktrees`
+`CANONICAL_SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills`
+`FORBIDDEN_PROJECT_ROOT=C:\Projetos\carteira-2.0`
+`EXPECTED_REMOTE=https://github.com/paulinhoo2002-ctrl/carteira-investimentos.git`
+
+Em mismatch, não tente corrigir o contexto: use
+`STATUS=BLOCKED_WRONG_PROJECT` e `STOP_IMMEDIATELY=true`.
+
+O boot independente do chat lê `AGENTS.md`, `PROJECT_MEMORY.md`, `NEXT_STEP.md`,
+`DECISIONS.md` e este router, depois descobre `.agents/skills`, considera
+Superpowers e seleciona apenas as Skills necessárias. Este arquivo versionado
+é autoritativo; `.agents/SKILL_ROUTER.md` pode existir apenas como bridge local.
+
+`PROJECT_IDENTITY_GATE_REQUIRED=true`
+`AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`
+`SUPERPOWERS_ALWAYS_CONSIDERED=true`
+
 OFFICIAL_WORKSPACE:
 C:\Projetos\carteira-investimentos
 

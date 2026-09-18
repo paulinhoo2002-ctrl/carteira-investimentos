@@ -1,5 +1,27 @@
 # Project Memory
 
+## PERMANENT PROJECT IDENTITY AND ROUTING GUARD
+
+- `PROJECT_IDENTITY_GATE_REQUIRED=true` antes de qualquer edição, teste
+  substancial, worktree, commit, push, PR, merge ou deploy.
+- `CANONICAL_PROJECT_ROOT=C:\Projetos\carteira-investimentos`.
+- `CANONICAL_WORKTREE_ROOT=C:\Projetos\carteira-investimentos.worktrees`.
+- `CANONICAL_SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills`.
+- `FORBIDDEN_PROJECT_ROOT=C:\Projetos\carteira-2.0`.
+- `EXPECTED_REMOTE=https://github.com/paulinhoo2002-ctrl/carteira-investimentos.git`.
+- Em qualquer mismatch: `PROJECT_IDENTITY_MATCH=false`,
+  `STATUS=BLOCKED_WRONG_PROJECT` e `STOP_IMMEDIATELY=true`.
+- `docs/ai/SKILL_ROUTER.md` é a fonte versionada e autoritativa do roteamento;
+  uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
+- `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`.
+- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; Superpowers não substitui identidade,
+  segurança financeira, persistência, Git ou gates humanos.
+
+Boot mínimo independente do chat: identity gate → `AGENTS.md` →
+`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → `SKILL_ROUTER.md` →
+descoberta em `.agents/skills` → consideração de Superpowers → menor conjunto
+de Skills relevante.
+
 ## V197 durable boot summary
 
 - `PROJECT_ROOT=C:\Projetos\carteira-investimentos`
@@ -19,7 +41,7 @@
   `REUSE_GREEN_EVIDENCE=true`; `SAME_FAILURE_TWICE=PIVOT`.
 
 Boot links: [`AGENTS.md`](../../AGENTS.md), [`NEXT_STEP.md`](NEXT_STEP.md),
-[`DECISIONS.md`](DECISIONS.md), [`SKILL_ROUTER.md`](../../.agents/SKILL_ROUTER.md).
+[`DECISIONS.md`](DECISIONS.md), [`SKILL_ROUTER.md`](SKILL_ROUTER.md).
 
 ## FULL EXECUTION AUTONOMY
 
