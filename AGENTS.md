@@ -247,6 +247,21 @@ Sempre parar e pedir autorização explícita antes de:
 - Decisions: `docs/ai/DECISIONS.md`
 - Financial Rules: `docs/ai/FINANCIAL_RULES.md`
 
+Para a plataforma de trabalho V192, consulte também somente quando o tipo de
+tarefa exigir:
+
+- Princípios: `docs/ai/ENGINEERING_PRINCIPLES.md`
+- Arquitetura resumida: `docs/ai/ARCHITECTURE_MEMORY.md`
+- Semântica financeira: `docs/ai/FINANCIAL_SEMANTICS.md`
+- QA: `docs/ai/QA_PLAYBOOK.md`
+- Release: `docs/ai/RELEASE_PLAYBOOK.md`
+- Roteamento de Skills: `docs/ai/SKILL_ROUTING.md`
+- Manifesto/versionamento de ferramentas: `docs/ai/SKILLS_MANIFEST.md`
+- Decisões V192: `docs/ai/DECISIONS_V192.md`
+
+`DESIGN.md` é a fonte visual do projeto. Memória Git-tracked é a fonte de
+verdade; qualquer índice MCP é derivado e não autoriza alterações.
+
 Até nova orientação, este `AGENTS.md` não substitui nem altera qualquer
 documento oficial existente: ele somente consolida as regras que Hermes,
 Codex e outros agentes devem seguir no fluxo diário.

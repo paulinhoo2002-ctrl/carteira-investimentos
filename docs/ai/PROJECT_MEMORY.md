@@ -1252,3 +1252,20 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - A cobertura do Import Center permanece verde; TWR/XIRR continuam mostrando
   coleta/insuficiência quando não há evidência bastante. Nenhuma lógica
   financeira, persistência ou cloud foi alterada.
+
+## V192 — plataforma de inteligência do projeto
+
+- A memória canônica vive em `docs/ai/` e no `DESIGN.md`; índices externos são
+  derivados e não substituem a documentação versionada.
+- O worktree V192 parte de `origin/main` em `a904b19...`; o main local e os
+  históricos V166, V178 e V182 permanecem protegidos.
+- Skills operacionais físicas presentes neste baseline: browser-testing-with-
+  devtools, doubt-driven-development, interview-me e
+  source-driven-development. `references` é auxiliar, não Skill roteável.
+- O Codebase Memory MCP v0.8.1 foi verificado por checksum e executado em
+  modo local de ajuda; sua instalação persistente foi bloqueada pelo executor
+  por exigir autorização adicional. Nenhuma configuração de agente foi
+  alterada.
+- Browser Use, Defuddle, Composio, Agent Reach, Caveman e skills de marketing
+  permanecem fora do conjunto padrão por redundância, custo, telemetria ou
+  ausência de requisito concreto.
