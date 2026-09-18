@@ -2,6 +2,21 @@
 
 Este documento registra decisões arquiteturais que foram validadas pelo projeto e devem ser preservadas.
 
+## V197 — Boot, memória e roteamento
+
+- **Data**: 2026-09-18
+- **Decisão**: Superpowers sempre é considerado; Skills adicionais seguem o
+  mínimo conjunto relevante via `.agents/SKILL_ROUTER.md`.
+- **Motivo**: reduzir prompts sem sobrepor segurança financeira, persistência,
+  Git ou gates humanos.
+- **Status**: Ativo e vinculante.
+
+- **Data**: 2026-09-18
+- **Decisão**: `PROJECT_MEMORY.md` guarda fatos duráveis; `NEXT_STEP.md` guarda
+  estado transitório; `DECISIONS.md` guarda decisões não redescobertas.
+- **Motivo**: permitir novas sessões sem histórico de chat.
+- **Status**: Ativo e vinculante.
+
 ## Decision 009
 **Titulo**: Isolamento de trabalho paralelo
 

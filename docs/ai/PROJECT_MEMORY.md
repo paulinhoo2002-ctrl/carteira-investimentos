@@ -1,5 +1,26 @@
 # Project Memory
 
+## V197 durable boot summary
+
+- `PROJECT_ROOT=C:\Projetos\carteira-investimentos`
+- `WORKTREE_ROOT=C:\Projetos\carteira-investimentos.worktrees`
+- `SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills`
+- `FORBIDDEN_PROJECT=C:\Projetos\carteira-2.0`
+- `PRODUCTION_URL=https://carteira-investimentos-delta.vercel.app`
+- Produto: carteira pessoal, local-first, sem custo recorrente obrigatório.
+- Visual: dark navy, teal/emerald, blue benchmark, green/red semântico,
+  amber controlado, premium executivo; prioridade 1366x768 e 390x844.
+- Protegido: Finance Core, persistência/schema/Firebase, dados reais, autoridade
+  manual RF, indisponível != zero, import preview/dedupe/confirm e eventos shadow.
+- QA: `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated`,
+  CDP `127.0.0.1:9233`, `protectedReadOnlyQa=1`, zero writes.
+- Git: worktree por objetivo, staging seletivo, sem reset/restore/clean/stash/rebase/force push.
+- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
+  `REUSE_GREEN_EVIDENCE=true`; `SAME_FAILURE_TWICE=PIVOT`.
+
+Boot links: [`AGENTS.md`](../../AGENTS.md), [`NEXT_STEP.md`](NEXT_STEP.md),
+[`DECISIONS.md`](DECISIONS.md), [`SKILL_ROUTER.md`](../../.agents/SKILL_ROUTER.md).
+
 ## FULL EXECUTION AUTONOMY
 
 The operational policy for Codex, OpenCode and Hermes is maintained in
