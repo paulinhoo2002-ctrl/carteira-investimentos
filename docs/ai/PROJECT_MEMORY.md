@@ -973,7 +973,7 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Estado atual confiável: `431/330/101`, 99 referências, `2709626` cents,
   FP `06df1e4ea0adf48cdba16c6eab62c39641a75f6800fe0e296b5846213bd201c2`.
 - Runtime contratual: origem HTTP `http://127.0.0.1:4173`, perfil
-  `qa-browser-authenticated`/`Default`, CDP `9233`, autoridade V2 e SW v17.
+  `qa-browser-authenticated`/`Default`, CDP `9233`, autoridade V2 e SW v18.
 - O fluxo mensal V65 é local, somente pré-autorização, hashado, idempotente e
   sem cloud. `tools/qa/monthly-preauth.js` rejeita escrita real e foi validado
   contra August em sombra 5x.
