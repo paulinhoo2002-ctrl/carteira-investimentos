@@ -1269,3 +1269,18 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Browser Use, Defuddle, Composio, Agent Reach, Caveman e skills de marketing
   permanecem fora do conjunto padrão por redundância, custo, telemetria ou
   ausência de requisito concreto.
+
+## V193 — Superpowers no Hermes
+
+- `obra/superpowers` foi avaliado como workflow de agente aprovado para uso
+  potencial, sem fazer parte do runtime do produto.
+- A tag estável verificada é `v6.3.0`, commit
+  `86babb696875227929e85420f287d6309374b93f`.
+- A instalação oficial `hermes plugins install obra/superpowers --enable` foi
+  tentada uma vez e bloqueada pelo security scan do Hermes: fonte comunitária,
+  veredito `CAUTION` e 219 achados. Não foi usado `--force` e o plugin não
+  está instalado/habilitado.
+- O próximo passo, se desejado, é revisão humana dos achados e uma instalação
+  oficial fixada; não copiar o repositório para `.agents/skills`.
+- Superpowers não pode substituir `AGENTS.md`, contratos financeiros,
+  persistência, protected read-only QA ou gates de merge/deploy.
