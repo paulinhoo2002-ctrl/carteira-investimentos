@@ -22,6 +22,33 @@ conservadora que não altere o que já foi documentado em outros lugares.
   preservar.
 - Não reconstruir o sistema do zero em nome de modernização ampla.
 
+## PROJECT IDENTITY GATE — OBRIGATÓRIO
+
+`MANDATORY_PROJECT_IDENTITY_GATE=true`.
+
+Antes de editar, testar substancialmente, criar uma worktree, fazer commit,
+push, abrir PR, fazer merge ou deploy, confirme nesta ordem:
+
+1. diretório atual e raiz Git real;
+2. `origin` e repositório esperado;
+3. branch atual, HEAD e status da worktree;
+4. diretório Git comum da worktree;
+5. que o caminho pertence a `C:\Projetos\carteira-investimentos` ou a
+   `C:\Projetos\carteira-investimentos.worktrees\*`;
+6. que `C:\Projetos\carteira-2.0` não está sendo usado.
+
+Registre internamente `PROJECT_IDENTITY_CHECKED`, `PROJECT_IDENTITY_MATCH`,
+`CURRENT_PATH`, `GIT_ROOT`, `GIT_REMOTE`, `CURRENT_BRANCH` e `CURRENT_HEAD`.
+Se qualquer item não puder ser comprovado, defina
+`PROJECT_IDENTITY_MATCH=false`, `STATUS=BLOCKED_WRONG_PROJECT` e
+`STOP_IMMEDIATELY=true`. Não tente adaptar ou misturar repositórios.
+
+Toda nova worktree deve ficar sob
+`C:\Projetos\carteira-investimentos.worktrees\` e usar o mesmo Git comum e
+remote do projeto canônico. A raiz factual das Skills é
+`C:\Projetos\carteira-investimentos\.agents\skills`; o caminho adjacente
+`C:\Projetos\carteira-investimentos.agents\skills` não é canônico.
+
 ## AGENT STARTUP PROTOCOL
 
 Ao iniciar uma tarefa relevante neste repositório:
@@ -29,10 +56,12 @@ Ao iniciar uma tarefa relevante neste repositório:
 1. Leia este arquivo e `docs/ai/PROJECT_MEMORY.md`.
 2. Consulte `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`.
 3. Confirme workspace, branch, HEAD, `origin/main` e working tree.
-4. Selecione Skills pelo problema, não mecanicamente (ver `docs/ai/SKILL_ROUTER.md`).
-5. Execute a mudança com escopo controlado e preserve áreas protegidas.
-6. Valide com os testes, build e navegador aplicáveis.
-7. Registre decisões duradouras na memória/documentação apropriada.
+4. Execute o PROJECT IDENTITY GATE e selecione Skills pelo problema, não
+   mecanicamente (ver `docs/ai/SKILL_ROUTER.md`).
+5. Considere sempre Superpowers e selecione somente o menor conjunto relevante.
+6. Execute a mudança com escopo controlado e preserve áreas protegidas.
+7. Valide com os testes, build e navegador aplicáveis.
+8. Registre decisões duradouras na memória/documentação apropriada.
 
 ## PROJECT BOOTSTRAP
 
@@ -268,11 +297,13 @@ Codex e outros agentes devem seguir no fluxo diário.
 
 ## V197 compact boot contract
 
-Toda sessão deve confirmar identidade Git, ler `docs/ai/PROJECT_MEMORY.md`,
-`docs/ai/NEXT_STEP.md` e `.agents/SKILL_ROUTER.md`, descobrir Skills, sempre
+Toda sessão deve executar primeiro o PROJECT IDENTITY GATE, ler `AGENTS.md`,
+`docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`, `docs/ai/DECISIONS.md` e
+`docs/ai/SKILL_ROUTER.md`, descobrir Skills em `.agents/skills`, sempre
 considerar Superpowers, selecionar o menor conjunto relevante, executar,
-validar delta e atualizar `NEXT_STEP.md`. Memória durável só recebe fatos
-permanentes.
+validar delta e atualizar `NEXT_STEP.md`. O router versionado em
+`docs/ai/SKILL_ROUTER.md` é suficiente; `.agents/SKILL_ROUTER.md`, se existir,
+é somente uma bridge local e nunca é requisito do boot.
 
 Precedência: AGENTS.md → semântica protegida → gates humanos → segurança
 financeira/persistência/Git → PROJECT_MEMORY → DECISIONS → SKILL_ROUTER →
