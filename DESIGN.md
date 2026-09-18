@@ -288,3 +288,72 @@ Antes de aprovar uma mudanca visual, conferir:
 - nenhum toast bloqueia interacao;
 - areas consultivas continuam simples e legiveis;
 - a documentacao continua refletindo o estado atual do produto.
+
+## 14. Fundação de design V192
+
+Esta seção torna explícitos os contratos usados por agentes e revisores. Ela
+complementa `docs/ai/DESIGN_SYSTEM.md` e não autoriza uma migração visual
+global.
+
+### Personalidade e hierarquia
+
+- Personalidade: premium escura, executiva, discreta e orientada a leitura.
+- Um foco por tela: a tarefa principal vence por tamanho, peso, contraste ou
+  espaço; metadados não competem com o valor.
+- Base de escala: corpo de 14–16px, escala aproximada de 1.25, sem microtexto
+  para informação essencial.
+- Números financeiros usam `tabular-nums`, alinhamento consistente e formato
+  pt-BR quando aplicável.
+
+### Superfícies, profundidade e ritmo
+
+- Fundo navy; superfícies variam principalmente por luminosidade, não por
+  vários matizes.
+- Profundidade padrão: camadas discretas de superfície e bordas de baixa
+  opacidade; sombras fortes não são permitidas no tema escuro.
+- Espaçamento baseado em múltiplos de 4/8px; controles densos, seções com
+  respiro e nenhuma sequência monótona de cards iguais.
+- Raios: pequenos para controles, médios para cards e maiores para modais;
+  elementos aninhados respeitam raio concêntrico.
+
+### Cores semânticas
+
+- Navy/azul estrutura o produto; teal/emerald marca ação e identidade.
+- Azul pode comunicar benchmark/comparação; verde ganho/positivo; vermelho
+  perda/negativo; amber atenção.
+- Cor nunca é o único canal: estados têm texto, ícone ou padrão auxiliar.
+- `unavailable != zero`, `estimated != authoritative` e referência não vira
+  receita apenas por receber uma cor positiva.
+
+### Componentes e estados
+
+- KPI: rótulo discreto, valor focal, contexto e estado sem cálculo visual.
+- Tabelas: cabeçalho compreensível, números tabulares, sorting acessível,
+  scroll interno quando inevitável e ausência explícita.
+- Formulários: labels, foco visível, erro inline, valores preservados e ação
+  impossível desabilitada.
+- Import Center: status comunica etapa e segurança sem depender de cor; preview
+  e confirmação continuam separados.
+- Renda Fixa: autoridade manual, fonte, as-of, stale/fallback e suporte são
+  explicados sem substituir a autoridade.
+- Todo componente interativo mantém default, hover, active, focus, disabled,
+  loading, empty e error quando aplicável.
+
+### Responsividade e acessibilidade
+
+- Alvos de toque preferencialmente >=44px.
+- Desktop primário: 1366x768; validar também 390x844, 430x932, 768x900 e
+  1920x1080.
+- Não permitir overflow horizontal da página; rolagem interna deve ser
+  deliberada e identificável.
+- Headings semânticos, ordem de tabulação previsível, `focus-visible`, nomes
+  acessíveis e resumo textual para gráficos importantes.
+- Animações somente em `transform`/`opacity`, abaixo de 300ms quando úteis,
+  respeitando `prefers-reduced-motion`.
+
+### Checklist de decisão visual
+
+Antes de escrever UI, registrar: intenção humana, elemento focal, paleta e
+motivo, estratégia de profundidade, escala tipográfica, densidade e estados.
+Depois aplicar swap test, squint test, signature test e token test. Se a
+mudança não passa nesses testes, reduzir escopo ou voltar à solução existente.
