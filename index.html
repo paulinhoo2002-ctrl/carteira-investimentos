@@ -2449,10 +2449,35 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 .reports-intelligence-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#71849f}
 .reports-intelligence-strip strong{font-size:14px;color:#e5edf8;line-height:1.2;font-variant-numeric:tabular-nums}
 .reports-intelligence-strip small{color:#8294ad;font-size:10px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reports-executive-summary{padding:13px 14px;border:1px solid #20304a;border-radius:15px;background:#0a121f;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.reports-executive-summary-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.reports-executive-summary-head h2{margin:0;color:#e5edf8;font-size:14px;line-height:1.2}
+.reports-executive-summary-head p{margin:4px 0 0;color:#8294ad;font-size:10px;line-height:1.35}
+.reports-executive-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.reports-executive-summary-grid>div{min-width:0;padding:9px 10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(255,255,255,.018)}
+.reports-executive-summary-grid span,.reports-executive-summary-grid small{display:block;color:#8294ad;font-size:9px;line-height:1.25}
+.reports-executive-summary-grid strong{display:block;margin:4px 0 3px;color:#e5edf8;font-size:14px;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reports-executive-summary-grid small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.premium-rf-provenance-details{margin-top:3px;font-size:9px;color:var(--muted)}
+.premium-rf-provenance-details summary{display:inline-flex;min-height:28px;align-items:center;cursor:pointer;color:#9bb4d0;font-weight:700}
+.premium-rf-provenance-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 8px;margin-top:4px;padding:6px 8px;border-left:2px solid rgba(96,165,250,.45);background:rgba(96,165,250,.05);border-radius:0 7px 7px 0}
+.premium-rf-provenance-grid span{color:var(--muted)}
+.premium-rf-provenance-grid strong{color:var(--text);font-weight:700;overflow-wrap:anywhere}
+.metas-summary-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:3px}
+.metas-summary-value{font-size:12px;color:var(--text);line-height:1.3}
+.metas-summary-detail{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.3}
+.metas-goal-status{display:inline-flex;align-items:center;min-height:20px;padding:2px 6px;border:1px solid currentColor;border-radius:999px;font-size:8px;font-weight:800;line-height:1;vertical-align:middle}
+.metas-goal-status--positive{color:#86efac;background:rgba(34,197,94,.08)}
+.metas-goal-status--info{color:#7dd3fc;background:rgba(96,165,250,.08)}
+.metas-goal-status--muted{color:var(--muted);background:rgba(148,163,184,.08)}
 html[data-theme="light"] .reports-intelligence-strip{background:#fff;border-color:#d9e2ec}
 html[data-theme="light"] .reports-intelligence-strip strong{color:#172033}
 html[data-theme="light"] .reports-intelligence-strip small,.reports-intelligence-label{color:#52647b}
+html[data-theme="light"] .reports-executive-summary{background:#fff;border-color:#d9e2ec}
+html[data-theme="light"] .reports-executive-summary-head h2,.reports-executive-summary-grid strong{color:#172033}
+html[data-theme="light"] .reports-executive-summary-head p,.reports-executive-summary-grid span,.reports-executive-summary-grid small{color:#52647b}
 @media(max-width:560px){.reports-intelligence-strip{grid-template-columns:1fr;gap:9px;padding:11px}.reports-intelligence-strip small{white-space:normal}}
+@media(max-width:720px){.reports-executive-summary-head{display:block}.reports-executive-summary-head .reports-badge{display:inline-flex;margin-top:8px}.reports-executive-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-executive-summary-grid strong{font-size:13px}}
 .reports-premium-shell .reports-premium-hero{
   background:var(--surface)!important;
   box-shadow:none!important;
@@ -17540,11 +17565,42 @@ function assetRfCurrentValueMeta(a){
     origin: imported ? 'importado da B3' : '',
     authority: selection?.authority || 'UNKNOWN',
     provenance: selection?.provenance || 'UNKNOWN',
+    selectedField: selection?.selectedField || null,
     quality: selection?.quality || 'UNKNOWN',
     valuationAsOf: selection?.valuationAsOf || null,
     sourceAsOf: selection?.sourceAsOf || null,
-    isFallback: selection?.isFallback === true
+    isFallback: selection?.isFallback === true,
+    isEstimated: selection?.isEstimated === true,
+    isStale: selection?.isStale === true,
+    isSupported: selection?.isSupported !== false
   };
+}
+function fixedIncomeProvenanceDetails(meta){
+  const value=meta&&typeof meta==='object'?meta:{};
+  const describe=globalThis.FixedIncomeDisplay?.describe;
+  const summary=typeof describe==='function' ? describe(value) : null;
+  const label=String(summary?.label||value.provenance||value.source||'Valor informado');
+  const authorityLabels={
+    MANUAL_AUTHORITATIVE:'Manual autoritativa',
+    IMPORTED_AUTHORITATIVE:'Importada autoritativa',
+    LEGACY_AUTHORITATIVE:'Precedência legada',
+    LEGACY_FALLBACK:'Fallback do aplicado',
+  };
+  const qualityLabels={
+    CURRENT:'Atual',
+    STALE:'Desatualizada',
+    MANUAL_STALE:'Manual desatualizada',
+    INCOMPLETE_METADATA:'Metadados incompletos',
+    LEGACY_FALLBACK:'Fallback legado',
+    UNSUPPORTED:'Indisponível',
+  };
+  const rows=[
+    ['Autoridade',authorityLabels[value.authority]||'Não informada'],
+    ['Campo selecionado',value.selectedField||value.source||'Não informado'],
+    ['Qualidade',qualityLabels[value.quality]||'Não informada'],
+    ['Data de avaliação',value.valuationAsOf?reportDateText(value.valuationAsOf):'Não informada'],
+  ].filter(([,row])=>row&&row!=='Não informado');
+  return {label, note:String(summary?.note||''), rows};
 }
 function assetAppliedValue(a){
   return FinanceCore.assetAppliedValue(a);
@@ -26246,6 +26302,15 @@ function reportsTab(){
       <div><span class="reports-intelligence-label">Cobertura</span><strong>${esc(intelligenceCoverage)}</strong><small>${esc(intelligence?.coverage?.freshness==='LEGACY_CURRENT_VALUES'?'Valores atuais da carteira cadastrada.':'Atualização conforme a fonte disponível.')}</small></div>
       <div><span class="reports-intelligence-label">Escopo</span><strong>${intelligence?.sections?.assets?.items?.length||0} ativos</strong><small>Relatório somente leitura · sem alteração de dados</small></div>
     </section>
+    <section class="reports-executive-summary" aria-labelledby="reports-executive-summary-title">
+      <div class="reports-executive-summary-head"><div><h2 id="reports-executive-summary-title">Resumo para decidir o próximo passo</h2><p>Quatro sinais para orientar a conferência, sem criar recomendação de investimento.</p></div><span class="reports-badge">Fonte: carteira cadastrada</span></div>
+      <div class="reports-executive-summary-grid">
+        <div><span>Situação atual</span><strong>${fmt(data.portfolio.tC)}</strong><small>${data.assetsCount} ativos acompanhados</small></div>
+        <div><span>Evolução</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong><small>${fmtP(data.portfolio.tGP)} sobre o aplicado</small></div>
+        <div><span>Concentração</span><strong>${allocationRows.length?esc(allocationRows[0].type):'—'}</strong><small>${allocationRows.length?`${allocationRows[0].share.toFixed(1)}% da carteira`:'Sem distribuição disponível'}</small></div>
+        <div><span>Renda registrada</span><strong>${fmt(income.total12)}</strong><small>Recebido no recorte de 12M</small></div>
+      </div>
+    </section>
     <section class="reports-premium-main-grid">
       <article class="reports-panel reports-evolution-panel"><div class="reports-panel-head"><div><h2>Evolução patrimonial</h2><p>Aplicado e patrimônio estimado no período selecionado.</p></div><span class="reports-badge">${esc(data.periodLabel)}</span></div>
         <div class="reports-evolution-chart" aria-label="Evolução patrimonial dos últimos meses">${evolutionBars||'<div class="reports-empty">Sem histórico suficiente.</div>'}</div><ul class="reports-evolution-summary" aria-label="Resumo textual da evolução patrimonial">${evolutionSummary||'<li><span>Histórico</span><strong>—</strong></li>'}</ul>
@@ -28146,6 +28211,7 @@ function rendaFixaTab(){
     const display=row.explicit===false
       ? {kind:'missing', appliedText:fmt(row.applied), currentText:'Atualização necessária', currentNote:'Valor atual não informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:'neutral', resultText:'—', rentabilityText:'—'}
       : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta)?.note || row.currentMeta?.source || 'Valor atual informado'), provenance:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta) || {label:'Valor informado',tone:'ok'}), maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
+    const provenanceDetails=display.kind==='current' ? fixedIncomeProvenanceDetails(row.currentMeta) : null;
     return `
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
@@ -28156,6 +28222,7 @@ function rendaFixaTab(){
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
         <div class="premium-rf-row-meta">Valor aplicado ${display.appliedText}</div>
         <div class="premium-rf-row-meta"><span class="premium-rf-provenance ${esc(display.provenance?.tone||'muted')}">${esc(display.provenance?.label||'Valor informado')}</span> ${esc(display.currentNote)}</div>
+        ${provenanceDetails?.rows?.length ? `<details class="premium-rf-provenance-details"><summary>Como foi avaliado</summary><div class="premium-rf-provenance-grid">${provenanceDetails.rows.map(([key,value])=>`<span>${esc(key)}</span><strong>${esc(value)}</strong>`).join('')}</div></details>` : ''}
         <div class="premium-rf-row-meta">Vencimento ${esc(display.maturityText)}</div>
         <div class="premium-rf-row-results">
           <span class="premium-rf-row-meta ${display.resultClass}">Resultado ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
@@ -30349,6 +30416,12 @@ function goalProgressMetrics(current,target){
   const excess=hasCurrent && hasTarget ? Math.max(safeCurrent-safeTarget, 0) : null;
   const reached=hasCurrent && hasTarget ? safeCurrent>=safeTarget : false;
   return {hasCurrent,hasTarget,current:safeCurrent,target:safeTarget,percent,barPercent,missing,excess,reached};
+}
+function goalStatusPresentation(metrics, hasConfiguredTarget){
+  if(!hasConfiguredTarget || !metrics?.hasTarget) return {label:'Sem meta',tone:'muted',detail:'Configure um alvo para acompanhar o progresso.'};
+  if(!metrics.hasCurrent) return {label:'Sem leitura atual',tone:'muted',detail:'A carteira atual ainda não está disponível.'};
+  if(metrics.reached) return {label:'Atingida',tone:'positive',detail:'O valor atual alcançou ou ultrapassou o alvo cadastrado.'};
+  return {label:'Em andamento',tone:'info',detail:'O acompanhamento usa apenas os valores registrados.'};
 }
 function financialGoalsHasPortfolioData(portfolio){
   if(!portfolio || typeof portfolio!=='object') return false;
@@ -33009,7 +33082,9 @@ function metasTab(){
   const metaPatVar=Number(mp.annualVar)||0;
   const metaPatTime=estimateGoalMonths(tC,metaPatValor,metaPatAporte,metaPatVar);
   const metaPat=goalProgressText(tC,metaPatValor);
+  const metaPatStatus=goalStatusPresentation(goalProgressMetrics(Number.isFinite(Number(tC))?tC:null,metaPatValor),metaPatValor>0);
   const passiveGoal=passiveIncomeGoalStats();
+  const metaProStatus=goalStatusPresentation(goalProgressMetrics(passiveGoal?.hasData?passiveGoal.monthlyAvg:null,passiveGoal?.target||0),Boolean(passiveGoal?.hasTarget));
   const allocItems=allocationGoalItems();
   const rawAllocationItems=metas?.allocation?.items;
   const allocationConfigured=Boolean(rawAllocationItems && ((Array.isArray(rawAllocationItems) && rawAllocationItems.length) || (!Array.isArray(rawAllocationItems) && typeof rawAllocationItems==='object' && Object.keys(rawAllocationItems).length)) && allocItems.some(item=>Number(item.pct)>0));
@@ -33050,8 +33125,8 @@ function metasTab(){
   </div>
 
   <div class="metas-summary-bar ds-panel ds-panel--compact" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px">
-    <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Patrimônio</div><div style="font-size:12px;color:var(--text)">${metaPatSummary}</div></div>
-    <div style="flex:1;min-width:180px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px">Renda passiva</div><div style="font-size:12px;color:var(--text)">${metaProSummary}</div></div>
+    <div style="flex:1;min-width:180px"><div class="metas-summary-label">Patrimônio <span class="metas-goal-status metas-goal-status--${metaPatStatus.tone}">${esc(metaPatStatus.label)}</span></div><div class="metas-summary-value">${metaPatSummary}</div><div class="metas-summary-detail">${esc(metaPatStatus.detail)}</div></div>
+    <div style="flex:1;min-width:180px"><div class="metas-summary-label">Renda passiva <span class="metas-goal-status metas-goal-status--${metaProStatus.tone}">${esc(metaProStatus.label)}</span></div><div class="metas-summary-value">${metaProSummary}</div><div class="metas-summary-detail">${esc(metaProStatus.detail)}</div></div>
   </div>
   <div class="metas-projection-note" role="note">${esc(metaProjectionNote)} A renda projetada/mês continua sendo uma estimativa da carteira; a média 12M usa proventos já recebidos.</div>
 
@@ -33059,7 +33134,7 @@ function metasTab(){
     <summary>
       <div>
         <h2 class="sec-title wave-b-heading">${waveBIcon('target')}<span>Meta de Patrimônio</span></h2>
-        <div class="sec-meta">${fmt(tC)} / ${fmt(metaPatValor||0)} · ${metaPat.prog.toFixed(1)}% de progresso</div>
+        <div class="sec-meta"><span class="metas-goal-status metas-goal-status--${metaPatStatus.tone}">${esc(metaPatStatus.label)}</span> · ${fmt(tC)} / ${fmt(metaPatValor||0)} · ${metaPat.prog.toFixed(1)}% de progresso</div>
       </div>
       <div class="sec-meta">Recolher</div>
     </summary>
