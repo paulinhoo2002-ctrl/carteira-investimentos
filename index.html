@@ -14,6 +14,7 @@
 <script src="readonly-report-page-contract.js"></script>
 <script src="portfolio-movement-contract.js"></script>
 <script src="portfolio-movement-preview.js"></script>
+<script src="cloud-sync-state.js"></script>
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
@@ -7916,6 +7917,13 @@ summary:focus-visible,
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
   }
+  .cloud-sync-recovery{max-width:720px;margin:clamp(24px,8vh,72px) auto;padding:28px;border:1px solid rgba(251,191,36,.3);border-radius:18px;background:linear-gradient(145deg,rgba(26,37,58,.98),rgba(12,23,39,.98));box-shadow:0 18px 50px rgba(0,0,0,.22)}
+  .cloud-sync-recovery-kicker{color:#fbbf24;font-size:10px;font-weight:900;letter-spacing:.14em}
+  .cloud-sync-recovery h1{margin:10px 0 8px;color:#f4f7fb;font-size:24px;line-height:1.15}
+  .cloud-sync-recovery p{max-width:58ch;color:#aab8cc;font-size:13px;line-height:1.55}
+  .cloud-sync-recovery-status{margin-top:16px;color:#fbbf24;font-size:12px;font-weight:800}
+  .cloud-sync-retry{min-height:44px;margin-top:18px}
+  @media (max-width:560px){.cloud-sync-recovery{margin:20px 0;padding:20px}.cloud-sync-recovery h1{font-size:20px}}
 </style>
 </head>
 <body>
@@ -8011,7 +8019,7 @@ const firebaseConfig = {
 
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
-  unsub:null, cloudLoaded:false, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
+  unsub:null, cloudLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
   lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
@@ -10044,6 +10052,7 @@ function initFirebase(){
       FB.authResolved = true;
       FB.user = user || null;
       if(FB.user){
+        FB.cloudStateModel=CloudSyncState.initial(CloudSyncState.STATES.AUTHENTICATING);
         FB.access.loading = true;
         FB.access.loaded = false;
         FB.access.allowed = false;
@@ -10067,10 +10076,12 @@ function initFirebase(){
               FB.lastCloudAuthorityFingerprint=window.ProtectedLocalCloudAuthority.fingerprintCloud(cloudPayload||{});
             }
             FB.cloudLoaded = true;
+            FB.cloudStateModel=CloudSyncState.resolve(CloudSyncState.begin(FB.cloudStateModel),{exists:true,hasData:true});
             bindProtectedRealPilotSession();
             render();
           }).catch(error=>{
             FB.cloudLoaded = false;
+            FB.cloudStateModel=CloudSyncState.fail(CloudSyncState.begin(FB.cloudStateModel),error);
             debugWarn('âncora cloud somente leitura indisponível no runtime local:', error);
             render();
           });
@@ -10078,6 +10089,7 @@ function initFirebase(){
         }
         startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
       }else{
+        FB.cloudStateModel=CloudSyncState.initial();
         FB.access.loading = false;
         FB.access.loaded = false;
         FB.access.allowed = false;
@@ -10484,13 +10496,28 @@ function startCloudSync({readOnlyOnly=false}={}){
   if(!readOnlyOnly && !isEditOwner()) return;
   const ref=portfolioRef();
   if(!ref) return;
+  const previousCloudState=FB.cloudStateModel||CloudSyncState.initial();
   stopCloudSync(false);
+  FB.cloudStateModel=CloudSyncState.begin(previousCloudState);
+  const syncAttempt=FB.cloudStateModel.attempt;
   FB.cloudLoaded=false;
+  clearTimeout(FB.cloudSyncTimeoutTimer);
+  FB.cloudSyncTimeoutTimer=setTimeout(()=>{
+    if(FB.cloudStateModel?.attempt!==syncAttempt || FB.cloudStateModel?.status!==CloudSyncState.STATES.SYNCING) return;
+    FB.cloudStateModel=CloudSyncState.timeout(FB.cloudStateModel);
+    FB.lastCloudError=new Error('SYNC_TIMEOUT');
+    FB.cloudLoaded=false;
+    render();
+  },15000);
   FB.unsub=ref.onSnapshot(async snap=>{
     try{
+      if(FB.cloudStateModel?.attempt!==syncAttempt) return;
       if(!snap.exists){
         if(!readOnlyOnly && hasLocalData()) await uploadLocalToCloud(false,{allowMissingCloud:true});
         FB.cloudLoaded=true;
+        clearTimeout(FB.cloudSyncTimeoutTimer);
+        FB.cloudStateModel=CloudSyncState.resolve(FB.cloudStateModel,{exists:false,hasData:false});
+        FB.lastCloudError=null;
         bindProtectedRealPilotSession();
         if(FB.pendingCloudSave) queueCloudSave();
         render();
@@ -10499,13 +10526,29 @@ function startCloudSync({readOnlyOnly=false}={}){
       const data=snap.data()||{};
       const changed=await applyCloudData(data);
       FB.cloudLoaded=true;
+      clearTimeout(FB.cloudSyncTimeoutTimer);
+      FB.cloudStateModel=CloudSyncState.resolve(FB.cloudStateModel,{exists:true,hasData:cloudSnapshotHasData(data)});
+      FB.lastCloudError=null;
       bindProtectedRealPilotSession();
       if(FB.pendingCloudSave && changed) queueCloudSave();
-      if(changed) render();
-    }catch(e){ debugWarn('cloud sync:',e); }
+      render();
+    }catch(e){
+      FB.lastCloudError=e;
+      FB.cloudLoaded=false;
+      clearTimeout(FB.cloudSyncTimeoutTimer);
+      FB.cloudStateModel=CloudSyncState.fail(FB.cloudStateModel||CloudSyncState.initial(),e);
+      debugWarn('cloud sync:',e);
+      render();
+    }
   },err=>{
+    if(FB.cloudStateModel?.attempt!==syncAttempt) return;
+    FB.lastCloudError=err;
+    FB.cloudLoaded=false;
+    clearTimeout(FB.cloudSyncTimeoutTimer);
+    FB.cloudStateModel=CloudSyncState.fail(FB.cloudStateModel||CloudSyncState.initial(),err);
     debugWarn('Firestore:',err);
     toast('⚠️ Erro na sincronização com a nuvem. Confira regras do Firestore.','#fbbf24');
+    render();
   });
 }
 function stopCloudSync(doRender=true){
@@ -10515,6 +10558,9 @@ function stopCloudSync(doRender=true){
   }
   if(FB.unsub){ try{ FB.unsub(); }catch(e){} }
   FB.unsub=null; FB.cloudLoaded=false;
+  clearTimeout(FB.cloudSyncTimeoutTimer);
+  FB.cloudSyncTimeoutTimer=null;
+  FB.cloudStateModel=CloudSyncState.initial();
   clearTimeout(FB.cloudRetryTimer);
   if(doRender) render();
 }
@@ -10610,11 +10656,50 @@ async function signOutGoogle(){
   }
   try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos.'); }catch(e){}
 }
+function cloudSnapshotHasData(data={}){
+  const wallets=Array.isArray(data.wallets)?data.wallets:[];
+  const walletHasData=wallets.some(wallet=>[
+    wallet?.assets,wallet?.aportes,wallet?.proventos,wallet?.rfEvents
+  ].some(rows=>Array.isArray(rows)&&rows.length>0));
+  return walletHasData || [data.assets,data.aportes,data.proventos,data.rfEvents].some(rows=>Array.isArray(rows)&&rows.length>0);
+}
+function cloudSyncState(){ return FB.cloudStateModel || CloudSyncState.initial(); }
+function retryCloudSync(){
+  if(!FB.user || cloudSyncState().status===CloudSyncState.STATES.SYNCING) return;
+  startCloudSync({readOnlyOnly:true});
+}
+function cloudStatusText(){
+  const status=cloudSyncState().status;
+  if(status===CloudSyncState.STATES.CONNECTED || status===CloudSyncState.STATES.EMPTY_CONFIRMED) return '☁️ Nuvem conectada';
+  if(status===CloudSyncState.STATES.TIMEOUT) return '☁️ Sincronização atrasada';
+  if(status===CloudSyncState.STATES.OFFLINE) return '☁️ Sem conexão com a nuvem';
+  if(status===CloudSyncState.STATES.ERROR) return '☁️ Falha ao carregar dados';
+  return '☁️ Nuvem conectando…';
+}
+function cloudSyncRecoveryPanel(){
+  const state=cloudSyncState();
+  const copy={
+    [CloudSyncState.STATES.SYNCING]:['Sincronizando a carteira','Aguarde enquanto confirmamos seus dados na nuvem.'],
+    [CloudSyncState.STATES.TIMEOUT]:['A sincronização demorou mais que o esperado','A carteira não foi confirmada. Seus valores permanecem indisponíveis até uma leitura segura.'],
+    [CloudSyncState.STATES.OFFLINE]:['Sem conexão com a nuvem','Não foi possível confirmar a carteira agora. Verifique a conexão e tente novamente.'],
+    [CloudSyncState.STATES.ERROR]:['Falha ao carregar a carteira','A leitura da nuvem falhou. Nenhum valor foi substituído por zero.'],
+  }[state.status] || ['Preparando sincronização','A carteira ainda não foi confirmada.'];
+  const canRetry=[CloudSyncState.STATES.TIMEOUT,CloudSyncState.STATES.OFFLINE,CloudSyncState.STATES.ERROR].includes(state.status);
+  return `<section class="cloud-sync-recovery" role="status" aria-live="polite">
+    <div class="cloud-sync-recovery-kicker">DADOS PROTEGIDOS</div>
+    <h1>${esc(copy[0])}</h1>
+    <p>${esc(copy[1])}</p>
+    <div class="cloud-sync-recovery-status">${esc(cloudStatusText())}</div>
+    ${canRetry?'<button class="btn bp cloud-sync-retry" type="button" onclick="retryCloudSync()">Tentar novamente</button>':''}
+  </section>`;
+}
 function cloudStatus(){
   if(isLocalTestMode()) return '<span style="font-size:11px;color:#fbbf24">Modo teste local</span>';
   if(!FB.ready) return '<span style="font-size:11px;color:#f87171">Firebase offline</span>';
   if(!FB.user) return '<span style="font-size:11px;color:#64748b">Local</span>';
-  return `<span style="font-size:11px;color:#34d399">☁️ Nuvem ${FB.cloudLoaded?'online':'conectando...'}</span>`;
+  const state=cloudSyncState().status;
+  const tone=state===CloudSyncState.STATES.CONNECTED||state===CloudSyncState.STATES.EMPTY_CONFIRMED?'#34d399':state===CloudSyncState.STATES.SYNCING||state===CloudSyncState.STATES.INITIALIZING||state===CloudSyncState.STATES.AUTHENTICATING?'#fbbf24':'#f87171';
+  return `<span style="font-size:11px;color:${tone}">${esc(cloudStatusText())}</span>`;
 }
 function authBox(){
   if(isLocalTestMode()) return `<span class="note-pill" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Teste local</span>`;
@@ -10913,8 +10998,8 @@ function settingsTab(){
   const totalRf=(S.rfEvents||[]).length;
   const themeLabel=THEME==='light'?'Tema Claro':'Tema Escuro';
   const themeIcon=THEME==='light'?'🌤️':'🌙';
-  const cloudLabel=FB.user?(FB.cloudLoaded?'Online':'Conectando...'):(FB.ready?'Local':'Offline');
-  const cloudBadge=FB.user?(FB.cloudLoaded?'ok':'warn'):(FB.ready?'off':'off');
+  const cloudLabel=FB.user?cloudStatusText():(FB.ready?'Local':'Offline');
+  const cloudBadge=FB.user?(CloudSyncState.isDataConfirmed(cloudSyncState())?'ok':'warn'):(FB.ready?'off':'off');
   const userEmail=FB.user?FB.user.email:'';
   const userName=FB.user?(FB.user.displayName||FB.user.email||''):'';
   const pwaInstalled=!!PWA.installed;
@@ -26559,6 +26644,7 @@ function app(){
 ${globalThis.PortfolioMovementPreview?.getState?.().open ? globalThis.PortfolioMovementPreview.renderHtml() : ''}`;
 }
 function content(){
+  if(typeof FB!=='undefined' && FB.user && !CloudSyncState.isDataConfirmed(cloudSyncState())) return cloudSyncRecoveryPanel();
   if(assetDetailId){
     const detail=assetDetailAsset();
     if(detail) return assetDetailPage(detail);
