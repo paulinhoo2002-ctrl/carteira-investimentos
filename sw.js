@@ -1,4 +1,6 @@
-const CACHE_NAME = 'carteira-investimentos-v17';
+// Bump only when the app-shell/static asset contract changes. Activate removes
+// older caches with this app-owned prefix and preserves unrelated origin data.
+const CACHE_NAME = 'carteira-investimentos-v18';
 const CRITICAL_RUNTIME_PATHS = new Set([
   '/protected-local-cloud-authority.js',
 ]);
