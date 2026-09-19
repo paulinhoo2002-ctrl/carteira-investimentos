@@ -10436,11 +10436,14 @@ function markProtectedLocalMarkerMismatch(){
 }
 async function applyCloudData(d){
   if(!d) return;
-  if(isProtectedReadOnlyQaBoot() || isAuthoritativeLocalRecoveryBoot()){
+  if(isAuthoritativeLocalRecoveryBoot()){
     markProtectedLocalMarkerMismatch();
-    debugInfo('cloud snapshot read-only QA: aplicação local bloqueada', {updatedAtLocal:d.updatedAtLocal||null});
+    debugInfo('cloud snapshot: aplicação local authoritative bloqueada', {updatedAtLocal:d.updatedAtLocal||null});
     return false;
   }
+  // Protected QA may hydrate the authenticated cloud snapshot in memory. The
+  // persistence and cloud-write guards below remain fail-closed for this mode.
+  if(isProtectedReadOnlyQaBoot()) debugInfo('cloud snapshot read-only QA: hidratação em memória permitida', {updatedAtLocal:d.updatedAtLocal||null});
   if(window.ProtectedLocalCloudAuthority){
     const authority=window.ProtectedLocalCloudAuthority;
     const localState=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
