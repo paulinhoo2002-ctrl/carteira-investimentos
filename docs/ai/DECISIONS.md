@@ -24,6 +24,28 @@ Este documento registra decisões arquiteturais que foram validadas pelo projeto
 
 **Status**: Ativo e vinculante
 
+## Decision 013
+**Título**: Superpowers é workflow aprovado, sujeito à revisão de segurança
+
+**Contexto**: O projeto avaliou `obra/superpowers` como framework de workflow
+para agentes Hermes. A instalação oficial foi tentada no V193, mas o Hermes
+classificou a fonte comunitária como `CAUTION` com 219 achados.
+
+**Decisão**: Superpowers é aprovado como candidato de ferramenta de agente,
+mas permanece não instalado e não operacional até revisão humana dos achados e
+eventual instalação oficial fixada.
+
+**Motivo**: Preservar a segurança da cadeia de fornecimento sem perder o
+registro da decisão ou incentivar cópia/vendorização do repositório externo.
+
+**Consequências**:
+- nenhuma dependência de runtime ou npm é adicionada;
+- o projeto não copia a árvore de Skills do Superpowers;
+- a governança do projeto e os contratos financeiros têm precedência;
+- `--force` não deve ser usado automaticamente para contornar o scan.
+
+**Status**: Ativo e vinculante
+
 ## Decision 010
 **Titulo**: Semantica de testMode
 
