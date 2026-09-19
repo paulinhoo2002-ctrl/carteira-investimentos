@@ -2467,6 +2467,15 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 .reports-executive-summary-grid span,.reports-executive-summary-grid small{display:block;color:#8294ad;font-size:9px;line-height:1.25}
 .reports-executive-summary-grid strong{display:block;margin:4px 0 3px;color:#e5edf8;font-size:14px;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .reports-executive-summary-grid small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reports-reconciliation{padding:13px 14px;border:1px solid #20304a;border-radius:15px;background:#0a121f}
+.reports-reconciliation-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.reports-reconciliation-head h2{margin:0;color:#e5edf8;font-size:14px;line-height:1.2}
+.reports-reconciliation-head p{margin:4px 0 0;color:#8294ad;font-size:10px;line-height:1.35}
+.reports-reconciliation-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.reports-reconciliation-item{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;padding:9px 10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(255,255,255,.018);color:#8294ad;font-size:10px}
+.reports-reconciliation-item strong{font-size:10px;white-space:nowrap}
+.reports-reconciliation-pass{color:#34d399}.reports-reconciliation-mismatch{color:#fbbf24}.reports-reconciliation-unavailable{color:#94a3b8}
+.reports-reconciliation-note{margin:10px 0 0;color:#a9b8cb;font-size:10px;line-height:1.45}
 .premium-rf-provenance-details{margin-top:3px;font-size:9px;color:var(--muted)}
 .premium-rf-provenance-details summary{display:inline-flex;min-height:28px;align-items:center;cursor:pointer;color:#9bb4d0;font-weight:700}
 .premium-rf-provenance-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 8px;margin-top:4px;padding:6px 8px;border-left:2px solid rgba(96,165,250,.45);background:rgba(96,165,250,.05);border-radius:0 7px 7px 0}
@@ -2487,6 +2496,9 @@ html[data-theme="light"] .reports-executive-summary-head h2,.reports-executive-s
 html[data-theme="light"] .reports-executive-summary-head p,.reports-executive-summary-grid span,.reports-executive-summary-grid small{color:#52647b}
 @media(max-width:560px){.reports-intelligence-strip{grid-template-columns:1fr;gap:9px;padding:11px}.reports-intelligence-strip small{white-space:normal}}
 @media(max-width:720px){.reports-executive-summary-head{display:block}.reports-executive-summary-head .reports-badge{display:inline-flex;margin-top:8px}.reports-executive-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-executive-summary-grid strong{font-size:13px}}
+@media(max-width:720px){.reports-reconciliation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-reconciliation-head{display:block}.reports-reconciliation-head .reports-badge{display:inline-flex;margin-top:8px}}
+@media print{.reports-premium-shell{padding:0!important;background:#fff!important;color:#111827!important}.reports-premium-shell .reports-premium-head-actions,.reports-premium-shell .reports-inline-link,.reports-premium-shell .reports-export-details,.reports-premium-shell .reports-experiment-entry,.reports-premium-shell .reports-footnote{display:none!important}.reports-premium-shell .reports-hero,.reports-premium-shell .reports-panel,.reports-premium-shell .reports-executive-summary,.reports-premium-shell .reports-reconciliation{break-inside:avoid;box-shadow:none!important;background:#fff!important;border-color:#cbd5e1!important}.reports-premium-shell h1,.reports-premium-shell h2,.reports-premium-shell strong,.reports-premium-shell span,.reports-premium-shell p,.reports-premium-shell small{color:#111827!important}.reports-premium-shell .reports-intelligence-strip{background:#f8fafc!important;border-color:#cbd5e1!important}.reports-premium-shell .reports-kpi .sub,.reports-premium-shell .reports-panel-head p,.reports-premium-shell .reports-reconciliation-head p,.reports-premium-shell .reports-reconciliation-note{color:#475569!important}}
+@media print{body:has(.reports-premium-shell) .tabs,body:has(.reports-premium-shell) #investBottomNav{display:none!important}}
 .reports-premium-shell .reports-premium-hero{
   background:var(--surface)!important;
   box-shadow:none!important;
@@ -7981,6 +7993,7 @@ document.write([
 <script src="portfolio-allocation-intelligence.js"></script>
 <script src="portfolio-performance.js"></script>
 <script src="portfolio-report-model.js"></script>
+<script src="executive-reporting.js"></script>
 <script src="portfolio-runtime-stores.js"></script>
 <script src="fixed-income-benchmark-provider.js"></script>
 <script src="official-events-provider.js"></script>
@@ -24203,23 +24216,21 @@ function toggleImportedDividendsDetails(ev){
 // RELATÓRIOS E EXPORTAÇÕES
 // ══════════════════════════════════════
 function reportsPeriod(){
-  return ['year','12m','all'].includes(String(S.reportsPeriod||'')) ? String(S.reportsPeriod) : '12m';
+  return globalThis.ExecutiveReportingModel?.normalizePeriod?.(S.reportsPeriod) || (['year','12m','all'].includes(String(S.reportsPeriod||'')) ? String(S.reportsPeriod) : '12m');
 }
 function setReportsPeriod(value){
-  S.reportsPeriod=['year','12m','all'].includes(String(value)) ? String(value) : '12m';
+  S.reportsPeriod=globalThis.ExecutiveReportingModel?.normalizePeriod?.(value) || (['year','12m','all'].includes(String(value)) ? String(value) : '12m');
   render();
 }
 function reportsPeriodLabel(){
-  return reportsPeriod()==='year' ? 'Ano atual' : reportsPeriod()==='all' ? 'Todos os dados' : 'Últimos 12 meses';
+  return globalThis.ExecutiveReportingModel?.periodLabel?.(reportsPeriod()) || (reportsPeriod()==='year' ? 'Ano atual' : reportsPeriod()==='all' ? 'Todos os dados' : 'Últimos 12 meses');
 }
 function reportsPeriodStart(){
-  const now=new Date();
-  if(reportsPeriod()==='all') return null;
-  if(reportsPeriod()==='year') return new Date(now.getFullYear(),0,1);
-  return new Date(now.getFullYear(),now.getMonth()-11,1);
+  return globalThis.ExecutiveReportingModel?.periodStart?.(reportsPeriod(),new Date()) || (reportsPeriod()==='all'?null:new Date(new Date().getFullYear(),reportsPeriod()==='year'?0:new Date().getMonth()-11,1));
 }
 function reportsDateAllowed(value){
   const date=parseAnyDate(value);
+  if(globalThis.ExecutiveReportingModel?.dateAllowed) return globalThis.ExecutiveReportingModel.dateAllowed(value,reportsPeriod(),new Date(),parseAnyDate);
   if(!date) return reportsPeriod()==='all';
   const start=reportsPeriodStart();
   return !start || date>=start;
@@ -24249,6 +24260,7 @@ function reportsSnapshot(){
     const audit=dataAuditSnapshot();
     const filteredProventos=(S.proventos||[]).filter(p=>reportsDateAllowed(p.date));
     const filteredAportes=(S.aportes||[]).filter(a=>reportsDateAllowed(a.date));
+    const incomePeriodTotal=filteredProventos.reduce((sum,item)=>sum+(Number.isFinite(Number(item?.value))?Number(item.value):0),0);
     const movementCounts=filteredAportes.reduce((counts,movement)=>{
       const operation=String(movement?.movementKind||movement?.kind||movement?.operation||movement?.op||'').trim().toLowerCase();
       const type=String(movement?.type||movement?.asset_type||'').trim().toLowerCase();
@@ -24266,6 +24278,7 @@ function reportsSnapshot(){
       periodLabel:reportsPeriodLabel(),
       portfolio,
       income,
+      incomePeriodTotal,
       fixed,
       audit,
       assetsCount:(S.assets||[]).length,
@@ -26385,6 +26398,18 @@ function reportsTab(){
   const income=data.income||passiveIncomeGoalStats();
   const fixed=data.fixed||rfIntelligenceSnapshot();
   const movementCounts=data.movementCounts||{};
+  const knownReportAssets=reportAssets.filter(row=>Number.isFinite(Number(row.current))&&Number(row.current)>=0);
+  const knownReportTotal=knownReportAssets.reduce((sum,row)=>sum+Number(row.current||0),0);
+  const topReportShare=knownReportTotal>0?Math.max(...knownReportAssets.map(row=>Number(row.current||0)))/knownReportTotal*100:null;
+  const reportViewModel=globalThis.ExecutiveReportingModel?.buildViewModel?.({
+    period:reportsPeriod(),assetCount:data.assetsCount,
+    reportPortfolioValue:data.portfolio.tC,dashboardPortfolioValue:data.portfolio.tC,
+    reportFixedIncomeValue:fixed.totalCurrent,authoritativeFixedIncomeValue:fixed.totalCurrent,
+    reportDividendsValue:data.incomePeriodTotal,ledgerDividendsValue:data.incomePeriodTotal,
+    reportAllocationValue:allocation.total,knownAllocationValue:allocation.total,
+    topShare:topReportShare,classCount:allocationRows.length,incomeValue:data.incomePeriodTotal,
+    assetCoverage:knownReportTotal>0&&data.assetsCount?knownReportAssets.length/data.assetsCount*100:null
+  });
   const nextFixed=(fixed.maturityRows||[])[0]||null;
   const resultTone=Number(data.portfolio.tG)||0>0?'positive':Number(data.portfolio.tG)||0<0?'negative':'neutral';
   const maxEvolution=Math.max(...patrimony.months.map(row=>Number(row.cumulative)||0),1);
@@ -26418,6 +26443,9 @@ function reportsTab(){
       <div class="reports-head">
         <div><h1 class="reports-title">Relatórios</h1><div class="reports-sub">Análise, conferência e exportação da carteira.</div></div>
         <div class="reports-premium-head-actions"><div class="reports-filter">
+          <button class="${reportsPeriod()==='month'?'on':''}" onclick="setReportsPeriod('month')">Mês atual</button>
+          <button class="${reportsPeriod()==='3m'?'on':''}" onclick="setReportsPeriod('3m')">3 meses</button>
+          <button class="${reportsPeriod()==='6m'?'on':''}" onclick="setReportsPeriod('6m')">6 meses</button>
           <button class="${reportsPeriod()==='year'?'on':''}" onclick="setReportsPeriod('year')">Ano atual</button>
           <button class="${reportsPeriod()==='12m'?'on':''}" onclick="setReportsPeriod('12m')">Últimos 12 meses</button>
           <button class="${reportsPeriod()==='all'?'on':''}" onclick="setReportsPeriod('all')">Todos</button>
@@ -26427,7 +26455,7 @@ function reportsTab(){
         <div class="reports-kpi"><div class="label">Patrimônio atual</div><div class="value">${fmt(data.portfolio.tC)}</div><div class="sub">Estimativa pelos ativos cadastrados</div></div>
         <div class="reports-kpi"><div class="label">Total aplicado</div><div class="value">${fmt(data.portfolio.tI)}</div><div class="sub">Base consolidada da carteira</div></div>
         <div class="reports-kpi reports-kpi-${resultTone}"><div class="label">Resultado</div><div class="value">${fmt(data.portfolio.tG)}</div><div class="sub">${fmtP(data.portfolio.tGP)} sobre o aplicado</div></div>
-        <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(income.total12)}</div><div class="sub">Média 12M: ${fmt(income.monthlyAvg)}</div></div>
+        <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(data.incomePeriodTotal)}</div><div class="sub">Média 12M: ${fmt(income.monthlyAvg)}</div></div>
         <div class="reports-kpi"><div class="label">Rentabilidade</div><div class="value">${fmtP(data.portfolio.tGP)}</div><div class="sub">Resultado sobre o capital</div></div>
       </div>
     </section>
@@ -26437,13 +26465,20 @@ function reportsTab(){
       <div><span class="reports-intelligence-label">Escopo</span><strong>${intelligence?.sections?.assets?.items?.length||0} ativos</strong><small>Relatório somente leitura · sem alteração de dados</small></div>
     </section>
     <section class="reports-executive-summary" aria-labelledby="reports-executive-summary-title">
-      <div class="reports-executive-summary-head"><div><h2 id="reports-executive-summary-title">Resumo para decidir o próximo passo</h2><p>Quatro sinais para orientar a conferência, sem criar recomendação de investimento.</p></div><span class="reports-badge">Fonte: carteira cadastrada</span></div>
+      <div class="reports-executive-summary-head"><div><h2 id="reports-executive-summary-title">Resumo factual da carteira</h2><p>Quatro sinais para orientar a conferência, sem criar recomendação de investimento.</p></div><span class="reports-badge">Fonte: carteira cadastrada</span></div>
       <div class="reports-executive-summary-grid">
         <div><span>Situação atual</span><strong>${fmt(data.portfolio.tC)}</strong><small>${data.assetsCount} ativos acompanhados</small></div>
         <div><span>Evolução</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong><small>${fmtP(data.portfolio.tGP)} sobre o aplicado</small></div>
         <div><span>Concentração</span><strong>${allocationRows.length?esc(allocationRows[0].type):'—'}</strong><small>${allocationRows.length?`${allocationRows[0].share.toFixed(1)}% da carteira`:'Sem distribuição disponível'}</small></div>
-        <div><span>Renda registrada</span><strong>${fmt(income.total12)}</strong><small>Recebido no recorte de 12M</small></div>
+        <div><span>Renda registrada</span><strong>${fmt(data.incomePeriodTotal)}</strong><small>Recebido no período selecionado</small></div>
       </div>
+    </section>
+    <section class="reports-reconciliation" aria-labelledby="reports-reconciliation-title">
+      <div class="reports-reconciliation-head"><div><h2 id="reports-reconciliation-title">Reconciliação e cobertura</h2><p>Comparação read-only com as fontes canônicas já usadas pelo produto.</p></div><span class="reports-badge reports-badge-ok">${reportViewModel?.readOnly?'Somente leitura':'Indisponível'}</span></div>
+      <div class="reports-reconciliation-grid">
+        ${[['Patrimônio',reportViewModel?.reconciliations?.patrimony],['Renda Fixa',reportViewModel?.reconciliations?.fixedIncome],['Proventos',reportViewModel?.reconciliations?.dividends],['Alocação',reportViewModel?.reconciliations?.allocation]].map(([label,item])=>`<div class="reports-reconciliation-item"><span>${label}</span><strong class="reports-reconciliation-${item?.status==='PASS'?'pass':item?.status==='MISMATCH'?'mismatch':'unavailable'}">${item?.status==='PASS'?'Reconciliado':item?.status==='MISMATCH'?'Diferença factual':'Indisponível'}</strong></div>`).join('')}
+      </div>
+      <p class="reports-reconciliation-note">${esc(reportViewModel?.summary||'Sem dados suficientes para gerar o resumo factual.')}</p>
     </section>
     <section class="reports-premium-main-grid">
       <article class="reports-panel reports-evolution-panel"><div class="reports-panel-head"><div><h2>Evolução patrimonial</h2><p>Aplicado e patrimônio estimado no período selecionado.</p></div><span class="reports-badge">${esc(data.periodLabel)}</span></div>
@@ -26454,7 +26489,7 @@ function reportsTab(){
     </section>
     <section class="reports-premium-secondary-grid">
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Movimentações do período</h2><p>Fluxo registrado, sem confundir venda ou resgate com aporte.</p></div><span class="reports-badge">${data.aportesCount+data.proventosCount} registros</span></div><div class="reports-stat-list"><div><span>Compras</span><strong>${movementCounts.compras||0}</strong></div><div><span>Vendas</span><strong>${movementCounts.vendas||0}</strong></div><div><span>Aplicações RF</span><strong>${movementCounts.rendaFixa||0}</strong></div><div><span>Proventos</span><strong>${movementCounts.proventos||0}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('aportes');return false">Conferir movimentações</a></article>
-      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${income.hasData?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido em 12M</span><strong>${fmt(income.total12)}</strong></div><div><span>Média mensal</span><strong>${fmt(income.monthlyAvg)}</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
+      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${data.incomePeriodTotal>0?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido no período</span><strong>${fmt(data.incomePeriodTotal)}</strong></div><div><span>Média mensal 12M</span><strong>${fmt(income.monthlyAvg)}</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda Fixa</h2><p>Resumo da avaliação oficial.</p></div><span class="reports-badge">${fixed.assets?.length||0} posições</span></div><div class="reports-stat-list"><div><span>Valor atual</span><strong>${fmt(fixed.totalCurrent)}</strong></div><div><span>Total aplicado</span><strong>${fmt(fixed.totalApplied)}</strong></div><div><span>Resultado</span><strong class="reports-${Number(fixed.totalProfit)||0>=0?'positive':'negative'}">${fmt(fixed.totalProfit)}</strong></div></div><div class="reports-next-maturity">Próximo vencimento <strong>${nextFixed?esc(nextFixed.ticker||'Título RF'):'—'}</strong><small>${nextFixed?.due?nextFixed.due.toLocaleDateString('pt-BR'):'Nenhum vencimento futuro registrado.'}</small></div><a class="reports-inline-link" href="#" onclick="go('renda-fixa');return false">Ver Renda Fixa</a></article>
       <article class="reports-panel reports-audit-panel"><div class="reports-panel-head"><div><h2>Qualidade dos dados</h2><p>Conferência sem alterar registros.</p></div><span class="reports-badge reports-badge-${auditTone}">${data.auditCount?'Atenção':'Tudo certo'}</span></div><div class="reports-audit-count">${data.auditCount}<span>alertas para conferência</span></div><a class="reports-inline-link" href="#" onclick="go('auditoria');return false">Abrir Auditoria</a></article>
     </section>

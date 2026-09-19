@@ -60,9 +60,9 @@ test('RELATÓRIOS: navegação e estado inicial', async () => {
     
     // Check filters
     const filters = await page.$$('.reports-filter button');
-    assert.equal(filters.length, 3, 'Deve ter 3 filtros de período');
+    assert.equal(filters.length, 6, 'Deve ter 6 filtros de período');
     const filterTexts = await Promise.all(filters.map(f => f.textContent()));
-    assert.deepEqual(filterTexts, ['Ano atual', 'Últimos 12 meses', 'Todos']);
+    assert.deepEqual(filterTexts, ['Mês atual', '3 meses', '6 meses', 'Ano atual', 'Últimos 12 meses', 'Todos']);
     
     // Check evolution chart
     const evolution = await page.$('.reports-evolution-chart');
@@ -71,6 +71,9 @@ test('RELATÓRIOS: navegação e estado inicial', async () => {
     // Check allocation panel
     const allocation = await page.$('.reports-data-list');
     assert.ok(allocation, 'Painel de distribuição deve existir');
+
+    const reconciliation = await page.$('.reports-reconciliation');
+    assert.ok(reconciliation, 'Faixa de reconciliação deve existir');
     
     // Check income panel
     const incomePanel = await page.locator('.reports-panel:has-text("Renda e proventos")');
@@ -111,26 +114,30 @@ test('RELATÓRIOS: filtro de período atualiza UI', async () => {
     await waitForReportsShell(page);
     
     // Initial period should be '12m' (default)
-    let periodLabel = await page.$eval('.reports-badge', el => el.textContent);
+    let periodLabel = await page.$eval('.reports-evolution-panel .reports-badge', el => el.textContent);
     assert.ok(periodLabel.includes('Últimos 12 meses') || periodLabel.includes('12'), 'Período inicial deve ser 12M');
     
     // Click "Ano atual"
     await page.click('.reports-filter button:has-text("Ano atual")');
     await page.waitForTimeout(500);
-    periodLabel = await page.$eval('.reports-badge', el => el.textContent);
+    periodLabel = await page.$eval('.reports-evolution-panel .reports-badge', el => el.textContent);
     assert.ok(periodLabel.includes('Ano atual') || periodLabel.includes('Ano'), 'Período deve mudar para Ano atual');
     
     // Click "Todos"
     await page.click('.reports-filter button:has-text("Todos")');
     await page.waitForTimeout(500);
-    periodLabel = await page.$eval('.reports-badge', el => el.textContent);
+    periodLabel = await page.$eval('.reports-evolution-panel .reports-badge', el => el.textContent);
     assert.ok(periodLabel.includes('Todos'), 'Período deve mudar para Todos');
     
     // Click back to "Últimos 12 meses"
     await page.click('.reports-filter button:has-text("Últimos 12 meses")');
     await page.waitForTimeout(500);
-    periodLabel = await page.$eval('.reports-badge', el => el.textContent);
+    periodLabel = await page.$eval('.reports-evolution-panel .reports-badge', el => el.textContent);
     assert.ok(periodLabel.includes('12'), 'Período deve voltar para 12M');
+    await page.click('.reports-filter button:has-text("Mês atual")');
+    await page.waitForTimeout(500);
+    periodLabel = await page.$eval('.reports-panel-head .reports-badge', el => el.textContent);
+    assert.ok(periodLabel.includes('Mês atual'), 'Período deve suportar o mês atual');
     
     assert.equal(errors.length, 0, errors.join(' | '));
   } finally {
