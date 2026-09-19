@@ -34,11 +34,12 @@ function startServer() {
 test('relatórios preserva leitura responsiva e impressão nos viewports certificados', async (t) => {
   const server = await startServer();
   const port = server.address().port;
-  const browser = await chromium.launch({ executablePath: CHROME, headless: true });
+  let browser = null;
   t.after(async () => {
-    await browser.close();
+    if (browser) await browser.close();
     await new Promise((resolve) => server.close(resolve));
   });
+  browser = await chromium.launch({ executablePath: CHROME, headless: true });
 
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport });
