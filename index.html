@@ -2864,7 +2864,14 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
   .premium-dividends-3 .dividend-primary-grid .div-asset-total{display:block;text-align:right}
   .premium-dividends-3 .dividend-secondary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
   .premium-dividends-3 .dividend-primary-grid>.div-collapsible,.premium-dividends-3 .dividend-secondary-grid>.div-collapsible{min-width:0}
-  .premium-dividends-3 .dividend-history-block{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+.premium-dividends-3 .dividend-history-block{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
+.premium-dividends-3 .dividend-quality-panel{margin-top:12px;padding:12px 14px}
+.premium-dividends-3 .dividend-quality-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.premium-dividends-3 .dividend-quality-grid>div{display:flex;flex-direction:column;gap:3px;padding:8px 9px;border:1px solid var(--border);border-radius:10px;background:rgba(15,26,44,.55)}
+.premium-dividends-3 .dividend-quality-grid strong{font-size:17px;color:var(--text);font-variant-numeric:tabular-nums}
+.premium-dividends-3 .dividend-quality-grid span,.premium-dividends-3 .dividend-quality-note{font-size:10px;color:var(--muted);line-height:1.4}
+.premium-dividends-3 .dividend-quality-note{margin:10px 0 0}
+@media(max-width:640px){.premium-dividends-3 .dividend-quality-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.premium-dividends-3 .dividend-quality-panel{margin-top:7px;padding:9px 10px}}
   .premium-dividends-3 .dividend-history-heading{padding:10px 12px;border-bottom:1px solid var(--border)}
   .premium-dividends-3 .dividend-history-heading strong{font-size:13px;color:var(--text)}
   .premium-dividends-3 .dividend-history-heading span{display:block;margin-top:2px;font-size:10px;color:var(--muted)}
@@ -7974,6 +7981,7 @@ document.write([
 <script src="legacy/reports-readonly-source.js"></script>
 <script src="import-foundation.js"></script>
 <script src="import-center-core.js"></script>
+<script src="v210-income-quality.js"></script>
 <script src="fixed-income-valuation.js"></script>
 <script src="fixed-income-display.js"></script>
 <script src="import-center-context.js"></script>
@@ -26494,7 +26502,7 @@ const IMPORT_CENTER_SOURCES=[
   {type:'B3_DIVIDENDS_XLSX',label:'Proventos B3',support:'FULLY_SUPPORTED',hint:'Preview, deduplicação e histórico sem alterar Dividendos.'},
   {type:'BROKERAGE_NOTE_PDF',label:'Nota de corretagem',support:'PARTIAL',hint:'Fixture estruturada; extração arbitrária de PDF exige revisão.'},
 ];
-const IMPORT_CENTER_STEPS=['Arquivos','Detecção','Preview','Revisão','Reconciliação','Plano','Dry-run','Resultado'];
+const IMPORT_CENTER_STEPS=['Arquivo','Detectado','Interpretado','Validado','Prévia','Duplicatas','Confirmação','Resultado'];
 const IMPORT_CENTER_CONTEXT=typeof ImportCenterContext==='undefined' ? null : ImportCenterContext.create({readState:()=>importCenterState(),escapeText:esc,getSources:()=>IMPORT_CENTER_SOURCES,getSteps:()=>IMPORT_CENTER_STEPS});
 function importCenterState(){
   if(!S.importCenterSession) S.importCenterSession={files:[],step:1,result:null,history:[]};
@@ -31382,6 +31390,11 @@ function dividendAssetSummary(rows){
   const total=rows.reduce((sum,row)=>sum+row.value,0);
   return `${groups.size} ativo(s) · ${fmt(total)} total recebido`;
 }
+function dividendDataQualityPanel(rows){
+  const quality=globalThis.V210IncomeQuality?.dividendQuality?.(rows)||{count:0,assetCount:0,sourceCount:0,typeCount:0,unknownTickerCount:0,top3Share:0,topAssets:[]};
+  const top=quality.topAssets?.length ? quality.topAssets.map(([ticker,value])=>`${esc(ticker)} ${fmt(value)}`).join(' · ') : 'Sem concentração calculável';
+  return `<section class="premium-panel dividend-quality-panel" aria-labelledby="dividend-quality-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-quality-title">Qualidade da leitura</div><div class="premium-panel-sub">Indicadores descritivos do ledger filtrado; não são uma recomendação.</div></div><span class="div-premium-status neutral">${quality.count} eventos</span></div><div class="dividend-quality-grid"><div><strong>${quality.assetCount}</strong><span>ativos pagadores</span></div><div><strong>${quality.sourceCount}</strong><span>origens observadas</span></div><div><strong>${quality.typeCount}</strong><span>tipos identificados</span></div><div><strong>${quality.unknownTickerCount}</strong><span>sem ticker</span></div></div><p class="dividend-quality-note">Top 3 pagadores: <strong>${quality.top3Share.toFixed(1)}%</strong> do período · ${top}</p></section>`;
+}
 function dividendTimelineSummary(rows){
   const stats=passiveIncomeGoalStats();
   const months=stats.byMonth.length;
@@ -32595,7 +32608,8 @@ function canonDividendOverview(rows, kpisHtml){
         </div>
         <div class="premium-panel canon-div-panel canon-div-yearsum">
           <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('bars')}<span>Resumo por ano</span></div><div class="premium-panel-sub">Valor total recebido em cada ano.</div></div></div>
-          ${canonDividendYearSummary(filteredRows)}
+        ${canonDividendYearSummary(filteredRows)}
+        ${dividendDataQualityPanel(filteredRows)}
         </div>
         <div class="corporate-events-readonly-panel">${corporateEventsAnnouncementSection()}</div>
       </div>
