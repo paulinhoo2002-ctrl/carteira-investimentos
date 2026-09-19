@@ -70,9 +70,23 @@ test('old release to new release clears only the old app cache', { skip: !resolv
 
     release = 'B';
     await page.evaluate(async () => { const reg = await navigator.serviceWorker.getRegistration(); await reg.update(); });
-    await page.waitForFunction(() => navigator.serviceWorker.getRegistration().then(reg => Boolean(reg.waiting)));
-    await page.evaluate(async () => { (await navigator.serviceWorker.getRegistration()).waiting.postMessage({ type: 'SKIP_WAITING' }); });
-    await page.waitForFunction(() => navigator.serviceWorker.controller);
+    await page.evaluate(async () => {
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        const keys = await caches.keys();
+        if (keys.includes('carteira-investimentos-v18') && !keys.includes('carteira-investimentos-v17')) return;
+        if (reg?.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      throw new Error('service worker waiting/activation timeout');
+    });
+    await page.waitForFunction(() => caches.keys().then(keys => (
+      keys.includes('carteira-investimentos-v18') && !keys.includes('carteira-investimentos-v17')
+    )));
     await page.reload({ waitUntil: 'networkidle' });
     assert.equal(await page.evaluate(() => document.body.dataset.release), 'B');
     assert.deepEqual(await page.evaluate(() => caches.keys()), ['carteira-investimentos-v18']);
