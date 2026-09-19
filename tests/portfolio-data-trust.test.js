@@ -35,7 +35,16 @@ test('patrimony mismatch is explicit', () => assert.equal(Trust.reconcileValues(
 test('not comparable is not forced to pass', () => assert.equal(Trust.reconcileValues([100]).status, 'NOT_COMPARABLE'));
 test('fixed-income reconciliation is available through build', () => assert.equal(Trust.build({ assets: [], fixedIncomeTotal: 1, reportsFixedIncomeTotal: 1, dashboardFixedIncomeTotal: 1 }).reconciliations.fixedIncome.status, 'OK'));
 test('dividend reconciliation uses the same semantic totals', () => assert.equal(Trust.build({ assets: [], dividendsTotal: 2, reportsDividendsTotal: 2, timelineIncomeTotal: 2 }).reconciliations.dividends.status, 'OK'));
+test('dividend reconciliation marks partial timeline coverage instead of a false mismatch', () => {
+  const result = Trust.build({ assets: [], dividendsTotal: 10, reportsDividendsTotal: 10, timelineIncomeTotal: 6, dividendEventCount: 3, timelineIncomeEventCount: 2 });
+  assert.equal(result.reconciliations.dividends.status, 'PARTIAL_COVERAGE');
+  assert.match(result.reconciliations.dividends.reason, /cobertura|Timeline/i);
+});
 test('transaction reconciliation compares counts', () => assert.equal(Trust.build({ assets: [], transactionCount: 2, timelineTransactionCount: 2 }).reconciliations.transactions.status, 'OK'));
+test('transaction mismatch remains explicit when comparable counts differ', () => {
+  const result = Trust.build({ assets: [], transactionCount: 2, timelineTransactionCount: 1 });
+  assert.equal(result.reconciliations.transactions.status, 'MISMATCH');
+});
 test('timeline/detail reconciliation compares counts', () => assert.equal(Trust.build({ assets: [], timelineCount: 3, detailTimelineCount: 3 }).reconciliations.timeline.status, 'OK'));
 test('exact duplicate is identified by stable id', () => assert.equal(Trust.duplicateDiagnostics([{ id: 'x' }, { id: 'x' }]).exact.length, 1));
 test('potential duplicate is identified by natural identity', () => assert.equal(Trust.duplicateDiagnostics([{ date: '2026-01-01', type: 'DIVIDEND', ticker: 'A', value: 1 }, { date: '2026-01-01', type: 'DIVIDEND', ticker: 'A', value: 1 }]).potential.length, 1));

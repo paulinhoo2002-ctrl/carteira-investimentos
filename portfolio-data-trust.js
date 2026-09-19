@@ -18,6 +18,7 @@
     OK: 'OK',
     MISMATCH: 'MISMATCH',
     NOT_COMPARABLE: 'NOT_COMPARABLE',
+    PARTIAL_COVERAGE: 'PARTIAL_COVERAGE',
   });
 
   const text = value => String(value ?? '').trim();
@@ -192,6 +193,21 @@
     return { status: mismatch ? STATUS.MISMATCH : STATUS.OK, values: available, difference: Math.max(...available) - Math.min(...available) };
   }
 
+  function reconcileIncome(values = [], { sourceEventCount, timelineEventCount } = {}) {
+    const result = reconcileValues(values);
+    const countsComparable = Number.isFinite(Number(sourceEventCount)) && Number.isFinite(Number(timelineEventCount));
+    if (countsComparable && Number(sourceEventCount) !== Number(timelineEventCount)) {
+      return {
+        ...result,
+        status: STATUS.PARTIAL_COVERAGE,
+        sourceEventCount: Number(sourceEventCount),
+        timelineEventCount: Number(timelineEventCount),
+        reason: 'A Timeline cobre apenas eventos de renda reconhecidos; a diferença de cobertura não é uma divergência financeira comparável.'
+      };
+    }
+    return { ...result, sourceEventCount: Number(sourceEventCount), timelineEventCount: Number(timelineEventCount) };
+  }
+
   function build(input = {}, options = {}) {
     const assets = list(input.assets).map((asset, index) => normalizeAsset(asset, index, { ...options, isFixedIncome: options.isFixedIncome }));
     const events = list(input.events || input.proventos).map(event => ({ ...event }));
@@ -222,7 +238,7 @@
     const reconciliations = {
       patrimony: reconcileValues([input.dashboardPatrimony, input.assetsPatrimony, input.reportsPatrimony, input.allocationPatrimony]),
       fixedIncome: reconcileValues([input.fixedIncomeTotal, input.reportsFixedIncomeTotal, input.dashboardFixedIncomeTotal]),
-      dividends: reconcileValues([input.dividendsTotal, input.reportsDividendsTotal, input.timelineIncomeTotal]),
+      dividends: reconcileIncome([input.dividendsTotal, input.reportsDividendsTotal, input.timelineIncomeTotal], { sourceEventCount: input.dividendEventCount, timelineEventCount: input.timelineIncomeEventCount }),
       transactions: input.transactionCount === undefined || input.timelineTransactionCount === undefined
         ? { status: STATUS.NOT_COMPARABLE, values: [] }
         : { status: Number(input.transactionCount) === Number(input.timelineTransactionCount) ? STATUS.OK : STATUS.MISMATCH, values: [Number(input.transactionCount), Number(input.timelineTransactionCount)] },
@@ -278,5 +294,5 @@
     });
   }
 
-  return Object.freeze({ STATUS, timestamp, freshness, provenance, valueState, fixedIncomeStatus, classificationCoverage, duplicateDiagnostics, falseZeroDiagnostic, cloudHealth, reconcileValues, build, filter });
+  return Object.freeze({ STATUS, timestamp, freshness, provenance, valueState, fixedIncomeStatus, classificationCoverage, duplicateDiagnostics, falseZeroDiagnostic, cloudHealth, reconcileValues, reconcileIncome, build, filter });
 });

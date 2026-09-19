@@ -8025,7 +8025,7 @@ document.write([
 <script src="portfolio-report-model.js"></script>
 <script src="executive-reporting.js"></script>
 <script src="portfolio-event-timeline.js?v=v228-1"></script>
-<script src="portfolio-data-trust.js?v=v238-4"></script>
+<script src="portfolio-data-trust.js?v=v238-5"></script>
 <script src="portfolio-runtime-stores.js"></script>
 <script src="fixed-income-benchmark-provider.js"></script>
 <script src="official-events-provider.js"></script>
@@ -22358,12 +22358,12 @@ function dataTrustDate(value){
 function dataTrustTone(status){
   const key=String(status||'').toUpperCase();
   if(['OK','CURRENT','CONNECTED','KNOWN','LEGITIMATE_ZERO'].includes(key)) return 'ok';
-  if(['STALE','MANUAL','REFERENCE','SHADOW','MISMATCH','SNAPSHOT_RECEIVED_NOT_APPLIED'].includes(key)) return 'warn';
+  if(['STALE','MANUAL','REFERENCE','SHADOW','MISMATCH','PARTIAL_COVERAGE','SNAPSHOT_RECEIVED_NOT_APPLIED'].includes(key)) return 'warn';
   if(['ERROR','UNAVAILABLE','UNSUPPORTED'].includes(key)) return 'bad';
   return 'info';
 }
 function dataTrustStatusLabel(status){
-  return ({OK:'Coerente',CURRENT:'Atual',STALE:'Desatualizada',UNKNOWN:'Desconhecida',UNAVAILABLE:'Indisponível',UNSUPPORTED:'Não suportada',MANUAL:'Manual',REFERENCE:'Referência',SHADOW:'Shadow',MISMATCH:'Divergência',CONNECTED:'Conectado',CONNECTING:'Conectando',AUTHENTICATING:'Autenticando',EMPTY_CONFIRMED:'Vazio confirmado',SNAPSHOT_RECEIVED_NOT_APPLIED:'Snapshot não aplicado',LOADING:'Carregando',ERROR:'Erro',NOT_COMPARABLE:'Não comparável',LEGITIMATE_ZERO:'Zero legítimo'}[String(status||'').toUpperCase()]||String(status||'Desconhecido'));
+  return ({OK:'Coerente',CURRENT:'Atual',STALE:'Desatualizada',UNKNOWN:'Desconhecida',UNAVAILABLE:'Indisponível',UNSUPPORTED:'Não suportada',MANUAL:'Manual',REFERENCE:'Referência',SHADOW:'Shadow',MISMATCH:'Divergência',PARTIAL_COVERAGE:'Cobertura parcial',CONNECTED:'Conectado',CONNECTING:'Conectando',AUTHENTICATING:'Autenticando',EMPTY_CONFIRMED:'Vazio confirmado',SNAPSHOT_RECEIVED_NOT_APPLIED:'Snapshot não aplicado',LOADING:'Carregando',ERROR:'Erro',NOT_COMPARABLE:'Não comparável',LEGITIMATE_ZERO:'Zero legítimo'}[String(status||'').toUpperCase()]||String(status||'Desconhecido'));
 }
 function dataTrustPill(status){const tone=dataTrustTone(status);return `<span class="data-trust-pill ${tone}">${esc(dataTrustStatusLabel(status))}</span>`;}
 function dataTrustCloudInput(){
@@ -22392,7 +22392,8 @@ function dataTrustCloudInput(){
   const snapshotReceived=cloudLoaded || ['CONNECTED','EMPTY_CONFIRMED'].includes(syncState);
   const applied=snapshotReceived && (stateAssetCount>0 || syncState==='EMPTY_CONFIRMED');
   const incomeTypes=new Set(['DIVIDEND','JCP','RENDIMENTO','AMORTIZATION']);
-  const timelineIncomeTotal=timeline.filter(event=>String(event.status||'').toUpperCase()==='REALIZED'&&incomeTypes.has(String(event.type||'').toUpperCase())).reduce((sum,event)=>sum+(dataTrustNumber(event.value)||0),0);
+  const timelineIncomeEvents=timeline.filter(event=>String(event.status||'').toUpperCase()==='REALIZED'&&incomeTypes.has(String(event.type||'').toUpperCase()));
+  const timelineIncomeTotal=timelineIncomeEvents.reduce((sum,event)=>sum+(dataTrustNumber(event.value)||0),0);
   const timelineTransactionCount=timeline.filter(event=>['PURCHASE','SALE','CONTRIBUTION','WITHDRAWAL','TRANSFER'].includes(String(event.type||'').toUpperCase())).length;
   const authoritativeAssetsTotal=analysis.reduce((sum,row)=>sum+(dataTrustNumber(row.current)||0),0);
   const portfolioTotal=dataTrustNumber(reports.portfolio?.tC);
@@ -22419,7 +22420,9 @@ function dataTrustCloudInput(){
     dividendsTotal:dataTrustNumber(reports.incomePeriodTotal),
     reportsDividendsTotal:dataTrustNumber(reports.incomePeriodTotal),
     timelineIncomeTotal,
-    transactionCount:(S.aportes||[]).length,
+    transactionCount:reports.aportesCount,
+    dividendEventCount:reports.proventosCount,
+    timelineIncomeEventCount:timelineIncomeEvents.length,
     timelineTransactionCount,
     timelineCount:timeline.length,
     detailTimelineCount:timeline.length,
@@ -22430,7 +22433,7 @@ function dataTrustCoverageRow(label,item){
   const known=item?.knownCount||0,total=(item?.knownCount||0)+(item?.unknownCount||0),coverage=item?.coverageCount==null?'—':`${Math.round(item.coverageCount)}%`;
   return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${known} conhecidos · ${item?.unknownCount||0} sem informação · valor conhecido ${dataTrustMoney(item?.knownValue)}</small></div><div>${dataTrustPill(total?`${coverage}`:'UNKNOWN')}</div></div>`;
 }
-function dataTrustReconciliationRow(label,item){return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${item?.values?.length?item.values.map(value=>dataTrustMoney(value)).join(' · '):'Não há valores comparáveis nesta leitura.'}</small></div><div>${dataTrustPill(item?.status||'NOT_COMPARABLE')}</div></div>`;}
+function dataTrustReconciliationRow(label,item){return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${item?.values?.length?item.values.map(value=>dataTrustMoney(value)).join(' · '):'Não há valores comparáveis nesta leitura.'}${item?.reason?`<br><span>${esc(item.reason)}</span>`:''}</small></div><div>${dataTrustPill(item?.status||'NOT_COMPARABLE')}</div></div>`;}
 function dataTrustCenterTab(){
   const model=globalThis.PortfolioDataTrust?.build?.(dataTrustCloudInput(),{now:Date.now()})||{summary:{},assets:[],coverage:{},cloud:{status:'UNKNOWN'},falseZero:{status:'UNKNOWN',reason:'Diagnóstico indisponível.'},reconciliations:{},duplicates:{exact:[],potential:[]}};
   const rows=globalThis.PortfolioDataTrust?.filter?.(model,v238TrustFilters)||[];

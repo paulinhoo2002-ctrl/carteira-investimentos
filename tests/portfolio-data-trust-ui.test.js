@@ -7,7 +7,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const trustBlock = html.slice(html.indexOf('function dataTrustCenterTab'), html.indexOf('function dataQualityTab'));
 
 test('Confiabilidade carrega o módulo e está disponível na navegação', () => {
-  assert.match(html, /portfolio-data-trust\.js\?v=v238-4/);
+  assert.match(html, /portfolio-data-trust\.js\?v=v238-5/);
   assert.match(html, /\['confiabilidade','🛡️ Confiabilidade'\]/);
   assert.match(html, /S\.tab==='confiabilidade'\) return dataTrustCenterTab\(\)/);
   assert.match(html, /id="data-trust-title"/);
@@ -25,6 +25,14 @@ test('o centro expõe frescor, provenance, cloud e reconciliação factual', () 
 
 test('o centro não contém caminho de escrita ou confirmação', () => {
   assert.doesNotMatch(trustBlock, /save\(|setItem\(|setDoc\(|updateDoc\(|addDoc\(|deleteDoc\(|confirm\(|importar|realizar evento/i);
+});
+
+test('reconciliações usam o período selecionado e expõem cobertura parcial', () => {
+  assert.match(html, /transactionCount:reports\.aportesCount/);
+  assert.match(html, /dividendEventCount:reports\.proventosCount/);
+  assert.match(html, /timelineIncomeEventCount/);
+  assert.match(html, /PARTIAL_COVERAGE:'Cobertura parcial'/);
+  assert.match(html, /item\?\.reason/);
 });
 
 test('mobile oferece acesso à nova área', () => {
