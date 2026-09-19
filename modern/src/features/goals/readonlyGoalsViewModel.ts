@@ -33,8 +33,27 @@ export interface ReadonlyGoalsCard {
   readonly tone: 'muted' | 'ok' | 'info' | 'warn' | 'danger';
   readonly statusText: string;
   readonly hasData: boolean;
+  readonly reached: boolean;
   readonly missingValue: string | null;
   readonly excessValue: string | null;
+}
+
+export interface ReadonlyGoalMilestone {
+  readonly percent: number;
+  readonly label: string;
+  readonly reached: boolean;
+}
+
+export function createReadonlyGoalMilestones(
+  barPercent: number,
+  reached: boolean,
+): readonly ReadonlyGoalMilestone[] {
+  const progress = Math.max(0, Math.min(100, Number.isFinite(barPercent) ? barPercent : 0));
+  return [25, 50, 75, 100].map((percent) => ({
+    percent,
+    label: `${percent}%`,
+    reached: reached || progress >= percent,
+  }));
 }
 
 export interface ReadonlyGoalsAssetCard {
@@ -190,6 +209,7 @@ function buildPatrimonyCard(
     tone: metrics.tone,
     statusText,
     hasData,
+    reached: metrics.reached,
     missingValue,
     excessValue,
   };
@@ -239,6 +259,7 @@ function buildIncomeCard(
     tone: metrics.tone,
     statusText,
     hasData,
+    reached: metrics.reached,
     missingValue,
     excessValue,
   };

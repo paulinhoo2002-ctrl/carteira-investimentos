@@ -133,6 +133,14 @@ export function ReturnsPage({ reportsAdapter }: ReturnsPageProps) {
       <DashboardSection title="Histórico / Benchmarks" subtitle="Indicadores não disponíveis">
         <EmptyState title="Histórico de rentabilidade indisponível" body="Não há série histórica, CDI, Ibovespa, % CDI, Sharpe, Sortino, drawdown ou volatilidade calculados." size="compact" />
       </DashboardSection>
+      <details className="returns-reading-guide">
+        <summary>Como ler esta tela</summary>
+        <p>
+          Resultado e rentabilidade usam o snapshot disponível. Aportes e movimentações
+          não são tratados como retorno de mercado nesta visão. Sem série histórica ou
+          benchmark confiável, o indicador permanece indisponível em vez de assumir zero.
+        </p>
+      </details>
     </div>
   );
 }

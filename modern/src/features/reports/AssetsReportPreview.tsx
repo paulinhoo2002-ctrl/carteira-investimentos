@@ -68,6 +68,16 @@ function AssetsReportPreviewContent({
       <p className="page-shell__description">
         Primeira tela moderna somente leitura para demonstrar uma previa de relatorios sem carregar dados reais.
       </p>
+      <section className="assets-report__executive" aria-labelledby="reports-reading-title">
+        <div>
+          <p className="page-shell__eyebrow">Leitura executiva</p>
+          <h3 id="reports-reading-title">Uma visão rápida do snapshot</h3>
+        </div>
+        <p>
+          Esta prévia organiza valor, quantidade e variação em uma leitura única.
+          Os dados continuam demonstrativos e não representam a carteira persistida.
+        </p>
+      </section>
       {diagnostics ? (
         <div
           className="assets-report__diagnostic"
