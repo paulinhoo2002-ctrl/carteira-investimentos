@@ -1312,3 +1312,17 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Browser Use, Defuddle, Composio, Agent Reach, Caveman e skills de marketing
   permanecem fora do conjunto padrão por redundância, custo, telemetria ou
   ausência de requisito concreto.
+
+## Decisão permanente — SUPERPOWERS_FIRST
+
+- `SUPERPOWERS_FIRST=true`.
+- Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
+- Autoridade: `AGENTS.md`, `docs/SKILLS_ROUTING.md` e
+  `docs/ai/SKILL_ROUTING.md` versionados no repositório.
+- Razão: o roteamento de processo não depende de memória de chat, sessão,
+  modelo ou executor específico.
+- Fallback: se Superpowers não existir, usar as melhores Skills disponíveis
+  sem bloquear automaticamente a missão e registrar a limitação.
+- Limite: Skills orientam o processo, mas não autorizam merge, deploy,
+  alterações cloud/financeiras, persistência, schema, secrets ou ações
+  destrutivas.

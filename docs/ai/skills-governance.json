@@ -1,0 +1,19 @@
+{
+  "superpowers_first": true,
+  "required_if_available": true,
+  "fallback_if_unavailable": true,
+  "mission_authorization_has_precedence": true,
+  "portable_entrypoint": "AGENTS.md",
+  "routing_entrypoint": "docs/SKILLS_ROUTING.md",
+  "handoff_fields": [
+    "SKILLS_DISCOVERED",
+    "SUPERPOWERS_AVAILABLE",
+    "SUPERPOWERS_USED",
+    "SKILLS_CONSIDERED",
+    "SKILLS_USED",
+    "SKILLS_NOT_USED",
+    "SKILL_SELECTION_REASON",
+    "SKILL_REEVALUATED",
+    "SKILL_GAPS_FOUND"
+  ]
+}

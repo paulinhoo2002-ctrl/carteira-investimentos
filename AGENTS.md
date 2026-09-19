@@ -313,3 +313,31 @@ deploy ou mudança protegida.
 Políticas: `SUPERPOWERS_ALWAYS_CONSIDERED=true`,
 `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`, `REUSE_GREEN_EVIDENCE=true`,
 `SAME_FAILURE_TWICE=PIVOT` e `FUTURE_MISSIONS_DO_NOT_REPEAT_STABLE_GOVERNANCE=true`.
+
+## PERMANENT SKILLS POLICY — SUPERPOWERS_FIRST
+
+`SUPERPOWERS_FIRST=true`.
+
+Antes de implementar, investigar, depurar, revisar código, fazer QA,
+refatorar ou planejar uma mudança técnica, qualquer executor deve confirmar a
+identidade do projeto; ler este arquivo, `docs/ai/PROJECT_MEMORY.md` e
+`docs/ai/SKILL_ROUTING.md`; descobrir as Skills reais; localizar e ler
+Superpowers quando disponível; usá-la como camada-base/orquestradora; e então
+selecionar somente as Skills especializadas relevantes.
+
+Se a categoria mudar, registrar `SKILL_REEVALUATED=true` e reavaliar. Não
+inventar Skills nem ampliar escopo por causa de uma Skill. Superpowers é uma
+camada de processo, não autorização para merge, deploy, cloud writes,
+alterações financeiras, persistência, schema, secrets, force push ou Git
+destrutivo. A autorização da missão e os contratos do projeto prevalecem.
+
+Esta política é independente de chat, memória de sessão, modelo ou executor;
+Codex, Hermes, OpenCode e agentes genéricos convergem para estes arquivos. Se
+Superpowers não existir, usar o melhor fallback disponível e registrar a
+limitação.
+
+Handoff mínimo: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
+`SUPERPOWERS_USED`, `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
+`SKILL_SELECTION_REASON`, `SKILL_REEVALUATED`, `SKILL_GAPS_FOUND`.
+
+Detalhes: [`docs/SKILLS_ROUTING.md`](docs/SKILLS_ROUTING.md).
