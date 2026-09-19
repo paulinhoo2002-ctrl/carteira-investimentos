@@ -208,6 +208,18 @@
     return { ...result, sourceEventCount: Number(sourceEventCount), timelineEventCount: Number(timelineEventCount) };
   }
 
+  function reconcileTransactions(sourceCount, timelineCount, { coverageComplete = false } = {}) {
+    const source = Number(sourceCount), timeline = Number(timelineCount);
+    if (!Number.isFinite(source) || !Number.isFinite(timeline)) return { status: STATUS.NOT_COMPARABLE, values: [] };
+    if (source === timeline) return { status: STATUS.OK, values: [source, timeline] };
+    if (!coverageComplete) return {
+      status: STATUS.PARTIAL_COVERAGE,
+      values: [source, timeline],
+      reason: 'A Timeline cobre somente movimentações normalizadas como compra, venda, aporte, retirada ou transferência; outros tipos permanecem no extrato de Movimentações.'
+    };
+    return { status: STATUS.MISMATCH, values: [source, timeline] };
+  }
+
   function build(input = {}, options = {}) {
     const assets = list(input.assets).map((asset, index) => normalizeAsset(asset, index, { ...options, isFixedIncome: options.isFixedIncome }));
     const events = list(input.events || input.proventos).map(event => ({ ...event }));
@@ -239,9 +251,7 @@
       patrimony: reconcileValues([input.dashboardPatrimony, input.assetsPatrimony, input.reportsPatrimony, input.allocationPatrimony]),
       fixedIncome: reconcileValues([input.fixedIncomeTotal, input.reportsFixedIncomeTotal, input.dashboardFixedIncomeTotal]),
       dividends: reconcileIncome([input.dividendsTotal, input.reportsDividendsTotal, input.timelineIncomeTotal], { sourceEventCount: input.dividendEventCount, timelineEventCount: input.timelineIncomeEventCount }),
-      transactions: input.transactionCount === undefined || input.timelineTransactionCount === undefined
-        ? { status: STATUS.NOT_COMPARABLE, values: [] }
-        : { status: Number(input.transactionCount) === Number(input.timelineTransactionCount) ? STATUS.OK : STATUS.MISMATCH, values: [Number(input.transactionCount), Number(input.timelineTransactionCount)] },
+      transactions: reconcileTransactions(input.transactionCount, input.timelineTransactionCount, { coverageComplete: input.transactionCoverageComplete === true }),
       timeline: input.timelineCount === undefined || input.detailTimelineCount === undefined
         ? { status: STATUS.NOT_COMPARABLE, values: [] }
         : { status: Number(input.timelineCount) === Number(input.detailTimelineCount) ? STATUS.OK : STATUS.MISMATCH, values: [Number(input.timelineCount), Number(input.detailTimelineCount)] },
@@ -294,5 +304,5 @@
     });
   }
 
-  return Object.freeze({ STATUS, timestamp, freshness, provenance, valueState, fixedIncomeStatus, classificationCoverage, duplicateDiagnostics, falseZeroDiagnostic, cloudHealth, reconcileValues, reconcileIncome, build, filter });
+  return Object.freeze({ STATUS, timestamp, freshness, provenance, valueState, fixedIncomeStatus, classificationCoverage, duplicateDiagnostics, falseZeroDiagnostic, cloudHealth, reconcileValues, reconcileIncome, reconcileTransactions, build, filter });
 });

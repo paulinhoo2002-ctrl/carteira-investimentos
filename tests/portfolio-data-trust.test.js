@@ -43,6 +43,11 @@ test('dividend reconciliation marks partial timeline coverage instead of a false
 test('transaction reconciliation compares counts', () => assert.equal(Trust.build({ assets: [], transactionCount: 2, timelineTransactionCount: 2 }).reconciliations.transactions.status, 'OK'));
 test('transaction mismatch remains explicit when comparable counts differ', () => {
   const result = Trust.build({ assets: [], transactionCount: 2, timelineTransactionCount: 1 });
+  assert.equal(result.reconciliations.transactions.status, 'PARTIAL_COVERAGE');
+  assert.match(result.reconciliations.transactions.reason, /movimentações normalizadas/);
+});
+test('transaction mismatch remains explicit when coverage is complete', () => {
+  const result = Trust.build({ assets: [], transactionCount: 2, timelineTransactionCount: 1, transactionCoverageComplete: true });
   assert.equal(result.reconciliations.transactions.status, 'MISMATCH');
 });
 test('timeline/detail reconciliation compares counts', () => assert.equal(Trust.build({ assets: [], timelineCount: 3, detailTimelineCount: 3 }).reconciliations.timeline.status, 'OK'));
