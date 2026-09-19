@@ -2108,6 +2108,9 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .aporte-filter-label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
 .aporte-filter-chip{padding:6px 10px;border-color:var(--border);background:var(--surface)}
 .aporte-filter-chip.on{color:#c7d2fe;border-color:rgba(99,102,241,.4);background:rgba(79,70,229,.16)}
+.aporte-sort-control{display:inline-flex;align-items:center;gap:7px;margin:8px 0 0;padding:7px 10px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.aporte-sort-control select{min-height:32px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:11px;text-transform:none;letter-spacing:0;padding:4px 8px}
+.aporte-sort-control select:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 .ap-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;flex:1 1 460px}
 .aporte-primary-toolbar{justify-content:flex-start;margin:-2px 0 2px;flex:0 0 auto}
 .aporte-primary-toolbar .btn.bp{order:0}
@@ -3955,6 +3958,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .aporte-view-tabs{width:100%;flex-wrap:nowrap;overflow-x:auto;padding:4px}
   .aporte-view-tab{flex:0 0 auto;padding:7px 10px}
   .aporte-filter-row{flex-wrap:nowrap;overflow-x:auto;padding:8px}
+  .aporte-sort-control{width:100%;justify-content:space-between;margin:8px 0 0}
+  .aporte-sort-control select{flex:1;min-height:36px}
   .aporte-filter-label{display:none}
   .aporte-filter-chip{flex:0 0 auto}
   .aporte-history-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;padding:10px}
@@ -8088,6 +8093,7 @@ let S = {
   apHistoryOpen:false, apSearch:'',
   aportesViewMode:'resumo',
   aportesFilter:'todos',
+  aportesSort:'date-desc',
   aportesPage:1,
   apSearchTimer:null,
   activeDividendSection:'',
@@ -26693,13 +26699,20 @@ function setAssetDetailTab(tab){
 }
 function assetDetailText(value, fallback='—'){ const text=String(value??'').trim(); return text||fallback; }
 function assetDetailDate(value){ const text=assetDetailText(value,''); if(!text)return'—'; const parsed=parseAnyDate(text); return parsed?parsed.toLocaleDateString('pt-BR'):text; }
+function assetDetailSortRecords(rows){
+  return [...rows].sort((a,b)=>{
+    const da=parseAnyDate(a?.date||a?.tradeDate||a?.paymentDate||a?.payDate)?.getTime()||0;
+    const db=parseAnyDate(b?.date||b?.tradeDate||b?.paymentDate||b?.payDate)?.getTime()||0;
+    return db-da || String(a?.id||'').localeCompare(String(b?.id||''));
+  });
+}
 function assetDetailRecords(asset){
   const id=String(asset?.id||''), ticker=String(asset?.ticker||'').trim().toUpperCase();
-  return (S.aportes||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); });
+  return assetDetailSortRecords((S.aportes||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); }));
 }
 function assetDetailIncomeRecords(asset){
   const id=String(asset?.id||''), ticker=String(asset?.ticker||'').trim().toUpperCase();
-  return (S.proventos||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); });
+  return assetDetailSortRecords((S.proventos||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); }));
 }
 function assetDetailKindLabel(row){
   const raw=String(row?.operation||row?.op||row?.kind||row?.type||'').toLowerCase();
@@ -30009,6 +30022,15 @@ function filteredAporteRows(rows=aporteExtractRows()){
     return hay.includes(q);
   });
 }
+function sortedAporteRows(rows=filteredAporteRows()){
+  const mode=['date-desc','date-asc','asset-asc','value-desc','value-asc'].includes(S.aportesSort) ? S.aportesSort : 'date-desc';
+  return [...rows].sort((a,b)=>{
+    if(mode==='asset-asc') return String(a.ticker||a.name||'').localeCompare(String(b.ticker||b.name||''),'pt-BR',{sensitivity:'base'}) || (parseAnyDate(b.date)?.getTime()||0)-(parseAnyDate(a.date)?.getTime()||0);
+    if(mode==='value-desc' || mode==='value-asc') return (mode==='value-desc' ? -1 : 1) * ((Number(a.total)||0)-(Number(b.total)||0)) || (parseAnyDate(b.date)?.getTime()||0)-(parseAnyDate(a.date)?.getTime()||0);
+    const dateDiff=(parseAnyDate(b.date)?.getTime()||0)-(parseAnyDate(a.date)?.getTime()||0);
+    return (mode==='date-desc' ? 1 : -1) * dateDiff || String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR',{sensitivity:'base'});
+  });
+}
 function deleteMovementLaunch(id,sourceType){
   if(!canEditFromThisTab('excluir lançamento')) return;
   const type=String(sourceType||'aporte').toLowerCase();
@@ -30114,6 +30136,10 @@ function aporteViewModeTabs(){
 function aporteFilterTabs(){
   const filters=[['todos','Todos'],['compra','Compra'],['venda','Venda'],['provento','Provento'],['renda-fixa','Renda Fixa'],['outro','Outro']];
   return `<div class="aporte-filter-row"><span class="aporte-filter-label">Filtrar</span>${filters.map(([id,label])=>`<button class="aporte-filter-chip ${S.aportesFilter===id?'on':''}" onclick="setAportesFilter('${id}')">${label}</button>`).join('')}</div>`;
+}
+function aporteSortControl(){
+  const options=[['date-desc','Mais recentes'],['date-asc','Mais antigas'],['asset-asc','Ativo A–Z'],['value-desc','Maior valor'],['value-asc','Menor valor']];
+  return `<label class="aporte-sort-control"><span>Ordenar</span><select aria-label="Ordenar histórico de movimentações" onchange="setAportesSort(this.value)">${options.map(([value,label])=>`<option value="${value}" ${S.aportesSort===value?'selected':''}>${label}</option>`).join('')}</select></label>`;
 }
 function aporteInvestmentStats(rows=S.aportes||[]){
   const included=rows.filter(row=>['compra','renda-fixa'].includes(aporteMovementKind(row))).map(row=>{
@@ -30310,7 +30336,7 @@ function apTab(){
     </table></div></div></div></div>
   </details>`:'';
   const allRows=aporteExtractRows();
-  const extractRows=filteredAporteRows(allRows);
+  const extractRows=sortedAporteRows(filteredAporteRows(allRows));
   const mode=['extrato','ativo','categorias','resumo'].includes(S.aportesViewMode) ? S.aportesViewMode : 'resumo';
   S.aportesViewMode=mode;
   const categoriesContent=S.aportes.length
@@ -30355,7 +30381,7 @@ function apTab(){
     </details>
     ${frmP()}
     ${aporteViewModeTabs()}
-    ${mode!=='resumo'?aporteFilterTabs():''}
+    ${mode!=='resumo'?`${aporteFilterTabs()}${aporteSortControl()}`:''}
     ${viewContent}
   </div>`;
 }
@@ -34733,6 +34759,11 @@ function setAportesViewMode(mode){
 }
 function setAportesFilter(filter){
   S.aportesFilter=['todos','compra','venda','provento','renda-fixa','outro'].includes(filter) ? filter : 'todos';
+  S.aportesPage=1;
+  render();
+}
+function setAportesSort(sort){
+  S.aportesSort=['date-desc','date-asc','asset-asc','value-desc','value-asc'].includes(sort) ? sort : 'date-desc';
   S.aportesPage=1;
   render();
 }
