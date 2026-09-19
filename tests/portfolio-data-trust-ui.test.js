@@ -7,7 +7,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const trustBlock = html.slice(html.indexOf('function dataTrustCenterTab'), html.indexOf('function dataQualityTab'));
 
 test('Confiabilidade carrega o módulo e está disponível na navegação', () => {
-  assert.match(html, /portfolio-data-trust\.js\?v=v238-5/);
+  assert.match(html, /portfolio-data-trust\.js\?v=v238-6/);
   assert.match(html, /\['confiabilidade','🛡️ Confiabilidade'\]/);
   assert.match(html, /S\.tab==='confiabilidade'\) return dataTrustCenterTab\(\)/);
   assert.match(html, /id="data-trust-title"/);
