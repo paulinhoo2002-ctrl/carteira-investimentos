@@ -6348,6 +6348,11 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
       .premium-rf-provenance{display:inline-flex;align-items:center;margin-right:4px;padding:2px 5px;border:1px solid currentColor;border-radius:999px;font-size:8px;font-weight:800;line-height:1.1;white-space:nowrap}
       .premium-rf-provenance.ok{color:#86efac}.premium-rf-provenance.info{color:#7dd3fc}.premium-rf-provenance.warn{color:#fcd34d}.premium-rf-provenance.muted{color:var(--muted)}
+      .premium-rf-trust-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 13px;border:1px solid rgba(96,165,250,.22);border-radius:14px;background:rgba(96,165,250,.06)}
+      .premium-rf-trust-copy{display:flex;flex-direction:column;gap:3px;min-width:220px;color:var(--muted);font-size:10px;line-height:1.35}.premium-rf-trust-copy strong{color:var(--text);font-size:12px}
+      .premium-rf-trust-counts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.premium-rf-trust-count{padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;white-space:nowrap}.premium-rf-trust-count b{color:var(--text);margin-left:3px}.premium-rf-trust-count.warn{color:#fcd34d}
+      .premium-rf-controls{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(2,minmax(150px,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+      .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:11px;text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-row-meta.pos{color:var(--success)}
       .premium-rf-row-meta.neg{color:var(--danger)}
       .premium-rf-row-meta.neutral{color:var(--muted)}
@@ -6400,6 +6405,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-kpi{padding:10px}
         .premium-rf-kpi-value{font-size:15px}
         .premium-rf-grid,.premium-rf-distribution{grid-template-columns:1fr}
+        .premium-rf-controls{grid-template-columns:1fr;padding:10px 12px}
         .premium-rf-position-row,.premium-rf-maturity-row{padding:10px 12px}
         .premium-rf-review-groups{grid-template-columns:1fr}
         .premium-rf-review-group+.premium-rf-review-group,.premium-rf-review-group:nth-child(3),.premium-rf-review-group:nth-child(4){border-left:0;border-top:1px solid var(--border)}
@@ -7987,6 +7993,7 @@ document.write([
 <script src="v213-transaction-trust.js"></script>
 <script src="fixed-income-valuation.js"></script>
 <script src="fixed-income-display.js"></script>
+<script src="fixed-income-trust.js"></script>
 <script src="import-center-context.js"></script>
 <script src="import-center-preview-renderer.js"></script>
 <script src="import-center-file-list-renderer.js"></script>
@@ -8102,6 +8109,7 @@ let S = {
   irpfYear:new Date().getFullYear(),
   irpfStep:1,
   apHistoryOpen:false, apSearch:'',
+  rfSearch:'', rfTrustFilter:'all', rfSort:'name-asc', rfSearchTimer:null,
   aportesViewMode:'resumo',
   aportesFilter:'todos',
   aportesSort:'date-desc',
@@ -17662,6 +17670,9 @@ function assetRfCurrentValueMeta(a){
   const selection=host?.FixedIncomeValuation?.selectFixedIncomeValuation
     ? host.FixedIncomeValuation.selectFixedIncomeValuation(a,{legacyResolver:fixedIncomeLegacyValues})
     : null;
+  const benchmarkStatus=host?.FixedIncomeBenchmarkProvider?.classify
+    ? host.FixedIncomeBenchmarkProvider.classify(a)
+    : null;
   return {
     source,
     origin: imported ? 'importado da B3' : '',
@@ -17674,7 +17685,17 @@ function assetRfCurrentValueMeta(a){
     isFallback: selection?.isFallback === true,
     isEstimated: selection?.isEstimated === true,
     isStale: selection?.isStale === true,
-    isSupported: selection?.isSupported !== false
+    isSupported: selection?.isSupported !== false,
+    classification:benchmarkStatus || null,
+    benchmarkStatus,
+    trustStatus: globalThis.FixedIncomeTrust?.classify({
+      ...selection,
+      classification:benchmarkStatus,
+      source,
+      origin: imported ? 'importado da B3' : '',
+      manualValueCents: Number.isFinite(v.current) ? Math.round(v.current * 100) : null,
+      current: v.current
+    }).status || 'MANUAL_AUTHORITATIVE'
   };
 }
 function fixedIncomeProvenanceDetails(meta){
@@ -17696,11 +17717,16 @@ function fixedIncomeProvenanceDetails(meta){
     LEGACY_FALLBACK:'Fallback legado',
     UNSUPPORTED:'Indisponível',
   };
+  const trust=globalThis.FixedIncomeTrust?.classify(value);
   const rows=[
+    ['Status',trust?.label||'Não informado'],
     ['Autoridade',authorityLabels[value.authority]||'Não informada'],
+    ['Fonte',String(value.source||value.origin||'').trim() || 'Não informada'],
     ['Campo selecionado',value.selectedField||value.source||'Não informado'],
     ['Qualidade',qualityLabels[value.quality]||'Não informada'],
     ['Data de avaliação',value.valuationAsOf?reportDateText(value.valuationAsOf):'Não informada'],
+    ['Data da fonte',value.sourceAsOf?reportDateText(value.sourceAsOf):'Não informada'],
+    ['Observado em',value.observedAt?reportDateText(value.observedAt):'Não informado'],
   ].filter(([,row])=>row&&row!=='Não informado');
   return {label, note:String(summary?.note||''), rows};
 }
@@ -27836,16 +27862,16 @@ function rfIntelligenceSnapshot(){
     const vals=rfValues(a);
     const eventTotals=rfIncomeByAsset(a);
     const applied=Number(vals.applied)||0;
-    const current=Number(vals.current)||0;
-    const profit=Number(vals.profit)||0;
-    const pct=applied>0 ? (profit/applied)*100 : 0;
+    const current=Number.isFinite(vals.current) ? Number(vals.current) : null;
+    const profit=Number.isFinite(vals.profit) ? Number(vals.profit) : null;
+    const pct=Number.isFinite(profit) && applied>0 ? (profit/applied)*100 : null;
     const receivedGross=Number(eventTotals.grossValue)||0;
     const receivedIr=Number(eventTotals.ir)||0;
     const receivedIof=Number(eventTotals.iof)||0;
     const receivedNet=Number(eventTotals.netValue)||0;
     const eventCount=Number(eventTotals.count)||0;
-    const resultWithEvents=profit+receivedNet;
-    const rentabWithEvents=applied>0 ? (resultWithEvents/applied)*100 : null;
+    const resultWithEvents=Number.isFinite(profit) ? profit+receivedNet : null;
+    const rentabWithEvents=Number.isFinite(resultWithEvents) && applied>0 ? (resultWithEvents/applied)*100 : null;
     const due=parseAnyDate(assetRfMaturityDate(a));
     const days=due ? Math.floor((due.getTime()-today.getTime())/86400000) : null;
     const category=rfCategoryLabel(a);
@@ -27858,6 +27884,7 @@ function rfIntelligenceSnapshot(){
     else if(days!=null && days<=30) issues.push({tone:'warn',label:'Vence em até 30 dias'});
     else if(days!=null && days<=90) issues.push({tone:'warn',label:'Vence em até 90 dias'});
     const currentMeta=assetRfCurrentValueMeta(a);
+    const trustStatus=currentMeta.trustStatus || 'MANUAL_AUTHORITATIVE';
     return {
       asset:a,
       ticker:String(a.ticker||assetRfName(a)||'—').trim()||'—',
@@ -27874,6 +27901,7 @@ function rfIntelligenceSnapshot(){
       due,
       days,
       explicit,
+      trustStatus,
         currentMeta,
         issues,
         eventTotals,
@@ -27889,15 +27917,15 @@ function rfIntelligenceSnapshot(){
               };
   });
   const totalApplied=rows.reduce((s,r)=>s+r.applied,0);
-  const totalCurrent=rows.reduce((s,r)=>s+r.current,0);
-  const totalProfit=totalCurrent-totalApplied;
+  const totalCurrent=rows.reduce((s,r)=>s+(Number.isFinite(r.current)?r.current:0),0);
+  const totalProfit=rows.every(r=>Number.isFinite(r.current)) ? totalCurrent-totalApplied : null;
   const totalReceivedGross=rows.reduce((s,r)=>s+r.receivedGross,0);
   const totalReceivedIr=rows.reduce((s,r)=>s+r.receivedIr,0);
   const totalReceivedIof=rows.reduce((s,r)=>s+r.receivedIof,0);
   const totalReceivedNet=rows.reduce((s,r)=>s+r.receivedNet,0);
-  const totalResultWithEvents=totalProfit+totalReceivedNet;
-  const totalRentabWithEvents=totalApplied>0 ? (totalResultWithEvents/totalApplied)*100 : 0;
-  const totalPct=totalApplied>0 ? (totalProfit/totalApplied)*100 : 0;
+  const totalResultWithEvents=Number.isFinite(totalProfit) ? totalProfit+totalReceivedNet : null;
+  const totalRentabWithEvents=Number.isFinite(totalResultWithEvents) && totalApplied>0 ? (totalResultWithEvents/totalApplied)*100 : null;
+  const totalPct=Number.isFinite(totalProfit) && totalApplied>0 ? (totalProfit/totalApplied)*100 : null;
   const explicitCount=rows.filter(r=>r.explicit).length;
   const missingCurrent=rows.length-explicitCount;
   const overdue=rows.filter(r=>r.days!=null && r.days<0).length;
@@ -27907,10 +27935,19 @@ function rfIntelligenceSnapshot(){
   const longTerm=rows.filter(r=>r.days!=null && r.days>365).length;
   const missingDue=rows.filter(r=>r.days==null).length;
   const missingRate=rows.filter(r=>!String(r.rate||'').trim() || /taxa não informada/i.test(r.rate)).length;
+  const trustSummary=globalThis.FixedIncomeTrust?.summarize(rows.map(row=>({current:row.current,trustStatus:row.trustStatus}))) || {
+    positionCount:rows.length,
+    confirmedCurrent:totalCurrent,
+    manualCount:rows.filter(row=>row.trustStatus==='MANUAL_AUTHORITATIVE').length,
+    shadowCount:rows.filter(row=>row.trustStatus==='REFERENCE_SHADOW').length,
+    unsupportedCount:rows.filter(row=>row.trustStatus==='UNSUPPORTED').length,
+    unavailableCount:rows.filter(row=>row.trustStatus==='UNAVAILABLE').length,
+    staleCount:rows.filter(row=>row.trustStatus==='STALE').length
+  };
   const typeOrder=['CDB','LCI','LCA','Tesouro Direto','Debênture','Outros'];
   const typeRows=typeOrder.map(type=>{
     const subset=rows.filter(r=>r.category===type);
-    const value=subset.reduce((s,r)=>s+r.current,0);
+    const value=subset.reduce((s,r)=>s+(Number.isFinite(r.current)?r.current:0),0);
     const count=subset.length;
     return {
       type,
@@ -27922,20 +27959,20 @@ function rfIntelligenceSnapshot(){
   const bucketOrder=['Vencido','Próximos 30 dias','Próximos 90 dias','Próximos 12 meses','Acima de 12 meses','Sem vencimento'];
   const bucketRows=bucketOrder.map(bucket=>{
     const subset=rows.filter(r=>r.bucket===bucket);
-    const value=subset.reduce((s,r)=>s+r.current,0);
+    const value=subset.reduce((s,r)=>s+(Number.isFinite(r.current)?r.current:0),0);
     return {bucket,count:subset.length,value,share:totalCurrent>0 ? (value/totalCurrent)*100 : 0};
   }).filter(r=>r.count>0);
   const issuerRows=[...new Set(rows.map(row=>row.issuer).filter(Boolean))].map(issuer=>{
     const subset=rows.filter(row=>row.issuer===issuer);
-    const value=subset.reduce((s,row)=>s+row.current,0);
+    const value=subset.reduce((s,row)=>s+(Number.isFinite(row.current)?row.current:0),0);
     return {issuer,count:subset.length,value,share:totalCurrent>0 ? (value/totalCurrent)*100 : 0};
   }).sort((a,b)=>b.value-a.value || a.issuer.localeCompare(b.issuer,'pt-BR'));
   const indexerRows=[...new Set(rows.map(row=>row.indexer).filter(indexer=>indexer && indexer!=='—'))].map(indexer=>{
     const subset=rows.filter(row=>row.indexer===indexer);
-    const value=subset.reduce((s,row)=>s+row.current,0);
+    const value=subset.reduce((s,row)=>s+(Number.isFinite(row.current)?row.current:0),0);
     return {indexer,count:subset.length,value,share:totalCurrent>0 ? (value/totalCurrent)*100 : 0};
   }).sort((a,b)=>b.value-a.value || a.indexer.localeCompare(b.indexer,'pt-BR'));
-  const maturityRows=[...rows].filter(row=>row.days!=null && row.days>=0).sort((a,b)=>a.days-b.days || b.current-a.current).slice(0,6);
+  const maturityRows=[...rows].filter(row=>row.days!=null && row.days>=0).sort((a,b)=>a.days-b.days || (Number.isFinite(b.current)?b.current:-Infinity)-(Number.isFinite(a.current)?a.current:-Infinity)).slice(0,6);
   const alertRows=rows
     .flatMap(r=>{
       const severity=r.days==null ? (r.explicit ? 3 : 2) : (r.days<0 ? 0 : r.days<=30 ? 1 : r.days<=90 ? 2 : 4);
@@ -27951,16 +27988,16 @@ function rfIntelligenceSnapshot(){
               || '';
       return primaryIssue ? [{...r, severity, primaryIssue}] : [];
     })
-    .sort((a,b)=>a.severity-b.severity || a.days-b.days || a.ticker.localeCompare(b.ticker))
+    .sort((a,b)=>a.severity-b.severity || (a.days??99999)-(b.days??99999) || a.ticker.localeCompare(b.ticker))
     .slice(0,6);
   const previewRows=[...rows]
-    .sort((a,b)=>b.current-a.current || a.days-b.days || a.ticker.localeCompare(b.ticker))
+    .sort((a,b)=>(Number.isFinite(b.current)?b.current:-Infinity)-(Number.isFinite(a.current)?a.current:-Infinity) || (a.days??99999)-(b.days??99999) || a.ticker.localeCompare(b.ticker))
     .slice(0,5);
   const tableRows=[...rows]
     .sort((a,b)=>{
       const ad=a.days==null ? 99999 : a.days;
       const bd=b.days==null ? 99999 : b.days;
-      return ad-bd || b.current-a.current || a.ticker.localeCompare(b.ticker);
+      return ad-bd || (Number.isFinite(b.current)?b.current:-Infinity)-(Number.isFinite(a.current)?a.current:-Infinity) || a.ticker.localeCompare(b.ticker);
     });
   const reading=rows.length===0
     ? {tone:'muted',title:'Nenhum título cadastrado',text:'Cadastre títulos de renda fixa para ver resumo, vencimentos e alertas.'}
@@ -27972,7 +28009,7 @@ function rfIntelligenceSnapshot(){
           ? {tone:'warn',title:'Atenção a vencimentos próximos',text:`${soon30} título${soon30===1?'':'s'} vencem em até 30 dias.`}
           : missingCurrent>0
             ? {tone:'warn',title:'Dados incompletos para cálculo preciso',text:`${missingCurrent} título${missingCurrent===1?'':'s'} ainda usam o valor aplicado como referência.`}
-            : totalProfit>=0
+            : Number.isFinite(totalProfit) && totalProfit>=0
               ? {tone:'ok',title:'Carteira de renda fixa organizada',text:'Os valores atuais informados permitem uma leitura mais confiável da rentabilidade.'}
               : {tone:'warn',title:'Atenção ao resultado informado',text:'Os dados atuais mostram resultado abaixo do aplicado. Revise taxas, vencimentos e valores da corretora.'};
   return {
@@ -27996,6 +28033,7 @@ function rfIntelligenceSnapshot(){
     longTerm,
     missingDue,
     missingRate,
+    trustSummary,
     typeRows,
     bucketRows,
     issuerRows,
@@ -28279,10 +28317,30 @@ function rfMaturityReviewGroups(data){
     {id:'missingDue',title:'Sem vencimento',subtitle:'Complete o cadastro',bucket:'Sem vencimento'},
   ].map(group=>({...group,rows:rows.filter(row=>row.bucket===group.bucket)}));
 }
+function setRfTrustSearch(value){
+  S.rfSearch=String(value||'');
+  if(S.rfSearchTimer) clearTimeout(S.rfSearchTimer);
+  S.rfSearchTimer=setTimeout(()=>{S.rfSearchTimer=null;render();},120);
+}
+function setRfTrustFilter(value){
+  const allowed=['all','MANUAL_AUTHORITATIVE','REFERENCE_SHADOW','UNSUPPORTED','UNAVAILABLE','STALE'];
+  S.rfTrustFilter=allowed.includes(String(value||'')) ? String(value) : 'all';
+  render();
+}
+function setRfTrustSort(value){
+  const allowed=['name-asc','value-desc','value-asc','maturity-asc'];
+  S.rfSort=allowed.includes(String(value||'')) ? String(value) : 'name-asc';
+  render();
+}
 function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
   const count=data.assets.length;
   const {overdue, soon30, soon90, soon12m, longTerm, missingDue, missingRate}=data;
+  const trustSummary=data.trustSummary||{};
+  const trustApi=globalThis.FixedIncomeTrust;
+  const trustFiltered=trustApi?.filterRows ? trustApi.filterRows(data.tableRows,S.rfSearch,S.rfTrustFilter) : data.tableRows;
+  const sortParts=String(S.rfSort||'name-asc').split('-');
+  const trustRows=trustApi?.sortRows ? trustApi.sortRows(trustFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':'name',sortParts[1]==='desc'?'desc':'asc') : trustFiltered;
   const attentionBadges=count ? [
     overdue>0 ? `<span class="note-pill" style="color:#fecaca;background:#3f1d24;border-color:rgba(248,113,113,.24)">${overdue} vencido${overdue===1?'':'s'}</span>` : '',
     soon30>0 ? `<span class="note-pill" style="color:#fde68a;background:#3d2f12;border-color:rgba(251,191,36,.24)">${soon30} em até 30 dias</span>` : '',
@@ -28318,7 +28376,7 @@ function rendaFixaTab(){
     return '<span class="premium-rf-maturity-badge ds-badge ok ds-badge--positive">>12 meses</span>';
   }
 
-  const positionRows=data.tableRows.length ? data.tableRows.map(row=>{
+  const positionRows=trustRows.length ? trustRows.map(row=>{
     const asset=(S.assets||[]).find(a=>String(a?.ticker||'').trim().toUpperCase()===String(row.ticker||'').trim().toUpperCase()) || data.assets.find(a=>a.ticker===row.ticker);
     const getAssetEventId = (typeof rfAssetEventId === 'function') ? rfAssetEventId : (a)=>String(a?.id||a?.assetId||a?.rf_asset_id||'').trim();
     const assetId=asset?getAssetEventId(asset):null;
@@ -28449,7 +28507,7 @@ function rendaFixaTab(){
 
     const eventCards=rfEventHistoryCards(data.tableRows);
 
-    const tableRows=data.tableRows.length ? data.tableRows.map(row=>`
+    const tableRows=trustRows.length ? trustRows.map(row=>`
       <tr>
         <td class="rf-strong">${esc(row.ticker)}</td>
         <td>${esc(row.category)}</td>
@@ -28486,12 +28544,39 @@ function rendaFixaTab(){
       </div>
     </div>
     <div class="premium-rf-kpis">${kpis.join('')}</div>
+    <section class="premium-rf-trust-bar" aria-labelledby="rf-trust-title">
+      <div class="premium-rf-trust-copy"><strong id="rf-trust-title">Confiança da leitura</strong><span>Valor manual continua sendo a autoridade; referências shadow não alteram o patrimônio.</span></div>
+      <div class="premium-rf-trust-counts" aria-label="Resumo dos status de valuation">
+        <span class="premium-rf-trust-count">Manual <b>${trustSummary.manualCount||0}</b></span>
+        <span class="premium-rf-trust-count">Shadow <b>${trustSummary.shadowCount||0}</b></span>
+        <span class="premium-rf-trust-count">Sem cálculo <b>${trustSummary.unsupportedCount||0}</b></span>
+        <span class="premium-rf-trust-count">Indisponível <b>${trustSummary.unavailableCount||0}</b></span>
+        ${trustSummary.staleCount ? `<span class="premium-rf-trust-count warn">Desatualizada <b>${trustSummary.staleCount}</b></span>` : ''}
+      </div>
+    </section>
     ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
     ${summaryStrip}
     ${reviewQueueHtml}
     <div class="premium-rf-grid">
       <div class="premium-rf-panel ds-panel ds-panel--readonly">
-        <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${count} posições</div></div>
+        <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${trustRows.length}/${count} posições</div></div>
+        <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
+          <label><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
+          <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value)">
+            <option value="all" ${S.rfTrustFilter==='all'?'selected':''}>Todos</option>
+            <option value="MANUAL_AUTHORITATIVE" ${S.rfTrustFilter==='MANUAL_AUTHORITATIVE'?'selected':''}>Valor manual</option>
+            <option value="REFERENCE_SHADOW" ${S.rfTrustFilter==='REFERENCE_SHADOW'?'selected':''}>Referência shadow</option>
+            <option value="UNSUPPORTED" ${S.rfTrustFilter==='UNSUPPORTED'?'selected':''}>Sem cálculo automático</option>
+            <option value="UNAVAILABLE" ${S.rfTrustFilter==='UNAVAILABLE'?'selected':''}>Indisponível</option>
+            <option value="STALE" ${S.rfTrustFilter==='STALE'?'selected':''}>Desatualizada</option>
+          </select></label>
+          <label><span>Ordenar</span><select aria-label="Ordenar posições de renda fixa" onchange="setRfTrustSort(this.value)">
+            <option value="name-asc" ${S.rfSort==='name-asc'?'selected':''}>Nome A–Z</option>
+            <option value="value-desc" ${S.rfSort==='value-desc'?'selected':''}>Maior valor</option>
+            <option value="value-asc" ${S.rfSort==='value-asc'?'selected':''}>Menor valor</option>
+            <option value="maturity-asc" ${S.rfSort==='maturity-asc'?'selected':''}>Vencimento próximo</option>
+          </select></label>
+        </div>
         <div class="premium-rf-position-list">${positionRows}</div>
       </div>
       <div class="premium-rf-panel ds-panel ds-panel--readonly">
