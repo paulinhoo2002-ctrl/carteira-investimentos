@@ -977,6 +977,10 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .asset-kpi-grid .analysis-summary-value{font-size:17px}
 .asset-kpi-grid .analysis-summary-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-class-results{display:grid;gap:8px;margin:0 0 8px}.asset-class-results-title{font-size:12px;font-weight:800;color:#d7e1ef}.asset-class-result{padding:10px 12px;border:1px solid #1a2940;border-radius:10px;background:#101827}.asset-class-result-head,.asset-class-result-values{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.asset-class-result-head span,.asset-class-result-values span{font-size:11px;color:#91a4bf}.asset-class-result-values b{color:#e2eaf6;margin-left:3px}.asset-class-result-values .good b{color:#34d399}.asset-class-result-values .neg b{color:#f87171}.asset-class-result-values .neutral b{color:#c0cce0}
+.allocation-intelligence{display:grid;gap:14px}.allocation-intelligence-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.allocation-intelligence-kpi{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}.allocation-intelligence-kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.allocation-intelligence-kpi-value{margin-top:5px;font-size:18px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums}.allocation-intelligence-kpi-note{margin-top:3px;font-size:10px;color:var(--muted);line-height:1.35}.allocation-intelligence-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.allocation-intelligence-section{min-width:0}.allocation-intelligence-section h3{margin:0 0 8px;font-size:12px;color:var(--text)}.allocation-intelligence-table{width:100%;border-collapse:collapse;font-size:11px}.allocation-intelligence-table th,.allocation-intelligence-table td{padding:7px 4px;border-bottom:1px solid var(--border);text-align:left}.allocation-intelligence-table th{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.allocation-intelligence-table td:last-child,.allocation-intelligence-table th:last-child{text-align:right;font-variant-numeric:tabular-nums}.allocation-intelligence-table td:nth-child(2){text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}.allocation-intelligence-summary{margin:0;color:var(--muted);font-size:11px;line-height:1.45}.allocation-intelligence-note{margin:10px 0 0;color:var(--muted);font-size:10px;line-height:1.4}
+@media (min-width:1500px){.allocation-intelligence-columns{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:900px){.allocation-intelligence-grid,.allocation-intelligence-columns{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.allocation-intelligence-grid,.allocation-intelligence-columns{grid-template-columns:1fr}.allocation-intelligence-table th,.allocation-intelligence-table td{padding:8px 3px}}
 html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .aporte-premium .ap-summary{margin-top:2px}
 .aporte-premium .ap-summary .cl{font-size:11px}
@@ -7974,6 +7978,7 @@ document.write([
 <script src="corporate-events-parity.js"></script>
 <script src="market-data-providers.js"></script>
 <script src="portfolio-intelligence.js"></script>
+<script src="portfolio-allocation-intelligence.js"></script>
 <script src="portfolio-performance.js"></script>
 <script src="portfolio-report-model.js"></script>
 <script src="portfolio-runtime-stores.js"></script>
@@ -28879,6 +28884,63 @@ function dashLegacy(){
     </div>
   </div>`;
 }
+function portfolioAllocationSnapshot(){
+  const rows=(S.assets||[]).map((asset,index)=>{
+    const isRF=isRendaFixaAsset(asset);
+    const rawValue=asset?.current_value ?? asset?.currentValue ?? asset?.marketValue;
+    const explicitValue=rawValue===null||rawValue===undefined||rawValue==='' ? null : Number.isFinite(Number(rawValue)) ? Number(rawValue) : null;
+    const explicitAuthoritativeCurrent=isRF ? rfValues(asset).hasExplicitCurrent : explicitValue!==null;
+    const resolvedValue=isRF
+      ? (explicitAuthoritativeCurrent ? assetCurrentValue(asset) : null)
+      : assetCurrentValue(asset);
+    const value=isRF
+      ? (Number.isFinite(resolvedValue) && explicitAuthoritativeCurrent ? resolvedValue : null)
+      : (explicitValue!==null ? explicitValue : (Number.isFinite(resolvedValue)&&(resolvedValue>0 || explicitAuthoritativeCurrent) ? resolvedValue : null));
+    const valueStatus=value===null ? 'UNKNOWN' : value===0 ? 'LEGITIMATE_ZERO' : 'AVAILABLE';
+    return {
+      id:String(asset?.id||`asset-${index+1}`),
+      ticker:String(asset?.ticker||'').trim(),
+      name:String(asset?.name||asset?.product||asset?.title||'').trim(),
+      className:String(asset?.type||'').trim(),
+      sector:String(asset?.sector||'').trim(),
+      issuer:String(asset?.fixed_issuer||asset?.issuer||'').trim(),
+      value,
+      valueStatus,
+      authority:isRF?assetRfCurrentValueMeta(asset).authority:'MARKET_DATA',
+      isFixedIncome:isRF
+    };
+  });
+  return globalThis.PortfolioAllocationIntelligence?.prepare(rows) || {rows:[],knownRows:[],totalKnownValue:0,totalClassifiedValue:0,totalUnclassifiedValue:0,classes:{rows:[]},sectors:{rows:[]},issuers:{rows:[]},positionCount:0,knownPositionCount:0};
+}
+function allocationMoney(value){ return Number.isFinite(Number(value)) ? fmt(Number(value)) : '—'; }
+function allocationRowsHtml(rows, labelKey='label'){
+  const list=Array.isArray(rows)?rows.slice(0,5):[];
+  if(!list.length) return '<tr><td colspan="3" class="mu">Sem dados classificados.</td></tr>';
+  return list.map(row=>`<tr><td>${esc(row[labelKey]||'Não classificado')}</td><td>${Number(row.count)||0}</td><td>${allocationMoney(row.value)} · ${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</td></tr>`).join('');
+}
+function dashboardAllocationIntelligencePanel(){
+  const data=portfolioAllocationSnapshot();
+  const top=globalThis.PortfolioAllocationIntelligence?.top(data,5)||[];
+  const total=Number(data.totalKnownValue)||0;
+  const summary=globalThis.PortfolioAllocationIntelligence?.summary(data)||'Sem valores authoritative disponíveis para esta leitura.';
+  const unknownClass=Number(data.totalUnclassifiedValue)||0;
+  return `<section class="premium-panel allocation-intelligence" aria-labelledby="allocation-intelligence-title">
+    <div class="premium-panel-head"><div><div id="allocation-intelligence-title" class="premium-panel-title">Alocação e concentração</div><div class="premium-panel-sub">Leitura factual com valores authoritative e denominadores explícitos.</div></div><span class="premium-panel-badge">${data.knownPositionCount||0}/${data.positionCount||0} posições valorizadas</span></div>
+    <div class="allocation-intelligence-grid">
+      <div class="allocation-intelligence-kpi"><div class="allocation-intelligence-kpi-label">Patrimônio conhecido</div><div class="allocation-intelligence-kpi-value">${allocationMoney(total)}</div><div class="allocation-intelligence-kpi-note">Base usada nos percentuais exibidos.</div></div>
+      <div class="allocation-intelligence-kpi"><div class="allocation-intelligence-kpi-label">Classes identificadas</div><div class="allocation-intelligence-kpi-value">${data.classes?.rows?.length||0}</div><div class="allocation-intelligence-kpi-note">Somente categorias presentes nos dados.</div></div>
+      <div class="allocation-intelligence-kpi"><div class="allocation-intelligence-kpi-label">Sem classe informada</div><div class="allocation-intelligence-kpi-value">${allocationMoney(unknownClass)}</div><div class="allocation-intelligence-kpi-note">Não incluído em percentuais por classe.</div></div>
+    </div>
+    <p class="allocation-intelligence-summary">${esc(summary)}</p>
+    <div class="allocation-intelligence-columns">
+      <section class="allocation-intelligence-section" aria-labelledby="allocation-class-title"><h3 id="allocation-class-title">Por classe</h3><table class="allocation-intelligence-table"><thead><tr><th>Classe</th><th>Qtd.</th><th>Valor · peso</th></tr></thead><tbody>${allocationRowsHtml(data.classes?.rows)}</tbody></table></section>
+      <section class="allocation-intelligence-section" aria-labelledby="allocation-top-title"><h3 id="allocation-top-title">Maiores ativos</h3><table class="allocation-intelligence-table"><thead><tr><th>Ativo</th><th>Classe</th><th>Valor · peso</th></tr></thead><tbody>${top.length?top.map(row=>`<tr><td>${esc(row.label)}</td><td>${esc(row.className||'Não classificado')}</td><td>${allocationMoney(row.value)} · ${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</td></tr>`).join(''):'<tr><td colspan="3" class="mu">Sem valores authoritative.</td></tr>'}</tbody></table></section>
+      <section class="allocation-intelligence-section" aria-labelledby="allocation-sector-title"><h3 id="allocation-sector-title">Por setor</h3><table class="allocation-intelligence-table"><thead><tr><th>Setor</th><th>Qtd.</th><th>Valor · peso</th></tr></thead><tbody>${allocationRowsHtml(data.sectors?.rows)}</tbody></table></section>
+      <section class="allocation-intelligence-section" aria-labelledby="allocation-issuer-title"><h3 id="allocation-issuer-title">Por emissor</h3><table class="allocation-intelligence-table"><thead><tr><th>Emissor</th><th>Qtd.</th><th>Valor · peso</th></tr></thead><tbody>${allocationRowsHtml(data.issuers?.rows)}</tbody></table></section>
+    </div>
+    <p class="allocation-intelligence-note">Pesos são calculados sobre o patrimônio conhecido. Ausência de classe, setor ou emissor permanece como não classificada; nenhuma recomendação é inferida.</p>
+  </section>`;
+}
 function dash(){
   const analysisRows=assetAnalysisRows();
   const data=dashboardSnapshot(analysisRows);
@@ -28904,13 +28966,14 @@ function dash(){
         ${dashboardEvolutionPanel(data)}
         ${dashboardHomeCompositionPanel(data)}
       </div>
-      <div class="canon-dash-row-c">
+      <div class="canon-dash-row-c">${dashboardAllocationIntelligencePanel()}</div>
+      <div class="canon-dash-row-d">
         ${dashboardPassiveIncomePanel(data)}
       </div>
-      <div class="canon-dash-row-d">
+      <div class="canon-dash-row-e">
         ${dashboardHomeHighlightsPanel()}
       </div>
-      <div class="dashboard-intelligence-grid canon-dash-row-e">
+      <div class="dashboard-intelligence-grid canon-dash-row-f">
         ${dashboardReceiptsPanel(data)}
         ${dashboardInsightsPanel(data)}
       </div>
