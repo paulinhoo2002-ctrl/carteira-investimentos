@@ -4,6 +4,30 @@
   min-width: 0;
 }
 
+.returns-reading-guide {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border, rgba(148, 163, 184, .24));
+  border-radius: 14px;
+  background: var(--color-surface, rgba(15, 23, 42, .55));
+  color: var(--color-text-muted);
+}
+
+.returns-reading-guide summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.returns-reading-guide p {
+  max-width: 760px;
+  margin: 8px 0 2px;
+  line-height: 1.55;
+}
+
 .returns-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

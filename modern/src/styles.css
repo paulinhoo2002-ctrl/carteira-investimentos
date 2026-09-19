@@ -1127,6 +1127,30 @@ button {
   gap: var(--space-3);
 }
 
+.assets-report__executive {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(280px, 1.2fr);
+  gap: 20px;
+  align-items: center;
+  margin: 20px 0;
+  padding: 18px 20px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+}
+
+.assets-report__executive h3 {
+  margin: 4px 0 0;
+  color: var(--color-text);
+  font-size: clamp(18px, 2vw, 24px);
+}
+
+.assets-report__executive p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
 .assets-report__table-wrap {
   width: 100%;
   max-width: 100%;

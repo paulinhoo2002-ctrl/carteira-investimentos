@@ -4,6 +4,7 @@ import type { ReadOnlyGoalsAdapter } from './goalsSnapshotAdapter.mjs';
 import type { ReadonlyGoalsSnapshot } from './goalsReadonlyContract.d.ts';
 import {
   createReadonlyGoalsViewModel,
+  createReadonlyGoalMilestones,
   formatReadonlyDateTime,
   formatReadonlyCurrencyOrMissing,
   formatReadonlyPercentSimple,
@@ -111,6 +112,7 @@ function GoalCard({
     tone: 'muted' | 'ok' | 'info' | 'warn' | 'danger';
     statusText: string;
     hasData: boolean;
+    reached: boolean;
     missingValue: string | null;
     excessValue: string | null;
   } | null;
@@ -122,6 +124,7 @@ function GoalCard({
   const showPercent = card.percentValue !== null && card.hasData;
   const showMissing = card.missingValue !== null && !card.reached && card.hasData;
   const showExcess = card.excessValue !== null && card.reached && card.hasData;
+  const milestones = createReadonlyGoalMilestones(card.barPercent, card.reached);
 
   return (
     <article className={`passive-goal-card financial-goal-card ${card.tone}`}>
@@ -140,6 +143,14 @@ function GoalCard({
             ariaValueText={card.statusText}
           />
           <div className="passive-goal-sub">{card.statusText}</div>
+          <ol className="financial-goal-milestones" aria-label={'Marcos da meta ' + card.title.toLowerCase()}>
+            {milestones.map((milestone) => (
+              <li key={milestone.percent} className={milestone.reached ? 'is-reached' : undefined}>
+                <span aria-hidden="true">{milestone.reached ? '✓' : '○'}</span>
+                <span>{milestone.label}</span>
+              </li>
+            ))}
+          </ol>
           {showMissing && <div className="passive-goal-sub">Faltam {card.missingValue}</div>}
           {showExcess && <div className="passive-goal-sub">Acima da meta: {card.excessValue}</div>}
           {showPercent && (
@@ -419,6 +430,18 @@ function GoalsReadonlyPageContent({
       </div>
 
       <p className="fixed-income-readonly__notice">{snapshot.notice}</p>
+
+      <section className="goals-executive-summary" aria-labelledby="goals-executive-summary-title">
+        <div>
+          <p className="page-shell__eyebrow">Leitura executiva</p>
+          <h3 id="goals-executive-summary-title">Acompanhe o que já foi confirmado</h3>
+        </div>
+        <p>
+          {viewModel.hasAnyGoal
+            ? 'O progresso abaixo usa somente valores presentes no snapshot atual. Campos indisponíveis permanecem sinalizados.'
+            : 'Nenhuma meta está configurada no snapshot atual. Isso não representa ausência de patrimônio.'}
+        </p>
+      </section>
 
       <p className="fixed-income-readonly__status" role="status" aria-live="polite">
         {errorMessage ? errorMessage : `Snapshot ${refreshStatus} - ${viewModel.hasAnyGoal ? 'Metas configuradas' : 'Nenhuma meta ativa'}`}
