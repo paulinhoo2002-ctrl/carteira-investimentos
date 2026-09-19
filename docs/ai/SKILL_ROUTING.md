@@ -29,6 +29,28 @@ ficam disponíveis por categoria, não carregados todos ao mesmo tempo.
 `frontend-design`, `archify` e `caveman-review` são ativados somente quando o
 tipo de tarefa exigir.
 
+## SUPERPOWERS_FIRST permanente
+
+`SUPERPOWERS_FIRST=true` e `SUPERPOWERS_REQUIRED_IF_AVAILABLE=true`.
+
+Boot transversal: `identity → AGENTS.md → PROJECT_MEMORY.md →
+docs/SKILLS_ROUTING.md → descoberta → Superpowers → Skills especializadas →
+execução → testes → revisão → QA → handoff`.
+
+Superpowers é a camada-base quando disponível. Skills são escolhidas pelo
+problema, em conjunto mínimo, e não ampliam autorização. Merge, deploy,
+Firebase/OAuth, cloud writes, finanças, persistência, schema, secrets, force
+push e remoção destrutiva continuam protegidos pelos contratos do projeto e
+pela autorização explícita da missão.
+
+Se a natureza da missão mudar, registrar `SKILL_REEVALUATED=true` e recalcular
+o conjunto. Se Superpowers não existir, usar o fallback disponível e registrar
+`SUPERPOWERS_AVAILABLE=false`.
+
+Todo handoff informa: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
+`SUPERPOWERS_USED`, `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
+`SKILL_SELECTION_REASON`, `SKILL_REEVALUATED`, `SKILL_GAPS_FOUND`.
+
 ## Não roteáveis por padrão
 
 Backups e `references` são material auxiliar. Skills de marketing, Browser Use
