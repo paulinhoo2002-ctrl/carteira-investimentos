@@ -2117,6 +2117,7 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .aporte-primary-toolbar .aporte-search{order:2}
 .ap-toolbar .aporte-search{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:7px 10px;min-width:min(100%,340px);flex:1 1 320px;max-width:560px;min-height:44px}
 .aporte-search input{border:0;background:transparent;padding:0;min-width:0;flex:1 1 auto;width:100%;color:var(--text);min-height:44px}
+.aporte-trust-summary{display:flex;align-items:center;min-height:32px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .aporte-extract{display:flex;flex-direction:column;gap:8px}
 .aporte-history-card{display:grid;grid-template-columns:74px minmax(0,1.25fr) minmax(110px,.82fr) minmax(100px,.72fr) minmax(112px,.82fr) auto;gap:10px;align-items:center;padding:10px 11px;border:1px solid var(--border);border-radius:13px;background:var(--panel-2);box-shadow:0 5px 14px rgba(2,6,23,.05);transition:.18s ease}
 .aporte-history-card:hover{border-color:rgba(99,102,241,.35);transform:translateY(-1px);box-shadow:0 11px 24px rgba(2,6,23,.1)}
@@ -3970,6 +3971,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   .aporte-filter-label{display:none}
   .aporte-filter-chip{flex:0 0 auto}
   .aporte-history-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;padding:10px}
+  .aporte-trust-summary{grid-column:1/-1;white-space:normal}
   .aporte-history-date{grid-column:1/-1;font-size:9px}
   .aporte-history-main{grid-column:1/2}
   .aporte-history-value{grid-column:2/3;grid-row:2;text-align:right}
@@ -7982,6 +7984,7 @@ document.write([
 <script src="import-foundation.js"></script>
 <script src="import-center-core.js"></script>
 <script src="v210-income-quality.js"></script>
+<script src="v213-transaction-trust.js"></script>
 <script src="fixed-income-valuation.js"></script>
 <script src="fixed-income-display.js"></script>
 <script src="import-center-context.js"></script>
@@ -26716,7 +26719,9 @@ function assetDetailSortRecords(rows){
 }
 function assetDetailRecords(asset){
   const id=String(asset?.id||''), ticker=String(asset?.ticker||'').trim().toUpperCase();
-  return assetDetailSortRecords((S.aportes||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); }));
+  const helper=globalThis.V213TransactionTrust?.assetTransactions;
+  const rows=helper ? helper(S.aportes||[],{id,ticker}) : (S.aportes||[]).filter(row=>{ const rowId=String(row?.assetId||row?.asset_id||row?.assetID||'').trim(); const rowTicker=String(row?.ticker||'').trim().toUpperCase(); return (rowId&&rowId===id)||(!rowId&&ticker&&rowTicker===ticker); });
+  return assetDetailSortRecords(rows);
 }
 function assetDetailIncomeRecords(asset){
   const id=String(asset?.id||''), ticker=String(asset?.ticker||'').trim().toUpperCase();
@@ -26748,7 +26753,9 @@ function assetDetailPage(asset){
   const kpis=isRF?[['Valor usado na carteira',valueText,trust.label,''],['Valor aplicado',Number.isFinite(applied)?fmt(applied):'—','Principal cadastrado',''],['Resultado',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass],['Vencimento',assetDetailDate(assetRfMaturityDate(asset)),assetRfApplicationDate(asset)?`Aplicado em ${assetDetailDate(assetRfApplicationDate(asset))}`:'Data de aplicação não informada','']]:[['Valor de mercado',valueText,asset?.quoteUpdatedAt?'Cotação atualizada':'Cotação disponível',''],['Quantidade',assetDetailText(asset?.qty),'Posição atual',''],['Preço médio',Number(asset?.avg_price)>0?fmt(asset.avg_price):'—','Custo por unidade',''],['Resultado',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass]];
   const kpiHtml=kpis.map(([label,value,note,cls])=>`<article class="asset-detail-kpi"><div class="asset-detail-kpi-label">${esc(label)}</div><div class="asset-detail-kpi-value ${cls}">${esc(value)}</div><div class="asset-detail-kpi-note">${esc(note)}</div></article>`).join('');
   const row=(label,value)=>`<div class="asset-detail-row"><span>${esc(label)}</span><strong>${esc(assetDetailText(value))}</strong></div>`;
-  const overview=isRF?`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Informações do produto</h2><p>Identidade e condições registradas para este título.</p></div></div><div class="asset-detail-list">${row('Nome',name)}${row('Tipo',assetRfSubtype(asset))}${row('Indexador',assetRfIndexerLabel(asset))}${row('Taxa contratada',assetRfContractRate(asset))}${row('Data de aplicação',assetDetailDate(assetRfApplicationDate(asset)))}${row('Vencimento',assetDetailDate(assetRfMaturityDate(asset)))}${row('Origem',assetDetailText(assetRfNote(asset),'Cadastro da carteira'))}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Confiança do valor</h2><p>O detalhe preserva a autoridade do valor já cadastrado.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Status</div><strong>${esc(trust.label)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Valor atualizado em',assetDetailText(asset?.rf_updated_at||asset?.updatedAt||asset?.lastUpdatedAt,'Data-base não identificada'))}${row('IR/IOF',assetRfIrIof(asset)>0?fmt(assetRfIrIof(asset)):'—')}</div></article></div>`:`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Posição atual</h2><p>Leitura consolidada pelos dados reais da carteira.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor de mercado</div><strong>${esc(valueText)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Ticker',ticker)}${row('Classe',type)}${row('Setor',assetDetailText(asset?.sector))}${row('DY',Number.isFinite(Number(asset?.dy))?`${asset.dy}%`:'—')}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Leitura da cotação</h2><p>Fonte e atualização sem duplicar o cálculo oficial.</p></div></div><div class="asset-detail-list">${row('Fonte',trust.note)}${row('Última atualização',assetDetailDate(asset?.quoteUpdatedAt))}${row('Preço atual',Number(asset?.current_price)>0?fmt(asset.current_price):'—')}${row('Preço alvo',Number(asset?.price_target)>0?fmt(asset.price_target):'—')}</div></article></div>`;
+  const provenanceFacts=globalThis.V213TransactionTrust?.provenanceFacts?.({...asset,source:asset?.source||asset?.quoteSource})||[];
+  const provenanceHtml=provenanceFacts.length?`<article class="asset-detail-panel" data-provenance="true"><div class="asset-detail-panel-head"><div><h2>Origem e atualização</h2><p>Metadata factual disponível para esta posição.</p></div></div><div class="asset-detail-list">${provenanceFacts.map(item=>row(item.label,item.value)).join('')}</div></article>`:'';
+  const overview=isRF?`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Informações do produto</h2><p>Identidade e condições registradas para este título.</p></div></div><div class="asset-detail-list">${row('Nome',name)}${row('Tipo',assetRfSubtype(asset))}${row('Indexador',assetRfIndexerLabel(asset))}${row('Taxa contratada',assetRfContractRate(asset))}${row('Data de aplicação',assetDetailDate(assetRfApplicationDate(asset)))}${row('Vencimento',assetDetailDate(assetRfMaturityDate(asset)))}${row('Origem',assetDetailText(assetRfNote(asset),'Cadastro da carteira'))}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Confiança do valor</h2><p>O detalhe preserva a autoridade do valor já cadastrado.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Status</div><strong>${esc(trust.label)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Valor atualizado em',assetDetailText(asset?.rf_updated_at||asset?.updatedAt||asset?.lastUpdatedAt,'Data-base não identificada'))}${row('IR/IOF',assetRfIrIof(asset)>0?fmt(assetRfIrIof(asset)):'—')}</div></article></div>${provenanceHtml}`:`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Posição atual</h2><p>Leitura consolidada pelos dados reais da carteira.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor de mercado</div><strong>${esc(valueText)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Ticker',ticker)}${row('Classe',type)}${row('Setor',assetDetailText(asset?.sector))}${row('DY',Number.isFinite(Number(asset?.dy))?`${asset.dy}%`:'—')}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Leitura da cotação</h2><p>Fonte e atualização sem duplicar o cálculo oficial.</p></div></div><div class="asset-detail-list">${row('Fonte',trust.note)}${row('Última atualização',assetDetailDate(asset?.quoteUpdatedAt))}${row('Preço atual',Number(asset?.current_price)>0?fmt(asset.current_price):'—')}${row('Preço alvo',Number(asset?.price_target)>0?fmt(asset.price_target):'—')}</div></article></div>${provenanceHtml}`;
   const valuation=`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Valuation usado</h2><p>Valor que participa da carteira neste momento.</p></div><span class="asset-detail-badge ${trust.className}">${esc(trust.label)}</span></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor na carteira</div><strong>${esc(valueText)}</strong><p>${esc(isRF&&assetNeedsRFUpdate(asset)?'Atualização necessária para ampliar a leitura.':trust.note)}</p></div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Base e atualização</h2><p>Sem comparação artificial quando a data-base não é comparável.</p></div></div><div class="asset-detail-list">${row('Data-base',isRF?assetDetailText(asset?.rf_valuation_as_of||asset?.valuationAsOf,'Data-base não identificada'):assetDetailDate(asset?.quoteUpdatedAt))}${row('Origem',isRF?trust.note:asset?.quoteSource==='yahoo'?'Yahoo Finance':'Cotação da carteira')}${row('Comparação',isRF&&trust.label==='Benchmark CDI'?'Comparação com CDI':'Comparação indisponível')}${row('Diferença','—')}</div></article></div>`;
   const history=records.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Histórico de movimentações</h2><p>Registros existentes para este ativo, sem alterar a fonte.</p></div><span class="asset-detail-badge">${records.length} registro${records.length===1?'':'s'}</span></div><div class="asset-detail-list">${records.map(item=>row(`${assetDetailDate(item.date||item.tradeDate)} · ${assetDetailKindLabel(item)}`,Number(item.total||item.value||item.amount)>0?fmt(Number(item.total||item.value||item.amount)):'Quantidade registrada')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Coletando histórico desde 15/09/2026. Ainda não há pontos suficientes para uma série confiável.</div></article>';
   const incomeHtml=income.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Proventos do ativo</h2><p>Somente eventos já presentes no histórico da carteira.</p></div><span class="asset-detail-badge">${income.length} registro${income.length===1?'':'s'}</span></div><div class="asset-detail-list">${income.map(item=>row(`${assetDetailDate(item.date||item.paymentDate)} · ${assetDetailText(item.type,'Provento')}`,Number(item.value)>0?fmt(item.value):'Valor não informado')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum provento disponível para este ativo no histórico atual.</div></article>';
@@ -30019,7 +30026,11 @@ function aporteExtractRows(){
 function filteredAporteRows(rows=aporteExtractRows()){
   const q=String(S.apSearch||'').trim().toLowerCase();
   const filter=String(S.aportesFilter||'todos');
-  return rows.filter(row=>{
+  const helperRows=globalThis.V213TransactionTrust?.filterTransactions?.(rows.map(row=>({...row,type:row.kind,value:row.total})),{type:filter==='todos'?'Todos':filter})||rows;
+  const helperIds=new Set(helperRows.map(row=>row._v213Index ?? row.id));
+  const helperSearch=globalThis.V213TransactionTrust?.searchTransactions?.(rows,q)||rows;
+  const helperSearchIds=new Set(helperSearch.map(row=>row._v213Index ?? row.id));
+  return rows.filter((row,index)=>{
     if(filter!=='todos' && row.kind!==filter) return false;
     if(!q) return true;
     const numberText=[row.total,row.qty,row.price]
@@ -30027,11 +30038,18 @@ function filteredAporteRows(rows=aporteExtractRows()){
       .join(' ');
     const hay=[row.date,row.label,row.kind,row.ticker,row.name,row.type,row.sector,row.note,row.source,numberText]
       .filter(Boolean).join(' ').toLowerCase();
-    return hay.includes(q);
+    return hay.includes(q) || helperSearchIds.has(row._v213Index ?? row.id) || helperIds.has(row._v213Index ?? row.id);
   });
 }
 function sortedAporteRows(rows=filteredAporteRows()){
   const mode=['date-desc','date-asc','asset-asc','value-desc','value-asc'].includes(S.aportesSort) ? S.aportesSort : 'date-desc';
+  const helper=globalThis.V213TransactionTrust?.sortTransactions;
+  if(helper){
+    const decorated=rows.map((row,index)=>({...row,_v213Index:index,type:row.kind,value:row.total}));
+    const key=mode.startsWith('date')?'date':mode==='asset-asc'?'asset':'value';
+    const direction=mode==='date-asc'||mode==='value-asc'?'asc':'desc';
+    return helper(decorated,key,direction).map(row=>rows[row._v213Index]);
+  }
   return [...rows].sort((a,b)=>{
     if(mode==='asset-asc') return String(a.ticker||a.name||'').localeCompare(String(b.ticker||b.name||''),'pt-BR',{sensitivity:'base'}) || (parseAnyDate(b.date)?.getTime()||0)-(parseAnyDate(a.date)?.getTime()||0);
     if(mode==='value-desc' || mode==='value-asc') return (mode==='value-desc' ? -1 : 1) * ((Number(a.total)||0)-(Number(b.total)||0)) || (parseAnyDate(b.date)?.getTime()||0)-(parseAnyDate(a.date)?.getTime()||0);
@@ -30345,6 +30363,7 @@ function apTab(){
   </details>`:'';
   const allRows=aporteExtractRows();
   const extractRows=sortedAporteRows(filteredAporteRows(allRows));
+  const movementSummary=globalThis.V213TransactionTrust?.summarizeTransactions?.(extractRows)||{total:extractRows.length,buys:0,sells:0,contributions:0,others:0};
   const mode=['extrato','ativo','categorias','resumo'].includes(S.aportesViewMode) ? S.aportesViewMode : 'resumo';
   S.aportesViewMode=mode;
   const categoriesContent=S.aportes.length
@@ -30368,6 +30387,7 @@ function apTab(){
           <input id="aporte-premium-search" value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" aria-label="Buscar aportes por ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
           ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
         </div>
+        <div class="aporte-trust-summary" aria-label="Resumo das movimentações">${movementSummary.total} movimentações · ${movementSummary.buys} compras · ${movementSummary.sells} vendas · ${movementSummary.contributions} aportes</div>
       </div>`;
   return`<div class="aporte-premium">
     <div class="sh">
