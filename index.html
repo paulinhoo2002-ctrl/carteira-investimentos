@@ -26765,8 +26765,8 @@ function importCenterReset(){ S.importCenterSession={files:[],step:1,result:null
 function importCenterTab(){
   return ImportCenterView.render({context:IMPORT_CENTER_CONTEXT,renderers:{preview:ImportCenterPreviewRenderer,fileList:ImportCenterFileListRenderer,sourceList:ImportCenterSourceListRenderer}});
 }
-const NAV_TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights']];
-const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria'],['confiabilidade','🛡️ Confiabilidade']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights'],['confiabilidade','🛡️ Confiabilidade']];
+const REPORT_TABS=[['relatorios','📑 Relatórios'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
 }
@@ -26810,6 +26810,7 @@ function desktopTabs(){
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
     ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
     ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
+    ${navItem('confiabilidade','Confiabilidade','🛡️',S.tab==='confiabilidade')}
     ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navItem('metas','Metas','🎯',S.tab==='metas')}
