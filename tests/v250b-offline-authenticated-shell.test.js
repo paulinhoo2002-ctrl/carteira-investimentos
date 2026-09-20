@@ -44,6 +44,13 @@ test('offline session marker can be cleared by explicit logout without touching 
   assert.match(storage.getItem('civ5'), /fixture/);
 });
 
+test('trusted marker is not created without a local portfolio snapshot', () => {
+  const helper = loadHelper();
+  const storage = makeStorage();
+  assert.equal(helper.snapshotHasData(storage), false);
+  assert.equal(helper.eligible({ online: false, marker: { eligible: true }, hasSnapshot: false }), false);
+});
+
 test('V250B source contract gates offline shell before Firebase access gate', () => {
   assert.match(index, /v250-offline-session\.js/);
   assert.match(index, /function isV250OfflineCachedSession\(\)/);

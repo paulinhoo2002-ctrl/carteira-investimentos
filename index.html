@@ -8114,6 +8114,7 @@ function isV250OfflineCachedSession(){
 }
 async function rememberV250TrustedSnapshot(){
   if(!FB.user || navigator.onLine===false || !window.V250OfflineSession) return false;
+  if(!window.V250OfflineSession.snapshotHasData?.(localStorage,STOR)) return false;
   try{
     const scope=await window.V250OfflineSession.scopeHash(FB.user);
     return window.V250OfflineSession.mark(localStorage,{scope,snapshotSignature:FB.lastCloudSignature});
