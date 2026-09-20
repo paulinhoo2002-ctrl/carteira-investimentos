@@ -225,6 +225,22 @@
     const events = list(input.events || input.proventos).map(event => ({ ...event }));
     const fixedIncome = assets.filter(asset => asset.isFixedIncome);
     const freshnessRows = assets.map(asset => ({ id: asset.id, label: asset.label, source: asset.quoteSource, ...asset.freshness }));
+    const marketDataRows = assets.map(asset => {
+      const raw = asset.raw || {};
+      const status = upper(raw.quoteStatus || asset.freshness.status || STATUS.UNKNOWN);
+      return { id: asset.id, label: asset.label, source: asset.quoteSource || 'UNKNOWN', status, fallbackUsed: raw.quoteFallbackUsed === true, lastKnownGood: raw.quoteLastKnownGood === true, quoteUpdatedAt: raw.quoteUpdatedAt || null, quoteMarketTime: raw.quoteMarketTime || null };
+    });
+    const marketData = {
+      rows: marketDataRows,
+      freshCount: marketDataRows.filter(row => row.status === 'FRESH' || row.status === STATUS.CURRENT).length,
+      delayedCount: marketDataRows.filter(row => row.status === 'DELAYED').length,
+      staleCount: marketDataRows.filter(row => row.status === STATUS.STALE).length,
+      unknownCount: marketDataRows.filter(row => row.status === STATUS.UNKNOWN).length,
+      errorCount: marketDataRows.filter(row => row.status === 'ERROR').length,
+      fallbackCount: marketDataRows.filter(row => row.fallbackUsed).length,
+      lastKnownGoodCount: marketDataRows.filter(row => row.lastKnownGood).length,
+      sourceCount: new Set(marketDataRows.map(row => row.source).filter(Boolean)).size,
+    };
     const provenanceRows = assets.map(asset => ({ id: asset.id, label: asset.label, ...asset.provenance }));
     const knownValues = assets.map(asset => asset.value).filter(value => value !== null);
     const duplicates = duplicateDiagnostics(events);
@@ -282,6 +298,7 @@
       summary,
       assets,
       freshness: { rows: freshnessRows, stale, unknown: unknownFreshness },
+      marketData,
       provenance: { rows: provenanceRows, withProvenance: summary.provenanceCount, withoutProvenance: summary.noProvenanceCount },
       coverage,
       fixedIncome: { rows: fixedIncome, statuses: fixedStatus },
