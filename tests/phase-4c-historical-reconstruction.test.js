@@ -4,7 +4,8 @@ const Reconstruction = require('../historical-reconstruction.js');
 
 test('classifies custody, lending, subscription, corporate, income and trade events', () => {
   assert.equal(Reconstruction.classifyMovement({ Movimento: 'Transferência entrada' }).classification, 'TRANSFER_IN');
-  assert.equal(Reconstruction.classifyMovement({ Movimento: 'Empréstimo de ativos' }).classification, 'LENDING_OUT');
+  assert.equal(Reconstruction.classifyMovement({ Movimento: 'Empréstimo de ativos' }).classification, 'STOCK_LOAN');
+  assert.equal(Reconstruction.classifyMovement({ Movimento: 'Empréstimo de ativos' }).positionEffect, 'NONE');
   assert.equal(Reconstruction.classifyMovement({ Movimento: 'Direito de subscrição' }).classification, 'SUBSCRIPTION_RIGHT');
   assert.equal(Reconstruction.classifyMovement({ Movimento: 'Subscrição executada' }).classification, 'SUBSCRIPTION_EXECUTION');
   assert.equal(Reconstruction.classifyMovement({ Movimento: 'Bonificação' }).classification, 'CORPORATE_EVENT');
@@ -83,4 +84,19 @@ test('large historical reconstruction remains deterministic at 10k, 25k and 50k 
     assert.equal(result.unverifiedEventPositionImpact, 0);
     assert.equal(result.positions.length, 20);
   }
+});
+
+test('historical report keeps loans outside position and marks exact repeats auditably', () => {
+  const events = [
+    { date: '2019-01-02', ticker: 'ABCD3', qty: 10, movement: 'Compra' },
+    { date: '2019-01-03', ticker: 'ABCD3', qty: 10, movement: 'Empréstimo de ativos' },
+    { date: '2019-02-01', ticker: 'ABCD3', qty: 2, movement: 'Dividendo' }
+  ];
+  const report = Reconstruction.buildHistoricalReport(events, [{ ticker: 'ABCD3', qty: 10 }]);
+  assert.equal(report.writeEnabled, false);
+  assert.equal(report.ignoredLoans.length, 1);
+  assert.equal(report.positions[0][1], 10);
+  assert.equal(report.income.length, 1);
+  const duplicate = Reconstruction.deduplicateEconomicEvents([{ source: 'B3', events }, { source: 'B3-copy', events }]);
+  assert.equal(duplicate.groups.every(item => item.state === 'EXACT_DUPLICATE'), true);
 });

@@ -259,6 +259,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:11px 18px;font-size:13px;white-space:nowrap;flex:0 0 auto;transition:all .2s;min-height:44px}
 .tab:hover{color:var(--text)}.tab.on{border-bottom-color:var(--primary);color:#dbe4ff;font-weight:700}
 @media(max-width:1180px){.tabs-desktop{display:none}.tabs-mobile{display:flex;justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}.tab-menu-panel{left:8px;right:8px;min-width:0}}
+@media(min-width:621px) and (max-width:900px){.hdr{padding:8px 10px;gap:8px}.hdr-logo{min-width:0;flex:1 1 auto}.hdr-logo>div:last-child{min-width:0}.hdr-sub,.hdr-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hdr-right{min-width:0;max-width:52%;justify-content:flex-end;overflow:hidden}.hdr-right>*{min-width:0}.hdr-right .auth-box,.hdr-right .wallet-switch,.hdr-right .install-box{display:none}.tabs-mobile{max-width:100%;min-width:0;flex-wrap:wrap;overflow-x:visible;overflow-y:visible;justify-content:center}.tabs-mobile .tab,.tabs-mobile .tab-menu{flex:1 1 120px;min-width:0;text-align:center}.tabs-mobile .tab{padding:9px 8px}.tabs-mobile .tab-menu-panel{max-width:calc(100vw - 16px)}}
 
 /* PHASE 11: visual master shell. Desktop navigation is the persistent sidebar;
    mobile keeps the existing compact navigation and bottom actions. */
@@ -8040,6 +8041,8 @@ document.write([
 <script src="legacy/reports-readonly-source.js"></script>
 <script src="import-foundation.js"></script>
 <script src="import-center-core.js"></script>
+<script src="historical-import-preview.js"></script>
+<script src="historical-reconstruction.js"></script>
 <script src="v210-income-quality.js"></script>
 <script src="v213-transaction-trust.js"></script>
 <script src="fixed-income-valuation.js"></script>
@@ -26755,7 +26758,7 @@ function importCenterDetectFile(file){
 }
 function importCenterFiles(files){
   const session=importCenterState();
-  session.files=Array.from(files||[]).map(file=>({name:String(file.name||''),size:Number(file.size)||0,detected:importCenterDetectFile(file)}));
+  session.files=Array.from(files||[]).map((file,index)=>({name:String(file.name||''),size:Number(file.size)||0,lastModified:Number(file.lastModified)||0,sourceFingerprint:[file.name||'',file.size||0,file.lastModified||0,file.type||''].join('|'),detected:importCenterDetectFile(file),order:index}));
   session.step=session.files.length?2:1; session.result=null; render();
 }
 function importCenterRunDryRun(){
@@ -26763,8 +26766,11 @@ function importCenterRunDryRun(){
   if(!session.files.length) return;
   const unknown=session.files.filter(file=>file.detected.type==='UNKNOWN').length;
   const reviewed=session.files.filter(file=>file.detected.support==='REVIEW_REQUIRED').length;
+  const fingerprints=new Map(); session.files.forEach(file=>fingerprints.set(file.sourceFingerprint,(fingerprints.get(file.sourceFingerprint)||0)+1));
+  const duplicateAudit=session.files.map(file=>({label:file.name,state:(fingerprints.get(file.sourceFingerprint)||0)>1?'EXACT_DUPLICATE':'UNIQUE',reason:(fingerprints.get(file.sourceFingerprint)||0)>1?'Mesmo arquivo selecionado novamente; mantido fora de qualquer escrita.':'Identidade única nesta sessão.'}));
   session.step=8;
-  session.result={status:unknown||reviewed?'WARNING':'SUCCESS',snapshot:'validado',rollback:'testado',newRecords:0,records:0,duplicates:0,potentialDuplicates:0,conflicts:reviewed,review:reviewed,unsupported:unknown,position:'preservada',income:'sem alteração',whatWillChange:0,confirmation:'BLOCKED',provenance:'session-only',dedupe:'read-only'};
+  const exactDuplicates=duplicateAudit.filter(item=>item.state==='EXACT_DUPLICATE').length;
+  session.result={status:unknown||reviewed?'WARNING':'SUCCESS',snapshot:'validado',rollback:'testado',newRecords:0,records:0,duplicates:exactDuplicates,potentialDuplicates:0,conflicts:reviewed,review:reviewed,unsupported:unknown,position:'preservada',income:'sem alteração',whatWillChange:0,confirmation:'BLOCKED',provenance:'session-only',dedupe:'read-only',duplicateAudit};
   session.history=[{date:new Date().toISOString(),source:session.files.map(file=>file.detected.label).join(', '),period:'não informado',status:session.result.status,records:0,duplicates:0,conflicts:session.result.conflicts,reconciliation:'dry-run',rollback:'testado'},...(session.history||[])].slice(0,8);
   render();
 }

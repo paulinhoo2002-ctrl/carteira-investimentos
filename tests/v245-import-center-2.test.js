@@ -1,6 +1,8 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const Core = require('../import-center-core.js');
+const PreviewRenderer = require('../import-center-preview-renderer.js');
+const fs = require('node:fs');
 
 const source = (name = 'movimentos.xlsx', extra = {}) => ({ name, headers: ['Movimentação', 'Ticker', 'Quantidade'], ...extra });
 const row = (overrides = {}) => ({ date: '2026-09-15', ticker: 'PETR4', operation: 'BUY', quantity: 10, unitPrice: 35.5, grossValue: 355, ...overrides });
@@ -116,4 +118,23 @@ test('contratos de ausência continuam explícitos', () => {
   const preview = Core.buildPreview({ source: source(), rows: [{ date: '15/09/2026', operation: 'TRANSFER' }] });
   assert.equal(preview.records[0].validation.errors.includes('UNKNOWN_ASSET'), true);
   assert.equal(preview.financialWrite, false);
+});
+
+test('preview visual expõe exact duplicate e Historical Reconstruction Lab sem escrita', () => {
+  const html = PreviewRenderer.render({
+    files: [{ name: 'historico-b3-sanitizado.csv' }],
+    result: { duplicates: 1, potentialDuplicates: 0, conflicts: 0, review: 0, unsupported: 0, newRecords: 0, status: 'SUCCESS', snapshot: 'validado', rollback: 'testado', duplicateAudit: [{ label: 'historico-b3-sanitizado.csv', state: 'EXACT_DUPLICATE', reason: 'Mesmo conteúdo' }] },
+    history: [],
+    escapeText: value => String(value),
+    supportLabel: value => value
+  });
+  assert.match(html, /EXACT_DUPLICATE/);
+  assert.match(html, /Historical Reconstruction Lab/);
+  assert.match(html, /nenhuma linha financeira foi gravada/);
+});
+
+test('regressão de 768px mantém cabeçalho e navegação dentro da viewport', () => {
+  const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(source, /@media\(min-width:621px\) and \(max-width:900px\)/);
+  assert.match(source, /\.hdr-right\{min-width:0;max-width:52%/);
 });
