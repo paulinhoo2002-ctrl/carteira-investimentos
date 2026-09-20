@@ -47,7 +47,7 @@ const mainTabs = [
   { route: 'ajudar', label: 'Rebalancear' },
   { route: 'ia', label: 'Insights' }
 ];
-const reportGroupItems = ['Relatórios', 'IRPF', 'Auditoria'];
+const reportGroupItems = ['Relatórios', 'Eventos societários', 'IRPF', 'Auditoria'];
 
 function tabMatchesRoute(tab, route, label) {
   const text = (tab.textContent || '').trim();
@@ -126,7 +126,7 @@ for (const viewport of viewports) {
           group.setAttribute('open', '');
           return [...group.querySelectorAll('.tab-menu-panel button')].map(b => b.textContent.trim());
         });
-        assert.equal(groupItems.length, 3, `grupo Relatórios com 3 itens em ${viewport.label}`);
+        assert.equal(groupItems.length, 4, `grupo Relatórios com 4 itens em ${viewport.label}`);
         for (const item of reportGroupItems) {
           assert.ok(groupItems.some(text => text.includes(item)), `item '${item}' do grupo acessivel em ${viewport.label}`);
         }
