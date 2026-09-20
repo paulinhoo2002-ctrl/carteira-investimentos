@@ -8027,6 +8027,7 @@ document.write([
 </script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
+<script src="backup-portability.js"></script>
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
 <script src="rf-reconstruction.js"></script>
 <script src="income-linkage-reconciliation.js"></script>
@@ -11014,6 +11015,9 @@ function backupManagerModal(){
   const currentStats=backupStats(current.data);
   const draft=S.backupImportDraft;
   const draftStats=draft ? draft.summary : null;
+  const v249Preview=draft?.v249Preview;
+  const v249Diff=v249Preview?.diff||[];
+  const v249Status=v249Preview?.integrity?.status||'';
   return `<div class="note-overlay" onclick="if(event.target===this) closeBackupCenter()">
     <div class="note-modal" style="max-width:900px;max-height:86vh;display:flex;flex-direction:column" aria-busy="${S.backupImportValidating?'true':'false'}">
       <div class="note-head" style="padding:13px 16px 11px">
@@ -11026,7 +11030,7 @@ function backupManagerModal(){
         </div>
       </div>
       <div class="sec-body" style="display:flex;flex-direction:column;gap:10px;overflow:auto;min-height:0;padding:11px 16px 12px">
-        <div class="backup-warning">A importação substitui a carteira ativa. Exporte um backup antes de restaurar outro arquivo.</div>
+        <div class="backup-warning">${draft?.v249?'O arquivo será apenas validado e pré-visualizado nesta fase; nenhum restore real será executado.':'A importação substitui a carteira ativa. Exporte um backup antes de restaurar outro arquivo.'}</div>
         <div class="backup-summary">
           <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${currentStats.wallets}</div><div class="cs">Carteiras locais no app</div></div>
           <div class="card backup-card"><div class="cl">Ativos</div><div class="cv">${currentStats.assets}</div><div class="cs">Cadastros em Meus Ativos</div></div>
@@ -11063,8 +11067,9 @@ function backupManagerModal(){
                 <div class="card backup-card"><div class="cl">Renda Fixa</div><div class="cv">${draftStats.fixed}</div><div class="cs">Posições de renda fixa</div></div>
                 <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${draftStats.wallets}</div><div class="cs">Estrutura de carteiras</div></div>
               </div>
-              <div class="backup-note">Metas configuradas: ${draftStats.goals} · Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}</div>
-              <div class="backup-note" style="margin-top:2px">Meta de patrimônio e outras preferências também serão restauradas se existirem no arquivo.</div>
+            <div class="backup-note">Metas configuradas: ${draftStats.goals} · ${draft?.v249?'Material de autenticação: não exportado':`Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}`}</div>
+              ${draft?.v249?`<div class="backup-warning" role="status">Formato V249 · Integridade: <strong>${esc(v249Status||'UNKNOWN')}</strong> · Prévia sem escrita: ${v249Diff.filter(x=>x.kind==='ADD').length} adicionar, ${v249Diff.filter(x=>x.kind==='UPDATE').length} atualizar, ${v249Diff.filter(x=>x.kind==='CONFLICT').length} conflito, ${v249Diff.filter(x=>x.kind==='UNCHANGED').length} inalterado. Restauração real não é executada nesta fase.</div>`:''}
+              <div class="backup-note" style="margin-top:2px">A prévia preserva IDs, datas, valores desconhecidos e autoridade manual. Nenhum dado é aplicado antes de uma confirmação futura.</div>
             `:`
               <div class="backup-note" role="status" aria-live="polite">${S.backupImportValidating?'Validando o arquivo selecionado...':'Nenhum arquivo carregado ainda. Selecione um JSON de backup para ver a prévia antes de importar.'}</div>
             `}
@@ -11079,7 +11084,7 @@ function backupManagerModal(){
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn bgh" onclick="cancelBackupImport()">Cancelar importação</button>
-          <button class="btn bp" onclick="confirmBackupImport()" ${draft && !S.backupImportValidating ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>${S.backupImportValidating?'Validando...':'Importar backup'}</button>
+          <button class="btn bp" onclick="confirmBackupImport()" ${draft && !draft.v249 && !S.backupImportValidating ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>${draft?.v249?'Restaurar (somente ambiente de teste)':(S.backupImportValidating?'Validando...':'Importar backup')}</button>
         </div>
       </div>
     </div>
@@ -11526,6 +11531,16 @@ function backupPayload(){
   if(v76RuntimeAvailable()) payload.data.v76Runtime=window.PortfolioRuntimeStores.backupSupplement({snapshots:window.__V76_RUNTIME__?.snapshots,flows:window.__V76_RUNTIME__?.flows});
   return payload;
 }
+async function backupPortabilityPayload(){
+  if(typeof BackupPortability==='undefined') throw new Error('BACKUP_ENGINE_UNAVAILABLE');
+  syncWalletFromState();
+  return BackupPortability.createBackup({
+    state:PersistenceCore.buildBackupState(S, normalizeGoals),
+    config:backupCurrentConfig(),
+    metadata:{source:'localStorage',corporateEventsMode:'SHADOW_READ_ONLY',realRestoreEnabled:false},
+    appVersion:typeof APP_VERSION!=='undefined'?APP_VERSION:'legacy'
+  });
+}
 function backupFromRaw(raw){
   return PersistenceCore.parseBackupRaw(raw);
 }
@@ -11604,16 +11619,23 @@ function closeBackupCenter(){
     render();
   });
 }
-function exportBackup(){
+async function exportBackup(){
   if(isLocalTestMode()){
     toast('🧪 Modo de teste local: exportação desativada.');
     return;
   }
-  const payload=backupPayload();
+  let payload;
+  try{
+    payload=await backupPortabilityPayload();
+  }catch(error){
+    debugError('backup V249 export error:',error);
+    toast('Não foi possível preparar o backup local. Nenhum dado foi alterado.','#f87171');
+    return;
+  }
   const data=JSON.stringify(payload, null, 2);
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-${backupStamp()}.json`});
   a.click();
-  toast('💾 Backup exportado com sucesso!');
+  toast(`💾 Backup V${payload.manifest.backupVersion} exportado com integridade SHA-256.`);
 }
 function importBackup(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } openBackupCenter(); }
 function triggerBackupImport(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } document.getElementById('imp-file')?.click(); }
@@ -11664,6 +11686,10 @@ function applyBackupData(parsed){
 }
 function confirmBackupImport(){
   if(!S.backupImportDraft?.parsed) return;
+  if(S.backupImportDraft.v249){
+    toast('Prévia concluída. Restauração real está desabilitada nesta fase; nada foi gravado.','#fbbf24');
+    return;
+  }
   if(!canEditFromThisTab('restaurar backup')) return;
   const summary=S.backupImportDraft.summary;
   const fileName=String(S.backupImportDraft.fileName||'backup.json');
@@ -11686,9 +11712,22 @@ document.getElementById('imp-file').addEventListener('change',e=>{
   S.backupOpen=true;
   render();
   const r=new FileReader();
-  r.onload=ev=>{
+  r.onload=async ev=>{
     try{
       const d=JSON.parse(ev.target.result);
+      if(typeof BackupPortability!=='undefined' && d?.manifest?.backupFormat===BackupPortability.FORMAT){
+        const integrity=await BackupPortability.verifyBackup(d);
+        if(!['SUPPORTED','MIGRATABLE'].includes(integrity.status)){
+          toast(`Arquivo recusado: ${integrity.status}. Nenhum dado foi aplicado.`,'#f87171');
+          return;
+        }
+        const preview=await BackupPortability.previewRestore(d,backupCurrentState());
+        const parsedState=d.payload?.state||{};
+        S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview};
+        S.backupOpen=true;
+        render();
+        return;
+      }
       const parsed=backupFromRaw(d);
       if(!parsed){
         toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
