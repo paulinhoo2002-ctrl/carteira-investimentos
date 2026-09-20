@@ -59,6 +59,18 @@
     return { status, value: value === null || value === undefined ? null : value, ...extra };
   }
 
+  function gatedMetric(result, coverage, reason) {
+    const coverageStatus = coverage || 'UNKNOWN';
+    if (coverageStatus !== 'FULL_COVERAGE') {
+      return metric('INSUFFICIENT_DATA', null, {
+        formula: result?.formula,
+        coverage: coverageStatus,
+        reason: reason || 'HISTORICAL_COVERAGE_INSUFFICIENT',
+      });
+    }
+    return { ...result, coverage: coverageStatus };
+  }
+
   function simpleReturn(startValue, endValue, externalFlows = []) {
     const start = numberOrNull(startValue), end = numberOrNull(endValue);
     if (start === null || end === null || start <= EPSILON || externalFlows.length) return metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.simpleReturn });
@@ -159,12 +171,12 @@
     const totalIncome = incomes.reduce((sum, row) => sum + row.amount, 0);
     const capitalEnd = end === null ? null : end - totalIncome;
     const metrics = {
-      simpleReturn: simpleReturn(start, end, flows),
-      twr: twr(points, flows),
-      xirr: xirr([{ date: points[0]?.date, amount: -(start ?? 0) }, ...flows.map(flow => ({ date: flow.date, amount: flow.signedAmount })), { date: points.at(-1)?.date, amount: end ?? 0 }]),
-      incomeReturn: flows.length || start === null || start <= EPSILON ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.incomeReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_SUBPERIOD_DECOMPOSITION' : undefined }) : metric('PASS', totalIncome / start, { formula: FORMULA_VERSIONS.incomeReturn }),
-      capitalReturn: flows.length || start === null || start <= EPSILON || capitalEnd === null ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.capitalReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_SUBPERIOD_DECOMPOSITION' : undefined }) : metric('PASS', (capitalEnd - start) / start, { formula: FORMULA_VERSIONS.capitalReturn }),
-      totalReturn: flows.length || start === null || start <= EPSILON || end === null ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.simpleReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_FLOW_ADJUSTED_METRIC' : undefined }) : metric('PASS', (end - start) / start, { formula: FORMULA_VERSIONS.simpleReturn }),
+      simpleReturn: gatedMetric(simpleReturn(start, end, flows), coverage),
+      twr: gatedMetric(twr(points, flows), coverage),
+      xirr: gatedMetric(xirr([{ date: points[0]?.date, amount: -(start ?? 0) }, ...flows.map(flow => ({ date: flow.date, amount: flow.signedAmount })), { date: points.at(-1)?.date, amount: end ?? 0 }]), coverage),
+      incomeReturn: gatedMetric(flows.length || start === null || start <= EPSILON ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.incomeReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_SUBPERIOD_DECOMPOSITION' : undefined }) : metric('PASS', totalIncome / start, { formula: FORMULA_VERSIONS.incomeReturn }), coverage),
+      capitalReturn: gatedMetric(flows.length || start === null || start <= EPSILON || capitalEnd === null ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.capitalReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_SUBPERIOD_DECOMPOSITION' : undefined }) : metric('PASS', (capitalEnd - start) / start, { formula: FORMULA_VERSIONS.capitalReturn }), coverage),
+      totalReturn: gatedMetric(flows.length || start === null || start <= EPSILON || end === null ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.simpleReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_FLOW_ADJUSTED_METRIC' : undefined }) : metric('PASS', (end - start) / start, { formula: FORMULA_VERSIONS.simpleReturn }), coverage),
     };
     const benchmarkResult = benchmark ? normalizeBenchmark(benchmark.points || benchmark, points[0]?.date, points.at(-1)?.date) : { coverage: 'UNKNOWN', points: [] };
     return {

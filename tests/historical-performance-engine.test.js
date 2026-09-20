@@ -84,6 +84,49 @@ test('preço ausente é cobertura parcial, nunca zero', () => {
   assert.notEqual(result.knownValue, 0);
 });
 
+test('cobertura UNKNOWN bloqueia métricas definitivas sem converter em zero', () => {
+  const result = H.calculatePerformance({
+    valuations: [
+      { date: '2025-01-01', value: 100 },
+      { date: '2025-12-31', value: 110 },
+    ],
+    priceCoverage: { status: 'UNKNOWN' },
+  });
+  for (const key of ['simpleReturn', 'twr', 'xirr', 'incomeReturn', 'capitalReturn', 'totalReturn']) {
+    assert.equal(result.metrics[key].status, 'INSUFFICIENT_DATA');
+    assert.equal(result.metrics[key].value, null);
+    assert.equal(result.metrics[key].coverage, 'UNKNOWN');
+  }
+});
+
+test('cobertura parcial também falha fechada para retorno', () => {
+  const result = H.calculatePerformance({
+    valuations: [
+      { date: '2025-01-01', value: 100 },
+      { date: '2025-12-31', value: 110 },
+    ],
+    priceCoverage: { status: 'PARTIAL_COVERAGE' },
+  });
+  assert.equal(result.metrics.simpleReturn.status, 'INSUFFICIENT_DATA');
+  assert.equal(result.metrics.xirr.status, 'INSUFFICIENT_DATA');
+  assert.equal(result.metrics.simpleReturn.value, null);
+  assert.equal(result.metrics.xirr.value, null);
+});
+
+test('cobertura completa preserva métricas certificadas', () => {
+  const result = H.calculatePerformance({
+    valuations: [
+      { date: '2025-01-01', value: 100 },
+      { date: '2025-12-31', value: 110 },
+    ],
+    priceCoverage: { status: 'FULL_COVERAGE' },
+  });
+  assert.equal(result.metrics.simpleReturn.status, 'PASS');
+  closeTo(result.metrics.simpleReturn.value, 0.1);
+  assert.equal(result.metrics.twr.status, 'PASS');
+  assert.equal(result.metrics.xirr.status, 'PASS');
+});
+
 test('XIRR sem solução retorna estado explícito', () => {
   const result = H.xirr([
     { date: '2025-01-01', amount: -100 },
