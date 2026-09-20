@@ -29,21 +29,24 @@
     const entry=key(valueOf(row,['entryExit','entradaSaida','creditDebit','creditoDebito']));
     const incoming=entry==='entrada'||entry==='credito'||/entrada|in\b/.test(text);
     if(/transfer|custodia/.test(text)) return {classification:incoming?'TRANSFER_IN':'TRANSFER_OUT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CUSTODY_HISTORY'};
-    if(/emprestimo|aluguel/.test(text)) return {classification:incoming?'LENDING_IN':'LENDING_OUT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CUSTODY_HISTORY'};
+    if(/emprestimo|aluguel/.test(text)) return {classification:incoming?'STOCK_LOAN_RETURN':'STOCK_LOAN',confidence:'REVIEW_REQUIRED',positionImpact:0,positionEffect:'NONE',incomeEffect:'EXCLUDE',domain:'CUSTODY_HISTORY'};
     if(/direito.*subscr|subscricao.*direito/.test(text)) return {classification:'SUBSCRIPTION_RIGHT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CORPORATE_EVENT_HISTORY'};
     if(/subscricao|exercicio/.test(text)) return {classification:'SUBSCRIPTION_EXECUTION',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CORPORATE_EVENT_HISTORY'};
     if(/bonificacao|desdobro|grupamento|cisao|fusa|incorpor/.test(text)) return {classification:'CORPORATE_EVENT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CORPORATE_EVENT_HISTORY'};
-    if(/dividend|jcp|rendimento|provento/.test(text)) return {classification:'INCOME',confidence:'EXACT_SUPPORTED',positionImpact:0,domain:'INCOME_HISTORY'};
-    if(/compra|buy/.test(text)) return {classification:'BUY',confidence:'HIGH_CONFIDENCE',positionImpact:1,domain:'TRANSACTION_HISTORY'};
-    if(/venda|sell|resgate/.test(text)) return {classification:'SELL',confidence:'HIGH_CONFIDENCE',positionImpact:-1,domain:'TRANSACTION_HISTORY'};
+    if(/jcp/.test(text)) return {classification:'JCP',confidence:'EXACT_SUPPORTED',positionImpact:0,positionEffect:'NONE',incomeEffect:'INCLUDE',domain:'INCOME_HISTORY'};
+    if(/dividend|rendimento|provento/.test(text)) return {classification:'INCOME',confidence:'EXACT_SUPPORTED',positionImpact:0,positionEffect:'NONE',incomeEffect:'INCLUDE',domain:'INCOME_HISTORY'};
+    if(/compra|buy/.test(text)) return {classification:'BUY',confidence:'HIGH_CONFIDENCE',positionImpact:1,positionEffect:'INCREASE',incomeEffect:'EXCLUDE',domain:'TRANSACTION_HISTORY'};
+    if(/venda|sell|resgate/.test(text)) return {classification:'SELL',confidence:'HIGH_CONFIDENCE',positionImpact:-1,positionEffect:'DECREASE',incomeEffect:'EXCLUDE',domain:'TRANSACTION_HISTORY'};
     if(/ajuste|saldo/.test(text)) return {classification:'CUSTODY_ADJUSTMENT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CUSTODY_HISTORY'};
-    return {classification:'UNKNOWN',confidence:'UNKNOWN',positionImpact:0,domain:'IMPORT_AUDIT'};
+    return {classification:'UNKNOWN',confidence:'UNKNOWN',positionImpact:0,positionEffect:'UNKNOWN',incomeEffect:'UNKNOWN',domain:'IMPORT_AUDIT'};
   }
 
   function normalizeMovement(row={}, source='B3'){
     const classification=classifyMovement(row);
     const event={source,eventType:classification.classification,date:date(row),ticker:valueOf(row,['ticker','symbol','codigo','produto']),isin:valueOf(row,['isin']),assetId:valueOf(row,['assetId','idAtivo']),quantity:qty(row),unitPrice:Foundation.normalizeMoneyCents(valueOf(row,['unitPrice','price','preco','precoUnitario'])),grossValue:money(row),documentId:valueOf(row,['documentId','noteNumber','numeroNota']),institution:valueOf(row,['broker','brokerage','corretora','instituicao'])};
-    return {...event,identity:identity(event),classification:classification.classification,confidence:classification.confidence,positionImpact:classification.positionImpact,domain:classification.domain,verified:classification.confidence==='EXACT_SUPPORTED'||classification.confidence==='HIGH_CONFIDENCE',fingerprint:Foundation.eventFingerprint(event)};
+    const positionEffect=classification.positionEffect || (classification.positionImpact>0?'INCREASE':classification.positionImpact<0?'DECREASE':classification.classification==='UNKNOWN'?'UNKNOWN':'NONE');
+    const incomeEffect=classification.incomeEffect || (classification.classification==='INCOME'||classification.classification==='JCP'?'INCLUDE':'EXCLUDE');
+    return {...event,identity:identity(event),classification:classification.classification,confidence:classification.confidence,positionImpact:classification.positionImpact,positionEffect,incomeEffect,loanEffect:/STOCK_LOAN/.test(classification.classification)?'REFERENCE':'NONE',domain:classification.domain,verified:classification.confidence==='EXACT_SUPPORTED'||classification.confidence==='HIGH_CONFIDENCE',fingerprint:Foundation.eventFingerprint(event)};
   }
 
   function economicEventFingerprint(event={}){
@@ -74,7 +77,7 @@
         if(!groups.has(fp)) groups.set(fp,[]); groups.get(fp).push(event);
       });
     });
-    const entries=[...groups.entries()].map(([fingerprint,events])=>({fingerprint,events,state:events.length>1?'POSSIBLE_DUPLICATE':'NEW'}));
+    const entries=[...groups.entries()].map(([fingerprint,events])=>({fingerprint,events,state:events.length>1?'EXACT_DUPLICATE':'NEW',positionEffect:events[0]?.positionEffect||'UNKNOWN'}));
     return {groups:entries,doubleCount:entries.reduce((sum,item)=>sum+Math.max(0,item.events.length-1),0),economicEventDoubleCount:0};
   }
 
@@ -111,7 +114,7 @@
     const related=(Array.isArray(events)?events:[]).filter(event=>event.identity===row.identity);
     const classes=new Set(related.map(event=>event.classification));
     if(classes.has('TRANSFER_IN')||classes.has('TRANSFER_OUT')) return 'Transferência/custódia pode explicar a diferença; revisar manualmente.';
-    if(classes.has('LENDING_IN')||classes.has('LENDING_OUT')) return 'Empréstimo de ativos é informacional e não foi usado na posição esperada.';
+    if(classes.has('STOCK_LOAN')||classes.has('STOCK_LOAN_RETURN')) return 'Empréstimo de ativos é informacional e não foi usado na posição esperada.';
     if(classes.has('CORPORATE_EVENT')||classes.has('SUBSCRIPTION_EXECUTION')) return 'Evento corporativo ou subscrição requer evidência específica.';
     if(!related.length) return 'Possível lacuna de fonte, nota ou registro manual no app.';
     return 'Histórico disponível não explica integralmente a divergência.';
@@ -134,5 +137,12 @@
   function corporateEventSupportMap(){ return {splits:'UNSUPPORTED',reverseSplits:'UNSUPPORTED',bonifications:'PARTIALLY_SUPPORTED',tickerChanges:'UNSUPPORTED',mergers:'UNSUPPORTED',spinOffs:'UNSUPPORTED',subscription:'REVIEW_REQUIRED',amortization:'REVIEW_REQUIRED',capitalReturn:'REVIEW_REQUIRED'}; }
   function historicalIdentityMappingStatus(){ return {status:'NO_AUTOMATIC_MAPPING',documentedMappings:[],unsupportedMappings:['ticker change','security migration','class migration']}; }
 
-  return {classifyMovement,normalizeMovement,economicEventFingerprint,crossSourceMatch,deduplicateEconomicEvents,expectedPositionFromVerifiedHistory,reconcilePositions,explainDivergence,coverage,buildConflictReview,buildImportSession,buildReconciliationReport,corporateEventSupportMap,historicalIdentityMappingStatus};
+  function buildHistoricalReport(events=[], current=[]){
+    const normalized=(Array.isArray(events)?events:[]).map(event=>event.classification?event:normalizeMovement(event,event.source||'B3'));
+    const ordered=[...normalized].sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.fingerprint).localeCompare(String(b.fingerprint)));
+    const expected=expectedPositionFromVerifiedHistory(ordered);
+    return {coverage:coverage(ordered,ordered.filter(event=>['INCOME','JCP'].includes(event.classification))),positions:expected.positions,reconciliation:reconcilePositions(expected.positions,current,current),duplicates:deduplicateEconomicEvents([{source:'HISTORICAL',events:ordered}]),income:ordered.filter(event=>['INCOME','JCP'].includes(event.classification)&&event.incomeEffect==='INCLUDE'),ignoredLoans:ordered.filter(event=>String(event.classification).startsWith('STOCK_LOAN')),writeEnabled:false};
+  }
+
+  return {classifyMovement,normalizeMovement,economicEventFingerprint,crossSourceMatch,deduplicateEconomicEvents,expectedPositionFromVerifiedHistory,reconcilePositions,explainDivergence,coverage,buildConflictReview,buildImportSession,buildReconciliationReport,buildHistoricalReport,corporateEventSupportMap,historicalIdentityMappingStatus};
 });
