@@ -58,18 +58,25 @@
       const symbol = text(ticker).toUpperCase();
       if (!symbol) return Promise.resolve(normalizeQuote({ error: 'TICKER_AUSENTE' }, { ticker: symbol, now: now() }));
       if (inflight.has(symbol)) return inflight.get(symbol);
+      const cached = cache.get(symbol);
+      if (cached && cached.price !== null) {
+        const cachedFreshness = freshness(cached, { now: now(), delayedAfterMs, staleAfterMs });
+        if (cachedFreshness.status === STATUS.FRESH || cachedFreshness.status === STATUS.DELAYED) {
+          return Promise.resolve({ ...cached, cacheHit: true, freshness: cachedFreshness, status: cachedFreshness.status });
+        }
+      }
       const work = (async () => {
         let lastError = '';
-        for (const provider of list) {
+        for (const [index, provider] of list.entries()) {
           try {
             const raw = await provider.getQuote(symbol, { fetchImpl });
-            const quote = normalizeQuote(raw, { ticker: symbol, now: now(), fallbackUsed: provider.rank > 1, fallbackSource: provider.name });
+            const quote = normalizeQuote({ ...raw, source: raw?.source || raw?.provider || provider.name }, { ticker: symbol, now: now(), fallbackUsed: index > 0, fallbackSource: provider.name });
             if (quote.price !== null) { cache.set(symbol, quote); return quote; }
             lastError = quote.error;
           } catch (error) { lastError = text(error?.message || error); }
         }
         const previous = cache.get(symbol);
-        if (previous?.price !== null) return { ...previous, lastKnownGood: true, status: STATUS.STALE, freshness: { ...previous.freshness, status: STATUS.STALE, reason: 'Fonte indisponível; mantendo última cotação válida.' }, error: lastError };
+        if (previous && previous.price !== null) return { ...previous, lastKnownGood: true, cacheHit: false, status: STATUS.STALE, freshness: { ...previous.freshness, status: STATUS.STALE, reason: 'Fonte indisponível; mantendo última cotação válida.' }, error: lastError };
         return normalizeQuote({ ticker: symbol, error: lastError || 'FONTE_INDISPONÍVEL' }, { ticker: symbol, now: now() });
       })();
       inflight.set(symbol, work);
