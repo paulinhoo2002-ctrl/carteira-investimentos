@@ -59,6 +59,21 @@ test('shadow events do not affect asset values', () => { const model = Trust.bui
 test('build preserves unknown value state', () => assert.equal(Trust.build({ assets: [asset({ current_price: null })] }).assets[0].valueStatus, 'UNKNOWN'));
 test('build preserves legitimate zero value state', () => assert.equal(Trust.build({ assets: [asset({ current_price: 0 })] }).assets[0].valueStatus, 'LEGITIMATE_ZERO'));
 test('build counts stale positions', () => assert.equal(Trust.build({ assets: [asset({ quoteUpdatedAt: '2026-09-01' })] }, { now: NOW }).summary.staleQuoteCount, 1));
+test('market data aggregation uses the same freshness buckets as the summary', () => {
+  const assets = [
+    ...Array.from({ length: 36 }, (_, index) => asset({ id: `fresh-${index}`, quoteStatus: 'OK' })),
+    ...Array.from({ length: 2 }, (_, index) => asset({ id: `stale-${index}`, quoteStatus: 'STALE', quoteUpdatedAt: '2026-09-01T10:00:00Z' })),
+    ...Array.from({ length: 3 }, (_, index) => asset({ id: `unknown-${index}`, quoteStatus: 'UNKNOWN', quoteUpdatedAt: '' })),
+  ];
+  const model = Trust.build({ assets }, { now: NOW });
+  assert.equal(model.summary.currentQuoteCount, 36);
+  assert.equal(model.summary.staleQuoteCount, 2);
+  assert.equal(model.summary.unknownQuoteCount, 3);
+  assert.equal(model.marketData.freshCount, model.summary.currentQuoteCount);
+  assert.equal(model.marketData.staleCount, model.summary.staleQuoteCount);
+  assert.equal(model.marketData.unknownCount, model.summary.unknownQuoteCount);
+  assert.equal(model.marketData.freshCount + model.marketData.staleCount + model.marketData.unknownCount, assets.length);
+});
 test('build counts provenance gaps', () => assert.equal(Trust.build({ assets: [asset({ quoteSource: '', quoteUpdatedAt: '' })] }).summary.noProvenanceCount, 1));
 test('build counts fixed-income authority states', () => { const model = Trust.build({ assets: [asset({ type: 'Renda Fixa', currentMeta: { authority: 'MANUAL', manual: true } })] }); assert.equal(model.summary.manualFixedIncomeCount, 1); });
 test('search filters ticker and source', () => { const model = Trust.build({ assets: [asset(), asset({ id: 'a2', ticker: 'EFGH4', quoteSource: 'Importado' })] }); assert.equal(Trust.filter(model, { search: 'ABCD3' }).length, 1); assert.equal(Trust.filter(model, { source: 'Importado' }).length, 1); });
