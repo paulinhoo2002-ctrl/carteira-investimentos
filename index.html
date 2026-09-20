@@ -10168,6 +10168,16 @@ function initFirebase(){
     FB.auth = firebase.auth();
     FB.db   = firebase.firestore();
     FB.ready = true;
+    window.addEventListener('offline',()=>render());
+    window.addEventListener('online',()=>{
+      if(!FB.user){
+        FB.authResolved=false;
+        FB.access.loading=true;
+        FB.access.loaded=false;
+        FB.access.allowed=false;
+      }
+      render();
+    });
     if(!isProtectedReadOnlyQaBoot()){
       try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     }
