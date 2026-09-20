@@ -8143,6 +8143,51 @@ let FB = {
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
 
+const V250_RECONNECT_RELOAD_KEY = 'civ5_v250_reconnect_reload_v1';
+const RECONNECT_RELOAD_MAX_ATTEMPTS = 1;
+let reconnectAuthFlight = null;
+let reconnectAuthAttemptCount = 0;
+let reconnectWasOffline = navigator.onLine === false;
+
+function reconnectMarkerHasTrustedSnapshot(){
+  const marker = window.V250OfflineSession?.read?.();
+  const hasSnapshot = window.V250OfflineSession?.snapshotHasData?.(localStorage, STOR) === true;
+  return Boolean(marker?.eligible) && hasSnapshot;
+}
+function clearReconnectReloadGuard(){
+  try{ sessionStorage.removeItem(V250_RECONNECT_RELOAD_KEY); }catch(_){ }
+}
+function revalidateFirebaseAuthAfterReconnect(){
+  if(reconnectAuthFlight) return reconnectAuthFlight;
+  if(!navigator.onLine || !reconnectWasOffline || FB.user || !FB.auth || !reconnectMarkerHasTrustedSnapshot()){
+    return Promise.resolve({status:'not-needed'});
+  }
+  reconnectAuthFlight = (async()=>{
+    reconnectAuthAttemptCount += 1;
+    FB.authResolved = false;
+    FB.access.loading = true;
+    FB.access.loaded = false;
+    FB.access.allowed = false;
+    render();
+
+    // Firebase remains the only authority. A controlled reload is the
+    // compatibility fallback when the compat observer resolved null offline.
+    const currentUser = FB.auth.currentUser;
+    // A Firebase-owned currentUser is evidence for the bootstrap, never a
+    // reason to assign FB.user locally. Let the normal observer own recovery.
+    if(currentUser && typeof currentUser.getIdToken !== 'function') return {status:'auth-gate'};
+    let alreadyReloaded = false;
+    try{ alreadyReloaded = sessionStorage.getItem(V250_RECONNECT_RELOAD_KEY) === '1'; }catch(_){ }
+    if(alreadyReloaded || RECONNECT_RELOAD_MAX_ATTEMPTS < 1){
+      return {status:'auth-gate'};
+    }
+    try{ sessionStorage.setItem(V250_RECONNECT_RELOAD_KEY,'1'); }catch(_){ }
+    window.location.reload();
+    return {status:'controlled-reload'};
+  })().finally(()=>{ reconnectAuthFlight = null; });
+  return reconnectAuthFlight;
+}
+
 let THEME = 'dark';
 function normalizeTheme(v){
   return String(v||'dark').toLowerCase()==='light' ? 'light' : 'dark';
@@ -10168,7 +10213,10 @@ function initFirebase(){
     FB.auth = firebase.auth();
     FB.db   = firebase.firestore();
     FB.ready = true;
-    window.addEventListener('offline',()=>render());
+    window.addEventListener('offline',()=>{
+      reconnectWasOffline = true;
+      render();
+    });
     window.addEventListener('online',()=>{
       if(!FB.user){
         FB.authResolved=false;
@@ -10176,7 +10224,7 @@ function initFirebase(){
         FB.access.loaded=false;
         FB.access.allowed=false;
       }
-      render();
+      revalidateFirebaseAuthAfterReconnect().finally(()=>render());
     });
     if(!isProtectedReadOnlyQaBoot()){
       try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
@@ -10194,6 +10242,7 @@ function initFirebase(){
         const ok = await loadAccessControl(FB.user);
         await recordAccessAttempt(FB.user, ok, FB.access.reason);
         if(!ok){
+          clearReconnectReloadGuard();
           stopCloudSync(false);
           try{ await FB.auth.signOut(); }catch(e){}
           FB.user = null;
@@ -10203,6 +10252,8 @@ function initFirebase(){
           return;
         }
         FB.access.loading = false;
+        clearReconnectReloadGuard();
+        reconnectWasOffline = false;
         if(isAuthoritativeLocalRecoveryBoot()){
           readFreshCloudPayload().then(async cloudPayload=>{
             if(window.ProtectedLocalCloudAuthority){

@@ -62,6 +62,21 @@ test('V250B source contract gates offline shell before Firebase access gate', ()
   assert.match(index, /window\.addEventListener\('online',\(\)=>\{[\s\S]*?if\(!FB\.user\)/);
 });
 
+test('V250D reconnect revalidation is single-flight and reload-loop protected', () => {
+  assert.match(index, /function revalidateFirebaseAuthAfterReconnect\(\)/);
+  assert.match(index, /RECONNECT_RELOAD_MAX_ATTEMPTS/);
+  assert.match(index, /sessionStorage/);
+  assert.match(index, /window\.location\.reload\(\)/);
+  assert.match(index, /reconnectAuthFlight/);
+  assert.match(index, /revalidateFirebaseAuthAfterReconnect\(\)/);
+});
+
+test('V250D reconnect never promotes the offline marker to online auth', () => {
+  assert.doesNotMatch(index, /FB\.user\s*=\s*\{[^}]*offline/i);
+  assert.match(index, /FB\.auth\.currentUser/);
+  assert.match(index, /FB\.authResolved\s*=\s*false/);
+});
+
 test('V250B service worker ships the offline session helper in the versioned shell', () => {
   assert.match(sw, /'\.\/v250-offline-session\.js'/);
   assert.match(sw, /const SW_VERSION = 'v250\.1'/);
