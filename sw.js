@@ -10,6 +10,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
+  './v250-offline-session.js',
   './v250-runtime.js',
   './icon.svg',
   './icon-180.png',
