@@ -58,6 +58,7 @@ test('V250B source contract gates offline shell before Firebase access gate', ()
   assert.match(index, /clearV250OfflineEligibility\(\)/);
   assert.match(index, /typeof isV250OfflineCachedSession==='function' && isV250OfflineCachedSession\(\) && !protectedLocalRecoveryWrite/);
   assert.match(index, /rememberV250TrustedSnapshot/);
+  assert.match(index, /FB\.user && !isV250OfflineCachedSession\(\) && !CloudSyncState\.isDataConfirmed/);
 });
 
 test('V250B service worker ships the offline session helper in the versioned shell', () => {

@@ -27051,7 +27051,7 @@ function app(){
 ${globalThis.PortfolioMovementPreview?.getState?.().open ? globalThis.PortfolioMovementPreview.renderHtml() : ''}`;
 }
 function content(){
-  if(typeof FB!=='undefined' && FB.user && !CloudSyncState.isDataConfirmed(cloudSyncState())) return cloudSyncRecoveryPanel();
+  if(typeof FB!=='undefined' && FB.user && !isV250OfflineCachedSession() && !CloudSyncState.isDataConfirmed(cloudSyncState())) return cloudSyncRecoveryPanel();
   if(assetDetailId){
     const detail=assetDetailAsset();
     if(detail) return assetDetailPage(detail);
