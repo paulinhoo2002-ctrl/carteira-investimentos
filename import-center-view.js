@@ -9,7 +9,7 @@
     const session=context.readState()||{};
     const files=Array.isArray(session.files)?session.files:[];
     const result=session.result||null;
-    const supportLabel=value=>value==='FULLY_SUPPORTED'?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':value==='FIXTURE_REQUIRED'?'Fixture necessária':'Suporte parcial';
+    const supportLabel=value=>['FULLY_SUPPORTED','SUPPORTED','FULL'].includes(value)?'Suporte completo':value==='REVIEW_REQUIRED'?'Revisão necessária':value==='FIXTURE_REQUIRED'?'Fixture necessária':value==='UNSUPPORTED'?'Não suportado':'Suporte parcial';
     const stepLabels=context.getSteps();
     const currentStepLabel=stepLabels[Math.max(0,Math.min(stepLabels.length-1,Number(session.step)||1)-1)];
     const steps=stepLabels.map((label,index)=>`<div class="import-center-step ${session.step===index+1?'on':''} ${session.step>index+1?'done':''}"${session.step===index+1?' aria-current="step"':''}><span>${session.step>index+1?'✓':index+1}</span>${context.escapeText(label)}</div>`).join('');
