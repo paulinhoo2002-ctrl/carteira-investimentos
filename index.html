@@ -15,6 +15,7 @@
 <script src="portfolio-movement-contract.js"></script>
 <script src="portfolio-movement-preview.js"></script>
 <script src="cloud-sync-state.js"></script>
+<script src="v250-runtime.js"></script>
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
@@ -27,7 +28,7 @@
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
-  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v18';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.1';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode){
     document.documentElement.dataset.theme='dark';
@@ -35510,7 +35511,13 @@ if(isActiveWalletHostMode()){
     render();
   }
   fetchQuotes(false);
-  startPublicEventsSync();
+  const schedulePublicEventsSync=()=>{
+    if(!navigator.onLine) return;
+    const run=()=>startPublicEventsSync();
+    if(typeof window.requestIdleCallback==='function') window.requestIdleCallback(run,{timeout:1500});
+    else window.setTimeout(run,750);
+  };
+  schedulePublicEventsSync();
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
   window.addEventListener('focus',()=>{fetchQuotes(false); if(window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__) window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__.refresh().catch(()=>{});});
   window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
@@ -35541,6 +35548,7 @@ if(!isLocalTestMode() && !isActiveWalletHostMode() && !isProtectedShadowBoot() &
     navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
       window.__pwaRegistration=reg;
       watchPwaUpdate(reg);
+      window.V250Runtime?.checkVersionCoherence?.().catch(()=>{});
       if(reg && reg.update) reg.update().catch(()=>{});
     }).catch(()=>{});
   });
