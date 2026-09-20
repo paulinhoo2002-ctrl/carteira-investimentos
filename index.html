@@ -10193,7 +10193,7 @@ function initFirebase(){
         }
         FB.access.loading = false;
         if(isAuthoritativeLocalRecoveryBoot()){
-          readFreshCloudPayload().then(cloudPayload=>{
+          readFreshCloudPayload().then(async cloudPayload=>{
             if(window.ProtectedLocalCloudAuthority){
               FB.lastCloudAuthorityFingerprint=window.ProtectedLocalCloudAuthority.fingerprintCloud(cloudPayload||{});
             }
