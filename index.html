@@ -8041,6 +8041,7 @@ document.write([
 <script src="portfolio-intelligence.js"></script>
 <script src="portfolio-allocation-intelligence.js"></script>
 <script src="portfolio-performance.js"></script>
+<script src="historical-performance-engine.js"></script>
 <script src="portfolio-report-model.js"></script>
 <script src="executive-reporting.js"></script>
 <script src="portfolio-event-timeline.js?v=v228-1"></script>
@@ -33789,10 +33790,64 @@ function metasTab(){
   </div>`;
 }
 
+function v248HistoricalPerformanceSnapshot(){
+  const runtime=window.__V76_RUNTIME__||{};
+  const snapshots=Array.isArray(runtime.snapshots?.snapshots)?runtime.snapshots.snapshots:[];
+  const valuations=snapshots.map(row=>({date:row.localDate,value:Number(row.totalPortfolioValue)/100}));
+  const flowRows=Array.isArray(runtime.flows?.flows)?runtime.flows.flows:[];
+  const events=flowRows.map(row=>({date:row.date,type:row.type==='CONTRIBUTION'?'EXTERNAL_CONTRIBUTION':row.type==='WITHDRAWAL'?'EXTERNAL_WITHDRAWAL':row.type,amount:Number(row.amountCents)/100}));
+  const income=rentabilityIncomeRows().map(row=>({date:row.date,amount:row.value,type:row.sourceKind==='rf'?'FII_INCOME':'DIVIDEND'}));
+  const coverage=snapshots.length>=2
+    ? (snapshots.every(row=>Number(row.totalCoveragePercent)>=95)?'FULL_COVERAGE':'PARTIAL_COVERAGE')
+    : 'UNKNOWN';
+  const engine=window.HistoricalPerformance;
+  if(!engine) return {coverage:'UNKNOWN',model:null,yearEnd:[]};
+  const model=engine.calculatePerformance({valuations,events,income,priceCoverage:{status:coverage}});
+  const years=[...new Set(snapshots.map(row=>String(row.localDate||'').slice(0,4)).filter(Boolean))].sort();
+  const yearEnd=years.map(year=>engine.buildYearEndPosition(snapshots.map(row=>({date:row.localDate,ticker:'PORTFOLIO',quantity:null,value:Number(row.totalPortfolioValue)/100,coverage:Number(row.totalCoveragePercent)>=95?'FULL_COVERAGE':'PARTIAL_COVERAGE'})),Number(year)));
+  return {coverage,model,yearEnd,snapshotCount:snapshots.length,firstDate:valuations[0]?.date||null,lastDate:valuations.at(-1)?.date||null};
+}
+
+function v248PerformanceMetricLabel(metricValue){
+  if(!metricValue||metricValue.status!=='PASS'||!Number.isFinite(Number(metricValue.value))) return 'Indisponível';
+  return fmtP(Number(metricValue.value)*100);
+}
+
+function v248HistoricalPerformancePanel(){
+  const snapshot=v248HistoricalPerformanceSnapshot();
+  const model=snapshot.model;
+  const coverageLabel={FULL_COVERAGE:'Cobertura completa',PARTIAL_COVERAGE:'PARTIAL_COVERAGE · cobertura parcial',UNKNOWN:'UNKNOWN · histórico ainda não iniciado',INSUFFICIENT_DATA:'INSUFFICIENT_DATA · dados insuficientes'}[snapshot.coverage]||snapshot.coverage;
+  const start=model?.valuations?.[0]?.value;
+  const end=model?.valuations?.at(-1)?.value;
+  const currentValue=end==null?'Indisponível':fmt(end);
+  const initialValue=start==null?'Indisponível':fmt(start);
+  const flowTotal=(model?.externalFlows||[]).reduce((sum,row)=>sum+Number(row.signedAmount||0),0);
+  const yearEndRows=(snapshot.yearEnd||[]).flatMap(item=>item.rows||[]).map(row=>`<tr><td>${esc(row.date?.slice(0,4)||'—')}</td><td>${esc(row.ticker)}</td><td>${row.value==null?'UNKNOWN':fmt(row.value)}</td><td>${esc(row.coverage||'UNKNOWN')}</td></tr>`).join('');
+  return `<section class="card v248-history-panel" aria-label="Histórico auditável e performance">
+    <div class="sh"><div><div class="st">Histórico auditável</div><div class="mu">Patrimônio, fluxos externos e retorno com cobertura explícita.</div></div><span class="ds-badge ${snapshot.coverage==='FULL_COVERAGE'?'ok':snapshot.coverage==='PARTIAL_COVERAGE'?'warning':'muted'}">${esc(coverageLabel)}</span></div>
+    <div class="rent-summary-preview">
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Patrimônio atual</div><div class="rent-summary-chip-value">${currentValue}</div><div class="rent-summary-chip-sub">Último valuation histórico válido</div></div>
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Patrimônio inicial</div><div class="rent-summary-chip-value">${initialValue}</div><div class="rent-summary-chip-sub">Sem retroagir preço atual</div></div>
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Aportes líquidos</div><div class="rent-summary-chip-value">${model?.externalFlows?.length?fmt(flowTotal):'Indisponível'}</div><div class="rent-summary-chip-sub">Somente fluxos externos explícitos</div></div>
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Cobertura histórica</div><div class="rent-summary-chip-value">${esc(snapshot.coverage)}</div><div class="rent-summary-chip-sub">${snapshot.snapshotCount||0} valuation(s) derivados</div></div>
+    </div>
+    <div class="rent-analysis-note-list" style="margin-top:12px">
+      <div><span>SIMPLE_RETURN</span><strong>${v248PerformanceMetricLabel(model?.metrics?.simpleReturn)}</strong></div>
+      <div><span>TWR · fluxo no fim do subperíodo</span><strong>${v248PerformanceMetricLabel(model?.metrics?.twr)}</strong></div>
+      <div><span>MWR/XIRR</span><strong>${v248PerformanceMetricLabel(model?.metrics?.xirr)}</strong></div>
+      <div><span>Renda / capital</span><strong>${v248PerformanceMetricLabel(model?.metrics?.incomeReturn)} / ${v248PerformanceMetricLabel(model?.metrics?.capitalReturn)}</strong></div>
+    </div>
+    <div class="mu" style="margin-top:12px">Benchmarks históricos só aparecem quando houver série alinhada; preço atual, benchmark estático e lacuna de dados não são usados como histórico.</div>
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Posições em 31/12</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Ano</th><th>Ativo</th><th>Valor</th><th>Cobertura</th></tr></thead><tbody>${yearEndRows||'<tr><td colspan="4">Sem snapshot de 31/12 com cobertura suficiente.</td></tr>'}</tbody></table></div></details>
+  </section>`;
+}
+
 function rentabilidadeTab(){
   const bench=String(S.rentBench||'CDI');
   const type=String(S.rentType||'all');
   const period=String(S.rentPeriod||'all');
+  const v248History=v248HistoricalPerformanceSnapshot();
+  const certifiedHistory=v248History.coverage==='FULL_COVERAGE'||v248History.coverage==='PARTIAL_COVERAGE';
   const data=rentabilityHistory(type, period, bench);
   const view=Array.isArray(data.view)?data.view:[];
   const points=Array.isArray(data.points)?data.points:[];
@@ -33843,20 +33898,20 @@ function rentabilidadeTab(){
   const sideCards=[
     {
       title:'Rentabilidade total',
-      value:fmtP(current.cumReturn||0),
-      foot:`Inclui proventos recebidos · ${gap>=0?'Acima':'Abaixo'} do ${bench}: ${fmtP(gap||0)}`,
+      value:certifiedHistory?fmtP(current.cumReturn||0):'Indisponível',
+      foot:certifiedHistory?`Estimativa legada · ${gap>=0?'Acima':'Abaixo'} do ${bench}`:'Sem série histórica certificada para este recorte',
       color:'var(--success)',
     },
     {
       title:'Últimos 12 meses',
-      value:fmtP(return12m||0),
-      foot:`Variação acumulada no recorte de 12 meses · proventos: ${fmt(provCurrent)}`,
+      value:certifiedHistory?fmtP(return12m||0):'Indisponível',
+      foot:certifiedHistory?`Estimativa legada · proventos: ${fmt(provCurrent)}`:'Fluxos externos e valuations históricos insuficientes',
       color:'#60a5fa',
     },
     {
       title:'Último mês',
-      value:fmtP(currentMonth||0),
-      foot:'Mudança estimada no fechamento do mês',
+      value:certifiedHistory?fmtP(currentMonth||0):'Indisponível',
+      foot:certifiedHistory?'Estimativa legada do fechamento mensal':'Sem valuation histórico válido',
       color:(currentMonth||0)>=0?'var(--success)':'var(--danger)',
     },
     {
@@ -33870,7 +33925,7 @@ function rentabilidadeTab(){
     ? `Concentração: top 3 com ${top3Share.toFixed(1)}% da carteira. Maior posição: ${topAsset.ticker} com ${fmt(topAsset.value)} (${normalizeType(topAsset.type||'Ação','Ação')}).`
     : 'Concentração: sem posições ainda.';
 
-  const chartData=view.length?view:points;
+  const chartData=certifiedHistory?(view.length?view:points):[];
   const chartLabels=chartData.map(p=>p.label);
   const chartSeries=[
     {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--success)', fill:'rgba(34,197,94,.12)', width:2.5, points:false},
@@ -33901,12 +33956,13 @@ function rentabilidadeTab(){
 
   const chartLegend=`<div class="pleg">
     <div class="pli"><span class="pd" style="background:var(--success)"></span>Carteira</div>
-    <div class="pli"><span class="pd" style="background:#60a5fa"></span>${esc(bench)} estimado</div>
-    <div class="pli"><span class="pd" style="background:var(--muted)"></span>Baseado na posição atual</div>
+    <div class="pli"><span class="pd" style="background:#60a5fa"></span>${certifiedHistory?`${esc(bench)} com cobertura disponível`:'Benchmark UNKNOWN'}</div>
+    <div class="pli"><span class="pd" style="background:var(--muted)"></span>${certifiedHistory?'Série derivada dos valuations disponíveis':'Sem retroagir preço atual'}</div>
   </div>`;
 
   return`<div class="rent-premium"><h1 class="page-heading">Rentabilidade</h1>
   <div class="page-sub">Evolução e comparação da carteira, com proventos incluídos no cálculo.</div>
+  ${v248HistoricalPerformancePanel()}
 
   <div class="rent-layout">
     <div class="rent-side">
@@ -33921,7 +33977,7 @@ function rentabilidadeTab(){
       <div class="sh" style="margin-bottom:12px">
         <div>
           <div class="st">Rentabilidade comparada com índices</div>
-          <div class="mu" style="font-size:11px;margin-top:2px">Histórico estimado a partir dos dados lançados na carteira e dos proventos recebidos.</div>
+          <div class="mu" style="font-size:11px;margin-top:2px">A série certificada depende de valuations e preços históricos; lacunas permanecem visíveis.</div>
         </div>
         <div class="rent-filters">
           <select aria-label="Período da rentabilidade" onchange="setRentPeriod(this.value)">
@@ -33942,10 +33998,10 @@ function rentabilidadeTab(){
 
       ${chartLegend}
       <div class="rent-chartbox">
-        ${points.length ? lineChart(chartSeries, chartLabels, 'rent-performance-chart') : '<div class="es" style="padding:42px 18px">Cadastre aportes e proventos para ver a evolução da rentabilidade.</div>'}
+        ${chartData.length ? lineChart(chartSeries, chartLabels, 'rent-performance-chart') : '<div class="es" style="padding:42px 18px">Sem série histórica certificada para este período. O painel Histórico auditável informa a cobertura real.</div>'}
       </div>
       <div class="rent-summary-preview" aria-label="Resumo do histórico mensal">
-        ${summaryPreview.map(item=>`<div class="rent-summary-chip">
+        ${(certifiedHistory?summaryPreview:summaryPreview.map(item=>({...item,value:'Indisponível',sub:'Cobertura histórica insuficiente'}))).map(item=>`<div class="rent-summary-chip">
           <div class="rent-summary-chip-label">${esc(item.label)}</div>
           <div class="rent-summary-chip-value">${esc(item.value)}</div>
           <div class="rent-summary-chip-sub">${esc(item.sub)}</div>
