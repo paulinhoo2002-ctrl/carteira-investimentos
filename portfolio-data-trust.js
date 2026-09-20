@@ -146,6 +146,7 @@
 
   function normalizeMarketStatus(rawStatus, fallbackStatus = STATUS.UNKNOWN) {
     const raw = upper(rawStatus);
+    if (fallbackStatus === STATUS.CURRENT || fallbackStatus === STATUS.STALE || fallbackStatus === STATUS.UNKNOWN) return fallbackStatus;
     if (raw === 'FRESH' || raw === 'DELAYED' || raw === 'CURRENT' || raw === 'OK') return STATUS.CURRENT;
     if (raw === 'STALE') return STATUS.STALE;
     if (raw === 'UNKNOWN') return STATUS.UNKNOWN;

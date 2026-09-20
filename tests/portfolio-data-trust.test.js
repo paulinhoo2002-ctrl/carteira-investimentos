@@ -61,7 +61,7 @@ test('build preserves legitimate zero value state', () => assert.equal(Trust.bui
 test('build counts stale positions', () => assert.equal(Trust.build({ assets: [asset({ quoteUpdatedAt: '2026-09-01' })] }, { now: NOW }).summary.staleQuoteCount, 1));
 test('market data aggregation uses the same freshness buckets as the summary', () => {
   const assets = [
-    ...Array.from({ length: 36 }, (_, index) => asset({ id: `fresh-${index}`, quoteStatus: 'OK' })),
+    ...Array.from({ length: 36 }, (_, index) => asset({ id: `fresh-${index}`, quoteStatus: index === 0 ? 'STALE' : 'OK' })),
     ...Array.from({ length: 2 }, (_, index) => asset({ id: `stale-${index}`, quoteStatus: 'STALE', quoteUpdatedAt: '2026-09-01T10:00:00Z' })),
     ...Array.from({ length: 3 }, (_, index) => asset({ id: `unknown-${index}`, quoteStatus: 'UNKNOWN', quoteUpdatedAt: '' })),
   ];
