@@ -144,6 +144,17 @@
     };
   }
 
+  function normalizeMarketStatus(rawStatus, fallbackStatus = STATUS.UNKNOWN) {
+    const raw = upper(rawStatus);
+    if (fallbackStatus === STATUS.CURRENT || fallbackStatus === STATUS.STALE || fallbackStatus === STATUS.UNKNOWN) return fallbackStatus;
+    if (raw === 'FRESH' || raw === 'DELAYED' || raw === 'CURRENT' || raw === 'OK') return STATUS.CURRENT;
+    if (raw === 'STALE') return STATUS.STALE;
+    if (raw === 'UNKNOWN') return STATUS.UNKNOWN;
+    if (raw === 'ERROR') return 'ERROR';
+    if (fallbackStatus === STATUS.CURRENT || fallbackStatus === STATUS.STALE || fallbackStatus === STATUS.UNKNOWN) return fallbackStatus;
+    return STATUS.UNKNOWN;
+  }
+
   function duplicateDiagnostics(events = []) {
     const groups = new Map();
     list(events).forEach((event, index) => {
@@ -224,16 +235,17 @@
     const assets = list(input.assets).map((asset, index) => normalizeAsset(asset, index, { ...options, isFixedIncome: options.isFixedIncome }));
     const events = list(input.events || input.proventos).map(event => ({ ...event }));
     const fixedIncome = assets.filter(asset => asset.isFixedIncome);
-    const freshnessRows = assets.map(asset => ({ id: asset.id, label: asset.label, source: asset.quoteSource, ...asset.freshness }));
     const marketDataRows = assets.map(asset => {
       const raw = asset.raw || {};
-      const status = upper(raw.quoteStatus || asset.freshness.status || STATUS.UNKNOWN);
-      return { id: asset.id, label: asset.label, source: asset.quoteSource || 'UNKNOWN', status, fallbackUsed: raw.quoteFallbackUsed === true, lastKnownGood: raw.quoteLastKnownGood === true, quoteUpdatedAt: raw.quoteUpdatedAt || null, quoteMarketTime: raw.quoteMarketTime || null };
+      const rawStatus = upper(raw.quoteStatus);
+      const status = normalizeMarketStatus(rawStatus, asset.freshness.status);
+      return { id: asset.id, label: asset.label, source: asset.quoteSource || 'UNKNOWN', status, rawStatus, fallbackUsed: raw.quoteFallbackUsed === true, lastKnownGood: raw.quoteLastKnownGood === true, quoteUpdatedAt: raw.quoteUpdatedAt || null, quoteMarketTime: raw.quoteMarketTime || null };
     });
+    const freshnessRows = assets.map((asset, index) => ({ id: asset.id, label: asset.label, source: asset.quoteSource, ...asset.freshness, status: marketDataRows[index].status }));
     const marketData = {
       rows: marketDataRows,
-      freshCount: marketDataRows.filter(row => row.status === 'FRESH' || row.status === STATUS.CURRENT).length,
-      delayedCount: marketDataRows.filter(row => row.status === 'DELAYED').length,
+      freshCount: marketDataRows.filter(row => row.status === STATUS.CURRENT).length,
+      delayedCount: marketDataRows.filter(row => row.rawStatus === 'DELAYED').length,
       staleCount: marketDataRows.filter(row => row.status === STATUS.STALE).length,
       unknownCount: marketDataRows.filter(row => row.status === STATUS.UNKNOWN).length,
       errorCount: marketDataRows.filter(row => row.status === 'ERROR').length,
