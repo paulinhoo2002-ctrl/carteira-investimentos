@@ -70,6 +70,29 @@ test('V249 blocks duplicate identities, invalid dates and count tampering', asyn
   assert.equal((await Backup.verifyBackup(badCount)).status, 'CORRUPTED');
 });
 
+test('V249 accepts known Brazilian legacy contribution dates and normalizes the financial day', async () => {
+  const created = await Backup.createBackup({ state: { ...fixtureState(), aportes: [
+    { id: 'legacy', date: '02/01/2026', value: 1000 },
+    { id: 'canonical', date: '2026-01-03', value: 500 }
+  ] }, config: {} });
+  const backup = JSON.parse(JSON.stringify(created));
+  backup.payload.state.aportes.find(row => row.id === 'legacy').date = '02/01/2026';
+  backup.manifest.checksums.payload = (await import('node:crypto')).createHash('sha256').update(Backup.canonical(backup.payload), 'utf8').digest('hex');
+  const parsed = await Backup.verifyBackup(backup);
+  assert.equal(parsed.status, 'SUPPORTED');
+  assert.equal(parsed.backup.payload.state.aportes.find(row => row.id === 'legacy').date, '2026-01-02');
+  assert.equal(parsed.backup.payload.state.aportes.find(row => row.id === 'canonical').date, '2026-01-03');
+});
+
+test('V249 rejects impossible legacy dates without timezone coercion', async () => {
+  const backup = await Backup.createBackup({ state: { ...fixtureState(), aportes: [{ id: 'bad', date: '31/02/2025', value: 1000 }] }, config: {} });
+  const result = await Backup.verifyBackup(backup);
+  assert.equal(result.error, 'INVALID_DATE:aportes:date');
+  const canonical = await Backup.createBackup({ state: { ...fixtureState(), aportes: [{ id: 'day', date: '2025-01-01', value: 1000 }] }, config: {} });
+  const checked = await Backup.verifyBackup(canonical);
+  assert.equal(checked.backup.payload.state.aportes[0].date, '2025-01-01');
+});
+
 test('V249 isolated apply is idempotent and rolls back after injected failure', async () => {
   const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
   const store = { state: { wallets: [] }, config: {} };

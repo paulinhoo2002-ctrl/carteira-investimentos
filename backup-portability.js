@@ -55,7 +55,47 @@
   }
   function sourceState(input) {
     const state = input?.state ?? input ?? {};
-    return normalize(state, { stripSensitive: true });
+    return normalizeFinancialDates(normalize(state, { stripSensitive: true }));
+  }
+  const DATE_ONLY_FIELDS = new Set(['date', 'eventDate', 'effectiveDate']);
+  function daysInMonth(year, month) { return new Date(Date.UTC(year, month, 0)).getUTCDate(); }
+  function canonicalDate(year, month, day) {
+    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day) || year < 1900 || month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) return null;
+    return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+  function parseLegacyFinancialDate(value) {
+    if (value === null || value === undefined || value === '') return { status: 'MISSING', value };
+    const s = String(value).trim();
+    let match = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) return { status: canonicalDate(Number(match[1]), Number(match[2]), Number(match[3])) ? 'VALID' : 'INVALID', value: canonicalDate(Number(match[1]), Number(match[2]), Number(match[3])) };
+    match = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if (match) {
+      const year = match[3].length === 2 ? 2000 + Number(match[3]) : Number(match[3]);
+      const normalized = canonicalDate(year, Number(match[2]), Number(match[1]));
+      return { status: normalized ? 'VALID' : 'INVALID', value: normalized };
+    }
+    match = s.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+    if (match && canonicalDate(Number(match[1]), Number(match[2]), Number(match[3])) && Number.isFinite(Date.parse(s))) return { status: 'VALID', value: canonicalDate(Number(match[1]), Number(match[2]), Number(match[3])) };
+    return { status: 'INVALID', value };
+  }
+  function normalizeFinancialDates(state) {
+    if (!isRecord(state)) return state;
+    const result = clone(state);
+    for (const section of Object.keys(result)) {
+      if (!Array.isArray(result[section])) continue;
+      result[section] = result[section].map(row => {
+        if (!isRecord(row)) return row;
+        const next = { ...row };
+        for (const field of DATE_ONLY_FIELDS) {
+          if (next[field] !== undefined && next[field] !== null && next[field] !== '') {
+            const parsed = parseLegacyFinancialDate(next[field]);
+            if (parsed.status === 'VALID') next[field] = parsed.value;
+          }
+        }
+        return next;
+      });
+    }
+    return result;
   }
   function counts(state) {
     const count = key => Array.isArray(state?.[key]) ? state[key].length : 0;
@@ -89,7 +129,13 @@
         for (const field of ['qty', 'quantity', 'amount', 'value', 'valueCents']) {
           if (row[field] !== undefined && row[field] !== null && (typeof row[field] === 'boolean' || (typeof row[field] === 'number' && !Number.isFinite(row[field])))) return `INVALID_NUMBER:${section}:${field}`;
         }
-        for (const field of ['date', 'eventDate', 'effectiveDate', 'createdAt', 'updatedAt']) {
+        for (const field of ['date', 'eventDate', 'effectiveDate']) {
+          if (row[field] !== undefined && row[field] !== null && row[field] !== '') {
+            const parsed = parseLegacyFinancialDate(row[field]);
+            if (parsed.status === 'INVALID') return `INVALID_DATE:${section}:${field}`;
+          }
+        }
+        for (const field of ['createdAt', 'updatedAt']) {
           if (row[field] !== undefined && row[field] !== null && row[field] !== '' && Number.isNaN(new Date(String(row[field])).getTime())) return `INVALID_DATE:${section}:${field}`;
         }
       }
@@ -138,12 +184,13 @@
     if (!/^[a-f0-9]{64}$/.test(expected)) return { status: 'CORRUPTED', error: 'MISSING_CHECKSUM' };
     const actual = await sha256(canonical(backup.payload));
     if (actual !== expected) return { status: 'CORRUPTED', error: 'CHECKSUM_MISMATCH', expected, actual };
-    const stateError = validateState(backup.payload.state);
+    const normalizedBackup = { ...backup, payload: { ...backup.payload, state: normalizeFinancialDates(backup.payload.state) } };
+    const stateError = validateState(normalizedBackup.payload.state);
     if (stateError) return { status: 'CORRUPTED', error: stateError };
     const expectedCounts = backup.manifest.recordCounts || {};
-    const actualCounts = counts(backup.payload.state);
+    const actualCounts = counts(normalizedBackup.payload.state);
     for (const key of Object.keys(actualCounts)) if (expectedCounts[key] !== actualCounts[key]) return { status: 'CORRUPTED', error: `COUNT_MISMATCH:${key}` };
-    return { status: 'SUPPORTED', backup, checksum: actual };
+    return { status: 'SUPPORTED', backup: normalizedBackup, checksum: actual };
   }
   async function parseBackup(raw) {
     const result = await verifyBackup(raw);
