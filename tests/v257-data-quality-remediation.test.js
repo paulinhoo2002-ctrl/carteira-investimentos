@@ -35,9 +35,18 @@ test('unknown, partial and needs review stay distinct', () => {
 });
 
 test('root causes group across domains and navigation remains safe', () => {
-  const model = DQ.build({ xpStatus: 'FIXTURE_REQUIRED', btgStatus: 'FIXTURE_REQUIRED' });
+  const model = DQ.build({
+    legacyIssues: [
+      { category: 'Dividendos', severity: 'warning', entityType: 'Provento', entityLabel: 'PETR4', field: 'currency', message: 'Moeda ausente' },
+      { category: 'Movimentações', severity: 'warning', entityType: 'Movimentação', entityLabel: 'PETR4', field: 'date', message: 'Data ausente' },
+    ],
+    xpStatus: 'FIXTURE_REQUIRED',
+    btgStatus: 'FIXTURE_REQUIRED',
+  });
   const importGroup = model.rootCauses.find((group) => group.rootCause === 'IMPORT_FIXTURE_REQUIRED');
   assert.equal(importGroup.count, 2);
+  assert.equal(model.byDomain.INCOME, 1);
+  assert.equal(model.byDomain.TRANSACTIONS, 1);
   assert.equal(model.issues.every((item) => item.financialWriteRequired === false && item.safeNavigation === true), true);
 });
 

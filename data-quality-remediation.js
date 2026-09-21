@@ -55,13 +55,22 @@
   function fromLegacy(entry, defaults = {}) {
     if (!entry) return null;
     const severity = upper(entry.severity) === 'CRITICAL' ? 'CRITICAL' : upper(entry.severity) === 'WARNING' ? 'WARNING' : 'INFO';
+    const legacyDomain = ({
+      'ATIVOS': 'POSITIONS',
+      'DIVIDENDOS': 'INCOME',
+      'RENDA FIXA': 'FIXED_INCOME',
+      'MOVIMENTACOES': 'TRANSACTIONS',
+      'DUPLICIDADES': 'TRANSACTIONS',
+      'MOEDAS': 'POSITIONS',
+      'CONFIGURACOES': 'SYSTEM',
+    })[upper(entry.category).normalize('NFD').replace(/[\u0300-\u036f]/g, '')] || defaults.domain;
     return issue({
       ...defaults,
       id: entry.id,
       key: entry.key || entry.identityKey,
       severity,
       state: entry.state || (severity === 'INFO' ? 'INFORMATIONAL' : 'NEEDS_REVIEW'),
-      domain: entry.domain || defaults.domain,
+      domain: entry.domain || legacyDomain,
       dataState: entry.dataState || (severity === 'INFO' ? 'KNOWN' : 'NEEDS_REVIEW'),
       rootCause: entry.rootCause || entry.category || defaults.rootCause,
       entityType: entry.entityType,
