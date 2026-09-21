@@ -8175,7 +8175,7 @@ function revalidateFirebaseAuthAfterReconnect(){
     const currentUser = FB.auth.currentUser;
     // A Firebase-owned currentUser is evidence for the bootstrap, never a
     // reason to assign FB.user locally. Let the normal observer own recovery.
-    if(currentUser && typeof currentUser.getIdToken !== 'function') return {status:'auth-gate'};
+    if(currentUser) debugInfo('Firebase mantém uma sessão candidata para o bootstrap de reconnect');
     let alreadyReloaded = false;
     try{ alreadyReloaded = sessionStorage.getItem(V250_RECONNECT_RELOAD_KEY) === '1'; }catch(_){ }
     if(alreadyReloaded || RECONNECT_RELOAD_MAX_ATTEMPTS < 1){
@@ -10213,6 +10213,15 @@ function initFirebase(){
     FB.auth = firebase.auth();
     FB.db   = firebase.firestore();
     FB.ready = true;
+    // Keep session persistence under Firebase's own authority so a legitimate
+    // auth session can be restored after an offline reload without copying
+    // tokens, cookies, or credentials into application storage.
+    try{
+      const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
+      if(localPersistence && typeof FB.auth.setPersistence==='function'){
+        FB.auth.setPersistence(localPersistence).catch(error=>debugWarn('Persistência Firebase indisponível:', error));
+      }
+    }catch(error){ debugWarn('Persistência Firebase indisponível:', error); }
     window.addEventListener('offline',()=>{
       reconnectWasOffline = true;
       render();
