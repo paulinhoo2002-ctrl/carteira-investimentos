@@ -8182,6 +8182,7 @@ function revalidateFirebaseAuthAfterReconnect(){
         await currentUser.getIdToken(true);
         const accessOk = await loadAccessControl(FB.user);
         if(!accessOk) return {status:'auth-gate'};
+        FB.authResolved = true;
         FB.access.loading = false;
         FB.access.loaded = true;
         FB.access.allowed = true;
