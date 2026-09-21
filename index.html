@@ -8160,7 +8160,7 @@ function clearReconnectReloadGuard(){
 }
 function revalidateFirebaseAuthAfterReconnect(){
   if(reconnectAuthFlight) return reconnectAuthFlight;
-  if(!navigator.onLine || !reconnectWasOffline || FB.user || !FB.auth || !reconnectMarkerHasTrustedSnapshot()){
+  if(!navigator.onLine || !reconnectWasOffline || !FB.auth || !reconnectMarkerHasTrustedSnapshot()){
     return Promise.resolve({status:'not-needed'});
   }
   reconnectAuthFlight = (async()=>{
@@ -8177,6 +8177,25 @@ function revalidateFirebaseAuthAfterReconnect(){
     // A Firebase-owned currentUser is evidence for the bootstrap, never a
     // reason to assign FB.user locally. Let the normal observer own recovery.
     if(currentUser) debugInfo('Firebase mantém uma sessão candidata para o bootstrap de reconnect');
+    if(FB.user && currentUser){
+      try{
+        await currentUser.getIdToken(true);
+        const accessOk = await loadAccessControl(FB.user);
+        if(!accessOk) return {status:'auth-gate'};
+        FB.access.loading = false;
+        FB.access.loaded = true;
+        FB.access.allowed = true;
+        FB.access.reason = '';
+        clearReconnectReloadGuard();
+        reconnectWasOffline = false;
+        startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
+        render();
+        return {status:'revalidated'};
+      }catch(error){
+        debugWarn('Revalidação Firebase no reconnect indisponível:', error);
+        return {status:'auth-gate'};
+      }
+    }
     try{
       const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
       if(localPersistence && typeof FB.auth.setPersistence==='function'){
@@ -10237,7 +10256,7 @@ function initFirebase(){
       render();
     });
     window.addEventListener('online',()=>{
-      if(!FB.user){
+      if(!FB.user || !FB.access.allowed){
         FB.authResolved=false;
         FB.access.loading=true;
         FB.access.loaded=false;
@@ -10261,6 +10280,14 @@ function initFirebase(){
         const ok = await loadAccessControl(FB.user);
         await recordAccessAttempt(FB.user, ok, FB.access.reason);
         if(!ok){
+          if(navigator.onLine===false && isV250OfflineCachedSession()){
+            FB.access.loading = false;
+            FB.access.loaded = false;
+            FB.access.allowed = false;
+            FB.access.reason = 'Sessão local somente leitura enquanto estiver offline.';
+            render();
+            return;
+          }
           clearReconnectReloadGuard();
           stopCloudSync(false);
           try{ await FB.auth.signOut(); }catch(e){}

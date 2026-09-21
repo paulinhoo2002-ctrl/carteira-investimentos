@@ -81,6 +81,9 @@ test('V250D delegates reconnect persistence to Firebase LOCAL authority', () => 
   assert.match(index, /firebase\.auth\.Auth\?\.Persistence\?\.LOCAL/);
   assert.match(index, /FB\.auth\.setPersistence\(localPersistence\)/);
   assert.match(index, /await FB\.auth\.setPersistence\(localPersistence\)/);
+  assert.match(index, /await currentUser\.getIdToken\(true\)/);
+  assert.match(index, /navigator\.onLine===false && isV250OfflineCachedSession\(\)/);
+  assert.match(index, /Sessão local somente leitura enquanto estiver offline/);
   assert.match(index, /let firebaseAuthPersistenceReady = Promise\.resolve\(\)/);
   assert.match(index, /await firebaseAuthPersistenceReady/);
 });
