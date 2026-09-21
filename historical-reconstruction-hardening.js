@@ -146,5 +146,106 @@
       writeEnabled: false,
     };
   }
-  return { normalizeTransaction, deduplicate, reconcilePositions, annualCoverage, buildHistoricalReconstructionAudit };
+  const corporateEventType = value => {
+    const normalized = text(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    if (/REVERS|GRUPAMENTO/.test(normalized)) return 'REVERSE_SPLIT';
+    if (/SPLIT|DESDOBR/.test(normalized)) return 'SPLIT';
+    if (/BONIFIC/.test(normalized)) return 'BONUS';
+    if (/TICKER|MUDANCA.*CODIGO|MIGRA/.test(normalized)) return 'TICKER_MIGRATION';
+    if (/SUBSCRI/.test(normalized)) return 'SUBSCRIPTION';
+    if (/AMORTIZ/.test(normalized)) return 'AMORTIZATION';
+    if (/FUSA|INCORPOR/.test(normalized)) return 'MERGER';
+    return 'UNKNOWN_EVENT';
+  };
+  const eventRatio = row => finiteNumber(row.ratio ?? row.factor ?? row.multiplier);
+  const normalizedEvent = (row, index) => {
+    const eventType = corporateEventType(row.type ?? row.operation ?? row.movement ?? row.movimento);
+    const date = isoDate(row.date ?? row.eventDate ?? row.data);
+    const ticker = cleanTicker(row.ticker ?? row.symbol ?? row.codigo);
+    const ratio = eventRatio(row);
+    const nextTicker = cleanTicker(row.newTicker ?? row.toTicker ?? row.tickerAfter);
+    const reasons = [];
+    if (!ticker || !date) reasons.push('MISSING_EVENT_FIELDS');
+    if (!['SPLIT', 'REVERSE_SPLIT', 'TICKER_MIGRATION'].includes(eventType)) reasons.push('UNSUPPORTED_CORPORATE_EVENT');
+    if (['SPLIT', 'REVERSE_SPLIT'].includes(eventType) && !(ratio > 0)) reasons.push('MISSING_EVENT_RATIO');
+    if (eventType === 'TICKER_MIGRATION' && !nextTicker) reasons.push('MISSING_TICKER_LINEAGE');
+    return { id: text(row.id) || `event:${index}`, eventType, date, ticker, nextTicker, ratio, source: text(row.source ?? row.origin) || 'UNKNOWN', confidence: reasons.length ? 'LOW' : 'HIGH', reasons };
+  };
+  function replayTransactions(transactions = [], { cutoff = null } = {}) {
+    const normalized = transactions.map(normalizeTransaction).filter(row => row.date && (!cutoff || row.date <= cutoff));
+    const ordered = [...normalized].sort((a, b) => `${a.date}|${a.id}`.localeCompare(`${b.date}|${b.id}`));
+    const positions = new Map();
+    const rows = [];
+    const issues = [];
+    ordered.forEach(row => {
+      if (!['BUY', 'SELL'].includes(row.operation)) return;
+      const position = positions.get(row.ticker) || { ticker: row.ticker, quantity: 0, costBasis: 0, averageCost: null, confidence: 'HIGH', coverage: 'FULL', issues: [] };
+      if (row.operation === 'BUY') {
+        position.quantity += row.quantity || 0;
+        position.costBasis += row.total || 0;
+      } else if (position.averageCost === null || row.quantity > position.quantity) {
+        position.confidence = 'LOW'; position.coverage = 'PARTIAL'; position.issues.push('SELL_WITHOUT_CONFIDENT_BASIS'); issues.push({ id: row.id, ticker: row.ticker, type: 'SELL_WITHOUT_CONFIDENT_BASIS' });
+      } else {
+        const allocated = position.averageCost * row.quantity;
+        const proceeds = row.total || 0;
+        position.quantity -= row.quantity;
+        position.costBasis -= allocated;
+        rows.push({ id: row.id, ticker: row.ticker, date: row.date, quantity: row.quantity, proceeds, allocatedCostBasis: allocated, realizedResult: proceeds - allocated, confidence: row.reasons.length ? 'LOW' : 'HIGH', coverage: row.reasons.length ? 'PARTIAL' : 'FULL' });
+      }
+      position.averageCost = position.quantity > 0 ? position.costBasis / position.quantity : (position.quantity === 0 ? 0 : null);
+      if (row.reasons.length) { position.confidence = 'LOW'; position.coverage = 'PARTIAL'; position.issues.push(...row.reasons); }
+      positions.set(row.ticker, position);
+    });
+    return { normalized: ordered, positions: [...positions.values()], realizedSales: rows, issues, writeEnabled: false };
+  }
+  function applyCorporateEvents(snapshot, events = []) {
+    const positions = new Map((snapshot || []).map(row => [row.ticker, { ...row }]));
+    const applied = []; const review = [];
+    [...events].map(normalizedEvent).sort((a, b) => `${a.date}|${a.id}`.localeCompare(`${b.date}|${b.id}`)).forEach(event => {
+      const position = positions.get(event.ticker);
+      if (!position || event.reasons.length) { review.push(event); return; }
+      if (event.eventType === 'SPLIT') { position.quantity *= event.ratio; position.costBasis = position.costBasis; position.averageCost = position.quantity ? position.costBasis / position.quantity : 0; applied.push(event); return; }
+      if (event.eventType === 'REVERSE_SPLIT') { position.quantity /= event.ratio; position.averageCost = position.quantity ? position.costBasis / position.quantity : 0; applied.push(event); return; }
+      if (event.eventType === 'TICKER_MIGRATION') { positions.delete(event.ticker); position.ticker = event.nextTicker; positions.set(event.nextTicker, position); applied.push(event); return; }
+      review.push(event);
+    });
+    return { positions: [...positions.values()], applied, review, writeEnabled: false };
+  }
+  function buildHistoricalReconstructionCompleteness({ transactions = [], currentPositions = [], yearEndYears = [], corporateEvents = [], authoritativeCostBasis = null } = {}) {
+    const baseReplay = replayTransactions(transactions);
+    const eventAudit = corporateEvents.map(normalizedEvent);
+    const replayWithEvents = applyCorporateEvents(baseReplay.positions, corporateEvents);
+    const current = currentPositionMap(currentPositions);
+    const authoritativePositions = Array.isArray(authoritativeCostBasis?.positions) ? authoritativeCostBasis.positions : [];
+    const authoritativeByTicker = new Map(authoritativePositions.filter(row => row?.ticker).map(row => [cleanTicker(row.ticker), row]));
+    const v254CostBasisReconciliation = replayWithEvents.positions.filter(row => row?.ticker).map(row => {
+      const authoritative = authoritativeByTicker.get(row.ticker);
+      if (!authoritative) return { ticker: row.ticker, status: 'UNAVAILABLE', diff: null };
+      const diff = Number(authoritative.costBasis) - Number(row.costBasis);
+      return { ticker: row.ticker, status: Number.isFinite(diff) && Math.abs(diff) < 0.01 ? 'MATCH' : 'NEEDS_REVIEW', diff: Number.isFinite(diff) ? diff : null };
+    });
+    const tickers = [...new Set([...replayWithEvents.positions.map(row => row.ticker), ...current.keys()])].sort();
+    const reconciliation = tickers.map(ticker => {
+      const reconstructed = replayWithEvents.positions.find(row => row.ticker === ticker);
+      const reconstructedQuantity = reconstructed?.quantity ?? null;
+      const currentQuantity = current.get(ticker) ?? null;
+      const match = reconstructedQuantity !== null && currentQuantity !== null && Math.abs(reconstructedQuantity - currentQuantity) < 1e-8;
+      return { ticker, reconstructedQuantity, currentQuantity, diff: reconstructedQuantity === null || currentQuantity === null ? null : currentQuantity - reconstructedQuantity, status: match ? 'MATCH' : reconstructedQuantity === null || currentQuantity === null ? 'PARTIAL' : 'NEEDS_REVIEW', confidence: reconstructed?.confidence || 'UNKNOWN', coverage: reconstructed?.coverage || 'UNAVAILABLE', reason: match ? 'HISTORICAL_REPLAY_MATCHES_CURRENT' : 'HISTORICAL_REPLAY_REQUIRES_REVIEW' };
+    });
+    const replay = { ...baseReplay, ...replayWithEvents };
+    const snapshots = (yearEndYears.length ? yearEndYears : [...new Set(replay.normalized.map(row => Number(row.date.slice(0, 4))))]).map(year => {
+      const yearReplay = replayTransactions(transactions, { cutoff: `${year}-12-31` });
+      const yearNormalized = transactions.map(normalizeTransaction).filter(row => row.date && row.date <= `${year}-12-31`);
+      const yearEvents = corporateEvents.filter(row => isoDate(row.date ?? row.eventDate ?? row.data) <= `${year}-12-31`);
+      const withEvents = applyCorporateEvents(yearReplay.positions, yearEvents);
+      const reviewCount = yearReplay.issues.length + withEvents.review.length + yearNormalized.filter(row => row.operation === 'UNKNOWN' || row.reasons.length).length;
+      return { year, positions: withEvents.positions.map(row => ({ ticker: row.ticker, quantity: row.quantity, costBasis: row.costBasis, averageCost: row.averageCost, coverage: row.coverage, confidence: row.confidence })), status: reviewCount ? 'PARTIAL' : withEvents.positions.length ? 'FULL' : 'UNAVAILABLE', reviewCount };
+    });
+    const normalized = transactions.map(normalizeTransaction);
+    const buys = normalized.filter(row => row.operation === 'BUY');
+    const sells = normalized.filter(row => row.operation === 'SELL');
+    const loans = normalized.filter(row => /loan|emprest/i.test(row.source) || row.operation === 'UNKNOWN' && /loan/i.test(row.id));
+    return { version: 'V259_HISTORICAL_RECONSTRUCTION_COMPLETENESS_V1', writeEnabled: false, normalized, replay, eventAudit, reconciliation, yearEndSnapshots: snapshots, coverage: { firstDate: normalized.map(row => row.date).filter(Boolean).sort()[0] || null, lastDate: normalized.map(row => row.date).filter(Boolean).sort().at(-1) || null, status: normalized.length ? 'PARTIAL' : 'UNAVAILABLE', eventCount: normalized.length }, counts: { buy: buys.length, sell: sells.length, corporate: eventAudit.length, reference: normalized.filter(row => row.operation === 'TRANSFER').length, stockLoan: loans.length, unknown: normalized.filter(row => row.operation === 'UNKNOWN').length }, sales: { total: sells.length, confidentBasis: replay.realizedSales.filter(row => row.confidence === 'HIGH').length, partialBasis: replay.realizedSales.filter(row => row.confidence !== 'HIGH').length, needsReview: replay.issues.filter(row => row.type === 'SELL_WITHOUT_CONFIDENT_BASIS').length }, issues: replay.issues, unsupportedEvents: eventAudit.filter(row => row.reasons.length), appliedEvents: replayWithEvents.applied, v254CostBasisEngineReused: authoritativePositions.length > 0, v254CostBasisReconciliation, currentPositionAuthority: true, currentPositionAutoOverwriteCount: 0, forcedReconciliationCount: 0, syntheticTransactionCount: 0, stockLoanPositionMutationCount: 0, stockLoanCostBasisMutationCount: 0, referenceTransactionFinancialEffectCount: 0 };
+  }
+  return { normalizeTransaction, deduplicate, reconcilePositions, annualCoverage, buildHistoricalReconstructionAudit, replayTransactions, normalizeCorporateEvent: normalizedEvent, applyCorporateEvents, buildHistoricalReconstructionCompleteness };
 });
