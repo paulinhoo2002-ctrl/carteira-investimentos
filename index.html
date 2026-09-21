@@ -8177,6 +8177,12 @@ function revalidateFirebaseAuthAfterReconnect(){
     // A Firebase-owned currentUser is evidence for the bootstrap, never a
     // reason to assign FB.user locally. Let the normal observer own recovery.
     if(currentUser) debugInfo('Firebase mantém uma sessão candidata para o bootstrap de reconnect');
+    try{
+      const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
+      if(localPersistence && typeof FB.auth.setPersistence==='function'){
+        await FB.auth.setPersistence(localPersistence);
+      }
+    }catch(error){ debugWarn('Persistência Firebase indisponível no reconnect:', error); }
     let alreadyReloaded = false;
     try{ alreadyReloaded = sessionStorage.getItem(V250_RECONNECT_RELOAD_KEY) === '1'; }catch(_){ }
     if(alreadyReloaded || RECONNECT_RELOAD_MAX_ATTEMPTS < 1){
@@ -10219,7 +10225,7 @@ function initFirebase(){
     // tokens, cookies, or credentials into application storage.
     try{
       const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
-      if(localPersistence && typeof FB.auth.setPersistence==='function'){
+      if(navigator.onLine && localPersistence && typeof FB.auth.setPersistence==='function'){
         firebaseAuthPersistenceReady = FB.auth.setPersistence(localPersistence).catch(error=>{
           debugWarn('Persistência Firebase indisponível:', error);
           return false;
