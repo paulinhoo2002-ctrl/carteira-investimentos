@@ -8082,6 +8082,7 @@ document.write([
 <script src="import-center-core.js"></script>
 <script src="historical-import-preview.js"></script>
 <script src="historical-reconstruction.js"></script>
+<script src="historical-reconstruction-hardening.js"></script>
 <script src="v210-income-quality.js"></script>
 <script src="v213-transaction-trust.js"></script>
 <script src="fixed-income-valuation.js"></script>
@@ -26810,10 +26811,16 @@ function v254FiscalStatusLabel(status){
   const labels={COMPLETE:'Completo',PARTIAL:'Parcial',NEEDS_REVIEW:'Revisão necessária',UNSUPPORTED:'Não suportado',UNAVAILABLE:'Indisponível'};
   return labels[status]||status||'Indisponível';
 }
+function v255HistoryStatusLabel(status){
+  const labels={FULL:'Completo',COMPLETE:'Completo',PARTIAL:'Parcial',NEEDS_REVIEW:'Revisão necessária',UNAVAILABLE:'Indisponível',ALL_MATCH:'Reconciliado',REVIEW_REQUIRED:'Revisar divergência'};
+  return labels[status]||status||'Indisponível';
+}
 function v254FiscalPanel(){
   const engine=globalThis.TaxCostBasisIntelligence;
   if(!engine?.buildTaxIntelligence) return '';
   const result=engine.buildTaxIntelligence({transactions:S.aportes||[],incomeEvents:S.proventos||[]});
+  const historyEngine=globalThis.HistoricalReconstructionHardening;
+  const historyAudit=historyEngine?.buildHistoricalReconstructionAudit?.({transactions:S.aportes||[],currentPositions:S.assets||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()]})||null;
   const money=value=>value===null||value===undefined?'—':fmt(value);
   const status=result.costBasis?.status||'UNAVAILABLE';
   const positions=(result.positions||[]).filter(row=>row.ticker);
@@ -26824,9 +26831,14 @@ function v254FiscalPanel(){
   const reviewBody=reviewRows.length?reviewRows.map(row=>`<li><strong>${esc(row.ticker||row.asset||'Registro')}</strong><span>${esc(row.needsReviewReason||row.reasons?.join('|')||'NEEDS_REVIEW')}</span></li>`).join(''):'<li><strong>Sem pendências</strong><span>Não foram encontrados registros pendentes nesta leitura.</span></li>';
   const income=result.incomeLedger||{};
   const rules=(result.officialRules||[]).slice(0,4).map(rule=>`<li><a href="${esc(rule.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(rule.ruleName)}</a><small>${esc(rule.source)} · ${esc(rule.ruleVersion)}</small></li>`).join('');
+  const historyStatus=historyAudit?.status||'UNAVAILABLE';
+  const historyReview=(historyAudit?.reviewReasons||[]).slice(0,3).join(' · ')||'Nenhuma divergência factual detectada nesta leitura.';
+  const historyYears=(historyAudit?.annualCoverage||[]).map(row=>`${row.year}: ${v255HistoryStatusLabel(row.status)}`).join(' · ')||'Sem anos com cobertura';
+  const historyReconciliation=historyAudit?.positionReconciliation?.status||'UNAVAILABLE';
   return `<section class="v254-fiscal-panel" aria-labelledby="v254-fiscal-title">
     <div class="v254-fiscal-head"><div><span class="v254-fiscal-eyebrow">V254 · leitura auxiliar</span><h2 id="v254-fiscal-title">Inteligência fiscal e custo de aquisição</h2><p>Organização read-only baseada nas movimentações existentes. Não gera DARF, não transmite declaração e não altera a carteira.</p></div><span class="v254-fiscal-status v254-fiscal-status--${String(status).toLowerCase()}">${esc(v254FiscalStatusLabel(status))}</span></div>
     <div class="v254-fiscal-notice"><strong>Regra de segurança:</strong> custo desconhecido, classificação fiscal incompleta e período sem cobertura permanecem explícitos como revisão necessária — nunca são convertidos em zero.</div>
+    <div class="v254-fiscal-grid" aria-label="V255 reconstrução histórica"><article><div class="v254-fiscal-section-head"><div><h3>Reconstrução histórica</h3><p>Confiança, duplicidade econômica e posição corrente são auditadas sem sobrescrever a autoridade atual.</p></div><span>${esc(v255HistoryStatusLabel(historyStatus))}</span></div><div class="v254-fiscal-kpis"><div><span>Eventos lidos</span><strong>${historyAudit?.coverage?.eventCount||0}</strong></div><div><span>Duplicidades</span><strong>${historyAudit?.duplicateEconomicEvents||0}</strong></div><div><span>Posição corrente</span><strong>${esc(v255HistoryStatusLabel(historyReconciliation))}</strong></div><div><span>Período</span><strong>${esc(historyAudit?.coverage?.firstDate||'—')} → ${esc(historyAudit?.coverage?.lastDate||'—')}</strong></div></div><p class="v254-fiscal-review-list"><span>${esc(historyReview)}</span><span>Anos: ${esc(historyYears)}</span></p></article></div>
     <div class="v254-fiscal-kpis"><div><span>Posições acompanhadas</span><strong>${positions.length}</strong></div><div><span>Vendas analisadas</span><strong>${realized.length}</strong></div><div><span>Renda paga vinculada</span><strong>${money(income.total)}</strong></div><div><span>Cálculo tributário</span><strong>${esc(v254FiscalStatusLabel(result.taxSummary?.taxDue?.status))}</strong></div></div>
     <div class="v254-fiscal-grid"><article><div class="v254-fiscal-section-head"><div><h3>Custo médio por posição</h3><p>Média ponderada das compras; taxas só entram quando conhecidas.</p></div><span>Sem escrita</span></div><div class="v254-fiscal-table-wrap"><table class="v254-fiscal-table"><thead><tr><th>Ativo</th><th>Qtd.</th><th>Custo</th><th>Médio</th><th>Status</th></tr></thead><tbody>${positionBody}</tbody></table></div></article><article><div class="v254-fiscal-section-head"><div><h3>Resultado realizado</h3><p>Venda líquida menos custo alocado; não confunde venda com lucro.</p></div><span>Fiscal: revisão</span></div><div class="v254-fiscal-table-wrap"><table class="v254-fiscal-table"><thead><tr><th>Data</th><th>Ativo</th><th>Venda líquida</th><th>Custo</th><th>Resultado</th><th>Status</th></tr></thead><tbody>${realizedBody}</tbody></table></div></article></div>
     <div class="v254-fiscal-grid v254-fiscal-grid--lower"><article><div class="v254-fiscal-section-head"><div><h3>Revisão necessária</h3><p>Registros que não devem sustentar apuração definitiva.</p></div></div><ul class="v254-fiscal-review-list">${reviewBody}</ul></article><article><div class="v254-fiscal-section-head"><div><h3>Regras oficiais usadas</h3><p>Fontes versionadas; a classificação final continua responsabilidade do contribuinte.</p></div></div><ul class="v254-fiscal-rules">${rules}</ul></article></div>
