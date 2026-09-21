@@ -8045,6 +8045,7 @@ document.write([
 <script src="portfolio-allocation-intelligence.js"></script>
 <script src="portfolio-performance.js"></script>
 <script src="historical-performance-engine.js"></script>
+<script src="performance-intelligence.js"></script>
 <script src="portfolio-report-model.js"></script>
 <script src="executive-reporting.js"></script>
 <script src="portfolio-event-timeline.js?v=v228-1"></script>
@@ -34021,6 +34022,62 @@ function v248HistoricalPerformancePanel(){
   </section>`;
 }
 
+function v252PerformanceIntelligence(){
+  const engine=window.PerformanceIntelligence;
+  if(!engine) return null;
+  const knownAssetValues=asset=>{
+    const isRf=isRendaFixaAsset(asset);
+    if(isRf){
+      const values=rfValues(asset);
+      return {
+        invested:values?.applied!=null&&Number.isFinite(Number(values.applied)) ? Number(values.applied) : null,
+        current:values?.current!=null&&Number.isFinite(Number(values.current))&&values?.currentState?.state!=='missing' ? Number(values.current) : null
+      };
+    }
+    const qty=Number(asset?.qty), avg=Number(asset?.avg_price), quote=Number(asset?.current_price);
+    const hasQty=asset?.qty!=null&&String(asset.qty).trim()!==''&&Number.isFinite(qty);
+    const hasAvg=asset?.avg_price!=null&&String(asset.avg_price).trim()!==''&&Number.isFinite(avg);
+    const hasQuote=asset?.current_price!=null&&String(asset.current_price).trim()!==''&&Number.isFinite(quote);
+    return {
+      invested:hasQty&&hasAvg ? assetAppliedValue(asset) : null,
+      current:hasQty&&hasQuote ? assetCurrentValue(asset) : null
+    };
+  };
+  const assets=(Array.isArray(S.assets)?S.assets:[]).map(asset=>({
+    id:asset.id,ticker:asset.ticker,type:normalizeType(asset.type||metaTicker(asset.ticker).type||'Ação','Ação'),sector:asset.sector,
+    ...knownAssetValues(asset)
+  }));
+  const runtime=window.__V76_RUNTIME__||{};
+  const externalFlows=Array.isArray(runtime.flows?.flows)?runtime.flows.flows:[];
+  const income=typeof rentabilityIncomeRows==='function'?rentabilityIncomeRows():[];
+  const realized=(Array.isArray(S.aportes)?S.aportes:[]).filter(row=>/venda|resgate/i.test(String(row.operationType||row.operation||row.op||''))).map(row=>({result:row.realizedResult??row.result??row.profit}));
+  const model=engine.buildPerformanceIntelligence({assets,externalFlows,income,realized});
+  const history=v248HistoricalPerformanceSnapshot();
+  const currentHistory=history.model?.metrics?.totalReturn;
+  const data=rentabilityHistory('all',String(S.rentPeriod||'all'),String(S.rentBench||'CDI'));
+  const benchmarkCoverage=history.coverage==='FULL_COVERAGE' && Array.isArray(data?.benchSeries) && data.benchSeries.length>=2 ? 'FULL_COVERAGE' : 'UNKNOWN';
+  const benchmark=engine.compareBenchmark({portfolioReturn:currentHistory?.value==null?null:Number(currentHistory.value)*100,benchmarkReturn:Number(data?.currentBench),portfolioCoverage:history.coverage,benchmarkCoverage});
+  const metric=(value, formatter=fmt)=>value===null||value===undefined||!Number.isFinite(Number(value))?'Indisponível':formatter(Number(value));
+  const coverageLabel=model.coverage==='FULL_COVERAGE'?'Cobertura completa':model.coverage==='PARTIAL_COVERAGE'?'Cobertura parcial':'UNKNOWN · sem base suficiente';
+  const classRows=model.byClass.filter(row=>row.complete>0).sort((a,b)=>b.current-a.current).slice(0,5).map(row=>`<tr><td>${esc(row.name)}</td><td>${fmt(row.current)}</td><td>${row.returnPct==null?'Indisponível':fmtP(row.returnPct)}</td><td>${esc(row.status)}</td></tr>`).join('');
+  const benchmarkText=benchmark.status==='PASS'?`${benchmark.value>=0?'+':''}${fmtP(benchmark.value)} vs ${esc(S.rentBench||'CDI')}`:'Indisponível · janela ou cobertura desalinhada';
+  return `<section class="card v252-intelligence-panel" aria-label="Inteligência de patrimônio e performance">
+    <div class="sh"><div><div class="st">Inteligência de patrimônio</div><div class="mu">Leitura derivada V252: patrimônio, fluxos e resultado sem alterar a carteira.</div></div><span class="ds-badge ${model.coverage==='FULL_COVERAGE'?'ok':model.coverage==='PARTIAL_COVERAGE'?'warning':'muted'}">${esc(coverageLabel)}</span></div>
+    <div class="rent-summary-preview">
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Patrimônio atual</div><div class="rent-summary-chip-value">${metric(model.portfolio.currentPatrimony)}</div><div class="rent-summary-chip-sub">Somente posições com valor conhecido</div></div>
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Resultado não realizado</div><div class="rent-summary-chip-value">${metric(model.portfolio.unrealizedResult,assetSignedMoneyText)}</div><div class="rent-summary-chip-sub">Atual menos custo conhecido</div></div>
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Aportes líquidos</div><div class="rent-summary-chip-value">${metric(model.cashFlow.netContributions)}</div><div class="rent-summary-chip-sub">Aportes externos menos retiradas</div></div>
+      <div class="rent-summary-chip"><div class="rent-summary-chip-label">Proventos pagos</div><div class="rent-summary-chip-value">${metric(model.income.paid)}</div><div class="rent-summary-chip-sub">Anunciados e projetados ficam fora</div></div>
+    </div>
+    <div class="rent-analysis-note-list" style="margin-top:12px">
+      <div><span>Benchmark alinhado</span><strong>${benchmarkText}</strong></div>
+      <div><span>Resultado realizado</span><strong>${model.realized.status==='PASS'?assetSignedMoneyText(model.realized.value):'Indisponível · sem resultado explícito'}</strong></div>
+      <div><span>Modo</span><strong>Read-only · sem persistência nova</strong></div>
+    </div>
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Contribuição por classe</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Classe</th><th>Atual</th><th>Resultado</th><th>Cobertura</th></tr></thead><tbody>${classRows||'<tr><td colspan="4">Sem dados suficientes por classe.</td></tr>'}</tbody></table></div></details>
+  </section>`;
+}
+
 function rentabilidadeTab(){
   const bench=String(S.rentBench||'CDI');
   const type=String(S.rentType||'all');
@@ -34142,6 +34199,7 @@ function rentabilidadeTab(){
   return`<div class="rent-premium"><h1 class="page-heading">Rentabilidade</h1>
   <div class="page-sub">Evolução e comparação da carteira, com proventos incluídos no cálculo.</div>
   ${v248HistoricalPerformancePanel()}
+  ${v252PerformanceIntelligence()||''}
 
   <div class="rent-layout">
     <div class="rent-side">
