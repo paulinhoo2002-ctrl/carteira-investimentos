@@ -20,7 +20,7 @@ test('cloud read has a bounded timeout and terminal error transitions', () => {
 });
 
 test('unconfirmed cloud state blocks financial screens instead of rendering false zero', () => {
-  assert.match(html, /if\(typeof FB!=='undefined' && FB\.user && !CloudSyncState\.isDataConfirmed\(cloudSyncState\(\)\)\) return cloudSyncRecoveryPanel\(\);/);
+  assert.match(html, /if\(typeof FB!=='undefined' && FB\.user && !isV250OfflineCachedSession\(\) && !CloudSyncState\.isDataConfirmed\(cloudSyncState\(\)\)\) return cloudSyncRecoveryPanel\(\);/);
   assert.match(html, /Nenhum valor foi substituído por zero/);
   assert.match(html, /Tentar novamente/);
 });

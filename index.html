@@ -15,6 +15,8 @@
 <script src="portfolio-movement-contract.js"></script>
 <script src="portfolio-movement-preview.js"></script>
 <script src="cloud-sync-state.js"></script>
+<script src="v250-offline-session.js"></script>
+<script src="v250-runtime.js"></script>
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
@@ -27,7 +29,7 @@
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
-  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v18';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.1';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode){
     document.documentElement.dataset.theme='dark';
@@ -8103,6 +8105,26 @@ const ACCESS_ADMIN_EMAILS = ['paulinhoo2002@gmail.com'];
 const THEME_STOR   = 'carteira_theme';
 const THEME_COLOR  = { dark:'#07090f', light:'#e8eff6' };
 
+function isV250OfflineCachedSession(){
+  const marker=window.V250OfflineSession?.read?.();
+  const hasSnapshot=window.V250OfflineSession?.snapshotHasData?.(localStorage,STOR)===true;
+  const eligible=window.V250OfflineSession?.eligible?.({online:navigator.onLine,marker,hasSnapshot})===true;
+  document.documentElement.dataset.v250OfflineCachedSession=String(eligible);
+  return eligible;
+}
+async function rememberV250TrustedSnapshot(){
+  if(!FB.user || navigator.onLine===false || !window.V250OfflineSession) return false;
+  if(!window.V250OfflineSession.snapshotHasData?.(localStorage,STOR)) return false;
+  try{
+    const scope=await window.V250OfflineSession.scopeHash(FB.user);
+    return window.V250OfflineSession.mark(localStorage,{scope,snapshotSignature:FB.lastCloudSignature});
+  }catch(_){ return false; }
+}
+function clearV250OfflineEligibility(){
+  window.V250OfflineSession?.clear?.(localStorage);
+  document.documentElement.dataset.v250OfflineCachedSession='false';
+}
+
 // Firebase — login Google + Firestore
 const firebaseConfig = {
   apiKey: "AIzaSyAUAGr6VfVoq4BdYAKSNENLv5dCaisHIho",
@@ -8120,6 +8142,78 @@ let FB = {
   lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
+let firebaseAuthPersistenceReady = Promise.resolve();
+
+const V250_RECONNECT_RELOAD_KEY = 'civ5_v250_reconnect_reload_v1';
+const RECONNECT_RELOAD_MAX_ATTEMPTS = 1;
+let reconnectAuthFlight = null;
+let reconnectAuthAttemptCount = 0;
+let reconnectWasOffline = navigator.onLine === false;
+
+function reconnectMarkerHasTrustedSnapshot(){
+  const marker = window.V250OfflineSession?.read?.();
+  const hasSnapshot = window.V250OfflineSession?.snapshotHasData?.(localStorage, STOR) === true;
+  return Boolean(marker?.eligible) && hasSnapshot;
+}
+function clearReconnectReloadGuard(){
+  try{ sessionStorage.removeItem(V250_RECONNECT_RELOAD_KEY); }catch(_){ }
+}
+function revalidateFirebaseAuthAfterReconnect(){
+  if(reconnectAuthFlight) return reconnectAuthFlight;
+  if(!navigator.onLine || !reconnectWasOffline || !FB.auth || !reconnectMarkerHasTrustedSnapshot()){
+    return Promise.resolve({status:'not-needed'});
+  }
+  reconnectAuthFlight = (async()=>{
+    reconnectAuthAttemptCount += 1;
+    FB.authResolved = false;
+    FB.access.loading = true;
+    FB.access.loaded = false;
+    FB.access.allowed = false;
+    render();
+
+    // Firebase remains the only authority. A controlled reload is the
+    // compatibility fallback when the compat observer resolved null offline.
+    const currentUser = FB.auth.currentUser;
+    // A Firebase-owned currentUser is evidence for the bootstrap, never a
+    // reason to assign FB.user locally. Let the normal observer own recovery.
+    if(currentUser) debugInfo('Firebase mantém uma sessão candidata para o bootstrap de reconnect');
+    if(FB.user && currentUser){
+      try{
+        await currentUser.getIdToken(true);
+        const accessOk = await loadAccessControl(FB.user);
+        if(!accessOk) return {status:'auth-gate'};
+        FB.authResolved = true;
+        FB.access.loading = false;
+        FB.access.loaded = true;
+        FB.access.allowed = true;
+        FB.access.reason = '';
+        clearReconnectReloadGuard();
+        reconnectWasOffline = false;
+        startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
+        render();
+        return {status:'revalidated'};
+      }catch(error){
+        debugWarn('Revalidação Firebase no reconnect indisponível:', error);
+        return {status:'auth-gate'};
+      }
+    }
+    try{
+      const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
+      if(localPersistence && typeof FB.auth.setPersistence==='function'){
+        await FB.auth.setPersistence(localPersistence);
+      }
+    }catch(error){ debugWarn('Persistência Firebase indisponível no reconnect:', error); }
+    let alreadyReloaded = false;
+    try{ alreadyReloaded = sessionStorage.getItem(V250_RECONNECT_RELOAD_KEY) === '1'; }catch(_){ }
+    if(alreadyReloaded || RECONNECT_RELOAD_MAX_ATTEMPTS < 1){
+      return {status:'auth-gate'};
+    }
+    try{ sessionStorage.setItem(V250_RECONNECT_RELOAD_KEY,'1'); }catch(_){ }
+    window.location.reload();
+    return {status:'controlled-reload'};
+  })().finally(()=>{ reconnectAuthFlight = null; });
+  return reconnectAuthFlight;
+}
 
 let THEME = 'dark';
 function normalizeTheme(v){
@@ -8781,6 +8875,7 @@ function save(){
   const options=arguments[0]||{};
   const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
   try{
+    if(typeof isV250OfflineCachedSession==='function' && isV250OfflineCachedSession() && !protectedLocalRecoveryWrite) return false;
     if(isLocalTestMode()){
       syncWalletFromState();
       return true;
@@ -10145,6 +10240,31 @@ function initFirebase(){
     FB.auth = firebase.auth();
     FB.db   = firebase.firestore();
     FB.ready = true;
+    // Keep session persistence under Firebase's own authority so a legitimate
+    // auth session can be restored after an offline reload without copying
+    // tokens, cookies, or credentials into application storage.
+    try{
+      const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
+      if(navigator.onLine && localPersistence && typeof FB.auth.setPersistence==='function'){
+        firebaseAuthPersistenceReady = FB.auth.setPersistence(localPersistence).catch(error=>{
+          debugWarn('Persistência Firebase indisponível:', error);
+          return false;
+        });
+      }
+    }catch(error){ debugWarn('Persistência Firebase indisponível:', error); }
+    window.addEventListener('offline',()=>{
+      reconnectWasOffline = true;
+      render();
+    });
+    window.addEventListener('online',()=>{
+      if(!FB.user || !FB.access.allowed){
+        FB.authResolved=false;
+        FB.access.loading=true;
+        FB.access.loaded=false;
+        FB.access.allowed=false;
+      }
+      revalidateFirebaseAuthAfterReconnect().finally(()=>render());
+    });
     if(!isProtectedReadOnlyQaBoot()){
       try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     }
@@ -10161,6 +10281,15 @@ function initFirebase(){
         const ok = await loadAccessControl(FB.user);
         await recordAccessAttempt(FB.user, ok, FB.access.reason);
         if(!ok){
+          if(navigator.onLine===false && isV250OfflineCachedSession()){
+            FB.access.loading = false;
+            FB.access.loaded = false;
+            FB.access.allowed = false;
+            FB.access.reason = 'Sessão local somente leitura enquanto estiver offline.';
+            render();
+            return;
+          }
+          clearReconnectReloadGuard();
           stopCloudSync(false);
           try{ await FB.auth.signOut(); }catch(e){}
           FB.user = null;
@@ -10170,12 +10299,15 @@ function initFirebase(){
           return;
         }
         FB.access.loading = false;
+        clearReconnectReloadGuard();
+        reconnectWasOffline = false;
         if(isAuthoritativeLocalRecoveryBoot()){
-          readFreshCloudPayload().then(cloudPayload=>{
+          readFreshCloudPayload().then(async cloudPayload=>{
             if(window.ProtectedLocalCloudAuthority){
               FB.lastCloudAuthorityFingerprint=window.ProtectedLocalCloudAuthority.fingerprintCloud(cloudPayload||{});
             }
             FB.cloudLoaded = true;
+            await rememberV250TrustedSnapshot();
             FB.cloudStateModel=CloudSyncState.resolve(CloudSyncState.begin(FB.cloudStateModel),{exists:true,hasData:true});
             bindProtectedRealPilotSession();
             render();
@@ -10621,6 +10753,7 @@ function startCloudSync({readOnlyOnly=false}={}){
         clearTimeout(FB.cloudSyncTimeoutTimer);
         FB.cloudStateModel=CloudSyncState.resolve(FB.cloudStateModel,{exists:false,hasData:false});
         FB.lastCloudError=null;
+        await rememberV250TrustedSnapshot();
         bindProtectedRealPilotSession();
         if(FB.pendingCloudSave) queueCloudSave();
         render();
@@ -10632,6 +10765,7 @@ function startCloudSync({readOnlyOnly=false}={}){
       clearTimeout(FB.cloudSyncTimeoutTimer);
       FB.cloudStateModel=CloudSyncState.resolve(FB.cloudStateModel,{exists:true,hasData:cloudSnapshotHasData(data)});
       FB.lastCloudError=null;
+      await rememberV250TrustedSnapshot();
       bindProtectedRealPilotSession();
       if(FB.pendingCloudSave && changed) queueCloudSave();
       render();
@@ -10680,6 +10814,7 @@ function queueCloudSave(){
   FB.saveTimer=setTimeout(()=>uploadLocalToCloud(true),900);
 }
 async function uploadLocalToCloud(show=true, options={}){
+  if(isV250OfflineCachedSession()) return {pass:false,reason:'OFFLINE_READ_ONLY_CACHED_SESSION'};
   if(isProtectedReadOnlyQaBoot()) return {pass:false,reason:'PROTECTED_READ_ONLY_QA_BOOT'};
   if(isAuthoritativeLocalRecoveryBoot()) return {pass:false,reason:'AUTHORITATIVE_LOCAL_RECOVERY_CLOUD_WRITE_BLOCKED'};
   if(isLocalTestMode()){
@@ -10746,6 +10881,7 @@ async function signInGoogle(){
   if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
+    await firebaseAuthPersistenceReady;
     await FB.auth.signInWithPopup(provider);
   }catch(e){
     debugWarn(e);
@@ -10757,7 +10893,8 @@ async function signOutGoogle(){
     toast('🧪 Modo de teste local: saída desativada.');
     return;
   }
-  try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos.'); }catch(e){}
+  clearV250OfflineEligibility();
+  try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos, mas o modo offline protegido foi encerrado.'); }catch(e){}
 }
 function cloudSnapshotHasData(data={}){
   const wallets=Array.isArray(data.wallets)?data.wallets:[];
@@ -10798,6 +10935,7 @@ function cloudSyncRecoveryPanel(){
 }
 function cloudStatus(){
   if(isLocalTestMode()) return '<span style="font-size:11px;color:#fbbf24">Modo teste local</span>';
+  if(isV250OfflineCachedSession()) return '<span style="font-size:11px;color:#fbbf24">Offline · dados em cache</span>';
   if(!FB.ready) return '<span style="font-size:11px;color:#f87171">Firebase offline</span>';
   if(!FB.user) return '<span style="font-size:11px;color:#64748b">Local</span>';
   const state=cloudSyncState().status;
@@ -10806,6 +10944,7 @@ function cloudStatus(){
 }
 function authBox(){
   if(isLocalTestMode()) return `<span class="note-pill" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Teste local</span>`;
+  if(isV250OfflineCachedSession()) return `<span class="note-pill" role="status" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Offline · leitura</span>`;
   if(!FB.ready) return '';
   if(!FB.user) return `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()"><span class="hdr-mobile-icon">🔑</span><span class="hdr-mobile-label">Entrar Google</span></button>`;
   const name=esc(FB.user.displayName||'Conta Google');
@@ -10858,6 +10997,7 @@ function accessGateBox(){
 }
 function shouldShowAccessGate(){
   if(isLocalTestMode()) return false;
+  if(isV250OfflineCachedSession()) return false;
   return !FB.authResolved || FB.access.loading || !FB.access.loaded || !FB.access.allowed;
 }
 function normalizeListFromText(text){
@@ -27020,7 +27160,7 @@ function app(){
 ${globalThis.PortfolioMovementPreview?.getState?.().open ? globalThis.PortfolioMovementPreview.renderHtml() : ''}`;
 }
 function content(){
-  if(typeof FB!=='undefined' && FB.user && !CloudSyncState.isDataConfirmed(cloudSyncState())) return cloudSyncRecoveryPanel();
+  if(typeof FB!=='undefined' && FB.user && !isV250OfflineCachedSession() && !CloudSyncState.isDataConfirmed(cloudSyncState())) return cloudSyncRecoveryPanel();
   if(assetDetailId){
     const detail=assetDetailAsset();
     if(detail) return assetDetailPage(detail);
@@ -35510,7 +35650,13 @@ if(isActiveWalletHostMode()){
     render();
   }
   fetchQuotes(false);
-  startPublicEventsSync();
+  const schedulePublicEventsSync=()=>{
+    if(!navigator.onLine) return;
+    const run=()=>startPublicEventsSync();
+    if(typeof window.requestIdleCallback==='function') window.requestIdleCallback(run,{timeout:1500});
+    else window.setTimeout(run,750);
+  };
+  schedulePublicEventsSync();
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) fetchQuotes(false); });
   window.addEventListener('focus',()=>{fetchQuotes(false); if(window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__) window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__.refresh().catch(()=>{});});
   window.addEventListener('online',()=>{ if(FB.pendingCloudSave) queueCloudSave(); });
@@ -35541,6 +35687,7 @@ if(!isLocalTestMode() && !isActiveWalletHostMode() && !isProtectedShadowBoot() &
     navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
       window.__pwaRegistration=reg;
       watchPwaUpdate(reg);
+      window.V250Runtime?.checkVersionCoherence?.().catch(()=>{});
       if(reg && reg.update) reg.update().catch(()=>{});
     }).catch(()=>{});
   });
