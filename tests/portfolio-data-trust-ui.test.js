@@ -4,7 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const trustBlock = html.slice(html.indexOf('function dataTrustCenterTab'), html.indexOf('function dataQualityTab'));
+const trustStart = html.indexOf('function dataTrustCenterTab');
+const trustEnd = html.indexOf('function v257DataQualityCenter', trustStart);
+const trustBlock = html.slice(trustStart, trustEnd > trustStart ? trustEnd : html.indexOf('function dataQualityTab', trustStart));
 
 test('Confiabilidade carrega o módulo e está disponível na navegação', () => {
   assert.match(html, /portfolio-data-trust\.js\?v=v238-6/);
