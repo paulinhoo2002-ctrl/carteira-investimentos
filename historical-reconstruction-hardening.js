@@ -37,9 +37,10 @@
   function normalizeTransaction(row = {}, index = 0) {
     const ticker = cleanTicker(row.ticker ?? row.symbol ?? row.codigo);
     const date = isoDate(row.date ?? row.tradeDate ?? row.data);
-    const operation = operationOf(row.operation ?? row.op ?? row.movement ?? row.movimento ?? row.type);
+    const operation = operationOf(row.operationType ?? row.interpretedOperation ?? row.action ?? row.side ?? row.operation ?? row.op ?? row.movement ?? row.movimento ?? row.type);
     const quantity = finiteNumber(row.quantity ?? row.qty ?? row.quantidade);
-    const total = finiteNumber(row.total ?? row.totalValue ?? row.grossValue ?? row.value ?? row.valor);
+    const unitPrice = finiteNumber(row.unitPrice ?? row.price ?? row.preco);
+    const total = finiteNumber(row.total ?? row.totalValue ?? row.grossValue ?? row.value ?? row.valor ?? (quantity !== null && unitPrice !== null ? quantity * unitPrice : null));
     const source = text(row.source ?? row.origin) || 'UNKNOWN';
     const reasons = [];
     if (!ticker || !date || quantity === null || quantity <= 0 || total === null || total < 0) reasons.push('MISSING_TRANSACTION_FIELDS');

@@ -31,6 +31,20 @@ test('V259 does not create a definitive gain when sale lacks acquisition basis',
   assert.equal(result.replay.issues[0].type, 'SELL_WITHOUT_CONFIDENT_BASIS');
 });
 
+test('V259 recognizes canonical operation fields and derives total from unit price', () => {
+  const result = Reconstruction.buildHistoricalReconstructionCompleteness({
+    transactions: [
+      { id: 'buy', date: '2024-01-02', ticker: 'AAA3', operationType: 'Compra', qty: 10, price: 10, source: 'historical-import' },
+      { id: 'sell', date: '2024-02-02', ticker: 'AAA3', action: 'venda', qty: 4, price: 12, source: 'historical-import' }
+    ]
+  });
+  assert.equal(result.counts.buy, 1);
+  assert.equal(result.counts.sell, 1);
+  assert.equal(result.sales.total, 1);
+  assert.equal(result.sales.needsReview, 0);
+  assert.equal(result.replay.realizedSales[0].proceeds, 48);
+});
+
 test('V259 supports explicit split and ticker lineage without changing total basis', () => {
   const result = Reconstruction.buildHistoricalReconstructionCompleteness({
     transactions: [{ id: 'buy', date: '2024-01-02', ticker: 'CCC3', operation: 'compra', qty: 10, total: 100, source: 'broker-note' }],
