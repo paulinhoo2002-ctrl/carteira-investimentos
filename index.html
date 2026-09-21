@@ -2905,7 +2905,14 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
 .premium-dividends-3 .dividend-quality-grid>div{display:flex;flex-direction:column;gap:3px;padding:8px 9px;border:1px solid var(--border);border-radius:10px;background:rgba(15,26,44,.55)}
 .premium-dividends-3 .dividend-quality-grid strong{font-size:17px;color:var(--text);font-variant-numeric:tabular-nums}
 .premium-dividends-3 .dividend-quality-grid span,.premium-dividends-3 .dividend-quality-note{font-size:10px;color:var(--muted);line-height:1.4}
-.premium-dividends-3 .dividend-quality-note{margin:10px 0 0}
+  .premium-dividends-3 .dividend-quality-note{margin:10px 0 0}
+  .v253-income-intelligence{display:flex;flex-direction:column;gap:10px;margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(145deg,rgba(15,26,44,.92),rgba(8,13,24,.82))}
+  .v253-income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .v253-income-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  .v253-income-kpis article{min-width:0;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(7,12,23,.55)}
+  .v253-income-kpis span,.v253-income-kpis small{display:block;color:var(--muted);font-size:10px;line-height:1.3}.v253-income-kpis strong{display:block;margin:4px 0;font-size:17px;color:var(--success);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .v253-income-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.v253-income-card{min-width:0;padding:10px;border:1px solid var(--border);border-radius:11px;background:rgba(7,12,23,.42)}.v253-income-card h3{margin:0;color:var(--text);font-size:12px}.v253-income-note{margin:3px 0 8px;color:var(--muted);font-size:10px;line-height:1.35}.v253-month-list,.v253-ranked-list{display:flex;flex-direction:column;gap:6px}.v253-month-row{display:grid;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:7px;font-size:10px;color:var(--muted)}.v253-month-row i{height:6px;border-radius:99px;background:rgba(148,163,184,.16);overflow:hidden}.v253-month-row b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--primary),var(--success))}.v253-month-row strong,.v253-ranked-list strong{font-size:11px;color:var(--text);white-space:nowrap}.v253-ranked-list>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:7px;align-items:center;border-bottom:1px solid rgba(148,163,184,.1);padding:5px 0}.v253-ranked-list span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-size:11px}.v253-ranked-list small{color:var(--muted);font-size:9px;white-space:nowrap}.v253-income-empty{padding:8px 0;color:var(--muted);font-size:10px}
+  @media(max-width:640px){.v253-income-intelligence{margin:7px 0;padding:9px 10px}.v253-income-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.v253-income-kpis article:first-child{grid-column:1/-1}.v253-income-grid{grid-template-columns:1fr;gap:6px}.v253-income-card{padding:8px}.v253-income-head{align-items:center}.v253-income-head .div-premium-status{font-size:8px;white-space:nowrap}}
 @media(max-width:640px){.premium-dividends-3 .dividend-quality-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.premium-dividends-3 .dividend-quality-panel{margin-top:7px;padding:9px 10px}}
   .premium-dividends-3 .dividend-history-heading{padding:10px 12px;border-bottom:1px solid var(--border)}
   .premium-dividends-3 .dividend-history-heading strong{font-size:13px;color:var(--text)}
@@ -8046,6 +8053,7 @@ document.write([
 <script src="portfolio-performance.js"></script>
 <script src="historical-performance-engine.js"></script>
 <script src="performance-intelligence.js"></script>
+<script src="dividend-intelligence.js"></script>
 <script src="portfolio-report-model.js"></script>
 <script src="executive-reporting.js"></script>
 <script src="portfolio-event-timeline.js?v=v228-1"></script>
@@ -33222,6 +33230,33 @@ function canonDividendYearSummary(rows){
     }).join('')}</div>
   </div>`;
 }
+function v253DividendIntelligencePanel(rows){
+  const engine=globalThis.DividendIntelligence;
+  if(!engine?.buildDividendIntelligence) return '';
+  const model=engine.buildDividendIntelligence({rows:Array.isArray(rows)?rows:[],now:new Date()});
+  const money=value=>value==null?'—':fmt(value);
+  const topAssets=(model.byAsset||[]).slice(0,5);
+  const topClasses=(model.byClass||[]).slice(0,4);
+  const calendar=(model.calendar||[]).slice(0,6);
+  const months=(model.monthly?.rows||[]).slice(-12).reverse();
+  const list=(items,render,empty)=>items.length?items.map(render).join(''):`<div class="v253-income-empty" role="status">${esc(empty)}</div>`;
+  const coverageLabel={FULL_COVERAGE:'Cobertura completa',PARTIAL_COVERAGE:'Cobertura parcial',UNAVAILABLE:'Cobertura indisponível',UNKNOWN:'Cobertura desconhecida'}[model.monthly?.coverage]||'Cobertura desconhecida';
+  return `<section class="v253-income-intelligence" aria-labelledby="v253-income-title">
+    <div class="v253-income-head"><div><div class="premium-panel-title" id="v253-income-title">Inteligência de renda</div><div class="premium-panel-sub">Pagamentos registrados no ledger canônico; anunciados ficam fora do recebido.</div></div><span class="div-premium-status neutral">${esc(coverageLabel)}</span></div>
+    <div class="v253-income-kpis" aria-label="Resumo da inteligência de renda">
+      <article><span>YTD pago</span><strong>${money(model.ytdPaidIncome)}</strong><small>somente PAID</small></article>
+      <article><span>Últimos 12 meses</span><strong>${money(model.ttmPaidIncome)}</strong><small>janela móvel · PAID</small></article>
+      <article><span>Eventos pagos</span><strong>${model.paidEvents?.length||0}</strong><small>${esc(coverageLabel)}</small></article>
+      <article><span>Anunciados</span><strong>${(model.calendar||[]).filter(row=>row.state==='ANNOUNCED').length}</strong><small>não somados à renda</small></article>
+    </div>
+    <div class="v253-income-grid">
+      <div class="v253-income-card"><h3>Renda mensal</h3><p class="v253-income-note">Valores recebidos por mês · período coberto</p><div class="v253-month-list">${list(months,row=>`<div class="v253-month-row"><span>${esc(row.month)}</span><i><b style="width:${Math.max(2,Math.min(100,model.monthly.total?row.paidTotal/model.monthly.total*100:0)).toFixed(1)}%"></b></i><strong>${money(row.paidTotal)}</strong></div>`,'Sem pagamentos pagos no período.')}</div></div>
+      <div class="v253-income-card"><h3>Quem mais gerou renda</h3><p class="v253-income-note">Contribuição histórica do período coberto</p><div class="v253-ranked-list">${list(topAssets,row=>`<div><span>${esc(row.name)}</span><strong>${money(row.paidIncome)}</strong><small>${(row.shareOfCoveredIncome*100).toFixed(1)}%</small></div>`,'Sem contribuição classificável.')}</div></div>
+      <div class="v253-income-card"><h3>Por classe</h3><p class="v253-income-note">Sem recomendação; apenas composição observada</p><div class="v253-ranked-list">${list(topClasses,row=>`<div><span>${esc(row.name)}</span><strong>${money(row.paidIncome)}</strong><small>${(row.shareOfCoveredIncome*100).toFixed(1)}%</small></div>`,'Classe indisponível.')}</div></div>
+      <div class="v253-income-card"><h3>Calendário de renda</h3><p class="v253-income-note">Data, status e valor do ledger; anunciados não são recebimentos</p><div class="v253-ranked-list">${list(calendar,row=>`<div><span>${esc(row.ticker)} · ${esc(row.type)}</span><strong>${row.date?brDate(row.date):'Data indisponível'}</strong><small>${row.state}${row.state==='PAID'?` · ${money(row.value)}`:''}</small></div>`,'Nenhum evento de renda disponível.')}</div></div>
+    </div>
+  </section>`;
+}
 function canonDividendOverview(rows, kpisHtml){
   const filteredRows=rows.filter(r=>{
     const y=Number(r.monthKey&&r.monthKey.split('-')[0]);
@@ -33238,6 +33273,7 @@ function canonDividendOverview(rows, kpisHtml){
   return `
     <div class="canon-dividends">
       <div class="canon-div-kpi-row">${kpisHtml}</div>
+      ${v253DividendIntelligencePanel(rows)}
       <div class="dividend-history-block canon-div-history">
         <div class="dividend-history-heading">
           <div><strong class="wave-b-heading">${waveBIcon('history')}<span>Histórico mensal</span></strong><span>Ano · Jan–Dez · Média · Total, com os valores oficiais já gravados.</span></div>
