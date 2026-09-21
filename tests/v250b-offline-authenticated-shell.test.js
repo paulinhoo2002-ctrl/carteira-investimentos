@@ -80,6 +80,8 @@ test('V250D reconnect never promotes the offline marker to online auth', () => {
 test('V250D delegates reconnect persistence to Firebase LOCAL authority', () => {
   assert.match(index, /firebase\.auth\.Auth\?\.Persistence\?\.LOCAL/);
   assert.match(index, /FB\.auth\.setPersistence\(localPersistence\)/);
+  assert.match(index, /let firebaseAuthPersistenceReady = Promise\.resolve\(\)/);
+  assert.match(index, /await firebaseAuthPersistenceReady/);
 });
 
 test('V250B service worker ships the offline session helper in the versioned shell', () => {

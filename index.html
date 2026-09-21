@@ -8142,6 +8142,7 @@ let FB = {
   lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
+let firebaseAuthPersistenceReady = Promise.resolve();
 
 const V250_RECONNECT_RELOAD_KEY = 'civ5_v250_reconnect_reload_v1';
 const RECONNECT_RELOAD_MAX_ATTEMPTS = 1;
@@ -10219,7 +10220,10 @@ function initFirebase(){
     try{
       const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
       if(localPersistence && typeof FB.auth.setPersistence==='function'){
-        FB.auth.setPersistence(localPersistence).catch(error=>debugWarn('Persistência Firebase indisponível:', error));
+        firebaseAuthPersistenceReady = FB.auth.setPersistence(localPersistence).catch(error=>{
+          debugWarn('Persistência Firebase indisponível:', error);
+          return false;
+        });
       }
     }catch(error){ debugWarn('Persistência Firebase indisponível:', error); }
     window.addEventListener('offline',()=>{
@@ -10843,6 +10847,7 @@ async function signInGoogle(){
   if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
+    await firebaseAuthPersistenceReady;
     await FB.auth.signInWithPopup(provider);
   }catch(e){
     debugWarn(e);
