@@ -15,7 +15,7 @@ jobs:
   test:
     name: Build and test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: Checkout repository
@@ -35,14 +35,19 @@ jobs:
       - name: Build modern
         run: npm run build:modern
 
-      - name: Install Chromium
+      - name: Resolve Chromium (reuse preinstalled browser)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium
+          CHROME_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)"
+          if [ -z "$CHROME_BIN" ]; then
+            echo "No preinstalled browser found; falling back to apt install."
+            sudo apt-get update
+            sudo apt-get install -y chromium
+            CHROME_BIN="$(command -v chromium)"
+          fi
+          echo "Using browser: $CHROME_BIN"
+          echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
 
       - name: Reliability smokes
-        env:
-          CHROME_PATH: /usr/bin/chromium
         run: |
           node --test tests/phase-208-data-quality.test.js
           node --test tests/touch-targets.smoke.test.js
