@@ -17,12 +17,24 @@
 ## 2026-09-22 - V260 e governança
 
 - V260 Asset Detail Intelligence foi mergeada na PR #408.
-- O `origin/main` atual inclui o ajuste operacional de CI no SHA
-  `71f5fd534dc5b8e8abee89a872a84f346367bf61`.
+- O ajuste operacional de CI, incluindo reutilização do Chromium pré-instalado
+  em `/usr/bin/chromium`, foi incorporado antes da PR #409.
+- A PR #409 foi squash-merged no SHA
+  `2e7a898f09230d2f7e3b9781040a6effe33f9c7f`; CI de `main` passou no mesmo
+  SHA (run `35776520025`) e o deployment Production associado concluiu com
+  sucesso (deployment `6599404492`).
 - O CI reutiliza o Chromium pré-instalado em `/usr/bin/chromium`.
-- O commit local `4010ca95` de hard lock de identidade foi preservado na
-  branch `chore/project-identity-governance` e na PR #409; não deve ser
-  descartado nem reconciliado automaticamente com o `main` dirty.
+- O hard lock de identidade da PR #409 está em `main`. O `main` local foi
+  alinhado sem reset ao `origin/main`; os ponteiros anteriores foram
+  preservados em `archive/main-before-pr409-reconciliation`,
+  `archive/pre-pr409-local-main` e `archive/pr409-governance-history`.
+- Worktrees limpos `ci-ops-fix` e `identity-governance-pr409` foram removidos
+  após verificação; V260 foi preservada porque contém três arquivos locais não
+  rastreados. Nenhuma branch remota foi removida.
+- Próxima recomendação baseada em `docs/ai/OPEN_WORK.md`: atualizar o snapshot
+  de estado/continuidade desatualizado e então priorizar uma fase focada em
+  frescor, valuation e proveniência `as-of` de Renda Fixa. Fixtures legítimas
+  XP/BTG continuam bloqueadas por entrada do usuário.
 
 ## PERMANENT PROJECT IDENTITY AND ROUTING GUARD
 

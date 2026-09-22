@@ -1,22 +1,22 @@
 # Next Step
 
-## Current boot state — V197
+## Current boot state — 2026-09-22
 
-- `CURRENT_MAIN_SHA=253c73bfcacfaac9102bea09887b5879f341a0a6`
-- `LAST_MERGED_PR=373`
-- `LAST_RELEASE=V196 product feedback and Import Center accessibility`
-- `CURRENT_ACTIVE_MISSION=V197`
-- `ACTIVE_BRANCH=feature/v197-agent-memory-product-evolution`
-- `ACTIVE_WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v197-agent-product`
-- `PR=374`
-- `PR_HEAD=87f1507391f5141734a49b312ba53a8891011f2b`
-- `PR_CI=GREEN`
-- `MERGE_STATUS=HUMAN_AUTHORIZATION_REQUIRED`
-- `CURRENT_PRODUCT_PRIORITY=Dashboard, Ativos, Dividendos, Rentabilidade e navegação`
-- `CURRENT_BLOCKERS=browser-harness pode estar ausente; usar Playwright/CDP`
-- `DEFERRED_HIGH_VALUE_ITEMS=Renda Fixa e Relatórios após P1; auditoria npm sem rede`
-- `LAST_VALIDATION=215/215 tests, 22/22 UI tests, build PASS, browser matrix clean`
-- `LAST_UPDATED=2026-09-18`
+- `CURRENT_MAIN_SHA=2e7a898f09230d2f7e3b9781040a6effe33f9c7f`
+- `LAST_MERGED_PR=409`
+- `LAST_PRODUCT_RELEASE=V260 Asset Detail Intelligence (PR #408)`
+- `LAST_GOVERNANCE_RELEASE=PR #409 project identity hard lock`
+- `ACTIVE_MISSION=NONE`
+- `LOCAL_MAIN_ALIGNED_WITH_ORIGIN=true`
+- `MAIN_CI_RUN=35776520025 (SUCCESS)`
+- `PRODUCTION_DEPLOYMENT=6599404492 (SUCCESS)`
+- `NEXT_RECOMMENDED_WORK=Refresh project state, then improve fixed-income freshness, valuation, and financial as-of provenance`
+- `BLOCKED_BY_USER_INPUT=Sanitized XP and BTG statement fixtures`
+- `LAST_UPDATED=2026-09-22`
+
+The recommendation comes from `docs/ai/OPEN_WORK.md`; it is readiness only.
+Do not start a new phase without explicit authorization. The historical
+snapshots below are retained as evidence and are not the current boot state.
 
 O histórico abaixo permanece como evidência; este snapshot é o estado transitório atual.
 
