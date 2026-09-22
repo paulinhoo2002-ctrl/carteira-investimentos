@@ -1,5 +1,29 @@
 # Project Memory
 
+## PROJECT IDENTITY HARD LOCK
+
+- `PROJECT_IDENTITY_HARD_LOCK=true`.
+- Somente `C:\Projetos\carteira-investimentos` e worktrees registradas em
+  `C:\Projetos\carteira-investimentos.worktrees` são autorizados.
+- Outros repositórios são proibidos. Não fazer leituras, escritas, commits,
+  pushes ou PRs entre projetos.
+- Metadados antigos ou gerados de outro projeto devem ser ignorados, não
+  adaptados nem usados como fonte de verdade.
+- Toda missão começa pelo `PROJECT_IDENTITY_GATE` e confirma raiz Git, remote,
+  branch, HEAD, status e Git comum da worktree.
+- Em projeto incorreto, retornar
+  `HUMAN_BLOCKER_WRONG_PROJECT_AND_STOP` e interromper imediatamente.
+
+## 2026-09-22 - V260 e governança
+
+- V260 Asset Detail Intelligence foi mergeada na PR #408.
+- O `origin/main` atual inclui o ajuste operacional de CI no SHA
+  `71f5fd534dc5b8e8abee89a872a84f346367bf61`.
+- O CI reutiliza o Chromium pré-instalado em `/usr/bin/chromium`.
+- O commit local `4010ca95` de hard lock de identidade foi preservado na
+  branch `chore/project-identity-governance` e na PR #409; não deve ser
+  descartado nem reconciliado automaticamente com o `main` dirty.
+
 ## PERMANENT PROJECT IDENTITY AND ROUTING GUARD
 
 - `PROJECT_IDENTITY_GATE_REQUIRED=true` antes de qualquer edição, teste
