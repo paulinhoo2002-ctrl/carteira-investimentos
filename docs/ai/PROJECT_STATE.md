@@ -1,5 +1,18 @@
 # Project State
 
+## Current canonical state — 2026-09-22
+
+- `CURRENT_MAIN_SHA=2e7a898f09230d2f7e3b9781040a6effe33f9c7f`.
+- PR #409 hardens project identity governance; its merge is present in
+  `origin/main`, with main CI run `35776520025` successful and Production
+  deployment `6599404492` successful.
+- Latest product release: V260 Asset Detail Intelligence (PR #408).
+- Next recommendation from `docs/ai/OPEN_WORK.md`: refresh state documentation,
+  then assess fixed-income freshness, valuation, and financial `as-of`
+  provenance. XP/BTG fixtures remain blocked on sanitized user-provided input.
+- This is a repository-state update only; no product code or financial data was
+  changed.
+
 ## 2026-09-22 - Project identity hard lock
 
 - `PROJECT_IDENTITY_HARD_LOCK=true`.
