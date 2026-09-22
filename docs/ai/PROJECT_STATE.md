@@ -1,5 +1,18 @@
 # Project State
 
+## 2026-09-22 - Project identity hard lock
+
+- `PROJECT_IDENTITY_HARD_LOCK=true`.
+- `PROJECT_ROOT=C:\Projetos\carteira-investimentos`.
+- `OTHER_PROJECTS_ALLOWED=false` e `CROSS_PROJECT_ACCESS_ALLOWED=false`.
+- Worktrees válidas pertencem ao mesmo repositório e ficam sob
+  `C:\Projetos\carteira-investimentos.worktrees`.
+- Toda missão exige `PROJECT_IDENTITY_GATE` antes de leitura ou escrita
+  substancial.
+- Mismatch exige `HUMAN_BLOCKER_WRONG_PROJECT_AND_STOP`.
+- Esta entrada é governança durável. Não altera o estado funcional nem os
+  snapshots históricos abaixo.
+
 ## Estado canônico V79 — 2026-09-15
 
 - `CURRENT_HEAD` funcional: `25c5854177a9db88dba76a87d2d66d49dc59feb0`

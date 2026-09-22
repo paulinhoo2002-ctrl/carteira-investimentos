@@ -1,5 +1,16 @@
 # Roteamento permanente de Skills
 
+## PROJECT IDENTITY HARD LOCK
+
+O roteamento de Skills nunca pode mudar o projeto ativo. Antes de descobrir ou
+usar uma Skill, confirme que a raiz Git pertence a
+`C:\Projetos\carteira-investimentos` ou a uma worktree registrada do mesmo
+repositório. `C:\Projetos\carteira-2.0` e qualquer outro repositório são
+proibidos.
+
+Em caso de mismatch, não leia nem escreva no projeto detectado. Retorne
+`HUMAN_BLOCKER_WRONG_PROJECT_AND_STOP` e encerre a missão.
+
 Este é o entrypoint portátil para Codex, Hermes, OpenCode e agentes genéricos.
 O catálogo operacional canônico está em
 [`docs/ai/SKILL_ROUTING.md`](ai/SKILL_ROUTING.md).

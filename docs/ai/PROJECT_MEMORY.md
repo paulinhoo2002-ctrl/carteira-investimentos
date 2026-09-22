@@ -1,5 +1,19 @@
 # Project Memory
 
+## PROJECT IDENTITY HARD LOCK
+
+- `PROJECT_IDENTITY_HARD_LOCK=true`.
+- Somente `C:\Projetos\carteira-investimentos` e worktrees registradas em
+  `C:\Projetos\carteira-investimentos.worktrees` são autorizados.
+- Outros repositórios são proibidos. Não fazer leituras, escritas, commits,
+  pushes ou PRs entre projetos.
+- Metadados antigos ou gerados de outro projeto devem ser ignorados, não
+  adaptados nem usados como fonte de verdade.
+- Toda missão começa pelo `PROJECT_IDENTITY_GATE` e confirma raiz Git, remote,
+  branch, HEAD, status e Git comum da worktree.
+- Em projeto incorreto, retornar
+  `HUMAN_BLOCKER_WRONG_PROJECT_AND_STOP` e interromper imediatamente.
+
 ## PERMANENT PROJECT IDENTITY AND ROUTING GUARD
 
 - `PROJECT_IDENTITY_GATE_REQUIRED=true` antes de qualquer edição, teste
