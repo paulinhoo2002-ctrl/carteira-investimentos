@@ -9,7 +9,7 @@ import {
   formatReadonlyPercentOrMissing,
   formatText,
   type ReadonlyFixedIncomeSortKey,
-} from './readonlyFixedIncomeViewModel.ts';
+} from './readonlyFixedIncomeViewModelWithValuation.ts';
 
 interface FixedIncomeReadonlyPageProps {
   adapter: ReadOnlyFixedIncomeAdapter;
@@ -52,13 +52,18 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
   const [sortBy, setSortBy] = useState<ReadonlyFixedIncomeSortKey>('liquidValue');
   const snapshot = adapter.getSnapshot();
 
+  // For now, we don't have CDI data in the snapshot; we'll pass an empty array.
+  // In a real implementation, we would fetch CDI rates from a BCB SGS service.
+  const cdiRows: { date: string; valuePercentPerDay: number; factor: number }[] = [];
+
   const viewModel = useMemo(
-    () =>
-      createReadonlyFixedIncomeViewModel(snapshot, {
+    () => {
+      return createReadonlyFixedIncomeViewModel(snapshot, {
         query,
         subtype,
         sortBy,
-      }),
+      }, cdiRows);
+    },
     [query, snapshot, sortBy, subtype],
   );
 
@@ -148,9 +153,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
 
         <p className="fixed-income-readonly__results" aria-live="polite">
           {viewModel.hasResults
-            ? `${viewModel.filteredItems.length} resultado${viewModel.filteredItems.length === 1 ? '' : 's'} encontrado${
-                viewModel.filteredItems.length === 1 ? '' : 's'
-              }`
+            ? `${viewModel.filteredItems.length} resultado${viewModel.filteredItems.length === 1 ? '' : 's'} encontrado${viewModel.filteredItems.length === 1 ? '' : 's'}`
             : hasItems
               ? 'Nenhum titulo corresponde aos filtros atuais.'
               : 'Carteira vazia nesta leitura readonly.'}
@@ -325,8 +328,8 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
               <p className="overview-card__value">Snapshot vazio</p>
               <p className="overview-card__hint">Nenhum subtipo readonly para exibir.</p>
             </article>
-          )}
-        </div>
+          )
+        }
       </section>
 
       <section className="fixed-income-readonly__list" aria-labelledby="fixed-income-list">
@@ -351,40 +354,34 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                     <th scope="col">Vencimento</th>
                     <th scope="col">Rentab.</th>
                     <th scope="col">Indexador</th>
-                    <th className="number-cell" scope="col">
-                      Aplicado
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Bruto
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Líquido
-                    </th>
-                    <th className="number-cell" scope="col">
-                      Ganho / perda
-                    </th>
-                    <th className="number-cell" scope="col">
-                      IR
-                    </th>
-                    <th className="number-cell" scope="col">
-                      IOF
-                    </th>
-                    <th className="number-cell" scope="col">
-                      IR / IOF combinado
-                    </th>
+                    <th className="number-cell" scope="col">Aplicado</th>
+                    <th className="number-cell" scope="col">Bruto</th>
+                    <th className="number-cell" scope="col">Líquido</th>
+                    <th className="number-cell" scope="col">Ganho / perda</th>
+                    <th className="number-cell" scope="col">IR</th>
+                    <th className="number-cell" scope="col">IOF</th>
+                    <th className="number-cell" scope="col">IR / IOF combinado</th>
                     <th scope="col">Liquidez</th>
-                    <th className="number-cell" scope="col">
-                      Indisp.
-                    </th>
+                    <th scope="col">Indisp.</th>
+                    <th scope="col">Valor autoritativo</th>
+                    <th scope="col">Valor shadow</th>
+                    <th scope="col">Diferença</th>
+                    <th scope="col">As-of</th>
+                    <th scope="col">Frescor</th>
+                    <th scope="col">Fonte</th>
                     <th scope="col">Status</th>
                     <th scope="col">Observação</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {viewModel.filteredItems.map((item) => (
-                    <tr key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
-                      <th scope="row">
-                        {item.ticker ? <span className="assets-report__ticker">{item.ticker}</span> : null}
+                  {viewModel.filteredItems.map((item) => {
+                    const valuationItem = item as unknown as ReadonlyFixedIncomeItem & { valuation: any };
+                    const val = valuationItem.valuation;
+                    return (
+                      <tr key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
+                        <th scope="row">
+                          {item.ticker ? <span className="assets-report__ticker">{item.ticker}</span> : null}
+                        </th>
                         <span className="assets-report__name">{displayIdentity(item)}</span>
                       </th>
                       <td>{formatText(item.subtype)}</td>
@@ -401,7 +398,17 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       <td className="number-cell">{renderMoney(item.iofValue)}</td>
                       <td className="number-cell">{renderMoney(item.combinedTaxValue)}</td>
                       <td>{formatText(item.liquidity)}</td>
-                      <td className="number-cell">{renderMoney(item.unavailableValue)}</td>
+                      <td>{formatText(item.unavailableValue)}</td>
+                      <td className="number-cell">{renderMoney(val?.authoritativeValue)}</td>
+                      <td className="number-cell">{renderMoney(val?.shadowValue)}</td>
+                      <td className="number-cell">
+                        {val?.differenceAmount !== null && val?.differencePercent !== null && val?.comparisonStatus === 'COMPARABLE'
+                          ? `${renderMoney(val?.differenceAmount)} (${formatReadonlyPercentOrMissing(val?.differencePercent)}%)`
+                          : 'Não comparável'}
+                      </td>
+                      <td>{formatReadonlyDate(val?.authoritativeValueAsOf ?? val?.shadowValueAsOf)}</td>
+                      <td>{val?.authoritativeFreshness ?? val?.shadowFreshness ?? 'UNKNOWN'}</td>
+                      <td>{formatText(val?.authoritativeSource ?? val?.shadowSource)}</td>
                       <td>
                         <span className="fixed-income-readonly__status-badge" data-status={item.maturityStatus}>
                           {item.maturityStatus}
@@ -409,7 +416,8 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       </td>
                       <td>{formatText(item.note)}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -420,7 +428,6 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                   <div>
                     {item.ticker ? <h4 className="assets-report__ticker">{item.ticker}</h4> : null}
                     <p className="assets-report__name">{displayIdentity(item)}</p>
-                    <p className="fixed-income-readonly__mobile-subtitle">{formatText(item.subtype)}</p>
                   </div>
                   <dl>
                     <div>
@@ -452,7 +459,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       <dd>{renderMoney(item.grossValue)}</dd>
                     </div>
                     <div>
-                      <dt>Líquido</dt>
+                      <dt>Líquido</td>
                       <dd>{renderMoney(item.liquidValue)}</dd>
                     </div>
                     <div>
@@ -478,6 +485,34 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                     <div>
                       <dt>Indisp.</dt>
                       <dd>{renderMoney(item.unavailableValue)}</dd>
+                    </div>
+                    <div>
+                      <dt>Valor autoritativo</dt>
+                      <dd>{renderMoney(val?.authoritativeValue)}</dd>
+                    </div>
+                    <div>
+                      <dt>Valor shadow</dt>
+                      <dd>{renderMoney(val?.shadowValue)}</dd>
+                    </div>
+                    <div>
+                      <dt>Diferença</dt>
+                      <dd>
+                        {val?.differenceAmount !== null && val?.differencePercent !== null && val?.comparisonStatus === 'COMPARABLE'
+                          ? `${renderMoney(val?.differenceAmount)} (${formatReadonlyPercentOrMissing(val?.differencePercent)}%)`
+                          : 'Não comparável'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>As-of</dt>
+                      <dd>{formatReadonlyDate(val?.authoritativeValueAsOf ?? val?.shadowValueAsOf)}</dd>
+                    </div>
+                    <div>
+                      <dt>Frescor</dt>
+                      <dd>{val?.authoritativeFreshness ?? val?.shadowFreshness ?? 'UNKNOWN'}</dd>
+                    </div>
+                    <div>
+                      <dt>Fonte</dt>
+                      <dd>{formatText(val?.authoritativeSource ?? val?.shadowSource)}</dd>
                     </div>
                     <div>
                       <dt>Status</dt>
