@@ -375,8 +375,7 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                 </thead>
                 <tbody>
                   {viewModel.filteredItems.map((item) => {
-                    const valuationItem = item as unknown as ReadonlyFixedIncomeItem & { valuation: any };
-                    const val = valuationItem.valuation;
+                    const val = item.valuation;
                     return (
                       <tr key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
                                               <th scope="row">
@@ -409,11 +408,24 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       <td>{val?.authoritativeFreshness ?? val?.shadowFreshness ?? 'UNKNOWN'}</td>
                       <td>{formatText(val?.authoritativeSource ?? val?.shadowSource)}</td>
                       <td>
+                        <span className="fixed-income-readonly__status-badge" data-status={val.shadowStatus}>
+                          {val.shadowStatus}
+                        </span>
                         <span className="fixed-income-readonly__status-badge" data-status={item.maturityStatus}>
                           {item.maturityStatus}
                         </span>
                       </td>
-                      <td>{formatText(item.note)}</td>
+                      <td>
+                        {formatText(item.note)}
+                        {val.ipcaIndexDiagnostics ? (
+                          <p>
+                            IPCA (diagnóstico do índice; não é valor do título): cobertura {val.ipcaIndexDiagnostics.coverageStatus}
+                            {val.ipcaIndexDiagnostics.coveragePercent === null ? '' : ` (${val.ipcaIndexDiagnostics.coveragePercent}%)`}
+                            {' · '}série {val.ipcaIndexDiagnostics.freshness}
+                            {' · '}fonte até {val.ipcaIndexDiagnostics.sourceAsOf ?? 'indisponível'}
+                          </p>
+                        ) : null}
+                      </td>
                     </tr>
                     );
                   })}
@@ -422,112 +434,127 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
             </div>
 
             <div className="fixed-income-readonly__mobile-list" aria-label="Lista mobile dos titulos de renda fixa">
-              {viewModel.filteredItems.map((item) => (
-                <article className="fixed-income-readonly__mobile-card" key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
-                  <div>
-                    {item.ticker ? <h4 className="assets-report__ticker">{item.ticker}</h4> : null}
-                    <p className="assets-report__name">{displayIdentity(item)}</p>
-                  </div>
-                  <dl>
-                    <div>
-                      <dt>Emissor</dt>
-                      <dd>{formatText(item.issuer)}</dd>
-                    </div>
-                    <div>
-                      <dt>Aplicação</dt>
-                      <dd>{formatReadonlyDate(item.applicationDate)}</dd>
-                    </div>
-                    <div>
-                      <dt>Vencimento</dt>
-                      <dd>{formatReadonlyDate(item.maturityDate)}</dd>
-                    </div>
-                    <div>
-                      <dt>Rentab.</dt>
-                      <dd>{formatText(item.contractedRate)}</dd>
-                    </div>
-                    <div>
-                      <dt>Indexador</dt>
-                      <dd>{formatText(item.indexer)}</dd>
-                    </div>
-                    <div>
-                      <dt>Aplicado</dt>
-                      <dd>{renderMoney(item.appliedValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>Bruto</dt>
-                      <dd>{renderMoney(item.grossValue)}</dd>
-                    </div>
-                    <div>
-                                          <dt>Líquido</dt>
-                                          <dd>{renderMoney(item.liquidValue)}</dd>
-                                        </div>
-                    <div>
-                      <dt>Ganho / perda</dt>
-                      <dd>{renderMoney(item.profitValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>IR</dt>
-                      <dd>{renderMoney(item.irValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>IOF</dt>
-                      <dd>{renderMoney(item.iofValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>IR / IOF combinado</dt>
-                      <dd>{renderMoney(item.combinedTaxValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>Liquidez</dt>
-                      <dd>{formatText(item.liquidity)}</dd>
-                    </div>
-                    <div>
-                      <dt>Indisp.</dt>
-                      <dd>{renderMoney(item.unavailableValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>Valor autoritativo</dt>
-                      <dd>{renderMoney(val?.authoritativeValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>Valor shadow</dt>
-                      <dd>{renderMoney(val?.shadowValue)}</dd>
-                    </div>
-                    <div>
-                      <dt>Diferença</dt>
-                      <dd>
-                        {val?.differenceAmount !== null && val?.differencePercent !== null && val?.comparisonStatus === 'COMPARABLE'
-                          ? `${renderMoney(val?.differenceAmount)} (${formatReadonlyPercentOrMissing(val?.differencePercent)}%)`
-                          : 'Não comparável'}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>As-of</dt>
-                      <dd>{formatReadonlyDate(val?.authoritativeValueAsOf ?? val?.shadowValueAsOf)}</dd>
-                    </div>
-                    <div>
-                      <dt>Frescor</dt>
-                      <dd>{val?.authoritativeFreshness ?? val?.shadowFreshness ?? 'UNKNOWN'}</dd>
-                    </div>
-                    <div>
-                      <dt>Fonte</dt>
-                      <dd>{formatText(val?.authoritativeSource ?? val?.shadowSource)}</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>
-                        <span className="fixed-income-readonly__status-badge" data-status={item.maturityStatus}>
-                          {item.maturityStatus}
-                        </span>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Observação</dt>
-                      <dd>{formatText(item.note)}</dd>
-                    </div>
-                  </dl>
-                </article>
-              ))}
+              {viewModel.filteredItems.map((item) => {
+                        const val = item.valuation;
+                        return (
+                          <article className="fixed-income-readonly__mobile-card" key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
+                            <div>
+                              {item.ticker ? <h4 className="assets-report__ticker">{item.ticker}</h4> : null}
+                              <p className="assets-report__name">{displayIdentity(item)}</p>
+                            </div>
+                            <dl>
+                              <div>
+                                <dt>Emissor</dt>
+                                <dd>{formatText(item.issuer)}</dd>
+                              </div>
+                              <div>
+                                <dt>Aplicação</dt>
+                                <dd>{formatReadonlyDate(item.applicationDate)}</dd>
+                              </div>
+                              <div>
+                                <dt>Vencimento</dt>
+                                <dd>{formatReadonlyDate(item.maturityDate)}</dd>
+                              </div>
+                              <div>
+                                <dt>Rentab.</dt>
+                                <dd>{formatText(item.contractedRate)}</dd>
+                              </div>
+                              <div>
+                                <dt>Indexador</dt>
+                                <dd>{formatText(item.indexer)}</dd>
+                              </div>
+                              <div>
+                                <dt>Aplicado</dt>
+                                <dd>{renderMoney(item.appliedValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>Bruto</dt>
+                                <dd>{renderMoney(item.grossValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>Líquido</dt>
+                                <dd>{renderMoney(item.liquidValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>Ganho / perda</dt>
+                                <dd>{renderMoney(item.profitValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>IR</dt>
+                                <dd>{renderMoney(item.irValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>IOF</dt>
+                                <dd>{renderMoney(item.iofValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>IR / IOF combinado</dt>
+                                <dd>{renderMoney(item.combinedTaxValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>Liquidez</dt>
+                                <dd>{formatText(item.liquidity)}</dd>
+                              </div>
+                              <div>
+                                <dt>Indisp.</dt>
+                                <dd>{renderMoney(item.unavailableValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>Valor autoritativo</dt>
+                                <dd>{renderMoney(val?.authoritativeValue)}</dd>
+                              </div>
+                              <div>
+                                <dt>Valor shadow</dt>
+                                <dd>{renderMoney(val?.shadowValue)}</dd>
+                              </div>
+                              {val.ipcaIndexDiagnostics ? (
+                                <div>
+                                  <dt>IPCA — diagnóstico do índice</dt>
+                                  <dd>
+                                    {val.ipcaIndexDiagnostics.coverageStatus}
+                                    {val.ipcaIndexDiagnostics.coveragePercent === null ? '' : ` · ${val.ipcaIndexDiagnostics.coveragePercent}%`}
+                                    {' · '}série {val.ipcaIndexDiagnostics.freshness}
+                                    {' · '}até {val.ipcaIndexDiagnostics.sourceAsOf ?? 'indisponível'}
+                                    {' · '}não representa valor do título
+                                  </dd>
+                                </div>
+                              ) : null}
+                              <div>
+                                <dt>Diferença</dt>
+                                <dd>
+                                  {val?.differenceAmount !== null && val?.differencePercent !== null && val?.comparisonStatus === 'COMPARABLE'
+                                    ? `${renderMoney(val?.differenceAmount)} (${formatReadonlyPercentOrMissing(val?.differencePercent)}%)`
+                                    : 'Não comparável'}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt>As-of</dt>
+                                <dd>{formatReadonlyDate(val?.authoritativeValueAsOf ?? val?.shadowValueAsOf)}</dd>
+                              </div>
+                              <div>
+                                <dt>Frescor</dt>
+                                <dd>{val?.authoritativeFreshness ?? val?.shadowFreshness ?? 'UNKNOWN'}</dd>
+                              </div>
+                              <div>
+                                <dt>Fonte</dt>
+                                <dd>{formatText(val?.authoritativeSource ?? val?.shadowSource)}</dd>
+                              </div>
+                              <div>
+                                <dt>Status</dt>
+                                <dd>
+                                  <span className="fixed-income-readonly__status-badge" data-status={item.maturityStatus}>
+                                    {item.maturityStatus}
+                                  </span>
+                                </dd>
+                              </div>
+                              <div>
+                                <dt>Observação</dt>
+                                <dd>{formatText(item.note)}</dd>
+                              </div>
+                            </dl>
+                          </article>
+                        );
+                      })}
             </div>
           </>
         ) : (

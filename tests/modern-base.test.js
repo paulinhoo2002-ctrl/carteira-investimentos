@@ -591,7 +591,7 @@ test('modern shell exists and stays isolated', async () => {
   const allText = allSourceText();
   for (const forbidden of [
     'firebase',
-    'auth',
+    /\bauth\b/,
     'localStorage',
     'sessionStorage',
     'indexedDB',
@@ -633,7 +633,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(fixedIncomeReadonlyTsx.includes('sessionStorage'), false);
   assert.equal(fixedIncomeReadonlyTsx.includes('indexedDB'), false);
   assert.equal(fixedIncomeReadonlyTsx.includes('firebase'), false);
-  assert.equal(fixedIncomeReadonlyTsx.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(fixedIncomeReadonlyTsx), false);
   assert.equal(/\bsync\b/.test(fixedIncomeReadonlyTsx), false);
   assert.equal(fixedIncomeReadonlyTsx.includes('backup'), false);
   assert.equal(fixedIncomeReadonlyTsx.includes('setInterval'), false);
@@ -645,35 +645,35 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(fixedIncomeViewModelTs.includes('sessionStorage'), false);
   assert.equal(fixedIncomeViewModelTs.includes('indexedDB'), false);
   assert.equal(fixedIncomeViewModelTs.includes('firebase'), false);
-  assert.equal(fixedIncomeViewModelTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(fixedIncomeViewModelTs), false);
   assert.equal(/\bsync\b/.test(fixedIncomeViewModelTs), false);
   assert.equal(fixedIncomeViewModelTs.includes('backup'), false);
   assert.equal(fixedIncomeContractTs.includes('localStorage'), false);
   assert.equal(fixedIncomeContractTs.includes('sessionStorage'), false);
   assert.equal(fixedIncomeContractTs.includes('indexedDB'), false);
   assert.equal(fixedIncomeContractTs.includes('firebase'), false);
-  assert.equal(fixedIncomeContractTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(fixedIncomeContractTs), false);
   assert.equal(/\bsync\b/.test(fixedIncomeContractTs), false);
   assert.equal(fixedIncomeContractTs.includes('backup'), false);
   assert.equal(fixedIncomeBridgeTs.includes('localStorage'), false);
   assert.equal(fixedIncomeBridgeTs.includes('sessionStorage'), false);
   assert.equal(fixedIncomeBridgeTs.includes('indexedDB'), false);
   assert.equal(fixedIncomeBridgeTs.includes('firebase'), false);
-  assert.equal(fixedIncomeBridgeTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(fixedIncomeBridgeTs), false);
   assert.equal(/\bsync\b/.test(fixedIncomeBridgeTs), false);
   assert.equal(fixedIncomeBridgeTs.includes('backup'), false);
   assert.equal(fixedIncomeAdapterTs.includes('localStorage'), false);
   assert.equal(fixedIncomeAdapterTs.includes('sessionStorage'), false);
   assert.equal(fixedIncomeAdapterTs.includes('indexedDB'), false);
   assert.equal(fixedIncomeAdapterTs.includes('firebase'), false);
-  assert.equal(fixedIncomeAdapterTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(fixedIncomeAdapterTs), false);
   assert.equal(/\bsync\b/.test(fixedIncomeAdapterTs), false);
   assert.equal(fixedIncomeAdapterTs.includes('backup'), false);
   assert.equal(incomeReadonlyTsx.includes('localStorage'), false);
   assert.equal(incomeReadonlyTsx.includes('sessionStorage'), false);
   assert.equal(incomeReadonlyTsx.includes('indexedDB'), false);
   assert.equal(incomeReadonlyTsx.includes('firebase'), false);
-  assert.equal(incomeReadonlyTsx.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeReadonlyTsx), false);
   assert.equal(/\bsync\b/.test(incomeReadonlyTsx), false);
   assert.equal(incomeReadonlyTsx.includes('backup'), false);
   assert.equal(incomeReadonlyTsx.includes('setInterval'), false);
@@ -685,7 +685,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(incomeViewModelTs.includes('sessionStorage'), false);
   assert.equal(incomeViewModelTs.includes('indexedDB'), false);
   assert.equal(incomeViewModelTs.includes('firebase'), false);
-  assert.equal(incomeViewModelTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeViewModelTs), false);
   assert.equal(/\bsync\b/.test(incomeViewModelTs), false);
   assert.equal(incomeViewModelTs.includes('backup'), false);
   assert.equal(incomeViewModelTs.includes('setInterval'), false);
@@ -697,42 +697,42 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(incomeContractTs.includes('sessionStorage'), false);
   assert.equal(incomeContractTs.includes('indexedDB'), false);
   assert.equal(incomeContractTs.includes('firebase'), false);
-  assert.equal(incomeContractTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeContractTs), false);
   assert.equal(/\bsync\b/.test(incomeContractTs), false);
   assert.equal(incomeContractTs.includes('backup'), false);
   assert.equal(incomeBridgeTs.includes('localStorage'), false);
   assert.equal(incomeBridgeTs.includes('sessionStorage'), false);
   assert.equal(incomeBridgeTs.includes('indexedDB'), false);
   assert.equal(incomeBridgeTs.includes('firebase'), false);
-  assert.equal(incomeBridgeTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeBridgeTs), false);
   assert.equal(/\bsync\b/.test(incomeBridgeTs), false);
   assert.equal(incomeBridgeTs.includes('backup'), false);
   assert.equal(incomeAdapterTs.includes('localStorage'), false);
   assert.equal(incomeAdapterTs.includes('sessionStorage'), false);
   assert.equal(incomeAdapterTs.includes('indexedDB'), false);
   assert.equal(incomeAdapterTs.includes('firebase'), false);
-  assert.equal(incomeAdapterTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeAdapterTs), false);
   assert.equal(/\bsync\b/.test(incomeAdapterTs), false);
   assert.equal(incomeAdapterTs.includes('backup'), false);
   assert.equal(incomeIntegrationTs.includes('localStorage'), false);
   assert.equal(incomeIntegrationTs.includes('sessionStorage'), false);
   assert.equal(incomeIntegrationTs.includes('indexedDB'), false);
   assert.equal(incomeIntegrationTs.includes('firebase'), false);
-  assert.equal(incomeIntegrationTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeIntegrationTs), false);
   assert.equal(/\bsync\b/.test(incomeIntegrationTs), false);
   assert.equal(incomeIntegrationTs.includes('backup'), false);
   assert.equal(incomeSourceTs.includes('localStorage'), false);
   assert.equal(incomeSourceTs.includes('sessionStorage'), false);
   assert.equal(incomeSourceTs.includes('indexedDB'), false);
   assert.equal(incomeSourceTs.includes('firebase'), false);
-  assert.equal(incomeSourceTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeSourceTs), false);
   assert.equal(/\bsync\b/.test(incomeSourceTs), false);
   assert.equal(incomeSourceTs.includes('backup'), false);
   assert.equal(incomeRefreshControllerTs.includes('localStorage'), false);
   assert.equal(incomeRefreshControllerTs.includes('sessionStorage'), false);
   assert.equal(incomeRefreshControllerTs.includes('indexedDB'), false);
   assert.equal(incomeRefreshControllerTs.includes('firebase'), false);
-  assert.equal(incomeRefreshControllerTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(incomeRefreshControllerTs), false);
   assert.equal(/\bsync\b/.test(incomeRefreshControllerTs), false);
   assert.equal(incomeRefreshControllerTs.includes('backup'), false);
   assert.equal(incomeRefreshControllerTs.includes('setInterval'), false);
@@ -749,7 +749,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(refreshControllerTs.includes('sessionStorage'), false);
   assert.equal(refreshControllerTs.includes('indexedDB'), false);
   assert.equal(refreshControllerTs.includes('firebase'), false);
-  assert.equal(refreshControllerTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(refreshControllerTs), false);
   assert.equal(/\bsync\b/.test(refreshControllerTs), false);
   assert.equal(refreshControllerTs.includes('backup'), false);
   assert.equal(refreshControllerTs.includes('setInterval'), false);
@@ -766,7 +766,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(reportsIntegrationTs.includes('sessionStorage'), false);
   assert.equal(reportsIntegrationTs.includes('indexedDB'), false);
   assert.equal(reportsIntegrationTs.includes('firebase'), false);
-  assert.equal(reportsIntegrationTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(reportsIntegrationTs), false);
   assert.equal(/\bsync\b/.test(reportsIntegrationTs), false);
   assert.equal(reportsIntegrationTs.includes('backup'), false);
   assert.equal(reportsIntegrationTs.includes('document'), false);
@@ -780,7 +780,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(readonlySessionTs.includes('sessionStorage'), false);
   assert.equal(readonlySessionTs.includes('indexedDB'), false);
   assert.equal(readonlySessionTs.includes('firebase'), false);
-  assert.equal(readonlySessionTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(readonlySessionTs), false);
   assert.equal(/\bsync\b/.test(readonlySessionTs), false);
   assert.equal(readonlySessionTs.includes('backup'), false);
   assert.equal(readonlySessionTs.includes('READONLY_REPORT_PAGE_IDS=new Set'), false);
@@ -795,7 +795,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(hostSourceTs.includes('sessionStorage'), false);
   assert.equal(hostSourceTs.includes('indexedDB'), false);
   assert.equal(hostSourceTs.includes('firebase'), false);
-  assert.equal(hostSourceTs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(hostSourceTs), false);
   assert.equal(/\bsync\b/.test(hostSourceTs), false);
   assert.equal(hostSourceTs.includes('backup'), false);
   assert.equal(hostSourceTs.includes('document'), false);
@@ -808,7 +808,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(mountTsx.includes('sessionStorage'), false);
   assert.equal(mountTsx.includes('indexedDB'), false);
   assert.equal(mountTsx.includes('firebase'), false);
-  assert.equal(mountTsx.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(mountTsx), false);
   assert.equal(mountTsx.includes('sync'), false);
   assert.equal(mountTsx.includes('backup'), false);
   assert.equal(mountTsx.includes('postMessage'), false);
@@ -819,7 +819,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.equal(sessionContractJs.includes('sessionStorage'), false);
   assert.equal(sessionContractJs.includes('indexedDB'), false);
   assert.equal(sessionContractJs.includes('firebase'), false);
-  assert.equal(sessionContractJs.includes('auth'), false);
+  assert.equal(/\bauth\b/.test(sessionContractJs), false);
   assert.equal(/\bsync\b/.test(sessionContractJs), false);
   assert.equal(sessionContractJs.includes('backup'), false);
   assert.equal(sessionContractJs.includes('setInterval'), false);
