@@ -295,44 +295,44 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
           <p className="fixed-income-readonly__section-note">Agregação visual baseada nos valores já fornecidos.</p>
         </div>
 
-        <div className="fixed-income-readonly__distribution-list">
-          {viewModel.distribution.length > 0 ? (
-            viewModel.distribution.map((entry) => (
-              <div className="fixed-income-readonly__distribution-row" key={entry.subtype}>
-                <div className="fixed-income-readonly__distribution-row-head">
-                  <strong>{entry.subtype}</strong>
-                  <span>
-                    {entry.allocationPct === null
-                      ? `Não informado · ${entry.itemCount} títulos`
-                      : `${formatReadonlyPercentOrMissing(entry.allocationPct, { signed: false })} · ${entry.itemCount} títulos`}
-                  </span>
-                </div>
-                {entry.allocationPct === null ? (
-                  <p className="overview-card__hint">Participação não informada.</p>
-                ) : (
-                  <div
-                    className="fixed-income-readonly__distribution-track"
-                    aria-label={`${entry.subtype}: ${formatReadonlyPercentOrMissing(entry.allocationPct, { signed: false })}`}
-                  >
-                    <span
-                      className="fixed-income-readonly__distribution-fill"
-                      style={{ width: `${Math.max(0, Math.min(entry.allocationPct, 100))}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <article className="overview-card" aria-live="polite">
-              <p className="overview-card__label">Sem distribuição</p>
-              <p className="overview-card__value">Snapshot vazio</p>
-              <p className="overview-card__hint">Nenhum subtipo readonly para exibir.</p>
-            </article>
-          )
-        }
-      </section>
+        {viewModel.distribution.length > 0 ? (
+                    <>
+                      {viewModel.distribution.map((entry) => (
+                        <div className="fixed-income-readonly__distribution-row" key={entry.subtype}>
+                          <div className="fixed-income-readonly__distribution-row-head">
+                            <strong>{entry.subtype}</strong>
+                            <span>
+                              {entry.allocationPct === null
+                                ? `Não informado · ${entry.itemCount} títulos`
+                                : `${formatReadonlyPercentOrMissing(entry.allocationPct, { signed: false })} · ${entry.itemCount} títulos`}
+                            </span>
+                          </div>
+                          {entry.allocationPct === null ? (
+                            <p className="overview-card__hint">Participação não informada.</p>
+                          ) : (
+                            <div
+                              className="fixed-income-readonly__distribution-track"
+                              aria-label={`${entry.subtype}: ${formatReadonlyPercentOrMissing(entry.allocationPct, { signed: false })}`}
+                            >
+                              <span
+                                className="fixed-income-readonly__distribution-fill"
+                                style={{ width: `${Math.max(0, Math.min(entry.allocationPct, 100))}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <article className="overview-card" aria-live="polite">
+                      <p className="overview-card__label">Sem distribuição</p>
+                      <p className="overview-card__value">Snapshot vazio</p>
+                      <p className="overview-card__hint">Nenhum subtipo readonly para exibir.</p>
+                    </article>
+                                      )}
+                                  </section>
 
-      <section className="fixed-income-readonly__list" aria-labelledby="fixed-income-list">
+                          <section className="fixed-income-readonly__list" aria-labelledby="fixed-income-list">
         <div className="fixed-income-readonly__section-title-row">
           <h3 className="fixed-income-readonly__section-title" id="fixed-income-list">
             Lista de títulos
@@ -379,12 +379,11 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                     const val = valuationItem.valuation;
                     return (
                       <tr key={item.id ?? item.ticker ?? item.name ?? summarizeItemLabel(item)}>
-                        <th scope="row">
-                          {item.ticker ? <span className="assets-report__ticker">{item.ticker}</span> : null}
-                        </th>
-                        <span className="assets-report__name">{displayIdentity(item)}</span>
-                      </th>
-                      <td>{formatText(item.subtype)}</td>
+                                              <th scope="row">
+                                                {item.ticker ? <span className="assets-report__ticker">{item.ticker}</span> : null}
+                                                <span className="assets-report__name">{displayIdentity(item)}</span>
+                                              </th>
+                                              <td>{formatText(item.subtype)}</td>
                       <td>{formatText(item.issuer)}</td>
                       <td>{formatReadonlyDate(item.applicationDate)}</td>
                       <td>{formatReadonlyDate(item.maturityDate)}</td>
@@ -459,9 +458,9 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       <dd>{renderMoney(item.grossValue)}</dd>
                     </div>
                     <div>
-                      <dt>Líquido</td>
-                      <dd>{renderMoney(item.liquidValue)}</dd>
-                    </div>
+                                          <dt>Líquido</dt>
+                                          <dd>{renderMoney(item.liquidValue)}</dd>
+                                        </div>
                     <div>
                       <dt>Ganho / perda</dt>
                       <dd>{renderMoney(item.profitValue)}</dd>
