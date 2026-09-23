@@ -6437,7 +6437,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:10px;line-height:1.35}
       .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
       .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
-      @media(max-width:1199px){.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
+      @media(max-width:1499px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
+      @media(max-width:1199px){.premium-rf-grid{grid-template-columns:1fr}.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
         .premium-rf-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
         .premium-rf-header{align-items:stretch;flex-direction:column;gap:10px}
@@ -6450,6 +6451,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-grid,.premium-rf-distribution{grid-template-columns:1fr}
         .premium-rf-controls{grid-template-columns:1fr;padding:10px 12px}
         .premium-rf-position-row,.premium-rf-maturity-row{padding:10px 12px}
+        .premium-rf-row-main{flex-basis:100%}
+        .premium-rf-row-value{text-align:left}
+        .premium-rf-row-financial,.premium-rf-row-results{justify-content:flex-start}
+        .premium-rf-row-actions{justify-content:flex-start}
         .premium-rf-review-groups{grid-template-columns:1fr}
         .premium-rf-review-group+.premium-rf-review-group,.premium-rf-review-group:nth-child(3),.premium-rf-review-group:nth-child(4){border-left:0;border-top:1px solid var(--border)}
         .premium-rf-review-queue-head,.premium-rf-review-group{padding-left:12px;padding-right:12px}
