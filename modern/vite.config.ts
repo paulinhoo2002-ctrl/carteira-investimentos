@@ -53,6 +53,7 @@ export default defineConfig({
         index: resolve(rootDir, 'index.html'),
         host: resolve(rootDir, 'host.html'),
         'host-bootstrap': resolve(rootDir, 'src/bootstrap/hostBootstrap.ts'),
+        'v262-legacy-diagnostics': resolve(rootDir, 'src/features/fixed-income/v262LegacyDiagnostics.ts'),
       },
     },
   },

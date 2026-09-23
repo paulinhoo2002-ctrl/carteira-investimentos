@@ -68,6 +68,14 @@ export function analyzeIpcaIndexDiagnostics(
   for (let month = expectedStartMonth; month <= expectedEndMonth; month = shiftMonth(month, 1)) {
     expectedMonths.push(month);
   }
+  if (rows.length === 0) {
+    return Object.freeze({
+      ...unavailable(),
+      expectedStartMonth,
+      expectedEndMonth,
+      expectedMonthCount: expectedMonths.length,
+    });
+  }
   const expectedSet = new Set(expectedMonths);
   const counts = new Map<string, number>();
   const invalid = new Set<string>();

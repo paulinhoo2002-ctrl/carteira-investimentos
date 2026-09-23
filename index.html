@@ -6435,6 +6435,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-review-action:hover{background:var(--surface);border-color:var(--accent)}
       .premium-rf-review-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:10px;line-height:1.35}
+      .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
+      .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
       @media(max-width:1199px){.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
         .premium-rf-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
@@ -6453,6 +6455,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-review-queue-head,.premium-rf-review-group{padding-left:12px;padding-right:12px}
         .premium-rf-review-group.is-empty{padding-top:9px;padding-bottom:9px}
         .premium-rf-review-group.is-empty .premium-rf-review-list{display:none}
+        .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr)}
+        .premium-rf-ipca-diagnostics .premium-row-value{max-width:none;text-align:left}
       }
       @media(max-width:390px){.premium-rf-kpi-value{font-size:14px}.premium-rf-row-meta{max-width:190px}}
       @media(max-width:767px){
@@ -28991,6 +28995,15 @@ function setRfTrustSort(value){
 }
 function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
+  const ipcaDiagnosticsApi=globalThis.V262FixedIncomeDiagnostics;
+  const ipcaDiagnostics=typeof ipcaDiagnosticsApi?.build==='function'
+    ? ipcaDiagnosticsApi.build(Array.isArray(S.assets)?S.assets:[])
+    : null;
+  const ipcaDiagnosticsHtml=ipcaDiagnostics===null
+    ? '<section class="premium-rf-panel ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico IPCA</div><div class="premium-rf-panel-sub" role="status">Diagnóstico indisponível neste ambiente.</div></div></div></section>'
+    : ipcaDiagnostics.length===0
+      ? ''
+    : `<section class="premium-rf-panel premium-rf-ipca-diagnostics ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico da série IPCA</div><div class="premium-rf-panel-sub">Diagnóstico do índice; não calcula o valor do título.</div></div><span class="ds-badge">${ipcaDiagnostics.length} posição${ipcaDiagnostics.length===1?'':'ões'}</span></div><div class="premium-income-list">${ipcaDiagnostics.map(item=>`<div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">${esc(item.ticker||item.name||'Título IPCA')}</div><div class="premium-row-sub">Valuation: não suportado · valor manual continua sendo a autoridade</div></div><div class="premium-row-value"><span class="ds-badge">Cobertura ${esc(item.coverageStatus==='UNAVAILABLE'?'indisponível':item.coverageStatus==='PARTIAL'?'parcial':'completa')}${item.coveragePercent===null?'':` · ${esc(String(item.coveragePercent))}%`}</span><div class="premium-row-sub">Frescor ${esc(item.freshness==='UNKNOWN'?'desconhecido':item.freshness==='STALE'?'desatualizado':'atual')} · fonte até ${esc(item.sourceAsOf||'indisponível')}</div></div></div>`).join('')}</div></section>`;
   const count=data.assets.length;
   const {overdue, soon30, soon90, soon12m, longTerm, missingDue, missingRate}=data;
   const trustSummary=data.trustSummary||{};
@@ -29211,6 +29224,7 @@ function rendaFixaTab(){
         ${trustSummary.staleCount ? `<span class="premium-rf-trust-count warn">Desatualizada <b>${trustSummary.staleCount}</b></span>` : ''}
       </div>
     </section>
+    ${ipcaDiagnosticsHtml}
     ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
     ${summaryStrip}
     ${reviewQueueHtml}
@@ -36419,5 +36433,11 @@ function updateRfAssetSummary(selectElement) {
   .canon-dashboard .dashboard-patrimony-chart{background:rgba(8,19,32,.2)}
 }
 </style>
+<script>
+window.addEventListener('v262:diagnostics-ready',()=>{
+  try{if(typeof S!=='undefined'&&S.tab==='renda-fixa'&&typeof render==='function')render()}catch{}
+});
+</script>
+<script type="module" src="/modern/dist/assets/v262-legacy-diagnostics.js"></script>
 </body>
 </html>

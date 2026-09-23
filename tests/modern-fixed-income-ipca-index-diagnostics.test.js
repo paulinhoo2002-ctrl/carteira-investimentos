@@ -64,6 +64,23 @@ describe('analyzeIpcaIndexDiagnostics', () => {
     assert.equal(result.sourceAsOf, '2024-04');
   });
 
+  it('keeps coverage unavailable when no IPCA source rows were supplied', async () => {
+    const { analyzeIpcaIndexDiagnostics } = await loadDiagnostics();
+    const result = analyzeIpcaIndexDiagnostics([], {
+      applicationDate: '2024-01-15',
+      asOf: '2024-05-15',
+    });
+
+    assert.equal(result.coverageStatus, 'UNAVAILABLE');
+    assert.equal(result.coveragePercent, null);
+    assert.equal(result.expectedStartMonth, '2024-02');
+    assert.equal(result.expectedEndMonth, '2024-04');
+    assert.equal(result.availableMonthCount, 0);
+    assert.deepEqual(result.missingMonths, []);
+    assert.equal(result.freshness, 'UNKNOWN');
+    assert.equal(result.sourceAsOf, null);
+  });
+
   it('calculates 3 of 31 required months as 9 percent using conservative floor rounding', async () => {
     const { analyzeIpcaIndexDiagnostics } = await loadDiagnostics();
     const result = analyzeIpcaIndexDiagnostics(
