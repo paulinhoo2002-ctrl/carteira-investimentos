@@ -52,7 +52,7 @@ test('legacy fixed-income screen mounts the read-only diagnostic without changin
   const html = fs.readFileSync(htmlPath, 'utf8');
   const route = html.slice(html.indexOf('function rendaFixaTab(){'), html.indexOf('\nfunction dashboardMetricIcon', html.indexOf('function rendaFixaTab(){')));
 
-  assert.match(html, /\/modern\/dist\/assets\/v262-legacy-diagnostics\.js/);
+  assert.match(html, /import\('\/modern\/dist\/assets\/v262-legacy-diagnostics\.js'\)/);
   assert.match(route, /V262FixedIncomeDiagnostics/);
   assert.match(route, /UNSUPPORTED/);
   assert.match(route, /valor manual continua sendo a autoridade/);

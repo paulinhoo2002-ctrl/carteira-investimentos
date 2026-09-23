@@ -25,7 +25,13 @@ async function startServer(rootDir) {
       const filePath = path.normalize(path.join(rootDir, relative));
       if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
       const content = await fsp.readFile(filePath);
-      res.writeHead(200, { 'Content-Type': pathname.endsWith('.html') ? 'text/html; charset=utf-8' : 'text/plain' });
+      const extension = path.extname(filePath).toLowerCase();
+      const contentType = extension === '.html'
+        ? 'text/html; charset=utf-8'
+        : extension === '.js' || extension === '.mjs'
+          ? 'text/javascript; charset=utf-8'
+          : 'text/plain';
+      res.writeHead(200, { 'Content-Type': contentType });
       res.end(content);
     } catch (error) {
       res.writeHead(error.code === 'ENOENT' ? 404 : 500);

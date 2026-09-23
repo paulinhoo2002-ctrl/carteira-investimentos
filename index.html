@@ -28995,11 +28995,20 @@ function setRfTrustSort(value){
 }
 function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
+  if(typeof globalThis.V262FixedIncomeDiagnostics?.build!=='function'&&!globalThis.__V262FixedIncomeDiagnosticsLoading){
+    globalThis.__V262FixedIncomeDiagnosticsLoading=true;
+    import('/modern/dist/assets/v262-legacy-diagnostics.js').catch(()=>{
+      globalThis.__V262FixedIncomeDiagnosticsLoadFailed=true;
+      if(typeof window!=='undefined')window.dispatchEvent(new Event('v262:diagnostics-ready'));
+    });
+  }
   const ipcaDiagnosticsApi=globalThis.V262FixedIncomeDiagnostics;
   const ipcaDiagnostics=typeof ipcaDiagnosticsApi?.build==='function'
     ? ipcaDiagnosticsApi.build(Array.isArray(S.assets)?S.assets:[])
     : null;
-  const ipcaDiagnosticsHtml=ipcaDiagnostics===null
+  const ipcaDiagnosticsHtml=ipcaDiagnostics===null&&!globalThis.__V262FixedIncomeDiagnosticsLoadFailed
+    ? '<section class="premium-rf-panel ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico IPCA</div><div class="premium-rf-panel-sub" role="status">Carregando diagnóstico de cobertura e frescor…</div></div></div></section>'
+    : ipcaDiagnostics===null
     ? '<section class="premium-rf-panel ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico IPCA</div><div class="premium-rf-panel-sub" role="status">Diagnóstico indisponível neste ambiente.</div></div></div></section>'
     : ipcaDiagnostics.length===0
       ? ''
@@ -36438,6 +36447,5 @@ window.addEventListener('v262:diagnostics-ready',()=>{
   try{if(typeof S!=='undefined'&&S.tab==='renda-fixa'&&typeof render==='function')render()}catch{}
 });
 </script>
-<script type="module" src="/modern/dist/assets/v262-legacy-diagnostics.js"></script>
 </body>
 </html>
