@@ -3,7 +3,8 @@
 ## V262 — IPCA Diagnostics Protocol (2026-09-24)
 
 - Branch: `feature/v262-fixed-income-advanced-shadow-valuation`. PR: #412.
-- Final head: `94b26815a3c93a6a877316e048311be655b5ab40` (CI green, Vercel preview Comments green).
+- Final head: `dfafaafa87a35755e8c9fe70e5632313a34eaba2` (CI green, Vercel preview Comments green; test regex fix for CRLF/LF normalization).
+- Previous head `94b26815a3c93a6a877316e048311be655b5ab40` had 2/777 modern test failures due to brittle regex assertions around CRLF/comments/whitespace; fixed by normalizing line endings and matching literal regex pattern in source code.
 - Architecture: BCB SGS series 433 fetched once via `fetchIpcaLastNMonths(48)` in `FixedIncomeReadonlyPage` `useEffect`; rows forwarded through `createReadonlyFixedIncomeViewModel(snapshot, filters, cdiRows, ipcaRows)` → `computeFixedIncomeValuationState(item, cdiRows, ipcaRows)` → per-item `ipcaIndexDiagnostics` exposed to UI in list and mobile card.
 - IPCA diagnostics contract: `coverageStatus`, `coveragePercent`, `expectedStartMonth/EndMonth/MonthCount`, `availableMonthCount`, `missingMonths`, `duplicateMonths`, `invalidMonths`, `excludedFutureOrIncompleteMonthCount`, `freshness`, `sourceAsOf`. Truthful: zero/negative observations valid; future months excluded; duplicates not double-counted; coverage ≠ freshness; null ≠ zero.
 - Invariants: `KEEP_UNSUPPORTED_IPCA_EXACT=true`, `GENERIC_IPCA_PLUS_FORMULA_IMPLEMENTED=false`, `IPCA_SECURITY_VALUATION_SUPPORTED=false`, `MANUAL_FIXED_INCOME_AUTHORITY=true`. `shadowValue` remains null for unsupported exact valuation.

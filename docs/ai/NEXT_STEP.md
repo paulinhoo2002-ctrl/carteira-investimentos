@@ -5,14 +5,15 @@
 - `CURRENT_WORKTREE=C:/Projetos/carteira-investimentos.worktrees/v262-fixed-income-advanced-shadow-valuation`
 - `CURRENT_BRANCH=feature/v262-fixed-income-advanced-shadow-valuation`
 - `CURRENT_PR=412`
-- `PR_HEAD_SHA=94b26815a3c93a6a877316e048311be655b5ab40`
+- `PR_HEAD_SHA=dfafaafa87a35755e8c9fe70e5632313a34eaba2`
 - `PR_STATE=OPEN`
 - `PR_MERGEABLE=true`
-- `CI_HEAD_SHA=94b26815a3c93a6a877316e048311be655b5ab40 (Build and test SUCCESS, Vercel Preview Comments SUCCESS)`
-- `Vercel Environment URL: https://carteira-investimentos-74zyhot9x-paulinhoo2002-ctrls-projects.vercel.app (state=success, deployment 6635251455)`
+- `CI_HEAD_SHA=dfafaafa87a35755e8c9fe70e5632313a34eaba2 (Build and test SUCCESS, Vercel Preview Comments SUCCESS)`
+- `Vercel Environment URL: https://carteira-investimentos-git-ca8b51-paulinhoo2002-ctrls-projects.vercel.app (state=success, deployment BsNFX3GZQRCqqwJSwTmRXG8xKhaS)`
 - `PREVIEW_PROTECTION=Vercel SSO (interactive) — modern preview not accessible from QA profile without human Vercel login`
+- `TEST_REGEX_FIX=applied — CRLF→LF normalization + literal regex pattern matching`
 
-### Gates (worktree, HEAD 94b26815)
+### Gates (worktree, HEAD dfafaafa87)
 - `npm test` → 248/248 PASS
 - `npm run test:modern` → 777/777 PASS (27 suites)
 - `npm run build:modern` → PASS (`modern/dist/`, 162 modules, 930ms)
@@ -20,7 +21,7 @@
 - `git diff --check` → PASS
 - IPCA-focused test subset: 68/68 PASS (`modern-fixed-income-readonly-page` + `modern-fixed-income-ipca-index-diagnostics` + `modern-fixed-income-valuation-state`)
 
-### Implemented (commit 94b26815)
+### Implemented (commit dfafaafa87)
 - `modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx`
   - `useEffect` fetches `fetchIpcaLastNMonths(48)` of BCB SGS series 433 once per mount, stores in `ipcaRows` state.
   - `ipcaRows` passed to `createReadonlyFixedIncomeViewModel(snapshot, filters, cdiRows, ipcaRows)`.

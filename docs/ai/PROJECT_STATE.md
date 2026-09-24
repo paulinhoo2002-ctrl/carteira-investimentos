@@ -3,10 +3,11 @@
 ## V262 PR #412 — IPCA Diagnostics — 2026-09-24
 
 - Branch: `feature/v262-fixed-income-advanced-shadow-valuation`.
-- Head: `94b26815a3c93a6a877316e048311be655b5ab40`.
+- Head: `dfafaafa87a35755e8c9fe70e5632313a34eaba2`.
 - PR: [#412](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/412) — OPEN, MERGEABLE.
-- CI: Build and test SUCCESS on `94b26815`; Vercel preview Comments SUCCESS.
-- Vercel Preview deployment `6635251455` in state `success`; hostname `carteira-investimentos-74zyhot9x-paulinhoo2002-ctrls-projects.vercel.app`.
+- CI: Build and test SUCCESS on `dfafaafa87`; Vercel preview Comments SUCCESS.
+- Vercel Preview deployment `BsNFX3GZQRCqqwJSwTmRXG8xKhaS` in state `success`; hostname `carteira-investimentos-git-ca8b51-paulinhoo2002-ctrls-projects.vercel.app`.
+- Fix applied: 2/777 modern test failures resolved by normalizing CRLF→LF and matching literal regex pattern (`\[a-z0-9\]\+`) in source code assertions.
 - Vercel SSO protection is enabled for the preview; product-page QA blocked at SSO (human-only).
 - Local gates (worktree): `npm test` 248/248 PASS, `npm run test:modern` 777/777 PASS (27 suites), `npm run build:modern` PASS, `npm run build` PASS, `git diff --check` PASS.
 - IPCA-focused unit subset: 68/68 PASS covering `modern-fixed-income-readonly-page`, `modern-fixed-income-ipca-index-diagnostics`, and `modern-fixed-income-valuation-state`.
