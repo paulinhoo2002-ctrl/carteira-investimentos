@@ -1,6 +1,7 @@
 import type { ReadOnlyFixedIncomeItem, ReadOnlyFixedIncomeSnapshot } from './fixedIncomeReadonlyContract.mjs';
 import { formatReadonlyCurrency, formatReadonlyPercent } from '../reports/readonlyReportsViewModel.ts';
 import { computeFixedIncomeValuationState, type ValuationState } from '../../domain/fixedIncome/valuationState.ts';
+import type { IpcaMonthlyIndex } from '../../domain/fixedIncome/ipcaIndexDiagnostics.ts';
 
 export interface ReadonlyFixedIncomeValuationItem extends ReadOnlyFixedIncomeItem {
   readonly valuation: ValuationState;
@@ -249,6 +250,7 @@ export function createReadonlyFixedIncomeViewModel(
   snapshot: ReadOnlyFixedIncomeSnapshot,
   filters: ReadonlyFixedIncomePageFilters,
   cdiRows: readonly { date: string; valuePercentPerDay: number; factor: number }[] = [],
+  ipcaRows: readonly IpcaMonthlyIndex[] = [],
 ): ReadonlyFixedIncomeViewModelWithValuation {
   const query = filters.query.trim().toLowerCase();
   const selectedSubtype = filters.subtype;
@@ -256,7 +258,7 @@ export function createReadonlyFixedIncomeViewModel(
 
   // Enrich items with valuation state
   const enrichedItems = snapshot.items.map((item) => {
-    const valuation = computeFixedIncomeValuationState(item, cdiRows);
+    const valuation = computeFixedIncomeValuationState(item, cdiRows, ipcaRows);
     return Object.freeze({ ...item, valuation } as ReadonlyFixedIncomeValuationItem);
   });
 

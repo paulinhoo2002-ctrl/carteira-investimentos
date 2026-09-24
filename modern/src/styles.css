@@ -1121,6 +1121,41 @@ button {
   color: #bbf7d0;
 }
 
+.fixed-income-readonly__ipca-diagnostics {
+  display: grid;
+  gap: 4px;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+  font-size: 0.78rem;
+}
+
+.fixed-income-readonly__ipca-label {
+  color: var(--color-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+}
+
+.fixed-income-readonly__ipca-fields {
+  display: grid;
+  gap: 6px;
+}
+
+.fixed-income-readonly__ipca-fields span {
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.fixed-income-readonly__ipca-fields span:last-child {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
 .assets-report__summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

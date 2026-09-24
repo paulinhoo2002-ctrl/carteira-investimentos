@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { ReadOnlyFixedIncomeAdapter, ReadOnlyFixedIncomeItem } from './fixedIncomeSnapshotAdapter.mjs';
 import {
   createReadonlyFixedIncomeViewModel,
@@ -10,6 +10,8 @@ import {
   formatText,
   type ReadonlyFixedIncomeSortKey,
 } from './readonlyFixedIncomeViewModelWithValuation.ts';
+import { fetchIpcaLastNMonths } from '../../domain/fixedIncome/bcbIpcaFetcher.ts';
+import type { IpcaMonthlyIndex } from '../../domain/fixedIncome/ipcaIndexDiagnostics.ts';
 
 interface FixedIncomeReadonlyPageProps {
   adapter: ReadOnlyFixedIncomeAdapter;
@@ -52,6 +54,30 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
   const [sortBy, setSortBy] = useState<ReadonlyFixedIncomeSortKey>('liquidValue');
   const snapshot = adapter.getSnapshot();
 
+  // Fetch IPCA data once for all IPCA-indexed holdings
+  const [ipcaRows, setIpcaRows] = useState<IpcaMonthlyIndex[]>([]);
+  const [ipcaFetchError, setIpcaFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchIpcaLastNMonths(48) // fetch last 48 months to cover most application dates
+      .then((result) => {
+        if (!cancelled) {
+          if (result.ok) {
+            setIpcaRows(result.indices);
+          } else {
+            setIpcaFetchError(`IPCA fetch failed: ${result.error}`);
+          }
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setIpcaFetchError(`IPCA fetch error: ${err.message}`);
+        }
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   // For now, we don't have CDI data in the snapshot; we'll pass an empty array.
   // In a real implementation, we would fetch CDI rates from a BCB SGS service.
   const cdiRows: { date: string; valuePercentPerDay: number; factor: number }[] = [];
@@ -62,9 +88,9 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
         query,
         subtype,
         sortBy,
-      }, cdiRows);
+      }, cdiRows, ipcaRows);
     },
-    [query, snapshot, sortBy, subtype],
+    [query, snapshot, sortBy, subtype, ipcaRows],
   );
 
   const hasItems = snapshot.items.length > 0;
@@ -418,13 +444,22 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                       <td>
                         {formatText(item.note)}
                         {val.ipcaIndexDiagnostics ? (
-                          <p>
-                            IPCA (diagnóstico do índice; não é valor do título): cobertura {val.ipcaIndexDiagnostics.coverageStatus}
-                            {val.ipcaIndexDiagnostics.coveragePercent === null ? '' : ` (${val.ipcaIndexDiagnostics.coveragePercent}%)`}
-                            {' · '}série {val.ipcaIndexDiagnostics.freshness}
-                            {' · '}fonte até {val.ipcaIndexDiagnostics.sourceAsOf ?? 'indisponível'}
-                          </p>
-                        ) : null}
+                                                  <div className="fixed-income-readonly__ipca-diagnostics">
+                                                    <span className="fixed-income-readonly__ipca-label">IPCA — diagnóstico do índice</span>
+                                                    <div className="fixed-income-readonly__ipca-fields">
+                                                      <span>
+                                                        Cobertura: {val.ipcaIndexDiagnostics.coverageStatus}
+                                                        {val.ipcaIndexDiagnostics.coveragePercent !== null ? ` (${val.ipcaIndexDiagnostics.coveragePercent}%)` : ''}
+                                                      </span>
+                                                      <span>Série: {val.ipcaIndexDiagnostics.freshness}</span>
+                                                      <span>Fonte até: {val.ipcaIndexDiagnostics.sourceAsOf ?? 'indisponível'}</span>
+                                                      {val.ipcaIndexDiagnostics.missingMonths && val.ipcaIndexDiagnostics.missingMonths.length > 0 && (
+                                                        <span>Meses ausentes: {val.ipcaIndexDiagnostics.missingMonths.join(', ')}</span>
+                                                      )}
+                                                      <span>Não representa valor do título</span>
+                                                    </div>
+                                                  </div>
+                                                ) : null}
                       </td>
                     </tr>
                     );
@@ -508,17 +543,20 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                                 <dd>{renderMoney(val?.shadowValue)}</dd>
                               </div>
                               {val.ipcaIndexDiagnostics ? (
-                                <div>
-                                  <dt>IPCA — diagnóstico do índice</dt>
-                                  <dd>
-                                    {val.ipcaIndexDiagnostics.coverageStatus}
-                                    {val.ipcaIndexDiagnostics.coveragePercent === null ? '' : ` · ${val.ipcaIndexDiagnostics.coveragePercent}%`}
-                                    {' · '}série {val.ipcaIndexDiagnostics.freshness}
-                                    {' · '}até {val.ipcaIndexDiagnostics.sourceAsOf ?? 'indisponível'}
-                                    {' · '}não representa valor do título
-                                  </dd>
-                                </div>
-                              ) : null}
+                                                              <div>
+                                                                <dt>IPCA — diagnóstico do índice</dt>
+                                                                <dd>
+                                                                  Cobertura: {val.ipcaIndexDiagnostics.coverageStatus}
+                                                                  {val.ipcaIndexDiagnostics.coveragePercent !== null ? ` (${val.ipcaIndexDiagnostics.coveragePercent}%)` : ''}
+                                                                  {' · '}Série: {val.ipcaIndexDiagnostics.freshness}
+                                                                  {' · '}Até: {val.ipcaIndexDiagnostics.sourceAsOf ?? 'indisponível'}
+                                                                  {val.ipcaIndexDiagnostics.missingMonths && val.ipcaIndexDiagnostics.missingMonths.length > 0 && (
+                                                                    <> {' · '}Meses ausentes: {val.ipcaIndexDiagnostics.missingMonths.join(', ')}</>
+                                                                  )}
+                                                                  {' · '}Não representa valor do título
+                                                                </dd>
+                                                              </div>
+                                                            ) : null}
                               <div>
                                 <dt>Diferença</dt>
                                 <dd>
