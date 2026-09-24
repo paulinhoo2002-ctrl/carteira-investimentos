@@ -102,7 +102,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostHtml, /Host experimental/);
   assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);
   assert.match(hostHtml, /host-entry\.tsx/);
-  assert.match(hostHtml, /readonly-report-page-contract\.js/);
+  assert.match(hostHtml, /src="\/readonly-report-page-contract\.js"/);
   assert.match(rootIndexHtml, /readonly-report-page-contract\.js/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
