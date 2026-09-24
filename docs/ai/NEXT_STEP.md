@@ -1,5 +1,72 @@
 # Next Step
 
+## V262 PR #412 — IPCA Diagnostics Certification — 2026-09-24
+
+- `CURRENT_WORKTREE=C:/Projetos/carteira-investimentos.worktrees/v262-fixed-income-advanced-shadow-valuation`
+- `CURRENT_BRANCH=feature/v262-fixed-income-advanced-shadow-valuation`
+- `CURRENT_PR=412`
+- `PR_HEAD_SHA=94b26815a3c93a6a877316e048311be655b5ab40`
+- `PR_STATE=OPEN`
+- `PR_MERGEABLE=true`
+- `CI_HEAD_SHA=94b26815a3c93a6a877316e048311be655b5ab40 (Build and test SUCCESS, Vercel Preview Comments SUCCESS)`
+- `Vercel Environment URL: https://carteira-investimentos-74zyhot9x-paulinhoo2002-ctrls-projects.vercel.app (state=success, deployment 6635251455)`
+- `PREVIEW_PROTECTION=Vercel SSO (interactive) — modern preview not accessible from QA profile without human Vercel login`
+
+### Gates (worktree, HEAD 94b26815)
+- `npm test` → 248/248 PASS
+- `npm run test:modern` → 777/777 PASS (27 suites)
+- `npm run build:modern` → PASS (`modern/dist/`, 162 modules, 930ms)
+- `npm run build` → PASS (static shell validated)
+- `git diff --check` → PASS
+- IPCA-focused test subset: 68/68 PASS (`modern-fixed-income-readonly-page` + `modern-fixed-income-ipca-index-diagnostics` + `modern-fixed-income-valuation-state`)
+
+### Implemented (commit 94b26815)
+- `modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx`
+  - `useEffect` fetches `fetchIpcaLastNMonths(48)` of BCB SGS series 433 once per mount, stores in `ipcaRows` state.
+  - `ipcaRows` passed to `createReadonlyFixedIncomeViewModel(snapshot, filters, cdiRows, ipcaRows)`.
+  - List rows render `.fixed-income-readonly__ipca-diagnostics` block: `Cobertura`, `Série`, `Fonte até`, `Meses ausentes` (condicional), `Não representa valor do título`.
+  - Mobile card `dl` exposes the same diagnostics.
+- `modern/src/features/fixed-income/readonlyFixedIncomeViewModelWithValuation.ts`
+  - Signature extended: `ipcaRows: readonly IpcaMonthlyIndex[] = []`.
+  - Each item routed through `computeFixedIncomeValuationState(item, cdiRows, ipcaRows)`.
+- `modern/src/styles.css`
+  - New scope for `.fixed-income-readonly__ipca-diagnostics`, `__ipca-label`, `__ipca-fields` (dark-surface card).
+- `index.html` (legacy)
+  - `.premium-rf-row-meta.neg { color:#f87171 }` — WCAG AA against `--panel` (#121d2f).
+- `.gitignore` — added `.qa-*.js`, `.qa-v262-screenshots*` artifacts.
+
+### Domain invariants verified at runtime
+- `shadowValue=null` for IPCA (exact valuation unsupported).
+- `valuationMethod='UNSUPPORTED_IPCA_EXACT'`.
+- `authoritativeStatus='MANUAL_AUTHORITATIVE'` — manual value untouched.
+- `ipcaIndexDiagnostics` populated when `ipcaRows` supplied: `coverageStatus=FULL`, `coveragePercent=100`, `freshness=FRESH`, `sourceAsOf`, `missingMonths=[]` (sample run).
+- CDI path unaffected (`ipcaIndexDiagnostics=null`).
+- Non-IPCA / prefixado paths untouched.
+- Zero/negative IPCA observations accepted as valid inputs; future months excluded; duplicates not double-counted (unit tests verify).
+
+### QA status (Chrome Stable, dedicated QA profile `qa-browser-authenticated`)
+- Cross-tab lock in QA profile: resolved via localStorage cleanup (`civ5_edit_lock`) + reload — documented procedure.
+- 7 widths (390/430/768/1366/1440/1536/1920) on legacy preview: 0 horizontal overflow.
+- Network mutations during QA: 0 financial/tax writes (only Chrome telemetry POSTs to `play.google.com`).
+- `axe` against PR-head Vercel preview URL returned 0 critical / 0 serious after redirect smoke — however the URL redirected to Vercel SSO, so this is **not** a valid product-page axe run.
+
+### Blockers (human-only)
+- `HUMAN_BLOCKER_VERCEL_SSO=true` — PR preview `https://carteira-investimentos-74zyhot9x-paulinhoo2002-ctrls-projects.vercel.app` requires interactive Vercel login. QA profile has no Vercel credentials, and copying them from personal Chrome is forbidden.
+- Final authenticated exact-SHA product QA (sections 13–24 of mission protocol) cannot run until SSO is satisfied.
+
+### Suggested next action
+1. Human authenticates `carteira-investimentos-74zyhot9x-...` from the QA profile (Vercel SSO, GitHub button).
+2. Hermes reruns `.qa-final-pr-preview.js` for sections 13–24 on the exact PR head SHA.
+3. If axe still shows critical/serious on product page → fix in source, additional commit, repeat CI/preview.
+4. When `AXE_CRITICAL=0`, `AXE_SERIOUS=0`, `IPCA_DIAGNOSTICS_LIST_VISIBLE=true`, `IPCA_DIAGNOSTICS_DETAIL_VISIBLE=true`, `FIXED_INCOME_OFFLINE_TRUTHFULNESS_PASS=true`, request permission to squash merge PR #412.
+
+### Notes on git state
+- `git status --short` shows only `.gitignore` (modified) and `docs/ai/inbox/` (untracked; not staged by policy).
+- All `.qa-*` helper scripts remain untracked via new `.gitignore` entries.
+- No personal Chrome modified; dedicated QA profile unchanged except for the documented lock cleanup.
+
+---
+
 ## Current boot state — 2026-09-22
 
 - `CURRENT_MAIN_SHA=2e7a898f09230d2f7e3b9781040a6effe33f9c7f`

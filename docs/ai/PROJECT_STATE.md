@@ -1,5 +1,29 @@
 # Project State
 
+## V262 PR #412 — IPCA Diagnostics — 2026-09-24
+
+- Branch: `feature/v262-fixed-income-advanced-shadow-valuation`.
+- Head: `94b26815a3c93a6a877316e048311be655b5ab40`.
+- PR: [#412](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/412) — OPEN, MERGEABLE.
+- CI: Build and test SUCCESS on `94b26815`; Vercel preview Comments SUCCESS.
+- Vercel Preview deployment `6635251455` in state `success`; hostname `carteira-investimentos-74zyhot9x-paulinhoo2002-ctrls-projects.vercel.app`.
+- Vercel SSO protection is enabled for the preview; product-page QA blocked at SSO (human-only).
+- Local gates (worktree): `npm test` 248/248 PASS, `npm run test:modern` 777/777 PASS (27 suites), `npm run build:modern` PASS, `npm run build` PASS, `git diff --check` PASS.
+- IPCA-focused unit subset: 68/68 PASS covering `modern-fixed-income-readonly-page`, `modern-fixed-income-ipca-index-diagnostics`, and `modern-fixed-income-valuation-state`.
+- Domain invariants preserved:
+  - `KEEP_UNSUPPORTED_IPCA_EXACT=true`
+  - `GENERIC_IPCA_PLUS_FORMULA_IMPLEMENTED=false`
+  - `IPCA_SECURITY_VALUATION_SUPPORTED=false`
+  - `MANUAL_FIXED_INCOME_AUTHORITY=true`
+  - `UNKNOWN ≠ ZERO`, `PARTIAL ≠ COMPLETE`, `STALE ≠ FRESH`, `coverage ≠ freshness`
+- Code changes (commit `94b26815`):
+  - `modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx` — fetches IPCA once via `fetchIpcaLastNMonths(48)`, passes rows to view model, renders diagnostics in both desktop table and mobile list.
+  - `modern/src/features/fixed-income/readonlyFixedIncomeViewModelWithValuation.ts` — accepts `ipcaRows` and forwards to valuation pipeline.
+  - `modern/src/styles.css` — `.fixed-income-readonly__ipca-diagnostics` styles.
+  - `index.html` (legacy) — `.premium-rf-row-meta.neg { color:#f87171 }` for WCAG AA contrast on `--panel` background.
+- QA artifacts (`.qa-*.js`, `.qa-v262-screenshots*`) excluded via updated `.gitignore`. Untracked `docs/ai/inbox/` preserved.
+- Pending exact-SHA authenticated product QA: requires human Vercel SSO login inside the dedicated QA profile; until then `HUMAN_BLOCKER_VERCEL_SSO=true`.
+
 ## Current canonical state — 2026-09-22
 
 - `CURRENT_MAIN_SHA=2e7a898f09230d2f7e3b9781040a6effe33f9c7f`.

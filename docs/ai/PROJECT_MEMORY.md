@@ -1,5 +1,20 @@
 # Project Memory
 
+## V262 — IPCA Diagnostics Protocol (2026-09-24)
+
+- Branch: `feature/v262-fixed-income-advanced-shadow-valuation`. PR: #412.
+- Final head: `94b26815a3c93a6a877316e048311be655b5ab40` (CI green, Vercel preview Comments green).
+- Architecture: BCB SGS series 433 fetched once via `fetchIpcaLastNMonths(48)` in `FixedIncomeReadonlyPage` `useEffect`; rows forwarded through `createReadonlyFixedIncomeViewModel(snapshot, filters, cdiRows, ipcaRows)` → `computeFixedIncomeValuationState(item, cdiRows, ipcaRows)` → per-item `ipcaIndexDiagnostics` exposed to UI in list and mobile card.
+- IPCA diagnostics contract: `coverageStatus`, `coveragePercent`, `expectedStartMonth/EndMonth/MonthCount`, `availableMonthCount`, `missingMonths`, `duplicateMonths`, `invalidMonths`, `excludedFutureOrIncompleteMonthCount`, `freshness`, `sourceAsOf`. Truthful: zero/negative observations valid; future months excluded; duplicates not double-counted; coverage ≠ freshness; null ≠ zero.
+- Invariants: `KEEP_UNSUPPORTED_IPCA_EXACT=true`, `GENERIC_IPCA_PLUS_FORMULA_IMPLEMENTED=false`, `IPCA_SECURITY_VALUATION_SUPPORTED=false`, `MANUAL_FIXED_INCOME_AUTHORITY=true`. `shadowValue` remains null for unsupported exact valuation.
+- UI surfaces: `FixedIncomeReadonlyPage.tsx` renders `.fixed-income-readonly__ipca-diagnostics` with `Cobertura`, `Série`, `Fonte até`, `Meses ausentes` (when present), and `Não representa valor do título` disclaimer. Detail mobile card exposes same data.
+- Legacy accessibility fix: `.premium-rf-row-meta.neg` now uses `#f87171` (previous `var(--danger)=#ef4444` failed WCAG AA on `#121d2f` panel).
+- QA profile policy: always use `%LOCALAPPDATA%\CarteiraInvestimentos\qa-browser-authenticated` (authorized) — never personal Chrome; never copy cookies/tokens across profiles.
+- Cross-tab lock: safe to clear `civ5_edit_lock` and `civ5_offline_session_v1` from localStorage in the dedicated QA profile and reload; do not touch financial data.
+- Vercel SSO: PR preview hostnames are SSO-protected. Authenticated product QA requires interactive Vercel login and is a human blocker until the QA profile gains a Vercel session. Do not bypass; do not weaken deployment protection.
+- Fetch behavior: single IPCA request per page mount (cacheable). No per-row, no per-render loops. Network zero-write verified.
+- Unit coverage: 68/68 IPCA-focused tests pass across `modern-fixed-income-readonly-page`, `modern-fixed-income-ipca-index-diagnostics`, `modern-fixed-income-valuation-state`. Aggregate `npm test` 248/248, `npm run test:modern` 777/777.
+
 ## PROJECT IDENTITY HARD LOCK
 
 - `PROJECT_IDENTITY_HARD_LOCK=true`.
