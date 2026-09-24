@@ -1,19 +1,19 @@
 {
-  "buildCommand": "npm run build:modern",
-  "outputDirectory": "modern/dist",
+  "buildCommand": "npm run build:modern && npm run build",
+  "outputDirectory": ".",
   "framework": null,
   "rewrites": [
     {
       "source": "/modern",
-      "destination": "/host.html"
+      "destination": "/modern/dist/host.html"
     },
     {
       "source": "/modern/",
-      "destination": "/host.html"
+      "destination": "/modern/dist/host.html"
     },
     {
-      "source": "/modern/(.*)",
-      "destination": "/$1"
+      "source": "/modern/assets/(.*)",
+      "destination": "/modern/dist/assets/$1"
     }
   ],
   "headers": [

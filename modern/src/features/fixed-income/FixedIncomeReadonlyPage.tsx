@@ -338,7 +338,11 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                           ) : (
                             <div
                               className="fixed-income-readonly__distribution-track"
+                              role="progressbar"
                               aria-label={`${entry.subtype}: ${formatReadonlyPercentOrMissing(entry.allocationPct, { signed: false })}`}
+                              aria-valuenow={Math.max(0, Math.min(entry.allocationPct, 100))}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
                             >
                               <span
                                 className="fixed-income-readonly__distribution-fill"
@@ -368,7 +372,12 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
 
         {viewModel.filteredItems.length > 0 ? (
           <>
-            <div className="fixed-income-readonly__table-wrap">
+            <div
+              className="fixed-income-readonly__table-wrap"
+              role="region"
+              aria-label="Tabela de títulos de renda fixa"
+              tabIndex={0}
+            >
               <table className="fixed-income-readonly__table">
                 <caption>Lista readonly dos títulos de renda fixa</caption>
                 <thead>
