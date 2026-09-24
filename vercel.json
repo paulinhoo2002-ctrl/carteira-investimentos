@@ -1,18 +1,19 @@
 {
   "buildCommand": "npm run build:modern",
-  "outputDirectory": ".",
+  "outputDirectory": "modern/dist",
+  "framework": null,
   "rewrites": [
     {
       "source": "/modern",
-      "destination": "/modern/dist/host.html"
+      "destination": "/host.html"
     },
     {
       "source": "/modern/",
-      "destination": "/modern/dist/host.html"
+      "destination": "/host.html"
     },
     {
       "source": "/modern/(.*)",
-      "destination": "/modern/dist/$1"
+      "destination": "/$1"
     }
   ],
   "headers": [
@@ -29,7 +30,7 @@
       ]
     },
     {
-      "source": "/modern/dist/(.*)",
+      "source": "/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]
