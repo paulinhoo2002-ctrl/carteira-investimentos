@@ -4,8 +4,8 @@
 
 - Worktree: `C:/Projetos/carteira-investimentos.worktrees/v262-fixed-income-advanced-shadow-valuation`
 - Branch: `feature/v262-fixed-income-advanced-shadow-valuation`
-- Code SHA before this docs-only update: `9e3418c90f55f36c2c8418aa944a0d0c2e4f41be`
-- PR #412: OPEN, mergeable. Exact-head CI run `36068539913` succeeded; Vercel deployment `dpl_HN3tCTtsEZj7sgiTMGawV1rKXzM9` READY on that SHA.
+- Product-code SHA validated in authenticated QA: `9e3418c90f55f36c2c8418aa944a0d0c2e4f41be` (the later changes are documentation only).
+- PR #412: OPEN, mergeable. The documentation head's CI run `36072877272` succeeded, including reliability smokes. Its Vercel deployment `dpl_EJ4CoKvKxBPt6BxQpq5YvTdXTJXv` is READY. Authenticated UI evidence remains valid because no application code/config changed after the QA SHA.
 - Authenticated URL/path: approved preview branch alias, `/?protectedReadOnlyQa=1`. Actual V262 surface is the legacy Renda Fixa view, not `/modern/`. Login completed manually in the dedicated isolated QA Chrome. Firebase/auth/backend and real wallet were available.
 - Runtime: manual authority preserved; IPCA exact valuation is `UNSUPPORTED_IPCA_EXACT`; no generic IPCA+ value; coverage/freshness remain separate and display unavailable/unknown honestly; CDI unchanged; unknown is not zero.
 - Responsive 390/430/768/1366/1440/1536/1920 PASS; no horizontal overflow or critical clipping. Axe 0 critical/0 serious; representative screenshots captured and visually reviewed.
@@ -15,9 +15,8 @@
 
 ### Next action
 
-1. Commit and push this selective documentation-only update (never stage `docs/ai/inbox/`).
-2. Verify PR head, CI and Vercel preview all refer to the resulting same SHA and remain green/READY.
-3. If evidence remains consistent, stop and request only: `Autorizo o squash merge da PR #412.` Do not merge without that authorization.
+- Reconfirm the PR's final head, CI, Vercel deployment and open/mergeable state after this continuity update.
+- If all evidence remains consistent, stop and request only: `Autorizo o squash merge da PR #412.` Do not merge without that authorization.
 
 ---
 
