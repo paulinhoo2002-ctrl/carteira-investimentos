@@ -2,19 +2,16 @@
 
 ## V262 — IPCA Diagnostics Protocol (2026-09-24)
 
-- Branch: `feature/v262-fixed-income-advanced-shadow-valuation`. PR: #412.
-- Final head: `dfafaafa87a35755e8c9fe70e5632313a34eaba2` (CI green, Vercel preview Comments green; test regex fix for CRLF/LF normalization).
-- Previous head `94b26815a3c93a6a877316e048311be655b5ab40` had 2/777 modern test failures due to brittle regex assertions around CRLF/comments/whitespace; fixed by normalizing line endings and matching literal regex pattern in source code.
-- Architecture: BCB SGS series 433 fetched once via `fetchIpcaLastNMonths(48)` in `FixedIncomeReadonlyPage` `useEffect`; rows forwarded through `createReadonlyFixedIncomeViewModel(snapshot, filters, cdiRows, ipcaRows)` → `computeFixedIncomeValuationState(item, cdiRows, ipcaRows)` → per-item `ipcaIndexDiagnostics` exposed to UI in list and mobile card.
-- IPCA diagnostics contract: `coverageStatus`, `coveragePercent`, `expectedStartMonth/EndMonth/MonthCount`, `availableMonthCount`, `missingMonths`, `duplicateMonths`, `invalidMonths`, `excludedFutureOrIncompleteMonthCount`, `freshness`, `sourceAsOf`. Truthful: zero/negative observations valid; future months excluded; duplicates not double-counted; coverage ≠ freshness; null ≠ zero.
-- Invariants: `KEEP_UNSUPPORTED_IPCA_EXACT=true`, `GENERIC_IPCA_PLUS_FORMULA_IMPLEMENTED=false`, `IPCA_SECURITY_VALUATION_SUPPORTED=false`, `MANUAL_FIXED_INCOME_AUTHORITY=true`. `shadowValue` remains null for unsupported exact valuation.
-- UI surfaces: `FixedIncomeReadonlyPage.tsx` renders `.fixed-income-readonly__ipca-diagnostics` with `Cobertura`, `Série`, `Fonte até`, `Meses ausentes` (when present), and `Não representa valor do título` disclaimer. Detail mobile card exposes same data.
-- Legacy accessibility fix: `.premium-rf-row-meta.neg` now uses `#f87171` (previous `var(--danger)=#ef4444` failed WCAG AA on `#121d2f` panel).
-- QA profile policy: always use `%LOCALAPPDATA%\CarteiraInvestimentos\qa-browser-authenticated` (authorized) — never personal Chrome; never copy cookies/tokens across profiles.
-- Cross-tab lock: safe to clear `civ5_edit_lock` and `civ5_offline_session_v1` from localStorage in the dedicated QA profile and reload; do not touch financial data.
-- Vercel SSO: PR preview hostnames are SSO-protected. Authenticated product QA requires interactive Vercel login and is a human blocker until the QA profile gains a Vercel session. Do not bypass; do not weaken deployment protection.
-- Fetch behavior: single IPCA request per page mount (cacheable). No per-row, no per-render loops. Network zero-write verified.
-- Unit coverage: 68/68 IPCA-focused tests pass across `modern-fixed-income-readonly-page`, `modern-fixed-income-ipca-index-diagnostics`, `modern-fixed-income-valuation-state`. Aggregate `npm test` 248/248, `npm run test:modern` 777/777.
+- PR #412, branch `feature/v262-fixed-income-advanced-shadow-valuation`; latest verified code head before the documentation-only closeout: `9e3418c90f55f36c2c8418aa944a0d0c2e4f41be`.
+- Exact-head CI run `36068539913` succeeded. Vercel deployment `dpl_HN3tCTtsEZj7sgiTMGawV1rKXzM9` is READY for that SHA. Authenticated QA used the approved branch preview alias and the product route `/?protectedReadOnlyQa=1`.
+- The V262 product surface is the legacy Renda Fixa screen. `/modern/` is a separate modern-host route, not the V262 user flow. `?testMode=1&activeWalletHost=1` intentionally uses a test host that bypasses Firebase bootstrap; do not use it to diagnose Firebase health or authenticate a real wallet.
+- Authenticated read-only QA on a dedicated isolated Chrome profile/CDP 9234 verified manual fixed-income authority, exact IPCA `UNSUPPORTED_IPCA_EXACT`, no generic IPCA+ valuation (`shadowValue` absent/null), and honest separation of coverage (`UNAVAILABLE`) from freshness (`UNKNOWN`). CDI remained on its existing path. Unknown values were not rendered as zero.
+- Responsive checks passed at 390, 430, 768, 1366, 1440, 1536 and 1920 px with no horizontal overflow or critical clipping. Axe reported 0 critical and 0 serious violations. Representative screenshots were reviewed. Offline/reconnect passed using an organically generated, user-bound trusted local snapshot; offline stayed cached/read-only and did not claim fresh data.
+- Financial/tax/import/restore write counts were zero. Snapshot creation required a normal authenticated online bootstrap; that path can emit a nonfinancial user-access audit update. Therefore the evidence is **not** a claim of zero backend writes of every kind. Protected QA was restored afterward; no financial editing, movement, import, restore, tax write, or corporate-event realization was performed.
+- Browser safety: use `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated` only as the dedicated QA profile; never copy personal browser state, cookies or tokens. Vercel/Firebase login must be completed through the visible normal sign-in flow; do not weaken SSO or Firebase security.
+- Offline precondition: a trusted snapshot must first be created by the application after a legitimate online authenticated load. A cold profile without a trusted snapshot correctly remains gated/unavailable offline. Never fabricate or inject snapshot data. Preserve protected QA mode for read-only inspection; distinguish any nonfinancial access audit from financial/tax writes.
+- Core V262 invariants remain `KEEP_UNSUPPORTED_IPCA_EXACT=true`, `GENERIC_IPCA_PLUS_FORMULA_IMPLEMENTED=false`, `IPCA_SECURITY_VALUATION_SUPPORTED=false`, and `MANUAL_FIXED_INCOME_AUTHORITY_PRESERVED=true`; coverage is not freshness and unknown is not zero.
+- Latest reused test/build evidence: targeted offline/auth + V262 tests 12/12; `npm test` 249/249; `npm run test:modern` 777/777; both builds passed. No product formula changed during QA closeout.
 
 ## PROJECT IDENTITY HARD LOCK
 

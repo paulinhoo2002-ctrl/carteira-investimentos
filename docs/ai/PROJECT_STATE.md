@@ -2,41 +2,23 @@
 
 ## V262 PR #412 — IPCA Diagnostics — 2026-09-24
 
-- Branch: `feature/v262-fixed-income-advanced-shadow-valuation`.
-- Head: `dfafaafa87a35755e8c9fe70e5632313a34eaba2`.
-- PR: [#412](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/412) — OPEN, MERGEABLE.
-- CI: Build and test SUCCESS on `dfafaafa87`; Vercel preview Comments SUCCESS.
-- Vercel Preview deployment `BsNFX3GZQRCqqwJSwTmRXG8xKhaS` in state `success`; hostname `carteira-investimentos-git-ca8b51-paulinhoo2002-ctrls-projects.vercel.app`.
-- Fix applied: 2/777 modern test failures resolved by normalizing CRLF→LF and matching literal regex pattern (`\[a-z0-9\]\+`) in source code assertions.
-- Vercel SSO protection is enabled for the preview; product-page QA blocked at SSO (human-only).
-- Local gates (worktree): `npm test` 248/248 PASS, `npm run test:modern` 777/777 PASS (27 suites), `npm run build:modern` PASS, `npm run build` PASS, `git diff --check` PASS.
-- IPCA-focused unit subset: 68/68 PASS covering `modern-fixed-income-readonly-page`, `modern-fixed-income-ipca-index-diagnostics`, and `modern-fixed-income-valuation-state`.
-- Domain invariants preserved:
-  - `KEEP_UNSUPPORTED_IPCA_EXACT=true`
-  - `GENERIC_IPCA_PLUS_FORMULA_IMPLEMENTED=false`
-  - `IPCA_SECURITY_VALUATION_SUPPORTED=false`
-  - `MANUAL_FIXED_INCOME_AUTHORITY=true`
-  - `UNKNOWN ≠ ZERO`, `PARTIAL ≠ COMPLETE`, `STALE ≠ FRESH`, `coverage ≠ freshness`
-- Code changes (commit `94b26815`):
-  - `modern/src/features/fixed-income/FixedIncomeReadonlyPage.tsx` — fetches IPCA once via `fetchIpcaLastNMonths(48)`, passes rows to view model, renders diagnostics in both desktop table and mobile list.
-  - `modern/src/features/fixed-income/readonlyFixedIncomeViewModelWithValuation.ts` — accepts `ipcaRows` and forwards to valuation pipeline.
-  - `modern/src/styles.css` — `.fixed-income-readonly__ipca-diagnostics` styles.
-  - `index.html` (legacy) — `.premium-rf-row-meta.neg { color:#f87171 }` for WCAG AA contrast on `--panel` background.
-- QA artifacts (`.qa-*.js`, `.qa-v262-screenshots*`) excluded via updated `.gitignore`. Untracked `docs/ai/inbox/` preserved.
-- Pending exact-SHA authenticated product QA: requires human Vercel SSO login inside the dedicated QA profile; until then `HUMAN_BLOCKER_VERCEL_SSO=true`.
+- Branch: `feature/v262-fixed-income-advanced-shadow-valuation`; current verified code head before docs closeout: `9e3418c90f55f36c2c8418aa944a0d0c2e4f41be`.
+- PR [#412](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/412): OPEN and mergeable. CI run `36068539913` succeeded on the same SHA.
+- Vercel deployment `dpl_HN3tCTtsEZj7sgiTMGawV1rKXzM9` is READY for the same SHA; authenticated QA used the approved preview alias `carteira-investimentos-git-ca8b51-paulinhoo2002-ctrls-projects.vercel.app`.
+- Authenticated product route: `/?protectedReadOnlyQa=1` (legacy Renda Fixa screen). `/modern/` is not the V262 user route. The test-host query `testMode=1&activeWalletHost=1` intentionally bypasses Firebase and must not be used for real-wallet auth QA.
+- Runtime contract: manual Renda Fixa authority preserved; exact IPCA remains `UNSUPPORTED_IPCA_EXACT`; no generic IPCA+ value is calculated; coverage and freshness remain separate (`UNAVAILABLE` vs `UNKNOWN` in the inspected portfolio); CDI unchanged; unknown is not zero.
+- Authenticated responsive matrix 390/430/768/1366/1440/1536/1920 PASS; no horizontal overflow or critical clipping. Axe: 0 critical / 0 serious. Screenshots were captured and reviewed. Offline/reconnect PASS with an organically created trusted local snapshot; offline remained cached/read-only and truthful.
+- Financial, tax, import-confirmation and real-restore writes: 0. Snapshot bootstrap in normal authenticated mode may emit a **nonfinancial** access-audit update; do not characterize this as zero total backend writes. No financial controls or mutations were used.
+- Local evidence reused: targeted offline/auth + V262 tests 12/12, `npm test` 249/249, modern 777/777, both builds PASS. No financial formulas changed.
+- Merge remains unauthorized and not executed. Documentation-only closeout will create a new PR head; readiness must be rechecked against that final head's CI and preview.
 
-## Current canonical state — 2026-09-22
+## Current canonical state — 2026-09-24
 
-- `CURRENT_MAIN_SHA=2e7a898f09230d2f7e3b9781040a6effe33f9c7f`.
-- PR #409 hardens project identity governance; its merge is present in
-  `origin/main`, with main CI run `35776520025` successful and Production
-  deployment `6599404492` successful.
-- Latest product release: V260 Asset Detail Intelligence (PR #408).
-- Next recommendation from `docs/ai/OPEN_WORK.md`: refresh state documentation,
-  then assess fixed-income freshness, valuation, and financial `as-of`
-  provenance. XP/BTG fixtures remain blocked on sanitized user-provided input.
-- This is a repository-state update only; no product code or financial data was
-  changed.
+- `CURRENT_MAIN_SHA=c3466561c4f6134edd5ea915be1d0ed1ca387286`.
+- PR #412 is the active V262 phase; its merge has not been authorized or performed.
+- Latest product baseline on main before V262: V261 fixed-income freshness/valuation provenance.
+- Next step after V262 is explicit human squash-merge authorization; do not begin another product phase automatically.
+- This state update records read-only QA evidence and does not change financial data or formulas.
 
 ## 2026-09-22 - Project identity hard lock
 
