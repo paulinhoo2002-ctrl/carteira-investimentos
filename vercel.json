@@ -2,6 +2,18 @@
   "buildCommand": "npm run build:modern && npm run build",
   "outputDirectory": ".",
   "framework": null,
+  "redirects": [
+    {
+      "source": "/modern",
+      "destination": "/modern/dist/host.html",
+      "permanent": false
+    },
+    {
+      "source": "/modern/",
+      "destination": "/modern/dist/host.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/modern",

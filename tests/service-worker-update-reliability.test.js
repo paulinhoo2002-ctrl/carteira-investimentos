@@ -37,6 +37,20 @@ test('hosting policy revalidates the worker and navigation shell', () => {
   }
 });
 
+test('modern preview entry redirects around the Vite source index without replacing the legacy root', () => {
+  assert.equal(vercelSource.outputDirectory, '.');
+  assert.deepEqual(
+    vercelSource.redirects.filter(rule => ['/modern', '/modern/'].includes(rule.source)),
+    [
+      { source: '/modern', destination: '/modern/dist/host.html', permanent: false },
+      { source: '/modern/', destination: '/modern/dist/host.html', permanent: false },
+    ],
+  );
+  assert.ok(vercelSource.rewrites.some(rule => (
+    rule.source === '/modern/assets/(.*)' && rule.destination === '/modern/dist/assets/$1'
+  )));
+});
+
 test('old release to new release clears only the old app cache', { skip: !resolveBrowser(), skipReason: 'Chrome/Edge ausente; lifecycle real executa no step de reliability com navegador provisionado' }, async () => {
   const { chromium } = await import('playwright-core');
   const executablePath = resolveBrowser();
