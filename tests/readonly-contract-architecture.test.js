@@ -226,7 +226,7 @@ function assertNoLocalReadOnlyReportsContract(text, label) {
 }
 
 function assertHostHtmlOrder(hostHtml) {
-  const contractScript = '<script src="../readonly-report-page-contract.js"></script>';
+  const contractScript = '<script src="/readonly-report-page-contract.js"></script>';
   const hostEntryScript = '<script type="module" src="/src/host-entry.tsx"></script>';
 
   assert.match(hostHtml, /readonly-report-page-contract\.js/);
@@ -234,7 +234,7 @@ function assertHostHtmlOrder(hostHtml) {
   assert.equal(hostHtml.indexOf(contractScript) > -1, true, 'Host precisa carregar contrato');
   assert.equal(hostHtml.indexOf(hostEntryScript) > -1, true, 'Host precisa carregar bootstrap');
   assert.equal(hostHtml.indexOf(contractScript) < hostHtml.indexOf(hostEntryScript), true, 'Contrato precisa vir antes do bootstrap');
-  assert.equal(hostHtml.includes('type="module" src="../readonly-report-page-contract.js"'), false, 'Contrato precisa continuar classico');
+  assert.equal(hostHtml.includes('type="module" src="/readonly-report-page-contract.js"'), false, 'Contrato precisa continuar classico');
   assert.equal((hostHtml.match(/readonly-report-page-contract\.js/g) || []).length, 1, 'Contrato nao pode duplicar no host');
 }
 
