@@ -1,6 +1,20 @@
 {
   "buildCommand": "npm run build:modern",
   "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/modern",
+      "destination": "/modern/dist/host.html"
+    },
+    {
+      "source": "/modern/",
+      "destination": "/modern/dist/host.html"
+    },
+    {
+      "source": "/modern/(.*)",
+      "destination": "/modern/dist/$1"
+    }
+  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -10,6 +24,12 @@
     },
     {
       "source": "/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/modern/dist/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]

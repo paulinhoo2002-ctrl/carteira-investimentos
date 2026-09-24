@@ -8473,7 +8473,21 @@ function readonlyReportSessionPageIdFromLocation(){
 }
 function isActiveWalletHostMode(){
   try{
-    return (location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('activeWalletHost')==='1' && new URLSearchParams(location.search).get('testMode')==='1';
+    const params = new URLSearchParams(location.search);
+    const activeWalletHost = params.get('activeWalletHost') === '1';
+    const testMode = params.get('testMode') === '1';
+
+    if (!activeWalletHost || !testMode) {
+      return false;
+    }
+
+    // Allow on localhost for development
+    const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+    // Allow on Vercel preview deployments (pattern: carteira-investimentos-<hash>-<user>.vercel.app)
+    const isVercelPreview = /^carteira-investimentos-[a-z0-9]+-[a-z0-9]+\.vercel\.app$/.test(location.hostname);
+
+    return isLocalhost || isVercelPreview;
   }catch(e){
     return false;
   }
