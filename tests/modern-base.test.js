@@ -255,7 +255,7 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
   assert.match(
         rootIndexHtml.replace(/\r\n/g, '\n'),
-        /function isActiveWalletHostMode\(\)\{[\s\S]*?activeWalletHost[\s\S]*?testMode[\s\S]*?isLocalhost[\s\S]*?isVercelPreview[\s\S]*?\/.*carteira-investimentos-\[a-z0-9\]\+-\[a-z0-9\]\+\\.vercel\\.app.*\/[\s\S]*?return isLocalhost \|\| isVercelPreview/,
+        /function isActiveWalletHostMode\(\)\{[\s\S]*?activeWalletHost[\s\S]*?testMode[\s\S]*?isLocalhost[\s\S]*?isVercelPreview[\s\S]*?\/.*carteira-investimentos-\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\+\\\.vercel\\\.app.*\/[\s\S]*?return isLocalhost \|\| isVercelPreview/,
       );
   assert.match(hostHtml, /Host experimental/);
   assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);

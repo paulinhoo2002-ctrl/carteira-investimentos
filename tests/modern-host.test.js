@@ -156,7 +156,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(contributionsRuntimeTs.includes('score: Number(row?.score) || 0'), false);
   assert.match(
         rootIndexHtml.replace(/\r\n/g, '\n'),
-        /function isActiveWalletHostMode\(\)\{[\s\S]*?activeWalletHost[\s\S]*?testMode[\s\S]*?isLocalhost[\s\S]*?isVercelPreview[\s\S]*?\/.*carteira-investimentos-\[a-z0-9\]\+-\[a-z0-9\]\+\\.vercel\\.app.*\/[\s\S]*?return isLocalhost \|\| isVercelPreview/,
+        /function isActiveWalletHostMode\(\)\{[\s\S]*?activeWalletHost[\s\S]*?testMode[\s\S]*?isLocalhost[\s\S]*?isVercelPreview[\s\S]*?\/.*carteira-investimentos-\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\+\\\.vercel\\\.app.*\/[\s\S]*?return isLocalhost \|\| isVercelPreview/,
       );
   assert.match(hostSmokeText, /MODERN_HOST_URL/);
   assert.match(hostSmokeText, /CI/);
