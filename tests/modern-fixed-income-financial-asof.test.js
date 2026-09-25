@@ -44,6 +44,57 @@ describe('extractFinancialAsOfEvidence', () => {
     assert.strictEqual(evidence.source, 'quoteUpdatedAt');
   });
 
+  it('rejects impossible calendar dates such as 2026-02-31 (no rollover)', async () => {
+    const { extractFinancialAsOfEvidence } = await loadModule();
+    const evidence = extractFinancialAsOfEvidence(
+      { financialAsOfRaw: '2026-02-31' },
+      { referenceDate: REFERENCE_DATE },
+    );
+    assert.strictEqual(evidence.value, null);
+    assert.strictEqual(evidence.confidence, 'UNKNOWN');
+  });
+
+  it('rejects impossible calendar dates inside full timestamps', async () => {
+    const { extractFinancialAsOfEvidence } = await loadModule();
+    const evidence = extractFinancialAsOfEvidence(
+      { financialAsOfRaw: '2026-02-31T13:00:00.000Z' },
+      { referenceDate: REFERENCE_DATE },
+    );
+    assert.strictEqual(evidence.value, null);
+    assert.strictEqual(evidence.confidence, 'UNKNOWN');
+  });
+
+  it('accepts real leap-day dates such as 2024-02-29', async () => {
+    const { extractFinancialAsOfEvidence } = await loadModule();
+    const evidence = extractFinancialAsOfEvidence(
+      { financialAsOfRaw: '2024-02-29' },
+      { referenceDate: REFERENCE_DATE },
+    );
+    assert.strictEqual(evidence.value, '2024-02-29');
+    assert.strictEqual(evidence.confidence, 'HIGH');
+  });
+
+  it('treats whitespace-only timestamps as absent', async () => {
+    const { extractFinancialAsOfEvidence } = await loadModule();
+    const evidence = extractFinancialAsOfEvidence(
+      { financialAsOfRaw: '   ' },
+      { referenceDate: REFERENCE_DATE },
+    );
+    assert.strictEqual(evidence.value, null);
+    assert.strictEqual(evidence.confidence, 'UNKNOWN');
+  });
+
+  it('does NOT promote MEDIUM broker metadata delivered as quoteUpdatedAtRaw', async () => {
+    const { extractFinancialAsOfEvidence } = await loadModule();
+    const evidence = extractFinancialAsOfEvidence(
+      { quoteUpdatedAtRaw: '2026-09-10T13:00:00.000Z' },
+      { referenceDate: REFERENCE_DATE },
+    );
+    assert.strictEqual(evidence.value, '2026-09-10');
+    assert.strictEqual(evidence.confidence, 'MEDIUM');
+    assert.strictEqual(evidence.source, 'quoteUpdatedAt');
+  });
+
   it('prefers explicit financialAsOf over quoteUpdatedAt metadata', async () => {
     const { extractFinancialAsOfEvidence } = await loadModule();
     const evidence = extractFinancialAsOfEvidence(
