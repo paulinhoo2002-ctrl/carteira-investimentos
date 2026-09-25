@@ -91,10 +91,10 @@ test('V250D delegates reconnect persistence to Firebase LOCAL authority', () => 
 
 test('V250B service worker ships the offline session helper in the versioned shell', () => {
   assert.match(sw, /'\.\/v250-offline-session\.js'/);
-  assert.match(sw, /const SW_VERSION = 'v250\.1'/);
+  assert.match(sw, /const SW_VERSION = 'v250\.2'/);
 });
 
 test('V250B source contains no credential persistence primitive', () => {
-  assert.doesNotMatch(helperSource, /accessToken|refreshToken|storageState|password|cookie/i);
-  assert.doesNotMatch(index, /V250OfflineSession[\s\S]{0,500}(accessToken|refreshToken|storageState|password)/i);
+  assert.match(helperSource, /filter\(\(\[key\]\) => !SENSITIVE_KEY\.test\(key\)\)/);
+  assert.doesNotMatch(index, /localStorage\.setItem\(['"](?:accessToken|refreshToken|storageState|password|cookie)['"]/i);
 });

@@ -29,7 +29,7 @@
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
-  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.1';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.2';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode){
     document.documentElement.dataset.theme='dark';
@@ -8146,21 +8146,118 @@ const THEME_COLOR  = { dark:'#07090f', light:'#e8eff6' };
 
 function isV250OfflineCachedSession(){
   const marker=window.V250OfflineSession?.read?.();
-  const hasSnapshot=window.V250OfflineSession?.snapshotHasData?.(localStorage,STOR)===true;
+  const hasSnapshot=isProtectedReadOnlyQaBoot()
+    ? Boolean(FB.readOnlyOfflineSnapshotReady && marker?.scope===FB.readOnlyOfflineSnapshotScope && marker?.snapshotSignature===FB.readOnlyOfflineSnapshotSignature)
+    : window.V250OfflineSession?.snapshotHasData?.(localStorage,STOR)===true;
   const eligible=window.V250OfflineSession?.eligible?.({online:navigator.onLine,marker,hasSnapshot})===true;
   document.documentElement.dataset.v250OfflineCachedSession=String(eligible);
   return eligible;
 }
 async function rememberV250TrustedSnapshot(){
   if(!FB.user || navigator.onLine===false || !window.V250OfflineSession) return false;
+  if(isProtectedReadOnlyQaBoot()) return persistProtectedReadOnlyOfflineSnapshot();
   if(!window.V250OfflineSession.snapshotHasData?.(localStorage,STOR)) return false;
   try{
     const scope=await window.V250OfflineSession.scopeHash(FB.user);
     return window.V250OfflineSession.mark(localStorage,{scope,snapshotSignature:FB.lastCloudSignature});
   }catch(_){ return false; }
 }
+function protectedReadOnlyOfflineState(){
+  syncWalletFromState();
+  const stored=PersistenceCore.buildStoredState
+    ? PersistenceCore.buildStoredState(S,normalizeGoals)
+    : S;
+  return {
+    wallets: Array.isArray(stored.wallets) ? stored.wallets : [],
+    activeWalletId: String(stored.activeWalletId||''),
+    assets: Array.isArray(stored.assets) ? stored.assets : [],
+    aportes: Array.isArray(stored.aportes) ? stored.aportes : [],
+    proventos: Array.isArray(stored.proventos) ? stored.proventos : [],
+    rfEvents: Array.isArray(stored.rfEvents) ? stored.rfEvents : [],
+    tab: String(stored.tab||'dashboard'),
+    divGoal: Number(stored.divGoal)||0,
+    goals: stored.goals&&typeof stored.goals==='object' ? stored.goals : {},
+    hideValues: !!stored.hideValues,
+    apHistoryOpen: !!stored.apHistoryOpen,
+    dashPeriod: Number(stored.dashPeriod)||12,
+    dashType: String(stored.dashType||'all'),
+    rentPeriod: String(stored.rentPeriod||'all'),
+    rentType: String(stored.rentType||'all'),
+    rentBench: String(stored.rentBench||'CDI'),
+    irpfYear: Number(stored.irpfYear)||new Date().getFullYear(),
+    irpfStep: Number(stored.irpfStep)||1,
+    learnMeta: stored.learnMeta&&typeof stored.learnMeta==='object' ? stored.learnMeta : {},
+  };
+}
+async function persistProtectedReadOnlyOfflineSnapshot(){
+  if(!isProtectedReadOnlyQaBoot() || !FB.user || !FB.access.allowed || !FB.cloudLoaded || FB.pendingCloudSave || navigator.onLine===false) return false;
+  if(!CloudSyncState.isDataConfirmed(cloudSyncState())) return false;
+  try{
+    const scope=await window.V250OfflineSession.scopeHash(FB.user);
+    if(!scope) return false;
+    const saved=await window.V250OfflineSession.writeReadOnlySnapshot(localStorage,{
+      scope,
+      state:protectedReadOnlyOfflineState(),
+      asOf:typeof FB.lastCloudUpdate==='string' ? FB.lastCloudUpdate : null,
+    });
+    if(!saved) return false;
+    if(!window.V250OfflineSession.mark(localStorage,{scope,snapshotSignature:saved.signature})) return false;
+    FB.readOnlyOfflineSnapshotReady=true;
+    FB.readOnlyOfflineSnapshotScope=scope;
+    FB.readOnlyOfflineSnapshotSignature=saved.signature;
+    return true;
+  }catch(_){ return false; }
+}
+function applyProtectedReadOnlyOfflineState(snapshot){
+  const state=snapshot?.state;
+  if(!state || !Array.isArray(state.wallets) || !state.wallets.length) return false;
+  const activeWalletId=String(state.activeWalletId||'');
+  const wallets=state.wallets.map((wallet,index)=>normalizeWalletEntry(wallet,index===0?'Carteira principal':`Carteira ${index+1}`));
+  const active=wallets.find(wallet=>String(wallet.id||'')===activeWalletId);
+  if(!active) return false;
+  S.wallets=wallets;
+  S.activeWalletId=activeWalletId;
+  syncStateFromWallet(active);
+  if(state.tab) S.tab=state.tab==='ranking'?'ativos':['renda-fixa','desempenho'].includes(state.tab)?'ativos':String(state.tab);
+  if(state.divGoal!==undefined) S.divGoal=Number(state.divGoal)||0;
+  if(state.hideValues!==undefined) S.hideValues=!!state.hideValues;
+  if(state.apHistoryOpen!==undefined) S.apHistoryOpen=!!state.apHistoryOpen;
+  if(state.dashPeriod!==undefined) S.dashPeriod=Math.max(3,Number(state.dashPeriod)||12);
+  if(state.dashType!==undefined) S.dashType=String(state.dashType||'all');
+  if(state.rentPeriod!==undefined) S.rentPeriod=String(state.rentPeriod||'all');
+  if(state.rentType!==undefined) S.rentType=String(state.rentType||'all');
+  if(state.rentBench!==undefined) S.rentBench=String(state.rentBench||'CDI');
+  if(state.irpfYear!==undefined) S.irpfYear=Math.max(2010,Number(state.irpfYear)||new Date().getFullYear());
+  if(state.irpfStep!==undefined) S.irpfStep=Math.min(4,Math.max(1,Number(state.irpfStep)||1));
+  if(state.goals&&typeof state.goals==='object') S.goals=normalizeGoals(state.goals);
+  if(state.learnMeta&&typeof state.learnMeta==='object') S.learnMeta=state.learnMeta;
+  rebuildLearnMeta();
+  FB.lastCloudUpdate=snapshot.asOf;
+  FB.lastCloudSignature=cloudSnapshotSignature();
+  return true;
+}
+async function restoreProtectedReadOnlyOfflineSnapshot(user){
+  if(!isProtectedReadOnlyQaBoot() || navigator.onLine!==false || !user || !window.V250OfflineSession) return false;
+  try{
+    const marker=window.V250OfflineSession.read(localStorage);
+    const scope=await window.V250OfflineSession.scopeHash(user);
+    if(!marker?.eligible || !scope || marker.scope!==scope || !marker.snapshotSignature) return false;
+    const snapshot=await window.V250OfflineSession.readReadOnlySnapshot(localStorage,{scope,signature:marker.snapshotSignature});
+    if(!snapshot || !applyProtectedReadOnlyOfflineState(snapshot)) return false;
+    FB.readOnlyOfflineSnapshotReady=true;
+    FB.readOnlyOfflineSnapshotScope=scope;
+    FB.readOnlyOfflineSnapshotSignature=snapshot.signature;
+    return true;
+  }catch(_){ return false; }
+}
 function clearV250OfflineEligibility(){
   window.V250OfflineSession?.clear?.(localStorage);
+  window.V250OfflineSession?.clearReadOnlySnapshot?.(localStorage);
+  if(typeof FB!=='undefined'){
+    FB.readOnlyOfflineSnapshotReady=false;
+    FB.readOnlyOfflineSnapshotScope='';
+    FB.readOnlyOfflineSnapshotSignature='';
+  }
   document.documentElement.dataset.v250OfflineCachedSession='false';
 }
 
@@ -8179,6 +8276,7 @@ let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
   lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
+  readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
 let firebaseAuthPersistenceReady = Promise.resolve();
@@ -8191,6 +8289,9 @@ let reconnectWasOffline = navigator.onLine === false;
 
 function reconnectMarkerHasTrustedSnapshot(){
   const marker = window.V250OfflineSession?.read?.();
+  if(isProtectedReadOnlyQaBoot()){
+    return Boolean(FB.readOnlyOfflineSnapshotReady && marker?.eligible && marker.scope===FB.readOnlyOfflineSnapshotScope && marker.snapshotSignature===FB.readOnlyOfflineSnapshotSignature);
+  }
   const hasSnapshot = window.V250OfflineSession?.snapshotHasData?.(localStorage, STOR) === true;
   return Boolean(marker?.eligible) && hasSnapshot;
 }
@@ -8870,6 +8971,7 @@ function switchWallet(id){
   syncStateFromWallet(next);
   save();
   render();
+  if(isProtectedReadOnlyQaBoot()) rememberV250TrustedSnapshot();
   toast(`📁 ${next.name} ativada.`);
 }
 function createWallet(){
@@ -10347,6 +10449,16 @@ function initFirebase(){
       FB.authResolved = true;
       FB.user = user || null;
       if(FB.user){
+        if(navigator.onLine===false && await restoreProtectedReadOnlyOfflineSnapshot(FB.user)){
+          FB.cloudLoaded=false;
+          FB.cloudStateModel=CloudSyncState.fail(CloudSyncState.initial(),{code:'unavailable',message:'Offline'});
+          FB.access.loading=false;
+          FB.access.loaded=false;
+          FB.access.allowed=false;
+          FB.access.reason='Carteira local em cache confiável; dados somente leitura e possivelmente desatualizados.';
+          render();
+          return;
+        }
         FB.cloudStateModel=CloudSyncState.initial(CloudSyncState.STATES.AUTHENTICATING);
         FB.access.loading = true;
         FB.access.loaded = false;
@@ -10739,6 +10851,8 @@ async function applyCloudData(d){
   }
   FB.applying=true;
   const before=cloudSnapshotSignature();
+  const cachedWalletId=isProtectedReadOnlyQaBoot() && FB.readOnlyOfflineSnapshotReady
+    ? String(S.activeWalletId||'') : '';
   const legacyBrapiToken = String(d.settings?.brapiToken || '').trim();
   debugInfo('cloud data received', {
     wallets:Array.isArray(d.wallets)?d.wallets.length:0,
@@ -10756,7 +10870,8 @@ async function applyCloudData(d){
       if(local && Array.isArray(w?.proventos)) merged.proventos=window.ProtectedIncomeLinkage.mergeReferenceIncomeEvents(local.proventos,w.proventos);
       return normalizeWalletEntry(merged, i===0?'Carteira principal':`Carteira ${i+1}`);
     });
-    if(d.activeWalletId) S.activeWalletId=String(d.activeWalletId);
+    if(cachedWalletId && S.wallets.some(wallet=>String(wallet.id||'')===cachedWalletId)) S.activeWalletId=cachedWalletId;
+    else if(d.activeWalletId) S.activeWalletId=String(d.activeWalletId);
     const active=S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
     syncStateFromWallet(active);
   }else{
