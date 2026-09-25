@@ -61,16 +61,19 @@
 - `EXPECTED_REMOTE=https://github.com/paulinhoo2002-ctrl/carteira-investimentos.git`.
 - Em qualquer mismatch: `PROJECT_IDENTITY_MATCH=false`,
   `STATUS=BLOCKED_WRONG_PROJECT` e `STOP_IMMEDIATELY=true`.
-- `docs/ai/SKILL_ROUTER.md` é a fonte versionada e autoritativa do roteamento;
-  uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
+- `docs/SKILLS_ROUTING.md` é a política versionada de agente/modelo e boot;
+  `docs/ai/SKILL_ROUTER.md` é o roteador técnico de Skills por categoria.
+  Uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
 - `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`.
-- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; Superpowers não substitui identidade,
-  segurança financeira, persistência, Git ou gates humanos.
+- `MANDATORY_FIRST_SKILL=Superpowers`; carregar e usar primeiro quando
+  disponível. Superpowers não substitui identidade, segurança financeira,
+  persistência, Git ou gates humanos.
 
 Boot mínimo independente do chat: identity gate → `AGENTS.md` →
-`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → `SKILL_ROUTER.md` →
-descoberta em `.agents/skills` → consideração de Superpowers → menor conjunto
-de Skills relevante.
+`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → descoberta e uso de
+Superpowers → inventário físico `.agents/skills` → classificação → menor
+conjunto de Skills relevante em `docs/SKILLS_ROUTING.md` e
+`docs/ai/SKILL_ROUTER.md`.
 
 ## V197 durable boot summary
 
@@ -87,7 +90,7 @@ de Skills relevante.
 - QA: `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated`,
   CDP `127.0.0.1:9233`, `protectedReadOnlyQa=1`, zero writes.
 - Git: worktree por objetivo, staging seletivo, sem reset/restore/clean/stash/rebase/force push.
-- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
+- `MANDATORY_FIRST_SKILL=Superpowers`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
   `REUSE_GREEN_EVIDENCE=true`; `SAME_FAILURE_TWICE=PIVOT`.
 
 Boot links: [`AGENTS.md`](../../AGENTS.md), [`NEXT_STEP.md`](NEXT_STEP.md),
@@ -1365,14 +1368,27 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 
 ## Decisão permanente — SUPERPOWERS_FIRST
 
-- `SUPERPOWERS_FIRST=true`.
+- `MANDATORY_FIRST_SKILL=Superpowers` e `SUPERPOWERS_FIRST=true`.
 - Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
-- Autoridade: `AGENTS.md`, `docs/SKILLS_ROUTING.md` e
-  `docs/ai/SKILL_ROUTING.md` versionados no repositório.
+- Processo detalhado de agente/modelo e Skills: `docs/SKILLS_ROUTING.md`;
+  roteamento técnico por categoria: `docs/ai/SKILL_ROUTER.md`;
+  governança de execução: `AGENTS.md`.
 - Razão: o roteamento de processo não depende de memória de chat, sessão,
   modelo ou executor específico.
+- Hermes/NVIDIA API com Nemotron 3 Super é a rota preferencial para engenharia
+  normal; Ultra 550B A55B para tarefas difíceis/grandes/noturnas; Kimi K3 para
+  UI visual/mobile; GLM-5.3 para revisão independente. Codex/GPT-6 Sol é
+  fallback conforme indisponibilidade ou falha repetida da rota preferencial,
+  não por fricção técnica comum isolada. Toda disponibilidade deve ser
+  verificada no ambiente; nunca alegar execução/modelo indisponível.
+- Cada missão relevante registra agente/modelo recomendado e selecionado,
+  justificativa e campos de Skills; selecionar apenas o menor conjunto
+  especializado necessário após Superpowers e descoberta real do inventário.
 - Fallback: se Superpowers não existir, usar as melhores Skills disponíveis
   sem bloquear automaticamente a missão e registrar a limitação.
 - Limite: Skills orientam o processo, mas não autorizam merge, deploy,
   alterações cloud/financeiras, persistência, schema, secrets ou ações
   destrutivas.
+- `MERGE_AUTHORIZATION=false` por padrão; merge exige autorização humana
+  explícita e inequívoca para a PR correta. Commit, push e PR continuam sujeitos
+  à autorização da missão e ao fluxo do repositório.

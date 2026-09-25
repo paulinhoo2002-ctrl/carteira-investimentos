@@ -5,8 +5,10 @@ Este documento registra decisões arquiteturais que foram validadas pelo projeto
 ## V197 — Boot, memória e roteamento
 
 - **Data**: 2026-09-18
-- **Decisão**: Superpowers sempre é considerado; Skills adicionais seguem o
-  mínimo conjunto relevante via `.agents/SKILL_ROUTER.md`.
+- **Decisão**: Superpowers é a primeira Skill obrigatória quando disponível;
+  o inventário físico é descoberto e as Skills especializadas seguem o mínimo
+  conjunto relevante via `docs/SKILLS_ROUTING.md` e
+  `docs/ai/SKILL_ROUTER.md`.
 - **Motivo**: reduzir prompts sem sobrepor segurança financeira, persistência,
   Git ou gates humanos.
 - **Status**: Ativo e vinculante.

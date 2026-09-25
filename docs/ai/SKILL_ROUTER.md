@@ -22,23 +22,18 @@ em `AGENTS.md`: raiz Git, remote, branch, HEAD, Git comum da worktree,
 Em mismatch, não tente corrigir o contexto: use
 `STATUS=BLOCKED_WRONG_PROJECT` e `STOP_IMMEDIATELY=true`.
 
-O boot independente do chat lê `AGENTS.md`, `PROJECT_MEMORY.md`, `NEXT_STEP.md`,
-`DECISIONS.md` e este router, depois descobre `.agents/skills`, considera
-Superpowers e seleciona apenas as Skills necessárias. Este arquivo versionado
-é autoritativo; `.agents/SKILL_ROUTER.md` pode existir apenas como bridge local.
+O boot independente do chat segue `AGENTS.md` e
+[`docs/SKILLS_ROUTING.md`](../SKILLS_ROUTING.md): identity gate, Superpowers
+primeiro, descoberta do inventário físico `.agents/skills`, classificação da
+missão e seleção mínima de Skills. Este arquivo mantém o roteamento técnico
+por categoria; `.agents/SKILL_ROUTER.md` pode existir apenas como bridge local.
 
 `PROJECT_IDENTITY_GATE_REQUIRED=true`
 `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`
-`SUPERPOWERS_ALWAYS_CONSIDERED=true`
+`MANDATORY_FIRST_SKILL=Superpowers`
 
 OFFICIAL_WORKSPACE:
 C:\Projetos\carteira-investimentos
-
-DEFAULT_MODEL:
-5.6 Sol
-
-DEFAULT_EFFORT:
-Padrão
 
 DEFAULT_SKILLS:
 []
@@ -65,19 +60,19 @@ Princípio:
 
 ## ROTEAMENTO PRINCIPAL POR TAREFA
 
-| Categoria | Skills primárias | Modelo | Esforço | Escalar quando |
-|---|---|---|---|---|
-| FINANCIAL_LOGIC | `doubt-driven-development`, `source-driven-development` | 5.6 Sol | High | invariantes, arredondamento ou identidade divergirem |
-| PERSISTENCE / RECOVERY / DATA_MIGRATION | `doubt-driven-development`, `caveman-review` | 5.6 Sol | High | houver escrita, rollback ou mudança de schema |
-| FIREBASE / AUTH / LOCAL_CLOUD_SYNC | `firebase-security-rules-auditor`, `doubt-driven-development` | 5.6 Sol | High | permissões, divergência ou sincronização mudarem |
-| SECURITY | `firebase-security-rules-auditor`, `source-driven-development` | 5.6 Sol | High | risco de acesso, privilégio ou dado sensível |
-| UI_UX / VISUAL_POLISH | `interface-design` ou `impeccable`, `web-quality-audit` | 5.6 Terra | Medium | UI tocar em dados, persistência ou auth |
-| RESPONSIVE / ACCESSIBILITY / WEB_QUALITY | `web-quality-audit`, `playwright` | 5.6 Terra/Luna | Medium | erro de runtime ou fluxo protegido |
-| BROWSER_QA / E2E / REGRESSION_TESTING | `browser-harness`, `playwright` | 5.6 Luna | Medium | sessão/auth/CDP falhar repetidamente |
-| DOCUMENTATION / ARCHITECTURE_DOCS | `archify` quando visual ajudar, `caveman-review` | 5.6 Luna | Low/Medium | decisão arquitetural não for trivial |
-| SKILL_DISCOVERY | `find-skills` | 5.6 Luna | Low | apenas quando a capacidade não existir localmente |
-| CONTEXT_COMPRESSION / TOKEN_ECONOMY | `caveman-compress`, `caveman-stats` | 5.6 Luna | Low | nunca remover invariantes, IDs, hashes ou autorizações |
-| CODE_REVIEW / SELECTIVE_COMMITS | `caveman-review`, `caveman-commit` | 5.6 Luna | Medium | sempre antes de integração/commit autorizado |
+| Categoria | Skills primárias | Esforço | Escalar quando |
+|---|---|---|---|
+| FINANCIAL_LOGIC | `doubt-driven-development`, `source-driven-development` | High | invariantes, arredondamento ou identidade divergirem |
+| PERSISTENCE / RECOVERY / DATA_MIGRATION | `doubt-driven-development`, `caveman-review` | High | houver escrita, rollback ou mudança de schema |
+| FIREBASE / AUTH / LOCAL_CLOUD_SYNC | `firebase-security-rules-auditor`, `doubt-driven-development` | High | permissões, divergência ou sincronização mudarem |
+| SECURITY | `firebase-security-rules-auditor`, `source-driven-development` | High | risco de acesso, privilégio ou dado sensível |
+| UI_UX / VISUAL_POLISH | `interface-design` ou `impeccable`, `web-quality-audit` | Medium | UI tocar em dados, persistência ou auth |
+| RESPONSIVE / ACCESSIBILITY / WEB_QUALITY | `web-quality-audit`, `playwright` | Medium | erro de runtime ou fluxo protegido |
+| BROWSER_QA / E2E / REGRESSION_TESTING | `browser-harness`, `playwright` | Medium | sessão/auth/CDP falhar repetidamente |
+| DOCUMENTATION / ARCHITECTURE_DOCS | `archify` quando visual ajudar, `caveman-review` | Low/Medium | decisão arquitetural não for trivial |
+| SKILL_DISCOVERY | `find-skills` | Low | apenas quando a capacidade não existir localmente |
+| CONTEXT_COMPRESSION / TOKEN_ECONOMY | `caveman-compress`, `caveman-stats` | Low | nunca remover invariantes, IDs, hashes ou autorizações |
+| CODE_REVIEW / SELECTIVE_COMMITS | `caveman-review`, `caveman-commit` | Medium | sempre antes de integração/commit autorizado |
 
 ## REGRA DE BOOT AUTOMÁTICO
 
@@ -86,9 +81,13 @@ Em toda missão substancial, declarar antes de agir:
 ```text
 MODEL_SELECTED=
 EFFORT_SELECTED=
+PRIMARY_AGENT=
+MODEL_SELECTION_REASON=
 SKILLS_CONSIDERED=
 SKILLS_USED=
 SKILLS_NOT_USED=
+SKILL_SELECTION_REASON=
+SKILL_REEVALUATED=
 SKILL_GAPS_FOUND=
 SCOPE_GUARD=
 ```
