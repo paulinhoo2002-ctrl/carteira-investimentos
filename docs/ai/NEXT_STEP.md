@@ -4,10 +4,11 @@
 
 - V262 is CLOSED: PR #412 squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b` on main; local main fast-forwarded to the same SHA.
 - Active phase: V263 "Renda Fixa Freshness, Valuation & Financial As-Of Provenance" on branch `feature/v263-rf-freshness-valuation-asof` (worktree `C:/Projetos/carteira-investimentos.worktrees/v263-rf-freshness-valuation-asof`).
-- PR #413 OPEN/mergeable (current head from Git; implementation commits e970bc94 + a5f459ba), CI SUCCESS, Vercel preview READY. All local gates green (789/789 modern, 249/249 general, both builds, diff-check).
+- PR #413 OPEN/mergeable at `f3ed317a1ede6caee41e8bd0ba083be2045156bb`; exact-head CI run `36133823828` SUCCESS, Vercel deployment `dpl_7PrFSfsjY73PD9fC3ijaS4cxU42g` READY. Re-run local gates: 805/805 modern, 249/249 general, both builds, diff-check.
 - Implementation delivered: financial as-of evidence (HIGH/MEDIUM/UNKNOWN) separated from source as-of; valuation state derives value-as-of and freshness from real evidence; UI shows confidence badges and separate as-of rows; 12 targeted tests; zero financial/tax writes; all V262 invariants preserved (IPCA+ UNSUPPORTED, manual authority, UNKNOWN != ZERO).
-- Known pre-existing (not V263): modern host shell page-level horizontal overflow with the dense RF table (also in V262 build); recorded in OPEN_WORK. Fresh Vercel preview origins sit behind SSO — authenticated QA requires the established per-origin login procedure in the dedicated QA Chrome profile.
-- Next action: independent review of PR #413 (recommended: GLM-5.3), then optional authenticated QA on the real preview, then request only: `Autorizo o squash merge da PR #413.` Do NOT merge without that authorization.
+- Visual certification used a correct local production-like Vite preview (`build:modern` then `/host.html`): V262 and V263 were styled; all seven viewports passed with zero page-level overflow; axe-core WCAG A/AA had 0 violations; screenshots reviewed. Vercel preview remains behind per-origin SSO, so this pass is not authenticated real-portfolio QA. Earlier unstyled captures and reported 1886px overflow came from invalid asset-serving evidence.
+- Existing pre-V263 data-source issue: the unchanged V262 SGS fetcher receives HTTP 400 `Invalid initial date` for `dataInicial=07/2022` in both exact builds. Track as source-contract debt; do not attribute it to V263.
+- Next action: finish factual memory reconciliation and exact-head revalidation if docs are committed, then request only `Autorizo o squash merge da PR #413.` if all release gates remain valid. Do NOT merge without authorization.
 
 ### Post-V263 roadmap (repository-evidence based)
 
@@ -17,8 +18,18 @@
 - LATER — Corporate events MODE_B (needs provider decision; MODE_A active).
 - LATER — TWR/XIRR history (needs more valuation snapshots; V76/V77 tracking since 2026-09-15).
 - LATER — Clean-state integration (V88 branch; technical consolidation).
+- NEXT CANDIDATE (readiness only) — V264 BCB SGS IPCA request-contract hardening. The current V262 fetcher sends a month-only initial date rejected by the official endpoint; first verify the provider's accepted date contract, then fix/test only retrieval and truthful unavailable/stale states. Keep IPCA+ security valuation unsupported; no financial formula or authority change.
 - BLOCKED — Phase 4H Class C / August pilot (separate single-use authorizations; historical authorizations consumed).
 - NOT_RECOMMENDED — reopening frozen legacy screens without regression evidence.
+
+### Proposed next macro-phase (not authorized or started)
+
+- `V264_BCB_SGS_IPCA_REQUEST_CONTRACT_HARDENING`
+- Why now: exact local runtime evidence shows the same HTTP 400 `Invalid initial date` request on V262 base and V263, while the V263 change itself is isolated and has no visual regression.
+- Dependencies: confirm the current official BCB SGS query-date format; retain sanitized deterministic fixtures; preserve request bounds/caching and V262/V263 truth semantics.
+- Risk: low-to-medium if limited to public index-series retrieval; high/forbidden if it drifts into IPCA+ security valuation or manual-value override.
+- Candidate acceptance: valid date range request contract; tests for date serialization and rejected/empty/error responses; freshness and coverage stay separate; no synthesized index values on failure; exact-IPCA valuation remains unsupported; CDI/manual authority unchanged; no financial writes; focused plus full required suites and browser/network validation.
+- No V264 branch, worktree, implementation, or PR was created.
 
 ---
 
