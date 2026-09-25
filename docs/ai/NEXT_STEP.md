@@ -1,4 +1,15 @@
 # Next Step
+## V266 QA Smoke Autostart — COMPLETED 2026-09-25
+
+- Branch `feature/v266-qa-smoke-autostart` merged to local main at `eaec386`.
+- `qa:all` now autonomous: auto-starts local QA server on ephemeral port when `QA_ORIGIN` unset.
+- Implementation: `tools/qa/run-smoke-with-lifecycle.js` wrapper reusing V265-hardened `startLocalHttpServer`.
+- Tests: `tests/qa-lifecycle.test.js` (5 tests) + `test:qa-lifecycle` script.
+- Validation: `qa:all` PASS from clean state; `test:modern` 815/815; `npm test` 249/249; builds PASS; diff-check PASS; 7-width smoke PASS.
+- QA_ORIGIN compatibility preserved; manual server commands preserved.
+- No financial/product changes.
+- Documentation: `docs/ai/QA_HARNESS.md`, `docs/ai/PROJECT_STATE.md` updated.
+
 ## Skills/governance audit continuation
 
 - PR #417 carries the local Skills-library snapshot, dynamic discovery and

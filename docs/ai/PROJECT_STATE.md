@@ -78,6 +78,17 @@
 - No production application, financial logic, data, persistence, Firebase, imports, or tax code changed. `FINANCIAL_WRITE_COUNT=0`, `TAX_WRITE_COUNT=0` by scope. No authenticated portfolio QA was required or performed for this harness-only change.
 - PR #416 closed as merged to `main` at `5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`; its exact merged tree was verified before worktree removal. No merge was performed during this workspace-audit mission.
 
+## V266 — QA smoke autostart — 2026-09-25
+
+- Branch `feature/v266-qa-smoke-autostart`, based on V265 merge `5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`. This phase makes `qa:all` autonomous by auto-starting the local QA server when `QA_ORIGIN` is not defined.
+- Implementation: new wrapper `tools/qa/run-smoke-with-lifecycle.js` that checks `QA_ORIGIN`; if absent, starts `startLocalHttpServer(root, 0)` (ephemeral port), waits for HTTP 200 readiness, runs `browser-smoke.js`, and **always** stops owned server in `finally` block. If `QA_ORIGIN` supplied, passes through directly with no server management.
+- Reuses existing V265-hardened `startLocalHttpServer` — no new server implementation. Preserves path containment (403 on traversal), ephemeral port support.
+- Added lifecycle test suite `tests/qa-lifecycle.test.js` (5 tests): TEST 1 autostart+smoke+cleanup, TEST 2 QA_ORIGIN passthrough, TEST 3 failure cleanup, TEST 4 startup failure diagnostics, TEST 5 V265 404 survival. Added `test:qa-lifecycle` npm script.
+- Validation: `qa:all` PASS from clean state (no manual server); `test:qa-harness` 2/2; `test:qa-lifecycle` 5/5; `test:modern` 815/815; `npm test` 249/249; `build` PASS; `build:modern` PASS; `git diff --check` PASS. Browser smoke 7 widths (390, 430, 768, 1366, 1440, 1536, 1920) all PASS: no overflow, console errors, page errors, request failures.
+- QA_ORIGIN compatibility verified: explicit origin used, no autostart, external server not stopped. Manual server commands (`qa:serve:legacy`, `qa:start-server`) preserved.
+- No production application, financial logic, data, persistence, Firebase, imports, or tax code changed. `FINANCIAL_WRITE_COUNT=0`, `TAX_WRITE_COUNT=0` by scope.
+- Documentation updated: `docs/ai/QA_HARNESS.md` records autonomous execution and QA_ORIGIN behavior.
+
 ## Post-V264 baseline — 2026-09-25
 
 - V263 PR #413 was squash-merged on `main` as `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
