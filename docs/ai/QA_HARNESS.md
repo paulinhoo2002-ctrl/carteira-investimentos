@@ -5,7 +5,9 @@ Hermes, OpenCode e Codex validarem a SPA legada e os gates da Phase 4H.
 
 ## Princípios
 
-- O servidor legado é `python.exe -m http.server 4173 --bind 127.0.0.1`.
+- O servidor legado é `node tests/local-http-server.js --port 4173`; ele escuta
+  somente em `127.0.0.1`, retorna 404 antes de enviar cabeçalhos de sucesso e
+  aceita `--port 0` para testes com porta efêmera.
 - O navegador QA usa Chrome estável com perfil dedicado, fora do repositório,
   e CDP somente em `127.0.0.1`. Chrome for Testing pode ser usado em smoke
   sintético, mas não é a base de login Google autenticado.
