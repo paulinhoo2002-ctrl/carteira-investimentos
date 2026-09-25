@@ -1,22 +1,22 @@
 # Next Step
 
-## V262 PR #412 — final authenticated QA and continuity update (2026-09-24)
+## V262 PR #412 — exact-head final certification (2026-09-24)
 
 - Worktree: `C:/Projetos/carteira-investimentos.worktrees/v262-fixed-income-advanced-shadow-valuation`
 - Branch: `feature/v262-fixed-income-advanced-shadow-valuation`
-- Product-code SHA validated in authenticated QA: `9e3418c90f55f36c2c8418aa944a0d0c2e4f41be` (the later changes are documentation only).
-- PR #412: OPEN, mergeable. The documentation head's CI run `36072877272` succeeded, including reliability smokes. Its Vercel deployment `dpl_EJ4CoKvKxBPt6BxQpq5YvTdXTJXv` is READY. Authenticated UI evidence remains valid because no application code/config changed after the QA SHA.
-- Authenticated URL/path: approved preview branch alias, `/?protectedReadOnlyQa=1`. Actual V262 surface is the legacy Renda Fixa view, not `/modern/`. Login completed manually in the dedicated isolated QA Chrome. Firebase/auth/backend and real wallet were available.
-- Runtime: manual authority preserved; IPCA exact valuation is `UNSUPPORTED_IPCA_EXACT`; no generic IPCA+ value; coverage/freshness remain separate and display unavailable/unknown honestly; CDI unchanged; unknown is not zero.
-- Responsive 390/430/768/1366/1440/1536/1920 PASS; no horizontal overflow or critical clipping. Axe 0 critical/0 serious; representative screenshots captured and visually reviewed.
-- Offline/reconnect PASS after the app organically created a trusted user-bound snapshot during an authenticated online bootstrap. Cold profiles without such a snapshot correctly remain unavailable/gated offline. Cached display remained truthful and read-only.
-- Write audit: financial 0, tax 0, import confirmation 0, real restore 0. Snapshot bootstrap may emit a nonfinancial access-audit update; this was not counted as a financial/tax write, and global backend-write count is not claimed to be zero.
-- Tests/builds reused from exact code head: targeted offline/auth + V262 12/12; general 249/249; modern 777/777; both builds PASS. No formula/code change in this closeout.
+- Product-code SHA validated in authenticated QA: `26d1526389a92cc4ca94fff7bc671821f2cf0b09`.
+- PR #412 remains OPEN and mergeable at the code SHA. Exact-head CI run `36079088319` succeeded; Vercel deployment `6651218341` is READY.
+- Authenticated URL/path: explicitly approved branch alias, `/?protectedReadOnlyQa=1`. The V262 surface is the legacy Renda Fixa view, not `/modern/`. Login was completed manually in dedicated isolated QA Chrome; Firebase/auth/backend and the real wallet loaded.
+- Runtime: manual authority preserved; exact IPCA remains `UNSUPPORTED_IPCA_EXACT`; no generic IPCA+ value; coverage/freshness remain separate and honestly unavailable/unknown; CDI unchanged; unknown is not zero.
+- Responsive 390/430/768/1366/1440/1536/1920 PASS; no horizontal overflow or critical clipping. Axe 0 critical/0 serious; representative screenshots were captured and reviewed locally, not committed.
+- Offline root cause: protected QA blocks canonical portfolio persistence, but old offline eligibility relied on stale `civ5` state and could select an empty wallet after an in-memory wallet switch. A separate user-bound local read-only snapshot now captures only the validated selected wallet and is restored offline. The canonical `civ5` fingerprint stayed unchanged. The product-generated cache was verified with the real authenticated selected wallet; offline fixed-income state stayed truthful and read-only.
+- Reconnect restored the same selected wallet and fixed-income manual values; no request storm or reload loop was observed. Financial/tax/import-confirmation/restore writes were 0. Normal authenticated bootstrap may emit a nonfinancial access-audit update, so global backend writes are not claimed to be zero.
+- Tests/builds: focused offline/snapshot/security tests PASS; general 249/249; modern 777/777; modern and legacy builds PASS. No financial formula changed.
 
 ### Next action
 
-- Reconfirm the PR's final head, CI, Vercel deployment and open/mergeable state after this continuity update.
-- If all evidence remains consistent, stop and request only: `Autorizo o squash merge da PR #412.` Do not merge without that authorization.
+- Documentation closeout changes the PR head. Commit/push only the three approved project-memory files, then verify exact-head CI and preview SHA, READY status, and PR OPEN/mergeable state.
+- If the final evidence is consistent, stop and request only: `Autorizo o squash merge da PR #412.` Do not merge without that authorization.
 
 ---
 
