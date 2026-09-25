@@ -1,5 +1,6 @@
 import { parseIpcaContract } from './ipcaContractParser.ts';
 import { analyzeIpcaIndexDiagnostics, type IpcaIndexDiagnostics, type IpcaMonthlyIndex } from './ipcaIndexDiagnostics.ts';
+import { extractFinancialAsOfEvidence, freshnessFromAsOfEvidence, type FinancialAsOfEvidence } from './financialAsOf.ts';
 
 export type ValuationStatus =
   | 'MANUAL_AUTHORITATIVE'
@@ -22,6 +23,10 @@ export type ValuationState = {
   authoritativeSourceAsOf: string | null;
   authoritativeFreshness: FreshnessStatus;
   authoritativeStatus: ValuationStatus;
+  // V263: explicit financial as-of evidence (HIGH/MEDIUM/UNKNOWN), separate from source as-of
+  authoritativeAsOfEvidence: FinancialAsOfEvidence | null;
+  authoritativeAsOfSource: string | null;
+  authoritativeAsOfConfidence: 'HIGH' | 'MEDIUM' | 'UNKNOWN';
 
   // Shadow (derived) value - for CDI positions
   shadowValue: number | null;
@@ -64,6 +69,9 @@ export function computeFixedIncomeValuationState(
     authoritativeSourceAsOf: null,
     authoritativeFreshness: 'UNKNOWN',
     authoritativeStatus: 'UNAVAILABLE',
+    authoritativeAsOfEvidence: null,
+    authoritativeAsOfSource: null,
+    authoritativeAsOfConfidence: 'UNKNOWN',
     shadowValue: null,
     shadowValueAsOf: null,
     shadowSource: null,
@@ -96,14 +104,24 @@ export function computeFixedIncomeValuationState(
   const authoritativeValue = asset.liquidValue ?? asset.grossValue ?? asset.appliedValue ?? null;
   const hasAuthoritativeValue = authoritativeValue !== null;
 
-  // Authoritative as-of: use snapshot generatedAt as fallback for manual values
-  // In real implementation, would look for explicit valuationAsOf on the position
-  const authoritativeValueAsOf = null; // No explicit financial as-of in current data model
+  // V263: extract explicit financial as-of evidence from the readonly item.
+  // `financialAsOfRaw` is mapped by the host source from legacy fields
+  // (financialAsOf/valuationAsOf/quoteUpdatedAt/updated_at); items without
+  // those fields stay UNKNOWN — never LIVE, never zero.
+  const asOfEvidence = extractFinancialAsOfEvidence(asset as unknown as Record<string, unknown>, {
+    referenceDate: effectiveAsOf,
+  });
+  const authoritativeValueAsOf = asOfEvidence.value;
   const authoritativeSource = 'manual-rf'; // Legacy manual entry
   const authoritativeSourceAsOf = null;
+  const authoritativeAsOfSource = asOfEvidence.source;
+  const authoritativeAsOfConfidence = asOfEvidence.confidence;
 
-  // Freshness for manual: UNKNOWN since we don't have explicit financial as-of
-  const authoritativeFreshness: FreshnessStatus = 'UNKNOWN';
+  // Freshness for the authoritative value is derived from real financial
+  // as-of evidence; without evidence it stays UNKNOWN (not FRESH/STALE).
+  const authoritativeFreshness: FreshnessStatus = hasAuthoritativeValue
+    ? freshnessFromAsOfEvidence(asOfEvidence, { referenceDate: effectiveAsOf })
+    : 'UNKNOWN';
   const authoritativeStatus: ValuationStatus = hasAuthoritativeValue ? 'MANUAL_AUTHORITATIVE' : 'UNAVAILABLE';
 
   // CDI Shadow calculation
@@ -246,6 +264,9 @@ export function computeFixedIncomeValuationState(
     authoritativeSourceAsOf,
     authoritativeFreshness,
     authoritativeStatus,
+    authoritativeAsOfEvidence: asOfEvidence,
+    authoritativeAsOfSource,
+    authoritativeAsOfConfidence,
     shadowValue,
     shadowValueAsOf,
     shadowSource,

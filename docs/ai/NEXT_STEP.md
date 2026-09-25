@@ -1,5 +1,38 @@
 # Next Step
 
+## V263 PR #413 — current state (2026-09-25)
+
+- V262 is CLOSED: PR #412 squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b` on main; local main fast-forwarded to the same SHA.
+- Active phase: V263 "Renda Fixa Freshness, Valuation & Financial As-Of Provenance" on branch `feature/v263-rf-freshness-valuation-asof` (worktree `C:/Projetos/carteira-investimentos.worktrees/v263-rf-freshness-valuation-asof`).
+- At the 2026-09-25 certification checkpoint, PR #413 was OPEN/mergeable at `a617f8698692e1d541b22b54a33cd92577c7507e`; exact-head CI run `36147717670` SUCCESS and Vercel deployment `dpl_2r1Xy6XQiWU58caZzZmTvRCRo8eH` READY. Product-code tip remained `f3ed317a1ede6caee41e8bd0ba083be2045156bb`; local gates at that checkpoint: modern 805/805, general 249/249, both builds, diff-check. Query live refs for any later tip.
+- Implementation delivered: financial as-of evidence (HIGH/MEDIUM/UNKNOWN) separated from source as-of; valuation state derives value-as-of and freshness from real evidence; UI shows confidence badges and separate as-of rows; 12 targeted tests; zero financial/tax writes; all V262 invariants preserved (IPCA+ UNSUPPORTED, manual authority, UNKNOWN != ZERO).
+- Visual certification used a correct local production-like Vite preview (`build:modern` then `/host.html`): V262 and V263 were styled; all seven viewports passed with zero page-level overflow; axe-core WCAG A/AA had 0 violations; screenshots reviewed. Vercel preview remains behind per-origin SSO, so this pass is not authenticated real-portfolio QA. Earlier unstyled captures and reported 1886px overflow came from invalid asset-serving evidence.
+- Existing pre-V263 data-source issue: the unchanged V262 SGS fetcher receives HTTP 400 `Invalid initial date` for `dataInicial=07/2022` in both exact builds. Track as source-contract debt; do not attribute it to V263.
+- Next action: finish factual memory reconciliation and exact-head revalidation if docs are committed, then request only `Autorizo o squash merge da PR #413.` if all release gates remain valid. Do NOT merge without authorization.
+
+### Post-V263 roadmap (repository-evidence based)
+
+- SOON — Import Center productionization (V92/V93 branches exist; XP/BTG blocked by user fixtures).
+- SOON — Reports intelligence integration (V93 branch ready for review).
+- LATER — Mobile experience improvement (new candidate; needs explicit scope).
+- LATER — Corporate events MODE_B (needs provider decision; MODE_A active).
+- LATER — TWR/XIRR history (needs more valuation snapshots; V76/V77 tracking since 2026-09-15).
+- LATER — Clean-state integration (V88 branch; technical consolidation).
+- NEXT CANDIDATE (readiness only) — V264 BCB SGS IPCA request-contract hardening. The current V262 fetcher sends a month-only initial date rejected by the official endpoint; first verify the provider's accepted date contract, then fix/test only retrieval and truthful unavailable/stale states. Keep IPCA+ security valuation unsupported; no financial formula or authority change.
+- BLOCKED — Phase 4H Class C / August pilot (separate single-use authorizations; historical authorizations consumed).
+- NOT_RECOMMENDED — reopening frozen legacy screens without regression evidence.
+
+### Proposed next macro-phase (not authorized or started)
+
+- `V264_BCB_SGS_IPCA_REQUEST_CONTRACT_HARDENING`
+- Why now: exact local runtime evidence shows the same HTTP 400 `Invalid initial date` request on V262 base and V263, while the V263 change itself is isolated and has no visual regression.
+- Dependencies: confirm the current official BCB SGS query-date format; retain sanitized deterministic fixtures; preserve request bounds/caching and V262/V263 truth semantics.
+- Risk: low-to-medium if limited to public index-series retrieval; high/forbidden if it drifts into IPCA+ security valuation or manual-value override.
+- Candidate acceptance: valid date range request contract; tests for date serialization and rejected/empty/error responses; freshness and coverage stay separate; no synthesized index values on failure; exact-IPCA valuation remains unsupported; CDI/manual authority unchanged; no financial writes; focused plus full required suites and browser/network validation.
+- No V264 branch, worktree, implementation, or PR was created.
+
+---
+
 ## V262 PR #412 — exact-head final certification (2026-09-24)
 
 - Worktree: `C:/Projetos/carteira-investimentos.worktrees/v262-fixed-income-advanced-shadow-valuation`
