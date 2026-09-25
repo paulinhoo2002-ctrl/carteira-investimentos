@@ -1,5 +1,16 @@
 # Next Step
 
+## Active — V264 BCB SGS request contract (2026-09-25)
+
+- V263 is merged: PR #413 squash SHA `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
+- V264 branch `feature/v264-bcb-sgs-request-contract-hardening` is based on that SHA. It corrects SGS 433 inclusive monthly request bounds to `DD/MM/YYYY`, validates dates before network access, parses the provider's monthly response date, and preserves explicit empty/error states. IPCA+ security valuation remains unsupported; no financial methodology or manual authority changed.
+- Local gates: modern 777/777, general 249/249, modern and legacy builds and diff-check PASS. Official smoke proved July 2022 response and Aug–Sep 2026 only returned the published August point; a single-month current-period probe encountered a transient gateway 502. CI/preview must be verified on the pushed V264 PR head.
+- Next: finish code review, reconcile project docs, commit/push the scoped V264 change, create its PR, then verify exact-head CI and Vercel preview. Do not merge. PR #414 is independent, open, and not merged.
+
+### Next macro-phase after V264 (readiness only)
+
+- Prefer Reports Intelligence integration review after V264: an existing V93 reports branch is recorded as ready for review, so verify its current relationship to main and its user-facing value before opening work. Import Center remains valuable but XP/BTG productionization is blocked on sanitized broker fixtures; do not fabricate fixtures. No next phase is started here.
+
 ## V263 PR #413 — current state (2026-09-25)
 
 - V262 is CLOSED: PR #412 squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b` on main; local main fast-forwarded to the same SHA.

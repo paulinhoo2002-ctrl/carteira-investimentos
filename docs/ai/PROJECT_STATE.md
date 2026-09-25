@@ -1,5 +1,13 @@
 # Project State
 
+## V264 — BCB SGS request contract — 2026-09-25
+
+- V263 PR #413 was squash-merged on `main` as `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
+- Active work: `feature/v264-bcb-sgs-request-contract-hardening`, based on that merge. The SGS 433 fetcher now validates canonical `YYYY-MM` bounds and sends inclusive `DD/MM/YYYY` dates; invalid ranges fail before fetch. Response observations in `DD/MM/YYYY` normalize to month keys; the former `MM/YYYY` response shape remains accepted.
+- Official read-only smoke: July 2022 returned HTTP 200 and `01/07/2022`; Aug–Sep 2026 returned HTTP 200 with August only. A September-only direct request had a transient HTTP 502; the provider has also returned its explicit 404 `Value(s) not found` for unpublished periods. That explicit no-data payload is `EMPTY_RESPONSE`, not zero; other HTTP errors are explicit provider errors.
+- No IPCA+ automatic security valuation, financial formula, manual fixed-income authority, persistence, or financial/tax write behavior changed. Local final validation: modern 777/777, general 249/249, modern and legacy builds PASS, diff-check PASS. CI/preview evidence is pending the V264 PR.
+- PR #414 remains open/unmerged; see live GitHub state before acting. No merge was performed.
+
 ## V263 PR #413 — Financial As-Of Provenance (Renda Fixa) — 2026-09-25
 
 - Branch: `feature/v263-rf-freshness-valuation-asof`, base = merged main `9be3d9c3e17b659a507e46a8f57c2b152174366b` (V262 squash-merge of PR #412). Implementation commits: domain `e970bc94`, UI/tests `a5f459ba`; docs/certification commits follow on the same branch. The PR #413 current head must be obtained from Git/GitHub, not from this document.

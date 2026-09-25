@@ -2,15 +2,18 @@
 
 ## NOW
 
-- PR #413 V263 visual/compiled QA is complete on the exact verified head; preview SSO prevented authenticated real-portfolio QA in this pass. Merge only with explicit authorization;
+- V264 BCB SGS request-contract hardening is in progress on `feature/v264-bcb-sgs-request-contract-hardening`, based on V263 merge `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`. Local tests/builds are green; verify exact-head CI and Vercel preview after publishing. Do not merge without explicit authorization.
 - manter snapshots diários e acumular histórico confiável;
 - melhorar frescor/valuation de renda fixa e registrar as-of real (V263 em review);
 - amadurecer dashboard e detalhes de renda fixa;
 - manter cobertura pública de eventos e Import Center.
 
-## DEBT (2026-09-25, V263 run)
+## RESOLVED BY V264 (2026-09-25)
 
-- V262 SGS IPCA fetcher sends `dataInicial=MM/YYYY`; the BCB endpoint returned HTTP 400 `Invalid initial date` on both V262 base and V263. This predates V263 and needs a separately scoped source/date-contract fix; do not infer fresh IPCA data from a failed request.
+- SGS 433 month bounds now use validated inclusive `DD/MM/YYYY` dates. Explicit provider `Value(s) not found` is no-data, not zero; other HTTP failures remain errors. A temporary 502 occurred on a live September-only probe, so do not claim every current-month provider request succeeds.
+
+## DEBT (2026-09-25)
+
 - `tests/local-http-server.js`: `writeHead(200)` antes do `readFile` gera `ERR_HTTP_HEADERS_SENT` em 404 (debt de harness; não falhou depois de `build:modern` existir).
 - Worktree nova exige `npm run build:modern` antes de `npm test` (smokes de browser requisitam `modern/dist/assets/*`).
 
