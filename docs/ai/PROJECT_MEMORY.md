@@ -1,12 +1,73 @@
 # Project Memory
 
+## Skills library audit — 2026-09-25
+
+- Physical inventory: 42 direct directories, 43 recursive SKILL.md files and
+  38 operational local packages. Two upstream-copy directories, one old
+  impeccable backup and references are not active packages. Only four
+  operational SKILL.md files are Git-tracked; most of .agents/skills is
+  machine-local/ignored, so each session must rediscover actual availability.
+- Superpowers is usable as a global plugin in this Codex environment, but no
+  local .agents/skills/superpowers package exists. Do not fabricate a shim;
+  if unavailable in another executor, record the gap and use a process fallback.
+- Audit found seven missing optional Markdown references (six web-quality-audit
+  sister-skill links and one Mantis blueprint); banner-design also lacks cited
+  optional brand/generation references. caveman-stats is unavailable in this
+  snapshot because its two required hooks are absent. No forbidden-project
+  reference or destructive default was found in the 43 instruction files.
+  Duplicates/backups were kept.
+- The broad local browser-harness trigger is subordinate to minimum-skill
+  routing. Superpowers orchestrates and does not replace specialist Skills.
+  Agent/model routing remains separate from Skill routing.
+- Snapshot, taxonomy, triggers, limitations and routing matrix:
+  docs/ai/SKILL_OPERATIONAL_CATALOG.md. The filesystem remains authoritative.
+  Changes are included in governance PR #417; no merge was performed.
+
+## Workspace/worktree lifecycle audit — 2026-09-25
+
+- V265 PR #416 was squash-merged; `origin/main` is
+  `5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`. Governance PR #414 is merged
+  at `98420aea10b552264a729b8470d91ff129567640`. Canonical local `main` was
+  initially four commits behind, then fast-forwarded to this SHA after a
+  zero-collision check. It retains 335 untracked paths, all preserved.
+- The audit inventoried 37 registered worktrees; 34 remain. Three merged,
+  clean worktrees (#414/#415/#416) had exact tree equivalence to their squash
+  merge commits and were removed normally. Fourteen verified empty,
+  unregistered directories were also removed. No branches were deleted. The clean
+  `v264-postmerge-audit` worktree registration was removed normally, but the
+  OS rejected physical directory deletion (`Invalid argument`); its remaining
+  files were preserved. Unregistered paths with content, Git markers, unique
+  work or ambiguous process state remain untouched.
+- The official worktree root uses about 1.7 GiB. Git reported 25 `tmp_obj_*`
+  files (~259 MiB); read-only `fsck` also found 169 unreachable commits among
+  10,919 unreachable objects. No object was removed; retain them for recovery
+  analysis and do not run GC/prune.
+- Clean `origin/main` validation: modern 815/815, general 249/249, modern and
+  legacy builds PASS, QA harness 2/2, and seven-width browser smoke PASS.
+  `qa:all` requires the documented loopback server to be started separately;
+  with it running, the command passed. No product or financial behavior
+  changed.
+- V266 is **not started**. XP/BTG needs real sanitized fixtures; TWR/XIRR needs
+  more history; Corporate Events MODE_B awaits provider/business direction.
+  Reports and clean-state work are already on main, and no specific mobile
+  regression was found. No independent, evidence-backed macro-scope was ready;
+  preserve ambiguous residue and reassess when a dependency or concrete defect
+  changes the roadmap.
+- The V265 worktree removal left a junction to `v264-postmerge-audit/node_modules`;
+  the junction was removed without touching its target. Its empty parent
+  directory is system-locked and remains. The V264 residual contains source,
+  tests, docs, `Refs` and dependencies and remains preserved.
+- Documentation reconciliation is on branch `docs/workspace-worktree-lifecycle`
+  in `C:\Projetos\carteira-investimentos.worktrees\v266-main-audit-5a6a0a47`;
+  merge remains a separate human authorization gate.
+
 ## V265 — QA harness resilience (2026-09-25)
 
 - V265 is scoped to repository QA tooling. `tests/local-http-server.js` previously sent HTTP 200 before reading the asset; a missing generated file then attempted a second `writeHead(404)` and crashed with `ERR_HTTP_HEADERS_SENT`. The server now reads first and returns 404 safely. Its root containment check uses `path.relative`, preventing sibling-prefix traversal. The CLI binds only to `127.0.0.1`, accepts a selected port (including 0 for ephemeral tests), and is used by the legacy QA server scripts.
 - Added `test:qa-harness` contracts for missing asset 404 plus valid follow-up 200, and rejection of a real sibling-prefix traversal attempt. `qa:all`/`qa:all-safe` build modern assets before the harness tests and browser smoke. Post-fix validation: harness 2/2, modern 815/815, general 249/249, modern and legacy builds and `qa:all` PASS; browser smoke 390/430/768/1366/1440/1536/1920 passed with no page overflow, console/page errors or local request failures.
 - On the validation machine, another Python listener occupied 4173 and returned an empty response; it was left untouched. The new Node server was validated on 4174. Existing Vite/Node warnings are known and did not fail the gates.
 - No application, financial, persistence, Firebase, tax, or import behavior changed; financial/tax writes were zero by scope. No real portfolio or credentials were used. Check live PR/CI/Vercel for exact current head; no merge was performed.
-- PR #416 is open on `feature/v265-qa-harness-resilience`; its pre-reconciliation source head was `b3b06d47279ec58cf4d13d5554ac5b6505107760`. The branch now incorporates governance main `98420aea10b552264a729b8470d91ff129567640`; recheck live PR/CI/Vercel after the reconciliation push before readiness claims.
+- PR #416 was OPEN during V265 certification and was subsequently squash-merged to `main` as `5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`.
 - Roadmap decision: V93 reports and `integration/clean-state-v1` are ancestors of current `origin/main`, so no duplicate phase. XP/BTG remain fixture-required, TWR/XIRR is still collecting history, and MODE_B awaits provider/business choice. Revisit fixture-backed XP/BTG only after real sanitized notes are supplied.
 
 ## V264 — BCB SGS request contract (2026-09-25; merged)

@@ -7,12 +7,90 @@ dependências.
 
 ## Inventário reconciliado
 
-- 26 Skills operacionais reais com `SKILL.md`.
-- `archify-main` e `browser-harness-main`: cópias upstream de referência.
-- `impeccable.bak`: backup; não usar como fonte operacional.
-- `references`: material auxiliar, não Skill.
-- `deploy-to-vercel`: disponível, mas somente sob pedido explícito de deploy.
-- `find-skills`: Skill global de descoberta; não é uma pasta física deste site.
+Snapshot físico conferido em 2026-09-25:
+- 42 diretórios diretos, 43 arquivos SKILL.md e 38 pacotes operacionais.
+  Três SKILL.md excedentes ficam em uma cópia upstream com versões internas;
+  duas pastas upstream, um backup e references não são pacotes operacionais.
+- .agents/skills é majoritariamente ignorada pelo Git: somente quatro
+  SKILL.md operacionais estão rastreados. O catálogo é snapshot do ambiente,
+  não garantia de instalação em outros clones.
+- Superpowers está disponível como plugin global nesta sessão, mas não há
+  .agents/skills/superpowers/SKILL.md. Não fabricar cópia ou shim; registrar
+  lacuna e usar fallback se o plugin não estiver disponível em outro ambiente.
+- find-skills existe no pacote local e também pode existir globalmente.
+
+## Inventário por categoria e ativação
+
+| Skill | Categoria | Entrada → resultado | Dependência/limite | Estado |
+|---|---|---|---|---|
+| archify | ARCHITECTURE | Código/Mermaid → diagrama verificável | Representar apenas arquitetura confirmada | ACTIVE |
+| banner-design | VISUAL_UX | Brief/canal → conceito de banner | Referências auxiliares de brand/generation ausentes | ACTIVE_WITH_LIMITATIONS |
+| brand | VISUAL_UX | Diretrizes → voz/ativos coerentes | Não usar para lógica do produto | ACTIVE |
+| browser-harness | BROWSER_QA | URL/fluxo → controle e evidência browser | Trigger local amplo; aplicar seleção mínima do router | ACTIVE_WITH_LIMITATIONS |
+| browser-testing-with-devtools | BROWSER_QA | Página → DOM/estilos/rede/performance | Chrome DevTools MCP não configurado nesta sessão | ACTIVE_WITH_LIMITATIONS |
+| cavecrew | ORCHESTRATION | Missão → avaliar delegação | Owner único; seguir política de delegação | ACTIVE |
+| caveman | OTHER | Pedido → estilo conciso | Não substituir relatório de alto risco | ACTIVE |
+| caveman-commit | GIT_WORKTREE | Diff → sugestão de mensagem | Não autoriza staging/commit | ACTIVE |
+| caveman-compress | DOCUMENTATION | Texto longo → resumo fiel | Preservar IDs, hashes, invariantes e autorizações | ACTIVE |
+| caveman-help | OTHER | Dúvida de modo → referência rápida | Consulta, não altera estado | ACTIVE |
+| caveman-review | CODE_REVIEW | Diff → achados concisos | Não substitui testes ou review independente | ACTIVE |
+| caveman-stats | OTHER | Contexto → métricas de tokens | Hooks requeridos `caveman-stats.js` e `caveman-mode-tracker.js` ausentes | UNAVAILABLE_HOOK_DEPENDENCY |
+| deep-research | OTHER | Questão ampla → síntese com fontes | Verificar ferramenta/custo; sem custo recorrente por padrão | ACTIVE |
+| deploy-to-vercel | RELEASE_READINESS | Pedido de deploy → fluxo Vercel | Somente solicitação explícita | ACTIVE_WITH_LIMITATIONS |
+| design | VISUAL_UX | Brief criativo → artefato visual | Especializado; fora do fluxo normal | ACTIVE |
+| design-system | VISUAL_UX | Tokens/componentes → especificação | Acionar quando sistema visual mudar | ACTIVE |
+| doubt-driven-development | DATA_INTEGRITY | Contrato de alto risco → revisão adversarial | Processo; não autoriza mudança protegida | ACTIVE |
+| fact-checker | DATA_INTEGRITY | Afirmação → confiança e fontes cruzadas | Busca verificável | ACTIVE |
+| find-skills | ORCHESTRATION | Capacidade ausente → opções de Skill | Não instalar automaticamente | ACTIVE |
+| firebase-security-rules-auditor | SECURITY | Regras Firebase → achados | Não editar/publicar regras | ACTIVE |
+| frontend-design | VISUAL_UX | Nova direção estética → composição | Track exclusiva | ACTIVE |
+| impeccable | VISUAL_UX | UI existente → polish/a11y/spacing | Acabamento, não redesign | ACTIVE |
+| interface-design | VISUAL_UX | Requisito de tela → interface de produto | Preservar Visual Canon | ACTIVE |
+| interview-me | ORCHESTRATION | Pedido ambíguo → requisitos | Pontual; não usar em CI/loop | ACTIVE |
+| mantis-architecture | ARCHITECTURE | Contexto → análise arquitetural | Exemplo de entidade é output | ACTIVE |
+| mantis-critic | CODE_REVIEW | Proposta/relatório → crítica | Patch/reproduce desabilitados por padrão | ACTIVE |
+| mantis-report | DOCUMENTATION | Achados → relatório | Sem patch/commit | ACTIVE |
+| mantis-review | CODE_REVIEW | Artefato → revisão | Revisão apenas por padrão | ACTIVE |
+| mantis-structural-index | ARCHITECTURE | Árvore/código → índice | Blueprint auxiliar referenciado ausente | ACTIVE_WITH_LIMITATIONS |
+| mantis-threat-model | SECURITY | Arquitetura → modelo de ameaças | Referência à entidade é output gerado | ACTIVE |
+| planning-with-files | ORCHESTRATION | Missão longa → plano local | Hooks desligados; usar convenção .qa-state | ACTIVE |
+| playwright | BROWSER_QA | URL/jornada → teste/screenshot | CLI/wrapper deve estar disponível | ACTIVE |
+| slides | VISUAL_UX | Narrativa → apresentação HTML | Especializado | ACTIVE |
+| source-driven-development | DATA_INTEGRITY | Questão técnica → decisão com fonte oficial | Não substituir regra interna silenciosamente | ACTIVE |
+| source-tracker | DOCUMENTATION | URLs/notas → bibliografia local | Manual; sem cron/segredos | ACTIVE |
+| ui-styling | VISUAL_UX | Requisito → shadcn/Radix/Tailwind | Stack específica; não presumir compatibilidade | ACTIVE_WITH_LIMITATIONS |
+| ui-ux-pro-max | VISUAL_UX | Brief → pesquisa de padrões de design | Sob demanda; não substitui track visual | ACTIVE |
+| web-quality-audit | TESTING | URLs/estados → achados medidos | Seis links opcionais a Skills irmãs ausentes | ACTIVE_WITH_LIMITATIONS |
+
+Taxonomia usa uma categoria primária por Skill. Roteamento de agente/modelo
+continua separado da seleção de Skills.
+
+## Saúde estrutural e sobreposições
+
+- `caveman-stats` não pode executar a função anunciada neste snapshot: o
+  `SKILL.md`/README dependem de dois hooks ausentes do pacote. Classificar como
+  `UNAVAILABLE_HOOK_DEPENDENCY`; não simular ou estimar métricas.
+- `banner-design` contém a referência principal de tamanhos/estilos, mas cita
+  `docs/brand-guidelines.md` e exemplos de geração não encontrados. O fluxo é
+  utilizável com limitações; não presumir que os materiais/skills citados existam.
+- Sete links relativos ausentes: seis referências opcionais em web-quality-audit
+  a pacotes irmãos não instalados e um blueprint do mantis-structural-index.
+  Os corpos principais continuam utilizáveis; estado ACTIVE_WITH_LIMITATIONS.
+- archify-main e browser-harness-main são cópias upstream; os SKILL.md raiz
+  de archify/browser-harness têm hashes iguais às cópias raiz correspondentes.
+  impeccable.bak é backup antigo distinto. Nada foi apagado.
+- browser-harness tem trigger local “sempre”; o router permite omiti-lo quando
+  Playwright/DevTools bastarem. Precedência: identidade/segurança → Superpowers
+  → seleção mínima do router → instrução especializada. Não carregar redundante.
+- Varredura das 43 instruções: zero referência ao projeto proibido, zero padrão
+  destrutivo default e nenhum caminho de branch/worktree obsoleto. A varredura
+  cobre os arquivos de instrução, não dependências transitivas.
+- Uso histórico por missão não é estruturado o bastante para medir frequência
+  ou afirmar “nunca usado”. Registros citam UI, browser QA, review e Skills de
+  fonte/integridade; ausência de menção não significa obsolescência.
+- Lacunas: Skill dedicada a lifecycle Git/worktree, intake/sanitização de
+  fixtures financeiras e validação automatizada da biblioteca. Não recomendo
+  criar Skills novas nesta auditoria; governança existente cobre parte do ciclo.
 
 ## Roteamento por momento do projeto
 

@@ -62,6 +62,8 @@ Para toda missão substancial neste projeto:
 3. Descubra o inventário real em
    `C:\Projetos\carteira-investimentos\.agents\skills`; selecione apenas o
    conjunto mínimo relevante e reavalie se o escopo mudar.
+   O catálogo versionado é um snapshot; valide a instalação física atual e
+   não presuma que pacotes locais ignorados pelo Git existem em outros clones.
 4. Siga `docs/SKILLS_ROUTING.md` para agente/modelo, justificativa da escolha,
    fallback, limites e campos de relatório. Esta preferência não permite
    alegar que um provider/modelo foi usado quando ele não estiver disponível.
@@ -288,6 +290,34 @@ Sempre parar e pedir autorização explícita antes de:
 - Mudança de schema.
 - Alteração de persistência.
 - Instalação de dependência.
+
+## Lifecycle de worktrees e artefatos
+
+- Checkout canônico único: `C:\Projetos\carteira-investimentos`.
+- Novas worktrees Git devem ficar em
+  `C:\Projetos\carteira-investimentos.worktrees\<nome>`; a pasta interna
+  `.worktrees` é legado para novas criações, embora o conteúdo existente
+  permaneça até auditoria individual.
+- Nomear worktrees funcionais como `vNNN-curto-escopo`; manter no máximo uma
+  worktree ativa por branch de funcionalidade.
+- Após merge certificado, verificar PR/SHA em `origin/main`, commits exclusivos
+  (incluindo equivalência quando o merge foi squash), branch/PR dependentes,
+  status rastreado e não rastreado, evidências referenciadas e processos ativos.
+  Só então executar `git worktree remove` normal no caminho absoluto validado.
+- Se a remoção normal falhar, não usar `--force`, `Remove-Item -Recurse`,
+  `git clean` ou limpeza manual; preservar o resíduo e reportar o caminho.
+- Não apagar branches locais/remotas em lote. Branch não incorporada ou com
+  commits exclusivos fica preservada; branches remotas nunca são removidas por
+  housekeeping automático.
+- Pastas órfãs só podem ser removidas quando forem comprovadamente vazias ou
+  artefatos regeneráveis sem evidência/arquivo de usuário, fora do registro de
+  worktrees e sem processo dependente. Dúvida implica preservar.
+- Proteger `backups-seguros`, `local-imports`, `Refs`, `output`, fixtures,
+  exports financeiros, configuração, screenshots manuais e evidência QA.
+  `dist`, `coverage`, `test-results` e caches só são descartáveis após verificar
+  que são gerados e não são a única prova de um problema aberto.
+- Em falha de remoção, confirmar separadamente registro Git e presença física;
+  nunca presumir que ambos foram removidos juntos.
 
 ---
 

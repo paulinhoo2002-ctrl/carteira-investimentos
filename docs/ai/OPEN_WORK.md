@@ -2,9 +2,16 @@
 
 ## NOW
 
-- V264 BCB SGS request-contract hardening is merged to `main` as `10995f31d7ada0b7f8a02e6317813de0c21fc55d` (PR #415).
-- V265 QA harness resilience is in PR #416 on `feature/v265-qa-harness-resilience`, locally reconciled with governance merge `98420aea10b552264a729b8470d91ff129567640`; verify exact pushed-head CI/preview before readiness. Do not merge without explicit authorization.
+- PR #417 also contains the Skills-library audit: 38 local operational packages,
+  only four tracked Skill files, global-only Superpowers in this environment,
+  and optional missing references documented. Recheck exact-head CI/preview.
+  No Skills were installed or deleted.
+
+- V265 PR #416 is merged to `main` as `5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`.
 - Governance PR #414 is merged as `98420aea10b552264a729b8470d91ff129567640`.
+- Workspace audit removed 14 confirmed-empty orphan folders and three merged, clean worktrees with exact squash-tree equivalence. No branch was deleted. One empty residual parent is OS-locked; V264 source/dependency residue remains preserved.
+- Canonical local `main` is fast-forwarded to `origin/main` at `5a6a0a47`; all 335 untracked paths remain untouched. Git reports 25 garbage `tmp_obj_*` files and 169 unreachable commits; do not run GC/prune.
+- Documentation reconciliation is on `docs/workspace-worktree-lifecycle`; do not merge without explicit authorization. No evidence-backed, non-blocked V266 macro-scope was selected in this audit.
 - manter snapshots diários e acumular histórico confiável;
 - V263 financial/source as-of provenance is merged; preserve its semantics as BCB SGS retrieval is hardened in V264;
 - amadurecer dashboard e detalhes de renda fixa;
@@ -23,7 +30,7 @@
 
 ## NEXT CANDIDATE (readiness only)
 
-- Fixture-backed XP/BTG Import Center validation after the user supplies representative sanitized brokerage notes. V93 report intelligence and the old clean-state integration branch have no unique delta against current main; do not duplicate them.
+- Reassess V266 when a real dependency is satisfied or a concrete product/QA gap is evidenced. XP/BTG remains blocked on genuine sanitized notes; TWR/XIRR needs more history; MODE_B needs provider/business input. Reports and clean-state integration are already on main; do not duplicate them.
 
 ## BLOCKED_BY_USER_INPUT
 

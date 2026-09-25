@@ -1,12 +1,82 @@
 # Project State
 
+## Workspace / worktree audit — 2026-09-25
+
+- `origin/main=5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`; PR #416 (V265) está
+  CLOSED/MERGED nesse SHA. O `main` canônico começou quatro commits atrás e foi
+  atualizado por fast-forward após verificar zero colisões com os 335 caminhos
+  não rastreados; estes continuam preservados. O checkout terminou sincronizado
+  com `origin/main`, sem alterações rastreadas.
+- O inventário começou com 37 worktrees registradas. Após remover normalmente
+  as worktrees limpas/equivalentes de #414, #415 e #416, restam 34, incluindo
+  esta worktree documental. As worktrees internas em `.worktrees` continuam
+  registradas. Nenhuma branch local ou remota foi removida.
+- Quatorze diretórios órfãos comprovadamente vazios foram removidos sem
+  recursão. Pastas com arquivos, metadados `.git`, commits exclusivos ou
+  evidência ambígua foram preservadas. A worktree registrada
+  `v264-postmerge-audit` estava limpa e sem commits exclusivos; `git worktree
+  remove` retirou seu registro, mas falhou ao apagar a pasta física (`Invalid
+  argument`). O resíduo sem `.git` foi preservado, sem força ou limpeza manual.
+- Pastas não registradas restantes e conteúdo local do canonical permanecem
+  para revisão. Consulta de processos não encontrou consumidor além do próprio
+  shell da auditoria; uma segunda verificação por diretório foi limitada pela
+  permissão do host e, por isso, diretórios ambíguos não foram removidos.
+- Os 335 caminhos locais não rastreados do canonical incluem 139 arquivos
+  diretamente na raiz e diretórios de screenshots QA (79), ferramentas (71),
+  `local-imports` (19), docs (7), `.worktrees` (5), scripts (4) e testes (4),
+  além de diretórios de arquivo único. São evidência, dados locais e artefatos
+  heterogêneos; todos foram mantidos.
+- Órfãos com conteúdo mantidos: `.qa-state`, `v206-executive-evolution`,
+  `v222-allocation-intelligence`, `v245-import-center-2` e
+  `v264-postmerge-audit`. A pasta vazia de V265 continua bloqueada pelo sistema.
+- Uso aproximado observado: raiz oficial de worktrees 1.732 MiB; checkout
+  canônico (excluindo `.git`, `node_modules` e `.worktrees`) 800 MiB;
+  `node_modules` canônico 120 MiB; worktrees internas 168 MiB. O banco Git
+  reportou 25 arquivos temporários `tmp_obj_*` (~259 MiB). `git fsck --full
+  --no-reflogs --unreachable` encontrou 169 commits inalcançáveis (10.919
+  objetos no total). Nenhum objeto foi apagado; o risco de histórico
+  recuperável impede GC nesta missão.
+- Validação limpa em `origin/main`: modern 815/815; geral 249/249; builds
+  moderno/legado PASS; contrato QA 2/2; browser smoke 7 larguras PASS. `qa:all`
+  passa após iniciar o servidor oficial local (`qa:serve:legacy`) em loopback;
+  sem servidor, o smoke retorna `ERR_CONNECTION_REFUSED`. Nenhuma alteração de
+  produto, finanças, persistência ou dependências do projeto foi feita.
+- Governança proposta: usar somente a raiz externa para novas worktrees,
+  tratar `.worktrees` interno como legado, aplicar remoção pós-merge com gates
+  explícitos e preservar qualquer conteúdo duvidoso. A worktree #416 deixou
+  uma junction `node_modules` para o resíduo V264; a junction foi removida sem
+  tocar o alvo. A pasta pai vazia continua bloqueada pelo sistema. O resíduo
+  V264 inclui código-fonte, testes, docs, `Refs` e dependências e foi preservado.
+- A atualização documental está na branch `docs/workspace-worktree-lifecycle`;
+  merge permanece um gate humano separado.
+- V266 não foi iniciada: XP/BTG depende de fixtures reais sanitizadas; TWR/XIRR
+  depende de histórico suficiente; MODE_B aguarda decisão de provedor/negócio;
+  não há regressão mobile específica; Reports e clean-state estão integrados.
+  Nenhuma macrofase independente estava suficientemente evidenciada para
+  iniciar implementação nesta auditoria.
+
+## Skills library audit — 2026-09-25
+
+- Snapshot: 42 direct folders, 43 SKILL.md files, 38 physical operational
+  packages; caveman-stats cannot run without its two required hooks, and
+  banner-design has missing optional references.
+  Four operational Skill files are tracked; most of the library is
+  machine-local/ignored and must be rediscovered in each executor.
+- Superpowers is available through the global plugin in this session, not as a
+  local package under .agents/skills. No shim was created. Seven optional
+  Markdown links are missing in web-quality-audit/Mantis; banner-design also
+  lacks cited auxiliary references, and caveman-stats lacks its required hooks.
+  No package was deleted.
+- docs/ai/SKILL_OPERATIONAL_CATALOG.md now records classification and routing.
+  Changes are included in PR #417; merge remains unauthorized.
+
 ## V265 — QA harness resilience — 2026-09-25
 
 - Branch `feature/v265-qa-harness-resilience`, based on V264 merge `10995f31d7ada0b7f8a02e6317813de0c21fc55d`. This phase hardens only local QA infrastructure: the static test server now reads a file before sending HTTP 200 (so missing generated assets return 404 without crashing), supports an isolated CLI port, and has a regression test. QA scripts now include the missing `test:qa-harness` command and build `modern/dist` before browser smoke.
 - The supported local QA server is Node-based and bound to `127.0.0.1`; the previous Python server on this host accepted a connection but returned an empty response. A different process occupied port 4173 and was left untouched; validation used port 4174.
 - Validation after post-governance reconciliation: QA harness 2/2 (missing asset 404 followed by valid 200; sibling-prefix traversal denied), modern 815/815, general 249/249, modern/legacy builds PASS, `qa:all` PASS; browser smoke passed 390, 430, 768, 1366, 1440, 1536 and 1920 with no overflow, console/page errors or local request failures; diff-check PASS. Existing Vite/Node warnings remain unrelated.
 - No production application, financial logic, data, persistence, Firebase, imports, or tax code changed. `FINANCIAL_WRITE_COUNT=0`, `TAX_WRITE_COUNT=0` by scope. No authenticated portfolio QA was required or performed for this harness-only change.
-- PR #416 is OPEN. Its source head before reconciliation was `b3b06d47279ec58cf4d13d5554ac5b6505107760`; the branch now includes post-governance main `98420aea10b552264a729b8470d91ff129567640`. Query live GitHub/Vercel for final exact-head CI and preview after push. No merge is authorized or performed.
+- PR #416 closed as merged to `main` at `5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`; its exact merged tree was verified before worktree removal. No merge was performed during this workspace-audit mission.
 
 ## Post-V264 baseline — 2026-09-25
 
