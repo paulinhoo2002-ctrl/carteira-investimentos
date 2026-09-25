@@ -3,11 +3,13 @@ const fsp = require('node:fs/promises');
 const path = require('node:path');
 
 async function startLocalHttpServer(root, port = 0) {
+  const documentRoot = path.resolve(root);
   const server = http.createServer(async (req, res) => {
     try {
       const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const filePath = path.normalize(path.join(root, pathname === '/' ? '/index.html' : pathname));
-      if (!filePath.startsWith(root)) {
+      const filePath = path.resolve(documentRoot, pathname === '/' ? 'index.html' : `.${pathname}`);
+      const relativePath = path.relative(documentRoot, filePath);
+      if (relativePath === '..' || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
         res.writeHead(403);
         return res.end();
       }

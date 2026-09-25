@@ -21,18 +21,18 @@ O owner deve:
 
 ---
 
-## HERMES / CODEX / OPENCODE — ORIENTAÇÃO (NÃO REGRA RÍGIDA)
+## ROTEAMENTO DE AGENTES E MODELOS
 
-| AGENTE | BOM OWNER PARA |
-|--------|----------------|
-| **HERMES** | UI, UX, browser QA, features, testes locais, Git/PR/CI, tarefas que exigem iteração visual |
-| **CODEX** | Refatorações grandes, bugs difíceis, mudanças estruturais, verificação independente, financial/persistence/security review |
-| **OPENCODE** | Investigação read-only, exploração ampla do codebase, localizar origem de problemas, produzir findings para o owner |
+O roteamento normativo de agentes, modelos, disponibilidade e critérios de
+fallback está em [`../SKILLS_ROUTING.md`](../SKILLS_ROUTING.md). A rota padrão
+para engenharia normal é Hermes + NVIDIA API/Nemotron 3 Super quando realmente
+disponível; Codex + GPT-6 Sol é fallback conforme os critérios documentados,
+não uma preferência intercambiável.
 
-**IMPORTANTE**: Não transformar isso em regra rígida.
-- Se Codex já começou uma feature e está funcionando bem: **Codex permanece owner**
-- Se Hermes já começou: **Hermes permanece owner**
-- Não trocar agente sem motivo.
+O princípio de owner único permanece: o agente selecionado executa a tarefa de
+ponta a ponta. Não trocar de owner sem razão concreta, nem declarar que um
+agente/modelo indisponível foi usado. Preferências visuais e de revisão também
+seguem o router normativo.
 
 ---
 

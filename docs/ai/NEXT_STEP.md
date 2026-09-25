@@ -1,20 +1,19 @@
 # Next Step
 
-## Active — V265 QA harness resilience (2026-09-25)
+## Active — V265 QA harness resilience reconciliation (2026-09-25)
 
 - V263 is merged: PR #413 squash SHA `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
 - V264 PR #415 is CLOSED/MERGED as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`; its SGS 433 request-contract fix and existing financial invariants are on current `main`.
-- V265 is implemented on `feature/v265-qa-harness-resilience`: static QA server returns correct 404 responses without crashing; the regression contract is included in `test:qa-harness`; QA server uses Node on loopback; `qa:all` builds modern assets and runs the harness test before browser smokes.
-- Local validation: modern 815/815; general 249/249; builds and integrated `qa:all` PASS; seven browser-smoke widths passed without overflow or browser/network errors. Check GitHub/Vercel for the final PR head after push; no merge was performed.
-- Roadmap audit: Import Center is PARTIAL (Inter paths exist; XP/BTG remain `FIXTURE_REQUIRED` until real sanitized notes are provided); Reports Intelligence is COMPLETE on main (V93 branch is an ancestor, no unique delta); clean-state integration is already contained in main (branch is an ancestor); TWR/XIRR remains PARTIAL while history accumulates; corporate-events MODE_B is NOT_READY pending provider/business decision, with MODE_A remaining shadow/read-only; no specific mobile UX regression was evidenced in this audit; V264 fixed the identified SGS date-contract issue. Reliability/QA was selected because the server crash was reproduced and the `qa:all` test command was missing.
-- Governance PR #414 remains OPEN and unmerged; its branch is reconciled with current `origin/main`. At this checkpoint it is mergeable at `749ec33340ff6d17ee817eb6060d0e719bc0fe5f`, CI run `36155814932` passed, and Vercel deployment `dpl_7oqKtw6VENnQ49bBWN6aCXcAdt8e` is READY. Recheck live state before approval.
-- V265 PR #416 is OPEN; the implementation head was `ee05f0f90f7f85a0ec21040792f2e42c4d3f0945` before this documentation follow-up. Recheck final exact-head CI and preview after push.
-- Next candidate after V265: fixture-backed XP/BTG Import Center validation once the user supplies representative sanitized notes; until then, no broker support claim or fixture fabrication.
-- Do not merge PR #414 or the V265 PR without separate explicit human authorization.
+- V265 branch `feature/v265-qa-harness-resilience` now incorporates post-governance `origin/main` at `98420aea10b552264a729b8470d91ff129567640` through a normal merge; verify final PR head and checks live after push.
+- The static QA server returns 404 for missing assets without crashing, serves a valid follow-up request, and rejects sibling-prefix path traversal; `test:qa-harness` covers those contracts. Node QA server binds loopback; `qa:all` builds modern assets and runs harness tests before browser smokes.
+- Post-fix local evidence: focused harness 2/2, modern 815/815, general 249/249, modern/legacy builds and `qa:all` passed; all seven smoke widths had no overflow or browser/network errors. Verify CI and preview against the exact pushed head.
+- PR #414 governance was merged to main as `98420aea10b552264a729b8470d91ff129567640`.
+- Roadmap: XP/BTG fixture-backed validation remains blocked on genuine sanitized broker notes; Reports Intelligence and clean-state integration are already on main; TWR/XIRR remains partial while history accumulates; corporate-events MODE_B remains not ready pending provider/business decision. Do not fabricate fixtures or financial data.
+- Do not merge PR #416 without explicit human authorization.
 
-### Next macro-phase after V264 (readiness only)
+### Next macro-phase after V265 (readiness only)
 
-- The former V93 reports branch is already an ancestor of `origin/main`; do not create a duplicate reports integration phase. XP/BTG fixtures remain an explicit user-input dependency. Re-audit live project evidence before starting the next implementation phase.
+- Re-audit the roadmap after V265 is merged. XP/BTG fixtures remain an explicit user-input dependency; do not create duplicate Reports Intelligence or clean-state integration phases.
 
 ## V263 PR #413 — historical state (2026-09-25)
 

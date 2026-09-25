@@ -49,6 +49,32 @@ remote do projeto canônico. A raiz factual das Skills é
 `C:\Projetos\carteira-investimentos\.agents\skills`; o caminho adjacente
 `C:\Projetos\carteira-investimentos.agents\skills` não é canônico.
 
+## LEGACY Mandatory Agent Bootstrap
+
+Para toda missão substancial neste projeto:
+
+1. Execute o PROJECT IDENTITY GATE acima; o único workspace autorizado é
+   `C:\Projetos\carteira-investimentos`, incluindo worktrees registradas em
+   `C:\Projetos\carteira-investimentos.worktrees\`. Nunca leia, pesquise,
+   compare ou reutilize `C:\Projetos\carteira-2.0`.
+2. Carregue e use `Superpowers` como a primeira Skill, antes de qualquer outra
+   Skill especializada.
+3. Descubra o inventário real em
+   `C:\Projetos\carteira-investimentos\.agents\skills`; selecione apenas o
+   conjunto mínimo relevante e reavalie se o escopo mudar.
+4. Siga `docs/SKILLS_ROUTING.md` para agente/modelo, justificativa da escolha,
+   fallback, limites e campos de relatório. Esta preferência não permite
+   alegar que um provider/modelo foi usado quando ele não estiver disponível.
+5. Use a documentação versionada do repositório como continuidade durável,
+   não o histórico de chat. A memória canônica de projeto permanece
+   `docs/ai/PROJECT_MEMORY.md`.
+6. `MERGE_AUTHORIZATION=false` por padrão. Merge, squash merge e auto-merge
+   exigem autorização humana explícita e inequívoca para a PR identificada.
+
+O handoff deve registrar `SKILLS_CONSIDERED`, `SKILLS_USED`,
+`SKILLS_NOT_USED`, `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED` e
+`SKILL_GAPS_FOUND`, além do agente/modelo recomendado e motivo da escolha.
+
 ## AGENT STARTUP PROTOCOL
 
 Ao iniciar uma tarefa relevante neste repositório:
@@ -56,9 +82,9 @@ Ao iniciar uma tarefa relevante neste repositório:
 1. Leia este arquivo e `docs/ai/PROJECT_MEMORY.md`.
 2. Consulte `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`.
 3. Confirme workspace, branch, HEAD, `origin/main` e working tree.
-4. Execute o PROJECT IDENTITY GATE e selecione Skills pelo problema, não
-   mecanicamente (ver `docs/ai/SKILL_ROUTER.md`).
-5. Considere sempre Superpowers e selecione somente o menor conjunto relevante.
+4. Use primeiro Superpowers; descubra Skills locais e classifique a missão
+   conforme `docs/SKILLS_ROUTING.md` e `docs/ai/SKILL_ROUTER.md`.
+5. Selecione somente o menor conjunto relevante; reavalie se a categoria mudar.
 6. Execute a mudança com escopo controlado e preserve áreas protegidas.
 7. Valide com os testes, build e navegador aplicáveis.
 8. Registre decisões duradouras na memória/documentação apropriada.
@@ -310,20 +336,20 @@ financeira/persistência/Git → PROJECT_MEMORY → DECISIONS → SKILL_ROUTER �
 SKILL.md → preferência da missão. Superpowers nunca autoriza writes, merge,
 deploy ou mudança protegida.
 
-Políticas: `SUPERPOWERS_ALWAYS_CONSIDERED=true`,
+Políticas: `MANDATORY_FIRST_SKILL=Superpowers`,
 `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`, `REUSE_GREEN_EVIDENCE=true`,
 `SAME_FAILURE_TWICE=PIVOT` e `FUTURE_MISSIONS_DO_NOT_REPEAT_STABLE_GOVERNANCE=true`.
 
 ## PERMANENT SKILLS POLICY — SUPERPOWERS_FIRST
 
-`SUPERPOWERS_FIRST=true`.
+`MANDATORY_FIRST_SKILL=Superpowers`.
 
 Antes de implementar, investigar, depurar, revisar código, fazer QA,
 refatorar ou planejar uma mudança técnica, qualquer executor deve confirmar a
-identidade do projeto; ler este arquivo, `docs/ai/PROJECT_MEMORY.md` e
-`docs/ai/SKILL_ROUTING.md`; descobrir as Skills reais; localizar e ler
-Superpowers quando disponível; usá-la como camada-base/orquestradora; e então
-selecionar somente as Skills especializadas relevantes.
+identidade do projeto e carregar/usar Superpowers primeiro. Em seguida deve
+ler a memória canônica, descobrir as Skills reais em `.agents/skills` e
+selecionar somente as especializadas relevantes, conforme
+`docs/SKILLS_ROUTING.md`.
 
 Se a categoria mudar, registrar `SKILL_REEVALUATED=true` e reavaliar. Não
 inventar Skills nem ampliar escopo por causa de uma Skill. Superpowers é uma
@@ -333,8 +359,8 @@ destrutivo. A autorização da missão e os contratos do projeto prevalecem.
 
 Esta política é independente de chat, memória de sessão, modelo ou executor;
 Codex, Hermes, OpenCode e agentes genéricos convergem para estes arquivos. Se
-Superpowers não existir, usar o melhor fallback disponível e registrar a
-limitação.
+Superpowers não estiver disponível, registrar `SKILL_GAPS_FOUND`, explicar a
+limitação e só então usar o melhor fallback de processo disponível.
 
 Handoff mínimo: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
 `SUPERPOWERS_USED`, `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,

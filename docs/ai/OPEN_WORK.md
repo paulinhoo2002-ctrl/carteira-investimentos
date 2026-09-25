@@ -3,7 +3,8 @@
 ## NOW
 
 - V264 BCB SGS request-contract hardening is merged to `main` as `10995f31d7ada0b7f8a02e6317813de0c21fc55d` (PR #415).
-- V265 QA harness resilience is in PR #416 on `feature/v265-qa-harness-resilience`; verify final exact-head CI/preview before declaring readiness. Do not merge without explicit authorization.
+- V265 QA harness resilience is in PR #416 on `feature/v265-qa-harness-resilience`, locally reconciled with governance merge `98420aea10b552264a729b8470d91ff129567640`; verify exact pushed-head CI/preview before readiness. Do not merge without explicit authorization.
+- Governance PR #414 is merged as `98420aea10b552264a729b8470d91ff129567640`.
 - manter snapshots diários e acumular histórico confiável;
 - V263 financial/source as-of provenance is merged; preserve its semantics as BCB SGS retrieval is hardened in V264;
 - amadurecer dashboard e detalhes de renda fixa;

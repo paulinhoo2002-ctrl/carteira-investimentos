@@ -2,21 +2,21 @@
 
 ## V265 — QA harness resilience (2026-09-25)
 
-- V265 is scoped to repository QA tooling. `tests/local-http-server.js` previously sent HTTP 200 before reading the asset; a missing generated file then attempted a second `writeHead(404)` and crashed with `ERR_HTTP_HEADERS_SENT`. The server now reads first and returns 404 safely. Its CLI binds only to `127.0.0.1`, accepts a selected port (including 0 for ephemeral tests), and is used by the legacy QA server scripts.
-- Added `test:qa-harness` for the real server CLI contract. `qa:all`/`qa:all-safe` build modern assets before the harness test and browser smoke. Validation: harness 1/1, modern 815/815, general 249/249, modern and legacy builds and `qa:all` PASS; browser smoke 390/430/768/1366/1440/1536/1920 passed with no page overflow, console/page errors or local request failures.
+- V265 is scoped to repository QA tooling. `tests/local-http-server.js` previously sent HTTP 200 before reading the asset; a missing generated file then attempted a second `writeHead(404)` and crashed with `ERR_HTTP_HEADERS_SENT`. The server now reads first and returns 404 safely. Its root containment check uses `path.relative`, preventing sibling-prefix traversal. The CLI binds only to `127.0.0.1`, accepts a selected port (including 0 for ephemeral tests), and is used by the legacy QA server scripts.
+- Added `test:qa-harness` contracts for missing asset 404 plus valid follow-up 200, and rejection of a real sibling-prefix traversal attempt. `qa:all`/`qa:all-safe` build modern assets before the harness tests and browser smoke. Post-fix validation: harness 2/2, modern 815/815, general 249/249, modern and legacy builds and `qa:all` PASS; browser smoke 390/430/768/1366/1440/1536/1920 passed with no page overflow, console/page errors or local request failures.
 - On the validation machine, another Python listener occupied 4173 and returned an empty response; it was left untouched. The new Node server was validated on 4174. Existing Vite/Node warnings are known and did not fail the gates.
 - No application, financial, persistence, Firebase, tax, or import behavior changed; financial/tax writes were zero by scope. No real portfolio or credentials were used. Check live PR/CI/Vercel for exact current head; no merge was performed.
-- PR #416 is open on `feature/v265-qa-harness-resilience`; implementation commit `ee05f0f90f7f85a0ec21040792f2e42c4d3f0945` is not necessarily the final head after documentation. Recheck final exact-head CI and Vercel before readiness claims.
+- PR #416 is open on `feature/v265-qa-harness-resilience`; its pre-reconciliation source head was `b3b06d47279ec58cf4d13d5554ac5b6505107760`. The branch now incorporates governance main `98420aea10b552264a729b8470d91ff129567640`; recheck live PR/CI/Vercel after the reconciliation push before readiness claims.
 - Roadmap decision: V93 reports and `integration/clean-state-v1` are ancestors of current `origin/main`, so no duplicate phase. XP/BTG remain fixture-required, TWR/XIRR is still collecting history, and MODE_B awaits provider/business choice. Revisit fixture-backed XP/BTG only after real sanitized notes are supplied.
 
-## V264 — BCB SGS request contract (2026-09-25)
+## V264 — BCB SGS request contract (2026-09-25; merged)
 
 - V263 PR #413 was squash-merged on main as `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`; V264 starts from that exact merge. V264 fixes the existing SGS 433 request boundary: inclusive month ranges now serialize as complete `DD/MM/YYYY` dates (first day of start month, last day of end month), with strict Gregorian validation before fetch. `07/2022` is rejected locally instead of sent as an invalid request date.
 - The official BCB endpoint returned HTTP 200 for July 2022 with observation `01/07/2022` and for Aug–Sep 2026 with only the published August observation. The single-month September 2026 probe produced a transient gateway 502 in one direct request; a prior probe returned BCB 404 `Value(s) not found`. The fetcher maps that explicit no-observation response to `EMPTY_RESPONSE` (with HTTP status), while other HTTP errors remain `PROVIDER_HTTP_ERROR`; network timeout remains `FETCH_FAILED`. No failure or empty result becomes zero.
 - SGS 433 response dates `DD/MM/YYYY` are normalized to month keys; prior `MM/YYYY` response payloads remain accepted for compatibility. `sourceAsOf` is the last returned observation only, not a financial valuation date. No IPCA+ security valuation, formula, manual fixed-income authority, persistence, or write path changed. Financial/tax writes: 0.
 - Focused SGS contract tests cover calendar/leap-year bounds, invalid inputs with zero fetches, correct query serialization, provider date parsing, legacy response compatibility, HTTP/no-data/malformed/network failures. Final local runs: modern suite 815/815, general suite 249/249, modern and legacy builds PASS, `git diff --check` PASS. CI run `36152132436` and Vercel deployment `dpl_Ea7CgrzQ1KEVXtQSr4uvrDcnJppk` passed/READY on the then-current PR head; rerun exact-head checks after any later commit. A fresh worktree requires `build:modern` before `npm test` because legacy browser smoke tests serve generated modern assets.
-- V264 PR #415 was squash-merged to `main` as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`.
-- PR #414 remains open and unmerged; its branch was later reconciled with current `origin/main`. At this checkpoint it was mergeable at head `749ec33340ff6d17ee817eb6060d0e719bc0fe5f`, CI run `36155814932` succeeded, and Vercel deployment `dpl_7oqKtw6VENnQ49bBWN6aCXcAdt8e` was READY. Recheck live state before approval.
+- V264 PR #415 was squash-merged to `main` as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`. A clean worktree at that exact origin/main passed modern 815/815, general 249/249, modern/legacy builds, and diff-check.
+- Governance PR #414 was merged as `98420aea10b552264a729b8470d91ff129567640`; its permanent routing and project-identity rules are now canonical on main.
 
 ## V263 — Financial As-Of Provenance Protocol (2026-09-25)
 
@@ -92,16 +92,19 @@
 - `EXPECTED_REMOTE=https://github.com/paulinhoo2002-ctrl/carteira-investimentos.git`.
 - Em qualquer mismatch: `PROJECT_IDENTITY_MATCH=false`,
   `STATUS=BLOCKED_WRONG_PROJECT` e `STOP_IMMEDIATELY=true`.
-- `docs/ai/SKILL_ROUTER.md` é a fonte versionada e autoritativa do roteamento;
-  uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
+- `docs/SKILLS_ROUTING.md` é a política versionada de agente/modelo e boot;
+  `docs/ai/SKILL_ROUTER.md` é o roteador técnico de Skills por categoria.
+  Uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
 - `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`.
-- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; Superpowers não substitui identidade,
-  segurança financeira, persistência, Git ou gates humanos.
+- `MANDATORY_FIRST_SKILL=Superpowers`; carregar e usar primeiro quando
+  disponível. Superpowers não substitui identidade, segurança financeira,
+  persistência, Git ou gates humanos.
 
 Boot mínimo independente do chat: identity gate → `AGENTS.md` →
-`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → `SKILL_ROUTER.md` →
-descoberta em `.agents/skills` → consideração de Superpowers → menor conjunto
-de Skills relevante.
+`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → descoberta e uso de
+Superpowers → inventário físico `.agents/skills` → classificação → menor
+conjunto de Skills relevante em `docs/SKILLS_ROUTING.md` e
+`docs/ai/SKILL_ROUTER.md`.
 
 ## V197 durable boot summary
 
@@ -118,7 +121,7 @@ de Skills relevante.
 - QA: `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated`,
   CDP `127.0.0.1:9233`, `protectedReadOnlyQa=1`, zero writes.
 - Git: worktree por objetivo, staging seletivo, sem reset/restore/clean/stash/rebase/force push.
-- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
+- `MANDATORY_FIRST_SKILL=Superpowers`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
   `REUSE_GREEN_EVIDENCE=true`; `SAME_FAILURE_TWICE=PIVOT`.
 
 Boot links: [`AGENTS.md`](../../AGENTS.md), [`NEXT_STEP.md`](NEXT_STEP.md),
@@ -1396,14 +1399,27 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 
 ## Decisão permanente — SUPERPOWERS_FIRST
 
-- `SUPERPOWERS_FIRST=true`.
+- `MANDATORY_FIRST_SKILL=Superpowers` e `SUPERPOWERS_FIRST=true`.
 - Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
-- Autoridade: `AGENTS.md`, `docs/SKILLS_ROUTING.md` e
-  `docs/ai/SKILL_ROUTING.md` versionados no repositório.
+- Processo detalhado de agente/modelo e Skills: `docs/SKILLS_ROUTING.md`;
+  roteamento técnico por categoria: `docs/ai/SKILL_ROUTER.md`;
+  governança de execução: `AGENTS.md`.
 - Razão: o roteamento de processo não depende de memória de chat, sessão,
   modelo ou executor específico.
+- Hermes/NVIDIA API com Nemotron 3 Super é a rota preferencial para engenharia
+  normal; Ultra 550B A55B para tarefas difíceis/grandes/noturnas; Kimi K3 para
+  UI visual/mobile; GLM-5.3 para revisão independente. Codex/GPT-6 Sol é
+  fallback conforme indisponibilidade ou falha repetida da rota preferencial,
+  não por fricção técnica comum isolada. Toda disponibilidade deve ser
+  verificada no ambiente; nunca alegar execução/modelo indisponível.
+- Cada missão relevante registra agente/modelo recomendado e selecionado,
+  justificativa e campos de Skills; selecionar apenas o menor conjunto
+  especializado necessário após Superpowers e descoberta real do inventário.
 - Fallback: se Superpowers não existir, usar as melhores Skills disponíveis
   sem bloquear automaticamente a missão e registrar a limitação.
 - Limite: Skills orientam o processo, mas não autorizam merge, deploy,
   alterações cloud/financeiras, persistência, schema, secrets ou ações
   destrutivas.
+- `MERGE_AUTHORIZATION=false` por padrão; merge exige autorização humana
+  explícita e inequívoca para a PR correta. Commit, push e PR continuam sujeitos
+  à autorização da missão e ao fluxo do repositório.

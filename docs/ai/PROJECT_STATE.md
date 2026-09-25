@@ -4,17 +4,17 @@
 
 - Branch `feature/v265-qa-harness-resilience`, based on V264 merge `10995f31d7ada0b7f8a02e6317813de0c21fc55d`. This phase hardens only local QA infrastructure: the static test server now reads a file before sending HTTP 200 (so missing generated assets return 404 without crashing), supports an isolated CLI port, and has a regression test. QA scripts now include the missing `test:qa-harness` command and build `modern/dist` before browser smoke.
 - The supported local QA server is Node-based and bound to `127.0.0.1`; the previous Python server on this host accepted a connection but returned an empty response. A different process occupied port 4173 and was left untouched; validation used port 4174.
-- Validation on the implementation worktree: QA harness 1/1, modern 815/815, general 249/249, modern/legacy builds PASS, `qa:all` PASS; browser smoke passed 390, 430, 768, 1366, 1440, 1536 and 1920 with no overflow, console/page errors or local request failures; diff-check PASS. Existing Vite/Node warnings remain unrelated.
+- Validation after post-governance reconciliation: QA harness 2/2 (missing asset 404 followed by valid 200; sibling-prefix traversal denied), modern 815/815, general 249/249, modern/legacy builds PASS, `qa:all` PASS; browser smoke passed 390, 430, 768, 1366, 1440, 1536 and 1920 with no overflow, console/page errors or local request failures; diff-check PASS. Existing Vite/Node warnings remain unrelated.
 - No production application, financial logic, data, persistence, Firebase, imports, or tax code changed. `FINANCIAL_WRITE_COUNT=0`, `TAX_WRITE_COUNT=0` by scope. No authenticated portfolio QA was required or performed for this harness-only change.
-- PR #416 is OPEN. The implementation commit is `ee05f0f90f7f85a0ec21040792f2e42c4d3f0945`; query live GitHub/Vercel for final exact-head CI and preview after the documentation follow-up. No merge is authorized or performed.
+- PR #416 is OPEN. Its source head before reconciliation was `b3b06d47279ec58cf4d13d5554ac5b6505107760`; the branch now includes post-governance main `98420aea10b552264a729b8470d91ff129567640`. Query live GitHub/Vercel for final exact-head CI and preview after push. No merge is authorized or performed.
 
-## V264 — BCB SGS request contract — 2026-09-25
+## Post-V264 baseline — 2026-09-25
 
 - V263 PR #413 was squash-merged on `main` as `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
 - V264 was squash-merged by PR #415 as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`. The SGS 433 fetcher validates canonical `YYYY-MM` bounds and sends inclusive `DD/MM/YYYY` dates; invalid ranges fail before fetch. Response observations in `DD/MM/YYYY` normalize to month keys; the former `MM/YYYY` response shape remains accepted.
 - Official read-only smoke: July 2022 returned HTTP 200 and `01/07/2022`; Aug–Sep 2026 returned HTTP 200 with August only. A September-only direct request had a transient HTTP 502; the provider has also returned its explicit 404 `Value(s) not found` for unpublished periods. That explicit no-data payload is `EMPTY_RESPONSE`, not zero; other HTTP errors are explicit provider errors.
 - No IPCA+ automatic security valuation, financial formula, manual fixed-income authority, persistence, or financial/tax write behavior changed. Post-merge validation on `origin/main` in a clean worktree: modern 815/815, general 249/249, modern and legacy builds PASS, diff-check PASS.
-- PR #414 remains a separate OPEN governance PR, reconciled with current `origin/main`. At the 2026-09-25 checkpoint, head `749ec33340ff6d17ee817eb6060d0e719bc0fe5f` was mergeable, CI run `36155814932` succeeded and Vercel deployment `dpl_7oqKtw6VENnQ49bBWN6aCXcAdt8e` was READY. No PR merge was performed.
+- Governance PR #414 was subsequently merged; current main is `98420aea10b552264a729b8470d91ff129567640` and includes the permanent governance rules.
 
 ## V263 PR #413 — Financial As-Of Provenance (Renda Fixa) — historical record
 
