@@ -60,7 +60,7 @@ conta, token ou carteira real em CI.
 
 - `npm.cmd run qa:browser:start`: inicia ou detecta o Chrome QA.
 - `npm.cmd run qa:browser:check`: verifica CDP, servidor e superfície.
-- `npm.cmd run qa:smoke`: smoke local sem autenticação, sem dados reais.
+- `npm.cmd run qa:smoke`: smoke local sem autenticação, sem dados reais. **Auto-inicia servidor QA local se QA_ORIGIN não estiver definido**.
 - `npm.cmd run qa:auth-smoke`: prova autenticada native-click em dry-run.
 - `npm.cmd run qa:phase4h-native`: repete três cliques nativos dry-run e
   valida refresh, hard refresh e reabertura de rota.
@@ -68,8 +68,17 @@ conta, token ou carteira real em CI.
   exercita o callback oficial de read-back. Valida o contrato
   `{ok,value} -> value:string|null -> parseStoredState()`, sem snapshot, save,
   sync ou escrita real.
-- `npm.cmd run qa:all`: suites não destrutivas, builds e guards locais.
+- `npm.cmd run qa:all`: suites não destrutivas, builds e guards locais. **Auto-inicia servidor QA local quando QA_ORIGIN não está definido**.
 - `npm.cmd run qa:all-safe`: alias explícito para a suíte não destrutiva.
+
+### Sobre QA_ORIGIN
+
+O comando `qa:smoke` (e portanto `qa:all`) agora suporta execução autônoma:
+
+- **Sem QA_ORIGIN**: Inicia automaticamente o servidor QA local em porta efêmera (OS-assigned), aguarda prontidão, executa smoke e encerra o servidor.
+- **Com QA_ORIGIN definido** (ex: `QA_ORIGIN=http://127.0.0.1:4173 npm run qa:smoke`): Usa a origem fornecida, **não** inicia servidor local. Mantém compatibilidade total com modo manual de servidor.
+
+O servidor local reutiliza a implementação existente `tests/local-http-server.js` com hardening V265 (contenção de path, 403 em traversal, porta efêmera via `--port 0`).
 
 ## Handoff entre agentes
 
