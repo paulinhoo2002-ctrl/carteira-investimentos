@@ -11,7 +11,7 @@
 
 ### Next macro-phase after V264 (readiness only)
 
-- Prefer Reports Intelligence integration review after V264: an existing V93 reports branch is recorded as ready for review, so verify its current relationship to main and its user-facing value before opening work. Import Center remains valuable but XP/BTG productionization is blocked on sanitized broker fixtures; do not fabricate fixtures. No next phase is started here.
+- The former V93 reports branch is already an ancestor of `origin/main` (main is 56 commits ahead; the branch has no unique diff), and `portfolio-report-model.js` plus its tests are present on main; do not create a duplicate reports integration phase. Best next reliability phase: fixture-backed Import Center hardening for XP/BTG, beginning with obtaining sanitized representative notes through the approved user flow. Those fixtures are still a dependency; do not fabricate them. No next phase is started here.
 
 ## V263 PR #413 — current state (2026-09-25)
 

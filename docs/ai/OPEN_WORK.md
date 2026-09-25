@@ -4,7 +4,7 @@
 
 - V264 BCB SGS request-contract hardening is in PR #415, OPEN. CI and Vercel passed on the implementation head; use live PR checks for the documentation follow-up. Do not merge without explicit authorization.
 - manter snapshots diários e acumular histórico confiável;
-- melhorar frescor/valuation de renda fixa e registrar as-of real (V263 em review);
+- V263 financial/source as-of provenance is merged; preserve its semantics as BCB SGS retrieval is hardened in V264;
 - amadurecer dashboard e detalhes de renda fixa;
 - manter cobertura pública de eventos e Import Center.
 
@@ -21,7 +21,7 @@
 
 ## NEXT CANDIDATE (readiness only)
 
-- V264 BCB SGS IPCA request-contract hardening: validate the official date format before changing the existing month-only `dataInicial` serialization. Preserve IPCA+ `UNSUPPORTED_IPCA_EXACT`, manual Renda Fixa authority, and no-fabricated-data behavior. No phase has been authorized or started.
+- After V264 merge/release, prepare fixture-backed Import Center hardening. Sanitized XP/BTG notes are required; do not invent fixtures or enable unsupported imports without them. V93 report intelligence is already present on main, so do not duplicate that phase.
 
 ## BLOCKED_BY_USER_INPUT
 
