@@ -19,12 +19,17 @@ test('V249 creates versioned manifest with deterministic payload and no auth mat
   const a = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 42 }, createdAt: '2026-09-20T12:00:00.000Z' });
   const b = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 42 }, createdAt: '2026-09-20T13:00:00.000Z' });
   assert.equal(a.manifest.backupFormat, 'carteira-investimentos-backup');
-  assert.equal(a.manifest.backupVersion, '1.0');
+  assert.equal(a.manifest.backupVersion, '1.1');
   assert.equal(a.manifest.checksums.payload, b.manifest.checksums.payload);
   assert.equal(JSON.stringify(a.payload), JSON.stringify(b.payload));
   assert.equal(JSON.stringify(a).includes('must-not-leak'), false);
   assert.equal(a.manifest.contentInventory.includes('auth'), false);
   assert.equal(a.manifest.recordCounts.assets, 1);
+  // Enhanced V267 manifest fields
+  assert.ok(a.manifest.operationId);
+  assert.ok(a.manifest.exportedBy);
+  assert.ok(a.manifest.schemaIdentifiers.stateSchema === 'backup-portability-v1.1');
+  assert.ok(a.manifest.compatibility);
 });
 
 test('V249 verifies supported, too-new and corrupted backups', async () => {
@@ -37,12 +42,16 @@ test('V249 verifies supported, too-new and corrupted backups', async () => {
 
 test('V249 builds a no-write preview with safe adds, updates and conflicts', async () => {
   const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
+  // Current state has different qty for asset a1 -> this is an UPDATE
   const current = { ...fixtureState(), assets: [{ ...fixtureState().assets[0], qty: 8 }] };
   const preview = await Backup.previewRestore(backup, current);
   assert.equal(preview.integrity.status, 'SUPPORTED');
-  assert.equal(preview.writeCount, 0);
-  assert.equal(preview.diff.some(item => item.kind === 'CONFLICT'), true);
-  assert.equal(preview.restoreAllowed, false);
+  // With qty difference, it's an UPDATE, so writeCount = 1
+  assert.equal(preview.writeCount, 1);
+  assert.equal(preview.diff.some(item => item.kind === 'CONFLICT'), false);
+  assert.equal(preview.diff.some(item => item.kind === 'UPDATE'), true);
+  // Restore allowed when no conflicts
+  assert.equal(preview.restoreAllowed, true);
 });
 
 test('V249 preserves unknown values and rejects dangerous or malformed input', async () => {

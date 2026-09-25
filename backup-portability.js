@@ -4,12 +4,19 @@
   if (root) root.BackupPortability = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const FORMAT = 'carteira-investimentos-backup';
-  const VERSION = '1.0';
-  const MAX_SUPPORTED_MAJOR = 1;
-  const SENSITIVE_KEY = /(token|secret|password|passwd|credential|cookie|session|storage|authorization|access[_-]?key|refresh[_-]?token|private[_-]?key)/i;
-  const DANGEROUS_KEY = new Set(['__proto__', 'prototype', 'constructor']);
-  const RECORD_KEYS = ['wallets', 'assets', 'aportes', 'proventos', 'rfEvents', 'manualFixedIncome', 'manualOverrides', 'goals', 'importHistory', 'historical', 'corporateEvents', 'assetLineage', 'settings'];
-  const MAX_BACKUP_BYTES = 25 * 1024 * 1024;
+    const VERSION = '1.1';
+    const MAX_SUPPORTED_MAJOR = 1;
+    const SENSITIVE_KEY = /(token|secret|password|passwd|credential|cookie|session|storage|authorization|access[_-]?key|refresh[_-]?token|private[_-]?key)/i;
+    const DANGEROUS_KEY = new Set(['__proto__', 'prototype', 'constructor']);
+    const RECORD_KEYS = ['wallets', 'assets', 'aportes', 'proventos', 'rfEvents', 'manualFixedIncome', 'manualOverrides', 'goals', 'importHistory', 'historical', 'corporateEvents', 'assetLineage', 'settings'];
+    const MAX_BACKUP_BYTES = 25 * 1024 * 1024;
+
+    // Schema identifiers for compatibility checking
+    const SCHEMA_VERSIONS = {
+      'legacy-civ5-compatible': { major: 1, minor: 0, description: 'Legacy civ5 localStorage format' },
+      'legacy-civ5-cfg-compatible': { major: 1, minor: 0, description: 'Legacy civ5 config format' },
+      'backup-portability-v1.1': { major: 1, minor: 1, description: 'V267 enhanced backup format with manifest' }
+    };
 
   function isRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
   function clone(value) { return value === undefined ? undefined : JSON.parse(JSON.stringify(value)); }
@@ -143,26 +150,38 @@
     if (Array.isArray(state.wallets) && state.activeWalletId && !state.wallets.some(wallet => String(wallet.id) === String(state.activeWalletId))) return 'UNKNOWN_ACTIVE_WALLET';
     return null;
   }
-  async function createBackup({ state = {}, config = {}, metadata = {}, createdAt = new Date().toISOString(), appVersion = 'unknown' } = {}) {
-    const safeState = sourceState({ state });
-    const safeConfig = normalize(config, { stripSensitive: true });
-    const payload = { state: safeState, config: safeConfig, metadata: normalize(metadata, { stripSensitive: true }) };
-    const payloadHash = await sha256(canonical(payload));
-    return {
-      manifest: {
-        backupFormat: FORMAT,
-        backupVersion: VERSION,
-        appVersion: String(appVersion),
-        createdAt: String(createdAt),
-        exportMode: 'LOCAL_ONLY',
-        contentInventory: inventory(safeState),
-        recordCounts: counts(safeState),
-        schemaIdentifiers: { state: 'legacy-civ5-compatible', config: 'legacy-civ5-cfg-compatible' },
-        checksums: { algorithm: 'SHA-256', payload: payloadHash }
-      },
-      payload
-    };
-  }
+  async function createBackup({ state = {}, config = {}, metadata = {}, createdAt = new Date().toISOString(), appVersion = 'unknown', operationId = crypto.randomUUID ? crypto.randomUUID() : 'op-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) } = {}) {
+      const safeState = sourceState({ state });
+      const safeConfig = normalize(config, { stripSensitive: true });
+      const payload = { state: safeState, config: safeConfig, metadata: normalize(metadata, { stripSensitive: true }) };
+      const payloadHash = await sha256(canonical(payload));
+      return {
+        manifest: {
+          backupFormat: FORMAT,
+          backupVersion: VERSION,
+          appVersion: String(appVersion),
+          createdAt: String(createdAt),
+          exportMode: 'LOCAL_ONLY',
+          operationId: String(operationId),
+          exportedBy: navigator?.userAgent ? 'browser' : 'node',
+          contentInventory: inventory(safeState),
+          recordCounts: counts(safeState),
+          schemaIdentifiers: {
+            state: 'legacy-civ5-compatible',
+            config: 'legacy-civ5-cfg-compatible',
+            stateSchema: 'backup-portability-v1.1',
+            configSchema: 'backup-portability-v1.1'
+          },
+          checksums: { algorithm: 'SHA-256', payload: payloadHash },
+          compatibility: {
+            minSupportedMajor: 1,
+            currentMajor: 1,
+            legacyFormatsRecognized: ['legacy-civ5-compatible']
+          }
+        },
+        payload
+      };
+    }
   function parseJson(raw) {
     if (typeof raw !== 'string') return raw;
     return JSON.parse(raw, (key, value) => {
@@ -171,27 +190,84 @@
     });
   }
   async function verifyBackup(raw) {
-    if (typeof raw === 'string' && new TextEncoder().encode(raw).byteLength > MAX_BACKUP_BYTES) return { status: 'CORRUPTED', error: 'BACKUP_TOO_LARGE' };
-    let backup;
-    try { backup = parseJson(raw); } catch (error) { return { status: 'CORRUPTED', error: error.message }; }
-    if (!isRecord(backup) || !isRecord(backup.manifest) || !isRecord(backup.payload)) return { status: 'UNSUPPORTED', error: 'INVALID_CONTAINER' };
-    if (backup.manifest.backupFormat !== FORMAT) return { status: 'UNSUPPORTED', error: 'UNKNOWN_FORMAT' };
-    const major = Number(String(backup.manifest.backupVersion || '').split('.')[0]);
-    if (!Number.isInteger(major) || major > MAX_SUPPORTED_MAJOR) return { status: 'TOO_NEW', backup };
-    if (major < MAX_SUPPORTED_MAJOR) return { status: 'MIGRATABLE', backup };
-    try { assertSafeObject(backup); } catch (error) { return { status: 'CORRUPTED', error: error.message }; }
-    const expected = String(backup.manifest.checksums?.payload || '');
-    if (!/^[a-f0-9]{64}$/.test(expected)) return { status: 'CORRUPTED', error: 'MISSING_CHECKSUM' };
-    const actual = await sha256(canonical(backup.payload));
-    if (actual !== expected) return { status: 'CORRUPTED', error: 'CHECKSUM_MISMATCH', expected, actual };
-    const normalizedBackup = { ...backup, payload: { ...backup.payload, state: normalizeFinancialDates(backup.payload.state) } };
-    const stateError = validateState(normalizedBackup.payload.state);
-    if (stateError) return { status: 'CORRUPTED', error: stateError };
-    const expectedCounts = backup.manifest.recordCounts || {};
-    const actualCounts = counts(normalizedBackup.payload.state);
-    for (const key of Object.keys(actualCounts)) if (expectedCounts[key] !== actualCounts[key]) return { status: 'CORRUPTED', error: `COUNT_MISMATCH:${key}` };
-    return { status: 'SUPPORTED', backup: normalizedBackup, checksum: actual };
-  }
+      if (typeof raw === 'string' && new TextEncoder().encode(raw).byteLength > MAX_BACKUP_BYTES) return { status: 'CORRUPTED', error: 'BACKUP_TOO_LARGE' };
+      let backup;
+      try { backup = parseJson(raw); } catch (error) { return { status: 'CORRUPTED', error: error.message }; }
+      if (!isRecord(backup) || !isRecord(backup.manifest) || !isRecord(backup.payload)) return { status: 'UNSUPPORTED', error: 'INVALID_CONTAINER' };
+      if (backup.manifest.backupFormat !== FORMAT) return { status: 'UNSUPPORTED', error: 'UNKNOWN_FORMAT' };
+
+      const version = String(backup.manifest.backupVersion || '');
+      const major = Number(version.split('.')[0]);
+      const minor = Number(version.split('.')[1] || '0');
+      if (!Number.isInteger(major) || major > MAX_SUPPORTED_MAJOR) return { status: 'TOO_NEW', backup };
+      if (major < MAX_SUPPORTED_MAJOR) return { status: 'MIGRATABLE', backup };
+
+      try { assertSafeObject(backup); } catch (error) { return { status: 'CORRUPTED', error: error.message }; }
+      const expected = String(backup.manifest.checksums?.payload || '');
+      if (!/^[a-f0-9]{64}$/.test(expected)) return { status: 'CORRUPTED', error: 'MISSING_CHECKSUM' };
+      const actual = await sha256(canonical(backup.payload));
+      if (actual !== expected) return { status: 'CORRUPTED', error: 'CHECKSUM_MISMATCH', expected, actual };
+
+      const normalizedBackup = { ...backup, payload: { ...backup.payload, state: normalizeFinancialDates(backup.payload.state) } };
+      const stateError = validateState(normalizedBackup.payload.state);
+      if (stateError) return { status: 'CORRUPTED', error: stateError };
+
+      // Schema validation
+            const stateSchema = backup.manifest.schemaIdentifiers?.stateSchema;
+            const configSchema = backup.manifest.schemaIdentifiers?.configSchema;
+            const schemaWarnings = [];
+
+            // Check state schema
+            if (stateSchema) {
+              if (SCHEMA_VERSIONS[stateSchema]) {
+                const schemaInfo = SCHEMA_VERSIONS[stateSchema];
+                if (schemaInfo.major > MAX_SUPPORTED_MAJOR) {
+                  schemaWarnings.push(`STATE_SCHEMA_FUTURE:${stateSchema}`);
+                }
+              } else {
+                // Unknown schema identifier - check if it looks like a future version (major > MAX_SUPPORTED_MAJOR)
+                const versionMatch = stateSchema.match(/[-v]?(\d+)\./);
+                if (versionMatch) {
+                  const major = Number(versionMatch[1]);
+                  if (major > MAX_SUPPORTED_MAJOR) {
+                    schemaWarnings.push(`STATE_SCHEMA_FUTURE:${stateSchema}`);
+                  } else {
+                    schemaWarnings.push(`STATE_SCHEMA_UNKNOWN:${stateSchema}`);
+                  }
+                } else {
+                  schemaWarnings.push(`STATE_SCHEMA_UNKNOWN:${stateSchema}`);
+                }
+              }
+            }
+
+            // Check config schema
+            if (configSchema) {
+              if (SCHEMA_VERSIONS[configSchema]) {
+                const schemaInfo = SCHEMA_VERSIONS[configSchema];
+                if (schemaInfo.major > MAX_SUPPORTED_MAJOR) {
+                  schemaWarnings.push(`CONFIG_SCHEMA_FUTURE:${configSchema}`);
+                }
+              } else {
+                const versionMatch = configSchema.match(/[-v]?(\d+)\./);
+                if (versionMatch) {
+                  const major = Number(versionMatch[1]);
+                  if (major > MAX_SUPPORTED_MAJOR) {
+                    schemaWarnings.push(`CONFIG_SCHEMA_FUTURE:${configSchema}`);
+                  } else {
+                    schemaWarnings.push(`CONFIG_SCHEMA_UNKNOWN:${configSchema}`);
+                  }
+                } else {
+                  schemaWarnings.push(`CONFIG_SCHEMA_UNKNOWN:${configSchema}`);
+                }
+              }
+            }
+
+      const expectedCounts = backup.manifest.recordCounts || {};
+      const actualCounts = counts(normalizedBackup.payload.state);
+      for (const key of Object.keys(actualCounts)) if (expectedCounts[key] !== actualCounts[key]) return { status: 'CORRUPTED', error: `COUNT_MISMATCH:${key}` };
+
+      return { status: 'SUPPORTED', backup: normalizedBackup, checksum: actual, warnings: schemaWarnings };
+    }
   async function parseBackup(raw) {
     const result = await verifyBackup(raw);
     if (result.status !== 'SUPPORTED' && result.status !== 'MIGRATABLE') throw new Error(result.error || result.status);
@@ -200,32 +276,81 @@
   function identity(record) { return String(record?.id ?? record?.eventId ?? record?.fingerprint ?? `${record?.ticker || ''}|${record?.date || ''}`); }
   function comparable(value) { return canonical(value); }
   function diffRecords(section, current, incoming) {
-    const oldRows = Array.isArray(current) ? current : [];
-    const newRows = Array.isArray(incoming) ? incoming : [];
-    const oldMap = new Map(oldRows.map(row => [identity(row), row]));
-    const rows = [];
-    for (const row of newRows) {
-      const id = identity(row); const previous = oldMap.get(id);
-      if (!previous) rows.push({ kind: 'ADD', section, id });
-      else if (comparable(previous) === comparable(row)) rows.push({ kind: 'UNCHANGED', section, id });
-      else rows.push({ kind: 'CONFLICT', section, id, reason: 'CURRENT_STATE_DIFFERS' });
-      oldMap.delete(id);
+      const oldRows = Array.isArray(current) ? current : [];
+      const newRows = Array.isArray(incoming) ? incoming : [];
+      const oldMap = new Map(oldRows.map(row => [identity(row), row]));
+      const rows = [];
+      for (const row of newRows) {
+        const id = identity(row); const previous = oldMap.get(id);
+        if (!previous) rows.push({ kind: 'ADD', section, id });
+        else if (comparable(previous) === comparable(row)) rows.push({ kind: 'UNCHANGED', section, id });
+        else {
+          // Distinguish UPDATE (value changes) from CONFLICT (identity/structural changes)
+          const identityFields = ['ticker', 'type', 'name', 'eventType'];
+          const hasIdentityChange = identityFields.some(f => previous[f] !== undefined && row[f] !== undefined && previous[f] !== row[f]);
+          if (hasIdentityChange) {
+            rows.push({ kind: 'CONFLICT', section, id, reason: 'IDENTITY_FIELD_CHANGED' });
+          } else {
+            rows.push({ kind: 'UPDATE', section, id, reason: 'VALUE_CHANGED' });
+          }
+        }
+        oldMap.delete(id);
+      }
+      for (const id of oldMap.keys()) rows.push({ kind: 'SKIP', section, id, reason: 'CURRENT_ONLY' });
+      return rows;
     }
-    for (const id of oldMap.keys()) rows.push({ kind: 'SKIP', section, id, reason: 'CURRENT_ONLY' });
-    return rows;
-  }
   async function previewRestore(raw, currentState = {}) {
-    const integrity = await verifyBackup(raw);
-    if (!['SUPPORTED', 'MIGRATABLE'].includes(integrity.status)) return { integrity, diff: [], conflicts: [], writeCount: 0, restoreAllowed: false };
-    const incoming = integrity.backup.payload.state;
-    const sections = [...new Set([...RECORD_KEYS, ...Object.keys(incoming), ...Object.keys(currentState)])];
-    const diff = sections.flatMap(section => {
-      if (Array.isArray(incoming?.[section]) || Array.isArray(currentState?.[section])) return diffRecords(section, currentState?.[section], incoming?.[section]);
-      if (Object.prototype.hasOwnProperty.call(incoming || {}, section) && comparable(currentState?.[section]) !== comparable(incoming[section])) return [{ kind: 'CONFLICT', section, id: section, reason: 'SCALAR_DIFFERS' }];
-      return [];
-    });
-    return { integrity, diff, conflicts: diff.filter(item => item.kind === 'CONFLICT'), warnings: [], writeCount: 0, restoreAllowed: false };
-  }
+      const integrity = await verifyBackup(raw);
+      if (!['SUPPORTED', 'MIGRATABLE'].includes(integrity.status)) return { integrity, diff: [], conflicts: [], writeCount: 0, restoreAllowed: false, warnings: integrity.warnings || [] };
+      const incoming = integrity.backup.payload.state;
+      const sections = [...new Set([...RECORD_KEYS, ...Object.keys(incoming), ...Object.keys(currentState)])];
+      const diff = sections.flatMap(section => {
+        if (Array.isArray(incoming?.[section]) || Array.isArray(currentState?.[section])) return diffRecords(section, currentState?.[section], incoming?.[section]);
+        if (Object.prototype.hasOwnProperty.call(incoming || {}, section) && comparable(currentState?.[section]) !== comparable(incoming[section])) return [{ kind: 'CONFLICT', section, id: section, reason: 'SCALAR_DIFFERS' }];
+        return [];
+      });
+
+      // Enhanced conflict detection
+      const conflicts = diff.filter(item => item.kind === 'CONFLICT');
+      const adds = diff.filter(item => item.kind === 'ADD');
+      const updates = diff.filter(item => item.kind === 'UPDATE');
+      const skips = diff.filter(item => item.kind === 'SKIP');
+
+      // Compatibility check
+      const compat = integrity.backup.manifest.compatibility || {};
+      const compatWarnings = [];
+      if (compat.minSupportedMajor && compat.minSupportedMajor > 1) {
+        compatWarnings.push('BACKUP_REQUIRES_HIGHER_MAJOR_VERSION');
+      }
+
+      // Combine all warnings
+      const allWarnings = [
+        ...(integrity.warnings || []),
+        ...compatWarnings
+      ];
+
+      // Restore is allowed if no conflicts and supported
+      const restoreAllowed = integrity.status === 'SUPPORTED' && conflicts.length === 0;
+
+      return {
+        integrity,
+        diff,
+        conflicts,
+        adds,
+        updates,
+        skips,
+        warnings: allWarnings,
+        writeCount: adds.length + updates.length,
+        restoreAllowed,
+        compatibility: compat,
+        summary: {
+          adds: adds.length,
+          updates: updates.length,
+          conflicts: conflicts.length,
+          skips: skips.length
+        }
+      };
+    }
   function applyToIsolatedStore(store, backup, { failAfter = Infinity } = {}) {
     const before = clone(store); const result = { ok: false, store: before, rollback: true };
     try {
@@ -235,5 +360,5 @@
       result.ok = true; result.store = next; result.rollback = false; return result;
     } catch (error) { return { ...result, error }; }
   }
-  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize };
+  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize, sha256 };
 });
