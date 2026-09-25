@@ -2,7 +2,7 @@
 
 ## V263 — Financial As-Of Provenance Protocol (2026-09-25)
 
-- PR #412 (V262) was squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b`; V263 branched from that merge on `feature/v263-rf-freshness-valuation-asof` (head `a5f459ba`, PR #413, CI green, Vercel preview `mlwonw4r7` READY).
+- PR #412 (V262) was squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b`; V263 branched from that merge on `feature/v263-rf-freshness-valuation-asof` (head PR #413 (implementation head; current head from Git), CI green, Vercel preview READY).
 - `financialAsOf` semantics (V81/V82 preserved): application/capture/reconstruction/import dates are NEVER financial as-of. Explicit `financialAsOf`/`valuationAsOf` → HIGH; `quoteUpdatedAt`/`updated_at` → MEDIUM; nothing → UNKNOWN. Future dates rejected. UNKNOWN is never zero and never LIVE.
 - `valuationState.ts` now carries `authoritativeAsOfEvidence/Source/Confidence` and derives `authoritativeValueAsOf` + `authoritativeFreshness` from evidence. Manual authority is untouched; shadow never replaces the authoritative value; IPCA+ remains `UNSUPPORTED_IPCA_EXACT`.
 - Readonly contract: `financialAsOfRaw` is an additive OPTIONAL item field (validator + clone + d.ts); legacy snapshots stay valid. Host source maps legacy timestamp aliases into it.
