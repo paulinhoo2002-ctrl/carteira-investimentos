@@ -2,11 +2,14 @@
 
 ## SKILL SELECTION PROTOCOL
 
-1. Entenda o problema antes de escolher ferramentas.
-2. Consulte este catálogo e confirme o `SKILL.md` físico.
-3. Selecione somente Skills realmente úteis (ver `docs/ai/SKILL_ROUTER.md`).
-4. Combine Skills quando houver benefício real, sem uso mecânico de todas.
-5. Registre uma Skill nova relevante quando ela for descoberta e validada.
+1. Em missão substancial, siga `AGENTS.md` e carregue/use Superpowers
+   primeiro, quando disponível.
+2. Descubra o inventário físico e confirme o `SKILL.md` da Skill selecionada.
+3. Classifique a tarefa e consulte `docs/SKILLS_ROUTING.md` e
+   `docs/ai/SKILL_ROUTER.md`.
+4. Selecione somente Skills especializadas realmente úteis, sem uso mecânico.
+5. Registre disponibilidade, uso, lacunas e eventual reavaliação; registre uma
+   Skill nova relevante apenas quando descoberta e validada.
 
 ---
 

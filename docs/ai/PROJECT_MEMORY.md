@@ -1,13 +1,13 @@
 # Project Memory
 
-## V264 — BCB SGS request contract (2026-09-25)
+## V264 — BCB SGS request contract (2026-09-25; merged)
 
 - V263 PR #413 was squash-merged on main as `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`; V264 starts from that exact merge. V264 fixes the existing SGS 433 request boundary: inclusive month ranges now serialize as complete `DD/MM/YYYY` dates (first day of start month, last day of end month), with strict Gregorian validation before fetch. `07/2022` is rejected locally instead of sent as an invalid request date.
 - The official BCB endpoint returned HTTP 200 for July 2022 with observation `01/07/2022` and for Aug–Sep 2026 with only the published August observation. The single-month September 2026 probe produced a transient gateway 502 in one direct request; a prior probe returned BCB 404 `Value(s) not found`. The fetcher maps that explicit no-observation response to `EMPTY_RESPONSE` (with HTTP status), while other HTTP errors remain `PROVIDER_HTTP_ERROR`; network timeout remains `FETCH_FAILED`. No failure or empty result becomes zero.
 - SGS 433 response dates `DD/MM/YYYY` are normalized to month keys; prior `MM/YYYY` response payloads remain accepted for compatibility. `sourceAsOf` is the last returned observation only, not a financial valuation date. No IPCA+ security valuation, formula, manual fixed-income authority, persistence, or write path changed. Financial/tax writes: 0.
 - Focused SGS contract tests cover calendar/leap-year bounds, invalid inputs with zero fetches, correct query serialization, provider date parsing, legacy response compatibility, HTTP/no-data/malformed/network failures. Final local runs: modern suite 815/815, general suite 249/249, modern and legacy builds PASS, `git diff --check` PASS. CI run `36152132436` and Vercel deployment `dpl_Ea7CgrzQ1KEVXtQSr4uvrDcnJppk` passed/READY on the then-current PR head; rerun exact-head checks after any later commit. A fresh worktree requires `build:modern` before `npm test` because legacy browser smoke tests serve generated modern assets.
-- V264 PR #415 is open against `main`; the branch contains a focused implementation/test commit and a separate factual documentation commit. Recheck the live PR head, CI and deployment after each push. No merge was performed.
-- PR #414 was rechecked after V263 merge: OPEN, mergeable, head `f5bd6545265ba30ae36f7047bf624ef828a4afa1`; CI run `36144545119` SUCCESS and Vercel deployment `dpl_GHKdhPRGGixysYtBRraihvUPRucN` READY for the exact head. Its base remains `9be3d9c3e17b659a507e46a8f57c2b152174366b`, but GitHub reports mergeable and the diff has no stale V263-unmerged assertions. Governance PR is ready for human merge authorization only; it was not merged.
+- V264 PR #415 was squash-merged to `main` as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`. A clean worktree at that exact origin/main passed modern 815/815, general 249/249, modern/legacy builds, and diff-check.
+- Governance PR #414 remains OPEN and unmerged. Its branch `docs/legacy-agent-skills-routing` was reconciled by a normal merge of current `origin/main`; verify the live PR head, mergeability, CI, and preview before claiming readiness. Earlier head/check/deployment evidence is historical and must not be reused as current.
 
 ## V263 — Financial As-Of Provenance Protocol (2026-09-25)
 
@@ -83,16 +83,19 @@
 - `EXPECTED_REMOTE=https://github.com/paulinhoo2002-ctrl/carteira-investimentos.git`.
 - Em qualquer mismatch: `PROJECT_IDENTITY_MATCH=false`,
   `STATUS=BLOCKED_WRONG_PROJECT` e `STOP_IMMEDIATELY=true`.
-- `docs/ai/SKILL_ROUTER.md` é a fonte versionada e autoritativa do roteamento;
-  uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
+- `docs/SKILLS_ROUTING.md` é a política versionada de agente/modelo e boot;
+  `docs/ai/SKILL_ROUTER.md` é o roteador técnico de Skills por categoria.
+  Uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
 - `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`.
-- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; Superpowers não substitui identidade,
-  segurança financeira, persistência, Git ou gates humanos.
+- `MANDATORY_FIRST_SKILL=Superpowers`; carregar e usar primeiro quando
+  disponível. Superpowers não substitui identidade, segurança financeira,
+  persistência, Git ou gates humanos.
 
 Boot mínimo independente do chat: identity gate → `AGENTS.md` →
-`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → `SKILL_ROUTER.md` →
-descoberta em `.agents/skills` → consideração de Superpowers → menor conjunto
-de Skills relevante.
+`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → descoberta e uso de
+Superpowers → inventário físico `.agents/skills` → classificação → menor
+conjunto de Skills relevante em `docs/SKILLS_ROUTING.md` e
+`docs/ai/SKILL_ROUTER.md`.
 
 ## V197 durable boot summary
 
@@ -109,7 +112,7 @@ de Skills relevante.
 - QA: `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated`,
   CDP `127.0.0.1:9233`, `protectedReadOnlyQa=1`, zero writes.
 - Git: worktree por objetivo, staging seletivo, sem reset/restore/clean/stash/rebase/force push.
-- `SUPERPOWERS_ALWAYS_CONSIDERED=true`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
+- `MANDATORY_FIRST_SKILL=Superpowers`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
   `REUSE_GREEN_EVIDENCE=true`; `SAME_FAILURE_TWICE=PIVOT`.
 
 Boot links: [`AGENTS.md`](../../AGENTS.md), [`NEXT_STEP.md`](NEXT_STEP.md),
@@ -1387,14 +1390,27 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 
 ## Decisão permanente — SUPERPOWERS_FIRST
 
-- `SUPERPOWERS_FIRST=true`.
+- `MANDATORY_FIRST_SKILL=Superpowers` e `SUPERPOWERS_FIRST=true`.
 - Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
-- Autoridade: `AGENTS.md`, `docs/SKILLS_ROUTING.md` e
-  `docs/ai/SKILL_ROUTING.md` versionados no repositório.
+- Processo detalhado de agente/modelo e Skills: `docs/SKILLS_ROUTING.md`;
+  roteamento técnico por categoria: `docs/ai/SKILL_ROUTER.md`;
+  governança de execução: `AGENTS.md`.
 - Razão: o roteamento de processo não depende de memória de chat, sessão,
   modelo ou executor específico.
+- Hermes/NVIDIA API com Nemotron 3 Super é a rota preferencial para engenharia
+  normal; Ultra 550B A55B para tarefas difíceis/grandes/noturnas; Kimi K3 para
+  UI visual/mobile; GLM-5.3 para revisão independente. Codex/GPT-6 Sol é
+  fallback conforme indisponibilidade ou falha repetida da rota preferencial,
+  não por fricção técnica comum isolada. Toda disponibilidade deve ser
+  verificada no ambiente; nunca alegar execução/modelo indisponível.
+- Cada missão relevante registra agente/modelo recomendado e selecionado,
+  justificativa e campos de Skills; selecionar apenas o menor conjunto
+  especializado necessário após Superpowers e descoberta real do inventário.
 - Fallback: se Superpowers não existir, usar as melhores Skills disponíveis
   sem bloquear automaticamente a missão e registrar a limitação.
 - Limite: Skills orientam o processo, mas não autorizam merge, deploy,
   alterações cloud/financeiras, persistência, schema, secrets ou ações
   destrutivas.
+- `MERGE_AUTHORIZATION=false` por padrão; merge exige autorização humana
+  explícita e inequívoca para a PR correta. Commit, push e PR continuam sujeitos
+  à autorização da missão e ao fluxo do repositório.
