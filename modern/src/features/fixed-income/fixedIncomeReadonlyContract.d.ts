@@ -30,6 +30,10 @@ export interface ReadOnlyFixedIncomeItem {
   readonly unavailableValue: number | null;
   readonly maturityStatus: FixedIncomeReadonlyMaturityStatus;
   readonly note: string | null;
+  /** V263: optional raw EXPLICIT financial valuation timestamp (HIGH provenance). */
+  readonly financialAsOfRaw?: string | null;
+  /** V263: optional raw broker/update metadata timestamp (MEDIUM provenance). */
+  readonly quoteUpdatedAtRaw?: string | null;
 }
 
 export interface ReadOnlyFixedIncomeSummary {

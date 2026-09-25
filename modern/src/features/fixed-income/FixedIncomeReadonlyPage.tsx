@@ -439,7 +439,14 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                           ? `${renderMoney(val?.differenceAmount)} (${formatReadonlyPercentOrMissing(val?.differencePercent)}%)`
                           : 'Não comparável'}
                       </td>
-                      <td>{formatReadonlyDate(val?.authoritativeValueAsOf ?? val?.shadowValueAsOf)}</td>
+                      <td>
+                        {formatReadonlyDate(val?.authoritativeValueAsOf ?? val?.shadowValueAsOf)}
+                        {val?.authoritativeAsOfConfidence && val?.authoritativeAsOfConfidence !== 'UNKNOWN' ? (
+                          <span className="fixed-income-readonly__asof-confidence" data-confidence={val.authoritativeAsOfConfidence}>
+                            {val.authoritativeAsOfConfidence === 'HIGH' ? 'data explícita' : 'metadado'}
+                          </span>
+                        ) : null}
+                      </td>
                       <td>{val?.authoritativeFreshness ?? val?.shadowFreshness ?? 'UNKNOWN'}</td>
                       <td>{formatText(val?.authoritativeSource ?? val?.shadowSource)}</td>
                       <td>
@@ -575,8 +582,15 @@ function FixedIncomeReadonlyPageContent({ adapter }: FixedIncomeReadonlyPageProp
                                 </dd>
                               </div>
                               <div>
-                                <dt>As-of</dt>
-                                <dd>{formatReadonlyDate(val?.authoritativeValueAsOf ?? val?.shadowValueAsOf)}</dd>
+                                <dt>As-of financeiro</dt>
+                                <dd>
+                                  {formatReadonlyDate(val?.authoritativeValueAsOf)}
+                                  {val?.authoritativeAsOfConfidence === 'HIGH' ? ' (data explícita)' : val?.authoritativeAsOfConfidence === 'MEDIUM' ? ' (metadado)' : ''}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt>As-of da fonte</dt>
+                                <dd>{formatReadonlyDate(val?.shadowSourceAsOf ?? val?.authoritativeSourceAsOf)}</dd>
                               </div>
                               <div>
                                 <dt>Frescor</dt>

@@ -1145,6 +1145,29 @@ button {
   gap: 6px;
 }
 
+/* V263: financial as-of confidence badge (list) */
+.fixed-income-readonly__asof-confidence {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-subtle);
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.fixed-income-readonly__asof-confidence[data-confidence='HIGH'] {
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #bbf7d0;
+}
+
+.fixed-income-readonly__asof-confidence[data-confidence='MEDIUM'] {
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #fcd34d;
+}
+
+
 .fixed-income-readonly__ipca-fields span {
   color: var(--color-text);
   line-height: 1.4;

@@ -98,7 +98,11 @@ function isReadonlyFixedIncomeItem(value) {
     isNullableString(value.liquidity) &&
     isNullableNumber(value.unavailableValue) &&
     isReadonlyFixedIncomeMaturityStatus(value.maturityStatus) &&
-    isNullableString(value.note)
+    isNullableString(value.note) &&
+    // V263: optional financial as-of raw evidence; legacy snapshots without it remain valid.
+    (value.financialAsOfRaw === undefined || isNullableString(value.financialAsOfRaw)) &&
+    // V263: optional broker/update metadata raw evidence (MEDIUM provenance).
+    (value.quoteUpdatedAtRaw === undefined || isNullableString(value.quoteUpdatedAtRaw))
   );
 }
 
@@ -138,6 +142,13 @@ function cloneReadonlyFixedIncomeItem(item) {
     unavailableValue: item.unavailableValue,
     maturityStatus: item.maturityStatus,
     note: item.note,
+    // V263: preserve optional financial as-of evidence through the clone.
+    ...(Object.prototype.hasOwnProperty.call(item, 'financialAsOfRaw')
+      ? { financialAsOfRaw: item.financialAsOfRaw }
+      : {}),
+    ...(Object.prototype.hasOwnProperty.call(item, 'quoteUpdatedAtRaw')
+      ? { quoteUpdatedAtRaw: item.quoteUpdatedAtRaw }
+      : {}),
   };
 }
 
