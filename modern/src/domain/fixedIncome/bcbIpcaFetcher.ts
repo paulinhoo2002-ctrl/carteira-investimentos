@@ -14,17 +14,72 @@ export type BcbIpcaFetchResult =
     }>
   | Readonly<{
       readonly ok: false;
-      readonly error: 'FETCH_FAILED' | 'EMPTY_RESPONSE' | 'MALFORMED_DATA' | 'INVALID_SERIES';
+      readonly error:
+        | 'INVALID_REQUEST_DATE'
+        | 'PROVIDER_HTTP_ERROR'
+        | 'FETCH_FAILED'
+        | 'EMPTY_RESPONSE'
+        | 'MALFORMED_DATA'
+        | 'INVALID_SERIES';
+      readonly httpStatus?: number;
     }>;
 
 const BCB_SGS_IPCA_URL = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados';
 
-function parseBcbDate(bcbDate: string): string | null {
-  // BCB returns DD/MM/YYYY for daily, MM/YYYY for monthly
-  // Series 433 is monthly, so format is MM/YYYY
-  const match = /^(\d{2})\/(\d{4})$/.exec(bcbDate);
+function daysInMonth(year: number, month: number): number {
+  if (month === 2) {
+    const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    return leapYear ? 29 : 28;
+  }
+  return [4, 6, 9, 11].includes(month) ? 30 : 31;
+}
+
+function parseYearMonth(value: unknown): { year: number; month: number } | null {
+  if (typeof value !== 'string') return null;
+  const match = /^(\d{4})-(\d{2})$/.exec(value);
   if (!match) return null;
-  return `${match[2]}-${match[1]}`;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (year < 1 || month < 1 || month > 12) return null;
+  return { year, month };
+}
+
+function formatSgsDate(year: number, month: number, day: number): string {
+  return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${String(year).padStart(4, '0')}`;
+}
+
+/** Converts inclusive YYYY-MM civil-month bounds to the SGS DD/MM/YYYY contract. */
+export function normalizeSgsMonthRange(
+  fromYearMonth: unknown,
+  toYearMonth: unknown,
+): { readonly dataInicial: string; readonly dataFinal: string } | null {
+  const from = parseYearMonth(fromYearMonth);
+  const to = parseYearMonth(toYearMonth);
+  if (!from || !to || String(fromYearMonth) > String(toYearMonth)) return null;
+  return {
+    dataInicial: formatSgsDate(from.year, from.month, 1),
+    dataFinal: formatSgsDate(to.year, to.month, daysInMonth(to.year, to.month)),
+  };
+}
+
+function parseBcbDate(bcbDate: string): string | null {
+  // SGS 433 observations are monthly and the API returns the first day of the
+  // reference month as DD/MM/YYYY. Keep MM/YYYY for backward compatibility.
+  const fullDate = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(bcbDate);
+  if (fullDate) {
+    const day = Number(fullDate[1]);
+    const month = Number(fullDate[2]);
+    const year = Number(fullDate[3]);
+    if (year < 1 || month < 1 || month > 12 || day !== 1) return null;
+    return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}`;
+  }
+
+  const legacyMonth = /^(\d{2})\/(\d{4})$/.exec(bcbDate);
+  if (!legacyMonth) return null;
+  const month = Number(legacyMonth[1]);
+  const year = Number(legacyMonth[2]);
+  if (year < 1 || month < 1 || month > 12) return null;
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}`;
 }
 
 async function fetchWithTimeout(url: string, timeoutMs = 10000): Promise<Response> {
@@ -46,10 +101,13 @@ export async function fetchIpcaMonthlyFromBcb(
   fromYearMonth: string,
   toYearMonth: string,
 ): Promise<BcbIpcaFetchResult> {
+  const dateRange = normalizeSgsMonthRange(fromYearMonth, toYearMonth);
+  if (!dateRange) return { ok: false, error: 'INVALID_REQUEST_DATE' };
+
   const params = new URLSearchParams({
     formato: 'json',
-    dataInicial: `${fromYearMonth.slice(5)}/${fromYearMonth.slice(0, 4)}`, // MM/YYYY
-    dataFinal: `${toYearMonth.slice(5)}/${toYearMonth.slice(0, 4)}`,
+    dataInicial: dateRange.dataInicial,
+    dataFinal: dateRange.dataFinal,
   });
 
   const url = `${BCB_SGS_IPCA_URL}?${params.toString()}`;
@@ -58,12 +116,32 @@ export async function fetchIpcaMonthlyFromBcb(
     const response = await fetchWithTimeout(url);
 
     if (!response.ok) {
-      return { ok: false, error: 'FETCH_FAILED' };
+      if (response.status === 404) {
+        try {
+          const providerError: unknown = await response.json();
+          const detail = (providerError as { erro?: { detail?: unknown } } | null)?.erro?.detail;
+          if (typeof detail === 'string' && detail.includes('Value(s) not found')) {
+            return { ok: false, error: 'EMPTY_RESPONSE', httpStatus: response.status };
+          }
+        } catch {
+          // Keep an unparseable error body classified as an HTTP error below.
+        }
+      }
+      return { ok: false, error: 'PROVIDER_HTTP_ERROR', httpStatus: response.status };
     }
 
-    const data = await response.json();
+    let data: unknown;
+    try {
+      data = await response.json();
+    } catch {
+      return { ok: false, error: 'MALFORMED_DATA' };
+    }
 
-    if (!Array.isArray(data) || data.length === 0) {
+    if (!Array.isArray(data)) {
+      return { ok: false, error: 'MALFORMED_DATA' };
+    }
+
+    if (data.length === 0) {
       return { ok: false, error: 'EMPTY_RESPONSE' };
     }
 

@@ -3,6 +3,8 @@ const { describe, it } = require('node:test');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
+require('./modern-fixed-income-bcb-ipca-fetcher.test.js');
+
 const DIAGNOSTICS_PATH = path.join(
   __dirname,
   '..',
