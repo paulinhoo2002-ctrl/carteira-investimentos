@@ -1,37 +1,40 @@
 # Next Step
 
-## Active — V264 BCB SGS request contract (2026-09-25)
+## Active — V265 QA harness resilience (2026-09-25)
 
 - V263 is merged: PR #413 squash SHA `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
-- V264 branch `feature/v264-bcb-sgs-request-contract-hardening` is based on that SHA. It corrects SGS 433 inclusive monthly request bounds to `DD/MM/YYYY`, validates dates before network access, parses the provider's monthly response date, and preserves explicit empty/error states. IPCA+ security valuation remains unsupported; no financial methodology or manual authority changed.
-- Local gates: modern 815/815, general 249/249, modern and legacy builds and diff-check PASS. Official smoke proved July 2022 response and Aug–Sep 2026 only returned the published August point; a single-month current-period probe encountered a transient gateway 502.
-- V264 PR #415 is OPEN; CI and Vercel preview passed on its implementation head. Consult live PR checks for the documentation-follow-up head. Local code review passed. Do not merge without explicit human authorization.
-- Independent governance PR #414 is OPEN/mergeable at `f5bd6545265ba30ae36f7047bf624ef828a4afa1`, with CI `36144545119` SUCCESS and Vercel deployment `dpl_GHKdhPRGGixysYtBRraihvUPRucN` READY. It is separately ready for human authorization; do not merge in this mission.
-- Next: request human squash-merge authorization for PR #415 only. After it is merged, verify the merged SHA and production release before starting another implementation phase. PR #414 remains a separate approval decision.
+- V264 PR #415 is CLOSED/MERGED as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`; its SGS 433 request-contract fix and existing financial invariants are on current `main`.
+- V265 is implemented on `feature/v265-qa-harness-resilience`: static QA server returns correct 404 responses without crashing; the regression contract is included in `test:qa-harness`; QA server uses Node on loopback; `qa:all` builds modern assets and runs the harness test before browser smokes.
+- Local validation: modern 815/815; general 249/249; builds and integrated `qa:all` PASS; seven browser-smoke widths passed without overflow or browser/network errors. Check GitHub/Vercel for the final PR head after push; no merge was performed.
+- Roadmap audit: Import Center is PARTIAL (Inter paths exist; XP/BTG remain `FIXTURE_REQUIRED` until real sanitized notes are provided); Reports Intelligence is COMPLETE on main (V93 branch is an ancestor, no unique delta); clean-state integration is already contained in main (branch is an ancestor); TWR/XIRR remains PARTIAL while history accumulates; corporate-events MODE_B is NOT_READY pending provider/business decision, with MODE_A remaining shadow/read-only; no specific mobile UX regression was evidenced in this audit; V264 fixed the identified SGS date-contract issue. Reliability/QA was selected because the server crash was reproduced and the `qa:all` test command was missing.
+- Governance PR #414 remains OPEN and unmerged; its branch is reconciled with current `origin/main`. At this checkpoint it is mergeable at `749ec33340ff6d17ee817eb6060d0e719bc0fe5f`, CI run `36155814932` passed, and Vercel deployment `dpl_7oqKtw6VENnQ49bBWN6aCXcAdt8e` is READY. Recheck live state before approval.
+- V265 PR #416 is OPEN; the implementation head was `ee05f0f90f7f85a0ec21040792f2e42c4d3f0945` before this documentation follow-up. Recheck final exact-head CI and preview after push.
+- Next candidate after V265: fixture-backed XP/BTG Import Center validation once the user supplies representative sanitized notes; until then, no broker support claim or fixture fabrication.
+- Do not merge PR #414 or the V265 PR without separate explicit human authorization.
 
 ### Next macro-phase after V264 (readiness only)
 
-- The former V93 reports branch is already an ancestor of `origin/main` (main is 56 commits ahead; the branch has no unique diff), and `portfolio-report-model.js` plus its tests are present on main; do not create a duplicate reports integration phase. Best next reliability phase: fixture-backed Import Center hardening for XP/BTG, beginning with obtaining sanitized representative notes through the approved user flow. Those fixtures are still a dependency; do not fabricate them. No next phase is started here.
+- The former V93 reports branch is already an ancestor of `origin/main`; do not create a duplicate reports integration phase. XP/BTG fixtures remain an explicit user-input dependency. Re-audit live project evidence before starting the next implementation phase.
 
-## V263 PR #413 — current state (2026-09-25)
+## V263 PR #413 — historical state (2026-09-25)
 
 - V262 is CLOSED: PR #412 squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b` on main; local main fast-forwarded to the same SHA.
 - Active phase: V263 "Renda Fixa Freshness, Valuation & Financial As-Of Provenance" on branch `feature/v263-rf-freshness-valuation-asof` (worktree `C:/Projetos/carteira-investimentos.worktrees/v263-rf-freshness-valuation-asof`).
-- At the 2026-09-25 certification checkpoint, PR #413 was OPEN/mergeable at `a617f8698692e1d541b22b54a33cd92577c7507e`; exact-head CI run `36147717670` SUCCESS and Vercel deployment `dpl_2r1Xy6XQiWU58caZzZmTvRCRo8eH` READY. Product-code tip remained `f3ed317a1ede6caee41e8bd0ba083be2045156bb`; local gates at that checkpoint: modern 805/805, general 249/249, both builds, diff-check. Query live refs for any later tip.
+- At the 2026-09-25 certification checkpoint, PR #413 was OPEN/mergeable at `a617f8698692e1d541b22b54a33cd92577c7507e`; it was subsequently squash-merged as `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
 - Implementation delivered: financial as-of evidence (HIGH/MEDIUM/UNKNOWN) separated from source as-of; valuation state derives value-as-of and freshness from real evidence; UI shows confidence badges and separate as-of rows; 12 targeted tests; zero financial/tax writes; all V262 invariants preserved (IPCA+ UNSUPPORTED, manual authority, UNKNOWN != ZERO).
 - Visual certification used a correct local production-like Vite preview (`build:modern` then `/host.html`): V262 and V263 were styled; all seven viewports passed with zero page-level overflow; axe-core WCAG A/AA had 0 violations; screenshots reviewed. Vercel preview remains behind per-origin SSO, so this pass is not authenticated real-portfolio QA. Earlier unstyled captures and reported 1886px overflow came from invalid asset-serving evidence.
-- Existing pre-V263 data-source issue: the unchanged V262 SGS fetcher receives HTTP 400 `Invalid initial date` for `dataInicial=07/2022` in both exact builds. Track as source-contract debt; do not attribute it to V263.
-- Next action: finish factual memory reconciliation and exact-head revalidation if docs are committed, then request only `Autorizo o squash merge da PR #413.` if all release gates remain valid. Do NOT merge without authorization.
+- Existing pre-V263 data-source issue: the unchanged V262 SGS fetcher received HTTP 400 `Invalid initial date` for `dataInicial=07/2022`; this was addressed by V264, not by a change to V263 financial-as-of semantics.
+- PR #413 is merged; no merge action is pending for V263.
 
 ### Post-V263 roadmap (repository-evidence based)
 
 - SOON — Import Center productionization (V92/V93 branches exist; XP/BTG blocked by user fixtures).
-- SOON — Reports intelligence integration (V93 branch ready for review).
+- COMPLETE — Reports intelligence is present on main; the former V93 branch has no unique delta.
 - LATER — Mobile experience improvement (new candidate; needs explicit scope).
 - LATER — Corporate events MODE_B (needs provider decision; MODE_A active).
 - LATER — TWR/XIRR history (needs more valuation snapshots; V76/V77 tracking since 2026-09-15).
-- LATER — Clean-state integration (V88 branch; technical consolidation).
-- NEXT CANDIDATE (readiness only) — V264 BCB SGS IPCA request-contract hardening. The current V262 fetcher sends a month-only initial date rejected by the official endpoint; first verify the provider's accepted date contract, then fix/test only retrieval and truthful unavailable/stale states. Keep IPCA+ security valuation unsupported; no financial formula or authority change.
+- COMPLETE — `integration/clean-state-v1` has no unique delta against current main.
+- COMPLETE — V264 BCB SGS IPCA request-contract hardening is merged as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`.
 - BLOCKED — Phase 4H Class C / August pilot (separate single-use authorizations; historical authorizations consumed).
 - NOT_RECOMMENDED — reopening frozen legacy screens without regression evidence.
 
