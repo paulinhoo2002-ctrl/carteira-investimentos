@@ -17,26 +17,42 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function isValidIsoDate(value: string): boolean {
   if (!ISO_DATE.test(value)) return false;
-  const time = Date.parse(`${value}T00:00:00Z`);
-  return Number.isFinite(time);
+  // Calendar validation: Date.parse accepts impossible dates (2026-02-31 rolls
+  // over to March), so validate the day against the real month length — same
+  // technique as cdiDailyFactorProvider.ts isStrictDateString.
+  const y = Number(value.slice(0, 4));
+  const m = Number(value.slice(5, 7));
+  const d = Number(value.slice(8, 10));
+  if (m < 1 || m > 12 || d < 1) return false;
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return d <= lastDay;
 }
 
 function normalizeToIsoDate(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
   if (isValidIsoDate(trimmed)) return trimmed;
-  // Full timestamps: keep the date part only.
+  // Guard against impossible calendar dates inside timestamps (e.g. 2026-02-31T13:00:00Z):
+  // validate the leading date component BEFORE Date.parse can roll it over.
+  if (trimmed.length >= 10 && ISO_DATE.test(trimmed.slice(0, 10)) && !isValidIsoDate(trimmed.slice(0, 10))) {
+    return null;
+  }
+  // Full timestamps: keep the UTC date part only (consistent with V81/V82 provider).
   const ts = Date.parse(trimmed);
   if (Number.isFinite(ts)) return new Date(ts).toISOString().slice(0, 10);
   return null;
 }
 
 // Read-only view of the fields a legacy RF record may expose.
-// The readonly contract does not carry these fields today; the host source
-// maps known aliases into `financialAsOfRaw` (see hostFixedIncomeReadonlySource).
+// The readonly contract carries two SEPARATE optional raw fields so that
+// provenance survives mapper -> contract -> domain:
+// - financialAsOfRaw: EXPLICIT financial valuation timestamp (HIGH);
+// - quoteUpdatedAtRaw: broker/update metadata timestamp (MEDIUM).
+// Collapsing them into one field would promote MEDIUM metadata to HIGH.
 export type FinancialAsOfCandidateItem = Readonly<{
   readonly financialAsOfRaw?: string | null;
   readonly valuationAsOf?: string | null;
+  readonly quoteUpdatedAtRaw?: string | null;
   readonly quoteUpdatedAt?: string | null;
   readonly updatedAt?: string | null;
 }>;
@@ -47,6 +63,7 @@ const EXPLICIT_FIELDS = [
 ] as const;
 
 const METADATA_FIELDS = [
+  { key: 'quoteUpdatedAtRaw', label: 'quoteUpdatedAt', confidence: 'MEDIUM' },
   { key: 'quoteUpdatedAt', label: 'quoteUpdatedAt', confidence: 'MEDIUM' },
   { key: 'updatedAt', label: 'updated_at', confidence: 'MEDIUM' },
 ] as const;

@@ -149,17 +149,18 @@ function mapFixedIncomeAsset(asset: HostFixedIncomeAsset, generatedAt: string) {
     unavailableValue: toNullableNumber(asset?.rf_unavailable_value ?? asset?.unavailableValue),
     maturityStatus: normalizeMaturityStatus(maturityDate, generatedAt),
     note: toText(asset?.rf_note ?? asset?.note ?? asset?.observation ?? asset?.decision, null),
-    // V263: map legacy financial as-of candidates into one explicit raw field.
-    // financialAsOf/valuationAsOf are HIGH confidence; quoteUpdatedAt/updated_at
-    // are MEDIUM. The domain (financialAsOf.ts) decides trust; the mapper only
-    // surfaces the best candidate so items without timestamps stay UNKNOWN.
+    // V263: preserve provenance with SEPARATE raw fields.
+    // financialAsOfRaw carries only EXPLICIT financial valuation timestamps (HIGH):
+    // financialAsOf / valuationAsOf / rf_valuation_as_of.
+    // quoteUpdatedAtRaw carries broker/update metadata (MEDIUM):
+    // quoteUpdatedAt / updated_at / updatedAt.
+    // Collapsing both into one field would promote MEDIUM metadata to HIGH.
     financialAsOfRaw: toText(
-      asset?.financialAsOf ??
-        asset?.valuationAsOf ??
-        asset?.rf_valuation_as_of ??
-        asset?.quoteUpdatedAt ??
-        asset?.updated_at ??
-        asset?.updatedAt,
+      asset?.financialAsOf ?? asset?.valuationAsOf ?? asset?.rf_valuation_as_of,
+      null,
+    ),
+    quoteUpdatedAtRaw: toText(
+      asset?.quoteUpdatedAt ?? asset?.updated_at ?? asset?.updatedAt,
       null,
     ),
   };
