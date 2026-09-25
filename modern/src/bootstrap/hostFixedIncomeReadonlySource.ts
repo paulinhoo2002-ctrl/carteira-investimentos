@@ -149,6 +149,19 @@ function mapFixedIncomeAsset(asset: HostFixedIncomeAsset, generatedAt: string) {
     unavailableValue: toNullableNumber(asset?.rf_unavailable_value ?? asset?.unavailableValue),
     maturityStatus: normalizeMaturityStatus(maturityDate, generatedAt),
     note: toText(asset?.rf_note ?? asset?.note ?? asset?.observation ?? asset?.decision, null),
+    // V263: map legacy financial as-of candidates into one explicit raw field.
+    // financialAsOf/valuationAsOf are HIGH confidence; quoteUpdatedAt/updated_at
+    // are MEDIUM. The domain (financialAsOf.ts) decides trust; the mapper only
+    // surfaces the best candidate so items without timestamps stay UNKNOWN.
+    financialAsOfRaw: toText(
+      asset?.financialAsOf ??
+        asset?.valuationAsOf ??
+        asset?.rf_valuation_as_of ??
+        asset?.quoteUpdatedAt ??
+        asset?.updated_at ??
+        asset?.updatedAt,
+      null,
+    ),
   };
 }
 

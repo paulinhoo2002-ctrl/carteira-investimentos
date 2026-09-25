@@ -30,6 +30,8 @@ export interface ReadOnlyFixedIncomeItem {
   readonly unavailableValue: number | null;
   readonly maturityStatus: FixedIncomeReadonlyMaturityStatus;
   readonly note: string | null;
+  /** V263: optional raw financial as-of evidence mapped from legacy fields. */
+  readonly financialAsOfRaw?: string | null;
 }
 
 export interface ReadOnlyFixedIncomeSummary {
