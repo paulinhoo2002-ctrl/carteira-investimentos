@@ -25,18 +25,18 @@ outros clones.
 |---|-------|------|--------|------------|
 | 1 | `archify` | REAL_SKILL | Ativo | Diagramas arquiteturais validados |
 | 2 | `archify-main` | UPSTREAM_COPY | Backup/Referência | Cópia upstream `archify-main/archify-main/archify` — não usar como fonte canônica |
-| 3 | `banner-design` | REAL_SKILL | Limitações | Referência visual presente; referências auxiliares de marca/geração ausentes |
+| 3 | `banner-design` | REAL_SKILL | Limitações | Referência de tamanhos presente; geradores `ai-artist`/`ai-multimodal`, helper de marca e exportador `chrome-devtools` ausentes |
 | 4 | `brand` | REAL_SKILL | Baixo uso | Identidade/marca — apenas quando necessário |
 | 5 | `browser-harness` | REAL_SKILL | Ativo | CDP automation, QA browser |
 | 6 | `browser-harness-main` | UPSTREAM_COPY | Backup/Referência | Fonte upstream completa — não usar como skill operacional |
 | 7 | `browser-testing-with-devtools` | REAL_SKILL | Ativo | DevTools MCP, diagnóstico runtime |
-| 8 | `cavecrew` | REAL_SKILL | Baixo uso | Delegação subagentes caveman |
+| 8 | `cavecrew` | REAL_SKILL | Limitações | Três perfis `cavecrew-*` e links para `.agents/README.md` ausentes; usar somente se suporte de subagentes estiver disponível e definir papéis no prompt |
 | 9 | `caveman` | REAL_SKILL | Ativo | Comunicação ultra-condensada |
 | 10 | `caveman-commit` | REAL_SKILL | Ativo | Commit messages |
-| 11 | `caveman-compress` | REAL_SKILL | Ativo | Compactar documentação/memória |
+| 11 | `caveman-compress` | REAL_SKILL | Ativo com cuidado de escrita | Compacta e sobrescreve o arquivo-alvo após criar backup `.original.md`; exigir escopo explícito e verificar backup |
 | 12 | `caveman-help` | REAL_SKILL | Ativo | Referência rápida |
 | 13 | `caveman-review` | REAL_SKILL | Ativo | Review de diff |
-| 14 | `caveman-stats` | REAL_SKILL | Dependência ausente | Hooks requeridos pelo SKILL.md não estão instalados neste pacote |
+| 14 | `caveman-stats` | REAL_SKILL | Desativado para roteamento | Hooks requeridos pelo SKILL.md não estão instalados neste pacote |
 | 15 | `design` | REAL_SKILL | Baixo uso | Brand, tokens, UI, logo, CIP, slides, banners, ícones |
 | 16 | `design-system` | REAL_SKILL | Ativo | Tokens, componentes, slides |
 | 17 | `doubt-driven-development` | REAL_SKILL | **OBRIGATÓRIA** finance/persist | Revisão adversarial contexto fresco |

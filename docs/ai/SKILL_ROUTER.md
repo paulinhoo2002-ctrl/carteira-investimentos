@@ -71,7 +71,7 @@ Princípio:
 | BROWSER_QA / E2E / REGRESSION_TESTING | `browser-harness`, `playwright` | Medium | sessão/auth/CDP falhar repetidamente |
 | DOCUMENTATION / ARCHITECTURE_DOCS | `archify` quando visual ajudar, `caveman-review` | Low/Medium | decisão arquitetural não for trivial |
 | SKILL_DISCOVERY | `find-skills` | Low | apenas quando a capacidade não existir localmente |
-| CONTEXT_COMPRESSION / TOKEN_ECONOMY | `caveman-compress`, `caveman-stats` | Low | nunca remover invariantes, IDs, hashes ou autorizações |
+| CONTEXT_COMPRESSION / TOKEN_ECONOMY | `caveman-compress` | Low | nunca remover invariantes, IDs, hashes ou autorizações |
 | CODE_REVIEW / SELECTIVE_COMMITS | `caveman-review`, `caveman-commit` | Medium | sempre antes de integração/commit autorizado |
 
 ## REGRA DE BOOT AUTOMÁTICO
@@ -96,6 +96,28 @@ SCOPE_GUARD=
 ou Skill ausente. Para auditar a biblioteca instalada, a descoberta obrigatória
 é física em `.agents/skills`; não faça busca externa nem instalação só por ser
 uma missão grande. Skills não concedem autorização sobre áreas protegidas.
+
+## ELEGIBILIDADE DE SKILLS
+
+- `BROKEN` e `DISABLED_FOR_ROUTING` nunca entram na seleção automática.
+- `ACTIVE_WITH_LIMITATIONS` só pode ser selecionada quando a limitação não
+  afeta a tarefa; se afetar, escolha alternativa válida ou reporte a lacuna.
+- `caveman-stats` está `DISABLED_FOR_ROUTING` neste snapshot: faltam os hooks
+  `caveman-stats.js` e `caveman-mode-tracker.js` exigidos pelo pacote. Não
+  estimar nem simular resultados. Reativar após localizar e validar os hooks.
+- `banner-design` permanece `ACTIVE_WITH_LIMITATIONS`: a referência de tamanhos
+  existe, mas `ai-artist`, `ai-multimodal`, `chrome-devtools`,
+  `inject-brand-context.cjs` e brand guidelines citados não estão no pacote;
+  não alegar geração/exportação ponta a ponta.
+- `cavecrew` é condicional: os perfis `.agents/agents/cavecrew-*` citados não
+  estão instalados localmente; só formular papéis explícitos quando suporte de
+  subagentes estiver disponível. Não o tratar como requisito de execução.
+- `caveman-compress` sobrescreve seu alvo depois de criar backup `.original.md`;
+  só aplicar ao arquivo explicitamente autorizado e confirmar o backup. A Skill
+  não autoriza alterações em arquivos desconhecidos ou governança canônica.
+- `deploy-to-vercel` não autoriza publicação. Exigir autorização explícita de
+  deploy e usar apenas o fluxo autenticado aprovado; o fallback sem autenticação
+  que produz claim URL não é permitido neste projeto.
 
 ## TRACKS DE UI (MUTUAMENTE EXCLUSIVOS DURANTE A MESMA FASE)
 
@@ -133,7 +155,7 @@ Nunca carregar os três simultaneamente.
 | `browser-harness` | Não usar se Playwright/DevTools já resolverem |
 | `firebase-security-rules-auditor` | Firestore rules, ownership, create/update, tipos, limites e privilégio; não usar para editar ou fazer deploy |
 | `web-quality-audit` | Auditoria baseada em evidências de acessibilidade, performance, SEO, práticas web e navegação assistida |
-| `cavecrew` | Decidir quando delegação separada ajuda; não é obrigatório |
+| `cavecrew` | Condicional: formular papéis se subagentes estiverem disponíveis; perfis locais não validados |
 | `interview-me` | Pedido subespecificado ou ambíguo; nunca executar automaticamente em loops/CI |
 
 ---
@@ -152,9 +174,9 @@ Transformar os princípios úteis de economia em regra curta de governança:
 |-------|-----|
 | `caveman-review` | Review curto quando fizer sentido (escopo, simplicidade, riscos do diff) |
 | `caveman-commit` | Commit messages quando necessário (curta, conventional, descreve comportamento) |
-| `caveman-compress` | Somente para compactar documentação/memória longa |
+| `caveman-compress` | Somente com alvo explícito e backup `.original.md` confirmado |
 | `caveman-help` | Referência rápida dos modos/comandos |
-| `caveman-stats` | Medir custo de contexto ou comparar modos |
+| `caveman-stats` | Desativada para roteamento até que ambos os hooks obrigatórios sejam validados |
 
 ---
 
