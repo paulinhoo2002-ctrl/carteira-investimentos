@@ -1,19 +1,31 @@
 # Next Step
 
-## Active — V265 QA harness resilience reconciliation (2026-09-25)
+## Active — Workspace/worktree audit closeout (2026-09-25)
 
-- V263 is merged: PR #413 squash SHA `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
-- V264 PR #415 is CLOSED/MERGED as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`; its SGS 433 request-contract fix and existing financial invariants are on current `main`.
-- V265 branch `feature/v265-qa-harness-resilience` now incorporates post-governance `origin/main` at `98420aea10b552264a729b8470d91ff129567640` through a normal merge; verify final PR head and checks live after push.
-- The static QA server returns 404 for missing assets without crashing, serves a valid follow-up request, and rejects sibling-prefix path traversal; `test:qa-harness` covers those contracts. Node QA server binds loopback; `qa:all` builds modern assets and runs harness tests before browser smokes.
-- Post-fix local evidence: focused harness 2/2, modern 815/815, general 249/249, modern/legacy builds and `qa:all` passed; all seven smoke widths had no overflow or browser/network errors. Verify CI and preview against the exact pushed head.
-- PR #414 governance was merged to main as `98420aea10b552264a729b8470d91ff129567640`.
-- Roadmap: XP/BTG fixture-backed validation remains blocked on genuine sanitized broker notes; Reports Intelligence and clean-state integration are already on main; TWR/XIRR remains partial while history accumulates; corporate-events MODE_B remains not ready pending provider/business decision. Do not fabricate fixtures or financial data.
-- Do not merge PR #416 without explicit human authorization.
+- `origin/main=5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`; V265 PR #416 and
+  governance PR #414 are merged. V264 PR #415 remains merged at
+  `10995f31d7ada0b7f8a02e6317813de0c21fc55d`.
+- Clean main validation on 2026-09-25: modern 815/815, general 249/249,
+  modern/legacy builds, QA harness 2/2 and seven-width browser smoke PASS.
+- Workspace audit removed 14 confirmed-empty orphan directories and three
+  merged/clean worktrees with exact squash-tree equivalence. Canonical local
+  `main` was safely fast-forwarded to `origin/main`; all 335 untracked paths
+  remain preserved. The V264 residual and one locked empty parent remain.
+- Git inspection found 25 temporary `tmp_obj_*` files (~259 MiB) and 169
+  unreachable commits among 10,919 objects. Preserve all; no GC/prune is safe.
+- V266 feature work is not started because no independent, evidence-backed
+  scope is currently ready. Preserve ambiguous residue and Git objects. Reassess
+  after real XP/BTG fixtures arrive, enough history accumulates, a provider
+  decision is made, or a concrete product/QA regression appears.
 
-### Next macro-phase after V265 (readiness only)
+### Roadmap readiness (not implementation authorization)
 
-- Re-audit the roadmap after V265 is merged. XP/BTG fixtures remain an explicit user-input dependency; do not create duplicate Reports Intelligence or clean-state integration phases.
+- XP/BTG import validation needs genuine sanitized statements from the user.
+- TWR/XIRR needs sufficient defensible valuation history.
+- Corporate Events MODE_B needs provider/business direction.
+- Reports and clean-state integration are already on main; do not duplicate.
+- Seven-width smoke passed; no concrete mobile regression currently justifies
+  a new phase. Preserved audit residue is not a reason to delete or hide data.
 
 ## V263 PR #413 — historical state (2026-09-25)
 
