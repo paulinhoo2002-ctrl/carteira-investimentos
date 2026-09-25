@@ -1,5 +1,28 @@
 # Project Memory
 
+## Skills library audit — 2026-09-25
+
+- Physical inventory: 42 direct directories, 43 recursive SKILL.md files and
+  38 operational local packages. Two upstream-copy directories, one old
+  impeccable backup and references are not active packages. Only four
+  operational SKILL.md files are Git-tracked; most of .agents/skills is
+  machine-local/ignored, so each session must rediscover actual availability.
+- Superpowers is usable as a global plugin in this Codex environment, but no
+  local .agents/skills/superpowers package exists. Do not fabricate a shim;
+  if unavailable in another executor, record the gap and use a process fallback.
+- Audit found seven missing optional Markdown references (six web-quality-audit
+  sister-skill links and one Mantis blueprint); banner-design also lacks cited
+  optional brand/generation references. caveman-stats is unavailable in this
+  snapshot because its two required hooks are absent. No forbidden-project
+  reference or destructive default was found in the 43 instruction files.
+  Duplicates/backups were kept.
+- The broad local browser-harness trigger is subordinate to minimum-skill
+  routing. Superpowers orchestrates and does not replace specialist Skills.
+  Agent/model routing remains separate from Skill routing.
+- Snapshot, taxonomy, triggers, limitations and routing matrix:
+  docs/ai/SKILL_OPERATIONAL_CATALOG.md. The filesystem remains authoritative.
+  Changes are included in governance PR #417; no merge was performed.
+
 ## Workspace/worktree lifecycle audit — 2026-09-25
 
 - V265 PR #416 was squash-merged; `origin/main` is

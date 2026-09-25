@@ -1,4 +1,12 @@
 # Next Step
+## Skills/governance audit continuation
+
+- PR #417 carries the local Skills-library snapshot, dynamic discovery and
+  mandatory-first routing. Most local packages are not Git-tracked; recheck
+  live PR head, CI and Vercel before readiness.
+- Do not install, copy, delete or normalize local Skills in this audit.
+  V266 remains unstarted until a non-blocked scope is evidenced.
+
 
 ## Active — Workspace/worktree audit closeout (2026-09-25)
 

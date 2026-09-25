@@ -15,16 +15,17 @@
 
 ## INVENTÁRIO FÍSICO REAL — RECONCILIADO
 
-**Inventário reconciliado em 2026-09-12:** 29 pastas de primeiro nível e 32
-arquivos `SKILL.md` recursivos. A tabela também preserva uma pasta de
-referência sem `SKILL.md`; os três arquivos recursivos adicionais estão dentro
-de cópias upstream e não são Skills operacionais independentes.
+**Inventário local reconciliado em 2026-09-25:** 42 pastas de primeiro nível,
+43 arquivos `SKILL.md` recursivos; três arquivos adicionais estão em cópias
+upstream. São 38 pacotes operacionais, além de duas cópias upstream, um backup
+e uma pasta auxiliar sem `SKILL.md`. Este snapshot não garante instalação em
+outros clones.
 
 | # | PASTA | TIPO | STATUS | OBSERVAÇÃO |
 |---|-------|------|--------|------------|
 | 1 | `archify` | REAL_SKILL | Ativo | Diagramas arquiteturais validados |
 | 2 | `archify-main` | UPSTREAM_COPY | Backup/Referência | Cópia upstream `archify-main/archify-main/archify` — não usar como fonte canônica |
-| 3 | `banner-design` | REAL_SKILL | Baixo uso | Marketing/assets — não usar em tarefas normais do produto |
+| 3 | `banner-design` | REAL_SKILL | Limitações | Referência visual presente; referências auxiliares de marca/geração ausentes |
 | 4 | `brand` | REAL_SKILL | Baixo uso | Identidade/marca — apenas quando necessário |
 | 5 | `browser-harness` | REAL_SKILL | Ativo | CDP automation, QA browser |
 | 6 | `browser-harness-main` | UPSTREAM_COPY | Backup/Referência | Fonte upstream completa — não usar como skill operacional |
@@ -35,7 +36,7 @@ de cópias upstream e não são Skills operacionais independentes.
 | 11 | `caveman-compress` | REAL_SKILL | Ativo | Compactar documentação/memória |
 | 12 | `caveman-help` | REAL_SKILL | Ativo | Referência rápida |
 | 13 | `caveman-review` | REAL_SKILL | Ativo | Review de diff |
-| 14 | `caveman-stats` | REAL_SKILL | Ativo | Medir tokens |
+| 14 | `caveman-stats` | REAL_SKILL | Dependência ausente | Hooks requeridos pelo SKILL.md não estão instalados neste pacote |
 | 15 | `design` | REAL_SKILL | Baixo uso | Brand, tokens, UI, logo, CIP, slides, banners, ícones |
 | 16 | `design-system` | REAL_SKILL | Ativo | Tokens, componentes, slides |
 | 17 | `doubt-driven-development` | REAL_SKILL | **OBRIGATÓRIA** finance/persist | Revisão adversarial contexto fresco |
@@ -52,45 +53,42 @@ de cópias upstream e não são Skills operacionais independentes.
 | 28 | `ui-ux-pro-max` | REAL_SKILL | **SOB DEMANDA** | Design system amplo, pesquisa estruturada |
 | 29 | `firebase-security-rules-auditor` | REAL_SKILL | **ALTO RISCO** | Auditoria red-team de regras Firestore; nunca edita permissões automaticamente |
 | 30 | `web-quality-audit` | REAL_SKILL | **SOB DEMANDA** | Qualidade web, acessibilidade, performance, SEO e browser QA |
+| 31 | `deep-research` | REAL_SKILL | Sob demanda | Pesquisa multifuente; conferir fonte/custo |
+| 32 | `deploy-to-vercel` | REAL_SKILL | Condicional | Deploy somente com solicitação explícita |
+| 33 | `fact-checker` | REAL_SKILL | Sob demanda | Verificação de afirmação com fontes |
+| 34 | `find-skills` | REAL_SKILL | Condicional | Descoberta; não instala automaticamente |
+| 35 | `mantis-architecture` | REAL_SKILL | Guardrailed | Análise arquitetural |
+| 36 | `mantis-critic` | REAL_SKILL | Guardrailed | Crítica de propostas/artefatos |
+| 37 | `mantis-report` | REAL_SKILL | Guardrailed | Relatórios, sem patch |
+| 38 | `mantis-review` | REAL_SKILL | Guardrailed | Revisão, sem patch por padrão |
+| 39 | `mantis-structural-index` | REAL_SKILL | Limitação | Blueprint auxiliar referenciado ausente |
+| 40 | `mantis-threat-model` | REAL_SKILL | Guardrailed | Modelagem de ameaças |
+| 41 | `planning-with-files` | REAL_SKILL | Condicional | Plano local por missão, sem hooks |
+| 42 | `source-tracker` | REAL_SKILL | Condicional | Citações em banco local manual |
 
-**REAL_SKILL_COUNT = 26** (excluindo cópias upstream/backup e referências)
+**OPERATIONAL_SKILL_PACKAGE_COUNT = 38** (excluindo cópias upstream/backup e referências).
 
-`find-skills` é uma Skill global disponível ao agente, não uma pasta física
-deste repositório. `deploy-to-vercel` existe localmente, mas só pode ser usado
-quando houver pedido explícito de deploy; não faz parte do roteamento normal.
+`find-skills` existe como pacote local e também pode existir globalmente.
+Superpowers está disponível como plugin global neste ambiente, mas não existe
+.agents/skills/superpowers/SKILL.md; não copie nem fabrique um shim. Somente
+quatro Skills físicas estão rastreadas pelo Git (browser-testing-with-devtools,
+doubt-driven-development, interview-me e source-driven-development); as demais
+dependem da instalação local e devem ser redescobertas em cada ambiente.
 
 ---
 
 ## CLASSIFICAÇÃO OPERACIONAL
 
-### CORE (sempre disponíveis, carregar conforme SKILL_ROUTER)
-```
-interface-design, frontend-design, impeccable, playwright, browser-testing-with-devtools,
-source-driven-development, doubt-driven-development, design-system,
-firebase-security-rules-auditor, web-quality-audit, caveman, caveman-review,
-caveman-commit, caveman-compress, archify
-```
-
-### ON_DEMAND (carregar apenas quando critério explícito for atendido)
-```
-ui-ux-pro-max, ui-styling, brand, banner-design, slides, cavecrew, interview-me
-```
-
-### LOW_USE (raramente necessários no produto)
-```
-archify, banner-design, slides, brand, cavecrew
-```
-
-### BACKUP/REFERENCE (não carregar como skill operacional)
+### NÃO OPERACIONAIS (não carregar como Skill ativa)
 ```
 archify-main, browser-harness-main, impeccable.bak, references
 ```
 
-### DUPLICATE/UPSTREAM (cópias upstream preservadas para referência)
+### DUPLICATE/UPSTREAM (cópias preservadas para referência)
 ```
 archify-main → upstream archify
 browser-harness-main → upstream browser-harness
-impeccable.bak → backup impeccable
+impeccable.bak → backup antigo de impeccable
 ```
 
 ---

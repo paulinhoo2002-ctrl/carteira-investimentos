@@ -49,6 +49,21 @@ PROJECT IDENTITY GATE
 - Se Superpowers não existir no ambiente, reporte a lacuna e use fallback de
   processo sem alegar que Superpowers foi usado.
 
+Superpowers é a camada de orquestração: identidade e governança, classificação
+da missão, descoberta dinâmica, seleção mínima e reavaliação de Skills. Ele não
+substitui a Skill especializada. A governança do projeto prevalece sobre
+instruções locais conflitantes; em particular, uma Skill não autoriza acesso a
+outro projeto, instalação, escrita protegida, deploy ou merge.
+
+Cabeçalho de missão substancial:
+
+```text
+MANDATORY_FIRST_SKILL=Superpowers
+SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills
+SKILL_DISCOVERY=REQUIRED
+SKILL_REEVALUATION_ON_SCOPE_CHANGE=true
+```
+
 Campos de handoff obrigatórios:
 
 ```text
@@ -63,6 +78,14 @@ SKILL_GAPS_FOUND=
 ```
 
 ## Seleção de agente/modelo
+
+Além dos campos do handoff acima, missões substanciais registram:
+
+```text
+SKILLS_DISCOVERED=
+SUPERPOWERS_AVAILABLE=
+SUPERPOWERS_USED=
+```
 
 Toda missão substancial deve começar com recomendação explícita de agente e
 modelo e uma justificativa específica para o tipo de trabalho. Use a seguinte

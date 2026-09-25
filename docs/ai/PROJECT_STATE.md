@@ -55,6 +55,21 @@
   Nenhuma macrofase independente estava suficientemente evidenciada para
   iniciar implementação nesta auditoria.
 
+## Skills library audit — 2026-09-25
+
+- Snapshot: 42 direct folders, 43 SKILL.md files, 38 physical operational
+  packages; caveman-stats cannot run without its two required hooks, and
+  banner-design has missing optional references.
+  Four operational Skill files are tracked; most of the library is
+  machine-local/ignored and must be rediscovered in each executor.
+- Superpowers is available through the global plugin in this session, not as a
+  local package under .agents/skills. No shim was created. Seven optional
+  Markdown links are missing in web-quality-audit/Mantis; banner-design also
+  lacks cited auxiliary references, and caveman-stats lacks its required hooks.
+  No package was deleted.
+- docs/ai/SKILL_OPERATIONAL_CATALOG.md now records classification and routing.
+  Changes are included in PR #417; merge remains unauthorized.
+
 ## V265 — QA harness resilience — 2026-09-25
 
 - Branch `feature/v265-qa-harness-resilience`, based on V264 merge `10995f31d7ada0b7f8a02e6317813de0c21fc55d`. This phase hardens only local QA infrastructure: the static test server now reads a file before sending HTTP 200 (so missing generated assets return 404 without crashing), supports an isolated CLI port, and has a regression test. QA scripts now include the missing `test:qa-harness` command and build `modern/dist` before browser smoke.

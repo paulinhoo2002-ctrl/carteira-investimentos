@@ -2,6 +2,11 @@
 
 ## NOW
 
+- PR #417 also contains the Skills-library audit: 38 local operational packages,
+  only four tracked Skill files, global-only Superpowers in this environment,
+  and optional missing references documented. Recheck exact-head CI/preview.
+  No Skills were installed or deleted.
+
 - V265 PR #416 is merged to `main` as `5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`.
 - Governance PR #414 is merged as `98420aea10b552264a729b8470d91ff129567640`.
 - Workspace audit removed 14 confirmed-empty orphan folders and three merged, clean worktrees with exact squash-tree equivalence. No branch was deleted. One empty residual parent is OS-locked; V264 source/dependency residue remains preserved.

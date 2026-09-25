@@ -62,6 +62,8 @@ Para toda missão substancial neste projeto:
 3. Descubra o inventário real em
    `C:\Projetos\carteira-investimentos\.agents\skills`; selecione apenas o
    conjunto mínimo relevante e reavalie se o escopo mudar.
+   O catálogo versionado é um snapshot; valide a instalação física atual e
+   não presuma que pacotes locais ignorados pelo Git existem em outros clones.
 4. Siga `docs/SKILLS_ROUTING.md` para agente/modelo, justificativa da escolha,
    fallback, limites e campos de relatório. Esta preferência não permite
    alegar que um provider/modelo foi usado quando ele não estiver disponível.

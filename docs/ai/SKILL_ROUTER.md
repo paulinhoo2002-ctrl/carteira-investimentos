@@ -92,8 +92,10 @@ SKILL_GAPS_FOUND=
 SCOPE_GUARD=
 ```
 
-`find-skills` deve ser usado no início de missões grandes, sem instalação
-automática. Skills não concedem autorização sobre áreas protegidas.
+`find-skills` deve ser carregado quando a missão realmente procura capacidade
+ou Skill ausente. Para auditar a biblioteca instalada, a descoberta obrigatória
+é física em `.agents/skills`; não faça busca externa nem instalação só por ser
+uma missão grande. Skills não concedem autorização sobre áreas protegidas.
 
 ## TRACKS DE UI (MUTUAMENTE EXCLUSIVOS DURANTE A MESMA FASE)
 
