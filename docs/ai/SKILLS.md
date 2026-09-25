@@ -36,7 +36,7 @@ outros clones.
 | 11 | `caveman-compress` | REAL_SKILL | Ativo | Compactar documentação/memória |
 | 12 | `caveman-help` | REAL_SKILL | Ativo | Referência rápida |
 | 13 | `caveman-review` | REAL_SKILL | Ativo | Review de diff |
-| 14 | `caveman-stats` | REAL_SKILL | Dependência ausente | Hooks requeridos pelo SKILL.md não estão instalados neste pacote |
+| 14 | `caveman-stats` | REAL_SKILL | Desativado para roteamento | Hooks requeridos pelo SKILL.md não estão instalados neste pacote |
 | 15 | `design` | REAL_SKILL | Baixo uso | Brand, tokens, UI, logo, CIP, slides, banners, ícones |
 | 16 | `design-system` | REAL_SKILL | Ativo | Tokens, componentes, slides |
 | 17 | `doubt-driven-development` | REAL_SKILL | **OBRIGATÓRIA** finance/persist | Revisão adversarial contexto fresco |

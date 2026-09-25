@@ -34,7 +34,7 @@ Snapshot físico conferido em 2026-09-25:
 | caveman-compress | DOCUMENTATION | Texto longo → resumo fiel | Preservar IDs, hashes, invariantes e autorizações | ACTIVE |
 | caveman-help | OTHER | Dúvida de modo → referência rápida | Consulta, não altera estado | ACTIVE |
 | caveman-review | CODE_REVIEW | Diff → achados concisos | Não substitui testes ou review independente | ACTIVE |
-| caveman-stats | OTHER | Contexto → métricas de tokens | Hooks requeridos `caveman-stats.js` e `caveman-mode-tracker.js` ausentes | UNAVAILABLE_HOOK_DEPENDENCY |
+| caveman-stats | OTHER | Contexto → métricas de tokens | Hooks requeridos `caveman-stats.js` e `caveman-mode-tracker.js` ausentes | DISABLED_FOR_ROUTING |
 | deep-research | OTHER | Questão ampla → síntese com fontes | Verificar ferramenta/custo; sem custo recorrente por padrão | ACTIVE |
 | deploy-to-vercel | RELEASE_READINESS | Pedido de deploy → fluxo Vercel | Somente solicitação explícita | ACTIVE_WITH_LIMITATIONS |
 | design | VISUAL_UX | Brief criativo → artefato visual | Especializado; fora do fluxo normal | ACTIVE |
@@ -68,8 +68,9 @@ continua separado da seleção de Skills.
 ## Saúde estrutural e sobreposições
 
 - `caveman-stats` não pode executar a função anunciada neste snapshot: o
-  `SKILL.md`/README dependem de dois hooks ausentes do pacote. Classificar como
-  `UNAVAILABLE_HOOK_DEPENDENCY`; não simular ou estimar métricas.
+  `SKILL.md`/README dependem de dois hooks ausentes do pacote. Está
+  `DISABLED_FOR_ROUTING`; não simular ou estimar métricas. Reavaliar apenas
+  após localizar e validar ambos os hooks no ambiente real.
 - `banner-design` contém a referência principal de tamanhos/estilos, mas cita
   `docs/brand-guidelines.md` e exemplos de geração não encontrados. O fluxo é
   utilizável com limitações; não presumir que os materiais/skills citados existam.
@@ -116,7 +117,7 @@ continua separado da seleção de Skills.
 | Review final | `caveman-review` | escopo, risco e simplicidade do diff | não substitui testes |
 | Mensagem de commit | `caveman-commit` | mensagem curta e precisa | commit continua gate separado |
 | Contexto longo | `caveman-compress` | compactar documentação sem perder invariantes | nunca remover hashes, IDs ou autorizações |
-| Medir tokens | `caveman-stats` | acompanhar economia de contexto | opcional |
+| Medir tokens | Nenhuma Skill local elegível | `caveman-stats` desativada; não inventar métricas | indisponível até validar ambos os hooks |
 | Ajuda sobre modos | `caveman-help` | referência rápida | não altera governança |
 | Marca, banner ou apresentação | `brand`, `banner-design`, `slides`, `design` | materiais de comunicação | baixo uso; não são produto normal |
 | Deploy | `deploy-to-vercel` | fluxo de publicação | somente pedido explícito; sem deploy automático |
@@ -133,6 +134,25 @@ continua separado da seleção de Skills.
    `playwright` para transformar a interação em teste repetível.
 6. Preferir ferramentas e processamento locais, sem APIs pagas ou custo
    recorrente, salvo autorização explícita.
+
+## Dry-runs de roteamento — 2026-09-25
+
+Em todos os cenários: identidade/segurança → Superpowers → classificação →
+descoberta física → seleção mínima elegível. Roteamento de agente/modelo é
+decidido separadamente e não altera a seleção técnica de Skills.
+
+| Cenário | Classificação | Skills especializadas elegíveis após Superpowers | Exclusão/limite verificado |
+|---|---|---|---|
+| Git/worktree audit | GIT_WORKTREE | `caveman-review` se revisão do diff/doc ajudar | Não selecionar fluxo destrutivo; cada operação segue gates Git |
+| Bug debugging | DEBUGGING | `superpowers:systematic-debugging` se disponível + Skill de domínio mínima | Superpowers não autoriza mutação protegida; não selecionar pacote ausente |
+| Visual/mobile | UI_UX / RESPONSIVE | uma trilha entre `interface-design`, `frontend-design` ou `impeccable`; `playwright` para prova | `banner-design` não é trilha de produto; pedido de banner usa só referências existentes |
+| Financial data | FINANCIAL_LOGIC | `doubt-driven-development` + `source-driven-development` se fonte externa importar | Preservar autoridade manual/proveniência; UNKNOWN não vira zero |
+| Import Center | IMPORT / DATA_INTEGRITY | `doubt-driven-development`; `playwright` somente se UI/E2E mudar | Não selecionar `caveman-stats`; suporte de broker requer fixtures reais |
+| Release certification | RELEASE_READINESS | `verification-before-completion`; `deploy-to-vercel` apenas com pedido explícito | Sem merge/deploy automático; `caveman-stats` excluída |
+
+Resultado esperado nos seis dry-runs: Superpowers primeiro, menor conjunto
+útil, nenhuma Skill `BROKEN`/`DISABLED_FOR_ROUTING`, limitações avaliadas
+antes da seleção e agente/modelo roteado fora do catálogo técnico de Skills.
 
 ## Lacunas e duplicidades
 

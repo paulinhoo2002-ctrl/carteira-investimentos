@@ -71,7 +71,7 @@ Princípio:
 | BROWSER_QA / E2E / REGRESSION_TESTING | `browser-harness`, `playwright` | Medium | sessão/auth/CDP falhar repetidamente |
 | DOCUMENTATION / ARCHITECTURE_DOCS | `archify` quando visual ajudar, `caveman-review` | Low/Medium | decisão arquitetural não for trivial |
 | SKILL_DISCOVERY | `find-skills` | Low | apenas quando a capacidade não existir localmente |
-| CONTEXT_COMPRESSION / TOKEN_ECONOMY | `caveman-compress`, `caveman-stats` | Low | nunca remover invariantes, IDs, hashes ou autorizações |
+| CONTEXT_COMPRESSION / TOKEN_ECONOMY | `caveman-compress` | Low | nunca remover invariantes, IDs, hashes ou autorizações |
 | CODE_REVIEW / SELECTIVE_COMMITS | `caveman-review`, `caveman-commit` | Medium | sempre antes de integração/commit autorizado |
 
 ## REGRA DE BOOT AUTOMÁTICO
@@ -96,6 +96,18 @@ SCOPE_GUARD=
 ou Skill ausente. Para auditar a biblioteca instalada, a descoberta obrigatória
 é física em `.agents/skills`; não faça busca externa nem instalação só por ser
 uma missão grande. Skills não concedem autorização sobre áreas protegidas.
+
+## ELEGIBILIDADE DE SKILLS
+
+- `BROKEN` e `DISABLED_FOR_ROUTING` nunca entram na seleção automática.
+- `ACTIVE_WITH_LIMITATIONS` só pode ser selecionada quando a limitação não
+  afeta a tarefa; se afetar, escolha alternativa válida ou reporte a lacuna.
+- `caveman-stats` está `DISABLED_FOR_ROUTING` neste snapshot: faltam os hooks
+  `caveman-stats.js` e `caveman-mode-tracker.js` exigidos pelo pacote. Não
+  estimar nem simular resultados. Reativar após localizar e validar os hooks.
+- `banner-design` permanece `ACTIVE_WITH_LIMITATIONS`: a referência de tamanhos
+  existe, mas brand guidelines/exemplos citados faltam; usar apenas recursos
+  presentes e não alegar que geradores ou referências indisponíveis foram usados.
 
 ## TRACKS DE UI (MUTUAMENTE EXCLUSIVOS DURANTE A MESMA FASE)
 
@@ -154,7 +166,7 @@ Transformar os princípios úteis de economia em regra curta de governança:
 | `caveman-commit` | Commit messages quando necessário (curta, conventional, descreve comportamento) |
 | `caveman-compress` | Somente para compactar documentação/memória longa |
 | `caveman-help` | Referência rápida dos modos/comandos |
-| `caveman-stats` | Medir custo de contexto ou comparar modos |
+| `caveman-stats` | Desativada para roteamento até que ambos os hooks obrigatórios sejam validados |
 
 ---
 
