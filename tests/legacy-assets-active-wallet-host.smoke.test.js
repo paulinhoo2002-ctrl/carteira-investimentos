@@ -40,10 +40,10 @@ browserTest('active wallet host smoke navigation', async () => {
       await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
       await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
       await assert.equal(await page.locator('.assets-report__table').count(), 1);
-      await assert.equal(await page.getByText('PETR4').count() > 0, true);
-      await assert.equal(await page.getByText('ITUB4').count() > 0, true);
-      await assert.equal(await page.getByText('WEGE3').count() > 0, true);
-      await assert.equal(await page.getByText('MXRF11').count(), 0);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('PETR4').count() > 0, true);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('ITUB4').count() > 0, true);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('WEGE3').count() > 0, true);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('MXRF11').count(), 0);
       await assert.equal(
         await page.locator('.assets-report__notice').textContent(),
         'Snapshot legado somente leitura. React nao escreve na fonte.',
@@ -53,6 +53,12 @@ browserTest('active wallet host smoke navigation', async () => {
       await assert.match(await page.locator('.assets-report__diagnostic').innerText(), /Leitura inicial pronta/);
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'real-wallet');
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-refresh-status'), 'idle');
+      await page.locator('#modern-sidebar .sidebar__item').filter({ hasText: 'Renda fixa' }).click();
+      await assert.equal(await page.locator('#active-wallet-host-root #page-fixed-income').textContent(), 'Renda fixa');
+      await assert.equal(
+        await page.locator('#active-wallet-host-root .fixed-income-readonly__table-wrap').evaluate((element) => getComputedStyle(element).overflowX),
+        'auto',
+      );
     });
 
     await runViewportScenario(browser, smokeUrl, { width: 390, height: 844 }, async (page) => {
@@ -64,10 +70,10 @@ browserTest('active wallet host smoke navigation', async () => {
       await page.locator('#modern-sidebar .sidebar__item').filter({ hasText: 'Relatorios' }).press('Enter');
       await assert.equal(await page.locator('h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
       await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
-      await assert.equal(await page.getByText('PETR4').count() > 0, true);
-      await assert.equal(await page.getByText('ITUB4').count() > 0, true);
-      await assert.equal(await page.getByText('WEGE3').count() > 0, true);
-      await assert.equal(await page.getByText('MXRF11').count(), 0);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('PETR4').count() > 0, true);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('ITUB4').count() > 0, true);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('WEGE3').count() > 0, true);
+      await assert.equal(await page.locator('#active-wallet-host-root').getByText('MXRF11').count(), 0);
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-origin-mode'), 'real-wallet');
       await assert.equal(await page.locator('.assets-report__diagnostic').getAttribute('data-refresh-status'), 'idle');
@@ -116,9 +122,11 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
         /Relat.rio experimental somente leitura/,
       );
       await assert.equal(await page.getByRole('button', { name: 'Voltar ao legado' }).count(), 1);
-      await page.getByRole('button', { name: 'Voltar ao legado' }).click();
+      const returnButton = page.getByRole('button', { name: 'Voltar ao legado' });
+      await returnButton.focus();
+      await returnButton.press('Enter');
       await page.waitForURL((url) => !url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
-      await page.locator('.hdr-title').waitFor();
+      await assert.equal(await page.locator('#root').isVisible(), true);
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 0);
       await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
@@ -141,9 +149,11 @@ browserTest('legacy reports experimental entry opens host and returns to legacy'
       const menuButton = page.locator('.modern-menu-button');
       await menuButton.press('Enter');
       await assert.equal(await page.locator('#active-wallet-host-root h2#page-reports').textContent(), 'Previa somente leitura de Relatorios');
-      await page.getByRole('button', { name: 'Voltar ao legado' }).click();
+      const returnButton = page.getByRole('button', { name: 'Voltar ao legado' });
+      await returnButton.focus();
+      await returnButton.press('Enter');
       await page.waitForURL((url) => !url.href.includes('activeWalletHost=1') && url.searchParams.get('testMode') === '1');
-      await page.locator('.hdr-title').waitFor();
+      await assert.equal(await page.locator('#root').isVisible(), true);
       await assert.equal(await page.locator('#readonly-reports-experimental-banner').count(), 0);
       await assert.equal(await page.locator('.hdr-title').textContent(), 'Carteira de Investimentos');
       await assert.equal(await page.locator('.reports-experiment-entry').count(), 0);
@@ -221,14 +231,24 @@ async function runViewportScenario(browser, url, viewport, scenario) {
 }
 
 async function assertPageReady(page) {
-  await page.locator('#modern-sidebar').waitFor();
-  await assert.equal(await page.locator('#modern-sidebar').isVisible(), true);
+  await page.locator('#modern-sidebar').waitFor({ state: 'attached' });
+  await assert.equal(await page.locator('#modern-sidebar').isVisible(), await page.evaluate(() => innerWidth >= 1024));
+  await assert.equal(await page.locator('#root').isHidden(), true);
+  await assert.equal(await page.locator('link[data-active-wallet-host-styles]').count(), 1);
+  await assert.equal(
+    await page.locator('link[data-active-wallet-host-styles]').evaluate((element) => Boolean(element.sheet?.cssRules.length)),
+    true,
+  );
   assert.equal(await page.evaluate(() => Object.prototype.hasOwnProperty.call(window, 'buildReportAssetRow')), false);
   assert.equal(await page.evaluate(() => Object.prototype.hasOwnProperty.call(window, 'createLegacyReportsReadonlySource')), false);
 }
 
 async function assertLegacyPageReady(page) {
-  await page.locator('.shell .hdr-title').first().waitFor();
+  await assert.equal(
+    await page.locator('#root').isHidden(),
+    false,
+    `Legacy route unexpectedly hidden for query ${new URL(page.url()).search}`,
+  );
   await assert.equal(await page.locator('.shell .hdr-title').first().textContent(), 'Carteira de Investimentos');
   await assert.match(await page.locator('.shell .hdr-sub').first().textContent(), /Modo de teste local/);
   await assert.equal(await page.locator('.shell .tab').count() >= 7, true);

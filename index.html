@@ -8524,6 +8524,25 @@ function openReadonlyReportsExperimentalHost(){
 function returnFromReadonlyReportsExperimentalHost(){
   location.assign(readonlyReportsLegacyReturnUrl());
 }
+function loadExperimentalActiveWalletHostStylesheet(){
+  const existing=document.querySelector('link[data-active-wallet-host-styles]');
+  if(existing){
+    if(existing.sheet) return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      existing.addEventListener('load',resolve,{once:true});
+      existing.addEventListener('error',()=>reject(new Error('Estilos da previa moderna indisponiveis.')),{once:true});
+    });
+  }
+  return new Promise((resolve,reject)=>{
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href=new URL('/modern/dist/active-wallet-host.css',location.origin).href;
+    link.dataset.activeWalletHostStyles='true';
+    link.addEventListener('load',resolve,{once:true});
+    link.addEventListener('error',()=>reject(new Error('Estilos da previa moderna indisponiveis.')),{once:true});
+    document.head.appendChild(link);
+  });
+}
 function installReadonlyReportsExperimentalBanner(targetRoot){
   if(document.getElementById('readonly-reports-experimental-banner')) return;
   const banner=document.createElement('section');
@@ -9407,6 +9426,7 @@ function load(){
 }
 
 async function bootstrapExperimentalActiveWalletHost(){
+  await loadExperimentalActiveWalletHostStylesheet();
   const hostBootstrapModule = await import('./modern/dist/assets/host-bootstrap.js');
   const bootstrapHost = hostBootstrapModule.bootstrapHost ?? hostBootstrapModule.b ?? hostBootstrapModule.default;
   if(typeof bootstrapHost !== 'function') throw new TypeError('Bootstrap experimental da carteira ativa indisponivel.');
@@ -35934,6 +35954,11 @@ function startPublicEventsSync(){
 // ══════════════════════════════════════
 loadThemePreference();
 if(isActiveWalletHostMode()){
+  const legacyApplicationRoot=document.getElementById('root');
+  if(legacyApplicationRoot){
+    legacyApplicationRoot.hidden=true;
+    legacyApplicationRoot.style.display='none';
+  }
   if(isLocalTestMode()){
     applyLocalTestFixture();
   }else{
