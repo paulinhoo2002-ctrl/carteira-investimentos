@@ -61,3 +61,8 @@ playwright-report/
 *.trace
 *.har
 .qa-state/
+
+# V262 QA helper artifacts
+.qa-*.js
+.qa-v262-screenshots/
+.qa-v262-screenshots-final/

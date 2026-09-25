@@ -1,3 +1,6 @@
+import { parseIpcaContract } from './ipcaContractParser.ts';
+import { analyzeIpcaIndexDiagnostics, type IpcaIndexDiagnostics, type IpcaMonthlyIndex } from './ipcaIndexDiagnostics.ts';
+
 export type ValuationStatus =
   | 'MANUAL_AUTHORITATIVE'
   | 'SHADOW_AVAILABLE'
@@ -30,6 +33,7 @@ export type ValuationState = {
   valuationMethod: string | null;
   shadowCoverage: number | null;
   limitations: readonly string[];
+  ipcaIndexDiagnostics: IpcaIndexDiagnostics | null;
 
   // Comparison
   differenceAmount: number | null;
@@ -44,8 +48,14 @@ export type ValuationState = {
   lastUpdatedAt: string | null;
 };
 
-export function computeFixedIncomeValuationState(asset: ReadonlyFixedIncomeItem | null, cdiRows: readonly CdiRow[]): ValuationState {
+export function computeFixedIncomeValuationState(
+  asset: ReadOnlyFixedIncomeItem | null,
+  cdiRows: readonly CdiRow[],
+  ipcaRows: readonly IpcaMonthlyIndex[] = [],
+  valuationAsOf?: string, // optional fixed valuation date for testing
+): ValuationState {
   const now = new Date().toISOString().slice(0, 10);
+  const effectiveAsOf = valuationAsOf ?? now;
 
   const emptyState: ValuationState = {
     authoritativeValue: null,
@@ -63,6 +73,7 @@ export function computeFixedIncomeValuationState(asset: ReadonlyFixedIncomeItem 
     valuationMethod: null,
     shadowCoverage: null,
     limitations: ['asset is null or undefined'],
+    ipcaIndexDiagnostics: null,
     differenceAmount: null,
     differencePercent: null,
     comparisonStatus: 'NOT_COMPARABLE',
@@ -110,6 +121,7 @@ export function computeFixedIncomeValuationState(asset: ReadonlyFixedIncomeItem 
   let valuationMethod: string | null = null;
   let shadowCoverage: number | null = null;
   const limitations: string[] = [];
+  let ipcaIndexDiagnostics: IpcaIndexDiagnostics | null = null;
 
   // Initialize comparison variables early
   let differenceAmount: number | null = null;
@@ -167,10 +179,24 @@ export function computeFixedIncomeValuationState(asset: ReadonlyFixedIncomeItem 
     // Skip CDI data freshness check when inputs are missing
     // comparison variables already initialized above
   } else if (/IPCA/i.test(indexer) || /IPCA/i.test(contractedRate)) {
-    // IPCA+ position - no automatic valuation
+    const ipcaContract = parseIpcaContract(contractedRate, indexer);
+    ipcaIndexDiagnostics = analyzeIpcaIndexDiagnostics(ipcaRows, {
+      applicationDate,
+      asOf: effectiveAsOf,
+    });
     shadowStatus = 'UNSUPPORTED';
-    limitations.push('IPCA+ automatic market valuation not supported');
-    valuationMethod = 'UNSUPPORTED_IPCA';
+    valuationMethod = 'UNSUPPORTED_IPCA_EXACT';
+    shadowSource = ipcaRows.length > 0 ? 'BCB_SGS_IPCA' : null;
+    shadowSourceAsOf = ipcaIndexDiagnostics.sourceAsOf;
+    shadowFreshness = ipcaIndexDiagnostics.freshness;
+    shadowCoverage = ipcaIndexDiagnostics.coveragePercent;
+    limitations.push('IPCA index diagnostics do not determine a security value; instrument-specific VNA, cash flows and contract conventions are not modeled.');
+    if (!ipcaContract) limitations.push('IPCA contract terms are malformed or unsupported.');
+    if (ipcaIndexDiagnostics.coverageStatus === 'PARTIAL') {
+      limitations.push(`IPCA index coverage is partial (${ipcaIndexDiagnostics.coveragePercent}%).`);
+    } else if (ipcaIndexDiagnostics.coverageStatus === 'UNAVAILABLE') {
+      limitations.push('IPCA index coverage is unavailable for the expected period.');
+    }
   } else if (/PREFIX|PRE-FIX|PRÉ/i.test(indexer) || /PREFIX|PRE-FIX|PRÉ/i.test(contractedRate)) {
     // Prefixado position
     shadowStatus = 'UNSUPPORTED';
@@ -229,6 +255,7 @@ export function computeFixedIncomeValuationState(asset: ReadonlyFixedIncomeItem 
     valuationMethod,
     shadowCoverage,
     limitations,
+    ipcaIndexDiagnostics,
     differenceAmount,
     differencePercent,
     comparisonStatus,

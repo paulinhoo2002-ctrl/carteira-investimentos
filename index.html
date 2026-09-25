@@ -29,7 +29,7 @@
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
-  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.1';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.2';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode){
     document.documentElement.dataset.theme='dark';
@@ -4057,7 +4057,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   #root>#investBottomNav{position:relative;inset:auto;width:100%;min-height:calc(62px + env(safe-area-inset-bottom));height:auto;flex:0 0 auto}
   #investBottomNav button{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-    border:0;background:transparent;color:#4a6080;font-size:11px;font-weight:700;cursor:pointer;
+    border:0;background:transparent;color:#8194b0;font-size:11px;font-weight:700;cursor:pointer;
     padding:6px 2px;border-radius:10px;transition:color .15s ease;-webkit-tap-highlight-color:transparent;
   }
   #investBottomNav button .ni{font-size:18px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
@@ -4073,7 +4073,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   #investBottomNav .nav-center.act .ni,#investBottomNav .nav-center:hover .ni{
     transform:scale(1.08);box-shadow:0 10px 28px rgba(99,102,241,.6);
   }
-  #investBottomNav .nav-center span:last-child{font-size:11px;color:#4a6080;font-weight:800;margin-top:1px}
+  #investBottomNav .nav-center span:last-child{font-size:11px;color:#8194b0;font-weight:800;margin-top:1px}
   #investBottomNav .nav-center.act span:last-child{color:#818cf8}
   .tabs{display:none!important}
   .wrap{padding:10px 10px 88px!important}
@@ -6395,8 +6395,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-controls{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(2,minmax(150px,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
       .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:11px;text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-row-meta.pos{color:var(--success)}
-      .premium-rf-row-meta.neg{color:var(--danger)}
-      .premium-rf-row-meta.neutral{color:var(--muted)}
+            .premium-rf-row-meta.neg{color:#f87171}
+            .premium-rf-row-meta.neutral{color:var(--muted)}
       .premium-rf-row-value{min-width:174px;text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
       .premium-rf-row-financial{display:flex;align-items:baseline;justify-content:flex-end;gap:6px}
       .premium-rf-row-financial-label{color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
@@ -6435,7 +6435,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-review-action:hover{background:var(--surface);border-color:var(--accent)}
       .premium-rf-review-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:10px;line-height:1.35}
-      @media(max-width:1199px){.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
+      .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
+      .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
+      @media(max-width:1499px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
+      @media(max-width:1199px){.premium-rf-grid{grid-template-columns:1fr}.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
         .premium-rf-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
         .premium-rf-header{align-items:stretch;flex-direction:column;gap:10px}
@@ -6448,11 +6451,17 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-grid,.premium-rf-distribution{grid-template-columns:1fr}
         .premium-rf-controls{grid-template-columns:1fr;padding:10px 12px}
         .premium-rf-position-row,.premium-rf-maturity-row{padding:10px 12px}
+        .premium-rf-row-main{flex-basis:100%}
+        .premium-rf-row-value{text-align:left}
+        .premium-rf-row-financial,.premium-rf-row-results{justify-content:flex-start}
+        .premium-rf-row-actions{justify-content:flex-start}
         .premium-rf-review-groups{grid-template-columns:1fr}
         .premium-rf-review-group+.premium-rf-review-group,.premium-rf-review-group:nth-child(3),.premium-rf-review-group:nth-child(4){border-left:0;border-top:1px solid var(--border)}
         .premium-rf-review-queue-head,.premium-rf-review-group{padding-left:12px;padding-right:12px}
         .premium-rf-review-group.is-empty{padding-top:9px;padding-bottom:9px}
         .premium-rf-review-group.is-empty .premium-rf-review-list{display:none}
+        .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr)}
+        .premium-rf-ipca-diagnostics .premium-row-value{max-width:none;text-align:left}
       }
       @media(max-width:390px){.premium-rf-kpi-value{font-size:14px}.premium-rf-row-meta{max-width:190px}}
       @media(max-width:767px){
@@ -8137,21 +8146,118 @@ const THEME_COLOR  = { dark:'#07090f', light:'#e8eff6' };
 
 function isV250OfflineCachedSession(){
   const marker=window.V250OfflineSession?.read?.();
-  const hasSnapshot=window.V250OfflineSession?.snapshotHasData?.(localStorage,STOR)===true;
+  const hasSnapshot=isProtectedReadOnlyQaBoot()
+    ? Boolean(FB.readOnlyOfflineSnapshotReady && marker?.scope===FB.readOnlyOfflineSnapshotScope && marker?.snapshotSignature===FB.readOnlyOfflineSnapshotSignature)
+    : window.V250OfflineSession?.snapshotHasData?.(localStorage,STOR)===true;
   const eligible=window.V250OfflineSession?.eligible?.({online:navigator.onLine,marker,hasSnapshot})===true;
   document.documentElement.dataset.v250OfflineCachedSession=String(eligible);
   return eligible;
 }
 async function rememberV250TrustedSnapshot(){
   if(!FB.user || navigator.onLine===false || !window.V250OfflineSession) return false;
+  if(isProtectedReadOnlyQaBoot()) return persistProtectedReadOnlyOfflineSnapshot();
   if(!window.V250OfflineSession.snapshotHasData?.(localStorage,STOR)) return false;
   try{
     const scope=await window.V250OfflineSession.scopeHash(FB.user);
     return window.V250OfflineSession.mark(localStorage,{scope,snapshotSignature:FB.lastCloudSignature});
   }catch(_){ return false; }
 }
+function protectedReadOnlyOfflineState(){
+  syncWalletFromState();
+  const stored=PersistenceCore.buildStoredState
+    ? PersistenceCore.buildStoredState(S,normalizeGoals)
+    : S;
+  return {
+    wallets: Array.isArray(stored.wallets) ? stored.wallets : [],
+    activeWalletId: String(stored.activeWalletId||''),
+    assets: Array.isArray(stored.assets) ? stored.assets : [],
+    aportes: Array.isArray(stored.aportes) ? stored.aportes : [],
+    proventos: Array.isArray(stored.proventos) ? stored.proventos : [],
+    rfEvents: Array.isArray(stored.rfEvents) ? stored.rfEvents : [],
+    tab: String(stored.tab||'dashboard'),
+    divGoal: Number(stored.divGoal)||0,
+    goals: stored.goals&&typeof stored.goals==='object' ? stored.goals : {},
+    hideValues: !!stored.hideValues,
+    apHistoryOpen: !!stored.apHistoryOpen,
+    dashPeriod: Number(stored.dashPeriod)||12,
+    dashType: String(stored.dashType||'all'),
+    rentPeriod: String(stored.rentPeriod||'all'),
+    rentType: String(stored.rentType||'all'),
+    rentBench: String(stored.rentBench||'CDI'),
+    irpfYear: Number(stored.irpfYear)||new Date().getFullYear(),
+    irpfStep: Number(stored.irpfStep)||1,
+    learnMeta: stored.learnMeta&&typeof stored.learnMeta==='object' ? stored.learnMeta : {},
+  };
+}
+async function persistProtectedReadOnlyOfflineSnapshot(){
+  if(!isProtectedReadOnlyQaBoot() || !FB.user || !FB.access.allowed || !FB.cloudLoaded || FB.pendingCloudSave || navigator.onLine===false) return false;
+  if(!CloudSyncState.isDataConfirmed(cloudSyncState())) return false;
+  try{
+    const scope=await window.V250OfflineSession.scopeHash(FB.user);
+    if(!scope) return false;
+    const saved=await window.V250OfflineSession.writeReadOnlySnapshot(localStorage,{
+      scope,
+      state:protectedReadOnlyOfflineState(),
+      asOf:typeof FB.lastCloudUpdate==='string' ? FB.lastCloudUpdate : null,
+    });
+    if(!saved) return false;
+    if(!window.V250OfflineSession.mark(localStorage,{scope,snapshotSignature:saved.signature})) return false;
+    FB.readOnlyOfflineSnapshotReady=true;
+    FB.readOnlyOfflineSnapshotScope=scope;
+    FB.readOnlyOfflineSnapshotSignature=saved.signature;
+    return true;
+  }catch(_){ return false; }
+}
+function applyProtectedReadOnlyOfflineState(snapshot){
+  const state=snapshot?.state;
+  if(!state || !Array.isArray(state.wallets) || !state.wallets.length) return false;
+  const activeWalletId=String(state.activeWalletId||'');
+  const wallets=state.wallets.map((wallet,index)=>normalizeWalletEntry(wallet,index===0?'Carteira principal':`Carteira ${index+1}`));
+  const active=wallets.find(wallet=>String(wallet.id||'')===activeWalletId);
+  if(!active) return false;
+  S.wallets=wallets;
+  S.activeWalletId=activeWalletId;
+  syncStateFromWallet(active);
+  if(state.tab) S.tab=state.tab==='ranking'?'ativos':['renda-fixa','desempenho'].includes(state.tab)?'ativos':String(state.tab);
+  if(state.divGoal!==undefined) S.divGoal=Number(state.divGoal)||0;
+  if(state.hideValues!==undefined) S.hideValues=!!state.hideValues;
+  if(state.apHistoryOpen!==undefined) S.apHistoryOpen=!!state.apHistoryOpen;
+  if(state.dashPeriod!==undefined) S.dashPeriod=Math.max(3,Number(state.dashPeriod)||12);
+  if(state.dashType!==undefined) S.dashType=String(state.dashType||'all');
+  if(state.rentPeriod!==undefined) S.rentPeriod=String(state.rentPeriod||'all');
+  if(state.rentType!==undefined) S.rentType=String(state.rentType||'all');
+  if(state.rentBench!==undefined) S.rentBench=String(state.rentBench||'CDI');
+  if(state.irpfYear!==undefined) S.irpfYear=Math.max(2010,Number(state.irpfYear)||new Date().getFullYear());
+  if(state.irpfStep!==undefined) S.irpfStep=Math.min(4,Math.max(1,Number(state.irpfStep)||1));
+  if(state.goals&&typeof state.goals==='object') S.goals=normalizeGoals(state.goals);
+  if(state.learnMeta&&typeof state.learnMeta==='object') S.learnMeta=state.learnMeta;
+  rebuildLearnMeta();
+  FB.lastCloudUpdate=snapshot.asOf;
+  FB.lastCloudSignature=cloudSnapshotSignature();
+  return true;
+}
+async function restoreProtectedReadOnlyOfflineSnapshot(user){
+  if(!isProtectedReadOnlyQaBoot() || navigator.onLine!==false || !user || !window.V250OfflineSession) return false;
+  try{
+    const marker=window.V250OfflineSession.read(localStorage);
+    const scope=await window.V250OfflineSession.scopeHash(user);
+    if(!marker?.eligible || !scope || marker.scope!==scope || !marker.snapshotSignature) return false;
+    const snapshot=await window.V250OfflineSession.readReadOnlySnapshot(localStorage,{scope,signature:marker.snapshotSignature});
+    if(!snapshot || !applyProtectedReadOnlyOfflineState(snapshot)) return false;
+    FB.readOnlyOfflineSnapshotReady=true;
+    FB.readOnlyOfflineSnapshotScope=scope;
+    FB.readOnlyOfflineSnapshotSignature=snapshot.signature;
+    return true;
+  }catch(_){ return false; }
+}
 function clearV250OfflineEligibility(){
   window.V250OfflineSession?.clear?.(localStorage);
+  window.V250OfflineSession?.clearReadOnlySnapshot?.(localStorage);
+  if(typeof FB!=='undefined'){
+    FB.readOnlyOfflineSnapshotReady=false;
+    FB.readOnlyOfflineSnapshotScope='';
+    FB.readOnlyOfflineSnapshotSignature='';
+  }
   document.documentElement.dataset.v250OfflineCachedSession='false';
 }
 
@@ -8170,6 +8276,7 @@ let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
   lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
+  readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
 let firebaseAuthPersistenceReady = Promise.resolve();
@@ -8182,6 +8289,9 @@ let reconnectWasOffline = navigator.onLine === false;
 
 function reconnectMarkerHasTrustedSnapshot(){
   const marker = window.V250OfflineSession?.read?.();
+  if(isProtectedReadOnlyQaBoot()){
+    return Boolean(FB.readOnlyOfflineSnapshotReady && marker?.eligible && marker.scope===FB.readOnlyOfflineSnapshotScope && marker.snapshotSignature===FB.readOnlyOfflineSnapshotSignature);
+  }
   const hasSnapshot = window.V250OfflineSession?.snapshotHasData?.(localStorage, STOR) === true;
   return Boolean(marker?.eligible) && hasSnapshot;
 }
@@ -8464,7 +8574,23 @@ function readonlyReportSessionPageIdFromLocation(){
 }
 function isActiveWalletHostMode(){
   try{
-    return (location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('activeWalletHost')==='1' && new URLSearchParams(location.search).get('testMode')==='1';
+    const params = new URLSearchParams(location.search);
+    const activeWalletHost = params.get('activeWalletHost') === '1';
+    const testMode = params.get('testMode') === '1';
+
+    if (!activeWalletHost || !testMode) {
+      return false;
+    }
+
+    // Allow on localhost for development
+    const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+    // Allow on Vercel preview deployments (pattern: carteira-investimentos-<hash>-<team-slug>.vercel.app)
+    // Team slugs contain hyphens (e.g. paulinhoo2002-ctrls-projects), so the tail
+    // must accept 2+ segments while production (carteira-investimentos-delta) stays excluded.
+    const isVercelPreview = /^carteira-investimentos-[a-z0-9]+(?:-[a-z0-9]+)+\.vercel\.app$/.test(location.hostname);
+
+    return isLocalhost || isVercelPreview;
   }catch(e){
     return false;
   }
@@ -8498,6 +8624,25 @@ function openReadonlyReportsExperimentalHost(){
 }
 function returnFromReadonlyReportsExperimentalHost(){
   location.assign(readonlyReportsLegacyReturnUrl());
+}
+function loadExperimentalActiveWalletHostStylesheet(){
+  const existing=document.querySelector('link[data-active-wallet-host-styles]');
+  if(existing){
+    if(existing.sheet) return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      existing.addEventListener('load',resolve,{once:true});
+      existing.addEventListener('error',()=>reject(new Error('Estilos da previa moderna indisponiveis.')),{once:true});
+    });
+  }
+  return new Promise((resolve,reject)=>{
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href=new URL('/modern/dist/active-wallet-host.css',location.origin).href;
+    link.dataset.activeWalletHostStyles='true';
+    link.addEventListener('load',resolve,{once:true});
+    link.addEventListener('error',()=>reject(new Error('Estilos da previa moderna indisponiveis.')),{once:true});
+    document.head.appendChild(link);
+  });
 }
 function installReadonlyReportsExperimentalBanner(targetRoot){
   if(document.getElementById('readonly-reports-experimental-banner')) return;
@@ -8826,6 +8971,7 @@ function switchWallet(id){
   syncStateFromWallet(next);
   save();
   render();
+  if(isProtectedReadOnlyQaBoot()) rememberV250TrustedSnapshot();
   toast(`📁 ${next.name} ativada.`);
 }
 function createWallet(){
@@ -9382,6 +9528,7 @@ function load(){
 }
 
 async function bootstrapExperimentalActiveWalletHost(){
+  await loadExperimentalActiveWalletHostStylesheet();
   const hostBootstrapModule = await import('./modern/dist/assets/host-bootstrap.js');
   const bootstrapHost = hostBootstrapModule.bootstrapHost ?? hostBootstrapModule.b ?? hostBootstrapModule.default;
   if(typeof bootstrapHost !== 'function') throw new TypeError('Bootstrap experimental da carteira ativa indisponivel.');
@@ -10302,6 +10449,16 @@ function initFirebase(){
       FB.authResolved = true;
       FB.user = user || null;
       if(FB.user){
+        if(navigator.onLine===false && await restoreProtectedReadOnlyOfflineSnapshot(FB.user)){
+          FB.cloudLoaded=false;
+          FB.cloudStateModel=CloudSyncState.fail(CloudSyncState.initial(),{code:'unavailable',message:'Offline'});
+          FB.access.loading=false;
+          FB.access.loaded=false;
+          FB.access.allowed=false;
+          FB.access.reason='Carteira local em cache confiável; dados somente leitura e possivelmente desatualizados.';
+          render();
+          return;
+        }
         FB.cloudStateModel=CloudSyncState.initial(CloudSyncState.STATES.AUTHENTICATING);
         FB.access.loading = true;
         FB.access.loaded = false;
@@ -10694,6 +10851,8 @@ async function applyCloudData(d){
   }
   FB.applying=true;
   const before=cloudSnapshotSignature();
+  const cachedWalletId=isProtectedReadOnlyQaBoot() && FB.readOnlyOfflineSnapshotReady
+    ? String(S.activeWalletId||'') : '';
   const legacyBrapiToken = String(d.settings?.brapiToken || '').trim();
   debugInfo('cloud data received', {
     wallets:Array.isArray(d.wallets)?d.wallets.length:0,
@@ -10711,7 +10870,8 @@ async function applyCloudData(d){
       if(local && Array.isArray(w?.proventos)) merged.proventos=window.ProtectedIncomeLinkage.mergeReferenceIncomeEvents(local.proventos,w.proventos);
       return normalizeWalletEntry(merged, i===0?'Carteira principal':`Carteira ${i+1}`);
     });
-    if(d.activeWalletId) S.activeWalletId=String(d.activeWalletId);
+    if(cachedWalletId && S.wallets.some(wallet=>String(wallet.id||'')===cachedWalletId)) S.activeWalletId=cachedWalletId;
+    else if(d.activeWalletId) S.activeWalletId=String(d.activeWalletId);
     const active=S.wallets.find(w=>w.id===S.activeWalletId) || S.wallets[0];
     syncStateFromWallet(active);
   }else{
@@ -28991,6 +29151,24 @@ function setRfTrustSort(value){
 }
 function rendaFixaTab(){
   const data=rfIntelligenceSnapshot();
+  if(typeof globalThis.V262FixedIncomeDiagnostics?.build!=='function'&&!globalThis.__V262FixedIncomeDiagnosticsLoading){
+    globalThis.__V262FixedIncomeDiagnosticsLoading=true;
+    import('/modern/dist/assets/v262-legacy-diagnostics.js').catch(()=>{
+      globalThis.__V262FixedIncomeDiagnosticsLoadFailed=true;
+      if(typeof window!=='undefined')window.dispatchEvent(new Event('v262:diagnostics-ready'));
+    });
+  }
+  const ipcaDiagnosticsApi=globalThis.V262FixedIncomeDiagnostics;
+  const ipcaDiagnostics=typeof ipcaDiagnosticsApi?.build==='function'
+    ? ipcaDiagnosticsApi.build(Array.isArray(S.assets)?S.assets:[])
+    : null;
+  const ipcaDiagnosticsHtml=ipcaDiagnostics===null&&!globalThis.__V262FixedIncomeDiagnosticsLoadFailed
+    ? '<section class="premium-rf-panel ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico IPCA</div><div class="premium-rf-panel-sub" role="status">Carregando diagnóstico de cobertura e frescor…</div></div></div></section>'
+    : ipcaDiagnostics===null
+    ? '<section class="premium-rf-panel ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico IPCA</div><div class="premium-rf-panel-sub" role="status">Diagnóstico indisponível neste ambiente.</div></div></div></section>'
+    : ipcaDiagnostics.length===0
+      ? ''
+    : `<section class="premium-rf-panel premium-rf-ipca-diagnostics ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico da série IPCA</div><div class="premium-rf-panel-sub">Diagnóstico do índice; não calcula o valor do título.</div></div><span class="ds-badge">${ipcaDiagnostics.length} posição${ipcaDiagnostics.length===1?'':'ões'}</span></div><div class="premium-income-list">${ipcaDiagnostics.map(item=>`<div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">${esc(item.ticker||item.name||'Título IPCA')}</div><div class="premium-row-sub">Valuation: não suportado · valor manual continua sendo a autoridade</div></div><div class="premium-row-value"><span class="ds-badge">Cobertura ${esc(item.coverageStatus==='UNAVAILABLE'?'indisponível':item.coverageStatus==='PARTIAL'?'parcial':'completa')}${item.coveragePercent===null?'':` · ${esc(String(item.coveragePercent))}%`}</span><div class="premium-row-sub">Frescor ${esc(item.freshness==='UNKNOWN'?'desconhecido':item.freshness==='STALE'?'desatualizado':'atual')} · fonte até ${esc(item.sourceAsOf||'indisponível')}</div></div></div>`).join('')}</div></section>`;
   const count=data.assets.length;
   const {overdue, soon30, soon90, soon12m, longTerm, missingDue, missingRate}=data;
   const trustSummary=data.trustSummary||{};
@@ -29211,6 +29389,7 @@ function rendaFixaTab(){
         ${trustSummary.staleCount ? `<span class="premium-rf-trust-count warn">Desatualizada <b>${trustSummary.staleCount}</b></span>` : ''}
       </div>
     </section>
+    ${ipcaDiagnosticsHtml}
     ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
     ${summaryStrip}
     ${reviewQueueHtml}
@@ -35890,6 +36069,11 @@ function startPublicEventsSync(){
 // ══════════════════════════════════════
 loadThemePreference();
 if(isActiveWalletHostMode()){
+  const legacyApplicationRoot=document.getElementById('root');
+  if(legacyApplicationRoot){
+    legacyApplicationRoot.hidden=true;
+    legacyApplicationRoot.style.display='none';
+  }
   if(isLocalTestMode()){
     applyLocalTestFixture();
   }else{
@@ -36419,5 +36603,10 @@ function updateRfAssetSummary(selectElement) {
   .canon-dashboard .dashboard-patrimony-chart{background:rgba(8,19,32,.2)}
 }
 </style>
+<script>
+window.addEventListener('v262:diagnostics-ready',()=>{
+  try{if(typeof S!=='undefined'&&S.tab==='renda-fixa'&&typeof render==='function')render()}catch{}
+});
+</script>
 </body>
 </html>

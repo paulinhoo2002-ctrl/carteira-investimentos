@@ -1,4 +1,33 @@
 {
+  "buildCommand": "npm run build:modern && npm run build",
+  "outputDirectory": ".",
+  "framework": null,
+  "redirects": [
+    {
+      "source": "/modern",
+      "destination": "/modern/dist/host.html",
+      "permanent": false
+    },
+    {
+      "source": "/modern/",
+      "destination": "/modern/dist/host.html",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/modern",
+      "destination": "/modern/dist/host.html"
+    },
+    {
+      "source": "/modern/",
+      "destination": "/modern/dist/host.html"
+    },
+    {
+      "source": "/modern/assets/(.*)",
+      "destination": "/modern/dist/assets/$1"
+    }
+  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -8,6 +37,12 @@
     },
     {
       "source": "/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]

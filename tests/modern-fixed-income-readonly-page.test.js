@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
+require('./modern-fixed-income-ipca-index-diagnostics.test.js');
 const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 const { createServer } = require('vite');

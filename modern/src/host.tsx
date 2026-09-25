@@ -177,10 +177,26 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   const hasInjectedGoalsSnapshot = typeof options.getGoalsSnapshot === 'function';
   const hasInjectedIncomeSnapshot = typeof options.getIncomeSnapshot === 'function';
   const sessionContextEnabled =
-    typeof location !== 'undefined' &&
-    (location.hostname === 'localhost' || location.hostname === '127.0.0.1') &&
-    new URLSearchParams(location.search).get('activeWalletHost') === '1' &&
-    new URLSearchParams(location.search).get('testMode') === '1';
+      typeof location !== 'undefined' &&
+      (() => {
+        const params = new URLSearchParams(location.search);
+        const activeWalletHost = params.get('activeWalletHost') === '1';
+        const testMode = params.get('testMode') === '1';
+
+        if (!activeWalletHost || !testMode) {
+          return false;
+        }
+
+        // Allow on localhost for development
+        const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+        // Allow on Vercel preview deployments (pattern: carteira-investimentos-<hash>-<team-slug>.vercel.app)
+        // Team slugs contain hyphens (e.g. paulinhoo2002-ctrls-projects), so the tail
+        // must accept 2+ segments while production (carteira-investimentos-delta) stays excluded.
+        const isVercelPreview = /^carteira-investimentos-[a-z0-9]+(?:-[a-z0-9]+)+\.vercel\.app$/.test(location.hostname);
+
+        return isLocalhost || isVercelPreview;
+      })();
   const initialSessionContext = sessionContextEnabled
     ? readReadonlyReportSessionContext(location.search, 'reports')
     : null;

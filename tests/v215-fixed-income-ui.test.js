@@ -20,9 +20,11 @@ for (const viewport of [
   { width: 430, height: 932 },
   { width: 768, height: 900 },
   { width: 1366, height: 768 },
+  { width: 1440, height: 900 },
+  { width: 1536, height: 864 },
   { width: 1920, height: 1080 },
 ]) {
-  test(`V215 Renda Fixa trust controls remain usable at ${viewport.width}px`, async () => {
+  test(`V262 Renda Fixa layout and trust controls remain usable at ${viewport.width}px`, async () => {
     const executablePath = browserPath();
     assert.ok(executablePath, 'Chrome/Edge não encontrado');
     const harness = await startLocalHttpServer(require('node:path').join(__dirname, '..'));
@@ -35,6 +37,21 @@ for (const viewport of [
     try {
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('renda-fixa'));
+      await page.waitForSelector('.premium-rf-position-row', { state: 'visible' });
+      const layout = await page.evaluate(() => {
+        const vw = window.innerWidth;
+        const rows = [...document.querySelectorAll('.premium-rf-position-row')];
+        const mainWidths = rows.map(row => row.querySelector('.premium-rf-row-main')?.getBoundingClientRect().width || 0);
+        return {
+          overflow: document.documentElement.scrollWidth - vw,
+          rowCount: rows.length,
+          narrowMainRows: mainWidths.filter(width => width < 180).length,
+          gridColumns: getComputedStyle(document.querySelector('.premium-rf-grid')).gridTemplateColumns,
+        };
+      });
+      assert.ok(layout.rowCount > 0, 'nenhuma posição de renda fixa renderizada');
+      assert.equal(layout.narrowMainRows, 0, `nomes espremidos em ${viewport.width}px`);
+      assert.equal(layout.overflow, 0, `overflow horizontal de renda fixa em ${viewport.width}px`);
       await page.getByLabel('Buscar título de renda fixa').fill('CDI');
       await page.waitForTimeout(180);
       await page.getByLabel('Filtrar status do valuation').selectOption('UNAVAILABLE');

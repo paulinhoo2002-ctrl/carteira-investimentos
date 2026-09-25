@@ -1,17 +1,25 @@
 # Project State
 
-## Current canonical state — 2026-09-22
+## V262 PR #412 — IPCA Diagnostics — 2026-09-24
 
-- `CURRENT_MAIN_SHA=2e7a898f09230d2f7e3b9781040a6effe33f9c7f`.
-- PR #409 hardens project identity governance; its merge is present in
-  `origin/main`, with main CI run `35776520025` successful and Production
-  deployment `6599404492` successful.
-- Latest product release: V260 Asset Detail Intelligence (PR #408).
-- Next recommendation from `docs/ai/OPEN_WORK.md`: refresh state documentation,
-  then assess fixed-income freshness, valuation, and financial `as-of`
-  provenance. XP/BTG fixtures remain blocked on sanitized user-provided input.
-- This is a repository-state update only; no product code or financial data was
-  changed.
+- Branch: `feature/v262-fixed-income-advanced-shadow-valuation`; current code head: `26d1526389a92cc4ca94fff7bc671821f2cf0b09`.
+- PR [#412](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/412): OPEN and mergeable. CI run `36079088319` succeeded on the same SHA.
+- Vercel deployment `6651218341` is READY for the same SHA; authenticated QA used only the explicitly approved preview alias `carteira-investimentos-git-ca8b51-paulinhoo2002-ctrls-projects.vercel.app`.
+- Authenticated product route: `/?protectedReadOnlyQa=1` (legacy Renda Fixa screen). `/modern/` is not the V262 user route. The test-host query `testMode=1&activeWalletHost=1` intentionally bypasses Firebase and must not be used for real-wallet auth QA.
+- Runtime contract: manual Renda Fixa authority preserved; exact IPCA remains `UNSUPPORTED_IPCA_EXACT`; no generic IPCA+ value is calculated; coverage and freshness remain separate (`UNAVAILABLE` vs `UNKNOWN` in the inspected portfolio); CDI unchanged; unknown is not zero.
+- Authenticated responsive matrix 390/430/768/1366/1440/1536/1920 PASS; no horizontal overflow or critical clipping. Axe: 0 critical / 0 serious. Representative screenshots were captured/reviewed locally and not committed. Offline/reconnect PASS with an organically created trusted local snapshot for the selected wallet; offline remained cached/read-only and truthful.
+- Root cause fixed: protected QA mode blocked canonical portfolio persistence as intended, while offline recovery depended on a stale `civ5` wallet snapshot. A distinct user-bound local read-only cache now records the validated selected wallet from authenticated app-loaded state; canonical `civ5` stays unchanged. Snapshot/as-of provenance and fail-closed validation are preserved. Local offline cache writes are classified separately from financial/cloud writes.
+- Financial, tax, import-confirmation and real-restore writes: 0. Snapshot bootstrap in normal authenticated mode may emit a **nonfinancial** access-audit update; do not characterize this as zero total backend writes. No financial controls or mutations were used.
+- Local evidence: focused offline/snapshot/security tests PASS; `npm test` 249/249; modern 777/777; modern and legacy builds PASS. No financial formulas changed.
+- Offline recovered the same selected wallet and fixed-income authority; reconnect restored authenticated online state without a request/reload loop. After any documentation-only update, revalidate CI and Vercel against the exact current PR head before readiness. Merge remains unauthorized and not executed.
+
+## Current canonical state — 2026-09-24
+
+- `CURRENT_MAIN_SHA=c3466561c4f6134edd5ea915be1d0ed1ca387286` (verified before the V262 documentation closeout).
+- PR #412 is the active V262 phase; its merge has not been authorized or performed.
+- Latest product baseline on main before V262: V261 fixed-income freshness/valuation provenance.
+- Next step after V262 is explicit human squash-merge authorization; do not begin another product phase automatically.
+- This state update records read-only QA evidence and does not change financial data or formulas.
 
 ## 2026-09-22 - Project identity hard lock
 

@@ -1,5 +1,25 @@
 # Next Step
 
+## V262 PR #412 — exact-head final certification (2026-09-24)
+
+- Worktree: `C:/Projetos/carteira-investimentos.worktrees/v262-fixed-income-advanced-shadow-valuation`
+- Branch: `feature/v262-fixed-income-advanced-shadow-valuation`
+- Product-code SHA validated in authenticated QA: `26d1526389a92cc4ca94fff7bc671821f2cf0b09`.
+- PR #412 remains OPEN and mergeable at the code SHA. Exact-head CI run `36079088319` succeeded; Vercel deployment `6651218341` is READY.
+- Authenticated URL/path: explicitly approved branch alias, `/?protectedReadOnlyQa=1`. The V262 surface is the legacy Renda Fixa view, not `/modern/`. Login was completed manually in dedicated isolated QA Chrome; Firebase/auth/backend and the real wallet loaded.
+- Runtime: manual authority preserved; exact IPCA remains `UNSUPPORTED_IPCA_EXACT`; no generic IPCA+ value; coverage/freshness remain separate and honestly unavailable/unknown; CDI unchanged; unknown is not zero.
+- Responsive 390/430/768/1366/1440/1536/1920 PASS; no horizontal overflow or critical clipping. Axe 0 critical/0 serious; representative screenshots were captured and reviewed locally, not committed.
+- Offline root cause: protected QA blocks canonical portfolio persistence, but old offline eligibility relied on stale `civ5` state and could select an empty wallet after an in-memory wallet switch. A separate user-bound local read-only snapshot now captures only the validated selected wallet and is restored offline. The canonical `civ5` fingerprint stayed unchanged. The product-generated cache was verified with the real authenticated selected wallet; offline fixed-income state stayed truthful and read-only.
+- Reconnect restored the same selected wallet and fixed-income manual values; no request storm or reload loop was observed. Financial/tax/import-confirmation/restore writes were 0. Normal authenticated bootstrap may emit a nonfinancial access-audit update, so global backend writes are not claimed to be zero.
+- Tests/builds: focused offline/snapshot/security tests PASS; general 249/249; modern 777/777; modern and legacy builds PASS. No financial formula changed.
+
+### Next action
+
+- Recheck that the exact current PR head has successful CI, a READY Vercel deployment, and remains OPEN/mergeable before declaring readiness.
+- If final evidence is consistent, stop and request only: `Autorizo o squash merge da PR #412.` Do not merge without that authorization.
+
+---
+
 ## Current boot state — 2026-09-22
 
 - `CURRENT_MAIN_SHA=2e7a898f09230d2f7e3b9781040a6effe33f9c7f`

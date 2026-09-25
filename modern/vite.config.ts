@@ -11,13 +11,22 @@ const readonlyReportPageContractDist = resolve(rootDir, 'dist', 'readonly-report
 function copyReadonlyReportPageContract() {
   return {
     name: 'copy-readonly-report-page-contract',
-    writeBundle() {
+    writeBundle(_outputOptions, bundle) {
       if (!existsSync(readonlyReportPageContractSource)) {
         throw new Error('Missing readonly report page contract source file.');
       }
 
       mkdirSync(dirname(readonlyReportPageContractDist), { recursive: true });
       writeFileSync(readonlyReportPageContractDist, readFileSync(readonlyReportPageContractSource, 'utf8'));
+
+      const modernStyles = Object.values(bundle).find(
+        (item) => item.type === 'asset' && item.fileName.endsWith('.css'),
+      );
+      if (!modernStyles) {
+        throw new Error('Missing modern host stylesheet asset.');
+      }
+
+      writeFileSync(resolve(rootDir, 'dist', 'active-wallet-host.css'), modernStyles.source);
     },
   };
 }
@@ -53,6 +62,7 @@ export default defineConfig({
         index: resolve(rootDir, 'index.html'),
         host: resolve(rootDir, 'host.html'),
         'host-bootstrap': resolve(rootDir, 'src/bootstrap/hostBootstrap.ts'),
+        'v262-legacy-diagnostics': resolve(rootDir, 'src/features/fixed-income/v262LegacyDiagnostics.ts'),
       },
     },
   },

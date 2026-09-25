@@ -102,7 +102,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostHtml, /Host experimental/);
   assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);
   assert.match(hostHtml, /host-entry\.tsx/);
-  assert.match(hostHtml, /readonly-report-page-contract\.js/);
+  assert.match(hostHtml, /src="\/readonly-report-page-contract\.js"/);
   assert.match(rootIndexHtml, /readonly-report-page-contract\.js/);
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
@@ -155,9 +155,9 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.equal(contributionsSourceTs.includes('score: Number(row?.score) || 0'), false);
   assert.equal(contributionsRuntimeTs.includes('score: Number(row?.score) || 0'), false);
   assert.match(
-    rootIndexHtml,
-    /function isActiveWalletHostMode\(\)\{\s*try\{\s*return \(location\.hostname==='localhost' \|\| location\.hostname==='127\.0\.0\.1'\) && new URLSearchParams\(location\.search\)\.get\('activeWalletHost'\)==='1' && new URLSearchParams\(location\.search\)\.get\('testMode'\)==='1';/,
-  );
+        rootIndexHtml.replace(/\r\n/g, '\n'),
+        /function isActiveWalletHostMode\(\)\{[\s\S]*?activeWalletHost[\s\S]*?testMode[\s\S]*?isLocalhost[\s\S]*?isVercelPreview[\s\S]*?\/.*carteira-investimentos-\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\+\\\.vercel\\\.app.*\/[\s\S]*?return isLocalhost \|\| isVercelPreview/,
+      );
   assert.match(hostSmokeText, /MODERN_HOST_URL/);
   assert.match(hostSmokeText, /CI/);
   assert.match(hostSmokeText, /assert\.fail\('MODERN_HOST_URL required for host smoke test in CI'\)/);

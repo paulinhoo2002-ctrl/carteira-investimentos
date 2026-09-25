@@ -7,6 +7,7 @@ const test = require('node:test');
 
 const indexHtmlPath = path.join(__dirname, '..', 'index.html');
 const hostHtmlPath = path.join(__dirname, '..', 'modern', 'host.html');
+const viteConfigPath = path.join(__dirname, '..', 'modern', 'vite.config.ts');
 const hostModulePath = path.join(__dirname, '..', 'modern', 'src', 'host.tsx');
 const hostSourceModulePath = path.join(__dirname, '..', 'modern', 'src', 'bootstrap', 'hostLegacyReportsReadonlySource.ts');
 const modernMainPath = path.join(__dirname, '..', 'modern', 'src', 'main.tsx');
@@ -66,6 +67,7 @@ function runReadonlyReportSessionPageIdFromLocation(indexHtml, globals = {}, sea
 test('fase 178 mantÃ©m a composicao experimental isolada no entrypoint legado', () => {
   const indexHtml = normalize(fs.readFileSync(indexHtmlPath, 'utf8'));
   const hostHtml = normalize(fs.readFileSync(hostHtmlPath, 'utf8'));
+  const viteConfig = normalize(fs.readFileSync(viteConfigPath, 'utf8'));
   const hostTsx = normalize(fs.readFileSync(hostModulePath, 'utf8'));
   const hostSourceTs = normalize(fs.readFileSync(hostSourceModulePath, 'utf8'));
   const modernMainTsx = normalize(fs.readFileSync(modernMainPath, 'utf8'));
@@ -75,6 +77,10 @@ test('fase 178 mantÃ©m a composicao experimental isolada no entrypoint legado'
 
   assert.match(indexHtml, /activeWalletHost/);
   assert.match(indexHtml, /bootstrapExperimentalActiveWalletHost/);
+  assert.match(indexHtml, /if\(isActiveWalletHostMode\(\)\)\{\s*const legacyApplicationRoot=document\.getElementById\('root'\);\s*if\(legacyApplicationRoot\)\{\s*legacyApplicationRoot\.hidden=true;\s*legacyApplicationRoot\.style\.display='none';/);
+  assert.match(indexHtml, /loadExperimentalActiveWalletHostStylesheet/);
+  assert.match(indexHtml, /await loadExperimentalActiveWalletHostStylesheet\(\);[\s\S]*?import\('\.\/modern\/dist\/assets\/host-bootstrap\.js'\)/);
+  assert.match(viteConfig, /active-wallet-host\.css/);
   assert.match(indexHtml, /Array\.isArray\(S\.assets\)/);
   assert.match(indexHtml, /if\(!isActiveWalletHostMode\(\)\)\{\n  setInterval\(/);
   assert.match(indexHtml, /isReadonlyReportsExperimentalEntryEnabled/);
