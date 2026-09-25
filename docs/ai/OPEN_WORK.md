@@ -2,15 +2,18 @@
 
 ## NOW
 
-- PR #413 V263 visual/compiled QA is complete on the exact verified head; preview SSO prevented authenticated real-portfolio QA in this pass. Merge only with explicit authorization;
+- V264 BCB SGS request-contract hardening is in PR #415, OPEN. CI and Vercel passed on the implementation head; use live PR checks for the documentation follow-up. Do not merge without explicit authorization.
 - manter snapshots diários e acumular histórico confiável;
-- melhorar frescor/valuation de renda fixa e registrar as-of real (V263 em review);
+- V263 financial/source as-of provenance is merged; preserve its semantics as BCB SGS retrieval is hardened in V264;
 - amadurecer dashboard e detalhes de renda fixa;
 - manter cobertura pública de eventos e Import Center.
 
-## DEBT (2026-09-25, V263 run)
+## RESOLVED BY V264 (2026-09-25)
 
-- V262 SGS IPCA fetcher sends `dataInicial=MM/YYYY`; the BCB endpoint returned HTTP 400 `Invalid initial date` on both V262 base and V263. This predates V263 and needs a separately scoped source/date-contract fix; do not infer fresh IPCA data from a failed request.
+- SGS 433 month bounds now use validated inclusive `DD/MM/YYYY` dates. Explicit provider `Value(s) not found` is no-data, not zero; other HTTP failures remain errors. A temporary 502 occurred on a live September-only probe, so do not claim every current-month provider request succeeds.
+
+## DEBT (2026-09-25)
+
 - `tests/local-http-server.js`: `writeHead(200)` antes do `readFile` gera `ERR_HTTP_HEADERS_SENT` em 404 (debt de harness; não falhou depois de `build:modern` existir).
 - Worktree nova exige `npm run build:modern` antes de `npm test` (smokes de browser requisitam `modern/dist/assets/*`).
 
@@ -18,7 +21,7 @@
 
 ## NEXT CANDIDATE (readiness only)
 
-- V264 BCB SGS IPCA request-contract hardening: validate the official date format before changing the existing month-only `dataInicial` serialization. Preserve IPCA+ `UNSUPPORTED_IPCA_EXACT`, manual Renda Fixa authority, and no-fabricated-data behavior. No phase has been authorized or started.
+- After V264 merge/release, prepare fixture-backed Import Center hardening. Sanitized XP/BTG notes are required; do not invent fixtures or enable unsupported imports without them. V93 report intelligence is already present on main, so do not duplicate that phase.
 
 ## BLOCKED_BY_USER_INPUT
 
