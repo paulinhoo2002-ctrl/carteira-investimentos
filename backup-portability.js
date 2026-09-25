@@ -163,7 +163,7 @@
           createdAt: String(createdAt),
           exportMode: 'LOCAL_ONLY',
           operationId: String(operationId),
-          exportedBy: navigator?.userAgent ? 'browser' : 'node',
+          exportedBy: (typeof navigator !== 'undefined' && navigator?.userAgent) ? 'browser' : 'node',
           contentInventory: inventory(safeState),
           recordCounts: counts(safeState),
           schemaIdentifiers: {
