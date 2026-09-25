@@ -2,7 +2,7 @@
 
 ## NOW
 
-- V264 BCB SGS request-contract hardening is in progress on `feature/v264-bcb-sgs-request-contract-hardening`, based on V263 merge `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`. Local tests/builds are green; verify exact-head CI and Vercel preview after publishing. Do not merge without explicit authorization.
+- V264 BCB SGS request-contract hardening is in PR #415, OPEN. CI and Vercel passed on the implementation head; use live PR checks for the documentation follow-up. Do not merge without explicit authorization.
 - manter snapshots diários e acumular histórico confiável;
 - melhorar frescor/valuation de renda fixa e registrar as-of real (V263 em review);
 - amadurecer dashboard e detalhes de renda fixa;

@@ -4,8 +4,10 @@
 
 - V263 is merged: PR #413 squash SHA `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
 - V264 branch `feature/v264-bcb-sgs-request-contract-hardening` is based on that SHA. It corrects SGS 433 inclusive monthly request bounds to `DD/MM/YYYY`, validates dates before network access, parses the provider's monthly response date, and preserves explicit empty/error states. IPCA+ security valuation remains unsupported; no financial methodology or manual authority changed.
-- Local gates: modern 777/777, general 249/249, modern and legacy builds and diff-check PASS. Official smoke proved July 2022 response and Aug–Sep 2026 only returned the published August point; a single-month current-period probe encountered a transient gateway 502. CI/preview must be verified on the pushed V264 PR head.
-- Next: finish code review, reconcile project docs, commit/push the scoped V264 change, create its PR, then verify exact-head CI and Vercel preview. Do not merge. PR #414 is independent, open, and not merged.
+- Local gates: modern 815/815, general 249/249, modern and legacy builds and diff-check PASS. Official smoke proved July 2022 response and Aug–Sep 2026 only returned the published August point; a single-month current-period probe encountered a transient gateway 502.
+- V264 PR #415 is OPEN; CI and Vercel preview passed on its implementation head. Consult live PR checks for the documentation-follow-up head. Local code review passed. Do not merge without explicit human authorization.
+- Independent governance PR #414 is OPEN/mergeable at `f5bd6545265ba30ae36f7047bf624ef828a4afa1`, with CI `36144545119` SUCCESS and Vercel deployment `dpl_GHKdhPRGGixysYtBRraihvUPRucN` READY. It is separately ready for human authorization; do not merge in this mission.
+- Next: request human squash-merge authorization for PR #415 only. After it is merged, verify the merged SHA and production release before starting another implementation phase. PR #414 remains a separate approval decision.
 
 ### Next macro-phase after V264 (readiness only)
 
