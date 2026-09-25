@@ -1,5 +1,17 @@
 # Project State
 
+## V263 PR #413 — Financial As-Of Provenance (Renda Fixa) — 2026-09-25
+
+- Branch: `feature/v263-rf-freshness-valuation-asof`, base = merged main `9be3d9c3e17b659a507e46a8f57c2b152174366b` (V262 squash-merge of PR #412). Commits: domain `e970bc94`, UI/tests `a5f459ba` (PR head).
+- PR [#413](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/413): OPEN and mergeable; exact-head CI SUCCESS on `a5f459ba`; Vercel deployment `6659271472` READY at `https://carteira-investimentos-mlwonw4r7-paulinhoo2002-ctrls-projects.vercel.app`.
+- V263 delivers separation of **financial as-of** from **source as-of** in the modern readonly Renda Fixa surface: new `modern/src/domain/fixedIncome/financialAsOf.ts` extracts evidence with confidence HIGH (explicit `financialAsOf`/`valuationAsOf`), MEDIUM (`quoteUpdatedAt`/`updated_at` broker metadata) or UNKNOWN. Application/capture/reconstruction/import dates are never promoted. Future dates are rejected. Without evidence the value stays UNKNOWN — never zero, never LIVE.
+- `valuationState.ts` now derives `authoritativeValueAsOf` and `authoritativeFreshness` from that evidence and exposes `authoritativeAsOfEvidence/Source/Confidence`. Manual authority is preserved: the shadow value never replaces the authoritative value. IPCA+ remains `UNSUPPORTED_IPCA_EXACT`; CDI path unchanged; no financial methodology changed.
+- Readonly contract: additive optional `financialAsOfRaw` item field (validator, clone, d.ts); legacy snapshots without the field remain valid. The host source maps legacy timestamp aliases into it.
+- UI: list "As-of" cell gains a confidence badge (data explícita/metadado); mobile/detail gains separate "As-of financeiro" (with confidence) and "As-of da fonte" rows. Demo/unauthenticated items correctly show no badge (UNKNOWN).
+- Gates on PR head: `test:modern` 789/789 (12 new tests), `npm test` 249/249, `build:modern` PASS, legacy build PASS, `git diff --check` clean. The two transient V84 browser-smoke failures seen mid-mission were root-caused to the missing untracked `modern/dist` build artifact in the fresh worktree (harness 404 crash), not to code; after `build:modern` they pass 4/4.
+- Preview smoke on the deployment: legacy root is behind the standard Vercel preview SSO (fresh origin; same per-origin pattern as V262). Local serve of `modern/dist` confirmed the modern RF page mounts with "As-of financeiro", "As-of da fonte" and "Frescor" visible at 1366 and 390, zero writes. Known pre-existing limitation (present in V262 build too): the modern host shell allows page-level horizontal overflow when the dense 24-column RF table renders (scrollWidth 1886 vs 1366); the table wrapper itself is scrollable by design. Recorded in OPEN_WORK.
+- Financial/tax/import/restore writes: 0. Merge of PR #413 is NOT authorized and NOT executed.
+
 ## V262 PR #412 — IPCA Diagnostics — 2026-09-24
 
 - Branch: `feature/v262-fixed-income-advanced-shadow-valuation`; current code head: `26d1526389a92cc4ca94fff7bc671821f2cf0b09`.

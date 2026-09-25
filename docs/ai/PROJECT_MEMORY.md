@@ -1,5 +1,16 @@
 # Project Memory
 
+## V263 — Financial As-Of Provenance Protocol (2026-09-25)
+
+- PR #412 (V262) was squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b`; V263 branched from that merge on `feature/v263-rf-freshness-valuation-asof` (head `a5f459ba`, PR #413, CI green, Vercel preview `mlwonw4r7` READY).
+- `financialAsOf` semantics (V81/V82 preserved): application/capture/reconstruction/import dates are NEVER financial as-of. Explicit `financialAsOf`/`valuationAsOf` → HIGH; `quoteUpdatedAt`/`updated_at` → MEDIUM; nothing → UNKNOWN. Future dates rejected. UNKNOWN is never zero and never LIVE.
+- `valuationState.ts` now carries `authoritativeAsOfEvidence/Source/Confidence` and derives `authoritativeValueAsOf` + `authoritativeFreshness` from evidence. Manual authority is untouched; shadow never replaces the authoritative value; IPCA+ remains `UNSUPPORTED_IPCA_EXACT`.
+- Readonly contract: `financialAsOfRaw` is an additive OPTIONAL item field (validator + clone + d.ts); legacy snapshots stay valid. Host source maps legacy timestamp aliases into it.
+- Test-harness lesson: a fresh worktree has no `modern/dist` build artifact; `npm test` browser smokes (V84) will crash the static server with `ERR_HTTP_HEADERS_SENT` on the 404 of `/modern/dist/assets/v262-legacy-diagnostics.js`. Run `npm run build:modern` in a fresh worktree BEFORE `npm test`. The server harness `tests/local-http-server.js` also has a latent writeHead-after-404 bug (writes 200 headers before readFile); not fixed in V263 (small pre-existing harness debt).
+- Known pre-existing modern-host limitation: the dense 24-column RF table causes page-level horizontal overflow in the modern shell (scrollWidth 1886 vs 1366) — identical in the V262 baseline build; the table wrapper is internally scrollable by design. The certified V262 surface (legacy RF screen) is not affected.
+- Fresh Vercel preview origins are SSO-protected; authenticated QA requires the per-origin manual login in the dedicated QA Chrome profile (`%LOCALAPPDATA%\CarteiraInvestimentos\qa-browser-authenticated`). Never weaken deployment protection.
+- Gates on V263 head: modern 789/789 (12 new as-of tests), general 249/249, both builds, diff-check clean. FINANCIAL_WRITE_COUNT=0, TAX_WRITE_COUNT=0. PR #413 merge NOT authorized.
+
 ## V262 — IPCA Diagnostics Protocol (2026-09-24)
 
 - PR #412, branch `feature/v262-fixed-income-advanced-shadow-valuation`; current code head: `26d1526389a92cc4ca94fff7bc671821f2cf0b09`.

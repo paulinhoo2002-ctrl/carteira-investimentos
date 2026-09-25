@@ -1,5 +1,27 @@
 # Next Step
 
+## V263 PR #413 — current state (2026-09-25)
+
+- V262 is CLOSED: PR #412 squash-merged as `9be3d9c3e17b659a507e46a8f57c2b152174366b` on main; local main fast-forwarded to the same SHA.
+- Active phase: V263 "Renda Fixa Freshness, Valuation & Financial As-Of Provenance" on branch `feature/v263-rf-freshness-valuation-asof` (worktree `C:/Projetos/carteira-investimentos.worktrees/v263-rf-freshness-valuation-asof`).
+- PR #413 OPEN/mergeable, head `a5f459ba`, CI SUCCESS, Vercel preview READY (`mlwonw4r7`). All local gates green (789/789 modern, 249/249 general, both builds, diff-check).
+- Implementation delivered: financial as-of evidence (HIGH/MEDIUM/UNKNOWN) separated from source as-of; valuation state derives value-as-of and freshness from real evidence; UI shows confidence badges and separate as-of rows; 12 targeted tests; zero financial/tax writes; all V262 invariants preserved (IPCA+ UNSUPPORTED, manual authority, UNKNOWN != ZERO).
+- Known pre-existing (not V263): modern host shell page-level horizontal overflow with the dense RF table (also in V262 build); recorded in OPEN_WORK. Fresh Vercel preview origins sit behind SSO — authenticated QA requires the established per-origin login procedure in the dedicated QA Chrome profile.
+- Next action: independent review of PR #413 (recommended: GLM-5.3), then optional authenticated QA on the real preview, then request only: `Autorizo o squash merge da PR #413.` Do NOT merge without that authorization.
+
+### Post-V263 roadmap (repository-evidence based)
+
+- SOON — Import Center productionization (V92/V93 branches exist; XP/BTG blocked by user fixtures).
+- SOON — Reports intelligence integration (V93 branch ready for review).
+- LATER — Mobile experience improvement (new candidate; needs explicit scope).
+- LATER — Corporate events MODE_B (needs provider decision; MODE_A active).
+- LATER — TWR/XIRR history (needs more valuation snapshots; V76/V77 tracking since 2026-09-15).
+- LATER — Clean-state integration (V88 branch; technical consolidation).
+- BLOCKED — Phase 4H Class C / August pilot (separate single-use authorizations; historical authorizations consumed).
+- NOT_RECOMMENDED — reopening frozen legacy screens without regression evidence.
+
+---
+
 ## V262 PR #412 — exact-head final certification (2026-09-24)
 
 - Worktree: `C:/Projetos/carteira-investimentos.worktrees/v262-fixed-income-advanced-shadow-valuation`
