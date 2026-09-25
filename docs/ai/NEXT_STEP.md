@@ -1,13 +1,12 @@
 # Next Step
 
-## Active — V264 BCB SGS request contract (2026-09-25)
+## Active — post-V264 roadmap audit and V265 selection (2026-09-25)
 
 - V263 is merged: PR #413 squash SHA `346ae421222f5f167d7ad2ce2c62cd7ed2639e41`.
-- V264 branch `feature/v264-bcb-sgs-request-contract-hardening` is based on that SHA. It corrects SGS 433 inclusive monthly request bounds to `DD/MM/YYYY`, validates dates before network access, parses the provider's monthly response date, and preserves explicit empty/error states. IPCA+ security valuation remains unsupported; no financial methodology or manual authority changed.
-- Local gates: modern 815/815, general 249/249, modern and legacy builds and diff-check PASS. Official smoke proved July 2022 response and Aug–Sep 2026 only returned the published August point; a single-month current-period probe encountered a transient gateway 502.
-- V264 PR #415 is OPEN; CI and Vercel preview passed on its implementation head. Consult live PR checks for the documentation-follow-up head. Local code review passed. Do not merge without explicit human authorization.
-- Independent governance PR #414 is OPEN/mergeable at `f5bd6545265ba30ae36f7047bf624ef828a4afa1`, with CI `36144545119` SUCCESS and Vercel deployment `dpl_GHKdhPRGGixysYtBRraihvUPRucN` READY. It is separately ready for human authorization; do not merge in this mission.
-- Next: request human squash-merge authorization for PR #415 only. After it is merged, verify the merged SHA and production release before starting another implementation phase. PR #414 remains a separate approval decision.
+- V264 PR #415 is CLOSED/MERGED as `10995f31d7ada0b7f8a02e6317813de0c21fc55d`; its SGS 433 request-contract fix and existing financial invariants are on current `main`.
+- Current work is an evidence-based roadmap audit to select one V265 scope. The prior fixture-backed XP/BTG Import Center candidate remains blocked until representative sanitized statements are supplied; do not fabricate fixtures or declare broker support complete.
+- Governance PR #414 remains OPEN and unmerged. Its branch is being reconciled with current `origin/main`; query live PR/CI/deployment state before declaring it merge-ready.
+- Do not merge either PR without separate explicit human authorization.
 
 ### Next macro-phase after V264 (readiness only)
 

@@ -2,7 +2,9 @@
 
 ## NOW
 
-- V264 BCB SGS request-contract hardening is in PR #415, OPEN. CI and Vercel passed on the implementation head; use live PR checks for the documentation follow-up. Do not merge without explicit authorization.
+- V264 BCB SGS request-contract hardening is merged to `main` as `10995f31d7ada0b7f8a02e6317813de0c21fc55d` (PR #415). No merge is pending for V264.
+- V265 scope is under live roadmap/readiness audit. XP/BTG fixture-backed support remains blocked by missing user-provided sanitized statements; do not fabricate fixtures.
+- PR #414 is the separate governance PR; its branch is reconciled to current `origin/main`, remains unmerged, and its exact current head/checks must be verified live.
 - manter snapshots diários e acumular histórico confiável;
 - V263 financial/source as-of provenance is merged; preserve its semantics as BCB SGS retrieval is hardened in V264;
 - amadurecer dashboard e detalhes de renda fixa;
