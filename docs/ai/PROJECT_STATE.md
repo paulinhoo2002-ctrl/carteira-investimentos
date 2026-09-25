@@ -11,7 +11,7 @@
 - Root cause fixed: protected QA mode blocked canonical portfolio persistence as intended, while offline recovery depended on a stale `civ5` wallet snapshot. A distinct user-bound local read-only cache now records the validated selected wallet from authenticated app-loaded state; canonical `civ5` stays unchanged. Snapshot/as-of provenance and fail-closed validation are preserved. Local offline cache writes are classified separately from financial/cloud writes.
 - Financial, tax, import-confirmation and real-restore writes: 0. Snapshot bootstrap in normal authenticated mode may emit a **nonfinancial** access-audit update; do not characterize this as zero total backend writes. No financial controls or mutations were used.
 - Local evidence: focused offline/snapshot/security tests PASS; `npm test` 249/249; modern 777/777; modern and legacy builds PASS. No financial formulas changed.
-- Offline recovered the same selected wallet and fixed-income authority; reconnect restored authenticated online state without a request/reload loop. Documentation-only closeout is in progress and will change the PR head; exact-head CI and Vercel preview must be revalidated before readiness. Merge remains unauthorized and not executed.
+- Offline recovered the same selected wallet and fixed-income authority; reconnect restored authenticated online state without a request/reload loop. After any documentation-only update, revalidate CI and Vercel against the exact current PR head before readiness. Merge remains unauthorized and not executed.
 
 ## Current canonical state — 2026-09-24
 

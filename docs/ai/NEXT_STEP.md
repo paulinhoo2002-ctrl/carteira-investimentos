@@ -15,8 +15,8 @@
 
 ### Next action
 
-- Documentation closeout changes the PR head. Commit/push only the three approved project-memory files, then verify exact-head CI and preview SHA, READY status, and PR OPEN/mergeable state.
-- If the final evidence is consistent, stop and request only: `Autorizo o squash merge da PR #412.` Do not merge without that authorization.
+- Recheck that the exact current PR head has successful CI, a READY Vercel deployment, and remains OPEN/mergeable before declaring readiness.
+- If final evidence is consistent, stop and request only: `Autorizo o squash merge da PR #412.` Do not merge without that authorization.
 
 ---
 
