@@ -2,6 +2,13 @@
 
 Ordenação por impacto no usuário observável, não por facilidade.
 
+## QA closeout evidence update — 2026-09-26
+
+- Confirmed and fixed in this V274 pass: light-theme Dashboard upcoming-receipt labels were 4.21:1 on their observed surface; gain/loss highlight cards used a navy gradient with dark light-theme copy; chart title/axes were dark on the intentionally navy chart. Fixes are scoped to the Dashboard/light theme. The chart surface remains navy; only foreground roles were corrected. `tests/v274-accessibility-contract.test.js` guards these overrides.
+- Runtime axe on the actual light theme (changed through the product's theme toggle, not by mutating `data-theme` alone) reports no color-contrast violations at Dashboard 390 and 1366. Screenshots regenerated at 390/768/1366 and visually reviewed after the fix; cards are clear in light mode and the chart retains the navy visual treatment with readable labels.
+- Full prior matrix recorded above remains historical evidence for the pre-final Dashboard styling; dashboard was rerun at 390/1366 after the latest fixes. Other route-specific findings/backlog remain as recorded until individually verified; this update does not claim final 17-route re-execution.
+- Temporary theme-switch toasts can overlap chart content immediately after theme change; wait for the transient toast to disappear before capturing release screenshots. Real authenticated wallet QA remains incomplete behind Vercel SSO; never bypass it.
+
 ## P0 — Acessibilidade
 
 - Medir e corrigir foco de teclado em toda navegação/controle/modal; confirmar

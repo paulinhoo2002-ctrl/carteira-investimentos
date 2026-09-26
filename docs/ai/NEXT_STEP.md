@@ -1,6 +1,13 @@
 # Next Step
 
-## Active — V273 PR certification and merge authorization (2026-09-26)
+## Active — V274 PR #427 final exact-head certification (2026-09-26)
+
+- Continue only in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`; base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`, initial PR head `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`.
+- Light-theme Dashboard findings from runtime/screenshots were fixed: muted upcoming-receipt text, gain/loss panel surface/foreground, and chart title/axis text while preserving the navy chart surface. Added contract tests in `tests/v274-accessibility-contract.test.js`. Dashboard light axe color contrast is 0 violations at 390 and 1366; page overflow is 0. New 390/768/1366 light screenshots were visually reviewed.
+- Final local results: `npm test` 249/249; `npm run test:modern` 815/815; focused tests 22/22; `build`, `build:modern`, `qa:all` (QA harness 2/2 and seven-width smoke) and `git diff --check` PASS. Audit the full diff and zero-write boundary, then use the existing authorization to commit/push normally and verify PR #427 plus exact-head CI/Vercel. Do not merge. The complete 17-route axe matrix was not rerun after the last Dashboard-only CSS changes; Dashboard light contrast was rerun at 390/1366.
+- Preview is protected by Vercel SSO; do not bypass. Real authenticated wallet QA is `NOT_COMPLETED`, to be stated openly. No Firebase change or real financial/tax/import/restore writes.
+
+## V273 — merged historical record (2026-09-26; superseded by V274 above)
 
 - V273 is PR #426, branch `feature/v273-reporting-data-quality-ops`, worktree `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, final implementation SHA `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`, based on V272 merge SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4`.
 - Implementation, local tests, builds and local QA are complete. Latest evidence: modern 815/815, general 249/249, performance 84/84, QA harness 2/2, Reports browser matrix 6/6, modern/legacy builds and `qa:all` PASS; axe critical/serious 0 at 390px; seven viewport checks had no horizontal overflow, console, page or request errors.

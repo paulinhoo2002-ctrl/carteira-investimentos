@@ -1,6 +1,15 @@
 # Project Memory
 
-## V274 release hardening and visual/runtime baseline — 2026-09-26 (in progress)
+## V274 closeout — current final QA checkpoint (2026-09-26)
+
+- V274 remains isolated in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`, base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. Initial PR #427 head was `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`; do not reuse its remote CI/Vercel result after new commits.
+- Final visual audit exposed an intentionally navy Dashboard chart and gain/loss panels whose light-theme text was still dark. Corrected the gain/loss panels to white with semantic readable text and retained the chart's navy surface while switching chart title/axis labels to light foreground. Dashboard light axe color-contrast checks at 390 and 1366 both report zero violations; page overflow is zero. The prior complete 17-route, both-theme, 390/1366 axe matrix was 0 critical/serious before these localized Dashboard-only overrides. Rerun the complete matrix if exact final-head evidence is needed; do not overstate partial reruns.
+- Existing final UI runtime evidence: all seven responsive widths had zero page overflow; Dashboard allocation tables had no clipping; keyboard focus sweep covered nine named routes; touch target sampling at five widths had no <44px failures; CSS viewport reflow simulation at 100/125/150/200% had zero horizontal overflow. These used synthetic local `testMode`, not authenticated real portfolio data.
+- Final light screenshots at 390/768/1366 were regenerated and reviewed after Dashboard changes; other prior responsive/theme screenshots remain local under `%TEMP%`. A screenshot includes the app's temporary theme-change toast in some captures; it is transient UI, not layout content.
+- Final local validation after those changes: `npm test` 249/249, `npm run test:modern` 815/815, focused canon/dashboard/accessibility tests 22/22, both builds and `npm run qa:all` PASS; QA harness 2/2 and seven-width smoke PASS. `git diff --check` PASS before the final doc reconciliation. The 17-route full axe matrix was not rerun after Dashboard-only CSS overrides; only Dashboard light contrast was rerun at 390 and 1366. Treat CI/Vercel as stale until exact post-commit SHA checks finish.
+- Vercel preview SSO was not bypassed. `AUTHENTICATED_REAL_WALLET_QA=NOT_COMPLETED`. Do not add Firebase domains or claim authenticated portfolio QA. No financial, tax, import-confirm, restore or other product write occurred. Final exact SHA/CI/Vercel/PR status must be updated only after push and exact-head remote verification. No merge.
+
+## Initial V274 audit snapshot — 2026-09-26 (historical; superseded by closeout checkpoint above)
 
 - Branch/worktree `feature/v274-release-hardening-visual-baseline` / `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline` is based on exact `origin/main` `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. V273 PR #426 has since merged; prior PR/CI/deployment evidence must not be represented as current V274 evidence.
 - User authorized `npm ci --ignore-scripts` only in V274. It succeeded, with no manifest/lockfile changes. npm reported 6 audit findings (3 moderate, 3 high); no dependency changes/remediation were made.

@@ -5091,6 +5091,25 @@ html[data-theme="light"] .aic{
   background:#ffffff!important;
   border-color:#dbe3ee!important;
 }
+html[data-theme="light"] .perf-card.hi,
+html[data-theme="light"] .perf-card.lo{
+  background:#fff!important;
+  color:var(--text)!important;
+}
+html[data-theme="light"] .perf-card.hi .perf-h,
+html[data-theme="light"] .perf-card.lo .perf-h,
+html[data-theme="light"] .perf-card.hi .perf-ticker,
+html[data-theme="light"] .perf-card.lo .perf-ticker{color:#1f2f44!important}
+html[data-theme="light"] .perf-card.hi .perf-sub,
+html[data-theme="light"] .perf-card.lo .perf-sub,
+html[data-theme="light"] .perf-card.hi .perf-val,
+html[data-theme="light"] .perf-card.lo .perf-val,
+html[data-theme="light"] .perf-card.hi .perf-amt,
+html[data-theme="light"] .perf-card.lo .perf-amt{color:#526174!important}
+html[data-theme="light"] .perf-card.hi .perf-pct{color:#047857!important}
+html[data-theme="light"] .perf-card.lo .perf-pct{color:#b91c1c!important}
+html[data-theme="light"] .perf-card.hi .perf-badge{color:#047857!important;border-color:#a7f3d0!important;background:#ecfdf5!important}
+html[data-theme="light"] .perf-card.lo .perf-badge{color:#b91c1c!important;border-color:#fecaca!important;background:#fef2f2!important}
 html[data-theme="light"] .rebalance-study-labels,
 html[data-theme="light"] .dividend-query-list-head{
   color:#66758b!important;
@@ -36873,11 +36892,84 @@ html[data-theme="light"] .premium-rf-row-actions .asset-detail-link{color:#04785
 html[data-theme="light"] .asset-insight-value.am{color:#854d0e!important}
 html[data-theme="light"] .import-center-actions label.btn.bp{color:#fff!important;background:#137333!important;border-color:#137333!important}
 html[data-theme="light"] .dashboard-page-heading h1{background:#f8fafc;border-radius:6px;padding:2px 5px}
+/* V274: the fiscal analysis surface uses dark-theme literals; restore readable semantic roles on its light cards. */
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-grid article,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-kpis>div,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-review-list li,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-rules li{background:#f8fafc}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-head p,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-kpis span,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-section-head p,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-review-list span,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-rules small,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-table th,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-table td small,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-empty{color:#475569}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-eyebrow,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-section-head>span,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-rules a{color:#1d4ed8}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-table td{color:#334155}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-notice{background:#fffbeb;color:#334155}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-notice strong,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-review-list strong{color:#854d0e}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-status--complete{color:#166534;background:#f0fdf4}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-status--partial,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-status--needs_review{color:#854d0e;background:#fffbeb}
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-status--unavailable,
+html[data-theme="light"] .reports-premium-shell .v254-fiscal-status--unsupported{color:#475569;background:#f1f5f9}
+/* The report-specific dark cascade follows the original light palette rules; restore explicit light roles after it. */
+html[data-theme="light"] .reports-premium-shell .reports-panel{background:#fff;border-color:#d9e2ec;box-shadow:none}
+html[data-theme="light"] .reports-premium-shell .reports-filter{border-color:#d9e2ec;background:#f8fafc}
+html[data-theme="light"] .reports-premium-shell .reports-filter button{color:#334155}
+html[data-theme="light"] .reports-premium-shell .reports-filter button.on{background:#ecfdf5;color:#166534;box-shadow:inset 0 0 0 1px #86efac}
+html[data-theme="light"] .reports-premium-shell .reports-panel-footer span,
+html[data-theme="light"] .reports-premium-shell .reports-data-row small,
+html[data-theme="light"] .reports-premium-shell .reports-next-maturity small,
+html[data-theme="light"] .reports-premium-shell .reports-details summary span{color:#52647b}
+html[data-theme="light"] .reports-premium-shell .reports-inline-link{color:#1d4ed8}
+html[data-theme="light"] .reports-premium-shell .reports-audit-count{color:#854d0e}
+html[data-theme="light"] .reports-premium-shell .reports-audit-count span{color:#52647b}
+html[data-theme="light"] .reports-premium-shell .v228-timeline-summary-text{color:#334155}
+html[data-theme="light"] .reports-premium-shell .v228-timeline-note{color:#52647b}
+html[data-theme="light"] .reports-premium-shell .reports-export-details:not([open]){border-color:#d9e2ec;background:#f8fafc}
+html[data-theme="light"] .reports-premium-shell .reports-export-details:not([open]) summary{color:#172033}
+html[data-theme="light"] .reports-premium-shell .reports-export-details:not([open]) summary span{color:#52647b}
+html[data-theme="light"] #investBottomNav button span:last-child{color:#526174!important}
+/* V274: Corporate Events keeps dark-theme status literals inside light surfaces. */
+html[data-theme="light"] .corporate-events-legend span{color:#0f766e;background:#f0fdfa}
+html[data-theme="light"] .corporate-events-review-queue strong{color:#854d0e}
+/* V274: keep Dashboard quick-action text and its light-theme surface in the same semantic theme. */
+html[data-theme="light"] .canon-dashboard .dashboard-quick-action{color:#1e293b;background:#f8fafc}
+html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#526174}
+html[data-theme="light"] .canon-dashboard{--canon-muted:#405267}
+html[data-theme="light"] .canon-dashboard .dashboard-receipts-header .premium-panel-sub,
+html[data-theme="light"] .canon-dashboard .dash-receipt-date,
+html[data-theme="light"] .canon-dashboard .dash-receipt-rate{color:#405267!important}
+html[data-theme="light"] .canon-dashboard .dashboard-highlight-column{
+  background:#fff!important;
+  border-color:#c3cfd9!important;
+  color:#13202b!important;
+}
+html[data-theme="light"] .canon-dashboard .dashboard-highlight-column-head strong,
+html[data-theme="light"] .canon-dashboard .dashboard-highlight-row .premium-exec-title,
+html[data-theme="light"] .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details strong{color:#13202b!important}
+html[data-theme="light"] .canon-dashboard .dashboard-highlight-column-head span,
+html[data-theme="light"] .canon-dashboard .dashboard-highlight-row .premium-exec-sub,
+html[data-theme="light"] .canon-dashboard .dashboard-highlight-row .dashboard-highlight-details{color:#405267!important}
+html[data-theme="light"] .canon-dashboard .dashboard-evolution-card .premium-panel-title{color:#f1f5f9!important}
+html[data-theme="light"] .canon-dashboard .dashboard-evolution-card .premium-panel-sub{color:#cbd5e1!important}
+html[data-theme="light"] .canon-dashboard .dashboard-patrimony-chart text{fill:#cbd5e1!important}
+/* V274: override the global table minimum only for the four compact Dashboard allocation summaries. */
+.canon-dashboard .allocation-intelligence-table{width:100%;min-width:0;table-layout:fixed}
+.canon-dashboard .allocation-intelligence-table td{overflow-wrap:anywhere}
+.canon-dashboard .dashboard-highlight-column .dashboard-highlight-row,.canon-dashboard .dashboard-highlight-column .dashboard-context-action{height:auto!important;min-height:44px!important}
+@media (min-width:1181px) and (max-width:1535px){.tabs.tabs-desktop{top:0;height:100vh}}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{
   try{if(typeof S!=='undefined'&&S.tab==='renda-fixa'&&typeof render==='function')render()}catch{}
 });
+document.addEventListener('focusin',event=>{const nav=event.target?.closest?.('.tabs-desktop');if(!nav)return;const targetRect=event.target.getBoundingClientRect(),navRect=nav.getBoundingClientRect(),visibleTop=Math.max(0,navRect.top),visibleBottom=Math.min(innerHeight,navRect.bottom);if(targetRect.top<visibleTop)nav.scrollTop-=visibleTop-targetRect.top;else if(targetRect.bottom>visibleBottom)nav.scrollTop+=targetRect.bottom-visibleBottom});
 </script>
 </body>
 </html>
