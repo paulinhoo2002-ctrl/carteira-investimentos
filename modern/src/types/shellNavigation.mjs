@@ -17,6 +17,7 @@ export const SHELL_NAVIGATION_GROUPS = Object.freeze({
     'contributions',
     'reports',
     'settings',
+    'portfolio-history',
   ]),
   MOBILE_BOTTOM: Object.freeze([
     'overview',
@@ -33,6 +34,7 @@ export const SHELL_NAVIGATION_GROUPS = Object.freeze({
     'contributions',
     'reports',
     'settings',
+    'portfolio-history',
   ]),
 });
 

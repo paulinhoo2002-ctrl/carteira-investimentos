@@ -16,6 +16,8 @@ import type { IncomeRefreshController } from './features/income/incomeRefreshCon
 import type { ReadOnlyIncomeAdapter } from './features/income/incomeSnapshotAdapter.mjs';
 import { NetWorthPage } from './features/net-worth/NetWorthPage';
 import { OverviewPage } from './features/overview/OverviewPage';
+import { PortfolioHistoryPage } from './features/portfolio-history/PortfolioHistoryPage';
+import type { ReadOnlyPortfolioHistoryAdapter } from './features/portfolio-history/portfolioHistorySnapshotAdapter.ts';
 import { RebalancePage } from './features/rebalance/RebalancePage';
 import { AssetsReadonlyPage } from './features/reports/AssetsReadonlyPage';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
@@ -32,10 +34,23 @@ interface AppProps {
   incomeAdapter: ReadOnlyIncomeAdapter;
   contributionsAdapter: ReadOnlyContributionsAdapter;
   goalsAdapter: ReadOnlyGoalsAdapter;
+  portfolioHistoryAdapter: ReadOnlyPortfolioHistoryAdapter;
   reportsRefreshController?: ReportsRefreshController | null;
   incomeRefreshController?: IncomeRefreshController | null;
   contributionsRefreshController?: ContributionsRefreshController | null;
   goalsRefreshController?: GoalsRefreshController | null;
+  captureHistorySnapshot?: () => Promise<{
+      readonly status: 'CREATED' | 'DUPLICATE' | 'FAILED';
+      readonly snapshot?: {
+        readonly id: string;
+        readonly capturedAt: string;
+        readonly contentHash: string;
+        readonly priceCoverage: string;
+        readonly totalValue: number;
+        readonly assetCount: number;
+      };
+      readonly reason?: string;
+    }> | null;
   initialPageId?: ModernPageId;
   onActivePageIdChange?: (pageId: ModernPageId) => void;
 }
@@ -46,10 +61,12 @@ export function App({
   incomeAdapter,
   contributionsAdapter,
   goalsAdapter,
+  portfolioHistoryAdapter,
   reportsRefreshController,
   incomeRefreshController,
   contributionsRefreshController,
   goalsRefreshController,
+  captureHistorySnapshot,
   initialPageId = 'overview',
   onActivePageIdChange,
 }: AppProps) {
@@ -128,21 +145,26 @@ export function App({
           ) : activePageId === 'reports' ? (
             <AssetsReportPreview adapter={reportsAdapter} refreshController={reportsRefreshController} />
           ) : activePageId === 'overview' ? (
-            <OverviewPage reportsAdapter={reportsAdapter} incomeAdapter={incomeAdapter} />
-          ) : activePageId === 'returns' ? (
-            <ReturnsPage reportsAdapter={reportsAdapter} />
-          ) : activePageId === 'goals' ? (
-            <GoalsReadonlyPage adapter={goalsAdapter} refreshController={goalsRefreshController} />
-          ) : activePageId === 'net-worth' ? (
-            <NetWorthPage reportsAdapter={reportsAdapter} />
-          ) : activePageId === 'rebalance' ? (
-            <RebalancePage reportsAdapter={reportsAdapter} />
-          ) : (
-            <PagePlaceholder
-              cardData={activePageId === 'overview' ? OVERVIEW_CARDS : undefined}
-              page={activePage}
-            />
-          )}
+                      <OverviewPage reportsAdapter={reportsAdapter} incomeAdapter={incomeAdapter} />
+                    ) : activePageId === 'returns' ? (
+                      <ReturnsPage reportsAdapter={reportsAdapter} />
+                    ) : activePageId === 'goals' ? (
+                      <GoalsReadonlyPage adapter={goalsAdapter} refreshController={goalsRefreshController} />
+                    ) : activePageId === 'net-worth' ? (
+                      <NetWorthPage reportsAdapter={reportsAdapter} />
+                    ) : activePageId === 'rebalance' ? (
+                                          <RebalancePage reportsAdapter={reportsAdapter} />
+                                        ) : activePageId === 'portfolio-history' ? (
+                                                              <PortfolioHistoryPage
+                                                                adapter={portfolioHistoryAdapter}
+                                                                captureHistorySnapshot={captureHistorySnapshot}
+                                                              />
+                                                            ) : (
+                      <PagePlaceholder
+                        cardData={activePageId === 'overview' ? OVERVIEW_CARDS : undefined}
+                        page={activePage}
+                      />
+                    )}
         </main>
       </div>
 

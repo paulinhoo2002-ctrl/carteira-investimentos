@@ -35,8 +35,19 @@ export default defineConfig({
   root: 'modern',
   base: './',
   plugins: [react(), copyReadonlyReportPageContract()],
+  resolve: {
+    alias: {
+      'portfolio-history-core': resolve(rootDir, '..', 'portfolio-history-core.js'),
+      'persistence-core': resolve(rootDir, '..', 'persistence-core.js'),
+    },
+  },
   optimizeDeps: {
-    include: [resolve(rootDir, '..', 'legacy', 'reports-readonly-source.js'), resolve(rootDir, '..', 'report-asset-row.js')],
+    include: [
+      resolve(rootDir, '..', 'legacy', 'reports-readonly-source.js'),
+      resolve(rootDir, '..', 'report-asset-row.js'),
+      resolve(rootDir, '..', 'portfolio-history-core.js'),
+      resolve(rootDir, '..', 'persistence-core.js'),
+    ],
   },
   ssr: {
     external: [

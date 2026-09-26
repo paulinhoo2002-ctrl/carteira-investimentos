@@ -11,6 +11,7 @@ import type { ReportsRefreshController } from '../features/reports/reportsRefres
 import type { ReadOnlyReportsAdapter } from '../features/reports/reportsSnapshotAdapter';
 import type { ModernPageId } from '../types/navigation.mjs';
 import type { ComponentType } from 'react';
+import type { ReadOnlyPortfolioHistoryAdapter } from '../features/portfolio-history/portfolioHistorySnapshotAdapter.ts';
 
 interface MountModernAppOptions {
   readonly rootElement: HTMLElement | null | undefined;
@@ -19,25 +20,51 @@ interface MountModernAppOptions {
   readonly incomeAdapter: ReadOnlyIncomeAdapter | null | undefined;
   readonly contributionsAdapter: ReadOnlyContributionsAdapter | null | undefined;
   readonly goalsAdapter: ReadOnlyGoalsAdapter | null | undefined;
+  readonly portfolioHistoryAdapter: ReadOnlyPortfolioHistoryAdapter | null | undefined;
   readonly reportsRefreshController?: ReportsRefreshController | null | undefined;
   readonly incomeRefreshController?: IncomeRefreshController | null | undefined;
   readonly contributionsRefreshController?: ContributionsRefreshController | null | undefined;
   readonly goalsRefreshController?: GoalsRefreshController | null | undefined;
+  readonly captureHistorySnapshot?: () => Promise<{
+      readonly status: 'CREATED' | 'DUPLICATE' | 'FAILED';
+      readonly snapshot?: {
+        readonly id: string;
+        readonly capturedAt: string;
+        readonly contentHash: string;
+        readonly priceCoverage: string;
+        readonly totalValue: number;
+        readonly assetCount: number;
+      };
+      readonly reason?: string;
+    }> | null | undefined;
   readonly initialPageId?: ModernPageId;
   readonly onActivePageIdChange?: (pageId: ModernPageId) => void;
   readonly AppComponent?: ComponentType<{
-  reportsAdapter: ReadOnlyReportsAdapter;
-  fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
-  incomeAdapter: ReadOnlyIncomeAdapter;
-  contributionsAdapter: ReadOnlyContributionsAdapter;
-  goalsAdapter: ReadOnlyGoalsAdapter;
-  reportsRefreshController?: ReportsRefreshController | null | undefined;
-  incomeRefreshController?: IncomeRefreshController | null | undefined;
-  contributionsRefreshController?: ContributionsRefreshController | null | undefined;
-  goalsRefreshController?: GoalsRefreshController | null | undefined;
-  initialPageId?: ModernPageId;
-  onActivePageIdChange?: (pageId: ModernPageId) => void;
-}> | null | undefined;
+    reportsAdapter: ReadOnlyReportsAdapter;
+    fixedIncomeAdapter: ReadOnlyFixedIncomeAdapter;
+    incomeAdapter: ReadOnlyIncomeAdapter;
+    contributionsAdapter: ReadOnlyContributionsAdapter;
+    goalsAdapter: ReadOnlyGoalsAdapter;
+    portfolioHistoryAdapter: ReadOnlyPortfolioHistoryAdapter;
+    reportsRefreshController?: ReportsRefreshController | null | undefined;
+    incomeRefreshController?: IncomeRefreshController | null | undefined;
+    contributionsRefreshController?: ContributionsRefreshController | null | undefined;
+    goalsRefreshController?: GoalsRefreshController | null | undefined;
+    captureHistorySnapshot?: () => Promise<{
+      readonly status: 'CREATED' | 'DUPLICATE' | 'FAILED';
+      readonly snapshot?: {
+        readonly id: string;
+        readonly capturedAt: string;
+        readonly contentHash: string;
+        readonly priceCoverage: string;
+        readonly totalValue: number;
+        readonly assetCount: number;
+      };
+      readonly reason?: string;
+    }> | null | undefined;
+    initialPageId?: ModernPageId;
+    onActivePageIdChange?: (pageId: ModernPageId) => void;
+  }> | null | undefined;
 }
 
 export interface ModernAppMount {
@@ -54,10 +81,12 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
     incomeAdapter,
     contributionsAdapter,
     goalsAdapter,
+    portfolioHistoryAdapter,
     reportsRefreshController,
     incomeRefreshController,
     contributionsRefreshController,
     goalsRefreshController,
+    captureHistorySnapshot,
     initialPageId,
     onActivePageIdChange,
     AppComponent,
@@ -98,24 +127,26 @@ export function mountModernApp(options: MountModernAppOptions): ModernAppMount {
   const root = createRoot(rootElement);
   mountedRoots.set(rootElement, root);
   root.render(
-    React.createElement(
-      React.StrictMode,
-      null,
-      React.createElement(AppComponent, {
-        reportsAdapter,
-        fixedIncomeAdapter,
-        incomeAdapter,
-        contributionsAdapter,
-        goalsAdapter,
-        reportsRefreshController,
-        incomeRefreshController,
-        contributionsRefreshController,
-        goalsRefreshController,
-        initialPageId,
-        onActivePageIdChange,
-      }),
-    ),
-  );
+        React.createElement(
+          React.StrictMode,
+          null,
+          React.createElement(AppComponent, {
+            reportsAdapter,
+            fixedIncomeAdapter,
+            incomeAdapter,
+            contributionsAdapter,
+            goalsAdapter,
+            portfolioHistoryAdapter,
+            reportsRefreshController,
+            incomeRefreshController,
+            contributionsRefreshController,
+            goalsRefreshController,
+            captureHistorySnapshot,
+            initialPageId,
+            onActivePageIdChange,
+          }),
+        ),
+      );
 
   return {
     unmount() {

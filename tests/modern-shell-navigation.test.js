@@ -31,9 +31,9 @@ async function loadNavigation(cacheKey = '') {
 }
 
 const PRIMARY = ['overview', 'assets', 'provents', 'returns', 'goals', 'net-worth', 'rebalance'];
-const SECONDARY = ['fixed-income', 'contributions', 'reports', 'settings'];
+const SECONDARY = ['fixed-income', 'contributions', 'reports', 'settings', 'portfolio-history'];
 const MOBILE_BOTTOM = ['overview', 'assets', 'provents', 'returns', 'more'];
-const MOBILE_MORE = ['goals', 'net-worth', 'rebalance', 'fixed-income', 'contributions', 'reports', 'settings'];
+const MOBILE_MORE = ['goals', 'net-worth', 'rebalance', 'fixed-income', 'contributions', 'reports', 'settings', 'portfolio-history'];
 
 test('shell navigation exposes grouped ids referencing the canonical catalog', async () => {
   const shell = await loadShellNavigation('groups');
@@ -98,10 +98,10 @@ test('shell navigation contract stays aligned with the readonly report contract'
   assert.equal(readonlyReportPageContract.DEFAULT_READONLY_REPORT_PAGE_ID, 'reports');
 
   const uniqueIds = new Set([
-    ...shell.SHELL_NAVIGATION_GROUPS.PRIMARY,
-    ...shell.SHELL_NAVIGATION_GROUPS.SECONDARY,
-  ]);
-  assert.equal(uniqueIds.size, 11, 'shell deve referenciar todos os 11 IDs sem duplicar');
+      ...shell.SHELL_NAVIGATION_GROUPS.PRIMARY,
+      ...shell.SHELL_NAVIGATION_GROUPS.SECONDARY,
+    ]);
+    assert.equal(uniqueIds.size, 12, 'shell deve referenciar todos os 12 IDs sem duplicar');
 
   const moreExcluded = shell.SHELL_NAVIGATION_GROUPS.MOBILE_BOTTOM.filter((id) => id !== 'more');
   assert.deepEqual(
