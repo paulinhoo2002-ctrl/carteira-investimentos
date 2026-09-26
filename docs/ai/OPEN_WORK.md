@@ -2,18 +2,23 @@
 
 ## NOW
 
-- V272 implementation is locally validated on
-  `feature/v272-cashflow-performance-foundation` from base
-  `4fae02ac06729aea1c66a6008b24bba75b9a68b2`; commit/push/PR and exact-head CI
-  are the remaining authorized release steps. Do not merge without separate
+- V273 is active on `feature/v273-reporting-data-quality-ops` in
+  `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`,
+  based on V272 merge `75e77a7e98ef0768a5d4a6855b684432f09493b4`. Local tests,
+  builds and seven-width Reports QA pass; commit/push/PR and exact-head CI plus
+  preview are the remaining release steps. Do not merge without separate
   authorization.
+- V273 fixed a Reports route runtime defect: `classifier` was out of scope in
+  the readiness adapter. The canonical global classifier is now resolved in
+  that function and a regression test guards the mount. Full local counts and
+  visual/axe evidence are in `docs/ai/PROJECT_MEMORY.md`.
 - V76 flow and valuation stores are global and have no `walletId`. V272 keeps
   real-wallet `DATA_READY=false` until evidence has legitimate wallet scope;
   do not infer a wallet or expose real TWR/XIRR. Any future store/schema change
   requires its own authorized phase.
-- V272 local evidence: modern 815/815, general 249/249, builds and `qa:all`
-  PASS; rendered panel checked at seven widths, component axe 0. QA used
-  synthetic localhost test mode, not authenticated real-portfolio data.
+- V272 PR #425 is merged at `75e77a7e98ef0768a5d4a6855b684432f09493b4`.
+  V76 still lacks wallet IDs; do not infer wallet association or mark real
+  portfolio `DATA_READY`. `ENGINE_AVAILABLE` and `DATA_READY` remain separate.
 
 - PR #417 also contains the Skills-library audit: 38 local operational packages,
   only four tracked Skill files, global-only Superpowers in this environment,

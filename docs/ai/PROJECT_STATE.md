@@ -1,8 +1,19 @@
 # Project State
 
-## V272 — trusted cash flows and performance readiness (implementation certified locally, 2026-09-26)
+## V273 — Reporting data quality and operational polish (locally certified; PR pending, 2026-09-26)
 
-- Dedicated worktree `C:/Projetos/carteira-investimentos.worktrees/v272-cashflow-performance-foundation`, branch `feature/v272-cashflow-performance-foundation`, based on `4fae02ac06729aea1c66a6008b24bba75b9a68b2`. Implementation is validated locally; commit/push/PR remain pending at this documentation snapshot. No merge.
+- Branch `feature/v273-reporting-data-quality-ops`, worktree `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, based on current `origin/main` SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4` (V272 PR #425 merge).
+- Architecture spec and execution plan: `docs/superpowers/specs/2026-09-26-v273-reporting-data-quality-operational-polish-design.md` and `docs/superpowers/plans/2026-09-26-v273-reporting-data-quality-operational-polish.md`.
+- The pure/read-only `portfolio-report-readiness.js` aggregates existing evidence into factual section states; the Reports UI shows the concise result and evidence. It does not write, score, infer missing values, or create a new authority.
+- `ENGINE_AVAILABLE != DATA_READY`; V76 wallet identity remains absent and blocks real TWR/XIRR readiness. UNKNOWN != ZERO; PARTIAL != AVAILABLE; STALE != FRESH. Manual fixed-income authority is disclosed, not falsely aggregated.
+- A local browser smoke exposed a `ReferenceError` (`classifier` not defined) that made Reports silently fall back to Dashboard. Fixed by resolving the existing global `PortfolioCashFlowClassifier` in the V273 adapter; added a regression contract.
+- Final local verification: focused 75/75; `test:performance` 84/84; `test:qa-harness` 2/2; `test:modern` 815/815; `npm test` 249/249; `build`, `build:modern`, `qa:all`, V273 responsive/UI 6/6 and `git diff --check` PASS. Reports QA exercised 390/430/768/1366/1440/1536/1920 with no overflow/runtime/console/request failures. Axe on the Reports health panel at 390px: critical 0, serious 0. Screenshots at 390/768/1366/1920 were captured and reviewed by Codex from isolated synthetic local test mode.
+- Dependency installation (`npm ci --ignore-scripts`) was explicitly authorized and limited to this worktree; package manifest and lockfile unchanged. Six existing npm audit findings were reported; no versions were updated and no audit fix was run.
+- GLM-5.3, Kimi K3, Hermes/NVIDIA unavailable; separate Codex technical and visual reviews only, with no claim of independent-model review. Financial/tax writes: 0 by read-only scope. Commit/push/PR and exact-head CI/preview remain pending; no merge.
+
+## V272 — trusted cash flows and performance readiness (merged, 2026-09-26)
+
+- V272 PR #425 was merged to main at `75e77a7e98ef0768a5d4a6855b684432f09493b4`; the implementation below is part of the current base. No V273 merge is authorized.
 - Approved three-slice design and execution plan are in `docs/superpowers/specs/2026-09-26-v272-trusted-cashflow-performance-foundation-design.md` and `docs/superpowers/plans/2026-09-26-v272-trusted-cashflow-performance-foundation.md`.
 - Implementation currently adds pure `portfolio-cash-flow-classifier.js`; makes V271 TWR/XIRR readiness require wallet-scoped, HIGH-confidence canonical flow evidence with valid date, magnitude/sign and provenance; rejects ambiguous, wrong-wallet, duplicate-source-identity and unscoped evidence; and hardens/reuses V248 `HistoricalPerformance` rather than adding a second engine.
 - TWR requires explicit `END_OF_SUBPERIOD` timing and an observed valuation on the exact flow date. XIRR no longer fabricates an opening contribution from the opening valuation. Legacy `status` fields remain compatible while metrics also expose structured availability; engine availability is separate from real-wallet data readiness.

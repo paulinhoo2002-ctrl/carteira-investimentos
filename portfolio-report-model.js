@@ -1,10 +1,11 @@
 /* Read-only portfolio intelligence model. It never reads storage or writes data. */
 (function(root,factory){
-  const api=factory();
+  const readiness=root?.PortfolioReportReadiness || (typeof require==='function' ? require('./portfolio-report-readiness.js') : null);
+  const api=factory(readiness);
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.PortfolioReportModel=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
-  const finite=value=>Number.isFinite(Number(value))?Number(value):null;
+})(typeof globalThis!=='undefined'?globalThis:this,function(readinessApi){
+  const finite=value=>value===null||value===undefined||value===''||typeof value==='boolean'?null:Number.isFinite(Number(value))?Number(value):null;
   const array=value=>Array.isArray(value)?value:[];
   const text=(value,fallback='')=>String(value??'').trim()||fallback;
   const clone=value=>JSON.parse(JSON.stringify(value));
@@ -47,6 +48,9 @@
       {key:'xirr',label:'XIRR',value:finite(input.xirr?.value),status:text(input.xirr?.status,'INSUFFICIENT_DATA'),scope:input.xirr?.scope||performance.scope,reason:input.xirr?.reason||'Fluxos externos insuficientes para este cálculo.'}
     ];
     const alerts=array(input.alerts||quality.alerts);
+    const readiness=input.readiness && readinessApi?.buildPortfolioReportReadiness
+      ? readinessApi.buildPortfolioReportReadiness(input.readiness)
+      : null;
     return Object.freeze({
       version:1,
       generatedAt:text(input.generatedAt,new Date().toISOString()),
@@ -63,7 +67,8 @@
         proventos:section(proventos.length?'AVAILABLE':'EMPTY',proventos,{provenance:provenance.proventos,reason:proventos.length?null:'Nenhum provento registrado neste recorte.'}),
         risk:section(alerts.length?'ATTENTION':'CLEAR',alerts,{provenance:provenance.risk,reason:alerts.length?'Existem itens para conferência.':null})
       }),
-      coverage:{value:valueCoverage,status:valueCoverage===null?'UNAVAILABLE':valueCoverage>=99?'FULL':'PARTIAL',freshness,reason:valueCoverage===null?'Cobertura não informada.':valueCoverage>=99?null:'O relatório apresenta somente os dados valorizados disponíveis.'}
+      coverage:{value:valueCoverage,status:valueCoverage===null?'UNAVAILABLE':valueCoverage>=99?'FULL':'PARTIAL',freshness,reason:valueCoverage===null?'Cobertura não informada.':valueCoverage>=99?null:'O relatório apresenta somente os dados valorizados disponíveis.'},
+      readiness
     });
   }
   return {buildPortfolioReportModel};

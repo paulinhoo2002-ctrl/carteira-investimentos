@@ -1,8 +1,16 @@
 # Next Step
 
-## Active — V272 PR certification and human merge gate (2026-09-26)
+## Active — V273 PR certification and merge authorization (2026-09-26)
 
-- Continue in `C:/Projetos/carteira-investimentos.worktrees/v272-cashflow-performance-foundation`, branch `feature/v272-cashflow-performance-foundation`, based on `4fae02ac06729aea1c66a6008b24bba75b9a68b2`. Preserve canonical main and do not merge.
+- Continue in `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, branch `feature/v273-reporting-data-quality-ops`, from V272 merge SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4`.
+- Implementation, local tests, builds and local QA are complete. Latest evidence: modern 815/815, general 249/249, performance 84/84, QA harness 2/2, Reports browser matrix 6/6, modern/legacy builds and `qa:all` PASS; axe critical/serious 0 at 390px; seven viewport checks had no horizontal overflow, console, page or request errors.
+- A V273 `classifier` scope ReferenceError that silently fell back to Dashboard was fixed and covered by a regression test. Screenshots at 390/768/1366/1920 were captured and visually reviewed by Codex in isolated synthetic local test mode.
+- `npm ci --ignore-scripts` ran only in this V273 worktree under explicit authorization; package manifests/lockfile are unchanged. Separate GLM/Kimi/Hermes review models are unavailable; do not claim independent model review.
+- Next: audit diff, commit, push normally, open/update PR and confirm exact-head CI plus Vercel preview. Do not merge without explicit human authorization.
+
+## V272 — merged baseline (2026-09-26)
+
+- V272 PR #425 is merged on `origin/main` at `75e77a7e98ef0768a5d4a6855b684432f09493b4`. Preserve canonical main; no V273 merge is authorized.
 - Approved architecture and detailed plan: `docs/superpowers/specs/2026-09-26-v272-trusted-cashflow-performance-foundation-design.md` and `docs/superpowers/plans/2026-09-26-v272-trusted-cashflow-performance-foundation.md`.
 - V272 classifier, V271 readiness gate, existing V248 engine hardening (including fail-closed ambiguous-flow candidates), and read-only legacy History/Reports disclosure are implemented. Local tests/build/QA passed: focused 94/94, modern 815/815, general 249/249, QA harness 2/2, all builds and `qa:all`; rendered section verified in synthetic test mode across seven widths, full Rentabilidade axe WCAG 2.1 A/AA 0, screenshots visually inspected.
 - V76 still lacks wallet IDs; do not infer wallet association or mark real portfolio `DATA_READY`. `ENGINE_AVAILABLE` and `DATA_READY` remain separate. No financial/tax/import/restore/cloud writes; manifests/lock unchanged.

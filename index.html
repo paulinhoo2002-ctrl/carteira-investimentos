@@ -2493,6 +2493,10 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 .reports-reconciliation-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
 .reports-reconciliation-item{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;padding:9px 10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(255,255,255,.018);color:#8294ad;font-size:10px}
 .reports-reconciliation-item strong{font-size:10px;white-space:nowrap}
+.reports-v273-health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.reports-v273-health-item{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(255,255,255,.018)}
+.reports-v273-health-item strong{display:block;margin-top:5px;color:var(--text);font-size:11px;overflow-wrap:anywhere}
+.reports-v273-health-item small{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.45;overflow-wrap:anywhere}
 .reports-reconciliation-pass{color:#34d399}.reports-reconciliation-mismatch{color:#fbbf24}.reports-reconciliation-unavailable{color:#94a3b8}
 .reports-reconciliation-note{margin:10px 0 0;color:#a9b8cb;font-size:10px;line-height:1.45}
 .premium-rf-provenance-details{margin-top:3px;font-size:9px;color:var(--muted)}
@@ -2516,6 +2520,7 @@ html[data-theme="light"] .reports-executive-summary-head p,.reports-executive-su
 @media(max-width:560px){.reports-intelligence-strip{grid-template-columns:1fr;gap:9px;padding:11px}.reports-intelligence-strip small{white-space:normal}}
 @media(max-width:720px){.reports-executive-summary-head{display:block}.reports-executive-summary-head .reports-badge{display:inline-flex;margin-top:8px}.reports-executive-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-executive-summary-grid strong{font-size:13px}}
 @media(max-width:720px){.reports-reconciliation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-reconciliation-head{display:block}.reports-reconciliation-head .reports-badge{display:inline-flex;margin-top:8px}}
+@media(max-width:720px){.reports-v273-health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-v273-health-item{padding:9px}}
 @media print{.reports-premium-shell{padding:0!important;background:#fff!important;color:#111827!important}.reports-premium-shell .reports-premium-head-actions,.reports-premium-shell .reports-inline-link,.reports-premium-shell .reports-export-details,.reports-premium-shell .reports-experiment-entry,.reports-premium-shell .reports-footnote{display:none!important}.reports-premium-shell .reports-hero,.reports-premium-shell .reports-panel,.reports-premium-shell .reports-executive-summary,.reports-premium-shell .reports-reconciliation{break-inside:avoid;box-shadow:none!important;background:#fff!important;border-color:#cbd5e1!important}.reports-premium-shell h1,.reports-premium-shell h2,.reports-premium-shell strong,.reports-premium-shell span,.reports-premium-shell p,.reports-premium-shell small{color:#111827!important}.reports-premium-shell .reports-intelligence-strip{background:#f8fafc!important;border-color:#cbd5e1!important}.reports-premium-shell .reports-kpi .sub,.reports-premium-shell .reports-panel-head p,.reports-premium-shell .reports-reconciliation-head p,.reports-premium-shell .reports-reconciliation-note{color:#475569!important}}
 @media print{body:has(.reports-premium-shell) .tabs,body:has(.reports-premium-shell) #investBottomNav{display:none!important}}
 .reports-premium-shell .reports-premium-hero{
@@ -8086,6 +8091,7 @@ document.write([
 <script src="data-quality-remediation.js"></script>
 <script src="portfolio-monitoring.js?v=v258-1"></script>
 <script src="asset-detail-intelligence.js"></script>
+<script src="portfolio-report-readiness.js"></script>
 <script src="portfolio-report-model.js"></script>
 <script src="executive-reporting.js"></script>
 <script src="portfolio-event-timeline.js?v=v228-1"></script>
@@ -27066,6 +27072,112 @@ function v255HistoryStatusLabel(status){
   const labels={FULL:'Completo',COMPLETE:'Completo',PARTIAL:'Parcial',NEEDS_REVIEW:'Revisão necessária',UNAVAILABLE:'Indisponível',ALL_MATCH:'Reconciliado',REVIEW_REQUIRED:'Revisar divergência'};
   return labels[status]||status||'Indisponível';
 }
+function v273ReportReadiness(v272, reportAssets, reportFixed){
+  const trustEngine=globalThis.PortfolioDataTrust;
+  const classifier=globalThis.PortfolioCashFlowClassifier;
+  const listedAssets=(S.assets||[]).filter(asset=>normalizeType(asset.type||metaTicker(asset.ticker).type||'Ação','Ação')!=='Renda Fixa')
+    .map(asset=>({id:asset.id,ticker:asset.ticker,name:asset.name,type:asset.type,sector:asset.sector,
+      current:asset.current,current_price:asset.current_price,quoteSource:asset.quoteSource,quote_source:asset.quote_source,
+      quoteUpdatedAt:asset.quoteUpdatedAt,quote_updated_at:asset.quote_updated_at,quoteMarketTime:asset.quoteMarketTime,
+      quoteStatus:asset.quoteStatus,quoteFallbackUsed:asset.quoteFallbackUsed,quoteLastKnownGood:asset.quoteLastKnownGood}));
+  const trust=trustEngine?.build?.({assets:listedAssets})||null;
+  const market=trust?.marketData||{};
+  const marketRows=Array.isArray(market.rows)?market.rows:[];
+  const priceSources=[...new Set(marketRows.map(row=>row.source).filter(source=>source&&source!=='UNKNOWN'))];
+  const sourceAsOfValues=[...new Set(marketRows.map(row=>row.quoteMarketTime).filter(Boolean))];
+  const pricedCount=(Number(market.freshCount)||0)+(Number(market.staleCount)||0);
+  const totalPricedScope=listedAssets.length;
+  const priceCoverage=totalPricedScope===0?'UNKNOWN':pricedCount===0?'UNKNOWN':pricedCount>=totalPricedScope?'FULL':'PARTIAL';
+  const freshness=totalPricedScope>0&&Number(market.staleCount)>0?'STALE'
+    :totalPricedScope>0&&Number(market.freshCount)===totalPricedScope?'FRESH':'UNKNOWN';
+  const flowReadiness=v272?.flowReadiness||{};
+  const flowReadinessAvailable=Boolean(classifier&&Array.isArray(flowReadiness.trustedExternalFlows));
+  const unscopedFlowCount=Number(flowReadiness.unscopedEvents)||0;
+  const unscopedSnapshotCount=Number(v272?.unscopedSnapshotCount)||0;
+  const walletIdentityAvailable=Boolean(v272?.walletId)&&unscopedFlowCount===0&&unscopedSnapshotCount===0&&v272?.snapshotsScoped===true;
+  const historyCaps=v272?.capabilities||{};
+  const historyReady=historyCaps.VALUATION_HISTORY?.ready===true;
+  const historySnapshotCount=Number(v272?.assessment?.snapshotCount)||0;
+  const imports=globalThis.ImportCenterCore?.capabilities?.()||{};
+  const providers=['B3','INTER','XP','BTG'].map(provider=>({provider,status:imports[provider]?.status||'UNKNOWN'}));
+  const fixtureRequired=providers.some(provider=>provider.status==='FIXTURE_REQUIRED');
+  const v272ReasonCodes={
+    VALUATION_WALLET_SCOPE_MISSING:'WALLET_ID_UNAVAILABLE',FLOW_WALLET_SCOPE_MISSING:'WALLET_ID_UNAVAILABLE',
+    HISTORY_NOT_CAPTURED:'NO_HISTORY',HISTORY_REQUIREMENTS_NOT_ASSESSED:'NO_HISTORY',INSUFFICIENT_OBSERVATIONS:'NO_HISTORY',
+    INSUFFICIENT_HISTORY_SPAN:'INSUFFICIENT_HISTORY_SPAN',INSUFFICIENT_DAILY_COVERAGE:'INSUFFICIENT_DAILY_COVERAGE',
+    INSUFFICIENT_PRICE_COVERAGE:'PARTIAL_PRICE_COVERAGE',INSUFFICIENT_FLOW_PROVENANCE:'INSUFFICIENT_FLOW_PROVENANCE',
+    NO_TRUSTWORTHY_EXTERNAL_FLOWS:'NO_TRUSTWORTHY_EXTERNAL_FLOWS',INSUFFICIENT_FLOW_TIMING:'INSUFFICIENT_FLOW_TIMING',
+    NO_TERMINAL_VALUATION:'NO_TERMINAL_VALUATION'
+  };
+  const reasonCode=v272ReasonCodes[v272?.reason]||null;
+  const proventos=Array.isArray(S.proventos)?S.proventos:[];
+  const observedIncomePeriods=new Set(proventos.map(row=>{
+    const date=parseAnyDate(row?.date);
+    return date?`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`:null;
+  }).filter(Boolean));
+  const fixedIncome=Array.isArray(reportFixed)?reportFixed:[];
+  return {
+    history:{status:historyReady?'AVAILABLE':historySnapshotCount?'TRACKING_STARTED':'UNAVAILABLE',walletId:walletIdentityAvailable?v272.walletId:null,snapshotCount:historySnapshotCount,
+      spanDays:Number(v272?.assessment?.historySpan?.spanDays)||null,latestAt:v272?.assessment?.historySpan?.latestSnapshotAt||null},
+    performance:{engineAvailable:v272?.engineAvailable===true,dataReady:v272?.dataReady===true,
+      walletIdAvailable:walletIdentityAvailable,walletId:walletIdentityAvailable?v272.walletId:null,
+      twrReady:v272?.capabilities?.TWR?.ready===true,xirrReady:v272?.capabilities?.XIRR?.ready===true,
+      reasonCodes:[...new Set([!walletIdentityAvailable?'WALLET_ID_UNAVAILABLE':null,reasonCode].filter(Boolean))]},
+    prices:{coverageStatus:priceCoverage,freshness,source:priceSources.length===1?priceSources[0]:null,
+      sourceAsOf:sourceAsOfValues.length===1?sourceAsOfValues[0]:null},
+    cashFlows:{walletId:walletIdentityAvailable?v272.walletId:null,
+      trustedExternalCount:flowReadinessAvailable?flowReadiness.trustedExternalFlows.length:null,
+      ambiguousCount:flowReadinessAvailable?(Number(flowReadiness.ambiguousEvents)||0)+unscopedFlowCount:null,
+      unknownCount:flowReadinessAvailable?Number(flowReadiness.unknownEvents)||0:null,
+      provenanceCoverage:flowReadinessAvailable&&typeof flowReadiness.provenanceCoverage==='number'?flowReadiness.provenanceCoverage:null},
+    income:{status:proventos.length?'PARTIAL':'UNAVAILABLE',observedPeriods:observedIncomePeriods.size,
+      coveredPeriods:null,source:'ledger de proventos',freshness:'UNKNOWN'},
+    imports:{status:fixtureRequired?'PARTIAL':'UNAVAILABLE',providers},
+    backup:{status:'UNAVAILABLE',validationStatus:null,restoreAllowed:null,warningCount:null,schemaVersion:null,lastBackupAt:null},
+    fixedIncome:{status:fixedIncome.length?'PARTIAL':'UNAVAILABLE',manualAuthority:null,confidence:'UNKNOWN',
+      exactIpcaValuationSupported:false,reasonCodes:[]}
+  };
+}
+
+function v273HealthEvidenceText(label,item){
+  const evidence=item?.evidence||{};
+  const facts=[];
+  const addCount=(key,text)=>{if(Number.isInteger(evidence[key])&&evidence[key]>=0) facts.push(`${text}: ${evidence[key]}`);};
+  const shown=value=>value==null||value===''?'não informado':String(value);
+  if(label==='Histórico'){
+    addCount('snapshotCount','Snapshots');
+    if(Number.isInteger(evidence.spanDays)) facts.push(`Período observado: ${evidence.spanDays} dias`);
+    if(evidence.latestAt) facts.push(`Último registro: ${reportDateText(evidence.latestAt)}`);
+  }else if(label==='Preços'){
+    facts.push(`Cobertura: ${shown(evidence.coverage)} · Frescor: ${shown(evidence.freshness)}`);
+    facts.push(`Fonte: ${shown(evidence.source)} · Data da fonte: ${shown(evidence.sourceAsOf)}`);
+  }else if(label==='Fluxos externos'){
+    addCount('trustedExternalCount','Externos confiáveis');
+    addCount('ambiguousCount','Ambíguos');
+    addCount('unknownCount','Desconhecidos');
+    if(typeof evidence.provenanceCoverage==='number'&&Number.isFinite(evidence.provenanceCoverage)) facts.push(`Proveniência: ${Math.round(evidence.provenanceCoverage*100)}%`);
+  }else if(label==='Performance'){
+    facts.push(`Motor: ${evidence.engineAvailable?'disponível':'indisponível'} · Dados: ${evidence.dataReady?'prontos':'não prontos'}`);
+    facts.push(`TWR: ${evidence.twrReady?'pronto':'indisponível'} · XIRR: ${evidence.xirrReady?'pronto':'indisponível'}`);
+    if(!evidence.walletIdAvailable) facts.push('Identidade da carteira: não comprovada');
+  }else if(label==='Proventos'){
+    addCount('observedPeriods','Meses observados');
+    addCount('coveredPeriods','Meses cobertos');
+    facts.push(`Fonte: ${shown(evidence.source)} · Frescor: ${shown(evidence.freshness)}`);
+  }else if(label==='Importações'){
+    const providers=Array.isArray(evidence.providers)?evidence.providers.map(row=>`${row.provider||'Fonte'}: ${row.status||'UNKNOWN'}`):[];
+    if(providers.length) facts.push(providers.join(' · '));
+  }else if(label==='Backup e recuperação'){
+    facts.push(`Último backup: ${shown(evidence.lastBackupAt)} · Schema: ${shown(evidence.schemaVersion)}`);
+    facts.push(`Compatibilidade: ${shown(evidence.validationStatus)} · Restauração permitida: ${evidence.restoreAllowed===true?'sim':evidence.restoreAllowed===false?'não':'não validada'}`);
+    addCount('warningCount','Avisos');
+  }else if(label==='Renda Fixa'){
+    facts.push(`Autoridade manual: ${evidence.manualAuthority===true?'confirmada':evidence.manualAuthority===false?'não confirmada':'não agregada'}`);
+    facts.push(`Confiança: ${shown(evidence.confidence)} · IPCA+ exato automático: ${evidence.exactIpcaValuationSupported===false?'não suportado':shown(evidence.exactIpcaValuationSupported)}`);
+  }
+  return facts.join(' · ');
+}
+
 function v254FiscalPanel(){
   const engine=globalThis.TaxCostBasisIntelligence;
   if(!engine?.buildTaxIntelligence) return '';
@@ -27107,7 +27219,7 @@ function reportsTab(){
   const v272Readiness=v272CashFlowReadiness();
   const reportAssets=reportAssetRows();
   const reportFixed=reportFixedIncomeRows();
-  const reportValuesComplete=[...reportAssets,...reportFixed].every(row=>Number.isFinite(Number(row.current))&&Number(row.current)>=0);
+  const reportValuesComplete=[...reportAssets,...reportFixed].every(row=>row.current!==null&&row.current!==undefined&&row.current!==''&&Number.isFinite(Number(row.current))&&Number(row.current)>=0);
   const intelligence=globalThis.PortfolioReportModel?.buildPortfolioReportModel?.({
     summary:data,
     assets:reportAssets,
@@ -27115,8 +27227,9 @@ function reportsTab(){
     proventos:reportProventoRows(),
     allocation:Object.entries(allocationActualByType().map||{}).map(([type,value])=>({type,value})),
     performance:globalThis.__V76_RUNTIME_STATUS__||{},
-    valueCoverage:reportValuesComplete?100:null,
-    freshness:'LEGACY_CURRENT_VALUES',
+    valueCoverage:reportAssets.length+reportFixed.length>0&&reportValuesComplete?100:null,
+    freshness:'UNKNOWN',
+    readiness:v273ReportReadiness(v272Readiness,reportAssets,reportFixed),
     provenance:{summary:'cálculos do domínio legado',performance:'snapshots locais quando disponíveis'}
   });
   const patrimony=patrimonySnapshot(reportsPeriod()==='all'?12:reportsPeriod()==='year'?new Date().getMonth()+1:12);
@@ -27167,6 +27280,14 @@ function reportsTab(){
   const auditTone=data.auditCount?'warn':'ok';
   const intelligenceStatus=intelligence?.sections?.performance?.status==='AVAILABLE'?'Disponível':intelligence?.sections?.performance?.status==='TRACKING_STARTED'?'Coletando histórico':'Indisponível';
   const intelligenceCoverage=intelligence?.coverage?.value===null?'Cobertura não informada':`${intelligence.coverage.value.toFixed(0)}% dos valores reportados`;
+  const operationalReadiness=intelligence?.readiness;
+  const healthStateLabel=status=>({AVAILABLE:'Disponível',PARTIAL:'Parcial',UNAVAILABLE:'Indisponível',TRACKING_STARTED:'Coletando histórico'}[status]||'UNKNOWN');
+  const healthTiles=operationalReadiness?[
+    ['Histórico',operationalReadiness.sections.history],['Preços',operationalReadiness.sections.prices],
+    ['Fluxos externos',operationalReadiness.sections.cashFlows],['Performance',operationalReadiness.sections.performance],
+    ['Proventos',operationalReadiness.sections.income],['Importações',operationalReadiness.sections.imports],
+    ['Backup e recuperação',operationalReadiness.sections.backup],['Renda Fixa',operationalReadiness.sections.fixedIncome]
+  ].map(([label,item])=>{const explanation=item.reasons?.map(reason=>reason.label).join(' ')||'';const evidenceText=v273HealthEvidenceText(label,item);const details=[explanation,evidenceText].filter(Boolean).join(' ');return `<div class="reports-v273-health-item"><span>${esc(label)}</span><strong>${esc(healthStateLabel(item.status))}</strong><small>${esc(details||'Nenhuma evidência foi informada neste contexto.')}</small></div>`;}).join(''):'';
   return `<div class="reports-shell reports-premium-shell">
     <section class="reports-hero reports-premium-hero">
       <div class="reports-head">
@@ -27215,6 +27336,11 @@ function reportsTab(){
         ${[['Motor disponível',v272Readiness.engineAvailable?'Sim':'Não'],['Dados da carteira',v272Readiness.dataReady?'READY':'Indisponível'],['Fluxos externos confiáveis',String(v272Readiness.flowReadiness.trustedExternalFlows.length)],['Eventos sem escopo',String(v272Readiness.flowReadiness.unscopedEvents)]].map(([label,value])=>`<div class="reports-reconciliation-item"><span>${label}</span><strong class="reports-reconciliation-unavailable">${esc(value)}</strong></div>`).join('')}
       </div>
       <p class="reports-reconciliation-note">${esc(v272ReadinessReasonText(v272Readiness.reason))} UNKNOWN não é zero; evidência parcial não libera TWR/XIRR.</p>
+    </section>
+    <section class="reports-reconciliation reports-v273-health" aria-labelledby="reports-data-health-title">
+      <div class="reports-reconciliation-head"><div><h2 id="reports-data-health-title">Saúde e qualidade dos dados</h2><p>Estados descritivos, separados por fonte; ausência de evidência não significa valor zero.</p></div><span class="reports-badge">Somente leitura</span></div>
+      <div class="reports-v273-health-grid" aria-label="Diagnósticos de qualidade dos dados">${healthTiles}</div>
+      <p class="reports-reconciliation-note">Motor disponível: ${operationalReadiness?.engineAvailable?'sim':'não'} · dados prontos para performance real: ${operationalReadiness?.dataReady?'sim':'não'}. Cobertura, frescor e proveniência permanecem dimensões distintas.</p>
     </section>
     ${v254FiscalPanel()}
     <section class="reports-premium-main-grid">
