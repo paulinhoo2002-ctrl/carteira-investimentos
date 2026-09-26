@@ -72,18 +72,18 @@
     const stats = fs.statSync(filePath);
     results.size = stats.size;
     results.extension = path.extname(filePath).toLowerCase().replace('.', '');
-    
+
     // Binary detection
     const buffer = fs.readFileSync(filePath);
     const isBinary = detectBinary(buffer);
     results.isBinary = isBinary;
-    
+
     if (isBinary) {
       results.encoding = 'binary';
       results.format = detectBinaryFormat(buffer);
       return results;
     }
-    
+
     try {
       const content = buffer.toString('utf8');
       results.contentPreview = content.slice(0, 500);
