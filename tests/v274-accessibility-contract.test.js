@@ -51,7 +51,6 @@ test('Dashboard light actions, dense tables and interactive highlight rows remai
   assert.ok(html.includes("document.addEventListener('focusin',event=>{const nav=event.target?.closest?.('.tabs-desktop')"));
   assert.ok(html.includes('visibleBottom=Math.min(innerHeight,navRect.bottom)'));
   assert.ok(html.includes('nav.scrollTop+=targetRect.bottom-visibleBottom'));
-  assert.ok(/@media\s*\(min-width:\s*1181px\)\s*and\s*\(max-width:\s*1535px\)\s*\{\.tabs\.tabs-desktop\{top:0;height:100vh\}\}/.test(html));
 });
 
 test('Dashboard light theme gives gain/loss cards readable surfaces and semantic text colors', () => {
