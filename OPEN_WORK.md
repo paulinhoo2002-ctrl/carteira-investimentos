@@ -8,7 +8,8 @@
 - Local gates after the latest code edits: modern 815/815, general 249/249, legacy/modern builds, `qa:all` (7 viewport smoke, harness 2/2), focused contracts 18/18. A separate axe matrix covers 17 routes x two themes x 390/1366. Dark is 0 critical/serious; light has zero critical but serious contrast in Dashboard (390/1366) and Reports (1366); accessibility release gate is NOT PASS.
 - Visual baseline remains synthetic. Dashboard allocation content collides internally in the 1920 screenshot despite no document overflow. Four screenshots were visually reviewed before latest theme-specific corrections; recapture/review remains needed. Complete focus traversal, touch geometry, zoom, performance and data-state coverage remain open.
 - Audit package: `docs/visual/FINAL_VISUAL_AUDIT_CONSOLIDATION.md`, `FINAL_VISUAL_REDESIGN_INPUT.md`, `V274_VISUAL_PRIORITY_BACKLOG.md`. No product visual redesign, no financial/tax writes, no merge.
-- Next: resolve the remaining light-theme axe findings without broad redesign, complete remaining measurements/screenshots, rerun all gates, then diff audit and commit/push/open V274 PR. Verify exact-head CI/preview. Do not merge.
+- Draft PR #427 is OPEN/MERGEABLE at `e8c6bf70ef037acf8bbc46bb587cfb13a15e098f`; exact-head CI run 36274933546 PASS; Vercel deployment 6684798149 success. Preview is SSO-protected (302); no Firebase domain was added and no authenticated QA performed.
+- Next: resolve light-theme axe findings within the authorized narrow scope or defer the broader V254 theme correction to the final visual phase; complete remaining measurements/screenshots. If docs/code change, rerun exact-head checks. Do not merge.
 
 ## Completed Phases (Post-Merge)
 
