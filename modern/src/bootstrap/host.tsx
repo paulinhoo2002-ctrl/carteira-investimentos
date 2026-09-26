@@ -1,0 +1,433 @@
+import { App } from './App';
+import { createHostContributionsReadonlySource } from './bootstrap/hostContributionsReadonlySource';
+import { createHostFixedIncomeReadonlySource } from './bootstrap/hostFixedIncomeReadonlySource';
+import { createHostGoalsReadonlySource } from './bootstrap/hostGoalsReadonlySource';
+import { createHostIncomeReadonlySource } from './bootstrap/hostIncomeReadonlySource';
+import {
+  createHostLegacyReportsReadonlySource,
+  hostAssetAppliedValue,
+  hostAssetCurrentValue,
+  hostMetaTicker,
+  hostNormalizeType,
+} from './bootstrap/hostLegacyReportsReadonlySource';
+import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRuntime';
+import { createModernContributionsRuntime } from './bootstrap/modernContributionsRuntime';
+import { createModernGoalsRuntime } from './bootstrap/modernGoalsRuntime';
+import { createModernIncomeRuntime } from './bootstrap/modernIncomeRuntime';
+import { createHostPortfolioHistoryReadonlySource } from './bootstrap/hostPortfolioHistoryReadonlySource';
+import { createModernPortfolioHistoryRuntime } from './bootstrap/modernPortfolioHistoryRuntime';
+import type { HostPortfolioHistoryReadonlySourceOptions } from './bootstrap/hostPortfolioHistoryReadonlySource';
+import { createHostPortfolioHistoryCaptureAction } from './bootstrap/hostPortfolioHistoryCaptureAction';
+import { createPortfolioHistoryAutoCaptureCoordinator } from './bootstrap/portfolioHistoryAutoCaptureCoordinator';
+import { mountModernApp } from './bootstrap/mountModernApp';
+import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
+import type { HostFixedIncomeAsset } from './bootstrap/hostFixedIncomeReadonlySource';
+import type { HostIncomeReadonlySourceOptions } from './bootstrap/hostIncomeReadonlySource';
+import {
+  buildReadonlyReportSessionSearch,
+  readReadonlyReportSessionContext,
+} from './features/reports/readonlyReportSessionContext.ts';
+import {
+  createReportsRefreshController,
+  type ReportsReadonlyDiagnostics,
+  type ReportsRefreshControllerDiagnosticsFactory,
+  type ReportsReadonlyOriginMode,
+} from './features/reports/reportsRefreshController.ts';
+import type { HostLegacyReportAsset } from './bootstrap/hostLegacyReportsReadonlySource';
+import type { ModernPageId } from './types/navigation.mjs';
+import { buildFixedIncomeReadonlySupplementMap } from './features/fixed-income/fixedIncomeReadonlySupplementBuilder.ts';
+import './styles.css';
+
+const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null;
+
+export interface HostBootstrapOptions {
+  readonly rootElement?: HTMLElement | null;
+  readonly getAssets?: () => readonly HostLegacyReportAsset[];
+  readonly getContributionsSnapshot?: () => unknown;
+  readonly getFixedIncomeAssets?: () => readonly HostFixedIncomeAsset[];
+  readonly getGoalsSnapshot?: () => unknown;
+  readonly getIncomeSnapshot?: HostIncomeReadonlySourceOptions['getIncomeSnapshot'];
+  readonly getRfEvents?: () => readonly unknown[];
+  readonly legacyModule?: Record<string, unknown> | null;
+  readonly buildReportAssetRowModule?: Record<string, unknown> | null;
+  readonly getGeneratedAt?: () => string;
+  readonly notice?: string;
+  readonly strictSourceWiring?: boolean;
+  readonly getHistoryState?: HostPortfolioHistoryReadonlySourceOptions['getHistoryState'];
+  readonly getFullState?: () => Record<string, unknown> | null;
+  readonly captureHistorySnapshot?: () => Promise<{
+      readonly status: 'CREATED' | 'DUPLICATE' | 'FAILED';
+      readonly snapshot?: {
+        readonly id: string;
+        readonly capturedAt: string;
+        readonly contentHash: string;
+        readonly priceCoverage: string;
+        readonly totalValue: number;
+        readonly assetCount: number;
+      };
+      readonly reason?: string;
+    }>;
+  readonly applyStorageTransaction?: (state: Record<string, unknown>) => Promise<void> | void;
+  readonly walletId?: string;
+  readonly userId?: string;
+  readonly timezoneOffsetMinutes?: number;
+}
+
+function createNullReportsSource() {
+  return {
+    getSnapshot() {
+      return null;
+    },
+  };
+}
+
+function createHostExperimentalAssets(revision: number) {
+  const offset = revision;
+
+  return [
+    {
+      ticker: 'PETR4',
+      name: 'Petrobras',
+      type: 'Acao',
+      sector: 'Energia',
+      qty: 10,
+      avg_price: 20,
+      current_price: 25 + offset,
+      applied: 200,
+      current: 250 + offset * 10,
+      source: 'host-experimental',
+      updated_at: '2026-07-14T10:30:00.000Z',
+    },
+    {
+      ticker: 'MXRF11',
+      name: 'Maxi Renda',
+      type: 'FII',
+      sector: 'Imobiliario',
+      qty: 5,
+      avg_price: 100,
+      current_price: 90 + offset,
+      applied: 500,
+      current: 450 + offset * 5,
+      source: 'host-experimental',
+      updated_at: '2026-07-14T10:30:00.000Z',
+    },
+    {
+      ticker: 'BOVA11',
+      name: 'BOVA',
+      type: 'ETF',
+      sector: 'Ibovespa',
+      qty: 2,
+      avg_price: 100,
+      current_price: 100 + offset,
+      applied: 200,
+      current: 200 + offset * 2,
+      source: 'host-experimental',
+      updated_at: '2026-07-14T10:30:00.000Z',
+    },
+  ] as const;
+}
+
+function resolveHostOriginMode({
+  hasInjectedAssets,
+  isFallbackSnapshot,
+  itemCount,
+}: {
+  readonly hasInjectedAssets: boolean;
+  readonly isFallbackSnapshot: boolean;
+  readonly itemCount: number;
+}): ReportsReadonlyOriginMode {
+  if (isFallbackSnapshot) {
+    return 'fallback-readonly';
+  }
+
+  if (!hasInjectedAssets) {
+    return 'demo-source';
+  }
+
+  return itemCount > 0 ? 'real-wallet' : 'empty-wallet';
+}
+
+function buildHostOriginLabel(originMode: ReportsReadonlyOriginMode) {
+  switch (originMode) {
+    case 'real-wallet':
+      return 'Carteira ativa real';
+    case 'empty-wallet':
+      return 'Carteira ativa vazia';
+    case 'fallback-readonly':
+      return 'Fallback readonly';
+    case 'demo-source':
+    default:
+      return 'Fonte demonstrativa';
+  }
+}
+
+function createHostDiagnosticsFactory({
+  hasInjectedAssets,
+}: {
+  readonly hasInjectedAssets: boolean;
+}): ReportsRefreshControllerDiagnosticsFactory {
+  return ({ snapshot, isFallbackSnapshot, refreshStatus, previousDiagnostics }) => {
+    const originMode = resolveHostOriginMode({
+      hasInjectedAssets,
+      isFallbackSnapshot,
+      itemCount: snapshot.items.length,
+    });
+
+    const diagnostics: ReportsReadonlyDiagnostics = {
+      originMode,
+      originLabel: buildHostOriginLabel(originMode),
+      itemCount: snapshot.items.length,
+      generatedAt: snapshot.generatedAt,
+      hasNotice: Boolean(String(snapshot.notice || '').trim()),
+      refreshStatus: refreshStatus === 'error' && previousDiagnostics ? 'error' : refreshStatus,
+    };
+
+    return diagnostics;
+  };
+}
+
+export async function bootstrapHost(options: HostBootstrapOptions = {}) {
+  const targetRoot = options.rootElement ?? rootElement;
+
+  if (!targetRoot) {
+    throw new Error('Elemento root nao encontrado.');
+  }
+
+  const hasInjectedAssets = typeof options.getAssets === 'function';
+  const hasInjectedContributionsSnapshot = typeof options.getContributionsSnapshot === 'function';
+  const hasInjectedFixedIncomeAssets = typeof options.getFixedIncomeAssets === 'function';
+  const hasInjectedGoalsSnapshot = typeof options.getGoalsSnapshot === 'function';
+  const hasInjectedIncomeSnapshot = typeof options.getIncomeSnapshot === 'function';
+  const sessionContextEnabled =
+      typeof location !== 'undefined' &&
+      (() => {
+        const params = new URLSearchParams(location.search);
+        const activeWalletHost = params.get('activeWalletHost') === '1';
+        const testMode = params.get('testMode') === '1';
+
+        if (!activeWalletHost || !testMode) {
+          return false;
+        }
+
+        // Allow on localhost for development
+        const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+        // Allow on Vercel preview deployments (pattern: carteira-investimentos-<hash>-<team-slug>.vercel.app)
+        // Team slugs contain hyphens (e.g. paulinhoo2002-ctrls-projects), so the tail
+        // must accept 2+ segments while production (carteira-investimentos-delta) stays excluded.
+        const isVercelPreview = /^carteira-investimentos-[a-z0-9]+(?:-[a-z0-9]+)+\\.vercel\\.app$/.test(location.hostname);
+
+        return isLocalhost || isVercelPreview;
+      })();
+  const initialSessionContext = sessionContextEnabled
+    ? readReadonlyReportSessionContext(location.search, 'reports')
+    : null;
+  let experimentalRevision = 0;
+  let experimentalAssets = createHostExperimentalAssets(experimentalRevision);
+
+  const injectedLegacyModule = options.legacyModule ?? null;
+  const injectedBuildReportAssetRow =
+    options.buildReportAssetRowModule?.buildReportAssetRow ??
+    options.buildReportAssetRowModule?.default?.buildReportAssetRow ??
+    options.buildReportAssetRowModule?.default;
+  const strictSourceWiring = options.strictSourceWiring === true;
+
+  const directLegacyProvider =
+    injectedLegacyModule &&
+    (injectedLegacyModule.createLegacyAssetsReadonlyProvider ??
+      injectedLegacyModule.createLegacyReportsReadonlySource ??
+      injectedLegacyModule.default?.createLegacyAssetsReadonlyProvider ??
+      injectedLegacyModule.default?.createLegacyReportsReadonlySource);
+
+  const directReportsSource = (() => {
+    if (typeof directLegacyProvider === 'function' && typeof injectedBuildReportAssetRow === 'function') {
+      return directLegacyProvider({
+        getAssets: options.getAssets ?? (() => experimentalAssets),
+        buildReportAssetRow: injectedBuildReportAssetRow,
+        assetAppliedValue: hostAssetAppliedValue,
+        assetCurrentValue: hostAssetCurrentValue,
+        metaTicker: hostMetaTicker,
+        normalizeType: hostNormalizeType,
+        getGeneratedAt:
+          options.getGeneratedAt ??
+          (() =>
+            hasInjectedAssets
+              ? new Date().toISOString()
+              : new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString()),
+        notice: options.notice ?? 'Snapshot legado somente leitura. React nao escreve na fonte.',
+      });
+    }
+
+    return null;
+  })();
+
+  const fixedIncomeSource = hasInjectedFixedIncomeAssets
+    ? createHostFixedIncomeReadonlySource({
+        getAssets: options.getFixedIncomeAssets,
+        getGeneratedAt: options.getGeneratedAt ?? (() => new Date().toISOString()),
+        notice: options.notice ?? 'Snapshot legado somente leitura de renda fixa. React nao escreve na fonte.',
+      })
+      : null;
+
+  const contributionsSource = hasInjectedContributionsSnapshot
+    ? createHostContributionsReadonlySource({
+        getContributionsSnapshot: options.getContributionsSnapshot,
+      })
+    : null;
+
+  const incomeSource = hasInjectedIncomeSnapshot
+    ? createHostIncomeReadonlySource({
+        getIncomeSnapshot: options.getIncomeSnapshot,
+      })
+    : null;
+
+  const goalsSource = hasInjectedGoalsSnapshot
+      ? createHostGoalsReadonlySource({
+          getGoalsSnapshot: options.getGoalsSnapshot,
+        })
+      : null;
+
+    const historySource = typeof options.getHistoryState === 'function'
+              ? createHostPortfolioHistoryReadonlySource({
+                  getHistoryState: options.getHistoryState,
+                  getGeneratedAt: options.getGeneratedAt ?? (() => new Date().toISOString()),
+                  notice: options.notice ?? 'Snapshot legado somente leitura de histórico de portfólio. React não escreve na fonte.',
+                })
+              : null;
+
+        // Create auto-capture coordinator
+        const autoCaptureCoordinator = createPortfolioHistoryAutoCaptureCoordinator({
+          getFullState: options.getFullState,
+          getHistoryState: options.getHistoryState,
+          getGeneratedAt: options.getGeneratedAt,
+          applyStorageTransaction: options.applyStorageTransaction,
+          walletId: options.walletId,
+          userId: options.userId,
+          timezoneOffsetMinutes: options.timezoneOffsetMinutes,
+        });
+
+        const captureHistorySnapshot = typeof options.captureHistorySnapshot === 'function'
+                                                  ? options.captureHistorySnapshot
+                                                  : createHostPortfolioHistoryCaptureAction({
+                                                      getFullState: options.getFullState,
+                                                      getHistoryState: options.getHistoryState,
+                                                      getGeneratedAt: options.getGeneratedAt,
+                                                      applyStorageTransaction: options.applyStorageTransaction,
+                                                    });
+
+        const fallbackHostReportsSource = await createHostLegacyReportsReadonlySource({
+      legacyModule: injectedLegacyModule ?? undefined,
+      getAssets: options.getAssets ?? (() => experimentalAssets),
+      buildReportAssetRowModule: options.buildReportAssetRowModule ?? null,
+      getGeneratedAt:
+        options.getGeneratedAt ??
+        (() =>
+          hasInjectedAssets
+            ? new Date().toISOString()
+            : new Date(Date.parse('2026-07-14T10:30:00.000Z') + experimentalRevision * 60000).toISOString()),
+      notice: options.notice ?? 'Snapshot legado somente leitura. React nao escreve na fonte.',
+    });
+
+  const resolvedReportsSource = directReportsSource ?? fallbackHostReportsSource;
+
+  if (strictSourceWiring && !resolvedReportsSource) {
+    throw new Error('Fonte readonly experimental indisponivel.');
+  }
+
+  const baseReportsSource =
+    resolvedReportsSource ?? (hasInjectedAssets ? createNullReportsSource() : createConnectedReportsDemoSource());
+
+  const reportsRefreshController = createReportsRefreshController({
+    source: baseReportsSource,
+    buildDiagnostics: createHostDiagnosticsFactory({ hasInjectedAssets }),
+    onRefresh: hasInjectedAssets
+      ? undefined
+      : () => {
+          experimentalRevision += 1;
+          experimentalAssets = createHostExperimentalAssets(experimentalRevision);
+      },
+  });
+
+  const canBuildFixedIncomeValuationSupplement =
+    typeof options.getFixedIncomeAssets === 'function' &&
+    typeof options.getRfEvents === 'function' &&
+    typeof options.getGeneratedAt === 'function';
+
+  const fixedIncomeValuationSupplementMap =
+    canBuildFixedIncomeValuationSupplement
+      ? buildFixedIncomeReadonlySupplementMap({
+          getAssets: options.getFixedIncomeAssets,
+          getRfEvents: options.getRfEvents,
+          getGeneratedAt: options.getGeneratedAt,
+        })
+      : {};
+
+  const modernReportsRuntime = createModernReportsRuntime({ reportsSource: reportsRefreshController });
+  const modernFixedIncomeRuntime = createModernFixedIncomeRuntime({
+    fixedIncomeSource: fixedIncomeSource ?? undefined,
+    fixedIncomeValuationSupplementMap,
+  });
+  const modernContributionsRuntime = createModernContributionsRuntime({
+    contributionsSource: contributionsSource ?? undefined,
+  });
+  const modernIncomeRuntime = createModernIncomeRuntime({
+    incomeSource: incomeSource ?? undefined,
+  });
+  const modernGoalsRuntime = createModernGoalsRuntime({
+    goalsSource: goalsSource ?? undefined,
+  });
+
+  const modernPortfolioHistoryRuntime = createModernPortfolioHistoryRuntime({
+      portfolioHistorySource: historySource ?? undefined,
+    });
+
+    mountModernApp({
+      rootElement: targetRoot,
+      reportsAdapter: modernReportsRuntime.reportsAdapter,
+      fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
+      contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
+      incomeAdapter: modernIncomeRuntime.incomeAdapter,
+      goalsAdapter: modernGoalsRuntime.goalsAdapter,
+      portfolioHistoryAdapter: modernPortfolioHistoryRuntime.portfolioHistoryAdapter,
+      AppComponent: App,
+      reportsRefreshController,
+      contributionsRefreshController: modernContributionsRuntime.contributionsRefreshController,
+      incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
+      goalsRefreshController: modernGoalsRuntime.goalsRefreshController,
+        initialPageId: initialSessionContext?.pageId ?? 'overview',
+        onActivePageIdChange(pageId: ModernPageId) {
+        if (!sessionContextEnabled) {
+          return;
+        }
+
+        try {
+          const nextUrl = new URL(location.href);
+          nextUrl.search = buildReadonlyReportSessionSearch(pageId, location.search);
+          nextUrl.hash = '';
+          history.replaceState(history.state, '', nextUrl.toString());
+        } catch (error) {
+          debugWarn('readonly report session context failed:', error);
+        }
+      },
+    });
+
+  // Run auto-capture on mount (non-blocking)
+  if (typeof autoCaptureCoordinator === 'function') {
+    autoCaptureCoordinator().catch(() => {
+      // Auto-capture failures are non-blocking
+    });
+  }
+
+  return {
+      reportsRefreshController,
+      reportsAdapter: modernReportsRuntime.reportsAdapter,
+      fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
+      contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
+      incomeAdapter: modernIncomeRuntime.incomeAdapter,
+      goalsAdapter: modernGoalsRuntime.goalsAdapter,
+      captureHistorySnapshot,
+    };
+}
+
+export const isHostPage =
+  typeof location !== 'undefined' && /\\/host\\.html(?:[?#]|$)/.test(location.pathname);

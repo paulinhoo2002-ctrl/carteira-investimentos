@@ -77,6 +77,14 @@ function getSourceLabel(source: string) {
   }
 }
 
+function getReadinessLabel(ready: boolean) {
+  return ready ? 'Disponível' : 'Indisponível';
+}
+
+function getReadinessClass(ready: boolean) {
+  return ready ? 'readiness-ready' : 'readiness-not-ready';
+}
+
 interface PortfolioHistoryPageProps {
   adapter: ReadOnlyPortfolioHistoryAdapter;
   captureHistorySnapshot?: () => Promise<{
@@ -111,6 +119,102 @@ export function PortfolioHistoryPage({ adapter, captureHistorySnapshot }: Portfo
   const latestSnapshot = hasSnapshots ? snapshots[0] : null;
   const oldestSnapshot = hasSnapshots ? snapshots[snapshots.length - 1] : null;
 
+  // Compute readiness/sufficiency (read-only, derived from snapshots + config)
+  const readiness = useMemo(() => {
+    if (!hasSnapshots) {
+      return {
+        overallState: 'NOT_STARTED',
+        capabilities: {
+          PORTFOLIO_EVOLUTION: { ready: false, reason: 'INSUFFICIENT_SNAPSHOTS' },
+          ALLOCATION_HISTORY: { ready: false, reason: 'INSUFFICIENT_SNAPSHOTS' },
+          VALUATION_HISTORY: { ready: false, reason: 'INSUFFICIENT_SNAPSHOTS' },
+          TWR: { ready: false, reason: 'INSUFFICIENT_SNAPSHOTS' },
+          XIRR: { ready: false, reason: 'INSUFFICIENT_SNAPSHOTS' },
+        },
+        snapshotCount: 0,
+        historySpanDays: 0,
+        priceCoverage: 'UNKNOWN',
+        dailyCoverageRatio: 0,
+        largestGapDays: 0,
+        warnings: ['Histórico vazio — rastreamento automático começará no próximo ciclo elegível.'],
+      };
+    }
+
+    // Price coverage analysis
+    let full = 0, partial = 0, unknown = 0;
+    for (const snap of snapshots) {
+      if (snap.priceCoverage === 'FULL_COVERAGE') full++;
+      else if (snap.priceCoverage === 'PARTIAL_COVERAGE') partial++;
+      else unknown++;
+    }
+    const total = snapshots.length;
+    const coverageRatio = total > 0 ? full / total : 0;
+    let priceCoverageLevel = 'UNKNOWN';
+    if (full === total) priceCoverageLevel = 'FULL_COVERAGE';
+    else if (full > 0 || partial > 0) priceCoverageLevel = 'PARTIAL_COVERAGE';
+
+    // History span
+    const dates = snapshots.map(s => Date.parse(s.capturedAt)).filter(Number.isFinite);
+    const first = dates.length ? Math.min(...dates) : null;
+    const latest = dates.length ? Math.max(...dates) : null;
+    const spanDays = first && latest ? Math.floor((latest - first) / 86400000) : 0;
+
+    // Daily coverage
+    const uniqueDays = new Set(snapshots.map(s => s.capturedAt.split('T')[0]));
+    const observedDays = uniqueDays.size;
+    const expectedDays = spanDays + 1;
+    const dailyCoverageRatio = expectedDays > 0 ? observedDays / expectedDays : 0;
+
+    // Largest gap
+    const sortedDates = dates.sort((a, b) => a - b);
+    let largestGapDays = 0;
+    for (let i = 1; i < sortedDates.length; i++) {
+      const gap = Math.floor((sortedDates[i] - sortedDates[i-1]) / 86400000);
+      if (gap > largestGapDays) largestGapDays = gap;
+    }
+
+    // Capability readiness (simplified client-side assessment)
+    const capabilities = {
+      PORTFOLIO_EVOLUTION: {
+        ready: total >= 2 && spanDays >= 1 && priceCoverageLevel !== 'UNKNOWN',
+        reason: total < 2 ? 'INSUFFICIENT_SNAPSHOTS' : spanDays < 1 ? 'SAME_DAY_SNAPSHOTS' : priceCoverageLevel === 'UNKNOWN' ? 'NO_PRICE_COVERAGE' : 'SUFFICIENT'
+      },
+      ALLOCATION_HISTORY: {
+        ready: total >= 2 && snapshots.some(s => s.valuations.byAsset.length > 0) && priceCoverageLevel !== 'UNKNOWN',
+        reason: total < 2 ? 'INSUFFICIENT_SNAPSHOTS' : !snapshots.some(s => s.valuations.byAsset.length > 0) ? 'NO_ASSET_BREAKDOWN' : priceCoverageLevel === 'UNKNOWN' ? 'NO_PRICE_COVERAGE' : 'SUFFICIENT'
+      },
+      VALUATION_HISTORY: {
+        ready: total >= 2 && priceCoverageLevel === 'FULL_COVERAGE' && spanDays >= 7,
+        reason: total < 2 ? 'INSUFFICIENT_SNAPSHOTS' : priceCoverageLevel !== 'FULL_COVERAGE' ? 'PARTIAL_PRICE_COVERAGE' : spanDays < 7 ? 'INSUFFICIENT_SPAN' : 'SUFFICIENT'
+      },
+      TWR: {
+        ready: false,
+        reason: 'REQUIRES_EXTERNAL_FLOWS_AND_HISTORY'
+      },
+      XIRR: {
+        ready: false,
+        reason: 'REQUIRES_DATED_CASH_FLOWS'
+      },
+    };
+
+    const warnings = [];
+    if (total === 1) warnings.push('Apenas 1 snapshot — histórico muito incipiente');
+    if (priceCoverageLevel === 'UNKNOWN') warnings.push('Sem cobertura de preço em nenhum snapshot');
+    else if (priceCoverageLevel === 'PARTIAL_COVERAGE') warnings.push('Cobertura de preço parcial — análises de valuation podem ser imprecisas');
+    if (largestGapDays > 30) warnings.push(`Maior lacuna: ${largestGapDays} dias sem captura`);
+
+    return {
+      overallState: total === 0 ? 'NOT_STARTED' : 'BUILDING',
+      capabilities,
+      snapshotCount: total,
+      historySpanDays: spanDays,
+      priceCoverage: priceCoverageLevel,
+      dailyCoverageRatio,
+      largestGapDays,
+      warnings,
+    };
+  }, [snapshots, hasSnapshots]);
+
   const handleCapture = useCallback(async () => {
     if (!captureHistorySnapshot) {
       setLastCaptureResult({ status: 'FAILED', reason: 'Ação de captura não disponível' });
@@ -134,6 +238,18 @@ export function PortfolioHistoryPage({ adapter, captureHistorySnapshot }: Portfo
       handleCapture();
     }
   }, [handleCapture]);
+
+  const autoTrackingEnabled = config?.autoCaptureEnabled !== false;
+  const nextAutoCaptureHint = hasSnapshots && autoTrackingEnabled
+    ? (() => {
+        const last = snapshots.find(s => s.provenance?.walletId === 'default');
+        if (!last) return null;
+        const lastDay = last.capturedAt.split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
+        if (lastDay === today) return 'Próxima captura automática: amanhã';
+        return 'Captura automática elegível hoje';
+      })()
+    : null;
 
   return (
     <div className="portfolio-history-page">
@@ -163,6 +279,38 @@ export function PortfolioHistoryPage({ adapter, captureHistorySnapshot }: Portfo
             variant={latestSnapshot ? (latestSnapshot.priceCoverage === 'FULL_COVERAGE' ? 'success' : latestSnapshot.priceCoverage === 'PARTIAL_COVERAGE' ? 'warning' : 'info') : 'info'}
             size="large"
           />
+        </div>
+      </DashboardSection>
+
+      {/* Auto-tracking status panel */}
+      <DashboardSection title="Rastreamento Automático" subtitle={autoTrackingEnabled ? 'Ativo — captura diária por carteira' : 'Desativado'}>
+        <div className="portfolio-history-auto-status">
+          <div className="auto-status-row">
+            <span className="auto-status-label">Estado:</span>
+            <span className={`auto-status-value ${autoTrackingEnabled ? 'enabled' : 'disabled'}`}>
+              {autoTrackingEnabled ? 'Ativo' : 'Desativado'}
+            </span>
+          </div>
+          <div className="auto-status-row">
+            <span className="auto-status-label">Última captura automática:</span>
+            <span className="auto-status-value">
+              {(() => {
+                const autoSnapshots = snapshots.filter(s => s.source === 'AUTO');
+                return autoSnapshots.length > 0 ? formatDateTimeShort(autoSnapshots[0].capturedAt) : '—';
+              })()}
+            </span>
+          </div>
+          {nextAutoCaptureHint && (
+            <div className="auto-status-row hint">
+              <span className="auto-status-label">Próxima verificação:</span>
+              <span className="auto-status-value">{nextAutoCaptureHint}</span>
+            </div>
+          )}
+          <p className="auto-status-hint">
+            Captura automática ocorre no máximo uma vez por dia civil por carteira,
+            apenas após o estado do portfólio estar carregado e válido.
+            Capturas manuais não impedem a automática (e vice-versa).
+          </p>
         </div>
       </DashboardSection>
 
@@ -203,6 +351,76 @@ export function PortfolioHistoryPage({ adapter, captureHistorySnapshot }: Portfo
             Captura o estado atual: patrimônio, alocação, preços e proveniência.
             Snapshots duplicados (mesmo estado + timestamp) são desduplicados automaticamente.
           </p>
+        </div>
+      </DashboardSection>
+
+      {/* Readiness / Sufficiency Panel */}
+      <DashboardSection title="Prontidão para Análises Históricas" subtitle={`Estado geral: ${readiness.overallState}`}>
+        <div className="portfolio-history-readiness">
+          <div className="readiness-metrics">
+            <DashboardMetricCard
+              label="Histórico"
+              value={`${readiness.snapshotCount} snapshots`}
+              variant="info"
+              size="small"
+            />
+            <DashboardMetricCard
+              label="Período"
+              value={readiness.historySpanDays > 0 ? `${readiness.historySpanDays} dias` : '—'}
+              variant="info"
+              size="small"
+            />
+            <DashboardMetricCard
+              label="Cobertura diária"
+              value={readiness.dailyCoverageRatio > 0 ? `${Math.round(readiness.dailyCoverageRatio * 100)}%` : '—'}
+              variant={readiness.dailyCoverageRatio >= 0.8 ? 'success' : readiness.dailyCoverageRatio > 0 ? 'warning' : 'info'}
+              size="small"
+            />
+            <DashboardMetricCard
+              label="Cobertura de preço"
+              value={getCoverageLabel(readiness.priceCoverage)}
+              variant={readiness.priceCoverage === 'FULL_COVERAGE' ? 'success' : readiness.priceCoverage === 'PARTIAL_COVERAGE' ? 'warning' : 'info'}
+              size="small"
+            />
+          </div>
+
+          <div className="readiness-capabilities">
+            <h4>Capacidades</h4>
+            <ul className="readiness-capability-list">
+              {Object.entries(readiness.capabilities).map(([cap, info]) => (
+                <li key={cap} className={`readiness-capability-item ${getReadinessClass(info.ready)}`}>
+                  <span className="readiness-capability-name">{cap.replace(/_/g, ' ')}</span>
+                  <span className={`readiness-capability-status ${getReadinessClass(info.ready)}`}>
+                    {getReadinessLabel(info.ready)}
+                  </span>
+                  <span className="readiness-capability-reason">{info.reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {readiness.warnings.length > 0 && (
+            <div className="readiness-warnings">
+              <h4>Observações</h4>
+              <ul>
+                {readiness.warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="readiness-twrxirr">
+            <h4>TWR / XIRR</h4>
+            <p className="twrxirr-status">
+              <strong>Indisponíveis</strong> — requerem histórico suficiente com cobertura de preço completa
+              e fluxos de caixa externos datados (aportes, saques, proventos).
+            </p>
+            <p className="twrxirr-detail">
+              TWR: precisa ≥4 snapshots, cobertura completa, ≥30 dias de histórico, fluxos externos confiáveis.
+              XIRR: precisa fluxos de caixa datados com sinais corretos + valuation terminal.
+            </p>
+          </div>
         </div>
       </DashboardSection>
 
@@ -256,19 +474,6 @@ export function PortfolioHistoryPage({ adapter, captureHistorySnapshot }: Portfo
               emptyState={
                 <EmptyState title="Sem snapshots" body="Nenhum snapshot capturado ainda." size="compact" />
               }
-            />
-          </DashboardSection>
-
-          <DashboardSection title="Análise de Performance (TWR/XIRR)" subtitle="Indicadores indisponíveis">
-            <EmptyState
-              title="Análise de rentabilidade histórica indisponível"
-              body={
-                <>
-                  <p>O cálculo de TWR (Time-Weighted Return) e XIRR (Extended Internal Rate of Return) requer uma série histórica suficiente de snapshots com cobertura de preço completa e fluxos de caixa registrados.</p>
-                  <p className="twrxirr-status">Estado atual: <strong>COLETANDO_HISTÓRICO</strong> — Snapshots serão acumulados ao longo do tempo. Nenhum valor sintético ou fabricado é exibido.</p>
-                </>
-              }
-              size="compact"
             />
           </DashboardSection>
         </>
