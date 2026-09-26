@@ -150,17 +150,16 @@ readiness in the existing product surface. No merge or real financial writes.
 - User authorized locked dependency installation in this worktree only;
   `npm ci --ignore-scripts` completed without changing package manifests or the
   lockfile.
-- Focused V272/V271/V248/history/runtime and inline-script checks: 93/93,
+- Focused V272/V271/V248/history/runtime and inline-script checks: 94/94,
   including a regression proving ambiguous candidates block direct engine
   metrics unless classified/trusted.
 - `npm run test:modern`: 815/815; `npm test`: 249/249.
 - Legacy build, modern build and `npm run qa:all`: PASS. QA harness 2/2;
   browser smoke and rendered V272 panel tested at 390/430/768/1366/1440/1536/1920
   with zero horizontal/panel overflow and no page/console errors.
-- Axe scoped to the V272 history panel: 0 violations. Whole Rentabilidade view
-  has unrelated existing contrast/landmark findings outside the V272 panel.
-  Isolated screenshots were visually reviewed; this was synthetic localhost
-  test mode, not authenticated real-portfolio QA.
+- Full Rentabilidade axe WCAG 2.1 A/AA scan: 0 violations after a page-scoped
+  text-contrast correction. Isolated screenshots were visually reviewed; this
+  was synthetic localhost test mode, not authenticated real-portfolio QA.
 - Real V76 stores still do not contain `walletId`; consequently real wallet
   `DATA_READY` remains unavailable. No financial/tax/import/restore/cloud
   writes, persistence/schema changes, or dependency drift.

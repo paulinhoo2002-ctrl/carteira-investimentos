@@ -35,3 +35,7 @@ test('V272 painel separa capacidade do motor da prontidão real e sinaliza escop
   assert.match(index, /Prontidão de performance histórica/);
   assert.match(index, /UNKNOWN não é zero/);
 });
+
+test('Rentabilidade usa contraste acessível apenas na superfície da página', () => {
+  assert.match(index, /\.rent-premium \.mu,\.rent-premium \.pli,\.rent-premium \.es\{color:#9fb0c5\}/);
+});
