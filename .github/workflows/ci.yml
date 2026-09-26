@@ -55,3 +55,5 @@ jobs:
           node --test tests/tablet-tab-overflow.smoke.test.js
           node --test tests/safe-area.smoke.test.js
           node --test tests/service-worker-update-reliability.test.js
+          node --test tests/portfolio-report-readiness.test.js tests/v273-reporting-ui-contract.test.js
+          node --test tests/reports-responsive-matrix.test.js

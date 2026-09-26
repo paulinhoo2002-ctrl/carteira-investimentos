@@ -2,16 +2,18 @@
 
 ## Active Phase
 
-**V269 — Portfolio History UI and Manual Capture** (CERTIFIED, ready for PR)
-- Branch: `feature/v269-portfolio-history-ui`
-- Worktree: `C:\Projetos\carteira-investimentos.worktrees\v269-portfolio-history-ui`
-- Base: `556387f54085b09ba0f75658d6759c8d8d4177f1` (origin/main post-V268 merge)
-- Scope: Portfolio History page in modern shell, manual capture button, coverage badges, snapshot detail, empty state, TWR/XIRR notice, reading guide
-- Tests: All gates passing (test:modern 815/815, npm test 249/249, build:modern PASS, build PASS, qa:all PASS, git diff --check PASS, core 18/18, backup 9/9, v249 12/12)
-- PR: Ready to open after final documentation
-- Status: Certified for human merge authorization
+**V273 — Reporting data quality and operational polish** (PR #426 open; final docs-head revalidation pending)
+- Branch: `feature/v273-reporting-data-quality-ops`
+- Worktree: `C:\Projetos\carteira-investimentos.worktrees\v273-reporting-data-quality-ops`
+- Base: `75e77a7e98ef0768a5d4a6855b684432f09493b4` (V272 PR #425 merge on origin/main)
+- Scope: pure/read-only report readiness aggregation and compact evidence/status disclosure; no new authority, arbitrary score, route, or financial/tax writes.
+- Current verification: focused 75/75 plus UI/browser matrix 6/6; performance 84/84; QA harness 2/2; modern tests 815/815; general suite 249/249; legacy/modern builds; `qa:all`; report seven-width responsive matrix; axe critical/serious 0; diff-check PASS.
+- The dedicated QA found and fixed a V273 render defect: `v273ReportReadiness` referenced a block-scoped `classifier` from a different function, causing silent fallback to Dashboard. The adapter now resolves the canonical global classifier and has a regression test. Final screenshots at 390/768/1366/1920 were inspected from isolated synthetic `testMode`; no authenticated portfolio or personal browser was used.
+- `npm ci --ignore-scripts` ran only in this worktree under explicit authorization; package manifest and lockfile unchanged. Commit `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac` is pushed; PR #426 is OPEN/mergeable. CI run 690 and Vercel preview are READY on that exact SHA. This docs reconciliation will create a follow-up SHA requiring exact-head revalidation. No merge.
 
 ## Completed Phases (Post-Merge)
+
+- **V272** — Trusted cash-flow/performance readiness — MERGED as `75e77a7e98ef0768a5d4a6855b684432f09493b4` (PR #425)
 
 - **V268** — Portfolio History Foundation — MERGED as `556387f54085b09ba0f75658d6759c8d8d4177f1` (PR #421)
 - **V267** — Backup and recovery hardening — MERGED as `f11d38683b1aca50fb639aba1746f0269c426ef6` (PR #420)
@@ -31,12 +33,6 @@
 | IPCA+ Exact Valuation | Defensible implementation (currently `UNSUPPORTED_IPCA_EXACT`) | MEDIUM |
 | Authenticated QA Ergonomics | Protected QA preview access improvements | MEDIUM |
 | Mobile Readability Hardening | Specific viewport regression evidence | LOW |
-
-## Ready to Start (Dependencies Met)
-
-1. **Import Center Fixture Intake Tooling** — No blockers; tooling only; unblocks XP/BTG
-2. **Export/Import/Recovery Integration** — V267 + V268 + V269 all complete; validation only
-3. **Data Provenance Consolidation** — V268/V269 provenance model proven; architectural
 
 ## Technical Debt / Maintenance
 
@@ -60,17 +56,9 @@
 - `NO_FAKE_HISTORY_CREATED` — No synthetic backfill ever
 - `TWR_XIRR_AVAILABLE=false` — Until sufficient trustworthy history exists
 
-## Documentation Updates Needed
-
-- [x] `docs/ai/PROJECT_STATE.md` — V267 completed, V268 merged, V269 certified
-- [x] `NEXT_STEP.md` — Updated for post-V269
-- [x] `OPEN_WORK.md` — Updated for V269 active phase
-- [ ] `docs/PROJECT_MEMORY.md` — If exists, reconcile
-- [ ] `docs/ai/QA_HARNESS.md` — V269 integration notes (if applicable)
-
 ## Next Human Decision Points
 
-1. **V269 PR merge authorization** — `Autorizo o squash merge da PR #<V269_PR>`
-2. **V270 Selection** — Choose from: Fixture Intake / Export/Import Integration / Data Provenance
-3. **TWR/XIRR Threshold** — Define "sufficient trustworthy history" criteria (e.g., 365 daily snapshots)
-4. **XP/BTG Fixture Acquisition** — Authorize broker statement sanitization workflow
+1. **V273 merge authorization** — Only after exact-head PR CI and preview are ready; no merge has occurred.
+2. **TWR/XIRR real readiness** — Remains blocked by missing wallet-scoped V76 evidence; do not synthesize IDs or history.
+3. **XP/BTG parser completion** — Requires legitimate sanitized broker fixtures.
+4. **Corporate Events MODE_B** — Requires provider/business direction.

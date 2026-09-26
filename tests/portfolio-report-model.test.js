@@ -37,6 +37,16 @@ test('modelo não transforma ausência em zero ou retorno fictício', () => {
   assert.equal(model.coverage.status, 'UNAVAILABLE');
 });
 
+test('valores nulos ou vazios permanecem indisponíveis em vez de virarem zero', () => {
+  const model = buildPortfolioReportModel({
+    summary: { portfolio: { tC: null, tI: '', tG: undefined, tGP: null }, income: { total12: null } },
+  });
+  for (const key of ['portfolioValue', 'invested', 'marketResult', 'returnPercent', 'incomeReceived']) {
+    assert.equal(model.metrics[key].value, null, `${key} não deve assumir zero`);
+    assert.equal(model.metrics[key].status, 'UNAVAILABLE');
+  }
+});
+
 test('renda, proventos e risco preservam estados sem escrita', () => {
   const model = buildPortfolioReportModel(input({
     proventos: [{ ticker: 'PETR4', value: 320 }],
@@ -54,4 +64,18 @@ test('xirr sem fluxos externos permanece explicitamente indisponível', () => {
   assert.equal(xirr.status, 'INSUFFICIENT_DATA');
   assert.equal(xirr.value, null);
   assert.match(xirr.reason, /Fluxos externos/);
+});
+
+test('modelo integra readiness V273 sem alterar o contrato anterior', () => {
+  const model = buildPortfolioReportModel(input({
+    readiness: {
+      history: { status: 'TRACKING_STARTED', snapshotCount: 1 },
+      performance: { engineAvailable: true, dataReady: false, reasonCodes: ['WALLET_ID_UNAVAILABLE'] },
+    },
+  }));
+  assert.equal(model.readOnly, true);
+  assert.equal(model.metrics.portfolioValue.value, 12500);
+  assert.equal(model.readiness.engineAvailable, true);
+  assert.equal(model.readiness.dataReady, false);
+  assert.ok(model.readiness.sections.performance.reasonCodes.includes('WALLET_ID_UNAVAILABLE'));
 });
