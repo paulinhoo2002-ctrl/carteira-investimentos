@@ -428,9 +428,11 @@ test('V271 Sufficiency inventoryCashFlows categorizes sources', () => {
   const result = Sufficiency.inventoryCashFlows(fullState);
   
   assert.equal(result.aportes.available, true);
-  assert.equal(result.aportes.trustworthy, true);
+  assert.equal(result.aportes.trustworthy, false);
+  assert.equal(result.aportes.ambiguous, true);
   assert.equal(result.proventos.available, true);
-  assert.equal(result.proventos.trustworthy, true);
+  assert.equal(result.proventos.trustworthy, false);
+  assert.equal(result.proventos.ambiguous, true);
   assert.equal(result.rfEvents.available, true);
   assert.equal(result.rfEvents.ambiguous, true);
 });
@@ -492,4 +494,96 @@ test('V271 REGRESSION: PortfolioHistory.addSnapshotToHistory maintains order', a
   
   assert.equal(historyState.snapshots[0].id, snap1.id);
   assert.equal(historyState.snapshots[1].id, snap2.id);
+});
+
+test('V272 ambiguous legacy source rows never satisfy TWR or XIRR readiness', () => {
+  const snaps = Array.from({ length: 40 }, (_, index) => ({
+    id: `s-${index}`, capturedAt: new Date(Date.UTC(2026, 0, 1 + index)).toISOString(),
+    source: 'AUTO', priceCoverage: 'FULL_COVERAGE',
+    valuations: { totalValue: 100 + index, byAsset: [{ id: 'a1', value: 100 + index }] },
+    provenance: { walletId: 'wallet-a' }
+  }));
+  const result = Sufficiency.assessSufficiency(
+    { snapshots: snaps, config: PortfolioHistory.getDefaultConfig() },
+    { aportes: [{ id: 'a1', date: '2026-01-02', value: 500 }], proventos: [{ id: 'p1', date: '2026-01-03', value: 20 }] },
+    { walletId: 'wallet-a' }
+  );
+  assert.equal(result.capabilities.find(row => row.capability === 'TWR').ready, false);
+  assert.equal(result.capabilities.find(row => row.capability === 'XIRR').ready, false);
+  assert.equal(result.cashFlowReadiness.trustworthyExternal.length, 0);
+});
+
+test('V272 only wallet-matched high-confidence external classifications satisfy flow prerequisite', () => {
+  const snapshots = [
+    { id: 'old', capturedAt: '2026-01-01T00:00:00.000Z', source: 'MANUAL', priceCoverage: 'FULL_COVERAGE', valuations: { totalValue: 100 }, provenance: { walletId: 'wallet-a' } },
+    { id: 'new', capturedAt: '2026-02-15T00:00:00.000Z', source: 'AUTO', priceCoverage: 'FULL_COVERAGE', valuations: { totalValue: 120 }, provenance: { walletId: 'wallet-a' } }
+  ];
+  const classifiedFlows = [
+    { walletId: 'wallet-a', date: '2026-01-20', amount: 50, investorSignedAmount: -50, classification: 'EXTERNAL_CONTRIBUTION', isExternalFlow: true, confidence: 'HIGH', provenance: { sourceSystem: 'MANUAL', sourceId: 'f1' }, sourceIdentity: 'MANUAL:f1' },
+    { walletId: 'wallet-a', date: '2026-01-25', classification: 'AMBIGUOUS', isExternalFlow: false, confidence: 'LOW' },
+    { walletId: 'wallet-b', date: '2026-01-26', amount: 10, investorSignedAmount: 10, classification: 'EXTERNAL_WITHDRAWAL', isExternalFlow: true, confidence: 'HIGH', provenance: { sourceSystem: 'MANUAL', sourceId: 'f2' }, sourceIdentity: 'MANUAL:f2' }
+  ];
+  const result = Sufficiency.assessSufficiency(
+    { snapshots, config: PortfolioHistory.getDefaultConfig() }, {},
+    { walletId: 'wallet-a', classifiedFlows }
+  );
+  assert.equal(result.cashFlowReadiness.trustworthyExternal.length, 1);
+  assert.equal(result.cashFlowReadiness.ambiguousEvents, 1);
+  assert.equal(result.capabilities.find(row => row.capability === 'XIRR').ready, false);
+});
+
+test('V272 readiness accepts trusted wallet-scoped flows without promoting internal events to ambiguity', () => {
+  const snapshots = Array.from({ length: 40 }, (_, index) => ({
+    id: `s-${index}`, capturedAt: new Date(Date.UTC(2026, 0, 1 + index)).toISOString(),
+    source: 'AUTO', priceCoverage: 'FULL_COVERAGE',
+    valuations: { totalValue: 100 + index, byAsset: [{ id: 'a1', value: 100 + index }] },
+    provenance: { walletId: 'wallet-a' }
+  }));
+  const classifiedFlows = [
+    { eventId: 'flow-1', walletId: 'wallet-a', date: '2026-01-20', amount: 20, investorSignedAmount: -20, classification: 'EXTERNAL_CONTRIBUTION', isExternalFlow: true, confidence: 'HIGH', sourceIdentity: 'MANUAL:flow-1', provenance: { sourceSystem: 'MANUAL', sourceId: 'flow-1' }, timing: 'END_OF_SUBPERIOD' },
+    { eventId: 'buy-1', walletId: 'wallet-a', date: '2026-01-21', classification: 'INTERNAL_BUY', isExternalFlow: false, confidence: 'MEDIUM' }
+  ];
+  const result = Sufficiency.assessSufficiency(
+    { snapshots, config: PortfolioHistory.getDefaultConfig() }, {},
+    { walletId: 'wallet-a', classifiedFlows }
+  );
+  assert.equal(result.capabilities.find(row => row.capability === 'TWR').ready, true);
+  assert.equal(result.capabilities.find(row => row.capability === 'XIRR').ready, true);
+});
+
+test('V272 direct XIRR readiness rejects legacy source-name strings as flow evidence', () => {
+  const snapshots = [
+    { id: 's1', capturedAt: '2026-01-01T00:00:00.000Z', priceCoverage: 'FULL_COVERAGE', valuations: { totalValue: 100 }, provenance: { walletId: 'wallet-a' } },
+    { id: 's2', capturedAt: '2026-02-01T00:00:00.000Z', priceCoverage: 'FULL_COVERAGE', valuations: { totalValue: 110 }, provenance: { walletId: 'wallet-a' } }
+  ];
+  const result = Sufficiency.assessXIRRReadiness(snapshots, { level: 'FULL_COVERAGE' }, { trustworthyExternal: ['aportes'], ambiguous: [] }, {});
+  assert.equal(result.ready, false);
+});
+
+test('V272 readiness rejects impossible dates and investor-sign conflicts in direct flow input', () => {
+  const snapshots = [
+    { id: 's1', capturedAt: '2026-01-01T00:00:00.000Z', priceCoverage: 'FULL_COVERAGE', valuations: { totalValue: 100 }, provenance: { walletId: 'wallet-a' } },
+    { id: 's2', capturedAt: '2026-02-01T00:00:00.000Z', priceCoverage: 'FULL_COVERAGE', valuations: { totalValue: 110 }, provenance: { walletId: 'wallet-a' } }
+  ];
+  const base = { walletId: 'wallet-a', amount: 10, investorSignedAmount: -10, classification: 'EXTERNAL_CONTRIBUTION', isExternalFlow: true, confidence: 'HIGH', sourceIdentity: 'MANUAL:f1', provenance: { sourceSystem: 'MANUAL', sourceId: 'f1' } };
+  const invalidDate = Sufficiency.assessXIRRReadiness(snapshots, { level: 'FULL_COVERAGE' }, { trustworthyExternal: [{ ...base, date: '2026-02-30' }], ambiguous: [] }, {});
+  const wrongSign = Sufficiency.assessXIRRReadiness(snapshots, { level: 'FULL_COVERAGE' }, { trustworthyExternal: [{ ...base, date: '2026-01-20', investorSignedAmount: 10 }], ambiguous: [] }, {});
+  assert.equal(invalidDate.ready, false);
+  assert.equal(wrongSign.ready, false);
+});
+
+test('V272 duplicate source identity cannot be counted twice or unlock a capability', () => {
+  const snapshots = Array.from({ length: 40 }, (_, index) => ({
+    id: `s-${index}`, capturedAt: new Date(Date.UTC(2026, 0, 1 + index)).toISOString(),
+    priceCoverage: 'FULL_COVERAGE', valuations: { totalValue: 100 + index }, provenance: { walletId: 'wallet-a' }
+  }));
+  const flow = { eventId: 'row-1', walletId: 'wallet-a', date: '2026-01-20', amount: 20, investorSignedAmount: -20, classification: 'EXTERNAL_CONTRIBUTION', isExternalFlow: true, confidence: 'HIGH', sourceIdentity: 'MANUAL:same', provenance: { sourceSystem: 'MANUAL', sourceId: 'same' }, timing: 'END_OF_SUBPERIOD' };
+  const result = Sufficiency.assessSufficiency(
+    { snapshots, config: PortfolioHistory.getDefaultConfig() }, {},
+    { walletId: 'wallet-a', classifiedFlows: [flow, { ...flow, eventId: 'row-2' }] }
+  );
+  assert.equal(result.cashFlowReadiness.trustedExternalCount, 0);
+  assert.equal(result.cashFlowReadiness.ambiguous.includes('DUPLICATE_SOURCE_IDENTITY'), true);
+  assert.equal(result.capabilities.find(row => row.capability === 'TWR').ready, false);
+  assert.equal(result.capabilities.find(row => row.capability === 'XIRR').ready, false);
 });

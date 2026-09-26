@@ -26,6 +26,31 @@
     return typeof value === 'number' && Number.isFinite(value);
   }
 
+  function isValidIsoDate(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [year, month, day] = value.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  }
+
+  function isTrustedScopedFlow(flow, snapshots) {
+    if (!isRecord(flow) || flow.isExternalFlow !== true || flow.confidence !== 'HIGH' ||
+      !['EXTERNAL_CONTRIBUTION', 'EXTERNAL_WITHDRAWAL'].includes(flow.classification) ||
+      !isValidIsoDate(flow.date) || dateMs(flow.date) === null ||
+      !flow.sourceIdentity || !flow.provenance?.sourceSystem || !(flow.provenance?.sourceId || flow.eventId || flow.id) ||
+      !isFiniteNumber(flow.amount) || flow.amount <= 0 ||
+      flow.investorSignedAmount !== (flow.classification === 'EXTERNAL_CONTRIBUTION' ? -flow.amount : flow.amount)) return false;
+    const snapshotWalletId = snapshots.find(snapshot => snapshot?.provenance?.walletId)?.provenance?.walletId;
+    return !!snapshotWalletId && flow.walletId === snapshotWalletId;
+  }
+
+  function getUniqueTrustedScopedFlows(flows, snapshots) {
+    const eligible = (Array.isArray(flows) ? flows : []).filter(flow => isTrustedScopedFlow(flow, snapshots));
+    const counts = eligible.reduce((map, flow) => map.set(flow.sourceIdentity, (map.get(flow.sourceIdentity) || 0) + 1), new Map());
+    const duplicates = new Set([...counts].filter(([, count]) => count > 1).map(([identity]) => identity));
+    return { flows: eligible.filter(flow => !duplicates.has(flow.sourceIdentity)), duplicateIdentityCount: duplicates.size };
+  }
+
   function dateMs(dateStr) {
     const ms = Date.parse(dateStr);
     return Number.isFinite(ms) ? ms : null;
@@ -146,27 +171,25 @@
       taxes: { available: false, count: 0, trustworthy: false, ambiguous: false }
     };
 
-    // Aportes (contributions) - typically EXTERNAL_CONTRIBUTION
+    // Legacy collections are diagnostic candidates only. Their names/shapes
+    // do not prove external investor cash flow or wallet scope.
     if (Array.isArray(fullState?.aportes) && fullState.aportes.length > 0) {
       sources.aportes.available = true;
       sources.aportes.count = fullState.aportes.length;
-      sources.aportes.trustworthy = fullState.aportes.every(a => a.date && typeof a.value === 'number' && a.value > 0);
-      sources.aportes.ambiguous = !sources.aportes.trustworthy;
+      sources.aportes.ambiguous = true;
     }
 
     // Proventos (dividends/interest) - typically DIVIDEND
     if (Array.isArray(fullState?.proventos) && fullState.proventos.length > 0) {
       sources.proventos.available = true;
       sources.proventos.count = fullState.proventos.length;
-      sources.proventos.trustworthy = fullState.proventos.every(p => p.date && typeof p.value === 'number');
-      sources.proventos.ambiguous = !sources.proventos.trustworthy;
+      sources.proventos.ambiguous = true;
     }
 
     // RF Events (fixed income) - could be internal or external
     if (Array.isArray(fullState?.rfEvents) && fullState.rfEvents.length > 0) {
       sources.rfEvents.available = true;
       sources.rfEvents.count = fullState.rfEvents.length;
-      sources.rfEvents.trustworthy = fullState.rfEvents.every(r => r.value !== undefined);
       sources.rfEvents.ambiguous = true; // RF events often ambiguous between internal/external
     }
 
@@ -302,7 +325,17 @@
     }
     
     // Check external cash flows
-    const hasExternalFlows = cashFlowPrerequisites.trustworthyExternal.length > 0;
+    const trustedResult = getUniqueTrustedScopedFlows(cashFlowPrerequisites.trustworthyExternal, snapshots);
+    const trustedFlows = trustedResult.flows;
+    if ((cashFlowPrerequisites.ambiguous || []).length > 0 || trustedResult.duplicateIdentityCount > 0) {
+      return {
+        ready: false,
+        reason: 'INSUFFICIENT_FLOW_PROVENANCE',
+        minimumRequired: 'all candidate external flows classified with wallet scope and provenance',
+        missingPrerequisites: ['flow provenance']
+      };
+    }
+    const hasExternalFlows = trustedFlows.length > 0;
     if (!hasExternalFlows) {
       return { 
         ready: false, 
@@ -313,9 +346,8 @@
     }
     
     // Check flow timing/provenance
-    const hasFlowTiming = cashFlowPrerequisites.trustworthyExternal.some(t => 
-      ['aportes', 'proventos'].includes(t)
-    );
+    const snapshotDates = new Set(snapshots.map(snapshot => String(snapshot.capturedAt || '').slice(0, 10)));
+    const hasFlowTiming = trustedFlows.every(flow => flow.timing === 'END_OF_SUBPERIOD' && snapshotDates.has(flow.date));
     if (!hasFlowTiming) {
       return { 
         ready: false, 
@@ -346,8 +378,8 @@
       };
     }
     
-    const latestSnap = snapshots[0]; // newest first from getSnapshots
-    if (!latestSnap || latestSnap.valuations?.totalValue === undefined) {
+    const latestSnap = snapshots.reduce((latest, snapshot) => !latest || dateMs(snapshot.capturedAt) > dateMs(latest.capturedAt) ? snapshot : latest, null);
+    if (!latestSnap || !isFiniteNumber(latestSnap.valuations?.totalValue) || latestSnap.valuations.totalValue <= 0) {
       return { 
         ready: false, 
         reason: 'NO_TERMINAL_VALUATION', 
@@ -356,18 +388,19 @@
       };
     }
     
-    if (priceCoverage.level === 'UNKNOWN') {
+    if (priceCoverage.level !== 'FULL_COVERAGE') {
       return { 
         ready: false, 
-        reason: 'NO_PRICE_COVERAGE', 
-        minimumRequired: 'FULL_COVERAGE or PARTIAL_COVERAGE',
+        reason: priceCoverage.level === 'UNKNOWN' ? 'NO_PRICE_COVERAGE' : 'PARTIAL_PRICE_COVERAGE',
+        minimumRequired: 'FULL_COVERAGE',
         missingPrerequisites: ['price coverage']
       };
     }
     
     // Check for dated cash flows with signs
-    const hasDatedFlows = cashFlowPrerequisites.trustworthyExternal.length > 0 || 
-                          cashFlowPrerequisites.ambiguous.length > 0;
+    const trustedResult = getUniqueTrustedScopedFlows(cashFlowPrerequisites.trustworthyExternal, snapshots);
+    const trustedFlows = trustedResult.flows;
+    const hasDatedFlows = trustedFlows.length > 0;
     if (!hasDatedFlows) {
       return { 
         ready: false, 
@@ -377,9 +410,24 @@
       };
     }
     
-    // Check date ordering - flows must be before terminal valuation
-    // This would need actual flow dates vs latest snapshot date
-    // For now, assume if we have flows and snapshots, ordering can be checked
+    const terminalDate = String(latestSnap.capturedAt || '').slice(0, 10);
+    if (trustedFlows.some(flow => flow.date > terminalDate)) {
+      return {
+        ready: false,
+        reason: 'FLOW_AFTER_TERMINAL_VALUATION',
+        minimumRequired: 'flows dated on or before terminal valuation',
+        missingPrerequisites: ['flow date ordering']
+      };
+    }
+
+    if ((cashFlowPrerequisites.ambiguous || []).length > 0 || trustedResult.duplicateIdentityCount > 0) {
+      return {
+        ready: false,
+        reason: 'INSUFFICIENT_FLOW_PROVENANCE',
+        minimumRequired: 'all candidate external flows classified with wallet scope and provenance',
+        missingPrerequisites: ['flow provenance']
+      };
+    }
     
     return { ready: true, reason: 'SUFFICIENT' };
   }
@@ -403,7 +451,8 @@
   }
 
   function assessSufficiency(historyState, fullState, options = {}) {
-    const { walletId = 'default', now = Date.now() } = options;
+    const { walletId = 'default', now = Date.now(), classifiedFlows = [] } = options;
+    const canonicalFlows = Array.isArray(classifiedFlows) ? classifiedFlows : [];
     
     if (!historyState || !Array.isArray(historyState.snapshots)) {
       return {
@@ -414,7 +463,7 @@
         coverage: { level: 'UNKNOWN', ratio: 0, full: 0, partial: 0, unknown: 0 },
         historySpan: { spanDays: 0, firstSnapshotAt: null, latestSnapshotAt: null },
         snapshotCount: 0,
-        cashFlowReadiness: { trustworthyExternal: [], ambiguous: [], unavailable: [] },
+        cashFlowReadiness: { trustworthyExternal: [], ambiguous: [], ambiguousEvents: 0, unavailable: [], totalEvents: 0, trustedExternalCount: 0, unscopedEventCount: 0 },
         priceReadiness: 'UNKNOWN',
         walletScope: walletId
       };
@@ -431,7 +480,7 @@
         coverage: { level: 'UNKNOWN', ratio: 0, full: 0, partial: 0, unknown: 0 },
         historySpan: { spanDays: 0, firstSnapshotAt: null, latestSnapshotAt: null },
         snapshotCount: 0,
-        cashFlowReadiness: { trustworthyExternal: [], ambiguous: [], unavailable: [] },
+        cashFlowReadiness: { trustworthyExternal: [], ambiguous: [], ambiguousEvents: 0, unavailable: [], totalEvents: 0, trustedExternalCount: 0, unscopedEventCount: 0 },
         priceReadiness: 'UNKNOWN',
         walletScope: walletId
       };
@@ -441,7 +490,26 @@
     const dailyCoverage = analyzeDailyCoverage(walletSnapshots);
     const walletContinuity = analyzeWalletContinuity(historyState.snapshots, walletId);
     const cashFlowInventory = inventoryCashFlows(fullState);
-    const cashFlowPrerequisites = classifyCashFlowPrerequisites(cashFlowInventory);
+    const legacyCandidates = Object.entries(cashFlowInventory).filter(([, info]) => info.available && info.count > 0).map(([name]) => name);
+    const scopedFlows = canonicalFlows.filter(flow => flow?.walletId === walletId);
+    const trustedResult = getUniqueTrustedScopedFlows(scopedFlows, walletSnapshots);
+    const trustedExternal = trustedResult.flows;
+    const classifiedAmbiguous = scopedFlows.filter(flow => ['AMBIGUOUS', 'UNKNOWN'].includes(flow.classification) ||
+      (['EXTERNAL_CONTRIBUTION', 'EXTERNAL_WITHDRAWAL'].includes(flow.classification) && flow.confidence !== 'HIGH'));
+    const classifiedAmbiguousIds = classifiedAmbiguous.map(flow => flow.eventId || 'classified-event');
+    const unscopedAmbiguous = canonicalFlows.some(flow => !flow?.walletId && ['AMBIGUOUS', 'EXTERNAL_CONTRIBUTION', 'EXTERNAL_WITHDRAWAL'].includes(flow?.classification));
+    const hasCanonicalClassification = canonicalFlows.length > 0;
+    const cashFlowPrerequisites = {
+      trustworthyExternal: trustedExternal,
+      ambiguous: [...new Set([...(hasCanonicalClassification ? classifiedAmbiguousIds : legacyCandidates), ...(unscopedAmbiguous ? ['UNSCOPED_EVENTS'] : []), ...(trustedResult.duplicateIdentityCount ? ['DUPLICATE_SOURCE_IDENTITY'] : [])])],
+      ambiguousEvents: classifiedAmbiguous.length + (unscopedAmbiguous ? 1 : 0) + trustedResult.duplicateIdentityCount,
+      unavailable: Object.entries(cashFlowInventory).filter(([, info]) => !info.available).map(([name]) => name),
+      inventory: cashFlowInventory,
+      totalEvents: canonicalFlows.length,
+      trustedExternalCount: trustedExternal.length,
+      ambiguousEventCount: classifiedAmbiguous.length,
+      unscopedEventCount: canonicalFlows.filter(flow => !flow?.walletId).length
+    };
     
     // Assess each capability
     const capabilities = [

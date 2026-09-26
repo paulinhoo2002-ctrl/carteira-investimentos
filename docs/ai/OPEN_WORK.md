@@ -2,6 +2,19 @@
 
 ## NOW
 
+- V272 implementation is locally validated on
+  `feature/v272-cashflow-performance-foundation` from base
+  `4fae02ac06729aea1c66a6008b24bba75b9a68b2`; commit/push/PR and exact-head CI
+  are the remaining authorized release steps. Do not merge without separate
+  authorization.
+- V76 flow and valuation stores are global and have no `walletId`. V272 keeps
+  real-wallet `DATA_READY=false` until evidence has legitimate wallet scope;
+  do not infer a wallet or expose real TWR/XIRR. Any future store/schema change
+  requires its own authorized phase.
+- V272 local evidence: modern 815/815, general 249/249, builds and `qa:all`
+  PASS; rendered panel checked at seven widths, component axe 0. QA used
+  synthetic localhost test mode, not authenticated real-portfolio data.
+
 - PR #417 also contains the Skills-library audit: 38 local operational packages,
   only four tracked Skill files, global-only Superpowers in this environment,
   and optional missing references documented. Recheck exact-head CI/preview.

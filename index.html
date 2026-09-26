@@ -2075,6 +2075,7 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .pli{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b}
 .pd{width:8px;height:8px;border-radius:2px}
 .gn{color:#34d399}.rd{color:#f87171}.am{color:#fbbf24}.pu{color:#818cf8}.bl{color:#60a5fa}.mu{color:#64748b}.di{color:#3d5472}
+.rent-premium .mu,.rent-premium .pli,.rent-premium .es{color:#9fb0c5}
 .bwr{background:#111828;border-radius:3px;height:5px;width:70px;overflow:hidden;display:inline-block}
 .bfr{height:100%;background:#fbbf24}
 .es{text-align:center;padding:40px 20px;color:#3d5472;line-height:1.7}
@@ -8076,6 +8077,8 @@ document.write([
 <script src="portfolio-intelligence.js"></script>
 <script src="portfolio-allocation-intelligence.js"></script>
 <script src="portfolio-performance.js"></script>
+<script src="portfolio-cash-flow-classifier.js"></script>
+<script src="portfolio-history-sufficiency.js"></script>
 <script src="historical-performance-engine.js"></script>
 <script src="performance-intelligence.js"></script>
 <script src="dividend-intelligence.js"></script>
@@ -27101,6 +27104,7 @@ function v254FiscalPanel(){
 }
 function reportsTab(){
   const data=reportsSnapshot();
+  const v272Readiness=v272CashFlowReadiness();
   const reportAssets=reportAssetRows();
   const reportFixed=reportFixedIncomeRows();
   const reportValuesComplete=[...reportAssets,...reportFixed].every(row=>Number.isFinite(Number(row.current))&&Number(row.current)>=0);
@@ -27204,6 +27208,13 @@ function reportsTab(){
         ${[['Patrimônio',reportViewModel?.reconciliations?.patrimony],['Renda Fixa',reportViewModel?.reconciliations?.fixedIncome],['Proventos',reportViewModel?.reconciliations?.dividends],['Alocação',reportViewModel?.reconciliations?.allocation]].map(([label,item])=>`<div class="reports-reconciliation-item"><span>${label}</span><strong class="reports-reconciliation-${item?.status==='PASS'?'pass':item?.status==='MISMATCH'?'mismatch':'unavailable'}">${item?.status==='PASS'?'Reconciliado':item?.status==='MISMATCH'?'Diferença factual':'Indisponível'}</strong></div>`).join('')}
       </div>
       <p class="reports-reconciliation-note">${esc(reportViewModel?.summary||'Sem dados suficientes para gerar o resumo factual.')}</p>
+    </section>
+    <section class="reports-reconciliation" aria-labelledby="reports-performance-readiness-title">
+      <div class="reports-reconciliation-head"><div><h2 id="reports-performance-readiness-title">Prontidão de performance histórica</h2><p>Capacidade matemática e suficiência da evidência são verificadas separadamente.</p></div><span class="reports-badge">Read-only</span></div>
+      <div class="reports-reconciliation-grid">
+        ${[['Motor disponível',v272Readiness.engineAvailable?'Sim':'Não'],['Dados da carteira',v272Readiness.dataReady?'READY':'Indisponível'],['Fluxos externos confiáveis',String(v272Readiness.flowReadiness.trustedExternalFlows.length)],['Eventos sem escopo',String(v272Readiness.flowReadiness.unscopedEvents)]].map(([label,value])=>`<div class="reports-reconciliation-item"><span>${label}</span><strong class="reports-reconciliation-unavailable">${esc(value)}</strong></div>`).join('')}
+      </div>
+      <p class="reports-reconciliation-note">${esc(v272ReadinessReasonText(v272Readiness.reason))} UNKNOWN não é zero; evidência parcial não libera TWR/XIRR.</p>
     </section>
     ${v254FiscalPanel()}
     <section class="reports-premium-main-grid">
@@ -34358,25 +34369,74 @@ function metasTab(){
   </div>`;
 }
 
-function v248HistoricalPerformanceSnapshot(){
+function v272CashFlowReadiness(){
   const runtime=window.__V76_RUNTIME__||{};
-  const snapshots=Array.isArray(runtime.snapshots?.snapshots)?runtime.snapshots.snapshots:[];
-  const valuations=snapshots.map(row=>({date:row.localDate,value:Number(row.totalPortfolioValue)/100}));
-  const flowRows=Array.isArray(runtime.flows?.flows)?runtime.flows.flows:[];
-  const events=flowRows.map(row=>({date:row.date,type:row.type==='CONTRIBUTION'?'EXTERNAL_CONTRIBUTION':row.type==='WITHDRAWAL'?'EXTERNAL_WITHDRAWAL':row.type,amount:Number(row.amountCents)/100}));
-  const income=rentabilityIncomeRows().map(row=>({date:row.date,amount:row.value,type:row.sourceKind==='rf'?'FII_INCOME':'DIVIDEND'}));
-  const coverage=snapshots.length>=2
-    ? (snapshots.every(row=>Number(row.totalCoveragePercent)>=95)?'FULL_COVERAGE':'PARTIAL_COVERAGE')
-    : 'UNKNOWN';
+  const classifier=window.PortfolioCashFlowClassifier;
   const engine=window.HistoricalPerformance;
-  if(!engine) return {coverage:'UNKNOWN',model:null,yearEnd:[]};
-  const model=engine.calculatePerformance({valuations,events,income,priceCoverage:{status:coverage}});
-  const years=[...new Set(snapshots.map(row=>String(row.localDate||'').slice(0,4)).filter(Boolean))].sort();
-  const yearEnd=years.map(year=>engine.buildYearEndPosition(snapshots.map(row=>({date:row.localDate,ticker:'PORTFOLIO',quantity:null,value:Number(row.totalPortfolioValue)/100,coverage:Number(row.totalCoveragePercent)>=95?'FULL_COVERAGE':'PARTIAL_COVERAGE'})),Number(year)));
-  return {coverage,model,yearEnd,snapshotCount:snapshots.length,firstDate:valuations[0]?.date||null,lastDate:valuations.at(-1)?.date||null};
+  const walletId=String(S.activeWalletId||'');
+  const rawFlows=Array.isArray(runtime.flows?.flows)?runtime.flows.flows:[];
+  const classified=classifier?rawFlows.map(row=>classifier.classifyEvent(row,{walletId,sourceSystem:'V76_RUNTIME'})):[];
+  const flowReadiness=classifier?classifier.assessCashFlowReadiness(classified,walletId):{state:'UNAVAILABLE',trustedExternalFlows:[],ambiguousEvents:0,unknownEvents:0,unscopedEvents:rawFlows.length};
+  const rawSnapshots=Array.isArray(runtime.snapshots?.snapshots)?runtime.snapshots.snapshots:[];
+  const scopedSnapshots=rawSnapshots.filter(row=>String(row.walletId||'')===walletId&&!!walletId);
+  const snapshotsScoped=rawSnapshots.length>0&&scopedSnapshots.length===rawSnapshots.length;
+  const historyEngine=window.PortfolioHistorySufficiency;
+  const historySnapshots=rawSnapshots.map(row=>({
+    id:row.id,capturedAt:row.capturedAt,source:row.source,
+    priceCoverage:Number(row.totalCoveragePercent)>=95?'FULL_COVERAGE':Number(row.totalCoveragePercent)>0?'PARTIAL_COVERAGE':'UNKNOWN',
+    valuations:{totalValue:Number.isFinite(Number(row.totalPortfolioValue))?Number(row.totalPortfolioValue)/100:null},
+    provenance:{walletId:row.walletId||null}
+  }));
+  const assessment=historyEngine?.assessSufficiency({snapshots:historySnapshots,config:{}},{},{walletId,classifiedFlows:classified});
+  const capabilities=Object.fromEntries((assessment?.capabilities||[]).map(item=>[item.capability,item]));
+  const twrReady=capabilities.TWR?.ready===true;
+  const xirrReady=capabilities.XIRR?.ready===true;
+  const dataReady=snapshotsScoped&&twrReady&&xirrReady;
+  const reason=dataReady?'SUFFICIENT':rawSnapshots.length&&!snapshotsScoped?'VALUATION_WALLET_SCOPE_MISSING':!rawSnapshots.length?'HISTORY_NOT_CAPTURED':flowReadiness.unscopedEvents?'FLOW_WALLET_SCOPE_MISSING':flowReadiness.ambiguousEvents?'INSUFFICIENT_FLOW_PROVENANCE':capabilities.TWR?.reason||capabilities.XIRR?.reason||'NO_TRUSTWORTHY_EXTERNAL_FLOWS';
+  return {engineAvailable:!!(engine&&typeof engine.calculatePerformance==='function'&&typeof engine.xirr==='function'),dataReady,walletId,
+    flowReadiness,snapshotsScoped,scopedSnapshots,unscopedSnapshotCount:rawSnapshots.length-scopedSnapshots.length,
+    classifiedFlows:classified,trustedExternalFlows:flowReadiness.trustedExternalFlows,assessment,capabilities,reason};
 }
 
-function v248PerformanceMetricLabel(metricValue){
+function v272ReadinessReasonText(reason){
+  return ({
+    VALUATION_WALLET_SCOPE_MISSING:'Os snapshots disponíveis não identificam a carteira de origem.',
+    HISTORY_NOT_CAPTURED:'Ainda não há snapshots históricos disponíveis para esta carteira.',
+    FLOW_WALLET_SCOPE_MISSING:'Os fluxos registrados não identificam a carteira de origem.',
+    INSUFFICIENT_FLOW_PROVENANCE:'Há eventos ambíguos ou sem proveniência suficiente.',
+    INSUFFICIENT_OBSERVATIONS:'O histórico ainda não tem observações suficientes.',
+    INSUFFICIENT_PRICE_COVERAGE:'A cobertura de preço ainda não é completa.',
+    INSUFFICIENT_HISTORY_SPAN:'O histórico ainda não cobre o período mínimo.',
+    INSUFFICIENT_DAILY_COVERAGE:'Há lacunas excessivas entre as capturas.',
+    NO_TRUSTWORTHY_EXTERNAL_FLOWS:'Ainda não há fluxo externo confiável identificado.',
+    INSUFFICIENT_FLOW_TIMING:'O momento dos fluxos em relação às avaliações não está comprovado.',
+    NO_TERMINAL_VALUATION:'Não há avaliação terminal confiável.',
+    HISTORY_REQUIREMENTS_NOT_ASSESSED:'Os requisitos de histórico ainda precisam ser validados.',
+    FLOW_AFTER_TERMINAL_VALUATION:'Há fluxo posterior à avaliação terminal.'
+  })[reason]||'As evidências disponíveis não permitem liberar a métrica.';
+}
+
+function v248HistoricalPerformanceSnapshot(){
+  const runtime=window.__V76_RUNTIME__||{};
+  const readiness=v272CashFlowReadiness();
+  const snapshots=Array.isArray(runtime.snapshots?.snapshots)?runtime.snapshots.snapshots:[];
+  const valuations=(readiness.scopedSnapshots.length?snapshots.filter(row=>String(row.walletId||'')===readiness.walletId):[]).map(row=>({date:row.localDate,value:Number(row.totalPortfolioValue)/100}));
+  const events=readiness.trustedExternalFlows;
+  const income=rentabilityIncomeRows().map(row=>({date:row.date,amount:row.value,type:row.sourceKind==='rf'?'FII_INCOME':'DIVIDEND'}));
+  const scopedSnapshotRows=readiness.scopedSnapshots;
+  const coverage=scopedSnapshotRows.length>=2
+    ? (scopedSnapshotRows.every(row=>Number(row.totalCoveragePercent)>=95)?'FULL_COVERAGE':'PARTIAL_COVERAGE')
+    : 'UNKNOWN';
+  const engine=window.HistoricalPerformance;
+  if(!engine) return {coverage:'UNKNOWN',model:null,yearEnd:[],readiness};
+  const model=engine.calculatePerformance({valuations,events,income,priceCoverage:{status:coverage},walletId:readiness.walletId});
+  const years=[...new Set(scopedSnapshotRows.map(row=>String(row.localDate||'').slice(0,4)).filter(Boolean))].sort();
+  const yearEnd=years.map(year=>engine.buildYearEndPosition(scopedSnapshotRows.map(row=>({date:row.localDate,ticker:'PORTFOLIO',quantity:null,value:Number(row.totalPortfolioValue)/100,coverage:Number(row.totalCoveragePercent)>=95?'FULL_COVERAGE':'PARTIAL_COVERAGE'})),Number(year)));
+  return {coverage,model,yearEnd,snapshotCount:scopedSnapshotRows.length,firstDate:valuations[0]?.date||null,lastDate:valuations.at(-1)?.date||null,readiness};
+}
+
+function v248PerformanceMetricLabel(metricValue,dataReady){
+  if(dataReady!==true) return 'Indisponível';
   if(!metricValue||metricValue.status!=='PASS'||!Number.isFinite(Number(metricValue.value))) return 'Indisponível';
   return fmtP(Number(metricValue.value)*100);
 }
@@ -34384,12 +34444,13 @@ function v248PerformanceMetricLabel(metricValue){
 function v248HistoricalPerformancePanel(){
   const snapshot=v248HistoricalPerformanceSnapshot();
   const model=snapshot.model;
+  const readiness=snapshot.readiness||{engineAvailable:false,dataReady:false,flowReadiness:{trustedExternalFlows:[],ambiguousEvents:0,unscopedEvents:0},reason:'READINESS_UNAVAILABLE'};
   const coverageLabel={FULL_COVERAGE:'Cobertura completa',PARTIAL_COVERAGE:'PARTIAL_COVERAGE · cobertura parcial',UNKNOWN:'UNKNOWN · histórico ainda não iniciado',INSUFFICIENT_DATA:'INSUFFICIENT_DATA · dados insuficientes'}[snapshot.coverage]||snapshot.coverage;
   const start=model?.valuations?.[0]?.value;
   const end=model?.valuations?.at(-1)?.value;
-  const currentValue=end==null?'Indisponível':fmt(end);
-  const initialValue=start==null?'Indisponível':fmt(start);
-  const flowTotal=(model?.externalFlows||[]).reduce((sum,row)=>sum+Number(row.signedAmount||0),0);
+  const currentValue=!readiness.dataReady||end==null?'Indisponível':fmt(end);
+  const initialValue=!readiness.dataReady||start==null?'Indisponível':fmt(start);
+  const flowTotal=(model?.externalFlows||[]).reduce((sum,row)=>sum+Number(row.portfolioSignedAmount||0),0);
   const yearEndRows=(snapshot.yearEnd||[]).flatMap(item=>item.rows||[]).map(row=>`<tr><td>${esc(row.date?.slice(0,4)||'—')}</td><td>${esc(row.ticker)}</td><td>${row.value==null?'UNKNOWN':fmt(row.value)}</td><td>${esc(row.coverage||'UNKNOWN')}</td></tr>`).join('');
   return `<section class="card v248-history-panel" aria-label="Histórico auditável e performance">
     <div class="sh"><div><div class="st">Histórico auditável</div><div class="mu">Patrimônio, fluxos externos e retorno com cobertura explícita.</div></div><span class="ds-badge ${snapshot.coverage==='FULL_COVERAGE'?'ok':snapshot.coverage==='PARTIAL_COVERAGE'?'warning':'muted'}">${esc(coverageLabel)}</span></div>
@@ -34400,11 +34461,16 @@ function v248HistoricalPerformancePanel(){
       <div class="rent-summary-chip"><div class="rent-summary-chip-label">Cobertura histórica</div><div class="rent-summary-chip-value">${esc(snapshot.coverage)}</div><div class="rent-summary-chip-sub">${snapshot.snapshotCount||0} valuation(s) derivados</div></div>
     </div>
     <div class="rent-analysis-note-list" style="margin-top:12px">
-      <div><span>SIMPLE_RETURN</span><strong>${v248PerformanceMetricLabel(model?.metrics?.simpleReturn)}</strong></div>
-      <div><span>TWR · fluxo no fim do subperíodo</span><strong>${v248PerformanceMetricLabel(model?.metrics?.twr)}</strong></div>
-      <div><span>MWR/XIRR</span><strong>${v248PerformanceMetricLabel(model?.metrics?.xirr)}</strong></div>
-      <div><span>Renda / capital</span><strong>${v248PerformanceMetricLabel(model?.metrics?.incomeReturn)} / ${v248PerformanceMetricLabel(model?.metrics?.capitalReturn)}</strong></div>
+      <div><span>ENGINE_AVAILABLE</span><strong>${readiness.engineAvailable?'Sim':'Não'}</strong></div>
+      <div><span>DATA_READY</span><strong>${readiness.dataReady?'READY':'UNAVAILABLE'}</strong></div>
+      <div><span>Fluxos externos confiáveis</span><strong>${readiness.flowReadiness.trustedExternalFlows.length}</strong></div>
+      <div><span>Eventos ambíguos / sem carteira</span><strong>${readiness.flowReadiness.ambiguousEvents} / ${readiness.flowReadiness.unscopedEvents}</strong></div>
+      <div><span>SIMPLE_RETURN</span><strong>${v248PerformanceMetricLabel(model?.metrics?.simpleReturn,readiness.dataReady)}</strong></div>
+      <div><span>TWR · fluxo no fim do subperíodo</span><strong>${v248PerformanceMetricLabel(model?.metrics?.twr,readiness.dataReady)}</strong></div>
+      <div><span>MWR/XIRR</span><strong>${v248PerformanceMetricLabel(model?.metrics?.xirr,readiness.dataReady)}</strong></div>
+      <div><span>Renda / capital</span><strong>${v248PerformanceMetricLabel(model?.metrics?.incomeReturn,readiness.dataReady)} / ${v248PerformanceMetricLabel(model?.metrics?.capitalReturn,readiness.dataReady)}</strong></div>
     </div>
+    ${readiness.dataReady?'':`<div class="mu" role="status" style="margin-top:10px">Métricas de performance indisponíveis: ${esc(v272ReadinessReasonText(readiness.reason))} Ausência de evidência não é zero.</div>`}
     <div class="mu" style="margin-top:12px">Benchmarks históricos só aparecem quando houver série alinhada; preço atual, benchmark estático e lacuna de dados não são usados como histórico.</div>
     <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Posições em 31/12</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Ano</th><th>Ativo</th><th>Valor</th><th>Cobertura</th></tr></thead><tbody>${yearEndRows||'<tr><td colspan="4">Sem snapshot de 31/12 com cobertura suficiente.</td></tr>'}</tbody></table></div></details>
   </section>`;

@@ -21,3 +21,21 @@ test('painel V248 não expõe confirmação ou realização financeira', () => {
   assert.doesNotMatch(panel, /Aplicar|Realizar|Confirmar importação|Promover/);
   assert.match(panel, /Somente fluxos externos explícitos/);
 });
+
+test('V272 painel separa capacidade do motor da prontidão real e sinaliza escopo ausente', () => {
+  assert.match(index, /portfolio-cash-flow-classifier\.js/);
+  assert.match(index, /portfolio-history-sufficiency\.js/);
+  assert.match(index, /function v272CashFlowReadiness\(\)/);
+  assert.match(index, /historyEngine\?\.assessSufficiency/);
+  const panel = index.slice(index.indexOf('function v248HistoricalPerformancePanel'), index.indexOf('function rentabilidadeTab'));
+  assert.match(panel, /ENGINE_AVAILABLE/);
+  assert.match(panel, /DATA_READY/);
+  assert.match(panel, /carteira/i);
+  assert.match(panel, /ambígu/i);
+  assert.match(index, /Prontidão de performance histórica/);
+  assert.match(index, /UNKNOWN não é zero/);
+});
+
+test('Rentabilidade usa contraste acessível apenas na superfície da página', () => {
+  assert.match(index, /\.rent-premium \.mu,\.rent-premium \.pli,\.rent-premium \.es\{color:#9fb0c5\}/);
+});
