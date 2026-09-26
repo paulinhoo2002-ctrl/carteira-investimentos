@@ -36,6 +36,7 @@
     'goals',
     'net-worth',
     'rebalance',
+    'portfolio-history',
   ]);
 
   const DEFAULT_READONLY_REPORT_PAGE_ID = 'reports';

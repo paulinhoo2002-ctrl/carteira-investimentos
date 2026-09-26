@@ -87,6 +87,14 @@ export const MODERN_PAGES = [
     description: 'Consulta somente leitura de rebalanceamento da carteira, com leitura segura do snapshot.',
     hint: 'Leitura readonly planejada',
   },
+  {
+    id: 'portfolio-history',
+    label: 'Historico',
+    displayLabel: 'Histórico',
+    title: 'Histórico do Portfólio',
+    description: 'Captura e consulta de snapshots históricos do portfólio com proveniência e cobertura.',
+    hint: 'Rastreamento histórico',
+  },
 ];
 
 export const OVERVIEW_CARDS = [

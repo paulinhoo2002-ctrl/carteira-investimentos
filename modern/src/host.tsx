@@ -14,7 +14,10 @@ import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRun
 import { createModernContributionsRuntime } from './bootstrap/modernContributionsRuntime';
 import { createModernGoalsRuntime } from './bootstrap/modernGoalsRuntime';
 import { createModernIncomeRuntime } from './bootstrap/modernIncomeRuntime';
-import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
+import { createHostPortfolioHistoryReadonlySource } from './bootstrap/hostPortfolioHistoryReadonlySource';
+import { createModernPortfolioHistoryRuntime } from './bootstrap/modernPortfolioHistoryRuntime';
+import type { HostPortfolioHistoryReadonlySourceOptions } from './bootstrap/hostPortfolioHistoryReadonlySource';
+import { createHostPortfolioHistoryCaptureAction } from './bootstrap/hostPortfolioHistoryCaptureAction';
 import { mountModernApp } from './bootstrap/mountModernApp';
 import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
 import type { HostFixedIncomeAsset } from './bootstrap/hostFixedIncomeReadonlySource';
@@ -49,6 +52,20 @@ export interface HostBootstrapOptions {
   readonly getGeneratedAt?: () => string;
   readonly notice?: string;
   readonly strictSourceWiring?: boolean;
+  readonly getHistoryState?: HostPortfolioHistoryReadonlySourceOptions['getHistoryState'];
+  readonly getFullState?: () => Record<string, unknown> | null;
+  readonly captureHistorySnapshot?: () => Promise<{
+      readonly status: 'CREATED' | 'DUPLICATE' | 'FAILED';
+      readonly snapshot?: {
+        readonly id: string;
+        readonly capturedAt: string;
+        readonly contentHash: string;
+        readonly priceCoverage: string;
+        readonly totalValue: number;
+        readonly assetCount: number;
+      };
+      readonly reason?: string;
+    }>;
 }
 
 function createNullReportsSource() {
@@ -260,12 +277,29 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     : null;
 
   const goalsSource = hasInjectedGoalsSnapshot
-    ? createHostGoalsReadonlySource({
-        getGoalsSnapshot: options.getGoalsSnapshot,
-      })
-    : null;
+      ? createHostGoalsReadonlySource({
+          getGoalsSnapshot: options.getGoalsSnapshot,
+        })
+      : null;
 
-  const fallbackHostReportsSource = await createHostLegacyReportsReadonlySource({
+    const historySource = typeof options.getHistoryState === 'function'
+              ? createHostPortfolioHistoryReadonlySource({
+                  getHistoryState: options.getHistoryState,
+                  getGeneratedAt: options.getGeneratedAt ?? (() => new Date().toISOString()),
+                  notice: options.notice ?? 'Snapshot legado somente leitura de histórico de portfólio. React não escreve na fonte.',
+                })
+              : null;
+
+        const captureHistorySnapshot = typeof options.captureHistorySnapshot === 'function'
+                                                  ? options.captureHistorySnapshot
+                                                  : createHostPortfolioHistoryCaptureAction({
+                                                      getFullState: options.getFullState,
+                                                      getHistoryState: options.getHistoryState,
+                                                      getGeneratedAt: options.getGeneratedAt,
+                                                      applyStorageTransaction: options.applyStorageTransaction,
+                                                    });
+
+        const fallbackHostReportsSource = await createHostLegacyReportsReadonlySource({
       legacyModule: injectedLegacyModule ?? undefined,
       getAssets: options.getAssets ?? (() => experimentalAssets),
       buildReportAssetRowModule: options.buildReportAssetRowModule ?? null,
@@ -327,43 +361,49 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
     goalsSource: goalsSource ?? undefined,
   });
 
-  mountModernApp({
-    rootElement: targetRoot,
-    reportsAdapter: modernReportsRuntime.reportsAdapter,
-    fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
-    contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
-    incomeAdapter: modernIncomeRuntime.incomeAdapter,
-    goalsAdapter: modernGoalsRuntime.goalsAdapter,
-    AppComponent: App,
-    reportsRefreshController,
-    contributionsRefreshController: modernContributionsRuntime.contributionsRefreshController,
-    incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
-    goalsRefreshController: modernGoalsRuntime.goalsRefreshController,
-      initialPageId: initialSessionContext?.pageId ?? 'overview',
-      onActivePageIdChange(pageId: ModernPageId) {
-      if (!sessionContextEnabled) {
-        return;
-      }
+  const modernPortfolioHistoryRuntime = createModernPortfolioHistoryRuntime({
+      portfolioHistorySource: historySource ?? undefined,
+    });
 
-      try {
-        const nextUrl = new URL(location.href);
-        nextUrl.search = buildReadonlyReportSessionSearch(pageId, location.search);
-        nextUrl.hash = '';
-        history.replaceState(history.state, '', nextUrl.toString());
-      } catch (error) {
-        debugWarn('readonly report session context failed:', error);
-      }
-    },
-  });
+    mountModernApp({
+      rootElement: targetRoot,
+      reportsAdapter: modernReportsRuntime.reportsAdapter,
+      fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
+      contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
+      incomeAdapter: modernIncomeRuntime.incomeAdapter,
+      goalsAdapter: modernGoalsRuntime.goalsAdapter,
+      portfolioHistoryAdapter: modernPortfolioHistoryRuntime.portfolioHistoryAdapter,
+      AppComponent: App,
+      reportsRefreshController,
+      contributionsRefreshController: modernContributionsRuntime.contributionsRefreshController,
+      incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
+      goalsRefreshController: modernGoalsRuntime.goalsRefreshController,
+        initialPageId: initialSessionContext?.pageId ?? 'overview',
+        onActivePageIdChange(pageId: ModernPageId) {
+        if (!sessionContextEnabled) {
+          return;
+        }
+
+        try {
+          const nextUrl = new URL(location.href);
+          nextUrl.search = buildReadonlyReportSessionSearch(pageId, location.search);
+          nextUrl.hash = '';
+          history.replaceState(history.state, '', nextUrl.toString());
+        } catch (error) {
+          debugWarn('readonly report session context failed:', error);
+        }
+      },
+    });
 
   return {
-    reportsRefreshController,
-    reportsAdapter: modernReportsRuntime.reportsAdapter,
-    fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
-    contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
-    incomeAdapter: modernIncomeRuntime.incomeAdapter,
-    goalsAdapter: modernGoalsRuntime.goalsAdapter,
-  };
+      reportsRefreshController,
+      reportsAdapter: modernReportsRuntime.reportsAdapter,
+      fixedIncomeAdapter: modernFixedIncomeRuntime.fixedIncomeAdapter,
+      contributionsAdapter: modernContributionsRuntime.contributionsAdapter,
+      incomeAdapter: modernIncomeRuntime.incomeAdapter,
+      goalsAdapter: modernGoalsRuntime.goalsAdapter,
+      captureHistorySnapshot,
+    };
 }
 
 export const isHostPage =

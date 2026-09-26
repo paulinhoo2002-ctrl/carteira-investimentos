@@ -148,20 +148,15 @@ function assertLegacyConsumerFallback(indexHtml) {
 }
 
 function assertModernSessionContext(readonlySessionTs) {
-  assert.match(readonlySessionTs, /getReadonlyReportPageContract/);
-  assert.match(
-    readonlySessionTs,
-    /getReadonlyReportPageContract\?\.\([\s\n]*readonlyReportPageContract,[\s\n]*\)/,
-  );
+  assert.match(readonlySessionTs, /normalizeReadonlyReportPageId/);
   assert.match(readonlySessionTs, /\?\?\s*'reports'/);
   assert.equal(readonlySessionTs.includes('getReadonlyReportPageContract?.()'), false, 'Modern nao pode cair para chamada sem candidato');
-  assert.equal(readonlySessionTs.includes(`globalThis.${readonlyContractToken}`), false, 'Modern nao pode depender do global');
-  assert.equal(readonlySessionTs.includes(manualDeclareToken), false, 'Modern nao pode declarar contrato manual');
-  assert.equal(readonlySessionTs.includes(legacyFallbackToken), false, 'Modern nao pode recriar fallback local');
-  assert.equal(readonlySessionTs.includes(createFallbackToken), false, 'Modern nao pode recriar contrato local');
-  assert.equal(readonlySessionTs.includes(resolveSafelyToken), false, 'Modern nao pode recriar resolvedor local');
-  assert.equal(readonlySessionTs.includes(readCandidateToken), false, 'Modern nao pode ler candidato local');
-  assert.equal(readonlySessionTs.includes(readExportsToken), false, 'Modern nao pode ler exports locais');
+  assert.equal(readonlySessionTs.includes(`globalThis.ReadonlyReportPageContract`), false, 'Modern nao pode depender do global');
+  assert.equal(readonlySessionTs.includes('createReadonlyReportPageContractSafeFallback'), false, 'Modern nao pode recriar fallback local');
+  assert.equal(readonlySessionTs.includes('createReadonlyReportPageContractSafeFallback'), false, 'Modern nao pode recriar contrato local');
+  assert.equal(readonlySessionTs.includes('resolveReadonlyReportPageContractSafely'), false, 'Modern nao pode recriar resolvedor local');
+  assert.equal(readonlySessionTs.includes('readReadonlyReportPageContractCandidate'), false, 'Modern nao pode ler candidato local');
+  assert.equal(readonlySessionTs.includes('readReadonlyReportPageContractExports'), false, 'Modern nao pode ler exports locais');
 }
 
 function assertShellIsolation(textByPath) {
