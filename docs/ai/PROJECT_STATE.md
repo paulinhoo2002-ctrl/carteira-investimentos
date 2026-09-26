@@ -88,6 +88,43 @@
 - QA_ORIGIN compatibility verified: explicit origin used, no autostart, external server not stopped. Manual server commands (`qa:serve:legacy`, `qa:start-server`) preserved.
 - No production application, financial logic, data, persistence, Firebase, imports, or tax code changed. `FINANCIAL_WRITE_COUNT=0`, `TAX_WRITE_COUNT=0` by scope.
 - Documentation updated: `docs/ai/QA_HARNESS.md` records autonomous execution and QA_ORIGIN behavior.
+- PR #419 squash-merged as `5b9de334775d24833e0e696a2bc825f9b7a4361d`. Local main fast-forwarded to `origin/main`. V266 worktree removed (residue preserved due to Windows file lock).
+
+## V267 — Backup and recovery hardening — 2026-09-25 — COMPLETED & MERGED
+
+- **Selection rationale:** Delivers real user value (reliable backup/restore with audit trail), reduces operational risk (no silent overwrites, preview before restore), strongly testable, autonomous completion possible, does not require fabricated financial history or broker files, unlocks later phases.
+- **Scope delivered:** Deterministic export with explicit version/schema metadata; restore preview before write (dry-run); validation before restore (schema, version, structural); no silent overwrite (explicit confirmation); failure-safe recovery (atomic, rollback); auditability (operation logs); backward compatibility (recognize legacy formats).
+- **Constraints preserved:** Zero real financial writes before explicit confirmation; preserve UNKNOWN != ZERO, PARTIAL != COMPLETE, STALE != FRESH, FINANCIAL_AS_OF != SOURCE_AS_OF; MANUAL_AUTHORITY_PRESERVED=true.
+- **Implementation:**
+  - `backup-portability.js` v1.1: `operationId`, `exportedBy`, `schemaIdentifiers.stateSchema`/`configSchema` = `backup-portability-v1.1`, `compatibility` object, `SCHEMA_VERSIONS` registry
+  - `verifyBackup`: future/unknown schema warnings via semantic major comparison, checksum validation, COUNT_MISMATCH detection, prototype pollution protection
+  - `previewRestore`: detailed diff (adds/updates/conflicts/skips), summary object, `restoreAllowed` semantics (SUPPORTED + no conflicts), compatibility/warnings propagated, side-effect free
+  - Diff semantics: UPDATE (mutable value changes) vs CONFLICT (identity fields: ticker, type, name, eventType)
+  - Legacy v1.0 (major=1) → SUPPORTED; major < 1 → MIGRATABLE (blocks restore); major > 1 → TOO_NEW
+- **Tests:** `tests/backup-recovery-hardening.test.js` (9 tests), `tests/v249-backup-recovery.test.js` updated for v1.1
+- **Validation:** `test:modern` 815/815; `npm test` 249/249; `build` PASS; `build:modern` PASS; `qa:all` PASS; `git diff --check` PASS; `test:backup-recovery` 9/9; `test:v249` 12/12
+- **PR #420** squash-merged as `f11d38683b1aca50fb639aba1746f0269c426ef6`. Local main fast-forwarded to `origin/main`. V267 worktree removed (residue preserved due to Windows file lock).
+- **No production application, financial logic, data, persistence, Firebase, imports, or tax code changed.** `FINANCIAL_WRITE_COUNT=0`, `TAX_WRITE_COUNT=0` by scope.
+
+## V268 — Portfolio history foundation — 2026-09-25 (SELECTED)
+
+- **Selection rationale:** Delivers real user value (deterministic portfolio snapshots with provenance), enables future TWR/XIRR over real history (no synthetic backfill), strongly testable, autonomous completion possible, does not require fabricated financial history or broker files, builds on V267 backup/restore guarantees.
+- **Scope:** Deterministic snapshot capture with `operationId`-equivalent `contentHash`, provenance (source, user, wallet, reason), price coverage classification, chronological storage order, deduplication by content hash, retention by age/count, schema validation, auto-capture scheduling.
+- **Constraints:** Zero real financial writes; preserve UNKNOWN != ZERO, PARTIAL != COMPLETE, STALE != FRESH, FINANCIAL_AS_OF != SOURCE_AS_OF; MANUAL_AUTHORITY_PRESERVED=true; NO_FAKE_HISTORY_CREATED=true; TWR_XIRR_AVAILABLE=false until sufficient trustworthy history exists.
+- **Implementation:**
+  - `portfolio-history-core.js`: `captureSnapshot`, `getSnapshots`, `deduplicateSnapshots`, `pruneSnapshots`, `validateSnapshot`, `shouldAutoCapture`, `getHistoryState`, `setHistoryState`, `addSnapshotToHistory`, `computeValuations`, `computePriceCoverage`
+  - `portfolioHistory` state key: `{ snapshots: [], config: {} }` with chronological storage (oldest first)
+  - Content hash = SHA256 of `{ valuations, priceCoverage, capturedAt, schemaVersion }` — deterministic for identical portfolio state + timestamp
+  - Provenance: `source` (MANUAL|AUTO|IMPORT|RECOVERY), `userId`, `walletId`, `captureReason`, `extra`
+  - Price coverage: FULL_COVERAGE | PARTIAL_COVERAGE | UNKNOWN (blocks TWR/XIRR)
+  - Deduplication: by `contentHash` (identical portfolio state at same timestamp)
+  - Retention: max 3650 snapshots (10 years daily), max 3650 days age
+  - Ordering contract: STORAGE = chronological (oldest first); DISPLAY = `getSnapshots` returns newest-first; `pruneSnapshots` returns chronological for storage consistency
+- **Tests:** `tests/portfolio-history-core.test.js` (18 tests covering capture, query, dedup, prune, validation, ordering contract, auto-capture)
+- **Integration:** `portfolioHistory` state included in V267 backup/restore automatically via state serialization
+- **Validation:** `test:modern` 815/815; `npm test` 249/249; `build` PASS; `build:modern` PASS; `qa:all` PASS; `git diff --check` PASS; `test:backup-recovery` 9/9; `test:v249` 12/12
+- **Branch:** `feature/v268-portfolio-history-foundation` from `origin/main` (`f11d38683b1aca50fb639aba1746f0269c426ef6`)
+- **Worktree:** `C:\Projetos\carteira-investimentos.worktrees\v268-portfolio-history-foundation`
 
 ## Post-V264 baseline — 2026-09-25
 
