@@ -2074,7 +2074,11 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .page-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:14px}
 .pli{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b}
 .pd{width:8px;height:8px;border-radius:2px}
-.gn{color:#34d399}.rd{color:#f87171}.am{color:#fbbf24}.pu{color:#818cf8}.bl{color:#60a5fa}.mu{color:#64748b}.di{color:#3d5472}
+.gn{color:#34d399}.rd{color:#f87171}.am{color:#fbbf24}.pu{color:#818cf8}.bl{color:#60a5fa}.mu{color:#94a3b8}.di{color:#3d5472}
+html[data-theme="light"] .mu{color:#4f6175}
+.asset-insight-sub{color:#94a3b8}
+html[data-theme="light"] .asset-insight-sub{color:#4f6175}
+.ai-hub-pill{color:#a5b4fc}
 .rent-premium .mu,.rent-premium .pli,.rent-premium .es{color:#9fb0c5}
 .bwr{background:#111828;border-radius:3px;height:5px;width:70px;overflow:hidden;display:inline-block}
 .bfr{height:100%;background:#fbbf24}
@@ -2513,10 +2517,10 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 .metas-goal-status--muted{color:var(--muted);background:rgba(148,163,184,.08)}
 html[data-theme="light"] .reports-intelligence-strip{background:#fff;border-color:#d9e2ec}
 html[data-theme="light"] .reports-intelligence-strip strong{color:#172033}
-html[data-theme="light"] .reports-intelligence-strip small,.reports-intelligence-label{color:#52647b}
+html[data-theme="light"] .reports-intelligence-strip small,html[data-theme="light"] .reports-intelligence-label{color:#52647b}
 html[data-theme="light"] .reports-executive-summary{background:#fff;border-color:#d9e2ec}
-html[data-theme="light"] .reports-executive-summary-head h2,.reports-executive-summary-grid strong{color:#172033}
-html[data-theme="light"] .reports-executive-summary-head p,.reports-executive-summary-grid span,.reports-executive-summary-grid small{color:#52647b}
+html[data-theme="light"] .reports-executive-summary-head h2,html[data-theme="light"] .reports-executive-summary-grid strong{color:#172033}
+html[data-theme="light"] .reports-executive-summary-head p,html[data-theme="light"] .reports-executive-summary-grid span,html[data-theme="light"] .reports-executive-summary-grid small{color:#52647b}
 @media(max-width:560px){.reports-intelligence-strip{grid-template-columns:1fr;gap:9px;padding:11px}.reports-intelligence-strip small{white-space:normal}}
 @media(max-width:720px){.reports-executive-summary-head{display:block}.reports-executive-summary-head .reports-badge{display:inline-flex;margin-top:8px}.reports-executive-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-executive-summary-grid strong{font-size:13px}}
 @media(max-width:720px){.reports-reconciliation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-reconciliation-head{display:block}.reports-reconciliation-head .reports-badge{display:inline-flex;margin-top:8px}}
@@ -2575,8 +2579,8 @@ html[data-theme="light"] .reports-executive-summary-head p,.reports-executive-su
 .reports-premium-shell .reports-filter{padding:3px;border:1px solid #1f3047;border-radius:12px;background:#09111d}
 .reports-premium-shell .reports-filter button{border:0;border-radius:9px;background:transparent;color:#8fa2ba}
 .reports-premium-shell .reports-filter button.on{background:rgba(16,185,129,.16);color:#86efac;box-shadow:inset 0 0 0 1px rgba(16,185,129,.24)}
-.reports-premium-shell .btn.reports-export-cta{border-color:rgba(16,185,129,.45)!important;background:#059669!important;color:#ecfdf5!important;box-shadow:none!important}
-.reports-premium-shell .btn.reports-export-cta:hover{background:#10b981!important}
+.reports-premium-shell .btn.reports-export-cta{border-color:rgba(16,185,129,.45)!important;background:#047857!important;color:#fff!important;box-shadow:none!important}
+.reports-premium-shell .btn.reports-export-cta:hover{background:#065f46!important}
 .reports-premium-shell .reports-panel{padding:13px 14px;background:#0a121f}
 .reports-premium-shell .reports-panel-head{margin-bottom:10px}
 .reports-premium-shell .reports-premium-main-grid{grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr)}
@@ -3220,6 +3224,7 @@ details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
 .div-mat-toggle-btn:not(.on):hover{color:var(--text)}
 .div-mat-wrap{min-width:0;overflow:hidden}
 .div-mat-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;padding:0 0 2px;scrollbar-gutter:stable both-edges}
+.div-mat-scroll:focus-visible,.data-trust-list:focus-visible,.v254-fiscal-table-wrap:focus-visible,.ts:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 .div-mat-table{border-collapse:collapse;width:100%;min-width:700px;font-size:11px;line-height:1.45;font-variant-numeric:tabular-nums}
 .div-mat-table th{background:var(--surface);color:var(--muted);font-size:12px;font-weight:700;padding:8px;text-align:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1}
 .div-mat-table th:first-child{text-align:left;padding-left:8px;position:sticky;left:0;z-index:2;background:var(--surface)}
@@ -21677,7 +21682,7 @@ function irpfTabPremium(){
         </div>
         <div class="irpf-yearbox">
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-            <select id="irpf-year-report" onchange="setIrpfYear(this.value)" style="min-width:160px">
+            <select id="irpf-year-report" aria-label="Ano-calendário do relatório" onchange="setIrpfYear(this.value)" style="min-width:160px">
               ${years.map(y=>`<option value="${y}" ${Number(y)===Number(year)?'selected':''}>${y}</option>`).join('')}
             </select>
             <button class="btn bp ds-button ds-button--primary" onclick="irpfExportCSV()">⬇️ CSV</button>
@@ -22863,7 +22868,7 @@ function dataTrustCenterTab(){
     <section class="data-trust-panel" aria-labelledby="data-trust-market-title" style="margin-top:12px"><h2 id="data-trust-market-title">Saúde das fontes de mercado</h2><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone((model.marketData?.errorCount||0)?'ERROR':(model.marketData?.staleCount||0)?'STALE':'OK')}" aria-hidden="true"></i><div><strong>${model.marketData?.freshCount||0} atualizadas · ${model.marketData?.staleCount||0} desatualizadas · ${model.marketData?.unknownCount||0} desconhecidas</strong><span>${model.marketData?.fallbackCount||0} usando fallback · ${model.marketData?.lastKnownGoodCount||0} preservando última cotação válida · falhas não são convertidas em zero.</span></div></div></section>
     <div class="data-trust-layout"><section class="data-trust-panel" aria-labelledby="data-trust-status-title"><h2 id="data-trust-status-title">Estado operacional</h2><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(issueStatus)}" aria-hidden="true"></i><div><strong>${esc(dataTrustStatusLabel(issueStatus))}</strong><span>${esc(issueText)}</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(cloud.status)}" aria-hidden="true"></i><div><strong>Cloud sync · ${esc(dataTrustStatusLabel(cloud.status))}</strong><span>Autenticação pronta: ${cloud.authReady?'sim':'não'} · backend acessível: ${cloud.backendReachable?'sim':'não'} · snapshot aplicado: ${cloud.applied?'sim':'não'}.</span></div></div><h3>Reconciliações disponíveis</h3><div id="data-trust-reconciliation">${dataTrustReconciliationRow('Patrimônio',reconciliations.patrimony)}${dataTrustReconciliationRow('Renda Fixa',reconciliations.fixedIncome)}${dataTrustReconciliationRow('Dividendos realizados',reconciliations.dividends)}${dataTrustReconciliationRow('Movimentações ↔ Timeline',reconciliations.transactions)}${dataTrustReconciliationRow('Timeline ↔ Detalhe do Ativo',reconciliations.timeline)}</div><div class="data-trust-nav"><a class="data-trust-link" href="#" onclick="go('ativos');return false">Ativos</a><a class="data-trust-link" href="#" onclick="go('relatorios');return false">Relatórios</a><a class="data-trust-link" href="#" onclick="go('dividendos');return false">Dividendos</a><a class="data-trust-link" href="#" onclick="go('aportes');return false">Movimentações</a></div></section>
     <section class="data-trust-panel" aria-labelledby="data-trust-coverage-title"><h2 id="data-trust-coverage-title">Cobertura e autoridade</h2><h3>Classificação</h3>${dataTrustCoverageRow('Classe do ativo',model.coverage?.className)}${dataTrustCoverageRow('Setor',model.coverage?.sector)}${dataTrustCoverageRow('Emissor',model.coverage?.issuer)}<h3>Renda Fixa</h3><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(summary.manualFixedIncomeCount?'MANUAL':'UNKNOWN')}" aria-hidden="true"></i><div><strong>${summary.manualFixedIncomeCount||0} posições com valor manual</strong><span>${summary.shadowFixedIncomeCount||0} shadow · ${summary.unsupportedFixedIncomeCount||0} não suportadas. Manual é uma autoridade factual existente, não uma recomendação.</span></div></div><h3>Importações e eventos corporativos</h3><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(model.importHealth?.status)}" aria-hidden="true"></i><div><strong>Import Center · ${esc(dataTrustStatusLabel(model.importHealth?.status||'UNKNOWN'))}</strong><span>${model.importHealth?.previewCount||0} registros em prévia · ${model.importHealth?.duplicateCount||0} duplicados · ${model.importHealth?.providerCount||0} corretoras detectadas · provenance ${esc(model.importHealth?.provenance||'UNKNOWN')} · confirmação ${esc(model.importHealth?.confirmation||'BLOCKED')} · writes ${model.importHealth?.writeCount||0}.</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(model.corporateHealth?.realizedCount?'MISMATCH':'SHADOW')}" aria-hidden="true"></i><div><strong>Corporate Events · ${model.corporateHealth?.detectedShadowCount||0} shadow</strong><span>${model.corporateHealth?.referenceCount||0} reference · ${model.corporateHealth?.unsupportedCount||0} não suportados · ${model.corporateHealth?.reviewRequiredCount||0} revisão necessária · ${model.corporateHealth?.conflictCount||0} conflitos · ${model.corporateHealth?.realizedCount||0} realizados · writes ${model.corporateHealth?.writes||0}. O modo permanece somente leitura.</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(summary.duplicateCount||summary.potentialDuplicateCount?'STALE':'OK')}" aria-hidden="true"></i><div><strong>${summary.duplicateCount||0} duplicações exatas · ${summary.potentialDuplicateCount||0} potenciais</strong><span>Eventos reference/shadow permanecem fora de totais financeiros e Corporate Events continuam somente leitura.</span></div></div></section></div>
-    <section class="data-trust-panel" id="data-trust-positions" aria-labelledby="data-trust-positions-title" style="margin-top:16px"><h2 id="data-trust-positions-title">Posições e frescor</h2><div class="data-trust-filters"><div class="data-trust-filter"><label class="sr-only" for="data-trust-search">Buscar posição ou origem</label><input id="data-trust-search" type="search" placeholder="Buscar ticker, nome ou origem" value="${esc(v238TrustFilters.search)}" oninput="setDataTrustFilter('search',this.value)"></div><div class="data-trust-filter"><label class="sr-only" for="data-trust-status">Status da cotação</label><select id="data-trust-status" onchange="setDataTrustFilter('status',this.value)"><option value="all"${v238TrustFilters.status==='all'?' selected':''}>Todos os status</option><option value="CURRENT"${v238TrustFilters.status==='CURRENT'?' selected':''}>Atuais</option><option value="STALE"${v238TrustFilters.status==='STALE'?' selected':''}>Desatualizadas</option><option value="UNKNOWN"${v238TrustFilters.status==='UNKNOWN'?' selected':''}>Desconhecidas</option></select></div><div class="data-trust-filter"><label class="sr-only" for="data-trust-source">Fonte</label><select id="data-trust-source" onchange="setDataTrustFilter('source',this.value)"><option value="all">Todas as fontes</option>${sources.map(source=>`<option value="${esc(source)}"${v238TrustFilters.source===source?' selected':''}>${esc(source)}</option>`).join('')}</select></div></div><div class="data-trust-list">${assetRows}</div><details class="data-trust-details"><summary>Detalhes de provenance e critérios</summary><p class="data-trust-lede">A cotação é considerada desatualizada após 3 dias quando existe uma data-base real. Sem timestamp ou fonte, o estado permanece desconhecido. Nenhuma ausência é convertida em zero.</p></details></section>
+    <section class="data-trust-panel" id="data-trust-positions" aria-labelledby="data-trust-positions-title" style="margin-top:16px"><h2 id="data-trust-positions-title">Posições e frescor</h2><div class="data-trust-filters"><div class="data-trust-filter"><label class="sr-only" for="data-trust-search">Buscar posição ou origem</label><input id="data-trust-search" type="search" placeholder="Buscar ticker, nome ou origem" value="${esc(v238TrustFilters.search)}" oninput="setDataTrustFilter('search',this.value)"></div><div class="data-trust-filter"><label class="sr-only" for="data-trust-status">Status da cotação</label><select id="data-trust-status" onchange="setDataTrustFilter('status',this.value)"><option value="all"${v238TrustFilters.status==='all'?' selected':''}>Todos os status</option><option value="CURRENT"${v238TrustFilters.status==='CURRENT'?' selected':''}>Atuais</option><option value="STALE"${v238TrustFilters.status==='STALE'?' selected':''}>Desatualizadas</option><option value="UNKNOWN"${v238TrustFilters.status==='UNKNOWN'?' selected':''}>Desconhecidas</option></select></div><div class="data-trust-filter"><label class="sr-only" for="data-trust-source">Fonte</label><select id="data-trust-source" onchange="setDataTrustFilter('source',this.value)"><option value="all">Todas as fontes</option>${sources.map(source=>`<option value="${esc(source)}"${v238TrustFilters.source===source?' selected':''}>${esc(source)}</option>`).join('')}</select></div></div><div class="data-trust-list" tabindex="0" role="region" aria-label="Lista de posições com rolagem">${assetRows}</div><details class="data-trust-details"><summary>Detalhes de provenance e critérios</summary><p class="data-trust-lede">A cotação é considerada desatualizada após 3 dias quando existe uma data-base real. Sem timestamp ou fonte, o estado permanece desconhecido. Nenhuma ausência é convertida em zero.</p></details></section>
     ${v257DataQualityCenter(v257QualityModel())}
     ${v258MonitoringCenter(monitoringModel)}
   </main>`;
@@ -24767,8 +24772,8 @@ function assetPerformanceOverviewPanel(){
       </div>
       <div class="perf-grid" style="margin-top:8px;grid-template-columns:repeat(2,minmax(0,1fr))">
         <div style="display:grid;gap:6px">
-          <div class="fl" style="margin-bottom:0">Ordenacao</div>
-          <select id="assets-performance-sort" onchange="setAssetsPerformanceSort(this.value)" style="width:100%;min-width:0">
+          <div class="fl" id="assets-performance-sort-label" style="margin-bottom:0">Ordenacao</div>
+          <select id="assets-performance-sort" aria-labelledby="assets-performance-sort-label" onchange="setAssetsPerformanceSort(this.value)" style="width:100%;min-width:0">
             ${sortOptions.map(([value,label])=>`<option value="${value}" ${sortBy===value?'selected':''}>${esc(label)}</option>`).join('')}
           </select>
         </div>
@@ -27210,7 +27215,7 @@ function v254FiscalPanel(){
     <div class="v254-fiscal-grid" aria-label="V255 reconstrução histórica"><article><div class="v254-fiscal-section-head"><div><h3>Reconstrução histórica</h3><p>Confiança, duplicidade econômica e posição corrente são auditadas sem sobrescrever a autoridade atual.</p></div><span>${esc(v255HistoryStatusLabel(historyStatus))}</span></div><div class="v254-fiscal-kpis"><div><span>Eventos lidos</span><strong>${historyAudit?.coverage?.eventCount||0}</strong></div><div><span>Duplicidades</span><strong>${historyAudit?.duplicateEconomicEvents||0}</strong></div><div><span>Posição corrente</span><strong>${esc(v255HistoryStatusLabel(historyReconciliation))}</strong></div><div><span>Período</span><strong>${esc(historyAudit?.coverage?.firstDate||'—')} → ${esc(historyAudit?.coverage?.lastDate||'—')}</strong></div></div><p class="v254-fiscal-review-list"><span>${esc(historyReview)}</span><span>Anos: ${esc(historyYears)}</span></p></article></div>
     <div class="v254-fiscal-grid" aria-label="V259 completude da reconstrução histórica"><article><div class="v254-fiscal-section-head"><div><h3>Completude e confiança do replay</h3><p>Compras, vendas e snapshots são reconstruídos por evidência; divergências continuam revisão, nunca correção automática.</p></div><span>${esc(v255HistoryStatusLabel(v259Status))}</span></div><div class="v254-fiscal-kpis"><div><span>Compras</span><strong>${completeness?.counts?.buy||0}</strong></div><div><span>Vendas</span><strong>${v259Sales}</strong></div><div><span>Vendas em revisão</span><strong>${v259ReviewSales}</strong></div><div><span>Snapshots anuais</span><strong>${completeness?.yearEndSnapshots?.length||0}</strong></div></div><p class="v254-fiscal-review-list"><span>${esc(v259RootCause)}</span><span>${esc(v259Snapshots)} · posição corrente permanece autoridade · sem writes</span></p></article></div>
     <div class="v254-fiscal-kpis"><div><span>Posições acompanhadas</span><strong>${positions.length}</strong></div><div><span>Vendas analisadas</span><strong>${realized.length}</strong></div><div><span>Renda paga vinculada</span><strong>${money(income.total)}</strong></div><div><span>Cálculo tributário</span><strong>${esc(v254FiscalStatusLabel(result.taxSummary?.taxDue?.status))}</strong></div></div>
-    <div class="v254-fiscal-grid"><article><div class="v254-fiscal-section-head"><div><h3>Custo médio por posição</h3><p>Média ponderada das compras; taxas só entram quando conhecidas.</p></div><span>Sem escrita</span></div><div class="v254-fiscal-table-wrap"><table class="v254-fiscal-table"><thead><tr><th>Ativo</th><th>Qtd.</th><th>Custo</th><th>Médio</th><th>Status</th></tr></thead><tbody>${positionBody}</tbody></table></div></article><article><div class="v254-fiscal-section-head"><div><h3>Resultado realizado</h3><p>Venda líquida menos custo alocado; não confunde venda com lucro.</p></div><span>Fiscal: revisão</span></div><div class="v254-fiscal-table-wrap"><table class="v254-fiscal-table"><thead><tr><th>Data</th><th>Ativo</th><th>Venda líquida</th><th>Custo</th><th>Resultado</th><th>Status</th></tr></thead><tbody>${realizedBody}</tbody></table></div></article></div>
+    <div class="v254-fiscal-grid"><article><div class="v254-fiscal-section-head"><div><h3>Custo médio por posição</h3><p>Média ponderada das compras; taxas só entram quando conhecidas.</p></div><span>Sem escrita</span></div><div class="v254-fiscal-table-wrap" tabindex="0" role="region" aria-label="Tabela fiscal por posição com rolagem horizontal"><table class="v254-fiscal-table"><thead><tr><th>Ativo</th><th>Qtd.</th><th>Custo</th><th>Médio</th><th>Status</th></tr></thead><tbody>${positionBody}</tbody></table></div></article><article><div class="v254-fiscal-section-head"><div><h3>Resultado realizado</h3><p>Venda líquida menos custo alocado; não confunde venda com lucro.</p></div><span>Fiscal: revisão</span></div><div class="v254-fiscal-table-wrap" tabindex="0" role="region" aria-label="Tabela fiscal de resultado realizado com rolagem horizontal"><table class="v254-fiscal-table"><thead><tr><th>Data</th><th>Ativo</th><th>Venda líquida</th><th>Custo</th><th>Resultado</th><th>Status</th></tr></thead><tbody>${realizedBody}</tbody></table></div></article></div>
     <div class="v254-fiscal-grid v254-fiscal-grid--lower"><article><div class="v254-fiscal-section-head"><div><h3>Revisão necessária</h3><p>Registros que não devem sustentar apuração definitiva.</p></div></div><ul class="v254-fiscal-review-list">${reviewBody}</ul></article><article><div class="v254-fiscal-section-head"><div><h3>Regras oficiais usadas</h3><p>Fontes versionadas; a classificação final continua responsabilidade do contribuinte.</p></div></div><ul class="v254-fiscal-rules">${rules}</ul></article></div>
   </section>`;
 }
@@ -33429,7 +33434,7 @@ function dividendAnnualMatrixView(data){
     const meanCell=row.annualMean!==null?`<td class="mat-mean">${fmt(row.annualMean)}</td>`:'<td class="mat-mean">—</td>';
     return `<tr><td class="mat-year">${row.year}</td>${cells}${meanCell}<td class="mat-total">${fmt(row.annualTotal)}</td></tr>`;
   }).join('')}</tbody>`;
-  return `<div class="div-mat-wrap"><div class="div-mat-scroll"><table class="div-mat-table">${thead}${tbody}</table></div></div>`;
+  return `<div class="div-mat-wrap"><div class="div-mat-scroll" tabindex="0" role="region" aria-label="Matriz anual de proventos com rolagem horizontal"><table class="div-mat-table">${thead}${tbody}</table></div></div>`;
 }
 function dividendAnnualMatrixToggleButton(){
   const view=String(S.dividendMonthlyHistoryView||'list');
@@ -34470,18 +34475,16 @@ function metasTab(){
 
   ${passiveIncomeGoalBlock(passiveGoal, projCurrent)}
 
-  <details class="sec metas-goal-section" open style="margin-bottom:12px">
+    <details class="sec metas-goal-section" open style="margin-bottom:12px">
     <summary>
       <div>
         <h2 class="sec-title wave-b-heading">${waveBIcon('allocation')}<span>Distribuição da carteira</span></h2>
         <div class="sec-meta">${allocItems.length} categorias · clique para recolher</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="btn bgh ds-button ds-button--secondary" onclick="event.stopPropagation();openAllocationGoal()">${waveBIcon('readonly')} Configurar</button>
-      </div>
+      <div class="sec-meta">Abrir ou recolher</div>
     </summary>
     <div class="sec-body">
-      <div class="tw"><div class="ts"><table>
+      <div class="tw"><div class="ts" tabindex="0" role="region" aria-label="Tabela de distribuição da carteira com rolagem horizontal"><table>
         <thead><tr><th>Categoria</th><th>Meta</th><th>Atual</th><th>Diferença</th><th>Desvio</th></tr></thead>
         <tbody>${allocRows || '<tr><td colspan="5" style="text-align:center;padding:18px;color:#2e3f58">Configure a distribuição na aba Ativos.</td></tr>'}</tbody>
       </table></div></div>
@@ -36794,6 +36797,82 @@ function updateRfAssetSummary(selectElement) {
   .canon-dashboard .dashboard-evolution-header .premium-panel-badge{max-width:48%}
   .canon-dashboard .dashboard-patrimony-chart{background:rgba(8,19,32,.2)}
 }
+html[data-theme="light"] .ai-hub-pill{color:#4338ca}
+html[data-theme="light"] .side-brand-name{color:#172033!important}
+html[data-theme="light"] .side-brand-sub{color:#526174!important}
+html[data-theme="light"] .premium-settings-title{color:#172033}
+html[data-theme="light"] .assets-premium-kpi.info .assets-premium-kpi-value{color:#2563eb}
+html[data-theme="light"] .gn{color:#166534!important}
+html[data-theme="light"] .portfolio-search-trigger{color:#526174}
+html[data-theme="light"] .portfolio-search-trigger:hover,
+html[data-theme="light"] .portfolio-search-trigger:focus-visible{color:#334155}
+html[data-theme="light"] .index2027-dashboard .dashboard-page-heading h1,
+html[data-theme="light"] .canon-dashboard .dashboard-page-heading h1{color:#111827!important}
+html[data-theme="light"] .dashboard-page-heading p{color:#334155!important}
+html[data-theme="light"] .canon-last-update{color:#334155!important;background:#eef3f8;border-radius:6px;padding:2px 5px}
+html[data-theme="light"] .ag-stats .ag-stat .ag-v{color:#334155!important}
+html[data-theme="light"] .asset-inner-tab{color:#475569!important}
+html[data-theme="light"] .asset-inner-tab.on{color:#3730a3!important}
+html[data-theme="light"] .tabs-desktop .tab.on,
+html[data-theme="light"] .tabs-desktop .tab-menu>summary.on,
+html[data-theme="light"] .tabs-desktop .tab-menu-panel button.on{color:#312e81!important}
+html[data-theme="light"] kbd{color:#526174!important}
+html[data-theme="light"] .aporte-premium .ap-toolbar .btn.bp,
+html[data-theme="light"] .rebalance-shell .rebalance-form .btn.bp{color:#fff!important}
+html[data-theme="light"] .aporte-view-tab.on{color:#166534!important}
+html[data-theme="light"] .rf-spotlight-badges .note-pill{color:#fecaca!important}
+html[data-theme="light"] #investBottomNav .nav-center span:last-child{color:#526174}
+html[data-theme="light"] .premium-dividends-3 .dividend-executive-kpi-value.good{color:#047857}
+html[data-theme="light"] .data-trust-kicker{color:#047857}
+html[data-theme="light"] .data-trust-lede{color:#526174}
+html[data-theme="light"] .corporate-events-summary-card span{color:#cbd5e1}
+html[data-theme="light"] .corporate-events-center label{color:#f1f5f9}
+html[data-theme="light"] .data-quality-card-label{color:#526174!important}
+html[data-theme="light"] .metas-goal-status--info{color:#0369a1}
+html[data-theme="light"] .import-support.full{color:#166534}
+html[data-theme="light"] .rebalance-insight-value.attention{color:#854d0e}
+html[data-theme="light"] .dashboard-page-heading h1{color:#f8fafc!important}
+html[data-theme="light"] .dashboard-page-heading p{color:#111827!important}
+html[data-theme="light"] .premium-metric-label,
+html[data-theme="light"] .aporte-contribution-date,
+html[data-theme="light"] .aporte-contribution-name,
+html[data-theme="light"] .aporte-contribution-meta{color:#334155!important}
+html[data-theme="light"] .perf-badge,
+html[data-theme="light"] .div-asset-rank{color:#3730a3!important}
+html[data-theme="light"] .premium-exec-value.rd{color:#b91c1c!important}
+html[data-theme="light"] .premium-exec-value.am{color:#854d0e!important}
+html[data-theme="light"] .perf-pct,
+html[data-theme="light"] .asset-performance-pct{color:#15803d!important}
+html[data-theme="light"] .dividend-quality-grid span{color:#526174!important}
+html[data-theme="light"] .btn.bp{color:#fff!important}
+html[data-theme="light"] .reports-v273-health-item,
+html[data-theme="light"] .reports-v273-health-item span,
+html[data-theme="light"] .reports-v273-health-item strong{color:#e2e8f0!important}
+html[data-theme="light"] .reports-v273-health-item small{color:#cbd5e1!important}
+html[data-theme="light"] .data-quality-action-level{color:#1d4ed8!important}
+html[data-theme="light"] .premium-rf-provenance.ok{color:#166534!important}
+html[data-theme="light"] .premium-rf-provenance-details summary{color:#475569!important}
+html[data-theme="light"] .asset-insight-value.bl{color:#2563eb!important}
+html[data-theme="light"] .import-center-step.on{color:#047857!important}
+html[data-theme="light"] .import-support.partial{color:#854d0e!important}
+html[data-theme="light"] .rent-kpi-value[style*="#60a5fa"]{color:#2563eb!important}
+html[data-theme="light"] .rent-kpi-value[style*="#22d3ee"]{color:#0e7490!important}
+html[data-theme="light"] .rent-kpi-value[style*="#34d399"]{color:#15803d!important}
+html[data-theme="light"] .rent-kpi-value[style*="#f87171"]{color:#b91c1c!important}
+html[data-theme="light"] .pli{color:#475569!important}
+html[data-theme="light"] .dashboard-class-share{color:#111827!important;background:#fff;border-radius:4px;padding:1px 3px}
+html[data-theme="light"] .aporte-contribution-total{color:#15803d!important}
+html[data-theme="light"] .aporte-repeat-btn{color:#1d4ed8!important}
+html[data-theme="light"] .dividend-quality-grid span{color:#1f2937!important;background:#fff;border-radius:3px;padding:1px 2px}
+html[data-theme="light"] .rent-chartbox .es{color:#475569!important}
+html[data-theme="light"] .v254-fiscal-notice{color:#334155!important}
+html[data-theme="light"] .v254-fiscal-notice strong{color:#854d0e!important}
+html[data-theme="light"] .v254-fiscal-eyebrow{color:#2563eb!important}
+html[data-theme="light"] .v254-fiscal-status--partial{color:#854d0e!important}
+html[data-theme="light"] .premium-rf-row-actions .asset-detail-link{color:#047857!important}
+html[data-theme="light"] .asset-insight-value.am{color:#854d0e!important}
+html[data-theme="light"] .import-center-actions label.btn.bp{color:#fff!important;background:#137333!important;border-color:#137333!important}
+html[data-theme="light"] .dashboard-page-heading h1{background:#f8fafc;border-radius:6px;padding:2px 5px}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{

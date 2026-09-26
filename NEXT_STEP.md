@@ -1,6 +1,18 @@
 # Next Steps — Carteira de Investimentos Legacy
 
-## Immediate — V273 Reporting Data Quality and Operational Polish
+## Immediate — V274 release hardening and visual baseline closeout
+
+- V274 branch `feature/v274-release-hardening-visual-baseline`, based on `5b4bd90eb46275bd44dcac2812fe2533d918f85e`; keep canonical main unchanged.
+- V273 PR #426 is merged. Current local gates after targeted light-theme edits: `npm test` 249/249, `test:modern` 815/815, modern build PASS, `qa:all` PASS (QA harness 2/2 + seven-width overflow smoke), focused contracts 18/18. Rerun relevant gates after any further edits.
+- Runtime evidence is synthetic local. Page overflow is zero in seven widths, but Dashboard allocation tables visibly collide at 1920; four screenshots reviewed. Dark axe scan of 17 routes x 390/1366 is 0/0. Light scan has zero critical but serious contrast remains in Dashboard at 390/1366 and Reports at 1366; axe gate is NOT PASS. Keyboard traversal, touch geometry, zoom, performance timing and other data states remain pending; do not claim full-product certification.
+- Four audit sources are reconciled in `docs/visual/FINAL_VISUAL_AUDIT_CONSOLIDATION.md`; final redesign input and impact backlog are in sibling `FINAL_VISUAL_REDESIGN_INPUT.md` and `V274_VISUAL_PRIORITY_BACKLOG.md`. Legacy is the redesign target; modern is preserve/test.
+- Remaining release work before V274 closeout: fix/rerun light-theme Dashboard/Reports axe findings, complete applicable screen/theme/focus/touch/zoom/performance runtime evidence, review docs/diff and rerun required gates, then commit/push/open PR and verify CI/deployment on exact final SHA. No merge.
+
+## V273 — merged baseline
+
+- V273 PR #426 is CLOSED/MERGED. Historic tests and preview evidence remain scoped to the merged SHA in `docs/ai/PROJECT_STATE.md`; do not use as current-head V274 evidence.
+
+## Historical V273 closeout record
 
 - [x] Install only lockfile-pinned V273 dependencies with `npm ci --ignore-scripts`; package manifests remain unchanged.
 - [x] Run general/modern suites, modern/legacy builds, `qa:all`, seven-width Reports QA, axe at 390px, and inspect final screenshots.

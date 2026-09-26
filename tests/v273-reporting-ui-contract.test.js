@@ -47,3 +47,7 @@ test('readiness aggregator contains no storage, network, wall-clock or mutation 
   assert.match(aggregator, /PARTIAL_PRICE_COVERAGE/);
   assert.match(aggregator, /SOURCE_FRESHNESS_UNKNOWN/);
 });
+
+test('executive summary dark-theme values retain the dark foreground outside light theme', () => {
+  assert.match(html, /html\[data-theme="light"\] \.reports-executive-summary-head h2,html\[data-theme="light"\] \.reports-executive-summary-grid strong\{color:#172033\}/);
+});
