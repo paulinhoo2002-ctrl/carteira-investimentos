@@ -2,11 +2,11 @@
 
 ## Active — V273 PR certification and merge authorization (2026-09-26)
 
-- Continue in `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, branch `feature/v273-reporting-data-quality-ops`, from V272 merge SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4`.
+- V273 is PR #426, branch `feature/v273-reporting-data-quality-ops`, worktree `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, final implementation SHA `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`, based on V272 merge SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4`.
 - Implementation, local tests, builds and local QA are complete. Latest evidence: modern 815/815, general 249/249, performance 84/84, QA harness 2/2, Reports browser matrix 6/6, modern/legacy builds and `qa:all` PASS; axe critical/serious 0 at 390px; seven viewport checks had no horizontal overflow, console, page or request errors.
 - A V273 `classifier` scope ReferenceError that silently fell back to Dashboard was fixed and covered by a regression test. Screenshots at 390/768/1366/1920 were captured and visually reviewed by Codex in isolated synthetic local test mode.
 - `npm ci --ignore-scripts` ran only in this V273 worktree under explicit authorization; package manifests/lockfile are unchanged. Separate GLM/Kimi/Hermes review models are unavailable; do not claim independent model review.
-- Next: audit diff, commit, push normally, open/update PR and confirm exact-head CI plus Vercel preview. Do not merge without explicit human authorization.
+- Exact-head remote gates: PR #426 OPEN/mergeable; GitHub CI run 690 PASS; Vercel READY at `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/`, both for `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`. Project-memory reconciliation may create a docs-only follow-up SHA; if so, repeat CI and preview checks on that new SHA. Do not merge without explicit human authorization.
 
 ## V272 — merged baseline (2026-09-26)
 

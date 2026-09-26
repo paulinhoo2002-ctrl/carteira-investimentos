@@ -1,6 +1,6 @@
 # Project State
 
-## V273 — Reporting data quality and operational polish (locally certified; PR pending, 2026-09-26)
+## V273 — Reporting data quality and operational polish (PR #426 open; CI and preview ready, 2026-09-26)
 
 - Branch `feature/v273-reporting-data-quality-ops`, worktree `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, based on current `origin/main` SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4` (V272 PR #425 merge).
 - Architecture spec and execution plan: `docs/superpowers/specs/2026-09-26-v273-reporting-data-quality-operational-polish-design.md` and `docs/superpowers/plans/2026-09-26-v273-reporting-data-quality-operational-polish.md`.
@@ -8,8 +8,8 @@
 - `ENGINE_AVAILABLE != DATA_READY`; V76 wallet identity remains absent and blocks real TWR/XIRR readiness. UNKNOWN != ZERO; PARTIAL != AVAILABLE; STALE != FRESH. Manual fixed-income authority is disclosed, not falsely aggregated.
 - A local browser smoke exposed a `ReferenceError` (`classifier` not defined) that made Reports silently fall back to Dashboard. Fixed by resolving the existing global `PortfolioCashFlowClassifier` in the V273 adapter; added a regression contract.
 - Final local verification: focused 75/75; `test:performance` 84/84; `test:qa-harness` 2/2; `test:modern` 815/815; `npm test` 249/249; `build`, `build:modern`, `qa:all`, V273 responsive/UI 6/6 and `git diff --check` PASS. Reports QA exercised 390/430/768/1366/1440/1536/1920 with no overflow/runtime/console/request failures. Axe on the Reports health panel at 390px: critical 0, serious 0. Screenshots at 390/768/1366/1920 were captured and reviewed by Codex from isolated synthetic local test mode.
-- Dependency installation (`npm ci --ignore-scripts`) was explicitly authorized and limited to this worktree; package manifest and lockfile unchanged. Six existing npm audit findings were reported; no versions were updated and no audit fix was run.
-- GLM-5.3, Kimi K3, Hermes/NVIDIA unavailable; separate Codex technical and visual reviews only, with no claim of independent-model review. Financial/tax writes: 0 by read-only scope. Commit/push/PR and exact-head CI/preview remain pending; no merge.
+- Dependency installation (`npm ci --ignore-scripts`) was explicitly authorized and limited to this worktree; package manifest and lockfile unchanged. Six npm audit findings (3 moderate, 3 high) were reported; no versions were updated and no audit fix was run.
+- Commit `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac` was pushed normally and opened as PR #426 against `main`; PR is OPEN and mergeable. GitHub CI run 690 passed on this exact SHA. Vercel deployment `C2QVZv3n8tAEH6Ng2x6JXVGQSdar` is READY for this exact SHA at `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/` (preview protection/authentication was not exercised). No merge. GLM-5.3, Kimi K3, Hermes/NVIDIA unavailable; separate Codex technical and visual reviews only, with no claim of independent-model review. Financial/tax writes: 0 by read-only scope.
 
 ## V272 — trusted cash flows and performance readiness (merged, 2026-09-26)
 

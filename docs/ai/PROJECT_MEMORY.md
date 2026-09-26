@@ -1,6 +1,6 @@
 # Project Memory
 
-## V273 reporting data quality and operational polish — 2026-09-26 (local certification complete; PR pending)
+## V273 reporting data quality and operational polish — 2026-09-26 (PR #426 open; exact-head CI/preview ready)
 
 - V273 branches from `origin/main` at `75e77a7e98ef0768a5d4a6855b684432f09493b4` (V272 PR #425 merge). Worktree: `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`; branch: `feature/v273-reporting-data-quality-ops`.
 - The approved architecture and implementation plan are recorded in `docs/superpowers/specs/2026-09-26-v273-reporting-data-quality-operational-polish-design.md` and `docs/superpowers/plans/2026-09-26-v273-reporting-data-quality-operational-polish.md`.
@@ -11,7 +11,7 @@
 - Screenshots captured to the machine-local temp directory `%TEMP%\\v273-reports-qa` at 390/768/1366/1920 and visually reviewed by Codex. Review found the dense copy small but legible within the existing compact Reports visual system; no raw/un-styled rendering or clipping. QA used isolated local synthetic `testMode` only, not an authenticated/real portfolio or personal Chrome/Edge profile.
 - `npm ci --ignore-scripts` was run only in this V273 worktree under explicit user authorization. `package.json`/`package-lock.json` hashes remained unchanged. The install reported 6 existing audit findings (3 moderate, 3 high); no audit remediation or dependency version change was made.
 - GLM-5.3, Kimi K3, and Hermes/NVIDIA are unavailable in this session; only separate Codex technical and visual reviews may be reported. No independent model review is claimed.
-- At this snapshot no commit, push, PR, merge or financial/tax write has been recorded. Local write counts are zero by read-only scope. Update this entry with exact final SHA, CI and preview after delivery; merge remains unauthorized.
+- Commit `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac` was pushed normally as PR #426 to `main`; PR is OPEN and mergeable. GitHub Actions CI run 690 is successful on this exact head. Vercel deployment `C2QVZv3n8tAEH6Ng2x6JXVGQSdar` is READY on the same SHA at `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/`; preview authentication was not exercised. No merge or financial/tax write occurred. Documentation-only reconciliation may create a follow-up head; if so, revalidate CI and preview for that exact SHA. Merge remains unauthorized.
 
 ## V272 trusted cash-flow/performance foundation — 2026-09-26 (merged)
 

@@ -5,15 +5,16 @@
 - [x] Install only lockfile-pinned V273 dependencies with `npm ci --ignore-scripts`; package manifests remain unchanged.
 - [x] Run general/modern suites, modern/legacy builds, `qa:all`, seven-width Reports QA, axe at 390px, and inspect final screenshots.
 - [x] Review implementation and reconcile project memory/state/next-step/open-work with measured local evidence.
-- [ ] Perform final diff audit, commit, push and open/update the V273 PR; then verify CI and preview on its exact final SHA. Do not merge.
+- [x] Audit the diff, commit and push normally, and open PR #426. CI run 690 and the Vercel preview are READY on SHA `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`.
+- [ ] Revalidate exact-head CI/preview after this documentation reconciliation; request human merge authorization only when both still match. Do not merge.
 
 ## Roadmap constraints after V272 merge
 
 - **V272** is merged in `origin/main` at `75e77a7e98ef0768a5d4a6855b684432f09493b4` (PR #425).
-- **V273** is the active reporting data-quality/operational polish phase. The readiness aggregator must stay pure/read-only and consume existing evidence only.
+- **V273** is PR #426, currently OPEN and mergeable; its readiness aggregator stays pure/read-only and consumes existing evidence only. The currently certified preview is `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/` for SHA `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`.
 - **TWR/XIRR** remains unavailable for real wallets while V76 history/flows lack trustworthy wallet identity; do not synthesize `walletId` or history.
 - **XP/BTG parser completion** still requires legitimate sanitized broker fixtures. **MODE_B** still requires provider/business direction. Reassess candidates from current repository evidence after V273; do not treat this list as approval to start another phase.
-- **Current V273 local gates:** `test:modern` 815/815; `npm test` 249/249; `test:performance` 84/84; `test:qa-harness` 2/2; `build`, `build:modern`, `qa:all`, Reports responsive matrix and `git diff --check` PASS. Exact PR/CI/preview evidence is still pending.
+- **Current V273 gates:** `test:modern` 815/815; `npm test` 249/249; `test:performance` 84/84; `test:qa-harness` 2/2; `build`, `build:modern`, `qa:all`, Reports responsive matrix and axe PASS. GitHub CI run 690 PASS and Vercel READY on SHA `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`; recheck both after docs-only follow-up.
 
 ## Blocked / Waiting
 

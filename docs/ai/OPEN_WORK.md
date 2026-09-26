@@ -2,16 +2,15 @@
 
 ## NOW
 
-- V273 is active on `feature/v273-reporting-data-quality-ops` in
+- V273 PR #426 is OPEN and mergeable on `feature/v273-reporting-data-quality-ops` in
   `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`,
   based on V272 merge `75e77a7e98ef0768a5d4a6855b684432f09493b4`. Local tests,
-  builds and seven-width Reports QA pass; commit/push/PR and exact-head CI plus
-  preview are the remaining release steps. Do not merge without separate
-  authorization.
+  builds and seven-width Reports QA pass. Commit `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac` is on the PR; GitHub CI run 690 passed and Vercel preview is READY on the same SHA. Do not merge without separate authorization.
 - V273 fixed a Reports route runtime defect: `classifier` was out of scope in
   the readiness adapter. The canonical global classifier is now resolved in
   that function and a regression test guards the mount. Full local counts and
   visual/axe evidence are in `docs/ai/PROJECT_MEMORY.md`.
+- Current exact-head preview: `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/`; preview authentication was not tested. Any docs-only follow-up push must be rechecked for exact-head CI/preview.
 - V76 flow and valuation stores are global and have no `walletId`. V272 keeps
   real-wallet `DATA_READY=false` until evidence has legitimate wallet scope;
   do not infer a wallet or expose real TWR/XIRR. Any future store/schema change
