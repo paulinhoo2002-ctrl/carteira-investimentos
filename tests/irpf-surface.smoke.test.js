@@ -54,6 +54,7 @@ test('IRPF preserva rota, leitura auxiliar, exportacoes e layout responsivo', as
       backupPayload: typeof backupPayload === 'function',
       mobileRows: document.querySelectorAll('.irpf-mobile-row').length,
       positionMobile: [...document.querySelectorAll('.irpf-mobile-row')].some(row => row.textContent.includes('Qtd.') && row.textContent.includes('PM')),
+      yearAccessibleName: document.querySelector('#irpf-year-report')?.getAttribute('aria-label'),
     }));
     assert.equal(snapshot.route, 'irpf');
     assert.equal(snapshot.title, 'Relatório IRPF 2026');
@@ -65,6 +66,7 @@ test('IRPF preserva rota, leitura auxiliar, exportacoes e layout responsivo', as
     assert.equal(snapshot.backupPayload, true);
     assert.ok(snapshot.mobileRows >= 1);
     assert.equal(snapshot.positionMobile, true);
+    assert.equal(snapshot.yearAccessibleName, 'Ano-calendário do relatório');
   } finally {
     await browser.close();
     harness.server.close();

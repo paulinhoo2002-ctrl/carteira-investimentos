@@ -2,14 +2,14 @@
 
 ## Active Phase
 
-**V273 — Reporting data quality and operational polish** (PR #426 open; final docs-head revalidation pending)
-- Branch: `feature/v273-reporting-data-quality-ops`
-- Worktree: `C:\Projetos\carteira-investimentos.worktrees\v273-reporting-data-quality-ops`
-- Base: `75e77a7e98ef0768a5d4a6855b684432f09493b4` (V272 PR #425 merge on origin/main)
-- Scope: pure/read-only report readiness aggregation and compact evidence/status disclosure; no new authority, arbitrary score, route, or financial/tax writes.
-- Current verification: focused 75/75 plus UI/browser matrix 6/6; performance 84/84; QA harness 2/2; modern tests 815/815; general suite 249/249; legacy/modern builds; `qa:all`; report seven-width responsive matrix; axe critical/serious 0; diff-check PASS.
-- The dedicated QA found and fixed a V273 render defect: `v273ReportReadiness` referenced a block-scoped `classifier` from a different function, causing silent fallback to Dashboard. The adapter now resolves the canonical global classifier and has a regression test. Final screenshots at 390/768/1366/1920 were inspected from isolated synthetic `testMode`; no authenticated portfolio or personal browser was used.
-- `npm ci --ignore-scripts` ran only in this worktree under explicit authorization; package manifest and lockfile unchanged. Commit `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac` is pushed; PR #426 is OPEN/mergeable. CI run 690 and Vercel preview are READY on that exact SHA. This docs reconciliation will create a follow-up SHA requiring exact-head revalidation. No merge.
+**V274 — release hardening and visual/runtime baseline** (in progress)
+- Branch: `feature/v274-release-hardening-visual-baseline`; worktree: `C:\Projetos\carteira-investimentos.worktrees\v274-release-hardening-visual-baseline`; base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`.
+- V273 PR #426 is merged. V274 dependency installation was authorized only in its worktree; manifests remain unchanged.
+- Local gates after the latest code edits: modern 815/815, general 249/249, legacy/modern builds, `qa:all` (7 viewport smoke, harness 2/2), focused contracts 18/18. A separate axe matrix covers 17 routes x two themes x 390/1366. Dark is 0 critical/serious; light has zero critical but serious contrast in Dashboard (390/1366) and Reports (1366); accessibility release gate is NOT PASS.
+- Visual baseline remains synthetic. Dashboard allocation content collides internally in the 1920 screenshot despite no document overflow. Four screenshots were visually reviewed before latest theme-specific corrections; recapture/review remains needed. Complete focus traversal, touch geometry, zoom, performance and data-state coverage remain open.
+- Audit package: `docs/visual/FINAL_VISUAL_AUDIT_CONSOLIDATION.md`, `FINAL_VISUAL_REDESIGN_INPUT.md`, `V274_VISUAL_PRIORITY_BACKLOG.md`. No product visual redesign, no financial/tax writes, no merge.
+- Draft PR #427 is OPEN/MERGEABLE at `e8c6bf70ef037acf8bbc46bb587cfb13a15e098f`; exact-head CI run 36274933546 PASS; Vercel deployment 6684798149 success. Preview is SSO-protected (302); no Firebase domain was added and no authenticated QA performed.
+- Next: resolve light-theme axe findings within the authorized narrow scope or defer the broader V254 theme correction to the final visual phase; complete remaining measurements/screenshots. If docs/code change, rerun exact-head checks. Do not merge.
 
 ## Completed Phases (Post-Merge)
 
@@ -35,6 +35,8 @@
 | Mobile Readability Hardening | Specific viewport regression evidence | LOW |
 
 ## Technical Debt / Maintenance
+
+- [ ] V274 accessibility: dark axe on 17 routes x 390/1366 is 0/0; light axe has zero critical and serious contrast groups in Dashboard (390/1366) and Reports (1366). Complete fixes/retest plus keyboard traversal, touch geometry, zoom and relevant UI states. Details: `docs/visual/V274_VISUAL_PRIORITY_BACKLOG.md`.
 
 - [ ] Internal `.worktrees` cleanup (legacy worktrees under `C:\Projetos\carteira-investimentos\.worktrees`)
 - [ ] `node_modules` junction cleanup from V264 residue
