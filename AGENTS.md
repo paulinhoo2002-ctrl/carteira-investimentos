@@ -57,16 +57,14 @@ Para toda missão substancial neste projeto:
    `C:\Projetos\carteira-investimentos`, incluindo worktrees registradas em
    `C:\Projetos\carteira-investimentos.worktrees\`. Nunca leia, pesquise,
    compare ou reutilize `C:\Projetos\carteira-2.0`.
-2. Depois do gate, anuncie `Using Caveman + Superpowers to <purpose>` e carregue
-   `caveman` seguido de `using-superpowers`. O Caveman local orienta concisão;
-   não concede autoridade nem substitui análise técnica.
+2. Carregue e use `Superpowers` como a primeira Skill, antes de qualquer outra
+   Skill especializada.
 3. Descubra o inventário real em
    `C:\Projetos\carteira-investimentos\.agents\skills`; selecione apenas o
    conjunto mínimo relevante e reavalie se o escopo mudar.
    O catálogo versionado é um snapshot; valide a instalação física atual e
    não presuma que pacotes locais ignorados pelo Git existem em outros clones.
-4. Siga `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md` para processo,
-   agente/modelo, justificativa da escolha,
+4. Siga `docs/SKILLS_ROUTING.md` para agente/modelo, justificativa da escolha,
    fallback, limites e campos de relatório. Esta preferência não permite
    alegar que um provider/modelo foi usado quando ele não estiver disponível.
 5. Use a documentação versionada do repositório como continuidade durável,
@@ -83,14 +81,11 @@ O handoff deve registrar `SKILLS_CONSIDERED`, `SKILLS_USED`,
 
 Ao iniciar uma tarefa relevante neste repositório:
 
-1. Confirme identidade, raiz Git, remote, branch, HEAD, status e Git comum.
-2. Anuncie `Using Caveman + Superpowers to <purpose>`; carregue `caveman` e
-   depois `using-superpowers`.
-3. Leia este arquivo, `docs/ai/PROJECT_MEMORY.md`, `docs/ai/PROJECT_STATE.md`,
-   `docs/ai/NEXT_STEP.md`, `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`.
-4. Descubra Skills locais e classifique a missão conforme
-   `docs/ai/SKILLS_ROUTING.md`, `docs/SKILLS_ROUTING.md` e
-   `docs/ai/SKILL_ROUTER.md`.
+1. Leia este arquivo e `docs/ai/PROJECT_MEMORY.md`.
+2. Consulte `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`.
+3. Confirme workspace, branch, HEAD, `origin/main` e working tree.
+4. Use primeiro Superpowers; descubra Skills locais e classifique a missão
+   conforme `docs/SKILLS_ROUTING.md` e `docs/ai/SKILL_ROUTER.md`.
 5. Selecione somente o menor conjunto relevante; reavalie se a categoria mudar.
 6. Execute a mudança com escopo controlado e preserve áreas protegidas.
 7. Valide com os testes, build e navegador aplicáveis.
@@ -324,64 +319,19 @@ Sempre parar e pedir autorização explícita antes de:
 - Em falha de remoção, confirmar separadamente registro Git e presença física;
   nunca presumir que ambos foram removidos juntos.
 
-## V278E — QA paths, archive and agent hygiene
-
-- `QA_CANONICAL_ROOT=scripts/qa`. Operational commands, scripts, tests and
-  current instructions must use existing `scripts/qa/` paths. A mention of
-  `tools/qa/` in a dated migration/report is `HISTORICAL_PATH_REFERENCE`, not
-  a current path. Never rewrite old evidence to make it look contemporaneous;
-  the current equivalent, when one exists, is `scripts/qa/`.
-- `ARCHIVE_IS_REFERENCE_ONLY=true`; canonical current docs override
-  `docs/ai/archive/`. `DO_NOT_RECURSIVELY_SCAN_ARCHIVE_BY_DEFAULT=true`.
-- `DO_NOT_SCAN_LOCAL_IMPORTS_BY_DEFAULT=true` and
-  `DO_NOT_SCAN_ALL_WORKTREES_BY_DEFAULT=true`; inspect only the minimum scope
-  required by the task. Do not expose local financial filenames/content.
-- `WORKTREE_CREATION_POLICY=CONSERVATIVE`;
-  `NO_WORKTREE_FOR_READ_ONLY_AUDIT=true`;
-  `REUSE_EXISTING_WORKTREE_WHEN_SAFE=true`;
-  `MISSION_END_WORKTREE_REVIEW=true`;
-  `NO_HISTORICAL_NODE_MODULES=true`;
-  `POST_MISSION_CLEANUP_POLICY=MANDATORY`;
-  `MISSION_TEMP_ROOT_POLICY=MANDATORY`;
-  `NO_SCATTERED_TEMP_ARTIFACTS=true`.
-- A historical worktree is not disposable by age/name. Require preservation of
-  its Git history and unique files, no active reference/process, and a
-  documented recovery route before removing its physical copy.
-- `CURRENT_FILESYSTEM_OVERRIDES_HISTORICAL_REPORT=true`: freshly verified
-  filesystem/Git state supersedes dated audit snapshots. `UNKNOWN_DO_NOT_DELETE=true`:
-  preserve uncertain files, metadata, and user data until individually resolved.
-
-### Política conservadora de worktrees e temporários
-
-- `WORKTREE_CREATION_POLICY=CONSERVATIVE`: não criar worktree para auditoria
-  somente leitura; reutilizar uma aprovada adequada; criar nova apenas para
-  implementação realmente isolada, uma por objetivo ativo, registrando
-  `PURPOSE` e `OWNER`.
-- Toda missão deve avaliar aposentadoria da própria worktree. Remoção exige
-  preservar HEAD e commits exclusivos, árvore rastreada limpa, zero arquivo
-  não rastreado exclusivo, nenhum processo/referência atual e método de
-  recuperação documentado. `UNKNOWN` significa manter.
-- Dependências só podem ser removidas quando regeneráveis pelo lockfile, o
-  ambiente estiver inativo e não houver processo consumidor.
-- `MISSION_TEMP_ROOT_POLICY=MANDATORY`: preferir `.qa-state/tmp/` existente;
-  não espalhar temporários pela raiz nem criar outro diretório sem justificativa.
-  Ao final, remover somente caminhos exatos comprovadamente regeneráveis e
-  que não sejam a única evidência de um problema aberto.
-- Nunca apagar dados ambíguos, imports, backups, screenshots manuais, fonte ou
-  histórico Git inalcançável para reduzir contagem/armazenamento.
-
 ---
 
-**Referências obrigatórias para decisões de ferramentas e fluxo:**
+## Referências obrigatórias para decisões de ferramentas e fluxo:
 
-- Skill Router: `docs/ai/SKILL_ROUTER.md`
+- Skill Router: `docs/ai/SKILLS_ROUTING.md`
 - Agent Router: `docs/ai/AGENT_ROUTER.md`
 - Agent Autonomy: `docs/ai/AGENT_AUTONOMY.md`
 - Project Memory: `docs/ai/PROJECT_MEMORY.md`
-- Skills Inventory: `docs/ai/SKILLS.md`
+- Skills Inventory: `docs/ai/PROJECT_SKILLS_MANIFEST.md`
 - Project Rules: `docs/ai/PROJECT_RULES.md`
 - Decisions: `docs/ai/DECISIONS.md`
 - Financial Rules: `docs/ai/FINANCIAL_RULES.md`
+- Continuity Policy: `docs/ai/PROJECT_CONTINUITY_POLICY.md`
 
 Para a plataforma de trabalho V192, consulte também somente quando o tipo de
 tarefa exigir:
@@ -404,13 +354,12 @@ Codex e outros agentes devem seguir no fluxo diário.
 
 ## V197 compact boot contract
 
-Toda sessão deve executar primeiro o PROJECT IDENTITY GATE. Depois, anunciar o
-uso, carregar `caveman` e `using-superpowers` nessa ordem; então ler
-`AGENTS.md`, `docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`,
-`docs/ai/DECISIONS.md` e `docs/ai/SKILL_ROUTER.md`, descobrir Skills em
-`.agents/skills`, classificar a missão, selecionar o menor conjunto relevante,
-executar, validar delta e atualizar `NEXT_STEP.md`. O router versionado em
-`docs/ai/SKILL_ROUTER.md` é suficiente; `.agents/SKILL_ROUTER.md`, se existir,
+|Toda sessão deve executar primeiro o PROJECT IDENTITY GATE, ler `AGENTS.md`,
+`docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`, `docs/ai/DECISIONS.md` e
+`docs/ai/SKILLS_ROUTING.md`, descobrir Skills em `.agents/skills`, sempre
+considerar Superpowers, selecionar o menor conjunto relevante, executar,
+validar delta e atualizar `NEXT_STEP.md`. O router versionado em
+`docs/ai/SKILLS_ROUTING.md` é suficiente; `.agents/SKILL_ROUTER.md`, se existir,
 é somente uma bridge local e nunca é requisito do boot.
 
 Precedência: AGENTS.md → semântica protegida → gates humanos → segurança
@@ -418,65 +367,34 @@ financeira/persistência/Git → PROJECT_MEMORY → DECISIONS → SKILL_ROUTER �
 SKILL.md → preferência da missão. Superpowers nunca autoriza writes, merge,
 deploy ou mudança protegida.
 
-Políticas: `MANDATORY_AGENT_BOOTSTRAP=true`,
-`BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`,
-`MANDATORY_START_ANNOUNCEMENT=true`,
+Políticas: `MANDATORY_FIRST_SKILL=Superpowers`,
 `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`, `REUSE_GREEN_EVIDENCE=true`,
 `SAME_FAILURE_TWICE=PIVOT` e `FUTURE_MISSIONS_DO_NOT_REPEAT_STABLE_GOVERNANCE=true`.
 
-### Bootstrap documental de cinco arquivos
+## PERMANENT SKILLS POLICY — SUPERPOWERS_FIRST
 
-Para orientação inicial sem varredura ampla, ler nesta ordem: `AGENTS.md`,
-`docs/ai/INDEX.md`, `docs/ai/PROJECT_STATE.md`, `docs/ai/NEXT_STEP.md` e
-`docs/ai/CURRENT_PROJECT_MAP.md`. Depois, abrir somente contratos e roteadores
-específicos exigidos pela tarefa; esta otimização não dispensa PROJECT IDENTITY
-GATE, Superpowers, nem instruções task-specific aplicáveis.
-
-## PERMANENT SKILLS POLICY — CAVEMAN_AND_SUPERPOWERS
-
-`MANDATORY_AGENT_BOOTSTRAP=true`.
-
-Ordem: PROJECT IDENTITY GATE → anúncio obrigatório `Using Caveman +
-Superpowers to <purpose>` → `caveman` → `using-superpowers` → Skills
-específicas da missão. Essa sequência aplica-se a todos os agentes e modelos.
-O anúncio ocorre no início da primeira resposta substancial, após confirmar a
-identidade. `caveman` é a Skill de comunicação concisa disponível neste
-projeto; preserve precisão, legibilidade e explicações completas para risco,
-segurança ou ação irreversível. Não invente capacidades se o pacote mudar.
+`MANDATORY_FIRST_SKILL=Superpowers`.
 
 Antes de implementar, investigar, depurar, revisar código, fazer QA,
 refatorar ou planejar uma mudança técnica, qualquer executor deve confirmar a
-identidade do projeto, carregar `caveman` e em seguida `using-superpowers`, ler
-a memória canônica, descobrir Skills reais em `.agents/skills` e selecionar
-somente as especializadas relevantes conforme os roteadores versionados.
+identidade do projeto e carregar/usar Superpowers primeiro. Em seguida deve
+ler a memória canônica, descobrir as Skills reais em `.agents/skills` e
+selecionar somente as especializadas relevantes, conforme
+`docs/SKILLS_ROUTING.md`.
 
 Se a categoria mudar, registrar `SKILL_REEVALUATED=true` e reavaliar. Não
-inventar Skills nem ampliar escopo por causa de uma Skill. Caveman e
-Superpowers orientam comunicação/processo; não autorizam merge, deploy, cloud writes,
+inventar Skills nem ampliar escopo por causa de uma Skill. Superpowers é uma
+camada de processo, não autorização para merge, deploy, cloud writes,
 alterações financeiras, persistência, schema, secrets, force push ou Git
 destrutivo. A autorização da missão e os contratos do projeto prevalecem.
 
 Esta política é independente de chat, memória de sessão, modelo ou executor;
 Codex, Hermes, OpenCode e agentes genéricos convergem para estes arquivos. Se
-Caveman ou Superpowers não estiver disponível, registrar `SKILL_GAPS_FOUND`,
-não alegar uso e continuar apenas com capacidades realmente disponíveis e
-fallback de processo seguro.
+Superpowers não estiver disponível, registrar `SKILL_GAPS_FOUND`, explicar a
+limitação e só então usar o melhor fallback de processo disponível.
 
-Handoff mínimo: `CAVEMAN_SKILL_AVAILABLE`, `CAVEMAN_USED`,
-`SUPERPOWERS_AVAILABLE`, `SUPERPOWERS_USED`, `SKILLS_DISCOVERED`,
-`SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
+Handoff mínimo: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
+`SUPERPOWERS_USED`, `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
 `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED`, `SKILL_GAPS_FOUND`.
 
 Detalhes: [`docs/SKILLS_ROUTING.md`](docs/SKILLS_ROUTING.md).
-
-## Privacidade de artefatos financeiros pessoais
-
-- `PERSONAL_FINANCIAL_ARTIFACTS_POLICY=LOCAL_ONLY`: imports, extratos,
-  snapshots de carteira, evidências de conta e relatórios pessoais de
-  reconciliação não podem ser adicionados ao Git, a backups de código-fonte ou
-  a anexos públicos de PR.
-- Dados locais sensíveis não devem ser lidos ou enumerados além do necessário;
-  nunca reproduza valores, identificadores ou nomes de arquivos pessoais em
-  documentação pública. Preserve-os por padrão.
-- `UI_WORK_MUST_READ_VISUAL_CANON=true`: antes de mudança visual, leia
-  `docs/ai/VISUAL_CANON.md` e o índice em `Refs/visual-canon/`.

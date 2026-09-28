@@ -2,6 +2,8 @@
 
 Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
 
+**⚠️ NOTE**: The `.agents/skills` directory is currently ignored by `.gitignore`. Skills are vendored from the read-only source at `C:/Projetos/skills/` and must be re-synced after a fresh clone. See `docs/ai/PROJECT_CONTINUITY_POLICY.md` for continuity requirements.
+
 ---
 
 ## VENDORED SKILLS (Core)

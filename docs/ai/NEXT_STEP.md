@@ -1,67 +1,83 @@
 # Next Step
+## V282A Project Skills Vendoring and Routing — COMPLETED 2026-09-28
 
-## Current — Functional completion (2026-09-28)
+- V282A vendored 25 project skills from C:/Projetos/skills to .agents/skills/
+- Created PROJECT_SKILLS_MANIFEST.md with full inventory and classification
+- Created SKILLS_ROUTING.md with mission-type routing table
+- Updated legacy .agents/SKILL_ROUTER.md as deprecated reference
+- Commit: de2fa0f
+- No runtime changes, no financial logic changes, no test changes
 
-- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`. Read [`V280_PRODUCT_COMPLETION_AUDIT.md`](V280_PRODUCT_COMPLETION_AUDIT.md), [`PRODUCT_COMPLETION_BACKLOG.md`](PRODUCT_COMPLETION_BACKLOG.md) and [`PRODUCT_COMPLETION_MATRIX.md`](PRODUCT_COMPLETION_MATRIX.md).
-- A P0 integrity issue was found in legacy Rentabilidade: historical holdings may be valued with current quotes and benchmark history may be synthesized from fixed annual rates. Runtime was not changed. Do not present these series as observed history; next work should reuse dated valuation/readiness contracts and fail closed on gaps.
-- `VISUAL_PHASE=DEFERRED`; `VISUAL_CANON_V2=FROZEN_REFERENCE`. Broad visual implementation is deferred until the integrity blocker is resolved. No financial/tax writes, runtime changes, dependency changes, push, PR, merge or deploy occurred in V280.
-- `P0=P0_RENTABILIDADE_HISTORICAL_SERIES`; until proven correct, `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`.
-- `NEXT_ACTION=V281_HISTORICAL_RETURN_TRUTH_REPAIR`; `V281_STATUS=RECOMMENDED_NOT_STARTED`. This is a recommendation, not authorization. Preserve `ENGINE_AVAILABLE != DATA_READY`; no interpolation, present-quote back-projection, or fixed-rate substitute for dated benchmarks.
-- `VISUAL_CANON_V2=FROZEN_REFERENCE`; `FUNCTIONAL_COMPLETION_FIRST=true`; `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`. Only usability-blocking visual fixes may occur during functional waves.
+## V282B Project Memory Continuity and Skills Certification — IN PROGRESS
 
-- V278 is closed: PR #428 is merged and deployed at `e3a295833e7ac5227b86b7f88deab41e82679a4e`; production is READY at https://carteira-investimentos-delta.vercel.app/.
-- Privacy reconciliation is complete. Private recovery metadata and private visual references remain local-only; the public visual canon is safe for Git.
-- Historical V279B phase: `PRODUCT_VISUAL_CONSOLIDATION`, focused on Dashboard, Ativos, and Dividendos. `FUNCTIONAL_FOUNDATION=MATURE` was a working problem statement, not a claim that all visual issues were known; visual implementation is now deferred while the P0 is open.
-- Durable guidance: one coherent shell/sidebar and page-header/KPI hierarchy; consistent card geometry; tables remain primary analytical surfaces; semantic colors are restrained; charts include context; dense but comfortable; 1366x768 is first-class; adapt for mobile rather than squeeze desktop tables. Avoid neon/gaming styling, excessive glow, and microcard overload. Keep Patrimônio distinct from Rentabilidade, preserve `UNKNOWN != ZERO` and `PARTIAL != COMPLETE`, and never invent financial data for visual presentation.
-- `V279B_STATUS=COMPLETE_DOCUMENTATION_ONLY`; its audit and visual canon remain durable references, not the current next action.
+- Certifying V282A filesystem truth
+- Reconciling skill counts and tracking status
+- Creating PROJECT_CONTINUITY_POLICY.md for repository-first memory
+- Fixing .agents/skills gitignore issue (skills not versioned)
+- Updating canonical document references in AGENTS.md
 
-The V278O/V278V entries below are historical checkpoints, not active instructions.
+---
 
-The V274 and earlier entries below are dated historical checkpoints, not the active objective.
+## Active — V282B Continuity Hardening
 
-## Histórico — V274 PR #427 final exact-head certification (2026-09-26)
+- Identity verified: C:/Projetos/carteira-investimentos, main, de2fa0f
+- Worktrees: 8 active (including V281 at 993b9d0)
+- .agents/skills is gitignored — must document re-sync procedure
+- 25 source skills validated, 27 destination dirs (includes legacy/extras)
 
-- Continue only in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`; base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`, initial PR head `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`.
-- Light-theme Dashboard findings from runtime/screenshots were fixed: muted upcoming-receipt text, gain/loss panel surface/foreground, and chart title/axis text while preserving the navy chart surface. Added contract tests in `tests/v274-accessibility-contract.test.js`. Dashboard light axe color contrast is 0 violations at 390 and 1366; page overflow is 0. New 390/768/1366 light screenshots were visually reviewed.
-- Code SHA `9abfee7b8d622e9faa3ee19a854db8382a9da85d` and docs follow-up `d264b8502331ad2758cb3e37cae1427114c5ea51` have green CI and READY Vercel; the latter's run/deployment are `36280566417` / `6685761086` at `https://carteira-investimentos-47y3us37b-paulinhoo2002-ctrls-projects.vercel.app`. PR #427 is OPEN/MERGEABLE/DRAFT. Final axe 68 observations: critical 0, serious 0, overflow 0; no runtime/console/local-request errors. Seven-width Dashboard dark/light screenshots reviewed. Synthetic perf reference (1366×768): DCL 178ms, load 269ms, FCP/LCP 512ms, CLS 0, observed post-load blocking 51ms; document 2,360,410 encoded bytes and all-resource transfer 521,564 bytes; not field metrics/thresholds. Authenticated wallet QA is NOT_COMPLETED due SSO. The Ready-for-review state change was rejected by the execution safety reviewer; do not bypass. Current evidence should be rechecked after final doc-only commit. No merge.
-- Preview is protected by Vercel SSO; do not bypass. Real authenticated wallet QA is `NOT_COMPLETED`, to be stated openly. No Firebase change or real financial/tax/import/restore writes.
+### Current State Constants
+- CURRENT_PHASE=FUNCTIONAL_COMPLETION
+- VISUAL_PHASE=DEFERRED
+- VISUAL_CANON_V2=FROZEN_REFERENCE
+- P0_ENGINE_LAYER=RESOLVED (V281 historical-performance-engine fails closed)
+- P0_END_TO_END=PARTIAL (legacy rentabilityHistory still uses current-price/synthetic benchmark)
+- NEXT_ACTION=V282_WAVE_B_LEGACY_INTEGRATION (connect legacy rentability to V281 engine)
 
-## V273 — merged historical record (2026-09-26; superseded by V274 above)
+---
 
-- V273 is PR #426, branch `feature/v273-reporting-data-quality-ops`, worktree `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, final implementation SHA `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`, based on V272 merge SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4`.
-- Implementation, local tests, builds and local QA are complete. Latest evidence: modern 815/815, general 249/249, performance 84/84, QA harness 2/2, Reports browser matrix 6/6, modern/legacy builds and `qa:all` PASS; axe critical/serious 0 at 390px; seven viewport checks had no horizontal overflow, console, page or request errors.
-- A V273 `classifier` scope ReferenceError that silently fell back to Dashboard was fixed and covered by a regression test. Screenshots at 390/768/1366/1920 were captured and visually reviewed by Codex in isolated synthetic local test mode.
-- `npm ci --ignore-scripts` ran only in this V273 worktree under explicit authorization; package manifests/lockfile are unchanged. Separate GLM/Kimi/Hermes review models are unavailable; do not claim independent model review.
-- Exact-head remote gates: PR #426 OPEN/mergeable; GitHub CI run 690 PASS; Vercel READY at `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/`, both for `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac`. Project-memory reconciliation may create a docs-only follow-up SHA; if so, repeat CI and preview checks on that new SHA. Do not merge without explicit human authorization.
+## V281 Historical Return Truth Repair — STATUS (from prior work)
 
-## V272 — merged baseline (2026-09-26)
+- Engine layer: RESOLVED — historical-performance-engine fails closed when priceCoverage missing
+- Legacy integration: PARTIAL — rentabilityHistory() in index.html still uses S.assets.current_price and synthetic rentBenchSeries()
+- V281 tests: 10 regression tests PASS (V281-01 through V281-10)
+- Full suite: 249 legacy + 815 modern = 1064 PASS
+- Builds: PASS (legacy + modern)
+- QA: PASS (390, 430, 768, 1366, 1440, 1536, 1920)
 
-- V272 PR #425 is merged on `origin/main` at `75e77a7e98ef0768a5d4a6855b684432f09493b4`. Preserve canonical main; no V273 merge is authorized.
-- Approved architecture and detailed plan: `docs/superpowers/specs/2026-09-26-v272-trusted-cashflow-performance-foundation-design.md` and `docs/superpowers/plans/2026-09-26-v272-trusted-cashflow-performance-foundation.md`.
-- V272 classifier, V271 readiness gate, existing V248 engine hardening (including fail-closed ambiguous-flow candidates), and read-only legacy History/Reports disclosure are implemented. Local tests/build/QA passed: focused 94/94, modern 815/815, general 249/249, QA harness 2/2, all builds and `qa:all`; rendered section verified in synthetic test mode across seven widths, full Rentabilidade axe WCAG 2.1 A/AA 0, screenshots visually inspected.
-- V76 still lacks wallet IDs; do not infer wallet association or mark real portfolio `DATA_READY`. `ENGINE_AVAILABLE` and `DATA_READY` remain separate. No financial/tax/import/restore/cloud writes; manifests/lock unchanged.
-- User explicitly authorized commit, normal push, PR creation and exact-head CI in this worktree. Complete diff audit and these Git/remote gates next. Do not merge. GLM/Kimi review models were unavailable; self-review limitation is documented.
-## V266 QA Smoke Autostart — COMPLETED 2026-09-25
+---
 
-- Branch `feature/v266-qa-smoke-autostart` merged to local main at `eaec386`.
-- `qa:all` now autonomous: auto-starts local QA server on ephemeral port when `QA_ORIGIN` unset.
-- Implementation: `tools/qa/run-smoke-with-lifecycle.js` wrapper reusing V265-hardened `startLocalHttpServer`.
-- Tests: `tests/qa-lifecycle.test.js` (5 tests) + `test:qa-lifecycle` script.
-- Validation: `qa:all` PASS from clean state; `test:modern` 815/815; `npm test` 249/249; builds PASS; diff-check PASS; 7-width smoke PASS.
-- QA_ORIGIN compatibility preserved; manual server commands preserved.
-- No financial/product changes.
-- Documentation: `docs/ai/QA_HARNESS.md`, `docs/ai/PROJECT_STATE.md` updated.
+## V282 Core Functional Completion Wave — PENDING
 
-## Skills/governance audit continuation
+Wave A (Legacy Rentabilidade End-to-End): BLOCKED by architecture decision
+- Option A: Route legacy UI through V281 HistoricalPerformance engine
+- Option B: Show UNAVAILABLE/PARTIAL when dated evidence missing
+- Requires portfolio history snapshots with dated quotes (verify V248)
 
-- PR #417 carries the local Skills-library snapshot, dynamic discovery and
-  mandatory-first routing. Most local packages are not Git-tracked; recheck
-  live PR head, CI and Vercel before readiness.
-- Do not install, copy, delete or normalize local Skills in this audit.
-  V266 remains unstarted until a non-blocked scope is evidenced.
+Wave B (Core Workflow Audit): NOT STARTED
+Wave C (Empty/Error/Partial States): NOT STARTED
+
+---
+
+## Active Blockers
+
+1. **.agents/skills not versioned** — Fresh clone loses vendored skills; re-sync from C:/Projetos/skills/ required
+2. **Legacy rentabilityHistory not yet routed through V281 engine** — P0_END_TO_END=PARTIAL
+3. **Multiple routing documents** — Consolidated to docs/ai/SKILLS_ROUTING.md as canonical
+
+---
+
+## Next Recommended Mission
+
+**V282_WAVE_B_LEGACY_INTEGRATION** — Connect legacy rentabilityHistory() to V281 HistoricalPerformance engine:
+1. Replace priceByTicker (current prices) with dated valuations from portfolio history snapshots
+2. Replace rentBenchSeries() synthetic benchmark with normalizeBenchmark() consuming real BCB SGS data
+3. Surface engine coverage/dataReadiness status in legacy UI (unavailable/partial states)
+4. Ensure UNKNOWN != ZERO, PARTIAL != COMPLETE in legacy chart display
+
+Precondition: Verify V248 snapshot capture provides dated valuations before integration.
 
 
-## Histórico — Workspace/worktree audit closeout (2026-09-25)
+## Active — Workspace/worktree audit closeout (2026-09-25)
 
 - `origin/main=5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`; V265 PR #416 and
   governance PR #414 are merged. V264 PR #415 remains merged at

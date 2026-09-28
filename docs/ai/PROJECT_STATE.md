@@ -1,88 +1,47 @@
 # Project State
 
-## V280 — product completion audit (2026-09-28)
+## V282B Project Memory Continuity and Skills Certification — 2026-09-28
 
-- `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`; no product/runtime, financial, tax, test, or dependency changes were made.
-- Audit, backlog and 24-domain completion matrix: `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md`, `PRODUCT_COMPLETION_MATRIX.md`.
-- P0 integrity finding: legacy Rentabilidade may back-project current quotes into past periods and synthesize benchmark history from fixed annual rates. Static-source finding only; no browser or production behavior was newly certified. Until proven correct, `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`.
-- `VISUAL_CANON_V2=FROZEN_REFERENCE`; `FUNCTIONAL_COMPLETION_FIRST=true`; `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`. Broad redesign is deferred until the integrity blocker is resolved; only usability-blocking visual defects may be fixed during functional waves.
-- `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recommendation only; not started or authorized).
-- Preferred Hermes/Nemotron and independent review models were not available; Codex completed the source/documentation audit. No independent model review or fresh browser certification is claimed.
+- **CURRENT_PHASE=FUNCTIONAL_COMPLETION**
+- **VISUAL_PHASE=DEFERRED**
+- **VISUAL_CANON_V2=FROZEN_REFERENCE**
+- **P0_ENGINE_LAYER=RESOLVED** — V281 historical-performance-engine fails closed when priceCoverage missing
+- **P0_END_TO_END=PARTIAL** — legacy rentabilityHistory() in index.html still uses S.assets.current_price and synthetic rentBenchSeries()
+- **NEXT_ACTION=V282_WAVE_B_LEGACY_INTEGRATION** (connect legacy rentability to V281 engine)
 
-## V280A — bootstrap global e publicação documental (2026-09-28)
+### V281 Historical Return Truth Repair — STATUS
 
-- `MANDATORY_AGENT_BOOTSTRAP=true`; identity gate → anúncio obrigatório → Caveman → Superpowers `using-superpowers` → Skills específicas. Regras em `AGENTS.md`, `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`.
-- A Skill Caveman disponível é de comunicação concisa, não concede autoridade. Verifique instalação a cada missão; reporte qualquer lacuna e não alegue uso indisponível.
-- `VISUAL_CANON_V2=FROZEN_REFERENCE`; conclusão funcional primeiro; implementação visual global adiada.
-- P0 de Rentabilidade permanece aberto; `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`. Próxima missão recomendada: `V281_HISTORICAL_RETURN_TRUTH_REPAIR`, ainda não iniciada/autorizada.
+- Engine layer: RESOLVED — historical-performance-engine fails closed (missing priceCoverage → INSUFFICIENT_DATA)
+- Legacy integration: PARTIAL — rentabilityHistory() still uses current prices and synthetic benchmark
+- V281 tests: 10 regression tests PASS (V281-01 through V281-10)
+- Full suite: 249 legacy + 815 modern = 1064 PASS
+- Builds: PASS (legacy + modern)
+- QA: PASS (390, 430, 768, 1366, 1440, 1536, 1920)
 
-## V279B — visual and product learning audit (2026-09-28; historical)
+### V282A Project Skills Vendoring and Routing — COMPLETED
 
-- `V279B_STATUS=COMPLETE_DOCUMENTATION_ONLY`; active target is the LEGACY `index.html` product. Modern remains read-only and is not the redesign target.
-- Durable cross-source audit: `docs/ai/V279B_VISUAL_PRODUCT_AUDIT.md`; consolidated reusable UI contract: `docs/ai/VISUAL_CANON_V2.md`, linked from `VISUAL_CANON.md`.
-- Main product finding: functional breadth and useful screen structures exist, but visual hierarchy, table geometry, navigation grouping, and several overlapping style/token layers are inconsistent. Prior V274 synthetic evidence records an internal Dashboard allocation-table collision at 1920px; it was not freshly rendered/retested in V279B.
-- Reference B was strictly read-only and remains a laboratory. Reference C's composite included financial-looking private content and remains local-only; no private values, branding, reference business logic, or product code were copied.
-- `RUNTIME_FILES_CHANGED=0`; `FINANCIAL_FILES_CHANGED=0`; `TEST_FILES_CHANGED=0`; `PACKAGE_FILES_CHANGED=0`. No browser/runtime re-certification is claimed.
-- Hermes/Nemotron was unavailable; Codex performed the static/source and visual-reference audit. No independent model review is claimed.
+- Vendored 25 project skills from C:/Projetos/skills to .agents/skills/
+- Created PROJECT_SKILLS_MANIFEST.md with full inventory and classification
+- Created SKILLS_ROUTING.md with mission-type routing table
+- Updated legacy .agents/SKILL_ROUTER.md as deprecated reference
+- Commit: de2fa0f
+- No runtime changes, no financial logic changes, no test changes
 
-## V279A2 — post-V278 closeout (2026-09-28)
+### V282B Project Memory Continuity and Skills Certification — IN PROGRESS
 
-- `V278_STATUS=MERGED_AND_DEPLOYED`; PR #428 merged at `e3a295833e7ac5227b86b7f88deab41e82679a4e`. `PRODUCTION_STATUS=READY`; production URL: https://carteira-investimentos-delta.vercel.app/.
-- `PRIVACY_RECONCILIATION=COMPLETE`; `VISUAL_CANON_PUBLIC_SAFE=true`. `PRIVATE_RECOVERY_METADATA=LOCAL_ONLY` and `PRIVATE_VISUAL_REFERENCES=LOCAL_ONLY`.
-- `CURRENT_PHASE=PRODUCT_VISUAL_CONSOLIDATION`; primary screens: Dashboard, Ativos, Dividendos. `FUNCTIONAL_FOUNDATION=MATURE`; `PRIMARY_CURRENT_GAP=VISUAL_COHERENCE_AND_PRODUCT_HIERARCHY`. This is a working problem statement, not a claim that all visual issues are known.
-- `NEXT_MISSION=V279B_VISUAL_AND_PRODUCT_LEARNING_AUDIT`. Do not begin it automatically; it requires its own mission authorization.
-- This documentation closeout is isolated on `docs/v279a-post-merge-closeout`, based on the exact merged main SHA above. No runtime, financial, tax, test, or dependency files are in scope.
+- Certifying V282A filesystem truth
+- Reconciling skill counts and tracking status
+- Creating PROJECT_CONTINUITY_POLICY.md for repository-first memory
+- Documenting .agents/skills gitignore issue (skills not versioned)
+- Updating canonical document references in AGENTS.md
 
-## V278O — local publishable reconstruction (historical; closed by V279A2)
+### Active Blockers
 
-## V274 — remaining QA gates closeout checkpoint (2026-09-26)
+1. **.agents/skills not versioned** — Fresh clone loses vendored skills; re-sync from C:/Projetos/skills/ required
+2. **Legacy rentabilityHistory not yet routed through V281 engine** — P0_END_TO_END=PARTIAL
+3. **Multiple routing documents** — Consolidated to docs/ai/SKILLS_ROUTING.md as canonical
 
-- Work continues only in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`, from base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. Initial PR head was `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`; corrected code head `9abfee7b8d622e9faa3ee19a854db8382a9da85d` has green CI/READY preview; final documentation follow-up SHA and its gates will be recorded in the handoff. Canonical checkout and its untracked content remain untouched; `carteira-2.0` was not accessed.
-- Runtime QA found and corrected Dashboard light-theme contrast defects: muted upcoming-receipt text (4.21:1 against its actual surface), dark text on intentionally navy gain/loss panels, and dark text on the navy chart. Light theme now keeps highlight panels white with dark readable content and preserves the chart's navy surface with light title/axis labels. Regression coverage is in `tests/v274-accessibility-contract.test.js`.
-- Exact-head CI initially caught that a newly added 1181–1535px navigation override changed the established desktop sidebar offset from 58px to 0px at 1366×768. Removed that unnecessary override (preserving the keyboard-focus scroll correction); the full safe-area suite plus V274 accessibility contracts now pass 20/20 locally. The failed CI attempt is not treated as final evidence; CI/preview must pass on the subsequent pushed SHA.
-- Final axe matrix after the Dashboard contrast fixes: 17 LEGACY routes × 390/1366 × dark/light = 68 observations; 0 critical nodes, 0 serious nodes, 0 overflow observations, and no page/console errors or failed local requests. It used isolated headless Chrome and synthetic `testMode`, not real wallet data.
-- Final styled Dashboard screenshots for 390/430/768/1366/1440/1536/1920 in dark/light were captured across the final review and visually inspected from isolated `testMode`; latest 430/1440/1536/1920 pairs were regenerated in `%TEMP%`. A transient theme-switch toast appeared in some immediate light captures; it is not persistent content. At 1920 the dense allocation tables remain visually compact/crowded (pre-existing debt tracked in the visual backlog), without page overflow; no global redesign was attempted.
-- Synthetic Dashboard performance baseline at 1366×768 (single local Chromium run, diagnostic only): navigation DCL 178ms, load 269ms, FCP/LCP 512ms, CLS 0, observed post-load long-task blocking 51ms (not Lighthouse TBT/INP); document encoded size 2,360,410 bytes, transfer 2,360,710 bytes; 67 resource entries, 66 script-initiated entries / 498,402 encoded bytes, 0 external CSS entries (styles inline), aggregate resource transfer 521,564 bytes. Not comparable to authenticated/production field performance; no arbitrary threshold is asserted.
-- Keyboard Tab/Shift+Tab coverage across Dashboard, Ativos, Renda Fixa, Proventos, Relatórios, Histórico, Metas, Import Center and Configurações found no focus-without-style or focus-outside-viewport issue after the desktop-sidebar correction. Runtime touch target scan: zero sub-44px interactive targets at 390/430/768/1366/1920. Zoom reflow was simulated at 100/125/150/200% for 390/768/1366; zero page/table horizontal overflow or clipped allocation cells. This is CSS viewport reflow simulation, not browser-chrome zoom.
-- Exact code-head remote evidence: `9abfee7b8d622e9faa3ee19a854db8382a9da85d`; CI run `36279913140` PASS and Vercel deployment `6685655970` SUCCESS/READY. A documentation follow-up produced `d264b8502331ad2758cb3e37cae1427114c5ea51`; CI run `36280566417` PASS and Vercel deployment `6685761086` SUCCESS/READY at `https://carteira-investimentos-47y3us37b-paulinhoo2002-ctrls-projects.vercel.app`. PR #427 is OPEN and MERGEABLE but remains draft; the explicit ready-for-review state transition was blocked by the execution safety reviewer and was not retried or bypassed. This final doc-only follow-up SHA requires its own exact-head CI/preview recheck.
-- No authenticated real-wallet QA is claimed: Vercel preview remains protected by SSO and was not bypassed. `AUTHENTICATED_REAL_WALLET_QA=NOT_COMPLETED`; this is disclosed separately from passing synthetic QA.
-- Local gates before the narrow CI-discovered correction: `npm test` 249/249; modern 815/815; focused Dashboard/accessibility/canon 22/22; builds and `qa:all` PASS. After correction, safe-area + V274 contracts 20/20. GitHub CI on corrected code SHA passed full build/test and reliability-smoke jobs. `qa:all` includes harness 2/2 and seven-width document-overflow smoke. `git diff --check` must be rerun after this docs update.
-- No final visual redesign, financial methodology, persistence, imports, wallet identity, Firebase, provider config or production security change. PR #427 remains unmerged; merge authorization is false.
-
-## Initial V274 audit snapshot — 2026-09-26 (historical; superseded by closeout checkpoint above)
-
-- V274 worktree/branch: `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, `feature/v274-release-hardening-visual-baseline`, based on `origin/main` `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. Canonical main checkout and its untracked files were not modified.
-- V273 PR #426 is CLOSED/MERGED; the V274 base is the verified later `origin/main` SHA above. Historic V273 CI/preview evidence applies to its own merged head only.
-- `npm ci --ignore-scripts` was authorized and ran only in this worktree. `package.json` and `package-lock.json` remained unchanged. npm reported 6 audit findings (3 moderate, 3 high); no audit fix/version update was run.
-- Current V274 verification: `test:modern` 815/815 PASS; `npm test` 249/249 PASS; `build` PASS; `build:modern` PASS; `qa:all` PASS (QA harness 2/2 and 7 viewport document-overflow smoke). The standalone `tests/audit-visual-canon.test.js` exposed one stale selector-expression assertion; it now checks current `currentChild`/`parentActive` behavior and passes 7/7. Two localized accessibility corrections were made: the IRPF year selector has an accessible name, and Reports executive-summary dark foreground is scoped to light theme; regression assertions cover both.
-- Isolated Playwright Chromium ran the LEGACY Dashboard in synthetic `testMode`; document width matched viewport at 390/430/768/1366/1440/1536/1920. Dashboard axe at 390 reported no WCAG 2.1 A/AA violations (23 passes, 2 incomplete). Screenshots at 390/768/1366/1920 were visually reviewed. At 1920, allocation table contents visibly collide despite no document overflow; this is a real visual debt reserved for the final redesign, not changed in V274.
-- Visual evidence is partial: no authenticated/real portfolio, all-route/all-theme axe, complete keyboard/focus traversal, runtime contrast matrix, 125/150% zoom, or performance timing baseline was certified. The screenshot artifacts remain outside Git under `%TEMP%`.
-- Expanded axe before those localized fixes covered 17 LEGACY routes at 390/1366 and found the repeated IRPF `select-name` critical issue plus 73 serious node occurrences (not unique-finding count) involving contrast, scrollable-region focus, and one nested-interactive issue. Dark synthetic mode now reports 0 critical/serious on that matrix. Additional light scan across the same 17 routes and widths (68 total route/theme/width combinations across both themes) reports zero critical but three route/viewport observations with serious contrast: Dashboard 390, Dashboard 1366 and Reports 1366. Minor groups were corrected; remaining Dashboard variable-background and broad V254 Reports contrast require a coordinated theme fix. Full axe release gate is NOT PASS. All-data states and authenticated real portfolio are untested. See `docs/visual/FINAL_VISUAL_AUDIT_CONSOLIDATION.md` and `docs/visual/V274_VISUAL_PRIORITY_BACKLOG.md`.
-- Four historical audits were reconciled in `docs/visual/FINAL_VISUAL_AUDIT_CONSOLIDATION.md`; redesign input and priority backlog are in `docs/visual/FINAL_VISUAL_REDESIGN_INPUT.md` and `docs/visual/V274_VISUAL_PRIORITY_BACKLOG.md`. Target remains `LEGACY`; modern remains preserve/test, not redesign target.
-- V274 commit `e8c6bf70ef037acf8bbc46bb587cfb13a15e098f` is published in draft PR #427 (`MERGEABLE`, base `main`). Exact-head GitHub Actions run 36274933546 passed; Vercel deployment 6684798149 is `success` for the same SHA at `https://carteira-investimentos-2q90sg3w6-paulinhoo2002-ctrls-projects.vercel.app`. A read-only HTTP probe returned 302 to Vercel SSO; no authenticated preview QA or Firebase domain changes were performed. PR is not release/merge-ready because of light-theme serious axe findings and incomplete manual gates.
-- No financial, tax, import-confirm, restore, schema, Firebase, or real-user-data writes occurred. No merge.
-
-## V273 — Reporting data quality and operational polish (PR #426 merged; 2026-09-26)
-
-- Branch `feature/v273-reporting-data-quality-ops`, worktree `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`, based on current `origin/main` SHA `75e77a7e98ef0768a5d4a6855b684432f09493b4` (V272 PR #425 merge).
-- Architecture spec and execution plan: `docs/superpowers/specs/2026-09-26-v273-reporting-data-quality-operational-polish-design.md` and `docs/superpowers/plans/2026-09-26-v273-reporting-data-quality-operational-polish.md`.
-- The pure/read-only `portfolio-report-readiness.js` aggregates existing evidence into factual section states; the Reports UI shows the concise result and evidence. It does not write, score, infer missing values, or create a new authority.
-- `ENGINE_AVAILABLE != DATA_READY`; V76 wallet identity remains absent and blocks real TWR/XIRR readiness. UNKNOWN != ZERO; PARTIAL != AVAILABLE; STALE != FRESH. Manual fixed-income authority is disclosed, not falsely aggregated.
-- A local browser smoke exposed a `ReferenceError` (`classifier` not defined) that made Reports silently fall back to Dashboard. Fixed by resolving the existing global `PortfolioCashFlowClassifier` in the V273 adapter; added a regression contract.
-- Final local verification: focused 75/75; `test:performance` 84/84; `test:qa-harness` 2/2; `test:modern` 815/815; `npm test` 249/249; `build`, `build:modern`, `qa:all`, V273 responsive/UI 6/6 and `git diff --check` PASS. Reports QA exercised 390/430/768/1366/1440/1536/1920 with no overflow/runtime/console/request failures. Axe on the Reports health panel at 390px: critical 0, serious 0. Screenshots at 390/768/1366/1920 were captured and reviewed by Codex from isolated synthetic local test mode.
-- Dependency installation (`npm ci --ignore-scripts`) was explicitly authorized and limited to this worktree; package manifest and lockfile unchanged. Six npm audit findings (3 moderate, 3 high) were reported; no versions were updated and no audit fix was run.
-- Commit `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac` was pushed normally and opened as PR #426 against `main`; PR is OPEN and mergeable. GitHub CI run 690 passed on this exact SHA. Vercel deployment `C2QVZv3n8tAEH6Ng2x6JXVGQSdar` is READY for this exact SHA at `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/` (preview protection/authentication was not exercised). No merge. GLM-5.3, Kimi K3, Hermes/NVIDIA unavailable; separate Codex technical and visual reviews only, with no claim of independent-model review. Financial/tax writes: 0 by read-only scope.
-
-## V272 — trusted cash flows and performance readiness (merged, 2026-09-26)
-
-- V272 PR #425 was merged to main at `75e77a7e98ef0768a5d4a6855b684432f09493b4`; the implementation below is part of the current base. No V273 merge is authorized.
-- Approved three-slice design and execution plan are in `docs/superpowers/specs/2026-09-26-v272-trusted-cashflow-performance-foundation-design.md` and `docs/superpowers/plans/2026-09-26-v272-trusted-cashflow-performance-foundation.md`.
-- Implementation currently adds pure `portfolio-cash-flow-classifier.js`; makes V271 TWR/XIRR readiness require wallet-scoped, HIGH-confidence canonical flow evidence with valid date, magnitude/sign and provenance; rejects ambiguous, wrong-wallet, duplicate-source-identity and unscoped evidence; and hardens/reuses V248 `HistoricalPerformance` rather than adding a second engine.
-- TWR requires explicit `END_OF_SUBPERIOD` timing and an observed valuation on the exact flow date. XIRR no longer fabricates an opening contribution from the opening valuation. Legacy `status` fields remain compatible while metrics also expose structured availability; engine availability is separate from real-wallet data readiness.
-- The legacy History/Reports disclosure is wired read-only. V76 global flow/snapshot stores currently lack wallet IDs; V272 refuses to assign global records to the active wallet, so real-wallet TWR/XIRR remain unavailable. No financial/tax, persistence, schema, import, backup, Firebase or cloud writes were made.
-- After the user-authorized lockfile install (`npm ci --ignore-scripts`; no manifest/lock changes), final local gates passed: focused V272/V271/V248/history tests + inline syntax 94/94; `npm run test:modern` 815/815; `npm test` 249/249; legacy and modern builds PASS; `npm run qa:all` PASS including QA harness 2/2 and browser smoke at 390/430/768/1366/1440/1536/1920 with no horizontal overflow, console/page/request errors. The rendered V272 panel was inspected in isolated Playwright test mode at all seven widths: mounted, no panel/page overflow, `ENGINE_AVAILABLE=Sim`, `DATA_READY=UNAVAILABLE`; full Rentabilidade axe scan had 0 WCAG 2.1 A/AA violations after a page-scoped text-contrast correction. Visual screenshots were reviewed from isolated synthetic test mode; this is not authenticated real-wallet QA.
-- `V76` runtime flow/snapshot stores are global and omit `walletId`. That is a real evidence limitation, not a value to infer: real-wallet readiness remains false until wallet-scoped provenance exists. `ENGINE_AVAILABLE` does not imply `DATA_READY`; no metric is made ready with synthetic data. GLM-5.3/Kimi K3 were not available as review executors; separated technical and visual self-review was performed.
-- Financial/tax/import/restore/cloud write counts are 0. `package.json` and lockfile are unchanged. Canonical main's dirty/untracked state was preserved; all V272 edits remain confined to its dedicated worktree.
+---
 
 ## Workspace / worktree audit — 2026-09-25
 
