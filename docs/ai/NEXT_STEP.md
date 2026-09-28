@@ -3,8 +3,11 @@
 ## Active — V278O privacy-safe reconstruction (2026-09-28)
 
 - Work only in the isolated V278O integration worktree on `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. Its machine-local path is intentionally omitted; the source V278M worktree remains untouched.
-- V278Q sanitization and local validation are complete. Public backup/recovery docs now describe architecture only; exact private recovery metadata remains outside Git. Visual references without proven public provenance are local-only.
-- Gates passed: general 249/249, modern 815/815, directed 29/29, both builds, `qa:all`, and seven-width smoke. Six npm advisories affect development dependencies only and remain a security follow-up. Next action is final Codex privacy review; do not commit, push, open PR, merge, or deploy until separately authorized.
+- `PRIVACY_REVIEW_COMPLETED=true`; `PRIVACY_SAFE=true`. Public backup/recovery docs describe architecture only; exact private recovery metadata and visual references without proven public provenance remain local-only.
+- `LOCAL_COMMITS_CREATED=6` for V278T, reviewed at `V278T_HEAD=8419d3566888655689b31ee1045acda1fb0a8fc7`. This V278V documentation reconciliation is the seventh local commit relative to the recorded base; obtain the exact current HEAD from Git.
+- `TECHNICAL_VALIDATION_PASS=true` at the V278T reviewed HEAD: general 249/249, modern 815/815, directed 18/18, both builds, `qa:all`, seven-width smoke, diff checks and `git fsck --full` passed. This V278V docs-only change requires fresh diff checks; it does not alter runtime or dependencies. Six npm advisories remain a development-tooling follow-up.
+- `PUSH_NOT_AUTHORIZED=true`; `PR_NOT_AUTHORIZED=true`. No push, PR, merge or deploy is authorized; no financial write occurred.
+- `NEXT_ACTION=FINAL_READ_ONLY_CONFIRMATION_THEN_REQUEST_HUMAN_PUSH_PR_AUTHORIZATION`.
 
 The V274 and earlier entries below are dated historical checkpoints, not the active objective.
 
