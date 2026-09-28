@@ -1,4 +1,4 @@
-# scripts/setup-ai.ps1
+# scripts/maintenance/setup-ai.ps1
 # This script validates the AI infrastructure setup without modifying anything.
 # Assumes it is run from the project root.
 

@@ -5,7 +5,7 @@
 - `RELEASE_INTEGRATION=RF_HARNESS_RECONCILED`
 - `USER_AUTHORIZED_TEMP_WORKTREE=true`
 - `CANONICAL_WORKSPACE_PRESERVED=true`
-- `AUTHORIZED_TEMP_WORKTREE=C:\Projetos\carteira-investimentos-release-integration`
+- `AUTHORIZED_TEMP_WORKTREE=[machine-local path omitted from public archival copy]`
 - `INTEGRATION_BRANCH=release/visual-product-integration`
 - `INTEGRATION_BASE=origin/main@d3170e9fda8f9a1b9b9746cc950ceb5445c3d3c2`
 - `INTEGRATION_MERGE_COMMIT=2e8971f1e84dfafbe69971815391eaf8c5571e01`
@@ -19,7 +19,7 @@
 - Feature remote HEAD: `c53085d689930a1ca1cffd17fdf3bc58d6bbb356`
 - Divergence before integration: `origin/main...feature = 5 behind / 30 ahead`
 - Canonical checkout was not mutated by this integration.
-- `C:\Projetos\carteira-investimentos-integration` was preserved and not modified.
+- The separate integration worktree was preserved and not modified; its machine-local path is kept only in private recovery evidence.
 
 ## Integration Work
 
