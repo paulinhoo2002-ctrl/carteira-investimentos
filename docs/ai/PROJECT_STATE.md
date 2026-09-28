@@ -1,5 +1,15 @@
 # Project State
 
+## V279B — visual and product learning audit (2026-09-28)
+
+- `V279B_STATUS=COMPLETE_DOCUMENTATION_ONLY`; active target is the LEGACY `index.html` product. Modern remains read-only and is not the redesign target.
+- Durable cross-source audit: `docs/ai/V279B_VISUAL_PRODUCT_AUDIT.md`; consolidated reusable UI contract: `docs/ai/VISUAL_CANON_V2.md`, linked from `VISUAL_CANON.md`.
+- Main product finding: functional breadth and useful screen structures exist, but visual hierarchy, table geometry, navigation grouping, and several overlapping style/token layers are inconsistent. Prior V274 synthetic evidence records an internal Dashboard allocation-table collision at 1920px; it was not freshly rendered/retested in V279B.
+- Reference B was strictly read-only and remains a laboratory. Reference C's composite included financial-looking private content and remains local-only; no private values, branding, reference business logic, or product code were copied.
+- `RUNTIME_FILES_CHANGED=0`; `FINANCIAL_FILES_CHANGED=0`; `TEST_FILES_CHANGED=0`; `PACKAGE_FILES_CHANGED=0`. No browser/runtime re-certification is claimed.
+- `NEXT_RECOMMENDED_MISSION=V280_GLOBAL_VISUAL_FOUNDATION_AND_DASHBOARD` (not started; separate authorization required).
+- Hermes/Nemotron was unavailable; Codex performed the static/source and visual-reference audit. No independent model review is claimed.
+
 ## V279A2 — post-V278 closeout (2026-09-28)
 
 - `V278_STATUS=MERGED_AND_DEPLOYED`; PR #428 merged at `e3a295833e7ac5227b86b7f88deab41e82679a4e`. `PRODUCTION_STATUS=READY`; production URL: https://carteira-investimentos-delta.vercel.app/.

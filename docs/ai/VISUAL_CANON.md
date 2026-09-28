@@ -1,5 +1,12 @@
 # Visual Canon
 
+> **Current consolidated system:** [`VISUAL_CANON_V2.md`](VISUAL_CANON_V2.md).
+>
+> **Evidence, screen-by-screen audit, and implementation sequence:** [`V279B_VISUAL_PRODUCT_AUDIT.md`](V279B_VISUAL_PRODUCT_AUDIT.md).
+
+V2 supersedes this document's earlier high-level guidance where it is more
+specific. Existing product and financial contracts remain authoritative.
+
 `VISUAL_DIRECTION=PREMIUM_DARK_EXECUTIVE`.
 `UI_WORK_MUST_READ_VISUAL_CANON=true`.
 
