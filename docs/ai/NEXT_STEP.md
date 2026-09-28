@@ -1,5 +1,13 @@
 # Next Step
 
+## Active — V278O privacy-safe reconstruction (2026-09-28)
+
+- Work only in the isolated V278O integration worktree on `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. Its machine-local path is intentionally omitted; the source V278M worktree remains untouched.
+- V278Q sanitization and local validation are complete. Public backup/recovery docs now describe architecture only; exact private recovery metadata remains outside Git. Visual references without proven public provenance are local-only.
+- Gates passed: general 249/249, modern 815/815, directed 29/29, both builds, `qa:all`, and seven-width smoke. Six npm advisories affect development dependencies only and remain a security follow-up. Next action is final Codex privacy review; do not commit, push, open PR, merge, or deploy until separately authorized.
+
+The V274 and earlier entries below are dated historical checkpoints, not the active objective.
+
 ## Active — V274 PR #427 final exact-head certification (2026-09-26)
 
 - Continue only in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`; base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`, initial PR head `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`.

@@ -1,6 +1,51 @@
 # Trabalho aberto
 
-## NOW
+## V278O — sanitização publicável validada localmente (2026-09-28)
+
+- A branch `integration/v278o-privacy-safe` parte do `origin/main` `179ea6269a04d5075b655d829645b53ffd200741` em worktree isolada. O delta está sendo reaplicado por arquivos revisados, sem incorporar a ancestralidade local V278M.
+- Relatórios financeiros e metadados privados de recuperação foram preservados fora do Git; documentos públicos foram sanitizados. Referências visuais sem proveniência pública comprovada permanecem privadas e não fazem parte do conjunto publicável.
+- Validação local: geral 249/249, moderna 815/815, direcionada 29/29, builds e `qa:all` PASS; smoke em sete larguras sem overflow/erros. `npm audit` registrou seis advisories somente em dependências de desenvolvimento, sem caminho de produção; manter acompanhamento de segurança.
+- Não houve alteração financeira/fiscal, atualização de dependências, commit, push, PR, merge ou deploy. Próxima ação: revisão final de privacidade/integração Codex antes de qualquer autorização remota.
+
+## V278K — certificação local final
+
+- Os commits locais incluem a reconciliação dos caminhos antigos e o teste QA
+  de isolamento de origem sem perfil autenticado. A documentação V278K registra
+  os gates executados; repetir diff-check e `git fsck --full` após o commit
+  documental final.
+- Branch local está divergente de `origin/main` (4 commits remotos à frente da
+  base e 6 commits locais exclusivos neste checkpoint). Não fazer merge/rebase,
+  push ou PR nesta missão. A próxima ação é certificação read-only V278L.
+- Preservar os cinco worktrees registrados, 92 caminhos locais classificados e
+  o resíduo V245 bloqueado pelo host. Nenhum dado financeiro foi escrito.
+
+## V278E — handoff para certificação final
+
+- A auditoria read-only está documentada em `PROJECT_STATE.md`,
+  `CURRENT_PROJECT_MAP.md` e `STORAGE_AND_WORKTREE_POLICY.md`. QA atual usa `scripts/qa/`; menções
+  históricas a `tools/qa/` foram classificadas, sem reescrever a história.
+- Nenhum diretório foi removido: o host bloqueou as remoções de V206/V264 e a
+  tentativa anterior no V265 vazio. Preservar V245 (nove arquivos QA únicos),
+  post-PR418 (conteúdo divergente), temporário não identificado e demais
+  worktrees até prova de ownership/preservação.
+- Não fazer staging/commit/push/merge/GC nem escrever dados financeiros. Próxima
+  ação: certificação final read-only por Codex; retornar ao produto somente
+  depois de revisar a mistura de alterações e arquivos não rastreados.
+
+## V278C — checkpoint histórico
+
+- Execução no checkout canônico, branch
+  `feature/v278c-canonical-state-reconciliation`, HEAD
+  `469596644322c1bd13b8d359c91e8aedacb520ef`; `origin/main` é apenas o tracking
+  ref local `179ea6269a04d5075b655d829645b53ffd200741` e não foi atualizado.
+- 12 worktrees registradas e 17 diretórios físicos imediatos; preservar seis
+  entradas não registradas e todos os resíduos. Nenhuma remoção ocorreu; tentativa
+  de remover diretório vazio V265 foi bloqueada pelo host.
+- Não fazer commit/push/merge/GC, não apagar artifacts, nem executar backup real.
+  Próximo gate: validação final de testes/build/QA e diff depois da reconciliação
+  documental.
+
+## Previous roadmap snapshot — superseded by the V278E handoff above
 
 - V273 PR #426 is OPEN and mergeable on `feature/v273-reporting-data-quality-ops` in
   `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`,

@@ -319,6 +319,52 @@ Sempre parar e pedir autorização explícita antes de:
 - Em falha de remoção, confirmar separadamente registro Git e presença física;
   nunca presumir que ambos foram removidos juntos.
 
+## V278E — QA paths, archive and agent hygiene
+
+- `QA_CANONICAL_ROOT=scripts/qa`. Operational commands, scripts, tests and
+  current instructions must use existing `scripts/qa/` paths. A mention of
+  `tools/qa/` in a dated migration/report is `HISTORICAL_PATH_REFERENCE`, not
+  a current path. Never rewrite old evidence to make it look contemporaneous;
+  the current equivalent, when one exists, is `scripts/qa/`.
+- `ARCHIVE_IS_REFERENCE_ONLY=true`; canonical current docs override
+  `docs/ai/archive/`. `DO_NOT_RECURSIVELY_SCAN_ARCHIVE_BY_DEFAULT=true`.
+- `DO_NOT_SCAN_LOCAL_IMPORTS_BY_DEFAULT=true` and
+  `DO_NOT_SCAN_ALL_WORKTREES_BY_DEFAULT=true`; inspect only the minimum scope
+  required by the task. Do not expose local financial filenames/content.
+- `WORKTREE_CREATION_POLICY=CONSERVATIVE`;
+  `NO_WORKTREE_FOR_READ_ONLY_AUDIT=true`;
+  `REUSE_EXISTING_WORKTREE_WHEN_SAFE=true`;
+  `MISSION_END_WORKTREE_REVIEW=true`;
+  `NO_HISTORICAL_NODE_MODULES=true`;
+  `POST_MISSION_CLEANUP_POLICY=MANDATORY`;
+  `MISSION_TEMP_ROOT_POLICY=MANDATORY`;
+  `NO_SCATTERED_TEMP_ARTIFACTS=true`.
+- A historical worktree is not disposable by age/name. Require preservation of
+  its Git history and unique files, no active reference/process, and a
+  documented recovery route before removing its physical copy.
+- `CURRENT_FILESYSTEM_OVERRIDES_HISTORICAL_REPORT=true`: freshly verified
+  filesystem/Git state supersedes dated audit snapshots. `UNKNOWN_DO_NOT_DELETE=true`:
+  preserve uncertain files, metadata, and user data until individually resolved.
+
+### Política conservadora de worktrees e temporários
+
+- `WORKTREE_CREATION_POLICY=CONSERVATIVE`: não criar worktree para auditoria
+  somente leitura; reutilizar uma aprovada adequada; criar nova apenas para
+  implementação realmente isolada, uma por objetivo ativo, registrando
+  `PURPOSE` e `OWNER`.
+- Toda missão deve avaliar aposentadoria da própria worktree. Remoção exige
+  preservar HEAD e commits exclusivos, árvore rastreada limpa, zero arquivo
+  não rastreado exclusivo, nenhum processo/referência atual e método de
+  recuperação documentado. `UNKNOWN` significa manter.
+- Dependências só podem ser removidas quando regeneráveis pelo lockfile, o
+  ambiente estiver inativo e não houver processo consumidor.
+- `MISSION_TEMP_ROOT_POLICY=MANDATORY`: preferir `.qa-state/tmp/` existente;
+  não espalhar temporários pela raiz nem criar outro diretório sem justificativa.
+  Ao final, remover somente caminhos exatos comprovadamente regeneráveis e
+  que não sejam a única evidência de um problema aberto.
+- Nunca apagar dados ambíguos, imports, backups, screenshots manuais, fonte ou
+  histórico Git inalcançável para reduzir contagem/armazenamento.
+
 ---
 
 **Referências obrigatórias para decisões de ferramentas e fluxo:**
@@ -370,6 +416,14 @@ Políticas: `MANDATORY_FIRST_SKILL=Superpowers`,
 `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`, `REUSE_GREEN_EVIDENCE=true`,
 `SAME_FAILURE_TWICE=PIVOT` e `FUTURE_MISSIONS_DO_NOT_REPEAT_STABLE_GOVERNANCE=true`.
 
+### Bootstrap documental de cinco arquivos
+
+Para orientação inicial sem varredura ampla, ler nesta ordem: `AGENTS.md`,
+`docs/ai/INDEX.md`, `docs/ai/PROJECT_STATE.md`, `docs/ai/NEXT_STEP.md` e
+`docs/ai/CURRENT_PROJECT_MAP.md`. Depois, abrir somente contratos e roteadores
+específicos exigidos pela tarefa; esta otimização não dispensa PROJECT IDENTITY
+GATE, Superpowers, nem instruções task-specific aplicáveis.
+
 ## PERMANENT SKILLS POLICY — SUPERPOWERS_FIRST
 
 `MANDATORY_FIRST_SKILL=Superpowers`.
@@ -397,3 +451,15 @@ Handoff mínimo: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
 `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED`, `SKILL_GAPS_FOUND`.
 
 Detalhes: [`docs/SKILLS_ROUTING.md`](docs/SKILLS_ROUTING.md).
+
+## Privacidade de artefatos financeiros pessoais
+
+- `PERSONAL_FINANCIAL_ARTIFACTS_POLICY=LOCAL_ONLY`: imports, extratos,
+  snapshots de carteira, evidências de conta e relatórios pessoais de
+  reconciliação não podem ser adicionados ao Git, a backups de código-fonte ou
+  a anexos públicos de PR.
+- Dados locais sensíveis não devem ser lidos ou enumerados além do necessário;
+  nunca reproduza valores, identificadores ou nomes de arquivos pessoais em
+  documentação pública. Preserve-os por padrão.
+- `UI_WORK_MUST_READ_VISUAL_CANON=true`: antes de mudança visual, leia
+  `docs/ai/VISUAL_CANON.md` e o índice em `Refs/visual-canon/`.

@@ -1,5 +1,11 @@
 # Project State
 
+## V278O — local publishable reconstruction (2026-09-28)
+
+- Active worktree: isolated V278O integration worktree, branch `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. The machine-local path is intentionally omitted. The source integration worktree is preserved and was not edited.
+- This branch is rebuilt from reviewed file-level changes rather than V278M commits. Private financial reports and exact recovery metadata remain outside Git; visual references without proven public provenance are excluded from the publishable tree.
+- V278Q local gates passed: `npm test` 249/249 (including its modern-build prerequisite), modern tests 815/815, directed tests 29/29, builds, `qa:all`, and seven-width smoke. Six audit advisories are confined to development dependencies; no dependency versions changed. No product financial behavior/persistence changed and no financial write, commit, push, PR, merge, or deploy occurred.
+
 ## V274 — remaining QA gates closeout checkpoint (2026-09-26)
 
 - Work continues only in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`, from base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. Initial PR head was `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`; corrected code head `9abfee7b8d622e9faa3ee19a854db8382a9da85d` has green CI/READY preview; final documentation follow-up SHA and its gates will be recorded in the handoff. Canonical checkout and its untracked content remain untouched; `carteira-2.0` was not accessed.

@@ -62,7 +62,7 @@ Ao iniciar em computador novo, clone novo, chat novo ou agente novo:
 
 1. validar repositorio, branch, HEAD e status;
 2. ler `docs/ai`;
-3. executar `scripts/setup-ai.ps1`;
+3. executar `scripts/maintenance/setup-ai.ps1`;
 4. verificar ou restaurar as skills locais;
 5. conferir `docs/ai/skills.lock.json`;
 6. somente depois iniciar implementacao.
