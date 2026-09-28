@@ -1,13 +1,21 @@
 # Project State
 
-## V279B — visual and product learning audit (2026-09-28)
+## V280 — product completion audit (2026-09-28)
+
+- `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`; no product/runtime, financial, tax, test, or dependency changes were made.
+- Audit, backlog and 24-domain completion matrix: `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md`, `PRODUCT_COMPLETION_MATRIX.md`.
+- P0 integrity finding: legacy Rentabilidade may back-project current quotes into past periods and synthesize benchmark history from fixed annual rates. This conflicts with the dated-history contract; see V281 acceptance criteria. Static-source finding only; no browser or production behavior was newly certified.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; broad visual redesign is deferred until the integrity blocker is resolved.
+- `NEXT_RECOMMENDED_MISSION=V281_TRUSTWORTHY_RENTABILITY_SERIES_REPAIR` (recommendation only; not started or authorized).
+- Preferred Hermes/Nemotron and independent review models were not available; Codex completed the source/documentation audit. No independent model review or fresh browser certification is claimed.
+
+## V279B — visual and product learning audit (2026-09-28; historical)
 
 - `V279B_STATUS=COMPLETE_DOCUMENTATION_ONLY`; active target is the LEGACY `index.html` product. Modern remains read-only and is not the redesign target.
 - Durable cross-source audit: `docs/ai/V279B_VISUAL_PRODUCT_AUDIT.md`; consolidated reusable UI contract: `docs/ai/VISUAL_CANON_V2.md`, linked from `VISUAL_CANON.md`.
 - Main product finding: functional breadth and useful screen structures exist, but visual hierarchy, table geometry, navigation grouping, and several overlapping style/token layers are inconsistent. Prior V274 synthetic evidence records an internal Dashboard allocation-table collision at 1920px; it was not freshly rendered/retested in V279B.
 - Reference B was strictly read-only and remains a laboratory. Reference C's composite included financial-looking private content and remains local-only; no private values, branding, reference business logic, or product code were copied.
 - `RUNTIME_FILES_CHANGED=0`; `FINANCIAL_FILES_CHANGED=0`; `TEST_FILES_CHANGED=0`; `PACKAGE_FILES_CHANGED=0`. No browser/runtime re-certification is claimed.
-- `NEXT_RECOMMENDED_MISSION=V280_GLOBAL_VISUAL_FOUNDATION_AND_DASHBOARD` (not started; separate authorization required).
 - Hermes/Nemotron was unavailable; Codex performed the static/source and visual-reference audit. No independent model review is claimed.
 
 ## V279A2 — post-V278 closeout (2026-09-28)

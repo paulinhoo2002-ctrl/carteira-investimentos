@@ -1,12 +1,13 @@
 # Next Step
 
-## Active — V279B visual and product learning audit (2026-09-28)
+# Next Step
 
-- `V279B_STATUS=COMPLETE_DOCUMENTATION_ONLY`. Durable results are in [`V279B_VISUAL_PRODUCT_AUDIT.md`](V279B_VISUAL_PRODUCT_AUDIT.md) and [`VISUAL_CANON_V2.md`](VISUAL_CANON_V2.md); `VISUAL_CANON.md` points to the consolidated system.
-- The target remains the LEGACY `index.html` surface. The audit found competing style/token layers and an evidenced historical Dashboard allocation-table collision at 1920px; that collision was not re-tested in this documentation-only mission. No runtime, CSS, financial, test, or dependency files changed.
-- `NEXT_RECOMMENDED_MISSION=V280_GLOBAL_VISUAL_FOUNDATION_AND_DASHBOARD`. This is a recommendation only; do not start implementation without separate authorization. Begin with shared shell/token mapping and a rendered Dashboard slice, preserving financial semantics and proving table geometry at relevant widths.
-- `PREFERRED_AGENT=HERMES_NEMOTRON_3_ULTRA` was unavailable in this session; Codex completed static/source and reference review. No independent model review or fresh browser rendering is claimed. Reference B remained strictly read-only; Reference C's financial-looking composite remains local-private and was not added to Git.
-- `NEXT_ACTION=AUTHORIZE_V280_GLOBAL_VISUAL_FOUNDATION_AND_DASHBOARD`.
+## Active — V280 product completion audit (2026-09-28)
+
+- `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`. Read [`V280_PRODUCT_COMPLETION_AUDIT.md`](V280_PRODUCT_COMPLETION_AUDIT.md), [`PRODUCT_COMPLETION_BACKLOG.md`](PRODUCT_COMPLETION_BACKLOG.md) and [`PRODUCT_COMPLETION_MATRIX.md`](PRODUCT_COMPLETION_MATRIX.md).
+- A P0 integrity issue was found in legacy Rentabilidade: historical holdings may be valued with current quotes and benchmark history may be synthesized from fixed annual rates. Runtime was not changed. Do not present these series as observed history; next work should reuse dated valuation/readiness contracts and fail closed on gaps.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; broad visual implementation is deferred until the integrity blocker is resolved. No financial/tax writes, runtime changes, dependency changes, push, PR, merge or deploy occurred in V280.
+- `NEXT_RECOMMENDED_MISSION=V281_TRUSTWORTHY_RENTABILITY_SERIES_REPAIR`. This is a recommendation, not authorization to start the next phase. Preserve `ENGINE_AVAILABLE != DATA_READY` and avoid interpolation or quote back-projection.
 
 - V278 is closed: PR #428 is merged and deployed at `e3a295833e7ac5227b86b7f88deab41e82679a4e`; production is READY at https://carteira-investimentos-delta.vercel.app/.
 - Privacy reconciliation is complete. Private recovery metadata and private visual references remain local-only; the public visual canon is safe for Git.
