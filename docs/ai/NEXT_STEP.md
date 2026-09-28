@@ -4,7 +4,7 @@
 
 - `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`. Read [`V280_PRODUCT_COMPLETION_AUDIT.md`](V280_PRODUCT_COMPLETION_AUDIT.md), [`PRODUCT_COMPLETION_BACKLOG.md`](PRODUCT_COMPLETION_BACKLOG.md) and [`PRODUCT_COMPLETION_MATRIX.md`](PRODUCT_COMPLETION_MATRIX.md).
 - A P0 integrity issue was found in legacy Rentabilidade: historical holdings may be valued with current quotes and benchmark history may be synthesized from fixed annual rates. Runtime was not changed. Do not present these series as observed history; next work should reuse dated valuation/readiness contracts and fail closed on gaps.
-- `VISUAL_CANON_V2=FROZEN_REFERENCE`; broad visual implementation is deferred until the integrity blocker is resolved. No financial/tax writes, runtime changes, dependency changes, push, PR, merge or deploy occurred in V280.
+- `VISUAL_PHASE=DEFERRED`; `VISUAL_CANON_V2=FROZEN_REFERENCE`. Broad visual implementation is deferred until the integrity blocker is resolved. No financial/tax writes, runtime changes, dependency changes, push, PR, merge or deploy occurred in V280.
 - `P0=P0_RENTABILIDADE_HISTORICAL_SERIES`; until proven correct, `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`.
 - `NEXT_ACTION=V281_HISTORICAL_RETURN_TRUTH_REPAIR`; `V281_STATUS=RECOMMENDED_NOT_STARTED`. This is a recommendation, not authorization. Preserve `ENGINE_AVAILABLE != DATA_READY`; no interpolation, present-quote back-projection, or fixed-rate substitute for dated benchmarks.
 - `VISUAL_CANON_V2=FROZEN_REFERENCE`; `FUNCTIONAL_COMPLETION_FIRST=true`; `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`. Only usability-blocking visual fixes may occur during functional waves.
