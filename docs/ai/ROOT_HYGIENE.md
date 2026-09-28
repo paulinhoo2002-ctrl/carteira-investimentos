@@ -24,7 +24,11 @@ Runtime-generated browser-harness directories MUST NOT accumulate in root:
 - `.browser-harness-config-*` → `%TEMP%\CarteiraInvestimentos\browser-harness\config\`
 - `.browser-harness-runtime*` → `%TEMP%\CarteiraInvestimentos\browser-harness\runtime\`
 
-## Root Writer Identification
+## Root Writer Identification — historical V5R evidence
+
+The `tools/qa/` file paths below are historical paths from the 2026-09-12
+investigation. The current QA root is `scripts/qa/`; do not treat these old
+writer paths as existing operational files.
 
 Files that previously generated root clutter (fixed 2026-09-12):
 
@@ -35,18 +39,18 @@ Files that previously generated root clutter (fixed 2026-09-12):
 
 ## Enforcement
 
-- `scripts/root-hygiene-check.js` — run this to verify no harness dirs in root.
+- `scripts/maintenance/root-hygiene-check.js` — current check for harness dirs in root.
 - `.gitignore` patterns `.browser-harness-*/`, `.browser-harness-runtime*/` prevent tracking.
 
 ## Root Writer Policy
 
-Any new QA tool that uses `browser-harness.exe` must:
-1. Import `tools/qa/harness-paths.js` (the central temp-path policy).
-2. Use `HarnessPaths.envFor()` to set `BH_HOME`, `BH_TMP_DIR`, `BH_CONFIG_DIR`, `BH_RUNTIME_DIR`.
-3. Never default to `process.cwd()` for harness state directories.
+Any new QA tool that uses `browser-harness.exe` must keep all harness state
+outside the repository, under `%TEMP%\CarteiraInvestimentos\browser-harness\`,
+and must not default state directories to `process.cwd()`. The old helper
+`tools/qa/harness-paths.js` is historical and absent; do not import it.
 
 ## Recovery Workflow
 
-1. `harness-paths.js` resolves temp paths via `os.tmpdir()`.
-2. `harness-paths.js envFor()` returns env overrides respecting env var overrides for flexibility.
-3. `ensureTempDirs()` creates the temp directory tree on demand.
+1. Resolve the temp root from the OS temp directory and validate containment.
+2. Respect explicit QA environment overrides only after validation.
+3. Create only the required QA temp subdirectories.

@@ -39,6 +39,7 @@ for(const item of cases){
         const page=await context.newPage();
         page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
         page.on('pageerror',error=>errors.push(`pageerror: ${error.message}`));
+        page.on('response',response=>{if(response.status()>=400)failures.push(`${response.status()} ${response.url()}`);});
         page.on('requestfailed',request=>failures.push(request.url()));
         await page.goto(harness.url,{waitUntil:'networkidle'});
         await page.evaluate(route=>go(route),item.route);
@@ -92,8 +93,8 @@ for(const item of cases){
           await new Promise(resolve=>harness.server.close(resolve));
         }
       }
-      assert.deepEqual(errors,[],`console/pageerror: ${errors.join(' | ')}`);
       assert.deepEqual(failures,[],`request failures: ${failures.join(' | ')}`);
+      assert.deepEqual(errors,[],`console/pageerror: ${errors.join(' | ')}`);
     });
   }
 }

@@ -1,5 +1,16 @@
 # Next Step
 
+## Active — V278O privacy-safe reconstruction (2026-09-28)
+
+- Work only in the isolated V278O integration worktree on `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. Its machine-local path is intentionally omitted; the source V278M worktree remains untouched.
+- `PRIVACY_REVIEW_COMPLETED=true`; `PRIVACY_SAFE=true`. Public backup/recovery docs describe architecture only; exact private recovery metadata and visual references without proven public provenance remain local-only.
+- `LOCAL_COMMITS_CREATED=6` for V278T, reviewed at `V278T_HEAD=8419d3566888655689b31ee1045acda1fb0a8fc7`. This V278V documentation reconciliation is the seventh local commit relative to the recorded base; obtain the exact current HEAD from Git.
+- `TECHNICAL_VALIDATION_PASS=true` at the V278T reviewed HEAD: general 249/249, modern 815/815, directed 18/18, both builds, `qa:all`, seven-width smoke, diff checks and `git fsck --full` passed. This V278V docs-only change requires fresh diff checks; it does not alter runtime or dependencies. Six npm advisories remain a development-tooling follow-up.
+- `PUSH_NOT_AUTHORIZED=true`; `PR_NOT_AUTHORIZED=true`. No push, PR, merge or deploy is authorized; no financial write occurred.
+- `NEXT_ACTION=FINAL_READ_ONLY_CONFIRMATION_THEN_REQUEST_HUMAN_PUSH_PR_AUTHORIZATION`.
+
+The V274 and earlier entries below are dated historical checkpoints, not the active objective.
+
 ## Active — V274 PR #427 final exact-head certification (2026-09-26)
 
 - Continue only in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`; base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`, initial PR head `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`.

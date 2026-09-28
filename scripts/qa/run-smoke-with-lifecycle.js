@@ -5,7 +5,7 @@ const path = require('node:path');
 const { startLocalHttpServer } = require('../../tests/local-http-server.js');
 
 const ROOT = path.join(__dirname, '..', '..');
-const SMOKE_SCRIPT = path.join(ROOT, 'tools/qa/browser-smoke.js');
+const SMOKE_SCRIPT = path.join(ROOT, 'scripts/qa/browser-smoke.js');
 
 async function waitForServerReady(baseUrl, maxAttempts = 50) {
   for (let i = 0; i < maxAttempts; i++) {

@@ -15,8 +15,8 @@
 
 | Suite | Command | Purpose | Baseline |
 |---|---|---|---|
-| Static/build | `npm test` | Main build plus legacy/core/integration/regression suites | Current project baseline previously observed: 75 passing; rerun before release |
-| Modern | `npm run test:modern` | Readonly React/Vite host, bridges and modern contracts | Previously observed: 750 passing; rerun before release |
+| Static/build | `npm test` | Main build plus legacy/core/integration/regression suites | V278N clean `origin/main` baseline: 249 passing |
+| Modern | `npm run test:modern` | Readonly React/Vite host, bridges and modern contracts | V278N clean `origin/main` baseline: 815 passing |
 | Finance | `npm run test:finance` | Finance Core contract suite | Previously observed: 80 passing |
 | Persistence | `npm run test:persistence` | Persistence Core contract suite | Previously observed: 31 passing |
 | Static build | `npm run build` | Required legacy files exist | PASS in recent release validation |
@@ -25,8 +25,12 @@
 | Phase 4I prewrite | `npm run qa:phase4i:prewrite` | Authenticated native click plus protected sandbox; no real write | Required before a pilot authorization |
 | Phase 4I browser | `npm run qa:phase4i:browser` | Authenticated surface at seven viewports via local QA CDP | Required for the protected surface gate |
 
-Counts above are recorded baselines from the latest project state, not a claim
-that this documentation-only audit reran every suite.
+Counts above are recorded baselines; the V278N clean `origin/main` run freshly
+reproduced 249/249 general and 815/815 modern tests. The legacy `npm test`
+suite passed before `build:modern` on that baseline. V84 smoke screenshots are
+written to ignored `.qa-state/v84-ui/`; they are generated QA evidence, not
+authenticated browser-profile state. Do not remove existing screenshots just
+to work around sandbox write restrictions; use the authorized local runtime.
 
 The Phase 4I prewrite command must report no snapshot, mutation, save or sync.
 The local static server may return an expected 404 for `/api/yahoo-quote`; the
@@ -126,14 +130,15 @@ QA visual não autenticado ou análise estática. Somente leituras Firebase,
 cold boot autenticado e prewrite real são deferred. `.qa-state/` é local e
   ignorado; nunca deve conter cookies, tokens ou dados privados.
 
-## Root hygiene gate (2026-09-12, V5R)
+## Root hygiene gate (historical V5R notes; current paths below)
 
-- Check: `node scripts/root-hygiene-check.js` (fails if `.browser-harness-*`
+- Current check: `node scripts/maintenance/root-hygiene-check.js` (fails if `.browser-harness-*`
   dirs appear in repo root).
 - All browser-harness temp state MUST be created outside the repo, under
   `%TEMP%\CarteiraInvestimentos\browser-harness\`. The central policy lives in
-  `tools/qa/harness-paths.js` (`HarnessPaths.envFor()`); QA scripts must import
-  it instead of defaulting to `process.cwd()`.
+  the owning QA script; do not import the historical, absent
+  `tools/qa/harness-paths.js`. Current QA tooling is under `scripts/qa/` and
+  must resolve temp state outside the repository.
 - Canonical QA profile stays at
   `%LOCALAPPDATA%\CarteiraInvestimentos\qa-browser-authenticated` (outside repo).
 - See `docs/ai/ROOT_HYGIENE.md` for allowed root categories and writer policy.

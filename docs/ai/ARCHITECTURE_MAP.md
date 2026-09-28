@@ -171,7 +171,7 @@ ancora de destino, cria snapshot local persistido dos 99 registros afetados e
 dos hashes de estado nao relacionado, aplica somente a divergencia local,
 valida readback independente e faz rollback por identidade/slot original.
 O dry-run encerra antes do snapshot; nenhum callback de cloud e exposto. O
-prewrite correspondente e `tools/qa/phase4h-preclassc-recovery-prewrite.js`.
+O prewrite correspondente e `scripts/qa/phase4h-preclassc-recovery-prewrite.js`.
 
 ### V49 autoridade local/cloud e durabilidade do perfil QA
 

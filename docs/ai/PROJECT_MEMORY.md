@@ -1,5 +1,11 @@
 # Project Memory
 
+## V278O — privacy-safe local integration reconstruction (2026-09-28)
+
+- This branch is reconstructed from `origin/main` `179ea6269a04d5075b655d829645b53ffd200741` in an isolated V278O worktree, branch `integration/v278o-privacy-safe`. The machine-local path is intentionally omitted. It replays reviewed file-level changes only; it does not inherit the local V278M commit ancestry.
+- Personal financial artifacts and exact recovery identifiers remain local-only; the original private recovery material was preserved outside Git. Unproven visual references are also private and absent from the publishable tree. The V278M source worktree remains preserved as local evidence.
+- V278Q validation: general 249/249, modern 815/815, directed 29/29, both builds and `qa:all` PASS; responsive smoke passed seven widths. Read-only npm audit: 6 advisories (3 high, 3 moderate), 1 direct and 5 transitive development dependencies across build/test tooling, with no production runtime path observed. Runtime-reachable findings=0; follow-up required=true. No exploit details or dependency changes are recorded; re-audit the current lockfile before a release. No financial writes, commit, push, PR, merge, or deploy.
+
 ## V274 closeout — current final QA checkpoint (2026-09-26)
 
 - V274 remains isolated in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`, base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. Initial PR #427 head was `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`; do not reuse its remote CI/Vercel result after new commits.
@@ -1061,8 +1067,8 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Os planos têm `20` eventos sobrepostos e convergiram nas simulações em
   `431/330/101`, `2709626` cents; a ordem segura recomendada é Class C e
   depois agosto, sempre com autorizações separadas. Manifestos V20 foram
-  congelados como bloqueados em `docs/ai/PHASE4H_V20_READONLY_MANIFESTS.md` e
-  `.qa-state/phase4h-v20-*-preauth-manifest.json`.
+  mantidos bloqueados por padrão; evidências específicas de estado local não
+  são incluídas na documentação publicável.
 - Nesta fase: `REAL_CLASS_C_EXECUTED=false`, `REAL_AUGUST_PILOT_EXECUTED=false`,
   `REAL_USER_DATA_WRITE=false`, cloud write/sync/push/PR/merge/deploy false.
 # Phase 4H V25 — Class C provenance closure

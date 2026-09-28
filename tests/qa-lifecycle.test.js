@@ -5,8 +5,29 @@ const test = require('node:test');
 const { startLocalHttpServer } = require('../tests/local-http-server.js');
 
 const ROOT = path.join(__dirname, '..');
-const SMOKE_SCRIPT = path.join(ROOT, 'tools/qa/browser-smoke.js');
-const LIFECYCLE_SCRIPT = path.join(ROOT, 'tools/qa/run-smoke-with-lifecycle.js');
+const SMOKE_SCRIPT = path.join(ROOT, 'scripts/qa/browser-smoke.js');
+const LIFECYCLE_SCRIPT = path.join(ROOT, 'scripts/qa/run-smoke-with-lifecycle.js');
+const BROWSER_DOCTOR = path.join(ROOT, 'scripts/qa/browser-doctor.js');
+
+test('browser-doctor imports without launching diagnostics and exports a callable diagnostic', () => {
+  const doctor = require(BROWSER_DOCTOR);
+  assert.equal(typeof doctor.collectDiagnostics, 'function');
+});
+
+test('canonical QA auth reader degrades safely when CDP is unavailable', async () => {
+  const previousPort = process.env.QA_CDP_PORT;
+  process.env.QA_CDP_PORT = '1';
+  try {
+    const browser = require('../scripts/qa/canonical-qa-browser.js');
+    const status = await browser.readAuthStatus();
+    assert.equal(status.CDP_REACHABLE, false);
+    assert.equal(status.AUTH_SESSION_VALID, false);
+    assert.equal(status.FB_CLOUD_LOADED, false);
+  } finally {
+    if (previousPort === undefined) delete process.env.QA_CDP_PORT;
+    else process.env.QA_CDP_PORT = previousPort;
+  }
+});
 
 async function waitForServerReady(baseUrl, maxAttempts = 50) {
   for (let i = 0; i < maxAttempts; i++) {

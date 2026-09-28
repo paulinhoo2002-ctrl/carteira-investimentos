@@ -54,6 +54,21 @@ test('missing generated asset returns 404 without crashing the QA server', async
   }
 });
 
+test('Yahoo quote requests in the static QA harness receive only an empty synthetic response', async () => {
+  const { startLocalHttpServer } = require('./local-http-server');
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  try {
+    const response = await fetch(new URL('/api/yahoo-quote?symbols=petr4,vale3', harness.url));
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+      source: 'synthetic-qa-empty', requested: ['PETR4', 'VALE3'], count: 0, results: [],
+    });
+  } finally {
+    harness.server.closeAllConnections?.();
+    await new Promise(resolve => harness.server.close(resolve));
+  }
+});
+
 test('does not serve a sibling path whose name shares the document root prefix', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'qa-static-root-'));
   const sibling = `${root}-outside`;
