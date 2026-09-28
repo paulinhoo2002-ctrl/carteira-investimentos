@@ -57,14 +57,16 @@ Para toda missão substancial neste projeto:
    `C:\Projetos\carteira-investimentos`, incluindo worktrees registradas em
    `C:\Projetos\carteira-investimentos.worktrees\`. Nunca leia, pesquise,
    compare ou reutilize `C:\Projetos\carteira-2.0`.
-2. Carregue e use `Superpowers` como a primeira Skill, antes de qualquer outra
-   Skill especializada.
+2. Depois do gate, anuncie `Using Caveman + Superpowers to <purpose>` e carregue
+   `caveman` seguido de `using-superpowers`. O Caveman local orienta concisão;
+   não concede autoridade nem substitui análise técnica.
 3. Descubra o inventário real em
    `C:\Projetos\carteira-investimentos\.agents\skills`; selecione apenas o
    conjunto mínimo relevante e reavalie se o escopo mudar.
    O catálogo versionado é um snapshot; valide a instalação física atual e
    não presuma que pacotes locais ignorados pelo Git existem em outros clones.
-4. Siga `docs/SKILLS_ROUTING.md` para agente/modelo, justificativa da escolha,
+4. Siga `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md` para processo,
+   agente/modelo, justificativa da escolha,
    fallback, limites e campos de relatório. Esta preferência não permite
    alegar que um provider/modelo foi usado quando ele não estiver disponível.
 5. Use a documentação versionada do repositório como continuidade durável,
@@ -81,11 +83,14 @@ O handoff deve registrar `SKILLS_CONSIDERED`, `SKILLS_USED`,
 
 Ao iniciar uma tarefa relevante neste repositório:
 
-1. Leia este arquivo e `docs/ai/PROJECT_MEMORY.md`.
-2. Consulte `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`.
-3. Confirme workspace, branch, HEAD, `origin/main` e working tree.
-4. Use primeiro Superpowers; descubra Skills locais e classifique a missão
-   conforme `docs/SKILLS_ROUTING.md` e `docs/ai/SKILL_ROUTER.md`.
+1. Confirme identidade, raiz Git, remote, branch, HEAD, status e Git comum.
+2. Anuncie `Using Caveman + Superpowers to <purpose>`; carregue `caveman` e
+   depois `using-superpowers`.
+3. Leia este arquivo, `docs/ai/PROJECT_MEMORY.md`, `docs/ai/PROJECT_STATE.md`,
+   `docs/ai/NEXT_STEP.md`, `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`.
+4. Descubra Skills locais e classifique a missão conforme
+   `docs/ai/SKILLS_ROUTING.md`, `docs/SKILLS_ROUTING.md` e
+   `docs/ai/SKILL_ROUTER.md`.
 5. Selecione somente o menor conjunto relevante; reavalie se a categoria mudar.
 6. Execute a mudança com escopo controlado e preserve áreas protegidas.
 7. Valide com os testes, build e navegador aplicáveis.
@@ -399,11 +404,12 @@ Codex e outros agentes devem seguir no fluxo diário.
 
 ## V197 compact boot contract
 
-Toda sessão deve executar primeiro o PROJECT IDENTITY GATE, ler `AGENTS.md`,
-`docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`, `docs/ai/DECISIONS.md` e
-`docs/ai/SKILL_ROUTER.md`, descobrir Skills em `.agents/skills`, sempre
-considerar Superpowers, selecionar o menor conjunto relevante, executar,
-validar delta e atualizar `NEXT_STEP.md`. O router versionado em
+Toda sessão deve executar primeiro o PROJECT IDENTITY GATE. Depois, anunciar o
+uso, carregar `caveman` e `using-superpowers` nessa ordem; então ler
+`AGENTS.md`, `docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`,
+`docs/ai/DECISIONS.md` e `docs/ai/SKILL_ROUTER.md`, descobrir Skills em
+`.agents/skills`, classificar a missão, selecionar o menor conjunto relevante,
+executar, validar delta e atualizar `NEXT_STEP.md`. O router versionado em
 `docs/ai/SKILL_ROUTER.md` é suficiente; `.agents/SKILL_ROUTER.md`, se existir,
 é somente uma bridge local e nunca é requisito do boot.
 
@@ -412,7 +418,9 @@ financeira/persistência/Git → PROJECT_MEMORY → DECISIONS → SKILL_ROUTER �
 SKILL.md → preferência da missão. Superpowers nunca autoriza writes, merge,
 deploy ou mudança protegida.
 
-Políticas: `MANDATORY_FIRST_SKILL=Superpowers`,
+Políticas: `MANDATORY_AGENT_BOOTSTRAP=true`,
+`BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`,
+`MANDATORY_START_ANNOUNCEMENT=true`,
 `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`, `REUSE_GREEN_EVIDENCE=true`,
 `SAME_FAILURE_TWICE=PIVOT` e `FUTURE_MISSIONS_DO_NOT_REPEAT_STABLE_GOVERNANCE=true`.
 
@@ -424,30 +432,39 @@ Para orientação inicial sem varredura ampla, ler nesta ordem: `AGENTS.md`,
 específicos exigidos pela tarefa; esta otimização não dispensa PROJECT IDENTITY
 GATE, Superpowers, nem instruções task-specific aplicáveis.
 
-## PERMANENT SKILLS POLICY — SUPERPOWERS_FIRST
+## PERMANENT SKILLS POLICY — CAVEMAN_AND_SUPERPOWERS
 
-`MANDATORY_FIRST_SKILL=Superpowers`.
+`MANDATORY_AGENT_BOOTSTRAP=true`.
+
+Ordem: PROJECT IDENTITY GATE → anúncio obrigatório `Using Caveman +
+Superpowers to <purpose>` → `caveman` → `using-superpowers` → Skills
+específicas da missão. Essa sequência aplica-se a todos os agentes e modelos.
+O anúncio ocorre no início da primeira resposta substancial, após confirmar a
+identidade. `caveman` é a Skill de comunicação concisa disponível neste
+projeto; preserve precisão, legibilidade e explicações completas para risco,
+segurança ou ação irreversível. Não invente capacidades se o pacote mudar.
 
 Antes de implementar, investigar, depurar, revisar código, fazer QA,
 refatorar ou planejar uma mudança técnica, qualquer executor deve confirmar a
-identidade do projeto e carregar/usar Superpowers primeiro. Em seguida deve
-ler a memória canônica, descobrir as Skills reais em `.agents/skills` e
-selecionar somente as especializadas relevantes, conforme
-`docs/SKILLS_ROUTING.md`.
+identidade do projeto, carregar `caveman` e em seguida `using-superpowers`, ler
+a memória canônica, descobrir Skills reais em `.agents/skills` e selecionar
+somente as especializadas relevantes conforme os roteadores versionados.
 
 Se a categoria mudar, registrar `SKILL_REEVALUATED=true` e reavaliar. Não
-inventar Skills nem ampliar escopo por causa de uma Skill. Superpowers é uma
-camada de processo, não autorização para merge, deploy, cloud writes,
+inventar Skills nem ampliar escopo por causa de uma Skill. Caveman e
+Superpowers orientam comunicação/processo; não autorizam merge, deploy, cloud writes,
 alterações financeiras, persistência, schema, secrets, force push ou Git
 destrutivo. A autorização da missão e os contratos do projeto prevalecem.
 
 Esta política é independente de chat, memória de sessão, modelo ou executor;
 Codex, Hermes, OpenCode e agentes genéricos convergem para estes arquivos. Se
-Superpowers não estiver disponível, registrar `SKILL_GAPS_FOUND`, explicar a
-limitação e só então usar o melhor fallback de processo disponível.
+Caveman ou Superpowers não estiver disponível, registrar `SKILL_GAPS_FOUND`,
+não alegar uso e continuar apenas com capacidades realmente disponíveis e
+fallback de processo seguro.
 
-Handoff mínimo: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
-`SUPERPOWERS_USED`, `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
+Handoff mínimo: `CAVEMAN_SKILL_AVAILABLE`, `CAVEMAN_USED`,
+`SUPERPOWERS_AVAILABLE`, `SUPERPOWERS_USED`, `SKILLS_DISCOVERED`,
+`SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
 `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED`, `SKILL_GAPS_FOUND`.
 
 Detalhes: [`docs/SKILLS_ROUTING.md`](docs/SKILLS_ROUTING.md).

@@ -30,7 +30,8 @@ por categoria; `.agents/SKILL_ROUTER.md` pode existir apenas como bridge local.
 
 `PROJECT_IDENTITY_GATE_REQUIRED=true`
 `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`
-`MANDATORY_FIRST_SKILL=Superpowers`
+`MANDATORY_AGENT_BOOTSTRAP=true`
+`BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`
 
 OFFICIAL_WORKSPACE:
 C:\Projetos\carteira-investimentos

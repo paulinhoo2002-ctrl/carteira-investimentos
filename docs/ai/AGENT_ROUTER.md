@@ -24,10 +24,11 @@ O owner deve:
 ## ROTEAMENTO DE AGENTES E MODELOS
 
 O roteamento normativo de agentes, modelos, disponibilidade e critérios de
-fallback está em [`../SKILLS_ROUTING.md`](../SKILLS_ROUTING.md). A rota padrão
-para engenharia normal é Hermes + NVIDIA API/Nemotron 3 Super quando realmente
-disponível; Codex + GPT-6 Sol é fallback conforme os critérios documentados,
-não uma preferência intercambiável.
+fallback está em [`../SKILLS_ROUTING.md`](../SKILLS_ROUTING.md), com bootstrap
+obrigatório detalhado em [`SKILLS_ROUTING.md`](SKILLS_ROUTING.md). Engenharia
+normal pode usar Hermes/NVIDIA quando disponível; auditoria ampla/longa prefere
+Hermes/Nemotron Ultra. Revisão técnica focada e revisão final de Git/filesystem
+de risco preferem Codex/GPT-5.6 Sol. Verifique disponibilidade em cada missão.
 
 O princípio de owner único permanece: o agente selecionado executa a tarefa de
 ponta a ponta. Não trocar de owner sem razão concreta, nem declarar que um

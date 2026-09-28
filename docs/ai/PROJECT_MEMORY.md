@@ -1,5 +1,26 @@
 # Project Memory
 
+## V280A — bootstrap global e prioridade funcional (2026-09-28)
+
+- `MANDATORY_AGENT_BOOTSTRAP=true`. Após PROJECT IDENTITY GATE, anúncio obrigatório `Using Caveman + Superpowers to <purpose>`, depois `caveman`, `using-superpowers` e Skills específicas. Disponibilidade real deve ser verificada; ausência é reportada, nunca simulada. `caveman` local orienta concisão, não segurança ou autorização.
+- Rotas, modelos, anúncio, limites e freeze visual: `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`. Visual: `VISUAL_CANON_V2=FROZEN_REFERENCE`, `FUNCTIONAL_COMPLETION_FIRST=true`, `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`.
+- `P0_RENTABILIDADE_HISTORICAL_SERIES=true`; retorno histórico não verificado deve permanecer `UNAVAILABLE`. Proibidos interpolação, retroprojeção de cotação presente e taxa fixa no lugar de benchmark datado.
+- `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recomendação; não iniciada/autorizada).
+
+## V280A/V280 — auditoria funcional e política de bootstrap (2026-09-28)
+
+- Auditoria, backlog e matriz: `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md` e `PRODUCT_COMPLETION_MATRIX.md`.
+- P0 em Rentabilidade legado: períodos podem ser reavaliados com cotações atuais e benchmarks podem derivar de taxas fixas. Achado estático; sem alteração de runtime ou nova certificação de navegador. Resolver antes de redesign global.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; conclusão funcional precede implementação visual ampla.
+
+## V279A2 — post-V278 closeout (2026-09-28)
+
+- V278 is `MERGED_AND_DEPLOYED`: PR #428 merged at `e3a295833e7ac5227b86b7f88deab41e82679a4e`; production is READY at https://carteira-investimentos-delta.vercel.app/.
+- Privacy reconciliation is complete; the public visual canon is safe. Exact recovery metadata and private visual references remain local-only.
+- Product phase is `PRODUCT_VISUAL_CONSOLIDATION`; the next authorized objective is `V279B_VISUAL_AND_PRODUCT_LEARNING_AUDIT`, focused first on Dashboard, Ativos, and Dividendos. Functional foundation is mature; visual coherence/product hierarchy is the current working gap, not a claim of exhaustive discovery.
+- Preserve the established visual/financial constraints: coherent shell and hierarchy, analytical tables, contextual charts, restrained semantic color, readable density at 1366x768, mobile adaptation, `Patrimônio != Rentabilidade`, `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, and no invented financial data.
+- Worktree inventory at closeout is recorded in `CURRENT_PROJECT_MAP.md`; no historical worktree or residue was removed in V279A2.
+
 ## V278O — privacy-safe local integration reconstruction (2026-09-28)
 
 - This branch is reconstructed from `origin/main` `179ea6269a04d5075b655d829645b53ffd200741` in an isolated V278O worktree, branch `integration/v278o-privacy-safe`. The machine-local path is intentionally omitted. It replays reviewed file-level changes only; it does not inherit the local V278M commit ancestry.
@@ -212,14 +233,15 @@
   `docs/ai/SKILL_ROUTER.md` é o roteador técnico de Skills por categoria.
   Uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
 - `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`.
-- `MANDATORY_FIRST_SKILL=Superpowers`; carregar e usar primeiro quando
-  disponível. Superpowers não substitui identidade, segurança financeira,
-  persistência, Git ou gates humanos.
+- `MANDATORY_AGENT_BOOTSTRAP=true`; após identidade, usar Caveman e depois
+  Superpowers `using-superpowers`, seguido das Skills específicas. Ambos são
+  sujeitos à disponibilidade física; indisponibilidade deve ser registrada.
 
-Boot mínimo independente do chat: identity gate → `AGENTS.md` →
-`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → descoberta e uso de
-Superpowers → inventário físico `.agents/skills` → classificação → menor
-conjunto de Skills relevante em `docs/SKILLS_ROUTING.md` e
+Boot mínimo independente do chat: identity gate → anúncio → Caveman →
+Superpowers `using-superpowers` → `AGENTS.md` → `PROJECT_MEMORY.md` →
+`NEXT_STEP.md` → `DECISIONS.md` → inventário físico `.agents/skills` →
+classificação → menor conjunto de Skills relevante em
+`docs/ai/SKILLS_ROUTING.md`, `docs/SKILLS_ROUTING.md` e
 `docs/ai/SKILL_ROUTER.md`.
 
 ## V197 durable boot summary
@@ -237,7 +259,7 @@ conjunto de Skills relevante em `docs/SKILLS_ROUTING.md` e
 - QA: `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated`,
   CDP `127.0.0.1:9233`, `protectedReadOnlyQa=1`, zero writes.
 - Git: worktree por objetivo, staging seletivo, sem reset/restore/clean/stash/rebase/force push.
-- `MANDATORY_FIRST_SKILL=Superpowers`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
+- `MANDATORY_AGENT_BOOTSTRAP=true`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
   `REUSE_GREEN_EVIDENCE=true`; `SAME_FAILURE_TWICE=PIVOT`.
 
 Boot links: [`AGENTS.md`](../../AGENTS.md), [`NEXT_STEP.md`](NEXT_STEP.md),
@@ -1513,9 +1535,10 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
   permanecem fora do conjunto padrão por redundância, custo, telemetria ou
   ausência de requisito concreto.
 
-## Decisão permanente — SUPERPOWERS_FIRST
+## Decisão permanente — CAVEMAN_SUPERPOWERS_BOOTSTRAP
 
-- `MANDATORY_FIRST_SKILL=Superpowers` e `SUPERPOWERS_FIRST=true`.
+- `MANDATORY_AGENT_BOOTSTRAP=true` e
+  `BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`.
 - Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
 - Processo detalhado de agente/modelo e Skills: `docs/SKILLS_ROUTING.md`;
   roteamento técnico por categoria: `docs/ai/SKILL_ROUTER.md`;
@@ -1528,11 +1551,12 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
   fallback conforme indisponibilidade ou falha repetida da rota preferencial,
   não por fricção técnica comum isolada. Toda disponibilidade deve ser
   verificada no ambiente; nunca alegar execução/modelo indisponível.
-- Cada missão relevante registra agente/modelo recomendado e selecionado,
-  justificativa e campos de Skills; selecionar apenas o menor conjunto
-  especializado necessário após Superpowers e descoberta real do inventário.
-- Fallback: se Superpowers não existir, usar as melhores Skills disponíveis
-  sem bloquear automaticamente a missão e registrar a limitação.
+- Toda missão substancial anuncia `Using Caveman + Superpowers to <purpose>`.
+  Cada handoff registra disponibilidade/uso, agente/modelo, justificativa,
+  Skills consideradas/usadas/não usadas e lacunas. Selecionar menor conjunto
+  especializado após bootstrap e descoberta real do inventário.
+- Fallback: se Caveman ou Superpowers não existir, registrar a limitação e
+  usar somente processo/Skills realmente disponíveis, sem alegar uso.
 - Limite: Skills orientam o processo, mas não autorizam merge, deploy,
   alterações cloud/financeiras, persistência, schema, secrets ou ações
   destrutivas.

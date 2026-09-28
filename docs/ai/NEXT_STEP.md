@@ -1,17 +1,25 @@
 # Next Step
 
-## Active — V278O privacy-safe reconstruction (2026-09-28)
+## Current — Functional completion (2026-09-28)
 
-- Work only in the isolated V278O integration worktree on `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. Its machine-local path is intentionally omitted; the source V278M worktree remains untouched.
-- `PRIVACY_REVIEW_COMPLETED=true`; `PRIVACY_SAFE=true`. Public backup/recovery docs describe architecture only; exact private recovery metadata and visual references without proven public provenance remain local-only.
-- `LOCAL_COMMITS_CREATED=6` for V278T, reviewed at `V278T_HEAD=8419d3566888655689b31ee1045acda1fb0a8fc7`. This V278V documentation reconciliation is the seventh local commit relative to the recorded base; obtain the exact current HEAD from Git.
-- `TECHNICAL_VALIDATION_PASS=true` at the V278T reviewed HEAD: general 249/249, modern 815/815, directed 18/18, both builds, `qa:all`, seven-width smoke, diff checks and `git fsck --full` passed. This V278V docs-only change requires fresh diff checks; it does not alter runtime or dependencies. Six npm advisories remain a development-tooling follow-up.
-- `PUSH_NOT_AUTHORIZED=true`; `PR_NOT_AUTHORIZED=true`. No push, PR, merge or deploy is authorized; no financial write occurred.
-- `NEXT_ACTION=FINAL_READ_ONLY_CONFIRMATION_THEN_REQUEST_HUMAN_PUSH_PR_AUTHORIZATION`.
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`. Read [`V280_PRODUCT_COMPLETION_AUDIT.md`](V280_PRODUCT_COMPLETION_AUDIT.md), [`PRODUCT_COMPLETION_BACKLOG.md`](PRODUCT_COMPLETION_BACKLOG.md) and [`PRODUCT_COMPLETION_MATRIX.md`](PRODUCT_COMPLETION_MATRIX.md).
+- A P0 integrity issue was found in legacy Rentabilidade: historical holdings may be valued with current quotes and benchmark history may be synthesized from fixed annual rates. Runtime was not changed. Do not present these series as observed history; next work should reuse dated valuation/readiness contracts and fail closed on gaps.
+- `VISUAL_PHASE=DEFERRED`; `VISUAL_CANON_V2=FROZEN_REFERENCE`. Broad visual implementation is deferred until the integrity blocker is resolved. No financial/tax writes, runtime changes, dependency changes, push, PR, merge or deploy occurred in V280.
+- `P0=P0_RENTABILIDADE_HISTORICAL_SERIES`; until proven correct, `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`.
+- `NEXT_ACTION=V281_HISTORICAL_RETURN_TRUTH_REPAIR`; `V281_STATUS=RECOMMENDED_NOT_STARTED`. This is a recommendation, not authorization. Preserve `ENGINE_AVAILABLE != DATA_READY`; no interpolation, present-quote back-projection, or fixed-rate substitute for dated benchmarks.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; `FUNCTIONAL_COMPLETION_FIRST=true`; `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`. Only usability-blocking visual fixes may occur during functional waves.
+
+- V278 is closed: PR #428 is merged and deployed at `e3a295833e7ac5227b86b7f88deab41e82679a4e`; production is READY at https://carteira-investimentos-delta.vercel.app/.
+- Privacy reconciliation is complete. Private recovery metadata and private visual references remain local-only; the public visual canon is safe for Git.
+- Historical V279B phase: `PRODUCT_VISUAL_CONSOLIDATION`, focused on Dashboard, Ativos, and Dividendos. `FUNCTIONAL_FOUNDATION=MATURE` was a working problem statement, not a claim that all visual issues were known; visual implementation is now deferred while the P0 is open.
+- Durable guidance: one coherent shell/sidebar and page-header/KPI hierarchy; consistent card geometry; tables remain primary analytical surfaces; semantic colors are restrained; charts include context; dense but comfortable; 1366x768 is first-class; adapt for mobile rather than squeeze desktop tables. Avoid neon/gaming styling, excessive glow, and microcard overload. Keep Patrimônio distinct from Rentabilidade, preserve `UNKNOWN != ZERO` and `PARTIAL != COMPLETE`, and never invent financial data for visual presentation.
+- `V279B_STATUS=COMPLETE_DOCUMENTATION_ONLY`; its audit and visual canon remain durable references, not the current next action.
+
+The V278O/V278V entries below are historical checkpoints, not active instructions.
 
 The V274 and earlier entries below are dated historical checkpoints, not the active objective.
 
-## Active — V274 PR #427 final exact-head certification (2026-09-26)
+## Histórico — V274 PR #427 final exact-head certification (2026-09-26)
 
 - Continue only in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`; base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`, initial PR head `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`.
 - Light-theme Dashboard findings from runtime/screenshots were fixed: muted upcoming-receipt text, gain/loss panel surface/foreground, and chart title/axis text while preserving the navy chart surface. Added contract tests in `tests/v274-accessibility-contract.test.js`. Dashboard light axe color contrast is 0 violations at 390 and 1366; page overflow is 0. New 390/768/1366 light screenshots were visually reviewed.
@@ -53,7 +61,7 @@ The V274 and earlier entries below are dated historical checkpoints, not the act
   V266 remains unstarted until a non-blocked scope is evidenced.
 
 
-## Active — Workspace/worktree audit closeout (2026-09-25)
+## Histórico — Workspace/worktree audit closeout (2026-09-25)
 
 - `origin/main=5a6a0a47d7396cf7b075c9b0ff8adc29faebf0aa`; V265 PR #416 and
   governance PR #414 are merged. V264 PR #415 remains merged at

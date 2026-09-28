@@ -1,12 +1,39 @@
 # Project State
 
-## V278O — local publishable reconstruction (2026-09-28)
+## V280 — product completion audit (2026-09-28)
 
-- Active worktree: isolated V278O integration worktree, branch `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. The machine-local path is intentionally omitted. The source integration worktree is preserved and was not edited.
-- This branch is rebuilt from reviewed file-level changes rather than V278M commits. Private financial reports and exact recovery metadata remain outside Git; visual references without proven public provenance are excluded from the publishable tree.
-- `PRIVACY_REVIEW_COMPLETED=true`; `PRIVACY_SAFE=true`. V278T created six local publishable commits, reviewed at `V278T_HEAD=8419d3566888655689b31ee1045acda1fb0a8fc7`; this V278V docs-only reconciliation is the seventh local commit relative to the recorded base. Read the exact current HEAD from Git.
-- V278T validation at that reviewed HEAD passed: `npm test` 249/249, modern tests 815/815, directed tests 18/18, both builds, `qa:all`, seven-width smoke, diff checks and `git fsck --full`. Six audit advisories remain limited to development dependencies; package versions were not changed. Product financial behavior and persistence were not changed; no financial write occurred.
-- `PUSH_NOT_AUTHORIZED=true`; `PR_NOT_AUTHORIZED=true`; no push, PR, merge or deploy has occurred. `NEXT_ACTION=FINAL_READ_ONLY_CONFIRMATION_THEN_REQUEST_HUMAN_PUSH_PR_AUTHORIZATION`.
+- `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`; no product/runtime, financial, tax, test, or dependency changes were made.
+- Audit, backlog and 24-domain completion matrix: `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md`, `PRODUCT_COMPLETION_MATRIX.md`.
+- P0 integrity finding: legacy Rentabilidade may back-project current quotes into past periods and synthesize benchmark history from fixed annual rates. Static-source finding only; no browser or production behavior was newly certified. Until proven correct, `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; `FUNCTIONAL_COMPLETION_FIRST=true`; `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`. Broad redesign is deferred until the integrity blocker is resolved; only usability-blocking visual defects may be fixed during functional waves.
+- `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recommendation only; not started or authorized).
+- Preferred Hermes/Nemotron and independent review models were not available; Codex completed the source/documentation audit. No independent model review or fresh browser certification is claimed.
+
+## V280A — bootstrap global e publicação documental (2026-09-28)
+
+- `MANDATORY_AGENT_BOOTSTRAP=true`; identity gate → anúncio obrigatório → Caveman → Superpowers `using-superpowers` → Skills específicas. Regras em `AGENTS.md`, `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`.
+- A Skill Caveman disponível é de comunicação concisa, não concede autoridade. Verifique instalação a cada missão; reporte qualquer lacuna e não alegue uso indisponível.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; conclusão funcional primeiro; implementação visual global adiada.
+- P0 de Rentabilidade permanece aberto; `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`. Próxima missão recomendada: `V281_HISTORICAL_RETURN_TRUTH_REPAIR`, ainda não iniciada/autorizada.
+
+## V279B — visual and product learning audit (2026-09-28; historical)
+
+- `V279B_STATUS=COMPLETE_DOCUMENTATION_ONLY`; active target is the LEGACY `index.html` product. Modern remains read-only and is not the redesign target.
+- Durable cross-source audit: `docs/ai/V279B_VISUAL_PRODUCT_AUDIT.md`; consolidated reusable UI contract: `docs/ai/VISUAL_CANON_V2.md`, linked from `VISUAL_CANON.md`.
+- Main product finding: functional breadth and useful screen structures exist, but visual hierarchy, table geometry, navigation grouping, and several overlapping style/token layers are inconsistent. Prior V274 synthetic evidence records an internal Dashboard allocation-table collision at 1920px; it was not freshly rendered/retested in V279B.
+- Reference B was strictly read-only and remains a laboratory. Reference C's composite included financial-looking private content and remains local-only; no private values, branding, reference business logic, or product code were copied.
+- `RUNTIME_FILES_CHANGED=0`; `FINANCIAL_FILES_CHANGED=0`; `TEST_FILES_CHANGED=0`; `PACKAGE_FILES_CHANGED=0`. No browser/runtime re-certification is claimed.
+- Hermes/Nemotron was unavailable; Codex performed the static/source and visual-reference audit. No independent model review is claimed.
+
+## V279A2 — post-V278 closeout (2026-09-28)
+
+- `V278_STATUS=MERGED_AND_DEPLOYED`; PR #428 merged at `e3a295833e7ac5227b86b7f88deab41e82679a4e`. `PRODUCTION_STATUS=READY`; production URL: https://carteira-investimentos-delta.vercel.app/.
+- `PRIVACY_RECONCILIATION=COMPLETE`; `VISUAL_CANON_PUBLIC_SAFE=true`. `PRIVATE_RECOVERY_METADATA=LOCAL_ONLY` and `PRIVATE_VISUAL_REFERENCES=LOCAL_ONLY`.
+- `CURRENT_PHASE=PRODUCT_VISUAL_CONSOLIDATION`; primary screens: Dashboard, Ativos, Dividendos. `FUNCTIONAL_FOUNDATION=MATURE`; `PRIMARY_CURRENT_GAP=VISUAL_COHERENCE_AND_PRODUCT_HIERARCHY`. This is a working problem statement, not a claim that all visual issues are known.
+- `NEXT_MISSION=V279B_VISUAL_AND_PRODUCT_LEARNING_AUDIT`. Do not begin it automatically; it requires its own mission authorization.
+- This documentation closeout is isolated on `docs/v279a-post-merge-closeout`, based on the exact merged main SHA above. No runtime, financial, tax, test, or dependency files are in scope.
+
+## V278O — local publishable reconstruction (historical; closed by V279A2)
 
 ## V274 — remaining QA gates closeout checkpoint (2026-09-26)
 

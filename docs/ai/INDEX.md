@@ -17,7 +17,9 @@ scan archives, local imports, or every worktree by default.
 - State and continuity: `PROJECT_STATE.md`, `NEXT_STEP.md`, `PROJECT_MEMORY.md`,
   `CURRENT_PROJECT_MAP.md`, `OPEN_WORK.md`.
 - Architecture and product: `ARCHITECTURE.md`, `ARCHITECTURE_MAP.md`,
-  `PRODUCT_CONTRACTS.md`, `FINANCIAL_RULES.md`, `FINANCIAL_SEMANTICS.md`.
+  `PRODUCT_CONTRACTS.md`, `FINANCIAL_RULES.md`, `FINANCIAL_SEMANTICS.md`,
+  `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md`,
+  `PRODUCT_COMPLETION_MATRIX.md`.
 - Data and imports: `DATA_SOURCES_AND_PROVIDERS.md`,
   `MONTHLY_IMPORT_RUNBOOK.md`, `BROKERAGE_NOTE_IMPORT.md`,
   `EXTERNAL_CASH_FLOWS.md`.
@@ -28,8 +30,9 @@ scan archives, local imports, or every worktree by default.
 - Backup and storage: `BACKUP_MANIFEST.md`,
   `STORAGE_AND_WORKTREE_POLICY.md`, `LEGACY_ARCHIVE_INDEX.md`.
 - Visual work: `VISUAL_CANON.md` and `Refs/visual-canon/README.md`.
-- Agent routing: `SKILLS.md`, `SKILL_ROUTER.md`, `SKILL_ROUTING.md`,
+- Agent routing: `SKILLS.md`, `SKILL_ROUTER.md`, `SKILLS_ROUTING.md`,
   `AGENT_ROUTER.md`, `AGENT_AUTONOMY.md`.
+- Detailed agent/model process policy: [`docs/SKILLS_ROUTING.md`](../SKILLS_ROUTING.md).
 
 ## Local-only and private data
 
