@@ -315,3 +315,29 @@ This policy consolidates and supersedes scattered continuity rules previously in
 - Various mission reports
 
 Those documents now **reference** this policy rather than duplicating it.
+
+---
+
+## CONTINUITY MATURITY LEVEL
+
+Add a simple project maturity marker.
+
+Suggested:
+
+CONTINUITY_LEVEL_0=CHAT_DEPENDENT
+CONTINUITY_LEVEL_1=DOCS_PRESENT
+CONTINUITY_LEVEL_2=CANONICAL_STATE
+CONTINUITY_LEVEL_3=AGENT_NEUTRAL
+CONTINUITY_LEVEL_4=FRESH_CLONE_REPRODUCIBLE
+
+Current level:
+
+PROJECT_CONTINUITY_LEVEL=4
+
+Achieved because:
+
+- All canonical docs present and consistent (Level 1-2)
+- Agent-neutral project memory (Level 3)
+- Fresh clone can reconstruct operational skill environment for tracked skills (Level 4)
+
+Note: Some skills (browser-harness-main, impeccable, archify-main) remain external dependencies due to size/complexity. They are documented in PROJECT_SKILLS_MANIFEST.md with clear license/provenance and can be re-synced from C:/Projetos/skills/ or their upstream sources.

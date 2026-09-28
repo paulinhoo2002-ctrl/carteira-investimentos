@@ -58,11 +58,18 @@ Wave C (Empty/Error/Partial States): NOT STARTED
 
 ---
 
-## Active Blockers
+### V282C Repository Reproducibility and Clean State — COMPLETED 2026-09-28
 
-1. **.agents/skills not versioned** — Fresh clone loses vendored skills; re-sync from C:/Projetos/skills/ required
-2. **Legacy rentabilityHistory not yet routed through V281 engine** — P0_END_TO_END=PARTIAL
-3. **Multiple routing documents** — Consolidated to docs/ai/SKILLS_ROUTING.md as canonical
+- Fixed .gitignore to track minimum required project-local skills (17 skills)
+- Excluded heavy skills: browser-harness-main (3.6M), impeccable (3.0M)
+- Excluded large archify-main (34M) — archify (5.6M) is canonical
+- Excluded meta skills and backups
+- Vendorable skills now tracked: caveman, doubt-driven-development, source-driven-development, browser-testing-with-devtools, playwright, interface-design, design-system, frontend-design, caveman-review, caveman-commit, caveman-compress, cavecrew, banner-design, brand, slides, archify, interview-me, references
+- All tracked skills have valid SKILL.md and permissive licenses
+- No node_modules, .git, credentials, or private data in tracked skills
+- Commit: 7426250
+- REPRODUCIBLE_AFTER_FRESH_CLONE=true (for tracked skills)
+- PROJECT_CONTINUITY_LEVEL=4 (FRESH_CLONE_REPRODUCIBLE)
 
 ---
 

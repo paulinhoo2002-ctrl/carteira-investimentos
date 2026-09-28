@@ -37,9 +37,13 @@
 
 ### Active Blockers
 
-1. **.agents/skills not versioned** — Fresh clone loses vendored skills; re-sync from C:/Projetos/skills/ required
-2. **Legacy rentabilityHistory not yet routed through V281 engine** — P0_END_TO_END=PARTIAL
-3. **Multiple routing documents** — Consolidated to docs/ai/SKILLS_ROUTING.md as canonical
+1. **Legacy rentabilityHistory not yet routed through V281 engine** — P0_END_TO_END=PARTIAL
+2. **Multiple routing documents** — Consolidated to docs/ai/SKILLS_ROUTING.md as canonical
+
+### V282C Repository Reproducibility — COMPLETED
+
+- REPRODUCIBLE_AFTER_FRESH_CLONE=true (tracked skills)
+- PROJECT_CONTINUITY_LEVEL=4 (FRESH_CLONE_REPRODUCIBLE)
 
 ---
 

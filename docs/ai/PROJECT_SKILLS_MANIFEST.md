@@ -2,11 +2,11 @@
 
 Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
 
-**⚠️ NOTE**: The `.agents/skills` directory is currently ignored by `.gitignore`. Skills are vendored from the read-only source at `C:/Projetos/skills/` and must be re-synced after a fresh clone. See `docs/ai/PROJECT_CONTINUITY_POLICY.md` for continuity requirements.
+**⚠️ NOTE**: The `.agents/skills` directory is **partially tracked** by Git (see `.gitignore`). 17 approved project-local skills are versioned. Heavy skills (browser-harness-main, impeccable, archify-main) and meta/backup skills are excluded and must be re-synced from `C:/Projetos/skills/` or upstream sources. See `docs/ai/PROJECT_CONTINUITY_POLICY.md` for continuity requirements.
 
 ---
 
-## VENDORED SKILLS (Core)
+## VENDORED SKILLS (Core - Tracked)
 
 ### caveman
 - **Category**: BOOTSTRAP / CONTEXT_MANAGEMENT
@@ -404,6 +404,41 @@ Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
 | **planning-with-files** | Superseded by writing-plans |
 | **source-tracker** | Source tracking — not project-relevant |
 | **web-quality-audit** | General web audit — use browser QA skills |
+
+---
+
+## TRACKED VS EXTERNAL SKILLS
+
+### TRACKED IN REPOSITORY (17 skills, versioned in .agents/skills/)
+- caveman
+- doubt-driven-development
+- source-driven-development
+- browser-testing-with-devtools
+- playwright
+- interface-design
+- design-system
+- frontend-design
+- caveman-review
+- caveman-commit
+- caveman-compress
+- cavecrew
+- banner-design
+- brand
+- slides
+- archify
+- interview-me
+- references (reference-only, no SKILL.md)
+
+### EXTERNAL / RE-SYNC REQUIRED (not tracked due to size/complexity)
+- browser-harness-main (3.6M) — re-sync from C:/Projetos/skills/ or browser-use upstream
+- impeccable (3.0M) — re-sync from C:/Projetos/skills/ or tt-a1i upstream
+- archify-main (34M) — NOT canonical; archify (5.6M) is canonical and tracked
+
+### EXCLUDED (meta, backups, not project-relevant)
+- impeccable.bak (backup)
+- archiv-main (no SKILL.md)
+- design (meta-skill)
+- clone-website, deep-research, deploy-to-vercel, fact-checker, find-skills, firebase-security-rules-auditor, mantis-*, planning-with-files, source-tracker, ui-styling, ui-ux-pro-max, web-quality-audit
 
 ---
 

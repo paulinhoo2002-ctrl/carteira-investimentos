@@ -144,12 +144,12 @@ Before mission start, verify each required skill exists at the **source** (read-
 
 ```
 C:/Projetos/skills/<skill-name>/SKILL.md          (canonical source)
-C:/Projetos/carteira-investimentos/.agents/skills/<skill-name>/SKILL.md  (local vendored, gitignored)
+C:/Projetos/carteira-investimentos/.agents/skills/<skill-name>/SKILL.md  (local vendored, tracked for approved skills)
 ```
 
 If missing from both: `SKILL_UNAVAILABLE=<name>` — assess if mission can proceed safely.
 
-Note: `.agents/skills` is gitignored. After fresh clone, re-sync from `C:/Projetos/skills/`.
+Note: `.agents/skills` is partially tracked (see .gitignore). Approved skills are versioned. Heavy skills (browser-harness-main, impeccable, archify-main) remain external and can be re-synced from `C:/Projetos/skills/` or upstream sources.
 
 ---
 
