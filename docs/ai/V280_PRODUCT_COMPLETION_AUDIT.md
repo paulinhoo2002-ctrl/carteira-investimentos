@@ -107,4 +107,4 @@ Cada ação primária visível tem contrato e jornada testada; todas as escritas
 
 ## Próxima missão
 
-`V281_TRUSTWORTHY_RENTABILITY_SERIES_REPAIR` — reparar a semântica temporal do gráfico legado e integrar o contrato de série datada/readiness existente; manter gráficos e comparações indisponíveis quando as evidências não satisfizerem requisitos. Esta missão ainda não foi iniciada nem autorizada por este documento.
+`V281_HISTORICAL_RETURN_TRUTH_REPAIR` — reparar a semântica temporal do gráfico legado e integrar o contrato de série datada/readiness existente; manter gráficos e comparações indisponíveis quando as evidências não satisfizerem requisitos. Esta missão ainda não foi iniciada nem autorizada por este documento.

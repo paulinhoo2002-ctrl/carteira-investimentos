@@ -4,10 +4,17 @@
 
 - `V280_STATUS=COMPLETE_DOCUMENTATION_ONLY`; no product/runtime, financial, tax, test, or dependency changes were made.
 - Audit, backlog and 24-domain completion matrix: `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md`, `PRODUCT_COMPLETION_MATRIX.md`.
-- P0 integrity finding: legacy Rentabilidade may back-project current quotes into past periods and synthesize benchmark history from fixed annual rates. This conflicts with the dated-history contract; see V281 acceptance criteria. Static-source finding only; no browser or production behavior was newly certified.
-- `VISUAL_CANON_V2=FROZEN_REFERENCE`; broad visual redesign is deferred until the integrity blocker is resolved.
-- `NEXT_RECOMMENDED_MISSION=V281_TRUSTWORTHY_RENTABILITY_SERIES_REPAIR` (recommendation only; not started or authorized).
+- P0 integrity finding: legacy Rentabilidade may back-project current quotes into past periods and synthesize benchmark history from fixed annual rates. Static-source finding only; no browser or production behavior was newly certified. Until proven correct, `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; `FUNCTIONAL_COMPLETION_FIRST=true`; `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`. Broad redesign is deferred until the integrity blocker is resolved; only usability-blocking visual defects may be fixed during functional waves.
+- `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recommendation only; not started or authorized).
 - Preferred Hermes/Nemotron and independent review models were not available; Codex completed the source/documentation audit. No independent model review or fresh browser certification is claimed.
+
+## V280A — bootstrap global e publicação documental (2026-09-28)
+
+- `MANDATORY_AGENT_BOOTSTRAP=true`; identity gate → anúncio obrigatório → Caveman → Superpowers `using-superpowers` → Skills específicas. Regras em `AGENTS.md`, `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`.
+- A Skill Caveman disponível é de comunicação concisa, não concede autoridade. Verifique instalação a cada missão; reporte qualquer lacuna e não alegue uso indisponível.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; conclusão funcional primeiro; implementação visual global adiada.
+- P0 de Rentabilidade permanece aberto; `UNVERIFIED_HISTORICAL_RETURN=UNAVAILABLE`. Próxima missão recomendada: `V281_HISTORICAL_RETURN_TRUTH_REPAIR`, ainda não iniciada/autorizada.
 
 ## V279B — visual and product learning audit (2026-09-28; historical)
 

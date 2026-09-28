@@ -1,6 +1,6 @@
 # Backlog de conclusão funcional do produto
 
-Backlog derivado da auditoria V280. Não autoriza implementação, escrita financeira/fiscal, restore, importação real, deploy ou mudança de dependência. Prioridade expressa como P0–P5, sem pontuação arbitrária. “Human authorization” é necessária para operações financeiras/protegidas mesmo quando o código esteja pronto.
+Backlog derivado da auditoria V280. `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR`. Não autoriza implementação, escrita financeira/fiscal, restore, importação real, deploy ou mudança de dependência. Prioridade expressa como P0–P5, sem pontuação arbitrária. Aprovação humana continua necessária para operações financeiras/protegidas, mesmo quando o código esteja pronto.
 
 | ID / prioridade | Área e problema/evidência | Impacto / dependências | Arquivos prováveis / validação necessária | Escrita financeira / aprovação | Critério de conclusão |
 |---|---|---|---|---|---|
