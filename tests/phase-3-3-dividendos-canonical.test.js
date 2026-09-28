@@ -9,7 +9,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 test('Dividendos mantém o contrato canônico, fontes oficiais e bloqueios visuais', () => {
   const source = read('index.html');
   const canon = read('docs/ai/VISUAL_CANON.md');
-  const refs = read('docs/ai/VISUAL_REFERENCE_INDEX.md');
+  const refs = read('Refs/visual-canon/CANON_INDEX.md');
 
   assert.match(source, /function dividendExecutiveKpis\(\)/);
   for (const label of ['Recebido', 'Média mensal', 'Último mês', 'Projeção anual', 'Yield atual']) assert.match(source, new RegExp(label));
@@ -26,8 +26,9 @@ test('Dividendos mantém o contrato canônico, fontes oficiais e bloqueios visua
   assert.match(source, /onclick="exportBackup\(\)"/);
   assert.match(source, /Phase 3\.3: keep Dividendos visually faithful/);
 
-  assert.match(canon, /CANONICAL_REFERENCE_DIVIDENDS=Refs\/visual-canon\/dividendos-canonical\.png/);
-  assert.match(canon, /DIVIDENDOS_VISUAL=FROZEN/);
-  assert.match(refs, /dividendos-canonical\.png/);
-  assert.match(refs, /Classification: `PRIMARY_CANON`/);
+  assert.match(canon, /VISUAL_DIRECTION=PREMIUM_DARK_EXECUTIVE/);
+  assert.match(canon, /DIVIDENDOS/);
+  assert.match(refs, /No image is currently asserted as a public canonical asset/);
+  assert.match(refs, /synthetic, independently/);
+  assert.doesNotMatch(refs, /\.png|SHA-256/i);
 });

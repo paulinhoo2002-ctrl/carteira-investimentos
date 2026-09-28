@@ -6,7 +6,14 @@ async function startLocalHttpServer(root, port = 0) {
   const documentRoot = path.resolve(root);
   const server = http.createServer(async (req, res) => {
     try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
+      const requestUrl = new URL(req.url || '/', 'http://127.0.0.1');
+      const pathname = decodeURIComponent(requestUrl.pathname);
+      if (pathname === '/api/yahoo-quote') {
+        const requested = String(requestUrl.searchParams.get('symbols') || requestUrl.searchParams.get('tickers') || '')
+          .split(',').map(symbol => symbol.trim().toUpperCase()).filter(Boolean).slice(0, 50);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(JSON.stringify({ source: 'synthetic-qa-empty', requested, count: 0, results: [] }));
+      }
       const filePath = path.resolve(documentRoot, pathname === '/' ? 'index.html' : `.${pathname}`);
       const relativePath = path.relative(documentRoot, filePath);
       if (relativePath === '..' || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
