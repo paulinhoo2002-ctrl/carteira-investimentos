@@ -24,7 +24,28 @@ npm-debug.log*
 Thumbs.db
 
 # Codex / IA
-.agents/
+.agents/*
+!.agents/SKILL_ROUTER.md
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/caveman/
+!.agents/skills/doubt-driven-development/
+!.agents/skills/source-driven-development/
+!.agents/skills/browser-testing-with-devtools/
+!.agents/skills/playwright/
+!.agents/skills/interface-design/
+!.agents/skills/design-system/
+!.agents/skills/frontend-design/
+!.agents/skills/caveman-review/
+!.agents/skills/caveman-commit/
+!.agents/skills/caveman-compress/
+!.agents/skills/cavecrew/
+!.agents/skills/banner-design/
+!.agents/skills/brand/
+!.agents/skills/slides/
+!.agents/skills/archify/
+!.agents/skills/interview-me/
+!.agents/skills/references/
 .opencode/
 skills-lock.json
 
@@ -66,3 +87,4 @@ playwright-report/
 .qa-*.js
 .qa-v262-screenshots/
 .qa-v262-screenshots-final/
+.worktrees/
