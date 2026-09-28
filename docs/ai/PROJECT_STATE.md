@@ -1,12 +1,14 @@
 # Project State
 
-## V278O — local publishable reconstruction (2026-09-28)
+## V279A2 — post-V278 closeout (2026-09-28)
 
-- Active worktree: isolated V278O integration worktree, branch `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. The machine-local path is intentionally omitted. The source integration worktree is preserved and was not edited.
-- This branch is rebuilt from reviewed file-level changes rather than V278M commits. Private financial reports and exact recovery metadata remain outside Git; visual references without proven public provenance are excluded from the publishable tree.
-- `PRIVACY_REVIEW_COMPLETED=true`; `PRIVACY_SAFE=true`. V278T created six local publishable commits, reviewed at `V278T_HEAD=8419d3566888655689b31ee1045acda1fb0a8fc7`; this V278V docs-only reconciliation is the seventh local commit relative to the recorded base. Read the exact current HEAD from Git.
-- V278T validation at that reviewed HEAD passed: `npm test` 249/249, modern tests 815/815, directed tests 18/18, both builds, `qa:all`, seven-width smoke, diff checks and `git fsck --full`. Six audit advisories remain limited to development dependencies; package versions were not changed. Product financial behavior and persistence were not changed; no financial write occurred.
-- `PUSH_NOT_AUTHORIZED=true`; `PR_NOT_AUTHORIZED=true`; no push, PR, merge or deploy has occurred. `NEXT_ACTION=FINAL_READ_ONLY_CONFIRMATION_THEN_REQUEST_HUMAN_PUSH_PR_AUTHORIZATION`.
+- `V278_STATUS=MERGED_AND_DEPLOYED`; PR #428 merged at `e3a295833e7ac5227b86b7f88deab41e82679a4e`. `PRODUCTION_STATUS=READY`; production URL: https://carteira-investimentos-delta.vercel.app/.
+- `PRIVACY_RECONCILIATION=COMPLETE`; `VISUAL_CANON_PUBLIC_SAFE=true`. `PRIVATE_RECOVERY_METADATA=LOCAL_ONLY` and `PRIVATE_VISUAL_REFERENCES=LOCAL_ONLY`.
+- `CURRENT_PHASE=PRODUCT_VISUAL_CONSOLIDATION`; primary screens: Dashboard, Ativos, Dividendos. `FUNCTIONAL_FOUNDATION=MATURE`; `PRIMARY_CURRENT_GAP=VISUAL_COHERENCE_AND_PRODUCT_HIERARCHY`. This is a working problem statement, not a claim that all visual issues are known.
+- `NEXT_MISSION=V279B_VISUAL_AND_PRODUCT_LEARNING_AUDIT`. Do not begin it automatically; it requires its own mission authorization.
+- This documentation closeout is isolated on `docs/v279a-post-merge-closeout`, based on the exact merged main SHA above. No runtime, financial, tax, test, or dependency files are in scope.
+
+## V278O — local publishable reconstruction (historical; closed by V279A2)
 
 ## V274 — remaining QA gates closeout checkpoint (2026-09-26)
 

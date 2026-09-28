@@ -55,3 +55,21 @@ authorized recovery requires them.
 Branch, commit, worktree count, validation results, and active objective are
 time-sensitive. Read them from Git and `docs/ai/PROJECT_STATE.md` and
 `docs/ai/NEXT_STEP.md`; do not treat a checked-in map as a live status report.
+
+## Post-V278 worktree inventory — 2026-09-28
+
+These are classifications, not deletion instructions. Recheck live Git state,
+untracked contents, active processes, and recovery before any retirement.
+
+| Worktree/residue | Classification | Closeout note |
+|---|---|---|
+| `v278o-publishable-integration` | `MERGED_CANDIDATE_FOR_RETIREMENT` | V278 publication is merged; preserve local untracked items until individually reconciled. |
+| `v278m-safe-integration` | `PRESERVED_INTEGRATION_HISTORY` | Keep its integration history available. |
+| `v166-corporate-events-official-integration` | `RETAINED_TOOLING` | Preserve its local tooling state. |
+| `v169a-protected-read-only-qa` | `RETAINED_PROTECTED_QA` | Preserve protected QA state. |
+| `v178-ui-usability` | `PRESERVED_RECOVERY` | Preserve recovery material. |
+| `v275-final-premium-visual-redesign` | `PRESERVED_VISUAL_HISTORY` | Preserve prior visual work. |
+| `v263-rf-freshness-valuation-asof` | `ORPHAN_PHYSICAL_RESIDUE_PENDING_REVIEW` | Unregistered physical residue; classify before any cleanup. |
+
+V279A2 performed no worktree removal. These labels reflect the closeout
+inventory and do not replace a fresh lifecycle audit.

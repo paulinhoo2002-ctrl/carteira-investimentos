@@ -1,5 +1,13 @@
 # Project Memory
 
+## V279A2 — post-V278 closeout (2026-09-28)
+
+- V278 is `MERGED_AND_DEPLOYED`: PR #428 merged at `e3a295833e7ac5227b86b7f88deab41e82679a4e`; production is READY at https://carteira-investimentos-delta.vercel.app/.
+- Privacy reconciliation is complete; the public visual canon is safe. Exact recovery metadata and private visual references remain local-only.
+- Product phase is `PRODUCT_VISUAL_CONSOLIDATION`; the next authorized objective is `V279B_VISUAL_AND_PRODUCT_LEARNING_AUDIT`, focused first on Dashboard, Ativos, and Dividendos. Functional foundation is mature; visual coherence/product hierarchy is the current working gap, not a claim of exhaustive discovery.
+- Preserve the established visual/financial constraints: coherent shell and hierarchy, analytical tables, contextual charts, restrained semantic color, readable density at 1366x768, mobile adaptation, `Patrimônio != Rentabilidade`, `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, and no invented financial data.
+- Worktree inventory at closeout is recorded in `CURRENT_PROJECT_MAP.md`; no historical worktree or residue was removed in V279A2.
+
 ## V278O — privacy-safe local integration reconstruction (2026-09-28)
 
 - This branch is reconstructed from `origin/main` `179ea6269a04d5075b655d829645b53ffd200741` in an isolated V278O worktree, branch `integration/v278o-privacy-safe`. The machine-local path is intentionally omitted. It replays reviewed file-level changes only; it does not inherit the local V278M commit ancestry.

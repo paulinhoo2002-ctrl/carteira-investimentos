@@ -1,13 +1,14 @@
 # Next Step
 
-## Active — V278O privacy-safe reconstruction (2026-09-28)
+## Active — V279B visual and product learning audit (2026-09-28)
 
-- Work only in the isolated V278O integration worktree on `integration/v278o-privacy-safe`, based on `origin/main` `179ea6269a04d5075b655d829645b53ffd200741`. Its machine-local path is intentionally omitted; the source V278M worktree remains untouched.
-- `PRIVACY_REVIEW_COMPLETED=true`; `PRIVACY_SAFE=true`. Public backup/recovery docs describe architecture only; exact private recovery metadata and visual references without proven public provenance remain local-only.
-- `LOCAL_COMMITS_CREATED=6` for V278T, reviewed at `V278T_HEAD=8419d3566888655689b31ee1045acda1fb0a8fc7`. This V278V documentation reconciliation is the seventh local commit relative to the recorded base; obtain the exact current HEAD from Git.
-- `TECHNICAL_VALIDATION_PASS=true` at the V278T reviewed HEAD: general 249/249, modern 815/815, directed 18/18, both builds, `qa:all`, seven-width smoke, diff checks and `git fsck --full` passed. This V278V docs-only change requires fresh diff checks; it does not alter runtime or dependencies. Six npm advisories remain a development-tooling follow-up.
-- `PUSH_NOT_AUTHORIZED=true`; `PR_NOT_AUTHORIZED=true`. No push, PR, merge or deploy is authorized; no financial write occurred.
-- `NEXT_ACTION=FINAL_READ_ONLY_CONFIRMATION_THEN_REQUEST_HUMAN_PUSH_PR_AUTHORIZATION`.
+- V278 is closed: PR #428 is merged and deployed at `e3a295833e7ac5227b86b7f88deab41e82679a4e`; production is READY at https://carteira-investimentos-delta.vercel.app/.
+- Privacy reconciliation is complete. Private recovery metadata and private visual references remain local-only; the public visual canon is safe for Git.
+- `CURRENT_PHASE=PRODUCT_VISUAL_CONSOLIDATION`. Start with Dashboard, Ativos, and Dividendos. `FUNCTIONAL_FOUNDATION=MATURE`; the current working gap is visual coherence and product hierarchy. The audit must discover remaining issues rather than assume the inventory is complete.
+- Durable guidance: one coherent shell/sidebar and page-header/KPI hierarchy; consistent card geometry; tables remain primary analytical surfaces; semantic colors are restrained; charts include context; dense but comfortable; 1366x768 is first-class; adapt for mobile rather than squeeze desktop tables. Avoid neon/gaming styling, excessive glow, and microcard overload. Keep Patrimônio distinct from Rentabilidade, preserve `UNKNOWN != ZERO` and `PARTIAL != COMPLETE`, and never invent financial data for visual presentation.
+- `NEXT_ACTION=AUTHORIZE_AND_RUN_V279B_VISUAL_AND_PRODUCT_LEARNING_AUDIT`. This is a handoff only; do not start the next mission without authorization.
+
+The V278O/V278V entries below are historical checkpoints, not active instructions.
 
 The V274 and earlier entries below are dated historical checkpoints, not the active objective.
 
