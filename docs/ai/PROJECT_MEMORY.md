@@ -1,5 +1,17 @@
 # Project Memory
 
+## V283 — certificação funcional noturna atualizada (2026-09-29)
+
+- Branch `feature/v283-core-functional-truth`, 7 commits locais à frente de `origin/main` `c0e145595b2de9afa623ac3d994fb0bd972c583d` antes deste fechamento documental. Consulte o Git para o HEAD atual. Nenhum push/PR/merge/deploy.
+- Adapter de Rentabilidade está integrado após as declarações legadas e executa síncrono para o renderer; engine e adapter agora falham fechados em coverage omitido/UNKNOWN, fluxo externo ambíguo, valuation ausente e coverage parcial (<100%). Retorno agregado foi provado somente com snapshots sintéticos; `WALLET_ID_UNAVAILABLE` deixa `REAL_PORTFOLIO_DATA_READY=false`.
+- Benchmark, janela 12M, série mensal e filtros por classe seguem `UNAVAILABLE` sem observações/fronteiras suficientes. Nenhuma interpolação ou substituição por cotação atual.
+- Aportes encaminha cada botão a handler de importação implementado/diferenciado; nenhum arquivo foi importado ou confirmado.
+- Verificação final: geral 249/249, moderna 815/815, focados 46/46, subset alto-risco 78/78; builds legacy/modern e `qa:all` PASS. QA browser: 112/112 combinações rota×viewport, sete larguras sem overflow/console/request errors; axe A/AA sem violações em 12 telas × 390/1366. Fixtures eram sintéticas/testMode.
+- `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE` é o limite das conclusões sobre invariantes; nunca afirmar eliminação global. Backlog atual está em `PRODUCT_COMPLETION_BACKLOG.md`, incluindo readiness real, autoridade de realização de eventos e reclassificação do teste source-only legado.
+- `git fsck --full` passou; objetos dangling continuam preservados. Skills/modelos independentes não disponíveis; revisão foi self-review Codex/Caveman.
+
+---
+
 ## V280A — bootstrap global e prioridade funcional (2026-09-28)
 
 - `MANDATORY_AGENT_BOOTSTRAP=true`. Após PROJECT IDENTITY GATE, anúncio obrigatório `Using Caveman + Superpowers to <purpose>`, depois `caveman`, `using-superpowers` e Skills específicas. Disponibilidade real deve ser verificada; ausência é reportada, nunca simulada. `caveman` local orienta concisão, não segurança ou autorização.
