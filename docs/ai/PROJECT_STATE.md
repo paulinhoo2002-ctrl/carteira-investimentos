@@ -1,5 +1,21 @@
 # Project State
 
+## Estado V283 verificado nesta execução — 2026-09-29
+
+Este bloco prevalece sobre os registros históricos abaixo. Relatórios de ondas anteriores são evidência histórica limitada ao escopo então auditado, não certificação global.
+
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `VISUAL_CANON_V2=FROZEN_REFERENCE`.
+- `P0_RENTABILIDADE_CODE_PATH=PASS_SYNTHETIC_BROWSER_PROOF`; `REAL_PORTFOLIO_DATA_READY=false`: integração adapter/engine e ordem de carregamento foram corrigidas nesta worktree. O bloqueio de readiness real permanece.
+- A API do adapter é síncrona para o renderer legado. Benchmark, janela móvel 12M, série mensal e filtros sem evidência datada suficiente permanecem indisponíveis; não há interpolação.
+- Cobertura histórica omitida agora significa `UNKNOWN`; apenas `FULL_COVERAGE` explícita permite métricas numéricas. `buildYearEndPosition` também não infere completude quando falta coverage. Evidência sintética em teste comprova comportamento matemático, não prontidão da carteira real.
+- `WALLET_ID_UNAVAILABLE` e readiness real por carteira continuam bloqueantes para TWR/XIRR reais.
+- Os quatro controles de importação em Aportes agora apontam a handlers existentes e distintos; sem arquivo real, confirmação ou escrita nesta execução.
+- Alegações globais `UNKNOWN_TO_ZERO`, `PARTIAL_TO_COMPLETE`, `EXPECTED_TO_RECEIVED` e `FAKE_SUCCESS` ficam reclassificadas como `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`, sem afirmar eliminação global.
+- Certificação fresca após todos os ajustes: geral 249/249; moderna 815/815; focados performance/V283/V248 e source-audit 46/46; build legado/moderno PASS; `qa:all` PASS (harness 3/3 e smoke 7 larguras).
+- Browser isolado com fixture sintética executou adapter e engine; 95% => PARTIAL/sem número; 100% explícito => retorno agregado datado; 12M, benchmark e pontos mensais indisponíveis. Sem erros; sem overflow nas sete larguras. Axe A/AA na Rentabilidade (390px): zero violações; teclado alcançou filtros/ações.
+- `tests/v283-legacy-rentability-red.test.js` continua detectando padrões no código legado-fonte; não é prova do caminho ativo, pois adapter runtime prevalece. Teste/documentação precisa ser reclassificado.
+- `NEXT_ACTION=V283_FINAL_DIFF_REVIEW_AND_LOCAL_CLOSEOUT`; `git diff --check` e `git fsck --full` passaram; objetos dangling preservados. Sem push, PR, merge ou deploy.
+
 ## V282B Project Memory Continuity and Skills Certification — 2026-09-28
 
 - **CURRENT_PHASE=FUNCTIONAL_COMPLETION**
@@ -30,6 +46,34 @@
 - Adapter loads at runtime (HTTP 200, correct MIME type)
 - Commit: c9f1e9c
 - **NEXT_ACTION=V283_WAVE_B_CORE_WORKFLOW_AUDIT**
+
+### V283 Core Functional Truth — WAVE B COMPLETE
+
+- All 11 core surfaces audited: Dashboard, Ativos, Renda Fixa, Rentabilidade, Dividendos, Metas, Rebalancear, Relatórios, Configurações, Import Center, Aportes
+- **P0_FOUND=0** — No critical financial truth violations
+- **P1_FOUND=0** — No high-severity workflow blockers
+- **P2_FOUND=1** — Misleading import buttons in Aportes (all 4 called importB3Excel)
+- **P2_FIXED=1** — Commit 0ae82a0: fixed button handlers to call proper import functions
+- **DEAD_CONTROLS_FOUND=1** — Aportes import buttons
+- **DEAD_CONTROLS_FIXED=1** — Now each button calls its proper handler
+- **IMPORT_CENTER: PREVIEW_REQUIRED=true, WRITES_BEFORE_CONFIRMATION=0**
+- Full regression: 249 legacy + 24 V248 + 24 V283 = 297 PASS
+- **NEXT_ACTION=V283_WAVE_C_STATE_HARDENING**
+
+### V283 Core Functional Truth — WAVE C COMPLETE
+
+- **Empty states**: All 11 surfaces have explicit empty state UI (no silent failures)
+- **Error states**: All surfaces show explicit error messages (no hidden errors)
+- **Partial states**: Coverage/freshness properly surfaced (PARTIAL_COVERAGE, UNKNOWN, STALE)
+- **Stale states**: Data freshness indicators present (IPCA diagnostics, RF manual values, import health)
+- **Unknown → Zero**: ELIMINATED — adapter returns UNAVAILABLE + reason instead of numeric zeros
+- **Partial → Complete**: ELIMINATED — certifiedHistory gate prevents fake completeness
+- **Expected → Received**: DIVIDENDS separates RECEIVED/ANNOUNCED/IMPORTED explicitly
+- **Fake Success**: ELIMINATED — Import Center requires preview + confirmation, adapter fail-closed
+- **Financial Truth Invariants**: All preserved across all surfaces
+- Full regression: 249 legacy + 24 V248 + 24 V283 = 297 PASS
+- Builds: PASS (legacy + modern)
+- **NEXT_ACTION=V283_REGRESSION_BROWSER_QA**
 
 - Vendored 25 project skills from C:/Projetos/skills to .agents/skills/
 - Created PROJECT_SKILLS_MANIFEST.md with full inventory and classification

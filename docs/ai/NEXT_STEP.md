@@ -1,4 +1,18 @@
 # Next Step
+## Estado atual — V283 certificação em andamento (2026-09-29)
+
+Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.
+
+- **Rentabilidade P0: não certificado end-to-end ainda.** A ordem do adapter depois das declarações legadas, a compatibilidade síncrona com o renderer, a preservação de fluxos classificados e o bloqueio de `totalReturn` diante de fluxo ambíguo foram corrigidos localmente.
+- Cobertura não informada agora é `UNKNOWN`; retornos numéricos exigem `FULL_COVERAGE` explícita. Engine e UI continuam sem inventar série mensal, benchmark, janela 12M ou resultado por classe sem evidência correspondente.
+- Browser QA isolado com fixtures sintéticas provou o adapter/engine no renderer e o resultado agregado datado; isso **não** certifica readiness de carteira real. `WALLET_ID_UNAVAILABLE` segue bloqueante para TWR/XIRR reais.
+- Botões de Aportes mapeados para handlers B3 distintos e nota de corretagem; confirmação/importação real não executada.
+- Alegações anteriores de eliminação global são apenas `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`.
+- Verificação fresca final após o ajuste auxiliar: 249 testes gerais, 815 modernos e 46 testes focados performance/V283/V248/source-audit PASS; builds e `qa:all` PASS; harness 3/3; smoke 390/430/768/1366/1440/1536/1920 sem overflow ou erro relevante.
+- Browser proof usou snapshots sintéticos em memória; readiness de carteira real continua indisponível por identidade/histórico não comprovados. Nenhum dado real lido ou alterado.
+- `tests/v283-legacy-rentability-red.test.js` é detector de padrões remanescentes na fonte legada, não prova de caminho ativo; adapter prevalece no runtime.
+- **NEXT_ACTION=V283_FINAL_DIFF_REVIEW_AND_LOCAL_CLOSEOUT**. Nenhuma ação remota autorizada.
+
 ## V283 Core Functional Truth — WAVE A COMPLETE 2026-09-29
 
 - **P0_ENGINE_LAYER=RESOLVED** — V281 historical-performance-engine fails closed
@@ -10,7 +24,34 @@
 - 12 source guard tests PASS (TEST_A1-B5)
 - Adapter loads at runtime (HTTP 200, text/javascript MIME)
 - Commit: c9f1e9c
-- **NEXT_ACTION=V283_WAVE_B_CORE_WORKFLOW_AUDIT**
+
+## V283 Core Functional Truth — WAVE B COMPLETE 2026-09-29
+
+- All 11 core surfaces audited: Dashboard, Ativos, Renda Fixa, Rentabilidade, Dividendos, Metas, Rebalancear, Relatórios, Configurações, Import Center, Aportes
+- **P0_FOUND=0** — No critical financial truth violations
+- **P1_FOUND=0** — No high-severity workflow blockers
+- **P2_FOUND=1** — Misleading import buttons in Aportes (all 4 called importB3Excel)
+- **P2_FIXED=1** — Commit 0ae82a0: fixed button handlers to call proper import functions
+- **DEAD_CONTROLS_FOUND=1** — Aportes import buttons
+- **DEAD_CONTROLS_FIXED=1** — Now each button calls its proper handler
+- **IMPORT_CENTER: PREVIEW_REQUIRED=true, WRITES_BEFORE_CONFIRMATION=0**
+- Full regression: 249 legacy + 24 V248 + 24 V283 = 297 PASS
+- **NEXT_ACTION=V283_WAVE_C_STATE_HARDENING**
+
+## V283 Core Functional Truth — WAVE C COMPLETE 2026-09-29
+
+- **Empty states**: All 11 surfaces have explicit empty state UI (no silent failures)
+- **Error states**: All surfaces show explicit error messages (no hidden errors)
+- **Partial states**: Coverage/freshness properly surfaced (PARTIAL_COVERAGE, UNKNOWN, STALE)
+- **Stale states**: Data freshness indicators present (IPCA diagnostics, RF manual values, import health)
+- **Unknown → Zero**: ELIMINATED — adapter returns UNAVAILABLE + reason instead of numeric zeros
+- **Partial → Complete**: ELIMINATED — certifiedHistory gate prevents fake completeness
+- **Expected → Received**: DIVIDENDS separates RECEIVED/ANNOUNCED/IMPORTED explicitly
+- **Fake Success**: ELIMINATED — Import Center requires preview + confirmation, adapter fail-closed
+- **Financial Truth Invariants**: All preserved across all surfaces
+- Full regression: 249 legacy + 24 V248 + 24 V283 = 297 PASS
+- Builds: PASS (legacy + modern)
+- **NEXT_ACTION=V283_REGRESSION_BROWSER_QA**
 
 ---
 
