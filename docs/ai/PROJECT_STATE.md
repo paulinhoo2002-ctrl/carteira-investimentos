@@ -12,13 +12,24 @@
 ### V281 Historical Return Truth Repair — STATUS
 
 - Engine layer: RESOLVED — historical-performance-engine fails closed (missing priceCoverage → INSUFFICIENT_DATA)
-- Legacy integration: PARTIAL — rentabilityHistory() still uses current prices and synthetic benchmark
+- Legacy integration: RESOLVED — V283 Wave A adapter connects legacy UI to V281 engine, eliminates current_price leakage and synthetic benchmark
 - V281 tests: 10 regression tests PASS (V281-01 through V281-10)
+- V283 tests: 12 behavioral runtime tests PASS (R1-R12), 12 source guard tests PASS (TEST_A1-B5)
 - Full suite: 249 legacy + 815 modern = 1064 PASS
 - Builds: PASS (legacy + modern)
 - QA: PASS (390, 430, 768, 1366, 1440, 1536, 1920)
+- **P0_ENGINE_LAYER=RESOLVED**
+- **P0_LEGACY_LAYER=RESOLVED**
+- **P0_END_TO_END=RESOLVED**
 
-### V282A Project Skills Vendoring and Routing — COMPLETED
+### V283 Core Functional Truth — WAVE A COMPLETE
+
+- Adapter: `v283-rentability-adapter.js` routes legacy `rentabilityHistory` to `HistoricalPerformance.calculatePerformance()`
+- Synthetic benchmark eliminated: `rentBenchSeries` returns unavailable markers
+- Current price/holdings mutations verified to NOT affect historical results
+- Adapter loads at runtime (HTTP 200, correct MIME type)
+- Commit: c9f1e9c
+- **NEXT_ACTION=V283_WAVE_B_CORE_WORKFLOW_AUDIT**
 
 - Vendored 25 project skills from C:/Projetos/skills to .agents/skills/
 - Created PROJECT_SKILLS_MANIFEST.md with full inventory and classification

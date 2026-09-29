@@ -1,5 +1,20 @@
 # Next Step
-## V282A Project Skills Vendoring and Routing — COMPLETED 2026-09-28
+## V283 Core Functional Truth — WAVE A COMPLETE 2026-09-29
+
+- **P0_ENGINE_LAYER=RESOLVED** — V281 historical-performance-engine fails closed
+- **P0_LEGACY_LAYER=RESOLVED** — V283 adapter connects legacy UI to engine
+- **P0_END_TO_END=RESOLVED** — Current_price leakage eliminated, synthetic benchmark removed
+- Adapter: `v283-rentability-adapter.js` routes legacy `rentabilityHistory` → `HistoricalPerformance.calculatePerformance()`
+- `rentBenchSeries` returns unavailable markers (no synthetic data)
+- 12 behavioral runtime tests PASS (R1-R12)
+- 12 source guard tests PASS (TEST_A1-B5)
+- Adapter loads at runtime (HTTP 200, text/javascript MIME)
+- Commit: c9f1e9c
+- **NEXT_ACTION=V283_WAVE_B_CORE_WORKFLOW_AUDIT**
+
+---
+
+## V282 Project Memory Continuity and Skills Certification — COMPLETED 2026-09-28
 
 - V282A vendored 25 project skills from C:/Projetos/skills to .agents/skills/
 - Created PROJECT_SKILLS_MANIFEST.md with full inventory and classification
@@ -7,6 +22,8 @@
 - Updated legacy .agents/SKILL_ROUTER.md as deprecated reference
 - Commit: de2fa0f
 - No runtime changes, no financial logic changes, no test changes
+
+---
 
 ## V282B Project Memory Continuity and Skills Certification — IN PROGRESS
 

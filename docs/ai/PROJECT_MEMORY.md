@@ -7,6 +7,23 @@
 - `P0_RENTABILIDADE_HISTORICAL_SERIES=true`; retorno histórico não verificado deve permanecer `UNAVAILABLE`. Proibidos interpolação, retroprojeção de cotação presente e taxa fixa no lugar de benchmark datado.
 - `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recomendação; não iniciada/autorizada).
 
+---
+
+## V283 Core Functional Truth — WAVE A COMPLETE (2026-09-29)
+
+- **P0_ENGINE_LAYER=RESOLVED** — V281 historical-performance-engine fails closed
+- **P0_LEGACY_LAYER=RESOLVED** — V283 adapter connects legacy UI to engine
+- **P0_END_TO_END=RESOLVED** — Current_price leakage eliminated, synthetic benchmark removed
+- Adapter: `v283-rentability-adapter.js` routes legacy `rentabilityHistory` → `HistoricalPerformance.calculatePerformance()`
+- `rentBenchSeries` returns unavailable markers (no synthetic data)
+- 12 behavioral runtime tests PASS (R1-R12)
+- 12 source guard tests PASS (TEST_A1-B5)
+- Adapter loads at runtime (HTTP 200, text/javascript MIME)
+- Commit: c9f1e9c
+- **NEXT_ACTION=V283_WAVE_B_CORE_WORKFLOW_AUDIT**
+
+---
+
 ## V280A/V280 — auditoria funcional e política de bootstrap (2026-09-28)
 
 - Auditoria, backlog e matriz: `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md` e `PRODUCT_COMPLETION_MATRIX.md`.
