@@ -4,7 +4,7 @@ Backlog originado na auditoria V280 e atualizado pela certificação V283 em 202
 
 ## Revalidação V283 — estado atual
 
-O adapter legado e os controles de Aportes passaram os gates frescos: 249 geral, 815 modernos, 46 focados, builds, `qa:all` e browser smoke de sete larguras. O motor exige cobertura explicitamente informada e o adapter só classifica 100% como `FULL_COVERAGE` (95% ou valores menores permanecem parciais). Isto não certifica prontidão de carteira real: wallet ID, fluxos externos confiáveis e série datada seguem requisitos. Alegações históricas de eliminação global são apenas `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`.
+O caminho P0 de verdade está resolvido (`P0_END_TO_END=RESOLVED`): cotação atual/benchmark sintético não são alcançáveis e evidência insuficiente falha fechada. `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE`; isso não reabre o P0. Os gates frescos foram 249 geral, 815 modernos, 46 focados, builds, `qa:all` e browser smoke de sete larguras. O motor exige coverage explícita; alegações históricas de eliminação global são apenas `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`. `V283-01` é o próximo item acionável; `V283-04` é latente, sem chamador de produção identificado, e requer contrato de autoridade.
 
 | ID / prioridade | Área e problema/evidência | Impacto / dependências | Arquivos prováveis / validação necessária | Escrita financeira / aprovação | Critério de conclusão |
 |---|---|---|---|---|---|

@@ -132,7 +132,7 @@
     };
 
     // Build benchmark if possible
-    const benchmark = buildBenchmarkFromEngine(S.rentBench || 'CDI', 
+    const benchmark = buildBenchmarkFromEngine(S.rentBench || 'CDI',
       valuations[0]?.date, valuations[valuations.length - 1]?.date);
 
     // Call engine

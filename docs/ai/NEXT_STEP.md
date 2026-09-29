@@ -1,9 +1,10 @@
 # Next Step
-## Estado atual — V283 certificação em andamento (2026-09-29)
+## Estado atual — V283 certificação concluída (2026-09-29)
 
 Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.
 
-- **Rentabilidade P0: não certificado end-to-end ainda.** A ordem do adapter depois das declarações legadas, a compatibilidade síncrona com o renderer, a preservação de fluxos classificados e o bloqueio de `totalReturn` diante de fluxo ambíguo foram corrigidos localmente.
+- **P0_TRUTH_PATH=RESOLVED; P0_END_TO_END=RESOLVED.** Cotação atual e benchmark sintético não são alcançáveis no runtime; engine/adapter falham fechados sem evidência. Isto certifica o caminho de verdade, não a disponibilidade real da métrica.
+- **REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE.** Identidade/cobertura/histórico/fluxos insuficientes mantêm retorno real indisponível ou parcial. `FAIL_CLOSED_ON_INSUFFICIENT_EVIDENCE=true`; isso não reabre o P0.
 - Cobertura não informada agora é `UNKNOWN`; retornos numéricos exigem `FULL_COVERAGE` explícita. Engine e UI continuam sem inventar série mensal, benchmark, janela 12M ou resultado por classe sem evidência correspondente.
 - Browser QA isolado com fixtures sintéticas provou o adapter/engine no renderer e o resultado agregado datado; isso **não** certifica readiness de carteira real. `WALLET_ID_UNAVAILABLE` segue bloqueante para TWR/XIRR reais.
 - Botões de Aportes mapeados para handlers B3 distintos e nota de corretagem; confirmação/importação real não executada.
@@ -12,8 +13,8 @@ Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.
 - Suites direcionadas adicionais de backup/restore, renda fixa, dividendos, readiness de relatórios, rebalanceamento e Import Center: 78/78 PASS (há sobreposição com a suite geral).
 - Browser proof usou snapshots sintéticos em memória; readiness de carteira real continua indisponível por identidade/histórico não comprovados. Nenhum arquivo financeiro privado foi acessado e nenhum dado financeiro real foi alterado.
 - QA adicional: 16 rotas × 7 viewports (112/112), sem erro/overflow; axe WCAG 2 A/AA em 12 superfícies nas larguras 390 e 1366 (24 checks), sem violações. Dados apenas sintéticos/testMode.
-- `tests/v283-legacy-rentability-red.test.js` é detector de padrões remanescentes na fonte legada, não prova de caminho ativo; adapter prevalece no runtime.
-- **NEXT_ACTION=V283_FINAL_DIFF_REVIEW_AND_LOCAL_CLOSEOUT**. Nenhuma ação remota autorizada.
+- `tests/v283-legacy-rentability-red.test.js=SOURCE_GUARD_TESTS`, não prova reachability; `tests/v283-behavioral-runtime.test.js=BEHAVIORAL_RUNTIME_TESTS`. Browser/runtime prova implementação ativa.
+- **NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION** — item acionável existente no backlog. V283-04 permanece risco latente sem chamador de produção identificado e depende de contrato de autoridade. Nenhuma ação remota autorizada.
 
 ## V283 Core Functional Truth — WAVE A COMPLETE 2026-09-29
 

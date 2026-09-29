@@ -2,12 +2,12 @@
 
 ## V283 — certificação funcional noturna atualizada (2026-09-29)
 
-- Branch `feature/v283-core-functional-truth`, 7 commits locais à frente de `origin/main` `c0e145595b2de9afa623ac3d994fb0bd972c583d` antes deste fechamento documental. Consulte o Git para o HEAD atual. Nenhum push/PR/merge/deploy.
-- Adapter de Rentabilidade está integrado após as declarações legadas e executa síncrono para o renderer; engine e adapter agora falham fechados em coverage omitido/UNKNOWN, fluxo externo ambíguo, valuation ausente e coverage parcial (<100%). Retorno agregado foi provado somente com snapshots sintéticos; `WALLET_ID_UNAVAILABLE` deixa `REAL_PORTFOLIO_DATA_READY=false`.
+- No início deste closeout, branch `feature/v283-core-functional-truth` estava 8 commits à frente de `origin/main` `c0e145595b2de9afa623ac3d994fb0bd972c583d`; consulte Git para HEAD/contagem atuais. Nenhum push/PR/merge/deploy.
+- `P0_TRUTH_PATH=RESOLVED` / `P0_END_TO_END=RESOLVED`: cotação atual e benchmark sintético não são alcançáveis no runtime Rentabilidade; engine/adapter falham fechados com evidência insuficiente. `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE`; fixture sintética prova apenas caminho técnico, não retorno real. `WALLET_ID_UNAVAILABLE` continua bloqueante para disponibilidade real.
 - Benchmark, janela 12M, série mensal e filtros por classe seguem `UNAVAILABLE` sem observações/fronteiras suficientes. Nenhuma interpolação ou substituição por cotação atual.
 - Aportes encaminha cada botão a handler de importação implementado/diferenciado; nenhum arquivo foi importado ou confirmado.
-- Verificação final: geral 249/249, moderna 815/815, focados 46/46, subset alto-risco 78/78; builds legacy/modern e `qa:all` PASS. QA browser: 112/112 combinações rota×viewport, sete larguras sem overflow/console/request errors; axe A/AA sem violações em 12 telas × 390/1366. Fixtures eram sintéticas/testMode.
-- `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE` é o limite das conclusões sobre invariantes; nunca afirmar eliminação global. Backlog atual está em `PRODUCT_COMPLETION_BACKLOG.md`, incluindo readiness real, autoridade de realização de eventos e reclassificação do teste source-only legado.
+- Verificação final: geral 249/249, moderna 815/815, focados 46/46, subset alto-risco 78/78; builds legacy/modern e `qa:all` PASS. QA browser: 112/112 combinações rota×viewport, sete larguras sem overflow/console/request errors; axe A/AA sem violações em 12 telas × 390/1366. Fixtures eram sintéticas/testMode. Testes source-only são `SOURCE_GUARD_TESTS`; runtime/browser são `BEHAVIORAL_RUNTIME_TESTS`.
+- `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE` é o limite das conclusões sobre invariantes; nunca afirmar eliminação global. `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`, item existente e acionável; V283-04 permanece latente e depende de contrato de autoridade.
 - `git fsck --full` passou; objetos dangling continuam preservados. Skills/modelos independentes não disponíveis; revisão foi self-review Codex/Caveman.
 
 ---

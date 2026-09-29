@@ -23,7 +23,7 @@ function createRuntimeContext() {
       const coverage = opts.priceCoverage?.status || 'UNKNOWN';
       const start = valuations[0]?.value || 0;
       const end = valuations[valuations.length - 1]?.value || 0;
-      
+
       return {
         coverage: coverage,
         valuations: valuations.map(v => ({ date: v.date, value: v.value })),
@@ -46,7 +46,7 @@ function createRuntimeContext() {
     normalizeBenchmark: function() { return { points: [] }; },
     buildYearEndPosition: function() { return { rows: [] }; }
   };
-  
+
   // Mock PortfolioCashFlowClassifier
   const mockClassifier = {
     classifyEvent: function(row, opts) {
@@ -65,17 +65,17 @@ function createRuntimeContext() {
       return { state: 'READY', trustedExternalFlows: [], ambiguousEvents: 0, unknownEvents: 0, unscopedEvents: 0 };
     }
   };
-  
+
   // Mock PortfolioHistory
   const mockHistory = {
     assessSufficiency: function() {
       return { capabilities: [] };
     }
   };
-  
+
   const runtime = {
     console: console,
-    window: { 
+    window: {
       HistoricalPerformance: mockEngine,
       PortfolioCashFlowClassifier: mockClassifier,
       PortfolioHistory: mockHistory
@@ -140,14 +140,14 @@ function createRuntimeContext() {
       flows: { flows: [] }
     }
   };
-  
+
   runtime.window = runtime;
   runtime.self = runtime;
   runtime.globalThis = runtime;
   runtime.HistoricalPerformance = mockEngine;
   runtime.PortfolioCashFlowClassifier = mockClassifier;
   runtime.PortfolioHistory = mockHistory;
-  
+
   return runtime;
 }
 
@@ -157,15 +157,15 @@ test('R1: Missing dated valuation evidence => UNAVAILABLE/INSUFFICIENT_DATA', as
   const ctx = createRuntimeContext();
   // No snapshots = no dated valuations
   ctx.__V76_RUNTIME__.snapshots.snapshots = [];
-  
+
   // Create context and run adapter
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   // Call adapter's rentabilityHistory
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
-  assert.ok(result.status === 'UNAVAILABLE' || result.status === 'INSUFFICIENT_DATA', 
+
+  assert.ok(result.status === 'UNAVAILABLE' || result.status === 'INSUFFICIENT_DATA',
     `Expected UNAVAILABLE or INSUFFICIENT_DATA, got ${result.status}`);
   assert.ok(!result.current || result.current === null, 'current should be null when unavailable');
   assert.equal(result.return12m, null, 'return12m is unavailable, not zero');
@@ -192,12 +192,12 @@ test('R2: priceCoverage UNKNOWN => fail closed, no fake 0%', async () => {
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 0 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 0 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // With UNKNOWN coverage, engine should return INSUFFICIENT_DATA
   assert.ok(result.status === 'UNAVAILABLE' || result.status === 'INSUFFICIENT_DATA' || result.coverage === 'UNKNOWN',
     `Expected fail-closed state, got status=${result.status}, coverage=${result.coverage}`);
@@ -210,12 +210,12 @@ test('R3: priceCoverage PARTIAL => status PARTIAL, not COMPLETE', async () => {
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 50 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 50 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // PARTIAL coverage should not yield AVAILABLE unless engine explicitly allows
   assert.ok(result.status !== 'AVAILABLE' || result.coverage === 'PARTIAL_COVERAGE',
     `PARTIAL coverage should not be AVAILABLE without explicit engine approval`);
@@ -242,12 +242,12 @@ test('R4: Valid dated valuations + FULL coverage => numeric result available', a
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   assert.equal(result.status, 'AVAILABLE', 'Full dated synthetic evidence should expose an available aggregate return');
   assert.ok(Math.abs(result.current.cumReturn - 10) < 1e-9, 'Aggregate return must match the engine, not a fabricated zero');
   assert.equal(result.return12m, null, 'Two monthly observations do not prove a trailing-12-month boundary');
@@ -265,19 +265,19 @@ test('R5: Current price mutation must NOT alter historical result', async () => 
   ctx.S.assets = [
     { ticker: 'PETR4', current_price: 30, qty: 100, price: 25 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result1 = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // Mutate current_price
   ctx.S.assets[0].current_price = 50;
-  
+
   const result2 = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // Historical result based on dated snapshots should NOT change
-  assert.deepEqual(result1.points, result2.points, 
+  assert.deepEqual(result1.points, result2.points,
     'Historical points must not change when current_price mutates');
 });
 
@@ -287,19 +287,19 @@ test('R6: Current holdings mutation must NOT rewrite prior dated holding state',
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result1 = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // Mutate current holdings
   ctx.S.assets = [
     { ticker: 'VALE3', current_price: 60, qty: 200, price: 55 }
   ];
-  
+
   const result2 = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // Historical points should not change
   assert.deepEqual(result1.points, result2.points,
     'Historical points must not change when current holdings mutate');
@@ -311,12 +311,12 @@ test('R7: Benchmark unavailable => no synthetic benchmark series', async () => {
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // benchSeries should have unavailable markers, not synthetic values
   if (result.benchSeries && result.benchSeries.length > 0) {
     const allUnavailable = result.benchSeries.every(b => b.unavailable === true || b.value === null);
@@ -330,12 +330,12 @@ test('R8: Portfolio return available even if benchmark unavailable', async () =>
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // Portfolio return (current, return12m) should be computable from valuations
   // even if benchmark is unavailable
   assert.ok(result.current !== undefined, 'Portfolio current should exist');
@@ -343,15 +343,15 @@ test('R8: Portfolio return available even if benchmark unavailable', async () =>
   assert.ok(Number.isFinite(result.current?.cumReturn), 'The available aggregate return is preserved');
 });
 
-test('R9: Legacy rentabilityHistory resolves to adapter at runtime', async function() {
+test('R9: Legacy rentabilityHistory resolves to synchronous adapter at runtime', async function() {
   const ctx = createRuntimeContext();
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
-  // Check that window.rentabilityHistory is the adapter (async function)
+
+  // Verify the public renderer API remains synchronous after adapter installation.
   const fn = ctx.window.rentabilityHistory;
   assert.ok(typeof fn === 'function', 'rentabilityHistory should be a function');
-  
+
   const result = fn('all', 'all', 'CDI');
   assert.ok(result && typeof result.then !== 'function', 'Legacy render callers require a synchronous result');
 });
@@ -360,10 +360,10 @@ test('R10: Legacy rentBenchSeries does NOT execute old synthetic implementation'
   const ctx = createRuntimeContext();
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   // Call rentBenchSeries - should return unavailable markers
   const bench = ctx.window.rentBenchSeries(12, 'CDI');
-  
+
   // Should return array of unavailable markers
   assert.ok(Array.isArray(bench), 'benchSeries should return array');
   assert.equal(bench.length, 12, 'Should have 12 entries');
@@ -446,12 +446,12 @@ test('R11: Engine unavailable => fail closed, no fabricated numeric series', asy
   const ctx = createRuntimeContext();
   // Remove engine
   delete ctx.window.HistoricalPerformance;
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   assert.equal(result.status, 'UNAVAILABLE', 'Should be UNAVAILABLE when engine missing');
   assert.ok(result.reason && result.reason.includes('engine'), 'Reason should mention engine');
 });
@@ -462,15 +462,15 @@ test('R12: Adapter preserves provenance/coverage status when provided', async fu
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 50 }
   ];
-  
+
   const context = vm.createContext(ctx);
   vm.runInContext(adapterSource, context);
-  
+
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
-  
+
   // Debug: log the result
   console.log('R12 result:', JSON.stringify({status: result.status, coverage: result.coverage, hasCoverage: result.coverage !== undefined}));
-  
+
   // Result should expose coverage info - check status or coverage field
   assert.ok(result.coverage !== undefined || result.status !== undefined, 'Result should have coverage or status field');
   if (result.coverage !== undefined) {
