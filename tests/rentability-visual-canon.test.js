@@ -15,8 +15,8 @@ test('Rentabilidade preserva fontes oficiais e ordem analitica', () => {
   assert.match(view, /Último mês/);
   assert.match(view, /Melhor ano/);
   assert.match(view, /Pior ano/);
-  assert.match(view, /Meses analisados/);
-  assert.match(view, /Baseado na posição atual/);
+  assert.match(view, /Meses com retorno calculado/);
+  assert.match(view, /TWR datado|Retorno simples datado/);
 });
 
 test('Rentabilidade mantém filtros e valores financeiros legíveis', () => {

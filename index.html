@@ -31548,14 +31548,14 @@ function apTab(){
     ${executiveSummary}
     ${aporteToolbar}
     <details class="card aportes-imports-panel">
-      <summary>Importar movimentações</summary>
-      <div class="aporte-imports-options">
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📥 B3</button>
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📊 Excel</button>
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📄 PDF</button>
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openBrokerNoteImport()">🧾 Nota de corretagem</button>
-      </div>
-    </details>
+          <summary>Importar movimentações</summary>
+          <div class="aporte-imports-options">
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📥 B3</button>
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3NegotiationPreview()">📊 Negociações B3 (Excel/CSV)</button>
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3MovementPreview()">📈 Movimentações B3 (Excel/CSV)</button>
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importNotaCorretora()">🧾 Nota de corretagem (PDF)</button>
+          </div>
+        </details>
     ${frmP()}
     ${aporteViewModeTabs()}
     ${mode!=='resumo'?`${aporteFilterTabs()}${aporteSortControl()}`:''}
@@ -34685,17 +34685,17 @@ function rentabilidadeTab(){
   const type=String(S.rentType||'all');
   const period=String(S.rentPeriod||'all');
   const v248History=v248HistoricalPerformanceSnapshot();
-  const certifiedHistory=v248History.coverage==='FULL_COVERAGE'||v248History.coverage==='PARTIAL_COVERAGE';
   const data=rentabilityHistory(type, period, bench);
+  const certifiedHistory=v248History.coverage==='FULL_COVERAGE'&&data.status==='AVAILABLE';
   const view=Array.isArray(data.view)?data.view:[];
   const points=Array.isArray(data.points)?data.points:[];
   const benchSeries=Array.isArray(data.benchSeries)?data.benchSeries:[];
-  const current=data.current || {cumReturn:0, delta:0, costBasis:0, currentValue:0, proventos:0};
-  const benchNow=data.currentBench || 0;
+  const current=data.current || {cumReturn:null, delta:null, costBasis:null, currentValue:null, proventos:null};
+  const benchNow=data.currentBench;
   const gap=current.cumReturn - benchNow;
-  const return12m=data.return12m || 0;
-  const currentMonth=current.delta || 0;
-  const provCurrent=Number(current.proventos)||0;
+  const return12m=data.return12m;
+  const currentMonth=data.lastMonth;
+  const provCurrent=current.proventos==null?null:Number(current.proventos);
   const yearsList=(data.years||[]).filter(r=>Number.isFinite(Number(r.annual)));
   const bestYear=yearsList.reduce((best,row)=>!best || Number(row.annual||-999)>Number(best.annual||-999)?row:best,null);
   const worstYear=yearsList.reduce((worst,row)=>!worst || Number(row.annual||999)<Number(worst.annual||999)?row:worst,null);
@@ -34736,26 +34736,26 @@ function rentabilidadeTab(){
   const sideCards=[
     {
       title:'Rentabilidade total',
-      value:certifiedHistory?fmtP(current.cumReturn||0):'Indisponível',
-      foot:certifiedHistory?`Estimativa legada · ${gap>=0?'Acima':'Abaixo'} do ${bench}`:'Sem série histórica certificada para este recorte',
+      value:certifiedHistory&&current.cumReturn!=null?fmtP(current.cumReturn):'Indisponível',
+      foot:certifiedHistory?`${data.metric==='TWR'?'TWR datado':'Retorno simples datado'} · ${data.asOf||'sem data'}`:'Sem série histórica certificada para este recorte',
       color:'var(--success)',
     },
     {
       title:'Últimos 12 meses',
-      value:certifiedHistory?fmtP(return12m||0):'Indisponível',
-      foot:certifiedHistory?`Estimativa legada · proventos: ${fmt(provCurrent)}`:'Fluxos externos e valuations históricos insuficientes',
+      value:certifiedHistory&&return12m!=null?fmtP(return12m):'Indisponível',
+      foot:certifiedHistory&&return12m!=null?`Proventos: ${fmt(provCurrent)}`:'Valuation de abertura da janela de 12 meses indisponível',
       color:'#60a5fa',
     },
     {
       title:'Último mês',
-      value:certifiedHistory?fmtP(currentMonth||0):'Indisponível',
-      foot:certifiedHistory?'Estimativa legada do fechamento mensal':'Sem valuation histórico válido',
+      value:certifiedHistory&&currentMonth!=null?fmtP(currentMonth):'Indisponível',
+      foot:certifiedHistory&&currentMonth!=null?'Retorno entre valuations datados':'Valuations de abertura/fechamento mensal indisponíveis',
       color:(currentMonth||0)>=0?'var(--success)':'var(--danger)',
     },
     {
       title:'Patrimônio atual',
-      value:fmt(current.currentValue||0),
-      foot:'Valor atual das posições no recorte',
+      value:current.currentValue==null?'Indisponível':fmt(current.currentValue),
+      foot:current.currentValue==null?'Valuation histórico indisponível':'Último valuation datado disponível',
       color:'#22d3ee',
     },
   ];
@@ -34770,10 +34770,10 @@ function rentabilidadeTab(){
     {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'#60a5fa', width:2.2, points:false},
   ];
   const summaryPreview=[
-    {label:'Último mês', value:fmtP(currentMonth||0), sub:'Mudança estimada no fechamento do mês'},
+    {label:'Último mês', value:currentMonth==null?'Indisponível':fmtP(currentMonth), sub:'Retorno entre valuations datados'},
     {label:'Melhor ano', value:bestYear ? `${bestYear.year} · ${fmtP(bestYear.annual||0)}` : '—', sub:'Maior retorno anual'},
     {label:'Pior ano', value:worstYear ? `${worstYear.year} · ${fmtP(worstYear.annual||0)}` : '—', sub:'Menor retorno anual'},
-    {label:'Meses analisados', value:`${data.totalMonths}`, sub:`Proventos 12M ${fmt(provCurrent)}`},
+    {label:'Meses com retorno calculado', value:`${data.totalMonths}`, sub:`Proventos 12M ${provCurrent==null?'Indisponível':fmt(provCurrent)}`},
   ];
 
   const yearsRows=(data.years||[]).map(row=>{
@@ -36402,6 +36402,7 @@ function updateRfAssetSummary(selectElement) {
 
   summaryDiv.style.display = 'block'
 }</script>
+<script src="v283-rentability-adapter.js"></script>
 <style>
 @media (min-width:1181px){
   .canon-dashboard .dashboard-executive-kpis .premium-metric-value{white-space:nowrap;overflow:visible;line-height:1.25}

@@ -187,9 +187,12 @@
       const date = isoDate(row.date);
       if (!date || (Number.isFinite(wantedYear) && Number(date.slice(0, 4)) !== wantedYear)) return;
       const previous = latest.get(String(row.ticker || row.assetId || ''));
-      if (!previous || date >= previous.date) latest.set(String(row.ticker || row.assetId || ''), { ticker: String(row.ticker || row.assetId || ''), date, quantity: numberOrNull(row.quantity), value: numberOrNull(row.value), coverage: row.coverage || 'FULL_COVERAGE' });
+      if (!previous || date >= previous.date) latest.set(String(row.ticker || row.assetId || ''), { ticker: String(row.ticker || row.assetId || ''), date, quantity: numberOrNull(row.quantity), value: numberOrNull(row.value), coverage: ['FULL_COVERAGE', 'PARTIAL_COVERAGE', 'UNKNOWN'].includes(row.coverage) ? row.coverage : 'UNKNOWN' });
     });
-    return { year: wantedYear, rows: [...latest.values()].filter(row => row.ticker), coverage: [...latest.values()].some(row => row.coverage !== 'FULL_COVERAGE') ? 'PARTIAL_COVERAGE' : 'FULL_COVERAGE', writeEnabled: false };
+    const selectedRows = [...latest.values()].filter(row => row.ticker);
+    const coverage = selectedRows.length && selectedRows.every(row => row.coverage === 'FULL_COVERAGE') ? 'FULL_COVERAGE'
+      : selectedRows.some(row => row.coverage === 'PARTIAL_COVERAGE') ? 'PARTIAL_COVERAGE' : 'UNKNOWN';
+    return { year: wantedYear, rows: selectedRows, coverage, writeEnabled: false };
   }
 
   function calculatePerformance({ valuations = [], events = [], income = [], priceCoverage = null, benchmark = null, walletId = null } = {}) {
@@ -206,7 +209,7 @@
     const untrustedExternalFlowCount = Math.max(0, possibleFlowEvidence.length - flows.length);
     const incomes = incomeRows(income);
     const start = points[0]?.value ?? null, end = points[points.length - 1]?.value ?? null;
-    const coverage = priceCoverage?.status || (points.length >= 2 ? 'FULL_COVERAGE' : 'INSUFFICIENT_DATA');
+    const coverage = priceCoverage?.status || 'UNKNOWN';
     const totalIncome = incomes.reduce((sum, row) => sum + row.amount, 0);
     const capitalEnd = end === null ? null : end - totalIncome;
     const unsafeFlowGate = result => untrustedExternalFlowCount
@@ -221,7 +224,7 @@
       xirr: gatedMetric(unsafeFlowGate(xirr(xirrInputs)), coverage),
       incomeReturn: gatedMetric(flows.length || start === null || start <= EPSILON ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.incomeReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_SUBPERIOD_DECOMPOSITION' : undefined }) : metric('PASS', totalIncome / start, { formula: FORMULA_VERSIONS.incomeReturn }), coverage),
       capitalReturn: gatedMetric(flows.length || start === null || start <= EPSILON || capitalEnd === null ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.capitalReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_SUBPERIOD_DECOMPOSITION' : undefined }) : metric('PASS', (capitalEnd - start) / start, { formula: FORMULA_VERSIONS.capitalReturn }), coverage),
-      totalReturn: gatedMetric(flows.length || start === null || start <= EPSILON || end === null ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.simpleReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_FLOW_ADJUSTED_METRIC' : undefined }) : metric('PASS', (end - start) / start, { formula: FORMULA_VERSIONS.simpleReturn }), coverage),
+      totalReturn: gatedMetric(unsafeFlowGate(flows.length || start === null || start <= EPSILON || end === null ? metric('INSUFFICIENT_DATA', null, { formula: FORMULA_VERSIONS.simpleReturn, reason: flows.length ? 'EXTERNAL_FLOW_REQUIRES_FLOW_ADJUSTED_METRIC' : undefined }) : metric('PASS', (end - start) / start, { formula: FORMULA_VERSIONS.simpleReturn })), coverage),
     };
     const benchmarkResult = benchmark ? normalizeBenchmark(benchmark.points || benchmark, points[0]?.date, points.at(-1)?.date) : { coverage: 'UNKNOWN', points: [] };
     return {

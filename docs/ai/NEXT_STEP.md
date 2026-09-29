@@ -1,5 +1,64 @@
 # Next Step
-## V282A Project Skills Vendoring and Routing — COMPLETED 2026-09-28
+## Estado atual — V283 certificação concluída (2026-09-29)
+
+Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.
+
+- **P0_TRUTH_PATH=RESOLVED; P0_END_TO_END=RESOLVED.** Cotação atual e benchmark sintético não são alcançáveis no runtime; engine/adapter falham fechados sem evidência. Isto certifica o caminho de verdade, não a disponibilidade real da métrica.
+- **REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE.** Identidade/cobertura/histórico/fluxos insuficientes mantêm retorno real indisponível ou parcial. `FAIL_CLOSED_ON_INSUFFICIENT_EVIDENCE=true`; isso não reabre o P0.
+- Cobertura não informada agora é `UNKNOWN`; retornos numéricos exigem `FULL_COVERAGE` explícita. Engine e UI continuam sem inventar série mensal, benchmark, janela 12M ou resultado por classe sem evidência correspondente.
+- Browser QA isolado com fixtures sintéticas provou o adapter/engine no renderer e o resultado agregado datado; isso **não** certifica readiness de carteira real. `WALLET_ID_UNAVAILABLE` segue bloqueante para TWR/XIRR reais.
+- Botões de Aportes mapeados para handlers B3 distintos e nota de corretagem; confirmação/importação real não executada.
+- Alegações anteriores de eliminação global são apenas `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`.
+- Verificação fresca final após o ajuste auxiliar: 249 testes gerais, 815 modernos e 46 testes focados performance/V283/V248/source-audit PASS; builds e `qa:all` PASS; harness 3/3; smoke 390/430/768/1366/1440/1536/1920 sem overflow ou erro relevante.
+- Suites direcionadas adicionais de backup/restore, renda fixa, dividendos, readiness de relatórios, rebalanceamento e Import Center: 78/78 PASS (há sobreposição com a suite geral).
+- Browser proof usou snapshots sintéticos em memória; readiness de carteira real continua indisponível por identidade/histórico não comprovados. Nenhum arquivo financeiro privado foi acessado e nenhum dado financeiro real foi alterado.
+- QA adicional: 16 rotas × 7 viewports (112/112), sem erro/overflow; axe WCAG 2 A/AA em 12 superfícies nas larguras 390 e 1366 (24 checks), sem violações. Dados apenas sintéticos/testMode.
+- `tests/v283-legacy-rentability-red.test.js=SOURCE_GUARD_TESTS`, não prova reachability; `tests/v283-behavioral-runtime.test.js=BEHAVIORAL_RUNTIME_TESTS`. Browser/runtime prova implementação ativa.
+- **NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION** — item acionável existente no backlog. V283-04 permanece risco latente sem chamador de produção identificado e depende de contrato de autoridade. Nenhuma ação remota autorizada.
+
+## V283 Core Functional Truth — WAVE A COMPLETE 2026-09-29
+
+- **P0_ENGINE_LAYER=RESOLVED** — V281 historical-performance-engine fails closed
+- **P0_LEGACY_LAYER=RESOLVED** — V283 adapter connects legacy UI to engine
+- **P0_END_TO_END=RESOLVED** — Current_price leakage eliminated, synthetic benchmark removed
+- Adapter: `v283-rentability-adapter.js` routes legacy `rentabilityHistory` → `HistoricalPerformance.calculatePerformance()`
+- `rentBenchSeries` returns unavailable markers (no synthetic data)
+- 12 behavioral runtime tests PASS (R1-R12)
+- 12 source guard tests PASS (TEST_A1-B5)
+- Adapter loads at runtime (HTTP 200, text/javascript MIME)
+- Commit: c9f1e9c
+
+## V283 Core Functional Truth — WAVE B COMPLETE 2026-09-29
+
+- All 11 core surfaces audited: Dashboard, Ativos, Renda Fixa, Rentabilidade, Dividendos, Metas, Rebalancear, Relatórios, Configurações, Import Center, Aportes
+- **P0_FOUND=0** — No critical financial truth violations
+- **P1_FOUND=0** — No high-severity workflow blockers
+- **P2_FOUND=1** — Misleading import buttons in Aportes (all 4 called importB3Excel)
+- **P2_FIXED=1** — Commit 0ae82a0: fixed button handlers to call proper import functions
+- **DEAD_CONTROLS_FOUND=1** — Aportes import buttons
+- **DEAD_CONTROLS_FIXED=1** — Now each button calls its proper handler
+- **IMPORT_CENTER: PREVIEW_REQUIRED=true, WRITES_BEFORE_CONFIRMATION=0**
+- Full regression: 249 legacy + 24 V248 + 24 V283 = 297 PASS
+- **NEXT_ACTION=V283_WAVE_C_STATE_HARDENING**
+
+## V283 Core Functional Truth — WAVE C COMPLETE 2026-09-29
+
+- **Empty states**: All 11 surfaces have explicit empty state UI (no silent failures)
+- **Error states**: All surfaces show explicit error messages (no hidden errors)
+- **Partial states**: Coverage/freshness properly surfaced (PARTIAL_COVERAGE, UNKNOWN, STALE)
+- **Stale states**: Data freshness indicators present (IPCA diagnostics, RF manual values, import health)
+- **Unknown → Zero**: ELIMINATED — adapter returns UNAVAILABLE + reason instead of numeric zeros
+- **Partial → Complete**: ELIMINATED — certifiedHistory gate prevents fake completeness
+- **Expected → Received**: DIVIDENDS separates RECEIVED/ANNOUNCED/IMPORTED explicitly
+- **Fake Success**: ELIMINATED — Import Center requires preview + confirmation, adapter fail-closed
+- **Financial Truth Invariants**: All preserved across all surfaces
+- Full regression: 249 legacy + 24 V248 + 24 V283 = 297 PASS
+- Builds: PASS (legacy + modern)
+- **NEXT_ACTION=V283_REGRESSION_BROWSER_QA**
+
+---
+
+## V282 Project Memory Continuity and Skills Certification — COMPLETED 2026-09-28
 
 - V282A vendored 25 project skills from C:/Projetos/skills to .agents/skills/
 - Created PROJECT_SKILLS_MANIFEST.md with full inventory and classification
@@ -7,6 +66,8 @@
 - Updated legacy .agents/SKILL_ROUTER.md as deprecated reference
 - Commit: de2fa0f
 - No runtime changes, no financial logic changes, no test changes
+
+---
 
 ## V282B Project Memory Continuity and Skills Certification — IN PROGRESS
 

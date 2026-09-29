@@ -1,11 +1,40 @@
 # Project Memory
 
+## V283 — certificação funcional noturna atualizada (2026-09-29)
+
+- No início deste closeout, branch `feature/v283-core-functional-truth` estava 8 commits à frente de `origin/main` `c0e145595b2de9afa623ac3d994fb0bd972c583d`; consulte Git para HEAD/contagem atuais. Nenhum push/PR/merge/deploy.
+- `P0_TRUTH_PATH=RESOLVED` / `P0_END_TO_END=RESOLVED`: cotação atual e benchmark sintético não são alcançáveis no runtime Rentabilidade; engine/adapter falham fechados com evidência insuficiente. `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE`; fixture sintética prova apenas caminho técnico, não retorno real. `WALLET_ID_UNAVAILABLE` continua bloqueante para disponibilidade real.
+- Benchmark, janela 12M, série mensal e filtros por classe seguem `UNAVAILABLE` sem observações/fronteiras suficientes. Nenhuma interpolação ou substituição por cotação atual.
+- Aportes encaminha cada botão a handler de importação implementado/diferenciado; nenhum arquivo foi importado ou confirmado.
+- Verificação final: geral 249/249, moderna 815/815, focados 46/46, subset alto-risco 78/78; builds legacy/modern e `qa:all` PASS. QA browser: 112/112 combinações rota×viewport, sete larguras sem overflow/console/request errors; axe A/AA sem violações em 12 telas × 390/1366. Fixtures eram sintéticas/testMode. Testes source-only são `SOURCE_GUARD_TESTS`; runtime/browser são `BEHAVIORAL_RUNTIME_TESTS`.
+- `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE` é o limite das conclusões sobre invariantes; nunca afirmar eliminação global. `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`, item existente e acionável; V283-04 permanece latente e depende de contrato de autoridade.
+- `git fsck --full` passou; objetos dangling continuam preservados. Skills/modelos independentes não disponíveis; revisão foi self-review Codex/Caveman.
+
+---
+
 ## V280A — bootstrap global e prioridade funcional (2026-09-28)
 
 - `MANDATORY_AGENT_BOOTSTRAP=true`. Após PROJECT IDENTITY GATE, anúncio obrigatório `Using Caveman + Superpowers to <purpose>`, depois `caveman`, `using-superpowers` e Skills específicas. Disponibilidade real deve ser verificada; ausência é reportada, nunca simulada. `caveman` local orienta concisão, não segurança ou autorização.
 - Rotas, modelos, anúncio, limites e freeze visual: `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`. Visual: `VISUAL_CANON_V2=FROZEN_REFERENCE`, `FUNCTIONAL_COMPLETION_FIRST=true`, `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`.
 - `P0_RENTABILIDADE_HISTORICAL_SERIES=true`; retorno histórico não verificado deve permanecer `UNAVAILABLE`. Proibidos interpolação, retroprojeção de cotação presente e taxa fixa no lugar de benchmark datado.
 - `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recomendação; não iniciada/autorizada).
+
+---
+
+## V283 Core Functional Truth — WAVE A COMPLETE (2026-09-29)
+
+- **P0_ENGINE_LAYER=RESOLVED** — V281 historical-performance-engine fails closed
+- **P0_LEGACY_LAYER=RESOLVED** — V283 adapter connects legacy UI to engine
+- **P0_END_TO_END=RESOLVED** — Current_price leakage eliminated, synthetic benchmark removed
+- Adapter: `v283-rentability-adapter.js` routes legacy `rentabilityHistory` → `HistoricalPerformance.calculatePerformance()`
+- `rentBenchSeries` returns unavailable markers (no synthetic data)
+- 12 behavioral runtime tests PASS (R1-R12)
+- 12 source guard tests PASS (TEST_A1-B5)
+- Adapter loads at runtime (HTTP 200, text/javascript MIME)
+- Commit: c9f1e9c
+- **NEXT_ACTION=V283_WAVE_B_CORE_WORKFLOW_AUDIT**
+
+---
 
 ## V280A/V280 — auditoria funcional e política de bootstrap (2026-09-28)
 
