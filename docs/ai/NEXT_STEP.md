@@ -10,7 +10,8 @@ Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.
 - Alegações anteriores de eliminação global são apenas `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`.
 - Verificação fresca final após o ajuste auxiliar: 249 testes gerais, 815 modernos e 46 testes focados performance/V283/V248/source-audit PASS; builds e `qa:all` PASS; harness 3/3; smoke 390/430/768/1366/1440/1536/1920 sem overflow ou erro relevante.
 - Suites direcionadas adicionais de backup/restore, renda fixa, dividendos, readiness de relatórios, rebalanceamento e Import Center: 78/78 PASS (há sobreposição com a suite geral).
-- Browser proof usou snapshots sintéticos em memória; readiness de carteira real continua indisponível por identidade/histórico não comprovados. Nenhum dado real lido ou alterado.
+- Browser proof usou snapshots sintéticos em memória; readiness de carteira real continua indisponível por identidade/histórico não comprovados. Nenhum arquivo financeiro privado foi acessado e nenhum dado financeiro real foi alterado.
+- QA adicional: 16 rotas × 7 viewports (112/112), sem erro/overflow; axe WCAG 2 A/AA em 12 superfícies nas larguras 390 e 1366 (24 checks), sem violações. Dados apenas sintéticos/testMode.
 - `tests/v283-legacy-rentability-red.test.js` é detector de padrões remanescentes na fonte legada, não prova de caminho ativo; adapter prevalece no runtime.
 - **NEXT_ACTION=V283_FINAL_DIFF_REVIEW_AND_LOCAL_CLOSEOUT**. Nenhuma ação remota autorizada.
 
