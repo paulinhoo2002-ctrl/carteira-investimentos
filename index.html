@@ -31549,14 +31549,14 @@ function apTab(){
     ${executiveSummary}
     ${aporteToolbar}
     <details class="card aportes-imports-panel">
-      <summary>Importar movimentações</summary>
-      <div class="aporte-imports-options">
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📥 B3</button>
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📊 Excel</button>
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📄 PDF</button>
-        <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openBrokerNoteImport()">🧾 Nota de corretagem</button>
-      </div>
-    </details>
+          <summary>Importar movimentações</summary>
+          <div class="aporte-imports-options">
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importB3Excel()">📥 B3</button>
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importExcelMovements()">📊 Excel</button>
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="importPdfMovements()">📄 PDF</button>
+            <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openBrokerNoteImport()">🧾 Nota de corretagem</button>
+          </div>
+        </details>
     ${frmP()}
     ${aporteViewModeTabs()}
     ${mode!=='resumo'?`${aporteFilterTabs()}${aporteSortControl()}`:''}
