@@ -1,5 +1,17 @@
 # Project Memory
 
+## V284 Waves D/E/F — identidade, completude e isolamento de persistência (2026-09-29)
+
+- Wave C permanece commitada localmente em `c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.
+- `V284_FINAL_CODE_COMMIT=35199013a0aadb204d7cb131151e66187c89573b`
+- Nota numerada: corretora + número estável + data explícita válida. Sem número: corretora + data válida + conjunto canônico de operações. Ordenação usa comparação de código determinística. Filename é apenas provenance; aliases são limitados a brokers reconhecidos e rótulos desconhecidos mantêm distinções.
+- Parser reporta linhas de origem/analisadas/inválidas/descartadas/ambíguas e estado de completude. Incompletude, campos obrigatórios ausentes, identidade ambígua ou conflito bloqueiam `READY` e o writer. O writer revalida identidade/operações e mantém autoridade manual RF; reaplicação idêntica não persiste outra vez.
+- Evidência legada é escopada por broker/data/número quando disponível; data sem identidade suficiente permanece `REVIEW_REQUIRED`.
+- `snapshotFinancialImportState`/`restoreFinancialImportState` protegem ativos, aportes, proventos, metadados, carteiras, carteira ativa e estado de revisão nos fluxos de nota, posição/proventos/movimentações B3 e posição RF. `save()=false` ou throw restaura a sessão, marca quarentena, impede edição/salvamento posterior e retorna resultado não confirmado sem mensagem de sucesso.
+- A gravação local de um lote serializa o estado e grava uma chave `localStorage`; falha antes dessa gravação restaura o estado. Se a chave foi gravada e a fila cloud falhou em seguida, o resultado é incerto: sessão restaurada/quarentenada, mas dado local pode existir. A fila cloud não é transação com `localStorage`; após recarga, verificar o estado antes de retry. A identidade idempotente evita reaplicação. `IMPORT_BATCH_ATOMICITY=LOCAL_SINGLE_KEY_ONLY`, não atomicidade distribuída.
+- Validação fresca: V284 boundary + nota Inter + Import Center + V245 105/105; persistência 32/32; roundtrip 7/7; suite geral 249/249; moderna 815/815; builds legado/moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920 sem overflow, erro de página/console ou falha relevante de request. O browser não executou a interação de falha de importação; testes comportamentais sintéticos verificaram esse fluxo.
+- Testes apenas sintéticos; `FINANCIAL_WRITES=0`, `TAX_WRITES=0`, `REAL_PORTFOLIO_MUTATIONS=0`, `PRIVATE_FINANCIAL_FILES_USED=0`, `SCHEMA_MIGRATIONS=0`, `BACKFILLS=0`. Dois commits locais criados. `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`. Push/PR/merge/deploy não autorizados.
+
 ## V283 — certificação funcional noturna atualizada (2026-09-29)
 
 - No início deste closeout, branch `feature/v283-core-functional-truth` estava 8 commits à frente de `origin/main` `c0e145595b2de9afa623ac3d994fb0bd972c583d`; consulte Git para HEAD/contagem atuais. Nenhum push/PR/merge/deploy.

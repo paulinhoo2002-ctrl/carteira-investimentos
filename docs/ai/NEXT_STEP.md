@@ -1,4 +1,16 @@
 # Next Step
+## V284 Waves D/E/F — certificação pré-commit (2026-09-29)
+
+- `CURRENT_BRANCH=feature/v284-import-center-workflow`; `V284_WAVE_C_COMMIT=c0566104ef702c673bd060945f324c66725f517e`. Waves D/E/F foram implementadas, verificadas e commitadas localmente em dois commits.
+- `V284_FINAL_CODE_COMMIT=35199013a0aadb204d7cb131151e66187c89573b` (code + test)
+- Commit de memória pendente.
+- A identidade de nota usa corretora/identidade preservada + data explícita válida + número estável; sem número, usa operações semânticas canônicas com ordenação independente de locale. Filename é apenas provenance. Parsing incompleto, identidade ambígua, conflito ou campo financeiro obrigatório ausente bloqueia o writer.
+- Persistência financeira de importação é isolada por snapshot/restore. `save()=false` ou throw restaura estado financeiro, carteira ativa e revisão; sessão é `QUARANTINED`, sem novos saves/edições, sem sucesso falso. Se `localStorage` gravou antes de falha ao enfileirar cloud, o resultado durável local é incerto; recarregar e conferir antes de qualquer retry. A sincronização cloud não é transação atômica.
+- Rotas verificadas: nota de corretagem, posição B3, proventos B3, movimentações B3 e posição de Renda Fixa; falhas mistas não deixam mutação em memória nem autoridade manual alterada. `IMPORT_BATCH_ATOMICITY=LOCAL_SINGLE_KEY_ONLY`; não alegar atomicidade cloud.
+- Validação fresca: focados V284 boundary + nota Inter + Import Center + V245 105/105; persistência 32/32; roundtrip 7/7; geral 249/249; moderna 815/815; builds e `qa:all` PASS. Smoke 390/430/768/1366/1440/1536/1920 sem overflow, erro de página/console ou falha relevante de requisição. Fluxo de falha no browser não foi exercitado; testes comportamentais sintéticos cobrem o caso.
+- Sem escrita financeira/fiscal real, mutação real, arquivo privado, migração ou backfill. Um commit de código+teste criado; commit de memória pendente.
+- `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`. Próximo passo é certificação completa da branch, não autorização de push/PR/merge/deploy.
+
 ## Estado atual — V283 certificação concluída (2026-09-29)
 
 Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.

@@ -9080,7 +9080,45 @@ function deleteWallet(){
 // ══════════════════════════════════════
 // STORAGE — corrigido: salva tab + divGoal + beforeunload
 // ══════════════════════════════════════
+function snapshotFinancialImportState(keys){
+  try{
+    return (keys||[]).reduce((snapshot,key)=>{
+      snapshot[key]={
+        present:Object.prototype.hasOwnProperty.call(S,key),
+        value:cloneData(S[key])
+      };
+      return snapshot;
+    },{});
+  }catch(e){
+    return null;
+  }
+}
+function restoreFinancialImportState(snapshot){
+  if(!snapshot) return false;
+  try{
+    Object.keys(snapshot).forEach(key=>{
+      if(snapshot[key].present) S[key]=snapshot[key].value;
+      else delete S[key];
+    });
+    S._financialWriteQuarantined=true;
+    return true;
+  }catch(e){
+    S._financialWriteQuarantined=true;
+    return false;
+  }
+}
+function persistFinancialImportState(snapshot){
+  try{
+    if(save()===true) return true;
+  }catch(e){}
+  restoreFinancialImportState(snapshot);
+  return false;
+}
 function save(){
+  if(S?._financialWriteQuarantined===true){
+    toast('Gravações desta sessão estão bloqueadas após uma falha de persistência. Recarregue e confira o estado antes de continuar.','#f87171');
+    return false;
+  }
   const options=arguments[0]||{};
   const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
   try{
@@ -9239,6 +9277,10 @@ function isEditOwner(){
   return EDIT_LOCK_STATE.mode==='owner' && String(EDIT_LOCK_STATE.ownerId||'')===ensureEditLockTabId();
 }
 function canEditFromThisTab(action='salvar'){
+  if(S?._financialWriteQuarantined===true){
+    toast(`Edição bloqueada após falha de persistência${action ? ` (${action}).` : '.'} Recarregue e confira o estado.`,'#f87171');
+    return false;
+  }
   if(isEditOwner()) return true;
   toast(`Esta aba está em modo somente leitura para evitar perda de dados${action ? ` (${action}).` : '.'}`,'#fbbf24');
   return false;
@@ -14129,6 +14171,25 @@ function cleanupB3PositionAportes(){
   S.aportes=(S.aportes||[]).filter(a=>!isB3PositionAporte(a));
   return before-Number(S.aportes?.length||0);
 }
+function importedAssetSnapshotEqual(left, right){
+  const stable=value=>{
+    const result={};
+    Object.keys(value||{}).sort().forEach(key=>{
+      if(key!=='updated_at' && value[key]!==undefined) result[key]=value[key];
+    });
+    return JSON.stringify(result);
+  };
+  return stable(left)===stable(right);
+}
+function rfDetailedHasManualAuthority(asset){
+  const isManual=value=>String(value||'').trim().toLowerCase()==='manual';
+  return asset?.manual_authority===true
+    || isManual(asset?.manualValueAuthority)
+    || ['manual','manual-rf'].includes(String(asset?.source||'').trim().toLowerCase())
+    || ['manual','manual-rf'].includes(String(asset?.fixed_source||'').trim().toLowerCase())
+    || isManual(asset?.quoteSource)
+    || isManual(asset?.quote_source);
+}
 function rfDetailedFindExistingAsset(item){
   const ticker=String(item?.ticker||'').toUpperCase();
   const nameKey=rfPosNorm(item?.name);
@@ -14263,6 +14324,7 @@ function rfParseDetailedEvents(rows){
 function rfDetailedStatus(item){
   if(!item.ticker || !item.name || item.qty<=0 || item.appliedValue<=0 || item.marketValue<=0) return {status:'Revisar', note:'Dados principais incompletos.'};
   const found=rfDetailedFindExistingAsset(item);
+  if(found.idx>=0 && rfDetailedHasManualAuthority(S.assets[found.idx])) return {status:'Revisar',note:'A posição existente tem autoridade manual e não será sobrescrita automaticamente.'};
   if(found.idx>=0) return {status:'Atualizar existente', note:found.reason};
   if(rfDetailedPossibleDuplicateAsset(item)>=0) return {status:'Possível duplicado', note:'Mesmo vencimento e setor encontrados. Revise antes de gravar.'};
   return {status:'Novo ativo', note:'Novo ativo identificado apenas para revisão.'};
@@ -14341,6 +14403,23 @@ function parseRfDetailedPositionWorkbook(wb, fileName=''){
   if(!items.length) warnings.push('Nenhum ativo de Renda Fixa foi identificado na seção de posição detalhada.');
   return {items,events,warnings,importDate,kind:'rf-detailed-position'};
 }
+function canonicalNotaTradeDate(value){
+  const raw=String(value||'').trim();
+  const local=raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  const iso=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!local&&!iso) return '';
+  const [day,month,year]=local?local.slice(1):[iso[3],iso[2],iso[1]];
+  const date=new Date(Date.UTC(Number(year),Number(month)-1,Number(day)));
+  return date.getUTCFullYear()===Number(year)&&date.getUTCMonth()===Number(month)-1&&date.getUTCDate()===Number(day)?`${day}-${month}-${year}`:'';
+}
+function canonicalNotaBrokerIdentity(value){
+  const raw=String(value||'').normalize('NFC').trim().replace(/\s+/g,' ');
+  const alias=raw.toUpperCase().replace(/\./g,'').replace(/\s+/g,' ').trim();
+  if(['INTER','INTER DTVM','INTER DTVM LTDA','BANCO INTER','BANCO INTER DTVM','BANCO INTER DTVM LTDA','BANCO INTER DTVM S A'].includes(alias)) return 'INTER';
+  if(['XP','XP INVESTIMENTOS','XP INVESTIMENTOS CCTVM','XP INVESTIMENTOS CCTVM S/A'].includes(alias)) return 'XP';
+  if(['BTG','BTG PACTUAL','BTG PACTUAL DTVM','BTG PACTUAL DTVM S A'].includes(alias)) return 'BTG';
+  return raw;
+}
 function parseNotaCorretoraWorkbook(wb, fileName=''){
   const items=[]; const warnings=[];
   const stats={
@@ -14351,21 +14430,34 @@ function parseNotaCorretoraWorkbook(wb, fileName=''){
   };
   const sheetName=(wb.SheetNames||[])[0];
   if(!sheetName){
-    return {items,warnings,importDate:new Date().toLocaleDateString('pt-BR'),stats,noteKey:'nota-sem-planilha',noteNumber:'',tradeDate:''};
+    return {items,warnings,importDate:'',stats,noteKey:'',noteNumber:'',tradeDate:'',identityStatus:'INVALID',completenessStatus:'INVALID',sourceRowCount:0,parsedRowCount:0,invalidRowCount:0,discardedRowCount:0,ambiguousRowCount:0};
   }
   const sheet=wb.Sheets[sheetName];
   const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:''});
   const headerIdx=notaFindHeaderIndex(rows);
   const noteNumber=notaFindValue(rows,'NUM NOTA') || notaFindValue(rows,'Nº NOTA') || notaFindValue(rows,'N. NOTA') || '';
+  const normalizedDocument=notaNorm(rows.flat().map(value=>String(value||'')).join(' '));
+  const brokerLabel=notaFindValue(rows,'CORRETORA');
+  const brokerText=brokerLabel || (normalizedDocument.includes('INTER DTVM') ? 'INTER'
+    : (normalizedDocument.includes('XP INVESTIMENTOS') ? 'XP'
+      : (normalizedDocument.includes('BTG PACTUAL') ? 'BTG' : '')));
+  const broker=canonicalNotaBrokerIdentity(brokerText);
   const tradeDateRaw=notaFindValue(rows,'DATA PREGÃO') || notaFindValue(rows,'DATA PREGAO') || '';
-  const dateMatch=String(fileName||'').match(/(\d{2})(\d{2})(\d{4})/);
-  const tradeDate=tradeDateRaw
-    ? (String(tradeDateRaw).includes('/') ? String(tradeDateRaw).trim() : `${String(tradeDateRaw).slice(0,2)}/${String(tradeDateRaw).slice(2,4)}/${String(tradeDateRaw).slice(4,8)}`)
-    : (dateMatch ? `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}` : new Date().toLocaleDateString('pt-BR'));
-  const noteKey=[noteNumber||cleanAssetCode(fileName)||'NOTA',tradeDate.replace(/\//g,'-')].join('|');
+  const rawDate=String(tradeDateRaw||'').trim();
+  const dateMatch=rawDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+    || rawDate.match(/^(\d{2})(\d{2})(\d{4})$/)
+    || (()=>{const iso=rawDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);return iso?[iso[3],iso[2],iso[1]]:null;})();
+  let tradeDate='';
+  if(dateMatch){
+    const [,day,month,year]=dateMatch;
+    const parsedDate=new Date(Date.UTC(Number(year),Number(month)-1,Number(day)));
+    if(parsedDate.getUTCFullYear()===Number(year) && parsedDate.getUTCMonth()===Number(month)-1 && parsedDate.getUTCDate()===Number(day)) tradeDate=`${day}/${month}/${year}`;
+  }
+  const initialNoteKey='';
+  let sourceRowCount=0,parsedRowCount=0,invalidRowCount=0,discardedRowCount=0,ambiguousRowCount=0;
   if(headerIdx<0){
     warnings.push('Cabeçalho da nota corretora não encontrado. Procure a tabela com C/V, TIPO DE MERCADO e ESPECIFICAÇÃO DO TÍTULO.');
-    return {items,warnings,importDate:tradeDate,stats,noteKey,noteNumber,tradeDate};
+    return {items,warnings,importDate:tradeDate,stats,noteKey:initialNoteKey,noteNumber,tradeDate,broker,identityStatus:'REVIEW_REQUIRED',completenessStatus:'INVALID',sourceRowCount,parsedRowCount,invalidRowCount,discardedRowCount,ambiguousRowCount};
   }
   const headers=(rows[headerIdx]||[]).map(v=>String(v||'').trim());
   const normHeaders=headers.map(notaNorm);
@@ -14393,15 +14485,28 @@ function parseNotaCorretoraWorkbook(wb, fileName=''){
     }
     const spec=String(idxSpec>=0 ? row[idxSpec] : '').trim();
     const cv=String(idxCv>=0 ? row[idxCv] : '').trim().toUpperCase();
+    const qtyRaw=idxQty>=0 ? row[idxQty] : '';
+    const priceRaw=idxPrice>=0 ? row[idxPrice] : '';
+    const totalRaw=idxTotal>=0 ? row[idxTotal] : '';
+    const hasEconomicSignal=(cv==='C'||cv==='V')||!!spec||String(qtyRaw??'').trim()!==''||String(priceRaw??'').trim()!==''||String(totalRaw??'').trim()!=='';
+    if(!hasEconomicSignal) continue;
+    sourceRowCount++;
+    const invalidate=(ambiguous=false)=>{invalidRowCount++;discardedRowCount++;if(ambiguous) ambiguousRowCount++;};
+    if(cv!=='C' && cv!=='V'){
+      stats.totalIgnored++;
+      stats.ignoredByReason['operação ambígua']=(stats.ignoredByReason['operação ambígua']||0)+1;
+      invalidate(true);
+      continue;
+    }
     const market=String(idxMarket>=0 ? row[idxMarket] : '').trim();
     const obs=String(idxObs>=0 ? row[idxObs] : '').trim();
-    const qty=parseNum(idxQty>=0 ? row[idxQty] : '');
-    const price=parseNum(idxPrice>=0 ? row[idxPrice] : '');
-    const total=parseNum(idxTotal>=0 ? row[idxTotal] : '');
-    if(!spec && qty<=0 && price<=0 && total<=0) continue;
+    const qty=parseNum(qtyRaw);
+    const price=parseNum(priceRaw);
+    const total=parseNum(totalRaw);
     if(!spec){
       stats.totalIgnored++;
       stats.ignoredByReason['sem especificação']=(stats.ignoredByReason['sem especificação']||0)+1;
+      invalidate(true);
       continue;
     }
     if(/\bSUB\s*TOTAL\b|\bTOTAL\b/.test(notaNorm(spec))){
@@ -14414,14 +14519,16 @@ function parseNotaCorretoraWorkbook(wb, fileName=''){
     if(!ticker){
       stats.totalIgnored++;
       stats.ignoredByReason['sem ticker']=(stats.ignoredByReason['sem ticker']||0)+1;
+      invalidate(true);
       continue;
     }
     const meta=inferNotaMeta(ticker, spec, market);
-    const finalPrice=price>0 ? price : (qty>0 && total>0 ? total/qty : 0);
+    const finalPrice=price;
     const finalTotal=total>0 ? total : (qty>0 && finalPrice>0 ? qty*finalPrice : 0);
-    if(qty<=0 || finalPrice<=0){
+    if(!Number.isFinite(qty)||!Number.isFinite(finalPrice)||qty<=0||finalPrice<=0){
       stats.totalIgnored++;
       stats.ignoredByReason[qty<=0 ? 'sem quantidade' : 'sem preço válido']=(stats.ignoredByReason[qty<=0 ? 'sem quantidade' : 'sem preço válido']||0)+1;
+      invalidate(false);
       continue;
     }
     items.push({
@@ -14436,15 +14543,34 @@ function parseNotaCorretoraWorkbook(wb, fileName=''){
       obs,
       operation:op,
       date:tradeDate,
-      noteKey,
+      noteKey:initialNoteKey,
       noteNumber,
       source:'nota-corretora'
     });
     const metaType=normalizeType(meta.type||'Ação','Ação');
     stats.byType[metaType]=(stats.byType[metaType]||0)+1;
     stats.byOperation[op]=(stats.byOperation[op]||0)+1;
+    parsedRowCount++;
   }
-  return {items,warnings,importDate:tradeDate,stats,noteKey,noteNumber,tradeDate};
+  const semanticTrades=items.map(it=>[
+    String(it.operation||'').toLowerCase(),String(it.ticker||'').trim().toUpperCase(),
+    Number(it.qty),Number(it.price),String(it.date||''),String(it.type||''),String(it.sector||'')
+  ]).sort((a,b)=>{const left=JSON.stringify(a),right=JSON.stringify(b);return left<right?-1:(left>right?1:0);});
+  const completenessStatus=sourceRowCount===0?'INVALID':invalidRowCount===0&&parsedRowCount===sourceRowCount?'COMPLETE':parsedRowCount===0?'INVALID':'PARTIAL';
+  const validIdentity=completenessStatus==='COMPLETE' && !!broker && !!tradeDate && semanticTrades.length>0
+    && semanticTrades.every(row=>row[0] && row[1] && Number.isFinite(row[2]) && row[2]>0 && Number.isFinite(row[3]) && row[3]>0);
+  const brokerDate=`${broker}|${tradeDate.replace(/\//g,'-')}`;
+  const identityStatus=validIdentity ? 'READY' : 'REVIEW_REQUIRED';
+  const noteIdentity=validIdentity
+    ? (String(noteNumber).trim()
+      ? `v284-note|${encodeURIComponent(broker)}|number|${String(noteNumber).trim()}|${tradeDate.replace(/\//g,'-')}`
+      : `v284-note|${encodeURIComponent(broker)}|date|${tradeDate.replace(/\//g,'-')}|${encodeURIComponent(JSON.stringify(semanticTrades))}`)
+    : '';
+  const noteKey=noteIdentity;
+  items.forEach(it=>{it.noteKey=noteKey;});
+  if(invalidRowCount) warnings.push(`${invalidRowCount} linha(s) econômica(s) não puderam ser interpretadas; a nota permanece em revisão.`);
+  if(!validIdentity) warnings.push('Identidade da nota incompleta; mantenha para revisão.');
+  return {items,warnings,importDate:tradeDate,stats,noteKey,noteNumber,tradeDate,broker,identityStatus,brokerDate,noteIdentity,completenessStatus,sourceRowCount,parsedRowCount,invalidRowCount,discardedRowCount,ambiguousRowCount};
 }
 function hasSameB3Import(ticker, date){
   return S.aportes.some(a=>String(a.ticker||'').toUpperCase()===ticker && String(a.decision||'').includes('[IMPORT_B3_POSICAO]') && String(a.date||'')===date);
@@ -14456,6 +14582,11 @@ function applyB3ImportedPositions(items, importDate){
     return;
   }
   const validItems=(items||[]).filter(it=>!isB3PositionSummaryRow(it));
+  const beforeImport=snapshotFinancialImportState(['assets','learnMeta','wallets','activeWalletId','b3Review']);
+  if(!beforeImport){
+    alert('Não foi possível preparar uma cópia segura do estado. Nenhuma posição foi aplicada.');
+    return {status:'REVIEW_REQUIRED'};
+  }
   const now=new Date().toISOString();
   let created=0,updated=0,ignored=0;
   const normalizeName=s=>rfPosNorm(String(s||'').replace(/[-–—|]/g,' '));
@@ -14504,6 +14635,10 @@ function applyB3ImportedPositions(items, importDate){
     const importedSource='B3 Posição Atual';
     if(found.idx>=0){
       const old=S.assets[found.idx]||{};
+      if(isRF && rfDetailedHasManualAuthority(old)){
+        ignored++;
+        return;
+      }
       const preservedAvg=Number(old.avg_price)||0;
       const preservedType=old.type||type;
       const preservedSector=old.sector||sector;
@@ -14512,7 +14647,7 @@ function applyB3ImportedPositions(items, importDate){
       const nextCurrentPrice=isRF
         ? (totalValue>0 && qty>0 ? totalValue/qty : previousCurrent || currentPrice)
         : currentPrice;
-      S.assets[found.idx]={
+      const candidate={
         ...old,
         ticker:old.ticker||ticker,
         name:old.name||it.product||it.name||ticker,
@@ -14543,6 +14678,11 @@ function applyB3ImportedPositions(items, importDate){
         observation:old.observation||old.note||'',
         note:old.note||old.observation||''
       };
+      if(importedAssetSnapshotEqual(old,candidate)){
+        ignored++;
+        return;
+      }
+      S.assets[found.idx]=candidate;
       updated++;
     }else{
       S.assets.push({
@@ -14580,11 +14720,19 @@ function applyB3ImportedPositions(items, importDate){
     }
     learnTickerMeta(ticker, type, sector, true);
   });
-  S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
-  save();
-  render();
-  fetchQuotes(false);
+  if(created+updated>0){
+    S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+    if(!persistFinancialImportState(beforeImport)){
+      render();
+      alert('A gravação não foi confirmada. O estado da sessão foi restaurado e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+      return {status:'SAVE_OUTCOME_UNKNOWN'};
+    }
+    S.b3Review=null;
+    render();
+    fetchQuotes(false);
+  }
   b3ImportCompletedMessage(`✅ Posição B3 importada na carteira "${gate.name}": ${created} criados, ${updated} atualizados, ${ignored} ignorados.`);
+  return {status:'APPLIED',created,updated,ignored};
 }
 function openBrokerNoteImport(){
   S.brokerNoteImport={open:true,status:'idle',message:'',fileName:'',fileSize:0,rateCosts:false,allowDuplicate:false,parsed:null,diag:{phase:'aguardando',fileName:'',fileSize:0,chars:0,noteNumber:'',tradeDate:'',operations:0,rows:0,tickers:[],error:''}};
@@ -14815,6 +14963,27 @@ function confirmBrokerNoteImport(){
     brokerNoteCostsAllocated:!!state.rateCosts,
     brokerNoteAllocatedCost:Number(row.allocatedCost)||0
   }));
+  const noteKey=String(note.noteKey||'');
+  const noteNumber=String(note.noteNumber||'');
+  const tradeDate=String(note.tradeDate||'');
+  const existingNoteRecords=(S.aportes||[]).filter(row=>row.source==='Nota Inter PDF' && (
+    (noteKey && String(row.brokerNoteKey||'')===noteKey)
+    || (noteNumber && tradeDate && String(row.brokerNoteNumber||'')===noteNumber && String(row.date||'')===tradeDate)
+  ));
+  if(existingNoteRecords.length){
+    const signature=rows=>JSON.stringify(rows.map(row=>[
+      String(row.operation||'compra').toLowerCase(),String(row.ticker||'').trim().toUpperCase(),
+      Number(row.qty)||0,Number(row.price)||0,Number(row.totalValue)||0,
+      String(row.date||''),String(row.type||''),String(row.sector||''),
+      !!row.brokerNoteCostsAllocated,Number(row.brokerNoteAllocatedCost)||0
+    ]).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
+    if(signature(records)===signature(existingNoteRecords)){
+      toast(`A nota Inter ${note.noteNumber} já está aplicada; nenhuma alteração foi feita.`);
+      return {status:'NO_OP'};
+    }
+    alert('Já existe uma nota com esta identificação e conteúdo diferente. Revise a origem antes de importar novamente.');
+    return {status:'CONFLICT'};
+  }
   const importedTotal=records.reduce((sum,row)=>sum+(Number(row.totalValue)||0),0);
   S.aportes=[...records,...S.aportes];
   records.forEach(row=>learnTickerMeta(row.ticker,row.type,row.sector,true));
@@ -14834,6 +15003,7 @@ function confirmBrokerNoteImport(){
   fetchQuotes(false);
   scheduleAutoProventosGratis('nota-inter-pdf');
   toast(`✅ Nota Inter ${note.noteNumber} importada com sucesso.`);
+  return {status:'APPLIED',imported:records.length};
 }
 function closeBrokerNoteImportSuccess(){
   withScrollPreserved(()=>{
@@ -14867,22 +15037,30 @@ function brokerNoteImportSuccessHtml(){
     </div>
   </div>`;
 }
-function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
+function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate, broker='', noteIdentity='', completenessStatus='', identityStatus=''){
+  if(S?._financialWriteQuarantined===true) return {status:'SESSION_QUARANTINED'};
   if(!canEditFromThisTab('importar nota de corretagem')) return;
   const importTag='[IMPORT_NOTA_CORRETORA]';
-  const stamp=String(noteKey||noteNumber||tradeDate||'');
-  S.aportes=S.aportes.filter(a=>{
-    const dec=String(a.decision||'');
-    return !(dec.includes(importTag) && String(a.noteKey||'')===stamp);
-  });
+  const stamp=String(noteIdentity||noteKey||'');
+  const normalizedBroker=canonicalNotaBrokerIdentity(broker);
+  const stampParts=stamp.split('|');
+  const tradeDateKey=canonicalNotaTradeDate(tradeDate);
+  const identityDateKey=stampParts[2]==='number' ? stampParts[4] : stampParts[3];
+  const numberMatches=stampParts[2]!=='number' || String(noteNumber||'').trim()===stampParts[3];
+  if(stampParts[0]!=='v284-note' || !normalizedBroker || stampParts[1]!==encodeURIComponent(normalizedBroker) || !tradeDateKey
+    || tradeDateKey!==identityDateKey || !numberMatches || !String(noteNumber||'').trim()&&stampParts[2]==='number'
+    || completenessStatus!=='COMPLETE' || identityStatus!=='READY' || !Array.isArray(items) || !items.length) return {status:'REVIEW_REQUIRED'};
+  if(items.some(it=>!String(it?.ticker||'').trim()||!Number.isFinite(Number(it.qty))||Number(it.qty)<=0||!Number.isFinite(Number(it.price))||Number(it.price)<=0
+    || !['compra','venda'].includes(String(it.operation||'').toLowerCase())
+    || !it.date||canonicalNotaTradeDate(it.date)!==tradeDateKey)) return {status:'REVIEW_REQUIRED'};
   const now=Date.now();
   const novos=items.map((it,i)=>({
     id: now+i,
-    operation:it.operation||'compra',
+    operation:it.operation,
     ticker:it.ticker,
     qty:Number(it.qty)||0,
     price:Number(it.price)||0,
-    date:it.date||tradeDate||new Date().toLocaleDateString('pt-BR'),
+    date:it.date,
     decision:`${importTag} nota ${noteNumber||stamp} · ${it.market||'mercado'} · ${it.product||it.ticker}`,
     type:normalizeType(it.type||metaTicker(it.ticker).type||'Ação','Ação'),
     sector:it.sector||'',
@@ -14890,17 +15068,51 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate){
     noteNumber:noteNumber||'',
     source:'nota-corretora'
   })).filter(x=>x.ticker&&x.qty>0&&x.price>0);
-  S.aportes=[...novos,...S.aportes];
-  syncAssetsFromAportes(false);
-  items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
-  save();
+  const existingNoteRows=(S.aportes||[]).filter(row=>String(row.decision||'').includes(importTag)&&String(row.noteKey||'')===stamp);
+  if(existingNoteRows.length){
+    const signature=rows=>JSON.stringify(rows.map(row=>[
+      String(row.operation||'compra').toLowerCase(),String(row.ticker||'').trim().toUpperCase(),
+      Number(row.qty)||0,Number(row.price)||0,String(row.date||tradeDate||''),
+      String(row.type||''),String(row.sector||'')
+    ]).sort((a,b)=>{const left=JSON.stringify(a),right=JSON.stringify(b);return left<right?-1:(left>right?1:0);}));
+    if(signature(novos)===signature(existingNoteRows)) return {status:'NO_OP'};
+    return {status:'CONFLICT'};
+  }
+  const noteScope=stampParts.slice(0,4).join('|');
+  const conflictingScopeRows=stampParts[2]==='date' ? (S.aportes||[]).filter(row=>String(row.decision||'').includes(importTag)
+    && String(row.noteKey||'').startsWith(`${noteScope}|`) && String(row.noteKey||'')!==stamp) : [];
+  if(conflictingScopeRows.length) return {status:'CONFLICT'};
+  const ambiguousLegacyRows=(S.aportes||[]).filter(row=>{
+    if(!String(row.decision||'').includes(importTag)||String(row.noteKey||'').startsWith('v284-note|')||canonicalNotaTradeDate(row.date)!==tradeDateKey) return false;
+    const legacyBroker=canonicalNotaBrokerIdentity(row.brokerNoteBroker||row.broker||row.brokerName||row.sourceBroker||'');
+    const decisionNumber=String(row.decision||'').match(/\bnota\s+([^\s·]+)/i)?.[1]||'';
+    const legacyNumber=String(row.noteNumber||row.brokerNoteNumber||decisionNumber).trim();
+    if(legacyBroker&&legacyBroker!==normalizedBroker) return false;
+    if(legacyNumber&&String(noteNumber||'').trim()&&legacyNumber!==String(noteNumber).trim()) return false;
+    return true;
+  });
+  if(ambiguousLegacyRows.length) return {status:'REVIEW_REQUIRED'};
+  const beforeImport=snapshotFinancialImportState(['assets','aportes','learnMeta','wallets','activeWalletId']);
+  if(!beforeImport) return {status:'REVIEW_REQUIRED'};
+  try{
+    S.aportes=[...novos,...S.aportes];
+    syncAssetsFromAportes(false);
+    items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
+    if(!persistFinancialImportState(beforeImport)){
+      return {status:'SAVE_OUTCOME_UNKNOWN'};
+    }
+  }catch(e){
+    restoreFinancialImportState(beforeImport);
+    return {status:'SAVE_OUTCOME_UNKNOWN'};
+  }
   render();
   fetchQuotes(false);
   scheduleAutoProventosGratis('nota');
   toast(`✅ ${novos.length} lançamento(ões) importado(s) da nota da corretora.`);
+  return {status:'APPLIED',imported:novos.length};
 }
 function openNotaReview(parsed, fileName){
-  const {items=[],warnings=[],importDate='',stats={},noteKey='',noteNumber='',tradeDate=''}=parsed||{};
+  const {items=[],warnings=[],importDate='',stats={},noteKey='',noteNumber='',tradeDate='',broker='',identityStatus='REVIEW_REQUIRED',noteIdentity='',completenessStatus='INVALID',sourceRowCount=0,parsedRowCount=0,invalidRowCount=0,discardedRowCount=0,ambiguousRowCount=0}=parsed||{};
   const rows=items.map((it,i)=>({
     id:i,
     include:true,
@@ -14916,7 +15128,7 @@ function openNotaReview(parsed, fileName){
     value:Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0)),
     sourceItem:{...it}
   }));
-  S.noteReview={fileName,importDate,warnings,stats,noteKey,noteNumber,tradeDate,rows};
+  S.noteReview={fileName,importDate,warnings,stats,noteKey,noteNumber,tradeDate,broker,identityStatus,noteIdentity,completenessStatus,sourceRowCount,parsedRowCount,invalidRowCount,discardedRowCount,ambiguousRowCount,rows};
   render();
 }
 function closeNotaReview(){
@@ -14962,11 +15174,33 @@ function suggestNotaReviewTypes(){
 }
 function importNotaReview(){
   if(!S.noteReview) return;
+  if(S.noteReview.persistenceStatus==='UNKNOWN' || S.noteReview.persistenceStatus==='QUARANTINED'){
+    alert('O resultado do armazenamento ainda é desconhecido. Recarregue a aplicação e confira os lançamentos antes de tentar novamente.');
+    return;
+  }
   if(!canEditFromThisTab('importar nota de corretagem')) return;
   const rows=S.noteReview.rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0);
   if(!rows.length){ alert('Selecione pelo menos um lançamento válido para importar.'); return; }
   rememberScroll();
-  applyNotaCorretoraTrades(rows.map(r=>({...r.sourceItem,ticker:r.ticker,operation:r.operation,qty:r.qty,price:r.price,type:r.type,sector:r.sector,product:r.product})),S.noteReview.noteKey,S.noteReview.noteNumber,S.noteReview.tradeDate);
+  const result=applyNotaCorretoraTrades(rows.map(r=>({...r.sourceItem,ticker:r.ticker,operation:r.operation,qty:r.qty,price:r.price,type:r.type,sector:r.sector,product:r.product})),S.noteReview.noteKey,S.noteReview.noteNumber,S.noteReview.tradeDate,S.noteReview.broker,S.noteReview.noteIdentity,S.noteReview.completenessStatus,S.noteReview.identityStatus);
+  if(result?.status==='REVIEW_REQUIRED'){
+    alert('Não foi possível confirmar a identidade da nota. A conferência foi mantida para revisão.');
+    return;
+  }
+  if(result?.status==='CONFLICT'){
+    alert('Já existe uma nota com esta identificação e conteúdo diferente. A conferência foi mantida para revisão.');
+    return;
+  }
+  if(result?.status==='SAVE_OUTCOME_UNKNOWN'){
+    S.noteReview.persistenceStatus='QUARANTINED';
+    alert('A gravação não foi confirmada. O estado desta sessão foi restaurado e novas gravações estão bloqueadas; recarregue e confira a carteira antes de continuar.');
+    return;
+  }
+  if(result?.status==='SESSION_QUARANTINED'){
+    S.noteReview.persistenceStatus='QUARANTINED';
+    alert('Esta sessão está bloqueada após uma falha de persistência. Recarregue e confira a carteira antes de continuar.');
+    return;
+  }
   S.noteReview=null;
 }
 function notaReviewSummary(rows){
@@ -15401,8 +15635,8 @@ function importB3Review(){
     kind:r.kind,
     date:r.date
   }));
-  S.b3Review=null;
-  applyB3ImportedPositions(payload, importDate);
+  const result=applyB3ImportedPositions(payload, importDate);
+  if(result?.status==='APPLIED') S.b3Review=null;
 }
 function b3ReviewModal(){
   const r=S.b3Review;
@@ -15624,12 +15858,16 @@ function importRfPositionRows(rows){
     const found=rfDetailedFindExistingAsset(item);
     if(found.idx>=0){
       const old=S.assets[found.idx]||{};
+      if(rfDetailedHasManualAuthority(old)){
+        ignored++;
+        return;
+      }
       const preservedAvg=Number(old.avg_price)||0;
       const preservedType=old.type||item.type||'Renda Fixa';
       const preservedSector=old.sector||item.sector||'';
       const preservedName=old.name||item.name;
       const preservedProduct=old.product||item.name;
-      S.assets[found.idx]={
+      const candidate={
         ...old,
         ticker:old.ticker||item.ticker,
         name:preservedName,
@@ -15663,6 +15901,11 @@ function importRfPositionRows(rows){
         observation:old.observation||old.note||'',
         note:old.note||old.observation||''
       };
+      if(importedAssetSnapshotEqual(old,candidate)){
+        ignored++;
+        return;
+      }
+      S.assets[found.idx]=candidate;
       updated++;
       learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
       return;
@@ -15705,7 +15948,7 @@ function importRfPositionRows(rows){
     created++;
     learnTickerMeta(item.ticker, 'Renda Fixa', item.sector, true);
   });
-  S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  if(created+updated>0) S.assets=S.assets.sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
   return {created,updated,ignored};
 }
 function importRfEventRows(events){
@@ -15772,20 +16015,48 @@ function importRfEventRows(events){
 function importRfPositionReview(){
   if(!S.rfPositionReview) return;
   if(!canEditFromThisTab('importar posição de renda fixa')) return;
-  const selectedPositions=(S.rfPositionReview.items||[]).filter(it=>it.include!==false);
+  const reviewItems=S.rfPositionReview.items||[];
+  const manualAuthorityItems=[];
+  reviewItems.forEach(item=>{
+    const found=rfDetailedFindExistingAsset(item);
+    if(found.idx>=0 && rfDetailedHasManualAuthority(S.assets[found.idx])){
+      item.status='Revisar';
+      item.note='A posição existente tem autoridade manual e não será sobrescrita automaticamente.';
+      item.include=false;
+      manualAuthorityItems.push(item);
+    }
+  });
+  const selectedPositions=reviewItems.filter(it=>it.include!==false);
   if(!selectedPositions.length){
-    alert('Selecione ao menos uma posição válida para importar.');
+    alert(reviewItems.some(it=>it.status==='Revisar' && String(it.note||'').includes('autoridade manual'))
+      ? 'A posição existente tem autoridade manual e foi mantida para revisão.'
+      : 'Selecione ao menos uma posição válida para importar.');
+    render();
     return;
   }
   const summary=rfPositionReviewSummary();
   const duplicates=(S.rfPositionReview.items||[]).filter(it=>it.status==='Possível duplicado' || it.status==='Duplicado').length;
   const incomplete=(S.rfPositionReview.items||[]).filter(it=>it.status==='Revisar').length;
   if(!b3ConfirmImport('a posição detalhada de Renda Fixa', selectedPositions.length, duplicates, incomplete)) return;
+  const beforeImport=snapshotFinancialImportState(['assets','learnMeta','wallets','activeWalletId','rfPositionReview']);
+  if(!beforeImport){
+    alert('Não foi possível preparar uma cópia segura do estado. Nenhuma posição foi aplicada.');
+    return {status:'REVIEW_REQUIRED'};
+  }
   const positionResult=importRfPositionRows(selectedPositions);
-  S.rfPositionReview=null;
-  save();
+  const previousReview=S.rfPositionReview;
+  S.rfPositionReview=manualAuthorityItems.length
+    ? {...previousReview,items:manualAuthorityItems,events:previousReview.events||[]}
+    : null;
+  if(positionResult.created+positionResult.updated>0 && !persistFinancialImportState(beforeImport)){
+    render();
+    alert('A gravação não foi confirmada. A posição foi restaurada, a autoridade manual foi preservada e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+    return {status:'SAVE_OUTCOME_UNKNOWN'};
+  }
   render();
+  if(manualAuthorityItems.length) alert('As posições com autoridade manual foram preservadas na fila para revisão.');
   b3ImportCompletedMessage(`Posição B3 importada: ${positionResult.created} criados, ${positionResult.updated} atualizados, ${positionResult.ignored} ignorados.`);
+  return {status:'APPLIED',...positionResult};
 }
 function rfPositionReviewSummary(){
   const items=S.rfPositionReview?.items||[];
@@ -16005,6 +16276,11 @@ function importB3ProventosReview(){
   const initialDuplicates=rows.filter(r=>r.status==='Duplicado').length;
   const incomplete=rows.filter(r=>r.status==='Revisar' || r.destination==='Revisar').length;
   if(!b3ConfirmApplyToActiveWallet('os proventos recebidos da B3', selectedRows.length, initialDuplicates, incomplete)) return;
+  const beforeImport=snapshotFinancialImportState(['proventos','wallets','activeWalletId','b3ProventosReview']);
+  if(!beforeImport){
+    alert('Não foi possível preparar uma cópia segura do estado. Nenhum provento foi aplicado.');
+    return {status:'REVIEW_REQUIRED'};
+  }
   let added=0;
   let duplicates=rows.filter(r=>r.status==='Duplicado').length;
   const next=[];
@@ -16081,11 +16357,16 @@ function importB3ProventosReview(){
     added++;
   });
   const ignored=Math.max(0,totalRows-added-duplicates);
-  S.proventos=next;
+  if(added>0) S.proventos=next;
   S.b3ProventosReview=null;
-  save();
+  if(added>0 && !persistFinancialImportState(beforeImport)){
+    render();
+    alert('A gravação não foi confirmada. Os proventos foram restaurados e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+    return {status:'SAVE_OUTCOME_UNKNOWN'};
+  }
   render();
   b3ImportCompletedMessage(`Proventos importados na carteira "${b3ActiveWalletGate().name}": ${added} novos, ${duplicates} duplicados ignorados, ${ignored} ignorados.`);
+  return {status:'APPLIED',added,duplicates,ignored};
 }
 function b3ProventosReviewSummary(){
   const rows=S.b3ProventosReview?.items||[];
@@ -16497,6 +16778,11 @@ function applyB3MovementImported(rows, importDate){
     toast(`Movimentações importadas: 0 novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
     return;
   }
+  const beforeImport=snapshotFinancialImportState(['aportes','assets','learnMeta','wallets','activeWalletId','b3MovementReview']);
+  if(!beforeImport){
+    alert('Não foi possível preparar uma cópia segura do estado. Nenhuma movimentação foi aplicada.');
+    return {status:'REVIEW_REQUIRED'};
+  }
   const now=Date.now();
   const addAportes=[];
   finalRows.forEach((r,i)=>{
@@ -16538,9 +16824,15 @@ function applyB3MovementImported(rows, importDate){
   S.aportes=[...addAportes,...S.aportes];
   syncAssetsFromAportes(false);
   [...finalRows].forEach(r=>learnTickerMeta(r.ticker, r.type, r.sector, true));
-  save();
+  if(!persistFinancialImportState(beforeImport)){
+    render();
+    alert('A gravação não foi confirmada. As movimentações foram restauradas e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+    return {status:'SAVE_OUTCOME_UNKNOWN'};
+  }
+  S.b3MovementReview=null;
   render();
   b3ImportCompletedMessage(`Movimentações importadas na carteira "${gate.name}": ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
+  return {status:'APPLIED',added:addAportes.length,duplicates:duplicateCount,ignored:ignoredCount};
 }
 function importB3MovementReview(){
   if(!S.b3MovementReview) return;
@@ -16553,7 +16845,6 @@ function importB3MovementReview(){
   const summary=b3MovementSummary();
   if(!b3ConfirmApplyToActiveWallet('as movimentações B3 no Histórico de aportes', rows.length, summary.duplicates, summary.incomplete+summary.revisar)) return;
   const importDate=S.b3MovementReview.importDate || new Date().toLocaleDateString('pt-BR');
-  S.b3MovementReview=null;
   applyB3MovementImported(rows, importDate);
 }
 function b3MovementReviewModal(){
@@ -16837,12 +17128,12 @@ document.getElementById('nota-file').addEventListener('change',async e=>{
       ? XLSX.read(await file.text(),{type:'string'})
       : XLSX.read(await file.arrayBuffer(),{type:'array'});
     const parsed=parseNotaCorretoraWorkbook(wb,file.name);
-    const {items,warnings,importDate,stats,noteKey,noteNumber,tradeDate}=parsed;
+    const {items,warnings,importDate,stats,noteKey,noteNumber,tradeDate,broker,identityStatus,noteIdentity,completenessStatus,sourceRowCount,parsedRowCount,invalidRowCount,discardedRowCount,ambiguousRowCount}=parsed;
     if(!items.length){
       alert('Não encontrei lançamentos válidos na nota da corretora. Confira se o arquivo é uma nota de negociação/exportação da corretora no formato Excel.');
       return;
     }
-    openNotaReview({items,warnings,importDate,stats,noteKey,noteNumber,tradeDate},file.name);
+    openNotaReview({items,warnings,importDate,stats,noteKey,noteNumber,tradeDate,broker,identityStatus,noteIdentity,completenessStatus,sourceRowCount,parsedRowCount,invalidRowCount,discardedRowCount,ambiguousRowCount},file.name);
     if(warnings.length) debugWarn('Avisos importação nota:',warnings);
   }catch(err){ debugError(err); alert('Erro ao importar a nota da corretora. Verifique o arquivo e tente novamente.'); }
   e.target.value='';
