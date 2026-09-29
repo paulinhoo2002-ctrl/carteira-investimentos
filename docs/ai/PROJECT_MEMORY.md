@@ -1,12 +1,16 @@
 # Project Memory
 
-## V284 Wave C — writers legados (2026-09-29)
+## V284 Waves D/E/F — identidade, completude e isolamento de persistência (2026-09-29)
 
-- Implementação local em `feature/v284-import-center-workflow`, partindo do HEAD autorizado `272dad8e6d579ba3af7c2a3935043c5acd5e3f24`; ainda sem commit.
-- Reimportação idêntica não persiste nos writers testados de posição B3, proventos B3, nota legada Inter, nota PDF Inter e posição detalhada RF. Nota com identidade repetida e conteúdo divergente é conflito/revisão, sem substituir registros existentes.
-- Renda Fixa manual identificada por marcadores já existentes é protegida contra writers B3/RF. A confirmação explícita segue obrigatória; abrir/fechar/cancelar preview não grava. Legacy permanece fora do Import Center Core, que segue preview-only.
-- Testes frescos após ajuste de lote misto RF: V284 19/19, Import Center 27/27, geral 249/249, moderna 815/815; builds e `qa:all` PASS; smoke sete viewports sem overflow/erros. Artefatos de teste foram sintéticos. Escritas financeiras/fiscais reais=0.
-- Codex CLI independente anteriormente encontrou os riscos de reimportação e sobrescrita; esta implementação foi verificada localmente, sem alegar um segundo reviewer independente. Nenhuma ação remota. Próximo gate: diff review e autorização humana para commit local.
+- Wave C permanece commitada localmente em `c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.
+- `V284_FINAL_CODE_COMMIT=35199013a0aadb204d7cb131151e66187c89573b`
+- Nota numerada: corretora + número estável + data explícita válida. Sem número: corretora + data válida + conjunto canônico de operações. Ordenação usa comparação de código determinística. Filename é apenas provenance; aliases são limitados a brokers reconhecidos e rótulos desconhecidos mantêm distinções.
+- Parser reporta linhas de origem/analisadas/inválidas/descartadas/ambíguas e estado de completude. Incompletude, campos obrigatórios ausentes, identidade ambígua ou conflito bloqueiam `READY` e o writer. O writer revalida identidade/operações e mantém autoridade manual RF; reaplicação idêntica não persiste outra vez.
+- Evidência legada é escopada por broker/data/número quando disponível; data sem identidade suficiente permanece `REVIEW_REQUIRED`.
+- `snapshotFinancialImportState`/`restoreFinancialImportState` protegem ativos, aportes, proventos, metadados, carteiras, carteira ativa e estado de revisão nos fluxos de nota, posição/proventos/movimentações B3 e posição RF. `save()=false` ou throw restaura a sessão, marca quarentena, impede edição/salvamento posterior e retorna resultado não confirmado sem mensagem de sucesso.
+- A gravação local de um lote serializa o estado e grava uma chave `localStorage`; falha antes dessa gravação restaura o estado. Se a chave foi gravada e a fila cloud falhou em seguida, o resultado é incerto: sessão restaurada/quarentenada, mas dado local pode existir. A fila cloud não é transação com `localStorage`; após recarga, verificar o estado antes de retry. A identidade idempotente evita reaplicação. `IMPORT_BATCH_ATOMICITY=LOCAL_SINGLE_KEY_ONLY`, não atomicidade distribuída.
+- Validação fresca: V284 boundary + nota Inter + Import Center + V245 105/105; persistência 32/32; roundtrip 7/7; suite geral 249/249; moderna 815/815; builds legado/moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920 sem overflow, erro de página/console ou falha relevante de request. O browser não executou a interação de falha de importação; testes comportamentais sintéticos verificaram esse fluxo.
+- Testes apenas sintéticos; `FINANCIAL_WRITES=0`, `TAX_WRITES=0`, `REAL_PORTFOLIO_MUTATIONS=0`, `PRIVATE_FINANCIAL_FILES_USED=0`, `SCHEMA_MIGRATIONS=0`, `BACKFILLS=0`. Dois commits locais criados. `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`. Push/PR/merge/deploy não autorizados.
 
 ## V283 — certificação funcional noturna atualizada (2026-09-29)
 

@@ -1,14 +1,18 @@
 # Project State
 
-## V284 Wave C — writers legados idempotentes e autoridade RF (2026-09-29)
+## V284 Waves D/E/F — identidade, completude e isolamento de falha (2026-09-29)
 
-- `V284_WAVE_C_STATUS=IMPLEMENTED_AND_LOCALLY_VERIFIED`; worktree `feature/v284-import-center-workflow`, início em `272dad8e6d579ba3af7c2a3935043c5acd5e3f24`. Alterações ainda locais e sem commit.
-- `PRECONFIRM_WRITE_SAFETY=RESOLVED`: confirmação explícita permanece no fluxo; abrir/fechar/cancelar previews não alcança writers. Import Center Core continua preview-only (`CORE_CONFIRMED_WRITE_AVAILABLE=false`); handlers legados continuam fora desse Core (`LEGACY_BYPASSES_IMPORT_CENTER_CORE=true`).
-- `LEGACY_REIMPORT_IDEMPOTENCY=RESOLVED` nos caminhos cobertos: snapshot B3, proventos B3 duplicados, nota legada Inter, nota PDF Inter e posição detalhada RF. Reaplicação idêntica não chama persistência; conteúdo materialmente divergente sob a mesma identidade de nota retorna conflito e permanece para revisão.
-- `RF_MANUAL_AUTHORITY_SAFETY=RESOLVED` para marcadores existentes `manual_authority`, `manualValueAuthority`, `source/fixed_source=manual|manual-rf` e `quoteSource/quote_source=manual`. Posições manuais ficam em revisão; writers B3/RF não as substituem.
-- Verificação fresca após preservar linhas manuais em lotes mistos: V284 focados 19/19, Import Center 27/27, geral 249/249, moderna 815/815; build legado/moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920, sem overflow, console/page errors ou falhas relevantes de requisição.
-- Nenhuma escrita financeira/fiscal real, confirmação de importação real, alteração de schema, backfill, mudança de dependência, ação remota ou acesso a arquivo financeiro privado. Revisão independente Codex CLI anterior confirmou que os controles de confirmação já existiam; não foram reroteados ao Core.
-- Próximo gate: revisão final do diff e autorização explícita para commit local. Nenhum push/PR/merge/deploy autorizado.
+- `V284_WAVE_C_COMMIT=c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.
+- `V284_FINAL_CODE_COMMIT=35199013a0aadb204d7cb131151e66187c89573b`
+- Identidade usa corretora canônica + data de negociação explícita válida + número estável; sem número, usa conjunto canônico de operações com ordenação por comparação de código, não por locale. Nome do arquivo é provenance, nunca autoridade de unicidade. Alias conhecido só é normalizado para corretoras explicitamente reconhecidas; pontuação/acento em nomes desconhecidos não é removida.
+- Parsing parcial/inválido expõe contagens de linhas e `completenessStatus`; qualquer linha econômica descartada/inválida bloqueia `READY` e o writer revalida completude, identidade, estado de revisão/conflito e campos obrigatórios. Ausência não vira zero nem compra implícita.
+- Evidência legada ambígua é escopada por corretora/data/número quando disponíveis; data isolada com identidade insuficiente continua `REVIEW_REQUIRED`. Notas numeradas diferentes no mesmo dia/corretora podem coexistir.
+- Reaplicação idêntica não persiste novamente; conteúdo divergente na mesma identidade resulta em conflito/revisão. Autoridade manual de RF e salvaguardas da Wave C permanecem cobertas pelos testes.
+- A falha de persistência restaura snapshot profundo dos campos financeiros, estado de revisão, carteiras e carteira ativa; marca a sessão como `QUARANTINED`, bloqueia `save()` e o gate compartilhado de edição, e não anuncia sucesso. B3 posições, B3 proventos, B3 movimentações, posição RF e nota de corretagem passam pela mesma barreira. Se o armazenamento local aceitar a chave e a fila cloud falhar depois, o resultado continua incerto: memória é restaurada/quarentenada, mas o registro local pode já conter a operação; após recarga, identidade/idempotência impede reaplicação. A sincronização cloud não é transação atômica com `localStorage`.
+- `IMPORT_BATCH_ATOMICITY=ONE_LOCAL_SERIALIZED_STATE_KEY`; isso descreve a gravação síncrona do snapshot local, não durabilidade cloud ou atomicidade distribuída. `RETRY_IDEMPOTENCE=AFTER_RELOAD_AND_STATE_CHECK`; retry na sessão quarentenada é bloqueado.
+- Verificação fresca final: V284 boundary + nota Inter + Import Center + V245 = 105/105; persistência 32/32; roundtrip 7/7; geral 249/249; moderna 815/815; build legado, build moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920 sem overflow, erros de console/página ou falhas relevantes de requisição. O smoke não exercitou a interação de falha de importação no browser; estados de falha foram verificados por testes comportamentais sintéticos.
+- Nenhuma escrita financeira/fiscal real, mutação real de carteira, arquivo financeiro privado, migração, backfill ou mudança de dependência. Dois commits locais criados. Push/PR/merge/deploy não autorizados.
+- `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`
 
 ## Estado V283 verificado nesta execução — 2026-09-29
 

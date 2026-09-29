@@ -1,11 +1,15 @@
 # Next Step
-## V284 Wave C — implementação local verificada (2026-09-29)
+## V284 Waves D/E/F — certificação pré-commit (2026-09-29)
 
-- `CURRENT_BRANCH=feature/v284-import-center-workflow`; `START_HEAD=272dad8e6d579ba3af7c2a3935043c5acd5e3f24`. Mudanças V284 locais ainda sem commit.
-- Idempotência sem persistência para reimportação idêntica de posições B3, proventos B3, notas Inter legadas/PDF e posições detalhadas RF; nota alterada com mesma identidade fica em conflito/revisão.
-- Posições RF com marcadores manuais reconhecidos não são sobrescritas pelos writers B3/RF. Confirmação explícita e cancelamento sem escrita continuam protegidos; Import Center Core permanece preview-only.
-- Evidência fresca após ajuste de lote misto RF: V284 19/19, Import Center 27/27, geral 249/249, moderna 815/815, builds e `qa:all` PASS; smoke em sete larguras PASS.
-- `NEXT_ACTION=V284_FINAL_DIFF_REVIEW_AND_LOCAL_COMMIT_AUTHORIZATION`. Não fazer commit sem autorização explícita, conforme AGENTS.md; push/PR/merge/deploy continuam não autorizados.
+- `CURRENT_BRANCH=feature/v284-import-center-workflow`; `V284_WAVE_C_COMMIT=c0566104ef702c673bd060945f324c66725f517e`. Waves D/E/F foram implementadas, verificadas e commitadas localmente em dois commits.
+- `V284_FINAL_CODE_COMMIT=35199013a0aadb204d7cb131151e66187c89573b` (code + test)
+- Commit de memória pendente.
+- A identidade de nota usa corretora/identidade preservada + data explícita válida + número estável; sem número, usa operações semânticas canônicas com ordenação independente de locale. Filename é apenas provenance. Parsing incompleto, identidade ambígua, conflito ou campo financeiro obrigatório ausente bloqueia o writer.
+- Persistência financeira de importação é isolada por snapshot/restore. `save()=false` ou throw restaura estado financeiro, carteira ativa e revisão; sessão é `QUARANTINED`, sem novos saves/edições, sem sucesso falso. Se `localStorage` gravou antes de falha ao enfileirar cloud, o resultado durável local é incerto; recarregar e conferir antes de qualquer retry. A sincronização cloud não é transação atômica.
+- Rotas verificadas: nota de corretagem, posição B3, proventos B3, movimentações B3 e posição de Renda Fixa; falhas mistas não deixam mutação em memória nem autoridade manual alterada. `IMPORT_BATCH_ATOMICITY=LOCAL_SINGLE_KEY_ONLY`; não alegar atomicidade cloud.
+- Validação fresca: focados V284 boundary + nota Inter + Import Center + V245 105/105; persistência 32/32; roundtrip 7/7; geral 249/249; moderna 815/815; builds e `qa:all` PASS. Smoke 390/430/768/1366/1440/1536/1920 sem overflow, erro de página/console ou falha relevante de requisição. Fluxo de falha no browser não foi exercitado; testes comportamentais sintéticos cobrem o caso.
+- Sem escrita financeira/fiscal real, mutação real, arquivo privado, migração ou backfill. Um commit de código+teste criado; commit de memória pendente.
+- `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`. Próximo passo é certificação completa da branch, não autorização de push/PR/merge/deploy.
 
 ## Estado atual — V283 certificação concluída (2026-09-29)
 
