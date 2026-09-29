@@ -1,5 +1,16 @@
 # Project Memory
 
+## Estado canônico pós-V285 — 2026-09-29
+
+- V284 foi incorporada em `origin/main` (`6f249bb822bb83163a39a3cb7e59ff80ab3134bb`); `V284_FINAL_BRANCH_CERTIFICATION` é histórico, não a próxima ação.
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `VISUAL_CANON_V2=FROZEN_REFERENCE`; `NEXT_ACTION=V282-01_FINANCIAL_ACTION_END_TO_END_CERTIFICATION`.
+- `V283-01=COMPLETE_FOR_CURRENT_APPROVED_SOURCES`: seleção de arquivo no Import Center encaminha B3 (movimentações, posição, proventos) e nota Inter aos fluxos específicos de revisão/confirm; os writers legados permanecem autoridade de escrita. `ImportCenterCore` permanece preview-only. XP/BTG permanecem `FIXTURE_REQUIRED`; formatos desconhecidos falham fechados; um arquivo por vez.
+- Correção funcional desta onda: confirmação explícita da nota Inter agora usa snapshot → mutação → `save()` → efeitos posteriores. `save()=false/throw` restaura estado e quarentena a sessão; não anuncia sucesso. Teste sintético prova save falho, ausência de leak em save posterior e persistência única após confirmação.
+- Browser sintético B3: revisão protegida exibe ticker/valor correto, grava zero antes da confirmação e cancelamento deixa zero gravado; 390/430/768/1366/1440/1536/1920 sem overflow, erros de página/console ou falhas relevantes. Nenhuma confirmação real foi executada.
+- Validação fresca nesta branch: focados 144/144, geral 252/252, moderna 815/815; builds legacy/modern e `qa:all` PASS. Avisos existentes do Vite não causaram falha.
+- Histórico: ver `HISTORICAL_CONSOLIDATION_AUDIT.md`. V284 está em `origin/main`; refs arquivadas V178/V275/V278M/V281 verificadas. O branch local V178 está ausente, mas ref de arquivo preserva o commit. O backup-root esperado não estava presente, portanto bundles externos não foram verificados. Nenhum resíduo foi removido.
+- Sem arquivos financeiros privados, escrita financeira/fiscal real, mutação real, alteração de dependências, push, PR, merge ou deploy.
+
 ## V284 Waves D/E/F — identidade, completude e isolamento de persistência (2026-09-29)
 
 - Wave C permanece commitada localmente em `c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.
@@ -10,7 +21,7 @@
 - `snapshotFinancialImportState`/`restoreFinancialImportState` protegem ativos, aportes, proventos, metadados, carteiras, carteira ativa e estado de revisão nos fluxos de nota, posição/proventos/movimentações B3 e posição RF. `save()=false` ou throw restaura a sessão, marca quarentena, impede edição/salvamento posterior e retorna resultado não confirmado sem mensagem de sucesso.
 - A gravação local de um lote serializa o estado e grava uma chave `localStorage`; falha antes dessa gravação restaura o estado. Se a chave foi gravada e a fila cloud falhou em seguida, o resultado é incerto: sessão restaurada/quarentenada, mas dado local pode existir. A fila cloud não é transação com `localStorage`; após recarga, verificar o estado antes de retry. A identidade idempotente evita reaplicação. `IMPORT_BATCH_ATOMICITY=LOCAL_SINGLE_KEY_ONLY`, não atomicidade distribuída.
 - Validação fresca: V284 boundary + nota Inter + Import Center + V245 105/105; persistência 32/32; roundtrip 7/7; suite geral 249/249; moderna 815/815; builds legado/moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920 sem overflow, erro de página/console ou falha relevante de request. O browser não executou a interação de falha de importação; testes comportamentais sintéticos verificaram esse fluxo.
-- Testes apenas sintéticos; `FINANCIAL_WRITES=0`, `TAX_WRITES=0`, `REAL_PORTFOLIO_MUTATIONS=0`, `PRIVATE_FINANCIAL_FILES_USED=0`, `SCHEMA_MIGRATIONS=0`, `BACKFILLS=0`. Dois commits locais criados. `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`. Push/PR/merge/deploy não autorizados.
+- Testes apenas sintéticos; `FINANCIAL_WRITES=0`, `TAX_WRITES=0`, `REAL_PORTFOLIO_MUTATIONS=0`, `PRIVATE_FINANCIAL_FILES_USED=0`, `SCHEMA_MIGRATIONS=0`, `BACKFILLS=0`. V284 foi posteriormente integrada por PR #432; `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`.
 
 ## V283 — certificação funcional noturna atualizada (2026-09-29)
 

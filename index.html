@@ -8134,6 +8134,7 @@ document.write([
 <script src="legacy/reports-readonly-source.js"></script>
 <script src="import-foundation.js"></script>
 <script src="import-center-core.js"></script>
+<script src="import-center-workflow.js"></script>
 <script src="historical-import-preview.js"></script>
 <script src="historical-reconstruction.js"></script>
 <script src="historical-reconstruction-hardening.js"></script>
@@ -14725,6 +14726,7 @@ function applyB3ImportedPositions(items, importDate){
     if(!persistFinancialImportState(beforeImport)){
       render();
       alert('A gravação não foi confirmada. O estado da sessão foi restaurado e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+      importCenterFinishReview('SAVE_FAILED','A gravação não foi confirmada; estado restaurado e a sessão exige recarga/conferência.',0);
       return {status:'SAVE_OUTCOME_UNKNOWN'};
     }
     S.b3Review=null;
@@ -14743,6 +14745,7 @@ function closeBrokerNoteImport(){
     S.brokerNoteImport=null;
     const input=document.getElementById('broker-note-pdf-file');
     if(input) input.value='';
+    importCenterFinishReview('CANCELLED','Revisão fechada sem confirmar; nenhum registro foi gravado.');
     render();
   });
 }
@@ -14984,6 +14987,11 @@ function confirmBrokerNoteImport(){
     alert('Já existe uma nota com esta identificação e conteúdo diferente. Revise a origem antes de importar novamente.');
     return {status:'CONFLICT'};
   }
+  const beforeImport=snapshotFinancialImportState(['assets','aportes','learnMeta','wallets','activeWalletId','brokerNoteImport','brokerNoteImportSuccess','aportesViewMode','aportesFilter','aportesPage']);
+  if(!beforeImport){
+    alert('Não foi possível preparar uma cópia segura do estado. Nenhuma nota foi aplicada.');
+    return {status:'REVIEW_REQUIRED'};
+  }
   const importedTotal=records.reduce((sum,row)=>sum+(Number(row.totalValue)||0),0);
   S.aportes=[...records,...S.aportes];
   records.forEach(row=>learnTickerMeta(row.ticker,row.type,row.sector,true));
@@ -15000,9 +15008,16 @@ function confirmBrokerNoteImport(){
   S.aportesFilter='todos';
   S.aportesPage=1;
   syncAssetsFromAportes(false);
+  if(!persistFinancialImportState(beforeImport)){
+    render();
+    alert('A gravação da nota não foi confirmada. O estado anterior foi restaurado e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+    importCenterFinishReview('SAVE_FAILED','A gravação não foi confirmada; estado restaurado e sessão bloqueada para recarga/conferência.',0);
+    return {status:'SAVE_OUTCOME_UNKNOWN'};
+  }
   fetchQuotes(false);
   scheduleAutoProventosGratis('nota-inter-pdf');
   toast(`✅ Nota Inter ${note.noteNumber} importada com sucesso.`);
+  importCenterFinishReview('IMPORTED','Nota Inter confirmada e aplicada.',records.length);
   return {status:'APPLIED',imported:records.length};
 }
 function closeBrokerNoteImportSuccess(){
@@ -15134,6 +15149,7 @@ function openNotaReview(parsed, fileName){
 function closeNotaReview(){
   withScrollPreserved(()=>{
     S.noteReview=null;
+    importCenterFinishReview('CANCELLED','Revisão fechada sem confirmar; nenhum registro foi gravado.');
     render();
   });
 }
@@ -15194,14 +15210,18 @@ function importNotaReview(){
   if(result?.status==='SAVE_OUTCOME_UNKNOWN'){
     S.noteReview.persistenceStatus='QUARANTINED';
     alert('A gravação não foi confirmada. O estado desta sessão foi restaurado e novas gravações estão bloqueadas; recarregue e confira a carteira antes de continuar.');
+    importCenterFinishReview('SAVE_FAILED','A gravação da nota não foi confirmada; estado restaurado e sessão bloqueada para recarga/conferência.',0);
     return;
   }
   if(result?.status==='SESSION_QUARANTINED'){
     S.noteReview.persistenceStatus='QUARANTINED';
     alert('Esta sessão está bloqueada após uma falha de persistência. Recarregue e confira a carteira antes de continuar.');
+    importCenterFinishReview('SAVE_FAILED','A sessão permanece bloqueada após falha anterior de persistência; recarregue e confira antes de continuar.',0);
     return;
   }
   S.noteReview=null;
+  if(result?.status==='APPLIED') importCenterFinishReview('IMPORTED','Nota de corretagem confirmada e aplicada.',result.imported||rows.length);
+  else if(result?.status==='NO_OP') importCenterFinishReview('NO_NEW_RECORDS','A identidade já estava aplicada; nenhum registro novo foi gravado.',0);
 }
 function notaReviewSummary(rows){
   const total=rows.filter(r=>r.include!==false).reduce((s,r)=>s+(Number(r.qty)||0)*(Number(r.price)||0),0);
@@ -15558,6 +15578,7 @@ function openB3Review(parsed, fileName='', sourceKind='excel'){
 function closeB3Review(){
   withScrollPreserved(()=>{
     S.b3Review=null;
+    importCenterFinishReview('CANCELLED','Revisão fechada sem confirmar; nenhum registro foi gravado.');
     render();
   });
 }
@@ -15636,7 +15657,10 @@ function importB3Review(){
     date:r.date
   }));
   const result=applyB3ImportedPositions(payload, importDate);
-  if(result?.status==='APPLIED') S.b3Review=null;
+  if(result?.status==='APPLIED'){
+    S.b3Review=null;
+    importCenterFinishReview('IMPORTED','Posição B3 confirmada e aplicada.',Number(result.created||0)+Number(result.updated||0));
+  }
 }
 function b3ReviewModal(){
   const r=S.b3Review;
@@ -15805,6 +15829,7 @@ function openRfPositionReview(parsed, fileName='', sourceKind='excel'){
 function closeRfPositionReview(){
   withScrollPreserved(()=>{
     S.rfPositionReview=null;
+    importCenterFinishReview('CANCELLED','Revisão fechada sem confirmar; nenhum registro foi gravado.');
     render();
   });
 }
@@ -16051,11 +16076,13 @@ function importRfPositionReview(){
   if(positionResult.created+positionResult.updated>0 && !persistFinancialImportState(beforeImport)){
     render();
     alert('A gravação não foi confirmada. A posição foi restaurada, a autoridade manual foi preservada e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+    importCenterFinishReview('SAVE_FAILED','A gravação não foi confirmada; posição restaurada e sessão bloqueada para recarga/conferência.',0);
     return {status:'SAVE_OUTCOME_UNKNOWN'};
   }
   render();
   if(manualAuthorityItems.length) alert('As posições com autoridade manual foram preservadas na fila para revisão.');
   b3ImportCompletedMessage(`Posição B3 importada: ${positionResult.created} criados, ${positionResult.updated} atualizados, ${positionResult.ignored} ignorados.`);
+  importCenterFinishReview(manualAuthorityItems.length?'PARTIALLY_IMPORTED':'IMPORTED',manualAuthorityItems.length?'Posições importáveis aplicadas; valores manuais permaneceram em revisão.':'Posição de Renda Fixa confirmada e aplicada.',positionResult.created+positionResult.updated);
   return {status:'APPLIED',...positionResult};
 }
 function rfPositionReviewSummary(){
@@ -16227,6 +16254,7 @@ function openB3ProventosReview(parsed, fileName='', sourceKind='excel'){
 function closeB3ProventosReview(){
   withScrollPreserved(()=>{
     S.b3ProventosReview=null;
+    importCenterFinishReview('CANCELLED','Revisão fechada sem confirmar; nenhum registro foi gravado.');
     render();
   });
 }
@@ -16362,10 +16390,12 @@ function importB3ProventosReview(){
   if(added>0 && !persistFinancialImportState(beforeImport)){
     render();
     alert('A gravação não foi confirmada. Os proventos foram restaurados e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+    importCenterFinishReview('SAVE_FAILED','A gravação não foi confirmada; proventos restaurados e sessão bloqueada para recarga/conferência.',0);
     return {status:'SAVE_OUTCOME_UNKNOWN'};
   }
   render();
   b3ImportCompletedMessage(`Proventos importados na carteira "${b3ActiveWalletGate().name}": ${added} novos, ${duplicates} duplicados ignorados, ${ignored} ignorados.`);
+  importCenterFinishReview(added?'IMPORTED':'NO_NEW_RECORDS',added?'Proventos confirmados e aplicados.':'Nenhum provento novo elegível; nenhum registro foi gravado.',added);
   return {status:'APPLIED',added,duplicates,ignored};
 }
 function b3ProventosReviewSummary(){
@@ -16595,6 +16625,7 @@ function openB3MovementReview(parsed, fileName='', sourceKind='excel'){
 function closeB3MovementReview(){
   withScrollPreserved(()=>{
     S.b3MovementReview=null;
+    importCenterFinishReview('CANCELLED','Revisão fechada sem confirmar; nenhum registro foi gravado.');
     render();
   });
 }
@@ -16827,11 +16858,13 @@ function applyB3MovementImported(rows, importDate){
   if(!persistFinancialImportState(beforeImport)){
     render();
     alert('A gravação não foi confirmada. As movimentações foram restauradas e novas gravações estão bloqueadas; recarregue e confira a carteira.');
+    importCenterFinishReview('SAVE_FAILED','A gravação não foi confirmada; movimentações restauradas e sessão bloqueada para recarga/conferência.',0);
     return {status:'SAVE_OUTCOME_UNKNOWN'};
   }
   S.b3MovementReview=null;
   render();
   b3ImportCompletedMessage(`Movimentações importadas na carteira "${gate.name}": ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
+  importCenterFinishReview(addAportes.length?'IMPORTED':'NO_NEW_RECORDS',addAportes.length?'Movimentações confirmadas e aplicadas.':'Nenhuma movimentação nova elegível; nenhum registro foi gravado.',addAportes.length);
   return {status:'APPLIED',added:addAportes.length,duplicates:duplicateCount,ignored:ignoredCount};
 }
 function importB3MovementReview(){
@@ -27760,30 +27793,103 @@ function importCenterState(){
   return S.importCenterSession;
 }
 function importCenterDetectFile(file){
-  const detected=globalThis.ImportCenterCore?.detectImportFile?.({name:file?.name||''}) || {sourceType:'UNKNOWN',provider:'UNKNOWN',support:'REVIEW_REQUIRED',parser:null,requiresReview:true};
-  const labels={BROKERAGE_NOTE_PDF:detected.provider==='XP'?'Nota XP':detected.provider==='BTG'?'Nota BTG':'Nota Inter',B3_DIVIDENDS_XLSX:'Proventos B3',B3_MOVEMENTS_XLSX:'Movimentações B3',B3_POSITION_XLSX:'Posição B3',UNKNOWN:'Formato não reconhecido'};
-  const parsers={BROKERAGE_NOTE_PDF:'preview de nota',B3_DIVIDENDS_XLSX:'preview de proventos',B3_MOVEMENTS_XLSX:'reconstrução de movimentos',B3_POSITION_XLSX:'conciliação de posição'};
-  return {type:detected.sourceType,label:labels[detected.sourceType]||labels.UNKNOWN,support:detected.capability==='FULL'?'FULLY_SUPPORTED':detected.support==='FIXTURE_REQUIRED'?'FIXTURE_REQUIRED':detected.support==='SUPPORTED'?'PARTIAL':'REVIEW_REQUIRED',parser:detected.parser||parsers[detected.sourceType]||'nenhum',provider:detected.provider,capability:detected.capability,reason:detected.reason,confidence:detected.confidence,requiresReview:detected.requiresReview};
+  const name=String(file?.name||'');
+  const extension=name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1]||'';
+  const supported=['csv','xls','xlsx','pdf'].includes(extension);
+  return {type:'PENDING_CONTENT',label:supported?'Aguardando leitura local':'Formato não reconhecido',support:supported?'REVIEW_REQUIRED':'UNSUPPORTED',parser:supported?'Parser será escolhido pelo conteúdo':'nenhum',provider:'UNKNOWN',capability:supported?'PENDING_CONTENT':'UNSUPPORTED',reason:supported?'Extensão não confirma corretora nem layout.':'Formato sem parser habilitado.',confidence:'LOW',requiresReview:true};
 }
 function importCenterFiles(files){
   const session=importCenterState();
-  session.files=Array.from(files||[]).map((file,index)=>({name:String(file.name||''),size:Number(file.size)||0,lastModified:Number(file.lastModified)||0,sourceFingerprint:[file.name||'',file.size||0,file.lastModified||0,file.type||''].join('|'),detected:importCenterDetectFile(file),order:index}));
-  session.step=session.files.length?2:1; session.result=null; render();
+  const file=Array.from(files||[])[0];
+  session.files=file?[{name:String(file.name||''),size:Number(file.size)||0,detected:importCenterDetectFile(file),file}]:[];
+  session.step=session.files.length?2:1; session.result=null; session.pendingReview=null; render();
 }
-function importCenterRunDryRun(){
+async function importCenterParseSpreadsheet(file){
+  if(typeof XLSX==='undefined') throw new Error('SPREADSHEET_READER_UNAVAILABLE');
+  const isCsv=/\.csv$/i.test(file.name||'')||String(file.type||'').toLowerCase().includes('csv');
+  const wb=isCsv?XLSX.read(await file.text(),{type:'string',raw:true}):XLSX.read(await file.arrayBuffer(),{type:'array'});
+  let parsed,sourceType;
+  if(detectB3ProventosWorkbook(wb,file.name)){parsed=parseB3ProventosWorkbook(wb,file.name);sourceType='B3_DIVIDENDS_XLSX';}
+  else if(detectRfDetailedPositionWorkbook(wb,file.name)){parsed=parseRfDetailedPositionWorkbook(wb,file.name);sourceType='B3_POSITION_XLSX';}
+  else if(detectB3WorkbookKind(wb)==='movement'){parsed=parseB3MovementWorkbook(wb,file.name);sourceType='B3_MOVEMENTS_XLSX';}
+  else{
+    const hasPositionEvidence=(wb.SheetNames||[]).some(sheetName=>{
+      const sheet=wb.Sheets[sheetName];
+      if(!sheet) return false;
+      const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+      return rows.slice(0,20).some(row=>{
+        const headers=(row||[]).map(normHeaderB3);
+        const hasQuantity=headers.includes('quantidade')||headers.includes('quantidade disponivel');
+        const hasAsset=headers.some(header=>['codigo de negociacao','codigo','ticker','produto','ativo','descricao do produto'].includes(header));
+        return hasQuantity&&hasAsset;
+      });
+    });
+    if(!hasPositionEvidence) return {status:'UNSUPPORTED',provider:'UNKNOWN',sourceType:'UNKNOWN',reason:'LAYOUT_NOT_RECOGNIZED'};
+    parsed=parseB3PositionWorkbook(wb,file.name);sourceType='B3_POSITION_XLSX';
+  }
+  if(!Array.isArray(parsed?.items)||!parsed.items.length) return {status:'REVIEW_REQUIRED',provider:'B3',sourceType,reason:'NO_VALID_ROWS',parsed};
+  return {status:'READY_FOR_REVIEW',provider:'B3',sourceType,parsed,recordCount:parsed.items.length};
+}
+async function importCenterParsePdf(file){
+  let text=await extractBrokerNotePdfText(file);
+  if(text.replace(/\s+/g,'').length<80){
+    const pdfjs=await loadPdfJs();
+    const doc=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+    const pages=[];
+    for(let pageNumber=1;pageNumber<=doc.numPages;pageNumber++){
+      const page=await doc.getPage(pageNumber);
+      pages.push(pdfLinesFromTextContent(await page.getTextContent()).join('\n'));
+    }
+    text=pages.join('\n');
+  }
+  if(text.replace(/\s+/g,'').length<80) return {status:'REVIEW_REQUIRED',provider:'UNKNOWN',sourceType:'BROKERAGE_NOTE_PDF',reason:'PDF_TEXT_UNAVAILABLE'};
+  const parsed=parseInterBrokerNoteText(text);
+  if(!parsed.warnings.some(warning=>/não foi identificado com segurança/i.test(warning))){
+    if(!parsed.valid) return {status:'REVIEW_REQUIRED',provider:'INTER',sourceType:'BROKERAGE_NOTE_PDF',reason:'NOTE_IDENTITY_OR_PARSE_INCOMPLETE',parsed};
+    parsed.duplicate=detectBrokerNoteDuplicate(parsed);
+    return {status:'READY_FOR_REVIEW',provider:'INTER',sourceType:'BROKERAGE_NOTE_PDF',parsed,recordCount:parsed.operations.length};
+  }
+  const kind=await detectB3PdfKind(file);
+  if(kind==='ambiguous') return {status:'UNSUPPORTED',provider:'UNKNOWN',sourceType:'UNKNOWN',reason:'PDF_LAYOUT_AMBIGUOUS'};
+  const b3Parsed=kind==='movement'?await parseB3MovementPdf(file):await parseB3PositionPdf(file);
+  if(!Array.isArray(b3Parsed?.items)||!b3Parsed.items.length) return {status:'REVIEW_REQUIRED',provider:'B3',sourceType:kind==='movement'?'B3_MOVEMENTS_XLSX':'B3_POSITION_XLSX',reason:'NO_VALID_ROWS',parsed:b3Parsed};
+  return {status:'READY_FOR_REVIEW',provider:'B3',sourceType:kind==='movement'?'B3_MOVEMENTS_XLSX':'B3_POSITION_XLSX',parsed:b3Parsed,recordCount:b3Parsed.items.length,sourceKind:'pdf'};
+}
+function importCenterOpenReview({fileName,provider,sourceType,parsed,sourceKind}){
   const session=importCenterState();
-  if(!session.files.length) return;
-  const unknown=session.files.filter(file=>file.detected.type==='UNKNOWN').length;
-  const reviewed=session.files.filter(file=>file.detected.support==='REVIEW_REQUIRED').length;
-  const fingerprints=new Map(); session.files.forEach(file=>fingerprints.set(file.sourceFingerprint,(fingerprints.get(file.sourceFingerprint)||0)+1));
-  const duplicateAudit=session.files.map(file=>({label:file.name,state:(fingerprints.get(file.sourceFingerprint)||0)>1?'EXACT_DUPLICATE':'UNIQUE',reason:(fingerprints.get(file.sourceFingerprint)||0)>1?'Mesmo arquivo selecionado novamente; mantido fora de qualquer escrita.':'Identidade única nesta sessão.'}));
+  session.pendingReview={fileName,provider,sourceType};
+  session.step=7;
+  if(sourceType==='BROKERAGE_NOTE_PDF'){
+    S.brokerNoteImport={open:true,status:'ready',message:'Nota lida. Confira todos os dados antes de confirmar.',fileName,fileSize:0,rateCosts:false,allowDuplicate:false,parsed,diag:{phase:'revisão',fileName,fileSize:0,chars:0,noteNumber:parsed.noteNumber||'',tradeDate:parsed.tradeDate||'',operations:parsed.operations?.length||0,rows:parsed.rows?.length||0,tickers:(parsed.rows||[]).map(row=>row.ticker||''),error:''}};
+  }else if(parsed.kind==='b3-proventos') openB3ProventosReview(parsed,fileName,sourceKind||'excel');
+  else if(parsed.kind==='rf-detailed-position') openRfPositionReview(parsed,fileName,sourceKind||'excel');
+  else if(parsed.kind==='movement') openB3MovementReview(parsed,fileName,sourceKind||'excel');
+  else openB3Review(parsed,fileName,sourceKind||'excel');
+  return true;
+}
+function importCenterFinishReview(status,message,writeCount=null){
+  const session=S.importCenterSession;
+  if(!session?.pendingReview) return false;
+  session.pendingReview=null;
   session.step=8;
-  const exactDuplicates=duplicateAudit.filter(item=>item.state==='EXACT_DUPLICATE').length;
-  session.result={status:unknown||reviewed?'WARNING':'SUCCESS',snapshot:'validado',rollback:'testado',newRecords:0,records:0,duplicates:exactDuplicates,potentialDuplicates:0,conflicts:reviewed,review:reviewed,unsupported:unknown,position:'preservada',income:'sem alteração',whatWillChange:0,confirmation:'BLOCKED',provenance:'session-only',dedupe:'read-only',duplicateAudit};
-  session.history=[{date:new Date().toISOString(),source:session.files.map(file=>file.detected.label).join(', '),period:'não informado',status:session.result.status,records:0,duplicates:0,conflicts:session.result.conflicts,reconciliation:'dry-run',rollback:'testado'},...(session.history||[])].slice(0,8);
+  session.result={status,message:String(message||status),provider:session.result?.provider||'UNKNOWN',sourceType:session.result?.sourceType||'UNKNOWN',fileName:session.result?.fileName||'',writeCount:Number.isInteger(writeCount)&&writeCount>=0?writeCount:null};
+  render();
+  return true;
+}
+async function importCenterRunDryRun(){
+  const session=importCenterState();
+  if(!session.files.length || session.pendingReview) return;
+  const selected=session.files[0];
+  session.step=3;
+  session.result={status:'PARSING',message:'Lendo o arquivo localmente; nenhuma gravação ocorreu.',writeCount:0};
+  render();
+  const result=await ImportCenterWorkflow.openReviewForFile(selected.file,{parseSpreadsheet:importCenterParseSpreadsheet,parsePdf:importCenterParsePdf,openReview:importCenterOpenReview});
+  session.result={...result,message:result.status==='REVIEW_OPEN'?'Prévia aberta no fluxo protegido existente. Só o botão explícito de confirmação poderá aplicar registros.':result.reason||result.status,writeCount:0};
+  if(result.provider) selected.detected={...selected.detected,type:result.sourceType,provider:result.provider,label:result.provider==='INTER'?'Nota Inter':result.sourceType==='B3_DIVIDENDS_XLSX'?'Proventos B3':result.sourceType==='B3_MOVEMENTS_XLSX'?'Movimentações B3':result.sourceType==='B3_POSITION_XLSX'?'Posição B3':'Fonte B3',support:'FULLY_SUPPORTED',parser:'Parser legado validado',capability:'FULL'};
+  session.step=result.status==='REVIEW_OPEN'?7:8;
   render();
 }
-function importCenterReset(){ S.importCenterSession={files:[],step:1,result:null,history:[]}; render(); }
+function importCenterReset(){ if(importCenterState().pendingReview) return; S.importCenterSession={files:[],step:1,result:null,history:[]}; render(); }
 function importCenterTab(){
   return ImportCenterView.render({context:IMPORT_CENTER_CONTEXT,renderers:{preview:ImportCenterPreviewRenderer,fileList:ImportCenterFileListRenderer,sourceList:ImportCenterSourceListRenderer}});
 }

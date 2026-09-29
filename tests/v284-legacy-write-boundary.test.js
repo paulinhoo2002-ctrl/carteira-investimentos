@@ -41,6 +41,7 @@ function harness(functions, overrides = {}) {
     alert(message) { metrics.alerts.push(String(message)); },
     toast() {},
     render() { metrics.renderCalls += 1; },
+    importCenterFinishReview() {},
     save() { metrics.saveCalls += 1; return true; },
     canEditFromThisTab: () => true,
     withScrollPreserved: callback => callback(),
@@ -385,6 +386,87 @@ test('Inter PDF: changed note with same identity remains review-only', () => {
   assert.equal(JSON.stringify(context.S.aportes), before);
   assert.equal(metrics.scheduleCalls, 0);
   assert.ok(metrics.alerts.length > 0);
+});
+
+test('Inter PDF: failed persistence restores the confirmed note and blocks later-save leakage', () => {
+  const note = { valid: true, noteKey: 'synthetic-pdf-save-failure', noteNumber: '8', tradeDate: '2026-01-02', broker: 'INTER', rows: [{ include: true, ticker: 'SYN2', qty: 1, price: 25, total: 25, operation: 'compra', type: 'Ação', sector: 'Ação' }], operationsTotal: 25, costs: 0 };
+  const reviewState = { parsed: note, rateCosts: false, allowDuplicate: false };
+  const { context, metrics } = harness([
+    ['confirmBrokerNoteImport', 'closeBrokerNoteImportSuccess'],
+  ], {
+    S: { aportes: [], assets: [], learnMeta: {}, wallets: [], brokerNoteImport: reviewState },
+    brokerNoteCanConfirm: () => true,
+    detectBrokerNoteDuplicate: () => false,
+    brokerNoteValidTicker: () => true,
+    brokerNoteAdjustedRow: row => ({ ...row, adjustedPrice: row.price, adjustedTotal: row.total, allocatedCost: 0 }),
+    syncAssetsFromAportes() {},
+    fetchQuotes() { metrics.quoteCalls += 1; },
+    scheduleAutoProventosGratis() { metrics.scheduleCalls += 1; },
+    learnTickerMeta() {},
+    importCenterFinishReview() {},
+  });
+  context.save = () => {
+    if (context.S._financialWriteQuarantined === true) return false;
+    metrics.saveCalls += 1;
+    return false;
+  };
+  const result = context.confirmBrokerNoteImport();
+  assert.equal(result?.status, 'SAVE_OUTCOME_UNKNOWN');
+  assert.equal(metrics.saveCalls, 1);
+  assert.deepEqual(JSON.parse(JSON.stringify(context.S.aportes)), []);
+  assert.deepEqual(JSON.parse(JSON.stringify(context.S.brokerNoteImport)), reviewState, 'review remains available for explicit reload/reconciliation');
+  assert.equal(context.S._financialWriteQuarantined, true);
+  context.S.aportes.push({ id: 'synthetic-unrelated', ticker: 'SYN3' });
+  assert.equal(context.save(), false, 'later saves must remain blocked in quarantined session');
+  assert.equal(metrics.saveCalls, 1);
+});
+
+test('Inter PDF: explicit confirmation persists once before success side effects', () => {
+  const note = { valid: true, noteKey: 'synthetic-pdf-confirmed', noteNumber: '9', tradeDate: '2026-01-03', broker: 'INTER', rows: [{ include: true, ticker: 'SYN4', qty: 2, price: 15, total: 30, operation: 'compra', type: 'Ação', sector: 'Ação' }], operationsTotal: 30, costs: 0 };
+  const order = [];
+  const { context, metrics } = harness([
+    ['confirmBrokerNoteImport', 'closeBrokerNoteImportSuccess'],
+  ], {
+    S: { aportes: [], assets: [], learnMeta: {}, wallets: [], brokerNoteImport: { parsed: note, rateCosts: false, allowDuplicate: false } },
+    brokerNoteCanConfirm: () => true,
+    detectBrokerNoteDuplicate: () => false,
+    brokerNoteValidTicker: () => true,
+    brokerNoteAdjustedRow: row => ({ ...row, adjustedPrice: row.price, adjustedTotal: row.total, allocatedCost: 0 }),
+    syncAssetsFromAportes() { order.push('sync'); },
+    fetchQuotes() { metrics.quoteCalls += 1; order.push('quotes'); },
+    scheduleAutoProventosGratis() { metrics.scheduleCalls += 1; order.push('schedule'); },
+    learnTickerMeta() {},
+    importCenterFinishReview() {},
+  });
+  context.save = () => { metrics.saveCalls += 1; order.push('save'); return true; };
+  const result = context.confirmBrokerNoteImport();
+  assert.equal(result?.status, 'APPLIED');
+  assert.equal(metrics.saveCalls, 1);
+  assert.equal(context.S.aportes.length, 1);
+  assert.equal(order.indexOf('save') >= 0 && order.indexOf('save') < order.indexOf('schedule'), true);
+});
+
+test('Inter PDF: explicit confirmation reaches synthetic local storage exactly once', () => {
+  const note = { valid: true, noteKey: 'synthetic-pdf-local-save', noteNumber: '10', tradeDate: '2026-01-04', broker: 'INTER', rows: [{ include: true, ticker: 'SYN5', qty: 1, price: 40, total: 40, operation: 'compra', type: 'Ação', sector: 'Ação' }], operationsTotal: 40, costs: 0 };
+  const { context } = harness([
+    ['confirmBrokerNoteImport', 'closeBrokerNoteImportSuccess'],
+  ], {
+    S: { aportes: [], assets: [], learnMeta: {}, wallets: [], activeWalletId: '', brokerNoteImport: { parsed: note, rateCosts: false, allowDuplicate: false } },
+    brokerNoteCanConfirm: () => true,
+    detectBrokerNoteDuplicate: () => false,
+    brokerNoteValidTicker: () => true,
+    brokerNoteAdjustedRow: row => ({ ...row, adjustedPrice: row.price, adjustedTotal: row.total, allocatedCost: 0 }),
+    syncAssetsFromAportes() {},
+    fetchQuotes() {},
+    scheduleAutoProventosGratis() {},
+    learnTickerMeta() {},
+    importCenterFinishReview() {},
+  });
+  const persistence = installSyntheticLocalPersistence(context);
+  assert.equal(context.confirmBrokerNoteImport()?.status, 'APPLIED');
+  assert.equal(persistence.getStorageWrites(), 1);
+  assert.equal(persistence.getPersisted().aportes.length, 1);
+  assert.equal(persistence.getPersisted().aportes[0].brokerNoteKey, note.noteKey);
 });
 
 test('fixed-income import: exact repeat is a no-op', () => {

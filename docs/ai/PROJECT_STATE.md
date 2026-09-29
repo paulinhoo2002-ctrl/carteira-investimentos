@@ -1,5 +1,26 @@
 # Project State
 
+## Estado canônico — V285 Import Center (2026-09-29)
+
+- `ORIGIN_MAIN=6f249bb822bb83163a39a3cb7e59ff80ab3134bb`; PR #432/V284 está incorporada. Esta missão trabalha isolada em `feature/v285-import-center-completion`; o checkout canônico não foi alterado.
+- `V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION=COMPLETE_FOR_CURRENT_APPROVED_SOURCES`: B3 (movimentações, posição e proventos) e nota Inter percorrem leitura local → parser → revisão protegida → confirmação explícita → writer legado. A confirmação Inter agora persiste o estado antes dos efeitos posteriores e restaura/quarentena a sessão quando `save()` não confirma.
+- `ImportCenterCore` continua deliberadamente preview-only e não recebe autoridade genérica de escrita. A integração de UI encaminha a revisão para os writers específicos existentes. Seleção, leitura, cancelamento e fechamento não gravam.
+- `XP/BTG=FIXTURE_REQUIRED`; formatos desconhecidos permanecem `UNSUPPORTED`/`REVIEW_REQUIRED`. O centro processa um arquivo por vez; lotes multi-arquivo não foram implementados nem alegados.
+- Browser com CSV B3 sintético abriu revisão protegida, mostrou `SYNTH3` e R$ 20,00, manteve `REGISTROS GRAVADOS=0` e cancelou sem escrita. Sete larguras (390/430/768/1366/1440/1536/1920), sem overflow, erro de página/console ou falha relevante de request.
+- Validação fresca: focados 144/144; `npm.cmd test` 252/252; `test:modern` 815/815; build legacy, build moderno e `qa:all` PASS. Somente dados sintéticos/testMode; nenhum arquivo financeiro privado ou escrita real.
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; visual segue `FROZEN_REFERENCE`. `NEXT_ACTION=V282-01_FINANCIAL_ACTION_END_TO_END_CERTIFICATION` (P1 acionável, conforme backlog). `V283-04` permanece risco latente dependente de contrato de autoridade.
+- Ramo de consolidação histórica: V284 é recuperável em `origin/main`; refs V178/V275/V278M/V281 apontam aos commits esperados. O branch local V178 não existe mais; `refs/archive/v178-ui-usability` continua. O backup-root esperado não foi encontrado, portanto bundles externos não foram verificados. Nenhuma limpeza foi feita nesta missão.
+
+## Histórico — snapshot pós-PR #432 antes da V285 (2026-09-29)
+
+- `ORIGIN_MAIN=6f249bb822bb83163a39a3cb7e59ff80ab3134bb`; PR #432 incorporou V284. O checkout canônico `main` está em `d1d67e67285ad8c531d794967d8c9812754193e7`, atrás e com dados locais não rastreados; não foi atualizado/resetado. A reconciliação documental ocorre na branch isolada `maintenance/v285-historical-consolidation`.
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `VISUAL_CANON_V2=FROZEN_REFERENCE`. V284 identidade/completude/isolamento de falha está em `origin/main`; memória antiga que ainda indica certificação V284 como próxima ação está superada.
+- `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`, item P1 existente no backlog. A ingestão unificada ainda está em simulação; confirmação humana continua obrigatória para qualquer escrita real. Não iniciar importação real nesta missão.
+- Auditoria histórica: V166, V169A, V178 e V281 não justificam reintroduzir implementação antiga; V278M QA/backup/governança úteis já têm equivalentes atuais; V275 fica como referência para fase visual futura, sem integrar redesign durante o freeze. V278O foi incorporada ao ciclo V278; resíduos locais permanecem preservados.
+- V284 commit `832261529ed122f02054314c1058c3fcc348c407` é ancestral de `origin/main`. V178 commit `35bd68b14aaf0410c2444ec191bf78e7331a5aec` continua recuperável por branch local e `refs/archive/v178-ui-usability`. Refs V275, V278M e V281 também conferem com seus SHAs esperados. Bundles externos não foram verificados nesta auditoria; não acessar metadados privados sem necessidade.
+- A limpeza de worktrees foi conservadora: QA state, evidência local, dados privados, dependências ignoradas ou resíduos não rastreados permanecem onde encontrados. Nenhuma remoção manual, force, GC ou prune de objetos foi feita.
+- `PHASE8_COMMITTED_HISTORY_LOSS=NOT_DETECTED`; os commits esperados são recuperáveis. Esta conclusão não afirma recuperação de arquivos não rastreados que não tenham sido preservados por Git.
+
 ## V284 Waves D/E/F — identidade, completude e isolamento de falha (2026-09-29)
 
 - `V284_WAVE_C_COMMIT=c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.
@@ -14,7 +35,7 @@
 - Nenhuma escrita financeira/fiscal real, mutação real de carteira, arquivo financeiro privado, migração, backfill ou mudança de dependência. Dois commits locais criados. Push/PR/merge/deploy não autorizados.
 - `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`
 
-## Estado V283 verificado nesta execução — 2026-09-29
+## Histórico — certificação V283 anterior à V285 (2026-09-29)
 
 Este bloco prevalece sobre os registros históricos abaixo. Relatórios de ondas anteriores são evidência histórica limitada ao escopo então auditado, não certificação global.
 
