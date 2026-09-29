@@ -11,12 +11,28 @@ const trustedContribution = (date = '2025-06-30') => ({
   sourceIdentity: 'MANUAL:flow-1', provenance: { sourceSystem: 'MANUAL', sourceId: 'flow-1' }
 });
 
-test('não há fluxo externo: retorno simples e TWR coincidem', () => {
+test('cobertura não informada permanece UNKNOWN e bloqueia retorno', () => {
   const result = H.calculatePerformance({
     valuations: [
       { date: '2025-01-01', value: 100 },
       { date: '2025-12-31', value: 110 },
     ],
+  });
+  assert.equal(result.coverage, 'UNKNOWN');
+  for (const key of ['simpleReturn', 'twr', 'xirr', 'incomeReturn', 'capitalReturn', 'totalReturn']) {
+    assert.equal(result.metrics[key].status, 'INSUFFICIENT_DATA');
+    assert.equal(result.metrics[key].value, null);
+    assert.equal(result.metrics[key].coverage, 'UNKNOWN');
+  }
+});
+
+test('cobertura completa explícita permite calcular retorno simples e TWR', () => {
+  const result = H.calculatePerformance({
+    valuations: [
+      { date: '2025-01-01', value: 100 },
+      { date: '2025-12-31', value: 110 },
+    ],
+    priceCoverage: { status: 'FULL_COVERAGE' },
   });
   assert.equal(result.coverage, 'FULL_COVERAGE');
   closeTo(result.metrics.simpleReturn.value, 0.1);
@@ -31,6 +47,7 @@ test('aporte externo não vira retorno e TWR neutraliza o fluxo', () => {
       { date: '2025-12-31', value: 220 },
     ],
     events: [trustedContribution()], walletId: 'wallet-a',
+    priceCoverage: { status: 'FULL_COVERAGE' },
   });
   assert.equal(result.metrics.simpleReturn.status, 'INSUFFICIENT_DATA');
   closeTo(result.metrics.twr.value, 0.1);
@@ -60,6 +77,7 @@ test('renda e valorização são decompostas sem confundir aporte', () => {
       { date: '2025-12-31', value: 115 },
     ],
     income: [{ date: '2025-12-31', amount: 5, type: 'DIVIDEND' }],
+    priceCoverage: { status: 'FULL_COVERAGE' },
   });
   closeTo(result.metrics.capitalReturn.value, 0.1);
   closeTo(result.metrics.incomeReturn.value, 0.05);
@@ -156,6 +174,15 @@ test('posição de fim de ano é determinística e read-only', () => {
   ], 2025);
   assert.deepEqual(result.rows.map(row => row.ticker), ['ABC3', 'XYZ3']);
   assert.equal(result.writeEnabled, false);
+  assert.equal(result.coverage, 'UNKNOWN');
+  assert.ok(result.rows.every(row => row.coverage === 'UNKNOWN'));
+});
+
+test('snapshot de fim de ano só declara cobertura completa com evidência explícita', () => {
+  const result = H.buildYearEndPosition([
+    { date: '2025-12-31', ticker: 'ABC3', quantity: 10, value: 100, coverage: 'FULL_COVERAGE' },
+  ], 2025);
+  assert.equal(result.coverage, 'FULL_COVERAGE');
 });
 
 test('reprocessar o mesmo histórico preserva saída', () => {
@@ -175,7 +202,7 @@ test('V272 performance engine accepts only canonical trusted external flow evide
   };
   const make = events => H.calculatePerformance({
     valuations: [{ date: '2025-01-01', value: 100 }, { date: '2025-06-30', value: 200 }, { date: '2025-12-31', value: 220 }],
-    events, walletId: 'wallet-a'
+    events, walletId: 'wallet-a', priceCoverage: { status: 'FULL_COVERAGE' }
   });
   assert.equal(make([trusted]).externalFlows.length, 1);
   assert.equal(make([trusted]).externalFlows[0].signedAmount, -100);
@@ -201,6 +228,8 @@ test('V272 ambiguous external-flow candidates block seemingly clean return metri
   assert.equal(result.metrics.simpleReturn.reason, 'UNTRUSTED_EXTERNAL_FLOW_EVIDENCE');
   assert.equal(result.metrics.twr.value, null);
   assert.equal(result.metrics.twr.reason, 'UNTRUSTED_EXTERNAL_FLOW_EVIDENCE');
+  assert.equal(result.metrics.totalReturn.value, null);
+  assert.equal(result.metrics.totalReturn.reason, 'UNTRUSTED_EXTERNAL_FLOW_EVIDENCE');
   assert.equal(result.dataReadiness.state, 'PARTIAL');
   assert.equal(result.dataReadiness.untrustedExternalFlowCount, 1);
 });
@@ -214,7 +243,7 @@ test('V272 rejects a trusted flow without an observed valuation boundary and rej
   };
   const result = H.calculatePerformance({
     valuations: [{ date: '2025-01-01', value: 100 }, { date: '2025-12-31', value: 220 }],
-    events: [flow], walletId: 'wallet-a'
+    events: [flow], walletId: 'wallet-a', priceCoverage: { status: 'FULL_COVERAGE' }
   });
   assert.equal(result.metrics.twr.value, null);
   assert.equal(result.metrics.twr.status, 'INSUFFICIENT_DATA');
@@ -226,7 +255,7 @@ test('V272 daily date alone does not prove TWR same-day flow timing', () => {
   const flow = { ...trustedContribution('2025-06-30'), timing: null };
   const result = H.calculatePerformance({
     valuations: [{ date: '2025-01-01', value: 100 }, { date: '2025-06-30', value: 200 }, { date: '2025-12-31', value: 220 }],
-    events: [flow], walletId: 'wallet-a'
+    events: [flow], walletId: 'wallet-a', priceCoverage: { status: 'FULL_COVERAGE' }
   });
   assert.equal(result.externalFlows.length, 1);
   assert.equal(result.metrics.twr.status, 'INSUFFICIENT_DATA');

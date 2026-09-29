@@ -10,6 +10,9 @@ const vm = require('vm');
 
 // Load the adapter file
 const adapterSource = fs.readFileSync(path.join(__dirname, '..', 'v283-rentability-adapter.js'), 'utf8');
+const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const realClassifier = require('../portfolio-cash-flow-classifier.js');
+const realEngine = require('../historical-performance-engine.js');
 
 // Create a realistic browser-like environment
 function createRuntimeContext() {
@@ -25,12 +28,12 @@ function createRuntimeContext() {
         coverage: coverage,
         valuations: valuations.map(v => ({ date: v.date, value: v.value })),
         metrics: {
-          simpleReturn: { status: 'PASS', value: start > 0 ? (end - start) / start : 0, formula: 'simple' },
-          twr: { status: 'PASS', value: start > 0 ? (end - start) / start : 0, formula: 'twr' },
-          xirr: { status: 'PASS', value: start > 0 ? (end - start) / start : 0, formula: 'xirr' },
+          simpleReturn: { status: 'PASS', availability: 'AVAILABLE', value: start > 0 ? (end - start) / start : 0, formula: 'simple' },
+          twr: { status: 'PASS', availability: 'AVAILABLE', value: start > 0 ? (end - start) / start : 0, formula: 'twr' },
+          xirr: { status: 'PASS', availability: 'AVAILABLE', value: start > 0 ? (end - start) / start : 0, formula: 'xirr' },
           incomeReturn: { status: 'INSUFFICIENT_DATA', value: null, formula: 'income' },
           capitalReturn: { status: 'INSUFFICIENT_DATA', value: null, formula: 'capital' },
-          totalReturn: { status: 'PASS', value: start > 0 ? (end - start) / start : 0, formula: 'total' }
+          totalReturn: { status: 'PASS', availability: 'AVAILABLE', value: start > 0 ? (end - start) / start : 0, formula: 'total' }
         },
         benchmark: { points: [] },
         engineAvailability: { simpleReturn: true, twr: true, xirr: true },
@@ -141,6 +144,9 @@ function createRuntimeContext() {
   runtime.window = runtime;
   runtime.self = runtime;
   runtime.globalThis = runtime;
+  runtime.HistoricalPerformance = mockEngine;
+  runtime.PortfolioCashFlowClassifier = mockClassifier;
+  runtime.PortfolioHistory = mockHistory;
   
   return runtime;
 }
@@ -162,8 +168,21 @@ test('R1: Missing dated valuation evidence => UNAVAILABLE/INSUFFICIENT_DATA', as
   assert.ok(result.status === 'UNAVAILABLE' || result.status === 'INSUFFICIENT_DATA', 
     `Expected UNAVAILABLE or INSUFFICIENT_DATA, got ${result.status}`);
   assert.ok(!result.current || result.current === null, 'current should be null when unavailable');
-  assert.equal(result.return12m, 0, 'return12m should be 0 when unavailable');
-  assert.equal(result.currentBench, 0, 'currentBench should be 0 when unavailable');
+  assert.equal(result.return12m, null, 'return12m is unavailable, not zero');
+  assert.equal(result.currentBench, null, 'currentBench is unavailable, not zero');
+});
+
+test('R1b: valuation ausente não é convertida em zero no adapter', async () => {
+  const ctx = createRuntimeContext();
+  ctx.__V76_RUNTIME__.snapshots.snapshots = [
+    { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: null, totalCoveragePercent: 100 },
+    { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
+  ];
+  const context = vm.createContext(ctx);
+  vm.runInContext(adapterSource, context);
+  const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
+  assert.equal(result.status, 'UNAVAILABLE');
+  assert.equal(result.current, null);
 });
 
 test('R2: priceCoverage UNKNOWN => fail closed, no fake 0%', async () => {
@@ -202,9 +221,23 @@ test('R3: priceCoverage PARTIAL => status PARTIAL, not COMPLETE', async () => {
     `PARTIAL coverage should not be AVAILABLE without explicit engine approval`);
 });
 
+test('R3b: 95% de cobertura patrimonial não vira cobertura completa de preço', async () => {
+  const ctx = createRuntimeContext();
+  ctx.__V76_RUNTIME__.snapshots.snapshots = [
+    { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 95 },
+    { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 95 }
+  ];
+  const context = vm.createContext(ctx);
+  vm.runInContext(adapterSource, context);
+  const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
+  assert.equal(result.status, 'PARTIAL');
+  assert.equal(result.coverage, 'PARTIAL_COVERAGE');
+  assert.equal(result.current, null);
+});
+
 test('R4: Valid dated valuations + FULL coverage => numeric result available', async () => {
   const ctx = createRuntimeContext();
-  // Snapshots with FULL coverage (95%+)
+  // Snapshots with explicit 100% coverage
   ctx.__V76_RUNTIME__.snapshots.snapshots = [
     { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
     { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
@@ -215,9 +248,11 @@ test('R4: Valid dated valuations + FULL coverage => numeric result available', a
   
   const result = await ctx.window.rentabilityHistory('all', 'all', 'CDI');
   
-  // Should get some result (may be AVAILABLE or UNAVAILABLE depending on engine)
-  assert.ok(typeof result === 'object', 'Result should be an object');
-  assert.ok(result.points !== undefined, 'Should have points array');
+  assert.equal(result.status, 'AVAILABLE', 'Full dated synthetic evidence should expose an available aggregate return');
+  assert.ok(Math.abs(result.current.cumReturn - 10) < 1e-9, 'Aggregate return must match the engine, not a fabricated zero');
+  assert.equal(result.return12m, null, 'Two monthly observations do not prove a trailing-12-month boundary');
+  assert.equal(result.points.length, 0, 'Do not fabricate monthly return points from valuations alone');
+  assert.equal(result.totalMonths, 0, 'Valuation observation count is not a monthly-return series');
 });
 
 test('R5: Current price mutation must NOT alter historical result', async () => {
@@ -304,7 +339,8 @@ test('R8: Portfolio return available even if benchmark unavailable', async () =>
   // Portfolio return (current, return12m) should be computable from valuations
   // even if benchmark is unavailable
   assert.ok(result.current !== undefined, 'Portfolio current should exist');
-  assert.ok(typeof result.return12m === 'number', 'return12m should be a number');
+  assert.equal(result.return12m, null, 'Trailing 12M is unavailable without a dated opening boundary');
+  assert.ok(Number.isFinite(result.current?.cumReturn), 'The available aggregate return is preserved');
 });
 
 test('R9: Legacy rentabilityHistory resolves to adapter at runtime', async function() {
@@ -316,9 +352,8 @@ test('R9: Legacy rentabilityHistory resolves to adapter at runtime', async funct
   const fn = ctx.window.rentabilityHistory;
   assert.ok(typeof fn === 'function', 'rentabilityHistory should be a function');
   
-  // It should be async (the adapter) - call it and check if it returns a thenable
   const result = fn('all', 'all', 'CDI');
-  assert.ok(result && typeof result.then === 'function', 'Adapter rentabilityHistory should return a Promise/thenable');
+  assert.ok(result && typeof result.then !== 'function', 'Legacy render callers require a synchronous result');
 });
 
 test('R10: Legacy rentBenchSeries does NOT execute old synthetic implementation', async () => {
@@ -334,6 +369,77 @@ test('R10: Legacy rentBenchSeries does NOT execute old synthetic implementation'
   assert.equal(bench.length, 12, 'Should have 12 entries');
   assert.ok(bench.every(b => b.unavailable === true || b.value === null),
     'All benchmark entries should be unavailable (no synthetic)');
+});
+
+test('R10b: Adapter loads after legacy rentability globals are defined', () => {
+  const adapterTag = indexHtml.indexOf('<script src="v283-rentability-adapter.js"></script>');
+  const legacyHistory = indexHtml.indexOf('function rentabilityHistory(');
+  assert.ok(adapterTag >= 0, 'Rentability adapter script tag exists');
+  assert.ok(legacyHistory >= 0, 'Legacy history function exists for compatibility');
+  assert.ok(adapterTag > legacyHistory,
+    'Adapter must load after legacy function declarations or they overwrite the adapter');
+});
+
+test('R10c: Deprecated fixed-rate benchmark API fails closed', () => {
+  const ctx = createRuntimeContext();
+  const context = vm.createContext(ctx);
+  vm.runInContext(adapterSource, context);
+  assert.equal(ctx.window.rentBenchRate('CDI'), null,
+    'Deprecated fixed-rate API must not expose a synthetic numeric benchmark');
+});
+
+test('R10d: Adapter preserves classified cash-flow evidence for the engine', async () => {
+  const ctx = createRuntimeContext();
+  ctx.PortfolioCashFlowClassifier = realClassifier;
+  let received;
+  ctx.HistoricalPerformance = {
+    ...realEngine,
+    calculatePerformance(options) { received = options; return realEngine.calculatePerformance(options); }
+  };
+  ctx.__V76_RUNTIME__.snapshots.snapshots = [
+    { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
+    { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
+  ];
+  ctx.__V76_RUNTIME__.flows.flows = [{ id: 'synthetic-flow-1', sourceId: 'synthetic-source-1', source: 'MANUAL', walletId: 'wallet-1', date: '2024-02-29', type: 'EXTERNAL_CONTRIBUTION', amount: 100, timing: 'END_OF_SUBPERIOD' }];
+  const context = vm.createContext(ctx);
+  vm.runInContext(adapterSource, context);
+  const result = ctx.rentabilityHistory('all', 'all', 'CDI');
+  assert.equal(received.events.length, 1, 'Trusted external flow must reach the engine');
+  assert.equal(received.events[0].classification, 'EXTERNAL_CONTRIBUTION');
+  assert.equal(result.status, 'AVAILABLE');
+  assert.ok(Math.abs(result.current.cumReturn - 9) < 1e-9, 'TWR must neutralize the synthetic contribution at its observed boundary');
+});
+
+test('R10e: Ambiguous flow evidence blocks aggregate return', () => {
+  const ctx = createRuntimeContext();
+  ctx.PortfolioCashFlowClassifier = realClassifier;
+  let received;
+  ctx.HistoricalPerformance = {
+    ...realEngine,
+    calculatePerformance(options) { received = options; return realEngine.calculatePerformance(options); }
+  };
+  ctx.__V76_RUNTIME__.snapshots.snapshots = [
+    { walletId: 'wallet-1', localDate: '2024-01-31', totalPortfolioValue: 1000000, totalCoveragePercent: 100 },
+    { walletId: 'wallet-1', localDate: '2024-02-29', totalPortfolioValue: 1100000, totalCoveragePercent: 100 }
+  ];
+  ctx.__V76_RUNTIME__.flows.flows = [{ id: 'synthetic-ambiguous-1', sourceId: 'synthetic-source-2', source: 'MANUAL', walletId: 'wallet-1', date: '2024-02-29', type: 'TRANSFER', amount: 100, timing: 'END_OF_SUBPERIOD' }];
+  const context = vm.createContext(ctx);
+  vm.runInContext(adapterSource, context);
+  const result = ctx.rentabilityHistory('all', 'all', 'CDI');
+  assert.equal(received.events[0].classification, 'AMBIGUOUS');
+  assert.equal(result.status, 'UNAVAILABLE', 'Ambiguous external-flow candidate cannot yield an available return');
+  assert.equal(result.current, null);
+});
+
+test('Aportes import buttons reference implemented handlers only', () => {
+  const start = indexHtml.indexOf('<details class="card aportes-imports-panel">');
+  const end = indexHtml.indexOf('</details>', start);
+  assert.ok(start >= 0 && end > start, 'Aportes import panel exists');
+  const panel = indexHtml.slice(start, end);
+  const handlers = [...panel.matchAll(/onclick="([A-Za-z_$][\w$]*)\(\)"/g)].map(match => match[1]);
+  assert.equal(handlers.length, 4, 'All four import buttons are inspected');
+  const missing = handlers.filter(name => !new RegExp('function\\s+' + name + '\\s*\\(').test(indexHtml));
+  assert.deepEqual(missing, [], 'Every visible import button must resolve to an implemented handler');
 });
 
 test('R11: Engine unavailable => fail closed, no fabricated numeric series', async () => {

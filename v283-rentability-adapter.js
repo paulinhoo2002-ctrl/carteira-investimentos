@@ -6,14 +6,11 @@
   // Store original for reference (not used in new path)
   const originalRentabilityHistory = window.rentabilityHistory;
   const originalRentBenchSeries = window.rentBenchSeries;
-  const originalRentBenchRate = window.rentBenchRate;
 
   // Check if engine is available
   const engine = window.HistoricalPerformance;
 
   // Engine readiness cache
-  let engineReadinessCache = null;
-  let engineReadinessPromise = null;
 
   // ============ HELPERS ============
 
@@ -26,23 +23,11 @@
     return !!(engine && typeof engine.calculatePerformance === 'function');
   }
 
-  async function ensureEngineReadiness() {
-    if (engineReadinessCache) return engineReadinessCache;
-    if (engineReadinessPromise) return engineReadinessPromise;
-
-    engineReadinessPromise = (async () => {
-      const engine = getEngine();
-      if (!engine) return { available: false, reason: 'ENGINE_NOT_LOADED' };
-
-      try {
-        // Check if PortfolioHistory is also available for snapshots
-        const historyEngine = window.PortfolioHistory;
-        return { available: true, reason: null };
-      } catch (e) {
-        return { available: false, reason: 'ENGINE_ERROR: ' + e.message };
-      }
-    })();
-    return engineReadinessPromise;
+  function ensureEngineReadiness() {
+    const engine = getEngine();
+    return engine && typeof engine.calculatePerformance === 'function'
+      ? { available: true, reason: null }
+      : { available: false, reason: 'ENGINE_NOT_LOADED' };
   }
 
   // ============ DATA ADAPTERS ============
@@ -55,12 +40,17 @@
 
     return rawSnapshots
       .filter(row => String(row.walletId || '') === walletId && walletId)
-      .map(row => ({
-        date: row.localDate,
-        value: Number.isFinite(Number(row.totalPortfolioValue)) ? Number(row.totalPortfolioValue) / 100 : null,
-        coverage: Number(row.totalCoveragePercent) >= 95 ? 'FULL_COVERAGE' :
+      .map(row => {
+        const rawValue = row.totalPortfolioValue;
+        const parsedValue = rawValue === null || rawValue === undefined || (typeof rawValue === 'string' && !rawValue.trim())
+          ? null : Number(rawValue);
+        return {
+          date: row.localDate,
+          value: parsedValue !== null && Number.isFinite(parsedValue) ? parsedValue / 100 : null,
+          coverage: Number(row.totalCoveragePercent) >= 100 ? 'FULL_COVERAGE' :
                   Number(row.totalCoveragePercent) > 0 ? 'PARTIAL_COVERAGE' : 'UNKNOWN'
-      }))
+        };
+      })
       .filter(v => v.value !== null);
   }
 
@@ -73,19 +63,16 @@
 
     if (!classifier) return [];
 
-    const classified = flows
-      .map(row => classifier.classifyEvent(row, { walletId, sourceSystem: 'V76_RUNTIME' }))
-      .filter(f => f && ['EXTERNAL_CONTRIBUTION', 'EXTERNAL_WITHDRAWAL'].includes(f.kind));
-
-    return classified.map(f => ({
-      id: f.eventId || f.id,
-      date: f.date,
-      signedAmount: f.signedAmount,
-      portfolioSignedAmount: f.portfolioSignedAmount,
-      walletId: f.walletId,
-      sourceIdentity: f.sourceIdentity,
-      timing: f.timing || 'END_OF_SUBPERIOD'
-    }));
+    const classified = flows.map(row => classifier.classifyEvent(row, { walletId, sourceSystem: 'V76_RUNTIME' }));
+    return classified.filter(Boolean).map(flow => {
+      const external = ['EXTERNAL_CONTRIBUTION', 'EXTERNAL_WITHDRAWAL'].includes(flow.classification);
+      const classification = external && flow.isExternalFlow !== true
+        ? 'AMBIGUOUS'
+        : ['AMBIGUOUS', 'UNKNOWN'].includes(flow.classification)
+          ? flow.classification
+          : external ? flow.classification : 'INTERNAL';
+      return { ...flow, type: classification, classification, isExternalFlow: external && flow.isExternalFlow === true };
+    });
   }
 
   // Convert legacy income rows to engine format
@@ -111,10 +98,10 @@
 
   // ============ MAIN ADAPTER ============
 
-  async function adaptedRentabilityHistory(typeFilter = 'all', period = 'all', bench = 'CDI') {
+  function adaptedRentabilityHistory(typeFilter = 'all', period = 'all', bench = 'CDI') {
     // Try to use engine first
     const engine = getEngine();
-    const readiness = await ensureEngineReadiness();
+    const readiness = ensureEngineReadiness();
 
     if (!readiness.available || !isEngineAvailable()) {
       // Engine not available - return legacy-compatible UNAVAILABLE state
@@ -126,6 +113,13 @@
     const events = buildExternalFlowsFromLegacy();
     const income = buildIncomeFromLegacy();
     const walletId = String(S.activeWalletId || '');
+
+    if (String(typeFilter || 'all') !== 'all') {
+      return createUnavailableResult('Asset-class historical valuations are not available');
+    }
+    if (String(period || 'all') !== 'all') {
+      return createUnavailableResult('A dated opening valuation for the selected period is not available');
+    }
 
     if (!valuations.length || valuations.length < 2) {
       return createUnavailableResult('Insufficient historical valuations for calculation');
@@ -144,8 +138,8 @@
     // Call engine
     const engineResult = engine.calculatePerformance({
       valuations,
-      events: buildExternalFlowsFromLegacy(),
-      income: buildIncomeFromLegacy(),
+      events,
+      income,
       priceCoverage: { status: priceCoverage.status },
       benchmark: benchmark,
       walletId: String(S.activeWalletId || '')
@@ -155,6 +149,9 @@
     if (!engineResult || engineResult.coverage === 'INSUFFICIENT_DATA' || !engineResult.metrics) {
       return createUnavailableResult('Insufficient data for reliable calculation');
     }
+    if (engineResult.coverage !== 'FULL_COVERAGE') {
+      return { ...createUnavailableResult('Historical valuation coverage is not complete'), status: 'PARTIAL', coverage: engineResult.coverage };
+    }
 
     // Map engine result to legacy format
     return mapEngineResultToLegacy(engineResult, period);
@@ -163,68 +160,51 @@
   function createUnavailableResult(reason) {
     return {
       points: [], view: [], benchSeries: [], labels: [], months: [], years: [],
-      current: null, prev12: null, firstView: null, currentBench: 0,
-      return12m: 0, lastMonth: 0, aboveBench: 0, totalMonths: 0,
+      current: null, prev12: null, firstView: null, currentBench: null,
+      return12m: null, lastMonth: null, aboveBench: null, totalMonths: 0,
       status: 'UNAVAILABLE',
       reason: reason
     };
   }
 
   function mapEngineResultToLegacy(engineResult, period) {
-    const valuations = engineResult.valuations || [];
     const metrics = engineResult.metrics || {};
-    const benchmark = engineResult.benchmark || { points: [] };
-
-    // Build monthly points from valuations
-    const monthlyPoints = buildMonthlyPointsFromValuations(engineResult);
-
-    const totalMonths = monthlyPoints.length;
-    const periodCount = period === 'all' ? totalMonths : Math.max(3, Number(period) || 12);
-    const view = totalMonths > periodCount ? monthlyPoints.slice(-periodCount) : monthlyPoints.slice();
-
-    // Build benchmark series aligned with view
-    const benchSeries = buildAlignedBenchmarkSeries(benchmark, view);
-
-    const current = view[view.length - 1] || null;
-    const prev12 = monthlyPoints.length > 12 ? monthlyPoints[monthlyPoints.length - 13] : null;
-    const firstView = view[0] || null;
-    const currentBench = benchSeries[benchSeries.length - 1] || 0;
-    const return12m = current && prev12 ? current.cumReturn - prev12.cumReturn : current ? current.cumReturn : 0;
-    const lastMonth = current ? current.delta : 0;
-    const aboveBench = current ? current.cumReturn - currentBench : 0;
-
-    // Build years
-    const yearsMap = new Map();
-    monthlyPoints.forEach(p => {
-      if (!yearsMap.has(p.year)) yearsMap.set(p.year, Array(12).fill(null));
-      yearsMap.get(p.year)[p.month] = p;
-    });
-    const years = [...yearsMap.entries()].sort((a, b) => b[0] - a[0]).map(([year, months]) => {
-      const filled = months.filter(Boolean);
-      const annual = filled.reduce((s, p) => s + p.delta, 0);
-      const acum = filled.length ? filled[filled.length - 1].cumReturn : 0;
-      const provAnnual = filled.reduce((s, p) => s + (Number(p.provMonth) || 0), 0);
-      const provAcum = filled.length ? Number(filled[filled.length - 1].proventos) || 0 : 0;
-      return { year, months, annual, acum, provAnnual, provAcum };
-    });
+    const twr = metrics.twr;
+    const totalReturn = metrics.totalReturn;
+    const selectedMetric = twr?.availability === 'AVAILABLE' && Number.isFinite(twr.value)
+      ? { key: 'TWR', value: twr.value }
+      : totalReturn?.availability === 'AVAILABLE' && Number.isFinite(totalReturn.value)
+        ? { key: 'SIMPLE_RETURN', value: totalReturn.value }
+        : null;
+    if (!selectedMetric) return createUnavailableResult('No certified aggregate return is available');
+    const valuations = engineResult.valuations || [];
+    const lastValuation = valuations[valuations.length - 1] || null;
+    const current = lastValuation ? {
+      key: lastValuation.date.slice(0, 7), label: lastValuation.date,
+      currentValue: lastValuation.value, cumReturn: selectedMetric.value * 100,
+      delta: null, costBasis: null, proventos: null, provMonth: null
+    } : null;
 
     return {
-      points: monthlyPoints,
-      view,
-      benchSeries,
-      labels: view.map(p => p.label),
-      months: view.map(p => p.month),
-      years,
+      points: [],
+      view: [],
+      benchSeries: [],
+      labels: [],
+      months: [],
+      years: [],
       current,
-      prev12,
-      firstView,
-      currentBench,
-      return12m,
-      lastMonth,
-      aboveBench,
-      totalMonths: monthlyPoints.length,
+      prev12: null,
+      firstView: null,
+      currentBench: null,
+      return12m: null,
+      lastMonth: null,
+      aboveBench: null,
+      totalMonths: 0,
       status: 'AVAILABLE',
-      coverage: engineResult.coverage
+      coverage: engineResult.coverage,
+      metric: selectedMetric.key,
+      period: engineResult.period,
+      asOf: engineResult.asOf
     };
   }
 
@@ -282,9 +262,9 @@
   // ============ PUBLIC API ============
 
   // Replace legacy functions
-  window.rentabilityHistory = async function(typeFilter = 'all', period = 'all', bench = 'CDI') {
+  window.rentabilityHistory = function(typeFilter = 'all', period = 'all', bench = 'CDI') {
     try {
-      return await adaptedRentabilityHistory(typeFilter, period, bench);
+      return adaptedRentabilityHistory(typeFilter, period, bench);
     } catch (e) {
       console.error('[V283 Adapter] rentabilityHistory error:', e);
       return createUnavailableResult('Adapter error: ' + e.message);
@@ -300,7 +280,7 @@
   // Keep rentBenchRate for reference but mark deprecated
   window.rentBenchRate = function(name) {
     console.warn('[V283] rentBenchRate is deprecated - use real benchmark observations');
-    return Number(originalRentBenchRate(name));
+    return null;
   };
 
   // Expose adapter status for debugging
