@@ -12,6 +12,7 @@ Este bloco prevalece sobre os registros históricos abaixo. Relatórios de ondas
 - Os quatro controles de importação em Aportes agora apontam a handlers existentes e distintos; sem arquivo real, confirmação ou escrita nesta execução.
 - Alegações globais `UNKNOWN_TO_ZERO`, `PARTIAL_TO_COMPLETE`, `EXPECTED_TO_RECEIVED` e `FAKE_SUCCESS` ficam reclassificadas como `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`, sem afirmar eliminação global.
 - Certificação fresca após todos os ajustes: geral 249/249; moderna 815/815; focados performance/V283/V248 e source-audit 46/46; build legado/moderno PASS; `qa:all` PASS (harness 3/3 e smoke 7 larguras).
+- Verificação direcionada adicional após os gates: backup/restore, fixed-income trust/valuation, dividend intelligence, report readiness/model, rebalance e Import Center 78/78 PASS (subconjunto/overlap com a suite geral, não somar ao total).
 - Browser isolado com fixture sintética executou adapter e engine; 95% => PARTIAL/sem número; 100% explícito => retorno agregado datado; 12M, benchmark e pontos mensais indisponíveis. Sem erros; sem overflow nas sete larguras. Axe A/AA na Rentabilidade (390px): zero violações; teclado alcançou filtros/ações.
 - `tests/v283-legacy-rentability-red.test.js` continua detectando padrões no código legado-fonte; não é prova do caminho ativo, pois adapter runtime prevalece. Teste/documentação precisa ser reclassificado.
 - `NEXT_ACTION=V283_FINAL_DIFF_REVIEW_AND_LOCAL_CLOSEOUT`; `git diff --check` e `git fsck --full` passaram; objetos dangling preservados. Sem push, PR, merge ou deploy.
