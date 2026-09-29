@@ -189,13 +189,18 @@ Do not invoke every installed skill. Select minimum relevant set per `docs/ai/SK
 FUNCTIONAL_COMPLETION_FIRST=true
 VISUAL_PHASE=DEFERRED
 VISUAL_CANON_V2=FROZEN_REFERENCE
-
-Historical return:
-P0_ENGINE_LAYER=RESOLVED        (V281 engine fails closed)
-P0_END_TO_END=PARTIAL           (Legacy rentabilityHistory still uses current-price/synthetic benchmark paths)
 ```
 
-Do not mark P0 fully resolved during governance missions. The end-to-end legacy path remains PARTIAL until verified otherwise.
+**Current transient implementation status (P0, phase, next action) is owned by `docs/ai/PROJECT_STATE.md` and `docs/ai/NEXT_STEP.md`. This policy defines durable governance only.**
+
+Do not embed obsolete transient status here. The V283 work (adapter + engine) resolved the historical return truth path:
+- `P0_ENGINE_LAYER=RESOLVED` (V281 engine fails closed)
+- `P0_LEGACY_LAYER=RESOLVED` (V283 adapter connects legacy UI to engine)
+- `P0_END_TO_END=RESOLVED` (current_price leakage eliminated, synthetic benchmark removed)
+- `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE` (identity/coverage/history/flows insufficient → metric unavailable)
+- `FAIL_CLOSED_ON_INSUFFICIENT_EVIDENCE=true`
+
+Do not mark P0 status in this policy. Reference `docs/ai/PROJECT_STATE.md` for verified current state.
 
 ---
 
