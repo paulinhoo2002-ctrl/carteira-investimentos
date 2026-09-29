@@ -1,12 +1,20 @@
 # Next Step
-## Próximo gate funcional após PR #432 (2026-09-29)
+## Próximo gate funcional após V285 (2026-09-29)
 
 - `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `ORIGIN_MAIN=6f249bb822bb83163a39a3cb7e59ff80ab3134bb` inclui PR #432/V284.
-- `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION` (P1 já existente no backlog). Completar o fluxo único de detectar → parsear → validar → preview → dedupe → confirmação explícita → persistência testada, mantendo falhas e cancelamento sem escrita.
-- Usar somente fixtures sintéticas nesta missão de planejamento/implementação. Nenhuma importação ou mutação financeira real; escrita real requer confirmação humana específica.
+- `V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION=COMPLETE_FOR_CURRENT_APPROVED_SOURCES`: UI encaminha B3 (movimentações/posição/proventos) e nota Inter aos respectivos fluxos protegidos e writers existentes. Core genérico permanece preview-only; a confirmação de fonte é explícita.
+- `XP/BTG=FIXTURE_REQUIRED`; arquivo desconhecido não é promovido a suportado. O centro aceita um arquivo por sessão.
+- `NEXT_ACTION=V282-01_FINANCIAL_ACTION_END_TO_END_CERTIFICATION` (P1 acionável mais alto restante no backlog). Certificar por ação pré-condição, confirmação, persistência/reload, idempotência, cancelamento e falha com ambiente/fixtures sintéticas.
+- Usar somente fixtures sintéticas nesta próxima missão. Nenhuma importação ou mutação financeira real; escrita real requer confirmação humana específica.
 - Manter `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, `EXPECTED != RECEIVED`; preservar proteção contra repetição, conflito, autoridade manual de renda fixa e falha de persistência.
 - Visual permanece congelado (`VISUAL_CANON_V2=FROZEN_REFERENCE`); correções visuais somente se bloquearem usabilidade do fluxo.
 - Não reutilizar evidência antiga automaticamente: validar no SHA da nova missão. Não iniciar push, PR, merge ou deploy sem o gate aplicável.
+
+### Evidência V285
+
+- Roteamento browser sintético B3 abriu a revisão protegida; valor R$ 20,00 preservado, contador gravado zero, cancelamento sem escrita; sete larguras sem overflow, erros de página/console ou falhas relevantes.
+- Testes focados 144/144; suite geral 252/252; moderna 815/815; builds e `qa:all` PASS. `confirmBrokerNoteImport()` agora persiste antes de marcar sucesso; falha restaura estado e quarentena saves posteriores.
+- Sem arquivos financeiros privados ou escrita financeira/fiscal real. Nenhum push/PR/merge/deploy.
 
 ## V284 Waves D/E/F — certificação pré-commit (2026-09-29)
 
@@ -20,7 +28,7 @@
 - Sem escrita financeira/fiscal real, mutação real, arquivo privado, migração ou backfill. Um commit de código+teste criado; commit de memória pendente.
 - Registro histórico: `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION` foi superado quando PR #432 foi incorporada em `origin/main`.
 
-## Estado atual — V283 certificação concluída (2026-09-29)
+## Snapshot histórico — V283 certificação antes da V285 (2026-09-29)
 
 Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.
 

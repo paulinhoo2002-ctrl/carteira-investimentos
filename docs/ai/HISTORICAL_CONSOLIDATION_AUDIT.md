@@ -13,7 +13,7 @@ valuable code paths; old local evidence is preserved where present.
 |---|---|---|
 | V166 corporate events | Commit `2a24c8f2fd579dbc487678a14bfc0360e1f29996`; modules, parity test, runbooks, current tests and untracked QA probes | `IN_MAIN` for modules/tests/runbooks. The local parity-baseline probe reads production browser storage; the other probes depend on a hard-coded CDP page. Do not integrate or execute them. Preserve their local state. |
 | V169A protected QA | Commit `bf50219da99f53a5e2c1975912213848e859ecc2`; current boot guards, QA harness, tests and runbook | `SEMANTICALLY_SUPERSEDED` by current-main protected QA controls. Its ignored `.qa-state` is retained; no manual removal. |
-| V178 usability | Commit `35bd68b14aaf0410c2444ec191bf78e7331a5aec`; chart tooltip/crosshair, sector search and contract test | `IN_MAIN` by current source and `chart-interaction-contract.test.js`. Physical checkout is absent; local branch and archive ref preserve the exact commit. Standalone bundle is not verified. |
+| V178 usability | Commit `35bd68b14aaf0410c2444ec191bf78e7331a5aec`; chart tooltip/crosshair, sector search and contract test | `IN_MAIN` by current source and `chart-interaction-contract.test.js`. Physical checkout and local feature branch are absent; `refs/archive/v178-ui-usability` preserves the exact commit. Standalone bundle is not verified. |
 | V275 visual redesign | Five commits `20aed39`, `158d3b4`, `7407346`, `4f1062d`, `001b8aa`; committed code only | `FUTURE_VALUE`, not current integration. Reusable ideas: Dashboard hierarchy/primitives; Ativos/Renda Fixa/Proventos composition; explicit estimate labeling; operational/detail-screen patterns. Visual canon is frozen and broad visual implementation deferred. Private/local-import material remains untouched. |
 | V278M integration | All 11 commits from `cadc0ea` through `d95c5f3`; changed paths compared with current tree | `IN_MAIN_OR_SUPERSEDED` for current QA/backup/security/governance implementation. Archive docs and historical inventories remain archival evidence, not bootstrap instructions. `.interface-design/system.md` is reference-only and is not a competing canon. Ignored local QA/build/dependency state remains. |
 | V278O privacy-safe release | Branch head `fff87418004e2e59092b115160bb7c28653dba31`; public docs and local residues | `MERGED_HISTORY`; V278 was closed by PR #428. Design notes duplicate current visual governance; local `.interface-design/` and test residue were not modified. |
@@ -41,9 +41,10 @@ valuable code paths; old local evidence is preserved where present.
   ancestor of current `origin/main`; PR #432 merge commit is the current main
   head. The local feature branch is absent; the fetched remote-tracking branch
   remains. No committed-history loss was detected.
-- V178 checkout registration and physical path are absent. Its local feature
-  branch and `refs/archive/v178-ui-usability` both resolve to the expected
-  commit. Historical reports describe the removed untracked items as generated
+- V178 checkout registration, physical path, and local feature branch are absent
+  in the current Git state. `refs/archive/v178-ui-usability` resolves to the
+  expected commit. The prior claim that a local feature branch remains is
+  stale; the archive ref is the verified recovery route. Historical reports describe the removed untracked items as generated
   QA screenshots; this audit did not inspect screenshot contents.
 - `git fsck --full` succeeds. Dangling objects are preserved. No claim is made
   that Git can recover arbitrary untracked files deleted outside Git.
@@ -51,10 +52,11 @@ valuable code paths; old local evidence is preserved where present.
 ## Archive verification boundary
 
 Verified archive refs: V178, V275, V278M, V281, each at the expected commit.
-The V284 feature commit is reachable from main. Standalone bundle files and
-their hashes were not verified: exact bundle locations are maintained in
-private recovery metadata, which was not accessed. Git refs/remote history
-remain the recovery route established by this audit.
+The V284 feature commit is reachable from main and its remote-tracking feature
+branch remains. The expected external backup root was not present in this
+environment, so standalone bundle files/hashes could not be verified. Git
+refs/remote history remain the verified recovery route; do not infer that
+untracked files deleted outside Git are recoverable from these refs.
 
 ## Cleanup decision
 

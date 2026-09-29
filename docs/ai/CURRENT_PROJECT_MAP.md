@@ -73,6 +73,7 @@ untracked contents, active processes, and recovery before any retirement.
 | `v263-rf-freshness-valuation-asof` | `UNREGISTERED_PHYSICAL_RESIDUE_PENDING_SAFE_RETIREMENT` | Prior audit found no unique semantic changes among comparable files; unregistered physical tree was not manually deleted. |
 | V178 old worktree | `PHYSICAL_PATH_ABSENT_RECOVERABLE_HISTORY` | Local branch and archive ref point to expected commit; standalone bundle was not verified. |
 | V284 old worktree | `PHYSICAL_PATH_ABSENT_MERGED_HISTORY` | Expected feature commit is reachable from current `origin/main`; remote-tracking branch remains. |
+| `v285-import-center-completion` | `ACTIVE_CURRENT_FUNCTIONAL_BRANCH` | Isolated from `origin/main` `6f249bb`; closes V283-01 for currently approved B3/Inter sources. Check Git for live HEAD/status; do not infer publication from this documentation. |
 
 Counts are time-sensitive. Recheck `git worktree list --porcelain` and each
 physical path before lifecycle operations. Ignored QA state, private data, or
