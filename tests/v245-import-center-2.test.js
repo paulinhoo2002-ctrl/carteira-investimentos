@@ -120,17 +120,16 @@ test('contratos de ausência continuam explícitos', () => {
   assert.equal(preview.financialWrite, false);
 });
 
-test('preview visual expõe exact duplicate e Historical Reconstruction Lab sem escrita', () => {
+test('resultado visual não inventa deduplicação, snapshot ou laboratório sem evidência', () => {
   const html = PreviewRenderer.render({
-    files: [{ name: 'historico-b3-sanitizado.csv' }],
-    result: { duplicates: 1, potentialDuplicates: 0, conflicts: 0, review: 0, unsupported: 0, newRecords: 0, status: 'SUCCESS', snapshot: 'validado', rollback: 'testado', duplicateAudit: [{ label: 'historico-b3-sanitizado.csv', state: 'EXACT_DUPLICATE', reason: 'Mesmo conteúdo' }] },
-    history: [],
+    files: [{ name: 'synthetic-fixture.csv' }],
+    result: { status: 'NO_NEW_RECORDS', fileName: 'synthetic-fixture.csv', provider: 'B3', sourceType: 'B3_MOVEMENTS_XLSX', writeCount: 0 },
     escapeText: value => String(value),
-    supportLabel: value => value
   });
-  assert.match(html, /EXACT_DUPLICATE/);
-  assert.match(html, /Historical Reconstruction Lab/);
-  assert.match(html, /nenhuma linha financeira foi gravada/);
+  assert.match(html, /NO_NEW_RECORDS/);
+  assert.match(html, /synthetic-fixture\.csv/);
+  assert.match(html, /Registros gravados<\/b> 0/);
+  assert.doesNotMatch(html, /EXACT_DUPLICATE|Historical Reconstruction Lab|Snapshot|rollback/);
 });
 
 test('regressão de 768px mantém cabeçalho e navegação dentro da viewport', () => {
