@@ -1,4 +1,12 @@
 # Next Step
+## V284 Wave C — implementação local verificada (2026-09-29)
+
+- `CURRENT_BRANCH=feature/v284-import-center-workflow`; `START_HEAD=272dad8e6d579ba3af7c2a3935043c5acd5e3f24`. Mudanças V284 locais ainda sem commit.
+- Idempotência sem persistência para reimportação idêntica de posições B3, proventos B3, notas Inter legadas/PDF e posições detalhadas RF; nota alterada com mesma identidade fica em conflito/revisão.
+- Posições RF com marcadores manuais reconhecidos não são sobrescritas pelos writers B3/RF. Confirmação explícita e cancelamento sem escrita continuam protegidos; Import Center Core permanece preview-only.
+- Evidência fresca após ajuste de lote misto RF: V284 19/19, Import Center 27/27, geral 249/249, moderna 815/815, builds e `qa:all` PASS; smoke em sete larguras PASS.
+- `NEXT_ACTION=V284_FINAL_DIFF_REVIEW_AND_LOCAL_COMMIT_AUTHORIZATION`. Não fazer commit sem autorização explícita, conforme AGENTS.md; push/PR/merge/deploy continuam não autorizados.
+
 ## Estado atual — V283 certificação concluída (2026-09-29)
 
 Este resumo atual prevalece sobre os registros V282/V283 históricos abaixo.

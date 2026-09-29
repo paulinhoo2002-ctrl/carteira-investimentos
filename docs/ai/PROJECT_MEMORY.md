@@ -1,5 +1,13 @@
 # Project Memory
 
+## V284 Wave C — writers legados (2026-09-29)
+
+- Implementação local em `feature/v284-import-center-workflow`, partindo do HEAD autorizado `272dad8e6d579ba3af7c2a3935043c5acd5e3f24`; ainda sem commit.
+- Reimportação idêntica não persiste nos writers testados de posição B3, proventos B3, nota legada Inter, nota PDF Inter e posição detalhada RF. Nota com identidade repetida e conteúdo divergente é conflito/revisão, sem substituir registros existentes.
+- Renda Fixa manual identificada por marcadores já existentes é protegida contra writers B3/RF. A confirmação explícita segue obrigatória; abrir/fechar/cancelar preview não grava. Legacy permanece fora do Import Center Core, que segue preview-only.
+- Testes frescos após ajuste de lote misto RF: V284 19/19, Import Center 27/27, geral 249/249, moderna 815/815; builds e `qa:all` PASS; smoke sete viewports sem overflow/erros. Artefatos de teste foram sintéticos. Escritas financeiras/fiscais reais=0.
+- Codex CLI independente anteriormente encontrou os riscos de reimportação e sobrescrita; esta implementação foi verificada localmente, sem alegar um segundo reviewer independente. Nenhuma ação remota. Próximo gate: diff review e autorização humana para commit local.
+
 ## V283 — certificação funcional noturna atualizada (2026-09-29)
 
 - No início deste closeout, branch `feature/v283-core-functional-truth` estava 8 commits à frente de `origin/main` `c0e145595b2de9afa623ac3d994fb0bd972c583d`; consulte Git para HEAD/contagem atuais. Nenhum push/PR/merge/deploy.

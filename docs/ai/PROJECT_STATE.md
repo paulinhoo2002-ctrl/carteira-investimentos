@@ -1,5 +1,15 @@
 # Project State
 
+## V284 Wave C — writers legados idempotentes e autoridade RF (2026-09-29)
+
+- `V284_WAVE_C_STATUS=IMPLEMENTED_AND_LOCALLY_VERIFIED`; worktree `feature/v284-import-center-workflow`, início em `272dad8e6d579ba3af7c2a3935043c5acd5e3f24`. Alterações ainda locais e sem commit.
+- `PRECONFIRM_WRITE_SAFETY=RESOLVED`: confirmação explícita permanece no fluxo; abrir/fechar/cancelar previews não alcança writers. Import Center Core continua preview-only (`CORE_CONFIRMED_WRITE_AVAILABLE=false`); handlers legados continuam fora desse Core (`LEGACY_BYPASSES_IMPORT_CENTER_CORE=true`).
+- `LEGACY_REIMPORT_IDEMPOTENCY=RESOLVED` nos caminhos cobertos: snapshot B3, proventos B3 duplicados, nota legada Inter, nota PDF Inter e posição detalhada RF. Reaplicação idêntica não chama persistência; conteúdo materialmente divergente sob a mesma identidade de nota retorna conflito e permanece para revisão.
+- `RF_MANUAL_AUTHORITY_SAFETY=RESOLVED` para marcadores existentes `manual_authority`, `manualValueAuthority`, `source/fixed_source=manual|manual-rf` e `quoteSource/quote_source=manual`. Posições manuais ficam em revisão; writers B3/RF não as substituem.
+- Verificação fresca após preservar linhas manuais em lotes mistos: V284 focados 19/19, Import Center 27/27, geral 249/249, moderna 815/815; build legado/moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920, sem overflow, console/page errors ou falhas relevantes de requisição.
+- Nenhuma escrita financeira/fiscal real, confirmação de importação real, alteração de schema, backfill, mudança de dependência, ação remota ou acesso a arquivo financeiro privado. Revisão independente Codex CLI anterior confirmou que os controles de confirmação já existiam; não foram reroteados ao Core.
+- Próximo gate: revisão final do diff e autorização explícita para commit local. Nenhum push/PR/merge/deploy autorizado.
+
 ## Estado V283 verificado nesta execução — 2026-09-29
 
 Este bloco prevalece sobre os registros históricos abaixo. Relatórios de ondas anteriores são evidência histórica limitada ao escopo então auditado, não certificação global.
