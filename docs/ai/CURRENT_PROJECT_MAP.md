@@ -56,20 +56,24 @@ Branch, commit, worktree count, validation results, and active objective are
 time-sensitive. Read them from Git and `docs/ai/PROJECT_STATE.md` and
 `docs/ai/NEXT_STEP.md`; do not treat a checked-in map as a live status report.
 
-## Post-V278 worktree inventory — 2026-09-28
+## Worktree inventory — audit 2026-09-29
 
 These are classifications, not deletion instructions. Recheck live Git state,
 untracked contents, active processes, and recovery before any retirement.
 
 | Worktree/residue | Classification | Closeout note |
 |---|---|---|
-| `v278o-publishable-integration` | `MERGED_CANDIDATE_FOR_RETIREMENT` | V278 publication is merged; preserve local untracked items until individually reconciled. |
-| `v278m-safe-integration` | `PRESERVED_INTEGRATION_HISTORY` | Keep its integration history available. |
-| `v166-corporate-events-official-integration` | `RETAINED_TOOLING` | Preserve its local tooling state. |
-| `v169a-protected-read-only-qa` | `RETAINED_PROTECTED_QA` | Preserve protected QA state. |
-| `v178-ui-usability` | `PRESERVED_RECOVERY` | Preserve recovery material. |
-| `v275-final-premium-visual-redesign` | `PRESERVED_VISUAL_HISTORY` | Preserve prior visual work. |
-| `v263-rf-freshness-valuation-asof` | `ORPHAN_PHYSICAL_RESIDUE_PENDING_REVIEW` | Unregistered physical residue; classify before any cleanup. |
+| Canonical `main` checkout | `PROTECTED_DIRTY_CANONICAL` | Local checkout is behind `origin/main`; untracked local/import/QA artifacts preserved. Do not reset or clean. |
+| `.worktrees/v281-historical-return-truth` | `CLEANUP_PENDING_IGNORED_QA_AND_DEPENDENCIES` | Engine/test semantics are in current main; ignored `.qa-state`, `modern/dist`, and `node_modules` remain. No removal attempted. |
+| `v166-corporate-events-official-integration` | `KEEP_LOCAL_QA_EVIDENCE` | Corporate-event modules/tests exist in current main; untracked probes include production/CDP-specific assumptions and remain untouched. |
+| `v169a-protected-read-only-qa` | `CLEANUP_PENDING_PROTECTED_QA_STATE` | Protected read-only implementation/docs/tests have current-main equivalents; local `.qa-state` remains. |
+| `v275-final-premium-visual-redesign` | `PRIVATE_KEEP_AND_FUTURE_VISUAL_REFERENCE` | Five committed visual commits retained in archive ref. `local-imports/` and local reconciliation artifacts were not opened, moved, or changed. Visual implementation remains deferred. |
+| `v278m-safe-integration` | `ARCHIVED_HISTORY_WITH_LOCAL_QA_STATE` | 11-commit history retained by local branch/archive ref; relevant current QA/backup paths exist on main; ignored QA/build/dependency state remains. |
+| `v278o-publishable-integration` | `MERGED_HISTORY_WITH_LOCAL_RESIDUES` | V278 release was incorporated; `.interface-design/` and an untracked local test artifact remain untouched. |
+| `v263-rf-freshness-valuation-asof` | `UNREGISTERED_PHYSICAL_RESIDUE_PENDING_SAFE_RETIREMENT` | Prior audit found no unique semantic changes among comparable files; unregistered physical tree was not manually deleted. |
+| V178 old worktree | `PHYSICAL_PATH_ABSENT_RECOVERABLE_HISTORY` | Local branch and archive ref point to expected commit; standalone bundle was not verified. |
+| V284 old worktree | `PHYSICAL_PATH_ABSENT_MERGED_HISTORY` | Expected feature commit is reachable from current `origin/main`; remote-tracking branch remains. |
 
-V279A2 performed no worktree removal. These labels reflect the closeout
-inventory and do not replace a fresh lifecycle audit.
+Counts are time-sensitive. Recheck `git worktree list --porcelain` and each
+physical path before lifecycle operations. Ignored QA state, private data, or
+untracked artifacts are not disposable solely because Git does not track them.

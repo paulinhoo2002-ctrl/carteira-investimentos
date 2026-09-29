@@ -1,5 +1,15 @@
 # Project State
 
+## Pós-PR #432 — consolidação histórica e próximo gate (2026-09-29)
+
+- `ORIGIN_MAIN=6f249bb822bb83163a39a3cb7e59ff80ab3134bb`; PR #432 incorporou V284. O checkout canônico `main` está em `d1d67e67285ad8c531d794967d8c9812754193e7`, atrás e com dados locais não rastreados; não foi atualizado/resetado. A reconciliação documental ocorre na branch isolada `maintenance/v285-historical-consolidation`.
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `VISUAL_CANON_V2=FROZEN_REFERENCE`. V284 identidade/completude/isolamento de falha está em `origin/main`; memória antiga que ainda indica certificação V284 como próxima ação está superada.
+- `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`, item P1 existente no backlog. A ingestão unificada ainda está em simulação; confirmação humana continua obrigatória para qualquer escrita real. Não iniciar importação real nesta missão.
+- Auditoria histórica: V166, V169A, V178 e V281 não justificam reintroduzir implementação antiga; V278M QA/backup/governança úteis já têm equivalentes atuais; V275 fica como referência para fase visual futura, sem integrar redesign durante o freeze. V278O foi incorporada ao ciclo V278; resíduos locais permanecem preservados.
+- V284 commit `832261529ed122f02054314c1058c3fcc348c407` é ancestral de `origin/main`. V178 commit `35bd68b14aaf0410c2444ec191bf78e7331a5aec` continua recuperável por branch local e `refs/archive/v178-ui-usability`. Refs V275, V278M e V281 também conferem com seus SHAs esperados. Bundles externos não foram verificados nesta auditoria; não acessar metadados privados sem necessidade.
+- A limpeza de worktrees foi conservadora: QA state, evidência local, dados privados, dependências ignoradas ou resíduos não rastreados permanecem onde encontrados. Nenhuma remoção manual, force, GC ou prune de objetos foi feita.
+- `PHASE8_COMMITTED_HISTORY_LOSS=NOT_DETECTED`; os commits esperados são recuperáveis. Esta conclusão não afirma recuperação de arquivos não rastreados que não tenham sido preservados por Git.
+
 ## V284 Waves D/E/F — identidade, completude e isolamento de falha (2026-09-29)
 
 - `V284_WAVE_C_COMMIT=c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.

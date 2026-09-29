@@ -1,5 +1,13 @@
 # Project Memory
 
+## Estado canônico pós-PR #432 — 2026-09-29
+
+- V284 foi incorporada em `origin/main` (`6f249bb822bb83163a39a3cb7e59ff80ab3134bb`); `V284_FINAL_BRANCH_CERTIFICATION` é histórico, não a próxima ação.
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `VISUAL_CANON_V2=FROZEN_REFERENCE`; `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`, P1 existente no backlog. O Import Center ainda não conclui ingestão única de ponta a ponta; confirmação humana e testes sintéticos continuam necessários.
+- O checkout local `main` observado está atrás e contém estado não rastreado local; preservar. A memória foi reconciliada numa branch documental baseada no `origin/main` fresco, sem alterar o checkout canônico.
+- Auditoria de arquivos históricos e worktrees: ver `HISTORICAL_CONSOLIDATION_AUDIT.md`. Commits V284/V178/V275/V278M/V281 preservados por refs Git confirmadas; bundles externos não verificados nesta missão. Resíduos QA/privados foram mantidos, sem limpeza destrutiva.
+- Sem escrita financeira/fiscal real, mutação de carteira, alteração de dependências, push, PR, merge ou deploy nesta auditoria.
+
 ## V284 Waves D/E/F — identidade, completude e isolamento de persistência (2026-09-29)
 
 - Wave C permanece commitada localmente em `c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.
@@ -10,7 +18,7 @@
 - `snapshotFinancialImportState`/`restoreFinancialImportState` protegem ativos, aportes, proventos, metadados, carteiras, carteira ativa e estado de revisão nos fluxos de nota, posição/proventos/movimentações B3 e posição RF. `save()=false` ou throw restaura a sessão, marca quarentena, impede edição/salvamento posterior e retorna resultado não confirmado sem mensagem de sucesso.
 - A gravação local de um lote serializa o estado e grava uma chave `localStorage`; falha antes dessa gravação restaura o estado. Se a chave foi gravada e a fila cloud falhou em seguida, o resultado é incerto: sessão restaurada/quarentenada, mas dado local pode existir. A fila cloud não é transação com `localStorage`; após recarga, verificar o estado antes de retry. A identidade idempotente evita reaplicação. `IMPORT_BATCH_ATOMICITY=LOCAL_SINGLE_KEY_ONLY`, não atomicidade distribuída.
 - Validação fresca: V284 boundary + nota Inter + Import Center + V245 105/105; persistência 32/32; roundtrip 7/7; suite geral 249/249; moderna 815/815; builds legado/moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920 sem overflow, erro de página/console ou falha relevante de request. O browser não executou a interação de falha de importação; testes comportamentais sintéticos verificaram esse fluxo.
-- Testes apenas sintéticos; `FINANCIAL_WRITES=0`, `TAX_WRITES=0`, `REAL_PORTFOLIO_MUTATIONS=0`, `PRIVATE_FINANCIAL_FILES_USED=0`, `SCHEMA_MIGRATIONS=0`, `BACKFILLS=0`. Dois commits locais criados. `NEXT_ACTION=V284_FINAL_BRANCH_CERTIFICATION`. Push/PR/merge/deploy não autorizados.
+- Testes apenas sintéticos; `FINANCIAL_WRITES=0`, `TAX_WRITES=0`, `REAL_PORTFOLIO_MUTATIONS=0`, `PRIVATE_FINANCIAL_FILES_USED=0`, `SCHEMA_MIGRATIONS=0`, `BACKFILLS=0`. V284 foi posteriormente integrada por PR #432; `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`.
 
 ## V283 — certificação funcional noturna atualizada (2026-09-29)
 
