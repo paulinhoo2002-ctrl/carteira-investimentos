@@ -76,21 +76,11 @@ SKILL_GAPS_FOUND=
 CURRENT_PHASE=FUNCTIONAL_COMPLETION
 VISUAL_PHASE=DEFERRED
 VISUAL_CANON_V2=FROZEN_REFERENCE
+NEXT_ACTION=V282_WAVE_B_LEGACY_INTEGRATION (connect legacy rentability to V281 engine)
+P0_ENGINE_LAYER=RESOLVED
+P0_END_TO_END=PARTIAL
 P0=P0_RENTABILIDADE_HISTORICAL_SERIES
 ```
-
-**Current transient project state (P0 status, next action) is owned by `docs/ai/PROJECT_STATE.md` and `docs/ai/NEXT_STEP.md`. This routing file defines durable skill-selection constraints only.**
-
-Do not embed transient project-state constants here. Reference:
-- `CURRENT_PROJECT_STATE_AUTHORITY=docs/ai/PROJECT_STATE.md`
-- `NEXT_ACTION_AUTHORITY=docs/ai/NEXT_STEP.md`
-
-The V283 work resolved the historical return truth path:
-- `P0_ENGINE_LAYER=RESOLVED` (V281 engine fails closed)
-- `P0_LEGACY_LAYER=RESOLVED` (V283 adapter connects legacy UI to engine)
-- `P0_END_TO_END=RESOLVED` (current_price leakage eliminated, synthetic benchmark removed)
-- `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE`
-- `FAIL_CLOSED_ON_INSUFFICIENT_EVIDENCE=true`
 
 ---
 
@@ -178,3 +168,23 @@ When adding/removing skills:
 
 Previous routing at `.agents/SKILL_ROUTER.md` is **DEPRECATED**.
 This file (`docs/ai/SKILLS_ROUTING.md`) is the **single canonical source**.
+
+---
+
+## TIERED VALIDATION STRATEGY
+
+```TIER 1 (FAST) - docs, small fixes, CSS, documentation-only
+→ quick-check.ps1 (identity + git + package.json + governance files)
+→ target: <10 seconds
+
+TIER 2 (NORMAL) - features, refactors, moderate bugs
+→ quick-check + related tests + required build
+→ example: npm run test:finance + npm run build:modern
+
+TIER 3 (CRITICAL) - finance, backup, restore, persistence, import, calculations, dividends, destructive deletion, migration, storage, auth/security
+→ full-check.ps1 (identity + quick-check + ALL package.json scripts)
+→ deep review + HUMAN_GATE required
+→ validation cache via HEAD + diff hash
+
+Record HEAD/hash when full-check passes to avoid re-running unchanged code.
+```
