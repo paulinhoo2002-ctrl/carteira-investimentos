@@ -5,7 +5,8 @@ Skills no projeto LEGACY. O inventário físico atual fica em
 `.agents/skills/`; os documentos versionados são a fonte de continuidade, não
 o histórico de chat. O roteamento técnico de Skills por categoria permanece em
 [`ai/SKILL_ROUTER.md`](ai/SKILL_ROUTER.md), que não define um provider/modelo
-concorrente.
+concorrente. A ordem comum e as rotas Superpowers estão resumidas em
+[`docs/ai/SKILLS_ROUTING.md`](ai/SKILLS_ROUTING.md).
 
 ## Identidade e isolamento
 
@@ -15,7 +16,9 @@ AUTHORIZED_WORKSPACE=C:\Projetos\carteira-investimentos
 AUTHORIZED_WORKTREE_ROOT=C:\Projetos\carteira-investimentos.worktrees
 FORBIDDEN_WORKSPACE=C:\Projetos\carteira-2.0
 SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills
-MANDATORY_FIRST_SKILL=Superpowers
+MANDATORY_AGENT_BOOTSTRAP=true
+BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills
+MANDATORY_START_ANNOUNCEMENT=true
 MERGE_AUTHORIZATION=false
 ```
 
@@ -29,7 +32,9 @@ com `HUMAN_BLOCKER_WRONG_PROJECT`.
 
 ```text
 PROJECT IDENTITY GATE
-→ SUPERPOWERS (primeira Skill carregada e usada)
+→ ANNOUNCE "Using Caveman + Superpowers to <purpose>"
+→ CAVEMAN
+→ SUPERPOWERS using-superpowers
 → DISCOVER SKILLS IN .agents/skills
 → CLASSIFY MISSION
 → SELECT MINIMUM RELEVANT SKILLS
@@ -40,25 +45,29 @@ PROJECT IDENTITY GATE
 
 - Não assuma o inventário com base em conversas anteriores; confirme os
   arquivos `SKILL.md` reais.
-- Superpowers é obrigatório e deve preceder Skills especializadas em toda
-  missão substancial.
-- Use normalmente no máximo duas Skills relevantes além da camada
-  Superpowers; excepcionalmente três se houver razão concreta.
+- Após o identity gate, Caveman e Superpowers são obrigatórios nessa ordem em
+  toda missão substancial, seguidos pelas Skills específicas.
+- O pacote local `caveman` orienta comunicação concisa. Preserve clareza e
+  detalhe para riscos, segurança, finanças e ações irreversíveis; não concede
+  autorização nem substitui método técnico.
+- Após o bootstrap obrigatório, use normalmente no máximo duas Skills
+  específicas da missão; excepcionalmente três se houver razão concreta.
 - Reavalie as Skills quando a categoria/escopo mudar. Skills não ampliam
   autorização para dados financeiros, persistência, cloud, Git ou merge.
-- Se Superpowers não existir no ambiente, reporte a lacuna e use fallback de
-  processo sem alegar que Superpowers foi usado.
+- Se Caveman ou Superpowers não existir, reporte a lacuna e use apenas fallback
+  realmente disponível, sem alegar uso.
 
-Superpowers é a camada de orquestração: identidade e governança, classificação
-da missão, descoberta dinâmica, seleção mínima e reavaliação de Skills. Ele não
-substitui a Skill especializada. A governança do projeto prevalece sobre
+Superpowers é a camada de processo: classificação da missão, descoberta
+dinâmica, seleção mínima e reavaliação de Skills. Ele não substitui a Skill
+especializada. A governança do projeto prevalece sobre
 instruções locais conflitantes; em particular, uma Skill não autoriza acesso a
 outro projeto, instalação, escrita protegida, deploy ou merge.
 
 Cabeçalho de missão substancial:
 
 ```text
-MANDATORY_FIRST_SKILL=Superpowers
+MANDATORY_AGENT_BOOTSTRAP=true
+BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills
 SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills
 SKILL_DISCOVERY=REQUIRED
 SKILL_REEVALUATION_ON_SCOPE_CHANGE=true
@@ -68,7 +77,9 @@ Campos de handoff obrigatórios:
 
 ```text
 SKILLS_ROOT=
-MANDATORY_FIRST_SKILL=Superpowers
+MANDATORY_AGENT_BOOTSTRAP=true
+CAVEMAN_SKILL_AVAILABLE=
+CAVEMAN_USED=
 SKILLS_CONSIDERED=
 SKILLS_USED=
 SKILLS_NOT_USED=
@@ -82,6 +93,8 @@ SKILL_GAPS_FOUND=
 Além dos campos do handoff acima, missões substanciais registram:
 
 ```text
+CAVEMAN_SKILL_AVAILABLE=
+CAVEMAN_USED=
 SKILLS_DISCOVERED=
 SUPERPOWERS_AVAILABLE=
 SUPERPOWERS_USED=
@@ -99,6 +112,9 @@ disponíveis no ambiente:
 | UI/UX visual ou mobile | Kimi K3 | Foco visual e responsivo. Continua sujeito aos contratos financeiros e de dados do projeto. |
 | Revisão independente | GLM-5.3 | Perspectiva independente sobre uma implementação já produzida. |
 | Fallback de engenharia | Codex + GPT-6 Sol | Usar quando o caminho Hermes/NVIDIA falhar repetidamente, ferramentas forem instáveis, testes/build não fecharem após tentativas razoáveis ou a cirurgia exigir precisão adicional. |
+| Revisão técnica focada | Codex + GPT-5.6 Sol | Verificar disponibilidade; não chamar revisão da mesma sessão de independente. |
+| Revisão final de Git/filesystem de risco | Codex + GPT-5.6 Sol | Exigir estado atual, preservação de dados e checagem de escopo. |
+| Revisão visual multimodal | Revisor multimodal disponível | Usar quando visão agregue valor; nunca usar screenshots financeiros privados. |
 
 ```text
 DEFAULT_EXECUTION_PROVIDER=NVIDIA_API (quando configurado/disponível)
@@ -108,6 +124,9 @@ OVERNIGHT_LARGE_AUTONOMOUS_MISSION=Hermes + Nemotron 3 Ultra 550B A55B
 VISUAL_MOBILE_UI_UX=Kimi K3
 INDEPENDENT_REVIEW=GLM-5.3
 FALLBACK_WHEN_NVIDIA_HERMES_DOES_NOT_RESOLVE=Codex + GPT-6 Sol
+FOCUSED_TECHNICAL_REVIEW=Codex + GPT-5.6 Sol
+FINAL_RISKY_GIT_OR_FILESYSTEM_REVIEW=Codex + GPT-5.6 Sol
+MULTIMODAL_VISUAL_REVIEW=multimodal-capable reviewer when useful
 ```
 
 Esses valores são política de roteamento, não prova de disponibilidade. Antes
@@ -119,9 +138,9 @@ isolada não é motivo para abandonar imediatamente Hermes/NVIDIA; siga o
 critério de fallback acima.
 
 O autor da missão deve justificar o agente/modelo recomendado, por exemplo:
-“Hermes/Nemotron 3 Super é adequado porque a tarefa é uma mudança documental
+"Hermes/Nemotron 3 Super é adequado porque a tarefa é uma mudança documental
 focada com testes simples; Codex/GPT-6 Sol é fallback apenas se a rota primária
-não estiver disponível.”
+não estiver disponível."
 
 ## Cabeçalho de missão
 
@@ -132,7 +151,8 @@ PROJECT=CARTEIRA_DE_INVESTIMENTOS_LEGACY
 AUTHORIZED_WORKSPACE=C:\Projetos\carteira-investimentos
 FORBIDDEN_WORKSPACE=C:\Projetos\carteira-2.0
 SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills
-MANDATORY_FIRST_SKILL=Superpowers
+MANDATORY_AGENT_BOOTSTRAP=true
+BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills
 PRIMARY_AGENT=<agente selecionado>
 PRIMARY_MODEL=<modelo selecionado>
 MODEL_SELECTION_REASON=<justificativa específica>

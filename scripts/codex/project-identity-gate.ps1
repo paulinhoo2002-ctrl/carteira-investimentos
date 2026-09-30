@@ -216,7 +216,7 @@ try {
     $status = git status --short 2>&1
     $exitCode = $LASTEXITCODE
     if ($exitCode -eq 0) {
-        if ($status.Trim()) {
+        if ($null -ne $status -and $status.Trim()) {
             Write-Status "Working tree has changes:" $Yellow
             $status.Split("`n") | ForEach-Object { Write-Status "  $_" $White }
         } else {

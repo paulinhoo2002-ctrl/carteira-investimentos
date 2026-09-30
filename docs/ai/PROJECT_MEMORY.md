@@ -1,5 +1,133 @@
 # Project Memory
 
+## Estado canônico pós-V285 — 2026-09-29
+
+- V284 foi incorporada em `origin/main` (`6f249bb822bb83163a39a3cb7e59ff80ab3134bb`); `V284_FINAL_BRANCH_CERTIFICATION` é histórico, não a próxima ação.
+- `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `VISUAL_CANON_V2=FROZEN_REFERENCE`; `NEXT_ACTION=V282-01_FINANCIAL_ACTION_END_TO_END_CERTIFICATION`.
+- `V283-01=COMPLETE_FOR_CURRENT_APPROVED_SOURCES`: seleção de arquivo no Import Center encaminha B3 (movimentações, posição, proventos) e nota Inter aos fluxos específicos de revisão/confirm; os writers legados permanecem autoridade de escrita. `ImportCenterCore` permanece preview-only. XP/BTG permanecem `FIXTURE_REQUIRED`; formatos desconhecidos falham fechados; um arquivo por vez.
+- Correção funcional desta onda: confirmação explícita da nota Inter agora usa snapshot → mutação → `save()` → efeitos posteriores. `save()=false/throw` restaura estado e quarentena a sessão; não anuncia sucesso. Teste sintético prova save falho, ausência de leak em save posterior e persistência única após confirmação.
+- Browser sintético B3: revisão protegida exibe ticker/valor correto, grava zero antes da confirmação e cancelamento deixa zero gravado; 390/430/768/1366/1440/1536/1920 sem overflow, erros de página/console ou falhas relevantes. Nenhuma confirmação real foi executada.
+- Validação fresca nesta branch: focados 144/144, geral 252/252, moderna 815/815; builds legacy/modern e `qa:all` PASS. Avisos existentes do Vite não causaram falha.
+- Histórico: ver `HISTORICAL_CONSOLIDATION_AUDIT.md`. V284 está em `origin/main`; refs arquivadas V178/V275/V278M/V281 verificadas. O branch local V178 está ausente, mas ref de arquivo preserva o commit. O backup-root esperado não estava presente, portanto bundles externos não foram verificados. Nenhum resíduo foi removido.
+- Sem arquivos financeiros privados, escrita financeira/fiscal real, mutação real, alteração de dependências, push, PR, merge ou deploy.
+
+## V284 Waves D/E/F — identidade, completude e isolamento de persistência (2026-09-29)
+
+- Wave C permanece commitada localmente em `c0566104ef702c673bd060945f324c66725f517e`; Waves D/E/F partiram desse HEAD na branch `feature/v284-import-center-workflow` e foram commitadas localmente.
+- `V284_FINAL_CODE_COMMIT=35199013a0aadb204d7cb131151e66187c89573b`
+- Nota numerada: corretora + número estável + data explícita válida. Sem número: corretora + data válida + conjunto canônico de operações. Ordenação usa comparação de código determinística. Filename é apenas provenance; aliases são limitados a brokers reconhecidos e rótulos desconhecidos mantêm distinções.
+- Parser reporta linhas de origem/analisadas/inválidas/descartadas/ambíguas e estado de completude. Incompletude, campos obrigatórios ausentes, identidade ambígua ou conflito bloqueiam `READY` e o writer. O writer revalida identidade/operações e mantém autoridade manual RF; reaplicação idêntica não persiste outra vez.
+- Evidência legada é escopada por broker/data/número quando disponível; data sem identidade suficiente permanece `REVIEW_REQUIRED`.
+- `snapshotFinancialImportState`/`restoreFinancialImportState` protegem ativos, aportes, proventos, metadados, carteiras, carteira ativa e estado de revisão nos fluxos de nota, posição/proventos/movimentações B3 e posição RF. `save()=false` ou throw restaura a sessão, marca quarentena, impede edição/salvamento posterior e retorna resultado não confirmado sem mensagem de sucesso.
+- A gravação local de um lote serializa o estado e grava uma chave `localStorage`; falha antes dessa gravação restaura o estado. Se a chave foi gravada e a fila cloud falhou em seguida, o resultado é incerto: sessão restaurada/quarentenada, mas dado local pode existir. A fila cloud não é transação com `localStorage`; após recarga, verificar o estado antes de retry. A identidade idempotente evita reaplicação. `IMPORT_BATCH_ATOMICITY=LOCAL_SINGLE_KEY_ONLY`, não atomicidade distribuída.
+- Validação fresca: V284 boundary + nota Inter + Import Center + V245 105/105; persistência 32/32; roundtrip 7/7; suite geral 249/249; moderna 815/815; builds legado/moderno e `qa:all` PASS. Smoke sintético 390/430/768/1366/1440/1536/1920 sem overflow, erro de página/console ou falha relevante de request. O browser não executou a interação de falha de importação; testes comportamentais sintéticos verificaram esse fluxo.
+- Testes apenas sintéticos; `FINANCIAL_WRITES=0`, `TAX_WRITES=0`, `REAL_PORTFOLIO_MUTATIONS=0`, `PRIVATE_FINANCIAL_FILES_USED=0`, `SCHEMA_MIGRATIONS=0`, `BACKFILLS=0`. V284 foi posteriormente integrada por PR #432; `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`.
+
+## V283 — certificação funcional noturna atualizada (2026-09-29)
+
+- No início deste closeout, branch `feature/v283-core-functional-truth` estava 8 commits à frente de `origin/main` `c0e145595b2de9afa623ac3d994fb0bd972c583d`; consulte Git para HEAD/contagem atuais. Nenhum push/PR/merge/deploy.
+- `P0_TRUTH_PATH=RESOLVED` / `P0_END_TO_END=RESOLVED`: cotação atual e benchmark sintético não são alcançáveis no runtime Rentabilidade; engine/adapter falham fechados com evidência insuficiente. `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE`; fixture sintética prova apenas caminho técnico, não retorno real. `WALLET_ID_UNAVAILABLE` continua bloqueante para disponibilidade real.
+- Benchmark, janela 12M, série mensal e filtros por classe seguem `UNAVAILABLE` sem observações/fronteiras suficientes. Nenhuma interpolação ou substituição por cotação atual.
+- Aportes encaminha cada botão a handler de importação implementado/diferenciado; nenhum arquivo foi importado ou confirmado.
+- Verificação final: geral 249/249, moderna 815/815, focados 46/46, subset alto-risco 78/78; builds legacy/modern e `qa:all` PASS. QA browser: 112/112 combinações rota×viewport, sete larguras sem overflow/console/request errors; axe A/AA sem violações em 12 telas × 390/1366. Fixtures eram sintéticas/testMode. Testes source-only são `SOURCE_GUARD_TESTS`; runtime/browser são `BEHAVIORAL_RUNTIME_TESTS`.
+- `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE` é o limite das conclusões sobre invariantes; nunca afirmar eliminação global. `NEXT_ACTION=V283-01_IMPORT_CENTER_WORKFLOW_COMPLETION`, item existente e acionável; V283-04 permanece latente e depende de contrato de autoridade.
+- `git fsck --full` passou; objetos dangling continuam preservados. Skills/modelos independentes não disponíveis; revisão foi self-review Codex/Caveman.
+
+---
+
+## V280A — bootstrap global e prioridade funcional (2026-09-28)
+
+- `MANDATORY_AGENT_BOOTSTRAP=true`. Após PROJECT IDENTITY GATE, anúncio obrigatório `Using Caveman + Superpowers to <purpose>`, depois `caveman`, `using-superpowers` e Skills específicas. Disponibilidade real deve ser verificada; ausência é reportada, nunca simulada. `caveman` local orienta concisão, não segurança ou autorização.
+- Rotas, modelos, anúncio, limites e freeze visual: `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`. Visual: `VISUAL_CANON_V2=FROZEN_REFERENCE`, `FUNCTIONAL_COMPLETION_FIRST=true`, `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`.
+- `P0_RENTABILIDADE_HISTORICAL_SERIES=true`; retorno histórico não verificado deve permanecer `UNAVAILABLE`. Proibidos interpolação, retroprojeção de cotação presente e taxa fixa no lugar de benchmark datado.
+- `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recomendação; não iniciada/autorizada).
+
+---
+
+## V283 Core Functional Truth — WAVE A COMPLETE (2026-09-29)
+
+- **P0_ENGINE_LAYER=RESOLVED** — V281 historical-performance-engine fails closed
+- **P0_LEGACY_LAYER=RESOLVED** — V283 adapter connects legacy UI to engine
+- **P0_END_TO_END=RESOLVED** — Current_price leakage eliminated, synthetic benchmark removed
+- Adapter: `v283-rentability-adapter.js` routes legacy `rentabilityHistory` → `HistoricalPerformance.calculatePerformance()`
+- `rentBenchSeries` returns unavailable markers (no synthetic data)
+- 12 behavioral runtime tests PASS (R1-R12)
+- 12 source guard tests PASS (TEST_A1-B5)
+- Adapter loads at runtime (HTTP 200, text/javascript MIME)
+- Commit: c9f1e9c
+- **NEXT_ACTION=V283_WAVE_B_CORE_WORKFLOW_AUDIT**
+
+---
+
+## V280A/V280 — auditoria funcional e política de bootstrap (2026-09-28)
+
+- Auditoria, backlog e matriz: `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md` e `PRODUCT_COMPLETION_MATRIX.md`.
+- P0 em Rentabilidade legado: períodos podem ser reavaliados com cotações atuais e benchmarks podem derivar de taxas fixas. Achado estático; sem alteração de runtime ou nova certificação de navegador. Resolver antes de redesign global.
+- `VISUAL_CANON_V2=FROZEN_REFERENCE`; conclusão funcional precede implementação visual ampla.
+
+## V279A2 — post-V278 closeout (2026-09-28)
+
+- V278 is `MERGED_AND_DEPLOYED`: PR #428 merged at `e3a295833e7ac5227b86b7f88deab41e82679a4e`; production is READY at https://carteira-investimentos-delta.vercel.app/.
+- Privacy reconciliation is complete; the public visual canon is safe. Exact recovery metadata and private visual references remain local-only.
+- Product phase is `PRODUCT_VISUAL_CONSOLIDATION`; the next authorized objective is `V279B_VISUAL_AND_PRODUCT_LEARNING_AUDIT`, focused first on Dashboard, Ativos, and Dividendos. Functional foundation is mature; visual coherence/product hierarchy is the current working gap, not a claim of exhaustive discovery.
+- Preserve the established visual/financial constraints: coherent shell and hierarchy, analytical tables, contextual charts, restrained semantic color, readable density at 1366x768, mobile adaptation, `Patrimônio != Rentabilidade`, `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, and no invented financial data.
+- Worktree inventory at closeout is recorded in `CURRENT_PROJECT_MAP.md`; no historical worktree or residue was removed in V279A2.
+
+## V278O — privacy-safe local integration reconstruction (2026-09-28)
+
+- This branch is reconstructed from `origin/main` `179ea6269a04d5075b655d829645b53ffd200741` in an isolated V278O worktree, branch `integration/v278o-privacy-safe`. The machine-local path is intentionally omitted. It replays reviewed file-level changes only; it does not inherit the local V278M commit ancestry.
+- Personal financial artifacts and exact recovery identifiers remain local-only; the original private recovery material was preserved outside Git. Unproven visual references are also private and absent from the publishable tree. The V278M source worktree remains preserved as local evidence.
+- V278Q validation: general 249/249, modern 815/815, directed 29/29, both builds and `qa:all` PASS; responsive smoke passed seven widths. Read-only npm audit: 6 advisories (3 high, 3 moderate), 1 direct and 5 transitive development dependencies across build/test tooling, with no production runtime path observed. Runtime-reachable findings=0; follow-up required=true. No exploit details or dependency changes are recorded; re-audit the current lockfile before a release. No financial writes, commit, push, PR, merge, or deploy.
+
+## V274 closeout — current final QA checkpoint (2026-09-26)
+
+- V274 remains isolated in `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline`, branch `feature/v274-release-hardening-visual-baseline`, base `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. Initial PR #427 head was `729f80ecf2dc1aa5c9f592be600346c4ddfa1ad4`; do not reuse its remote CI/Vercel result after new commits.
+- Final visual audit exposed an intentionally navy Dashboard chart and gain/loss panels whose light-theme text was still dark. Corrected the gain/loss panels to white with semantic readable text and retained the chart's navy surface while switching chart title/axis labels to light foreground. Final axe rerun covered 17 routes × 390/1366 × dark/light (68 observations): critical 0, serious 0, overflow 0, no page/console/local-request failures; isolated synthetic `testMode` only.
+- Existing final UI runtime evidence: all seven responsive widths had zero page overflow; Dashboard allocation tables had no clipping; keyboard focus sweep covered nine named routes; touch target sampling at five widths had no <44px failures; CSS viewport reflow simulation at 100/125/150/200% had zero horizontal overflow. These used synthetic local `testMode`, not authenticated real portfolio data.
+- Dashboard screenshots at all seven widths 390/430/768/1366/1440/1536/1920 in dark/light were reviewed during final pass; latest missing desktop/intermediate pairs regenerated under `%TEMP%`. Some immediate theme-toggle captures include a transient toast. Dense allocation tables remain visually compact/crowded at 1920 (pre-existing backlog, no page overflow); no broad redesign.
+- Final local validation: `npm test` 249/249, `npm run test:modern` 815/815, focused canon/dashboard/accessibility tests 22/22, both builds and `npm run qa:all` PASS; QA harness 2/2 and seven-width smoke PASS. After the narrow sidebar correction, safe-area plus V274 contracts 20/20. Final axe matrix has 68 observations and 0 critical/serious findings. `git diff --check` must be rerun after this documentation update.
+- First exact-head CI failed only the 1366×768 safe-area assertion: a V274 override incorrectly forced desktop sidebar `top:0` instead of the established 58px. Removed the override and its supporting static assertion; local safe-area plus V274 accessibility tests pass 20/20. Corrected code SHA `9abfee7b8d622e9faa3ee19a854db8382a9da85d` passed CI run `36279913140` and Vercel deployment `6685655970`; docs follow-up `d264b8502331ad2758cb3e37cae1427114c5ea51` passed CI run `36280566417` and deployment `6685761086` at `https://carteira-investimentos-47y3us37b-paulinhoo2002-ctrls-projects.vercel.app`.
+- Synthetic Dashboard performance reference at 1366×768: DCL 178ms, load 269ms, FCP/LCP 512ms, CLS 0, observed post-load long-task blocking 51ms; document encoded 2,360,410 bytes and aggregate resource transfer 521,564 bytes. Single-run local metric only, not production field performance or threshold. PR #427 remains draft; attempting the ready-for-review transition was rejected by the execution safety reviewer and was not retried/bypassed. Vercel SSO was not bypassed; authenticated real-wallet QA NOT_COMPLETED. No financial, tax, import-confirm, restore or other product write occurred. No merge.
+
+## Initial V274 audit snapshot — 2026-09-26 (historical; superseded by closeout checkpoint above)
+
+- Branch/worktree `feature/v274-release-hardening-visual-baseline` / `C:/Projetos/carteira-investimentos.worktrees/v274-release-hardening-visual-baseline` is based on exact `origin/main` `5b4bd90eb46275bd44dcac2812fe2533d918f85e`. V273 PR #426 has since merged; prior PR/CI/deployment evidence must not be represented as current V274 evidence.
+- User authorized `npm ci --ignore-scripts` only in V274. It succeeded, with no manifest/lockfile changes. npm reported 6 audit findings (3 moderate, 3 high); no dependency changes/remediation were made.
+- Fresh V274 local gates: modern 815/815, general 249/249, `build`, `build:modern`, and `qa:all` PASS. The latter includes the isolated standard seven-width page-overflow smoke and QA harness 2/2. Existing Vite CJS API and legacy-script bundling warnings remain non-fatal.
+- A separate run of `tests/audit-visual-canon.test.js` found one stale static expectation for an old navigation variable. The test now checks the present `currentChild`/`parentActive` contract; focused result 7/7 PASS. Expanded dark axe over 17 LEGACY routes at 390/1366 initially found two repeated critical node hits for one unnamed IRPF year select and 73 serious node occurrences across contrast, scrollable-region focus, and nested-interactive findings. Focused corrections removed those critical/nested/focus defects; dark scan now reports 0 critical/serious. An additional 68-combination scan (17 routes x 2 widths x 2 themes) found zero critical but three light-theme route/viewport observations with serious contrast: Dashboard at 390 and 1366, Reports at 1366. Do not report axe as fully passing; extensive V254 light-theme component scope remains unresolved.
+- Chromium Playwright was launched headless in an isolated context against the local LEGACY shell and synthetic `testMode`; no personal profile or real portfolio was used. Dashboard page width equaled viewport at 390/430/768/1366/1440/1536/1920. Axe at Dashboard/390: 0 WCAG 2.1 A/AA violations, 23 passed, 2 incomplete. Four Dashboard screenshots at 390/768/1366/1920 were reviewed.
+- Runtime screenshots confirm styling and expose internal table-content collision in Dashboard allocation at 1920; page-level `scrollWidth` does not reveal it. Treat as a final visual redesign P1 candidate; do not hide with page overflow clipping. Small secondary labels are visible on mobile; detailed text-size/contrast audit remains unverified.
+- Visual target is explicitly LEGACY (`index.html`); modern stays preserve/test only. Four audit reconciliation, final redesign input and impact-ranked backlog: `docs/visual/FINAL_VISUAL_AUDIT_CONSOLIDATION.md`, `docs/visual/FINAL_VISUAL_REDESIGN_INPUT.md`, `docs/visual/V274_VISUAL_PRIORITY_BACKLOG.md`.
+- `npm test` was rerun after the UI fixes and passes 249/249; modern tests 815/815, modern build, and `qa:all` (harness 2/2, seven widths, no document overflow/console/page/request errors) pass. Vite's existing CJS and legacy script/export warnings remain non-fatal. Runtime wide-route overflow sweep showed 0 page overflow on 119 route/viewport pairs; internal clipping remains in the 1920 Dashboard screenshot.
+- All evidence is local synthetic/read-only; no financial/tax/import/restore writes, no authenticated preview evidence, no merge. Independent GLM/Kimi/Hermes models are unavailable; only separate Codex technical and visual reviews are possible. V274 remains uncertified: light axe has serious findings; manual keyboard/touch geometry, zoom, performance baseline, broader state coverage and final light screenshot review remain.
+- V274 was committed/pushed as `e8c6bf70ef037acf8bbc46bb587cfb13a15e098f` and draft PR #427 opened. Exact-head Actions run 36274933546 passed; Vercel deployment 6684798149 succeeded on that SHA, but its preview `https://carteira-investimentos-2q90sg3w6-paulinhoo2002-ctrls-projects.vercel.app` returns Vercel SSO HTTP 302 to an unauthenticated read-only probe. No Firebase domain was added and no authenticated preview QA was performed. PR remains not merge-ready due to axe/manual QA gaps.
+
+## V273 reporting data quality and operational polish — 2026-09-26 (merged)
+
+- V273 branches from `origin/main` at `75e77a7e98ef0768a5d4a6855b684432f09493b4` (V272 PR #425 merge). Worktree: `C:/Projetos/carteira-investimentos.worktrees/v273-reporting-data-quality-ops`; branch: `feature/v273-reporting-data-quality-ops`.
+- The approved architecture and implementation plan are recorded in `docs/superpowers/specs/2026-09-26-v273-reporting-data-quality-operational-polish-design.md` and `docs/superpowers/plans/2026-09-26-v273-reporting-data-quality-operational-polish.md`.
+- V273 adds pure/read-only `portfolio-report-readiness.js` and integrates a compact Reports data-health section with explicit availability, coverage/freshness, provenance, wallet-scope, import/provider and backup states. It does not create a new authority, arbitrary score, financial/tax write, route, or global redesign.
+- `ENGINE_AVAILABLE` remains separate from `DATA_READY`; missing V76 `walletId` remains a hard blocker for real TWR/XIRR. The adapter does not synthesize wallet identity. UNKNOWN is not zero; PARTIAL is not AVAILABLE; STALE is not FRESH. Fixed-income manual authority is disclosed as not aggregated rather than represented with invented coverage.
+- A runtime smoke found a V273 defect: `v273ReportReadiness` referenced `classifier` outside the function where it was declared; Reports silently fell back to Dashboard. The adapter now resolves `globalThis.PortfolioCashFlowClassifier`, with a UI-contract regression test. This was fixed before final gates.
+- Final local tests: targeted V271/V272/V273/Reports/history 75/75; performance 84/84; QA harness 2/2; `npm run test:modern` 815/815; `npm test` 249/249; Reports responsive/UI contract 6/6. Legacy/modern builds, `npm run qa:all`, seven-width Reports QA and `git diff --check` PASS. Reports responsive matrix includes 390/430/768/1366/1440/1536/1920; no page horizontal overflow, console errors, page errors or request failures. The Reports section axe scan at 390px reported zero critical/serious violations.
+- Screenshots captured to the machine-local temp directory `%TEMP%\\v273-reports-qa` at 390/768/1366/1920 and visually reviewed by Codex. Review found the dense copy small but legible within the existing compact Reports visual system; no raw/un-styled rendering or clipping. QA used isolated local synthetic `testMode` only, not an authenticated/real portfolio or personal Chrome/Edge profile.
+- `npm ci --ignore-scripts` was run only in this V273 worktree under explicit user authorization. `package.json`/`package-lock.json` hashes remained unchanged. The install reported 6 existing audit findings (3 moderate, 3 high); no audit remediation or dependency version change was made.
+- GLM-5.3, Kimi K3, and Hermes/NVIDIA are unavailable in this session; only separate Codex technical and visual reviews may be reported. No independent model review is claimed.
+- Commit `7a5c5a02172126146dc19fd2a7d007d0f8b2a4ac` was pushed normally as PR #426 to `main`; PR is OPEN and mergeable. GitHub Actions CI run 690 is successful on this exact head. Vercel deployment `C2QVZv3n8tAEH6Ng2x6JXVGQSdar` is READY on the same SHA at `https://carteira-investimentos-6c0yxzvkb-paulinhoo2002-ctrls-projects.vercel.app/`; preview authentication was not exercised. No merge or financial/tax write occurred. Documentation-only reconciliation may create a follow-up head; if so, revalidate CI and preview for that exact SHA. Merge remains unauthorized.
+
+## V272 trusted cash-flow/performance foundation — 2026-09-26 (merged)
+
+- V272 PR #425 was merged to main at `75e77a7e98ef0768a5d4a6855b684432f09493b4`. The implementation and evidence below describe the merged baseline.
+- Architecture decisions/design and the three implementation slices are recorded in `docs/superpowers/specs/2026-09-26-v272-trusted-cashflow-performance-foundation-design.md` and `docs/superpowers/plans/2026-09-26-v272-trusted-cashflow-performance-foundation.md`.
+- Reuse V248 `HistoricalPerformance`; do not add `portfolio-performance.js` as a parallel canonical engine. `portfolio-cash-flow-classifier.js` is a pure read-only layer. Only exact explicit external event types from allowlisted manual source, with valid date/positive amount, stable identity/provenance and explicit wallet identity, can reach HIGH-confidence external-flow status. BUY/SELL/income/fees/taxes are non-external; generic transfer, conflicts and missing evidence stay ambiguous/unknown.
+- Contribution sign is positive for portfolio and negative for investor/XIRR; withdrawal is inverse. Existing financial-import identity/dedup remains separate from source identity and classification identity. Duplicate source identities are excluded from readiness/calculation inputs rather than counted twice.
+- V271 now rejects ambiguous, low-confidence, invalid-date, sign-conflicting, unscoped, wrong-wallet and duplicate-source evidence for TWR/XIRR. TWR requires explicit `END_OF_SUBPERIOD` plus an observed valuation boundary for the flow date; no interpolation. XIRR receives trusted investor-perspective flows and actual terminal valuation only; it does not invent an initial investor flow from opening valuation.
+- Existing V76 flow/snapshot persistence is global and has no wallet ID. Do not infer the selected wallet or change the persistence schema as a workaround. Consequently the current UI accurately keeps real-wallet DATA_READY false even though the math engine exists. The legacy V248 History/Reports panel only discloses readiness and reasons until real scoped evidence is available.
+- Final validation after fail-closed ambiguous-flow regression fix, Rentabilidade-scoped contrast adjustment and lockfile install: focused classifier/V271/V248/history/runtime + inline syntax 94/94; `npm run test:modern` 815/815; `npm test` 249/249; modern/legacy builds PASS; `npm run qa:all` PASS (QA harness 2/2 and seven viewport smoke). Isolated rendered Rentabilidade QA confirmed the V272 section at all seven widths with no horizontal/panel overflow or runtime/console error. Full Rentabilidade axe WCAG 2.1 A/AA scan: 0 violations. Screenshots were visually inspected; QA used synthetic localhost `testMode`, not the real authenticated portfolio.
+- Dependency install used `npm ci --ignore-scripts` under explicit user authorization; no package manifest or lockfile drift. Six npm audit findings (3 moderate, 3 high) were reported; no audit fix/version changes were made.
+- V76 stores remain global and do not provide `walletId`; this is an actual limitation, not a missing value to synthesize. The UI keeps `DATA_READY=UNAVAILABLE`; no synthetic evidence flows into real readiness. GLM-5.3 and Kimi K3 were not available as separate review models; explicit separate code and screenshot self-review was used.
+- No financial/tax/import/restore/cloud writes or persisted data/schema changes; do not expose synthetic calculation fixtures as real portfolio readiness. Exact-IPCA unsupported and manual fixed-income authority remain untouched.
+
 ## Skills library audit — 2026-09-25
 
 - Physical inventory: 42 direct directories, 43 recursive SKILL.md files and
@@ -157,14 +285,15 @@
   `docs/ai/SKILL_ROUTER.md` é o roteador técnico de Skills por categoria.
   Uma eventual `.agents/SKILL_ROUTER.md` é apenas bridge local ignorada.
 - `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`.
-- `MANDATORY_FIRST_SKILL=Superpowers`; carregar e usar primeiro quando
-  disponível. Superpowers não substitui identidade, segurança financeira,
-  persistência, Git ou gates humanos.
+- `MANDATORY_AGENT_BOOTSTRAP=true`; após identidade, usar Caveman e depois
+  Superpowers `using-superpowers`, seguido das Skills específicas. Ambos são
+  sujeitos à disponibilidade física; indisponibilidade deve ser registrada.
 
-Boot mínimo independente do chat: identity gate → `AGENTS.md` →
-`PROJECT_MEMORY.md` → `NEXT_STEP.md` → `DECISIONS.md` → descoberta e uso de
-Superpowers → inventário físico `.agents/skills` → classificação → menor
-conjunto de Skills relevante em `docs/SKILLS_ROUTING.md` e
+Boot mínimo independente do chat: identity gate → anúncio → Caveman →
+Superpowers `using-superpowers` → `AGENTS.md` → `PROJECT_MEMORY.md` →
+`NEXT_STEP.md` → `DECISIONS.md` → inventário físico `.agents/skills` →
+classificação → menor conjunto de Skills relevante em
+`docs/ai/SKILLS_ROUTING.md`, `docs/SKILLS_ROUTING.md` e
 `docs/ai/SKILL_ROUTER.md`.
 
 ## V197 durable boot summary
@@ -182,7 +311,7 @@ conjunto de Skills relevante em `docs/SKILLS_ROUTING.md` e
 - QA: `%LOCALAPPDATA%\\CarteiraInvestimentos\\qa-browser-authenticated`,
   CDP `127.0.0.1:9233`, `protectedReadOnlyQa=1`, zero writes.
 - Git: worktree por objetivo, staging seletivo, sem reset/restore/clean/stash/rebase/force push.
-- `MANDATORY_FIRST_SKILL=Superpowers`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
+- `MANDATORY_AGENT_BOOTSTRAP=true`; `MINIMUM_RELEVANT_ADDITIONAL_SKILLS=true`;
   `REUSE_GREEN_EVIDENCE=true`; `SAME_FAILURE_TWICE=PIVOT`.
 
 Boot links: [`AGENTS.md`](../../AGENTS.md), [`NEXT_STEP.md`](NEXT_STEP.md),
@@ -1012,8 +1141,8 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Os planos têm `20` eventos sobrepostos e convergiram nas simulações em
   `431/330/101`, `2709626` cents; a ordem segura recomendada é Class C e
   depois agosto, sempre com autorizações separadas. Manifestos V20 foram
-  congelados como bloqueados em `docs/ai/PHASE4H_V20_READONLY_MANIFESTS.md` e
-  `.qa-state/phase4h-v20-*-preauth-manifest.json`.
+  mantidos bloqueados por padrão; evidências específicas de estado local não
+  são incluídas na documentação publicável.
 - Nesta fase: `REAL_CLASS_C_EXECUTED=false`, `REAL_AUGUST_PILOT_EXECUTED=false`,
   `REAL_USER_DATA_WRITE=false`, cloud write/sync/push/PR/merge/deploy false.
 # Phase 4H V25 — Class C provenance closure
@@ -1458,9 +1587,10 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
   permanecem fora do conjunto padrão por redundância, custo, telemetria ou
   ausência de requisito concreto.
 
-## Decisão permanente — SUPERPOWERS_FIRST
+## Decisão permanente — CAVEMAN_SUPERPOWERS_BOOTSTRAP
 
-- `MANDATORY_FIRST_SKILL=Superpowers` e `SUPERPOWERS_FIRST=true`.
+- `MANDATORY_AGENT_BOOTSTRAP=true` e
+  `BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`.
 - Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
 - Processo detalhado de agente/modelo e Skills: `docs/SKILLS_ROUTING.md`;
   roteamento técnico por categoria: `docs/ai/SKILL_ROUTER.md`;
@@ -1473,11 +1603,12 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
   fallback conforme indisponibilidade ou falha repetida da rota preferencial,
   não por fricção técnica comum isolada. Toda disponibilidade deve ser
   verificada no ambiente; nunca alegar execução/modelo indisponível.
-- Cada missão relevante registra agente/modelo recomendado e selecionado,
-  justificativa e campos de Skills; selecionar apenas o menor conjunto
-  especializado necessário após Superpowers e descoberta real do inventário.
-- Fallback: se Superpowers não existir, usar as melhores Skills disponíveis
-  sem bloquear automaticamente a missão e registrar a limitação.
+- Toda missão substancial anuncia `Using Caveman + Superpowers to <purpose>`.
+  Cada handoff registra disponibilidade/uso, agente/modelo, justificativa,
+  Skills consideradas/usadas/não usadas e lacunas. Selecionar menor conjunto
+  especializado após bootstrap e descoberta real do inventário.
+- Fallback: se Caveman ou Superpowers não existir, registrar a limitação e
+  usar somente processo/Skills realmente disponíveis, sem alegar uso.
 - Limite: Skills orientam o processo, mas não autorizam merge, deploy,
   alterações cloud/financeiras, persistência, schema, secrets ou ações
   destrutivas.
@@ -1512,7 +1643,7 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 
 ### Codex Cloud Readiness
 - **Documentation**: `docs/CODEX_CLOUD_SETUP.md`
-- **Node requirement**: 18+ (tested 20.x)
+- **Node requirement**: 18+ (MINIMUM_SUPPORTED=18, OBSERVED_VALIDATION_RUNTIME=Node v26.7.0 / npm 11.19.0)
 - **Package-lock**: Committed for deterministic `npm ci`
 - **Env vars**: Firebase optional (tests mock), GitHub required
 - **Network**: github.com mandatory, others optional
