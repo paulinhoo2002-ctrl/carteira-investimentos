@@ -122,11 +122,9 @@ foreach ($doc in $mandatoryDocs) {
 
 # 3. Quick/Full Check Commands
 Write-Section "VALIDATION COMMANDS"
-Write-Item "Quick check (fast):" "npm.cmd test  (runs legacy 249 + modern 815)"
-Write-Item "Full check (critical):" "npm.cmd run build && npm.cmd run build:modern && npm.cmd run qa:all"
-Write-Item "Legacy tests:" "npm.cmd run test:finance && npm.cmd run test:persistence && npm.cmd run test:backup-restore && npm.cmd run test:load && npm.cmd run test:roundtrip"
-Write-Item "Modern tests:" "npm.cmd run test:modern"
-Write-Item "Browser smoke:" "npm.cmd run qa:smoke"
+Write-Item "Quick check (fast):" "powershell -File scripts/codex/quick-check.ps1"
+Write-Item "Full check (critical):" "powershell -File scripts/codex/full-check.ps1 -Force"
+Write-Item "Cloud health check:" "powershell -File scripts/codex/cloud-health-check.ps1"
 Write-Item "Diff check:" "git diff --check"
 
 # 4. Critical Constraints
@@ -153,9 +151,9 @@ foreach ($c in $constraints) {
 
 # 5. Tiered Testing Strategy
 Write-Section "TOKEN OPTIMIZATION - TIERED TESTING"
-Write-Host "  TIER 1 (FAST) - docs, small fixes, CSS:     quick-check (legacy + modern unit)" -ForegroundColor $Green
+Write-Host "  TIER 1 (FAST) - docs, small fixes, CSS:     powershell -File scripts/codex/quick-check.ps1" -ForegroundColor $Green
 Write-Host "  TIER 2 (NORMAL) - features, refactors:       related tests + required build" -ForegroundColor $Yellow
-Write-Host "  TIER 3 (CRITICAL) - backup, import, finance: full-check + deep review + HUMAN_GATE" -ForegroundColor $Red
+Write-Host "  TIER 3 (CRITICAL) - backup, import, finance: powershell -File scripts/codex/full-check.ps1 -Force + HUMAN_GATE" -ForegroundColor $Red
 Write-Host ""
 Write-Host "  Record HEAD/hash when full-check passes to avoid re-running unchanged code." -ForegroundColor $Cyan
 

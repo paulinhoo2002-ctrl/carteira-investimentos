@@ -83,8 +83,8 @@ Validates cloud environment readiness:
 - Browser requirements (optional, headless Chromium if needed)
 
 ## NODE REQUIREMENT
-- **Node.js**: 18+ (tested on 20.x)
-- **npm**: 9+ (bundled with Node)
+- **Node.js**: 18+ (MINIMUM_SUPPORTED=18)
+- **OBSERVED_VALIDATION_RUNTIME**: Node v26.7.0 / npm 11.19.0
 
 ## PACKAGE-LOCK
 - `package-lock.json` committed for deterministic installs

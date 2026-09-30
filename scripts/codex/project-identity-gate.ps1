@@ -214,7 +214,8 @@ try {
 Write-Section "5. GIT STATUS"
 try {
     $status = git status --short 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) {
         if ($status.Trim()) {
             Write-Status "Working tree has changes:" $Yellow
             $status.Split("`n") | ForEach-Object { Write-Status "  $_" $White }
@@ -222,7 +223,7 @@ try {
             Write-Status "  [OK] Working tree clean" $Green
         }
     } else {
-        Write-Status "  [FAIL] git status failed: $status" $Red
+        Write-Status "  [FAIL] git status failed (exit $exitCode): $status" $Red
         $allPassed = $false
     }
 } catch {
