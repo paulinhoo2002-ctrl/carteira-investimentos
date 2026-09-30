@@ -43,6 +43,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$isWindowsRuntime = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
 
 # Colors for output
 $Green = [ConsoleColor]::Green
@@ -73,10 +74,42 @@ function Test-IsPathAtOrUnderRoot {
         $candidatePath.StartsWith($rootPath + '\', [StringComparison]::OrdinalIgnoreCase)
 }
 
+function Test-IsLinuxPathAtOrUnderRoot {
+    param([string]$Candidate, [string]$Root)
+
+    if ([string]::IsNullOrWhiteSpace($Candidate) -or [string]::IsNullOrWhiteSpace($Root)) {
+        return $false
+    }
+    if (-not [System.IO.Path]::IsPathRooted($Candidate) -or -not [System.IO.Path]::IsPathRooted($Root)) {
+        return $false
+    }
+    $candidatePath = [System.IO.Path]::GetFullPath($Candidate).TrimEnd('/')
+    $rootPath = [System.IO.Path]::GetFullPath($Root).TrimEnd('/')
+    if ($rootPath -eq '') { $rootPath = '/' }
+    return $candidatePath.Equals($rootPath, [StringComparison]::Ordinal) -or
+        $candidatePath.StartsWith($rootPath.TrimEnd('/') + '/', [StringComparison]::Ordinal)
+}
+
+function ConvertTo-CanonicalGitHubRemote {
+    param([string]$Remote)
+
+    if ([string]::IsNullOrWhiteSpace($Remote)) { return $null }
+    $value = $Remote.Trim()
+    if ($value -cnotmatch '^(?:https://github\.com/|git@github\.com:)([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?$') {
+        return $null
+    }
+    return $Matches[1].ToLowerInvariant()
+}
+
 function Test-IsForbiddenProjectPath {
     param([string]$Candidate)
 
-    return (Test-IsPathAtOrUnderRoot -Candidate $Candidate -Root $ForbiddenProjectPath)
+    if ([string]::IsNullOrWhiteSpace($Candidate)) { return $false }
+    if (Test-IsPathAtOrUnderRoot -Candidate $Candidate -Root $ForbiddenProjectPath) {
+        return $true
+    }
+    # Lexical only: never probe the forbidden project on disk.
+    return $Candidate.Replace('\', '/') -match '(^|/)carteira-2\.0(?=/|$)'
 }
 
 function Write-Section {
@@ -133,11 +166,16 @@ Write-Status "Current directory: $cwd" $Cyan
 $cwdStr = $cwd.Path
 $cwdValid = $false
 foreach ($allowed in $AllowedWorktreeRoots) {
+    if (-not $isWindowsRuntime) { break }
     if (Test-IsPathAtOrUnderRoot -Candidate $cwdStr -Root $allowed) {
         $cwdValid = $true
         Write-Status "  [OK] Working directory under allowed root: $allowed" $Green
         break
     }
+}
+if (-not $isWindowsRuntime) {
+    # The Git root is resolved below; validate Linux containment there.
+    $cwdValid = $true
 }
 if (-not $cwdValid) {
     Write-Status "  [FAIL] Working directory NOT under any allowed root" $Red
@@ -157,21 +195,25 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Status "Git root: $gitRoot" $Cyan
         
-        $normalizedGitRoot = $gitRoot.Replace('/', '\').TrimEnd([char]92)
-        $normalizedExpectedRoot = $ExpectedProjectRoot.Replace('/', '\').TrimEnd([char]92)
-        $gitRootValid = $normalizedGitRoot.Equals($normalizedExpectedRoot, [StringComparison]::OrdinalIgnoreCase)
-        if (-not $gitRootValid) {
-            foreach ($allowed in $AllowedWorktreeRoots) {
-                if (Test-IsPathAtOrUnderRoot -Candidate $gitRoot -Root $allowed) {
-                    $gitRootValid = $true
-                    break
+        if ($isWindowsRuntime) {
+            $normalizedGitRoot = $gitRoot.Replace('/', '\').TrimEnd([char]92)
+            $normalizedExpectedRoot = $ExpectedProjectRoot.Replace('/', '\').TrimEnd([char]92)
+            $gitRootValid = $normalizedGitRoot.Equals($normalizedExpectedRoot, [StringComparison]::OrdinalIgnoreCase)
+            if (-not $gitRootValid) {
+                foreach ($allowed in $AllowedWorktreeRoots) {
+                    if (Test-IsPathAtOrUnderRoot -Candidate $gitRoot -Root $allowed) {
+                        $gitRootValid = $true
+                        break
+                    }
                 }
             }
+        } else {
+            $gitRootValid = Test-IsLinuxPathAtOrUnderRoot -Candidate $cwdStr -Root $gitRoot
         }
         if ($gitRootValid) {
-            Write-Status "  [OK] Git root matches an allowed project/worktree root" $Green
+            Write-Status "  [OK] Git root and current directory satisfy platform path policy" $Green
         } else {
-            Write-Status "  [FAIL] Git root is outside allowed project/worktree roots" $Red
+            Write-Status "  [FAIL] Git root and current directory violate platform path policy" $Red
             $allPassed = $false
         }
 
@@ -191,19 +233,15 @@ try {
 # 3. Remote Validation
 Write-Section "3. REMOTE VALIDATION"
 try {
-    $remotes = git remote -v 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-Status "Remotes:" $Cyan
-        $remotes.Split("`n") | ForEach-Object { Write-Status "  $_" $White }
-        
-        if ($remotes -match [regex]::Escape($ExpectedRemote)) {
-            Write-Status "  [OK] Expected remote found: $ExpectedRemote" $Green
-        } else {
-            Write-Status "  [FAIL] Expected remote NOT found: $ExpectedRemote" $Red
-            $allPassed = $false
-        }
+    $remote = @(git remote get-url origin 2>&1)
+    $expectedIdentity = ConvertTo-CanonicalGitHubRemote -Remote $ExpectedRemote
+    $actualIdentity = if ($LASTEXITCODE -eq 0 -and $remote.Count -eq 1) {
+        ConvertTo-CanonicalGitHubRemote -Remote $remote[0]
+    } else { $null }
+    if ($null -ne $expectedIdentity -and $actualIdentity -ceq $expectedIdentity) {
+        Write-Status "  [OK] origin identifies $expectedIdentity" $Green
     } else {
-        Write-Status "  [FAIL] git remote -v failed: $remotes" $Red
+        Write-Status "  [FAIL] origin does not identify the expected GitHub repository" $Red
         $allPassed = $false
     }
 } catch {
@@ -281,6 +319,7 @@ try {
         }
 
         $allValid = $true
+        $currentRootRegistered = $false
         $validatedCount = 0
         foreach ($wtPath in $worktreePaths) {
             $validatedCount++
@@ -298,11 +337,19 @@ try {
                 continue
             }
 
-            $valid = $false
-            foreach ($allowed in $AllowedWorktreeRoots) {
-                if (Test-IsPathAtOrUnderRoot -Candidate $wtPath -Root $allowed) {
-                    $valid = $true
-                    break
+            if ($isWindowsRuntime) {
+                $valid = $false
+                foreach ($allowed in $AllowedWorktreeRoots) {
+                    if (Test-IsPathAtOrUnderRoot -Candidate $wtPath -Root $allowed) {
+                        $valid = $true
+                        break
+                    }
+                }
+            } else {
+                $valid = [System.IO.Path]::IsPathRooted($wtPath)
+                if ($valid -and (Test-IsLinuxPathAtOrUnderRoot -Candidate $wtPath -Root $gitRoot) -and
+                    (Test-IsLinuxPathAtOrUnderRoot -Candidate $gitRoot -Root $wtPath)) {
+                    $currentRootRegistered = $true
                 }
             }
             if ($valid) {
@@ -312,6 +359,11 @@ try {
                 $allPassed = $false
                 $allValid = $false
             }
+        }
+        if (-not $isWindowsRuntime -and -not $currentRootRegistered) {
+            Write-Status "  [FAIL] Git root is not a registered worktree" $Red
+            $allPassed = $false
+            $allValid = $false
         }
         Write-Status "Validated worktrees: $validatedCount" $Cyan
         if ($allValid -and $wtCount -gt 0 -and $validatedCount -eq $wtCount) {
