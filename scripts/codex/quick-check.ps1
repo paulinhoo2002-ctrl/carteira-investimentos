@@ -10,7 +10,7 @@ Runs only fast, essential pre-flight checks:
 - Merge conflict markers detection
 - package.json validity
 - Required governance files presence
-- Forbidden path access check
+- Project isolation via PROJECT_IDENTITY_GATE
 - Optional: minimal smoke test if officially exists in project
 
 Does NOT run by default:
@@ -178,7 +178,7 @@ try {
             $file = $_.Trim()
             if ($file -and (Test-Path $file)) {
                 $content = Get-Content $file -Raw -ErrorAction SilentlyContinue
-                if ($content -and $content -match '<<<<<<<|=======|>>>>>>>') {
+                if ($content -and $content -match '(?m)^[ 	]*(?:<{7}(?:[ 	].*)?|={7}|>{7}(?:[ 	].*)?)?$') {
                     Write-Fail "  FAIL: Merge conflict markers found in $file"
                     $hasConflicts = $true
                     $overallSuccess = $false
@@ -225,20 +225,7 @@ if ($missingFiles.Count -eq 0) {
     Write-Fail "  FAIL: Missing governance files: $($missingFiles -join ', ')"
 }
 
-# 7. Forbidden path access check
-Write-Step "Forbidden project access check"
-$forbiddenPath = "C:\Projetos\carteira-2.0"
-if (Test-Path $forbiddenPath) {
-    # Check if current worktree is under forbidden path
-    $cwd = (Get-Location).Path
-    if ($cwd -like "*carteira-2.0*") {
-        Write-Fail "  FAIL: Currently inside forbidden project: carteira-2.0"
-    } else {
-        Write-Warn "  WARNING: Forbidden project path exists but not accessed: $forbiddenPath"
-    }
-} else {
-    Write-Success "  PASS: Forbidden project path not present"
-}
+# Project isolation is validated by PROJECT_IDENTITY_GATE above.
 
 # 8. Optional minimal smoke test
 if ($IncludeSmokeTest) {

@@ -11,7 +11,7 @@ It validates:
 - Remote origin URL
 - Current branch and HEAD
 - Worktree belongs to correct repository
-- Forbidden project (carteira-2.0) is not being accessed
+- Current workspace and registered worktrees are outside the forbidden project
 
 .OUTPUTS
 - Exit code 0 = PASS (PROJECT_IDENTITY=PASS)
@@ -57,6 +57,26 @@ function Write-Status {
     $Host.UI.RawUI.ForegroundColor = $Color
     Write-Host $Message
     $Host.UI.RawUI.ForegroundColor = $originalColor
+}
+
+function Test-IsPathAtOrUnderRoot {
+    param([string]$Candidate, [string]$Root)
+
+    if ([string]::IsNullOrWhiteSpace($Candidate) -or [string]::IsNullOrWhiteSpace($Root)) {
+        return $false
+    }
+
+    # Lexical comparison only: neither path is probed or resolved.
+    $candidatePath = $Candidate.Replace('/', '\').TrimEnd([char]92)
+    $rootPath = $Root.Replace('/', '\').TrimEnd([char]92)
+    return $candidatePath.Equals($rootPath, [StringComparison]::OrdinalIgnoreCase) -or
+        $candidatePath.StartsWith($rootPath + '\', [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-IsForbiddenProjectPath {
+    param([string]$Candidate)
+
+    return (Test-IsPathAtOrUnderRoot -Candidate $Candidate -Root $ForbiddenProjectPath)
 }
 
 function Write-Section {
@@ -113,7 +133,7 @@ Write-Status "Current directory: $cwd" $Cyan
 $cwdStr = $cwd.Path
 $cwdValid = $false
 foreach ($allowed in $AllowedWorktreeRoots) {
-    if ($cwdStr.StartsWith($allowed, [StringComparison]::OrdinalIgnoreCase)) {
+    if (Test-IsPathAtOrUnderRoot -Candidate $cwdStr -Root $allowed) {
         $cwdValid = $true
         Write-Status "  [OK] Working directory under allowed root: $allowed" $Green
         break
@@ -125,7 +145,7 @@ if (-not $cwdValid) {
 }
 
 # Check forbidden path
-if ($cwdStr -like "*carteira-2.0*") {
+if (Test-IsForbiddenProjectPath $cwdStr) {
     Write-Status "  [BLOCKED] Working directory contains forbidden path: carteira-2.0" $Red
     $allPassed = $false
 }
@@ -137,14 +157,25 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Status "Git root: $gitRoot" $Cyan
         
-        if ($gitRoot -like "*carteira-investimentos*") {
-            Write-Status "  [OK] Git root belongs to carteira-investimentos" $Green
+        $normalizedGitRoot = $gitRoot.Replace('/', '\').TrimEnd([char]92)
+        $normalizedExpectedRoot = $ExpectedProjectRoot.Replace('/', '\').TrimEnd([char]92)
+        $gitRootValid = $normalizedGitRoot.Equals($normalizedExpectedRoot, [StringComparison]::OrdinalIgnoreCase)
+        if (-not $gitRootValid) {
+            foreach ($allowed in $AllowedWorktreeRoots) {
+                if (Test-IsPathAtOrUnderRoot -Candidate $gitRoot -Root $allowed) {
+                    $gitRootValid = $true
+                    break
+                }
+            }
+        }
+        if ($gitRootValid) {
+            Write-Status "  [OK] Git root matches an allowed project/worktree root" $Green
         } else {
-            Write-Status "  [FAIL] Git root does not belong to carteira-investimentos" $Red
+            Write-Status "  [FAIL] Git root is outside allowed project/worktree roots" $Red
             $allPassed = $false
         }
-        
-        if ($gitRoot -like "*carteira-2.0*") {
+
+        if (Test-IsForbiddenProjectPath $gitRoot) {
             Write-Status "  [BLOCKED] Git root contains forbidden path: carteira-2.0" $Red
             $allPassed = $false
         }
@@ -234,63 +265,79 @@ try {
 # 6. Worktree List
 Write-Section "6. WORKTREE VALIDATION"
 try {
-    $worktreesRaw = git worktree list --porcelain 2>&1
+    $worktreesRaw = @(git worktree list --porcelain 2>&1)
     if ($LASTEXITCODE -eq 0) {
-        # Parse porcelain format: each worktree has worktree, HEAD, branch lines
-        $worktreeBlocks = $worktreesRaw -split "`nworktree " | Where-Object { $_ -match '^worktree ' }
-        $wtCount = $worktreeBlocks.Count
+        $worktreePaths = @(
+            $worktreesRaw |
+                Where-Object { $_ -is [string] -and $_.StartsWith("worktree ", [StringComparison]::Ordinal) } |
+                ForEach-Object { $_.Substring(9).Trim() }
+        )
+        $wtCount = $worktreePaths.Count
         Write-Status "Registered worktrees: $wtCount" $Cyan
-        
+
+        if ($wtCount -eq 0) {
+            Write-Status "  [FAIL] No worktree paths found in Git porcelain output" $Red
+            $allPassed = $false
+        }
+
         $allValid = $true
-        foreach ($block in $worktreeBlocks) {
-            $lines = $block -split "`n"
-            $wtPath = ""
-            foreach ($line in $lines) {
-                if ($line.StartsWith("worktree ")) {
-                    $wtPath = $line.Substring(9).Trim()
+        $validatedCount = 0
+        foreach ($wtPath in $worktreePaths) {
+            $validatedCount++
+            if ([string]::IsNullOrWhiteSpace($wtPath)) {
+                Write-Status "  [FAIL] Empty worktree path in Git porcelain output" $Red
+                $allPassed = $false
+                $allValid = $false
+                continue
+            }
+
+            if (Test-IsForbiddenProjectPath $wtPath) {
+                Write-Status "  [FAIL] Registered worktree is under forbidden project: $wtPath" $Red
+                $allPassed = $false
+                $allValid = $false
+                continue
+            }
+
+            $valid = $false
+            foreach ($allowed in $AllowedWorktreeRoots) {
+                if (Test-IsPathAtOrUnderRoot -Candidate $wtPath -Root $allowed) {
+                    $valid = $true
                     break
                 }
             }
-            
-            if ($wtPath) {
-                $valid = $false
-                # Normalize path separators for comparison
-                $normalizedWtPath = $wtPath.Replace('/', '\')
-                foreach ($allowed in $AllowedWorktreeRoots) {
-                    $normalizedAllowed = $allowed.Replace('/', '\')
-                    if ($normalizedWtPath.StartsWith($normalizedAllowed, [StringComparison]::OrdinalIgnoreCase)) {
-                        $valid = $true
-                        break
-                    }
-                }
-                if ($valid) {
-                    Write-Status "  [OK] $wtPath" $Green
-                } else {
-                    Write-Status "  [FAIL] Worktree outside allowed roots: $wtPath" $Red
-                    $allPassed = $false
-                    $allValid = $false
-                }
+            if ($valid) {
+                Write-Status "  [OK] $wtPath" $Green
+            } else {
+                Write-Status "  [FAIL] Worktree outside allowed roots: $wtPath" $Red
+                $allPassed = $false
+                $allValid = $false
             }
         }
-        if ($allValid) {
-            Write-Status "  [OK] All worktrees belong to allowed roots" $Green
+        Write-Status "Validated worktrees: $validatedCount" $Cyan
+        if ($allValid -and $wtCount -gt 0 -and $validatedCount -eq $wtCount) {
+            Write-Status "  [OK] All registered worktrees belong to allowed roots" $Green
         }
     } else {
         Write-Status "  [FAIL] git worktree list failed: $worktreesRaw" $Red
         $allPassed = $false
     }
 } catch {
-    Write-Status "  [FAIL] git worktree command failed" $Red
+    Write-Status "  [FAIL] git worktree command failed: $($_.Exception.Message)" $Red
     $allPassed = $false
 }
 
 # 7. Forbidden Project Check
 Write-Section "7. FORBIDDEN PROJECT CHECK"
-if (Test-Path $ForbiddenProjectPath) {
-    Write-Status "  [WARN] Forbidden project path EXISTS: $ForbiddenProjectPath" $Yellow
-    Write-Status "  [INFO] This is acceptable IF not being accessed by current worktree" $Yellow
-} else {
-    Write-Status "  [OK] Forbidden project path does not exist: $ForbiddenProjectPath" $Green
+$forbiddenCurrentPath = $false
+foreach ($currentPath in @($cwdStr, $gitRoot)) {
+    if (Test-IsForbiddenProjectPath $currentPath) {
+        Write-Status "  [FAIL] Current workspace identity is under forbidden project: $currentPath" $Red
+        $allPassed = $false
+        $forbiddenCurrentPath = $true
+    }
+}
+if (-not $forbiddenCurrentPath) {
+    Write-Status "  [OK] Current directory and Git root are outside the forbidden project" $Green
 }
 
 # Final Result
