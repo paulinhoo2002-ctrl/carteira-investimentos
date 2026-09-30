@@ -59,18 +59,24 @@ function Write-Status {
     $Host.UI.RawUI.ForegroundColor = $originalColor
 }
 
-function Test-IsForbiddenProjectPath {
-    param([string]$Candidate)
+function Test-IsPathAtOrUnderRoot {
+    param([string]$Candidate, [string]$Root)
 
-    if ([string]::IsNullOrWhiteSpace($Candidate)) {
+    if ([string]::IsNullOrWhiteSpace($Candidate) -or [string]::IsNullOrWhiteSpace($Root)) {
         return $false
     }
 
-    # Compare strings already obtained from the current process or Git. Never probe this path.
+    # Lexical comparison only: neither path is probed or resolved.
     $candidatePath = $Candidate.Replace('/', '\').TrimEnd([char]92)
-    $forbiddenPath = $ForbiddenProjectPath.Replace('/', '\').TrimEnd([char]92)
-    return $candidatePath.Equals($forbiddenPath, [StringComparison]::OrdinalIgnoreCase) -or
-        $candidatePath.StartsWith($forbiddenPath + '\', [StringComparison]::OrdinalIgnoreCase)
+    $rootPath = $Root.Replace('/', '\').TrimEnd([char]92)
+    return $candidatePath.Equals($rootPath, [StringComparison]::OrdinalIgnoreCase) -or
+        $candidatePath.StartsWith($rootPath + '\', [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-IsForbiddenProjectPath {
+    param([string]$Candidate)
+
+    return (Test-IsPathAtOrUnderRoot -Candidate $Candidate -Root $ForbiddenProjectPath)
 }
 
 function Write-Section {
@@ -127,7 +133,7 @@ Write-Status "Current directory: $cwd" $Cyan
 $cwdStr = $cwd.Path
 $cwdValid = $false
 foreach ($allowed in $AllowedWorktreeRoots) {
-    if ($cwdStr.StartsWith($allowed, [StringComparison]::OrdinalIgnoreCase)) {
+    if (Test-IsPathAtOrUnderRoot -Candidate $cwdStr -Root $allowed) {
         $cwdValid = $true
         Write-Status "  [OK] Working directory under allowed root: $allowed" $Green
         break
@@ -139,7 +145,7 @@ if (-not $cwdValid) {
 }
 
 # Check forbidden path
-if ($cwdStr -like "*carteira-2.0*") {
+if (Test-IsForbiddenProjectPath $cwdStr) {
     Write-Status "  [BLOCKED] Working directory contains forbidden path: carteira-2.0" $Red
     $allPassed = $false
 }
@@ -151,14 +157,25 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Status "Git root: $gitRoot" $Cyan
         
-        if ($gitRoot -like "*carteira-investimentos*") {
-            Write-Status "  [OK] Git root belongs to carteira-investimentos" $Green
+        $normalizedGitRoot = $gitRoot.Replace('/', '\').TrimEnd([char]92)
+        $normalizedExpectedRoot = $ExpectedProjectRoot.Replace('/', '\').TrimEnd([char]92)
+        $gitRootValid = $normalizedGitRoot.Equals($normalizedExpectedRoot, [StringComparison]::OrdinalIgnoreCase)
+        if (-not $gitRootValid) {
+            foreach ($allowed in $AllowedWorktreeRoots) {
+                if (Test-IsPathAtOrUnderRoot -Candidate $gitRoot -Root $allowed) {
+                    $gitRootValid = $true
+                    break
+                }
+            }
+        }
+        if ($gitRootValid) {
+            Write-Status "  [OK] Git root matches an allowed project/worktree root" $Green
         } else {
-            Write-Status "  [FAIL] Git root does not belong to carteira-investimentos" $Red
+            Write-Status "  [FAIL] Git root is outside allowed project/worktree roots" $Red
             $allPassed = $false
         }
-        
-        if ($gitRoot -like "*carteira-2.0*") {
+
+        if (Test-IsForbiddenProjectPath $gitRoot) {
             Write-Status "  [BLOCKED] Git root contains forbidden path: carteira-2.0" $Red
             $allPassed = $false
         }
@@ -282,11 +299,8 @@ try {
             }
 
             $valid = $false
-            $normalizedWtPath = $wtPath.Replace('/', '\').TrimEnd([char]92)
             foreach ($allowed in $AllowedWorktreeRoots) {
-                $normalizedAllowed = $allowed.Replace('/', '\').TrimEnd([char]92)
-                if ($normalizedWtPath.Equals($normalizedAllowed, [StringComparison]::OrdinalIgnoreCase) -or
-                    $normalizedWtPath.StartsWith($normalizedAllowed + '\', [StringComparison]::OrdinalIgnoreCase)) {
+                if (Test-IsPathAtOrUnderRoot -Candidate $wtPath -Root $allowed) {
                     $valid = $true
                     break
                 }
