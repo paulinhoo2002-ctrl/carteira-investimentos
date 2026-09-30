@@ -8,6 +8,38 @@
 npm ci
 ```
 
+### PowerShell on Debian 13 Codex Cloud
+
+The governance scripts require `pwsh`. The official Microsoft Debian 13
+repository is `https://packages.microsoft.com/debian/13/prod` and provides the
+`powershell` package. In an image build with root access, install
+`packages-microsoft-prod.deb` from
+`https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb`,
+then run `apt-get update` and `DEBIAN_FRONTEND=noninteractive apt-get install -y powershell`.
+
+The Codex Cloud task user has no root access. The prepared environment
+configuration draft contains a setup script that installs the official Debian
+package into `/workspace/.codex-tools/powershell-7.6.6`. The install script
+checks Microsoft's signed Debian repository metadata and the package SHA-256
+before extraction. `packages.microsoft.com` must be allowed for this setup.
+Activate the retained binary and writable PowerShell state before running
+governance checks in a new task:
+
+```bash
+export PATH="/workspace/.codex-tools/powershell-7.6.6/opt/microsoft/powershell/7:$PATH"
+export XDG_CACHE_HOME=/workspace/.codex-tools/xdg/cache
+export XDG_CONFIG_HOME=/workspace/.codex-tools/xdg/config
+export XDG_DATA_HOME=/workspace/.codex-tools/xdg/data
+pwsh -NoProfile -File scripts/codex/project-identity-gate.ps1
+pwsh -NoProfile -File scripts/codex/quick-check.ps1
+pwsh -NoProfile -File scripts/codex/cloud-health-check.ps1
+```
+
+Run these commands from the selected checkout. The Linux identity gate checks
+that the current directory is inside its Git root, that the root is registered
+by Git as a worktree, and that `origin` names this exact GitHub repository.
+Windows retains the allowed-root policy under `C:\Projetos`.
+
 ## CORE VALIDATION
 ```bash
 npm test
@@ -33,6 +65,7 @@ npm run build:modern
 scripts/codex/project-identity-gate.ps1
 ```
 Validates repository identity, branch, remote, and worktree safety.
+On Debian, use the `pwsh -NoProfile -File` commands above.
 
 ## FAST CHECK (TIER 1) — <10 seconds
 ```powershell
@@ -114,6 +147,7 @@ Validates cloud environment readiness:
 | Service | Host | Required | Purpose |
 |---------|------|----------|---------|
 | GitHub | github.com | **Yes** | Repository clone, CI, PR |
+| Microsoft packages | packages.microsoft.com | **Setup** | Official PowerShell package |
 | Firebase | firebase.googleapis.com | No | Auth, Firestore, Hosting (real portfolio) |
 | BCB SGS | api.bcb.gov.br | No | CDI benchmark data |
 | Yahoo Finance | query1.finance.yahoo.com | No | Quote/dividend data |
