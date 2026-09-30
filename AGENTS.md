@@ -404,3 +404,41 @@ Handoff mínimo: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
 `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED`, `SKILL_GAPS_FOUND`.
 
 Detalhes: [`docs/SKILLS_ROUTING.md`](docs/SKILLS_ROUTING.md).
+
+---
+
+## Codex / Agent Execution Policy
+
+Regras permanentes para todos os agentes (Codex, Hermes, OpenCode, etc.):
+
+### PROJECT_IDENTITY_GATE obrigatório
+- `EXPECTED_PROJECT: C:\Projetos\carteira-investimentos`
+- `FORBIDDEN: C:\Projetos\carteira-2.0` — nunca acessar outro projeto
+- Worktree dedicada por missão grande
+- Main protegida
+
+### Operações proibidas sem autorização humana explícita
+- `force push`
+- `auto merge` / `merge` direto
+- `git reset --hard`
+- `git clean` destrutivo
+- `push` direto para main
+- destruição de worktree com trabalho não integrado
+
+### Protected financial semantics
+- Nunca alterar fórmulas financeiras sem fase dedicada
+- Nunca alterar persistência/schema/Firebase sem autorização
+- `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, `ESTIMATE != RECEIVED`
+- Manual RF authority preservada
+- Save() failure = quarantine
+
+### Review requirements
+- Alterações críticas exigem: FULL CHECK + independent review + HUMAN_GATE
+- TIER 1/2/3 validation strategy conforme risco
+
+### Source of truth
+- `AGENTS.md`
+- `docs/ai/PROJECT_MEMORY.md`
+- `docs/ai/SKILLS_ROUTING.md`
+- `docs/ai/DESIGN.md` quando aplicável
+- **Histórico do chat NÃO é source of truth**

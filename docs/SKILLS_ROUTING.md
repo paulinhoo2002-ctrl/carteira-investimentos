@@ -138,9 +138,9 @@ isolada não é motivo para abandonar imediatamente Hermes/NVIDIA; siga o
 critério de fallback acima.
 
 O autor da missão deve justificar o agente/modelo recomendado, por exemplo:
-“Hermes/Nemotron 3 Super é adequado porque a tarefa é uma mudança documental
+"Hermes/Nemotron 3 Super é adequado porque a tarefa é uma mudança documental
 focada com testes simples; Codex/GPT-6 Sol é fallback apenas se a rota primária
-não estiver disponível.”
+não estiver disponível."
 
 ## Cabeçalho de missão
 
@@ -196,3 +196,23 @@ Skills automaticamente. Rotas típicas incluem:
 - identidade, regras e sync Firebase: `firebase-security-rules-auditor`.
 
 A rota final depende do trabalho real; esta lista não substitui o inventário.
+
+---
+
+## TIERED VALIDATION STRATEGY
+
+```TIER 1 (FAST) - docs, small fixes, CSS, documentation-only
+→ quick-check.ps1 (identity + git + package.json + governance files)
+→ target: <10 seconds
+
+TIER 2 (NORMAL) - features, refactors, moderate bugs
+→ quick-check + related tests + required build
+→ example: npm run test:finance + npm run build:modern
+
+TIER 3 (CRITICAL) - finance, backup, restore, persistence, import, calculations, dividends, destructive deletion, migration, storage, auth/security
+→ full-check.ps1 (identity + quick-check + ALL package.json scripts)
+→ deep review + HUMAN_GATE required
+→ validation cache via HEAD + diff hash
+
+Record HEAD/hash when full-check passes to avoid re-running unchanged code.
+```

@@ -88,3 +88,6 @@ playwright-report/
 .qa-v262-screenshots/
 .qa-v262-screenshots-final/
 .worktrees/
+
+# Codex local cache (not committed)
+.codex-local/

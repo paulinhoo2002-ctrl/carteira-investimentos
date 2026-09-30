@@ -178,3 +178,23 @@ When adding/removing skills:
 
 Previous routing at `.agents/SKILL_ROUTER.md` is **DEPRECATED**.
 This file (`docs/ai/SKILLS_ROUTING.md`) is the **single canonical source**.
+
+---
+
+## TIERED VALIDATION STRATEGY
+
+```TIER 1 (FAST) - docs, small fixes, CSS, documentation-only
+→ quick-check.ps1 (identity + git + package.json + governance files)
+→ target: <10 seconds
+
+TIER 2 (NORMAL) - features, refactors, moderate bugs
+→ quick-check + related tests + required build
+→ example: npm run test:finance + npm run build:modern
+
+TIER 3 (CRITICAL) - finance, backup, restore, persistence, import, calculations, dividends, destructive deletion, migration, storage, auth/security
+→ full-check.ps1 (identity + quick-check + ALL package.json scripts)
+→ deep review + HUMAN_GATE required
+→ validation cache via HEAD + diff hash
+
+Record HEAD/hash when full-check passes to avoid re-running unchanged code.
+```

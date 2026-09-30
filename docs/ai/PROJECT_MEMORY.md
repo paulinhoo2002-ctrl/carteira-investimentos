@@ -1615,3 +1615,42 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - `MERGE_AUTHORIZATION=false` por padrão; merge exige autorização humana
   explícita e inequívoca para a PR correta. Commit, push e PR continuam sujeitos
   à autorização da missão e ao fluxo do repositório.
+
+---
+
+## CODEX_INFRASTRUCTURE_2026 — 2026-09-30
+
+### Infrastructure Created
+- **PROJECT_IDENTITY_GATE**: `scripts/codex/project-identity-gate.ps1` — Executable identity validation
+- **agent-bootstrap**: `scripts/codex/agent-bootstrap.ps1` — Agent startup protocol
+- **quick-check**: `scripts/codex/quick-check.ps1` — TIER 1 fast pre-flight (<10s)
+- **full-check**: `scripts/codex/full-check.ps1` — TIER 3 comprehensive validation with cache
+- **cloud-health-check**: `scripts/codex/cloud-health-check.ps1` — Cloud readiness assessment
+
+### Governance & Policies
+- **Worktree strategy**: `codex/` prefix, isolated worktrees under `C:\Users\Paulo Sergio\.codex\worktrees\carteira-investimentos\`
+- **Branch prefix**: `codex/`
+- **PR default**: DRAFT
+- **Force push**: OFF
+- **Auto-merge**: OFF
+- **HUMAN_GATE**: Required for merge/deploy/critical changes
+- **Review strategy**: Separate review for large/critical missions
+
+### Validation Strategy (TIER 1/2/3)
+- **TIER 1 (FAST)**: Documentation, small fixes, CSS → `quick-check.ps1`
+- **TIER 2 (NORMAL)**: Features, refactors → Related tests + required build
+- **TIER 3 (CRITICAL)**: Finance, backup, import, persistence, migration → `full-check.ps1` + deep review + HUMAN_GATE
+
+### Codex Cloud Readiness
+- **Documentation**: `docs/CODEX_CLOUD_SETUP.md`
+- **Node requirement**: 18+ (MINIMUM_SUPPORTED=18, OBSERVED_VALIDATION_RUNTIME=Node v26.7.0 / npm 11.19.0)
+- **Package-lock**: Committed for deterministic `npm ci`
+- **Env vars**: Firebase optional (tests mock), GitHub required
+- **Network**: github.com mandatory, others optional
+- **Browser**: Optional (Playwright/Chromium only if QA explicitly run)
+
+### Safety
+- No force push, no auto-merge, no destructive git
+- Protected financial semantics enforced
+- Identity gate executable and mandatory
+- Cache validation via HEAD + diff hash (`.codex-local/last-full-check.json`, gitignored)
