@@ -113,6 +113,8 @@ No GitHub Desktop:
 - [ ] Mobile testado.
 - [ ] Console sem erro crítico.
 - [ ] `cmd /c npm run build` passou.
+- [ ] Nunca validar o app via `file://`; usar `localhost` ou preview da Vercel.
+- [ ] Para login Google local, garantir `localhost` autorizado no Firebase Auth.
 
 ## Continuar em outro computador
 
