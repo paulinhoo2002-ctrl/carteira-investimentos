@@ -94,7 +94,16 @@ test('destaques da carteira usa dados oficiais e ordenacao correta', () => {
   assert.equal(lows.some((row) => row.type === 'Renda Fixa'), false);
 });
 
-test('destaques da carteira renderiza abas, estado vazio e atalho para desempenho', () => {
+// Reconciliação V3 (HYBRID V2 aprovada): a spec determina "MOVE rankings →
+// Análise" e "Dashboard sem ranking" (seção 4, matriz de decisão L28). As
+// colunas "Maiores altas/baixas" eram ranking na primeira dobra do Dashboard
+// e foram intencionalmente removidas. O comportamento protegido continua
+// coberto: (1) top performers com dados oficiais e ordenação correta são
+// afirmados pelo teste 1 via dashboardHighlightsRows (fonte canônica da aba
+// Análise/IA); (2) a síntese priorizada de insights permanece no dashboard
+// via dashboardHomeHighlightsPanel com no máximo uma prioridade; (3) a
+// navegação atalho para desempenho continua operando em go().
+test('destaques da carteira prioriza insights acionáveis e preserva navegação para desempenho', () => {
   const rows = [
     { ticker: 'AAA3', type: 'Acao', sector: 'Banco', profit: 1850, pct: 18.5, applied: 10000, current: 11850, hasPerformanceData: true },
     { ticker: 'AAB3', type: 'FII', sector: 'Imobiliario', profit: 1210, pct: 12.1, applied: 10000, current: 11210, hasPerformanceData: true },
@@ -114,61 +123,62 @@ test('destaques da carteira renderiza abas, estado vazio e atalho para desempenh
   ];
   const { context, counters } = makeContext(rows);
 
-  const htmlHigh = context.dashboardHomeHighlightsPanel();
-  assert.match(htmlHigh, /dashboard-highlight-panels/);
-  assert.match(htmlHigh, /Maiores altas/);
-  assert.match(htmlHigh, /Maiores baixas/);
-  assert.match(htmlHigh, /AAA3/);
-  assert.match(htmlHigh, /R\$1850\.00/);
-  assert.match(htmlHigh, /dashboard-highlight-details/);
-  assert.match(htmlHigh, /dashboard-highlight-bar/);
-  assert.match(htmlHigh, /<span>PM<strong>/);
-  assert.match(htmlHigh, /<span>Atual<strong>/);
-  assert.match(htmlHigh, /class=\"gn\"/);
-  assert.equal(htmlHigh.includes('dashboard-highlight-toolbar'), false);
-  assert.equal((htmlHigh.match(/dashboard-highlight-row/g) || []).length, 10);
-  assert.equal(htmlHigh.includes('Maiores pagadores do mes'), false);
+  // Painel V3: um insight priorizado acionável, com severidade e rota válida.
+  context.S.__unused = undefined;
+  const insight = { id: 'concentration-top-sector', severity: 'ATTENTION', title: 'Concentração em Bancos', description: 'Setor domina a carteira.', relatedRoute: 'ativos', actionLabel: 'Ver detalhes' };
+  const htmlInsight = context.dashboardHomeHighlightsPanel({ insights: [insight] });
+  assert.match(htmlInsight, /dashboard-highlight-panels/);
+  assert.match(htmlInsight, /dashboard-insight-action/);
+  assert.match(htmlInsight, /Concentração em Bancos/);
+  assert.match(htmlInsight, /Atenção/);
+  assert.match(htmlInsight, /go\('ativos'\)/);
+  assert.match(htmlInsight, /aria-label="Ver detalhes: Concentração em Bancos"/);
 
+  // Vários insights: síntese com contagem e acesso à visão completa (IA).
+  const htmlMany = context.dashboardHomeHighlightsPanel({ insights: [insight, { ...insight, id: 'i2', title: 'Segundo ponto' }, { ...insight, id: 'i3', title: 'Terceiro ponto' }] });
+  assert.match(htmlMany, /3 prioridades identificadas/);
+  assert.match(htmlMany, /go\('ia'\)/);
+  assert.equal((htmlMany.match(/premium-consultive-card-head/g) || []).length, 1, 'síntese única, sem card por insight');
+
+  // Estado vazio: mensagem real, sem card vazio (UNKNOWN != ZERO).
+  const htmlEmpty = context.dashboardHomeHighlightsPanel({ insights: [] });
+  assert.match(htmlEmpty, /Nenhum ponto prioritário identificado na base atual\./);
+  assert.equal(htmlEmpty.includes('dashboard-highlight-row'), false);
+
+  // Ranking não volta à primeira dobra: sem colunas altas/baixas no painel V3.
+  const anyPanel = htmlInsight + htmlMany + htmlEmpty;
+  assert.equal(anyPanel.includes('Maiores altas'), false);
+  assert.equal(anyPanel.includes('Maiores baixas'), false);
+  assert.equal(anyPanel.includes('dashboard-highlight-toolbar'), false);
+
+  // Comportamento de alternância preservado com render único.
+  context.setDashboardHighlightsTab('low');
+  assert.equal(context.S.dashboardHighlightsTab, 'low');
+  assert.equal(counters.renders, 1);
+
+  // Atalho de navegação para desempenho continua roteando para Ativos.
   const navContext = makeContext(rows).context;
   vm.runInNewContext(extractGoSnippet(), navContext);
   navContext.go('desempenho');
   assert.equal(navContext.S.tab, 'ativos');
   assert.equal(navContext.S.assetsInnerTab, 'desempenho');
 
-  context.setDashboardHighlightsTab('low');
-  assert.equal(context.S.dashboardHighlightsTab, 'low');
-  assert.equal(counters.renders, 1);
+  // A fonte canônica do ranking (usada pela aba Análise/IA) permanece
+  // ordenando e filtrando com dados oficiais — protected behavior do teste 1,
+  // reafirmado aqui contra o snippet atual.
+  const highs = context.dashboardHighlightsRows('high');
+  const lows = context.dashboardHighlightsRows('low');
+  assert.deepEqual([...highs.slice(0, 3).map((row) => row.ticker)], ['AAA3', 'AAB3', 'AAC3']);
+  // Lows ordenados por prejuízo decrescente: BAC3(-910), BAD3(-610), BAB3(-550);
+  // BAC4 (Renda Fixa, -910) é excluído pela fonte antes da ordenação.
+  assert.deepEqual([...lows.slice(0, 3).map((row) => row.ticker)], ['BAC3', 'BAD3', 'BAB3']);
+  assert.equal(highs.some((row) => row.type === 'Renda Fixa'), false);
+  assert.equal(lows.some((row) => row.type === 'Renda Fixa'), false);
 
-  const htmlLow = context.dashboardHomeHighlightsPanel();
-  assert.match(htmlLow, /BAC3/);
-  assert.match(htmlLow, /class=\"rd\"/);
-  assert.equal(htmlLow.includes('Nenhum ativo negativo com dados suficientes.'), false);
-  context.setDashboardHighlightsClassFilter('acao');
-  const htmlAction = context.dashboardHomeHighlightsPanel();
-  assert.equal(htmlAction.includes('Renda Fixa'), false);
-  assert.ok((htmlAction.match(/dashboard-highlight-row/g) || []).length <= 10);
-  assert.match(htmlAction, /Maiores altas/);
-
-  context.setDashboardHighlightsTab('high');
-  context.setDashboardHighlightsClassFilter('fii');
-  const htmlFii = context.dashboardHomeHighlightsPanel();
-  assert.match(htmlFii, /AAB3|AAE3/);
-  assert.equal(htmlFii.includes('AAC3'), false);
-
-  context.setDashboardHighlightsClassFilter('etf');
-  const htmlEtf = context.dashboardHomeHighlightsPanel();
-  assert.match(htmlEtf, /AAC3|AAF3/);
-  assert.equal(htmlEtf.includes('AAA3'), false);
-
-  const emptyContext = makeContext([]).context;
-  const emptyHigh = emptyContext.dashboardHomeHighlightsPanel();
-  emptyContext.setDashboardHighlightsTab('low');
-  const emptyLow = emptyContext.dashboardHomeHighlightsPanel();
-  assert.match(emptyHigh, /Nenhum ativo positivo com dados suficientes\./);
-  assert.match(emptyLow, /Nenhum ativo negativo com dados suficientes\./);
-
+  // A primeira dobra do dashboard consome a síntese priorizada, não o grid V2.
   const dashBlock = extractSnippet('function dash(){', 'function patrimonySnapshot(');
-  assert.match(dashBlock, /dashboardHomeHighlightsPanel\(\)/);
+  assert.match(dashBlock, /dashboardV3PriorityPanel\(data\)/);
+  assert.equal(dashBlock.includes('dashboardHomePerformancePanel('), false);
   assert.equal(dashBlock.includes('dashboardHomeMonthlyPayersPanel(data)'), false);
   assert.equal(dashBlock.includes("dashboardHomePerformancePanel('Maiores altas'"), false);
   assert.equal(dashBlock.includes("dashboardHomePerformancePanel('Maiores baixas'"), false);

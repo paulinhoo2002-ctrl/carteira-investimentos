@@ -4520,7 +4520,9 @@ html[data-theme="light"] .card .cv:not([style*="color"]),
 html[data-theme="light"] .report-export-title,
 html[data-theme="light"] .b3-preview-card-title,
 html[data-theme="light"] .passive-goal-empty-title,
-html[data-theme="light"] .b3-conference-card .value{
+html[data-theme="light"] .b3-conference-card .value,
+html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric-value,
+html[data-theme="light"] .canon-dashboard .dashboard-income-grid .premium-metric-value{
   color:var(--text)!important;
 }
 html[data-theme="light"] .hdr-sub,
@@ -6651,7 +6653,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   }
   .dashboard-executive-kpis {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     margin: 1rem 0;
   }
@@ -7400,7 +7402,7 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 .canon-dashboard .canon-dash-meta .dash-chip{min-height:38px;padding:7px 11px;border-radius:9px}
 .canon-dashboard .canon-dash-meta .dash-chip.on{background:var(--canon-green);border-color:var(--canon-green);color:#04130c}
 .canon-dashboard .canon-last-update{margin-left:4px}
-.canon-dashboard .dashboard-executive-kpis{gap:10px;margin:0}
+.canon-dashboard .dashboard-executive-kpis{gap:10px;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
   .canon-dashboard .dashboard-executive-kpis .premium-metric{min-height:0;height:78px;padding:8px 10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
 .canon-dashboard .dashboard-executive-kpis .premium-metric-top{gap:8px}
 .canon-dashboard .dashboard-executive-kpis .premium-metric-icon{width:30px;height:30px;border-radius:9px}
@@ -23620,62 +23622,83 @@ function hideLineChartTooltip(){
   document.querySelectorAll('.chart-crosshair').forEach(line=>{ line.hidden=true; });
 }
 function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
-  const width=1080, height=260;
-  const padL=50, padR=18, padT=14, padB=28;
-  const all=series.flatMap(s=>s.values.map(v=>Number(v)||0));
+  const dashboardChart=chartClass==='dashboard-patrimony-chart';
+  const compactChart=dashboardChart && innerWidth<=767;
+  const width=dashboardChart?(compactChart?360:760):1080;
+  const height=dashboardChart?(compactChart?142:198):260;
+  const padL=dashboardChart?(compactChart?67:72):50, padR=18, padT=14, padB=28;
+  const validValue=v=>typeof v==='number' && Number.isFinite(v);
+  const all=series.flatMap(s=>(s.values||[]).filter(validValue));
   if(!all.length) return '<div class="es" style="padding:36px 18px">Sem dados suficientes para desenhar o gráfico.</div>';
   let minY=Math.min(0,...all);
   let maxY=Math.max(0,...all);
   if(minY===maxY){ maxY=minY+1; }
   const span=maxY-minY;
   const extra=Math.max(2, span*0.12);
-  minY-=extra; maxY+=extra;
+  minY=minY<0?minY-extra:0; maxY+=extra;
   const xStep=(width-padL-padR)/Math.max(1, labels.length-1);
   const yAt=v=>height-padB-(((v-minY)/(maxY-minY))*(height-padT-padB));
   const xAt=i=>padL + i*xStep;
+
+  // Respect hideValues for tooltips and accessible text
+  const hideValues = typeof S !== 'undefined' && S.hideValues;
+  const safeFormatter = hideValues ? () => 'R$ ••••' : valueFormatter;
+
   const chartTooltips=labels.map((label,i)=>series.map(s=>{
     if(!Array.isArray(s.values) || i>=s.values.length) return '';
     const value=s.values[i];
+    if(!validValue(value)) return '';
     const name=s.tooltipLabel||s.name||'Série';
-    return `${label}\n${name}\n${valueFormatter(value)}`;
+    return `${label}\n${name}\n${safeFormatter(value)}`;
   }).filter(Boolean).join('\n'));
   const grid=[];
   for(let i=0;i<=5;i++){
     const y=padT + ((height-padT-padB)/5)*i;
     const value=maxY - ((maxY-minY)/5)*i;
     grid.push(`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${width-padR}" y2="${y.toFixed(1)}" stroke="#161e2e" stroke-width="1"/>`);
-    grid.push(`<text x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="#64748b" font-size="10">${valueFormatter(value)}</text>`);
+    grid.push(`<text x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="#64748b" font-size="10">${safeFormatter(value)}</text>`);
   }
   const paths=series.map((s,idx)=>{
     const color=s.color||CLRS[idx%CLRS.length];
     const values=s.values||[];
     if(!values.length) return '';
-    const pts=values.map((v,i)=>`${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`);
-    const path=`M ${pts.join(' L ')}`;
-    const area=`M ${xAt(0).toFixed(1)},${(height-padB).toFixed(1)} L ${pts.join(' L ')} L ${xAt(values.length-1).toFixed(1)},${(height-padB).toFixed(1)} Z`;
+    const runs=[];
+    let run=[];
+    values.forEach((value,i)=>{
+      if(validValue(value)) run.push({value,i});
+      else if(run.length){runs.push(run);run=[];}
+    });
+    if(run.length) runs.push(run);
+    const pathsMarkup=runs.map(points=>{
+      const pts=points.map(({value,i})=>`${xAt(i).toFixed(1)},${yAt(value).toFixed(1)}`);
+      const path=`M ${pts.join(' L ')}`;
+      const area=points.length>1?`M ${xAt(points[0].i).toFixed(1)},${(height-padB).toFixed(1)} L ${pts.join(' L ')} L ${xAt(points[points.length-1].i).toFixed(1)},${(height-padB).toFixed(1)} Z`:'';
+      return `${area&&s.fill?`<path d="${area}" fill="${s.fill}"/>`:''}<path d="${path}" fill="none" stroke="${color}" stroke-width="${s.width||2.2}" stroke-linecap="round" stroke-linejoin="round"><title>${esc(s.name||'Série')}</title></path>`;
+    }).join('');
 const pointsMarkup=values.map((v,i)=>{
+      if(!validValue(v)) return '';
       const label=labels[i]||`Período ${i+1}`;
-      const tooltip=chartTooltips[i] || (s.tooltipLabel ? `${label}\n${s.tooltipLabel}\n${valueFormatter(v)}` : `${s.name||'Série'} · ${label}: ${valueFormatter(v)}`);
+      const tooltip=chartTooltips[i] || (s.tooltipLabel ? `${label}\n${s.tooltipLabel}\n${safeFormatter(v)}` : `${s.name||'Série'} · ${label}: ${safeFormatter(v)}`);
       const visible=s.points===false?'':`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="2.5" fill="${color}" stroke="#090c15" stroke-width="1"/>`;
       return `${visible}<circle class="chart-data-point" cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="8" fill="transparent" tabindex="0" focusable="true" aria-label="${esc(tooltip)}" data-chart-index="${i}" data-chart-x="${xAt(i).toFixed(1)}" data-chart-tooltip="${esc(tooltip)}" onpointerenter="showLineChartTooltip(this,event)" onpointermove="showLineChartTooltip(this,event)" onpointerleave="hideLineChartTooltip()" onfocus="showLineChartTooltip(this,event)" onblur="hideLineChartTooltip()" onclick="showLineChartTooltip(this,event)"><title>${esc(tooltip)}</title></circle>`;
     }).join('');
     return `
-      <path d="${area}" fill="${s.fill||'none'}" opacity="${s.fill?1:0}"/>
-      <path d="${path}" fill="none" stroke="${color}" stroke-width="${s.width||2.2}" stroke-linecap="round" stroke-linejoin="round"><title>${esc(s.name||'Série')}</title></path>
+      ${pathsMarkup}
       ${pointsMarkup}
     `;
   }).join('');
-  const labelStep=Math.max(1, Math.ceil(labels.length/8));
-  const xLabels=labels.map((l,i)=>`<text x="${xAt(i).toFixed(1)}" y="${height-10}" text-anchor="middle" fill="${i%labelStep===0||i===labels.length-1?'#64748b':'transparent'}" font-size="10">${esc(l)}</text>`).join('');
+  const labelStep=Math.max(1, Math.ceil(labels.length/(compactChart?4:8)));
+  const xLabels=labels.flatMap((l,i)=>i%labelStep===0||i===labels.length-1?[`<text x="${xAt(i).toFixed(1)}" y="${height-10}" text-anchor="middle" fill="#64748b" font-size="10">${esc(l)}</text>`]:[]).join('');
   const classAttr=chartClass ? ` class="${chartClass}"` : '';
   const preserveAttr=chartClass ? ' preserveAspectRatio="none"' : '';
   const chartId=`chart-${String(chartClass||'series').replace(/[^a-zA-Z0-9_-]+/g,'-')}-${labels.length}`;
   const firstLabel=labels[0]||'primeiro período';
   const lastLabel=labels[labels.length-1]||'último período';
   const firstSeries=series[0]||{};
-  const firstValue=Array.isArray(firstSeries.values)&&firstSeries.values.length?valueFormatter(firstSeries.values[0]):'—';
-  const lastValue=Array.isArray(firstSeries.values)&&firstSeries.values.length?valueFormatter(firstSeries.values[firstSeries.values.length-1]):'—';
-  const chartSummary=`${firstSeries.name||firstSeries.tooltipLabel||'Série principal'}: ${firstLabel}, ${firstValue}; ${lastLabel}, ${lastValue}.`;
+  const firstValue=Array.isArray(firstSeries.values)&&validValue(firstSeries.values[0])?safeFormatter(firstSeries.values[0]):'sem dado';
+  const lastValue=Array.isArray(firstSeries.values)&&validValue(firstSeries.values[firstSeries.values.length-1])?safeFormatter(firstSeries.values[firstSeries.values.length-1]):'sem dado';
+  const gapLabels=(firstSeries.values||[]).flatMap((v,i)=>validValue(v)?[]:[labels[i]||`período ${i+1}`]);
+  const chartSummary=`${firstSeries.name||firstSeries.tooltipLabel||'Série principal'}: ${firstLabel}, ${firstValue}; ${lastLabel}, ${lastValue}.${gapLabels.length?` Intervalo sem dados: ${gapLabels.join(', ')}.`:''}`;
   return `<svg${classAttr} role="img" aria-labelledby="${chartId}-title ${chartId}-desc" viewBox="0 0 ${width} ${height}" width="100%" height="${height}"${preserveAttr} style="display:block;overflow:visible">
     <title id="${chartId}-title">${esc(firstSeries.name||firstSeries.tooltipLabel||'Gráfico de evolução')}</title>
     <desc id="${chartId}-desc">${esc(chartSummary)}</desc>
@@ -27940,18 +27963,24 @@ function desktopTabs(){
       <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
-    ${navItem('dashboard','Dashboard','📊',S.tab==='dashboard')}
+    <div class="nav-section-title">CARTEIRA</div>
+    ${navItem('dashboard','Resumo','📊',S.tab==='dashboard')}
     ${navItem('ativos','Ativos','💼',isAtivos)}
     ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
-    ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
-    ${navItem('analise','Análise','📊',S.tab==='analise')}
+    <div class="nav-section-title">RENDA &amp; PERFORMANCE</div>
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
     ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
+    ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
+    <div class="nav-section-title">ANÁLISE</div>
+    ${navItem('analise','Análise','📊',S.tab==='analise')}
     ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
+    ${navItem('metas','Metas','🎯',S.tab==='metas')}
+    ${navItem('ia','Insights','💡',S.tab==='ia')}
+    <div class="nav-section-title">DADOS</div>
     ${navItem('confiabilidade','Confiabilidade','🛡️',S.tab==='confiabilidade')}
     ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
+    <div class="nav-section-title">MAIS</div>
     ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
-    ${navItem('metas','Metas','🎯',S.tab==='metas')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
     <div class="side-utilities" aria-label="Preferências da carteira">
       ${hideValuesToggleButton('sidebar')}
@@ -28844,20 +28873,34 @@ function dashboardHighlightsRowHtml(row, kind){
     ? `<button type="button" class="premium-exec-row dashboard-highlight-row dashboard-context-action" onclick="dashboardOpenAssetByTicker(${esc(JSON.stringify(ticker))})" aria-label="Abrir ativo ${esc(ticker)}">${content}</button>`
     : `<div class="premium-exec-row dashboard-highlight-row">${content}</div>`;
 }
-function dashboardHomeHighlightsPanel(){
-  const classFilter=['all','acao','fii','etf'].includes(String(S.dashboardHighlightsClassFilter||'all'))
-    ? String(S.dashboardHighlightsClassFilter||'all') : 'all';
-  const renderColumn=(kind,title,empty)=>{
-    const rows=dashboardHighlightsRows(kind,classFilter).slice(0,5);
-    const body=rows.length ? rows.map(row=>dashboardHighlightsRowHtml(row,kind)).join('') : `<div class="premium-empty">${empty}</div>`;
-    return `<section class="dashboard-highlight-column ${kind}">
-      <div class="dashboard-highlight-column-head"><strong>${title}</strong><span>${rows.length} ativos</span></div>
-      <div class="premium-exec-list">${body}</div>
-    </section>`;
-  };
+function dashboardHomeHighlightsPanel(data){
+  const insights = Array.isArray(data?.insights) ? data.insights.slice(0, 3) : [];
+  const supportedRoutes = new Set(['dashboard','ativos','aportes','metas','dividendos','rentabilidade','ajudar','relatorios','ia','auditoria','renda-fixa','desempenho','irpf','settings']);
+  if (insights.length === 0) {
+    return `<div class="dashboard-highlight-panels"><div class="premium-empty">Nenhum ponto prioritário identificado na base atual.</div></div>`;
+  }
+
+  if (insights.length === 1) {
+    const item = insights[0];
+    const route = String(item?.relatedRoute || '').trim();
+    const actionLabel = String(item?.actionLabel || '').trim();
+    const severity = `<div class="premium-exec-value ${item.severity==='IMPORTANT'?'rd':item.severity==='ATTENTION'?'am':'gn'}">${item.severity==='IMPORTANT'?'Importante':item.severity==='ATTENTION'?'Atenção':'Info'}</div>`;
+    const content = `<div class="premium-exec-left"><div class="premium-exec-title">${esc(item.title)}</div><div class="premium-exec-sub">${esc(item.description)}</div></div>${severity}`;
+    return supportedRoutes.has(route) && actionLabel
+      ? `<div class="dashboard-highlight-panels"><button class="premium-exec-row dashboard-insight-action premium-consultive-card" type="button" aria-label="${esc(actionLabel)}: ${esc(item.title)}" onclick="go('${esc(route)}')">${content}</button></div>`
+      : `<div class="dashboard-highlight-panels"><section class="premium-consultive-card">${content}</section></div>`;
+  }
+
+  // Many insights - show summary only
   return `<div class="dashboard-highlight-panels">
-    ${renderColumn('high','Maiores altas','Nenhum ativo positivo com dados suficientes.')}
-    ${renderColumn('low','Maiores baixas','Nenhum ativo negativo com dados suficientes.')}
+    <section class="premium-consultive-card">
+      <div class="premium-consultive-card-head">
+        <div class="premium-consultive-card-title">${insights.length} prioridades identificadas</div>
+        <div class="premium-consultive-card-status warn">Atenção</div>
+      </div>
+      <div class="premium-consultive-card-text">Principais: ${insights.slice(0,3).map(i => esc(i.title)).join(', ')}</div>
+      <div class="premium-consultive-card-action"><button class="btn bgh" onclick="go('ia')">Ver todos os insights</button></div>
+    </section>
   </div>`;
 }
 function dashboardHomeCompositionPanel(data){
@@ -30337,7 +30380,7 @@ function dash(){
   const periodOpts=[3,6,12,24];
   const dashMeta=new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   return `
-    <div class="premium-dashboard index2027-dashboard canon-dashboard">
+    <div class="premium-dashboard canon-dashboard">
       <div class="dashboard-page-heading canon-dash-head">
         <div>
           <h1>Visão consolidada</h1>
@@ -30349,24 +30392,54 @@ function dash(){
         </div>
       </div>
       ${executiveKPIs(data)}
-      ${dashboardQuickActions()}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
-        ${dashboardHomeCompositionPanel(data)}
+        ${dashboardV3AllocationPanel()}
       </div>
-      <div class="canon-dash-row-c">${dashboardAllocationIntelligencePanel()}</div>
-      <div class="canon-dash-row-d">
-        ${dashboardPassiveIncomePanel(data)}
-      </div>
-      <div class="canon-dash-row-e">
-        ${dashboardHomeHighlightsPanel()}
-      </div>
-      <div class="dashboard-intelligence-grid canon-dash-row-f">
-        ${dashboardReceiptsPanel(data)}
-        ${dashboardInsightsPanel(data)}
-      </div>
+      ${dashboardV3PriorityPanel(data)}
+      ${dashboardQuickActions()}
     </div>
   `;
+}
+
+function dashboardV3AllocationPanel(){
+  const allocation=portfolioAllocationSnapshot();
+  const rows=Array.isArray(allocation.classes?.rows)?allocation.classes.rows.filter(row=>Number(row.value)>0):[];
+  const unknownCount=allocation.unknownPositionCount||0;
+  const knownZero=allocation.knownPositionCount>0 && allocation.totalKnownValue===0;
+  const hidden=!!S.hideValues;
+  const palette=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff'];
+  const segments=rows.map((row,index)=>`<span style="width:${Math.max(0,Math.min(100,Number(row.shareOfKnown)||0)).toFixed(1)}%;background:${palette[index%palette.length]}" title="${esc(row.label)}"></span>`).join('');
+  const list=hidden?'' : rows.length?rows.map((row,index)=>`<button type="button" class="dashboard-v3-allocation-row" data-class="${esc(row.label)}" onclick="dashboardOpenAllocationClass(this.dataset.class)" aria-label="Ver ${esc(row.label)} em Ativos"><span class="dashboard-v3-allocation-dot" style="background:${palette[index%palette.length]}"></span><span>${esc(row.label)}</span><strong>${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</strong></button>`).join(''):
+    `<p class="dashboard-v3-allocation-empty">${knownZero?'Valor atual conhecido: zero; percentuais indisponíveis com base zero.':allocation.positionCount?'Valores atuais indisponíveis.':'Sem ativos cadastrados.'}</p>`;
+  const unknown=unknownCount?`<p class="dashboard-v3-allocation-unknown">${unknownCount} ${unknownCount===1?'valor atual indisponível':'valores atuais indisponíveis'}; percentuais usam apenas valores conhecidos.</p>`:'';
+  const unclassified=Number(allocation.totalUnclassifiedValue)>0?`<p class="dashboard-v3-allocation-unknown">Parcela não classificada: ${hidden?'••••':fmt(allocation.totalUnclassifiedValue)}.</p>`:'';
+  return `<section class="dashboard-v3-allocation" aria-label="Alocação da carteira">
+    <div class="dashboard-v3-section-head"><h2>Alocação</h2><button type="button" onclick="go('ativos')">Ver ativos</button></div>
+    <p class="dashboard-v3-context">Participação por classe · base: valor atual conhecido.</p>
+    ${hidden?'<p class="dashboard-v3-allocation-hidden">Composição oculta</p>':`<div class="dashboard-v3-allocation-bar" role="img" aria-label="Participação das classes com valor conhecido">${segments}</div>`}
+    <div class="dashboard-v3-allocation-list">${list}</div>${unknown}${unclassified}
+  </section>`;
+}
+
+function dashboardOpenAllocationClass(className){
+  go('ativos');
+  S.assetsSearch='';
+  S.assetsClassFilter='all';
+  S.assetsFilterClasses=[String(className)];
+  render();
+}
+
+function dashboardV3PriorityPanel(data){
+  const hasRecords=(S.assets||[]).length+(S.aportes||[]).length+(S.proventos||[]).length+(S.rfEvents||[]).length>0;
+  const items=(Array.isArray(data?.insights)?data.insights:[]).filter(item=>
+    ['ATTENTION','IMPORTANT'].includes(item.severity) && (item.id!=='data-quality-review'||hasRecords));
+  if(!items.length) return '';
+  const top=items[0];
+  const reason=top.id==='data-quality-review'?'Fontes e cobertura exigem conferência antes de interpretar o resultado.':top.description;
+  const severity=top.severity==='IMPORTANT'?'Importante':'Atenção';
+  if(items.length===1) return `<aside class="dashboard-v3-priority" aria-label="Prioridade da carteira"><div><strong>${severity} · ${esc(top.title)}</strong><span>${esc(reason)}</span></div><button type="button" onclick="go('${esc(top.relatedRoute||'ia')}')">${esc(top.actionLabel||'Ver detalhes')}</button></aside>`;
+  return `<aside class="dashboard-v3-priority" aria-label="Prioridade da carteira"><div><strong>${severity} · ${esc(top.title)} <small>· ${items.length} pontos</small></strong><span>${esc(reason)}</span></div><button type="button" onclick="go('ia')">Ver Insights</button></aside>`;
 }
 
 function dashboardQuickActions(){
@@ -30425,42 +30498,64 @@ function patrimonySnapshot(period=Number(S.dashPeriod)||12){
       : {tone:'muted',title:'Patrimônio próximo do aplicado',text:`A diferença atual é pequena (${fmtP(pct)}). O crescimento observado vem principalmente dos aportes registrados.`};
   return {summary,months,performance,bestEvolution,worstEvolution,biggestContribution,pct,absPct,reading,count};
 }
+function dashboardCurrentValueAvailability(){
+  const allocation=portfolioAllocationSnapshot();
+  if(!allocation.positionCount) return {state:'NO_DATA',note:'Sem ativos cadastrados'};
+  const missing=allocation.unknownPositionCount||0;
+  if(missing===allocation.positionCount) return {state:'UNKNOWN',note:'Valor atual indisponível'};
+  if(missing>0) return {state:'PARTIAL',note:`Parcial: ${missing} valor${missing===1?'':'es'} atual${missing===1?'':'is'} indisponível${missing===1?'':'eis'}`};
+  if((S.assets||[]).some(asset=>!isRendaFixaAsset(asset) && globalThis.PortfolioDataTrust?.freshness?.(asset).status==='STALE'))
+    return {state:'STALE',note:'Cotações desatualizadas; confirme a data da fonte'};
+  return {state:'AVAILABLE',note:'Valores atuais informados'};
+}
 function executiveKPIs(data){
   const p=data?.portfolio||cx();
   const totalCurrent=Number(p.tC)||0;
   const totalApplied=Number(p.tI)||0;
-  const totalResult=Number(p.tG)||0;
-  const totalPct=Number(p.tGP)||0;
-  const income=data?.income||passiveIncomeGoalStats();
+  const amountValid=typeof p.tG==='number' && Number.isFinite(p.tG);
+  const percentValid=typeof p.tGP==='number' && Number.isFinite(p.tGP) && totalApplied>0;
+  const availability=dashboardCurrentValueAvailability();
   const currentMonthKey=passiveIncomeMonthKey(new Date());
   const recent=data?.recent?.month===currentMonthKey?data.recent:passiveIncomeMonthSummary(currentMonthKey);
   const monthReceived=Number(recent.total)||0;
+  // cx() supplies both values from the same applied-capital base. Validate the
+  // relationship before pairing; this does not calculate a replacement return.
+  const sameBasis=amountValid && percentValid && Math.abs((p.tG/totalApplied)*100-p.tGP)<0.02;
+  const resultAvailable=!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state);
+  const amount=resultAvailable&&amountValid?fmt(p.tG):'';
+  const percent=resultAvailable&&percentValid&&!S.hideValues?fmtP(p.tGP):'';
+  const resultValue=sameBasis&&amount&&percent?`${amount} · ${percent}`:(amount||percent||'—');
+  const resultNote=!resultAvailable?'Base parcial ou indisponível':sameBasis?'Variação atual sobre capital aplicado':'Medidas sem base comum; não pareadas';
+  const resultTone=p.tG>=0?'#34d399':'#f87171';
+  const resultGlow=p.tG>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
+  const patrimonyValue=['UNKNOWN','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
+  const investedContext=totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
+  const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
+  const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
+
   return `
     <div class="dashboard-executive-kpis">
-      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',fmt(totalCurrent),totalCurrent>0?'Valor estimado da carteira':'Cadastre ativos para começar','#a78bfa','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Total investido',fmt(totalApplied),totalApplied>0?'Capital informado na carteira':'Sem aportes registrados','#60a5fa','rgba(96,165,250,.14)')}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado geral',fmt(totalResult),totalCurrent>0?'Diferença entre aplicado e atual':'Sem base suficiente',totalResult>=0?'#34d399':'#f87171',totalResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
-      ${dashboardMetricCard(dashboardMetricIcon('percent'),'Rentabilidade',totalApplied>0?fmtP(totalPct):'—',totalApplied>0?'Cálculo sobre o capital aplicado':'Sem capital informado',totalPct>=0?'#60a5fa':'#f87171',totalPct>=0?'rgba(96,165,250,.14)':'rgba(248,113,113,.14)')}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`,'#a78bfa','rgba(129,140,248,.16)')}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultNote,resultTone,resultGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',incomeAvailable?fmt(monthReceived):'—',incomeAvailable?'Proventos recebidos no mês atual':'Sem histórico de renda recebida','#10b981','rgba(16,185,129,.14)')}
     </div>
   `;
 }
 function dashboardEvolutionPanel(data){
-  const p=data?.portfolio||cx();
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);
   const values=snapshot.months.map(row=>row.cumulative);
   const hasHistory=values.some(value=>Number.isFinite(value)&&value>0);
   if(hasHistory){
     return `
       <div class="dashboard-evolution-card">
-        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Aportes líquidos acumulados · janela de ${snapshot.count} meses.</div></div><span class="premium-panel-badge premium-financial-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
-        ${lineChart([{name:'Aportes líquidos acumulados',tooltipLabel:'Patrimônio',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
+        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes acumulados</div><div class="premium-panel-sub">Acumulado de aportes líquidos · janela de ${snapshot.count} meses. Histórico patrimonial indisponível.</div></div></div>
+        ${lineChart([{name:'Aportes líquidos acumulados',tooltipLabel:'Aportes acumulados',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
   return `
     <div class="dashboard-evolution-card dashboard-evolution-empty">
-      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Patrimônio consolidado · histórico patrimonial ainda não disponível.</div></div><span class="premium-panel-badge">Patrimônio atual ${fmt(p.tC)}</span></div>
+      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Patrimônio consolidado · histórico patrimonial ainda não disponível.</div></div></div>
       <div class="premium-empty">Ainda não há série mensal confiável para desenhar a curva. Registre aportes e movimentações para liberar a evolução patrimonial.</div>
       <div class="premium-panel-actions" style="margin-top:10px">
         <button class="btn bp" onclick="go('aportes')">Registrar aporte</button>
@@ -35951,20 +36046,25 @@ function getAI(){
 function mobileMenuOpen(){
   S.mobileMenuOpen=true;
   render();
+  document.querySelector('#investMenuSheet .sheet-title')?.focus();
 }
 function mobileMenuClose(){
   withScrollPreserved(()=>{
     S.mobileMenuOpen=false;
     render();
+    document.querySelector('#investBottomNav > button:last-child')?.focus();
   });
 }
+if(typeof document!=='undefined' && typeof document.addEventListener==='function') document.addEventListener('keydown',event=>{
+  if(event.key==='Escape' && S.mobileMenuOpen){event.preventDefault();mobileMenuClose();}
+});
 function mobileBottomNav(){
   return `<nav id="investBottomNav" aria-label="Navegação principal da carteira">
-    <button class="${S.tab==='dashboard'?'act':''}" onclick="go('dashboard')"${S.tab==='dashboard'?' aria-current="page"':''}><span class="ni">📊</span><span>Dashboard</span></button>
+    <button class="${S.tab==='dashboard'?'act':''}" onclick="go('dashboard')"${S.tab==='dashboard'?' aria-current="page"':''}><span class="ni">📊</span><span>Resumo</span></button>
     <button class="${S.tab==='ativos'?'act':''}" onclick="go('ativos')"${S.tab==='ativos'?' aria-current="page"':''}><span class="ni">💼</span><span>Ativos</span></button>
-    <button class="nav-center ${S.tab==='aportes'?'act':''}" onclick="go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}><span class="ni">💰</span><span>Aportes</span></button>
     <button class="${S.tab==='dividendos'?'act':''}" onclick="go('dividendos')"${S.tab==='dividendos'?' aria-current="page"':''}><span class="ni">📅</span><span>Dividendos</span></button>
-    <button class="${['patrimonio','metas','renda-fixa','rentabilidade','ajudar','auditoria','relatorios','ia','analise','irpf','settings'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()" aria-label="Abrir navegação complementar" aria-controls="investMenuDrawer" aria-expanded="${S.mobileMenuOpen?'true':'false'}"><span class="ni">☰</span><span>Menu</span></button>
+    <button class="${S.tab==='renda-fixa'?'act':''}" onclick="go('renda-fixa')"${S.tab==='renda-fixa'?' aria-current="page"':''}><span class="ni">◈</span><span>Renda Fixa</span></button>
+    <button class="${['aportes','patrimonio','metas','rentabilidade','ajudar','auditoria','relatorios','ia','analise','irpf','settings','confiabilidade','importacao','corporate-eventos'].includes(S.tab)?'act':''}" onclick="mobileMenuOpen()" aria-label="Abrir navegação complementar" aria-controls="investMenuDrawer" aria-expanded="${S.mobileMenuOpen?'true':'false'}"${['aportes','patrimonio','metas','rentabilidade','ajudar','auditoria','relatorios','ia','analise','irpf','settings','confiabilidade','importacao','corporate-eventos'].includes(S.tab)?' aria-current="page"':''}><span class="ni">☰</span><span>Mais</span></button>
   </nav>`;
 }
 function mobileMenuDrawer(){
@@ -35973,9 +36073,10 @@ function mobileMenuDrawer(){
     <div class="overlay" onclick="mobileMenuClose()"></div>
     <div id="investMenuSheet">
       <div class="sheet-grip"></div>
-      <div class="sheet-title">Mais seções</div>
+      <div class="sheet-title" tabindex="-1">Mais seções</div>
       <button class="portfolio-search-mobile-trigger" type="button" onclick="mobileMenuClose();portfolioSearchOpen()">⌕&nbsp; Buscar na carteira</button>
       <div class="sheet-grid">
+        <button onclick="mobileMenuClose();go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}>💰 Aportes</button>
         <button onclick="mobileMenuClose();go('analise')"${S.tab==='analise'?' aria-current="page"':''}>📊 Análise</button>
         <button onclick="mobileMenuClose();go('rentabilidade')"${S.tab==='rentabilidade'?' aria-current="page"':''}>📈 Rentab.</button>
         <button onclick="mobileMenuClose();go('metas')"${S.tab==='metas'?' aria-current="page"':''}>🎯 Metas</button>
@@ -35983,6 +36084,7 @@ function mobileMenuDrawer(){
         <button onclick="mobileMenuClose();go('auditoria')"${S.tab==='auditoria'?' aria-current="page"':''}>🔎 Auditoria</button>
         <button onclick="mobileMenuClose();go('confiabilidade')"${S.tab==='confiabilidade'?' aria-current="page"':''}>🛡️ Confiabilidade</button>
         <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>📑 Relatórios</button>
+        <button onclick="mobileMenuClose();go('corporate-eventos')"${S.tab==='corporate-eventos'?' aria-current="page"':''}>◈ Eventos societários</button>
         <button onclick="mobileMenuClose();go('importacao')"${S.tab==='importacao'?' aria-current="page"':''}>⇅ Importar dados</button>
         <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>💡 Insights</button>
         <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>🧾 IRPF</button>
@@ -37361,6 +37463,80 @@ html[data-theme="light"] .canon-dashboard .dashboard-patrimony-chart text{fill:#
 .canon-dashboard .allocation-intelligence-table{width:100%;min-width:0;table-layout:fixed}
 .canon-dashboard .allocation-intelligence-table td{overflow-wrap:anywhere}
 .canon-dashboard .dashboard-highlight-column .dashboard-highlight-row,.canon-dashboard .dashboard-highlight-column .dashboard-context-action{height:auto!important;min-height:44px!important}
+/* Visual Canon V3: presentation roles shared by the two supported themes. */
+html[data-theme="dark"]{--v3-canvas:#081321;--v3-surface:#101e30;--v3-text:#eff5fc;--v3-accent:#8198f8}
+html[data-theme="light"]{--v3-canvas:#f2f5fa;--v3-surface:#ffffff;--v3-text:#17243a;--v3-accent:#3959c7}
+.tabs-desktop .nav-section-title{padding:12px 10px 3px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.11em;line-height:1.35}
+.tabs-desktop .nav-section-title:first-of-type{padding-top:4px}
+@media(min-width:1181px){.shell .tabs.tabs-desktop{top:0;bottom:0;height:100dvh;box-sizing:border-box;background:var(--v3-canvas)}.tabs-desktop .tab{min-height:36px}}
+@media(max-width:1180px){#investBottomNav button{min-width:44px;min-height:44px}#investMenuSheet .sheet-title:focus{outline:2px solid var(--v3-accent);outline-offset:3px}}
+/* V290 Dashboard: one readable first layer in both themes. */
+.canon-dashboard{--dash-ink:#edf4fc;--dash-muted:#b6c7db;--dash-link:#c8d1ff;--dash-surface:#101e30;--dash-line:#30425a;--dash-soft:#14263b;color:var(--dash-ink)}
+html[data-theme="light"] .shell-main:has(.canon-dashboard){background:#f2f5fa}
+html[data-theme="light"] .canon-dashboard{--dash-ink:#17243a;--dash-muted:#40536b;--dash-link:#28449d;--dash-surface:#fff;--dash-line:#cad5e3;--dash-soft:#eef3f9;background:#f2f5fa;border-radius:16px;padding:16px}
+.canon-dashboard .dashboard-page-heading h1,.canon-dashboard .dashboard-page-heading p{color:var(--dash-ink)}
+.canon-dashboard .dashboard-page-heading p{color:var(--dash-muted);font-size:12px}
+html[data-theme="dark"] .canon-dashboard .dashboard-page-heading p{color:var(--dash-muted)!important}
+.canon-dashboard .canon-dash-meta .canon-last-update{color:var(--dash-muted);font-size:11px;background:transparent}
+.canon-dashboard .canon-dash-meta .dash-chip{min-width:44px;min-height:44px;color:var(--dash-ink);background:var(--dash-surface);border:1px solid var(--dash-line)}
+.canon-dashboard .canon-dash-meta .dash-chip.on{color:#06211a;background:#34d399;border-color:#34d399}
+.canon-dashboard .dashboard-executive-kpis{grid-template-columns:minmax(0,1.18fr) repeat(2,minmax(0,1fr));gap:12px;margin:0}
+.canon-dashboard .dashboard-executive-kpis .premium-metric{box-sizing:border-box;height:auto;min-height:112px;padding:14px 16px;background:var(--dash-surface);border:1px solid var(--dash-line);box-shadow:none}
+.canon-dashboard .dashboard-executive-kpis .premium-metric:first-child{background:var(--dash-soft);border-color:var(--dash-line)}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-label{font-size:12px;color:var(--dash-muted)}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:clamp(18px,1.7vw,24px);white-space:normal;overflow-wrap:anywhere;color:var(--dash-ink)}
+.canon-dashboard .dashboard-executive-kpis .premium-metric:first-child .premium-metric-value{font-size:clamp(24px,2.3vw,32px)}
+.canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:12px;line-height:1.35;color:var(--dash-muted);white-space:normal;overflow:visible;display:block}
+.canon-dashboard .dashboard-analytical-primary{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(280px,.8fr);gap:18px;align-items:start;margin:0}
+.canon-dashboard .dashboard-evolution-card{height:276px;min-height:276px;padding:15px;background:var(--dash-surface);border:1px solid var(--dash-line);box-shadow:none}
+.canon-dashboard .dashboard-evolution-card::before{display:none}
+.canon-dashboard .dashboard-evolution-header .premium-panel-title{color:var(--dash-ink)!important;font-size:17px!important}
+.canon-dashboard .dashboard-evolution-header .premium-panel-sub{color:var(--dash-muted)!important;font-size:11px;line-height:1.35}
+.canon-dashboard .dashboard-evolution-header .premium-panel-badge{max-width:48%;white-space:normal;color:var(--dash-ink);background:var(--dash-soft);border-color:var(--dash-line);font-size:11px}
+.canon-dashboard .dashboard-evolution-card svg.dashboard-patrimony-chart{height:198px;background:transparent}
+html[data-theme="dark"] .canon-dashboard .dashboard-patrimony-chart text{fill:#b6c7db}
+html[data-theme="light"] .canon-dashboard .dashboard-patrimony-chart text{fill:#40536b!important}
+.canon-dashboard .dashboard-v3-allocation{min-width:0;color:var(--dash-ink);padding:9px 0}
+.canon-dashboard .dashboard-v3-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.canon-dashboard .dashboard-v3-section-head h2{margin:0;font-size:17px;line-height:1.2}
+.canon-dashboard .dashboard-v3-section-head button,.canon-dashboard .dashboard-v3-priority button{min-height:44px;padding:8px 10px;border:0;background:transparent;color:var(--dash-link);font:inherit;font-weight:700;cursor:pointer}
+.canon-dashboard .dashboard-v3-context,.canon-dashboard .dashboard-v3-allocation-unknown,.canon-dashboard .dashboard-v3-allocation-empty,.canon-dashboard .dashboard-v3-allocation-hidden{color:var(--dash-muted);font-size:12px;line-height:1.4}
+.canon-dashboard .dashboard-v3-context{margin:6px 0 14px}
+.canon-dashboard .dashboard-v3-allocation-bar{display:flex;width:100%;height:12px;overflow:hidden;border-radius:999px;background:var(--dash-soft)}
+.canon-dashboard .dashboard-v3-allocation-list{display:grid;gap:1px;margin-top:13px}
+.canon-dashboard .dashboard-v3-allocation-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:44px;padding:3px 0;background:transparent;border:0;color:var(--dash-ink);font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.canon-dashboard .dashboard-v3-allocation-row strong{font-variant-numeric:tabular-nums}
+.canon-dashboard .dashboard-v3-allocation-dot{width:9px;height:9px;border-radius:50%}
+.canon-dashboard .dashboard-v3-allocation-unknown{margin:8px 0 0}
+.canon-dashboard .dashboard-v3-priority{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:52px;padding:8px 12px;border-left:3px solid #d69b36;background:var(--dash-soft);border-radius:0 8px 8px 0;color:var(--dash-ink)}
+.canon-dashboard .dashboard-v3-priority div{display:grid;gap:3px;min-width:0}
+.canon-dashboard .dashboard-v3-priority strong{font-size:13px}
+.canon-dashboard .dashboard-v3-priority span{font-size:12px;line-height:1.35;color:var(--dash-muted);overflow-wrap:anywhere}
+.canon-dashboard .dashboard-quick-action{color:var(--dash-ink);background:var(--dash-surface);border:1px solid var(--dash-line)}
+.canon-dashboard .dashboard-quick-action-sub{color:var(--dash-muted)}
+.canon-dashboard button:focus-visible{outline:2px solid var(--v3-accent);outline-offset:2px}
+/* The legacy theme sets these roles with !important; override only this Dashboard surface. */
+html[data-theme="light"] .canon-dashboard .canon-dash-meta .dash-chip{color:#24364d!important;background:#fff!important;border-color:var(--dash-line)!important}
+html[data-theme="light"] .canon-dashboard .canon-dash-meta .dash-chip.on{color:#06211a!important;background:#34d399!important;border-color:#34d399!important}
+html[data-theme="light"] .canon-dashboard .dashboard-evolution-header .premium-panel-badge{color:#24364d!important;background:var(--dash-soft)!important;border-color:var(--dash-line)!important}
+html[data-theme="light"] .canon-dashboard .dashboard-evolution-card .dashboard-evolution-header .premium-panel-title{color:var(--dash-ink)!important}
+html[data-theme="light"] .canon-dashboard .dashboard-evolution-card .dashboard-evolution-header .premium-panel-sub{color:var(--dash-muted)!important}
+html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric-note,
+html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405267!important}
+@media(max-width:1180px){.canon-dashboard .dashboard-analytical-primary{grid-template-columns:1fr}.canon-dashboard .dashboard-v3-allocation{padding:0 2px}}
+@media(max-width:767px){
+  html[data-theme="light"] .canon-dashboard{padding:10px;border-radius:0}
+  .canon-dashboard .dashboard-executive-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{min-height:112px;padding:12px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child{grid-column:1/-1;min-height:98px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:18px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child .premium-metric-value{font-size:25px}
+  .canon-dashboard .dashboard-evolution-card{height:220px;min-height:220px;padding:12px}
+  .canon-dashboard .dashboard-evolution-header .premium-panel-sub{display:block}
+  .canon-dashboard .dashboard-evolution-card svg.dashboard-patrimony-chart{height:130px}
+  .canon-dashboard .dashboard-v3-allocation{padding:3px 2px 5px}
+  .canon-dashboard .dashboard-v3-priority{align-items:flex-start;flex-direction:column;gap:2px}
+}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{
