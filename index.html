@@ -7463,9 +7463,16 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 .premium-dividends-3 .div-premium-canon-actions .canon-year-chip{min-height:40px}
 .premium-dividends-3 .div-premium-canon-actions .btn{min-height:40px}
 .premium-dividends-3 .div-premium-tabs{width:max-content;max-width:100%;margin-top:9px;padding:3px;border:1px solid var(--canon-border);border-radius:10px;background:var(--canon-panel)}
-.premium-dividends-3 .div-premium-tab{min-height:36px;padding:7px 11px;border-radius:7px;color:var(--canon-muted)}
+.premium-dividends-3 .div-premium-tab{min-height:44px;padding:8px 12px;border-radius:7px;color:var(--canon-muted);font-size:12px}
 .premium-dividends-3 .div-premium-tab.on{background:rgba(16,217,129,.11);color:var(--canon-green)}
 .premium-dividends-3 .canon-dividends{gap:12px}
+.premium-dividends-3 .dividend-calendar-primary{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:12px;align-items:start}
+.premium-dividends-3 .dividend-calendar-primary>*{min-width:0}
+.premium-dividends-3 .dividend-secondary-disclosure{border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);overflow:hidden}
+.premium-dividends-3 .dividend-secondary-disclosure>summary{min-height:44px;padding:12px 14px;display:flex;align-items:center;cursor:pointer;color:var(--canon-muted);font-size:12px;font-weight:750}
+.premium-dividends-3 .dividend-secondary-disclosure-body{padding:12px;display:grid;gap:12px}
+.premium-dividends-3 .dividend-secondary-disclosure .v253-income-grid{margin-top:10px}
+.premium-dividends-3 .dividend-mode-content{min-width:0}
 .premium-dividends-3 .canon-div-controls{gap:8px;min-height:38px}
 .premium-dividends-3 .canon-year-chips{gap:5px}
 .premium-dividends-3 .canon-year-chip{min-height:38px;padding:7px 12px;border-radius:9px;background:transparent}
@@ -34285,54 +34292,45 @@ function v253DividendIntelligencePanel(rows){
   </section>`;
 }
 function canonDividendOverview(rows, kpisHtml){
-  const filteredRows=rows.filter(r=>{
-    const y=Number(r.monthKey&&r.monthKey.split('-')[0]);
-    const filter=String(S.dividendYearFilter||'all');
-    return filter==='all'||String(y)===filter;
-  });
-  const matrix=dividendAnnualMatrixData(filteredRows);
-  const yearFilteredMatrix=String(S.dividendYearFilter||'all')!=='all'
-    ? matrix.filter(row=>String(row.year)===String(S.dividendYearFilter))
-    : matrix;
-  const table=yearFilteredMatrix.length
-    ? dividendAnnualMatrixView(yearFilteredMatrix)
-    : `<div class="premium-empty">Nenhum recebimento registrado no período selecionado.</div>`;
+  const incomeEngine=globalThis.DividendIntelligence;
+  const receivedRows=incomeEngine?.classifyIncomeState
+    ? rows.filter(row=>incomeEngine.classifyIncomeState(row)==='PAID')
+    : rows;
+  const received=dividendCompactSectionHeader(
+    'received',
+    'Renda recebida',
+    receivedRows.length
+      ? dividendOverviewRecentSummary(receivedRows)
+      : (rows.length ? 'Nenhum recebimento pago identificado nos lançamentos atuais.' : 'Sem recebimentos identificados no período.'),
+    receivedRows.length ? dividendRecentList(receivedRows,6) : dividendEmptyState(rows.length
+      ? 'Nenhum recebimento pago identificado.'
+      : 'Sem dados de recebimentos no período.'),
+    true
+  );
+  const upcoming=dividendUpcomingSection(receivedRows,false);
   return `
-    <div class="canon-dividends">
-      <div class="canon-div-kpi-row">${kpisHtml}</div>
-      ${v253DividendIntelligencePanel(rows)}
-      <div class="dividend-history-block canon-div-history">
-        <div class="dividend-history-heading">
-          <div><strong class="wave-b-heading">${waveBIcon('history')}<span>Histórico mensal</span></strong><span>Ano · Jan–Dez · Média · Total, com os valores oficiais já gravados.</span></div>
-          ${canonDividendYearChips(rows)}
+    <div class="canon-dividends dividend-calendar-view">
+      <section class="dividend-calendar-primary" aria-label="Recebimentos e próximos eventos">
+        ${received}
+        ${upcoming}
+      </section>
+      <details class="dividend-secondary-disclosure">
+        <summary>Resumo de renda e cobertura</summary>
+        <div class="dividend-secondary-disclosure-body">
+          ${kpisHtml}
+          ${v253DividendIntelligencePanel(rows)}
+          <div class="corporate-events-readonly-panel">${corporateEventsAnnouncementSection()}</div>
         </div>
-        ${table}
-      </div>
-      <div class="canon-div-lower">
-        <div class="premium-panel canon-div-panel canon-div-evolution">
-          <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('trend')}<span>Evolução da renda</span></div><div class="premium-panel-sub">Renda passiva mês a mês.</div></div></div>
-          ${dividendMonthlyTimeline(filteredRows)}
-        </div>
-        <div class="premium-panel canon-div-panel canon-div-top">
-          <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('ranking')}<span>Top ativos</span></div><div class="premium-panel-sub">Maiores contribuintes de proventos.</div></div></div>
-          ${dividendsByAssetView(filteredRows)}
-        </div>
-        <div class="premium-panel canon-div-panel canon-div-yearsum">
-          <div class="premium-panel-head"><div><div class="premium-panel-title wave-b-heading">${waveBIcon('bars')}<span>Resumo por ano</span></div><div class="premium-panel-sub">Valor total recebido em cada ano.</div></div></div>
-        ${canonDividendYearSummary(filteredRows)}
-        ${dividendDataQualityPanel(filteredRows)}
-        </div>
-        <div class="corporate-events-readonly-panel">${corporateEventsAnnouncementSection()}</div>
-      </div>
+      </details>
     </div>`;
 }
 function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const mode=['overview','received','asset','monthly','timeline','review'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
   S.dividendViewMode=mode;
   const rows=filteredDividendRows();
-  const tabs=[['overview','Visão geral'],['received','Recebimentos'],['asset','Por ativo'],['review','Revisão']];
-  const extraViews=[['monthly','Histórico mensal'],['timeline','Linha do tempo']];
-  const extraViewsOpen=['monthly','timeline'].includes(mode);
+  const tabs=[['overview','Calendário'],['timeline','Evolução'],['monthly','Histórico']];
+  const extraViews=[['received','Recebimentos'],['asset','Por ativo'],['review','Revisão']];
+  const extraViewsOpen=['received','asset','review'].includes(mode);
   const recentSection=dividendCompactSectionHeader(
     'received',
     'Últimos recebimentos',
@@ -34346,17 +34344,11 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
     dividendAssetSummary(rows),
     dividendsByAssetView(rows)
   );
-  const monthlyStartOpen=mode==='monthly' || (typeof window!=='undefined' && Number(window.innerWidth)>=768);
+  const monthlyStartOpen=mode==='monthly';
   const monthlySection=mode==='monthly'
     ? dividendMonthlyTableBlock(rows, mode==='monthly')
     : dividendMonthlyTableBlock(rows, monthlyStartOpen);
-  const timelineSection=dividendCompactSectionHeader(
-    'timeline',
-    'Linha do tempo',
-    dividendTimelineSummary(rows),
-    dividendMonthlyTimeline(),
-    mode==='overview' || mode==='timeline'
-  );
+  const timelineSection=`<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período exibido no gráfico.</span></div>${dividendMonthlyTimeline()}</section>`;
   const reviewSection=renderProventoRfLinkAuditPanel();
 const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
   const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline(),true)}</div><div>${topAssetsSection}</div></div>`;
@@ -34372,10 +34364,8 @@ const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividen
     :mode==='received'?recentSection
     :mode==='review'?reviewSection
     :overviewBody;
-  const overviewHeaderActions=mode==='overview'
-    ? `<div class="div-premium-canon-actions">${canonDividendYearChips(rows)}<button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`
-    : `<button class="btn bp" onclick="tgD()">+ Registrar provento</button>`;
-  const modeNavigation=mode==='overview' ? '' : `<div class="div-premium-tabs">${tabs.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}<details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}><summary class="div-dividend-moreviews-summary"><span>+${extraViews.length}</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'mais'}</span></summary><div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div></details></div>`;
+  const overviewHeaderActions=`<div class="div-premium-canon-actions">${mode==='overview'?canonDividendYearChips(rows):''}<button type="button" class="btn bp" onclick="tgD()">+ Registrar provento</button><button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`;
+  const modeNavigation=`<nav class="div-premium-tabs" aria-label="Modos de Dividendos">${tabs.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" aria-current="${mode===id?'page':'false'}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}<details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}><summary class="div-dividend-moreviews-summary"><span>Mais</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'modos'}</span></summary><div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div></details></nav>`;
   return `<main class="div-premium premium-dividends-3 div-exec-overview" aria-labelledby="dividends-page-title">
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><h1 id="dividends-page-title" class="div-premium-title">Dividendos</h1><div class="div-premium-sub">Acompanhe sua renda passiva mês a mês.</div></div>${overviewHeaderActions}</div>
@@ -37558,6 +37548,12 @@ html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405
   .canon-dashboard .dashboard-evolution-card svg.dashboard-patrimony-chart{height:130px}
   .canon-dashboard .dashboard-v3-allocation{padding:3px 2px 5px}
   .canon-dashboard .dashboard-v3-priority{align-items:flex-start;flex-direction:column;gap:2px}
+}
+@media(max-width:700px){
+  .premium-dividends-3 .dividend-calendar-primary{grid-template-columns:minmax(0,1fr)}
+  .premium-dividends-3 .div-premium-head{align-items:flex-start;flex-direction:column;gap:10px}
+  .premium-dividends-3 .div-premium-canon-actions{width:100%;flex-wrap:wrap}
+  .premium-dividends-3 .div-premium-tabs{width:100%;overflow-x:auto}
 }
 </style>
 <script>
