@@ -1654,3 +1654,13 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Protected financial semantics enforced
 - Identity gate executable and mandatory
 - Cache validation via HEAD + diff hash (`.codex-local/last-full-check.json`, gitignored)
+
+## Runtime-agnostic skill policy — Ponytail
+
+- `AGENTS.md` is the shared policy source for Codex, Hermes and OpenCode; keep
+  the full precedence and safeguards there rather than duplicating the rules.
+- `PONYTAIL_DEFAULT_MODE=full`. Prefer minimal correct implementation while
+  preserving validation, error handling, security, accessibility, financial
+  semantics, persistence/import safeguards and required behavioral tests.
+- Consider `ponytail-review` after substantial implementation. Run
+  `ponytail-audit` only when an audit/cleanup mission explicitly authorizes it.

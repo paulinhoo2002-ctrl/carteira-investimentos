@@ -442,3 +442,29 @@ Regras permanentes para todos os agentes (Codex, Hermes, OpenCode, etc.):
 - `docs/ai/SKILLS_ROUTING.md`
 - `docs/ai/DESIGN.md` quando aplicável
 - **Histórico do chat NÃO é source of truth**
+
+## Runtime-agnostic project skill policy
+
+`PROJECT_SKILL_POLICY=Caveman+Superpowers+Ponytail` applies to Codex, Hermes,
+OpenCode and other agents that read this file. `PONYTAIL_DEFAULT_MODE=full`;
+do not default to `ultra`. Ponytail's runtime default is `full` unless overridden
+by `PONYTAIL_DEFAULT_MODE` or its user config.
+
+Priority: project governance in `AGENTS.md` → protected financial semantics →
+Git safety and human gates → approved specs and behavioral contracts →
+Superpowers execution discipline → Ponytail minimal implementation → Caveman
+concise communication.
+
+Prefer the smallest implementation that satisfies approved behavior. Never
+simplify away financial invariants, validation, error handling, security,
+accessibility, persistence safeguards, import confirmation, authority/provenance
+semantics, historical integrity or required behavioral tests. Prefer, in order:
+do not build if unnecessary; reuse project code; use platform/stdlib capability;
+reuse an installed dependency; choose the smallest correct implementation; only
+then introduce an abstraction or dependency. After substantial implementation,
+consider `ponytail-review` before final technical certification. Run
+`ponytail-audit` only in explicitly authorized cleanup/audit missions; never
+refactor opportunistically. This policy does not override project rules or
+authorize protected or remote actions.
+
+See `docs/ai/SKILLS_ROUTING.md` for the short routing reference.

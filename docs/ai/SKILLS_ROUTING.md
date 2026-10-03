@@ -198,3 +198,13 @@ TIER 3 (CRITICAL) - finance, backup, restore, persistence, import, calculations,
 
 Record HEAD/hash when full-check passes to avoid re-running unchanged code.
 ```
+## SHARED PONYTAIL POLICY
+
+All runtimes that read the repository follow the shared [`AGENTS.md`](../../AGENTS.md)
+policy `Caveman + Superpowers + Ponytail`; this file remains the concise routing
+index. `PONYTAIL_DEFAULT_MODE=full`. Ponytail's minimal-implementation rule does
+not remove governance, protected financial semantics, tests, validation,
+security, accessibility, or persistence/import safeguards. Consider
+`ponytail-review` after substantial implementation. Run `ponytail-audit` only
+when an explicit cleanup/audit mission authorizes it. Neither grants permission
+to change protected areas or perform remote Git actions.
