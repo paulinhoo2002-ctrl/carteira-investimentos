@@ -22,9 +22,11 @@ As seis imagens abaixo mostram o código Wave D atual em tema escuro, com perfil
 - Desktop 1366×768: [abrir imagem](v292-dividendos-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-dividendos-1366-dark.png`
 - Mobile 390×844: [abrir imagem](v292-dividendos-390-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-dividendos-390-dark.png`
 
-## Rentabilidade
-- Desktop 1366×768: [abrir imagem](v292-rentabilidade-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-rentabilidade-1366-dark.png`
-- Mobile 390×844: [abrir imagem](v292-rentabilidade-390-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-rentabilidade-390-dark.png`
+## Rentabilidade (pós-fix visual MAJOR — estado neutro para "Indisponível")
+- Desktop 1366×768: [abrir imagem](v292-rentabilidade-1366-dark-post-major-fix.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-rentabilidade-1366-dark-post-major-fix.png`
+- Mobile 390×844: [abrir imagem](v292-rentabilidade-390-dark-post-major-fix.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-rentabilidade-390-dark-post-major-fix.png`
+
+As capturas Rentabilidade originais pré-fix (v292-rentabilidade-1366-dark.png / v292-rentabilidade-390-dark.png) permanecem no diretório como histórico; as canônicas atuais são as versões post-major-fix acima, refletindo o commit `9f114e7` (estado indisponível com semântica muted neutra, sem verde de sucesso).
 
 ## Renda Fixa
 - Desktop 1366×768: [abrir imagem](v292-renda-fixa-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-renda-fixa-1366-dark.png`
