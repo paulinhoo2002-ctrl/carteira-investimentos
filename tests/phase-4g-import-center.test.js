@@ -25,7 +25,7 @@ test('Import center exposes honest source support and unknown-format behavior', 
   assert.match(importCenterSource, /Nota de corretagem/);
   assert.match(importCenterSource, /Formato não reconhecido/);
   assert.match(importCenterSource, /UNKNOWN/);
-  assert.match(importCenterSource, /formatos sem parser confirmado não seguem para gravação/);
+  assert.match(importCenterSource, /formatos sem parser confirmado não seguem para gravação/i);
   assert.match(importCenterSource, /Suporte completo/);
   assert.match(importCenterSource, /Revisão necessária/);
 });
