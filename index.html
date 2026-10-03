@@ -7615,6 +7615,21 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 
 <style>
 /* Canonical migration 07: compact goals hierarchy without changing goal logic. */
+.metas-primary-goal{display:grid;gap:16px;padding:20px 22px;border:1px solid var(--border);border-radius:18px;background:var(--panel)}
+.metas-primary-goal-heading h2{margin:3px 0 4px;font-size:22px;line-height:1.2;color:var(--text)}
+.metas-primary-goal-heading p,.metas-primary-goal-unavailable{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.metas-primary-goal-kicker{color:var(--primary);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.metas-primary-goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.metas-primary-goal-value{display:flex;min-width:0;flex-direction:column;gap:5px;padding:12px 14px;border-left:2px solid var(--primary);background:var(--surface);border-radius:0 10px 10px 0}
+.metas-primary-goal-value span,.metas-primary-goal-progress span{font-size:12px;color:var(--muted)}
+.metas-primary-goal-value strong{font-size:20px;line-height:1.25;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.metas-primary-goal-value small,.metas-primary-goal-progress small{font-size:12px;line-height:1.45;color:var(--muted)}
+.metas-primary-goal-progress{display:grid;gap:8px;padding-top:2px}
+.metas-primary-goal-progress>div:first-child{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.metas-primary-goal-progress strong{font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.metas-primary-goal-track{height:8px;border-radius:99px;background:var(--border);overflow:hidden}
+.metas-primary-goal-track span{display:block;height:100%;border-radius:inherit;background:var(--primary)}
+.metas-patrimony-section{margin-bottom:8px}
 .metas-shell{gap:8px;padding-bottom:2px}
 .metas-shell .page-heading{margin-bottom:0;font-size:24px;line-height:1.05}
 .metas-shell .page-sub{margin-bottom:4px;max-width:72ch}
@@ -7639,6 +7654,11 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 .metas-shell .metas-goal-section table th,.metas-shell .metas-goal-section table td{white-space:nowrap}
 .metas-shell .metas-goal-section table td:first-child{white-space:normal}
 @media(max-width:767px){
+  .metas-primary-goal{gap:12px;padding:16px 14px}
+  .metas-primary-goal-heading h2{font-size:19px}
+  .metas-primary-goal-grid{grid-template-columns:1fr;gap:8px}
+  .metas-primary-goal-value{padding:10px 12px}
+  .metas-primary-goal-value strong{font-size:18px}
   .metas-shell .page-heading{font-size:21px}
   .metas-shell .metas-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .metas-shell .metas-kpi-card{padding:8px 9px;min-height:62px}
@@ -32136,6 +32156,7 @@ function saveMetaPatrimonioTarget(){
   const raw=Number(document.getElementById('mp-head-target')?.value);
   S.goals.patrimonio.target=Number.isFinite(raw) ? Math.max(0, raw) : 0;
   save(); render();
+  document.querySelector('.metas-patrimony-section')?.setAttribute('open','');
 }
 function setMetaAssetType(type){
   if(!canEditFromThisTab('salvar meta de ativos')) return;
@@ -34917,9 +34938,13 @@ function metasTab(){
   const metaPatValor=Number(mp.target)||0;
   const metaPatAporte=Number(mp.aporte)||0;
   const metaPatVar=Number(mp.annualVar)||0;
-  const metaPatTime=estimateGoalMonths(tC,metaPatValor,metaPatAporte,metaPatVar);
-  const metaPat=goalProgressText(tC,metaPatValor);
-  const metaPatStatus=goalStatusPresentation(goalProgressMetrics(Number.isFinite(Number(tC))?tC:null,metaPatValor),metaPatValor>0);
+  const goalSnapshot=financialGoalsSnapshot();
+  const metaPatMetrics=goalProgressMetrics(goalSnapshot.hasPortfolioData?goalSnapshot.portfolioCurrent:null,metaPatValor);
+  const metaPatStatus=goalStatusPresentation(metaPatMetrics,metaPatValor>0);
+  const metaPatTime=metaPatMetrics.hasCurrent?estimateGoalMonths(metaPatMetrics.current,metaPatValor,metaPatAporte,metaPatVar):null;
+  const metaPatPrimaryProgress=metaPatMetrics.hasCurrent&&metaPatMetrics.hasTarget
+    ? '<div class="metas-primary-goal-progress"><div><span>Progresso registrado</span><strong>'+metaPatMetrics.percent.toFixed(1)+'%</strong></div><div class="metas-primary-goal-track"><span style="width:'+Math.min(100,metaPatMetrics.barPercent)+'%"></span></div><small>Simulação de prazo: '+formatGoalMonths(metaPatTime)+'. Premissas não garantem resultado.</small></div>'
+    : '<p class="metas-primary-goal-unavailable">'+esc(metaPatStatus.detail)+'</p>';
   const passiveGoal=passiveIncomeGoalStats();
   const metaProStatus=goalStatusPresentation(goalProgressMetrics(passiveGoal?.hasData?passiveGoal.monthlyAvg:null,passiveGoal?.target||0),Boolean(passiveGoal?.hasTarget));
   const allocItems=allocationGoalItems();
@@ -34944,21 +34969,35 @@ function metasTab(){
     </tr>`;
   }).join('');
 
-  const metaPatSummary=metaPatValor>0?`${fmt(tC)} atual · ${metaPat.prog.toFixed(1)}% · Falta ${fmt(metaPat.falta)}`:'Meta patrimonial não configurada';
+  const metaPatSummary=metaPatMetrics.hasTarget?(metaPatMetrics.hasCurrent?`${fmt(metaPatMetrics.current)} atual · ${metaPatMetrics.percent.toFixed(1)}% · Falta ${fmt(metaPatMetrics.missing)}`:'Meta definida · sem leitura atual'):'Meta patrimonial não configurada';
   const metaProSummary=passiveGoal?.hasTarget?`${fmt(passiveGoal.monthlyAvg||0)} média 12M · ${fmtP(passiveGoal.percent||0)} · Falta ${fmt(passiveGoal.missing||0)}/mês`:'Meta de renda não configurada';
-  const metaProjectionNote=metaPatValor>0
+  const metaProjectionNote=metaPatMetrics.hasCurrent&&metaPatMetrics.hasTarget
     ? `Prazo estimado com aporte mensal de ${fmt(metaPatAporte)} e variação anual de ${metaPatVar.toFixed(1)}%. É uma simulação baseada nas premissas cadastradas, não uma garantia de resultado.`
-    : 'Configure uma meta patrimonial, aporte mensal e variação anual para visualizar um prazo estimado.';
+    : 'Simulação de prazo indisponível sem meta definida e leitura atual.';
 
   return`<div class="metas-shell">
   <h1 class="page-heading wave-b-heading">${waveBIcon('target')}<span>Metas</span></h1>
   <div class="page-sub">Objetivos da carteira, com leitura rápida de renda, patrimônio e distribuição.</div>
 
+  <section class="metas-primary-goal" aria-labelledby="metas-primary-goal-title">
+    <div class="metas-primary-goal-heading">
+      <div class="metas-primary-goal-kicker">Objetivo principal</div>
+      <h2 id="metas-primary-goal-title">Meta de Patrimônio</h2>
+      <p>Veja o alvo definido, a leitura atual e a distância comprovada.</p>
+    </div>
+    <div class="metas-primary-goal-grid">
+      <div class="metas-primary-goal-value"><span>Meta definida</span><strong>${metaPatValor>0?fmt(metaPatValor):'Meta não configurada'}</strong></div>
+      <div class="metas-primary-goal-value"><span>Patrimônio atual</span><strong>${metaPatMetrics.hasCurrent?fmt(metaPatMetrics.current):'Sem leitura atual'}</strong><small>${metaPatMetrics.hasCurrent?'Leitura disponível':'Valor atual não tratado como zero'}</small></div>
+      <div class="metas-primary-goal-value"><span>Distância até a meta</span><strong>${metaPatMetrics.hasCurrent&&metaPatMetrics.hasTarget?fmt(metaPatMetrics.missing):'Indisponível'}</strong><small>${metaPatMetrics.hasCurrent&&metaPatMetrics.hasTarget?'Valor restante para o alvo':'Exige alvo e leitura atual'}</small></div>
+    </div>
+    ${metaPatPrimaryProgress}
+  </section>
+
   <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
-    <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${fmt(mD)}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira</div></div>
-    <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${fmt(aD)}</div></div>
-    <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${avgDY.toFixed(2)}%</div></div>
-    <div class="card al metas-kpi-card ds-kpi" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('wallet')}<span>Total da carteira</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--text)">${fmt(tC)}</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${goalSnapshot.hasPortfolioData?fmt(mD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${goalSnapshot.hasPortfolioData?fmt(aD):'Indisponível'}</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${goalSnapshot.hasPortfolioData?avgDY.toFixed(2)+'%':'Indisponível'}</div></div>
+    <div class="card al metas-kpi-card ds-kpi" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('wallet')}<span>Total da carteira</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--text)">${goalSnapshot.hasPortfolioData?fmt(tC):'Indisponível'}</div></div>
   </div>
 
   <div class="metas-summary-bar ds-panel ds-panel--compact" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px">
@@ -34967,13 +35006,13 @@ function metasTab(){
   </div>
   <div class="metas-projection-note" role="note">${esc(metaProjectionNote)} A renda projetada/mês continua sendo uma estimativa da carteira; a média 12M usa proventos já recebidos.</div>
 
-  <details class="sec metas-goal-section metas-patrimony-section" open style="margin-bottom:10px">
+  <details class="sec metas-goal-section metas-patrimony-section" style="margin-bottom:10px">
     <summary>
       <div>
         <h2 class="sec-title wave-b-heading">${waveBIcon('target')}<span>Meta de Patrimônio</span></h2>
-        <div class="sec-meta"><span class="metas-goal-status metas-goal-status--${metaPatStatus.tone}">${esc(metaPatStatus.label)}</span> · ${fmt(tC)} / ${fmt(metaPatValor||0)} · ${metaPat.prog.toFixed(1)}% de progresso</div>
+        <div class="sec-meta"><span class="metas-goal-status metas-goal-status--${metaPatStatus.tone}">${esc(metaPatStatus.label)}</span> · Meta ${metaPatValor>0?fmt(metaPatValor):'não configurada'} · Atual ${metaPatMetrics.hasCurrent?fmt(metaPatMetrics.current):'indisponível'}</div>
       </div>
-      <div class="sec-meta">Recolher</div>
+      <div class="sec-meta">Abrir edição</div>
     </summary>
     <div class="sec-body">
       <div class="cg" style="gap:10px;grid-template-columns:1fr 1fr">
@@ -34983,19 +35022,7 @@ function metasTab(){
           <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
           ${metaPatValor > 0 ? `<div class="btn bgh ds-button ds-button--secondary" style="margin-top:4px" onclick="event.stopPropagation(); document.getElementById('mp-head-target').value=''; saveMetaPatrimonioTarget();">${waveBIcon('attention')} Remover meta</div>` : ''}
         </div>
-        <div class="card al" style="border-left-color:var(--primary);padding:12px;display:flex;flex-direction:column;gap:8px;min-height:0">
-          <div class="fl">Progresso</div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-            <div class="mu">Carteira atual</div>
-            <div style="font-size:16px;font-weight:800;color:var(--primary)">${metaPat.prog.toFixed(1)}%</div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-            <div class="mu">${fmt(tC)} / ${fmt(metaPatValor||0)}</div>
-            <div class="mu">${fmt(metaPat.falta)} em aberto · ${formatGoalMonths(metaPatTime)}</div>
-          </div>
-          <div class="dbt" style="height:8px;margin-top:4px;border-radius:4px;background:var(--border)"><div class="dbf" style="width:${Math.min(100, metaPat.prog.toFixed(1))}%;background:var(--primary);height:100%;border-radius:4px;transition:width 0.3s ease"></div></div>
-          ${metaPatValor > 0 ? `<div class="goal-context-action-row"><button type="button" class="btn bgh ds-button ds-button--secondary goal-context-action" onclick="go('aportes')">Registrar aporte</button></div>` : ''}
-        </div>
+        ${metaPatValor>0&&metaPatMetrics.hasCurrent?`<div class="goal-context-action-row"><button type="button" class="btn bgh ds-button ds-button--secondary goal-context-action" onclick="go('aportes')">Registrar aporte</button></div>`:''}
       </div>
     </div>
   </details>

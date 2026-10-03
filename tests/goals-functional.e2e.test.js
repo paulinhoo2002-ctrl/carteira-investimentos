@@ -21,10 +21,16 @@ function waitForMetasShell(page) {
   return page.waitForFunction(() => document.querySelector('.metas-shell') !== null, { timeout: 10000 });
 }
 
+async function openPatrimonyEditor(page) {
+  const editor = page.locator('.metas-patrimony-section');
+  if (!(await editor.evaluate(node => node.open))) await editor.locator(':scope > summary').click();
+}
+
 test('PATRIMÔNIO: editar meta patrimonial, salvar, confirmar persistência', async () => {
   const { browser, page, errors, harness } = await app({ width: 1366, height: 768 });
   try {
     await waitForMetasShell(page);
+    await openPatrimonyEditor(page);
     
     // Clear any existing value first
     await page.fill('#mp-head-target', '');
@@ -41,7 +47,7 @@ test('PATRIMÔNIO: editar meta patrimonial, salvar, confirmar persistência', as
     assert.equal(value, '1000000', 'Meta patrimonial deve persistir');
     
     // Verify progress text exists (not checking exact % as test data varies)
-    const progressText = await page.locator('.metas-shell .sec-body .card:nth-child(2)').innerText();
+    const progressText = await page.locator('.metas-primary-goal-progress').innerText();
     assert.ok(progressText.includes('%'), 'Progresso deve conter porcentagem');
     
     assert.equal(errors.length, 0, errors.join(' | '));
@@ -56,6 +62,7 @@ test('PATRIMÔNIO: desativar meta com target=0 via botão Remover meta', async (
   const { browser, page, errors, harness } = await app({ width: 1366, height: 768 });
   try {
     await waitForMetasShell(page);
+    await openPatrimonyEditor(page);
     
     // First set a target
     await page.fill('#mp-head-target', '500000');
@@ -188,6 +195,7 @@ test('VALIDATION: valor negativo na meta patrimonial normalizado para 0', async 
   const { browser, page, errors, harness } = await app({ width: 1366, height: 768 });
   try {
     await waitForMetasShell(page);
+    await openPatrimonyEditor(page);
     
     // Try negative value - should be normalized to 0
     await page.fill('#mp-head-target', '-1000');
@@ -218,6 +226,7 @@ test('MOBILE 390: editar meta sem overflow horizontal', async () => {
   const { browser, page, errors, harness } = await app({ width: 390, height: 844 });
   try {
     await waitForMetasShell(page);
+    await openPatrimonyEditor(page);
     
     // Check no horizontal overflow
     const hasOverflow = await page.evaluate(() => {
@@ -260,7 +269,7 @@ test('SMOKE METAS: navegação UI real e conteúdo semântico', async () => {
     const heading = await page.$('.page-heading');
     assert.ok(heading, 'Título da página deve existir');
     const headingText = await heading.innerText();
-    assert.ok(headingText.includes('🎯 Metas'), 'Título deve conter "Metas"');
+    assert.ok(headingText.includes('Metas'), 'Título deve conter o rótulo da rota');
     
     // Check all details sections in metas-shell
     const details = await page.$$('.metas-shell details');
