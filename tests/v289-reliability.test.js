@@ -12,11 +12,13 @@ async function createApp(viewport = { width: 1366, height: 768 }) {
   const context = await browser.newContext({ viewport, isMobile: viewport.width <= 430, hasTouch: viewport.width <= 430 });
   const page = await context.newPage();
   const errors = [];
+  const requestFailures = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('requestfailed', request => requestFailures.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText || 'failed'}`));
   await page.goto(harness.url, { waitUntil: 'networkidle' });
   await applyV289VisualFixture(page, 'baseline');
-  return { browser, context, page, harness, errors };
+  return { browser, context, page, harness, errors, requestFailures };
 }
 
 async function closeApp(app) {
@@ -177,6 +179,11 @@ test('Wave F: reliability hierarchy remains usable at desktop and mobile widths'
             summaryVisible:Boolean(summaryRect && summaryRect.top < innerHeight),
             diagnosticsCollapsed:root?.querySelector('#data-trust-diagnostics')?.open === false,
             smallTargets:targets.filter(target => target.height < 44),
+            clippedPrimary:[...(summary?.querySelectorAll('*') || [])].filter(node => {
+              const style=getComputedStyle(node);
+              const clips=style.overflowX!=='visible'||style.overflowY!=='visible';
+              return clips&&(node.scrollWidth>node.clientWidth+1||node.scrollHeight>node.clientHeight+1);
+            }).map(node => node.tagName.toLowerCase()),
             primaryTextColor:root?.querySelector('.data-trust-primary-note')?getComputedStyle(root.querySelector('.data-trust-primary-note')).color:'',
           };
         });
@@ -185,9 +192,12 @@ test('Wave F: reliability hierarchy remains usable at desktop and mobile widths'
         assert.equal(result.summaryVisible, true);
         assert.equal(result.diagnosticsCollapsed, true);
         assert.deepEqual(result.smallTargets, [], `alvos interativos da rota devem ter ao menos 44px em ${viewport.width}px ${theme}`);
+        assert.deepEqual(result.clippedPrimary, [], `texto primário não deve sofrer clipping em ${viewport.width}px ${theme}`);
         if (theme === 'light') assert.notEqual(result.primaryTextColor, 'rgb(174, 189, 208)', 'notas claras precisam usar texto legível no tema claro');
       }
     }
+    assert.deepEqual(app.errors, [], 'a matriz responsiva não deve gerar erros de console ou página');
+    assert.deepEqual(app.requestFailures, [], 'a matriz responsiva não deve gerar falhas de requisição locais');
   } finally {
     await closeApp(app);
   }
