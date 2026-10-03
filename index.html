@@ -578,8 +578,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-alloc-pct.above{color:var(--warning)}
 .rebalance-alloc-pct.below{color:var(--success)}
 .rebalance-alloc-diff{font-size:11px;font-weight:800}
-.rebalance-alloc-diff.pos{color:var(--warning)}
-.rebalance-alloc-diff.neg{color:var(--success)}
+.rebalance-alloc-diff.pos,.rebalance-alloc-diff.neg{color:var(--muted)}
 .rebalance-alloc-bar-wrap{height:6px;border-radius:3px;background:var(--surface);overflow:hidden;position:relative}
 .rebalance-alloc-bar{height:100%;border-radius:3px;transition:width .3s ease}
 .rebalance-alloc-bar.current{background:var(--primary)}
@@ -35544,7 +35543,7 @@ function ajudarTab(){
   const allocSection=allocRows.length?`<section class="sec rebalance-alloc-details" aria-labelledby="rebalance-allocation-title">
     <div class="rebalance-allocation-head">
       <div>
-        <h2 class="sec-title" id="rebalance-allocation-title">Alocação atual vs ideal</h2>
+        <h2 class="sec-title" id="rebalance-allocation-title">Alocação atual vs meta</h2>
         <div class="sec-meta">Atual x meta da carteira.</div>
       </div>
     </div>

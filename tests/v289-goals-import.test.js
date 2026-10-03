@@ -156,6 +156,9 @@ test('E2 Rebalancear: comparação atual versus meta lidera e simulações ficam
         const columns = root?.querySelector('.rebalance-alloc-labels')?.innerText || '';
         const rows = [...(comparison?.querySelectorAll('.rebalance-alloc-item') || [])]
           .map(row => row.innerText.replace(/\s+/g, ' ').trim());
+        const deltas = [...(comparison?.querySelectorAll('.rebalance-alloc-diff') || [])]
+          .map(node => ({ text: node.innerText.trim(), color: getComputedStyle(node).color }));
+        const neutralReferenceColor = getComputedStyle(comparison?.querySelector('.sec-meta')).color;
         const comparisonBox = comparison?.getBoundingClientRect();
         const inputBox = simInput?.getBoundingClientRect();
         return {
@@ -167,6 +170,9 @@ test('E2 Rebalancear: comparação atual versus meta lidera e simulações ficam
           comparisonTop: comparisonBox?.top ?? Number.POSITIVE_INFINITY,
           firstRowTop: comparison?.querySelector('.rebalance-alloc-item')?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY,
           rows,
+          deltas,
+          neutralReferenceColor,
+          routeText: root?.innerText || '',
           summariesSecondary: Boolean(summaries && comparison && comparison.compareDocumentPosition(summaries) & Node.DOCUMENT_POSITION_FOLLOWING),
           summaryText: summaries?.innerText || '',
           columns,
@@ -176,7 +182,8 @@ test('E2 Rebalancear: comparação atual versus meta lidera e simulações ficam
         };
       });
       assert.match(contract.title, /Rebalanceamento/);
-      assert.match(contract.comparisonLabel, /Alocação atual vs ideal/);
+      assert.match(contract.comparisonLabel, /Alocação atual vs (meta|alvo)/i);
+      assert.doesNotMatch(contract.comparisonLabel, /ideal/i, 'comparação deve tratar alocação cadastrada como meta definida pelo usuário');
       assert.equal(contract.comparisonBeforeTools, true, 'comparação deve preceder as ferramentas de simulação');
       assert.equal(contract.comparisonVisible, true, 'comparação deve ser apresentada como conteúdo principal');
       assert.equal(contract.comparisonDataVisible, true, 'comparação deve permanecer visível em desktop e mobile');
@@ -184,6 +191,9 @@ test('E2 Rebalancear: comparação atual versus meta lidera e simulações ficam
       assert.ok(contract.firstRowTop < viewport.height, 'primeira classe deve aparecer na primeira dobra');
       assert.match(contract.columns, /Atual[\s\S]*Meta[\s\S]*Diferença/i);
       assert.ok(contract.rows.some(row => /Ação/.test(row)), 'classe sintética deve aparecer na comparação');
+      assert.deepEqual(contract.deltas.map(item => item.text), ['-26.9 p.p.', '-26.2 p.p.'], 'diferenças calculadas devem permanecer inalteradas');
+      assert.ok(contract.deltas.every(item => item.color === contract.neutralReferenceColor), 'diferenças devem usar a cor neutra da interface, sem valência de sucesso/alerta');
+      assert.doesNotMatch(contract.routeText, /\bideal\b|recomendad|recomendação|\bmelhor\b|deve comprar|deve vender/i, 'rota não deve sugerir alocação objetivamente ideal nem ação recomendada');
       assert.equal(contract.summariesSecondary, true, 'resumos devem vir depois da comparação atual/meta');
       assert.doesNotMatch(contract.summaryText, /pedem aporte|recomendação de compra|compre|venda/i, 'resumo não deve transformar desvio em ordem de ação');
       assert.equal(contract.pageWidth, contract.viewportWidth, `overflow em ${viewport.width}px`);
