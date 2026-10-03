@@ -32,6 +32,27 @@ As capturas Rentabilidade originais pré-fix (v292-rentabilidade-1366-dark.png /
 - Desktop 1366×768: [abrir imagem](v292-renda-fixa-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-renda-fixa-1366-dark.png`
 - Mobile 390×844: [abrir imagem](v292-renda-fixa-390-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-renda-fixa-390-dark.png`
 
+# Wave E — Evidências visuais
+
+Capturas atuais da Wave E em tema escuro, com fixture local sintética. Cada arquivo foi verificado na dimensão indicada, sem overflow e sem erro de console/página.
+
+## Metas
+- Desktop 1366×768: [abrir imagem](v293-metas-1366-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v293-metas-1366-dark.png
+
+- Mobile 390×844: [abrir imagem](v293-metas-390-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v293-metas-390-dark.png
+
+## Rebalancear
+- Desktop 1366×768: [abrir imagem](v293-rebalancear-1366-dark-post-major-fix.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v293-rebalancear-1366-dark-post-major-fix.png
+
+- Mobile 390×844: [abrir imagem](v293-rebalancear-390-dark-post-major-fix.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v293-rebalancear-390-dark-post-major-fix.png
+
+As capturas post-major-fix são a evidência canônica atual após neutralizar a linguagem da meta e a cor dos deltas; as imagens anteriores permanecem como histórico.
+
+## Importar
+- Desktop 1366×768: [abrir imagem](v293-importar-1366-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v293-importar-1366-dark.png
+
+- Mobile 390×844: [abrir imagem](v293-importar-390-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v293-importar-390-dark.png
+
 MAX_HUMAN_IMAGES=10
 
 PHOTO_PICKUP:
