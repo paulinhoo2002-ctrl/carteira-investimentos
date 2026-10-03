@@ -7268,6 +7268,18 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .rebalance-shell .rebalance-title{font-size:24px;line-height:1.05;color:var(--text)}
 .rebalance-shell .rebalance-subtitle{margin-top:5px;max-width:70ch}
 .rebalance-shell .rebalance-form{grid-template-columns:minmax(220px,320px) 140px 170px;gap:8px;margin-top:10px;justify-content:start}
+.rebalance-shell .rebalance-allocation-head{padding:13px 14px 0}
+.rebalance-shell .rebalance-alloc-details .sec-body{padding-top:8px}
+.rebalance-shell .rebalance-tools,
+.rebalance-shell .rebalance-secondary-summary{border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden}
+.rebalance-shell .rebalance-tools>summary,
+.rebalance-shell .rebalance-secondary-summary>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:10px 12px;list-style:none;cursor:pointer;color:var(--text);font-size:12px;font-weight:850}
+.rebalance-shell .rebalance-tools>summary::-webkit-details-marker,
+.rebalance-shell .rebalance-secondary-summary>summary::-webkit-details-marker{display:none}
+.rebalance-shell .rebalance-tools>summary span{font-size:10px;font-weight:600;color:var(--muted);text-align:right}
+.rebalance-shell .rebalance-tools-body{display:flex;flex-direction:column;gap:12px;padding:12px}
+.rebalance-shell .rebalance-secondary-summary{background:var(--surface-2)}
+.rebalance-shell .rebalance-tools-summary{display:flex;flex-direction:column;gap:10px;padding:10px 12px}
 .rebalance-shell .rebalance-form .btn.bp{background:var(--success);color:#04120b;box-shadow:none}
 .rebalance-shell .rebalance-quickline-pill{color:var(--success);border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.1)}
 .rebalance-shell .rebalance-safety{border:0;background:transparent;padding:2px 2px;color:var(--muted)}
@@ -7277,8 +7289,13 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 @media(max-width:767px){
   .rebalance-shell .rebalance-hero{padding:10px 12px 11px}
   .rebalance-shell .rebalance-title{font-size:21px}
-  .rebalance-shell .rebalance-form{grid-template-columns:1fr;gap:6px;margin-top:8px}
-  .rebalance-shell .rebalance-form .btn{width:100%}
+  .rebalance-shell .rebalance-form{grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+  .rebalance-shell .rebalance-form .fg{grid-column:1/-1}
+  .rebalance-shell .rebalance-form .btn{width:100%;min-width:0}
+  .rebalance-shell .rebalance-tools>summary{align-items:flex-start;flex-direction:column}
+  .rebalance-shell .rebalance-tools>summary span{text-align:left}
+  .rebalance-shell .rebalance-allocation-head{padding:11px 10px 0}
+  .rebalance-shell .rebalance-alloc-details .sec-body{padding:8px 10px 10px}
 }
 
 /* REAL_USE_REFINEMENT_02: keep the approved shell dense without reducing
@@ -35512,21 +35529,19 @@ function ajudarTab(){
   const topGap=allocRows[0]||null;
   const aboveTarget=allocRows.filter(row=>row.diff>0).length;
   const belowTarget=allocRows.filter(row=>row.diff<0).length;
-  const desktopAllocationOpen=typeof window==='undefined'||!window.matchMedia||!window.matchMedia('(max-width:640px)').matches;
   const rebalanceInsight=`<section class="rebalance-insight-strip" aria-label="Resumo da alocação">
     <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('allocation')}<div class="rebalance-insight-label">Classes analisadas</div></div><div class="rebalance-insight-value">${allocRows.length||'—'}</div><div class="rebalance-insight-note">Metas oficiais disponíveis</div></article>
     <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('attention')}<div class="rebalance-insight-label">Maior desvio</div></div><div class="rebalance-insight-value ${topGap?'attention':''}">${topGap?`${esc(topGap.type)} · ${topGap.diff>=0?'+':''}${topGap.diff.toFixed(1)} p.p.`:'—'}</div><div class="rebalance-insight-note">Diferença entre atual e meta</div></article>
-    <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('target')}<div class="rebalance-insight-label">Abaixo da meta</div></div><div class="rebalance-insight-value ${belowTarget?'attention':'ok'}">${allocRows.length?belowTarget:'—'}</div><div class="rebalance-insight-note">Classes que pedem aporte</div></article>
+    <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('target')}<div class="rebalance-insight-label">Abaixo da meta</div></div><div class="rebalance-insight-value ${belowTarget?'attention':'ok'}">${allocRows.length?belowTarget:'—'}</div><div class="rebalance-insight-note">Classes abaixo da meta</div></article>
     <article class="rebalance-insight-card"><div class="rebalance-insight-top">${waveBIcon('readonly')}<div class="rebalance-insight-label">Modo da ferramenta</div></div><div class="rebalance-insight-value ok">Readonly</div><div class="rebalance-insight-note">Nenhuma operação é executada</div></article>
   </section>`;
-  const allocSection=allocRows.length?`<details class="sec rebalance-alloc-details" ${desktopAllocationOpen?'open':''}>
-    <summary>
+  const allocSection=allocRows.length?`<section class="sec rebalance-alloc-details" aria-labelledby="rebalance-allocation-title">
+    <div class="rebalance-allocation-head">
       <div>
-        <h2 class="sec-title">Alocação atual vs ideal</h2>
+        <h2 class="sec-title" id="rebalance-allocation-title">Alocação atual vs ideal</h2>
         <div class="sec-meta">Atual x meta da carteira.</div>
       </div>
-      <div class="sec-meta">${topGap ? `Abrir · ${esc(topGap.type)}` : 'Abrir detalhes'}</div>
-    </summary>
+    </div>
     <div class="sec-body">
       <div class="rebalance-alloc">
         <div class="rebalance-alloc-head">
@@ -35548,28 +35563,37 @@ function ajudarTab(){
         }).join('')}
       </div>
     </div>
-  </details>`:'';
+  </section>`:'';
   return`<div class="rebalance-shell">
   <div class="rebalance-hero">
     <h1 class="rebalance-title">Rebalanceamento</h1>
-    <div class="rebalance-subtitle">Veja onde o próximo aporte ajuda mais e quais classes estão mais distantes do plano.</div>
-    <div class="rebalance-form">
-      <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500" style="min-height:44px"></div></div>
-      <button class="btn bp" onclick="calcRebalance()">Simular</button>
-      <button type="button" class="btn bgh" onclick="toggleRebalanceScenarioComparison()">Comparar cenários</button>
-    </div>
+    <div class="rebalance-subtitle">Compare a distribuição atual com as metas cadastradas. Simulações são opcionais e não alteram a carteira.</div>
   </div>
-  ${rebalanceInsight}
-  <div class="rebalance-quickline">
-    <span class="rebalance-quickline-pill">Leitura rápida</span>
-    ${topGap ? `<strong>${esc(topGap.type)}</strong> tem o maior desvio: <strong>${topGap.diff>=0?'+':''}${topGap.diff.toFixed(1)} p.p.</strong> ${topGap.diff>0?'acima da meta':topGap.diff<0?'abaixo da meta':'na meta'}` : 'Sem base suficiente para leitura rápida'}
-    ${allocRows.length ? `· <strong>${aboveTarget}</strong> acima da meta · <strong>${belowTarget}</strong> abaixo da meta` : ''}
-  </div>
-  <div class="rebalance-safety">Ferramenta de apoio de organização da carteira. Não é recomendação de compra, venda ou manutenção.</div>
-  <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha a carteira atualizada para gerar a simulação.</div>':'<div class="rebalance-empty">Informe um valor maior que zero e mantenha a carteira atualizada para gerar a simulação.</div>'}</div>
-  ${rebalanceScenarioComparisonPanel()}
   ${allocSection}
-  <div class="rebalance-about"><div class="rebalance-about-title">Sobre o rebalanceamento</div><div class="rebalance-about-text">O rebalanceamento é o processo de realocar recursos para manter a distribuição desejada entre classes de ativos. Ele ajuda a controlar riscos e manter a carteira alinhada aos seus objetivos de longo prazo. Esta ferramenta oferece uma simulação prudente, mas decisões de investimento devem considerar seu perfil completo.</div></div>
+  <details class="rebalance-tools">
+    <summary>Simular e comparar aportes <span>Ferramentas opcionais · não executam operações</span></summary>
+    <div class="rebalance-tools-body">
+      <div class="rebalance-form">
+        <div class="fg"><div><div class="fl">Valor do aporte (R$)</div><input id="reb-val" type="number" step="0.01" min="0" placeholder="ex: 500" style="min-height:44px"></div></div>
+        <button class="btn bp" onclick="calcRebalance()">Simular</button>
+        <button type="button" class="btn bgh" onclick="toggleRebalanceScenarioComparison()">Comparar cenários</button>
+      </div>
+      <div id="reb-out">${!S.assets.length?'<div class="rebalance-empty">Cadastre ativos e mantenha a carteira atualizada para gerar a simulação.</div>':'<div class="rebalance-empty">Informe um valor maior que zero e mantenha a carteira atualizada para gerar a simulação.</div>'}</div>
+      <details class="rebalance-secondary-summary">
+        <summary>Resumo e leitura da alocação</summary>
+        <div class="rebalance-tools-summary">${rebalanceInsight}
+          <div class="rebalance-quickline">
+            <span class="rebalance-quickline-pill">Leitura rápida</span>
+            ${topGap ? `<strong>${esc(topGap.type)}</strong> tem o maior desvio: <strong>${topGap.diff>=0?'+':''}${topGap.diff.toFixed(1)} p.p.</strong> ${topGap.diff>0?'acima da meta':topGap.diff<0?'abaixo da meta':'na meta'}` : 'Sem base suficiente para leitura rápida'}
+            ${allocRows.length ? `· <strong>${aboveTarget}</strong> acima da meta · <strong>${belowTarget}</strong> abaixo da meta` : ''}
+          </div>
+          <div class="rebalance-safety">Ferramenta de apoio de organização da carteira. Não é recomendação de compra, venda ou manutenção.</div>
+          <div class="rebalance-about"><div class="rebalance-about-title">Sobre o rebalanceamento</div><div class="rebalance-about-text">O rebalanceamento é o processo de realocar recursos para manter a distribuição desejada entre classes de ativos. Ele ajuda a controlar riscos e manter a carteira alinhada aos seus objetivos de longo prazo. Esta ferramenta oferece uma simulação prudente, mas decisões de investimento devem considerar seu perfil completo.</div></div>
+        </div>
+      </details>
+    </div>
+  </details>
+  ${rebalanceScenarioComparisonPanel()}
   </div>`;
 }
 function calcRebalance(){

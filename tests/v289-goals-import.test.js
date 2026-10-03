@@ -138,3 +138,111 @@ test('E1 Metas: edição permanece aberta depois de salvar uma meta sintética',
     await closeApp(app);
   }
 });
+
+test('E2 Rebalancear: comparação atual versus meta lidera e simulações ficam secundárias', async () => {
+  for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 }]) {
+    const app = await createApp(viewport);
+    try {
+      await app.page.evaluate(() => {
+        S.goals.allocation = { items: [{ type: 'Ação', pct: 60 }, { type: 'FII', pct: 40 }] };
+        go('ajudar');
+      });
+      const contract = await app.page.evaluate(() => {
+        const root = document.querySelector('.rebalance-shell');
+        const title = root?.querySelector('h1');
+        const comparison = root?.querySelector('.rebalance-alloc-details');
+        const simInput = root?.querySelector('#reb-val');
+        const summaries = root?.querySelector('.rebalance-insight-strip');
+        const columns = root?.querySelector('.rebalance-alloc-labels')?.innerText || '';
+        const rows = [...(comparison?.querySelectorAll('.rebalance-alloc-item') || [])]
+          .map(row => row.innerText.replace(/\s+/g, ' ').trim());
+        const comparisonBox = comparison?.getBoundingClientRect();
+        const inputBox = simInput?.getBoundingClientRect();
+        return {
+          title: title?.innerText || '',
+          comparisonLabel: comparison?.querySelector('.sec-title')?.innerText || '',
+          comparisonBeforeTools: Boolean(comparison && simInput && comparison.compareDocumentPosition(simInput) & Node.DOCUMENT_POSITION_FOLLOWING),
+          comparisonVisible: Boolean(comparisonBox && comparisonBox.width > 0 && comparisonBox.height > 0),
+          comparisonDataVisible: Boolean(comparison?.querySelector('.rebalance-alloc')?.getBoundingClientRect().height),
+          comparisonTop: comparisonBox?.top ?? Number.POSITIVE_INFINITY,
+          firstRowTop: comparison?.querySelector('.rebalance-alloc-item')?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY,
+          rows,
+          summariesSecondary: Boolean(summaries && comparison && comparison.compareDocumentPosition(summaries) & Node.DOCUMENT_POSITION_FOLLOWING),
+          summaryText: summaries?.innerText || '',
+          columns,
+          simInputY: inputBox?.top ?? -1,
+          pageWidth: document.documentElement.scrollWidth,
+          viewportWidth: innerWidth,
+        };
+      });
+      assert.match(contract.title, /Rebalanceamento/);
+      assert.match(contract.comparisonLabel, /Alocação atual vs ideal/);
+      assert.equal(contract.comparisonBeforeTools, true, 'comparação deve preceder as ferramentas de simulação');
+      assert.equal(contract.comparisonVisible, true, 'comparação deve ser apresentada como conteúdo principal');
+      assert.equal(contract.comparisonDataVisible, true, 'comparação deve permanecer visível em desktop e mobile');
+      assert.ok(contract.comparisonTop < viewport.height, 'comparação deve começar na primeira dobra');
+      assert.ok(contract.firstRowTop < viewport.height, 'primeira classe deve aparecer na primeira dobra');
+      assert.match(contract.columns, /Atual[\s\S]*Meta[\s\S]*Diferença/i);
+      assert.ok(contract.rows.some(row => /Ação/.test(row)), 'classe sintética deve aparecer na comparação');
+      assert.equal(contract.summariesSecondary, true, 'resumos devem vir depois da comparação atual/meta');
+      assert.doesNotMatch(contract.summaryText, /pedem aporte|recomendação de compra|compre|venda/i, 'resumo não deve transformar desvio em ordem de ação');
+      assert.equal(contract.pageWidth, contract.viewportWidth, `overflow em ${viewport.width}px`);
+      const before = await app.page.evaluate(() => JSON.stringify({ assets: S.assets, aportes: S.aportes, goals: S.goals }));
+      await app.page.locator('.rebalance-tools > summary').click();
+      await app.page.fill('#reb-val', '500');
+      await app.page.locator('.rebalance-form button').first().click();
+      const after = await app.page.evaluate(() => JSON.stringify({ assets: S.assets, aportes: S.aportes, goals: S.goals }));
+      assert.equal(after, before, 'a simulação não deve alterar ativos, aportes ou metas');
+      assert.match(await app.page.locator('#reb-out').innerText(), /simula|distribui/i);
+      assert.deepEqual(app.errors, []);
+    } finally {
+      await closeApp(app);
+    }
+  }
+});
+
+test('E2 Rebalancear: comparação legível sem overflow nas larguras canônicas em tema escuro e claro', async () => {
+  const app = await createApp();
+  try {
+    await app.page.evaluate(() => {
+      S.goals.allocation = { items: [{ type: 'Ação', pct: 60 }, { type: 'FII', pct: 40 }] };
+      go('ajudar');
+    });
+    for (const theme of ['dark', 'light']) {
+      await app.page.evaluate(value => {
+        if (value === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else document.documentElement.removeAttribute('data-theme');
+      }, theme);
+      for (const width of [390, 430, 768, 1366, 1440, 1536, 1920]) {
+        await app.page.setViewportSize({ width, height: width <= 430 ? 844 : 900 });
+        const layout = await app.page.evaluate(() => {
+          const comparison = document.querySelector('.rebalance-alloc-details');
+          const data = comparison?.querySelector('.rebalance-alloc-item');
+          const toolsSummary = document.querySelector('.rebalance-tools > summary');
+          const scenarioSummary = document.querySelector('.rebalance-secondary-summary > summary');
+          return {
+            width: innerWidth,
+            documentWidth: document.documentElement.scrollWidth,
+            comparisonWidth: comparison?.getBoundingClientRect().width || 0,
+            dataVisible: Boolean(data && data.getBoundingClientRect().width > 0),
+            firstRowTop: data?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY,
+            toolsTarget: toolsSummary ? toolsSummary.getBoundingClientRect().height : 0,
+            summaryTarget: scenarioSummary ? scenarioSummary.getBoundingClientRect().height : 0,
+            bottomNavPresent: Boolean(document.querySelector('#investBottomNav')),
+          };
+        });
+        assert.equal(layout.width, width);
+        assert.equal(layout.documentWidth, width, `${theme}: overflow em ${width}px`);
+        assert.ok(layout.comparisonWidth > 0, `${theme}: comparação ausente em ${width}px`);
+        assert.equal(layout.dataVisible, true, `${theme}: linha de alocação ausente em ${width}px`);
+        if (width <= 430 || width === 1366) assert.ok(layout.firstRowTop < (width <= 430 ? 844 : 768), `${theme}: primeira classe abaixo da primeira dobra em ${width}px`);
+        assert.ok(layout.toolsTarget >= 44, `${theme}: área de ferramentas menor que 44px em ${width}px`);
+        assert.ok(layout.summaryTarget >= 44, `${theme}: área de resumo menor que 44px em ${width}px`);
+        if (width <= 430) assert.equal(layout.bottomNavPresent, true, 'navegação móvel deve continuar presente');
+      }
+    }
+    assert.deepEqual(app.errors, []);
+  } finally {
+    await closeApp(app);
+  }
+});
