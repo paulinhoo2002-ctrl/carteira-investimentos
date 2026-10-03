@@ -197,3 +197,102 @@ test('V292 D2 Rentabilidade stays readable across approved viewport sizes and th
     assert.deepEqual(page.__v289Errors.page,[]);
   });
 });
+
+test('V292 D3 Renda Fixa leads with synthetic positions and maturity, with diagnostics secondary', async () => {
+  await withPage({ width: 1366, height: 768 }, async page => {
+    await page.evaluate(() => {
+      S.assets = S.assets.map(asset => asset.id === 'QA_ASSET_RF' ? {
+        ...asset,
+        name: 'CDB sintético de emissor fictício com vencimento em dezembro de 2027 e denominação longa para teste de leitura',
+        rf_subtype: 'CDB',
+        rf_contract_rate: '105% CDI',
+        rf_maturity_date: '2027-12-15',
+        fixed_issuer: 'Emissor sintético',
+      } : asset);
+      render();
+      go('renda-fixa');
+    });
+    const route = page.locator('.premium-rf-page');
+    await route.waitFor({ state: 'attached' });
+    const order = await route.evaluate(root => {
+      const selectors = [
+        '.premium-rf-header',
+        '.premium-rf-grid',
+        '.premium-rf-position-list .premium-rf-position-row',
+        '.premium-rf-maturity-list .premium-rf-maturity-row',
+        '.premium-rf-secondary-overview',
+      ];
+      return selectors.map(selector => {
+        const node = root.querySelector(selector);
+        return { selector, present: !!node, text: node?.innerText || '' };
+      });
+    });
+    assert.ok(order.every(item => item.present), `Renda Fixa primary hierarchy missing: ${JSON.stringify(order)}`);
+    assert.ok(order[1].text.includes('CDB sintético de emissor fictício'), 'Synthetic position must lead the route');
+    assert.match(order[2].text, /105% CDI|CDI/);
+    assert.match(order[2].text, /15\/12\/2027/);
+    assert.match(order[3].text, /15\/12\/2027/);
+    assert.equal(await route.locator('.premium-rf-secondary-overview').evaluate(node => node.open), false,
+      'Trust, summary KPIs, and diagnostics must remain in a closed secondary disclosure');
+    assert.ok(await route.evaluate(root => root.querySelector('.premium-rf-grid').compareDocumentPosition(root.querySelector('.premium-rf-secondary-overview')) & Node.DOCUMENT_POSITION_FOLLOWING),
+      'Positions and maturities must precede the secondary overview in reading order');
+    assert.ok(await route.locator('.premium-rf-header button').evaluateAll(buttons => buttons.every(button => button.getBoundingClientRect().height >= 44)),
+      'Primary fixed-income actions must remain reachable');
+    assert.deepEqual(page.__v289Errors.console, []);
+    assert.deepEqual(page.__v289Errors.page, []);
+  });
+});
+
+test('V292 D3 Renda Fixa remains readable across approved viewport sizes and themes', async () => {
+  await withPage({ width: 1366, height: 768 }, async page => {
+    await page.evaluate(() => {
+      S.assets = S.assets.map(asset => asset.id === 'QA_ASSET_RF' ? {
+        ...asset, name: 'CDB sintético de emissor fictício com vencimento em dezembro de 2027 e denominação longa para teste de leitura', rf_subtype: 'CDB',
+        rf_contract_rate: '105% CDI', rf_maturity_date: '2027-12-15', fixed_issuer: 'Emissor sintético',
+      } : asset);
+      go('renda-fixa');
+    });
+    const viewports = [[390,844],[430,932],[768,1024],[1366,768],[1440,900],[1536,864],[1920,1080]];
+    for (const [width,height] of viewports) {
+      await page.setViewportSize({ width, height });
+      for (const theme of ['dark','light']) {
+        await page.evaluate(themeName => {
+          document.documentElement.dataset.theme = themeName;
+          document.documentElement.style.colorScheme = themeName;
+          render();
+        }, theme);
+        const layout = await page.evaluate(() => {
+          const route = document.querySelector('.premium-rf-page');
+          const metrics = element => {
+            const rect = element.getBoundingClientRect();
+            const style = getComputedStyle(element);
+            return { width: rect.width, height: rect.height, font: Number.parseFloat(style.fontSize), right: rect.right, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
+          };
+          const title = route.querySelector('.premium-rf-title');
+          const position = route.querySelector('.premium-rf-position-row .premium-rf-row-title');
+          const maturity = route.querySelector('.premium-rf-maturity-row');
+          const summary = route.querySelector('.premium-rf-secondary-overview > summary');
+          return {
+            overflow: document.documentElement.scrollWidth > innerWidth,
+            theme: document.documentElement.dataset.theme,
+            title: metrics(title),
+            position: metrics(position),
+            maturity: metrics(maturity),
+            summary: metrics(summary),
+            diagnosticsClosed: !route.querySelector('.premium-rf-secondary-overview').open,
+          };
+        });
+        assert.equal(layout.theme, theme, `${width}px should render ${theme}`);
+        assert.equal(layout.overflow, false, `${width}px ${theme} must not overflow horizontally`);
+        assert.ok(layout.title.font >= (width <= 768 ? 16 : 20), `${width}px ${theme} title must remain readable`);
+        assert.ok(layout.position.width > 0 && layout.position.right <= width, `${width}px ${theme} position identity must remain visible`);
+        assert.ok(layout.position.scrollWidth <= layout.position.clientWidth + 1, `${width}px ${theme} long position name must wrap without clipping`);
+        assert.ok(layout.maturity.width > 0, `${width}px ${theme} maturity row must remain visible`);
+        assert.ok(layout.summary.height >= 44 && layout.summary.font >= 12, `${width}px ${theme} secondary disclosure must remain usable`);
+        assert.equal(layout.diagnosticsClosed, true, `${width}px ${theme} must keep diagnostics secondary`);
+      }
+    }
+    assert.deepEqual(page.__v289Errors.console, []);
+    assert.deepEqual(page.__v289Errors.page, []);
+  });
+});

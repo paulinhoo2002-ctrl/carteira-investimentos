@@ -29996,21 +29996,6 @@ function rendaFixaTab(){
         <button type="button" class="btn bp ds-button ds-button--primary" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">+ Nova aplicação</button>
       </div>
     </div>
-    <div class="premium-rf-kpis">${kpis.join('')}</div>
-    <section class="premium-rf-trust-bar" aria-labelledby="rf-trust-title">
-      <div class="premium-rf-trust-copy"><strong id="rf-trust-title">Confiança da leitura</strong><span>Valor manual continua sendo a autoridade; referências shadow não alteram o patrimônio.</span></div>
-      <div class="premium-rf-trust-counts" aria-label="Resumo dos status de valuation">
-        <span class="premium-rf-trust-count">Manual <b>${trustSummary.manualCount||0}</b></span>
-        <span class="premium-rf-trust-count">Shadow <b>${trustSummary.shadowCount||0}</b></span>
-        <span class="premium-rf-trust-count">Sem cálculo <b>${trustSummary.unsupportedCount||0}</b></span>
-        <span class="premium-rf-trust-count">Indisponível <b>${trustSummary.unavailableCount||0}</b></span>
-        ${trustSummary.staleCount ? `<span class="premium-rf-trust-count warn">Desatualizada <b>${trustSummary.staleCount}</b></span>` : ''}
-      </div>
-    </section>
-    ${ipcaDiagnosticsHtml}
-    ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
-    ${summaryStrip}
-    ${reviewQueueHtml}
     <div class="premium-rf-grid">
       <div class="premium-rf-panel ds-panel ds-panel--readonly">
         <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${trustRows.length}/${count} posições</div></div>
@@ -30038,6 +30023,24 @@ function rendaFixaTab(){
         <div class="premium-rf-maturity-list">${maturityRows}</div>
       </div>
     </div>
+    <details class="premium-rf-secondary-overview sec ds-panel ds-panel--readonly">
+      <summary><div><div class="sec-title">Resumo e confiabilidade</div><div class="sec-meta">Indicadores agregados e diagnósticos de cobertura, fonte e vencimentos.</div></div><div class="sec-meta">Abrir detalhes</div></summary>
+      <div class="sec-body" style="display:grid;gap:12px">
+        <div class="premium-rf-kpis">${kpis.join('')}</div>
+        <section class="premium-rf-trust-bar" aria-labelledby="rf-trust-title">
+          <div class="premium-rf-trust-copy"><strong id="rf-trust-title">Confiança da leitura</strong><span>Valor manual continua sendo a autoridade; referências shadow não alteram o patrimônio.</span></div>
+          <div class="premium-rf-trust-counts" aria-label="Resumo dos status de valuation">
+            <span class="premium-rf-trust-count">Manual <b>${trustSummary.manualCount||0}</b></span>
+            <span class="premium-rf-trust-count">Shadow <b>${trustSummary.shadowCount||0}</b></span>
+            <span class="premium-rf-trust-count">Sem cálculo <b>${trustSummary.unsupportedCount||0}</b></span>
+            <span class="premium-rf-trust-count">Indisponível <b>${trustSummary.unavailableCount||0}</b></span>
+            ${trustSummary.staleCount ? `<span class="premium-rf-trust-count warn">Desatualizada <b>${trustSummary.staleCount}</b></span>` : ''}
+          </div>
+        </section>
+        ${ipcaDiagnosticsHtml}
+        ${data.missingCurrent>0 ? `<div class="premium-note">Sem rendimento atualizado. Informe o valor bruto ou líquido atual da corretora para acompanhar a rentabilidade.</div>` : ''}
+        ${summaryStrip}
+        ${reviewQueueHtml}
     <div class="premium-rf-distribution">
       <div class="premium-rf-panel ds-panel ds-panel--readonly"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por indexador</div><div class="premium-rf-panel-sub">Somente indexadores informados nos títulos.</div></div></div>${distributionRows(data.indexerRows,'indexer')}</div>
       <div class="premium-rf-panel ds-panel ds-panel--readonly"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Distribuição por emissor</div><div class="premium-rf-panel-sub">Somente emissores cadastrados.</div></div></div>${distributionRows(data.issuerRows,'issuer')}</div>
@@ -30064,6 +30067,9 @@ function rendaFixaTab(){
         <div class="rf-preview-list">${previewRows}</div>
         <div class="rf-note">A estimativa não inventa rendimento: se faltar valor atual, taxa ou vencimento, o ativo fica como dados incompletos.</div>
       </div>
+    </details>
+
+    </div>
     </details>
 
     <details class="sec ds-panel ds-panel--readonly" style="margin-top:2px">
