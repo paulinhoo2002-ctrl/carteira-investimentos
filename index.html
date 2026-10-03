@@ -8118,9 +8118,30 @@ summary:focus-visible,
   .data-trust-filters{display:grid;grid-template-columns:minmax(180px,1fr) repeat(2,minmax(150px,.35fr));gap:8px;margin-bottom:12px}.data-trust-filter{min-width:0}.data-trust-filter input,.data-trust-filter select{width:100%}
   .data-trust-list{display:grid;gap:8px;max-height:430px;overflow:auto}.data-trust-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 12px;border:1px solid rgba(116,144,180,.16);border-radius:11px;background:rgba(8,19,34,.34)}.data-trust-row strong{display:block;font-size:12px}.data-trust-row small{display:block;margin-top:3px;color:#9fb0c7;font-size:11px;line-height:1.35}.data-trust-empty{padding:20px 10px;color:#aebdd0;text-align:center;font-size:13px}
   .data-trust-details{margin-top:14px}.data-trust-details summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#b9f6dc;font-size:12px;font-weight:800}.data-trust-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.data-trust-nav .data-trust-link{min-height:44px}
+   .data-trust-primary{border:1px solid rgba(116,144,180,.25);border-radius:16px;padding:16px;background:linear-gradient(145deg,rgba(25,42,67,.92),rgba(14,28,47,.92));margin:16px 0}
+   .data-trust-primary-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+   .data-trust-primary-title{margin:0;font-size:18px;color:var(--text,#e8eef8)}
+   .data-trust-primary-state{display:block;margin-top:5px;font-size:20px;font-weight:850;color:var(--text,#f5f8fc)}
+   .data-trust-primary-note{margin:5px 0 0;color:#aebdd0;font-size:12px;line-height:1.5;max-width:72ch}
+   .data-trust-primary-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+   .data-trust-primary-fact{min-width:0;padding:10px 0;border-top:1px solid rgba(116,144,180,.22)}
+   .data-trust-primary-fact strong{display:block;font-size:12px;color:#dce7f5}
+   .data-trust-primary-fact span{display:block;margin-top:4px;color:#aebdd0;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+   .data-trust-gaps{display:grid;gap:8px;margin-top:14px}
+   .data-trust-gap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border-top:1px solid rgba(116,144,180,.2);padding:10px 0 2px}
+   .data-trust-gap h3{margin:0;color:var(--text,#e8eef8);font-size:13px;line-height:1.35}
+   .data-trust-gap p{margin:4px 0 0;color:#aebdd0;font-size:12px;line-height:1.45}
+   .data-trust-gap-action{min-height:44px;white-space:nowrap}
+   .data-trust-diagnostics{margin:12px 0 20px;border:1px solid rgba(116,144,180,.24);border-radius:14px;background:rgba(14,28,47,.75);overflow:hidden}
+   .data-trust-diagnostics>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:10px 14px;cursor:pointer;color:#dce7f5;font-size:13px;font-weight:800;list-style:none}
+   .data-trust-diagnostics>summary::-webkit-details-marker{display:none}
+   .data-trust-diagnostics>summary:after{content:'+';font-size:18px;color:#aebdd0}
+   .data-trust-diagnostics[open]>summary:after{content:'−'}
+   .data-trust-diagnostics-body{padding:0 10px 12px}
+   .data-trust-source-date{display:block;margin-top:3px;color:#9fb0c7;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
   .data-trust-page :focus-visible{outline:3px solid #67e8f9;outline-offset:2px}
   @media (max-width:1000px){.data-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.data-trust-layout{grid-template-columns:1fr}}
-  @media (max-width:560px){.data-trust-page{padding:18px 14px}.data-trust-hero{display:block}.data-trust-actions{margin-top:14px}.data-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.data-trust-card{padding:12px}.data-trust-card-value{font-size:21px}.data-trust-panel{padding:14px;border-radius:13px}.data-trust-filters{grid-template-columns:1fr}.data-trust-table{font-size:11px}.data-trust-table th,.data-trust-table td{padding:8px 5px}.data-trust-row{grid-template-columns:1fr;gap:8px}}
+   @media (max-width:560px){.data-trust-page{padding:18px 14px}.data-trust-hero{display:block}.data-trust-actions{margin-top:14px}.data-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.data-trust-card{padding:12px}.data-trust-card-value{font-size:21px}.data-trust-panel{padding:14px;border-radius:13px}.data-trust-filters{grid-template-columns:1fr}.data-trust-table{font-size:11px}.data-trust-table th,.data-trust-table td{padding:8px 5px}.data-trust-row{grid-template-columns:1fr;gap:8px}.data-trust-primary{padding:14px;border-radius:14px}.data-trust-primary-facts{grid-template-columns:1fr 1fr;gap:8px}.data-trust-gap{grid-template-columns:1fr}.data-trust-gap-action{justify-self:start}.data-trust-diagnostics-body{padding:0 6px 10px}}
 </style>
 <style>
 .v257-remediation-center{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #29405c;border-radius:16px;background:linear-gradient(135deg,rgba(15,29,49,.98),rgba(8,17,30,.98));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.v257-remediation-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.v257-remediation-kicker{color:#60a5fa;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.v257-remediation-head h2{margin:4px 0 0;color:#edf3ff;font-size:17px}.v257-remediation-head p{margin:5px 0 0;color:#9cafc6;font-size:10px;line-height:1.45;max-width:760px}.v257-remediation-readonly{display:inline-flex;min-height:28px;align-items:center;border:1px solid rgba(52,211,153,.28);border-radius:999px;padding:0 9px;color:#86efac;background:rgba(52,211,153,.08);font-size:9px;font-weight:900;white-space:nowrap}.v257-remediation-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.v257-remediation-summary article{padding:8px 9px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(255,255,255,.025)}.v257-remediation-summary span{display:block;color:#8294ad;font-size:9px}.v257-remediation-summary strong{display:block;margin-top:4px;color:#edf3ff;font-size:15px}.v257-remediation-summary .warning strong{color:#fbbf24}.v257-remediation-summary .critical strong{color:#f87171}.v257-remediation-summary .info strong{color:#60a5fa}.v257-remediation-filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.v257-remediation-filters input,.v257-remediation-filters select{min-height:44px;border:1px solid #29405c;border-radius:9px;background:#0b1626;color:#dbeafe;padding:0 9px;font:inherit;font-size:10px}.v257-remediation-filters input{min-width:220px}.v257-remediation-list{display:grid;gap:7px}.v257-remediation-item{display:grid;grid-template-columns:105px minmax(130px,1fr) minmax(220px,2fr) minmax(160px,1fr);gap:9px;align-items:start;padding:10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(4,10,20,.3)}.v257-remediation-item strong{display:block;color:#edf3ff;font-size:11px}.v257-remediation-item small{display:block;margin-top:3px;color:#8294ad;font-size:9px;line-height:1.35}.v257-remediation-badge{display:inline-flex;width:max-content;border:1px solid currentColor;border-radius:999px;padding:4px 6px;font-size:8px;font-weight:900}.v257-remediation-badge.critical{color:#fca5a5}.v257-remediation-badge.warning{color:#fbbf24}.v257-remediation-badge.info{color:#93c5fd}.v257-remediation-badge.state{margin-top:4px;color:#c4b5fd}.v257-remediation-empty{padding:18px;text-align:center;border:1px dashed #29405c;border-radius:10px;color:#9cafc6;font-size:10px}.v257-remediation-groups{display:flex;gap:6px;flex-wrap:wrap}.v257-remediation-group{border:1px solid rgba(148,163,184,.16);border-radius:999px;padding:5px 8px;color:#9cafc6;font-size:9px}.v257-remediation-note{color:#8294ad;font-size:9px;line-height:1.4}@media(max-width:700px){.v257-remediation-head{display:block}.v257-remediation-readonly{margin-top:9px}.v257-remediation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.v257-remediation-summary article:first-child{grid-column:1/-1}.v257-remediation-item{grid-template-columns:1fr 1fr}.v257-remediation-item>div:nth-child(3){grid-column:1/-1}.v257-remediation-item>div:nth-child(4){grid-column:1/-1}.v257-remediation-filters input{min-width:100%;width:100%}}
@@ -23168,7 +23189,9 @@ let v238TrustFilters={search:'',status:'all',source:'all'};
 function dataTrustNumber(value){return Number.isFinite(Number(value))?Number(value):null;}
 function dataTrustMoney(value){return dataTrustNumber(value)===null?'—':fmt(Number(value));}
 function dataTrustDate(value){
-  const date=value?new Date(value):null;
+  const date=typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)
+    ?new Date(Number(value.slice(0,4)),Number(value.slice(5,7))-1,Number(value.slice(8,10)))
+    :value?new Date(value):null;
   return date && Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'—';
 }
 function dataTrustTone(status){
@@ -23182,6 +23205,14 @@ function dataTrustStatusLabel(status){
   return ({OK:'Coerente',CURRENT:'Atual',STALE:'Desatualizada',UNKNOWN:'Desconhecida',UNAVAILABLE:'Indisponível',UNSUPPORTED:'Não suportada',MANUAL:'Manual',REFERENCE:'Referência',SHADOW:'Shadow',MISMATCH:'Divergência',PARTIAL_COVERAGE:'Cobertura parcial',CONNECTED:'Conectado',CONNECTING:'Conectando',AUTHENTICATING:'Autenticando',EMPTY_CONFIRMED:'Vazio confirmado',SNAPSHOT_RECEIVED_NOT_APPLIED:'Snapshot não aplicado',LOADING:'Carregando',ERROR:'Erro',NOT_COMPARABLE:'Não comparável',LEGITIMATE_ZERO:'Zero legítimo'}[String(status||'').toUpperCase()]||String(status||'Desconhecido'));
 }
 function dataTrustPill(status){const tone=dataTrustTone(status);return `<span class="data-trust-pill ${tone}">${esc(dataTrustStatusLabel(status))}</span>`;}
+function dataTrustFreshnessFieldLabel(field){return ({quoteUpdatedAt:'Atualização da cotação',quote_updated_at:'Atualização da cotação',sourceAsOf:'Base informada pela fonte',source_as_of:'Base informada pela fonte',valuationAsOf:'Data de avaliação informada',valuation_as_of:'Data de avaliação informada',financialAsOf:'Data financeira informada',financial_as_of:'Data financeira informada',observedAt:'Observação registrada',observed_at:'Observação registrada',updatedAt:'Registro atualizado',updated_at:'Registro atualizado'}[String(field||'')]||'Data de atualização identificada');}
+function dataTrustCoverageState(item,assetCount){if(!item||item.coverageCount==null)return assetCount?'Desconhecida':'Sem posições para avaliar';if(item.coverageCount>=100)return 'Completa nesta classificação';if(item.coverageCount<=0)return 'Nenhuma classificação identificada';return 'Parcial';}
+function dataTrustPriorityGap(issue){
+  const action=typeof dataQualityResolveAction==='function'?dataQualityResolveAction(issue):{level:4,label:'Informativo'};
+  const actionHtml=action.level===4?'<span class="data-trust-pill info">Informativo</span>':`<button type="button" class="data-trust-link data-trust-gap-action" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label||'Abrir contexto')}</button>`;
+  const impact=issue.impact?` Impacto: ${esc(issue.impact)}`:'';
+  return `<article class="data-trust-gap" data-trust-priority-gap><div><h3>${esc(issue.message)}</h3><p>${esc(issue.category)} · ${esc(issue.entityLabel)} · campo ${esc(issue.field)}.${impact} ${esc(issue.recommendation)}</p></div>${actionHtml}</article>`;
+}
 function corporateEventsShadowSnapshot(){
   const raw=Array.isArray(window.__CORPORATE_EVENTS_RUNTIME__?.events)?window.__CORPORATE_EVENTS_RUNTIME__.events:[];
   if(!globalThis.CorporateEventsShadow?.processShadowEvents) return {events:[],conflicts:[],reviewRequired:0,mismatches:0,writes:0};
@@ -23256,12 +23287,52 @@ function dataTrustCloudInput(){
   };
 }
 function setDataTrustFilter(field,value){v238TrustFilters[field]=String(value||'all');render();}
-function dataTrustCoverageRow(label,item){
-  const known=item?.knownCount||0,total=(item?.knownCount||0)+(item?.unknownCount||0),coverage=item?.coverageCount==null?'—':`${Math.round(item.coverageCount)}%`;
-  return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${known} conhecidos · ${item?.unknownCount||0} sem informação · valor conhecido ${dataTrustMoney(item?.knownValue)}</small></div><div>${dataTrustPill(total?`${coverage}`:'UNKNOWN')}</div></div>`;
+function dataTrustCoverageRow(label,item,assetCount=0){
+  if(!item||item.coverageCount==null)return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${assetCount?'Cobertura desconhecida nesta leitura.':'Sem posições para avaliar esta classificação.'}</small></div><div>${dataTrustPill('UNKNOWN')}</div></div>`;
+  const known=Number(item.knownCount)||0,unknown=Number(item.unknownCount)||0;
+  return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${known} conhecidos · ${unknown} sem informação · valor conhecido ${dataTrustMoney(item.knownValue)}</small></div><div>${dataTrustPill(dataTrustCoverageState(item,assetCount))}</div></div>`;
 }
 function dataTrustReconciliationRow(label,item){return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${item?.values?.length?item.values.map(value=>dataTrustMoney(value)).join(' · '):'Não há valores comparáveis nesta leitura.'}${item?.reason?`<br><span>${esc(item.reason)}</span>`:''}</small></div><div>${dataTrustPill(item?.status||'NOT_COMPARABLE')}</div></div>`;}
 function dataTrustCenterTab(){
+  const model=globalThis.PortfolioDataTrust?.build?.(dataTrustCloudInput(),{now:Date.now()})||{summary:{},assets:[],coverage:{},cloud:{status:'UNKNOWN'},falseZero:{status:'UNKNOWN',reason:'Diagnóstico indisponível.'},reconciliations:{},duplicates:{exact:[],potential:[]}};
+  const quality=dataQualitySnapshot();
+  const summary=model.summary||{};
+  const cloud=model.cloud||{};
+  const issueCount=Number(quality.summary?.issueCount)||0;
+  const hasConfirmedEmpty=cloud.status==='EMPTY_CONFIRMED';
+  const noEvidence=!summary.assetCount&&!quality.summary?.totalRecords&&!cloud.snapshotReceived&&!hasConfirmedEmpty;
+  const hasPartial=issueCount>0||(Number(summary.staleQuoteCount)||0)>0||(Number(summary.unknownQuoteCount)||0)>0||model.status==='MISMATCH'||Object.values(model.coverage||{}).some(item=>item?.coverageCount!=null&&item.coverageCount<100);
+  const overallState=noEvidence?'Indisponível':(Number(summary.staleQuoteCount)||0)>0?'Desatualizado':hasPartial?'Parcial':'Nenhum achado nesta leitura';
+  const overallNote=noEvidence?'Não há registros suficientes nesta sessão para verificar posições e cobertura.':hasConfirmedEmpty&&!summary.assetCount?'A carteira foi confirmada vazia nesta leitura.':`Esta síntese considera ${Number(summary.assetCount)||0} posições e ${Number(quality.summary?.totalRecords)||0} registros analisados; ausência de achados não certifica cobertura completa.`;
+  const assetCount=Number(summary.assetCount)||0;
+  const currentCount=Number(summary.currentQuoteCount)||0,staleCount=Number(summary.staleQuoteCount)||0,unknownCount=Number(summary.unknownQuoteCount)||0;
+  const freshnessText=assetCount?`${currentCount} ${currentCount===1?'atual':'atuais'} · ${staleCount} ${staleCount===1?'desatualizada':'desatualizadas'} · ${unknownCount} ${unknownCount===1?'desconhecida':'desconhecidas'}`:'Sem posições avaliadas';
+  const coverageNames=[['className','Classe'],['sector','Setor'],['issuer','Emissor']];
+  const coverageHtml=coverageNames.map(([key,label])=>`<div class="data-trust-primary-fact"><strong>${label}</strong><span data-trust-state>${dataTrustCoverageState(model.coverage?.[key],assetCount)}</span></div>`).join('');
+  const authorityText=assetCount?`${Number(summary.provenanceCount)||0} de ${assetCount} com proveniência identificada`:'Autoridade desconhecida sem posições avaliadas';
+  const manualText=Number(summary.fixedIncomeCount)>0?`${Number(summary.manualFixedIncomeCount)||0} de ${Number(summary.fixedIncomeCount)} posições de Renda Fixa com autoridade manual`:'Sem posições de Renda Fixa avaliadas';
+  const priorityIssues=dataQualityPriorityIssues(quality.issues,3);
+  const visibleIssues=typeof window!=='undefined'&&window.matchMedia('(max-width: 640px)').matches?priorityIssues.slice(0,2):priorityIssues;
+  const priorityHtml=visibleIssues.length?visibleIssues.map(dataTrustPriorityGap).join(''):'<p class="data-trust-primary-note" role="status">Nenhum gap de cadastro apareceu nesta auditoria. Isso não confirma cobertura completa.</p>';
+  const allIssueCount=Array.isArray(quality.issues)?quality.issues.length:issueCount;
+  const moreIssues=Math.max(0,allIssueCount-visibleIssues.length);
+  return `<div class="data-trust-page data-trust-v294" aria-labelledby="data-trust-primary-title">
+    <header class="data-trust-hero"><div><div class="data-trust-kicker">Qualidade e evidências</div><h1 id="data-trust-primary-title">Confiabilidade</h1><p class="data-trust-lede">Veja o que está atualizado, o que falta e qual origem sustenta cada leitura.</p></div></header>
+    <section class="data-trust-primary" data-trust-primary-summary aria-labelledby="data-trust-overall-title">
+      <div class="data-trust-primary-head"><div><h2 class="data-trust-primary-title" id="data-trust-overall-title">Estado geral da leitura</h2><strong class="data-trust-primary-state" data-trust-state>${esc(overallState)}</strong><p class="data-trust-primary-note">${esc(overallNote)}</p></div>${dataTrustPill(overallState)}</div>
+      <div class="data-trust-primary-facts">
+        <div class="data-trust-primary-fact"><strong>Frescor identificado</strong><span data-trust-state>${esc(freshnessText)}</span></div>
+        <div class="data-trust-primary-fact"><strong>Sincronização</strong><span data-trust-state>${esc(dataTrustStatusLabel(cloud.status||'UNKNOWN'))}. Estado do vínculo, não prova de completude.</span></div>
+        ${coverageHtml}
+        <div class="data-trust-primary-fact"><strong>Origem e autoridade</strong><span>${esc(authorityText)}. ${esc(manualText)}.</span></div>
+      </div>
+      <div class="data-trust-gaps" aria-label="Principais lacunas de evidência">${priorityHtml}</div>
+      ${moreIssues>0?`<p class="data-trust-primary-note">${moreIssues} outro(s) achado(s) disponível(is) nos diagnósticos detalhados.</p>`:''}
+    </section>
+    <details class="data-trust-diagnostics" id="data-trust-diagnostics"><summary>Detalhes de origem, cobertura e auditorias</summary><div class="data-trust-diagnostics-body">${dataTrustDetailedTab()}</div></details>
+  </div>`;
+}
+function dataTrustDetailedTab(){
   const model=globalThis.PortfolioDataTrust?.build?.(dataTrustCloudInput(),{now:Date.now()})||{summary:{},assets:[],coverage:{},cloud:{status:'UNKNOWN'},falseZero:{status:'UNKNOWN',reason:'Diagnóstico indisponível.'},reconciliations:{},duplicates:{exact:[],potential:[]}};
   const monitoringModel=v258MonitoringModel(v257QualityModel());
   const rows=globalThis.PortfolioDataTrust?.filter?.(model,v238TrustFilters)||[];
@@ -23270,7 +23341,7 @@ function dataTrustCenterTab(){
   const cloud=model.cloud||{};
   const issueStatus=model.falseZero?.mismatch?'MISMATCH':cloud.status;
   const issueText=model.falseZero?.mismatch?model.falseZero.reason:(cloud.status==='ERROR'?'A fonte retornou erro; isso não representa carteira vazia.':`Estado da sincronização: ${dataTrustStatusLabel(cloud.status)}.`);
-  const assetRows=rows.length?rows.slice(0,80).map(asset=>`<div class="data-trust-row"><div><strong>${esc(asset.label)}</strong><small>${esc(asset.type||'Classe não informada')} · ${esc(asset.quoteSource||'Fonte desconhecida')} · ${asset.freshness?.timestamp?`base ${dataTrustDate(asset.freshness.timestamp)}`:'data-base não informada'}</small></div><div>${dataTrustPill(asset.freshness?.status||'UNKNOWN')}</div></div>`).join(''):`<div class="data-trust-empty" role="status">Nenhuma posição corresponde aos filtros atuais. Isso não altera os dados da carteira.</div>`;
+  const assetRows=rows.length?rows.slice(0,80).map(asset=>{const raw=asset.raw||{};const sourceAsOf=raw.sourceAsOf||raw.source_as_of;const financialAsOf=raw.financialAsOf||raw.financial_as_of;const freshnessDate=asset.freshness?.timestamp?`${dataTrustFreshnessFieldLabel(asset.freshness.field)}: ${dataTrustDate(asset.freshness.timestamp)}`:'Data de atualização desconhecida';return `<div class="data-trust-row"><div><strong>${esc(asset.label)}</strong><small>${esc(asset.type||'Classe não informada')} · ${esc(asset.quoteSource||'Fonte desconhecida')}</small><span class="data-trust-source-date">${esc(freshnessDate)}</span><span class="data-trust-source-date" data-trust-source-as-of>Data da fonte: ${esc(sourceAsOf?dataTrustDate(sourceAsOf):'Não informada')}</span><span class="data-trust-source-date" data-trust-financial-as-of>Data financeira: ${esc(financialAsOf?dataTrustDate(financialAsOf):'Não informada')}</span></div><div>${dataTrustPill(asset.freshness?.status||'UNKNOWN')}</div></div>`;}).join(''):`<div class="data-trust-empty" role="status">Nenhuma posição corresponde aos filtros atuais. Isso não altera os dados da carteira.</div>`;
   const reconciliations=model.reconciliations||{};
   return `<main class="data-trust-page" aria-labelledby="data-trust-title">
     <header class="data-trust-hero"><div><div class="data-trust-kicker">Centro operacional</div><h1 id="data-trust-title">Confiabilidade da carteira</h1><p class="data-trust-lede">Leitura factual de atualização, origem, cobertura e reconciliação. Esta área não corrige dados, não calcula recomendação e não executa ações financeiras.</p></div><div class="data-trust-actions"><a class="data-trust-link" href="#data-trust-positions">Ver posições</a><a class="data-trust-link" href="#data-trust-reconciliation">Ver reconciliações</a></div></header>
@@ -37448,6 +37519,12 @@ html[data-theme="light"] #investBottomNav .nav-center span:last-child{color:#526
 html[data-theme="light"] .premium-dividends-3 .dividend-executive-kpi-value.good{color:#047857}
 html[data-theme="light"] .data-trust-kicker{color:#047857}
 html[data-theme="light"] .data-trust-lede{color:#526174}
+html[data-theme="light"] .data-trust-primary,html[data-theme="light"] .data-trust-diagnostics{background:#fff;border-color:#d9e2ec;box-shadow:none}
+html[data-theme="light"] .data-trust-primary-title,html[data-theme="light"] .data-trust-primary-state,html[data-theme="light"] .data-trust-gap h3{color:#172033}
+html[data-theme="light"] .data-trust-primary-note,html[data-theme="light"] .data-trust-primary-fact span,html[data-theme="light"] .data-trust-gap p{color:#526174}
+html[data-theme="light"] .data-trust-primary-fact{border-color:#d9e2ec}
+html[data-theme="light"] .data-trust-diagnostics>summary{color:#334155}
+html[data-theme="light"] .data-trust-diagnostics>summary:after{color:#526174}
 html[data-theme="light"] .corporate-events-summary-card span{color:#cbd5e1}
 html[data-theme="light"] .corporate-events-center label{color:#f1f5f9}
 html[data-theme="light"] .data-quality-card-label{color:#526174!important}
