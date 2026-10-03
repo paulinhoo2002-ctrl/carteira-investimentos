@@ -8,6 +8,7 @@ const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 
 const ROOT = path.join(__dirname, '..');
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const XLSX_FIXTURE = path.join(ROOT, 'tests', 'fixtures', 'import-center', 'v296-synthetic-b3-movements.xlsx');
 const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const sheetJsTag = indexHtml.match(/<script src="(https:\/\/cdn\.jsdelivr\.net\/npm\/xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js)" integrity="(sha384-[^"]+)" crossorigin="anonymous"><\\\/script>/);
 if (!sheetJsTag) throw new Error('Production SheetJS URL/SRI tag not found');
@@ -71,19 +72,8 @@ async function closeApp(app) {
   app.harness.server.close();
 }
 
-async function makeSyntheticWorkbook(page) {
-  const bytes = await page.evaluate(() => {
-    const workbook = XLSX.utils.book_new();
-    const sheet = XLSX.utils.aoa_to_sheet([
-      ['Entrada/Saída', 'Data', 'Movimentação', 'Produto', 'Quantidade', 'Preço unitário', 'Valor da Operação', 'Instituição'],
-      ['Entrada', '15/09/2026', 'Compra', 'QAAA3 - QA sintético Alfa', 2, 10, 20, ''],
-      ['Entrada', '16/09/2026', 'Compra', 'QAFI11 - QA sintético Beta', 1, 15, 15, ''],
-      ['Entrada', '17/09/2026', 'Compra', 'QAZZ3 - linha incompleta sintética', null, null, null, ''],
-    ]);
-    XLSX.utils.book_append_sheet(workbook, sheet, 'Movimentacao');
-    return Array.from(new Uint8Array(XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })));
-  });
-  const buffer = Buffer.from(bytes);
+function readSyntheticWorkbook() {
+  const buffer = fs.readFileSync(XLSX_FIXTURE);
   assert.equal(buffer.subarray(0, 2).toString(), 'PK', 'fixture must be a ZIP-based XLSX workbook');
   assert.ok(buffer.length > 1000 && buffer.length < 50000, 'synthetic workbook should remain small');
   return buffer;
@@ -108,7 +98,7 @@ async function selectAndParse(app, file) {
 test('V296: browser loads production SheetJS CDN and decodes synthetic XLSX before protected confirmation', async () => {
   const app = await createApp();
   try {
-    const workbook = await makeSyntheticWorkbook(app.page);
+    const workbook = readSyntheticWorkbook();
     await selectAndParse(app, {
       name: 'QA_XLSX_SYNTHETIC_movements_2026-09-17.xlsx',
       mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
