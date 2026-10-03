@@ -14,6 +14,22 @@ Capturas canônicas Wave C. Todas usam fixtures locais sintéticas e representam
 - Desktop 1366: [abrir imagem](v291-aportes-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v291-aportes-1366-dark.png`
 - Mobile 390: [abrir imagem](v291-aportes-390-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v291-aportes-390-dark.png`
 
+# Wave D — Evidências visuais
+
+As seis imagens abaixo mostram o código Wave D atual em tema escuro, com perfil descartável e carteira sintética local (`QA_WALLET_01`).
+
+## Dividendos
+- Desktop 1366×768: [abrir imagem](v292-dividendos-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-dividendos-1366-dark.png`
+- Mobile 390×844: [abrir imagem](v292-dividendos-390-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-dividendos-390-dark.png`
+
+## Rentabilidade
+- Desktop 1366×768: [abrir imagem](v292-rentabilidade-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-rentabilidade-1366-dark.png`
+- Mobile 390×844: [abrir imagem](v292-rentabilidade-390-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-rentabilidade-390-dark.png`
+
+## Renda Fixa
+- Desktop 1366×768: [abrir imagem](v292-renda-fixa-1366-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-renda-fixa-1366-dark.png`
+- Mobile 390×844: [abrir imagem](v292-renda-fixa-390-dark.png) — `C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v292-renda-fixa-390-dark.png`
+
 MAX_HUMAN_IMAGES=10
 
 PHOTO_PICKUP:
