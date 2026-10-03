@@ -132,6 +132,42 @@ test('Wave F: no-data, partial and stale states remain distinct and as-of fields
   }
 });
 
+test('Wave F: per-asset authority is visible and stays distinct from source and freshness', async () => {
+  const app = await createApp();
+  try {
+    await app.page.evaluate(() => {
+      S.assets = [
+        { id:'QA_AUTH_MANUAL', ticker:'QAM1', name:'Ativo manual sintético', type:'Ação', qty:1, avg_price:10, current_price:11, source:'Fonte sintética A', quoteUpdatedAt:'2026-10-02T10:00:00Z', manual_authority:true, manualValueAuthority:'manual' },
+        { id:'QA_AUTH_IMPORTED', ticker:'QAI1', name:'Ativo importado sintético', type:'Ação', qty:1, avg_price:10, current_price:11, source:'Fonte sintética C', quoteUpdatedAt:'2026-10-02T10:00:00Z', valuationMode:'LEGACY_REPORTED', currentMeta:{ authority:'IMPORTED_AUTHORITATIVE' } },
+        { id:'QA_AUTH_UNKNOWN', ticker:'QAU1', name:'Ativo sem autoridade sintético', type:'Ação', qty:1, avg_price:10, current_price:11, source:'Fonte sintética B', quoteUpdatedAt:'2026-10-02T10:00:00Z' },
+      ];
+      S.aportes = []; S.proventos = []; S.rfEvents = []; S.tab = 'confiabilidade'; render();
+    });
+
+    const authorityDisclosure = app.page.getByText('Autoridade por ativo');
+    assert.equal(await authorityDisclosure.count(), 1, 'autoridade por ativo deve ser encontrável sem abrir os diagnósticos técnicos');
+    await authorityDisclosure.click();
+    const manualRow = app.page.locator('[data-trust-asset-authority]').filter({ hasText:'QAM1' });
+    const importedRow = app.page.locator('[data-trust-asset-authority]').filter({ hasText:'QAI1' });
+    const unknownRow = app.page.locator('[data-trust-asset-authority]').filter({ hasText:'QAU1' });
+    const manualText = await manualRow.innerText();
+    const importedText = await importedRow.innerText();
+    const unknownText = await unknownRow.innerText();
+    assert.match(manualText, /Autoridade: Manual/i);
+    assert.match(manualText, /Fonte: Fonte sintética A/i);
+    assert.match(manualText, /Atualização da cotação:/i);
+    assert.match(importedText, /Autoridade: Importado/i);
+    assert.match(importedText, /Fonte: Fonte sintética C/i);
+    assert.match(importedText, /Atualização da cotação:/i);
+    assert.match(unknownText, /Autoridade: Não informada/i);
+    assert.match(unknownText, /Fonte: Fonte sintética B/i);
+    assert.match(unknownText, /Atualização da cotação:/i);
+    assert.doesNotMatch(unknownText, /Autoridade: (Manual|Referência de mercado|Estimado|Importado|Oficial|Histórico certificado)/i);
+  } finally {
+    await closeApp(app);
+  }
+});
+
 test('Wave F: detailed evidence stays reachable through a keyboard-operable disclosure', async () => {
   const app = await createApp();
   try {

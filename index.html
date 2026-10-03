@@ -8139,9 +8139,18 @@ summary:focus-visible,
    .data-trust-diagnostics[open]>summary:after{content:'−'}
    .data-trust-diagnostics-body{padding:0 10px 12px}
    .data-trust-source-date{display:block;margin-top:3px;color:#9fb0c7;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+   .data-trust-authority-details{margin:10px 0;border:1px solid rgba(116,144,180,.2);border-radius:12px;background:rgba(14,28,47,.4)}
+   .data-trust-authority-details>summary{display:flex;align-items:center;min-height:48px;padding:10px 14px;cursor:pointer;color:#dce7f5;font-size:13px;font-weight:750;list-style:none}
+   .data-trust-authority-details>summary::-webkit-details-marker{display:none}
+   .data-trust-authority-details>summary:after{content:'+';margin-left:auto;font-size:18px;color:#aebdd0}
+   .data-trust-authority-details[open]>summary:after{content:'−'}
+   .data-trust-authority-list{display:grid;gap:0;max-height:420px;overflow:auto;padding:0 14px 8px}
+   .data-trust-authority-list article{display:grid;grid-template-columns:minmax(120px,1fr) repeat(3,minmax(130px,1fr));gap:10px;align-items:center;padding:10px 0;border-top:1px solid rgba(116,144,180,.16);font-size:12px}
+   .data-trust-authority-list article strong{color:var(--text,#e8eef8);overflow-wrap:anywhere}
+   .data-trust-authority-list article span{color:#aebdd0;line-height:1.4;overflow-wrap:anywhere}
   .data-trust-page :focus-visible{outline:3px solid #67e8f9;outline-offset:2px}
   @media (max-width:1000px){.data-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.data-trust-layout{grid-template-columns:1fr}}
-   @media (max-width:560px){.data-trust-page{padding:18px 14px}.data-trust-hero{display:block}.data-trust-actions{margin-top:14px}.data-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.data-trust-card{padding:12px}.data-trust-card-value{font-size:21px}.data-trust-panel{padding:14px;border-radius:13px}.data-trust-filters{grid-template-columns:1fr}.data-trust-table{font-size:11px}.data-trust-table th,.data-trust-table td{padding:8px 5px}.data-trust-row{grid-template-columns:1fr;gap:8px}.data-trust-primary{padding:14px;border-radius:14px}.data-trust-primary-facts{grid-template-columns:1fr 1fr;gap:8px}.data-trust-gap{grid-template-columns:1fr}.data-trust-gap-action{justify-self:start}.data-trust-diagnostics-body{padding:0 6px 10px}}
+   @media (max-width:560px){.data-trust-page{padding:18px 14px}.data-trust-hero{display:block}.data-trust-actions{margin-top:14px}.data-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.data-trust-card{padding:12px}.data-trust-card-value{font-size:21px}.data-trust-panel{padding:14px;border-radius:13px}.data-trust-filters{grid-template-columns:1fr}.data-trust-table{font-size:11px}.data-trust-table th,.data-trust-table td{padding:8px 5px}.data-trust-row{grid-template-columns:1fr;gap:8px}.data-trust-primary{padding:14px;border-radius:14px}.data-trust-primary-facts{grid-template-columns:1fr 1fr;gap:8px}.data-trust-gap{grid-template-columns:1fr}.data-trust-gap-action{justify-self:start}.data-trust-authority-list article{grid-template-columns:1fr;gap:4px;padding:9px 0}.data-trust-diagnostics-body{padding:0 6px 10px}}
 </style>
 <style>
 .v257-remediation-center{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #29405c;border-radius:16px;background:linear-gradient(135deg,rgba(15,29,49,.98),rgba(8,17,30,.98));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.v257-remediation-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.v257-remediation-kicker{color:#60a5fa;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.v257-remediation-head h2{margin:4px 0 0;color:#edf3ff;font-size:17px}.v257-remediation-head p{margin:5px 0 0;color:#9cafc6;font-size:10px;line-height:1.45;max-width:760px}.v257-remediation-readonly{display:inline-flex;min-height:28px;align-items:center;border:1px solid rgba(52,211,153,.28);border-radius:999px;padding:0 9px;color:#86efac;background:rgba(52,211,153,.08);font-size:9px;font-weight:900;white-space:nowrap}.v257-remediation-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.v257-remediation-summary article{padding:8px 9px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(255,255,255,.025)}.v257-remediation-summary span{display:block;color:#8294ad;font-size:9px}.v257-remediation-summary strong{display:block;margin-top:4px;color:#edf3ff;font-size:15px}.v257-remediation-summary .warning strong{color:#fbbf24}.v257-remediation-summary .critical strong{color:#f87171}.v257-remediation-summary .info strong{color:#60a5fa}.v257-remediation-filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.v257-remediation-filters input,.v257-remediation-filters select{min-height:44px;border:1px solid #29405c;border-radius:9px;background:#0b1626;color:#dbeafe;padding:0 9px;font:inherit;font-size:10px}.v257-remediation-filters input{min-width:220px}.v257-remediation-list{display:grid;gap:7px}.v257-remediation-item{display:grid;grid-template-columns:105px minmax(130px,1fr) minmax(220px,2fr) minmax(160px,1fr);gap:9px;align-items:start;padding:10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(4,10,20,.3)}.v257-remediation-item strong{display:block;color:#edf3ff;font-size:11px}.v257-remediation-item small{display:block;margin-top:3px;color:#8294ad;font-size:9px;line-height:1.35}.v257-remediation-badge{display:inline-flex;width:max-content;border:1px solid currentColor;border-radius:999px;padding:4px 6px;font-size:8px;font-weight:900}.v257-remediation-badge.critical{color:#fca5a5}.v257-remediation-badge.warning{color:#fbbf24}.v257-remediation-badge.info{color:#93c5fd}.v257-remediation-badge.state{margin-top:4px;color:#c4b5fd}.v257-remediation-empty{padding:18px;text-align:center;border:1px dashed #29405c;border-radius:10px;color:#9cafc6;font-size:10px}.v257-remediation-groups{display:flex;gap:6px;flex-wrap:wrap}.v257-remediation-group{border:1px solid rgba(148,163,184,.16);border-radius:999px;padding:5px 8px;color:#9cafc6;font-size:9px}.v257-remediation-note{color:#8294ad;font-size:9px;line-height:1.4}@media(max-width:700px){.v257-remediation-head{display:block}.v257-remediation-readonly{margin-top:9px}.v257-remediation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.v257-remediation-summary article:first-child{grid-column:1/-1}.v257-remediation-item{grid-template-columns:1fr 1fr}.v257-remediation-item>div:nth-child(3){grid-column:1/-1}.v257-remediation-item>div:nth-child(4){grid-column:1/-1}.v257-remediation-filters input{min-width:100%;width:100%}}
@@ -23207,6 +23216,30 @@ function dataTrustStatusLabel(status){
 function dataTrustPill(status){const tone=dataTrustTone(status);return `<span class="data-trust-pill ${tone}">${esc(dataTrustStatusLabel(status))}</span>`;}
 function dataTrustFreshnessFieldLabel(field){return ({quoteUpdatedAt:'Atualização da cotação',quote_updated_at:'Atualização da cotação',sourceAsOf:'Base informada pela fonte',source_as_of:'Base informada pela fonte',valuationAsOf:'Data de avaliação informada',valuation_as_of:'Data de avaliação informada',financialAsOf:'Data financeira informada',financial_as_of:'Data financeira informada',observedAt:'Observação registrada',observed_at:'Observação registrada',updatedAt:'Registro atualizado',updated_at:'Registro atualizado'}[String(field||'')]||'Data de atualização identificada');}
 function dataTrustCoverageState(item,assetCount){if(!item||item.coverageCount==null)return assetCount?'Desconhecida':'Sem posições para avaliar';if(item.coverageCount>=100)return 'Completa nesta classificação';if(item.coverageCount<=0)return 'Nenhuma classificação identificada';return 'Parcial';}
+function dataTrustAssetAuthorityLabel(asset){
+  const raw=asset?.raw||{};
+  const meta=raw.currentMeta&&typeof raw.currentMeta==='object'?raw.currentMeta:{};
+  const explicitAuthority=[meta.authority,asset?.provenance?.authority,raw.authority,raw.sourceAuthority,raw.source_authority,raw.valueAuthority,raw.value_authority].find(value=>String(value||'').trim());
+  const valuationMode=String(raw.valuationMode||raw.valuation_mode||'').trim().toUpperCase().replace(/[\s-]+/g,'_');
+  const explicit=explicitAuthority||(valuationMode==='APPLIED_VALUE_FALLBACK'?valuationMode:'');
+  const key=String(explicit||'').trim().toUpperCase().replace(/[\s-]+/g,'_');
+  const labels={MANUAL:'Manual',MANUAL_AUTHORITATIVE:'Manual',IMPORTED:'Importado',IMPORTED_AUTHORITATIVE:'Importado',IMPORT:'Importado',ESTIMATED:'Estimado',ESTIMATE:'Estimado',PROJECTED:'Estimado',REFERENCE:'Referência',REFERENCE_ONLY:'Referência',REFERENCE_SHADOW:'Referência shadow',LEGACY_AUTHORITATIVE:'Valor legado',LEGACY_FALLBACK:'Fallback do valor aplicado',APPLIED_VALUE_FALLBACK:'Fallback do valor aplicado',UNKNOWN:'Não informada',UNAVAILABLE:'Indisponível',UNSUPPORTED:'Não suportada'};
+  if(labels[key]&&key!=='UNKNOWN')return labels[key];
+  if(meta.isEstimated===true||raw.isEstimated===true)return 'Estimado';
+  if(labels[key])return labels[key];
+  if(!explicit&&(raw.manual_authority===true||String(raw.manualValueAuthority||'').trim().toUpperCase()==='MANUAL'||meta.manual===true||meta.manualValueCents!==undefined))return 'Manual';
+  if(!explicit&&raw.imported_authority===true)return 'Importado';
+  if(meta.isSupported===false)return 'Não suportada';
+  return explicit?'Não identificada':'Não informada';
+}
+function dataTrustAssetAuthorityRows(assets){
+  if(!assets.length)return '<p class="data-trust-primary-note" role="status">Sem posições avaliadas para identificar autoridade.</p>';
+  return assets.map(asset=>{
+    const source=asset.quoteSource||'Não informada';
+    const freshness=asset.freshness?.timestamp?`${dataTrustFreshnessFieldLabel(asset.freshness.field)}: ${dataTrustDate(asset.freshness.timestamp)}`:'Atualização: não informada';
+    return `<article data-trust-asset-authority><strong>${esc(asset.label)}</strong><span>Autoridade: ${esc(dataTrustAssetAuthorityLabel(asset))}</span><span>Fonte: ${esc(source)}</span><span>${esc(freshness)}</span></article>`;
+  }).join('');
+}
 function dataTrustPriorityGap(issue){
   const action=typeof dataQualityResolveAction==='function'?dataQualityResolveAction(issue):{level:4,label:'Informativo'};
   const actionHtml=action.level===4?'<span class="data-trust-pill info">Informativo</span>':`<button type="button" class="data-trust-link data-trust-gap-action" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label||'Abrir contexto')}</button>`;
@@ -23329,6 +23362,7 @@ function dataTrustCenterTab(){
       <div class="data-trust-gaps" aria-label="Principais lacunas de evidência">${priorityHtml}</div>
       ${moreIssues>0?`<p class="data-trust-primary-note">${moreIssues} outro(s) achado(s) disponível(is) nos diagnósticos detalhados.</p>`:''}
     </section>
+    <details class="data-trust-authority-details"><summary>Autoridade por ativo (${assetCount})</summary><div class="data-trust-authority-list" aria-label="Autoridade, fonte e atualização por ativo">${dataTrustAssetAuthorityRows(model.assets||[])}</div></details>
     <details class="data-trust-diagnostics" id="data-trust-diagnostics"><summary>Detalhes de origem, cobertura e auditorias</summary><div class="data-trust-diagnostics-body">${dataTrustDetailedTab()}</div></details>
   </div>`;
 }
@@ -37525,6 +37559,9 @@ html[data-theme="light"] .data-trust-primary-note,html[data-theme="light"] .data
 html[data-theme="light"] .data-trust-primary-fact{border-color:#d9e2ec}
 html[data-theme="light"] .data-trust-diagnostics>summary{color:#334155}
 html[data-theme="light"] .data-trust-diagnostics>summary:after{color:#526174}
+html[data-theme="light"] .data-trust-authority-details{background:#fff;border-color:#d9e2ec}
+html[data-theme="light"] .data-trust-authority-details>summary,html[data-theme="light"] .data-trust-authority-list article strong{color:#172033}
+html[data-theme="light"] .data-trust-authority-details>summary:after,html[data-theme="light"] .data-trust-authority-list article span{color:#526174}
 html[data-theme="light"] .corporate-events-summary-card span{color:#cbd5e1}
 html[data-theme="light"] .corporate-events-center label{color:#f1f5f9}
 html[data-theme="light"] .data-quality-card-label{color:#526174!important}
