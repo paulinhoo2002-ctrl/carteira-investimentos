@@ -71,3 +71,23 @@ Abra o Explorador de Arquivos e cole FOLDER na barra de endereço.
 
 HOW_TO_OPEN_ON_REMOTE_PHONE=
 Abra a sessão remota do computador no celular, abra o Explorador de Arquivos da máquina, cole FOLDER e selecione os arquivos listados.
+
+# Wave G — Regressão visual final
+
+Capturas locais com fixtures sintéticas do estado atual da Wave G. A captura de Ativos foi refeita após elevar os rótulos financeiros para 12 px.
+
+## Dashboard
+- Desktop 1366×768 dark: [abrir imagem](v295-dashboard-1366-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-dashboard-1366-dark.png
+- Mobile 390×844 dark: [abrir imagem](v295-dashboard-390-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-dashboard-390-dark.png
+- Desktop 1366×768 light: [abrir imagem](v295-dashboard-1366-light.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-dashboard-1366-light.png
+- Mobile 390×844 light: [abrir imagem](v295-dashboard-390-light.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-dashboard-390-light.png
+
+## Ativos
+- Desktop 1366×768 dark: [abrir imagem](v295-ativos-1366-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-ativos-1366-dark.png
+
+## Aportes
+- Mobile 390×844 dark: [abrir imagem](v295-aportes-390-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-aportes-390-dark.png
+
+## Confiabilidade
+- Desktop 1366×768 dark: [abrir imagem](v295-confiabilidade-1366-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-confiabilidade-1366-dark.png
+- Mobile 390×844 dark: [abrir imagem](v295-confiabilidade-390-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-confiabilidade-390-dark.png
