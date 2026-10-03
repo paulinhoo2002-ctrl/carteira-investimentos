@@ -58,8 +58,8 @@ As capturas post-major-fix são a evidência canônica atual após neutralizar a
 Capturas atuais da Confiabilidade em tema escuro, com perfil local descartável e dados sintéticos da fixture V289. Dimensões validadas: desktop 1366×768 e mobile 390×844; sem erros de console/página ou overflow horizontal.
 
 ## Confiabilidade
-- Desktop 1366×768: [abrir imagem](v294-confiabilidade-1366-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v294-confiabilidade-1366-dark.png
-- Mobile 390×844: [abrir imagem](v294-confiabilidade-390-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v294-confiabilidade-390-dark.png
+- Desktop 1366×768: [abrir desktop](v294-confiabilidade-1366-dark-post-major-fix.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v294-confiabilidade-1366-dark-post-major-fix.png
+- Mobile 390×844: [abrir mobile](v294-confiabilidade-390-dark-post-major-fix.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v294-confiabilidade-390-dark-post-major-fix.png
 
 MAX_HUMAN_IMAGES=10
 
