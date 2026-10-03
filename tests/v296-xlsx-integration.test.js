@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
@@ -13,21 +12,6 @@ const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const sheetJsTag = indexHtml.match(/<script src="(https:\/\/cdn\.jsdelivr\.net\/npm\/xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js)" integrity="(sha384-[^"]+)" crossorigin="anonymous"><\\\/script>/);
 if (!sheetJsTag) throw new Error('Production SheetJS URL/SRI tag not found');
 const [, sheetJsUrl, sheetJsIntegrity] = sheetJsTag;
-let sheetJsAssetPromise;
-
-async function getSheetJsAsset() {
-  if (!sheetJsAssetPromise) {
-    sheetJsAssetPromise = fetch(sheetJsUrl).then(async response => {
-      if (!response.ok) throw new Error(`SheetJS CDN returned HTTP ${response.status}`);
-      const source = Buffer.from(await response.arrayBuffer());
-      const digest = `sha384-${crypto.createHash('sha384').update(source).digest('base64')}`;
-      assert.equal(digest, sheetJsIntegrity, 'downloaded SheetJS must match production SRI');
-      return source;
-    });
-  }
-  return sheetJsAssetPromise;
-}
-
 async function createApp() {
   const harness = await startLocalHttpServer(ROOT);
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
@@ -41,13 +25,6 @@ async function createApp() {
   try {
     await page.goto(harness.url, { waitUntil: 'networkidle' });
     await applyV289VisualFixture(page, 'baseline');
-    const source = await getSheetJsAsset();
-    await page.route(sheetJsUrl, route => route.fulfill({
-      status: 200,
-      contentType: 'application/javascript; charset=utf-8',
-      headers: { 'access-control-allow-origin': '*', 'cache-control': 'no-store' },
-      body: source,
-    }));
     const version = await page.evaluate(async ({ src, integrity }) => new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = src;
@@ -128,7 +105,7 @@ async function selectAndParse(app, file) {
   await app.page.waitForFunction(() => S.importCenterSession?.result?.status !== 'PARSING', null, { timeout: 15000 });
 }
 
-test('V296: production SheetJS decodes synthetic XLSX through Import Center before protected confirmation', async () => {
+test('V296: browser loads production SheetJS CDN and decodes synthetic XLSX before protected confirmation', async () => {
   const app = await createApp();
   try {
     const workbook = await makeSyntheticWorkbook(app.page);
