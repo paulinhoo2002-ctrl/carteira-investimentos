@@ -33,7 +33,7 @@
 
 - Integração XLSX: 2/2 PASS.
 - Import Center, parsers, autoridade, persistência, salvaguardas de import e Wave E: 186/186 PASS.
-- Cobertura atual Dashboard HYBRID V2 e Metas: 37/37 PASS.
+- Revisão reproduzível Dashboard HYBRID V2 e Metas: 29/29 PASS, com manifesto explícito: `tests/v289-dashboard-hybrid.test.js` (18), `tests/goals-functional.e2e.test.js` (8) e `tests/goals-contextual-continuity.test.js` (3). O agregado original 37/37 não tinha manifesto exato no handoff/ledger e não é reproduzível independentemente; não é usado como evidência certificada.
 - `npm.cmd test`: 252/252 PASS.
 - `npm.cmd run test:modern`: 815/815 PASS.
 - `npm.cmd run build`: PASS.
@@ -47,7 +47,7 @@
 - Wave G técnica: `BLOCKER=0`, `MAJOR=0`, `MINOR=4`.
 - Wave G visual: `BLOCKER=0`, `MAJOR=0`, `MINOR=2`.
 - `PHASE_198_CLASSIFICATION=PREEXISTING_FAILURE_DOCUMENTATION_DRIFT`; não bloqueante conforme continuidade existente.
-- `PHASE_206_CLASSIFICATION=TEST_HARNESS_FAILURE`; 4/5 testes do arquivo passam. O teste restante falha na extração VM por `ReferenceError: assetCurrentValue is not defined`, antes das antigas asserções de estrutura Dashboard. Não foi alterado nem enfraquecido. Cobertura vigente de Dashboard HYBRID V2 e Metas, incluindo fluxo de edição e salvamento sintético, passou 37/37.
+- `PHASE_206_CLASSIFICATION=TEST_HARNESS_FAILURE`; 4/5 testes do arquivo passam. O teste restante falha na extração VM por `ReferenceError: assetCurrentValue is not defined`, antes das antigas asserções de estrutura Dashboard. Não foi alterado nem enfraquecido. A revisão reproduzível de Dashboard HYBRID V2 e Metas, incluindo edição/salvamento sintético, é 29/29 conforme manifesto acima. O agregado anterior 37/37 não tinha manifesto exato e permanece uma imprecisão documental, não uma falha de produto.
 - Outras dívidas menores da Wave G permanecem documentadas no handoff Wave G e no ledger; nenhuma BLOCKER ou MAJOR aberto foi identificado.
 - Ponytail `full`; revisão executada. Resultado: `Lean already. Ship.` Nenhuma exclusão ou simplificação adicional aplicada.
 

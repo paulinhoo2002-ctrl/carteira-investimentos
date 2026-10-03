@@ -1,4 +1,11 @@
 # Next Step
+## V298 — próximo passo após checkpoint RC local (2026-10-03)
+
+- O RC da branch `feature/v289-premium-visual-redesign` foi certificado localmente no base `69569adc0ec4cf58ea8cec29c6c59c4bff10d643`, após os gates frescos e correção documental do agregado 37/37 para 29/29 reproduzível.
+- A decisão seguinte é humana: avaliar push/PR/merge/deploy separadamente. Esta missão não executa nenhuma dessas ações.
+- Manter `test:import-xlsx` como gate manual de release, pois depende de rede/CDN; não incorporá-lo à CI offline sem missão própria.
+- Preservar Phase-206 (falha de harness), Phase-198 (drift documental) e os seis demais débitos visuais/técnicos menores registrados no handoff RC.
+
 ## Próximo gate funcional após V285 (2026-09-29)
 
 - `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `ORIGIN_MAIN=6f249bb822bb83163a39a3cb7e59ff80ab3134bb` inclui PR #432/V284.
