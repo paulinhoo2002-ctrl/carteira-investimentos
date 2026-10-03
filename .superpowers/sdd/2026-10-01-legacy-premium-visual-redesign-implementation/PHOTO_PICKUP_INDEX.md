@@ -91,3 +91,5 @@ Capturas locais com fixtures sintéticas do estado atual da Wave G. A captura de
 ## Confiabilidade
 - Desktop 1366×768 dark: [abrir imagem](v295-confiabilidade-1366-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-confiabilidade-1366-dark.png
 - Mobile 390×844 dark: [abrir imagem](v295-confiabilidade-390-dark.png) — C:\Projetos\carteira-investimentos.worktrees\v289-premium-visual-redesign\.superpowers\sdd\2026-10-01-legacy-premium-visual-redesign-implementation\v295-confiabilidade-390-dark.png
+
+Revisão visual final ChatGPT vision: BLOCKER=0, MAJOR=0, MINOR=2; oito capturas aprovadas; overflow horizontal=0; clipping visível=0. Ver `CHATGPT_WAVE_G_HANDOFF.md` para o resultado completo e gates frescos.
