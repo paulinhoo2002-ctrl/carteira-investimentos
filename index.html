@@ -35188,10 +35188,15 @@ function v252PerformanceIntelligence(){
   </section>`;
 }
 
+function setRentPrimarySemantic(card, isAvailable){
+  if(!card) return;
+  card.classList.toggle('rent-primary-result--unavailable', !isAvailable);
+  card.setAttribute('data-availability', isAvailable?'available':'unavailable');
+}
 function rentabilidadeTab(){
-  const bench=String(S.rentBench||'CDI');
-  const type=String(S.rentType||'all');
-  const period=String(S.rentPeriod||'all');
+  const type=S.rentType||'all';
+  const period=S.rentPeriod||'all';
+  const bench=S.rentBench||'CDI';
   const v248History=v248HistoricalPerformanceSnapshot();
   const data=rentabilityHistory(type, period, bench);
   const certifiedHistory=v248History.coverage==='FULL_COVERAGE'&&data.status==='AVAILABLE';
@@ -35252,19 +35257,19 @@ function rentabilidadeTab(){
       title:'Rentabilidade total',
       value:certifiedHistory&&current.cumReturn!=null?fmtP(current.cumReturn):'Indisponível',
       foot:certifiedHistory?`${data.metric==='TWR'?'TWR datado':'Retorno simples datado'} · ${data.asOf||'sem data'}`:'Sem série histórica certificada para este recorte',
-      color:'var(--success)',
+      color:certifiedHistory&&current.cumReturn!=null?'var(--success)':'var(--muted)',
     },
     {
       title:'Últimos 12 meses',
       value:certifiedHistory&&return12m!=null?fmtP(return12m):'Indisponível',
       foot:certifiedHistory&&return12m!=null?`Proventos: ${fmt(provCurrent)}`:'Valuation de abertura da janela de 12 meses indisponível',
-      color:'#60a5fa',
+      color:certifiedHistory&&return12m!=null?'#60a5fa':'var(--muted)',
     },
     {
       title:'Último mês',
       value:certifiedHistory&&currentMonth!=null?fmtP(currentMonth):'Indisponível',
       foot:certifiedHistory&&currentMonth!=null?'Retorno entre valuations datados':'Valuations de abertura/fechamento mensal indisponíveis',
-      color:(currentMonth||0)>=0?'var(--success)':'var(--danger)',
+      color:certifiedHistory&&currentMonth!=null?(currentMonth||0)>=0?'var(--success)':'var(--danger)':'var(--muted)',
     },
     {
       title:'Patrimônio atual',
@@ -35326,7 +35331,7 @@ function rentabilidadeTab(){
 
   return`<div class="rent-premium"><h1 class="page-heading">Rentabilidade</h1>
   <div class="page-sub">Resultado histórico por período, com base e cobertura explícitas.</div>
-  <section class="card al dash-card rent-card rent-primary-result" aria-label="Resultado de rentabilidade no período">
+  <section class="card al dash-card rent-card rent-primary-result ${certifiedHistory?'rent-primary-result--available':'rent-primary-result--unavailable'}" aria-label="Resultado de rentabilidade no período">
     <div class="rent-kpi-label">${esc(primaryResultCard.title)} · ${esc(periodLabel)}</div>
     <div class="rent-kpi-value" style="color:${primaryResultCard.color}">${primaryResultCard.value}</div>
     <div class="rent-kpi-foot">${esc(primaryResultCard.foot)}</div>
@@ -37580,10 +37585,13 @@ html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405
   .canon-dashboard .dashboard-v3-allocation{padding:3px 2px 5px}
   .canon-dashboard .dashboard-v3-priority{align-items:flex-start;flex-direction:column;gap:2px}
 }
- .rent-premium .rent-primary-result{border-left:4px solid var(--success);padding:16px 18px}
-.rent-premium .rent-primary-result .rent-kpi-label{font-size:13px}
-.rent-premium .rent-primary-result .rent-kpi-value{font-size:30px;line-height:1.12;font-variant-numeric:tabular-nums}
-.rent-premium .rent-primary-result .rent-kpi-foot{font-size:12px;line-height:1.4}
+ .rent-premium .rent-primary-result{border-left:4px solid var(--muted);padding:16px 18px}
+ .rent-premium .rent-primary-result--available{border-left-color:var(--success)}
+ .rent-premium .rent-primary-result--unavailable .rent-kpi-value{color:var(--muted)}
+ .rent-premium .rent-primary-result--available .rent-kpi-value{color:var(--success)}
+ .rent-premium .rent-primary-result .rent-kpi-label{font-size:13px}
+ .rent-premium .rent-primary-result .rent-kpi-value{font-size:30px;line-height:1.12;font-variant-numeric:tabular-nums}
+ .rent-premium .rent-primary-result .rent-kpi-foot{font-size:12px;line-height:1.4}
 .rent-premium .rent-primary-context{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
 .rent-premium .rent-filters-context{display:grid;gap:5px;min-width:0;color:var(--muted);font-size:12px;font-weight:700}
 .rent-premium .rent-filters-context select{width:100%;min-width:0;min-height:44px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font:inherit;font-size:13px}
