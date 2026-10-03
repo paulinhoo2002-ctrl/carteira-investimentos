@@ -148,6 +148,14 @@ test('V292 D2 Rentabilidade leads with result, period, benchmark basis, coverage
       '.rent-primary-result', '[aria-label="Período da rentabilidade"]', '.rent-primary-context',
       '.rent-primary-coverage', '.rent-chartbox', '.rent-monthly-details > summary', '.rent-evidence-details > summary',
     ]);
+    const visualOrder = await route.evaluate(root => ({
+      chart: root.querySelector('.rent-main').getBoundingClientRect().top,
+      secondary: root.querySelector('.rent-secondary-disclosure').getBoundingClientRect().top,
+      monthly: root.querySelector('.rent-monthly-details').getBoundingClientRect().top,
+      evidence: root.querySelector('.rent-evidence-details').getBoundingClientRect().top,
+    }));
+    assert.ok(visualOrder.chart < visualOrder.secondary && visualOrder.chart < visualOrder.monthly && visualOrder.chart < visualOrder.evidence,
+      `Evolution must visually precede secondary details: ${JSON.stringify(visualOrder)}`);
     assert.match(order[2].text, /fonte\/série histórica indisponível/);
     assert.match(order[2].text, /taxa fixa não é série datada/);
     assert.match(order[3].text, /UNKNOWN|indisponível|parcial|completa/i);
