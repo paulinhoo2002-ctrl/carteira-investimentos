@@ -8,7 +8,7 @@ const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 const chrome = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
 async function withPage(viewport, run) {
-  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'), 45678);
   let browser;
   try {
     browser = await chromium.launch({ executablePath: chrome, headless: true });
@@ -119,5 +119,81 @@ test('V292 D1 Dividendos stays usable across approved viewport sizes and themes'
     }
     assert.deepEqual(page.__v289Errors.console, []);
     assert.deepEqual(page.__v289Errors.page, []);
+  });
+});
+
+test('V292 D2 Rentabilidade leads with result, period, benchmark basis, coverage, then chart', async () => {
+  await withPage({ width: 1366, height: 768 }, async page => {
+    await page.locator('.tabs-desktop button.tab[aria-label="Rentabilidade"]').click();
+    const route = page.locator('.rent-premium');
+    await route.waitFor({ state: 'attached' }).catch(async () => {
+      const state = await page.evaluate(() => ({ tab: S.tab, root: document.getElementById('root')?.innerText.slice(0, 300) || '', renderError:(()=>{try{rentabilidadeTab();return ''}catch(error){return error.stack}})() }));
+      assert.fail(`Rentabilidade route did not render: ${JSON.stringify(state)}; page errors=${page.__v289Errors.page.join(' | ')}`);
+    });
+    const order = await route.evaluate(root => {
+      const selectors = [
+        '.rent-primary-result',
+        '[aria-label="Período da rentabilidade"]',
+        '.rent-primary-context',
+        '.rent-primary-coverage',
+        '.rent-chartbox',
+        '.rent-monthly-details > summary',
+        '.rent-evidence-details > summary',
+      ];
+      const nodes = selectors.map(selector => root.querySelector(selector));
+      return nodes.map((node, index) => ({ selector: selectors[index], present: !!node, text: node?.innerText || '' }));
+    });
+    assert.ok(order.every(item => item.present), `Rentabilidade hierarchy elements missing: ${JSON.stringify(order)}`);
+    assert.deepEqual(order.map(item => item.selector), [
+      '.rent-primary-result', '[aria-label="Período da rentabilidade"]', '.rent-primary-context',
+      '.rent-primary-coverage', '.rent-chartbox', '.rent-monthly-details > summary', '.rent-evidence-details > summary',
+    ]);
+    assert.match(order[2].text, /fonte\/série histórica indisponível/);
+    assert.match(order[2].text, /taxa fixa não é série datada/);
+    assert.match(order[3].text, /UNKNOWN|indisponível|parcial|completa/i);
+    assert.match(order[4].text, /Sem série histórica certificada|rent-performance-chart/);
+    assert.match(await route.locator('.rent-primary-result').innerText(), /Indisponível/);
+    await route.locator('.rent-secondary-disclosure > summary').click();
+    assert.match(await route.locator('.rent-analysis-note').innerText(), /Proventos no recorte\s+Indisponível/);
+    assert.deepEqual(page.__v289Errors.console, []);
+    assert.deepEqual(page.__v289Errors.page, []);
+  });
+});
+
+test('V292 D2 Rentabilidade stays readable across approved viewport sizes and themes', async () => {
+  await withPage({ width: 1366, height: 768 }, async page => {
+    await page.locator('.tabs-desktop button.tab[aria-label="Rentabilidade"]').click();
+    const viewports = [[390,844],[430,932],[768,1024],[1366,768],[1440,900],[1536,864],[1920,1080]];
+    for (const [width,height] of viewports) {
+      await page.setViewportSize({ width, height });
+      for (const theme of ['dark','light']) {
+        await page.evaluate(themeName => {
+          document.documentElement.dataset.theme=themeName;
+          document.documentElement.style.colorScheme=themeName;
+          render();
+        },theme);
+        const layout=await page.evaluate(()=>{
+          const metrics=element=>{const rect=element.getBoundingClientRect();return{width:rect.width,height:rect.height,font:Number.parseFloat(getComputedStyle(element).fontSize)}};
+          const main=document.querySelector('.rent-main');
+          const context=document.querySelector('.rent-primary-context');
+          return{
+            overflow:document.documentElement.scrollWidth>innerWidth,
+            controls:[...context.querySelectorAll('select')].map(metrics),
+            labels:[...context.querySelectorAll('span,strong')].map(metrics),
+            result:metrics(document.querySelector('.rent-primary-result .rent-kpi-value')),
+            chart:main.getBoundingClientRect().width>0,
+            theme:document.documentElement.dataset.theme,
+          };
+        });
+        assert.equal(layout.theme,theme,`${width}px should render ${theme}`);
+        assert.equal(layout.overflow,false,`${width}px ${theme} must not overflow`);
+        assert.equal(layout.chart,true,`${width}px ${theme} chart region must be present`);
+        assert.ok(layout.result.font>=25,`${width}px ${theme} primary result must stay readable`);
+        assert.ok(layout.controls.length===3&&layout.controls.every(control=>control.height>=44&&control.font>=12),`${width}px ${theme} period/source controls must remain usable`);
+        assert.ok(layout.labels.every(label=>label.font>=12),`${width}px ${theme} base and coverage labels must remain readable`);
+      }
+    }
+    assert.deepEqual(page.__v289Errors.console,[]);
+    assert.deepEqual(page.__v289Errors.page,[]);
   });
 });

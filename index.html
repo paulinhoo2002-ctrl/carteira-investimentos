@@ -35191,6 +35191,12 @@ function rentabilidadeTab(){
   const v248History=v248HistoricalPerformanceSnapshot();
   const data=rentabilityHistory(type, period, bench);
   const certifiedHistory=v248History.coverage==='FULL_COVERAGE'&&data.status==='AVAILABLE';
+  const historyCoverageLabel={
+    FULL_COVERAGE:'Cobertura completa',
+    PARTIAL_COVERAGE:'Cobertura parcial',
+    UNKNOWN:'Cobertura UNKNOWN · sem série histórica disponível',
+    INSUFFICIENT_DATA:'Cobertura insuficiente · série histórica indisponível'
+  }[v248History.coverage]||'Cobertura indisponível';
   const view=Array.isArray(data.view)?data.view:[];
   const points=Array.isArray(data.points)?data.points:[];
   const benchSeries=Array.isArray(data.benchSeries)?data.benchSeries:[];
@@ -35269,9 +35275,12 @@ function rentabilidadeTab(){
 
   const chartData=certifiedHistory?(view.length?view:points):[];
   const chartLabels=chartData.map(p=>p.label);
+  const benchmarkSource=String(data.benchmarkSource||data.benchmark?.source||'').trim();
+  const benchmarkPeriod=String(data.benchmarkPeriod||data.benchmark?.period||'').trim();
+  const benchmarkSeriesAvailable=!!benchmarkSource&&!!benchmarkPeriod&&benchSeries.length===chartData.length&&benchSeries.every(value=>Number.isFinite(Number(value)));
   const chartSeries=[
     {name:'Carteira', values:chartData.map(p=>p.cumReturn||0), color:'var(--success)', fill:'rgba(34,197,94,.12)', width:2.5, points:false},
-    {name:bench, values:benchSeries.length?benchSeries:rentBenchSeries(chartData.length, bench), color:'#60a5fa', width:2.2, points:false},
+    ...(benchmarkSeriesAvailable?[{name:`${bench} · ${benchmarkSource} · ${benchmarkPeriod}`, values:benchSeries, color:'#60a5fa', width:2.2, points:false}]:[]),
   ];
   const summaryPreview=[
     {label:'Último mês', value:currentMonth==null?'Indisponível':fmtP(currentMonth), sub:'Retorno entre valuations datados'},
@@ -35298,63 +35307,76 @@ function rentabilidadeTab(){
 
   const chartLegend=`<div class="pleg">
     <div class="pli"><span class="pd" style="background:var(--success)"></span>Carteira</div>
-    <div class="pli"><span class="pd" style="background:#60a5fa"></span>${certifiedHistory?`${esc(bench)} com cobertura disponível`:'Benchmark UNKNOWN'}</div>
+    <div class="pli"><span class="pd" style="background:#60a5fa"></span>${benchmarkSeriesAvailable?`${esc(bench)} · ${esc(benchmarkSource)} · ${esc(benchmarkPeriod)}`:`${esc(bench)} · referência indisponível; fonte e série datadas não disponíveis`}</div>
     <div class="pli"><span class="pd" style="background:var(--muted)"></span>${certifiedHistory?'Série derivada dos valuations disponíveis':'Sem retroagir preço atual'}</div>
   </div>`;
+  const periodLabel=period==='all'?'Desde o início':`${period} meses`;
+  const benchmarkBasis=benchmarkSeriesAvailable
+    ? `${bench} · fonte ${benchmarkSource} · período ${benchmarkPeriod}`
+    : `${bench} · fonte/série histórica indisponível para ${periodLabel}; taxa fixa não é série datada`;
+  const baseLabel=certifiedHistory
+    ? `${data.metric==='TWR'?'TWR':'Retorno simples'} com valuations datados · ${data.asOf||'data-base indisponível'}`
+    : 'Valuations históricos necessários; preço atual não é usado como histórico';
+  const primaryResultCard=sideCards[0];
+  const secondaryMetricCards=sideCards.slice(1);
 
   return`<div class="rent-premium"><h1 class="page-heading">Rentabilidade</h1>
-  <div class="page-sub">Evolução e comparação da carteira, com proventos incluídos no cálculo.</div>
-  ${v248HistoricalPerformancePanel()}
-  ${v252PerformanceIntelligence()||''}
-
-  <div class="rent-layout">
-    <div class="rent-side">
-      ${sideCards.map(c=>`<div class="card al dash-card rent-card" style="border-left-color:${c.color}">
-        <div class="rent-kpi-label">${esc(c.title)}</div>
-        <div class="rent-kpi-value" style="color:${c.color}">${c.value}</div>
-        <div class="rent-kpi-foot">${esc(c.foot)}</div>
-      </div>`).join('')}
+  <div class="page-sub">Resultado histórico por período, com base e cobertura explícitas.</div>
+  <section class="card al dash-card rent-card rent-primary-result" aria-label="Resultado de rentabilidade no período">
+    <div class="rent-kpi-label">${esc(primaryResultCard.title)} · ${esc(periodLabel)}</div>
+    <div class="rent-kpi-value" style="color:${primaryResultCard.color}">${primaryResultCard.value}</div>
+    <div class="rent-kpi-foot">${esc(primaryResultCard.foot)}</div>
+  </section>
+  <section class="rent-primary-context" aria-label="Base, referência e cobertura da rentabilidade">
+    <label class="rent-filters-context">Período
+      <select aria-label="Período da rentabilidade" onchange="setRentPeriod(this.value)">
+        <option value="all" ${period==='all'?'selected':''}>Desde o início</option>
+        <option value="12" ${String(period)==='12'?'selected':''}>12M</option>
+        <option value="24" ${String(period)==='24'?'selected':''}>24M</option>
+        <option value="36" ${String(period)==='36'?'selected':''}>36M</option>
+        <option value="60" ${String(period)==='60'?'selected':''}>60M</option>
+      </select>
+    </label>
+    <label class="rent-filters-context">Ativo
+      <select aria-label="Tipo de ativo da rentabilidade" onchange="setRentType(this.value)">
+        ${['all','Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option value="${esc(t)}" ${type===t?'selected':''}>${t==='all'?'Todos os tipos':t}</option>`).join('')}
+      </select>
+    </label>
+    <label class="rent-filters-context">Referência
+      <select aria-label="Benchmark da rentabilidade" onchange="setRentBench(this.value)">
+        ${Object.keys(RENT_BENCH).map(b=>`<option value="${esc(b)}" ${bench===b?'selected':''}>${esc(b)}</option>`).join('')}
+      </select>
+    </label>
+    <div class="rent-primary-context-item"><span>Base do resultado</span><strong>${esc(baseLabel)}</strong></div>
+    <div class="rent-primary-context-item"><span>Referência · período e fonte</span><strong>${esc(benchmarkBasis)}</strong></div>
+    <div class="rent-primary-context-item rent-primary-coverage" role="status"><span>Cobertura histórica</span><strong>${esc(historyCoverageLabel)}</strong></div>
+  </section>
+  <section class="cc rent-main" aria-label="Evolução da rentabilidade">
+    <div class="sh" style="margin-bottom:12px">
+      <div>
+        <div class="st">Evolução no período selecionado</div>
+        <div class="mu" style="font-size:11px;margin-top:2px">A série certificada depende de valuations e preços históricos; lacunas permanecem visíveis.</div>
+      </div>
     </div>
 
-    <div class="cc rent-main">
-      <div class="sh" style="margin-bottom:12px">
-        <div>
-          <div class="st">Rentabilidade comparada com índices</div>
-          <div class="mu" style="font-size:11px;margin-top:2px">A série certificada depende de valuations e preços históricos; lacunas permanecem visíveis.</div>
-        </div>
-        <div class="rent-filters">
-          <select aria-label="Período da rentabilidade" onchange="setRentPeriod(this.value)">
-            <option value="all" ${period==='all'?'selected':''}>Desde o início</option>
-            <option value="12" ${String(period)==='12'?'selected':''}>12M</option>
-            <option value="24" ${String(period)==='24'?'selected':''}>24M</option>
-            <option value="36" ${String(period)==='36'?'selected':''}>36M</option>
-            <option value="60" ${String(period)==='60'?'selected':''}>60M</option>
-          </select>
-          <select aria-label="Tipo de ativo da rentabilidade" onchange="setRentType(this.value)">
-            ${['all','Ação','FII','ETF','Renda Fixa','BDR','Crypto'].map(t=>`<option value="${esc(t)}" ${type===t?'selected':''}>${t==='all'?'Todos os tipos':t}</option>`).join('')}
-          </select>
-          <select aria-label="Benchmark da rentabilidade" onchange="setRentBench(this.value)">
-            ${Object.keys(RENT_BENCH).map(b=>`<option value="${esc(b)}" ${bench===b?'selected':''}>${esc(b)}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-
-      ${chartLegend}
-      <div class="rent-chartbox">
-        ${chartData.length ? lineChart(chartSeries, chartLabels, 'rent-performance-chart') : '<div class="es" style="padding:42px 18px">Sem série histórica certificada para este período. O painel Histórico auditável informa a cobertura real.</div>'}
-      </div>
-      <div class="rent-summary-preview" aria-label="Resumo do histórico mensal">
+    ${chartLegend}
+    <div class="rent-chartbox">
+      ${chartData.length ? lineChart(chartSeries, chartLabels, 'rent-performance-chart') : '<div class="es" style="padding:42px 18px">Sem série histórica certificada para este período. A ausência de histórico não representa retorno zero.</div>'}
+    </div>
+    <div class="rent-summary-preview" aria-label="Resumo do histórico mensal">
         ${(certifiedHistory?summaryPreview:summaryPreview.map(item=>({...item,value:'Indisponível',sub:'Cobertura histórica insuficiente'}))).map(item=>`<div class="rent-summary-chip">
           <div class="rent-summary-chip-label">${esc(item.label)}</div>
           <div class="rent-summary-chip-value">${esc(item.value)}</div>
           <div class="rent-summary-chip-sub">${esc(item.sub)}</div>
         </div>`).join('')}
-      </div>
-      <div class="rent-context-note"><span class="mu" style="font-size:10px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</span>${topAssetAction}</div>
     </div>
-  </div>
+    <div class="rent-context-note"><span class="mu" style="font-size:10px;line-height:1.35">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</span>${topAssetAction}</div>
+  </section>
 
-  <div class="rent-secondary-grid">
+  <details class="rent-secondary-disclosure">
+    <summary>Outros períodos e composição atual</summary>
+    <div class="rent-side">${secondaryMetricCards.map(c=>`<div class="card al dash-card rent-card" style="border-left-color:${c.color}"><div class="rent-kpi-label">${esc(c.title)}</div><div class="rent-kpi-value" style="color:${c.color}">${c.value}</div><div class="rent-kpi-foot">${esc(c.foot)}</div></div>`).join('')}</div>
+    <div class="rent-secondary-grid">
     <section class="card rent-distribution-panel" aria-label="Distribuição atual da carteira">
       <div class="sh"><div><div class="st">Distribuição por tipo de ativo</div><div class="mu">Composição atual usando o snapshot oficial da carteira.</div></div></div>
       ${distributionRows.length ? `<div class="rent-distribution-list">${distributionRows.map(([label,value],idx)=>{const pct=allocationSnapshot.total>0?(Number(value)/allocationSnapshot.total)*100:0;return `<div class="rent-distribution-row"><div class="rent-distribution-head"><span><i class="rent-distribution-dot" style="background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></i>${esc(label)}</span><strong>${pct.toFixed(1)}% · ${fmt(value)}</strong></div><div class="rent-distribution-track"><span style="width:${Math.max(4,pct).toFixed(1)}%;background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></span></div></div>`}).join('')}</div>` : '<div class="evo-empty">Nenhuma posição disponível para distribuir.</div>'}
@@ -35363,13 +35385,14 @@ function rentabilidadeTab(){
       <div class="sh"><div><div class="st">Leitura analítica</div><div class="mu">Contexto para interpretar o retorno exibido.</div></div></div>
       <div class="rent-analysis-note-list">
         <div><span>Base de cálculo</span><strong>Capital aplicado</strong></div>
-        <div><span>Proventos no recorte</span><strong>${fmt(provCurrent)}</strong></div>
-        <div><span>Comparação</span><strong>${esc(bench)} oficial</strong></div>
+        <div><span>Proventos no recorte</span><strong>${provCurrent==null?'Indisponível':fmt(provCurrent)}</strong></div>
+        <div><span>Comparação</span><strong>${esc(bench)} · taxa fixa anual configurada</strong></div>
       </div>
     </section>
-  </div>
+    </div>
+  </details>
 
-  <details class="sec" style="margin-top:14px">
+  <details class="sec rent-monthly-details" style="margin-top:14px">
     <summary>
       <div>
         <div class="sec-title">Rentabilidade mensal</div>
@@ -35383,6 +35406,10 @@ function rentabilidadeTab(){
         <tbody>${yearsRows||'<tr><td colspan="17" style="text-align:center;padding:20px;color:#2e3f58">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
       </table></div></div>
     </div>
+  </details>
+  <details class="rent-evidence-details">
+    <summary>Cobertura e auditoria histórica</summary>
+    <div class="rent-evidence-details-body">${v248HistoricalPerformancePanel()}${v252PerformanceIntelligence()||''}</div>
   </details></div>`;
 }
 
@@ -37549,7 +37576,28 @@ html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405
   .canon-dashboard .dashboard-v3-allocation{padding:3px 2px 5px}
   .canon-dashboard .dashboard-v3-priority{align-items:flex-start;flex-direction:column;gap:2px}
 }
+ .rent-premium .rent-primary-result{border-left:4px solid var(--success);padding:16px 18px}
+.rent-premium .rent-primary-result .rent-kpi-label{font-size:13px}
+.rent-premium .rent-primary-result .rent-kpi-value{font-size:30px;line-height:1.12;font-variant-numeric:tabular-nums}
+.rent-premium .rent-primary-result .rent-kpi-foot{font-size:12px;line-height:1.4}
+.rent-premium .rent-primary-context{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.rent-premium .rent-filters-context{display:grid;gap:5px;min-width:0;color:var(--muted);font-size:12px;font-weight:700}
+.rent-premium .rent-filters-context select{width:100%;min-width:0;min-height:44px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font:inherit;font-size:13px}
+.rent-premium .rent-primary-context-item{display:grid;gap:5px;align-content:start;min-width:0;padding:8px 2px}
+.rent-premium .rent-primary-context-item span{color:var(--muted);font-size:12px;font-weight:700}
+.rent-premium .rent-primary-context-item strong{color:var(--text);font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.rent-premium .rent-primary-coverage strong{color:var(--muted)}
+.rent-premium .rent-secondary-disclosure,.rent-premium .rent-evidence-details{border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden}
+.rent-premium .rent-secondary-disclosure>summary,.rent-premium .rent-evidence-details>summary{min-height:48px;padding:12px 14px;display:flex;align-items:center;cursor:pointer;color:var(--text);font-size:13px;font-weight:750}
+.rent-premium .rent-secondary-disclosure .rent-side{padding:12px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.rent-premium .rent-secondary-grid{padding:0 12px 12px}
+.rent-premium .rent-evidence-details-body{display:grid;gap:12px;padding:12px}
+.rent-premium .rent-evidence-details .v248-history-panel,.rent-premium .rent-evidence-details .v252-intelligence-panel{margin:0}
 @media(max-width:700px){
+  .rent-premium .rent-primary-result .rent-kpi-value{font-size:25px}
+  .rent-premium .rent-primary-context{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .rent-premium .rent-primary-context-item:last-child{grid-column:1/-1}
+  .rent-premium .rent-secondary-disclosure .rent-side{grid-template-columns:1fr}
   .premium-dividends-3 .dividend-calendar-primary{grid-template-columns:minmax(0,1fr)}
   .premium-dividends-3 .div-premium-head{align-items:flex-start;flex-direction:column;gap:10px}
   .premium-dividends-3 .div-premium-canon-actions{width:100%;flex-wrap:wrap}
