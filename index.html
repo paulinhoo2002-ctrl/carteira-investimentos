@@ -2166,7 +2166,7 @@ html[data-theme="light"] .asset-insight-sub{color:#4f6175}
 .aporte-history-value{text-align:right}
 .aporte-history-total{font-size:12px;font-weight:900;color:var(--text);white-space:nowrap}
 .aporte-history-unit{font-size:8px;color:var(--muted);margin-top:3px;white-space:nowrap}
-.aporte-kind{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:9px;font-weight:900;border:1px solid var(--border);white-space:nowrap}
+.aporte-kind{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;border:1px solid var(--border);white-space:nowrap}
     .aporte-kind.compra{color:#6ee7b7;background:rgba(110,231,183,.1);border-color:rgba(110,231,183,.3)}
 .aporte-kind.venda{color:#f87171;background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25)}
 .aporte-kind.provento{color:#fbbf24;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.28)}
@@ -2195,7 +2195,7 @@ html[data-theme="light"] .aporte-filter-chip.on{color:#3343c7;background:#e8ebff
 html[data-theme="light"] .aporte-history-card{box-shadow:0 7px 20px rgba(51,65,85,.07)}
 html[data-theme="light"] .aporte-kind.compra{color:#15803d;background:rgba(110,231,183,.1);border-color:rgba(21,128,61,.35)}
 html[data-theme="light"] .aporte-kind.venda{color:#dc2626}
-html[data-theme="light"] .aporte-kind.provento{color:#a16207}
+html[data-theme="light"] .aporte-kind.provento{color:#855500}
 html[data-theme="light"] .aporte-kind.renda-fixa{color:#2563eb}
 html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
@@ -7640,7 +7640,7 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 .metas-primary-goal{display:grid;gap:16px;padding:20px 22px;border:1px solid var(--border);border-radius:18px;background:var(--panel)}
 .metas-primary-goal-heading h2{margin:3px 0 4px;font-size:22px;line-height:1.2;color:var(--text)}
 .metas-primary-goal-heading p,.metas-primary-goal-unavailable{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
-.metas-primary-goal-kicker{color:var(--primary);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.metas-primary-goal-kicker{color:var(--v3-accent);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .metas-primary-goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .metas-primary-goal-value{display:flex;min-width:0;flex-direction:column;gap:5px;padding:12px 14px;border-left:2px solid var(--primary);background:var(--surface);border-radius:0 10px 10px 0}
 .metas-primary-goal-value span,.metas-primary-goal-progress span{font-size:12px;color:var(--muted)}
@@ -37488,6 +37488,8 @@ function updateRfAssetSummary(selectElement) {
 .assets-filter-summary strong{color:var(--text);font-size:12px}
 .assets-filter-summary-dot{color:var(--primary);font-weight:800}
 .assets-page-context{max-width:66ch;line-height:1.4}
+html[data-theme="light"] .assets-page-context,
+html[data-theme="light"] .assets-filter-summary{color:#334155}
 
 .corporate-events-center{display:grid;gap:16px;max-width:1180px;margin:0 auto;padding:8px 0 32px}
 .corporate-events-center-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:22px 24px;border:1px solid rgba(96,165,250,.2);border-radius:18px;background:linear-gradient(145deg,rgba(17,35,57,.96),rgba(10,22,38,.96))}
@@ -37557,6 +37559,8 @@ html[data-theme="light"] .data-trust-primary,html[data-theme="light"] .data-trus
 html[data-theme="light"] .data-trust-primary-title,html[data-theme="light"] .data-trust-primary-state,html[data-theme="light"] .data-trust-gap h3{color:#172033}
 html[data-theme="light"] .data-trust-primary-note,html[data-theme="light"] .data-trust-primary-fact span,html[data-theme="light"] .data-trust-gap p{color:#526174}
 html[data-theme="light"] .data-trust-primary-fact{border-color:#d9e2ec}
+html[data-theme="light"] .data-trust-primary-fact strong{color:#17243a}
+html[data-theme="light"] .data-trust-primary-head .data-trust-pill.info{color:#1e40af}
 html[data-theme="light"] .data-trust-diagnostics>summary{color:#334155}
 html[data-theme="light"] .data-trust-diagnostics>summary:after{color:#526174}
 html[data-theme="light"] .data-trust-authority-details{background:#fff;border-color:#d9e2ec}
@@ -37785,6 +37789,10 @@ html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405
   .premium-dividends-3 .div-premium-canon-actions{width:100%;flex-wrap:wrap}
   .premium-dividends-3 .div-premium-tabs{width:100%;overflow-x:auto}
 }
+html[data-theme="light"] .premium-dividends-3 .div-premium-tab{color:#4b5d70}
+html[data-theme="light"] .premium-dividends-3 .div-type-badge.rendimento{color:#137333}
+html[data-theme="light"] .premium-dividends-3 .div-type-badge.outro{color:#475569}
+.assets-premium-shell .ag-k{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{
