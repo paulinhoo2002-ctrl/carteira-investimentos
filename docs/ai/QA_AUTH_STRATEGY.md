@@ -1,5 +1,35 @@
 # Synthetic QA authentication and route smoke
 
+## V315 status — Layer 3 operacional e scaffolding Layer 4
+
+PR #439 integrou Auth + Firestore emulators e CI Ubuntu. O estado atual da
+Layer 3 está certificado no merge `2966dfb197ddcde5440379f8d2d21c35cdeda183`;
+ver `docs/ai/PROJECT_STATE.md` para gates e deployment pós-merge. Os blocos
+V310 abaixo registram corretamente o estado histórico daquela versão.
+
+O follow-up V315 adiciona `scripts/qa/preview-firebase-config.cjs`,
+`scripts/qa/preview-provider-smoke.cjs` e `tests/qa-preview-firebase-config.test.js`.
+O contrato requer `VERCEL_ENV=preview`, `VERCEL_URL` exatamente listado em
+`QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`, as seis variáveis `QA_FIREBASE_*` de
+configuração cliente e `PRODUCTION_FIREBASE_PROJECT_ID` diferente de
+`QA_FIREBASE_PROJECT_ID`. A allowlist é controle de host, não segredo.
+
+`npm run test:qa-preview-config` usa somente dados sintéticos e roda na CI. O
+`npm run qa:preview-provider-smoke` é uma verificação de fronteira somente de
+leitura: baixa a página pública do Preview, extrai o project ID inline e exige
+igualdade com o ID QA configurado e diferença do ID de produção. Ele não executa
+login Google, não usa credenciais e não faz writes. A aplicação ainda não
+seleciona essa configuração; sem uma futura alteração revisada do runtime, o
+smoke bloqueia corretamente. Não configurar variáveis em Preview antes dessa
+alteração e dos testes negativos de seleção de ambiente.
+
+`QA_FIREBASE_PROJECT_EXISTS=NOT_VERIFIED`: nenhuma configuração Preview QA foi
+encontrada nos metadados consultáveis, o que não prova inexistência de projeto
+Firebase externo. A pessoa responsável deve provisionar projeto/Auth/Firestore
+isolados, identidade sintética e domínio Preview; nunca enviar valores de
+configuração ou credenciais no chat. A ativação da config no runtime é uma
+missão posterior separada.
+
 ## Three distinct kinds of evidence
 
 - `PRODUCTION_PUBLIC_GATE_SMOKE` checks reachability, the public login shell and
