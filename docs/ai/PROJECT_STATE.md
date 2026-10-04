@@ -1,5 +1,17 @@
 # Project State
 
+## V304 — pós-release e automação QA (2026-10-03)
+
+- `origin/main=eb1f3c4686f1f61635939512a2c1118cb0dde908`; deploy V1.3.0 permanece READY. A tag `v1.3.0-rc1` e o histórico certificado não foram alterados.
+- V304 ocorre isolada em `feature/v304-post-release-hardening`; sem produção, Firebase, persistência ou lógica financeira modificados.
+- Phase-198 foi reconciliada com o roadmap atual e passa 2/2. Phase-206 harness agora injeta o helper real de valor e testa o Dashboard HYBRID V2 atual; passa 5/5.
+- `setRentPrimarySemantic` foi removida após busca de referências confirmar que havia somente a definição; Rentabilidade contextual/visual passou.
+- `npm run test:visual-regression` executa a matriz sintética V289 e está na CI após descoberta do Chromium. `npm run verify:release` reúne `npm test`, `test:modern`, `qa:all` e a matriz visual.
+- XLSX continua gate manual separado (`npm run test:import-xlsx`) por depender do CDN/SRI; bytes exclusivamente sintéticos.
+- O testMode local é um fixture de rota em memória, não autentica Firebase/Google. Não há no repositório emulator Auth, projeto QA isolado ou conta QA sintética. Smoke com identidade autenticada exige ação humana para provisionar ambiente/conta isolados.
+- V304 não cria bypass de autenticação de produção. O smoke sintético observa zero escrita financeira/Firebase; o app pode gravar apenas metadados locais de QA documentados em `QA_AUTH_STRATEGY.md`.
+- `PUSH=false`; `PR=false`; `MERGE=false`; `DEPLOY=false`.
+
 ## V298 — RC local da branch visual (2026-10-03)
 
 - `CURRENT_BRANCH=feature/v289-premium-visual-redesign`; `RC_BASE_HEAD=69569adc0ec4cf58ea8cec29c6c59c4bff10d643`.

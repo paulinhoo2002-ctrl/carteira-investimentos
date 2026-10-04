@@ -52,10 +52,9 @@ function expectations(v) {
   const w = v.width;
   const hdrTopBase = w <= 640 ? 8 : 10;
   let tabsTopBase;
-  if (w >= 1536) tabsTopBase = 0;
+  if (w >= 1181) tabsTopBase = 0;
   else if (w <= 900) tabsTopBase = 58;
-  else if (w <= 1180) tabsTopBase = 52;
-  else tabsTopBase = 58;
+  else tabsTopBase = 52;
   const hdrLeftBase = w <= 640 ? 10 : w <= 900 ? 12 : 18;
   return {
     hdrTop: hdrTopBase,

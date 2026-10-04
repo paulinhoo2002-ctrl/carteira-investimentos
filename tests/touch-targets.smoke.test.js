@@ -50,9 +50,13 @@ const viewports = [
 const confirmedTargets = {
   auditoria: ['.data-quality-chip', '.data-quality-actions .btn'],
   ia: ['.ai-modebar .btn', '.ai-cta'],
-  rentabilidade: ['.rent-filters select'],
+  rentabilidade: [
+    '[aria-label="Período da rentabilidade"]',
+    '[aria-label="Tipo de ativo da rentabilidade"]',
+    '[aria-label="Benchmark da rentabilidade"]',
+  ],
   irpf: ['#irpf-year-report', '.irpf-yearbox .btn'],
-  ajudar: ['.rebalance-form .btn'],
+  ajudar: ['.rebalance-tools > summary'],
 };
 
 for (const viewport of viewports) {
@@ -94,7 +98,7 @@ for (const viewport of viewports) {
             const r = el.getBoundingClientRect();
             const cs = getComputedStyle(el);
             return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'
-              && !el.closest('details:not([open])');
+              && (!el.closest('details:not([open])') || el.matches('details:not([open]) > summary'));
           };
           const issues = [];
           const boxes = [];
@@ -138,7 +142,7 @@ for (const viewport of viewports) {
             const r = el.getBoundingClientRect();
             const cs = getComputedStyle(el);
             return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'
-              && !el.closest('details:not([open])');
+              && (!el.closest('details:not([open])') || el.matches('details:not([open]) > summary'));
           };
           const issues = [];
           for (const sel of selectors) {

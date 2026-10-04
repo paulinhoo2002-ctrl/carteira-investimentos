@@ -26,7 +26,7 @@ scan archives, local imports, or every worktree by default.
 - Performance and reporting: `PORTFOLIO_PERFORMANCE_CONTRACT.md`,
   `TWR_XIRR_METHODOLOGY.md`, `PORTFOLIO_REPORTING_INTELLIGENCE.md`.
 - QA and release: `TESTING_AND_RELEASE.md`, `QA_HARNESS.md`, `QA_PLAYBOOK.md`,
-  `RELEASE_PLAYBOOK.md`.
+  `RELEASE_PLAYBOOK.md`, `QA_AUTH_STRATEGY.md`.
 - Backup and storage: `BACKUP_MANIFEST.md`,
   `STORAGE_AND_WORKTREE_POLICY.md`, `LEGACY_ARCHIVE_INDEX.md`.
 - Visual work: `VISUAL_CANON.md` and `Refs/visual-canon/README.md`.

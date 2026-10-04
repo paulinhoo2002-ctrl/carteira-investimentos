@@ -108,16 +108,28 @@ for (const viewport of viewports) {
       assert.ok(ia.allVisible, `algum modo da IA cortado em ${viewport.label}`);
       assert.equal(await pageOverflow(), 0, `pageOverflow na IA em ${viewport.label}`);
 
-      // Dividendos: o Overview canônico não exibe tabs; os modos internos
-      // continuam acessíveis pelo controlador oficial.
+      // Dividendos: the current route exposes primary modes in its own
+      // horizontally scrollable navigation, with secondary modes under Mais.
       await page.evaluate(() => go('dividendos'));
-      const div = await page.evaluate(() => {
-        const before = document.querySelector('.div-premium-tabs');
-        setDividendViewMode('review');
-        return { overviewTabsAbsent: !before, reviewRendered: Boolean(document.querySelector('.div-premium')) };
+      const dividendModes = page.locator('nav[aria-label="Modos de Dividendos"]');
+      assert.equal(await dividendModes.isVisible(), true, `navegação de modos indisponível em ${viewport.label}`);
+      const dividendNavGeometry = await dividendModes.evaluate(nav => {
+        const rect = nav.getBoundingClientRect();
+        return { left: rect.left, right: rect.right };
       });
-      assert.equal(div.overviewTabsAbsent, true, `tabs antigas ainda visíveis em ${viewport.label}`);
-      assert.equal(div.reviewRendered, true, `modo Revisão inacessível em ${viewport.label}`);
+      assert.ok(dividendNavGeometry.left >= -1 && dividendNavGeometry.right <= viewport.width + 1,
+        `navegação de Dividendos fora da viewport em ${viewport.label}: ${JSON.stringify(dividendNavGeometry)}`);
+      await dividendModes.getByRole('button', { name: 'Evolução', exact: true }).click();
+      assert.equal(await dividendModes.locator('.div-premium-tab.on').innerText(), 'Evolução',
+        `modo Evolução não selecionado em ${viewport.label}`);
+      assert.equal(await page.locator('.dividend-mode-content[aria-label="Evolução da renda"]').isVisible(), true,
+        `conteúdo de Evolução não renderizado em ${viewport.label}`);
+      await page.locator('.div-dividend-moreviews > summary').click();
+      await page.locator('.div-dividend-moreviews-body').getByRole('button', { name: 'Revisão', exact: true }).click();
+      assert.equal(await dividendModes.locator('.div-dividend-moreviews-body .div-premium-tab.on').innerText(), 'Revisão',
+        `modo Revisão não selecionado em ${viewport.label}`);
+      assert.equal(await page.locator('.prov-review-shell .prov-review-title strong').innerText(), 'Revisão',
+        `conteúdo de Revisão não renderizado em ${viewport.label}`);
       assert.equal(await pageOverflow(), 0, `pageOverflow em dividendos ${viewport.label}`);
 
       // Ativos: acoes (Comprar/Vender/Mais e Movimentar/Resgatar) visiveis e sem sobreposicao

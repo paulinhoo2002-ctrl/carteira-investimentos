@@ -35,13 +35,38 @@ async function createRuntime(viewport) {
     });
     const page = await context.newPage();
     page.setDefaultTimeout(5000);
+    await page.addInitScript(() => {
+      window.__V304_QA_WRITE_COUNTS__ = { localStorage: [], financialStateAtBoot: localStorage.getItem('civ5') };
+      const originalSetItem = Storage.prototype.setItem;
+      const originalRemoveItem = Storage.prototype.removeItem;
+      const originalClear = Storage.prototype.clear;
+      Storage.prototype.setItem = function (...args) {
+        if (this === window.localStorage) window.__V304_QA_WRITE_COUNTS__.localStorage.push({ operation: 'setItem', key: String(args[0]) });
+        return originalSetItem.apply(this, args);
+      };
+      Storage.prototype.removeItem = function (...args) {
+        if (this === window.localStorage) window.__V304_QA_WRITE_COUNTS__.localStorage.push({ operation: 'removeItem', key: String(args[0]) });
+        return originalRemoveItem.apply(this, args);
+      };
+      Storage.prototype.clear = function (...args) {
+        if (this === window.localStorage) window.__V304_QA_WRITE_COUNTS__.localStorage.push({ operation: 'clear', key: '*' });
+        return originalClear.apply(this, args);
+      };
+    });
     const consoleErrors = [];
     const pageErrors = [];
     const localRequestFailures = [];
+    const firebaseRequests = [];
     page.on('console', message => {
       if (message.type() === 'error') consoleErrors.push(message.text());
     });
     page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('request', request => {
+      const url = new URL(request.url());
+      if (/(?:firebaseio\.com|firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com)$/i.test(url.hostname)) {
+        firebaseRequests.push({ method: request.method(), host: url.hostname });
+      }
+    });
     page.on('requestfailed', request => {
       if (request.url().startsWith(new URL(harness.url).origin)) {
         localRequestFailures.push(`${request.method()} ${request.url()} (${request.failure()?.errorText || 'unknown'})`);
@@ -50,7 +75,7 @@ async function createRuntime(viewport) {
     await page.goto(harness.url, { waitUntil: 'domcontentloaded' });
     await applyV289VisualFixture(page, 'baseline');
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
-    return { harness, browser, context, page, consoleErrors, pageErrors, localRequestFailures };
+    return { harness, browser, context, page, consoleErrors, pageErrors, localRequestFailures, firebaseRequests };
   } catch (error) {
     if (browser) await browser.close();
     harness.server.closeAllConnections();
@@ -64,6 +89,24 @@ async function closeRuntime(runtime) {
   await runtime.browser.close();
   runtime.harness.server.closeAllConnections();
   runtime.harness.server.close();
+}
+
+async function assertSyntheticReadOnlyRuntime(runtime) {
+  const state = await runtime.page.evaluate(() => ({
+    localTestMode: window.__LOCAL_TEST_MODE__ === true,
+    firebaseInitialized: typeof FB !== 'undefined' && Boolean(FB.app || FB.auth || FB.db),
+    localStorageWriteKeys: window.__V304_QA_WRITE_COUNTS__?.localStorage ?? [],
+    financialStateAtBoot: window.__V304_QA_WRITE_COUNTS__?.financialStateAtBoot ?? null,
+    financialStateNow: localStorage.getItem('civ5'),
+  }));
+  assert.equal(state.localTestMode, true, 'route smoke must use the isolated localhost synthetic fixture');
+  assert.equal(state.firebaseInitialized, false, 'synthetic route smoke must not initialize Firebase');
+  assert.equal(state.financialStateNow, state.financialStateAtBoot, 'read-only route smoke changed financial localStorage state');
+  const financialStorageWrites = state.localStorageWriteKeys.filter(({ key }) => key === 'civ5');
+  assert.deepEqual(financialStorageWrites, [], `read-only route smoke mutated financial storage: ${JSON.stringify(financialStorageWrites)}`);
+  const unexpectedStorageWrites = state.localStorageWriteKeys.filter(({ key }) => key !== 'civ5_edit_lock' && !/^v258-monitoring-baseline-v1:QA_/.test(key));
+  assert.deepEqual(unexpectedStorageWrites, [], `read-only route smoke mutated unexpected storage key(s): ${JSON.stringify(unexpectedStorageWrites)}`);
+  assert.deepEqual(runtime.firebaseRequests, [], `synthetic route smoke contacted Firebase: ${JSON.stringify(runtime.firebaseRequests)}`);
 }
 
 async function directRoutes(page) {
@@ -147,6 +190,7 @@ test('V289 final route matrix renders every route in both themes at 390 and 1366
     assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
     assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
     assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);
   }
@@ -178,6 +222,7 @@ test('V289 representative Dashboard, Ativos and Confiabilidade matrix covers rem
     assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
     assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
     assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);
   }
@@ -216,6 +261,7 @@ test('V289 final route matrix keeps Dashboard first-fold, mobile order and navig
 
     await runtime.page.evaluate(() => go('confiabilidade'));
     assert.equal(await runtime.page.evaluate(() => document.documentElement.dataset.theme), 'dark', 'theme should survive route rendering');
+    await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);
   }
@@ -242,6 +288,7 @@ test('V289 changed routes pass axe in dark/light and respect reduced motion', as
     assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
     assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
     assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);
   }
