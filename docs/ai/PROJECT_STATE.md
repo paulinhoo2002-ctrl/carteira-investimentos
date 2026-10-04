@@ -9,7 +9,8 @@
 - `test:import-xlsx` tentou e falhou porque SheetJS CDN não carregou: `BLOCKED_NETWORK`; XLSX browser/provider QA não certificado. CSV sintético passou.
 - Nenhum dado financeiro real ou credencial foi usado. `testMode` não prova Google/Firebase auth nem persistência cloud. `npm ci` foi executado apenas nesta worktree; lockfile sem alteração.
 - Modelos recomendados: implementação Codex GPT-6 Luna Medium; revisão Hermes GLM-5.3 NVIDIA (disponibilidade não verificada); escalonamento Codex GPT-6 Sol Medium. Runtime usado: Codex, variante não exposta. Skills consideradas/usadas: Superpowers, Ponytail full, Caveman, Playwright. Sem redesign.
-- CI, commit, push, PR Draft e revisão independente ainda pendentes. PRs #440/#441 intocadas; `MERGE=false`.
+- Código: commit `5bf3c213b5f62ed0a98b4b33182de891127ea657`; push PASS. PR #442 OPEN/DRAFT em `main`; CI run `37238415129` PASS (Build/test, Auth+Firestore emulator, visual V289, Vercel e Preview Comments). Link PR: `https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442`.
+- Revisor independente e XLSX CDN seguem pendentes para eventual avanço além de Draft. PRs #440/#441 continuam intocadas. `MERGE=false`.
 
 ## V310 — preparação local de autenticação QA isolada
 

@@ -2,7 +2,7 @@
 ## V317 — próximo passo operacional
 
 - Gates funcionais locais sintéticos e `verify:release` concluídos; ver `PROJECT_STATE.md` e `PROJECT_MEMORY.md` para evidência e limites.
-- Antes de publicar: revisão completa do diff, identidade/status frescos, atualizar relatório e executar CI. Manter Draft e não fazer merge.
+- PR #442 foi publicada em Draft e CI passou no commit de código V317. Próximo gate humano: revisão técnica independente e repetição de XLSX browser quando o SheetJS CDN estiver acessível. Não promover de Draft nem fazer merge sem resolução dos gates; merge não foi autorizado.
 - `test:import-xlsx` aguarda acesso ao SheetJS CDN; não marcar como aprovado até repetição real do gate.
 - testMode não substitui Firebase QA/Google Provider. O provisionamento humano da V316 segue separado; não alterar PR #440/#441.
 

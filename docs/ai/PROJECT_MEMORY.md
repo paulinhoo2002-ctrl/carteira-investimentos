@@ -8,7 +8,8 @@
 - Gates: `verify:release` PASS (legado 252, moderno 815, `qa:all`, smoke sete larguras sem erros/overflow, visual 4/4); validação focada agregada 196/196 após o teste de snapshot. V296 XLSX depende de SheetJS CDN e não carregou neste ambiente: `BLOCKED_NETWORK`, não classificar como falha funcional nem PASS.
 - `testMode` não substitui Firebase/Google auth nem comprova persistência cloud; roundtrip local valida save/load separado. A confirmação CSV ocorre só em sessão sintética.
 - Skills usadas: Superpowers (`using-superpowers`, `executing-plans`, TDD) controlou processo/test-first; Ponytail full guiou correção mínima e salvaguardas; Caveman guiou relatório/revisão; Playwright foi o browser harness primário. `MODEL_RECOMMENDED=Codex GPT-6 Luna Medium`; `REVIEW_MODEL_RECOMMENDED=Hermes GLM-5.3 via NVIDIA` (disponibilidade não verificada); `ESCALATION_MODEL_RECOMMENDED=Codex GPT-6 Sol Medium`. Runtime efetivo: Codex, variante não exposta. Revisor independente externo não usado e deve permanecer declarado como lacuna se não estiver disponível.
-- Estado inicial deste registro: gates locais completos; CI/PR ainda pendentes. `MERGE=false`.
+- Código V317 commitado em `5bf3c213b5f62ed0a98b4b33182de891127ea657`; PR [#442](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442) OPEN/DRAFT. CI run `37238415129`: Build/test, Auth+Firestore emulator, V289 visual, Vercel Preview e comments PASS.
+- Revisor técnico independente ainda não usado; a revisão humana permanece pendente junto ao gate XLSX CDN. `MERGE=false`.
 
 ## V310 — decisão durável de QA autenticada isolada
 

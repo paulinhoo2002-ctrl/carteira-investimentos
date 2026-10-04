@@ -14,7 +14,7 @@ Backlog originado na auditoria V280 e atualizado após PR #432/V284 e V285 em 20
 - `V282-01=PARTIAL_CERTIFICATION`: compra sintética, cancelamento, falha `save()` com rollback/quarentena, roundtrip local, jornadas browser de Ativos/Aportes/Metas/Relatórios e Import Center CSV com cancelamento/confirmação/replay foram cobertos. Escritas apenas em testMode/fixtures; zero escrita real.
 - E2E V317 e fronteira V284 provam preview sem gravação, confirmação explícita, falha e replay sem nova inclusão. `save-load-roundtrip.test.js` valida persistência local separadamente; testMode browser é memória-only.
 - `verify:release` PASS: legado 252/252; moderno 815/815; QA, builds e visual 4/4. Direcionados agregados 196/196. `test:import-xlsx=BLOCKED_NETWORK` (SheetJS CDN não carregou), XLSX browser continua pendente.
-- Após revisão do diff e CI da branch publicada, manter PR Draft para revisão humana. Merge não autorizado. Autenticação Firebase/Google QA é externa e permanece em fluxo separado.
+- PR #442 está OPEN/DRAFT; CI (Build/test, Auth/Firestore emulator, visual, Vercel Preview) passou no commit de código `5bf3c213b5f62ed0a98b4b33182de891127ea657`. Merge não autorizado. Revisão técnica independente e XLSX CDN permanecem pendentes; Firebase/Google QA segue em fluxo separado.
 
 ## Revalidação V283 — estado atual
 
