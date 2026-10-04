@@ -26,6 +26,12 @@ V311_LAYER3_CERTIFIED=false
 - No production Firebase config or rules were staged. `firebase.json` has no content delta from HEAD and remains unstaged due to the Windows working-tree line-ending/stat report.
 - This commit is a verification checkpoint only, not Layer 3 certification. Do not set `LAYER3_OPERATIONAL=true` until fresh emulator tests and required regression gates pass, followed by independent security review.
 
+### First Ubuntu Actions run
+
+- GitHub Actions run `37208106179` successfully started Auth and Firestore emulators under `demo-carteira-qa-emulator`; the emulator suite executed all seven tests and shut both emulators down.
+- Five tests passed. Two test defects were found: route smoke waited on nonexistent `FB.tab` rather than the current `S.tab`, and the non-loopback auth guard assertion ran before the Firebase auth state finished resolving.
+- The current change corrects those assertions and makes the non-loopback test also require zero observed production Firebase data requests. Fresh focused emulator and full CI reruns are pending; do not treat the first run as a product regression or as certification.
+
 SKILLS_CONSIDERED=Superpowers systematic-debugging, verification-before-completion, Ponytail, Caveman, Firebase security review, Playwright/browser QA.
 SKILLS_USED=Superpowers systematic-debugging for runner diagnosis, verification-before-completion for evidence boundaries, Ponytail full for minimum implementation, Caveman for concise reporting.
 SKILLS_NOT_USED=Firebase security auditor and browser QA specialist for final certification; execution is pending the Ubuntu emulator run.

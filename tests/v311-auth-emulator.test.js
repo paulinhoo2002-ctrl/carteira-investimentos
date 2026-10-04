@@ -135,7 +135,7 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
           await app.page.locator('#investBottomNav > button').nth(4).click();
           await app.page.locator('#investMenuDrawer button').filter({ hasText: 'Confiabilidade' }).click();
         } else await app.page.evaluate(route => go(route), route);
-        await app.page.waitForFunction(route => FB.tab === route, route);
+        await app.page.waitForFunction(route => S.tab === route, route);
         const state = await app.page.evaluate(() => ({
           authenticated: !!FB.user && FB.access.allowed,
           gateVisible: document.body.innerText.includes('Entre com Google para continuar'),
@@ -195,6 +195,7 @@ test('V311: malformed emulator session remains unauthenticated', async () => {
 test('V311: localhost query flags cannot bypass auth on a non-loopback origin', async () => {
   const app = await newPage({ hostname: 'qa-non-loopback.invalid', query: `${QUERY}&testMode=1&skipAuth=1` });
   try {
+    await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'));
     const state = await app.page.evaluate(() => ({
       testMode: window.__LOCAL_TEST_MODE__,
       emulatorMode: window.__LOCAL_AUTH_EMULATOR_MODE__,
@@ -206,6 +207,7 @@ test('V311: localhost query flags cannot bypass auth on a non-loopback origin', 
     assert.equal(state.authenticated, false);
     assert.equal(state.gate, true);
     assert.equal(app.requests.some(({ url }) => /127\.0\.0\.1:(9099|8080)/.test(url)), false);
+    assert.deepEqual(app.blockedProductionRequests, [], 'non-loopback QA URL must not contact production Firebase data endpoints');
   } finally { await app.context.close(); }
 });
 
