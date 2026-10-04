@@ -35,6 +35,7 @@ V311_LAYER3_CERTIFIED=false
 - A later run passed six tests including the authenticated route matrix, Firestore guards, and non-loopback negative case; the only failure was one browser console 404. The harness now fulfills Chromium's automatic local `/favicon.ico` request with 204 and records HTTP error URLs/statuses so any other failed resource remains visible and failing.
 - The next run isolated the remaining 404 to `modern/dist/assets/v262-legacy-diagnostics.js`: the new CI job had a clean workspace but did not build modern assets before serving the app. Added `npm run build:modern` to the emulator job before Firebase setup; rerun is pending.
 - Added one explicit negative test for unavailable Auth and Firestore emulator endpoints. It asserts both operations fail closed under the demo project with zero Firebase production data requests; fresh Actions verification is pending.
+- Security review of the current production persistence path confirmed `users/{uid}` contains wallet state. Tightened the QA-only Firestore fixture to allow owner reads but deny all user-document writes, and added a 403 assertion alongside access-control and portfolio write denials. Fresh Actions verification is pending.
 
 SKILLS_CONSIDERED=Superpowers systematic-debugging, verification-before-completion, Ponytail, Caveman, Firebase security review, Playwright/browser QA.
 SKILLS_USED=Superpowers systematic-debugging for runner diagnosis, verification-before-completion for evidence boundaries, Ponytail full for minimum implementation, Caveman for concise reporting.

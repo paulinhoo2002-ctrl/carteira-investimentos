@@ -44,7 +44,7 @@ async function createSyntheticIdentity() {
   return { ...identity, email };
 }
 
-test('V311: demo Auth identity can read synthetic access policy but cannot write it or portfolio data', async () => {
+test('V311: demo Auth identity can read own synthetic data but cannot write access or financial data', async () => {
   const identity = await createSyntheticIdentity();
   const headers = { authorization: `Bearer ${identity.idToken}`, 'content-type': 'application/json' };
 
@@ -57,6 +57,11 @@ test('V311: demo Auth identity can read synthetic access policy but cannot write
     method: 'PATCH', headers, body: JSON.stringify({ fields: { enabled: { booleanValue: false } } }),
   });
   assert.equal(accessWrite.status, 403, 'Synthetic identity cannot alter access authority');
+
+  const userWrite = await request(`${FIRESTORE_EMULATOR}/users/${identity.localId}`, {
+    method: 'PATCH', headers, body: JSON.stringify({ fields: { synthetic: { booleanValue: true } } }),
+  });
+  assert.equal(userWrite.status, 403, 'QA rules reject writes to the user document that contains wallet state');
 
   const portfolioWrite = await request(`${FIRESTORE_EMULATOR}/portfolios/${identity.localId}`, {
     method: 'PATCH', headers, body: JSON.stringify({ fields: { synthetic: { booleanValue: true } } }),
