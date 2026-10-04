@@ -71,7 +71,8 @@
 - Phase-198 documentation/test reconciliation: `c19708449b3343e10532e0ca673d88036fdff537`.
 - Phase-206 goals harness repair: `bf700099128de878d904599f2f9be8dd8493f714`.
 - Proven unused Rentabilidade helper removal: `41c0e4f47311e823991979a911672722485ceee0`.
-- Visual regression, CI job, and release scripts: `0d6a738092be77ec4303751e72f385aec544a042`.
+- Visual regression guards and package scripts: `0d6a738092be77ec4303751e72f385aec544a042`.
+- Dedicated CI job for the visual matrix: `64578cad582791c1f306c946b54ff44503e3067d`.
 
 WAVE_G_RELEASE_PRESERVED=true
 PRODUCTION_AUTH_BYPASS_CREATED=false
