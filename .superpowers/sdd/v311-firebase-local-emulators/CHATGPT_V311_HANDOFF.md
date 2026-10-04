@@ -1,4 +1,4 @@
-# V313 / V311 local Firebase emulator QA — blocked verification
+# V311 Firebase emulator QA — initial blocked attempt, superseded by V314 certification below
 
 - Branch: `feature/v311-firebase-local-emulators`; base HEAD `f233a77a202eed64f6086607976bc8c4274362d3`. No commit, push, PR, merge or deploy in this attempt.
 - The default `.firebaserc` still targets the existing production project. `firebase.json` has the same normalized Git blob as HEAD; the QA-only emulator config is `firebase.qa-emulator.json` and explicitly uses `demo-carteira-qa-emulator` in the package script. Production `firestore.rules` was not changed; QA rules are separate under `tests/fixtures/`.
@@ -43,3 +43,89 @@ SKILLS_NOT_USED=Firebase security auditor and browser QA specialist for final ce
 SKILL_SELECTION_REASON=Diagnose the emulator lifecycle blocker, preserve the production boundary, and move verification to a compatible runner.
 SKILL_REEVALUATED=true.
 SKILL_GAPS_FOUND=Local Codex Windows runner cannot initialize Firestore Emulator Java NIO; Linux Actions verification is pending.
+
+## V314 final Layer 3 certification — supersedes pending checkpoints above
+
+CERTIFICATION_HEAD=fdb8e6661f710412ff0a1c879c29e9c3ff976e74
+BRANCH=feature/v311-firebase-local-emulators
+PR=439
+PR_URL=https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/439
+
+### Result
+
+LAYER3_OPERATIONAL=true
+AUTH_EMULATOR_IMPLEMENTED=true
+FIRESTORE_EMULATOR_IMPLEMENTED=true
+AUTH_AND_FIRESTORE_PAIRED=true
+EMULATOR_PROJECT=demo-carteira-qa-emulator
+AUTH_STATE_AUTHENTICATED=true
+REAL_CREDENTIAL_USED=false
+GOOGLE_PROVIDER_REAL_AUTH_USED=false
+PROVIDER_AUTHENTICATED_PREVIEW=DEFERRED
+
+GitHub Actions Ubuntu run `37210892063` passed all three jobs at this HEAD. The Auth + Firestore job ran 8/8 tests with no skips. It used the actual Firebase Auth SDK emulator session and Firestore emulator, and exercised Dashboard, Ativos, Dividendos, Renda Fixa and Confiabilidade at 390x844 and 1366x768. The suite confirmed authenticated state, no login loop, zero production Firebase requests across Firestore, Identity Toolkit, Storage, Realtime Database, Secure Token and Firebase Installations endpoints, zero accepted financial/import/tax writes, no horizontal overflow, and no clipping inside visible content containers. Controls inside closed disclosures are excluded from clipping measurement because they are not visible; horizontal viewport clipping is checked separately.
+
+Negative tests passed: partial emulator flags fail closed; unavailable emulator endpoints do not fall back to production; localhost query flags on a non-loopback origin do not bypass auth; the malformed Firebase SDK session key is consumed and remains unauthenticated; emulator Auth and Firestore are paired; the demo identity cannot write access policy, `users/{uid}` wallet state or `portfolios/{uid}`. The only Firestore seed is synthetic emulator-only access metadata; denied write attempts are assertions, not accepted writes.
+
+### Fresh gates at certification HEAD
+
+- `npm run verify:release` — PASS, exit 0. This ran `npm test` (252/252), `test:modern` (815/815), `qa:all` (PASS; viewport smoke reported zero overflow, console, page and relevant request errors), and visual regression (4/4).
+- `npm run test:import-xlsx` — PASS, 2/2, synthetic workbook only; real production SheetJS CDN path exercised.
+- `npm run build` — PASS.
+- `npm run build:modern` — PASS through `verify:release` and CI.
+- `git diff --check` — PASS.
+- GitHub Actions Build and test, V289 visual regression, and Auth and Firestore emulator QA — all SUCCESS; emulator suite 8/8.
+
+The Windows Codex sandbox once returned EPERM while Vite cleared `modern/dist`. Re-running the full release command through the authorized host PowerShell path passed. The Firestore Java NIO selector problem on the Windows Codex runner was avoided by the dedicated Ubuntu Actions job; no more Java-version retry was needed.
+
+### Security and data boundaries
+
+PRODUCTION_AUTH_BYPASS_CREATED=false
+PRODUCTION_AUTH_GUARD_CHANGED=false
+PRODUCTION_FIREBASE_CONFIG_CHANGED=false
+PRODUCTION_FIRESTORE_RULES_CHANGED=false
+PRODUCTION_SECRETS_USED=false
+HARDCODED_SECRET_FOUND=false
+FINANCIAL_LOGIC_CHANGED=false
+PERSISTENCE_SEMANTICS_CHANGED=false
+IMPORT_AUTHORITY_CHANGED=false
+REAL_DATA_USED=false
+LOCAL_IMPORTS_CONTENT_ACCESSED=false
+FIREBASE_EXTERNAL_RESOURCES_CREATED=false
+VERCEL_ENV_CHANGED=false
+DEPLOY_SIDE_EFFECT=false
+
+QA Firestore rules remain in `tests/fixtures/v311-firestore.rules`; production `firestore.rules` is unchanged. Normal `.firebaserc` selection remains unchanged. `firebase.json` has no content delta: its normalized working-tree blob equals `HEAD:firebase.json` and `git diff --exit-code -- firebase.json` succeeds, although Windows Git continues to report `M firebase.json` with `needs update` after index refresh. It was not staged. Treat this as a worktree metadata/line-ending anomaly, not a content change; do not restore or stage it without fresh evidence.
+
+### Review and skills
+
+INDEPENDENT_REVIEWER=Codex GPT-6 Sol Medium, fresh-context fallback
+NVIDIA_MODEL_USED=false; GLM-5.3/Nemotron integration was unavailable in this runtime
+INDEPENDENT_REVIEW=BLOCKER 0 / MAJOR 0 / MINOR 0 / DEFERRED 1
+DEFERRED=provider-authenticated Google QA requires an isolated Firebase QA project/account and Preview configuration; no external resources were provisioned.
+PONYTAIL_REVIEW=completed; no unnecessary dependency or abstraction found; `playwright-core` already existed.
+
+SKILLS_CONSIDERED=Superpowers systematic-debugging, verification-before-completion, executing-plans; Ponytail; Caveman; Firebase security rules audit; Playwright/browser QA; Windows Git workflow.
+SKILLS_USED=systematic-debugging isolated runner/test failures before fixes; verification-before-completion governed claims and final gates; executing-plans sequenced the authorized mission; Ponytail constrained changes to the smallest test/config/doc corrections; Firebase security review checked demo rules and denied writes; Playwright/browser QA validated authenticated routes; Caveman kept reporting concise.
+SKILLS_NOT_USED=GLM-5.3/Nemotron independent review (provider unavailable); Codex Sol fresh-context review was used as fallback.
+SKILL_SELECTION_REASON=This mission crosses Firebase Auth/Firestore isolation, browser route behavior, test runners and release verification.
+SKILL_REEVALUATED=true after runner failures, reviewer findings and scope of the clipping assertions changed.
+SKILL_GAPS_FOUND=NVIDIA reviewer provider unavailable; Windows sandbox cannot start the Firestore emulator; both gaps were handled with fresh-context review and Ubuntu Actions.
+
+### Commits on the feature branch
+
+- `63ea1c1` test(auth): checkpoint emulator harness for Linux CI
+- `63f4633` test(auth): fix emulator route smoke state checks
+- `d7f02ac` test(auth): clear emulator notice before route interaction
+- `c48cf9d` test(auth): isolate browser favicon noise
+- `3a41be0` ci(auth): build modern assets for emulator smoke
+- `565dc46` test(auth): verify emulator outage fails closed
+- `3f871fc` test(auth): deny wallet writes in emulator rules
+- `5990950` test(auth): prove invalid emulator session is consumed
+- `4c7891b` test(auth): report clipped control geometry
+- `4920c3d` test(auth): ignore viewport fold in clipping audit
+- `2590ab1` test(auth): skip collapsed disclosure controls
+- `4c927d0` test(auth): detect horizontal root clipping
+- `fdb8e66` test(auth): scope clipping to visible controls
+
+No product-code change was required in V314. The only final uncommitted path is the unchanged-content `firebase.json` Windows line-ending/stat report above; it remains unstaged. Documentation checkpoint is committed separately. Pushes were limited to the feature branch; PR #439 remains open for human review. No merge, deploy, Firebase provisioning or Vercel environment change occurred.
