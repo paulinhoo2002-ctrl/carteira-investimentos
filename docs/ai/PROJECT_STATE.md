@@ -1,5 +1,20 @@
 # Project State
 
+## V317 — certificação de ações financeiras (2026-10-04)
+
+- `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.
+- Revisão independente CONCLUÍDA por Hermes GLM-5.3 via NVIDIA (HEAD `79991e67033a9336fdb103eb0f1bd9641ce2c938`): `FINANCIAL_SEMANTICS_CHANGED=false`; snapshot pré-mutação fail-closed; restauração/quarentena cobre todas as chaves mutadas; os 14 chamadores pré-existentes de `syncAssetsFromAportes()`/`autoDY()` mantêm comportamento idêntico via default `persistState=true`. Ponytail full: BLOCKER=0/MAJOR=0/MINOR=0/DEFERRED=0; Caveman: sem estado duplicado ou fallback oculto.
+- Gates frescos na revisão: V317 browser 4/4; legado 252/252; moderno 815/815; focados 79/79; persistência+roundtrip+reliability 44/44; fronteira V284 8/8; Import Center core 10/10; XLSX sintético 2/2 (o `BLOCKED_NETWORK` anterior não reproduz neste HEAD — gate CDN agora PASS); visual 4/4; builds PASS; `qa:all` 7 larguras sem erros; `git diff --check` PASS. CI PR #442 verde.
+- `V317_LOCAL_RUNTIME_CERTIFICATION=PASS_SYNTHETIC_ONLY`. testMode NÃO certifica Google/Firebase auth, persistência cloud nem Firestore de produção (`V316_FIREBASE_PROVIDER_QA=SEPARATE_PENDING_GATE`). Nenhum dado real, escrita real ou credencial. `MERGE=false`; gate humano permanece.
+- `saveQuickMovement()` passou a usar snapshot/restore, confirmar um único `save()===true` e restaurar/quarentenar em falha; falha de snapshot não chama save. `syncAssetsFromAportes()`/`autoDY()` deferem apenas nessa chamada. Nenhuma mudança de schema ou fórmula.
+- Browser V317 usa somente testMode/fixtures sintéticas; compra/cancelamento/reload/falha e Import Center CSV preview/cancel/confirm/replay foram exercitados sem requests externos de escrita. Repetição não adicionou registros. `test:roundtrip` 7/7; fronteira V284 76/76.
+- `verify:release` PASS: `npm test` 252/252, moderna 815/815, build legacy/modern, QA harness, smoke (390/430/768/1366/1440/1536/1920, zero overflow/erros) e visual 4/4. Direcionados agregados 196/196 PASS; `git diff --check` PASS.
+- `test:import-xlsx` tentou e falhou porque SheetJS CDN não carregou: `BLOCKED_NETWORK`; XLSX browser/provider QA não certificado. CSV sintético passou.
+- Nenhum dado financeiro real ou credencial foi usado. `testMode` não prova Google/Firebase auth nem persistência cloud. `npm ci` foi executado apenas nesta worktree; lockfile sem alteração.
+- Modelos recomendados: implementação Codex GPT-6 Luna Medium; revisão Hermes GLM-5.3 NVIDIA (disponibilidade não verificada); escalonamento Codex GPT-6 Sol Medium. Runtime usado: Codex, variante não exposta. Skills consideradas/usadas: Superpowers, Ponytail full, Caveman, Playwright. Sem redesign.
+- Código: commit `5bf3c213b5f62ed0a98b4b33182de891127ea657`; push PASS. PR #442 OPEN/DRAFT em `main`; CI run `37238415129` PASS (Build/test, Auth+Firestore emulator, visual V289, Vercel e Preview Comments). Link PR: `https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442`.
+- Revisor independente e XLSX CDN seguem pendentes para eventual avanço além de Draft. PRs #440/#441 continuam intocadas. `MERGE=false`.
+
 ## V310 — preparação local de autenticação QA isolada
 
 - PR #438/V304 foi integrada por squash em `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09`. A tag `v1.3.0-rc1` permanece em `399e120d83bfc81d58e613adb79fe6f27bf47cfe`.

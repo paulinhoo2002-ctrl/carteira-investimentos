@@ -9,6 +9,13 @@ Backlog originado na auditoria V280 e atualizado após PR #432/V284 e V285 em 20
 - Evidência: focados 144/144, geral 252/252, moderna 815/815, builds e `qa:all` PASS; browser B3 sintético abriu revisão, reportou zero gravado, cancelou sem escrita e passou sete larguras sem overflow/erro relevante.
 - `NEXT_ACTION=V282-01_FINANCIAL_ACTION_END_TO_END_CERTIFICATION`, P1 acionável restante. A missão usa fixtures sintéticas e não autoriza escrita financeira real.
 
+## Atualização V317 — 2026-10-04
+
+- `V282-01=PARTIAL_CERTIFICATION`: compra sintética, cancelamento, falha `save()` com rollback/quarentena, roundtrip local, jornadas browser de Ativos/Aportes/Metas/Relatórios e Import Center CSV com cancelamento/confirmação/replay foram cobertos. Escritas apenas em testMode/fixtures; zero escrita real.
+- E2E V317 e fronteira V284 provam preview sem gravação, confirmação explícita, falha e replay sem nova inclusão. `save-load-roundtrip.test.js` valida persistência local separadamente; testMode browser é memória-only.
+- `verify:release` PASS: legado 252/252; moderno 815/815; QA, builds e visual 4/4. Direcionados agregados 196/196. `test:import-xlsx=BLOCKED_NETWORK` (SheetJS CDN não carregou), XLSX browser continua pendente.
+- PR #442 está OPEN/DRAFT; CI (Build/test, Auth/Firestore emulator, visual, Vercel Preview) passou no commit de código `5bf3c213b5f62ed0a98b4b33182de891127ea657`. Merge não autorizado. Revisão técnica independente e XLSX CDN permanecem pendentes; Firebase/Google QA segue em fluxo separado.
+
 ## Revalidação V283 — estado atual
 
 O caminho P0 de verdade está resolvido (`P0_END_TO_END=RESOLVED`): cotação atual/benchmark sintético não são alcançáveis e evidência insuficiente falha fechada. `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE`; isso não reabre o P0. Os gates frescos foram 249 geral, 815 modernos, 46 focados, builds, `qa:all` e browser smoke de sete larguras. O motor exige coverage explícita; alegações históricas de eliminação global são apenas `NO_VIOLATION_FOUND_IN_PRIOR_AUDITED_SCOPE`. `V283-01` é o próximo item acionável; `V283-04` é latente, sem chamador de produção identificado, e requer contrato de autoridade.

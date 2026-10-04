@@ -209,13 +209,14 @@ test('venda com preview inválido (quantidade acima da posição) mapeia para qm
 
 const SAVE_SOURCE = extractFunctionSource('saveQuickMovement', 'function isRendaFixaAsset');
 
-function saveContext({ draft = makeDraft(), builder = null, save = () => {}, open = false } = {}) {
+function saveContext({ draft = makeDraft(), builder = null, save = () => true, open = false } = {}) {
   const focuses = [];
   const renders = [];
   const toasts = [];
   const context = {
     console,
     S: makeBaseS({ quickMovementDraft: draft, quickMovementOpen: open }),
+    cloneData: value => JSON.parse(JSON.stringify(value ?? null)),
     canEditFromThisTab: () => true,
     render: () => { renders.push(1); },
     toast: (m) => { toasts.push(m); },
@@ -226,12 +227,18 @@ function saveContext({ draft = makeDraft(), builder = null, save = () => {}, ope
     scheduleAutoProventosGratis: () => {},
     markProventosDirty: () => {},
     quickMovementBuildAporteFromFields: builder || (() => ({ reg: { id: 'r1', ticker: 'PETR4', operation: 'compra', movementKind: 'compra', type: 'Ação', sector: 'Petróleo' } })),
+    quickMovementSuccessText: () => 'Movimentação salva.',
     document: {
       getElementById: (id) => ({ value: '', focus: () => focuses.push(id) }),
     },
     setTimeout: (fn) => { fn(); },
   };
-  vm.runInNewContext(`${helperCode}\n${SAVE_SOURCE}\nthis.saveM = saveQuickMovement;`, context);
+  const persistenceHelpers = [
+    extractFunctionSource('snapshotFinancialImportState', 'function restoreFinancialImportState'),
+    extractFunctionSource('restoreFinancialImportState', 'function persistFinancialImportState'),
+    extractFunctionSource('persistFinancialImportState', 'function save'),
+  ].join('\n');
+  vm.runInNewContext(`${helperCode}\n${persistenceHelpers}\n${SAVE_SOURCE}\nthis.saveM = saveQuickMovement;`, context);
   return { context, focuses, renders, toasts };
 }
 
@@ -289,6 +296,21 @@ test('saveQuickMovement reabre o modal com erro quando a persistência falha', (
   assert.equal(context.S.quickMovementSaving, false);
 });
 
+test('saveQuickMovement falha fechada quando não consegue preparar snapshot', () => {
+  let saveCalls = 0;
+  const { context } = saveContext({
+    open: true,
+    draft: makeDraft({ kind: 'compra' }),
+    save: () => { saveCalls += 1; return true; },
+  });
+  context.cloneData = () => { throw new Error('synthetic snapshot failure'); };
+  context.saveM();
+  assert.equal(context.S.aportes.length, 0);
+  assert.equal(context.S.quickMovementOpen, true);
+  assert.ok(context.S.quickMovementDraft);
+  assert.equal(saveCalls, 0);
+});
+
 // ---------------------------------------------------------------------------
 // Modal: banner acessível + aria-invalid/aria-describedby
 // ---------------------------------------------------------------------------
@@ -314,6 +336,7 @@ function modalContext({ error = null, field = '', kind = 'compra' } = {}) {
     quickMovementSellableAssets: () => [],
     quickMovementSaleOptionsHtml: () => '',
     quickMovementSaleInfoHtml: () => '',
+    quickMovementAssetPickerOptionsHtml: () => '',
     quickMovementAssetSummaryHtml: () => '',
     quickMovementPreviewHtml: () => '<div>preview</div>',
     rfExistingAssetOptionsHtml: () => '<option>Nenhum título</option>',

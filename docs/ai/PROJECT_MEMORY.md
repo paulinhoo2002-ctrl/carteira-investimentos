@@ -1,5 +1,16 @@
 # Project Memory
 
+## V317 — certificação sintética das ações financeiras (2026-10-04)
+
+- Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.
+- `saveQuickMovement()` usa snapshot/restore e só executa efeitos de sucesso após um único `save()===true`; falha restaura aportes, proventos, ativos, carteiras e metadados e põe a sessão em quarentena. Falha ao criar snapshot também falha fechada, sem chamar save. `syncAssetsFromAportes()` e `autoDY()` aceitam preservar o save legado padrão ou deferi-lo ao boundary transacional.
+- `tests/v317-financial-action-e2e.test.js` valida compra em memória testMode, cancelamento/reload, falha de persistência e Import Center CSV com prévia/cancelamento, confirmação sintética e replay sem nova inclusão. Nenhuma chamada externa de escrita. Roundtrip local 7/7; fronteira V284 76/76.
+- Gates: `verify:release` PASS (legado 252, moderno 815, `qa:all`, smoke sete larguras sem erros/overflow, visual 4/4); validação focada agregada 196/196 após o teste de snapshot. V296 XLSX depende de SheetJS CDN e não carregou neste ambiente: `BLOCKED_NETWORK`, não classificar como falha funcional nem PASS.
+- `testMode` não substitui Firebase/Google auth nem comprova persistência cloud; roundtrip local valida save/load separado. A confirmação CSV ocorre só em sessão sintética.
+- Skills usadas: Superpowers (`using-superpowers`, `executing-plans`, TDD) controlou processo/test-first; Ponytail full guiou correção mínima e salvaguardas; Caveman guiou relatório/revisão; Playwright foi o browser harness primário. `MODEL_RECOMMENDED=Codex GPT-6 Luna Medium`; `REVIEW_MODEL_RECOMMENDED=Hermes GLM-5.3 via NVIDIA` (disponibilidade não verificada); `ESCALATION_MODEL_RECOMMENDED=Codex GPT-6 Sol Medium`. Runtime efetivo: Codex, variante não exposta. Revisor independente externo não usado e deve permanecer declarado como lacuna se não estiver disponível.
+- Código V317 commitado em `5bf3c213b5f62ed0a98b4b33182de891127ea657`; PR [#442](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442) OPEN/DRAFT. CI run `37238415129`: Build/test, Auth+Firestore emulator, V289 visual, Vercel Preview e comments PASS.
+- Revisor técnico independente ainda não usado; a revisão humana permanece pendente junto ao gate XLSX CDN. `MERGE=false`.
+
 ## V310 — decisão durável de QA autenticada isolada
 
 - O roteamento permanente de modelos e Skills é propriedade de `docs/ai/SKILLS_ROUTING.md`, independente do chat ou de um provider. Implementador e revisor devem ser distintos quando disponíveis.
