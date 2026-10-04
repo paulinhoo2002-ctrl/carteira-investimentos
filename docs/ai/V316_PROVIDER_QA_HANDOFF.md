@@ -41,6 +41,11 @@ O app Preview bloqueia login sem configuração QA completa e host autorizado.
    `VERCEL_BRANCH_URL` (ou `VERCEL_URL` se não houver branch URL), sem `https://`.
    Verificar visualmente sete nomes, escopo Preview/branch e host idêntico ao
    autorizado no Firebase; não compartilhar valores em chat.
+   No deployment do HEAD `58ad9a7`, a alias de branch observada é
+   `carteira-investimentos-git-a76546-paulinhoo2002-ctrls-projects.vercel.app`.
+   Conferir essa alias em **Deployments > Domains** antes de usá-la no Firebase
+   e em `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`; se mudar, usar o valor atual
+   exibido pela Vercel em ambos os lugares.
 6. **Vercel > Deployments > Preview da branch da PR #440**: gerar novo deployment
    depois de salvar as variáveis, pois elas não mudam deployments anteriores.
    Conferir commit SHA da PR e estado Ready. Não usar `--prod`, não promover
