@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isQaIdentity() {
+      return request.auth != null
+        && request.auth.token.email.matches('^qa[.-].*@example[.]invalid$');
+    }
+
+    match /meta/access {
+      allow read: if isQaIdentity();
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /portfolios/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
