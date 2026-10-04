@@ -1,5 +1,16 @@
 # Project Memory
 
+## V315 — integração Layer 3 e preparação de Provider QA (2026-10-04)
+
+- PR #439 foi squash-merged em `2966dfb197ddcde5440379f8d2d21c35cdeda183`; main CI pós-merge `37212449673` passou, incluindo Auth + Firestore Emulator QA no Ubuntu.
+- Pós-merge no SHA integrado: legado 252/252, moderno 815/815, QA emulador 8/8, reliability, visual 4/4, `qa:all`, `verify:release`, XLSX sintético 2/2, builds legado/moderno e diff check passaram. `npm ci` foi executado apenas no worktree aprovado; manifests não mudaram. Avisos npm: 6 vulnerabilidades reportadas (3 moderate, 3 high); nenhuma correção automática ou script de instalação adicional foi executado.
+- Vercel deployment automático do merge SHA ficou READY no alias público; browser confirmou gate de login/acesso restrito sem login. Sem deploy manual ou credenciais reais.
+- Layer 3 está operacional e isolada: Auth + Firestore Emulator, sessão sintética autenticada, zero requests Firebase de produção nos testes emuladores e zero escrita financeira real.
+- O follow-up V315 contém apenas scaffolding não-production: loader `scripts/qa/preview-firebase-config.cjs` exige `VERCEL_ENV=preview`, host em `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`, seis valores `QA_FIREBASE_*` completos e `QA_FIREBASE_PROJECT_ID` distinto de `PRODUCTION_FIREBASE_PROJECT_ID`; smoke `scripts/qa/preview-provider-smoke.cjs` lê HTML público e exige que o project ID visível corresponda ao projeto QA. Não faz login nem grava dados. O runtime de `index.html` ainda usa a configuração existente, portanto o smoke deve bloquear enquanto a seleção QA não for implementada/revisada.
+- Nenhum projeto Firebase QA isolado foi confirmado. A consulta de metadados Vercel Preview não encontrou variáveis de QA; isso não prova inexistência externa. Provisionamento de projeto, Google provider, identidade sintética e domínio Preview são ação humana; não enviar valores/segredos ao chat.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_PROJECT_AND_SYNTHETIC_GOOGLE_IDENTITY`; depois, missão própria para config runtime Preview isolada e validação provider sem dados/escritas financeiras.
+- Skills: Superpowers conduziu retomada e gates; Ponytail full limitou implementação ao mínimo e revisão; Caveman orientou comunicação concisa. Sem reviewer Hermes/NVIDIA disponível; revisão independente externa não alegada.
+
 ## V310 — decisão durável de QA autenticada isolada
 
 - O roteamento permanente de modelos e Skills é propriedade de `docs/ai/SKILLS_ROUTING.md`, independente do chat ou de um provider. Implementador e revisor devem ser distintos quando disponíveis.

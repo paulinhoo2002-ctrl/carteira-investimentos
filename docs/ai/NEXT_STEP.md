@@ -1,4 +1,12 @@
 # Next Step
+## V315 — gate humano para Provider QA em Preview
+
+- V315/#439 está em `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; main CI `37212449673` PASS e deployment automático correspondente READY. Layer 3 Auth + Firestore Emulator permanece operacional, com 8/8 testes em Ubuntu.
+- Preparação local em `codex/v315-final-operationalization`: contrato fail-closed para env de Preview, smoke público da fronteira de projeto e testes sintéticos. O app estático ainda não seleciona config Firebase por ambiente; smoke retorna bloqueio enquanto runtime não expuser projeto QA.
+- `HUMAN_ACTION_REQUIRED=true`: (1) criar projeto Firebase QA separado com Auth/Firestore e sem dados/contas de produção; (2) habilitar Google e designar identidade sintética; (3) autorizar somente o domínio Preview pretendido; (4) configurar as variáveis QA somente em Preview após a mudança de runtime ser revisada. Não enviar credenciais ou valores de config pelo chat.
+- Após provisionamento, abrir missão específica para seleção de config QA Preview, testes negativos de isolamento e execução do provider smoke sem escrita financeira. Merge continua gate humano; não iniciar provider login ou integração de runtime nesta preparação.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_PROJECT_AND_SYNTHETIC_GOOGLE_IDENTITY`.
+
 ## V310 — próximo gate de autenticação QA isolada
 
 - `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09` contém PR #438/V304; `v1.3.0-rc1` permanece preservada.
