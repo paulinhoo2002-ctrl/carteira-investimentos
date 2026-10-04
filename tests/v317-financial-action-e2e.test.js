@@ -97,12 +97,9 @@ test('compra sintética altera apenas sessão QA e não persiste dados financeir
   } finally { await closeApp(app); }
 });
 
-test('compra V317 permanece bloqueada no guard read-only da Preview V316', async () => {
+test('compra V317 permanece bloqueada no boot read-only usado pela Preview V316', async () => {
   const app = await openApp({ protectedReadOnlyQa: true });
   try {
-    await app.page.evaluate(() => {
-      window.__FIREBASE_DEPLOYMENT__ = { mode: 'preview' };
-    });
     await fillPurchase(app.page, 'V318PREVIEW');
     const before = await app.page.evaluate(() => JSON.stringify({
       assets: S.assets,

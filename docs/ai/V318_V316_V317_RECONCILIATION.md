@@ -17,19 +17,19 @@ Estado desejado: PR #440 OPEN/DRAFT, sem merge; Provider QA real pendente.
 
 | Arquivo/área | Alteração V317 | Alteração V316 | Sobreposição | Resolução/evidência |
 |---|---|---|---|---|
-| `index.html` | Snapshot pré-mutação, rollback, quarantine e sucesso após um único `save()===true` para ação financeira | Seleção de Firebase por ambiente, Preview QA read-only, isolamento local/session/auth | Semântica financeira e de segurança se encontram no boundary da ação | Git auto-merge sem conflito; preservados ambos. E2E sintético cruzado confirma ação funciona localmente e é barrada no Preview protegido antes de `save()`; 60/60 browser combinado. |
+| `index.html` | Snapshot pré-mutação, rollback, quarantine e sucesso após um único `save()===true` para ação financeira | Seleção de Firebase por ambiente, Preview QA read-only, isolamento local/session/auth | Semântica financeira e de segurança se encontram no boundary da ação | Git auto-merge sem conflito; preservados ambos. E2E sintético cruzado confirma ação funciona localmente e é barrada pelo boot read-only usado pela Preview antes de `save()`; 60/60 browser combinado. |
 | `docs/ai/NEXT_STEP.md` | Continuidade V317/main e gates humanos | Handoff Firebase QA Preview | Conflito documental, sem execução/runtime | Merge manual manteve a seção V317 atual e a seção V316; este documento V318 agora prevalece para o próximo passo. |
 | `docs/ai/PROJECT_MEMORY.md` | Registro de certificação V317 | Implementação/runtime e segurança V316 | Histórico/estado | Merge manual preservou ambos os registros sem descartar evidência; resumo V318 no topo distingue certificação local de Provider real. |
 | `docs/ai/PROJECT_STATE.md` | Estado V317 local certificado, review e CI #442 | Estado V316/provider pendente | Estado ativo e next action | Merge manual preservou V317 e V316; bloco V318 superior define estado pós-rebase. |
 | CI, `package.json`, Firebase config/rules, QA scripts e testes V316 | Sem alteração funcional V317 | Gates da V316 e configuração Preview isolada | Nenhuma semântica V317 coincidente | Mantidos; gates reexecutados conforme matriz deste relatório. |
-| `tests/v317-financial-action-e2e.test.js` | Valida transação financeira local e falhas | Não havia teste de cruzamento | Nova interação necessária | Acrescentado somente um cenário sintético que prova o guard V316 sobre a ação V317; sem produto/config externo. |
+| `tests/v317-financial-action-e2e.test.js` | Valida transação financeira local e falhas | Não havia teste de cruzamento | Nova interação necessária | Acrescentado somente um cenário sintético que prova a ação V317 barrada pelo boot read-only (`protectedReadOnlyQa=1`) usado pela Preview; sem produto/config externo. Não inicializa deployment Preview real. |
 
 ## Contratos certificados nesta reconciliação
 
 - `MAIN_INCLUDES_V317=true`; `V317_LOCAL_RUNTIME_CERTIFIED=true` para execução local/teste sintético. Isso não certifica Firebase/Google real nem cloud persistence.
 - Preview sem QA permanece bloqueado, com `firebaseConfig={}` e sem fallback para projeto de produção. Host/config desconhecidos, parciais, inválidos ou colidentes falham fechados.
 - Configuração Preview validada autoriza somente Auth QA e leituras Firestore QA necessárias; gravações Firestore/Storage/Auth fora do QA e mutações financeiras locais permanecem bloqueadas.
-- V317 compra local em fixture sintética continua funcionando. A mesma ação em Preview protegido não modifica estado, localStorage, nem chama `save()`; nenhuma escrita externa.
+- V317 compra local em fixture sintética continua funcionando. Em sessão sintética com o boot read-only ativado pela flag usada para QA protegido, a mesma ação não modifica estado/localStorage nem chama `save()`; nenhuma escrita externa. Esse E2E não inicializa o descritor/deployment Preview, que é coberto separadamente pelos testes do runtime/config V316.
 - `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` nos testes sintéticos; `PRODUCTION_AUTH_BYPASS=false`; `PRODUCTION_RULES_WEAKENED=false`.
 - `V316_PROVIDER_QA_REAL=PENDING_HUMAN_EXTERNAL_PROVISIONING`; `CLOUD_PERSISTENCE_CERTIFIED=false`.
 
