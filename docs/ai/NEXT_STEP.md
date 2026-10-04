@@ -1,11 +1,11 @@
 # Next Step
-## V304 — hardening pós-release (2026-10-03)
+## V310 — próximo gate de autenticação QA isolada
 
-- Release V1.3.0 segue READY no `origin/main=eb1f3c4686f1f61635939512a2c1118cb0dde908`; RC tag preservada.
-- A branch local `feature/v304-post-release-hardening` adiciona reconciliação dos testes Phase-198/206, gate visual automatizado, `verify:release` e política de QA sintético; consultar `.superpowers/sdd/v304-post-release-hardening/CHATGPT_V304_HANDOFF.md`.
-- Gates locais frescos PASS; XLSX 2/2 com fixture sintética. `test:import-xlsx` permanece manual por exigir CDN/rede.
-- O smoke de rotas usa somente testMode em localhost, sem Firebase; não prova autenticação real. `HUMAN_ACTION_REQUIRED=true` para provisionar projeto/conta QA isolados antes de autenticar smoke real.
-- Próxima ação: revisão independente do checkpoint local V304; qualquer push/PR requer nova autorização. Não alterar o RC tag nem fazer deploy.
+- `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09` contém PR #438/V304; `v1.3.0-rc1` permanece preservada.
+- O branch local V310 registra o roteamento de modelos/Skills e o desenho QA. O smoke atual de localhost compõe rotas com fixture em memória; não autentica Firebase.
+- Próximo passo técnico separado: implementar e revisar um harness com projeto Firebase `demo-` e **Auth + Firestore emulators**, incluindo testes negativos de isolamento. Nenhum emulador foi conectado ao produto nesta missão.
+- `HUMAN_ACTION_REQUIRED=true` para autenticação Google real em Preview: aprovar projeto Firebase QA isolado, identidade sintética e configuração Preview exclusiva. Não enviar credenciais por chat. Ver `docs/ai/QA_AUTH_STRATEGY.md`.
+- Push/PR/merge/deploy e provisionamento externo continuam gates separados. `test:import-xlsx` permanece gate manual de release dependente de rede/CDN.
 
 ## V298 — próximo passo após checkpoint RC local (2026-10-03)
 
