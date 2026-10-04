@@ -174,12 +174,12 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
                 const clipsX = ['hidden', 'clip'].includes(ancestorStyle.overflowX);
                 const clipsY = ['hidden', 'clip'].includes(ancestorStyle.overflowY);
                 if ((clipsX && (rect.left < clipLeft - 1 || rect.right > clipRight + 1)) || (clipsY && (rect.top < clipTop - 1 || rect.bottom > clipBottom + 1))) {
-                  clipped.push(element.outerHTML.slice(0, 160));
+                  clipped.push({ control: element.outerHTML.slice(0, 160), rect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }, clipper: ancestor.tagName.toLowerCase() + (ancestor.id ? '#' + ancestor.id : '') + (ancestor.className ? '.' + String(ancestor.className).trim().replace(/\\s+/g, '.') : ''), clipAxes: { x: ancestorStyle.overflowX, y: ancestorStyle.overflowY }, clipRect: { left: clipLeft, right: clipRight, top: clipTop, bottom: clipBottom } });
                   break;
                 }
                 ancestor = ancestor.parentElement;
               }
-              if (rect.left < -1 || rect.right > innerWidth + 1) clipped.push(element.outerHTML.slice(0, 160));
+              if (rect.left < -1 || rect.right > innerWidth + 1) clipped.push({ control: element.outerHTML.slice(0, 160), rect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }, clipper: 'viewport' });
             }
             return [...new Set(clipped)];
           })(),
