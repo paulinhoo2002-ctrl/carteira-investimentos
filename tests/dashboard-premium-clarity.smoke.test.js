@@ -50,16 +50,16 @@ const viewports = [
   { width: 1920, height: 1080, label: '1920x1080' },
 ];
 
-const metricLabels = [
-  'Patrimônio atual',
-  'Total investido',
-  'Resultado geral',
-  'Rentabilidade',
-  'Recebido no mês',
-  'Média 12 meses',
-  'Meta mensal',
-  'Falta para meta — média 12M',
-];
+// Contrato visual aprovado V3 (HYBRID V2): no máximo 3 unidades primárias de
+// KPI — Patrimônio atual (capital investido como contexto secundário dentro
+// da unidade), Resultado (R$ + % compatíveis na mesma unidade) e Recebido.
+// A antiga expectativa de oito métricas peer ("Total investido",
+// "Rentabilidade", "Recebido no mês", "Média 12 meses", "Meta mensal",
+// "Falta para meta") codificava o Dashboard pré-V3 substituído pela spec
+// aprovada. A distinção financeira protegida pelo teste antigo continua
+// afirmada: capital investido visível E distinto do patrimônio atual,
+// resultado em R$ e %, renda rotulada como recebida (não estimativa).
+const PRIMARY_KPI_UNITS_MAX = 3;
 
 for (const viewport of viewports) {
   test(`Dashboard Premium Clarity - ${viewport.label}`, async () => {
@@ -88,46 +88,94 @@ for (const viewport of viewports) {
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('dashboard'));
       await page.waitForSelector('.dashboard-analytical-primary', { state: 'visible', timeout: 5000 });
-      await page.waitForSelector('.dashboard-home-income', { state: 'visible', timeout: 5000 });
+      await page.waitForSelector('.dashboard-executive-kpis', { state: 'visible', timeout: 5000 });
 
-      const snapshot = await page.evaluate(labels => {
+      const snapshot = await page.evaluate(() => {
         const visible = element => {
           const style = getComputedStyle(element);
           const box = element.getBoundingClientRect();
           return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && box.width > 0 && box.height > 0;
         };
+        const kpisRoot = document.querySelector('.dashboard-executive-kpis');
+        const cards = [...(kpisRoot ? kpisRoot.querySelectorAll('.premium-metric') : [])].map(card => {
+          const value = card.querySelector('.premium-metric-value');
+          const cardBox = card.getBoundingClientRect();
+          const valueBox = value ? value.getBoundingClientRect() : null;
+          return {
+            label: card.querySelector('.premium-metric-label')?.textContent.trim() || '',
+            value: value?.textContent.trim() || '',
+            note: card.querySelector('.premium-metric-note')?.textContent.trim() || '',
+            visible: visible(card),
+            cardWidth: cardBox?.width || 0,
+            cardHeight: cardBox?.height || 0,
+            valueWidth: valueBox?.width || 0,
+            valueHeight: valueBox?.height || 0,
+            valueScrollHeight: value?.scrollHeight || 0,
+            valueClientHeight: value?.clientHeight || 0,
+          };
+        });
         return {
-          metrics: labels.map(label => {
-            const labelNode = [...document.querySelectorAll('.premium-metric-label')].find(node => node.textContent.trim() === label);
-            const card = labelNode?.closest('.premium-metric');
-            const value = card?.querySelector('.premium-metric-value');
-            const cardBox = card?.getBoundingClientRect();
-            const valueBox = value?.getBoundingClientRect();
-            return {
-              label,
-              visible: !!card && visible(card) && !!value && visible(value),
-              text: value?.textContent.trim() || '',
-              cardWidth: cardBox?.width || 0,
-              cardHeight: cardBox?.height || 0,
-              valueWidth: valueBox?.width || 0,
-              valueHeight: valueBox?.height || 0,
-              valueScrollHeight: value?.scrollHeight || 0,
-              valueClientHeight: value?.clientHeight || 0,
-            };
-          }),
+          kpisRootExists: !!kpisRoot,
+          primaryKpiCount: cards.length,
+          cards,
+          investedPeerCount: cards.filter(card => /^Total investido$/i.test(card.label)).length,
           overflow: document.documentElement.scrollWidth > window.innerWidth,
-          buttons: [...document.querySelectorAll('.dashboard-analytical-primary button, .dashboard-home-income button')]
+          buttons: [...document.querySelectorAll('.dashboard-analytical-primary button, .dashboard-executive-kpis button')]
             .filter(visible)
             .map(button => ({ text: button.textContent.trim(), width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })),
         };
-      }, metricLabels);
+      });
 
-      for (const metric of snapshot.metrics) {
-        assert.equal(metric.visible, true, `${metric.label} não está visível em ${viewport.label}`);
-        assert.ok(metric.text.length > 0, `${metric.label} não tem valor em ${viewport.label}`);
-        assert.ok(metric.cardWidth > 0 && metric.cardHeight > 0, `${metric.label} sem bounding box em ${viewport.label}`);
-        assert.ok(metric.valueWidth > 0 && metric.valueHeight > 0, `${metric.label} sem valor visível em ${viewport.label}`);
-        assert.ok(metric.valueScrollHeight <= metric.valueClientHeight + 1, `${metric.label} quebrou verticalmente em ${viewport.label}`);
+      // 1. O container executivo V3 existe e é o dono atual dos KPIs.
+      assert.equal(snapshot.kpisRootExists, true, `dashboard-executive-kpis precisa existir em ${viewport.label}`);
+
+      // 2. Densidade contratual: no máximo 3 unidades primárias de KPI.
+      assert.ok(snapshot.primaryKpiCount >= 1 && snapshot.primaryKpiCount <= PRIMARY_KPI_UNITS_MAX,
+        `unidades primárias de KPI (${snapshot.primaryKpiCount}) excedem o máximo ${PRIMARY_KPI_UNITS_MAX} em ${viewport.label}`);
+
+      const findCard = label => snapshot.cards.find(card => card.label === label);
+
+      // 3. Patrimônio atual é unidade primária, visível e com valor.
+      const patrimony = findCard('Patrimônio atual');
+      assert.ok(patrimony, `KPI primário "Patrimônio atual" precisa existir em ${viewport.label}`);
+      assert.equal(patrimony.visible, true, `"Patrimônio atual" não está visível em ${viewport.label}`);
+      assert.ok(patrimony.value.length > 0, `"Patrimônio atual" não tem valor em ${viewport.label}`);
+
+      // 4-5. Capital investido permanece visível DENTRO da unidade Patrimônio,
+      // com rótulo semântico explícito ("Investido R$ ..."), distinto do valor
+      // patrimonial — preservando a distinção financeira do teste antigo.
+      assert.match(patrimony.note, /Investido\s+R\$/i,
+        `capital investido precisa estar visível e rotulado dentro da unidade Patrimônio em ${viewport.label} (nota: "${patrimony.note}")`);
+      assert.ok(patrimony.value !== patrimony.note, `valor patrimonial e capital investido precisam permanecer distintos em ${viewport.label}`);
+
+      // 6. Capital investido NÃO é um quarto KPI peer (estrutura pré-V3 proibida).
+      assert.equal(snapshot.investedPeerCount, 0,
+        `"Total investido" não pode voltar como KPI peer em ${viewport.label}; pertence ao contexto da unidade Patrimônio`);
+
+      // 7. Resultado permanece unidade primária própria, com R$ e % na mesma
+      // unidade quando compatíveis (o antigo "Resultado geral" + "Rentabilidade"
+      // peer não podem voltar, mas as duas medidas continuam visíveis).
+      const resultado = findCard('Resultado');
+      assert.ok(resultado, `KPI primário "Resultado" precisa existir em ${viewport.label}`);
+      assert.equal(resultado.visible, true, `"Resultado" não está visível em ${viewport.label}`);
+      assert.ok(resultado.value.length > 0, `"Resultado" não tem valor em ${viewport.label}`);
+      assert.match(resultado.value, /R\$/, `"Resultado" precisa exibir medida em R$ em ${viewport.label}`);
+      assert.match(resultado.value, /%/, `"Resultado" precisa exibir o retorno percentual compatível na mesma unidade em ${viewport.label} (valor: "${resultado.value}")`);
+
+      // 8. Recebido permanece unidade primária própria, rotulada como renda
+      // RECEBIDA — recebido não pode ser confundido com estimativa/futuro.
+      const recebido = findCard('Recebido');
+      assert.ok(recebido, `KPI primário "Recebido" precisa existir em ${viewport.label}`);
+      assert.equal(recebido.visible, true, `"Recebido" não está visível em ${viewport.label}`);
+      assert.ok(recebido.value.length > 0, `"Recebido" não tem valor em ${viewport.label}`);
+      assert.match(recebido.note, /recebid/i, `renda precisa estar rotulada como recebida (não estimativa/futuro) em ${viewport.label} (nota: "${recebido.note}")`);
+
+      // Preservação geométrica do teste antigo: nenhuma quebra vertical nos
+      // valores das unidades primárias.
+      for (const card of snapshot.cards) {
+        assert.ok(card.cardWidth > 0 && card.cardHeight > 0, `"${card.label}" sem bounding box em ${viewport.label}`);
+        assert.ok(card.valueWidth > 0 && card.valueHeight > 0, `"${card.label}" sem valor visível em ${viewport.label}`);
+        assert.ok(card.valueScrollHeight <= card.valueClientHeight + 1, `"${card.label}" quebrou verticalmente em ${viewport.label}`);
       }
       assert.equal(snapshot.overflow, false, `overflow horizontal em ${viewport.label}`);
       for (const button of snapshot.buttons) {

@@ -1,5 +1,14 @@
 # Project State
 
+## V298 — RC local da branch visual (2026-10-03)
+
+- `CURRENT_BRANCH=feature/v289-premium-visual-redesign`; `RC_BASE_HEAD=69569adc0ec4cf58ea8cec29c6c59c4bff10d643`.
+- Wave G e V296 XLSX completos; prontidão RC válida somente para este checkpoint local, ainda não publicado nem integrado.
+- Gates frescos: XLSX 2/2; `qa:all` PASS; `npm test` 252/252; `test:modern` 815/815; builds legado/moderno PASS; `git diff --check` e `git diff --cached --check` PASS antes do commit documental.
+- Revisões registradas: BLOCKER=0, MAJOR=0, MINOR=7; seis itens não bloqueantes continuam adiados. XLSX fechado.
+- A evidência reproduzível Dashboard/Metas é 29/29 com manifesto; o agregado histórico 37/37 sem manifesto foi retirado como evidência certificada.
+- `PUSH=false`; `PR=false`; `MERGE=false`; `DEPLOY=false`. Tag RC é local e não será enviada.
+
 ## Estado canônico — V285 Import Center (2026-09-29)
 
 - `ORIGIN_MAIN=6f249bb822bb83163a39a3cb7e59ff80ab3134bb`; PR #432/V284 está incorporada. Esta missão trabalha isolada em `feature/v285-import-center-completion`; o checkout canônico não foi alterado.

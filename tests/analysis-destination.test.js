@@ -26,7 +26,10 @@ test('Análise não inventa dados nem cria caminho de persistência', () => {
   assert.match(destination, /assetAnalysisRows\(\)/);
 });
 
-test('Análise comunica estados vazios conhecidos sem placeholder ambíguo', () => {
-  assert.match(source, /best\?[^:]+:'Nenhum'/);
-  assert.match(source, /worst\?[^:]+:'Nenhuma'/);
+test('Análise comunica estados vazios nos diagnósticos sem KPI redundante', () => {
+  assert.match(source, /performanceEmpty='<div class="asset-premium-empty">Nenhum ativo disponível para este diagnóstico\.<\/div>'/);
+  assert.match(source, /Nenhum ativo acima do limite de atenção\./);
+  assert.match(source, /Todos os ativos possuem dados suficientes\./);
+  assert.match(source, /Nenhum alerta relevante com os critérios atuais\./);
+  assert.match(source, /Nenhum setor informado nos ativos atuais\./);
 });

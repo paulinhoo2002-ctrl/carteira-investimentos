@@ -38,11 +38,28 @@ test('dashboard snapshot exposes sector concentration without a parallel financi
   assert.doesNotMatch(snapshot, /FinanceCore|localStorage|save\(/);
 });
 
-test('dashboard renders fixed-income agenda and evidence-based insights', () => {
+// Reconciliação V3 (HYBRID V2 aprovada): a spec MOVE recebíveis → Dividendos
+// (rota dona) e consolida o grid dashboard-intelligence-grid (receipts +
+// insights) em "no máximo uma prioridade" (spec seções 4-5: "Dashboard
+// conserva metadado essencial e um link de prioridade"). O comportamento
+// protegido — insights baseados em evidência continuam presentes e
+// acionáveis no dashboard — migraram para dashboardV3PriorityPanel, que
+// consome data.insights (portfolioInsightsSnapshot) e roteia para a rota
+// relacionada/IA. As funções donas antigas permanecem para as rotas donas.
+test('dashboard keeps evidence-based insights reachable via a single priority', () => {
   const dash = extract('function dash(){', 'function patrimonySnapshot(');
-  assert.match(dash, /dashboardReceiptsPanel\(data\)/);
-  assert.match(dash, /dashboardInsightsPanel\(data\)/);
-  assert.match(dash, /dashboard-intelligence-grid/);
+  // A prioridade V3 é o novo lar dos insights no dashboard.
+  assert.match(dash, /dashboardV3PriorityPanel\(data\)/);
+  // O snapshot de insights continua sendo produzido com evidência real.
+  assert.match(dash, /portfolioInsightsSnapshot\(/);
+  // O grid V2 dedicado não deve voltar à primeira dobra.
+  assert.doesNotMatch(dash, /dashboard-intelligence-grid/);
+  assert.doesNotMatch(dash, /dashboardReceiptsPanel\(data\)/);
+
+  const priority = extract('function dashboardV3PriorityPanel(', 'function dashboardQuickActions()');
+  assert.match(priority, /data\?\.insights/);
+  assert.match(priority, /relatedRoute/);
+  assert.match(priority, /go\('/);
 });
 
 test('dashboard creates a sector concentration insight using an existing route', () => {

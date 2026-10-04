@@ -13,7 +13,7 @@ function extract(startMarker, endMarker) {
   return source.slice(start, end);
 }
 
-function makeContext(mode = 'resumo') {
+function makeContext(mode = 'extrato') {
   const context = {
     S: { tab: 'dashboard', tabSeq: 0, aportesViewMode: mode, mobileMenuOpen: true, mobileTopMenuOpen: true, assetsInnerTab: 'patrimonio', activeDividendSection: '' },
     save() {},
@@ -24,16 +24,16 @@ function makeContext(mode = 'resumo') {
   return context;
 }
 
-test('first entry and invalid state use the official resumo default', () => {
-  assert.match(source, /aportesViewMode:'resumo'/);
+test('first entry and invalid state use the official extrato default', () => {
+  assert.match(source, /aportesViewMode:'extrato'/);
   const apTabSource = extract('function apTab(){', 'function frmD(){');
-  assert.match(apTabSource, /: 'resumo'/);
+  assert.match(apTabSource, /: 'extrato'/);
   const context = makeContext('invalid');
   context.go('aportes');
   assert.equal(context.S.aportesViewMode, 'invalid', 'go must not overwrite a session mode');
   assert.match(apTabSource, /S\.aportesViewMode=mode/);
   context.setAportesViewMode('invalid');
-  assert.equal(context.S.aportesViewMode, 'resumo');
+  assert.equal(context.S.aportesViewMode, 'extrato');
 });
 
 test('valid mode survives leaving and returning to Aportes during the session', () => {

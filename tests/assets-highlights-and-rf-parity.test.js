@@ -151,7 +151,7 @@ function loadPrincipalFns(ctx){
   vm.runInNewContext(assetPerformanceRowHtml, ctx);
   const assetInsightRowHtml = extractFunctionBlock(INDEX_HTML, 'function assetInsightRowHtml(row, mode){', 'function assetAnalysisBlock(');
   vm.runInNewContext(assetInsightRowHtml, ctx);
-  const assetPremiumSection = extractFunctionBlock(INDEX_HTML, 'function assetPremiumSection(title, subtitle, count, body, tone=\'muted\'){', 'function assetPerformanceRowHtml(');
+  const assetPremiumSection = extractFunctionBlock(INDEX_HTML, 'function assetPremiumSection(', 'function assetPerformanceRowHtml(');
   vm.runInNewContext(assetPremiumSection, ctx);
   const assetConcentrationAlert = extractFunctionBlock(INDEX_HTML, 'function assetConcentrationAlert(share){', 'function assetSummaryCard(');
   vm.runInNewContext(assetConcentrationAlert, ctx);

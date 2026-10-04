@@ -74,6 +74,8 @@ for (const viewport of viewports) {
 
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('aportes'));
+      await page.locator('.aporte-view-tabs').getByRole('button', { name: 'Resumo', exact: true }).click();
+      await page.locator('.aporte-secondary-summary > summary').click();
       await page.waitForSelector('.aporte-premium', { state: 'visible', timeout: 5000 });
       await page.waitForSelector('.aporte-contribution-grid', { state: 'visible', timeout: 5000 });
 
@@ -120,6 +122,7 @@ for (const viewport of viewports) {
       const before = snapshot.metrics.map(metric => metric.value);
       await page.evaluate(() => go('dashboard'));
       await page.evaluate(() => go('aportes'));
+      await page.locator('.aporte-secondary-summary > summary').click();
       await page.waitForSelector('.aporte-contribution-grid', { state: 'visible', timeout: 5000 });
       const after = await readSnapshot();
       assert.deepEqual(after.metrics.map(metric => metric.value), before, `valores dos KPIs mudaram ao navegar em ${viewport.label}`);
