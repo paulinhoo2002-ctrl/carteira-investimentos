@@ -18397,6 +18397,7 @@ function saveQuickMovement(){
   const reg=built.reg;
   const editId=S.quickMovementEditId;
   const draftBeforeClose=S.quickMovementDraft;
+  const financialSnapshot=snapshotFinancialImportState(['aportes','proventos','assets','wallets','activeWalletId','learnMeta']);
   S.quickMovementOpen=false;
   S.quickMovementDraft=null;
   S.quickMovementEditId=null;
@@ -18404,9 +18405,10 @@ function saveQuickMovement(){
   S.quickMovementErrorField='';
   let persisted=false;
   try{
+    if(!financialSnapshot) throw new Error('QUICK_MOVEMENT_SNAPSHOT_FAILED');
     if(kind==='provento'){
       S.proventos.unshift(reg);
-      save();
+      if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
       toast(quickMovementSuccessText(reg,kind));
       render();
       markProventosDirty();
@@ -18419,7 +18421,7 @@ function saveQuickMovement(){
       }else{
         S.aportes.unshift(reg);
       }
-      save();
+      if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
       toast(quickMovementSuccessText(reg,kind));
       render();
       persisted=true;
@@ -18428,7 +18430,8 @@ function saveQuickMovement(){
     S.aportes.unshift(reg);
     if(kind==='renda-fixa'){
       learnTickerMeta(reg.ticker, 'Renda Fixa', reg.sector, true);
-      syncAssetsFromAportes(false);
+      syncAssetsFromAportes(false,false);
+      if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
       toast(quickMovementSuccessText(reg,kind));
       fetchQuotes(false);
       scheduleAutoProventosGratis('aporte-rf');
@@ -18436,7 +18439,8 @@ function saveQuickMovement(){
       return;
     }
     learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
-    syncAssetsFromAportes(false);
+    syncAssetsFromAportes(false,false);
+    if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
     toast(quickMovementSuccessText(reg,kind));
     fetchQuotes(false);
     scheduleAutoProventosGratis('aporte');
@@ -19469,7 +19473,7 @@ const META={
   TGAR11:['FII','Desenvolvimento'],HGBS11:['FII','Shopping'],HGRE11:['FII','Lajes'],PVBI11:['FII','Lajes'],RBRP11:['FII','Lajes']
 };
 // ── DY automático: proventos reais → estimativa da tabela → manual
-function autoDY(){
+function autoDY(persistState=true){
   const now=new Date();
   const oneYearAgo=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());
   let updated=0;
@@ -19491,7 +19495,7 @@ function autoDY(){
       if(ref){ a.dy=ref; a.dySource='estimate'; updated++; }
     }
   });
-  if(updated>0){ save(); }
+  if(updated>0 && persistState){ save(); }
   return updated;
 }
 
@@ -23905,7 +23909,7 @@ const pointsMarkup=values.map((v,i)=>{
   </svg>`;
 }
 
-function syncAssetsFromAportes(showMsg=false){
+function syncAssetsFromAportes(showMsg=false,persistState=true){
   if(isProtectedReadOnlyQaBoot()) return;
   const keep={};
   S.assets.forEach(a=>keep[a.ticker]={...a});
@@ -24085,8 +24089,8 @@ function syncAssetsFromAportes(showMsg=false){
   if(importedPositionAssets.length){
     S.assets=[...S.assets, ...importedPositionAssets].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
   }
-  autoDY();
-  save();
+  autoDY(persistState);
+  if(persistState) save();
   if(showMsg) toast('✅ Carteira recalculada pelos aportes!');
   render();
 }

@@ -51,6 +51,12 @@ const HELPERS = {
     }
     return v;
   },
+  inputDateValue(v) {
+    if (!v) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(v))) return String(v);
+    const match = String(v).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+  },
   cleanAssetCode(txt) {
     return String(txt || '')
       .normalize('NFD')
@@ -145,6 +151,8 @@ function loadBuilder(draft, overrides = {}) {
     extractFunctionSource('quickMovementContract', 'function quickMovementSellableAssets'),
     extractFunctionSource('quickMovementSellableAssets', 'function quickMovementSaleAssetById'),
     extractFunctionSource('quickMovementSaleAssetById', 'function quickMovementSaleOptionsHtml'),
+    extractFunctionSource('parseQuickMovementNumber', 'function quickMovementNumberField'),
+    extractFunctionSource('quickMovementNumberField', 'function quickMovementBuildAporteFromFields'),
     extractFunctionSource('quickMovementBuildAporteFromFields', 'function saveQuickMovement'),
   ].join('\n');
   vm.runInNewContext(code, context);
@@ -355,8 +363,8 @@ test('saveQuickMovement com gravação em andamento não duplica o lançamento',
 
 test('fluxo de venda não altera renda fixa nem usa ticker manual', () => {
   const saleFieldsRegion = indexHtml.slice(
-    indexHtml.indexOf('const saleType=draft.saleType=='),
-    indexHtml.indexOf('const body=kind===\'provento\'')
+    indexHtml.indexOf('const saleFields ='),
+    indexHtml.indexOf('const rfMovEditorAsset=', indexHtml.indexOf('const saleFields ='))
   );
   assert.ok(saleFieldsRegion.includes('Ativo (somente posições com saldo)'), 'Venda deve usar seletor de posições');
   assert.ok(saleFieldsRegion.includes('select id="qm-sale-asset"'), 'Seleção deve ser por select (sem ticker manual)');
@@ -376,16 +384,19 @@ test('contrato expõe as funções exigidas pela venda simplificada', () => {
   assert.equal(contract.MOVEMENT_ERROR_CODES.INSUFFICIENT_QUANTITY, 'INSUFFICIENT_QUANTITY');
 });
 
-test('diff da venda simplificada contém os marcadores exigidos', () => {
-  const diff = require('node:child_process').execSync('git diff -- index.html', { encoding: 'utf8' });
+test('venda simplificada contém os marcadores exigidos no runtime vigente', () => {
+  const implementation = extractFunctionSource('quickMovementModal', 'function aporteMovementKind') +
+    extractFunctionSource('quickMovementSalePreview', 'function quickMovementSaleInfoHtml') +
+    extractFunctionSource('quickMovementBuildAporteFromFields', 'function saveQuickMovement') +
+    extractFunctionSource('saveQuickMovement', 'function isRendaFixaAsset');
   for (const marker of [
-    'buildSellableAssets',
+    'quickMovementSellableAssets',
     'assetId',
     'Venda parcial',
     'Vender tudo',
     'buildVariableIncomeSalePreview',
     'quickMovementSaving',
   ]) {
-    assert.ok(diff.includes(marker), `O diff deve conter: ${marker}`);
+    assert.ok(implementation.includes(marker), `A implementação deve conter: ${marker}`);
   }
 });
