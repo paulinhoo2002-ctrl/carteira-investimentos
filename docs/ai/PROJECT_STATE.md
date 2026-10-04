@@ -1,5 +1,15 @@
 # Project State
 
+## V318 — reconciliação pós-V317 em andamento (2026-10-04)
+
+- `MAIN_INCLUDES_V317=true`; `MAIN_HEAD_AT_RECONCILIATION=cb476604d6ca859cb999dda8a9fc679275169556`; PR #442 MERGED. CI main exato `37241619149` SUCCESS; gates locais pós-merge certificados em worktree isolado.
+- Branch V316 `codex/v315-final-operationalization` foi rebaseada sobre o novo main após confirmar checkout limpo, autoria e remote antigo esperado. Conflitos apenas documentais em `NEXT_STEP.md`, `PROJECT_MEMORY.md`, `PROJECT_STATE.md`; `index.html` auto-merge preservou ambas as camadas e foi validado pelo E2E cruzado V317/V316.
+- `V317_LOCAL_RUNTIME_CERTIFIED=true`; compra V317 sintética funciona no runtime local; no Preview protegido V316 a mutação fica bloqueada antes de `save()`, sem estado ou `localStorage` alterado.
+- V316 Preview selection/guards: 58/58 PASS; `verify:release` PASS (legado 252, moderno 815, QA smoke sem erros/overflow, visual 4/4); E2E financeiro/browser combinado 60/60; reliability 61/61; Import Center, persistência, roundtrip e XLSX sintético PASS. Auth/Firestore emulator local não executado: porta 8080 ocupada por processo Java preexistente, preservado; validar via CI Ubuntu do HEAD final.
+- `V316_PROVIDER_QA_REAL=PENDING_HUMAN_EXTERNAL_PROVISIONING`; `CLOUD_PERSISTENCE_CERTIFIED=false`; `PR441_STATUS=PARKED_UNTIL_440_MERGED`. #440 deve permanecer OPEN/DRAFT; #441 não foi alterada; nenhum merge.
+- Segurança/finanças: `PRODUCTION_AUTH_BYPASS=false`; regras de produção inalteradas; Preview sem QA permanece fail-closed; `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` em testes sintéticos.
+- Próximo passo após publicação do HEAD final: conferir CI Ubuntu e Preview automático `mode=blocked`, sem config Firebase de produção; #440 continua Draft até provider QA real externo. Ver matriz e evidências em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
+
 ## V317 — certificação de ações financeiras (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.

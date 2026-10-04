@@ -1,5 +1,14 @@
 # Project Memory
 
+## V318 — reconciliação V316/V317 (2026-10-04)
+
+- Main pós-PR #442: `cb476604d6ca859cb999dda8a9fc679275169556`; CI `37241619149` SUCCESS. Worktree de certificação isolado e worktree de V316 mantidos separados; checkout canônico preservado sem alterações.
+- A branch `codex/v315-final-operationalization` foi rebaseada sobre esse main com old remote verificado. Conflitos só em continuidade documental; `index.html` auto-merge preservou o save transacional V317 e os boundaries Preview V316. Matriz explícita em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
+- Novo E2E cruzado: compra sintética funciona no modo local V317; mesma ação é barrada pelo read-only Preview V316 antes de `save()`, sem mutação financeira, localStorage ou requests externos de escrita. Suíte browser combinada 60/60.
+- Validação V316 fresca: Preview config/guards 58/58; `verify:release` PASS (252 legado, 815 moderno, QA smoke, visual 4/4); reliability 61/61; Import Center, persistência 32/32, roundtrip 7/7, XLSX sintético 2/2. Emulator local bloqueado por porta 8080 em uso por PID Java pré-existente; nenhum processo foi encerrado. CI Ubuntu do SHA final ainda deve confirmar Auth/Firestore emulator e rules QA.
+- `V317_LOCAL_RUNTIME_CERTIFIED=true`; `MAIN_INCLUDES_V317=true`; provider Google real `NOT_TESTED`; Firebase QA/Google identity externos pendentes; `CLOUD_PERSISTENCE_CERTIFIED=false`. `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` em execução sintética.
+- PR #440 deve ficar OPEN/DRAFT sem merge até ação externa Provider QA e decisão humana. #441 não foi tocada e permanece parked até #440 ser merged. Estratégia futura: avaliar os três testes V316B após merge de #440 e portar apenas cenários ainda únicos, preferindo testes do runtime real.
+
 ## V317 — certificação sintética das ações financeiras (2026-10-04)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.

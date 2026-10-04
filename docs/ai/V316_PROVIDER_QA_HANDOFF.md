@@ -1,5 +1,14 @@
 # V316: handoff do Provider QA em Preview
 
+## Estado após reconciliação V318
+
+- Main já inclui V317/PR #442: `cb476604d6ca859cb999dda8a9fc679275169556`; `V317_LOCAL_RUNTIME_CERTIFIED=true` apenas para runtime local sintético.
+- A branch PR #440 foi reconciliada por rebase sobre esse main; manter OPEN/DRAFT e não fazer merge. Provider Google real continua `NOT_TESTED` até o provisionamento descrito abaixo. `CLOUD_PERSISTENCE_CERTIFIED=false`.
+- Preview sem os valores QA continua bloqueado e sem config Firebase de produção no artefato. Não existe fallback para produção; rules de produção, finanças e dados históricos não foram alterados.
+- Novos testes de regressão cruzada: compra V317 funciona em local sintético, mas é bloqueada em Preview read-only V316 antes de `save()` e sem localStorage/write requests.
+- Após o push da reconciliação, exigir novo deployment Preview com SHA idêntico ao HEAD da PR. Inspecionar somente a URL Preview/SHA e resultado do smoke; nunca enviar valores das sete variáveis, email, senha, MFA, cookies, tokens ou bypass por chat.
+- A tentativa local de Auth/Firestore Emulator foi impedida porque a porta 8080 já estava ocupada por processo Java externo ao teste; esse processo foi preservado. A confirmação deve vir da CI Ubuntu no HEAD final.
+
 Escopo: PR #440 em draft, sem merge. Projeto Firebase QA vazio e separado.
 `firebase.qa-preview.rules` é exclusivo desse projeto; **não publicar em produção**.
 O app Preview bloqueia login sem configuração QA completa e host autorizado.
