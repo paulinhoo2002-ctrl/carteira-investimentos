@@ -301,12 +301,12 @@ describe('V316B Write Guard Tests - Preview QA never writes to production', () =
       const FB = this.FB;
       FB.db = this.firebase.firestore();
       FB.user = { uid: 'test-uid' };
-      
+
       // Simulate the guard that would be in the real save/cloud sync path
       if (this.isProtectedReadOnlyQaBoot()) {
         return { ok: false, reason: 'READ_ONLY_QA' };
       }
-      
+
       const batch = FB.db.batch();
       const ref = FB.db.collection('test').doc('x');
       batch.set(ref, { data: 'test' });
@@ -340,12 +340,12 @@ describe('V316B Write Guard Tests - Preview QA never writes to production', () =
       const FB = this.FB;
       FB.db = this.firebase.firestore();
       FB.user = { uid: 'test-uid' };
-      
+
       // Simulate the guard that would be in the real save/cloud sync path
       if (this.isProtectedReadOnlyQaBoot()) {
         return { ok: false, reason: 'READ_ONLY_QA' };
       }
-      
+
       return FB.db.runTransaction(async (transaction) => {
         const ref = FB.db.collection('test').doc('x');
         transaction.set(ref, { data: 'test' });
@@ -390,14 +390,14 @@ describe('V316B Write Guard Tests - Preview QA never writes to production', () =
 
     // Verify the test helper patterns exist
     const DATA_HOSTS = /(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebasestorage\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com|(?:^|\.)firebaseio\.com)(?::\d+)?(?:\/|$)/i;
-    
+
     for (const endpoint of productionEndpoints) {
       if (endpoint === 'firebaseio.com') {
         // The regex uses (?:^|\\.)firebaseio\\.com which requires a prefix
-        assert.ok(DATA_HOSTS.test(`https://test.firebaseio.com/v1/projects/test/databases/(default)/documents/test`), 
+        assert.ok(DATA_HOSTS.test(`https://test.firebaseio.com/v1/projects/test/databases/(default)/documents/test`),
           `DATA_HOSTS should match ${endpoint}`);
       } else {
-        assert.ok(DATA_HOSTS.test(`https://${endpoint}/v1/projects/test/databases/(default)/documents/test`), 
+        assert.ok(DATA_HOSTS.test(`https://${endpoint}/v1/projects/test/databases/(default)/documents/test`),
           `DATA_HOSTS should match ${endpoint}`);
       }
     }
