@@ -47,6 +47,7 @@ async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWP
   const blockedProductionRequests = [];
   const pageErrors = [];
   const consoleErrors = [];
+  const httpErrors = [];
   let financialWrites = 0;
   let taxWrites = 0;
   let importWrites = 0;
@@ -54,12 +55,16 @@ async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWP
     blockedProductionRequests.push(route.request().url());
     return route.abort();
   });
+  await page.route('**/favicon.ico', route => route.fulfill({ status: 204, body: '' }));
   page.on('request', request => {
     const url = request.url();
     requests.push({ url, method: request.method() });
     if (/127\.0\.0\.1:8080\/.*(?::commit|:write|:batchWrite)$/i.test(url) || (/127\.0\.0\.1:8080\/.*\/documents\//i.test(url) && ['PATCH', 'PUT', 'DELETE'].includes(request.method()))) financialWrites++;
     if (/127\.0\.0\.1:8080\/.*(?:tax|irpf)/i.test(url) && !['GET', 'OPTIONS'].includes(request.method())) taxWrites++;
     if (/127\.0\.0\.1:8080\/.*(?:import|broker)/i.test(url) && !['GET', 'OPTIONS'].includes(request.method())) importWrites++;
+  });
+  page.on('response', response => {
+    if (response.status() >= 400) httpErrors.push({ status: response.status(), url: response.url() });
   });
   page.on('pageerror', error => pageErrors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
@@ -73,7 +78,7 @@ async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWP
   });
   const base = harness.url.replace('127.0.0.1', hostname).replace('?testMode=1', query);
   await page.goto(base, { waitUntil: 'domcontentloaded' });
-  return { context, page, requests, blockedProductionRequests, pageErrors, consoleErrors, get financialWrites() { return financialWrites; }, get taxWrites() { return taxWrites; }, get importWrites() { return importWrites; } };
+  return { context, page, requests, blockedProductionRequests, pageErrors, consoleErrors, httpErrors, get financialWrites() { return financialWrites; }, get taxWrites() { return taxWrites; }, get importWrites() { return importWrites; } };
 }
 
 async function waitForFirebase(app) {
@@ -161,7 +166,8 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
     assert.equal(app.taxWrites, 0);
     assert.equal(app.importWrites, 0);
     assert.deepEqual(app.pageErrors, []);
-    assert.deepEqual(app.consoleErrors, []);
+    assert.deepEqual(app.consoleErrors, [], `console errors: ${JSON.stringify(app.consoleErrors)}; HTTP errors: ${JSON.stringify(app.httpErrors)}`);
+    assert.deepEqual(app.httpErrors, [], `HTTP errors: ${JSON.stringify(app.httpErrors)}`);
   } finally {
     await app.context.close();
   }
