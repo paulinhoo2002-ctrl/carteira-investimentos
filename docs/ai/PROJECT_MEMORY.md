@@ -1,5 +1,16 @@
 # Project Memory
 
+## Estado canônico pós-release — V304 (2026-10-03)
+
+- O release V1.3.0 permanece no `origin/main` certificado `eb1f3c4686f1f61635939512a2c1118cb0dde908`; `v1.3.0-rc1` não foi alterada. V304 trabalha em branch pós-release isolada, sem push/PR/merge/deploy.
+- Phase-198: drift corrigido removendo o bloco inicial de estado duplicado e obsoleto do roadmap; contratos agora apontam à Phase 214 atual. Testes 2/2.
+- Phase-206: harness VM agora inclui `assetCurrentValue` real e o teste verifica o contrato Dashboard HYBRID V2 atual em vez dos painéis aposentados; testes 5/5. Nenhuma fórmula financeira mudou.
+- `setRentPrimarySemantic` era definição não referenciada nem chamada dinamicamente e foi removida; testes vizinhos de Rentabilidade passaram.
+- A matriz `tests/v289-visual-regression.test.js` tem script dedicado e CI; guarda que testMode está ativo, Firebase não inicializa/não recebe requests e o `civ5` financeiro não muda. Metadados locais sintéticos do lock de edição e monitoramento V258 são permitidos e não são persistência financeira.
+- `npm run verify:release` executa gates offline/local sem o XLSX CDN. `npm run test:import-xlsx` permanece gate manual (2/2 com bytes XLSX sintéticos).
+- Não existe Auth Emulator, projeto Firebase QA isolado ou conta sintética QA configurados neste repo. testMode é rota synthetic-only localhost, não autenticação provider-backed. Uma sessão verdadeiramente autenticada exige provisionamento humano isolado; produção mantém Google/Firebase auth sem bypass criado.
+- Handoff V304: `.superpowers/sdd/v304-post-release-hardening/CHATGPT_V304_HANDOFF.md`; política: `docs/ai/QA_AUTH_STRATEGY.md`.
+
 ## Estado canônico pós-V285 — 2026-09-29
 
 - V284 foi incorporada em `origin/main` (`6f249bb822bb83163a39a3cb7e59ff80ab3134bb`); `V284_FINAL_BRANCH_CERTIFICATION` é histórico, não a próxima ação.

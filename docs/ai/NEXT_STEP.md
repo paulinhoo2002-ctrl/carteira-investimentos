@@ -1,4 +1,12 @@
 # Next Step
+## V304 — hardening pós-release (2026-10-03)
+
+- Release V1.3.0 segue READY no `origin/main=eb1f3c4686f1f61635939512a2c1118cb0dde908`; RC tag preservada.
+- A branch local `feature/v304-post-release-hardening` adiciona reconciliação dos testes Phase-198/206, gate visual automatizado, `verify:release` e política de QA sintético; consultar `.superpowers/sdd/v304-post-release-hardening/CHATGPT_V304_HANDOFF.md`.
+- Gates locais frescos PASS; XLSX 2/2 com fixture sintética. `test:import-xlsx` permanece manual por exigir CDN/rede.
+- O smoke de rotas usa somente testMode em localhost, sem Firebase; não prova autenticação real. `HUMAN_ACTION_REQUIRED=true` para provisionar projeto/conta QA isolados antes de autenticar smoke real.
+- Próxima ação: revisão independente do checkpoint local V304; qualquer push/PR requer nova autorização. Não alterar o RC tag nem fazer deploy.
+
 ## V298 — próximo passo após checkpoint RC local (2026-10-03)
 
 - O RC da branch `feature/v289-premium-visual-redesign` foi certificado localmente no base `69569adc0ec4cf58ea8cec29c6c59c4bff10d643`, após os gates frescos e correção documental do agregado 37/37 para 29/29 reproduzível.
