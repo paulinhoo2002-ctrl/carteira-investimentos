@@ -18,8 +18,9 @@
   `meta/access` get para e-mail explicitamente listado e leitura da própria
   carteira somente para essa identidade aprovada, sem writes; é arquivo exclusivo do projeto QA, não altera
   `firestore.rules` de produção. `docs/ai/V316_PROVIDER_QA_HANDOFF.md` registra
-  cliques, sete variáveis Preview e classificação. Smoke público aceita host
-  HTTPS + project ID QA sem copiar a configuração cliente para o terminal.
+  cliques, sete variáveis Preview e classificação. Smoke público aceita apenas
+  o host HTTPS e deriva o project ID QA do descritor público, sem copiar valores
+  da configuração cliente ao terminal ou chat.
 - Revisão independente encontrou e corrigiu leitura/merge de estado financeiro
   local antigo no Preview: boot ignora `civ5` e marker local, auth troca limpa
   estado apenas em memória e snapshot offline financeiro fica desativado no

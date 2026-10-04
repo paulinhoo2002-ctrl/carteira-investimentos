@@ -20,11 +20,14 @@
   somente em Vercel Preview. A tabela, cliques e verificações visuais estão no
   handoff. Nenhum segredo ou valor da configuração cliente vai ao chat.
 - Depois de novo deployment Preview Ready no SHA atual, executar smoke público
-  com somente host HTTPS e project ID QA, ambos não secretos:
-  `npm.cmd run qa:preview-provider-smoke -- https://HOST_PREVIEW_ESTAVEL/ QA_PROJECT_ID`.
+  somente com o host HTTPS:
+  `npm.cmd run qa:preview-provider-smoke -- https://HOST_PREVIEW_ESTAVEL/`.
+  O smoke valida o ID QA diretamente no descritor público; nenhum valor de
+  configuração precisa ser enviado ao agente.
   Esse PASS valida fronteira e isolamento público; não prova login Google.
 - Com identidade sintética presente, executar
-  `npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/ QA_PROJECT_ID`.
+  `npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/`.
+  O harness também deriva o ID QA do descritor do mesmo Preview.
   O operador conclui o popup Google. O harness verifica leitura QA permitida,
   sessão/logout, zero request Firebase de produção e zero writes financeiros.
   Provider real fica `NOT_TESTED` até esse gate.

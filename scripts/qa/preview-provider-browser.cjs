@@ -32,6 +32,9 @@ async function run(urlText, expectedProjectId) {
   const response = await fetch(url.href, { redirect: 'error' });
   const html = await response.text();
   const deployment = JSON.parse(html.match(/window\.__FIREBASE_DEPLOYMENT__=(\{[^;]+\});/)[1]);
+  const qaProjectId = deployment.config?.projectId;
+  if (!/^[a-z][a-z0-9-]*[a-z0-9]$/.test(qaProjectId || '')
+    || (expectedProjectId && expectedProjectId !== qaProjectId)) throw new Error('Preview QA project ID could not be verified');
   const qa = { ...deployment.config, productionProjectId: deployment.productionProjectId };
   const browser = await chromium.launch({ headless: false,
     ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
@@ -66,7 +69,7 @@ async function run(urlText, expectedProjectId) {
       readOnly: window.__PROTECTED_READ_ONLY_QA_BOOT__ === true,
       accessAllowed: FB.access.allowed === true,
     }));
-    if (state.projectId !== expectedProjectId || !state.readOnly || !state.accessAllowed
+    if (state.projectId !== qaProjectId || !state.readOnly || !state.accessAllowed
       || state.financialStorageWrites !== 0 || violations.length) throw new Error('Provider QA boundary failed');
     await page.evaluate(() => signOutGoogle());
     await page.waitForFunction(() => typeof FB !== 'undefined' && !FB.user && !FB.access.allowed,

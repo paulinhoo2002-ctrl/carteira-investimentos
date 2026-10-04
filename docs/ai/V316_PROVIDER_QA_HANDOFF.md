@@ -77,12 +77,14 @@ No worktree LEGACY correto, com o novo Preview Ready e sem credenciais no
 terminal, executar:
 
 ```powershell
-npm.cmd run qa:preview-provider-smoke -- https://HOST_PREVIEW_ESTAVEL/ QA_PROJECT_ID
+npm.cmd run qa:preview-provider-smoke -- https://HOST_PREVIEW_ESTAVEL/
 ```
 
 O comando verifica HTTPS, host permitido, configuração QA completa no
-descritor público, projeto QA distinto da produção e ausência de API key de
-produção no HTML. Saída `PREVIEW_QA_BOUNDARY_PASS` **não prova login**.
+descritor público, projeto QA distinto da produção e ausência de configuração
+de produção no HTML. Saída
+`PREVIEW_QA_BOUNDARY_PASS` **não prova login**. O harness lê internamente o
+ID QA público já implantado; nenhum valor precisa ser enviado no chat.
 O agente também executa `npm.cmd run test:qa-preview-config` e gates de CI no
 SHA exato. Se o Preview estiver protegido pela Vercel, usar o acesso oficial
 ao deployment para ler o HTML; não remover proteção para fazer o teste passar.
@@ -91,7 +93,7 @@ Quando a identidade QA estiver disponível, executar o gate interativo em
 navegador isolado (abre janela temporária; nenhum token é salvo no repositório):
 
 ```powershell
-npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/ QA_PROJECT_ID
+npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/
 ```
 
 O operador conclui somente o popup Google na janela aberta. O script bloqueia

@@ -78,9 +78,9 @@ test('V315 provider smoke refuses unverifiable runtime config', async () => {
   })), /could not be verified/);
 });
 
-test('V316 public smoke verifies QA boundary with only URL and non-secret project ID', async () => {
+test('V316 public smoke verifies QA boundary from the public descriptor without a project ID argument', async () => {
   const env = validEnv();
-  const result = await runPublicPreviewSmoke('https://qa-preview.example.test/', env.QA_FIREBASE_PROJECT_ID,
+  const result = await runPublicPreviewSmoke('https://qa-preview.example.test/',
     async () => ({ ok: true, status: 200, text: async () => previewHtml(env) }));
   assert.equal(result.status, 'PREVIEW_QA_BOUNDARY_PASS');
   assert.equal(result.providerLogin, 'NOT_TESTED');

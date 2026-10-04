@@ -4,10 +4,14 @@ const { resolvePreviewFirebaseConfig } = require('./preview-firebase-config.cjs'
 const { selectFirebaseConfig } = require('../../firebase-config-selector.js');
 
 async function runPublicPreviewSmoke(previewUrl, expectedQaProjectId, fetchImpl = fetch) {
+  if (typeof expectedQaProjectId === 'function') {
+    fetchImpl = expectedQaProjectId;
+    expectedQaProjectId = '';
+  }
   const url = new URL(previewUrl);
   if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash
-    || !/^[a-z][a-z0-9-]*[a-z0-9]$/.test(expectedQaProjectId || '')) {
-    throw new Error('Exact HTTPS Preview root and QA project ID are required');
+    || (expectedQaProjectId && !/^[a-z][a-z0-9-]*[a-z0-9]$/.test(expectedQaProjectId))) {
+    throw new Error('Exact HTTPS Preview root and optional QA project ID are required');
   }
   const response = await fetchImpl(url.href, { redirect: 'error' });
   if (!response.ok) throw new Error(`Preview returned HTTP ${response.status}`);
@@ -19,8 +23,10 @@ async function runPublicPreviewSmoke(previewUrl, expectedQaProjectId, fetchImpl 
   }
   let deployment;
   try { deployment = JSON.parse(raw); } catch { throw new Error('Preview runtime Firebase boundary could not be verified'); }
+  const qaProjectId = expectedQaProjectId || deployment.config?.projectId;
   if (deployment.mode !== 'preview' || deployment.productionProjectId !== productionProjectId
-    || deployment.config?.projectId !== expectedQaProjectId
+    || !/^[a-z][a-z0-9-]*[a-z0-9]$/.test(qaProjectId || '')
+    || deployment.config?.projectId !== qaProjectId
     || !Array.isArray(deployment.allowedHosts) || !deployment.allowedHosts.includes(url.hostname)
     || /const firebaseConfig = \{[^;]*\bapiKey\s*:/.test(html)) {
     throw new Error('Preview runtime does not use the isolated QA project');
@@ -57,7 +63,7 @@ async function runPreviewProviderSmoke(env = process.env, fetchImpl = fetch) {
 
 if (require.main === module) {
   const smoke = process.argv.length > 2
-    ? runPublicPreviewSmoke(process.argv[2], process.argv[3])
+    ? runPublicPreviewSmoke(process.argv[2], process.argv[3] || '')
     : runPreviewProviderSmoke();
   smoke.then(result => {
     console.log(`Preview provider smoke: ${result.status}; provider login ${result.providerLogin}; financial writes ${result.financialWrites}.`);
