@@ -57,3 +57,6 @@ jobs:
           node --test tests/service-worker-update-reliability.test.js
           node --test tests/portfolio-report-readiness.test.js tests/v273-reporting-ui-contract.test.js
           node --test tests/reports-responsive-matrix.test.js
+
+      - name: V289 visual regression matrix
+        run: npm run test:visual-regression
