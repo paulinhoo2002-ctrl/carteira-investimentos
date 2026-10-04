@@ -39,7 +39,7 @@ async function seedAccessDocument() {
   } });
 }
 
-async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWPORTS[1], invalidSession = false } = {}) {
+async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWPORTS[1], invalidSession = false, unavailableEmulators = false } = {}) {
   const context = await browser.newContext({ viewport });
   if(invalidSession) await context.addInitScript(() => { if(location.origin.startsWith('http://127.0.0.1:')) localStorage.setItem('firebase:authUser:demo-carteira-qa-emulator:[DEFAULT]', '{invalid-session'); });
   const page = await context.newPage();
@@ -55,6 +55,10 @@ async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWP
     blockedProductionRequests.push(route.request().url());
     return route.abort();
   });
+  if (unavailableEmulators) {
+    await page.route('http://127.0.0.1:9099/**', route => route.abort());
+    await page.route('http://127.0.0.1:8080/**', route => route.abort());
+  }
   await page.route('**/favicon.ico', route => route.fulfill({ status: 204, body: '' }));
   page.on('request', request => {
     const url = request.url();
@@ -198,6 +202,34 @@ test('V311: malformed emulator session remains unauthenticated', async () => {
     const state = await app.page.evaluate(() => ({ authenticated: !!FB.user, allowed: FB.access.allowed, gate: document.body.innerText.includes('Entre com Google para continuar') }));
     assert.deepEqual(state, { authenticated: false, allowed: false, gate: true });
     assert.deepEqual(app.blockedProductionRequests, []);
+  } finally { await app.context.close(); }
+});
+
+test('V311: unavailable Auth and Firestore emulators fail closed without production fallback', async () => {
+  const app = await newPage({ unavailableEmulators: true });
+  try {
+    await waitForFirebase(app);
+    const result = await app.page.evaluate(async () => {
+      let authError = '';
+      let firestoreError = '';
+      try { await FB.auth.createUserWithEmailAndPassword('qa.synthetic@example.invalid', 'ephemeral-only'); }
+      catch (error) { authError = String(error.code || error.message); }
+      try { await FB.db.doc('meta/access').get(); }
+      catch (error) { firestoreError = String(error.code || error.message); }
+      return { projectId: FB.app.options.projectId, authenticated: !!FB.user, allowed: FB.access.allowed, authError, firestoreError };
+    });
+    assert.equal(result.projectId, PROJECT);
+    assert.equal(result.authenticated, false);
+    assert.equal(result.allowed, false);
+    assert.notEqual(result.authError, '');
+    assert.notEqual(result.firestoreError, '');
+    assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:9099/')));
+    assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:8080/')));
+    assert.deepEqual(firebaseDataRequests(app), []);
+    assert.deepEqual(app.blockedProductionRequests, []);
+    assert.equal(app.financialWrites, 0);
+    assert.equal(app.taxWrites, 0);
+    assert.equal(app.importWrites, 0);
   } finally { await app.context.close(); }
 });
 
