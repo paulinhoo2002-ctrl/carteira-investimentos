@@ -1,5 +1,26 @@
 # Project Memory
 
+## V316 — seleção Firebase por ambiente para Layer 4 (2026-10-04)
+
+- Commit de código V316: `490b20e`; documentação registrada em commit separado.
+- Continuação da PR #440 no worktree LEGACY: `vercel.json` gera um descritor de ambiente durante o build. Produção aceita apenas hosts de produção conhecidos e mantém a configuração existente; Preview exige domínio explicitamente permitido, projeto Firebase QA distinto e configuração completa. Preview sem provisionamento mostra acesso indisponível; configuração parcial falha no build. Nenhum fallback para Firebase de produção.
+- O artefato Preview remove a configuração Firebase de produção do HTML. `firebase-config-selector.js` valida host, modo, projeto e campos QA antes de `initializeApp`; o boot Preview ativa o guard existente de QA somente leitura. Auth Preview usa persistência Firebase `SESSION`; produção mantém `LOCAL`. O gate exibe falha controlada e desabilita login sem provider/config válido.
+- O smoke público lê o descritor gerado, verifica host/projeto QA e rejeita a presença de configuração de produção no artefato Preview. Ele não autentica nem escreve. `npm run test:qa-preview-config` cobre casos positivos/negativos sintéticos e é executado na CI existente.
+- Projeto Firebase QA externo, Google Provider, identidade sintética e domínio autorizado não foram comprovados; metadados acessíveis da Vercel não mostraram variáveis QA. Não usar produção como substituto, nem dados/credenciais reais. Provisionamento humano descrito em `docs/ai/NEXT_STEP.md`.
+- Gates V316: contrato Preview 27/27; legado 252/252; moderno 815/815; visual 4/4; smoke 7 larguras PASS. CI Ubuntu `37217207204` no SHA `47aaf3c8e5c60452a8f014ceb702d5e9fd884d3a` passou nos três jobs, incluindo emuladores e reliability. Preview automático desse SHA ficou READY em `mode=blocked`, seletor presente e configuração de produção ausente, conforme esperado sem QA externo. `qa:all` local foi interrompido por EPERM do Windows em `modern/dist` após build moderno anterior bem-sucedido; emulator local foi bloqueado por EPERM no configstore global do Firebase CLI; XLSX 0/2 por falha de carga da CDN SheetJS no ambiente.
+- `MERGE_AUTHORIZATION=false`; nenhuma regra Firebase, fórmula financeira, schema, persistência financeira ou dado real foi alterado. `NEXT_ACTION=PROVISION_ISOLATED_QA_FIREBASE_AND_VALIDATE_PREVIEW_PROVIDER` após revisão/CI da PR.
+
+## V315 — integração Layer 3 e preparação de Provider QA (2026-10-04)
+
+- PR #439 foi squash-merged em `2966dfb197ddcde5440379f8d2d21c35cdeda183`; main CI pós-merge `37212449673` passou, incluindo Auth + Firestore Emulator QA no Ubuntu.
+- Pós-merge no SHA integrado: legado 252/252, moderno 815/815, QA emulador 8/8, reliability, visual 4/4, `qa:all`, `verify:release`, XLSX sintético 2/2, builds legado/moderno e diff check passaram. `npm ci` foi executado apenas no worktree aprovado; manifests não mudaram. Avisos npm: 6 vulnerabilidades reportadas (3 moderate, 3 high); nenhuma correção automática ou script de instalação adicional foi executado.
+- Vercel deployment automático do merge SHA ficou READY no alias público; browser confirmou gate de login/acesso restrito sem login. Sem deploy manual ou credenciais reais.
+- Layer 3 está operacional e isolada: Auth + Firestore Emulator, sessão sintética autenticada, zero requests Firebase de produção nos testes emuladores e zero escrita financeira real.
+- O follow-up V315 contém apenas scaffolding não-production: loader `scripts/qa/preview-firebase-config.cjs` exige `VERCEL_ENV=preview`, host em `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`, seis valores `QA_FIREBASE_*` completos e `QA_FIREBASE_PROJECT_ID` distinto de `PRODUCTION_FIREBASE_PROJECT_ID`; smoke `scripts/qa/preview-provider-smoke.cjs` lê HTML público e exige que o project ID visível corresponda ao projeto QA. Não faz login nem grava dados. O runtime de `index.html` ainda usa a configuração existente, portanto o smoke deve bloquear enquanto a seleção QA não for implementada/revisada.
+- Nenhum projeto Firebase QA isolado foi confirmado. A consulta de metadados Vercel Preview não encontrou variáveis de QA; isso não prova inexistência externa. Provisionamento de projeto, Google provider, identidade sintética e domínio Preview são ação humana; não enviar valores/segredos ao chat.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_PROJECT_AND_SYNTHETIC_GOOGLE_IDENTITY`; depois, missão própria para config runtime Preview isolada e validação provider sem dados/escritas financeiras.
+- Skills: Superpowers conduziu retomada e gates; Ponytail full limitou implementação ao mínimo e revisão; Caveman orientou comunicação concisa. Sem reviewer Hermes/NVIDIA disponível; revisão independente externa não alegada.
+
 ## V310 — decisão durável de QA autenticada isolada
 
 - O roteamento permanente de modelos e Skills é propriedade de `docs/ai/SKILLS_ROUTING.md`, independente do chat ou de um provider. Implementador e revisor devem ser distintos quando disponíveis.

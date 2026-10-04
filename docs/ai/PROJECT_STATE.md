@@ -1,5 +1,23 @@
 # Project State
 
+## V316 — Layer 4 runtime preparado; provider externo pendente (2026-10-04)
+
+- Branch de trabalho `codex/v315-final-operationalization`, base `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; PR #440 permanece draft e sem autorização de merge. Consultar Git/CI para HEAD e status finais.
+- Produção seleciona somente configuração de produção em hosts conhecidos. Preview seleciona somente Firebase QA completo, distinto e permitido pelo host; sem valores QA fica bloqueado, configuração parcial falha no build. Preview usa o guard financeiro somente leitura existente e sessão Auth por aba.
+- Testes focados sintéticos 27/27 PASS; legado 252/252; moderno 815/815; visual 4/4; smoke 390/430/768/1366/1440/1536/1920 PASS. CI Ubuntu `37217207204` do SHA `47aaf3c8e5c60452a8f014ceb702d5e9fd884d3a` passou nos três jobs. Preview Vercel automático do mesmo SHA ficou READY, mas bloqueado sem QA externo; artefato não contém configuração de produção. `qa:all` teve EPERM Windows em saída Vite; emuladores tiveram EPERM no configstore global; XLSX depende da CDN e falhou localmente.
+- Firebase QA externo, Google Provider, identidade sintética e domínio Preview seguem não comprovados. Login real e smoke provider autenticado continuam pendentes de provisionamento humano; zero teste com dados reais, zero escrita financeira e nenhum deploy manual.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA`; merge exige gate humano independente e CI do HEAD final.
+
+## V315 — Layer 3 integrada; preparação da Layer 4 (2026-10-04)
+
+- PR #439 integrada por squash. `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; CI do push pós-merge `37212449673` concluiu com sucesso, incluindo Auth + Firestore Emulator QA.
+- Certificação fresca no merge SHA: legado 252/252; moderno 815/815; Auth/Firestore Emulator 8/8 via CI Ubuntu; `qa:all`, visual 4/4, `verify:release`, XLSX sintético 2/2, build legado/moderno e `git diff --check` PASS. O runner Firebase Java do Windows permaneceu dispensado; CI Ubuntu é a evidência do emulador.
+- Deployment automático Vercel para o mesmo SHA chegou a READY no alias `carteira-investimentos-delta.vercel.app`; navegação pública confirmou a tela de login Google/acesso restrito sem autenticação. Nenhum deploy manual ou credencial real.
+- Layer 3 operacional: Auth + Firestore emulators e sessão sintética autenticada; nenhuma requisição Firebase de produção nos testes de emulador; zero escrita financeira real.
+- V315 preparou o contrato fail-closed de Preview (`scripts/qa/preview-firebase-config.cjs`), smoke público de fronteira (`scripts/qa/preview-provider-smoke.cjs`) e testes com valores sintéticos. Esse tooling não ativa nem injeta config Firebase no produto; nenhuma config de produção foi alterada.
+- Projeto Firebase QA isolado e identidade Google sintética não foram comprovados nos recursos acessíveis. Provider-authenticated Preview permanece adiado; exige provisionamento humano e futura revisão da seleção de config no runtime. Variáveis de Preview não devem ser configuradas antes dessa revisão.
+- `CURRENT_BRANCH=codex/v315-final-operationalization`, base exata merge SHA; follow-up não-production permanece separado e sujeito aos gates normais de CI/revisão. Sem alteração financeira, persistência, schema, regra Firebase ou dado real.
+
 ## V310 — preparação local de autenticação QA isolada
 
 - PR #438/V304 foi integrada por squash em `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09`. A tag `v1.3.0-rc1` permanece em `399e120d83bfc81d58e613adb79fe6f27bf47cfe`.

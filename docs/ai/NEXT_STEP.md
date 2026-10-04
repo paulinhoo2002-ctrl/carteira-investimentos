@@ -1,4 +1,19 @@
 # Next Step
+## V316 — provisionar Firebase QA isolado e validar Provider em Preview
+
+- A seleção de configuração por ambiente foi preparada: produção mantém seu projeto; Preview permitido só ativa projeto QA diferente, com guard de escrita financeira somente leitura. Sem configuração QA o login fica indisponível; configuração parcial falha no build. PR #440 permanece draft, com merge sujeito a autorização humana.
+- Ação humana externa mínima: (1) provisionar projeto Firebase QA vazio e isolado; (2) habilitar Auth, Firestore e Google Provider nesse projeto; (3) designar identidade Google sintética sem dados financeiros reais; (4) autorizar apenas o domínio Preview estável aprovado em Firebase Auth; (5) configurar os seis `QA_FIREBASE_*` e `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS` exclusivamente no ambiente Preview correto da Vercel; (6) confirmar que o projeto QA e o domínio Preview correspondem antes de testar o login. Não enviar configuração/credenciais pelo chat.
+- Depois do provisionamento: verificar o deploy Preview do HEAD exato, executar smoke público do descritor, login Google sintético e leitura Firestore QA; confirmar zero requests a Firebase de produção e zero escrita financeira. Registrar CI/review, manter HUMAN_GATE para merge e não fazer deploy manual.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_AND_SYNTHETIC_IDENTITY`; provider real continua `NOT_TESTED` até esse gate.
+
+## V315 — gate humano para Provider QA em Preview
+
+- V315/#439 está em `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; main CI `37212449673` PASS e deployment automático correspondente READY. Layer 3 Auth + Firestore Emulator permanece operacional, com 8/8 testes em Ubuntu.
+- Preparação local em `codex/v315-final-operationalization`: contrato fail-closed para env de Preview, smoke público da fronteira de projeto e testes sintéticos. O app estático ainda não seleciona config Firebase por ambiente; smoke retorna bloqueio enquanto runtime não expuser projeto QA.
+- `HUMAN_ACTION_REQUIRED=true`: (1) criar projeto Firebase QA separado com Auth/Firestore e sem dados/contas de produção; (2) habilitar Google e designar identidade sintética; (3) autorizar somente o domínio Preview pretendido; (4) configurar as variáveis QA somente em Preview após a mudança de runtime ser revisada. Não enviar credenciais ou valores de config pelo chat.
+- Após provisionamento, abrir missão específica para seleção de config QA Preview, testes negativos de isolamento e execução do provider smoke sem escrita financeira. Merge continua gate humano; não iniciar provider login ou integração de runtime nesta preparação.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_PROJECT_AND_SYNTHETIC_GOOGLE_IDENTITY`.
+
 ## V310 — próximo gate de autenticação QA isolada
 
 - `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09` contém PR #438/V304; `v1.3.0-rc1` permanece preservada.
