@@ -41,6 +41,10 @@
   Google real permanece sem teste por falta de QA externo.
 - Commit de código V316: `490b20e`; documentação registrada em commit separado.
 - Continuação da PR #440 no worktree LEGACY: `vercel.json` gera um descritor de ambiente durante o build. Produção aceita apenas hosts de produção conhecidos e mantém a configuração existente; Preview exige domínio explicitamente permitido, projeto Firebase QA distinto e configuração completa. Preview sem provisionamento mostra acesso indisponível; configuração parcial falha no build. Nenhum fallback para Firebase de produção.
+- Inspeção do artifact Vercel V316 mostrou que Preview sem QA ainda carregava o
+  `projectId` público de produção num objeto Firebase incompleto. Ajustado o
+  builder para publicar `firebaseConfig={}` nesse estado bloqueado; Preview QA
+  provisionado e produção mantêm os respectivos caminhos validados.
 - O artefato Preview remove a configuração Firebase de produção do HTML. `firebase-config-selector.js` valida host, modo, projeto e campos QA antes de `initializeApp`; o boot Preview ativa o guard existente de QA somente leitura. Auth Preview usa persistência Firebase `SESSION`; produção mantém `LOCAL`. O gate exibe falha controlada e desabilita login sem provider/config válido.
 - O smoke público lê o descritor gerado, verifica host/projeto QA e rejeita a presença de configuração de produção no artefato Preview. Ele não autentica nem escreve. `npm run test:qa-preview-config` cobre casos positivos/negativos sintéticos e é executado na CI existente.
 - Projeto Firebase QA externo, Google Provider, identidade sintética e domínio autorizado não foram comprovados; metadados acessíveis da Vercel não mostraram variáveis QA. Não usar produção como substituto, nem dados/credenciais reais. Provisionamento humano descrito em `docs/ai/NEXT_STEP.md`.

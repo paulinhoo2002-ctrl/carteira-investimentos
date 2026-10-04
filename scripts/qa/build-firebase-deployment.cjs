@@ -56,7 +56,8 @@ function renderFirebaseDeployment(html, env = process.env) {
     } else {
       descriptor = { mode: 'blocked' };
     }
-    html = html.replace(configMatch[0], `const firebaseConfig = { projectId: ${JSON.stringify(projectId)} };`);
+    if (descriptor.mode === 'blocked') html = html.replace(configMatch[0], 'const firebaseConfig = {};');
+    else html = html.replace(configMatch[0], `const firebaseConfig = { projectId: ${JSON.stringify(projectId)} };`);
   } else {
     throw new Error('Unknown deployment environment');
   }

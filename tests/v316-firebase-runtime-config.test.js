@@ -113,6 +113,8 @@ test('V316 build strips production credentials from an approved Preview artifact
 test('V316 Preview without QA provisioning remains blocked; partial config fails build', () => {
   const blocked = renderFirebaseDeployment(html, { VERCEL_ENV: 'preview', VERCEL_BRANCH_URL: 'qa-preview.example.test' });
   assert.match(blocked, /"mode":"blocked"/);
+  assert.match(blocked, /const firebaseConfig = \{\};/);
+  assert.doesNotMatch(blocked, /production-project/);
   assert.doesNotMatch(blocked, /synthetic-production-key/);
   const partial = previewEnv();
   delete partial.QA_FIREBASE_APP_ID;
