@@ -4,9 +4,9 @@
 
 - Branch de trabalho `codex/v315-final-operationalization`, base `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; PR #440 permanece draft e sem autorização de merge. Consultar Git/CI para HEAD e status finais.
 - Produção seleciona somente configuração de produção em hosts conhecidos. Preview seleciona somente Firebase QA completo, distinto e permitido pelo host; sem valores QA fica bloqueado, configuração parcial falha no build. Preview usa o guard financeiro somente leitura existente e sessão Auth por aba.
-- Testes focados sintéticos 27/27 PASS; legado 252/252; moderno 815/815; visual 4/4; smoke 390/430/768/1366/1440/1536/1920 PASS. `qa:all` teve EPERM Windows em saída Vite; emuladores tiveram EPERM no configstore global; XLSX depende da CDN e falhou localmente. CI exata V316 ainda deve ser verificada.
+- Testes focados sintéticos 27/27 PASS; legado 252/252; moderno 815/815; visual 4/4; smoke 390/430/768/1366/1440/1536/1920 PASS. CI Ubuntu `37217207204` do SHA `47aaf3c8e5c60452a8f014ceb702d5e9fd884d3a` passou nos três jobs. Preview Vercel automático do mesmo SHA ficou READY, mas bloqueado sem QA externo; artefato não contém configuração de produção. `qa:all` teve EPERM Windows em saída Vite; emuladores tiveram EPERM no configstore global; XLSX depende da CDN e falhou localmente.
 - Firebase QA externo, Google Provider, identidade sintética e domínio Preview seguem não comprovados. Login real e smoke provider autenticado continuam pendentes de provisionamento humano; zero teste com dados reais, zero escrita financeira e nenhum deploy manual.
-- `NEXT_ACTION=V316_CI_AND_HUMAN_PROVISION_ISOLATED_FIREBASE_QA`; merge exige gate humano independente.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA`; merge exige gate humano independente e CI do HEAD final.
 
 ## V315 — Layer 3 integrada; preparação da Layer 4 (2026-10-04)
 
