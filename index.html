@@ -35342,11 +35342,6 @@ function v252PerformanceIntelligence(){
   </section>`;
 }
 
-function setRentPrimarySemantic(card, isAvailable){
-  if(!card) return;
-  card.classList.toggle('rent-primary-result--unavailable', !isAvailable);
-  card.setAttribute('data-availability', isAvailable?'available':'unavailable');
-}
 function rentabilidadeTab(){
   const type=S.rentType||'all';
   const period=S.rentPeriod||'all';
