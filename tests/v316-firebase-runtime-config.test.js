@@ -162,14 +162,15 @@ test('V316 blocked remote Preview enables read-only boundary while localhost rem
   }
 });
 
-test('V316 Preview runtime selects QA before initializeApp and uses session persistence', () => {
+test('V316 Preview runtime selects QA before initializeApp and uses session persistence', async () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const start = source.indexOf('function initFirebase(){');
   const end = source.indexOf('async function loadAccessControl(', start);
   assert.ok(start >= 0 && end > start);
   let initializedProject;
   let persistence;
-  const auth = { setPersistence: value => { persistence = value; return Promise.resolve(); }, onAuthStateChanged: () => {} };
+  let authCallback;
+  const auth = { setPersistence: value => { persistence = value; return Promise.resolve(); }, onAuthStateChanged: callback => { authCallback = callback; } };
   const firebase = {
     initializeApp: config => { initializedProject = config.projectId; return {}; },
     auth: Object.assign(() => auth, { Auth: { Persistence: { LOCAL: 'local', SESSION: 'session' } } }),
@@ -178,11 +179,57 @@ test('V316 Preview runtime selects QA before initializeApp and uses session pers
   const deployment = { mode: 'preview', allowedHosts: ['qa-preview.example.test'], productionHosts: ['carteira-investimentos-delta.vercel.app'], productionProjectId: production.projectId, config: qa };
   const FB = { access: {} };
   const window = { firebase, FirebaseConfigSelector: { selectFirebaseConfig }, __FIREBASE_DEPLOYMENT__: deployment, addEventListener: () => {} };
-  const context = { window, firebase, FB, firebaseConfig: production, location: { hostname: 'qa-preview.example.test' }, navigator: { onLine: true }, isLocalTestMode: () => false, isLocalAuthEmulatorMode: () => false, isProtectedReadOnlyQaBoot: () => true, debugWarn: () => {}, render: () => {}, CloudSyncState: {} };
+  const order = [];
+  const context = { window, firebase, FB, firebaseConfig: production, location: { hostname: 'qa-preview.example.test' }, navigator: { onLine: true }, isLocalTestMode: () => false, isLocalAuthEmulatorMode: () => false, isProtectedReadOnlyQaBoot: () => true, debugWarn: () => {}, render: () => {}, CloudSyncState: { initial: () => ({}) }, stopCloudSync: () => { order.push('stop'); }, resetPreviewFinancialState: () => { order.push('reset'); } };
   vm.runInNewContext(`${source.slice(start, end)}\ninitFirebase()`, context);
   assert.equal(initializedProject, qa.projectId);
   assert.equal(persistence, 'session');
   assert.equal(FB.ready, true);
+  await authCallback(null);
+  assert.deepEqual(order.slice(0, 2), ['stop', 'reset']);
+});
+
+test('V316 protected Preview initializes V76 stores empty without reading local financial history', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const start = source.indexOf("const V76_SNAPSHOT_STORAGE_KEY='portfolioValuationSnapshotsV1';");
+  const end = source.indexOf('function saveV76RuntimeStores(){', start);
+  assert.ok(start >= 0 && end > start);
+  let localStorageReads = 0;
+  const emptySnapshotStore = () => ({ snapshots: [] });
+  const emptyFlowStore = () => ({ flows: [] });
+  const window = { PortfolioRuntimeStores: { emptySnapshotStore, emptyFlowStore } };
+  const context = {
+    window,
+    localStorage: { getItem: () => { localStorageReads += 1; throw new Error('Preview must not read local financial history'); } },
+    isProtectedReadOnlyQaBoot: () => true,
+  };
+  vm.runInNewContext(`${source.slice(start, end)}\nloadV76RuntimeStores()`, context);
+  assert.equal(localStorageReads, 0);
+  assert.deepEqual(Array.from(window.__V76_RUNTIME__.snapshots.snapshots), []);
+  assert.deepEqual(Array.from(window.__V76_RUNTIME__.flows.flows), []);
+  assert.deepEqual(Array.from(window.__V76_RUNTIME__.diagnostics), ['PROTECTED_READ_ONLY_QA_BOOT']);
+});
+
+test('V316 protected Preview refuses V76 snapshots and external-flow mutation in memory', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const captureStart = source.indexOf('function captureV76DailySnapshot(');
+  const captureEnd = source.indexOf('function initializeV76Runtime()', captureStart);
+  const flowStart = source.indexOf('function openExternalFlow()', captureEnd);
+  const flowEnd = source.indexOf('function externalFlowModal()', flowStart);
+  assert.ok(captureStart >= 0 && captureEnd > captureStart && flowStart > captureEnd && flowEnd > flowStart);
+  const original = { snapshots: { snapshots: [] }, flows: { flows: [] } };
+  const window = { __V76_RUNTIME__: original };
+  const context = {
+    window,
+    isProtectedReadOnlyQaBoot: () => true,
+    document: { getElementById: () => { throw new Error('Protected Preview must not inspect financial-flow inputs'); } },
+    S: { externalFlowOpen: false, externalFlowError: '' },
+    render: () => { throw new Error('Protected Preview must not open a financial-flow editor'); },
+  };
+  vm.runInNewContext(`${source.slice(captureStart, captureEnd)}\n${source.slice(flowStart, flowEnd)}\ncaptureV76DailySnapshot(); openExternalFlow(); addExternalFlowFromUi();`, context);
+  assert.strictEqual(window.__V76_RUNTIME__, original);
+  assert.deepEqual(original, { snapshots: { snapshots: [] }, flows: { flows: [] } });
+  assert.equal(context.S.externalFlowOpen, false);
 });
 
 test('V316 unavailable Firebase provider resolves to a controlled access failure', () => {

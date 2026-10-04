@@ -23,11 +23,22 @@
 - Revisão independente encontrou e corrigiu leitura/merge de estado financeiro
   local antigo no Preview: boot ignora `civ5` e marker local, auth troca limpa
   estado apenas em memória e snapshot offline financeiro fica desativado no
-  Preview. Preview remoto bloqueado também ignora `civ5` e desativa writes;
+  Preview. V76 não lê snapshots ou fluxos locais: inicializa stores vazias e
+  bloqueia captura de snapshots, abertura/adição de fluxos e persistência em QA
+  protegido. Preview remoto bloqueado também ignora `civ5` e desativa writes;
   storage existente não é apagado. O harness bloqueia também POST de
   criação Firestore e endpoints Storage/identidade sem vínculo QA verificável.
 - V316B revisou a branch independente Hermes `hermes/v316b-test-hardening` (`e518120`), pai exato do HEAD V316 anterior: 14 testes de ambiente chamavam o seletor real; os 6 de escrita e 12 de provider simulavam funções copiadas. Portados os casos úteis para os testes do runtime real, sem cherry-pick nem alteração da branch Hermes. A revisão achou um bypass local em Preview: `save({__protectedLocalRecoveryWrite:true})` podia gravar localStorage; agora Preview bloqueia esse override antes de qualquer persistência, sem mudar a recuperação local fora do Preview.
-- Gates após a integração: contrato Preview/guards 43/43, `verify:release` PASS (legado 252/252, moderno 815/815, `qa:all` e visual 4/4), reliability 61/61, XLSX sintético 2/2, diff check PASS. O Firebase Emulator local iniciou Auth mas Firestore encerrou antes dos testes sob Java 26; CI Ubuntu com Java 21 é o gate desse emulador no novo SHA. Provider Google real permanece sem teste por falta de QA externo.
+- Gates prévios no branch: contrato Preview/guards 43/43, `verify:release` PASS
+  (legado 252/252, moderno 815/815, `qa:all` e visual 4/4), reliability
+  61/61, XLSX sintético 2/2, diff check PASS. Na retomada, após as barreiras
+  de isolamento V76, contrato focado 55/55, `verify:release` PASS (legado
+  252/252, moderno 815/815, `qa:all`, visual 4/4), reliability 61/61, XLSX
+  sintético 2/2 e diff check PASS. CI Ubuntu no SHA final ainda precisa
+  terminar antes da prontidão da PR. O Firebase Emulator local iniciou Auth
+  mas Firestore encerrou antes
+  dos testes sob Java 26; CI Ubuntu com Java 21 é o gate desse emulador. Provider
+  Google real permanece sem teste por falta de QA externo.
 - Commit de código V316: `490b20e`; documentação registrada em commit separado.
 - Continuação da PR #440 no worktree LEGACY: `vercel.json` gera um descritor de ambiente durante o build. Produção aceita apenas hosts de produção conhecidos e mantém a configuração existente; Preview exige domínio explicitamente permitido, projeto Firebase QA distinto e configuração completa. Preview sem provisionamento mostra acesso indisponível; configuração parcial falha no build. Nenhum fallback para Firebase de produção.
 - O artefato Preview remove a configuração Firebase de produção do HTML. `firebase-config-selector.js` valida host, modo, projeto e campos QA antes de `initializeApp`; o boot Preview ativa o guard existente de QA somente leitura. Auth Preview usa persistência Firebase `SESSION`; produção mantém `LOCAL`. O gate exibe falha controlada e desabilita login sem provider/config válido.

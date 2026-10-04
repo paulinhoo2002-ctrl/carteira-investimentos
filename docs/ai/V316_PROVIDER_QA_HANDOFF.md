@@ -103,7 +103,10 @@ terminar `PROVIDER_QA_PASS` no deployment do HEAD correto.
 Mesmo se o navegador já tiver `civ5` de Preview antigo, o runtime QA não lê
 esse estado, não mescla proventos locais e não grava snapshot financeiro offline.
 Os dados locais existentes permanecem intactos; a sessão QA usa apenas memória
-limpa e o projeto QA autorizado.
+limpa e o projeto QA autorizado. Snapshots de avaliação e fluxos V76 também
+começam vazios sem ler as chaves antigas do `localStorage`; as funções que os
+criam ou alteram ficam inativas em QA protegido. Um backup exportado começa
+com stores V76 vazias daquela sessão.
 
 O gate interativo usa navegador QA isolado, identidade sintética e somente
 leitura: abrir o mesmo host, conferir botão Google disponível, autenticar,

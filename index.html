@@ -10668,6 +10668,7 @@ function initFirebase(){
     FB.auth.onAuthStateChanged(async user=>{
       FB.authResolved = true;
       FB.user = user || null;
+      if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview') stopCloudSync(false);
       resetPreviewFinancialState();
       if(FB.user){
         if(navigator.onLine===false && await restoreProtectedReadOnlyOfflineSnapshot(FB.user)){
@@ -12001,6 +12002,10 @@ function v76RuntimeAvailable(){ return !!window.PortfolioRuntimeStores && typeof
 function loadV76RuntimeStores(){
   if(!v76RuntimeAvailable()) return {snapshots:[],flows:[],diagnostics:['RUNTIME_UNAVAILABLE']};
   const R=window.PortfolioRuntimeStores;
+  if(isProtectedReadOnlyQaBoot()){
+    window.__V76_RUNTIME__={snapshots:R.emptySnapshotStore(v76Clock),flows:R.emptyFlowStore(v76Clock),diagnostics:['PROTECTED_READ_ONLY_QA_BOOT']};
+    return window.__V76_RUNTIME__;
+  }
   const snapshots=R.loadStore(localStorage.getItem(V76_SNAPSHOT_STORAGE_KEY),'snapshots',v76Clock);
   const flows=R.loadStore(localStorage.getItem(V76_FLOW_STORAGE_KEY),'flows',v76Clock);
   window.__V76_RUNTIME__={snapshots:snapshots.value,flows:flows.value,diagnostics:[snapshots.diagnostic,flows.diagnostic]};
@@ -12035,6 +12040,7 @@ function v76CurrentPortfolioComponents(){
   return {listed,priced,rf,listedValue:Math.round(listedValue*100),fixedIncomeValue:Math.round(fixedIncomeValue*100),listedCoverage,fixedCoverage,fixedIncomeAsOf,freshness:components.freshness,selectors:components};
 }
 function captureV76DailySnapshot({force=false}={}){
+  if(isProtectedReadOnlyQaBoot()) return {ok:false,diagnostic:'PROTECTED_READ_ONLY_QA_BOOT'};
   if(!v76RuntimeAvailable()||isLocalTestMode()||!Array.isArray(S.assets)||!S.assets.length) return {ok:false,diagnostic:'PORTFOLIO_NOT_READY'};
   const components=v76CurrentPortfolioComponents();
   if(!force && components.priced.length===0) return {ok:false,diagnostic:'LISTED_VALUE_UNAVAILABLE'};
@@ -12057,9 +12063,10 @@ function initializeV76Runtime(){
   return runtime;
 }
 function v76ExternalFlowLabel(type){return ({CONTRIBUTION:'Aporte',WITHDRAWAL:'Retirada',TRANSFER_IN_EXTERNAL:'Transferência externa entrada',TRANSFER_OUT_EXTERNAL:'Transferência externa saída',ADJUSTMENT:'Ajuste'})[type]||type;}
-function openExternalFlow(){S.externalFlowOpen=true;S.externalFlowError='';render();}
+function openExternalFlow(){if(isProtectedReadOnlyQaBoot()) return; S.externalFlowOpen=true;S.externalFlowError='';render();}
 function closeExternalFlow(){S.externalFlowOpen=false;S.externalFlowError='';render();}
 function addExternalFlowFromUi(){
+  if(isProtectedReadOnlyQaBoot()) return;
   const type=String(document.getElementById('v76-flow-type')?.value||'');
   const date=String(document.getElementById('v76-flow-date')?.value||'');
   const amount=String(document.getElementById('v76-flow-amount')?.value||'').replace(',','.');

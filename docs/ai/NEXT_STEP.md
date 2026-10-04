@@ -9,20 +9,32 @@
 
 ## V316 — provisionar Firebase QA isolado e validar Provider em Preview
 
-- Handoff operacional exato: `docs/ai/V316_PROVIDER_QA_HANDOFF.md`; regras
-  somente leitura para **projeto QA separado**: `firebase.qa-preview.rules`.
-  O `meta/access` QA deve conter o e-mail sintético na lista explícita; as
-  regras de produção não dão leitura a essa identidade. Sem esse documento e
-  as regras QA, o login fecha corretamente por acesso negado.
-- Após novo deployment Preview Ready, o smoke público pode ser executado com
-  apenas host HTTPS e project ID QA (ambos não secretos):
-  `npm.cmd run qa:preview-provider-smoke -- https://HOST/ QA_PROJECT_ID`.
-  PASS prova fronteira pública, não login Google. Login real e inspeção de rede
-  continuam gate humano/identidade, sem envio de segredo pelo chat.
-- A seleção de configuração por ambiente foi preparada: produção mantém seu projeto; Preview permitido só ativa projeto QA diferente, com guard de escrita financeira somente leitura. Sem configuração QA o login fica indisponível; configuração parcial falha no build. PR #440 permanece draft, com merge sujeito a autorização humana.
-- Ação humana externa mínima: (1) provisionar projeto Firebase QA vazio e isolado; (2) habilitar Auth, Firestore e Google Provider nesse projeto; (3) designar identidade Google sintética sem dados financeiros reais; (4) autorizar apenas o domínio Preview estável aprovado em Firebase Auth; (5) configurar os seis `QA_FIREBASE_*` e `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS` exclusivamente no ambiente Preview correto da Vercel; (6) confirmar que o projeto QA e o domínio Preview correspondem antes de testar o login. Não enviar configuração/credenciais pelo chat.
-- Depois do provisionamento: verificar o deploy Preview do HEAD exato, executar smoke público do descritor, login Google sintético e leitura Firestore QA; confirmar zero requests a Firebase de produção e zero escrita financeira. Registrar CI/review, manter HUMAN_GATE para merge e não fazer deploy manual.
-- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_AND_SYNTHETIC_IDENTITY`; provider real continua `NOT_TESTED` até esse gate.
+- Estado: PR #440 continua OPEN/DRAFT; implementação local da V316 está pronta
+  para revisão/CI e para o gate humano de Provider QA. Não fazer merge.
+- Handoff operacional passo a passo:
+  `docs/ai/V316_PROVIDER_QA_HANDOFF.md`. Regras somente leitura exclusivas do
+  projeto QA: `firebase.qa-preview.rules`; nunca publicar em produção.
+- Antes de login real, a pessoa responsável provisiona Firebase QA vazio, uma
+  identidade Google sintética, autoriza o host Preview estável da branch e
+  grava as sete variáveis `QA_FIREBASE_*`/`QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`
+  somente em Vercel Preview. A tabela, cliques e verificações visuais estão no
+  handoff. Nenhum segredo ou valor da configuração cliente vai ao chat.
+- Depois de novo deployment Preview Ready no SHA atual, executar smoke público
+  com somente host HTTPS e project ID QA, ambos não secretos:
+  `npm.cmd run qa:preview-provider-smoke -- https://HOST_PREVIEW_ESTAVEL/ QA_PROJECT_ID`.
+  Esse PASS valida fronteira e isolamento público; não prova login Google.
+- Com identidade sintética presente, executar
+  `npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/ QA_PROJECT_ID`.
+  O operador conclui o popup Google. O harness verifica leitura QA permitida,
+  sessão/logout, zero request Firebase de produção e zero writes financeiros.
+  Provider real fica `NOT_TESTED` até esse gate.
+- Em Preview, o app não lê `civ5`, marker, snapshots ou fluxos V76 do
+  `localStorage`; stores V76 começam vazias, não são mutáveis nem persistidas,
+  e estado local preexistente não é apagado. Produção mantém a configuração
+  existente e não recebe fallback a partir do QA.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_AND_SYNTHETIC_IDENTITY`;
+  após QA autenticado, revisão humana e autorização de merge continuam gates
+  separados.
 
 
 ## V310 — próximo gate de autenticação QA isolada
