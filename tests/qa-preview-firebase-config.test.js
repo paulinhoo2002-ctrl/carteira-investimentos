@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const { resolvePreviewFirebaseConfig } = require('../scripts/qa/preview-firebase-config.cjs');
-const { runPreviewProviderSmoke } = require('../scripts/qa/preview-provider-smoke.cjs');
+const { runPreviewProviderSmoke, runPublicPreviewSmoke } = require('../scripts/qa/preview-provider-smoke.cjs');
 const { renderFirebaseDeployment } = require('../scripts/qa/build-firebase-deployment.cjs');
 
 const validEnv = () => ({
@@ -76,6 +76,24 @@ test('V315 provider smoke refuses unverifiable runtime config', async () => {
   await assert.rejects(runPreviewProviderSmoke(validEnv(), async () => ({
     ok: true, status: 200, text: async () => '<html>login</html>',
   })), /could not be verified/);
+});
+
+test('V316 public smoke verifies QA boundary with only URL and non-secret project ID', async () => {
+  const env = validEnv();
+  const result = await runPublicPreviewSmoke('https://qa-preview.example.test/', env.QA_FIREBASE_PROJECT_ID,
+    async () => ({ ok: true, status: 200, text: async () => previewHtml(env) }));
+  assert.equal(result.status, 'PREVIEW_QA_BOUNDARY_PASS');
+  assert.equal(result.providerLogin, 'NOT_TESTED');
+});
+
+test('V316 public smoke rejects wrong project, wrong host and blocked mode', async () => {
+  const env = validEnv();
+  const fetchPreview = async () => ({ ok: true, status: 200, text: async () => previewHtml(env) });
+  await assert.rejects(runPublicPreviewSmoke('https://qa-preview.example.test/', 'wrong-qa-project', fetchPreview));
+  await assert.rejects(runPublicPreviewSmoke('https://unlisted.example.test/', env.QA_FIREBASE_PROJECT_ID, fetchPreview));
+  await assert.rejects(runPublicPreviewSmoke('http://qa-preview.example.test/', env.QA_FIREBASE_PROJECT_ID, fetchPreview));
+  await assert.rejects(runPublicPreviewSmoke('https://qa-preview.example.test/', env.QA_FIREBASE_PROJECT_ID,
+    async () => ({ ok: true, status: 200, text: async () => previewHtml(env).replace('"mode":"preview"', '"mode":"blocked"') })));
 });
 
 function previewHtml(env) {

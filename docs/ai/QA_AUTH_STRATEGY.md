@@ -1,5 +1,15 @@
 # Synthetic QA authentication and route smoke
 
+## V316 active Preview contract
+
+V316 seleciona projeto Firebase QA apenas em Preview autorizado; sem QA completo,
+bloqueia login. `firebase.qa-preview.rules` e o documento `meta/access` sintético
+são necessários no projeto QA porque as regras de produção permitem ler esse
+documento apenas ao administrador de produção. O handoff operacional atual é
+[`V316_PROVIDER_QA_HANDOFF.md`](V316_PROVIDER_QA_HANDOFF.md). O smoke público
+aceita `https://HOST/ QA_PROJECT_ID`; autenticação Google real ainda não foi
+executada. As seções V315/V310 abaixo descrevem estados históricos.
+
 ## V315 status — Layer 3 operacional e scaffolding Layer 4
 
 PR #439 integrou Auth + Firestore emulators e CI Ubuntu. O estado atual da

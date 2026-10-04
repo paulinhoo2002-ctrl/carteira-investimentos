@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// V316: publish only to the isolated Firebase QA project, never production.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function approvedQaIdentity() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string
+        && resource.data.enabled == true
+        && resource.data.allowedEmails is list
+        && request.auth.token.email in resource.data.allowedEmails;
+    }
+
+    match /meta/access {
+      allow get: if approvedQaIdentity();
+      allow list, write: if false;
+    }
+
+    match /portfolios/{userId} {
+      allow get: if request.auth != null && request.auth.uid == userId;
+      allow list, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

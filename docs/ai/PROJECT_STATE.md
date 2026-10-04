@@ -18,6 +18,11 @@
 
 ## V316 — Layer 4 runtime preparado; provider externo pendente (2026-10-04)
 
+- Handoff para ação humana externa: `docs/ai/V316_PROVIDER_QA_HANDOFF.md`.
+  Projeto QA deve receber `firebase.qa-preview.rules` somente nele e
+  `meta/access` com identidade sintética explicitamente aprovada; regras de
+  produção ficam intactas. Smoke público usa URL Preview + QA project ID sem
+  credenciais; autenticação Google real permanece `NOT_TESTED` até provisão.
 - V316B: branch Hermes `e518120` inspecionada somente por Git, sem modificar worktree/branch alheia. Casos úteis de seleção, provider negativo e guards de escrita foram portados para testes que executam o runtime real. Um teste revelou e orientou correção do override de recuperação local em Preview; o modo local original segue intacto.
 - Validação local após correção: contrato QA 43/43; `verify:release` PASS, incluindo legado 252/252, moderno 815/815, `qa:all` e visual 4/4; reliability 61/61; XLSX 2/2; diff check PASS. Firebase Emulator local não completou com Java 26; CI Ubuntu Java 21 deve validar o HEAD final. Login Google real ainda `NOT_TESTED` sem provisionamento externo.
 - Branch de trabalho `codex/v315-final-operationalization`, base `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; PR #440 permanece draft e sem autorização de merge. Consultar Git/CI para HEAD e status finais.

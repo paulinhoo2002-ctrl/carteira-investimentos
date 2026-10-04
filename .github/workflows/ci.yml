@@ -138,3 +138,6 @@ jobs:
 
       - name: Run isolated Auth and Firestore emulator tests
         run: npm run test:auth-emulator
+
+      - name: Verify Preview QA read-only Firestore rules
+        run: npm run test:qa-preview-rules
