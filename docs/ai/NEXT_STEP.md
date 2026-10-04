@@ -28,7 +28,8 @@
 - Com identidade sintética presente, executar
   `npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/`.
   O harness também deriva o ID QA do descritor do mesmo Preview.
-  O operador conclui o popup Google. O harness verifica leitura QA permitida,
+  Se Vercel SSO aparecer, o operador autentica na janela isolada e depois
+  conclui o popup Google sintético. O harness verifica leitura QA permitida,
   sessão/logout, zero request Firebase de produção e zero writes financeiros.
   Provider real fica `NOT_TESTED` até esse gate.
 - Em Preview, o app não lê `civ5`, marker, snapshots ou fluxos V76 do

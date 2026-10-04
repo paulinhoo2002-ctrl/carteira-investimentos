@@ -2,10 +2,41 @@
 
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { unsafeFirebaseRequest } = require('../scripts/qa/preview-provider-browser.cjs');
+const { isFirebaseServiceRequest, readSourceProductionProjectId, resolvePreviewQaBoundary, unsafeFirebaseRequest } = require('../scripts/qa/preview-provider-browser.cjs');
 
 const qa = { projectId: 'qa-project', productionProjectId: 'prod-project',
   apiKey: 'qa-key', authDomain: 'qa-project.firebaseapp.com' };
+
+test('V316 protected browser bootstrap blocks Firebase until the QA descriptor is validated', () => {
+  assert.equal(isFirebaseServiceRequest('https://firestore.googleapis.com/v1/projects/qa-project/databases/(default)/documents'), true);
+  assert.equal(isFirebaseServiceRequest('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp'), true);
+  assert.equal(isFirebaseServiceRequest('https://qa-project.firebaseapp.com/__/auth/handler'), true);
+  assert.equal(isFirebaseServiceRequest('https://query1.finance.yahoo.com/v8/finance/chart/ABC'), false);
+});
+
+test('V316 browser reads the production project boundary only from the stripped public config', () => {
+  assert.equal(readSourceProductionProjectId('const firebaseConfig = { projectId: "prod-project" };'), 'prod-project');
+  assert.equal(readSourceProductionProjectId('const firebaseConfig = {};'), '');
+  assert.equal(readSourceProductionProjectId('const firebaseConfig = { apiKey: "must-not-parse", projectId: "prod-project" };'), '');
+});
+
+test('V316 browser derives only an authorized isolated Preview project from its descriptor', () => {
+  const deployment = {
+    mode: 'preview',
+    allowedHosts: ['qa-preview.example.test'],
+    productionHosts: ['carteira-investimentos-delta.vercel.app'],
+    productionProjectId: 'prod-project',
+    config: { ...qa, storageBucket: 'qa-project.firebasestorage.app', messagingSenderId: '123456', appId: '1:123456:web:abc123' },
+  };
+  assert.deepEqual(resolvePreviewQaBoundary('qa-preview.example.test', deployment, 'prod-project'), { ...deployment.config, productionProjectId: 'prod-project' });
+  assert.throws(() => resolvePreviewQaBoundary('unknown.example.test', deployment, 'prod-project'), /not authorized/);
+  assert.throws(() => resolvePreviewQaBoundary('qa-preview.example.test', { mode: 'blocked' }, 'prod-project'), /project ID could not be verified/);
+  assert.throws(() => resolvePreviewQaBoundary('qa-preview.example.test', deployment, ''), /project ID could not be verified/);
+  assert.throws(() => resolvePreviewQaBoundary('qa-preview.example.test', deployment, 'other-prod-project'), /project ID could not be verified/);
+  assert.throws(() => resolvePreviewQaBoundary('qa-preview.example.test', { ...deployment, productionProjectId: undefined }, 'prod-project'), /project ID could not be verified/);
+  assert.throws(() => resolvePreviewQaBoundary('qa-preview.example.test', deployment, 'prod-project', 'other-qa-project'), /project ID could not be verified/);
+  assert.throws(() => resolvePreviewQaBoundary('qa-preview.example.test', { ...deployment, productionProjectId: 'qa-project' }, 'qa-project'), /not isolated/);
+});
 
 test('V316 browser boundary permits QA Auth and Firestore reads', () => {
   assert.equal(unsafeFirebaseRequest('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=qa-key', qa), null);

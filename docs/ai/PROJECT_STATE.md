@@ -27,8 +27,13 @@
   limpa somente memória ao mudar sessão e não usa snapshot offline financeiro;
   regras QA exigem e-mail aprovado também para a própria carteira. Browser
   smoke bloqueia métodos de escrita Firestore/Storage e Auth fora do QA.
+- Revisão independente adicional fechou o boundary do browser harness: o ID de
+  produção do descritor é comparado ao `projectId` reduzido publicado no HTML;
+  ausente, inesperado, divergente ou colidente mantém todos os endpoints
+  Firebase bloqueados. Harness também bloqueia writes/removals financeiros
+  locais e `localStorage.clear()`.
 - V316B: branch Hermes `e518120` inspecionada somente por Git, sem modificar worktree/branch alheia. Casos úteis de seleção, provider negativo e guards de escrita foram portados para testes que executam o runtime real. Um teste revelou e orientou correção do override de recuperação local em Preview; o modo local original segue intacto.
-- Validação local após correção: contrato QA 43/43; `verify:release` PASS, incluindo legado 252/252, moderno 815/815, `qa:all` e visual 4/4; reliability 61/61; XLSX 2/2; diff check PASS. Firebase Emulator local não completou com Java 26; CI Ubuntu Java 21 deve validar o HEAD final. Login Google real ainda `NOT_TESTED` sem provisionamento externo.
+- Validação local fresca: contrato Preview 58/58; `verify:release` PASS (legado 252/252, moderno 815/815, `qa:all`, visual 4/4); reliability 4/4; XLSX sintético 2/2; build legado/moderno e diff check PASS. Auth + Firestore Emulator aguardam CI Ubuntu no novo HEAD; login Google real permanece `NOT_TESTED` sem provisionamento humano.
 - Branch de trabalho `codex/v315-final-operationalization`, base `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; PR #440 permanece draft e sem autorização de merge. Consultar Git/CI para HEAD e status finais.
 - Produção seleciona somente configuração de produção em hosts conhecidos. Preview seleciona somente Firebase QA completo, distinto e permitido pelo host; sem valores QA fica bloqueado, configuração parcial falha no build. Preview usa o guard financeiro somente leitura existente e sessão Auth por aba.
 - Testes focados sintéticos 27/27 PASS; legado 252/252; moderno 815/815; visual 4/4; smoke 390/430/768/1366/1440/1536/1920 PASS. CI Ubuntu `37217207204` do SHA `47aaf3c8e5c60452a8f014ceb702d5e9fd884d3a` passou nos três jobs. Preview Vercel automático do mesmo SHA ficou READY, mas bloqueado sem QA externo; artefato não contém configuração de produção. `qa:all` teve EPERM Windows em saída Vite; emuladores tiveram EPERM no configstore global; XLSX depende da CDN e falhou localmente.

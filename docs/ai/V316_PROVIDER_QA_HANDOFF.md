@@ -96,11 +96,22 @@ navegador isolado (abre janela temporária; nenhum token é salvo no repositóri
 npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/
 ```
 
-O operador conclui somente o popup Google na janela aberta. O script bloqueia
-requests Firebase para outros projetos, bloqueia writes Firestore e localStorage
-financeiro, exige leitura QA autorizada e verifica logout. Ele não usa senha,
-MFA ou cookie fornecido ao agente. O resultado só é válido se esse comando
-terminar `PROVIDER_QA_PASS` no deployment do HEAD correto.
+Se a proteção da Vercel mostrar SSO, autenticar na própria janela isolada; depois
+concluir o popup Google com a identidade sintética QA. O harness bloqueia todos
+os endpoints Firebase durante esse primeiro carregamento, valida o descritor
+QA e só então recarrega permitindo Auth QA e leituras Firestore QA. Ele bloqueia
+outros projetos, confere o ID de produção do descritor contra o ID publicado
+separadamente no `firebaseConfig` e falha fechado se estiver ausente ou divergir.
+Também bloqueia writes Firestore, escritas/remoções financeiras locais e
+`localStorage.clear()`, e verifica logout. Senha, MFA, cookie ou bypass da Vercel
+nunca são enviados ao agente. O resultado só é válido se esse comando terminar
+`PROVIDER_QA_PASS` no deployment do HEAD correto.
+
+O smoke Node por URL funciona quando o deployment é acessível por HTTP público.
+No Preview atual, Vercel SSO responde a clientes anônimos; não desligar a
+proteção nem compartilhar link/token de bypass. Para esse caso, o agente usa a
+leitura autenticada pelo conector Vercel para o smoke público e o operador usa
+a janela isolada acima para SSO + Provider.
 
 Mesmo se o navegador já tiver `civ5` de Preview antigo, o runtime QA não lê
 esse estado, não mescla proventos locais e não grava snapshot financeiro offline.
