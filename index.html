@@ -9232,6 +9232,7 @@ function save(){
   }
   const options=arguments[0]||{};
   const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
+  if(typeof window==='object' && window.__FIREBASE_DEPLOYMENT__?.mode==='preview') return false;
   try{
     if(typeof isV250OfflineCachedSession==='function' && isV250OfflineCachedSession() && !protectedLocalRecoveryWrite) return false;
     if(isLocalTestMode()){

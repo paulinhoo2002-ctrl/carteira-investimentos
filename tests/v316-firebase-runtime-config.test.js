@@ -62,6 +62,8 @@ test('V316 approved Preview selects only isolated QA config', () => {
 test('V316 unknown host and absent deployment fail closed before Firebase initialization', () => {
   const deployment = { mode: 'production', allowedHosts: ['carteira-investimentos-delta.vercel.app'], productionProjectId: production.projectId };
   assert.throws(() => selectFirebaseConfig('unknown.example.test', deployment, production), /not authorized/);
+  assert.throws(() => selectFirebaseConfig('localhost', deployment, production), /not authorized/);
+  assert.throws(() => selectFirebaseConfig('127.0.0.1', deployment, production), /not authorized/);
   assert.throws(() => selectFirebaseConfig('carteira-investimentos-delta.vercel.app', null, production), /not configured/);
 });
 
@@ -69,7 +71,15 @@ test('V316 Preview rejects partial, mixed-project and invalid QA config', () => 
   const base = { mode: 'preview', allowedHosts: ['qa-preview.example.test'], productionHosts: ['carteira-investimentos-delta.vercel.app'], productionProjectId: production.projectId, config: qa };
   assert.throws(() => selectFirebaseConfig('qa-preview.example.test', { ...base, config: { ...qa, appId: '' } }, production), /invalid/);
   assert.throws(() => selectFirebaseConfig('qa-preview.example.test', { ...base, config: production }, production), /isolated/);
+  assert.throws(() => selectFirebaseConfig('qa-preview.example.test', { ...base, config: { ...qa, apiKey: production.apiKey } }, production), /isolated/);
   assert.throws(() => selectFirebaseConfig('qa-preview.example.test', { ...base, config: { ...qa, authDomain: production.authDomain } }, production), /invalid/);
+  assert.throws(() => selectFirebaseConfig('carteira-investimentos-delta.vercel.app', { ...base, allowedHosts: ['carteira-investimentos-delta.vercel.app'] }, production), /production host/);
+});
+
+test('V316 rejects malformed production config on an approved production host', () => {
+  const invalid = { ...production, projectId: 'Invalid_Project' };
+  const deployment = { mode: 'production', allowedHosts: ['carteira-investimentos-delta.vercel.app'], productionProjectId: invalid.projectId };
+  assert.throws(() => selectFirebaseConfig('carteira-investimentos-delta.vercel.app', deployment, invalid), /Production Firebase configuration is invalid/);
 });
 
 test('V316 build emits production descriptor only for production environment', () => {

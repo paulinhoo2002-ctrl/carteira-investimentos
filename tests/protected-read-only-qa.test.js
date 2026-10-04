@@ -38,8 +38,8 @@ function makeGoHarness(protectedQa) {
   return { context, counters };
 }
 
-test('protected QA boot is query-driven and host-independent', () => {
-  assert.match(html, /window\.__PROTECTED_READ_ONLY_QA_BOOT__=new URLSearchParams\(location\.search\)\.get\('protectedReadOnlyQa'\)==='1';/);
+test('protected QA boot accepts explicit query and all Preview deployments', () => {
+  assert.match(html, /window\.__PROTECTED_READ_ONLY_QA_BOOT__=window\.__FIREBASE_DEPLOYMENT__\?\.mode==='preview' \|\| new URLSearchParams\(location\.search\)\.get\('protectedReadOnlyQa'\)==='1';/);
   assert.doesNotMatch(html, /__PROTECTED_READ_ONLY_QA_BOOT__=.*hostname===['"]localhost/);
 });
 
@@ -74,6 +74,6 @@ test('protected mode guards every identified write channel', () => {
 });
 
 test('protected mode skips persistence enablement and public event runtime', () => {
-  assert.match(html, /if\(!isProtectedReadOnlyQaBoot\(\)\)\{\s*try\{ FB\.db\.enablePersistence/);
+  assert.match(html, /if\(!isProtectedReadOnlyQaBoot\(\) && !emulatorMode\)\{\s*try\{ FB\.db\.enablePersistence/);
   assert.match(html, /function startPublicEventsSync\(\)[\s\S]*?isProtectedReadOnlyQaBoot\(\)\)return/);
 });
