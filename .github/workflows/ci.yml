@@ -116,6 +116,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build modern assets
+        run: npm run build:modern
+
       - name: Install pinned Firebase CLI
         run: npm install --global firebase-tools@15.32.1
 
