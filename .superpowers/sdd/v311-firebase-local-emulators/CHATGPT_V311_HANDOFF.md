@@ -31,6 +31,7 @@ V311_LAYER3_CERTIFIED=false
 - GitHub Actions run `37208106179` successfully started Auth and Firestore emulators under `demo-carteira-qa-emulator`; the emulator suite executed all seven tests and shut both emulators down.
 - Five tests passed. Two test defects were found: route smoke waited on nonexistent `FB.tab` rather than the current `S.tab`, and the non-loopback auth guard assertion ran before the Firebase auth state finished resolving.
 - The current change corrects those assertions and makes the non-loopback test also require zero observed production Firebase data requests. Fresh focused emulator and full CI reruns are pending; do not treat the first run as a product regression or as certification.
+- The next Ubuntu run passed the emulator pair and six of seven tests. Its remaining failure was Playwright correctly reporting that Firebase's injected `.firebase-emulator-warning` banner intercepted the mobile navigation tap. The smoke now asserts that this SDK-owned banner is present, then removes only that emulator notice before real route navigation; product UI and route controls remain under test.
 
 SKILLS_CONSIDERED=Superpowers systematic-debugging, verification-before-completion, Ponytail, Caveman, Firebase security review, Playwright/browser QA.
 SKILLS_USED=Superpowers systematic-debugging for runner diagnosis, verification-before-completion for evidence boundaries, Ponytail full for minimum implementation, Caveman for concise reporting.

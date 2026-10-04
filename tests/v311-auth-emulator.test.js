@@ -124,6 +124,9 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
     assert.deepEqual(identity, { authenticated: true, email: EMAIL, allowed: true });
     assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:9099/')));
     assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:8080/')));
+    const emulatorNotice = app.page.locator('.firebase-emulator-warning');
+    assert.match(await emulatorNotice.innerText(), /Running in emulator mode/i);
+    await emulatorNotice.evaluate(element => element.remove());
 
     for (const viewport of VIEWPORTS) {
       await app.page.setViewportSize(viewport);
