@@ -11,8 +11,8 @@ const PROJECT = 'demo-carteira-qa-emulator';
 const EMAIL = 'qa.synthetic@example.invalid';
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const QUERY = '?qaAuthEmulator=1&qaFirestoreEmulator=1&protectedReadOnlyQa=1';
-const DATA_HOSTS = /(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebasestorage\.googleapis\.com|(?:^|\.)firebaseio\.com)(?::\d+)?(?:\/|$)/i;
-const DATA_REQUEST_URL = /^https?:\/\/[^/]*(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebasestorage\.googleapis\.com|firebaseio\.com)(?::\d+)?(?:\/|$)/i;
+const DATA_HOSTS = /(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebasestorage\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com|(?:^|\.)firebaseio\.com)(?::\d+)?(?:\/|$)/i;
+const DATA_REQUEST_URL = /^https?:\/\/[^/]*(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebasestorage\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com|firebaseio\.com)(?::\d+)?(?:\/|$)/i;
 const ROUTES = ['dashboard', 'ativos', 'dividendos', 'renda-fixa', 'confiabilidade'];
 const VIEWPORTS = [{ width: 390, height: 844 }, { width: 1366, height: 768 }];
 
@@ -41,7 +41,7 @@ async function seedAccessDocument() {
 
 async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWPORTS[1], invalidSession = false, unavailableEmulators = false } = {}) {
   const context = await browser.newContext({ viewport });
-  if(invalidSession) await context.addInitScript(() => { if(location.origin.startsWith('http://127.0.0.1:')) localStorage.setItem('firebase:authUser:demo-carteira-qa-emulator:[DEFAULT]', '{invalid-session'); });
+  if(invalidSession) await context.addInitScript(() => { if(location.origin.startsWith('http://127.0.0.1:')) localStorage.setItem('firebase:authUser:demo-api-key:[DEFAULT]', '{invalid-session'); });
   const page = await context.newPage();
   const requests = [];
   const blockedProductionRequests = [];
@@ -155,12 +155,41 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
           bodyWidth: document.body.scrollWidth,
           viewportWidth: innerWidth,
           financialStorageWrites: window.__V311_FINANCIAL_STORAGE_WRITES__,
+          clippedInteractiveControls: (() => {
+            const clipped = [];
+            const controls = [...document.querySelectorAll('button, a[href], input, select, textarea, [role="button"], [role="tab"]')];
+            for (const element of controls) {
+              const style = getComputedStyle(element);
+              const rect = element.getBoundingClientRect();
+              if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) continue;
+              if (rect.right <= 0 || rect.left >= innerWidth || rect.bottom <= 0 || rect.top >= innerHeight) continue;
+              let ancestor = element.parentElement;
+              while (ancestor) {
+                const ancestorStyle = getComputedStyle(ancestor);
+                const bounds = ancestor.getBoundingClientRect();
+                const clipLeft = bounds.left + ancestor.clientLeft;
+                const clipTop = bounds.top + ancestor.clientTop;
+                const clipRight = clipLeft + ancestor.clientWidth;
+                const clipBottom = clipTop + ancestor.clientHeight;
+                const clipsX = ['hidden', 'clip'].includes(ancestorStyle.overflowX);
+                const clipsY = ['hidden', 'clip'].includes(ancestorStyle.overflowY);
+                if ((clipsX && (rect.left < clipLeft - 1 || rect.right > clipRight + 1)) || (clipsY && (rect.top < clipTop - 1 || rect.bottom > clipBottom + 1))) {
+                  clipped.push(element.outerHTML.slice(0, 160));
+                  break;
+                }
+                ancestor = ancestor.parentElement;
+              }
+              if (rect.left < -1 || rect.right > innerWidth + 1) clipped.push(element.outerHTML.slice(0, 160));
+            }
+            return [...new Set(clipped)];
+          })(),
         }));
         assert.equal(state.authenticated, true, `${route} at ${viewport.width}: auth lost`);
         assert.equal(state.gateVisible, false, `${route} at ${viewport.width}: login gate returned`);
         assert.ok(state.documentWidth <= state.viewportWidth, `${route} at ${viewport.width}: document overflow`);
         assert.ok(state.bodyWidth <= state.viewportWidth, `${route} at ${viewport.width}: body overflow`);
         assert.equal(state.financialStorageWrites, 0);
+        assert.deepEqual(state.clippedInteractiveControls, [], `${route} at ${viewport.width}: clipped interactive controls`);
       }
     }
 
@@ -199,8 +228,13 @@ test('V311: malformed emulator session remains unauthenticated', async () => {
   const app = await newPage({ invalidSession: true });
   try {
     await waitForFirebase(app);
-    const state = await app.page.evaluate(() => ({ authenticated: !!FB.user, allowed: FB.access.allowed, gate: document.body.innerText.includes('Entre com Google para continuar') }));
-    assert.deepEqual(state, { authenticated: false, allowed: false, gate: true });
+    const state = await app.page.evaluate(() => ({
+      authenticated: !!FB.user,
+      allowed: FB.access.allowed,
+      gate: document.body.innerText.includes('Entre com Google para continuar'),
+      invalidSessionConsumed: localStorage.getItem('firebase:authUser:demo-api-key:[DEFAULT]') === null,
+    }));
+    assert.deepEqual(state, { authenticated: false, allowed: false, gate: true, invalidSessionConsumed: true });
     assert.deepEqual(app.blockedProductionRequests, []);
   } finally { await app.context.close(); }
 });
