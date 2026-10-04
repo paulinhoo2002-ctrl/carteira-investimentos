@@ -1,12 +1,12 @@
 # Roteamento de agentes, modelos e Skills — LEGACY
 
-Esta é a especificação detalhada e durável para seleção de agente/modelo e
-Skills no projeto LEGACY. O inventário físico atual fica em
+Este arquivo preserva a ponte legada e as regras de validação. A especificação
+canônica para modelos, revisores, prioridade e relatório de Skills é
+[`docs/ai/SKILLS_ROUTING.md`](ai/SKILLS_ROUTING.md). O inventário físico fica em
 `.agents/skills/`; os documentos versionados são a fonte de continuidade, não
 o histórico de chat. O roteamento técnico de Skills por categoria permanece em
 [`ai/SKILL_ROUTER.md`](ai/SKILL_ROUTER.md), que não define um provider/modelo
-concorrente. A ordem comum e as rotas Superpowers estão resumidas em
-[`docs/ai/SKILLS_ROUTING.md`](ai/SKILLS_ROUTING.md).
+concorrente. Em caso de divergência, siga `AGENTS.md` e o roteador canônico.
 
 ## Identidade e isolamento
 
@@ -17,7 +17,7 @@ AUTHORIZED_WORKTREE_ROOT=C:\Projetos\carteira-investimentos.worktrees
 FORBIDDEN_WORKSPACE=C:\Projetos\carteira-2.0
 SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills
 MANDATORY_AGENT_BOOTSTRAP=true
-BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills
+BOOTSTRAP_ORDER=Superpowers using-superpowers>Ponytail>Caveman>minimum mission-specific-skills
 MANDATORY_START_ANNOUNCEMENT=true
 MERGE_AUTHORIZATION=false
 ```
@@ -32,9 +32,9 @@ com `HUMAN_BLOCKER_WRONG_PROJECT`.
 
 ```text
 PROJECT IDENTITY GATE
-→ ANNOUNCE "Using Caveman + Superpowers to <purpose>"
-→ CAVEMAN
+→ ANNOUNCE "Using Caveman + Ponytail + Superpowers to <purpose>"
 → SUPERPOWERS using-superpowers
+→ PONYTAIL + CAVEMAN when available/relevant
 → DISCOVER SKILLS IN .agents/skills
 → CLASSIFY MISSION
 → SELECT MINIMUM RELEVANT SKILLS
@@ -45,8 +45,9 @@ PROJECT IDENTITY GATE
 
 - Não assuma o inventário com base em conversas anteriores; confirme os
   arquivos `SKILL.md` reais.
-- Após o identity gate, Caveman e Superpowers são obrigatórios nessa ordem em
-  toda missão substancial, seguidos pelas Skills específicas.
+- Após o identity gate, use Superpowers primeiro; Ponytail e Caveman são
+  considerados em toda missão substancial, seguidos pelo mínimo de Skills
+  específicas disponíveis.
 - O pacote local `caveman` orienta comunicação concisa. Preserve clareza e
   detalhe para riscos, segurança, finanças e ações irreversíveis; não concede
   autorização nem substitui método técnico.
@@ -54,7 +55,7 @@ PROJECT IDENTITY GATE
   específicas da missão; excepcionalmente três se houver razão concreta.
 - Reavalie as Skills quando a categoria/escopo mudar. Skills não ampliam
   autorização para dados financeiros, persistência, cloud, Git ou merge.
-- Se Caveman ou Superpowers não existir, reporte a lacuna e use apenas fallback
+- Se Caveman, Ponytail ou Superpowers não existir, reporte a lacuna e use apenas fallback
   realmente disponível, sem alegar uso.
 
 Superpowers é a camada de processo: classificação da missão, descoberta
@@ -67,7 +68,7 @@ Cabeçalho de missão substancial:
 
 ```text
 MANDATORY_AGENT_BOOTSTRAP=true
-BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills
+BOOTSTRAP_ORDER=Superpowers using-superpowers>Ponytail>Caveman>minimum mission-specific-skills
 SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills
 SKILL_DISCOVERY=REQUIRED
 SKILL_REEVALUATION_ON_SCOPE_CHANGE=true
@@ -90,57 +91,14 @@ SKILL_GAPS_FOUND=
 
 ## Seleção de agente/modelo
 
-Além dos campos do handoff acima, missões substanciais registram:
-
-```text
-CAVEMAN_SKILL_AVAILABLE=
-CAVEMAN_USED=
-SKILLS_DISCOVERED=
-SUPERPOWERS_AVAILABLE=
-SUPERPOWERS_USED=
-```
-
-Toda missão substancial deve começar com recomendação explícita de agente e
-modelo e uma justificativa específica para o tipo de trabalho. Use a seguinte
-ordem quando os agentes, modelos e credenciais de execução estiverem realmente
-disponíveis no ambiente:
-
-| Tipo de missão | Caminho preferencial | Razão de seleção |
-|---|---|---|
-| Engenharia normal | Hermes + NVIDIA API / Nemotron 3 Super | Execução padrão de engenharia, implementação e testes com iteração autônoma. |
-| Engenharia difícil, grande ou noturna | Hermes + NVIDIA API / Nemotron 3 Ultra 550B A55B | Problemas amplos/complexos que se beneficiam de maior capacidade e continuidade. |
-| UI/UX visual ou mobile | Kimi K3 | Foco visual e responsivo. Continua sujeito aos contratos financeiros e de dados do projeto. |
-| Revisão independente | GLM-5.3 | Perspectiva independente sobre uma implementação já produzida. |
-| Fallback de engenharia | Codex + GPT-6 Sol | Usar quando o caminho Hermes/NVIDIA falhar repetidamente, ferramentas forem instáveis, testes/build não fecharem após tentativas razoáveis ou a cirurgia exigir precisão adicional. |
-| Revisão técnica focada | Codex + GPT-5.6 Sol | Verificar disponibilidade; não chamar revisão da mesma sessão de independente. |
-| Revisão final de Git/filesystem de risco | Codex + GPT-5.6 Sol | Exigir estado atual, preservação de dados e checagem de escopo. |
-| Revisão visual multimodal | Revisor multimodal disponível | Usar quando visão agregue valor; nunca usar screenshots financeiros privados. |
-
-```text
-DEFAULT_EXECUTION_PROVIDER=NVIDIA_API (quando configurado/disponível)
-NORMAL_ENGINEERING=Hermes + Nemotron 3 Super
-DIFFICULT_ENGINEERING=Hermes + Nemotron 3 Ultra 550B A55B
-OVERNIGHT_LARGE_AUTONOMOUS_MISSION=Hermes + Nemotron 3 Ultra 550B A55B
-VISUAL_MOBILE_UI_UX=Kimi K3
-INDEPENDENT_REVIEW=GLM-5.3
-FALLBACK_WHEN_NVIDIA_HERMES_DOES_NOT_RESOLVE=Codex + GPT-6 Sol
-FOCUSED_TECHNICAL_REVIEW=Codex + GPT-5.6 Sol
-FINAL_RISKY_GIT_OR_FILESYSTEM_REVIEW=Codex + GPT-5.6 Sol
-MULTIMODAL_VISUAL_REVIEW=multimodal-capable reviewer when useful
-```
-
-Esses valores são política de roteamento, não prova de disponibilidade. Antes
-de selecionar, consulte a allowlist real do ambiente. Nunca invente troca de
-modelo, execução Hermes/NVIDIA ou review independente. Se a rota preferida
-estiver indisponível, registre `AGENT_MODEL_UNAVAILABLE`, recomende a opção
-alternativa realmente executável e explique por quê. Fricção técnica comum
-isolada não é motivo para abandonar imediatamente Hermes/NVIDIA; siga o
-critério de fallback acima.
-
-O autor da missão deve justificar o agente/modelo recomendado, por exemplo:
-"Hermes/Nemotron 3 Super é adequado porque a tarefa é uma mudança documental
-focada com testes simples; Codex/GPT-6 Sol é fallback apenas se a rota primária
-não estiver disponível."
+Use a matriz canônica em [`docs/ai/SKILLS_ROUTING.md`](ai/SKILLS_ROUTING.md).
+Em resumo: Codex GPT-6 Luna Medium é o padrão de implementação; Codex GPT-6
+Sol Medium é a escalação para arquitetura/segurança complexa ou uma causa
+sem solução após três tentativas fundamentadas. Hermes GLM-5.3 via NVIDIA é o
+revisor independente preferido quando disponível. Nemotron 3 Ultra 550B A55B
+é alternativa de revisão pesada, Kimi K3 é opção visual segura, e NVIDIA não
+é dependência obrigatória. Revisor e implementador devem ser distintos sempre
+que possível. Verifique disponibilidade e relate o modelo realmente usado.
 
 ## Cabeçalho de missão
 
@@ -152,14 +110,13 @@ AUTHORIZED_WORKSPACE=C:\Projetos\carteira-investimentos
 FORBIDDEN_WORKSPACE=C:\Projetos\carteira-2.0
 SKILLS_ROOT=C:\Projetos\carteira-investimentos\.agents\skills
 MANDATORY_AGENT_BOOTSTRAP=true
-BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills
+BOOTSTRAP_ORDER=Superpowers using-superpowers>Ponytail>Caveman>minimum mission-specific-skills
 PRIMARY_AGENT=<agente selecionado>
 PRIMARY_MODEL=<modelo selecionado>
 MODEL_SELECTION_REASON=<justificativa específica>
-FALLBACK_AGENT=Codex
-FALLBACK_MODEL=GPT-6 Sol
-REVIEW_MODEL=GLM-5.3
-VISUAL_MODEL=Kimi K3
+ESCALATION_MODEL=Codex GPT-6 Sol Medium
+REVIEW_MODEL=Hermes GLM-5.3 via NVIDIA when available
+VISUAL_MODEL=Kimi K3 or ChatGPT vision when safely available
 MERGE_AUTHORIZATION=false
 ```
 

@@ -453,7 +453,7 @@ by `PONYTAIL_DEFAULT_MODE` or its user config.
 Priority: project governance in `AGENTS.md` → protected financial semantics →
 Git safety and human gates → approved specs and behavioral contracts →
 Superpowers execution discipline → Ponytail minimal implementation → Caveman
-concise communication.
+concise communication → specialist Skills selected for the task.
 
 Prefer the smallest implementation that satisfies approved behavior. Never
 simplify away financial invariants, validation, error handling, security,
@@ -468,3 +468,18 @@ refactor opportunistically. This policy does not override project rules or
 authorize protected or remote actions.
 
 See `docs/ai/SKILLS_ROUTING.md` for the short routing reference.
+
+## Model and Skill routing
+
+`docs/ai/SKILLS_ROUTING.md` owns model selection, independent reviewer routing,
+Skill discovery and mission reporting for every runtime. Codex GPT-6 Luna Medium
+is the default implementation model; Codex GPT-6 Sol Medium handles complex
+architecture/security or a root cause unresolved after three reasoned attempts.
+Hermes GLM-5.3 via NVIDIA is the preferred independent reviewer when available.
+These are routing preferences, never a dependency or a claim that a model ran.
+
+For substantial missions, discover the Skills actually available, use
+Superpowers first, select the smallest useful set, and report
+`SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
+`SKILL_SELECTION_REASON`, `SKILL_REEVALUATED` and `SKILL_GAPS_FOUND`.
+Repository state and tracked rules outrank chat memory or runtime defaults.
