@@ -1,6 +1,17 @@
 # Project State
 
-## V317 — certificação de ações financeiras (2026-10-04)
+## V318 — reconciliação pós-V317; Provider QA pendente (2026-10-04)
+
+- `MAIN_INCLUDES_V317=true`; `MAIN_HEAD_AT_RECONCILIATION=cb476604d6ca859cb999dda8a9fc679275169556`; PR #442 MERGED. CI main exato `37241619149` SUCCESS; gates locais pós-merge certificados em worktree isolado.
+- Branch V316 `codex/v315-final-operationalization` foi rebaseada sobre o novo main após confirmar checkout limpo, autoria e remote antigo esperado. Conflitos apenas documentais em `NEXT_STEP.md`, `PROJECT_MEMORY.md`, `PROJECT_STATE.md`; `index.html` auto-merge preservou ambas as camadas e foi validado pelo E2E cruzado V317/V316.
+- `V317_LOCAL_RUNTIME_CERTIFIED=true`; compra V317 sintética funciona no runtime local; no boot read-only sintético usado pelo QA protegido, a mutação fica bloqueada antes de `save()`, sem estado ou `localStorage` alterado. E2E não inicializa deployment Preview real; a seleção Preview é coberta por contrato separado.
+- V316 Preview selection/guards: 58/58 PASS; `verify:release` PASS (legado 252, moderno 815, QA smoke sem erros/overflow, visual 4/4); E2E financeiro/browser combinado 60/60; reliability 61/61; Import Center, persistência, roundtrip e XLSX sintético PASS. Auth/Firestore emulator local não executado: porta 8080 ocupada por processo Java preexistente, preservado; CI Ubuntu posterior passou os gates equivalentes.
+- `V316_PROVIDER_QA_REAL=PENDING_HUMAN_EXTERNAL_PROVISIONING`; `CLOUD_PERSISTENCE_CERTIFIED=false`; `PR441_STATUS=PARKED_UNTIL_440_MERGED`. #440 deve permanecer OPEN/DRAFT; #441 não foi alterada; nenhum merge.
+- Segurança/finanças: `PRODUCTION_AUTH_BYPASS=false`; regras de produção inalteradas; Preview sem QA permanece fail-closed; `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` em testes sintéticos.
+- CI Ubuntu `37243814383` SUCCESS no commit de código/teste `58b1f106041744896db63120347d4e11d9f5e345`, incluindo Auth/Firestore emulator, rules QA, reliability e visual. Preview automático no mesmo SHA ficou READY; conector Vercel confirmou `mode=blocked`, seletor presente, `firebaseConfig={}` e sem config de produção. Provider QA real segue pendente. Ver matriz e evidências em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
+- Documentação de reconciliação publicada em `2c9fd1fb98b63ec33786cb043d1918eaf2dd448a`; CI Ubuntu `37244080039` SUCCESS (três jobs). Preview automático deste SHA também READY, modo `blocked`, seletor presente e config Firebase vazia/sem produção. #440 permanece OPEN/DRAFT e merge=false.
+
+## Snapshot histórico V317 — certificação antes da V318 (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.
 - Revisão independente CONCLUÍDA por Hermes GLM-5.3 via NVIDIA (HEAD `79991e67033a9336fdb103eb0f1bd9641ce2c938`): `FINANCIAL_SEMANTICS_CHANGED=false`; snapshot pré-mutação fail-closed; restauração/quarentena cobre todas as chaves mutadas; os 14 chamadores pré-existentes de `syncAssetsFromAportes()`/`autoDY()` mantêm comportamento idêntico via default `persistState=true`. Ponytail full: BLOCKER=0/MAJOR=0/MINOR=0/DEFERRED=0; Caveman: sem estado duplicado ou fallback oculto.
@@ -14,6 +25,32 @@
 - Modelos recomendados: implementação Codex GPT-6 Luna Medium; revisão Hermes GLM-5.3 NVIDIA (disponibilidade não verificada); escalonamento Codex GPT-6 Sol Medium. Runtime usado: Codex, variante não exposta. Skills consideradas/usadas: Superpowers, Ponytail full, Caveman, Playwright. Sem redesign.
 - Código: commit `5bf3c213b5f62ed0a98b4b33182de891127ea657`; push PASS. PR #442 OPEN/DRAFT em `main`; CI run `37238415129` PASS (Build/test, Auth+Firestore emulator, visual V289, Vercel e Preview Comments). Link PR: `https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442`.
 - Revisor independente e XLSX CDN seguem pendentes para eventual avanço além de Draft. PRs #440/#441 continuam intocadas. `MERGE=false`.
+
+
+## Snapshot histórico V316 — Layer 4 antes da reconciliação V318 (2026-10-04)
+
+- Handoff para ação humana externa: `docs/ai/V316_PROVIDER_QA_HANDOFF.md`.
+  Projeto QA deve receber `firebase.qa-preview.rules` somente nele e
+  `meta/access` com identidade sintética explicitamente aprovada; regras de
+  produção ficam intactas. Smoke público usa URL Preview + QA project ID sem
+  credenciais; autenticação Google real permanece `NOT_TESTED` até provisão.
+- Após revisão independente, o Preview ignora dados financeiros locais antigos,
+  limpa somente memória ao mudar sessão e não usa snapshot offline financeiro;
+  regras QA exigem e-mail aprovado também para a própria carteira. Browser
+  smoke bloqueia métodos de escrita Firestore/Storage e Auth fora do QA.
+- Revisão independente adicional fechou o boundary do browser harness: o ID de
+  produção do descritor é comparado ao `projectId` reduzido publicado no HTML;
+  ausente, inesperado, divergente ou colidente mantém todos os endpoints
+  Firebase bloqueados. Harness também bloqueia writes/removals financeiros
+  locais e `localStorage.clear()`.
+- V316B: branch Hermes `e518120` inspecionada somente por Git, sem modificar worktree/branch alheia. Casos úteis de seleção, provider negativo e guards de escrita foram portados para testes que executam o runtime real. Um teste revelou e orientou correção do override de recuperação local em Preview; o modo local original segue intacto.
+- Validação local fresca: contrato Preview 58/58; `verify:release` PASS (legado 252/252, moderno 815/815, `qa:all`, visual 4/4); reliability 4/4; XLSX sintético 2/2; build legado/moderno e diff check PASS. CI Ubuntu `37233092589` no SHA `624fac70c82129ced93a0f7ccf76c568db2a9a78` passou nos três jobs, incluindo Auth + Firestore Emulator 8/8 e rules QA 1/1. Login Google real permanece `NOT_TESTED` sem provisionamento humano.
+- Branch de trabalho `codex/v315-final-operationalization`, base `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; PR #440 permanece draft e sem autorização de merge. Consultar Git/CI para HEAD e status finais.
+- Produção seleciona somente configuração de produção em hosts conhecidos. Preview seleciona somente Firebase QA completo, distinto e permitido pelo host; sem valores QA fica bloqueado, configuração parcial falha no build. Preview usa o guard financeiro somente leitura existente e sessão Auth por aba.
+- Testes focados sintéticos 27/27 PASS; legado 252/252; moderno 815/815; visual 4/4; smoke 390/430/768/1366/1440/1536/1920 PASS. CI Ubuntu `37217207204` do SHA `47aaf3c8e5c60452a8f014ceb702d5e9fd884d3a` passou nos três jobs. Preview Vercel automático do mesmo SHA ficou READY, mas bloqueado sem QA externo; artefato não contém configuração de produção. `qa:all` teve EPERM Windows em saída Vite; emuladores tiveram EPERM no configstore global; XLSX depende da CDN e falhou localmente.
+- Firebase QA externo, Google Provider, identidade sintética e domínio Preview seguem não comprovados. Login real e smoke provider autenticado continuam pendentes de provisionamento humano; zero teste com dados reais, zero escrita financeira e nenhum deploy manual.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA`; merge exige gate humano independente e CI do HEAD final.
+
 
 ## V310 — preparação local de autenticação QA isolada
 

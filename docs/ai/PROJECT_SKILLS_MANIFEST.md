@@ -1,5 +1,19 @@
 # Project Skills Manifest — Carteira de Investimentos
 
+## V318 reconciliation runtime skill record (2026-10-04)
+
+- `SKILLS_DISCOVERED=true`; inventory `.agents/skills` validated earlier in the existing V316 mission. `SUPERPOWERS_AVAILABLE=true`; `SUPERPOWERS_USED=true` first. `SKILLS_CONSIDERED=Superpowers,Ponytail full,Ponytail review,Caveman,verification-before-completion,Playwright`; `SKILLS_USED=Superpowers,Ponytail full,Ponytail review,Caveman,verification-before-completion,Playwright`.
+- Reasons: reconcile protected Auth/Preview and financial transaction boundaries, review minimality/security, and execute fresh release/browser evidence. `SKILLS_NOT_USED=ponytail-audit` (not a cleanup mission); `SKILL_REEVALUATED=true`; `SKILL_GAPS_FOUND=Hermes/NVIDIA unavailable; independent fresh-context Codex review used as routed fallback`.
+- Independent review found no BLOCKER/MAJOR and one MINOR: the cross-version test booted protected read-only localhost rather than a deployed Preview descriptor. Test title and docs were narrowed to that evidence; V316 runtime Preview selection remains covered separately.
+- Runtime: Codex; exact model variant not exposed. Recommended per mission routing: Codex GPT-6 Luna Medium, fallback GPT-6 Sol Medium. Do not claim Hermes/NVIDIA review of the final V318 delta.
+
+## V316 runtime skill selection (2026-10-04)
+
+- `SKILLS_DISCOVERED=true`; fonte local `.agents/skills` validada no worktree LEGACY; plugins globais Superpowers e Ponytail disponíveis.
+- `SUPERPOWERS_AVAILABLE=true`; `SUPERPOWERS_USED=true` como primeira Skill após o identity gate. `SKILLS_CONSIDERED=Superpowers,Ponytail full,Caveman,ponytail-review,verification-before-completion`; `SKILLS_USED=Superpowers,Ponytail full,Caveman,verification-before-completion,ponytail-review`.
+- `SKILLS_NOT_USED=ponytail-audit` (missão não é limpeza geral); `SKILL_SELECTION_REASON=seleção mínima para mudança de boundary Auth/Preview, revisão de simplicidade e prova antes de conclusão`; `SKILL_REEVALUATED=true` ao passar de scaffolding para runtime; `SKILL_GAPS_FOUND=nenhum skill obrigatório ausente`.
+- Agente/modelo recomendado: Codex GPT-6 Sol Medium; runtime exato não exposto, sem alegar variante não verificada. Hermes forneceu testes independentes V316B em branch separada; esta integração revisou a qualidade dos testes e portou somente casos conectados ao runtime real. Isso não equivale a aprovação de review completa da PR.
+
 Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
 
 This manifest is an inventory snapshot, not proof of installation in another

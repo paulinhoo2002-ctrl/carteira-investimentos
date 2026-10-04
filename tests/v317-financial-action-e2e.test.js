@@ -7,7 +7,7 @@ const { startLocalHttpServer } = require('./local-http-server');
 const ROOT = path.join(__dirname, '..');
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
-async function openApp() {
+async function openApp({ protectedReadOnlyQa = false } = {}) {
   const harness = await startLocalHttpServer(ROOT);
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
   const context = await browser.newContext();
@@ -21,7 +21,8 @@ async function openApp() {
     outboundRequests.push({ type: 'blocked-request', method: request.method(), url: request.url() });
     return route.abort();
   });
-  await page.goto(harness.url, { waitUntil: 'domcontentloaded' });
+  const url = protectedReadOnlyQa ? `${harness.url}&protectedReadOnlyQa=1` : harness.url;
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof S !== 'undefined' && Array.isArray(S.aportes) && typeof go === 'function');
   await page.evaluate(() => {
     restoreLocalTestData();
@@ -92,6 +93,65 @@ test('compra sintética altera apenas sessão QA e não persiste dados financeir
     assert.deepEqual(afterSave, [{ operation: 'compra', qty: 2, price: 10.25 }]);
     assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
     assert.equal(await app.page.evaluate(() => window.__v317SaveCalls), 1, 'uma compra confirmada deve persistir uma única vez');
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+
+test('compra V317 permanece bloqueada no boot read-only usado pela Preview V316', async () => {
+  const app = await openApp({ protectedReadOnlyQa: true });
+  try {
+    await fillPurchase(app.page, 'V318PREVIEW');
+    const before = await app.page.evaluate(() => JSON.stringify({
+      assets: S.assets,
+      aportes: S.aportes,
+      proventos: S.proventos,
+      rfEvents: S.rfEvents,
+      wallets: S.wallets,
+    }));
+    await app.page.evaluate(() => {
+      window.__v318StorageWrites = [];
+      for (const method of ['setItem', 'removeItem', 'clear']) {
+        const original = Storage.prototype[method];
+        Storage.prototype[method] = function (...args) {
+          window.__v318StorageWrites.push({ method, key: args[0] ?? null });
+          return original.apply(this, args);
+        };
+      }
+      window.__v318SaveCalls = 0;
+      window.__v318SaveResults = [];
+      const originalSave = window.save;
+      window.save = function (...args) {
+        window.__v318SaveCalls += 1;
+        const result = originalSave.apply(this, args);
+        window.__v318SaveResults.push(result);
+        return result;
+      };
+    });
+
+    assert.equal(await app.page.evaluate(() => isProtectedReadOnlyQaBoot()), true);
+    await app.page.locator('.quick-movement-modal button.btn.bsv').click();
+
+    const after = await app.page.evaluate(() => ({
+      state: JSON.stringify({
+        assets: S.assets,
+        aportes: S.aportes,
+        proventos: S.proventos,
+        rfEvents: S.rfEvents,
+        wallets: S.wallets,
+      }),
+      newMovements: S.aportes.filter(item => item.ticker === 'V318PREVIEW').length,
+      storageWrites: window.__v318StorageWrites,
+      saveCalls: window.__v318SaveCalls,
+      saveResults: window.__v318SaveResults,
+      modalOpen: S.quickMovementOpen,
+    }));
+
+    assert.equal(after.state, before, 'o guard deve restaurar o estado financeiro sintético');
+    assert.equal(after.newMovements, 0);
+    assert.deepEqual(after.storageWrites, [], 'Preview não pode persistir estado local');
+    assert.equal(after.saveCalls, 0, 'a guarda de edição deve barrar a ação antes do save');
+    assert.deepEqual(after.saveResults, []);
+    assert.equal(after.modalOpen, true, 'a ação bloqueada deve manter a revisão aberta');
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
 });

@@ -1,6 +1,17 @@
 # Project Memory
 
-## V317 — certificação sintética das ações financeiras (2026-10-04)
+## V318 — reconciliação V316/V317 (2026-10-04)
+
+- Main pós-PR #442: `cb476604d6ca859cb999dda8a9fc679275169556`; CI `37241619149` SUCCESS. Worktree de certificação isolado e worktree de V316 mantidos separados; checkout canônico preservado sem alterações.
+- A branch `codex/v315-final-operationalization` foi rebaseada sobre esse main com old remote verificado. Conflitos só em continuidade documental; `index.html` auto-merge preservou o save transacional V317 e os boundaries Preview V316. Matriz explícita em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
+- Novo E2E cruzado: compra sintética funciona no modo local V317; em boot read-only sintético com a flag usada pelo QA protegido V316, mesma ação é barrada antes de `save()`, sem mutação financeira, localStorage ou requests externos de escrita. Não inicia deployment Preview real; contratos de seleção/config Preview são separados. Suíte browser combinada 60/60.
+- Validação V316 fresca: Preview config/guards 58/58; `verify:release` PASS (252 legado, 815 moderno, QA smoke, visual 4/4); reliability 61/61; Import Center, persistência 32/32, roundtrip 7/7, XLSX sintético 2/2. Emulator local bloqueado por porta 8080 em uso por PID Java pré-existente; nenhum processo foi encerrado. O CI Ubuntu pós-reconciliação confirmou Auth/Firestore e rules QA.
+- CI Ubuntu `37243814383` no SHA `58b1f106041744896db63120347d4e11d9f5e345` SUCCESS: Build/test + reliability, Auth/Firestore emulator e rules QA, visual V289. Emuladores passaram em CI; bloqueio local da porta 8080 não limita a evidência final.
+- Preview Vercel automático no SHA `58b1f106041744896db63120347d4e11d9f5e345` READY. Leitura autenticada pelo conector confirmou HTTP 200, `mode=blocked`, seletor presente e `firebaseConfig={}` sem config de projeto/API key de produção. Fetch Node direto não acessou devido à proteção; não alegar smoke Node PASS.
+- `V317_LOCAL_RUNTIME_CERTIFIED=true`; `MAIN_INCLUDES_V317=true`; provider Google real `NOT_TESTED`; Firebase QA/Google identity externos pendentes; `CLOUD_PERSISTENCE_CERTIFIED=false`. `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` em execução sintética.
+- PR #440 deve ficar OPEN/DRAFT sem merge até ação externa Provider QA e decisão humana. #441 não foi tocada e permanece parked até #440 ser merged. Estratégia futura: avaliar os três testes V316B após merge de #440 e portar apenas cenários ainda únicos, preferindo testes do runtime real.
+
+## Snapshot histórico V317 — certificação sintética antes da V318 (2026-10-04)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.
 - `saveQuickMovement()` usa snapshot/restore e só executa efeitos de sucesso após um único `save()===true`; falha restaura aportes, proventos, ativos, carteiras e metadados e põe a sessão em quarentena. Falha ao criar snapshot também falha fechada, sem chamar save. `syncAssetsFromAportes()` e `autoDY()` aceitam preservar o save legado padrão ou deferi-lo ao boundary transacional.
@@ -10,6 +21,51 @@
 - Skills usadas: Superpowers (`using-superpowers`, `executing-plans`, TDD) controlou processo/test-first; Ponytail full guiou correção mínima e salvaguardas; Caveman guiou relatório/revisão; Playwright foi o browser harness primário. `MODEL_RECOMMENDED=Codex GPT-6 Luna Medium`; `REVIEW_MODEL_RECOMMENDED=Hermes GLM-5.3 via NVIDIA` (disponibilidade não verificada); `ESCALATION_MODEL_RECOMMENDED=Codex GPT-6 Sol Medium`. Runtime efetivo: Codex, variante não exposta. Revisor independente externo não usado e deve permanecer declarado como lacuna se não estiver disponível.
 - Código V317 commitado em `5bf3c213b5f62ed0a98b4b33182de891127ea657`; PR [#442](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442) OPEN/DRAFT. CI run `37238415129`: Build/test, Auth+Firestore emulator, V289 visual, Vercel Preview e comments PASS.
 - Revisor técnico independente ainda não usado; a revisão humana permanece pendente junto ao gate XLSX CDN. `MERGE=false`.
+
+
+## Snapshot histórico V316 — seleção Firebase antes da reconciliação V318 (2026-10-04)
+
+- Preparação pós-provisionamento: `firebase.qa-preview.rules` modela apenas
+  `meta/access` get para e-mail explicitamente listado e leitura da própria
+  carteira somente para essa identidade aprovada, sem writes; é arquivo exclusivo do projeto QA, não altera
+  `firestore.rules` de produção. `docs/ai/V316_PROVIDER_QA_HANDOFF.md` registra
+  cliques, sete variáveis Preview e classificação. Smoke público aceita apenas
+  o host HTTPS e deriva o project ID QA do descritor público, sem copiar valores
+  da configuração cliente ao terminal ou chat.
+- Revisão independente encontrou e corrigiu leitura/merge de estado financeiro
+  local antigo no Preview: boot ignora `civ5` e marker local, auth troca limpa
+  estado apenas em memória e snapshot offline financeiro fica desativado no
+  Preview. V76 não lê snapshots ou fluxos locais: inicializa stores vazias e
+  bloqueia captura de snapshots, abertura/adição de fluxos e persistência em QA
+  protegido. Preview remoto bloqueado também ignora `civ5` e desativa writes;
+  storage existente não é apagado. O harness bloqueia também POST de
+  criação Firestore e endpoints Storage/identidade sem vínculo QA verificável.
+- V316B revisou a branch independente Hermes `hermes/v316b-test-hardening` (`e518120`), pai exato do HEAD V316 anterior: 14 testes de ambiente chamavam o seletor real; os 6 de escrita e 12 de provider simulavam funções copiadas. Portados os casos úteis para os testes do runtime real, sem cherry-pick nem alteração da branch Hermes. A revisão achou um bypass local em Preview: `save({__protectedLocalRecoveryWrite:true})` podia gravar localStorage; agora Preview bloqueia esse override antes de qualquer persistência, sem mudar a recuperação local fora do Preview.
+- Gates prévios no branch: contrato Preview/guards 43/43, `verify:release` PASS
+  (legado 252/252, moderno 815/815, `qa:all` e visual 4/4), reliability
+  61/61, XLSX sintético 2/2, diff check PASS. Na retomada, após as barreiras
+  de isolamento V76, contrato focado 55/55, `verify:release` PASS (legado
+  252/252, moderno 815/815, `qa:all`, visual 4/4), reliability 61/61, XLSX
+  sintético 2/2 e diff check PASS. Naquele checkpoint a CI Ubuntu do SHA
+  final ainda precisava terminar antes da prontidão da PR. O Firebase Emulator local iniciou Auth
+  mas Firestore encerrou antes
+  dos testes sob Java 26; CI Ubuntu com Java 21 é o gate desse emulador. Provider
+  Google real permanece sem teste por falta de QA externo.
+- Commit de código V316: `490b20e`; documentação registrada em commit separado.
+- Continuação da PR #440 no worktree LEGACY: `vercel.json` gera um descritor de ambiente durante o build. Produção aceita apenas hosts de produção conhecidos e mantém a configuração existente; Preview exige domínio explicitamente permitido, projeto Firebase QA distinto e configuração completa. Preview sem provisionamento mostra acesso indisponível; configuração parcial falha no build. Nenhum fallback para Firebase de produção.
+- Inspeção do artifact Vercel V316 mostrou que Preview sem QA ainda carregava o
+  `projectId` público de produção num objeto Firebase incompleto. Ajustado o
+  builder para publicar `firebaseConfig={}` nesse estado bloqueado; Preview QA
+  provisionado e produção mantêm os respectivos caminhos validados.
+- O artefato Preview remove a configuração Firebase de produção do HTML. `firebase-config-selector.js` valida host, modo, projeto e campos QA antes de `initializeApp`; o boot Preview ativa o guard existente de QA somente leitura. Auth Preview usa persistência Firebase `SESSION`; produção mantém `LOCAL`. O gate exibe falha controlada e desabilita login sem provider/config válido.
+- O smoke público lê o descritor gerado, verifica host/projeto QA e rejeita a presença de configuração de produção no artefato Preview. Ele não autentica nem escreve. `npm run test:qa-preview-config` cobre casos positivos/negativos sintéticos e é executado na CI existente.
+- Revisão independente do harness Vercel SSO encontrou um caso em que `productionProjectId` ausente poderia ser aceito por comparação consigo mesmo. O browser harness agora extrai o ID de produção da configuração pública reduzida (`{ projectId }`), exige igualdade com o descritor e mantém todos os endpoints Firebase bloqueados até validar host, projeto QA e isolamento. Testes cobrem ID ausente, formato inesperado, divergência e colisão QA/produção.
+- O harness interativo valida o descritor dentro do browser isolado após eventual Vercel SSO, antes de liberar somente Auth QA e leituras Firestore QA. Guards bloqueiam requests Firebase pré-validação, writes/removals de chaves financeiras locais e `localStorage.clear()`; provider real segue dependente de provisioning humano.
+- Validação fresca após a correção independente: contrato Preview 58/58, `verify:release` PASS (legado 252/252, moderno 815/815, `qa:all`, visual 4/4), reliability 4/4, XLSX sintético 2/2 e `git diff --check` PASS. CI Ubuntu `37233092589` no SHA `624fac70c82129ced93a0f7ccf76c568db2a9a78` passou nos três jobs: Auth + Firestore Emulator 8/8, rules QA 1/1, build/test + reliability e visual. Provider QA real segue pendente do provisioning humano.
+- Projeto Firebase QA externo, Google Provider, identidade sintética e domínio autorizado não foram comprovados; metadados acessíveis da Vercel não mostraram variáveis QA. Não usar produção como substituto, nem dados/credenciais reais. Provisionamento humano descrito em `docs/ai/NEXT_STEP.md`.
+- Gates V316: contrato Preview 27/27; legado 252/252; moderno 815/815; visual 4/4; smoke 7 larguras PASS. CI Ubuntu `37217207204` no SHA `47aaf3c8e5c60452a8f014ceb702d5e9fd884d3a` passou nos três jobs, incluindo emuladores e reliability. Preview automático desse SHA ficou READY em `mode=blocked`, seletor presente e configuração de produção ausente, conforme esperado sem QA externo. `qa:all` local foi interrompido por EPERM do Windows em `modern/dist` após build moderno anterior bem-sucedido; emulator local foi bloqueado por EPERM no configstore global do Firebase CLI; XLSX 0/2 por falha de carga da CDN SheetJS no ambiente.
+- `MERGE_AUTHORIZATION=false`; nenhuma regra Firebase, fórmula financeira, schema, persistência financeira ou dado real foi alterado. `NEXT_ACTION=PROVISION_ISOLATED_QA_FIREBASE_AND_VALIDATE_PREVIEW_PROVIDER` após revisão/CI da PR.
+
 
 ## V310 — decisão durável de QA autenticada isolada
 

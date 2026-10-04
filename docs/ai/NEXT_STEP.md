@@ -1,10 +1,55 @@
 # Next Step
-## V317 — próximo passo operacional
+## V318 — reconciliação V316 com main pós-V317 (2026-10-04)
+
+- `MAIN_INCLUDES_V317=true`; `MAIN_HEAD_AT_RECONCILIATION=cb476604d6ca859cb999dda8a9fc679275169556` (PR #442 merged). Certificação local fresca da V317 no main: legado 252/252, moderno 815/815, E2E financeiro 59/59, Import Center 27/27, persistência 32/32, roundtrip 7/7, backup/restore 6/6, QA lifecycle 7/7, QA harness 3/3, XLSX sintético 2/2, visual 4/4 e `qa:all` PASS; CI do SHA exato `37241619149` SUCCESS.
+- V316 foi rebaseada com segurança sobre esse main; reconciliação atual em `codex/v315-final-operationalization`, HEAD a registrar após commit. V317 financeiro preservado; Preview V316 segue isolado/read-only. A suíte agregada `verify:release` e os gates V316/browser cruzados foram reexecutados depois da reconciliação. O browser cruzado usa boot read-only sintético, não inicializa deployment Preview real; config/selector Preview têm contratos separados.
+- `V317_LOCAL_RUNTIME_CERTIFIED=true`; `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`.
+- `V316_PROVIDER_QA_REAL=PENDING_HUMAN_EXTERNAL_PROVISIONING`; `CLOUD_PERSISTENCE_CERTIFIED=false`. Única ação humana funcional pendente: provisionar Firebase QA isolado e identidade sintética Google segundo `V316_PROVIDER_QA_HANDOFF.md`, configurar variáveis somente no Preview e disponibilizar URL/SHA públicos não secretos após o novo deployment.
+- `PR441_STATUS=PARKED_UNTIL_440_MERGED`; não alterar nem integrar PR #441 antes de #440 ser integrada. PR #440 permanece OPEN/DRAFT; merge não autorizado.
+- Gate local Auth/Firestore Emulator: bloqueado porque a porta 8080 está ocupada por processo Java preexistente (PID 105204); processo preservado. Não alegar PASS local. Usar os jobs de emulator/rules da CI Ubuntu no HEAD final como autoridade.
+- Após provisionamento, executar smoke público e harness autenticado listados no handoff. Em seguida revalidar CI/Preview e solicitar decisão humana separada de merge.
+
+## Snapshot V317 — próximo passo operacional antes da V318 (histórico)
 
 - Gates funcionais locais sintéticos e `verify:release` concluídos; ver `PROJECT_STATE.md` e `PROJECT_MEMORY.md` para evidência e limites.
 - PR #442 foi publicada em Draft e CI passou no commit de código V317. Próximo gate humano: revisão técnica independente e repetição de XLSX browser quando o SheetJS CDN estiver acessível. Não promover de Draft nem fazer merge sem resolução dos gates; merge não foi autorizado.
 - `test:import-xlsx` aguarda acesso ao SheetJS CDN; não marcar como aprovado até repetição real do gate.
 - testMode não substitui Firebase QA/Google Provider. O provisionamento humano da V316 segue separado; não alterar PR #440/#441.
+
+
+## V316 — provisionar Firebase QA isolado e validar Provider em Preview
+
+- Estado: PR #440 continua OPEN/DRAFT; implementação local da V316 está pronta
+  para revisão/CI e para o gate humano de Provider QA. Não fazer merge.
+- Handoff operacional passo a passo:
+  `docs/ai/V316_PROVIDER_QA_HANDOFF.md`. Regras somente leitura exclusivas do
+  projeto QA: `firebase.qa-preview.rules`; nunca publicar em produção.
+- Antes de login real, a pessoa responsável provisiona Firebase QA vazio, uma
+  identidade Google sintética, autoriza o host Preview estável da branch e
+  grava as sete variáveis `QA_FIREBASE_*`/`QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`
+  somente em Vercel Preview. A tabela, cliques e verificações visuais estão no
+  handoff. Nenhum segredo ou valor da configuração cliente vai ao chat.
+- Depois de novo deployment Preview Ready no SHA atual, executar smoke público
+  somente com o host HTTPS:
+  `npm.cmd run qa:preview-provider-smoke -- https://HOST_PREVIEW_ESTAVEL/`.
+  O smoke valida o ID QA diretamente no descritor público; nenhum valor de
+  configuração precisa ser enviado ao agente.
+  Esse PASS valida fronteira e isolamento público; não prova login Google.
+- Com identidade sintética presente, executar
+  `npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/`.
+  O harness também deriva o ID QA do descritor do mesmo Preview.
+  Se Vercel SSO aparecer, o operador autentica na janela isolada e depois
+  conclui o popup Google sintético. O harness verifica leitura QA permitida,
+  sessão/logout, zero request Firebase de produção e zero writes financeiros.
+  Provider real fica `NOT_TESTED` até esse gate.
+- Em Preview, o app não lê `civ5`, marker, snapshots ou fluxos V76 do
+  `localStorage`; stores V76 começam vazias, não são mutáveis nem persistidas,
+  e estado local preexistente não é apagado. Produção mantém a configuração
+  existente e não recebe fallback a partir do QA.
+- `NEXT_ACTION=HUMAN_PROVISION_ISOLATED_FIREBASE_QA_AND_SYNTHETIC_IDENTITY`;
+  após QA autenticado, revisão humana e autorização de merge continuam gates
+  separados.
+
 
 ## V310 — próximo gate de autenticação QA isolada
 
