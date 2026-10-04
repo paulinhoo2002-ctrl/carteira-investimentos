@@ -1,14 +1,15 @@
 # Project State
 
-## V318 — reconciliação pós-V317 em andamento (2026-10-04)
+## V318 — reconciliação pós-V317; Provider QA pendente (2026-10-04)
 
 - `MAIN_INCLUDES_V317=true`; `MAIN_HEAD_AT_RECONCILIATION=cb476604d6ca859cb999dda8a9fc679275169556`; PR #442 MERGED. CI main exato `37241619149` SUCCESS; gates locais pós-merge certificados em worktree isolado.
 - Branch V316 `codex/v315-final-operationalization` foi rebaseada sobre o novo main após confirmar checkout limpo, autoria e remote antigo esperado. Conflitos apenas documentais em `NEXT_STEP.md`, `PROJECT_MEMORY.md`, `PROJECT_STATE.md`; `index.html` auto-merge preservou ambas as camadas e foi validado pelo E2E cruzado V317/V316.
 - `V317_LOCAL_RUNTIME_CERTIFIED=true`; compra V317 sintética funciona no runtime local; no boot read-only sintético usado pelo QA protegido, a mutação fica bloqueada antes de `save()`, sem estado ou `localStorage` alterado. E2E não inicializa deployment Preview real; a seleção Preview é coberta por contrato separado.
-- V316 Preview selection/guards: 58/58 PASS; `verify:release` PASS (legado 252, moderno 815, QA smoke sem erros/overflow, visual 4/4); E2E financeiro/browser combinado 60/60; reliability 61/61; Import Center, persistência, roundtrip e XLSX sintético PASS. Auth/Firestore emulator local não executado: porta 8080 ocupada por processo Java preexistente, preservado; validar via CI Ubuntu do HEAD final.
+- V316 Preview selection/guards: 58/58 PASS; `verify:release` PASS (legado 252, moderno 815, QA smoke sem erros/overflow, visual 4/4); E2E financeiro/browser combinado 60/60; reliability 61/61; Import Center, persistência, roundtrip e XLSX sintético PASS. Auth/Firestore emulator local não executado: porta 8080 ocupada por processo Java preexistente, preservado; CI Ubuntu posterior passou os gates equivalentes.
 - `V316_PROVIDER_QA_REAL=PENDING_HUMAN_EXTERNAL_PROVISIONING`; `CLOUD_PERSISTENCE_CERTIFIED=false`; `PR441_STATUS=PARKED_UNTIL_440_MERGED`. #440 deve permanecer OPEN/DRAFT; #441 não foi alterada; nenhum merge.
 - Segurança/finanças: `PRODUCTION_AUTH_BYPASS=false`; regras de produção inalteradas; Preview sem QA permanece fail-closed; `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` em testes sintéticos.
 - CI Ubuntu `37243814383` SUCCESS no commit de código/teste `58b1f106041744896db63120347d4e11d9f5e345`, incluindo Auth/Firestore emulator, rules QA, reliability e visual. Preview automático no mesmo SHA ficou READY; conector Vercel confirmou `mode=blocked`, seletor presente, `firebaseConfig={}` e sem config de produção. Provider QA real segue pendente. Ver matriz e evidências em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
+- Documentação de reconciliação publicada em `2c9fd1fb98b63ec33786cb043d1918eaf2dd448a`; CI Ubuntu `37244080039` SUCCESS (três jobs). Preview automático deste SHA também READY, modo `blocked`, seletor presente e config Firebase vazia/sem produção. #440 permanece OPEN/DRAFT e merge=false.
 
 ## Snapshot histórico V317 — certificação antes da V318 (2026-10-04)
 

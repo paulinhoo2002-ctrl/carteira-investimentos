@@ -3,7 +3,8 @@
 ## V318 reconciliation runtime skill record (2026-10-04)
 
 - `SKILLS_DISCOVERED=true`; inventory `.agents/skills` validated earlier in the existing V316 mission. `SUPERPOWERS_AVAILABLE=true`; `SUPERPOWERS_USED=true` first. `SKILLS_CONSIDERED=Superpowers,Ponytail full,Ponytail review,Caveman,verification-before-completion,Playwright`; `SKILLS_USED=Superpowers,Ponytail full,Ponytail review,Caveman,verification-before-completion,Playwright`.
-- Reasons: reconcile protected Auth/Preview and financial transaction boundaries, review minimality/security, and execute fresh release/browser evidence. `SKILLS_NOT_USED=ponytail-audit` (not a cleanup mission); `SKILL_REEVALUATED=true`; `SKILL_GAPS_FOUND=independent Hermes/NVIDIA reviewer unavailable in this run; one already-completed independent review found no BLOCKER/MAJOR before the final cross-version test`.
+- Reasons: reconcile protected Auth/Preview and financial transaction boundaries, review minimality/security, and execute fresh release/browser evidence. `SKILLS_NOT_USED=ponytail-audit` (not a cleanup mission); `SKILL_REEVALUATED=true`; `SKILL_GAPS_FOUND=Hermes/NVIDIA unavailable; independent fresh-context Codex review used as routed fallback`.
+- Independent review found no BLOCKER/MAJOR and one MINOR: the cross-version test booted protected read-only localhost rather than a deployed Preview descriptor. Test title and docs were narrowed to that evidence; V316 runtime Preview selection remains covered separately.
 - Runtime: Codex; exact model variant not exposed. Recommended per mission routing: Codex GPT-6 Luna Medium, fallback GPT-6 Sol Medium. Do not claim Hermes/NVIDIA review of the final V318 delta.
 
 ## V316 runtime skill selection (2026-10-04)

@@ -49,14 +49,12 @@ Não fazer cherry-pick/rebase da #441 antes da integração da #440. Depois, com
 
 - No main `cb476604...`: CI `37241619149` SUCCESS no SHA exato. Local: legado 252/252; moderno 815/815; E2E V317/browser 59/59; Import Center 27/27; persistência 32/32; roundtrip 7/7; backup/restore 6/6; lifecycle 7/7; QA harness 3/3; XLSX 2/2; visual 4/4; `qa:all` PASS; smoke 7 larguras sem overflow/erros.
 - Após rebase V316: `verify:release` PASS; QA Preview/config/guards 58/58; browser V317+V316 60/60; reliability 61/61; Import Center 27/27; persistência 32/32; roundtrip 7/7; XLSX sintético 2/2; diff check PASS.
-- Emulator local não pôde iniciar porque porta 8080 já estava ocupada por processo Java PID 105204, iniciado antes da tentativa; não foi encerrado nem alterado. Auth/Firestore 8/8 e rules QA 1/1 só podem ser declarados depois da CI Ubuntu no HEAD final.
+- Emulator local não pôde iniciar porque porta 8080 já estava ocupada por processo Java PID 105204, iniciado antes da tentativa; não foi encerrado nem alterado. CI Ubuntu `37243814383` passou Auth/Firestore 8/8 e rules QA 1/1 no SHA de código/teste `58b1f106041744896db63120347d4e11d9f5e345`; CI `37244080039` também passou os três jobs no HEAD documental `2c9fd1fb98b63ec33786cb043d1918eaf2dd448a`.
 - Avisos de build preexistentes observados: warning CJS Vite, script classic do `host.html` não bundlado, default export ausente reportado pelo Vite; build retorna sucesso. Não são mudanças desta reconciliação.
-- Independent reviewer: avaliação anterior já reportada não encontrou BLOCKER/MAJOR nos guards. Revisor Hermes/NVIDIA não esteve disponível para a nova delta cross-version; não alegar revisão independente final desta delta.
+- Independent reviewer: Hermes/NVIDIA não esteve disponível; revisão fresh-context Codex foi usada como fallback. BLOCKER=0, MAJOR=0. MINOR=1: teste cobria boot read-only protegido em localhost, não inicialização do descritor Preview. Título e documentação foram ajustados para declarar exatamente a evidência; seleção do modo Preview tem testes V316 separados.
 
 ## Próximos gates
 
-1. Concluir revisão final e commit temático do E2E cruzado + reconciliação documental.
-2. Revalidar remote #440 no old SHA conhecido imediatamente antes de push. Atualizar a branch existente só via force-with-lease exato; nunca alterar main.
-3. Confirmar CI Ubuntu, Auth/Firestore Emulator, QA rules e Preview automático do HEAD final; sem configuração Firebase QA, Preview esperado `mode=blocked`.
-4. Atualizar descrição #440 sem remover Draft. Não alterar #441 e não fazer merge.
-5. Único trabalho externo que fica para a pessoa responsável: provisionamento Firebase QA/Google sintético no escopo descrito em `V316_PROVIDER_QA_HANDOFF.md`, seguido de `qa:preview-provider-smoke` e `qa:preview-provider-browser`.
+1. Trabalho técnico V318 concluído; #440 permanece OPEN/DRAFT, mergeable, CI verde e Preview final READY em `mode=blocked`.
+2. #441 permanece OPEN/DRAFT, intocada e estacionada até #440 ser integrada.
+3. Único trabalho externo que fica para a pessoa responsável: provisionamento Firebase QA/Google sintético no escopo descrito em `V316_PROVIDER_QA_HANDOFF.md`, seguido de `qa:preview-provider-smoke` e `qa:preview-provider-browser`.
