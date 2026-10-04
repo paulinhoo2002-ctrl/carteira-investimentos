@@ -8,9 +8,9 @@
 - V316 Preview selection/guards: 58/58 PASS; `verify:release` PASS (legado 252, moderno 815, QA smoke sem erros/overflow, visual 4/4); E2E financeiro/browser combinado 60/60; reliability 61/61; Import Center, persistência, roundtrip e XLSX sintético PASS. Auth/Firestore emulator local não executado: porta 8080 ocupada por processo Java preexistente, preservado; validar via CI Ubuntu do HEAD final.
 - `V316_PROVIDER_QA_REAL=PENDING_HUMAN_EXTERNAL_PROVISIONING`; `CLOUD_PERSISTENCE_CERTIFIED=false`; `PR441_STATUS=PARKED_UNTIL_440_MERGED`. #440 deve permanecer OPEN/DRAFT; #441 não foi alterada; nenhum merge.
 - Segurança/finanças: `PRODUCTION_AUTH_BYPASS=false`; regras de produção inalteradas; Preview sem QA permanece fail-closed; `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` em testes sintéticos.
-- Próximo passo após publicação do HEAD final: conferir CI Ubuntu e Preview automático `mode=blocked`, sem config Firebase de produção; #440 continua Draft até provider QA real externo. Ver matriz e evidências em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
+- CI Ubuntu `37243814383` SUCCESS no commit de código/teste `58b1f106041744896db63120347d4e11d9f5e345`, incluindo Auth/Firestore emulator, rules QA, reliability e visual. Preview automático no mesmo SHA ficou READY; conector Vercel confirmou `mode=blocked`, seletor presente, `firebaseConfig={}` e sem config de produção. Provider QA real segue pendente. Ver matriz e evidências em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
 
-## V317 — certificação de ações financeiras (2026-10-04)
+## Snapshot histórico V317 — certificação antes da V318 (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.
 - Revisão independente CONCLUÍDA por Hermes GLM-5.3 via NVIDIA (HEAD `79991e67033a9336fdb103eb0f1bd9641ce2c938`): `FINANCIAL_SEMANTICS_CHANGED=false`; snapshot pré-mutação fail-closed; restauração/quarentena cobre todas as chaves mutadas; os 14 chamadores pré-existentes de `syncAssetsFromAportes()`/`autoDY()` mantêm comportamento idêntico via default `persistState=true`. Ponytail full: BLOCKER=0/MAJOR=0/MINOR=0/DEFERRED=0; Caveman: sem estado duplicado ou fallback oculto.
@@ -26,7 +26,7 @@
 - Revisor independente e XLSX CDN seguem pendentes para eventual avanço além de Draft. PRs #440/#441 continuam intocadas. `MERGE=false`.
 
 
-## V316 — Layer 4 runtime preparado; provider externo pendente (2026-10-04)
+## Snapshot histórico V316 — Layer 4 antes da reconciliação V318 (2026-10-04)
 
 - Handoff para ação humana externa: `docs/ai/V316_PROVIDER_QA_HANDOFF.md`.
   Projeto QA deve receber `firebase.qa-preview.rules` somente nele e

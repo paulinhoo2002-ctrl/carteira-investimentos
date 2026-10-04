@@ -5,11 +5,13 @@
 - Main pós-PR #442: `cb476604d6ca859cb999dda8a9fc679275169556`; CI `37241619149` SUCCESS. Worktree de certificação isolado e worktree de V316 mantidos separados; checkout canônico preservado sem alterações.
 - A branch `codex/v315-final-operationalization` foi rebaseada sobre esse main com old remote verificado. Conflitos só em continuidade documental; `index.html` auto-merge preservou o save transacional V317 e os boundaries Preview V316. Matriz explícita em `docs/ai/V318_V316_V317_RECONCILIATION.md`.
 - Novo E2E cruzado: compra sintética funciona no modo local V317; em boot read-only sintético com a flag usada pelo QA protegido V316, mesma ação é barrada antes de `save()`, sem mutação financeira, localStorage ou requests externos de escrita. Não inicia deployment Preview real; contratos de seleção/config Preview são separados. Suíte browser combinada 60/60.
-- Validação V316 fresca: Preview config/guards 58/58; `verify:release` PASS (252 legado, 815 moderno, QA smoke, visual 4/4); reliability 61/61; Import Center, persistência 32/32, roundtrip 7/7, XLSX sintético 2/2. Emulator local bloqueado por porta 8080 em uso por PID Java pré-existente; nenhum processo foi encerrado. CI Ubuntu do SHA final ainda deve confirmar Auth/Firestore emulator e rules QA.
+- Validação V316 fresca: Preview config/guards 58/58; `verify:release` PASS (252 legado, 815 moderno, QA smoke, visual 4/4); reliability 61/61; Import Center, persistência 32/32, roundtrip 7/7, XLSX sintético 2/2. Emulator local bloqueado por porta 8080 em uso por PID Java pré-existente; nenhum processo foi encerrado. O CI Ubuntu pós-reconciliação confirmou Auth/Firestore e rules QA.
+- CI Ubuntu `37243814383` no SHA `58b1f106041744896db63120347d4e11d9f5e345` SUCCESS: Build/test + reliability, Auth/Firestore emulator e rules QA, visual V289. Emuladores passaram em CI; bloqueio local da porta 8080 não limita a evidência final.
+- Preview Vercel automático no SHA `58b1f106041744896db63120347d4e11d9f5e345` READY. Leitura autenticada pelo conector confirmou HTTP 200, `mode=blocked`, seletor presente e `firebaseConfig={}` sem config de projeto/API key de produção. Fetch Node direto não acessou devido à proteção; não alegar smoke Node PASS.
 - `V317_LOCAL_RUNTIME_CERTIFIED=true`; `MAIN_INCLUDES_V317=true`; provider Google real `NOT_TESTED`; Firebase QA/Google identity externos pendentes; `CLOUD_PERSISTENCE_CERTIFIED=false`. `FINANCIAL_SEMANTICS_CHANGED=false`; `REAL_DATA_USED=false`; `REAL_FINANCIAL_WRITES=0`; `PRODUCTION_FIREBASE_WRITES=0` em execução sintética.
 - PR #440 deve ficar OPEN/DRAFT sem merge até ação externa Provider QA e decisão humana. #441 não foi tocada e permanece parked até #440 ser merged. Estratégia futura: avaliar os três testes V316B após merge de #440 e portar apenas cenários ainda únicos, preferindo testes do runtime real.
 
-## V317 — certificação sintética das ações financeiras (2026-10-04)
+## Snapshot histórico V317 — certificação sintética antes da V318 (2026-10-04)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.
 - `saveQuickMovement()` usa snapshot/restore e só executa efeitos de sucesso após um único `save()===true`; falha restaura aportes, proventos, ativos, carteiras e metadados e põe a sessão em quarentena. Falha ao criar snapshot também falha fechada, sem chamar save. `syncAssetsFromAportes()` e `autoDY()` aceitam preservar o save legado padrão ou deferi-lo ao boundary transacional.
@@ -21,7 +23,7 @@
 - Revisor técnico independente ainda não usado; a revisão humana permanece pendente junto ao gate XLSX CDN. `MERGE=false`.
 
 
-## V316 — seleção Firebase por ambiente para Layer 4 (2026-10-04)
+## Snapshot histórico V316 — seleção Firebase antes da reconciliação V318 (2026-10-04)
 
 - Preparação pós-provisionamento: `firebase.qa-preview.rules` modela apenas
   `meta/access` get para e-mail explicitamente listado e leitura da própria
@@ -44,8 +46,8 @@
   61/61, XLSX sintético 2/2, diff check PASS. Na retomada, após as barreiras
   de isolamento V76, contrato focado 55/55, `verify:release` PASS (legado
   252/252, moderno 815/815, `qa:all`, visual 4/4), reliability 61/61, XLSX
-  sintético 2/2 e diff check PASS. CI Ubuntu no SHA final ainda precisa
-  terminar antes da prontidão da PR. O Firebase Emulator local iniciou Auth
+  sintético 2/2 e diff check PASS. Naquele checkpoint a CI Ubuntu do SHA
+  final ainda precisava terminar antes da prontidão da PR. O Firebase Emulator local iniciou Auth
   mas Firestore encerrou antes
   dos testes sob Java 26; CI Ubuntu com Java 21 é o gate desse emulador. Provider
   Google real permanece sem teste por falta de QA externo.
