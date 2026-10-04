@@ -3,7 +3,7 @@
 const { chromium } = require('playwright-core');
 const { runPublicPreviewSmoke } = require('./preview-provider-smoke.cjs');
 
-function unsafeFirebaseRequest(raw, qa) {
+function unsafeFirebaseRequest(raw, qa, method = 'GET') {
   const url = new URL(raw);
   const host = url.hostname;
   if (raw.includes(qa.productionProjectId)) return 'PRODUCTION_PROJECT_REQUEST';
@@ -11,8 +11,10 @@ function unsafeFirebaseRequest(raw, qa) {
     const database = url.searchParams.get('database') || '';
     if (!url.pathname.includes(`/projects/${qa.projectId}/`)
       && !database.startsWith(`projects/${qa.projectId}/`)) return 'OTHER_FIRESTORE_PROJECT';
-    if (/\/(?:Write\/channel|documents:(?:commit|batchWrite))/.test(url.pathname)) return 'FIRESTORE_WRITE';
+    if (['PATCH', 'PUT', 'DELETE'].includes(method)
+      || /\/(?:Write\/channel|documents:(?:commit|batchWrite))/.test(url.pathname)) return 'FIRESTORE_WRITE';
   }
+  if (host === 'firebasestorage.googleapis.com' && !['GET', 'HEAD', 'OPTIONS'].includes(method)) return 'FIREBASE_STORAGE_WRITE';
   if (['identitytoolkit.googleapis.com', 'securetoken.googleapis.com', 'firebaseinstallations.googleapis.com'].includes(host)
     && url.searchParams.has('key') && url.searchParams.get('key') !== qa.apiKey) return 'OTHER_FIREBASE_API_KEY';
   if (host.endsWith('.firebaseapp.com') && host !== qa.authDomain) return 'OTHER_AUTH_DOMAIN';
@@ -46,7 +48,7 @@ async function run(urlText, expectedProjectId) {
     });
     await context.route('**/*', route => {
       const request = route.request();
-      const reason = unsafeFirebaseRequest(request.url(), qa);
+      const reason = unsafeFirebaseRequest(request.url(), qa, request.method());
       if (reason) { violations.push(reason); return route.abort(); }
       return route.continue();
     });
