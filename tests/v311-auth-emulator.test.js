@@ -161,6 +161,7 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
             for (const element of controls) {
               const style = getComputedStyle(element);
               const rect = element.getBoundingClientRect();
+              if (element.closest('details:not([open])')) continue;
               if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) continue;
               if (rect.right <= 0 || rect.left >= innerWidth || rect.bottom <= 0 || rect.top >= innerHeight) continue;
               let ancestor = element.parentElement;
