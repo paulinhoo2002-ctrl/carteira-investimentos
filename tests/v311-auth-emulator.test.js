@@ -161,10 +161,10 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
             for (const element of controls) {
               const style = getComputedStyle(element);
               const rect = element.getBoundingClientRect();
-              if (rect.left < -1 || rect.right > innerWidth + 1) clipped.push({ control: element.outerHTML.slice(0, 160), rect: { left: rect.left, right: rect.right }, clipper: 'viewport-horizontal' });
               if (element.closest('details:not([open])')) continue;
               if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) continue;
               if (rect.right <= 0 || rect.left >= innerWidth || rect.bottom <= 0 || rect.top >= innerHeight) continue;
+              if (rect.left < -1 || rect.right > innerWidth + 1) clipped.push({ control: element.outerHTML.slice(0, 160), rect: { left: rect.left, right: rect.right }, clipper: 'viewport-horizontal' });
               let ancestor = element.parentElement;
               while (ancestor) {
                 const ancestorStyle = getComputedStyle(ancestor);
