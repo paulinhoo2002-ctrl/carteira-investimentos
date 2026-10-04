@@ -16,10 +16,16 @@
 
 - Preparação pós-provisionamento: `firebase.qa-preview.rules` modela apenas
   `meta/access` get para e-mail explicitamente listado e leitura da própria
-  carteira, sem writes; é arquivo exclusivo do projeto QA, não altera
+  carteira somente para essa identidade aprovada, sem writes; é arquivo exclusivo do projeto QA, não altera
   `firestore.rules` de produção. `docs/ai/V316_PROVIDER_QA_HANDOFF.md` registra
   cliques, sete variáveis Preview e classificação. Smoke público aceita host
   HTTPS + project ID QA sem copiar a configuração cliente para o terminal.
+- Revisão independente encontrou e corrigiu leitura/merge de estado financeiro
+  local antigo no Preview: boot ignora `civ5` e marker local, auth troca limpa
+  estado apenas em memória e snapshot offline financeiro fica desativado no
+  Preview. Preview remoto bloqueado também ignora `civ5` e desativa writes;
+  storage existente não é apagado. O harness bloqueia também POST de
+  criação Firestore e endpoints Storage/identidade sem vínculo QA verificável.
 - V316B revisou a branch independente Hermes `hermes/v316b-test-hardening` (`e518120`), pai exato do HEAD V316 anterior: 14 testes de ambiente chamavam o seletor real; os 6 de escrita e 12 de provider simulavam funções copiadas. Portados os casos úteis para os testes do runtime real, sem cherry-pick nem alteração da branch Hermes. A revisão achou um bypass local em Preview: `save({__protectedLocalRecoveryWrite:true})` podia gravar localStorage; agora Preview bloqueia esse override antes de qualquer persistência, sem mudar a recuperação local fora do Preview.
 - Gates após a integração: contrato Preview/guards 43/43, `verify:release` PASS (legado 252/252, moderno 815/815, `qa:all` e visual 4/4), reliability 61/61, XLSX sintético 2/2, diff check PASS. O Firebase Emulator local iniciou Auth mas Firestore encerrou antes dos testes sob Java 26; CI Ubuntu com Java 21 é o gate desse emulador no novo SHA. Provider Google real permanece sem teste por falta de QA externo.
 - Commit de código V316: `490b20e`; documentação registrada em commit separado.

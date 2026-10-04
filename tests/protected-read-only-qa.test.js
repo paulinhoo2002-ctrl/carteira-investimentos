@@ -39,7 +39,7 @@ function makeGoHarness(protectedQa) {
 }
 
 test('protected QA boot accepts explicit query and all Preview deployments', () => {
-  assert.match(html, /window\.__PROTECTED_READ_ONLY_QA_BOOT__=window\.__FIREBASE_DEPLOYMENT__\?\.mode==='preview' \|\| new URLSearchParams\(location\.search\)\.get\('protectedReadOnlyQa'\)==='1';/);
+  assert.match(html, /window\.__PROTECTED_READ_ONLY_QA_BOOT__=window\.__FIREBASE_DEPLOYMENT__\?\.mode==='preview'.*mode==='blocked'.*protectedReadOnlyQa/);
   assert.doesNotMatch(html, /__PROTECTED_READ_ONLY_QA_BOOT__=.*hostname===['"]localhost/);
 });
 

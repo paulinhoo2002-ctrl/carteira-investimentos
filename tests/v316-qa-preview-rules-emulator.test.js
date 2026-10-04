@@ -58,6 +58,7 @@ test('V316 QA rules allow only verified listed identity to read access and own e
   assert.equal((await read('meta/access')).status, 403);
   assert.equal((await read(`portfolios/${approved.localId}`, approved.idToken)).status, 404);
   assert.equal((await read(`portfolios/${approved.localId}`, denied.idToken)).status, 403);
+  assert.equal((await read(`portfolios/${denied.localId}`, denied.idToken)).status, 403);
 
   for (const path of ['meta/access', `portfolios/${approved.localId}`, `users/${approved.localId}`]) {
     const write = await fetch(`${db}/${path}`, {

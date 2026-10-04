@@ -37,7 +37,7 @@ window.__FIREBASE_DEPLOYMENT__={"mode":"blocked"};
   window.__LOCAL_AUTH_EMULATOR_CONFIG_ERROR__=emulatorRequested && !emulatorPairEnabled;
   // Explicit QA mode only reduces capabilities: reads/rendering remain allowed,
   // while persistence, cloud writes and financial mutations fail closed.
-  window.__PROTECTED_READ_ONLY_QA_BOOT__=window.__FIREBASE_DEPLOYMENT__?.mode==='preview' || new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
+  window.__PROTECTED_READ_ONLY_QA_BOOT__=window.__FIREBASE_DEPLOYMENT__?.mode==='preview' || (window.__FIREBASE_DEPLOYMENT__?.mode==='blocked' && !loopbackHost) || new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
@@ -8333,6 +8333,7 @@ function protectedReadOnlyOfflineState(){
   };
 }
 async function persistProtectedReadOnlyOfflineSnapshot(){
+  if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview') return false;
   if(!isProtectedReadOnlyQaBoot() || !FB.user || !FB.access.allowed || !FB.cloudLoaded || FB.pendingCloudSave || navigator.onLine===false) return false;
   if(!CloudSyncState.isDataConfirmed(cloudSyncState())) return false;
   try{
@@ -8380,6 +8381,7 @@ function applyProtectedReadOnlyOfflineState(snapshot){
   return true;
 }
 async function restoreProtectedReadOnlyOfflineSnapshot(user){
+  if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview') return false;
   if(!isProtectedReadOnlyQaBoot() || navigator.onLine!==false || !user || !window.V250OfflineSession) return false;
   try{
     const marker=window.V250OfflineSession.read(localStorage);
@@ -8654,6 +8656,13 @@ const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
 function isLocalAuthEmulatorMode(){ return window.__LOCAL_AUTH_EMULATOR_MODE__===true && ['localhost','127.0.0.1'].includes(location.hostname); }
 function isProtectedReadOnlyQaBoot(){ return window.__PROTECTED_READ_ONLY_QA_BOOT__===true; }
+function resetPreviewFinancialState(){
+  if(window.__FIREBASE_DEPLOYMENT__?.mode!=='preview') return;
+  Object.assign(S,cloneData(DEFAULT_RUNTIME_STATE));
+  S.wallets=[];
+  S.activeWalletId='';
+  ensureWallets();
+}
 function isProtectedShadowBoot(){
   try{ return new URLSearchParams(location.search).get('protectedShadow')==='1'; }
   catch(e){ return false; }
@@ -9232,7 +9241,7 @@ function save(){
   }
   const options=arguments[0]||{};
   const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
-  if(typeof window==='object' && window.__FIREBASE_DEPLOYMENT__?.mode==='preview') return false;
+  if(typeof window==='object' && (window.__FIREBASE_DEPLOYMENT__?.mode==='preview' || (window.__FIREBASE_DEPLOYMENT__?.mode==='blocked' && isProtectedReadOnlyQaBoot()))) return false;
   try{
     if(typeof isV250OfflineCachedSession==='function' && isV250OfflineCachedSession() && !protectedLocalRecoveryWrite) return false;
     if(isLocalTestMode()){
@@ -9628,6 +9637,10 @@ async function runAutoProventosGratis(reason='change'){
 }
 
 function load(){
+  if(typeof window==='object' && (window.__FIREBASE_DEPLOYMENT__?.mode==='preview' || (window.__FIREBASE_DEPLOYMENT__?.mode==='blocked' && isProtectedReadOnlyQaBoot()))){
+    ensureWallets();
+    return;
+  }
   if(isLocalTestMode()) return;
   const stateRead=safeGetLocalStorageItem(STOR, 'load leitura storage');
   if(stateRead.ok){
@@ -10655,6 +10668,7 @@ function initFirebase(){
     FB.auth.onAuthStateChanged(async user=>{
       FB.authResolved = true;
       FB.user = user || null;
+      resetPreviewFinancialState();
       if(FB.user){
         if(navigator.onLine===false && await restoreProtectedReadOnlyOfflineSnapshot(FB.user)){
           FB.cloudLoaded=false;
@@ -11031,7 +11045,7 @@ async function applyCloudData(d){
   // Protected QA may hydrate the authenticated cloud snapshot in memory. The
   // persistence and cloud-write guards below remain fail-closed for this mode.
   if(isProtectedReadOnlyQaBoot()) debugInfo('cloud snapshot read-only QA: hidratação em memória permitida', {updatedAtLocal:d.updatedAtLocal||null});
-  if(window.ProtectedLocalCloudAuthority){
+  if(window.ProtectedLocalCloudAuthority && window.__FIREBASE_DEPLOYMENT__?.mode!=='preview'){
     const authority=window.ProtectedLocalCloudAuthority;
     const localState=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
     const localFingerprint=authority.fingerprintState(localState);
@@ -11075,7 +11089,7 @@ async function applyCloudData(d){
     hasTokenInSettings:!!d.settings?.brapiToken
   });
   if(Array.isArray(d.wallets) && d.wallets.length){
-    const localWallets=Array.isArray(S.wallets) ? S.wallets : [];
+    const localWallets=window.__FIREBASE_DEPLOYMENT__?.mode==='preview' ? [] : (Array.isArray(S.wallets) ? S.wallets : []);
     S.wallets=d.wallets.map((w,i)=>{
       const local=localWallets.find(item=>String(item?.id||'')===String(w?.id||''));
       const merged={...w};
@@ -11295,7 +11309,7 @@ async function signOutGoogle(){
     toast('🧪 Modo de teste local: saída desativada.');
     return;
   }
-  clearV250OfflineEligibility();
+  if(window.__FIREBASE_DEPLOYMENT__?.mode!=='preview') clearV250OfflineEligibility();
   try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos, mas o modo offline protegido foi encerrado.'); }catch(e){}
 }
 function cloudSnapshotHasData(data={}){

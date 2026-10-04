@@ -149,6 +149,19 @@ test('V316 Preview boot enables existing protected read-only QA boundary', () =>
   assert.equal(window.__PROTECTED_READ_ONLY_QA_BOOT__, true);
 });
 
+test('V316 blocked remote Preview enables read-only boundary while localhost remains testable', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const boot = source.indexOf('(()=>{try{', source.indexOf('<title>'));
+  const start = source.lastIndexOf('<script>', boot) + '<script>'.length;
+  const end = source.indexOf('</script>', boot);
+  for (const [hostname, expected] of [['qa-preview.example.test', true], ['localhost', false]]) {
+    const window = { __FIREBASE_DEPLOYMENT__: { mode: 'blocked' } };
+    const context = { window, location: { search: '', hostname }, document: { documentElement: { dataset: {}, style: {} }, querySelector: () => null }, localStorage: { getItem: () => null }, URLSearchParams };
+    vm.runInNewContext(source.slice(start, end), context);
+    assert.equal(window.__PROTECTED_READ_ONLY_QA_BOOT__, expected);
+  }
+});
+
 test('V316 Preview runtime selects QA before initializeApp and uses session persistence', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const start = source.indexOf('function initFirebase(){');

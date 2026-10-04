@@ -41,7 +41,7 @@ O app Preview bloqueia login sem configuração QA completa e host autorizado.
    `VERCEL_BRANCH_URL` (ou `VERCEL_URL` se não houver branch URL), sem `https://`.
    Verificar visualmente sete nomes, escopo Preview/branch e host idêntico ao
    autorizado no Firebase; não compartilhar valores em chat.
-   No deployment do HEAD `58ad9a7`, a alias de branch observada é
+   A alias de branch observada durante a preparação V316 é
    `carteira-investimentos-git-a76546-paulinhoo2002-ctrls-projects.vercel.app`.
    Conferir essa alias em **Deployments > Domains** antes de usá-la no Firebase
    e em `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`; se mudar, usar o valor atual
@@ -99,6 +99,11 @@ requests Firebase para outros projetos, bloqueia writes Firestore e localStorage
 financeiro, exige leitura QA autorizada e verifica logout. Ele não usa senha,
 MFA ou cookie fornecido ao agente. O resultado só é válido se esse comando
 terminar `PROVIDER_QA_PASS` no deployment do HEAD correto.
+
+Mesmo se o navegador já tiver `civ5` de Preview antigo, o runtime QA não lê
+esse estado, não mescla proventos locais e não grava snapshot financeiro offline.
+Os dados locais existentes permanecem intactos; a sessão QA usa apenas memória
+limpa e o projeto QA autorizado.
 
 O gate interativo usa navegador QA isolado, identidade sintética e somente
 leitura: abrir o mesmo host, conferir botão Google disponível, autenticar,

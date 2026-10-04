@@ -11,13 +11,17 @@ function unsafeFirebaseRequest(raw, qa, method = 'GET') {
     const database = url.searchParams.get('database') || '';
     if (!url.pathname.includes(`/projects/${qa.projectId}/`)
       && !database.startsWith(`projects/${qa.projectId}/`)) return 'OTHER_FIRESTORE_PROJECT';
-    if (['PATCH', 'PUT', 'DELETE'].includes(method)
-      || /\/(?:Write\/channel|documents:(?:commit|batchWrite))/.test(url.pathname)) return 'FIRESTORE_WRITE';
+    if (/\/Write\/channel$|\/documents:(?:commit|batchWrite)$/.test(url.pathname)) return 'FIRESTORE_WRITE';
+    if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return null;
+    if (method === 'POST' && /\/Listen\/channel$|\/documents:runQuery$/.test(url.pathname)) return null;
+    return 'FIRESTORE_WRITE';
   }
-  if (host === 'firebasestorage.googleapis.com' && !['GET', 'HEAD', 'OPTIONS'].includes(method)) return 'FIREBASE_STORAGE_WRITE';
+  if (host === 'firebasestorage.googleapis.com' || host === 'storage.googleapis.com'
+    || host.endsWith('.firebaseio.com')) return 'UNEXPECTED_FIREBASE_DATA_REQUEST';
   if (['identitytoolkit.googleapis.com', 'securetoken.googleapis.com', 'firebaseinstallations.googleapis.com'].includes(host)
-    && url.searchParams.has('key') && url.searchParams.get('key') !== qa.apiKey) return 'OTHER_FIREBASE_API_KEY';
+    && url.searchParams.get('key') !== qa.apiKey) return 'OTHER_FIREBASE_API_KEY';
   if (host.endsWith('.firebaseapp.com') && host !== qa.authDomain) return 'OTHER_AUTH_DOMAIN';
+  if (host.endsWith('.firebaseapp.com') && !['GET', 'HEAD', 'OPTIONS'].includes(method)) return 'UNEXPECTED_AUTH_DOMAIN_WRITE';
   return null;
 }
 

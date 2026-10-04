@@ -23,6 +23,10 @@
   `meta/access` com identidade sintética explicitamente aprovada; regras de
   produção ficam intactas. Smoke público usa URL Preview + QA project ID sem
   credenciais; autenticação Google real permanece `NOT_TESTED` até provisão.
+- Após revisão independente, o Preview ignora dados financeiros locais antigos,
+  limpa somente memória ao mudar sessão e não usa snapshot offline financeiro;
+  regras QA exigem e-mail aprovado também para a própria carteira. Browser
+  smoke bloqueia métodos de escrita Firestore/Storage e Auth fora do QA.
 - V316B: branch Hermes `e518120` inspecionada somente por Git, sem modificar worktree/branch alheia. Casos úteis de seleção, provider negativo e guards de escrita foram portados para testes que executam o runtime real. Um teste revelou e orientou correção do override de recuperação local em Preview; o modo local original segue intacto.
 - Validação local após correção: contrato QA 43/43; `verify:release` PASS, incluindo legado 252/252, moderno 815/815, `qa:all` e visual 4/4; reliability 61/61; XLSX 2/2; diff check PASS. Firebase Emulator local não completou com Java 26; CI Ubuntu Java 21 deve validar o HEAD final. Login Google real ainda `NOT_TESTED` sem provisionamento externo.
 - Branch de trabalho `codex/v315-final-operationalization`, base `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; PR #440 permanece draft e sem autorização de merge. Consultar Git/CI para HEAD e status finais.

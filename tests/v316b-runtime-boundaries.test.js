@@ -27,6 +27,52 @@ test('V316B actual access log guard prevents Firestore writes in Preview QA', as
   assert.equal(writes, 0);
 });
 
+test('V316 Preview ignores older financial local storage without deleting it', () => {
+  let walletInitialized = 0;
+  const context = {
+    window: { __FIREBASE_DEPLOYMENT__: { mode: 'preview' } },
+    isLocalTestMode: () => false,
+    ensureWallets: () => { walletInitialized++; },
+    safeGetLocalStorageItem: () => { throw new Error('financial storage read'); },
+  };
+  runtime('function load(){', 'async function bootstrapExperimentalActiveWalletHost(', context, 'load()');
+  assert.equal(walletInitialized, 1);
+});
+
+test('V316 blocked remote Preview also ignores old financial local storage', () => {
+  let reads = 0;
+  runtime('function load(){', 'async function bootstrapExperimentalActiveWalletHost(', {
+    window: { __FIREBASE_DEPLOYMENT__: { mode: 'blocked' } },
+    isProtectedReadOnlyQaBoot: () => true,
+    ensureWallets: () => {},
+    safeGetLocalStorageItem: () => { reads++; return { ok: false }; },
+  }, 'load()');
+  assert.equal(reads, 0);
+});
+
+test('V316 Preview clears prior in-memory wallet on auth changes', () => {
+  const S = { assets: [{ synthetic: 'old' }], wallets: [{ id: 'old' }], activeWalletId: 'old' };
+  runtime('function resetPreviewFinancialState(){', 'function isProtectedShadowBoot(){', {
+    window: { __FIREBASE_DEPLOYMENT__: { mode: 'preview' } }, S,
+    DEFAULT_RUNTIME_STATE: { assets: [], aportes: [], proventos: [] },
+    cloneData: value => structuredClone(value),
+    ensureWallets: () => { S.wallets = [{ id: 'empty' }]; S.activeWalletId = 'empty'; },
+  }, 'resetPreviewFinancialState()');
+  assert.equal(S.assets.length, 0);
+  assert.equal(S.wallets[0].id, 'empty');
+  assert.equal(S.activeWalletId, 'empty');
+});
+
+test('V316 Preview never restores or persists offline financial snapshots', async () => {
+  const context = { window: { __FIREBASE_DEPLOYMENT__: { mode: 'preview' } } };
+  const persist = await runtime('async function persistProtectedReadOnlyOfflineSnapshot(){', 'function applyProtectedReadOnlyOfflineState(', context,
+    'persistProtectedReadOnlyOfflineSnapshot()');
+  const restore = await runtime('async function restoreProtectedReadOnlyOfflineSnapshot(user){', 'function clearV250OfflineEligibility(){', context,
+    'restoreProtectedReadOnlyOfflineSnapshot({uid:"synthetic"})');
+  assert.equal(persist, false);
+  assert.equal(restore, false);
+});
+
 test('V316B actual save blocks even protected recovery override on Preview', () => {
   let writes = 0;
   const errors = [];
@@ -49,6 +95,17 @@ test('V316B actual save blocks even protected recovery override on Preview', () 
   assert.equal(result, false);
   assert.equal(writes, 0);
   assert.equal(errors.length, 0, String(errors[0]?.[1]));
+});
+
+test('V316 blocked remote Preview refuses protected recovery write override', () => {
+  let writes = 0;
+  const result = runtime('function save(){', 'async function releaseCloudSyncAfterSuccessfulReconciliation(', {
+    S: {}, FB: {}, window: { __FIREBASE_DEPLOYMENT__: { mode: 'blocked' } },
+    isProtectedReadOnlyQaBoot: () => true,
+    localStorage: { setItem: () => { writes++; } },
+  }, 'save({__protectedLocalRecoveryWrite:true})');
+  assert.equal(result, false);
+  assert.equal(writes, 0);
 });
 
 test('V316B actual queueCloudSave leaves cloud write queue untouched in Preview QA', () => {

@@ -12,13 +12,23 @@ service cloud.firestore {
         && request.auth.token.email in resource.data.allowedEmails;
     }
 
+    function approvedQaPortfolioReader() {
+      let access = get(/databases/$(database)/documents/meta/access);
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string
+        && access.data.enabled == true
+        && access.data.allowedEmails is list
+        && request.auth.token.email in access.data.allowedEmails;
+    }
+
     match /meta/access {
       allow get: if approvedQaIdentity();
       allow list, write: if false;
     }
 
     match /portfolios/{userId} {
-      allow get: if request.auth != null && request.auth.uid == userId;
+      allow get: if approvedQaPortfolioReader() && request.auth.uid == userId;
       allow list, write: if false;
     }
 
