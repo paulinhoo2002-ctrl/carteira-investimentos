@@ -20,9 +20,15 @@
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
-  const testMode=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('testMode')==='1';
+  const params=new URLSearchParams(location.search);
+  const loopbackHost=location.hostname==='localhost' || location.hostname==='127.0.0.1';
+  const testMode=loopbackHost && params.get('testMode')==='1';
+  const emulatorRequested=loopbackHost && (params.has('qaAuthEmulator') || params.has('qaFirestoreEmulator'));
+  const emulatorPairEnabled=emulatorRequested && !testMode && params.get('qaAuthEmulator')==='1' && params.get('qaFirestoreEmulator')==='1';
   const authoritativeLocalRecovery=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('authoritativeLocalRecovery')==='1';
   window.__LOCAL_TEST_MODE__=testMode;
+  window.__LOCAL_AUTH_EMULATOR_MODE__=emulatorPairEnabled;
+  window.__LOCAL_AUTH_EMULATOR_CONFIG_ERROR__=emulatorRequested && !emulatorPairEnabled;
   // Explicit QA mode only reduces capabilities: reads/rendering remain allowed,
   // while persistence, cloud writes and financial mutations fail closed.
   window.__PROTECTED_READ_ONLY_QA_BOOT__=new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
@@ -31,7 +37,7 @@
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
   window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.2';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
-  if(testMode){
+  if(testMode || emulatorRequested){
     document.documentElement.dataset.theme='dark';
     document.documentElement.style.colorScheme='dark';
     return;
@@ -8640,6 +8646,7 @@ try{
 function cloneData(v){ return JSON.parse(JSON.stringify(v ?? null)); }
 const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
+function isLocalAuthEmulatorMode(){ return window.__LOCAL_AUTH_EMULATOR_MODE__===true && ['localhost','127.0.0.1'].includes(location.hostname); }
 function isProtectedReadOnlyQaBoot(){ return window.__PROTECTED_READ_ONLY_QA_BOOT__===true; }
 function isProtectedShadowBoot(){
   try{ return new URLSearchParams(location.search).get('protectedShadow')==='1'; }
@@ -10578,6 +10585,14 @@ function initFirebase(){
     FB.access.reason = 'Modo de teste local';
     return;
   }
+  if(window.__LOCAL_AUTH_EMULATOR_CONFIG_ERROR__===true){
+    FB.authResolved=true;
+    FB.access.loading=false;
+    FB.access.loaded=false;
+    FB.access.allowed=false;
+    FB.access.reason='Configuração local de emuladores incompleta.';
+    return;
+  }
   try{
     if(!window.firebase){
       FB.authResolved = true;
@@ -10586,13 +10601,24 @@ function initFirebase(){
       FB.access.allowed = false;
       return;
     }
-    FB.app  = firebase.initializeApp(firebaseConfig);
-    FB.auth = firebase.auth();
-    FB.db   = firebase.firestore();
-    FB.ready = true;
-    // Keep session persistence under Firebase's own authority so a legitimate
-    // auth session can be restored after an offline reload without copying
-    // tokens, cookies, or credentials into application storage.
+    const emulatorMode=isLocalAuthEmulatorMode();
+    if(window.__LOCAL_AUTH_EMULATOR_MODE__===true && !emulatorMode) throw new Error('Auth emulator mode is loopback-only.');
+    const appConfig=emulatorMode
+      ? {apiKey:'demo-api-key',authDomain:'localhost',projectId:'demo-carteira-qa-emulator'}
+      : firebaseConfig;
+    FB.app=firebase.initializeApp(appConfig);
+    FB.auth=firebase.auth();
+    FB.db=firebase.firestore();
+    if(emulatorMode){
+      if(typeof FB.auth.useEmulator!=='function' || typeof FB.db.useEmulator!=='function') throw new Error('Firebase emulator connectors unavailable.');
+      FB.auth.useEmulator('http://127.0.0.1:9099');
+      FB.db.useEmulator('127.0.0.1',8080);
+    }
+    FB.ready=true;
+
+        // Keep session persistence under Firebase's own authority so a legitimate
+        // auth session can be restored after an offline reload without copying
+        // tokens, cookies, or credentials into application storage.
     try{
       const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
       if(navigator.onLine && localPersistence && typeof FB.auth.setPersistence==='function'){
@@ -10615,7 +10641,7 @@ function initFirebase(){
       }
       revalidateFirebaseAuthAfterReconnect().finally(()=>render());
     });
-    if(!isProtectedReadOnlyQaBoot()){
+    if(!isProtectedReadOnlyQaBoot() && !emulatorMode){
       try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     }
     FB.auth.onAuthStateChanged(async user=>{

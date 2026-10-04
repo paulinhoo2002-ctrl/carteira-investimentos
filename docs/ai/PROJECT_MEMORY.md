@@ -1,8 +1,15 @@
 # Project Memory
 
-## Estado canônico pós-release — V304 (2026-10-03)
+## V310 — decisão durável de QA autenticada isolada
 
-- O release V1.3.0 permanece no `origin/main` certificado `eb1f3c4686f1f61635939512a2c1118cb0dde908`; `v1.3.0-rc1` não foi alterada. V304 trabalha em branch pós-release isolada, sem push/PR/merge/deploy.
+- O roteamento permanente de modelos e Skills é propriedade de `docs/ai/SKILLS_ROUTING.md`, independente do chat ou de um provider. Implementador e revisor devem ser distintos quando disponíveis.
+- V304/PR #438 foi integrada por squash em `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09`; `v1.3.0-rc1` mantém o alvo `399e120d83bfc81d58e613adb79fe6f27bf47cfe`. Os gates pós-merge e CI passaram. O commit documental local V309 foi reconciliado com este estado, sem cherry-pick cego.
+- QA de rotas em `testMode` prova composição local sem Firebase. Auth Emulator isolado requer também Firestore Emulator porque o guard lê `meta/access` e grava tentativas. Preferir projeto `demo-` e falha fechada; não conectar um emulador isoladamente à configuração de produção. Preview autenticado exige projeto Firebase QA separado e ação humana. Arquitetura e ameaças: `docs/ai/QA_AUTH_STRATEGY.md`.
+- Evidência temporária de baseline deve ficar em `.superpowers/sdd/<mission>/tmp/`, não como diretório irmão da worktree; ver `docs/ai/PROJECT_CONTINUITY_POLICY.md`.
+
+## Histórico V304 pré-merge (2026-10-03)
+
+- No checkpoint V304, o release V1.3.0 estava em `origin/main=eb1f3c4686f1f61635939512a2c1118cb0dde908` e V304 ainda trabalhava em branch isolada. Este registro é histórico; o estado integrado atual está no início do arquivo.
 - Phase-198: drift corrigido removendo o bloco inicial de estado duplicado e obsoleto do roadmap; contratos agora apontam à Phase 214 atual. Testes 2/2.
 - Phase-206: harness VM agora inclui `assetCurrentValue` real e o teste verifica o contrato Dashboard HYBRID V2 atual em vez dos painéis aposentados; testes 5/5. Nenhuma fórmula financeira mudou.
 - `setRentPrimarySemantic` era definição não referenciada nem chamada dinamicamente e foi removida; testes vizinhos de Rentabilidade passaram.
@@ -1601,24 +1608,24 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 ## Decisão permanente — CAVEMAN_SUPERPOWERS_BOOTSTRAP
 
 - `MANDATORY_AGENT_BOOTSTRAP=true` e
-  `BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`.
+  `BOOTSTRAP_ORDER=Superpowers using-superpowers>Ponytail>Caveman>minimum mission-specific-skills`.
 - Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
-- Processo detalhado de agente/modelo e Skills: `docs/SKILLS_ROUTING.md`;
+- Processo detalhado de agente/modelo e Skills: `docs/ai/SKILLS_ROUTING.md`;
   roteamento técnico por categoria: `docs/ai/SKILL_ROUTER.md`;
   governança de execução: `AGENTS.md`.
 - Razão: o roteamento de processo não depende de memória de chat, sessão,
   modelo ou executor específico.
-- Hermes/NVIDIA API com Nemotron 3 Super é a rota preferencial para engenharia
-  normal; Ultra 550B A55B para tarefas difíceis/grandes/noturnas; Kimi K3 para
-  UI visual/mobile; GLM-5.3 para revisão independente. Codex/GPT-6 Sol é
-  fallback conforme indisponibilidade ou falha repetida da rota preferencial,
-  não por fricção técnica comum isolada. Toda disponibilidade deve ser
-  verificada no ambiente; nunca alegar execução/modelo indisponível.
-- Toda missão substancial anuncia `Using Caveman + Superpowers to <purpose>`.
-  Cada handoff registra disponibilidade/uso, agente/modelo, justificativa,
-  Skills consideradas/usadas/não usadas e lacunas. Selecionar menor conjunto
-  especializado após bootstrap e descoberta real do inventário.
-- Fallback: se Caveman ou Superpowers não existir, registrar a limitação e
+- O padrão é Codex GPT-6 Luna Medium para implementação; GPT-6 Sol Medium
+  atende arquitetura/segurança complexa e causas sem solução após três
+  tentativas fundamentadas. Hermes GLM-5.3 via NVIDIA é o revisor independente
+  preferido; Nemotron 3 Ultra 550B A55B é alternativa de revisão pesada e
+  Kimi K3 pode revisar visual quando disponível. NVIDIA não é dependência;
+  ausência permite revisão profunda em contexto novo com Codex Sol Medium.
+  Toda disponibilidade deve ser verificada; nunca alegar modelo não usado.
+- Toda missão substancial considera Caveman + Ponytail + Superpowers e registra
+  modelos recomendados, justificativas, Skills consideradas/usadas/não usadas,
+  reavaliação e lacunas após descoberta real do inventário.
+- Fallback: se Caveman, Ponytail ou Superpowers não existir, registrar a limitação e
   usar somente processo/Skills realmente disponíveis, sem alegar uso.
 - Limite: Skills orientam o processo, mas não autorizam merge, deploy,
   alterações cloud/financeiras, persistência, schema, secrets ou ações

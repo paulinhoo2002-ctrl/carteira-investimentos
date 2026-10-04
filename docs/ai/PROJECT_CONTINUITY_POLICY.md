@@ -55,6 +55,12 @@ Mission reports, audit outputs, and session summaries are Level 2 (mission recor
 - Failed experiments, dead ends
 - Partial verification outputs
 
+Temporary baseline and test evidence belongs under the current mission's
+`.superpowers/sdd/<mission>/tmp/` directory (or another approved mission-local
+temporary directory), never beside the worktree root. Keep it untracked and
+remove only exact verified generated paths when cleanup is authorized. Do not
+use broad Git or recursive cleanup to erase unknown evidence.
+
 ### LEVEL 2 — MISSION RECORD (Mission Artifacts)
 - Audit reports with evidence
 - Test evidence (RED/GREEN output)
