@@ -1,5 +1,12 @@
 # Project Skills Manifest — Carteira de Investimentos
 
+## V316 runtime skill selection (2026-10-04)
+
+- `SKILLS_DISCOVERED=true`; fonte local `.agents/skills` validada no worktree LEGACY; plugins globais Superpowers e Ponytail disponíveis.
+- `SUPERPOWERS_AVAILABLE=true`; `SUPERPOWERS_USED=true` como primeira Skill após o identity gate. `SKILLS_CONSIDERED=Superpowers,Ponytail full,Caveman,ponytail-review,verification-before-completion`; `SKILLS_USED=Superpowers,Ponytail full,Caveman,verification-before-completion,ponytail-review`.
+- `SKILLS_NOT_USED=ponytail-audit` (missão não é limpeza geral); `SKILL_SELECTION_REASON=seleção mínima para mudança de boundary Auth/Preview, revisão de simplicidade e prova antes de conclusão`; `SKILL_REEVALUATED=true` ao passar de scaffolding para runtime; `SKILL_GAPS_FOUND=nenhum skill obrigatório ausente`.
+- Agente/modelo recomendado: Codex GPT-6 Sol Medium; runtime exato não exposto, sem alegar variante não verificada. Reviewer externo independente não disponível nesta execução; revisão interna e CI exata devem ser distinguidas.
+
 Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
 
 This manifest is an inventory snapshot, not proof of installation in another

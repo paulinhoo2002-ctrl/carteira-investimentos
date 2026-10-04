@@ -15,6 +15,16 @@
 - Código: commit `5bf3c213b5f62ed0a98b4b33182de891127ea657`; push PASS. PR #442 OPEN/DRAFT em `main`; CI run `37238415129` PASS (Build/test, Auth+Firestore emulator, visual V289, Vercel e Preview Comments). Link PR: `https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442`.
 - Revisor independente e XLSX CDN seguem pendentes para eventual avanço além de Draft. PRs #440/#441 continuam intocadas. `MERGE=false`.
 
+
+## V316 — Layer 4 runtime preparado; provider externo pendente (2026-10-04)
+
+- Branch de trabalho `codex/v315-final-operationalization`, base `origin/main=2966dfb197ddcde5440379f8d2d21c35cdeda183`; PR #440 permanece draft e sem autorização de merge. Consultar Git/CI para HEAD e status finais.
+- Produção seleciona somente configuração de produção em hosts conhecidos. Preview seleciona somente Firebase QA completo, distinto e permitido pelo host; sem valores QA fica bloqueado, configuração parcial falha no build. Preview usa o guard financeiro somente leitura existente e sessão Auth por aba.
+- Testes focados sintéticos 27/27 PASS; legado 252/252; moderno 815/815; visual 4/4; smoke 390/430/768/1366/1440/1536/1920 PASS. `qa:all` teve EPERM Windows em saída Vite; emuladores tiveram EPERM no configstore global; XLSX depende da CDN e falhou localmente. CI exata V316 ainda deve ser verificada.
+- Firebase QA externo, Google Provider, identidade sintética e domínio Preview seguem não comprovados. Login real e smoke provider autenticado continuam pendentes de provisionamento humano; zero teste com dados reais, zero escrita financeira e nenhum deploy manual.
+- `NEXT_ACTION=V316_CI_AND_HUMAN_PROVISION_ISOLATED_FIREBASE_QA`; merge exige gate humano independente.
+
+
 ## V310 — preparação local de autenticação QA isolada
 
 - PR #438/V304 foi integrada por squash em `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09`. A tag `v1.3.0-rc1` permanece em `399e120d83bfc81d58e613adb79fe6f27bf47cfe`.

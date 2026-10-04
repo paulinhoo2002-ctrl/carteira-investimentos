@@ -11,6 +11,18 @@
 - Código V317 commitado em `5bf3c213b5f62ed0a98b4b33182de891127ea657`; PR [#442](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442) OPEN/DRAFT. CI run `37238415129`: Build/test, Auth+Firestore emulator, V289 visual, Vercel Preview e comments PASS.
 - Revisor técnico independente ainda não usado; a revisão humana permanece pendente junto ao gate XLSX CDN. `MERGE=false`.
 
+
+## V316 — seleção Firebase por ambiente para Layer 4 (2026-10-04)
+
+- Commit de código V316: `490b20e`; documentação registrada em commit separado.
+- Continuação da PR #440 no worktree LEGACY: `vercel.json` gera um descritor de ambiente durante o build. Produção aceita apenas hosts de produção conhecidos e mantém a configuração existente; Preview exige domínio explicitamente permitido, projeto Firebase QA distinto e configuração completa. Preview sem provisionamento mostra acesso indisponível; configuração parcial falha no build. Nenhum fallback para Firebase de produção.
+- O artefato Preview remove a configuração Firebase de produção do HTML. `firebase-config-selector.js` valida host, modo, projeto e campos QA antes de `initializeApp`; o boot Preview ativa o guard existente de QA somente leitura. Auth Preview usa persistência Firebase `SESSION`; produção mantém `LOCAL`. O gate exibe falha controlada e desabilita login sem provider/config válido.
+- O smoke público lê o descritor gerado, verifica host/projeto QA e rejeita a presença de configuração de produção no artefato Preview. Ele não autentica nem escreve. `npm run test:qa-preview-config` cobre casos positivos/negativos sintéticos e é executado na CI existente.
+- Projeto Firebase QA externo, Google Provider, identidade sintética e domínio autorizado não foram comprovados; metadados acessíveis da Vercel não mostraram variáveis QA. Não usar produção como substituto, nem dados/credenciais reais. Provisionamento humano descrito em `docs/ai/NEXT_STEP.md`.
+- Gates locais V316 antes da CI: contrato Preview 27/27; legado 252/252; moderno 815/815; visual 4/4; smoke 7 larguras PASS. `qa:all` foi interrompido por EPERM do Windows em `modern/dist` após um build moderno anterior bem-sucedido; Auth/Firestore emulator local foi bloqueado por EPERM em configstore global do Firebase CLI; XLSX 0/2 por falha de carga da CDN SheetJS no ambiente. A CI Ubuntu da PR anterior, no SHA anterior, não substitui CI V316.
+- `MERGE_AUTHORIZATION=false`; nenhuma regra Firebase, fórmula financeira, schema, persistência financeira ou dado real foi alterado. `NEXT_ACTION=PROVISION_ISOLATED_QA_FIREBASE_AND_VALIDATE_PREVIEW_PROVIDER` após revisão/CI da PR.
+
+
 ## V310 — decisão durável de QA autenticada isolada
 
 - O roteamento permanente de modelos e Skills é propriedade de `docs/ai/SKILLS_ROUTING.md`, independente do chat ou de um provider. Implementador e revisor devem ser distintos quando disponíveis.
