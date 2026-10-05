@@ -1,5 +1,13 @@
 # Project Memory
 
+## V321 — checkpoint após execução do Provider QA (2026-10-05)
+
+- PR #444 OPEN/DRAFT/MERGEABLE no HEAD `4b3ae3dae857f8fd47dccad15ce7f4dab477793c`; CI #781 (`37360390948`) SUCCESS. Vercel Preview READY; alias branch autorizado. Worktree correta e limpa antes destas atualizações documentais.
+- Testes locais frescos: QA Preview config/guard/provider-negative 65/65; regressão V317/V320 + harness browser 15/15; moderno 815/815. `verify:release` interrompeu em EPERM Windows ao remover artefato de build; CI Ubuntu do mesmo HEAD passou.
+- Aba Codex In-app Browser restaurou sessão Google já autenticada e exibiu estado do app sem identidade QA sintética confirmada; foi fechada assim que detectado, sem interação com controles financeiros nem leitura deliberada de detalhes. Nenhuma credencial foi digitada; Chrome dedicado falhou ao iniciar processo gráfico e IAB não expõe rede.
+- `GOOGLE_PROVIDER_QA=RESTORED_UNVERIFIED_IDENTITY`; persistência cloud e contagem live de requests/writes não testadas. Nenhuma ação financeira foi iniciada, mas sem instrumentação `FINANCIAL_WRITES=NOT_MEASURED`. Firebase de produção não foi alterado; requests live não foram medidos.
+- Gate pendente: usar um contexto novo isolado com identidade QA sintética; se o alerta de domínio se repetir, pedir confirmação no momento da ação antes de cadastrar somente no Firebase QA `carteira-invest-qa-v316`. Depois repetir login provider, limites cloud, logout e instrumentação; `BATCH7_READY=false`; `MERGE=false`.
+
 ## V320 — certificação pós-merge (2026-10-05)
 
 - PR #443 foi integrada por squash em `main=c14924998aadf3b783e790294b7efa74877bbcd0`; V320=`MERGED_COMPLETE`. CI pós-merge run `37315410156` (#774) SUCCESS. A CI final pré-merge `37310346405` também passou.

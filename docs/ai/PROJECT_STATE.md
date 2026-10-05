@@ -4,21 +4,14 @@
 
 ### Checkpoint de execução mais recente — 2026-10-05
 
-- Código V321 HEAD `0acd33ca37e114537a7b9801b7c2b8aa7bd7fe52`; PR #444 OPEN/DRAFT/MERGEABLE. CI #779 (`37352555250`) SUCCESS e Preview automático READY nesse SHA.
-- As sete variáveis QA existem no escopo Preview/branch (valores não lidos); alias estável passou inspeção do descritor em checkpoint anterior. Deployment host único não é allowlisted.
-- Correção do harness anexando por CDP loopback já está commitada. Endpoint não disponível. O Chrome cotidiano tem outras sessões pessoais abertas, e a superfície CUA não fornece captura de rede do mesmo contexto; não anexar esse perfil.
-- Sessão Firebase/Google restaurada de sessão existente e persistiu após reload. Popup Google fresh e `meta/access` não foram testados. Logout retornou ao gate por um reload, mas uma aba compartilhada restaurou a sessão depois; clear cross-tab não certificado.
-- `PROD_FIREBASE_REQUESTS=NOT_MEASURED`; `APP_FIRESTORE_WRITES=NOT_MEASURED_LIVE`; `FINANCIAL_WRITES=0` por escopo das ações realizadas. Testes automatizados não substituem medição live. `GOOGLE_PROVIDER_QA=RESTORED_SESSION_ONLY`; `CLOUD_PERSISTENCE_CERTIFIED=false`; `BATCH7_READY=false`; `MERGE=false`.
-- CI exato do commit de código #779 passou. Resultados locais e limitações atuais ficam registrados em `NEXT_STEP.md`; não reclassificar bloqueios EPERM/CDN como PASS.
-- `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443/V320 merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS; V320=`MERGED_COMPLETE`.
-- Evidências V320 preservadas: legado 254/254, moderno 815/815, A11Y 19/19, V289 4/4, matriz financeira 173/173, `qa:all`, `verify:release`, XLSX sintético 2/2 e builds PASS.
-- V321 worktree `C:\Projetos\carteira-investimentos.worktrees\v321-postmerge-reconcile`, branch `codex/v321-postmerge-reconcile`, base main c149249. Implementação `c33c0c0`; PR #444 OPEN/DRAFT/MERGEABLE, head observado `e74df87bdb345801d803dd3fd1417c376cc41759`; CI #777 SUCCESS em Build/test, Auth+Firestore QA/rules e V289. Este sync subsequente é somente documental; conferir os checks vivos da PR na ponta nova.
-- Reconciliou o comportamento único ainda necessário de #440. Dos testes #441, preservou as verificações úteis de seleção/guardas/provider-negative via cobertura runtime #440 e acrescentou teste direto para bucket Storage de produção; não integrou testes mock-only redundantes. #440/#441 permanecem abertas/draft até V321 estar integrada; nenhuma foi merged.
-- Revisão independente: BLOCKER=0; MAJOR=1 encontrado e corrigido (persistência QA SESSION falha fechada). `tests/v316-firebase-runtime-config.test.js` passou 20/20, QA Preview 59/59, V317/V320 cruzado 6/6 e `verify:release` PASS local. XLSX local `BLOCKED_NETWORK` (CDN/SRI); Auth/Firestore Emulator Windows falhou antes dos testes, sem diagnóstico útil. CI do HEAD V321 e Preview novo ainda pendentes.
-- Preview Vercel Ready no SHA e74df87; login permanece disabled/fail-closed pois não há variáveis QA no escopo branch V321. Provider QA real continua `NOT_TESTED`; cloud persistence não certificada.
-- `V285-02=DEFERRED_FINANCIAL_SEMANTICS`; V319 permanece separada. Nenhum dado real, gravação financeira, Firestore real ou Firebase de produção foi usado/tocado. `REAL_DATA_USED=false`; `REAL_WRITES=0`; `FIREBASE_PROD_TOUCHED=false`; `MERGE=false`.
-- Batch 7 não iniciado; readiness fica `false` até configuração Preview QA humana, validação provider real e gates aplicáveis sem blocker/major.
+- V321 HEAD `4b3ae3dae857f8fd47dccad15ce7f4dab477793c`; branch/worktree corretas e limpas, base `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`. PR #444 OPEN/DRAFT/MERGEABLE, `MERGE=false`.
+- CI #781 (`37360390948`) SUCCESS no HEAD; Vercel check e Preview SUCCESS/READY. Sete variáveis QA presentes sem leitura dos valores.
+- Gate automatizado fresh: QA Preview config/guards/provider-negative 65/65; cruzado V317/V320 + browser boundary 15/15; moderno 815/815. `verify:release` local bloqueado por EPERM ao remover artefato `modern/dist`; CI Ubuntu do HEAD é verde.
+- Aba Codex IAB restaurou sessão Google já autenticada e exibiu estado do app com identidade não comprovada como QA sintética. A aba criada foi fechada ao detectar isso, sem interação com controles financeiros; a superfície não fornece captura de rede. Chrome dedicado falhou no executor com erro de acesso negado do processo gráfico, sem CDP persistente; perfis QA temporários foram preservados.
+- Estado live: `GOOGLE_PROVIDER_QA=RESTORED_UNVERIFIED_IDENTITY`; `CLOUD_PERSISTENCE_BOUNDARY=NOT_TESTED`; `PROD_FIREBASE_REQUESTS=NOT_MEASURED`; `APP_FIRESTORE_WRITES=NOT_MEASURED`; `FINANCIAL_WRITES=NOT_MEASURED` (nenhuma ação financeira foi iniciada, mas a rede automática não foi instrumentada). `BATCH7_READY=false`.
+- Gate pendente: usar contexto novo e isolado com identidade QA sintética. Se o aviso de domínio repetir, confirmar no momento da ação qualquer inclusão somente em Authorized domains do projeto QA `carteira-invest-qa-v316`. Produção Firebase não foi alterada; nenhuma ação financeira foi feita.
 
+## Checkpoints históricos de V321 (substituídos pelo estado acima)
 ## V317 — certificação de ações financeiras (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.
