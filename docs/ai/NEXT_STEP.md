@@ -1,4 +1,13 @@
 # Next Step
+## V320 — CI recuperado e Batch 6 certificado nos fluxos ativos (2026-10-05)
+
+- PR #443 permanece OPEN/DRAFT; `MERGE=false`. Branch `hermes/v320-overnight-functional-acceleration`; CI Ubuntu run 37309408539 passou em Build/test, V289 visual e Auth+Firestore emulator após os commits `0011b4e` e `5bf0e30`.
+- V288: quatro fechamentos prematuros de template literal em `index.html` impediam o boot do script inline. A11Y agora executa um navegador sintético e falha quando o runtime não inicia. V289 4/4, A11Y 19/19 e suíte financeira V320 173/173 passaram no HEAD `5bf0e30`; `verify:release`, `qa:all` e XLSX sintético 2/2 também passaram localmente.
+- Batch 6: B3 Posição é atualização de snapshot por identidade (ticker/nome), não soma incremental. Entrada idêntica é no-op; quantidade alterada substitui o valor, com persistência única. Falha de gravação bloqueia a sessão; repetição exige recarga e conferência do estado persistido. Movimentação rápida, renda fixa, carteira e nota Inter têm testes sintéticos de falha/repetição; o rollback de renda fixa foi corrigido para usar snapshot anterior à mutação.
+- `CorporateEventsCore.promoteExpectedToRealized()` é função pura, sem writer ou chamador de produção; sua repetição e exigência de evidência `RECEIVED` são testadas. O cenário “save falha e retry” não se aplica a ela sem criar uma nova integração de escrita, que requer contrato próprio.
+- Em Windows local, o Firestore Emulator encerrou antes dos testes sem diagnóstico no log; o job Ubuntu do mesmo HEAD passou. O Preview Vercel automático está READY no SHA `5bf0e30`; a tela pública de acesso carregou sem erro de console. Não foi feita autenticação nem escrita financeira real.
+- Próximo passo: revisão humana da PR #443 e autorização de merge em gate separado. Não iniciar Batch 7 nesta missão; V319 e PRs #440/#441 permanecem separados.
+
 ## V317 — próximo passo operacional
 
 - Gates funcionais locais sintéticos e `verify:release` concluídos; ver `PROJECT_STATE.md` e `PROJECT_MEMORY.md` para evidência e limites.
