@@ -1,12 +1,13 @@
 # Next Step
 ## V321 — reconciliação pós-merge e Firebase QA (2026-10-05)
 
-- `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443 foi merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS.
-- V320=`MERGED_COMPLETE`; preservar evidências: CI final pré-merge `37310346405` PASS; A11Y 19/19; V289 4/4; legado 254/254; moderno 815/815; matriz financeira V320 173/173; `qa:all` e `verify:release` PASS; XLSX sintético 2/2; builds PASS.
-- Batch 6 certificado. B3 Posição é upsert de snapshot por identidade, repetição idêntica é no-op e quantidade alterada substitui; falhas exigem reload e conferência antes de retry. A promoção de evento esperado para realizado continua pura e exige proveniência `RECEIVED`.
-- Somente dados sintéticos; sem autenticação real ou escrita financeira. Firestore Emulator local encerrou sem diagnóstico; CI Ubuntu no HEAD final passou.
-- V285-02=`DEFERRED_FINANCIAL_SEMANTICS`. V319 permanece missão separada. PR #440 e #441 continuam separadas, abertas em Draft e não merged; a próxima ação é reconciliá-las sobre `main` na V321.
-- `MERGE=false`; não iniciar Batch 7 nesta missão.
+- `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443 foi merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS. V320=`MERGED_COMPLETE`.
+- Evidências V320 preservadas: CI final pré-merge `37310346405` PASS; A11Y 19/19; V289 4/4; legado 254/254; moderno 815/815; matriz financeira 173/173; `qa:all`, `verify:release`, XLSX sintético 2/2 e builds PASS. Batch 6 certificado; V285-02=`DEFERRED_FINANCIAL_SEMANTICS`; V319 permanece separada.
+- Reconciliação V321 parte do main acima na branch `codex/v321-postmerge-reconcile`, commit de implementação `c33c0c0`. Inclui somente runtime isolado Firebase Preview necessário, guards/testes V316B úteis e regressão cruzada V317/V320; #440 e #441 continuam abertas/draft, não merged e não alteradas.
+- Revisão independente encontrou falha de sessão QA: V321 agora exige confirmação de persistência Firebase `SESSION` antes de aceitar sessão restaurada ou abrir Google popup; ausência/falha bloqueia acesso. Teste dirigido passou 20/20. `test:qa-preview-config` passou 59/59; regressões V317/V320 passaram 6/6.
+- `verify:release` passou localmente na worktree V321 (legado, moderno 815/815, `qa:all` sete larguras, visual/V289 4/4). XLSX local ficou bloqueado por falha de carregamento CDN/SRI; não declarar teste XLSX fresco como PASS. Auth/Firestore Emulator local encerrou inesperadamente no Windows sem iniciar os testes; exigir CI Ubuntu no HEAD final. CI da branch V321 ainda pendente até push.
+- Provider Google real=`NOT_TESTED`; Preview final pós-commit ainda precisa ser inspecionada. Nenhum dado real, gravação financeira, Firestore real ou Firebase de produção foi usado/tocado. `REAL_DATA_USED=false`; `REAL_WRITES=0`; `MERGE=false`.
+- Próximo passo: concluir revisão/docs, publicar branch V321 e abrir uma única PR Draft para `main`; aguardar CI, corrigir falhas técnicas e validar Preview do SHA final. Não fechar #440/#441 até a sucessora estar integrada; recomendação atual é deixá-las abertas até lá. Não iniciar Batch 7 antes de `BLOCKER=0`, `MAJOR=0` e readiness final.
 
 ## V317 — próximo passo operacional
 
