@@ -1,12 +1,14 @@
 # Next Step
-## V320 — CI recuperado e Batch 6 certificado nos fluxos ativos (2026-10-05)
+## V320 — certificação final antes do gate humano (2026-10-05)
 
-- PR #443 permanece OPEN/DRAFT; `MERGE=false`. Branch `hermes/v320-overnight-functional-acceleration`; CI Ubuntu run 37309408539 passou em Build/test, V289 visual e Auth+Firestore emulator após os commits `0011b4e` e `5bf0e30`.
-- V288: quatro fechamentos prematuros de template literal em `index.html` impediam o boot do script inline. A11Y agora executa um navegador sintético e falha quando o runtime não inicia. V289 4/4, A11Y 19/19 e suíte financeira V320 173/173 passaram no HEAD `5bf0e30`; `verify:release`, `qa:all` e XLSX sintético 2/2 também passaram localmente.
-- Batch 6: B3 Posição é atualização de snapshot por identidade (ticker/nome), não soma incremental. Entrada idêntica é no-op; quantidade alterada substitui o valor, com persistência única. Falha de gravação bloqueia a sessão; repetição exige recarga e conferência do estado persistido. Movimentação rápida, renda fixa, carteira e nota Inter têm testes sintéticos de falha/repetição; o rollback de renda fixa foi corrigido para usar snapshot anterior à mutação.
-- `CorporateEventsCore.promoteExpectedToRealized()` é função pura, sem writer ou chamador de produção; sua repetição e exigência de evidência `RECEIVED` são testadas. O cenário “save falha e retry” não se aplica a ela sem criar uma nova integração de escrita, que requer contrato próprio.
-- Em Windows local, o Firestore Emulator encerrou antes dos testes sem diagnóstico no log; o job Ubuntu do mesmo HEAD passou. O Preview Vercel automático está READY no SHA `5bf0e30`; a tela pública de acesso carregou sem erro de console. Não foi feita autenticação nem escrita financeira real.
-- Próximo passo: revisão humana da PR #443 e autorização de merge em gate separado. Não iniciar Batch 7 nesta missão; V319 e PRs #440/#441 permanecem separados.
+- PR #443 permanece OPEN/DRAFT em `hermes/v320-overnight-functional-acceleration`; HEAD final `c53229e559a5843dd3181e74d0e01153e160171e`; `MERGE=false`.
+- CI final run `37310346405` PASS: Build/test, V289 visual e Auth+Firestore Emulator QA.
+- Evidência local no HEAD final: A11Y 19/19; V289 4/4; legado 254/254; moderno 815/815; matriz financeira V320 173/173; `qa:all` PASS; `verify:release` PASS; XLSX sintético 2/2; builds e `git diff --check` PASS.
+- V288: quatro fechamentos prematuros de template literal em `index.html` impediam o boot do script inline. O gate A11Y agora inicia navegador sintético e falha quando o runtime não inicializa.
+- Batch 6 certificado: B3 Posição é atualização de snapshot por identidade (ticker/nome), sem soma incremental; repetição idêntica é no-op e quantidade alterada substitui o valor. Falha de gravação bloqueia a sessão; retry exige recarga e conferência do estado persistido. Movimentação rápida, renda fixa, carteira e importações têm testes sintéticos de falha/retry ou duplo envio; o rollback de renda fixa usa snapshot anterior à mutação.
+- `CorporateEventsCore.promoteExpectedToRealized()` é função pura, sem writer ou chamador de produção; sua idempotência e exigência de evidência `RECEIVED` estão testadas. Falha de `save`/retry não se aplica a esse caminho sem uma nova integração com contrato próprio.
+- Em Windows local, o Firestore Emulator encerrou antes dos testes sem diagnóstico no log; o job Ubuntu do mesmo HEAD passou. O Preview Vercel está READY no SHA final; a tela pública de acesso carregou sem erro de console observado. Nenhuma autenticação nem escrita financeira real foi executada.
+- V285-02 permanece uma decisão humana de semântica financeira. V319 e PRs #440/#441 permanecem intocadas. Próximo passo: revisão humana da PR #443; não iniciar Batch 7 nesta missão e não fazer merge sem autorização explícita.
 
 ## V317 — próximo passo operacional
 
