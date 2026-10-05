@@ -16,10 +16,11 @@
 
 - Base pós-merge: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 foi incorporada e CI pós-merge #785/run `37378069598` passou.
 - Detector V323 exige identidade B3 explícita ou assinatura estrutural reconhecida; XP explícito, conflito e layouts genéricos não são enviados ao parser B3. Testes sintéticos V323 foram adicionados a `test:import-center` e `test:ui`.
-- `npm test`, moderna 815/815, A11Y 19/19, V289 4/4, `qa:all`, `verify:release` e diff-check passaram neste checkpoint local. XLSX Playwright ficou bloqueado pelo carregamento SRI/runtime do CDN; Auth/Firestore Emulator local ficou bloqueado pelo selector/loopback Java no Windows.
+- PR #446 está OPEN/DRAFT e mergeable no HEAD `13010052b42bc9d58b38dc8e56af53fd00fff321`. CI do HEAD #786/run `37384764846` PASS: Build/test, Auth+Firestore Emulator QA e V289 visual; status Vercel Preview success.
+- `npm test`, moderna 815/815, A11Y 19/19, V289 4/4, `qa:all`, `verify:release` e diff-check passaram localmente. XLSX Playwright ficou bloqueado pelo carregamento SRI/runtime do CDN; Auth/Firestore Emulator local ficou bloqueado pelo selector/loopback Java no Windows. CI Linux verde cobre o job Auth/Firestore neste HEAD.
 - Fontes foram catalogadas em modo somente leitura; o handoff não publica conteúdo nem quantidades dos arquivos. Foi encontrada sobreposição estrutural entre planilhas de movimentação, insuficiente para autorizar importar ambas.
 - O estado atual do site não estava disponível: match/missing/extra/diferenças e backup/restore preview são `UNKNOWN`/não executados. Nenhum dado real foi importado ou gravado; V285-02 segue diferida; `MERGE=false`.
-- Próximo gate: PR draft e CI do HEAD V323. Primeiro import real continua bloqueado até estado do site, reconciliação e backup/restore validados, e confirmação humana explícita.
+- CI do HEAD V323 está verde; PR #446 permanece draft e não foi mergeada. Primeiro import real continua bloqueado até estado do site, reconciliação e backup/restore validados, e confirmação humana explícita.
 
 ## V320 — certificação final antes do gate humano (2026-10-05)
 
