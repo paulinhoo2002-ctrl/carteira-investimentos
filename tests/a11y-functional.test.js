@@ -39,7 +39,7 @@ test('A11Y: All interactive elements have accessible names', () => {
     const hasAriaLabel = btn.includes('aria-label=');
     const hasTitle = btn.includes('title=');
     const hasAriaLabelledby = btn.includes('aria-labelledby=');
-    
+
     // Icons-only buttons must have aria-label or title
     if (!hasText && !hasAriaLabel && !hasTitle && !hasAriaLabelledby) {
       // Allow if it's an icon-only button with visible text in a child element
@@ -59,7 +59,7 @@ test('A11Y: Focusable elements have visible focus styles', () => {
     'box-shadow:',
     'ring-'
   ];
-  
+
   let found = false;
   for (const style of focusStyles) {
     if (indexHtml.includes(style)) {
@@ -77,11 +77,11 @@ test('A11Y: Form inputs have associated labels', () => {
     if (input.includes('type="file"') || input.includes('type="hidden"') || input.includes('type="checkbox"')) {
       continue; // File inputs and checkboxes handled differently
     }
-    
+
     const hasId = input.includes('id=');
     const hasAriaLabel = input.includes('aria-label=');
     const hasAriaLabelledby = input.includes('aria-labelledby=');
-    
+
     if (hasId && !hasAriaLabel && !hasAriaLabelledby) {
       // Check if there's a label referencing this id
       const idMatch = input.match(/id=["']([^"']+)["']/);
@@ -112,7 +112,7 @@ test('A11Y: Escape key closes modals', () => {
     'keydown',
     'keyup'
   ];
-  
+
   // At least some modals should have escape handling
   const hasEscapeHandler = indexHtml.includes('Escape') || indexHtml.includes('escape');
   assert.ok(hasEscapeHandler, 'No Escape key handler found for modals');
@@ -151,7 +151,7 @@ test('A11Y: Color contrast - semantic colors defined', () => {
     'green',
     'red'
   ];
-  
+
   let found = 0;
   for (const color of semanticColors) {
     if (indexHtml.includes(color)) found++;
@@ -167,7 +167,7 @@ test('A11Y: Touch targets minimum 44x44px on mobile', () => {
     '44px',
     '48px'
   ];
-  
+
   let found = false;
   for (const style of touchTargetStyles) {
     if (indexHtml.includes(style)) {
@@ -191,7 +191,7 @@ test('A11Y: Skip links or proper heading hierarchy', () => {
   const h1Count = (indexHtml.match(/<h1[^>]*>/g) || []).length;
   const h2Count = (indexHtml.match(/<h2[^>]*>/g) || []).length;
   const h3Count = (indexHtml.match(/<h3[^>]*>/g) || []).length;
-  
+
   assert.ok(h1Count > 0, 'No h1 found');
   assert.ok(h2Count > 0, 'No h2 found');
   // Heading hierarchy should exist
@@ -224,7 +224,7 @@ test('A11Y: Select elements have labels', () => {
     const hasId = select.includes('id=');
     const hasAriaLabel = select.includes('aria-label=');
     const hasAriaLabelledby = select.includes('aria-labelledby=');
-    
+
     if (hasId && !hasAriaLabel && !hasAriaLabelledby) {
       const idMatch = select.match(/id=["']([^"']+)["']/);
       if (idMatch) {
@@ -240,7 +240,7 @@ test('A11Y: No duplicate IDs', () => {
   const idMatches = indexHtml.match(/id=["']([^"']+)["']/g) || [];
   const ids = idMatches.map(m => m.match(/id=["']([^"']+)["']/)[1]);
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
-  
+
   // Known pre-existing duplicate IDs from template reuse (baseline from origin/main)
   // These are structural template duplicates that exist in base and are not V320 regressions
   const knownDuplicates = new Set([
@@ -262,10 +262,10 @@ test('A11Y: No duplicate IDs', () => {
     'div-month-history-years',
     '${esc(bodyId)}'
   ]);
-  
+
   const newDuplicates = [...new Set(duplicates)].filter(id => !knownDuplicates.has(id));
-  
-  assert.equal(newDuplicates.length, 0, 
+
+  assert.equal(newDuplicates.length, 0,
     `NEW duplicate IDs introduced by V320: ${newDuplicates.join(', ')}. ` +
     `Known pre-existing duplicates (baseline): ${[...knownDuplicates].join(', ')}`
   );

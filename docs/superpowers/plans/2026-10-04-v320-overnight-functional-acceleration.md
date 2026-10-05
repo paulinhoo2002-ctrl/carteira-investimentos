@@ -197,11 +197,11 @@ test('legacy rentability functions still exist in source but adapter prevails at
   // Source guard: detect problematic patterns in legacy source
   const source = fs.readFileSync('index.html', 'utf8');
   assert.match(source, /current_price/); // legacy pattern exists in source
-  
+
   // Runtime assertion: adapter is loaded and used
   const adapter = require('./v283-rentability-adapter.js');
   assert.ok(typeof adapter.rentabilityHistory === 'function');
-  
+
   // Verify adapter doesn't use current_price for historical
   const result = adapter.rentabilityHistory({ assets: [], period: '12m' });
   assert.ok(result.coverage !== 'FULL_COVERAGE' || result.dataReadiness === 'UNAVAILABLE');

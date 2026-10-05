@@ -36,7 +36,7 @@
   function calculateEventEntitlement(event, portfolio={}){ const e=normalizeCorporateEvent(event); const cutoff=e.baseDate||e.exDate; const tx=Array.isArray(portfolio.transactions)?portfolio.transactions:[]; const provisional=!cutoff; const qty=provisional||!tx.length?number(portfolio.currentQuantity):historicalPositionAtDate({assetId:e.assetId,ticker:e.symbol,transactions:tx,date:cutoff}); const gross=qty*e.valuePerUnitGross; const net=qty*(e.valuePerUnitNet||e.valuePerUnitGross); return {...e,eligibleQuantity:qty,expectedGross:gross,expectedNet:net,eligibilityReason:provisional?'PROVISIONAL_UNTIL_BASE_DATE':(!tx.length?'CURRENT_POSITION_FALLBACK':(qty>0?'HELD_ON_ENTITLEMENT_DATE':'NOT_HELD_ON_ENTITLEMENT_DATE')),calculationVersion:'historical-position-v1',status:provisional?'EXPECTED':(qty>0?'ELIGIBILITY_KNOWN':'IGNORED')}; }
   function promoteExpectedToRealized(event,{realizedIds=[],receiptEvidence=[]}={}){ const e=normalizeCorporateEvent(event); const id=e.financialEventId||e.eventKey; if(e.status==='CANCELLED') return {ok:true,alreadyRealized:false,delta:0,event:e,blockedReason:'CANCELLED_SHADOW_EVENT'}; if(realizedIds.map(String).includes(String(id))) return {ok:true,alreadyRealized:true,delta:0,event:e};
   // Require explicit RECEIVED provenance receipt evidence
-  const hasValidReceipt = Array.isArray(receiptEvidence) && receiptEvidence.some(r => 
+  const hasValidReceipt = Array.isArray(receiptEvidence) && receiptEvidence.some(r =>
     String(r.symbol||'').toUpperCase()===String(e.symbol||'').toUpperCase() &&
     r.eventType===e.eventType &&
     Number(r.value)===Number(e.expectedNet??e.expectedGross??0) &&

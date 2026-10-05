@@ -12,19 +12,19 @@ test('promotion is idempotent and pure',()=>{const e={symbol:'ABCD3',eventType:'
 
 test('promoteExpectedToRealized requires explicit RECEIVED provenance receipt evidence',()=>{
   const expected = {symbol:'ABCP11',eventType:'DIVIDEND',valuePerUnitGross:1,expectedNet:100,paymentDate:'2026-08-01',status:'EXPECTED'};
-  
+
   // No receipt evidence - should stay EXPECTED
   const resultNoReceipt = C.promoteExpectedToRealized(expected, {receiptEvidence: []});
   assert.equal(resultNoReceipt.event.status, 'EXPECTED');
   assert.equal(resultNoReceipt.delta, 0);
-  
+
   // Receipt evidence without RECEIVED provenance - should stay EXPECTED
   const resultWrongProvenance = C.promoteExpectedToRealized(expected, {
     receiptEvidence: [{symbol:'ABCP11',eventType:'DIVIDEND',value:100,provenance:'ANNOUNCED'}]
   });
   assert.equal(resultWrongProvenance.event.status, 'EXPECTED');
   assert.equal(resultWrongProvenance.delta, 0);
-  
+
   // Valid RECEIVED provenance - should promote to REALIZED
   const resultValid = C.promoteExpectedToRealized(expected, {
     receiptEvidence: [{symbol:'ABCP11',eventType:'DIVIDEND',value:100,provenance:'RECEIVED'}]
@@ -35,13 +35,13 @@ test('promoteExpectedToRealized requires explicit RECEIVED provenance receipt ev
 
 test('promoteExpectedToRealized matches receipt by symbol+eventType+value',()=>{
   const expected = {symbol:'ABCP11',eventType:'DIVIDEND',valuePerUnitGross:1,expectedNet:100,paymentDate:'2026-08-01',status:'EXPECTED'};
-  
+
   // Mismatched symbol - should not promote
   const resultMismatch = C.promoteExpectedToRealized(expected, {
     receiptEvidence: [{symbol:'XYZ11',eventType:'DIVIDEND',value:100,provenance:'RECEIVED'}]
   });
   assert.equal(resultMismatch.event.status, 'EXPECTED');
-  
+
   // Mismatched value - should not promote
   const resultValueMismatch = C.promoteExpectedToRealized(expected, {
     receiptEvidence: [{symbol:'ABCP11',eventType:'DIVIDEND',value:50,provenance:'RECEIVED'}]
