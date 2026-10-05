@@ -296,6 +296,47 @@ test('saveQuickMovement reabre o modal com erro quando a persistência falha', (
   assert.equal(context.S.quickMovementSaving, false);
 });
 
+test('saveQuickMovement falha, bloqueia a sessao e apos recarga persiste apenas uma vez', () => {
+  let fail = true;
+  let writes = 0;
+  let durable = [];
+  const { context } = saveContext({ open: true, draft: makeDraft({ kind: 'outro' }) });
+  context.save = () => {
+    if (fail) return false;
+    writes += 1;
+    durable = JSON.parse(JSON.stringify(context.S.aportes));
+    return true;
+  };
+  context.canEditFromThisTab = () => context.S._financialWriteQuarantined !== true;
+  context.saveM();
+  assert.equal(context.S._financialWriteQuarantined, true);
+  assert.equal(context.S.aportes.length, 0);
+  assert.equal(durable.length, 0);
+  context.saveM();
+  assert.equal(writes, 0, 'a sessao incerta nao pode tentar gravar novamente');
+  context.S._financialWriteQuarantined = false; // simulated reload after persisted state check
+  fail = false;
+  context.saveM();
+  assert.equal(context.S.aportes.length, 1);
+  assert.equal(durable.length, 1);
+  assert.equal(writes, 1);
+});
+
+test('saveQuickMovement ignora duplo envio enquanto o primeiro sucesso aguarda liberacao', () => {
+  let writes = 0;
+  let release;
+  const { context } = saveContext({ open: true, draft: makeDraft({ kind: 'outro' }) });
+  context.save = () => { writes += 1; return true; };
+  context.setTimeout = fn => { release = fn; };
+  context.saveM();
+  context.saveM();
+  assert.equal(writes, 1);
+  assert.equal(context.S.aportes.length, 1);
+  assert.equal(context.S.quickMovementSaving, true);
+  release();
+  assert.equal(context.S.quickMovementSaving, false);
+});
+
 test('saveQuickMovement falha fechada quando não consegue preparar snapshot', () => {
   let saveCalls = 0;
   const { context } = saveContext({

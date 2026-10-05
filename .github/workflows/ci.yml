@@ -50,6 +50,9 @@ jobs:
       - name: A11Y functional runtime
         run: node --test tests/a11y-functional.test.js
 
+      - name: V320 financial retry and replay contracts
+        run: node --test tests/quick-movement-inline-errors.test.js tests/rf-movement-flow.test.js tests/v284-legacy-write-boundary.test.js tests/v320-wallet-retry.test.js tests/corporate-events-core.test.js
+
       - name: Reliability smokes
         run: |
           node --test tests/phase-208-data-quality.test.js

@@ -19281,6 +19281,11 @@ function saveRfMovimentacao(){
     alert('Já existe uma movimentação com a mesma data, ativo, tipo e valores.');
     return;
   }
+  const beforeSave=snapshotFinancialImportState(['rfEvents','assets','rfMovementEditor']);
+  if(!beforeSave){
+    toast('⚠️ Não foi possível preparar a gravação. Nenhuma movimentação foi aplicada.','#f87171');
+    return;
+  }
   const newEvents=(S.rfEvents||[]).map(normalizeRfEventEntry);
   if(rfMovementNeedsBaseline(asset)){
     newEvents.unshift(normalizeRfEventEntry(rfMovementBaselineEvent(asset)));
@@ -19303,7 +19308,7 @@ function saveRfMovimentacao(){
   S.assets=newAssets;
   S.rfMovementEditor=null;
     rememberScroll();
-    if(!persistFinancialImportState(['rfEvents','assets'])) {
+    if(!persistFinancialImportState(beforeSave)) {
       toast('⚠️ Falha ao gravar. Estado anterior restaurado.','#f87171');
       render();
       return;

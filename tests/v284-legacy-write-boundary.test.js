@@ -259,14 +259,50 @@ test('B3 positions: identical confirmed reimport is a no-op', () => {
     b3ReviewSummary: () => ({ ignored: 0 }),
   });
   context.importB3Review();
+  context.importB3Review(); // queued second confirmation sees the closed review
   const afterFirst = JSON.stringify(context.S.assets);
-  assert.equal(metrics.saveCalls, 1, 'primeira importação persiste a nova posição');
+  assert.equal(metrics.saveCalls, 1, 'duplo envio da confirmação persiste a posição apenas uma vez');
   assert.equal(metrics.quoteCalls, 1);
   context.S.b3Review = { items: [item], selectedSheets: { Ações: true }, importDate: '2026-01-01' };
   context.importB3Review();
   assert.equal(metrics.saveCalls, 1, 'reimport idêntico não deve persistir novamente');
   assert.equal(metrics.quoteCalls, 1, 'reimport idêntico não deve disparar recálculo downstream');
   assert.equal(JSON.stringify(context.S.assets), afterFirst);
+});
+
+test('B3 positions: repeated confirmation upserts a snapshot without accumulating quantity', () => {
+  const { context } = harness([['applyB3ImportedPositions', 'openBrokerNoteImport']], {
+    S: { assets: [], learnMeta: {}, wallets: [] },
+  });
+  const persistence = installSyntheticLocalPersistence(context);
+  const position = { ticker: 'SYN-SNAPSHOT', qty: 2, price: 50, value: 100, type: 'Ação' };
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').status, 'APPLIED');
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').ignored, 1);
+  assert.equal(persistence.getStorageWrites(), 1);
+  assert.equal(persistence.getPersisted().assets.length, 1);
+  assert.equal(persistence.getPersisted().assets[0].qty, 2);
+  assert.equal(context.applyB3ImportedPositions([{ ...position, qty: 3, value: 150 }], '2026-01-02').updated, 1);
+  assert.equal(persistence.getPersisted().assets.length, 1);
+  assert.equal(persistence.getPersisted().assets[0].qty, 3);
+  assert.equal(persistence.getStorageWrites(), 2);
+});
+
+test('B3 positions: failed save quarantines; retry after reload creates one durable snapshot', () => {
+  const { context } = harness([['applyB3ImportedPositions', 'openBrokerNoteImport']], {
+    S: { assets: [], learnMeta: {}, wallets: [] },
+  });
+  const persistence = installSyntheticLocalPersistence(context, { failStorage: true });
+  const position = { ticker: 'SYN-RETRY', qty: 2, price: 50, value: 100, type: 'Ação' };
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').status, 'SAVE_OUTCOME_UNKNOWN');
+  assert.equal(context.S.assets.length, 0);
+  assert.equal(context.S._financialWriteQuarantined, true);
+  assert.equal(persistence.getPersisted().assets.length, 0);
+  context.S._financialWriteQuarantined = false; // synthetic reload after persisted state check
+  persistence.setFailures();
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').status, 'APPLIED');
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').ignored, 1);
+  assert.equal(persistence.getPersisted().assets.length, 1);
+  assert.equal(persistence.getStorageWrites(), 1);
 });
 
 test('B3 income: duplicate-only confirmed batch performs no persistence write', () => {
