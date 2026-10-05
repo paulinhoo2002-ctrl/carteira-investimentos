@@ -1,17 +1,26 @@
 ## V322 — Batch 7–10 certificados até a fronteira síncrona (2026-10-05)
 
-- PR #445 OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS. `MERGE=false`.
+- PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou. CI #783/run `37372040030` foi a validação pré-merge.
 - Batch 7: pipeline CI verde; Build/test (249 pass, 0 fail, 5 skipped), A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual.
 - Batch 8: Corporate Events 39/39 PASS, incluindo shadow-only, sem writer de produção e promoção condicionada a evidência `RECEIVED`.
 - Batch 9: failure injection e quarentena cobertas pela fronteira V284 81/81 PASS.
 - Batch 10: double-submit e replay sequenciais sem gravação duplicada, cobertos localmente/CI. Concorrência entre abas não foi testada; não alegar certificação multi-tab.
 - Teste focal local combinado: 120/120 PASS. Escritas reais/produção=0; sem mudança de código de produto, fórmulas, schema ou persistência.
-- Próximo gate: revisão humana/merge da #445 e CI pós-merge. Até ambos, V323 fica read-only; Provider QA, cloud persistence e primeiro import real seguem bloqueados.
+- V322 encerrada após merge e CI pós-merge. V323 prossegue read-only; comparação com o site, backup validado, Provider QA e primeiro import real não estão certificados.
 
 ---
 ---
 
 # Next Step
+## V323 — correção do detector e reconciliação somente leitura (2026-10-05)
+
+- Base pós-merge: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 foi incorporada e CI pós-merge #785/run `37378069598` passou.
+- Detector V323 exige identidade B3 explícita ou assinatura estrutural reconhecida; XP explícito, conflito e layouts genéricos não são enviados ao parser B3. Testes sintéticos V323 foram adicionados a `test:import-center` e `test:ui`.
+- `npm test`, moderna 815/815, A11Y 19/19, V289 4/4, `qa:all`, `verify:release` e diff-check passaram neste checkpoint local. XLSX Playwright ficou bloqueado pelo carregamento SRI/runtime do CDN; Auth/Firestore Emulator local ficou bloqueado pelo selector/loopback Java no Windows.
+- Fontes foram catalogadas em modo somente leitura; o handoff não publica conteúdo nem quantidades dos arquivos. Foi encontrada sobreposição estrutural entre planilhas de movimentação, insuficiente para autorizar importar ambas.
+- O estado atual do site não estava disponível: match/missing/extra/diferenças e backup/restore preview são `UNKNOWN`/não executados. Nenhum dado real foi importado ou gravado; V285-02 segue diferida; `MERGE=false`.
+- Próximo gate: PR draft e CI do HEAD V323. Primeiro import real continua bloqueado até estado do site, reconciliação e backup/restore validados, e confirmação humana explícita.
+
 ## V320 — certificação final antes do gate humano (2026-10-05)
 
 - PR #443 permanece OPEN/DRAFT em `hermes/v320-overnight-functional-acceleration`; HEAD final `c53229e559a5843dd3181e74d0e01153e160171e`; `MERGE=false`.

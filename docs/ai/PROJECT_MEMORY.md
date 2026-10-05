@@ -1,10 +1,18 @@
+# V323 — detector de origem e reconciliação read-only (2026-10-05)
+
+- PR #445 foi integrada em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou.
+- Corrigido o fallback que podia enviar XLSX genérico ao parser B3. XP explícito e conflito falham fechados; movimentos/proventos preservam assinaturas reconhecidas; posição genérica fica em revisão. Testes sintéticos V323 entram em `test:import-center` e `test:ui`.
+- `verify:release`, `npm test`, moderna 815/815, A11Y 19/19, V289 4/4 e `qa:all` passaram localmente. XLSX browser foi bloqueado por SRI/runtime do CDN; Auth/Firestore Emulator local por falha Java/Netty loopback no Windows.
+- A comparação estrutural apontou sobreposição entre movimentos; conteúdos e quantidades não foram publicados. Não houve soma, import, gravação financeira nem alteração dos originais. Estado atual do site, diferenças e backup permanecem desconhecidos/não executados. Primeiro import real segue bloqueado; V285-02 permanece diferida; `MERGE=false`.
+- Handoff seguro sem valores/ativos pessoais: `docs/ai/V323_READ_ONLY_RECONCILIATION.md`.
+
 ## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
 
-- PR #445 OPEN/DRAFT/MERGEABLE, `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS, sem merge.
+- PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI #783/run `37372040030` foi pré-merge e CI pós-merge #785/run `37378069598` passou.
 - Batch 7 CI: Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual passaram. `npm test`: 249 pass, 0 fail, 5 skipped.
 - Batch 8 Corporate Events 39/39; Batch 9 failure injection e Batch 10 double-submit/replay cobertos na fronteira V284 81/81. Validação local focal combinada 120/120.
 - Escopo de concorrência: confirmação repetida síncrona e replay estão cobertos; corrida real entre abas não foi testada nem certificada.
-- Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
+- V322 encerrou sem escrita real/produção ou mudança financeira. V323 iniciou após merge e CI pós-merge; comparação do site e qualquer import continuam bloqueados até fonte autorizada e backup validado.
 # Project Memory
 
 #

@@ -1,13 +1,21 @@
 ## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
 
-- PR #445 permanece OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783, run `37372040030`, SUCCESS. Nenhum merge foi feito.
+- PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou. CI #783/run `37372040030` é a validação pré-merge.
 - Batch 7: gate completo passou em CI (Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual). `npm test` reportou 249 passes, zero failures e cinco testes skipped.
 - Batch 8 Corporate Events: 39/39 testes focados PASS; fluxo shadow permanece sem writer de carteira, e promoção exige evidência `RECEIVED`.
 - Batch 9 failure injection: fronteira V284 81/81 PASS, incluindo rollback, quarentena, bloqueio de saves seguintes e retry após reload/verificação.
 - Batch 10 double action/replay: cancel/confirm, double-submit e replay idêntico persistem uma única vez; coberto em V284 e validado em CI/local. Disputa real entre abas não foi exercitada e não está certificada.
 - Validação local focal combinada: Corporate Events 39/39 e fronteira V284 81/81; writes reais/produção zero. Sem mudança de produto, fórmula, schema ou persistência.
-- V323 continua somente leitura até PR #445 ser incorporada e o CI pós-merge passar. Provider QA real e persistência cloud seguem externos; `MERGE=false`.
+- V322 está encerrada. V323 continua somente leitura para fontes financeiras reais: o site/backup atual não foram acessados nem validados. Provider QA e persistência cloud continuam externos; `MERGE=false`.
 # Project State
+
+## V323 — estado atual pós-merge e somente leitura (2026-10-05)
+
+- Base `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 incorporada; CI pós-merge #785/run `37378069598` verde.
+- Worktree V323 usa branch `codex/v323-real-portfolio-reconciliation`. O detector XLSX separa XP, B3 e origem desconhecida com fail-closed; as planilhas de posição sem identidade explícita não seguem ao parser.
+- `verify:release`, `npm test`, moderna 815/815, A11Y 19/19, V289 4/4 e `qa:all` passaram localmente. XLSX browser/CDN e Auth/Firestore Emulator local têm limitações ambientais documentadas no handoff V323.
+- Site sem snapshot acessível; reconciliação site-a-site e backup/restauração não executados. `REAL_WRITES=0`; primeiro import continua não autorizado e não pronto; `MERGE=false`.
+- Ver `V323_READ_ONLY_RECONCILIATION.md` e `NEXT_STEP.md` para evidências e próximo gate.
 
 #
 # V317 — certificação de ações financeiras (2026-10-04)

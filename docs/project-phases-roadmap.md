@@ -1,5 +1,17 @@
 # Project Phases Roadmap
 
+## V324 — UX productivity hardening (proposta; não autorizada para implementação)
+
+Itens de auditoria Investidor10 a avaliar numa fase própria, sem misturar com V323:
+
+1. Atalhos de navegação somente leitura via Ctrl+K.
+2. Sincronização de páginas modernas com URL e histórico do navegador.
+3. Lazy loading de páginas pesadas somente após medição.
+4. Estados vazios e indisponíveis mais claros.
+5. Descrições textuais acessíveis para gráficos.
+
+`V324_IMPLEMENTATION_AUTHORIZED=false`.
+
 Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca
