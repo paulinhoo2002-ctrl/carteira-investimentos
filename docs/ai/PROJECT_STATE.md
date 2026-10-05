@@ -11,7 +11,7 @@
 
 ## V323 — estado atual pós-merge e somente leitura (2026-10-05)
 
-- PR #446 está OPEN/DRAFT/mergeable em `main`, HEAD `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #786/run `37384764846` passou em Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview status success. `MERGE=false`.
+- PR #446 está OPEN/DRAFT/mergeable em `main`, HEAD documental `ba66364b1acbaba4148f96407459ed7f427c9ad8` sobre implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #787/run `37385414541` passou em Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview status success. `MERGE=false`.
 - Base `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 incorporada; CI pós-merge #785/run `37378069598` verde.
 - Worktree V323 usa branch `codex/v323-real-portfolio-reconciliation`. O detector XLSX separa XP, B3 e origem desconhecida com fail-closed; as planilhas de posição sem identidade explícita não seguem ao parser.
 - `verify:release`, `npm test`, moderna 815/815, A11Y 19/19, V289 4/4 e `qa:all` passaram localmente. XLSX browser/CDN e Auth/Firestore Emulator local têm limitações ambientais documentadas no handoff V323.

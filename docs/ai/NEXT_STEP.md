@@ -16,7 +16,7 @@
 
 - Base pós-merge: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 foi incorporada e CI pós-merge #785/run `37378069598` passou.
 - Detector V323 exige identidade B3 explícita ou assinatura estrutural reconhecida; XP explícito, conflito e layouts genéricos não são enviados ao parser B3. Testes sintéticos V323 foram adicionados a `test:import-center` e `test:ui`.
-- PR #446 está OPEN/DRAFT e mergeable no HEAD `13010052b42bc9d58b38dc8e56af53fd00fff321`. CI do HEAD #786/run `37384764846` PASS: Build/test, Auth+Firestore Emulator QA e V289 visual; status Vercel Preview success.
+- PR #446 está OPEN/DRAFT e mergeable no HEAD `ba66364b1acbaba4148f96407459ed7f427c9ad8` (commit documental sobre a implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`). CI #787/run `37385414541` PASS: Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview success.
 - `npm test`, moderna 815/815, A11Y 19/19, V289 4/4, `qa:all`, `verify:release` e diff-check passaram localmente. XLSX Playwright ficou bloqueado pelo carregamento SRI/runtime do CDN; Auth/Firestore Emulator local ficou bloqueado pelo selector/loopback Java no Windows. CI Linux verde cobre o job Auth/Firestore neste HEAD.
 - Fontes foram catalogadas em modo somente leitura; o handoff não publica conteúdo nem quantidades dos arquivos. Foi encontrada sobreposição estrutural entre planilhas de movimentação, insuficiente para autorizar importar ambas.
 - O estado atual do site não estava disponível: match/missing/extra/diferenças e backup/restore preview são `UNKNOWN`/não executados. Nenhum dado real foi importado ou gravado; V285-02 segue diferida; `MERGE=false`.

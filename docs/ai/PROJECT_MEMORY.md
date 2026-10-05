@@ -1,6 +1,6 @@
 # V323 — detector de origem e reconciliação read-only (2026-10-05)
 
-- PR #446 OPEN/DRAFT/mergeable em `main`; HEAD `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #786/run `37384764846` PASS nos jobs Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview success. `MERGE=false`.
+- PR #446 OPEN/DRAFT/mergeable em `main`; HEAD documental `ba66364b1acbaba4148f96407459ed7f427c9ad8`, sobre implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #787/run `37385414541` PASS nos jobs Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview success. `MERGE=false`.
 - PR #445 foi integrada em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou.
 - Corrigido o fallback que podia enviar XLSX genérico ao parser B3. XP explícito e conflito falham fechados; movimentos/proventos preservam assinaturas reconhecidas; posição genérica fica em revisão. Testes sintéticos V323 entram em `test:import-center` e `test:ui`.
 - `verify:release`, `npm test`, moderna 815/815, A11Y 19/19, V289 4/4 e `qa:all` passaram localmente. XLSX browser foi bloqueado por SRI/runtime do CDN; Auth/Firestore Emulator local por falha Java/Netty loopback no Windows.
