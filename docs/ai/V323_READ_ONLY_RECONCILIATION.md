@@ -3,7 +3,7 @@
 Data: 2026-10-05
 Base: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`
 Branch: `codex/v323-real-portfolio-reconciliation`
-PR: #446 OPEN/DRAFT/mergeable; HEAD `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #786/run `37384764846` PASS (Build/test, Auth+Firestore Emulator QA, V289 visual); Vercel Preview success. `MERGE=false`.
+PR: #446 OPEN/DRAFT/mergeable; HEAD documental `ba66364b1acbaba4148f96407459ed7f427c9ad8` sobre implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #787/run `37385414541` PASS (Build/test, Auth+Firestore Emulator QA, V289 visual); Vercel Preview success. `MERGE=false`.
 
 ## Limite operacional
 
@@ -46,7 +46,7 @@ Comparação estrutural encontrou linhas completas repetidas entre as planilhas 
 - `a11y-functional`: 19/19 PASS; V289 visual: 4/4 PASS.
 - `qa:all` e `verify:release`: PASS; sete larguras sem overflow ou erros no smoke.
 - `test:import-xlsx`: 0/2; Playwright não carregou a biblioteca SheetJS por falha de SRI/runtime no CDN. Não classificado como defeito do detector nem como PASS.
-- Auth/Firestore Emulator local: bloqueado no Windows porque o processo Java/Netty não conseguiu criar selector/loopback. O CI deste HEAD (`#786`, run `37384764846`) passou no job Auth/Firestore Emulator QA e Build/test.
+- Auth/Firestore Emulator local: bloqueado no Windows porque o processo Java/Netty não conseguiu criar selector/loopback. O CI do HEAD documental (`#787`, run `37385414541`) passou no job Auth/Firestore Emulator QA e Build/test.
 - `npm ci` usou o lockfile sem alteração. O audit remoto não pôde consultar o endpoint npm; os avisos de audit da instalação não foram remediados neste escopo.
 
 ## Estado
