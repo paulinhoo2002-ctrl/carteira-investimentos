@@ -73,6 +73,10 @@ async function createRuntime(viewport) {
       }
     });
     await page.goto(harness.url, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() =>
+      window.__LOCAL_TEST_MODE__ === true && typeof S !== 'undefined' && typeof render === 'function',
+      null, { timeout: 5000 });
+    assert.deepEqual(pageErrors, [], 'V289 synthetic runtime has page errors');
     await applyV289VisualFixture(page, 'baseline');
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
     return { harness, browser, context, page, consoleErrors, pageErrors, localRequestFailures, firebaseRequests };

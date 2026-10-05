@@ -68,6 +68,7 @@ function buildContext(initialState = {}) {
       rfEventEditor: null,
       ...initialState
     },
+    cloneData: value => JSON.parse(JSON.stringify(value ?? null)),
     window: {},
     FinanceCore: {
       assetAppliedValue: (a) => context.isRendaFixaAsset(a) ? context.rfValues(a).applied : (Number(a?.qty)||0)*(Number(a?.avg_price)||0),
@@ -87,7 +88,7 @@ function buildContext(initialState = {}) {
     fmt: (v) => `R$${Number(v || 0).toFixed(2).replace('.', ',')}`,
     canEditFromThisTab: () => true,
     rememberScroll: () => {},
-    save: () => { counters.save += 1; },
+    save: () => { counters.save += 1; return true; },
     render: () => { counters.render += 1; },
     toast: (message) => { counters.toast.push(message); },
     alert: () => { counters.alert += 1; },
@@ -97,6 +98,9 @@ function buildContext(initialState = {}) {
       getElementById: () => null
     }
   };
+
+  const persistenceBlock = extractFunctionBlock(INDEX_HTML, 'function snapshotFinancialImportState(keys){', 'function save(){');
+  vm.runInNewContext(persistenceBlock, context, { filename: 'rf-persistence-helpers.js' });
 
   const rfBlock = extractFunctionBlock(INDEX_HTML, 'function isRendaFixaAsset(a){', 'function parseNum(v){');
   vm.runInNewContext(rfBlock, context, { filename: 'rf-movement-block.js' });
@@ -656,6 +660,35 @@ test('dupla submissao da mesma operacao nao cria evento duplicado', () => {
   assert.equal(counters.alert, 1, 'a duplicata deve disparar alerta');
   assert.equal(context.S.rfEvents.length, 1, 'o editor foi reaberto e mesmo assim nao pode criar novo evento');
   assert.equal(context.S.assets[0].rf_applied_value, 700);
+});
+
+test('falha ao gravar movimentacao RF restaura saldo e permite um retry apos recarga', () => {
+  const asset = makeCdiAsset();
+  const { context, counters } = buildContext({ assets: [asset] });
+  const draft = { mode: 'resgate_parcial', date: '2026-06-01', principalDelta: '300,00', grossValue: '', netValue: '', ir: '0,00', iof: '0,00', source: 'Manual', note: '' };
+  let fail = true;
+  let persisted = [];
+  context.save = () => {
+    counters.save += 1;
+    if (fail) return false;
+    persisted = JSON.parse(JSON.stringify(context.S.rfEvents));
+    return true;
+  };
+  context.canEditFromThisTab = () => context.S._financialWriteQuarantined !== true;
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft };
+  context.saveRfMovimentacao();
+  assert.equal(context.S._financialWriteQuarantined, true);
+  assert.equal(context.S.assets[0].rf_applied_value, 1000);
+  assert.equal(context.S.rfEvents.length, 0);
+  assert.equal(persisted.length, 0);
+  context.S._financialWriteQuarantined = false; // simulated reload after persisted state check
+  context.S.rfMovementEditor = { assetId: 'rf-asset-cdi', draft: { ...draft } };
+  fail = false;
+  context.saveRfMovimentacao();
+  assert.equal(context.S.assets[0].rf_applied_value, 700);
+  assert.equal(context.S.rfEvents.length, 1);
+  assert.equal(persisted.length, 1);
+  assert.equal(counters.save, 2);
 });
 
 test('falha de validacao com saldo zero nao altera assets nem rfEvents (snapshot profundo)', () => {
