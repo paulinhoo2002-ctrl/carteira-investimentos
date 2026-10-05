@@ -17,7 +17,13 @@
 <script src="cloud-sync-state.js"></script>
 <script src="v250-offline-session.js"></script>
 <script src="v250-runtime.js"></script>
+<script src="firebase-config-selector.js"></script>
 <title>📈 Carteira de Investimentos</title>
+<script>
+/* V316_FIREBASE_DEPLOYMENT_START */
+window.__FIREBASE_DEPLOYMENT__={"mode":"blocked"};
+/* V316_FIREBASE_DEPLOYMENT_END */
+</script>
 <script>
 (()=>{try{
   const params=new URLSearchParams(location.search);
@@ -31,7 +37,7 @@
   window.__LOCAL_AUTH_EMULATOR_CONFIG_ERROR__=emulatorRequested && !emulatorPairEnabled;
   // Explicit QA mode only reduces capabilities: reads/rendering remain allowed,
   // while persistence, cloud writes and financial mutations fail closed.
-  window.__PROTECTED_READ_ONLY_QA_BOOT__=new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
+  window.__PROTECTED_READ_ONLY_QA_BOOT__=window.__FIREBASE_DEPLOYMENT__?.mode==='preview' || (window.__FIREBASE_DEPLOYMENT__?.mode==='blocked' && !loopbackHost) || new URLSearchParams(location.search).get('protectedReadOnlyQa')==='1';
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
@@ -8327,6 +8333,7 @@ function protectedReadOnlyOfflineState(){
   };
 }
 async function persistProtectedReadOnlyOfflineSnapshot(){
+  if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview') return false;
   if(!isProtectedReadOnlyQaBoot() || !FB.user || !FB.access.allowed || !FB.cloudLoaded || FB.pendingCloudSave || navigator.onLine===false) return false;
   if(!CloudSyncState.isDataConfirmed(cloudSyncState())) return false;
   try{
@@ -8374,6 +8381,7 @@ function applyProtectedReadOnlyOfflineState(snapshot){
   return true;
 }
 async function restoreProtectedReadOnlyOfflineSnapshot(user){
+  if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview') return false;
   if(!isProtectedReadOnlyQaBoot() || navigator.onLine!==false || !user || !window.V250OfflineSession) return false;
   try{
     const marker=window.V250OfflineSession.read(localStorage);
@@ -8648,6 +8656,13 @@ const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
 function isLocalAuthEmulatorMode(){ return window.__LOCAL_AUTH_EMULATOR_MODE__===true && ['localhost','127.0.0.1'].includes(location.hostname); }
 function isProtectedReadOnlyQaBoot(){ return window.__PROTECTED_READ_ONLY_QA_BOOT__===true; }
+function resetPreviewFinancialState(){
+  if(window.__FIREBASE_DEPLOYMENT__?.mode!=='preview') return;
+  Object.assign(S,cloneData(DEFAULT_RUNTIME_STATE));
+  S.wallets=[];
+  S.activeWalletId='';
+  ensureWallets();
+}
 function isProtectedShadowBoot(){
   try{ return new URLSearchParams(location.search).get('protectedShadow')==='1'; }
   catch(e){ return false; }
@@ -9233,6 +9248,7 @@ function save(){
   }
   const options=arguments[0]||{};
   const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
+  if(typeof window==='object' && (window.__FIREBASE_DEPLOYMENT__?.mode==='preview' || (window.__FIREBASE_DEPLOYMENT__?.mode==='blocked' && isProtectedReadOnlyQaBoot()))) return false;
   try{
     if(typeof isV250OfflineCachedSession==='function' && isV250OfflineCachedSession() && !protectedLocalRecoveryWrite) return false;
     if(isLocalTestMode()){
@@ -9628,6 +9644,10 @@ async function runAutoProventosGratis(reason='change'){
 }
 
 function load(){
+  if(typeof window==='object' && (window.__FIREBASE_DEPLOYMENT__?.mode==='preview' || (window.__FIREBASE_DEPLOYMENT__?.mode==='blocked' && isProtectedReadOnlyQaBoot()))){
+    ensureWallets();
+    return;
+  }
   if(isLocalTestMode()) return;
   const stateRead=safeGetLocalStorageItem(STOR, 'load leitura storage');
   if(stateRead.ok){
@@ -10606,13 +10626,14 @@ function initFirebase(){
       FB.access.loading = false;
       FB.access.loaded = false;
       FB.access.allowed = false;
+      FB.access.reason = 'Autenticação indisponível neste ambiente.';
       return;
     }
     const emulatorMode=isLocalAuthEmulatorMode();
     if(window.__LOCAL_AUTH_EMULATOR_MODE__===true && !emulatorMode) throw new Error('Auth emulator mode is loopback-only.');
     const appConfig=emulatorMode
       ? {apiKey:'demo-api-key',authDomain:'localhost',projectId:'demo-carteira-qa-emulator'}
-      : firebaseConfig;
+      : window.FirebaseConfigSelector.selectFirebaseConfig(location.hostname,window.__FIREBASE_DEPLOYMENT__,firebaseConfig);
     FB.app=firebase.initializeApp(appConfig);
     FB.auth=firebase.auth();
     FB.db=firebase.firestore();
@@ -10626,15 +10647,34 @@ function initFirebase(){
         // Keep session persistence under Firebase's own authority so a legitimate
         // auth session can be restored after an offline reload without copying
         // tokens, cookies, or credentials into application storage.
-    try{
-      const localPersistence = firebase.auth.Auth?.Persistence?.LOCAL;
-      if(navigator.onLine && localPersistence && typeof FB.auth.setPersistence==='function'){
-        firebaseAuthPersistenceReady = FB.auth.setPersistence(localPersistence).catch(error=>{
-          debugWarn('Persistência Firebase indisponível:', error);
-          return false;
-        });
+    const previewDeployment=window.__FIREBASE_DEPLOYMENT__?.mode==='preview';
+    if(previewDeployment){
+      try{
+        const sessionPersistence=firebase.auth.Auth?.Persistence?.SESSION;
+        if(sessionPersistence && typeof FB.auth.setPersistence==='function'){
+          firebaseAuthPersistenceReady=Promise.resolve(FB.auth.setPersistence(sessionPersistence)).then(()=>true).catch(error=>{
+            debugWarn('Persistência Firebase de sessão indisponível:', error);
+            return false;
+          });
+        }else{
+          firebaseAuthPersistenceReady=Promise.resolve(false);
+          debugWarn('Persistência Firebase de sessão indisponível neste ambiente.');
+        }
+      }catch(error){
+        firebaseAuthPersistenceReady=Promise.resolve(false);
+        debugWarn('Persistência Firebase de sessão indisponível:', error);
       }
-    }catch(error){ debugWarn('Persistência Firebase indisponível:', error); }
+    }else{
+      try{
+        const localPersistence=firebase.auth.Auth?.Persistence?.LOCAL;
+        if(navigator.onLine && localPersistence && typeof FB.auth.setPersistence==='function'){
+          firebaseAuthPersistenceReady=FB.auth.setPersistence(localPersistence).catch(error=>{
+            debugWarn('Persistência Firebase indisponível:', error);
+            return false;
+          });
+        }
+      }catch(error){ debugWarn('Persistência Firebase indisponível:', error); }
+    }
     window.addEventListener('offline',()=>{
       reconnectWasOffline = true;
       render();
@@ -10652,8 +10692,27 @@ function initFirebase(){
       try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     }
     FB.auth.onAuthStateChanged(async user=>{
+      if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview'){
+        let sessionPersistenceReady=false;
+        try{ sessionPersistenceReady=await firebaseAuthPersistenceReady===true; }catch(e){}
+        if(!sessionPersistenceReady){
+          FB.authResolved=true;
+          FB.user=null;
+          stopCloudSync(false);
+          resetPreviewFinancialState();
+          FB.access.loading=false;
+          FB.access.loaded=false;
+          FB.access.allowed=false;
+          FB.access.reason='Autenticação QA bloqueada: persistência de sessão indisponível.';
+          if(user) try{ await FB.auth.signOut(); }catch(e){}
+          render();
+          return;
+        }
+      }
       FB.authResolved = true;
       FB.user = user || null;
+      if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview') stopCloudSync(false);
+      resetPreviewFinancialState();
       if(FB.user){
         if(navigator.onLine===false && await restoreProtectedReadOnlyOfflineSnapshot(FB.user)){
           FB.cloudLoaded=false;
@@ -10733,6 +10792,11 @@ function initFirebase(){
   }catch(e){
     debugWarn('Firebase indisponível:', e);
     FB.ready=false;
+    FB.authResolved=true;
+    FB.access.loading=false;
+    FB.access.loaded=false;
+    FB.access.allowed=false;
+    FB.access.reason='Autenticação indisponível neste ambiente.';
   }
 }
 async function loadAccessControl(user){
@@ -11025,7 +11089,7 @@ async function applyCloudData(d){
   // Protected QA may hydrate the authenticated cloud snapshot in memory. The
   // persistence and cloud-write guards below remain fail-closed for this mode.
   if(isProtectedReadOnlyQaBoot()) debugInfo('cloud snapshot read-only QA: hidratação em memória permitida', {updatedAtLocal:d.updatedAtLocal||null});
-  if(window.ProtectedLocalCloudAuthority){
+  if(window.ProtectedLocalCloudAuthority && window.__FIREBASE_DEPLOYMENT__?.mode!=='preview'){
     const authority=window.ProtectedLocalCloudAuthority;
     const localState=PersistenceCore.buildStoredState?PersistenceCore.buildStoredState(S,normalizeGoals):S;
     const localFingerprint=authority.fingerprintState(localState);
@@ -11069,7 +11133,7 @@ async function applyCloudData(d){
     hasTokenInSettings:!!d.settings?.brapiToken
   });
   if(Array.isArray(d.wallets) && d.wallets.length){
-    const localWallets=Array.isArray(S.wallets) ? S.wallets : [];
+    const localWallets=window.__FIREBASE_DEPLOYMENT__?.mode==='preview' ? [] : (Array.isArray(S.wallets) ? S.wallets : []);
     S.wallets=d.wallets.map((w,i)=>{
       const local=localWallets.find(item=>String(item?.id||'')===String(w?.id||''));
       const merged={...w};
@@ -11277,7 +11341,10 @@ async function signInGoogle(){
   if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
-    await firebaseAuthPersistenceReady;
+    const persistenceReady=await firebaseAuthPersistenceReady;
+    if(window.__FIREBASE_DEPLOYMENT__?.mode==='preview' && persistenceReady!==true){
+      throw new Error('Preview QA requires Firebase session persistence.');
+    }
     await FB.auth.signInWithPopup(provider);
   }catch(e){
     debugWarn(e);
@@ -11289,7 +11356,7 @@ async function signOutGoogle(){
     toast('🧪 Modo de teste local: saída desativada.');
     return;
   }
-  clearV250OfflineEligibility();
+  if(window.__FIREBASE_DEPLOYMENT__?.mode!=='preview') clearV250OfflineEligibility();
   try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos, mas o modo offline protegido foi encerrado.'); }catch(e){}
 }
 function cloudSnapshotHasData(data={}){
@@ -11373,9 +11440,10 @@ function accessGateBox(){
             Acesso aprovado para contas autorizadas.<br>
             A carteira sincroniza automaticamente na nuvem.
           </div>
+          ${!loading && FB.access.reason ? `<div role="alert" style="margin-top:12px;color:#fca5a5;font-size:12px;line-height:1.45">${esc(reason)}</div>` : ''}
           ${FB.user ? `<div style="margin-top:14px">${chip}</div>` : ''}
           <div style="margin-top:18px">
-            <button class="btn bp" onclick="signInGoogle()" style="width:100%;min-height:48px;border-radius:14px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 28px rgba(79,70,229,.34)">
+            <button class="btn bp" onclick="signInGoogle()" ${!FB.ready?'disabled':''} style="width:100%;min-height:48px;border-radius:14px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 28px rgba(79,70,229,.34)">
               <span style="font-size:18px;font-weight:900;line-height:1;background:linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">G</span>
               <span>Entrar com Google</span>
             </button>
@@ -11980,6 +12048,10 @@ function v76RuntimeAvailable(){ return !!window.PortfolioRuntimeStores && typeof
 function loadV76RuntimeStores(){
   if(!v76RuntimeAvailable()) return {snapshots:[],flows:[],diagnostics:['RUNTIME_UNAVAILABLE']};
   const R=window.PortfolioRuntimeStores;
+  if(isProtectedReadOnlyQaBoot()){
+    window.__V76_RUNTIME__={snapshots:R.emptySnapshotStore(v76Clock),flows:R.emptyFlowStore(v76Clock),diagnostics:['PROTECTED_READ_ONLY_QA_BOOT']};
+    return window.__V76_RUNTIME__;
+  }
   const snapshots=R.loadStore(localStorage.getItem(V76_SNAPSHOT_STORAGE_KEY),'snapshots',v76Clock);
   const flows=R.loadStore(localStorage.getItem(V76_FLOW_STORAGE_KEY),'flows',v76Clock);
   window.__V76_RUNTIME__={snapshots:snapshots.value,flows:flows.value,diagnostics:[snapshots.diagnostic,flows.diagnostic]};
@@ -12014,6 +12086,7 @@ function v76CurrentPortfolioComponents(){
   return {listed,priced,rf,listedValue:Math.round(listedValue*100),fixedIncomeValue:Math.round(fixedIncomeValue*100),listedCoverage,fixedCoverage,fixedIncomeAsOf,freshness:components.freshness,selectors:components};
 }
 function captureV76DailySnapshot({force=false}={}){
+  if(isProtectedReadOnlyQaBoot()) return {ok:false,diagnostic:'PROTECTED_READ_ONLY_QA_BOOT'};
   if(!v76RuntimeAvailable()||isLocalTestMode()||!Array.isArray(S.assets)||!S.assets.length) return {ok:false,diagnostic:'PORTFOLIO_NOT_READY'};
   const components=v76CurrentPortfolioComponents();
   if(!force && components.priced.length===0) return {ok:false,diagnostic:'LISTED_VALUE_UNAVAILABLE'};
@@ -12036,9 +12109,10 @@ function initializeV76Runtime(){
   return runtime;
 }
 function v76ExternalFlowLabel(type){return ({CONTRIBUTION:'Aporte',WITHDRAWAL:'Retirada',TRANSFER_IN_EXTERNAL:'Transferência externa entrada',TRANSFER_OUT_EXTERNAL:'Transferência externa saída',ADJUSTMENT:'Ajuste'})[type]||type;}
-function openExternalFlow(){S.externalFlowOpen=true;S.externalFlowError='';render();}
+function openExternalFlow(){if(isProtectedReadOnlyQaBoot()) return; S.externalFlowOpen=true;S.externalFlowError='';render();}
 function closeExternalFlow(){S.externalFlowOpen=false;S.externalFlowError='';render();}
 function addExternalFlowFromUi(){
+  if(isProtectedReadOnlyQaBoot()) return;
   const type=String(document.getElementById('v76-flow-type')?.value||'');
   const date=String(document.getElementById('v76-flow-date')?.value||'');
   const amount=String(document.getElementById('v76-flow-amount')?.value||'').replace(',','.');

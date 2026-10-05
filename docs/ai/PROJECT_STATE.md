@@ -1,5 +1,17 @@
 # Project State
 
+## V321 — reconciliação pós-merge (2026-10-05)
+
+### Checkpoint de execução mais recente — 2026-10-05
+
+- V321 HEAD `4b3ae3dae857f8fd47dccad15ce7f4dab477793c`; branch/worktree corretas e limpas, base `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`. PR #444 OPEN/DRAFT/MERGEABLE, `MERGE=false`.
+- CI #781 (`37360390948`) SUCCESS no HEAD; Vercel check e Preview SUCCESS/READY. Sete variáveis QA presentes sem leitura dos valores.
+- Gate automatizado fresh: QA Preview config/guards/provider-negative 65/65; cruzado V317/V320 + browser boundary 15/15; moderno 815/815. `verify:release` local bloqueado por EPERM ao remover artefato `modern/dist`; CI Ubuntu do HEAD é verde.
+- Aba Codex IAB restaurou sessão Google já autenticada e exibiu estado do app com identidade não comprovada como QA sintética. A aba criada foi fechada ao detectar isso, sem interação com controles financeiros; a superfície não fornece captura de rede. Chrome dedicado falhou no executor com erro de acesso negado do processo gráfico, sem CDP persistente; perfis QA temporários foram preservados.
+- Estado live: `GOOGLE_PROVIDER_QA=RESTORED_UNVERIFIED_IDENTITY`; `CLOUD_PERSISTENCE_BOUNDARY=NOT_TESTED`; `PROD_FIREBASE_REQUESTS=NOT_MEASURED`; `APP_FIRESTORE_WRITES=NOT_MEASURED`; `FINANCIAL_WRITES=NOT_MEASURED` (nenhuma ação financeira foi iniciada, mas a rede automática não foi instrumentada). `BATCH7_READY=false`.
+- Gate pendente: usar contexto novo e isolado com identidade QA sintética. Se o aviso de domínio repetir, confirmar no momento da ação qualquer inclusão somente em Authorized domains do projeto QA `carteira-invest-qa-v316`. Produção Firebase não foi alterada; nenhuma ação financeira foi feita.
+
+## Checkpoints históricos de V321 (substituídos pelo estado acima)
 ## V317 — certificação de ações financeiras (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.

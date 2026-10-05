@@ -1,5 +1,47 @@
 # Synthetic QA authentication and route smoke
 
+## V316 active Preview contract
+
+V316 seleciona projeto Firebase QA apenas em Preview autorizado; sem QA completo,
+bloqueia login. `firebase.qa-preview.rules` e o documento `meta/access` sintético
+são necessários no projeto QA porque as regras de produção permitem ler esse
+documento apenas ao administrador de produção. O handoff operacional atual é
+[`V316_PROVIDER_QA_HANDOFF.md`](V316_PROVIDER_QA_HANDOFF.md). O smoke público
+aceita `https://HOST/ QA_PROJECT_ID`; autenticação Google real ainda não foi
+executada. As seções V315/V310 abaixo descrevem estados históricos.
+Em Preview, o runtime exige confirmação de persistência Firebase `SESSION`
+antes de aceitar uma sessão restaurada ou abrir o popup Google; se o método
+estiver ausente ou falhar, acesso e popup permanecem bloqueados.
+
+## V315 status — Layer 3 operacional e scaffolding Layer 4
+
+PR #439 integrou Auth + Firestore emulators e CI Ubuntu. O estado atual da
+Layer 3 está certificado no merge `2966dfb197ddcde5440379f8d2d21c35cdeda183`;
+ver `docs/ai/PROJECT_STATE.md` para gates e deployment pós-merge. Os blocos
+V310 abaixo registram corretamente o estado histórico daquela versão.
+
+O follow-up V315 adiciona `scripts/qa/preview-firebase-config.cjs`,
+`scripts/qa/preview-provider-smoke.cjs` e `tests/qa-preview-firebase-config.test.js`.
+O contrato requer `VERCEL_ENV=preview`, `VERCEL_URL` exatamente listado em
+`QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`, as seis variáveis `QA_FIREBASE_*` de
+configuração cliente e `PRODUCTION_FIREBASE_PROJECT_ID` diferente de
+`QA_FIREBASE_PROJECT_ID`. A allowlist é controle de host, não segredo.
+
+Na entrega V315, `npm run test:qa-preview-config` usava somente dados
+sintéticos e rodava na CI. O
+`npm run qa:preview-provider-smoke` é uma verificação de fronteira somente de
+leitura: baixa a página pública do Preview, extrai o project ID inline e exige
+igualdade com o ID QA configurado e diferença do ID de produção. Ele não executa
+login Google, não usa credenciais e não faz writes. Naquele checkpoint, o
+runtime ainda não selecionava essa configuração; V316 implementou e testou essa
+fronteira. As chaves e o contrato operacionais atuais estão no handoff acima.
+
+`QA_FIREBASE_PROJECT_EXISTS=NOT_VERIFIED` descreve a observação histórica da
+V315, não o estado atual do console externo. A V316 implementa a seleção de
+configuração no runtime; o provider real e o Preview final ainda precisam de
+validação no deployment V321. Nunca enviar valores de configuração ou
+credenciais no chat.
+
 ## Three distinct kinds of evidence
 
 - `PRODUCTION_PUBLIC_GATE_SMOKE` checks reachability, the public login shell and
@@ -25,19 +67,20 @@ uses in-memory synthetic state, and blocks import/export actions. The
 `tests/e2e-auth-mode.test.js`
 contract protects these boundaries.
 
-Repository inspection found no configured Firebase Auth Emulator, isolated QA
-Firebase project, or dedicated synthetic test account. Do not add a production
-auth bypass, query-parameter shortcut, hardcoded credential, shared QA secret,
-or client-created user accepted by a real backend. A true provider-authenticated
-smoke requires a separately provisioned isolated QA project/account and
-environment configuration. Until then, route coverage must be described as
-synthetic local route smoke, not authenticated-provider verification.
+At the V310 baseline, repository inspection found no configured Firebase Auth
+Emulator, isolated QA Firebase project, or dedicated synthetic test account.
+Later V315 work added local Auth + Firestore Emulator coverage; V316 added the
+isolated Preview runtime contract. Do not add a production auth bypass,
+query-parameter shortcut, hardcoded credential, shared QA secret, or
+client-created user accepted by a real backend. Until provider QA succeeds on
+the final V321 Preview, route coverage remains synthetic and must not be called
+authenticated-provider verification.
 
-The static production Firebase configuration is embedded in the legacy page;
-no preview-specific Firebase project selection was found. Therefore a preview
-deployment is not an isolated auth environment and must not be used for a
-synthetic authenticated smoke until a separate configuration boundary is
-designed and verified.
+The static production Firebase configuration remains embedded in the legacy
+source for production. At the V310 baseline, no Preview-specific project
+selection existed; the V316 active Preview contract above supersedes that
+historical finding. Only an authorized V321 Preview with complete isolated QA
+configuration may be used for provider QA.
 
 ## Automated local route smoke
 
@@ -78,7 +121,7 @@ save, transaction, tax, goal update, or other financial mutation actions.
 Production authentication configuration and secrets are outside this QA
 strategy and are not changed by it.
 
-## V310 architecture decision: isolate every Firebase service
+## V310 architecture decision (historical): isolate every Firebase service
 
 `AUTH_PROVIDER=Firebase Authentication / Google popup` in the normal app.
 The legacy `index.html` loads Firebase compat SDK 10.12.5 from gstatic, embeds
@@ -104,31 +147,34 @@ as a QA account. Keep synthetic identities and all state ephemeral. Access-log
 writes may occur only inside that emulator and must be distinguished from
 financial writes.
 
-The local emulator integration is **not implemented in V310**. The current
+The local emulator integration was **not implemented in V310**. At that
+historical checkpoint, the
 static page hardcodes the production Firebase configuration; connecting only
 Auth, or injecting a query parameter into the product auth guard, would create
 an unsafe mixed environment. The Firebase CLI is also not installed in the
-verified runtime. Implement layer 3 in a separate reviewed test-harness change
+runtime that was verified then. Later V315 added the emulator harness and
+CI coverage. Implement layer 3 in a separate reviewed test-harness change
 that supplies a demo-only config before Firebase initialization and connects
 both compat SDK clients before listeners or reads. The test must prove no
 production Firebase contact and zero financial/import/tax writes. Do not call
 the existing testMode smoke an emulator smoke.
 
-For layer 4, provision a **separate** Firebase QA project and Auth user store,
-plus a separate Firestore database and rules. Preview deployments may use that
-project only after a reviewed environment-selection mechanism is added to the
-static legacy build. The current page does not read Vercel environment
-variables; setting them today would not isolate anything. Proposed Preview-only
-configuration keys correspond to the current client fields:
+For layer 4, V310 proposed provisioning a **separate** Firebase QA project and
+Auth user store, plus a separate Firestore database and rules. At that point,
+Preview deployments still lacked an environment-selection mechanism and the
+page did not read Vercel environment variables. V316 later added the reviewed
+selector and fail-closed Preview build. The V315-proposed Preview-only
+configuration keys correspond to the client fields:
 `QA_FIREBASE_API_KEY`, `QA_FIREBASE_AUTH_DOMAIN`, `QA_FIREBASE_PROJECT_ID`,
 `QA_FIREBASE_STORAGE_BUCKET`, `QA_FIREBASE_MESSAGING_SENDER_ID`, and
 `QA_FIREBASE_APP_ID` (plus `QA_FIREBASE_MEASUREMENT_ID` only if analytics is
-deliberately used). These names are a design contract, **not** active settings.
+deliberately used). This list is historical; the active exact variables are in
+the V316 handoff.
 Do not store their values in Git or chat. Production keeps its current config;
 unknown or missing Preview config must fail closed, never fall back to
 production. No Vercel setting or Firebase resource was changed in V310.
 
-| Layer | Environment | What it proves | Current status |
+| Layer | Environment | What it proves | Status at V310 |
 | --- | --- | --- | --- |
 | 1 Public production gate | Production login shell | Reachability, public auth gate, exposed build identity | Available; no private route claim |
 | 2 Local synthetic route | Loopback `testMode=1`, in-memory fixture | Route composition, navigation and read-only visual behavior | Available; no Firebase identity |
@@ -158,7 +204,7 @@ access production data. A deterministic emulator job may enter CI only after
 these checks pass locally and no production endpoint is contacted. The current
 `test:visual-regression` and release scripts remain unchanged.
 
-## Human gate for provider-authenticated Preview QA
+## Human gate recorded in V310 (historical; see current V316 handoff)
 
 1. Approve and create a separate Firebase QA project with separate Auth and
    Firestore, no production data or service-account linkage.
