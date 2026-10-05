@@ -2,6 +2,14 @@
 
 ## V321 — reconciliação pós-merge (2026-10-05)
 
+### Checkpoint de execução mais recente — 2026-10-05
+
+- Código V321 HEAD `0acd33ca37e114537a7b9801b7c2b8aa7bd7fe52`; PR #444 OPEN/DRAFT/MERGEABLE. CI #779 (`37352555250`) SUCCESS e Preview automático READY nesse SHA.
+- As sete variáveis QA existem no escopo Preview/branch (valores não lidos); alias estável passou inspeção do descritor em checkpoint anterior. Deployment host único não é allowlisted.
+- Correção do harness anexando por CDP loopback já está commitada. Endpoint não disponível. O Chrome cotidiano tem outras sessões pessoais abertas, e a superfície CUA não fornece captura de rede do mesmo contexto; não anexar esse perfil.
+- Sessão Firebase/Google restaurada de sessão existente e persistiu após reload. Popup Google fresh e `meta/access` não foram testados. Logout retornou ao gate por um reload, mas uma aba compartilhada restaurou a sessão depois; clear cross-tab não certificado.
+- `PROD_FIREBASE_REQUESTS=NOT_MEASURED`; `APP_FIRESTORE_WRITES=NOT_MEASURED_LIVE`; `FINANCIAL_WRITES=0` por escopo das ações realizadas. Testes automatizados não substituem medição live. `GOOGLE_PROVIDER_QA=RESTORED_SESSION_ONLY`; `CLOUD_PERSISTENCE_CERTIFIED=false`; `BATCH7_READY=false`; `MERGE=false`.
+- CI exato do commit de código #779 passou. Resultados locais e limitações atuais ficam registrados em `NEXT_STEP.md`; não reclassificar bloqueios EPERM/CDN como PASS.
 - `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443/V320 merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS; V320=`MERGED_COMPLETE`.
 - Evidências V320 preservadas: legado 254/254, moderno 815/815, A11Y 19/19, V289 4/4, matriz financeira 173/173, `qa:all`, `verify:release`, XLSX sintético 2/2 e builds PASS.
 - V321 worktree `C:\Projetos\carteira-investimentos.worktrees\v321-postmerge-reconcile`, branch `codex/v321-postmerge-reconcile`, base main c149249. Implementação `c33c0c0`; PR #444 OPEN/DRAFT/MERGEABLE, head observado `e74df87bdb345801d803dd3fd1417c376cc41759`; CI #777 SUCCESS em Build/test, Auth+Firestore QA/rules e V289. Este sync subsequente é somente documental; conferir os checks vivos da PR na ponta nova.

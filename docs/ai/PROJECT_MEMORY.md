@@ -16,6 +16,13 @@
 - V321 focado: Preview config/guards/provider-negative 59/59; regressão financeira V317/V320 6/6; `verify:release` PASS (legado, moderno, `qa:all`, V289). XLSX sintético local ficou `BLOCKED_NETWORK` por CDN/SRI; Auth/Firestore Emulator Windows não iniciou os testes. CI pós-merge de V320 (#774) não substitui CI futura do V321.
 - Preview Vercel está Ready no SHA e74df87, mas sem variáveis QA para a branch V321; UI exibe login disabled e autenticação indisponível, confirmando fail-closed. Provider Google real e cloud persistence continuam `NOT_TESTED`/não certificados. Somente config/fixtures sintéticas em testes; sem dado real, gravação financeira ou Firebase de produção. `V285-02=DEFERRED_FINANCIAL_SEMANTICS`; `MERGE=false`; Batch 7 não iniciado.
 
+
+### V321 — checkpoint de Provider QA atualizado (2026-10-05)
+
+- Estado atualizado após o commit de código `0acd33ca37e114537a7b9801b7c2b8aa7bd7fe52`: PR #444 OPEN/DRAFT/MERGEABLE; CI #779 (`37352555250`) SUCCESS; Preview automático READY. Sete variáveis QA estão presentes no escopo Preview/branch, sem leitura de valores; descritor validado no alias estável em checkpoint anterior.
+- Harness CDP evita exportação de cookies, mas a porta loopback padrão não estava disponível. CUA não expõe rede do mesmo contexto. O Chrome cotidiano tem outras sessões pessoais abertas, portanto não foi usado para instrumentação.
+- Browser mostrou sessão Firebase/Google previamente restaurada e persistente; nenhum popup fresh nem verificação nova de `meta/access`. Logout exibiu o gate e sobreviveu a um reload; depois outra aba restaurou sessão compartilhada. Logout cross-tab permanece não certificado.
+- Requests Firebase de produção e writes Firestore live não foram medidos. Nenhuma ação financeira foi realizada; guardas automatizadas/CI seguem evidência separada. `GOOGLE_PROVIDER_QA=RESTORED_SESSION_ONLY`, `CLOUD_PERSISTENCE_CERTIFIED=false`, `BATCH7_READY=false`, `MERGE=false`. Detalhes e limitações locais em `NEXT_STEP.md`.
 ## V317 — certificação sintética das ações financeiras (2026-10-04)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.

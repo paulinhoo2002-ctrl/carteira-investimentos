@@ -18,6 +18,14 @@ Escopo: #440/#441 não devem ser merged; PR V321 permanece draft até revisão e
 `firebase.qa-preview.rules` é exclusivo desse projeto; **não publicar em produção**.
 O app Preview bloqueia login sem configuração QA completa e host autorizado.
 
+## Checkpoint operacional V321 — 2026-10-05
+
+PR #444 permanece OPEN/DRAFT no HEAD `0acd33ca37e114537a7b9801b7c2b8aa7bd7fe52`; CI #779 passou e o Preview desse HEAD está READY. As sete variáveis `QA_FIREBASE_*` existem no escopo Preview da branch, com valores mantidos não descriptografados. O descritor foi verificado no alias estável autorizado em checkpoint anterior; o hostname único do deployment não deve ser usado como host QA.
+
+A sessão Firebase/Google existente restaurou e persistiu em reload. Não foi aberto um popup Google novo, nem feita leitura fresh de `meta/access`. Logout mostrou o gate após reload, mas outra aba compartilhou/restaurou a sessão mais tarde; portanto logout cross-tab não está certificado. A porta CDP loopback não estava disponível e a superfície CUA não expõe requests de rede no contexto autenticado. O Chrome cotidiano contém outras sessões pessoais e não deve ser conectado ao harness.
+
+Classificação: `GOOGLE_PROVIDER_QA=RESTORED_SESSION_ONLY`; `PROD_FIREBASE_REQUESTS=NOT_MEASURED`; `APP_FIRESTORE_WRITES=NOT_MEASURED_LIVE`; `FINANCIAL_WRITES=0` pelas ações realizadas; `CLOUD_PERSISTENCE_CERTIFIED=false`; `BATCH7_READY=false`; `MERGE=false`. Não declarar Provider QA PASS. Retomar quando houver instrumentação de rede suportada em contexto QA dedicado e persistente, sem copiar cookies, credenciais, MFA ou bypass.
+
 ## Ações humanas externas, em ordem
 
 1. **Firebase Console > Add project**: criar projeto QA novo, sem importar dados,

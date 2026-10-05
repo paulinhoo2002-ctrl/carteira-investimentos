@@ -1,6 +1,15 @@
 # Next Step
 ## V321 — reconciliação pós-merge e Firebase QA (2026-10-05)
 
+### Checkpoint atual V321 — 2026-10-05 após `0acd33c`
+
+- PR #444 permanece OPEN/DRAFT/MERGEABLE no HEAD `0acd33ca37e114537a7b9801b7c2b8aa7bd7fe52`; CI #779 (`37352555250`) SUCCESS. Preview automático desse HEAD está READY. A documentação abaixo deste checkpoint contém snapshots anteriores e foi superada onde divergir.
+- Sete variáveis `QA_FIREBASE_*` estão configuradas em Preview para a branch V321; valores não foram descriptografados nem registrados. O descritor público foi verificado no alias estável autorizado em checkpoint anterior. O hostname exclusivo do deployment não é allowlisted; não o usar como host QA.
+- Harness atualizado para anexar ao browser já autenticado por endpoint CDP loopback, sem exportar sessão ou abrir perfil limpo. O endpoint local padrão não estava disponível. Não anexar ao Chrome cotidiano: há outras sessões pessoais abertas e a ferramenta de browser não oferece captura de requests nesse mesmo contexto.
+- Sessão Google Firebase já existente foi restaurada e persistiu em reload; não ocorreu popup Google novo nem verificação fresh de `meta/access`. Logout retornou ao gate e um reload manteve o gate, porém outra aba restaurou a sessão compartilhada depois. `LOGOUT_SESSION_CLEAR=UNVERIFIED_CROSS_TAB`.
+- Não houve captura live da rede: `PROD_FIREBASE_REQUESTS=NOT_MEASURED`; `APP_FIRESTORE_WRITES=NOT_MEASURED_LIVE`. Guardas automatizadas continuam cobertas pelos testes/CI; nenhuma ação financeira foi feita nesta validação. Não declarar Provider QA completo nem `BATCH7_READY`.
+- Local no commit de código: QA Preview config 63/63, regressão financeira V317/V320 6/6, moderno 815/815, visual V289 4/4 e build legado PASS. Legacy 250/254 por EPERM ao gravar screenshots; `verify:release` interrompido por EPERM em `modern/dist`; XLSX 0/2 por CDN/SRI. CI Ubuntu #779 é verde no commit de código; essas limitações locais não foram reclassificadas como PASS.
+- Próximo gate: obter instrumentação de rede suportada no mesmo contexto QA sem tocar o perfil cotidiano nem copiar credenciais; então confirmar login provider fresh, `meta/access`, logout sem restauração cross-tab e contagem de requests/writes. Até lá `GOOGLE_PROVIDER_QA=RESTORED_SESSION_ONLY`, `CLOUD_PERSISTENCE_CERTIFIED=false`, `BATCH7_READY=false`, `MERGE=false`.
 - `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443 foi merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS. V320=`MERGED_COMPLETE`.
 - Evidências V320 preservadas: CI final pré-merge `37310346405` PASS; A11Y 19/19; V289 4/4; legado 254/254; moderno 815/815; matriz financeira 173/173; `qa:all`, `verify:release`, XLSX sintético 2/2 e builds PASS. Batch 6 certificado; V285-02=`DEFERRED_FINANCIAL_SEMANTICS`; V319 permanece separada.
 - Reconciliação V321 parte do main acima na branch `codex/v321-postmerge-reconcile`, PR #444 OPEN/DRAFT/MERGEABLE, HEAD observado `e74df87bdb345801d803dd3fd1417c376cc41759`. Commits: `d3d8ddc` (truth sync), `c33c0c0` (runtime/tests), `3d69ae4`, `208b37c` e `e74df87` (handoff docs). #440 segue OPEN/DRAFT com aviso de sucessora; #441 OPEN/DRAFT e intocada.
