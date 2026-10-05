@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify fail-closed Preview QA config contract
+        run: npm run test:qa-preview-config
+
       - name: Run build and tests
         run: npm test
 
@@ -141,3 +144,6 @@ jobs:
 
       - name: Run isolated Auth and Firestore emulator tests
         run: npm run test:auth-emulator
+
+      - name: Verify Preview QA read-only Firestore rules
+        run: npm run test:qa-preview-rules
