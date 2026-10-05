@@ -1,6 +1,14 @@
+## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
+
+- PR #445 OPEN/DRAFT/MERGEABLE, `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS, sem merge.
+- Batch 7 CI: Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual passaram. `npm test`: 249 pass, 0 fail, 5 skipped.
+- Batch 8 Corporate Events 39/39; Batch 9 failure injection e Batch 10 double-submit/replay cobertos na fronteira V284 81/81. Validação local focal combinada 120/120.
+- Escopo de concorrência: confirmação repetida síncrona e replay estão cobertos; corrida real entre abas não foi testada nem certificada.
+- Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
-## V317 — certificação sintética das ações financeiras (2026-10-04)
+#
+# V317 — certificação sintética das ações financeiras (2026-10-04)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.
 - `saveQuickMovement()` usa snapshot/restore e só executa efeitos de sucesso após um único `save()===true`; falha restaura aportes, proventos, ativos, carteiras e metadados e põe a sessão em quarentena. Falha ao criar snapshot também falha fechada, sem chamar save. `syncAssetsFromAportes()` e `autoDY()` aceitam preservar o save legado padrão ou deferi-lo ao boundary transacional.

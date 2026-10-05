@@ -1,6 +1,16 @@
+## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
+
+- PR #445 permanece OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783, run `37372040030`, SUCCESS. Nenhum merge foi feito.
+- Batch 7: gate completo passou em CI (Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual). `npm test` reportou 249 passes, zero failures e cinco testes skipped.
+- Batch 8 Corporate Events: 39/39 testes focados PASS; fluxo shadow permanece sem writer de carteira, e promoção exige evidência `RECEIVED`.
+- Batch 9 failure injection: fronteira V284 81/81 PASS, incluindo rollback, quarentena, bloqueio de saves seguintes e retry após reload/verificação.
+- Batch 10 double action/replay: cancel/confirm, double-submit e replay idêntico persistem uma única vez; coberto em V284 e validado em CI/local. Disputa real entre abas não foi exercitada e não está certificada.
+- Validação local focal combinada: Corporate Events 39/39 e fronteira V284 81/81; writes reais/produção zero. Sem mudança de produto, fórmula, schema ou persistência.
+- V323 continua somente leitura até PR #445 ser incorporada e o CI pós-merge passar. Provider QA real e persistência cloud seguem externos; `MERGE=false`.
 # Project State
 
-## V317 — certificação de ações financeiras (2026-10-04)
+#
+# V317 — certificação de ações financeiras (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.
 - Revisão independente CONCLUÍDA por Hermes GLM-5.3 via NVIDIA (HEAD `79991e67033a9336fdb103eb0f1bd9641ce2c938`): `FINANCIAL_SEMANTICS_CHANGED=false`; snapshot pré-mutação fail-closed; restauração/quarentena cobre todas as chaves mutadas; os 14 chamadores pré-existentes de `syncAssetsFromAportes()`/`autoDY()` mantêm comportamento idêntico via default `persistState=true`. Ponytail full: BLOCKER=0/MAJOR=0/MINOR=0/DEFERRED=0; Caveman: sem estado duplicado ou fallback oculto.

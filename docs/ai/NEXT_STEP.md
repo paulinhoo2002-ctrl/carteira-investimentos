@@ -1,3 +1,16 @@
+## V322 — Batch 7–10 certificados até a fronteira síncrona (2026-10-05)
+
+- PR #445 OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS. `MERGE=false`.
+- Batch 7: pipeline CI verde; Build/test (249 pass, 0 fail, 5 skipped), A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual.
+- Batch 8: Corporate Events 39/39 PASS, incluindo shadow-only, sem writer de produção e promoção condicionada a evidência `RECEIVED`.
+- Batch 9: failure injection e quarentena cobertas pela fronteira V284 81/81 PASS.
+- Batch 10: double-submit e replay sequenciais sem gravação duplicada, cobertos localmente/CI. Concorrência entre abas não foi testada; não alegar certificação multi-tab.
+- Teste focal local combinado: 120/120 PASS. Escritas reais/produção=0; sem mudança de código de produto, fórmulas, schema ou persistência.
+- Próximo gate: revisão humana/merge da #445 e CI pós-merge. Até ambos, V323 fica read-only; Provider QA, cloud persistence e primeiro import real seguem bloqueados.
+
+---
+---
+
 # Next Step
 ## V320 — certificação final antes do gate humano (2026-10-05)
 
