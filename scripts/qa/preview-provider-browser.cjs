@@ -38,10 +38,8 @@ function unsafeFirebaseRequest(raw, qa, method = 'GET') {
     const database = url.searchParams.get('database') || '';
     if (!url.pathname.includes(`/projects/${qa.projectId}/`)
       && !database.startsWith(`projects/${qa.projectId}/`)) return 'OTHER_FIRESTORE_PROJECT';
-    if (/\/Write\/channel$|\/documents:(?:commit|batchWrite)$/.test(url.pathname)) return 'FIRESTORE_WRITE';
-    if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return null;
-    if (method === 'POST' && /\/Listen\/channel$|\/documents:runQuery$/.test(url.pathname)) return null;
-    return 'FIRESTORE_WRITE';
+    if (isFirestoreWriteRequest(raw, method)) return 'FIRESTORE_WRITE';
+    return null;
   }
   if (host === 'firebasestorage.googleapis.com' || host === 'storage.googleapis.com'
     || host.endsWith('.firebaseio.com')) return 'UNEXPECTED_FIREBASE_DATA_REQUEST';
@@ -50,6 +48,47 @@ function unsafeFirebaseRequest(raw, qa, method = 'GET') {
   if (host.endsWith('.firebaseapp.com') && host !== qa.authDomain) return 'OTHER_AUTH_DOMAIN';
   if (host.endsWith('.firebaseapp.com') && !['GET', 'HEAD', 'OPTIONS'].includes(method)) return 'UNEXPECTED_AUTH_DOMAIN_WRITE';
   return null;
+}
+
+function isFirestoreWriteRequest(raw, method = 'GET') {
+  const url = new URL(raw);
+  if (url.hostname !== 'firestore.googleapis.com') return false;
+  if (/\/Write\/channel$|\/documents:(?:commit|batchWrite)$/.test(url.pathname)) return true;
+  const verb = String(method).toUpperCase();
+  if (['GET', 'HEAD', 'OPTIONS'].includes(verb)) return false;
+  return !(verb === 'POST' && /\/Listen\/channel$|\/documents:(?:runQuery|batchGet|runAggregationQuery)$/.test(url.pathname));
+}
+
+function createProviderQaMetrics() {
+  return {
+    firebaseRequests: 0,
+    qaFirestoreReads: 0,
+    productionFirebaseRequests: 0,
+    nonQaFirebaseRequests: 0,
+    appFirestoreWrites: 0,
+    financialStorageWriteAttempts: 0,
+    preBoundaryFirebaseRequests: 0,
+  };
+}
+
+function recordProviderQaRequest(metrics, raw, method = 'GET', qa = null) {
+  if (!isFirebaseServiceRequest(raw)) return null;
+  metrics.firebaseRequests++;
+  const url = new URL(raw);
+  const firestoreWrite = url.hostname === 'firestore.googleapis.com' && isFirestoreWriteRequest(raw, method);
+  if (firestoreWrite) metrics.appFirestoreWrites++;
+  if (!qa) {
+    metrics.preBoundaryFirebaseRequests++;
+    return 'FIREBASE_REQUEST_BEFORE_QA_BOUNDARY';
+  }
+  const reason = unsafeFirebaseRequest(raw, qa, method);
+  if (url.href.includes(qa.productionProjectId)
+    || ['PRODUCTION_PROJECT_REQUEST', 'OTHER_FIRESTORE_PROJECT', 'OTHER_FIREBASE_API_KEY', 'OTHER_AUTH_DOMAIN'].includes(reason)) {
+    metrics.productionFirebaseRequests++;
+  }
+  if (reason && reason !== 'FIRESTORE_WRITE') metrics.nonQaFirebaseRequests++;
+  if (url.hostname === 'firestore.googleapis.com' && !firestoreWrite && !reason) metrics.qaFirestoreReads++;
+  return reason;
 }
 
 function classifyBrowserGateState({ hostname, pathname = '/', title = '', providerError = '', hasDescriptor = false }) {
@@ -70,6 +109,10 @@ function gateError(code, message) {
   const error = new Error(message);
   error.code = code;
   return error;
+}
+
+function shouldPreserveQaBrowserForError(error) {
+  return ['GOOGLE_AUTH_REQUIRED', 'VERCEL_AUTH_REQUIRED'].includes(error?.code);
 }
 
 function resolveAuthenticatedBrowserEndpoint(raw) {
@@ -99,8 +142,16 @@ async function run(urlText, expectedProjectId) {
   let page;
   const violations = [];
   const authPopups = new Set();
+  const metrics = createProviderQaMetrics();
   let qa = null;
+  let preserveBrowser = false;
   try {
+    await context.route('**/*', route => {
+      const request = route.request();
+      const reason = recordProviderQaRequest(metrics, request.url(), request.method(), qa);
+      if (reason) { violations.push(reason); return route.abort(); }
+      return route.continue();
+    });
     page = await context.newPage();
     await page.addInitScript(() => {
       window.__V316_FINANCIAL_STORAGE_WRITES__ = 0;
@@ -126,18 +177,6 @@ async function run(urlText, expectedProjectId) {
         throw new Error('V316 QA local storage clear blocked');
       };
     });
-    const attachRequestGuard = target => target.route('**/*', route => {
-      const request = route.request();
-      if (isFirebaseServiceRequest(request.url()) && !qa) {
-        violations.push('FIREBASE_REQUEST_BEFORE_QA_BOUNDARY');
-        return route.abort();
-      }
-      if (!qa) return route.continue();
-      const reason = unsafeFirebaseRequest(request.url(), qa, request.method());
-      if (reason) { violations.push(reason); return route.abort(); }
-      return route.continue();
-    });
-    await attachRequestGuard(page);
     page.on('popup', popup => authPopups.add(popup));
     try {
       await page.goto(url.href, { waitUntil: 'domcontentloaded' });
@@ -199,6 +238,7 @@ async function run(urlText, expectedProjectId) {
     if (await page.evaluate(() => window.__V316_FINANCIAL_STORAGE_WRITES__ || 0) !== 0) {
       throw new Error('Preview attempted financial storage writes before QA boundary validation');
     }
+    metrics.financialStorageWriteAttempts += await page.evaluate(() => window.__V316_FINANCIAL_STORAGE_WRITES__ || 0);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof FB !== 'undefined' && FB.ready, null, { timeout: 30000 })
       .catch(() => { throw gateError('FIREBASE_QA_AUTH_FAILED', 'QA Firebase Auth did not become ready'); });
@@ -209,10 +249,11 @@ async function run(urlText, expectedProjectId) {
         throw gateError('GOOGLE_AUTH_REQUIRED', 'Google QA login is not available in the authenticated browser context');
       }
       await loginButton.click();
+      console.log('GOOGLE_AUTH_REQUIRED: complete sign-in in the dedicated QA browser window; this harness will keep waiting without closing it.');
     }
     try {
       await page.waitForFunction(() => typeof FB !== 'undefined' && FB.user && FB.access.allowed && FB.cloudLoaded,
-        null, { timeout: 180000 });
+        null, { timeout: 0 });
     } catch {
       const googleAuthPending = [...authPopups].some(candidate =>
         /(^|\.)accounts\.google\.com\//i.test(candidate.url()));
@@ -236,6 +277,10 @@ async function run(urlText, expectedProjectId) {
     if (beforePersistenceReload.projectId !== qa.projectId || !beforePersistenceReload.readOnly
       || !beforePersistenceReload.accessAllowed || beforePersistenceReload.financialStorageWrites !== 0
       || violations.length) throw new Error('QA boundary failed before persistence reload');
+    metrics.financialStorageWriteAttempts += beforePersistenceReload.financialStorageWrites;
+    if (metrics.productionFirebaseRequests !== 0 || metrics.appFirestoreWrites !== 0) {
+      throw new Error('QA network boundary observed a production Firebase request or Firestore write');
+    }
     if (Object.values(beforePersistenceReload.financialCounts).some(count => count !== 0)) {
       throw gateError('QA_DATA_NOT_CLEAN', 'QA identity loaded financial records; read-only certification stopped');
     }
@@ -256,22 +301,40 @@ async function run(urlText, expectedProjectId) {
     }));
     if (state.projectId !== qa.projectId || !state.readOnly || !state.accessAllowed
       || state.financialStorageWrites !== 0 || violations.length) throw new Error('Provider QA boundary failed');
+    metrics.financialStorageWriteAttempts += state.financialStorageWrites;
+    if (metrics.productionFirebaseRequests !== 0 || metrics.appFirestoreWrites !== 0) {
+      throw new Error('QA network boundary observed a production Firebase request or Firestore write');
+    }
     if (Object.values(state.financialCounts).some(count => count !== 0)) {
       throw gateError('QA_DATA_NOT_CLEAN', 'QA identity loaded financial records after session restoration');
     }
     await page.evaluate(() => signOutGoogle());
     await page.waitForFunction(() => typeof FB !== 'undefined' && !FB.user && !FB.access.allowed,
       null, { timeout: 15000 });
+    metrics.financialStorageWriteAttempts += await page.evaluate(() => window.__V316_FINANCIAL_STORAGE_WRITES__ || 0);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof FB !== 'undefined' && !FB.user && !FB.access.allowed,
       null, { timeout: 30000 });
-    if (violations.length || await page.evaluate(() => window.__V316_FINANCIAL_STORAGE_WRITES__) !== 0) {
+    metrics.financialStorageWriteAttempts += await page.evaluate(() => window.__V316_FINANCIAL_STORAGE_WRITES__ || 0);
+    if (violations.length || metrics.productionFirebaseRequests !== 0 || metrics.appFirestoreWrites !== 0
+      || metrics.financialStorageWriteAttempts !== 0) {
       throw new Error('Provider QA write/request boundary failed');
     }
-    console.log('PROVIDER_QA_PASS: isolated project, authorized read-only login, logout, zero production requests and zero financial writes.');
+    if (metrics.firebaseRequests === 0 || metrics.qaFirestoreReads === 0) {
+      throw new Error('Provider QA did not capture Firebase authentication and Firestore read requests');
+    }
+    console.log(`PROVIDER_QA_PASS ${JSON.stringify(metrics)}`);
+  } catch (error) {
+    if (shouldPreserveQaBrowserForError(error)) {
+      preserveBrowser = true;
+      console.error('QA_BROWSER_PRESERVED: finish authentication in the dedicated QA window; do not share credentials or MFA.');
+    }
+    throw error;
   } finally {
-    await page?.close().catch(() => {});
-    await browser.close().catch(() => {});
+    if (!preserveBrowser) {
+      await page?.close().catch(() => {});
+      await browser.close().catch(() => {});
+    }
   }
 }
 
@@ -282,4 +345,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { EXPECTED_QA_PROJECT_ID, classifyBrowserGateState, isFirebaseServiceRequest, readSourceProductionProjectId, resolveAuthenticatedBrowserEndpoint, resolvePreviewQaBoundary, unsafeFirebaseRequest };
+module.exports = { EXPECTED_QA_PROJECT_ID, classifyBrowserGateState, createProviderQaMetrics, isFirebaseServiceRequest, isFirestoreWriteRequest, readSourceProductionProjectId, recordProviderQaRequest, resolveAuthenticatedBrowserEndpoint, resolvePreviewQaBoundary, shouldPreserveQaBrowserForError, unsafeFirebaseRequest };

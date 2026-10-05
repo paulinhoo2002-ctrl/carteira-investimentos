@@ -2,7 +2,7 @@
 
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { EXPECTED_QA_PROJECT_ID, classifyBrowserGateState, isFirebaseServiceRequest, readSourceProductionProjectId, resolveAuthenticatedBrowserEndpoint, resolvePreviewQaBoundary, unsafeFirebaseRequest } = require('../scripts/qa/preview-provider-browser.cjs');
+const { EXPECTED_QA_PROJECT_ID, classifyBrowserGateState, createProviderQaMetrics, isFirebaseServiceRequest, readSourceProductionProjectId, recordProviderQaRequest, resolveAuthenticatedBrowserEndpoint, resolvePreviewQaBoundary, shouldPreserveQaBrowserForError, unsafeFirebaseRequest } = require('../scripts/qa/preview-provider-browser.cjs');
 
 const qa = { projectId: 'qa-project', productionProjectId: 'prod-project',
   apiKey: 'qa-key', authDomain: 'qa-project.firebaseapp.com' };
@@ -74,4 +74,32 @@ test('V316 browser boundary blocks production/other Firebase projects and writes
   assert.equal(unsafeFirebaseRequest('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp', qa, 'POST'), 'OTHER_FIREBASE_API_KEY');
   assert.equal(unsafeFirebaseRequest('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=prod-key', qa), 'OTHER_FIREBASE_API_KEY');
   assert.equal(unsafeFirebaseRequest('https://prod-project.firebaseapp.com/__/auth/handler', qa), 'PRODUCTION_PROJECT_REQUEST');
+});
+
+test('V321 provider request metrics distinguish QA reads, production requests and blocked writes', () => {
+  const metrics = createProviderQaMetrics();
+  assert.equal(recordProviderQaRequest(metrics,
+    'https://firestore.googleapis.com/v1/projects/qa-project/databases/(default)/documents/meta/access', 'GET', qa), null);
+  assert.equal(recordProviderQaRequest(metrics,
+    'https://firestore.googleapis.com/v1/projects/qa-project/databases/(default)/documents:batchGet', 'POST', qa), null);
+  assert.equal(recordProviderQaRequest(metrics,
+    'https://firestore.googleapis.com/v1/projects/prod-project/databases/(default)/documents/meta/access', 'GET', qa), 'PRODUCTION_PROJECT_REQUEST');
+  assert.equal(recordProviderQaRequest(metrics,
+    'https://firestore.googleapis.com/v1/projects/qa-project/databases/(default)/documents:commit', 'POST', qa), 'FIRESTORE_WRITE');
+  assert.deepEqual(metrics, {
+    firebaseRequests: 4,
+    qaFirestoreReads: 2,
+    productionFirebaseRequests: 1,
+    nonQaFirebaseRequests: 1,
+    appFirestoreWrites: 1,
+    financialStorageWriteAttempts: 0,
+    preBoundaryFirebaseRequests: 0,
+  });
+});
+
+test('V321 leaves the dedicated browser open when a human auth gate is reached', () => {
+  assert.equal(shouldPreserveQaBrowserForError({ code: 'GOOGLE_AUTH_REQUIRED' }), true);
+  assert.equal(shouldPreserveQaBrowserForError({ code: 'VERCEL_AUTH_REQUIRED' }), true);
+  assert.equal(shouldPreserveQaBrowserForError({ code: 'FIREBASE_QA_AUTH_FAILED' }), false);
+  assert.equal(shouldPreserveQaBrowserForError(new Error('other failure')), false);
 });
