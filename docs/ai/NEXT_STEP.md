@@ -1,14 +1,12 @@
 # Next Step
-## V320 — certificação final antes do gate humano (2026-10-05)
+## V321 — reconciliação pós-merge e Firebase QA (2026-10-05)
 
-- PR #443 permanece OPEN/DRAFT em `hermes/v320-overnight-functional-acceleration`; HEAD final `c53229e559a5843dd3181e74d0e01153e160171e`; `MERGE=false`.
-- CI final run `37310346405` PASS: Build/test, V289 visual e Auth+Firestore Emulator QA.
-- Evidência local no HEAD final: A11Y 19/19; V289 4/4; legado 254/254; moderno 815/815; matriz financeira V320 173/173; `qa:all` PASS; `verify:release` PASS; XLSX sintético 2/2; builds e `git diff --check` PASS.
-- V288: quatro fechamentos prematuros de template literal em `index.html` impediam o boot do script inline. O gate A11Y agora inicia navegador sintético e falha quando o runtime não inicializa.
-- Batch 6 certificado: B3 Posição é atualização de snapshot por identidade (ticker/nome), sem soma incremental; repetição idêntica é no-op e quantidade alterada substitui o valor. Falha de gravação bloqueia a sessão; retry exige recarga e conferência do estado persistido. Movimentação rápida, renda fixa, carteira e importações têm testes sintéticos de falha/retry ou duplo envio; o rollback de renda fixa usa snapshot anterior à mutação.
-- `CorporateEventsCore.promoteExpectedToRealized()` é função pura, sem writer ou chamador de produção; sua idempotência e exigência de evidência `RECEIVED` estão testadas. Falha de `save`/retry não se aplica a esse caminho sem uma nova integração com contrato próprio.
-- Em Windows local, o Firestore Emulator encerrou antes dos testes sem diagnóstico no log; o job Ubuntu do mesmo HEAD passou. O Preview Vercel está READY no SHA final; a tela pública de acesso carregou sem erro de console observado. Nenhuma autenticação nem escrita financeira real foi executada.
-- V285-02 permanece uma decisão humana de semântica financeira. V319 e PRs #440/#441 permanecem intocadas. Próximo passo: revisão humana da PR #443; não iniciar Batch 7 nesta missão e não fazer merge sem autorização explícita.
+- `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443 foi merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS.
+- V320=`MERGED_COMPLETE`; preservar evidências: CI final pré-merge `37310346405` PASS; A11Y 19/19; V289 4/4; legado 254/254; moderno 815/815; matriz financeira V320 173/173; `qa:all` e `verify:release` PASS; XLSX sintético 2/2; builds PASS.
+- Batch 6 certificado. B3 Posição é upsert de snapshot por identidade, repetição idêntica é no-op e quantidade alterada substitui; falhas exigem reload e conferência antes de retry. A promoção de evento esperado para realizado continua pura e exige proveniência `RECEIVED`.
+- Somente dados sintéticos; sem autenticação real ou escrita financeira. Firestore Emulator local encerrou sem diagnóstico; CI Ubuntu no HEAD final passou.
+- V285-02=`DEFERRED_FINANCIAL_SEMANTICS`. V319 permanece missão separada. PR #440 e #441 continuam separadas, abertas em Draft e não merged; a próxima ação é reconciliá-las sobre `main` na V321.
+- `MERGE=false`; não iniciar Batch 7 nesta missão.
 
 ## V317 — próximo passo operacional
 

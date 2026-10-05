@@ -1,5 +1,13 @@
 # Project Memory
 
+## V320 — certificação pós-merge (2026-10-05)
+
+- PR #443 foi integrada por squash em `main=c14924998aadf3b783e790294b7efa74877bbcd0`; V320=`MERGED_COMPLETE`. CI pós-merge run `37315410156` (#774) SUCCESS. A CI final pré-merge `37310346405` também passou.
+- Evidência final preservada: legado 254/254, moderno 815/815, A11Y 19/19, V289 4/4, matriz financeira 173/173, `qa:all`, `verify:release`, XLSX sintético 2/2 e builds PASS. Batch 6 certificado.
+- Apenas dados sintéticos; sem login real, escrita financeira real ou alteração Firebase de produção. Firestore Emulator local encerrou sem diagnóstico; CI Ubuntu passou no SHA merged.
+- V285-02 segue `DEFERRED_FINANCIAL_SEMANTICS`; V319 separado. PRs #440/#441 permanecem abertas/draft e sem merge para reconciliação V321. Batch 7 ainda não começou.
+- `REAL_DATA_USED=false`; `REAL_WRITES=0`; `FIREBASE_PROD_TOUCHED=false`; `MERGE=false`.
+
 ## V317 — certificação sintética das ações financeiras (2026-10-04)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.

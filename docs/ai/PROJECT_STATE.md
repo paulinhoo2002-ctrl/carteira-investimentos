@@ -1,5 +1,12 @@
 # Project State
 
+## V321 — reconciliação pós-merge (2026-10-05)
+
+- `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443/V320 merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS; V320=`MERGED_COMPLETE`.
+- Evidências V320 preservadas: legado 254/254, moderno 815/815, A11Y 19/19, V289 4/4, matriz financeira 173/173, `qa:all`, `verify:release`, XLSX sintético 2/2 e builds PASS.
+- V285-02=`DEFERRED_FINANCIAL_SEMANTICS`; V319 permanece separada. #440 e #441 seguem abertas/draft e não merged. V321 reconcilia somente mudanças Firebase QA e cobertura única sobre main; Batch 7 não iniciado.
+- `REAL_DATA_USED=false`; `REAL_WRITES=0`; `FIREBASE_PROD_TOUCHED=false`; `MERGE=false`.
+
 ## V317 — certificação de ações financeiras (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.
