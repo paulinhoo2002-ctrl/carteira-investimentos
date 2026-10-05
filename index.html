@@ -9105,9 +9105,16 @@ function switchWallet(id){
     render();
     return;
   }
+  const previousWalletId=S.activeWalletId;
   S.activeWalletId=next.id;
   syncStateFromWallet(next);
-  save();
+  if(!save()){
+    S.activeWalletId=previousWalletId;
+    syncStateFromWallet(activeWallet());
+    toast('⚠️ Falha ao gravar. Carteira anterior restaurada.','#f87171');
+    render();
+    return;
+  }
   render();
   if(isProtectedReadOnlyQaBoot()) rememberV250TrustedSnapshot();
   toast(`📁 ${next.name} ativada.`);
@@ -19122,10 +19129,14 @@ S.rfEvents=normalizeRfEvents(list);
   }
 
   S.rfEventEditor=null;
-  rememberScroll();
-  save();
-  toast('✅ Evento de renda fixa salvo.');
-  render();
+    rememberScroll();
+    if(!persistFinancialImportState(['rfEvents','proventos','assets'])) {
+      toast('⚠️ Falha ao gravar. Estado anterior restaurado.','#f87171');
+      render();
+      return;
+    }
+    toast('✅ Evento de renda fixa salvo.');
+    render();
 }
 function removeRfEvent(eventId){
   if(!canEditFromThisTab('excluir evento RF')) return;
@@ -19291,10 +19302,14 @@ function saveRfMovimentacao(){
   S.rfEvents=normalizeRfEvents(newEvents);
   S.assets=newAssets;
   S.rfMovementEditor=null;
-  rememberScroll();
-  save();
-  toast(`✅ Movimentação de ${result.event.ticker||'renda fixa'} registrada. Novo saldo: ${fmt(novoSaldo)}.`);
-  render();
+    rememberScroll();
+    if(!persistFinancialImportState(['rfEvents','assets'])) {
+      toast('⚠️ Falha ao gravar. Estado anterior restaurado.','#f87171');
+      render();
+      return;
+    }
+    toast(`✅ Movimentação de ${result.event.ticker||'renda fixa'} registrada. Novo saldo: ${fmt(novoSaldo)}.`);
+    render();
 }
 function parseNum(v){
   if(v==null) return 0;
