@@ -47,6 +47,9 @@ jobs:
           echo "Using browser: $CHROME_BIN"
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
 
+      - name: A11Y functional runtime
+        run: node --test tests/a11y-functional.test.js
+
       - name: Reliability smokes
         run: |
           node --test tests/phase-208-data-quality.test.js

@@ -2,9 +2,34 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const { chromium } = require('playwright-core');
+const { startLocalHttpServer } = require('./local-http-server');
 
 // Load index.html
 const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+
+test('A11Y: synthetic browser runtime initializes before accessibility checks', async () => {
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  let browser;
+  try {
+    browser = await chromium.launch({
+      executablePath: process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      headless: true,
+    });
+    const page = await browser.newPage();
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    await page.goto(harness.url, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() =>
+      window.__LOCAL_TEST_MODE__ === true && typeof S !== 'undefined' && typeof render === 'function',
+      null, { timeout: 5000 });
+    assert.deepEqual(pageErrors, [], 'synthetic runtime must have no page errors');
+  } finally {
+    if (browser) await browser.close();
+    harness.server.closeAllConnections();
+    harness.server.close();
+  }
+});
 
 test('A11Y: All interactive elements have accessible names', () => {
   // Buttons should have text content or aria-label
