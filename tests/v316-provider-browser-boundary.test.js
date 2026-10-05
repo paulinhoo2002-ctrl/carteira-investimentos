@@ -2,10 +2,29 @@
 
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { isFirebaseServiceRequest, readSourceProductionProjectId, resolvePreviewQaBoundary, unsafeFirebaseRequest } = require('../scripts/qa/preview-provider-browser.cjs');
+const { EXPECTED_QA_PROJECT_ID, classifyBrowserGateState, isFirebaseServiceRequest, readSourceProductionProjectId, resolveAuthenticatedBrowserEndpoint, resolvePreviewQaBoundary, unsafeFirebaseRequest } = require('../scripts/qa/preview-provider-browser.cjs');
 
 const qa = { projectId: 'qa-project', productionProjectId: 'prod-project',
   apiKey: 'qa-key', authDomain: 'qa-project.firebaseapp.com' };
+
+test('V316 browser gate distinguishes Vercel auth, Google auth, invalid config and missing descriptor', () => {
+  assert.equal(EXPECTED_QA_PROJECT_ID, 'carteira-invest-qa-v316');
+  assert.equal(classifyBrowserGateState({ hostname: 'vercel.com', pathname: '/sso-api/login' }), 'VERCEL_AUTH_REQUIRED');
+  assert.equal(classifyBrowserGateState({ hostname: 'preview.example.test', title: 'Log in to Vercel' }), 'VERCEL_AUTH_REQUIRED');
+  assert.equal(classifyBrowserGateState({ hostname: 'preview.example.test', title: 'Authentication required | Vercel' }), 'VERCEL_AUTH_REQUIRED');
+  assert.equal(classifyBrowserGateState({ hostname: 'accounts.google.com' }), 'GOOGLE_AUTH_REQUIRED');
+  assert.equal(classifyBrowserGateState({ hostname: 'preview.example.test', providerError: 'Autenticação indisponível neste ambiente' }), 'PREVIEW_CONFIG_INVALID');
+  assert.equal(classifyBrowserGateState({ hostname: 'preview.example.test' }), 'DESCRIPTOR_UNAVAILABLE');
+  assert.equal(classifyBrowserGateState({ hostname: 'preview.example.test', hasDescriptor: true }), 'PREVIEW_DESCRIPTOR_READY');
+});
+
+test('V316 browser reuse only accepts local plain-HTTP CDP endpoints', () => {
+  assert.equal(resolveAuthenticatedBrowserEndpoint('http://127.0.0.1:9222'), 'http://127.0.0.1:9222');
+  assert.equal(resolveAuthenticatedBrowserEndpoint('http://localhost:9222'), 'http://localhost:9222');
+  assert.throws(() => resolveAuthenticatedBrowserEndpoint('https://remote.example.test'), /loopback/);
+  assert.throws(() => resolveAuthenticatedBrowserEndpoint('http://127.0.0.1:9222/?token=x'), /loopback/);
+  assert.throws(() => resolveAuthenticatedBrowserEndpoint(''), /already-authenticated/);
+});
 
 test('V316 protected browser bootstrap blocks Firebase until the QA descriptor is validated', () => {
   assert.equal(isFirebaseServiceRequest('https://firestore.googleapis.com/v1/projects/qa-project/databases/(default)/documents'), true);

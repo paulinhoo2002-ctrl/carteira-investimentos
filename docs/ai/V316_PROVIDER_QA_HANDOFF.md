@@ -10,6 +10,10 @@
 - A tentativa local de Auth/Firestore Emulator não iniciou: Firebase CLI encontrou `EPERM` ao acessar a configuração global e, com configuração isolada, o Firestore Emulator encerrou inesperadamente sem diagnóstico. A CI Ubuntu no HEAD reconciliado é a evidência necessária para esse gate.
 - Estado observado em 2026-10-05: PR #444 tem CI #777 SUCCESS no HEAD `e74df87bdb345801d803dd3fd1417c376cc41759`; Preview Ready nesse SHA em `carteira-investimentos-111kuhx36-paulinhoo2002-ctrls-projects.vercel.app`. A página pública mostra login desabilitado e autenticação indisponível, conforme esperado sem QA config. A consulta Vercel sem descriptografar valores não encontrou variáveis no escopo da branch `codex/v321-postmerge-reconcile`; o novo deployment precisa ser gerado após configurar as sete variáveis no escopo Preview/branch.
 
+- Atualização V321 em `e189ea273379772ec69f2708d972298172fc2049`: as sete variáveis `QA_FIREBASE_*` foram encontradas no escopo Preview da branch `codex/v321-postmerge-reconcile` (valores não lidos/exibidos). O deployment desse SHA foi criado antes delas e não contém o novo ambiente; o próximo Preview deve ser gerado por um push autorizado.
+- O harness `scripts/qa/preview-provider-browser.cjs` agora exige `QA_BROWSER_CDP_ENDPOINT` em loopback e se conecta ao Chrome já autenticado, criando apenas uma nova aba e roteando somente essa aba e seus popups. Não exporta nem persiste cookies. Sem endpoint, retorna `VERCEL_AUTH_REQUIRED` e não abre Chromium vazio. Também classifica configuração/descritor, tenta Google QA pela UI, verifica sessão após reload/logout e bloqueia qualquer solicitação Firebase antes de validar a fronteira.
+- A porta local padrão CDP `127.0.0.1:9222` não estava disponível na inspeção de 2026-10-05. `GOOGLE_PROVIDER_QA=NOT_TESTED`; não usar o navegador isolado antigo nem alegar certificação live até haver acesso suportado ao mesmo contexto autenticado. A consulta CUA do Preview corrente não tinha `__FIREBASE_DEPLOYMENT__` e não foi usada para ler estado financeiro.
+
 Escopo: #440/#441 não devem ser merged; PR V321 permanece draft até revisão e validação externa aplicáveis. O projeto Firebase QA deve ser isolado e nunca receber dados reais.
 `firebase.qa-preview.rules` é exclusivo desse projeto; **não publicar em produção**.
 O app Preview bloqueia login sem configuração QA completa e host autorizado.
@@ -99,23 +103,24 @@ O agente também executa `npm.cmd run test:qa-preview-config` e gates de CI no
 SHA exato. Se o Preview estiver protegido pela Vercel, usar o acesso oficial
 ao deployment para ler o HTML; não remover proteção para fazer o teste passar.
 
-Quando a identidade QA estiver disponível, executar o gate interativo em
-navegador isolado (abre janela temporária; nenhum token é salvo no repositório):
+Quando o endpoint CDP local do Chrome já autenticado estiver disponível,
+executar o gate interativo pelo mesmo perfil (somente `http://127.0.0.1` ou
+`http://localhost`; nenhum cookie/token é exportado ou salvo):
 
 ```powershell
+$env:QA_BROWSER_CDP_ENDPOINT = 'http://127.0.0.1:9222'
 npm.cmd run qa:preview-provider-browser -- https://HOST_PREVIEW_ESTAVEL/
 ```
 
-Se a proteção da Vercel mostrar SSO, autenticar na própria janela isolada; depois
-concluir o popup Google com a identidade sintética QA. O harness bloqueia todos
-os endpoints Firebase durante esse primeiro carregamento, valida o descritor
-QA e só então recarrega permitindo Auth QA e leituras Firestore QA. Ele bloqueia
-outros projetos, confere o ID de produção do descritor contra o ID publicado
-separadamente no `firebaseConfig` e falha fechado se estiver ausente ou divergir.
-Também bloqueia writes Firestore, escritas/remoções financeiras locais e
-`localStorage.clear()`, e verifica logout. Senha, MFA, cookie ou bypass da Vercel
-nunca são enviados ao agente. O resultado só é válido se esse comando terminar
-`PROVIDER_QA_PASS` no deployment do HEAD correto.
+O script cria uma aba nova no contexto autenticado existente; não toca nas
+demais abas. Antes da fronteira validada, aborta e registra qualquer solicitação
+Firebase. Depois aceita somente Auth QA e leituras Firestore QA, bloqueia outros
+projetos, writes Firestore, escritas/remoções financeiras locais e
+`localStorage.clear()`, e valida sessão persistente e logout. Se surgir SSO,
+continua esperando na mesma janela/contexto; autenticação, cookies, MFA ou
+bypass nunca são lidos pelo script. Sem endpoint local, o gate para com
+`VERCEL_AUTH_REQUIRED`; não inicie uma sessão limpa nem repita login. O resultado
+só é válido se terminar `PROVIDER_QA_PASS` no deployment do HEAD correto.
 
 O smoke Node por URL funciona quando o deployment é acessível por HTTP público.
 No Preview atual, Vercel SSO responde a clientes anônimos; não desligar a
