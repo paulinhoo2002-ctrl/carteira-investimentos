@@ -1,3 +1,12 @@
+## V322 — continuidade de desenvolvimento, Provider QA diferido (2026-10-05)
+
+- V321: PR #444 OPEN/DRAFT; código SHA `4b3ae3dae857f8fd47dccad15ce7f4dab477793c` passou CI #781. Run documental #782: Build/test PASS, V289 e Auth/Firestore Emulator CANCELLED. PR #444 não foi alterada.
+- `GOOGLE_PROVIDER_QA=DEFERRED_EXTERNAL_GATE`; `CLOUD_PERSISTENCE_LIVE=DEFERRED_EXTERNAL_GATE`; `DEVELOPMENT_BLOCKED=false`; `RELEASE_BLOCKED=true`; `MERGE=false`.
+- V322 parte de `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0` na branch `codex/v322-batch7-import-center-hardening`. Mudanças somente em testes, script e docs; writers/fórmulas/schema/persistência de produto não mudaram.
+- Evidência: V284 81/81; Import Center 27/27; workflow/histórico/Inter/RF 49/49; Corporate Events 39/39; persistência/backup/roundtrip 45/45; build legado PASS. Build moderno e suítes completas aguardam CI: worktree sem dependências.
+- B3 movimentações ganhou cancel/confirm/double-submit/replay, falha/quarentena/retry e bloqueio vazio/incompleto/revisão. Matriz em `docs/ai/V322_BATCH7_IMPORT_MATRIX.md`.
+- XP/BTG `FIXTURE_REQUIRED`; `UNKNOWN != ZERO`; `PARTIAL != COMPLETE`; posição snapshot/upsert. Fixtures sintéticas; nenhuma escrita real/produção.
+
 # Project State
 
 ## V317 — certificação de ações financeiras (2026-10-04)
