@@ -12245,27 +12245,52 @@ document.getElementById('imp-file').addEventListener('change',e=>{
     try{
       const d=JSON.parse(ev.target.result);
       if(typeof BackupPortability!=='undefined' && d?.manifest?.backupFormat===BackupPortability.FORMAT){
-        const integrity=await BackupPortability.verifyBackup(d);
-        if(!['SUPPORTED','MIGRATABLE'].includes(integrity.status)){
-          toast(`Arquivo recusado: ${integrity.status}. Nenhum dado foi aplicado.`,'#f87171');
-          return;
-        }
-        const preview=await BackupPortability.previewRestore(d,backupCurrentState());
-        const parsedState=d.payload?.state||{};
-        S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview};
-        S.backupOpen=true;
-        render();
-        return;
-      }
-      const parsed=backupFromRaw(d);
-      if(!parsed){
-        toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
-        return;
-      }
-      const summary=backupStats(parsed.data);
-      S.backupImportDraft={fileName:f.name, parsed, summary, importedAt:backupImportedAt(parsed)};
-      S.backupOpen=true;
-      render();
+              const integrity=await BackupPortability.verifyBackup(d);
+              if(!['SUPPORTED','MIGRATABLE'].includes(integrity.status)){
+                toast(`Arquivo recusado: ${integrity.status}. Nenhum dado foi aplicado.`,'#f87171');
+                return;
+              }
+              const preview=await BackupPortability.previewRestore(d,backupCurrentState());
+              const parsedState=d.payload?.state||{};
+              S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview};
+              S.backupOpen=true;
+              render();
+              return;
+            }
+            // Legacy format: also use previewRestore for consistent preview
+            const legacyParsed=backupFromRaw(d);
+            if(!legacyParsed){
+              toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
+              return;
+            }
+            // Build a backup object compatible with previewRestore
+            const legacyBackup={
+              manifest: {
+                backupFormat: 'carteira-investimentos-backup',
+                backupVersion: '1.0',
+                appVersion: 'legacy',
+                createdAt: new Date().toISOString(),
+                exportMode: 'LOCAL_ONLY',
+                operationId: 'legacy-op-' + Date.now(),
+                exportedBy: 'browser',
+                contentInventory: ['state', 'assets', 'transactions', 'income', 'fixedIncome', 'goals', 'corporateEvents'],
+                recordCounts: backupStats(legacyParsed.data),
+                schemaIdentifiers: { state: 'legacy-civ5-compatible', config: 'legacy-civ5-cfg-compatible' },
+                checksums: { algorithm: 'SHA-256', payload: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
+                compatibility: { minSupportedMajor: 1, currentMajor: 1, legacyFormatsRecognized: ['legacy-civ5-compatible'] }
+              },
+              payload: legacyParsed,
+              config: {}
+            };
+            // Calculate correct checksum
+            if(typeof BackupPortability!=='undefined'){
+              legacyBackup.manifest.checksums.payload = await BackupPortability.sha256(BackupPortability.canonical(legacyBackup.payload));
+            }
+            const legacyPreview=await BackupPortability.previewRestore(legacyBackup,backupCurrentState());
+            const legacySummary=backupStats(legacyParsed.data);
+            S.backupImportDraft={fileName:f.name, parsed:legacyBackup, summary:legacySummary, importedAt:backupImportedAt(legacyParsed), v249:false, v249Preview:legacyPreview};
+            S.backupOpen=true;
+            render();
     }catch(err){
       toast('Arquivo inválido. Selecione um backup em JSON.', '#f87171');
     }finally{
