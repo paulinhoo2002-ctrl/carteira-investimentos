@@ -29,3 +29,12 @@ Falha segue `SNAPSHOT → VALIDATE → MUTATE → PERSIST → VERIFY → CONFIRM
 - `npm test`, moderna, `qa:all`, `verify:release`, A11Y, V289 e visual aguardam CI; não declarar PASS.
 
 Nenhum arquivo financeiro pessoal, conta de produção, Firebase Production ou dado real acessado. Writes reais/produção zero. `MERGE=false`.
+
+## Certificação sequencial após CI #783 (2026-10-05)
+
+- `BATCH7_CI=PASS`: run `37372040030`, commit `36c78e69acaa8c67531654181cc274cd71ade6c4`; todos os três jobs passaram.
+- `BATCH8_CORPORATE_EVENTS=PASS`: testes focados 39/39; shadow e promoção com comprovante `RECEIVED`, sem writer de carteira.
+- `BATCH9_FAILURE_INJECTION=PASS`: fronteira V284 81/81; rollback/quarentena/retry após verificação cobertos.
+- `BATCH10_DOUBLE_ACTION=PASS_WITH_SCOPE`: duplo envio e replay síncronos preservam uma única persistência; disputa real entre abas não foi exercitada.
+- Testes locais focados combinados: 120/120. CI amplo: `npm test` 249 pass, 0 fail, 5 skipped; A11Y, V320 contracts, Reliability, Auth/Firestore Emulator e V289 visual passaram.
+- `REAL_WRITES=0`; nenhuma mudança de produto. `PR445=OPEN/DRAFT`; `MERGE=false`. V323 permanece read-only até merge humano e CI pós-merge.

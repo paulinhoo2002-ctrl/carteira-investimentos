@@ -1,15 +1,16 @@
-## V322 — continuidade de desenvolvimento, Provider QA diferido (2026-10-05)
+## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
 
-- V321: PR #444 OPEN/DRAFT; código SHA `4b3ae3dae857f8fd47dccad15ce7f4dab477793c` passou CI #781. Run documental #782: Build/test PASS, V289 e Auth/Firestore Emulator CANCELLED. PR #444 não foi alterada.
-- `GOOGLE_PROVIDER_QA=DEFERRED_EXTERNAL_GATE`; `CLOUD_PERSISTENCE_LIVE=DEFERRED_EXTERNAL_GATE`; `DEVELOPMENT_BLOCKED=false`; `RELEASE_BLOCKED=true`; `MERGE=false`.
-- V322 parte de `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0` na branch `codex/v322-batch7-import-center-hardening`. Mudanças somente em testes, script e docs; writers/fórmulas/schema/persistência de produto não mudaram.
-- Evidência: V284 81/81; Import Center 27/27; workflow/histórico/Inter/RF 49/49; Corporate Events 39/39; persistência/backup/roundtrip 45/45; build legado PASS. Build moderno e suítes completas aguardam CI: worktree sem dependências.
-- B3 movimentações ganhou cancel/confirm/double-submit/replay, falha/quarentena/retry e bloqueio vazio/incompleto/revisão. Matriz em `docs/ai/V322_BATCH7_IMPORT_MATRIX.md`.
-- XP/BTG `FIXTURE_REQUIRED`; `UNKNOWN != ZERO`; `PARTIAL != COMPLETE`; posição snapshot/upsert. Fixtures sintéticas; nenhuma escrita real/produção.
-
+- PR #445 permanece OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783, run `37372040030`, SUCCESS. Nenhum merge foi feito.
+- Batch 7: gate completo passou em CI (Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual). `npm test` reportou 249 passes, zero failures e cinco testes skipped.
+- Batch 8 Corporate Events: 39/39 testes focados PASS; fluxo shadow permanece sem writer de carteira, e promoção exige evidência `RECEIVED`.
+- Batch 9 failure injection: fronteira V284 81/81 PASS, incluindo rollback, quarentena, bloqueio de saves seguintes e retry após reload/verificação.
+- Batch 10 double action/replay: cancel/confirm, double-submit e replay idêntico persistem uma única vez; coberto em V284 e validado em CI/local. Disputa real entre abas não foi exercitada e não está certificada.
+- Validação local focal combinada: Corporate Events 39/39 e fronteira V284 81/81; writes reais/produção zero. Sem mudança de produto, fórmula, schema ou persistência.
+- V323 continua somente leitura até PR #445 ser incorporada e o CI pós-merge passar. Provider QA real e persistência cloud seguem externos; `MERGE=false`.
 # Project State
 
-## V317 — certificação de ações financeiras (2026-10-04)
+#
+# V317 — certificação de ações financeiras (2026-10-04)
 
 - `WORKTREE=C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`; `BRANCH=hermes/v317-financial-action-e2e-certification`; base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`.
 - Revisão independente CONCLUÍDA por Hermes GLM-5.3 via NVIDIA (HEAD `79991e67033a9336fdb103eb0f1bd9641ce2c938`): `FINANCIAL_SEMANTICS_CHANGED=false`; snapshot pré-mutação fail-closed; restauração/quarentena cobre todas as chaves mutadas; os 14 chamadores pré-existentes de `syncAssetsFromAportes()`/`autoDY()` mantêm comportamento idêntico via default `persistState=true`. Ponytail full: BLOCKER=0/MAJOR=0/MINOR=0/DEFERRED=0; Caveman: sem estado duplicado ou fallback oculto.

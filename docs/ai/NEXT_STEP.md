@@ -1,20 +1,14 @@
-## V322 — desenvolvimento segue com Provider QA diferido (2026-10-05)
+## V322 — Batch 7–10 certificados até a fronteira síncrona (2026-10-05)
 
-### Estado V321
-- PR #444 OPEN/DRAFT/MERGEABLE, branch `codex/v321-postmerge-reconcile`, HEAD `d08e528c63b8a2e794e5b4db9fb13922dfa3ff6b`; não alterada.
-- Código V321 SHA `4b3ae3dae857f8fd47dccad15ce7f4dab477793c`: CI #781 (`37360390948`) SUCCESS. Run documental #782 (`37366338959`): Build/test passou; V289 e Auth/Firestore Emulator cancelados. #782 não é CI integralmente verde.
-- `GOOGLE_PROVIDER_QA=DEFERRED_EXTERNAL_GATE`; `CLOUD_PERSISTENCE_LIVE=DEFERRED_EXTERNAL_GATE`; não certificados. `AUTOMATED_PROVIDER_GUARDS=PASS`; `FIREBASE_EMULATOR_QA=PASS` em #781.
-- `DEVELOPMENT_BLOCKED=false`; `RELEASE_BLOCKED=true`; sem tentativa browser/CDP nesta missão. `MERGE=false`.
+- PR #445 OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS. `MERGE=false`.
+- Batch 7: pipeline CI verde; Build/test (249 pass, 0 fail, 5 skipped), A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual.
+- Batch 8: Corporate Events 39/39 PASS, incluindo shadow-only, sem writer de produção e promoção condicionada a evidência `RECEIVED`.
+- Batch 9: failure injection e quarentena cobertas pela fronteira V284 81/81 PASS.
+- Batch 10: double-submit e replay sequenciais sem gravação duplicada, cobertos localmente/CI. Concorrência entre abas não foi testada; não alegar certificação multi-tab.
+- Teste focal local combinado: 120/120 PASS. Escritas reais/produção=0; sem mudança de código de produto, fórmulas, schema ou persistência.
+- Próximo gate: revisão humana/merge da #445 e CI pós-merge. Até ambos, V323 fica read-only; Provider QA, cloud persistence e primeiro import real seguem bloqueados.
 
-### Batch 7 — checkpoint local
-- Worktree `C:\Projetos\carteira-investimentos.worktrees\v322-batch7-import-center-hardening`; branch `codex/v322-batch7-import-center-hardening`; base `c14924998aadf3b783e790294b7efa74877bbcd0`.
-- Fronteira V284 81/81; Import Center 27/27; workflow/histórico/Inter/RF 49/49; Corporate Events 39/39; persistência/backup/roundtrip 45/45; build legado PASS.
-- Três testes sintéticos novos cobrem confirmação/replay, retry após save incerto e bloqueio de linhas B3 vazias/incompletas/revisão. V284 foi ligado ao `test:ui` dentro de `npm test`.
-- Build moderno local não executou: dependências não instaladas. Nenhum `npm ci`; testes completos, modernos, A11Y, V289, visual, `qa:all` e `verify:release` aguardam CI.
-- Matriz: [`V322_BATCH7_IMPORT_MATRIX.md`](V322_BATCH7_IMPORT_MATRIX.md). XP/BTG `FIXTURE_REQUIRED`; posição B3 snapshot/upsert.
-
-NEXT_ACTION=Revisar diff, publicar Draft PR Batch 7 e exigir CI completa verde; então prosseguir Batch 8 Corporate Events, Batch 9 Failure Injection e Batch 10 Double Action/concurrency. Não retomar Provider QA.
-
+---
 ---
 
 # Next Step
