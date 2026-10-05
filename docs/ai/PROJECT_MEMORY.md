@@ -10,11 +10,11 @@
 
 ## V321 — reconciliação Firebase pós-V320 (2026-10-05)
 
-- Branch/worktree `codex/v321-postmerge-reconcile` / `C:\Projetos\carteira-investimentos.worktrees\v321-postmerge-reconcile`, baseada em main `c14924998aadf3b783e790294b7efa74877bbcd0`. Commit de implementação `c33c0c0`; docs correntes e publicação ainda em andamento neste checkpoint.
+- Branch/worktree `codex/v321-postmerge-reconcile` / `C:\Projetos\carteira-investimentos.worktrees\v321-postmerge-reconcile`, baseada em main `c14924998aadf3b783e790294b7efa74877bbcd0`. Implementação `c33c0c0`; PR #444 OPEN/DRAFT, head observado `3d69ae4cef8bcd11f916d33a24493fae2ec3c634`. CI run #775 passou nos três jobs; atualização documental seguinte precisa de CI própria.
 - PR #440 continha runtime Preview QA ainda necessário; portado sem rebase da história antiga. Cobertura #441 foi comparada; guardas e provider-negative já estavam exercitados no runtime de #440, e foi preservado teste único direto contra bucket Storage de produção. Nenhuma PR antiga foi alterada ou merged.
 - Revisão independente encontrou login Preview avançando sem confirmação de persistência Firebase `SESSION`; corrigido: falha ou ausência do método bloqueia popup, recusa sessão restaurada e limpa a sessão antes de qualquer leitura `meta/access`. RED→GREEN confirmado no runtime.
 - V321 focado: Preview config/guards/provider-negative 59/59; regressão financeira V317/V320 6/6; `verify:release` PASS (legado, moderno, `qa:all`, V289). XLSX sintético local ficou `BLOCKED_NETWORK` por CDN/SRI; Auth/Firestore Emulator Windows não iniciou os testes. CI pós-merge de V320 (#774) não substitui CI futura do V321.
-- Provider Google real e cloud persistence continuam `NOT_TESTED`/não certificados; Preview final da nova branch ainda pendente. Somente config/fixtures sintéticas em testes; sem dado real, gravação financeira ou Firebase de produção. `V285-02=DEFERRED_FINANCIAL_SEMANTICS`; `MERGE=false`; Batch 7 não iniciado.
+- Preview Vercel está Ready no SHA observado, mas sem variáveis QA para a branch V321; UI exibe login disabled e autenticação indisponível, confirmando fail-closed. Provider Google real e cloud persistence continuam `NOT_TESTED`/não certificados. Somente config/fixtures sintéticas em testes; sem dado real, gravação financeira ou Firebase de produção. `V285-02=DEFERRED_FINANCIAL_SEMANTICS`; `MERGE=false`; Batch 7 não iniciado.
 
 ## V317 — certificação sintética das ações financeiras (2026-10-04)
 

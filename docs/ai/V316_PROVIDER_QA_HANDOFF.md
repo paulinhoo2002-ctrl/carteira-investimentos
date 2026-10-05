@@ -8,6 +8,7 @@
 - Teste cruzado cobre compra V317 em runtime local sintético e bloqueio no Preview antes de `save()`. Isso não autentica Google nem certifica cloud persistence. `REAL_PROVIDER_QA=NOT_TESTED`; `CLOUD_PERSISTENCE_CERTIFIED=false`.
 - Após o push, exigir novo deployment Preview da branch V321 com SHA idêntico ao HEAD da PR. Inspecionar somente URL Preview/SHA e o resultado do smoke; nunca enviar valores das sete variáveis, email, senha, MFA, cookies, tokens ou bypass por chat.
 - A tentativa local de Auth/Firestore Emulator não iniciou: Firebase CLI encontrou `EPERM` ao acessar a configuração global e, com configuração isolada, o Firestore Emulator encerrou inesperadamente sem diagnóstico. A CI Ubuntu no HEAD reconciliado é a evidência necessária para esse gate.
+- Estado observado depois do primeiro push: PR #444 tem CI #775 SUCCESS e Preview Ready no SHA `3d69ae4cef8bcd11f916d33a24493fae2ec3c634`. A página pública mostra login desabilitado e autenticação indisponível, conforme esperado sem QA config. A consulta Vercel sem descriptografar valores não encontrou variáveis no escopo da branch `codex/v321-postmerge-reconcile`; o novo deployment ainda precisa ser gerado após configurar as sete variáveis no escopo Preview/branch.
 
 Escopo: #440/#441 não devem ser merged; PR V321 permanece draft até revisão e validação externa aplicáveis. O projeto Firebase QA deve ser isolado e nunca receber dados reais.
 `firebase.qa-preview.rules` é exclusivo desse projeto; **não publicar em produção**.

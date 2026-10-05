@@ -4,11 +4,12 @@
 
 - `origin/main=c14924998aadf3b783e790294b7efa74877bbcd0`; PR #443/V320 merged por squash. CI pós-merge run `37315410156` (#774) SUCCESS; V320=`MERGED_COMPLETE`.
 - Evidências V320 preservadas: legado 254/254, moderno 815/815, A11Y 19/19, V289 4/4, matriz financeira 173/173, `qa:all`, `verify:release`, XLSX sintético 2/2 e builds PASS.
-- V321 worktree `C:\Projetos\carteira-investimentos.worktrees\v321-postmerge-reconcile`, branch `codex/v321-postmerge-reconcile`, base main c149249. Commit de implementação atual `c33c0c0` (runtime QA Firebase Preview, proteções read-only e testes de integração V317/V320). Commit documental e PR Draft ainda pendentes.
+- V321 worktree `C:\Projetos\carteira-investimentos.worktrees\v321-postmerge-reconcile`, branch `codex/v321-postmerge-reconcile`, base main c149249. Implementação `c33c0c0`; PR #444 OPEN/DRAFT, head observado `3d69ae4cef8bcd11f916d33a24493fae2ec3c634`; CI run #775 SUCCESS em Build/test, Auth+Firestore QA/rules e V289. Esta atualização documental subsequente deve disparar nova CI.
 - Reconciliou o comportamento único ainda necessário de #440. Dos testes #441, preservou as verificações úteis de seleção/guardas/provider-negative via cobertura runtime #440 e acrescentou teste direto para bucket Storage de produção; não integrou testes mock-only redundantes. #440/#441 permanecem abertas/draft até V321 estar integrada; nenhuma foi merged.
 - Revisão independente: BLOCKER=0; MAJOR=1 encontrado e corrigido (persistência QA SESSION falha fechada). `tests/v316-firebase-runtime-config.test.js` passou 20/20, QA Preview 59/59, V317/V320 cruzado 6/6 e `verify:release` PASS local. XLSX local `BLOCKED_NETWORK` (CDN/SRI); Auth/Firestore Emulator Windows falhou antes dos testes, sem diagnóstico útil. CI do HEAD V321 e Preview novo ainda pendentes.
-- `REAL_PROVIDER_QA=NOT_TESTED`; `CLOUD_PERSISTENCE_CERTIFIED=false`; V285-02=`DEFERRED_FINANCIAL_SEMANTICS`; V319 permanece separada. Nenhum dado real, gravação financeira, Firestore real ou Firebase de produção foi usado/tocado. `REAL_DATA_USED=false`; `REAL_WRITES=0`; `FIREBASE_PROD_TOUCHED=false`; `MERGE=false`.
-- Batch 7 não iniciado; readiness fica `false` até a revisão final, CI V321 e validação Preview aplicável confirmarem blocker/major zero.
+- Preview Vercel Ready no SHA observado; login permanece disabled/fail-closed pois não há variáveis QA no escopo branch V321. Provider QA real continua `NOT_TESTED`; cloud persistence não certificada.
+- `V285-02=DEFERRED_FINANCIAL_SEMANTICS`; V319 permanece separada. Nenhum dado real, gravação financeira, Firestore real ou Firebase de produção foi usado/tocado. `REAL_DATA_USED=false`; `REAL_WRITES=0`; `FIREBASE_PROD_TOUCHED=false`; `MERGE=false`.
+- Batch 7 não iniciado; readiness fica `false` até configuração Preview QA humana, validação provider real e gates aplicáveis sem blocker/major.
 
 ## V317 — certificação de ações financeiras (2026-10-04)
 
