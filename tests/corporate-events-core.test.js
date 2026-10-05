@@ -8,5 +8,44 @@ test('cancellation remains a shadow status and never realizes or reverses a ledg
 test('eligibility uses entitlement date, not current quantity',()=>{const tx=[{ticker:'ABCD3',date:'2026-01-01',qty:100,operation:'compra'},{ticker:'ABCD3',date:'2026-09-16',qty:100,operation:'venda'}];const e=C.calculateEventEntitlement({symbol:'ABCD3',eventType:'DIVIDEND',baseDate:'2026-09-15',paymentDate:'2026-09-25',valuePerUnitGross:1},{transactions:tx,currentQuantity:0});assert.equal(e.eligibleQuantity,100);assert.equal(e.expectedGross,100);});
 test('buy after cutoff is excluded, partial lots and multi-lot are deterministic',()=>{const tx=[{ticker:'ABCD3',date:'2026-01-01',qty:40,operation:'compra'},{ticker:'ABCD3',date:'2026-09-01',qty:60,operation:'compra'},{ticker:'ABCD3',date:'2026-09-16',qty:100,operation:'compra'}];const e=C.calculateEventEntitlement({symbol:'ABCD3',eventType:'DIVIDEND',baseDate:'2026-09-15',valuePerUnitGross:2},{transactions:tx});assert.equal(e.eligibleQuantity,100);assert.equal(e.expectedGross,200);});
 test('future event is visible as provisional and upcoming',()=>{const e=C.calculateEventEntitlement({symbol:'KNHF11',eventType:'FII_INCOME',paymentDate:'2099-09-25',valuePerUnitGross:1},{currentQuantity:100});assert.equal(e.status,'EXPECTED');assert.equal(C.buildUpcomingIncomeView([e],new Date('2099-09-01'))[0].status,'A RECEBER');});
-test('promotion is idempotent and pure',()=>{const e={symbol:'ABCD3',eventType:'DIVIDEND',valuePerUnitGross:1,expectedNet:10};const a=C.promoteExpectedToRealized(e);const b=C.promoteExpectedToRealized(a.event,{realizedIds:[a.event.financialEventId]});assert.equal(a.delta,10);assert.equal(b.delta,0);});
+test('promotion is idempotent and pure',()=>{const e={symbol:'ABCD3',eventType:'DIVIDEND',valuePerUnitGross:1,expectedNet:10};const receiptEvidence=[{symbol:'ABCD3',eventType:'DIVIDEND',value:10,provenance:'RECEIVED'}];const a=C.promoteExpectedToRealized(e,{receiptEvidence});const b=C.promoteExpectedToRealized(a.event,{realizedIds:[a.event.financialEventId],receiptEvidence});assert.equal(a.delta,10);assert.equal(b.delta,0);});
+
+test('promoteExpectedToRealized requires explicit RECEIVED provenance receipt evidence',()=>{
+  const expected = {symbol:'ABCP11',eventType:'DIVIDEND',valuePerUnitGross:1,expectedNet:100,paymentDate:'2026-08-01',status:'EXPECTED'};
+  
+  // No receipt evidence - should stay EXPECTED
+  const resultNoReceipt = C.promoteExpectedToRealized(expected, {receiptEvidence: []});
+  assert.equal(resultNoReceipt.event.status, 'EXPECTED');
+  assert.equal(resultNoReceipt.delta, 0);
+  
+  // Receipt evidence without RECEIVED provenance - should stay EXPECTED
+  const resultWrongProvenance = C.promoteExpectedToRealized(expected, {
+    receiptEvidence: [{symbol:'ABCP11',eventType:'DIVIDEND',value:100,provenance:'ANNOUNCED'}]
+  });
+  assert.equal(resultWrongProvenance.event.status, 'EXPECTED');
+  assert.equal(resultWrongProvenance.delta, 0);
+  
+  // Valid RECEIVED provenance - should promote to REALIZED
+  const resultValid = C.promoteExpectedToRealized(expected, {
+    receiptEvidence: [{symbol:'ABCP11',eventType:'DIVIDEND',value:100,provenance:'RECEIVED'}]
+  });
+  assert.equal(resultValid.event.status, 'REALIZED');
+  assert.equal(resultValid.delta, 100);
+});
+
+test('promoteExpectedToRealized matches receipt by symbol+eventType+value',()=>{
+  const expected = {symbol:'ABCP11',eventType:'DIVIDEND',valuePerUnitGross:1,expectedNet:100,paymentDate:'2026-08-01',status:'EXPECTED'};
+  
+  // Mismatched symbol - should not promote
+  const resultMismatch = C.promoteExpectedToRealized(expected, {
+    receiptEvidence: [{symbol:'XYZ11',eventType:'DIVIDEND',value:100,provenance:'RECEIVED'}]
+  });
+  assert.equal(resultMismatch.event.status, 'EXPECTED');
+  
+  // Mismatched value - should not promote
+  const resultValueMismatch = C.promoteExpectedToRealized(expected, {
+    receiptEvidence: [{symbol:'ABCP11',eventType:'DIVIDEND',value:50,provenance:'RECEIVED'}]
+  });
+  assert.equal(resultValueMismatch.event.status, 'EXPECTED');
+});
 test('B3 reconciliation distinguishes missing and conflicts',()=>{const a={valuePerUnitGross:1,paymentDate:'2026-09-20'};assert.equal(C.reconcileB3Event(a,null),'MISSING_LOCAL');assert.equal(C.reconcileB3Event(a,{valuePerUnitGross:1.1,paymentDate:'2026-09-20'}),'VALUE_CONFLICT');assert.equal(C.reconcileB3Event(a,{valuePerUnitGross:1,paymentDate:'2026-09-20'}),'CONFIRMED');});
