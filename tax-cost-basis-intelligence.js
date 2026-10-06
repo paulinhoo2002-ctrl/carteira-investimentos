@@ -6,9 +6,50 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function createEngine(dividendApi) {
   const text = value => String(value ?? '').trim();
   const numberOrNull = value => {
-    if (value === '' || value === null || value === undefined) return null;
+    if (typeof value === 'string' && value.trim() === '') return null;
+    if (value === null || value === undefined) return null;
     const number = Number(value);
     return Number.isFinite(number) ? number : null;
+  };
+  const decimalParts = value => {
+    const match = text(value).match(/^([+-]?)(?:(\d+)(?:\.(\d*))?|\.(\d+))(?:e([+-]?\d+))?$/i);
+    if (!match) return null;
+    const fraction = match[3] ?? match[4] ?? '';
+    const exponent = Number(match[5] || 0);
+    let scale = fraction.length - exponent;
+    let units = BigInt(`${match[1] === '-' ? '-' : ''}${match[2] || '0'}${fraction}`);
+    if (scale < 0) {
+      units *= 10n ** BigInt(-scale);
+      scale = 0;
+    }
+    while (scale > 0 && units % 10n === 0n) {
+      units /= 10n;
+      scale -= 1;
+    }
+    return { units, scale };
+  };
+  const alignDecimal = (value, scale) => value.units * 10n ** BigInt(scale - value.scale);
+  const compareDecimals = (left, right) => {
+    const scale = Math.max(left.scale, right.scale);
+    const a = alignDecimal(left, scale), b = alignDecimal(right, scale);
+    return a < b ? -1 : a > b ? 1 : 0;
+  };
+  const subtractDecimals = (left, right) => {
+    let scale = Math.max(left.scale, right.scale);
+    let units = alignDecimal(left, scale) - alignDecimal(right, scale);
+    while (scale > 0 && units % 10n === 0n) {
+      units /= 10n;
+      scale -= 1;
+    }
+    return { units, scale };
+  };
+  const decimalToNumber = value => {
+    const negative = value.units < 0n;
+    const digits = String(negative ? -value.units : value.units);
+    const sign = negative ? '-' : '';
+    if (!value.scale) return Number(`${sign}${digits}`);
+    const padded = digits.padStart(value.scale + 1, '0');
+    return Number(`${sign}${padded.slice(0, -value.scale)}.${padded.slice(-value.scale)}`);
   };
   const dateOnly = value => {
     const raw = text(value);
@@ -30,7 +71,8 @@
     if (normalized.includes('RESERVA')) return 'Reserva de emergência';
     if (normalized.includes('CRYPTO')) return 'Crypto';
     if (normalized.includes('STOCK')) return 'Stock';
-    return 'Ação';
+    if (normalized === 'ACAO' || normalized === 'ACOES' || normalized === 'EQUITY') return 'Ação';
+    return 'UNKNOWN';
   };
   const normalizeOperation = value => {
     const normalized = text(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
@@ -124,7 +166,7 @@
     if (!sourceIsStrong) reasons.push('WEAK_SOURCE');
     if (operation === 'TRANSFER') reasons.push('TRANSFER_WITHOUT_COST_BASIS');
     if (operation === 'CORPORATE_EVENT') reasons.push('UNSUPPORTED_CORPORATE_EVENT');
-    if (type === 'Renda Fixa' || type === 'Crypto' || type === 'Stock' || type === 'Reserva de emergência') reasons.push('UNSUPPORTED_ASSET_CLASS');
+    if (type === 'UNKNOWN' || type === 'Renda Fixa' || type === 'Crypto' || type === 'Stock' || type === 'Reserva de emergência') reasons.push('UNSUPPORTED_ASSET_CLASS');
     return { id: text(row.id) || `transaction:${index}`, ticker, type, date, operation, quantity, unitPrice, total, fees, source, validTrade, reasons };
   }
   function feesAreKnown(row) { return feesOf(row) !== null; }
@@ -136,22 +178,32 @@
   function addReview(reasons, rowReasons) { rowReasons.forEach(reason => { if (!reasons.includes(reason)) reasons.push(reason); }); }
   function applyTrade(position, row) {
     const next = { ...position, lastDate: row.date, type: row.type, source: row.source };
+    const currentQuantity = next._quantityExact || decimalParts(next.runningQuantity);
+    if (!row._quantityExact || !currentQuantity) {
+      addReview(next.needsReviewReasons, ['INVALID_QUANTITY_PRECISION']);
+      next.status = 'NEEDS_REVIEW';
+      return next;
+    }
     if (row.operation === 'BUY') {
       const adjustedCost = row.total + (row.fees || 0);
-      next.runningQuantity += row.quantity;
+      const scale = Math.max(currentQuantity.scale, row._quantityExact.scale);
+      next._quantityExact = { units: alignDecimal(currentQuantity, scale) + alignDecimal(row._quantityExact, scale), scale };
+      next.runningQuantity = decimalToNumber(next._quantityExact);
       next.runningCostBasis += adjustedCost;
       next.averageCost = next.runningQuantity ? next.runningCostBasis / next.runningQuantity : null;
       next.transactionCount += 1;
       return next;
     }
     if (row.operation === 'SELL') {
+      const exceedsAvailableQuantity = compareDecimals(row._quantityExact, currentQuantity) > 0;
       const allocated = next.averageCost === null ? null : next.averageCost * row.quantity;
-      if (allocated === null || row.quantity > next.runningQuantity) {
-        addReview(next.needsReviewReasons, ['MISSING_PURCHASE_HISTORY']);
+      if (allocated === null || exceedsAvailableQuantity) {
+        addReview(next.needsReviewReasons, [exceedsAvailableQuantity ? 'SELL_EXCEEDS_AVAILABLE_QUANTITY' : 'MISSING_PURCHASE_HISTORY']);
         next.status = 'NEEDS_REVIEW';
         return next;
       }
-      next.runningQuantity -= row.quantity;
+      next._quantityExact = subtractDecimals(currentQuantity, row._quantityExact);
+      next.runningQuantity = decimalToNumber(next._quantityExact);
       next.runningCostBasis -= allocated;
       next.averageCost = next.runningQuantity ? next.runningCostBasis / next.runningQuantity : 0;
       next.transactionCount += 1;
@@ -160,14 +212,43 @@
     return next;
   }
   function buildCostBasis(transactions) {
-    const normalized = (transactions || []).map(normalizeTransaction).sort((a, b) => `${a.date}|${a.id}`.localeCompare(`${b.date}|${b.id}`));
+    const normalized = (transactions || []).map((source, index) => {
+      const row = normalizeTransaction(source, index);
+      if (row.validTrade) {
+        row._quantityExact = decimalParts(row.quantity);
+        if (!row._quantityExact) row.reasons.push('INVALID_QUANTITY_PRECISION');
+      }
+      return row;
+    }).sort((a, b) => `${a.date}|${a.id}`.localeCompare(`${b.date}|${b.id}`));
+    const firstById = new Map();
+    normalized.forEach(row => {
+      const previous = firstById.get(row.id);
+      if (previous) {
+        addReview(row.reasons, ["DUPLICATE_TRANSACTION_ID"]);
+        addReview(previous.reasons, ["DUPLICATE_TRANSACTION_ID"]);
+      } else firstById.set(row.id, row);
+    });
     const positions = new Map();
     const rows = [];
     const realizedRows = [];
     const unsupported = [];
     normalized.forEach(row => {
-      if (row.operation === 'UNKNOWN') return;
-      if (row.operation === 'TRANSFER' || row.operation === 'CORPORATE_EVENT' || row.reasons.includes('UNSUPPORTED_ASSET_CLASS')) {
+      if (row.operation === 'UNKNOWN') {
+        addReview(row.reasons, ['UNSUPPORTED_OPERATION']);
+        unsupported.push(row);
+        if (row.ticker) {
+          const existing = positions.get(row.ticker) || { ticker: row.ticker, type: row.type, runningQuantity: null, runningCostBasis: null, averageCost: null, transactionCount: 0, needsReviewReasons: [], status: 'NEEDS_REVIEW' };
+          addReview(existing.needsReviewReasons, row.reasons);
+          existing.runningQuantity = null;
+          existing.runningCostBasis = null;
+          existing.averageCost = null;
+          delete existing._quantityExact;
+          existing.status = 'NEEDS_REVIEW';
+          positions.set(row.ticker, existing);
+        }
+        return;
+      }
+      if (row.operation === 'TRANSFER' || row.operation === 'CORPORATE_EVENT' || row.reasons.includes('UNSUPPORTED_ASSET_CLASS') || row.reasons.includes('DUPLICATE_TRANSACTION_ID')) {
         unsupported.push(row);
         const existing = positions.get(row.ticker) || { ticker: row.ticker, type: row.type, runningQuantity: 0, runningCostBasis: 0, averageCost: null, transactionCount: 0, needsReviewReasons: [], status: 'NEEDS_REVIEW' };
         addReview(existing.needsReviewReasons, row.reasons);
@@ -178,25 +259,35 @@
       const previous = positions.get(row.ticker) || { ticker: row.ticker, type: row.type, runningQuantity: 0, runningCostBasis: 0, averageCost: null, transactionCount: 0, needsReviewReasons: [], status: 'COMPLETE' };
       const beforeQuantity = previous.runningQuantity;
       const beforeCost = previous.runningCostBasis;
+      const beforeQuantityExact = previous._quantityExact || decimalParts(beforeQuantity);
+      const saleQuantityKnown = Boolean(row._quantityExact && beforeQuantityExact);
+      const exceedsAvailableQuantity = row.operation === 'SELL' && saleQuantityKnown && compareDecimals(row._quantityExact, beforeQuantityExact) > 0;
       const updated = applyTrade(previous, row);
       addReview(updated.needsReviewReasons, row.reasons);
       updated.status = updated.needsReviewReasons.length ? 'NEEDS_REVIEW' : 'COMPLETE';
       positions.set(row.ticker, updated);
       const confidence = confidenceOf(row);
+      const transactionReasons = [...row.reasons];
+      addReview(transactionReasons, previous.needsReviewReasons);
+      if (exceedsAvailableQuantity && !transactionReasons.includes('SELL_EXCEEDS_AVAILABLE_QUANTITY')) transactionReasons.push('SELL_EXCEEDS_AVAILABLE_QUANTITY');
       rows.push({
         id: row.id, ticker: row.ticker, type: row.type, tradeDate: row.date, operation: row.operation,
         quantity: row.quantity, grossValue: row.total, fees: row.fees, allocatedFees: row.fees,
         adjustedCost: row.operation === 'BUY' ? row.total + (row.fees || 0) : null,
         runningQuantity: updated.runningQuantity, runningCostBasis: updated.runningCostBasis,
-        averageCost: updated.averageCost, source: row.source, confidence,
-        coverage: row.reasons.length ? 'PARTIAL' : 'COMPLETE', status: row.reasons.length ? 'NEEDS_REVIEW' : 'COMPLETE',
-        needsReviewReason: row.reasons.join('|') || ''
+        averageCost: updated.averageCost, source: row.source,
+        confidence: transactionReasons.length ? (confidence === 'UNKNOWN' ? 'UNKNOWN' : 'LOW') : confidence,
+        coverage: transactionReasons.length ? 'PARTIAL' : 'COMPLETE', status: transactionReasons.length ? 'NEEDS_REVIEW' : 'COMPLETE',
+        needsReviewReason: transactionReasons.join('|') || ''
       });
       if (row.operation === 'SELL') {
-        const allocatedCostBasis = beforeQuantity > 0 && previous.averageCost !== null ? previous.averageCost * row.quantity : null;
+        const allocatedCostBasis = saleQuantityKnown && !exceedsAvailableQuantity && previous.needsReviewReasons.length === 0 && beforeQuantity > 0 && previous.averageCost !== null ? previous.averageCost * row.quantity : null;
         const netProceeds = row.total - (row.fees || 0);
         const reasons = [...row.reasons];
-        if (allocatedCostBasis === null) reasons.push('MISSING_PURCHASE_HISTORY');
+        addReview(reasons, previous.needsReviewReasons);
+        if (exceedsAvailableQuantity && !reasons.includes('SELL_EXCEEDS_AVAILABLE_QUANTITY')) reasons.push('SELL_EXCEEDS_AVAILABLE_QUANTITY');
+        if (!saleQuantityKnown && !reasons.includes('INVALID_QUANTITY_PRECISION')) reasons.push('INVALID_QUANTITY_PRECISION');
+        if (allocatedCostBasis === null && previous.needsReviewReasons.length === 0 && !reasons.includes('MISSING_PURCHASE_HISTORY') && !exceedsAvailableQuantity && saleQuantityKnown) reasons.push('MISSING_PURCHASE_HISTORY');
         realizedRows.push({
           id: row.id, asset: row.ticker, type: row.type, saleDate: row.date, quantity: row.quantity,
           grossProceeds: row.total, allocatedCostBasis, fees: row.fees, netProceeds,
@@ -207,8 +298,13 @@
       }
       void beforeCost;
     });
-    const positionRows = [...positions.values()].map(row => ({ ...row, needsReview: row.needsReviewReasons.length > 0, needsReviewReason: row.needsReviewReasons.join('|') }));
-    return { normalized, rows, positions: positionRows, realizedRows, unsupported };
+    const positionRows = [...positions.values()].map(row => {
+      const { _quantityExact, ...position } = row;
+      return { ...position, needsReview: row.needsReviewReasons.length > 0, needsReviewReason: row.needsReviewReasons.join('|') };
+    });
+    const publicNormalized = normalized.map(({ _quantityExact, ...row }) => row);
+    const publicUnsupported = unsupported.map(({ _quantityExact, ...row }) => row);
+    return { normalized: publicNormalized, rows, positions: positionRows, realizedRows, unsupported: publicUnsupported };
   }
   function buildYearEnd(transactions, years) {
     const normalized = (transactions || []).map(normalizeTransaction);
@@ -235,9 +331,9 @@
       version: 'V254_TAX_COST_BASIS_INTELLIGENCE_V1',
       writeEnabled: false,
       officialRules,
-      costBasis: { rows: costBasis.rows, positions: costBasis.positions, unsupported: costBasis.unsupported, status: costBasis.rows.length ? (costBasis.rows.some(row => row.status === 'NEEDS_REVIEW') || costBasis.realizedRows.some(row => row.taxCategory === 'UNKNOWN') ? 'PARTIAL' : 'COMPLETE') : 'UNAVAILABLE' },
+      costBasis: { rows: costBasis.rows, positions: costBasis.positions, unsupported: costBasis.unsupported, status: costBasis.rows.length || costBasis.unsupported.length ? (costBasis.rows.some(row => row.status === 'NEEDS_REVIEW') || costBasis.realizedRows.some(row => row.taxCategory === 'UNKNOWN') || costBasis.unsupported.length ? 'PARTIAL' : 'COMPLETE') : 'UNAVAILABLE' },
       positions: costBasis.positions,
-      realizedGains: { rows: costBasis.realizedRows, status: costBasis.realizedRows.length ? (costBasis.realizedRows.some(row => row.status === 'NEEDS_REVIEW') ? 'PARTIAL' : 'COMPLETE') : 'UNAVAILABLE' },
+      realizedGains: { rows: costBasis.realizedRows, status: costBasis.realizedRows.length ? (costBasis.realizedRows.some(row => row.status === 'NEEDS_REVIEW') || costBasis.unsupported.length ? 'PARTIAL' : 'COMPLETE') : 'UNAVAILABLE' },
       incomeLedger,
       yearEnd: buildYearEnd(transactions, yearEndYears),
       taxSummary: { taxDue: { value: null, status: taxDueStatus, reason: 'TAX_CALCULATION_REQUIRES_PERIOD_RULES_AND_COMPLETE_DATA' }, darfEnabled: false, filingEnabled: false, lossCarryforward: 'NEEDS_REVIEW' },
