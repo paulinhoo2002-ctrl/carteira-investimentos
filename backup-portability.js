@@ -4,8 +4,9 @@
   if (root) root.BackupPortability = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const FORMAT = 'carteira-investimentos-backup';
-    const VERSION = '1.1';
+    const VERSION = '1.2';
     const MAX_SUPPORTED_MAJOR = 1;
+    const MAX_SUPPORTED_MINOR = 2;
     const SENSITIVE_KEY = /(token|secret|password|passwd|credential|cookie|session|storage|authorization|access[_-]?key|refresh[_-]?token|private[_-]?key)/i;
     const DANGEROUS_KEY = new Set(['__proto__', 'prototype', 'constructor']);
     const RECORD_KEYS = ['wallets', 'assets', 'aportes', 'proventos', 'rfEvents', 'manualFixedIncome', 'manualOverrides', 'goals', 'importHistory', 'historical', 'corporateEvents', 'assetLineage', 'settings'];
@@ -15,7 +16,8 @@
     const SCHEMA_VERSIONS = {
       'legacy-civ5-compatible': { major: 1, minor: 0, description: 'Legacy civ5 localStorage format' },
       'legacy-civ5-cfg-compatible': { major: 1, minor: 0, description: 'Legacy civ5 config format' },
-      'backup-portability-v1.1': { major: 1, minor: 1, description: 'V267 enhanced backup format with manifest' }
+      'backup-portability-v1.1': { major: 1, minor: 1, description: 'V267 enhanced backup format with manifest' },
+      'backup-portability-v1.2': { major: 1, minor: 2, description: 'V324 complete-domain backup format' }
     };
 
   function isRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
@@ -112,6 +114,165 @@
       corporateEvents: count('corporateEvents'), goals: isRecord(state?.goals) ? Object.keys(state.goals).length : 0
     };
   }
+  function domainManifest(state, config) {
+    const required = ['wallets', 'assets', 'aportes', 'proventos', 'rfEvents', 'goals', 'performance'];
+    const missing = required.filter(key => !Object.prototype.hasOwnProperty.call(state || {}, key));
+    if (missing.length) throw new Error(`MISSING_REQUIRED_DOMAIN:${missing.join(',')}`);
+    if (!isRecord(config)) throw new Error('INVALID_REQUIRED_DOMAIN:settings');
+    if (!Array.isArray(state.wallets) || !Array.isArray(state.assets) || !Array.isArray(state.aportes) ||
+        !Array.isArray(state.proventos) || !Array.isArray(state.rfEvents) || !isRecord(state.goals) ||
+        !isRecord(state.performance)) throw new Error('INVALID_REQUIRED_DOMAIN');
+    const performance = state.performance;
+    if (performance.schemaVersion !== 1 || !isRecord(performance.valuationSnapshots) || !Array.isArray(performance.valuationSnapshots.snapshots) ||
+        !isRecord(performance.externalCashFlows) || !Array.isArray(performance.externalCashFlows.flows)) throw new Error('INVALID_REQUIRED_DOMAIN:performance');
+    const performanceCount = (Array.isArray(performance.valuationSnapshots?.snapshots) ? performance.valuationSnapshots.snapshots.length : 0) +
+      (Array.isArray(performance.externalCashFlows?.flows) ? performance.externalCashFlows.flows.length : 0);
+    const persistedSettings = ['tab', 'divGoal', 'hideValues', 'apHistoryOpen', 'apSearch', 'dashPeriod', 'dashType', 'rentPeriod', 'rentType', 'rentBench', 'irpfYear', 'irpfStep', 'learnMeta'];
+    const settingsCount = new Set([...Object.keys(config), ...persistedSettings.filter(key => Object.prototype.hasOwnProperty.call(state, key))]).size;
+    return [
+      { name: 'portfolio', version: 1, count: state.wallets.length, required: true },
+      { name: 'assets', version: 1, count: state.assets.length, required: true },
+      { name: 'transactions', version: 1, count: state.aportes.length, required: true },
+      { name: 'income', version: 1, count: state.proventos.length, required: true },
+      { name: 'fixedIncome', version: 1, count: state.rfEvents.length, required: true },
+      { name: 'goals', version: 1, count: Object.keys(state.goals).length, required: true },
+      { name: 'settings', version: 1, count: settingsCount, required: true },
+      { name: 'performance', version: 1, count: performanceCount, required: true }
+    ];
+  }
+  function planRetention(entries, { monthlyLimit = 12 } = {}) {
+    const rows = Array.isArray(entries) ? entries : [];
+    const monthly = rows.filter(row => row?.cadence === 'monthly').slice().sort((a, b) =>
+      String(b.createdAt || '').localeCompare(String(a.createdAt || '')) || String(b.id || '').localeCompare(String(a.id || '')));
+    const latestValid = monthly.find(row => row.status === 'VALID');
+    const protectedIds = new Set(rows.filter(row => row?.recoveryRequired || row?.status !== 'VALID').map(row => String(row.id)));
+    if (latestValid) protectedIds.add(String(latestValid.id));
+    const keepMonthly = new Set(monthly.slice(0, Math.max(0, monthlyLimit)).map(row => String(row.id)));
+    const deleteIds = monthly.filter(row => row.status === 'VALID' && !protectedIds.has(String(row.id)) && !keepMonthly.has(String(row.id))).map(row => String(row.id));
+    const deleted = new Set(deleteIds);
+    return { deleteIds, keepIds: rows.filter(row => !deleted.has(String(row?.id))).map(row => String(row?.id)) };
+  }
+  function externalBackupChannels() {
+    return {
+      storage: { status: 'NOT_CONFIGURED', writesEnabled: false },
+      notification: { status: 'NOT_CONFIGURED', sendsEnabled: false }
+    };
+  }
+  function validateAssetTypes(state, supportedAssetTypes) {
+    if (!Array.isArray(supportedAssetTypes) || !supportedAssetTypes.length) return null;
+    const allowed = new Set(supportedAssetTypes);
+    for (const asset of state?.assets || []) {
+      if (typeof asset?.type !== 'string' || !asset.type.trim()) return 'REVIEW_REQUIRED:MISSING_ASSET_TYPE';
+      if (!allowed.has(asset.type)) return 'UNSUPPORTED_TYPE:ASSET:' + asset.type;
+    }
+    return null;
+  }
+  function periodicCadences(createdAt, entries = []) {
+    const date = new Date(createdAt);
+    if (Number.isNaN(date.getTime())) return { status: 'INVALID_DATE', cadences: [] };
+    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const year = month.slice(0, 4);
+    const rows = Array.isArray(entries) ? entries : [];
+    const cadences = [];
+    if (!rows.some(row => row?.integrityValid === true && row?.cadence === 'monthly' && row?.period === month)) cadences.push({ cadence: 'monthly', period: month });
+    if (month.endsWith('-12') && !rows.some(row => row?.integrityValid === true && row?.cadence === 'annual' && row?.period === year)) cadences.push({ cadence: 'annual', period: year });
+    return { status: 'READY', cadences };
+  }
+  const ARCHIVE_DB = 'carteira-investimentos-backups-v1';
+  const ARCHIVE_STORE = 'snapshots';
+  function openArchive(indexedDb = globalThis.indexedDB) {
+    if (!indexedDb) return Promise.reject(new Error('LOCAL_ARCHIVE_UNAVAILABLE'));
+    return new Promise((resolve, reject) => {
+      const request = indexedDb.open(ARCHIVE_DB, 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains(ARCHIVE_STORE)) request.result.createObjectStore(ARCHIVE_STORE, { keyPath: 'id' });
+      };
+      request.onsuccess = () => {
+        request.result.onversionchange = () => request.result.close();
+        resolve(request.result);
+      };
+      request.onblocked = () => reject(new Error('LOCAL_ARCHIVE_BLOCKED'));
+      request.onerror = () => reject(request.error || new Error('LOCAL_ARCHIVE_OPEN_FAILED'));
+    });
+  }
+  async function listLocalBackups({ indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes } = {}) {
+    const db = await openArchive(indexedDb);
+    try {
+      const rows = await new Promise((resolve, reject) => {
+        const tx = db.transaction(ARCHIVE_STORE, 'readonly');
+        const request = tx.objectStore(ARCHIVE_STORE).getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error || new Error('LOCAL_ARCHIVE_READ_FAILED'));
+      });
+      const verified = await Promise.all(rows.map(async row => {
+        const integrity = await verifyArchivedBackup(row.backup, { supportedAssetTypes });
+        const { backup, ...metadata } = row;
+        return { ...metadata, status: integrity.valid ? 'VALID' : 'CORRUPTED', integrityValid: integrity.valid };
+      }));
+      return verified.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    } finally { db.close(); }
+  }
+  async function verifyArchivedBackup(backup, options) {
+    try {
+      const checksum = String(backup?.manifest?.checksums?.payload || '');
+      if (backup?.manifest?.checksums?.algorithm !== 'SHA-256' || !/^[a-f0-9]{64}$/.test(checksum) || !isRecord(backup?.payload)) return { valid: false, status: 'CORRUPTED' };
+      const actual = await sha256(canonical(backup.payload));
+      if (actual !== checksum) return { valid: false, status: 'CORRUPTED' };
+      const checked = await verifyBackup(backup, options);
+      return { valid: checked.status === 'SUPPORTED', status: checked.status };
+    } catch (_) { return { valid: false, status: 'CORRUPTED' }; }
+  }
+  async function saveLocalBackup(backup, { cadence = 'manual', period = '', createdAt = backup?.manifest?.createdAt, indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes } = {}) {
+    const checked = await verifyBackup(backup, { supportedAssetTypes });
+    if (checked.status !== 'SUPPORTED') return { ok: false, status: checked.status, error: checked.error || checked.status };
+    if (!['manual', 'monthly', 'annual'].includes(cadence) || !createdAt || (cadence !== 'manual' && !period)) return { ok: false, status: 'INVALID_METADATA' };
+    const id = cadence === 'manual' ? `manual:${createdAt}:${backup.manifest.operationId}` : `${cadence}:${period}`;
+    const db = await openArchive(indexedDb);
+    const entry = { id, cadence, period, createdAt: String(createdAt), status: 'VALID', recoveryRequired: false, backup: checked.backup };
+    try {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(ARCHIVE_STORE, 'readwrite');
+        tx.objectStore(ARCHIVE_STORE).put(entry);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error || new Error('LOCAL_ARCHIVE_WRITE_FAILED'));
+        tx.onabort = () => reject(tx.error || new Error('LOCAL_ARCHIVE_WRITE_ABORTED'));
+      });
+      const rows = await new Promise((resolve, reject) => {
+        const tx = db.transaction(ARCHIVE_STORE, 'readonly');
+        const request = tx.objectStore(ARCHIVE_STORE).getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error || new Error('LOCAL_ARCHIVE_READ_FAILED'));
+      });
+      const verifiedRows = await Promise.all(rows.map(async row => ({
+        ...row,
+        status: (await verifyArchivedBackup(row.backup, { supportedAssetTypes })).valid ? 'VALID' : 'CORRUPTED'
+      })));
+      const retention = planRetention(verifiedRows, { monthlyLimit: 12 });
+      if (retention.deleteIds.length) await new Promise((resolve, reject) => {
+        const tx = db.transaction(ARCHIVE_STORE, 'readwrite');
+        const store = tx.objectStore(ARCHIVE_STORE);
+        retention.deleteIds.forEach(key => store.delete(key));
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error || new Error('LOCAL_ARCHIVE_RETENTION_FAILED'));
+        tx.onabort = () => reject(tx.error || new Error('LOCAL_ARCHIVE_RETENTION_ABORTED'));
+      });
+      return { ok: true, id, deleted: retention.deleteIds };
+    } finally { db.close(); }
+  }
+  async function createPeriodicBackups(backupOrFactory, { now = new Date(), indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes, canCreateSnapshot = () => true } = {}) {
+    const entries = await listLocalBackups({ indexedDB: indexedDb, supportedAssetTypes });
+    const schedule = periodicCadences(now, entries);
+    if (schedule.status !== 'READY') return schedule;
+    if (!schedule.cadences.length) return { status: 'NOOP', results: [] };
+    const results = [];
+    for (const item of schedule.cadences) {
+      if (!canCreateSnapshot()) return { status: results.length ? 'PARTIAL' : 'BLOCKED', reason: 'RUNTIME_NOT_STABLE', results };
+      const backup = typeof backupOrFactory === 'function' ? await backupOrFactory() : backupOrFactory;
+      if (!canCreateSnapshot()) return { status: results.length ? 'PARTIAL' : 'BLOCKED', reason: 'RUNTIME_NOT_STABLE', results };
+      results.push(await saveLocalBackup(backup, { ...item, createdAt: now.toISOString(), indexedDB: indexedDb, supportedAssetTypes }));
+    }
+    return { status: results.every(result => result.ok) ? 'SAVED' : 'FAILED', results };
+  }
   function inventory(state) {
     return ['state', 'assets', 'transactions', 'income', 'fixedIncome', 'goals'].concat(
       ['historical', 'corporateEvents', 'assetLineage', 'manualOverrides', 'settings', 'importHistory']
@@ -150,9 +311,11 @@
     if (Array.isArray(state.wallets) && state.activeWalletId && !state.wallets.some(wallet => String(wallet.id) === String(state.activeWalletId))) return 'UNKNOWN_ACTIVE_WALLET';
     return null;
   }
-  async function createBackup({ state = {}, config = {}, metadata = {}, createdAt = new Date().toISOString(), appVersion = 'unknown', operationId = crypto.randomUUID ? crypto.randomUUID() : 'op-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) } = {}) {
+  async function createBackup({ state = {}, config = {}, metadata = {}, supportedAssetTypes, createdAt = new Date().toISOString(), appVersion = 'unknown', operationId = crypto.randomUUID ? crypto.randomUUID() : 'op-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) } = {}) {
       const safeState = sourceState({ state });
       const safeConfig = normalize(config, { stripSensitive: true });
+      const typeError = validateAssetTypes(safeState, supportedAssetTypes);
+      if (typeError) throw new Error(typeError);
       const payload = { state: safeState, config: safeConfig, metadata: normalize(metadata, { stripSensitive: true }) };
       const payloadHash = await sha256(canonical(payload));
       return {
@@ -169,9 +332,10 @@
           schemaIdentifiers: {
             state: 'legacy-civ5-compatible',
             config: 'legacy-civ5-cfg-compatible',
-            stateSchema: 'backup-portability-v1.1',
-            configSchema: 'backup-portability-v1.1'
+            stateSchema: 'backup-portability-v1.2',
+            configSchema: 'backup-portability-v1.2'
           },
+          domains: domainManifest(safeState, safeConfig),
           checksums: { algorithm: 'SHA-256', payload: payloadHash },
           compatibility: {
             minSupportedMajor: 1,
@@ -189,8 +353,11 @@
       return value;
     });
   }
-  async function verifyBackup(raw) {
-      if (typeof raw === 'string' && new TextEncoder().encode(raw).byteLength > MAX_BACKUP_BYTES) return { status: 'CORRUPTED', error: 'BACKUP_TOO_LARGE' };
+  async function verifyBackup(raw, { supportedAssetTypes } = {}) {
+      let rawText;
+      try { rawText = typeof raw === 'string' ? raw : JSON.stringify(raw); }
+      catch (_) { return { status: 'CORRUPTED', error: 'NON_SERIALIZABLE_BACKUP' }; }
+      if (typeof rawText === 'string' && new TextEncoder().encode(rawText).byteLength > MAX_BACKUP_BYTES) return { status: 'CORRUPTED', error: 'BACKUP_TOO_LARGE' };
       let backup;
       try { backup = parseJson(raw); } catch (error) { return { status: 'CORRUPTED', error: error.message }; }
       if (!isRecord(backup) || !isRecord(backup.manifest) || !isRecord(backup.payload)) return { status: 'UNSUPPORTED', error: 'INVALID_CONTAINER' };
@@ -200,6 +367,7 @@
       const major = Number(version.split('.')[0]);
       const minor = Number(version.split('.')[1] || '0');
       if (!Number.isInteger(major) || major > MAX_SUPPORTED_MAJOR) return { status: 'TOO_NEW', backup };
+      if (major === MAX_SUPPORTED_MAJOR && minor > MAX_SUPPORTED_MINOR) return { status: 'TOO_NEW', backup };
       if (major < MAX_SUPPORTED_MAJOR) return { status: 'MIGRATABLE', backup };
 
       try { assertSafeObject(backup); } catch (error) { return { status: 'CORRUPTED', error: error.message }; }
@@ -211,6 +379,30 @@
       const normalizedBackup = { ...backup, payload: { ...backup.payload, state: normalizeFinancialDates(backup.payload.state) } };
       const stateError = validateState(normalizedBackup.payload.state);
       if (stateError) return { status: 'CORRUPTED', error: stateError };
+      const typeError = validateAssetTypes(normalizedBackup.payload.state, supportedAssetTypes);
+      if (typeError) return { status: typeError.startsWith('UNSUPPORTED_TYPE:') ? 'UNSUPPORTED_TYPE' : 'REVIEW_REQUIRED', error: typeError };
+      if (major === 1 && minor >= 2) {
+        let expectedDomains;
+        try { expectedDomains = domainManifest(normalizedBackup.payload.state, normalizedBackup.payload.config); }
+        catch (error) { return { status: 'PARTIAL', error: error.message }; }
+        const declared = backup.manifest.domains;
+        if (!Array.isArray(declared)) return { status: 'PARTIAL', error: 'MISSING_DOMAIN_MANIFEST' };
+        const declaredByName = new Map(declared.map(domain => [domain?.name, domain]));
+        for (const expectedDomain of expectedDomains) {
+          const domain = declaredByName.get(expectedDomain.name);
+          if (!domain) return { status: 'PARTIAL', error: `MISSING_DOMAIN:${expectedDomain.name}` };
+          if (domain.required !== true || domain.version !== expectedDomain.version || domain.count !== expectedDomain.count) {
+            return { status: 'CORRUPTED', error: `DOMAIN_MISMATCH:${expectedDomain.name}` };
+          }
+        }
+        if (declared.length !== expectedDomains.length || declared.some(domain => !expectedDomains.some(expectedDomain => expectedDomain.name === domain?.name))) {
+          return { status: 'INCOMPATIBLE', error: 'UNKNOWN_OR_DUPLICATE_DOMAIN' };
+        }
+        const schemaIdentifiers = backup.manifest.schemaIdentifiers || {};
+        if (schemaIdentifiers.stateSchema !== 'backup-portability-v1.2' || schemaIdentifiers.configSchema !== 'backup-portability-v1.2') {
+          return { status: 'INCOMPATIBLE', error: 'UNSUPPORTED_SCHEMA_IDENTIFIER' };
+        }
+      }
 
       // Schema validation
             const stateSchema = backup.manifest.schemaIdentifiers?.stateSchema;
@@ -262,14 +454,16 @@
               }
             }
 
+      if (schemaWarnings.some(item => item.includes('_FUTURE:'))) return { status: 'TOO_NEW', error: 'UNSUPPORTED_FUTURE_SCHEMA', warnings: schemaWarnings };
+      if (schemaWarnings.length) return { status: 'INCOMPATIBLE', error: 'UNKNOWN_SCHEMA_IDENTIFIER', warnings: schemaWarnings };
       const expectedCounts = backup.manifest.recordCounts || {};
       const actualCounts = counts(normalizedBackup.payload.state);
       for (const key of Object.keys(actualCounts)) if (expectedCounts[key] !== actualCounts[key]) return { status: 'CORRUPTED', error: `COUNT_MISMATCH:${key}` };
 
       return { status: 'SUPPORTED', backup: normalizedBackup, checksum: actual, warnings: schemaWarnings };
     }
-  async function parseBackup(raw) {
-    const result = await verifyBackup(raw);
+  async function parseBackup(raw, options) {
+    const result = await verifyBackup(raw, options);
     if (result.status !== 'SUPPORTED' && result.status !== 'MIGRATABLE') throw new Error(result.error || result.status);
     return result.backup;
   }
@@ -299,8 +493,8 @@
       for (const id of oldMap.keys()) rows.push({ kind: 'SKIP', section, id, reason: 'CURRENT_ONLY' });
       return rows;
     }
-  async function previewRestore(raw, currentState = {}) {
-      const integrity = await verifyBackup(raw);
+  async function previewRestore(raw, currentState = {}, options) {
+      const integrity = await verifyBackup(raw, options);
       if (!['SUPPORTED', 'MIGRATABLE'].includes(integrity.status)) return { integrity, diff: [], conflicts: [], writeCount: 0, restoreAllowed: false, warnings: integrity.warnings || [] };
       const incoming = integrity.backup.payload.state;
       const sections = [...new Set([...RECORD_KEYS, ...Object.keys(incoming), ...Object.keys(currentState)])];
@@ -352,7 +546,7 @@
       };
     }
   function applyToIsolatedStore(store, backup, { failAfter = Infinity } = {}) {
-    const before = clone(store); const result = { ok: false, store: before, rollback: true };
+    const before = clone(store); const result = { ok: false, store: before, preApplySnapshot: clone(before), rollback: true };
     try {
       if (!backup?.payload?.state) throw new Error('INVALID_BACKUP');
       const next = clone(store); next.state = clone(backup.payload.state); next.config = clone(backup.payload.config || {});
@@ -360,5 +554,5 @@
       result.ok = true; result.store = next; result.rollback = false; return result;
     } catch (error) { return { ...result, error }; }
   }
-  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize, sha256 };
+  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize, sha256, planRetention, periodicCadences, listLocalBackups, saveLocalBackup, createPeriodicBackups, externalBackupChannels };
 });
