@@ -25,11 +25,12 @@
 ## V323C — contrato de backup hardening local (2026-10-05)
 
 - Worktree autorizada `C:\Projetos\carteira-investimentos.worktrees\v323-real-reconciliation`, branch `codex/v323-real-portfolio-reconciliation`, base `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; HEAD remoto ainda `ce380cc926f4c96d70b52f9e9cd4cb5b63ec4d28`. PR #446 segue OPEN/DRAFT; `MERGE=false`.
-- Alterações locais não commitadas preservadas em `backup-portability.js`, `index.html`, `persistence-core.js`, `portfolio-runtime-stores.js`, `public-events-store.js`, testes e documentação. HEAD/remote continuam `ce380cc926f4c96d70b52f9e9cd4cb5b63ec4d28`; `MERGE=false`.
+- Contrato V323C commitado em `4f6dcd7d24276953413ad17b33df8a12c785e527` e enviado normalmente à mesma branch; `MERGE=false`.
 - Contrato V2 distingue `VALID`, `PARTIAL`, `CORRUPT`, `UNSUPPORTED_FUTURE_SCHEMA`, `UNSUPPORTED_TYPE` e `INCOMPATIBLE`; exige manifesto/contagens para portfolio, assets, transactions, income, fixedIncome, goals e settings. Cache de corporate events e performance V76 são domínios opcionais/read-only; ausência não é inventada como zero.
 - `divGoal` presente é validado como número finito não negativo; stores V76 corrompidos, vazios, incompletos, com registro inválido, data impossível ou metadado essencial inválido abortam export/verify/restore. Regressões focadas: 56/56 PASS. `verify:release` PASS: legado 254/254, moderna 815/815, `qa:all` e V289 4/4; build legado/moderno incluídos.
+- CI run `37395729957` PASS em Build/test, Auth/Firestore Emulator e V289 visual. Preview de `4f6dcd7` READY. PR #446 permanece OPEN/DRAFT/mergeable.
 - Revisão independente final: BLOCKER=0, MAJOR=0. MINOR: migração V76 legada preenche `trackingStartDate:null` se ausente. Restore real de `corporateEvents` segue não implementado; restore V2 continua bloqueado na UI e backup legacy com eventos não vazios é recusado. `applyBackupData` confia no preview refeito pelo fluxo da UI.
-- Nenhum Preview acessado, backup real criado ou dado financeiro real lido. `REAL_DATA_USED=false`, `REAL_WRITES=0`, `REAL_IMPORT=false`. `V323B_REAL_SITE_INSPECTION_READY=true` tecnicamente após fechamento dos MAJOR. Próximo passo bloqueado pela regra AGENTS: obter autorização explícita para commit/push; depois aguardar CI/Preview no HEAD novo e solicitar login humano isolado.
+- Nenhum Preview acessado, backup real criado ou dado financeiro real lido. `REAL_DATA_USED=false`, `REAL_WRITES=0`, `REAL_IMPORT=false`. `V323B_REAL_SITE_INSPECTION_READY=true`. Próximo passo: aguardar login humano na Preview isolada; não compartilhar credenciais/MFA no chat.
 
 ## V320 — certificação final antes do gate humano (2026-10-05)
 
