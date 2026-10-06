@@ -16,6 +16,14 @@
 - V322 encerrou sem escrita real/produção ou mudança financeira. V323 iniciou após merge e CI pós-merge; comparação do site e qualquer import continuam bloqueados até fonte autorizada e backup validado.
 # Project Memory
 
+## V323C — contrato de backup hardening (2026-10-05)
+
+- Na worktree V323 validada (`codex/v323-real-portfolio-reconciliation`, HEAD local base `ce380cc926f4c96d70b52f9e9cd4cb5b63ec4d28`), contrato V2 de backup está em alterações locais ainda não commitadas. Manifesto separa `VALID`, `PARTIAL`, `CORRUPT`, `UNSUPPORTED_FUTURE_SCHEMA`, `UNSUPPORTED_TYPE` e `INCOMPATIBLE`; domínios obrigatórios incluem portfolio, assets, transactions, income, fixedIncome, goals e settings.
+- `config.divGoal` presente exige número finito não negativo. Export/verify/restore V76 rejeitam store vazio/corrompido/incompleto, registro fora da forma canônica, data impossível e metadado essencial inválido; registros válidos passam sem normalização. Compatibilidade: `loadStore` preenche `trackingStartDate:null` em stores antigos sem esse campo. Corporate events permanecem em domínio/cache isolado e sem writer de restore; restore real V2 segue bloqueado.
+- Testes focados sintéticos: 56/56; `verify:release` PASS (legacy 254/254, modern 815/815, `qa:all`, V289 4/4 e builds). Revisão independente final: BLOCKER=0, MAJOR=0, MINOR=1 (compatibilidade V76). Nenhum Preview acessado, backup real criado, dado real lido, importado ou gravado. PR #446 não atualizada, merge=false; CI verde pertence ao HEAD remoto anterior.
+- `git diff --check` passou após as atualizações finais de docs/testes. `V323B_REAL_SITE_INSPECTION_READY=true` tecnicamente após fechamento dos MAJOR.
+- Próxima ação: obter autorização explícita para commit/push segundo AGENTS. Só então verificar CI/Preview no novo HEAD e solicitar login humano isolado.
+
 #
 # V317 — certificação sintética das ações financeiras (2026-10-04)
 

@@ -26,3 +26,16 @@ test('V249 export excludes the old token presentation from the new flow', () => 
   assert.match(exportCode, /backupPortabilityPayload/);
   assert.doesNotMatch(exportCode, /brapiToken/);
 });
+
+test('V323C export reads persisted state and config without materializing defaults', () => {
+  const start = html.indexOf('async function backupPortabilityPayload()');
+  const end = html.indexOf('function backupFromRaw(', start);
+  assert.ok(start >= 0 && end > start);
+  const code = html.slice(start, end);
+  assert.match(code, /localStorage\.getItem\(STOR\)/);
+  assert.match(code, /localStorage\.getItem\(`\$\{STOR\}_cfg`\)/);
+  assert.match(code, /backupSupplementFromRaw\(rawSnapshots,rawFlows,v76Clock\)/);
+  assert.match(code, /BACKUP_V76_RUNTIME_/);
+  assert.match(code, /validation\.status!=='VALID'/);
+  assert.doesNotMatch(code, /PersistenceCore\.buildBackupState|backupCurrentConfig/);
+});

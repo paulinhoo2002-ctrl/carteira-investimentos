@@ -8258,20 +8258,12 @@ const QUOTE_REFRESH_INTERVAL = 5 * 60 * 1000;
 const QI = QUOTE_REFRESH_INTERVAL / 1000;
 const CLRS         = ['#818cf8','#34d399','#fbbf24','#f472b6','#60a5fa','#a3e635','#fb923c','#a78bfa'];
 const RENT_BENCH   = { CDI:10.65, IPCA:4.50, IFIX:9.20, IBOV:11.00, SMLL:12.00, IDIV:10.00, IVVB11:13.00 };
-const TYPE_CHOICES = ['Ação','FII','ETF','Renda Fixa','Tesouro Direto','Reserva de emergência','BDR','Crypto','Stock','Reit','Fundos de Investimento'];
+const TYPE_CHOICES = PersistenceCore.ASSET_TYPE_CHOICES;
 const TYPE_ORDER   = ['Ação','FII','ETF','Renda Fixa','Tesouro Direto','BDR','Crypto','Stock','Reit','Fundos de Investimento'];
 const TYPE_FORM_CHOICES = TYPE_CHOICES.filter(t=>t!=='Reserva de emergência');
 const TYPE_DASH_CHOICES = TYPE_ORDER;
 const TYPE_GOAL_CHOICES = ['Ação','FII','ETF','BDR','Stock','Reit','Fundos de Investimento'];
-const TYPE_ALIASES = {
-  'AÇÕES':'Ação','AÇÃO':'Ação','ACTIONS':'Ação',
-  'FIIS':'FII','FUNDOS IMOBILIARIOS':'FII','FUNDOS IMOBILIÁRIOS':'FII',
-  'ETFS':'ETF','ETF\'S':'ETF','ETF INTERNACIONAL':'ETF','ETFS INTERNACIONAIS':'ETF',
-  'RENDA FIXA (CDB/LCI/LCA/LC/LF/RDB)':'Renda Fixa','RENDA FIXA':'Renda Fixa','TESOURO DIRETO':'Tesouro Direto',
-  'RESERVA DE EMERGENCIA':'Reserva de emergência','RESERVA DE EMERGÊNCIA':'Reserva de emergência',
-  'FUNDOS DE INVESTIMENTO':'Fundos de Investimento','FUNDOS DE INVESTIMENTOS':'Fundos de Investimento',
-  'STOCK':'Stock','STOCKS':'Stock','REIT':'Reit','REITS':'Reit',
-};
+const TYPE_ALIASES = PersistenceCore.ASSET_TYPE_ALIASES;
 const TYPE_ALIAS_LOOKUP = Object.fromEntries(Object.entries(TYPE_ALIASES).map(([k,v])=>[k.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase(),v]));
 const STOR         = 'civ5';
 const APP_NAME     = 'Carteira de Investimentos';
@@ -11620,7 +11612,7 @@ function backupManagerModal(){
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn bgh" onclick="cancelBackupImport()">Cancelar importação</button>
-          <button class="btn bp" onclick="confirmBackupImport()" ${draft && !draft.v249 && !S.backupImportValidating ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>${draft?.v249?'Restaurar (somente ambiente de teste)':(S.backupImportValidating?'Validando...':'Importar backup')}</button>
+          <button class="btn bp" onclick="confirmBackupImport()" ${draft && !draft.v249 && draft.v249Preview?.restoreAllowed && !S.backupImportValidating ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>${draft?.v249?'Restaurar (somente ambiente de teste)':(S.backupImportValidating?'Validando...':'Importar backup')}</button>
         </div>
       </div>
     </div>
@@ -12069,16 +12061,54 @@ function backupPayload(){
 }
 async function backupPortabilityPayload(){
   if(typeof BackupPortability==='undefined') throw new Error('BACKUP_ENGINE_UNAVAILABLE');
-  syncWalletFromState();
-  return BackupPortability.createBackup({
-    state:PersistenceCore.buildBackupState(S, normalizeGoals),
-    config:backupCurrentConfig(),
-    metadata:{source:'localStorage',corporateEventsMode:'SHADOW_READ_ONLY',realRestoreEnabled:false},
+  const corporateCache=PublicEventsStore.readForBackup(localStorage);
+  const rawState=localStorage.getItem(STOR);
+  const state=rawState===null?{}:JSON.parse(rawState);
+  if(!state||typeof state!=='object'||Array.isArray(state)) throw new Error('BACKUP_SOURCE_STATE_INVALID');
+  const rawConfig=localStorage.getItem(`${STOR}_cfg`);
+  const config=rawConfig===null?undefined:JSON.parse(rawConfig);
+  const rawSnapshots=localStorage.getItem(V76_SNAPSHOT_STORAGE_KEY);
+  const rawFlows=localStorage.getItem(V76_FLOW_STORAGE_KEY);
+  const hasStoredRuntime=rawSnapshots!==null||rawFlows!==null;
+  let runtime;
+  if(hasStoredRuntime){
+    if(!v76RuntimeAvailable()) throw new Error('BACKUP_V76_RUNTIME_UNAVAILABLE');
+    const result=window.PortfolioRuntimeStores.backupSupplementFromRaw(rawSnapshots,rawFlows,v76Clock);
+    if(!result.ok) throw new Error(`BACKUP_V76_RUNTIME_${result.diagnostic}`);
+    runtime=result.value;
+  }
+  const backup=await BackupPortability.createBackup({
+    state,
+    config,
+    runtime,
+    corporateEvents:corporateCache.present?corporateCache.events:undefined,
+    metadata:{source:'localStorage',corporateEventsMode:'SHADOW_READ_ONLY',corporateEventsCache:{present:corporateCache.present,version:corporateCache.version,updatedAt:corporateCache.updatedAt,source:'public-read-only'},realRestoreEnabled:false},
     appVersion:typeof APP_VERSION!=='undefined'?APP_VERSION:'legacy'
   });
+  const validation=await BackupPortability.verifyBackup(backup);
+  if(validation.status!=='VALID') throw new Error(`BACKUP_NOT_COMPLETE:${validation.status}`);
+  return backup;
 }
 function backupFromRaw(raw){
   return PersistenceCore.parseBackupRaw(raw);
+}
+function legacyBackupInput(parsed){
+  const data=parsed?.data||{};
+  const rawState=parsed?.storage?.[STOR]||data;
+  const runtime=data.v76Runtime||parsed?.v76Runtime;
+  const cleanState={...rawState};
+  const corporateEvents=Array.isArray(cleanState.corporateEvents)?cleanState.corporateEvents:undefined;
+  delete cleanState.corporateEvents;
+  if(runtime&&rawState===data) delete cleanState.v76Runtime;
+  const config=parsed?.storage?.[`${STOR}_cfg`]||(Object.prototype.hasOwnProperty.call(data,'divGoal')?{divGoal:data.divGoal}:undefined);
+  return {state:cleanState,config,runtime,corporateEvents};
+}
+async function validateLegacyBackup(parsed){
+  const input=legacyBackupInput(parsed);
+  if(input.corporateEvents?.length) return {envelope:null,integrity:{status:'INCOMPATIBLE',error:'CORPORATE_EVENTS_SEPARATE_STORE_UNSUPPORTED'}};
+  const envelope=await BackupPortability.createBackup({...input,metadata:{source:'legacy-import-validation'},appVersion:'legacy'});
+  const integrity=await BackupPortability.verifyBackup(envelope);
+  return {envelope,integrity};
 }
 function backupStats(data){
   return PersistenceCore.backupStats(data, normalizeGoals, isRendaFixaAsset);
@@ -12175,20 +12205,21 @@ async function exportBackup(){
 }
 function importBackup(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } openBackupCenter(); }
 function triggerBackupImport(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } document.getElementById('imp-file')?.click(); }
-function applyBackupData(parsed){
-  if(!canEditFromThisTab('restaurar backup')) return false;
-  const payload=PersistenceCore.parseBackupRaw(parsed);
-  if(!payload){
-    toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
+function applyBackupData(parsed,validation){
+  if(!S.backupImportDraft||S.backupImportDraft.parsed!==parsed||S.backupImportDraft.v249||validation?.status!=='VALID'||validation?.restoreAllowed!==true||validation?.source!==parsed){
+    toast('Restauração bloqueada: backup não validado nesta prévia. Nenhum dado foi aplicado.','#f87171');
     return false;
   }
-  const state=payload.storage?.[STOR] || payload.data || {};
-  const cfg=payload.storage?.[`${STOR}_cfg`] || {
-    brapiToken:String(payload.data?.brapiToken || payload.meta?.brapiToken || ''),
-    divGoal:Number(payload.data?.divGoal)||0
-  };
+  if(!canEditFromThisTab('restaurar backup')) return false;
+  const validatedPayload=validation.validatedBackup?.payload;
+  if(!validatedPayload||typeof validatedPayload.state!=='object'||!validatedPayload.config){
+    toast('Restauração bloqueada: snapshot validado ausente. Nenhum dado foi aplicado.','#f87171');
+    return false;
+  }
+  const state=validatedPayload.state;
+  const cfg=validatedPayload.config;
   const runtimeApi=typeof globalThis!=='undefined'?globalThis.PortfolioRuntimeStores:null;
-  const derived=runtimeApi?.restoreSupplement(payload.data?.v76Runtime||payload.v76Runtime,v76Clock);
+  const derived=runtimeApi?.restoreSupplement(validatedPayload.runtime,v76Clock);
   if(derived&&!derived.ok){ toast('A seção de performance do backup é inválida; restauração cancelada.','#f87171'); return false; }
   const result=PersistenceCore.applyStorageTransaction(
     localStorage,
@@ -12220,13 +12251,28 @@ function applyBackupData(parsed){
   toast('✅ Backup importado com sucesso!', '#6ee7b7');
   return true;
 }
-function confirmBackupImport(){
+async function confirmBackupImport(){
   if(!S.backupImportDraft?.parsed) return;
   if(S.backupImportDraft.v249){
     toast('Prévia concluída. Restauração real está desabilitada nesta fase; nada foi gravado.','#fbbf24');
     return;
   }
   if(!canEditFromThisTab('restaurar backup')) return;
+  const draft=S.backupImportDraft;
+  if(!draft.validationEnvelope){
+    toast('Restauração bloqueada: validação integral ausente. Nenhum dado foi aplicado.','#f87171');
+    return;
+  }
+  const rebuilt=await validateLegacyBackup(draft.parsed);
+  if(rebuilt.integrity.status!=='VALID'){
+    toast(`Restauração bloqueada: ${rebuilt.integrity.status}. Nenhum dado foi aplicado.`,'#f87171');
+    return;
+  }
+  const freshPreview=await BackupPortability.previewRestore(rebuilt.envelope,backupCurrentState());
+  if(freshPreview.integrity.status!=='VALID'||!freshPreview.restoreAllowed){
+    toast(`Restauração bloqueada: ${freshPreview.integrity.status==='VALID'?'CONFLICT':freshPreview.integrity.status}. Nenhum dado foi aplicado.`,'#f87171');
+    return;
+  }
   const summary=S.backupImportDraft.summary;
   const fileName=String(S.backupImportDraft.fileName||'backup.json');
   const importedAt=String(S.backupImportDraft.importedAt||'data não informada');
@@ -12235,7 +12281,7 @@ function confirmBackupImport(){
     toast('Importação cancelada.');
     return;
   }
-  applyBackupData(S.backupImportDraft.parsed);
+  applyBackupData(draft.parsed,{...freshPreview,status:freshPreview.integrity.status,source:draft.parsed,validatedBackup:freshPreview.integrity.backup});
 }
 function cancelBackupImport(){
   if(S.backupImportDraft) toast('Importação cancelada.');
@@ -12253,13 +12299,13 @@ document.getElementById('imp-file').addEventListener('change',e=>{
       const d=JSON.parse(ev.target.result);
       if(typeof BackupPortability!=='undefined' && d?.manifest?.backupFormat===BackupPortability.FORMAT){
               const integrity=await BackupPortability.verifyBackup(d);
-              if(!['SUPPORTED','MIGRATABLE'].includes(integrity.status)){
+              if(integrity.status!=='VALID'){
                 toast(`Arquivo recusado: ${integrity.status}. Nenhum dado foi aplicado.`,'#f87171');
                 return;
               }
               const preview=await BackupPortability.previewRestore(d,backupCurrentState());
               const parsedState=d.payload?.state||{};
-              S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview};
+              S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview,validationEnvelope:d};
               S.backupOpen=true;
               render();
               return;
@@ -12270,32 +12316,14 @@ document.getElementById('imp-file').addEventListener('change',e=>{
               toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
               return;
             }
-            // Build a backup object compatible with previewRestore
-            const legacyBackup={
-              manifest: {
-                backupFormat: 'carteira-investimentos-backup',
-                backupVersion: '1.0',
-                appVersion: 'legacy',
-                createdAt: new Date().toISOString(),
-                exportMode: 'LOCAL_ONLY',
-                operationId: 'legacy-op-' + Date.now(),
-                exportedBy: 'browser',
-                contentInventory: ['state', 'assets', 'transactions', 'income', 'fixedIncome', 'goals', 'corporateEvents'],
-                recordCounts: backupStats(legacyParsed.data),
-                schemaIdentifiers: { state: 'legacy-civ5-compatible', config: 'legacy-civ5-cfg-compatible' },
-                checksums: { algorithm: 'SHA-256', payload: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
-                compatibility: { minSupportedMajor: 1, currentMajor: 1, legacyFormatsRecognized: ['legacy-civ5-compatible'] }
-              },
-              payload: legacyParsed,
-              config: {}
-            };
-            // Calculate correct checksum
-            if(typeof BackupPortability!=='undefined'){
-              legacyBackup.manifest.checksums.payload = await BackupPortability.sha256(BackupPortability.canonical(legacyBackup.payload));
+            const {envelope:validationEnvelope,integrity:validation}=await validateLegacyBackup(legacyParsed);
+            if(validation.status!=='VALID'){
+              toast(`Arquivo recusado: ${validation.status}. Nenhum dado foi aplicado.`,'#f87171');
+              return;
             }
-            const legacyPreview=await BackupPortability.previewRestore(legacyBackup,backupCurrentState());
+            const legacyPreview=await BackupPortability.previewRestore(validationEnvelope,backupCurrentState());
             const legacySummary=backupStats(legacyParsed.data);
-            S.backupImportDraft={fileName:f.name, parsed:legacyBackup, summary:legacySummary, importedAt:backupImportedAt(legacyParsed), v249:false, v249Preview:legacyPreview};
+            S.backupImportDraft={fileName:f.name, parsed:legacyParsed, summary:legacySummary, importedAt:backupImportedAt(legacyParsed), v249:false, v249Preview:legacyPreview, validationEnvelope};
             S.backupOpen=true;
             render();
     }catch(err){

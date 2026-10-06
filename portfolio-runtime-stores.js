@@ -11,7 +11,7 @@
   const finite=v=>Number.isFinite(Number(v))?Number(v):null;
   const nonNegativeCents=v=>Number.isInteger(Number(v))&&Number(v)>=0?Number(v):null;
   const positiveCents=v=>Number.isInteger(Number(v))&&Number(v)>0?Number(v):null;
-  const isoDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):null;
+  const isoDate=v=>{const value=String(v||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;const date=new Date(`${value}T00:00:00.000Z`);return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value?value:null;};
   const nowIso=clock=>new Date(clock?.()).toISOString();
   const clone=v=>JSON.parse(JSON.stringify(v));
 
@@ -79,6 +79,28 @@
   function trackingStartDate(store,{minimumCoverage=95}={}){return store?.trackingStartDate||((store?.snapshots||[]).filter(s=>(finite(s.totalCoveragePercent)||0)>=minimumCoverage).sort((a,b)=>a.localDate.localeCompare(b.localDate))[0]?.localDate||null);}
   function prospectiveStatus(store){const count=store?.snapshots?.length||0;return count?{status:'TRACKING_STARTED',snapshotCount:count,trackingStartDate:trackingStartDate(store)}:{status:'NOT_STARTED',snapshotCount:0,trackingStartDate:null};}
   function backupSupplement({snapshots,flows}={}){return {schemaVersion:1,derived:true,valuationSnapshots:clone(snapshots||emptySnapshotStore()),externalCashFlows:clone(flows||emptyFlowStore())};}
-  function restoreSupplement(payload,clock=Date.now){if(payload==null)return {ok:true,snapshots:emptySnapshotStore(clock),flows:emptyFlowStore(clock),diagnostic:'LEGACY_BACKUP_DEFAULTS'};if(payload.schemaVersion!==1||!payload.valuationSnapshots||!payload.externalCashFlows)return {ok:false,diagnostic:'INVALID_DERIVED_BACKUP'};const s=loadStore(payload.valuationSnapshots,'snapshots',clock),f=loadStore(payload.externalCashFlows,'flows',clock);if(!s.ok||!f.ok)return {ok:false,diagnostic:'INVALID_DERIVED_STORE'};return {ok:true,snapshots:s.value,flows:f.value,diagnostic:'RESTORED'};}
-  return {SNAPSHOT_SCHEMA_VERSION,FLOW_SCHEMA_VERSION,CALCULATION_VERSION,FLOW_TYPES:[...FLOW_TYPES],emptySnapshotStore,emptyFlowStore,loadStore,normalizeSnapshot,upsertDailySnapshot,normalizeFlow,addExternalFlow,flowDuplicate,selectors,trackingStartDate,prospectiveStatus,backupSupplement,restoreSupplement};
+  function canonical(value){if(Array.isArray(value))return value.map(canonical);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])]));return value;}
+  function sameRecord(value,normalizer){try{return JSON.stringify(canonical(value))===JSON.stringify(canonical(normalizer(value,()=>Date.parse('2000-01-01T00:00:00.000Z'))));}catch(_){return false;}}
+  function validateBackupSupplement(payload){
+    if(!payload||payload.schemaVersion!==1||payload.derived!==true)return {ok:false,diagnostic:'INVALID_DERIVED_BACKUP'};
+    const snapshots=payload.valuationSnapshots,flows=payload.externalCashFlows;
+    if(!snapshots||snapshots.schemaVersion!==SNAPSHOT_SCHEMA_VERSION||!Array.isArray(snapshots.snapshots)||!snapshots.snapshots.every(row=>sameRecord(row,normalizeSnapshot)))return {ok:false,diagnostic:'INVALID_DERIVED_SNAPSHOTS'};
+    if(!flows||flows.schemaVersion!==FLOW_SCHEMA_VERSION||!Array.isArray(flows.flows)||!flows.flows.every(row=>sameRecord(row,normalizeFlow)))return {ok:false,diagnostic:'INVALID_DERIVED_FLOWS'};
+    if(typeof snapshots.lastUpdatedAt!=='string'||!Number.isFinite(Date.parse(snapshots.lastUpdatedAt))||snapshots.calculationVersion!==CALCULATION_VERSION||(snapshots.trackingStartDate!==null&&isoDate(snapshots.trackingStartDate)!==snapshots.trackingStartDate))return {ok:false,diagnostic:'INVALID_DERIVED_SNAPSHOT_METADATA'};
+    if(typeof flows.lastUpdatedAt!=='string'||!Number.isFinite(Date.parse(flows.lastUpdatedAt)))return {ok:false,diagnostic:'INVALID_DERIVED_FLOW_METADATA'};
+    if(new Set(snapshots.snapshots.map(row=>row.localDate)).size!==snapshots.snapshots.length)return {ok:false,diagnostic:'DUPLICATE_DERIVED_SNAPSHOT'};
+    const seen=[];for(const flow of flows.flows){if(flowDuplicate(seen,flow))return {ok:false,diagnostic:'DUPLICATE_DERIVED_FLOW'};seen.push(flow);}
+    return {ok:true,diagnostic:'VALID'};
+  }
+  function backupSupplementFromRaw(snapshotRaw,flowRaw,clock=Date.now){
+    if(snapshotRaw==null||flowRaw==null)return {ok:false,diagnostic:'PARTIAL_DERIVED_STORE'};
+    if(snapshotRaw===''||flowRaw==='')return {ok:false,diagnostic:'CORRUPT_DERIVED_STORE'};
+    const snapshots=loadStore(snapshotRaw,'snapshots',clock),flows=loadStore(flowRaw,'flows',clock);
+    if(!snapshots.ok||!flows.ok)return {ok:false,diagnostic:'CORRUPT_DERIVED_STORE'};
+    const value=backupSupplement({snapshots:snapshots.value,flows:flows.value});
+    const validation=validateBackupSupplement(value);
+    return validation.ok?{ok:true,value,diagnostic:'VALID'}:{ok:false,diagnostic:validation.diagnostic};
+  }
+  function restoreSupplement(payload,clock=Date.now){if(payload==null)return {ok:true,snapshots:emptySnapshotStore(clock),flows:emptyFlowStore(clock),diagnostic:'LEGACY_BACKUP_DEFAULTS'};const validation=validateBackupSupplement(payload);if(!validation.ok)return {ok:false,diagnostic:validation.diagnostic};const s=loadStore(payload.valuationSnapshots,'snapshots',clock),f=loadStore(payload.externalCashFlows,'flows',clock);return {ok:true,snapshots:s.value,flows:f.value,diagnostic:'RESTORED'};}
+  return {SNAPSHOT_SCHEMA_VERSION,FLOW_SCHEMA_VERSION,CALCULATION_VERSION,FLOW_TYPES:[...FLOW_TYPES],emptySnapshotStore,emptyFlowStore,loadStore,normalizeSnapshot,upsertDailySnapshot,normalizeFlow,addExternalFlow,flowDuplicate,selectors,trackingStartDate,prospectiveStatus,backupSupplement,backupSupplementFromRaw,validateBackupSupplement,restoreSupplement};
 });

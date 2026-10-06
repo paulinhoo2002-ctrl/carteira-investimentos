@@ -1,18 +1,19 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const Backup = require('../backup-portability.js');
+const Persistence = require('../persistence-core.js');
 
 function fixtureState() {
-  return {
+  return Persistence.buildBackupState({
     wallets: [{ id: 'w1', name: 'Principal' }],
     activeWalletId: 'w1',
-    assets: [{ id: 'a1', ticker: 'ABCD3', qty: 10, current_price: 12.34 }],
+    assets: [{ id: 'a1', ticker: 'ABCD3', type: 'Ação', qty: 10, current_price: 12.34 }],
     aportes: [{ id: 'm1', date: '2026-01-02', value: 1000 }],
     proventos: [{ id: 'i1', date: '2026-02-03', value: 12.5, type: 'DIVIDEND' }],
     rfEvents: [{ id: 'rf1', value: 5000, manual: true }],
     goals: { patrimonio: { target: 100000 } },
     brapiToken: 'must-not-leak'
-  };
+  });
 }
 
 test('V267 backup manifest includes operationId and schema identifiers', async () => {
@@ -25,27 +26,27 @@ test('V267 backup manifest includes operationId and schema identifiers', async (
   // V267 enhanced manifest fields
   assert.ok(backup.manifest.operationId, 'Should have operationId');
   assert.ok(backup.manifest.exportedBy, 'Should have exportedBy');
-  assert.equal(backup.manifest.schemaIdentifiers.stateSchema, 'backup-portability-v1.1');
+  assert.equal(backup.manifest.schemaIdentifiers.stateSchema, 'backup-portability-v2.0');
   assert.ok(backup.manifest.compatibility);
   assert.equal(backup.manifest.compatibility.minSupportedMajor, 1);
   assert.ok(backup.manifest.compatibility.legacyFormatsRecognized.includes('legacy-civ5-compatible'));
 });
 
-test('V267 verifyBackup returns schema warnings for future schemas', async () => {
-  const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
+test('V323C verifyBackup rejects future schemas', async () => {
+  const backup = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 0 } });
   const futureBackup = {
     ...backup,
     manifest: {
       ...backup.manifest,
-      schemaIdentifiers: { stateSchema: 'backup-portability-v2.0' }
+      backupVersion: '3.0', schemaVersion: 3,
+      schemaIdentifiers: { stateSchema: 'backup-portability-v3.0' }
     }
   };
   // Recalculate checksum
   futureBackup.manifest.checksums.payload = await Backup.sha256(Backup.canonical(futureBackup.payload));
   
   const result = await Backup.verifyBackup(futureBackup);
-  assert.equal(result.status, 'SUPPORTED');
-  assert.ok(result.warnings.includes('STATE_SCHEMA_FUTURE:backup-portability-v2.0'));
+  assert.equal(result.status, 'UNSUPPORTED_FUTURE_SCHEMA');
 });
 
 test('V267 previewRestore provides detailed diff with adds, updates, conflicts, skips', async () => {
@@ -53,23 +54,23 @@ test('V267 previewRestore provides detailed diff with adds, updates, conflicts, 
   const backupState = {
     ...fixtureState(),
     assets: [
-      { id: 'a1', ticker: 'ABCD3', qty: 10, current_price: 12.34 },
-      { id: 'a2', ticker: 'EFGH4', qty: 5 }
+      { id: 'a1', ticker: 'ABCD3', type: 'Ação', qty: 10, current_price: 12.34 },
+      { id: 'a2', ticker: 'EFGH4', type: 'Ação', qty: 5 }
     ]
   };
-  const backup = await Backup.createBackup({ state: backupState, config: {} });
+  const backup = await Backup.createBackup({ state: backupState, config: { divGoal: 0 } });
   
   // Current state: a1 qty changed to 8 (UPDATE), a2 missing (SKIP for current-only)
   const current = {
     ...fixtureState(),
     assets: [
-      { id: 'a1', ticker: 'ABCD3', qty: 8, current_price: 12.34 } // UPDATE: same ID a1, different qty
+      { id: 'a1', ticker: 'ABCD3', type: 'Ação', qty: 8, current_price: 12.34 } // UPDATE: same ID a1, different qty
     ]
   };
   
   const preview = await Backup.previewRestore(backup, current);
   
-  assert.equal(preview.integrity.status, 'SUPPORTED');
+  assert.equal(preview.integrity.status, 'VALID');
   // diff is incoming (backup) vs current
   // - a1: in both, qty differs -> UPDATE
   // - a2: in backup only -> ADD
@@ -84,23 +85,23 @@ test('V267 previewRestore provides detailed diff with adds, updates, conflicts, 
 });
 
 test('V267 previewRestore detects CONFLICT when same ID has different data', async () => {
-  const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
+  const backup = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 0 } });
   
   // Current state: same asset ID but completely different data (CONFLICT)
   const current = {
     ...fixtureState(),
-    assets: [{ id: 'a1', ticker: 'XYZ', qty: 100, current_price: 999 }] // Different ticker, price
+    assets: [{ id: 'a1', ticker: 'XYZ', type: 'Ação', qty: 100, current_price: 999 }] // Different ticker, price
   };
   
   const preview = await Backup.previewRestore(backup, current);
   
-  assert.equal(preview.integrity.status, 'SUPPORTED');
+  assert.equal(preview.integrity.status, 'VALID');
   assert.ok(preview.conflicts.length > 0);
   assert.equal(preview.restoreAllowed, false); // Conflicts block restore
 });
 
 test('V267 previewRestore returns warnings array with schema and compatibility warnings', async () => {
-  const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
+  const backup = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 0 } });
   const preview = await Backup.previewRestore(backup, fixtureState());
   
   assert.ok(Array.isArray(preview.warnings));
@@ -108,12 +109,12 @@ test('V267 previewRestore returns warnings array with schema and compatibility w
 });
 
 test('V267 previewRestore summary object provides quick counts', async () => {
-  const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
+  const backup = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 0 } });
   const current = {
     ...fixtureState(),
     assets: [
       { ...fixtureState().assets[0], qty: 8 }, // UPDATE
-      { id: 'a2', ticker: 'EFGH4', qty: 5 } // ADD
+      { id: 'a2', ticker: 'EFGH4', type: 'Ação', qty: 5 } // ADD
     ]
   };
   
@@ -127,7 +128,7 @@ test('V267 previewRestore summary object provides quick counts', async () => {
 });
 
 test('V267 previewRestore compatibility object passed through', async () => {
-  const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
+  const backup = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 0 } });
   const preview = await Backup.previewRestore(backup, fixtureState());
   
   assert.ok(preview.compatibility);
@@ -147,7 +148,7 @@ test('V267 legacy format recognition', async () => {
       operationId: 'legacy-op-123',
       exportedBy: 'node',
       contentInventory: ['state', 'assets', 'transactions', 'income', 'fixedIncome', 'goals', 'corporateEvents'],
-      recordCounts: { wallets: 1, assets: 1, transactions: 1, income: 1, fixedIncome: 1, goals: 1, corporateEvents: 0 },
+      recordCounts: { wallets: 1, assets: 1, transactions: 1, income: 1, fixedIncome: 1, goals: Object.keys(fixtureState().goals).length, corporateEvents: 0 },
       schemaIdentifiers: { 
         state: 'legacy-civ5-compatible', 
         config: 'legacy-civ5-cfg-compatible',
@@ -158,16 +159,8 @@ test('V267 legacy format recognition', async () => {
       compatibility: { minSupportedMajor: 1, currentMajor: 1, legacyFormatsRecognized: ['legacy-civ5-compatible'] }
     },
     payload: {
-      state: { 
-        wallets: [{ id: 'w1', name: 'Principal' }], 
-        assets: [{ id: 'a1', ticker: 'ABCD3', qty: 10 }], 
-        aportes: [{ id: 'm1', date: '2026-01-02', value: 1000 }],
-        proventos: [{ id: 'i1', date: '2026-02-03', value: 12.5, type: 'DIVIDEND' }],
-        rfEvents: [{ id: 'rf1', value: 5000, manual: true }],
-        goals: { patrimonio: { target: 100000 } },
-        corporateEvents: []
-      },
-      config: {},
+      state: { ...fixtureState(), corporateEvents: [] },
+      config: { divGoal: 0 },
       metadata: {}
     }
   };
@@ -176,13 +169,9 @@ test('V267 legacy format recognition', async () => {
   legacyBackup.manifest.checksums.payload = await Backup.sha256(Backup.canonical(legacyBackup.payload));
   
   const result = await Backup.verifyBackup(legacyBackup);
-  // Major version 1, so should be SUPPORTED
-  assert.equal(result.status, 'SUPPORTED');
-  
-  // Verify legacy schema identifiers are recognized
-  assert.ok(result.warnings.includes('STATE_SCHEMA_UNKNOWN:legacy-civ5-compatible') || 
-            result.warnings.includes('STATE_SCHEMA_FUTURE:legacy-civ5-compatible') ||
-            result.warnings.length >= 0); // At minimum, should not error
+  // Complete legacy backups migrate to the supported current contract.
+  assert.equal(result.status, 'VALID', result.error);
+  assert.equal(result.migratedFrom, 1);
 });
 
 test('V267 previewRestore for MIGRATABLE backup returns restoreAllowed false with warnings', async () => {
@@ -200,8 +189,8 @@ test('V267 previewRestore for MIGRATABLE backup returns restoreAllowed false wit
       compatibility: { minSupportedMajor: 1, currentMajor: 1, legacyFormatsRecognized: ['legacy-civ5-compatible'] }
     },
     payload: {
-      state: { wallets: [], assets: [], aportes: [], proventos: [], rfEvents: [], goals: {} },
-      config: {},
+      state: { wallets: [], activeWalletId: '', assets: [], aportes: [], proventos: [], rfEvents: [], goals: {}, tab: 'dashboard', divGoal: 0, hideValues: false, apHistoryOpen: false, apSearch: '', dashPeriod: 12, dashType: 'all', rentPeriod: 'all', rentType: 'all', rentBench: 'CDI', irpfYear: 2026, irpfStep: 1, learnMeta: {} },
+      config: { divGoal: 0 },
       metadata: {}
     }
   };
@@ -211,7 +200,7 @@ test('V267 previewRestore for MIGRATABLE backup returns restoreAllowed false wit
   
   const preview = await Backup.previewRestore(oldBackup, fixtureState());
   
-  assert.equal(preview.integrity.status, 'MIGRATABLE');
+  assert.equal(preview.integrity.status, 'INCOMPATIBLE');
   // MIGRATABLE backups should not allow restore by default
   assert.equal(preview.restoreAllowed, false);
 });
