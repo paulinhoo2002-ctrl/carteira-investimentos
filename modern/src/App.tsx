@@ -22,6 +22,7 @@ import { RebalancePage } from './features/rebalance/RebalancePage';
 import { AssetsReadonlyPage } from './features/reports/AssetsReadonlyPage';
 import { AssetsReportPreview } from './features/reports/AssetsReportPreview';
 import { ReturnsPage } from './features/returns/ReturnsPage';
+import { createReadonlyReportSessionHistory } from './features/reports/readonlyReportSessionHistory.ts';
 import type { ReportsRefreshController } from './features/reports/reportsRefreshController';
 import type { ReadOnlyFixedIncomeAdapter } from './features/fixed-income/fixedIncomeSnapshotAdapter.mjs';
 import type { ReadOnlyReportsAdapter } from './features/reports/reportsSnapshotAdapter';
@@ -75,6 +76,12 @@ export function App({
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const activePage = MODERN_PAGES.find((page) => page.id === activePageId) ?? MODERN_PAGES[0];
+
+  useEffect(() => {
+    if (!onActivePageIdChange) return;
+    const navigation = createReadonlyReportSessionHistory(window);
+    return navigation.subscribe(setActivePageId, initialPageId);
+  }, [initialPageId, onActivePageIdChange]);
 
   useEffect(() => {
     if (!isMenuOpen && !isMoreOpen) {

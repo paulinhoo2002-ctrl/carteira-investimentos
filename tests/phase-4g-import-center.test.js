@@ -69,5 +69,7 @@ test('parser indisponível, erro e formato desconhecido nunca abrem revisão con
 });
 
 test('Import navigation does not invoke the normal persistence save on entry', () => {
-  assert.match(source, /if\(t!=='importacao' && \!\(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot\(\)\)\) save\(\);/);
+  assert.match(source, /function go\(t\)\{\s*return goInternal\(t,true\);/);
+  assert.match(source, /if\(persistNavigation && t!=='importacao' && \!\(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot\(\)\)\) save\(\);/);
+  assert.match(source, /if\(entry\.kind==='navigation'\)\{\s*goInternal\(entry\.route,false\);/);
 });

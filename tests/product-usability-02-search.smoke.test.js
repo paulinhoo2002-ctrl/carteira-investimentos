@@ -68,3 +68,35 @@ test('busca global encontra Análise, respeita teclado, no-match e links context
     harness.server.close();
   }
 });
+
+test('comando de navegação Ctrl+K altera a tela sem save, localStorage ou cloud-save', async () => {
+  const executable = browserPath();
+  assert.ok(executable, 'Chrome/Edge nao encontrado');
+  const { chromium } = await import('playwright-core');
+  const harness = await startServer(path.join(__dirname, '..'));
+  const browser = await chromium.launch({ executablePath: executable, headless: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(harness.url, { waitUntil: 'networkidle' });
+    await page.evaluate(() => {
+      window.__commandWriteCounts = { save: 0, localStorage: 0, cloud: 0 };
+      const originalSave = window.save;
+      window.save = (...args) => { window.__commandWriteCounts.save += 1; return originalSave(...args); };
+      const originalCloudSave = window.queueCloudSave;
+      window.queueCloudSave = (...args) => { window.__commandWriteCounts.cloud += 1; return originalCloudSave?.(...args); };
+      const originalSetItem = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (...args) {
+        window.__commandWriteCounts.localStorage += 1;
+        return originalSetItem.apply(this, args);
+      };
+    });
+    await page.keyboard.press('Control+KeyK');
+    await page.locator('#portfolio-search-input').fill('abrir metas');
+    await page.getByRole('button', { name: /Abrir seção: Metas/ }).click();
+    assert.equal(await page.evaluate(() => S.tab), 'metas');
+    assert.deepEqual(await page.evaluate(() => window.__commandWriteCounts), { save: 0, localStorage: 0, cloud: 0 });
+  } finally {
+    await browser.close();
+    harness.server.close();
+  }
+});

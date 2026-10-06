@@ -268,7 +268,8 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(hostTsx, /createHostIncomeReadonlySource/);
   assert.match(hostTsx, /createModernIncomeRuntime/);
   assert.match(hostTsx, /readReadonlyReportSessionContext/);
-  assert.match(hostTsx, /buildReadonlyReportSessionSearch/);
+  assert.match(hostTsx, /createReadonlyReportSessionHistory/);
+  assert.match(hostTsx, /routeHistory\?\.navigate/);
   assert.match(hostTsx, /createReportsRefreshController/);
   assert.match(hostTsx, /createHostDiagnosticsFactory/);
   assert.match(hostTsx, /Carteira ativa real/);

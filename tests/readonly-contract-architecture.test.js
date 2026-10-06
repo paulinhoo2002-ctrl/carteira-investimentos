@@ -149,7 +149,8 @@ function assertLegacyConsumerFallback(indexHtml) {
 
 function assertModernSessionContext(readonlySessionTs) {
   assert.match(readonlySessionTs, /normalizeReadonlyReportPageId/);
-  assert.match(readonlySessionTs, /\?\?\s*'reports'/);
+  assert.match(readonlySessionTs, /MODERN_PAGES/);
+  assert.match(readonlySessionTs, /modernPageIds\.has\(fallback\)\s*\?\s*fallback\s*:\s*'reports'/);
   assert.equal(readonlySessionTs.includes('getReadonlyReportPageContract?.()'), false, 'Modern nao pode cair para chamada sem candidato');
   assert.equal(readonlySessionTs.includes(`globalThis.ReadonlyReportPageContract`), false, 'Modern nao pode depender do global');
   assert.equal(readonlySessionTs.includes('createReadonlyReportPageContractSafeFallback'), false, 'Modern nao pode recriar fallback local');

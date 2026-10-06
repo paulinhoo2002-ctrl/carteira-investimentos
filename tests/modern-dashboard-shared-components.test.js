@@ -81,6 +81,27 @@ test('EmptyState renderiza título, corpo e action', async () => {
   assert.ok(html.includes('empty-state--compact'));
 });
 
+test('EmptyState identifica estados desconhecido e parcial sem substituir a mensagem', async () => {
+  await loadShared();
+  const unknown = renderToStaticMarkup(React.createElement(EmptyState, {
+    title: 'Valor atual não identificado',
+    body: 'A fonte não confirmou o valor.',
+    status: 'UNKNOWN',
+  }));
+  const partial = renderToStaticMarkup(React.createElement(EmptyState, {
+    title: 'Cobertura parcial',
+    body: 'Há registros sem confirmação.',
+    status: 'PARTIAL',
+  }));
+
+  assert.match(unknown, /data-state="UNKNOWN"/);
+  assert.match(unknown, /Dados não identificados/);
+  assert.match(unknown, /A fonte não confirmou o valor\./);
+  assert.match(partial, /data-state="PARTIAL"/);
+  assert.match(partial, /Dados parciais/);
+  assert.match(partial, /Há registros sem confirmação\./);
+});
+
 test('AssetClassBadge categoria conhecida aplica cores', async () => {
   await loadShared();
   const el = React.createElement(AssetClassBadge, { category: 'Acao demo' });
@@ -104,6 +125,21 @@ test('ChartContainer com children renderiza wrapper', async () => {
   assert.ok(html.includes('Gráfico'));
   assert.ok(html.includes('resumo'));
   assert.ok(html.includes('chart'));
+});
+
+test('ChartContainer associa título e resumo textual à imagem do gráfico', async () => {
+  await loadShared();
+  const el = React.createElement(ChartContainer, {
+    title: 'Evolução mensal',
+    summary: 'Período: seis meses. Snapshot gerado em 2026-10-06. Cobertura parcial.',
+  }, React.createElement('svg', {}, 'chart'));
+  const html = renderToStaticMarkup(el);
+  const summaryId = html.match(/class="chart-container__summary" id="([^"]+)"/)?.[1];
+  const descriptionId = html.match(/class="chart-container__wrapper"[^>]*aria-describedby="([^"]+)"/)?.[1];
+
+  assert.ok(summaryId, 'resumo deve ter id para referência acessível');
+  assert.equal(descriptionId, summaryId, 'gráfico deve anunciar o resumo como descrição');
+  assert.match(html, /aria-labelledby="[^"]+"/);
 });
 
 test('ChartContainer estado vazio exibe noData', async () => {
