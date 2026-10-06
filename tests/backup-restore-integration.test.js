@@ -10,7 +10,7 @@ const configKey = 'civ5_cfg';
 
 function extractApplyBackupData() {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  const start = html.indexOf('function applyBackupData(parsed){');
+  const start = html.indexOf('async function applyBackupData(parsed){');
   const end = html.indexOf('function confirmBackupImport(){', start);
   assert.notEqual(start, -1);
   assert.notEqual(end, -1);
@@ -81,7 +81,14 @@ function makePayload() {
   };
 }
 
-function makeHarness({ storage }) {
+function makeCurrentStorage(failures = []) {
+  return makeStorage({
+    [stateKey]: JSON.stringify({ wallets: [], activeWalletId: '', assets: [], aportes: [], proventos: [], rfEvents: [], goals: {} }),
+    [configKey]: JSON.stringify({ divGoal: 0 })
+  }, failures);
+}
+
+function makeHarness({ storage, backupOverrides = {}, runtimeDiagnostics = ['EMPTY_DEFAULT', 'EMPTY_DEFAULT'] }) {
   const calls = [];
   const toasts = [];
   const debugErrors = [];
@@ -93,11 +100,29 @@ function makeHarness({ storage }) {
       return PersistenceCore.applyStorageTransaction(...args);
     }
   };
+  const backupCalls = [];
+  const safetyBackup = { manifest: { backupVersion: '1.2' }, payload: { state: {} } };
+  const backupPortability = {
+    async createBackup(options) { backupCalls.push(['create', options]); return safetyBackup; },
+    async verifyBackup(backup) { backupCalls.push(['verify', backup]); return { status: 'SUPPORTED', backup }; },
+    async saveLocalBackup(backup, options) { backupCalls.push(['archive', backup, options]); return { ok: true }; },
+    ...backupOverrides
+  };
+  const restoreButton = { disabled: false };
   const context = {
     PersistenceCore: core,
+    BackupPortability: backupPortability,
+    PortfolioRuntimeStores: {
+      backupSupplement: () => ({ schemaVersion: 1, derived: true, valuationSnapshots: { snapshots: [] }, externalCashFlows: { flows: [] } }),
+      restoreSupplement: () => null
+    },
+    __V76_RUNTIME__: { snapshots: { snapshots: [] }, flows: { flows: [] }, diagnostics: runtimeDiagnostics },
+    v76Clock: () => Date.now(),
+    TYPE_CHOICES: ['Ação'],
+    document: { getElementById: id => id === 'backup-import-confirm' ? restoreButton : null },
     STOR: stateKey,
     localStorage: storage,
-    S: { backupImportDraft: { parsed: makePayload() }, backupOpen: true },
+    S: { backupImportDraft: { parsed: makePayload() }, backupOpen: true, backupRestoreInProgress: false },
     canEditFromThisTab() {
       calls.push('canEditFromThisTab');
       return true;
@@ -123,7 +148,7 @@ function makeHarness({ storage }) {
     }
   };
   const applyBackupData = vm.runInNewContext(`${extractApplyBackupData()}\napplyBackupData;`, context);
-  return { applyBackupData, calls, toasts, debugErrors, transactionCalls, context };
+  return { applyBackupData, calls, toasts, debugErrors, transactionCalls, context, backupCalls, restoreButton };
 }
 
 function assertNoSuccessEffects(harness) {
@@ -138,19 +163,21 @@ function assertNoSuccessEffects(harness) {
 
 function assertStorageUnchanged(storage) {
   assert.deepEqual(storage.snapshot(), {
-    [stateKey]: 'old-state',
-    [configKey]: 'old-config'
+    [stateKey]: JSON.stringify({ wallets: [], activeWalletId: '', assets: [], aportes: [], proventos: [], rfEvents: [], goals: {} }),
+    [configKey]: JSON.stringify({ divGoal: 0 })
   });
 }
 
-test('applyBackupData writes civ5 and civ5_cfg through PersistenceCore and preserves success flow', () => {
-  const storage = makeStorage({ [stateKey]: 'old-state', [configKey]: 'old-config' });
+test('applyBackupData stores a validated safety backup before writing through PersistenceCore', async () => {
+  const storage = makeCurrentStorage();
   const harness = makeHarness({ storage });
   const payload = makePayload();
 
-  const result = harness.applyBackupData(payload);
+  const result = await harness.applyBackupData(payload);
 
   assert.equal(result, true);
+  assert.deepEqual(harness.backupCalls.map(call => call[0]), ['create', 'verify', 'archive']);
+  assert.equal(harness.backupCalls[0][1].state.performance.schemaVersion, 1);
   assert.equal(harness.transactionCalls.length, 1);
   assert.deepEqual(harness.transactionCalls[0].slice(0, 3), [storage, stateKey, configKey]);
   assert.deepEqual(JSON.parse(storage.snapshot()[stateKey]), payload.storage[stateKey]);
@@ -169,15 +196,33 @@ test('applyBackupData writes civ5 and civ5_cfg through PersistenceCore and prese
   assert.equal(harness.toasts.at(-1).color, '#6ee7b7');
 });
 
-test('applyBackupData restores previous values and stops success effects when writing civ5 fails', () => {
+test('applyBackupData serializes concurrent restore attempts and disables confirmation while pending', async () => {
+  const storage = makeCurrentStorage();
+  let releaseCreate;
+  const createPending = new Promise(resolve => { releaseCreate = resolve; });
+  const safetyBackup = { manifest: { backupVersion: '1.2' }, payload: { state: {} } };
+  const harness = makeHarness({ storage, backupOverrides: { async createBackup() { return createPending; } } });
+
+  const first = harness.applyBackupData(makePayload());
+  assert.equal(harness.context.S.backupRestoreInProgress, true);
+  assert.equal(harness.restoreButton.disabled, true);
+  const second = await harness.applyBackupData(makePayload());
+  assert.equal(second, false);
+  assert.equal(harness.transactionCalls.length, 0);
+  releaseCreate(safetyBackup);
+  assert.equal(await first, true);
+  assert.equal(harness.transactionCalls.length, 1);
+  assert.equal(harness.context.S.backupRestoreInProgress, false);
+});
+
+test('applyBackupData restores previous values and stops success effects when writing civ5 fails', async () => {
   const writeError = new Error('state write failed');
-  const storage = makeStorage(
-    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+  const storage = makeCurrentStorage(
     [{ op: 'setItem', key: stateKey, error: writeError, call: 1 }]
   );
   const harness = makeHarness({ storage });
 
-  const result = harness.applyBackupData(makePayload());
+  const result = await harness.applyBackupData(makePayload());
 
   assert.equal(result, false);
   assertStorageUnchanged(storage);
@@ -187,15 +232,14 @@ test('applyBackupData restores previous values and stops success effects when wr
   assert.equal(harness.toasts.at(-1).color, '#f87171');
 });
 
-test('applyBackupData restores previous values and avoids partial restore when writing civ5_cfg fails', () => {
+test('applyBackupData restores previous values and avoids partial restore when writing civ5_cfg fails', async () => {
   const writeError = new Error('config write failed');
-  const storage = makeStorage(
-    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+  const storage = makeCurrentStorage(
     [{ op: 'setItem', key: configKey, error: writeError, call: 1 }]
   );
   const harness = makeHarness({ storage });
 
-  const result = harness.applyBackupData(makePayload());
+  const result = await harness.applyBackupData(makePayload());
 
   assert.equal(result, false);
   assertStorageUnchanged(storage);
@@ -206,15 +250,14 @@ test('applyBackupData restores previous values and avoids partial restore when w
   assert.equal(harness.toasts.at(-1).message.includes('Seus dados anteriores foram restaurados'), true);
 });
 
-test('applyBackupData does not write or rollback when reading civ5 fails', () => {
+test('applyBackupData blocks before mutation when pre-restore state cannot be read', async () => {
   const readError = new Error('state read failed');
-  const storage = makeStorage(
-    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+  const storage = makeCurrentStorage(
     [{ op: 'getItem', key: stateKey, error: readError }]
   );
   const harness = makeHarness({ storage });
 
-  const result = harness.applyBackupData(makePayload());
+  const result = await harness.applyBackupData(makePayload());
 
   assert.equal(result, false);
   assertStorageUnchanged(storage);
@@ -222,18 +265,52 @@ test('applyBackupData does not write or rollback when reading civ5 fails', () =>
   assert.equal(storage.calls.some(c => c.op === 'setItem'), false);
   assert.equal(storage.calls.some(c => c.op === 'removeItem'), false);
   assert.equal(harness.debugErrors[0][1], readError);
-  assert.equal(harness.toasts.at(-1).message.includes('Seus dados anteriores foram restaurados'), true);
+  assert.equal(harness.toasts.at(-1).message.includes('nenhum dado foi alterado'), true);
 });
 
-test('applyBackupData preserves previous civ5 and does not write or rollback when reading civ5_cfg fails', () => {
+test('applyBackupData blocks before mutation if safety backup creation, validation, or archive fails', async () => {
+  const cases = [
+    { createBackup: async () => { throw new Error('safety backup unavailable'); } },
+    { verifyBackup: async () => ({ status: 'CORRUPTED' }) },
+    { saveLocalBackup: async () => ({ ok: false, status: 'LOCAL_ARCHIVE_UNAVAILABLE' }) }
+  ];
+  for (const backupOverrides of cases) {
+    const storage = makeCurrentStorage();
+    const harness = makeHarness({ storage, backupOverrides });
+
+    const result = await harness.applyBackupData(makePayload());
+
+    assert.equal(result, false);
+    assert.equal(harness.transactionCalls.length, 0);
+    assert.equal(storage.calls.some(call => call.op === 'setItem' || call.op === 'removeItem'), false);
+    assertStorageUnchanged(storage);
+    assertNoSuccessEffects(harness);
+    assert.equal(harness.toasts.at(-1).message.includes('Restauração cancelada'), true);
+  }
+});
+
+test('applyBackupData blocks before mutation when the current performance snapshot is invalid', async () => {
+  const storage = makeCurrentStorage();
+  const harness = makeHarness({ storage, runtimeDiagnostics: ['CORRUPT_JSON', 'EMPTY_DEFAULT'] });
+
+  const result = await harness.applyBackupData(makePayload());
+
+  assert.equal(result, false);
+  assert.equal(harness.transactionCalls.length, 0);
+  assert.equal(harness.backupCalls.length, 0);
+  assert.equal(storage.calls.some(call => call.op === 'setItem' || call.op === 'removeItem'), false);
+  assertStorageUnchanged(storage);
+  assertNoSuccessEffects(harness);
+});
+
+test('applyBackupData blocks before mutation when pre-restore config cannot be read', async () => {
   const readError = new Error('config read failed');
-  const storage = makeStorage(
-    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+  const storage = makeCurrentStorage(
     [{ op: 'getItem', key: configKey, error: readError }]
   );
   const harness = makeHarness({ storage });
 
-  const result = harness.applyBackupData(makePayload());
+  const result = await harness.applyBackupData(makePayload());
 
   assert.equal(result, false);
   assertStorageUnchanged(storage);
@@ -241,14 +318,13 @@ test('applyBackupData preserves previous civ5 and does not write or rollback whe
   assert.equal(storage.calls.some(c => c.op === 'setItem'), false);
   assert.equal(storage.calls.some(c => c.op === 'removeItem'), false);
   assert.equal(harness.debugErrors[0][1], readError);
-  assert.equal(harness.toasts.at(-1).message.includes('Seus dados anteriores foram restaurados'), true);
+  assert.equal(harness.toasts.at(-1).message.includes('nenhum dado foi alterado'), true);
 });
 
-test('applyBackupData shows incomplete recovery toast when rollback fails', () => {
+test('applyBackupData shows incomplete recovery toast when rollback fails', async () => {
   const writeError = new Error('config write failed');
   const rollbackError = new Error('state rollback failed');
-  const storage = makeStorage(
-    { [stateKey]: 'old-state', [configKey]: 'old-config' },
+  const storage = makeCurrentStorage(
     [
       { op: 'setItem', key: configKey, error: writeError, call: 1 },
       { op: 'setItem', key: stateKey, error: rollbackError, call: 2 }
@@ -256,7 +332,7 @@ test('applyBackupData shows incomplete recovery toast when rollback fails', () =
   );
   const harness = makeHarness({ storage });
 
-  const result = harness.applyBackupData(makePayload());
+  const result = await harness.applyBackupData(makePayload());
 
   assert.equal(result, false);
   assertNoSuccessEffects(harness);
