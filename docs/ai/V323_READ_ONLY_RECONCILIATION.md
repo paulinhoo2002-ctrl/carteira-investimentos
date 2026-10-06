@@ -2,9 +2,11 @@
 
 ## V323D — checkpoint atual do exportador (2026-10-06)
 
-Este checkpoint supersede o limite operacional abaixo quanto ao acesso read-only ao Preview: houve uma tentativa de exportação, que falhou antes de produzir arquivo. A causa raiz não foi capturada e permanece `UNCONFIRMED`; nenhum conteúdo financeiro foi incorporado a fixtures ou documentação.
+Uma tentativa somente de exportação foi executada no Preview autenticado da PR #446 e falhou antes de produzir arquivo. A interface mostrou apenas a mensagem genérica; nenhum dado foi alterado e nenhum conteúdo financeiro foi incluído em logs de missão ou documentação. A etapa exata não foi visível nessa versão do Preview, então a causa raiz continua desconhecida.
 
-A suíte sintética focada (42/42) e `verify:release` passaram. O commit `7cfaede55c32884d6bde18749c6070aae14bb334` teve CI #792/run `37443504218` PASS e Vercel Preview `READY` para o mesmo SHA. A instrumentação distingue coleta do snapshot, manifesto, validação, serialização, Blob e gatilho de download, armazenando apenas o código da etapa em memória. O próximo checkpoint documental precisa passar seu próprio CI/Preview; depois deve ser solicitada autenticação QA isolada para uma tentativa somente de exportação. `BLOCKER=1` até backup real validado; `MAJOR=0`; `REAL_IMPORT=false`, `REAL_WRITES=0`, `MERGE=false`.
+No HEAD local baseado em `c0ea758ecef88070a40b38c18f4bb7b34eaffde9`, o exportador passa a mostrar somente código de etapa de allowlist fixa para falhas de snapshot/manifesto/validação; código fora da lista vira `BACKUP_EXPORT_UNKNOWN`. Não expõe exceção bruta nem payload. Testes focados V323C/D 13/13, `verify:release` (legacy 254/254, modern 815/815, `qa:all`, smoke, V289 4/4), XLSX sintético 2/2 e revisão independente (BLOCKER=0, MAJOR=0, MINOR=0 para o delta) passaram. O HEAD publicado/CI/Preview deste ajuste ainda estão pendentes.
+
+Próximo: publicar o ajuste autorizado, aguardar CI e Preview no SHA exato, e então pedir novo login QA isolado para uma tentativa somente de export. Nenhum import, restore real, edição, escrita ou merge. `BLOCKER=1` até backup real validado; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`.
 
 Data: 2026-10-05
 Base: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`

@@ -22,6 +22,12 @@
 - Batch 8 Corporate Events 39/39; Batch 9 failure injection e Batch 10 double-submit/replay cobertos na fronteira V284 81/81. Validação local focal combinada 120/120.
 - Escopo de concorrência: confirmação repetida síncrona e replay estão cobertos; corrida real entre abas não foi testada nem certificada.
 - V322 encerrou sem escrita real/produção ou mudança financeira. V323 iniciou após merge e CI pós-merge; comparação do site e qualquer import continuam bloqueados até fonte autorizada e backup validado.
+## V323D — diagnóstico do exportador (2026-10-06)
+
+- Preview autenticado da PR #446: uma tentativa somente de exportação falhou antes de gerar arquivo; a mensagem daquela versão não identificou a etapa. Nenhum dado foi alterado ou registrado aqui. Causa raiz segue desconhecida.
+- Ajuste local sobre `c0ea758ecef88070a40b38c18f4bb7b34eaffde9`: toast de falha de geração expõe apenas código fixo permitido por allowlist; erros e payloads não são expostos. Testes V323C/D 13/13, `verify:release`, XLSX sintético 2/2 e revisão independente passaram. CI/Preview do novo HEAD aguardam push.
+- `BLOCKER=1` até obter e validar backup; `MAJOR=0`; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`. Próximo passo: CI/Preview, novo login isolado e uma tentativa somente de export.
+
 # Project Memory
 
 ## V323C — contrato de backup hardening (2026-10-05)

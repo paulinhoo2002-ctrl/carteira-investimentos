@@ -12209,7 +12209,10 @@ async function exportBackup(){
   try{
     payload=await backupPortabilityPayload();
   }catch(error){
-    toast('Não foi possível preparar o backup local. Nenhum dado foi alterado.','#f87171');
+    const reportedCode=window.__BACKUP_EXPORT_ERROR__?.code;
+    const safeCodes=['BACKUP_EXPORT_SNAPSHOT_COLLECTION_FAILED','BACKUP_EXPORT_MANIFEST_CREATION_FAILED','BACKUP_EXPORT_VALIDATION_FAILED'];
+    const code=safeCodes.includes(reportedCode)?reportedCode:'BACKUP_EXPORT_UNKNOWN';
+    toast(`Não foi possível preparar o backup local. Nenhum dado foi alterado. (${code})`,'#f87171');
     return;
   }
   let stage='SERIALIZATION_FAILED';

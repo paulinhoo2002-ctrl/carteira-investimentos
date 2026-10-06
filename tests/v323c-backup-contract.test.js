@@ -258,6 +258,8 @@ test('V323D export reports safe pipeline stages without logging payload errors',
   assert.match(download, /BLOB_CREATION_FAILED/);
   assert.match(download, /DOWNLOAD_TRIGGER_FAILED/);
   assert.match(download, /__BACKUP_EXPORT_ERROR__/);
+  assert.match(download, /safeCodes\.includes\(reportedCode\)\?reportedCode:'BACKUP_EXPORT_UNKNOWN'/);
+  assert.match(download, /Nenhum dado foi alterado.*\$\{code\}/);
   assert.doesNotMatch(generation + download, /debugError\([^\n]*error\s*\)/);
 });
 
