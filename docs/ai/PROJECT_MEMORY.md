@@ -3,7 +3,8 @@
 - No branch V323, o export real anterior no Preview falhou sem produzir arquivo; a mensagem não identificou a etapa. A causa raiz continua `UNCONFIRMED`.
 - A reprodução sintética grande no contrato de estado salvo validou o manifesto e roundtrip isolado; não reproduziu a falha.
 - Instrumentação local agora registra somente o código da etapa em `window.__BACKUP_EXPORT_ERROR__`; nenhuma mensagem/payload bruto é armazenado. A geração e a preparação do download falham separadamente.
-- Testes focados de backup e `verify:release` passaram localmente. Novo CI/Preview ainda pendente para o HEAD com instrumentação. Nenhuma escrita/import/restore real; merge não autorizado.
+- Testes focados de backup 42/42 e `verify:release` passaram localmente. Commit `7cfaede55c32884d6bde18749c6070aae14bb334` teve CI #792/run `37443504218` PASS e Preview `READY` no mesmo SHA. Este registro documental requer nova validação remota no seu novo HEAD.
+- BLOCKER=1 continua: falta obter backup real válido e a causa do erro não foi capturada. MAJOR=0. MINOR=3: teste de diagnóstico estrutural, sem runtime V76 populado no roundtrip grande, e confirmação de download limitada ao clique síncrono/Blob URL sem revoke. Nenhuma escrita/import/restore real; merge não autorizado.
 
 # V323 — detector de origem e reconciliação read-only (2026-10-05)
 

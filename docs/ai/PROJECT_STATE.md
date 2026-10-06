@@ -14,7 +14,7 @@
 - Branch `codex/v323-real-portfolio-reconciliation`, base local `6e46789afe7becf1aee7ce23e1115fc089df5193`; PR #446 segue OPEN/DRAFT; `MERGE=false`.
 - O export real observado anteriormente no Preview falhou antes de criar arquivo; causa raiz ainda não confirmada. A reprodução sintética de estado grande validou geração e roundtrip em memória.
 - Código local registra uma etapa segura do erro e separa a geração de dados do download. Backup real validado, restore preview real e cobertura real de eventos corporativos continuam pendentes.
-- Testes focados e `verify:release` PASS no estado local; CI e Preview do novo HEAD pendentes. Sem escrita ou importação real.
+- Testes focados 42/42 e `verify:release` PASS. O commit `7cfaede55c32884d6bde18749c6070aae14bb334` teve CI #792/run `37443504218` PASS e Preview `READY` no mesmo SHA; este checkpoint documental ainda aguarda seu próprio CI/Preview. `BLOCKER=1` até backup real validado; `MAJOR=0`; `MINOR=3`. Sem escrita ou importação real.
 
 ## V323 — estado atual pós-merge e somente leitura (2026-10-05)
 

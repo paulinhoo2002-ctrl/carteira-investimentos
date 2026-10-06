@@ -14,12 +14,13 @@
 # Next Step
 # V323D — diagnóstico do exportador de backup (2026-10-06)
 
-- Worktree autorizada: `C:\Projetos\carteira-investimentos.worktrees\v323-real-reconciliation`; branch `codex/v323-real-portfolio-reconciliation`; HEAD-base `6e46789afe7becf1aee7ce23e1115fc089df5193`. PR #446 OPEN/DRAFT; `MERGE=false`.
+- Worktree autorizada: `C:\Projetos\carteira-investimentos.worktrees\v323-real-reconciliation`; branch `codex/v323-real-portfolio-reconciliation`; HEAD instrumentado `7cfaede55c32884d6bde18749c6070aae14bb334` sobre base `6e46789afe7becf1aee7ce23e1115fc089df5193`. PR #446 OPEN/DRAFT; `MERGE=false`.
 - O export real anterior no Preview falhou antes de produzir arquivo. O erro era genérico; causa raiz segue `UNCONFIRMED`. Nenhum valor da carteira foi registrado nesta documentação.
 - Export sintético em memória com o formato persistido pela aplicação e roundtrip grande representativo passou. Limites e contagens sintéticas não reproduzem a falha.
 - A mudança local adiciona códigos seguros por etapa (`SNAPSHOT_COLLECTION_FAILED`, `MANIFEST_CREATION_FAILED`, `VALIDATION_FAILED`, `SERIALIZATION_FAILED`, `BLOB_CREATION_FAILED`, `DOWNLOAD_TRIGGER_FAILED`), sem registrar erro bruto/payload; geração e download agora têm tratamento separado.
-- Testes focados de backup PASS; `verify:release` PASS (legado, moderna, build, `qa:all`, smoke e V289 4/4). O HEAD com a instrumentação ainda precisa ser commitado, publicado, validado em CI e Preview.
-- Próximo: validar CI e Preview no mesmo novo HEAD; depois solicitar autenticação QA isolada e fazer uma tentativa de export somente para capturar o código de etapa. Sem import, restore real, edição, escrita ou merge.
+- Testes focados de backup 42/42 PASS; `verify:release` PASS (legado, moderna 815/815, build, `qa:all`, smoke e V289 4/4). CI #792/run `37443504218` PASS no HEAD `7cfaede…`; Vercel Preview `READY` para o mesmo SHA.
+- `BLOCKER=1` permanece até obter um arquivo de backup válido; `MAJOR=0`. `MINOR=3`: teste dos códigos é estrutural, o roundtrip grande não inclui V76 populado, e Blob URL/toast não certificam arquivo salvo.
+- Próximo: validar este checkpoint documental no CI/Preview do SHA resultante; com ambos verdes, solicitar autenticação QA isolada e fazer uma tentativa somente de export para capturar o código de etapa. Sem import, restore real, edição, escrita ou merge.
 - `REAL_WRITES=0`; `REAL_IMPORT=false`; `READY_FOR_FIRST_REAL_IMPORT=false`; causa raiz/backup restaurável continuam não certificados.
 
 ## V323 — correção do detector e reconciliação somente leitura (2026-10-05)

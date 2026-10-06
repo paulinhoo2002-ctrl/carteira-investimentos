@@ -4,7 +4,7 @@
 
 Este checkpoint supersede o limite operacional abaixo quanto ao acesso read-only ao Preview: houve uma tentativa de exportação, que falhou antes de produzir arquivo. A causa raiz não foi capturada e permanece `UNCONFIRMED`; nenhum conteúdo financeiro foi incorporado a fixtures ou documentação.
 
-A suíte sintética de backup com estado grande representativo passou na validação e no roundtrip isolado. A instrumentação local distingue coleta do snapshot, manifesto, validação, serialização, Blob e gatilho de download, armazenando apenas o código da etapa em memória. A mudança ainda depende de CI e Preview no novo HEAD, seguidos por autenticação QA isolada e uma nova tentativa somente de exportação. `REAL_IMPORT=false`, `REAL_WRITES=0`, `MERGE=false`.
+A suíte sintética focada (42/42) e `verify:release` passaram. O commit `7cfaede55c32884d6bde18749c6070aae14bb334` teve CI #792/run `37443504218` PASS e Vercel Preview `READY` para o mesmo SHA. A instrumentação distingue coleta do snapshot, manifesto, validação, serialização, Blob e gatilho de download, armazenando apenas o código da etapa em memória. O próximo checkpoint documental precisa passar seu próprio CI/Preview; depois deve ser solicitada autenticação QA isolada para uma tentativa somente de exportação. `BLOCKER=1` até backup real validado; `MAJOR=0`; `REAL_IMPORT=false`, `REAL_WRITES=0`, `MERGE=false`.
 
 Data: 2026-10-05
 Base: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`
