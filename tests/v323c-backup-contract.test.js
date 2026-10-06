@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const Backup = require('../backup-portability.js');
 const Persistence = require('../persistence-core.js');
 const PublicEvents = require('../public-events-store.js');
@@ -240,4 +241,54 @@ test('V323C exports the public corporate event cache only when its stored envelo
   assert.deepEqual(exported.events, snapshot.events);
   storage.setItem(PublicEvents.KEY, '{invalid');
   assert.throws(() => PublicEvents.readForBackup(storage), /CORPORATE_EVENTS_CACHE_CORRUPT/);
+});
+
+test('V323D export reports safe pipeline stages without logging payload errors', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const start = html.indexOf('async function backupPortabilityPayload()');
+  const end = html.indexOf('function backupFromRaw(', start);
+  const generation = html.slice(start, end);
+  const exportStart = html.indexOf('async function exportBackup()');
+  const exportEnd = html.indexOf('function importBackup()', exportStart);
+  const download = html.slice(exportStart, exportEnd);
+  assert.match(generation, /SNAPSHOT_COLLECTION_FAILED/);
+  assert.match(generation, /MANIFEST_CREATION_FAILED/);
+  assert.match(generation, /VALIDATION_FAILED/);
+  assert.match(download, /SERIALIZATION_FAILED/);
+  assert.match(download, /BLOB_CREATION_FAILED/);
+  assert.match(download, /DOWNLOAD_TRIGGER_FAILED/);
+  assert.match(download, /__BACKUP_EXPORT_ERROR__/);
+  assert.doesNotMatch(generation + download, /debugError\([^\n]*error\s*\)/);
+});
+
+test('V323D large synthetic portfolio exports and restores in isolated memory', async () => {
+  const state = {
+    ...Persistence.buildStoredState({
+      wallets: [{ id: 'wallet-1', name: 'Synthetic 1' }, { id: 'wallet-2', name: 'Synthetic 2' }],
+      activeWalletId: 'wallet-1',
+      assets: Array.from({ length: 40 }, (_, index) => ({
+        id: `asset-${index}`, ticker: `SYN${index}`, type: index < 5 ? 'Renda Fixa' : 'Ação', qty: 1, current_price: 10
+      })),
+      aportes: Array.from({ length: 72 }, (_, index) => ({ id: `movement-${index}`, date: '2026-01-01', value: 10 })),
+      proventos: Array.from({ length: 441 }, (_, index) => ({ id: `income-${index}`, date: '2026-01-01', value: 1 })),
+      goals: {}
+    }),
+    goals: { patrimoine: { target: 100 }, income: { target: 10 }, allocation: { target: 3 } }
+  };
+  const corporateEvents = [{ eventKey: 'synthetic-event-1', eventType: 'SPLIT', status: 'REVIEW_REQUIRED' }];
+  const backup = await Backup.createBackup({ state, config: { divGoal: 0 }, corporateEvents });
+  const validation = await Backup.verifyBackup(backup);
+  assert.equal(validation.status, 'VALID', validation.error);
+  assert.equal(backup.manifest.domains.find(domain => domain.name === 'assets').count, 40);
+  assert.equal(backup.manifest.domains.find(domain => domain.name === 'transactions').count, 72);
+  assert.equal(backup.manifest.domains.find(domain => domain.name === 'income').count, 441);
+  assert.equal(backup.manifest.domains.find(domain => domain.name === 'fixedIncome').count, 5);
+  assert.equal(backup.manifest.domains.find(domain => domain.name === 'goals').count, 3);
+  assert.equal(backup.manifest.domains.find(domain => domain.name === 'corporateEvents').count, 1);
+  const preview = await Backup.previewRestore(backup, state);
+  assert.equal(preview.restoreAllowed, true);
+  const restored = await Backup.applyToIsolatedStore({ state: {}, config: {} }, backup);
+  assert.equal(restored.ok, true);
+  assert.deepEqual(restored.store.state, validation.backup.payload.state);
+  assert.deepEqual(restored.store.corporateEvents, corporateEvents);
 });

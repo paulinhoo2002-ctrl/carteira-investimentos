@@ -9,6 +9,13 @@
 - V322 está encerrada. V323 continua somente leitura para fontes financeiras reais: o site/backup atual não foram acessados nem validados. Provider QA e persistência cloud continuam externos; `MERGE=false`.
 # Project State
 
+## V323D — checkpoint atual do exportador (2026-10-06)
+
+- Branch `codex/v323-real-portfolio-reconciliation`, base local `6e46789afe7becf1aee7ce23e1115fc089df5193`; PR #446 segue OPEN/DRAFT; `MERGE=false`.
+- O export real observado anteriormente no Preview falhou antes de criar arquivo; causa raiz ainda não confirmada. A reprodução sintética de estado grande validou geração e roundtrip em memória.
+- Código local registra uma etapa segura do erro e separa a geração de dados do download. Backup real validado, restore preview real e cobertura real de eventos corporativos continuam pendentes.
+- Testes focados e `verify:release` PASS no estado local; CI e Preview do novo HEAD pendentes. Sem escrita ou importação real.
+
 ## V323 — estado atual pós-merge e somente leitura (2026-10-05)
 
 - PR #446 está OPEN/DRAFT/mergeable em `main`, HEAD documental `ba66364b1acbaba4148f96407459ed7f427c9ad8` sobre implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #787/run `37385414541` passou em Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview status success. `MERGE=false`.

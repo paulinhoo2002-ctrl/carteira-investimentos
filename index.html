@@ -12059,35 +12059,49 @@ function backupPayload(){
   if(v76RuntimeAvailable()) payload.data.v76Runtime=window.PortfolioRuntimeStores.backupSupplement({snapshots:window.__V76_RUNTIME__?.snapshots,flows:window.__V76_RUNTIME__?.flows});
   return payload;
 }
+function recordBackupExportError(stage){
+  const diagnostic=Object.freeze({code:`BACKUP_EXPORT_${stage}`,stage});
+  try{window.__BACKUP_EXPORT_ERROR__=diagnostic;}catch(e){}
+  return diagnostic;
+}
 async function backupPortabilityPayload(){
-  if(typeof BackupPortability==='undefined') throw new Error('BACKUP_ENGINE_UNAVAILABLE');
-  const corporateCache=PublicEventsStore.readForBackup(localStorage);
-  const rawState=localStorage.getItem(STOR);
-  const state=rawState===null?{}:JSON.parse(rawState);
-  if(!state||typeof state!=='object'||Array.isArray(state)) throw new Error('BACKUP_SOURCE_STATE_INVALID');
-  const rawConfig=localStorage.getItem(`${STOR}_cfg`);
-  const config=rawConfig===null?undefined:JSON.parse(rawConfig);
-  const rawSnapshots=localStorage.getItem(V76_SNAPSHOT_STORAGE_KEY);
-  const rawFlows=localStorage.getItem(V76_FLOW_STORAGE_KEY);
-  const hasStoredRuntime=rawSnapshots!==null||rawFlows!==null;
-  let runtime;
-  if(hasStoredRuntime){
-    if(!v76RuntimeAvailable()) throw new Error('BACKUP_V76_RUNTIME_UNAVAILABLE');
-    const result=window.PortfolioRuntimeStores.backupSupplementFromRaw(rawSnapshots,rawFlows,v76Clock);
-    if(!result.ok) throw new Error(`BACKUP_V76_RUNTIME_${result.diagnostic}`);
-    runtime=result.value;
+  let stage='SNAPSHOT_COLLECTION_FAILED';
+  try{
+    if(typeof BackupPortability==='undefined') throw new Error('BACKUP_ENGINE_UNAVAILABLE');
+    const corporateCache=PublicEventsStore.readForBackup(localStorage);
+    const rawState=localStorage.getItem(STOR);
+    const state=rawState===null?{}:JSON.parse(rawState);
+    if(!state||typeof state!=='object'||Array.isArray(state)) throw new Error('BACKUP_SOURCE_STATE_INVALID');
+    const rawConfig=localStorage.getItem(`${STOR}_cfg`);
+    const config=rawConfig===null?undefined:JSON.parse(rawConfig);
+    const rawSnapshots=localStorage.getItem(V76_SNAPSHOT_STORAGE_KEY);
+    const rawFlows=localStorage.getItem(V76_FLOW_STORAGE_KEY);
+    const hasStoredRuntime=rawSnapshots!==null||rawFlows!==null;
+    let runtime;
+    if(hasStoredRuntime){
+      if(!v76RuntimeAvailable()) throw new Error('BACKUP_V76_RUNTIME_UNAVAILABLE');
+      const result=window.PortfolioRuntimeStores.backupSupplementFromRaw(rawSnapshots,rawFlows,v76Clock);
+      if(!result.ok) throw new Error(`BACKUP_V76_RUNTIME_${result.diagnostic}`);
+      runtime=result.value;
+    }
+    stage='MANIFEST_CREATION_FAILED';
+    const backup=await BackupPortability.createBackup({
+      state,
+      config,
+      runtime,
+      corporateEvents:corporateCache.present?corporateCache.events:undefined,
+      metadata:{source:'localStorage',corporateEventsMode:'SHADOW_READ_ONLY',corporateEventsCache:{present:corporateCache.present,version:corporateCache.version,updatedAt:corporateCache.updatedAt,source:'public-read-only'},realRestoreEnabled:false},
+      appVersion:typeof APP_VERSION!=='undefined'?APP_VERSION:'legacy'
+    });
+    stage='VALIDATION_FAILED';
+    const validation=await BackupPortability.verifyBackup(backup);
+    if(validation.status!=='VALID') throw new Error(`BACKUP_NOT_COMPLETE:${validation.status}`);
+    return backup;
+  }catch(error){
+    const diagnostic=recordBackupExportError(stage);
+    debugError('backup export failed:',diagnostic.code);
+    throw new Error(diagnostic.code);
   }
-  const backup=await BackupPortability.createBackup({
-    state,
-    config,
-    runtime,
-    corporateEvents:corporateCache.present?corporateCache.events:undefined,
-    metadata:{source:'localStorage',corporateEventsMode:'SHADOW_READ_ONLY',corporateEventsCache:{present:corporateCache.present,version:corporateCache.version,updatedAt:corporateCache.updatedAt,source:'public-read-only'},realRestoreEnabled:false},
-    appVersion:typeof APP_VERSION!=='undefined'?APP_VERSION:'legacy'
-  });
-  const validation=await BackupPortability.verifyBackup(backup);
-  if(validation.status!=='VALID') throw new Error(`BACKUP_NOT_COMPLETE:${validation.status}`);
-  return backup;
 }
 function backupFromRaw(raw){
   return PersistenceCore.parseBackupRaw(raw);
@@ -12190,18 +12204,29 @@ async function exportBackup(){
     toast('🧪 Modo de teste local: exportação desativada.');
     return;
   }
+  try{window.__BACKUP_EXPORT_ERROR__=null;}catch(e){}
   let payload;
   try{
     payload=await backupPortabilityPayload();
   }catch(error){
-    debugError('backup V249 export error:',error);
     toast('Não foi possível preparar o backup local. Nenhum dado foi alterado.','#f87171');
     return;
   }
-  const data=JSON.stringify(payload, null, 2);
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-${backupStamp()}.json`});
-  a.click();
-  toast(`💾 Backup V${payload.manifest.backupVersion} exportado com integridade SHA-256.`);
+  let stage='SERIALIZATION_FAILED';
+  try{
+    const data=JSON.stringify(payload, null, 2);
+    stage='BLOB_CREATION_FAILED';
+    const blob=new Blob([data],{type:'application/json'});
+    const href=URL.createObjectURL(blob);
+    stage='DOWNLOAD_TRIGGER_FAILED';
+    const a=Object.assign(document.createElement('a'),{href,download:`carteira-investimentos-backup-${backupStamp()}.json`});
+    a.click();
+    toast(`💾 Backup V${payload.manifest.backupVersion} exportado com integridade SHA-256.`);
+  }catch(error){
+    const diagnostic=recordBackupExportError(stage);
+    debugError('backup export failed:',diagnostic.code);
+    toast('Não foi possível concluir o download do backup local. Nenhum dado foi alterado.','#f87171');
+  }
 }
 function importBackup(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } openBackupCenter(); }
 function triggerBackupImport(){ if(isLocalTestMode()) { toast('🧪 Modo de teste local: importação desativada.'); return; } document.getElementById('imp-file')?.click(); }

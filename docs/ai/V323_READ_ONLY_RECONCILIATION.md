@@ -1,5 +1,11 @@
 # V323 — detector de origem e checkpoint de reconciliação somente leitura
 
+## V323D — checkpoint atual do exportador (2026-10-06)
+
+Este checkpoint supersede o limite operacional abaixo quanto ao acesso read-only ao Preview: houve uma tentativa de exportação, que falhou antes de produzir arquivo. A causa raiz não foi capturada e permanece `UNCONFIRMED`; nenhum conteúdo financeiro foi incorporado a fixtures ou documentação.
+
+A suíte sintética de backup com estado grande representativo passou na validação e no roundtrip isolado. A instrumentação local distingue coleta do snapshot, manifesto, validação, serialização, Blob e gatilho de download, armazenando apenas o código da etapa em memória. A mudança ainda depende de CI e Preview no novo HEAD, seguidos por autenticação QA isolada e uma nova tentativa somente de exportação. `REAL_IMPORT=false`, `REAL_WRITES=0`, `MERGE=false`.
+
 Data: 2026-10-05
 Base: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`
 Branch: `codex/v323-real-portfolio-reconciliation`

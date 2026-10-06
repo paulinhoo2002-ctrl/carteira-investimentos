@@ -1,3 +1,10 @@
+# V323D — estado atual do exportador (2026-10-06)
+
+- No branch V323, o export real anterior no Preview falhou sem produzir arquivo; a mensagem não identificou a etapa. A causa raiz continua `UNCONFIRMED`.
+- A reprodução sintética grande no contrato de estado salvo validou o manifesto e roundtrip isolado; não reproduziu a falha.
+- Instrumentação local agora registra somente o código da etapa em `window.__BACKUP_EXPORT_ERROR__`; nenhuma mensagem/payload bruto é armazenado. A geração e a preparação do download falham separadamente.
+- Testes focados de backup e `verify:release` passaram localmente. Novo CI/Preview ainda pendente para o HEAD com instrumentação. Nenhuma escrita/import/restore real; merge não autorizado.
+
 # V323 — detector de origem e reconciliação read-only (2026-10-05)
 
 - PR #446 OPEN/DRAFT/mergeable em `main`; HEAD documental `ba66364b1acbaba4148f96407459ed7f427c9ad8`, sobre implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #787/run `37385414541` PASS nos jobs Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview success. `MERGE=false`.

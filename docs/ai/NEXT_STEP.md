@@ -12,6 +12,16 @@
 ---
 
 # Next Step
+# V323D — diagnóstico do exportador de backup (2026-10-06)
+
+- Worktree autorizada: `C:\Projetos\carteira-investimentos.worktrees\v323-real-reconciliation`; branch `codex/v323-real-portfolio-reconciliation`; HEAD-base `6e46789afe7becf1aee7ce23e1115fc089df5193`. PR #446 OPEN/DRAFT; `MERGE=false`.
+- O export real anterior no Preview falhou antes de produzir arquivo. O erro era genérico; causa raiz segue `UNCONFIRMED`. Nenhum valor da carteira foi registrado nesta documentação.
+- Export sintético em memória com o formato persistido pela aplicação e roundtrip grande representativo passou. Limites e contagens sintéticas não reproduzem a falha.
+- A mudança local adiciona códigos seguros por etapa (`SNAPSHOT_COLLECTION_FAILED`, `MANIFEST_CREATION_FAILED`, `VALIDATION_FAILED`, `SERIALIZATION_FAILED`, `BLOB_CREATION_FAILED`, `DOWNLOAD_TRIGGER_FAILED`), sem registrar erro bruto/payload; geração e download agora têm tratamento separado.
+- Testes focados de backup PASS; `verify:release` PASS (legado, moderna, build, `qa:all`, smoke e V289 4/4). O HEAD com a instrumentação ainda precisa ser commitado, publicado, validado em CI e Preview.
+- Próximo: validar CI e Preview no mesmo novo HEAD; depois solicitar autenticação QA isolada e fazer uma tentativa de export somente para capturar o código de etapa. Sem import, restore real, edição, escrita ou merge.
+- `REAL_WRITES=0`; `REAL_IMPORT=false`; `READY_FOR_FIRST_REAL_IMPORT=false`; causa raiz/backup restaurável continuam não certificados.
+
 ## V323 — correção do detector e reconciliação somente leitura (2026-10-05)
 
 - Base pós-merge: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 foi incorporada e CI pós-merge #785/run `37378069598` passou.
