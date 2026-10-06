@@ -342,6 +342,31 @@ test('V323D validation failure detail is reduced to safe status, reason, and kno
   assert.deepEqual(injected, { status: 'PARTIAL', reason: 'UNKNOWN' });
 });
 
+test('V323E export preserves only the canonical missing domain through validation diagnostics', async () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const start = html.indexOf('function safeBackupValidationDiagnostic(validation){');
+  const end = html.indexOf('function backupFromRaw(', start);
+  const context = {
+    BackupPortability: Backup,
+    PublicEventsStore: { readForBackup: () => ({ present: false, events: [] }) },
+    localStorage: { getItem: key => key === 'civ5' ? JSON.stringify({}) : null },
+    window: {},
+    STOR: 'civ5',
+    V76_SNAPSHOT_STORAGE_KEY: 'snapshots',
+    V76_FLOW_STORAGE_KEY: 'flows',
+    APP_VERSION: 'test',
+    debugError: () => {}
+  };
+  vm.runInNewContext(html.slice(start, end) + '\nthis.backupPortabilityPayload=backupPortabilityPayload;', context);
+
+  await assert.rejects(context.backupPortabilityPayload(), /BACKUP_EXPORT_VALIDATION_FAILED/);
+  assert.deepEqual(JSON.parse(JSON.stringify(context.window.__BACKUP_EXPORT_ERROR__)), {
+    code: 'BACKUP_EXPORT_VALIDATION_FAILED',
+    stage: 'VALIDATION_FAILED',
+    validation: { status: 'PARTIAL', reason: 'REQUIRED_DOMAIN_MISSING', domain: 'portfolio' }
+  });
+});
+
 test('V323D large synthetic portfolio exports and restores in isolated memory', async () => {
   const state = {
     ...Persistence.buildStoredState({
