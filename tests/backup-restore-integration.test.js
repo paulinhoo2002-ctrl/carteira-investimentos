@@ -10,8 +10,8 @@ const configKey = 'civ5_cfg';
 
 function extractApplyBackupData() {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  const start = html.indexOf('function applyBackupData(parsed){');
-  const end = html.indexOf('function confirmBackupImport(){', start);
+  const start = html.indexOf('function applyBackupData(parsed,validation){');
+  const end = html.indexOf('async function confirmBackupImport(){', start);
   assert.notEqual(start, -1);
   assert.notEqual(end, -1);
   return html.slice(start, end);
@@ -97,7 +97,7 @@ function makeHarness({ storage }) {
     PersistenceCore: core,
     STOR: stateKey,
     localStorage: storage,
-    S: { backupImportDraft: { parsed: makePayload() }, backupOpen: true },
+    S: { backupImportDraft: null, backupOpen: true },
     canEditFromThisTab() {
       calls.push('canEditFromThisTab');
       return true;
@@ -122,7 +122,15 @@ function makeHarness({ storage }) {
       debugErrors.push(args);
     }
   };
-  const applyBackupData = vm.runInNewContext(`${extractApplyBackupData()}\napplyBackupData;`, context);
+  const applyValidated = vm.runInNewContext(`${extractApplyBackupData()}\napplyBackupData;`, context);
+  function applyBackupData(payload = makePayload(), validated = true) {
+    context.S.backupImportDraft = { parsed: payload, v249: false };
+    const validation = validated ? {
+      status: 'VALID', restoreAllowed: true, source: payload,
+      validatedBackup: { payload: { state: payload.storage[stateKey], config: { divGoal: payload.storage[configKey].divGoal } } }
+    } : null;
+    return applyValidated(payload, validation);
+  }
   return { applyBackupData, calls, toasts, debugErrors, transactionCalls, context };
 }
 
@@ -143,6 +151,15 @@ function assertStorageUnchanged(storage) {
   });
 }
 
+test('applyBackupData refuses missing validation before any persistence call', () => {
+  const storage = makeStorage({ [stateKey]: 'old-state', [configKey]: 'old-config' });
+  const harness = makeHarness({ storage });
+  assert.equal(harness.applyBackupData(makePayload(), false), false);
+  assertStorageUnchanged(storage);
+  assert.equal(harness.transactionCalls.length, 0);
+  assert.equal(storage.calls.some(call => call.op === 'setItem' || call.op === 'removeItem'), false);
+});
+
 test('applyBackupData writes civ5 and civ5_cfg through PersistenceCore and preserves success flow', () => {
   const storage = makeStorage({ [stateKey]: 'old-state', [configKey]: 'old-config' });
   const harness = makeHarness({ storage });
@@ -154,7 +171,7 @@ test('applyBackupData writes civ5 and civ5_cfg through PersistenceCore and prese
   assert.equal(harness.transactionCalls.length, 1);
   assert.deepEqual(harness.transactionCalls[0].slice(0, 3), [storage, stateKey, configKey]);
   assert.deepEqual(JSON.parse(storage.snapshot()[stateKey]), payload.storage[stateKey]);
-  assert.deepEqual(JSON.parse(storage.snapshot()[configKey]), payload.storage[configKey]);
+  assert.deepEqual(JSON.parse(storage.snapshot()[configKey]), { divGoal: 77 });
   assert.deepEqual(harness.calls, [
     'canEditFromThisTab',
     'load',

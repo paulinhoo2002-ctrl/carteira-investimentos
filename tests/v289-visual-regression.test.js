@@ -8,6 +8,7 @@ const { startLocalHttpServer } = require('./local-http-server');
 const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const QA_PORT = Number(process.env.V289_QA_PORT) || 4175;
 const THEMES = ['dark', 'light'];
 const ROUTE_VIEWPORTS = [
   { width: 390, height: 844 },
@@ -23,7 +24,7 @@ const MATRIX_VIEWPORTS = [
 const INTERNAL_ROUTES = new Set(['ranking', 'desempenho', 'patrimonio']);
 
 async function createRuntime(viewport) {
-  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'), QA_PORT);
   let browser;
   try {
     browser = await chromium.launch({ executablePath: CHROME, headless: true });

@@ -1,5 +1,26 @@
 # Project Phases Roadmap
 
+## V324 — backup longevity e disaster recovery (proposta; não autorizada para implementação)
+
+- Backup manual e mensal automático com 12 cópias mensais e snapshots anuais protegidos.
+- Manifesto com versão/schema, timestamp, domínios, contagens e SHA/integridade.
+- Preview de restore e snapshot de segurança pré-restore.
+- Abstração de armazenamento externo e desenho de notificação/link por e-mail; sem credenciais, provedor, custo ou envio real nesta proposta.
+
+`V324_IMPLEMENTATION_AUTHORIZED=false`.
+
+## V325 — UX productivity hardening (proposta; não autorizada para implementação)
+
+1. Navegação somente leitura por `Ctrl+K`.
+2. Sincronização de página com URL e histórico.
+3. Lazy loading somente após medição.
+4. Estados vazios, indisponíveis, carregando e erro distintos.
+5. Descrições acessíveis para gráficos, sem inventar dados.
+
+`V325_IMPLEMENTATION_AUTHORIZED=false`.
+
+Especificações: `docs/ai/V324_BACKUP_LONGEVITY_SPEC.md` e `docs/ai/V325_UX_PRODUCTIVITY_SPEC.md`.
+
 Registro oficial e versionado da evolucao readonly do projeto.
 
 ## Estado e governanca

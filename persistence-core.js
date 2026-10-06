@@ -3,6 +3,17 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.PersistenceCore = api;
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
+  const ASSET_TYPE_CHOICES = Object.freeze(['Ação', 'FII', 'ETF', 'Renda Fixa', 'Tesouro Direto', 'Reserva de emergência', 'BDR', 'Crypto', 'Stock', 'Reit', 'Fundos de Investimento']);
+  const ASSET_TYPE_ALIASES = Object.freeze({
+    'AÇÕES': 'Ação', 'AÇÃO': 'Ação', 'ACTIONS': 'Ação',
+    'FIIS': 'FII', 'FUNDOS IMOBILIARIOS': 'FII', 'FUNDOS IMOBILIÁRIOS': 'FII',
+    'ETFS': 'ETF', "ETF'S": 'ETF', 'ETF INTERNACIONAL': 'ETF', 'ETFS INTERNACIONAIS': 'ETF',
+    'RENDA FIXA (CDB/LCI/LCA/LC/LF/RDB)': 'Renda Fixa', 'RENDA FIXA': 'Renda Fixa', 'TESOURO DIRETO': 'Tesouro Direto',
+    'RESERVA DE EMERGENCIA': 'Reserva de emergência', 'RESERVA DE EMERGÊNCIA': 'Reserva de emergência',
+    'FUNDOS DE INVESTIMENTO': 'Fundos de Investimento', 'FUNDOS DE INVESTIMENTOS': 'Fundos de Investimento',
+    STOCK: 'Stock', STOCKS: 'Stock', REIT: 'Reit', REITS: 'Reit'
+  });
+
   function defaultNormalizeType(value, fallback = 'Ação') {
     const raw = String(value || '').trim();
     if (!raw) return fallback || 'Ação';
@@ -10,10 +21,19 @@
     const aliases = {
       'ACAO': 'Ação',
       'ACOES': 'Ação',
+      'ACTIONS': 'Ação',
+      'FIIS': 'FII',
+      'FUNDOS IMOBILIARIOS': 'FII',
+      'ETF S': 'ETF',
+      'ETF INTERNACIONAL': 'ETF',
+      'ETFS INTERNACIONAIS': 'ETF',
       'FUNDO DE INVESTIMENTO': 'Fundos de Investimento',
       'FUNDOS DE INVESTIMENTO': 'Fundos de Investimento',
+      'FUNDOS DE INVESTIMENTOS': 'Fundos de Investimento',
       'RENDA FIXA': 'Renda Fixa',
       'TESOURO DIRETO': 'Tesouro Direto',
+      'RESERVA DE EMERGENCIA': 'Reserva de emergência',
+      'RESERVA DE EMERGÊNCIA': 'Reserva de emergência',
       'RESERVA DE EMERGENCIA': 'Reserva de emergência',
       'STOCK': 'Stock',
       'STOCKS': 'Stock',
@@ -21,6 +41,16 @@
       'REITS': 'Reit'
     };
     return aliases[key] || fallback || raw || 'Ação';
+  }
+
+  function normalizeKnownAssetType(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return null;
+    if (ASSET_TYPE_CHOICES.includes(raw)) return raw;
+    const key = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+    const compact = key.replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+    const alias = ASSET_TYPE_ALIASES[key] || ASSET_TYPE_ALIASES[compact] || defaultNormalizeType(raw, '');
+    return ASSET_TYPE_CHOICES.includes(alias) ? alias : null;
   }
 
   function defaultNormalizeGoals(goals) {
@@ -256,6 +286,9 @@
   }
 
   return {
+    ASSET_TYPE_CHOICES,
+    ASSET_TYPE_ALIASES,
+    normalizeKnownAssetType,
     applyStorageTransaction,
     buildStoredState,
     buildBackupState,

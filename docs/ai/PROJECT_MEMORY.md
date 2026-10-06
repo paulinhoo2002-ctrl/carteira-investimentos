@@ -1,11 +1,52 @@
+## V323H — recuperação e decisão de prontidão (2026-10-06)
+
+- Clone isolado criado a partir da branch publicada V323, Último checkpoint publicado verificado `46be3f7540fe1a3b43d9ce1fa6263732838ba11b` sobre código base `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`; PR #446 OPEN/DRAFT/mergeable; CI #800 PASS; Vercel check success. Checkout canônico e worktree antiga foram preservados.
+- Backup validado anteriormente (schema, integridade, domínios e restore preview isolado); nenhum restore real. Hash/bytes em `NEXT_STEP.md`; conteúdo permanece fora do Git.
+- A análise estrutural do candidato de proventos não encontrou cabeçalho parseável (arquivo 1×1). Nenhuma fonte é `CERTIFIED_IMPORTABLE`; `READY_FOR_FIRST_REAL_IMPORT=false`. Nenhum XLSX tinha assinatura parser; PDFs Inter ficam em reconciliação; XP exige fixture; B3 posição/movimento/proventos seguem diferidos até fonte comprovada.
+- Restore V2 de produção permanece bloqueado na UI; `ROLLBACK_READY=false`. Não importar até restore aplicável ser validado em fase autorizada.
+- V324 backup longevity e V325 UX produtividade ficam como especificações, sem implementação autorizada.
+- Skills: Superpowers usado para retomada e investigação disciplinada; Ponytail full para limitar escopo/código a zero; Caveman para diffs e relatório concisos. Skills especializadas de browser/import real não usadas porque não houve fluxo autenticado nem arquivo parseável. `SKILL_REEVALUATED=true`; gaps: execução de parser real SheetJS e restore V2 aplicável ainda não demonstrados.
+
+---
+
+# V323D — estado atual do exportador (2026-10-06)
+
+- No branch V323, o export real anterior no Preview falhou sem produzir arquivo; a mensagem não identificou a etapa. A causa raiz continua `UNCONFIRMED`.
+- A reprodução sintética grande no contrato de estado salvo validou o manifesto e roundtrip isolado; não reproduziu a falha.
+- Instrumentação local agora registra somente o código da etapa em `window.__BACKUP_EXPORT_ERROR__`; nenhuma mensagem/payload bruto é armazenado. A geração e a preparação do download falham separadamente.
+- Testes focados de backup 42/42 e `verify:release` passaram localmente. Commit `7cfaede55c32884d6bde18749c6070aae14bb334` teve CI #792/run `37443504218` PASS e Preview `READY` no mesmo SHA. Este registro documental requer nova validação remota no seu novo HEAD.
+- BLOCKER=1 continua: falta obter backup real válido e a causa do erro não foi capturada. MAJOR=0. MINOR=3: teste de diagnóstico estrutural, sem runtime V76 populado no roundtrip grande, e confirmação de download limitada ao clique síncrono/Blob URL sem revoke. Nenhuma escrita/import/restore real; merge não autorizado.
+
+# V323 — detector de origem e reconciliação read-only (2026-10-05)
+
+- PR #446 OPEN/DRAFT/mergeable em `main`; HEAD documental `ba66364b1acbaba4148f96407459ed7f427c9ad8`, sobre implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #787/run `37385414541` PASS nos jobs Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview success. `MERGE=false`.
+- PR #445 foi integrada em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou.
+- Corrigido o fallback que podia enviar XLSX genérico ao parser B3. XP explícito e conflito falham fechados; movimentos/proventos preservam assinaturas reconhecidas; posição genérica fica em revisão. Testes sintéticos V323 entram em `test:import-center` e `test:ui`.
+- `verify:release`, `npm test`, moderna 815/815, A11Y 19/19, V289 4/4 e `qa:all` passaram localmente. XLSX browser foi bloqueado por SRI/runtime do CDN; Auth/Firestore Emulator local por falha Java/Netty loopback no Windows.
+- A comparação estrutural apontou sobreposição entre movimentos; conteúdos e quantidades não foram publicados. Não houve soma, import, gravação financeira nem alteração dos originais. Estado atual do site, diferenças e backup permanecem desconhecidos/não executados. Primeiro import real segue bloqueado; V285-02 permanece diferida; `MERGE=false`.
+- Handoff seguro sem valores/ativos pessoais: `docs/ai/V323_READ_ONLY_RECONCILIATION.md`.
+
 ## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
 
-- PR #445 OPEN/DRAFT/MERGEABLE, `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS, sem merge.
+- PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI #783/run `37372040030` foi pré-merge e CI pós-merge #785/run `37378069598` passou.
 - Batch 7 CI: Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual passaram. `npm test`: 249 pass, 0 fail, 5 skipped.
 - Batch 8 Corporate Events 39/39; Batch 9 failure injection e Batch 10 double-submit/replay cobertos na fronteira V284 81/81. Validação local focal combinada 120/120.
 - Escopo de concorrência: confirmação repetida síncrona e replay estão cobertos; corrida real entre abas não foi testada nem certificada.
-- Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
+- V322 encerrou sem escrita real/produção ou mudança financeira. V323 iniciou após merge e CI pós-merge; comparação do site e qualquer import continuam bloqueados até fonte autorizada e backup validado.
+## V323D — diagnóstico do exportador (2026-10-06)
+
+- Preview autenticado da PR #446: a exportação chegou à validação e falhou com `PARTIAL/REQUIRED_DOMAIN_MISSING`, sem arquivo e sem alteração de dados. O domínio canônico ausente ainda não foi capturado; nenhum valor de carteira foi registrado.
+- Diagnóstico publicado em `81b9c124a8c40dc620c8f72ee1975d297ff37c70`: export falhou `PARTIAL/REQUIRED_DOMAIN_MISSING`; nenhum domínio específico foi registrado. `verify:release` passou localmente, V323C/D 14/14; XLSX 0/2 por falha externa de SheetJS/SRI antes dos asserts. CI e Preview passaram nesse SHA. Delta local seguinte extrai apenas o primeiro nome canônico obrigatório ausente; validação/push pendentes. Revisão: BLOCKER=0, MAJOR=0, MINOR=1.
+- `BLOCKER=1` até obter e validar backup; `MAJOR=0`; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`. Próximo passo: CI/Preview, novo login isolado e uma tentativa somente de export.
+
 # Project Memory
+
+## V323C — contrato de backup hardening (2026-10-05)
+
+- Na worktree V323 validada (`codex/v323-real-portfolio-reconciliation`), contrato V2 de backup foi commitado em `4f6dcd7d24276953413ad17b33df8a12c785e527` e enviado normalmente. Manifesto separa `VALID`, `PARTIAL`, `CORRUPT`, `UNSUPPORTED_FUTURE_SCHEMA`, `UNSUPPORTED_TYPE` e `INCOMPATIBLE`; domínios obrigatórios incluem portfolio, assets, transactions, income, fixedIncome, goals e settings.
+- `config.divGoal` presente exige número finito não negativo. Export/verify/restore V76 rejeitam store vazio/corrompido/incompleto, registro fora da forma canônica, data impossível e metadado essencial inválido; registros válidos passam sem normalização. Compatibilidade: `loadStore` preenche `trackingStartDate:null` em stores antigos sem esse campo. Corporate events permanecem em domínio/cache isolado e sem writer de restore; restore real V2 segue bloqueado.
+- Testes focados sintéticos: 56/56; `verify:release` PASS (legacy 254/254, modern 815/815, `qa:all`, V289 4/4 e builds). Revisão independente final: BLOCKER=0, MAJOR=0, MINOR=1 (compatibilidade V76). CI #37395729957 PASS e Vercel Preview READY no HEAD citado. Nenhum Preview acessado, backup real criado, dado real lido, importado ou gravado.
+- `git diff --check` PASS. `V323B_REAL_SITE_INSPECTION_READY=true`; próxima ação é login humano na Preview isolada. Não compartilhar credenciais/MFA no chat. PR #446 permanece OPEN/DRAFT; merge=false.
 
 #
 # V317 — certificação sintética das ações financeiras (2026-10-04)

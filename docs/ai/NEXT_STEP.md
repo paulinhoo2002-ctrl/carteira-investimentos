@@ -1,17 +1,58 @@
+# V323H — recuperação isolada e fechamento de prontidão (2026-10-06)
+
+- Remoto verificado pelo conector GitHub: PR #446 OPEN/DRAFT/mergeable, Último checkpoint verificado: `46be3f7540fe1a3b43d9ce1fa6263732838ba11b`, sobre código base `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`; base `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI #800 success; Vercel check success. Revalidar o HEAD remoto antes de agir.
+- Clone isolado limpo criado para recuperação; checkout canônico sujo foi preservado; worktree antiga não foi removida nem reparada.
+- Backup aceito: 621679 bytes, SHA-256 `3D6DA352A82764A74820BD60E1A580B60E6EB55760F6E5C1F789AA718666802E`; schema/domínios/integridade PASS; restore preview isolado PASS.
+- Nenhuma fonte real foi certificada: o candidato B3 proventos era arquivo estrutural 1×1 sem cabeçalho; outros formatos permanecem diferidos. Nenhum import/restore real ou leitura do estado vivo foi feito.
+- `READY_FOR_FIRST_REAL_IMPORT=false`; blocker restrito à prontidão desse escopo; sem major de produto; `MERGE=false`.
+- `NEXT_ACTION=VALIDAR_FONTE_ESTRUTURADA_COMPATIVEL_E_RESTORE_V2_APLICAVEL`; requer fonte parseável e restore V2 validado antes de autorizar importação. Gate humano de autorização do primeiro import continua obrigatório.
+- Especificações prontas: `V324_BACKUP_LONGEVITY_SPEC.md`, `V325_UX_PRODUCTIVITY_SPEC.md`. Não iniciar implementação das fases sem autorização separada.
+
+---
+
 ## V322 — Batch 7–10 certificados até a fronteira síncrona (2026-10-05)
 
-- PR #445 OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS. `MERGE=false`.
+- PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou. CI #783/run `37372040030` foi a validação pré-merge.
 - Batch 7: pipeline CI verde; Build/test (249 pass, 0 fail, 5 skipped), A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual.
 - Batch 8: Corporate Events 39/39 PASS, incluindo shadow-only, sem writer de produção e promoção condicionada a evidência `RECEIVED`.
 - Batch 9: failure injection e quarentena cobertas pela fronteira V284 81/81 PASS.
 - Batch 10: double-submit e replay sequenciais sem gravação duplicada, cobertos localmente/CI. Concorrência entre abas não foi testada; não alegar certificação multi-tab.
 - Teste focal local combinado: 120/120 PASS. Escritas reais/produção=0; sem mudança de código de produto, fórmulas, schema ou persistência.
-- Próximo gate: revisão humana/merge da #445 e CI pós-merge. Até ambos, V323 fica read-only; Provider QA, cloud persistence e primeiro import real seguem bloqueados.
+- V322 encerrada após merge e CI pós-merge. V323 prossegue read-only; comparação com o site, backup validado, Provider QA e primeiro import real não estão certificados.
 
 ---
 ---
 
 # Next Step
+# V323D — diagnóstico do exportador de backup (2026-10-06)
+
+- Worktree autorizada: `C:\Projetos\carteira-investimentos.worktrees\v323-real-reconciliation`; branch `codex/v323-real-portfolio-reconciliation`; base do ajuste `c0ea758ecef88070a40b38c18f4bb7b34eaffde9`. PR #446 OPEN/DRAFT; `MERGE=false`.
+- A tentativa isolada mais recente de exportação no Preview autenticado falhou antes de produzir arquivo. A interface retornou `PARTIAL/REQUIRED_DOMAIN_MISSING`; nenhum dado foi alterado. Nenhuma informação financeira foi copiada para esta documentação. O domínio canônico ausente ainda não foi identificado.
+- Ajuste local em `index.html`: o erro de geração exibe somente códigos de etapa e status/razões enumerados, além de domínio canônico opcional; texto bruto, identificadores e payloads não são expostos. Testes VM cobrem a sanitização.
+- `verify:release` passou localmente (legado/moderno, `qa:all`, smoke e V289 4/4); V323C/D 14/14 e build estático PASS. XLSX 0/2: SheetJS CDN/SRI falhou antes dos asserts. CI verde no SHA anterior `81b9c124`; novo delta exige CI próprio. Revisão independente: BLOCKER=0, MAJOR=0; MINOR=1 (allowlists exigem atualização explícita quando surgirem novos códigos legítimos).
+- Próximo: incluir o domínio canônico ausente no diagnóstico seguro, publicar, aguardar CI e Preview no HEAD exato; então solicitar login QA isolado para outra tentativa somente de export. Sem import, restore real, edição, escrita ou merge.
+- `BLOCKER=1` até backup real íntegro obtido e validado; `MAJOR=0`; `REAL_WRITES=0`; `REAL_IMPORT=false`; `READY_FOR_FIRST_REAL_IMPORT=false`.
+
+## V323 — correção do detector e reconciliação somente leitura (2026-10-05)
+
+- Base pós-merge: `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 foi incorporada e CI pós-merge #785/run `37378069598` passou.
+- Detector V323 exige identidade B3 explícita ou assinatura estrutural reconhecida; XP explícito, conflito e layouts genéricos não são enviados ao parser B3. Testes sintéticos V323 foram adicionados a `test:import-center` e `test:ui`.
+- PR #446 está OPEN/DRAFT e mergeable no HEAD `ba66364b1acbaba4148f96407459ed7f427c9ad8` (commit documental sobre a implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`). CI #787/run `37385414541` PASS: Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview success.
+- `npm test`, moderna 815/815, A11Y 19/19, V289 4/4, `qa:all`, `verify:release` e diff-check passaram localmente. XLSX Playwright ficou bloqueado pelo carregamento SRI/runtime do CDN; Auth/Firestore Emulator local ficou bloqueado pelo selector/loopback Java no Windows. CI Linux verde cobre o job Auth/Firestore neste HEAD.
+- Fontes foram catalogadas em modo somente leitura; o handoff não publica conteúdo nem quantidades dos arquivos. Foi encontrada sobreposição estrutural entre planilhas de movimentação, insuficiente para autorizar importar ambas.
+- O estado atual do site não estava disponível: match/missing/extra/diferenças e backup/restore preview são `UNKNOWN`/não executados. Nenhum dado real foi importado ou gravado; V285-02 segue diferida; `MERGE=false`.
+- CI do HEAD V323 está verde; PR #446 permanece draft e não foi mergeada. Primeiro import real continua bloqueado até estado do site, reconciliação e backup/restore validados, e confirmação humana explícita.
+
+## V323C — contrato de backup hardening local (2026-10-05)
+
+- Worktree autorizada `C:\Projetos\carteira-investimentos.worktrees\v323-real-reconciliation`, branch `codex/v323-real-portfolio-reconciliation`, base `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; HEAD remoto ainda `ce380cc926f4c96d70b52f9e9cd4cb5b63ec4d28`. PR #446 segue OPEN/DRAFT; `MERGE=false`.
+- Contrato V323C commitado em `4f6dcd7d24276953413ad17b33df8a12c785e527` e enviado normalmente à mesma branch; `MERGE=false`.
+- Contrato V2 distingue `VALID`, `PARTIAL`, `CORRUPT`, `UNSUPPORTED_FUTURE_SCHEMA`, `UNSUPPORTED_TYPE` e `INCOMPATIBLE`; exige manifesto/contagens para portfolio, assets, transactions, income, fixedIncome, goals e settings. Cache de corporate events e performance V76 são domínios opcionais/read-only; ausência não é inventada como zero.
+- `divGoal` presente é validado como número finito não negativo; stores V76 corrompidos, vazios, incompletos, com registro inválido, data impossível ou metadado essencial inválido abortam export/verify/restore. Regressões focadas: 56/56 PASS. `verify:release` PASS: legado 254/254, moderna 815/815, `qa:all` e V289 4/4; build legado/moderno incluídos.
+- CI run `37395729957` PASS em Build/test, Auth/Firestore Emulator e V289 visual. Preview de `4f6dcd7` READY. PR #446 permanece OPEN/DRAFT/mergeable.
+- Revisão independente final: BLOCKER=0, MAJOR=0. MINOR: migração V76 legada preenche `trackingStartDate:null` se ausente. Restore real de `corporateEvents` segue não implementado; restore V2 continua bloqueado na UI e backup legacy com eventos não vazios é recusado. `applyBackupData` confia no preview refeito pelo fluxo da UI.
+- Nenhum Preview acessado, backup real criado ou dado financeiro real lido. `REAL_DATA_USED=false`, `REAL_WRITES=0`, `REAL_IMPORT=false`. `V323B_REAL_SITE_INSPECTION_READY=true`. Próximo passo: aguardar login humano na Preview isolada; não compartilhar credenciais/MFA no chat.
+
 ## V320 — certificação final antes do gate humano (2026-10-05)
 
 - PR #443 permanece OPEN/DRAFT em `hermes/v320-overnight-functional-acceleration`; HEAD final `c53229e559a5843dd3181e74d0e01153e160171e`; `MERGE=false`.

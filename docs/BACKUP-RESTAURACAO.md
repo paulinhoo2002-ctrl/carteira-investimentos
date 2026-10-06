@@ -15,6 +15,11 @@ O arquivo JSON pode incluir:
 - preferências relevantes;
 - metadados do aplicativo e da exportação.
 
+O formato versionado distingue seção presente e vazia de seção ausente. Se
+algum domínio obrigatório estiver ausente, o arquivo é classificado como
+parcial e não pode ser restaurado. Cache de eventos corporativos e dados de
+performance são opcionais e permanecem separados do ledger financeiro.
+
 O backup não deve conter senha da conta Google.
 
 ## Exportar backup
@@ -55,7 +60,11 @@ Antes de depender do backup:
    - renda fixa;
    - carteiras;
    - data do backup.
-6. Confirme somente se os dados estiverem corretos.
+6. Backups versionados V2/V249/V323C ficam em prévia somente; restauração real
+   continua bloqueada. Backups legacy seguem a rota compatível e só podem ser
+   gravados após validação integral, prévia refeita e confirmação explícita.
+   Arquivos incompletos ou incompatíveis são recusados antes de qualquer
+   gravação.
 
 A importação substitui os dados atuais da carteira ativa. Ela não deve acontecer apenas ao selecionar o arquivo; existe uma confirmação antes da gravação.
 

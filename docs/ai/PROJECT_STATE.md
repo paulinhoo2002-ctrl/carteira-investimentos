@@ -1,13 +1,38 @@
+## V323H — checkpoint atual (2026-10-06)
+
+- Clone isolado de recuperação em `C:\Projetos\carteira-investimentos.worktrees\v323h-recovery`; branch `codex/v323-real-portfolio-reconciliation`, último checkpoint publicado verificado `46be3f7540fe1a3b43d9ce1fa6263732838ba11b` (código base `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`); clone limpo após o commit documental correspondente.
+- PR #446 OPEN/DRAFT/mergeable; CI #800 PASS no checkpoint verificado e Vercel check success; merge=false.
+- Backup previamente validado: schema/integridade/domínios PASS, 621679 bytes, restore preview isolado PASS. Backup não foi reexportado nem aplicado a conta real.
+- Nenhuma fonte real foi certificada. Fontes autorizadas não continham XLSX com assinatura B3 parser; candidato de proventos tinha dimensão 1×1. PDFs seguem reconciliação somente; demais formatos diferidos. Estado vivo atual do Preview não foi lido.
+- `READY_FOR_FIRST_REAL_IMPORT=false`; `BLOCKER=1` no escopo de import; `MAJOR=0` no nível de produto; `MINOR=1` (compatibilidade V76); `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`.
+- Detalhes/limites em `V323H_FIRST_IMPORT_READINESS_AND_ROLLBACK.md`. V324 backup/disaster-recovery e V325 UX têm propostas, sem implementação autorizada.
+
 ## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
 
-- PR #445 permanece OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783, run `37372040030`, SUCCESS. Nenhum merge foi feito.
+- PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou. CI #783/run `37372040030` é a validação pré-merge.
 - Batch 7: gate completo passou em CI (Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual). `npm test` reportou 249 passes, zero failures e cinco testes skipped.
 - Batch 8 Corporate Events: 39/39 testes focados PASS; fluxo shadow permanece sem writer de carteira, e promoção exige evidência `RECEIVED`.
 - Batch 9 failure injection: fronteira V284 81/81 PASS, incluindo rollback, quarentena, bloqueio de saves seguintes e retry após reload/verificação.
 - Batch 10 double action/replay: cancel/confirm, double-submit e replay idêntico persistem uma única vez; coberto em V284 e validado em CI/local. Disputa real entre abas não foi exercitada e não está certificada.
 - Validação local focal combinada: Corporate Events 39/39 e fronteira V284 81/81; writes reais/produção zero. Sem mudança de produto, fórmula, schema ou persistência.
-- V323 continua somente leitura até PR #445 ser incorporada e o CI pós-merge passar. Provider QA real e persistência cloud seguem externos; `MERGE=false`.
+- V322 está encerrada. V323 continua somente leitura para fontes financeiras reais: o site/backup atual não foram acessados nem validados. Provider QA e persistência cloud continuam externos; `MERGE=false`.
 # Project State
+
+## V323D — checkpoint atual do exportador (2026-10-06)
+
+- Branch `codex/v323-real-portfolio-reconciliation`, base local `6e46789afe7becf1aee7ce23e1115fc089df5193`; PR #446 segue OPEN/DRAFT; `MERGE=false`.
+- O export real observado anteriormente no Preview falhou antes de criar arquivo; causa raiz ainda não confirmada. A reprodução sintética de estado grande validou geração e roundtrip em memória.
+- Código local registra uma etapa segura do erro e separa a geração de dados do download. Backup real validado, restore preview real e cobertura real de eventos corporativos continuam pendentes.
+- Testes focados 42/42 e `verify:release` PASS. O commit `7cfaede55c32884d6bde18749c6070aae14bb334` teve CI #792/run `37443504218` PASS e Preview `READY` no mesmo SHA; este checkpoint documental ainda aguarda seu próprio CI/Preview. `BLOCKER=1` até backup real validado; `MAJOR=0`; `MINOR=3`. Sem escrita ou importação real.
+
+## V323 — estado atual pós-merge e somente leitura (2026-10-05)
+
+- PR #446 está OPEN/DRAFT/mergeable em `main`, HEAD documental `ba66364b1acbaba4148f96407459ed7f427c9ad8` sobre implementação `13010052b42bc9d58b38dc8e56af53fd00fff321`; CI #787/run `37385414541` passou em Build/test, Auth+Firestore Emulator QA e V289 visual; Vercel Preview status success. `MERGE=false`.
+- Base `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; PR #445 incorporada; CI pós-merge #785/run `37378069598` verde.
+- Worktree V323 usa branch `codex/v323-real-portfolio-reconciliation`. O detector XLSX separa XP, B3 e origem desconhecida com fail-closed; as planilhas de posição sem identidade explícita não seguem ao parser.
+- `verify:release`, `npm test`, moderna 815/815, A11Y 19/19, V289 4/4 e `qa:all` passaram localmente. XLSX browser/CDN e Auth/Firestore Emulator local têm limitações ambientais documentadas no handoff V323.
+- Site sem snapshot acessível; reconciliação site-a-site e backup/restauração não executados. `REAL_WRITES=0`; primeiro import continua não autorizado e não pronto; `MERGE=false`.
+- Ver `V323_READ_ONLY_RECONCILIATION.md` e `NEXT_STEP.md` para evidências e próximo gate.
 
 #
 # V317 — certificação de ações financeiras (2026-10-04)

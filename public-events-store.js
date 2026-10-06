@@ -3,9 +3,22 @@
   const VERSION=1,KEY='carteira_public_corporate_events_v1';
   const clone=v=>JSON.parse(JSON.stringify(v));
   const text=v=>String(v??'').trim();
+  const isRecord=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
   const eventIdentity=e=>text(e?.eventKey||e?.id)||[text(e?.symbol||e?.ticker).toUpperCase(),text(e?.eventType||e?.type).toUpperCase(),text(e?.baseDate||e?.recordDate),text(e?.paymentDate||e?.payDate),Number.isFinite(Number(e?.valuePerUnitGross))?Math.round(Number(e.valuePerUnitGross)*100):'',text(e?.sourceDocumentId||e?.officialId)].join('|');
   function createMemoryStorage(){const map=new Map();return {getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k)};}
   function read(storage=globalThis.localStorage){try{const raw=storage?.getItem(KEY);if(!raw)return {version:VERSION,updatedAt:null,events:[],quotes:{}};const v=JSON.parse(raw);if(!Array.isArray(v.events))return {version:VERSION,updatedAt:null,events:[],quotes:{}};return {version:VERSION,updatedAt:v.updatedAt||null,events:clone(v.events),quotes:v.quotes&&typeof v.quotes==='object'?clone(v.quotes):{}};}catch{return {version:VERSION,updatedAt:null,events:[],quotes:{}};}}
+  function readForBackup(storage=globalThis.localStorage){
+    const raw=storage?.getItem(KEY);
+    if(raw==null||raw==='')return {present:false,version:VERSION,updatedAt:null,events:[]};
+    let value;try{value=JSON.parse(raw);}catch{throw new Error('CORPORATE_EVENTS_CACHE_CORRUPT:JSON');}
+    if(!isRecord(value)||value.version!==VERSION||!Array.isArray(value.events)||!isRecord(value.quotes))throw new Error('CORPORATE_EVENTS_CACHE_CORRUPT:SCHEMA');
+    const seen=new Set();
+    for(const event of value.events){
+      if(!isRecord(event)||!text(event.eventKey||event.id||event.symbol||event.ticker))throw new Error('CORPORATE_EVENTS_CACHE_CORRUPT:IDENTITY');
+      const key=eventIdentity(event);if(seen.has(key))throw new Error('CORPORATE_EVENTS_CACHE_CORRUPT:DUPLICATE');seen.add(key);
+    }
+    return {present:true,version:VERSION,updatedAt:value.updatedAt||null,events:clone(value.events)};
+  }
   function mergeEvents(existing=[],incoming=[]){
     const map=new Map(); let duplicates=0,updated=0,corrections=0,cancellations=0;
     for(const event of [...(Array.isArray(existing)?existing:[])]) map.set(eventIdentity(event),clone(event));
@@ -19,5 +32,5 @@
   function write(storage,payload){const next={version:VERSION,updatedAt:payload.updatedAt||new Date().toISOString(),events:Array.isArray(payload.events)?clone(payload.events):[],quotes:payload.quotes&&typeof payload.quotes==='object'?clone(payload.quotes):{}};storage.setItem(KEY,JSON.stringify(next));return next;}
   function upsert(storage,incoming,{now=new Date().toISOString()}={}){const current=read(storage);const merged=mergeEvents(current.events,incoming);const snapshot=write(storage,{updatedAt:now,events:merged.events,quotes:current.quotes});return {...merged,snapshot};}
   function isFresh(updatedAt,ttlMs,now=Date.now()){const t=Date.parse(updatedAt||'');return Number.isFinite(t)&&now-t<ttlMs;}
-  return {VERSION,KEY,createMemoryStorage,eventIdentity,mergeEvents,read,write,upsert,isFresh};
+  return {VERSION,KEY,createMemoryStorage,eventIdentity,mergeEvents,read,readForBackup,write,upsert,isFresh};
 });
