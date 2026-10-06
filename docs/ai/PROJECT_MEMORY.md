@@ -1,3 +1,14 @@
+## V323H — recuperação e decisão de prontidão (2026-10-06)
+
+- Clone isolado criado a partir da branch publicada V323, HEAD `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`; PR #446 OPEN/DRAFT/mergeable; CI #798 PASS; Vercel check success. Checkout canônico e worktree antiga foram preservados.
+- Backup validado anteriormente (schema, integridade, domínios e restore preview isolado); nenhum restore real. Hash/bytes em `NEXT_STEP.md`; conteúdo permanece fora do Git.
+- A análise estrutural do candidato de proventos não encontrou cabeçalho parseável (arquivo 1×1). Nenhuma fonte é `CERTIFIED_IMPORTABLE`; `READY_FOR_FIRST_REAL_IMPORT=false`. Nenhum XLSX tinha assinatura parser; PDFs Inter ficam em reconciliação; XP exige fixture; B3 posição/movimento/proventos seguem diferidos até fonte comprovada.
+- Restore V2 de produção permanece bloqueado na UI; `ROLLBACK_READY=false`. Não importar até restore aplicável ser validado em fase autorizada.
+- V324 backup longevity e V325 UX produtividade ficam como especificações, sem implementação autorizada.
+- Skills: Superpowers usado para retomada e investigação disciplinada; Ponytail full para limitar escopo/código a zero; Caveman para diffs e relatório concisos. Skills especializadas de browser/import real não usadas porque não houve fluxo autenticado nem arquivo parseável. `SKILL_REEVALUATED=true`; gaps: execução de parser real SheetJS e restore V2 aplicável ainda não demonstrados.
+
+---
+
 # V323D — estado atual do exportador (2026-10-06)
 
 - No branch V323, o export real anterior no Preview falhou sem produzir arquivo; a mensagem não identificou a etapa. A causa raiz continua `UNCONFIRMED`.

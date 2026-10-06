@@ -1,3 +1,16 @@
+# V323H — checkpoint de prontidão por fonte (2026-10-06)
+
+Este checkpoint supersede os status V323D/V323C abaixo quanto a backup e prontidão. Histórico mantido para proveniência.
+
+- PR #446 OPEN/DRAFT/mergeable no HEAD `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`; base `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI #798 PASS; check Vercel success.
+- Backup previamente validado e restore preview isolado PASS. Restore V2 aplicável à conta não está disponível/provado.
+- Nenhum candidato real foi certificado. Um XLSX indicado como proventos por nome/aba estava vazio estruturalmente (1×1), sem cabeçalho parseável. B3 movimentos/posição, XP e PDFs Inter permanecem diferidos pelas limitações de identidade/parser já descritas.
+- Estado vivo do Preview não consultado; contagens do backup não são declaradas como estado atual.
+- `READY_FOR_FIRST_REAL_IMPORT=false`; `BLOCKER=1` para o escopo; `MAJOR=0` no nível de produto; `MINOR=1` compatibilidade V76; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`.
+- Relatório/rollback: `docs/ai/V323H_FIRST_IMPORT_READINESS_AND_ROLLBACK.md`.
+
+---
+
 # V323 — detector de origem e checkpoint de reconciliação somente leitura
 
 ## V323D — checkpoint atual do exportador (2026-10-06)

@@ -1,3 +1,15 @@
+# V323H — recuperação isolada e fechamento de prontidão (2026-10-06)
+
+- Remoto verificado pelo conector GitHub: PR #446 OPEN/DRAFT/mergeable, HEAD `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`, base `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI #798 success; Vercel check success.
+- Clone isolado limpo criado para recuperação; checkout canônico sujo foi preservado; worktree antiga não foi removida nem reparada.
+- Backup aceito: 621679 bytes, SHA-256 `3D6DA352A82764A74820BD60E1A580B60E6EB55760F6E5C1F789AA718666802E`; schema/domínios/integridade PASS; restore preview isolado PASS.
+- Nenhuma fonte real foi certificada: o candidato B3 proventos era arquivo estrutural 1×1 sem cabeçalho; outros formatos permanecem diferidos. Nenhum import/restore real ou leitura do estado vivo foi feito.
+- `READY_FOR_FIRST_REAL_IMPORT=false`; blocker restrito à prontidão desse escopo; sem major de produto; `MERGE=false`.
+- `NEXT_ACTION=VALIDAR_FONTE_ESTRUTURADA_COMPATIVEL_E_RESTORE_V2_APLICAVEL`; requer fonte parseável e restore V2 validado antes de autorizar importação. Gate humano de autorização do primeiro import continua obrigatório.
+- Especificações prontas: `V324_BACKUP_LONGEVITY_SPEC.md`, `V325_UX_PRODUCTIVITY_SPEC.md`. Não iniciar implementação das fases sem autorização separada.
+
+---
+
 ## V322 — Batch 7–10 certificados até a fronteira síncrona (2026-10-05)
 
 - PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou. CI #783/run `37372040030` foi a validação pré-merge.

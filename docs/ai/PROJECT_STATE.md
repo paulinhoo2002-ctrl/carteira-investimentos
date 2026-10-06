@@ -1,3 +1,12 @@
+## V323H — checkpoint atual (2026-10-06)
+
+- Clone isolado de recuperação em `C:\Projetos\carteira-investimentos.worktrees\v323h-recovery`; branch `codex/v323-real-portfolio-reconciliation`, HEAD `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`, árvore limpa antes desta atualização documental.
+- PR #446 OPEN/DRAFT/mergeable; CI #798 PASS no HEAD e check Vercel success; merge=false.
+- Backup previamente validado: schema/integridade/domínios PASS, 621679 bytes, restore preview isolado PASS. Backup não foi reexportado nem aplicado a conta real.
+- Nenhuma fonte real foi certificada. Fontes autorizadas não continham XLSX com assinatura B3 parser; candidato de proventos tinha dimensão 1×1. PDFs seguem reconciliação somente; demais formatos diferidos. Estado vivo atual do Preview não foi lido.
+- `READY_FOR_FIRST_REAL_IMPORT=false`; `BLOCKER=1` no escopo de import; `MAJOR=0` no nível de produto; `MINOR=1` (compatibilidade V76); `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`.
+- Detalhes/limites em `V323H_FIRST_IMPORT_READINESS_AND_ROLLBACK.md`. V324 backup/disaster-recovery e V325 UX têm propostas, sem implementação autorizada.
+
 ## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
 
 - PR #445 foi incorporada por squash em `origin/main=e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI pós-merge #785/run `37378069598` passou. CI #783/run `37372040030` é a validação pré-merge.
