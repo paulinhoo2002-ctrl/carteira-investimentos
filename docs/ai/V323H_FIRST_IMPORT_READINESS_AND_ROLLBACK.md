@@ -6,9 +6,9 @@ Data: 2026-10-06. Checkpoint somente leitura no clone isolado de recuperação.
 
 - Repositório: `paulinhoo2002-ctrl/carteira-investimentos`.
 - Branch: `codex/v323-real-portfolio-reconciliation`.
-- HEAD final documental: `3783e09a4a6bd1806cef5b1703a7d64280cf48e9` (partiu do HEAD de código `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`); base: `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`.
+- HEAD de código revisado: `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`; último checkpoint documental verificado antes desta atualização: `46be3f7540fe1a3b43d9ce1fa6263732838ba11b`; base: `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`.
 - PR #446: OPEN/DRAFT/mergeable; não mergeada.
-- CI #799: PASS no HEAD final exato; Vercel Preview: READY no mesmo SHA. A interface autenticada não foi exercitada neste checkpoint.
+- CI #800: PASS no checkpoint `46be3f7540fe1a3b43d9ce1fa6263732838ba11b`; Vercel check success. O HEAD corrente deve ser obtido do PR; esta nota não referencia a si própria. A interface autenticada não foi exercitada neste checkpoint.
 
 ## Backup aceito
 
