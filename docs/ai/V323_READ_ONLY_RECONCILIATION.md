@@ -2,9 +2,9 @@
 
 ## V323D — checkpoint atual do exportador (2026-10-06)
 
-Uma tentativa somente de exportação foi executada no Preview autenticado da PR #446 e falhou antes de produzir arquivo. A interface mostrou apenas a mensagem genérica; nenhum dado foi alterado e nenhum conteúdo financeiro foi incluído em logs de missão ou documentação. A versão apresentou `BACKUP_EXPORT_VALIDATION_FAILED`; o payload foi recusado pela etapa de validação. Ela não expôs o status/razão específicos, então a causa raiz permanece desconhecida.
+Uma tentativa somente de exportação foi executada no Preview autenticado da PR #446 e falhou antes de produzir arquivo com `PARTIAL/REQUIRED_DOMAIN_MISSING`. Nenhum dado foi alterado e nenhum conteúdo financeiro foi incluído em logs de missão ou documentação. O domínio canônico ausente ainda não foi exposto, então a causa raiz específica permanece desconhecida.
 
-No HEAD local baseado em `e5809c472a04806af1d6b71765b14954dd5284ba`, o exportador reduz falhas a códigos de etapa, status/razões enumerados e domínio canônico opcional. Erros brutos, identificadores e payloads não são expostos; desconhecidos viram `UNKNOWN`. Testes V323C/D 14/14 e build estático passam. `verify:release` local parou por EPERM ao limpar `modern/dist`; XLSX não carregou SheetJS externo (SRI) antes dos asserts. O HEAD `e5809c4` tinha baseline verde nesses gates, mas CI do novo delta ainda é necessário. Revisão independente: BLOCKER=0, MAJOR=0, MINOR=1 (novos códigos legítimos exigem atualizar allowlists).
+No HEAD `81b9c124a8c40dc620c8f72ee1975d297ff37c70`, o exportador reduziu falhas a códigos de etapa, status/razões enumerados e domínio canônico opcional. CI/Preview passaram; `verify:release` local e V323C/D 14/14 passaram; XLSX falhou no carregamento SheetJS/SRI antes dos asserts. O resultado `PARTIAL/REQUIRED_DOMAIN_MISSING` levou a ampliar o diagnóstico local para extrair apenas o primeiro nome de domínio obrigatório ausente; novo CI/Preview ainda pendentes. Revisão independente anterior: BLOCKER=0, MAJOR=0, MINOR=1.
 
 Próximo: publicar o ajuste autorizado, aguardar CI e Preview no SHA exato, e então pedir novo login QA isolado para uma tentativa somente de export. Nenhum import, restore real, edição, escrita ou merge. `BLOCKER=1` até backup real validado; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`.
 

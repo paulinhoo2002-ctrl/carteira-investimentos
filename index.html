@@ -12068,7 +12068,7 @@ function safeBackupValidationDiagnostic(validation){
   const candidateReason=typeof validation?.reason==='string'?validation.reason:parts[0];
   const status=statuses.includes(validation?.status)?validation.status:'UNKNOWN';
   const reason=reasons.includes(candidateReason)?candidateReason:'UNKNOWN';
-  const candidateDomain=typeof validation?.domain==='string'?validation.domain:parts[1];
+  const candidateDomain=typeof validation?.domain==='string'?validation.domain:parts[1]||validation?.domains?.find(item=>item?.required===true&&item?.present===false)?.name;
   const domain=domains.includes(candidateDomain)?candidateDomain:undefined;
   return Object.freeze({status,reason,...(domain?{domain}:{})});
 }

@@ -24,8 +24,8 @@
 - V322 encerrou sem escrita real/produção ou mudança financeira. V323 iniciou após merge e CI pós-merge; comparação do site e qualquer import continuam bloqueados até fonte autorizada e backup validado.
 ## V323D — diagnóstico do exportador (2026-10-06)
 
-- Preview autenticado da PR #446: uma tentativa somente de exportação chegou à validação e falhou (`BACKUP_EXPORT_VALIDATION_FAILED`), sem arquivo e sem alteração de dados. A versão ainda não expunha status/razão específicos; causa raiz segue desconhecida. Nenhum valor de carteira foi registrado aqui.
-- Ajuste local sobre `e5809c472a04806af1d6b71765b14954dd5284ba`: toast de falha exibe apenas códigos de etapa, status/razões enumerados e domínio canônico opcional; erros brutos, identificadores e payloads não são expostos. V323C/D 14/14, build estático e diff-check passam. `verify:release` local bloqueado por EPERM ao limpar `modern/dist`; XLSX bloqueado por falha de carregamento externo SheetJS/SRI antes dos asserts. Baseline anterior no HEAD `e5809c4` passou ambos os gates; CI/Preview do delta atual pendentes. Revisão independente: BLOCKER=0, MAJOR=0, MINOR=1 (manter allowlists alinhadas aos enums).
+- Preview autenticado da PR #446: a exportação chegou à validação e falhou com `PARTIAL/REQUIRED_DOMAIN_MISSING`, sem arquivo e sem alteração de dados. O domínio canônico ausente ainda não foi capturado; nenhum valor de carteira foi registrado.
+- Diagnóstico publicado em `81b9c124a8c40dc620c8f72ee1975d297ff37c70`: export falhou `PARTIAL/REQUIRED_DOMAIN_MISSING`; nenhum domínio específico foi registrado. `verify:release` passou localmente, V323C/D 14/14; XLSX 0/2 por falha externa de SheetJS/SRI antes dos asserts. CI e Preview passaram nesse SHA. Delta local seguinte extrai apenas o primeiro nome canônico obrigatório ausente; validação/push pendentes. Revisão: BLOCKER=0, MAJOR=0, MINOR=1.
 - `BLOCKER=1` até obter e validar backup; `MAJOR=0`; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`. Próximo passo: CI/Preview, novo login isolado e uma tentativa somente de export.
 
 # Project Memory

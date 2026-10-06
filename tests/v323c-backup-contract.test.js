@@ -278,6 +278,7 @@ test('V323D validation failure detail is reduced to safe status, reason, and kno
   const partial = JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'PARTIAL', error: 'MISSING_DOMAIN:assets' })));
   assert.deepEqual(partial, { status: 'PARTIAL', reason: 'MISSING_DOMAIN', domain: 'assets' });
   assert.deepEqual(JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'CORRUPT', error: 'INVALID_DOMAIN_MANIFEST' }))), { status: 'CORRUPT', reason: 'INVALID_DOMAIN_MANIFEST' });
+  assert.deepEqual(JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'PARTIAL', error: 'REQUIRED_DOMAIN_MISSING', domains: [{ name: 'settings', required: true, present: false, count: null, version: '1' }] }))), { status: 'PARTIAL', reason: 'REQUIRED_DOMAIN_MISSING', domain: 'settings' });
   const unknown = JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'UNSUPPORTED_TYPE', error: 'UNSUPPORTED_TYPE:assets:private-custom-type' })));
   assert.deepEqual(unknown, { status: 'UNSUPPORTED_TYPE', reason: 'UNSUPPORTED_TYPE', domain: 'assets' });
   const malformed = JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'sensitive', error: 'COUNT_MISMATCH:wallet-id-private' })));
