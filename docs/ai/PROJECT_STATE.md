@@ -1,7 +1,7 @@
 ## V323H — checkpoint atual (2026-10-06)
 
-- Clone isolado de recuperação em `C:\Projetos\carteira-investimentos.worktrees\v323h-recovery`; branch `codex/v323-real-portfolio-reconciliation`, HEAD `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`, árvore limpa antes desta atualização documental.
-- PR #446 OPEN/DRAFT/mergeable; CI #798 PASS no HEAD e check Vercel success; merge=false.
+- Clone isolado de recuperação em `C:\Projetos\carteira-investimentos.worktrees\v323h-recovery`; branch `codex/v323-real-portfolio-reconciliation`, HEAD final `3783e09a4a6bd1806cef5b1703a7d64280cf48e9` (código base `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`), árvore limpa após o commit documental.
+- PR #446 OPEN/DRAFT/mergeable; CI #799 PASS no HEAD final e Vercel Preview READY; merge=false.
 - Backup previamente validado: schema/integridade/domínios PASS, 621679 bytes, restore preview isolado PASS. Backup não foi reexportado nem aplicado a conta real.
 - Nenhuma fonte real foi certificada. Fontes autorizadas não continham XLSX com assinatura B3 parser; candidato de proventos tinha dimensão 1×1. PDFs seguem reconciliação somente; demais formatos diferidos. Estado vivo atual do Preview não foi lido.
 - `READY_FOR_FIRST_REAL_IMPORT=false`; `BLOCKER=1` no escopo de import; `MAJOR=0` no nível de produto; `MINOR=1` (compatibilidade V76); `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`.

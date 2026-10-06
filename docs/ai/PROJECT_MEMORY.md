@@ -1,6 +1,6 @@
 ## V323H — recuperação e decisão de prontidão (2026-10-06)
 
-- Clone isolado criado a partir da branch publicada V323, HEAD `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`; PR #446 OPEN/DRAFT/mergeable; CI #798 PASS; Vercel check success. Checkout canônico e worktree antiga foram preservados.
+- Clone isolado criado a partir da branch publicada V323, HEAD final `3783e09a4a6bd1806cef5b1703a7d64280cf48e9` (código base `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`); PR #446 OPEN/DRAFT/mergeable; CI #799 PASS; Vercel Preview READY. Checkout canônico e worktree antiga foram preservados.
 - Backup validado anteriormente (schema, integridade, domínios e restore preview isolado); nenhum restore real. Hash/bytes em `NEXT_STEP.md`; conteúdo permanece fora do Git.
 - A análise estrutural do candidato de proventos não encontrou cabeçalho parseável (arquivo 1×1). Nenhuma fonte é `CERTIFIED_IMPORTABLE`; `READY_FOR_FIRST_REAL_IMPORT=false`. Nenhum XLSX tinha assinatura parser; PDFs Inter ficam em reconciliação; XP exige fixture; B3 posição/movimento/proventos seguem diferidos até fonte comprovada.
 - Restore V2 de produção permanece bloqueado na UI; `ROLLBACK_READY=false`. Não importar até restore aplicável ser validado em fase autorizada.

@@ -1,6 +1,6 @@
 # V323H — recuperação isolada e fechamento de prontidão (2026-10-06)
 
-- Remoto verificado pelo conector GitHub: PR #446 OPEN/DRAFT/mergeable, HEAD `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`, base `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI #798 success; Vercel check success.
+- Remoto verificado pelo conector GitHub: PR #446 OPEN/DRAFT/mergeable, HEAD final `3783e09a4a6bd1806cef5b1703a7d64280cf48e9` (código base `23f37b09e4547f3ce9496653c1444e3d18d2d0f0`), base `e38e946c47cfc9cab51fa04fbf07aa6c4435248d`; CI #799 success; Vercel Preview READY.
 - Clone isolado limpo criado para recuperação; checkout canônico sujo foi preservado; worktree antiga não foi removida nem reparada.
 - Backup aceito: 621679 bytes, SHA-256 `3D6DA352A82764A74820BD60E1A580B60E6EB55760F6E5C1F789AA718666802E`; schema/domínios/integridade PASS; restore preview isolado PASS.
 - Nenhuma fonte real foi certificada: o candidato B3 proventos era arquivo estrutural 1×1 sem cabeçalho; outros formatos permanecem diferidos. Nenhum import/restore real ou leitura do estado vivo foi feito.
