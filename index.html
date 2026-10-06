@@ -12059,8 +12059,22 @@ function backupPayload(){
   if(v76RuntimeAvailable()) payload.data.v76Runtime=window.PortfolioRuntimeStores.backupSupplement({snapshots:window.__V76_RUNTIME__?.snapshots,flows:window.__V76_RUNTIME__?.flows});
   return payload;
 }
-function recordBackupExportError(stage){
-  const diagnostic=Object.freeze({code:`BACKUP_EXPORT_${stage}`,stage});
+function safeBackupValidationDiagnostic(validation){
+  const statuses=['VALID','PARTIAL','CORRUPT','UNSUPPORTED_FUTURE_SCHEMA','UNSUPPORTED_TYPE','INCOMPATIBLE'];
+  const reasons=['BACKUP_TOO_LARGE','UNSAFE_KEY','INVALID_CONTAINER','MISSING_STATE','INVALID_STATE','UNKNOWN_FORMAT','FORMAT_MISMATCH','INVALID_BACKUP_VERSION','FUTURE_SCHEMA','UNSUPPORTED_OLD_SCHEMA','VERSION_SCHEMA_MISMATCH','UNKNOWN_SCHEMA','MISSING_PAYLOAD_CHECKSUM','PAYLOAD_CHECKSUM_MISMATCH','INVALID_MANIFEST_METADATA','INVALID_SECTION','INVALID_RECORD','DUPLICATE_ID','INVALID_NUMBER','INVALID_DATE','UNKNOWN_ACTIVE_WALLET','UNSUPPORTED_TYPE','INVALID_CONFIG','CORPORATE_EVENTS_IN_WRONG_DOMAIN','INVALID_PERFORMANCE_DOMAIN','COUNT_MISMATCH','REQUIRED_DOMAIN_MISSING','MISSING_MANIFEST_CHECKSUM','MANIFEST_CHECKSUM_MISMATCH','MISSING_DOMAIN_MANIFEST','INVALID_DOMAIN_MANIFEST','MISSING_DOMAIN','DOMAIN_SCHEMA_MISMATCH','DOMAIN_PRESENCE_MISMATCH','DOMAIN_COUNT_MISMATCH','UNKNOWN_DOMAIN','MISSING_RECORD_COUNT','CONTENT_INVENTORY_MISMATCH'];
+  const domains=['portfolio','assets','transactions','income','fixedIncome','corporateEvents','performance','goals','settings'];
+  const rawError=typeof validation?.error==='string'?validation.error:'';
+  const parts=rawError.split(':');
+  const candidateReason=typeof validation?.reason==='string'?validation.reason:parts[0];
+  const status=statuses.includes(validation?.status)?validation.status:'UNKNOWN';
+  const reason=reasons.includes(candidateReason)?candidateReason:'UNKNOWN';
+  const candidateDomain=typeof validation?.domain==='string'?validation.domain:parts[1];
+  const domain=domains.includes(candidateDomain)?candidateDomain:undefined;
+  return Object.freeze({status,reason,...(domain?{domain}:{})});
+}
+function recordBackupExportError(stage,validation){
+  const diagnostic=Object.freeze(Object.assign({code:'BACKUP_EXPORT_'+stage,stage},validation?{validation:safeBackupValidationDiagnostic(validation)}:{}));
+
   try{window.__BACKUP_EXPORT_ERROR__=diagnostic;}catch(e){}
   return diagnostic;
 }
@@ -12095,10 +12109,10 @@ async function backupPortabilityPayload(){
     });
     stage='VALIDATION_FAILED';
     const validation=await BackupPortability.verifyBackup(backup);
-    if(validation.status!=='VALID') throw new Error(`BACKUP_NOT_COMPLETE:${validation.status}`);
+    if(validation.status!=='VALID') throw Object.assign(new Error('BACKUP_NOT_COMPLETE'),{backupValidation:safeBackupValidationDiagnostic(validation)});
     return backup;
   }catch(error){
-    const diagnostic=recordBackupExportError(stage);
+    const diagnostic=recordBackupExportError(stage,error?.backupValidation);
     debugError('backup export failed:',diagnostic.code);
     throw new Error(diagnostic.code);
   }
@@ -12209,10 +12223,13 @@ async function exportBackup(){
   try{
     payload=await backupPortabilityPayload();
   }catch(error){
-    const reportedCode=window.__BACKUP_EXPORT_ERROR__?.code;
+    const diagnostic=window.__BACKUP_EXPORT_ERROR__;
+    const reportedCode=diagnostic?.code;
     const safeCodes=['BACKUP_EXPORT_SNAPSHOT_COLLECTION_FAILED','BACKUP_EXPORT_MANIFEST_CREATION_FAILED','BACKUP_EXPORT_VALIDATION_FAILED'];
     const code=safeCodes.includes(reportedCode)?reportedCode:'BACKUP_EXPORT_UNKNOWN';
-    toast(`Não foi possível preparar o backup local. Nenhum dado foi alterado. (${code})`,'#f87171');
+    const validation=safeBackupValidationDiagnostic(diagnostic?.validation);
+    const detail=validation.status!=='UNKNOWN'?' ['+validation.status+'/'+validation.reason+(validation.domain?'/'+validation.domain:'')+']':'';
+    toast('Não foi possível preparar o backup local. Nenhum dado foi alterado. ('+code+detail+')','#f87171');
     return;
   }
   let stage='SERIALIZATION_FAILED';

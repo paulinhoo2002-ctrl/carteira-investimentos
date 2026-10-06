@@ -24,8 +24,8 @@
 - V322 encerrou sem escrita real/produção ou mudança financeira. V323 iniciou após merge e CI pós-merge; comparação do site e qualquer import continuam bloqueados até fonte autorizada e backup validado.
 ## V323D — diagnóstico do exportador (2026-10-06)
 
-- Preview autenticado da PR #446: uma tentativa somente de exportação falhou antes de gerar arquivo; a mensagem daquela versão não identificou a etapa. Nenhum dado foi alterado ou registrado aqui. Causa raiz segue desconhecida.
-- Ajuste local sobre `c0ea758ecef88070a40b38c18f4bb7b34eaffde9`: toast de falha de geração expõe apenas código fixo permitido por allowlist; erros e payloads não são expostos. Testes V323C/D 13/13, `verify:release`, XLSX sintético 2/2 e revisão independente passaram. CI/Preview do novo HEAD aguardam push.
+- Preview autenticado da PR #446: uma tentativa somente de exportação chegou à validação e falhou (`BACKUP_EXPORT_VALIDATION_FAILED`), sem arquivo e sem alteração de dados. A versão ainda não expunha status/razão específicos; causa raiz segue desconhecida. Nenhum valor de carteira foi registrado aqui.
+- Ajuste local sobre `e5809c472a04806af1d6b71765b14954dd5284ba`: toast de falha exibe apenas códigos de etapa, status/razões enumerados e domínio canônico opcional; erros brutos, identificadores e payloads não são expostos. V323C/D 14/14, build estático e diff-check passam. `verify:release` local bloqueado por EPERM ao limpar `modern/dist`; XLSX bloqueado por falha de carregamento externo SheetJS/SRI antes dos asserts. Baseline anterior no HEAD `e5809c4` passou ambos os gates; CI/Preview do delta atual pendentes. Revisão independente: BLOCKER=0, MAJOR=0, MINOR=1 (manter allowlists alinhadas aos enums).
 - `BLOCKER=1` até obter e validar backup; `MAJOR=0`; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`. Próximo passo: CI/Preview, novo login isolado e uma tentativa somente de export.
 
 # Project Memory

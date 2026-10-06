@@ -15,10 +15,10 @@
 # V323D — diagnóstico do exportador de backup (2026-10-06)
 
 - Worktree autorizada: `C:\Projetos\carteira-investimentos.worktrees\v323-real-reconciliation`; branch `codex/v323-real-portfolio-reconciliation`; base do ajuste `c0ea758ecef88070a40b38c18f4bb7b34eaffde9`. PR #446 OPEN/DRAFT; `MERGE=false`.
-- Uma tentativa isolada de exportação no Preview autenticado falhou antes de produzir arquivo. A interface exibiu mensagem genérica; nenhum dado foi alterado. Nenhuma informação financeira foi copiada para esta documentação. A causa raiz ainda é desconhecida.
-- Ajuste local em `index.html`: o erro de geração agora exibe somente um código de etapa validado por allowlist fixa; erros brutos e payloads não são expostos. Teste V323D cobre esse contrato.
-- Testes focados V323C/D 13/13 PASS; `verify:release` PASS (legado 254/254, moderna 815/815, build, `qa:all`, smoke, V289 4/4); XLSX sintético 2/2 PASS; `git diff --check` PASS. Revisão independente: BLOCKER=0, MAJOR=0, MINOR=0 para este delta.
-- Próximo: commit/push autorizado, esperar CI e Preview para o HEAD exato; então solicitar login QA isolado e repetir uma única tentativa de export para identificar a etapa. Sem import, restore real, edição, escrita ou merge.
+- Uma tentativa isolada de exportação no Preview autenticado falhou antes de produzir arquivo. A interface exibiu mensagem genérica; nenhum dado foi alterado. Nenhuma informação financeira foi copiada para esta documentação. O Preview retornou `BACKUP_EXPORT_VALIDATION_FAILED`. A validação recusou o backup; status/razão específicos ainda não foram expostos por essa versão. A causa raiz permanece desconhecida.
+- Ajuste local em `index.html`: o erro de geração exibe somente códigos de etapa e status/razões enumerados, além de domínio canônico opcional; texto bruto, identificadores e payloads não são expostos. Testes VM cobrem a sanitização.
+- Baseline em `e5809c4`: `verify:release` PASS (legado 254/254, moderna 815/815, build, `qa:all`, smoke, V289 4/4) e XLSX sintético 2/2 PASS. Delta diagnóstico atual: V323C/D 14/14 PASS, build estático PASS, `git diff --check` PASS. `verify:release` bloqueado localmente por EPERM ao limpar `modern/dist`; XLSX repetido falhou no carregamento externo SheetJS/SRI antes dos asserts. CI ainda precisa validar este delta. Revisão independente: BLOCKER=0, MAJOR=0; MINOR=1 (allowlists exigem atualização explícita quando surgirem novos códigos legítimos).
+- Próximo: publicar o delta autorizado, aguardar CI e Preview no HEAD exato; então solicitar login QA isolado para uma tentativa somente de export que capte a razão sanitizada. Sem import, restore real, edição, escrita ou merge.
 - `BLOCKER=1` até backup real íntegro obtido e validado; `MAJOR=0`; `REAL_WRITES=0`; `REAL_IMPORT=false`; `READY_FOR_FIRST_REAL_IMPORT=false`.
 
 ## V323 — correção do detector e reconciliação somente leitura (2026-10-05)

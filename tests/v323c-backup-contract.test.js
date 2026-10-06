@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const vm = require('node:vm');
 const Backup = require('../backup-portability.js');
 const Persistence = require('../persistence-core.js');
 const PublicEvents = require('../public-events-store.js');
@@ -259,8 +260,30 @@ test('V323D export reports safe pipeline stages without logging payload errors',
   assert.match(download, /DOWNLOAD_TRIGGER_FAILED/);
   assert.match(download, /__BACKUP_EXPORT_ERROR__/);
   assert.match(download, /safeCodes\.includes\(reportedCode\)\?reportedCode:'BACKUP_EXPORT_UNKNOWN'/);
-  assert.match(download, /Nenhum dado foi alterado.*\$\{code\}/);
+  assert.match(download, /safeBackupValidationDiagnostic\(diagnostic\?\.validation\)/);
+  assert.match(download, /Nenhum dado foi alterado.*'\+code\+detail\+'/);
   assert.doesNotMatch(generation + download, /debugError\([^\n]*error\s*\)/);
+});
+
+test('V323D validation failure detail is reduced to safe status, reason, and known domain', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const start = html.indexOf('function safeBackupValidationDiagnostic(validation){');
+  const end = html.indexOf('async function backupPortabilityPayload(', start);
+  assert.ok(start >= 0 && end > start, 'safe validation diagnostic helper exists');
+  const context = {};
+  vm.runInNewContext(html.slice(start, end) + '\nthis.safeBackupValidationDiagnostic=safeBackupValidationDiagnostic; this.recordBackupExportError=recordBackupExportError;', context);
+  context.window={};
+  context.recordBackupExportError('VALIDATION_FAILED',{status:'CORRUPT',error:'CONTENT_INVENTORY_MISMATCH'});
+  assert.deepEqual(JSON.parse(JSON.stringify(context.window.__BACKUP_EXPORT_ERROR__)),{code:'BACKUP_EXPORT_VALIDATION_FAILED',stage:'VALIDATION_FAILED',validation:{status:'CORRUPT',reason:'CONTENT_INVENTORY_MISMATCH'}});
+  const partial = JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'PARTIAL', error: 'MISSING_DOMAIN:assets' })));
+  assert.deepEqual(partial, { status: 'PARTIAL', reason: 'MISSING_DOMAIN', domain: 'assets' });
+  assert.deepEqual(JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'CORRUPT', error: 'INVALID_DOMAIN_MANIFEST' }))), { status: 'CORRUPT', reason: 'INVALID_DOMAIN_MANIFEST' });
+  const unknown = JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'UNSUPPORTED_TYPE', error: 'UNSUPPORTED_TYPE:assets:private-custom-type' })));
+  assert.deepEqual(unknown, { status: 'UNSUPPORTED_TYPE', reason: 'UNSUPPORTED_TYPE', domain: 'assets' });
+  const malformed = JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'sensitive', error: 'COUNT_MISMATCH:wallet-id-private' })));
+  assert.deepEqual(malformed, { status: 'UNKNOWN', reason: 'COUNT_MISMATCH' });
+  const injected = JSON.parse(JSON.stringify(context.safeBackupValidationDiagnostic({ status: 'PARTIAL', reason: 'MISSING_DOMAIN:private-id', domain: 'private-id' })));
+  assert.deepEqual(injected, { status: 'PARTIAL', reason: 'UNKNOWN' });
 });
 
 test('V323D large synthetic portfolio exports and restores in isolated memory', async () => {

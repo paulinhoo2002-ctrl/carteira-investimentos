@@ -2,9 +2,9 @@
 
 ## V323D — checkpoint atual do exportador (2026-10-06)
 
-Uma tentativa somente de exportação foi executada no Preview autenticado da PR #446 e falhou antes de produzir arquivo. A interface mostrou apenas a mensagem genérica; nenhum dado foi alterado e nenhum conteúdo financeiro foi incluído em logs de missão ou documentação. A etapa exata não foi visível nessa versão do Preview, então a causa raiz continua desconhecida.
+Uma tentativa somente de exportação foi executada no Preview autenticado da PR #446 e falhou antes de produzir arquivo. A interface mostrou apenas a mensagem genérica; nenhum dado foi alterado e nenhum conteúdo financeiro foi incluído em logs de missão ou documentação. A versão apresentou `BACKUP_EXPORT_VALIDATION_FAILED`; o payload foi recusado pela etapa de validação. Ela não expôs o status/razão específicos, então a causa raiz permanece desconhecida.
 
-No HEAD local baseado em `c0ea758ecef88070a40b38c18f4bb7b34eaffde9`, o exportador passa a mostrar somente código de etapa de allowlist fixa para falhas de snapshot/manifesto/validação; código fora da lista vira `BACKUP_EXPORT_UNKNOWN`. Não expõe exceção bruta nem payload. Testes focados V323C/D 13/13, `verify:release` (legacy 254/254, modern 815/815, `qa:all`, smoke, V289 4/4), XLSX sintético 2/2 e revisão independente (BLOCKER=0, MAJOR=0, MINOR=0 para o delta) passaram. O HEAD publicado/CI/Preview deste ajuste ainda estão pendentes.
+No HEAD local baseado em `e5809c472a04806af1d6b71765b14954dd5284ba`, o exportador reduz falhas a códigos de etapa, status/razões enumerados e domínio canônico opcional. Erros brutos, identificadores e payloads não são expostos; desconhecidos viram `UNKNOWN`. Testes V323C/D 14/14 e build estático passam. `verify:release` local parou por EPERM ao limpar `modern/dist`; XLSX não carregou SheetJS externo (SRI) antes dos asserts. O HEAD `e5809c4` tinha baseline verde nesses gates, mas CI do novo delta ainda é necessário. Revisão independente: BLOCKER=0, MAJOR=0, MINOR=1 (novos códigos legítimos exigem atualizar allowlists).
 
 Próximo: publicar o ajuste autorizado, aguardar CI e Preview no SHA exato, e então pedir novo login QA isolado para uma tentativa somente de export. Nenhum import, restore real, edição, escrita ou merge. `BLOCKER=1` até backup real validado; `REAL_WRITES=0`; `REAL_IMPORT=false`; `MERGE=false`.
 
