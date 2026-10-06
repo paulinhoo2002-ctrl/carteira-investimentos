@@ -385,6 +385,74 @@ test('pagina readonly renderiza resumo, lista e estado vazio sem botao em modo e
   }
 });
 
+test('evolução mensal expõe contexto de leitura e diferencia desconhecido, parcial e indisponível', async () => {
+  const viteServer = await createServer({
+    configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
+    logLevel: 'error',
+    server: { middlewareMode: true },
+  });
+
+  try {
+    const { IncomeReadonlyPage } = await viteServer.ssrLoadModule('/src/features/income/IncomeReadonlyPage.tsx');
+    const base = createSnapshot();
+    const unknown = createSnapshot({
+      summary: { totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 0 },
+      items: [],
+    });
+    const partial = createSnapshot({
+      summary: { totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 1 },
+      items: [{ ...base.items[0], receivedValue: null }],
+    });
+    const unavailable = createSnapshot({
+      summary: { totalReceived: 0, monthTotal: 0, yearTotal: 0, averageMonthly: 0, paymentCount: 0 },
+      items: [],
+    });
+    const render = (snapshot) => renderToStaticMarkup(
+      React.createElement(IncomeReadonlyPage, { adapter: createAdapter(snapshot) }),
+    );
+    const unknownHtml = render(unknown);
+    const partialHtml = render(partial);
+    const unavailableHtml = render(unavailable);
+
+    assert.match(unknownHtml, /data-state="UNKNOWN"/);
+    assert.match(partialHtml, /data-state="PARTIAL"/);
+    assert.match(unavailableHtml, /data-state="UNAVAILABLE"/);
+    assert.match(unknownHtml, /Período: últimos seis meses/);
+    assert.match(unknownHtml, /Snapshot gerado em/);
+    assert.match(partialHtml, /total mensal não foi confirmado/i);
+    assert.match(unavailableHtml, /menos de dois períodos conhecidos/i);
+  } finally {
+    await viteServer.close();
+  }
+});
+
+test('sparkline em SVG usa coordenadas numéricas válidas no viewBox', async () => {
+  const viteServer = await createServer({
+    configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
+    logLevel: 'error',
+    server: { middlewareMode: true },
+  });
+
+  try {
+    const { IncomeReadonlyPage } = await viteServer.ssrLoadModule('/src/features/income/IncomeReadonlyPage.tsx');
+    const base = createSnapshot();
+    const snapshot = createSnapshot({
+      items: [
+        { ...base.items[0], paymentDate: '2026-05-15', receivedValue: 10 },
+        { ...base.items[1], paymentDate: '2026-06-15', receivedValue: 20 },
+      ],
+    });
+    const html = renderToStaticMarkup(
+      React.createElement(IncomeReadonlyPage, { adapter: createAdapter(snapshot) }),
+    );
+    const points = html.match(/<polyline[^>]* points="([^"]+)"/)?.[1];
+
+    assert.match(points ?? '', /^\d+(?:\.\d+)?,\d+(?:\.\d+)?(?:\s\d+(?:\.\d+)?,\d+(?:\.\d+)?)+$/);
+  } finally {
+    await viteServer.close();
+  }
+});
+
 test('pagina readonly usa controller real quando presente e preserva ultimo snapshot valido', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),

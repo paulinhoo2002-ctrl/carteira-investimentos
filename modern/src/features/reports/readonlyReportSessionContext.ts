@@ -1,5 +1,6 @@
 import * as readonlyReportPageContractModule from '../../../../readonly-report-page-contract.js';
 import type { ModernPageId } from '../../types/navigation.mjs';
+import { MODERN_PAGES } from '../../types/navigation.mjs';
 
 export interface ReadonlyReportSessionContext {
   readonly pageId: ModernPageId;
@@ -18,9 +19,19 @@ const readonlyReportPageContract =
 const resolvedReadonlyReportPageContract = readonlyReportPageContract.getReadonlyReportPageContract?.(
   readonlyReportPageContract,
 );
+const modernPageIds = new Set(MODERN_PAGES.map((page) => page.id));
 
 function normalizePageId(value: string | null, fallback: ModernPageId): ModernPageId {
-  return resolvedReadonlyReportPageContract?.normalizeReadonlyReportPageId(value, fallback) ?? 'reports';
+  try {
+    const normalizedByContract = resolvedReadonlyReportPageContract?.normalizeReadonlyReportPageId(value, fallback);
+    if (normalizedByContract && modernPageIds.has(normalizedByContract)) return normalizedByContract;
+  } catch {
+    // Keep valid modern routes available if the shared contract module interop fails.
+  }
+
+  const requestedPageId = String(value ?? '').trim();
+  if (modernPageIds.has(requestedPageId as ModernPageId)) return requestedPageId as ModernPageId;
+  return modernPageIds.has(fallback) ? fallback : 'reports';
 }
 
 export function readReadonlyReportSessionContext(

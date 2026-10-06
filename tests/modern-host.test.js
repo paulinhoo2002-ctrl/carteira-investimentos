@@ -107,7 +107,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /readReadonlyReportSessionContext/);
-  assert.match(hostTsx, /buildReadonlyReportSessionSearch/);
+  assert.match(hostTsx, /createReadonlyReportSessionHistory/);
+  assert.match(hostTsx, /routeHistory\?\.navigate/);
   assert.match(hostTsx, /createReportsRefreshController/);
   assert.match(hostTsx, /createNullReportsSource/);
   assert.match(hostTsx, /strictSourceWiring/);
@@ -127,6 +128,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /createHostExperimentalAssets/);
   assert.match(hostTsx, /experimentalAssets/);
   assert.match(hostTsx, /createModernReportsRuntime/);
+  assert.match(hostTsx, /import \{ createModernReportsRuntime \} from '\.\/bootstrap\/modernReportsRuntime'/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /AppComponent: App/);
   assert.match(hostTsx, /reportsRefreshController/);
@@ -180,6 +182,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(appTsx, /contributionsAdapter: ReadOnlyContributionsAdapter/);
   assert.match(appTsx, /initialPageId\?: ModernPageId/);
   assert.match(appTsx, /onActivePageIdChange\?: \(pageId: ModernPageId\) => void/);
+  assert.match(appTsx, /navigation\.subscribe\(setActivePageId, initialPageId\)/);
   assert.match(appTsx, /ContributionsReadonlyPage/);
   assert.match(mainTsx, /createModernContributionsRuntime/);
   assert.match(mainTsx, /contributionsAdapter/);

@@ -36446,13 +36446,16 @@ function mobileMenuDrawer(){
   </div>`;
 }
 function go(t){
+  return goInternal(t,true);
+}
+function goInternal(t,persistNavigation){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
   if(t==='assets') t='ativos';
   if(t==='analise'){
     S.tab='analise';
     S.mobileMenuOpen=false;
     S.mobileTopMenuOpen=false;
-    save();
+    if(persistNavigation) save();
     render();
     return 0;
   }
@@ -36473,13 +36476,22 @@ function go(t){
   S.mobileTopMenuOpen=false;
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
-  if(t!=='importacao' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) save();
+  if(persistNavigation && t!=='importacao' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) save();
   render();
-  if(t==='dividendos' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) runAutoProventosGratis('tab');
+  if(persistNavigation && t==='dividendos' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
 
 // Busca global somente em memoria: os registros continuam vindo das fontes oficiais.
-const PORTFOLIO_SEARCH_GROUPS={asset:'Ativos',rf:'Renda Fixa',movement:'Movimentações',dividend:'Dividendos',goal:'Metas',audit:'Auditoria',analysis:'Análise'};
+const PORTFOLIO_SEARCH_GROUPS={navigation:'Navegação',asset:'Ativos',rf:'Renda Fixa',movement:'Movimentações',dividend:'Dividendos',goal:'Metas',audit:'Auditoria',analysis:'Análise'};
+const PORTFOLIO_SEARCH_COMMANDS=[
+  {kind:'navigation',id:'nav-dashboard',title:'Visão geral',meta:'Abrir a página inicial da carteira',fields:['visão geral','visao geral','início','inicio','carteira','dashboard','abrir visão geral'],route:'dashboard',action:'Abrir seção'},
+  {kind:'navigation',id:'nav-assets',title:'Ativos',meta:'Abrir a lista de ativos',fields:['ativos','ações','acoes','fundos','abrir ativos'],route:'ativos',action:'Abrir seção'},
+  {kind:'navigation',id:'nav-fixed-income',title:'Renda Fixa',meta:'Abrir posições de renda fixa',fields:['renda fixa','cdb','lci','lca','tesouro','abrir renda fixa'],route:'renda-fixa',action:'Abrir seção'},
+  {kind:'navigation',id:'nav-contributions',title:'Aportes',meta:'Abrir aportes e movimentações',fields:['aportes','movimentações','movimentacoes','abrir aportes'],route:'aportes',action:'Abrir seção'},
+  {kind:'navigation',id:'nav-goals',title:'Metas',meta:'Abrir metas da carteira',fields:['metas','objetivos','abrir metas'],route:'metas',action:'Abrir seção'},
+  {kind:'navigation',id:'nav-analysis',title:'Análise',meta:'Abrir análise da carteira',fields:['análise','analise','exposição','exposicao','abrir análise','abrir analise'],route:'analise',action:'Abrir seção'},
+  {kind:'navigation',id:'nav-audit',title:'Auditoria',meta:'Abrir pontos de conferência',fields:['auditoria','conferências','conferencias','qualidade dos dados','abrir auditoria'],route:'auditoria',action:'Abrir seção'},
+];
 function portfolioSearchText(value){
   return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
@@ -36503,7 +36515,7 @@ function portfolioSearchAssetForMovement(move){
   return byTicker.length===1 ? byTicker[0] : null;
 }
 function portfolioSearchBuildEntries(){
-  const entries=[];
+  const entries=PORTFOLIO_SEARCH_COMMANDS.map(entry=>({...entry}));
   entries.push({kind:'analysis',id:'analise',title:'Análise da carteira',meta:'Exposição, desempenho e pontos de atenção',fields:['analise','análise','exposição','desempenho','concentração'],route:'analise',action:'Abrir Análise',source:null});
   (S.assets||[]).forEach(asset=>{
     const id=String(asset?.id??'').trim();
@@ -36620,6 +36632,10 @@ function portfolioSearchMove(delta){
   requestAnimationFrame(()=>document.getElementById('portfolio-search-input')?.focus());
 }
 function portfolioSearchOpenEntry(entry){
+  if(entry.kind==='navigation'){
+    goInternal(entry.route,false);
+    return;
+  }
   if(entry.kind==='asset' || entry.kind==='rf'){
     go(entry.route);
     return;

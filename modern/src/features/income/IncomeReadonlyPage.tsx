@@ -79,7 +79,9 @@ function Sparkline({ data, color = 'var(--color-accent-info)' }: { data: readonl
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min || 1;
-  const points = data.map((value, i) => `${(i / (data.length - 1)) * 100}% ${100 - ((value - min) / range) * 100}%`).join(', ');
+  const points = data
+    .map((value, i) => `${((i / (data.length - 1)) * 100).toFixed(2)},${(26 - ((value - min) / range) * 22).toFixed(2)}`)
+    .join(' ');
   return (
     <svg
       className="overview-sparkline"
@@ -211,13 +213,25 @@ function IncomeReadonlyPageContent({
 
       <div className="income-grid">
         <DashboardSection title="Evolução mensal" subtitle="Últimos 6 meses">
-          <ChartContainer summary={snapshot.summary.monthTotal != null ? `Mês atual: ${formatReadonlyCurrency(snapshot.summary.monthTotal)}` : undefined}>
+          <ChartContainer
+            title="Evolução mensal de proventos"
+            summary={`Período: últimos seis meses. Snapshot gerado em ${formatDateShort(snapshot.generatedAt)}. ${snapshot.summary.monthTotal != null ? `Mês atual: ${formatReadonlyCurrency(snapshot.summary.monthTotal)}` : hasItems ? 'O total mensal não foi confirmado.' : 'O total mensal não está identificado.'}`}
+          >
             {monthlyIncomeData.length >= 2 ? (
               <div className="income-sparkline-wrapper">
                 <Sparkline data={monthlyIncomeData} color="var(--color-accent-info)" />
               </div>
             ) : (
-              <EmptyState title="Histórico mensal indisponível" body="Não há dados suficientes para exibir a evolução." size="compact" />
+              <EmptyState
+                title={hasItems ? 'Histórico mensal parcial' : 'Histórico mensal desconhecido'}
+                body={snapshot.summary.monthTotal == null && hasItems
+                  ? 'Há registros, mas o total mensal não foi confirmado. A evolução não será estimada.'
+                  : snapshot.summary.monthTotal == null
+                    ? 'Não há dados identificados para confirmar o histórico mensal.'
+                    : 'Menos de dois períodos conhecidos para exibir a evolução.'}
+                status={snapshot.summary.monthTotal == null ? (hasItems ? 'PARTIAL' : 'UNKNOWN') : 'UNAVAILABLE'}
+                size="compact"
+              />
             )}
           </ChartContainer>
         </DashboardSection>

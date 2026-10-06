@@ -48,6 +48,7 @@ browserTest('modern host smoke navigation', async () => {
       await page.waitForTimeout(100);
       await assert.equal(await page.locator('.assets-report__refresh-button').count(), 1);
       await assert.equal(await page.locator('[aria-current="page"] .sidebar__item-label').textContent(), 'Relatorios');
+
     });
 
     await runViewportScenario(browser, { width: 390, height: 844 }, async (page) => {
@@ -84,6 +85,48 @@ browserTest('modern host smoke navigation', async () => {
       await assert.equal(await page.locator('.assets-report__mobile-list').isVisible(), true);
       await assert.equal(await page.locator('.assets-report__mobile-card').count(), 3);
       await assert.equal(await menuButton.getAttribute('aria-expanded'), 'false');
+    });
+  } finally {
+    await browser.close();
+  }
+});
+
+browserTest('modern host deep links restore route and keep browser history', async () => {
+  const executablePath = resolveBrowserExecutable();
+  assert.ok(executablePath, 'Chrome or Edge executable not found for host smoke test');
+  const { chromium } = await import('playwright-core');
+  const browser = await chromium.launch({ executablePath, headless: true });
+
+  try {
+    await runViewportScenario(browser, { width: 1366, height: 768 }, async (page) => {
+      const deepLink = new URL(page.url());
+      deepLink.searchParams.set('readonlyReportPage', 'assets');
+      deepLink.searchParams.set('v325Keep', 'qa');
+      deepLink.hash = 'history-check';
+      await page.goto(deepLink.toString(), { waitUntil: 'domcontentloaded' });
+      await page.locator('#page-assets').waitFor();
+      assert.equal(new URL(page.url()).searchParams.get('v325Keep'), 'qa');
+      assert.equal(new URL(page.url()).hash, '#history-check');
+
+      await page.locator('.sidebar__item').filter({ hasText: 'Proventos' }).first().click();
+      await page.locator('#page-income').waitFor();
+      assert.equal(new URL(page.url()).searchParams.get('readonlyReportPage'), 'provents');
+      assert.equal(new URL(page.url()).searchParams.get('v325Keep'), 'qa');
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.locator('#page-income').waitFor();
+      await page.goBack({ waitUntil: 'domcontentloaded' });
+      await page.locator('#page-assets').waitFor();
+      await page.goForward({ waitUntil: 'domcontentloaded' });
+      await page.locator('#page-income').waitFor();
+
+      const incomeChart = page.locator('.chart-container__wrapper[role="img"]').first();
+      const chartLabel = await incomeChart.getAttribute('aria-labelledby');
+      const chartDescription = await incomeChart.getAttribute('aria-describedby');
+      assert.equal(await page.evaluate((id) => Boolean(id && document.getElementById(id)), chartLabel), true);
+      assert.equal(await page.evaluate((id) => Boolean(id && document.getElementById(id)), chartDescription), true);
+      await page.setViewportSize({ width: 390, height: 844 });
+      const mobileWidth = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+      assert.equal(mobileWidth, true, 'Horizontal overflow at 390px');
     });
   } finally {
     await browser.close();
