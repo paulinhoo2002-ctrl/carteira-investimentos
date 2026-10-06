@@ -72,6 +72,43 @@ test('V323C manifest declares canonical domains and separates empty from missing
   assert.equal((await Backup.previewRestore(partial, {})).restoreAllowed, false);
 });
 
+test('V323E exports persisted application state with canonical settings defaults', async () => {
+  const state = {
+    ...fixtureState(),
+    tab: 'dashboard',
+    divGoal: 0,
+    dashPeriod: 12,
+    dashType: 'all',
+    rentPeriod: 'all',
+    rentType: 'all',
+    rentBench: 'CDI',
+    learnMeta: {}
+  };
+  for (const key of ['hideValues', 'apHistoryOpen', 'apSearch', 'irpfYear', 'irpfStep']) delete state[key];
+
+  const backup = await makeBackup(state);
+  assert.equal((await Backup.verifyBackup(backup)).status, 'VALID');
+  assert.equal(backup.payload.state.hideValues, false);
+  assert.equal(backup.payload.state.apHistoryOpen, false);
+  assert.equal(backup.payload.state.apSearch, '');
+  assert.equal(typeof backup.payload.state.irpfYear, 'number');
+  assert.equal(backup.payload.state.irpfStep, 1);
+
+  const emptyState = {
+    wallets: [], activeWalletId: '', assets: [], aportes: [], proventos: [], rfEvents: [], goals: {},
+    tab: 'dashboard', divGoal: 0, dashPeriod: 12, dashType: 'all', rentPeriod: 'all', rentType: 'all', rentBench: 'CDI', learnMeta: {}
+  };
+  const emptyBackup = await makeBackup(emptyState);
+  assert.equal((await Backup.verifyBackup(emptyBackup)).status, 'VALID');
+  for (const domain of emptyBackup.manifest.domains.filter(item => item.required)) {
+    assert.equal(domain.present, true, domain.name);
+    assert.equal(domain.count, domain.name === 'settings' ? 14 : 0, domain.name);
+  }
+
+  const missingAssets = await makeBackup({ ...emptyState, assets: undefined });
+  assert.equal((await Backup.verifyBackup(missingAssets)).error, 'REQUIRED_DOMAIN_MISSING');
+});
+
 test('V323C rejects future schema and migrates complete supported v1 backups explicitly', async () => {
   const future = await makeBackup();
   future.manifest.schemaVersion = 3;
@@ -194,7 +231,15 @@ test('V323C round-trips corporate events, fixed income, income and transaction p
   };
   const state = fixtureState();
   state.corporateEvents = [corporateEvent];
-  const backup = await makeBackup(state);
+  const clock = () => Date.parse('2026-10-05T12:00:00.000Z');
+  const snapshots = RuntimeStores.emptySnapshotStore(clock);
+  snapshots.snapshots.push(RuntimeStores.normalizeSnapshot({ localDate: '2026-10-04', listedAssetsValue: 10000, fixedIncomeValue: 0, otherAssetsValue: 0, totalPortfolioValue: 10000 }, clock));
+  const flows = RuntimeStores.emptyFlowStore(clock);
+  flows.flows.push(RuntimeStores.normalizeFlow({ date: '2026-10-04', type: 'CONTRIBUTION', amountCents: 1000 }, clock));
+  const backup = await Backup.createBackup({
+    state, config: { divGoal: 0 }, runtime: RuntimeStores.backupSupplement({ snapshots, flows }),
+    createdAt: '2026-10-05T12:00:00.000Z', appVersion: 'v323e-test'
+  });
   const verification = await Backup.verifyBackup(backup);
   assert.equal(verification.status, 'VALID');
   const corporateDomain = backup.manifest.domains.find(item => item.name === 'corporateEvents');
@@ -202,7 +247,7 @@ test('V323C round-trips corporate events, fixed income, income and transaction p
   assert.equal(corporateDomain.count, 1);
   assert.deepEqual(backup.payload.corporateEvents, [corporateEvent]);
   assert.equal(Object.hasOwn(backup.payload.state, 'corporateEvents'), false);
-  assert.equal(backup.manifest.domains.find(item => item.name === 'performance').count, 0);
+  assert.equal(backup.manifest.domains.find(item => item.name === 'performance').count, 2);
 
   const preview = await Backup.previewRestore(backup, {});
   assert.equal(preview.restoreAllowed, true);
@@ -216,6 +261,8 @@ test('V323C round-trips corporate events, fixed income, income and transaction p
   assert.deepEqual(result.store.state.aportes, state.aportes);
   assert.equal(result.store.config.divGoal, 0);
   assert.deepEqual(result.store.runtime, backup.payload.runtime);
+  assert.equal(result.store.runtime.valuationSnapshots.snapshots.length, 1);
+  assert.equal(result.store.runtime.externalCashFlows.flows.length, 1);
 });
 
 test('V323C isolated apply refuses invalid backups and leaves store unchanged', async () => {
@@ -227,9 +274,17 @@ test('V323C isolated apply refuses invalid backups and leaves store unchanged', 
   assert.deepEqual(result.store, initial);
 });
 
-test('V323C exports the public corporate event cache only when its stored envelope is valid', () => {
+test('V323C distinguishes an empty public corporate event cache from a missing one', async () => {
   const storage = PublicEvents.createMemoryStorage();
   assert.equal(PublicEvents.readForBackup(storage).present, false);
+  PublicEvents.write(storage, { version: PublicEvents.VERSION, updatedAt: '2026-10-05T12:00:00.000Z', events: [], quotes: {} });
+  const empty = PublicEvents.readForBackup(storage);
+  assert.equal(empty.present, true);
+  assert.deepEqual(empty.events, []);
+  const emptyBackup = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 0 }, corporateEvents: empty.events });
+  const emptyDomain = emptyBackup.manifest.domains.find(item => item.name === 'corporateEvents');
+  assert.deepEqual({ present: emptyDomain.present, count: emptyDomain.count }, { present: true, count: 0 });
+
   const snapshot = {
     version: PublicEvents.VERSION,
     updatedAt: '2026-10-05T12:00:00.000Z',

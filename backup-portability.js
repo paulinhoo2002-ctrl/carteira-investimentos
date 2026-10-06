@@ -22,6 +22,7 @@
     const PersistenceCore = typeof require === 'function' ? require('./persistence-core.js') : globalThis.PersistenceCore;
     function runtimeStores() { return typeof require === 'function' ? require('./portfolio-runtime-stores.js') : globalThis.PortfolioRuntimeStores; }
     const SETTING_KEYS = ['tab', 'divGoal', 'hideValues', 'apHistoryOpen', 'apSearch', 'dashPeriod', 'dashType', 'rentPeriod', 'rentType', 'rentBench', 'irpfYear', 'irpfStep', 'learnMeta'];
+    const TRANSIENT_SETTING_KEYS = ['hideValues', 'apHistoryOpen', 'apSearch', 'irpfYear', 'irpfStep'];
     const DOMAIN_SPECS = [
       { name: 'portfolio', version: '1', required: true, present: ({ state }) => Array.isArray(state?.wallets) && typeof state?.activeWalletId === 'string', count: ({ state }) => state.wallets.length },
       { name: 'assets', version: '1', required: true, present: ({ state }) => Array.isArray(state?.assets), count: ({ state }) => state.assets.length },
@@ -81,7 +82,12 @@
   }
   function sourceState(input) {
     const state = input?.state ?? input ?? {};
-    return normalizeFinancialDates(normalize(state, { stripSensitive: true }));
+    const backupState = { ...state };
+    const storedDefaults = PersistenceCore?.buildStoredState?.(state);
+    for (const key of TRANSIENT_SETTING_KEYS) {
+      if (!Object.prototype.hasOwnProperty.call(backupState, key) && storedDefaults) backupState[key] = storedDefaults[key];
+    }
+    return normalizeFinancialDates(normalize(backupState, { stripSensitive: true }));
   }
   const DATE_ONLY_FIELDS = new Set(['date', 'eventDate', 'effectiveDate']);
   function daysInMonth(year, month) { return new Date(Date.UTC(year, month, 0)).getUTCDate(); }
