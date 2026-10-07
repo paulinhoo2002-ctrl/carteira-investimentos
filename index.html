@@ -7548,7 +7548,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .assets-premium-shell .ag-left{grid-column:1;grid-row:1;min-width:0;width:auto;flex:initial}
   .assets-premium-shell .ag-open{grid-column:2;grid-row:1}
   .assets-premium-shell .ag-stats{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;min-width:0;flex:initial}
-  .assets-premium-shell .ag-stat:first-child,.assets-premium-shell .ag-stat:nth-child(5){display:none}
+  .assets-premium-shell .ag-stat:first-child,.assets-premium-shell .ag-stat:nth-child(5){display:block}
   .assets-premium-shell .ag-k{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .assets-premium-shell .ag-v{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 }
@@ -31975,25 +31975,27 @@ function ativos(){
           <div class="acc-sub">${typeCount} ativo${typeCount !== 1 ? 's' : ''} ${reviewFilterActive ? ' · filtrados' : ''}</div>
         </div>
       </div>
-      <div>
+      <div class="ag-stats">
+        <div class="ag-stat">
         <div class="acc-metric-label ag-k">Investido</div>
         <div class="acc-metric-value">${fmt(typeInvested)}</div>
-      </div>
-      <div>
+        </div>
+        <div class="ag-stat">
         <div class="acc-metric-label ag-k">Atual</div>
         <div class="acc-metric-value">${typeTotalValue == null ? '—' : fmt(typeTotalValue)}</div>
-      </div>
-      <div>
+        </div>
+        <div class="ag-stat">
         <div class="acc-metric-label ag-k">Resultado</div>
         <div class="acc-metric-value ${resultTone}">${typeResult == null ? '—' : `${resultPrefix}${fmt(typeResult)}`}</div>
-      </div>
-      <div>
+        </div>
+        <div class="ag-stat">
         <div class="acc-metric-label ag-k">Rentab.</div>
         <div class="acc-metric-value ${resultTone}">${typeReturn == null ? '—' : `${resultPrefix}${fmtP(typeReturn)}`}</div>
-      </div>
-      <div>
+        </div>
+        <div class="ag-stat">
         <div class="acc-metric-label ag-k">Peso</div>
         <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2)}%`}</div>
+        </div>
       </div>
       <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
     `;
