@@ -19,6 +19,13 @@
 - A evidência de certificação só vale para o SHA e estado efetivamente
   testados; consulte `PROJECT_CONTINUITY_POLICY.md` para a regra canônica de
   frescor e recuperação, sem duplicar seus contratos aqui.
+- Ativos deve preservar no desktop as cinco métricas de classe (investido,
+  atual, resultado, rentabilidade e peso) dentro do cartão; a tabela pode usar
+  rolagem horizontal local. Em mobile, recompor campos em cards expansíveis,
+  sem ocultar informação financeira essencial.
+- Alvos primários de UI: notebook 1366x768 e 1440x900; mobile 390x844, com
+  cobertura adicional em 360x800 e 430x932. Capturas devem usar fixtures
+  sintéticas e ficar fora do Git por padrão.
 
 #
 # V317 — certificação sintética das ações financeiras (2026-10-04)
