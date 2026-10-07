@@ -21,6 +21,71 @@ test('unknown fixed income is not treated as manual', () => assert.equal(Trust.f
 test('class coverage counts known and unknown', () => { const c = Trust.classificationCoverage([asset(), asset({ id: 'a2', type: '' })]); assert.equal(c.className.knownCount, 1); assert.equal(c.className.unknownCount, 1); });
 test('sector coverage preserves unknown', () => { const c = Trust.classificationCoverage([asset({ sector: '' })]); assert.equal(c.sector.unknownCount, 1); });
 test('issuer coverage preserves unknown', () => { const c = Trust.classificationCoverage([asset({ issuer: '' })]); assert.equal(c.issuer.unknownCount, 1); });
+test('classification value coverage stays unknown when any position value is missing', () => {
+  const coverage = Trust.classificationCoverage([
+    asset({ id: 'known-value', type: 'Ação', current_price: 100 }),
+    asset({ id: 'missing-value', type: 'FII', current_price: null }),
+  ]).className;
+  assert.equal(coverage.knownValue, 100);
+  assert.equal(coverage.unknownValue, null);
+  assert.equal(coverage.coverageValue, null);
+});
+test('classification amount stays unavailable when every position value is unknown', () => {
+  const coverage = Trust.classificationCoverage([asset({ current_price: null })]).className;
+  assert.equal(coverage.knownValue, null);
+  assert.equal(coverage.coverageValue, null);
+});
+test('canonical zero fallback does not hide a missing quote for a held position', () => {
+  const row = Trust.build({ assets: [asset({ qty: 2, current_price: null, currentValue: 0 })] }).assets[0];
+  assert.equal(row.value, null);
+  assert.equal(row.valueStatus, 'UNKNOWN');
+});
+test('fixed-income value without explicit valuation remains unknown', () => {
+  const row = Trust.build({ assets: [asset({ type: 'Renda Fixa', currentValue: 0, hasExplicitCurrent: false })] }).assets[0];
+  assert.equal(row.value, null);
+  assert.equal(row.valueStatus, 'UNKNOWN');
+});
+test('missing valuation overrides a stale legitimate-zero tag and institution is not an issuer', () => {
+  const row = Trust.build({ assets: [asset({
+    type: 'Ação', qty: 2, current_price: null, currentValue: 0,
+    valueStatus: 'LEGITIMATE_ZERO', institution: 'Custodiante X', issuer: '',
+  })] }).assets[0];
+  assert.equal(row.value, null);
+  assert.equal(row.valueStatus, 'UNKNOWN');
+  assert.equal(row.institution, 'Custodiante X');
+  assert.equal(row.issuer, '');
+});
+test('institution coverage does not infer institution from issuer', () => {
+  const row = Trust.build({ assets: [asset({ issuer: 'Banco emissor', institution: '' })] }).coverage;
+  assert.equal(row.issuer.knownCount, 1);
+  assert.equal(row.institution.knownCount, 0);
+  assert.equal(row.institution.unknownCount, 1);
+});
+test('completeness distinguishes complete, partial, unknown and confirmed empty', () => {
+  const coverage = (expectedCount, availableCount, emptyConfirmed = false) => Trust.completenessState({
+    expectedCount, availableCount, sourceAvailable: true, emptyConfirmed,
+  });
+  assert.equal(coverage(2, 2), 'COMPLETE');
+  assert.equal(coverage(2, 1), 'PARTIAL');
+  assert.equal(coverage(2, 0), 'UNKNOWN');
+  assert.equal(coverage(0, 0), 'UNKNOWN');
+  assert.equal(coverage(0, 0, true), 'COMPLETE');
+  assert.equal(Trust.completenessState({ expectedCount: '', availableCount: 0, sourceAvailable: true, emptyConfirmed: true }), 'UNKNOWN');
+  assert.equal(coverage(2, 1.5), 'UNKNOWN');
+  assert.equal(Trust.completenessState({ expectedCount: 1, availableCount: 1, sourceAvailable: false }), 'UNKNOWN');
+  assert.equal(Trust.completenessState({ expectedCount: 0, availableCount: 0, applicable: false }), 'NOT_APPLICABLE');
+});
+test('confidence states keep available, partial, stale and uncalculated distinct', () => {
+  assert.equal(Trust.confidenceState({ available: true }), 'AVAILABLE');
+  assert.equal(Trust.confidenceState({ available: true, partial: true }), 'PARTIAL');
+  assert.equal(Trust.confidenceState({ available: true, stale: true }), 'STALE');
+  assert.equal(Trust.confidenceState({ calculated: false }), 'NOT_CALCULATED');
+  assert.equal(Trust.confidenceState({ available: false }), 'UNKNOWN');
+});
+test('untrusted legacy verified flag does not assert verification in asset trust state', () => {
+  const row = Trust.build({ assets: [asset({ current_price: 10, quoteUpdatedAt: '2026-09-19T11:00:00Z', verified: true })] }, { now: NOW }).assets[0];
+  assert.equal(row.confidence, 'AVAILABLE');
+});
 test('legitimate zero is distinct from unknown', () => { assert.deepEqual(Trust.valueState({ current: 0 }), { value: 0, status: 'LEGITIMATE_ZERO' }); });
 test('unknown value is not zero', () => { assert.deepEqual(Trust.valueState({ current: null }), { value: null, status: 'UNKNOWN' }); });
 test('cloud connected requires applied snapshot', () => assert.equal(Trust.cloudHealth({ authReady: true, backendReachable: true, snapshotReceived: true, applied: true }).status, 'CONNECTED'));

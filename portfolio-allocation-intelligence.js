@@ -49,10 +49,11 @@
       shareOfClassified:classifiedValue>0?group.value/classifiedValue*100:null
     }));
     const classifiedCount=rows.filter(row=>valueOf(row)!==null && labelOf(row,field)!=='Não classificado').length;
+    const hasKnownValues=rows.some(row=>valueOf(row)!==null);
     return {
       rows:groups,
-      classifiedValue,
-      unclassifiedValue:Math.max(0,totalKnown-classifiedValue),
+      classifiedValue:hasKnownValues?classifiedValue:null,
+      unclassifiedValue:totalKnown===null?null:Math.max(0,totalKnown-classifiedValue),
       classifiedCount,
       coverageCount:rows.length?classifiedCount/rows.length*100:null,
       coverageValue:totalKnown>0?classifiedValue/totalKnown*100:null
@@ -75,18 +76,30 @@
       };
     });
     const knownRows=rows.filter(row=>row.value!==null);
-    const totalKnownValue=knownRows.reduce((sum,row)=>sum+row.value,0);
-    const topRows=sortRows(knownRows).map(row=>({...row,shareOfKnown:totalKnownValue>0?row.value/totalKnownValue*100:null}));
+    const totalKnownValue=knownRows.length?knownRows.reduce((sum,row)=>sum+row.value,0):null;
+    const denominator=totalKnownValue??0;
+    const topRows=sortRows(knownRows).map(row=>({...row,shareOfKnown:denominator>0?row.value/denominator*100:null}));
     const classes=aggregate(rows,'className',totalKnownValue);
     const sectors=aggregate(rows,'sector',totalKnownValue);
     const issuers=aggregate(rows,'issuer',totalKnownValue);
+    const institutions=aggregate(rows,'institution',totalKnownValue);
     const unknownPositionCount=rows.filter(row=>row.value===null).length;
+    const valuationDays=knownRows.map(row=>{
+      const raw=text(row.valuationAsOf);
+      const parsed=raw?Date.parse(raw):NaN;
+      return Number.isFinite(parsed)&&parsed<=Date.now()+86400000?new Date(parsed).toISOString().slice(0,10):null;
+    });
+    const uniqueValuationDays=new Set(valuationDays.filter(Boolean));
+    const valuationAsOf={
+      status:!knownRows.length||valuationDays.some(day=>!day)?'UNKNOWN':uniqueValuationDays.size!==1?'MIXED':unknownPositionCount?'PARTIAL':'COMPLETE',
+      date:knownRows.length>0&&valuationDays.every(Boolean)&&uniqueValuationDays.size===1?uniqueValuationDays.values().next().value:null
+    };
     return {
       rows,
       knownRows:topRows,
       totalKnownValue,
       totalClassifiedValue:classes.classifiedValue,
-      totalUnclassifiedValue:Math.max(0,totalKnownValue-classes.classifiedValue),
+      totalUnclassifiedValue:classes.unclassifiedValue,
       unknownValue:null,
       unknownPositionCount,
       positionCount:rows.length,
@@ -94,12 +107,15 @@
       classes,
       sectors,
       issuers,
+      institutions,
+      valuationAsOf,
       coverage:{
         value:rows.length?knownRows.length/rows.length*100:null,
         valueKnown:totalKnownValue>0?totalKnownValue/totalKnownValue*100:null,
         class:classes,
         sector:sectors,
-        issuer:issuers
+        issuer:issuers,
+        institution:institutions
       }
     };
   }
@@ -112,7 +128,7 @@
   function filterRows(input,filters={}){
     const rows=Array.isArray(input?.rows)?input.rows:prepare(input).rows;
     const matches=(row,field)=>!filters[field]||filters[field]==='all'||text(row[field])===text(filters[field]);
-    return rows.filter(row=>matches(row,'className')&&matches(row,'sector')&&matches(row,'issuer'));
+    return rows.filter(row=>matches(row,'className')&&matches(row,'sector')&&matches(row,'issuer')&&matches(row,'institution'));
   }
 
   function sortRowsBy(input,field='value',direction='desc'){

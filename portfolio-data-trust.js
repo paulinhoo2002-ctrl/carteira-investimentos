@@ -19,6 +19,11 @@
     MISMATCH: 'MISMATCH',
     NOT_COMPARABLE: 'NOT_COMPARABLE',
     PARTIAL_COVERAGE: 'PARTIAL_COVERAGE',
+    COMPLETE: 'COMPLETE',
+    PARTIAL: 'PARTIAL',
+    NOT_APPLICABLE: 'NOT_APPLICABLE',
+    AVAILABLE: 'AVAILABLE',
+    NOT_CALCULATED: 'NOT_CALCULATED',
   });
 
   const text = value => String(value ?? '').trim();
@@ -82,6 +87,25 @@
     return { value, status: 'KNOWN' };
   }
 
+  function completenessState({ expectedCount, availableCount, sourceAvailable, emptyConfirmed = false, applicable = true } = {}) {
+    if (applicable === false) return STATUS.NOT_APPLICABLE;
+    if (sourceAvailable !== true) return STATUS.UNKNOWN;
+    if ([expectedCount, availableCount].some(value => value === null || value === undefined || (typeof value === 'string' && !value.trim()))) return STATUS.UNKNOWN;
+    const expected = finite(expectedCount), available = finite(availableCount);
+    if (expected === null || available === null || !Number.isInteger(expected) || !Number.isInteger(available) || expected < 0 || available < 0 || available > expected) return STATUS.UNKNOWN;
+    if (expected === 0) return emptyConfirmed === true && available === 0 ? STATUS.COMPLETE : STATUS.UNKNOWN;
+    if (available === expected) return STATUS.COMPLETE;
+    return available > 0 ? STATUS.PARTIAL : STATUS.UNKNOWN;
+  }
+
+  function confidenceState({ calculated = true, available, partial = false, stale = false } = {}) {
+    if (calculated === false) return STATUS.NOT_CALCULATED;
+    if (available !== true) return STATUS.UNKNOWN;
+    if (stale === true) return STATUS.STALE;
+    if (partial === true) return STATUS.PARTIAL;
+    return STATUS.AVAILABLE;
+  }
+
   function fixedIncomeStatus(record = {}) {
     const meta = record.currentMeta || record;
     const raw = upper(meta.status || record.trustStatus || meta.classification || meta.benchmarkStatus);
@@ -96,24 +120,26 @@
   }
 
   function classificationCoverage(rows = []) {
-    const dimensions = ['className', 'sector', 'issuer'];
+    const dimensions = ['className', 'sector', 'issuer', 'institution'];
     const result = {};
     dimensions.forEach(field => {
       const known = rows.filter(row => text(row[field] || row[field === 'className' ? 'type' : field]));
       const values = rows.map(row => valueState(row));
-      const knownValue = rows.reduce((sum, row) => {
+      const classifiedValues = rows.reduce((sum, row) => {
         if (!text(row[field] || row[field === 'className' ? 'type' : field])) return sum;
         const state = valueState(row);
-        return state.value === null ? sum : sum + state.value;
-      }, 0);
+        return state.value === null ? sum : { count: sum.count + 1, value: sum.value + state.value };
+      }, { count: 0, value: 0 });
+      const knownValue = classifiedValues.count ? classifiedValues.value : null;
       const totalKnown = values.reduce((sum, state) => state.value === null ? sum : sum + state.value, 0);
+      const valuationComplete = values.every(state => state.value !== null);
       result[field] = {
         knownCount: known.length,
         unknownCount: Math.max(0, rows.length - known.length),
         knownValue,
-        unknownValue: totalKnown > 0 ? Math.max(0, totalKnown - knownValue) : null,
+        unknownValue: valuationComplete && totalKnown > 0 ? Math.max(0, totalKnown - knownValue) : null,
         coverageCount: rows.length ? known.length / rows.length * 100 : null,
-        coverageValue: totalKnown > 0 ? knownValue / totalKnown * 100 : null,
+        coverageValue: valuationComplete && totalKnown > 0 ? knownValue / totalKnown * 100 : null,
       };
     });
     return result;
@@ -122,8 +148,16 @@
   function normalizeAsset(asset = {}, index = 0, options = {}) {
     const freshnessState = freshness(asset, options);
     const trust = provenance(asset);
-    const value = valueState({ current: asset.currentValue ?? asset.current ?? asset.current_price, valueStatus: asset.valueStatus });
     const type = text(asset.type || asset.category || asset.assetClass);
+    const isFixedIncome = Boolean(options.isFixedIncome?.(asset)) || Boolean(asset.isFixedIncome) || /renda fixa|cdb|lci|lca|tesouro|debênture|debenture/i.test(type);
+    const quantity = finite(asset.qty ?? asset.quantity);
+    const currentPrice = asset.current_price;
+    const hasCurrentPrice = currentPrice !== null && currentPrice !== undefined && currentPrice !== '' && Number.isFinite(Number(currentPrice));
+    const missingValuation = asset.hasExplicitCurrent === false || (!isFixedIncome && quantity !== null && quantity > 0 && !hasCurrentPrice);
+    const value = valueState({
+      current: asset.currentValue ?? asset.current ?? asset.current_price,
+      valueStatus: missingValuation ? STATUS.UNKNOWN : asset.valueStatus,
+    });
     return {
       id: text(asset.id) || `asset-${index + 1}`,
       label: text(asset.ticker || asset.name || asset.title) || 'Ativo sem identificação',
@@ -132,13 +166,19 @@
       type,
       className: type,
       sector: text(asset.sector),
-      issuer: text(asset.issuer || asset.fixed_issuer || asset.institution || asset.broker),
+      issuer: text(asset.issuer || asset.fixed_issuer),
+      institution: text(asset.institution || asset.broker || asset.brokerage || asset.custodian),
       value: value.value,
       valueStatus: value.status,
+      confidence: confidenceState({
+        available: value.value !== null,
+        partial: asset.partial === true,
+        stale: freshnessState.status === STATUS.STALE,
+      }),
       quoteSource: sourceOf(asset),
       freshness: freshnessState,
       provenance: trust,
-      isFixedIncome: Boolean(options.isFixedIncome?.(asset)) || /renda fixa|cdb|lci|lca|tesouro|debênture|debenture/i.test(type),
+      isFixedIncome,
       fixedIncomeStatus: fixedIncomeStatus({ ...asset, isFixedIncome: true }),
       raw: asset,
     };
@@ -333,5 +373,5 @@
     });
   }
 
-  return Object.freeze({ STATUS, timestamp, freshness, provenance, valueState, fixedIncomeStatus, classificationCoverage, duplicateDiagnostics, falseZeroDiagnostic, cloudHealth, reconcileValues, reconcileIncome, reconcileTransactions, build, filter });
+  return Object.freeze({ STATUS, timestamp, freshness, provenance, valueState, completenessState, confidenceState, fixedIncomeStatus, classificationCoverage, duplicateDiagnostics, falseZeroDiagnostic, cloudHealth, reconcileValues, reconcileIncome, reconcileTransactions, build, filter });
 });

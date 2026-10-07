@@ -303,6 +303,114 @@ test('V289 representative Dashboard, Ativos and Confiabilidade matrix covers rem
   }
 });
 
+test('V329 trust states render across premium routes on mobile and desktop', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    const states = [
+      { scenario: 'baseline', expected: 'Disponível; verificação não informada' },
+      { scenario: 'verified', expected: 'Disponível; verificação não informada' },
+      { scenario: 'partial', expected: ['Parcial', 'Desconhecida'] },
+      { scenario: 'stale', expected: 'Desatualizada' },
+      { scenario: 'unknown', expected: 'Desconhecida' },
+    ];
+    for (const state of states) {
+      await applyV289VisualFixture(runtime.page, state.scenario === 'verified' ? 'baseline' : state.scenario);
+      if (state.scenario === 'verified') {
+        await runtime.page.evaluate(() => { S.assets[0].verified = true; render(); });
+      }
+      for (const viewport of [{ width: 390, height: 844 }, { width: 1366, height: 768 }]) {
+        await runtime.page.setViewportSize(viewport);
+        for (const route of ['dashboard', 'ativos', 'dividendos', 'patrimonio', 'confiabilidade']) {
+          await setThemeAndRoute(runtime.page, 'dark', route);
+          const layout = await inspectLayout(runtime.page);
+          assert.ok(layout.heading || layout.rootText.length > 20, `${route} rendered no content for ${state.scenario}/${viewport.width}px`);
+          assert.equal(layout.pageOverflow, false, `${route} overflow for ${state.scenario}/${viewport.width}px`);
+          assert.deepEqual(layout.clipped, [], `${route} clipped controls for ${state.scenario}/${viewport.width}px`);
+          if (route === 'confiabilidade') {
+            await runtime.page.locator('#data-trust-diagnostics > summary').click();
+            const details = await runtime.page.locator('#data-trust-diagnostics').innerText();
+            for (const expected of Array.isArray(state.expected) ? state.expected : [state.expected]) {
+              assert.ok(details.includes(expected), 'expected trust state is missing');
+            }
+          }
+        }
+      }
+    }
+    assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
+    assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
+    assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('V329 all-unknown allocation does not render zero totals or an unsupported date', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await runtime.page.evaluate(() => {
+      S.assets = [
+        { id: 'synthetic-known-date', ticker: 'SYN1', type: 'Ação', qty: 2, current_price: 10, current_value: 20, currentValue: 20, quoteUpdatedAt: '2026-10-07' },
+        { id: 'synthetic-missing-date', ticker: 'SYN2', type: 'Ação', qty: 2, current_price: 10, current_value: 20, currentValue: 20, quoteUpdatedAt: '' },
+      ];
+      render();
+    });
+    await setThemeAndRoute(runtime.page, 'dark', 'dashboard');
+    const panel = await runtime.page.evaluate(() => {
+      const element = document.createElement('div');
+      element.innerHTML = dashboardAllocationIntelligencePanel();
+      return element.textContent;
+    });
+    assert.ok(panel.includes('Data-base dos valores: não uniforme ou não informada'));
+    assert.ok(!panel.includes('07/10/2026'));
+    await runtime.page.evaluate(() => {
+      S.assets = [{ id: 'synthetic-all-unknown', ticker: 'SYN3', type: 'Ação', qty: 2, current_price: null, current_value: null, currentValue: null, quoteUpdatedAt: '' }];
+      render();
+    });
+    const refreshed = await runtime.page.evaluate(() => {
+      const element = document.createElement('div');
+      element.innerHTML = dashboardAllocationIntelligencePanel();
+      return element.textContent;
+    });
+    assert.match(refreshed, /Patrimônio conhecido—/);
+    assert.match(refreshed, /Sem classe informada—/);
+    assert.doesNotMatch(refreshed, /R\$\s*0,00/);
+    const compact = await runtime.page.locator('.dashboard-v3-allocation').innerText();
+    assert.ok(compact.includes('Valores atuais indisponíveis.'));
+    assert.ok(compact.includes('Cobertura institucional:'));
+    assert.ok(compact.includes('Data-base dos valores:'));
+    assert.doesNotMatch(compact, /R\$\s*0,00/);
+    assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
+    assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('V329 hide-values mode also hides institutional identities, coverage and dates', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await runtime.page.evaluate(() => {
+      S.assets = [{ id: 'synthetic-private', ticker: 'SYN4', type: 'Ação', qty: 2, current_price: 10, current_value: 20, currentValue: 20, institution: 'Custodiante Sintético', quoteUpdatedAt: '2026-10-07' }];
+      S.hideValues = false;
+      render();
+    });
+    await setThemeAndRoute(runtime.page, 'dark', 'dashboard');
+    const visible = await runtime.page.locator('.dashboard-v3-allocation').innerText();
+    assert.ok(visible.includes('Custodiante Sintético'));
+    assert.ok(visible.includes('Cobertura institucional:'));
+    await runtime.page.evaluate(() => { S.hideValues = true; render(); });
+    const hidden = await runtime.page.locator('.dashboard-v3-allocation').innerText();
+    assert.ok(hidden.includes('Composição oculta'));
+    assert.ok(!hidden.includes('Custodiante Sintético'));
+    assert.ok(!hidden.includes('Cobertura institucional:'));
+    assert.ok(!hidden.includes('07/10/2026'));
+    assert.ok(!hidden.includes('%'));
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
 test('Ativos mantém valor indisponível como desconhecido, nunca como zero', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
   try {
