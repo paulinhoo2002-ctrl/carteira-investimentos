@@ -2,14 +2,14 @@
 
 ## V331 — refinamento local premium (2026-10-07)
 
-- PR #453 V330 foi integrada por squash em `main` no merge SHA `cefc725f2378648c29593b27399a2f9bf2656db7`; CI pós-merge passou em Build/test, Auth+Firestore Emulator, V289 visual e Vercel. #454 (documentação) e #455 (produto) permanecem OPEN/DRAFT; ramos dependentes estão sendo atualizados para `main` sem merge.
+- PR #453 V330 foi integrada por squash em `main` no merge SHA `cefc725f2378648c29593b27399a2f9bf2656db7`; CI pós-merge passou em Build/test, Auth+Firestore Emulator, V289 visual e Vercel. PR #454 está OPEN/DRAFT sobre `main` no HEAD `f4de4ef744f6b4247f4ef9ebab9133d2e516efd7`; #455 está OPEN/DRAFT sobre #454 no HEAD `e43c2e82af1ff24a2aa953140b01977a27dcae3c`. Vercel Preview dos dois HEADs está READY; não há workflow GitHub Actions associado a esses SHAs. Nenhuma dessas PRs foi mesclada.
 - Correção visual: Ativos agora agrupa as cinco métricas de classe no contêiner responsivo já previsto pelo CSS; todos os valores ficam visíveis dentro do cartão entre 768 e 1440 px. A tabela completa mantém rolagem local e os cards mobile continuam detalhando os campos.
 - Capturas sintéticas de Dashboard, Ativos desktop/mobile, Dividendos desktop/mobile, Patrimônio, Aportes, Metas, Rentabilidade, Rebalancear e Relatórios em `.qa-state/v331-premium-refinement/` (ignorado pelo Git); nenhum dado pessoal ou valor de benchmark foi usado como verdade financeira.
 - `npm ci` autorizado executado nesta worktree; `package.json` e lockfile sem alterações. `npm run verify:release` PASS após o build moderno, incluindo legado, moderno, V330, V84, QA all, checks de acessibilidade Axe e visual 14/14. `git diff --check` PASS.
-- Push normal e Draft PRs concluídos, sem merge. Checks Vercel dos dois PRs PASS; nenhuma execução GitHub Actions foi criada para esses SHAs. Preview #455 está READY para `226dfa6`; a rota mostra acesso restrito e login Google, então QA autenticado não foi realizado. Não foi solicitado nem inserido segredo/credencial e nenhum navegador pessoal foi usado.
-- `npm run verify:release` local PASS, visual 14/14, `git diff --check` PASS. Produção, importação, restauração e escritas financeiras não foram executadas. Próximo: concluir a sincronização de #454/#455 com `main` e revalidar seus checks; nenhuma dessas PRs será mesclada nesta atualização.
+- Push normal e Draft PRs concluídos, sem merge. `npm run verify:release` local PASS no HEAD de produto `e43c2e82af1ff24a2aa953140b01977a27dcae3c`, visual 14/14 e `git diff --check` PASS. O Preview atual de #455 exige login Google; QA autenticado não foi realizado. Não foi solicitado nem inserido segredo/credencial e nenhum navegador pessoal foi usado.
+- Próximo gate: revisão humana das Draft PRs #454 e #455. Login QA no Preview só se a revisão exigir inspeção autenticada, usando contexto dedicado. Produção, importação, restauração e escritas financeiras não foram executadas; `MERGE=false`.
 
-## V330 — integrada; PRs V331 dependentes em atualização (2026-10-07)
+## V330 — integrada; PRs V331 dependentes OPEN/DRAFT (2026-10-07)
 
 - V329/PR #452 está MERGED no `origin/main` `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. O CI run `37663297762` passou no HEAD PR `f5a1dccdbc4de8fbc06dc3db92970caca535a6ad`; não foi observado workflow separado no merge SHA.
 - PR #453 foi squash-merged em `main`: merge SHA `cefc725f2378648c29593b27399a2f9bf2656db7`; branch base `main` agora contém V330.
