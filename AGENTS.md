@@ -159,6 +159,10 @@ Em mudanças visuais, revisar:
 - Comportamento em mobile (390/430) e desktop (1366/1920).
 - Excesso de cards, bordas, brilhos, sombras e gradientes.
 
+`PROJECT_MISSION_PREFIX=SUPERPOWERS + PONYTAIL FULL + CAVEMAN`. Begin every
+project mission, agent command block, handoff, and final report with that exact
+prefix.
+
 ## Playwright
 
 Após mudanças visuais, validar obrigatoriamente:

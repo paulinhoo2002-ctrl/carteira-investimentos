@@ -47,6 +47,9 @@ jobs:
           echo "Using browser: $CHROME_BIN"
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
 
+      - name: V330 synthetic browser QA
+        run: npm run test:v330:browser
+
       - name: A11Y functional runtime
         run: node --test tests/a11y-functional.test.js
 

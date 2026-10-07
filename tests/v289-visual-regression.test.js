@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
 const { chromium } = require('playwright-core');
@@ -10,12 +11,16 @@ const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const THEMES = ['dark', 'light'];
 const ROUTE_VIEWPORTS = [
+  { width: 360, height: 800 },
   { width: 390, height: 844 },
   { width: 1366, height: 768 },
 ];
 const MATRIX_VIEWPORTS = [
+  { width: 360, height: 800 },
   { width: 430, height: 932 },
   { width: 768, height: 1024 },
+  { width: 1024, height: 768 },
+  { width: 1280, height: 800 },
   { width: 1440, height: 900 },
   { width: 1536, height: 864 },
   { width: 1920, height: 1080 },
@@ -271,6 +276,72 @@ test('V328 premium screens remain readable across the responsive viewport matrix
   }
 });
 
+test('V330 daily-use visual evidence captures premium screens with synthetic data', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  const screenshotDir = path.join(__dirname, '..', '.qa-state', 'v330-daily-use');
+  const screenshots = [
+    { route: 'ativos', width: 1366, height: 768 },
+    { route: 'ativos', width: 390, height: 844 },
+    { route: 'dividendos', width: 1366, height: 768 },
+    { route: 'dividendos', width: 390, height: 844 },
+    { route: 'dashboard', width: 1366, height: 768 },
+    { route: 'patrimonio', width: 1366, height: 768 },
+    { route: 'metas', width: 1366, height: 768 },
+    { route: 'rentabilidade', width: 1366, height: 768 },
+    { route: 'ajudar', width: 1366, height: 768 },
+  ];
+  try {
+    await fs.mkdir(screenshotDir, { recursive: true });
+    for (const item of screenshots) {
+      await runtime.page.setViewportSize({ width: item.width, height: item.height });
+      await applyV289VisualFixture(runtime.page, 'baseline');
+      await setThemeAndRoute(runtime.page, 'dark', item.route);
+      const layout = await inspectLayout(runtime.page);
+      assert.equal(layout.pageOverflow, false, `${item.route} overflows at ${item.width}x${item.height}`);
+      assert.deepEqual(layout.clipped, [], `${item.route} clips controls at ${item.width}x${item.height}`);
+      if (item.route === 'ativos') {
+        assert.ok(layout.assetMetricLabels.length > 0, `Ativos information metrics missing at ${item.width}px`);
+        assert.ok(layout.assetMetricLabels.every(label => label.font >= 12), `Ativos metric label too small at ${item.width}px`);
+        if (item.width > 430) {
+          const headers = await runtime.page.locator('.assets-table thead th').allTextContents();
+          for (const label of ['Setor', 'Quantidade', 'Preço médio', 'Preço atual / posição', 'Resultado R$', 'Rentabilidade', 'Valor total', '% carteira', 'Fonte / atualização', 'DY', 'Estimativa mensal', 'Ações']) {
+            assert.ok(headers.some(header => header.trim() === label), `Ativos table is missing ${label}`);
+          }
+        } else {
+          const card = runtime.page.locator('.asset-mobile-cards .asset-premium-card').first();
+          const summary = await card.locator('summary').innerText();
+          for (const label of ['Tipo', 'Valor da posição', 'Resultado R$', 'Rentabilidade', '% Carteira']) assert.ok(summary.includes(label), `Ativos mobile summary is missing ${label}`);
+          await card.locator('summary').click();
+          const details = await card.innerText();
+          for (const label of ['Setor', 'Quantidade', 'Preço médio', 'Preço atual / posição', 'Resultado R$', 'Rentabilidade', 'Valor total', 'DY', 'Estimativa mensal', 'Fonte / atualização']) {
+            assert.ok(details.includes(label), `Ativos mobile details are missing ${label}`);
+          }
+        }
+      }
+      if (item.route === 'dividendos') {
+        const dividendText = layout.rootText.toLocaleLowerCase('pt-BR');
+        for (const label of ['Recebido', 'Média mensal', 'Último mês', 'Projeção anual', 'Histórico mensal', 'Evolução da renda', 'Top ativos', 'Resumo por ano']) {
+          assert.ok(dividendText.includes(label.toLocaleLowerCase('pt-BR')), `Dividendos overview is missing ${label}`);
+        }
+        const receivedKpi = await runtime.page.locator('.dividend-executive-kpi').first().innerText();
+        assert.match(receivedKpi, /Recebido no ano/i, 'primary Dividendos KPI must report confirmed receipts for the current year');
+        assert.match(receivedKpi, /R\$\s*19,37/, 'synthetic paid receipt in the current year must be included once');
+      }
+      await runtime.page.screenshot({
+        path: path.join(screenshotDir, `${item.route}-${item.width}x${item.height}.png`),
+        fullPage: true,
+      });
+    }
+    assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
+    assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
+    assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
+    console.log(`V330 daily-use screenshots: ${screenshotDir}`);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
 test('V289 representative Dashboard, Ativos and Confiabilidade matrix covers remaining widths', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
   try {
@@ -416,14 +487,20 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
   try {
     await applyV289VisualFixture(runtime.page, 'partial');
     await setThemeAndRoute(runtime.page, 'dark', 'ativos');
-    const row = runtime.page.locator('.assets-premium-shell tr[data-id="QA_ASSET_B"]');
-    const values = await row.locator('td').evaluateAll(cells => cells.map(cell => cell.textContent.trim()));
-    assert.equal(values[6], '—', 'valor atual ausente deve ficar indisponível');
-    assert.equal(values[7], '—', 'rentabilidade sem valor atual deve ficar indisponível');
-    assert.equal(values[8], '—', 'peso sem valor atual deve ficar indisponível');
+    const row = runtime.page.locator('.assets-premium-shell .assets-table tr[data-id="QA_ASSET_B"]');
+    const values = await row.evaluate(element => Object.fromEntries(
+      [...element.closest('table').querySelectorAll('thead th')].map((header, index) => [header.textContent.trim(), element.cells[index]?.textContent.trim()])
+    ));
+    assert.equal(values['Preço atual / posição'], '—', 'valor atual ausente deve ficar indisponível');
+    assert.equal(values['Rentabilidade'], '—', 'rentabilidade sem valor atual deve ficar indisponível');
+    assert.equal(values['% carteira'], '—', 'peso sem valor atual deve ficar indisponível');
+    assert.equal(values['Valor total'], '—', 'valor total sem preço deve ficar indisponível');
     const categoryMetrics = await runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="FII"] .acc-metric-value').allInnerTexts();
     assert.deepEqual(categoryMetrics.slice(1), ['—', '—', '—', '—'], 'agregados da categoria incompleta não podem transformar valor ausente em perda ou peso zero');
-    const rowWeights = await runtime.page.locator('.assets-premium-shell tbody tr td:nth-child(9)').allInnerTexts();
+    const rowWeights = await runtime.page.locator('.assets-premium-shell .assets-table tbody tr').evaluateAll(rows => rows.map(row => {
+      const headers = [...row.closest('table').querySelectorAll('thead th')].map(header => header.textContent.trim());
+      return row.cells[headers.indexOf('% carteira')]?.textContent.trim();
+    }));
     assert.ok(rowWeights.length > 0 && rowWeights.every(value => value.trim() === '—'), 'pesos individuais também ficam indisponíveis quando o denominador da carteira é parcial');
     assert.match(await runtime.page.locator('.assets-coverage-note').innerText(), /parcial|indisponível/i);
     await assertSyntheticReadOnlyRuntime(runtime);

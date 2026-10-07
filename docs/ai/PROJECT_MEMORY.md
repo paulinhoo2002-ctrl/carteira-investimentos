@@ -1714,3 +1714,30 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
   semantics, persistence/import safeguards and required behavioral tests.
 - Consider `ponytail-review` after substantial implementation. Run
   `ponytail-audit` only when an audit/cleanup mission explicitly authorizes it.
+## V330 — contratos de nota de corretagem e reconciliação
+
+- `RAW_EXECUTION != NORMALIZED_TRANSACTION`: toda linha bruta permanece
+  identificável; agrupamento exige dimensões de identidade e contexto
+  suficientes. Ambiguidade, conflito ou possível duplicata nunca é colapsada
+  silenciosamente.
+- Proveniência e versão de normalização acompanham transações derivadas. Replay
+  de mesma identidade/conteúdo é idempotente; conteúdo divergente na mesma
+  identidade exige revisão.
+- Identidade governada exige corretora, número da nota e data do pregão; ID do
+  arquivo é proveniência, nunca substituto da identidade. Quantidade deve ser
+  positiva, sem expoente e até oito casas; bruto por execução deve conferir com
+  quantidade × preço, tolerância máxima de um centavo.
+- Deduplicação do plano preserva ativos, notas e execuções distintas. Plano com
+  itens pendentes de revisão não pode ser confirmado.
+- Taxas permanecem no nível da nota, por componente, sem rateio inventado;
+  IRRF, base e inclusão no líquido são evidências separadas. Data de pregão e
+  liquidação não são intercambiáveis nem inferidas.
+- `SALE_GROSS != REALIZED_PNL`. Reutilizar o único contrato V326 de cost basis
+  quando toda a evidência estiver disponível; fora disso, resultado realizado
+  permanece indisponível.
+- Preview V330 é sintético/read-only e termina antes de persistência. Fixtures
+  não contêm dados pessoais ou PDFs reais; nenhum writer, Firebase, localStorage
+  ou caminho de produção pertence ao parser/modelo de preview.
+- Contrato técnico detalhado: `BROKERAGE_NOTE_IMPORT.md` e
+  `PRODUCT_CONTRACTS.md`; estado de execução permanece em `PROJECT_STATE.md` e
+  `NEXT_STEP.md`.
