@@ -6514,7 +6514,409 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-row-results{gap:4px 8px}
         .premium-rf-row-results .premium-rf-row-meta{font-size:9px}
       }
-      </style>
+
+  /* V328 ACCORDION CATEGORY - Adapted from index2027 */
+  .accordion-category {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .accordion-category:hover { border-color: rgba(245, 197, 66, 0.2); }
+  .accordion-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+    align-items: center;
+    padding: 14px 18px;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .accordion-header:hover { background: var(--panel-2); }
+  .acc-info { display: flex; align-items: center; gap: 12px; }
+  .acc-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .acc-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .acc-sub { font-size: 11px; color: var(--muted); }
+  .acc-metric-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+  .acc-metric-value { font-size: 16px; font-weight: 700; }
+  .acc-toggle {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+.accordion-category[open] > .accordion-header .acc-toggle { transform: rotate(180deg); }
+  .accordion-body {
+    display: none;
+    border-top: 1px solid var(--border);
+  }
+  .accordion-body.open { display: block; }
+
+  .assets-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .assets-table-wrap { overflow-x: auto; }
+  .assets-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 900px; }
+  .assets-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+  .assets-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .assets-table tr:last-child td { border-bottom: none; }
+  .assets-table tbody tr { transition: background 0.2s ease; }
+  .assets-table tbody tr:hover { background: var(--panel-2); }
+  .asset-info { display: flex; align-items: center; gap: 8px; }
+  .asset-logo {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 10px;
+    flex-shrink: 0;
+    color: white;
+  }
+  .asset-name { font-weight: 600; font-size: 12px; }
+  .asset-ticker { font-size: 10px; color: var(--muted); }
+  .asset-change {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .asset-type {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .type-acao { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+  .type-fii { background: rgba(139, 92, 246, 0.15); color: var(--ds-info); }
+  .type-etf { background: rgba(245, 197, 66, 0.15); color: var(--warning); }
+  .type-rf { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+  .type-cripto { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+  .positive-text { color: var(--success); font-weight: 600; }
+  .negative-text { color: var(--danger); font-weight: 600; }
+  .neutral-text { color: var(--muted); }
+  .yahoo-tag {
+    display: inline-block;
+    font-size: 9px;
+    color: var(--cyan);
+    margin-left: 4px;
+    font-weight: 600;
+  }
+  .yahoo-time { font-size: 9px; color: var(--muted); display: block; }
+  .action-btns { display: flex; gap: 4px; }
+  .icon-action {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-size: 12px;
+  }
+  .icon-action:hover { background: var(--panel-2); color: var(--text); }
+  .icon-action.delete:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
+
+  /* V328 DIVIDEND SUMMARY */
+  .dividend-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .div-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .div-card-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: 600; }
+  .div-card-value { font-size: 20px; font-weight: 700; }
+  .div-card-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* V328 CHARTS GRID */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 1100px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chart-title { font-size: 14px; font-weight: 700; }
+  .chart-subtitle { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .chart-tabs {
+    display: flex;
+    gap: 3px;
+    background: var(--bg);
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .chart-tab {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .chart-tab.active { background: var(--warning); color: #0a0e1a; }
+  .chart-container { position: relative; height: 260px; }
+
+  /* V328 PATRIMONIO GRID */
+  .patrimonio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 1100px) { .patrimonio-grid { grid-template-columns: 1fr; } }
+  .patrimonio-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .patrimonio-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .patrimonio-card-title-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(245, 197, 66, 0.1);
+    color: var(--warning);
+  }
+  .top-asset-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .top-asset-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .top-asset-rank {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--warning);
+    color: #0a0e1a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .top-asset-rank.silver { background: var(--muted); }
+  .top-asset-rank.bronze { background: var(--warning); }
+  .top-asset-info { flex: 1; min-width: 0; }
+  .top-asset-ticker { font-size: 12px; font-weight: 700; }
+  .top-asset-name { font-size: 10px; color: var(--muted); }
+  .top-asset-value { text-align: right; }
+  .top-asset-amount { font-size: 12px; font-weight: 700; }
+  .top-asset-perc { font-size: 10px; color: var(--muted); }
+
+  .broker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .broker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .broker-info { display: flex; align-items: center; gap: 10px; }
+  .broker-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+    color: white;
+  }
+  .broker-name { font-size: 12px; font-weight: 600; }
+  .broker-sub { font-size: 10px; color: var(--muted); }
+  .broker-value { font-size: 13px; font-weight: 700; }
+
+  .risk-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .risk-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--card);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .risk-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+  .risk-label { font-size: 11px; font-weight: 600; min-width: 80px; }
+  .risk-value { font-size: 11px; color: var(--muted); min-width: 40px; text-align: right; }
+
+  /* V328 CALENDAR GRID */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .calendar-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+  }
+  .calendar-card:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: translateY(-2px);
+  }
+  .calendar-date {
+    width: 48px;
+    text-align: center;
+    padding: 6px 0;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .calendar-day { font-size: 18px; font-weight: 800; color: var(--success); line-height: 1; }
+  .calendar-month { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .calendar-info { flex: 1; min-width: 0; }
+  .calendar-ticker { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .calendar-type { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .calendar-value { font-size: 12px; color: var(--success); font-weight: 600; }
+
+  /* V328 GOALS GRID */
+  .goals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .goal-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    background: rgba(245, 197, 66, 0.1);
+  }
+  .goal-progress-badge {
+    font-size: 11px; font-weight: 700; color: var(--warning);
+    background: rgba(245, 197, 66, 0.1);
+    padding: 3px 8px; border-radius: 12px;
+  }
+  .goal-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .goal-meta { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .goal-values { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; }
+  .goal-current { color: var(--text); font-weight: 600; }
+  .goal-target { color: var(--muted); }
+  .goal-bar { height: 6px; background: var(--bg); border-radius: 10px; overflow: hidden; }
+  .goal-bar-fill { height: 100%; background: linear-gradient(90deg, var(--warning) 0%, var(--success) 100%); border-radius: 10px; }
+
+  /* V328 MOBILE CARDS - Responsive */
+  .assets-premium-shell #ativos-page-title { font-size: 24px; line-height: 1.2; }
+  @media (max-width: 640px) {
+    .assets-premium-shell #ativos-page-title { font-size: 20px; }
+    .assets-table-wrap { display: none; }
+    .asset-mobile-cards { display: flex; flex-direction: column; gap: 8px; }
+    .asset-premium-card { border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+    .asset-premium-card-summary { padding: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .asset-premium-card-summary .asset-info { gap: 10px; }
+    .asset-premium-card-summary .asset-logo { width: 32px; height: 32px; font-size: 12px; }
+    .asset-premium-card-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .asset-premium-card-share { font-size: 11px; color: var(--muted); }
+    .asset-premium-card-details { padding: 12px; border-top: 1px solid var(--border); background: var(--bg); }
+    .asset-premium-card-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
+    .asset-premium-card-row span { color: var(--muted); }
+    .asset-premium-card-row strong { color: var(--text); }
+    .asset-premium-card-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  }
+</style>
 <style>
 /* PREMIUM SETTINGS 6 */
 .premium-settings-page{display:flex;flex-direction:column;gap:14px}
@@ -24773,6 +25175,10 @@ function setRentBench(bench){
     }
     return filtered;
   }
+function clearAssetReviewFilter(){
+  S.assetReviewFilter = { assetIds: [], reasons: [] };
+  render();
+}
 
   function setActiveAssetGroup(type, open){
     S.activeAssetsGroup=open ? type : '';
@@ -28236,7 +28642,7 @@ function corporateEventsCenterTab(){
   return CorporateEventsCenter.render(vm,{escape:esc});
 }
 function filterCorporateEventsCenter(control){return CorporateEventsCenter.filterCorporateEventsCenter(control)}
-const NAV_TABS=[['dashboard','📊 Dashboard'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights'],['confiabilidade','🛡️ Confiabilidade']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','💎 Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights'],['confiabilidade','🛡️ Confiabilidade']];
 const REPORT_TABS=[['relatorios','📑 Relatórios'],['corporate-eventos','⚙️ Eventos societários'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
@@ -28275,6 +28681,7 @@ function desktopTabs(){
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     <div class="nav-section-title">CARTEIRA</div>
     ${navItem('dashboard','Resumo','📊',S.tab==='dashboard')}
+    ${navItem('patrimonio','Patrimônio','◈',S.tab==='patrimonio')}
     ${navItem('ativos','Ativos','💼',isAtivos)}
     ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
     <div class="nav-section-title">RENDA &amp; PERFORMANCE</div>
@@ -30781,6 +31188,7 @@ function patrimonySnapshot(period=Number(S.dashPeriod)||12){
       key:`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`,
       label:date.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'}),
       aporte:0,
+      movementCount:0,
       cumulative:0
     });
   }
@@ -30796,15 +31204,19 @@ function patrimonySnapshot(period=Number(S.dashPeriod)||12){
     const signed=/venda|resgate|vencimento/.test(op) ? -rawValue : rawValue;
     const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
     if(date<firstMonth) baseline+=signed;
-    else if(monthMap.has(key)) monthMap.get(key).aporte+=signed;
+    else if(monthMap.has(key)){
+      const row=monthMap.get(key);
+      row.aporte+=signed;
+      row.movementCount++;
+    }
   });
   let cumulative=baseline;
-  months.forEach(row=>{cumulative+=row.aporte;row.cumulative=cumulative;});
-  const rent=rentabilityHistory('all',String(count),String(S.rentBench||'CDI'));
-  const performance=(rent.view||[]).filter(row=>Number.isFinite(Number(row.delta)));
-  const bestEvolution=performance.reduce((best,row)=>!best||Number(row.delta)>Number(best.delta)?row:best,null);
-  const worstEvolution=performance.reduce((worst,row)=>!worst||Number(row.delta)<Number(worst.delta)?row:worst,null);
-  const biggestContribution=months.filter(row=>row.aporte>0).sort((a,b)=>b.aporte-a.aporte)[0]||null;
+  months.forEach(row=>{
+    cumulative+=row.aporte;
+    row.cumulative=row.movementCount?cumulative:null;
+  });
+
+  const biggestContribution=months.filter(row=>row.movementCount&&row.aporte>0).sort((a,b)=>b.aporte-a.aporte)[0]||null;
   const pct=summary.tI>0?(summary.tG/summary.tI)*100:0;
   const absPct=Math.abs(pct);
   const reading=pct>1
@@ -30812,7 +31224,12 @@ function patrimonySnapshot(period=Number(S.dashPeriod)||12){
     : pct<-1
       ? {tone:'danger',title:'Patrimônio abaixo do aplicado',text:`A carteira está ${fmt(Math.abs(summary.tG))} abaixo do valor aplicado. Revise desempenho e concentração antes de novas decisões.`}
       : {tone:'muted',title:'Patrimônio próximo do aplicado',text:`A diferença atual é pequena (${fmtP(pct)}). O crescimento observado vem principalmente dos aportes registrados.`};
-  return {summary,months,performance,bestEvolution,worstEvolution,biggestContribution,pct,absPct,reading,count};
+  const availability=dashboardCurrentValueAvailability();
+  const appliedKnown=(S.assets||[]).filter(asset=>(Number(asset?.qty)||0)>0).map(asset=>isRendaFixaAsset(asset)
+    ? rfValues(asset).hasExplicitApplied
+    : hasOwnFiniteNumber(asset,['avg_price','applied_value']));
+  const appliedState=!appliedKnown.length?'NO_DATA':appliedKnown.every(Boolean)?'AVAILABLE':appliedKnown.some(Boolean)?'PARTIAL':'UNKNOWN';
+  return {summary,months,biggestContribution,pct,absPct,reading,count,availability,appliedState};
 }
 function dashboardCurrentValueAvailability(){
   const allocation=portfolioAllocationSnapshot();
@@ -30859,20 +31276,20 @@ function executiveKPIs(data){
 }
 function dashboardEvolutionPanel(data){
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);
-  const values=snapshot.months.map(row=>row.cumulative);
-  const hasHistory=values.some(value=>Number.isFinite(value)&&value>0);
+  const values=snapshot.months.map(row=>row.movementCount?row.cumulative:null);
+  const hasHistory=snapshot.months.some(row=>row.movementCount&&Number.isFinite(row.cumulative));
   if(hasHistory){
     return `
       <div class="dashboard-evolution-card">
-        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes acumulados</div><div class="premium-panel-sub">Acumulado de aportes líquidos · janela de ${snapshot.count} meses. Histórico patrimonial indisponível.</div></div></div>
-        ${lineChart([{name:'Aportes líquidos acumulados',tooltipLabel:'Aportes acumulados',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
+        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><div class="premium-panel-sub">Acumulado apenas nos meses com movimentos registrados · cobertura do histórico desconhecida.</div></div></div>
+        ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
   return `
     <div class="dashboard-evolution-card dashboard-evolution-empty">
-      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Evolução patrimonial</div><div class="premium-panel-sub">Patrimônio consolidado · histórico patrimonial ainda não disponível.</div></div></div>
-      <div class="premium-empty">Ainda não há série mensal confiável para desenhar a curva. Registre aportes e movimentações para liberar a evolução patrimonial.</div>
+      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><div class="premium-panel-sub">Histórico patrimonial ainda não disponível.</div></div></div>
+      <div class="premium-empty">Não há movimentações registradas na janela; a cobertura do histórico é desconhecida.</div>
       <div class="premium-panel-actions" style="margin-top:10px">
         <button class="btn bp" onclick="go('aportes')">Registrar aporte</button>
         <button class="btn bgh" onclick="go('ativos')">Ver ativos</button>
@@ -30914,10 +31331,14 @@ function dashboardReceiptsPanel(data){
 function patrimonioTab(){
   const data=patrimonySnapshot();
   const {tI,tC,tG}=data.summary;
+  const currentKnown=data.availability.state==='AVAILABLE';
+  const appliedKnown=data.appliedState==='AVAILABLE';
+  const resultKnown=currentKnown&&appliedKnown&&tI>0;
   const periodOpts=[3,6,12,24];
-  const maxMonth=Math.max(...data.months.map(row=>Math.max(0,row.cumulative)),tC,1);
+  const shownMonths=data.months.filter(row=>row.movementCount>0);
+  const maxMonth=Math.max(...shownMonths.map(row=>Math.max(0,row.cumulative)),1);
   const mobile=typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:640px)').matches;
-  const visibleMonths=mobile&&data.months.length>8?data.months.slice(-8):data.months;
+  const visibleMonths=mobile&&shownMonths.length>8?shownMonths.slice(-8):shownMonths;
   const monthRows=visibleMonths.length ? visibleMonths.map((row,index)=>{
     const width=Math.max(row.cumulative>0?4:0,Math.min(100,(Math.max(0,row.cumulative)/maxMonth)*100));
     const isLast=index===visibleMonths.length-1;
@@ -30926,11 +31347,11 @@ function patrimonioTab(){
       <div class="patrimony-month-track"><div class="patrimony-month-fill" style="width:${width.toFixed(0)}%"></div></div>
       <div class="patrimony-month-value">${fmt(row.cumulative)}${isLast?' *':''}</div>
     </div>`;
-  }).join('') : '<div class="evo-empty">Registre movimentações na aba Aportes para acompanhar a evolução.</div>';
-  const resultTone=tG>0?'gn':tG<0?'rd':'mu';
-  const resultLabel=tG>0?'Acima do aplicado':tG<0?'Abaixo do aplicado':'Próximo do aplicado';
-  const appliedShare=tC>0?Math.min(100,(tI/tC)*100):(tI>0?100:0);
-  const resultShare=tC>0?(tG/tC)*100:0;
+  }).join('') : '<div class="evo-empty">Sem movimentações registradas no período; a cobertura do histórico é desconhecida.</div>';
+  const resultTone=resultKnown?(tG>0?'gn':tG<0?'rd':'mu'):'mu';
+  const resultLabel=resultKnown?(tG>0?'Acima do aplicado':tG<0?'Abaixo do aplicado':'Próximo do aplicado'):'Resultado indisponível';
+  const appliedShare=resultKnown&&tC>0?Math.min(100,(tI/tC)*100):0;
+  const resultShare=resultKnown&&tC>0?(tG/tC)*100:0;
   const positiveResultShare=Math.max(0,Math.min(100,resultShare));
   const appliedBarShare=tG>=0?Math.max(0,100-positiveResultShare):100;
 
@@ -30939,9 +31360,10 @@ function patrimonioTab(){
     .filter(a => (Number(a.qty)||0) > 0 && (Number(a.current_price)||0) > 0)
     .map(a => {
       const currentValue = Number(a.qty) * Number(a.current_price);
-      const appliedValue = Number(a.qty) * Number(a.avg_price||0);
-      const result = currentValue - appliedValue;
-      return { ticker: a.ticker, name: a.name, currentValue, appliedValue, result, pct: appliedValue > 0 ? (result/appliedValue)*100 : 0 };
+    const hasApplied=hasOwnFiniteNumber(a,['avg_price']);
+    const appliedValue = hasApplied ? Number(a.qty) * Number(a.avg_price) : null;
+    const result = hasApplied ? currentValue - appliedValue : null;
+    return { ticker: a.ticker, name: a.name, currentValue, appliedValue, result, pct: hasApplied&&appliedValue > 0 ? (result/appliedValue)*100 : null };
     })
     .sort((a,b) => b.currentValue - a.currentValue)
     .slice(0, 8);
@@ -30951,7 +31373,7 @@ function patrimonioTab(){
   const topAssetsHtml = topAssets.length ? topAssets.map((asset, i) => {
     const share = totalCurrent > 0 ? (asset.currentValue/totalCurrent)*100 : 0;
     const barWidth = Math.min(100, share);
-    const resultTone = asset.result >= 0 ? 'gn' : 'rd';
+    const resultTone = asset.result===null?'mu':asset.result >= 0 ? 'gn' : 'rd';
     return `<div class="patrimonio-top-asset">
       <div class="patrimonio-top-asset-rank">#${i+1}</div>
       <div class="patrimonio-top-asset-info">
@@ -30960,7 +31382,7 @@ function patrimonioTab(){
       </div>
       <div class="patrimonio-top-asset-value">
         <div class="patrimonio-top-asset-amount">${fmt(asset.currentValue)}</div>
-        <div class="patrimonio-top-asset-perc ${resultTone}">${share.toFixed(1)}% · ${asset.result>=0?'+':''}${fmtP(asset.pct)}</div>
+        <div class="patrimonio-top-asset-perc ${resultTone}">${share.toFixed(1)}% do exibido · ${asset.pct===null?'resultado indisponível':`${asset.result>=0?'+':''}${fmtP(asset.pct)}`}</div>
       </div>
       <div class="patrimonio-top-asset-bar-wrap"><div class="patrimonio-top-asset-bar" style="width:${barWidth.toFixed(1)}%"></div></div>
     </div>`;
@@ -30969,28 +31391,29 @@ function patrimonioTab(){
   return `<div class="patrimonio-premium">
     <div class="patrimonio-hero">
       <div class="patrimonio-head">
-        <div><h1 class="patrimonio-title">Patrimônio</h1><div class="patrimonio-subtitle">Valor total, origem do crescimento e evolução temporal.</div></div>
-        <div class="patrimony-reading">${data.reading.text}</div>
+        <div><h1 class="patrimonio-title">Patrimônio</h1><div class="patrimonio-subtitle">Composição atual e aportes registrados; histórico patrimonial indisponível.</div></div>
+        <div class="patrimony-reading">${resultKnown?data.reading.text:`Valores parciais ou sem base aplicada completa. Resultado atual indisponível (${data.availability.note}).`}</div>
       </div>
       <div class="patrimonio-kpis">
         <div class="patrimonio-kpi patrimonio-kpi-main">
           <div class="patrimonio-kpi-label">Patrimônio total</div>
-          <div class="patrimonio-kpi-value">${fmt(tC)}</div>
+          <div class="patrimonio-kpi-value">${currentKnown?fmt(tC):'—'}</div>
+          ${!currentKnown?`<div class="patrimonio-kpi-sub">${esc(data.availability.note)}</div>`:''}
         </div>
         <div class="patrimonio-kpi">
-          <div class="patrimonio-kpi-label">Evolução no período</div>
-          <div class="patrimonio-kpi-value ${tG>=0?'gn':'rd'}">${tG>=0?'+':''}${fmt(tG)}</div>
-          <div class="patrimonio-kpi-sub">${tG>=0?'Ganho de capital':'Perda de capital'}</div>
+          <div class="patrimonio-kpi-label">Resultado atual</div>
+          <div class="patrimonio-kpi-value ${resultTone}">${resultKnown?`${tG>=0?'+':''}${fmt(tG)}`:'—'}</div>
+          <div class="patrimonio-kpi-sub">${resultKnown?(tG>=0?'Ganho de capital':'Perda de capital'):'Base de valor atual ou aplicada incompleta'}</div>
         </div>
         <div class="patrimonio-kpi">
           <div class="patrimonio-kpi-label">Aportes líquidos</div>
-          <div class="patrimonio-kpi-value pu">${fmt(tI)}</div>
-          <div class="patrimonio-kpi-sub">Capital aplicado</div>
+          <div class="patrimonio-kpi-value pu">${appliedKnown?fmt(tI):'—'}</div>
+          <div class="patrimonio-kpi-sub">${appliedKnown?'Capital aplicado':'Base aplicada desconhecida ou parcial'}</div>
         </div>
         <div class="patrimonio-kpi">
           <div class="patrimonio-kpi-label">Resultado %</div>
-          <div class="patrimonio-kpi-value ${resultTone}">${fmtP(data.pct)}</div>
-          <div class="patrimonio-kpi-sub">${data.pct>=0?'Acima do aplicado':'Abaixo do aplicado'}</div>
+          <div class="patrimonio-kpi-value ${resultTone}">${resultKnown?fmtP(data.pct):'—'}</div>
+          <div class="patrimonio-kpi-sub">${resultKnown?(data.pct>=0?'Acima do aplicado':'Abaixo do aplicado'):'Percentual indisponível sem bases completas'}</div>
         </div>
       </div>
     </div>
@@ -31000,20 +31423,20 @@ function patrimonioTab(){
     <div class="patrimonio-grid">
       <div class="patrimonio-panel patrimonio-panel-chart">
         <div class="patrimonio-panel-head">
-          <div><h2 class="patrimonio-panel-title">Evolução do Patrimônio</h2><div class="patrimonio-panel-sub">Aportes líquidos acumulados vs patrimônio atual. * = período atual.</div></div>
-          <div class="patrimonio-panel-badge">Patrimônio atual ${fmt(tC)}</div>
+          <div><h2 class="patrimonio-panel-title">Aportes líquidos acumulados</h2><div class="patrimonio-panel-sub">Acumulado apenas nos meses com movimentos registrados; não representa valuation histórico e a cobertura dos registros é desconhecida.</div></div>
+          <div class="patrimonio-panel-badge">Patrimônio atual ${currentKnown?fmt(tC):'indisponível'}</div>
         </div>
         <div class="patrimony-month-list">${monthRows}</div>
       </div>
       <div class="patrimonio-panel patrimonio-panel-top">
-        <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Top Ativos</h2><div class="patrimonio-panel-sub">Maiores posições por valor atual. Barra = participação no patrimônio total.</div></div><div class="patrimonio-panel-badge">${topAssets.length} ativos</div></div>
+        <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Top Ativos</h2><div class="patrimonio-panel-sub">Maiores posições por valor atual; barras e percentuais comparam as posições exibidas.</div></div><div class="patrimonio-panel-badge">${topAssets.length} ativos</div></div>
         <div class="patrimonio-top-asset-list">${topAssetsHtml}</div>
       </div>
     </div>
     <div class="patrimonio-grid patrimonio-grid-composition">
       <div class="patrimonio-panel patrimonio-panel-composition">
         <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Composição do Patrimônio</h2><div class="patrimonio-panel-sub">Quanto vem de capital aportado e quanto de ganho/perda de mercado.</div></div><div class="patrimonio-panel-badge ${resultTone}">${esc(resultLabel)}</div></div>
-        <div class="patrimony-composition">
+        ${resultKnown?`<div class="patrimony-composition">
           <div class="patrimony-composition-track">
             <div class="patrimony-composition-applied" style="width:${appliedBarShare.toFixed(1)}%"></div>
             ${tG>=0?`<div class="patrimony-composition-result" style="width:${positiveResultShare.toFixed(1)}%"></div>`:''}
@@ -31028,17 +31451,16 @@ function patrimonioTab(){
           <div class="patrimony-composition-stat"><div class="patrimony-composition-label">${tG>=0?'Ganho no patrimônio':'Perda sobre patrimônio'}</div><div class="patrimony-composition-value ${resultTone}">${fmtP(resultShare)}</div></div>
           <div class="patrimony-composition-stat"><div class="patrimony-composition-label">Resultado acumulado</div><div class="patrimony-composition-value ${resultTone}">${fmt(tG)}</div></div>
         </div>
-        <div class="patrimony-composition-text">${tG>0?`O patrimônio atual combina capital aportado com ${fmt(tG)} de valorização. Aproximadamente ${positiveResultShare.toFixed(1)}% do valor atual representa ganho de capital.`:tG<0?`O patrimônio é formado pelos aportes, mas uma perda de ${fmt(Math.abs(tG))} reduziu o valor atual. O crescimento depende principalmente de novos aportes enquanto essa diferença permanecer.`:'O patrimônio atual está praticamente igual ao capital aplicado; neste momento, o crescimento vem principalmente dos aportes.'}</div>
+        <div class="patrimony-composition-text">${tG>0?`O patrimônio atual combina capital aportado com ${fmt(tG)} de valorização. Aproximadamente ${positiveResultShare.toFixed(1)}% do valor atual representa ganho de capital.`:tG<0?`O patrimônio é formado pelos aportes, mas uma perda de ${fmt(Math.abs(tG))} reduziu o valor atual. O crescimento depende principalmente de novos aportes enquanto essa diferença permanecer.`:'O patrimônio atual está praticamente igual ao capital aplicado; neste momento, o crescimento vem principalmente dos aportes.'}</div>`:`<div class="premium-empty">Composição indisponível: valores correntes ou base aplicada incompletos.</div>`}
       </div>
       <div class="patrimonio-panel patrimonio-panel-insights">
-        <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Indicadores do Período</h2><div class="patrimonio-panel-sub">Movimentações reais e evolução estimada pelo histórico disponível.</div></div><div class="patrimonio-panel-badge">${data.count} meses</div></div>
+        <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Registros do período</h2><div class="patrimonio-panel-sub">Aportes registrados; valuation histórico não disponível.</div></div><div class="patrimonio-panel-badge">${data.count} meses</div></div>
         <div class="patrimonio-insights">
+          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Histórico patrimonial</div><div class="patrimonio-insight-value">Indisponível</div><div class="patrimonio-insight-note">Snapshots de valuation não disponíveis</div></div>
           <div class="patrimonio-insight"><div class="patrimonio-insight-label">Maior mês de aporte</div><div class="patrimonio-insight-value">${data.biggestContribution?esc(data.biggestContribution.label):'—'}</div><div class="patrimonio-insight-note">${data.biggestContribution?fmt(data.biggestContribution.aporte):'Sem aporte positivo no período'}</div></div>
-          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Melhor evolução estimada</div><div class="patrimonio-insight-value gn">${data.bestEvolution?esc(data.bestEvolution.label):'—'}</div><div class="patrimonio-insight-note">${data.bestEvolution?fmtP(data.bestEvolution.delta):'Dados insuficientes'}</div></div>
-          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Pior evolução estimada</div><div class="patrimonio-insight-value ${data.worstEvolution&&data.worstEvolution.delta<0?'rd':''}">${data.worstEvolution?esc(data.worstEvolution.label):'—'}</div><div class="patrimonio-insight-note">${data.worstEvolution?fmtP(data.worstEvolution.delta):'Dados insuficientes'}</div></div>
-          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Meses analisados</div><div class="patrimonio-insight-value">${data.months.length}</div><div class="patrimonio-insight-note">Janela selecionada para leitura</div></div>
+          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Meses na janela</div><div class="patrimonio-insight-value">${data.months.length}</div><div class="patrimonio-insight-note">Período selecionado</div></div>
         </div>
-        <div class="premium-note">A evolução estimada usa o histórico disponível e os preços atuais cadastrados; não substitui uma série histórica de cotações.</div>
+        <div class="premium-note">Esta série resume movimentações disponíveis; ela não substitui snapshots históricos de valor de mercado.</div>
       </div>
     </div>
   </div>`;
@@ -31213,656 +31635,354 @@ function rfMovementFromAssetsModal(){
   </div>`;
 }
 function ativos(){
-  const innerTab=['analise','desempenho','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
-  const ativosCategoryIcon=type=>({
-    'Ação':'trend',
-    'FII':'bars',
-    'ETF':'bars',
-    'Renda Fixa':'cash'
-  }[String(type)]||'wallet');
-  if(assetReviewFilterIsActive()){
-    const reviewData=assetReviewQualityData();
-    S.assetReviewFilter.assetIds=reviewData.ids;
-    S.assetReviewFilter.reasons=reviewData.reasons;
+  const innerTab = ['analise','desempenho','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
+  const ativosCategoryIcon = type => ({
+    'Ação': '📈',
+    'FII': '🏢',
+    'ETF': '📊',
+    'Renda Fixa': '💰'
+  }[String(type)] || '💼');
+
+  if (assetReviewFilterIsActive()) {
+    const reviewData = assetReviewQualityData();
+    S.assetReviewFilter.assetIds = reviewData.ids;
+    S.assetReviewFilter.reasons = reviewData.reasons;
   }
-  const reviewFilterActive=assetReviewFilterIsActive();
-  const reviewFilterCount=reviewFilterActive ? (S.assetReviewFilter.assetIds||[]).length : 0;
-  const assetMetricsCache=new Map();
-  const getAssetMetrics=a=>{
-    if(assetMetricsCache.has(a)) return assetMetricsCache.get(a);
-    const currentValue=assetCurrentValue(a);
-    const appliedValue=assetAppliedValue(a);
-    const rentabPct=assetRentabPct(a);
-    const jurosValue=assetJurosValue(a);
-    const isRF=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa';
-    const currentUnit=Number(a.current_price)||0;
-    const avgPrice=Number(a.avg_price)||0;
-    const marketValue=isRF ? currentValue : (Number(a.qty)||0)*currentUnit;
-    const currentDisplay=isRF ? marketValue : currentUnit;
-    const metrics={currentValue,appliedValue,rentabPct,jurosValue,isRF,currentUnit,avgPrice,marketValue,currentDisplay};
-    assetMetricsCache.set(a,metrics);
+  const reviewFilterActive = assetReviewFilterIsActive();
+  const reviewFilterCount = reviewFilterActive ? (S.assetReviewFilter.assetIds || []).length : 0;
+
+  const assetMetricsCache = new Map();
+  const getAssetMetrics = a => {
+    if (assetMetricsCache.has(a)) return assetMetricsCache.get(a);
+    const isRF = normalizeType(a.type || metaTicker(a.ticker).type || 'Ação', 'Ação') === 'Renda Fixa';
+    const currentValue = assetCurrentValue(a);
+    const currentKeys = isRF
+      ? ['rf_liquid_value', 'fixed_current_value', 'rf_gross_value', 'current_value', 'current_price']
+      : ['current_price', 'current_value'];
+    const displayCurrentValue = hasOwnFiniteNumber(a, currentKeys) ? currentValue : null;
+    const appliedValue = assetAppliedValue(a);
+    const rentabPct = assetRentabPct(a);
+    const jurosValue = assetJurosValue(a);
+    const currentUnit = Number(a.current_price) || 0;
+    const avgPrice = Number(a.avg_price) || 0;
+    const marketValue = isRF ? currentValue : (Number(a.qty) || 0) * currentUnit;
+    const currentDisplay = isRF ? marketValue : currentUnit;
+    const metrics = { currentValue, displayCurrentValue, appliedValue, rentabPct, jurosValue, isRF, currentUnit, avgPrice, marketValue, currentDisplay };
+    assetMetricsCache.set(a, metrics);
     return metrics;
   };
-  const total=S.assets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
-  const grouped=new Map();
-  S.assets.forEach(a=>{
-    const type=normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação');
-    if(!grouped.has(type)) grouped.set(type,[]);
+
+  const total = S.assets.reduce((s, a) => s + getAssetMetrics(a).currentValue, 0);
+
+  const grouped = new Map();
+  S.assets.forEach(a => {
+    const type = normalizeType(a.type || metaTicker(a.ticker).type || 'Ação', 'Ação');
+    if (!grouped.has(type)) grouped.set(type, []);
     grouped.get(type).push(a);
   });
-  const order=TYPE_ORDER;
-  const groupNames=[...order.filter(t=>grouped.has(t)), ...[...grouped.keys()].filter(t=>!order.includes(t)).sort((a,b)=>a.localeCompare(b))];
-  const analysisRows=innerTab==='analise' ? assetAnalysisRows() : null;
-  const analysis=innerTab==='analise' ? assetAnalysisBlock(analysisRows) : '';
-  const consolidated=assetsPortfolioSummary(S.assets);
-  const assetKpiApplied=consolidated.invested;
-  const assetKpiCurrent=consolidated.current;
-  const assetKpiProfit=consolidated.result;
-  const assetKpiReturn=consolidated.returnPct;
-            // Filter assets for display (search + class + performance filters)
-            const displayAssets = filterAssetsForDisplay(S.assets);
-            const canonicalAnalysisByTicker = new Map(assetAnalysisRows().map(row=>[row.ticker,row]));
-            const assetFiltersActive = !!S.assetsSearch || !!S.assetsFilterClasses?.length
-              || (S.assetsSectorFilter && S.assetsSectorFilter!=='all')
-              || (S.assetsClassFilter && S.assetsClassFilter!=='all')
-              || (S.assetsPerformanceFilter && S.assetsPerformanceFilter!=='all')
-              || reviewFilterActive;
-            const portfolioTotal = reviewFilterActive
-              ? total
-              : displayAssets.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
 
-            const sectionNames=assetFiltersActive
-              ? groupNames.filter(type=>filterAssetsForDisplay(grouped.get(type)).length)
-              : groupNames;
-            const sections=sectionNames.map((type,idx)=>{
-      const groupKey=String(type||'').toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g,'')
-        .replace(/[^a-z0-9]+/g,'-')
-        .replace(/^-+|-+$/g,'');
-      // Filter items for this group
-      const items=[...grouped.get(type)].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||'')));
-      const displayItems = filterAssetsForDisplay(items);
-     const gApplied=items.reduce((s,a)=>s+getAssetMetrics(a).appliedValue,0);
-     const gTotal=items.reduce((s,a)=>s+getAssetMetrics(a).currentValue,0);
-     const gDivMes=items.reduce((s,a)=>{
-       const cur=getAssetMetrics(a).currentValue;
-       const dy=Number(a.dy);
-       return s + (Number.isFinite(cur) && Number.isFinite(dy) ? (cur*dy/100)/12 : 0);
-     },0);
-     const gJuros=items.reduce((s,a)=>{
-       const j=getAssetMetrics(a).jurosValue;
-       return s + (Number.isFinite(j) ? j : 0);
-     },0);
-    const gCost=gApplied;
-        const gVar=gCost>0?((gTotal-gCost)/gCost)*100:0;
-        const gDY=gTotal>0?(gDivMes/gTotal)*100*12:0;
-        const share=portfolioTotal>0?(gTotal/portfolioTotal)*100:0;
-         const isOpen=S.activeAssetsGroup===type || (!S.activeAssetsGroup && !!S.assetsSearch && idx===0);
-              const sortedDisplayItems=sortAssetsByGroup(type, displayItems, portfolioTotal);
-              const rows=sortedDisplayItems.map(a=>{
-           const m=getAssetMetrics(a);
-           const avg=Number(a.avg_price)||0;
-           const currentUnit=m.currentUnit;
-           const marketValue=m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
-           const currentDisplay=m.isRF ? marketValue : currentUnit;
-           const applied=m.appliedValue;
-           const rentab=m.rentabPct;
-           const juros=m.jurosValue;
-           const analysisRow=canonicalAnalysisByTicker.get(String(a ? a.ticker : '').trim().toUpperCase());
-           const result= m.isRF ? juros : (analysisRow && analysisRow.pct!=null && Number.isFinite(analysisRow.profit) ? analysisRow.profit : null);
-            const dy=Number(a.dy);
-            const dm=Number.isFinite(marketValue)&&Number.isFinite(dy)?marketValue*dy/1200:null;
-           const peso=portfolioTotal>0?(marketValue/portfolioTotal)*100:0;
-       const alvo=Number(a.price_target)||0,ideal=Number(a.ideal_pct)||0,diff=ideal>0?ideal-peso:0;
-       const q=S.quotes[a.ticker];
-       const quoteTrust=quoteTrustMeta(a);
-       const qtag=q?`<span style="font-size:10px;color:${q.change>=0?'#34d399':'#f87171'};margin-left:5px;font-weight:600">${fmtP(q.change)}</span>`:'';
-       const qt=a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
-        const qs=a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'Brapi':a.quoteSource==='importado'?'Importado':'sem atualização';
-       const isRF=m.isRF;
-        const atualText=marketValue!=null?fmt(currentDisplay):'—';
-        const pmText=isRF?fmt(applied):(avg?fmt(avg):'—');
-       const rfSource=isRF?assetRfCurrentValueMeta(a):null;
-       const rentText=isRF
-          ? `${Number.isFinite(rentab)?`Rentab.: ${fmtP(rentab)}`:'Rentab.: —'}<div style="font-size:10px;color:${Number.isFinite(juros)?(juros>=0?'#34d399':'#f87171'):'#64748b'};margin-top:2px">Resultado: ${Number.isFinite(juros)?fmt(juros):'—'}</div>${assetNeedsRFUpdate(a)?'<div style="font-size:10px;color:#fbbf24;margin-top:2px">Sem rendimento atualizado. Informe o valor bruto ou liquido atual da corretora para acompanhar a rentabilidade.</div>':''}`
-          : `${Number.isFinite(rentab)?fmtP(rentab):'—'}`;
-       const resultClass=Number.isFinite(result)?(result>0?'pos':result<0?'neg':'neutral'):'neutral';
-       const rentabClass=Number.isFinite(rentab)?(rentab>0?'pos':rentab<0?'neg':'neutral'):'neutral';
-       const atualCls=`font-weight:600;color:${isRF?'var(--text)':currentUnit>avg?'var(--success)':currentUnit<avg?'var(--danger)':'var(--muted)'}`;
-       return`<tr>
-         <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}${qtag}${reviewFilterActive?`<div class="asset-review-reason">${esc(assetReviewReasonText(a))}</div>`:''}</td>
-         <td><span class="bdg ${bdg(a.type)}">${esc(a.type||'—')}</span></td>
-         <td class="mu">${esc(a.sector||'—')}</td>
-         <td>${a.qty}</td>
-         <td>${pmText}</td>
-         <td style="${atualCls}" class="${(S.quotes[a.ticker]?.flash==='up'?'flash-up':S.quotes[a.ticker]?.flash==='down'?'flash-down':'')}">
-           ${atualText}
-            ${a.quoteSource==='brapi'?'<span style="font-size:9px;color:#34d399;margin-left:3px" title="Brapi">Brapi</span>':a.quoteSource==='yahoo'?'<span style="font-size:9px;color:#60a5fa;margin-left:3px" title="Yahoo Finance">Yahoo</span>':''}
-            <div style="font-size:10px;color:${quoteTrust.status==='STALE'||quoteTrust.status==='ERROR'?'#fbbf24':'#3d5472'};font-weight:500;margin-top:2px">${qs} · ${quoteTrust.label} · ${qt}</div>
-            ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
-         </td>
-         <td class="result-indicator ${resultClass}">${Number.isFinite(result)?`${assetResultIndicator(result)} ${assetSignedMoneyText(result)}`:'—'}</td>
-         <td class="${rentabClass}" style="font-weight:700">${rentText}</td>
-         <td style="font-weight:700;color:#e2eaf6">${alvo>0?fmt(alvo):'—'}</td>
-         <td style="font-weight:700;color:#e2eaf6">${marketValue!=null?fmt(marketValue):'—'}</td>
-         <td class="bl" style="font-weight:600">${peso.toFixed(1)}%</td>
-        <td class="${ideal>0?(diff>0?'gn':diff<0?'rd':'mu'):'mu'}">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
-        <td class="am" style="font-weight:600">${dm!=null?fmt(dm):'—'}</td>
-        <td class="mu">${Number.isFinite(dy)?dy+'%':'—'}${a.dySource==='api'?'<span style="font-size:10px;color:#34d399;margin-left:4px" title="via Brapi">API</span>':a.dySource==='proventos'?'<span style="font-size:10px;color:#818cf8;margin-left:4px" title="calculado pelos seus proventos reais">Real</span>':a.dySource==='estimate'?'<span style="font-size:10px;color:#fbbf24;margin-left:4px" title="estimativa de mercado · atualize se necessário">Estimativa</span>':''}</td>
-          <td>${assetActionMenuHtml(a, false, `group-${groupKey}`)}</td>
-       </tr>`;
-     }).join('');
-     const rfSummaryCards=sortedDisplayItems.filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação')==='Renda Fixa').map(a=>{
-       const applied=assetAppliedValue(a), current=assetCurrentValue(a), profit=assetJurosValue(a), rentab=assetRentabPct(a);
-       const share=total>0&&Number.isFinite(current)?(current/total)*100:null;
-       const pClass=Number.isFinite(profit)?(profit>0?'pos':profit<0?'neg':'neutral'):'';
-       const rClass=Number.isFinite(rentab)?(rentab>0?'pos':rentab<0?'neg':'neutral'):'';
-       return `<div class="rf-category-row"><div class="rf-category-identity"><strong>${esc(assetRfName(a)||a.ticker||'Renda Fixa')}</strong><span>${esc(assetRfSubtype(a)||'Título')} · ${esc(assetRfIndexerLabel(a)||'—')}</span></div><div class="rf-category-metric"><small>Aplicado</small><b>${fmt(applied)}</b></div><div class="rf-category-metric"><small>Atual</small><b>${Number.isFinite(current)?fmt(current):'—'}</b></div><div class="rf-category-metric ${pClass}"><small>Resultado</small><b>${Number.isFinite(profit)?assetSignedMoneyText(profit):'—'}</b></div><div class="rf-category-metric ${rClass}"><small>Rentab.</small><b>${Number.isFinite(rentab)?fmtP(rentab):'—'}</b></div><div class="rf-category-metric"><small>% carteira</small><b>${share==null?'—':share.toFixed(1)+'%'}</b></div><div>${assetActionMenuHtml(a,true,'group-rf-'+groupKey)}</div></div>`;
-     }).join('');
-     const mobileGroupCards=sortedDisplayItems
-       .filter(a=>normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa')
-       .map(a=>{
-         const m=getAssetMetrics(a);
-         const avg=Number(a.avg_price)||0;
-         const currentUnit=m.currentUnit;
-         const marketValue=m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
-         const applied=m.appliedValue;
-         const dy=Number(a.dy);
-         const dm=Number.isFinite(marketValue)&&Number.isFinite(dy)?marketValue*dy/1200:null;
-         const peso=portfolioTotal>0?(marketValue/portfolioTotal)*100:0;
-         const analysisRow=canonicalAnalysisByTicker.get(String(a ? a.ticker : '').trim().toUpperCase());
-         const result=m.isRF ? m.jurosValue : (analysisRow && analysisRow.pct!=null && Number.isFinite(analysisRow.profit) ? analysisRow.profit : null);
-         const resultPct=m.isRF ? m.rentabPct : (applied>0&&Number.isFinite(result)?(result/applied)*100:null);
-         const resultClass=Number.isFinite(result)?(result>0?'pos':result<0?'neg':'neutral'):'neutral';
-         const resultPctClass=Number.isFinite(resultPct)?(resultPct>0?'pos':resultPct<0?'neg':'neutral'):'neutral';
-         return `<details class="asset-premium-card" data-ticker="${esc(a.ticker)}">
-           <summary class="asset-premium-card-head">
-             <div class="asset-premium-card-ticker">${esc(a.ticker)} <span class="assets-premium-badge">${esc(a.type)}</span></div>
-             <div class="asset-premium-card-result"><div class="asset-premium-card-result-current">${marketValue!=null?fmt(marketValue):'—'}</div><div class="asset-premium-card-result-money ${resultClass}">${Number.isFinite(result)?assetSignedMoneyText(result):'—'}</div><div class="asset-premium-card-result-pct ${resultPctClass}">${Number.isFinite(resultPct)?fmtP(resultPct):'—'}</div></div>
-           </summary>
-           <div class="asset-premium-card-body">
-             <div class="asset-premium-card-row full"><div class="asset-premium-card-label">Nome</div><div class="asset-premium-card-value accent">${esc(a.name||a.ticker||'—')}</div></div>
-             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Qtd</div><div class="asset-premium-card-value">${a.qty}</div></div>
-             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Participação</div><div class="asset-premium-card-value">${peso.toFixed(1)}%</div></div>
-             <div class="asset-premium-card-row"><div class="asset-premium-card-label">PM</div><div class="asset-premium-card-value">${avg?fmt(avg):'—'}</div></div>
-             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Atual</div><div class="asset-premium-card-value accent">${currentUnit?fmt(currentUnit):'—'}</div></div>
-             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Resultado</div><div class="asset-premium-card-value ${resultClass}">${Number.isFinite(result)?assetSignedMoneyText(result):'—'}</div></div>
-             <div class="asset-premium-card-row"><div class="asset-premium-card-label">Rentab.</div><div class="asset-premium-card-value ${resultPctClass}">${Number.isFinite(resultPct)?fmtP(resultPct):'—'}</div></div>
-           </div>
-           <div class="asset-premium-card-actions"><button class="asset-premium-card-action" onclick='openAssetDetail(${JSON.stringify(String(a.id))})'>Detalhes</button><button class="asset-premium-card-action primary" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "compra")'>Comprar</button><button class="asset-premium-card-action" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "venda")'>Vender</button><button class="asset-premium-card-action" onclick='edA(${JSON.stringify(String(a.id))})'>Editar</button></div>
-           <div class="asset-premium-card-expanded"><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;padding-top:10px"><div><div class="asset-premium-card-label">Setor</div><div class="asset-premium-card-value">${esc(a.sector||'—')}</div></div><div><div class="asset-premium-card-label">Preço alvo</div><div class="asset-premium-card-value">${Number(a.price_target)?fmt(a.price_target):'—'}</div></div><div><div class="asset-premium-card-label">% ideal</div><div class="asset-premium-card-value">${Number(a.ideal_pct)>0?Number(a.ideal_pct).toFixed(1)+'%':'—'}</div></div><div><div class="asset-premium-card-label">Div. est./mês</div><div class="asset-premium-card-value">${dm!=null?fmt(dm):'—'}</div></div><div><div class="asset-premium-card-label">DY</div><div class="asset-premium-card-value">${Number.isFinite(Number(a.dy))?Number(a.dy)+'%':'—'}</div></div></div></div>
-         </details>`;
-       }).join('');
-         const rfRows=sortedDisplayItems.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a=>{
-       const applied=assetAppliedValue(a);
-       const current=assetCurrentValue(a);
-       const profit=assetJurosValue(a);
-       const rentab=assetRentabPct(a);
-       const name=assetRfName(a);
-       const subtype=assetRfSubtype(a);
-       const indexer=assetRfIndexerLabel(a);
-       const appDate=assetRfApplicationDate(a);
-       const dueDate=assetRfMaturityDate(a);
-       const contractRate=assetRfContractRate(a);
-       const note=assetRfNote(a);
-       const iriof=assetRfIrIof(a);
-       const unavailable=assetRfUnavailableValue(a);
-       const share=total>0 && Number.isFinite(current) ? (current/total)*100 : null;
-       const badges=[
-         unavailable?`<span class="analysis-pill muted" title="Valor indisponível">${esc(`Indisponível: ${fmt(unavailable)}`)}</span>`:'',
-         (iriof||a.rf_ir_iof===0)?`<span class="analysis-pill info">${esc(`IR/IOF: ${fmt(iriof)}`)}</span>`:'',
-         note?`<span class="analysis-pill muted" title="${esc(note)}">${esc(`Obs.: ${note}`)}</span>`:''
-       ].filter(Boolean).join('');
-       return `<tr>
-         <td>
-           <div style="display:flex;flex-direction:column;gap:4px;min-width:0;max-width:150px">
-             <div style="font-weight:800;color:#e2eaf6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(name||a.ticker||'Renda Fixa')}">${esc(name||a.ticker||'Renda Fixa')}</div>
-             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
-             ${badges?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:1px">${badges}</div>`:''}
-           </div>
-         </td>
-         <td>
-           <div style="display:flex;flex-direction:column;gap:4px;min-width:0;max-width:120px">
-             <div style="font-weight:700;color:#d7e1ef;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(subtype)}">${esc(subtype)}</div>
-             <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(indexer)}">${esc(indexer)}</div>
-           </div>
-         </td>
-         <td class="mu">${esc(appDate||'—')}</td>
-         <td class="mu">${esc(dueDate||'—')}</td>
-         <td class="rf-right" style="font-weight:700;color:#e2eaf6">${fmt(applied)}</td>
-         <td class="rf-right" style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#e2eaf6'}">${fmt(current)}</td>
-         <td class="rf-right" style="font-weight:700;color:${Number.isFinite(profit)?(profit>=0?'#34d399':'#f87171'):'#64748b'}">${Number.isFinite(profit)?fmt(profit):'—'}</td>
-         <td class="rf-right" style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'#34d399':'#f87171'):'#64748b'}">${Number.isFinite(rentab)?fmtP(rentab):'—'}</td>
-         <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
-         <td style="white-space:nowrap">${assetActionMenuHtml(a, true, `group-${groupKey}`)}</td>
-       </tr>`;
-     }).join('');
+  const order = TYPE_ORDER;
+  const groupNames = [...order.filter(t => grouped.has(t)), ...[...grouped.keys()].filter(t => !order.includes(t)).sort((a, b) => a.localeCompare(b))];
 
-    return`<details class="ag"${isOpen?' open':''} data-asset-group="${esc(type)}" data-asset-group-key="${esc(groupKey)}" ontoggle='toggleAssetGroup(${JSON.stringify(type)}, this.open)'>
-       <summary>
-        <div class="ag-left">
-          <div class="ag-ico">${dashboardMetricIcon(ativosCategoryIcon(type))}</div>
-          <div>
-            <div class="ag-name">${esc(type)}</div>
-             <div class="ag-sub">${type==='Renda Fixa'?`${items.length} títulos · aplicado ${fmt(gApplied)}`:`${items.length} ativos`}</div>
-          </div>
-        </div>
-        <div class="ag-stats">
-          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor aplicado':'Ativos'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gApplied):items.length}</div></div>
-          <div class="ag-stat"><div class="ag-k">${type==='Renda Fixa'?'Valor atual':'Valor total'}</div><div class="ag-v">${type==='Renda Fixa'?fmt(gTotal):fmt(gTotal)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Resultado</div><div class="ag-v ${gVar==null?'mu':gVar>0?'gn':gVar<0?'rd':'mu'}">${gVar==null?'—':fmt(gTotal-gCost)}</div></div>
-          <div class="ag-stat"><div class="ag-k">Rentabilidade</div><div class="ag-v ${gVar==null?'mu':gVar>0?'gn':gVar<0?'rd':'mu'}">${gVar==null?'—':fmtP(gVar)}</div></div>
-          <div class="ag-stat"><div class="ag-k">% na carteira</div><div class="ag-v" style="color:#c0cce0">${share.toFixed(1)}%</div></div>
-        </div>
-        <div class="ag-open">⌄</div>
-      </summary>
-      <div class="ag-body">
-        ${type==='Renda Fixa'
-          ? `<div class="rf-category-summary" style="display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid rgba(96,165,250,.18);border-radius:12px;background:rgba(96,165,250,.05)">
-              ${rfSummaryCards||'<div style="color:#94a3b8">Nenhum título nesta categoria.</div>'}
-              <div>
-                <div style="font-weight:800;color:#e2eaf6">Gestão detalhada em Renda Fixa</div>
-                <div style="font-size:12px;color:#94a3b8;margin-top:4px">Consulte vencimentos, taxas e movimentações na rota dedicada.</div>
-              </div>
-              <button class="btn bgh touch-target-utility" onclick="go('renda-fixa')">Ver Renda Fixa</button>
-            </div>`
-          : `<div class="ag-table">
-          <div class="tw"><div class="ts"><table>
-            <caption class="assets-table-caption">Posições atuais, custo, valor de mercado, resultado e peso na carteira</caption>
-            <thead><tr><th>${assetSortableHeader(type,'ticker','Ticker')}</th><th>Tipo</th><th>Setor</th><th>${assetSortableHeader(type,'qty','Qtd')}</th><th>PM</th>
-              <th>
-                <div style="display:flex;align-items:center;gap:5px">
-                  ATUAL
-                  <span class="qdot${S.qLoad?' spin':''}" title="Cotações ao vivo · atualiza a cada ${QI}s"></span>
-              </div>
-              </th>
-              <th>Resultado R$</th><th>Rentab. %</th><th>Alvo</th><th>Valor total</th><th>% carteira</th><th>% ideal</th><th>Div. est./mês</th><th>DY</th><th>Ações</th></tr></thead>
-            <tbody>${rows||'<tr><td colspan="15" style="text-align:center;padding:28px;color:#2e3f58">Nenhum ativo nesta categoria.</td></tr>'}</tbody>
-          </table></div></div>
-        </div>${type==='Renda Fixa' ? '' : `<div class="ag-mobile-list">${mobileGroupCards||'<div class="assets-premium-empty">Nenhum ativo nesta categoria.</div>'}</div>`}`}
-      </div>
-    </details>`;
-  }).join('');
-  // Build class summary from consolidated.byClass (reusing patch logic, compact presentation)
-    const classSummaryHtml = consolidated.byClass.map(group => {
-      const hasData = group.complete > 0;
-      const result = group.result;
-      const returnPct = group.returnPct;
-      const resultClass = !hasData ? 'neutral' : result > 0 ? 'pos' : result < 0 ? 'neg' : 'neutral';
-      const resultIndicator = !hasData ? '→' : result > 0 ? '↑' : result < 0 ? '↓' : '→';
-      const colorClass = !hasData ? 'mu' : result > 0 ? 'gn' : result < 0 ? 'rd' : 'mu';
-      return `<div class="assets-premium-distribution-item">
-        <span class="assets-premium-distribution-color" style="background:${typeAccentColor(group.className)}"></span>
-        <div class="assets-premium-distribution-info">
-          <div class="assets-premium-distribution-name">${esc(group.className)}</div>
-          <div class="assets-premium-distribution-detail">${group.complete} ativo${group.complete!==1?'s':''}${group.incomplete?` · ${group.incomplete} sem dados completos`:''}</div>
-        </div>
-        <div class="assets-premium-distribution-stats">
-          <span class="assets-premium-distribution-pct">${group.invested>0?((group.current/group.invested-1)*100).toFixed(1):'0'}%</span>
-          <span class="assets-premium-distribution-value">${fmt(group.current)}</span>
-          <span class="assets-premium-distribution-result ${resultClass}">${resultIndicator} ${hasData?fmt(Math.abs(result)):'—'}</span>
-          <span class="assets-premium-distribution-return ${colorClass}">${hasData && returnPct!=null?fmtP(returnPct):'—'}</span>
-        </div>
-      </div>`;
-    }).join('');
+  const analysisRows = innerTab === 'analise' ? assetAnalysisRows() : null;
+  const analysis = innerTab === 'analise' ? assetAnalysisBlock(analysisRows) : '';
+  const consolidated = assetsPortfolioSummary(S.assets);
+  const assetKpiApplied = consolidated.invested;
+  const assetKpiCurrent = consolidated.current;
+  const assetKpiProfit = consolidated.result;
+  const assetKpiReturn = consolidated.returnPct;
+  const unavailableAssetCount = S.assets.filter(a => getAssetMetrics(a).displayCurrentValue == null).length;
 
-    // Build premium table rows (non-RF)
-    const premiumDisplayAssets = sortAssetsByGroup('Todos', displayAssets, total);
-    const analysisByTicker = canonicalAnalysisByTicker;
-    const premiumTableRows = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa').map(a => {
+  // Filter assets for display (search + class + performance filters)
+  const displayAssets = filterAssetsForDisplay(S.assets);
+  const canonicalAnalysisByTicker = new Map(assetAnalysisRows().map(row => [row.ticker, row]));
+  const assetFiltersActive = !!S.assetsSearch || !!S.assetsFilterClasses?.length
+    || (S.assetsSectorFilter && S.assetsSectorFilter !== 'all')
+    || (S.assetsClassFilter && S.assetsClassFilter !== 'all')
+    || (S.assetsPerformanceFilter && S.assetsPerformanceFilter !== 'all')
+    || reviewFilterActive;
+  const activeAssetFilterCount = assetsFilterCount();
+  const classFilterSet = new Set(S.assetsFilterClasses || []);
+  const sectorOptions = [...new Set(S.assets.map(a => String(a?.sector || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const assetClassOptions = [...new Set(S.assets.map(a => String(a?.assetClass || a?.class || a?.category || a?.type || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const assetControls = `<div class="assets-premium-controls">
+    <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch || '')}" oninput="onAssetsSearchInput(this.value)"></div>
+    <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen ? 'true' : 'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
+    <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen ? 'block' : 'none'}">
+      <div class="assets-filter-heading">Tipo de ativo</div>
+      <label><input type="checkbox" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter()"> Todos os tipos</label>
+      <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação') ? 'checked' : ''} onchange="applyAssetsFilter()"> Ações</label>
+      <label><input type="checkbox" value="FII" ${classFilterSet.has('FII') ? 'checked' : ''} onchange="applyAssetsFilter()"> FIIs</label>
+      <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF') ? 'checked' : ''} onchange="applyAssetsFilter()"> ETFs</label>
+      <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa') ? 'checked' : ''} onchange="applyAssetsFilter()"> Renda Fixa</label>
+      <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR') ? 'checked' : ''} onchange="applyAssetsFilter()"> BDRs</label>
+      <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto') ? 'checked' : ''} onchange="applyAssetsFilter()"> Crypto</label>
+      <label class="assets-performance-filter"><span>Setor</span><select aria-label="Filtrar por setor" onchange="setAssetsSectorFilter(this.value)"><option value="all" ${S.assetsSectorFilter === 'all' ? 'selected' : ''}>Todos</option>${sectorOptions.map(sector => `<option value="${esc(sector)}" ${S.assetsSectorFilter === sector ? 'selected' : ''}>${esc(sector)}</option>`).join('')}</select></label>
+      <label class="assets-performance-filter"><span>Classe</span><select aria-label="Filtrar por classe" onchange="setAssetsClassFilter(this.value)"><option value="all" ${S.assetsClassFilter === 'all' ? 'selected' : ''}>Todas</option>${assetClassOptions.map(value => `<option value="${esc(value)}" ${S.assetsClassFilter === value ? 'selected' : ''}>${esc(value)}</option>`).join('')}</select></label>
+      <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)"><option value="all" ${S.assetsPerformanceFilter === 'all' ? 'selected' : ''}>Todos</option><option value="positive" ${S.assetsPerformanceFilter === 'positive' ? 'selected' : ''}>Positivos</option><option value="negative" ${S.assetsPerformanceFilter === 'negative' ? 'selected' : ''}>Negativos</option><option value="neutral" ${S.assetsPerformanceFilter === 'neutral' ? 'selected' : ''}>Neutros</option></select></label>
+      ${activeAssetFilterCount ? '<button type="button" class="btn bgh assets-clear-filter" onclick="clearAssetsFilters()">Limpar filtros</button>' : ''}
+    </div>
+    <div class="assets-filter-summary" role="status" aria-live="polite"><strong>${displayAssets.length}</strong><span>${assetFiltersActive ? `ativos exibidos de ${S.assets.length}` : 'ativos na carteira'}</span>${assetFiltersActive ? '<span class="assets-filter-summary-dot" aria-hidden="true">·</span><span>filtros em uso</span>' : ''}</div>
+  </div>`;
+  const assetsFilterEmpty = assetFiltersActive && displayAssets.length === 0;
+  const assetsFilterEmptyMessage = '<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
+
+  const portfolioHasCompleteCurrentValues = S.assets.every(a => getAssetMetrics(a).displayCurrentValue != null);
+  const portfolioTotal = portfolioHasCompleteCurrentValues ? (reviewFilterActive ? total : assetKpiCurrent) : null;
+
+  // Build accordion categories using details/summary for test compatibility
+  const accordionHtml = groupNames.map(type => {
+    const assets = grouped.get(type) || [];
+    const filteredAssets = assets.filter(a => displayAssets.includes(a));
+    if (filteredAssets.length === 0 && !assetFiltersActive) return '';
+
+    const icon = ativosCategoryIcon(type);
+    const typeAssets = assets;
+    const typeDisplayAssets = filteredAssets;
+
+    // Category metrics
+    const typeHasCompleteCurrentValues = typeAssets.every(a => getAssetMetrics(a).displayCurrentValue != null);
+    const typeTotalValue = typeHasCompleteCurrentValues ? typeAssets.reduce((s, a) => s + getAssetMetrics(a).currentValue, 0) : null;
+    const typeInvested = typeAssets.reduce((s, a) => s + getAssetMetrics(a).appliedValue, 0);
+    const typeResult = typeTotalValue == null ? null : typeTotalValue - typeInvested;
+    const typeReturn = typeResult != null && typeInvested > 0 ? (typeResult / typeInvested) * 100 : null;
+    const typeWeight = typeResult != null && portfolioTotal > 0 ? (typeTotalValue / portfolioTotal) * 100 : null;
+    const typeCount = typeDisplayAssets.length;
+
+    const resultTone = typeResult == null ? '' : typeResult >= 0 ? 'positive-text' : 'negative-text';
+    const resultPrefix = typeResult != null && typeResult >= 0 ? '+' : '';
+
+    // Build table rows
+    const rowsHtml = typeDisplayAssets.map(a => {
       const m = getAssetMetrics(a);
-      const avg = Number(a.avg_price)||0;
-      const currentUnit = m.currentUnit;
-      const marketValue = m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
-      const applied = m.appliedValue;
-      const rentab = m.rentabPct;
-      const juros = m.jurosValue;
-      const dy = Number(a.dy);
-      const dm = Number.isFinite(marketValue)&&Number.isFinite(dy)?marketValue*dy/1200:null;
-      const peso = total>0?(marketValue/total)*100:0;
-      const alvo = Number(a.price_target)||0, ideal = Number(a.ideal_pct)||0, diff = ideal>0?ideal-peso:0;
-      const q = S.quotes[a.ticker];
-      const quoteTrust = quoteTrustMeta(a);
-      const qtag = q?`<span class="quote-source ${q.change>=0?'brapi':'brapi'}">${fmtP(q.change)}</span>`:'';
-      const qt = a.quoteUpdatedAt?new Date(a.quoteUpdatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando';
-      const qs = a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='brapi'?'Brapi':a.quoteSource==='importado'?'Importado':'sem atualização';
+      const currentValue = m.currentValue;
+      const displayCurrentValue = m.displayCurrentValue;
+      const appliedValue = m.appliedValue;
+      const rentabPct = m.rentabPct;
+      const jurosValue = m.jurosValue;
       const isRF = m.isRF;
-      const atualText = marketValue!=null?fmt(currentUnit):'—';
-      const pmText = isRF?fmt(applied):(avg?fmt(avg):'—');
-      const rfSource = isRF?assetRfCurrentValueMeta(a):null;
-      const analysisRow = analysisByTicker.get(String(a?.ticker||'').trim().toUpperCase());
-      const result = analysisRow?.pct!=null && Number.isFinite(analysisRow.profit) ? analysisRow.profit : null;
-      const resultClass = result==null ? 'neutral' : result > 0 ? 'pos' : result < 0 ? 'neg' : 'neutral';
-      const resultIndicator = result==null ? '→' : result > 0 ? '↑' : result < 0 ? '↓' : '→';
-      const resultText = Number.isFinite(result) ? assetSignedMoneyText(result) : '—';
-      const badgeClass = String(a.type||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]+/g,'-');
-      return `<tr>
-        <td class="col-ticker">${esc(a.ticker)}${qtag}${reviewFilterActive?`<div class="asset-review-reason">${esc(assetReviewReasonText(a))}</div>`:''}</td>
-        <td class="col-type"><span class="assets-premium-badge ${badgeClass}">${esc(a.type)}</span></td>
-        <td class="col-sector mu">${esc(a.sector||'—')}</td>
-        <td class="col-qty">${a.qty}</td>
-        <td class="col-pm">${pmText}</td>
-        <td class="col-atual">
-          ${atualText}
-          ${a.quoteSource==='brapi'?'<span class="quote-source brapi">Brapi</span>':a.quoteSource==='yahoo'?'<span class="quote-source yahoo">Yahoo</span>':''}
-          <div style="font-size:10px;color:${quoteTrust.status==='STALE'||quoteTrust.status==='ERROR'?'#fbbf24':'#3d5472'};font-weight:500;margin-top:2px">${qs} · ${quoteTrust.label} · ${qt}</div>
-          ${isRF?`<div style="font-size:10px;color:#8da0bd;font-weight:500;margin-top:2px">Fonte: ${esc(rfSource?.source||'—')}${rfSource?.origin ? ` · ${esc(rfSource.origin)}` : ''}</div>`:''}
+      const currentUnit = m.currentUnit;
+      const avgPrice = m.avgPrice;
+      const marketValue = m.marketValue;
+      const currentDisplay = m.currentDisplay;
+
+      const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
+      const result = displayCurrentValue == null || !Number.isFinite(appliedValue) ? null : displayCurrentValue - appliedValue;
+      const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
+      const resultPrefix2 = result >= 0 ? '+' : '';
+
+      // Get analysis row for this ticker
+      const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
+      const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
+      const yahooTime = analysisRow?.lastUpdate ? `<span class="yahoo-time">${esc(analysisRow.lastUpdate)}</span>` : '';
+
+      const qty = Number(a.qty) || 0;
+      const qtyDisplay = isRF ? fmt(qty) : (qty % 1 === 0 ? String(qty) : qty.toFixed(4));
+
+      let priceDisplay, investedDisplay, currentDisplay2, resultDisplay;
+      if (isRF) {
+        priceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
+        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
+        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
+        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
+      } else {
+        priceDisplay = currentUnit > 0 ? fmt(currentUnit) : '—';
+        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
+        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
+        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
+      }
+
+      const typeBadge = `<span class="asset-type type-${String(type).toLowerCase().replace('ç','c').replace('ã','a')}">${esc(type)}</span>`;
+
+      return `<tr data-id="${esc(a.id)}" class="asset-premium-card">
+        <td>
+          <div class="asset-info">
+            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+            <div>
+              <div class="asset-name">${esc(a.ticker)}</div>
+              <div class="asset-ticker">${esc(a.name)} ${yahooBadge}</div>
+              ${yahooTime}
+            </div>
+          </div>
         </td>
-        <td class="col-result"><span class="result-indicator ${resultClass}">${resultIndicator} ${resultText}</span></td>
-        <td class="col-rentab" style="color:${Number.isFinite(rentab)?(rentab>=0?'var(--success)':'var(--danger)'):'var(--muted)'};font-weight:700">${Number.isFinite(rentab)?fmtP(rentab):'—'}</td>
-        <td class="col-alvo">${alvo>0?fmt(alvo):'—'}</td>
-        <td class="col-total">${marketValue!=null?fmt(marketValue):'—'}</td>
-        <td class="col-share bl">${peso.toFixed(1)}%</td>
-        <td class="col-ideal ${ideal>0?(diff>0?'gn':'rd'):'mu'}">${ideal>0?ideal.toFixed(1)+'%':'—'}</td>
-        <td class="col-div am">${dm!=null?fmt(dm):'—'}</td>
-        <td class="col-dy mu">${Number.isFinite(dy)?dy+'%':'—'}${a.dySource==='api'?'<span class="quote-source brapi" style="font-size:8px;margin-left:4px">API</span>':a.dySource==='proventos'?'<span class="quote-source yahoo" style="font-size:8px;margin-left:4px">Real</span>':a.dySource==='estimate'?'<span class="quote-source" style="font-size:8px;margin-left:4px;color:#fbbf24;background:rgba(251,191,36,.12)">Estimativa</span>':''}</td>
-        <td class="col-actions">${assetActionMenuHtml(a, false, 'primary')}</td>
+        <td>${esc(a.name)}</td>
+        <td>${typeBadge}</td>
+        <td>${qtyDisplay}</td>
+        <td>${priceDisplay}</td>
+        <td>${investedDisplay}</td>
+        <td>${currentDisplay2}</td>
+        <td class="${resultClass}">${Number.isFinite(displayCurrentValue) ? resultDisplay : '—'}</td>
+        <td>${share == null ? '—' : `${share.toFixed(2)}%`}</td>
+        <td>${esc(analysisRow?.source || 'manual')}${analysisRow?.refTime ? ` · ${esc(analysisRow.refTime)}` : ''}</td>
+        <td>
+          ${assetActionMenuHtml(a, isRF, 'v328')}
+        </td>
       </tr>`;
     }).join('');
 
-    // Renda Fixa tem rota própria; Ativos mostra apenas seu resumo de categoria.
-    const premiumRfRows = '';
-    /* const premiumRfRowsLegacy = premiumDisplayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') === 'Renda Fixa').map(a => {
-      const applied = assetAppliedValue(a);
-      const current = assetCurrentValue(a);
-      const profit = assetJurosValue(a);
-      const rentab = assetRentabPct(a);
-      const rfDisplay = assetRfDisplayState(a);
-      const name = assetRfName(a);
-      const subtype = assetRfSubtype(a);
-      const indexer = assetRfIndexerLabel(a);
-      const appDate = assetRfApplicationDate(a);
-      const dueDate = assetRfMaturityDate(a);
-      const contractRate = assetRfContractRate(a);
-      const note = assetRfNote(a);
-      const iriof = assetRfIrIof(a);
-      const unavailable = assetRfUnavailableValue(a);
-      const share = total>0 && Number.isFinite(current) ? (current/total)*100 : null;
-      const badges = [
-        unavailable?`<span class="analysis-pill muted" title="Valor indisponível">${esc(`Indisponível: ${fmt(unavailable)}`)}</span>`:'',
-        (iriof||a.rf_ir_iof===0)?`<span class="analysis-pill info">${esc(`IR/IOF: ${fmt(iriof)}`)}</span>`:'',
-        note?`<span class="analysis-pill muted" title="${esc(note)}">${esc(`Obs.: ${note}`)}</span>`:''
-      ].filter(Boolean).join('');
-      const result = rfDisplay.kind==='fallback-applied' ? null : current - applied;
-      const resultClass = Number.isFinite(profit) ? (profit > 0 ? 'pos' : profit < 0 ? 'neg' : 'neutral') : 'neutral';
-      const resultIndicator = Number.isFinite(profit) ? (profit > 0 ? '↑' : profit < 0 ? '↓' : '→') : '→';
-      return `<tr>
-        <td>
-          <div style="display:flex;flex-direction:column;gap:4px;min-width:0;max-width:180px">
-            <div style="font-weight:800;color:#e2eaf6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(name||a.ticker||'Renda Fixa')}">${esc(name||a.ticker||'Renda Fixa')}</div>
-            <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}">${esc(subtype)}${contractRate?` · ${esc(contractRate)}`:''}</div>
-            ${badges?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:1px">${badges}</div>`:''}
-          </div>
-        </td>
-        <td>
-          <div style="display:flex;flex-direction:column;gap:4px;min-width:0;max-width:140px">
-            <div style="font-weight:700;color:#d7e1ef;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(subtype)}">${esc(subtype)}</div>
-            <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(indexer)}">${esc(indexer)}</div>
-          </div>
-        </td>
-        <td class="mu">${esc(appDate||'—')}</td>
-        <td class="mu">${esc(dueDate||'—')}</td>
-        <td class="rf-right" style="font-weight:700;color:#e2eaf6">${fmt(applied)}</td>
-        <td class="rf-right" style="font-weight:700;color:${rfDisplay.kind==='missing'?'#8da0bd':rfDisplay.kind==='fallback-applied'?'#d7e1ef':Number.isFinite(profit)?(profit>=0?'var(--success)':'var(--danger)'):'#e2eaf6'}">
-          <div class="rf-strong">${rfDisplay.currentText}</div>
-          <div class="rf-mini">${esc(rfDisplay.currentNote)}</div>
-        </td>
-        <td class="rf-right">
-          <span class="result-indicator ${rfDisplay.resultClass}">${resultIndicator} ${Number.isFinite(result)?assetSignedMoneyText(result):'—'}</span>
-          <div class="rf-mini">${esc(rfDisplay.resultNote)}</div>
-        </td>
-        <td class="rf-right" style="font-weight:700;color:${Number.isFinite(rentab)?(rentab>=0?'var(--success)':'var(--danger)'):'var(--muted)'}">${rfDisplay.kind==='fallback-applied' ? '—' : (Number.isFinite(rentab)?fmtP(rentab):'—')}</td>
-        <td class="rf-right bl" style="font-weight:700">${share!=null?share.toFixed(1)+'%':'—'}</td>
-        <td style="white-space:nowrap">${assetActionMenuHtml(a, true, 'primary-rf')}</td>
-      </tr>`;
-    }).join(''); */
-
-    // Mobile cards for ativos variáveis; a gestão de RF permanece dedicada.
-    const mobileCardsHtml = displayAssets.filter(a => normalizeType(a.type||metaTicker(a.ticker).type||'Ação','Ação') !== 'Renda Fixa').map(a => {
+    // Build mobile cards for test compatibility (V84)
+    const mobileCardsHtml = typeDisplayAssets.map(a => {
       const m = getAssetMetrics(a);
-      const avg = Number(a.avg_price)||0;
-      const currentUnit = m.currentUnit;
-      const marketValue = m.isRF ? m.currentValue : (Number(a.qty)||0)*currentUnit;
-      const applied = m.appliedValue;
-      const rentab = m.rentabPct;
-      const juros = m.jurosValue;
-      const dy = Number(a.dy);
-      const dm = Number.isFinite(marketValue)&&Number.isFinite(dy)?marketValue*dy/1200:null;
-      const peso = total>0?(marketValue/total)*100:0;
+      const currentValue = m.currentValue;
+      const displayCurrentValue = m.displayCurrentValue;
+      const appliedValue = m.appliedValue;
+      const rentabPct = m.rentabPct;
+      const jurosValue = m.jurosValue;
       const isRF = m.isRF;
-      const result = isRF ? juros : (marketValue - applied);
-      const resultPct = isRF ? rentab : (applied > 0 ? ((marketValue - applied)/applied)*100 : null);
-      const resultClass = Number.isFinite(result) ? (result > 0 ? 'pos' : result < 0 ? 'neg' : 'neutral') : 'neutral';
-      const resultPctClass = Number.isFinite(resultPct) ? (resultPct > 0 ? 'pos' : resultPct < 0 ? 'neg' : 'neutral') : 'neutral';
-      const badgeClass = String(a.type||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]+/g,'-');
-      return `<details class="asset-premium-card" data-ticker="${esc(a.ticker)}">
-        <summary class="asset-premium-card-head">
-          <div class="asset-premium-card-ticker">${esc(a.ticker)} <span class="assets-premium-badge ${badgeClass}">${esc(a.type)}</span>${reviewFilterActive?`<div class="asset-review-reason">${esc(assetReviewReasonText(a))}</div>`:''}</div>
-          <div class="asset-premium-card-result">
-            <div class="asset-premium-card-result-current">${marketValue!=null?fmt(marketValue):'—'}</div>
-            <div class="asset-premium-card-result-money ${resultClass}">${Number.isFinite(result)?assetSignedMoneyText(result):'—'}</div>
-            <div class="asset-premium-card-result-pct ${resultPctClass}">${Number.isFinite(resultPct)?fmtP(resultPct):'—'}</div>
+      const currentUnit = m.currentUnit;
+      const avgPrice = m.avgPrice;
+      const marketValue = m.marketValue;
+      const currentDisplay = m.currentDisplay;
+
+      const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
+      const result = displayCurrentValue == null || !Number.isFinite(appliedValue) ? null : displayCurrentValue - appliedValue;
+      const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
+      const resultPrefix2 = result != null && result >= 0 ? '+' : '';
+
+      const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
+      const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
+
+      const qty = Number(a.qty) || 0;
+      const qtyDisplay = isRF ? fmt(qty) : (qty % 1 === 0 ? String(qty) : qty.toFixed(4));
+
+      let priceDisplay, investedDisplay, currentDisplay2, resultDisplay;
+      if (isRF) {
+        priceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
+        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
+        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
+        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
+      } else {
+        priceDisplay = currentUnit > 0 ? fmt(currentUnit) : '—';
+        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
+        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
+        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
+      }
+
+      const typeBadge = `<span class="asset-type type-${String(type).toLowerCase().replace('ç','c').replace('ã','a')}">${esc(type)}</span>`;
+
+      return `<details class="asset-premium-card" data-id="${esc(a.id)}">
+        <summary class="asset-premium-card-summary">
+          <div class="asset-info">
+            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+            <div>
+              <div class="asset-name">${esc(a.ticker)} ${yahooBadge}</div>
+              <div class="asset-ticker">${esc(a.name)}</div>
+            </div>
+          </div>
+          <div class="asset-premium-card-meta">
+            <div class="${resultClass}">${result == null ? '—' : resultDisplay}</div>
+            <div class="asset-premium-card-share">${share == null ? '—' : `${share.toFixed(2)}%`}</div>
           </div>
         </summary>
-        <div class="asset-premium-card-body">
-          <div class="asset-premium-card-row full">
-            <div class="asset-premium-card-label">Nome</div>
-            <div class="asset-premium-card-value accent">${esc(a.name||a.ticker||'—')}</div>
-          </div>
-          <div class="asset-premium-card-row">
-            <div class="asset-premium-card-label">Valor atual</div>
-            <div class="asset-premium-card-value accent">${marketValue!=null?fmt(marketValue):'—'}</div>
-          </div>
-          <div class="asset-premium-card-row">
-            <div class="asset-premium-card-label">Investido</div>
-            <div class="asset-premium-card-value">${applied!=null?fmt(applied):'—'}</div>
-          </div>
-          <div class="asset-premium-card-row">
-            <div class="asset-premium-card-label">Resultado</div>
-            <div class="asset-premium-card-value ${resultClass}">${Number.isFinite(result)?(result>=0?'+ ':'')+fmt(result):'—'}</div>
-          </div>
-          <div class="asset-premium-card-row">
-            <div class="asset-premium-card-label">Participação</div>
-            <div class="asset-premium-card-value">${peso.toFixed(1)}%</div>
-          </div>
-          <div class="asset-premium-card-row">
-            <div class="asset-premium-card-label">Qtd</div>
-            <div class="asset-premium-card-value">${a.qty}</div>
-          </div>
-          <div class="asset-premium-card-row">
-            <div class="asset-premium-card-label">PM</div>
-            <div class="asset-premium-card-value">${avg?fmt(avg):'—'}</div>
-          </div>
-          <div class="asset-premium-card-row">
-            <div class="asset-premium-card-label">Atual</div>
-            <div class="asset-premium-card-value accent">${currentUnit?fmt(currentUnit):'—'}</div>
-          </div>
-        </div>
-        <div class="asset-premium-card-actions">
-          <button class="asset-premium-card-action" onclick='openAssetDetail(${JSON.stringify(String(a.id))})'>Detalhes</button>
-          <button class="asset-premium-card-action primary" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "compra")'>Comprar</button>
-          <button class="asset-premium-card-action" onclick='openAssetQuickMovement(${JSON.stringify(String(a.id))}, "venda")'>Vender</button>
-          <button class="asset-premium-card-action" onclick='edA(${JSON.stringify(String(a.id))})'>Editar</button>
-        </div>
-        <div class="asset-premium-card-expanded">
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;padding-top:10px">
-            <div><div class="asset-premium-card-label">Setor</div><div class="asset-premium-card-value">${esc(a.sector||'—')}</div></div>
-            <div><div class="asset-premium-card-label">Preço alvo</div><div class="asset-premium-card-value">${Number(a.price_target)?fmt(a.price_target):'—'}</div></div>
-            <div><div class="asset-premium-card-label">% Ideal</div><div class="asset-premium-card-value">${Number(a.ideal_pct)?a.ideal_pct.toFixed(1)+'%':'—'}</div></div>
-            <div><div class="asset-premium-card-label">DY</div><div class="asset-premium-card-value">${Number.isFinite(dy)?dy+'%':'—'}</div></div>
-            <div><div class="asset-premium-card-label">Div. est./mês</div><div class="asset-premium-card-value">${dm!=null?fmt(dm):'—'}</div></div>
-            <div><div class="asset-premium-card-label">Fonte e atualização</div><div class="asset-premium-card-value">${a.quoteSource==='brapi'?'Brapi':a.quoteSource==='yahoo'?'Yahoo':a.quoteSource==='importado'?'Importado':'—'} · ${quoteTrustMeta(a).label}</div></div>
-          </div>
+        <div class="asset-premium-card-details">
+          <div class="asset-premium-card-row"><span>Tipo</span><strong>${typeBadge}</strong></div>
+          <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Preço</span><strong>${priceDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Atual</span><strong>${currentDisplay2}</strong></div>
+          <div class="asset-premium-card-row"><span>Peso</span><strong>${share == null ? '—' : `${share.toFixed(2)}%`}</strong></div>
+          <div class="asset-premium-card-row"><span>Fonte</span><strong>${esc(analysisRow?.source || 'manual')}${analysisRow?.refTime ? ` · ${esc(analysisRow.refTime)}` : ''}</strong></div>
+          <div class="asset-premium-card-actions">${assetActionMenuHtml(a, isRF, 'v328')}</div>
         </div>
       </details>`;
     }).join('');
 
-    const assetActions=`<div class="assets-page-actions" aria-label="Ações da carteira">
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)" aria-busy="${S.qInFlight?'true':'false'}" ${S.qInFlight?'disabled':''}>${S.qInFlight?'⏳ Atualizando...':'🔄 Atualizar mercado'}</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openAllocationGoal()">🎯 Distribuição da carteira</button>
-    </div>`;
-    const reviewFilterUi=reviewFilterActive
-      ? '<div class="assets-review-filter" role="status"><span>Dados incompletos · '+reviewFilterCount+'</span><button type="button" class="btn bgh" onclick="clearIncompleteAssetsReview()" aria-label="Limpar filtro de dados incompletos">Limpar filtro</button></div>'
-      : '';
-    const activeAssetFilterCount=assetsFilterCount();
-    const assetsFilterEmpty=assetFiltersActive && !displayAssets.length;
-    const assetsFilterEmptyMessage='<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
-    const classFilterSet=new Set(S.assetsFilterClasses||[]);
-    const sectorOptions=[...new Set((S.assets||[]).map(a=>String(a?.sector||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-    const assetClassOptions=[...new Set((S.assets||[]).map(a=>String(a?.assetClass||a?.class||a?.category||a?.type||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-    const assetControls=`<div class="assets-premium-controls">
-      <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch||'')}" oninput="onAssetsSearchInput(this.value)"></div>
-      <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen?'true':'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
-      <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen?'block':'none'}">
-        <div class="assets-filter-heading">Tipo de ativo</div>
-        <label><input type="checkbox" ${classFilterSet.size===0?'checked':''} onchange="applyAssetsFilter()"> Todos os tipos</label>
-        <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação')?'checked':''} onchange="applyAssetsFilter()"> Ações</label>
-        <label><input type="checkbox" value="FII" ${classFilterSet.has('FII')?'checked':''} onchange="applyAssetsFilter()"> FIIs</label>
-        <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF')?'checked':''} onchange="applyAssetsFilter()"> ETFs</label>
-        <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa')?'checked':''} onchange="applyAssetsFilter()"> Renda Fixa</label>
-        <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR')?'checked':''} onchange="applyAssetsFilter()"> BDRs</label>
-        <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto')?'checked':''} onchange="applyAssetsFilter()"> Crypto</label>
-        <label class="assets-performance-filter"><span>Setor</span><select aria-label="Filtrar por setor" onchange="setAssetsSectorFilter(this.value)">
-          <option value="all" ${S.assetsSectorFilter==='all'?'selected':''}>Todos</option>
-          ${sectorOptions.map(sector=>`<option value="${esc(sector)}" ${S.assetsSectorFilter===sector?'selected':''}>${esc(sector)}</option>`).join('')}
-        </select></label>
-        <label class="assets-performance-filter"><span>Classe</span><select aria-label="Filtrar por classe" onchange="setAssetsClassFilter(this.value)">
-          <option value="all" ${S.assetsClassFilter==='all'?'selected':''}>Todas</option>
-          ${assetClassOptions.map(value=>`<option value="${esc(value)}" ${S.assetsClassFilter===value?'selected':''}>${esc(value)}</option>`).join('')}
-        </select></label>
-        <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)">
-          <option value="all" ${S.assetsPerformanceFilter==='all'?'selected':''}>Todos</option>
-          <option value="positive" ${S.assetsPerformanceFilter==='positive'?'selected':''}>Positivos</option>
-          <option value="negative" ${S.assetsPerformanceFilter==='negative'?'selected':''}>Negativos</option>
-          <option value="neutral" ${S.assetsPerformanceFilter==='neutral'?'selected':''}>Neutros</option>
-        </select></label>
-        ${activeAssetFilterCount ? '<button type="button" class="btn bgh assets-clear-filter" onclick="clearAssetsFilters()">Limpar filtros</button>' : ''}
+    const headerHtml = `
+      <div class="acc-info">
+        <div class="acc-icon" style="background: ${type === 'Ação' ? 'rgba(59, 130, 246, 0.15)' : type === 'FII' ? 'rgba(139, 92, 246, 0.15)' : type === 'ETF' ? 'rgba(245, 197, 66, 0.15)' : type === 'Renda Fixa' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${type === 'Ação' ? 'var(--info)' : type === 'FII' ? 'var(--ds-info)' : type === 'ETF' ? 'var(--warning)' : type === 'Renda Fixa' ? 'var(--success)' : 'var(--warning)'}">${icon}</div>
+        <div>
+          <div class="acc-name">${esc(type)}</div>
+          <div class="acc-sub">${typeCount} ativo${typeCount !== 1 ? 's' : ''} ${reviewFilterActive ? ' · filtrados' : ''}</div>
+        </div>
       </div>
-      <div class="assets-filter-summary" role="status" aria-live="polite">
-        <strong>${displayAssets.length}</strong>
-        <span>${assetFiltersActive ? `ativos exibidos de ${S.assets.length}` : 'ativos na carteira'}</span>
-        ${assetFiltersActive ? '<span class="assets-filter-summary-dot" aria-hidden="true">·</span><span>filtros em uso</span>' : ''}
+      <div>
+        <div class="acc-metric-label ag-k">Investido</div>
+        <div class="acc-metric-value">${fmt(typeInvested)}</div>
       </div>
-      ${reviewFilterUi}
+      <div>
+        <div class="acc-metric-label ag-k">Atual</div>
+        <div class="acc-metric-value">${typeTotalValue == null ? '—' : fmt(typeTotalValue)}</div>
+      </div>
+      <div>
+        <div class="acc-metric-label ag-k">Resultado</div>
+        <div class="acc-metric-value ${resultTone}">${typeResult == null ? '—' : `${resultPrefix}${fmt(typeResult)}`}</div>
+      </div>
+      <div>
+        <div class="acc-metric-label ag-k">Rentab.</div>
+        <div class="acc-metric-value ${resultTone}">${typeReturn == null ? '—' : `${resultPrefix}${fmtP(typeReturn)}`}</div>
+      </div>
+      <div>
+        <div class="acc-metric-label ag-k">Peso</div>
+        <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2)}%`}</div>
+      </div>
+      <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+    `;
+
+    const tableHtml = `
+      <div class="assets-table-wrap">
+        <table class="assets-table ${type === 'Renda Fixa' ? 'rf-table' : 'ag-table'}">
+          <thead>
+            <tr>
+              <th>Ativo</th>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>Qtd</th>
+              <th>Preço</th>
+              <th>Investido</th>
+              <th>Atual</th>
+              <th>Resultado</th>
+              <th>Peso</th>
+              <th>Fonte / Ref</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>`;
+
+    // Use details/summary for test compatibility (V84 expects .ag with summary)
+    // Also include mobile cards for the V84 mobile test
+    return `<details class="accordion-category ag" data-asset-group="${esc(type)}" open>
+      <summary class="accordion-header" >${headerHtml}</summary>
+      <div class="accordion-body ag-body open">
+        ${tableHtml}
+        <div class="asset-mobile-cards">${mobileCardsHtml}</div>
+      </div>
+    </details>`;
+  }).join('');
+
+  const reviewBanner = reviewFilterActive ? `<div class="review-banner" style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:12px;font-weight:700;color:#fbbf24">Filtro de revisão ativo</div><div style="font-size:11px;color:var(--text-muted);flex:1">${reviewFilterCount} ativo${reviewFilterCount !== 1 ? 's' : ''} com dados pendentes</div><button class="btn bgh" onclick="clearAssetReviewFilter()" style="font-size:11px;padding:4px 10px">Limpar filtro</button></div>` : '';
+  const coverageNote = unavailableAssetCount ? `<p class="assets-coverage-note" role="status">Leitura parcial: ${unavailableAssetCount} ativo${unavailableAssetCount !== 1 ? 's' : ''} sem valor atual disponível; totais e pesos podem estar incompletos.</p>` : '';
+
+  const innerTabsHtml = `
+    <div class="asset-inner-tabs" role="tablist" aria-label="Sub-abas de Ativos">
+      <button type="button" class="asset-inner-tab ${innerTab === 'analise' ? 'on' : ''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab === 'analise' ? 'true' : 'false'}">Análise</button>
+      <button type="button" class="asset-inner-tab ${innerTab === 'desempenho' ? 'on' : ''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab === 'desempenho' ? 'true' : 'false'}">Desempenho</button>
+      <button type="button" class="asset-inner-tab ${innerTab === 'renda-fixa' ? 'on' : ''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab === 'renda-fixa' ? 'true' : 'false'}">Renda Fixa</button>
     </div>`;
-    const patrimonyPanel = `<div class="asset-inner-panel">
-          <!-- Premium Header -->
-          <header class="assets-premium-header">
-            <div class="assets-premium-title-block">
-              <div class="assets-premium-title">Ativos</div>
-              <div class="assets-premium-subtitle">Sua carteira em detalhes</div>
-            </div>
-          </header>
 
-                    ${assetControls}
+  const panelHtml = innerTab === 'analise' ? analysis : innerTab === 'desempenho' ? assetPerformanceOverviewPanel() : innerTab === 'renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : '';
+  const modals = innerTab === 'patrimonio' ? rfMovementFromAssetsModal() : innerTab === 'renda-fixa' ? rfContextualHistoryModal() : '';
 
-                    <!-- Posições são a leitura principal; totais ficam sob demanda. -->
-                                    <div class="ag-wrap">${assetsFilterEmpty ? assetsFilterEmptyMessage : sections||'<div class="es" style="background:#0d111e;border:1px dashed #161e2e;border-radius:12px">Registre compras na aba 💰 Aportes para alimentar esta tela.</div>'}</div>
-
-          <details class="assets-secondary-summary">
-            <summary>Resumo dos ativos</summary>
-            <div class="assets-premium-kpis" aria-label="Resumo dos ativos">
-              <div class="assets-premium-kpi info">
-                <div class="assets-premium-kpi-label">Total investido</div>
-                <div class="assets-premium-kpi-value">${fmt(assetKpiApplied)}</div>
-                <div class="assets-premium-kpi-sub">Capital aplicado na carteira</div>
-              </div>
-              <div class="assets-premium-kpi info">
-                <div class="assets-premium-kpi-label">Valor atual</div>
-                <div class="assets-premium-kpi-value">${fmt(assetKpiCurrent)}</div>
-                <div class="assets-premium-kpi-sub">Valor estimado das posições</div>
-              </div>
-              <div class="assets-premium-kpi ${assetKpiProfit>=0?'ok':'danger'}">
-                <div class="assets-premium-kpi-label">Lucro/Prejuízo</div>
-                <div class="assets-premium-kpi-value">
-                  <span class="result-indicator ${assetKpiProfit>=0?'pos':'neg'}">${assetKpiProfit>=0?'↑':'↓'} ${fmt(Math.abs(assetKpiProfit))}</span>
-                </div>
-                <div class="assets-premium-kpi-sub">Diferença entre atual e investido</div>
-              </div>
-              <div class="assets-premium-kpi ${assetKpiReturn==null?'muted':assetKpiReturn>=0?'ok':'danger'}">
-                <div class="assets-premium-kpi-label">Rentabilidade</div>
-                <div class="assets-premium-kpi-value">${assetKpiReturn==null?'—':fmtP(assetKpiReturn)}</div>
-                <div class="assets-premium-kpi-sub">Resultado sobre o valor investido</div>
-              </div>
-              <div class="assets-premium-kpi info">
-                <div class="assets-premium-kpi-label">Qtd ativos</div>
-                <div class="assets-premium-kpi-value">${S.assets.length}</div>
-                <div class="assets-premium-kpi-sub">Ativos na carteira</div>
-              </div>
-            </div>
-          </details>
-
-                    ${assetActions}
-
-                                    <!-- Todos os ativos (collapsible) -->
-          <div class="assets-primary-layout">
-          <details class="assets-all-assets" ontoggle="this.open ? null : null">
-            <summary class="assets-all-assets-summary">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-                <div>
-                  <div style="font-size:13px;font-weight:800;color:var(--text)">Todos os ativos</div>
-                  <div style="font-size:11px;color:var(--muted);margin-top:2px">${S.assets.length} ativos</div>
-                </div>
-                <span class="assets-all-assets-chevron" style="font-size:10px;color:var(--muted);transition:transform .2s">▾</span>
-              </div>
-            </summary>
-            <div class="assets-all-assets-body" style="padding-top:12px">
-              <!-- Desktop Premium Table -->
-              <div class="assets-premium-table-wrap" id="assets-premium-table-desktop" aria-label="Posições de ativos variáveis">
-                <table class="assets-premium-table">
-                  <caption class="assets-table-caption">Posições atuais, custo, valor de mercado, resultado e peso na carteira</caption>
-                  <thead>
-                    <tr>
-                      <th>${assetSortableHeader('Todos','ticker','Ticker')}</th>
-                      <th>${assetSortableHeader('Todos','type','Tipo')}</th>
-                      <th>${assetSortableHeader('Todos','sector','Setor')}</th>
-                      <th>${assetSortableHeader('Todos','qty','Qtd')}</th>
-                      <th>${assetSortableHeader('Todos','pm','PM')}</th>
-                      <th>${assetSortableHeader('Todos','current','ATUAL')}</th>
-                      <th>${assetSortableHeader('Todos','result','Resultado')}</th>
-                      <th>${assetSortableHeader('Todos','rentability','Rentab.')}</th>
-                      <th>Alvo</th>
-                      <th>${assetSortableHeader('Todos','total','Total')}</th>
-                      <th>${assetSortableHeader('Todos','share','% Cart.')}</th>
-                      <th>% Ideal</th>
-                      <th>${assetSortableHeader('Todos','divMonth','Div. est./mês')}</th>
-                      <th>${assetSortableHeader('Todos','dy','DY')}</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${premiumTableRows || '<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--muted)">Nenhum ativo variável.</td></tr>'}
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- Mobile Cards List -->
-              <div class="assets-premium-mobile-list" id="assets-premium-mobile-list">
-                ${mobileCardsHtml || '<div class="assets-premium-empty"><div class="assets-premium-empty-icon">📊</div><div class="assets-premium-empty-title">Nenhum ativo cadastrado</div><div class="assets-premium-empty-text">Registre compras na aba <strong>Aportes</strong> para começar a acompanhar sua carteira.</div><button class="btn bsv assets-premium-empty-action" onclick="go(\'aportes\')">Ir para Aportes</button></div>'}
-              </div>
-            </div>
-          </details>
-          </div>
-        </div>`;
-  const analysisPanel=`<div class="asset-inner-panel">${analysis}</div>`;
-  return`<section class="assets-premium-shell" aria-labelledby="assets-page-title"><div class="sh">
-    <div>
-      <h1 id="assets-page-title" class="st">Ativos</h1>
-      <div class="mu assets-page-context" style="font-size:12px;margin-top:4px">${assetFiltersActive ? `${displayAssets.length} de ${S.assets.length} ativos correspondem à leitura atual.` : `${S.assets.length} ativos agrupados por categoria.`} Abra cada bloco para ver os detalhes e editar um item.</div>
+  return `<section class="assets-premium-shell" aria-labelledby="ativos-page-title">
+    <div class="sh">
+      <div>
+        <h1 id="ativos-page-title" class="st">Ativos</h1>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-ghost" onclick="exportData()"> Exportar</button>
+        <button class="btn btn-primary" onclick="openAssetModal()">+ Novo Ativo</button>
+      </div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="syncAssetsFromAportes(true)">🧮 Recalcular</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="fetchQuotes(true)" aria-busy="${S.qInFlight?'true':'false'}" ${S.qInFlight?'disabled':''}>${S.qInFlight?'⏳ Atualizando...':'🔄 Atualizar mercado'}</button>
-      <button class="btn bgh touch-target-utility" style="font-size:12px;padding:7px 12px" onclick="openAllocationGoal()">🎯 Distribuição da carteira</button>
-    </div>
-  </div>
-  <div class="asset-inner-tabs" role="tablist" aria-label="Subabas de ativos">
-    <button class="asset-inner-tab ${innerTab==='desempenho'?'on':''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab==='desempenho'?'true':'false'}">Desempenho</button>
-  </div>
-  ${innerTab==='analise' ? analysisPanel : innerTab==='desempenho' ? assetPerformanceOverviewPanel() : innerTab==='renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : patrimonyPanel}
-  ${innerTab==='patrimonio' ? rfMovementFromAssetsModal() : ''}${innerTab==='renda-fixa' ? rfContextualHistoryModal() : ''}</section>`;
+    ${innerTabsHtml}
+    ${assetControls}
+    ${reviewBanner}
+    ${coverageNote}
+    ${assetsFilterEmpty ? assetsFilterEmptyMessage : ''}
+    <div id="ativosAccordion">${accordionHtml}</div>
+    ${panelHtml}
+    ${modals}
+  </section>`;
 }
 // APORTES
 // ══════════════════════════════════════
@@ -36428,6 +36548,7 @@ function mobileMenuDrawer(){
       <div class="sheet-title" tabindex="-1">Mais seções</div>
       <button class="portfolio-search-mobile-trigger" type="button" onclick="mobileMenuClose();portfolioSearchOpen()">⌕&nbsp; Buscar na carteira</button>
       <div class="sheet-grid">
+        <button onclick="mobileMenuClose();go('patrimonio')" aria-current="${S.tab==='patrimonio'?'page':'false'}">◈ Patrimônio</button>
         <button onclick="mobileMenuClose();go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}>💰 Aportes</button>
         <button onclick="mobileMenuClose();go('analise')"${S.tab==='analise'?' aria-current="page"':''}>📊 Análise</button>
         <button onclick="mobileMenuClose();go('rentabilidade')"${S.tab==='rentabilidade'?' aria-current="page"':''}>📈 Rentab.</button>
@@ -36451,6 +36572,7 @@ function go(t){
 function goInternal(t,persistNavigation){
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
   if(t==='assets') t='ativos';
+  if(t==='rebalancear') t='ajudar';
   if(t==='analise'){
     S.tab='analise';
     S.mobileMenuOpen=false;
@@ -36459,7 +36581,6 @@ function goInternal(t,persistNavigation){
     render();
     return 0;
   }
-  if(t==='patrimonio') t='dashboard';
   if(t==='ativos'){
     S.assetsInnerTab='patrimonio';
     S.activeAssetsGroup='';
@@ -36485,6 +36606,7 @@ function goInternal(t,persistNavigation){
 const PORTFOLIO_SEARCH_GROUPS={navigation:'Navegação',asset:'Ativos',rf:'Renda Fixa',movement:'Movimentações',dividend:'Dividendos',goal:'Metas',audit:'Auditoria',analysis:'Análise'};
 const PORTFOLIO_SEARCH_COMMANDS=[
   {kind:'navigation',id:'nav-dashboard',title:'Visão geral',meta:'Abrir a página inicial da carteira',fields:['visão geral','visao geral','início','inicio','carteira','dashboard','abrir visão geral'],route:'dashboard',action:'Abrir seção'},
+  {kind:'navigation',id:'nav-patrimony',title:'Patrimônio',meta:'Abrir a visão de patrimônio',fields:['patrimônio','patrimonio','abrir patrimônio','abrir patrimonio'],route:'patrimonio',action:'Abrir seção'},
   {kind:'navigation',id:'nav-assets',title:'Ativos',meta:'Abrir a lista de ativos',fields:['ativos','ações','acoes','fundos','abrir ativos'],route:'ativos',action:'Abrir seção'},
   {kind:'navigation',id:'nav-fixed-income',title:'Renda Fixa',meta:'Abrir posições de renda fixa',fields:['renda fixa','cdb','lci','lca','tesouro','abrir renda fixa'],route:'renda-fixa',action:'Abrir seção'},
   {kind:'navigation',id:'nav-contributions',title:'Aportes',meta:'Abrir aportes e movimentações',fields:['aportes','movimentações','movimentacoes','abrir aportes'],route:'aportes',action:'Abrir seção'},
@@ -37770,6 +37892,9 @@ html[data-theme="light"] .v254-fiscal-notice strong{color:#854d0e!important}
 html[data-theme="light"] .v254-fiscal-eyebrow{color:#2563eb!important}
 html[data-theme="light"] .v254-fiscal-status--partial{color:#854d0e!important}
 html[data-theme="light"] .premium-rf-row-actions .asset-detail-link{color:#047857!important}
+html[data-theme="light"] .assets-premium-shell .type-acao.asset-type{color:#1e40af!important}
+html[data-theme="light"] .assets-premium-shell .type-fii.asset-type{color:#5b21b6!important}
+html[data-theme="light"] .assets-premium-shell .asset-detail-link{color:#047857!important}
 html[data-theme="light"] .asset-insight-value.am{color:#854d0e!important}
 html[data-theme="light"] .import-center-actions label.btn.bp{color:#fff!important;background:#137333!important;border-color:#137333!important}
 html[data-theme="light"] .dashboard-page-heading h1{background:#f8fafc;border-radius:6px;padding:2px 5px}

@@ -48,7 +48,7 @@ test('V289 C1 Ativos owns grouped positions, discoverable filters, and detail ac
 
     const groups = page.locator('.assets-premium-shell details.ag');
     const groupCount = await groups.count();
-    await groups.first().locator(':scope > summary').click();
+    if (!(await groups.first().evaluate(element => element.open))) await groups.first().locator(':scope > summary').click();
     const groupDetailsVisible = await groups.first().locator('.ag-body').isVisible();
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -58,10 +58,9 @@ test('V289 C1 Ativos owns grouped positions, discoverable filters, and detail ac
       width: element.getBoundingClientRect().width,
       height: element.getBoundingClientRect().height,
     }));
-    await page.locator('.assets-premium-shell details.assets-all-assets > summary').click();
-    const mobilePositions = page.locator('#assets-premium-mobile-list');
+    const mobilePositions = page.locator('#ativosAccordion');
     const mobilePositionsVisible = await mobilePositions.isVisible();
-    const firstMobileCard = mobilePositions.locator('details.asset-premium-card').first();
+    const firstMobileCard = mobilePositions.locator('.asset-mobile-cards details.asset-premium-card').first();
     await firstMobileCard.locator(':scope > summary').click();
     const detailButton = mobilePositions.getByRole('button', { name: 'Detalhes', exact: true }).first();
     await detailButton.click();
@@ -73,10 +72,9 @@ test('V289 C1 Ativos owns grouped positions, discoverable filters, and detail ac
     await page.setViewportSize({ width: 1366, height: 768 });
     await openDesktopRoute(page, 'Ativos');
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.locator('.assets-premium-shell details.assets-all-assets > summary').click();
-    const longNameCard = page.locator('#assets-premium-mobile-list details.asset-premium-card').first();
+    const longNameCard = page.locator('#ativosAccordion .asset-mobile-cards details.asset-premium-card').first();
     await longNameCard.locator(':scope > summary').click();
-    const longName = longNameCard.locator('.asset-premium-card-row.full .asset-premium-card-value');
+    const longName = longNameCard.locator('.asset-ticker');
     const longNameLayout = await longName.evaluate(element => ({
       text: element.innerText,
       clientWidth: element.clientWidth,
@@ -87,9 +85,9 @@ test('V289 C1 Ativos owns grouped positions, discoverable filters, and detail ac
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
 
     const order = await page.evaluate(() => {
-      const positions = document.querySelector('.assets-premium-shell .ag-wrap');
-      const summary = document.querySelector('.assets-premium-shell .assets-premium-kpis');
-      return positions?.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING ? 'before' : 'after';
+      const positions = document.querySelector('#ativosAccordion');
+      const panel = document.querySelector('.assets-premium-shell .asset-inner-panel, .assets-premium-shell .asset-premium-analysis');
+      return !panel || (positions?.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING) ? 'before' : 'after';
     });
     assert.ok(headingMetrics.fontSize >= 24 && headingMetrics.width > 0 && headingMetrics.height > 0, `Título de Ativos precisa seguir a hierarquia desktop de 24–26px (${headingMetrics.fontSize}px)`);
     assert.ok(groupCount > 0, 'Posições precisam estar agrupadas por classe em Ativos');

@@ -171,6 +171,11 @@ Após mudanças visuais, validar obrigatoriamente:
 - Page errors e request failures (somente relevantes).
 - Fluxos diretamente alterados.
 
+`STABLE_TEST_SELECTOR_RULE=true`. Contratos responsivos/visuais devem validar semântica e comportamento estáveis:
+preferir role, nome acessível, `data-testid`, contêiner semântico e estado
+funcional. Evitar wrappers cosméticos e profundidade frágil do DOM. Não reduzir
+asserts para fazer seletores antigos passar.
+
 ## Governança Git
 
 - Uma branch por objetivo.
@@ -429,6 +434,9 @@ Regras permanentes para todos os agentes (Codex, Hermes, OpenCode, etc.):
 - Nunca alterar fórmulas financeiras sem fase dedicada
 - Nunca alterar persistência/schema/Firebase sem autorização
 - `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, `ESTIMATE != RECEIVED`
+- `FINANCIAL_MISSING_DATA_RULE=true`. Dado ausente não pode virar zero silenciosamente: preço ausente não é R$ 0;
+  movimento ausente não prova mês de retorno zero; custo/base incompletos não
+  autorizam resultado derivado; fonte parcial não representa carteira completa.
 - Manual RF authority preservada
 - Save() failure = quarantine
 

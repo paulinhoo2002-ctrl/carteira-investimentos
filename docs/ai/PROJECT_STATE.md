@@ -9,6 +9,18 @@
 - V323 continua somente leitura até PR #445 ser incorporada e o CI pós-merge passar. Provider QA real e persistência cloud seguem externos; `MERGE=false`.
 # Project State
 
+## V328 — estabilização das telas premium e continuidade (2026-10-07)
+
+- Estado atual confirmado: worktree registrada `C:\Projetos\carteira-investimentos.worktrees\v328-preparation`, branch `v328-preparation`, HEAD `943449b51d8fd768246305e85aa4b24a2c27755e`, 5 commits à frente de `origin/main` (`8a62885ee88a3f12daee354fb79cb9d643bd9596`). PR #451 está OPEN/DRAFT/MERGEABLE. Documentos de governança e a especificação V329 estão com alterações locais pendentes de commit/push; `V328_PREPARATION_MATRIX.md` continua não rastreado e excluído.
+- Ativos estabilizado: busca, filtros, acordeões, ações, RF e estados UNKNOWN permanecem cobertos. Valores sem fonte seguem indisponíveis, sem mudança de cálculo.
+- Patrimônio: além de não haver snapshots de valuation histórico, a cobertura dos movimentos não é certificada. A UI exibe a série somente nos meses com movimentos registrados, deixa lacunas sem valor e não trata ausência como zero. Totais/resultados/composição ficam indisponíveis quando valores correntes ou base aplicada estão parciais, ausentes ou sem capital aplicado. Fórmulas, schema e persistência não mudaram.
+- Telas Dividendos, Dashboard, Patrimônio, Metas, Rentabilidade, Rebalancear e Ativos passaram matriz browser sintética em tema claro/escuro nas larguras 390/430/768/1366/1440/1536/1920, sem overflow/clipping; harness confirmou ausência de writes locais inesperados, requests Firebase, erros de página e console.
+- Evidência local no HEAD de implementação: `verify:release` PASS (legacy 255/255, modern 820/820, QA harness 3/3, `qa:all`, build legacy/modern e V289 visual 9/9); V84 4/4; A11Y 19/19; performance 96/96; regressões focadas de Patrimônio 4/4. `git diff --check` PASS.
+- CI exato de #451 no HEAD atual: run `37647140501` SUCCESS; Build and test, V289 visual regression, Auth and Firestore emulator QA e Vercel Preview passaram. A falha anterior por seletores antigos foi corrigida no teste; não há falha corrente demonstrada. Gates locais frescos no mesmo HEAD: legacy 255/255, modern 820/820, V84 4/4, A11Y 19/19, performance 96/96, QA harness 3/3, V289 9/9, `qa:all`, `verify:release`, builds legacy/modern e `git diff --check` PASS.
+- Avisos não bloqueantes: Vite CJS API deprecada, contrato readonly de relatórios no build e diagnósticos de clickable-div no script A11Y; os gates correspondentes passaram. A matriz não rastreada permanece local e excluída da publicação por conter afirmações ainda não comprovadas.
+- `V328_STATUS=READY_FOR_HUMAN_REVIEW` para o estado de produto no HEAD remoto atual; `BLOCKER=0`; `MAJOR=0`; `MINOR=1` (avisos/ferramentas e diagnósticos acima). O novo HEAD documental requer CI pós-push. Dados financeiros reais, importação, restauração, writes financeiros e produção não foram usados; PR #451 continua Draft; `MERGE=false`.
+- `TEST_CERTIFICATION_FRESHNESS_RULE=true`; regras de continuidade ficam em `PROJECT_CONTINUITY_POLICY.md`. `MERGE=false`.
+
 #
 # V317 — certificação de ações financeiras (2026-10-04)
 

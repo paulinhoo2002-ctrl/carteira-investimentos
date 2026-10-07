@@ -200,6 +200,77 @@ test('V289 final route matrix renders every route in both themes at 390 and 1366
   }
 });
 
+test('V328 Patrimônio abre pela navegação desktop e mobile', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await runtime.page.locator('.tabs-desktop').getByRole('button', { name: 'Patrimônio' }).click();
+    await runtime.page.waitForFunction(() => S.tab === 'patrimonio');
+    assert.equal(await runtime.page.locator('.patrimonio-premium').count(), 1);
+
+    await runtime.page.setViewportSize({ width: 390, height: 844 });
+    await runtime.page.getByRole('button', { name: 'Abrir navegação complementar' }).click();
+    await runtime.page.locator('#investMenuDrawer').getByRole('button', { name: /Patrimônio/ }).click();
+    await runtime.page.waitForFunction(() => S.tab === 'patrimonio');
+    assert.equal(await runtime.page.locator('.patrimonio-premium').count(), 1);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+test('V328 premium screens remain readable across the responsive viewport matrix', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  const screens = [
+    ['Dividendos', 'dividendos'],
+    ['Dashboard', 'dashboard'],
+    ['Patrimônio', 'patrimonio'],
+    ['Metas', 'metas'],
+    ['Rentabilidade', 'rentabilidade'],
+    ['Rebalancear', 'ajudar'],
+    ['Ativos', 'ativos'],
+  ];
+  try {
+    for (const viewport of MATRIX_VIEWPORTS) {
+      await runtime.page.setViewportSize(viewport);
+      await applyV289VisualFixture(runtime.page, 'baseline');
+      for (const theme of THEMES) {
+        for (const [screen, route] of screens) {
+          if (route === 'patrimonio') {
+            await runtime.page.evaluate(({ theme }) => {
+              applyTheme(theme);
+              S.tab = 'patrimonio';
+              render();
+            }, { theme });
+            await runtime.page.waitForFunction(() => S.tab === 'patrimonio');
+          } else {
+            await setThemeAndRoute(runtime.page, theme, route);
+          }
+          const layout = await inspectLayout(runtime.page);
+          assert.ok(layout.heading || layout.rootText.length > 20, `${screen} has no visible content at ${viewport.width}px/${theme}`);
+          assert.equal(layout.pageOverflow, false, `${screen} overflows at ${viewport.width}px/${theme}`);
+          assert.deepEqual(layout.clipped, [], `${screen} clips a visible control at ${viewport.width}px/${theme}: ${JSON.stringify(layout.clipped)}`);
+          assert.deepEqual(layout.criticalLabels, [], `${screen} has an unreadable heading at ${viewport.width}px/${theme}`);
+          if (screen === 'Patrimônio') {
+            assert.match(layout.rootText, /Aportes líquidos acumulados/, 'Patrimônio contribution series label missing at ' + viewport.width + 'px/' + theme);
+            assert.match(layout.rootText, /Histórico patrimonial indisponível/i, 'Patrimônio history availability missing at ' + viewport.width + 'px/' + theme);
+            assert.doesNotMatch(layout.rootText, /Evolução do Patrimônio|Melhor evolução estimada|Pior evolução estimada/, 'Patrimônio must not present estimates as historical valuation at ' + viewport.width + 'px/' + theme);
+          }
+          if (screen === 'Ativos') {
+            assert.ok(layout.assetMetricLabels.length > 0, `Ativos group metrics missing at ${viewport.width}px/${theme}`);
+            assert.ok(layout.assetMetricLabels.every(item => item.font >= 12), `Ativos group labels too small at ${viewport.width}px/${theme}`);
+          }
+        }
+      }
+    }
+    assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
+    assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
+    assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
 test('V289 representative Dashboard, Ativos and Confiabilidade matrix covers remaining widths', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
   try {
@@ -226,6 +297,74 @@ test('V289 representative Dashboard, Ativos and Confiabilidade matrix covers rem
     assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
     assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
     assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Ativos mantém valor indisponível como desconhecido, nunca como zero', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'partial');
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    const row = runtime.page.locator('.assets-premium-shell tr[data-id="QA_ASSET_B"]');
+    const values = await row.locator('td').evaluateAll(cells => cells.map(cell => cell.textContent.trim()));
+    assert.equal(values[6], '—', 'valor atual ausente deve ficar indisponível');
+    assert.equal(values[7], '—', 'rentabilidade sem valor atual deve ficar indisponível');
+    assert.equal(values[8], '—', 'peso sem valor atual deve ficar indisponível');
+    const categoryMetrics = await runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="FII"] .acc-metric-value').allInnerTexts();
+    assert.deepEqual(categoryMetrics.slice(1), ['—', '—', '—', '—'], 'agregados da categoria incompleta não podem transformar valor ausente em perda ou peso zero');
+    const rowWeights = await runtime.page.locator('.assets-premium-shell tbody tr td:nth-child(9)').allInnerTexts();
+    assert.ok(rowWeights.length > 0 && rowWeights.every(value => value.trim() === '—'), 'pesos individuais também ficam indisponíveis quando o denominador da carteira é parcial');
+    assert.match(await runtime.page.locator('.assets-coverage-note').innerText(), /parcial|indisponível/i);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Patrimônio mantém valores correntes e base aplicada indisponíveis quando a carteira é parcial', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'partial');
+    await runtime.page.evaluate(() => {
+      S.tab = 'patrimonio';
+      render();
+    });
+    await runtime.page.waitForFunction(() => S.tab === 'patrimonio');
+    const current = await runtime.page.locator('.patrimonio-kpi-main .patrimonio-kpi-value').innerText();
+    const result = await runtime.page.locator('.patrimonio-kpi').nth(1).innerText();
+    assert.equal(current.trim(), '—', 'total da carteira parcial não pode parecer completo');
+    assert.match(result, /indisponível|parcial|incompleta/i, 'resultado não pode ser calculado com valores correntes parciais');
+    assert.equal(await runtime.page.locator('.patrimony-month-row').count(), 1, 'meses sem movimento não podem aparecer como aporte acumulado zero');
+    await runtime.page.evaluate(() => {
+      S.assets.forEach(asset => { asset.avg_price = null; asset.appliedValue = null; });
+      render();
+    });
+    const applied = await runtime.page.locator('.patrimonio-kpi').nth(2).innerText();
+    const percent = await runtime.page.locator('.patrimonio-kpi').nth(3).innerText();
+    assert.match(applied, /indisponível|desconhecida/i, 'base aplicada ausente deve permanecer desconhecida');
+    assert.match(percent, /indisponível|desconhecida/i, 'percentual sem base aplicada não pode ser exibido como zero');
+    await runtime.page.evaluate(() => {
+      S.assets.forEach(asset => { asset.type = 'Ação'; asset.avg_price = 0; });
+      render();
+    });
+    const zeroBasis = await runtime.page.locator('.patrimonio-kpi').nth(3).innerText();
+    assert.match(zeroBasis, /indisponível|desconhecida/i, 'percentual sem capital aplicado não pode sugerir retorno de zero');
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Análise abre a tela LEGACY de Rebalancear pelo CTA contextual', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await runtime.page.evaluate(() => goInternal('analise', false));
+    await runtime.page.getByRole('button', { name: 'Abrir rebalanceamento' }).click();
+    await runtime.page.waitForFunction(() => S.tab === 'ajudar');
+    assert.match(await runtime.page.locator('#root .wrap').innerText(), /Rebalancear|alocação atual/i);
     await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);

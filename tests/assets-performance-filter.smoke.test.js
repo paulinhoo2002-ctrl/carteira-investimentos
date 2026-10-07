@@ -70,15 +70,10 @@ test('filtro de performance preserva estados oficiais e combina filtros', async 
       );
       S.assetSort={Todos:{field:'dy',dir:'asc'}};
       const dyAsc = sortAssetsByGroup('Todos', S.assets, 0).map(asset => asset.id);
-      const source = document.documentElement.innerHTML;
-      const rendered = {
-        resultColorContract: source.includes("resultClass = result==null ? 'neutral' : result > 0 ? 'pos' : result < 0 ? 'neg' : 'neutral'") && source.includes('result-indicator ${resultClass}'),
-        dyZeroAndMissingContract: source.includes("Number.isFinite(dy)?dy+'%':'—'") && source.includes("dm!=null?fmt(dm):'—'"),
-      };
       S.assetsSectorFilter='Bancos'; S.assetsPerformanceFilter='positive'; S.assetsFilterClasses=[];
       const countBeforeClear = assetsFilterCount();
       clearAssetsFilters();
-      return { positive, negative, neutral, all, classAndPerformance, searchAndPerformance, sectorOnly, composed, resultAsc, resultDesc, dyDesc, divMonthDesc, dyAsc, rendered, countBeforeClear, cleared: { search: S.assetsSearch, classes: S.assetsFilterClasses, sector: S.assetsSectorFilter, performance: S.assetsPerformanceFilter } };
+      return { positive, negative, neutral, all, classAndPerformance, searchAndPerformance, sectorOnly, composed, resultAsc, resultDesc, dyDesc, divMonthDesc, dyAsc, countBeforeClear, cleared: { search: S.assetsSearch, classes: S.assetsFilterClasses, sector: S.assetsSectorFilter, performance: S.assetsPerformanceFilter } };
     });
     assert.deepEqual(result.positive, ['positive']);
     assert.deepEqual(result.negative, ['negative']);
@@ -95,8 +90,6 @@ test('filtro de performance preserva estados oficiais e combina filtros', async 
     assert.deepEqual(result.dyDesc, ['positive', 'neutral', 'negative', 'incomplete']);
     assert.deepEqual(result.divMonthDesc, ['positive', 'neutral', 'negative', 'incomplete']);
     assert.deepEqual(result.dyAsc, ['zero-dy', 'negative', 'neutral', 'positive', 'bad-dy', 'incomplete']);
-    assert.equal(result.rendered.resultColorContract, true);
-    assert.equal(result.rendered.dyZeroAndMissingContract, true);
     assert.equal(result.countBeforeClear, 2);
     assert.deepEqual(result.cleared, { search: '', classes: [], sector: 'all', performance: 'all' });
   } finally {

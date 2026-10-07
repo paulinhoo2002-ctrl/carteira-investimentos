@@ -12,18 +12,15 @@ const panel = source.slice(start, end);
 test('evolucao usa a serie real de aportes acumulados e nao a rotula como patrimonio', () => {
   assert.ok(start >= 0 && end > start, 'painel patrimonial precisa existir');
   assert.match(panel, /histórico patrimonial ainda não disponível/i);
-  assert.match(panel, /Patrimônio consolidado/);
-  assert.match(panel, /Aportes líquidos acumulados/);
+  assert.match(panel, /cobertura do histórico desconhecida/);
+  assert.match(panel, /Aportes líquidos registrados/);
   assert.match(panel, /dashboard-patrimony-chart/);
   assert.match(panel, /lineChart\(/);
-  // Proveniência verificada: patrimonySnapshot().cumulative é construído a
-  // partir de S.aportes (aportes líquidos com sinal + baseline pré-janela),
-  // ou seja, capital aportado acumulado — não valor de mercado. O rótulo
-  // correto da série é "Aportes acumulados"; rotulá-la como "Patrimônio"
-  // seria semântica financeira falsa (CURRENT_STATE != HISTORICAL_STATE).
-  assert.match(panel, /tooltipLabel:'Aportes acumulados'/);
+  // Meses sem movimentos têm lacunas explícitas; a série nunca afirma cobertura completa.
+  assert.match(panel, /row\.movementCount\?row\.cumulative:null/);
+  assert.match(panel, /tooltipLabel:'Aportes registrados'/);
   assert.doesNotMatch(panel, /tooltipLabel:'Patrimônio'/, 'série de aportes não pode se apresentar como patrimônio de mercado');
-  assert.match(panel, /Histórico patrimonial indisponível/, 'painel precisa declarar que o histórico patrimonial não está disponível');
+  assert.match(panel, /Histórico patrimonial ainda não disponível/, 'painel precisa declarar que o histórico patrimonial não está disponível');
   assert.match(panel, /snapshot\.months\.map\(row=>row\.label\)/);
 });
 
