@@ -2,11 +2,11 @@
 
 ## V331 — refinamento visual local (2026-10-07)
 
-- Worktree `C:\Projetos\carteira-investimentos.worktrees\v331-premium-refinement-daily-use`, branch `codex/v331-premium-refinement-daily-use`, HEAD/base `371db2b6e12b16676c92ddc8c41d8b36cd282be6` antes das alterações. O branch não tem commit V331 nem referência remota própria.
+- PR #454 é documental (`codex/v331-governance-docs`, HEAD `5962b2ab90c42a288bb11efdbac637e2118ec45c`, base `codex/v330-data-source-reconciliation`); PR #455 contém somente produto/teste (`codex/v331-premium-refinement-daily-use`, HEAD `226dfa6203a71c37c2b6d929811a149cbf9fd59c`, base `codex/v331-governance-docs`). Ambos OPEN/DRAFT/MERGEABLE; PR #453 permanece intacto.
 - A revisão sintética encontrou cinco métricas de classe de Ativos fora do contêiner `.ag-stats` requerido pelos estilos responsivos; isso fazia os indicadores de valor atual e peso extrapolarem o cartão em notebook. O markup agora usa o wrapper/itens sem alterar cálculos, e o breakpoint 768–1199 px mantém todas as cinco métricas visíveis.
 - Capturas locais de 11 telas/viewport em `.qa-state/v331-premium-refinement/`; evidência sintética, fora do Git. Sem dados reais, escrita financeira, importação, restauração ou ação de produção.
-- `npm ci` PASS, manifests inalterados. `npm run verify:release` PASS: inclui testes legados/modernos, V330, V84, `qa:all`, builds e matriz visual/Axe; `git diff --check` PASS. Revisão do diff: 0 BLOCKER, 0 MAJOR; CI e Preview do futuro SHA permanecem NÃO EXECUTADOS porque não houve publicação.
-- Próximo: após autorização humana exigida pelo `AGENTS.md`, criar commits coerentes, push normal e Draft PR; então aguardar CI e Preview no SHA exato. Merge continua proibido.
+- `npm ci` PASS, manifests inalterados. `npm run verify:release` PASS: inclui testes legados/modernos, V330, V84, `qa:all`, builds e matriz visual/Axe 14/14; `git diff --check` PASS. Checks Vercel dos SHAs PASS; não foi criada execução GitHub Actions. Preview Vercel do SHA `226dfa6` READY, mas o conteúdo exige login Google e não foi autenticado. BLOCKER=0, MAJOR=0 na revisão local; QA autenticado do Preview permanece pendente.
+- Próximo gate: revisão humana dos Draft PRs #454 e #455. Login QA somente no Preview e por contexto dedicado se a validação autenticada for necessária. Nenhum segredo foi solicitado/inserido; sem real data/write/import/restore, produção ou merge.
 
 ## V330 — reconciliação de notas de corretagem (2026-10-07)
 
