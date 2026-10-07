@@ -1,3 +1,12 @@
+## V329 — trust e insights (2026-10-07)
+
+- V328/PR #451 MERGED em `2d79860c9cb3a6faa7c1098119bb6c4e23af46b0`; CI pós-merge run `37652790258` PASS (Build/test, Auth/Firestore Emulator, V289 visual).
+- Worktree/branch: `C:\Projetos\carteira-investimentos.worktrees\v329-trust-insights`, `codex/v329-portfolio-trust-insights`, base atual `origin/main=2d79860c9cb3a6faa7c1098119bb6c4e23af46b0`. Árvore estava limpa antes desta missão; não tocar na antiga worktree V328. `V328_PREPARATION_MATRIX.md` continua preservada, sem verificação local nesta sessão.
+- Implementação V329 local: modelo reutilizado de confiança/alocação com completude e confiança distintas; cobertura financeira não aparenta zero quando valuations estão ausentes; concentração por instituição usa somente metadado explícito; mostra denominador de patrimônio conhecido, cobertura institucional e data-base com estado parcial/desconhecido (datas futuras rejeitadas); o campo legado `verified` não prova verificação sem autoridade governada; o modo ocultar valores também oculta instituição, cobertura e data-base. Dashboard, Ativos, Dividendos, Patrimônio e Rentabilidade preservam os indicadores e contratos já existentes.
+- Gates locais frescos no diff atual: focused trust/allocation/dividend/UI 108/108; legacy 255/255; modern 820/820; `qa:all` PASS; A11Y 19/19; V289 12/12 (inclui três cenários sintéticos V329); `verify:release` PASS; builds PASS; `git diff --check` PASS. CI remoto ainda não existe para este diff, pois não houve commit/push/PR.
+- `npm ci` executado com autorização explícita apenas nesta worktree; lockfile não foi alterado. O audit da instalação reportou 7 vulnerabilidades (3 moderadas, 4 altas); não foi executado `npm audit fix`.
+- `V330_DATA_SOURCE_AND_RECONCILIATION_UX_SPEC.md` é proposta/spec apenas; não iniciar a fase antes do encerramento V329. Diff local, review Ponytail e revisão independente interna foram concluídos; revisão externa Hermes não foi executada. Próximo gate: autorização humana para commit/push/Draft PR; CI remoto e Preview virão depois. `MERGE=false`; sem dados ou writes financeiros, import, restore ou produção.
+
 ## V322 — Batch 7–10 certificados até a fronteira síncrona (2026-10-05)
 
 - PR #445 OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS. `MERGE=false`.

@@ -1,6 +1,6 @@
 # V329 — Portfolio Trust and Insights
 
-**Status:** specification only; implementation requires a separately authorized phase.
+**Status:** implementation authorized and in progress in `codex/v329-portfolio-trust-insights`, based on V328 merge `2d79860c9cb3a6faa7c1098119bb6c4e23af46b0`.
 
 ## Goal
 
@@ -35,25 +35,51 @@ not recommend investments.
   not fabricate a zero or a complete portfolio result.
 - The modern frontend remains read-only; no production writes.
 
-## Acceptance evidence for a future implementation phase
+## Implementation evidence and remaining gates
 
-- Synthetic tests cover fresh/stale, complete/partial/unknown/unavailable, and
-  missing-source states without coercion to zero.
-- Concentration outputs disclose numerator, denominator, coverage, and as-of
-  basis; incomplete inputs cannot produce a falsely complete total.
+- Existing freshness uses the product's current three-day quote-staleness
+  boundary and actual source timestamps; this phase adds no second threshold.
+- Synthetic tests cover distinct complete, partial, unknown, empty, available,
+  stale, and not-calculated states. No product status asserts verified or
+  unverified without a governed verification source.
+- Classification coverage keeps monetary coverage unknown if any position value
+  is unavailable; an all-unknown value aggregate remains unavailable, not zero.
+- Allocation reuses `PortfolioAllocationIntelligence`; institution grouping
+  uses only explicit institution/custodian/broker metadata and never issuer.
+  Percentages retain the known-value denominator, disclose position coverage,
+  and show a valuation date only when source dates support it.
 - Income indicators preserve source provenance and never treat absence as
-  confirmed zero income.
-- Accessibility and responsive review cover semantic labels, keyboard use,
-  supported viewport widths, and no horizontal overflow.
+  confirmed zero income; existing Dividend Intelligence separates received
+  from announced/estimated events and remains the authority.
+- A11Y passes 19/19, V289 visual/browser passes 12/12, and `qa:all` reports no
+  overflow, console errors, page errors, or relevant request errors across the
+  390–1920 px synthetic viewport set. Route and theme regression coverage
+  includes Dashboard, Ativos, Dividendos, Patrimônio, Rentabilidade and
+  Confiabilidade; trust states also have focused synthetic model/UI contracts.
 - Review confirms no financial formula, persistence, schema, or write-path
   change; any such change requires its own approved contract and phase.
 
-## Open decisions
+## Accepted boundaries and open evidence
 
-- Which existing source timestamps are reliable enough to drive freshness.
-- Whether institution identity and income-source coverage are complete enough
-  for concentration/consistency outputs.
-- Thresholds for stale warnings and the presentation of unavailable states.
+- Quote freshness is sourced from explicit quote/source timestamps and uses the
+  existing three-day rule. Fixed-income valuation freshness continues to use
+  its existing authority metadata.
+- Institution identity is not complete enough to assert total institutional
+  concentration; output is descriptive only and shows coverage from explicit
+  metadata.
+- The product has no governed asset-verification authority yet; an incidental
+  legacy `verified` flag is ignored and the UI says verification is not
+  informed.
+- Future valuation timestamps and incomplete/missing dates do not establish a
+  uniform valuation base; hidden-value mode suppresses institution identity,
+  coverage, and valuation date.
+- Income-source coverage is not proven by absent events. Existing paid,
+  announced, estimated, and unknown distinctions remain authoritative.
+- Visual/browser evidence, A11Y, and local release gates pass for this worktree.
+  Remote CI and deployed Preview remain pending until an authorized commit and
+  push. An internal independent adversarial review found and closed its
+  findings; an external Hermes review was not run.
 
-Resolve these from current product contracts and synthetic evidence before
-implementation. Do not guess missing authority or thresholds.
+Do not infer the unresolved identity or income-source coverage. Any future
+threshold, data-source authority, or financial semantic change requires its
+own governed decision.
