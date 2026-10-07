@@ -18143,7 +18143,7 @@ function quickMovementModal(){
     <div class="fg">
       <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
       <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 10,00" value="${esc(draft.price||'')}" aria-label="Preço unitário"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
-      <div><div class="fl">Taxas e emolumentos (R$)</div><input id="qm-fees" type="text" inputmode="decimal" placeholder="ex: 5,00 (opcional)" value="${esc(draft.fees||'')}" aria-label="Taxas e emolumentos"${qmErrOn('qm-fees')} oninput="setQuickMovementField('fees', this.value)"></div>
+      <div><div class="fl">Taxas e emolumentos (R$)</div><input id="qm-buy-fees" type="text" inputmode="decimal" placeholder="ex: 5,00 (opcional)" value="${esc(draft.fees||'')}" aria-label="Taxas e emolumentos"${qmErrOn('qm-buy-fees')} oninput="setQuickMovementField('fees', this.value)"></div>
     </div>
     <div id="qm-asset-picker-hint" class="quick-movement-preview-note" style="margin-top:6px">Digite o ticker ou escolha um ativo já cadastrado para preencher tipo e setor.</div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
@@ -18201,7 +18201,7 @@ function quickMovementModal(){
       </div>
       <div id="qm-sale-qty-wrap" style="${saleType==='total'?'display:none':''}"><div class="fl">Quantidade (parcial)</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade parcial"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
       <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 34,25" value="${esc(draft.price||'')}" aria-label="Preço unitário da venda"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
-      <div><div class="fl">Taxas da venda (R$)</div><input id="qm-fees" type="text" inputmode="decimal" placeholder="ex: 2,00 (opcional)" value="${esc(draft.fees||'')}" aria-label="Taxas da venda"${qmErrOn('qm-fees')} oninput="setQuickMovementField('fees', this.value)"></div>
+      <div><div class="fl">Taxas da venda (R$)</div><input id="qm-sell-fees" type="text" inputmode="decimal" placeholder="ex: 2,00 (opcional)" value="${esc(draft.fees||'')}" aria-label="Taxas da venda"${qmErrOn('qm-sell-fees')} oninput="setQuickMovementField('fees', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfMovEditorAsset=kind==='renda-fixa' && S.rfMovementEditor && S.rfMovementEditor.assetId ? getRfAssetByEventId(S.rfMovementEditor.assetId) : null;
@@ -18477,13 +18477,13 @@ function quickMovementBuildAporteFromFields(kind){
     const asset=quickMovementSaleAssetById(draft.assetId);
     const contract=quickMovementContract();
     const priceState=quickMovementNumberField('qm-price','Preço unitário',{value:document.getElementById('qm-price')?.value ?? draft.price});
-    const feesState=quickMovementNumberField('qm-fees','Taxas',{required:false,value:document.getElementById('qm-fees')?.value ?? draft.fees,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
+    const feesState=quickMovementNumberField('qm-buy-fees','Taxas',{required:false,value:document.getElementById('qm-buy-fees')?.value ?? draft.fees,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
     const note=String(document.getElementById('qm-note')?.value ?? draft.note).trim();
     if(!contract || typeof contract.buildVariableIncomeSalePreview!=='function') return {error:'Preview de venda indisponível.', field:''};
     if(!asset) return {error:'Selecione um ativo para vender.', field:'qm-sale-asset'};
     const price=priceState.ok ? priceState.value : 0;
     if(!feesState.ok) return feesState;
-    if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-fees'};
+    if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-buy-fees'};
     const fees=feesState.reason==='empty'?null:feesState.value;
     if(draft.saleType!=='total'){
       const qtyState=quickMovementNumberField('qm-qty','Quantidade',{value:document.getElementById('qm-qty')?.value ?? draft.qty});
@@ -18515,7 +18515,7 @@ function quickMovementBuildAporteFromFields(kind){
   const ticker=normalizeMetadataTicker(document.getElementById('qm-ti')?.value||'');
   const qtyState=quickMovementNumberField('qm-qty','Quantidade',{emptyError:'Preencha uma quantidade válida maior que zero.',invalidError:'Quantidade: informe um número válido.'});
   const priceState=quickMovementNumberField('qm-price','Preço unitário',{emptyError:'Preencha um preço unitário válido maior que zero.',invalidError:'Preço unitário: informe um número válido.'});
-  const feesState=quickMovementNumberField('qm-fees','Taxas',{required:false,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
+  const feesState=quickMovementNumberField('qm-buy-fees','Taxas',{required:false,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
   const draft=S.quickMovementDraft||{};
   const resolved=resolveAssetMetadata(ticker,{manual:{
     type:draft.manualType ? document.getElementById('qm-type')?.value : '',
@@ -18530,7 +18530,7 @@ function quickMovementBuildAporteFromFields(kind){
   if(!priceState.ok) return priceState;
   if(priceState.value<=0) return {error:'Preencha um preço unitário válido maior que zero.', field:'qm-price'};
   if(!feesState.ok) return feesState;
-  if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-fees'};
+  if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-buy-fees'};
   const qty=qtyState.value;
   const price=priceState.value;
   const fees=feesState.reason==='empty'?null:feesState.value;
