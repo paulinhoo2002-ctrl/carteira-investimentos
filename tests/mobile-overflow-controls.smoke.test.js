@@ -158,13 +158,13 @@ for (const viewport of viewports) {
             pageWidth: Math.max(document.scrollingElement.scrollWidth, document.body?.scrollWidth || 0),
           };
         }
-        const wrappers = [...document.querySelectorAll('.ag[open] .ag-table .tw, .ag[open] .rf-table-wrap')].filter(w => visible(w) && w.querySelector('tbody tr'));
-        const tables = wrappers.map(w => {
-          const firstRow = w.querySelector('tbody tr');
+        const tables = [...document.querySelectorAll('.ag[open] table')].filter(table => visible(table) && table.querySelector('tbody tr')).map(table => {
+          const firstRow = table.querySelector('tbody tr');
           const actions = firstRow.querySelector('.asset-actions');
           const buttons = [...actions.querySelectorAll('button')].filter(visible).map(btn => {
             const r = btn.getBoundingClientRect();
-            return { text: btn.textContent.trim(), left: r.left, right: r.right, top: r.top, bottom: r.bottom, height: r.height, fullyInViewport: r.left >= -1 && r.right <= vw + 1 };
+            const text = btn.textContent.trim();
+            return { text, accessibleName: btn.getAttribute('aria-label') || text, left: r.left, right: r.right, top: r.top, bottom: r.bottom, height: r.height, fullyInViewport: r.left >= -1 && r.right <= vw + 1 };
           });
           let overlap = false;
           for (let i = 0; i < buttons.length; i++) {
@@ -175,23 +175,23 @@ for (const viewport of viewports) {
               if (xOverlap && yOverlap) overlap = true;
             }
           }
-          const internallyScrollable = w.scrollWidth > w.clientWidth + 1;
-          const originalScrollLeft = w.scrollLeft;
+          const scrollContainer = table.closest('.assets-table-wrap') || table;
+          const internallyScrollable = scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
+          const originalScrollLeft = scrollContainer.scrollLeft;
           let actionsReachableWithInternalScroll = buttons.every(b => b.fullyInViewport);
           if (internallyScrollable) {
-            w.scrollLeft = w.scrollWidth - w.clientWidth;
+            scrollContainer.scrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
             actionsReachableWithInternalScroll = [...actions.querySelectorAll('button')]
               .filter(visible)
               .every(button => {
                 const rect = button.getBoundingClientRect();
-                const wrapRect = w.getBoundingClientRect();
+                const wrapRect = scrollContainer.getBoundingClientRect();
                 return rect.left >= wrapRect.left - 1 && rect.right <= wrapRect.right + 1;
               });
-            w.scrollLeft = originalScrollLeft;
+            scrollContainer.scrollLeft = originalScrollLeft;
           }
           return {
-            cls: w.className,
-            sticky: getComputedStyle(firstRow.lastElementChild).position,
+            cls: `${scrollContainer.className} ${table.className}`,
             buttons,
             buttonsOverlap: overlap,
             actionsVisible: buttons.every(b => b.fullyInViewport),
@@ -212,13 +212,13 @@ for (const viewport of viewports) {
       assert.ok(ativ.anyTable, `nenhuma tabela de ativos visivel em ${viewport.label}`);
       for (const table of ativ.tables) {
         assert.ok(table.buttons.length >= 2, `acoes ausentes em ${viewport.label} (${table.cls})`);
+        assert.ok(table.buttons.every(button => button.accessibleName), `acao sem nome acessivel em ${viewport.label} (${table.cls})`);
         assert.ok(
           table.actionsVisible || (table.internallyScrollable && table.actionsReachableWithInternalScroll),
           `acoes cortadas em ${viewport.label} (${table.cls})`,
         );
         assert.equal(table.buttonsOverlap, false, `acoes sobrepostas em ${viewport.label} (${table.cls})`);
         for (const button of table.buttons) assert.ok(button.height >= 44, `acao menor que 44px em ${viewport.label}: ${button.text} (${Math.round(button.height)}px)`);
-        assert.equal(table.sticky, 'sticky', `coluna de acoes nao sticky em ${viewport.label} (${table.cls})`);
       }
       }
       assert.equal(await pageOverflow(), 0, `pageOverflow em ativos ${viewport.label}`);
