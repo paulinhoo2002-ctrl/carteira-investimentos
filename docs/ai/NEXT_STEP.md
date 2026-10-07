@@ -1,5 +1,13 @@
 # Next Step
 
+## V331 — refinamento local premium (2026-10-07)
+
+- Worktree `C:\Projetos\carteira-investimentos.worktrees\v331-premium-refinement-daily-use`, branch `codex/v331-premium-refinement-daily-use`, base `371db2b6e12b16676c92ddc8c41d8b36cd282be6`. Alterações locais ainda não commitadas: `index.html`, `tests/v289-visual-regression.test.js`, `docs/ai/NEXT_STEP.md`, `docs/ai/PROJECT_STATE.md` e `docs/ai/PROJECT_MEMORY.md`.
+- Correção visual: Ativos agora agrupa as cinco métricas de classe no contêiner responsivo já previsto pelo CSS; todos os valores ficam visíveis dentro do cartão entre 768 e 1440 px. A tabela completa mantém rolagem local e os cards mobile continuam detalhando os campos.
+- Capturas sintéticas de Dashboard, Ativos desktop/mobile, Dividendos desktop/mobile, Patrimônio, Aportes, Metas, Rentabilidade, Rebalancear e Relatórios em `.qa-state/v331-premium-refinement/` (ignorado pelo Git); nenhum dado pessoal ou valor de benchmark foi usado como verdade financeira.
+- `npm ci` autorizado executado nesta worktree; `package.json` e lockfile sem alterações. `npm run verify:release` PASS após o build moderno, incluindo legado, moderno, V330, V84, QA all, checks de acessibilidade Axe e visual 14/14. `git diff --check` PASS.
+- Sem commit, push, PR, CI ou Preview de novo SHA. A governança `AGENTS.md` exige autorização inequívoca separada antes de publicar; continuar após o gate humano de commit/push/Draft PR. Produção, importação, restauração e escritas financeiras não foram executadas.
+
 ## V330 — implementação publicada; aguarda revisão humana (2026-10-07)
 
 - V329/PR #452 está MERGED no `origin/main` `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. O CI run `37663297762` passou no HEAD PR `f5a1dccdbc4de8fbc06dc3db92970caca535a6ad`; não foi observado workflow separado no merge SHA.
