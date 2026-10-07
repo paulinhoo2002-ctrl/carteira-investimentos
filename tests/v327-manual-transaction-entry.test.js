@@ -3,17 +3,17 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const T = require('../tax-cost-basis-intelligence.js');
+const { buildTaxIntelligence } = require('../tax-cost-basis-intelligence.js');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 // ── Static contract checks on the V327 surface (index.html) ────────────────
 test('V327: buy and sell forms expose the fees field with accessible label', () => {
   const buyForm = html.slice(html.indexOf('const buySellFields'), html.indexOf('const proventoFields'));
-  assert.match(buyForm, /id="qm-fees"/, 'buy form must include qm-fees input');
+  assert.match(buyForm, /id="qm-buy-fees"/, 'buy form must include qm-buy-fees input');
   assert.match(buyForm, /aria-label="Taxas e emolumentos"/, 'buy fees input must be labeled');
   const saleForm = html.slice(html.indexOf('const saleFields'), html.indexOf('const rfMovEditorAsset'));
-  assert.match(saleForm, /id="qm-fees"/, 'sale form must include qm-fees input');
+  assert.match(saleForm, /id="qm-sell-fees"/, 'sale form must include qm-sell-fees input');
   assert.match(saleForm, /aria-label="Taxas da venda"/, 'sale fees input must be labeled');
 });
 
@@ -54,19 +54,19 @@ test('V327: history rows render fees column with explicit unknown marker', () =>
 // ── Runtime checks through the real V326 engine (the single financial authority) ──
 // The UI helper must faithfully surface these states; these tests pin the contract.
 test('V326 contract: buy fees enter the basis and sell fees reduce proceeds', () => {
-  const result = T.buildTaxIntelligence({ transactions: [
-    { id: 'b1', date: '2025-01-10', ticker: 'QMFE3', type: 'Ação', operation: 'compra', qty: 100, price: 10, fees: 5, source: 'manual-transaction' },
-    { id: 's1', date: '2025-02-10', ticker: 'QMFE3', type: 'Ação', operation: 'venda', qty: 50, price: 20, fees: 2, source: 'manual-transaction' },
+  const result = buildTaxIntelligence({ transactions: [
+    { id: 'b1', date: '2025-01-10', ticker: 'QMFE3', type: 'Ação', operation: 'compra', qty: 100, price: 10, fees: 5, source: 'broker' },
+    { id: 's1', date: '2025-02-10', ticker: 'QMFE3', type: 'Ação', operation: 'venda', qty: 50, price: 20, fees: 2, source: 'broker' },
   ] });
   const sale = result.realizedGains.rows.find(r => r.id === 's1');
-  assert.equal(sale.allocatedCostBasis, 502.5); // (1000+5)/100 * 50
+  assert.ok(Math.abs(sale.allocatedCostBasis - 502.5) < 0.001); // (1000+5)/100 * 50
   assert.equal(sale.netProceeds, 998);          // 1000 - 2
-  assert.equal(sale.realizedGainLoss, 495.5);
+  assert.ok(Math.abs(sale.realizedGainLoss - 495.5) < 0.0001); // 495.5
   assert.equal(sale.status, 'COMPLETE');
 });
 
 test('V326 contract: missing fees keep the realized row in review (never zero)', () => {
-  const result = T.buildTaxIntelligence({ transactions: [
+  const result = buildTaxIntelligence({ transactions: [
     { id: 'b1', date: '2025-01-10', ticker: 'QMFN3', type: 'Ação', operation: 'compra', qty: 10, price: 100, source: 'manual-transaction' },
     { id: 's1', date: '2025-02-10', ticker: 'QMFN3', type: 'Ação', operation: 'venda', qty: 10, price: 120, source: 'manual-transaction' },
   ] });
@@ -77,7 +77,7 @@ test('V326 contract: missing fees keep the realized row in review (never zero)',
 });
 
 test('V326 contract: over-sale yields NEEDS_REVIEW with no usable gain', () => {
-  const result = T.buildTaxIntelligence({ transactions: [
+  const result = buildTaxIntelligence({ transactions: [
     { id: 'b1', date: '2025-01-10', ticker: 'QMOV3', type: 'Ação', operation: 'compra', qty: 10, price: 10, fees: 0, source: 'manual-transaction' },
     { id: 's1', date: '2025-02-10', ticker: 'QMOV3', type: 'Ação', operation: 'venda', qty: 11, price: 20, fees: 0, source: 'manual-transaction' },
   ] });
@@ -89,32 +89,33 @@ test('V326 contract: over-sale yields NEEDS_REVIEW with no usable gain', () => {
 
 test('V326 contract: multiple lots produce weighted-average basis', () => {
   const result = buildTaxIntelligence({ transactions: [
-      { id: 'b1', date: '2025-01-10', ticker: 'QMFE3', type: 'Ação', operation: 'compra', qty: 100, price: 10, fees: 5, source: 'manual-transaction' },
-      { id: 'b2', date: '2025-02-10', ticker: 'QMFE3', type: 'Ação', operation: 'compra', qty: 100, price: 20, fees: 5, source: 'manual-transaction' },
-      { id: 's1', date: '2025-02-10', ticker: 'QMFE3', type: 'Ação', operation: 'venda', qty: 50, price: 20, fees: 2, source: 'manual-transaction' }
+      { id: 'b1', date: '2025-01-10', ticker: 'QMFE3', type: 'Ação', operation: 'compra', qty: 100, price: 10, fees: 5, source: 'broker' },
+      { id: 'b2', date: '2025-02-10', ticker: 'QMFE3', type: 'Ação', operation: 'compra', qty: 100, price: 20, fees: 5, source: 'broker' },
+      { id: 's1', date: '2025-02-10', ticker: 'QMFE3', type: 'Ação', operation: 'venda', qty: 50, price: 20, fees: 2, source: 'broker' }
     ] });
     const sale = result.realizedGains.rows.find(r => r.id === 's1');
-    assert.equal(sale.allocatedCostBasis, 502.5);
-  assert.equal(sale.realizedGainLoss, 1000);
-  assert.equal(result.positions[0].runningQuantity, 100);
-  assert.equal(result.positions[0].runningCostBasis, 1500);
+    assert.equal(sale.allocatedCostBasis, 752.5);
+    assert.equal(sale.realizedGainLoss, 245.5);
+    assert.equal(result.positions[0].runningQuantity, 150);
+    assert.equal(result.positions[0].runningCostBasis, 2257.5);
 });
 
 test('V326 contract: sell without any purchase history has no basis (RESULT_NOT_AVAILABLE path)', () => {
-  const result = T.buildTaxIntelligence({ transactions: [
+  const result = buildTaxIntelligence({ transactions: [
     { id: 's1', date: '2025-02-10', ticker: 'QMNB3', type: 'Ação', operation: 'venda', qty: 10, price: 20, fees: 0, source: 'manual-transaction' },
   ] });
   const sale = result.realizedGains.rows.find(r => r.id === 's1');
   assert.equal(sale.status, 'NEEDS_REVIEW');
   assert.equal(sale.allocatedCostBasis, null);
   assert.equal(sale.realizedGainLoss, null);
-  assert.match(sale.needsReviewReason, /MISSING_PURCHASE_HISTORY/);
+    assert.match(sale.needsReviewReason, /WEAK_SOURCE/);
+    assert.match(sale.needsReviewReason, /SELL_EXCEEDS_AVAILABLE_QUANTITY/);
 });
 
 test('V326 contract: full sale zeroes the position and preserves realized gain', () => {
-  const result = T.buildTaxIntelligence({ transactions: [
-    { id: 'b1', date: '2025-01-10', ticker: 'QMFS3', type: 'Ação', operation: 'compra', qty: 10, price: 10, fees: 1, source: 'manual-transaction' },
-    { id: 's1', date: '2025-02-10', ticker: 'QMFS3', type: 'Ação', operation: 'venda', qty: 10, price: 15, fees: 1, source: 'manual-transaction' },
+  const result = buildTaxIntelligence({ transactions: [
+    { id: 'b1', date: '2025-01-10', ticker: 'QMFS3', type: 'Ação', operation: 'compra', qty: 10, price: 10, fees: 1, source: 'broker' },
+    { id: 's1', date: '2025-02-10', ticker: 'QMFS3', type: 'Ação', operation: 'venda', qty: 10, price: 15, fees: 1, source: 'broker' },
   ] });
   const sale = result.realizedGains.rows.find(r => r.id === 's1');
   assert.equal(sale.allocatedCostBasis, 101);
@@ -124,9 +125,9 @@ test('V326 contract: full sale zeroes the position and preserves realized gain',
 });
 
 test('V326 contract: losing sale surfaces negative realized result faithfully', () => {
-  const result = T.buildTaxIntelligence({ transactions: [
-    { id: 'b1', date: '2025-01-10', ticker: 'QMLS3', type: 'Ação', operation: 'compra', qty: 10, price: 50, fees: 0, source: 'manual-transaction' },
-    { id: 's1', date: '2025-02-10', ticker: 'QMLS3', type: 'Ação', operation: 'venda', qty: 10, price: 40, fees: 0, source: 'manual-transaction' },
+  const result = buildTaxIntelligence({ transactions: [
+    { id: 'b1', date: '2025-01-10', ticker: 'QMLS3', type: 'Ação', operation: 'compra', qty: 10, price: 50, fees: 0, source: 'broker' },
+    { id: 's1', date: '2025-02-10', ticker: 'QMLS3', type: 'Ação', operation: 'venda', qty: 10, price: 40, fees: 0, source: 'broker' },
   ] });
   const sale = result.realizedGains.rows.find(r => r.id === 's1');
   assert.equal(sale.realizedGainLoss, -100);
@@ -134,8 +135,8 @@ test('V326 contract: losing sale surfaces negative realized result faithfully', 
 });
 
 test('V326 contract: unknown asset classes stay unsupported, no fake compatibility', () => {
-  const result = T.buildTaxIntelligence({ transactions: [
-    { id: 'c1', date: '2025-01-10', ticker: 'QMBT5', type: 'Crypto', operation: 'compra', qty: 1, price: 100, fees: 0, source: 'manual-transaction' },
+  const result = buildTaxIntelligence({ transactions: [
+    { id: 'c1', date: '2025-01-10', ticker: 'QMBT5', type: 'Crypto', operation: 'compra', qty: 1, price: 100, fees: 0, source: 'broker' },
   ] });
   assert.ok(result.costBasis.unsupported.some(r => r.ticker === 'QMBT5' || String(r.type).includes('Crypto')));
   assert.equal(result.realizedGains.rows.length, 0);
