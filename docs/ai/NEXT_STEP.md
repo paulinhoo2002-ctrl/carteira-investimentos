@@ -12,6 +12,14 @@
 ---
 
 # Next Step
+## V328 — certificação local concluída; aguarda gate de publicação (2026-10-07)
+
+- HEAD/worktree: `8a62885ee88a3f12daee354fb79cb9d643bd9596`, branch `v328-preparation`, igual a `origin/main`; 12 arquivos rastreados modificados, um arquivo de matriz não rastreado e não publicável.
+- Ativos e as telas Dividendos, Dashboard, Patrimônio, Metas, Rentabilidade e Rebalancear foram revalidados. Patrimônio deixa meses sem movimento como lacunas e oculta total/resultados quando valor atual ou base aplicada não são completos; sem mudança de fórmula ou persistência.
+- Gates frescos: legacy 255/255, modern 820/820, V84 4/4, A11Y 19/19, performance 96/96, QA harness 3/3, visual 9/9, `qa:all` e `verify:release` PASS. Smoke em sete larguras sem overflow, erros de página/console ou falhas relevantes de request. Build emite avisos conhecidos registrados em `PROJECT_STATE.md`.
+- Próximo passo: revisão final do diff e autorização humana para commit/push conforme `AGENTS.md`. Nenhum commit, push, PR, merge ou deploy foi executado; `MERGE=false`.
+- `V328_PREPARATION_MATRIX.md` continua fora do índice e da publicação por conter afirmações não comprovadas e referência fora do escopo autorizado.
+
 ## V320 — certificação final antes do gate humano (2026-10-05)
 
 - PR #443 permanece OPEN/DRAFT em `hermes/v320-overnight-functional-acceleration`; HEAD final `c53229e559a5843dd3181e74d0e01153e160171e`; `MERGE=false`.

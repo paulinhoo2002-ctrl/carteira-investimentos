@@ -9,6 +9,17 @@
 - V323 continua somente leitura até PR #445 ser incorporada e o CI pós-merge passar. Provider QA real e persistência cloud seguem externos; `MERGE=false`.
 # Project State
 
+## V328 — estabilização das telas premium e continuidade (2026-10-07)
+
+- Identidade confirmada: worktree registrada `C:\Projetos\carteira-investimentos.worktrees\v328-preparation`, branch `v328-preparation`, HEAD `8a62885ee88a3f12daee354fb79cb9d643bd9596`, mesmo HEAD de `origin/main`; worktree limpa de stage, com 12 arquivos rastreados modificados e `V328_PREPARATION_MATRIX.md` não rastreado. Checkout canônico e arquivos locais preservados.
+- Ativos estabilizado: busca, filtros, acordeões, ações, RF e estados UNKNOWN permanecem cobertos. Valores sem fonte seguem indisponíveis, sem mudança de cálculo.
+- Patrimônio: além de não haver snapshots de valuation histórico, a cobertura dos movimentos não é certificada. A UI exibe a série somente nos meses com movimentos registrados, deixa lacunas sem valor e não trata ausência como zero. Totais/resultados/composição ficam indisponíveis quando valores correntes ou base aplicada estão parciais, ausentes ou sem capital aplicado. Fórmulas, schema e persistência não mudaram.
+- Telas Dividendos, Dashboard, Patrimônio, Metas, Rentabilidade, Rebalancear e Ativos passaram matriz browser sintética em tema claro/escuro nas larguras 390/430/768/1366/1440/1536/1920, sem overflow/clipping; harness confirmou ausência de writes locais inesperados, requests Firebase, erros de página e console.
+- Evidência fresca no HEAD atual: `verify:release` PASS (legacy 255/255, modern 820/820, QA harness 3/3, `qa:all`, build legacy/modern e V289 visual 9/9); V84 4/4; A11Y 19/19; performance 96/96; regressões focadas de Patrimônio 4/4. `git diff --check` PASS após atualização documental.
+- Avisos não bloqueantes observados: Vite CJS API deprecada, contrato readonly de relatórios no build e diagnósticos de clickable-div no script A11Y; gates correspondentes passaram. Matriz não rastreada contém alegações sem comprovação e referência fora do escopo; permanece não publicável e excluída.
+- Dados financeiros reais, importação, restauração, writes financeiros, produção, Firebase e navegador pessoal: não usados. `BLOCKER=0`, `MAJOR=0`; `MINOR` contém somente avisos de ferramenta/diagnósticos acima. Sem stage, commit, push, PR ou merge.
+- `TEST_CERTIFICATION_FRESHNESS_RULE=true`; regras reutilizáveis de diagnóstico de acesso, bloqueio localizado e retomada sem reinício estão em `PROJECT_CONTINUITY_POLICY.md`. `PROJECT_MEMORY.md` e `SKILLS_ROUTING.md` não precisam duplicar esses fatos. `MERGE=false`.
+
 #
 # V317 — certificação de ações financeiras (2026-10-04)
 
