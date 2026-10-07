@@ -2,11 +2,12 @@
 
 ## V331 — refinamento local premium (2026-10-07)
 
-- Worktree `C:\Projetos\carteira-investimentos.worktrees\v331-premium-refinement-daily-use`, branch `codex/v331-premium-refinement-daily-use`, base `371db2b6e12b16676c92ddc8c41d8b36cd282be6`. Alterações locais ainda não commitadas: `index.html`, `tests/v289-visual-regression.test.js`, `docs/ai/NEXT_STEP.md`, `docs/ai/PROJECT_STATE.md` e `docs/ai/PROJECT_MEMORY.md`.
+- PR #454 (documentação) e PR #455 (produto) estão OPEN/DRAFT/MERGEABLE; #453 V330 não foi alterado. PR #454: branch `codex/v331-governance-docs`, HEAD `5962b2ab90c42a288bb11efdbac637e2118ec45c`, base `codex/v330-data-source-reconciliation`. PR #455: branch `codex/v331-premium-refinement-daily-use`, HEAD `226dfa6203a71c37c2b6d929811a149cbf9fd59c`, base `codex/v331-governance-docs`.
 - Correção visual: Ativos agora agrupa as cinco métricas de classe no contêiner responsivo já previsto pelo CSS; todos os valores ficam visíveis dentro do cartão entre 768 e 1440 px. A tabela completa mantém rolagem local e os cards mobile continuam detalhando os campos.
 - Capturas sintéticas de Dashboard, Ativos desktop/mobile, Dividendos desktop/mobile, Patrimônio, Aportes, Metas, Rentabilidade, Rebalancear e Relatórios em `.qa-state/v331-premium-refinement/` (ignorado pelo Git); nenhum dado pessoal ou valor de benchmark foi usado como verdade financeira.
 - `npm ci` autorizado executado nesta worktree; `package.json` e lockfile sem alterações. `npm run verify:release` PASS após o build moderno, incluindo legado, moderno, V330, V84, QA all, checks de acessibilidade Axe e visual 14/14. `git diff --check` PASS.
-- Sem commit, push, PR, CI ou Preview de novo SHA. A governança `AGENTS.md` exige autorização inequívoca separada antes de publicar; continuar após o gate humano de commit/push/Draft PR. Produção, importação, restauração e escritas financeiras não foram executadas.
+- Push normal e Draft PRs concluídos, sem merge. Checks Vercel dos dois PRs PASS; nenhuma execução GitHub Actions foi criada para esses SHAs. Preview #455 está READY para `226dfa6`; a rota mostra acesso restrito e login Google, então QA autenticado não foi realizado. Não foi solicitado nem inserido segredo/credencial e nenhum navegador pessoal foi usado.
+- `npm run verify:release` local PASS, visual 14/14, `git diff --check` PASS. Produção, importação, restauração e escritas financeiras não foram executadas. Próximo: revisão humana de #454/#455; login QA dedicado só se necessário para confirmar a sessão autenticada do Preview. `MERGE=false`.
 
 ## V330 — implementação publicada; aguarda revisão humana (2026-10-07)
 
