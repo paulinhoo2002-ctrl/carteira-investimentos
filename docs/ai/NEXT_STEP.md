@@ -1,27 +1,24 @@
-## V329 — trust e insights (2026-10-07)
-
-- V328/PR #451 MERGED em `2d79860c9cb3a6faa7c1098119bb6c4e23af46b0`; CI pós-merge run `37652790258` PASS (Build/test, Auth/Firestore Emulator, V289 visual).
-- Worktree/branch: `C:\Projetos\carteira-investimentos.worktrees\v329-trust-insights`, `codex/v329-portfolio-trust-insights`, base atual `origin/main=2d79860c9cb3a6faa7c1098119bb6c4e23af46b0`. Árvore estava limpa antes desta missão; não tocar na antiga worktree V328. `V328_PREPARATION_MATRIX.md` continua preservada, sem verificação local nesta sessão.
-- Implementação V329 local: modelo reutilizado de confiança/alocação com completude e confiança distintas; cobertura financeira não aparenta zero quando valuations estão ausentes; concentração por instituição usa somente metadado explícito; mostra denominador de patrimônio conhecido, cobertura institucional e data-base com estado parcial/desconhecido (datas futuras rejeitadas); o campo legado `verified` não prova verificação sem autoridade governada; o modo ocultar valores também oculta instituição, cobertura e data-base. Dashboard, Ativos, Dividendos, Patrimônio e Rentabilidade preservam os indicadores e contratos já existentes.
-- Gates locais frescos no diff atual: focused trust/allocation/dividend/UI 108/108; legacy 255/255; modern 820/820; `qa:all` PASS; A11Y 19/19; V289 12/12 (inclui três cenários sintéticos V329); `verify:release` PASS; builds PASS; `git diff --check` PASS. CI remoto ainda não existe para este diff, pois não houve commit/push/PR.
-- `npm ci` executado com autorização explícita apenas nesta worktree; lockfile não foi alterado. O audit da instalação reportou 7 vulnerabilidades (3 moderadas, 4 altas); não foi executado `npm audit fix`.
-- `V330_DATA_SOURCE_AND_RECONCILIATION_UX_SPEC.md` é proposta/spec apenas; não iniciar a fase antes do encerramento V329. Diff local, review Ponytail e revisão independente interna foram concluídos; revisão externa Hermes não foi executada. Próximo gate: autorização humana para commit/push/Draft PR; CI remoto e Preview virão depois. `MERGE=false`; sem dados ou writes financeiros, import, restore ou produção.
-
-## V322 — Batch 7–10 certificados até a fronteira síncrona (2026-10-05)
-
-- PR #445 OPEN/DRAFT/MERGEABLE, branch `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS. `MERGE=false`.
-- Batch 7: pipeline CI verde; Build/test (249 pass, 0 fail, 5 skipped), A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual.
-- Batch 8: Corporate Events 39/39 PASS, incluindo shadow-only, sem writer de produção e promoção condicionada a evidência `RECEIVED`.
-- Batch 9: failure injection e quarentena cobertas pela fronteira V284 81/81 PASS.
-- Batch 10: double-submit e replay sequenciais sem gravação duplicada, cobertos localmente/CI. Concorrência entre abas não foi testada; não alegar certificação multi-tab.
-- Teste focal local combinado: 120/120 PASS. Escritas reais/produção=0; sem mudança de código de produto, fórmulas, schema ou persistência.
-- Próximo gate: revisão humana/merge da #445 e CI pós-merge. Até ambos, V323 fica read-only; Provider QA, cloud persistence e primeiro import real seguem bloqueados.
-
----
----
-
 # Next Step
-## V328 — pronta para revisão humana (2026-10-07)
+
+## V330 — gates locais concluídos; publicar Draft PR e validar remoto (2026-10-07)
+
+- V329/PR #452 está MERGED no `origin/main` `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. O CI run `37663297762` passou no HEAD PR `f5a1dccdbc4de8fbc06dc3db92970caca535a6ad`; não foi observado workflow separado no merge SHA.
+- Worktree/branch: `C:\Projetos\carteira-investimentos.worktrees\v330-reconciliation`, `codex/v330-data-source-reconciliation`, base `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. Diff local sem commit/push/PR.
+- Prévia sintética/read-only preserva execuções brutas, operações agrupadas, custos conhecidos/desconhecidos e proveniência. Identidade exige corretora+número+data; quantidade positiva, precisão máxima de 8 casas e bruto conferido dentro de um centavo. Dry-run preserva ativos/notas distintos e revisão pendente bloqueia o pipeline protegido.
+- UI V330 no diff local: Ativos desktop mostra campos financeiros separados e usa scroll horizontal local; mobile recompõe a informação em cards expansíveis. Dividendos overview inclui KPIs, histórico mensal, evolução, ativos principais e resumo anual; KPI anual soma apenas registros classificados como pagos e permanece indisponível quando classificação/valor faltam. Dashboard, Patrimônio, Metas, Rentabilidade e Rebalancear foram capturados com fixture sintética.
+- Gates locais frescos após as mudanças: `npm run verify:release` PASS (inclui testes legados, modernos, V330 20/20, V84 4/4, V4D 11/11, `qa:all` e visual); confirmação de nota 6/6; browser V330 2/2; `test:import-center` 27/27; `test:import-xlsx` 2/2; visual 13/13 com Axe dark/light sem violações; `git diff --check` PASS. Browser sintético sem Firebase, writes locais financeiros, page/console/request errors ou overflow de página. Capturas ficam em `.qa-state/` (ignorado pelo Git).
+- Medição sintética local: DOMContentLoaded 190 ms; render Ativos 3 ativos 5,8 ms; render Ativos 500 ativos 158,2 ms. Medição é diagnóstico local, não SLA.
+- Auth+Firestore Emulator não passou localmente: Firestore encerrou antes dos testes em Node/Java 26. `NOT_TESTED` para os contratos de emulador; CI Ubuntu com Java 21 é autoridade. npm ci autorizado, manifests/lockfile inalterados; auditoria: 7 achados no conjunto instalado, 0 em produção (`--omit=dev`), sem auto-fix.
+- Decisão humana aprovada: `brokerNoteCanConfirm()` exige checklist legado aprovado E prontidão V330 segura. Ausência de prontidão, `HUMAN_DATA_REQUIRED`, `SOURCE_CONFLICT`, `DUPLICATE_CANDIDATE` ou `UNRECONCILED` bloqueiam com mensagem explícita. O par canônico existente `SOURCE_CONFIRMED` + `READY_FOR_REVIEW` + validação `VALID` continua aceito; metadados descritivos ausentes não criam bloqueio independente. Testes unitários e browser sintético cobrem os dois lados.
+- Revisão local: `BLOCKER=0`, `MAJOR=0`; build moderno mantém avisos preexistentes de Vite/contrato readonly. CI remoto e Preview ainda não testados. Commit, push e abertura de Draft PR autorizados por decisão humana desta missão; não houve writer nem merge.
+- Continuam proibidos nesta fase: real PDF/account data, real import/restore/write, produção e merge. `MERGE=false`.
+
+## Histórico — V329 trust e insights (2026-10-07)
+
+- V328/PR #451 foi integrada em `2d79860c9cb3a6faa7c1098119bb6c4e23af46b0`; V329/PR #452 foi integrada em `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. O CI registrado passou nos respectivos HEADs de PR; nenhum workflow separado foi observado para o merge SHA V329.
+- A implementação V329 reutilizou os modelos de confiança/alocação/dividendos e manteve explícitos dados parciais e desconhecidos. Evidências detalhadas estão em `PROJECT_STATE.md` e `PROJECT_MEMORY.md`.
+
+## Histórico — V328 pronta para revisão humana (2026-10-07)
 
 - HEAD/worktree: `943449b51d8fd768246305e85aa4b24a2c27755e`, branch `v328-preparation`, 5 commits à frente de `origin/main` `8a62885ee88a3f12daee354fb79cb9d643bd9596`. PR #451 OPEN/DRAFT/MERGEABLE; CI do HEAD remoto atual, run `37647140501`, PASS. Alterações documentais desta missão ainda são locais; `V328_PREPARATION_MATRIX.md` permanece local e excluído. Exigir CI do novo SHA após push.
 - Ativos e as telas Dividendos, Dashboard, Patrimônio, Metas, Rentabilidade e Rebalancear foram revalidados. Patrimônio deixa meses sem movimento como lacunas e oculta total/resultados quando valor atual ou base aplicada não são completos; sem mudança de fórmula ou persistência.

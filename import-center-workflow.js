@@ -43,6 +43,7 @@ async function openReviewForFile(file, adapters = {}) {
     return {
       status: 'REVIEW_OPEN', fileName, provider: parsed.provider, sourceType: parsed.sourceType,
       recordCount: Number.isInteger(parsed.recordCount) ? parsed.recordCount : null,
+      notePreview: parsed.notePreview || parsed.parsed?.v330Preview || null,
       confirmationRequired: true, writeCount: 0,
     };
   } catch (error) {

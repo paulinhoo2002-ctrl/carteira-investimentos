@@ -2908,7 +2908,7 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
   /* PREMIUM DIVIDENDS 3 */
   .premium-dividends-3{display:flex;flex-direction:column;gap:12px}
   .premium-dividends-3 .div-premium-hero{margin-bottom:0}
-  .premium-dividends-3 .dividend-executive-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .premium-dividends-3 .dividend-executive-kpis{display:block}
   .premium-dividends-3 .dividend-executive-kpi{min-width:0;min-height:78px;border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:9px 10px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}
   .premium-dividends-3 .dividend-executive-kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   .premium-dividends-3 .dividend-executive-kpi-value{font-size:15px;font-weight:900;color:var(--text);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
@@ -6579,7 +6579,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     margin-bottom: 20px;
   }
   .assets-table-wrap { overflow-x: auto; }
-  .assets-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 900px; }
+  .asset-mobile-cards { display: none; }
+  .assets-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1560px; }
   .assets-table th {
     text-align: left;
     padding: 10px 14px;
@@ -6598,6 +6599,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     font-size: 12px;
     white-space: nowrap;
   }
+  .assets-table th.num,.assets-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .assets-table tr:last-child td { border-bottom: none; }
   .assets-table tbody tr { transition: background 0.2s ease; }
   .assets-table tbody tr:hover { background: var(--panel-2); }
@@ -6905,11 +6907,13 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .assets-table-wrap { display: none; }
     .asset-mobile-cards { display: flex; flex-direction: column; gap: 8px; }
     .asset-premium-card { border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
-    .asset-premium-card-summary { padding: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .asset-premium-card-summary { padding: 12px; display: grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr); align-items:start; gap:9px; cursor: pointer; }
     .asset-premium-card-summary .asset-info { gap: 10px; }
     .asset-premium-card-summary .asset-logo { width: 32px; height: 32px; font-size: 12px; }
-    .asset-premium-card-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .asset-premium-card-share { font-size: 11px; color: var(--muted); }
+    .asset-premium-card-meta { min-width:0; display:grid; gap:5px; text-align:right; }
+    .asset-premium-card-meta>div{display:flex;flex-direction:column;gap:1px;min-width:0}
+    .asset-premium-card-meta span{font-size:9px;line-height:1.2;color:var(--muted)}
+    .asset-premium-card-meta strong{font-size:12px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
     .asset-premium-card-details { padding: 12px; border-top: 1px solid var(--border); background: var(--bg); }
     .asset-premium-card-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
     .asset-premium-card-row span { color: var(--muted); }
@@ -7595,6 +7599,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .premium-dividends-3 .dividend-executive-kpi-sub{font-size:9px}
   .premium-dividends-3 .dividend-primary-grid{gap:8px}
   .premium-dividends-3 .dividend-secondary-grid{grid-template-columns:1fr}
+  .premium-dividends-3 .dividend-primary-grid{grid-template-columns:1fr}
   .premium-dividends-3 .div-dividend-toolbar{flex-direction:column;align-items:stretch}
   .premium-dividends-3 .div-dividend-toolbar-main,.premium-dividends-3 .div-dividend-toolbar-actions{width:100%}
   .premium-dividends-3 .dividend-evolution-chart{min-height:180px}
@@ -7900,6 +7905,7 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 .premium-dividends-3 .canon-year-chip{min-height:38px;padding:7px 12px;border-radius:9px;background:transparent}
 .premium-dividends-3 .canon-year-chip.on{background:var(--canon-green);border-color:var(--canon-green);color:#04130c}
 .premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.premium-dividends-3 .div-monthly-summary-item span{color:var(--canon-text)}
 .premium-dividends-3 .canon-kpi-card{min-height:86px;padding:12px 13px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
 .premium-dividends-3 .dividend-executive-kpi-label{font-size:10px;color:var(--canon-muted)}
 .premium-dividends-3 .dividend-executive-kpi-value{font-size:20px;line-height:1.1;color:var(--canon-text);font-variant-numeric:tabular-nums}
@@ -8001,10 +8007,11 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 .import-support{display:inline-flex;margin-top:9px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.04em}.import-support.full{color:#86efac;background:rgba(16,185,129,.12)}.import-support.partial{color:#fcd34d;background:rgba(245,158,11,.12)}
 .import-file-list{display:flex;flex-direction:column;gap:7px;margin-top:12px}.import-file-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--surface)}.import-file-row strong{display:block;color:var(--text);font-size:11px;overflow-wrap:anywhere}.import-file-row small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
 .import-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}.import-kpi{padding:9px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.import-kpi small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase}.import-kpi strong{display:block;margin-top:4px;color:var(--text);font-size:17px;font-variant-numeric:tabular-nums}
-.import-review-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.import-review-item{padding:10px;border-left:3px solid #64748b;border-radius:8px;background:var(--surface);font-size:11px;color:var(--text)}.import-review-item.warning{border-left-color:#f59e0b}.import-review-item.danger{border-left-color:#ef4444}
+.import-review-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.import-review-item{padding:10px;border-left:3px solid #64748b;border-radius:8px;background:var(--surface);font-size:12px;color:var(--text)}.import-review-item.warning{border-left-color:#f59e0b}.import-review-item.danger{border-left-color:#ef4444}
 .import-center-summary{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;margin-top:12px}.import-center-summary .import-kpi strong{font-size:16px}.import-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.import-review-card{min-width:0;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}.import-review-card h3{margin:0;color:var(--text);font-size:12px}.import-review-card p{margin:6px 0 0;color:var(--muted);font-size:10px;line-height:1.5}.import-review-card dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;margin:10px 0 0;font-size:10px}.import-review-card dt{color:var(--muted)}.import-review-card dd{margin:0;color:var(--text);font-weight:700;text-align:right;overflow-wrap:anywhere}.import-reconciliation{overflow:auto;margin-top:10px;border:1px solid var(--border);border-radius:11px}.import-reconciliation table{width:100%;min-width:430px;border-collapse:collapse;font-size:10px}.import-reconciliation th,.import-reconciliation td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}.import-reconciliation th{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em}.import-reconciliation td{color:var(--text)}.import-reconciliation tr:last-child td{border-bottom:0}.import-muted{color:var(--muted)!important;font-weight:500!important}
 .import-reconciliation-mobile{display:none}.import-reconcile-card{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.import-reconcile-card + .import-reconcile-card{margin-top:7px}.import-reconcile-card strong{display:block;color:var(--text);font-size:11px}.import-reconcile-card dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;margin-top:7px;font-size:10px}.import-reconcile-card dt{color:var(--muted)}.import-reconcile-card dd{margin:0;color:var(--text);font-weight:700;text-align:right;overflow-wrap:anywhere}
 .import-center-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:14px}.import-center-actions .btn{min-height:44px}.import-center-actions .bp{box-shadow:none!important;background:#4338ca!important;border-color:#5b52df}.import-center-actions .bp:hover{background:#4f46e5!important;box-shadow:none!important}.import-center-panel.empty{padding-bottom:12px}.import-center-panel.empty .import-file-list{margin-top:8px}.import-safety-result{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;padding:9px 11px;border:1px solid rgba(16,185,129,.24);border-radius:10px;background:rgba(16,185,129,.08);color:#bbf7d0;font-size:10px;line-height:1.35}.import-safety-result span{display:inline-flex;gap:4px;align-items:center}.import-safety-result span+span{border-left:1px solid rgba(134,239,172,.24);padding-left:8px}.import-safety-result b{color:#86efac;font-size:9px;text-transform:uppercase;letter-spacing:.04em}
+.v330-note-preview{min-width:0;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:11px;background:var(--panel);overflow-wrap:anywhere}.v330-note-preview h2{margin:0 0 8px;color:var(--text);font-size:14px}.v330-note-preview p,.v330-note-preview li,.v330-note-preview dd{color:var(--text);font-size:12px;line-height:1.5}.v330-note-preview dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px}.v330-note-preview dt{color:var(--muted);font-size:11px}.v330-note-preview dd{margin:0;font-weight:700}.v330-note-preview li>span{display:block}.v330-note-preview summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--text);font-weight:700}.v330-note-preview summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}.v330-note-preview ul{padding-left:20px}.v330-note-preview li+li{margin-top:4px}
 .import-center-source-catalog{border:1px solid var(--border);border-radius:13px;background:var(--panel);overflow:hidden}
 .import-center-source-catalog>summary{display:flex;align-items:center;min-height:44px;padding:9px 12px;list-style:none;cursor:pointer;color:var(--text);font-size:12px;font-weight:800}
 .import-center-source-catalog>summary::-webkit-details-marker{display:none}
@@ -8013,7 +8020,8 @@ body:has(.test-mode-banner) .test-mode-banner{display:none!important}
 .import-center-source-catalog .import-source-list{margin:8px 12px 12px}
 @media(max-width:900px){.import-center-grid{grid-template-columns:1fr}.import-center-hero{display:block}.import-center-safety{margin-top:12px}.import-source-list{grid-template-columns:1fr}}
 @media(max-width:900px){.import-center-summary{grid-template-columns:repeat(4,minmax(0,1fr))}.import-review-grid{grid-template-columns:1fr}}
-@media(max-width:560px){.import-center-shell{gap:9px}.import-center-hero{padding:13px 12px}.import-center-title{font-size:19px}.import-center-steps{padding:7px}.import-center-step{display:none}.import-center-step-mobile{display:flex;min-width:0;flex:1;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;color:var(--muted);font-size:10px;font-weight:800}.import-center-step-mobile strong{color:var(--text);font-size:12px}.import-center-panel{padding:11px}.import-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.import-center-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.import-center-actions{justify-content:stretch}.import-center-actions .btn{flex:1 1 100%}.import-reconciliation{display:none}.import-reconciliation-mobile{display:block;margin-top:10px}.import-safety-result{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.import-safety-result span+span{border-left:0;padding-left:0}}
+@media(max-width:900px){.v330-note-preview dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.import-center-shell{gap:9px}.import-center-hero{padding:13px 12px}.import-center-title{font-size:19px}.import-center-steps{padding:7px}.import-center-step{display:none}.import-center-step-mobile{display:flex;min-width:0;flex:1;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;color:var(--muted);font-size:10px;font-weight:800}.import-center-step-mobile strong{color:var(--text);font-size:12px}.import-center-panel{padding:11px}.import-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.import-center-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.import-center-actions{justify-content:stretch}.import-center-actions .btn{flex:1 1 100%}.import-reconciliation{display:none}.import-reconciliation-mobile{display:block;margin-top:10px}.import-safety-result{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.import-safety-result span+span{border-left:0;padding-left:0}.v330-note-preview dl{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)}}
 </style>
 
 <style>
@@ -8642,6 +8650,7 @@ document.write([
 <script src="import-center-workflow.js"></script>
 <script src="historical-import-preview.js"></script>
 <script src="historical-reconstruction.js"></script>
+<script src="brokerage-professional.js"></script>
 <script src="historical-reconstruction-hardening.js"></script>
 <script src="v210-income-quality.js"></script>
 <script src="v213-transaction-trust.js"></script>
@@ -14363,6 +14372,9 @@ function inferNotaMeta(ticker, spec, market){
   return {type:mt.type||'Ação', sector:mt.sector||''};
 }
 function brokerNoteMoney(text, labels){
+  return brokerNoteMoneyEvidence(text,labels).value||0;
+}
+function brokerNoteMoneyEvidence(text, labels){
   const source=String(text||'');
   const lines=source.split(/\r?\n/).map(line=>line.replace(/\s+/g,' ').trim()).filter(Boolean);
   for(const label of labels){
@@ -14370,10 +14382,10 @@ function brokerNoteMoney(text, labels){
     const line=lines.find(item=>notaNorm(item).includes(normalizedLabel));
     if(line){
       const values=[...line.matchAll(/(?:R\$\s*)?([\d.]+,\d{2})/g)];
-      if(values.length) return parseNum(values[values.length-1][1]);
+      if(values.length) return {present:true,value:parseNum(values[values.length-1][1])};
     }
   }
-  return 0;
+  return {present:false,value:null};
 }
 function mapInterAssetToTicker(description){
   const s=notaNorm(description);
@@ -14518,10 +14530,14 @@ function parseInterBrokerNoteText(text){
   const operations=lines.map(parseInterBrokerOperationLine).filter(Boolean);
   const rows=consolidateBrokerNoteOperations(operations,tradeDate);
   const operationsTotal=brokerNoteMoney(raw,['Valor das operações']) || operations.reduce((sum,item)=>sum+item.total,0);
-  const netTotal=brokerNoteMoney(raw,['Líquido para','Líquido da nota','Valor líquido da nota','Total líquido']);
-  const settlementFee=brokerNoteMoney(raw,['Taxa de liquidação']);
-  const emoluments=brokerNoteMoney(raw,['Emolumentos']);
-  const transferFee=brokerNoteMoney(raw,['Taxa de transferência de ativos','Transferência de ativos']);
+  const netTotalEvidence=brokerNoteMoneyEvidence(raw,['Líquido para','Líquido da nota','Valor líquido da nota','Total líquido']);
+  const settlementFeeEvidence=brokerNoteMoneyEvidence(raw,['Taxa de liquidação']);
+  const emolumentsEvidence=brokerNoteMoneyEvidence(raw,['Emolumentos']);
+  const transferFeeEvidence=brokerNoteMoneyEvidence(raw,['Taxa de transferência de ativos','Transferência de ativos']);
+  const netTotal=netTotalEvidence.value||0;
+  const settlementFee=settlementFeeEvidence.value||0;
+  const emoluments=emolumentsEvidence.value||0;
+  const transferFee=transferFeeEvidence.value||0;
   const costs=netTotal>0 && operationsTotal>0 ? netTotal-operationsTotal : settlementFee+emoluments+transferFee;
   if(!noteNumber) warnings.push('Número da nota não identificado.');
   if(!tradeDate) warnings.push('Data do pregão não identificada.');
@@ -14531,7 +14547,7 @@ function parseInterBrokerNoteText(text){
   return {
     valid:isInter && !!noteNumber && !!tradeDate && operations.length>0,
     noteNumber,tradeDate,settlementDate,broker,operations,rows,operationsTotal,netTotal,
-    settlementFee,emoluments,transferFee,costs,warnings,
+    settlementFee,settlementFeeKnown:settlementFeeEvidence.present,emoluments,emolumentsKnown:emolumentsEvidence.present,transferFee,transferFeeKnown:transferFeeEvidence.present,netTotal,netTotalKnown:netTotalEvidence.present,costs,warnings,
     noteKey:[noteNumber,tradeDate,broker,account].join('|')
   };
 }
@@ -15496,9 +15512,21 @@ function brokerNoteValidationChecklist(note=S.brokerNoteImport?.parsed){
     {id:'pending',ok:rows.length>0 && allTickers,label:'Nenhuma linha pendente',note:rows.length>0&&allTickers?'Prévia pronta para confirmação.':'Revise os campos destacados.'}
   ];
 }
+function brokerNoteV330ReadinessAllowsConfirm(preview){
+  if(!preview || typeof preview!=='object') return false;
+  const readiness=preview.importReadiness?.state;
+  const states=[preview.status,preview.reconciliation?.state,readiness].filter(value=>typeof value==='string' && value);
+  const denied=new Set(['HUMAN_DATA_REQUIRED','SOURCE_CONFLICT','DUPLICATE_CANDIDATE','UNRECONCILED','UNKNOWN_IDENTITY','REQUIRED_FEE_DATA_INCOMPLETE','REQUIRED_IRRF_STATUS_INCOMPLETE','SOURCE_PARTIAL','UNKNOWN','REVIEW_REQUIRED']);
+  const allowed=new Set(['RECONCILED','SOURCE_CONFIRMED','READY_FOR_CONFIRMATION']);
+  if(states.some(value=>denied.has(value))) return false;
+  const reasons=[preview.reasonCodes,preview.reconciliation?.reasonCodes,preview.importReadiness?.reasonCodes,preview.validation?.reasonCodes].filter(Array.isArray).flat();
+  if(reasons.length) return false;
+  if(readiness==='READY_FOR_REVIEW') return preview.status==='SOURCE_CONFIRMED' && preview.reconciliation?.state==='SOURCE_CONFIRMED' && preview.validation?.status==='VALID';
+  return states.length>0 && states.every(value=>allowed.has(value)) && allowed.has(readiness);
+}
 function brokerNoteCanConfirm(state=S.brokerNoteImport){
   const note=state?.parsed;
-  if(!note?.valid) return false;
+  if(!note?.valid || !brokerNoteV330ReadinessAllowsConfirm(state.v330Preview)) return false;
   const checks=brokerNoteValidationChecklist(note);
   const required=checks.filter(item=>item.id!=='duplicate').every(item=>item.ok);
   const duplicate=brokerNoteDuplicateInfo(note).duplicate;
@@ -15562,7 +15590,7 @@ function confirmBrokerNoteImport(){
   const note=state?.parsed;
   if(!note?.valid) return;
   if(!brokerNoteCanConfirm(state)){
-    alert('A conferência ainda possui pendências. Revise o checklist antes de importar.');
+    alert(!brokerNoteV330ReadinessAllowsConfirm(state?.v330Preview)?'Necessita revisão antes da confirmação.':'A conferência ainda possui pendências. Revise o checklist antes de importar.');
     return;
   }
   const rows=(note.rows||[]).filter(row=>row.include!==false);
@@ -15885,6 +15913,7 @@ function brokerNoteImportModal(){
         </div>
         ${state.message?`<div class="broker-note-status ${statusClass}" style="margin-top:10px">${esc(state.message)}</div>`:''}
         ${note?`
+          ${state.v330Preview?`<div style="margin-top:12px">${BrokerageProfessional.renderNotePreview(state.v330Preview,esc)}</div>`:''}
           <div class="broker-note-section" style="margin-top:12px">
             <div class="broker-note-section-head"><div><div class="broker-note-section-title">Cabeçalho da nota</div><div class="broker-note-section-sub">Identificação principal extraída do PDF.</div></div><span class="broker-note-read-status ${readTone}">${readLabel}</span></div>
             <div class="broker-note-kpis">
@@ -15906,7 +15935,7 @@ function brokerNoteImportModal(){
           ${(note.warnings||[]).length?`<div class="broker-note-alert" style="margin-top:10px">${note.warnings.map(esc).join('<br>')}</div>`:''}
           <div style="margin-top:10px">${brokerNoteOperationsReviewHtml(note,rateCosts)}</div>
           <div class="broker-note-confirm-bar">
-            <div><div class="broker-note-section-title">${canConfirm?'Conferência concluída':'Importação bloqueada'}</div><div class="broker-note-section-sub">${canConfirm?'Todos os requisitos foram atendidos.':'Revise os itens pendentes no checklist.'}</div></div>
+            <div><div class="broker-note-section-title">${canConfirm?'Conferência concluída':'Importação bloqueada'}</div><div class="broker-note-section-sub">${canConfirm?'Todos os requisitos foram atendidos.':!brokerNoteV330ReadinessAllowsConfirm(state.v330Preview)?'Necessita revisão antes da confirmação.':'Revise os itens pendentes no checklist.'}</div></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn bgh" onclick="closeBrokerNoteImport()">Cancelar</button>
               <button class="btn bsv" onclick="confirmBrokerNoteImport()" ${canConfirm?'':'disabled'}>Confirmar importação</button>
@@ -28592,6 +28621,7 @@ async function importCenterParsePdf(file){
   const parsed=parseInterBrokerNoteText(text);
   if(!parsed.warnings.some(warning=>/não foi identificado com segurança/i.test(warning))){
     if(!parsed.valid) return {status:'REVIEW_REQUIRED',provider:'INTER',sourceType:'BROKERAGE_NOTE_PDF',reason:'NOTE_IDENTITY_OR_PARSE_INCOMPLETE',parsed};
+    parsed.v330Preview=BrokerageProfessional.buildNotePreview({broker:parsed.broker,noteNumber:parsed.noteNumber,tradeDate:parsed.tradeDate,settlementDate:parsed.settlementDate,operations:parsed.operations.map((operation,index)=>({ticker:operation.ticker,security:operation.description,side:operation.operation,quantity:operation.qty,unitPrice:operation.price,grossValue:operation.total,market:'Bovespa',executionSequence:index+1})),fees:{settlement:parsed.settlementFeeKnown?parsed.settlementFee:null,emoluments:parsed.emolumentsKnown?parsed.emoluments:null,transfer:parsed.transferFeeKnown?parsed.transferFee:null},netSettlement:parsed.netTotalKnown?parsed.netTotal:null,irrf:{}},{sourceId:[parsed.broker,parsed.noteNumber,parsed.tradeDate].join('|'),sourceAsOf:parsed.tradeDate});
     parsed.duplicate=detectBrokerNoteDuplicate(parsed);
     return {status:'READY_FOR_REVIEW',provider:'INTER',sourceType:'BROKERAGE_NOTE_PDF',parsed,recordCount:parsed.operations.length};
   }
@@ -28606,7 +28636,7 @@ function importCenterOpenReview({fileName,provider,sourceType,parsed,sourceKind}
   session.pendingReview={fileName,provider,sourceType};
   session.step=7;
   if(sourceType==='BROKERAGE_NOTE_PDF'){
-    S.brokerNoteImport={open:true,status:'ready',message:'Nota lida. Confira todos os dados antes de confirmar.',fileName,fileSize:0,rateCosts:false,allowDuplicate:false,parsed,diag:{phase:'revisão',fileName,fileSize:0,chars:0,noteNumber:parsed.noteNumber||'',tradeDate:parsed.tradeDate||'',operations:parsed.operations?.length||0,rows:parsed.rows?.length||0,tickers:(parsed.rows||[]).map(row=>row.ticker||''),error:''}};
+    S.brokerNoteImport={open:true,status:'ready',message:'Nota lida. Confira todos os dados antes de confirmar.',fileName,fileSize:0,rateCosts:false,allowDuplicate:false,parsed,v330Preview:parsed.v330Preview||null,diag:{phase:'revisão',fileName,fileSize:0,chars:0,noteNumber:parsed.noteNumber||'',tradeDate:parsed.tradeDate||'',operations:parsed.operations?.length||0,rows:parsed.rows?.length||0,tickers:(parsed.rows||[]).map(row=>row.ticker||''),error:''}};
   }else if(parsed.kind==='b3-proventos') openB3ProventosReview(parsed,fileName,sourceKind||'excel');
   else if(parsed.kind==='rf-detailed-position') openRfPositionReview(parsed,fileName,sourceKind||'excel');
   else if(parsed.kind==='movement') openB3MovementReview(parsed,fileName,sourceKind||'excel');
@@ -28637,7 +28667,7 @@ async function importCenterRunDryRun(){
 }
 function importCenterReset(){ if(importCenterState().pendingReview) return; S.importCenterSession={files:[],step:1,result:null,history:[]}; render(); }
 function importCenterTab(){
-  return ImportCenterView.render({context:IMPORT_CENTER_CONTEXT,renderers:{preview:ImportCenterPreviewRenderer,fileList:ImportCenterFileListRenderer,sourceList:ImportCenterSourceListRenderer}});
+  return ImportCenterView.render({context:IMPORT_CENTER_CONTEXT,renderers:{preview:ImportCenterPreviewRenderer,fileList:ImportCenterFileListRenderer,sourceList:ImportCenterSourceListRenderer,notePreview:BrokerageProfessional.renderNotePreview}});
 }
 function corporateEventsCenterTab(){
   const raw=Array.isArray(window.__CORPORATE_EVENTS_RUNTIME__?.events)?window.__CORPORATE_EVENTS_RUNTIME__.events:[];
@@ -31680,6 +31710,8 @@ function ativos(){
   const reviewFilterActive = assetReviewFilterIsActive();
   const reviewFilterCount = reviewFilterActive ? (S.assetReviewFilter.assetIds || []).length : 0;
 
+  const consolidated = assetsPortfolioSummary(S.assets);
+  const consolidatedAssetRows = new Map(consolidated.assets.map(row => [row.asset, row]));
   const assetMetricsCache = new Map();
   const getAssetMetrics = a => {
     if (assetMetricsCache.has(a)) return assetMetricsCache.get(a);
@@ -31696,7 +31728,7 @@ function ativos(){
     const avgPrice = Number(a.avg_price) || 0;
     const marketValue = isRF ? currentValue : (Number(a.qty) || 0) * currentUnit;
     const currentDisplay = isRF ? marketValue : currentUnit;
-    const metrics = { currentValue, displayCurrentValue, appliedValue, rentabPct, jurosValue, isRF, currentUnit, avgPrice, marketValue, currentDisplay };
+    const metrics = { currentValue, displayCurrentValue, appliedValue, rentabPct, jurosValue, isRF, currentUnit, avgPrice, marketValue, currentDisplay, financial: consolidatedAssetRows.get(a) };
     assetMetricsCache.set(a, metrics);
     return metrics;
   };
@@ -31715,7 +31747,6 @@ function ativos(){
 
   const analysisRows = innerTab === 'analise' ? assetAnalysisRows() : null;
   const analysis = innerTab === 'analise' ? assetAnalysisBlock(analysisRows) : '';
-  const consolidated = assetsPortfolioSummary(S.assets);
   const assetKpiApplied = consolidated.invested;
   const assetKpiCurrent = consolidated.current;
   const assetKpiProfit = consolidated.result;
@@ -31794,11 +31825,13 @@ function ativos(){
       const avgPrice = m.avgPrice;
       const marketValue = m.marketValue;
       const currentDisplay = m.currentDisplay;
+      const financial = m.financial;
 
       const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
-      const result = displayCurrentValue == null || !Number.isFinite(appliedValue) ? null : displayCurrentValue - appliedValue;
+      const result = Number.isFinite(financial?.result) ? financial.result : null;
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
-      const resultPrefix2 = result >= 0 ? '+' : '';
+      const resultPrefix2 = result != null && result > 0 ? '+' : '';
+      const returnPct = Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
 
       // Get analysis row for this ticker
       const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
@@ -31808,20 +31841,23 @@ function ativos(){
       const qty = Number(a.qty) || 0;
       const qtyDisplay = isRF ? fmt(qty) : (qty % 1 === 0 ? String(qty) : qty.toFixed(4));
 
-      let priceDisplay, investedDisplay, currentDisplay2, resultDisplay;
-      if (isRF) {
-        priceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
-        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
-        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
-        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
-      } else {
-        priceDisplay = currentUnit > 0 ? fmt(currentUnit) : '—';
-        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
-        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
-        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
-      }
+      const averagePriceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
+      const currentPriceDisplay = isRF
+        ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
+        : (currentUnit > 0 ? fmt(currentUnit) : '—');
+      const investedDisplay = Number.isFinite(financial?.invested) ? fmt(financial.invested) : '—';
+      const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
+      const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
+      const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
+      const shareDisplay = share == null ? '—' : `${share.toFixed(2)}%`;
 
       const typeBadge = `<span class="asset-type type-${String(type).toLowerCase().replace('ç','c').replace('ã','a')}">${esc(type)}</span>`;
+      const sector = String(a.sector || metaTicker(a.ticker).sector || '').trim() || '—';
+      const sourceInfo = [analysisRow?.source || a.source, analysisRow?.refTime || analysisRow?.lastUpdate || a.quoteUpdatedAt]
+        .filter(value => value != null && String(value).trim())
+        .map(value => String(value).trim()).join(' · ') || 'Não informada';
+      const hasDy = hasOwnFiniteNumber(a, ['dy']);
+      const dyDisplay = hasDy ? fmtP(Number(a.dy)) : '—';
 
       return `<tr data-id="${esc(a.id)}" class="asset-premium-card">
         <td>
@@ -31834,15 +31870,19 @@ function ativos(){
             </div>
           </div>
         </td>
-        <td>${esc(a.name)}</td>
+        <td>${esc(sector)}</td>
         <td>${typeBadge}</td>
-        <td>${qtyDisplay}</td>
-        <td>${priceDisplay}</td>
-        <td>${investedDisplay}</td>
-        <td>${currentDisplay2}</td>
-        <td class="${resultClass}">${Number.isFinite(displayCurrentValue) ? resultDisplay : '—'}</td>
-        <td>${share == null ? '—' : `${share.toFixed(2)}%`}</td>
-        <td>${esc(analysisRow?.source || 'manual')}${analysisRow?.refTime ? ` · ${esc(analysisRow.refTime)}` : ''}</td>
+        <td class="num">${qtyDisplay}</td>
+        <td class="num">${averagePriceDisplay}</td>
+        <td class="num">${currentPriceDisplay}</td>
+        <td class="num">${investedDisplay}</td>
+        <td class="num ${resultClass}">${resultMoneyDisplay}</td>
+        <td class="num ${returnPct == null ? '' : returnPct >= 0 ? 'positive-text' : 'negative-text'}">${returnDisplay}</td>
+        <td class="num">${positionValueDisplay}</td>
+        <td class="num">${shareDisplay}</td>
+        <td>${esc(sourceInfo)}</td>
+        <td class="num">${dyDisplay}</td>
+        <td class="num" title="Sem estimativa mensal validada">—</td>
         <td>
           ${assetActionMenuHtml(a, isRF, 'v328')}
         </td>
@@ -31862,11 +31902,13 @@ function ativos(){
       const avgPrice = m.avgPrice;
       const marketValue = m.marketValue;
       const currentDisplay = m.currentDisplay;
+      const financial = m.financial;
 
       const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
-      const result = displayCurrentValue == null || !Number.isFinite(appliedValue) ? null : displayCurrentValue - appliedValue;
+      const result = Number.isFinite(financial?.result) ? financial.result : null;
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
-      const resultPrefix2 = result != null && result >= 0 ? '+' : '';
+      const resultPrefix2 = result != null && result > 0 ? '+' : '';
+      const returnPct = Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
 
       const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
       const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
@@ -31874,20 +31916,22 @@ function ativos(){
       const qty = Number(a.qty) || 0;
       const qtyDisplay = isRF ? fmt(qty) : (qty % 1 === 0 ? String(qty) : qty.toFixed(4));
 
-      let priceDisplay, investedDisplay, currentDisplay2, resultDisplay;
-      if (isRF) {
-        priceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
-        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
-        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
-        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
-      } else {
-        priceDisplay = currentUnit > 0 ? fmt(currentUnit) : '—';
-        investedDisplay = Number.isFinite(appliedValue) ? fmt(appliedValue) : '—';
-        currentDisplay2 = Number.isFinite(displayCurrentValue) ? fmt(displayCurrentValue) : '—';
-        resultDisplay = Number.isFinite(rentabPct) && appliedValue > 0 ? fmtP(rentabPct) : '—';
-      }
+      const averagePriceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
+      const currentPriceDisplay = isRF
+        ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
+        : (currentUnit > 0 ? fmt(currentUnit) : '—');
+      const investedDisplay = Number.isFinite(financial?.invested) ? fmt(financial.invested) : '—';
+      const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
+      const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
+      const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
+      const shareDisplay = share == null ? '—' : `${share.toFixed(2)}%`;
 
       const typeBadge = `<span class="asset-type type-${String(type).toLowerCase().replace('ç','c').replace('ã','a')}">${esc(type)}</span>`;
+      const sector = String(a.sector || metaTicker(a.ticker).sector || '').trim() || '—';
+      const sourceInfo = [analysisRow?.source || a.source, analysisRow?.refTime || analysisRow?.lastUpdate || a.quoteUpdatedAt]
+        .filter(value => value != null && String(value).trim())
+        .map(value => String(value).trim()).join(' · ') || 'Não informada';
+      const dyDisplay = hasOwnFiniteNumber(a, ['dy']) ? fmtP(Number(a.dy)) : '—';
 
       return `<details class="asset-premium-card" data-id="${esc(a.id)}">
         <summary class="asset-premium-card-summary">
@@ -31899,18 +31943,25 @@ function ativos(){
             </div>
           </div>
           <div class="asset-premium-card-meta">
-            <div class="${resultClass}">${result == null ? '—' : resultDisplay}</div>
-            <div class="asset-premium-card-share">${share == null ? '—' : `${share.toFixed(2)}%`}</div>
+            <div><span>Tipo</span><strong>${typeBadge}</strong></div>
+            <div><span>Valor da posição</span><strong>${positionValueDisplay}</strong></div>
+            <div><span>Resultado R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
+            <div><span>Rentabilidade · % Carteira</span><strong>${returnDisplay} · ${shareDisplay}</strong></div>
           </div>
         </summary>
         <div class="asset-premium-card-details">
-          <div class="asset-premium-card-row"><span>Tipo</span><strong>${typeBadge}</strong></div>
+          <div class="asset-premium-card-row"><span>Setor</span><strong>${esc(sector)}</strong></div>
           <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>
-          <div class="asset-premium-card-row"><span>Preço</span><strong>${priceDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
-          <div class="asset-premium-card-row"><span>Atual</span><strong>${currentDisplay2}</strong></div>
-          <div class="asset-premium-card-row"><span>Peso</span><strong>${share == null ? '—' : `${share.toFixed(2)}%`}</strong></div>
-          <div class="asset-premium-card-row"><span>Fonte</span><strong>${esc(analysisRow?.source || 'manual')}${analysisRow?.refTime ? ` · ${esc(analysisRow.refTime)}` : ''}</strong></div>
+          <div class="asset-premium-card-row"><span>Resultado R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Rentabilidade</span><strong>${returnDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Valor total</span><strong>${positionValueDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>% Carteira</span><strong>${shareDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>DY</span><strong>${dyDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Estimativa mensal</span><strong title="Sem estimativa mensal validada">—</strong></div>
+          <div class="asset-premium-card-row"><span>Fonte / atualização</span><strong>${esc(sourceInfo)}</strong></div>
           <div class="asset-premium-card-actions">${assetActionMenuHtml(a, isRF, 'v328')}</div>
         </div>
       </details>`;
@@ -31953,15 +32004,19 @@ function ativos(){
           <thead>
             <tr>
               <th>Ativo</th>
-              <th>Nome</th>
+              <th>Setor</th>
               <th>Tipo</th>
-              <th>Qtd</th>
-              <th>Preço</th>
+              <th class="num">Quantidade</th>
+              <th class="num">Preço médio</th>
+              <th class="num">Preço atual / posição</th>
               <th>Investido</th>
-              <th>Atual</th>
-              <th>Resultado</th>
-              <th>Peso</th>
-              <th>Fonte / Ref</th>
+              <th class="num">Resultado R$</th>
+              <th class="num">Rentabilidade</th>
+              <th class="num">Valor total</th>
+              <th class="num">% carteira</th>
+              <th>Fonte / atualização</th>
+              <th class="num">DY</th>
+              <th class="num">Estimativa mensal</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -34485,16 +34540,38 @@ function dividendSummaryCards(){
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
     </div>`;
 }
-function dividendExecutiveKpis(){
+function dividendExecutiveKpis(rows=dividendPremiumRows()){
   const stats=passiveIncomeGoalStats();
-  const receivedThisMonth=stats.currentMonthTotal||0;
+  const incomeEngine=globalThis.DividendIntelligence;
+  const classifyIncomeState=incomeEngine?.classifyIncomeState;
+  const currentYear=new Date().getFullYear();
+  const receivedThisYearRows=typeof classifyIncomeState==='function' ? rows.filter(row=>{
+    if(classifyIncomeState(row)!=='PAID') return false;
+    const date=row.paymentDt instanceof Date ? row.paymentDt : row.dt instanceof Date ? row.dt : parseAnyDate(row.date);
+    return date instanceof Date && !Number.isNaN(date.getTime()) && date.getFullYear()===currentYear;
+  }) : [];
+  const receivedThisYearCents=receivedThisYearRows.map(row=>{
+    if(row.value==null||row.value==='') return NaN;
+    const cents=Number(row.value)*100;
+    const rounded=Math.round(cents);
+    return Number.isSafeInteger(rounded)&&Math.abs(cents-rounded)<1e-6 ? rounded : NaN;
+  });
+  const receivedThisYearKnown=receivedThisYearCents.length>0 && receivedThisYearCents.every(Number.isSafeInteger);
+  const receivedThisYear=receivedThisYearKnown ? receivedThisYearCents.reduce((sum,value)=>sum+value,0)/100 : null;
+  const receivedThisYearSub=typeof classifyIncomeState!=='function'
+    ? 'Classificação de recebimento indisponível'
+    : !receivedThisYearRows.length
+      ? 'Sem recebimentos identificados no ano atual'
+      : receivedThisYearKnown
+        ? 'Pagamentos classificados como recebidos no ano atual'
+        : 'Valor de recebimento indisponível';
   const monthlyAvg=stats.monthlyAvg||0;
   const lastMonth=stats.byMonth.length>1 ? stats.byMonth[stats.byMonth.length-2]?.total||0 : 0;
   const annualProjection=stats.annualProjection||0;
   const portfolioTotal=(S.assets||[]).reduce((s,a)=>s+(assetCurrentValue(a)||0),0);
   const yieldNow=(portfolioTotal>0 && stats.total12>0) ? (stats.total12/portfolioTotal*100) : null;
   const cards=[
-    ['Recebido','income',fmt(receivedThisMonth),'Mês atual · lançamentos oficiais',receivedThisMonth>0?'good':'',''],
+    ['Recebido no ano','income',receivedThisYearKnown?fmt(receivedThisYear):'—',receivedThisYearSub,receivedThisYearKnown&&receivedThisYear>0?'good':'',''],
     ['Média mensal','history',fmt(monthlyAvg),'Base dos últimos 12 meses',monthlyAvg>0?'good':'','blue'],
     ['Último mês','trend',fmt(lastMonth),'Mês anterior completo',lastMonth>0?'good':'','orange'],
     ['Projeção anual','target',fmt(annualProjection),'Média 12M × 12',annualProjection>0?'good':'','purple'],
@@ -34756,9 +34833,17 @@ function canonDividendOverview(rows, kpisHtml){
       : 'Sem dados de recebimentos no período.'),
     true
   );
-  const upcoming=dividendUpcomingSection(receivedRows,false);
+  const upcoming=dividendUpcomingSection(rows,false);
+  const monthlyHistory=dividendMonthlyTableBlock(rows,true);
+  const incomeEvolution=`<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período observado, sem projeção no histórico.</span></div>${dividendMonthlyTimeline(rows)}</section>`;
+  const topAssets=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
+  const annualSummary=`<section class="premium-panel dividend-annual-summary" aria-labelledby="dividend-annual-summary-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-annual-summary-title">Resumo por ano</div><div class="premium-panel-sub">Recebimentos registrados por ano; períodos sem cobertura permanecem indisponíveis.</div></div></div>${canonDividendYearSummary(rows)}</section>`;
   return `
-    <div class="canon-dividends dividend-calendar-view">
+    <div class="canon-dividends dividend-calendar-view dividend-daily-overview">
+      ${kpisHtml}
+      <section class="dividend-history-block" aria-label="Histórico mensal de recebimentos">${monthlyHistory}</section>
+      <div class="dividend-primary-grid">${incomeEvolution}${topAssets}</div>
+      ${annualSummary}
       <section class="dividend-calendar-primary" aria-label="Recebimentos e próximos eventos">
         ${received}
         ${upcoming}
@@ -34766,7 +34851,6 @@ function canonDividendOverview(rows, kpisHtml){
       <details class="dividend-secondary-disclosure">
         <summary>Resumo de renda e cobertura</summary>
         <div class="dividend-secondary-disclosure-body">
-          ${kpisHtml}
           ${v253DividendIntelligencePanel(rows)}
           <div class="corporate-events-readonly-panel">${corporateEventsAnnouncementSection()}</div>
         </div>

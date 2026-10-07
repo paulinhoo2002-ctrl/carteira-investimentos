@@ -70,10 +70,14 @@ function parseSource(source = {}, detection = detectSource(source), existing = {
     return { parsed: rows.length, valid: rows.length, positions: clone(rows), newRecords: [], reviewRequired: [], unsupported: [], conflicts: [], counts: { NEW: 0 } };
   }
   if (detection.SOURCE_TYPE === 'BROKERAGE_NOTE_PDF') {
-    const note = Brokerage.normalizeNote(source.note || { operations: rows }, { ...source, fingerprint: sourceFingerprint(source) });
+    const rawNote = source.note || { operations: rows };
+    const notePreview = Brokerage.buildNotePreview(rawNote, { ...source, fingerprint: sourceFingerprint(source) }, existing.processedNotes || []);
+    const note = notePreview.note;
     const validation = Brokerage.crossCheckNoteFinancials(note);
-    const operations = note.OPERATIONS.map(operation => ({ ...operation, source: 'BROKERAGE_NOTE_PDF', operation: operation.buySell }));
-    return { parsed: operations.length, valid: operations.filter(operation => operation.identity && operation.quantity).length, note, validation, events: operations, newRecords: operations.filter(operation => operation.identity && operation.quantity), reviewRequired: validation.status === 'MATCH' ? [] : [validation], unsupported: [], conflicts: validation.status === 'MATCH' ? [] : [validation], counts: { NEW: operations.length } };
+    const operations = notePreview.rawExecutions.map(operation => ({ ...operation, source: 'BROKERAGE_NOTE_PDF', operation: operation.side }));
+    const normalized = notePreview.normalizedTransactions.map(operation => ({ ...operation, source: 'BROKERAGE_NOTE_PDF', buySell: operation.side, operation: operation.side, kind: 'transaction' }));
+    const reviewRequired = notePreview.importReadiness.state === 'READY_FOR_REVIEW' && validation.status === 'MATCH' ? [] : [{ state: notePreview.importReadiness.state, reasons: notePreview.reasonCodes, financialCrossCheck: validation }];
+    return { parsed: operations.length, valid: normalized.filter(operation => operation.assetCanonicalId && operation.quantity).length, note, notePreview, validation, events: operations, newRecords: normalized, reviewRequired, unsupported: [], conflicts: notePreview.status === 'SOURCE_CONFLICT' ? reviewRequired : [], counts: { NEW: normalized.length, RAW_EXECUTIONS: operations.length }, writeCount: 0, financialWrite: false };
   }
   return { parsed: rows.length, valid: 0, newRecords: [], reviewRequired: rows.length ? rows : ['UNKNOWN_FORMAT'], unsupported: rows, conflicts: [], counts: { NEW: 0 } };
 }
@@ -84,15 +88,23 @@ function incomeRecordsFromParsed(parsed, sourceType) {
 }
 
 function transactionRecordsFromParsed(parsed, sourceType) {
-  return (parsed.newRecords || []).filter(record => record.kind !== 'income' && (record.classification === 'BUY' || record.classification === 'SELL' || record.buySell === 'BUY' || record.buySell === 'SELL')).map(record => ({ ...record, kind: 'transaction', source: sourceType, eventType: record.eventType || record.classification || record.buySell, operation: record.operation || record.classification || record.buySell }));
+  return (parsed.newRecords || []).filter(record => record.kind !== 'income' && (record.classification === 'BUY' || record.classification === 'SELL' || record.buySell === 'BUY' || record.buySell === 'SELL' || record.side === 'BUY' || record.side === 'SELL')).map(record => ({ ...record, kind: 'transaction', source: sourceType, eventType: record.eventType || record.classification || record.buySell || record.side, operation: record.operation || record.classification || record.buySell || record.side }));
 }
 
 function deduplicateCandidateRecords(records = [], kind = 'transaction') {
   const seen = new Map();
   const duplicates = [];
   records.forEach(record => {
+    const v330Note = kind === 'transaction' && record.sourceType === 'BROKERAGE_NOTE';
+    const v330NoteKey = v330Note ? [
+      record.sourceType, record.noteIdentity || record.sourceId || '', record.assetCanonicalId || '',
+      record.side || record.eventType || record.buySell || '', record.tradeDate || record.date || '',
+      record.settlementDate || '', record.market || '', record.quantity || record.qty || '',
+      record.unitPriceCents ?? record.unitPrice ?? '', record.grossValueCents ?? record.grossValue ?? record.value ?? '',
+      Array.isArray(record.rawExecutionIds) ? [...record.rawExecutionIds].sort().join(',') : '',
+    ].join('|') : '';
     const key = kind === 'transaction'
-      ? `${record.eventType || record.classification || record.buySell || ''}|${record.date || record.tradeDate || ''}|${record.identity || Foundation.resolveExactIdentity(record)}|${record.quantity || record.qty || ''}|${record.unitPrice ?? ''}|${record.grossValue ?? record.value ?? ''}`
+      ? v330Note ? v330NoteKey : `${record.eventType || record.classification || record.buySell || ''}|${record.date || record.tradeDate || ''}|${record.identity || Foundation.resolveExactIdentity(record)}|${record.quantity || record.qty || ''}|${record.unitPrice ?? ''}|${record.grossValue ?? record.value ?? ''}`
       : `${record.date || ''}|${record.identity || Foundation.resolveExactIdentity(record)}|${record.incomeType || record.eventType || ''}|${record.netValue ?? record.grossValue ?? record.value ?? ''}`;
     if (seen.has(key)) duplicates.push(record);
     else seen.set(key, record);

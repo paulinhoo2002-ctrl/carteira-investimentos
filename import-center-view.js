@@ -15,7 +15,7 @@
     const steps=stepLabels.map((label,index)=>`<div class="import-center-step ${session.step===index+1?'on':''} ${session.step>index+1?'done':''}"${session.step===index+1?' aria-current="step"':''}><span>${session.step>index+1?'✓':index+1}</span>${context.escapeText(label)}</div>`).join('');
     const fileRows=renderers.fileList.render({files,escapeText:context.escapeText,supportLabel});
     const sourceListHtml=renderers.sourceList.render({items:context.getSources(),escapeText:context.escapeText,supportLabel});
-    const previewStatusHtml=renderers.preview.render({files,result,history:Array.isArray(session.history)?session.history:[],escapeText:context.escapeText,supportLabel});
+    const previewStatusHtml=renderers.preview.render({files,result,history:Array.isArray(session.history)?session.history:[],escapeText:context.escapeText,supportLabel,renderNotePreview:renderers.notePreview});
     return `<section class="import-center-shell" aria-labelledby="import-center-title">
       <div class="import-center-hero">
         <div><h1 class="import-center-title" id="import-center-title">Importar dados</h1><div class="import-center-sub">Entrada única para leitura e revisão. A confirmação e a gravação continuam nos fluxos protegidos de cada fonte.</div></div>

@@ -126,7 +126,7 @@ test('resultado visual não inventa deduplicação, snapshot ou laboratório sem
     result: { status: 'NO_NEW_RECORDS', fileName: 'synthetic-fixture.csv', provider: 'B3', sourceType: 'B3_MOVEMENTS_XLSX', writeCount: 0 },
     escapeText: value => String(value),
   });
-  assert.match(html, /NO_NEW_RECORDS/);
+  assert.match(html, /Nenhum registro novo/);
   assert.match(html, /synthetic-fixture\.csv/);
   assert.match(html, /Registros gravados<\/b> 0/);
   assert.doesNotMatch(html, /EXACT_DUPLICATE|Historical Reconstruction Lab|Snapshot|rollback/);

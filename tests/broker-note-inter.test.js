@@ -288,3 +288,36 @@ test('brokerNoteDuplicateInfo e brokerNoteCanConfirm usam a chave com conta e bl
   });
   assert.equal(differentNoteInfo.duplicate, false);
 });
+
+test('brokerNoteCanConfirm exige prontidão V330 segura além do checklist legado', () => {
+  const readinessSnippet = extractFunctionSource('brokerNoteV330ReadinessAllowsConfirm', 'function brokerNoteCanConfirm');
+  const canConfirmSnippet = extractFunctionSource('brokerNoteCanConfirm', 'function brokerNoteChecklistHtml');
+  const run = (readiness, checklistPass = true) => {
+    const context = makeContext({
+      S: { aportes: [], brokerNoteImport: { allowDuplicate: false, parsed: { valid: true, noteNumber: 'SYN-1', tradeDate: '01/10/2026', broker: 'Corretora Sintética', rows: [{ ticker: 'SYN1', qty: 1, price: 10, total: 10 }], operationsTotal: 10 }, v330Preview: readiness } },
+      brokerNoteValidationChecklist: () => [
+        { id: 'note', ok: checklistPass }, { id: 'date', ok: checklistPass }, { id: 'broker', ok: checklistPass },
+        { id: 'tickers', ok: checklistPass }, { id: 'values', ok: checklistPass }, { id: 'duplicate', ok: true }, { id: 'pending', ok: checklistPass },
+      ],
+      brokerNoteDuplicateInfo: () => ({ duplicate: false, count: 0 }),
+    });
+    vm.runInNewContext(`${readinessSnippet}\n${canConfirmSnippet}\nthis.__canConfirm = brokerNoteCanConfirm;`, context);
+    return context.__canConfirm(context.S.brokerNoteImport);
+  };
+
+  const ready = { status: 'SOURCE_CONFIRMED', reconciliation: { state: 'SOURCE_CONFIRMED' }, importReadiness: { state: 'READY_FOR_REVIEW' }, validation: { status: 'VALID', reasonCodes: [] } };
+  assert.equal(run(ready), true, 'V330 ready and legacy checklist pass must allow confirmation');
+  for (const state of ['RECONCILED', 'SOURCE_CONFIRMED', 'READY_FOR_CONFIRMATION']) {
+    const explicitReady = { status: state, reconciliation: { state }, importReadiness: { state }, validation: { status: 'VALID', reasonCodes: [] } };
+    assert.equal(run(explicitReady), true, `${state} must be accepted when canonical validation is clean`);
+  }
+  for (const state of ['HUMAN_DATA_REQUIRED', 'SOURCE_CONFLICT', 'DUPLICATE_CANDIDATE', 'UNRECONCILED', 'UNKNOWN_IDENTITY', 'REQUIRED_FEE_DATA_INCOMPLETE', 'REQUIRED_IRRF_STATUS_INCOMPLETE']) {
+    const blocked = { ...ready, status: state, reconciliation: { state }, importReadiness: { state } };
+    assert.equal(run(blocked), false, `${state} must block confirmation`);
+  }
+  assert.equal(run({ ...ready, reasonCodes: ['NOTE_LEVEL_FEES_INCOMPLETE'] }), false, 'required fee gaps block even with an inconsistent ready label');
+  assert.equal(run({ ...ready, validation: { status: 'VALID', reasonCodes: ['IRRF_SETTLEMENT_INCLUSION_UNKNOWN'] } }), false, 'incomplete IRRF semantics block confirmation');
+  assert.equal(run(ready, false), false, 'V330 readiness must not override a failing legacy checklist');
+  assert.equal(run({ ...ready, descriptiveMetadata: null }), true, 'non-authoritative descriptive metadata follows canonical readiness');
+  assert.equal(run(null), false, 'missing V330 readiness must fail closed');
+});

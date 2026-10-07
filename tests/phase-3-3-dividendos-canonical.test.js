@@ -11,8 +11,9 @@ test('Dividendos mantém o contrato canônico, fontes oficiais e bloqueios visua
   const canon = read('docs/ai/VISUAL_CANON.md');
   const refs = read('Refs/visual-canon/CANON_INDEX.md');
 
-  assert.match(source, /function dividendExecutiveKpis\(\)/);
-  for (const label of ['Recebido', 'Média mensal', 'Último mês', 'Projeção anual', 'Yield atual']) assert.match(source, new RegExp(label));
+  assert.match(source, /function dividendExecutiveKpis\(rows=dividendPremiumRows\(\)\)/);
+  for (const label of ['Recebido no ano', 'Média mensal', 'Último mês', 'Projeção anual', 'Yield atual']) assert.match(source, new RegExp(label));
+  assert.match(source, /classifyIncomeState\(row\)!=='PAID'/);
   assert.match(source, /passiveIncomeGoalStats\(\)/);
   assert.match(source, /function dividendAnnualMatrixData\(rows\)/);
   assert.match(source, /const monthNames=\['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'\]/);

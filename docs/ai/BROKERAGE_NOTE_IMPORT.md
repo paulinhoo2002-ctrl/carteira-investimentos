@@ -38,3 +38,35 @@ Duplicidade provável ou conflito nunca é confirmado silenciosamente.
 A extração arbitrária de PDF continua dependente de fixture/parser específico.
 O Import Center visual legado continua em modo de simulação; esta camada não
 habilita importação financeira real.
+
+## V330 raw execution and reconciliation contract
+
+- Keep each raw execution, sequence and source-row identity, even when several
+  executions normalize into one economic transaction. The normalized record
+  carries the raw execution identities and source provenance.
+- Group only when broker/note identity, trade date, canonical asset identity,
+  BUY/SELL side, market, unit price and settlement context are known. Missing
+  or conflicting dimensions require review; unknown asset descriptions are not
+  promoted to canonical tickers.
+- Note replay with the same identity/content is `EXACT_DUPLICATE`; changed
+  content under the same identity is `CONFLICT`. Same-day matching app
+  transactions remain `POSSIBLE_DUPLICATE`/`CONFLICT` and are never collapsed
+  automatically.
+- Fees remain separated by note-level component, with explicit total when
+  present, and default allocation `UNALLOCATED`. IRRF amount, base, and whether
+  it is included in settlement are independent evidence; missing inclusion is
+  review-required. Trade and settlement dates stay distinct and are never
+  inferred.
+- Missing, invalid, or unsafe monetary values remain unavailable rather than
+  being rounded into a plausible amount. `UNKNOWN != ZERO`.
+- Note identity requires broker, note number and trade date; file/source ID is
+  provenance only. Quantity must be positive, non-exponential and have at most
+  eight decimal places. Execution gross must match quantity × unit price
+  within one cent, otherwise the row requires review.
+- Dry-run deduplication preserves separate note identities, canonical assets
+  and execution evidence. Any unresolved review item blocks plan confirmation.
+- Sale gross is not realized P&L. Reuse the existing governed V326 cost-basis
+  engine when its full evidence is available; otherwise retain
+  `RESULT_NOT_AVAILABLE`. Do not add a second P&L implementation.
+- V330 preview and tests are in-memory/read-only, synthetic fixtures only, and
+  stop before any real persistence. `writeCount=0` and `financialWrite=false`.
