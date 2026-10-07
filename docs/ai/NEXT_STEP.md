@@ -12,12 +12,12 @@
 ---
 
 # Next Step
-## V328 — certificação local concluída; aguarda gate de publicação (2026-10-07)
+## V328 — Draft PR aberta; CI exige ajuste de seletor (2026-10-07)
 
-- HEAD/worktree: `8a62885ee88a3f12daee354fb79cb9d643bd9596`, branch `v328-preparation`, igual a `origin/main`; 12 arquivos rastreados modificados, um arquivo de matriz não rastreado e não publicável.
+- HEAD/worktree: `1fe45c2ee50a5fbd1e321d56bfc0b0d9594f842a`, branch `v328-preparation`, 3 commits à frente da base `origin/main` `8a62885ee88a3f12daee354fb79cb9d643bd9596`. PR #451 OPEN/DRAFT/MERGEABLE. Apenas `V328_PREPARATION_MATRIX.md` permanece local e excluído.
 - Ativos e as telas Dividendos, Dashboard, Patrimônio, Metas, Rentabilidade e Rebalancear foram revalidados. Patrimônio deixa meses sem movimento como lacunas e oculta total/resultados quando valor atual ou base aplicada não são completos; sem mudança de fórmula ou persistência.
-- Gates frescos: legacy 255/255, modern 820/820, V84 4/4, A11Y 19/19, performance 96/96, QA harness 3/3, visual 9/9, `qa:all` e `verify:release` PASS. Smoke em sete larguras sem overflow, erros de página/console ou falhas relevantes de request. Build emite avisos conhecidos registrados em `PROJECT_STATE.md`.
-- Próximo passo: revisão final do diff e autorização humana para commit/push conforme `AGENTS.md`. Nenhum commit, push, PR, merge ou deploy foi executado; `MERGE=false`.
+- Gates locais: legacy 255/255, modern 820/820, V84 4/4, A11Y 19/19, performance 96/96, QA harness 3/3, visual 9/9, `qa:all` e `verify:release` PASS. CI run `37642870074`: V289 visual, Auth/Firestore Emulator e Vercel PASS; Reliability smokes falha porque `mobile-overflow-controls.smoke.test.js` usa wrappers antigos. DOM atual da tabela foi confirmado; classificação `SELECTOR_DRIFT`, não ausência da tabela.
+- Próximo passo bloqueado pela autorização de escopo: corrigir somente `tests/mobile-overflow-controls.smoke.test.js` para selecionar `.assets-table-wrap`/tabela atual e as áreas de scroll corretas. Arquivo não pertence aos 12 autorizados; aguardar resposta à solicitação de expansão antes de alterar, commitar ou enviar esse teste. `MERGE=false`.
 - `V328_PREPARATION_MATRIX.md` continua fora do índice e da publicação por conter afirmações não comprovadas e referência fora do escopo autorizado.
 
 ## V320 — certificação final antes do gate humano (2026-10-05)
