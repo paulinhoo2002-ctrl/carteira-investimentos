@@ -18060,6 +18060,7 @@ function quickMovementDefaultDraft(kind='compra'){
     qty:'',
     price:'',
     value:'',
+    fees:'',
     note:'',
     eventType:'Rendimento',
     rfName:'',
@@ -18219,12 +18220,57 @@ function quickMovementAssetSummaryHtml(){
     ${quickMovementMetadataFeedbackHtml(draft.ticker, draft.type, draft.sector, draft.manualType, draft.manualSector)}
   </div>`;
 }
+function quickMovementSaleRealizedPnl(asset, preview, fees){
+  // Fail-closed realized P&L preview via V326 TaxCostBasisIntelligence (derived, read-only).
+  // Returns {status:'COMPLETE'|'NEEDS_REVIEW'|'RESULT_NOT_AVAILABLE', value:number|null, reason:string}
+  const engine=globalThis.TaxCostBasisIntelligence;
+  if(!engine?.buildCostBasis || !asset || !preview?.ok) return {status:'RESULT_NOT_AVAILABLE', value:null, reason:'ENGINE_OR_PREVIEW_UNAVAILABLE'};
+  const ticker=String(asset.ticker||'').trim().toUpperCase();
+  if(!ticker) return {status:'RESULT_NOT_AVAILABLE', value:null, reason:'MISSING_TICKER'};
+  const draft=S.quickMovementDraft||{};
+  const saleDate=String(draft.date||'').trim();
+  const priorTransactions=(S.aportes||[])
+    .filter(a=>{
+      const op=String(a.operation||a.op||a.movementKind||'').toLowerCase();
+      const isTrade=op==='compra'||op==='buy'||op==='venda'||op==='sell';
+      const aTicker=String(a.ticker||'').trim().toUpperCase();
+      return isTrade && aTicker===ticker;
+    })
+    .filter(a=>{
+      const aDate=String(a.date||'').trim();
+      return !saleDate || !aDate || brDate(aDate)<=brDate(saleDate);
+    });
+  const candidate={
+    id:`v327-preview-${ticker}`,
+    ticker,
+    type:normalizeType(asset.type,'Ação'),
+    operation:'venda',
+    qty:preview.quantityToSell,
+    price:preview.unitPrice,
+    fees:fees||0,
+    date:saleDate||new Date().toISOString().slice(0,10),
+    source:'manual-transaction'
+  };
+  const result=engine.buildCostBasis([...priorTransactions, candidate]);
+  const realized=result.realizedRows?.find(r=>String(r.id)===candidate.id)||null;
+  if(!realized || realized.realizedGainLoss===null || realized.realizedGainLoss===undefined){
+    return {status: realized?.needsReview ? 'NEEDS_REVIEW' : 'RESULT_NOT_AVAILABLE', value:null, reason:realized?.needsReviewReason||'NO_USABLE_REALIZED_ROW'};
+  }
+  return {status:'COMPLETE', value:realized.realizedGainLoss, reason:''};
+}
 function quickMovementSalePreviewHtml(){
   const draft=S.quickMovementDraft||quickMovementDefaultDraft();
   const preview=quickMovementSalePreview();
   const asset=quickMovementSaleAssetById(draft.assetId);
   const ticker=esc(String(asset?.ticker||draft.ticker||'—').trim().toUpperCase()||'—');
   const saleTypeLabel=draft.saleType==='total'?'Vender tudo':'Venda parcial';
+  const feesValue=parseQuickMovementNumber(String(draft.fees||''),{required:false});
+  const fees=feesValue.ok?feesValue.value:0;
+  const grossValue=preview.ok?preview.estimatedGrossValue:0;
+  const netProceeds=preview.ok?Math.max(0,grossValue-fees):0;
+  const pnl=quickMovementSaleRealizedPnl(asset,preview,fees);
+  const pnlTone=pnl.status==='COMPLETE'?(pnl.value>=0?'gn':'rd'):'mu';
+  const pnlLabel=pnl.status==='COMPLETE'?`${pnl.value>=0?'+':''}${fmt(pnl.value)}`:(pnl.status==='NEEDS_REVIEW'?'Revisão necessária':'Resultado não disponível');
   return `
     <div class="quick-movement-preview-card">
       <div class="quick-movement-preview-head">
@@ -18260,11 +18306,24 @@ function quickMovementSalePreviewHtml(){
           <div class="quick-movement-preview-value">${preview.ok?fmtRaw(preview.unitPrice):'—'}</div>
         </div>
         <div class="quick-movement-preview-stat">
-          <div class="quick-movement-preview-label">Total</div>
-          <div class="quick-movement-preview-value">${preview.ok?fmtRaw(preview.estimatedGrossValue):'—'}</div>
+          <div class="quick-movement-preview-label">Taxas</div>
+          <div class="quick-movement-preview-value">${feesValue.ok&&feesValue.reason==='value'?fmtRaw(fees):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Bruto</div>
+          <div class="quick-movement-preview-value">${preview.ok?fmtRaw(grossValue):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Líquido</div>
+          <div class="quick-movement-preview-value">${preview.ok?fmtRaw(netProceeds):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Resultado realizado</div>
+          <div class="quick-movement-preview-value ${pnlTone}">${pnlLabel}</div>
         </div>
       </div>
       <div class="quick-movement-preview-note">${preview.ok?'Saldo após a venda: '+fmtN(preview.quantityRemaining)+' unidade(s).':esc(preview.error||'')}</div>
+      ${pnl.status!=='COMPLETE'?`<div class="quick-movement-preview-note">${pnl.status==='NEEDS_REVIEW'?'Custo de aquisição em revisão: o resultado realizado exibirá "Revisão necessária" até a base estar comprovada.':'Base de custo não disponível: o resultado desta venda ficará como "Resultado não disponível". Nenhum valor é inventado.'}</div>`:''}
     </div>`;
 }
 function quickMovementSourceLabel(kind){
@@ -18336,6 +18395,14 @@ function quickMovementPreviewHtml(){
         <div class="quick-movement-preview-stat">
           <div class="quick-movement-preview-label">Preço unitário</div>
           <div class="quick-movement-preview-value">${price>0?fmtRaw(price):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Taxas</div>
+          <div class="quick-movement-preview-value">${parseQuickMovementNumber(String(draft.fees||''),{required:false}).reason==='value'?fmtRaw(Math.max(0,parseNum(draft.fees))):'—'}</div>
+        </div>
+        <div class="quick-movement-preview-stat">
+          <div class="quick-movement-preview-label">Custo total</div>
+          <div class="quick-movement-preview-value">${qty>0&&price>0?fmt(total+Math.max(0,parseNum(draft.fees||'0'))):'—'}</div>
         </div>` : '';
   return `
     <div class="quick-movement-preview-card">
@@ -18580,6 +18647,7 @@ function quickMovementModal(){
     <div class="fg">
       <div><div class="fl">Quantidade</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
       <div><div class="fl">Preço unitário</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 10,00" value="${esc(draft.price||'')}" aria-label="Preço unitário"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
+      <div><div class="fl">Taxas e emolumentos (R$)</div><input id="qm-fees" type="text" inputmode="decimal" placeholder="ex: 5,00 (opcional)" value="${esc(draft.fees||'')}" aria-label="Taxas e emolumentos"${qmErrOn('qm-fees')} oninput="setQuickMovementField('fees', this.value)"></div>
     </div>
     <div id="qm-asset-picker-hint" class="quick-movement-preview-note" style="margin-top:6px">Digite o ticker ou escolha um ativo já cadastrado para preencher tipo e setor.</div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
@@ -18637,6 +18705,7 @@ function quickMovementModal(){
       </div>
       <div id="qm-sale-qty-wrap" style="${saleType==='total'?'display:none':''}"><div class="fl">Quantidade (parcial)</div><input id="qm-qty" type="text" inputmode="decimal" placeholder="ex: 10" value="${esc(draft.qty||'')}" aria-label="Quantidade parcial"${qmErrOn('qm-qty')} oninput="setQuickMovementField('qty', this.value)"></div>
       <div><div class="fl">Preço unitário (R$)</div><input id="qm-price" type="text" inputmode="decimal" placeholder="ex: 34,25" value="${esc(draft.price||'')}" aria-label="Preço unitário da venda"${qmErrOn('qm-price')} oninput="setQuickMovementField('price', this.value)"></div>
+      <div><div class="fl">Taxas da venda (R$)</div><input id="qm-fees" type="text" inputmode="decimal" placeholder="ex: 2,00 (opcional)" value="${esc(draft.fees||'')}" aria-label="Taxas da venda"${qmErrOn('qm-fees')} oninput="setQuickMovementField('fees', this.value)"></div>
     </div>
     <div style="margin-top:10px"><div class="fl">Observação</div><input id="qm-note" placeholder="opcional: motivo, estratégia ou contexto" value="${esc(draft.note||'')}" aria-label="Observação" oninput="setQuickMovementField('note', this.value)"></div>`;
   const rfMovEditorAsset=kind==='renda-fixa' && S.rfMovementEditor && S.rfMovementEditor.assetId ? getRfAssetByEventId(S.rfMovementEditor.assetId) : null;
@@ -18912,10 +18981,14 @@ function quickMovementBuildAporteFromFields(kind){
     const asset=quickMovementSaleAssetById(draft.assetId);
     const contract=quickMovementContract();
     const priceState=quickMovementNumberField('qm-price','Preço unitário',{value:document.getElementById('qm-price')?.value ?? draft.price});
+    const feesState=quickMovementNumberField('qm-fees','Taxas',{required:false,value:document.getElementById('qm-fees')?.value ?? draft.fees,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
     const note=String(document.getElementById('qm-note')?.value ?? draft.note).trim();
     if(!contract || typeof contract.buildVariableIncomeSalePreview!=='function') return {error:'Preview de venda indisponível.', field:''};
     if(!asset) return {error:'Selecione um ativo para vender.', field:'qm-sale-asset'};
     const price=priceState.ok ? priceState.value : 0;
+    if(!feesState.ok) return feesState;
+    if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-fees'};
+    const fees=feesState.reason==='empty'?null:feesState.value;
     if(draft.saleType!=='total'){
       const qtyState=quickMovementNumberField('qm-qty','Quantidade',{value:document.getElementById('qm-qty')?.value ?? draft.qty});
       if(!qtyState.ok) return qtyState;
@@ -18934,6 +19007,7 @@ function quickMovementBuildAporteFromFields(kind){
         ticker:cleanAssetCode(asset.ticker),
         qty:preview.quantityToSell,
         price:preview.unitPrice,
+        fees,
         date:brDate(dt),
         decision:note,
         type:normalizeType(asset.type,'Ação'),
@@ -18945,6 +19019,7 @@ function quickMovementBuildAporteFromFields(kind){
   const ticker=normalizeMetadataTicker(document.getElementById('qm-ti')?.value||'');
   const qtyState=quickMovementNumberField('qm-qty','Quantidade',{emptyError:'Preencha uma quantidade válida maior que zero.',invalidError:'Quantidade: informe um número válido.'});
   const priceState=quickMovementNumberField('qm-price','Preço unitário',{emptyError:'Preencha um preço unitário válido maior que zero.',invalidError:'Preço unitário: informe um número válido.'});
+  const feesState=quickMovementNumberField('qm-fees','Taxas',{required:false,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
   const draft=S.quickMovementDraft||{};
   const resolved=resolveAssetMetadata(ticker,{manual:{
     type:draft.manualType ? document.getElementById('qm-type')?.value : '',
@@ -18958,8 +19033,11 @@ function quickMovementBuildAporteFromFields(kind){
   if(qtyState.value<=0) return {error:'Preencha uma quantidade válida maior que zero.', field:'qm-qty'};
   if(!priceState.ok) return priceState;
   if(priceState.value<=0) return {error:'Preencha um preço unitário válido maior que zero.', field:'qm-price'};
+  if(!feesState.ok) return feesState;
+  if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-fees'};
   const qty=qtyState.value;
   const price=priceState.value;
+  const fees=feesState.reason==='empty'?null:feesState.value;
   return {
     kind:next,
     reg:{
@@ -18969,6 +19047,7 @@ function quickMovementBuildAporteFromFields(kind){
       ticker:resolved.ticker,
       qty,
       price,
+      fees,
       date:dt,
       decision:note,
       type,
@@ -32576,6 +32655,7 @@ function apTab(){
         <td class="mu">${esc(m.sector||'—')}</td>
         <td>${Math.abs(Number(a.qty)||0)}</td>
         <td>${fmt(Number(a.price))}</td>
+        <td>${a.fees===null||a.fees===undefined?'<span class="mu">—</span>':fmt(Number(a.fees))}</td>
         <td class="${isV?'rd':'gn'}" style="font-weight:700">${isV?'-':'+'}${fmt(Math.abs(a.qty)*a.price)}</td>
         <td class="mu">${esc(a.decision||'—')}</td>
         <td><div style="display:flex;gap:6px">
@@ -32607,8 +32687,8 @@ function apTab(){
       <div class="ag-body">
         <div class="ag-table">
           <div class="tw"><div class="ts"><table>
-            <thead><tr><th>Data</th><th>Op.</th><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Preço</th><th>Total</th><th>Decisão</th><th></th></tr></thead>
-            <tbody>${rows||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#2e3f58">Nenhum lançamento nesta categoria.</td></tr>'}</tbody>
+            <thead><tr><th>Data</th><th>Op.</th><th>Ticker</th><th>Tipo</th><th>Setor</th><th>Qtd</th><th>Preço</th><th scope="col">Taxas</th><th>Total</th><th>Decisão</th><th></th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="11" style="text-align:center;padding:20px;color:#2e3f58">Nenhum lançamento nesta categoria.</td></tr>'}</tbody>
           </table></div></div>
         </div>
       </div>
