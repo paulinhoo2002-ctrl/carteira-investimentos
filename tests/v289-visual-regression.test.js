@@ -276,9 +276,36 @@ test('V328 premium screens remain readable across the responsive viewport matrix
   }
 });
 
-test('V330 daily-use visual evidence captures premium screens with synthetic data', async () => {
+test('Ativos keeps all class summary metrics inside the category at notebook widths', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
-  const screenshotDir = path.join(__dirname, '..', '.qa-state', 'v330-daily-use');
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    for (const width of [768, 1024, 1280, 1366, 1440]) {
+      await runtime.page.setViewportSize({ width, height: 800 });
+      const summary = runtime.page.locator('.assets-premium-shell details.ag > summary').first();
+      const layout = await summary.evaluate(element => {
+        const box = element.getBoundingClientRect();
+        const stats = element.querySelector('.ag-stats');
+        const items = [...(stats?.querySelectorAll('.ag-stat') || [])].map(item => {
+          const rect = item.getBoundingClientRect();
+          return { text: item.innerText.trim(), left: rect.left, right: rect.right, width: rect.width };
+        });
+        return { left: box.left, right: box.right, width: box.width, items };
+      });
+      assert.equal(layout.items.length, 5, `${width}px summary should expose Investido, Atual, Resultado, Rentab. and Peso`);
+      assert.ok(layout.items.every(item => item.width > 0 && item.left >= layout.left && item.right <= layout.right + 1), `${width}px class metrics overflow their category: ${JSON.stringify(layout)}`);
+      assert.deepEqual(layout.items.map(item => item.text.split('\n')[0].toLocaleUpperCase('pt-BR')), ['INVESTIDO', 'ATUAL', 'RESULTADO', 'RENTAB.', 'PESO']);
+    }
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('V331 daily-use visual evidence captures premium screens with synthetic data', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  const screenshotDir = path.join(__dirname, '..', '.qa-state', 'v331-premium-refinement');
   const screenshots = [
     { route: 'ativos', width: 1366, height: 768 },
     { route: 'ativos', width: 390, height: 844 },
@@ -286,9 +313,11 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
     { route: 'dividendos', width: 390, height: 844 },
     { route: 'dashboard', width: 1366, height: 768 },
     { route: 'patrimonio', width: 1366, height: 768 },
+    { route: 'aportes', width: 1366, height: 768 },
     { route: 'metas', width: 1366, height: 768 },
     { route: 'rentabilidade', width: 1366, height: 768 },
     { route: 'ajudar', width: 1366, height: 768 },
+    { route: 'relatorios', width: 1366, height: 768 },
   ];
   try {
     await fs.mkdir(screenshotDir, { recursive: true });
@@ -336,7 +365,7 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
     assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
     assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
     await assertSyntheticReadOnlyRuntime(runtime);
-    console.log(`V330 daily-use screenshots: ${screenshotDir}`);
+    console.log(`V331 premium screenshots: ${screenshotDir}`);
   } finally {
     await closeRuntime(runtime);
   }
