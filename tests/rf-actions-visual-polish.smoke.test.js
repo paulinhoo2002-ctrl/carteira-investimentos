@@ -69,11 +69,17 @@ for (const viewport of viewports) {
         if (!details) throw new Error('Grupo Renda Fixa nao encontrado em Ativos');
         if (!details.open) details.querySelector('summary').click();
       });
-      await page.waitForSelector('.rf-table tbody tr', { state: 'visible', timeout: 5000 });
+      const rfCard = page.locator('.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card').first();
+      if (viewport.width <= 640) await rfCard.locator(':scope > summary').click();
+      const rfActionScope = viewport.width <= 640 ? rfCard : page.locator('.rf-table tbody tr:first-child');
+      await rfActionScope.waitFor({ state: 'visible', timeout: 5000 });
 
       const before = await page.evaluate(() => {
-        const asset = S.assets.find(item => isRendaFixaAsset(item) && Number(rfPrincipalBalance(item).value) > 0);
-        const buttons = [...document.querySelectorAll('.rf-table tbody tr:first-child .asset-actions button')]
+        const firstAsset = window.innerWidth <= 640
+          ? document.querySelector('.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card')
+          : document.querySelector('.rf-table tbody tr:first-child');
+        const asset = S.assets.find(item => String(item.id) === firstAsset?.dataset.id && isRendaFixaAsset(item) && Number(rfPrincipalBalance(item).value) > 0);
+        const buttons = [...(firstAsset?.querySelectorAll('.asset-actions button') || [])]
           .filter(button => button.getBoundingClientRect().width > 0);
         const metrics = asset && {
           id: rfAssetEventId(asset),
@@ -94,28 +100,25 @@ for (const viewport of viewports) {
         };
       });
       assert.ok(before.metrics, `ativo RF elegivel ausente em ${viewport.label}`);
-      assert.deepEqual(before.buttons.map(button => button.text), ['Movimentar', 'Resgatar', 'Mais']);
+      assert.deepEqual(before.buttons.map(button => button.text), ['Detalhes', 'Movimentar', 'Resgatar', '✎ Editar']);
       assert.equal(before.overflow, false, `overflow horizontal em ${viewport.label}`);
       for (const button of before.buttons) {
         assert.ok(button.width >= 44 && button.height >= 44, `touch target invalido: ${button.text} ${button.width}x${button.height}`);
         assert.ok(button.width < 180, `acao excessivamente larga: ${button.text} ${button.width}px`);
       }
 
-      await page.locator('.rf-table tbody tr:first-child button', { hasText: 'Movimentar' }).click();
+      await rfActionScope.locator('button', { hasText: 'Movimentar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'visible', timeout: 5000 });
       await page.locator('.rf-event-editor button', { hasText: 'Cancelar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'detached', timeout: 5000 });
 
-      await page.locator('.rf-table tbody tr:first-child button', { hasText: 'Resgatar' }).click();
+      if (viewport.width <= 640 && !(await rfCard.evaluate(element => element.open))) {
+        await rfCard.locator(':scope > summary').click();
+      }
+      await rfActionScope.locator('button', { hasText: 'Resgatar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'visible', timeout: 5000 });
       await page.locator('.rf-event-editor button', { hasText: 'Cancelar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'detached', timeout: 5000 });
-
-      const menuButton = page.locator('.rf-table tbody tr:first-child button[aria-haspopup="menu"]');
-      await menuButton.click();
-      await page.locator('.rf-table tbody tr:first-child .asset-action-menu-panel.open').waitFor({ state: 'visible' });
-      await page.keyboard.press('Escape');
-      await page.locator('.rf-table tbody tr:first-child .asset-action-menu-panel.open').waitFor({ state: 'hidden' });
 
       const after = await page.evaluate(id => {
         const asset = S.assets.find(item => rfAssetEventId(item) === id);

@@ -237,8 +237,8 @@ test('A11Y: Select elements have labels', () => {
 });
 
 test('A11Y: No duplicate IDs', () => {
-  const idMatches = indexHtml.match(/id=["']([^"']+)["']/g) || [];
-  const ids = idMatches.map(m => m.match(/id=["']([^"']+)["']/)[1]);
+  const idMatches = [...indexHtml.matchAll(/(?:^|\s)id=["']([^"']+)["']/g)];
+  const ids = idMatches.map(match => match[1]);
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
 
   // Known pre-existing duplicate IDs from template reuse (baseline from origin/main)
