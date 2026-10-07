@@ -8609,7 +8609,7 @@ document.write([
 <script src="market-data-providers.js"></script>
 <script src="market-data-2.js"></script>
 <script src="portfolio-intelligence.js"></script>
-<script src="portfolio-allocation-intelligence.js"></script>
+<script src="portfolio-allocation-intelligence.js?v=v329-1"></script>
 <script src="portfolio-performance.js"></script>
 <script src="portfolio-cash-flow-classifier.js"></script>
 <script src="portfolio-history-sufficiency.js"></script>
@@ -8624,7 +8624,7 @@ document.write([
 <script src="portfolio-report-model.js"></script>
 <script src="executive-reporting.js"></script>
 <script src="portfolio-event-timeline.js?v=v228-1"></script>
-<script src="portfolio-data-trust.js?v=v238-6"></script>
+<script src="portfolio-data-trust.js?v=v329-1"></script>
 <script src="portfolio-runtime-stores.js"></script>
 <script src="fixed-income-benchmark-provider.js"></script>
 <script src="official-events-provider.js"></script>
@@ -23745,7 +23745,7 @@ function dataQualityRfReconciliationSection(){
   </section>`;
 }
 let v238TrustFilters={search:'',status:'all',source:'all'};
-function dataTrustNumber(value){return Number.isFinite(Number(value))?Number(value):null;}
+function dataTrustNumber(value){return value===null||value===undefined||value===''?null:Number.isFinite(Number(value))?Number(value):null;}
 function dataTrustMoney(value){return dataTrustNumber(value)===null?'—':fmt(Number(value));}
 function dataTrustDate(value){
   const date=typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -23761,7 +23761,7 @@ function dataTrustTone(status){
   return 'info';
 }
 function dataTrustStatusLabel(status){
-  return ({OK:'Coerente',CURRENT:'Atual',STALE:'Desatualizada',UNKNOWN:'Desconhecida',UNAVAILABLE:'Indisponível',UNSUPPORTED:'Não suportada',MANUAL:'Manual',REFERENCE:'Referência',SHADOW:'Shadow',MISMATCH:'Divergência',PARTIAL_COVERAGE:'Cobertura parcial',CONNECTED:'Conectado',CONNECTING:'Conectando',AUTHENTICATING:'Autenticando',EMPTY_CONFIRMED:'Vazio confirmado',SNAPSHOT_RECEIVED_NOT_APPLIED:'Snapshot não aplicado',LOADING:'Carregando',ERROR:'Erro',NOT_COMPARABLE:'Não comparável',LEGITIMATE_ZERO:'Zero legítimo'}[String(status||'').toUpperCase()]||String(status||'Desconhecido'));
+  return ({OK:'Coerente',CURRENT:'Atual',STALE:'Desatualizada',UNKNOWN:'Desconhecida',UNAVAILABLE:'Indisponível',UNSUPPORTED:'Não suportada',MANUAL:'Manual',REFERENCE:'Referência',SHADOW:'Shadow',MISMATCH:'Divergência',PARTIAL_COVERAGE:'Cobertura parcial',COMPLETE:'Completa',PARTIAL:'Parcial',NOT_APPLICABLE:'Não aplicável',AVAILABLE:'Disponível; verificação não informada',NOT_CALCULATED:'Não calculada',CONNECTED:'Conectado',CONNECTING:'Conectando',AUTHENTICATING:'Autenticando',EMPTY_CONFIRMED:'Vazio confirmado',SNAPSHOT_RECEIVED_NOT_APPLIED:'Snapshot não aplicado',LOADING:'Carregando',ERROR:'Erro',NOT_COMPARABLE:'Não comparável',LEGITIMATE_ZERO:'Zero legítimo'}[String(status||'').toUpperCase()]||String(status||'Desconhecido'));
 }
 function dataTrustPill(status){const tone=dataTrustTone(status);return `<span class="data-trust-pill ${tone}">${esc(dataTrustStatusLabel(status))}</span>`;}
 function dataTrustFreshnessFieldLabel(field){return ({quoteUpdatedAt:'Atualização da cotação',quote_updated_at:'Atualização da cotação',sourceAsOf:'Base informada pela fonte',source_as_of:'Base informada pela fonte',valuationAsOf:'Data de avaliação informada',valuation_as_of:'Data de avaliação informada',financialAsOf:'Data financeira informada',financial_as_of:'Data financeira informada',observedAt:'Observação registrada',observed_at:'Observação registrada',updatedAt:'Registro atualizado',updated_at:'Registro atualizado'}[String(field||'')]||'Data de atualização identificada');}
@@ -23820,9 +23820,15 @@ function dataTrustCloudInput(){
     const ticker=String(asset.ticker||'').trim().toUpperCase();
     const analysisRow=analysisByTicker.get(ticker);
     const fixedRow=fixedRows.find(row=>row.asset===asset)||fixedByTicker.get(ticker);
+    const fixedIncome=typeof isRendaFixaAsset==='function'&&isRendaFixaAsset(asset);
+    const fixedValues=fixedIncome&&typeof rfValues==='function'?rfValues(asset):null;
+    const currentPrice=asset.current_price;
+    const hasExplicitCurrent=fixedIncome
+      ? fixedValues?.hasExplicitCurrent===true
+      : currentPrice!==null&&currentPrice!==undefined&&currentPrice!==''&&Number.isFinite(Number(currentPrice));
     const authoritativeCurrent=typeof assetCurrentValue==='function'?assetCurrentValue(asset):(analysisRow?.current??asset.currentValue);
     const authoritativeMeta=typeof assetRfCurrentValueMeta==='function'&&typeof isRendaFixaAsset==='function'&&isRendaFixaAsset(asset)?assetRfCurrentValueMeta(asset):(fixedRow?.currentMeta||asset.currentMeta);
-    return {...asset,currentValue:authoritativeCurrent,currentMeta:authoritativeMeta,trustStatus:authoritativeMeta?.trustStatus||fixedRow?.trustStatus||asset.trustStatus};
+    return {...asset,isFixedIncome:fixedIncome,hasExplicitCurrent,currentValue:authoritativeCurrent,currentMeta:authoritativeMeta,trustStatus:authoritativeMeta?.trustStatus||fixedRow?.trustStatus||asset.trustStatus,valueStatus:hasExplicitCurrent?asset.valueStatus:'UNKNOWN'};
   });
   const cloudLoaded=Boolean(FB?.cloudLoaded);
   const authReady=Boolean(FB?.user);
@@ -23873,7 +23879,8 @@ function setDataTrustFilter(field,value){v238TrustFilters[field]=String(value||'
 function dataTrustCoverageRow(label,item,assetCount=0){
   if(!item||item.coverageCount==null)return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${assetCount?'Cobertura desconhecida nesta leitura.':'Sem posições para avaliar esta classificação.'}</small></div><div>${dataTrustPill('UNKNOWN')}</div></div>`;
   const known=Number(item.knownCount)||0,unknown=Number(item.unknownCount)||0;
-  return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${known} conhecidos · ${unknown} sem informação · valor conhecido ${dataTrustMoney(item.knownValue)}</small></div><div>${dataTrustPill(dataTrustCoverageState(item,assetCount))}</div></div>`;
+  const valueCoverage=item.coverageValue==null?'Percentual financeiro indisponível nesta leitura.':`${item.coverageValue.toLocaleString('pt-BR',{maximumFractionDigits:1})}% dos valores avaliados estão classificados.`;
+  return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${known} conhecidos · ${unknown} sem informação · valor conhecido ${dataTrustMoney(item.knownValue)} · ${esc(valueCoverage)}</small></div><div>${dataTrustPill(dataTrustCoverageState(item,assetCount))}</div></div>`;
 }
 function dataTrustReconciliationRow(label,item){return `<div class="data-trust-row"><div><strong>${esc(label)}</strong><small>${item?.values?.length?item.values.map(value=>dataTrustMoney(value)).join(' · '):'Não há valores comparáveis nesta leitura.'}${item?.reason?`<br><span>${esc(item.reason)}</span>`:''}</small></div><div>${dataTrustPill(item?.status||'NOT_COMPARABLE')}</div></div>`;}
 function dataTrustCenterTab(){
@@ -23890,7 +23897,7 @@ function dataTrustCenterTab(){
   const assetCount=Number(summary.assetCount)||0;
   const currentCount=Number(summary.currentQuoteCount)||0,staleCount=Number(summary.staleQuoteCount)||0,unknownCount=Number(summary.unknownQuoteCount)||0;
   const freshnessText=assetCount?`${currentCount} ${currentCount===1?'atual':'atuais'} · ${staleCount} ${staleCount===1?'desatualizada':'desatualizadas'} · ${unknownCount} ${unknownCount===1?'desconhecida':'desconhecidas'}`:'Sem posições avaliadas';
-  const coverageNames=[['className','Classe'],['sector','Setor'],['issuer','Emissor']];
+  const coverageNames=[['className','Classe'],['sector','Setor'],['issuer','Emissor'],['institution','Instituição']];
   const coverageHtml=coverageNames.map(([key,label])=>`<div class="data-trust-primary-fact"><strong>${label}</strong><span data-trust-state>${dataTrustCoverageState(model.coverage?.[key],assetCount)}</span></div>`).join('');
   const authorityText=assetCount?`${Number(summary.provenanceCount)||0} de ${assetCount} com proveniência identificada`:'Autoridade desconhecida sem posições avaliadas';
   const manualText=Number(summary.fixedIncomeCount)>0?`${Number(summary.manualFixedIncomeCount)||0} de ${Number(summary.fixedIncomeCount)} posições de Renda Fixa com autoridade manual`:'Sem posições de Renda Fixa avaliadas';
@@ -23925,14 +23932,14 @@ function dataTrustDetailedTab(){
   const cloud=model.cloud||{};
   const issueStatus=model.falseZero?.mismatch?'MISMATCH':cloud.status;
   const issueText=model.falseZero?.mismatch?model.falseZero.reason:(cloud.status==='ERROR'?'A fonte retornou erro; isso não representa carteira vazia.':`Estado da sincronização: ${dataTrustStatusLabel(cloud.status)}.`);
-  const assetRows=rows.length?rows.slice(0,80).map(asset=>{const raw=asset.raw||{};const sourceAsOf=raw.sourceAsOf||raw.source_as_of;const financialAsOf=raw.financialAsOf||raw.financial_as_of;const freshnessDate=asset.freshness?.timestamp?`${dataTrustFreshnessFieldLabel(asset.freshness.field)}: ${dataTrustDate(asset.freshness.timestamp)}`:'Data de atualização desconhecida';return `<div class="data-trust-row"><div><strong>${esc(asset.label)}</strong><small>${esc(asset.type||'Classe não informada')} · ${esc(asset.quoteSource||'Fonte desconhecida')}</small><span class="data-trust-source-date">${esc(freshnessDate)}</span><span class="data-trust-source-date" data-trust-source-as-of>Data da fonte: ${esc(sourceAsOf?dataTrustDate(sourceAsOf):'Não informada')}</span><span class="data-trust-source-date" data-trust-financial-as-of>Data financeira: ${esc(financialAsOf?dataTrustDate(financialAsOf):'Não informada')}</span></div><div>${dataTrustPill(asset.freshness?.status||'UNKNOWN')}</div></div>`;}).join(''):`<div class="data-trust-empty" role="status">Nenhuma posição corresponde aos filtros atuais. Isso não altera os dados da carteira.</div>`;
+  const assetRows=rows.length?rows.slice(0,80).map(asset=>{const raw=asset.raw||{};const sourceAsOf=raw.sourceAsOf||raw.source_as_of;const financialAsOf=raw.financialAsOf||raw.financial_as_of;const freshnessDate=asset.freshness?.timestamp?`${dataTrustFreshnessFieldLabel(asset.freshness.field)}: ${dataTrustDate(asset.freshness.timestamp)}`:'Data de atualização desconhecida';return `<div class="data-trust-row"><div><strong>${esc(asset.label)}</strong><small>${esc(asset.type||'Classe não informada')} · ${esc(asset.quoteSource||'Fonte desconhecida')}</small><span class="data-trust-source-date">Confiança do valor: ${esc(dataTrustStatusLabel(asset.confidence||'UNKNOWN'))}</span><span class="data-trust-source-date">${esc(freshnessDate)}</span><span class="data-trust-source-date" data-trust-source-as-of>Data da fonte: ${esc(sourceAsOf?dataTrustDate(sourceAsOf):'Não informada')}</span><span class="data-trust-source-date" data-trust-financial-as-of>Data financeira: ${esc(financialAsOf?dataTrustDate(financialAsOf):'Não informada')}</span></div><div>${dataTrustPill(asset.freshness?.status||'UNKNOWN')}</div></div>`;}).join(''):`<div class="data-trust-empty" role="status">Nenhuma posição corresponde aos filtros atuais. Isso não altera os dados da carteira.</div>`;
   const reconciliations=model.reconciliations||{};
   return `<main class="data-trust-page" aria-labelledby="data-trust-title">
     <header class="data-trust-hero"><div><div class="data-trust-kicker">Centro operacional</div><h1 id="data-trust-title">Confiabilidade da carteira</h1><p class="data-trust-lede">Leitura factual de atualização, origem, cobertura e reconciliação. Esta área não corrige dados, não calcula recomendação e não executa ações financeiras.</p></div><div class="data-trust-actions"><a class="data-trust-link" href="#data-trust-positions">Ver posições</a><a class="data-trust-link" href="#data-trust-reconciliation">Ver reconciliações</a></div></header>
     <section class="data-trust-grid" aria-label="Resumo operacional"><div class="data-trust-card"><span class="data-trust-card-label">Posições</span><strong class="data-trust-card-value">${summary.assetCount||0}</strong><span class="data-trust-card-note">estado carregado em memória</span></div><div class="data-trust-card"><span class="data-trust-card-label">Cotações atuais</span><strong class="data-trust-card-value">${summary.currentQuoteCount||0}</strong><span class="data-trust-card-note">${summary.staleQuoteCount||0} desatualizadas · ${summary.unknownQuoteCount||0} desconhecidas</span></div><div class="data-trust-card"><span class="data-trust-card-label">Provenance</span><strong class="data-trust-card-value">${summary.provenanceCount||0}/${summary.assetCount||0}</strong><span class="data-trust-card-note">${summary.noProvenanceCount||0} sem metadata de origem</span></div><div class="data-trust-card"><span class="data-trust-card-label">Cloud sync</span><strong class="data-trust-card-value">${esc(dataTrustStatusLabel(cloud.status))}</strong><span class="data-trust-card-note">snapshot recebido: ${cloud.snapshotReceived?'sim':'não'} · aplicado: ${cloud.applied?'sim':'não'}</span></div></section>
     <section class="data-trust-panel" aria-labelledby="data-trust-market-title" style="margin-top:12px"><h2 id="data-trust-market-title">Saúde das fontes de mercado</h2><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone((model.marketData?.errorCount||0)?'ERROR':(model.marketData?.staleCount||0)?'STALE':'OK')}" aria-hidden="true"></i><div><strong>${model.marketData?.freshCount||0} atualizadas · ${model.marketData?.staleCount||0} desatualizadas · ${model.marketData?.unknownCount||0} desconhecidas</strong><span>${model.marketData?.fallbackCount||0} usando fallback · ${model.marketData?.lastKnownGoodCount||0} preservando última cotação válida · falhas não são convertidas em zero.</span></div></div></section>
     <div class="data-trust-layout"><section class="data-trust-panel" aria-labelledby="data-trust-status-title"><h2 id="data-trust-status-title">Estado operacional</h2><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(issueStatus)}" aria-hidden="true"></i><div><strong>${esc(dataTrustStatusLabel(issueStatus))}</strong><span>${esc(issueText)}</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(cloud.status)}" aria-hidden="true"></i><div><strong>Cloud sync · ${esc(dataTrustStatusLabel(cloud.status))}</strong><span>Autenticação pronta: ${cloud.authReady?'sim':'não'} · backend acessível: ${cloud.backendReachable?'sim':'não'} · snapshot aplicado: ${cloud.applied?'sim':'não'}.</span></div></div><h3>Reconciliações disponíveis</h3><div id="data-trust-reconciliation">${dataTrustReconciliationRow('Patrimônio',reconciliations.patrimony)}${dataTrustReconciliationRow('Renda Fixa',reconciliations.fixedIncome)}${dataTrustReconciliationRow('Dividendos realizados',reconciliations.dividends)}${dataTrustReconciliationRow('Movimentações ↔ Timeline',reconciliations.transactions)}${dataTrustReconciliationRow('Timeline ↔ Detalhe do Ativo',reconciliations.timeline)}</div><div class="data-trust-nav"><a class="data-trust-link" href="#" onclick="go('ativos');return false">Ativos</a><a class="data-trust-link" href="#" onclick="go('relatorios');return false">Relatórios</a><a class="data-trust-link" href="#" onclick="go('dividendos');return false">Dividendos</a><a class="data-trust-link" href="#" onclick="go('aportes');return false">Movimentações</a></div></section>
-    <section class="data-trust-panel" aria-labelledby="data-trust-coverage-title"><h2 id="data-trust-coverage-title">Cobertura e autoridade</h2><h3>Classificação</h3>${dataTrustCoverageRow('Classe do ativo',model.coverage?.className)}${dataTrustCoverageRow('Setor',model.coverage?.sector)}${dataTrustCoverageRow('Emissor',model.coverage?.issuer)}<h3>Renda Fixa</h3><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(summary.manualFixedIncomeCount?'MANUAL':'UNKNOWN')}" aria-hidden="true"></i><div><strong>${summary.manualFixedIncomeCount||0} posições com valor manual</strong><span>${summary.shadowFixedIncomeCount||0} shadow · ${summary.unsupportedFixedIncomeCount||0} não suportadas. Manual é uma autoridade factual existente, não uma recomendação.</span></div></div><h3>Importações e eventos corporativos</h3><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(model.importHealth?.status)}" aria-hidden="true"></i><div><strong>Import Center · ${esc(dataTrustStatusLabel(model.importHealth?.status||'UNKNOWN'))}</strong><span>${model.importHealth?.previewCount||0} registros em prévia · ${model.importHealth?.duplicateCount||0} duplicados · ${model.importHealth?.providerCount||0} corretoras detectadas · provenance ${esc(model.importHealth?.provenance||'UNKNOWN')} · confirmação ${esc(model.importHealth?.confirmation||'BLOCKED')} · writes ${model.importHealth?.writeCount||0}.</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(model.corporateHealth?.realizedCount?'MISMATCH':'SHADOW')}" aria-hidden="true"></i><div><strong>Corporate Events · ${model.corporateHealth?.detectedShadowCount||0} shadow</strong><span>${model.corporateHealth?.referenceCount||0} reference · ${model.corporateHealth?.unsupportedCount||0} não suportados · ${model.corporateHealth?.reviewRequiredCount||0} revisão necessária · ${model.corporateHealth?.conflictCount||0} conflitos · ${model.corporateHealth?.realizedCount||0} realizados · writes ${model.corporateHealth?.writes||0}. O modo permanece somente leitura.</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(summary.duplicateCount||summary.potentialDuplicateCount?'STALE':'OK')}" aria-hidden="true"></i><div><strong>${summary.duplicateCount||0} duplicações exatas · ${summary.potentialDuplicateCount||0} potenciais</strong><span>Eventos reference/shadow permanecem fora de totais financeiros e Corporate Events continuam somente leitura.</span></div></div></section></div>
+    <section class="data-trust-panel" aria-labelledby="data-trust-coverage-title"><h2 id="data-trust-coverage-title">Cobertura e autoridade</h2><h3>Classificação</h3>${dataTrustCoverageRow('Classe do ativo',model.coverage?.className)}${dataTrustCoverageRow('Setor',model.coverage?.sector)}${dataTrustCoverageRow('Emissor',model.coverage?.issuer)}${dataTrustCoverageRow('Instituição',model.coverage?.institution)}<h3>Renda Fixa</h3><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(summary.manualFixedIncomeCount?'MANUAL':'UNKNOWN')}" aria-hidden="true"></i><div><strong>${summary.manualFixedIncomeCount||0} posições com valor manual</strong><span>${summary.shadowFixedIncomeCount||0} shadow · ${summary.unsupportedFixedIncomeCount||0} não suportadas. Manual é uma autoridade factual existente, não uma recomendação.</span></div></div><h3>Importações e eventos corporativos</h3><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(model.importHealth?.status)}" aria-hidden="true"></i><div><strong>Import Center · ${esc(dataTrustStatusLabel(model.importHealth?.status||'UNKNOWN'))}</strong><span>${model.importHealth?.previewCount||0} registros em prévia · ${model.importHealth?.duplicateCount||0} duplicados · ${model.importHealth?.providerCount||0} corretoras detectadas · provenance ${esc(model.importHealth?.provenance||'UNKNOWN')} · confirmação ${esc(model.importHealth?.confirmation||'BLOCKED')} · writes ${model.importHealth?.writeCount||0}.</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(model.corporateHealth?.realizedCount?'MISMATCH':'SHADOW')}" aria-hidden="true"></i><div><strong>Corporate Events · ${model.corporateHealth?.detectedShadowCount||0} shadow</strong><span>${model.corporateHealth?.referenceCount||0} reference · ${model.corporateHealth?.unsupportedCount||0} não suportados · ${model.corporateHealth?.reviewRequiredCount||0} revisão necessária · ${model.corporateHealth?.conflictCount||0} conflitos · ${model.corporateHealth?.realizedCount||0} realizados · writes ${model.corporateHealth?.writes||0}. O modo permanece somente leitura.</span></div></div><div class="data-trust-status"><i class="data-trust-dot ${dataTrustTone(summary.duplicateCount||summary.potentialDuplicateCount?'STALE':'OK')}" aria-hidden="true"></i><div><strong>${summary.duplicateCount||0} duplicações exatas · ${summary.potentialDuplicateCount||0} potenciais</strong><span>Eventos reference/shadow permanecem fora de totais financeiros e Corporate Events continuam somente leitura.</span></div></div></section></div>
     <section class="data-trust-panel" id="data-trust-positions" aria-labelledby="data-trust-positions-title" style="margin-top:16px"><h2 id="data-trust-positions-title">Posições e frescor</h2><div class="data-trust-filters"><div class="data-trust-filter"><label class="sr-only" for="data-trust-search">Buscar posição ou origem</label><input id="data-trust-search" type="search" placeholder="Buscar ticker, nome ou origem" value="${esc(v238TrustFilters.search)}" oninput="setDataTrustFilter('search',this.value)"></div><div class="data-trust-filter"><label class="sr-only" for="data-trust-status">Status da cotação</label><select id="data-trust-status" onchange="setDataTrustFilter('status',this.value)"><option value="all"${v238TrustFilters.status==='all'?' selected':''}>Todos os status</option><option value="CURRENT"${v238TrustFilters.status==='CURRENT'?' selected':''}>Atuais</option><option value="STALE"${v238TrustFilters.status==='STALE'?' selected':''}>Desatualizadas</option><option value="UNKNOWN"${v238TrustFilters.status==='UNKNOWN'?' selected':''}>Desconhecidas</option></select></div><div class="data-trust-filter"><label class="sr-only" for="data-trust-source">Fonte</label><select id="data-trust-source" onchange="setDataTrustFilter('source',this.value)"><option value="all">Todas as fontes</option>${sources.map(source=>`<option value="${esc(source)}"${v238TrustFilters.source===source?' selected':''}>${esc(source)}</option>`).join('')}</select></div></div><div class="data-trust-list" tabindex="0" role="region" aria-label="Lista de posições com rolagem">${assetRows}</div><details class="data-trust-details"><summary>Detalhes de provenance e critérios</summary><p class="data-trust-lede">A cotação é considerada desatualizada após 3 dias quando existe uma data-base real. Sem timestamp ou fonte, o estado permanece desconhecido. Nenhuma ausência é convertida em zero.</p></details></section>
     ${v257DataQualityCenter(v257QualityModel())}
     ${v258MonitoringCenter(monitoringModel)}
@@ -31058,26 +31065,36 @@ function portfolioAllocationSnapshot(){
       className:String(asset?.type||'').trim(),
       sector:String(asset?.sector||'').trim(),
       issuer:String(asset?.fixed_issuer||asset?.issuer||'').trim(),
+      institution:String(asset?.institution||asset?.broker||asset?.brokerage||asset?.custodian||'').trim(),
+      valuationAsOf:isRF?assetRfCurrentValueMeta(asset).valuationAsOf:(asset?.valuationAsOf||asset?.valuation_as_of||asset?.quoteMarketTime||asset?.quote_market_time||asset?.quoteUpdatedAt||asset?.quote_updated_at||null),
       value,
       valueStatus,
       authority:isRF?assetRfCurrentValueMeta(asset).authority:'MARKET_DATA',
       isFixedIncome:isRF
     };
   });
-  return globalThis.PortfolioAllocationIntelligence?.prepare(rows) || {rows:[],knownRows:[],totalKnownValue:0,totalClassifiedValue:0,totalUnclassifiedValue:0,classes:{rows:[]},sectors:{rows:[]},issuers:{rows:[]},positionCount:0,knownPositionCount:0};
+  return globalThis.PortfolioAllocationIntelligence?.prepare(rows) || {rows:[],knownRows:[],totalKnownValue:null,totalClassifiedValue:null,totalUnclassifiedValue:null,classes:{rows:[]},sectors:{rows:[]},issuers:{rows:[]},institutions:{rows:[]},positionCount:0,knownPositionCount:0};
 }
-function allocationMoney(value){ return Number.isFinite(Number(value)) ? fmt(Number(value)) : '—'; }
+function allocationMoney(value){ return value===null||value===undefined||value===''||!Number.isFinite(Number(value)) ? '—' : fmt(Number(value)); }
 function allocationRowsHtml(rows, labelKey='label'){
   const list=Array.isArray(rows)?rows.slice(0,5):[];
   if(!list.length) return '<tr><td colspan="3" class="mu">Sem dados classificados.</td></tr>';
   return list.map(row=>`<tr><td>${esc(row[labelKey]||'Não classificado')}</td><td>${Number(row.count)||0}</td><td>${allocationMoney(row.value)} · ${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</td></tr>`).join('');
 }
 function dashboardAllocationIntelligencePanel(){
+  if(S.hideValues) return '<section class="premium-panel allocation-intelligence" aria-label="Alocação da carteira"><p>Composição oculta.</p></section>';
   const data=portfolioAllocationSnapshot();
   const top=globalThis.PortfolioAllocationIntelligence?.top(data,5)||[];
-  const total=Number(data.totalKnownValue)||0;
+  const total=data.totalKnownValue;
   const summary=globalThis.PortfolioAllocationIntelligence?.summary(data)||'Sem valores authoritative disponíveis para esta leitura.';
-  const unknownClass=Number(data.totalUnclassifiedValue)||0;
+  const unknownClass=data.totalUnclassifiedValue;
+  const valuationStatus=data.valuationAsOf?.status;
+  const valuationDate=valuationStatus==='COMPLETE'&&data.valuationAsOf?.date
+    ? dataTrustDate(data.valuationAsOf.date)
+    : valuationStatus==='PARTIAL'&&data.valuationAsOf?.date
+      ? `uniforme entre posições valorizadas (${dataTrustDate(data.valuationAsOf.date)}); carteira parcial`
+      : valuationStatus==='MIXED'?'mista entre posições valorizadas':'não uniforme ou não informada';
+  const institutionCoverage=data.coverage?.institution||{};
   return `<section class="premium-panel allocation-intelligence" aria-labelledby="allocation-intelligence-title">
     <div class="premium-panel-head"><div><div id="allocation-intelligence-title" class="premium-panel-title">Alocação e concentração</div><div class="premium-panel-sub">Leitura factual com valores authoritative e denominadores explícitos.</div></div><span class="premium-panel-badge">${data.knownPositionCount||0}/${data.positionCount||0} posições valorizadas</span></div>
     <div class="allocation-intelligence-grid">
@@ -31086,11 +31103,13 @@ function dashboardAllocationIntelligencePanel(){
       <div class="allocation-intelligence-kpi"><div class="allocation-intelligence-kpi-label">Sem classe informada</div><div class="allocation-intelligence-kpi-value">${allocationMoney(unknownClass)}</div><div class="allocation-intelligence-kpi-note">Não incluído em percentuais por classe.</div></div>
     </div>
     <p class="allocation-intelligence-summary">${esc(summary)}</p>
+    <p class="allocation-intelligence-note" data-allocation-valuation-as-of>Data-base dos valores: ${esc(valuationDate)} · cobertura de posições ${data.coverage?.value==null?'desconhecida':`${globalThis.PortfolioAllocationIntelligence.formatPercent(data.coverage.value)}`}.</p>
     <div class="allocation-intelligence-columns">
       <section class="allocation-intelligence-section" aria-labelledby="allocation-class-title"><h3 id="allocation-class-title">Por classe</h3><table class="allocation-intelligence-table"><thead><tr><th>Classe</th><th>Qtd.</th><th>Valor · peso</th></tr></thead><tbody>${allocationRowsHtml(data.classes?.rows)}</tbody></table></section>
       <section class="allocation-intelligence-section" aria-labelledby="allocation-top-title"><h3 id="allocation-top-title">Maiores ativos</h3><table class="allocation-intelligence-table"><thead><tr><th>Ativo</th><th>Classe</th><th>Valor · peso</th></tr></thead><tbody>${top.length?top.map(row=>`<tr><td>${esc(row.label)}</td><td>${esc(row.className||'Não classificado')}</td><td>${allocationMoney(row.value)} · ${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</td></tr>`).join(''):'<tr><td colspan="3" class="mu">Sem valores authoritative.</td></tr>'}</tbody></table></section>
       <section class="allocation-intelligence-section" aria-labelledby="allocation-sector-title"><h3 id="allocation-sector-title">Por setor</h3><table class="allocation-intelligence-table"><thead><tr><th>Setor</th><th>Qtd.</th><th>Valor · peso</th></tr></thead><tbody>${allocationRowsHtml(data.sectors?.rows)}</tbody></table></section>
       <section class="allocation-intelligence-section" aria-labelledby="allocation-issuer-title"><h3 id="allocation-issuer-title">Por emissor</h3><table class="allocation-intelligence-table"><thead><tr><th>Emissor</th><th>Qtd.</th><th>Valor · peso</th></tr></thead><tbody>${allocationRowsHtml(data.issuers?.rows)}</tbody></table></section>
+      <section class="allocation-intelligence-section" aria-labelledby="allocation-institution-title"><h3 id="allocation-institution-title">Por instituição identificada</h3><table class="allocation-intelligence-table"><thead><tr><th>Instituição</th><th>Qtd.</th><th>Valor · peso</th></tr></thead><tbody>${allocationRowsHtml(data.institutions?.rows)}</tbody></table><p class="allocation-intelligence-note">Cobertura institucional: ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageCount)} das posições; ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageValue)} do patrimônio conhecido identificado. A instituição só é identificada por metadado explícito; emissor não é usado como substituto.</p></section>
     </div>
     <p class="allocation-intelligence-note">Pesos são calculados sobre o patrimônio conhecido. Ausência de classe, setor ou emissor permanece como não classificada; nenhuma recomendação é inferida.</p>
   </section>`;
@@ -31135,6 +31154,15 @@ function dashboardV3AllocationPanel(){
   const segments=rows.map((row,index)=>`<span style="width:${Math.max(0,Math.min(100,Number(row.shareOfKnown)||0)).toFixed(1)}%;background:${palette[index%palette.length]}" title="${esc(row.label)}"></span>`).join('');
   const list=hidden?'' : rows.length?rows.map((row,index)=>`<button type="button" class="dashboard-v3-allocation-row" data-class="${esc(row.label)}" onclick="dashboardOpenAllocationClass(this.dataset.class)" aria-label="Ver ${esc(row.label)} em Ativos"><span class="dashboard-v3-allocation-dot" style="background:${palette[index%palette.length]}"></span><span>${esc(row.label)}</span><strong>${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</strong></button>`).join(''):
     `<p class="dashboard-v3-allocation-empty">${knownZero?'Valor atual conhecido: zero; percentuais indisponíveis com base zero.':allocation.positionCount?'Valores atuais indisponíveis.':'Sem ativos cadastrados.'}</p>`;
+  const institutionCoverage=allocation.coverage?.institution||{};
+  const institutionRows=(allocation.institutions?.rows||[]).slice(0,3);
+  const institutionList=institutionRows.length?institutionRows.map(row=>`${esc(row.label)} ${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}`).join(' · '):'nenhuma instituição com valor conhecido';
+  const valuationStatus=allocation.valuationAsOf?.status;
+  const valuationDate=valuationStatus==='COMPLETE'&&allocation.valuationAsOf?.date
+    ? dataTrustDate(allocation.valuationAsOf.date)
+    : valuationStatus==='PARTIAL'&&allocation.valuationAsOf?.date
+      ? `uniforme entre posições valorizadas (${dataTrustDate(allocation.valuationAsOf.date)}); carteira parcial`
+      : valuationStatus==='MIXED'?'mista entre posições valorizadas':'não uniforme ou não informada';
   const unknown=unknownCount?`<p class="dashboard-v3-allocation-unknown">${unknownCount} ${unknownCount===1?'valor atual indisponível':'valores atuais indisponíveis'}; percentuais usam apenas valores conhecidos.</p>`:'';
   const unclassified=Number(allocation.totalUnclassifiedValue)>0?`<p class="dashboard-v3-allocation-unknown">Parcela não classificada: ${hidden?'••••':fmt(allocation.totalUnclassifiedValue)}.</p>`:'';
   return `<section class="dashboard-v3-allocation" aria-label="Alocação da carteira">
@@ -31142,6 +31170,7 @@ function dashboardV3AllocationPanel(){
     <p class="dashboard-v3-context">Participação por classe · base: valor atual conhecido.</p>
     ${hidden?'<p class="dashboard-v3-allocation-hidden">Composição oculta</p>':`<div class="dashboard-v3-allocation-bar" role="img" aria-label="Participação das classes com valor conhecido">${segments}</div>`}
     <div class="dashboard-v3-allocation-list">${list}</div>${unknown}${unclassified}
+    ${hidden?'':`<p class="dashboard-v3-context">Cobertura institucional: ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageCount)} das posições; ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageValue)} do patrimônio conhecido identificado. ${esc(institutionList)}. A instituição usa apenas metadado explícito, não o emissor.</p><p class="dashboard-v3-context">Data-base dos valores: ${esc(valuationDate)}.</p>`}
   </section>`;
 }
 
