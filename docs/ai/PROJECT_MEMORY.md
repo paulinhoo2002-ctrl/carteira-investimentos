@@ -7,6 +7,19 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V328 — lições duráveis de testes e dados ausentes (2026-10-07)
+
+- Testes responsivos devem selecionar comportamento/semântica estáveis (role,
+  nome acessível, `data-testid`, contêiner semântico ou estado funcional), sem
+  depender de wrappers cosméticos; corrigir seletor obsoleto sem enfraquecer
+  asserts.
+- Dado financeiro ausente permanece desconhecido: preço ausente não é zero,
+  falta de movimento não prova retorno zero, base incompleta não permite
+  resultado derivado e fonte parcial não equivale à carteira completa.
+- A evidência de certificação só vale para o SHA e estado efetivamente
+  testados; consulte `PROJECT_CONTINUITY_POLICY.md` para a regra canônica de
+  frescor e recuperação, sem duplicar seus contratos aqui.
+
 #
 # V317 — certificação sintética das ações financeiras (2026-10-04)
 

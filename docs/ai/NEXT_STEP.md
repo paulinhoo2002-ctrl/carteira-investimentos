@@ -12,13 +12,14 @@
 ---
 
 # Next Step
-## V328 — Draft PR aberta; CI exige ajuste de seletor (2026-10-07)
+## V328 — pronta para revisão humana (2026-10-07)
 
-- HEAD/worktree: `1fe45c2ee50a5fbd1e321d56bfc0b0d9594f842a`, branch `v328-preparation`, 3 commits à frente da base `origin/main` `8a62885ee88a3f12daee354fb79cb9d643bd9596`. PR #451 OPEN/DRAFT/MERGEABLE. Apenas `V328_PREPARATION_MATRIX.md` permanece local e excluído.
+- HEAD/worktree: `943449b51d8fd768246305e85aa4b24a2c27755e`, branch `v328-preparation`, 5 commits à frente de `origin/main` `8a62885ee88a3f12daee354fb79cb9d643bd9596`. PR #451 OPEN/DRAFT/MERGEABLE; CI do HEAD remoto atual, run `37647140501`, PASS. Alterações documentais desta missão ainda são locais; `V328_PREPARATION_MATRIX.md` permanece local e excluído. Exigir CI do novo SHA após push.
 - Ativos e as telas Dividendos, Dashboard, Patrimônio, Metas, Rentabilidade e Rebalancear foram revalidados. Patrimônio deixa meses sem movimento como lacunas e oculta total/resultados quando valor atual ou base aplicada não são completos; sem mudança de fórmula ou persistência.
-- Gates locais: legacy 255/255, modern 820/820, V84 4/4, A11Y 19/19, performance 96/96, QA harness 3/3, visual 9/9, `qa:all` e `verify:release` PASS. CI run `37642870074`: V289 visual, Auth/Firestore Emulator e Vercel PASS; Reliability smokes falha porque `mobile-overflow-controls.smoke.test.js` usa wrappers antigos. DOM atual da tabela foi confirmado; classificação `SELECTOR_DRIFT`, não ausência da tabela.
-- Próximo passo bloqueado pela autorização de escopo: corrigir somente `tests/mobile-overflow-controls.smoke.test.js` para selecionar `.assets-table-wrap`/tabela atual e as áreas de scroll corretas. Arquivo não pertence aos 12 autorizados; aguardar resposta à solicitação de expansão antes de alterar, commitar ou enviar esse teste. `MERGE=false`.
-- `V328_PREPARATION_MATRIX.md` continua fora do índice e da publicação por conter afirmações não comprovadas e referência fora do escopo autorizado.
+- Gates locais no HEAD acima: legacy 255/255, modern 820/820, V84 4/4, A11Y 19/19, performance 96/96, QA harness 3/3, V289 9/9, `qa:all`, `verify:release`, builds legacy/modern e `git diff --check` PASS. CI exato run `37647140501`: Build/test, V289 visual, Auth/Firestore Emulator e Vercel Preview PASS.
+- `V328_STATUS=READY_FOR_HUMAN_REVIEW` para o estado de produto no HEAD remoto atual; `BLOCKER=0`; `MAJOR=0`; `MINOR=1` (avisos não bloqueantes registrados em `PROJECT_STATE.md`). A certificação do novo HEAD documental depende do CI pós-push. Não houve escrita financeira real nem deploy de produção. `MERGE=false`.
+- `V328_PREPARATION_MATRIX.md` permanece local, não rastreado e excluído; não é fonte de afirmações publicáveis.
+- Próximo gate: revisão humana final e autorização separada de merge da PR #451. Não iniciar V329 sem autorização de fase; sua especificação está em `V329_PORTFOLIO_TRUST_AND_INSIGHTS_SPEC.md`.
 
 ## V320 — certificação final antes do gate humano (2026-10-05)
 

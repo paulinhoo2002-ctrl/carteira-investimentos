@@ -21,6 +21,14 @@ competing model policy.
 
 ## MODEL AND REVIEWER ROUTING (ALL RUNTIMES)
 
+`AGENT_MODEL_ROUTING_POLICY=true`. Before every large mission, compare current model options and record
+`MELHOR_PELO_HERMES`, `FALLBACK_HERMES`, `MELHOR_PELO_CODEX`,
+`FALLBACK_CODEX` and `MOTIVO`. Recheck the current NVIDIA catalog for Hermes;
+catalog descriptions are not benchmark proof, so avoid unsupported absolute
+claims and account for runtime availability. Codex defaults to GPT-6 Luna
+Medium; use GPT-6 Sol Medium only when task complexity materially justifies
+escalation. `USER_CHOOSES_RUNTIME=true`.
+
 - `DEFAULT_IMPLEMENTATION_MODEL=Codex GPT-6 Luna Medium`: normal and large
   implementation, tests, CI, docs, local fixes, known-scope refactors, release
   execution and repository maintenance.
