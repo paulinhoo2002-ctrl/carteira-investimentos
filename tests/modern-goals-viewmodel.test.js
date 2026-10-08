@@ -501,3 +501,28 @@ test('viewModel ativo-alvo padrao nao exibe quando type=Acao e ticker=vazio e ap
   const viewModel = createReadonlyGoalsViewModel(snapshot);
   assert.deepEqual(viewModel.assetGoalCard, null);
 });
+
+const fs = require('node:fs');
+const vm = require('node:vm');
+for (const coverage of ['UNKNOWN','PARTIAL']) {
+  test(`historical average stays unavailable with ${coverage} coverage in host and Modern`, () => {
+    const source=fs.readFileSync('index.html','utf8');
+    const start=source.indexOf('function getGoalsSnapshot(){');
+    const end=source.indexOf('function normalizeAllocationItems(',start);
+    const context={
+      S:{goals:{proventos:{monthly:1000}}},
+      financialGoalsSnapshot:()=>({goals:{},hasPortfolioData:false,currentIncome:250,currentIncomeCoverage:coverage,incomeTarget:1000,historyGroups:[{key:'2026-10',label:'Outubro 2026',total:250,count:1,diff:null,diffPct:null,isCurrent:true}],historySummary:{total:250,monthCount:1,avg:250}}),
+      goalProgressMetrics:(current,target)=>({hasCurrent:current!==null,hasTarget:true,current,target,percent:current===null?null:25,barPercent:0,missing:current===null?null:750,excess:null,reached:false}),
+      financialGoalsTone:()=> 'muted',
+      passiveIncomeGoalStats:()=>({monthlyAvg:null,monthlyAverageStatus:coverage,completeMonthCount:0,total12:250,hasData:true}),
+    };
+    const snapshot=vm.runInNewContext(`${source.slice(start,end)}; getGoalsSnapshot()`,context);
+    assert.equal(snapshot.history.summary.avg,null,'host leaked unconfirmed monthly average');
+    assert.equal(snapshot.history.summary.total,250,'registered total must stay available');
+    assert.equal(snapshot.income.reached,false);
+    const candidate={...GOALS_READONLY_FALLBACK_SNAPSHOT,history:{groups:snapshot.history.groups,summary:{total:250,monthCount:1,avg:250}}};
+    const viewModel=createReadonlyGoalsViewModel(candidate);
+    assert.equal(viewModel.historySection.summary.avgValue,'Nao informado','Modern must fail closed for history without coverage');
+    assert.ok(viewModel.historySection.summary.totalValue.includes('250'));
+  });
+}

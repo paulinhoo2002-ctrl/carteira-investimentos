@@ -32976,9 +32976,8 @@ function getGoalsSnapshot(){
   const historySummary = {
     total: Number(snapshot.historySummary?.total) || 0,
     monthCount: Number(snapshot.historySummary?.monthCount) || 0,
-    avg: snapshot.historySummary?.avg !== null && Number.isFinite(Number(snapshot.historySummary?.avg))
-      ? Number(snapshot.historySummary?.avg)
-      : null,
+    // Historical groups carry no full-month coverage evidence.
+    avg: null,
   };
   var result = {
     version: 1,

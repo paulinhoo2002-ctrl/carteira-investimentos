@@ -330,7 +330,8 @@ function buildHistorySection(
     monthCountLabel: 'Meses com lancamentos',
     monthCountValue: String(history.summary.monthCount),
     avgLabel: 'Media mensal',
-    avgValue: formatReadonlyCurrencyOrMissing(history.summary.avg),
+    // This history contract has no certified monthly denominator.
+    avgValue: formatReadonlyCurrencyOrMissing(null),
   };
 
   const rows: ReadonlyGoalsHistoryRow[] = history.groups.map((group) => ({
