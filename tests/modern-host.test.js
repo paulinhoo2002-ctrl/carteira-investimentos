@@ -382,7 +382,7 @@ test('income host runtime keeps demo source available', async () => {
   const runtime = createModernIncomeRuntime();
 
   assert.equal(typeof runtime.incomeAdapter.getSnapshot, 'function');
-  assert.equal(runtime.incomeAdapter.getSnapshot().version, 1);
+  assert.equal(runtime.incomeAdapter.getSnapshot().version, 2);
   assert.equal(runtime.incomeRefreshController, null);
   assert.match(read('src/host.tsx'), /createModernIncomeRuntime/);
 });
@@ -398,7 +398,7 @@ test('income host source keeps fallback controlled when reading fails', async ()
 
   const snapshot = source.getSnapshot();
 
-  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.version, 2);
   assert.equal(snapshot.summary.paymentCount, 0);
   assert.equal(snapshot.items.length, 0);
   assert.equal(snapshot.summary.totalReceived, null);

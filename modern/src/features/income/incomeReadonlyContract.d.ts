@@ -1,9 +1,12 @@
-export declare const INCOME_READONLY_CONTRACT_VERSION: 1;
+export declare const INCOME_READONLY_CONTRACT_VERSION: 2;
 export declare const INCOME_READONLY_FALLBACK_SNAPSHOT: Readonly<{
   version: 1;
   generatedAt: string;
   notice: string;
   summary: Readonly<{
+    historyCoverage: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN';
+    monthCoverage: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN' | 'FUTURE';
+    averageCoverage: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN';
     totalReceived: number | null;
     monthTotal: number | null;
     yearTotal: number | null;
@@ -14,6 +17,8 @@ export declare const INCOME_READONLY_FALLBACK_SNAPSHOT: Readonly<{
 }>;
 
 export interface ReadOnlyIncomeItem {
+  readonly paymentState: 'PAID' | 'ANNOUNCED' | 'ESTIMATED' | 'UNKNOWN';
+  readonly plannedValue: number | null;
   readonly id: string | null;
   readonly ticker: string | null;
   readonly name: string | null;
@@ -30,6 +35,9 @@ export interface ReadOnlyIncomeItem {
 }
 
 export interface ReadOnlyIncomeSummary {
+  readonly historyCoverage: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN';
+  readonly monthCoverage: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN' | 'FUTURE';
+  readonly averageCoverage: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN';
   readonly totalReceived: number | null;
   readonly monthTotal: number | null;
   readonly yearTotal: number | null;
@@ -38,7 +46,7 @@ export interface ReadOnlyIncomeSummary {
 }
 
 export interface ReadOnlyIncomeSnapshot {
-  readonly version: 1;
+  readonly version: 2;
   readonly generatedAt: string;
   readonly notice: string;
   readonly summary: ReadOnlyIncomeSummary;
