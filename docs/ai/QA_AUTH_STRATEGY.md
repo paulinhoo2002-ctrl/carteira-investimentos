@@ -18,12 +18,23 @@
 The production path continues to use Firebase Authentication and the Google
 sign-in flow. Firebase owns auth session persistence (the app requests Firebase
 `LOCAL` persistence when available); application code does not copy auth tokens
-or session cookies into its own storage. The local deterministic fixture is
-enabled only on `localhost` or `127.0.0.1` with the explicit `testMode=1` flag.
-In that local mode, it bypasses the access gate, does not initialize Firebase,
-uses in-memory synthetic state, and blocks import/export actions. The
-`tests/e2e-auth-mode.test.js`
-contract protects these boundaries.
+or session cookies into its own storage. The synthetic fixture activates only
+when all three conditions hold: the local test server was explicitly started
+with `--synthetic-qa` and injected its fixed runtime marker, the browser
+hostname is exactly `localhost` or `127.0.0.1`, and the URL includes
+`testMode=1`. A query parameter, request header, Preview, or production URL
+cannot create the marker or bypass the normal auth gate. Use
+`npm run qa:local-synthetic` for `http://localhost:8765/?testMode=1`.
+
+The default synthetic session permits test actions only in ephemeral memory;
+it does not write financial data to localStorage or Firebase. Add
+`testReadOnly=1` to select strict read-only QA. That mode blocks mutations at
+the shared edit guard and `save()` boundary, including programmatic app actions;
+the visible banner is informational, not the enforcement. Both modes bypass
+Firebase only inside the marked loopback test runtime, use deterministic
+synthetic state, and block real-data import/export. The
+`tests/e2e-auth-mode.test.js` and `tests/local-synthetic-qa-runtime.test.js`
+contracts protect these boundaries.
 
 Repository inspection found no configured Firebase Auth Emulator, isolated QA
 Firebase project, or dedicated synthetic test account. Do not add a production
@@ -41,14 +52,17 @@ designed and verified.
 
 ## Automated local route smoke
 
+`npm run test:local-synthetic` checks the server marker and bootstrap contracts.
 `npm run test:visual-regression` runs the V289 route/theme/viewport matrix with
 the local deterministic fixture. It checks route rendering, navigation,
 responsive overflow/clipping, accessibility, reduced motion, page/console
 errors, Firebase initialization/network contact, and financial storage writes.
-The fixture uses synthetic data only. The app may write nonfinancial local QA
-metadata (`civ5_edit_lock` and the synthetic V258 monitoring baseline); these
-are not financial persistence. The harness explicitly rejects writes to the
-`civ5` financial storage key and requests to Firebase endpoints.
+The fixture uses synthetic data only. Existing route smoke interactions may
+change the synthetic in-memory session; they are not strict-readonly evidence.
+The app may write nonfinancial local QA metadata (`civ5_edit_lock` and the
+synthetic V258 monitoring baseline); these are not financial persistence. The
+harness explicitly rejects writes to the `civ5` financial storage key and
+requests to Firebase endpoints.
 
 Coverage is browser based and read-only: Dashboard, Ativos, Dividendos, Renda
 Fixa, Confiabilidade and other direct routes are visited at 390x844 and
@@ -73,10 +87,12 @@ to use synthetic XLSX bytes only.
 ## Safety statements
 
 The local synthetic route smoke does not contact production Firebase and does
-not prove Firebase/Google authentication behavior. It must not trigger import,
-save, transaction, tax, goal update, or other financial mutation actions.
-Production authentication configuration and secrets are outside this QA
-strategy and are not changed by it.
+not prove Firebase/Google authentication or authenticated persistence. The
+editable synthetic mode may exercise financial actions only against ephemeral
+in-memory fixtures; strict-readonly mode must reject them before mutation.
+Neither mode may import, restore, synchronize, or persist real financial data.
+Production authentication configuration, authorization, Firebase rules and
+secrets are outside this QA strategy and are not changed by it.
 
 ## V310 architecture decision: isolate every Firebase service
 
@@ -86,8 +102,9 @@ the production Firebase client configuration, calls `firebase.initializeApp`,
 then creates Auth and Firestore clients. `onAuthStateChanged` validates the user
 against Firestore `meta/access`, records an access attempt, and starts cloud
 sync only after authorization. Firebase `LOCAL` persistence owns the session.
-The localhost `testMode=1` branch returns before Firebase initialization,
-supplies an in-memory fixture and does not test provider authentication.
+The server-marked loopback `testMode=1` branch returns before Firebase
+initialization, supplies an in-memory fixture and does not test provider
+authentication. The URL flag alone is insufficient.
 There is no repository configuration for Auth or Firestore emulators, no local
 Firebase CLI, no isolated QA/Preview project, and no synthetic provider account.
 
@@ -131,7 +148,7 @@ production. No Vercel setting or Firebase resource was changed in V310.
 | Layer | Environment | What it proves | Current status |
 | --- | --- | --- | --- |
 | 1 Public production gate | Production login shell | Reachability, public auth gate, exposed build identity | Available; no private route claim |
-| 2 Local synthetic route | Loopback `testMode=1`, in-memory fixture | Route composition, navigation and read-only visual behavior | Available; no Firebase identity |
+| 2 Local synthetic route | QA server marker + loopback + `testMode=1`; optional `testReadOnly=1` | Route composition, navigation, or strict-readonly mutation denial | Available; no Firebase identity or persistence certification |
 | 3 Local Auth + Firestore emulators | Loopback, `demo-` project, ephemeral synthetic user | SDK auth state plus local access-control interaction | Designed; not implemented |
 | 4 Provider-authenticated Preview | Isolated QA Firebase project and Preview domain | Real Google provider flow in a non-production environment | Deferred; human provisioning required |
 
@@ -147,7 +164,7 @@ Firebase authentication. Real-user acceptance is separate, optional and manual.
 | QA credential, OAuth token or session leak | Ephemeral synthetic identities; no password/token/cookie in Git, logs, artifacts or chat. |
 | Preview silently using production Firebase | Require an explicit Preview QA config, verify project ID at runtime and fail closed if absent/mismatched. |
 | Synthetic QA user reaching private data | Separate QA Auth user store and Firestore; no production data import, service-account reuse or cross-project grants. |
-| Test mode enabled in production | Keep exact loopback plus explicit flag guard; negative browser test must reject production-origin activation. |
+| Synthetic mode enabled outside QA loopback | Require server-injected fixed marker, exact loopback hostname and `testMode=1`; query-only and non-loopback negatives must keep normal auth. |
 | Provider redirect misconfiguration | Authorize only the intended QA Preview domain in the QA project; no production OAuth credential reuse. |
 | Secret exposure in CI | No Firebase production secrets in CI; emulator job uses a demo project and synthetic data only. |
 

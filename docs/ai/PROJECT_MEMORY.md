@@ -7,6 +7,29 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V332 — runtime local de QA sintético (2026-10-07)
+
+- O modo sintético exige marcador fixo injetado pelo servidor local iniciado
+  com `--synthetic-qa`, host exato `localhost`/`127.0.0.1` e `testMode=1`.
+  Query/headers sozinhos e origens Preview/produção não ativam o bypass. A
+  estratégia e seus limites ficam em `docs/ai/QA_AUTH_STRATEGY.md`.
+- A sessão editável muda apenas memória efêmera. `testReadOnly=1` bloqueia as
+  fronteiras compartilhadas de edição, `save()`, reset de fixture e navegação
+  persistente, inclusive chamadas programáticas. Modo sintético também rejeita
+  hidratação de nuvem e acesso/persistência V76, sem localStorage financeiro.
+- `npm ci` autorizado nesta worktree; `package.json`/lockfile inalterados.
+  Validação fresca: `test:local-synthetic` 26/26, browser readonly 1/1,
+  legado 255/255, moderno 820/820, V330 20/20, V84 4/4, A11Y 19/19,
+  QA harness 4/4 e V289 visual 13/13; `qa:all`, `verify:release`, builds e
+  `git diff --check` passaram.
+  Smoke viewport sem overflow em 390/430/768/1366/1440/1536/1920; V289
+  também cobre 360/1024/1280. Evidência visual sintética fica em `.qa-state/`.
+- Browser encontrou e corrigiu sinal duplicado no resultado positivo por
+  classe e métricas do resumo de classes Ativos cortadas a 1366 px. npm reportou
+  7 advisories (3 moderados, 4 altos); audit de produção reportou zero; nenhum
+  auto-fix/upgrade foi executado.
+  CI/Preview do commit V332 ainda pendentes; PRs dependentes #454/#455 intactas.
+
 ## V328 — lições duráveis de testes e dados ausentes (2026-10-07)
 
 - Testes responsivos devem selecionar comportamento/semântica estáveis (role,

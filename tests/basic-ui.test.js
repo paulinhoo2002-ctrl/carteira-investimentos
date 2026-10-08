@@ -53,7 +53,7 @@ function makeThemeBootstrapHarness({ host = 'localhost', search = '?testMode=1',
   const context = {
     location: { hostname: host, search },
     URLSearchParams,
-    window: {},
+    window: { __LOCAL_QA_RUNTIME__: 'local-synthetic-v1' },
     document: {
       documentElement,
       querySelector(selector) {

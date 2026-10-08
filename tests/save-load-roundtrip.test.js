@@ -254,6 +254,9 @@ function makeHarness({
     isLocalTestMode() {
       return false;
     },
+    isLocalTestReadOnlyMode() {
+      return false;
+    },
     emptyWallet(fallbackName = 'Carteira') {
       walletCounter += 1;
       return {

@@ -6,7 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 test('missing generated asset returns 404 without crashing the QA server', async () => {
-  const child = spawn(process.execPath, ['tests/local-http-server.js', '--port', '0'], {
+  const child = spawn(process.execPath, ['tests/local-http-server.js', '--port', '0', '--synthetic-qa'], {
     cwd: path.join(__dirname, '..'),
     stdio: ['pipe', 'pipe', 'pipe'],
   });
@@ -42,7 +42,9 @@ test('missing generated asset returns 404 without crashing the QA server', async
 
     const followupResponse = await fetch(new URL('/index.html', baseUrl));
     assert.equal(followupResponse.status, 200, 'QA server should serve a valid request after a 404');
-    assert.match(await followupResponse.text(), /<html/i);
+    const html = await followupResponse.text();
+    assert.match(html, /<html/i);
+    assert.match(html, /Object\.defineProperty\(window,'__LOCAL_QA_RUNTIME__',\{value:'local-synthetic-v1',writable:false,configurable:false\}\)/);
     assert.equal(child.exitCode, null, 'QA server should remain available after the follow-up request');
   } finally {
     if (child.exitCode === null) {
@@ -66,6 +68,29 @@ test('Yahoo quote requests in the static QA harness receive only an empty synthe
   } finally {
     harness.server.closeAllConnections?.();
     await new Promise(resolve => harness.server.close(resolve));
+  }
+});
+
+test('runtime marker is server-controlled and absent unless synthetic QA was explicitly started', async () => {
+  const { startLocalHttpServer } = require('./local-http-server');
+  const root = path.join(__dirname, '..');
+  const qa = await startLocalHttpServer(root, 0, { syntheticQa: true });
+  const ordinary = await startLocalHttpServer(root, 0, { syntheticQa: false });
+  try {
+    assert.equal(qa.server.address().address, '127.0.0.1');
+    const qaResponse = await fetch(qa.url);
+    assert.match(await qaResponse.text(), /Object\.defineProperty\(window,'__LOCAL_QA_RUNTIME__',\{value:'local-synthetic-v1',writable:false,configurable:false\}\)/);
+
+    const ordinaryResponse = await fetch(`${ordinary.url}&qaRuntime=1`, {
+      headers: { 'x-local-qa-runtime': '1' },
+    });
+    const ordinaryHtml = await ordinaryResponse.text();
+    assert.doesNotMatch(ordinaryHtml, /__LOCAL_QA_RUNTIME__/);
+  } finally {
+    for (const harness of [qa, ordinary]) {
+      harness.server.closeAllConnections?.();
+      await new Promise(resolve => harness.server.close(resolve));
+    }
   }
 });
 
