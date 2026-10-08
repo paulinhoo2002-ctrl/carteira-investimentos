@@ -9317,12 +9317,16 @@ function localTestFixtureWallet(){
     learnMeta:{}
   };
 }
-const LOCAL_TEST_FIXTURE_BOOT_TOKEN=Symbol('local-test-fixture-boot');
-function applyLocalTestFixture(runtimeToken){
-  if(isLocalTestReadOnlyMode() && runtimeToken!==LOCAL_TEST_FIXTURE_BOOT_TOKEN){
+const LOCAL_TEST_FIXTURE_RUNTIME=(()=>{
+  const bootToken=Symbol('local-test-fixture-boot');
+  let bootTokenAvailable=true;
+  function apply(runtimeToken){
+  const authorizedBoot=runtimeToken===bootToken && bootTokenAvailable;
+  if(isLocalTestReadOnlyMode() && !authorizedBoot){
     canEditFromThisTab('restaurar fixture de teste');
     return false;
   }
+  if(authorizedBoot) bootTokenAvailable=false;
   Object.assign(S, cloneData(DEFAULT_RUNTIME_STATE));
   resetTransientRuntimeState();
   const wallet=normalizeWalletEntry(localTestFixtureWallet(), 'Carteira de teste');
@@ -9384,14 +9388,18 @@ function applyLocalTestFixture(runtimeToken){
   S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
   return true;
-}
+  }
+  return {apply, initialize(){return bootTokenAvailable ? apply(bootToken) : false;}};
+})();
+function applyLocalTestFixture(runtimeToken){ return LOCAL_TEST_FIXTURE_RUNTIME.apply(runtimeToken); }
+function initializeLocalTestFixture(){ return LOCAL_TEST_FIXTURE_RUNTIME.initialize(); }
 function restoreLocalTestData(){
   if(!isLocalTestMode()) return;
   if(isLocalTestReadOnlyMode()){
     canEditFromThisTab('restaurar dados de teste');
     return;
   }
-  applyLocalTestFixture(LOCAL_TEST_FIXTURE_BOOT_TOKEN);
+  applyLocalTestFixture();
   render();
   toast('🧪 Dados de teste restaurados.', '#60a5fa');
 }
@@ -37528,7 +37536,7 @@ if(isActiveWalletHostMode()){
     legacyApplicationRoot.style.display='none';
   }
   if(isLocalTestMode()){
-    applyLocalTestFixture(LOCAL_TEST_FIXTURE_BOOT_TOKEN);
+    initializeLocalTestFixture();
   }else{
     load();
   }
@@ -37539,7 +37547,7 @@ if(isActiveWalletHostMode()){
     debugError('falha ao montar a previa experimental da carteira ativa:',error);
   });
 }else if(isLocalTestMode()){
-  applyLocalTestFixture(LOCAL_TEST_FIXTURE_BOOT_TOKEN);
+  initializeLocalTestFixture();
   initEditProtection();
   render();
 }else{

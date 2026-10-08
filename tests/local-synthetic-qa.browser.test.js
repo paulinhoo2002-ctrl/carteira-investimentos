@@ -61,6 +61,19 @@ test('strict read-only synthetic browser rejects programmatic writes and cloud h
     assert.equal(attempts.financialStorage, null);
     assert.deepEqual(attempts.writes, []);
     assert.deepEqual(firebaseRequests, []);
+    const fixtureReset = await page.evaluate(() => {
+      const before = JSON.stringify({ assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, wallets:S.wallets, goals:S.goals });
+      const directResult = applyLocalTestFixture();
+      const bootResult = initializeLocalTestFixture();
+      return {
+        directResult,
+        bootResult,
+        changed: JSON.stringify({ assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, wallets:S.wallets, goals:S.goals }) !== before,
+      };
+    });
+    assert.equal(fixtureReset.directResult, false, 'read-only mode must reject direct fixture reset');
+    assert.equal(fixtureReset.bootResult, false, 'read-only boot capability must be one-shot');
+    assert.equal(fixtureReset.changed, false, 'read-only fixture reset changed in-memory financial state');
     const handlers = await page.evaluate(() => {
       const messages = [];
       const originalToast = toast;

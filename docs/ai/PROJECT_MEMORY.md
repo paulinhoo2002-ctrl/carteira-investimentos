@@ -24,6 +24,9 @@
   fronteiras compartilhadas de edição, `save()`, reset de fixture e navegação
   persistente, inclusive chamadas programáticas. Modo sintético também rejeita
   hidratação de nuvem e acesso/persistência V76, sem localStorage financeiro.
+- A capacidade privilegiada para instalar o fixture readonly é privada e
+  one-shot: nunca deixe token de boot em escopo léxico global, pois avaliação
+  de JavaScript na página pode acessá-lo mesmo sem propriedade em `window`.
 - `npm ci` autorizado nesta worktree; `package.json`/lockfile inalterados.
   Validação fresca: `test:local-synthetic` 26/26, browser readonly 1/1,
   legado 255/255, moderno 820/820, V330 20/20, V84 4/4, A11Y 19/19,
