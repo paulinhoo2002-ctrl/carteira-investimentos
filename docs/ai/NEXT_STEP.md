@@ -1038,3 +1038,7 @@ Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada 
 2. Avaliar PR isolada V336 de rolagem/acessibilidade de Ativos sem integrar pendências.
 3. Resolver execução local Auth/Firestore Emulator ou usar CI do SHA exato; provider QA exige ambiente externo isolado. Manter gap Firefox/WebKit explícito.
 4. Merge somente após autorização humana específica por PR; Vercel production branch/auto-deploy precisa ser verificado antes de qualquer integração. Sem deploy nesta missão.
+
+## V336 — gate da melhoria isolada
+
+Revisar Draft V336 de rolagem/acessibilidade Ativos, dependente #457→#456. Manter todas Draft, solicitar gate humano específico somente após confirmar evidência/CI aplicável e auto-deploy. Nenhum merge ou produção autorizado.
