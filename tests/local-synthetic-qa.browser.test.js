@@ -61,6 +61,31 @@ test('strict read-only synthetic browser rejects programmatic writes and cloud h
     assert.equal(attempts.financialStorage, null);
     assert.deepEqual(attempts.writes, []);
     assert.deepEqual(firebaseRequests, []);
+    const handlers = await page.evaluate(() => {
+      const messages = [];
+      const originalToast = toast;
+      toast = message => messages.push(message);
+      const state = () => JSON.stringify({assets:S.assets,aportes:S.aportes,proventos:S.proventos,rfEvents:S.rfEvents,wallets:S.wallets,goals:S.goals});
+      const results = [];
+      const originalConfirm = window.confirm;
+      let confirms = 0;
+      window.confirm = () => { confirms += 1; return true; };
+      try {
+        S.editId = S.assets[0]?.id;
+        for(const [name,invoke] of [['svA',()=>svA()],['svP',()=>svP()],['rmP',()=>rmP(S.aportes[0]?.id)],['svD',()=>svD()],['rmD',()=>rmD(S.proventos[0]?.id)],['autoDY',()=>autoDY()],['syncAssetsFromAportes',()=>syncAssetsFromAportes(true)],['importRfEventSeeds',()=>importRfEventSeeds('synthetic')],['removeProventoAuditSelected',()=>removeProventoAuditSelected()],['confirmProventoRfLink',()=>confirmProventoRfLink('synthetic','synthetic')],['unlinkProventoRfEvent',()=>unlinkProventoRfEvent('synthetic')],['saveAllocationGoalItems',()=>saveAllocationGoalItems([{type:'Ação',pct:50}])],['normalizeAllocationGoal',()=>normalizeAllocationGoal()],['stripAutoProventos',()=>stripAutoProventos()],['cleanupB3PositionSummaryAssets',()=>cleanupB3PositionSummaryAssets()],['cleanupB3PositionAportes',()=>cleanupB3PositionAportes()],['applyProtectedReadOnlyOfflineState',()=>applyProtectedReadOnlyOfflineState({state:{wallets:[{id:'synthetic-hydration',assets:[],aportes:[],proventos:[]}],activeWalletId:'synthetic-hydration'}})]]) {
+          const before=state();
+          invoke();
+          results.push({name,unchanged:state()===before});
+        }
+      } finally { toast=originalToast; window.confirm=originalConfirm; }
+      return {results,messages,confirms,writes:window.__QA_FINANCIAL_WRITES__};
+    });
+    assert.ok(handlers.results.every(result => result.unchanged), JSON.stringify(handlers.results));
+    assert.equal(handlers.confirms,0);
+    assert.equal(handlers.messages.length,11);
+    assert.ok(handlers.messages.every(message => /Ação bloqueada/.test(message)));
+    assert.deepEqual(handlers.writes,[]);
+
 
     await page.setViewportSize({ width: 1366, height: 768 });
     assert.equal(await page.locator('.test-mode-banner').isVisible(), true);

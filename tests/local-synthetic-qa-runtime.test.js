@@ -257,3 +257,96 @@ test('ordinary deployment keeps normal auth and Firebase initialization', () => 
   assert.match(source, /function initFirebase\(\)\{\s*if\(isLocalTestMode\(\)\)/);
   assert.match(source, /signInGoogle\(\)/);
 });
+
+for (const name of ['svA', 'svP', 'rmP', 'svD', 'rmD']) {
+  test(`readonly ${name} leaves financial state intact and never announces success`, () => {
+    const start = source.indexOf(`function ${name}(`);
+    const end = source.indexOf('\nfunction ', start + 1);
+    const body = source.slice(start, end);
+    const S = {
+      assets: [{ id: 1, ticker: 'SYNTH3', type: 'Ação', avg_price: 10, dy: 5 }],
+      aportes: [{ id: 2, ticker: 'SYNTH3', qty: 1, price: 10 }],
+      proventos: [{ id: 3, ticker: 'SYNTH3', value: 5 }],
+      editId: 1, editPId: 2, editDId: 3,
+    };
+    const before = JSON.stringify(S);
+    const messages = [];
+    let effects = 0;
+    const fields = { 'p-ti': 'SYNTH3', 'p-qt': '1', 'p-pr': '10', 'p-dt': '2026-10-01', 'd-ti': 'SYNTH3', 'd-va': '5', 'd-dt': '2026-10-01' };
+    const context = {
+      S, document: { getElementById: key => ({ value: fields[key] || '' }) },
+      canEditFromThisTab: () => { messages.push('Ação bloqueada: somente leitura'); return false; },
+      parseNum: value => Number(value) || 0, normalizeType: value => value,
+      isRendaFixaAsset: () => false, metaTicker: () => ({ type: 'Ação' }),
+      cleanAssetCode: value => value, brDate: value => value,
+      confirm: () => { effects += 1; return true; },
+      alert: () => { effects += 1; }, toast: message => messages.push(message),
+      rememberScroll: () => { effects += 1; }, learnTickerMeta: () => { effects += 1; },
+      save: () => { effects += 1; return false; }, render: () => { effects += 1; },
+      syncAssetsFromAportes: () => { effects += 1; }, fetchQuotes: () => { effects += 1; },
+      scheduleAutoProventosGratis: () => { effects += 1; }, markProventosDirty: () => { effects += 1; },
+    };
+    vm.runInNewContext(`${body}; ${name}(${name === 'rmP' ? 2 : 3})`, context);
+    assert.equal(JSON.stringify(S), before, `${name} mutated financial state`);
+    assert.equal(effects, 0, 'blocked handler must stop before confirmations and side effects');
+    assert.deepEqual(messages, ['Ação bloqueada: somente leitura']);
+  });
+}
+
+(()=>{
+'use strict';
+// Synthetic-only READ ONLY VM reproduction. Run from the reviewed worktree.
+const fs=require('node:fs');
+const vm=require('node:vm');
+const source=fs.readFileSync('index.html','utf8');
+function body(name){
+  const start=source.indexOf(`function ${name}(`);
+  if(start<0) throw Error(`Missing ${name}`);
+  return source.slice(start,source.indexOf('\nfunction ',start+1));
+}
+const cases=[];
+function run(name,args,S,extra={},dependencies=[]){
+  const messages=[];let confirms=0,saves=0,guardCalls=0;
+  const context={S,isLocalTestMode:()=>true,isLocalTestReadOnlyMode:()=>true,
+    isProtectedReadOnlyQaBoot:()=>false,
+    canEditFromThisTab:()=>{guardCalls++;messages.push('Ação bloqueada');return false},
+    save:()=>{saves++;return false},render:()=>{},toast:m=>messages.push(m),
+    confirm:()=>{confirms++;return true},...extra};
+  const before=JSON.stringify(S);
+  const result=vm.runInNewContext([...dependencies,name].map(body).join('\n')+`;${name}(${args})`,context);
+  const unchanged=JSON.stringify(S)===before;
+  const falseSuccess=messages.some(m=>/✅|vinculado|desfeito/i.test(m));
+  cases.push({name,passed:unchanged&&!falseSuccess,before:JSON.parse(before),after:S,unchanged,falseSuccess,messages,confirms,saves,guardCalls,result});
+}
+run('autoDY','',{assets:[{ticker:'SYNTH3',qty:10,current_price:20,dy:0}],proventos:[]},{DY_REF:{SYNTH3:7},parseAnyDate:()=>null});
+run('syncAssetsFromAportes','true',{assets:[{ticker:'SYNTH3',qty:10,current_price:20}],aportes:[],proventos:[]},{window:{},rfPositionImportSourceTag:()=>false,autoDY:()=>0});
+run('importRfEventSeeds',"'a'",{rfEvents:[],wallets:[]},{getRfAssetByEventId:()=>({id:'a'}),rfEventImportSummary:()=>({expected:1,missing:1,current:0,ticker:'SYNTH',seeds:[{id:'event',autoKey:'event'}]}),normalizeRfEvents:x=>x,normalizeRfEventEntry:x=>x,rfAssetEventId:x=>x.id,rfAssetEventTicker:()=> 'SYNTH'});
+run('removeProventoAuditSelected','',{proventos:[{id:'dup',value:5}]},{proventoAuditBuildRows:()=>({all:[{auditId:'dup',canRemove:true}]}),proventoAuditEnsureState:()=>({selectedIds:['dup']}),proventoAuditEntryId:p=>p.id});
+run('confirmProventoRfLink',"'p','rf'",{proventos:[{id:'p',value:5}]},{proventoAuditFindRow:()=>({auditIndex:0}),rfEventByIdMap:()=>new Map([['rf',{id:'rf'}]])});
+run('unlinkProventoRfEvent',"'p'",{proventos:[{id:'p',value:5,sourceEventKind:'rf',sourceEventId:'rf',excludedFromIncomeTotals:true}]},{proventoAuditFindRow:()=>({auditIndex:0})});
+run('saveAllocationGoalItems',"[{type:'Ação',pct:50}]",{goals:{allocation:{items:[{type:'Ação',pct:100}]}}},{normalizeAllocationItems:x=>x});
+const allocationState={goals:{allocation:{items:[{type:'Ação',pct:25},{type:'FII',pct:25}]}}};
+run('normalizeAllocationGoal','',allocationState,{allocationGoalItems:()=>JSON.parse(JSON.stringify(allocationState.goals.allocation.items)),normalizeAllocationItems:x=>x},['saveAllocationGoalItems']);
+
+run('stripAutoProventos','',{proventos:[{id:'auto',source:'auto-test'}]},{isAutoGeneratedProvento:()=>true});
+run('cleanupB3PositionSummaryAssets','',{assets:[{ticker:'SYNTH',source:'B3 POSICAO ATUAL'}]},{rfPosNorm:x=>x,isB3PositionSummaryRow:()=>true});
+run('cleanupB3PositionAportes','',{aportes:[{id:'synthetic',source:'B3 POSICAO ATUAL'}]},{rfPosNorm:x=>String(x||'')});
+for(const entry of cases) test(`readonly sibling ${entry.name} blocks financial mutation and false success`,()=>{ assert.equal(entry.unchanged,true,entry.name+' mutated financial state'); assert.equal(entry.falseSuccess,false); assert.equal(entry.confirms,0); assert.equal(entry.saves,0); });
+
+})();
+
+test('readonly rejects a valid synthetic offline snapshot before wallet hydration', () => {
+  const start=source.indexOf('function applyProtectedReadOnlyOfflineState(');
+  const end=source.indexOf('\nfunction ',start+1);
+  const body=source.slice(start,end);
+  const S={assets:[{ticker:'SYNTH3'}],wallets:[]};
+  const before=JSON.stringify(S);
+  const snapshot={state:{wallets:[{id:'qa-new',assets:[]}],activeWalletId:'qa-new'}};
+  const context={S,FB:{},rebuildLearnMeta:()=>{},cloudSnapshotSignature:()=> 'synthetic',isLocalTestReadOnlyMode:()=>true,normalizeWalletEntry:x=>x,syncStateFromWallet:wallet=>{S.assets=wallet.assets;}};
+  const result=vm.runInNewContext(body+'; applyProtectedReadOnlyOfflineState('+JSON.stringify(snapshot)+')',context);
+  assert.equal(result,false);
+  assert.equal(JSON.stringify(S),before);
+  const unguarded=body.replace(/  if\(typeof isLocalTestReadOnlyMode[^\n]*\n/,'');
+  assert.equal(vm.runInNewContext(unguarded+'; applyProtectedReadOnlyOfflineState('+JSON.stringify(snapshot)+')',context),true);
+  assert.notEqual(JSON.stringify(S),before,'valid fixture must reproduce the original mutation');
+});
