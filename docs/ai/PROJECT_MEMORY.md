@@ -26,14 +26,16 @@
   também cobre 360/1024/1280. Evidência visual sintética fica em `.qa-state/`.
 - Cinco smokes responsivos passaram a usar o servidor QA compartilhado, que
   injeta o marcador confiável exigido pelo modo sintético. Isso corrigiu a
-  falha de Reliability no CI sem mudar o produto. PR #456 permanece OPEN/DRAFT;
-  HEAD `855ffc5d904668d6c8fcca240f96a2a7c9b7fa89`, CI run `37713822618` PASS,
-  Preview Vercel READY no mesmo SHA. A revisão/merge continua humana.
+  falha de Reliability no CI sem mudar o produto. Snapshot de certificação do
+  produto antes desta sincronização documental: SHA
+  `732dbb1e58401c981c23f9da48b41d2faf345b7b`, CI run `37714085100` PASS e
+  Preview Vercel READY no mesmo SHA. PR #456 permanece OPEN/DRAFT; a revisão/
+  merge continua humana.
 - Browser encontrou e corrigiu sinal duplicado no resultado positivo por
   classe e métricas do resumo de classes Ativos cortadas a 1366 px. npm reportou
   7 advisories (3 moderados, 4 altos); audit de produção reportou zero; nenhum
   auto-fix/upgrade foi executado.
-  CI/Preview do commit V332 ainda pendentes; PRs dependentes #454/#455 intactas.
+  PRs dependentes #454/#455 intactas.
 
 ## V328 — lições duráveis de testes e dados ausentes (2026-10-07)
 

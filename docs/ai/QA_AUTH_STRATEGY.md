@@ -36,13 +36,15 @@ synthetic state, and block real-data import/export. The
 `tests/e2e-auth-mode.test.js` and `tests/local-synthetic-qa-runtime.test.js`
 contracts protect these boundaries.
 
-Repository inspection found no configured Firebase Auth Emulator, isolated QA
-Firebase project, or dedicated synthetic test account. Do not add a production
-auth bypass, query-parameter shortcut, hardcoded credential, shared QA secret,
-or client-created user accepted by a real backend. A true provider-authenticated
-smoke requires a separately provisioned isolated QA project/account and
-environment configuration. Until then, route coverage must be described as
-synthetic local route smoke, not authenticated-provider verification.
+The local Auth and Firestore Emulator path is configured with
+`firebase.qa-emulator.json`, the `test:auth-emulator` script, V311 emulator
+contracts, and a CI job. This isolated emulator path does not provide a live
+Google provider identity or certify persistence in a separately provisioned QA
+Firebase project. No isolated provider QA project/account is configured.
+Do not add a production auth bypass, query-parameter shortcut, hardcoded
+credential, shared QA secret, or client-created user accepted by a real backend.
+A true provider-authenticated smoke still requires a separately provisioned
+isolated QA project/account and environment configuration.
 
 The static production Firebase configuration is embedded in the legacy page;
 no preview-specific Firebase project selection was found. Therefore a preview
@@ -94,7 +96,11 @@ Neither mode may import, restore, synchronize, or persist real financial data.
 Production authentication configuration, authorization, Firebase rules and
 secrets are outside this QA strategy and are not changed by it.
 
-## V310 architecture decision: isolate every Firebase service
+## V310 architecture decision: isolate every Firebase service (historical)
+
+This section records the design decision and repository state at V310. The
+local Auth + Firestore Emulator configuration and CI test path were added in
+V311; the current status is summarized below and in the layer table.
 
 `AUTH_PROVIDER=Firebase Authentication / Google popup` in the normal app.
 The legacy `index.html` loads Firebase compat SDK 10.12.5 from gstatic, embeds
@@ -105,8 +111,9 @@ sync only after authorization. Firebase `LOCAL` persistence owns the session.
 The server-marked loopback `testMode=1` branch returns before Firebase
 initialization, supplies an in-memory fixture and does not test provider
 authentication. The URL flag alone is insufficient.
-There is no repository configuration for Auth or Firestore emulators, no local
-Firebase CLI, no isolated QA/Preview project, and no synthetic provider account.
+At V310, there was no repository configuration for Auth or Firestore emulators,
+no local Firebase CLI, no isolated QA/Preview project, and no synthetic
+provider account.
 
 **Decision:** retain the existing local synthetic route smoke as layer 2.
 For layer 3, use a `demo-` Firebase project with **both** Auth and Firestore
@@ -121,8 +128,8 @@ as a QA account. Keep synthetic identities and all state ephemeral. Access-log
 writes may occur only inside that emulator and must be distinguished from
 financial writes.
 
-The local emulator integration is **not implemented in V310**. The current
-static page hardcodes the production Firebase configuration; connecting only
+The local emulator integration was **not implemented in V310**. The static
+page then hardcoded the production Firebase configuration; connecting only
 Auth, or injecting a query parameter into the product auth guard, would create
 an unsafe mixed environment. The Firebase CLI is also not installed in the
 verified runtime. Implement layer 3 in a separate reviewed test-harness change
@@ -149,7 +156,7 @@ production. No Vercel setting or Firebase resource was changed in V310.
 | --- | --- | --- | --- |
 | 1 Public production gate | Production login shell | Reachability, public auth gate, exposed build identity | Available; no private route claim |
 | 2 Local synthetic route | QA server marker + loopback + `testMode=1`; optional `testReadOnly=1` | Route composition, navigation, or strict-readonly mutation denial | Available; no Firebase identity or persistence certification |
-| 3 Local Auth + Firestore emulators | Loopback, `demo-` project, ephemeral synthetic user | SDK auth state plus local access-control interaction | Designed; not implemented |
+| 3 Local Auth + Firestore emulators | Loopback, `demo-` project, ephemeral synthetic user | SDK auth state plus local access-control interaction | Configured and exercised by V311 tests; CI job runs `test:auth-emulator` |
 | 4 Provider-authenticated Preview | Isolated QA Firebase project and Preview domain | Real Google provider flow in a non-production environment | Deferred; human provisioning required |
 
 Layer 3 does not prove Google's live OAuth service; layer 2 does not prove any
