@@ -1777,3 +1777,7 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Contrato técnico detalhado: `BROKERAGE_NOTE_IMPORT.md` e
   `PRODUCT_CONTRACTS.md`; estado de execução permanece em `PROJECT_STATE.md` e
   `NEXT_STEP.md`.
+
+## V333.2–V338 — checkpoint de 2026-10-08
+
+P0 readonly e média histórica corrigidos em Draft #456/#457; V336 acessibilidade Ativos em Draft #458. Evidência, limitações de CI empilhado/provider QA/compatibilidade e próximos gates estão em [V333_2_V338_RELEASE_GATES.md](V333_2_V338_RELEASE_GATES.md). Testes V337 finais 117/117; Chrome e Edge 30 combinações cada. Nenhum merge PR/main, produção ou dado financeiro real.
