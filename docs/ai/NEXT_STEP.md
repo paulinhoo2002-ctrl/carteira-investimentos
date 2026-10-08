@@ -4,6 +4,8 @@
 
 - Decisão humana: ausência de registros não comprova zero. A matriz e os cards distinguem `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`; zero exige fonte e confirmação explícita do mês inteiro. Total recebido, média completa e estimativa permanecem separados.
 - Runtime atual não fornece confirmação de cobertura mensal completa. Valores registrados aparecem como parciais; média/projeção ficam indisponíveis. A integração futura dessa evidência exige fonte governada; não inferir cobertura a partir de registros vazios.
+- Consumidor de insights também foi corrigido: `generateIncomeAnalysis()` não declara meta atingida quando a distância é indisponível por cobertura parcial. Teste sintético cobre a mensagem e a prioridade; HEAD atual `56c8227352ba5f392335f263556c51966d11ce66`, Preview Vercel READY. Revisar e manter a cadeia #457→#456; sem merge.
+
 - Revisar a Draft PR #457, empilhada sobre #456. O workflow remoto CI só atende PRs com base `main`; não confundir sucesso do Vercel com execução das suítes GitHub Actions. Usar evidência local fresca e repetir CI quando a cadeia puder receber o gate remoto, sem alterar a base/mesclar automaticamente.
 - Segurança mantida: somente fixtures sintéticas; `REAL_WRITES=0`, `REAL_IMPORT=false`, `REAL_RESTORE=false`, `PRODUCTION=false`, `MERGE=false`.
 
