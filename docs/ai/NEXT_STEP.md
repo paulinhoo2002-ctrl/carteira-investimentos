@@ -1,5 +1,13 @@
 # Next Step
 
+## Estado vigente — V336–V340 (2026-10-08)
+
+- PR #460: OPEN/DRAFT, base `main`, HEAD `0f60a30f7d2faaa7f650856961f861c5f96ba897`; CI run `37851111827` SUCCESS em Build and test, V289 visual e Auth/Firestore Emulator. Preview Vercel do mesmo SHA READY e resposta HTTP 200. Revisões abertas: zero threads inline.
+- Próximo gate: revisão humana da #460. Não marcar Ready, mesclar, promover produção, importar ou restaurar nesta etapa. PR #458 permanece preservada; checkout canônico não foi alterado.
+- Evidência e limites V336–V340 estão em `PROJECT_STATE.md`: QA sintético em 17 rotas × 15 larguras, com teste adicional de zoom/orientação em Ativos. Apenas Chrome foi certificado localmente; Firefox/WebKit e persistência autenticada permanecem não certificados.
+- PR de continuidade documental será independente da #460 para manter documentação fora da PR funcional. Nenhuma nova fase funcional começa automaticamente.
+- `REAL_WRITES=0`, `REAL_IMPORT=false`, `REAL_RESTORE=false`, `PRODUCTION=false`, `MERGE=false`.
+
 ## V333 — cobertura mensal aprovada e implementada
 
 - Decisão humana: ausência de registros não comprova zero. A matriz e os cards distinguem `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`; zero exige fonte e confirmação explícita do mês inteiro. Total recebido, média completa e estimativa permanecem separados.

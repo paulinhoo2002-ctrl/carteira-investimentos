@@ -1,5 +1,13 @@
 # Project State
 
+## V336–V340 — validação responsiva e acessível; PR #460 em revisão (2026-10-08)
+
+- `origin/main=09f45677fd13b8d2c05da5ad43c752549c0f2950` contém a integração da PR #459. A #458 foi preservada sem alterações. A worktree isolada `C:\Projetos\carteira-investimentos.worktrees\v336-v340-premium-universal`, branch `codex/v336-v340-premium-universal`, base nesse SHA, publicou o commit `0f60a30f7d2faaa7f650856961f861c5f96ba897` na PR #460 (OPEN/DRAFT, base main).
+- V336 reaplicou somente a acessibilidade/rolagem da tabela de Ativos da #458 e seus testes. O QA encontrou e corrigiu overflow de 1 px no submenu de Relatórios a 768 px, com quebra de texto e teste de navegação por teclado. Nenhuma fórmula, persistência, Auth ou Firebase mudou.
+- Validação local no diff final: `npm ci` sem mudança de manifests/lockfile; `npm run verify:release` PASS, incluindo Legacy, Modern, financeiro, V330 sintético, builds, `qa:all`, V289 e Axe dark/light; matriz Playwright sintética de 17 rotas × 15 larguras (320–3440 px), 255/255 sem overflow global nem page errors; zoom 125%, fonte ampliada e retrato/paisagem em Ativos sem overflow; `git diff --check` PASS. A CI exata do SHA executou Build and test, V289 visual e Auth/Firestore Emulator, todos SUCCESS (run `37851111827`).
+- Preview Vercel correspondente ao SHA está READY e respondeu HTTP 200. A inspeção foi anônima/read-only; nenhum login ou dado de conta foi usado. Somente Chrome foi executado localmente; Firefox/WebKit, persistência autenticada e deploy/produção não foram certificados. Capturas QA usam fixture sintética e permanecem em `.qa-state/` ignorado.
+- V337–V339: a missão foi concluída para a matriz sintética executada; não implica redesign amplo de telas sem gap demonstrado nem certificação universal de navegadores/dispositivos. V340 registra continuidade e limites. PR #460 aguarda revisão humana; `MERGE=false`, `PRODUCTION=false`, `REAL_WRITES=0`, `REAL_IMPORT=false`, `REAL_RESTORE=false`.
+
 ## V333 — revisão de uso diário (2026-10-08)
 
 - Base empilhada sobre PR #456 no HEAD `1917c7e577bea777e0315c988df5c8985cc25286`; PR #456 foi confirmada OPEN/DRAFT/MERGEABLE, CI run `37755481672` PASS. Worktree `C:\Projetos\carteira-investimentos.worktrees\v333-premium-product-finish`, branch `codex/v333-premium-product-finish`; PRs #454/#455 preservadas.

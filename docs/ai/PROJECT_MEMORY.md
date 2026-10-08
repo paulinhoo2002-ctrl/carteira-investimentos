@@ -7,6 +7,14 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V336–V340 — acessibilidade, overflow e validação responsiva (2026-10-08)
+
+- A integração #459 na main foi verificada em `09f45677fd13b8d2c05da5ad43c752549c0f2950`; a #458 original continua preservada. PR #460 mantém somente o ajuste funcional de Ativos e o teste visual/teclado, mais a correção responsiva/teste do submenu de Relatórios.
+- O teste da tabela de Ativos valida foco, navegação por teclado/roda, rolagem local e ausência de overflow global; ações financeiras não são disparadas pela expansão. Para navegação responsiva, verificar também limites horizontais e verticais e clipping do texto, não apenas ausência de scroll da página.
+- Em worktree limpa, o teste V289 pode precisar de `npm run build:modern` antes de executar, pois `modern/dist` é ignorado e gerado pelo build; ausência desse artefato é pré-condição do harness, não evidência de defeito do produto.
+- Evidência final do SHA `0f60a30f7d2faaa7f650856961f861c5f96ba897`: `verify:release` e diff check PASS; 255 verificações sintéticas em 17 rotas × 15 larguras (320–3440 px), sem overflow global/page errors; zoom 125%, fonte ampliada, retrato/paisagem de Ativos sem overflow. CI run `37851111827` SUCCESS nos três jobs (Build and test, V289 visual, Auth/Firestore Emulator); Preview Vercel READY e HTTP 200 no mesmo SHA.
+- Limites: somente Chrome local; Firefox/WebKit, login/persistência autenticada e produção não testados. QA foi sintético; sem Firebase financeiro, importação, restauração ou escrita real. PR #460 continua OPEN/DRAFT e aguarda revisão humana; não mesclar. Detalhes factuais em `PROJECT_STATE.md`.
+
 ## V333 — ausência mensal não comprova zero (2026-10-08)
 
 - Decisão humana aprovada: `NO_RECORDS != ZERO_RECEIVED`. `COMPLETE` exige confirmação explícita de fonte/mês inteiro; ausência de registros permanece `UNKNOWN`, registros sem cobertura completa são `PARTIAL`, meses futuros são `FUTURE`.
