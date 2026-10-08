@@ -15,29 +15,29 @@ export function IncomeReadonlySummaryGrid({
   return (
     <div className="overview-grid fixed-income-readonly__summary" aria-label="Resumo readonly dos proventos">
       <article className="overview-card">
-        <p className="overview-card__label">Total recebido</p>
+        <p className="overview-card__label">{snapshot.summary.historyCoverage === 'COMPLETE' ? 'Total recebido' : 'Subtotal recebido'}</p>
         <p className="overview-card__value">{formatReadonlyMoneyOrMissing(viewModel.totalReceived)}</p>
-        <p className="overview-card__hint">Valor oficial fornecido pelo legado</p>
+        <p className="overview-card__hint">Cobertura do histórico: {snapshot.summary.historyCoverage.toLowerCase()}</p>
       </article>
       <article className="overview-card">
-        <p className="overview-card__label">Mes atual</p>
+        <p className="overview-card__label">{snapshot.summary.monthCoverage === 'COMPLETE' ? 'Mês atual confirmado' : snapshot.summary.monthCoverage === 'PARTIAL' ? 'Subtotal do mês parcial' : 'Recebido no mês'}</p>
         <p className="overview-card__value">{formatReadonlyMoneyOrMissing(viewModel.monthTotal)}</p>
-        <p className="overview-card__hint">Leitura direta do snapshot readonly</p>
+        <p className="overview-card__hint">Cobertura do mês: {snapshot.summary.monthCoverage.toLowerCase()}</p>
       </article>
       <article className="overview-card">
-        <p className="overview-card__label">Ano atual</p>
+        <p className="overview-card__label">{snapshot.summary.historyCoverage === 'COMPLETE' ? 'Ano atual confirmado' : 'Subtotal anual'}</p>
         <p className="overview-card__value">{formatReadonlyMoneyOrMissing(viewModel.yearTotal)}</p>
-        <p className="overview-card__hint">Sem recalculo moderno</p>
+        <p className="overview-card__hint">Cobertura anual não comprovada</p>
       </article>
       <article className="overview-card">
-        <p className="overview-card__label">Media mensal</p>
+        <p className="overview-card__label">Média mensal completa</p>
         <p className="overview-card__value">{formatReadonlyMoneyOrMissing(viewModel.averageMonthly)}</p>
-        <p className="overview-card__hint">Media oficial do legado quando existente</p>
+        <p className="overview-card__hint">Exibida apenas com 12 meses completos</p>
       </article>
       <article className="overview-card">
         <p className="overview-card__label">Quantidade de pagamentos</p>
-        <p className="overview-card__value">{viewModel.paymentCount}</p>
-        <p className="overview-card__hint">Registros ja validados e congelados</p>
+        <p className="overview-card__value">{viewModel.paymentCount > 0 ? viewModel.paymentCount : snapshot.summary.historyCoverage === 'COMPLETE' ? 0 : 'Nao informado'}</p>
+        <p className="overview-card__hint">Registros classificados como recebidos (PAID)</p>
       </article>
       <article className="overview-card">
         <p className="overview-card__label">Maior pagamento</p>

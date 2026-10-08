@@ -50,17 +50,22 @@ async function loadSourceModule() {
 }
 
 function createSnapshot(overrides = {}) {
+  const { summary, ...rest } = overrides;
+  const defaultSummary = {
+    historyCoverage: 'PARTIAL',
+    monthCoverage: 'PARTIAL',
+    averageCoverage: 'COMPLETE',
+    totalReceived: 748.51,
+    monthTotal: 748.51,
+    yearTotal: 748.51,
+    averageMonthly: 62.38,
+    paymentCount: 4,
+  };
   return {
-    version: 1,
+    version: 2,
     generatedAt: '2026-07-14T10:30:00.000Z',
     notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
-    summary: {
-      totalReceived: 748.51,
-      monthTotal: 748.51,
-      yearTotal: 748.51,
-      averageMonthly: 62.38,
-      paymentCount: 4,
-    },
+    summary: { ...defaultSummary, ...summary },
     items: [
       {
         id: 'inc-001',
@@ -70,6 +75,8 @@ function createSnapshot(overrides = {}) {
         paymentDate: '2026-06-15',
         competenceDate: null,
         receivedValue: 320,
+        paymentState: 'PAID',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: 'Demo de provento recebido',
@@ -85,6 +92,8 @@ function createSnapshot(overrides = {}) {
         paymentDate: '2026-06-27',
         competenceDate: null,
         receivedValue: 215.41,
+        paymentState: 'PAID',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: 'Demo de JCP',
@@ -100,6 +109,8 @@ function createSnapshot(overrides = {}) {
         paymentDate: '2026-07-05',
         competenceDate: null,
         receivedValue: 168.5,
+        paymentState: 'PAID',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: 'Demo de rendimento',
@@ -115,6 +126,8 @@ function createSnapshot(overrides = {}) {
         paymentDate: '2026-07-14',
         competenceDate: null,
         receivedValue: 44.6,
+        paymentState: 'PAID',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: 'Demo de renda fixa',
@@ -123,7 +136,7 @@ function createSnapshot(overrides = {}) {
         sourceEventId: null,
       },
     ],
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -172,7 +185,7 @@ test('contrato readonly de proventos aceita snapshot valido e preserva zero e nu
   const snapshot = normalizeReadonlyIncomeSnapshot(createSnapshot());
 
   assert.equal(isReadonlyIncomeSnapshot(createSnapshot()), true);
-  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.version, 2);
   assert.equal(snapshot.summary.totalReceived, 748.51);
   assert.equal(snapshot.summary.monthTotal, 748.51);
   assert.equal(snapshot.summary.yearTotal, 748.51);
@@ -191,10 +204,13 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
   const { normalizeReadonlyIncomeSnapshot, INCOME_READONLY_FALLBACK_SNAPSHOT } = await loadContractModule();
 
   const emptySnapshot = normalizeReadonlyIncomeSnapshot({
-    version: 1,
+    version: 2,
     generatedAt: '2026-07-14T10:30:00.000Z',
     notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
     summary: {
+      historyCoverage: 'UNKNOWN',
+      monthCoverage: 'UNKNOWN',
+      averageCoverage: 'UNKNOWN',
       totalReceived: null,
       monthTotal: null,
       yearTotal: null,
@@ -210,6 +226,8 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
         paymentDate: null,
         competenceDate: null,
         receivedValue: null,
+        paymentState: 'UNKNOWN',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: null,
@@ -221,15 +239,18 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
   });
 
   const idOnlySnapshot = normalizeReadonlyIncomeSnapshot({
-    version: 1,
+    version: 2,
     generatedAt: '2026-07-14T10:30:00.000Z',
     notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
     summary: {
+      historyCoverage: 'UNKNOWN',
+      monthCoverage: 'UNKNOWN',
+      averageCoverage: 'UNKNOWN',
       totalReceived: null,
       monthTotal: null,
       yearTotal: null,
       averageMonthly: null,
-      paymentCount: 1,
+      paymentCount: 0,
     },
     items: [
       {
@@ -240,6 +261,8 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
         paymentDate: null,
         competenceDate: null,
         receivedValue: null,
+        paymentState: 'UNKNOWN',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: null,
@@ -251,15 +274,18 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
   });
 
   const sourceEventOnlySnapshot = normalizeReadonlyIncomeSnapshot({
-    version: 1,
+    version: 2,
     generatedAt: '2026-07-14T10:30:00.000Z',
     notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
     summary: {
+      historyCoverage: 'UNKNOWN',
+      monthCoverage: 'UNKNOWN',
+      averageCoverage: 'UNKNOWN',
       totalReceived: null,
       monthTotal: null,
       yearTotal: null,
       averageMonthly: null,
-      paymentCount: 1,
+      paymentCount: 0,
     },
     items: [
       {
@@ -270,6 +296,8 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
         paymentDate: null,
         competenceDate: null,
         receivedValue: null,
+        paymentState: 'UNKNOWN',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: null,
@@ -281,14 +309,17 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
   });
 
   const zeroSnapshot = normalizeReadonlyIncomeSnapshot({
-    version: 1,
+    version: 2,
     generatedAt: '2026-07-14T10:30:00.000Z',
     notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
     summary: {
+      historyCoverage: 'PARTIAL',
+      monthCoverage: 'PARTIAL',
+      averageCoverage: 'UNKNOWN',
       totalReceived: 0,
       monthTotal: 0,
       yearTotal: 0,
-      averageMonthly: 0,
+      averageMonthly: null,
       paymentCount: 1,
     },
     items: [
@@ -300,6 +331,8 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
         paymentDate: '2026-06-15',
         competenceDate: null,
         receivedValue: 0,
+        paymentState: 'PAID',
+        plannedValue: null,
         taxValue: null,
         quantity: null,
         note: 'Zero real',
@@ -318,7 +351,7 @@ test('contrato readonly de proventos rejeita item vazio e aceita identidade mini
   assert.equal(zeroSnapshot.summary.totalReceived, 0);
   assert.equal(zeroSnapshot.summary.monthTotal, 0);
   assert.equal(zeroSnapshot.summary.yearTotal, 0);
-  assert.equal(zeroSnapshot.summary.averageMonthly, 0);
+  assert.equal(zeroSnapshot.summary.averageMonthly, null);
 });
 
 test('view model preserva ausencias, agrupa mes a mes e nao muta snapshot', async () => {
@@ -351,6 +384,27 @@ test('view model preserva ausencias, agrupa mes a mes e nao muta snapshot', asyn
   assert.equal(snapshot.items[0].ticker, 'PETR4');
 });
 
+test('eventos anunciados permanecem visíveis sem entrar em métricas de recebimento', async () => {
+  const { createReadonlyIncomeViewModel } = await loadViewModelModule();
+  const base = createSnapshot();
+  const snapshot = createSnapshot({
+    summary: { historyCoverage: 'UNKNOWN', monthCoverage: 'UNKNOWN', averageCoverage: 'UNKNOWN', totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 0 },
+    items: [{ ...base.items[0], paymentState: 'ANNOUNCED', receivedValue: null, plannedValue: 150 }],
+  });
+  const viewModel = createReadonlyIncomeViewModel(snapshot, {
+    query: '', year: 'all', month: 'all', type: 'all', sortBy: 'paymentDate',
+  });
+
+  assert.equal(viewModel.filteredItems.length, 1);
+  assert.equal(viewModel.filteredItems[0].paymentState, 'ANNOUNCED');
+  assert.equal(viewModel.filteredItems[0].receivedValue, null);
+  assert.deepEqual(viewModel.monthlyBuckets, []);
+  assert.deepEqual(viewModel.topPayments, []);
+  assert.deepEqual(viewModel.topPayers, []);
+  assert.equal(viewModel.paymentCount, 0);
+  assert.equal(viewModel.totalReceived, null);
+});
+
 test('pagina readonly renderiza resumo, lista e estado vazio sem botao em modo estatico', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
@@ -368,7 +422,7 @@ test('pagina readonly renderiza resumo, lista e estado vazio sem botao em modo e
 
     assert.match(html, /<h2 class="page-shell__title" id="page-income">Proventos e renda mensal<\/h2>/);
     assert.match(html, /Somente leitura/);
-    assert.match(html, /Total recebido/);
+    assert.match(html, /Subtotal recebido/);
     assert.match(html, /R\$[\s\u00a0]748,51/);
     assert.match(html, /Quantidade de pagamentos/);
     assert.match(html, /Destaques/);
@@ -396,15 +450,15 @@ test('evolução mensal expõe contexto de leitura e diferencia desconhecido, pa
     const { IncomeReadonlyPage } = await viteServer.ssrLoadModule('/src/features/income/IncomeReadonlyPage.tsx');
     const base = createSnapshot();
     const unknown = createSnapshot({
-      summary: { totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 0 },
+      summary: { historyCoverage: 'UNKNOWN', monthCoverage: 'UNKNOWN', averageCoverage: 'UNKNOWN', totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 0 },
       items: [],
     });
     const partial = createSnapshot({
-      summary: { totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 1 },
+      summary: { historyCoverage: 'UNKNOWN', monthCoverage: 'PARTIAL', averageCoverage: 'UNKNOWN', totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 1 },
       items: [{ ...base.items[0], receivedValue: null }],
     });
     const unavailable = createSnapshot({
-      summary: { totalReceived: 0, monthTotal: 0, yearTotal: 0, averageMonthly: 0, paymentCount: 0 },
+      summary: { historyCoverage: 'COMPLETE', monthCoverage: 'COMPLETE', averageCoverage: 'COMPLETE', totalReceived: 0, monthTotal: 0, yearTotal: 0, averageMonthly: 0, paymentCount: 0 },
       items: [],
     });
     const render = (snapshot) => renderToStaticMarkup(
@@ -419,7 +473,7 @@ test('evolução mensal expõe contexto de leitura e diferencia desconhecido, pa
     assert.match(unavailableHtml, /data-state="UNAVAILABLE"/);
     assert.match(unknownHtml, /Período: últimos seis meses/);
     assert.match(unknownHtml, /Snapshot gerado em/);
-    assert.match(partialHtml, /total mensal não foi confirmado/i);
+    assert.match(partialHtml, /Cobertura mensal insuficiente para confirmar o total/i);
     assert.match(unavailableHtml, /menos de dois períodos conhecidos/i);
   } finally {
     await viteServer.close();
@@ -503,7 +557,7 @@ test('runtime e host source de proventos usam fonte real e fallback controlado',
 
   const runtime = createModernIncomeRuntime();
   const demoSnapshot = runtime.incomeAdapter.getSnapshot();
-  assert.equal(demoSnapshot.version, 1);
+  assert.equal(demoSnapshot.version, 2);
   assert.equal(demoSnapshot.items.length, 4);
   assert.equal(demoSnapshot.summary.totalReceived, 748.51);
 
@@ -537,7 +591,7 @@ test('runtime e host source de proventos usam fonte real e fallback controlado',
   });
   const fallbackSnapshot = invalidSource.getSnapshot();
 
-  assert.equal(fallbackSnapshot.version, 1);
+  assert.equal(fallbackSnapshot.version, 2);
   assert.equal(fallbackSnapshot.summary.paymentCount, 0);
   assert.equal(fallbackSnapshot.items.length, 0);
   assert.equal(Object.isFrozen(fallbackSnapshot), true);

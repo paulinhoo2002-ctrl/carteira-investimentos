@@ -29,6 +29,7 @@ function makeMatrixContext() {
 
   const context = {
     console,
+    DividendIntelligence: require('../dividend-intelligence.js'),
     S: { dividendMonthlyHistoryView: 'list', dividendMonthlyHistoryLimit: 6, dividendMonthlyHistoryExpanded: [] },
     fmt(value) {
       return Number(value ?? 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -111,7 +112,7 @@ test('dividendAnnualMatrixData estrutura por ano tem 12 meses + media + total', 
       assert.equal(typeof m.key, 'string');
       assert.equal(typeof m.year, 'number');
       assert.equal(typeof m.month, 'number');
-      assert.equal(typeof m.total, 'number');
+      assert.ok(m.total===null || typeof m.total==='number');
       assert.equal(typeof m.isFuture, 'boolean');
       assert.equal(typeof m.isBeforeFirst, 'boolean');
       assert.equal(typeof m.hasData, 'boolean');
@@ -149,9 +150,8 @@ test('dividendAnnualMatrixData media exclui meses ausentes e futuros', () => {
   const lastYear = result.find(r => r.year === CY - 1);
   assert.ok(lastYear);
   // 2 months with data in CY-1
-  const validYearMinus1 = lastYear.months.filter(m => !m.isBeforeFirst && !m.isFuture);
-  const expectedMean = validYearMinus1.reduce((s, m) => s + m.total, 0) / validYearMinus1.length;
-  assert.equal(lastYear.annualMean, expectedMean);
+  assert.equal(lastYear.completeCount, 0);
+  assert.equal(lastYear.annualMean, null);
 });
 
 test('dividendAnnualMatrixView gera HTML valido sem NaN/undefined/null', () => {
@@ -181,7 +181,7 @@ test('dividendAnnualMatrixView meses ausentes mat-absent com title', () => {
   const html = ctx.dividendAnnualMatrixView(result);
   const absentInHtml = (html.match(/mat-absent/g) || []).length;
   assert.ok(absentInHtml > 0, 'Deveria ter meses ausentes (antes do primeiro provento)');
-  assert.ok(html.includes('Sem histórico neste período'));
+  assert.ok(html.includes('Cobertura de dados não confirmada'));
 });
 
 test('dividendAnnualMatrixView meses futuros mat-future com title', () => {
@@ -224,9 +224,11 @@ test('dividendAnnualMatrixView valor zero real vs sem recebimento', () => {
   // Month 03+: hasData=false, isBeforeFirst=false -> no receipt in a valid period
   const mar = lastYear.months.find(m => m.month === 3);
   assert.equal(mar.hasData, false);
-  assert.equal(mar.total, 0);
+  assert.equal(mar.total, null);
   // Month 03 should have title about no receipt
-  assert.ok(html.includes('Nenhum recebimento no mês'));
+  assert.equal(mar.coverage, 'UNKNOWN');
+  assert.ok(html.includes('Cobertura de dados não confirmada'));
+  assert.doesNotMatch(html, /R\$\s*0,00/);
 });
 
 test('dividendAnnualMatrixToggleButton default ativo e list', () => {

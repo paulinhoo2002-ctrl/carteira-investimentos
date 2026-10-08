@@ -220,6 +220,10 @@ export function formatReadonlyMoneyOrMissing(value: number | null | undefined) {
   return typeof value === 'number' && Number.isFinite(value) ? formatReadonlyCurrency(value) : 'Nao informado';
 }
 
+export function formatIncomePaymentState(state: ReadOnlyIncomeItem['paymentState']) {
+  return state === 'PAID' ? 'Recebido' : state === 'ANNOUNCED' ? 'Anunciado' : state === 'ESTIMATED' ? 'Estimado' : 'Estado desconhecido';
+}
+
 export function createReadonlyIncomeViewModel(
   snapshot: ReadOnlyIncomeSnapshot,
   filters: ReadonlyIncomePageFilters,
@@ -265,12 +269,13 @@ export function createReadonlyIncomeViewModel(
   });
 
   const sortedFilteredItems = sortItems(filteredItems, filters.sortBy);
-  const monthlyBuckets = buildMonthlyBuckets(filteredItems);
+  const paidItems = filteredItems.filter((item) => item.paymentState === 'PAID');
+  const monthlyBuckets = buildMonthlyBuckets(paidItems);
   const topPayments = sortItems(
-    filteredItems.filter((item) => typeof getDisplayedValue(item) === 'number'),
+    paidItems.filter((item) => typeof getDisplayedValue(item) === 'number'),
     'receivedValue',
   ).slice(0, 3);
-  const topPayers = buildTopPayers(filteredItems).slice(0, 3);
+  const topPayers = buildTopPayers(paidItems).slice(0, 3);
 
   return {
     query,

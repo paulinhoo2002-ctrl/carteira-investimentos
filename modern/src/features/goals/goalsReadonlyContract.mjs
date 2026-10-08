@@ -48,8 +48,11 @@ export const GOALS_READONLY_FALLBACK_SNAPSHOT = deepFreeze({
     currentMonthKey: '1970-01',
     currentMonthLabel: 'Janeiro 1970',
     currentMonthCount: 0,
-    monthlyAverage: 0,
-    total12: 0,
+    monthlyAverage: null,
+    monthlyAverageStatus: 'UNKNOWN',
+    completeMonthCount: 0,
+    total12: null,
+    currentMonthCoverage: 'UNKNOWN',
     hasData: false,
   },
   assetGoal: {
@@ -140,10 +143,11 @@ function isIncomeMetrics(value) {
     isFiniteNumber(value.currentMonthCount) &&
     Number.isInteger(value.currentMonthCount) &&
     value.currentMonthCount >= 0 &&
-    isFiniteNumber(value.monthlyAverage) &&
-    Number.isFinite(value.monthlyAverage) &&
-    isFiniteNumber(value.total12) &&
-    Number.isFinite(value.total12) &&
+    isNullableNumber(value.monthlyAverage) &&
+    isNullableNumber(value.total12) &&
+    (value.monthlyAverageStatus === undefined || ['COMPLETE', 'PARTIAL', 'UNKNOWN'].includes(value.monthlyAverageStatus)) &&
+    (value.completeMonthCount === undefined || (Number.isInteger(value.completeMonthCount) && value.completeMonthCount >= 0 && value.completeMonthCount <= 12)) &&
+    (value.currentMonthCoverage === undefined || ['COMPLETE', 'PARTIAL', 'UNKNOWN', 'FUTURE'].includes(value.currentMonthCoverage)) &&
     typeof value.hasData === 'boolean'
   );
 }
@@ -272,7 +276,10 @@ function cloneIncomeMetrics(metrics) {
     currentMonthLabel: metrics.currentMonthLabel,
     currentMonthCount: metrics.currentMonthCount,
     monthlyAverage: metrics.monthlyAverage,
+    ...(metrics.monthlyAverageStatus === undefined ? {} : { monthlyAverageStatus: metrics.monthlyAverageStatus }),
+    ...(metrics.completeMonthCount === undefined ? {} : { completeMonthCount: metrics.completeMonthCount }),
     total12: metrics.total12,
+    ...(metrics.currentMonthCoverage === undefined ? {} : { currentMonthCoverage: metrics.currentMonthCoverage }),
     hasData: metrics.hasData,
   };
 }

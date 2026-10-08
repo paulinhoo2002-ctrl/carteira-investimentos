@@ -64,6 +64,10 @@ function makeAnalysisHarness(overrides = {}) {
       if (!Number.isFinite(n)) return "—";
       return `R$ ${n.toFixed(2)}`;
     },
+    passiveIncomeValue(value) {
+      const n = Number(value);
+      return value == null || !Number.isFinite(n) ? "—" : `R$ ${n.toFixed(2)}`;
+    },
     fmtP(value) {
       const n = Number(value);
       if (!Number.isFinite(n)) return "—";

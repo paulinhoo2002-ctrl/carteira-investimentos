@@ -32,7 +32,7 @@
   };
   const stateOf = row => {
     const state = normalizeKey(row?.state || row?.status || row?.incomeState || row?.paymentState || row?.raw?.state || row?.raw?.status);
-    if (state.includes('ANNOUNCED') || state.includes('ANUNCIAD')) return 'ANNOUNCED';
+    if (state.includes('ANNOUNCED') || state.includes('ANUNCIAD') || state.includes('DECLARED') || state.includes('DECLARAD') || state.includes('EXPECTED')) return 'ANNOUNCED';
     if (state.includes('ESTIMATED') || state.includes('PROJECTED') || state.includes('PREVIST')) return 'ESTIMATED';
     if (state.includes('UNKNOWN') || state.includes('DESCONHEC')) return 'UNKNOWN';
     return 'PAID';

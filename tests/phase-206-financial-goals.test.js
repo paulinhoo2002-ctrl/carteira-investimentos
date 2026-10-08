@@ -75,11 +75,15 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
   const state = {
     calls,
     FinanceCore,
+    PortfolioAllocationIntelligence: { prepare() { return null; }, top() { return []; }, summary() { return 'Sem dados.'; }, formatPercent(value) { return value == null ? '—' : `${Number(value).toFixed(1)}%`; } },
     S: { goals, assets },
     lastGo: null,
     renderCount: 0,
     fmt(value) {
       return `R$ ${Number(value ?? 0).toFixed(2)}`;
+    },
+    passiveIncomeValue(value) {
+      return value == null || !Number.isFinite(Number(value)) ? '—' : `R$ ${Number(value).toFixed(2)}`;
     },
     fmtP(value) {
       return `${Number(value ?? 0).toFixed(1)}%`;
@@ -100,8 +104,8 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
         analysis: analysisRows,
         portfolio: state.cx(),
         financialGoals: state.financialGoalsSnapshot(),
-        income: { target: Number(state.S?.goals?.proventos?.monthly) || 0, monthlyAvg: 0 },
-        recent: { month: monthKey(new Date()), total: 0 },
+        income: { target: Number(state.S?.goals?.proventos?.monthly) || 0, monthlyAvg: null, monthlyAverageStatus: 'UNKNOWN', completeMonthCount: 0 },
+        recent: { month: monthKey(new Date()), total: null, coverage: 'UNKNOWN', count: 0 },
         typeRows: [],
       };
     },
@@ -175,6 +179,10 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
       const best = groups.reduce((acc, row) => (!acc || row.total > acc.total ? row : acc), null);
       return { total, monthCount, avg, best };
     },
+    passiveIncomeMonthSummary(key) {
+      const group = state.dividendMonthlyHistoryGroupRows(historyRows).find(row => row.key === key);
+      return group ? { total: group.total, count: group.count, coverage: 'PARTIAL' } : { total: null, count: 0, coverage: 'UNKNOWN' };
+    },
     cx() {
           calls.cx += 1;
           const totalApplied = assets.reduce((sum, asset) => sum + (Number(asset.applied) || 0), 0);
@@ -232,6 +240,7 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
   vm.runInContext(extractGoalsSnippet(), state, { filename: 'financial-goals-snippet.js' });
   // This contract checks Dashboard composition; its evolution model is covered separately.
   state.dashboardEvolutionPanel = () => '<section class="dashboard-evolution-card">Evolução</section>';
+  state.dashboardV3AllocationPanel = () => '<section class="dashboard-v3-allocation">Alocação</section>';
   return state;
 }
 
@@ -286,12 +295,13 @@ test('financial goals snapshot uses cx and official history helpers', () => {
   assert.equal(snapshot.portfolioCurrent, 22);
   assert.equal(snapshot.hasPortfolioData, true);
   assert.equal(ctx.calls.historyRows, 1);
-  assert.equal(ctx.calls.historyGroupRows, 1);
+  assert.equal(ctx.calls.historyGroupRows, 2);
   assert.equal(ctx.calls.historySummary, 1);
   assert.equal(snapshot.historySummary.total, 5800);
   assert.equal(snapshot.historySummary.monthCount, 3);
   assert.equal(snapshot.historySummary.best.total, 2800);
   assert.equal(snapshot.currentIncome, 2800);
+  assert.equal(snapshot.currentIncomeCoverage, 'PARTIAL');
   assert.equal(snapshot.currentIncomeCount, 2);
 });
 
@@ -380,7 +390,7 @@ test('metas financeiras calculam progresso, limite e estado executivo', () => {
   assert.match(html, /R\$ 620000\.00/);
   assert.match(html, /R\$ 2800\.00/);
   assert.match(html, /Faltam R\$ 380000\.00/);
-  assert.match(html, /Faltam R\$ 1200\.00/);
+  assert.match(html, /Progresso indisponível sem cobertura completa do mês/);
   assert.match(html, /Média 12M/);
   assert.match(html, /melhor mês/);
   assert.match(html, /role="progressbar"/);
@@ -401,13 +411,15 @@ test('metas financeiras tratam ausencia como estado neutro', () => {
   const snapshot = ctx.financialGoalsSnapshot();
   assert.equal(snapshot.hasPortfolioData, false);
   assert.equal(snapshot.portfolioCurrent, null);
-  assert.equal(snapshot.currentIncome, 0);
+  assert.equal(snapshot.currentIncome, null);
+  assert.equal(snapshot.currentIncomeCoverage, 'UNKNOWN');
   assert.equal(snapshot.currentIncomeCount, 0);
 
   const html = ctx.dashboardFinancialGoalsPanel({ financialGoals: snapshot });
   assert.match(html, /Patrimônio atual indisponível/);
   assert.match(html, /Revise os valores e cotações cadastrados para acompanhar esta meta\./);
   assert.match(html, /Meta de renda passiva/);
-  assert.match(html, /R\$ 0\.00 recebidos neste mês|0,00 recebidos neste mês/);
+  assert.match(html, /Cobertura mensal não confirmada/);
+  assert.doesNotMatch(html, /R\$ 0\.00 recebidos neste mês|0,00 recebidos neste mês/);
   assert.match(html, /Meta R\$ 4000\.00 · sugerida visualmente/);
 });

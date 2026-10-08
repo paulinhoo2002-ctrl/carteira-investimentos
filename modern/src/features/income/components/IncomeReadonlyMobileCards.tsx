@@ -1,4 +1,4 @@
-import { formatReadonlyDateTime, formatReadonlyMoneyOrMissing } from '../readonlyIncomeViewModel.ts';
+import { formatIncomePaymentState, formatReadonlyDateTime, formatReadonlyMoneyOrMissing } from '../readonlyIncomeViewModel.ts';
 import type { ReadOnlyIncomeItem, ReadOnlyIncomeSnapshot } from '../incomeReadonlyContract.mjs';
 import { summarizeItemLabel } from './shared/summarizeItemLabel';
 
@@ -23,6 +23,10 @@ export function IncomeReadonlyMobileCards({ items, snapshot }: IncomeReadonlyMob
             <div>
               <dt>Tipo</dt>
               <dd>{item.type ?? 'Nao informado'}</dd>
+            </div>
+            <div>
+              <dt>Estado</dt>
+              <dd>{formatIncomePaymentState(item.paymentState)}</dd>
             </div>
             <div>
               <dt>Pagamento</dt>
