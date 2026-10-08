@@ -108,6 +108,7 @@ function installSyntheticLocalPersistence(context, { failStorage = false, failQu
   };
   context.isV250OfflineCachedSession = () => false;
   context.isLocalTestMode = () => false;
+  context.isLocalTestReadOnlyMode = () => false;
   context.isProtectedReadOnlyQaBoot = () => false;
   context.isAuthoritativeLocalRecoveryBoot = () => false;
   context.canEditFromThisTab = () => context.S._financialWriteQuarantined !== true;
@@ -1120,6 +1121,7 @@ test('SESSION-QUARANTINE: shared edit gate rejects writes after persistence unce
   const context = {
     S: { _financialWriteQuarantined: true },
     toast() {},
+    isLocalTestReadOnlyMode: () => false,
     isEditOwner: () => true,
   };
   vm.createContext(context);

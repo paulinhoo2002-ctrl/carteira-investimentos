@@ -250,7 +250,7 @@ async function assertLegacyPageReady(page) {
     `Legacy route unexpectedly hidden for query ${new URL(page.url()).search}`,
   );
   await assert.equal(await page.locator('.shell .hdr-title').first().textContent(), 'Carteira de Investimentos');
-  await assert.match(await page.locator('.shell .hdr-sub').first().textContent(), /Modo de teste local/);
+  await assert.match(await page.locator('.shell .hdr-sub').first().textContent(), /TESTE LOCAL/);
   await assert.equal(await page.locator('.shell .tab').count() >= 7, true);
 }
 

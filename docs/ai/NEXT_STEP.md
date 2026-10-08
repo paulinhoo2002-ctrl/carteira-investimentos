@@ -1,5 +1,13 @@
 # Next Step
 
+## V332 — runtime QA sintético local (2026-10-07)
+
+- Certificação do produto V332 antes desta sincronização documental: SHA `732dbb1e58401c981c23f9da48b41d2faf345b7b`; CI run `37714085100` PASS (Build/test, V289 visual, Auth/Firestore Emulator); Vercel Preview READY para o mesmo SHA. PR #456 permanece OPEN/DRAFT/MERGEABLE. Worktree `C:\Projetos\carteira-investimentos.worktrees\local-test-mode-hardening`, branch `codex/local-test-mode-hardening`, base `cefc725f2378648c29593b27399a2f9bf2656db7`. Checkout canônico e PRs/worktrees #454/#455 preservados.
+- O modo sintético exige marcador fixo injetado pelo servidor iniciado explicitamente com `--synthetic-qa`, host loopback exato e `testMode=1`. `testReadOnly=1` bloqueia edição, `save()`, reset e navegação persistente também em chamadas programáticas. Hidratação cloud é rejeitada; stores V76 são vazios em memória sem localStorage; backup de armazenamento corrompido não grava no modo sintético. Firebase normal permanece intacto fora do runtime local confiável.
+- `npm ci` autorizado nesta worktree; manifests e lockfile permaneceram inalterados. Gates frescos: `test:local-synthetic` 26/26 e browser readonly 1/1; legado 255/255; V330 20/20; moderno 820/820; V84 4/4; A11Y 19/19; QA harness 4/4; `qa:all`, `verify:release`, build legado/moderno, V289 visual 13/13 e `git diff --check` PASS. Smoke sem overflow em 390, 430, 768, 1366, 1440, 1536 e 1920 px; V289 cobre também 360, 1024 e 1280. Browser e dados foram sintéticos; capturas ficam em `.qa-state/` (ignorado pelo Git).
+- QA visual corrigiu dois defeitos observados: sinal positivo duplicado no resumo de rentabilidade por classe e métricas do resumo de classes de Ativos agrupadas/cortadas em 1366 px. Tabela Ativos permanece completa com scroll local e cards expansíveis no mobile; Dividendos mantém meses futuros indisponíveis como `—`.
+- A falha inicial de CI em Reliability e quatro smokes responsivos adicionais vinham de harnesses que serviam `testMode=1` sem o marcador confiável do QA. Cinco smokes agora reutilizam o servidor compartilhado; Reliability passou localmente e no CI. `npm ci` reportou 7 advisories (3 moderados, 4 altos); `npm audit --omit=dev` encontrou 0 vulnerabilidades de produção; nenhum fix/upgrade foi executado. Avisos de build moderno sobre API CJS do Vite e contrato readonly são preexistentes. Próximo: revisão humana da Draft PR #456; não fazer merge sem autorização explícita. Sem Firebase real, escrita financeira, importação, restauração ou produção (`MERGE=false`).
+
 ## V330 — implementação publicada; aguarda revisão humana (2026-10-07)
 
 - V329/PR #452 está MERGED no `origin/main` `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. O CI run `37663297762` passou no HEAD PR `f5a1dccdbc4de8fbc06dc3db92970caca535a6ad`; não foi observado workflow separado no merge SHA.
@@ -1010,3 +1018,7 @@ autorização single-use vinculada ao novo HEAD.
   autenticada final e qualquer autorização single-use continuam bloqueadas até
   o QA autenticado voltar a estar disponível. Não executar recovery, Class C,
   sync ou piloto de agosto antes disso.
+
+## V333.2 — próximo gate readonly
+
+Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada sem reescrita de histórico. Correção readonly e regressões concluídas localmente; merge por PR exige autorização humana específica. Provider QA isolado permanece externo, sem writes reais ou produção.

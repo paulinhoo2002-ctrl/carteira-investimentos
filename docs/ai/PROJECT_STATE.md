@@ -1,5 +1,14 @@
 # Project State
 
+## V332 — runtime local de QA sintético (2026-10-07)
+
+- Worktree `C:\Projetos\carteira-investimentos.worktrees\local-test-mode-hardening`, branch `codex/local-test-mode-hardening`, base `cefc725f2378648c29593b27399a2f9bf2656db7`. PRs #454/#455 e worktrees dependentes não foram alterados.
+- Modo sintético requer marcador server-side iniciado por `--synthetic-qa`, loopback exato e `testMode=1`; Preview/produção e query isolada mantêm autenticação normal. Sessão editável usa memória efêmera; `testReadOnly=1` bloqueia edição, `save()`, reset e persistência de navegação, inclusive chamadas programáticas. Hidratação cloud e persistência V76/cópia de storage corrompido também ficam bloqueadas no runtime sintético. Nenhuma regra Firebase mudou. Detalhes: `QA_AUTH_STRATEGY.md`.
+- `npm ci` autorizado; `package.json` e lockfile inalterados. Gates frescos: runtime/server/auth 26/26, browser readonly 1/1, legado 255/255, moderno 820/820, V330 20/20, V84 4/4, A11Y 19/19, QA harness 4/4, V289 13/13; `qa:all`, `verify:release`, builds e `git diff --check` PASS. Smoke sem overflow em 390, 430, 768, 1366, 1440, 1536 e 1920 px; V289 cobre ainda 360, 1024 e 1280. Capturas visuais sintéticas ficam em `.qa-state/` e não entram no Git.
+- Revisão adversarial V335 reproduziu o reset programático do fixture readonly via token lexical global. A correção mantém o token dentro de uma closure, limita a capacidade de boot a uma chamada e preserva o bloqueio após inicialização. Teste de browser RED→GREEN no Chrome; `test:local-synthetic` 43/43 e `test:local-synthetic:browser` 1/1 após a correção. Nenhuma gravação financeira, Firebase ou alteração de fixture persistida.
+- Correções visuais V332: sinal duplicado no resultado positivo de classe e grade do resumo de Ativos que cortava métricas em 1366 px. Browser usou apenas fixtures sintéticas; não houve Firebase real, login real ou persistência autenticada.
+- Snapshot de certificação do produto V332 antes desta sincronização documental: SHA `732dbb1e58401c981c23f9da48b41d2faf345b7b`; CI run `37714085100` PASS em Build/test, V289 visual e Auth/Firestore Emulator; Preview Vercel READY e HTML servido sem marcador QA injetado para o mesmo SHA. PR #456 permanece OPEN/DRAFT. A falha anterior de Reliability era causada por harnesses de teste responsivo que omitiam o marcador; corrigidos para reutilizar o servidor QA compartilhado. npm reportou 7 advisories (3 moderados, 4 altos) no conjunto; `npm audit --omit=dev` encontrou 0 de produção. Sem auto-fix/upgrade. Builds modernos mostram avisos preexistentes de Vite CJS/contrato readonly. `MERGE=false`; sem escrita financeira, importação, restore ou produção.
+
 ## V330 — reconciliação de notas de corretagem (2026-10-07)
 
 - `origin/main=0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`, merge SHA da PR #452/V329. A PR #452 está MERGED; CI run `37663297762` passou no HEAD PR `f5a1dccdbc4de8fbc06dc3db92970caca535a6ad`. Não houve workflow separado observado para o merge commit.
@@ -1316,3 +1325,10 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
 - Nenhuma recuperação real, rollback real, Class C, piloto de agosto ou sync foi
   executado. A prova live final permanece pendente porque o perfil QA perdeu a
   sessão autenticada (`AUTH_SESSION_VALID=false`, CDP 9233 indisponível).
+
+## V333.2 — correção readonly comprovada (2026-10-08)
+
+- Código: 5c87918fad9861e4f60e7fc5d586bcc16cb4641f; 17 entradas financeiras bloqueadas antes de mutação/confirm, incluindo helpers de recálculo, conciliação, importação RF, alocação e hidratação offline. Sem alteração de fórmulas, schema ou dados reais.
+- RED: cinco handlers originais e onze siblings mutaram VM sintética; snapshot válido reproduz o bypass original no teste. GREEN: readonly runtime/browser 33/33; test:local-synthetic 43/43 e browser 1/1. verify:release PASS no código final; CI readonly conectado agora ao npm test e após Chromium no workflow.
+- Revisão independente em contexto separado: nenhum MAJOR acionável nos diffs revisados; não certifica inexistência global de bugs.
+- PR #456 continua Draft/base main. CI do novo HEAD precisa ser confirmado. Checkout canônico e #454/#455 preservados. MERGE_PR=false; PRODUCTION=false; REAL_WRITES=0.

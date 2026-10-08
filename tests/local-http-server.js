@@ -2,7 +2,7 @@ const http = require('node:http');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
 
-async function startLocalHttpServer(root, port = 0) {
+async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {}) {
   const documentRoot = path.resolve(root);
   const server = http.createServer(async (req, res) => {
     try {
@@ -20,9 +20,16 @@ async function startLocalHttpServer(root, port = 0) {
         res.writeHead(403);
         return res.end();
       }
-      const content = await fsp.readFile(filePath);
+      let content = await fsp.readFile(filePath);
+      if (syntheticQa && path.extname(filePath) === '.html') {
+        const html = content.toString('utf8');
+        const head = /<head(?:\s[^>]*)?>/i;
+        if (!head.test(html)) throw new Error('Synthetic QA runtime marker could not be injected.');
+        content = Buffer.from(html.replace(head, match => `${match}\n<script>Object.defineProperty(window,'__LOCAL_QA_RUNTIME__',{value:'local-synthetic-v1',writable:false,configurable:false});</script>`), 'utf8');
+      }
       res.writeHead(200, {
         'Content-Type': path.extname(filePath) === '.html' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8',
+        ...(syntheticQa && path.extname(filePath) === '.html' ? { 'Cache-Control': 'no-store' } : {}),
       });
       res.end(content);
     } catch {
@@ -35,7 +42,8 @@ async function startLocalHttpServer(root, port = 0) {
     server.once('error', reject);
     server.listen(port, '127.0.0.1', resolve);
   });
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  const query = syntheticQa ? '?testMode=1' : '';
+  return { server, url: `http://127.0.0.1:${server.address().port}/index.html${query}` };
 }
 
 module.exports = { startLocalHttpServer };
@@ -43,11 +51,12 @@ module.exports = { startLocalHttpServer };
 if (require.main === module) {
   const portIndex = process.argv.indexOf('--port');
   const port = portIndex >= 0 ? Number(process.argv[portIndex + 1]) : 4173;
+  const syntheticQa = process.argv.includes('--synthetic-qa');
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     console.error('Port must be an integer between 0 and 65535.');
     process.exitCode = 1;
   } else {
-    startLocalHttpServer(process.cwd(), port)
+    startLocalHttpServer(process.cwd(), port, { syntheticQa })
       .then(({ url }) => console.log(`QA server listening: ${url}`))
       .catch(error => {
         console.error(`QA server failed to start: ${error.message}`);

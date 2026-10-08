@@ -22,11 +22,14 @@
 (()=>{try{
   const params=new URLSearchParams(location.search);
   const loopbackHost=location.hostname==='localhost' || location.hostname==='127.0.0.1';
-  const testMode=loopbackHost && params.get('testMode')==='1';
+  const trustedQaRuntime=window.__LOCAL_QA_RUNTIME__==='local-synthetic-v1';
+  const testMode=trustedQaRuntime && loopbackHost && params.get('testMode')==='1';
+  const testReadOnly=testMode && params.get('testReadOnly')==='1';
   const emulatorRequested=loopbackHost && (params.has('qaAuthEmulator') || params.has('qaFirestoreEmulator'));
   const emulatorPairEnabled=emulatorRequested && !testMode && params.get('qaAuthEmulator')==='1' && params.get('qaFirestoreEmulator')==='1';
   const authoritativeLocalRecovery=(location.hostname==='localhost' || location.hostname==='127.0.0.1') && new URLSearchParams(location.search).get('authoritativeLocalRecovery')==='1';
-  window.__LOCAL_TEST_MODE__=testMode;
+  Object.defineProperty(window,'__LOCAL_TEST_MODE__',{value:testMode,writable:false,configurable:false});
+  Object.defineProperty(window,'__LOCAL_TEST_READ_ONLY__',{value:testReadOnly,writable:false,configurable:false});
   window.__LOCAL_AUTH_EMULATOR_MODE__=emulatorPairEnabled;
   window.__LOCAL_AUTH_EMULATOR_CONFIG_ERROR__=emulatorRequested && !emulatorPairEnabled;
   // Explicit QA mode only reduces capabilities: reads/rendering remain allowed,
@@ -7833,9 +7836,6 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .wrap{max-width:1500px;padding:20px 28px 30px}
 }
 
-/* The local fixture banner is diagnostic, not part of the product shell. */
-body:has(.test-mode-banner) .test-mode-banner{display:none!important}
-
 .canon-dashboard{width:100%;max-width:none;gap:12px}
 .canon-dashboard .dashboard-page-heading{padding:0 2px 2px;align-items:flex-end}
 .canon-dashboard .dashboard-page-heading h1{font-size:28px;letter-spacing:-.04em}
@@ -8757,6 +8757,7 @@ async function persistProtectedReadOnlyOfflineSnapshot(){
   }catch(_){ return false; }
 }
 function applyProtectedReadOnlyOfflineState(snapshot){
+  if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return false;
   const state=snapshot?.state;
   if(!state || !Array.isArray(state.wallets) || !state.wallets.length) return false;
   const activeWalletId=String(state.activeWalletId||'');
@@ -8836,6 +8837,7 @@ let reconnectAuthAttemptCount = 0;
 let reconnectWasOffline = navigator.onLine === false;
 
 function reconnectMarkerHasTrustedSnapshot(){
+  if(isLocalTestMode()) return false;
   const marker = window.V250OfflineSession?.read?.();
   if(isProtectedReadOnlyQaBoot()){
     return Boolean(FB.readOnlyOfflineSnapshotReady && marker?.eligible && marker.scope===FB.readOnlyOfflineSnapshotScope && marker.snapshotSignature===FB.readOnlyOfflineSnapshotSignature);
@@ -8847,6 +8849,7 @@ function clearReconnectReloadGuard(){
   try{ sessionStorage.removeItem(V250_RECONNECT_RELOAD_KEY); }catch(_){ }
 }
 function revalidateFirebaseAuthAfterReconnect(){
+  if(isLocalTestMode()) return Promise.resolve({status:'not-needed'});
   if(reconnectAuthFlight) return reconnectAuthFlight;
   if(!navigator.onLine || !reconnectWasOffline || !FB.auth || !reconnectMarkerHasTrustedSnapshot()){
     return Promise.resolve({status:'not-needed'});
@@ -9057,6 +9060,7 @@ try{
 function cloneData(v){ return JSON.parse(JSON.stringify(v ?? null)); }
 const DEFAULT_RUNTIME_STATE=cloneData(S);
 function isLocalTestMode(){ return !!window.__LOCAL_TEST_MODE__; }
+function isLocalTestReadOnlyMode(){ return isLocalTestMode() && window.__LOCAL_TEST_READ_ONLY__===true; }
 function isLocalAuthEmulatorMode(){ return window.__LOCAL_AUTH_EMULATOR_MODE__===true && ['localhost','127.0.0.1'].includes(location.hostname); }
 function isProtectedReadOnlyQaBoot(){ return window.__PROTECTED_READ_ONLY_QA_BOOT__===true; }
 function isProtectedShadowBoot(){
@@ -9313,7 +9317,16 @@ function localTestFixtureWallet(){
     learnMeta:{}
   };
 }
-function applyLocalTestFixture(){
+const LOCAL_TEST_FIXTURE_RUNTIME=(()=>{
+  const bootToken=Symbol('local-test-fixture-boot');
+  let bootTokenAvailable=true;
+  function apply(runtimeToken){
+  const authorizedBoot=runtimeToken===bootToken && bootTokenAvailable;
+  if(isLocalTestReadOnlyMode() && !authorizedBoot){
+    canEditFromThisTab('restaurar fixture de teste');
+    return false;
+  }
+  if(authorizedBoot) bootTokenAvailable=false;
   Object.assign(S, cloneData(DEFAULT_RUNTIME_STATE));
   resetTransientRuntimeState();
   const wallet=normalizeWalletEntry(localTestFixtureWallet(), 'Carteira de teste');
@@ -9374,9 +9387,18 @@ function applyLocalTestFixture(){
   S.rfEventEditor=null;
   S.goals=normalizeGoals(S.goals);
   rebuildLearnMeta();
-}
+  return true;
+  }
+  return {apply, initialize(){return bootTokenAvailable ? apply(bootToken) : false;}};
+})();
+function applyLocalTestFixture(runtimeToken){ return LOCAL_TEST_FIXTURE_RUNTIME.apply(runtimeToken); }
+function initializeLocalTestFixture(){ return LOCAL_TEST_FIXTURE_RUNTIME.initialize(); }
 function restoreLocalTestData(){
   if(!isLocalTestMode()) return;
+  if(isLocalTestReadOnlyMode()){
+    canEditFromThisTab('restaurar dados de teste');
+    return;
+  }
   applyLocalTestFixture();
   render();
   toast('🧪 Dados de teste restaurados.', '#60a5fa');
@@ -9642,6 +9664,10 @@ function save(){
     toast('Gravações desta sessão estão bloqueadas após uma falha de persistência. Recarregue e confira o estado antes de continuar.','#f87171');
     return false;
   }
+  if(isLocalTestReadOnlyMode()){
+    toast('Ação bloqueada: este teste local está em modo somente leitura.','#fbbf24');
+    return false;
+  }
   const options=arguments[0]||{};
   const protectedLocalRecoveryWrite=options.__protectedLocalRecoveryWrite===true;
   try{
@@ -9758,6 +9784,7 @@ let EDIT_LOCK_CHANNEL = null;
 let EDIT_LOCK_TIMER = null;
 let EDIT_LOCK_STATE = { ownerId:'', updatedAt:0, mode:'owner', stale:false };
 function ensureEditLockTabId(){
+  if(isLocalTestMode()) return 'local-synthetic-qa';
   if(EDIT_LOCK_TAB_ID) return EDIT_LOCK_TAB_ID;
   try{
     EDIT_LOCK_TAB_ID = sessionStorage.getItem(`${STOR}_tab_id`) || '';
@@ -9771,6 +9798,7 @@ function ensureEditLockTabId(){
   return EDIT_LOCK_TAB_ID;
 }
 function readEditLockRecord(){
+  if(isLocalTestMode()) return null;
   try{
     const raw=localStorage.getItem(EDIT_LOCK_KEY);
     const lock=JSON.parse(raw||'{}');
@@ -9780,7 +9808,7 @@ function readEditLockRecord(){
   }
 }
 function writeEditLockRecord(lock){
-  if(isProtectedReadOnlyQaBoot()) return false;
+  if(isLocalTestMode() || isProtectedReadOnlyQaBoot()) return false;
   try{
     localStorage.setItem(EDIT_LOCK_KEY, JSON.stringify(lock));
     return true;
@@ -9789,7 +9817,7 @@ function writeEditLockRecord(lock){
   }
 }
 function removeEditLockRecord(){
-  if(isProtectedReadOnlyQaBoot()) return false;
+  if(isLocalTestMode() || isProtectedReadOnlyQaBoot()) return false;
   try{ localStorage.removeItem(EDIT_LOCK_KEY); }catch(e){}
 }
 function isEditLockStale(lock){
@@ -9800,19 +9828,26 @@ function isEditOwner(){
   return EDIT_LOCK_STATE.mode==='owner' && String(EDIT_LOCK_STATE.ownerId||'')===ensureEditLockTabId();
 }
 function canEditFromThisTab(action='salvar'){
+  if(isLocalTestReadOnlyMode()){
+    toast(`Necessita revisão antes da confirmação. Ação bloqueada em teste local somente leitura${action ? ` (${action}).` : '.'}`,'#fbbf24');
+    return false;
+  }
   if(S?._financialWriteQuarantined===true){
     toast(`Edição bloqueada após falha de persistência${action ? ` (${action}).` : '.'} Recarregue e confira o estado.`,'#f87171');
     return false;
   }
+  if(isLocalTestMode()) return true;
   if(isEditOwner()) return true;
   toast(`Esta aba está em modo somente leitura para evitar perda de dados${action ? ` (${action}).` : '.'}`,'#fbbf24');
   return false;
 }
 function broadcastEditLock(reason='change'){
+  if(isLocalTestMode()) return;
   const payload={type:'lock-update', reason, ownerId:ensureEditLockTabId(), updatedAt:Date.now()};
   try{ EDIT_LOCK_CHANNEL?.postMessage(payload); }catch(e){}
 }
 function applyEditLockState(lock, mode){
+  if(isLocalTestMode()) return false;
   const next={
     ownerId:String(lock?.ownerId||''),
     updatedAt:Number(lock?.updatedAt||0),
@@ -9830,6 +9865,10 @@ function applyEditLockState(lock, mode){
   return true;
 }
 function refreshEditProtection({allowClaim=false, forceClaim=false, reason='tick'}={}){
+  if(isLocalTestMode()){
+    EDIT_LOCK_STATE={ownerId:'',updatedAt:0,mode:isLocalTestReadOnlyMode()?'readonly':'owner',stale:false};
+    return false;
+  }
   const tabId=ensureEditLockTabId();
   const lock=readEditLockRecord();
   const ownerId=String(lock?.ownerId||'');
@@ -9854,6 +9893,10 @@ function refreshEditProtection({allowClaim=false, forceClaim=false, reason='tick
   return applyEditLockState(lock, 'readonly');
 }
 function assumeEditControl(){
+  if(isLocalTestMode()){
+    if(isLocalTestReadOnlyMode()) canEditFromThisTab('assumir edição');
+    return;
+  }
   if(isEditOwner()){
     toast('Esta aba já está com a edição.');
     return;
@@ -9866,7 +9909,7 @@ function assumeEditControl(){
   toast('✅ Edição assumida nesta aba.');
 }
 function releaseEditProtection(reason='pagehide'){
-  if(isProtectedReadOnlyQaBoot()) return;
+  if(isLocalTestMode() || isProtectedReadOnlyQaBoot()) return;
   const tabId=ensureEditLockTabId();
   const lock=readEditLockRecord();
   if(lock && String(lock.ownerId||'')===tabId){
@@ -9875,6 +9918,10 @@ function releaseEditProtection(reason='pagehide'){
   }
 }
 function initEditProtection(){
+  if(isLocalTestMode()){
+    EDIT_LOCK_STATE={ownerId:'',updatedAt:0,mode:isLocalTestReadOnlyMode()?'readonly':'owner',stale:false};
+    return;
+  }
   ensureEditLockTabId();
   if(isProtectedReadOnlyQaBoot()){
     EDIT_LOCK_STATE={ownerId:'',updatedAt:0,mode:'readonly',stale:false};
@@ -9907,6 +9954,7 @@ function initEditProtection(){
   }
 }
 function editLockBanner(){
+  if(isLocalTestMode()) return '';
   if(isEditOwner()) return '';
   const lock=readEditLockRecord();
   const hasLock=!!lock;
@@ -9931,6 +9979,7 @@ function editLockBanner(){
 // readback; no silent steal from a live owner is possible because forceClaim is
 // only used by the single-use real-execution flow after stale tabs are closed.
 async function claimEditOwnership({reason='pilot', maxAttempts=10, settleMs=60}={}){
+    if(isLocalTestMode()) return {claimed:false, reason:'LOCAL_SYNTHETIC_QA'};
     ensureEditLockTabId();
     const tabId=EDIT_LOCK_TAB_ID;
     for(let attempt=1;attempt<=maxAttempts;attempt++){
@@ -9963,6 +10012,7 @@ function releaseEditOwnership({reason='pilot'}={}){
 }
 function backupCorruptedStorageValue(storageKey, rawValue, error){
   try{
+    if(typeof isLocalTestMode==='function' && isLocalTestMode()) return null;
     const protectedQa=typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot();
     const authoritativeLocal=typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot();
     if(protectedQa || authoritativeLocal) return null;
@@ -9996,6 +10046,7 @@ function isAutoGeneratedProvento(p){
   return !!p?.autoKey || source.startsWith('auto');
 }
 function stripAutoProventos(){
+  if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return 0;
   const before=Number(S.proventos?.length||0);
   S.proventos=(S.proventos||[]).filter(p=>!isAutoGeneratedProvento(p));
   return before-(S.proventos?.length||0);
@@ -11428,6 +11479,7 @@ function markProtectedLocalMarkerMismatch(){
   return null;
 }
 async function applyCloudData(d){
+  if(isLocalTestMode()) return false;
   if(!d) return;
   if(isAuthoritativeLocalRecoveryBoot()){
     markProtectedLocalMarkerMismatch();
@@ -12159,7 +12211,7 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Restaurar dados de teste</div><div class="premium-settings-row-desc">Reinicializa a fixture em memória com dados determinísticos.</div></div>
-            <button class="btn bgh ds-button ds-button--secondary" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>
+            ${isLocalTestReadOnlyMode()?'<span role="status">Bloqueado no modo somente leitura.</span>':'<button class="btn bgh ds-button ds-button--secondary" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>'}
           </div>
         </div>` : ''}
 
@@ -12403,6 +12455,10 @@ const V76_FLOW_STORAGE_KEY='portfolioExternalCashFlowsV1';
 function v76Clock(){ return Date.now(); }
 function v76RuntimeAvailable(){ return !!window.PortfolioRuntimeStores && typeof localStorage!=='undefined'; }
 function loadV76RuntimeStores(){
+  if(isLocalTestMode()){
+    window.__V76_RUNTIME__={snapshots:[],flows:[],diagnostics:['LOCAL_SYNTHETIC_QA']};
+    return window.__V76_RUNTIME__;
+  }
   if(!v76RuntimeAvailable()) return {snapshots:[],flows:[],diagnostics:['RUNTIME_UNAVAILABLE']};
   const R=window.PortfolioRuntimeStores;
   const snapshots=R.loadStore(localStorage.getItem(V76_SNAPSHOT_STORAGE_KEY),'snapshots',v76Clock);
@@ -12411,7 +12467,7 @@ function loadV76RuntimeStores(){
   return window.__V76_RUNTIME__;
 }
 function saveV76RuntimeStores(){
-  if(isProtectedReadOnlyQaBoot()) return false;
+  if(isLocalTestMode() || isProtectedReadOnlyQaBoot()) return false;
   if(!v76RuntimeAvailable()||!window.__V76_RUNTIME__) return false;
   try{
     localStorage.setItem(V76_SNAPSHOT_STORAGE_KEY,JSON.stringify(window.__V76_RUNTIME__.snapshots));
@@ -14795,6 +14851,7 @@ function rfPositionImportSourceTag(src){
   return s==='B3 POSICAO ATUAL' || s==='POSICAODETALHADA B3/XP';
 }
 function cleanupB3PositionSummaryAssets(){
+  if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return 0;
   const before=Number(S.assets?.length||0);
   S.assets=(S.assets||[]).filter(a=>{
     const source=String(a?.source||a?.fixed_source||'');
@@ -14804,6 +14861,7 @@ function cleanupB3PositionSummaryAssets(){
   return before-Number(S.assets?.length||0);
 }
 function cleanupB3PositionAportes(){
+  if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return 0;
   const before=Number(S.aportes?.length||0);
   const isB3PositionAporte=a=>{
     const src=rfPosNorm(a?.source||a?.origin||a?.origem||'');
@@ -19498,6 +19556,7 @@ function rfEventImportSummary(asset){
   return {ticker,seeds,totals,expected,current,missing};
 }
 function importRfEventSeeds(assetId){
+  if(!canEditFromThisTab('importar eventos de renda fixa')) return 0;
   const asset=getRfAssetByEventId(assetId);
   if(!asset) return 0;
   const summary=rfEventImportSummary(asset);
@@ -20023,6 +20082,7 @@ const META={
 };
 // ── DY automático: proventos reais → estimativa da tabela → manual
 function autoDY(persistState=true){
+  if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return 0;
   const now=new Date();
   const oneYearAgo=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());
   let updated=0;
@@ -21049,6 +21109,7 @@ function selectProventoAuditDuplicateExtras(){
   render();
 }
 function removeProventoAuditSelected(){
+  if(!canEditFromThisTab('remover proventos duplicados')) return;
   const audit=proventoAuditBuildRows();
   const state=proventoAuditEnsureState();
   const selectedSet=new Set(state.selectedIds||[]);
@@ -21093,6 +21154,7 @@ function setProventoRfLinkNote(value){
   S.proventoRfLinkModal.note=String(value||'');
 }
 function confirmProventoRfLink(auditId, rfEventId){
+  if(!canEditFromThisTab('vincular provento a renda fixa')) return;
   const row=proventoAuditFindRow(auditId);
   const rfMap=rfEventByIdMap();
   const event=rfMap.get(String(rfEventId||'').trim());
@@ -21124,6 +21186,7 @@ function confirmProventoRfLink(auditId, rfEventId){
   toast('Provento vinculado a Renda Fixa.');
 }
 function unlinkProventoRfEvent(auditId){
+  if(!canEditFromThisTab('desvincular provento de renda fixa')) return;
   const row=proventoAuditFindRow(auditId);
   if(!row || row.auditIndex==null){
     toast('Nao foi possivel localizar este provento.', '#fbbf24');
@@ -24466,6 +24529,7 @@ const pointsMarkup=values.map((v,i)=>{
 }
 
 function syncAssetsFromAportes(showMsg=false,persistState=true){
+  if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return;
   if(isProtectedReadOnlyQaBoot()) return;
   const keep={};
   S.assets.forEach(a=>keep[a.ticker]={...a});
@@ -28759,7 +28823,7 @@ function app(){
    <div class="hdr">
     <div class="hdr-logo">
       <div class="hdr-icon">📈</div>
-      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">${isLocalTestMode() ? 'Modo de teste local · dados determinísticos em memória' : `Dados locais + Google/Firebase · ${cloudStatus()} · ${esc(activeWallet()?.name||'Carteira')} ${walletChip()}`}</div></div>
+      <div><div class="hdr-title">Carteira de Investimentos</div><div class="hdr-sub">${isLocalTestMode() ? `TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''} · dados sintéticos em memória` : `Dados locais + Google/Firebase · ${cloudStatus()} · ${esc(activeWallet()?.name||'Carteira')} ${walletChip()}`}</div></div>
     </div>
     <div class="hdr-right">
       ${authBox()}
@@ -28780,10 +28844,10 @@ function app(){
   ${isLocalTestMode()?`
   <div class="test-mode-banner" style="margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(251,191,36,.28);border-radius:14px;background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.08));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">
     <div style="min-width:0">
-      <div class="test-mode-banner-title" style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#fde68a">Modo de teste local</div>
-      <div class="test-mode-banner-text" style="font-size:12px;line-height:1.45;color:#e5edf8">Dados determinísticos em memória. Sem Firebase, sem sync, sem importação/exportação e sem localStorage.</div>
+      <div class="test-mode-banner-title" style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#fde68a">TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''}</div>
+      <div class="test-mode-banner-text" role="status" style="font-size:12px;line-height:1.45;color:#e5edf8">Dados sintéticos em memória. Sem Firebase, sincronização, importação/exportação ou persistência financeira.</div>
     </div>
-    <button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:44px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>
+    ${isLocalTestReadOnlyMode()?'<span class="test-mode-readonly-status" role="status">Necessita revisão antes da confirmação; ações bloqueadas.</span>':'<button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:44px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>'}
   </div>`:''}
   ${editLockBanner()}
   ${desktopTabs()}
@@ -31989,7 +32053,7 @@ function ativos(){
       </div>
       <div>
         <div class="acc-metric-label ag-k">Rentab.</div>
-        <div class="acc-metric-value ${resultTone}">${typeReturn == null ? '—' : `${resultPrefix}${fmtP(typeReturn)}`}</div>
+        <div class="acc-metric-value ${resultTone}">${typeReturn == null ? '—' : fmtP(typeReturn)}</div>
       </div>
       <div>
         <div class="acc-metric-label ag-k">Peso</div>
@@ -32984,12 +33048,14 @@ function allocationGoalItems(){
   return normalizeAllocationItems(S.goals?.allocation?.items);
 }
 function saveAllocationGoalItems(items){
+  if(!canEditFromThisTab('salvar meta de alocação')) return;
   S.goals=S.goals||{};
   S.goals.allocation={items:normalizeAllocationItems(items)};
   save();
   render();
 }
 function normalizeAllocationGoal(){
+  if(!canEditFromThisTab('normalizar meta de alocação')) return;
   const items=allocationGoalItems();
   if(!items.length) return toast('Adicione ao menos uma categoria antes de normalizar.');
   const total=items.reduce((s,it)=>s+Number(it.pct||0),0);
@@ -36683,6 +36749,7 @@ function go(t){
   return goInternal(t,true);
 }
 function goInternal(t,persistNavigation){
+  const persistRoute=persistNavigation && !(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot());
   S.tabSeq = (Number(S.tabSeq)||0) + 1;
   if(t==='assets') t='ativos';
   if(t==='rebalancear') t='ajudar';
@@ -36690,7 +36757,7 @@ function goInternal(t,persistNavigation){
     S.tab='analise';
     S.mobileMenuOpen=false;
     S.mobileTopMenuOpen=false;
-    if(persistNavigation) save();
+    if(persistRoute) save();
     render();
     return 0;
   }
@@ -36710,9 +36777,9 @@ function goInternal(t,persistNavigation){
   S.mobileTopMenuOpen=false;
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
-  if(persistNavigation && t!=='importacao' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) save();
+  if(persistRoute && t!=='importacao') save();
   render();
-  if(persistNavigation && t==='dividendos' && !(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot())) runAutoProventosGratis('tab');
+  if(persistRoute && t==='dividendos') runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
 
 // Busca global somente em memoria: os registros continuam vindo das fontes oficiais.
@@ -36936,6 +37003,7 @@ function openRentabilityAsset(assetId,ticker){
   go('ativos');
 }
 function svA(){
+  if(!canEditFromThisTab('salvar ativo')) return;
   if(!S.editId) return;
   const editedAsset=S.assets.find(a=>a.id===S.editId);
   const dy=parseNum(document.getElementById('f-dy')?.value);
@@ -37023,6 +37091,7 @@ function edP(id){
   setTimeout(applyMetaToAporte,50);
 }
 function svP(){
+  if(!canEditFromThisTab('salvar operação')) return;
   const op=(document.getElementById('p-op')?.value||'compra').toLowerCase();
   const rawName=String(document.getElementById('p-ti')?.value||'').trim();
   const ty=normalizeType(document.getElementById('p-ty')?.value||metaTicker(rawName).type||'Ação','Ação');
@@ -37140,6 +37209,7 @@ function svP(){
   scheduleAutoProventosGratis('aporte');
 }
 function rmP(id){
+  if(!canEditFromThisTab('excluir operação')) return;
   const idStr=String(id);
   if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
   const before=(S.aportes||[]).length;
@@ -37165,6 +37235,7 @@ function editDividendReceipt(id){
   render();
 }
 function svD(){
+  if(!canEditFromThisTab('salvar provento')) return;
   const wasEdit=!!S.editDId;
   const ti=document.getElementById('d-ti')?.value?.trim().toUpperCase();
   const va=parseNum(document.getElementById('d-va')?.value);
@@ -37183,6 +37254,7 @@ function svD(){
   markProventosDirty();
 }
 function rmD(id){
+  if(!canEditFromThisTab('excluir provento')) return;
   if(!confirm('Remover este provento?')) return;
   const before=(S.proventos||[]).length;
   S.proventos=(S.proventos||[]).filter(p=>String(p.id)!==String(id));
@@ -37391,7 +37463,7 @@ if(isActiveWalletHostMode()){
     legacyApplicationRoot.style.display='none';
   }
   if(isLocalTestMode()){
-    applyLocalTestFixture();
+    initializeLocalTestFixture();
   }else{
     load();
   }
@@ -37402,7 +37474,7 @@ if(isActiveWalletHostMode()){
     debugError('falha ao montar a previa experimental da carteira ativa:',error);
   });
 }else if(isLocalTestMode()){
-  applyLocalTestFixture();
+  initializeLocalTestFixture();
   initEditProtection();
   render();
 }else{
@@ -37617,8 +37689,8 @@ function updateRfAssetSummary(selectElement) {
   }
   .assets-premium-shell .ag{width:100%;min-width:0}
   .assets-premium-shell .ag>summary{
-    display:grid;grid-template-columns:minmax(240px,1.1fr) minmax(0,3fr) 32px;
-    align-items:center;gap:12px;padding:10px 14px;min-height:64px;
+    display:grid;grid-template-columns:minmax(180px,1.1fr) repeat(5,minmax(0,1fr)) 30px;
+    align-items:center;gap:8px;padding:10px 12px;min-height:64px;
   }
   .assets-premium-shell .ag-left{grid-column:1;grid-row:1;min-width:0;width:auto}
   .assets-premium-shell .ag-stats{
