@@ -1031,3 +1031,10 @@ autorização single-use vinculada ao novo HEAD.
 ## V333.2 — próximo gate readonly
 
 Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada sem reescrita de histórico. Correção readonly e regressões concluídas localmente; merge por PR exige autorização humana específica. Provider QA isolado permanece externo, sem writes reais ou produção.
+
+## V333.2–V338 — gates seguintes
+
+1. Conferir SHA/CI da #456 e revisar #457 na base empilhada atualizada. Regressões readonly estão no npm test e CI browser; média histórica não certificada está indisponível.
+2. Avaliar PR isolada V336 de rolagem/acessibilidade de Ativos sem integrar pendências.
+3. Resolver execução local Auth/Firestore Emulator ou usar CI do SHA exato; provider QA exige ambiente externo isolado. Manter gap Firefox/WebKit explícito.
+4. Merge somente após autorização humana específica por PR; Vercel production branch/auto-deploy precisa ser verificado antes de qualquer integração. Sem deploy nesta missão.
