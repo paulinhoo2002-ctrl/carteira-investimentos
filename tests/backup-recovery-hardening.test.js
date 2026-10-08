@@ -11,6 +11,7 @@ function fixtureState() {
     proventos: [{ id: 'i1', date: '2026-02-03', value: 12.5, type: 'DIVIDEND' }],
     rfEvents: [{ id: 'rf1', value: 5000, manual: true }],
     goals: { patrimonio: { target: 100000 } },
+    performance: { schemaVersion: 1, derived: true, valuationSnapshots: { snapshots: [] }, externalCashFlows: { flows: [] } },
     brapiToken: 'must-not-leak'
   };
 }
@@ -25,13 +26,13 @@ test('V267 backup manifest includes operationId and schema identifiers', async (
   // V267 enhanced manifest fields
   assert.ok(backup.manifest.operationId, 'Should have operationId');
   assert.ok(backup.manifest.exportedBy, 'Should have exportedBy');
-  assert.equal(backup.manifest.schemaIdentifiers.stateSchema, 'backup-portability-v1.1');
+  assert.equal(backup.manifest.schemaIdentifiers.stateSchema, 'backup-portability-v1.2');
   assert.ok(backup.manifest.compatibility);
   assert.equal(backup.manifest.compatibility.minSupportedMajor, 1);
   assert.ok(backup.manifest.compatibility.legacyFormatsRecognized.includes('legacy-civ5-compatible'));
 });
 
-test('V267 verifyBackup returns schema warnings for future schemas', async () => {
+test('V267 verifyBackup rejects future schema identifiers', async () => {
   const backup = await Backup.createBackup({ state: fixtureState(), config: {} });
   const futureBackup = {
     ...backup,
@@ -44,8 +45,8 @@ test('V267 verifyBackup returns schema warnings for future schemas', async () =>
   futureBackup.manifest.checksums.payload = await Backup.sha256(Backup.canonical(futureBackup.payload));
   
   const result = await Backup.verifyBackup(futureBackup);
-  assert.equal(result.status, 'SUPPORTED');
-  assert.ok(result.warnings.includes('STATE_SCHEMA_FUTURE:backup-portability-v2.0'));
+  assert.equal(result.status, 'INCOMPATIBLE');
+  assert.equal(result.error, 'UNSUPPORTED_SCHEMA_IDENTIFIER');
 });
 
 test('V267 previewRestore provides detailed diff with adds, updates, conflicts, skips', async () => {
