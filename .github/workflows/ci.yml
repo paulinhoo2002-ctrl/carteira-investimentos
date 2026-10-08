@@ -47,6 +47,9 @@ jobs:
           echo "Using browser: $CHROME_BIN"
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
 
+      - name: Local synthetic readonly QA
+        run: npm run test:local-synthetic:browser
+
       - name: V330 synthetic browser QA
         run: npm run test:v330:browser
 
