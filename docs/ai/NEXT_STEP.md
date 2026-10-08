@@ -1,5 +1,12 @@
 # Next Step
 
+## V333 — próximo gate humano
+
+- V333 foi auditada em runtime local sintético; o único arquivo funcional alterado é `tests/dividends-p0-ux.smoke.test.js`, para alinhar seu servidor ao marcador QA V332 e sua navegação ao DOM atual. Telas visuais já satisfizeram a matriz inspecionada, então nenhum produto foi alterado.
+- Antes de afirmar prontidão financeira de Dividendos, decidir o contrato protegido para meses sem registros após o início do histórico: eles significam zero recebido ou cobertura desconhecida? A matriz atual mostra `R$ 0,00` e calcula a média como se fossem zero; cobertura não é explicitada. Não alterar essa semântica até a decisão.
+- Após esse gate, se houver correção autorizada, atualizar contrato/testes e repetir `verify:release`, capturas e QA. Em qualquer caso, verificar CI do HEAD atual da PR V333 e manter PR #456 como base; não mesclar.
+- Segurança mantida: somente fixtures sintéticas; `REAL_WRITES=0`, `REAL_IMPORT=false`, `REAL_RESTORE=false`, `PRODUCTION=false`, `MERGE=false`.
+
 ## V332 — runtime QA sintético local (2026-10-07)
 
 - Certificação do produto V332 antes desta sincronização documental: SHA `732dbb1e58401c981c23f9da48b41d2faf345b7b`; CI run `37714085100` PASS (Build/test, V289 visual, Auth/Firestore Emulator); Vercel Preview READY para o mesmo SHA. PR #456 permanece OPEN/DRAFT/MERGEABLE. Worktree `C:\Projetos\carteira-investimentos.worktrees\local-test-mode-hardening`, branch `codex/local-test-mode-hardening`, base `cefc725f2378648c29593b27399a2f9bf2656db7`. Checkout canônico e PRs/worktrees #454/#455 preservados.

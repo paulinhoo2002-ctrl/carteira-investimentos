@@ -1,5 +1,14 @@
 # Project State
 
+## V333 — revisão de uso diário (2026-10-08)
+
+- Base empilhada sobre PR #456 no HEAD `1917c7e577bea777e0315c988df5c8985cc25286`; PR #456 foi confirmada OPEN/DRAFT/MERGEABLE, CI run `37755481672` PASS. Worktree `C:\Projetos\carteira-investimentos.worktrees\v333-premium-product-finish`, branch `codex/v333-premium-product-finish`; PRs #454/#455 preservadas.
+- Auditoria visual local usou somente fixtures sintéticas. Ativos mantém resumo por classe, tabela financeira completa com rolagem local no desktop e cartões expansíveis no mobile; Dividendos mantém KPIs, filtros, histórico, evolução, maiores pagadores e resumo anual. As capturas estão em `.qa-state/v333/` (ignorado pelo Git). Não foi necessária alteração de produto visual.
+- Smoke `dividends-p0-ux` foi reconciliado com o runtime V332: agora usa `startLocalHttpServer`, valida o texto anual vigente e executa navegação Aportes→Dividendos sem depender de um botão móvel obsoleto. Essa suíte passou em 390, 768, 1366 e 1920 px.
+- Evidência local após a correção: Ativos/Dividendos focal 64/64; local synthetic 26/26; browser readonly 1/1; V330 20/20 e browser 2/2; Import Center 27/27; `verify:release`, `qa:all`, builds e V289 visual 13/13 PASS. Smoke cobriu 390, 430, 768, 1366, 1440, 1536 e 1920 px; V289 cobriu também 360, 1024 e 1280. Zero requests Firebase, page errors ou overflow nas capturas V333.
+- **Gate financeiro pendente:** a matriz mensal de Dividendos ainda representa mês sem registro após o primeiro mês observado como `R$ 0,00` e inclui esses meses na média. `dividends-annual-matrix-filters.test.js` codifica esse comportamento, mas os registros não declaram cobertura mensal. Nenhuma semântica foi alterada; decidir se ausência de registro comprova zero ou exige estado/cobertura explícita requer gate humano protegido. Dividendos fica `READY_WITH_LIMITATIONS`; não certificar prontidão financeira geral.
+- Comparativos foram somente leitura; nenhuma autenticação, persistência real, Firebase, produção, importação, restauração ou escrita financeira ocorreu. O build moderno emite avisos preexistentes de Vite CJS, contrato readonly e chave React ausente. `MERGE=false`.
+
 ## V332 — runtime local de QA sintético (2026-10-07)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\local-test-mode-hardening`, branch `codex/local-test-mode-hardening`, base `cefc725f2378648c29593b27399a2f9bf2656db7`. PRs #454/#455 e worktrees dependentes não foram alterados.
