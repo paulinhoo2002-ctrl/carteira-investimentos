@@ -131,8 +131,9 @@ test('dividendSummaryCards ainda contem KPIs essenciais', () => {
   assert.ok(fn.includes('Recebido este mês'));
   assert.ok(fn.includes('Total últimos 12 meses'));
   assert.ok(fn.includes('Meta mensal'));
-  assert.ok(fn.includes('fmt(stats.total12)'));
-  assert.ok(fn.includes('fmt(stats.monthlyAvg)'));
+  assert.ok(fn.includes('passiveIncomeValue(stats.total12)'));
+  assert.ok(fn.includes('Cobertura confirmada: ${complete.length}/12 meses'));
+  assert.ok(fn.includes('passiveIncomeValue(stats.monthlyAvg)'));
 });
 
 test('dividendDistributionRow aceita maxVal zero sem quebrar', () => {

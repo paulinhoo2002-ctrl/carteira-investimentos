@@ -20616,6 +20616,9 @@ function passiveIncomeMetricCard({tone='muted', kicker='', value='—', sub=''})
     <div class="passive-goal-sub">${sub}</div>
   </div>`;
 }
+function passiveIncomeValue(value){
+  return value!==null && value!==undefined && value!=='' && Number.isFinite(Number(value)) ? fmt(Number(value)) : '—';
+}
 function passiveIncomeProgressCard({tone='muted', kicker='', value='—', sub='', percent=0, barColor='#60a5fa'}){
   const width=Math.max(0, Math.min(100, Number(percent)||0)).toFixed(1);
   return `<div class="passive-goal-card ${tone}" style="min-height:88px">
@@ -20652,10 +20655,12 @@ function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
     </div>
   </div>`;
 }
-function passiveIncomeTopPayers(limit=5, monthKeys=null){
+function passiveIncomeTopPayers(limit=5, monthKeys=null, sourceRows=passiveIncomeCombinedRows()){
   const keys=Array.isArray(monthKeys) && monthKeys.length ? new Set(monthKeys) : null;
   const map=new Map();
-  passiveIncomeCombinedRows().forEach((row,idx)=>{
+  const classify=globalThis.DividendIntelligence?.classifyIncomeState;
+  sourceRows.forEach((row,idx)=>{
+    if(typeof classify!=='function' || classify(row)!=='PAID') return;
     const dt=row?.dt instanceof Date ? row.dt : parseAnyDate(row?.date);
     const value=Number(row?.value)||0;
     if(!dt || value<=0) return;
@@ -20680,12 +20685,14 @@ function passiveIncomeMonthKey(baseDate=new Date()){
   const dt=baseDate instanceof Date ? baseDate : parseAnyDate(baseDate);
   return dt ? `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}` : '';
 }
-function passiveIncomeMonthSummary(monthKey){
+function passiveIncomeMonthSummary(monthKey, coverage={}){
   const key=String(monthKey||'').trim();
   const map=new Map();
   let total=0;
   let count=0;
+  const classify=globalThis.DividendIntelligence?.classifyIncomeState;
   passiveIncomeCombinedRows().forEach((row,idx)=>{
+    if(typeof classify!=='function' || classify(row)!=='PAID') return;
     const rowKey=String(row?.monthKey||'').trim() || passiveIncomeMonthKey(row?.dt || row?.date);
     const value=Number(row?.value)||0;
     if(!key || rowKey!==key || value<=0) return;
@@ -20710,32 +20717,41 @@ function passiveIncomeMonthSummary(monthKey){
     ...p,
     sourceKinds:[...p.sourceKinds]
   })).sort((a,b)=>b.total-a.total || b.count-a.count || a.ticker.localeCompare(b.ticker,'pt-BR'));
-  return {month:key,total,count,payers,best:payers[0]||null};
+  const matrix=dividendAnnualMatrixData(dividendPremiumRows(),coverage).flatMap(year=>year.months);
+  const month=matrix.find(row=>row.key===key);
+  const monthCoverage=month?.coverage||'UNKNOWN';
+  return {month:key,total:count?total:monthCoverage==='COMPLETE'?0:null,count,payers,best:payers[0]||null,coverage:monthCoverage};
 }
-function passiveIncomeGoalStats(){
+function passiveIncomeGoalStats(coverage={}){
   const target=passiveIncomeGoalTarget();
   const monthKeys=passiveIncomeRollingMonthKeys(new Date(), 12);
-  const monthMap=new Map(monthKeys.map(key=>[key,{key,total:0,count:0}]));
-  let total12=0;
-  const currentMonthKey=monthKeys[monthKeys.length-1] || '';
-  passiveIncomeCombinedRows().forEach(p=>{
-    const dt=p?.dt instanceof Date ? p.dt : parseAnyDate(p?.date);
-    const value=Number(p?.value)||0;
-    if(!dt || value<=0) return;
-    const key=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
-    if(!monthMap.has(key)) return;
-    const row=monthMap.get(key);
-    row.total+=value;
-    row.count++;
-    total12+=value;
-  });
-  const monthlyAvg=total12/12;
-  const annualProjection=monthlyAvg*12;
-  const percent=target>0 ? (monthlyAvg/target)*100 : 0;
-  const missing=Math.max(0, target-monthlyAvg);
-  const currentMonthTotal=monthMap.get(currentMonthKey)?.total || 0;
+  const receivedRows=dividendPremiumRows();
+  const matrixMonths=dividendAnnualMatrixData(receivedRows,coverage).flatMap(year=>year.months);
+  const classify=globalThis.DividendIntelligence?.classifyIncomeState;
+  const monthMap=new Map(monthKeys.map(key=>{
+    const month=matrixMonths.find(row=>row.key===key);
+    const total=month?.total;
+    const receivedCount=receivedRows.filter(row=>{
+      if(typeof classify!=='function' || classify(row)!=='PAID') return false;
+      return (String(row?.monthKey||'').trim()||passiveIncomeMonthKey(row?.dt||row?.date))===key;
+    }).length;
+    return [key,{key,total:total??null,count:receivedCount,coverage:month?.coverage||'UNKNOWN'}];
+  }));
   const byMonth=[...monthMap.values()];
-  const topPayers=passiveIncomeTopPayers(5, monthKeys);
+  const completeMonths=byMonth.filter(month=>month.coverage==='COMPLETE');
+  const completeMonthCount=completeMonths.length;
+  const monthlyAvg=completeMonthCount?completeMonths.reduce((sum,month)=>sum+month.total,0)/completeMonthCount:null;
+  const monthlyAverageStatus=completeMonthCount===12?'COMPLETE':completeMonthCount?'PARTIAL':'UNKNOWN';
+  const knownTotals=byMonth.filter(month=>month.total!==null);
+  const total12=knownTotals.length?knownTotals.reduce((sum,month)=>sum+month.total,0):null;
+  const currentMonthKey=monthKeys[monthKeys.length-1] || '';
+  const currentMonth=monthMap.get(currentMonthKey);
+  const currentMonthTotal=currentMonth?.total??null;
+  const annualProjection=completeMonthCount===12&&monthlyAvg!==null?monthlyAvg*12:null;
+  const progressCertified=monthlyAverageStatus==='COMPLETE'&&target>0;
+  const percent=progressCertified?(monthlyAvg/target)*100:null;
+  const missing=progressCertified?Math.max(0,target-monthlyAvg):null;
+  const topPayers=passiveIncomeTopPayers(5, monthKeys, receivedRows);
   const bestPayer=topPayers[0] || null;
   return {
     target,
@@ -20743,35 +20759,40 @@ function passiveIncomeGoalStats(){
     byMonth,
     total12,
     monthlyAvg,
+    monthlyAverageStatus,
+    completeMonthCount,
     annualProjection,
     percent,
     missing,
     currentMonthKey,
     currentMonthTotal,
+    currentMonthCoverage:currentMonth?.coverage||'UNKNOWN',
+    currentMonthCount:currentMonth?.count||0,
     topPayers,
     bestPayer,
-    hasData: total12>0 || topPayers.length>0
+    hasData: (total12!==null&&total12>0) || topPayers.length>0
   };
 }
 function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly=0){
   const hasGoal=stats.target>0;
-  const avgProg=goalProgressText(stats.monthlyAvg, stats.target);
+  const averageComplete=stats.monthlyAverageStatus==='COMPLETE';
+  const avgProg=averageComplete ? goalProgressText(stats.monthlyAvg, stats.target) : null;
   const projProg=goalProgressText(projectedMonthly, stats.target);
-  const avgTone = !hasGoal ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
+  const avgTone = !hasGoal || !avgProg ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
   const projTone = !hasGoal ? 'muted' : projProg.prog>=100 ? 'ok' : projProg.prog>=75 ? 'info' : projProg.prog>=40 ? 'warn' : 'danger';
-  const annualReal=stats.monthlyAvg*12;
+  const annualReal=stats.annualProjection;
   const projectedLabel = projectedMonthly>0 ? fmt(projectedMonthly) : '—';
-  const annualLabel = stats.hasData ? fmt(annualReal) : '—';
+  const annualLabel = passiveIncomeValue(annualReal);
   const guidance = hasGoal
     ? 'A renda projetada/mês é uma estimativa da carteira. A média mensal 12M é histórico real de proventos.'
     : 'Defina sua meta de renda passiva na aba Metas para ver o progresso desta seção.';
-  const topTone = !hasGoal ? 'muted' : !stats.hasData ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
+  const topTone = !hasGoal || !avgProg ? 'muted' : avgProg.prog>=100 ? 'ok' : avgProg.prog>=75 ? 'info' : avgProg.prog>=40 ? 'warn' : 'danger';
   const contextualAction = (hasGoal || stats.hasData) ? `<div class="goal-context-action-row"><button type="button" class="btn bgh goal-context-action" onclick="go('dividendos')">Ver Dividendos</button></div>` : '';
   return `<details class="sec metas-goal-section" style="margin-bottom:8px">
     <summary>
       <div>
         <div class="sec-title">Meta de Renda Passiva</div>
-        <div class="sec-meta">${hasGoal && stats.hasData ? `${fmt(stats.monthlyAvg)} média 12M / ${fmt(stats.target)} · ${avgProg.prog.toFixed(1)}% · falta ${fmt(stats.missing)}/mês` : 'Configure a meta mensal para acompanhar o progresso da renda passiva.'}</div>
+        <div class="sec-meta">${hasGoal && avgProg ? `${fmt(stats.monthlyAvg)} média 12M / ${fmt(stats.target)} · ${avgProg.prog.toFixed(1)}% · falta ${fmt(stats.missing)}/mês` : hasGoal ? `Progresso indisponível · cobertura confirmada ${stats.completeMonthCount}/12 meses` : 'Configure a meta mensal para acompanhar o progresso da renda passiva.'}</div>
       </div>
       <div class="sec-meta">Abrir</div>
     </summary>
@@ -20782,7 +20803,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="st">Meta de Renda Passiva</div>
             <div class="mu" style="font-size:11px;margin-top:2px">Meta mensal lida da aba <strong style="color:#e2eaf6">Metas</strong> e calculada com base nos proventos já gravados em <strong style="color:#e2eaf6">S.proventos</strong>.</div>
           </div>
-          <div class="passive-goal-badge ds-badge ${topTone}">${hasGoal ? (stats.hasData ? `${avgProg.prog.toFixed(1)}% da meta` : 'Dados insuficientes') : 'Sem meta'}</div>
+          <div class="passive-goal-badge ds-badge ${topTone}">${hasGoal ? (avgProg ? `${avgProg.prog.toFixed(1)}% da meta` : `Cobertura ${stats.completeMonthCount}/12`) : 'Sem meta'}</div>
         </div>
         <div class="mu" style="font-size:11px;margin:0 0 2px;line-height:1.35">${esc(guidance)}</div>
         ${!hasGoal ? `<div class="passive-goal-empty">
@@ -20798,10 +20819,10 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <input id="mpr-head-monthly" type="number" step="10" placeholder="ex: 1500" aria-label="Meta mensal de renda passiva" value="${hasGoal ? stats.target : ''}" onkeydown="if(event.key==='Enter')saveMetaProventosTarget()" onblur="saveMetaProventosTarget()" style="min-height:44px;padding:8px 10px">
             <div class="passive-goal-sub">${hasGoal ? 'Meta cadastrada na aba Metas' : 'Defina sua meta de renda passiva'}</div>
           </div>
-          ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Renda real média 12M', value:stats.hasData ? fmt(stats.monthlyAvg) : '—', sub:'Histórico real dos últimos 12 meses corridos'})}
+          ${passiveIncomeMetricCard({tone:stats.monthlyAverageStatus==='COMPLETE' ? 'ok' : 'muted', kicker:'Renda real média 12M', value:passiveIncomeValue(stats.monthlyAvg), sub:`Meses completos: ${stats.completeMonthCount}/12`})}
           ${passiveIncomeMetricCard({tone:projectedMonthly>0 ? 'info' : 'muted', kicker:'Renda projetada/mês', value:projectedLabel, sub:projectedMonthly>0 ? 'Estimativa da carteira' : 'Sem ativos suficientes para projetar'})}
-          ${hasGoal ? passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:`${avgProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`, percent:avgProg.prog, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#f87171'}) : ''}
-          ${hasGoal ? passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:fmt(avgProg.falta), sub:'Comparação entre meta e média mensal 12M'}) : ''}
+          ${hasGoal ? passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:avgProg?`${avgProg.prog.toFixed(1)}%`:'Indisponível', sub:avgProg?`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`:`Cobertura insuficiente · ${stats.completeMonthCount}/12 meses completos`, percent:avgProg?.prog??0, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#94a3b8'}) : ''}
+          ${hasGoal ? passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:passiveIncomeValue(avgProg?.falta), sub:'Comparação disponível somente com 12 meses completos'}) : ''}
         </div>
         ${hasGoal ? `
         <details class="sec metas-goal-section" style="margin-top:8px;margin-bottom:0">
@@ -20816,7 +20837,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">A média real usa proventos já recebidos nos últimos 12 meses. A renda projetada é uma estimativa da carteira atual.</div>
             <div class="passive-goal-grid secondary">
               ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Média mensal real × 12'})}
-              ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1)}%`, sub:`Faltam ${fmt(projProg.falta)}/mês para atingir a meta pela estimativa.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
+              ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1)}%`, sub:`Estimativa: faltam ${fmt(projProg.falta)}/mês para atingir a meta.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
               ${passiveIncomeMetricCard({tone:projTone, kicker:'Quanto falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
             </div>
           </div>
@@ -26495,11 +26516,11 @@ async function downloadExecutivePdf(){
     const pct = v => Number.isFinite(Number(v)) ? fmtP(Number(v)) : pdfDash;
     const text = v => String(v ?? '').trim() || pdfDash;
     const target = Number(income.target) || 0;
-    const monthlyAvg = Number(income.monthlyAvg) || 0;
-    const targetPercent = target > 0 ? (monthlyAvg / target) * 100 : null;
+    const monthlyAvg = income.monthlyAvg;
+    const targetPercent = target > 0 && income.monthlyAverageStatus==='COMPLETE' ? (monthlyAvg / target) * 100 : null;
     const summaryText1 = target > 0
-      ? `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses. A meta mensal de renda passiva está em ${fmt(target)}, o que representa ${fmtP(targetPercent || 0)} do objetivo atual.`
-      : `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses.`;
+      ? `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${passiveIncomeValue(monthlyAvg)} nos últimos 12 meses. Meta mensal de ${fmt(target)} · progresso ${targetPercent===null?'indisponível':fmtP(targetPercent)}.`
+      : `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${passiveIncomeValue(monthlyAvg)} nos últimos 12 meses.`;
     const summaryText2 = 'Os blocos abaixo ajudam a revisar alocação, concentração, renda passiva, renda fixa e pontos de atenção com o assessor. A avaliação final deve considerar perfil de risco, objetivos e horizonte de investimento.';
     const assetRows = reportAssetRows();
     const fixedRowsAll = reportFixedIncomeRows();
@@ -27686,7 +27707,7 @@ function reportCardPdfProventosPreview(printMode=false){
     calloutText:rows.length ? 'Confira os dados com a corretora e os informes oficiais antes de decidir.' : noData,
     kpis:[
       {label:'Total de proventos',value:fmt(totalValue),sub:'Soma dos lançamentos no período'},
-      {label:'Média mensal',value:fmt(Number(summary.income?.monthlyAvg)||0),sub:'Média dos últimos 12 meses'},
+      {label:'Média mensal',value:passiveIncomeValue(summary.income?.monthlyAvg),sub:`Meses completos: ${summary.income?.completeMonthCount??0}/12`},
       {label:'Registros',value:String(rows.length),sub:'Lançamentos filtrados'},
       {label:'Ativos únicos',value:String(uniqueTickers),sub:'Ativos com recebimentos'},
       {label:'Proventos no filtro',value:String(summary.proventosCount||rows.length),sub:'Quantidade de lançamentos no período'}
@@ -27861,8 +27882,8 @@ function reportPdfPreview(){
     const dashboard=dashboardSnapshot(data.analysis);
     const {portfolio,income,fixed,audit}=data.summary;
     const target=Number(income.target)||0;
-    const monthlyAvg=Number(income.monthlyAvg)||0;
-    const targetPercent=target>0 ? (monthlyAvg/target)*100 : null;
+    const monthlyAvg=income.monthlyAvg;
+    const targetPercent=target>0 && income.monthlyAverageStatus==='COMPLETE' ? (monthlyAvg/target)*100 : null;
     const generatedAt=new Date(data.summary.generatedAt);
     const assetMap=new Map((S.assets||[]).map(a=>[String(a.ticker||'').trim().toUpperCase(),a]));
     const positiveRows=(dashboard.positives||[]).slice(0,5).map(row=>{
@@ -27949,8 +27970,8 @@ function reportPdfPreview(){
     const severityOrder={critical:0,warning:1,info:2};
     const alerts=[...(audit.alerts||[])].sort((a,b)=>(severityOrder[a.severity]??9)-(severityOrder[b.severity]??9)).slice(0,8);
     const summaryText1=target>0
-      ? `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses. A meta mensal de renda passiva está em ${fmt(target)}, o que representa ${fmtP(targetPercent||0)} do objetivo atual.`
-      : `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${fmt(monthlyAvg)} nos últimos 12 meses.`;
+      ? `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${passiveIncomeValue(monthlyAvg)} nos últimos 12 meses. Meta mensal de ${fmt(target)} · progresso ${targetPercent===null?'indisponível':fmtP(targetPercent)}.`
+      : `Este relatório consolida a posição atual da carteira com patrimônio de ${fmt(portfolio.tC)}, resultado acumulado de ${fmt(portfolio.tG)} e renda média mensal de ${passiveIncomeValue(monthlyAvg)} nos últimos 12 meses.`;
     const summaryText2='Os blocos abaixo ajudam a revisar alocação, concentração, renda passiva, renda fixa e pontos de atenção com o assessor. A avaliação final deve considerar perfil de risco, objetivos e horizonte de investimento.';
     const checklist=[
       'A alocação atual está adequada ao perfil de risco?',
@@ -28084,7 +28105,7 @@ function reportPdfPreview(){
           ${pdfReportKpi('Resultado',fmt(portfolio.tG),fmtP(portfolio.tGP))}
           ${pdfReportKpi('Rentabilidade',fmtP(portfolio.tGP),'Retorno sobre o capital aplicado')}
           ${pdfReportKpi('Proventos 12M',fmt(income.total12),`${data.summary.proventosCount} registro(s) no filtro`)}
-          ${pdfReportKpi('Média mensal 12M',fmt(monthlyAvg),'Proventos reais recebidos')}
+          ${pdfReportKpi('Média mensal 12M',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`)}
           ${pdfReportKpi('Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Sem meta definida')}
           ${pdfReportKpi('Meta atingida',currentMonthPercent,target>0?'Percentual da meta mensal':'Sem referência de meta')}
         </div>
@@ -28137,7 +28158,7 @@ function reportPdfPreview(){
               <div class="pdf-report-card-title">Resumo da renda passiva</div>
               <div class="pdf-report-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:7px">
                 ${pdfReportKpi('Proventos 12M',fmt(income.total12),'Soma dos últimos 12 meses')}
-                ${pdfReportKpi('Média mensal',fmt(monthlyAvg),'Média dos últimos 12 meses')}
+                ${pdfReportKpi('Média mensal',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`)}
                 ${pdfReportKpi('Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Sem meta definida')}
                 ${pdfReportKpi('Meta atingida',currentMonthPercent,target>0?'Percentual da meta mensal':'Sem referência de meta')}
               </div>
@@ -28474,7 +28495,7 @@ function reportsTab(){
         <div class="reports-kpi"><div class="label">Patrimônio atual</div><div class="value">${fmt(data.portfolio.tC)}</div><div class="sub">Estimativa pelos ativos cadastrados</div></div>
         <div class="reports-kpi"><div class="label">Total aplicado</div><div class="value">${fmt(data.portfolio.tI)}</div><div class="sub">Base consolidada da carteira</div></div>
         <div class="reports-kpi reports-kpi-${resultTone}"><div class="label">Resultado</div><div class="value">${fmt(data.portfolio.tG)}</div><div class="sub">${fmtP(data.portfolio.tGP)} sobre o aplicado</div></div>
-        <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(data.incomePeriodTotal)}</div><div class="sub">Média 12M: ${fmt(income.monthlyAvg)}</div></div>
+        <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(data.incomePeriodTotal)}</div><div class="sub">Média 12M: ${passiveIncomeValue(income.monthlyAvg)} · cobertura ${income.completeMonthCount??0}/12</div></div>
         <div class="reports-kpi"><div class="label">Rentabilidade</div><div class="value">${fmtP(data.portfolio.tGP)}</div><div class="sub">Resultado sobre o capital</div></div>
       </div>
     </section>
@@ -28521,7 +28542,7 @@ function reportsTab(){
     </section>
     <section class="reports-premium-secondary-grid">
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Movimentações do período</h2><p>Fluxo registrado, sem confundir venda ou resgate com aporte.</p></div><span class="reports-badge">${data.aportesCount+data.proventosCount} registros</span></div><div class="reports-stat-list"><div><span>Compras</span><strong>${movementCounts.compras||0}</strong></div><div><span>Vendas</span><strong>${movementCounts.vendas||0}</strong></div><div><span>Aplicações RF</span><strong>${movementCounts.rendaFixa||0}</strong></div><div><span>Proventos</span><strong>${movementCounts.proventos||0}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('aportes');return false">Conferir movimentações</a></article>
-      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${data.incomePeriodTotal>0?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido no período</span><strong>${fmt(data.incomePeriodTotal)}</strong></div><div><span>Média mensal 12M</span><strong>${fmt(income.monthlyAvg)}</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
+      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${data.incomePeriodTotal>0?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido no período</span><strong>${fmt(data.incomePeriodTotal)}</strong></div><div><span>Média mensal 12M</span><strong>${passiveIncomeValue(income.monthlyAvg)} · cobertura ${income.completeMonthCount??0}/12</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda Fixa</h2><p>Resumo da avaliação oficial.</p></div><span class="reports-badge">${fixed.assets?.length||0} posições</span></div><div class="reports-stat-list"><div><span>Valor atual</span><strong>${fmt(fixed.totalCurrent)}</strong></div><div><span>Total aplicado</span><strong>${fmt(fixed.totalApplied)}</strong></div><div><span>Resultado</span><strong class="reports-${Number(fixed.totalProfit)||0>=0?'positive':'negative'}">${fmt(fixed.totalProfit)}</strong></div></div><div class="reports-next-maturity">Próximo vencimento <strong>${nextFixed?esc(nextFixed.ticker||'Título RF'):'—'}</strong><small>${nextFixed?.due?nextFixed.due.toLocaleDateString('pt-BR'):'Nenhum vencimento futuro registrado.'}</small></div><a class="reports-inline-link" href="#" onclick="go('renda-fixa');return false">Ver Renda Fixa</a></article>
       <article class="reports-panel reports-audit-panel"><div class="reports-panel-head"><div><h2>Qualidade dos dados</h2><p>Conferência sem alterar registros.</p></div><span class="reports-badge reports-badge-${auditTone}">${data.auditCount?'Atenção':'Tudo certo'}</span></div><div class="reports-audit-count">${data.auditCount}<span>alertas para conferência</span></div><a class="reports-inline-link" href="#" onclick="go('auditoria');return false">Abrir Auditoria</a></article>
     </section>
@@ -29237,7 +29258,7 @@ function dashboardSnapshot(analysisRows){
     portfolio,income,analysis,typeRows,variableValue,
     sectorRows:portfolioSectorConcentrationRows(analysis),
     fixed:{assets:fixedAssets,applied:fixedApplied,current:fixedCurrent,missing:fixedMissing,maturities},
-    recent:{month:recentIncome.month,total:recentIncome.total,count:recentIncome.count,best:recentIncome.best,payers:recentIncome.payers},
+    recent:{month:recentIncome.month,total:recentIncome.total,count:recentIncome.count,coverage:recentIncome.coverage,best:recentIncome.best,payers:recentIncome.payers},
     concentration,positives,negatives,insufficient,concentrated,
     financialGoals,
     contribution:prudentContributionAnalysis()
@@ -29346,11 +29367,11 @@ function portfolioInsightsSnapshot(source=null){
     add({id:'rf-missing-current',category:'data-quality',severity:'ATTENTION',title:'Valor atual de RF incompleto',description:`${Number(rf.missingCurrent)} posição(ões) dependem de revisão do valor atual informado.`,evidence:{count:Number(rf.missingCurrent)},relatedRoute:'renda-fixa',actionLabel:'Revisar valores'});
   }
   const income=data.income||{};
-  const currentIncome=Number(income.currentMonthTotal);
-  const averageIncome=Number(income.monthlyAvg);
-  if(income.hasData && Number.isFinite(currentIncome) && Number.isFinite(averageIncome) && averageIncome>0 && currentIncome<averageIncome){
+  const currentIncome=income.currentMonthTotal;
+  const averageIncome=income.monthlyAvg;
+  if(income.currentMonthCoverage==='COMPLETE' && income.monthlyAverageStatus==='COMPLETE' && Number.isFinite(currentIncome) && Number.isFinite(averageIncome) && averageIncome>0 && currentIncome<averageIncome){
     add({id:'income-below-average',category:'passive-income',severity:'ATTENTION',title:'Renda passiva abaixo da média',description:`O mês atual soma ${fmt(currentIncome)}, abaixo da média 12M de ${fmt(averageIncome)}.`,evidence:{current:currentIncome,average:averageIncome},relatedRoute:'dividendos',actionLabel:'Ver Dividendos'});
-  }else if(income.hasData && Number.isFinite(currentIncome) && Number.isFinite(averageIncome) && currentIncome>averageIncome){
+  }else if(income.currentMonthCoverage==='COMPLETE' && income.monthlyAverageStatus==='COMPLETE' && Number.isFinite(currentIncome) && Number.isFinite(averageIncome) && currentIncome>averageIncome){
     add({id:'income-above-average',category:'passive-income',severity:'INFO',title:'Renda passiva acima da média',description:`O mês atual soma ${fmt(currentIncome)}, acima da média 12M de ${fmt(averageIncome)}.`,evidence:{current:currentIncome,average:averageIncome},relatedRoute:'dividendos',actionLabel:'Ver evolução'});
   }
   if(Number(income.target)>0 && Number(income.missing)>0){
@@ -29456,11 +29477,12 @@ function dashboardHomeSummaryPanel(data){
 function dashboardPassiveIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
   const target=Number(income.target)||0;
-  const monthlyAvg=Number(income.monthlyAvg)||0;
-  const goalReached=target>0 ? Math.max(target-monthlyAvg,0) : 0;
+  const monthlyAvg=income.monthlyAvg;
+  const averageComplete=income.monthlyAverageStatus==='COMPLETE';
+  const goalReached=target>0&&averageComplete?Math.max(target-monthlyAvg,0):null;
   const currentMonthKey=passiveIncomeMonthKey(new Date());
   const recent=data?.recent?.month===currentMonthKey ? data.recent : passiveIncomeMonthSummary(currentMonthKey);
-  const monthReceived=Number(recent.total)||0;
+  const monthReceived=recent.total;
   const monthLabel=new Date(`${currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   return `<div class="premium-panel dashboard-home-income dashboard-income-card">
     <div class="premium-panel-head">
@@ -29470,10 +29492,10 @@ function dashboardPassiveIncomePanel(data){
     <div class="dash-income-grid">
       <div class="dash-income-main">
         <div class="premium-metrics">
-          ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#34d399','rgba(52,211,153,.14)')}
-          ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',fmt(monthlyAvg),'Base usada para leitura da renda passiva','#60a5fa','rgba(96,165,250,.14)')}
+          ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+          ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
           ${dashboardMetricCard(dashboardMetricIcon('target'),'Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-          ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
+          ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
         </div>
       </div>
     </div>
@@ -29493,7 +29515,7 @@ function financialGoalsBarColor(tone){
 function financialGoalsBar(metrics,label,tone){
   const width=metrics?.hasTarget ? Math.max(0, Math.min(100, Number(metrics.barPercent)||0)).toFixed(1) : '0.0';
   const text=!metrics?.hasCurrent
-    ? 'Patrimônio atual indisponível'
+    ? `${label} indisponível`
     : !metrics?.hasTarget
       ? 'Meta nao configurada'
       : metrics.reached
@@ -29508,11 +29530,12 @@ function dashboardFinancialGoalsPanel(data){
   const portfolioCurrent=goals.hasPortfolioData ? Number(goals.portfolioCurrent ?? goals.portfolio?.tC ?? 0) : null;
   const patrimonyConfigured=Number(normalizedGoals?.patrimonio?.target)||0;
   const incomeConfigured=Number(normalizedGoals?.proventos?.monthly)||0;
+  const incomeStats=data?.income||{monthlyAvg:null,monthlyAverageStatus:'UNKNOWN',completeMonthCount:0};
   const patrimonyTarget=patrimonyConfigured>0 ? patrimonyConfigured : 1000000;
   const incomeTarget=incomeConfigured>0 ? incomeConfigured : 4000;
   const patrimonyMetrics=goalProgressMetrics(portfolioCurrent, patrimonyTarget);
-  const incomeCurrent=Number(goals.currentIncome)||0;
-  const incomeMetrics=goalProgressMetrics(incomeCurrent, incomeTarget);
+  const incomeCurrent=goals.currentIncome;
+  const incomeMetrics=goalProgressMetrics(goals.currentIncomeCoverage==='COMPLETE'?incomeCurrent:null, incomeTarget);
   const patrimonyTone=financialGoalsTone(patrimonyMetrics);
   const incomeTone=financialGoalsTone(incomeMetrics);
   const patrimonyCurrentLabel=patrimonyMetrics.hasCurrent ? fmt(portfolioCurrent) : 'Patrimônio atual indisponível';
@@ -29532,12 +29555,16 @@ function dashboardFinancialGoalsPanel(data){
         ? `Faltam ${fmt(patrimonyMetrics.missing)}`
         : 'Meta não configurada';
   const incomeTargetLabel=fmt(incomeTarget);
-  const incomeStatus=incomeMetrics.reached
+  const incomeStatus=!incomeMetrics.hasCurrent
+    ? 'Cobertura mensal não confirmada'
+    : incomeMetrics.reached
     ? 'Meta atingida'
     : incomeMetrics.hasTarget
       ? `${(Number(incomeMetrics.percent)||0).toFixed(1)}% alcançado`
       : 'Meta não configurada';
-  const incomeGap=incomeMetrics.reached
+  const incomeGap=!incomeMetrics.hasCurrent
+    ? 'Progresso indisponível sem cobertura completa do mês'
+    : incomeMetrics.reached
     ? (incomeMetrics.excess>0 ? `${fmt(incomeMetrics.excess)} acima da meta` : 'Meta atingida')
     : incomeMetrics.hasTarget
       ? `Faltam ${fmt(incomeMetrics.missing)}`
@@ -29551,10 +29578,10 @@ function dashboardFinancialGoalsPanel(data){
   const trendDetail=latestMonth && previousMonth
     ? `${latestMonth.diff >= 0 ? '+' : '-'}${fmt(Math.abs(latestMonth.diff||0))}${Number.isFinite(latestMonth.diffPct) ? ` (${latestMonth.diffPct >= 0 ? '+' : ''}${latestMonth.diffPct.toFixed(1)}%)` : ''} vs ${previousMonth.label}`
     : 'Sem comparação oficial anterior';
-  const incomeAverage=incomeHistorySummary.monthCount > 0 ? fmt(incomeHistorySummary.avg) : '—';
+  const incomeAverage=passiveIncomeValue(incomeStats.monthlyAvg);
   const incomeBestMonth=incomeHistorySummary.best ? `${incomeHistorySummary.best.label} · ${fmt(incomeHistorySummary.best.total)}` : '—';
-  const incomeCurrentLabel=fmt(incomeCurrent);
-  const incomeCurrentStatus=goals.currentMonthGroup?.count > 0 ? `${currentMonthCount} lançamento(s) em ${currentMonthLabel}` : 'R$ 0,00 recebidos neste mês';
+  const incomeCurrentLabel=passiveIncomeValue(incomeCurrent);
+  const incomeCurrentStatus=currentMonthCount>0 ? `${currentMonthCount} lançamento(s) em ${currentMonthLabel} · ${goals.currentIncomeCoverage==='COMPLETE'?'cobertura completa':goals.currentIncomeCoverage==='PARTIAL'?'cobertura parcial':'cobertura desconhecida'}` : goals.currentIncomeCoverage==='COMPLETE'?'Mês completo confirmado · nenhum recebimento':'Recebido indisponível · cobertura desconhecida';
   return `<div class="premium-panel dashboard-home-goals">
     <div class="premium-panel-head">
       <div><div class="premium-panel-title">Metas financeiras</div><div class="premium-panel-sub">Acompanhe seu progresso patrimonial e sua renda passiva usando os dados reais da carteira.</div></div>
@@ -29577,7 +29604,7 @@ function dashboardFinancialGoalsPanel(data){
         ${financialGoalsBar(incomeMetrics, 'Progresso da meta de renda passiva', incomeTone)}
         <div class="passive-goal-sub">${incomeStatus}</div>
         <div class="passive-goal-sub">${incomeGap}</div>
-        <div class="passive-goal-sub">Média 12M ${incomeAverage} · melhor mês ${incomeBestMonth}</div>
+        <div class="passive-goal-sub">Média 12M ${incomeAverage} · cobertura confirmada ${incomeStats.completeMonthCount}/12 meses · melhor mês ${incomeBestMonth}</div>
         <div class="passive-goal-sub">${incomeCurrentStatus} · ${trendLabel} · ${trendDetail}</div>
         <div class="passive-goal-sub">Detalhe completo na tela de Metas.</div>
       </article>
@@ -29795,7 +29822,8 @@ function dashboardPortfolioReading(data){
   const top1=data?.concentration?.[0]||null;
   const top3=(data?.concentration||[]).slice(0,3);
   const top3Share=top3.reduce((sum,row)=>sum+(Number(row?.share)||0),0);
-  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const monthlyAvg=data?.income?.monthlyAvg;
+  const averageComplete=data?.income?.monthlyAverageStatus==='COMPLETE';
   const target=Number(data?.income?.target)||0;
   const fixedTotal=Number(data?.fixed?.current)||0;
   const portfolioTotal=Number(data?.portfolio?.tC)||0;
@@ -29804,9 +29832,9 @@ function dashboardPortfolioReading(data){
   const reading=[
     {
       title:'Renda média mensal',
-      value:target>0 ? `${fmt(monthlyAvg)} / ${fmt(target)}` : 'Sem meta',
-      sub:target>0 ? (monthlyAvg<target ? 'Abaixo da meta.' : 'Em linha com a meta.') : 'Defina a meta mensal.',
-      tone:target>0 && monthlyAvg<target ? 'warn' : 'ok'
+      value:target>0 && monthlyAvg!==null && monthlyAvg!==undefined ? `${fmt(monthlyAvg)} / ${fmt(target)}` : target>0?'Indisponível':'Sem meta',
+      sub:target>0 ? (averageComplete ? (monthlyAvg<target ? 'Abaixo da meta.' : 'Em linha com a meta.') : 'Cobertura confirmada insuficiente.') : 'Defina a meta mensal.',
+      tone:target>0 && !averageComplete?'muted':target>0 && monthlyAvg<target ? 'warn' : 'ok'
     },
     {
       title:'Maior concentração',
@@ -29854,7 +29882,8 @@ function dashboardPortfolioReading(data){
 }
 function dashboardNextStep(data){
   const target=Number(data?.income?.target)||0;
-  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const monthlyAvg=data?.income?.monthlyAvg;
+  const averageComplete=data?.income?.monthlyAverageStatus==='COMPLETE';
   const incomplete=Number(data?.insufficient?.length)||0;
   const top1=data?.concentration?.[0]||null;
   const top3Share=(data?.concentration||[]).slice(0,3).reduce((sum,row)=>sum+(Number(row?.share)||0),0);
@@ -29867,13 +29896,13 @@ function dashboardNextStep(data){
   if(incomplete>0){
     tone='warn'; status='Atenção';
     text='Completar dados dos ativos antes de decidir novos aportes.';
-  }else if(target>0 && monthlyAvg < target){
+  }else if(target>0 && averageComplete && monthlyAvg < target){
     tone='warn'; status='Atenção';
     text='Priorizar análise de ativos geradores de renda.';
   }else if(top1 && (Number(top1.share)>20 || top3Share>45)){
     tone='danger'; status='Atenção';
     text='Evitar aumentar posição nos ativos já concentrados.';
-  }else if(fixedShare>45 && target>0 && monthlyAvg >= target){
+  }else if(fixedShare>45 && target>0 && averageComplete && monthlyAvg >= target){
     tone='info'; status='OK';
     text='Avaliar rebalanceamento gradual conforme seu plano.';
   }
@@ -29892,7 +29921,8 @@ function dashboardNextStep(data){
 }
 function dashboardAttentionRadar(data){
   const target=Number(data?.income?.target)||0;
-  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const monthlyAvg=data?.income?.monthlyAvg;
+  const averageComplete=data?.income?.monthlyAverageStatus==='COMPLETE';
   const incomplete=Number(data?.insufficient?.length)||0;
   const portfolioPct=Number(data?.portfolio?.tGP)||0;
   const fixedMissing=Number(data?.fixed?.missing)||0;
@@ -29911,10 +29941,10 @@ function dashboardAttentionRadar(data){
     },
     {
       title:'Renda passiva',
-      status:target>0 ? `${((target>0 ? (monthlyAvg/target)*100 : 0)).toFixed(1)}%` : 'Sem meta',
-      tone:target>0 && monthlyAvg<target ? 'warn' : 'ok',
-      text:target>0 ? `Média de ${fmt(monthlyAvg)} frente à meta de ${fmt(target)}.` : 'Defina a meta mensal para medir progresso.',
-      action:target>0 && monthlyAvg<target ? 'Acompanhar evolução mensal.' : 'Meta acompanhada.'
+      status:target>0 && averageComplete ? `${((monthlyAvg/target)*100).toFixed(1)}%` : target>0?'Indisponível':'Sem meta',
+      tone:target>0 && !averageComplete?'muted':target>0 && monthlyAvg<target ? 'warn' : 'ok',
+      text:target>0 ? (averageComplete?`Média de ${fmt(monthlyAvg)} frente à meta de ${fmt(target)}.`:`Cobertura confirmada insuficiente para comparar com a meta de ${fmt(target)}.`) : 'Defina a meta mensal para medir progresso.',
+      action:target>0 && averageComplete && monthlyAvg<target ? 'Acompanhar evolução mensal.' : averageComplete?'Meta acompanhada.':'Aguardando cobertura completa.'
     },
     {
       title:'Dados incompletos',
@@ -29952,18 +29982,18 @@ function dashboardAttentionRadar(data){
 }
 function dashboardIncomeSnapshot(data){
   const recentMonthLabel=data.recent.month ? new Date(`${data.recent.month}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : 'Sem histórico';
-  const goalPct=Number(data?.income?.percent)||0;
+  const goalPct=data?.income?.percent;
   const target=Number(data?.income?.target)||0;
-  const monthlyAvg=Number(data?.income?.monthlyAvg)||0;
+  const monthlyAvg=data?.income?.monthlyAvg;
   const best=data?.recent?.best;
-  const total12=Number(data?.income?.total12)||0;
+  const total12=data?.income?.total12;
   const launches=Number(data?.recent?.count)||0;
   return `<div class="premium-panel premium-dividend-panel">
     <div class="premium-panel-head"><div><div class="premium-panel-title">Dividendos recentes</div><div class="premium-panel-sub">Mês calendário atual na base combinada.</div></div><div class="premium-panel-badge">${esc(recentMonthLabel)}</div></div>
     <div class="premium-exec-list">
-      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Total recebido</div><div class="premium-exec-sub">${launches} lançamento${launches===1?'':'s'} no período</div></div><div class="premium-exec-value gn">${fmt(data.recent.total)}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Total recebido</div><div class="premium-exec-sub">${launches} lançamento${launches===1?'':'s'} no período · ${esc(data.recent.coverage||'UNKNOWN')}</div></div><div class="premium-exec-value gn">${passiveIncomeValue(data.recent.total)}</div></div>
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Melhor pagador</div><div class="premium-exec-sub">${best?best.count||0:'—'} lançamento${best&&best.count===1?'':'s'} no período</div></div><div class="premium-exec-value">${best?`${best.ticker||best.key||'—'} · ${fmt(best.total||0)}`:'Sem dados'}</div></div>
-      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Meta</div><div class="premium-exec-sub">${target>0?`${goalPct.toFixed(1)}% da meta`:'Sem meta definida'}</div></div><div class="premium-exec-value ${target>0 && goalPct>=100?'gn':'am'}">${target>0?fmt(monthlyAvg):'—'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Meta</div><div class="premium-exec-sub">${target>0 && goalPct!==null?`${goalPct.toFixed(1)}% da meta`:target>0?'Cobertura 12M incompleta':'Sem meta definida'}</div></div><div class="premium-exec-value ${target>0 && goalPct!==null && goalPct>=100?'gn':'am'}">${target>0?passiveIncomeValue(monthlyAvg):'—'}</div></div>
     </div>
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver dividendos</button></div>
   </div>`;
@@ -31355,7 +31385,7 @@ function executiveKPIs(data){
   const availability=dashboardCurrentValueAvailability();
   const currentMonthKey=passiveIncomeMonthKey(new Date());
   const recent=data?.recent?.month===currentMonthKey?data.recent:passiveIncomeMonthSummary(currentMonthKey);
-  const monthReceived=Number(recent.total)||0;
+  const monthReceived=recent.total;
   // cx() supplies both values from the same applied-capital base. Validate the
   // relationship before pairing; this does not calculate a replacement return.
   const sameBasis=amountValid && percentValid && Math.abs((p.tG/totalApplied)*100-p.tGP)<0.02;
@@ -31375,7 +31405,7 @@ function executiveKPIs(data){
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`,'#a78bfa','rgba(129,140,248,.16)')}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultNote,resultTone,resultGlow)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',incomeAvailable?fmt(monthReceived):'—',incomeAvailable?'Proventos recebidos no mês atual':'Sem histórico de renda recebida','#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)')}
     </div>
   `;
 }
@@ -31405,20 +31435,21 @@ function dashboardEvolutionPanel(data){
 function dashboardIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
   const target=Number(income.target)||0;
-  const monthlyAvg=Number(income.monthlyAvg)||0;
-  const goalReached=target>0?Math.max(target-monthlyAvg,0):0;
+  const monthlyAvg=income.monthlyAvg;
+  const averageComplete=income.monthlyAverageStatus==='COMPLETE';
+  const goalReached=target>0&&averageComplete?Math.max(target-monthlyAvg,0):null;
   const currentMonthKey=passiveIncomeMonthKey(new Date());
   const recent=data?.recent?.month===currentMonthKey?data.recent:passiveIncomeMonthSummary(currentMonthKey);
-  const monthReceived=Number(recent.total)||0;
+  const monthReceived=recent.total;
   const monthLabel=new Date(`${currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   return `
     <div class="dashboard-income-card">
       <div class="dashboard-income-header"><div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal</div></div><div class="premium-panel-badge">${esc(monthLabel)}</div></div>
       <div class="dashboard-income-grid"><div class="premium-metrics">
-        ${dashboardMetricCard('💵','Recebido no mês',fmt(monthReceived),monthReceived>0?'Proventos creditados no mês atual':'Sem recebimentos no mês','#34d399','rgba(52,211,153,.14)')}
-        ${dashboardMetricCard('📊','Média 12 meses',fmt(monthlyAvg),'Base usada para leitura da renda passiva','#60a5fa','rgba(96,165,250,.14)')}
+        ${dashboardMetricCard('💵','Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+        ${dashboardMetricCard('📊','Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
         ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-        ${dashboardMetricCard('🧭','Falta para meta — média 12M',target>0?fmt(goalReached):'—',target>0?(goalReached>0?'Valor restante para atingir a meta':'Meta atingida'):'Sem meta definida',goalReached>0?'#fbbf24':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
+        ${dashboardMetricCard('🧭','Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211, 153,.14)')}
       </div></div>
     </div>
   `;
@@ -32822,10 +32853,11 @@ function financialGoalsSnapshot(){
   const historySummary=dividendMonthlyHistorySummary(historyGroups);
   const currentMonthKey=passiveIncomeMonthKey(new Date());
   const currentMonthGroup=historyGroups.find(row=>row.key===currentMonthKey)||null;
+  const currentMonthIncome=passiveIncomeMonthSummary(currentMonthKey);
   const latestMonth=historyGroups[0]||null;
   const previousMonth=historyGroups[1]||null;
-  const currentIncome=Number(currentMonthGroup?.total)||0;
-  const currentIncomeCount=Number(currentMonthGroup?.count)||0;
+  const currentIncome=currentMonthIncome.total;
+  const currentIncomeCount=Number(currentMonthIncome.count)||0;
   const currentMonthLabel=currentMonthGroup?.label || new Date(`${currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   const patrimonyTarget=Math.max(0, Number(goals?.patrimonio?.target)||0);
   const portfolioCurrent=hasPortfolioData ? Number(portfolio.tC)||0 : null;
@@ -32845,6 +32877,7 @@ function financialGoalsSnapshot(){
     previousMonth,
     currentIncome,
     currentIncomeCount,
+    currentIncomeCoverage:currentMonthIncome.coverage||'UNKNOWN',
     patrimonyTarget,
     incomeTarget,
   };
@@ -32899,8 +32932,8 @@ function getGoalsSnapshot(){
   const incomeTarget = hasIncomeGoal ? snapshot.incomeTarget : 0;
   const patrimonyMetrics = goalProgressMetrics(portfolioCurrent, patriTarget);
   const patrimonyTone = financialGoalsTone(patrimonyMetrics);
-  const incomeCurrent = Number(snapshot.currentIncome) || 0;
-  const incomeMetrics = goalProgressMetrics(incomeCurrent, incomeTarget);
+  const incomeCurrent = snapshot.currentIncome;
+  const incomeMetrics = goalProgressMetrics(snapshot.currentIncomeCoverage==='COMPLETE' ? incomeCurrent : null, incomeTarget);
   const incomeTone = financialGoalsTone(incomeMetrics);
   const incomeStats = passiveIncomeGoalStats();
   const goals = snapshot.goals || {};
@@ -32988,7 +33021,10 @@ function getGoalsSnapshot(){
       currentMonthKey: String(snapshot.currentMonthKey || ''),
       currentMonthLabel: String(snapshot.currentMonthLabel || ''),
       currentMonthCount: Number(snapshot.currentIncomeCount) || 0,
+      currentMonthCoverage: snapshot.currentIncomeCoverage || 'UNKNOWN',
       monthlyAverage: incomeStats.monthlyAvg,
+      monthlyAverageStatus: incomeStats.monthlyAverageStatus,
+      completeMonthCount: incomeStats.completeMonthCount,
       total12: incomeStats.total12,
       hasData: Boolean(incomeStats.hasData),
     },
@@ -34516,7 +34552,7 @@ function dividendAnnualMatrixData(rows,coverage={}){
     const complete=months.filter(m=>m.coverage==='COMPLETE');
     const annualTotal=months.some(m=>m.total!==null)?months.reduce((s,m)=>s+(m.total??0),0):null;
     const annualMean=complete.length?complete.reduce((s,m)=>s+m.total,0)/complete.length:null;
-    return {year,months,annualTotal,annualMean,annualProjection:annualMean===null?null:annualMean*12,completeCount:complete.length};
+    return {year,months,annualTotal,annualMean,annualProjection:complete.length===12&&annualMean!==null?annualMean*12:null,completeCount:complete.length};
   });
 }
 function dividendAnnualMatrixView(data){
@@ -34585,19 +34621,22 @@ function dividendSummaryCards(){
   const stats=passiveIncomeGoalStats();
   const covered=dividendAnnualMatrixData(dividendPremiumRows()).flatMap(year=>year.months).filter(month=>stats.monthKeys.includes(month.key));
   const complete=covered.filter(month=>month.coverage==='COMPLETE');
-  stats.total12=covered.reduce((sum,month)=>sum+(month.total??0),0);
+  const knownTotals=covered.filter(month=>month.total!==null);
+  stats.total12=knownTotals.length?knownTotals.reduce((sum,month)=>sum+month.total,0):null;
   stats.monthlyAvg=complete.length?complete.reduce((sum,month)=>sum+month.total,0)/complete.length:null;
-  stats.annualProjection=stats.monthlyAvg===null?null:stats.monthlyAvg*12;
-  const current=covered.find(row=>row.key===stats.currentMonthKey)||{total:null};
+  stats.monthlyAverageStatus=complete.length===12?'COMPLETE':complete.length?'PARTIAL':'UNKNOWN';
+  stats.completeMonthCount=complete.length;
+  stats.annualProjection=complete.length===12&&stats.monthlyAvg!==null?stats.monthlyAvg*12:null;
+  const current=covered.find(row=>row.key===stats.currentMonthKey)||{total:null,coverage:'UNKNOWN'};
   const audit=proventoAuditBuildRows();
   const reviewPending=Number(audit.summary.pending)||0;
   const reviewNote=reviewPending
     ? `${fmt(audit.summary.quebrados)} vínculos quebrados · ${fmt(audit.summary.possiveis)} possíveis duplicidades`
     : 'Nenhuma revisão pendente.';
   return `<div class="div-premium-metrics">
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido este mês</div><div class="div-premium-metric-value good">${current.total===null?'—':fmt(current.total)}</div><div class="div-premium-metric-sub">Recebimentos registrados · cobertura parcial</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Média mensal ${stats.monthlyAvg===null?'—':fmt(stats.monthlyAvg)} · projeção anual estimada ${stats.annualProjection===null?'—':fmt(stats.annualProjection)}</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0 && current.total!==null?`${((current.total/stats.target)*100).toFixed(1)}% registrado · cobertura parcial`:'Lida da aba Metas · recebido indisponível'}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido este mês</div><div class="div-premium-metric-value good">${current.total===null?'—':fmt(current.total)}</div><div class="div-premium-metric-sub">${current.coverage==='COMPLETE'?'Cobertura completa confirmada':current.coverage==='PARTIAL'?'Recebido registrado · cobertura parcial':'Cobertura desconhecida'}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${passiveIncomeValue(stats.total12)}</div><div class="div-premium-metric-sub">Cobertura confirmada: ${complete.length}/12 meses · média ${passiveIncomeValue(stats.monthlyAvg)} · projeção ${passiveIncomeValue(stats.annualProjection)}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0 && current.coverage==='COMPLETE'?`${((current.total/stats.target)*100).toFixed(1)}% do mês completo vs meta`:current.coverage==='PARTIAL'?'Subtotal recebido · cobertura parcial, sem comparação com a meta':'Lida da aba Metas · recebido indisponível'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
     </div>`;
 }
@@ -34630,7 +34669,7 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
   const complete=covered.filter(month=>month.coverage==='COMPLETE');
   const monthlyAvg=complete.length?complete.reduce((sum,month)=>sum+month.total,0)/complete.length:null;
   const lastMonth=covered.find(month=>month.key===stats.monthKeys[stats.monthKeys.length-2])?.total??null;
-  const annualProjection=monthlyAvg===null?null:monthlyAvg*12;
+  const annualProjection=complete.length===12&&monthlyAvg!==null?monthlyAvg*12:null;
   const portfolioTotal=(S.assets||[]).reduce((s,a)=>s+(assetCurrentValue(a)||0),0);
   const yieldNow=(portfolioTotal>0 && stats.total12>0) ? (stats.total12/portfolioTotal*100) : null;
   const cards=[
@@ -35520,7 +35559,9 @@ function metasTab(){
     ? '<div class="metas-primary-goal-progress"><div><span>Progresso registrado</span><strong>'+metaPatMetrics.percent.toFixed(1)+'%</strong></div><div class="metas-primary-goal-track"><span style="width:'+Math.min(100,metaPatMetrics.barPercent)+'%"></span></div><small>Simulação de prazo: '+formatGoalMonths(metaPatTime)+'. Premissas não garantem resultado.</small></div>'
     : '<p class="metas-primary-goal-unavailable">'+esc(metaPatStatus.detail)+'</p>';
   const passiveGoal=passiveIncomeGoalStats();
-  const metaProStatus=goalStatusPresentation(goalProgressMetrics(passiveGoal?.hasData?passiveGoal.monthlyAvg:null,passiveGoal?.target||0),Boolean(passiveGoal?.hasTarget));
+  const metaProStatus=passiveGoal?.monthlyAverageStatus==='COMPLETE'
+    ? goalStatusPresentation(goalProgressMetrics(passiveGoal.monthlyAvg,passiveGoal.target||0),Boolean(passiveGoal?.hasTarget))
+    : {label:passiveGoal?.monthlyAverageStatus==='PARTIAL'?'Cobertura parcial':'Indisponível',tone:'muted',detail:`Progresso da meta indisponível · cobertura confirmada ${passiveGoal?.completeMonthCount||0}/12 meses.`};
   const allocItems=allocationGoalItems();
   const rawAllocationItems=metas?.allocation?.items;
   const allocationConfigured=Boolean(rawAllocationItems && ((Array.isArray(rawAllocationItems) && rawAllocationItems.length) || (!Array.isArray(rawAllocationItems) && typeof rawAllocationItems==='object' && Object.keys(rawAllocationItems).length)) && allocItems.some(item=>Number(item.pct)>0));
@@ -35544,7 +35585,7 @@ function metasTab(){
   }).join('');
 
   const metaPatSummary=metaPatMetrics.hasTarget?(metaPatMetrics.hasCurrent?`${fmt(metaPatMetrics.current)} atual · ${metaPatMetrics.percent.toFixed(1)}% · Falta ${fmt(metaPatMetrics.missing)}`:'Meta definida · sem leitura atual'):'Meta patrimonial não configurada';
-  const metaProSummary=passiveGoal?.hasTarget?`${fmt(passiveGoal.monthlyAvg||0)} média 12M · ${fmtP(passiveGoal.percent||0)} · Falta ${fmt(passiveGoal.missing||0)}/mês`:'Meta de renda não configurada';
+  const metaProSummary=passiveGoal?.hasTarget?`${passiveIncomeValue(passiveGoal.monthlyAvg)} média 12M · ${passiveGoal.monthlyAverageStatus==='COMPLETE'?`${fmtP(passiveGoal.percent)} · Falta ${passiveIncomeValue(passiveGoal.missing)}/mês`:`progresso indisponível · cobertura ${passiveGoal.completeMonthCount}/12`}`:'Meta de renda não configurada';
   const metaProjectionNote=metaPatMetrics.hasCurrent&&metaPatMetrics.hasTarget
     ? `Prazo estimado com aporte mensal de ${fmt(metaPatAporte)} e variação anual de ${metaPatVar.toFixed(1)}%. É uma simulação baseada nas premissas cadastradas, não uma garantia de resultado.`
     : 'Simulação de prazo indisponível sem meta definida e leitura atual.';
@@ -36379,10 +36420,10 @@ function generateIncomeAnalysis(){
   return {
     mode:'income',
     title:'Priorizar renda',
-    summary:`Renda 12M ${fmt(stats.total12)} · Média ${fmt(stats.monthlyAvg)} · Meta ${fmt(stats.target)}`,
+    summary:`Renda 12M ${passiveIncomeValue(stats.total12)} · Média ${passiveIncomeValue(stats.monthlyAvg)} · Meta ${fmt(stats.target)}`,
     metrics:[
-      {label:'Renda dos últimos 12 meses', value:fmt(stats.total12), note:'Janela oficial de 12 meses'},
-      {label:'Média mensal 12M', value:fmt(stats.monthlyAvg), note:`Faltam ${fmt(stats.missing)}/mês para a meta`},
+      {label:'Renda dos últimos 12 meses', value:passiveIncomeValue(stats.total12), note:`Cobertura confirmada ${stats.completeMonthCount}/12 meses`},
+      {label:'Média mensal 12M', value:passiveIncomeValue(stats.monthlyAvg), note:stats.missing===null?'Progresso indisponível sem 12 meses completos':`Faltam ${fmt(stats.missing)}/mês para a meta`},
       {label:'Meta mensal', value:fmt(stats.target), note:'Meta oficial cadastrada'},
       {label:'Meses com provento', value:`${monthsWithData}/12`, note:'Regularidade da janela oficial'},
       {label:'Melhor mês histórico', value:historyBest, note:`Histórico completo: ${historySummary.monthCount || 0} mês(es)`},

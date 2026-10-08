@@ -29,8 +29,11 @@ export interface ReadonlyGoalsIncomeMetrics extends ReadonlyGoalsMetrics {
   readonly currentMonthKey: string;
   readonly currentMonthLabel: string;
   readonly currentMonthCount: number;
-  readonly monthlyAverage: number;
-  readonly total12: number;
+  readonly monthlyAverage: number | null;
+  readonly monthlyAverageStatus?: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN';
+  readonly completeMonthCount?: number;
+  readonly total12: number | null;
+  readonly currentMonthCoverage?: 'COMPLETE' | 'PARTIAL' | 'UNKNOWN' | 'FUTURE';
   readonly hasData: boolean;
 }
 

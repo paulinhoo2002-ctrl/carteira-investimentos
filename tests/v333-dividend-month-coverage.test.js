@@ -44,7 +44,7 @@ test('average/projection only use complete months; annual received excludes anno
   assert.equal(row.annualTotal, 600);
   assert.equal(row.completeCount, 2);
   assert.equal(row.annualMean, 50);
-  assert.equal(row.annualProjection, 600);
+  assert.equal(row.annualProjection, null);
   assert.equal(ctx.dividendAnnualMatrixData(records)[0].annualMean, null);
   assert.equal(ctx.dividendAnnualMatrixData(records)[0].annualProjection, null);
   const futureKey = `${year + 2}-01`;
