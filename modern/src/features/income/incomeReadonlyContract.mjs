@@ -1,10 +1,13 @@
-export const INCOME_READONLY_CONTRACT_VERSION = 1;
+export const INCOME_READONLY_CONTRACT_VERSION = 2;
 
 export const INCOME_READONLY_FALLBACK_SNAPSHOT = deepFreeze({
   version: INCOME_READONLY_CONTRACT_VERSION,
   generatedAt: '1970-01-01T00:00:00.000Z',
   notice: 'Snapshot readonly de proventos indisponivel. React nao escreve na fonte.',
   summary: {
+    historyCoverage: 'UNKNOWN',
+    monthCoverage: 'UNKNOWN',
+    averageCoverage: 'UNKNOWN',
     totalReceived: null,
     monthTotal: null,
     yearTotal: null,
@@ -64,13 +67,20 @@ function isReadonlyIncomeSummary(value) {
   }
 
   return (
+    ['COMPLETE', 'PARTIAL', 'UNKNOWN'].includes(value.historyCoverage) &&
+    ['COMPLETE', 'PARTIAL', 'UNKNOWN', 'FUTURE'].includes(value.monthCoverage) &&
+    ['COMPLETE', 'PARTIAL', 'UNKNOWN'].includes(value.averageCoverage) &&
     isNullableNumber(value.totalReceived) &&
     isNullableNumber(value.monthTotal) &&
     isNullableNumber(value.yearTotal) &&
     isNullableNumber(value.averageMonthly) &&
     isFiniteNumber(value.paymentCount) &&
     Number.isInteger(value.paymentCount) &&
-    value.paymentCount >= 0
+    value.paymentCount >= 0 &&
+    (value.averageCoverage === 'COMPLETE' || value.averageMonthly === null) &&
+    (value.paymentCount > 0 || value.historyCoverage === 'COMPLETE' || value.totalReceived === null) &&
+    (value.paymentCount > 0 || value.historyCoverage === 'COMPLETE' || value.yearTotal === null) &&
+    (value.monthCoverage === 'COMPLETE' || value.monthCoverage === 'PARTIAL' || value.monthTotal === null)
   );
 }
 
@@ -81,6 +91,7 @@ function isReadonlyIncomeItem(value) {
 
   return (
     hasReadonlyIncomePayload(value) &&
+    ['PAID', 'ANNOUNCED', 'ESTIMATED', 'UNKNOWN'].includes(value.paymentState) &&
     isNullableString(value.id) &&
     isNullableString(value.ticker) &&
     isNullableString(value.name) &&
@@ -88,6 +99,9 @@ function isReadonlyIncomeItem(value) {
     isNullableString(value.paymentDate) &&
     isNullableString(value.competenceDate) &&
     isNullableNumber(value.receivedValue) &&
+    isNullableNumber(value.plannedValue) &&
+    (value.paymentState === 'PAID' || value.receivedValue === null) &&
+    (value.paymentState === 'ANNOUNCED' || value.paymentState === 'ESTIMATED' || value.plannedValue === null) &&
     isNullableNumber(value.taxValue) &&
     isNullableNumber(value.quantity) &&
     isNullableString(value.note) &&
@@ -126,6 +140,8 @@ function cloneReadonlyIncomeItem(item) {
     source: item.source,
     sourceEventKind: item.sourceEventKind,
     sourceEventId: item.sourceEventId,
+    paymentState: item.paymentState,
+    plannedValue: item.plannedValue,
   };
 }
 
@@ -135,6 +151,9 @@ function cloneReadonlyIncomeSnapshot(snapshot) {
     generatedAt: snapshot.generatedAt,
     notice: snapshot.notice,
     summary: {
+      historyCoverage: snapshot.summary.historyCoverage,
+      monthCoverage: snapshot.summary.monthCoverage,
+      averageCoverage: snapshot.summary.averageCoverage,
       totalReceived: snapshot.summary.totalReceived,
       monthTotal: snapshot.summary.monthTotal,
       yearTotal: snapshot.summary.yearTotal,
@@ -162,7 +181,7 @@ export function isReadonlyIncomeSnapshot(value) {
     return false;
   }
 
-  if (value.summary.paymentCount !== value.items.length) {
+  if (value.summary.paymentCount !== value.items.filter((item) => item.paymentState === 'PAID').length) {
     return false;
   }
 

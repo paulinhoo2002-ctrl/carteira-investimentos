@@ -107,7 +107,8 @@ function assertIncomeSnapshotBuilderUsesReceivedValueOnly(indexHtml) {
 
   assert.equal(block.includes('grossValue: value'), false, 'getIncomeSnapshot nao pode duplicar grossValue');
   assert.equal(block.includes('netValue: value'), false, 'getIncomeSnapshot nao pode duplicar netValue');
-  assert.match(block, /receivedValue: value/);
+  assert.match(block, /receivedValue: paymentState === 'PAID' \? value : null/);
+  assert.match(block, /plannedValue: paymentState === 'ANNOUNCED' \|\| paymentState === 'ESTIMATED' \? value : null/);
 }
 
 function assertCanonicalContract(contractJs) {

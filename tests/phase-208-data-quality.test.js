@@ -50,6 +50,7 @@ function createSandbox(state = {}) {
     RegExp,
     Intl,
     Promise,
+    DividendIntelligence: require('../dividend-intelligence'),
     S: state,
     TYPE_CHOICES: ['Ação', 'FII', 'ETF', 'BDR', 'Stock', 'Reit', 'Renda Fixa', 'Tesouro Direto', 'Reserva de emergência', 'Fundos de Investimento'],
     TYPE_FORM_CHOICES: ['Ação', 'FII', 'ETF', 'BDR', 'Stock', 'Reit', 'Renda Fixa', 'Tesouro Direto', 'Reserva de emergência', 'Fundos de Investimento'],
@@ -236,6 +237,7 @@ function loadRuntime(state) {
     extractBetween(indexHtml, 'function goalProgressText(current,target){', 'function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.proventos : []){'),
     extractBetween(indexHtml, 'function proventoResumo(){', 'function passiveIncomeRollingMonthKeys(baseDate=new Date(), count=12){'),
     extractBetween(indexHtml, 'function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.proventos : []){', 'function dividendMonthlyHistoryPremium(rows,startOpen=false){'),
+    extractBetween(indexHtml, 'function dividendAnnualMatrixData(rows,coverage={}){', 'function dividendAnnualMatrixView(data){'),
   ];
 
   for (const block of blocks) {
@@ -579,8 +581,8 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   assert.equal(officialStats.ano, 150);
   assert.equal(officialResumo.meses.reduce((acc, row) => acc + row.valor, 0), summary.total);
   assert.equal(officialResumo.anos.reduce((acc, row) => acc + row.valor, 0), summary.total);
-  assert.equal(snapshot.currentIncome, 100);
-  assert.equal(snapshot.currentIncomeCount, 1);
+  assert.equal(snapshot.currentIncome, 110);
+  assert.equal(snapshot.currentIncomeCount, 2);
   assert.equal(snapshot.currentMonthGroup.total, 100);
   assert.equal(snapshot.currentMonthGroup.count, 1);
   assert.equal(snapshot.incomeTarget, 4000);

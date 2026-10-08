@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const test = require('node:test');
@@ -112,7 +113,7 @@ async function loadFixedIncomeIdentityModule() {
 }
 
 function assertDeepFrozen(snapshot) {
-  assert.equal(snapshot.version, 1);
+  assert.ok([1, 2].includes(snapshot.version));
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(Object.isFrozen(snapshot.summary), true);
   assert.equal(Object.isFrozen(snapshot.items), true);
@@ -646,21 +647,26 @@ test('host income source usa snapshot injetado e preserva mutabilidade da origem
       source: 'host-experimental',
       sourceEventKind: 'payment',
       sourceEventId: '1',
+      paymentState: 'PAID',
+      plannedValue: null,
     },
   ];
 
   const source = createHostIncomeReadonlySource({
     getIncomeSnapshot() {
       return {
-        version: 1,
+        version: 2,
         generatedAt: '2026-07-14T10:30:00.000Z',
         notice: 'Snapshot readonly de proventos. React nao escreve na fonte.',
         summary: {
+          historyCoverage: 'PARTIAL',
+          monthCoverage: 'PARTIAL',
+          averageCoverage: 'COMPLETE',
           totalReceived: 320,
           monthTotal: 320,
           yearTotal: 320,
           averageMonthly: 320,
-          paymentCount: incomeEvents.length,
+          paymentCount: incomeEvents.filter((item) => item.paymentState === 'PAID').length,
         },
         items: incomeEvents,
       };
@@ -699,7 +705,11 @@ test('host income source retorna fallback controlado quando leitura falha', asyn
 
   const snapshot = source.getSnapshot();
 
-  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.version, 2);
+  assert.match(
+    fs.readFileSync(path.join(__dirname, '..', 'modern', 'src', 'features', 'income', 'incomeReadonlyContract.d.ts'), 'utf8'),
+    /INCOME_READONLY_FALLBACK_SNAPSHOT:\s*Readonly<\{\s*version:\s*2;/,
+  );
   assert.equal(snapshot.generatedAt, '1970-01-01T00:00:00.000Z');
   assert.equal(snapshot.summary.paymentCount, 0);
   assert.equal(snapshot.summary.totalReceived, null);
@@ -716,7 +726,7 @@ test('host income runtime usa demo quando origem real nao existe', async () => {
   const runtime = createModernIncomeRuntime();
   const snapshot = runtime.incomeAdapter.getSnapshot();
 
-  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.version, 2);
   assert.equal(snapshot.items.length, 4);
   assert.equal(snapshot.summary.paymentCount, 4);
   assert.equal(snapshot.summary.totalReceived, 748.51);

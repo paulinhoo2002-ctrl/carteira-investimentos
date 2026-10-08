@@ -59,16 +59,17 @@ function makeReportsSnapshot(overrides = {}) {
 }
 
 function makeIncomeSnapshot(overrides = {}) {
+  const { summary, ...rest } = overrides;
   return {
-    version: 1,
+    version: 2,
     generatedAt: '2026-07-15T12:00:00.000Z',
     notice: 'test',
-    summary: { totalReceived: 500, monthTotal: 200, yearTotal: 500, averageMonthly: 100, paymentCount: 2 },
+    summary: { historyCoverage: 'PARTIAL', monthCoverage: 'PARTIAL', averageCoverage: 'UNKNOWN', totalReceived: 500, monthTotal: 200, yearTotal: 500, averageMonthly: null, paymentCount: 2, ...summary },
     items: [
-      { id: '1', ticker: 'PETR4', name: 'Petrobras', type: 'Dividendo', paymentDate: '2026-08-01', competenceDate: null, receivedValue: 200, taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
-      { id: '2', ticker: 'BBAS3', name: 'Banco do Brasil', type: 'JCP', paymentDate: '2026-09-01', competenceDate: null, receivedValue: 300, taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
+      { id: '1', ticker: 'PETR4', name: 'Petrobras', type: 'Dividendo', paymentDate: '2026-08-01', competenceDate: null, receivedValue: 200, plannedValue: null, paymentState: 'PAID', taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
+      { id: '2', ticker: 'BBAS3', name: 'Banco do Brasil', type: 'JCP', paymentDate: '2026-09-01', competenceDate: null, receivedValue: 300, plannedValue: null, paymentState: 'PAID', taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
     ],
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -114,7 +115,7 @@ test('OverviewPage não contém pontos interpolados', async () => {
 test('OverviewPage snapshot vazio mostra — nos cards', async () => {
   await loadModules();
   const emptyReports = makeReportsSnapshot({ items: [], summary: { totalValue: 0, itemCount: 0, averageVariationPct: 0 } });
-  const emptyIncome = makeIncomeSnapshot({ items: [], summary: { totalReceived: 0, monthTotal: 0, yearTotal: 0, averageMonthly: 0, paymentCount: 0 } });
+  const emptyIncome = makeIncomeSnapshot({ items: [], summary: { historyCoverage: 'UNKNOWN', monthCoverage: 'UNKNOWN', averageCoverage: 'UNKNOWN', totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 0 } });
   const reportsAdapter = createReadOnlyReportsAdapter({ getSnapshot: () => emptyReports });
   const incomeAdapter = createIncomeReadonlyAdapter({ getSnapshot: () => emptyIncome });
   const element = React.createElement(OverviewPage, { reportsAdapter, incomeAdapter });
@@ -126,9 +127,10 @@ test('próximos dividendos usam generatedAt como referência', async () => {
   await loadModules();
   const futureIncome = makeIncomeSnapshot({
     generatedAt: '2026-07-15T12:00:00.000Z',
+    summary: { historyCoverage: 'UNKNOWN', monthCoverage: 'UNKNOWN', averageCoverage: 'UNKNOWN', totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 0 },
     items: [
-      { id: '1', ticker: 'TAEE11', name: 'Taesa', type: 'Dividendo', paymentDate: '2026-07-14', competenceDate: null, receivedValue: 100, taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
-      { id: '2', ticker: 'BBAS3', name: 'Banco do Brasil', type: 'JCP', paymentDate: '2026-07-16', competenceDate: null, receivedValue: 200, taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
+      { id: '1', ticker: 'TAEE11', name: 'Taesa', type: 'Dividendo', paymentDate: '2026-07-14', competenceDate: null, receivedValue: null, plannedValue: 100, paymentState: 'ANNOUNCED', taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
+      { id: '2', ticker: 'BBAS3', name: 'Banco do Brasil', type: 'JCP', paymentDate: '2026-07-16', competenceDate: null, receivedValue: null, plannedValue: 200, paymentState: 'ANNOUNCED', taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
     ]
   });
   const reportsAdapter = createReadOnlyReportsAdapter({ getSnapshot: () => makeReportsSnapshot() });
@@ -144,9 +146,9 @@ test('item com paymentDate anterior a generatedAt não aparece como próximo', a
   await loadModules();
   const pastIncome = makeIncomeSnapshot({
     generatedAt: '2026-07-15T12:00:00.000Z',
-    summary: { totalReceived: 500, monthTotal: 200, yearTotal: 500, averageMonthly: 100, paymentCount: 1 },
+    summary: { historyCoverage: 'PARTIAL', monthCoverage: 'PARTIAL', averageCoverage: 'UNKNOWN', totalReceived: 500, monthTotal: 200, yearTotal: 500, averageMonthly: null, paymentCount: 1 },
     items: [
-      { id: '1', ticker: 'TAEE11', name: 'Taesa', type: 'Dividendo', paymentDate: '2026-07-14', competenceDate: null, receivedValue: 100, taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
+      { id: '1', ticker: 'TAEE11', name: 'Taesa', type: 'Dividendo', paymentDate: '2026-07-14', competenceDate: null, receivedValue: 100, plannedValue: null, paymentState: 'PAID', taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
     ]
   });
   const reportsAdapter = createReadOnlyReportsAdapter({ getSnapshot: () => makeReportsSnapshot() });
@@ -160,8 +162,9 @@ test('item com paymentDate posterior ou igual à regra aparece', async () => {
   await loadModules();
   const equalIncome = makeIncomeSnapshot({
     generatedAt: '2026-07-15T12:00:00.000Z',
+    summary: { historyCoverage: 'UNKNOWN', monthCoverage: 'UNKNOWN', averageCoverage: 'UNKNOWN', totalReceived: null, monthTotal: null, yearTotal: null, averageMonthly: null, paymentCount: 0 },
     items: [
-      { id: '1', ticker: 'PETR4', name: 'Petrobras', type: 'Dividendo', paymentDate: '2026-07-15', competenceDate: null, receivedValue: 100, taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
+      { id: '1', ticker: 'PETR4', name: 'Petrobras', type: 'Dividendo', paymentDate: '2026-07-15', competenceDate: null, receivedValue: null, plannedValue: 100, paymentState: 'ANNOUNCED', taxValue: null, quantity: null, note: '', source: 'demo', sourceEventKind: null, sourceEventId: null },
     ]
   });
   const reportsAdapter = createReadOnlyReportsAdapter({ getSnapshot: () => makeReportsSnapshot() });

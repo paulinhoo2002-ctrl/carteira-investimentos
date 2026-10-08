@@ -38,8 +38,8 @@ test('GOALS_READONLY_FALLBACK_SNAPSHOT e imutavel e valido', () => {
   assert.deepEqual(snapshot.patrimony.tone, 'muted');
   assert.deepEqual(snapshot.patrimony.monthlyContribution, 0);
   assert.deepEqual(snapshot.patrimony.annualVariation, 0);
-  assert.deepEqual(snapshot.income.monthlyAverage, 0);
-  assert.deepEqual(snapshot.income.total12, 0);
+  assert.deepEqual(snapshot.income.monthlyAverage, null);
+  assert.deepEqual(snapshot.income.total12, null);
   assert.deepEqual(snapshot.income.hasData, false);
   assert.deepEqual(snapshot.assetGoal.type, '');
   assert.deepEqual(snapshot.assetGoal.ticker, '');

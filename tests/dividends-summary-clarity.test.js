@@ -69,7 +69,7 @@ test('dividendDistributionRow gera HTML sem NaN/undefined', () => {
 
 test('dividendDistributionRow zero real preservado', () => {
   const ctx = makeContext();
-  const row = ctx.dividendDistributionRow(makeMonth('2026-06', 0), 200);
+  const row = ctx.dividendDistributionRow({ ...makeMonth('2026-06', 0), coverage: 'COMPLETE' }, 200);
   assert.ok(row.includes('div-dist-fill empty'));
   assert.ok(row.includes('div-dist-value zero'));
   assert.match(row, /R\$\s*0,00/);
@@ -82,8 +82,8 @@ test('dividendDistributionPanel gera no maximo 12 meses ordem cronologica', () =
   const html = ctx.dividendDistributionPanel(stats);
   assert.ok(html.startsWith('<div class="div-dist-panel">'));
   const rowCount = (html.match(/<div class="div-dist-row">/g) || []).length;
-  assert.equal(rowCount, 12);
-  assert.ok(html.includes('ago'));
+  assert.equal(rowCount, 11, 'Mês sem registros não pode ser convertido em linha sintética de zero');
+  assert.equal(html.includes('ago'), false);
   assert.ok(html.includes('jul'));
   assert.equal(html.includes('NaN'), false);
   assert.equal(html.includes('undefined'), false);
@@ -131,13 +131,14 @@ test('dividendSummaryCards ainda contem KPIs essenciais', () => {
   assert.ok(fn.includes('Recebido este mês'));
   assert.ok(fn.includes('Total últimos 12 meses'));
   assert.ok(fn.includes('Meta mensal'));
-  assert.ok(fn.includes('fmt(stats.total12)'));
-  assert.ok(fn.includes('fmt(stats.monthlyAvg)'));
+  assert.ok(fn.includes('passiveIncomeValue(stats.total12)'));
+  assert.ok(fn.includes('Cobertura confirmada: ${complete.length}/12 meses'));
+  assert.ok(fn.includes('passiveIncomeValue(stats.monthlyAvg)'));
 });
 
 test('dividendDistributionRow aceita maxVal zero sem quebrar', () => {
   const ctx = makeContext();
-  const row = ctx.dividendDistributionRow(makeMonth('2026-01', 0), 0);
+  const row = ctx.dividendDistributionRow({ ...makeMonth('2026-01', 0), coverage: 'COMPLETE' }, 0);
   assert.ok(row.includes('div-dist-fill empty'));
   assert.ok(row.includes('width:100%'));
   assert.equal(row.includes('NaN'), false);
@@ -200,12 +201,13 @@ test('dividendDistributionRow isAbsent renderiza — sem NaN', () => {
   assert.equal(row.includes('undefined'), false);
 });
 
-test('dividendDistributionRow isAbsent=false zero renderiza R$ 0,00', () => {
+test('dividendDistributionRow isAbsent=false sozinho não confirma zero', () => {
   const ctx = makeContext();
   const row = ctx.dividendDistributionRow({key:'2026-06', total:0, isAbsent:false}, 200);
   assert.ok(row.includes('div-dist-fill empty'));
   assert.ok(row.includes('div-dist-value zero'));
-  assert.match(row, /R\$\s*0,00/);
+  assert.doesNotMatch(row, /R\$\s*0,00/);
+  assert.match(row, /—/);
   assert.equal(row.includes('NaN'), false);
 });
 
