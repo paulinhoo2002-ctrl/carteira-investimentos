@@ -32086,7 +32086,8 @@ function ativos(){
     `;
 
     const tableHtml = `
-      <div class="assets-table-wrap">
+      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar">
+        <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
         <table class="assets-table ${type === 'Renda Fixa' ? 'rf-table' : 'ag-table'}">
           <thead>
             <tr>
