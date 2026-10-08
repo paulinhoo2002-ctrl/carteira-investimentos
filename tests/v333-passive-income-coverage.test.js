@@ -122,3 +122,31 @@ test('Metas screen gates progress on a complete 12-month average', () => {
   assert.ok(source.includes('progresso indisponível · cobertura ${passiveGoal.completeMonthCount}/12'));
   assert.ok(source.includes('passiveIncomeValue(passiveGoal.monthlyAvg)'));
 });
+
+test('income analysis does not claim goal achievement without certified coverage', () => {
+  const context = {
+    passiveIncomeGoalStats: () => ({
+      hasData: true,
+      target: 1000,
+      total12: 250,
+      monthlyAvg: null,
+      monthlyAverageStatus: 'PARTIAL',
+      completeMonthCount: 8,
+      missing: null,
+      topPayers: [],
+    }),
+    proventoHistoricoOficial: () => ({ summary: { monthCount: 2 } }),
+    proventoResumoPorAtivo: () => [],
+    passiveIncomeValue: () => '—',
+    fmt: value => `R$ ${value}`,
+  };
+  vm.createContext(context);
+  const start = source.indexOf('function generateIncomeAnalysis(){');
+  const end = source.indexOf('function generateRebalanceAnalysis(){', start);
+  vm.runInContext(source.slice(start, end), context);
+
+  const result = context.generateIncomeAnalysis();
+  assert.ok(result.warnings.some(message => message.includes('Progresso da meta indisponível')));
+  assert.ok(result.priority.includes('cobertura'));
+  assert.ok(result.warnings.every(message => !message.includes('Meta alcançada ou superada')));
+});

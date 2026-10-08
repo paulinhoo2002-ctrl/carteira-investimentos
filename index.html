@@ -36431,9 +36431,9 @@ function generateIncomeAnalysis(){
     positives: payers.slice(0,3).map(row=>`${row.ticker || row.key || '—'} · ${fmt(row.total || 0)} · ${row.count || 0} pagamento(s)`),
     warnings: [
       topPayer ? `Maior pagador responde por ${topShare.toFixed(1)}% dos proventos 12M.` : 'Sem pagadores suficientes para avaliar concentração.',
-      stats.missing > 0 ? `Faltam ${fmt(stats.missing)}/mês para atingir a meta.` : 'Meta alcançada ou superada.',
+      stats.missing === null ? 'Progresso da meta indisponível por cobertura incompleta.' : stats.missing > 0 ? `Faltam ${fmt(stats.missing)}/mês para atingir a meta.` : 'Meta alcançada ou superada.',
     ],
-    priority: stats.missing > 0 ? 'Reduzir distância da meta com renda recorrente e pulverização.' : 'Preservar regularidade e evitar concentração excessiva.',
+    priority: stats.missing === null ? 'Confirmar cobertura mensal antes de avaliar o progresso da meta.' : stats.missing > 0 ? 'Reduzir distância da meta com renda recorrente e pulverização.' : 'Preservar regularidade e evitar concentração excessiva.',
     actions:[
       'Acompanhar os 5 maiores pagadores.',
       'Reforçar ativos com histórico recorrente, sem concentrar demais a renda.'
