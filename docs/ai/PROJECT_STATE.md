@@ -1324,3 +1324,10 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
 - Nenhuma recuperação real, rollback real, Class C, piloto de agosto ou sync foi
   executado. A prova live final permanece pendente porque o perfil QA perdeu a
   sessão autenticada (`AUTH_SESSION_VALID=false`, CDP 9233 indisponível).
+
+## V333.2 — correção readonly comprovada (2026-10-08)
+
+- Código: 5c87918fad9861e4f60e7fc5d586bcc16cb4641f; 17 entradas financeiras bloqueadas antes de mutação/confirm, incluindo helpers de recálculo, conciliação, importação RF, alocação e hidratação offline. Sem alteração de fórmulas, schema ou dados reais.
+- RED: cinco handlers originais e onze siblings mutaram VM sintética; snapshot válido reproduz o bypass original no teste. GREEN: readonly runtime/browser 33/33; test:local-synthetic 43/43 e browser 1/1. verify:release PASS no código final; CI readonly conectado agora ao npm test e após Chromium no workflow.
+- Revisão independente em contexto separado: nenhum MAJOR acionável nos diffs revisados; não certifica inexistência global de bugs.
+- PR #456 continua Draft/base main. CI do novo HEAD precisa ser confirmado. Checkout canônico e #454/#455 preservados. MERGE_PR=false; PRODUCTION=false; REAL_WRITES=0.

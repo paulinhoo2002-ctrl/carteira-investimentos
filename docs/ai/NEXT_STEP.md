@@ -1018,3 +1018,7 @@ autorização single-use vinculada ao novo HEAD.
   autenticada final e qualquer autorização single-use continuam bloqueadas até
   o QA autenticado voltar a estar disponível. Não executar recovery, Class C,
   sync ou piloto de agosto antes disso.
+
+## V333.2 — próximo gate readonly
+
+Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada sem reescrita de histórico. Correção readonly e regressões concluídas localmente; merge por PR exige autorização humana específica. Provider QA isolado permanece externo, sem writes reais ou produção.
