@@ -52,7 +52,7 @@ test('programmatic edit, save, and fixture reset are blocked in strict read-only
   const editGuard = source.slice(source.indexOf('function canEditFromThisTab('), source.indexOf('function broadcastEditLock('));
   const save = source.slice(source.indexOf('function save(){'), source.indexOf('async function releaseCloudSyncAfterSuccessfulReconciliation'));
   const reset = source.slice(source.indexOf('function restoreLocalTestData(){'), source.indexOf('function normalizeEmail('));
-  const fixtureStart = source.indexOf('function applyLocalTestFixture(runtimeToken){');
+  const fixtureStart = source.indexOf('const LOCAL_TEST_FIXTURE_RUNTIME=(()=>{');
   const fixture = source.slice(fixtureStart, source.indexOf('function restoreLocalTestData(){', fixtureStart));
   let mutations = 0;
   const context = {
@@ -74,7 +74,6 @@ test('programmatic edit, save, and fixture reset are blocked in strict read-only
   const fixtureState = { marker: 'unchanged' };
   const fixtureResult = vm.runInNewContext(`${fixture}; applyLocalTestFixture()`, {
     S: fixtureState,
-    LOCAL_TEST_FIXTURE_BOOT_TOKEN: Symbol('test-token'),
     isLocalTestReadOnlyMode: () => true,
     canEditFromThisTab: () => false,
   });

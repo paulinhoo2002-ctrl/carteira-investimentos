@@ -12,6 +12,7 @@
 - Decisão humana aprovada: `NO_RECORDS != ZERO_RECEIVED`. `COMPLETE` exige confirmação explícita de fonte/mês inteiro; ausência de registros permanece `UNKNOWN`, registros sem cobertura completa são `PARTIAL`, meses futuros são `FUTURE`.
 - Média e projeção dependem exclusivamente de meses completos; sem evidência, exibir indisponível. Total anual contém recebido confirmado, nunca esperado/declarado/estimado. Contrato detalhado em `PRODUCT_CONTRACTS.md`.
 - Essa confirmação é entrada do modelo derivado, não schema persistido novo. O runtime atual não possui fonte de cobertura completa; não fabricar autoridade nem contornar persistência protegida para preencher o indicador.
+- Auditoria V335 encontrou o adapter Modern tratando qualquer linha de proventos como recebida e expondo médias de cobertura parcial. O contrato readonly v2 transporta estado por evento e cobertura; somente `PAID` entra em recebimentos, `plannedValue` é separado e média exige 12 meses completos. Isso é contrato derivado em memória, sem mudança de persistência.
 
 ## V332 — runtime local de QA sintético (2026-10-07)
 
@@ -23,6 +24,9 @@
   fronteiras compartilhadas de edição, `save()`, reset de fixture e navegação
   persistente, inclusive chamadas programáticas. Modo sintético também rejeita
   hidratação de nuvem e acesso/persistência V76, sem localStorage financeiro.
+- A capacidade privilegiada para instalar o fixture readonly é privada e
+  one-shot: nunca deixe token de boot em escopo léxico global, pois avaliação
+  de JavaScript na página pode acessá-lo mesmo sem propriedade em `window`.
 - `npm ci` autorizado nesta worktree; `package.json`/lockfile inalterados.
   Validação fresca: `test:local-synthetic` 26/26, browser readonly 1/1,
   legado 255/255, moderno 820/820, V330 20/20, V84 4/4, A11Y 19/19,

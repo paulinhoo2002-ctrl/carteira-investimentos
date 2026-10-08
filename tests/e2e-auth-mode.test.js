@@ -21,12 +21,13 @@ test('production keeps the normal Firebase authentication path', () => {
 
 test('local mode bypasses the access gate without initializing Firebase', () => {
   assert.match(source, /function shouldShowAccessGate\(\)\{\s*if\(isLocalTestMode\(\)\) return false;/);
-  assert.match(source, /\}else if\(isLocalTestMode\(\)\)\{\s*applyLocalTestFixture\(LOCAL_TEST_FIXTURE_BOOT_TOKEN\)/);
+  assert.match(source, /\}else if\(isLocalTestMode\(\)\)\{\s*initializeLocalTestFixture\(\)/);
 });
 
 test('local mode uses the deterministic fixture and disables remote sync', () => {
   assert.match(source, /function localTestFixtureWallet\(\)/);
   assert.match(source, /function applyLocalTestFixture\(runtimeToken\)/);
+  assert.doesNotMatch(source, /const LOCAL_TEST_FIXTURE_BOOT_TOKEN/);
   assert.match(source, /if\(isLocalTestMode\(\)\) return;/);
   assert.match(source, /Sem Firebase, sincronização, importação\/exportação ou persistência financeira/);
 });

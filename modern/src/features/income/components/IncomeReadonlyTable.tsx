@@ -1,4 +1,4 @@
-import { formatReadonlyDateTime, formatReadonlyMoneyOrMissing } from '../readonlyIncomeViewModel.ts';
+import { formatIncomePaymentState, formatReadonlyDateTime, formatReadonlyMoneyOrMissing } from '../readonlyIncomeViewModel.ts';
 import type { ReadOnlyIncomeItem, ReadOnlyIncomeSnapshot } from '../incomeReadonlyContract.mjs';
 import { summarizeItemLabel } from './shared/summarizeItemLabel';
 
@@ -11,11 +11,12 @@ export function IncomeReadonlyTable({ items, snapshot }: IncomeReadonlyTableProp
   return (
     <div className="fixed-income-readonly__table-wrap">
       <table className="fixed-income-readonly__table">
-        <caption>Proventos recebidos e renda mensal somente leitura</caption>
+        <caption>Recebimentos e eventos de proventos somente leitura</caption>
         <thead>
           <tr>
             <th scope="col">Ativo</th>
             <th scope="col">Tipo</th>
+            <th scope="col">Estado</th>
             <th scope="col">Pagamento</th>
             <th scope="col">Competencia</th>
             <th className="number-cell" scope="col">
@@ -38,6 +39,7 @@ export function IncomeReadonlyTable({ items, snapshot }: IncomeReadonlyTableProp
                 <span className="assets-report__name">{item.name ?? 'Sem identificacao'}</span>
               </th>
               <td>{item.type ?? 'Nao informado'}</td>
+              <td>{formatIncomePaymentState(item.paymentState)}</td>
               <td>{formatReadonlyDateTime(item.paymentDate ?? snapshot.generatedAt)}</td>
               <td>{item.competenceDate ? formatReadonlyDateTime(item.competenceDate) : 'Nao informado'}</td>
               <td className="number-cell">{formatReadonlyMoneyOrMissing(item.receivedValue)}</td>

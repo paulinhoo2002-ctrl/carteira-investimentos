@@ -38,16 +38,12 @@ export function OverviewPage({ reportsAdapter, incomeAdapter }: OverviewPageProp
   const assetsSummary = useMemo(() => createReadonlyAssetsSummary(reportsSnapshot.items), [reportsSnapshot.items]);
   const categoryDistribution = useMemo(() => createCategoryDistribution(reportsSnapshot.items), [reportsSnapshot.items]);
 
-  const totalReceived = incomeSnapshot.summary.totalReceived ?? 0;
-  const monthTotal = incomeSnapshot.summary.monthTotal ?? 0;
-  const yearTotal = incomeSnapshot.summary.yearTotal ?? 0;
-  const averageMonthly = incomeSnapshot.summary.averageMonthly ?? 0;
-  const paymentCount = incomeSnapshot.summary.paymentCount ?? 0;
+  const monthTotal = incomeSnapshot.summary.monthTotal;
 
   const upcomingDividends = useMemo(() => {
     const reference = new Date(incomeSnapshot.generatedAt).getTime();
     return incomeSnapshot.items
-      .filter((item) => item.paymentDate && new Date(item.paymentDate).getTime() >= reference)
+      .filter((item) => (item.paymentState === 'ANNOUNCED' || item.paymentState === 'ESTIMATED') && item.paymentDate && new Date(item.paymentDate).getTime() >= reference)
       .sort((a, b) => new Date(a.paymentDate!).getTime() - new Date(b.paymentDate!).getTime())
       .slice(0, 5);
   }, [incomeSnapshot.items, incomeSnapshot.generatedAt]);
@@ -79,8 +75,8 @@ export function OverviewPage({ reportsAdapter, incomeAdapter }: OverviewPageProp
           />
           <DashboardMetricCard
             label="Dividendos no mês"
-            value={monthTotal > 0 ? formatReadonlyCurrency(monthTotal) : '—'}
-            trend={monthTotal > 0 ? { value: 0, label: 'recebido' } : null}
+            value={monthTotal != null ? formatReadonlyCurrency(monthTotal) : '—'}
+            trend={monthTotal != null ? { value: 0, label: incomeSnapshot.summary.monthCoverage === 'COMPLETE' ? 'recebido confirmado' : `subtotal · ${incomeSnapshot.summary.monthCoverage.toLowerCase()}` } : null}
             variant="info"
             size="large"
           />
@@ -174,11 +170,11 @@ export function OverviewPage({ reportsAdapter, incomeAdapter }: OverviewPageProp
                 <article className="overview-dividend-row">
                   <div className="overview-dividend-row__asset">
                     <strong>{item.ticker ?? '—'}</strong>
-                    <span className="overview-dividend-row__type">{item.type ?? 'Provento'}</span>
+                    <span className="overview-dividend-row__type">{item.paymentState === 'ESTIMATED' ? 'Estimado · ' : 'Anunciado · '}{item.type ?? 'Provento'}</span>
                   </div>
                   <div className="overview-dividend-row__details">
                     <span className="overview-dividend-row__date">{formatDateShort(item.paymentDate)}</span>
-                    <span className="overview-dividend-row__value">{typeof item.receivedValue === 'number' ? formatReadonlyCurrency(item.receivedValue) : '—'}</span>
+                    <span className="overview-dividend-row__value">{typeof item.plannedValue === 'number' ? formatReadonlyCurrency(item.plannedValue) : '—'}</span>
                   </div>
                 </article>
               )}
@@ -186,10 +182,10 @@ export function OverviewPage({ reportsAdapter, incomeAdapter }: OverviewPageProp
                 <article className="overview-dividend-card">
                   <header>
                     <strong>{item.ticker ?? '—'}</strong>
-                    <span className="overview-dividend-card__type">{item.type ?? 'Provento'}</span>
+                    <span className="overview-dividend-card__type">{item.paymentState === 'ESTIMATED' ? 'Estimado · ' : 'Anunciado · '}{item.type ?? 'Provento'}</span>
                   </header>
                   <p className="overview-dividend-card__date">{formatDateShort(item.paymentDate)}</p>
-                  <p className="overview-dividend-card__value">{typeof item.receivedValue === 'number' ? formatReadonlyCurrency(item.receivedValue) : '—'}</p>
+                  <p className="overview-dividend-card__value">{typeof item.plannedValue === 'number' ? formatReadonlyCurrency(item.plannedValue) : '—'}</p>
                 </article>
               )}
               emptyState={<EmptyState title="Sem dividendos agendados" body="Nenhum pagamento futuro identificado." size="compact" />}

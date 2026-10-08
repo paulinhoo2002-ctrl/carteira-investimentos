@@ -150,3 +150,41 @@ test('income analysis does not claim goal achievement without certified coverage
   assert.ok(result.priority.includes('cobertura'));
   assert.ok(result.warnings.every(message => !message.includes('Meta alcançada ou superada')));
 });
+
+test('Modern Income snapshot separates announced events from received payments and uncertified averages', () => {
+  const start = source.indexOf('    getIncomeSnapshot(){');
+  const end = source.indexOf('getContributionsSnapshot(){', start);
+  assert.ok(start >= 0 && end > start, 'actual host income snapshot method exists');
+  const method = source.slice(start, end).replace(/,\s*$/, '').trim();
+  const engine = require('../dividend-intelligence');
+  const snapshotFor = rows => vm.runInNewContext(`({${method}}).getIncomeSnapshot()`, {
+    S: { proventos: rows },
+    globalThis: { DividendIntelligence: engine },
+    proventoStats: () => ({ total: rows.some(row => row.state === 'PAID') ? 250 : 0, mes: rows.some(row => row.state === 'PAID') ? 250 : 0, ano: rows.some(row => row.state === 'PAID') ? 250 : 0 }),
+    passiveIncomeGoalStats: () => ({ monthlyAvg: 100, monthlyAverageStatus: 'PARTIAL' }),
+    proventoDividendPaymentDate: row => row.date ? new Date(`${row.date}T12:00:00Z`) : null,
+    proventoTipoCanonical: value => value,
+    toISODate: value => value.toISOString().slice(0, 10),
+    Date: FixedDate,
+  });
+
+  for (const state of ['EXPECTED', 'DECLARED']) {
+    const snapshot = snapshotFor([{ id: state, ticker: 'SYN3', type: 'Dividendo', state, date: '2027-01-10', value: 150 }]);
+    assert.equal(snapshot.summary.paymentCount, 0, `${state} is not a received payment`);
+    assert.equal(snapshot.summary.totalReceived, null, `${state}-only history is not zero received`);
+    assert.equal(snapshot.summary.monthTotal, null);
+    assert.equal(snapshot.summary.yearTotal, null);
+    assert.equal(snapshot.summary.averageMonthly, null);
+    assert.equal(snapshot.summary.historyCoverage, 'UNKNOWN');
+    assert.equal(snapshot.items[0].paymentState, 'ANNOUNCED');
+    assert.equal(snapshot.items[0].receivedValue, null);
+    assert.equal(snapshot.items[0].plannedValue, 150);
+  }
+
+  const partialPaid = snapshotFor([{ id: 'paid', ticker: 'SYN3', type: 'Dividendo', state: 'PAID', date: '2026-10-10', value: 250 }]);
+  assert.equal(partialPaid.summary.paymentCount, 1);
+  assert.equal(partialPaid.summary.totalReceived, 250);
+  assert.equal(partialPaid.summary.averageMonthly, null, 'partial coverage cannot certify a monthly average');
+  assert.equal(partialPaid.items[0].paymentState, 'PAID');
+  assert.equal(partialPaid.items[0].receivedValue, 250);
+});

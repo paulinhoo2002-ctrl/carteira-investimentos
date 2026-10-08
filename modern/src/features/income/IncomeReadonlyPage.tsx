@@ -121,6 +121,7 @@ function IncomeReadonlyPageContent({
   );
 
   const hasItems = snapshot.items.length > 0;
+  const hasReceivedItems = snapshot.summary.paymentCount > 0;
   const topPayment = viewModel.topPayments[0] ?? null;
   const topPayer = viewModel.topPayers[0] ?? null;
   const emptyTitle = hasItems ? 'Nenhum provento encontrado' : 'Carteira de proventos vazia nesta leitura readonly.';
@@ -131,7 +132,7 @@ function IncomeReadonlyPageContent({
   const monthlyIncomeData = useMemo(() => {
     const buckets = new Map<string, number>();
     for (const item of snapshot.items) {
-      if (!item.paymentDate || typeof item.receivedValue !== 'number') continue;
+      if (item.paymentState !== 'PAID' || !item.paymentDate || typeof item.receivedValue !== 'number') continue;
       const date = new Date(item.paymentDate);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       buckets.set(key, (buckets.get(key) ?? 0) + (item.receivedValue ?? 0));
@@ -145,7 +146,7 @@ function IncomeReadonlyPageContent({
   const upcomingDividends = useMemo(() => {
     const reference = new Date(snapshot.generatedAt).getTime();
     return snapshot.items
-      .filter((item) => item.paymentDate && new Date(item.paymentDate).getTime() >= reference)
+      .filter((item) => (item.paymentState === 'ANNOUNCED' || item.paymentState === 'ESTIMATED') && item.paymentDate && new Date(item.paymentDate).getTime() >= reference)
       .sort((a, b) => new Date(a.paymentDate!).getTime() - new Date(b.paymentDate!).getTime())
       .slice(0, 5);
   }, [snapshot.items, snapshot.generatedAt]);
@@ -170,28 +171,28 @@ function IncomeReadonlyPageContent({
         {errorMessage ? errorMessage : formatStatusLabel(refreshStatus, snapshot.summary.paymentCount)}
       </p>
 
-      <DashboardSection title="Resumo de proventos" subtitle={`${snapshot.summary.paymentCount} pagamentos registrados`}>
+      <DashboardSection title="Resumo de proventos" subtitle={`${snapshot.summary.paymentCount} recebimentos identificados · cobertura ${snapshot.summary.historyCoverage.toLowerCase()}`}>
         <div className="income-summary-cards">
           <DashboardMetricCard
-            label="Total recebido"
+            label={snapshot.summary.historyCoverage === 'COMPLETE' ? 'Total recebido' : 'Subtotal recebido'}
             value={snapshot.summary.totalReceived != null ? formatReadonlyCurrency(snapshot.summary.totalReceived) : '—'}
             variant="primary"
             size="large"
           />
           <DashboardMetricCard
-            label="Mês atual"
+            label={snapshot.summary.monthCoverage === 'COMPLETE' ? 'Mês atual confirmado' : snapshot.summary.monthCoverage === 'PARTIAL' ? 'Subtotal do mês parcial' : 'Recebido no mês'}
             value={snapshot.summary.monthTotal != null ? formatReadonlyCurrency(snapshot.summary.monthTotal) : '—'}
             variant="info"
             size="large"
           />
           <DashboardMetricCard
-            label="Acumulado anual"
+            label={snapshot.summary.historyCoverage === 'COMPLETE' ? 'Acumulado anual' : 'Subtotal anual'}
             value={snapshot.summary.yearTotal != null ? formatReadonlyCurrency(snapshot.summary.yearTotal) : '—'}
             variant="primary"
             size="large"
           />
           <DashboardMetricCard
-            label="Média mensal"
+            label="Média mensal completa"
             value={snapshot.summary.averageMonthly != null ? formatReadonlyCurrency(snapshot.summary.averageMonthly) : '—'}
             variant="info"
             size="large"
@@ -204,7 +205,7 @@ function IncomeReadonlyPageContent({
           />
           <DashboardMetricCard
             label="Ativos pagadores"
-            value={snapshot.items.length > 0 ? new Set(snapshot.items.map((i) => i.ticker).filter(Boolean)).size.toString() : '0'}
+            value={hasReceivedItems ? new Set(snapshot.items.filter((i) => i.paymentState === 'PAID').map((i) => i.ticker).filter(Boolean)).size.toString() : '—'}
             variant="info"
             size="large"
           />
@@ -215,7 +216,7 @@ function IncomeReadonlyPageContent({
         <DashboardSection title="Evolução mensal" subtitle="Últimos 6 meses">
           <ChartContainer
             title="Evolução mensal de proventos"
-            summary={`Período: últimos seis meses. Snapshot gerado em ${formatDateShort(snapshot.generatedAt)}. ${snapshot.summary.monthTotal != null ? `Mês atual: ${formatReadonlyCurrency(snapshot.summary.monthTotal)}` : hasItems ? 'O total mensal não foi confirmado.' : 'O total mensal não está identificado.'}`}
+            summary={`Período: últimos seis meses. Snapshot gerado em ${formatDateShort(snapshot.generatedAt)}. ${snapshot.summary.monthTotal != null ? `Subtotal observado: ${formatReadonlyCurrency(snapshot.summary.monthTotal)} (${snapshot.summary.monthCoverage.toLowerCase()}).` : 'Cobertura mensal insuficiente para confirmar o total.'}`}
           >
             {monthlyIncomeData.length >= 2 ? (
               <div className="income-sparkline-wrapper">
@@ -223,13 +224,13 @@ function IncomeReadonlyPageContent({
               </div>
             ) : (
               <EmptyState
-                title={hasItems ? 'Histórico mensal parcial' : 'Histórico mensal desconhecido'}
-                body={snapshot.summary.monthTotal == null && hasItems
-                  ? 'Há registros, mas o total mensal não foi confirmado. A evolução não será estimada.'
+                title={hasReceivedItems ? 'Histórico mensal parcial' : 'Histórico mensal desconhecido'}
+                body={snapshot.summary.monthTotal == null && hasReceivedItems
+                  ? 'Há recebimentos identificados, mas a cobertura mensal não foi confirmada. A evolução não será estimada.'
                   : snapshot.summary.monthTotal == null
                     ? 'Não há dados identificados para confirmar o histórico mensal.'
                     : 'Menos de dois períodos conhecidos para exibir a evolução.'}
-                status={snapshot.summary.monthTotal == null ? (hasItems ? 'PARTIAL' : 'UNKNOWN') : 'UNAVAILABLE'}
+                status={snapshot.summary.monthTotal == null ? (hasReceivedItems ? 'PARTIAL' : 'UNKNOWN') : 'UNAVAILABLE'}
                 size="compact"
               />
             )}
@@ -238,9 +239,9 @@ function IncomeReadonlyPageContent({
 
         <DashboardSection title="Distribuição por tipo" subtitle="Proporção de proventos por categoria">
           <div className="income-type-distribution">
-            {snapshot.items.length > 0 ? (() => {
+            {hasReceivedItems ? (() => {
               const typeMap = new Map<string, { count: number; total: number }>();
-              for (const item of snapshot.items) {
+              for (const item of snapshot.items.filter((entry) => entry.paymentState === 'PAID')) {
                 const type = item.type ?? 'Não informado';
                 const current = typeMap.get(type) ?? { count: 0, total: 0 };
                 typeMap.set(type, { count: current.count + 1, total: current.total + (item.receivedValue ?? 0) });
@@ -266,7 +267,7 @@ function IncomeReadonlyPageContent({
                   </article>
                 ));
             })() : (
-              <EmptyState title="Sem distribuição" body="Nenhum provento para exibir distribuição por tipo." size="compact" />
+              <EmptyState title="Sem recebimentos confirmados" body="Eventos anunciados ou desconhecidos não são contabilizados como pagamentos recebidos." status="UNKNOWN" size="compact" />
             )}
           </div>
         </DashboardSection>
@@ -276,7 +277,7 @@ function IncomeReadonlyPageContent({
         {(() => {
           const now = Date.now();
           const upcoming = snapshot.items
-            .filter((item) => item.paymentDate && new Date(item.paymentDate).getTime() >= Date.now())
+            .filter((item) => (item.paymentState === 'ANNOUNCED' || item.paymentState === 'ESTIMATED') && item.paymentDate && new Date(item.paymentDate).getTime() >= Date.now())
             .sort((a, b) => new Date(a.paymentDate!).getTime() - new Date(b.paymentDate!).getTime())
             .slice(0, 5);
           return upcoming.length > 0 ? (
@@ -286,11 +287,11 @@ function IncomeReadonlyPageContent({
                 <article className="income-upcoming-row">
                   <div className="income-upcoming-row__asset">
                     <strong>{item.ticker ?? '—'}</strong>
-                    <span className="income-upcoming-row__type">{item.type ?? 'Provento'}</span>
+                    <span className="income-upcoming-row__type">{item.paymentState === 'ESTIMATED' ? 'Estimativa · ' : 'Anunciado · '}{item.type ?? 'Provento'}</span>
                   </div>
                   <div className="income-upcoming-row__details">
                     <span className="income-upcoming-row__date">{new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' }).format(new Date(item.paymentDate!))}</span>
-                    <span className="income-upcoming-row__value">{typeof item.receivedValue === 'number' ? formatReadonlyCurrency(item.receivedValue) : '—'}</span>
+                    <span className="income-upcoming-row__value">{typeof item.plannedValue === 'number' ? formatReadonlyCurrency(item.plannedValue) : '—'}</span>
                   </div>
                 </article>
               )}
@@ -298,10 +299,10 @@ function IncomeReadonlyPageContent({
                 <article className="income-upcoming-card">
                   <header>
                     <strong>{item.ticker ?? '—'}</strong>
-                    <span className="income-upcoming-card__type">{item.type ?? 'Provento'}</span>
+                    <span className="income-upcoming-card__type">{item.paymentState === 'ESTIMATED' ? 'Estimativa · ' : 'Anunciado · '}{item.type ?? 'Provento'}</span>
                   </header>
                   <p className="income-upcoming-card__date">{new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' }).format(new Date(item.paymentDate!))}</p>
-                  <p className="income-upcoming-card__value">{typeof item.receivedValue === 'number' ? formatReadonlyCurrency(item.receivedValue) : '—'}</p>
+                  <p className="income-upcoming-card__value">{typeof item.plannedValue === 'number' ? formatReadonlyCurrency(item.plannedValue) : '—'}</p>
                 </article>
               )}
               emptyState={<EmptyState title="Sem próximos pagamentos" body="Nenhum provento com data futura identificado." size="compact" />}

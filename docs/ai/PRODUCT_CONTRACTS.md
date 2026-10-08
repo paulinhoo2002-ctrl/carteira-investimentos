@@ -8,6 +8,7 @@
 - Total anual soma somente valores classificados como recebidos (`PAID`); esperados, declarados, anunciados, estimados e projeções ficam fora. A soma conhecida não certifica cobertura do ano.
 - Média usa somente meses completos confirmados, incluindo zero completo. Sem denominador governado, média e projeção ficam indisponíveis. Projeção anual é uma estimativa separada, nunca parte do recebido.
 - O runtime atual não possui fonte de confirmação mensal completa. A aplicação não inventa essa evidência nem grava novo schema; cobertura completa é uma entrada explícita do cálculo derivado, coberta por fixtures sintéticas. Persistência/Auth/Firebase permanecem intactos.
+- O snapshot readonly Modern mantém estado explícito por evento (`PAID`, `ANNOUNCED`, `ESTIMATED`, `UNKNOWN`). Somente `PAID` conta como recebimento; valores planejados permanecem separados. Cobertura histórica e mensal é parte do contrato derivado, e média mensal só é válida com 12 meses `COMPLETE`. A versão 2 altera apenas a interface em memória entre host e React; não muda schema persistido.
 
 ## Phase 4 automation safety contract (2026-09-06)
 
