@@ -6582,6 +6582,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     margin-bottom: 20px;
   }
   .assets-table-wrap { overflow-x: auto; }
+  .assets-table-wrap:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .asset-mobile-cards { display: none; }
   .assets-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1560px; }
   .assets-table th {
@@ -32086,7 +32087,7 @@ function ativos(){
     `;
 
     const tableHtml = `
-      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar">
+      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}">
         <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
         <table class="assets-table ${type === 'Renda Fixa' ? 'rf-table' : 'ag-table'}">
           <thead>

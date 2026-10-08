@@ -595,6 +595,50 @@ test('V289 final route matrix keeps Dashboard first-fold, mobile order and navig
   }
 });
 
+test('Ativos tabela rola por teclado sem ampliar a pagina e preserva cards mobile', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    const table = runtime.page.locator('.assets-table-wrap').first();
+    await table.focus();
+    const before = await table.evaluate(element => ({
+      focused: document.activeElement === element,
+      scrollWidth: element.scrollWidth,
+      clientWidth: element.clientWidth,
+      outlineStyle: getComputedStyle(element).outlineStyle,
+      pageWidth: document.documentElement.scrollWidth,
+      viewportWidth: innerWidth,
+    }));
+    assert.equal(before.focused, true);
+    assert.ok(before.scrollWidth > before.clientWidth, 'Ativos synthetic table should overflow inside its region');
+    assert.notEqual(before.outlineStyle, 'none', 'keyboard focus must be visible');
+    assert.ok(before.pageWidth <= before.viewportWidth, 'desktop page must not scroll horizontally');
+    await runtime.page.keyboard.press('ArrowRight');
+    assert.ok(await table.evaluate(element => element.scrollLeft > 0), 'ArrowRight should scroll the focused table region');
+    await runtime.page.keyboard.press('Tab');
+    assert.equal(await table.evaluate(element => document.activeElement !== element), true, 'Tab must leave the region');
+
+    await runtime.page.setViewportSize({ width: 390, height: 844 });
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    const mobile = await runtime.page.evaluate(() => ({
+      tableVisible: getComputedStyle(document.querySelector('.assets-table-wrap')).display !== 'none',
+      cards: document.querySelectorAll('.asset-mobile-cards > *').length,
+      pageWidth: document.documentElement.scrollWidth,
+      viewportWidth: innerWidth,
+    }));
+    assert.equal(mobile.tableVisible, false);
+    assert.ok(mobile.cards > 0, 'mobile must retain asset cards');
+    assert.ok(mobile.pageWidth <= mobile.viewportWidth, 'mobile page must not scroll horizontally');
+    await assertSyntheticReadOnlyRuntime(runtime);
+    assert.deepEqual(runtime.pageErrors, []);
+    assert.deepEqual(runtime.firebaseRequests, []);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
 test('V289 changed routes pass axe in dark/light and respect reduced motion', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
   try {
