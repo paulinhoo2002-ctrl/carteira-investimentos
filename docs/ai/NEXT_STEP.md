@@ -1,5 +1,12 @@
 # Next Step
 
+## V341 — próximo gate (2026-10-08)
+
+- `origin/main=6eb69f28` inclui #459/#460. Gates locais frescos da V341 estão em `PROJECT_STATE.md` (867/867 geral, 823/823 modern, V342 30/30, builds, `qa:all`).
+- **Gate humano imediato:** decidir o encerramento das PRs superseded #457/#458 (mesclar regrediria `dividendReceivedRows()`/PAID-only e a acessibilidade por teclado) e o rebase/fechamento da docs-only #461 (conteúdo reconciliado em `PROJECT_STATE.md` V341). Nenhuma das ações foi executada.
+- Após o gate: a cadeia #454/#455/#450/#446/#444/#441/#440 segue aberta e defasada; reavaliar uma a uma com auditoria two-dot antes de qualquer decisão.
+- Não iniciar merge, deploy, importação/restauração real ou escrita financeira real. `MERGE=false`, `PRODUCTION=false`, `REAL_WRITES=0`.
+
 ## V333 — cobertura mensal aprovada e implementada
 
 - Decisão humana: ausência de registros não comprova zero. A matriz e os cards distinguem `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`; zero exige fonte e confirmação explícita do mês inteiro. Total recebido, média completa e estimativa permanecem separados.

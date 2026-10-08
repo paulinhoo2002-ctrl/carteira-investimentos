@@ -1,5 +1,14 @@
 # Project State
 
+## V341 — consolidação pós-merge e reconciliação documental (2026-10-08)
+
+- `origin/main=6eb69f28b195c56a14c506bafc477f9bb52cbcdb` contém os merges #459 (`09f4567`, V333 cobertura de dividendos) e #460 (`6eb69f2`, V336–V339 acessibilidade/rolagem de Ativos + submenu Relatórios 768 px). Especificação: `docs/ai/V341_POST_MERGE_CONSOLIDATION_SPEC.md`.
+- Auditoria two-dot (`git diff origin/main <head>`) das PRs empilhadas: #457 (`ead2799`) e #458 (`e809d3c`) estão **SUPERSEDED** — seus conteúdos já estão no main via #459/#460 e o diff restante removeria `dividendReceivedRows()` (filtro PAID-only em resumo/matriz/pagadores), restauraria estado ausente→PAID em `stateOf()` e removeria a acessibilidade por teclado da tabela de Ativos. Mesclar causaria regressão financeira e de acessibilidade. Encerramento cabe ao gate humano; nenhum fechamento executado.
+- PR #461 (docs-only, head `d386e37`, CI verde) registra #460 como OPEN/DRAFT — obsoleto pós-merge. Seus blocos factuais foram reconciliados nesta V341 sem duplicação; rebase/fechamento da #461 é decisão humana.
+- Gates frescos no `6eb69f2` (worktree `v341-final-consolidation`, `npm ci` limpo): `npm test` 867/867; `test:modern` 823/823; focados V342 30/30 (inclui V289 visual 16/16 com teclado, toque, submenu 768 px e axe dark/light); builds legacy/moderno PASS; `qa:all` PASS com smoke 7 larguras (390/430/768/1366/1440/1536/1920) sem overflow/console/page errors; `git diff --check` PASS.
+- Invariantes confirmados no HEAD: `stateOf()` ausente→`UNKNOWN` (nunca PAID); `dividendReceivedRows()` restringe resumo/matriz/pagadores a `PAID`; `coverageOf()` sem registros→`UNKNOWN`. Nenhuma violação reproduzida; nenhum RED novo.
+- Limites: somente Chrome local; Firefox/WebKit, persistência autenticada e produção não certificados. QA sintético; `REAL_WRITES=0`, `REAL_IMPORT=false`, `REAL_RESTORE=false`, `PRODUCTION=false`, `MERGE=false`.
+
 ## V333 — revisão de uso diário (2026-10-08)
 
 - Base empilhada sobre PR #456 no HEAD `1917c7e577bea777e0315c988df5c8985cc25286`; PR #456 foi confirmada OPEN/DRAFT/MERGEABLE, CI run `37755481672` PASS. Worktree `C:\Projetos\carteira-investimentos.worktrees\v333-premium-product-finish`, branch `codex/v333-premium-product-finish`; PRs #454/#455 preservadas.

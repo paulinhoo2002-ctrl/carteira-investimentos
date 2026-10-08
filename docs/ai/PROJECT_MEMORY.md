@@ -7,6 +7,13 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V341 — lições de consolidação pós-merge (2026-10-08)
+
+- PRs empilhadas cujo conteúdo entrou no main por outra via (#457→#459, #458→#460) ficam perigosas: o diff exibido pela PR engana. Sempre auditar com `git diff origin/main <head>` (two-dot) antes de tratar PR aberta como útil; three-dot esconde regressões.
+- Sinal de superseded PR: o two-dot mostra **remoções** de código que o main adicionou depois (aqui: `dividendReceivedRows()`, `stateOf()` ausente→UNKNOWN, `assets-table-wrap` acessível).
+- Verificação de invariantes financeiros por leitura de fonte pontual (`stateOf`, `coverageOf`, `dividendReceivedRows`) + suíte focada é suficiente quando as regressões já têm cobertura de teste; não reescrever testes para confirmar o verde.
+- Documentação de checkpoint (#461) escrita antes de merges torna-se contraditória sem ser errada: reconciliar factualmente no doc canônico e deixar o fechamento da PR para o gate humano, em vez de reverter ou duplicar.
+
 ## V333 — ausência mensal não comprova zero (2026-10-08)
 
 - Decisão humana aprovada: `NO_RECORDS != ZERO_RECEIVED`. `COMPLETE` exige confirmação explícita de fonte/mês inteiro; ausência de registros permanece `UNKNOWN`, registros sem cobertura completa são `PARTIAL`, meses futuros são `FUTURE`.
