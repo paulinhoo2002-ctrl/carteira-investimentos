@@ -20629,9 +20629,9 @@ function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
   const resumo=proventoResumo();
   const historicalSummary=resumo.summary || { total: 0, avg: null, monthCount: 0, best: null };
   const totalHistoricalLabel=fmt(historicalSummary.total||0);
-  const avgHistoricalLabel=historicalSummary.avg!=null ? fmt(historicalSummary.avg) : '—';
+  const avgHistoricalLabel='—';
   const total12Label=stats.hasData ? fmt(stats.total12) : '—';
-  const avg12Label=stats.hasData ? fmt(stats.monthlyAvg) : '—';
+  const avg12Label='—';
   const bestMonthLabel=historicalSummary.best
     ? `${historicalSummary.best.label || historicalSummary.best.mes || '—'} · ${fmt(historicalSummary.best.total || 0)}`
     : '—';
@@ -20645,9 +20645,9 @@ function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
     </div>
     <div class="passive-goal-grid summary">
       ${passiveIncomeMetricCard({tone:historicalSummary.total>0?'ok':'muted', kicker:'Total histórico', value:totalHistoricalLabel, sub:'Soma oficial dos meses elegíveis'})}
-      ${passiveIncomeMetricCard({tone:historicalSummary.avg!=null?'info':'muted', kicker:'Média mensal histórica', value:avgHistoricalLabel, sub:'Total histórico dividido pelos meses do histórico'})}
+      ${passiveIncomeMetricCard({tone:'muted', kicker:'Média mensal histórica', value:avgHistoricalLabel, sub:'Cobertura mensal completa não confirmada'})}
       ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Total nos últimos 12 meses', value:total12Label, sub:'Soma oficial da janela de 12 meses'})}
-      ${passiveIncomeMetricCard({tone:stats.hasData?'info':'muted', kicker:'Média mensal nos últimos 12 meses', value:avg12Label, sub:'Total 12M dividido por 12'})}
+      ${passiveIncomeMetricCard({tone:'muted', kicker:'Média mensal nos últimos 12 meses', value:avg12Label, sub:'Cobertura mensal completa não confirmada'})}
       ${passiveIncomeMetricCard({tone:historicalSummary.best?'ok':'muted', kicker:'Melhor mês histórico', value:bestMonthLabel, sub:'Mês com maior total no histórico'})}
     </div>
   </div>`;
@@ -33755,6 +33755,7 @@ function dividendMonthlyHistoryRows(rows=Array.isArray(S.proventos) ? S.provento
   const limitDate=new Date();
   limitDate.setHours(23,59,59,999);
   return rows.map((p,index)=>{
+    if(globalThis.DividendIntelligence?.classifyIncomeState && globalThis.DividendIntelligence.classifyIncomeState(p)!=='PAID') return null;
     const paymentDt=proventoDividendPaymentDate(p);
     if(!(paymentDt instanceof Date) || Number.isNaN(paymentDt.getTime()) || paymentDt>limitDate) return null;
     const valueState=dataQualityNumberState(p?.value);
@@ -33881,7 +33882,7 @@ function dividendMonthlyHistoryYearRows(rows){
   const monthLabels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const currentYear=new Date().getFullYear();
   return dividendAnnualMatrixData(rows).map(year=>{
-    const validMonths=year.months.filter(month=>!month.isBeforeFirst && !month.isFuture);
+    const validMonths=year.months.filter(month=>month.total!==null && !month.isFuture);
     const bestMonth=validMonths.reduce((best,month)=>{
       if(!best) return month;
       if(month.total>best.total) return month;
@@ -33892,7 +33893,7 @@ function dividendMonthlyHistoryYearRows(rows){
       year: year.year,
       total: year.annualTotal,
       average: year.annualMean,
-      validCount: validMonths.length,
+      validCount: year.completeCount,
       bestMonth,
       isCurrent: year.year===currentYear,
       months: year.months.map((month,index)=>{
@@ -33901,9 +33902,12 @@ function dividendMonthlyHistoryYearRows(rows){
         if(month.isFuture){
           kind='future';
           valueText='—';
-        } else if(month.isBeforeFirst){
+        } else if(month.coverage==='UNKNOWN'){
           kind='absent';
           valueText='—';
+        } else if(month.coverage==='PARTIAL'){
+          kind='partial';
+          valueText=month.total>0 ? `${fmt(month.total)} · Parcial` : '— · Parcial';
         } else if(month.total===0){
           kind='zero';
           valueText=fmt(0);
@@ -33935,7 +33939,7 @@ function dividendMonthlyHistoryYearCard(year, compact=false, expanded=false){
     <div class="div-year-card-head">
       <div class="div-year-card-copy">
         <div class="div-year-card-year">${year.year}</div>
-        <div class="div-year-card-meta">Média ${fmt(year.average)} · Total ${fmt(year.total)} · ${year.validCount} mês(es) válidos</div>
+        <div class="div-year-card-meta">Média ${year.average===null?'—':fmt(year.average)} · Total recebido ${year.total===null?'—':fmt(year.total)} · Cobertura confirmada: ${year.validCount}/12 meses</div>
         <div class="div-year-card-sub">Melhor mês: ${bestMonth}</div>
       </div>
       ${compact ? `<button class="btn bgh div-year-card-toggle" type="button" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${esc(bodyId)}" onclick="dividendMonthlyHistoryToggleMonth('${esc(String(year.year))}')">${open ? 'Ocultar meses' : 'Ver meses'}</button>` : ''}
@@ -33947,7 +33951,7 @@ function dividendMonthlyHistoryYearCard(year, compact=false, expanded=false){
 }
 function dividendMonthlyHistorySummaryLine(summary, groups){
   const bestLabel=summary.best ? `${esc(summary.best.label)} · ${fmt(summary.best.total)}` : '—';
-  const averageLabel=summary.avg===null ? '—' : fmt(summary.avg);
+  const averageLabel='—'; // Sem evidência de cobertura completa na fonte deste resumo.
   const totalLabel=fmt(summary.total);
   const trend=groups.length>1 && groups[0] && groups[1]
     ? `${groups[0].total>=groups[1].total?'+':'-'}${fmt(Math.abs(groups[0].total-groups[1].total))}`
@@ -33978,8 +33982,9 @@ function dividendMonthlyHistoryDistributionRows(rows){
   return focus.months.map(month=>({
     key:month.key,
     total:month.total,
-    isAbsent:month.isBeforeFirst,
+    isAbsent:month.total===null,
     isFuture:month.isFuture,
+    coverage:month.coverage,
   }));
 }
 function dividendMonthlyHistoryDistributionPanel(rows, compact=false){
@@ -34231,7 +34236,7 @@ function dividendMonthlyHistory(rows){
   const hasMore=totalMonths>visibleGroups.length;
   const hasLess=visibleLimit>6 && totalMonths>0;
   const activeFilters=[S.dividendMonthlyHistoryPeriod, S.dividendMonthlyHistoryTicker, S.dividendMonthlyHistoryType].filter(value=>String(value||'all')!=='all').length;
-  const summaryAvg=summary.avg==null ? '—' : fmt(summary.avg);
+  const summaryAvg='—'; // Cobertura mensal completa não foi confirmada.
   const summaryBest=summary.best ? `${esc(summary.best.label)} · ${fmt(summary.best.total)}` : '—';
   const summaryBestHint=summary.best ? `${summary.best.count} lançamento(s)` : 'Sem base suficiente';
   const body=`<div class="div-monthly-body">
@@ -34368,7 +34373,7 @@ function dividendMonthlyHistoryPremium(rows,startOpen=false){
   const hasMore=totalMonths>visibleGroups.length;
   const hasLess=visibleLimit>6 && totalMonths>0;
   const activeFilters=[S.dividendMonthlyHistoryPeriod, S.dividendMonthlyHistoryTicker, S.dividendMonthlyHistoryType].filter(value=>String(value||'all')!=='all').length;
-  const summaryAvg=summary.avg==null ? '—' : fmt(summary.avg);
+  const summaryAvg='—'; // Cobertura mensal completa não foi confirmada.
   const summaryBest=summary.best ? `${esc(summary.best.label)} · ${fmt(summary.best.total)}` : '—';
   const summaryBestHint=summary.best ? `${summary.best.count} lançamento(s)` : 'Sem base suficiente';
   const view=String(S.dividendMonthlyHistoryView||'list');
@@ -34478,18 +34483,19 @@ function dividendMonthlyHistoryPremium(rows,startOpen=false){
 function dividendMonthlyTableBlock(rows,startOpen=false){
   return dividendMonthlyHistoryV4(rows,startOpen);
 }
-function dividendAnnualMatrixData(rows){
-  if(!rows.length) return [];
+function dividendAnnualMatrixData(rows,coverage={}){
   const now=new Date();
   const currentYear=now.getFullYear();
   const currentMonth=now.getMonth()+1;
   const monthNames=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const years=[...new Set(rows.map(r=>Number(r.monthKey.split('-')[0])))].sort((a,b)=>b-a);
+  const classify=globalThis.DividendIntelligence?.classifyIncomeState;
+  const received=rows.filter(r=>typeof classify==='function' && classify(r)==='PAID').map(r=>({...r,monthKey:r.monthKey || String(r.date||'').slice(0,7)})).filter(r=>/^\d{4}-(0[1-9]|1[0-2])$/.test(r.monthKey));
+  const years=[...new Set([...received.map(r=>r.monthKey),...Object.keys(coverage).filter(key=>/^\d{4}-(0[1-9]|1[0-2])$/.test(key))].map(key=>Number(key.split('-')[0])))].sort((a,b)=>b-a);
   if(!years.length) return [];
-  const sortedKeys=[...new Set(rows.map(r=>r.monthKey))].sort();
+  const sortedKeys=[...new Set(received.map(r=>r.monthKey))].sort();
   const firstDataKey=sortedKeys[0];
   const monthRows=new Map();
-  rows.forEach(r=>{
+  received.forEach(r=>{
     if(!monthRows.has(r.monthKey)) monthRows.set(r.monthKey,[]);
     monthRows.get(r.monthKey).push(r);
   });
@@ -34500,13 +34506,17 @@ function dividendAnnualMatrixData(rows){
       const isFuture=year>currentYear || (year===currentYear && month>currentMonth);
       const isBeforeFirst=key<firstDataKey;
       const mRows=monthRows.get(key);
-      const total=mRows?mRows.reduce((s,r)=>s+r.value,0):0;
-      return {key,year,month,total,isFuture,isBeforeFirst,hasData:!!mRows};
+      const validRows=(mRows||[]).filter(r=>r.value!=null && r.value!=='' && Number.isFinite(Number(r.value)) && Number(r.value)>=0);
+      const evidence=coverage[key];
+      const confirmed=evidence?.state==='COMPLETE' && evidence.fullMonthConfirmed===true && typeof evidence.source==='string' && evidence.source.trim()!=='' && validRows.length===(mRows||[]).length;
+      const state=isFuture?'FUTURE':confirmed?'COMPLETE':evidence?.state==='PARTIAL' || mRows?.length?'PARTIAL':'UNKNOWN';
+      const total=isFuture?null:validRows.length?validRows.reduce((s,r)=>s+Number(r.value),0):state==='COMPLETE'?0:null;
+      return {key,year,month,total,coverage:state,isFuture,isBeforeFirst,hasData:!!mRows};
     });
-    const valid=months.filter(m=>!m.isBeforeFirst && !m.isFuture);
-    const annualTotal=valid.reduce((s,m)=>s+m.total,0);
-    const annualMean=valid.length>0?annualTotal/valid.length:null;
-    return {year,months,annualTotal,annualMean};
+    const complete=months.filter(m=>m.coverage==='COMPLETE');
+    const annualTotal=months.some(m=>m.total!==null)?months.reduce((s,m)=>s+(m.total??0),0):null;
+    const annualMean=complete.length?complete.reduce((s,m)=>s+m.total,0)/complete.length:null;
+    return {year,months,annualTotal,annualMean,annualProjection:annualMean===null?null:annualMean*12,completeCount:complete.length};
   });
 }
 function dividendAnnualMatrixView(data){
@@ -34516,13 +34526,13 @@ function dividendAnnualMatrixView(data){
     const cells=row.months.map(m=>{
       let val,cls,title;
       if(m.isFuture){val='—';cls='mat-future';title='Período futuro';}
-      else if(m.isBeforeFirst){val='—';cls='mat-absent';title='Sem histórico neste período';}
-      else if(!m.hasData && m.total===0){val=fmt(0);cls='mat-zero';title='Nenhum recebimento no mês';}
+      else if(m.coverage==='UNKNOWN'){val='—';cls='mat-absent';title='Cobertura de dados não confirmada para este mês.';}
+      else if(m.coverage==='PARTIAL'){val=m.total>0?`${fmt(m.total)} · Parcial`:'— · Parcial';cls='mat-absent';title='Cobertura parcial; recebido registrado não confirma o mês completo.';}
       else{val=fmt(m.total);cls=m.total>0?'mat-val':'mat-zero';title='';}
       return `<td class="${cls}"${title?` title="${title}"`:''}>${val}</td>`;
     }).join('');
     const meanCell=row.annualMean!==null?`<td class="mat-mean">${fmt(row.annualMean)}</td>`:'<td class="mat-mean">—</td>';
-    return `<tr><td class="mat-year">${row.year}</td>${cells}${meanCell}<td class="mat-total">${fmt(row.annualTotal)}</td></tr>`;
+    return `<tr><td class="mat-year" title="Cobertura confirmada: ${row.completeCount}/12 meses">${row.year}<small> · ${row.completeCount}/12 completos</small></td>${cells}${meanCell}<td class="mat-total" title="Soma dos recebimentos registrados; cobertura mensal exibida separadamente">${row.annualTotal===null?'—':fmt(row.annualTotal)}</td></tr>`;
   }).join('')}</tbody>`;
   return `<div class="div-mat-wrap"><div class="div-mat-scroll" tabindex="0" role="region" aria-label="Matriz anual de proventos com rolagem horizontal"><table class="div-mat-table">${thead}${tbody}</table></div></div>`;
 }
@@ -34547,7 +34557,7 @@ function dividendMonthlyTimeline(rows=filteredDividendRows()){
   const series=years.map((year,index)=>({
     name:String(year.year),
     tooltipLabel:'Proventos',
-    values:monthLabels.map((_,monthIndex)=>Number(year.months?.[monthIndex]?.total)||0),
+    values:monthLabels.map((_,monthIndex)=>year.months?.[monthIndex]?.total??null),
     color:colors[index%colors.length],
     width:index===0?2.5:1.8
   }));
@@ -34573,16 +34583,21 @@ function hideDividendChartTooltip(point){
 }
 function dividendSummaryCards(){
   const stats=passiveIncomeGoalStats();
-  const current=stats.byMonth.find(row=>row.key===stats.currentMonthKey)||{total:0,count:0};
+  const covered=dividendAnnualMatrixData(dividendPremiumRows()).flatMap(year=>year.months).filter(month=>stats.monthKeys.includes(month.key));
+  const complete=covered.filter(month=>month.coverage==='COMPLETE');
+  stats.total12=covered.reduce((sum,month)=>sum+(month.total??0),0);
+  stats.monthlyAvg=complete.length?complete.reduce((sum,month)=>sum+month.total,0)/complete.length:null;
+  stats.annualProjection=stats.monthlyAvg===null?null:stats.monthlyAvg*12;
+  const current=covered.find(row=>row.key===stats.currentMonthKey)||{total:null};
   const audit=proventoAuditBuildRows();
   const reviewPending=Number(audit.summary.pending)||0;
   const reviewNote=reviewPending
     ? `${fmt(audit.summary.quebrados)} vínculos quebrados · ${fmt(audit.summary.possiveis)} possíveis duplicidades`
     : 'Nenhuma revisão pendente.';
   return `<div class="div-premium-metrics">
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido este mês</div><div class="div-premium-metric-value good">${fmt(current.total)}</div><div class="div-premium-metric-sub">Soma dos lançamentos oficiais do mês atual · ${current.count} lançamento(s)</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Média mensal ${fmt(stats.monthlyAvg)} · projeção anual ${fmt(stats.annualProjection)}</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0?`${((current.total/stats.target)*100).toFixed(1)}% atingido · faltam ${fmt(Math.max(0,stats.target-current.total))}`:'Lida da aba Metas'}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido este mês</div><div class="div-premium-metric-value good">${current.total===null?'—':fmt(current.total)}</div><div class="div-premium-metric-sub">Recebimentos registrados · cobertura parcial</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${fmt(stats.total12)}</div><div class="div-premium-metric-sub">Média mensal ${stats.monthlyAvg===null?'—':fmt(stats.monthlyAvg)} · projeção anual estimada ${stats.annualProjection===null?'—':fmt(stats.annualProjection)}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0 && current.total!==null?`${((current.total/stats.target)*100).toFixed(1)}% registrado · cobertura parcial`:'Lida da aba Metas · recebido indisponível'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
     </div>`;
 }
@@ -34611,16 +34626,18 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
       : receivedThisYearKnown
         ? 'Pagamentos classificados como recebidos no ano atual'
         : 'Valor de recebimento indisponível';
-  const monthlyAvg=stats.monthlyAvg||0;
-  const lastMonth=stats.byMonth.length>1 ? stats.byMonth[stats.byMonth.length-2]?.total||0 : 0;
-  const annualProjection=stats.annualProjection||0;
+  const covered=dividendAnnualMatrixData(rows).flatMap(year=>year.months).filter(month=>stats.monthKeys.includes(month.key));
+  const complete=covered.filter(month=>month.coverage==='COMPLETE');
+  const monthlyAvg=complete.length?complete.reduce((sum,month)=>sum+month.total,0)/complete.length:null;
+  const lastMonth=covered.find(month=>month.key===stats.monthKeys[stats.monthKeys.length-2])?.total??null;
+  const annualProjection=monthlyAvg===null?null:monthlyAvg*12;
   const portfolioTotal=(S.assets||[]).reduce((s,a)=>s+(assetCurrentValue(a)||0),0);
   const yieldNow=(portfolioTotal>0 && stats.total12>0) ? (stats.total12/portfolioTotal*100) : null;
   const cards=[
     ['Recebido no ano','income',receivedThisYearKnown?fmt(receivedThisYear):'—',receivedThisYearSub,receivedThisYearKnown&&receivedThisYear>0?'good':'',''],
-    ['Média mensal','history',fmt(monthlyAvg),'Base dos últimos 12 meses',monthlyAvg>0?'good':'','blue'],
-    ['Último mês','trend',fmt(lastMonth),'Mês anterior completo',lastMonth>0?'good':'','orange'],
-    ['Projeção anual','target',fmt(annualProjection),'Média 12M × 12',annualProjection>0?'good':'','purple'],
+    ['Média mensal','history',monthlyAvg===null?'—':fmt(monthlyAvg),`Cobertura confirmada: ${complete.length}/12 meses`,monthlyAvg>0?'good':'','blue'],
+    ['Último mês','trend',lastMonth===null?'—':fmt(lastMonth),'Recebido registrado · cobertura parcial',lastMonth>0?'good':'','orange'],
+    ['Projeção anual','target',annualProjection===null?'—':fmt(annualProjection),'Estimativa · somente meses completos',annualProjection>0?'good':'','purple'],
     ['Yield atual','percent',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'','cyan']
   ];
   return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,icon,value,sub,tone,color])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><span class="dividend-executive-kpi-icon ${color}" aria-hidden="true">${waveBIcon(icon)}</span><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div></article>`).join('')}</div></section>`;
@@ -34628,7 +34645,7 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
 function dividendDistributionRow(month, maxVal){
   const dt=new Date(month.key+'-01T12:00:00');
   const label=dt.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
-  if(month.isAbsent || month.isFuture){
+  if(month.isAbsent || month.isFuture || month.total==null || (month.total===0 && month.coverage!=='COMPLETE')){
     return `<div class="div-dist-row"><div class="div-dist-month">${esc(label)}</div><div class="div-dist-track"><div class="div-dist-fill empty"></div></div><div class="div-dist-value zero">—</div></div>`;
   }
   const pct=maxVal>0?Math.max(0.5,Math.min(100,month.total/maxVal*100)):0;
@@ -34636,13 +34653,15 @@ function dividendDistributionRow(month, maxVal){
   const cls='div-dist-fill'+(isZero?' empty':'');
   const width=pct>0?`${pct.toFixed(1)}%`:maxVal===0?'100%':'0%';
   const valCls='div-dist-value'+(isZero?' zero':'');
-  return `<div class="div-dist-row"><div class="div-dist-month">${esc(label)}</div><div class="div-dist-track"><div class="${cls}" style="width:${width}"></div></div><div class="${valCls}">${fmt(month.total)}</div></div>`;
+  const valueLabel=month.coverage!=='COMPLETE'?(month.total>0?`${fmt(month.total)} · Parcial`:'— · Parcial'):fmt(month.total);
+  return `<div class="div-dist-row"><div class="div-dist-month">${esc(label)}</div><div class="div-dist-track"><div class="${cls}" style="width:${width}"></div></div><div class="${valCls}">${valueLabel}</div></div>`;
 }
 function dividendDistributionMonths(period){
   const count={12:12,24:24,36:36,all:Infinity}[period]||12;
   if(count===12){
     const stats=passiveIncomeGoalStats();
-    return (stats.byMonth||[]).slice(-12).map(m=>({...m,isAbsent:false}));
+    const months=dividendAnnualMatrixData(dividendMonthlyHistoryRows()).flatMap(year=>year.months);
+    return (stats.byMonth||[]).slice(-12).map(m=>{const month=months.find(row=>row.key===m.key);return {...m,total:month?.total??null,isAbsent:month?.total==null,coverage:month?.coverage||'UNKNOWN'};});
   }
   const rows=dividendMonthlyHistoryRows();
   if(!rows.length) return [];
@@ -34672,13 +34691,13 @@ function dividendDistributionMonths(period){
     const keyDate=new Date(key+'-01');
     const data=monthMap.get(key);
     if(data) return {...data,isAbsent:false};
-    return {key,total:0,count:0,isAbsent:keyDate<firstDate};
+    return {key,total:null,count:0,isAbsent:true,coverage:'UNKNOWN'};
   }).sort((a,b)=>String(a.key).localeCompare(String(b.key)));
 }
 function dividendDistributionPanel(stats){
   const fallbackByMonth=Array.isArray(stats?.byMonth) ? stats.byMonth : [];
   const sourceRows=dividendMonthlyHistoryRows();
-  const baseRows=sourceRows.length ? sourceRows : fallbackByMonth.map(month=>{
+  const baseRows=sourceRows.length ? sourceRows : fallbackByMonth.filter(month=>month.count>0).map(month=>{
     const key=String(month.key||'').trim();
     const dt=new Date(`${key}-01T12:00:00`);
     return {
@@ -34807,6 +34826,7 @@ function canonDividendYearChips(rows){
   return `<div class="canon-year-chips" role="group" aria-label="Filtrar por ano">${chips}<button type="button" class="canon-year-chip ${current==='all'?'on':''}" onclick="setDividendYearFilter('all')">Todos</button></div>`;
 }
 function canonDividendYearSummary(rows){
+  rows=rows.filter(row=>globalThis.DividendIntelligence?.classifyIncomeState?.(row)==='PAID' && row.value!=null && row.value!=='' && Number.isFinite(Number(row.value)) && Number(row.value)>=0);
   const now=new Date();
   const currentMonth=now.getMonth()+1;
   const groups=new Map();

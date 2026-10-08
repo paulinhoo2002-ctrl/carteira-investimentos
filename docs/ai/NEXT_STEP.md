@@ -1,10 +1,10 @@
 # Next Step
 
-## V333 — próximo gate humano
+## V333 — cobertura mensal aprovada e implementada
 
-- V333 foi auditada em runtime local sintético; o único arquivo funcional alterado é `tests/dividends-p0-ux.smoke.test.js`, para alinhar seu servidor ao marcador QA V332 e sua navegação ao DOM atual. Telas visuais já satisfizeram a matriz inspecionada, então nenhum produto foi alterado.
-- Antes de afirmar prontidão financeira de Dividendos, decidir o contrato protegido para meses sem registros após o início do histórico: eles significam zero recebido ou cobertura desconhecida? A matriz atual mostra `R$ 0,00` e calcula a média como se fossem zero; cobertura não é explicitada. Não alterar essa semântica até a decisão.
-- Após esse gate, se houver correção autorizada, atualizar contrato/testes e repetir `verify:release`, capturas e QA. Em qualquer caso, verificar CI do HEAD atual da PR V333 e manter PR #456 como base; não mesclar.
+- Decisão humana: ausência de registros não comprova zero. A matriz e os cards distinguem `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`; zero exige fonte e confirmação explícita do mês inteiro. Total recebido, média completa e estimativa permanecem separados.
+- Runtime atual não fornece confirmação de cobertura mensal completa. Valores registrados aparecem como parciais; média/projeção ficam indisponíveis. A integração futura dessa evidência exige fonte governada; não inferir cobertura a partir de registros vazios.
+- Revisar a Draft PR #457, empilhada sobre #456. O workflow remoto CI só atende PRs com base `main`; não confundir sucesso do Vercel com execução das suítes GitHub Actions. Usar evidência local fresca e repetir CI quando a cadeia puder receber o gate remoto, sem alterar a base/mesclar automaticamente.
 - Segurança mantida: somente fixtures sintéticas; `REAL_WRITES=0`, `REAL_IMPORT=false`, `REAL_RESTORE=false`, `PRODUCTION=false`, `MERGE=false`.
 
 ## V332 — runtime QA sintético local (2026-10-07)

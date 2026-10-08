@@ -7,6 +7,12 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V333 — ausência mensal não comprova zero (2026-10-08)
+
+- Decisão humana aprovada: `NO_RECORDS != ZERO_RECEIVED`. `COMPLETE` exige confirmação explícita de fonte/mês inteiro; ausência de registros permanece `UNKNOWN`, registros sem cobertura completa são `PARTIAL`, meses futuros são `FUTURE`.
+- Média e projeção dependem exclusivamente de meses completos; sem evidência, exibir indisponível. Total anual contém recebido confirmado, nunca esperado/declarado/estimado. Contrato detalhado em `PRODUCT_CONTRACTS.md`.
+- Essa confirmação é entrada do modelo derivado, não schema persistido novo. O runtime atual não possui fonte de cobertura completa; não fabricar autoridade nem contornar persistência protegida para preencher o indicador.
+
 ## V332 — runtime local de QA sintético (2026-10-07)
 
 - O modo sintético exige marcador fixo injetado pelo servidor local iniciado
