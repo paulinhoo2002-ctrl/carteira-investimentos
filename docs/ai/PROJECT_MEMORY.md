@@ -24,6 +24,11 @@
   `git diff --check` passaram.
   Smoke viewport sem overflow em 390/430/768/1366/1440/1536/1920; V289
   também cobre 360/1024/1280. Evidência visual sintética fica em `.qa-state/`.
+- Cinco smokes responsivos passaram a usar o servidor QA compartilhado, que
+  injeta o marcador confiável exigido pelo modo sintético. Isso corrigiu a
+  falha de Reliability no CI sem mudar o produto. PR #456 permanece OPEN/DRAFT;
+  HEAD `855ffc5d904668d6c8fcca240f96a2a7c9b7fa89`, CI run `37713822618` PASS,
+  Preview Vercel READY no mesmo SHA. A revisão/merge continua humana.
 - Browser encontrou e corrigiu sinal duplicado no resultado positivo por
   classe e métricas do resumo de classes Ativos cortadas a 1366 px. npm reportou
   7 advisories (3 moderados, 4 altos); audit de produção reportou zero; nenhum
