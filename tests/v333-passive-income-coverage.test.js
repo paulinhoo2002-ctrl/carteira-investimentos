@@ -44,6 +44,23 @@ function runtime(rows, coverage = {}) {
   context.financialGoalsBar = () => '';
   return context;
 }
+
+test('Dividendos asset and monthly summaries include only classified received rows', () => {
+  const helperStart = source.indexOf('function dividendReceivedRows(');
+  assert.notEqual(helperStart, -1, 'shared received-only filter must be present');
+  const helperEnd = source.indexOf('\nfunction ', helperStart + 1);
+  const ctx = { globalThis: { DividendIntelligence: { classifyIncomeState: row => row.state || 'PAID' } } };
+  vm.createContext(ctx);
+  vm.runInContext(source.slice(helperStart, helperEnd), ctx);
+  assert.deepEqual(Array.from(ctx.dividendReceivedRows([
+    { state:'PAID', value:100 },
+    { state:'EXPECTED', value:900 },
+    { state:'PENDING', value:800 },
+  ]), row => row.value), [100]);
+  assert.match(source.slice(source.indexOf('function dividendAssetSummary('), source.indexOf('function dividendDataQualityPanel(')), /dividendReceivedRows\(rows\)/);
+  assert.match(source.slice(source.indexOf('function dividendsByAssetView('), source.indexOf('function dividendMonthlyRows(')), /dividendReceivedRows\(rows\)/);
+  assert.match(source.slice(source.indexOf('function dividendMonthlyRows('), source.indexOf('function dividendMonthlyHistoryRows(')), /dividendReceivedRows\(rows\)/);
+});
 const complete = { state:'COMPLETE', fullMonthConfirmed:true, source:'QA_SYNTHETIC' };
 const keys = ['2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10'];
 const covered = count => Object.fromEntries(keys.slice(0,count).map(key => [key, complete]));

@@ -33688,7 +33688,12 @@ function dividendMonthlySummary(rows){
   const avg=months.length ? total/months.length : 0;
   return `${months.length} meses · ${fmt(total)} total · média ${fmt(avg)}`;
 }
+function dividendReceivedRows(rows){
+  const classify=globalThis.DividendIntelligence?.classifyIncomeState;
+  return Array.isArray(rows) && typeof classify==='function' ? rows.filter(row=>classify(row)==='PAID') : [];
+}
 function dividendAssetSummary(rows){
+  rows=dividendReceivedRows(rows);
   const groups=new Map();
   rows.forEach(row=>{
     const key=row.ticker||row.name;
@@ -33771,6 +33776,7 @@ function dividendRecentList(rows,limit=0){
   </article>`;}).join('')}${footer}</div>`;
 }
 function dividendsByAssetView(rows){
+  rows=dividendReceivedRows(rows);
   const groups=new Map();
   rows.forEach(row=>{
     const key=row.ticker||row.name;
@@ -33802,6 +33808,7 @@ function dividendsByAssetView(rows){
   </div>`:dividendEmptyState('Nenhum ativo com proventos encontrado.', 'Tente mudar a visão, os filtros ou a busca.');
 }
 function dividendMonthlyRows(rows=dividendPremiumRows()){
+  rows=dividendReceivedRows(rows);
   const map=new Map();
   rows.forEach(row=>{
     if(!row.monthKey) return;
