@@ -616,6 +616,14 @@ test('Ativos tabela rola por teclado sem ampliar a pagina e preserva cards mobil
     assert.ok(before.pageWidth <= before.viewportWidth, 'desktop page must not scroll horizontally');
     await runtime.page.keyboard.press('ArrowRight');
     assert.ok(await table.evaluate(element => element.scrollLeft > 0), 'ArrowRight should scroll the focused table region');
+    await table.evaluate(element => { element.scrollLeft = 0; });
+    const box = await table.boundingBox();
+    await runtime.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await runtime.page.keyboard.down('Shift');
+    await runtime.page.mouse.wheel(0, 320);
+    await runtime.page.keyboard.up('Shift');
+    assert.ok(await table.evaluate(element => element.scrollLeft > 0), 'horizontal mouse wheel should scroll inside the table region');
+    assert.ok(await runtime.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'mouse scrolling must stay inside Ativos');
     await runtime.page.keyboard.press('Tab');
     assert.equal(await table.evaluate(element => document.activeElement !== element), true, 'Tab must leave the region');
 
@@ -631,6 +639,24 @@ test('Ativos tabela rola por teclado sem ampliar a pagina e preserva cards mobil
     assert.equal(mobile.tableVisible, false);
     assert.ok(mobile.cards > 0, 'mobile must retain asset cards');
     assert.ok(mobile.pageWidth <= mobile.viewportWidth, 'mobile page must not scroll horizontally');
+    await assertSyntheticReadOnlyRuntime(runtime);
+    assert.deepEqual(runtime.pageErrors, []);
+    assert.deepEqual(runtime.firebaseRequests, []);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Ativos cards respondem ao toque sem disparar acoes financeiras', async () => {
+  const runtime = await createRuntime({ width: 390, height: 844 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    const summary = runtime.page.locator('.asset-premium-card-summary').first();
+    await summary.tap();
+    assert.equal(await summary.evaluate(element => element.parentElement?.open), true);
+    const mobile = await runtime.page.evaluate(() => ({ pageWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth }));
+    assert.ok(mobile.pageWidth <= mobile.viewportWidth, 'touch interaction must not create page overflow');
     await assertSyntheticReadOnlyRuntime(runtime);
     assert.deepEqual(runtime.pageErrors, []);
     assert.deepEqual(runtime.firebaseRequests, []);

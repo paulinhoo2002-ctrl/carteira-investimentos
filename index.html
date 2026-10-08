@@ -32108,7 +32108,7 @@ function ativos(){
     `;
 
     const tableHtml = `
-      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}">
+      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
         <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
         <table class="assets-table ${type === 'Renda Fixa' ? 'rf-table' : 'ag-table'}">
           <thead>
