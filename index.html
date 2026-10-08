@@ -283,6 +283,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .tab:hover{color:var(--text)}.tab.on{border-bottom-color:var(--primary);color:#dbe4ff;font-weight:700}
 @media(max-width:1180px){.tabs-desktop{display:none}.tabs-mobile{display:flex;justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}.tab-menu-panel{left:8px;right:8px;min-width:0}}
 @media(min-width:621px) and (max-width:900px){.hdr{padding:8px 10px;gap:8px}.hdr-logo{min-width:0;flex:1 1 auto}.hdr-logo>div:last-child{min-width:0}.hdr-sub,.hdr-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hdr-right{min-width:0;max-width:52%;justify-content:flex-end;overflow:hidden}.hdr-right>*{min-width:0}.hdr-right .auth-box,.hdr-right .wallet-switch,.hdr-right .install-box{display:none}.tabs-mobile{max-width:100%;min-width:0;flex-wrap:wrap;overflow-x:visible;overflow-y:visible;justify-content:center}.tabs-mobile .tab,.tabs-mobile .tab-menu{flex:1 1 120px;min-width:0;text-align:center}.tabs-mobile .tab{padding:9px 8px}.tabs-mobile .tab-menu-panel{max-width:calc(100vw - 16px)}}
+@media(min-width:621px) and (max-width:900px){.tabs-mobile .tab-menu-panel button{white-space:normal;overflow-wrap:anywhere}}
 
 /* PHASE 11: visual master shell. Desktop navigation is the persistent sidebar;
    mobile keeps the existing compact navigation and bottom actions. */
@@ -6582,6 +6583,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     margin-bottom: 20px;
   }
   .assets-table-wrap { overflow-x: auto; }
+  .assets-table-wrap:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .asset-mobile-cards { display: none; }
   .assets-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1560px; }
   .assets-table th {
@@ -32107,7 +32109,8 @@ function ativos(){
     `;
 
     const tableHtml = `
-      <div class="assets-table-wrap">
+      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
+        <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
         <table class="assets-table ${type === 'Renda Fixa' ? 'rf-table' : 'ag-table'}">
           <thead>
             <tr>
