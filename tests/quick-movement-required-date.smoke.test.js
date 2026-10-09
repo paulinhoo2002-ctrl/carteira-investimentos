@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
-const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer } = require('./local-http-server');
 
 function browserPath() {
   return [
@@ -15,17 +14,7 @@ function browserPath() {
 }
 
 async function serve(root) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const file = path.normalize(path.join(root, pathname === '/' ? '/index.html' : pathname));
-      if (!file.startsWith(root)) return res.writeHead(403).end();
-      res.writeHead(200, { 'Content-Type': file.endsWith('.html') ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8' });
-      res.end(await fsp.readFile(file));
-    } catch { res.writeHead(404).end(); }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  return startLocalHttpServer(root);
 }
 
 const viewports = [
