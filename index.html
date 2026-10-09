@@ -28695,6 +28695,7 @@ function render(){
   const root=document.getElementById('root');
   if(!root) return;
   try{
+    S._dashboardHighlightsCache=null;
     if(S._rmpTrace) console.log('[rmP] render() chamado');
     const preserveQuoteUI=quoteUiArmed;
     if(preserveQuoteUI) snapshotQuoteUi();
@@ -29792,6 +29793,9 @@ function dashboardHighlightsRows(kind='high', classFilter='all'){
   const normalizedClassFilter=['all','acao','fii','etf'].includes(String(classFilter||'all'))
     ? String(classFilter||'all')
     : 'all';
+  const __cacheKeyNow=[(S.assets||[]).length,(S.aportes||[]).length,(S.proventos||[]).length,(S.rfEvents||[]).length].join('|')+'|'+String(kind)+'|'+String(normalizedClassFilter);
+  const __cache=S._dashboardHighlightsCache;
+  if(__cache && __cache.key===__cacheKeyNow) return __cache.rows;
   const rows=assetAnalysisRows().map(row=>({
     ticker:row.ticker,
     type:row.type,
@@ -29819,6 +29823,7 @@ function dashboardHighlightsRows(kind='high', classFilter='all'){
     }
     return (b.resultPct-a.resultPct) || (Math.abs(b.result)-Math.abs(a.result)) || compareText(a,b);
   });
+  S._dashboardHighlightsCache={key:__cacheKeyNow,rows:sorted};
   return sorted;
 }
 function dashboardHighlightsRowHtml(row, kind){
@@ -29844,13 +29849,33 @@ function dashboardHighlightsRowHtml(row, kind){
     ? `<button type="button" class="premium-exec-row dashboard-highlight-row dashboard-context-action" onclick="dashboardOpenAssetByTicker(${esc(JSON.stringify(ticker))})" aria-label="Abrir ativo ${esc(ticker)}">${content}</button>`
     : `<div class="premium-exec-row dashboard-highlight-row">${content}</div>`;
 }
+function dashboardHomeHighsLowsPanel(){
+  const classFilter=['all','acao','fii','etf'].includes(String(S.dashboardHighlightsClassFilter||'all'))
+    ? String(S.dashboardHighlightsClassFilter||'all') : 'all';
+  const chips=[['all','Todas'],['acao','Ações'],['fii','FIIs'],['etf','ETFs']].map(([value,label])=>
+    `<button type="button" class="asset-inner-tab ${classFilter===value?'on':''}" onclick="setDashboardHighlightsClassFilter('${value}')" aria-pressed="${classFilter===value?'true':'false'}">${label}</button>`).join('');
+  const renderColumn=(kind,title,empty)=>{
+    const rows=dashboardHighlightsRows(kind,classFilter).slice(0,5);
+    const body=rows.length ? rows.map(row=>dashboardHighlightsRowHtml(row,kind)).join('') : `<div class="premium-empty">${empty}</div>`;
+    return `<section class="dashboard-highlight-column ${kind}" aria-label="${title}">
+      <div class="dashboard-highlight-column-head"><strong>${title}</strong><span>${rows.length} ativo${rows.length===1?'':'s'}</span></div>
+      <div class="premium-exec-list">${body}</div>
+    </section>`;
+  };
+  return `<div class="dashboard-home-highlights canon-dashboard">
+    <div class="dashboard-highlights-tabs" role="group" aria-label="Filtrar destaques por classe">${chips}</div>
+    <div class="dashboard-highlight-panels">
+      ${renderColumn('high','Maiores altas','Nenhum ativo positivo com dados suficientes.')}
+      ${renderColumn('low','Maiores baixas','Nenhum ativo negativo com dados suficientes.')}
+    </div>
+  </div>`;
+}
 function dashboardHomeHighlightsPanel(data){
   const insights = Array.isArray(data?.insights) ? data.insights.slice(0, 3) : [];
   const supportedRoutes = new Set(['dashboard','ativos','aportes','metas','dividendos','rentabilidade','ajudar','relatorios','ia','auditoria','renda-fixa','desempenho','irpf','settings']);
   if (insights.length === 0) {
     return `<div class="dashboard-highlight-panels"><div class="premium-empty">Nenhum ponto prioritário identificado na base atual.</div></div>`;
   }
-
   if (insights.length === 1) {
     const item = insights[0];
     const route = String(item?.relatedRoute || '').trim();
@@ -29861,8 +29886,6 @@ function dashboardHomeHighlightsPanel(data){
       ? `<div class="dashboard-highlight-panels"><button class="premium-exec-row dashboard-insight-action premium-consultive-card" type="button" aria-label="${esc(actionLabel)}: ${esc(item.title)}" onclick="go('${esc(route)}')">${content}</button></div>`
       : `<div class="dashboard-highlight-panels"><section class="premium-consultive-card">${content}</section></div>`;
   }
-
-  // Many insights - show summary only
   return `<div class="dashboard-highlight-panels">
     <section class="premium-consultive-card">
       <div class="premium-consultive-card-head">
@@ -31389,6 +31412,7 @@ function dash(){
         ${dashboardV3AllocationPanel()}
       </div>
       ${dashboardV3PriorityPanel(data)}
+      ${dashboardHomeHighsLowsPanel()}
       ${dashboardQuickActions()}
     </div>
   `;

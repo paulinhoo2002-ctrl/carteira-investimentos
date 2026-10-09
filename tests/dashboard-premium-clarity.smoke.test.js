@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer } = require('./local-http-server');
 
 function resolveBrowser() {
   return [
@@ -18,29 +19,7 @@ function resolveBrowser() {
 }
 
 async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const relative = pathname === '/' ? '/index.html' : pathname;
-      const filePath = path.normalize(path.join(rootDir, relative));
-      if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
-      const content = await fsp.readFile(filePath);
-      const mime = {
-        '.html': 'text/html; charset=utf-8',
-        '.js': 'text/javascript; charset=utf-8',
-        '.css': 'text/css; charset=utf-8',
-        '.json': 'application/json',
-        '.svg': 'image/svg+xml',
-      };
-      res.writeHead(200, { 'Content-Type': mime[path.extname(filePath).toLowerCase()] || 'text/plain' });
-      res.end(content);
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end('');
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  return startLocalHttpServer(rootDir);
 }
 
 const viewports = [
@@ -162,13 +141,19 @@ for (const viewport of viewports) {
       assert.match(resultado.value, /R\$/, `"Resultado" precisa exibir medida em R$ em ${viewport.label}`);
       assert.match(resultado.value, /%/, `"Resultado" precisa exibir o retorno percentual compatível na mesma unidade em ${viewport.label} (valor: "${resultado.value}")`);
 
-      // 8. Recebido permanece unidade primária própria, rotulada como renda
-      // RECEBIDA — recebido não pode ser confundido com estimativa/futuro.
+      // 8. Recebido permanece unidade primária própria. A nota segue o estado
+      // de cobertura governado pós-V333: COMPLETE ("mês completo confirmado"),
+      // PARTIAL ("recebimentos registrados · cobertura parcial") ou UNKNOWN
+      // ("cobertura desconhecida"). Estimativa/futuro continuam proibidos aqui:
+      // recebido nunca pode ser rotulado como estimado ou projetado.
       const recebido = findCard('Recebido');
       assert.ok(recebido, `KPI primário "Recebido" precisa existir em ${viewport.label}`);
       assert.equal(recebido.visible, true, `"Recebido" não está visível em ${viewport.label}`);
       assert.ok(recebido.value.length > 0, `"Recebido" não tem valor em ${viewport.label}`);
-      assert.match(recebido.note, /recebid/i, `renda precisa estar rotulada como recebida (não estimativa/futuro) em ${viewport.label} (nota: "${recebido.note}")`);
+      assert.match(recebido.note, /confirmad|recebiment|cobertura desconhecida/i,
+        `nota do "Recebido" deve refletir o estado de cobertura governado (não estimativa/futuro) em ${viewport.label} (nota: "${recebido.note}")`);
+      assert.doesNotMatch(recebido.note, /estimad|projetad|futuro|previs/i,
+        `renda recebida não pode ser rotulada como estimativa/futuro em ${viewport.label} (nota: "${recebido.note}")`);
 
       // Preservação geométrica do teste antigo: nenhuma quebra vertical nos
       // valores das unidades primárias.
