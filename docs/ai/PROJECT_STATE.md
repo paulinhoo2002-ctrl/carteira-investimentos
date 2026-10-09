@@ -1,5 +1,15 @@
 # Project State
 
+## V402–V405 — aceleração final e release candidate (2026-10-09)
+
+- PR #467 MERGED via squash em `a8125b13331d6caf0ec25a69adcdea5d189004ad` (mergedAt 2026-10-09T22:26:47Z), conforme autorização humana específica. Certificação pós-merge na worktree `v402-v405-main-rc` (branch `codex/v402-v405-main-rc`, HEAD `a8125b1`, clean).
+- V402 (Firebase): causa raiz comprovada — firebase-tools encerra antes do processo java filho, deixando o emulador Firestore (porta 8080) como órfão com ParentProcessId morto. Padrão reproduzido em 3 ciclos; ownership verificado por CommandLine+ParentProcessId via PowerShell antes de cada taskkill /F; nenhum processo desconhecido encerrado. Com essa disciplina, `test:auth-emulator` 8/8 PASS em cada ciclo e portas 8080/9099/4400/4500 livres após limpeza. V394 desbloqueada operacionalmente; detalhes em `docs/ai/V402_V405_FINAL_ACCELERATION.md`.
+- V403 (Financeiro): test:finance 94/94; tax-cost-basis 16/16; v345-sale-fees + runtime 35/35; backup-restore 9/9; backup-recovery-hardening 53/53. Nenhuma fórmula alterada.
+- V404 (QA premium): Chromium smoke OVERFLOW=0/CONSOLE=0/PAGE=0; Firefox explícito idêntico (certificado funcional); WebKit funcional com apenas pageErrors pré-existentes de sw.js (access control) — REQUEST_ERRORS_RELEVANT=0. Viewports 390×844…1920×1080. Visual regression 18/18.
+- V405 (RC da main): npm test completo 868 testes 0 falhas; test:modern 823/823; verify:release PASS; qa:all PASS (sw.js x2 WebKit-style); git diff --check clean. CI main run `37999257277` SUCCESS; Vercel production deployment `6972275814` state=success no mesmo SHA (registro técnico, não certificação de produção).
+- GO_NO_GO=CONDITIONAL_GO; PRODUCTION_READY=false até validação humana do conteúdo em produção. Rollback: revert do merge `a8125b1` (squash revert), sem force-push.
+- REAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; PRODUCTION=false; MERGE=#467 somente (autorização específica prévia).
+
 ## V346–V347 — matriz responsiva gap e auditoria do index antigo (2026-10-09)
 
 - V346: `tests/v346-responsive-gap-matrix.test.js` (commit `a8ad063`, branch #463) estende a matriz V289 às larguras 320/375/390/600/2560/3440 × 2 temas × 4 rotas + zoom reflow 125/150/200% em 1366 e 390. Sem overflow, clipping, escritas ou contato Firebase. GREEN 2/2.

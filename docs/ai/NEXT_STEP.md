@@ -1,5 +1,12 @@
 # Next Step
 
+## V405 — release candidate aguardando decisão humana (2026-10-09)
+
+- Main pós-merge `a8125b1` (#467) certificada: 868 testes legado 0 falhas, moderno 823/823, verify:release PASS, qa:all PASS, CI run `37999257277` SUCCESS, Vercel production deployment success no mesmo SHA.
+- V402: causa raiz dos órfãos do Firestore emulator comprovada (firebase-tools sai antes do java filho). Disciplina aplicada: verificar CommandLine+ParentProcessId antes de taskkill /F — ciclo reproduzível com 8/8 PASS. Criar utilitário de pré-teste (checagem de portas + propriedade) é o próximo passo de engenharia recomendado.
+- Gate humano atual: validar conteúdo em produção (Vercel auto-deploy pós-merge) e decidir liberação para uso diário. GO_NO_GO=CONDITIONAL_GO.
+- Próximo comando sugerido (sem merge/deploy): `git -C "C:/Projetos/carteira-investimentos.worktrees/v402-v405-main-rc" log --oneline -3` para confirmar base; limpeza de worktrees antigas só com autorização humana.
+
 ## V348 — em andamento (2026-10-09)
 
 - Recriar o painel Maiores altas/baixas no Dashboard (branch isolada sobre main) usando apenas `dashboardHighlightsRows()`, `dashboardHighlightsRowHtml()`, `S.dashboardHighlightsClassFilter` e CSS canon existentes; 2 colunas top-5, chips all/acao/fii/etf, wire entre `dashboardV3PriorityPanel(data)` e `dashboardQuickActions()`; sem fórmulas novas.

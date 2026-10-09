@@ -7,6 +7,13 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V402 — órfãos do Firestore emulator: causa raiz e disciplina segura (2026-10-09)
+
+- firebase-tools (Node) sai antes do processo java filho; o emulador Firestore (`java.exe ... cloud-firestore-emulator-v1.22.0.jar --port 8080`) permanece ouvindo com ParentProcessId morto. Reproduzido em todo `test:auth-emulator` na worktree LEGACY (Windows).
+- Aviso visual do `netstat` não basta: confirmar propriedade com `Get-CimInstance Win32_Process` (CommandLine + ParentProcessId). Órfão legítimo = mesma linha de comando do emulador, rules do repositório, projeto demo e pai inexistente. Só então `taskkill /PID <pid> /F`.
+- Encerramento SIGINT (gracioso) não é aceito pelo java órfão — "só pode ser finalizado com /F". O ciclo pass/fail do teste não depende disso; a porta seguinte que travar é o sintoma.
+- Com essa disciplina, `test:auth-emulator` 8/8 PASS em ciclos repetidos e portas 8080/9099/4400/4500 livres ao final. V394 é operacionalmente resolvível sem ferramenta nova; a ferramenta de pré-teste continua recomendada, não urgente.
+
 ## V345 — lições de verdade financeira em fluxos manuais (2026-10-09)
 
 - Caminhos paralelos de formulário (compra vs venda) com IDs distintos exigem binding verificado por teste estático: `qm-buy-fees` lido no branch de venda passou despercebido porque nenhum teste ligava o campo lido ao campo renderizado.
