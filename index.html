@@ -18614,7 +18614,7 @@ function quickMovementModal(){
   const kind=normalizeQuickMovementKind(draft.kind);
   const qmError=String(S.quickMovementError||'');
   const qmErrorField=String(S.quickMovementErrorField||'');
-  const qmErrOn=(id)=>qmErrorField===id ? ' aria-invalid="true" aria-describedby="qm-error-banner"' : '';
+  const qmErrOn=(id)=>qmErrorField===id ? ' aria-invalid="true" aria-describedby="qm-error-banner"' : (id==='qm-ti' ? ' aria-describedby="qm-asset-picker-hint"' : '');
   const rfTab=['aplicar','resgatar','novo'].includes(S.quickMovementRfTab) ? S.quickMovementRfTab : 'aplicar';
   const kinds=['compra','venda','provento','renda-fixa','outro'];
   const tabs=kinds.map(next=>`<button type="button" class="dash-chip ${kind===next?'on':''}" aria-pressed="${kind===next?'true':'false'}" onclick="openQuickMovement('${next}')">${quickMovementKindIcon(next)} ${quickMovementKindLabel(next)}</button>`).join('');
@@ -18638,7 +18638,7 @@ function quickMovementModal(){
     <datalist id="qm-asset-options">${quickMovementAssetPickerOptionsHtml()}</datalist>
     <div class="fg">
       <div><div class="fl">Data</div><input id="qm-dt" type="date" value="${esc(draft.date!==undefined?draft.date:new Date().toISOString().slice(0,10))}" aria-label="Data"${qmErrOn('qm-dt')} oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" aria-label="Ticker" aria-describedby="qm-asset-picker-hint"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: BBAS3" value="${esc(draft.ticker||'')}" aria-label="Ticker"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
       <div><div class="fl">Tipo de ativo</div><select id="qm-type" aria-label="Tipo de ativo" onchange="setQuickMovementField('type', this.value)">${assetTypes}</select></div>
       <div><div class="fl">Setor</div><input id="qm-sector" placeholder="ex: Bancos" value="${esc(draft.sector||'')}" aria-label="Setor" oninput="setQuickMovementField('sector', this.value)"></div>
     </div>
@@ -18657,7 +18657,7 @@ function quickMovementModal(){
     <div id="quick-movement-asset-summary">${quickMovementAssetSummaryHtml()}</div>
     <div class="fg">
       <div><div class="fl">Data do pagamento</div><input id="qm-dt" type="date" aria-label="Data do pagamento" value="${esc(draft.date!==undefined?draft.date:new Date().toISOString().slice(0,10))}"${qmErrOn('qm-dt')} oninput="setQuickMovementField('date', this.value)"></div>
-      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: MXRF11" aria-label="Ticker do ativo" aria-describedby="qm-asset-picker-hint" value="${esc(draft.ticker||'')}"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
+      <div><div class="fl">Ticker</div><input id="qm-ti" list="qm-asset-options" placeholder="ex: MXRF11" aria-label="Ticker do ativo" value="${esc(draft.ticker||'')}"${qmErrOn('qm-ti')} oninput="this.value=this.value.toUpperCase();setQuickMovementField('ticker', this.value)"></div>
       <div><div class="fl">Valor recebido (R$)</div><input id="qm-value" type="text" inputmode="decimal" aria-label="Valor recebido" placeholder="ex: 35,80" value="${esc(draft.value||'')}"${qmErrOn('qm-value')} oninput="setQuickMovementField('value', this.value)"></div>
       <div><div class="fl">Tipo</div><select id="qm-event" aria-label="Tipo do provento" onchange="setQuickMovementField('eventType', this.value)">${eventTypes}</select></div>
     </div>
