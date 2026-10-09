@@ -1045,3 +1045,12 @@ Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada 
 2. Avaliar PR isolada V336 de rolagem/acessibilidade de Ativos sem integrar pendências.
 3. Resolver execução local Auth/Firestore Emulator ou usar CI do SHA exato; provider QA exige ambiente externo isolado. Manter gap Firefox/WebKit explícito.
 4. Merge somente após autorização humana específica por PR; Vercel production branch/auto-deploy precisa ser verificado antes de qualquer integração. Sem deploy nesta missão.
+
+## V399 — missão concluída, preparação para release (2026-10-09)
+
+- Missão V395-V399 concluída com sucesso nas fases V395, V396, V397, V398. V394 permanece BLOCKED_ENVIRONMENT.
+- Próximos passos:
+  1. Criar commits descritivos e push normal para as alterações realizadas.
+  2. Abrir Draft PR para revisão humana.
+  3. Aguardar gate humano para revisão do Draft PR e decisão de merge.
+  4. Após merge autorizado, preparar release de produção.

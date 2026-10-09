@@ -1,12 +1,25 @@
 'use strict';
 
-const { chromium } = require('playwright-core');
+const { chromium, firefox, webkit } = require('playwright');
 
 const origin = process.env.QA_ORIGIN || 'http://127.0.0.1:4173';
+const browserType = process.env.QA_BROWSER || 'chromium';
 const viewports = [[390, 844], [430, 932], [768, 1024], [1366, 768], [1440, 900], [1536, 864], [1920, 1080]];
 
 async function main() {
-  const browser = await chromium.launch({ headless: true, executablePath: process.env.QA_BROWSER_PATH || process.env.CHROME_PATH || undefined });
+  let browser;
+  switch (browserType) {
+    case 'firefox':
+      browser = await firefox.launch({ headless: true });
+      break;
+    case 'webkit':
+      browser = await webkit.launch({ headless: true });
+      break;
+    case 'chromium':
+    default:
+      browser = await chromium.launch({ headless: true });
+      break;
+  }
   const page = await browser.newPage();
   const consoleErrors = [];
   const expectedOfflineErrors = [];
