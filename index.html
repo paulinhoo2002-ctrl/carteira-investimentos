@@ -28615,6 +28615,7 @@ function render(){
   const root=document.getElementById('root');
   if(!root) return;
   try{
+    S._dashboardHighlightsCache=null;
     if(S._rmpTrace) console.log('[rmP] render() chamado');
     const preserveQuoteUI=quoteUiArmed;
     if(preserveQuoteUI) snapshotQuoteUi();
@@ -29681,6 +29682,9 @@ function dashboardHighlightsRows(kind='high', classFilter='all'){
   const normalizedClassFilter=['all','acao','fii','etf'].includes(String(classFilter||'all'))
     ? String(classFilter||'all')
     : 'all';
+  const __cacheKeyNow=[(S.assets||[]).length,(S.aportes||[]).length,(S.proventos||[]).length,(S.rfEvents||[]).length].join('|')+'|'+String(kind)+'|'+String(normalizedClassFilter);
+  const __cache=S._dashboardHighlightsCache;
+  if(__cache && __cache.key===__cacheKeyNow) return __cache.rows;
   const rows=assetAnalysisRows().map(row=>({
     ticker:row.ticker,
     type:row.type,
@@ -29708,6 +29712,7 @@ function dashboardHighlightsRows(kind='high', classFilter='all'){
     }
     return (b.resultPct-a.resultPct) || (Math.abs(b.result)-Math.abs(a.result)) || compareText(a,b);
   });
+  S._dashboardHighlightsCache={key:__cacheKeyNow,rows:sorted};
   return sorted;
 }
 function dashboardHighlightsRowHtml(row, kind){
