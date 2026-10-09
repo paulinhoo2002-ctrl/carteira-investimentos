@@ -4,21 +4,52 @@ const { chromium, firefox, webkit } = require('playwright');
 
 const origin = process.env.QA_ORIGIN || 'http://127.0.0.1:4173';
 const browserType = process.env.QA_BROWSER || 'chromium';
+let executablePath = process.env.QA_BROWSER_PATH;
+
+if (!executablePath && browserType === 'chromium') {
+  executablePath = process.env.CHROME_PATH;
+}
+
 const viewports = [[390, 844], [430, 932], [768, 1024], [1366, 768], [1440, 900], [1536, 864], [1920, 1080]];
 
 async function main() {
   let browser;
-  switch (browserType) {
-    case 'firefox':
-      browser = await firefox.launch({ headless: true });
-      break;
-    case 'webkit':
-      browser = await webkit.launch({ headless: true });
-      break;
-    case 'chromium':
-    default:
-      browser = await chromium.launch({ headless: true });
-      break;
+  try {
+    switch (browserType) {
+      case 'firefox':
+        browser = await firefox.launch({ 
+          headless: true,
+          executablePath: executablePath
+        });
+        break;
+      case 'webkit':
+        browser = await webkit.launch({ 
+          headless: true,
+          executablePath: executablePath
+        });
+        break;
+      case 'chromium':
+      default:
+        browser = await chromium.launch({ 
+          headless: true,
+          executablePath: executablePath
+        });
+        break;
+    }
+  } catch (error) {
+    if (executablePath && error.message.includes('executable doesn\'t exist')) {
+      console.error(`Failed to launch browser: The executable at '${executablePath}' does not exist.`);
+      console.error(`Please check the QA_BROWSER_PATH or CHROME_PATH environment variable.`);
+      process.exitCode = 1;
+    } else if (executablePath && error.message.includes('Failed to launch')) {
+      console.error(`Failed to launch browser with executable at '${executablePath}'.`);
+      console.error(`Please check that the executable is valid and you have the necessary permissions.`);
+      process.exitCode = 1;
+    } else {
+      console.error(error.stack);
+      process.exitCode = 1;
+    }
+    return;
   }
   const page = await browser.newPage();
   const consoleErrors = [];

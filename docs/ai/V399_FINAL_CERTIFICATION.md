@@ -103,4 +103,6 @@ MERGE=false
 ## Observações
 - Nenhuma escrita financeira real, importação ou restauração realizada (REAL_WRITES=0, REAL_IMPORT=false, REAL_RESTORE=false)
 - Nenhum merge realizado sem autorização humana específica
-- Missão concluída com resultados reproduzíveis e dentro das limitações de ambiente (V394 bloqueada por conflitos de porta do Firebase Emulator)
+- Missão concluída com resultados reproduzíveis e dentro das limitações de ambiente (V394 bloqueada por conflitos de porta do Firebase Emulator)- V400: PR #467 final review fixes. Updated browser-smoke.js to handle QA_BROWSER_PATH and CHROME_PATH with clear error messages for invalid executables.
+- V400: Verified fee validation (V345) passes, confirming that the sale branch correctly reads fees and the PnL helper passes fees=null as UNKNOWN.
+- V400: All regression tests pass: legacy, modern, verify:release, qa:all, visual regression.
