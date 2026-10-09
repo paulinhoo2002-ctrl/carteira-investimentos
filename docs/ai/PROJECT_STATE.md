@@ -1,5 +1,11 @@
 # Project State
 
+## V346–V347 — matriz responsiva gap e auditoria do index antigo (2026-10-09)
+
+- V346: `tests/v346-responsive-gap-matrix.test.js` (commit `a8ad063`, branch #463) estende a matriz V289 às larguras 320/375/390/600/2560/3440 × 2 temas × 4 rotas + zoom reflow 125/150/200% em 1366 e 390. Sem overflow, clipping, escritas ou contato Firebase. GREEN 2/2.
+- V347: auditoria read-only do clone antigo em `G:\Meu Drive\Codex\carteira-investimentos` (@ `f838451`) vs `origin/main` `6eb69f2` via git diff. Matriz KEEP/ADAPT/DO_NOT_COPY em `docs/ai/V347_LEGACY_INDEX_AUDIT.md` (commit `bc27556`). Único ADAPT: painel Maiores altas/baixas do Dashboard com filtro por classe — `dashboardHighlightsRows/RowHtml`, estado `S.dashboardHighlightsClassFilter` e CSS canon permanecem na main; `dashboardHomeHighlightsPanel` está órfã. DO_NOT_COPY: cobertura 0% calculada, matchMedia no render, Firebase antigo.
+
+
 ## V333 — revisão de uso diário (2026-10-08)
 
 - Base empilhada sobre PR #456 no HEAD `1917c7e577bea777e0315c988df5c8985cc25286`; PR #456 foi confirmada OPEN/DRAFT/MERGEABLE, CI run `37755481672` PASS. Worktree `C:\Projetos\carteira-investimentos.worktrees\v333-premium-product-finish`, branch `codex/v333-premium-product-finish`; PRs #454/#455 preservadas.

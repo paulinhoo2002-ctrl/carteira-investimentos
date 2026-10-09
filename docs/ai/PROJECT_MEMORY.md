@@ -7,6 +7,14 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V345 — lições de verdade financeira em fluxos manuais (2026-10-09)
+
+- Caminhos paralelos de formulário (compra vs venda) com IDs distintos exigem binding verificado por teste estático: `qm-buy-fees` lido no branch de venda passou despercebido porque nenhum teste ligava o campo lido ao campo renderizado.
+- `||0` em campo opcional financeiro = UNKNOWN→ZERO confirmado. Em P&L, use `??null` e deixe o motor classificar (`MISSING_FEES`→`NEEDS_REVIEW`); nunca converter ausência em número no caller.
+- Preview de venda deve herdar o estado UNKNOWN das taxas (Líquido `—`), não exibir `bruto-0` como se taxas zero fossem confirmadas.
+- Delta mínimo de PR antiga conflitante (XLSX fail-closed da #446) reaplicado sobre main é mais seguro que rebase do stack inteiro: extrair função+gate+testes originais, validar RED no main puro, GREEN com delta.
+
+
 ## V333 — ausência mensal não comprova zero (2026-10-08)
 
 - Decisão humana aprovada: `NO_RECORDS != ZERO_RECEIVED`. `COMPLETE` exige confirmação explícita de fonte/mês inteiro; ausência de registros permanece `UNKNOWN`, registros sem cobertura completa são `PARTIAL`, meses futuros são `FUTURE`.
