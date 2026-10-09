@@ -47,6 +47,18 @@ jobs:
           echo "Using browser: $CHROME_BIN"
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
 
+      - name: Local synthetic readonly QA
+        run: npm run test:local-synthetic:browser
+
+      - name: V330 synthetic browser QA
+        run: npm run test:v330:browser
+
+      - name: A11Y functional runtime
+        run: node --test tests/a11y-functional.test.js
+
+      - name: V320 financial retry and replay contracts
+        run: node --test tests/quick-movement-inline-errors.test.js tests/rf-movement-flow.test.js tests/v284-legacy-write-boundary.test.js tests/v320-wallet-retry.test.js tests/corporate-events-core.test.js
+
       - name: Reliability smokes
         run: |
           node --test tests/phase-208-data-quality.test.js
@@ -57,3 +69,81 @@ jobs:
           node --test tests/service-worker-update-reliability.test.js
           node --test tests/portfolio-report-readiness.test.js tests/v273-reporting-ui-contract.test.js
           node --test tests/reports-responsive-matrix.test.js
+
+  visual-regression:
+    name: V289 visual regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build modern assets
+        run: npm run build:modern
+
+      - name: Resolve Chromium (reuse preinstalled browser)
+        run: |
+          CHROME_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)"
+          if [ -z "$CHROME_BIN" ]; then
+            echo "No preinstalled browser found; falling back to apt install."
+            sudo apt-get update
+            sudo apt-get install -y chromium
+            CHROME_BIN="$(command -v chromium)"
+          fi
+          echo "Using browser: $CHROME_BIN"
+          echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
+
+      - name: Run V289 visual regression matrix
+        run: npm run test:visual-regression
+
+  auth-firestore-emulator:
+    name: Auth and Firestore emulator QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build modern assets
+        run: npm run build:modern
+
+      - name: Install pinned Firebase CLI
+        run: npm install --global firebase-tools@15.32.1
+
+      - name: Resolve Chromium
+        run: |
+          CHROME_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)"
+          if [ -z "$CHROME_BIN" ]; then
+            sudo apt-get update
+            sudo apt-get install -y chromium
+            CHROME_BIN="$(command -v chromium)"
+          fi
+          test -n "$CHROME_BIN"
+          echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
+
+      - name: Run isolated Auth and Firestore emulator tests
+        run: npm run test:auth-emulator

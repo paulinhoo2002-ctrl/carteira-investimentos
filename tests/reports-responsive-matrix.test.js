@@ -1,10 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { chromium } = require('playwright-core');
+const { startLocalHttpServer } = require('./local-http-server');
 let axePath = null;
 try { axePath = require.resolve('axe-core'); } catch {}
 
@@ -20,27 +20,9 @@ const viewports = [
   { width: 1920, height: 1080 },
 ];
 
-function startServer() {
-  const server = http.createServer((request, response) => {
-    const url = new URL(request.url, 'http://127.0.0.1');
-    const file = url.pathname === '/' ? '/index.html' : url.pathname;
-    const safePath = require('node:path').join(ROOT, file);
-    require('node:fs').readFile(safePath, (error, data) => {
-      if (error) {
-        response.writeHead(404);
-        response.end('not found');
-        return;
-      }
-      response.writeHead(200);
-      response.end(data);
-    });
-  });
-  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
-}
-
 test('relatórios preserva leitura responsiva e impressão nos viewports certificados', async (t) => {
-  const server = await startServer();
-  const port = server.address().port;
+  const harness = await startLocalHttpServer(ROOT);
+  const server = harness.server;
   const screenshotDir = process.env.V273_SCREENSHOT_DIR || path.join(os.tmpdir(), 'v273-reports-qa');
   let browser = null;
   t.after(async () => {
@@ -57,7 +39,7 @@ test('relatórios preserva leitura responsiva e impressão nos viewports certifi
     page.on('pageerror', error => pageErrors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
     page.on('requestfailed', request => requestFailures.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText || 'failed'}`));
-    await page.goto(`http://127.0.0.1:${port}/index.html?testMode=1&protectedReadOnlyQa=1`);
+    await page.goto(`${harness.url}&protectedReadOnlyQa=1`);
     await page.evaluate(() => go('relatorios'));
     await page.waitForSelector('.reports-premium-shell');
     if (viewport.width === 390 && axePath) {

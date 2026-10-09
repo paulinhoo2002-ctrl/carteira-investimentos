@@ -25,7 +25,7 @@ test('Import center exposes honest source support and unknown-format behavior', 
   assert.match(importCenterSource, /Nota de corretagem/);
   assert.match(importCenterSource, /Formato não reconhecido/);
   assert.match(importCenterSource, /UNKNOWN/);
-  assert.match(importCenterSource, /formatos sem parser confirmado não seguem para gravação/);
+  assert.match(importCenterSource, /formatos sem parser confirmado não seguem para gravação/i);
   assert.match(importCenterSource, /Suporte completo/);
   assert.match(importCenterSource, /Revisão necessária/);
 });
@@ -68,6 +68,9 @@ test('parser indisponível, erro e formato desconhecido nunca abrem revisão con
   assert.deepEqual(opened,[]);
 });
 
-test('Import navigation does not invoke the normal persistence save on entry', () => {
-  assert.match(source, /if\(t!=='importacao' && \!\(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot\(\)\)\) save\(\);/);
+test('Import and synthetic read-only navigation do not invoke persistence save on entry', () => {
+  assert.match(source, /function go\(t\)\{\s*return goInternal\(t,true\);/);
+  assert.match(source, /const persistRoute=persistNavigation && \!\(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode\(\)\) && \!\(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot\(\)\);/);
+  assert.match(source, /if\(persistRoute && t!=='importacao'\) save\(\);/);
+  assert.match(source, /if\(entry\.kind==='navigation'\)\{\s*goInternal\(entry\.route,false\);/);
 });

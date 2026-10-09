@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
-const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer } = require('./local-http-server');
 
 function resolveBrowser() {
   return [
@@ -16,23 +15,7 @@ function resolveBrowser() {
 }
 
 async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const p = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      let f = p === '/' ? '/index.html' : p;
-      const fp = path.normalize(path.join(rootDir, f));
-      if (!fp.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
-      const c = await fsp.readFile(fp);
-      const m = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml' };
-      res.writeHead(200, { 'Content-Type': m[path.extname(fp).toLowerCase()] || 'text/plain' });
-      res.end(c);
-    } catch (e) {
-      res.writeHead(e.code === 'ENOENT' ? 404 : 500);
-      res.end('');
-    }
-  });
-  await new Promise(r => server.listen(0, '127.0.0.1', r));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  return startLocalHttpServer(rootDir);
 }
 
 const viewports = [
@@ -93,21 +76,30 @@ viewports.forEach(vp => {
         assert.ok(await tabs.nth(i).isVisible() && await tabs.nth(i).isEnabled(), `Tab ${i} not visible or disabled`);
       }
 
-      // 4. First validate financial overview in the overview tab
-      // First, verify that we are in overview tab (first tab has class 'on')
+      // 4. The calendar route leads; secondary KPI detail remains available on demand.
       const firstTab = tabs.first();
       const firstTabClass = await firstTab.evaluate(el => el.className);
-      assert.ok(firstTabClass.includes('on'), 'First tab should be overview and active initially');
+      assert.ok(firstTabClass.includes('on'), 'Calendar should be active initially');
+      assert.strictEqual((await firstTab.textContent()).trim(), 'Calendário');
+      const secondarySummary = page.locator('.dividend-secondary-disclosure > summary');
+      await secondarySummary.click();
       const financialKpis = page.locator('.div-exec-kpis');
       await financialKpis.waitFor({ state: 'visible', timeout: 5000 });
       const financialKpisBox = await financialKpis.boundingBox();
       assert.ok(financialKpisBox && financialKpisBox.width > 0 && financialKpisBox.height > 0, 'Financial KPI card has no bounding box');
       const kpisText = await financialKpis.textContent();
-      assert.ok(kpisText && kpisText.includes('Recebido este mês'), 'Financial content missing expected KPI text');
-      assert.ok(kpisText && kpisText.includes('Total últimos 12 meses'), 'Financial content missing expected KPI text');
-      // Click on the second tab (received)
-      if (tabCount > 1) {
-        await tabs.nth(1).click();
+      assert.ok(kpisText && kpisText.includes('Recebido'), 'Financial content missing received-income KPI');
+      assert.ok(kpisText && kpisText.includes('Pagamentos classificados como recebidos no ano atual'), 'Received-income period/source context must remain visible');
+      assert.ok(kpisText && kpisText.includes('Projeção anual'), 'Annual projection must remain available as a separate secondary metric');
+      // Receipts and filters stay reachable under the secondary route menu.
+      const moreModes = page.locator('.div-dividend-moreviews > summary');
+      await moreModes.click();
+      const receiptsMode = page.getByRole('button', { name: 'Recebimentos', exact: true });
+      await receiptsMode.click();
+      const tabsAfterMode = page.locator('.div-premium-tab:visible');
+      const tabsAfterModeCount = await tabsAfterMode.count();
+      // Click the actual receipt view, not the adjacent evolution view.
+      if (tabsAfterModeCount > 0) {
         // Wait for the filters toolbar to appear
         await page.waitForSelector('.div-premium-toolbar', { timeout: 5000 });
         // Wait for at least one filter chip to be present in the type filters
@@ -119,7 +111,7 @@ viewports.forEach(vp => {
       }
 
       // 5. Filtros utilizáveis (only if we switched to a tab that shows them)
-      if (tabCount > 1) {
+      if (tabsAfterModeCount > 0) {
         const moreFilters = page.locator('.div-premium-toolbar details.div-dividend-more');
         if (await moreFilters.count()) await moreFilters.locator('summary').click();
         const chips = page.locator('.div-dividend-toolbar-main .div-premium-chip, .div-dividend-more-group:first-child .div-premium-chip');
@@ -136,7 +128,7 @@ viewports.forEach(vp => {
 
       // 6. Campo de busca utilizável (only if we switched tabs)
       const searchInput = page.locator('.div-premium input#dividend-premium-search');
-      if (tabCount > 1) {
+      if (tabsAfterModeCount > 0) {
         assert.ok(await searchInput.isVisible() && await searchInput.isEnabled(), 'Search input not visible or enabled');
       }
 
@@ -223,20 +215,17 @@ viewports.forEach(vp => {
       }
 
       // 17. Voltar para outra tela e retornar funciona
-      const otherTabBtn = page.locator('#investBottomNav button:has-text(\"Aportes\")');
-      if (await otherTabBtn.count() > 0) {
-        await page.evaluate(() => go('aportes'));
-        await page.waitForTimeout(500);
-        await page.evaluate(() => go('dividendos'));
-        await dividendContainer.waitFor({ state: 'visible', timeout: 5000 });
-        assert.ok(await dividendContainer.isVisible(), 'Failed to return to Dividendos screen after navigating away');
-      } else {
-        console.warn('Aportes tab not found, skipping return test');
-      }
+      await page.evaluate(() => go('aportes'));
+      await page.waitForFunction(() => S.tab === 'aportes');
+      assert.match(await page.locator('h1').first().innerText(), /Aportes/i, 'Aportes route did not render');
+      await page.evaluate(() => go('dividendos'));
+      await dividendContainer.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await dividendContainer.isVisible(), 'Failed to return to Dividendos screen after navigating away');
 
       await ctx.close();
     } finally {
       await browser.close();
+      h.server.closeAllConnections();
       h.server.close();
     }
 

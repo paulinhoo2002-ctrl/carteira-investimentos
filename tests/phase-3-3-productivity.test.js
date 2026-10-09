@@ -25,3 +25,15 @@ test('Phase 3.3 contextual shortcut cannot use approximate identity or mutate da
   assert.doesNotMatch(context, /save\(|localStorage|S\.assets\s*=|S\.aportes\s*=/);
 });
 
+test('Ctrl+K exposes navigation commands without financial actions', () => {
+  const start = source.indexOf('const PORTFOLIO_SEARCH_COMMANDS=');
+  const end = source.indexOf('function portfolioSearchBuildEntries', start);
+  assert.notEqual(start, -1, 'command catalog exists');
+  const catalog = source.slice(start, end);
+  for (const route of ['dashboard','ativos','renda-fixa','aportes','metas','analise','auditoria']) {
+    assert.match(catalog, new RegExp(`route:'${route}'`));
+  }
+  assert.doesNotMatch(catalog, /importacao|restore|backup|save\(|localStorage|runAutoProventosGratis/);
+  assert.match(source, /kind==='navigation'[\s\S]*?goInternal\(entry\.route,false\)/);
+});
+

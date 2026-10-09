@@ -2,6 +2,11 @@
 
 Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
 
+This manifest is an inventory snapshot, not proof of installation in another
+runtime. Discover actual Skills before each substantial mission. Model and Skill
+routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
+`AGENTS.md`. Codex, Hermes and OpenCode may have different installed Skills.
+
 **⚠️ NOTE**: The `.agents/skills` directory is **partially tracked** by Git (see `.gitignore`). 17 approved project-local skills are versioned. Heavy skills (browser-harness-main, impeccable, archify-main) and meta/backup skills are excluded and must be re-synced from `C:/Projetos/skills/` or upstream sources. See `docs/ai/PROJECT_CONTINUITY_POLICY.md` for continuity requirements.
 
 ---
@@ -12,24 +17,24 @@ Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
 - **Category**: BOOTSTRAP / CONTEXT_MANAGEMENT
 - **Source**: C:/Projetos/skills/caveman
 - **Purpose**: Ultra-compressed communication mode that cuts output tokens by ~80% while preserving semantic density. Enforces minimal change principle for edits.
-- **Recommended use**: Every mission — mandatory first skill. All responses must use caveman prefixes.
-- **Avoid when**: Never — always load first.
+- **Recommended use**: Substantial missions, after Superpowers; concise reports must retain required evidence.
+- **Avoid when**: Trivial self-contained task or unavailable in the runtime.
 - **Dependencies**: None
 - **Side effects**: Compresses all subsequent communication
 - **Risk level**: LOW
-- **Routing priority**: 1 (always first)
+- **Routing priority**: Bootstrap after Superpowers, when available
 - **Canonical status**: CORE
 
 ### using-superpowers
 - **Category**: BOOTSTRAP / PLANNING / AGENT_ORCHESTRATION
 - **Source**: C:/Projetos/skills/superpowers (via plugin)
 - **Purpose**: Establishes how to use all other superpowers skills. Mandatory bootstrap for every Hermes session.
-- **Recommended use**: Every mission — mandatory second skill after caveman.
-- **Avoid when**: Never — always load second.
-- **Dependencies**: caveman
+- **Recommended use**: First Skill for substantial technical missions, when available.
+- **Avoid when**: Trivial self-contained task or unavailable in the runtime.
+- **Dependencies**: None
 - **Side effects**: Enables all other superpowers skills
 - **Risk level**: LOW
-- **Routing priority**: 2 (always second)
+- **Routing priority**: 1 (first Skill for substantial technical work)
 - **Canonical status**: CORE
 
 ---

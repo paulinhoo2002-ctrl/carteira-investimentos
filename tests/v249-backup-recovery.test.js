@@ -6,11 +6,12 @@ function fixtureState() {
   return {
     wallets: [{ id: 'w1', name: 'Principal' }],
     activeWalletId: 'w1',
-    assets: [{ id: 'a1', ticker: 'ABCD3', qty: 10, current_price: 12.34 }],
+    assets: [{ id: 'a1', ticker: 'ABCD3', type: 'Ação', qty: 10, current_price: 12.34 }],
     aportes: [{ id: 'm1', date: '2026-01-02', value: 1000 }],
     proventos: [{ id: 'i1', date: '2026-02-03', value: 12.5, type: 'DIVIDEND' }],
     rfEvents: [{ id: 'rf1', value: 5000, manual: true }],
     goals: { patrimonio: { target: 100000 } },
+    performance: { schemaVersion: 1, derived: true, valuationSnapshots: { snapshots: [] }, externalCashFlows: { flows: [] } },
     brapiToken: 'must-not-leak'
   };
 }
@@ -19,7 +20,7 @@ test('V249 creates versioned manifest with deterministic payload and no auth mat
   const a = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 42 }, createdAt: '2026-09-20T12:00:00.000Z' });
   const b = await Backup.createBackup({ state: fixtureState(), config: { divGoal: 42 }, createdAt: '2026-09-20T13:00:00.000Z' });
   assert.equal(a.manifest.backupFormat, 'carteira-investimentos-backup');
-  assert.equal(a.manifest.backupVersion, '1.1');
+  assert.equal(a.manifest.backupVersion, '1.2');
   assert.equal(a.manifest.checksums.payload, b.manifest.checksums.payload);
   assert.equal(JSON.stringify(a.payload), JSON.stringify(b.payload));
   assert.equal(JSON.stringify(a).includes('must-not-leak'), false);
@@ -28,7 +29,7 @@ test('V249 creates versioned manifest with deterministic payload and no auth mat
   // Enhanced V267 manifest fields
   assert.ok(a.manifest.operationId);
   assert.ok(a.manifest.exportedBy);
-  assert.ok(a.manifest.schemaIdentifiers.stateSchema === 'backup-portability-v1.1');
+  assert.ok(a.manifest.schemaIdentifiers.stateSchema === 'backup-portability-v1.2');
   assert.ok(a.manifest.compatibility);
 });
 

@@ -58,8 +58,11 @@ const CONNECTED_GOALS_DEMO_SNAPSHOT = deepFreeze({
     currentMonthKey: '1970-01',
     currentMonthLabel: 'Janeiro 1970',
     currentMonthCount: 0,
-    monthlyAverage: 0,
-    total12: 0,
+    monthlyAverage: null,
+    monthlyAverageStatus: 'UNKNOWN',
+    completeMonthCount: 0,
+    total12: null,
+    currentMonthCoverage: 'UNKNOWN',
     hasData: false,
   },
   assetGoal: {

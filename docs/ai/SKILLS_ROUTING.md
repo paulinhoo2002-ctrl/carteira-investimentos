@@ -7,11 +7,78 @@
 ## GLOBAL BOOTSTRAP (MANDATORY — EVERY MISSION)
 
 ```
-1. caveman                    → Ultra-compressed communication, minimal change principle
-2. using-superpowers          → Enables all superpowers skills, establishes workflow
+1. using-superpowers          → Establishes the execution workflow
+2. ponytail                   → Minimum correct implementation, full safeguards
+3. caveman                    → Concise communication without losing evidence
 ```
 
-**Rule**: These two skills load first, always. No exceptions.
+**Rule**: For substantial missions, load Superpowers first, then only the
+additional Skills useful to the task. Discover actual runtime availability;
+do not claim use of an unavailable Skill. `AGENTS.md` takes precedence.
+`docs/SKILLS_ROUTING.md` is a legacy bridge to this policy;
+`docs/ai/SKILL_ROUTING.md` is a specialist Skill selection table, not a
+competing model policy.
+
+## MODEL AND REVIEWER ROUTING (ALL RUNTIMES)
+
+`AGENT_MODEL_ROUTING_POLICY=true`. Before every large mission, compare current model options and record
+`MELHOR_PELO_HERMES`, `FALLBACK_HERMES`, `MELHOR_PELO_CODEX`,
+`FALLBACK_CODEX` and `MOTIVO`. Recheck the current NVIDIA catalog for Hermes;
+catalog descriptions are not benchmark proof, so avoid unsupported absolute
+claims and account for runtime availability. Codex defaults to GPT-6 Luna
+Medium; use GPT-6 Sol Medium only when task complexity materially justifies
+escalation. `USER_CHOOSES_RUNTIME=true`.
+
+- `DEFAULT_IMPLEMENTATION_MODEL=Codex GPT-6 Luna Medium`: normal and large
+  implementation, tests, CI, docs, local fixes, known-scope refactors, release
+  execution and repository maintenance.
+- `COMPLEXITY_ESCALATION_MODEL=Codex GPT-6 Sol Medium`: difficult architecture,
+  protected financial conflicts, auth/security, persistence/integrity ambiguity,
+  or a root cause unresolved after three reasoned attempts. Stop repeating the
+  same local fix, reassess, then escalate.
+- `DEFAULT_INDEPENDENT_REVIEWER=Hermes GLM-5.3 via NVIDIA` when available for
+  technical, PR, root-cause, behavioral, test-quality, release and security
+  review. Prefer `IMPLEMENTER != INDEPENDENT_REVIEWER`.
+- Nemotron 3 Ultra 550B A55B is an optional heavy reviewer when healthy; Kimi
+  K3 is an optional visual reviewer when safely available, with ChatGPT vision
+  as a fallback. Do not introduce API keys for visual review or retry known
+  unavailable endpoints indefinitely. If NVIDIA is unavailable, use a fresh
+  context Codex GPT-6 Sol Medium for deep review and report the actual model.
+- `PROJECT_MUST_NOT_DEPEND_ON_ONE_MODEL=true`. Any runtime can continue by
+  reading `AGENTS.md`, `docs/ai/PROJECT_MEMORY.md`, this file and
+  `docs/ai/PROJECT_SKILLS_MANIFEST.md`; repository evidence outranks chat.
+
+Before a large mission, state `MODELO RECOMENDADO`: principal, reviewer and
+escalation model, each with a reason. These are recommendations, not claims
+about the model running in the current session.
+
+## SKILL DISCOVERY AND REPORTING
+
+For every substantial mission: read governance, discover Skills in the active
+runtime, choose the minimum useful set, explain the selection, reassess when
+scope changes, and report gaps. Priority is `AGENTS.md` → protected financial
+semantics → Git safety/human gates → approved contracts → Superpowers →
+Ponytail → Caveman → specialist Skills. No Skill overrides a higher rule.
+
+Use Superpowers `executing-plans` for large missions,
+`verification-before-completion` before completion/release/merge claims,
+`receiving-code-review` for review findings, `systematic-debugging` for
+unexpected failures and `finishing-a-development-branch` for PR/merge/release.
+`PONYTAIL_DEFAULT_MODE=full`; prefer minimum correct code while preserving
+financial invariants, validation, security/authentication/authorization,
+accessibility, persistence, import confirmation, provenance, history and
+behavioral tests. Use `ponytail-review` after substantial implementation;
+`ponytail-audit` requires an explicit cleanup mission. Caveman keeps reports
+brief without dropping safety, test, financial or blocker evidence.
+
+Every substantial handoff records `SKILLS_CONSIDERED`, `SKILLS_USED`,
+`SKILLS_NOT_USED`, `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED` and
+`SKILL_GAPS_FOUND`. For each used Skill, state what it controlled.
+
+Recommended mission header: `Skill Caveman + Ponytail + Superpowers`, then
+`PRIMARY_MODEL`, `REVIEW_MODEL`, `ESCALATION_MODEL`, `MODEL_SELECTION_REASON`,
+`SKILLS_CONSIDERED`, `SKILLS_REQUIRED`, `MISSION`, `MODE` and
+`REPOSITORY_FIRST=true`.
 
 ---
 
@@ -198,3 +265,13 @@ TIER 3 (CRITICAL) - finance, backup, restore, persistence, import, calculations,
 
 Record HEAD/hash when full-check passes to avoid re-running unchanged code.
 ```
+## SHARED PONYTAIL POLICY
+
+All runtimes that read the repository follow the shared [`AGENTS.md`](../../AGENTS.md)
+policy `Caveman + Superpowers + Ponytail`; this file remains the concise routing
+index. `PONYTAIL_DEFAULT_MODE=full`. Ponytail's minimal-implementation rule does
+not remove governance, protected financial semantics, tests, validation,
+security, accessibility, or persistence/import safeguards. Consider
+`ponytail-review` after substantial implementation. Run `ponytail-audit` only
+when an explicit cleanup/audit mission authorizes it. Neither grants permission
+to change protected areas or perform remote Git actions.

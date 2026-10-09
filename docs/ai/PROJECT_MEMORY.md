@@ -1,4 +1,102 @@
+## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
+
+- PR #445 OPEN/DRAFT/MERGEABLE, `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS, sem merge.
+- Batch 7 CI: Build/test, A11Y, V320 financial contracts, Reliability, Auth/Firestore Emulator e V289 visual passaram. `npm test`: 249 pass, 0 fail, 5 skipped.
+- Batch 8 Corporate Events 39/39; Batch 9 failure injection e Batch 10 double-submit/replay cobertos na fronteira V284 81/81. Validação local focal combinada 120/120.
+- Escopo de concorrência: confirmação repetida síncrona e replay estão cobertos; corrida real entre abas não foi testada nem certificada.
+- Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
+
+## V345 — lições de verdade financeira em fluxos manuais (2026-10-09)
+
+- Caminhos paralelos de formulário (compra vs venda) com IDs distintos exigem binding verificado por teste estático: `qm-buy-fees` lido no branch de venda passou despercebido porque nenhum teste ligava o campo lido ao campo renderizado.
+- `||0` em campo opcional financeiro = UNKNOWN→ZERO confirmado. Em P&L, use `??null` e deixe o motor classificar (`MISSING_FEES`→`NEEDS_REVIEW`); nunca converter ausência em número no caller.
+- Preview de venda deve herdar o estado UNKNOWN das taxas (Líquido `—`), não exibir `bruto-0` como se taxas zero fossem confirmadas.
+- Delta mínimo de PR antiga conflitante (XLSX fail-closed da #446) reaplicado sobre main é mais seguro que rebase do stack inteiro: extrair função+gate+testes originais, validar RED no main puro, GREEN com delta.
+
+
+## V333 — ausência mensal não comprova zero (2026-10-08)
+
+- Decisão humana aprovada: `NO_RECORDS != ZERO_RECEIVED`. `COMPLETE` exige confirmação explícita de fonte/mês inteiro; ausência de registros permanece `UNKNOWN`, registros sem cobertura completa são `PARTIAL`, meses futuros são `FUTURE`.
+- Média e projeção dependem exclusivamente de meses completos; sem evidência, exibir indisponível. Total anual contém recebido confirmado, nunca esperado/declarado/estimado. Contrato detalhado em `PRODUCT_CONTRACTS.md`.
+- Essa confirmação é entrada do modelo derivado, não schema persistido novo. O runtime atual não possui fonte de cobertura completa; não fabricar autoridade nem contornar persistência protegida para preencher o indicador.
+- Auditoria V335 encontrou o adapter Modern tratando qualquer linha de proventos como recebida e expondo médias de cobertura parcial. O contrato readonly v2 transporta estado por evento e cobertura; somente `PAID` entra em recebimentos, `plannedValue` é separado e média exige 12 meses completos. Isso é contrato derivado em memória, sem mudança de persistência.
+
+## V332 — runtime local de QA sintético (2026-10-07)
+
+- O modo sintético exige marcador fixo injetado pelo servidor local iniciado
+  com `--synthetic-qa`, host exato `localhost`/`127.0.0.1` e `testMode=1`.
+  Query/headers sozinhos e origens Preview/produção não ativam o bypass. A
+  estratégia e seus limites ficam em `docs/ai/QA_AUTH_STRATEGY.md`.
+- A sessão editável muda apenas memória efêmera. `testReadOnly=1` bloqueia as
+  fronteiras compartilhadas de edição, `save()`, reset de fixture e navegação
+  persistente, inclusive chamadas programáticas. Modo sintético também rejeita
+  hidratação de nuvem e acesso/persistência V76, sem localStorage financeiro.
+- A capacidade privilegiada para instalar o fixture readonly é privada e
+  one-shot: nunca deixe token de boot em escopo léxico global, pois avaliação
+  de JavaScript na página pode acessá-lo mesmo sem propriedade em `window`.
+- `npm ci` autorizado nesta worktree; `package.json`/lockfile inalterados.
+  Validação fresca: `test:local-synthetic` 26/26, browser readonly 1/1,
+  legado 255/255, moderno 820/820, V330 20/20, V84 4/4, A11Y 19/19,
+  QA harness 4/4 e V289 visual 13/13; `qa:all`, `verify:release`, builds e
+  `git diff --check` passaram.
+  Smoke viewport sem overflow em 390/430/768/1366/1440/1536/1920; V289
+  também cobre 360/1024/1280. Evidência visual sintética fica em `.qa-state/`.
+- Cinco smokes responsivos passaram a usar o servidor QA compartilhado, que
+  injeta o marcador confiável exigido pelo modo sintético. Isso corrigiu a
+  falha de Reliability no CI sem mudar o produto. Snapshot de certificação do
+  produto antes desta sincronização documental: SHA
+  `732dbb1e58401c981c23f9da48b41d2faf345b7b`, CI run `37714085100` PASS e
+  Preview Vercel READY no mesmo SHA. PR #456 permanece OPEN/DRAFT; a revisão/
+  merge continua humana.
+- Browser encontrou e corrigiu sinal duplicado no resultado positivo por
+  classe e métricas do resumo de classes Ativos cortadas a 1366 px. npm reportou
+  7 advisories (3 moderados, 4 altos); audit de produção reportou zero; nenhum
+  auto-fix/upgrade foi executado.
+  PRs dependentes #454/#455 intactas.
+
+## V328 — lições duráveis de testes e dados ausentes (2026-10-07)
+
+- Testes responsivos devem selecionar comportamento/semântica estáveis (role,
+  nome acessível, `data-testid`, contêiner semântico ou estado funcional), sem
+  depender de wrappers cosméticos; corrigir seletor obsoleto sem enfraquecer
+  asserts.
+- Dado financeiro ausente permanece desconhecido: preço ausente não é zero,
+  falta de movimento não prova retorno zero, base incompleta não permite
+  resultado derivado e fonte parcial não equivale à carteira completa.
+- A evidência de certificação só vale para o SHA e estado efetivamente
+  testados; consulte `PROJECT_CONTINUITY_POLICY.md` para a regra canônica de
+  frescor e recuperação, sem duplicar seus contratos aqui.
+
+#
+# V317 — certificação sintética das ações financeiras (2026-10-04)
+
+- Worktree `C:\Projetos\carteira-investimentos.worktrees\v317-financial-e2e`, branch `hermes/v317-financial-action-e2e-certification`, base/HEAD inicial `2966dfb197ddcde5440379f8d2d21c35cdeda183`. Somente fixtures sintéticas; sem escrita financeira real, sem alterações às PRs #440/#441 e sem merge.
+- `saveQuickMovement()` usa snapshot/restore e só executa efeitos de sucesso após um único `save()===true`; falha restaura aportes, proventos, ativos, carteiras e metadados e põe a sessão em quarentena. Falha ao criar snapshot também falha fechada, sem chamar save. `syncAssetsFromAportes()` e `autoDY()` aceitam preservar o save legado padrão ou deferi-lo ao boundary transacional.
+- `tests/v317-financial-action-e2e.test.js` valida compra em memória testMode, cancelamento/reload, falha de persistência e Import Center CSV com prévia/cancelamento, confirmação sintética e replay sem nova inclusão. Nenhuma chamada externa de escrita. Roundtrip local 7/7; fronteira V284 76/76.
+- Gates: `verify:release` PASS (legado 252, moderno 815, `qa:all`, smoke sete larguras sem erros/overflow, visual 4/4); validação focada agregada 196/196 após o teste de snapshot. V296 XLSX depende de SheetJS CDN e não carregou neste ambiente: `BLOCKED_NETWORK`, não classificar como falha funcional nem PASS.
+- `testMode` não substitui Firebase/Google auth nem comprova persistência cloud; roundtrip local valida save/load separado. A confirmação CSV ocorre só em sessão sintética.
+- Skills usadas: Superpowers (`using-superpowers`, `executing-plans`, TDD) controlou processo/test-first; Ponytail full guiou correção mínima e salvaguardas; Caveman guiou relatório/revisão; Playwright foi o browser harness primário. `MODEL_RECOMMENDED=Codex GPT-6 Luna Medium`; `REVIEW_MODEL_RECOMMENDED=Hermes GLM-5.3 via NVIDIA` (disponibilidade não verificada); `ESCALATION_MODEL_RECOMMENDED=Codex GPT-6 Sol Medium`. Runtime efetivo: Codex, variante não exposta. Revisor independente externo não usado e deve permanecer declarado como lacuna se não estiver disponível.
+- Código V317 commitado em `5bf3c213b5f62ed0a98b4b33182de891127ea657`; PR [#442](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/442) OPEN/DRAFT. CI run `37238415129`: Build/test, Auth+Firestore emulator, V289 visual, Vercel Preview e comments PASS.
+- Revisor técnico independente ainda não usado; a revisão humana permanece pendente junto ao gate XLSX CDN. `MERGE=false`.
+
+## V310 — decisão durável de QA autenticada isolada
+
+- O roteamento permanente de modelos e Skills é propriedade de `docs/ai/SKILLS_ROUTING.md`, independente do chat ou de um provider. Implementador e revisor devem ser distintos quando disponíveis.
+- V304/PR #438 foi integrada por squash em `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09`; `v1.3.0-rc1` mantém o alvo `399e120d83bfc81d58e613adb79fe6f27bf47cfe`. Os gates pós-merge e CI passaram. O commit documental local V309 foi reconciliado com este estado, sem cherry-pick cego.
+- QA de rotas em `testMode` prova composição local sem Firebase. Auth Emulator isolado requer também Firestore Emulator porque o guard lê `meta/access` e grava tentativas. Preferir projeto `demo-` e falha fechada; não conectar um emulador isoladamente à configuração de produção. Preview autenticado exige projeto Firebase QA separado e ação humana. Arquitetura e ameaças: `docs/ai/QA_AUTH_STRATEGY.md`.
+- Evidência temporária de baseline deve ficar em `.superpowers/sdd/<mission>/tmp/`, não como diretório irmão da worktree; ver `docs/ai/PROJECT_CONTINUITY_POLICY.md`.
+
+## Histórico V304 pré-merge (2026-10-03)
+
+- No checkpoint V304, o release V1.3.0 estava em `origin/main=eb1f3c4686f1f61635939512a2c1118cb0dde908` e V304 ainda trabalhava em branch isolada. Este registro é histórico; o estado integrado atual está no início do arquivo.
+- Phase-198: drift corrigido removendo o bloco inicial de estado duplicado e obsoleto do roadmap; contratos agora apontam à Phase 214 atual. Testes 2/2.
+- Phase-206: harness VM agora inclui `assetCurrentValue` real e o teste verifica o contrato Dashboard HYBRID V2 atual em vez dos painéis aposentados; testes 5/5. Nenhuma fórmula financeira mudou.
+- `setRentPrimarySemantic` era definição não referenciada nem chamada dinamicamente e foi removida; testes vizinhos de Rentabilidade passaram.
+- A matriz `tests/v289-visual-regression.test.js` tem script dedicado e CI; guarda que testMode está ativo, Firebase não inicializa/não recebe requests e o `civ5` financeiro não muda. Metadados locais sintéticos do lock de edição e monitoramento V258 são permitidos e não são persistência financeira.
+- `npm run verify:release` executa gates offline/local sem o XLSX CDN. `npm run test:import-xlsx` permanece gate manual (2/2 com bytes XLSX sintéticos).
+- Não existe Auth Emulator, projeto Firebase QA isolado ou conta sintética QA configurados neste repo. testMode é rota synthetic-only localhost, não autenticação provider-backed. Uma sessão verdadeiramente autenticada exige provisionamento humano isolado; produção mantém Google/Firebase auth sem bypass criado.
+- Handoff V304: `.superpowers/sdd/v304-post-release-hardening/CHATGPT_V304_HANDOFF.md`; política: `docs/ai/QA_AUTH_STRATEGY.md`.
 
 ## Estado canônico pós-V285 — 2026-09-29
 
@@ -1590,24 +1688,24 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 ## Decisão permanente — CAVEMAN_SUPERPOWERS_BOOTSTRAP
 
 - `MANDATORY_AGENT_BOOTSTRAP=true` e
-  `BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`.
+  `BOOTSTRAP_ORDER=Superpowers using-superpowers>Ponytail>Caveman>minimum mission-specific-skills`.
 - Escopo: Codex, Hermes, OpenCode e futuros agentes genéricos.
-- Processo detalhado de agente/modelo e Skills: `docs/SKILLS_ROUTING.md`;
+- Processo detalhado de agente/modelo e Skills: `docs/ai/SKILLS_ROUTING.md`;
   roteamento técnico por categoria: `docs/ai/SKILL_ROUTER.md`;
   governança de execução: `AGENTS.md`.
 - Razão: o roteamento de processo não depende de memória de chat, sessão,
   modelo ou executor específico.
-- Hermes/NVIDIA API com Nemotron 3 Super é a rota preferencial para engenharia
-  normal; Ultra 550B A55B para tarefas difíceis/grandes/noturnas; Kimi K3 para
-  UI visual/mobile; GLM-5.3 para revisão independente. Codex/GPT-6 Sol é
-  fallback conforme indisponibilidade ou falha repetida da rota preferencial,
-  não por fricção técnica comum isolada. Toda disponibilidade deve ser
-  verificada no ambiente; nunca alegar execução/modelo indisponível.
-- Toda missão substancial anuncia `Using Caveman + Superpowers to <purpose>`.
-  Cada handoff registra disponibilidade/uso, agente/modelo, justificativa,
-  Skills consideradas/usadas/não usadas e lacunas. Selecionar menor conjunto
-  especializado após bootstrap e descoberta real do inventário.
-- Fallback: se Caveman ou Superpowers não existir, registrar a limitação e
+- O padrão é Codex GPT-6 Luna Medium para implementação; GPT-6 Sol Medium
+  atende arquitetura/segurança complexa e causas sem solução após três
+  tentativas fundamentadas. Hermes GLM-5.3 via NVIDIA é o revisor independente
+  preferido; Nemotron 3 Ultra 550B A55B é alternativa de revisão pesada e
+  Kimi K3 pode revisar visual quando disponível. NVIDIA não é dependência;
+  ausência permite revisão profunda em contexto novo com Codex Sol Medium.
+  Toda disponibilidade deve ser verificada; nunca alegar modelo não usado.
+- Toda missão substancial considera Caveman + Ponytail + Superpowers e registra
+  modelos recomendados, justificativas, Skills consideradas/usadas/não usadas,
+  reavaliação e lacunas após descoberta real do inventário.
+- Fallback: se Caveman, Ponytail ou Superpowers não existir, registrar a limitação e
   usar somente processo/Skills realmente disponíveis, sem alegar uso.
 - Limite: Skills orientam o processo, mas não autorizam merge, deploy,
   alterações cloud/financeiras, persistência, schema, secrets ou ações
@@ -1654,3 +1752,40 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Protected financial semantics enforced
 - Identity gate executable and mandatory
 - Cache validation via HEAD + diff hash (`.codex-local/last-full-check.json`, gitignored)
+
+## Runtime-agnostic skill policy — Ponytail
+
+- `AGENTS.md` is the shared policy source for Codex, Hermes and OpenCode; keep
+  the full precedence and safeguards there rather than duplicating the rules.
+- `PONYTAIL_DEFAULT_MODE=full`. Prefer minimal correct implementation while
+  preserving validation, error handling, security, accessibility, financial
+  semantics, persistence/import safeguards and required behavioral tests.
+- Consider `ponytail-review` after substantial implementation. Run
+  `ponytail-audit` only when an audit/cleanup mission explicitly authorizes it.
+## V330 — contratos de nota de corretagem e reconciliação
+
+- `RAW_EXECUTION != NORMALIZED_TRANSACTION`: toda linha bruta permanece
+  identificável; agrupamento exige dimensões de identidade e contexto
+  suficientes. Ambiguidade, conflito ou possível duplicata nunca é colapsada
+  silenciosamente.
+- Proveniência e versão de normalização acompanham transações derivadas. Replay
+  de mesma identidade/conteúdo é idempotente; conteúdo divergente na mesma
+  identidade exige revisão.
+- Identidade governada exige corretora, número da nota e data do pregão; ID do
+  arquivo é proveniência, nunca substituto da identidade. Quantidade deve ser
+  positiva, sem expoente e até oito casas; bruto por execução deve conferir com
+  quantidade × preço, tolerância máxima de um centavo.
+- Deduplicação do plano preserva ativos, notas e execuções distintas. Plano com
+  itens pendentes de revisão não pode ser confirmado.
+- Taxas permanecem no nível da nota, por componente, sem rateio inventado;
+  IRRF, base e inclusão no líquido são evidências separadas. Data de pregão e
+  liquidação não são intercambiáveis nem inferidas.
+- `SALE_GROSS != REALIZED_PNL`. Reutilizar o único contrato V326 de cost basis
+  quando toda a evidência estiver disponível; fora disso, resultado realizado
+  permanece indisponível.
+- Preview V330 é sintético/read-only e termina antes de persistência. Fixtures
+  não contêm dados pessoais ou PDFs reais; nenhum writer, Firebase, localStorage
+  ou caminho de produção pertence ao parser/modelo de preview.
+- Contrato técnico detalhado: `BROKERAGE_NOTE_IMPORT.md` e
+  `PRODUCT_CONTRACTS.md`; estado de execução permanece em `PROJECT_STATE.md` e
+  `NEXT_STEP.md`.

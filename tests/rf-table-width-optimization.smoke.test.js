@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 
 function resolveBrowser() {
   return [
@@ -23,7 +24,10 @@ async function startServer(rootDir) {
       const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
       const file = path.normalize(path.join(rootDir, pathname === '/' ? '/index.html' : pathname));
       if (!file.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
-      res.writeHead(200, { 'Content-Type': file.endsWith('.html') ? 'text/html; charset=utf-8' : 'text/plain' });
+      const contentType = file.endsWith('.html') ? 'text/html; charset=utf-8'
+        : file.endsWith('.js') || file.endsWith('.mjs') ? 'text/javascript; charset=utf-8'
+          : file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/plain';
+      res.writeHead(200, { 'Content-Type': contentType });
       res.end(await fsp.readFile(file));
     } catch (error) {
       res.writeHead(error.code === 'ENOENT' ? 404 : 500);
@@ -41,7 +45,7 @@ const viewports = [
   { width: 1920, height: 1080, label: '1920x1080' },
 ];
 
-const EXPECTED_HEADERS = ['Título', 'Tipo / Indexador', 'Aplicação', 'Vencimento', 'Valor aplicado', 'Valor atual / líquido', 'Resultado', 'Rentabilidade', '% na carteira', 'Ações'];
+const EXPECTED_HEADERS = ['Ticker', 'Tipo', 'Aplicado', 'Atual', 'Resultado de mercado', 'Rendimentos recebidos', 'Resultado total', 'Rentab.', 'Vencimento', 'Situação'];
 
 for (const viewport of viewports) {
   test(`RF table width - ${viewport.label}`, async () => {
@@ -68,13 +72,10 @@ for (const viewport of viewports) {
     page.on('requestfailed', request => requestFailures.push(request.url()));
 
       await page.goto(harness.url, { waitUntil: 'networkidle' });
-      await page.evaluate(() => { go('ativos'); setAssetsInnerTab('patrimonio'); });
-      await page.evaluate(() => {
-        const details = [...document.querySelectorAll('details.ag')].find(item =>
-          (item.getAttribute('data-asset-group') || '').toLowerCase().includes('renda'));
-        if (!details) throw new Error('Grupo Renda Fixa nao encontrado em Ativos');
-        if (!details.open) details.querySelector('summary').click();
-      });
+      await applyV289VisualFixture(page, 'baseline');
+      await page.evaluate(() => go('renda-fixa'));
+      const detail = page.locator('.premium-rf-page > details').filter({ hasText: 'Detalhamento dos títulos' });
+      await detail.locator('summary').click();
       await page.waitForSelector('.rf-table tbody tr', { state: 'visible', timeout: 5000 });
 
       const snapshot = await page.evaluate(() => {
@@ -85,8 +86,8 @@ for (const viewport of viewports) {
         const rows = [...table.querySelectorAll('tbody tr')];
         const firstRow = rows[0];
         const tds = firstRow ? [...firstRow.querySelectorAll('td')] : [];
-        const acoesTd = tds[9];
-        const buttons = acoesTd ? [...acoesTd.querySelectorAll('button')]
+        const position = document.querySelector('.premium-rf-position-row');
+        const buttons = position ? [...position.querySelectorAll('.premium-rf-row-actions button')]
           .filter(b => b.getBoundingClientRect().width > 0 && b.getBoundingClientRect().height > 0)
           .map(b => {
             const r = b.getBoundingClientRect();
@@ -94,9 +95,10 @@ for (const viewport of viewports) {
           }) : [];
         const numericCells = tds.filter(td => td.classList.contains('rf-right'));
         const wrappedNumbers = numericCells.filter(td => {
+          const numericText = td.querySelector('.rf-strong')?.textContent.trim() || td.textContent.trim();
           const span = document.createElement('span');
           span.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:inherit';
-          span.textContent = td.textContent.trim();
+          span.textContent = numericText;
           document.body.appendChild(span);
           const textW = span.getBoundingClientRect().width;
           document.body.removeChild(span);
@@ -117,8 +119,7 @@ for (const viewport of viewports) {
         return {
           headers,
           rowCount: rows.length,
-          acoesButtons: buttons,
-          acoesFullyVisible: buttons.length ? buttons.every(b => b.right <= wrapRect.right) : null,
+          positionButtons: buttons,
           wrapClientW: wrap.clientWidth,
           wrapScrollW: wrap.scrollWidth,
           overflowTable: wrap.scrollWidth > wrap.clientWidth,
@@ -131,35 +132,28 @@ for (const viewport of viewports) {
       assert.deepEqual(snapshot.headers, EXPECTED_HEADERS, `colunas incorretas em ${viewport.label}`);
       assert.ok(snapshot.rowCount > 0, `sem linhas RF em ${viewport.label}`);
       assert.ok(snapshot.metrics, `ativo RF elegivel ausente em ${viewport.label}`);
-      assert.deepEqual(snapshot.acoesButtons.map(b => b.text), ['Movimentar', 'Resgatar', 'Mais'], `botoes de acao incorretos em ${viewport.label}`);
-      for (const button of snapshot.acoesButtons) {
+      assert.deepEqual(snapshot.positionButtons.map(b => b.text), ['Detalhes', 'Movimentar', 'Resgatar', '✎ Editar'], `acoes da posicao incorretas em ${viewport.label}`);
+      for (const button of snapshot.positionButtons) {
         assert.ok(button.h >= 44, `touch target < 44px: ${button.text} h=${button.h}`);
       }
       assert.deepEqual(snapshot.wrappedNumbers, [], `valores numericos quebrados em ${viewport.label}`);
 
       if (viewport.width >= 1366) {
         assert.equal(snapshot.overflowTable, false, `scroll interno da tabela em ${viewport.label} (scrollWidth=${snapshot.wrapScrollW} clientWidth=${snapshot.wrapClientW})`);
-        assert.equal(snapshot.acoesFullyVisible, true, `coluna Acoes nao totalmente visivel em ${viewport.label}`);
       }
       assert.equal(snapshot.overflowPage, false, `overflow horizontal da pagina em ${viewport.label}`);
 
       const id = snapshot.metrics.id;
 
-      await page.locator('.rf-table tbody tr:first-child button', { hasText: 'Movimentar' }).click();
+      await page.locator('.premium-rf-position-row:first-child button', { hasText: 'Movimentar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'visible', timeout: 5000 });
       await page.locator('.rf-event-editor button', { hasText: 'Cancelar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'detached', timeout: 5000 });
 
-      await page.locator('.rf-table tbody tr:first-child button', { hasText: 'Resgatar' }).click();
+      await page.locator('.premium-rf-position-row:first-child button', { hasText: 'Resgatar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'visible', timeout: 5000 });
       await page.locator('.rf-event-editor button', { hasText: 'Cancelar' }).click();
       await page.locator('.rf-event-editor').waitFor({ state: 'detached', timeout: 5000 });
-
-      const menuButton = page.locator('.rf-table tbody tr:first-child button[aria-haspopup="menu"]');
-      await menuButton.click();
-      await page.locator('.rf-table tbody tr:first-child .asset-action-menu-panel.open').waitFor({ state: 'visible' });
-      await page.keyboard.press('Escape');
-      await page.locator('.rf-table tbody tr:first-child .asset-action-menu-panel.open').waitFor({ state: 'hidden' });
 
       const after = await page.evaluate(id => {
         const asset = S.assets.find(item => rfAssetEventId(item) === id);

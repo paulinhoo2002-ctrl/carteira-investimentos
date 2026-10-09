@@ -208,58 +208,7 @@
     };
   }
 
-  function buildMonthlyPointsFromValuations(engineResult) {
-    // Build monthly points from valuations and flows
-    // This mirrors legacy logic but uses engine valuations
-    const valuations = engineResult.valuations || [];
-    const events = []; // External flows already in engine
-    const income = []; // Income already in engine
-
-    // Group valuations by month
-    const monthlyMap = new Map();
-    (engineResult.valuations || []).forEach(v => {
-      const key = v.date.slice(0, 7); // YYYY-MM
-      if (!monthlyMap.has(key) || new Date(v.date) > new Date(monthlyMap.get(key).date)) {
-        monthlyMap.set(key, v);
-      }
-    });
-
-    const monthlyPoints = [];
-    monthlyMap.forEach((v, key) => {
-      const date = new Date(key + '-01');
-      monthlyPoints.push({
-        key,
-        year: date.getFullYear(),
-        month: date.getMonth(),
-        label: date.toLocaleDateString('pt-BR', { month: '2-digit', year: '2-digit' }),
-        costBasis: null, // Would need flow reconstruction
-        currentValue: v.value,
-        proventos: 0,
-        provMonth: 0,
-        cumReturn: 0, // Would need start value
-        delta: 0
-      });
-    });
-
-    return monthlyPoints;
-  }
-
-  function buildAlignedBenchmarkSeries(benchmark, view) {
-    if (!benchmark || !benchmark.points || !benchmark.points.length) {
-      // No real benchmark - return unavailable marker
-      return view.map(() => ({ value: null, unavailable: true }));
-    }
-
-    // Align benchmark points with view dates
-    const benchmarkMap = new Map(benchmark.points.map(p => [p.date.slice(0, 7), p.value]));
-    return view.map(p => {
-      const key = p.key;
-      const value = benchmarkMap.get(key);
-      return value !== undefined ? { value, unavailable: false } : { value: null, unavailable: true };
-    });
-  }
-
-  // ============ PUBLIC API ============
+  // ============ MAIN ADAPTER ============
 
   // Replace legacy functions
   window.rentabilityHistory = function(typeFilter = 'all', period = 'all', bench = 'CDI') {

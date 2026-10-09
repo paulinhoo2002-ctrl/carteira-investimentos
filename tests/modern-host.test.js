@@ -107,7 +107,8 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /createHostLegacyReportsReadonlySource/);
   assert.match(hostTsx, /createConnectedReportsDemoSource/);
   assert.match(hostTsx, /readReadonlyReportSessionContext/);
-  assert.match(hostTsx, /buildReadonlyReportSessionSearch/);
+  assert.match(hostTsx, /createReadonlyReportSessionHistory/);
+  assert.match(hostTsx, /routeHistory\?\.navigate/);
   assert.match(hostTsx, /createReportsRefreshController/);
   assert.match(hostTsx, /createNullReportsSource/);
   assert.match(hostTsx, /strictSourceWiring/);
@@ -127,6 +128,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(hostTsx, /createHostExperimentalAssets/);
   assert.match(hostTsx, /experimentalAssets/);
   assert.match(hostTsx, /createModernReportsRuntime/);
+  assert.match(hostTsx, /import \{ createModernReportsRuntime \} from '\.\/bootstrap\/modernReportsRuntime'/);
   assert.match(hostTsx, /mountModernApp/);
   assert.match(hostTsx, /AppComponent: App/);
   assert.match(hostTsx, /reportsRefreshController/);
@@ -180,6 +182,7 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(appTsx, /contributionsAdapter: ReadOnlyContributionsAdapter/);
   assert.match(appTsx, /initialPageId\?: ModernPageId/);
   assert.match(appTsx, /onActivePageIdChange\?: \(pageId: ModernPageId\) => void/);
+  assert.match(appTsx, /navigation\.subscribe\(setActivePageId, initialPageId\)/);
   assert.match(appTsx, /ContributionsReadonlyPage/);
   assert.match(mainTsx, /createModernContributionsRuntime/);
   assert.match(mainTsx, /contributionsAdapter/);
@@ -379,7 +382,7 @@ test('income host runtime keeps demo source available', async () => {
   const runtime = createModernIncomeRuntime();
 
   assert.equal(typeof runtime.incomeAdapter.getSnapshot, 'function');
-  assert.equal(runtime.incomeAdapter.getSnapshot().version, 1);
+  assert.equal(runtime.incomeAdapter.getSnapshot().version, 2);
   assert.equal(runtime.incomeRefreshController, null);
   assert.match(read('src/host.tsx'), /createModernIncomeRuntime/);
 });
@@ -395,7 +398,7 @@ test('income host source keeps fallback controlled when reading fails', async ()
 
   const snapshot = source.getSnapshot();
 
-  assert.equal(snapshot.version, 1);
+  assert.equal(snapshot.version, 2);
   assert.equal(snapshot.summary.paymentCount, 0);
   assert.equal(snapshot.items.length, 0);
   assert.equal(snapshot.summary.totalReceived, null);

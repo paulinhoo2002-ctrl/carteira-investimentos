@@ -11,6 +11,7 @@ import {
   hostNormalizeType,
 } from './bootstrap/hostLegacyReportsReadonlySource';
 import { createModernFixedIncomeRuntime } from './bootstrap/modernFixedIncomeRuntime';
+import { createModernReportsRuntime } from './bootstrap/modernReportsRuntime';
 import { createModernContributionsRuntime } from './bootstrap/modernContributionsRuntime';
 import { createModernGoalsRuntime } from './bootstrap/modernGoalsRuntime';
 import { createModernIncomeRuntime } from './bootstrap/modernIncomeRuntime';
@@ -22,10 +23,8 @@ import { mountModernApp } from './bootstrap/mountModernApp';
 import { createConnectedReportsDemoSource } from './features/reports/legacyReportsReadonlyIntegration.ts';
 import type { HostFixedIncomeAsset } from './bootstrap/hostFixedIncomeReadonlySource';
 import type { HostIncomeReadonlySourceOptions } from './bootstrap/hostIncomeReadonlySource';
-import {
-  buildReadonlyReportSessionSearch,
-  readReadonlyReportSessionContext,
-} from './features/reports/readonlyReportSessionContext.ts';
+import { readReadonlyReportSessionContext } from './features/reports/readonlyReportSessionContext.ts';
+import { createReadonlyReportSessionHistory } from './features/reports/readonlyReportSessionHistory.ts';
 import {
   createReportsRefreshController,
   type ReportsReadonlyDiagnostics,
@@ -217,6 +216,11 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
   const initialSessionContext = sessionContextEnabled
     ? readReadonlyReportSessionContext(location.search, 'reports')
     : null;
+  const initialRouteContext = typeof location !== 'undefined'
+    ? readReadonlyReportSessionContext(location.search, sessionContextEnabled ? 'reports' : 'overview')
+    : null;
+  const navigationWindow = targetRoot.ownerDocument?.defaultView;
+  const routeHistory = navigationWindow ? createReadonlyReportSessionHistory(navigationWindow) : null;
   let experimentalRevision = 0;
   let experimentalAssets = createHostExperimentalAssets(experimentalRevision);
 
@@ -378,19 +382,12 @@ export async function bootstrapHost(options: HostBootstrapOptions = {}) {
       contributionsRefreshController: modernContributionsRuntime.contributionsRefreshController,
       incomeRefreshController: modernIncomeRuntime.incomeRefreshController,
       goalsRefreshController: modernGoalsRuntime.goalsRefreshController,
-        initialPageId: initialSessionContext?.pageId ?? 'overview',
+        initialPageId: initialSessionContext?.pageId ?? initialRouteContext?.pageId ?? 'overview',
         onActivePageIdChange(pageId: ModernPageId) {
-        if (!sessionContextEnabled) {
-          return;
-        }
-
         try {
-          const nextUrl = new URL(location.href);
-          nextUrl.search = buildReadonlyReportSessionSearch(pageId, location.search);
-          nextUrl.hash = '';
-          history.replaceState(history.state, '', nextUrl.toString());
+          routeHistory?.navigate(pageId);
         } catch (error) {
-          debugWarn('readonly report session context failed:', error);
+          debugWarn('readonly report navigation failed:', error);
         }
       },
     });

@@ -159,6 +159,10 @@ Em mudanças visuais, revisar:
 - Comportamento em mobile (390/430) e desktop (1366/1920).
 - Excesso de cards, bordas, brilhos, sombras e gradientes.
 
+`PROJECT_MISSION_PREFIX=SUPERPOWERS + PONYTAIL FULL + CAVEMAN`. Begin every
+project mission, agent command block, handoff, and final report with that exact
+prefix.
+
 ## Playwright
 
 Após mudanças visuais, validar obrigatoriamente:
@@ -170,6 +174,11 @@ Após mudanças visuais, validar obrigatoriamente:
 - Console (sem erro vermelho novo).
 - Page errors e request failures (somente relevantes).
 - Fluxos diretamente alterados.
+
+`STABLE_TEST_SELECTOR_RULE=true`. Contratos responsivos/visuais devem validar semântica e comportamento estáveis:
+preferir role, nome acessível, `data-testid`, contêiner semântico e estado
+funcional. Evitar wrappers cosméticos e profundidade frágil do DOM. Não reduzir
+asserts para fazer seletores antigos passar.
 
 ## Governança Git
 
@@ -429,6 +438,9 @@ Regras permanentes para todos os agentes (Codex, Hermes, OpenCode, etc.):
 - Nunca alterar fórmulas financeiras sem fase dedicada
 - Nunca alterar persistência/schema/Firebase sem autorização
 - `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, `ESTIMATE != RECEIVED`
+- `FINANCIAL_MISSING_DATA_RULE=true`. Dado ausente não pode virar zero silenciosamente: preço ausente não é R$ 0;
+  movimento ausente não prova mês de retorno zero; custo/base incompletos não
+  autorizam resultado derivado; fonte parcial não representa carteira completa.
 - Manual RF authority preservada
 - Save() failure = quarantine
 
@@ -442,3 +454,44 @@ Regras permanentes para todos os agentes (Codex, Hermes, OpenCode, etc.):
 - `docs/ai/SKILLS_ROUTING.md`
 - `docs/ai/DESIGN.md` quando aplicável
 - **Histórico do chat NÃO é source of truth**
+
+## Runtime-agnostic project skill policy
+
+`PROJECT_SKILL_POLICY=Caveman+Superpowers+Ponytail` applies to Codex, Hermes,
+OpenCode and other agents that read this file. `PONYTAIL_DEFAULT_MODE=full`;
+do not default to `ultra`. Ponytail's runtime default is `full` unless overridden
+by `PONYTAIL_DEFAULT_MODE` or its user config.
+
+Priority: project governance in `AGENTS.md` → protected financial semantics →
+Git safety and human gates → approved specs and behavioral contracts →
+Superpowers execution discipline → Ponytail minimal implementation → Caveman
+concise communication → specialist Skills selected for the task.
+
+Prefer the smallest implementation that satisfies approved behavior. Never
+simplify away financial invariants, validation, error handling, security,
+accessibility, persistence safeguards, import confirmation, authority/provenance
+semantics, historical integrity or required behavioral tests. Prefer, in order:
+do not build if unnecessary; reuse project code; use platform/stdlib capability;
+reuse an installed dependency; choose the smallest correct implementation; only
+then introduce an abstraction or dependency. After substantial implementation,
+consider `ponytail-review` before final technical certification. Run
+`ponytail-audit` only in explicitly authorized cleanup/audit missions; never
+refactor opportunistically. This policy does not override project rules or
+authorize protected or remote actions.
+
+See `docs/ai/SKILLS_ROUTING.md` for the short routing reference.
+
+## Model and Skill routing
+
+`docs/ai/SKILLS_ROUTING.md` owns model selection, independent reviewer routing,
+Skill discovery and mission reporting for every runtime. Codex GPT-6 Luna Medium
+is the default implementation model; Codex GPT-6 Sol Medium handles complex
+architecture/security or a root cause unresolved after three reasoned attempts.
+Hermes GLM-5.3 via NVIDIA is the preferred independent reviewer when available.
+These are routing preferences, never a dependency or a claim that a model ran.
+
+For substantial missions, discover the Skills actually available, use
+Superpowers first, select the smallest useful set, and report
+`SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
+`SKILL_SELECTION_REASON`, `SKILL_REEVALUATED` and `SKILL_GAPS_FOUND`.
+Repository state and tracked rules outrank chat memory or runtime defaults.

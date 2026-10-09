@@ -1,5 +1,17 @@
 # Testing and Release
 
+## Post-release automated local gates
+
+- `npm run test:visual-regression` runs the synthetic V289 browser route matrix;
+  the CI workflow runs it after resolving Chromium.
+- `npm run verify:release` runs legacy tests, modern tests, `qa:all`, and the
+  visual regression matrix. It needs the normal project dependencies and a
+  Chromium installation (or `CHROME_PATH`).
+- `npm run test:import-xlsx` remains a separate network/CDN-dependent manual
+  release gate and is intentionally outside offline CI and `verify:release`.
+- Local `testMode` route QA is an in-memory synthetic fixture, not Firebase
+  authentication evidence. See [`QA_AUTH_STRATEGY.md`](QA_AUTH_STRATEGY.md).
+
 ## Phase 3 final usability gate (2026-09-06)
 
 - Required widths: 390, 430, 768, 1366, 1440, 1536 and 1920 px.

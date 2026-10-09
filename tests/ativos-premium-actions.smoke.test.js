@@ -66,7 +66,12 @@ for (const viewport of viewports) {
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('ativos'));
       await page.waitForSelector('.ag', { state: 'visible', timeout: 5000 });
-      await page.locator('.ag').first().locator('summary').click();
+      const firstGroup = page.locator('.ag').first();
+      if (!(await firstGroup.evaluate(element => element.open))) await firstGroup.locator(':scope > summary').click();
+      if (viewport.width <= 640) {
+        await page.locator('.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card').first().locator(':scope > summary').click();
+        await page.locator('.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card').first().locator(':scope > summary').click();
+      }
 
       const snapshot = await page.evaluate(() => {
         const visible = element => {
@@ -74,16 +79,16 @@ for (const viewport of viewports) {
           const style = getComputedStyle(element);
           return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
         };
-        const rows = [...document.querySelectorAll('.ag-table tbody tr')].filter(visible);
-        const rfRows = [...document.querySelectorAll('.rf-table tbody tr')].filter(visible);
+        const rows = [...document.querySelectorAll('.ag-table tbody tr, .ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card')].filter(visible);
+        const rfRows = [...document.querySelectorAll('.rf-table tbody tr, .ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card')].filter(visible);
         const actions = [...document.querySelectorAll('.asset-actions button')].filter(visible).map(button => ({
           text: button.textContent.trim(),
           width: button.getBoundingClientRect().width,
           height: button.getBoundingClientRect().height,
         }));
-        const categoryIcons = [...document.querySelectorAll('.assets-premium-shell .ag-ico svg')].filter(visible);
-        const desktopTable = document.querySelector('#assets-premium-table-desktop');
-        const allocation = document.querySelector('.assets-allocation-panel');
+        const categoryIcons = [...document.querySelectorAll('.assets-premium-shell .acc-icon')].filter(visible);
+        const desktopTable = document.querySelector('.assets-table-wrap');
+        const categoryMetrics = document.querySelector('.assets-premium-shell .acc-metric-value');
         return {
           normalRows: rows.length,
           rfRows: rfRows.length,
@@ -93,10 +98,11 @@ for (const viewport of viewports) {
           hasSell: actions.some(action => action.text === 'Vender'),
           hasMove: actions.some(action => action.text === 'Movimentar'),
           hasRedeem: actions.some(action => action.text === 'Resgatar'),
-          hasMenu: actions.some(action => action.text === 'Mais'),
+          hasDetail: actions.some(action => action.text === 'Detalhes'),
+          hasEdit: actions.some(action => action.text.includes('Editar')),
           actions,
           categoryIconsVisible: categoryIcons.length,
-          allocationVisible: Boolean(allocation && visible(allocation)),
+          categoryMetricsVisible: Boolean(categoryMetrics && visible(categoryMetrics)),
           desktopTableVisible: Boolean(desktopTable && visible(desktopTable)),
           overflow: document.documentElement.scrollWidth > window.innerWidth,
         };
@@ -108,25 +114,23 @@ for (const viewport of viewports) {
       assert.equal(snapshot.hasSell, true, `Vender ausente em ${viewport.label}`);
       assert.equal(snapshot.hasMove, true, `Movimentar ausente em ${viewport.label}`);
       assert.equal(snapshot.hasRedeem, true, `Resgatar ausente em ${viewport.label}`);
-      assert.equal(snapshot.hasMenu, true, `menu contextual ausente em ${viewport.label}`);
+      assert.equal(snapshot.hasDetail, true, `Detalhes ausente em ${viewport.label}`);
+      assert.equal(snapshot.hasEdit, true, `Editar ausente em ${viewport.label}`);
       assert.equal(snapshot.overflow, false, `overflow horizontal em ${viewport.label}`);
       assert.ok(snapshot.categoryIconsVisible > 0, `icone SVG de categoria ausente em ${viewport.label}`);
-      assert.equal(snapshot.allocationVisible, true, `alocacao por classe ausente em ${viewport.label}`);
-      if (viewport.width >= 1366) assert.equal(snapshot.desktopTableVisible, true, `tabela principal ausente em ${viewport.label}`);
+      assert.equal(snapshot.categoryMetricsVisible, true, `métricas do grupo ausentes em ${viewport.label}`);
+      if (viewport.width > 640) assert.equal(snapshot.desktopTableVisible, true, `tabela principal ausente em ${viewport.label}`);
       for (const action of snapshot.actions) assert.ok(action.width >= 44 && action.height >= 44, `acao menor que 44px: ${action.text} (${action.width}x${action.height}) em ${viewport.label}`);
 
       const beforeData = { normal: snapshot.normalIdentity, rf: snapshot.rfIdentity };
-       const firstMenu = page.locator(viewport.width >= 1000
-         ? '#assets-premium-table-desktop .asset-action-menu'
-         : '.ag[open] .asset-action-menu').first();
-      await firstMenu.locator('button[aria-haspopup="menu"]').click();
-      await assert.doesNotReject(async () => firstMenu.locator('.asset-action-menu-panel.open').waitFor({ state: 'visible', timeout: 1000 }));
-      await page.keyboard.press('Escape');
-      await assert.doesNotReject(async () => firstMenu.locator('.asset-action-menu-panel.open').waitFor({ state: 'hidden', timeout: 1000 }));
-      const afterData = await page.evaluate(() => ({
-        normal: document.querySelector('.ag-table tbody tr')?.textContent.trim() || '',
-        rf: document.querySelector('.rf-table tbody tr')?.textContent.trim() || '',
-      }));
+      const afterData = await page.evaluate(isMobile => ({
+        normal: document.querySelector(isMobile
+          ? '.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card'
+          : '.ag-table tbody tr')?.textContent.trim() || '',
+        rf: document.querySelector(isMobile
+          ? '.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card'
+          : '.rf-table tbody tr')?.textContent.trim() || '',
+      }), viewport.width <= 640);
       assert.deepEqual(afterData, beforeData, `dados do ativo mudaram ao abrir/fechar menu em ${viewport.label}`);
       await context.close();
     } finally {

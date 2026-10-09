@@ -1,5 +1,15 @@
 # Product Contracts
 
+## V333 — cobertura mensal de Dividendos (decisão humana aprovada, 2026-10-08)
+
+- `NO_RECORDS != ZERO_RECEIVED`. Estados mensais: `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`.
+- Zero mensal exige evidência explícita da fonte de que o mês inteiro está representado. No modelo derivado, `COMPLETE` exige `fullMonthConfirmed=true` e `source` identificada; array vazio, data inicial do histórico e validade dos registros não comprovam cobertura completa. Valor inválido impede `COMPLETE`.
+- Sem evidência, meses vazios exibem `—`; recebimentos registrados exibem o valor com `Parcial`. Meses futuros exibem `—`.
+- Total anual soma somente valores classificados como recebidos (`PAID`); esperados, declarados, anunciados, estimados e projeções ficam fora. A soma conhecida não certifica cobertura do ano.
+- Média usa somente meses completos confirmados, incluindo zero completo. Sem denominador governado, média e projeção ficam indisponíveis. Projeção anual é uma estimativa separada, nunca parte do recebido.
+- O runtime atual não possui fonte de confirmação mensal completa. A aplicação não inventa essa evidência nem grava novo schema; cobertura completa é uma entrada explícita do cálculo derivado, coberta por fixtures sintéticas. Persistência/Auth/Firebase permanecem intactos.
+- O snapshot readonly Modern mantém estado explícito por evento (`PAID`, `ANNOUNCED`, `ESTIMATED`, `UNKNOWN`). Somente `PAID` conta como recebimento; valores planejados permanecem separados. Cobertura histórica e mensal é parte do contrato derivado, e média mensal só é válida com 12 meses `COMPLETE`. A versão 2 altera apenas a interface em memória entre host e React; não muda schema persistido.
+
 ## Phase 4 automation safety contract (2026-09-06)
 
 - `NO_SILENT_FINANCIAL_WRITE=true`
@@ -128,6 +138,36 @@ second financial state or persistence path.
 
 Future changes to this route are limited to bug fixes, regressions, financial or
 data correctness and explicit user authorization.
+
+## V330 brokerage-note reconciliation contract
+
+- `RAW_EXECUTION != NORMALIZED_TRANSACTION`: retain every source execution and
+  its row identity; group only with explicit broker/note, trade date, exact
+  canonical asset, side, market, unit price, and settlement context.
+- Missing identity, side, date, settlement/grouping evidence, unsafe monetary
+  precision, conflicting note content, or a possible existing transaction
+  match requires review. No ambiguous row is silently collapsed.
+- Note identity requires broker, note number and trade date; source/file ID is
+  provenance only. Quantity must be positive, non-exponential and limited to
+  eight decimal places. Gross must match quantity × unit price within one cent.
+- Deduplication preserves distinct notes, assets and execution identities;
+  unresolved review items block plan confirmation.
+- Note-level fee components, fee total, gross purchases/sales, net operations,
+  IRRF amount/base/inclusion, settlement date, source identity and provenance
+  remain separate. Unknown is not zero; note fees are `UNALLOCATED` by default.
+- `SALE_GROSS != REALIZED_PNL`. V330 adds no P&L formula; use existing governed
+  V326 cost-basis intelligence when its required history/evidence is available,
+  otherwise report `RESULT_NOT_AVAILABLE`.
+- The V330 preview is dry-run/read-only: no persistence, Firebase,
+  localStorage, or production writes. See `BROKERAGE_NOTE_IMPORT.md` for the
+  detailed source and idempotency contract.
+- Legacy brokerage-note confirmation requires both the existing legacy
+  checklist and safe V330 readiness. `HUMAN_DATA_REQUIRED`, `SOURCE_CONFLICT`,
+  `DUPLICATE_CANDIDATE`, `UNRECONCILED`, unknown/missing readiness, and
+  incomplete required fee or IRRF status block confirmation. The existing
+  canonical pair `SOURCE_CONFIRMED` + `READY_FOR_REVIEW` may proceed only with
+  `validation=VALID` and no readiness reasons; missing descriptive-only
+  metadata does not create a new financial block.
 
 ## Phase 4B historical import preview contract (2026-09-06)
 

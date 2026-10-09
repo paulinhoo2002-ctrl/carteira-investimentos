@@ -4,14 +4,17 @@ import type { ReadOnlyIncomeAdapter } from './incomeSnapshotAdapter.mjs';
 import type { ReadOnlyIncomeBridge, ReadOnlyIncomeSource } from './incomeReadonlyBridge.mjs';
 
 const CONNECTED_INCOME_DEMO_SNAPSHOT = {
-  version: 1,
+  version: 2,
   generatedAt: '2026-07-14T10:30:00.000Z',
   notice: 'Snapshot legado somente leitura de proventos. React nao escreve na fonte.',
   summary: {
+    historyCoverage: 'PARTIAL',
+    monthCoverage: 'PARTIAL',
+    averageCoverage: 'UNKNOWN',
     totalReceived: 748.51,
     monthTotal: 748.51,
     yearTotal: 748.51,
-    averageMonthly: 62.38,
+    averageMonthly: null,
     paymentCount: 4,
   },
   items: [
@@ -29,6 +32,8 @@ const CONNECTED_INCOME_DEMO_SNAPSHOT = {
       source: 'demo',
       sourceEventKind: null,
       sourceEventId: null,
+      paymentState: 'PAID',
+      plannedValue: null,
     },
     {
       id: 'inc-002',
@@ -44,6 +49,8 @@ const CONNECTED_INCOME_DEMO_SNAPSHOT = {
       source: 'demo',
       sourceEventKind: null,
       sourceEventId: null,
+      paymentState: 'PAID',
+      plannedValue: null,
     },
     {
       id: 'inc-003',
@@ -59,6 +66,8 @@ const CONNECTED_INCOME_DEMO_SNAPSHOT = {
       source: 'demo',
       sourceEventKind: null,
       sourceEventId: null,
+      paymentState: 'PAID',
+      plannedValue: null,
     },
     {
       id: 'inc-004',
@@ -74,6 +83,8 @@ const CONNECTED_INCOME_DEMO_SNAPSHOT = {
       source: 'demo',
       sourceEventKind: null,
       sourceEventId: null,
+      paymentState: 'PAID',
+      plannedValue: null,
     },
   ],
 } as const;

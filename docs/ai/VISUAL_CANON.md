@@ -38,6 +38,8 @@ public-safe, or explicitly approved-for-publication images may be tracked under
   passive income, and approved highlights. Do not invent metrics.
 - **ATIVOS:** preserve a rich comparison surface, explicit values and actions;
   mobile should use readable cards rather than a compressed desktop table.
+  `ATIVOS_INFORMATION_DENSITY_RULE=true`: desktop preserves every useful
+  portfolio field; mobile may recompose fields but must not silently omit them.
 - **DIVIDENDOS:** emphasize monthly and annual history, official KPIs, review
   states, filters, tooltips, and existing actions.
 - **PATRIMONIO:** communicate current composition and value without conflating
@@ -57,11 +59,12 @@ public-safe, or explicitly approved-for-publication images may be tracked under
 
 ## Responsive and reference policy
 
-Validate relevant screens at 390, 430, 768, 1366, and 1920 pixels (and the
-project's full QA matrix when required). Check overflow, clipping, focus,
-console/runtime errors, and relevant interactions. Private portfolio
-screenshots are local-only. New public images require provenance and privacy
-review before tracking.
+`PRIMARY_RESPONSIVE_TARGETS`: notebook 1366x768 and 1440x900; mobile 390x844,
+with 360x800 and 430x932 also covered. Validate relevant screens at 768, 1024,
+1280x800, and 1920x1080 as applicable, plus the project's full QA matrix when
+required. Check overflow, clipping, focus, console/runtime errors, and relevant
+interactions. Private portfolio screenshots are local-only. New public images
+require provenance and privacy review before tracking.
 
 Use `Refs/visual-canon/README.md` and `CANON_INDEX.md` for public reference
 handling rules. They do not promise that private reference images are present

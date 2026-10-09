@@ -19,6 +19,22 @@ test('separa pagos de anunciados e estimados sem writes', () => {
   assert.equal(result.semantics.announcedIsNotPaid, true);
 });
 
+test('states explicitly unrecognized are never treated as received, while legacy rows remain compatible', () => {
+  assert.equal(D.classifyIncomeState({ state: 'PENDING' }), 'UNKNOWN');
+  assert.equal(D.classifyIncomeState({ status: 'CANCELLED' }), 'UNKNOWN');
+  assert.equal(D.classifyIncomeState({ state: 'PAID' }), 'PAID');
+  assert.equal(D.classifyIncomeState({ state: 'RECEBIDO' }), 'PAID');
+  assert.equal(D.classifyIncomeState({}), 'PAID');
+
+  const result = D.buildDividendIntelligence({ rows: [
+    { id: 'pending', date: '2026-01-10', ticker: 'AAA3', type: 'Dividendo', value: 900, state: 'PENDING' },
+    { id: 'cancelled', date: '2026-01-11', ticker: 'AAA3', type: 'Dividendo', value: 800, status: 'CANCELLED' },
+    { id: 'legacy', date: '2026-01-12', ticker: 'AAA3', type: 'Dividendo', value: 100 },
+  ], now: new Date('2026-01-31T12:00:00') });
+  assert.equal(result.monthly.total, 100);
+  assert.equal(result.paidEvents.length, 1);
+});
+
 test('deduplica apenas identidade repetida e reconcilia por classe/tipo', () => {
   const result = D.buildDividendIntelligence({ rows: [...rows, { ...rows[0] }], now: new Date('2026-04-30T12:00:00') });
   assert.equal(result.paidEvents.length, 3);

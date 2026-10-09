@@ -1,4 +1,89 @@
 # Next Step
+
+## V348 — em andamento (2026-10-09)
+
+- Recriar o painel Maiores altas/baixas no Dashboard (branch isolada sobre main) usando apenas `dashboardHighlightsRows()`, `dashboardHighlightsRowHtml()`, `S.dashboardHighlightsClassFilter` e CSS canon existentes; 2 colunas top-5, chips all/acao/fii/etf, wire entre `dashboardV3PriorityPanel(data)` e `dashboardQuickActions()`; sem fórmulas novas.
+- Testes RED/GREEN: colunas, ordenação, filtros, estados vazios, UNKNOWN, notebook+celular, teclado/toque, zero Firebase/escritas.
+- Push pendente resolvido: V346 `a8ad063` agora está no remoto junto com V347 `bc27556`.
+
+
+## V333 — cobertura mensal aprovada e implementada
+
+- Decisão humana: ausência de registros não comprova zero. A matriz e os cards distinguem `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`; zero exige fonte e confirmação explícita do mês inteiro. Total recebido, média completa e estimativa permanecem separados.
+- Runtime atual não fornece confirmação de cobertura mensal completa. Valores registrados aparecem como parciais; média/projeção ficam indisponíveis. A integração futura dessa evidência exige fonte governada; não inferir cobertura a partir de registros vazios.
+- Consumidor de insights também foi corrigido: `generateIncomeAnalysis()` não declara meta atingida quando a distância é indisponível por cobertura parcial. Teste sintético cobre a mensagem e a prioridade; HEAD atual `56c8227352ba5f392335f263556c51966d11ce66`, Preview Vercel READY. Revisar e manter a cadeia #457→#456; sem merge.
+
+- Revisar a Draft PR #457, empilhada sobre #456. O workflow remoto CI só atende PRs com base `main`; não confundir sucesso do Vercel com execução das suítes GitHub Actions. Usar evidência local fresca e repetir CI quando a cadeia puder receber o gate remoto, sem alterar a base/mesclar automaticamente.
+- Segurança mantida: somente fixtures sintéticas; `REAL_WRITES=0`, `REAL_IMPORT=false`, `REAL_RESTORE=false`, `PRODUCTION=false`, `MERGE=false`.
+
+## V332 — runtime QA sintético local (2026-10-07)
+
+- Certificação do produto V332 antes desta sincronização documental: SHA `732dbb1e58401c981c23f9da48b41d2faf345b7b`; CI run `37714085100` PASS (Build/test, V289 visual, Auth/Firestore Emulator); Vercel Preview READY para o mesmo SHA. PR #456 permanece OPEN/DRAFT/MERGEABLE. Worktree `C:\Projetos\carteira-investimentos.worktrees\local-test-mode-hardening`, branch `codex/local-test-mode-hardening`, base `cefc725f2378648c29593b27399a2f9bf2656db7`. Checkout canônico e PRs/worktrees #454/#455 preservados.
+- O modo sintético exige marcador fixo injetado pelo servidor iniciado explicitamente com `--synthetic-qa`, host loopback exato e `testMode=1`. `testReadOnly=1` bloqueia edição, `save()`, reset e navegação persistente também em chamadas programáticas. Hidratação cloud é rejeitada; stores V76 são vazios em memória sem localStorage; backup de armazenamento corrompido não grava no modo sintético. Firebase normal permanece intacto fora do runtime local confiável.
+- `npm ci` autorizado nesta worktree; manifests e lockfile permaneceram inalterados. Gates frescos: `test:local-synthetic` 26/26 e browser readonly 1/1; legado 255/255; V330 20/20; moderno 820/820; V84 4/4; A11Y 19/19; QA harness 4/4; `qa:all`, `verify:release`, build legado/moderno, V289 visual 13/13 e `git diff --check` PASS. Smoke sem overflow em 390, 430, 768, 1366, 1440, 1536 e 1920 px; V289 cobre também 360, 1024 e 1280. Browser e dados foram sintéticos; capturas ficam em `.qa-state/` (ignorado pelo Git).
+- QA visual corrigiu dois defeitos observados: sinal positivo duplicado no resumo de rentabilidade por classe e métricas do resumo de classes de Ativos agrupadas/cortadas em 1366 px. Tabela Ativos permanece completa com scroll local e cards expansíveis no mobile; Dividendos mantém meses futuros indisponíveis como `—`.
+- A falha inicial de CI em Reliability e quatro smokes responsivos adicionais vinham de harnesses que serviam `testMode=1` sem o marcador confiável do QA. Cinco smokes agora reutilizam o servidor compartilhado; Reliability passou localmente e no CI. `npm ci` reportou 7 advisories (3 moderados, 4 altos); `npm audit --omit=dev` encontrou 0 vulnerabilidades de produção; nenhum fix/upgrade foi executado. Avisos de build moderno sobre API CJS do Vite e contrato readonly são preexistentes. Próximo: revisão humana da Draft PR #456; não fazer merge sem autorização explícita. Sem Firebase real, escrita financeira, importação, restauração ou produção (`MERGE=false`).
+
+## V330 — implementação publicada; aguarda revisão humana (2026-10-07)
+
+- V329/PR #452 está MERGED no `origin/main` `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. O CI run `37663297762` passou no HEAD PR `f5a1dccdbc4de8fbc06dc3db92970caca535a6ad`; não foi observado workflow separado no merge SHA.
+- Worktree/branch: `C:\Projetos\carteira-investimentos.worktrees\v330-reconciliation`, `codex/v330-data-source-reconciliation`, base `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. Implementação publicada no commit `e3b0680c231ee3b65fb47662fd3ae6ed1e38bcfc`; PR #453 OPEN/DRAFT/MERGEABLE.
+- Prévia sintética/read-only preserva execuções brutas, operações agrupadas, custos conhecidos/desconhecidos e proveniência. Identidade exige corretora+número+data; quantidade positiva, precisão máxima de 8 casas e bruto conferido dentro de um centavo. Dry-run preserva ativos/notas distintos e revisão pendente bloqueia o pipeline protegido.
+- UI V330 na PR: Ativos desktop mostra campos financeiros separados e usa scroll horizontal local; mobile recompõe a informação em cards expansíveis. Dividendos overview inclui KPIs, histórico mensal, evolução, ativos principais e resumo anual; KPI anual soma apenas registros classificados como pagos e permanece indisponível quando classificação/valor faltam. Dashboard, Patrimônio, Metas, Rentabilidade e Rebalancear foram capturados com fixture sintética.
+- Gates locais frescos: `npm run verify:release` PASS (legado 255/255, moderno, V330 20/20, V84 4/4, V4D 11/11, `qa:all` e visual); confirmação de nota 6/6; browser V330 2/2; `test:import-center` 27/27; `test:import-xlsx` 2/2; visual 13/13 com Axe dark/light sem violações; `git diff --check` PASS. Browser sintético sem Firebase, writes locais financeiros, page/console/request errors ou overflow de página. Capturas ficam em `.qa-state/` (ignorado pelo Git).
+- Medição sintética local: DOMContentLoaded 190 ms; render Ativos 3 ativos 5,8 ms; render Ativos 500 ativos 158,2 ms. Medição é diagnóstico local, não SLA.
+- Auth+Firestore Emulator bloqueou antes dos testes no ambiente local Node/Java 26; CI Ubuntu com Java 21 passou esse gate no run `37689070077`. CI do HEAD `e3b0680c` PASS em todos os checks: Build/test, V289 visual, Auth/Firestore Emulator. Vercel Preview do mesmo SHA está READY; não foi feita inspeção autenticada do conteúdo remoto. `npm ci` autorizado, manifests/lockfile inalterados; auditoria: 7 achados no conjunto instalado, 0 em produção (`--omit=dev`), sem auto-fix.
+- Decisão humana aprovada: `brokerNoteCanConfirm()` exige checklist legado aprovado E prontidão V330 segura. Ausência de prontidão, `HUMAN_DATA_REQUIRED`, `SOURCE_CONFLICT`, `DUPLICATE_CANDIDATE` ou `UNRECONCILED` bloqueiam com mensagem explícita. O par canônico existente `SOURCE_CONFIRMED` + `READY_FOR_REVIEW` + validação `VALID` continua aceito; metadados descritivos ausentes não criam bloqueio independente. Testes unitários e browser sintético cobrem os dois lados.
+- Revisão local: `BLOCKER=0`, `MAJOR=0`; build moderno mantém avisos preexistentes de Vite/contrato readonly. CI remoto verde e deployment Preview pronto no SHA `e3b0680c`. A sincronização documental atual gera novo CI para seu próprio HEAD. Nenhum writer foi executado; merge não autorizado.
+- Continuam proibidos nesta fase: real PDF/account data, real import/restore/write, produção e merge. `MERGE=false`.
+
+## Histórico — V329 trust e insights (2026-10-07)
+
+- V328/PR #451 foi integrada em `2d79860c9cb3a6faa7c1098119bb6c4e23af46b0`; V329/PR #452 foi integrada em `0000bcc16b6a4b841af89bd99ab78d2bdff56fd2`. O CI registrado passou nos respectivos HEADs de PR; nenhum workflow separado foi observado para o merge SHA V329.
+- A implementação V329 reutilizou os modelos de confiança/alocação/dividendos e manteve explícitos dados parciais e desconhecidos. Evidências detalhadas estão em `PROJECT_STATE.md` e `PROJECT_MEMORY.md`.
+
+## Histórico — V328 pronta para revisão humana (2026-10-07)
+
+- HEAD/worktree: `943449b51d8fd768246305e85aa4b24a2c27755e`, branch `v328-preparation`, 5 commits à frente de `origin/main` `8a62885ee88a3f12daee354fb79cb9d643bd9596`. PR #451 OPEN/DRAFT/MERGEABLE; CI do HEAD remoto atual, run `37647140501`, PASS. Alterações documentais desta missão ainda são locais; `V328_PREPARATION_MATRIX.md` permanece local e excluído. Exigir CI do novo SHA após push.
+- Ativos e as telas Dividendos, Dashboard, Patrimônio, Metas, Rentabilidade e Rebalancear foram revalidados. Patrimônio deixa meses sem movimento como lacunas e oculta total/resultados quando valor atual ou base aplicada não são completos; sem mudança de fórmula ou persistência.
+- Gates locais no HEAD acima: legacy 255/255, modern 820/820, V84 4/4, A11Y 19/19, performance 96/96, QA harness 3/3, V289 9/9, `qa:all`, `verify:release`, builds legacy/modern e `git diff --check` PASS. CI exato run `37647140501`: Build/test, V289 visual, Auth/Firestore Emulator e Vercel Preview PASS.
+- `V328_STATUS=READY_FOR_HUMAN_REVIEW` para o estado de produto no HEAD remoto atual; `BLOCKER=0`; `MAJOR=0`; `MINOR=1` (avisos não bloqueantes registrados em `PROJECT_STATE.md`). A certificação do novo HEAD documental depende do CI pós-push. Não houve escrita financeira real nem deploy de produção. `MERGE=false`.
+- `V328_PREPARATION_MATRIX.md` permanece local, não rastreado e excluído; não é fonte de afirmações publicáveis.
+- Próximo gate: revisão humana final e autorização separada de merge da PR #451. Não iniciar V329 sem autorização de fase; sua especificação está em `V329_PORTFOLIO_TRUST_AND_INSIGHTS_SPEC.md`.
+
+## V320 — certificação final antes do gate humano (2026-10-05)
+
+- PR #443 permanece OPEN/DRAFT em `hermes/v320-overnight-functional-acceleration`; HEAD final `c53229e559a5843dd3181e74d0e01153e160171e`; `MERGE=false`.
+- CI final run `37310346405` PASS: Build/test, V289 visual e Auth+Firestore Emulator QA.
+- Evidência local no HEAD final: A11Y 19/19; V289 4/4; legado 254/254; moderno 815/815; matriz financeira V320 173/173; `qa:all` PASS; `verify:release` PASS; XLSX sintético 2/2; builds e `git diff --check` PASS.
+- V288: quatro fechamentos prematuros de template literal em `index.html` impediam o boot do script inline. O gate A11Y agora inicia navegador sintético e falha quando o runtime não inicializa.
+- Batch 6 certificado: B3 Posição é atualização de snapshot por identidade (ticker/nome), sem soma incremental; repetição idêntica é no-op e quantidade alterada substitui o valor. Falha de gravação bloqueia a sessão; retry exige recarga e conferência do estado persistido. Movimentação rápida, renda fixa, carteira e importações têm testes sintéticos de falha/retry ou duplo envio; o rollback de renda fixa usa snapshot anterior à mutação.
+- `CorporateEventsCore.promoteExpectedToRealized()` é função pura, sem writer ou chamador de produção; sua idempotência e exigência de evidência `RECEIVED` estão testadas. Falha de `save`/retry não se aplica a esse caminho sem uma nova integração com contrato próprio.
+- Em Windows local, o Firestore Emulator encerrou antes dos testes sem diagnóstico no log; o job Ubuntu do mesmo HEAD passou. O Preview Vercel está READY no SHA final; a tela pública de acesso carregou sem erro de console observado. Nenhuma autenticação nem escrita financeira real foi executada.
+- V285-02 permanece uma decisão humana de semântica financeira. V319 e PRs #440/#441 permanecem intocadas. Próximo passo: revisão humana da PR #443; não iniciar Batch 7 nesta missão e não fazer merge sem autorização explícita.
+
+## V317 — próximo passo operacional
+
+- Gates funcionais locais sintéticos e `verify:release` concluídos; ver `PROJECT_STATE.md` e `PROJECT_MEMORY.md` para evidência e limites.
+- PR #442 foi publicada em Draft e CI passou no commit de código V317. Próximo gate humano: revisão técnica independente e repetição de XLSX browser quando o SheetJS CDN estiver acessível. Não promover de Draft nem fazer merge sem resolução dos gates; merge não foi autorizado.
+- `test:import-xlsx` aguarda acesso ao SheetJS CDN; não marcar como aprovado até repetição real do gate.
+- testMode não substitui Firebase QA/Google Provider. O provisionamento humano da V316 segue separado; não alterar PR #440/#441.
+
+## V310 — próximo gate de autenticação QA isolada
+
+- `origin/main=033ebbafca6b8904f0a65f241a48cba73e89bf09` contém PR #438/V304; `v1.3.0-rc1` permanece preservada.
+- O branch local V310 registra o roteamento de modelos/Skills e o desenho QA. O smoke atual de localhost compõe rotas com fixture em memória; não autentica Firebase.
+- Próximo passo técnico separado: implementar e revisar um harness com projeto Firebase `demo-` e **Auth + Firestore emulators**, incluindo testes negativos de isolamento. Nenhum emulador foi conectado ao produto nesta missão.
+- `HUMAN_ACTION_REQUIRED=true` para autenticação Google real em Preview: aprovar projeto Firebase QA isolado, identidade sintética e configuração Preview exclusiva. Não enviar credenciais por chat. Ver `docs/ai/QA_AUTH_STRATEGY.md`.
+- Push/PR/merge/deploy e provisionamento externo continuam gates separados. `test:import-xlsx` permanece gate manual de release dependente de rede/CDN.
+
+## V298 — próximo passo após checkpoint RC local (2026-10-03)
+
+- O RC da branch `feature/v289-premium-visual-redesign` foi certificado localmente no base `69569adc0ec4cf58ea8cec29c6c59c4bff10d643`, após os gates frescos e correção documental do agregado 37/37 para 29/29 reproduzível.
+- A decisão seguinte é humana: avaliar push/PR/merge/deploy separadamente. Esta missão não executa nenhuma dessas ações.
+- Manter `test:import-xlsx` como gate manual de release, pois depende de rede/CDN; não incorporá-lo à CI offline sem missão própria.
+- Preservar Phase-206 (falha de harness), Phase-198 (drift documental) e os seis demais débitos visuais/técnicos menores registrados no handoff RC.
+
 ## Próximo gate funcional após V285 (2026-09-29)
 
 - `CURRENT_PHASE=FUNCTIONAL_COMPLETION`; `ORIGIN_MAIN=6f249bb822bb83163a39a3cb7e59ff80ab3134bb` inclui PR #432/V284.
@@ -949,3 +1034,14 @@ autorização single-use vinculada ao novo HEAD.
   autenticada final e qualquer autorização single-use continuam bloqueadas até
   o QA autenticado voltar a estar disponível. Não executar recovery, Class C,
   sync ou piloto de agosto antes disso.
+
+## V333.2 — próximo gate readonly
+
+Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada sem reescrita de histórico. Correção readonly e regressões concluídas localmente; merge por PR exige autorização humana específica. Provider QA isolado permanece externo, sem writes reais ou produção.
+
+## V333.2–V338 — gates seguintes
+
+1. Conferir SHA/CI da #456 e revisar #457 na base empilhada atualizada. Regressões readonly estão no npm test e CI browser; média histórica não certificada está indisponível.
+2. Avaliar PR isolada V336 de rolagem/acessibilidade de Ativos sem integrar pendências.
+3. Resolver execução local Auth/Firestore Emulator ou usar CI do SHA exato; provider QA exige ambiente externo isolado. Manter gap Firefox/WebKit explícito.
+4. Merge somente após autorização humana específica por PR; Vercel production branch/auto-deploy precisa ser verificado antes de qualquer integração. Sem deploy nesta missão.

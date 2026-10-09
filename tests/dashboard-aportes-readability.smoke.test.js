@@ -75,7 +75,8 @@ for (const viewport of viewports) {
       dashboard.values.forEach(item => assert.ok(item.value, `KPI ausente: ${item.label}`));
       assert.equal(dashboard.overflow, false, `overflow Dashboard em ${viewport.label}`);
 
-      await page.evaluate(() => { restoreLocalTestData(); go('aportes'); });
+      await page.evaluate(() => { restoreLocalTestData(); go('aportes'); setAportesViewMode('resumo'); });
+      await page.locator('.aporte-secondary-summary > summary').click();
       await page.waitForSelector('.aporte-contribution-grid .cl', { state: 'visible', timeout: 5000 });
       const summary = await page.evaluate(labels => {
         const cards = [...document.querySelectorAll('.aporte-contribution-grid .card')];

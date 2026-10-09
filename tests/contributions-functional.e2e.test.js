@@ -104,8 +104,8 @@ test('Aportes E2E smoke das telas principais', async () => {
   const { browser, page, errors, harness } = await app({ width: 1366, height: 768 });
   try {
     const screens = {
-      dashboard: ['.canon-dashboard', /Dashboard/i],
-      ativos: ['body', /Ativos[\s\S]*Patrimônio|Ativos[\s\S]*Total investido/i],
+      dashboard: ['.canon-dashboard', /Resumo geral da sua carteira/i],
+      ativos: ['body', /Ativos[\s\S]*VALOR TOTAL/i],
       dividendos: ['body', /Dividendos[\s\S]*Proventos|Dividendos[\s\S]*Resumo/i],
       rentabilidade: ['body', /Rentabilidade[\s\S]*Desempenho|Rentabilidade[\s\S]*Carteira/i]
     };

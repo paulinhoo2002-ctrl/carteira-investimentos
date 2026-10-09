@@ -101,7 +101,9 @@ test('reference shadow sem valor não soma no patrimônio',()=>{
 
 test('unsupported permanece fora da base quando valor é unavailable',()=>{
   const model=allocation.prepare([{className:'Renda Fixa',value:null,valueStatus:'UNSUPPORTED'}]);
-  assert.equal(model.totalKnownValue,0);
+  assert.equal(model.totalKnownValue,null);
+  assert.equal(model.totalClassifiedValue,null);
+  assert.equal(model.totalUnclassifiedValue,null);
   assert.equal(model.unknownPositionCount,1);
 });
 
@@ -114,6 +116,27 @@ test('filtro por emissor não infere emissores ausentes',()=>{
   const model=allocation.prepare(rows);
   assert.deepEqual(allocation.filterRows(model,{issuer:'Emissor C'}).map(row=>row.label),['EEE']);
   assert.equal(allocation.filterRows(model,{issuer:'Banco'}).length,0);
+});
+
+test('instituição é agregada somente por campo explícito, sem inferir do emissor',()=>{
+  const model=allocation.prepare([
+    {id:'a',issuer:'Emissor A',institution:'Custodiante X',value:60,valueStatus:'AVAILABLE'},
+    {id:'b',issuer:'Emissor A',institution:'',value:40,valueStatus:'AVAILABLE'}
+  ]);
+  assert.equal(model.institutions.rows.length,1);
+  assert.equal(model.institutions.rows[0].label,'Custodiante X');
+  assert.equal(model.institutions.rows[0].shareOfKnown,60);
+  assert.equal(model.coverage.institution.coverageCount,50);
+});
+
+test('data-base da concentração distingue uniforme, parcial, mista e desconhecida',()=>{
+  const row=(id,valuationAsOf,value=10)=>({id,valuationAsOf,value,valueStatus:'AVAILABLE'});
+  assert.deepEqual(allocation.prepare([row('a','2026-10-07T09:00:00Z'),row('b','2026-10-07T17:00:00Z')]).valuationAsOf,{status:'COMPLETE',date:'2026-10-07'});
+  assert.deepEqual(allocation.prepare([row('a','2026-10-07'),row('b','2026-10-07',null)]).valuationAsOf,{status:'PARTIAL',date:'2026-10-07'});
+  assert.deepEqual(allocation.prepare([row('a','2026-10-07'),row('b','')]).valuationAsOf,{status:'UNKNOWN',date:null});
+  assert.deepEqual(allocation.prepare([row('future','2099-01-01')]).valuationAsOf,{status:'UNKNOWN',date:null});
+  assert.equal(allocation.prepare([row('a','2026-10-06'),row('b','2026-10-07')]).valuationAsOf.status,'MIXED');
+  assert.equal(allocation.prepare([row('a','')]).valuationAsOf.status,'UNKNOWN');
 });
 
 test('ordenação por nome é estável e independente do valor',()=>{
@@ -199,6 +222,6 @@ test('status stale não promove valor para patrimônio sem regra authoritative',
 
 test('status unavailable mantém peso indisponível mesmo com valor auxiliar',()=>{
   const model=allocation.prepare([{className:'ETF',value:90,valueStatus:'UNAVAILABLE'}]);
-  assert.equal(model.totalKnownValue,0);
+  assert.equal(model.totalKnownValue,null);
   assert.equal(model.classes.rows.length,0);
 });

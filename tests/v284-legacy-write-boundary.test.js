@@ -108,6 +108,7 @@ function installSyntheticLocalPersistence(context, { failStorage = false, failQu
   };
   context.isV250OfflineCachedSession = () => false;
   context.isLocalTestMode = () => false;
+  context.isLocalTestReadOnlyMode = () => false;
   context.isProtectedReadOnlyQaBoot = () => false;
   context.isAuthoritativeLocalRecoveryBoot = () => false;
   context.canEditFromThisTab = () => context.S._financialWriteQuarantined !== true;
@@ -259,14 +260,50 @@ test('B3 positions: identical confirmed reimport is a no-op', () => {
     b3ReviewSummary: () => ({ ignored: 0 }),
   });
   context.importB3Review();
+  context.importB3Review(); // queued second confirmation sees the closed review
   const afterFirst = JSON.stringify(context.S.assets);
-  assert.equal(metrics.saveCalls, 1, 'primeira importação persiste a nova posição');
+  assert.equal(metrics.saveCalls, 1, 'duplo envio da confirmação persiste a posição apenas uma vez');
   assert.equal(metrics.quoteCalls, 1);
   context.S.b3Review = { items: [item], selectedSheets: { Ações: true }, importDate: '2026-01-01' };
   context.importB3Review();
   assert.equal(metrics.saveCalls, 1, 'reimport idêntico não deve persistir novamente');
   assert.equal(metrics.quoteCalls, 1, 'reimport idêntico não deve disparar recálculo downstream');
   assert.equal(JSON.stringify(context.S.assets), afterFirst);
+});
+
+test('B3 positions: repeated confirmation upserts a snapshot without accumulating quantity', () => {
+  const { context } = harness([['applyB3ImportedPositions', 'openBrokerNoteImport']], {
+    S: { assets: [], learnMeta: {}, wallets: [] },
+  });
+  const persistence = installSyntheticLocalPersistence(context);
+  const position = { ticker: 'SYN-SNAPSHOT', qty: 2, price: 50, value: 100, type: 'Ação' };
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').status, 'APPLIED');
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').ignored, 1);
+  assert.equal(persistence.getStorageWrites(), 1);
+  assert.equal(persistence.getPersisted().assets.length, 1);
+  assert.equal(persistence.getPersisted().assets[0].qty, 2);
+  assert.equal(context.applyB3ImportedPositions([{ ...position, qty: 3, value: 150 }], '2026-01-02').updated, 1);
+  assert.equal(persistence.getPersisted().assets.length, 1);
+  assert.equal(persistence.getPersisted().assets[0].qty, 3);
+  assert.equal(persistence.getStorageWrites(), 2);
+});
+
+test('B3 positions: failed save quarantines; retry after reload creates one durable snapshot', () => {
+  const { context } = harness([['applyB3ImportedPositions', 'openBrokerNoteImport']], {
+    S: { assets: [], learnMeta: {}, wallets: [] },
+  });
+  const persistence = installSyntheticLocalPersistence(context, { failStorage: true });
+  const position = { ticker: 'SYN-RETRY', qty: 2, price: 50, value: 100, type: 'Ação' };
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').status, 'SAVE_OUTCOME_UNKNOWN');
+  assert.equal(context.S.assets.length, 0);
+  assert.equal(context.S._financialWriteQuarantined, true);
+  assert.equal(persistence.getPersisted().assets.length, 0);
+  context.S._financialWriteQuarantined = false; // synthetic reload after persisted state check
+  persistence.setFailures();
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').status, 'APPLIED');
+  assert.equal(context.applyB3ImportedPositions([position], '2026-01-01').ignored, 1);
+  assert.equal(persistence.getPersisted().assets.length, 1);
+  assert.equal(persistence.getStorageWrites(), 1);
 });
 
 test('B3 income: duplicate-only confirmed batch performs no persistence write', () => {
@@ -1084,6 +1121,7 @@ test('SESSION-QUARANTINE: shared edit gate rejects writes after persistence unce
   const context = {
     S: { _financialWriteQuarantined: true },
     toast() {},
+    isLocalTestReadOnlyMode: () => false,
     isEditOwner: () => true,
   };
   vm.createContext(context);
@@ -1179,7 +1217,9 @@ test('BATCH-SAVE-MOVEMENT: failed B3 movement persistence restores aportes and a
     b3MovementIsHistoricalImportable: () => true,
     b3MovementHistoricalOperationType: () => 'Compra',
     b3MovementHistoricalSide: () => 'Entrada',
+
     b3MovementHistoricalAutoKey: () => 'synthetic-movement-key',
+    b3MovementSavedHistoricalAutoKey: () => '',
     b3MovementDuplicateKind: () => '',
     rfPosNorm: value => String(value || '').toUpperCase(),
     b3MovementDateKey: value => String(value || ''),
@@ -1198,4 +1238,94 @@ test('BATCH-SAVE-MOVEMENT: failed B3 movement persistence restores aportes and a
   assert.ok(context.S.b3MovementReview, 'review remains available after failure');
   assert.equal(context.S._financialWriteQuarantined, true);
   assert.equal(messages.length, 0);
+});
+
+function syntheticB3MovementImport(items, { failStorage = false } = {}) {
+  let context;
+  const { context: created } = harness([
+    ['applyB3MovementImported', 'importB3MovementReview'],
+    ['importB3MovementReview', 'b3MovementReviewModal'],
+    ['b3MovementNorm', 'b3MovementTicker'],
+    ['b3MovementIsHistoricalImportable', 'b3MovementHistoricalOperationType'],
+    ['b3MovementHistoricalOperationType', 'b3MovementHistoricalSide'],
+    ['b3MovementHistoricalSide', 'b3MovementHistoricalAutoKey'],
+    ['b3MovementHistoricalAutoKey', 'b3MovementSavedHistoricalAutoKey'],
+    ['b3MovementSavedHistoricalAutoKey', 'b3MovementRefreshReviewFlags'],
+  ], {
+    S: {
+      assets: [], aportes: [], learnMeta: {}, wallets: [], activeWalletId: 'synthetic-wallet',
+      b3MovementReview: { items, importDate: '2026-01-01' },
+    },
+    b3MovementSelectedItems: () => context.S.b3MovementReview?.items || [],
+    b3MovementSummary: () => ({ duplicates: 0, incomplete: 0, revisar: 0 }),
+    b3MovementRefreshReviewFlags: row => row,
+
+    b3MovementDuplicateKind: () => '',
+    b3MovementDateKey: value => String(value || ''),
+    b3ActiveWalletGate: () => ({ allow: true, name: 'Carteira sintética' }),
+    b3ConfirmApplyToActiveWallet: () => context.confirm(),
+    syncAssetsFromAportes() {},
+    learnTickerMeta() {},
+  });
+  context = created;
+  const persistence = installSyntheticLocalPersistence(context, { failStorage });
+  return { context, persistence };
+}
+
+test('B3 movements: cancel blocks write; confirm, double-submit and exact replay persist once', () => {
+  const row = { ticker: 'SYN-MOV', qty: 2, price: 10, value: 20, date: '2026-01-01', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
+  const { context, persistence } = syntheticB3MovementImport([row]);
+
+  context.confirmAnswer = false;
+  context.importB3MovementReview();
+  assert.equal(persistence.getStorageWrites(), 0);
+  assert.equal(context.S.aportes.length, 0);
+  assert.ok(context.S.b3MovementReview, 'cancel keeps review available');
+
+  context.confirmAnswer = true;
+  context.importB3MovementReview();
+  context.importB3MovementReview();
+  assert.equal(persistence.getStorageWrites(), 1, 'double-submit applies once');
+  assert.equal(persistence.getPersisted().aportes.length, 1);
+
+  context.S.b3MovementReview = { items: [{ ...row }], importDate: '2026-01-01' };
+  context.importB3MovementReview();
+  assert.equal(persistence.getStorageWrites(), 1, 'exact replay is a durable no-op');
+  assert.equal(persistence.getPersisted().aportes.length, 1);
+});
+
+test('B3 movements: failed save quarantines; verified reload permits one retry', () => {
+  const row = { ticker: 'SYN-MOV-RETRY', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
+  const { context, persistence } = syntheticB3MovementImport([row], { failStorage: true });
+
+  const failed = context.applyB3MovementImported([row], '2026-01-02');
+  assert.equal(failed.status, 'SAVE_OUTCOME_UNKNOWN');
+  assert.equal(context.S._financialWriteQuarantined, true);
+  assert.equal(context.S.aportes.length, 0);
+  assert.equal(persistence.getPersisted().aportes.length, 0);
+
+  persistence.setFailures();
+  context.S._financialWriteQuarantined = false; // synthetic reload after persisted-state verification
+  const retried = context.applyB3MovementImported([row], '2026-01-02');
+  assert.equal(retried.status, 'APPLIED');
+  assert.equal(retried.added, 1);
+  assert.equal(persistence.getPersisted().aportes.length, 1);
+  assert.equal(persistence.getStorageWrites(), 1);
+
+  context.applyB3MovementImported([row], '2026-01-02');
+  assert.equal(persistence.getPersisted().aportes.length, 1, 'replay after retry remains idempotent');
+  assert.equal(persistence.getStorageWrites(), 1);
+});
+
+test('B3 movements: empty, incomplete and review-only rows never persist', () => {
+  const row = { ticker: 'SYN-MOV-INVALID', qty: 0, price: 10, value: 20, date: '2026-01-03', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
+  const { context, persistence } = syntheticB3MovementImport([]);
+
+  context.applyB3MovementImported([], '2026-01-03');
+  context.applyB3MovementImported([row], '2026-01-03');
+  context.applyB3MovementImported([{ ...row, qty: 2, target: 'revisar', destination: 'revisar', confidence: 'Baixa' }], '2026-01-03');
+
+  assert.equal(persistence.getStorageWrites(), 0);
+  assert.equal(persistence.getPersisted().aportes.length, 0);
+  assert.equal(context.S.aportes.length, 0);
 });
