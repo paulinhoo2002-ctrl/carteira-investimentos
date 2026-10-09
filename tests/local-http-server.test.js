@@ -5,6 +5,29 @@ const { spawn } = require('node:child_process');
 const path = require('node:path');
 const test = require('node:test');
 
+const { startLocalHttpServer, isUnsafeChromePort } = require('./local-http-server');
+
+// Windows starts its ephemeral port range at 1024, so listen(0) can hand the
+// shared QA harness a port Chromium refuses to navigate to (net::ERR_UNSAFE_PORT),
+// breaking every browser test through no fault of the product code.
+test('harness never allocates a Chromium-blocked ephemeral port', async () => {
+  assert.equal(typeof isUnsafeChromePort, 'function', 'harness must expose the unsafe-port guard');
+  for (const blocked of [1, 23, 25, 135, 465, 554, 2049, 3659, 4045, 5060, 6000, 6666, 6697]) {
+    assert.equal(isUnsafeChromePort(blocked), true, `port ${blocked} must be treated as unsafe`);
+  }
+  for (const safe of [0, 80, 443, 4173, 8080, 9222, 59638]) {
+    assert.equal(isUnsafeChromePort(safe), false, `port ${safe} must be treated as safe`);
+  }
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'), 0, { syntheticQa: false });
+  try {
+    const port = Number(new URL(harness.url).port);
+    assert.equal(isUnsafeChromePort(port), false, `allocated port ${port} must be browser-safe`);
+  } finally {
+    harness.server.closeAllConnections?.();
+    await new Promise(resolve => harness.server.close(resolve));
+  }
+});
+
 test('missing generated asset returns 404 without crashing the QA server', async () => {
   const child = spawn(process.execPath, ['tests/local-http-server.js', '--port', '0', '--synthetic-qa'], {
     cwd: path.join(__dirname, '..'),
