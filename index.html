@@ -28759,27 +28759,58 @@ function importCenterFiles(files){
   session.files=file?[{name:String(file.name||''),size:Number(file.size)||0,detected:importCenterDetectFile(file),file}]:[];
   session.step=session.files.length?2:1; session.result=null; session.pendingReview=null; render();
 }
+function importCenterWorkbookProvider(wb,fileName=''){
+  const normalize=value=>String(value||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  const fileHint=normalize(fileName);
+  let hasXpEvidence=/(^| )xp( |$)/.test(fileHint);
+  let hasB3Evidence=/(^| )b3( |$)/.test(fileHint);
+  for(const sheetName of wb.SheetNames||[]){
+    const sheetIdentity=normalize(sheetName);
+    hasXpEvidence ||= /^xp( investimentos)?$/.test(sheetIdentity);
+    hasB3Evidence ||= /^b3( s a)?$/.test(sheetIdentity);
+    const sheet=wb.Sheets[sheetName]; if(!sheet) continue;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null}).slice(0,10);
+    const headerIndex=rows.findIndex(row=>(row||[]).some(value=>['data','quantidade','produto','codigo','codigo de negociacao','movimentacao','preco','valor da operacao'].includes(normalize(value))));
+    const metadata=rows.slice(0,headerIndex<0?3:headerIndex);
+    hasXpEvidence ||= metadata.some(row=>(row||[]).some(value=>/^xp( investimentos)?$/.test(normalize(value))));
+    hasB3Evidence ||= metadata.some(row=>(row||[]).some(value=>/^b3( s a)?$/.test(normalize(value))));
+  }
+  if(hasXpEvidence&&hasB3Evidence) return 'UNKNOWN';
+  if(hasXpEvidence) return 'XP';
+  if(hasB3Evidence||detectB3WorkbookKind(wb)==='movement'||detectB3ProventosWorkbook(wb,fileName)) return 'B3';
+  return 'UNKNOWN';
+}
+function importCenterHasPositionEvidence(wb){
+  return (wb.SheetNames||[]).some(sheetName=>{
+    const sheet=wb.Sheets[sheetName];
+    if(!sheet) return false;
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+    return rows.slice(0,20).some(row=>{
+      const headers=(row||[]).map(normHeaderB3);
+      const hasQuantity=headers.includes('quantidade')||headers.includes('quantidade disponivel');
+      const hasAsset=headers.some(header=>['codigo de negociacao','codigo','ticker','produto','ativo','descricao do produto'].includes(header));
+      return hasQuantity&&hasAsset;
+    });
+  });
+}
 async function importCenterParseSpreadsheet(file){
   if(typeof XLSX==='undefined') throw new Error('SPREADSHEET_READER_UNAVAILABLE');
   const isCsv=/\.csv$/i.test(file.name||'')||String(file.type||'').toLowerCase().includes('csv');
   const wb=isCsv?XLSX.read(await file.text(),{type:'string',raw:true}):XLSX.read(await file.arrayBuffer(),{type:'array'});
+  if(!isCsv){
+    const provider=importCenterWorkbookProvider(wb,file.name);
+    if(provider==='XP') return {status:'UNSUPPORTED',provider,sourceType:'UNKNOWN',reason:'XP_LAYOUT_REQUIRES_FIXTURE'};
+    if(provider!=='B3'){
+      const recognized=detectB3ProventosWorkbook(wb,file.name)||detectRfDetailedPositionWorkbook(wb,file.name)||detectB3WorkbookKind(wb)==='movement'||importCenterHasPositionEvidence(wb);
+      return {status:recognized?'REVIEW_REQUIRED':'UNSUPPORTED',provider:'UNKNOWN',sourceType:'UNKNOWN',reason:recognized?'SOURCE_IDENTITY_UNCONFIRMED':'LAYOUT_NOT_RECOGNIZED'};
+    }
+  }
   let parsed,sourceType;
   if(detectB3ProventosWorkbook(wb,file.name)){parsed=parseB3ProventosWorkbook(wb,file.name);sourceType='B3_DIVIDENDS_XLSX';}
   else if(detectRfDetailedPositionWorkbook(wb,file.name)){parsed=parseRfDetailedPositionWorkbook(wb,file.name);sourceType='B3_POSITION_XLSX';}
   else if(detectB3WorkbookKind(wb)==='movement'){parsed=parseB3MovementWorkbook(wb,file.name);sourceType='B3_MOVEMENTS_XLSX';}
   else{
-    const hasPositionEvidence=(wb.SheetNames||[]).some(sheetName=>{
-      const sheet=wb.Sheets[sheetName];
-      if(!sheet) return false;
-      const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
-      return rows.slice(0,20).some(row=>{
-        const headers=(row||[]).map(normHeaderB3);
-        const hasQuantity=headers.includes('quantidade')||headers.includes('quantidade disponivel');
-        const hasAsset=headers.some(header=>['codigo de negociacao','codigo','ticker','produto','ativo','descricao do produto'].includes(header));
-        return hasQuantity&&hasAsset;
-      });
-    });
-    if(!hasPositionEvidence) return {status:'UNSUPPORTED',provider:'UNKNOWN',sourceType:'UNKNOWN',reason:'LAYOUT_NOT_RECOGNIZED'};
+    if(!importCenterHasPositionEvidence(wb)) return {status:'UNSUPPORTED',provider:'UNKNOWN',sourceType:'UNKNOWN',reason:'LAYOUT_NOT_RECOGNIZED'};
     parsed=parseB3PositionWorkbook(wb,file.name);sourceType='B3_POSITION_XLSX';
   }
   if(!Array.isArray(parsed?.items)||!parsed.items.length) return {status:'REVIEW_REQUIRED',provider:'B3',sourceType,reason:'NO_VALID_ROWS',parsed};
