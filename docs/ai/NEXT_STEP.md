@@ -1,5 +1,12 @@
 # Next Step
 
+## V348 — em andamento (2026-10-09)
+
+- Recriar o painel Maiores altas/baixas no Dashboard (branch isolada sobre main) usando apenas `dashboardHighlightsRows()`, `dashboardHighlightsRowHtml()`, `S.dashboardHighlightsClassFilter` e CSS canon existentes; 2 colunas top-5, chips all/acao/fii/etf, wire entre `dashboardV3PriorityPanel(data)` e `dashboardQuickActions()`; sem fórmulas novas.
+- Testes RED/GREEN: colunas, ordenação, filtros, estados vazios, UNKNOWN, notebook+celular, teclado/toque, zero Firebase/escritas.
+- Push pendente resolvido: V346 `a8ad063` agora está no remoto junto com V347 `bc27556`.
+
+
 ## V333 — cobertura mensal aprovada e implementada
 
 - Decisão humana: ausência de registros não comprova zero. A matriz e os cards distinguem `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`; zero exige fonte e confirmação explícita do mês inteiro. Total recebido, média completa e estimativa permanecem separados.
