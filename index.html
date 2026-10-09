@@ -18247,7 +18247,7 @@ function quickMovementSaleRealizedPnl(asset, preview, fees){
     operation:'venda',
     qty:preview.quantityToSell,
     price:preview.unitPrice,
-    fees:fees||0,
+    fees:fees??null,
     date:saleDate||new Date().toISOString().slice(0,10),
     source:'manual-transaction'
   };
@@ -18265,9 +18265,10 @@ function quickMovementSalePreviewHtml(){
   const ticker=esc(String(asset?.ticker||draft.ticker||'—').trim().toUpperCase()||'—');
   const saleTypeLabel=draft.saleType==='total'?'Vender tudo':'Venda parcial';
   const feesValue=parseQuickMovementNumber(String(draft.fees||''),{required:false});
-  const fees=feesValue.ok?feesValue.value:0;
+  const feesKnown=feesValue.ok && feesValue.reason==='value';
+  const fees=feesKnown?feesValue.value:null;
   const grossValue=preview.ok?preview.estimatedGrossValue:0;
-  const netProceeds=preview.ok?Math.max(0,grossValue-fees):0;
+  const netProceeds=preview.ok && feesKnown?Math.max(0,grossValue-fees):null;
   const pnl=quickMovementSaleRealizedPnl(asset,preview,fees);
   const pnlTone=pnl.status==='COMPLETE'?(pnl.value>=0?'gn':'rd'):'mu';
   const pnlLabel=pnl.status==='COMPLETE'?`${pnl.value>=0?'+':''}${fmt(pnl.value)}`:(pnl.status==='NEEDS_REVIEW'?'Revisão necessária':'Resultado não disponível');
@@ -18315,7 +18316,7 @@ function quickMovementSalePreviewHtml(){
         </div>
         <div class="quick-movement-preview-stat">
           <div class="quick-movement-preview-label">Líquido</div>
-          <div class="quick-movement-preview-value">${preview.ok?fmtRaw(netProceeds):'—'}</div>
+          <div class="quick-movement-preview-value">${netProceeds!==null?fmtRaw(netProceeds):'—'}</div>
         </div>
         <div class="quick-movement-preview-stat">
           <div class="quick-movement-preview-label">Resultado realizado</div>
@@ -18981,13 +18982,13 @@ function quickMovementBuildAporteFromFields(kind){
     const asset=quickMovementSaleAssetById(draft.assetId);
     const contract=quickMovementContract();
     const priceState=quickMovementNumberField('qm-price','Preço unitário',{value:document.getElementById('qm-price')?.value ?? draft.price});
-    const feesState=quickMovementNumberField('qm-buy-fees','Taxas',{required:false,value:document.getElementById('qm-buy-fees')?.value ?? draft.fees,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
+    const feesState=quickMovementNumberField('qm-sell-fees','Taxas',{required:false,value:document.getElementById('qm-sell-fees')?.value ?? draft.fees,emptyError:'Taxas: informe um número válido.',invalidError:'Taxas: informe um número válido.'});
     const note=String(document.getElementById('qm-note')?.value ?? draft.note).trim();
     if(!contract || typeof contract.buildVariableIncomeSalePreview!=='function') return {error:'Preview de venda indisponível.', field:''};
     if(!asset) return {error:'Selecione um ativo para vender.', field:'qm-sale-asset'};
     const price=priceState.ok ? priceState.value : 0;
     if(!feesState.ok) return feesState;
-    if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-buy-fees'};
+    if(feesState.value<0) return {error:'Taxas: informe um valor maior ou igual a zero.', field:'qm-sell-fees'};
     const fees=feesState.reason==='empty'?null:feesState.value;
     if(draft.saleType!=='total'){
       const qtyState=quickMovementNumberField('qm-qty','Quantidade',{value:document.getElementById('qm-qty')?.value ?? draft.qty});
