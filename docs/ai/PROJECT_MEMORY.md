@@ -7,6 +7,12 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V356 — lições de QA infra: porta efêmera insegura (2026-10-09)
+
+- Windows inicia a faixa de portas efêmeras em **1024**, então `listen(0)` pode entregar ao harness compartilhado portas que o Chromium bloqueia (`net::ERR_UNSAFE_PORT`; ex.: 2049=NFS). O flake quebra qualquer teste browser sem culpa do produto.
+- Correção de causa raiz em `tests/local-http-server.js`: retry até porta browser-safe + `isUnsafeChromePort()` exportada; contrato RED→GREEN em `tests/local-http-server.test.js` (5/5). Commit `14fcdf6`.
+- Ao diagnosticar falha visual `ERR_UNSAFE_PORT`, classificar como PORT_CONFLICT de infra; não reexecutar duas vezes antes de trocar de abordagem. O guard do server compartilhado protege todos os ~40 smokes que o reutilizam.
+
 ## V345 — lições de verdade financeira em fluxos manuais (2026-10-09)
 
 - Caminhos paralelos de formulário (compra vs venda) com IDs distintos exigem binding verificado por teste estático: `qm-buy-fees` lido no branch de venda passou despercebido porque nenhum teste ligava o campo lido ao campo renderizado.

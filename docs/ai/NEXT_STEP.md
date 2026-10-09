@@ -1,5 +1,14 @@
 # Next Step
 
+## V356 — integração #463/#464/#465 validada; correção de harness publicada (2026-10-09)
+
+- Branch `test-v356` (worktree isolada) contém a combinação real das três PRs independentes (merge-base comum `6eb69f2`) + fix de harness `14fcdf6` + auditoria documental `cc54f9a`. Push verificado no remoto.
+- Defeito comprovado e corrigido: `tests/local-http-server.js` recebia porta efêmera insegura para o Chromium (ex.: 2049=NFS, `ERR_UNSAFE_PORT`); corrigido com retry browser-safe + `isUnsafeChromePort()`, contrato RED→GREEN 5/5. Commit `14fcdf6`.
+- Gates combinados no HEAD: `verify:release` PASS (legacy 255/255, modern 823/823, V330 20/20, qa:all, visual 18/18), focais 41/41, A11Y 41/41, V84 4/4, browser V348 1/1, `git diff --check` limpo.
+- Ordem recomendada de merge individual: **#463 → #464 → #465** (squash; diffs disjuntos por arquivo, ordem mantida por previsibilidade). CI/Vercel verdes nos três HEADs de PR. `MERGE=false` — aguarda autorização humana por PR.
+- CI/Vercel não rodam para a branch `test-v356` sem PR (config atual: só PRs com base `main` disparam Actions); usar evidência local fresca e os CIs das próprias PRs.
+- Pendente: Draft PR do fix do harness `14fcdf6` (branch de teste contém também os merges combinados; extraí-los só na PR, conforme governança).
+
 ## V348 — em andamento (2026-10-09)
 
 - Recriar o painel Maiores altas/baixas no Dashboard (branch isolada sobre main) usando apenas `dashboardHighlightsRows()`, `dashboardHighlightsRowHtml()`, `S.dashboardHighlightsClassFilter` e CSS canon existentes; 2 colunas top-5, chips all/acao/fii/etf, wire entre `dashboardV3PriorityPanel(data)` e `dashboardQuickActions()`; sem fórmulas novas.
