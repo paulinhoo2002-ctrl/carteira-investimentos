@@ -1362,3 +1362,13 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
 - V336: estrutura premium já existente validada, sem transplantar CSS/fórmulas antigas. Browser sintético 30 combinações (Dashboard/Ativos/Dividendos; 390/430/768/1366/1920; claro/escuro): overflow 0, page/console errors 0, Firebase requests 0, writes storage 0, memória financeira intacta. Melhoria isolada de acessibilidade/rolagem de Ativos será preparada em branch própria.
 - V337: Auth+Firestore Emulator demo tentou e Firestore encerrou código 1 antes de testes; BLOCKED_ENVIRONMENT, causa não comprovada (Node 26.7.0 / Java 26.0.2.1). Provider QA real continua sem projeto isolado configurado; não autenticar Preview que aponta para produção.
 - V338: preparação release local concluída nos limites Chromium/fixtures; sem certificação Firefox/WebKit, provider QA ou persistência cloud. Diagnóstico de tempo local não é SLA. Sem publicação de produção. MERGE_PR=false; PRODUCTION=false; REAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false.
+
+## V395–V399 — missão autônoma com checkpoints (2026-10-09)
+
+- V395: QA Firefox e WebKit concluída. Firefox PASS, WebKit PASS_WITH_SERVICE_WORKER_WARNING (avisos de service worker não bloqueantes). Evidência: scripts/qa/browser-smoke.js atualizado para suportar Firefox/WebKit via Playwright.
+- V396: Backup e recuperação concluída com dados sintéticos exclusivamente no diretório aprovado C:\Projetos\_backups\carteira-investimentos. PASS: 53/53 testes em tests/backup-recovery-hardening.test.js.
+- V397: Taxas inválidas na prévia de venda corrigidas com teste RED/GREEN V345. PASS: confirma que a ramo de venda lê corretamente o campo de taxas e o helper de PnL passa fees=null como UNKNOWN.
+- V398: Regressões concluídas. Todos os testes passam: legado (867/867), moderno (823/823), verify:release (todas as suítes), qa:all (OVERFLOW=0, CONSOLE_ERRORS=0, PAGE_ERRORS=0, REQUEST_ERRORS_RELEVANT=0), V289 visual regression (60/60).
+- V394: Mantida como BLOCKED_ENVIRONMENT devido a conflitos recorrentes de portas do Firebase Emulator (8080/9099/4400/4500) causados por processos órfãos. Não retomada nesta sessão, exceto para consulta de evidências existentes.
+- Gates verificados: CI VERDE, Vercel PRONTO, git diff --check (apenas aviso de LF/CRLF, não bloqueante).
+- Nenhuma escrita financeira real, importação ou restauração realizada (REAL_WRITES=0, REAL_IMPORT=false, REAL_RESTORE=false). Nenhum merge realizado.

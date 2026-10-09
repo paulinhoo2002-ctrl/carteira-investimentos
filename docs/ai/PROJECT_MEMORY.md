@@ -1789,3 +1789,12 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - Contrato técnico detalhado: `BROKERAGE_NOTE_IMPORT.md` e
   `PRODUCT_CONTRACTS.md`; estado de execução permanece em `PROJECT_STATE.md` e
   `NEXT_STEP.md`.
+
+## V395–V399 — missão autônoma com checkpoints (2026-10-09)
+
+- V395: QA Firefox e WebKit concluída. Firefox PASS, WebKit PASS_WITH_SERVICE_WORKER_WARNING.
+- V396: Backup e recuperação concluída com dados sintéticos (53/53 PASS).
+- V397: Taxas inválidas corrigidas (teste V345 PASS).
+- V398: Regressões concluídas (todos os testes passam).
+- V394: BLOCKED_ENVIRONMENT mantido.
+- Nenhuma escrita financeira real, importação ou restauração (REAL_WRITES=0, REAL_IMPORT=false, REAL_RESTORE=false).
