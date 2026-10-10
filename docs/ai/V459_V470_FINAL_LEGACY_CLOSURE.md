@@ -11,7 +11,7 @@ PRODUCTION_READY=false
 - Main remota confirmada: `7d8a523abbef3f055ca3a6e85cf976fe06705462`.
 - PR #473: OPEN/DRAFT; head `bd7f33e051fe1f14d3ea779208003c4ab8732280`; CI e Preview associados aprovados no SHA consultado.
 - PR #474: OPEN/DRAFT, marcada SUPERSEDED; head `a266da3cc87944726605b2fe6f3f55cc044d5487`; CI e Preview associados aprovados no SHA consultado. Não mesclar.
-- PR #475: OPEN/DRAFT; head `1ba888097e7eaab25bed942d5434ab0d7f2695e0`; CI run `38071711561` SUCCESS nos três jobs; Vercel Preview falhou com `git_info_fail` antes dos eventos de build.
+- PR #475: OPEN/DRAFT; head verificado `a7bc3aafbfbbb31edbaacf7eacada9418dc4f522`; CI run `38071948798` SUCCESS nos três jobs; Vercel Preview READY no mesmo SHA. O primeiro deployment documental falhou com `git_info_fail`; a implantação criada para o commit seguinte concluiu com sucesso.
 - A worktree canônica estava suja e foi preservada. A integração e validação local ocorreram em worktree isolada; nenhum arquivo do checkout canônico foi alterado.
 
 ## Reconciliação documental

@@ -2,7 +2,7 @@
 
 - Revisar e integrar #473 primeiro, se houver autorização de merge separada.
 - Não mesclar #474: contém identificadores em histórico público. Revisar PR de substituição sanitizada baseada na main; decidir humanamente se fecha/substitui #474.
-- PR #475 OPEN/DRAFT: CI PASS no SHA `1ba888097e7eaab25bed942d5434ab0d7f2695e0`; Preview Vercel falhou com `git_info_fail` antes do build. Investigar apenas a integração Git/Vercel, sem deploy manual.
+- PR #475 OPEN/DRAFT: CI PASS (run `38071948798`) e Preview Vercel READY no SHA verificado `a7bc3aafbfbbb31edbaacf7eacada9418dc4f522`. Sem merge ou deploy manual.
 - QA autenticado hospedado e validação funcional em produção permanecem fora desta certificação; PRODUCTION_READY=false. Sem merge, deploy manual ou escrita financeira real.
 # Next Step
 
