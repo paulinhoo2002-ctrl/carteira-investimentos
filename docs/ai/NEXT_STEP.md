@@ -1,5 +1,14 @@
 # Next Step
 
+## V426 — AUTHORIZED_PROCESS_TERMINATION_AND_AUTH_QA: COMPLETED (2026-10-10)
+
+- HUMAN_AUTHORIZATION=GRANTED para PID 110840, Opção A (firebase-precheck), com revalidação de identidade.
+- Revalidação pré-kill (worktree v406-v415-overnight): PID 110840 = java.exe, jar cloud-firestore-emulator-v1.22.0, --project_id demo-carteira-qa-emulator, --rules exatos desta worktree, ParentPid 79564 morto, único órfão confirmado, zero unknownProcesses → condições da autorização integralmente atendidas.
+- `node scripts/qa/firebase-precheck.js --kill-confirmed` executado: killed=[110840]. Porta 8080 confirmada LISTENING-free; precheck subsequente: listeners=[], orphans=[], unknown=[].
+- `npm run test:auth-emulator` REAL nesta sessão: **8/8 PASS** (login demo, escrita bloqueada, flags parciais fail-closed, regras negando acesso, sem fallback produção). AUTH_TESTS=8/8.
+- Pós-teste: novo órfão PID 20360 (mesma assinatura do emulador, gerado pelo próprio suite). A autorização era específica do PID 110840 — kill NÃO estendido. Pendência operacional documentada: rodar precheck --kill-confirmed na worktree dona quando necessário.
+- PROVIDER_QA=NOT_TESTED permanece (gate humano posterior).
+
 ## V426 — auth emulator final recovery: HUMAN_GATE_PROCESS_TERMINATION (2026-10-10)
 
 - Precheck diagnóstico (sem kill) executado NA worktree v406-v415-overnight (dona do órfão): porta 8080 = PID 110840, java.exe, ParentPid 79564 MORTO, Firestore emulator jar v1.22.0, --project_id demo-carteira-qa-emulator, --rules C:\Projetos\carteira-investimentos.worktrees\v406-v415-overnight\tests\fixtures\v311-firestore.rules, --single_project_mode true. Classificação: CONFIRMED_ORPHAN (rules desta própria worktree, pai morto, projeto QA autorizado). Zero unknownProcesses.
