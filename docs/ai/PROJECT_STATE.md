@@ -1,5 +1,13 @@
 # Project State
 
+## V436 — final operational gates (2026-10-10)
+
+- Main e CI confirmados no SHA `c7690dfd9539e139226cb7865e7de165ab36ea2c`; GitHub run `38061181090` passou nos 3 checks, inclusive Auth/Firestore Emulator QA 8/8.
+- Deploy Vercel do mesmo SHA está READY; navegação anônima mostra a tela de acesso restrito e não habilita bypass por URL. Não foi feito login nem leitura de carteira.
+- PID 20360 não estava em execução e a porta 8080 não apareceu em `netstat`; não houve tentativa de encerramento. Worktree `v406-v415-overnight` está limpa, branch `codex/v406-v415-overnight`, HEAD `fe0f146ffaeecd5fb2f3162813c9fdee665941d1`, divergente da main e preservada.
+- QA hospedado autenticado, logout, isolamento entre identidades e persistência de sessão após reinício continuam `NOT_TESTED`. GO para uso autenticado/produção permanece negado; sem alterações financeiras ou de segurança.
+- Evidências e limitações: [`V436_FINAL_OPERATIONAL_GATES.md`](V436_FINAL_OPERATIONAL_GATES.md).
+
 ## V427–V435 — final operational trust (2026-10-10)
 
 - Main `a4d39734be7800d7fd016c6d986ea492d3a99f68` (#470 MERGED 13:32:29Z) certificada no SHA exato: npm test 868/868, modern 823/823, verify:release PASS, qa:all 0/0/0/0, V289 18/18, diff-check clean, CI main `38056111921` SUCCESS, Vercel production build publicado (registro técnico).
