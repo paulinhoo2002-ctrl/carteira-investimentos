@@ -85,14 +85,20 @@ async function main() {
   // 4. Local checkout sanity (HEAD of this worktree vs origin/main).
   const localHead = git(['rev-parse', 'HEAD']);
   const originMain = git(['rev-parse', 'origin/main']);
+  const mergeBase = localHead && originMain ? git(['merge-base', localHead, originMain]) : null;
   if (!localHead || !originMain) check('git-sync', 'WARN', 'git unavailable');
-  else check('git-sync', localHead === originMain ? 'OK' : 'WARN', `head=${localHead.slice(0, 10)} origin/main=${originMain.slice(0, 10)}${localHead === originMain ? '' : ' (behind/ahead)'}`);
+  else if (localHead === originMain) check('git-sync', 'OK', `head matches origin/main (${localHead.slice(0, 10)})`);
+  else if (mergeBase === originMain) check('git-sync', 'OK', `head=${localHead.slice(0, 10)} is origin/main + work (base ${originMain.slice(0, 10)})`);
+  else check('git-sync', 'WARN', `head=${localHead.slice(0, 10)} origin/main=${originMain.slice(0, 10)} diverged`);
 
   if (asJson) {
     console.log(JSON.stringify(report, null, 2));
   } else {
     for (const c of report.checks) console.log(`[${c.state}] ${c.name}: ${c.detail}`);
-    console.log(degraded ? 'HEALTH: DEGRADED' : 'HEALTH: OK');
+    // V616 alert levels: CRITICAL = app down (availability FAIL); DEGRADED = any other non-OK.
+    const availability = report.checks.find(c => c.name === 'availability');
+    const critical = availability && availability.state === 'FAIL';
+    console.log(critical ? 'HEALTH: CRITICAL (application unavailable)' : degraded ? 'HEALTH: DEGRADED' : 'HEALTH: OK');
   }
   process.exitCode = degraded ? 2 : 0;
 }
