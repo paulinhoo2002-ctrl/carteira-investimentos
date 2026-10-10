@@ -16,6 +16,8 @@ const path = require('node:path');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const EMULATOR_PORTS = [8080, 9099, 4400, 4500];
+// V416: the only QA project identity this utility may act on.
+const QA_PROJECT_ID = 'demo-carteira-qa-emulator';
 
 function netstatListeners() {
   // netstat -ano output columns: Proto, Local, Foreign, State, PID.
@@ -63,13 +65,30 @@ function processInfo(pid) {
   }
 }
 
-function isConfirmedOrphan(info) {
+function commandLineArgs(commandLine) {
+  return [...String(commandLine).matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)]
+    .map(([, doubleQuoted, singleQuoted, bare]) => doubleQuoted ?? singleQuoted ?? bare);
+}
+
+function isConfirmedOrphan(info, repoRoot = REPO_ROOT, qaProjectId = QA_PROJECT_ID) {
   if (!info) return false;
-  const cmd = info.commandLine || '';
-  const emulatorJar = cmd.includes('cloud-firestore-emulator') || cmd.includes('firebase');
-  const legacyRules = cmd.includes('carteira-investimentos');
-  const demoProject = cmd.includes('demo-carteira-qa') || cmd.includes('--project_id demo-carteira');
-  return emulatorJar && legacyRules && !info.parentAlive && (demoProject || true);
+  const cmd = String(info.commandLine || '');
+  const args = commandLineArgs(cmd);
+  // V416 fail-closed security fix: every condition below is mandatory.
+  // Match the actual Java -jar invocation and exact values, not incidental text.
+  const jarIndex = args.indexOf('-jar');
+  if (path.win32.basename(args[0] || '').toLowerCase() !== 'java.exe') return false;
+  if (jarIndex < 0 || !/^cloud-firestore-emulator.*\.jar$/i.test(path.win32.basename(args[jarIndex + 1] || ''))) return false;
+  const projectIndex = args.indexOf('--project_id');
+  if (projectIndex < 0 || args[projectIndex + 1] !== qaProjectId) return false;
+  const rulesIndex = args.indexOf('--rules');
+  if (rulesIndex < 0 || !args[rulesIndex + 1]) return false;
+  const expectedRules = path.win32.resolve(repoRoot, 'tests', 'fixtures', 'v311-firestore.rules');
+  const actualRules = path.win32.resolve(repoRoot, args[rulesIndex + 1]);
+  if (actualRules.toLowerCase() !== expectedRules.toLowerCase()) return false;
+  // Parent must be dead (orphan signature of firebase-tools exiting first).
+  if (info.parentAlive !== false) return false;
+  return true;
 }
 
 function main() {
@@ -83,11 +102,19 @@ function main() {
     if (isConfirmedOrphan(info)) {
       report.confirmedOrphans.push(entry);
       if (killConfirmed) {
-        try {
-          execFileSync('taskkill', ['/PID', String(item.pid), '/F'], { encoding: 'utf8' });
-          report.killed.push(entry.pid);
-        } catch (error) {
-          entry.killError = error.message;
+        // V416: revalidate identity + PID immediately before killing, so a
+        // recycled PID or vanished process is never targeted.
+        const freshInfo = processInfo(item.pid);
+        if (freshInfo && freshInfo.parentPid === info.parentPid && freshInfo.commandLine === info.commandLine && isConfirmedOrphan(freshInfo)) {
+          try {
+            execFileSync('taskkill', ['/PID', String(item.pid), '/F'], { encoding: 'utf8' });
+            report.killed.push(entry.pid);
+          } catch (error) {
+            entry.killError = error.message;
+          }
+        } else {
+          entry.killError = 'identity changed between check and kill; process left untouched';
+          report.unknownProcesses.push(entry);
         }
       }
     } else {
@@ -107,4 +134,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { netstatListeners, processInfo, isConfirmedOrphan, main, EMULATOR_PORTS };
+module.exports = { netstatListeners, processInfo, isConfirmedOrphan, main, EMULATOR_PORTS, QA_PROJECT_ID, REPO_ROOT };
