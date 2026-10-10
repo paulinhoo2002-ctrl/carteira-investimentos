@@ -1,5 +1,11 @@
 # Next Step
 
+## V425 — CONDITIONAL_GO; gates humanos restantes (2026-10-10)
+
+- Main `a109d51` certificada localmente (868/868, 823/823, verify:release, qa:all, V289 18/18, CI main SUCCESS). GO_NO_GO=CONDITIONAL_GO.
+- Para GO final faltam: (1) validação funcional humana em produção no SHA a109d51; (2) PROVIDER_QA — autenticação real de provedor (NOT_TESTED); (3) liberar porta 8080 do órfão da worktree irmã via `node scripts/qa/firebase-precheck.js --kill-confirmed` executado DENTRO de v406-v415-overnight, e reexecutar `npm run test:auth-emulator` (esperado 8/8, como nos 3 ciclos V407).
+- Próximo comando sugerido (sem merge/deploy): `cd /c/Projetos/carteira-investimentos.worktrees/v406-v415-overnight && node scripts/qa/firebase-precheck.js --kill-confirmed && cd ../v417-v425-final-cert && npm run test:auth-emulator`.
+
 ## V415 — GO final aguardando validação humana em produção (2026-10-10)
 
 - Main `a8ce46e` certificada (868/0 legado, 823/0 moderno, verify:release PASS, CI SUCCESS, Vercel build publicado). GO_NO_GO=CONDITIONAL_GO.
