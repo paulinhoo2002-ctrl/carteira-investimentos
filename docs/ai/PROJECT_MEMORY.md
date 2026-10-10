@@ -1,3 +1,9 @@
+## V459–V470 — reconciliação e encerramento documental (2026-10-10)
+
+- Main `7d8a523`; #473 adiciona checkpoint V437, #474 repete o mesmo blob e adiciona evidência QA hospedada. O conteúdo repetido não conflita após integração sequencial.
+- Regressão local `verify:release` passou no head #474: modern 823/823, QA geral sem overflow/erros relevantes e V289 18/18; a evidência CI/Preview consultada também era verde nos SHAs exatos.
+- PR #475 verificada no SHA `a7bc3aafbfbbb31edbaacf7eacada9418dc4f522`; CI run `38071948798` passou (3 jobs) e Vercel Preview ficou READY no mesmo SHA. A falha `git_info_fail` do primeiro deployment foi transitória.
+- #474 contém identificadores pessoais/de ambiente em documentação. A cópia sanitizada não elimina os dados do histórico remoto; manter recomendação de substituir e não mesclar #474. Hosted QA não foi revalidado nesta sessão. PRODUCTION_READY=false.
 ## V436 — gates operacionais (2026-10-10)
 
 - Main `c7690dfd9539e139226cb7865e7de165ab36ea2c`: CI 3/3 SUCCESS, incluindo Auth/Firestore Emulator 8/8; deploy Vercel READY no SHA exato.
