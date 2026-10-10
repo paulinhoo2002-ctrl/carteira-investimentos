@@ -1,3 +1,9 @@
+## V459–V470 — encerramento técnico LEGACY (2026-10-10)
+
+- Main `7d8a523`; PR #473 e #474 tiveram CI/Preview verdes nos heads consultados. A integração documental simulada identificou o checkpoint V437 idêntico nas duas PRs; a reaplicação após #473 é no-op.
+- Em #474, `npm.cmd run verify:release` passou no SHA `a266da3cc87944726605b2fe6f3f55cc044d5487`: modern 823/823, QA geral sem overflow/erros relevantes, V289 18/18; testes legados passaram no comando composto.
+- #474 inclui histórico documental com identificadores pessoais/de ambiente; foi preparada cópia sanitizada e substituição recomendada. A sanitização não apaga o histórico publicado. QA hospedado/autenticado não foi repetido.
+- BLOCKER=0 e MAJOR=0 para o escopo local/documental; MINOR=1 (histórico público da #474 contém identificadores). PRODUCTION_READY=false; nenhum acesso/alteração de carteira real, escrita, importação, restauração, encerramento de processo, deploy manual ou merge. Evidência: `V459_V470_FINAL_LEGACY_CLOSURE.md`.
 # Project State
 
 ## V436 — final operational gates (2026-10-10)

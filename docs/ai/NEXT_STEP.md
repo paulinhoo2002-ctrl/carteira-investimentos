@@ -1,3 +1,8 @@
+## V459–V470 — próximo passo (2026-10-10)
+
+- Revisar e integrar #473 primeiro, se houver autorização de merge separada.
+- Não mesclar #474: contém identificadores em histórico público. Revisar PR de substituição sanitizada baseada na main; decidir humanamente se fecha/substitui #474.
+- QA autenticado hospedado e validação funcional em produção permanecem fora desta certificação; PRODUCTION_READY=false. Sem merge, deploy manual ou escrita financeira real.
 # Next Step
 
 ## V436 — NO_GO_FOR_PRODUCTION; QA operacional parcial (2026-10-10)
