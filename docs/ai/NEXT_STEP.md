@@ -1,5 +1,11 @@
 # Next Step
 
+## V435 — CONDITIONAL_GO; 3 gates humanos restantes (2026-10-10)
+
+- Main `a4d3973` certificada no SHA exato (868/868, 823/823, verify, qa:all, V289 18/18, CI SUCCESS). GO_NO_GO=CONDITIONAL_GO.
+- Gates para GO final: (1) HUMAN_GATE PID 20360 (órfão do emulador na 8080, worktree v406-v415-overnight) → kill via precheck na worktree dona → reexecutar `npm run test:auth-emulator` (esperado 8/8, como em V426); (2) HUMAN_GATE_PROVIDER_QA — provisionar/autorizar ambiente Firebase QA autenticado isolado com conta sintética; (3) validação funcional humana em produção no SHA a4d3973.
+- Próximo comando sugerido (sem merge/deploy): `cd C:\Projetos\carteira-investimentos.worktrees\v406-v415-overnight && node scripts/qa/firebase-precheck.js --kill-confirmed` (apenas com aprovação específica para o PID 20360).
+
 ## V426 — AUTHORIZED_PROCESS_TERMINATION_AND_AUTH_QA: COMPLETED (2026-10-10)
 
 - HUMAN_AUTHORIZATION=GRANTED para PID 110840, Opção A (firebase-precheck), com revalidação de identidade.

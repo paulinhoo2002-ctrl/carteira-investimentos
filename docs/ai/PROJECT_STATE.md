@@ -1,5 +1,16 @@
 # Project State
 
+## V427–V435 — final operational trust (2026-10-10)
+
+- Main `a4d39734be7800d7fd016c6d986ea492d3a99f68` (#470 MERGED 13:32:29Z) certificada no SHA exato: npm test 868/868, modern 823/823, verify:release PASS, qa:all 0/0/0/0, V289 18/18, diff-check clean, CI main `38056111921` SUCCESS, Vercel production build publicado (registro técnico).
+- V428 PARTIAL: porta 8080 = órfão PID 20360 (emulador Firestore, rules da worktree irmã v406-v415-overnight, pai morto). Diagnóstico read-only feito; kill NÃO executado — HUMAN_GATE específico pendente para este PID (autorização anterior era exclusiva do 110840). Suítes sem emulador verdes no npm test 868/868; auth 8/8 REAL comprovado em V426 no mesmo binário.
+- V429: PROVIDER_QA=NOT_TESTED — sem ambiente Firebase QA autenticado isolado provisionado; HUMAN_GATE_PROVIDER_QA registrado.
+- V430 PASS: persistence 32/32, roundtrip 7/7, load 7/7, cloud resilience 4/4, sync-state 10/10, restore-integration 9/9. V431 PASS: hardening 9/9, lifecycle 14/14, backup-root preservado.
+- V432 PASS: finance 94/94, tax 16/16, v345 3/3, rf/linkage 10/10, dividend coverage 2/2 — invariantes preservados, zero mudança de fórmula.
+- V433 PASS: Chromium/Firefox 100% limpos; WebKit run principal limpo, intermitência sw.js reproduzida (0/1/2 erros em 3 runs) e investigada: Content-Type correto no servidor; trata-se de race de registro de Service Worker do WebKit headless contra 127.0.0.1 — pré-existente, ambiente local, sem impacto em deploy https. Não suprimido.
+- V434: INDEPENDENT_REVIEW=NOT_PERFORMED (sem segundo modelo). V435: GO_NO_GO=CONDITIONAL_GO; PRODUCTION_READY=false; rollback = squash revert de a4d3973.
+- REAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; MANUAL_PRODUCTION_DEPLOY=false; MERGE=false.
+
 ## V417–V425 — final reliability & production certification (2026-10-10)
 
 - Main pós-#469 certificada: `a109d51f5e30ccbc9a8a39fc53ff5db8ed1b87c9`, CI main run `38049861320` SUCCESS. Certificação local no SHA exato (worktree v417-v425-final-cert): npm test 868/868, modern 823/823, verify:release PASS, qa:all PASS (0/0/0/0), V289 visual 18/18, git diff --check clean.
