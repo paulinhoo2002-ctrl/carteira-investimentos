@@ -1,5 +1,13 @@
 # Next Step
 
+## V426 — auth emulator final recovery: HUMAN_GATE_PROCESS_TERMINATION (2026-10-10)
+
+- Precheck diagnóstico (sem kill) executado NA worktree v406-v415-overnight (dona do órfão): porta 8080 = PID 110840, java.exe, ParentPid 79564 MORTO, Firestore emulator jar v1.22.0, --project_id demo-carteira-qa-emulator, --rules C:\Projetos\carteira-investimentos.worktrees\v406-v415-overnight\tests\fixtures\v311-firestore.rules, --single_project_mode true. Classificação: CONFIRMED_ORPHAN (rules desta própria worktree, pai morto, projeto QA autorizado). Zero unknownProcesses.
+- HUMAN_GATE_PROCESS_TERMINATION: aguardando aprovação específica do usuário para `taskkill /PID 110840 /F` (ou `node scripts/qa/firebase-precheck.js --kill-confirmed` dentro de v406-v415-overnight). Nenhum processo encerrado nesta fase.
+- Suítes de segurança/persistência sem dependência de autorização: write-boundary 81/81, e2e-auth 7/7, synthetic runtime 32/32, cloud-sync 10/10, persistence-core 32/32 — todas PASS nesta sessão.
+- AUTH_TESTS=BLOCKED_BY_8080 (test:auth-emulator só após liberação autorizada da porta; esperado 8/8 conforme V407).
+- PROVIDER_QA=NOT_TESTED (gate humano posterior).
+
 ## V425 — CONDITIONAL_GO; gates humanos restantes (2026-10-10)
 
 - Main `a109d51` certificada localmente (868/868, 823/823, verify:release, qa:all, V289 18/18, CI main SUCCESS). GO_NO_GO=CONDITIONAL_GO.
