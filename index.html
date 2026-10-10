@@ -20728,6 +20728,19 @@ function passiveIncomeMetricCard({tone='muted', kicker='', value='—', sub=''})
 function passiveIncomeValue(value){
   return value!==null && value!==undefined && value!=='' && Number.isFinite(Number(value)) ? fmt(Number(value)) : '—';
 }
+// V561: month-over-month comparison of RECEIVED passive income only.
+// Contract: totals are pre-filtered received rows (DECLARED/EXPECTED never reach here).
+// Null/undefined/'' totals stay UNKNOWN — never coerced to zero (UNKNOWN != ZERO).
+function passiveIncomeMonthOverMonth({ currentTotal, previousTotal }){
+  const toNullable = value => (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) ? null : Number(value);
+  const current = toNullable(currentTotal);
+  const previous = toNullable(previousTotal);
+  if (current === null || previous === null) return { status: 'UNKNOWN', delta: null, deltaPercent: null, direction: null };
+  const delta = current - previous;
+  const deltaPercent = previous !== 0 ? (delta / previous) * 100 : null;
+  const direction = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+  return { status: 'COMPLETE', delta, deltaPercent, direction };
+}
 function passiveIncomeProgressCard({tone='muted', kicker='', value='—', sub='', percent=0, barColor='#60a5fa'}){
   const width=Math.max(0, Math.min(100, Number(percent)||0)).toFixed(1);
   return `<div class="passive-goal-card ${tone}" style="min-height:88px">
@@ -20877,6 +20890,8 @@ function passiveIncomeGoalStats(coverage={}){
     currentMonthTotal,
     currentMonthCoverage:currentMonth?.coverage||'UNKNOWN',
     currentMonthCount:currentMonth?.count||0,
+    previousMonthKey:monthKeys[monthKeys.length-2] || '',
+    previousMonthTotal:monthMap.get(monthKeys[monthKeys.length-2] || '')?.total ?? null,
     topPayers,
     bestPayer,
     hasData: (total12!==null&&total12>0) || topPayers.length>0
@@ -20929,6 +20944,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="passive-goal-sub">${hasGoal ? 'Meta cadastrada na aba Metas' : 'Defina sua meta de renda passiva'}</div>
           </div>
           ${passiveIncomeMetricCard({tone:stats.monthlyAverageStatus==='COMPLETE' ? 'ok' : 'muted', kicker:'Renda real média 12M', value:passiveIncomeValue(stats.monthlyAvg), sub:`Meses completos: ${stats.completeMonthCount}/12`})}
+          ${(() => { const monthOverMonth=passiveIncomeMonthOverMonth({currentTotal:stats.currentMonthTotal, previousTotal:stats.previousMonthTotal}); const momTone=monthOverMonth.status!=='COMPLETE' ? 'muted' : monthOverMonth.direction==='up' ? 'ok' : monthOverMonth.direction==='down' ? 'danger' : 'info'; const momValue=monthOverMonth.status!=='COMPLETE' ? 'Indisponível' : `${monthOverMonth.delta>=0?'+':''}${fmt(monthOverMonth.delta)}`; const momSub=monthOverMonth.status!=='COMPLETE' ? 'Recebimento de um dos meses ainda sem valor confirmado' : monthOverMonth.deltaPercent===null ? 'Mês anterior sem recebimento (zero confirmado)' : `${monthOverMonth.deltaPercent>=0?'+':''}${monthOverMonth.deltaPercent.toFixed(1)}% vs mês anterior · valores recebidos`; return passiveIncomeMetricCard({tone:momTone, kicker:'Mês atual vs anterior', value:momValue, sub:momSub}); })()}
           ${passiveIncomeMetricCard({tone:projectedMonthly>0 ? 'info' : 'muted', kicker:'Renda projetada/mês', value:projectedLabel, sub:projectedMonthly>0 ? 'Estimativa da carteira' : 'Sem ativos suficientes para projetar'})}
           ${hasGoal ? passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:avgProg?`${avgProg.prog.toFixed(1)}%`:'Indisponível', sub:avgProg?`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`:`Cobertura insuficiente · ${stats.completeMonthCount}/12 meses completos`, percent:avgProg?.prog??0, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#94a3b8'}) : ''}
           ${hasGoal ? passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:passiveIncomeValue(avgProg?.falta), sub:'Comparação disponível somente com 12 meses completos'}) : ''}

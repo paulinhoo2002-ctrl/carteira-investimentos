@@ -5,6 +5,14 @@ const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
 const fixedNow = new Date('2026-10-08T12:00:00Z');
 class FixedDate extends Date { constructor(...args) { super(...(args.length ? args : [fixedNow])); } static now() { return fixedNow.getTime(); } }
+function compareMonthOverMonth(stats) {
+  const start = source.indexOf('function passiveIncomeMonthOverMonth(');
+  const end = source.indexOf('\n}', start) + 2;
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(source.slice(start, end), context);
+  return context.passiveIncomeMonthOverMonth({currentTotal:stats.currentMonthTotal,previousTotal:stats.previousMonthTotal});
+}
 function runtime(rows, coverage = {}) {
   const context = {
     Date: FixedDate,
@@ -204,4 +212,32 @@ test('Modern Income snapshot separates announced events from received payments a
   assert.equal(partialPaid.summary.averageMonthly, null, 'partial coverage cannot certify a monthly average');
   assert.equal(partialPaid.items[0].paymentState, 'PAID');
   assert.equal(partialPaid.items[0].receivedValue, 250);
+});
+
+test('V561 comparison uses only PAID income from the current and immediately previous calendar months', () => {
+  const ctx = runtime([
+    row('2026-09',100,'PAID'), row('2026-09',700,'DECLARED'), row('2026-09',800,'EXPECTED'), row('2026-09',900,'PENDING'),
+    row('2026-10',250,'PAID'), row('2026-10',600,'EXPECTED'), row('2026-10',500,'PENDING'),
+  ]);
+  const stats = ctx.passiveIncomeGoalStats();
+  assert.equal(stats.previousMonthKey,'2026-09');
+  assert.equal(stats.currentMonthKey,'2026-10');
+  assert.equal(stats.previousMonthTotal,100);
+  assert.equal(stats.currentMonthTotal,250);
+  assert.deepEqual(JSON.parse(JSON.stringify(compareMonthOverMonth(stats))),
+    {status:'COMPLETE',delta:150,deltaPercent:150,direction:'up'});
+});
+
+test('V561 comparison keeps a no-record month UNKNOWN until complete coverage confirms zero', () => {
+  const rows = [row('2026-10',250,'PAID')];
+  const unknownStats = runtime(rows).passiveIncomeGoalStats();
+  assert.equal(unknownStats.previousMonthKey,'2026-09');
+  assert.equal(unknownStats.previousMonthTotal,null);
+  assert.equal(compareMonthOverMonth(unknownStats).status,'UNKNOWN');
+
+  const confirmedContext = runtime(rows,{'2026-09':complete});
+  const confirmedStats = confirmedContext.passiveIncomeGoalStats(confirmedContext.coverage);
+  assert.equal(confirmedStats.previousMonthTotal,0);
+  assert.deepEqual(JSON.parse(JSON.stringify(compareMonthOverMonth(confirmedStats))),
+    {status:'COMPLETE',delta:250,deltaPercent:null,direction:'up'});
 });

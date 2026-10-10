@@ -1,4 +1,9 @@
 # Next Step
+## V561 — hardening da comparação mensal (2026-10-10)
+
+- PR #481 segue OPEN/DRAFT no SHA `871a5de5cc7300b0a1c72497621b1b98cb441f0a`; testes sintéticos cobrem filtro exclusivo PAID, meses calendário consecutivos e UNKNOWN versus zero com cobertura completa.
+- `npm.cmd run test:finance`: 96/96; `npm.cmd run test:ui`: 293/293. CI do SHA: 3/3 jobs SUCCESS; Vercel Preview SUCCESS.
+- Próximo gate: revisão humana e decisão sobre squash merge. Sem merge ou produção nesta missão.
 
 ## V436 — NO_GO_FOR_PRODUCTION; QA operacional parcial (2026-10-10)
 
