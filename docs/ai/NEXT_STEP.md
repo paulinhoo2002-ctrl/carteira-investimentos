@@ -1,5 +1,14 @@
 # Next Step
 
+## V436 — NO_GO_FOR_PRODUCTION; QA operacional parcial (2026-10-10)
+
+- `origin/main` confirmado no SHA `c7690dfd9539e139226cb7865e7de165ab36ea2c`; CI run `38061181090` e os 3 checks (Build and test, Auth and Firestore emulator QA, V289 visual regression) concluíram SUCCESS no SHA exato.
+- Auth/Firestore Emulator QA executou 8/8 com projeto `demo-carteira-qa-emulator`: sessão Auth sintética, proteção de rotas, falha fechada, proibição de fallback à produção e regras negando escrita em autoridade/estado financeiro. A suíte não comprova logout, isolamento entre duas identidades nem persistência de sessão após reinício.
+- Vercel deployment `dpl_E48FpYS6qNgGyky4Pj6Da3FjqCxU` está READY no mesmo SHA. Inspeção sem login mostrou o gate normal “Acesso restrito / Entre com Google”; as rotas internas autenticadas não foram verificadas.
+- PID 20360 não estava ativo no diagnóstico atual; `netstat` não mostrou listener em 8080. Nenhum processo foi encerrado. Como o PID não existia, proprietário e worktree atuais são não aplicáveis; não há condição para determinar a quem pertencia se o identificador foi reutilizado.
+- `PROVIDER_QA=NOT_TESTED`; nenhuma conta QA em Firebase hospedado foi provisionada. `PRODUCTION_READY=false`; `GO_NO_GO=NO_GO_FOR_PRODUCTION` até validar logout, isolamento multiusuário, persistência autenticada e fluxo interno em QA isolado/hospedado, além de concluir validação funcional autorizada.
+- Relatório: [`V436_FINAL_OPERATIONAL_GATES.md`](V436_FINAL_OPERATIONAL_GATES.md). Nenhuma escrita financeira real, importação, restauração, ação manual de produção ou merge.
+
 ## V435 — CONDITIONAL_GO; 3 gates humanos restantes (2026-10-10)
 
 - Main `a4d3973` certificada no SHA exato (868/868, 823/823, verify, qa:all, V289 18/18, CI SUCCESS). GO_NO_GO=CONDITIONAL_GO.

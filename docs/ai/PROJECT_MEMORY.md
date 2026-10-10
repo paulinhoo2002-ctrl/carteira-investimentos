@@ -1,3 +1,10 @@
+## V436 — gates operacionais (2026-10-10)
+
+- Main `c7690dfd9539e139226cb7865e7de165ab36ea2c`: CI 3/3 SUCCESS, incluindo Auth/Firestore Emulator 8/8; deploy Vercel READY no SHA exato.
+- O PID 20360 não estava ativo durante o diagnóstico; nenhuma ação de encerramento. Worktree V406 permanece preservada e limpa.
+- QA hospedado, logout, isolamento multiusuário, persistência após reinício e rotas internas publicadas não foram certificados. `PRODUCTION_READY=false`; sem escrita real.
+- Evidência: [`V436_FINAL_OPERATIONAL_GATES.md`](V436_FINAL_OPERATIONAL_GATES.md).
+
 ## V322 — certificação Batch 7–10, Provider QA diferido (2026-10-05)
 
 - PR #445 OPEN/DRAFT/MERGEABLE, `codex/v322-batch7-import-center-hardening`, HEAD `36c78e69acaa8c67531654181cc274cd71ade6c4`; CI #783/run `37372040030` SUCCESS, sem merge.
