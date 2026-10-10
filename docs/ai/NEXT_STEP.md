@@ -1,5 +1,28 @@
 # Next Step
 
+## V426 — AUTHORIZED_PROCESS_TERMINATION_AND_AUTH_QA: COMPLETED (2026-10-10)
+
+- HUMAN_AUTHORIZATION=GRANTED para PID 110840, Opção A (firebase-precheck), com revalidação de identidade.
+- Revalidação pré-kill (worktree v406-v415-overnight): PID 110840 = java.exe, jar cloud-firestore-emulator-v1.22.0, --project_id demo-carteira-qa-emulator, --rules exatos desta worktree, ParentPid 79564 morto, único órfão confirmado, zero unknownProcesses → condições da autorização integralmente atendidas.
+- `node scripts/qa/firebase-precheck.js --kill-confirmed` executado: killed=[110840]. Porta 8080 confirmada LISTENING-free; precheck subsequente: listeners=[], orphans=[], unknown=[].
+- `npm run test:auth-emulator` REAL nesta sessão: **8/8 PASS** (login demo, escrita bloqueada, flags parciais fail-closed, regras negando acesso, sem fallback produção). AUTH_TESTS=8/8.
+- Pós-teste: novo órfão PID 20360 (mesma assinatura do emulador, gerado pelo próprio suite). A autorização era específica do PID 110840 — kill NÃO estendido. Pendência operacional documentada: rodar precheck --kill-confirmed na worktree dona quando necessário.
+- PROVIDER_QA=NOT_TESTED permanece (gate humano posterior).
+
+## V426 — auth emulator final recovery: HUMAN_GATE_PROCESS_TERMINATION (2026-10-10)
+
+- Precheck diagnóstico (sem kill) executado NA worktree v406-v415-overnight (dona do órfão): porta 8080 = PID 110840, java.exe, ParentPid 79564 MORTO, Firestore emulator jar v1.22.0, --project_id demo-carteira-qa-emulator, --rules C:\Projetos\carteira-investimentos.worktrees\v406-v415-overnight\tests\fixtures\v311-firestore.rules, --single_project_mode true. Classificação: CONFIRMED_ORPHAN (rules desta própria worktree, pai morto, projeto QA autorizado). Zero unknownProcesses.
+- HUMAN_GATE_PROCESS_TERMINATION: aguardando aprovação específica do usuário para `taskkill /PID 110840 /F` (ou `node scripts/qa/firebase-precheck.js --kill-confirmed` dentro de v406-v415-overnight). Nenhum processo encerrado nesta fase.
+- Suítes de segurança/persistência sem dependência de autorização: write-boundary 81/81, e2e-auth 7/7, synthetic runtime 32/32, cloud-sync 10/10, persistence-core 32/32 — todas PASS nesta sessão.
+- AUTH_TESTS=BLOCKED_BY_8080 (test:auth-emulator só após liberação autorizada da porta; esperado 8/8 conforme V407).
+- PROVIDER_QA=NOT_TESTED (gate humano posterior).
+
+## V425 — CONDITIONAL_GO; gates humanos restantes (2026-10-10)
+
+- Main `a109d51` certificada localmente (868/868, 823/823, verify:release, qa:all, V289 18/18, CI main SUCCESS). GO_NO_GO=CONDITIONAL_GO.
+- Para GO final faltam: (1) validação funcional humana em produção no SHA a109d51; (2) PROVIDER_QA — autenticação real de provedor (NOT_TESTED); (3) liberar porta 8080 do órfão da worktree irmã via `node scripts/qa/firebase-precheck.js --kill-confirmed` executado DENTRO de v406-v415-overnight, e reexecutar `npm run test:auth-emulator` (esperado 8/8, como nos 3 ciclos V407).
+- Próximo comando sugerido (sem merge/deploy): `cd /c/Projetos/carteira-investimentos.worktrees/v406-v415-overnight && node scripts/qa/firebase-precheck.js --kill-confirmed && cd ../v417-v425-final-cert && npm run test:auth-emulator`.
+
 ## V415 — GO final aguardando validação humana em produção (2026-10-10)
 
 - Main `a8ce46e` certificada (868/0 legado, 823/0 moderno, verify:release PASS, CI SUCCESS, Vercel build publicado). GO_NO_GO=CONDITIONAL_GO.

@@ -1,5 +1,16 @@
 # Project State
 
+## V417–V425 — final reliability & production certification (2026-10-10)
+
+- Main pós-#469 certificada: `a109d51f5e30ccbc9a8a39fc53ff5db8ed1b87c9`, CI main run `38049861320` SUCCESS. Certificação local no SHA exato (worktree v417-v425-final-cert): npm test 868/868, modern 823/823, verify:release PASS, qa:all PASS (0/0/0/0), V289 visual 18/18, git diff --check clean.
+- V418: precheck auditado na main — fail-closed por argumentos exatos, revalidação pré-kill, PowerShell/CIM null → nunca confirmado; suíte negativa 17/17; execução dry real reportou órfão da worktree IRMÃ na 8080 como UNKNOWN (fail-closed cross-worktree comprovado). `--kill-confirmed` não executado na missão.
+- V419: test:auth-emulator PARTIAL — porta 8080 ocupada pelo órfão da worktree irmã (PID 110840; kill proibido nesta missão). Fallback sem emulador: write-boundary 81/81, e2e-auth 7/7, synthetic runtime 32/32, cloud-sync 10/10. PROVIDER_QA=NOT_TESTED.
+- V420: backup 9/9 + hardening 9/9 + lifecycle 14/14. V421: finance 94/94, tax 16/16, v345 3/3, rf/linkage 10/10 — invariantes preservados, zero mudança de fórmula.
+- V422: Chromium e Firefox 100% limpos; WebKit com sw.js flaky intermitente (0↔2 erros entre runs, pré-existente, documentado, não suprimido). V423: benchmarks performance 2/2, historical engine 21/21, v330 escala 20/20.
+- V424: INDEPENDENT_REVIEW=NOT_PERFORMED (sem segundo modelo no runtime). V425: GO_NO_GO=CONDITIONAL_GO; PRODUCTION_READY=false.
+- Pendência operacional: liberar 8080 rodando `node scripts/qa/firebase-precheck.js --kill-confirmed` DENTRO da worktree v406-v415-overnight (root dela casa com o rules do órfão), ou kill manual após inspeção.
+- REAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; MANUAL_PRODUCTION_DEPLOY=false; MERGE=false.
+
 ## V406–V415 — finalização operacional overnight (2026-10-09/10)
 
 - PRs #467 e #468 MERGED; main remota = `a8ce46ea6ea6dc77f8f1426196a211b0597dee15` (igual ao SHA esperado). CI main SUCCESS (runs `38005347839`, `37999257277`); Vercel production build publicado no SHA `a8ce46e` (registro técnico, não certificação funcional). Certificação local completa no SHA exato: 868 testes / 0 falhas.
