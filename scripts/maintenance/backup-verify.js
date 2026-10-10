@@ -77,7 +77,11 @@ function main() {
     report.healthy = false;
   } else {
     const entries = fs.readdirSync(root).filter(f => !/\.sha256$/i.test(f));
-    if (entries.length === 0) report.files.push({ state: 'WARN', details: ['backup root is empty — no backups present'] });
+    if (entries.length === 0) {
+      // V666: no backups at all is BACKUP_MISSING — never healthy.
+      report.files.push({ state: 'WARN', details: ['backup root is empty — no backups present (BACKUP_MISSING)'] });
+      report.healthy = false;
+    }
     for (const entry of entries) {
       const full = path.join(root, entry);
       if (!fs.statSync(full).isFile()) continue;

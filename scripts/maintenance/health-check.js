@@ -12,6 +12,7 @@
 // Suggested cadence: daily (cron) — see docs/ai/V588_V600_MAINTENANCE.md
 
 const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
 const path = require('node:path');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -63,6 +64,17 @@ async function main() {
       const buildId = extractBuildId(body);
       check('availability', 'OK', `HTTP 200, ${body.length} bytes`);
       check('version-marker', buildId ? 'OK' : 'WARN', buildId ? `__APP_BUILD_ID__=${buildId}` : 'no __APP_BUILD_ID__ in served HTML');
+      // V674: compare served HTML with the local index.html (CRLF-normalized).
+      // Byte-identical after CRLF normalization means production serves exactly origin/main.
+      try {
+        const local = fs.readFileSync(path.join(REPO_ROOT, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
+        const served = body.replace(/\r\n/g, '\n');
+        check('index-html-match', local === served ? 'OK' : 'WARN', local === served
+          ? `served HTML matches local index.html (${served.length} bytes)`
+          : `DEPLOY_DIVERGED: served HTML differs from local index.html (local ${local.length}B vs served ${served.length}B) — production may be ahead/behind this checkout`);
+      } catch (error) {
+        check('index-html-match', 'WARN', `local index.html unavailable: ${String(error.message).slice(0, 60)}`);
+      }
     }
   } catch (error) {
     check('availability', 'FAIL', error.message);
