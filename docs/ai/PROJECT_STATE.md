@@ -1,5 +1,18 @@
 # Project State
 
+## V406–V415 — finalização operacional overnight (2026-10-09/10)
+
+- PRs #467 e #468 MERGED; main remota = `a8ce46ea6ea6dc77f8f1426196a211b0597dee15` (igual ao SHA esperado). CI main SUCCESS (runs `38005347839`, `37999257277`); Vercel production build publicado no SHA `a8ce46e` (registro técnico, não certificação funcional). Certificação local completa no SHA exato: 868 testes / 0 falhas.
+- V407: novo utilitário `scripts/qa/firebase-precheck.js` (6/6 testes) — checa portas 8080/9099/4400/4500, resolve PID → CommandLine+ParentProcessId, só encerra (`--kill-confirmed`) órfão confirmado (emulador jar + rules LEGACY + pai morto); desconhecidos só são reportados com HUMAN_BLOCKER_PROCESS_IDENTITY. Três ciclos START→8/8→SHUTDOWN→PORTS FREE confirmados (órfãos 67236, 90648, 90704 limpos).
+- V408: test:auth-emulator 8/8 nesta sessão. PROVIDER_QA=BLOCKED mantido (persistência autenticada real de provedor sem verificação). PRODUCTION_READY=false.
+- V409: backup 9/9 + hardening 9/9 + lifecycle 14/14; diretório aprovado preservado; sem restore real.
+- V410: finance 94/94, finance-core 80/80, tax 16/16, v345 3/3, dividend coverage 24/24, rf/linkage 10/10. Invariantes financeiros preservados; nenhuma alteração financeira.
+- V411: smoke Chromium OVERFLOW=0/CONSOLE=0/PAGE=0; Firefox idêntico; WebKit apenas sw.js pré-existente. Sem regressões.
+- V412: regras Firestore 8/8 via emulador; write boundary 81/81; nenhum segredo exposto; dependências inalteradas.
+- V413: bateria final no HEAD — npm test 868/0, modern 823/0, visual 18/0, verify:release PASS, qa:all PASS, git diff --check clean.
+- GO_NO_GO=CONDITIONAL_GO; INDEPENDENT_REVIEW=NOT_PERFORMED (sem modelo independente disponível). Rollback: squash revert de `a8ce46e`, sem force-push.
+- REAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; MANUAL_PRODUCTION_DEPLOY=false; MERGE_NEW_PRS=false.
+
 ## V402–V405 — aceleração final e release candidate (2026-10-09)
 
 - PR #467 MERGED via squash em `a8125b13331d6caf0ec25a69adcdea5d189004ad` (mergedAt 2026-10-09T22:26:47Z), conforme autorização humana específica. Certificação pós-merge na worktree `v402-v405-main-rc` (branch `codex/v402-v405-main-rc`, HEAD `a8125b1`, clean).

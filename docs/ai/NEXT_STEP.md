@@ -1,5 +1,12 @@
 # Next Step
 
+## V415 — GO final aguardando validação humana em produção (2026-10-10)
+
+- Main `a8ce46e` certificada (868/0 legado, 823/0 moderno, verify:release PASS, CI SUCCESS, Vercel build publicado). GO_NO_GO=CONDITIONAL_GO.
+- Gate humano atual: validação funcional em produção (SHA a8ce46e) e decisão de liberação. PROVIDER_QA=BLOCKED — persistência autenticada real continua sem verificação e impede GO.
+- V407 entregue: `node scripts/qa/firebase-precheck.js [--kill-confirmed]` torna o ciclo do Firestore emulator reproduzível e seguro (3 ciclos confirmados, 8/8 cada). Integrar precheck no `test:auth-emulator` é o próximo passo de engenharia, opcional.
+- Próximo comando sugerido (sem merge/deploy): `node scripts/qa/firebase-precheck.js` antes de qualquer ciclo de emulador.
+
 ## V405 — release candidate aguardando decisão humana (2026-10-09)
 
 - Main pós-merge `a8125b1` (#467) certificada: 868 testes legado 0 falhas, moderno 823/823, verify:release PASS, qa:all PASS, CI run `37999257277` SUCCESS, Vercel production deployment success no mesmo SHA.
