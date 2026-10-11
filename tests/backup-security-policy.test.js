@@ -35,7 +35,7 @@ test('backup destination and archive-path security policy blocks unsafe cases', 
     '  $result = Test-BackupDestinationPolicy -Candidate $case.Candidate -AllowedRoot $allowed -ProjectRoot $project -WorktreesRoot $worktrees -ForbiddenProject $forbidden -KnownReparsePoints $case.Reparse',
     '  [pscustomobject]@{ Name=$case.Name; Allowed=[bool]$result.Allowed; Reason=$result.Reason }',
     '}',
-    "$archivePaths = @('.env','.env.local','local-imports\\broker.pdf','_backups-seguros\\snapshot.json','docs\\credentials\\service-token.json','index.html','modern/src/main.tsx')",
+    "$archivePaths = @('.env','.env.local','local-imports\\broker.pdf','_backups-seguros\\snapshot.json','docs\\credentials\\service-token.json','docs\\security\\credential-policy.md','tests\\security\\token-detection.test.js','config\\service-token.json','index.html','modern/src/main.tsx')",
     '$plan = Get-BackupArchivePathPlan -Paths $archivePaths',
     '$archiveResults = foreach ($item in $archivePaths) {',
     '  $result = Get-BackupArchivePathPolicy -RelativePath $item',
@@ -65,8 +65,11 @@ test('backup destination and archive-path security policy blocks unsafe cases', 
   for (const candidate of ['.env', '.env.local', 'local-imports\\broker.pdf', '_backups-seguros\\snapshot.json', 'docs\\credentials\\service-token.json']) {
     assert.equal(dispositions[candidate], 'BLOCK', candidate);
   }
+  assert.equal(dispositions['docs\\security\\credential-policy.md'], 'INCLUDE');
+  assert.equal(dispositions['tests\\security\\token-detection.test.js'], 'INCLUDE');
+  assert.equal(dispositions['config\\service-token.json'], 'BLOCK');
   assert.equal(result.ArchiveAllowed, false, 'a sensitive candidate must hard-block archive creation');
-  assert.equal(result.SensitiveBlockerCount, 5);
+  assert.equal(result.SensitiveBlockerCount, 6);
   assert.equal(result.Included.includes('index.html'), true);
   assert.equal(result.Included.includes('modern/src/main.tsx'), true);
   assert.equal(dispositions['index.html'], 'INCLUDE');
