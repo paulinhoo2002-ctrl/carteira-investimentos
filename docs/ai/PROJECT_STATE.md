@@ -1,3 +1,13 @@
+## V1005 — certificação operacional (2026-10-11)
+
+- Base `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; branch isolada `codex/v1005-operational-certification`.
+- Exportação portátil implementada com AES-256-GCM e derivação PBKDF2; senha, salt e IV não são persistidos, e decifragem precede validação existente. Snapshots locais no browser continuam sem essa criptografia; import permanece em prévia, sem restore real.
+- `npm test`, `test:modern` (823/823), `qa:all`, `verify:release` (18/18), backup/restore (16/16), backup recovery (9/9), V324 backup (17/17), browser read-only sintético (1/1), E2E financeiro/relatórios (33/33) passaram localmente.
+- Emulator Auth/Firestore não executou: Firestore Emulator 1.22.0 falhou ao abrir conexão loopback. QA hospedado com duas identidades continua NOT_TESTED. Não houve credenciais, escritas remotas ou dados financeiros reais.
+- Relatórios E2E exigiam harness antigo sem marcador QA confiável; atualizado para reutilizar `tests/local-http-server.js`; suíte 10/10 PASS sem enfraquecer o runtime.
+- `npm ci` não alterou manifest/lock e reportou zero vulnerabilidades. Build Modern mantém avisos preexistentes de script classic/import default ausente.
+- Evidência detalhada: [`V1005_OPERATIONAL_CERTIFICATION.md`](V1005_OPERATIONAL_CERTIFICATION.md). Estado pré-publicação; CI/Preview do novo SHA aguardam commit/push. `MERGE=false`; `PRODUCTION=false`; `REAL_FINANCIAL_WRITES=0`.
+
 ## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
 
 - PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.

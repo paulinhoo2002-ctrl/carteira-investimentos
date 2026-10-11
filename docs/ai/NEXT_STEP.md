@@ -1,3 +1,11 @@
+## V1005 — certificação operacional LEGACY (2026-10-11)
+
+- Base verificada: `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; implementação na worktree isolada `codex/v1005-operational-certification`.
+- Exportação portátil cifrada AES-256-GCM/PBKDF2 e regressão no E2E de Relatórios via launcher QA oficial. Validação local: `npm test`, `test:modern` 823/823, `qa:all`, `verify:release` 18/18, backup/restore 16/16, recovery 9/9, V324 backup 17/17, browser sintético 1/1, E2E direcionado 33/33.
+- Limites: snapshots IndexedDB/browser continuam sem criptografia deste arquivo; import segue preview-only; backup externo independente e recuperação após perda de dispositivo não comprovados. Emulator falhou antes dos testes por socket loopback; QA hospedado multiusuário NOT_TESTED.
+- Próximo comando: revisar `git diff --check` e os arquivos explícitos; depois commit/push normal e Draft PR, conferir CI/Vercel no SHA exato. Sem merge, produção ou dados reais.
+- Relatório: [`V1005_OPERATIONAL_CERTIFICATION.md`](V1005_OPERATIONAL_CERTIFICATION.md).
+
 ## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
 
 - NEXT_ACTION=HUMAN_GATE_FINAL_REVIEW_AND_MERGE para a PR #485; manter OPEN/DRAFT até autorização específica. Atualização das dependências permanece em escopo separado.

@@ -33,7 +33,18 @@ test('strict read-only synthetic browser rejects programmatic writes and cloud h
     await page.waitForFunction(() => window.__LOCAL_TEST_MODE__ === true && window.__LOCAL_TEST_READ_ONLY__ === true);
 
     assert.match(await page.locator('.test-mode-banner').innerText(), /TESTE LOCAL · SOMENTE LEITURA/);
-    assert.match(await page.locator('.test-mode-readonly-status').innerText(), /Necessita revisão antes da confirmação/);
+    assert.match(await page.locator('.test-mode-readonly-status').innerText(), /Necessita revisão antes da confirmação/);    const encryptedRoundTrip = await page.evaluate(async () => {
+      const sample = { marker: 'BROWSER_SYNTHETIC_BACKUP', assets: [{ id: 'synthetic-asset-1', quantity: 2 }] };
+      const encrypted = await BackupPortability.encryptBackup(sample, 'synthetic browser passphrase 2026');
+      return {
+        noPlaintext: !JSON.stringify(encrypted).includes(sample.marker),
+        format: encrypted.format,
+        decrypted: await BackupPortability.decryptBackup(encrypted, 'synthetic browser passphrase 2026'),
+      };
+    });
+    assert.equal(encryptedRoundTrip.noPlaintext, true);
+    assert.equal(encryptedRoundTrip.format, 'carteira-investimentos-backup-encrypted');
+    assert.deepEqual(encryptedRoundTrip.decrypted, { marker: 'BROWSER_SYNTHETIC_BACKUP', assets: [{ id: 'synthetic-asset-1', quantity: 2 }] });
 
     const before = await page.evaluate(() => JSON.stringify({ assets: S.assets, movements: S.aportes, income: S.proventos }));
     const attempts = await page.evaluate(async () => {

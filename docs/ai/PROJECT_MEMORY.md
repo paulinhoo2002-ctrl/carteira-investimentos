@@ -1,3 +1,10 @@
+## V1005 — operacional e exportação portátil protegida (2026-10-11)
+
+- Na branch isolada `codex/v1005-operational-certification`, export portátil recebeu AES-256-GCM com chave derivada PBKDF2/SHA-256; a validação de proprietário/manifesto/SHA continua antes da cifra e depois da decifra. Snapshots locais do navegador permanecem sem esta criptografia e a UI de import continua preview-only.
+- Reuse sempre o launcher `tests/local-http-server.js` em E2E que requer modo sintético. Um servidor ad hoc com apenas `?testMode=1` não injeta o marcador confiável e é corretamente recusado pelo V332.
+- A validação final local passou `npm test`, Modern 823/823, `qa:all`, `verify:release`, testes de backup e browser sintético. Firestore Emulator local falhou ao estabelecer loopback; não classificar isso como teste de regras aprovado. Hosted QA multiusuário permanece NOT_TESTED.
+- Detalhes, riscos e próximo gate estão em [`V1005_OPERATIONAL_CERTIFICATION.md`](V1005_OPERATIONAL_CERTIFICATION.md). Nenhuma escrita remota/financeira, importação, restore real, deploy manual ou merge.
+
 ## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
 
 - PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
