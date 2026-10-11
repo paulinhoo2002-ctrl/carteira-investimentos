@@ -1,3 +1,10 @@
+## V1351 — endurecimento local do adaptador Drive (2026-10-11)
+
+- No mesmo delta da PR #492, o upload Drive usa sessão retomável, valida a URL do servidor, consulta bytes aceitos após interrupção/5xx e verifica tamanho mais SHA-256 por readback antes do sucesso. O readback adiciona uma leitura completa por upload/replay. O adaptador continua opt-in e desconectado do produto.
+- Evidência local atual: adaptador 26/26; backup/restore 52/52 (reexecutado após readback); recovery 9/9; V324 backup 17/17; finanças 96/96; runtime sintético 44/44; precheck Firebase V407 17/17; QA harness 17/17; audit previamente 0 findings; build estático e diff check PASS. Modern 719/728, nove arquivos não carregam sem React. `npm test`, `qa:all` e `verify:release` bloqueados pelo Vite ausente. Firestore Emulator sai com código 1 antes dos testes; causa não confirmada.
+- Limites: nenhuma OAuth/rede Drive real, Firebase hospedado, conta sintética remota, backup externo, persistência de restore ou dado financeiro real. O helper GIS segue isolado, mas usa token model no browser; orientação atual do Google recomenda code model com PKCE/backend para produção. `npm ci` não autorizado nesta worktree; sem merge ou produção.
+- Revisão independente fechou o achado de upload truncado após validação de tamanho e readback SHA-256. MAJOR restante para qualquer integração futura: list-before-create mais lock por página não é atômico entre abas/dispositivos, portanto duplicatas podem ocorrer em corrida. O adaptador permanece desconectado; exigir coordenação autoritativa ou tratar duplicatas com segurança antes de wiring.
+
 ## V1051 — simulador e recuperação sintética de destino externo (2026-10-11)
 
 - Continuação V1121 adicionou `google-drive-backup.js` como adaptador REST opt-in, separado e ainda não importado pelo produto. OAuth GIS pede apenas `drive.file`; token é efêmero em memória; operações usam origem fixa e redirects bloqueados. Só envia envelope já cifrado; owner/backup/idempotency são hashes em appProperties; download valida metadados e SHA. Paginação incompleta e erros operacionais falham fechados. Retenção é plano sem endpoint de exclusão.

@@ -1,3 +1,11 @@
+## V1351 — continuação segura da PR #492 (2026-10-11)
+
+- Worktree/branch: `C:\Projetos\carteira-investimentos.worktrees\v1051-drive-backup`, `codex/v1051-drive-backup-simulator`; base publicada da PR #492 `b1b846514fb4e0b80cdaad0910e2f02082001cb9`. PR #491 permanece separada, OPEN/DRAFT; #492 OPEN/DRAFT/MERGEABLE, empilhada sobre #491. Sem alterar base ou histórico.
+- Revisão independente confirmou o readback SHA e fechou o risco de sucesso falso em arquivo truncado. `MAJOR=1` permanece: concorrência entre abas/dispositivos pode duplicar arquivo, sem coordenação atômica. Adaptador não está ligado ao produto.
+- Próxima ação: revisar o diff completo e publicar por commit/push normal na Draft PR #492 sob autorização prévia aplicável a esta mesma branch. Revalidar CI/Vercel no SHA exato; manter #491 separada.
+- Testes locais no delta: adapter 26/26; backup/restore 52/52 (fresh após readback); recovery 9/9; V324 17/17; finanças 96/96; runtime QA sintético 44/44; V407 17/17; QA harness 17/17; audit previamente 0; build estático e diff-check PASS. Modern 719/728, nove falhas ao carregar React ausente. `npm test`, `qa:all` e `verify:release` bloqueados por Vite ausente; V84/V289/browser sem Playwright. `npm ci` não autorizado nesta worktree.
+- Firestore Emulator encerrou antes dos testes; log vazio, Java 26 presente, causa não comprovada. OAuth real e Drive real não usados. Token helper no browser continua apenas preparação isolada; integração de produção requer fluxo de código com PKCE/backend e gate OAuth separado. Não integrar #491/#492, não escrever Firebase hospedado e não executar produção/merge.
+
 ## V1051 — continuação do simulador de backup externo (2026-10-11)
 
 - Branch `codex/v1051-drive-backup-simulator` em worktree LEGACY isolada, empilhada sobre PR #491 no HEAD `af7d52afc81c8f8358005698a0c988184de943f7`; validar o estado da PR #491 novamente antes da publicação. Base atual da main: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`.
@@ -7,8 +15,8 @@
 
 ### V1121 — preparação isolada do adaptador Google Drive
 
-- Mesma PR #492 e mesma branch/worktree; implementação ainda local, não publicada. `google-drive-backup.js` é opt-in e não está conectado ao produto. Usa apenas OAuth scope `drive.file`, APIs Google fixas, envelope já cifrado, appProperties sem identificadores brutos, checksum e plano de retenção sem exclusão.
-- Testes locais no diff atual: adapter 12/12; simulador V1051 8/8; backup/restore 38/38; recovery 9/9; V324 17/17; financeiro 96/96; QA sintético 44/44; build legado e `git diff --check` PASS. Modern permanece parcial por React ausente; builds modernos/`qa:all`/`verify:release` dependem de Vite ausente; V84/V289 não carregam sem `playwright-core`. `npm ci` não está autorizado nesta worktree.
+- Evidência histórica no commit `b1b846514fb4e0b80cdaad0910e2f02082001cb9`: PR #492 publicada em Draft, adaptador opt-in não conectado ao produto; usa escopo `drive.file`, endpoints Google fixos, envelope já cifrado, metadata com hashes, checksum e retenção sem exclusão.
+- Os resultados de teste daquele SHA estão registrados no corpo original da PR. O estado corrente do diff e bloqueios de dependências estão no bloco V1351 acima.
 - Cross-tab/device idempotency não é atômica no Google Drive; nenhum OAuth, rede Google, conta real, Firebase remoto ou persistência da aplicação foi usado. Gate humano posterior: conta sintética Drive QA e autorização de upload/download real cifrado.
 
 ## V1006 — gate de disaster recovery (2026-10-11)

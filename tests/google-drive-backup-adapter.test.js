@@ -25,20 +25,33 @@ function response(status, data, headers = {}) {
 
 function driveHarness() {
   const files = new Map();
+  const sessions = new Map();
   const calls = [];
   let sequence = 0;
   const fetchImpl = async (url, options = {}) => {
     const parsed = new URL(url);
     calls.push({ url: parsed, options });
     const id = parsed.pathname.match(/\/files\/([^/]+)$/)?.[1];
-    if (options.method === 'POST' && parsed.pathname.endsWith('/upload/drive/v3/files')) {
-      const boundary = options.headers['Content-Type'].match(/boundary=([^;]+)/)[1];
-      const parts = (await options.body.text()).split(`--${boundary}`).filter(part => part.includes('\r\n\r\n'));
-      const metadata = JSON.parse(parts[0].slice(parts[0].indexOf('\r\n\r\n') + 4).trim());
-      const contentText = parts[1].slice(parts[1].indexOf('\r\n\r\n') + 4).replace(/\r\n$/, '').trim();
+    if (options.method === 'POST' && parsed.pathname.endsWith('/upload/drive/v3/files') && parsed.searchParams.get('uploadType') === 'resumable') {
+      const sessionId = `synthetic-session-${sessions.size + 1}`;
+      sessions.set(sessionId, { metadata: JSON.parse(options.body) });
+      return response(200, {}, { location: `https://www.googleapis.com/upload/drive/v3/files?upload_id=${sessionId}` });
+    }
+    if (options.method === 'PUT' && parsed.searchParams.has('upload_id')) {
+      const session = sessions.get(parsed.searchParams.get('upload_id'));
+      if (!session) return response(404, {});
+      if (!options.body) return response(308, {}, session.received ? { range: `bytes=0-${session.received - 1}` } : {});
+      const contentText = await options.body.text();
+      const range = options.headers['Content-Range'];
+      const start = Number(range.match(/^bytes (\d+)-/)[1]);
+      session.content = `${session.content || ''}${contentText}`;
+      session.received = start + contentText.length;
+      if (session.received < Number(range.match(/\/(\d+)$/)[1])) return response(308, {}, { range: `bytes=0-${session.received - 1}` });
       const fileId = `synthetic-drive-file-${++sequence}`;
-      const file = { id: fileId, createdTime: new Date(1000 + sequence).toISOString(), size: String(contentText.length), ...metadata };
-      files.set(fileId, { metadata: file, content: contentText });
+      const file = { id: fileId, createdTime: new Date(1000 + sequence).toISOString(), size: String(session.content.length), ...session.metadata };
+      delete file.mimeType;
+      files.set(fileId, { metadata: file, content: session.content });
+      sessions.delete(parsed.searchParams.get('upload_id'));
       return response(200, file);
     }
     if (parsed.pathname.endsWith('/drive/v3/files') && options.method !== 'POST') {
@@ -61,7 +74,7 @@ function driveHarness() {
     }
     return response(404, { error: { errors: [{ reason: 'notFound' }] } });
   };
-  return { files, calls, fetchImpl };
+  return { files, sessions, calls, fetchImpl };
 }
 
 function tokenProvider(scope = GOOGLE_DRIVE_FILE_SCOPE) {
@@ -88,6 +101,37 @@ test('Google Drive OAuth helper requests only drive.file and returns a short-liv
   assert.equal(Object.hasOwn(provider, 'token'), false);
 });
 
+test('Google Drive OAuth helper caches tokens only in memory and can invalidate them', async () => {
+  let grants = 0;
+  const google = { accounts: { oauth2: { initTokenClient(config) {
+    return { requestAccessToken() { queueMicrotask(() => config.callback({ access_token: `synthetic-token-${++grants}`, scope: GOOGLE_DRIVE_FILE_SCOPE, expires_in: 120 })); } };
+  } } } };
+  const provider = createGoogleDriveTokenProvider({ clientId: 'synthetic-client-id.apps.googleusercontent.com', google });
+  const first = await provider();
+  const cached = await provider();
+  assert.equal(cached.accessToken, first.accessToken);
+  assert.equal(grants, 1);
+  provider.invalidate();
+  assert.equal((await provider()).accessToken, 'synthetic-token-2');
+  assert.equal(grants, 2);
+});
+
+test('Drive adapter invalidates an unauthorized token without silently retrying', async () => {
+  let tokenReads = 0;
+  let requests = 0;
+  const provider = Object.assign(async () => ({
+    accessToken: `synthetic-token-${++tokenReads}`, scope: GOOGLE_DRIVE_FILE_SCOPE, expiresAt: Date.now() + 60_000
+  }), { invalidate() {} });
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: provider, ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async () => ++requests === 1 ? response(401, {}) : response(200, { files: [] })
+  });
+  await assert.rejects(() => adapter.listVersions({ backupKey: 'synthetic-wallet' }), { code: 'AUTH_REQUIRED' });
+  assert.equal(requests, 1);
+  assert.deepEqual(await adapter.listVersions({ backupKey: 'synthetic-wallet' }), []);
+  assert.equal(tokenReads, 2);
+});
+
 test('Drive adapter uploads immutable encrypted files, lists versions, and repeats by idempotency key', async () => {
   const drive = driveHarness();
   const adapter = createGoogleDriveBackupAdapter({
@@ -108,7 +152,8 @@ test('Drive adapter uploads immutable encrypted files, lists versions, and repea
   assert.deepEqual(restored.envelope, envelope);
   assert.equal(drive.files.size, 1);
   assert.equal([...drive.files.values()][0].content.includes('synthetic-wallet'), false);
-  assert.ok(drive.calls.every(call => call.options.headers.Authorization === 'Bearer synthetic-access-token'));
+  assert.ok(drive.calls.filter(call => call.url.origin === 'https://www.googleapis.com' && !call.url.searchParams.has('upload_id')).every(call => call.options.headers.Authorization === 'Bearer synthetic-access-token'));
+  assert.ok(drive.calls.filter(call => call.url.searchParams.has('upload_id')).every(call => !call.options.headers.Authorization));
   assert.equal(drive.calls.some(call => call.options.method === 'DELETE'), false);
 });
 
@@ -151,8 +196,8 @@ test('Drive adapter rejects invalid, expired, or overbroad OAuth grants before n
 test('Drive adapter sanitizes auth, quota, and network errors and exposes no secret details', async () => {
   const responses = [
     () => response(401, { message: 'token must not leak' }),
-    () => response(403, { error: { errors: [{ reason: 'userRateLimitExceeded', message: 'secret detail' }] } }),
-    () => { throw new Error('synthetic transport detail'); }
+    ...Array.from({ length: 3 }, () => () => response(403, { error: { errors: [{ reason: 'userRateLimitExceeded', message: 'secret detail' }] } })),
+    ...Array.from({ length: 3 }, () => () => { throw new Error('synthetic transport detail'); })
   ];
   const adapter = createGoogleDriveBackupAdapter({
     getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
@@ -165,6 +210,245 @@ test('Drive adapter sanitizes auth, quota, and network errors and exposes no sec
   const network = await rejected(adapter.listVersions({ backupKey: 'synthetic-wallet' }));
   assert.equal(network.code, 'NETWORK_ERROR');
   assert.doesNotMatch(`${first.message} ${quota.message} ${network.message}`, /secret|token must not leak|transport detail/);
+});
+
+test('Drive adapter retries only bounded idempotent reads and classifies conflict permissions', async () => {
+  let attempts = 0;
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async () => ++attempts < 3 ? response(503, {}) : response(200, { files: [] })
+  });
+  assert.deepEqual(await adapter.listVersions({ backupKey: 'synthetic-wallet' }), []);
+  assert.equal(attempts, 3);
+
+  const conflict = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async () => response(409, { message: 'private conflict detail' })
+  });
+  await assert.rejects(() => conflict.listVersions({ backupKey: 'synthetic-wallet' }), { code: 'DRIVE_CONFLICT' });
+
+  const forbidden = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async () => response(403, { message: 'private permission detail' })
+  });
+  await assert.rejects(() => forbidden.listVersions({ backupKey: 'synthetic-wallet' }), { code: 'PERMISSION_DENIED' });
+});
+
+test('Drive adapter never blindly retries an upload whose result is unknown', async () => {
+  const drive = driveHarness();
+  let uploadAttempts = 0;
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      if (options.method === 'POST') { uploadAttempts += 1; return response(503, { message: 'private server detail' }); }
+      return drive.fetchImpl(url, options);
+    }
+  });
+  await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'unknown-outcome', envelope }), { code: 'UPLOAD_OUTCOME_UNKNOWN' });
+  assert.equal(uploadAttempts, 1);
+});
+
+test('Drive adapter resumes an interrupted resumable upload after querying server state', async () => {
+  const drive = driveHarness();
+  let interruptions = 0;
+  const attemptedRanges = [];
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      const parsed = new URL(url);
+      const session = parsed.searchParams.has('upload_id') && drive.sessions.get(parsed.searchParams.get('upload_id'));
+      if (session && options.method === 'PUT') attemptedRanges.push(options.headers['Content-Range']);
+      if (session && options.method === 'PUT' && options.body && interruptions < 2) {
+        if (interruptions === 0) {
+          const content = await options.body.text();
+          session.content = content.slice(0, 12);
+          session.received = 12;
+        }
+        interruptions += 1;
+        throw new Error('synthetic connection interruption');
+      }
+      return drive.fetchImpl(url, options);
+    }
+  });
+  const uploaded = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'resume-1', envelope });
+  assert.equal(interruptions, 2);
+  assert.equal(drive.files.size, 1);
+  assert.ok(uploaded.fileId);
+  const restored = await adapter.download(uploaded.fileId, { backupKey: 'synthetic-wallet' });
+  assert.deepEqual(restored.envelope, envelope);
+  assert.deepEqual(attemptedRanges, [
+    `bytes 0-${JSON.stringify(envelope).length - 1}/${JSON.stringify(envelope).length}`,
+    `bytes */${JSON.stringify(envelope).length}`,
+    `bytes 12-${JSON.stringify(envelope).length - 1}/${JSON.stringify(envelope).length}`,
+    `bytes */${JSON.stringify(envelope).length}`,
+    `bytes 12-${JSON.stringify(envelope).length - 1}/${JSON.stringify(envelope).length}`
+  ]);
+});
+
+test('Drive adapter queries resumable upload state after a 5xx response', async () => {
+  const drive = driveHarness();
+  let failedTransfer = false;
+  let statusChecks = 0;
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      const parsed = new URL(url);
+      if (parsed.searchParams.has('upload_id') && options.method === 'PUT') {
+        if (options.body && !failedTransfer) { failedTransfer = true; return response(503, {}); }
+        if (!options.body) statusChecks += 1;
+      }
+      return drive.fetchImpl(url, options);
+    }
+  });
+  const result = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'resume-5xx', envelope });
+  assert.ok(result.fileId);
+  assert.equal(statusChecks, 1);
+  assert.equal(drive.files.size, 1);
+});
+
+test('Drive adapter bounds partial acknowledgements that do not complete an upload', async () => {
+  const drive = driveHarness();
+  let partialResponses = 0;
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      const parsed = new URL(url);
+      if (parsed.searchParams.has('upload_id') && options.method === 'PUT' && options.body) {
+        const acceptedThrough = Number(options.headers['Content-Range'].match(/^bytes (\d+)-/)[1]) + partialResponses++;
+        return response(308, {}, { range: `bytes=0-${acceptedThrough}` });
+      }
+      return drive.fetchImpl(url, options);
+    }
+  });
+  await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'stalled-resume', envelope }), { code: 'UPLOAD_OUTCOME_UNKNOWN' });
+  assert.equal(partialResponses, 3);
+  assert.equal(drive.files.size, 0);
+});
+
+test('Drive adapter rejects a forward resumable Range that produces a truncated remote file', async () => {
+  const drive = driveHarness();
+  const total = new TextEncoder().encode(JSON.stringify(envelope)).byteLength;
+  let claimedPartial = false;
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      const parsed = new URL(url);
+      if (parsed.searchParams.has('upload_id') && options.method === 'PUT' && options.body && !claimedPartial) {
+        claimedPartial = true;
+        return response(308, {}, { range: `bytes=0-${total - 2}` });
+      }
+      return drive.fetchImpl(url, options);
+    }
+  });
+  await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'forged-range', envelope }), { code: 'UPLOAD_VERIFICATION_FAILED' });
+  assert.equal(drive.files.size, 1);
+  assert.equal([...drive.files.values()][0].content.length, 1);
+});
+
+test('Drive adapter reads back and hashes stored bytes before reporting upload success', async () => {
+  const drive = driveHarness();
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      const result = await drive.fetchImpl(url, options);
+      if (new URL(url).searchParams.has('upload_id') && options.method === 'PUT' && result.ok) {
+        const file = await result.json();
+        const stored = drive.files.get(file.id);
+        stored.content = 'x'.repeat(stored.content.length);
+        return response(200, file);
+      }
+      return result;
+    }
+  });
+  await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'readback-corruption', envelope }), { code: 'FILE_CORRUPT' });
+});
+
+test('Drive adapter rejects an untrusted resumable session URL without sending credentials', async () => {
+  const calls = [];
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      const parsed = new URL(url);
+      calls.push({ parsed, options });
+      if (parsed.searchParams.has('q')) return response(200, { files: [] });
+      return response(200, {}, { location: 'https://attacker.invalid/upload/drive/v3/files?upload_id=secret' });
+    }
+  });
+  await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'unsafe-session', envelope }), { code: 'UPLOAD_SESSION_INVALID' });
+  assert.equal(calls.length, 3);
+  assert.ok(calls.every(call => call.parsed.hostname === 'www.googleapis.com'));
+});
+
+test('Drive adapter rejects oversized remote metadata before downloading backup content', async () => {
+  const drive = driveHarness();
+  const adapter = createGoogleDriveBackupAdapter({ getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' });
+  const uploaded = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'oversized-file', envelope });
+  drive.files.get(uploaded.fileId).metadata.size = String(36 * 1024 * 1024 + 1);
+  const callsBeforeDownload = drive.calls.length;
+  await assert.rejects(() => adapter.download(uploaded.fileId, { backupKey: 'synthetic-wallet' }), { code: 'BACKUP_TOO_LARGE' });
+  assert.equal(drive.calls.slice(callsBeforeDownload).some(call => call.url.searchParams.get('alt') === 'media'), false);
+});
+
+test('Drive adapter sanitizes failures while reading remote backup content', async () => {
+  const drive = driveHarness();
+  const stored = createGoogleDriveBackupAdapter({ getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' });
+  const uploaded = await stored.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'read-failure', envelope });
+  const failing = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => new URL(url).searchParams.get('alt') === 'media'
+      ? { ...response(200, ''), async text() { throw new Error('synthetic secret transport detail'); } }
+      : drive.fetchImpl(url, options)
+  });
+  const error = await rejected(failing.download(uploaded.fileId, { backupKey: 'synthetic-wallet' }));
+  assert.equal(error.code, 'NETWORK_ERROR');
+  assert.doesNotMatch(error.message, /secret transport detail/);
+});
+
+test('Drive adapter streams remote content and cancels when the bounded size is exceeded', async () => {
+  const drive = driveHarness();
+  const stored = createGoogleDriveBackupAdapter({ getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' });
+  const uploaded = await stored.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'stream-limit', envelope });
+  const chunk = new Uint8Array(1024 * 1024);
+  let pulls = 0;
+  let cancelled = false;
+  const oversized = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => new URL(url).searchParams.get('alt') === 'media'
+      ? {
+          ok: true, status: 200, headers: { get: () => null },
+          body: new ReadableStream({
+            pull(controller) { if (++pulls <= 40) controller.enqueue(chunk); else controller.close(); },
+            cancel() { cancelled = true; }
+          }),
+          async text() { throw new Error('stream must be used'); }
+        }
+      : drive.fetchImpl(url, options)
+  });
+  await assert.rejects(() => oversized.download(uploaded.fileId, { backupKey: 'synthetic-wallet' }), { code: 'BACKUP_TOO_LARGE' });
+  assert.equal(cancelled, true);
+  assert.ok(pulls >= 37 && pulls <= 38, `expected bounded reads after cancellation, got ${pulls}`);
+});
+
+test('Drive adapter bounds concurrent integrity reads while listing versions', async () => {
+  const drive = driveHarness();
+  const stored = createGoogleDriveBackupAdapter({ getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' });
+  for (let index = 0; index < 5; index += 1) {
+    await stored.upload({ backupKey: 'synthetic-wallet', idempotencyKey: `bounded-${index}`, envelope: { ...envelope, ciphertext: `${String.fromCharCode(65 + index)}AAAAAAAAAAAAAAAAAAAAA==` } });
+  }
+  let active = 0;
+  let maximumActive = 0;
+  const monitored = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1',
+    fetchImpl: async (url, options) => {
+      if (new URL(url).searchParams.get('alt') !== 'media') return drive.fetchImpl(url, options);
+      active += 1;
+      maximumActive = Math.max(maximumActive, active);
+      await new Promise(resolve => setTimeout(resolve, 5));
+      try { return await drive.fetchImpl(url, options); } finally { active -= 1; }
+    }
+  });
+  assert.equal((await monitored.listVersions({ backupKey: 'synthetic-wallet' })).length, 5);
+  assert.equal(maximumActive, 2);
 });
 
 test('Drive adapter retention is a non-destructive plan and rejects incomplete remote listings', async () => {
