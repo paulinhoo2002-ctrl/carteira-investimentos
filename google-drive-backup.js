@@ -192,7 +192,7 @@
     if (!journal) {
       // shortcut: local journal only recovers this profile; upgrade when a shared authority exists.
       try { journal = typeof window === 'object' ? window.localStorage : new Map(); }
-      catch { throw fail('OPERATION_JOURNAL_UNAVAILABLE'); }
+      catch { if (!operationCoordinator) throw fail('OPERATION_JOURNAL_UNAVAILABLE'); journal = new Map(); }
     }
 
     function journalGet(key) {
@@ -427,16 +427,33 @@
       const content = validateEnvelope(envelope);
       const contentSha256 = await sha256(content);
       const backupKeyHash = await sha256(backupKey);
-      const idempotencyHash = await sha256(`${ownerScope}:${backupKey}:${idempotencyKey}`);
+      const idempotencyHash = await sha256(JSON.stringify([ownerScope, backupKey, idempotencyKey]));
+      const legacyIdempotencyHash = await sha256(`${ownerScope}:${backupKey}:${idempotencyKey}`);
       const journalKey = `drive-backup-operation:${idempotencyHash}`;
-      let operation = journalGet(journalKey);
+      let operation;
+      let legacyOperation;
+      try { operation = journalGet(journalKey); }
+      catch (error) { if (!operationCoordinator) throw error; }
+      if (!operation && legacyIdempotencyHash !== idempotencyHash) {
+        try { legacyOperation = journalGet(`drive-backup-operation:${legacyIdempotencyHash}`); }
+        catch (error) { if (!operationCoordinator) throw error; }
+      }
       if (operation && (typeof operation.fileId !== 'string' || !/^[\w-]+$/.test(operation.fileId) || operation.contentSha256 !== contentSha256)) throw fail('IDEMPOTENCY_CONFLICT');
-      const existing = await listRaw({ backupKeyHash, idempotencyHash });
-      if (existing.length > 1) throw fail('IDEMPOTENCY_CONFLICT');
-      const sameContent = (await listRaw({ backupKeyHash })).filter(file => file.appProperties.contentSha256 === contentSha256);
+      const backupFiles = await listRaw({ backupKeyHash });
+      const existing = backupFiles.filter(file => file.appProperties.idempotency === idempotencyHash);
+      const legacyExisting = legacyIdempotencyHash === idempotencyHash ? [] : backupFiles.filter(file => file.appProperties.idempotency === legacyIdempotencyHash);
+      if (existing.length > 1 || legacyExisting.length > 1 || (existing[0] && legacyExisting[0] && existing[0].id !== legacyExisting[0].id)) throw fail('IDEMPOTENCY_CONFLICT');
+      const sameContent = backupFiles.filter(file => file.appProperties.contentSha256 === contentSha256);
       if (sameContent.length > 1) throw fail('IDEMPOTENCY_CONFLICT');
-      const discovered = existing[0] || sameContent[0] || null;
+      const discovered = existing[0] || legacyExisting[0] || sameContent[0] || null;
       if (discovered && discovered.appProperties.contentSha256 !== contentSha256) throw fail('IDEMPOTENCY_CONFLICT');
+      if (!operation && !discovered && legacyOperation) {
+        try {
+          const recovered = await download(legacyOperation.fileId, { backupKey });
+          if (recovered.contentSha256 !== contentSha256) throw fail('IDEMPOTENCY_CONFLICT');
+          operation = { fileId: recovered.fileId, contentSha256 };
+        } catch (error) { if (error.code !== 'NOT_FOUND') throw error; }
+      }
       if (operationCoordinator) {
         let proposedFileId = operation?.fileId || discovered?.id;
         if (!proposedFileId) {
@@ -448,7 +465,7 @@
         if (!shared || typeof shared.fileId !== 'string' || !/^[\w-]+$/.test(shared.fileId) || shared.contentSha256 !== contentSha256 ||
             (operation && operation.fileId !== shared.fileId) || (discovered && discovered.id !== shared.fileId)) throw fail('IDEMPOTENCY_CONFLICT');
         operation = { fileId: shared.fileId, contentSha256 };
-        journalSet(journalKey, operation);
+        try { journalSet(journalKey, operation); } catch { /* The shared coordinator is the durable authority. */ }
       }
       if (discovered) {
         await verifyUploadedFile(discovered, { backupKey, contentSha256, expectedSize: new TextEncoder().encode(content).byteLength });

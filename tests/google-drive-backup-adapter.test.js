@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const { createHash } = require('node:crypto');
 const { webcrypto } = require('node:crypto');
 const test = require('node:test');
 const Backup = require('../backup-portability.js');
@@ -257,6 +258,128 @@ test('Drive adapter shares operation identity across independent local journals 
   assert.equal(results[0].fileId, results[1].fileId);
   assert.equal(drive.files.size, 1);
   assert.equal(rows.size, 1);
+});
+
+test('Drive adapter keeps distinct backup and idempotency tuples distinct when fields contain separators', async () => {
+  const drive = driveHarness();
+  const rows = new Map();
+  const coordinator = {
+    async reserve(args) {
+      const current = rows.get(args.idempotencyHash);
+      if (current && current.contentSha256 !== args.contentSha256) throw Object.assign(new Error('IDEMPOTENCY_CONFLICT'), { code: 'IDEMPOTENCY_CONFLICT' });
+      const operation = current || { fileId: args.proposedFileId, contentSha256: args.contentSha256 };
+      rows.set(args.idempotencyHash, operation);
+      return operation;
+    }
+  };
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope,
+    appId: 'carteira-investimentos-v1', operationCoordinator: coordinator
+  });
+  const first = await adapter.upload({ backupKey: 'a:b', idempotencyKey: 'c', envelope });
+  const second = await adapter.upload({ backupKey: 'a', idempotencyKey: 'b:c', envelope });
+  assert.notEqual(first.fileId, second.fileId);
+  assert.equal(drive.files.size, 2);
+  assert.equal(rows.size, 2);
+});
+
+test('Drive adapter detects a changed retry for a legacy idempotency identity after upgrade', async () => {
+  const drive = driveHarness();
+  const backupKey = 'synthetic-wallet';
+  const idempotencyKey = 'legacy-operation';
+  const legacyHash = createHash('sha256').update(`${ownerScope}:${backupKey}:${idempotencyKey}`).digest('hex');
+  const backupKeyHash = createHash('sha256').update(backupKey).digest('hex');
+  const oldEnvelope = JSON.stringify(envelope);
+  drive.files.set('legacy-drive-file', {
+    metadata: {
+      id: 'legacy-drive-file', createdTime: new Date(1000).toISOString(), size: String(oldEnvelope.length),
+      appProperties: {
+        appId: 'carteira-investimentos-v1', ownerScope, backupKey: backupKeyHash, idempotency: legacyHash,
+        contentSha256: createHash('sha256').update(oldEnvelope).digest('hex'), formatVersion: '1'
+      }
+    },
+    content: oldEnvelope
+  });
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope,
+    appId: 'carteira-investimentos-v1', operationStore: operationStore()
+  });
+  const changedEnvelope = { ...envelope, ciphertext: 'AQEBAQEBAQEBAQEBAQEBAQ==' };
+  await assert.rejects(() => adapter.upload({ backupKey, idempotencyKey, envelope: changedEnvelope }), { code: 'IDEMPOTENCY_CONFLICT' });
+  assert.equal(drive.files.size, 1);
+});
+
+test('Drive adapter does not trust an ambiguous legacy journal entry for another backup key', async () => {
+  const drive = driveHarness();
+  const journal = operationStore();
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope,
+    appId: 'carteira-investimentos-v1', operationStore: journal
+  });
+  const first = await adapter.upload({ backupKey: 'a:b', idempotencyKey: 'c', envelope });
+  const legacyHash = createHash('sha256').update(`${ownerScope}:a:b:c`).digest('hex');
+  journal.setItem(`drive-backup-operation:${legacyHash}`, JSON.stringify({ fileId: first.fileId, contentSha256: first.contentSha256 }));
+  const secondEnvelope = { ...envelope, ciphertext: 'AQEBAQEBAQEBAQEBAQEBAQ==' };
+  const second = await adapter.upload({ backupKey: 'a', idempotencyKey: 'b:c', envelope: secondEnvelope });
+  assert.notEqual(second.fileId, first.fileId);
+  assert.equal(drive.files.size, 2);
+});
+
+test('Drive adapter can use shared coordinator when its local journal cannot be written', async () => {
+  const drive = driveHarness();
+  const rows = new Map();
+  const coordinator = {
+    async reserve(args) {
+      const current = rows.get(args.idempotencyHash);
+      const operation = current || { fileId: args.proposedFileId, contentSha256: args.contentSha256 };
+      if (current && current.contentSha256 !== args.contentSha256) throw Object.assign(new Error('IDEMPOTENCY_CONFLICT'), { code: 'IDEMPOTENCY_CONFLICT' });
+      rows.set(args.idempotencyHash, operation);
+      return operation;
+    }
+  };
+  const operationStore = {
+    getItem() { throw new Error('synthetic journal unavailable'); },
+    setItem() { throw new Error('synthetic journal unavailable'); }
+  };
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope,
+    appId: 'carteira-investimentos-v1', operationStore, operationCoordinator: coordinator
+  });
+  const first = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'shared-authority', envelope });
+  const replay = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'shared-authority', envelope });
+  assert.equal(replay.fileId, first.fileId);
+  assert.equal(replay.replayed, true);
+  assert.equal(rows.size, 1);
+  assert.equal(drive.files.size, 1);
+});
+
+test('Drive adapter falls back to memory when browser storage access is blocked but shared coordination exists', async () => {
+  const drive = driveHarness();
+  const rows = new Map();
+  const coordinator = {
+    async reserve(args) {
+      const current = rows.get(args.idempotencyHash);
+      const operation = current || { fileId: args.proposedFileId, contentSha256: args.contentSha256 };
+      rows.set(args.idempotencyHash, operation);
+      return operation;
+    }
+  };
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  globalThis.window = Object.defineProperty({}, 'localStorage', { get() { throw new DOMException('blocked', 'SecurityError'); } });
+  try {
+    const adapter = createGoogleDriveBackupAdapter({
+      getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope,
+      appId: 'carteira-investimentos-v1', operationCoordinator: coordinator
+    });
+    const first = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'blocked-storage', envelope });
+    const replay = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'blocked-storage', envelope });
+    assert.equal(replay.fileId, first.fileId);
+    assert.equal(replay.replayed, true);
+    assert.equal(drive.files.size, 1);
+  } finally {
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow);
+    else delete globalThis.window;
+  }
 });
 
 test('Drive adapter reuses a journaled Drive ID after restart when search is temporarily stale', async () => {
@@ -577,7 +700,7 @@ test('Drive adapter rejects an untrusted resumable session URL without sending c
     }
   });
   await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'unsafe-session', envelope }), { code: 'UPLOAD_SESSION_INVALID' });
-  assert.equal(calls.length, 4);
+  assert.equal(calls.length, 3);
   assert.ok(calls.every(call => call.parsed.hostname === 'www.googleapis.com'));
 });
 
