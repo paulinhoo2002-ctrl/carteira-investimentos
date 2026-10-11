@@ -5,6 +5,7 @@
 - Worktree: `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`
 - Branch: `codex/v831-v850-backup-automation`
 - Base: `efc9778e57f17e3778a69f4214301cacef670153`
+- PR: [#485](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/485), OPEN/DRAFT/MERGEABLE; código certificado no SHA `ca7e148eb1460e7e8676aac698d0c09d68e662e2` (a sincronização documental abaixo gera novo SHA).
 
 ## Escopo executado
 
@@ -19,6 +20,8 @@
 - Suíte focal V249/V267/V324/V831/V592/restore: 54/54 PASS.
 - `npm run test:ui`: 303/303 PASS; `npm run test:local-synthetic`: 44/44 PASS; `npm run test:qa-harness`: 5/5 PASS; `npm run test:backup-restore`: 9/9 PASS; `npm run build`: PASS; sintaxe e `git diff --check`: PASS.
 - `npm run test:modern`: 719 PASS, 9 arquivos não carregaram por `Cannot find module 'react'`; classificados como bloqueio de dependência. `qa:all` e `verify:release` pararam em `build:modern` porque `vite` não está instalado.
+- GitHub CI run `38099988910` passou em todos os três jobs no SHA `ca7e148eb1460e7e8676aac698d0c09d68e662e2` (Build/test, Auth/Firestore Emulator QA e V289 visual). O check `Vercel Preview Comments` também passou, sem feedback pendente.
+- O status de deployment Vercel para esse SHA é `FAILURE`, código `git_info_fail`, antes de disponibilizar uma URL Preview verificável; isso é distinto do check de comentários. Nenhuma alteração manual de deployment foi feita.
 - Fixtures cobrem duas contas sintéticas no mesmo período, retenção de 12 pontos, rejeição de proprietário diferente/ausente, duplicata exata, sidecar ausente/divergente, JSON arbitrário, corrupção e backup válido.
 - Nenhum diretório real de backups foi listado ou lido; nenhuma exportação/restauração foi realizada.
 - Dependências npm ausentes nesta worktree. `npm ci` não foi executado; `AGENTS.md` exige autorização humana específica para instalação. Builds/testes dependentes de React/Vite/Playwright seguem pendentes até essa autorização ou CI equivalente.
@@ -33,5 +36,6 @@
 
 ## Próxima ação
 
-1. Observar CI e Preview do SHA publicado e repetir os gates locais bloqueados quando as dependências estiverem disponíveis/autorizadas.
-2. Manter gates humanos para primeiro export real, OAuth/Drive, acesso a arquivos financeiros, escrita Firebase, restore/migração real e merge.
+1. Após a sincronização documental, confirmar CI e deployment Vercel no novo SHA exato; o último deployment observado falhou com `git_info_fail`, sem URL Preview verificável.
+2. Solicitar autorização para `npm ci` somente nesta worktree se a matriz local precisar ser completada; até lá, Modern, `qa:all` e `verify:release` locais permanecem incompletos, apesar do CI GitHub verde no SHA de código anterior.
+3. Manter gates humanos para primeiro export real, OAuth/Drive, acesso a arquivos financeiros, escrita Firebase, restore/migração real e merge.

@@ -1433,3 +1433,10 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
 - V394: Mantida como BLOCKED_ENVIRONMENT devido a conflitos recorrentes de portas do Firebase Emulator (8080/9099/4400/4500) causados por processos órfãos. Não retomada nesta sessão, exceto para consulta de evidências existentes.
 - Gates verificados: CI VERDE, Vercel PRONTO, git diff --check (apenas aviso de LF/CRLF, não bloqueante).
 - Nenhuma escrita financeira real, importação ou restauração realizada (REAL_WRITES=0, REAL_IMPORT=false, REAL_RESTORE=false). Nenhum merge realizado.
+
+## V831–V850 — isolamento de snapshots e verificação de backup (2026-10-10)
+
+- PR #485 (`codex/v831-v850-backup-automation`) permanece OPEN/DRAFT; implementação no SHA `ca7e148eb1460e7e8676aac698d0c09d68e662e2`. GitHub Actions run `38099988910` passou Build and test, Auth/Firestore Emulator QA e V289 visual no SHA exato; não há review threads não resolvidas.
+- O status de deployment Vercel desse SHA falhou com `git_info_fail` antes de produzir Preview verificável. O check Vercel Preview Comments passou e não equivale a deployment bem-sucedido.
+- Testes sintéticos focados, UI, QA harness, backup/restore, financeiro e build legado passaram conforme checkpoint V831. A matriz local Modern/qa:all/verify:release permanece parcial por React/Vite ausentes; `npm ci` não foi executado sem autorização específica para esta worktree.
+- Sem acesso a diretórios/arquivos de backup financeiro real, exportação ou restauração real, escrita Firebase, produção ou merge. Backups IndexedDB antigos sem owner scope foram preservados e não são atribuídos automaticamente.

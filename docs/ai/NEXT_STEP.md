@@ -1,10 +1,11 @@
 # Next Step
-## V831–V850 — concluir validação e preparar Draft PR
+## V831–V850 — sincronização documental e gates remotos
 
-- Continuar na worktree `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`, branch `codex/v831-v850-backup-automation`; não editar checkout canônico sujo.
-- Reexecutar testes focados, `git diff --check` e a matriz possível. Dependências ausentes; solicitar autorização para `npm ci` apenas se a matriz local não puder ser coberta pelo CI.
-- Revisar e publicar commits explícitos em Draft PR se a governança autorizar; sem merge/deploy. Registrar CI/Vercel no SHA exato.
-- Gates humanos: primeiro export real, OAuth/Drive, leitura de arquivo financeiro pessoal, Firebase write, restore/migração real e merge.
+- PR #485 permanece OPEN/DRAFT/MERGEABLE na branch `codex/v831-v850-backup-automation`; worktree dedicada em `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`. O último SHA de código certificado é `ca7e148eb1460e7e8676aac698d0c09d68e662e2`.
+- GitHub Actions run `38099988910` passou os três jobs no SHA acima. O deployment Vercel desse SHA falhou com `git_info_fail` antes de gerar Preview utilizável; não confundir com o check Vercel Preview Comments, que passou.
+- Após o commit documental, verificar os checks e o deployment no SHA novo exato. Não fazer deploy manual.
+- Localmente, `test:modern` teve 719 testes aprovados, mas 9 arquivos não carregaram por React ausente; `qa:all` e `verify:release` pararam no Vite ausente. `npm ci` não foi autorizado nesta worktree; solicitar autorização específica apenas se necessário para completar esses gates locais.
+- Próximos gates humanos: primeiro export real, OAuth/Drive, leitura de arquivo financeiro pessoal, Firebase write, restore/migração real e merge. Nenhum deles foi executado.
 
 ## V561 — hardening da comparação mensal (2026-10-10)
 
