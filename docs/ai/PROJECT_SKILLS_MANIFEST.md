@@ -391,6 +391,17 @@ routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
 
 ---
 
+## RUNTIME-PROVIDED CONDITIONAL SKILLS (NOT VENDORED)
+
+These Skills are conditional capabilities, not bundled project packages.
+Use only when the active runtime exposes the exact Skill; availability is
+per-session and this manifest does not install or guarantee it.
+
+| Skill | Conditional use |
+|-------|-----------------|
+| **find-skills** | Inventory or routing audit; use only when runtime-provided. |
+| **firebase-security-rules-auditor** | Firebase/Auth/Firestore security review; use only when runtime-provided. |
+
 ## NOT VENDORED / EXCLUDED
 
 | Skill | Reason |
@@ -403,8 +414,6 @@ routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
 | **deep-research** | Academic research — not project-relevant |
 | **deploy-to-vercel** | Deployment — prohibited (NO_DEPLOY) |
 | **fact-checker** | General fact-checking — use doubt-driven-development |
-| **find-skills** | Skill discovery — meta, not project-relevant |
-| **firebase-security-rules-auditor** | Specific to Firebase — not current stack |
 | **mantis-*** (6 skills) | Threat modeling/architecture critique — not project-relevant |
 | **planning-with-files** | Superseded by writing-plans |
 | **source-tracker** | Source tracking — not project-relevant |
@@ -443,7 +452,7 @@ routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
 - impeccable.bak (backup)
 - archiv-main (no SKILL.md)
 - design (meta-skill)
-- clone-website, deep-research, deploy-to-vercel, fact-checker, find-skills, firebase-security-rules-auditor, mantis-*, planning-with-files, source-tracker, ui-styling, ui-ux-pro-max, web-quality-audit
+- clone-website, deep-research, deploy-to-vercel, fact-checker, mantis-*, planning-with-files, source-tracker, ui-styling, ui-ux-pro-max, web-quality-audit
 
 ---
 

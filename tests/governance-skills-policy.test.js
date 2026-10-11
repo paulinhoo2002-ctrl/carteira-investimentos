@@ -33,3 +33,11 @@ test('permanent contract does not grant Git publication authority by mode label'
   assert.doesNotMatch(contract, /FULL SAFE.*autoriza.*commits/i);
   assert.match(continuity, /PERMANENT_OPERATING_CONTRACT/);
 });
+
+test('runtime-provided Firebase and discovery skills are conditional, not excluded', () => {
+  const manifest = read('docs/ai/PROJECT_SKILLS_MANIFEST.md');
+  const excludedSection = manifest.split('### EXCLUDED')[1].split('\n---')[0];
+  assert.doesNotMatch(excludedSection, /find-skills|firebase-security-rules-auditor/);
+  assert.match(manifest, /find-skills[^\n]*(?:conditional|runtime)/i);
+  assert.match(manifest, /firebase-security-rules-auditor[^\n]*(?:conditional|runtime)/i);
+});
