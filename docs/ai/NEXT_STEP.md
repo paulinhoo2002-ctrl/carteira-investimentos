@@ -1,9 +1,10 @@
 ## Próxima ação — V1651–V2000
 
-1. Resolver autorização específica para `npm ci` somente na worktree `C:\Projetos\carteira-investimentos.worktrees\v1651-drive-idempotency`; então rodar suites Modern/QA/release e Playwright relevantes.
-2. Corrigir/reproduzir o bloqueio local do Firestore Emulator sem alterar regras para facilitar testes; executar `tests/v311-security-emulator.test.js`, incluindo dois usuários sintéticos e operações de reserva imutável.
-3. Revalidar diff, `git diff --check`, atualizar PR #493 normalmente se permitido, e observar CI/Preview no SHA exato. Não fazer merge.
-4. Manter `MAJOR_IDEMPOTENCY=MITIGATED` até Emulator provar rules/transaction e um Drive QA sintético autorizado provar concorrência/conflict recovery. O adaptador não está ligado ao produto. Não declarar exactly-once nem readiness produtiva.
+1. O `npm ci` e os gates locais já foram executados na worktree autorizada. Não repetir instalação nem matriz verde sem mudança de código.
+2. Certificar `tests/v311-auth-emulator.test.js` e `tests/v311-security-emulator.test.js` em runtime compatível com o Firestore Emulator. Bloqueio local comprovado: Netty WEPoll não cria pipe loopback (`Invalid argument: connect`). Não relaxar rules nem usar Firebase hospedado.
+3. O workflow CI não atende branches empilhadas: `push` filtra `main` e `pull_request` exige base `main`; #493 tem base #492 (`codex/v1051-drive-backup-simulator`). Actions não retornou runs para o SHA verificado; apenas Vercel status foi observado. Manter isso explícito, sem declarar CI PASS.
+4. Manter `MAJOR_CROSS_DEVICE=MITIGATED_NOT_CERTIFIED` até Emulator provar rules/transaction e um Drive QA sintético autorizado provar corrida/reconciliação. Adaptador segue fora do produto; sem exactly-once.
+5. PR #493 permanece OPEN/DRAFT/MERGEABLE; sem merge, deploy manual, OAuth/Drive real, Firebase hospedado ou operação financeira real.
 
 ## V1351 — continuação segura da PR #492 (2026-10-11)
 
