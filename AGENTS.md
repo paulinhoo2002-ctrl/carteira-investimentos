@@ -499,3 +499,7 @@ Superpowers first, select the smallest useful set, and report
 `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
 `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED` and `SKILL_GAPS_FOUND`.
 Repository state and tracked rules outrank chat memory or runtime defaults.
+
+## Contrato permanente independente de chat
+
+**Leitura obrigatória em cada missão:** [`docs/ai/PERMANENT_OPERATING_CONTRACT.md`](docs/ai/PERMANENT_OPERATING_CONTRACT.md). Esse contrato versionado consolida decisões de escopo da carteira, invariantes financeiros, autonomia/gates, segurança Firebase, backup e recuperação, seleção real de modelos/Skills, critérios de certificação e checkpoints. O histórico de chat não substitui essas regras; divergências com contratos técnicos específicos devem ser verificadas e resolvidas explicitamente, nunca presumidas.
