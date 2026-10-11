@@ -1,9 +1,8 @@
 ## Próxima ação — V1651
 
-1. Executar `git diff --check` e revisar o diff completo, incluindo este estado documental.
-2. Reexecutar os gates focados afetados e o build estático; manter os gates React/Vite/Playwright como bloqueados se as dependências continuarem ausentes (não executar `npm ci` sem autorização desta worktree).
-3. Confirmar base/PR #492 e publicar commit/push normal da branch `codex/v1651-drive-idempotency`; abrir Draft PR empilhada em `codex/v1051-drive-backup-simulator` se a cadeia remota permanecer válida.
-4. Conferir SHA, CI e Vercel exatos. A PR pode documentar a mitigação local, mas `MAJOR=1` para corridas entre dispositivos impede certificação exactly-once e integração ao produto.
+1. Revalidar o HEAD atualizado após sincronização documental, o estado Draft da PR #493 e o status do Preview para esse SHA.
+2. Manter `MAJOR=1` para corridas entre dispositivos; não certificar exactly-once, backup externo produtivo nem integrar o adaptador ao fluxo financeiro.
+3. Gate futuro: projetar coordenador autoritativo compartilhado entre dispositivos ou uma política segura e testada de reconciliação de duplicatas; requer evidência real de execução concorrente antes da certificação final.
 
 ## V1351 — continuação segura da PR #492 (2026-10-11)
 
