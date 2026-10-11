@@ -1,7 +1,7 @@
 ## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
 
 - PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
-- Integração normal de origin/main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluída na árvore preparada para commit; conflitos somente nos três documentos de continuidade, ambos os históricos preservados integralmente.
+- Merge normal da main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluído no commit 5b937289c95e24c7b7a8ff8f4ebd9b58867aaaf0, com pais d516ec9a7907aef1d750898a1ec78f69f802377a 78549c05c0a9baf8cabf7c57513bf6946f399908. Conflitos apenas nos três documentos de continuidade; históricos dos dois lados preservados integralmente.
 - Regressões focadas no estado integrado: V324 backup 17/17; restore/segurança 11/11; recovery 9/9; finanças 96/96; persistência 32/32; Skills routing 12/12; backup verifier 7/7; QA harness 17/17 (inclui Skills routing). CI e Vercel do SHA final aguardam push.
 - NPM_CI=NOT_RUN (node_modules ausente; autorização não se estende a esta worktree); MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; sem dado financeiro real ou deploy manual.
 
