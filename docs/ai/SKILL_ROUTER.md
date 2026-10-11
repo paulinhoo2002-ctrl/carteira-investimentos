@@ -1,8 +1,9 @@
 # Carteira Investimentos — Skill Router
 
-O catálogo operacional detalhado por momento está em
-`docs/ai/SKILL_OPERATIONAL_CATALOG.md`; este arquivo mantém as regras compactas
-de roteamento e limites.
+O catálogo físico versionado está em `docs/ai/SKILLS.md`; as rotas mínimas
+executáveis ficam em `docs/ai/skills-routing.json`. Este arquivo mantém as
+regras compactas, limites e gatilhos. Não há `SKILL_OPERATIONAL_CATALOG.md`
+nesta base.
 
 ## PRÉ-REQUISITO DE IDENTIDADE E BOOT
 
@@ -31,7 +32,7 @@ por categoria; `.agents/SKILL_ROUTER.md` pode existir apenas como bridge local.
 `PROJECT_IDENTITY_GATE_REQUIRED=true`
 `AGENT_CAN_ROUTE_SKILLS_WITHOUT_LOCAL_BRIDGE=true`
 `MANDATORY_AGENT_BOOTSTRAP=true`
-`BOOTSTRAP_ORDER=Caveman>Superpowers using-superpowers>mission-specific-skills`
+`BOOTSTRAP_ORDER=Superpowers using-superpowers>Ponytail full>Caveman>mission-specific-skills`
 
 OFFICIAL_WORKSPACE:
 C:\Projetos\carteira-investimentos
@@ -63,7 +64,7 @@ Princípio:
 
 | Categoria | Skills primárias | Esforço | Escalar quando |
 |---|---|---|---|
-| FINANCIAL_LOGIC | `doubt-driven-development`, `source-driven-development` | High | invariantes, arredondamento ou identidade divergirem |
+| FINANCIAL_LOGIC | `doubt-driven-development` | High | invariantes, arredondamento ou identidade divergirem |
 | PERSISTENCE / RECOVERY / DATA_MIGRATION | `doubt-driven-development`, `caveman-review` | High | houver escrita, rollback ou mudança de schema |
 | FIREBASE / AUTH / LOCAL_CLOUD_SYNC | `firebase-security-rules-auditor`, `doubt-driven-development` | High | permissões, divergência ou sincronização mudarem |
 | SECURITY | `firebase-security-rules-auditor`, `source-driven-development` | High | risco de acesso, privilégio ou dado sensível |
@@ -97,6 +98,21 @@ SCOPE_GUARD=
 ou Skill ausente. Para auditar a biblioteca instalada, a descoberta obrigatória
 é física em `.agents/skills`; não faça busca externa nem instalação só por ser
 uma missão grande. Skills não concedem autorização sobre áreas protegidas.
+
+## SELETOR LOCAL (RECOMENDAÇÃO, NÃO EXECUÇÃO)
+
+`docs/ai/skills-routing.json` define categorias e gatilhos; o seletor puro em
+`scripts/qa/select-skills.js` recebe a lista de Skills já disponíveis no runtime:
+
+```text
+node scripts/qa/select-skills.js financial --available=doubt-driven-development,source-driven-development
+```
+
+O inventário pode conter IDs de plugin namespaced. Aliases explícitos em `skills-routing.json` preservam o nome retornado pelo runtime. O resultado limita a seleção a duas Skills especializadas, lista ausências e
+deixa explícito `authorization=NEVER_GRANTED_BY_SELECTION`. O seletor não
+instala, carrega nem executa Skills; o executor confirma presença real, lê cada
+`SKILL.md`, aplica precedência de `AGENTS.md` e relata lacunas. Modelo é
+recomendação; catálogo NVIDIA não comprova acesso a endpoint.
 
 ## ELEGIBILIDADE DE SKILLS
 

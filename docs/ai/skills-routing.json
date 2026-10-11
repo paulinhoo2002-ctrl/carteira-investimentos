@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "processContract": ["Superpowers-first", "Ponytail-full", "Caveman"],
+  "modelRouting": {
+    "defaultCodex": "GPT-6 Luna Medium",
+    "codexEscalation": "GPT-6 Sol Medium",
+    "hermesCodingCandidates": ["Poolside Laguna XS 2.1", "GLM-5.3"],
+    "effortByTask": {
+      "financial": "HIGH",
+      "firebase": "HIGH",
+      "ui": "MEDIUM",
+      "browser": "MEDIUM",
+      "backup": "HIGH",
+      "security": "HIGH",
+      "documentation": "LOW",
+      "release": "MEDIUM",
+      "skillDiscovery": "LOW"
+    },
+    "escalationTriggers": ["protected semantics", "security architecture", "uncertain root cause after three reasoned attempts"],
+    "availabilityRule": "Verify in the active runtime; catalog presence is not endpoint availability"
+  },
+  "runtimeAliases": {
+    "firebase-security-rules-auditor": ["firebase:firebase-security-rules-auditor"],
+    "browser-harness": ["browser-harness:browser-harness"]
+  },
+  "routes": {
+    "financial": { "required": ["doubt-driven-development"], "optional": { "officialSource": "source-driven-development" } },
+    "firebase": { "required": ["firebase-security-rules-auditor"], "optional": { "financialBoundary": "doubt-driven-development" } },
+    "ui": { "required": ["interface-design"], "optional": { "accessibility": "web-quality-audit" } },
+    "browser": { "alternatives": [["browser-harness", "playwright"]], "optional": { "domDiagnostics": "browser-testing-with-devtools" } },
+    "backup": { "required": ["doubt-driven-development"], "optional": { "independentDiffReview": "caveman-review" } },
+    "security": { "required": ["firebase-security-rules-auditor"], "optional": { "officialSource": "source-driven-development" } },
+    "documentation": { "required": ["caveman-review"], "optional": { "architectureDiagram": "archify" } },
+    "release": { "required": ["verification-before-completion"], "optional": { "gitCloseout": "caveman-commit" } },
+    "skillDiscovery": { "required": ["find-skills"], "optional": {} }
+  },
+  "maxSpecialistSkills": 2,
+  "authorization": "NEVER_GRANTED_BY_SELECTION"
+}

@@ -1,4 +1,21 @@
-# Next Step
+## V1001 — reconciliação das PRs #485/#486 (2026-10-11)
+
+- Reconciliar cada branch separadamente com origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d; sem rebase, force-push ou merge de PR.
+- #485 foi atualizada separadamente para f23d1c99bfba1f328ea9d16cde24488b81245509; CI/Preview desse SHA aguardam conclusão.
+- #486 é esta branch; validar o roteador de Skills e os checks do SHA publicado.
+- As PRs permanecem OPEN/DRAFT; sem dados reais, escrita, restauração, produção ou merge.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+Os blocos V851–V860 e V861–V920 abaixo descrevem estados daquele checkpoint e não substituem os gates V1001 acima.
+
+## V851–V860 — auditoria de Skills
+
+- PR #486 OPEN/DRAFT, base `efc9778e57f17e3778a69f4214301cacef670153`; HEAD remoto de referência antes do follow-up `f899af9a11621096130efdffddf24ec62e6d4015`.
+- Nesse HEAD: GitHub Actions run `38101636849` SUCCESS; Vercel Preview falhou antes do build (`git_info_fail`). Não declarar Preview READY.
+- Follow-up local corrige seleção de IDs namespaced com aliases explícitos; testes focados 11/11, QA harness 16/16 e diff-check limpo. Alterações ainda locais neste checkpoint.
+- Próximo passo autorizado: commit/push normal, monitorar CI e Preview do SHA exato; manter Draft, sem merge.
+
 
 ## V861–V920 — gate de retomada (2026-10-10)
 
@@ -6,6 +23,7 @@
 - Human gate obrigatório: autorização para npm ci somente na worktree V861. Depois, rerun Modern, V84/Playwright, suites legacy, builds, qa:all, verify:release e Firebase Emulator.
 - Reavaliar o bloqueio fail-closed do source archive sem expor caminhos; atualizar estado das automações por visualização suportada. A evidência #484 recente registra três jobs habilitados e duas execuções OK.
 - PR #485/#486/#487 seguem OPEN/DRAFT; #487 CI #905 e Preview READY no SHA c205fa2. Sem merge, dados reais, export/restore reais ou deploy manual.
+
 ## V561 — hardening da comparação mensal (2026-10-10)
 
 - PR #481 segue OPEN/DRAFT no SHA `871a5de5cc7300b0a1c72497621b1b98cb441f0a`; testes sintéticos cobrem filtro exclusivo PAID, meses calendário consecutivos e UNKNOWN versus zero com cobertura completa.

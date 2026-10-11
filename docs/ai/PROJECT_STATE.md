@@ -1,4 +1,23 @@
-# Project State
+## V1001 — certificação de integração das PRs #485 e #486 (2026-10-11)
+
+- Base remota validada: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d, que inclui o checkpoint #487. #485 e #486 permanecem OPEN/DRAFT; nenhuma foi mesclada.
+- #485 publicada separadamente em f23d1c99bfba1f328ea9d16cde24488b81245509; CI e Preview do SHA ainda precisam concluir.
+- #486 incorpora somente origin/main sobre sua branch. Os conflitos são documentais; resultados finais aguardam validação do SHA atualizado.
+- MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+Os blocos V851–V860 e V861–V920 abaixo são registros históricos; mantenha os estados e limitações originais como evidência datada.
+
+
+## V851–V860 — Skills routing audit (2026-10-10)
+
+- Base remota da PR #486 antes do follow-up: `f899af9a11621096130efdffddf24ec62e6d4015`; CI run `38101636849` SUCCESS. Vercel Preview para esse SHA falhou antes do build com `git_info_fail`; Preview não certificado.
+- Revisão encontrou IDs de plugin namespaced (`firebase:...`, `browser-harness:...`) não reconhecidos pelas rotas canônicas. Regressão RED 2/2; aliases explícitos preservam o identificador real selecionado. Depois da correção: `test:skills-routing` 11/11, `test:qa-harness` 16/16, `git diff --check` limpo.
+- Follow-up local ainda não publicado neste checkpoint. Hermes não disponível; compatibilidade Hermes `NOT_TESTED`. Seletor não instala, carrega ou executa Skills e não concede autorização.
+- `BLOCKER=0`; `MAJOR=0`; `MINOR=2` (Hermes não testado; Vercel `git_info_fail` no SHA-base).
+- `NEXT_ACTION=publicar follow-up autorizado, verificar CI/Preview no SHA exato e manter PR #486 OPEN/DRAFT; sem merge`.
+
 
 ## V861–V920 — confiabilidade de longo prazo (2026-10-10)
 
@@ -374,8 +393,9 @@ Este bloco prevalece sobre os registros históricos abaixo. Relatórios de ondas
   Markdown links are missing in web-quality-audit/Mantis; banner-design also
   lacks cited auxiliary references, and caveman-stats lacks its required hooks.
   No package was deleted.
-- docs/ai/SKILL_OPERATIONAL_CATALOG.md now records classification and routing.
-  Changes are included in PR #417; merge remains unauthorized.
+- A 2026-09-25 record expected a separate operational catalog and referenced
+  PR #417. In the V851 base that catalog path is absent; current inventory is
+  in `docs/ai/SKILLS.md`. The PR reference is historical, not current status.
 
 ## V265 — QA harness resilience — 2026-09-25
 

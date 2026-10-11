@@ -15,11 +15,12 @@
 
 ## INVENTÁRIO FÍSICO REAL — RECONCILIADO
 
-**Inventário local reconciliado em 2026-09-25:** 42 pastas de primeiro nível,
-43 arquivos `SKILL.md` recursivos; três arquivos adicionais estão em cópias
-upstream. São 38 pacotes operacionais, além de duas cópias upstream, um backup
-e uma pasta auxiliar sem `SKILL.md`. Este snapshot não garante instalação em
-outros clones.
+**Inventário observado em 2026-10-10:** nesta máquina, o diretório local tinha
+43 pastas de primeiro nível, 41 `SKILL.md` diretos e 44 recursivos. O clone
+limpo baseado em `origin/main` contém 17 Skills versionadas; as demais
+instalações/cópias locais não são portáveis nem presumidas em outras worktrees.
+O catálogo físico abaixo lista as pastas vistas neste host, não garante
+disponibilidade no runtime de uma missão futura.
 
 | # | PASTA | TIPO | STATUS | OBSERVAÇÃO |
 |---|-------|------|--------|------------|
@@ -65,15 +66,59 @@ outros clones.
 | 40 | `mantis-threat-model` | REAL_SKILL | Guardrailed | Modelagem de ameaças |
 | 41 | `planning-with-files` | REAL_SKILL | Condicional | Plano local por missão, sem hooks |
 | 42 | `source-tracker` | REAL_SKILL | Condicional | Citações em banco local manual |
+| 43 | `clone-website` | REAL_SKILL | Sob demanda | Auditoria comparativa; não copiar identidade, código ou layout proprietário |
 
 **OPERATIONAL_SKILL_PACKAGE_COUNT = 38** (excluindo cópias upstream/backup e referências).
 
-`find-skills` existe como pacote local e também pode existir globalmente.
-Superpowers está disponível como plugin global neste ambiente, mas não existe
-.agents/skills/superpowers/SKILL.md; não copie nem fabrique um shim. Somente
-quatro Skills físicas estão rastreadas pelo Git (browser-testing-with-devtools,
-doubt-driven-development, interview-me e source-driven-development); as demais
-dependem da instalação local e devem ser redescobertas em cada ambiente.
+`find-skills` existe no inventário do projeto e também pode existir globalmente.
+Superpowers e Ponytail podem ser fornecidos pelo runtime; não copie nem fabrique
+shims locais. O conjunto rastreado neste HEAD contém 17 arquivos `SKILL.md`;
+conjuntos globais e pacotes locais ignorados devem ser redescobertos em cada
+runtime. Neste host, `browser-harness/SKILL.md` e
+`browser-harness-main/SKILL.md` têm hash idêntico, mas isso não prova que os
+pacotes inteiros sejam duplicados. `archify-main` é cópia upstream, e
+`impeccable.bak` é backup preservado; nenhum foi removido.
+
+### Fontes e classificação de disponibilidade
+
+Snapshot de inventário somente leitura em 2026-10-10 (este host):
+
+| Fonte | Pastas/pacotes | `SKILL.md` direto | `SKILL.md` recursivo | Portável? |
+|---|---:|---:|---:|---|
+| `.agents/skills` do checkout canônico | 43 | 41 | 44 | Não; inclui conteúdo local ignorado |
+| `.agents/skills` versionado em clone limpo | 17 | 17 | 17 | Sim, somente esses arquivos |
+| Skills de usuário Codex | 7 | 6 | 11 | Não |
+| Skills de usuário genéricas | 167 | 167 | 167 | Não |
+| Runtime Codex desta sessão | Inventário fornecido pelo runtime | Dinâmico | Dinâmico | Não |
+
+O runtime Codex desta sessão disponibilizou Superpowers e Ponytail; o
+`caveman` físico existe no inventário do projeto. Hermes/NVIDIA não é um
+runtime conectado nesta sessão. Esses dados são uma fotografia do host, não
+um requisito de instalação nem uma garantia para outra sessão.
+
+Classificação para roteamento:
+
+- **CORE**: contrato de processo obrigatório: Superpowers primeiro, Ponytail
+  full e Caveman; respeitar instalação real de cada runtime.
+- **CONDITIONAL**: selecionar apenas quando a categoria/gatilho pedir e a
+  Skill estiver disponível (ex.: Firebase, interface, browser).
+- **SPECIALIZED**: ferramenta de nicho, ativada por gatilho explícito; nunca
+  carregada por padrão.
+- **UNAVAILABLE**: ausente no runtime ou com dependência essencial faltando;
+  reportar a lacuna e não instalar/substituir automaticamente.
+
+| Classe | Pacotes/capacidades no roteamento | Regra |
+|---|---|---|
+| CORE | Superpowers `using-superpowers`, Ponytail full, Caveman | Contrato de processo; Superpowers primeiro. Ponytail é modo, não pacote de Skill local. |
+| CONDITIONAL | `doubt-driven-development`, `source-driven-development`, `firebase-security-rules-auditor`, `interface-design`, `web-quality-audit`, `browser-harness`, `playwright`, `browser-testing-with-devtools`, `verification-before-completion`, `caveman-review`, `caveman-commit`, `find-skills` | Selecionar somente por categoria/gatilho, se disponíveis. |
+| SPECIALIZED | `archify`, `frontend-design`, `impeccable`, `design-system`, `ui-ux-pro-max`, `ui-styling`, `clone-website`, `brand`, `slides`, `deep-research`, `fact-checker`, Mantis | Uso de nicho; exige motivo específico, nunca carregamento padrão. |
+| UNAVAILABLE / LIMITED | `caveman-stats`; `cavecrew`, `banner-design`, `mantis-structural-index` quando suas dependências documentadas faltarem; qualquer Skill não presente no runtime | Bloquear a rota que depende da capacidade faltante e relatar a lacuna. |
+
+Limitações já observadas: `caveman-stats` não entra no roteamento sem os hooks;
+`cavecrew` depende de perfis/suporte de subagentes; `banner-design` tem
+dependências de geração/exportação ausentes; `mantis-structural-index` aponta
+para blueprint ausente. A disponibilidade de scripts, plugins e permissões
+deve ser revalidada para a tarefa; a auditoria não executou scripts de Skills.
 
 ---
 
@@ -86,9 +131,9 @@ archify-main, browser-harness-main, impeccable.bak, references
 
 ### DUPLICATE/UPSTREAM (cópias preservadas para referência)
 ```
-archify-main → upstream archify
-browser-harness-main → upstream browser-harness
-impeccable.bak → backup antigo de impeccable
+archify-main → upstream de archify
+browser-harness-main → instrução SKILL idêntica à de browser-harness no host auditado
+impeccable.bak → backup preservado de impeccable (não validar como runtime ativo)
 ```
 
 ---
@@ -131,8 +176,8 @@ impeccable.bak → backup antigo de impeccable
 ## EVIDÊNCIA DE USO RECENTE
 
 O mapa detalhado de uso por momento do projeto está em
-`docs/ai/SKILL_OPERATIONAL_CATALOG.md`. Ele é a fonte operacional para decidir
-qual Skill carregar sem duplicar cópias upstream nem usar todas mecanicamente.
+`docs/ai/SKILL_ROUTER.md` e `docs/ai/skills-routing.json`. Use o inventário
+físico do runtime como autoridade para decidir disponibilidade.
 
 Skills efetivamente utilizadas nas iterações do Visual North Star (Fase 12+):
 `frontend-design`, `interface-design`, `impeccable`, `playwright`, `browser-harness`, `caveman-review`, `source-driven-development`, `doubt-driven-development`.
