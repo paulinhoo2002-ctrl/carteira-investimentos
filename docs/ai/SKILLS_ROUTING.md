@@ -7,17 +7,17 @@
 ## GLOBAL BOOTSTRAP (MANDATORY — EVERY MISSION)
 
 ```
-1. using-superpowers          → Establishes the execution workflow
-2. ponytail                   → Minimum correct implementation, full safeguards
-3. caveman                    → Concise communication without losing evidence
+1. Superpowers `using-superpowers` → Process/bootstrap; mandatory first Skill
+2. Ponytail full mode              → Minimum correct implementation, full safeguards
+3. Caveman                         → Concise communication without losing evidence
 ```
 
 **Rule**: For substantial missions, load Superpowers first, then only the
 additional Skills useful to the task. Discover actual runtime availability;
 do not claim use of an unavailable Skill. `AGENTS.md` takes precedence.
 `docs/SKILLS_ROUTING.md` is a legacy bridge to this policy;
-`docs/ai/SKILL_ROUTING.md` is a specialist Skill selection table, not a
-competing model policy.
+`docs/ai/SKILL_ROUTER.md` is the technical category selector. The old
+`.agents/SKILL_ROUTER.md` is not authoritative.
 
 ## MODEL AND REVIEWER ROUTING (ALL RUNTIMES)
 
@@ -44,6 +44,11 @@ escalation. `USER_CHOOSES_RUNTIME=true`.
   as a fallback. Do not introduce API keys for visual review or retry known
   unavailable endpoints indefinitely. If NVIDIA is unavailable, use a fresh
   context Codex GPT-6 Sol Medium for deep review and report the actual model.
+- The NVIDIA catalog checked 2026-10-10 lists Poolside Laguna XS 2.1 for
+  agentic coding/tool use and GLM-5.3 for reasoning/tool calling. These are
+  candidates only; catalog listing does not prove credentials, endpoint access,
+  or runtime availability. Recheck the [NVIDIA model catalog](https://build.nvidia.com/models?filters=nimType%3Anim_type_preview)
+  for a large mission.
 - `PROJECT_MUST_NOT_DEPEND_ON_ONE_MODEL=true`. Any runtime can continue by
   reading `AGENTS.md`, `docs/ai/PROJECT_MEMORY.md`, this file and
   `docs/ai/PROJECT_SKILLS_MANIFEST.md`; repository evidence outranks chat.
@@ -84,7 +89,13 @@ Recommended mission header: `Skill Caveman + Ponytail + Superpowers`, then
 
 ## MISSION-TYPE ROUTING TABLE
 
-| MISSION_PATTERN | REQUIRED_SKILLS | OPTIONAL_SKILLS | FORBIDDEN_SKILLS | STOP_CONDITIONS |
+Entries below are candidates and constraints, not a checklist to load in full.
+After the process contract, load at most two specialist Skills by default; add
+an exceptional third only with a concrete, recorded need. The compact router
+and machine-readable [`skills-routing.json`](skills-routing.json) define the
+minimal routes used by the selector.
+
+| MISSION_PATTERN | CANDIDATE_SKILLS | OPTIONAL_SKILLS | FORBIDDEN_SKILLS | STOP_CONDITIONS |
 |----------------|-----------------|-----------------|------------------|-----------------|
 | **FINANCIAL_TRUTH**<br>historical returns, benchmarks, quotes, proventos, portfolio valuation, financial reports, imports, tax-sensitive logic | caveman<br>using-superpowers<br>doubt-driven-development<br>source-driven-development<br>systematic-debugging<br>test-driven-development<br>verification-before-completion<br>caveman-review<br>caveman-commit | cavecrew (if genuinely independent workstreams) | ui-ux-pro-max<br>frontend-design<br>interface-design<br>design-system<br>ui-styling<br>impeccable<br>banner-design<br>brand<br>slides<br>interview-me | UNKNOWN != ZERO<br>PARTIAL != COMPLETE<br>STALE != FRESH<br>ESTIMATE != RECEIVED<br>CURRENT_PRICE != HISTORICAL_PRICE<br>FINANCIAL_AS_OF != SOURCE_AS_OF |
 | **BUG_FIX**<br>any bug, test failure, unexpected behavior | caveman<br>using-superpowers<br>doubt-driven-development<br>systematic-debugging<br>test-driven-development<br>verification-before-completion | source-driven-development (if external data/API)<br>cavecrew (if independent) | ui-ux-pro-max<br>frontend-design<br>banner-design<br>brand<br>slides | Root cause identified<br>Test RED→GREEN confirmed<br>Verification gates pass |

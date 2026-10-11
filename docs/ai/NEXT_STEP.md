@@ -1,4 +1,14 @@
-## V1001 — reconciliação das PRs #485/#486 (2026-10-11)
+## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+
+- NEXT_ACTION=finalizar merge commit resolvido, push normal e verificar CI/Vercel no SHA exato; manter Draft e sem merge da PR.
+
+
+- PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
+- Integração normal de origin/main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluída na árvore preparada para commit; conflitos somente nos três documentos de continuidade, ambos os históricos preservados integralmente.
+- Regressões focadas no estado integrado: V324 backup 17/17; restore/segurança 11/11; recovery 9/9; finanças 96/96; persistência 32/32; Skills routing 12/12; backup verifier 7/7; QA harness 17/17 (inclui Skills routing). CI e Vercel do SHA final aguardam push.
+- NPM_CI=NOT_RUN (node_modules ausente; autorização não se estende a esta worktree); MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; sem dado financeiro real ou deploy manual.
+
+### Histórico V1001 — branch de backup #485
 
 - Base de integração: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d. A branch #485 recebeu essa base por merge não destrutivo e mantém PR OPEN/DRAFT, sem merge da PR.
 - A certificação final deve usar o SHA publicado após a resolução documental que preserva integralmente os registros históricos dos dois pais do merge.
@@ -16,6 +26,24 @@ Os blocos V831–V850 e V861–V920 abaixo são históricos e não substituem o 
 - Após o commit documental, verificar os checks e o deployment no SHA novo exato. Não fazer deploy manual.
 - Localmente, `test:modern` teve 719 testes aprovados, mas 9 arquivos não carregaram por React ausente; `qa:all` e `verify:release` pararam no Vite ausente. `npm ci` não foi autorizado nesta worktree; solicitar autorização específica apenas se necessário para completar esses gates locais.
 - Próximos gates humanos: primeiro export real, OAuth/Drive, leitura de arquivo financeiro pessoal, Firebase write, restore/migração real e merge. Nenhum deles foi executado.
+
+### Histórico V1001 — main após #486
+
+- Reconciliar cada branch separadamente com origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d; sem rebase, force-push ou merge de PR.
+- #485 foi atualizada separadamente para f23d1c99bfba1f328ea9d16cde24488b81245509; CI/Preview desse SHA aguardam conclusão.
+- #486 é esta branch; validar o roteador de Skills e os checks do SHA publicado.
+- As PRs permanecem OPEN/DRAFT; sem dados reais, escrita, restauração, produção ou merge.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+Os blocos V851–V860 e V861–V920 abaixo descrevem estados daquele checkpoint e não substituem os gates V1001 acima.
+
+## V851–V860 — auditoria de Skills
+
+- PR #486 OPEN/DRAFT, base `efc9778e57f17e3778a69f4214301cacef670153`; HEAD remoto de referência antes do follow-up `f899af9a11621096130efdffddf24ec62e6d4015`.
+- Nesse HEAD: GitHub Actions run `38101636849` SUCCESS; Vercel Preview falhou antes do build (`git_info_fail`). Não declarar Preview READY.
+- Follow-up local corrige seleção de IDs namespaced com aliases explícitos; testes focados 11/11, QA harness 16/16 e diff-check limpo. Alterações ainda locais neste checkpoint.
+- Próximo passo autorizado: commit/push normal, monitorar CI e Preview do SHA exato; manter Draft, sem merge.
 
 
 ## V861–V920 — gate de retomada (2026-10-10)

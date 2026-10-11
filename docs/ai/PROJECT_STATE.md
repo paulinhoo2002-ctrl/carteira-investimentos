@@ -1,3 +1,12 @@
+## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+
+- PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
+- Integração normal de origin/main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluída na árvore preparada para commit; conflitos somente nos três documentos de continuidade, ambos os históricos preservados integralmente.
+- Regressões focadas no estado integrado: V324 backup 17/17; restore/segurança 11/11; recovery 9/9; finanças 96/96; persistência 32/32; Skills routing 12/12; backup verifier 7/7; QA harness 17/17 (inclui Skills routing). CI e Vercel do SHA final aguardam push.
+- NPM_CI=NOT_RUN (node_modules ausente; autorização não se estende a esta worktree); MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; sem dado financeiro real ou deploy manual.
+
+### Histórico V1001 — branch de backup #485
+
 ## V1001 — certificação de integração da PR #485 (2026-10-11)
 
 - Base remota integrada: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d. A resolução V1001 preserva os dois blocos históricos originais e o restante do histórico documental.
@@ -16,6 +25,28 @@ Os registros V831–V850 e V861–V920 abaixo preservam os estados de seus check
 - Dependências npm não instaladas; `npm ci` requer autorização explícita conforme AGENTS.md. Nenhum backup real, diretório pessoal, Firebase ou credencial foi acessado.
 - Automação externa, agenda, OAuth/Drive e recuperação independente permanecem NÃO CONFIGURADOS. Snapshots antigos sem escopo são preservados e não atribuídos automaticamente.
 - Evidência e continuação: [`V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md`](V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md). `MERGE=false`.
+
+### Histórico V1001 — main após #486
+
+## V1001 — certificação de integração das PRs #485 e #486 (2026-10-11)
+
+- Base remota validada: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d, que inclui o checkpoint #487. #485 e #486 permanecem OPEN/DRAFT; nenhuma foi mesclada.
+- #485 publicada separadamente em f23d1c99bfba1f328ea9d16cde24488b81245509; CI e Preview do SHA ainda precisam concluir.
+- #486 incorpora somente origin/main sobre sua branch. Os conflitos são documentais; resultados finais aguardam validação do SHA atualizado.
+- MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+Os blocos V851–V860 e V861–V920 abaixo são registros históricos; mantenha os estados e limitações originais como evidência datada.
+
+
+## V851–V860 — Skills routing audit (2026-10-10)
+
+- Base remota da PR #486 antes do follow-up: `f899af9a11621096130efdffddf24ec62e6d4015`; CI run `38101636849` SUCCESS. Vercel Preview para esse SHA falhou antes do build com `git_info_fail`; Preview não certificado.
+- Revisão encontrou IDs de plugin namespaced (`firebase:...`, `browser-harness:...`) não reconhecidos pelas rotas canônicas. Regressão RED 2/2; aliases explícitos preservam o identificador real selecionado. Depois da correção: `test:skills-routing` 11/11, `test:qa-harness` 16/16, `git diff --check` limpo.
+- Follow-up local ainda não publicado neste checkpoint. Hermes não disponível; compatibilidade Hermes `NOT_TESTED`. Seletor não instala, carrega ou executa Skills e não concede autorização.
+- `BLOCKER=0`; `MAJOR=0`; `MINOR=2` (Hermes não testado; Vercel `git_info_fail` no SHA-base).
+- `NEXT_ACTION=publicar follow-up autorizado, verificar CI/Preview no SHA exato e manter PR #486 OPEN/DRAFT; sem merge`.
 
 
 ## V861–V920 — confiabilidade de longo prazo (2026-10-10)
@@ -392,8 +423,9 @@ Este bloco prevalece sobre os registros históricos abaixo. Relatórios de ondas
   Markdown links are missing in web-quality-audit/Mantis; banner-design also
   lacks cited auxiliary references, and caveman-stats lacks its required hooks.
   No package was deleted.
-- docs/ai/SKILL_OPERATIONAL_CATALOG.md now records classification and routing.
-  Changes are included in PR #417; merge remains unauthorized.
+- A 2026-09-25 record expected a separate operational catalog and referenced
+  PR #417. In the V851 base that catalog path is absent; current inventory is
+  in `docs/ai/SKILLS.md`. The PR reference is historical, not current status.
 
 ## V265 — QA harness resilience — 2026-09-25
 

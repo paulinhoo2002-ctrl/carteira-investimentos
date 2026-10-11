@@ -1,3 +1,12 @@
+## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+
+- PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
+- Integração normal de origin/main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluída na árvore preparada para commit; conflitos somente nos três documentos de continuidade, ambos os históricos preservados integralmente.
+- Regressões focadas no estado integrado: V324 backup 17/17; restore/segurança 11/11; recovery 9/9; finanças 96/96; persistência 32/32; Skills routing 12/12; backup verifier 7/7; QA harness 17/17 (inclui Skills routing). CI e Vercel do SHA final aguardam push.
+- NPM_CI=NOT_RUN (node_modules ausente; autorização não se estende a esta worktree); MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; sem dado financeiro real ou deploy manual.
+
+### Histórico V1001 — branch de backup #485
+
 ## V1001 — reconciliação da PR #485 (2026-10-11)
 
 - origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d foi incorporada à branch da #485 por merge normal, sem rebase ou force-push. Os conflitos eram documentais; a resolução preserva integralmente os blocos de histórico dos dois pais.
@@ -7,7 +16,26 @@
 
 Os blocos V831–V850 e V861–V920 abaixo são evidência histórica daquele momento.
 
+### Histórico V1001 — main após #486
 
+## V1001 — reconciliação das PRs #485/#486 (2026-10-11)
+
+- Base remota a746e0c4cd198baa6d9af00cc4188557dfa5300d foi incorporada sem rebase; conflitos documentais resolvidos preservando os checkpoints originais.
+- #485 recebeu merge normal da main e foi publicada em f23d1c99bfba1f328ea9d16cde24488b81245509. #486 está sendo reconciliada separadamente; nenhum código da #485 foi introduzido nela.
+- Nenhuma PR foi mesclada. Sem escrita, exportação, importação ou restauração financeira real, produção ou credenciais. CI/Preview serão avaliados por SHA após push.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+As entradas V851–V860 e V861–V920 abaixo preservam a evidência daquele momento e não são estado remoto atual.
+
+
+- Auditoria parte da main `efc9778e57f17e3778a69f4214301cacef670153`, em worktree isolada `codex/v851-v860-skills-intelligence`; checkout canônico sujo foi preservado.
+- Roteamento vigente: `AGENTS.md` → Superpowers primeiro → Ponytail full → Caveman → mínimo de Skills específicas. O Codex é runtime disponível; Hermes/NVIDIA não foi executado nem validado por credenciais neste ambiente.
+- Inventário host-local observado: 43 diretórios `.agents/skills` no checkout canônico (41 SKILL.md diretos/44 recursivos), 17 SKILL.md rastreados numa worktree limpa, 7 diretórios no root Codex do usuário (6/11 SKILL.md) e 167 no root genérico de Skills do usuário. Esses overlays não são portáveis.
+- Roteador existente referenciava `docs/ai/SKILL_OPERATIONAL_CATALOG.md`, inexistente. O catálogo real é `docs/ai/SKILLS.md`; categorias/taxonomia e o seletor consultivo vivem em `docs/ai/skills-routing.json`, `docs/ai/SKILL_ROUTER.md` e `scripts/qa/select-skills.js`.
+- Seletor limitado a duas Skills especializadas, exige inventário disponível fornecido pelo executor, não instala/carrega/executa Skills nem concede autorização. Casos financeiros, Firebase, UI, browser, backup, segurança, documentação e release cobertos por testes. IDs de plugin namespaced precisam de aliases explícitos no roteador; a saída preserva o identificador real fornecido pelo runtime. O contrato permanente não pode conceder autoridade Git global; ação e escopo precisam de autorização humana específica.
+- Catálogo NVIDIA foi rechecado em 2026-10-10. Poolside Laguna XS 2.1 e GLM-5.3 são candidatos de catálogo para coding/tool use; presença pública não prova acesso. Modelo Hermes indisponível nesta sessão. Sem mudança financeira, cloud, deploy ou produto.
+- `NEXT_ACTION=reviewar diff V851, validar testes e publicar Draft PR; sem merge`.
 
 
 - Main auditada: `efc9778e57f17e3778a69f4214301cacef670153`; checkout canônica continua com alterações locais preexistentes preservadas.
@@ -176,7 +204,10 @@ Os blocos V831–V850 e V861–V920 abaixo são evidência histórica daquele mo
 
 ## V280A — bootstrap global e prioridade funcional (2026-09-28)
 
-- `MANDATORY_AGENT_BOOTSTRAP=true`. Após PROJECT IDENTITY GATE, anúncio obrigatório `Using Caveman + Superpowers to <purpose>`, depois `caveman`, `using-superpowers` e Skills específicas. Disponibilidade real deve ser verificada; ausência é reportada, nunca simulada. `caveman` local orienta concisão, não segurança ou autorização.
+- Registro histórico de 2026-09-28: naquele snapshot a ordem era
+  `Caveman → Superpowers`. Foi supersedida pelo bootstrap atual
+  `Superpowers-first → Ponytail full → Caveman`, mantido em `AGENTS.md` e
+  `docs/ai/SKILLS_ROUTING.md`. Disponibilidade real continua exigindo confirmação.
 - Rotas, modelos, anúncio, limites e freeze visual: `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`. Visual: `VISUAL_CANON_V2=FROZEN_REFERENCE`, `FUNCTIONAL_COMPLETION_FIRST=true`, `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`.
 - `P0_RENTABILIDADE_HISTORICAL_SERIES=true`; retorno histórico não verificado deve permanecer `UNAVAILABLE`. Proibidos interpolação, retroprojeção de cotação presente e taxa fixa no lugar de benchmark datado.
 - `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recomendação; não iniciada/autorizada).
@@ -286,8 +317,11 @@ Os blocos V831–V850 e V861–V920 abaixo são evidência histórica daquele mo
 - The broad local browser-harness trigger is subordinate to minimum-skill
   routing. Superpowers orchestrates and does not replace specialist Skills.
   Agent/model routing remains separate from Skill routing.
-- Snapshot, taxonomy, triggers, limitations and routing matrix:
-  docs/ai/SKILL_OPERATIONAL_CATALOG.md. The filesystem remains authoritative.
+- Snapshot, taxonomy, triggers, limitations and routing matrix were then
+  documented in the catalog referenced by that historical entry; V851 later
+  found that `docs/ai/SKILL_OPERATIONAL_CATALOG.md` is absent from the current
+  base. Current catalog and routes: `docs/ai/SKILLS.md` and
+  `docs/ai/SKILL_ROUTER.md`.
   Changes are included in governance PR #417; no merge was performed.
 
 ## Workspace/worktree lifecycle audit — 2026-09-25
@@ -524,7 +558,7 @@ Historical facts and permanent decisions from the project's evolution.
   26 Skills operacionais reais; cópias upstream, backup e referências foram
   separadas e não entram no roteamento normal.
 - O catálogo detalhado por momento do projeto está em
-  `docs/ai/SKILL_OPERATIONAL_CATALOG.md`. Regra permanente: escolher o menor
+  `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`. Regra permanente: escolher o menor
   conjunto útil, normalmente no máximo duas Skills e três excepcionalmente.
 - Financeiro/persistência/recovery usa `doubt-driven-development`; Firebase,
   Auth, Firestore, cloud/local e protected writes usa

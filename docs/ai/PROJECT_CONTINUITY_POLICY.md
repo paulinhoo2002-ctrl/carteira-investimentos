@@ -105,6 +105,7 @@ use broad Git or recursive cleanup to erase unknown evidence.
 | Document | Owns | Does NOT Own |
 |----------|------|--------------|
 | `AGENTS.md` | Mandatory cross-agent behavioral/governance rules, identity gate, bootstrap protocol, protected areas, Git governance | Mission-specific state, skill routing details, project memory |
+| `docs/ai/PERMANENT_OPERATING_CONTRACT.md` | Cross-document operating-contract entry point and authorization summary | Current phase, detailed skill routing, detailed financial/auth/backup implementations |
 | `docs/ai/INDEX.md` | Bootstrap map and document entry point | Detailed content |
 | `docs/ai/PROJECT_STATE.md` | Verified current state only (what is true NOW) | Historical state, plans, decisions |
 | `docs/ai/NEXT_STEP.md` | One official next action / current blockers | History, alternatives, rationale |
