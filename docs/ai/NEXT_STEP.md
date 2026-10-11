@@ -1,4 +1,13 @@
-## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+## V1003 — próximo gate (2026-10-11)
+
+- Os registros abaixo são históricos e não descrevem o estado remoto atual; consulte este bloco V1003 e o checkpoint vinculado para status vigente.
+
+- PR #485/#486/#487 já integradas; não reabrir nem repetir certificações dos SHAs de PR. Main observada: `6b559adac12cdedb40d7b8294b14c82469c07446`.
+- Próxima ação: gate de escopo para atualizar dependências de desenvolvimento. `npm audit` atual encontrou 7 advisories (4 high, 3 moderate), todos no conjunto de desenvolvimento; `npm audit --omit=dev` = 0. Sem `npm install`, `npm ci`, atualização de lockfile ou correção automática nesta fase.
+- Em paralelo após esse gate, validar Firebase hospedado com duas identidades sintéticas e planejar backup independente; credenciais/OAuth, storage externo pago e operações reais continuam gated.
+- Não declarar `PRODUCTION_READY`; ver checkpoint V1003 para evidências, CI e limites.
+
+### Histórico V1002 — snapshot superado por V1003
 
 - NEXT_ACTION=HUMAN_GATE_FINAL_REVIEW_AND_MERGE para a PR #485; manter OPEN/DRAFT até autorização específica. Atualização das dependências permanece em escopo separado.
 - MERGE_COMMIT=5b937289c95e24c7b7a8ff8f4ebd9b58867aaaf0; PARENTS=d516ec9a7907aef1d750898a1ec78f69f802377a 78549c05c0a9baf8cabf7c57513bf6946f399908.
