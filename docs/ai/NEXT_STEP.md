@@ -2,7 +2,7 @@
 
 - Base isolada: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; branch `codex/v1006-disaster-recovery`.
 - Suítes sintéticas focadas: backup/restore/segurança 53/53 e finanças 82/82. Fluxo de arquivo cifrado foi aberto em subprocesso limpo sem IndexedDB/localStorage; aplicação persistida não foi restaurada.
-- Próxima ação: concluir build/diff review; commit e push normal desta branch; abrir Draft PR; conferir CI e Vercel no SHA exato. Não declarar backup externo certificado. Gate humano futuro: escolher/autorizar destino externo e, separadamente, autorizar restauração de fixture sintética em QA isolado.
+- PR #491 OPEN/DRAFT/MERGEABLE. Run `38151335729` SUCCESS e Vercel Preview READY no SHA `286f489dcc299c2a8f5aa18c01860f9971fbd4ea`; conferir novamente após esta sincronização documental. Não declarar backup externo certificado. Gate humano futuro: escolher/autorizar destino externo e, separadamente, autorizar restauração de fixture sintética em QA isolado.
 - Evidência: [`V1006_DISASTER_RECOVERY_CERTIFICATION.md`](V1006_DISASTER_RECOVERY_CERTIFICATION.md). `MERGE=false`; `PRODUCTION=false`; nenhuma operação financeira real.
 
 ## V1005 — certificação operacional LEGACY (2026-10-11)

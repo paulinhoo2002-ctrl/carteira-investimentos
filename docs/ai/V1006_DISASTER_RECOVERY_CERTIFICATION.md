@@ -3,6 +3,7 @@
 Data: 2026-10-11
 Base: `origin/main` `53d01ddb177cd6ad2fea48be1caea4366051e1b7`
 Branch: `codex/v1006-disaster-recovery`
+Draft PR: [#491](https://github.com/paulinhoo2002-ctrl/carteira-investimentos/pull/491)
 
 ## Resultado
 
@@ -27,7 +28,8 @@ Validações locais neste branch/base:
 - Suítes de backup, recuperação, segurança, lifecycle e integração: 53/53 PASS.
 - Finanças e cobertura mensal: 82/82 PASS.
 - `npm.cmd run build`: PASS; `git diff --check`: PASS antes do commit.
-- npm ci, matriz completa, Browser/Playwright, Firebase remoto, Vercel e CI: não certificados nesta worktree até que dependências e SHA publicado estejam disponíveis.
+- `npm ci` e matriz completa local: não executados nesta worktree porque dependências não estavam instaladas e a missão não autorizou npm ci nesta worktree. Browser/Playwright e Firebase hospedado também não foram executados.
+- No SHA `286f489dcc299c2a8f5aa18c01860f9971fbd4ea`, GitHub Actions run `38151335729` concluiu SUCCESS nos jobs Build and test, V289 visual regression e Auth and Firestore emulator QA. Vercel Preview `dpl_Hn7jXGpEuMVkwERARMexztmTsxTV` ficou READY no mesmo SHA. PR #491 estava OPEN/DRAFT/MERGEABLE, sem threads.
 
 ## Retenção e riscos
 
