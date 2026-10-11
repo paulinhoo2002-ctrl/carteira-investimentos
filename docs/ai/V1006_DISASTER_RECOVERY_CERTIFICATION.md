@@ -1,7 +1,7 @@
 # V1006 — disaster recovery local com fixture sintética
 
-Data: 2026-10-11  
-Base: `origin/main` `53d01ddb177cd6ad2fea48be1caea4366051e1b7`  
+Data: 2026-10-11
+Base: `origin/main` `53d01ddb177cd6ad2fea48be1caea4366051e1b7`
 Branch: `codex/v1006-disaster-recovery`
 
 ## Resultado
