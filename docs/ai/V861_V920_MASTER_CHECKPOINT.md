@@ -41,6 +41,12 @@ Mission: `V861_V920_LONG_TERM_RELIABILITY`
 - PR #485 proposes owner-scoped backup/archive and verification improvements but is not merged; those changes are not current-main behavior.
 - The latest recorded production backup-root result in PR #484 was `MISSING`; this mission did not inspect the directory, export personal data, or restore anything.
 
+## Publication checkpoint
+
+- PR #487 is OPEN/DRAFT/MERGEABLE, HEAD `c205fa245af9143c14eaf755ba823e9bd74e685a`, review threads 0.
+- GitHub CI run #905 passed on that exact SHA: Build and test, Auth and Firestore emulator QA, and V289 visual regression.
+- Vercel Preview is READY/SUCCESS on that exact SHA. No manual deployment was performed.
+- PRs #485 and #486 remain OPEN/DRAFT and unchanged.
 ## Safety and next action
 
 `REAL_FINANCIAL_WRITES=0`; `REAL_FINANCIAL_EXPORT=false`; `REAL_FINANCIAL_RESTORE=false`; `MANUAL_PRODUCTION_DEPLOY=false`; `MERGE=false`.

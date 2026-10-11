@@ -2,7 +2,7 @@
 
 ## V861–V920 — confiabilidade de longo prazo (2026-10-10)
 
-- Auditoria na worktree `codex/v861-v920-long-term-reliability`, baseada na main `efc9778e57f17e3778a69f4214301cacef670153`. PRs #485 e #486 permanecem OPEN/DRAFT; nenhuma foi mesclada.
+- Auditoria na worktree `codex/v861-v920-long-term-reliability`, baseada na main `efc9778e57f17e3778a69f4214301cacef670153`. PRs #485 e #486 permanecem OPEN/DRAFT; #487 foi aberta como Draft no SHA `c205fa245af9143c14eaf755ba823e9bd74e685a`, CI #905 e Preview passaram nesse SHA. Nenhuma foi mesclada.
 - Finanças 96/96 e performance 97/97 PASS. Backup/restore app sintético passou; teste separado de source archive dry-run bloqueia fail-closed por 13 nomes de caminho sinalizados; não foram expostos. Modern/V84 dependem de React/Playwright ausentes; npm ci aguarda autorização.
 - Firestore gerenciado sem schedules configurados. PR #484 registra três jobs Hermes habilitados, duas execuções manuais OK e próximas execuções; a consulta de automações deste runtime não exibiu estado vivo.
 - Regras `firestore.rules` têm blob idêntico à SHA V436 previamente testada no Emulator; Emulator não foi rerodado. QA hospedado multiusuário não testado; `PRODUCTION_READY=false`. Evidências: `docs/ai/V861_V920_MASTER_CHECKPOINT.md`.
