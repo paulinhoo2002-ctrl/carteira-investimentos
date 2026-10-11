@@ -1,3 +1,24 @@
+## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+
+- PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
+- Merge normal da main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluído no commit 5b937289c95e24c7b7a8ff8f4ebd9b58867aaaf0, com pais d516ec9a7907aef1d750898a1ec78f69f802377a 78549c05c0a9baf8cabf7c57513bf6946f399908. Conflitos apenas nos três documentos de continuidade; históricos dos dois lados preservados integralmente.
+- Regressões focadas no estado integrado: V324 backup 17/17; restore/segurança 11/11; recovery 9/9; finanças 96/96; persistência 32/32; Skills routing 12/12; backup verifier 7/7; QA harness 17/17 (inclui Skills routing). No HEAD remoto 77abe90a94bdd596a1da9c7a2ad9f3b434b0a057, CI run 38141337567 SUCCESS (Build and test, V289, Auth/Firestore Emulator) e Vercel Preview SUCCESS (deployment 8WnBqZTrmabHu8hsBnD9bKMoYYUS); PR OPEN/DRAFT/MERGEABLE, threads=0. Este é o checkpoint técnico antes do fechamento documental.
+- Dependency audit (2026-10-11): 7 achados em toolchain dev (4 HIGH, 3 MODERATE: baseline-browser-mapping, browserslist, esbuild, nanoid, postcss, source-map-js, vite); `npm audit --omit=dev` = 0. Nenhuma dependência foi alterada; `npm ci`, `npm update` e `npm audit fix` não executados. Correção direcionada aguarda escopo/autorização próprios.
+- NPM_CI=NOT_RUN (node_modules ausente; autorização não se estende a esta worktree); MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; sem dado financeiro real ou deploy manual.
+
+### Histórico V1001 — branch de backup #485
+
+## V1001 — reconciliação da PR #485 (2026-10-11)
+
+- origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d foi incorporada à branch da #485 por merge normal, sem rebase ou force-push. Os conflitos eram documentais; a resolução preserva integralmente os blocos de histórico dos dois pais.
+- Os checks finais são avaliados no SHA após esta sincronização. Nenhum backup real foi lido, exportado ou restaurado; nenhuma escrita financeira ou ação de produção ocorreu.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+Os blocos V831–V850 e V861–V920 abaixo são evidência histórica daquele momento.
+
+### Histórico V1001 — main após #486
+
 ## V1001 — reconciliação das PRs #485/#486 (2026-10-11)
 
 - Base remota a746e0c4cd198baa6d9af00cc4188557dfa5300d foi incorporada sem rebase; conflitos documentais resolvidos preservando os checkpoints originais.
@@ -39,6 +60,15 @@ As entradas V851–V860 e V861–V920 abaixo preservam a evidência daquele mome
 - Escopo de concorrência: confirmação repetida síncrona e replay estão cobertos; corrida real entre abas não foi testada nem certificada.
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
+
+## V831–V850 — contratos de backup e isolamento (2026-10-10)
+
+- Snapshots IndexedDB precisam de owner scope derivado do UID e de chaves versionadas; listagem e retenção por conta evitam sobrescrita/remoção cruzada. Backups vinculados exigem a mesma identidade para verificar e simular restauração.
+- Exportação e snapshot pré-restauração dependem de usuário permitido e cloud sincronizada estável. Backups históricos sem owner scope não devem ser atribuídos automaticamente; são preservados e ficam fora da listagem isolada.
+- `backup-verify.js` só certifica manifest/schema/domínios/checksum do formato do app e sidecar SHA-256 externo válido. JSON genérico, arquivo não suportado ou sidecar ausente/divergente nunca é PASS.
+- A existência de um script não prova cron configurado. IndexedDB local oportunista não equivale a backup externo/disaster recovery. Hermes/Task Scheduler, Drive/OAuth e notificações seguem não configurados até evidência/autorizações correspondentes.
+- V831 valida apenas fixtures sintéticas; dependências npm estavam ausentes e `npm ci` não foi autorizado nesta worktree. Sem exportação/restauração real, Firebase write ou produção.
+- Detalhes: [`V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md`](V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md).
 
 ## V402 — órfãos do Firestore emulator: causa raiz e disciplina segura (2026-10-09)
 

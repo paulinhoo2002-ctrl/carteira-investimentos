@@ -1,3 +1,34 @@
+## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+
+- PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
+- Merge normal da main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluído no commit 5b937289c95e24c7b7a8ff8f4ebd9b58867aaaf0, com pais d516ec9a7907aef1d750898a1ec78f69f802377a 78549c05c0a9baf8cabf7c57513bf6946f399908. Conflitos apenas nos três documentos de continuidade; históricos dos dois lados preservados integralmente.
+- Regressões focadas no estado integrado: V324 backup 17/17; restore/segurança 11/11; recovery 9/9; finanças 96/96; persistência 32/32; Skills routing 12/12; backup verifier 7/7; QA harness 17/17 (inclui Skills routing). No HEAD remoto 77abe90a94bdd596a1da9c7a2ad9f3b434b0a057, CI run 38141337567 SUCCESS (Build and test, V289, Auth/Firestore Emulator) e Vercel Preview SUCCESS (deployment 8WnBqZTrmabHu8hsBnD9bKMoYYUS); PR OPEN/DRAFT/MERGEABLE, threads=0. Este é o checkpoint técnico antes do fechamento documental.
+- Dependency audit (2026-10-11): 7 achados em toolchain dev (4 HIGH, 3 MODERATE: baseline-browser-mapping, browserslist, esbuild, nanoid, postcss, source-map-js, vite); `npm audit --omit=dev` = 0. Nenhuma dependência foi alterada; `npm ci`, `npm update` e `npm audit fix` não executados. Correção direcionada aguarda escopo/autorização próprios.
+- NPM_CI=NOT_RUN (node_modules ausente; autorização não se estende a esta worktree); MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; sem dado financeiro real ou deploy manual.
+
+### Histórico V1001 — branch de backup #485
+
+## V1001 — certificação de integração da PR #485 (2026-10-11)
+
+- Base remota integrada: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d. A resolução V1001 preserva os dois blocos históricos originais e o restante do histórico documental.
+- A PR permanece OPEN/DRAFT; testar e conferir o SHA final publicado em CI e Vercel antes do parecer.
+- Escopo permanece sintético/read-only para QA. MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+Os registros V831–V850 e V861–V920 abaixo preservam os estados de seus checkpoints originais.
+
+
+## V831–V850 — hardening do backup local, em revisão
+
+- Worktree isolada `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`, branch `codex/v831-v850-backup-automation`, baseada na `origin/main` `efc9778e57f17e3778a69f4214301cacef670153`.
+- Corrigido isolamento por proprietário para arquivos IndexedDB e endurecido o verificador de integridade. Suíte focal sintética passou 41/41 antes das últimas assertions; matriz ampla ainda não executada.
+- Dependências npm não instaladas; `npm ci` requer autorização explícita conforme AGENTS.md. Nenhum backup real, diretório pessoal, Firebase ou credencial foi acessado.
+- Automação externa, agenda, OAuth/Drive e recuperação independente permanecem NÃO CONFIGURADOS. Snapshots antigos sem escopo são preservados e não atribuídos automaticamente.
+- Evidência e continuação: [`V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md`](V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md). `MERGE=false`.
+
+### Histórico V1001 — main após #486
+
 ## V1001 — certificação de integração das PRs #485 e #486 (2026-10-11)
 
 - Base remota validada: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d, que inclui o checkpoint #487. #485 e #486 permanecem OPEN/DRAFT; nenhuma foi mesclada.
@@ -1452,3 +1483,10 @@ Os niveis EXACT, CONTEXT, GENERAL e INFO permanecem distintos. A Auditoria nao e
 - V394: Mantida como BLOCKED_ENVIRONMENT devido a conflitos recorrentes de portas do Firebase Emulator (8080/9099/4400/4500) causados por processos órfãos. Não retomada nesta sessão, exceto para consulta de evidências existentes.
 - Gates verificados: CI VERDE, Vercel PRONTO, git diff --check (apenas aviso de LF/CRLF, não bloqueante).
 - Nenhuma escrita financeira real, importação ou restauração realizada (REAL_WRITES=0, REAL_IMPORT=false, REAL_RESTORE=false). Nenhum merge realizado.
+
+## V831–V850 — isolamento de snapshots e verificação de backup (2026-10-10)
+
+- PR #485 (`codex/v831-v850-backup-automation`) permanece OPEN/DRAFT; implementação no SHA `ca7e148eb1460e7e8676aac698d0c09d68e662e2`. GitHub Actions run `38099988910` passou Build and test, Auth/Firestore Emulator QA e V289 visual no SHA exato; não há review threads não resolvidas.
+- O status de deployment Vercel desse SHA falhou com `git_info_fail` antes de produzir Preview verificável. O check Vercel Preview Comments passou e não equivale a deployment bem-sucedido.
+- Testes sintéticos focados, UI, QA harness, backup/restore, financeiro e build legado passaram conforme checkpoint V831. A matriz local Modern/qa:all/verify:release permanece parcial por React/Vite ausentes; `npm ci` não foi executado sem autorização específica para esta worktree.
+- Sem acesso a diretórios/arquivos de backup financeiro real, exportação ou restauração real, escrita Firebase, produção ou merge. Backups IndexedDB antigos sem owner scope foram preservados e não são atribuídos automaticamente.

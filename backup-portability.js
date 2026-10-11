@@ -62,6 +62,10 @@
     }
     throw new Error('SHA256_UNAVAILABLE');
   }
+  async function ownerScopeFor(ownerId) {
+    if (typeof ownerId !== 'string' || !ownerId.trim()) throw new Error('OWNER_ID_REQUIRED');
+    return sha256(`carteira-investimentos-backup-owner-v1:${ownerId.trim()}`);
+  }
   function sourceState(input) {
     const state = input?.state ?? input ?? {};
     return normalizeFinancialDates(normalize(state, { stripSensitive: true }));
@@ -195,7 +199,8 @@
       request.onerror = () => reject(request.error || new Error('LOCAL_ARCHIVE_OPEN_FAILED'));
     });
   }
-  async function listLocalBackups({ indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes } = {}) {
+  async function listLocalBackups({ indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes, ownerId } = {}) {
+    const expectedOwnerScope = ownerId === undefined ? null : await ownerScopeFor(ownerId);
     const db = await openArchive(indexedDb);
     try {
       const rows = await new Promise((resolve, reject) => {
@@ -204,10 +209,14 @@
         request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => reject(request.error || new Error('LOCAL_ARCHIVE_READ_FAILED'));
       });
-      const verified = await Promise.all(rows.map(async row => {
-        const integrity = await verifyArchivedBackup(row.backup, { supportedAssetTypes });
+      const scopedRows = expectedOwnerScope === null ? rows : rows.filter(row => (row.ownerScope || row.backup?.payload?.metadata?.ownerScope || 'unbound') === expectedOwnerScope);
+      const verified = await Promise.all(scopedRows.map(async row => {
+        const rowOwnerScope = row.ownerScope || row.backup?.payload?.metadata?.ownerScope || 'unbound';
+        const integrity = rowOwnerScope !== (row.backup?.payload?.metadata?.ownerScope || 'unbound') || (rowOwnerScope !== 'unbound' && !ownerId)
+          ? { valid: false }
+          : await verifyArchivedBackup(row.backup, { supportedAssetTypes, ownerId });
         const { backup, ...metadata } = row;
-        return { ...metadata, status: integrity.valid ? 'VALID' : 'CORRUPTED', integrityValid: integrity.valid };
+        return { ...metadata, ownerScope: rowOwnerScope, status: integrity.valid ? 'VALID' : 'CORRUPTED', integrityValid: integrity.valid };
       }));
       return verified.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     } finally { db.close(); }
@@ -222,21 +231,26 @@
       return { valid: checked.status === 'SUPPORTED', status: checked.status };
     } catch (_) { return { valid: false, status: 'CORRUPTED' }; }
   }
-  async function saveLocalBackup(backup, { cadence = 'manual', period = '', createdAt = backup?.manifest?.createdAt, indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes } = {}) {
-    const checked = await verifyBackup(backup, { supportedAssetTypes });
+  async function saveLocalBackup(backup, { cadence = 'manual', period = '', createdAt = backup?.manifest?.createdAt, indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes, ownerId } = {}) {
+    const embeddedOwnerScope = backup?.payload?.metadata?.ownerScope;
+    if (ownerId !== undefined && !embeddedOwnerScope) return { ok: false, status: 'OWNER_UNBOUND' };
+    const expectedOwnerScope = ownerId === undefined ? (embeddedOwnerScope || 'unbound') : await ownerScopeFor(ownerId);
+    if (embeddedOwnerScope && embeddedOwnerScope !== expectedOwnerScope) return { ok: false, status: 'OWNER_MISMATCH' };
+    const checked = await verifyBackup(backup, { supportedAssetTypes, ownerId });
     if (checked.status !== 'SUPPORTED') return { ok: false, status: checked.status, error: checked.error || checked.status };
     if (!['manual', 'monthly', 'annual'].includes(cadence) || !createdAt || (cadence !== 'manual' && !period)) return { ok: false, status: 'INVALID_METADATA' };
-    const id = cadence === 'manual' ? `manual:${createdAt}:${backup.manifest.operationId}` : `${cadence}:${period}`;
+    const id = `${expectedOwnerScope}:${cadence}:${period || 'manual'}:${createdAt}:${backup.manifest.operationId}`;
     const db = await openArchive(indexedDb);
-    const entry = { id, cadence, period, createdAt: String(createdAt), status: 'VALID', recoveryRequired: false, backup: checked.backup };
+    const entry = { id, ownerScope: expectedOwnerScope, cadence, period, createdAt: String(createdAt), status: 'VALID', recoveryRequired: false, backup: checked.backup };
     try {
-      await new Promise((resolve, reject) => {
+      const added = await new Promise((resolve, reject) => {
         const tx = db.transaction(ARCHIVE_STORE, 'readwrite');
-        tx.objectStore(ARCHIVE_STORE).put(entry);
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error || new Error('LOCAL_ARCHIVE_WRITE_FAILED'));
-        tx.onabort = () => reject(tx.error || new Error('LOCAL_ARCHIVE_WRITE_ABORTED'));
+        tx.objectStore(ARCHIVE_STORE).add(entry);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => tx.error?.name === 'ConstraintError' ? resolve(false) : reject(tx.error || new Error('LOCAL_ARCHIVE_WRITE_FAILED'));
+        tx.onabort = () => tx.error?.name === 'ConstraintError' ? resolve(false) : reject(tx.error || new Error('LOCAL_ARCHIVE_WRITE_ABORTED'));
       });
+      if (!added) return { ok: false, status: 'ALREADY_EXISTS' };
       const rows = await new Promise((resolve, reject) => {
         const tx = db.transaction(ARCHIVE_STORE, 'readonly');
         const request = tx.objectStore(ARCHIVE_STORE).getAll();
@@ -245,9 +259,9 @@
       });
       const verifiedRows = await Promise.all(rows.map(async row => ({
         ...row,
-        status: (await verifyArchivedBackup(row.backup, { supportedAssetTypes })).valid ? 'VALID' : 'CORRUPTED'
+        status: (await verifyArchivedBackup(row.backup, { supportedAssetTypes, ownerId: row.ownerScope === expectedOwnerScope ? ownerId : undefined })).valid ? 'VALID' : 'CORRUPTED'
       })));
-      const retention = planRetention(verifiedRows, { monthlyLimit: 12 });
+      const retention = planRetention(verifiedRows.filter(row => (row.ownerScope || row.backup?.payload?.metadata?.ownerScope || 'unbound') === expectedOwnerScope), { monthlyLimit: 12 });
       if (retention.deleteIds.length) await new Promise((resolve, reject) => {
         const tx = db.transaction(ARCHIVE_STORE, 'readwrite');
         const store = tx.objectStore(ARCHIVE_STORE);
@@ -259,8 +273,8 @@
       return { ok: true, id, deleted: retention.deleteIds };
     } finally { db.close(); }
   }
-  async function createPeriodicBackups(backupOrFactory, { now = new Date(), indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes, canCreateSnapshot = () => true } = {}) {
-    const entries = await listLocalBackups({ indexedDB: indexedDb, supportedAssetTypes });
+  async function createPeriodicBackups(backupOrFactory, { now = new Date(), indexedDB: indexedDb = globalThis.indexedDB, supportedAssetTypes, ownerId, canCreateSnapshot = () => true } = {}) {
+    const entries = await listLocalBackups({ indexedDB: indexedDb, supportedAssetTypes, ownerId });
     const schedule = periodicCadences(now, entries);
     if (schedule.status !== 'READY') return schedule;
     if (!schedule.cadences.length) return { status: 'NOOP', results: [] };
@@ -269,7 +283,7 @@
       if (!canCreateSnapshot()) return { status: results.length ? 'PARTIAL' : 'BLOCKED', reason: 'RUNTIME_NOT_STABLE', results };
       const backup = typeof backupOrFactory === 'function' ? await backupOrFactory() : backupOrFactory;
       if (!canCreateSnapshot()) return { status: results.length ? 'PARTIAL' : 'BLOCKED', reason: 'RUNTIME_NOT_STABLE', results };
-      results.push(await saveLocalBackup(backup, { ...item, createdAt: now.toISOString(), indexedDB: indexedDb, supportedAssetTypes }));
+      results.push(await saveLocalBackup(backup, { ...item, createdAt: now.toISOString(), indexedDB: indexedDb, supportedAssetTypes, ownerId }));
     }
     return { status: results.every(result => result.ok) ? 'SAVED' : 'FAILED', results };
   }
@@ -311,12 +325,16 @@
     if (Array.isArray(state.wallets) && state.activeWalletId && !state.wallets.some(wallet => String(wallet.id) === String(state.activeWalletId))) return 'UNKNOWN_ACTIVE_WALLET';
     return null;
   }
-  async function createBackup({ state = {}, config = {}, metadata = {}, supportedAssetTypes, createdAt = new Date().toISOString(), appVersion = 'unknown', operationId = crypto.randomUUID ? crypto.randomUUID() : 'op-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) } = {}) {
+  async function createBackup({ state = {}, config = {}, metadata = {}, supportedAssetTypes, ownerId, createdAt = new Date().toISOString(), appVersion = 'unknown', operationId = crypto.randomUUID ? crypto.randomUUID() : 'op-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) } = {}) {
       const safeState = sourceState({ state });
       const safeConfig = normalize(config, { stripSensitive: true });
       const typeError = validateAssetTypes(safeState, supportedAssetTypes);
       if (typeError) throw new Error(typeError);
-      const payload = { state: safeState, config: safeConfig, metadata: normalize(metadata, { stripSensitive: true }) };
+      const safeMetadata = normalize(metadata, { stripSensitive: true });
+      if (!isRecord(safeMetadata)) throw new Error('INVALID_BACKUP_METADATA');
+      if (ownerId !== undefined) safeMetadata.ownerScope = await ownerScopeFor(ownerId);
+      else if (Object.prototype.hasOwnProperty.call(safeMetadata, 'ownerScope')) throw new Error('OWNER_SCOPE_REQUIRES_OWNER_ID');
+      const payload = { state: safeState, config: safeConfig, metadata: safeMetadata };
       const payloadHash = await sha256(canonical(payload));
       return {
         manifest: {
@@ -353,7 +371,7 @@
       return value;
     });
   }
-  async function verifyBackup(raw, { supportedAssetTypes } = {}) {
+  async function verifyBackup(raw, { supportedAssetTypes, ownerId } = {}) {
       let rawText;
       try { rawText = typeof raw === 'string' ? raw : JSON.stringify(raw); }
       catch (_) { return { status: 'CORRUPTED', error: 'NON_SERIALIZABLE_BACKUP' }; }
@@ -375,6 +393,10 @@
       if (!/^[a-f0-9]{64}$/.test(expected)) return { status: 'CORRUPTED', error: 'MISSING_CHECKSUM' };
       const actual = await sha256(canonical(backup.payload));
       if (actual !== expected) return { status: 'CORRUPTED', error: 'CHECKSUM_MISMATCH', expected, actual };
+      if (backup.payload.metadata?.ownerScope) {
+        if (ownerId === undefined) return { status: 'OWNER_REQUIRED', error: 'BACKUP_OWNER_REQUIRED' };
+        if (backup.payload.metadata.ownerScope !== await ownerScopeFor(ownerId)) return { status: 'OWNER_MISMATCH', error: 'BACKUP_OWNER_MISMATCH' };
+      }
 
       const normalizedBackup = { ...backup, payload: { ...backup.payload, state: normalizeFinancialDates(backup.payload.state) } };
       const stateError = validateState(normalizedBackup.payload.state);

@@ -12565,11 +12565,13 @@ function backupPayload(){
 }
 async function backupPortabilityPayload(){
   if(typeof BackupPortability==='undefined') throw new Error('BACKUP_ENGINE_UNAVAILABLE');
+  if(!v324PeriodicBackupEligible()) throw new Error('BACKUP_SOURCE_NOT_STABLE');
   const state=backupCurrentState();
   return BackupPortability.createBackup({
     state,
     config:backupCurrentConfig(),
     supportedAssetTypes:TYPE_CHOICES,
+    ownerId:FB.user.uid,
     metadata:{source:'localStorage',corporateEventsMode:'SHADOW_READ_ONLY',realRestoreEnabled:false},
     appVersion:typeof APP_VERSION!=='undefined'?APP_VERSION:'legacy'
   });
@@ -12642,11 +12644,12 @@ function openBackupCenter(){
     toast('🧪 Modo de teste local: backup desativado.');
     return;
   }
+  if(typeof FB==='undefined'||!FB.user||FB.access?.allowed!==true){toast('Entre na conta autorizada para acessar backups.','#fbbf24');return;}
   S.backupOpen=true;
   S.backupArchiveStatus='LOADING';
   S.backupArchiveEntries=[];
   render();
-  BackupPortability.listLocalBackups().then(entries=>{
+  BackupPortability.listLocalBackups({ownerId:FB.user.uid,supportedAssetTypes:TYPE_CHOICES}).then(entries=>{
     S.backupArchiveEntries=entries;
     S.backupArchiveStatus='READY';
     if(S.backupOpen) render();
@@ -12668,8 +12671,12 @@ async function exportBackup(){
     return;
   }
   let payload;
+  const ownerId=FB?.user?.uid;
   try{
     payload=await backupPortabilityPayload();
+    const integrity=await BackupPortability.verifyBackup(payload,{supportedAssetTypes:TYPE_CHOICES,ownerId});
+    if(integrity.status!=='SUPPORTED') throw new Error(`BACKUP_${integrity.status}`);
+    if(FB?.user?.uid!==ownerId||FB?.access?.allowed!==true) throw new Error('BACKUP_OWNER_CHANGED');
   }catch(error){
     debugError('backup V249 export error:',error);
     toast('Não foi possível preparar o backup local. Nenhum dado foi alterado.','#f87171');
@@ -12680,7 +12687,7 @@ async function exportBackup(){
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   try{
-    const archived=await BackupPortability.saveLocalBackup(payload,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES});
+    const archived=await BackupPortability.saveLocalBackup(payload,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(!archived.ok) debugWarn('backup local archive skipped:',archived.status);
   }catch(error){ debugWarn('backup local archive unavailable:',error?.name||'UNKNOWN'); }
   toast(`💾 Backup V${payload.manifest.backupVersion} exportado com integridade SHA-256.`);
@@ -12692,7 +12699,7 @@ function runV324PeriodicBackups(){
   if(!v324PeriodicBackupEligible()) return;
   if(FB.v324BackupRunning) return;
   FB.v324BackupRunning=true;
-  BackupPortability.createPeriodicBackups(()=>backupPortabilityPayload(),{supportedAssetTypes:TYPE_CHOICES,canCreateSnapshot:v324PeriodicBackupEligible}).then(result=>{
+  BackupPortability.createPeriodicBackups(()=>backupPortabilityPayload(),{supportedAssetTypes:TYPE_CHOICES,ownerId:FB.user.uid,canCreateSnapshot:v324PeriodicBackupEligible}).then(result=>{
     if(result.status==='FAILED') debugWarn('backup periódico local falhou:',result.results?.map(item=>item.status||item.error));
   }).catch(error=>debugWarn('backup periódico local indisponível:',error?.name||'UNKNOWN')).finally(()=>{FB.v324BackupRunning=false;});
 }
@@ -12710,6 +12717,12 @@ async function applyBackupData(parsed){
   if(!payload){
     toast('Arquivo inválido. Selecione um backup do app.', '#f87171');
     return false;
+  }
+  if(typeof BackupPortability!=='undefined'&&parsed?.manifest?.backupFormat===BackupPortability.FORMAT&&parsed?.payload?.metadata?.ownerScope){
+    const ownerId=FB?.user?.uid;
+    if(!ownerId||FB.access?.allowed!==true){toast('Entre na conta autorizada para validar este backup.','#f87171');return false;}
+    const ownerCheck=await BackupPortability.verifyBackup(parsed,{supportedAssetTypes:TYPE_CHOICES,ownerId});
+    if(!['SUPPORTED','MIGRATABLE'].includes(ownerCheck.status)){toast('Este backup pertence a outra conta ou não pôde ser validado. Nenhum dado foi alterado.','#f87171');return false;}
   }
   const state=payload.storage?.[STOR] || payload.data || {};
   const cfg=payload.storage?.[`${STOR}_cfg`] || {
@@ -12730,10 +12743,12 @@ async function applyBackupData(parsed){
     const currentRuntime=globalThis.__V76_RUNTIME__;
     if(!Array.isArray(currentRuntime?.diagnostics)||currentRuntime.diagnostics.some(code=>!['EMPTY_DEFAULT','LOADED','RESTORED'].includes(code))) throw new Error('SAFETY_BACKUP_PERFORMANCE_DOMAIN_UNAVAILABLE');
     currentState.performance=runtimeApi.backupSupplement({snapshots:currentRuntime.snapshots,flows:currentRuntime.flows});
-    const safetyBackup=await portability.createBackup({state:currentState,config:currentConfig,supportedAssetTypes:TYPE_CHOICES});
-    const safetyIntegrity=await portability.verifyBackup(safetyBackup,{supportedAssetTypes:TYPE_CHOICES});
+    const ownerId=typeof FB!=='undefined'?FB.user?.uid:null;
+    if(!ownerId||FB.access?.allowed!==true||FB.cloudLoaded!==true) throw new Error('SAFETY_BACKUP_AUTHORIZATION_REQUIRED');
+    const safetyBackup=await portability.createBackup({state:currentState,config:currentConfig,supportedAssetTypes:TYPE_CHOICES,ownerId});
+    const safetyIntegrity=await portability.verifyBackup(safetyBackup,{supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(safetyIntegrity.status!=='SUPPORTED') throw new Error(`SAFETY_BACKUP_${safetyIntegrity.status}`);
-    const archived=await portability.saveLocalBackup(safetyIntegrity.backup,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES});
+    const archived=await portability.saveLocalBackup(safetyIntegrity.backup,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(!archived?.ok) throw new Error(`SAFETY_BACKUP_ARCHIVE_${archived?.status||'FAILED'}`);
   }catch(error){
     debugError('pre-restore safety backup error:',error);
@@ -12807,12 +12822,13 @@ document.getElementById('imp-file').addEventListener('change',e=>{
     try{
       const d=JSON.parse(ev.target.result);
       if(typeof BackupPortability!=='undefined' && d?.manifest?.backupFormat===BackupPortability.FORMAT){
-              const integrity=await BackupPortability.verifyBackup(d,{supportedAssetTypes:TYPE_CHOICES});
+              const ownerId=FB?.user?.uid;
+              const integrity=await BackupPortability.verifyBackup(d,{supportedAssetTypes:TYPE_CHOICES,ownerId});
               if(!['SUPPORTED','MIGRATABLE'].includes(integrity.status)){
                 toast(`Arquivo recusado: ${integrity.status}. Nenhum dado foi aplicado.`,'#f87171');
                 return;
               }
-              const preview=await BackupPortability.previewRestore(d,backupCurrentState(),{supportedAssetTypes:TYPE_CHOICES});
+              const preview=await BackupPortability.previewRestore(d,backupCurrentState(),{supportedAssetTypes:TYPE_CHOICES,ownerId});
               const parsedState=d.payload?.state||{};
               S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview};
               S.backupOpen=true;

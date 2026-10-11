@@ -1,4 +1,35 @@
-## V1001 — reconciliação das PRs #485/#486 (2026-10-11)
+## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+
+- NEXT_ACTION=HUMAN_GATE_FINAL_REVIEW_AND_MERGE para a PR #485; manter OPEN/DRAFT até autorização específica. Atualização das dependências permanece em escopo separado.
+- MERGE_COMMIT=5b937289c95e24c7b7a8ff8f4ebd9b58867aaaf0; PARENTS=d516ec9a7907aef1d750898a1ec78f69f802377a 78549c05c0a9baf8cabf7c57513bf6946f399908.
+
+
+- PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
+- Merge normal da main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluído no commit 5b937289c95e24c7b7a8ff8f4ebd9b58867aaaf0, com pais d516ec9a7907aef1d750898a1ec78f69f802377a 78549c05c0a9baf8cabf7c57513bf6946f399908. Conflitos apenas nos três documentos de continuidade; históricos dos dois lados preservados integralmente.
+- Regressões focadas no estado integrado: V324 backup 17/17; restore/segurança 11/11; recovery 9/9; finanças 96/96; persistência 32/32; Skills routing 12/12; backup verifier 7/7; QA harness 17/17 (inclui Skills routing). No HEAD remoto 77abe90a94bdd596a1da9c7a2ad9f3b434b0a057, CI run 38141337567 SUCCESS (Build and test, V289, Auth/Firestore Emulator) e Vercel Preview SUCCESS (deployment 8WnBqZTrmabHu8hsBnD9bKMoYYUS); PR OPEN/DRAFT/MERGEABLE, threads=0. Este é o checkpoint técnico antes do fechamento documental.
+- Dependency audit (2026-10-11): 7 achados em toolchain dev (4 HIGH, 3 MODERATE: baseline-browser-mapping, browserslist, esbuild, nanoid, postcss, source-map-js, vite); `npm audit --omit=dev` = 0. Nenhuma dependência foi alterada; `npm ci`, `npm update` e `npm audit fix` não executados. Correção direcionada aguarda escopo/autorização próprios.
+- NPM_CI=NOT_RUN (node_modules ausente; autorização não se estende a esta worktree); MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; sem dado financeiro real ou deploy manual.
+
+### Histórico V1001 — branch de backup #485
+
+- Base de integração: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d. A branch #485 recebeu essa base por merge não destrutivo e mantém PR OPEN/DRAFT, sem merge da PR.
+- A certificação final deve usar o SHA publicado após a resolução documental que preserva integralmente os registros históricos dos dois pais do merge.
+- Verificar CI e Vercel Preview do SHA exato; não fazer deploy manual.
+- Nenhum backup real foi acessado; sem escrita, exportação, importação ou restauração financeira real.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+Os blocos V831–V850 e V861–V920 abaixo são históricos e não substituem o gate V1001.
+
+## V831–V850 — sincronização documental e gates remotos
+
+- PR #485 permanece OPEN/DRAFT/MERGEABLE na branch `codex/v831-v850-backup-automation`; worktree dedicada em `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`. O último SHA de código certificado é `ca7e148eb1460e7e8676aac698d0c09d68e662e2`.
+- GitHub Actions run `38099988910` passou os três jobs no SHA acima. O deployment Vercel desse SHA falhou com `git_info_fail` antes de gerar Preview utilizável; não confundir com o check Vercel Preview Comments, que passou.
+- Após o commit documental, verificar os checks e o deployment no SHA novo exato. Não fazer deploy manual.
+- Localmente, `test:modern` teve 719 testes aprovados, mas 9 arquivos não carregaram por React ausente; `qa:all` e `verify:release` pararam no Vite ausente. `npm ci` não foi autorizado nesta worktree; solicitar autorização específica apenas se necessário para completar esses gates locais.
+- Próximos gates humanos: primeiro export real, OAuth/Drive, leitura de arquivo financeiro pessoal, Firebase write, restore/migração real e merge. Nenhum deles foi executado.
+
+### Histórico V1001 — main após #486
 
 - Reconciliar cada branch separadamente com origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d; sem rebase, force-push ou merge de PR.
 - #485 foi atualizada separadamente para f23d1c99bfba1f328ea9d16cde24488b81245509; CI/Preview desse SHA aguardam conclusão.

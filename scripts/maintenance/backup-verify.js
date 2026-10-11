@@ -14,6 +14,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const BackupPortability = require('../../backup-portability.js');
 
 const DEFAULT_ROOT = 'C:\\Projetos\\_backups\\carteira-investimentos';
 
@@ -23,37 +24,28 @@ function sha256(filePath) {
   return h.digest('hex');
 }
 
-function verifyFile(filePath, maxAgeDays, now = Date.now()) {
+async function verifyFile(filePath, maxAgeDays, now = Date.now()) {
   const result = { file: path.basename(filePath), state: 'OK', details: [] };
   const stat = fs.statSync(filePath);
   if (stat.size === 0) { result.state = 'FAIL'; result.details.push('empty file'); return result; }
 
-  // Format check (JSON backups).
-  if (/\.json$/i.test(filePath)) {
-    try {
-      const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        result.state = 'WARN'; result.details.push('valid JSON but not an object');
-      } else {
-        result.details.push(`json object, ${Object.keys(parsed).length} top-level keys`);
-      }
-    } catch (error) {
-      result.state = 'FAIL'; result.details.push(`invalid JSON: ${String(error.message).slice(0, 60)}`);
-      return result;
-    }
-  } else {
-    result.details.push(`binary/other, ${stat.size} bytes`);
-  }
+  if (!/\.json$/i.test(filePath)) { result.state = 'FAIL'; result.details.push('unsupported backup file format'); return result; }
+  let parsed;
+  try { parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')); }
+  catch (error) { result.state = 'FAIL'; result.details.push(`invalid JSON: ${String(error.message).slice(0, 60)}`); return result; }
+  const integrity = await BackupPortability.verifyBackup(parsed);
+  if (integrity.status !== 'SUPPORTED') { result.state = 'FAIL'; result.details.push(`unsupported or invalid application backup: ${integrity.status}`); return result; }
+  result.details.push('application backup manifest and payload verified');
 
   // Hash check against sidecar.
   const sidecar = `${filePath}.sha256`;
   if (fs.existsSync(sidecar)) {
     const expected = fs.readFileSync(sidecar, 'utf8').trim().split(/\s+/)[0].toLowerCase();
     const actual = sha256(filePath);
-    if (expected && expected !== actual) { result.state = 'FAIL'; result.details.push(`hash mismatch: expected ${expected.slice(0, 12)} got ${actual.slice(0, 12)}`); }
+    if (!/^[a-f0-9]{64}$/.test(expected) || expected !== actual) { result.state = 'FAIL'; result.details.push('hash sidecar invalid or mismatched'); }
     else result.details.push('hash verified');
   } else {
-    result.details.push('no .sha256 sidecar (hash not checked)');
+    result.state = 'FAIL'; result.details.push('missing .sha256 sidecar');
   }
 
   // Age check.
@@ -63,7 +55,7 @@ function verifyFile(filePath, maxAgeDays, now = Date.now()) {
   return result;
 }
 
-function main() {
+async function main() {
   const args = process.argv;
   const asJson = args.includes('--json');
   const rootIdx = args.indexOf('--root');
@@ -85,7 +77,7 @@ function main() {
     for (const entry of entries) {
       const full = path.join(root, entry);
       if (!fs.statSync(full).isFile()) continue;
-      const r = verifyFile(full, maxAgeDays);
+      const r = await verifyFile(full, maxAgeDays);
       report.files.push(r);
       if (r.state !== 'OK') report.healthy = false;
     }
@@ -99,5 +91,5 @@ function main() {
   process.exitCode = report.healthy ? 0 : 2;
 }
 
-if (require.main === module) main();
+if (require.main === module) main().catch(error => { console.error(`backup verifier failed: ${error?.message || 'UNKNOWN'}`); process.exitCode = 1; });
 module.exports = { verifyFile, DEFAULT_ROOT };
