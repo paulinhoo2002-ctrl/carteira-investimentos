@@ -1,5 +1,36 @@
 # Product Contracts
 
+## V1651 external-backup idempotency boundary
+
+- A generated Drive file ID persisted in a local operation journal can recover
+  retries within that browser profile, and Web Locks can serialize cooperating
+  same-origin contexts. Neither provides a shared atomic idempotency authority
+  across devices or profiles.
+- Google Drive appProperties search is not an atomic uniqueness constraint.
+  Separate devices may create distinct files for the same operation during a
+  stale or incomplete search. Never claim exactly-once external backup from
+  this mechanism.
+- The opt-in adapter now accepts a shared Firestore transaction coordinator.
+  It reserves one generated Drive file ID at
+  `users/{authenticatedUid}/driveBackupOperations/{idempotencyHash}` with only
+  `fileId` and the encrypted-envelope SHA-256. Before the transaction, it also
+  verifies that the Drive `ownerScope` hashes the same authenticated UID.
+  Rules allow owner `get` and validated immutable `create`; list, update,
+  delete and cross-owner access are denied. The UID scopes the Firestore path;
+  the hashed `ownerScope` remains a separate Drive metadata filter.
+- Browser uploads fail closed with `SHARED_COORDINATOR_REQUIRED` if no shared
+  coordinator is injected. The local journal remains a retry cache, not a
+  cross-device authority. Do not wire the adapter into product flows until the
+  Firestore emulator validates rules/transactions and an authorized Drive QA
+  validates concurrent creation and conflict recovery. Existing uploads made
+  before coordinator adoption may need explicit duplicate review.
+- Synthetic Node tests exercise the transaction adapter and two independent
+  local journals against a serialized fake. They are not proof of Firestore
+  transaction semantics or real Drive behavior. Do not claim exactly-once
+  external backup until those service-level gates pass. The local journal
+  stores only a generated remote file ID and content digest, never credentials
+  or financial payloads.
+
 ## V333 — cobertura mensal de Dividendos (decisão humana aprovada, 2026-10-08)
 
 - `NO_RECORDS != ZERO_RECEIVED`. Estados mensais: `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`.

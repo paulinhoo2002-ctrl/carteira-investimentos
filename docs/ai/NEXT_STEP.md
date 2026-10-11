@@ -1,3 +1,11 @@
+## Próxima ação — V1651–V2000
+
+1. O `npm ci` e os gates locais já foram executados na worktree autorizada. Não repetir instalação nem matriz verde sem mudança de código.
+2. Certificar `tests/v311-auth-emulator.test.js` e `tests/v311-security-emulator.test.js` em runtime compatível com o Firestore Emulator. Bloqueio local comprovado: Netty WEPoll não cria pipe loopback (`Invalid argument: connect`). Não relaxar rules nem usar Firebase hospedado.
+3. O workflow CI não atende branches empilhadas: `push` filtra `main` e `pull_request` exige base `main`; #493 tem base #492 (`codex/v1051-drive-backup-simulator`). Actions não retornou runs para o SHA verificado; apenas Vercel status foi observado. Manter isso explícito, sem declarar CI PASS.
+4. Manter `MAJOR_CROSS_DEVICE=MITIGATED_NOT_CERTIFIED` até Emulator provar rules/transaction e um Drive QA sintético autorizado provar corrida/reconciliação. Adaptador segue fora do produto; sem exactly-once.
+5. PR #493 permanece OPEN/DRAFT/MERGEABLE; sem merge, deploy manual, OAuth/Drive real, Firebase hospedado ou operação financeira real.
+
 ## V1351 — continuação segura da PR #492 (2026-10-11)
 
 - Worktree/branch: `C:\Projetos\carteira-investimentos.worktrees\v1051-drive-backup`, `codex/v1051-drive-backup-simulator`; base publicada da PR #492 `b1b846514fb4e0b80cdaad0910e2f02082001cb9`. PR #491 permanece separada, OPEN/DRAFT; #492 OPEN/DRAFT/MERGEABLE, empilhada sobre #491. Sem alterar base ou histórico.
