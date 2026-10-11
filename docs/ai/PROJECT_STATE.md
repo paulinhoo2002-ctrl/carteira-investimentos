@@ -1,26 +1,29 @@
-# Project State
+## V1001 — certificação de integração da PR #485 (2026-10-11)
 
-## V1001 — certificação de integração das PRs #485 e #486 (2026-10-11)
+- Base remota integrada: origin/main a746e0c4cd198baa6d9af00cc4188557dfa5300d. A resolução V1001 preserva os dois blocos históricos originais e o restante do histórico documental.
+- A PR permanece OPEN/DRAFT; testar e conferir o SHA final publicado em CI e Vercel antes do parecer.
+- Escopo permanece sintético/read-only para QA. MERGE=false; PRODUCTION_READY=false; REAL_FINANCIAL_WRITES=0.
 
-- Base remota validada: `origin/main` `a746e0c4cd198baa6d9af00cc4188557dfa5300d`, que inclui o checkpoint #487. #485 e #486 continuam OPEN/DRAFT; nenhuma foi mesclada.
-- Reconciliação da #485 em andamento na worktree `v831-v850-backup-automation`. A main foi incorporada localmente por merge não destrutivo; conflitos documentais em `NEXT_STEP.md` e `PROJECT_STATE.md` estão sendo resolvidos preservando o histórico de ambos os lados.
-- Estado do backup e resultados finais de testes/CI/Preview serão registrados somente após validação do SHA atualizado. Não declarar prontidão de recuperação real: testes usam somente lógica/fixtures sintéticas.
-- A #486 será reconciliada separadamente na worktree `v851-v860-skills-intelligence`, contra a mesma base, sem incluir alterações da #485.
-- `MERGE=false`, `PRODUCTION_READY=false`, `REAL_FINANCIAL_WRITES=0`.
+## Checkpoints anteriores — registros de 2026-10-10
 
-## V831–V850 — checkpoint anterior à reconciliação
+Os registros V831–V850 e V861–V920 abaixo preservam os estados de seus checkpoints originais.
 
-- Worktree `v831-v850-backup-automation`, branch `codex/v831-v850-backup-automation`, originalmente baseada na main `efc9778e57f17e3778a69f4214301cacef670153`.
-- A implementação separa escopo por proprietário para arquivos IndexedDB e endurece a verificação de integridade. A suíte focal sintética anotada no checkpoint passou 41/41 antes de as últimas assertions serem adicionadas; matriz ampla ainda não havia sido executada naquela ocasião.
-- Nenhum backup real, diretório pessoal, Firebase ou credencial foi acessado. Automação externa, agenda, OAuth/Drive e recuperação independente permaneciam não configurados; snapshots antigos sem escopo não são atribuídos automaticamente.
-- Evidência histórica: [`V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md`](V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md). `MERGE=false`.
 
-## V861–V920 — checkpoint anterior à reconciliação (2026-10-10)
+## V831–V850 — hardening do backup local, em revisão
 
-- Auditoria na worktree `codex/v861-v920-long-term-reliability`, baseada na main `efc9778e57f17e3778a69f4214301cacef670153`. #487 foi aberta como Draft no SHA `c205fa245af9143c14eaf755ba823e9bd74e685a`, CI #905 e Preview passaram naquele SHA. Nenhuma PR foi mesclada naquele checkpoint.
-- Finanças 96/96 e performance 97/97 PASS; backup/restore sintético passou. O teste separado de source archive dry-run bloqueou fail-closed; nomes de caminho foram omitidos. Modern/V84 estavam limitados pela ausência de React/Playwright naquela worktree.
-- Firestore gerenciado sem schedules configurados. PR #484 registrava três jobs habilitados e duas execuções manuais OK; isso não comprovava agenda ativa.
-- QA hospedado multiusuário não testado; `PRODUCTION_READY=false`. Evidência histórica: `docs/ai/V861_V920_MASTER_CHECKPOINT.md`.
+- Worktree isolada `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`, branch `codex/v831-v850-backup-automation`, baseada na `origin/main` `efc9778e57f17e3778a69f4214301cacef670153`.
+- Corrigido isolamento por proprietário para arquivos IndexedDB e endurecido o verificador de integridade. Suíte focal sintética passou 41/41 antes das últimas assertions; matriz ampla ainda não executada.
+- Dependências npm não instaladas; `npm ci` requer autorização explícita conforme AGENTS.md. Nenhum backup real, diretório pessoal, Firebase ou credencial foi acessado.
+- Automação externa, agenda, OAuth/Drive e recuperação independente permanecem NÃO CONFIGURADOS. Snapshots antigos sem escopo são preservados e não atribuídos automaticamente.
+- Evidência e continuação: [`V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md`](V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md). `MERGE=false`.
+
+
+## V861–V920 — confiabilidade de longo prazo (2026-10-10)
+
+- Auditoria na worktree `codex/v861-v920-long-term-reliability`, baseada na main `efc9778e57f17e3778a69f4214301cacef670153`. PRs #485 e #486 permanecem OPEN/DRAFT; #487 foi aberta como Draft no SHA `c205fa245af9143c14eaf755ba823e9bd74e685a`, CI #905 e Preview passaram nesse SHA. Nenhuma foi mesclada.
+- Finanças 96/96 e performance 97/97 PASS. Backup/restore app sintético passou; teste separado de source archive dry-run bloqueia fail-closed por 13 nomes de caminho sinalizados; não foram expostos. Modern/V84 dependem de React/Playwright ausentes; npm ci aguarda autorização.
+- Firestore gerenciado sem schedules configurados. PR #484 registra três jobs Hermes habilitados, duas execuções manuais OK e próximas execuções; a consulta de automações deste runtime não exibiu estado vivo.
+- Regras `firestore.rules` têm blob idêntico à SHA V436 previamente testada no Emulator; Emulator não foi rerodado. QA hospedado multiusuário não testado; `PRODUCTION_READY=false`. Evidências: `docs/ai/V861_V920_MASTER_CHECKPOINT.md`.
 
 ## V436 — final operational gates (2026-10-10)
 
