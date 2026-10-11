@@ -12,13 +12,13 @@ node scripts/qa/select-skills.js financial --available=doubt-driven-development,
 node scripts/qa/select-skills.js financial --available=doubt-driven-development,source-driven-development --triggers=officialSource
 
 # Firebase com fronteira financeira: no máximo duas Skills.
-node scripts/qa/select-skills.js firebase --available=firebase-security-rules-auditor,doubt-driven-development --triggers=financialBoundary
+node scripts/qa/select-skills.js firebase --available=firebase:firebase-security-rules-auditor,doubt-driven-development --triggers=financialBoundary
 
 # UI com acessibilidade: não seleciona Playwright automaticamente.
 node scripts/qa/select-skills.js ui --available=interface-design,web-quality-audit --triggers=accessibility
 
 # Browser: escolhe somente uma alternativa primária disponível.
-node scripts/qa/select-skills.js browser --available=browser-harness,playwright,browser-testing-with-devtools
+node scripts/qa/select-skills.js browser --available=browser-harness:browser-harness,playwright,browser-testing-with-devtools
 
 # Backup, security, docs, release e descoberta usam as categorias correspondentes.
 node scripts/qa/select-skills.js backup --available=doubt-driven-development,caveman-review

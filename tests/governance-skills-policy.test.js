@@ -25,3 +25,11 @@ test('permanent Superpowers-first governance remains versioned', () => {
   assert.match(agents, /seletor .* é consultivo/);
   for (const field of policy.handoff_fields) assert.match(agents, new RegExp(field));
 });
+
+test('permanent contract does not grant Git publication authority by mode label', () => {
+  const contract = read('docs/ai/PERMANENT_OPERATING_CONTRACT.md');
+  const continuity = read('docs/ai/PROJECT_CONTINUITY_POLICY.md');
+  assert.match(contract, /autorização humana explícita que cubra ação e escopo/i);
+  assert.doesNotMatch(contract, /FULL SAFE.*autoriza.*commits/i);
+  assert.match(continuity, /PERMANENT_OPERATING_CONTRACT/);
+});

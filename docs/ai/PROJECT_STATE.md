@@ -1,13 +1,12 @@
 # Project State
 
-## V851–V860 — Skills routing audit em andamento (2026-10-10)
+## V851–V860 — Skills routing audit (2026-10-10)
 
-- Base: `origin/main=efc9778e57f17e3778a69f4214301cacef670153`; worktree `codex/v851-v860-skills-intelligence` isolada e iniciada limpa.
-- Auditoria detectou caminho inexistente `docs/ai/SKILL_OPERATIONAL_CATALOG.md`, snapshot de inventário defasado e ordem antiga Caveman→Superpowers em um router deprecado. A fonte física versionada é `docs/ai/SKILLS.md`; processo: Superpowers primeiro, Ponytail full, Caveman; rotas técnicas em `docs/ai/SKILL_ROUTER.md`.
-- Seletor consultivo e inventário de rotas implementados; revisão de 14 arquivos concluída. `test:qa-harness` passou (roteamento/governança 8/8; harness local 5/5); `git diff --check` limpo. PR #486 aberta como Draft. CI do SHA de implementação `ba8c23086294d40322fcf7b30de072ba52a6f358` passou (3 jobs) e Preview ficou READY nesse SHA. Build e suítes amplas locais não foram executados: dependências completas ausentes e instalação não autorizada nesta missão.
-- `BLOCKER=0`; `MAJOR=0`; `MINOR=1` (disponibilidade de ferramentas/modelos externos não é reproduzível em todas as sessões).
-- `NEXT_ACTION=revisão humana da PR #486; confirmar CI do HEAD mais recente antes de qualquer decisão posterior`.
-
+- Base remota da PR #486 antes do follow-up: `f899af9a11621096130efdffddf24ec62e6d4015`; CI run `38101636849` SUCCESS. Vercel Preview para esse SHA falhou antes do build com `git_info_fail`; Preview não certificado.
+- Revisão encontrou IDs de plugin namespaced (`firebase:...`, `browser-harness:...`) não reconhecidos pelas rotas canônicas. Regressão RED 2/2; aliases explícitos preservam o identificador real selecionado. Depois da correção: `test:skills-routing` 11/11, `test:qa-harness` 16/16, `git diff --check` limpo.
+- Follow-up local ainda não publicado neste checkpoint. Hermes não disponível; compatibilidade Hermes `NOT_TESTED`. Seletor não instala, carrega ou executa Skills e não concede autorização.
+- `BLOCKER=0`; `MAJOR=0`; `MINOR=2` (Hermes não testado; Vercel `git_info_fail` no SHA-base).
+- `NEXT_ACTION=publicar follow-up autorizado, verificar CI/Preview no SHA exato e manter PR #486 OPEN/DRAFT; sem merge`.
 ## V436 — final operational gates (2026-10-10)
 
 - Main e CI confirmados no SHA `c7690dfd9539e139226cb7865e7de165ab36ea2c`; GitHub run `38061181090` passou nos 3 checks, inclusive Auth/Firestore Emulator QA 8/8.

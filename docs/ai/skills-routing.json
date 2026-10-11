@@ -19,6 +19,10 @@
     "escalationTriggers": ["protected semantics", "security architecture", "uncertain root cause after three reasoned attempts"],
     "availabilityRule": "Verify in the active runtime; catalog presence is not endpoint availability"
   },
+  "runtimeAliases": {
+    "firebase-security-rules-auditor": ["firebase:firebase-security-rules-auditor"],
+    "browser-harness": ["browser-harness:browser-harness"]
+  },
   "routes": {
     "financial": { "required": ["doubt-driven-development"], "optional": { "officialSource": "source-driven-development" } },
     "firebase": { "required": ["firebase-security-rules-auditor"], "optional": { "financialBoundary": "doubt-driven-development" } },

@@ -15,17 +15,21 @@ function selectSkills(task, availableSkills, triggers = []) {
   const selected = [];
   const missingRequired = [];
   const missingTriggered = [];
+  const resolveAvailable = (name) => {
+    if (available.has(name)) return name;
+    return (catalog.runtimeAliases?.[name] || []).find((candidate) => available.has(candidate)) || null;
+  };
   const consider = (name, missing) => {
-    if (selected.includes(name)) return;
-    if (available.has(name)) selected.push(name);
-    else missing.push(name);
+    const match = resolveAvailable(name);
+    if (match && !selected.includes(match)) selected.push(match);
+    else if (!match) missing.push(name);
   };
 
   for (const name of route.required || []) consider(name, missingRequired);
   for (const group of route.alternatives || []) {
-    const match = group.find((name) => available.has(name));
-    if (match) selected.push(match);
-    else missingRequired.push(...group);
+    const match = group.map(resolveAvailable).find(Boolean);
+    if (match && !selected.includes(match)) selected.push(match);
+    else if (!match) missingRequired.push(...group);
   }
   for (const [trigger, name] of Object.entries(route.optional || {})) {
     if (triggers.includes(trigger)) consider(name, missingTriggered);

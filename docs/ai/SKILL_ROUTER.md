@@ -108,7 +108,7 @@ uma missão grande. Skills não concedem autorização sobre áreas protegidas.
 node scripts/qa/select-skills.js financial --available=doubt-driven-development,source-driven-development
 ```
 
-O resultado limita a seleção a duas Skills especializadas, lista ausências e
+O inventário pode conter IDs de plugin namespaced. Aliases explícitos em `skills-routing.json` preservam o nome retornado pelo runtime. O resultado limita a seleção a duas Skills especializadas, lista ausências e
 deixa explícito `authorization=NEVER_GRANTED_BY_SELECTION`. O seletor não
 instala, carrega nem executa Skills; o executor confirma presença real, lê cada
 `SKILL.md`, aplica precedência de `AGENTS.md` e relata lacunas. Modelo é

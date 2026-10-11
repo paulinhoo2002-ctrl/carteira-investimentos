@@ -69,3 +69,15 @@ test('process contract remains separate from skills and does not grant authoriza
 test('unknown categories fail closed', () => {
   assert.throws(() => selectSkills('unknown', inventory), /Unknown task category/);
 });
+
+test('selects a namespaced Firebase skill from the active runtime inventory', () => {
+  const result = selectSkills('firebase', ['firebase:firebase-security-rules-auditor']);
+  assert.deepEqual(result.selectedSkills, ['firebase:firebase-security-rules-auditor']);
+  assert.deepEqual(result.missingRequiredSkills, []);
+});
+
+test('selects a namespaced browser harness from the active runtime inventory', () => {
+  const result = selectSkills('browser', ['browser-harness:browser-harness']);
+  assert.deepEqual(result.selectedSkills, ['browser-harness:browser-harness']);
+  assert.deepEqual(result.missingRequiredSkills, []);
+});

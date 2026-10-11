@@ -5,7 +5,7 @@
 ## 1. Identidade, autonomia e proteção
 
 - Confirmar **PROJECT IDENTITY GATE** antes de qualquer trabalho: repositório `paulinhoo2002-ctrl/carteira-investimentos`, git root, origin, branch, HEAD, worktree, status e documentos de governança. `C:\Projetos\carteira-investimentos` é o checkout canônico a preservar; operações de implementação somente em worktree LEGACY isolada. Nunca alterar `carteira-2.0`, outras worktrees, unidade G: histórica ou outros projetos.
-- **FULL SAFE** autoriza ler/editar código LEGACY, testes sintéticos, dependências de QA aprovadas, commits, push normal e Draft PRs. **Não** autoriza por si só merge, deploy manual, alteração Firebase de produção, OAuth, recursos pagos, acesso/exportação/importação/restauração de dados financeiros reais, nem Git destrutivo. Cada merge requer autorização humana específica da PR e do HEAD. Não contornar bloqueios do runtime.
+- Código, testes, dependências, commits, push, Draft PR, merge, deploy e operações com dados exigem autorização humana explícita que cubra ação e escopo. O rótulo **FULL SAFE**, uma Skill ou este contrato não concede nem amplia autorização. Merge exige autorização específica da PR e do HEAD. Não contornar bloqueios do runtime.
 - Nunca encerrar processo apenas pelo número de porta/PID. Confirmar CommandLine, ParentProcessId, identidade do emulador, rules e worktree imediatamente antes; processos de terceiros ou propriedade incerta exigem gate humano.
 - Para tarefas extensas: fases independentes, testes focados antes de suíte ampla, checkpoint durável, `RESUME_FROM_PHASE` e próximo comando concreto. Não alegar trabalho em segundo plano nem execução após limite de sessão.
 

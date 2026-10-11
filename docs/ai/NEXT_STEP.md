@@ -1,12 +1,10 @@
 # Next Step
 ## V851–V860 — auditoria de Skills
 
-- Worktree isolada `codex/v851-v860-skills-intelligence`, base `efc9778e57f17e3778a69f4214301cacef670153`.
-- `test:qa-harness` passou (8/8 roteamento/governança e 5/5 harness); revisão dos 14 arquivos concluída; `git diff --check` limpo. Base remota segue `efc9778e57f17e3778a69f4214301cacef670153`.
-- PR #486 está OPEN/DRAFT. CI (3 jobs) e Preview passaram no SHA de implementação `ba8c23086294d40322fcf7b30de072ba52a6f358`; este checkpoint documental exige nova validação no HEAD final. Build e suítes amplas locais não foram executados porque dependências completas não estavam disponíveis e instalação não foi autorizada.
-- Próximo gate: revisão humana da PR #486; sem merge.
-- Não mesclar nem fazer deploy; preservar o checkout canônico e overlays locais de Skills.
-
+- PR #486 OPEN/DRAFT, base `efc9778e57f17e3778a69f4214301cacef670153`; HEAD remoto de referência antes do follow-up `f899af9a11621096130efdffddf24ec62e6d4015`.
+- Nesse HEAD: GitHub Actions run `38101636849` SUCCESS; Vercel Preview falhou antes do build (`git_info_fail`). Não declarar Preview READY.
+- Follow-up local corrige seleção de IDs namespaced com aliases explícitos; testes focados 11/11, QA harness 16/16 e diff-check limpo. Alterações ainda locais neste checkpoint.
+- Próximo passo autorizado: commit/push normal, monitorar CI e Preview do SHA exato; manter Draft, sem merge.
 ## V561 — hardening da comparação mensal (2026-10-10)
 
 - PR #481 segue OPEN/DRAFT no SHA `871a5de5cc7300b0a1c72497621b1b98cb441f0a`; testes sintéticos cobrem filtro exclusivo PAID, meses calendário consecutivos e UNKNOWN versus zero com cobertura completa.
