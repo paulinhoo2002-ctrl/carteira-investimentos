@@ -1,10 +1,10 @@
 # V831–V850 — checkpoint de backup e recuperação
 
-Data: 2026-10-10  
-Repositório: `paulinhoo2002-ctrl/carteira-investimentos`  
-Worktree: `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`  
-Branch: `codex/v831-v850-backup-automation`  
-Base: `efc9778e57f17e3778a69f4214301cacef670153`
+- Data: 2026-10-10
+- Repositório: `paulinhoo2002-ctrl/carteira-investimentos`
+- Worktree: `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`
+- Branch: `codex/v831-v850-backup-automation`
+- Base: `efc9778e57f17e3778a69f4214301cacef670153`
 
 ## Escopo executado
 
