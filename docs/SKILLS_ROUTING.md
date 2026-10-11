@@ -142,9 +142,10 @@ MERGE_AUTHORIZATION=false
 ## Roteamento mínimo de Skills
 
 Após Superpowers e a descoberta dinâmica do inventário, use `docs/ai/SKILL_ROUTER.md`
-e `docs/ai/SKILL_OPERATIONAL_CATALOG.md` para escolher Skills por categoria.
-Escolha apenas Skills presentes no catálogo físico atual; não instale novas
-Skills automaticamente. Rotas típicas incluem:
+e `docs/ai/SKILLS.md` como catálogo físico versionado para escolher Skills por
+categoria. `docs/ai/SKILL_OPERATIONAL_CATALOG.md` não existe nesta base e não
+deve ser tratado como fonte. O inventário do runtime prevalece sobre o snapshot;
+não instale Skills automaticamente. Rotas típicas incluem:
 
 - finanças, persistência e recuperação: `doubt-driven-development`;
 - fontes oficiais: `source-driven-development`;
@@ -153,6 +154,9 @@ Skills automaticamente. Rotas típicas incluem:
 - identidade, regras e sync Firebase: `firebase-security-rules-auditor`.
 
 A rota final depende do trabalho real; esta lista não substitui o inventário.
+O helper `scripts/qa/select-skills.js` é uma recomendação limitada às Skills
+explicitamente informadas como disponíveis; veja
+`docs/ai/SKILLS_ROUTING_EXAMPLES.md`.
 
 ---
 

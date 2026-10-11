@@ -1,4 +1,11 @@
 # Next Step
+## V851–V860 — auditoria de Skills
+
+- Worktree isolada `codex/v851-v860-skills-intelligence`, base `efc9778e57f17e3778a69f4214301cacef670153`.
+- `test:qa-harness` passou (8/8 roteamento/governança e 5/5 harness); revisão dos 14 arquivos concluída; `git diff --check` limpo. Base remota segue `efc9778e57f17e3778a69f4214301cacef670153`.
+- Próximo: commit e push normais dos arquivos explícitos, abrir Draft PR e acompanhar CI/Preview do SHA exato. Build e suítes gerais permanecem não executados porque dependências completas não estão disponíveis e instalação não foi autorizada nesta missão.
+- Não mesclar nem fazer deploy; preservar o checkout canônico e overlays locais de Skills.
+
 ## V561 — hardening da comparação mensal (2026-10-10)
 
 - PR #481 segue OPEN/DRAFT no SHA `871a5de5cc7300b0a1c72497621b1b98cb441f0a`; testes sintéticos cobrem filtro exclusivo PAID, meses calendário consecutivos e UNKNOWN versus zero com cobertura completa.

@@ -412,6 +412,10 @@ Handoff mínimo: `SKILLS_DISCOVERED`, `SUPERPOWERS_AVAILABLE`,
 `SUPERPOWERS_USED`, `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
 `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED`, `SKILL_GAPS_FOUND`.
 
+O seletor `scripts/qa/select-skills.js` é consultivo: informe somente Skills
+confirmadas no runtime. Ele não instala/carrega Skills nem concede autorização;
+`AGENTS.md`, contratos protegidos e autorização da missão continuam prevalecendo.
+
 Detalhes: [`docs/SKILLS_ROUTING.md`](docs/SKILLS_ROUTING.md).
 
 ---

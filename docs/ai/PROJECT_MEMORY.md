@@ -1,3 +1,13 @@
+## V851–V860 — auditoria e roteamento de Skills (2026-10-10)
+
+- Auditoria parte da main `efc9778e57f17e3778a69f4214301cacef670153`, em worktree isolada `codex/v851-v860-skills-intelligence`; checkout canônico sujo foi preservado.
+- Roteamento vigente: `AGENTS.md` → Superpowers primeiro → Ponytail full → Caveman → mínimo de Skills específicas. O Codex é runtime disponível; Hermes/NVIDIA não foi executado nem validado por credenciais neste ambiente.
+- Inventário host-local observado: 43 diretórios `.agents/skills` no checkout canônico (41 SKILL.md diretos/44 recursivos), 17 SKILL.md rastreados numa worktree limpa, 7 diretórios no root Codex do usuário (6/11 SKILL.md) e 167 no root genérico de Skills do usuário. Esses overlays não são portáveis.
+- Roteador existente referenciava `docs/ai/SKILL_OPERATIONAL_CATALOG.md`, inexistente. O catálogo real é `docs/ai/SKILLS.md`; categorias/taxonomia e o seletor consultivo vivem em `docs/ai/skills-routing.json`, `docs/ai/SKILL_ROUTER.md` e `scripts/qa/select-skills.js`.
+- Seletor limitado a duas Skills especializadas, exige inventário disponível fornecido pelo executor, não instala/carrega/executa Skills nem concede autorização. Casos financeiros, Firebase, UI, browser, backup, segurança, documentação e release cobertos por testes.
+- Catálogo NVIDIA foi rechecado em 2026-10-10. Poolside Laguna XS 2.1 e GLM-5.3 são candidatos de catálogo para coding/tool use; presença pública não prova acesso. Modelo Hermes indisponível nesta sessão. Sem mudança financeira, cloud, deploy ou produto.
+- `NEXT_ACTION=reviewar diff V851, validar testes e publicar Draft PR; sem merge`.
+
 ## V436 — gates operacionais (2026-10-10)
 
 - Main `c7690dfd9539e139226cb7865e7de165ab36ea2c`: CI 3/3 SUCCESS, incluindo Auth/Firestore Emulator 8/8; deploy Vercel READY no SHA exato.
@@ -149,7 +159,10 @@
 
 ## V280A — bootstrap global e prioridade funcional (2026-09-28)
 
-- `MANDATORY_AGENT_BOOTSTRAP=true`. Após PROJECT IDENTITY GATE, anúncio obrigatório `Using Caveman + Superpowers to <purpose>`, depois `caveman`, `using-superpowers` e Skills específicas. Disponibilidade real deve ser verificada; ausência é reportada, nunca simulada. `caveman` local orienta concisão, não segurança ou autorização.
+- Registro histórico de 2026-09-28: naquele snapshot a ordem era
+  `Caveman → Superpowers`. Foi supersedida pelo bootstrap atual
+  `Superpowers-first → Ponytail full → Caveman`, mantido em `AGENTS.md` e
+  `docs/ai/SKILLS_ROUTING.md`. Disponibilidade real continua exigindo confirmação.
 - Rotas, modelos, anúncio, limites e freeze visual: `docs/ai/SKILLS_ROUTING.md` e `docs/SKILLS_ROUTING.md`. Visual: `VISUAL_CANON_V2=FROZEN_REFERENCE`, `FUNCTIONAL_COMPLETION_FIRST=true`, `GLOBAL_VISUAL_IMPLEMENTATION_DEFERRED=true`.
 - `P0_RENTABILIDADE_HISTORICAL_SERIES=true`; retorno histórico não verificado deve permanecer `UNAVAILABLE`. Proibidos interpolação, retroprojeção de cotação presente e taxa fixa no lugar de benchmark datado.
 - `NEXT_FUNCTIONAL_MISSION=V281_HISTORICAL_RETURN_TRUTH_REPAIR` (recomendação; não iniciada/autorizada).
@@ -259,8 +272,11 @@
 - The broad local browser-harness trigger is subordinate to minimum-skill
   routing. Superpowers orchestrates and does not replace specialist Skills.
   Agent/model routing remains separate from Skill routing.
-- Snapshot, taxonomy, triggers, limitations and routing matrix:
-  docs/ai/SKILL_OPERATIONAL_CATALOG.md. The filesystem remains authoritative.
+- Snapshot, taxonomy, triggers, limitations and routing matrix were then
+  documented in the catalog referenced by that historical entry; V851 later
+  found that `docs/ai/SKILL_OPERATIONAL_CATALOG.md` is absent from the current
+  base. Current catalog and routes: `docs/ai/SKILLS.md` and
+  `docs/ai/SKILL_ROUTER.md`.
   Changes are included in governance PR #417; no merge was performed.
 
 ## Workspace/worktree lifecycle audit — 2026-09-25
@@ -497,7 +513,7 @@ Historical facts and permanent decisions from the project's evolution.
   26 Skills operacionais reais; cópias upstream, backup e referências foram
   separadas e não entram no roteamento normal.
 - O catálogo detalhado por momento do projeto está em
-  `docs/ai/SKILL_OPERATIONAL_CATALOG.md`. Regra permanente: escolher o menor
+  `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`. Regra permanente: escolher o menor
   conjunto útil, normalmente no máximo duas Skills e três excepcionalmente.
 - Financeiro/persistência/recovery usa `doubt-driven-development`; Firebase,
   Auth, Firestore, cloud/local e protected writes usa

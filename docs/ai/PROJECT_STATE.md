@@ -1,5 +1,13 @@
 # Project State
 
+## V851–V860 — Skills routing audit em andamento (2026-10-10)
+
+- Base: `origin/main=efc9778e57f17e3778a69f4214301cacef670153`; worktree `codex/v851-v860-skills-intelligence` isolada e iniciada limpa.
+- Auditoria detectou caminho inexistente `docs/ai/SKILL_OPERATIONAL_CATALOG.md`, snapshot de inventário defasado e ordem antiga Caveman→Superpowers em um router deprecado. A fonte física versionada é `docs/ai/SKILLS.md`; processo: Superpowers primeiro, Ponytail full, Caveman; rotas técnicas em `docs/ai/SKILL_ROUTER.md`.
+- Seletor consultivo e inventário de rotas implementados; revisão de 14 arquivos concluída. `test:qa-harness` passou (roteamento/governança 8/8; harness local 5/5); `git diff --check` limpo. Build e suítes gerais não executados: dependências completas ausentes e sem autorização para instalar nesta missão.
+- `BLOCKER=0`; `MAJOR=0`; `MINOR=1` (disponibilidade de ferramentas/modelos externos não é reproduzível em todas as sessões).
+- `NEXT_ACTION=commit e push normais autorizados; abrir Draft PR e verificar CI do SHA exato`.
+
 ## V436 — final operational gates (2026-10-10)
 
 - Main e CI confirmados no SHA `c7690dfd9539e139226cb7865e7de165ab36ea2c`; GitHub run `38061181090` passou nos 3 checks, inclusive Auth/Firestore Emulator QA 8/8.
@@ -367,8 +375,9 @@ Este bloco prevalece sobre os registros históricos abaixo. Relatórios de ondas
   Markdown links are missing in web-quality-audit/Mantis; banner-design also
   lacks cited auxiliary references, and caveman-stats lacks its required hooks.
   No package was deleted.
-- docs/ai/SKILL_OPERATIONAL_CATALOG.md now records classification and routing.
-  Changes are included in PR #417; merge remains unauthorized.
+- A 2026-09-25 record expected a separate operational catalog and referenced
+  PR #417. In the V851 base that catalog path is absent; current inventory is
+  in `docs/ai/SKILLS.md`. The PR reference is historical, not current status.
 
 ## V265 — QA harness resilience — 2026-09-25
 
