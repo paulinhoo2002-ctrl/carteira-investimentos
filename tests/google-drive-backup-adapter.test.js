@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const { webcrypto } = require('node:crypto');
 const test = require('node:test');
 const Backup = require('../backup-portability.js');
-const { GOOGLE_DRIVE_FILE_SCOPE, createGoogleDriveBackupAdapter, createGoogleDriveTokenProvider } = require('../google-drive-backup.js');
+const { GOOGLE_DRIVE_FILE_SCOPE, createGoogleDriveBackupAdapter, createGoogleDriveTokenProvider, createFirestoreBackupOperationCoordinator } = require('../google-drive-backup.js');
 
 const ownerScope = 'a'.repeat(64);
 const otherOwnerScope = 'b'.repeat(64);
@@ -196,6 +196,69 @@ test('Drive adapter serializes same-page retries for an idempotency key', async 
   assert.equal(drive.files.size, 1);
 });
 
+test('Firestore coordinator atomically reserves one owner-scoped Drive ID and rejects payload conflicts', async () => {
+  const rows = new Map();
+  let transactionQueue = Promise.resolve();
+  const firestore = {
+    collection: name => ({ doc: uid => ({ collection: sub => ({ doc: id => `${name}/${uid}/${sub}/${id}` }) }) }),
+    async runTransaction(callback) {
+      const current = transactionQueue.then(() => callback({
+          async get(ref) { const data = rows.get(ref); return { exists: rows.has(ref), data: () => rows.get(ref) }; },
+          set(ref, value) { rows.set(ref, value); }
+        }));
+      transactionQueue = current.catch(() => {});
+      return current;
+    }
+  };
+  const coordinatorA = createFirestoreBackupOperationCoordinator({ firestore, getOwnerUid: () => 'synthetic-owner-a' });
+  const coordinatorB = createFirestoreBackupOperationCoordinator({ firestore, getOwnerUid: () => 'synthetic-owner-a' });
+  const idempotencyHash = 'c'.repeat(64);
+  const contentSha256 = 'd'.repeat(64);
+  const coordinatorOwnerScope = await Backup.sha256('carteira-investimentos-backup-owner-v1:synthetic-owner-a');
+  const [first, replay] = await Promise.all([
+    coordinatorA.reserve({ idempotencyHash, contentSha256, proposedFileId: 'synthetic-drive-id-a', ownerScope: coordinatorOwnerScope }),
+    coordinatorB.reserve({ idempotencyHash, contentSha256, proposedFileId: 'synthetic-drive-id-b', ownerScope: coordinatorOwnerScope })
+  ]);
+  assert.equal(first.fileId, replay.fileId);
+  assert.equal(rows.size, 1);
+  await assert.rejects(() => coordinatorA.reserve({ idempotencyHash, contentSha256: 'e'.repeat(64), proposedFileId: 'synthetic-drive-id-c', ownerScope: coordinatorOwnerScope }), { code: 'IDEMPOTENCY_CONFLICT' });
+  await assert.rejects(() => coordinatorA.reserve({ idempotencyHash, contentSha256, proposedFileId: 'synthetic-drive-id-c', ownerScope: 'f'.repeat(64) }), { code: 'COORDINATOR_OWNER_MISMATCH' });
+  await assert.rejects(() => createFirestoreBackupOperationCoordinator({ firestore, getOwnerUid: () => 'owner/escape' }).reserve({ idempotencyHash, contentSha256, proposedFileId: 'synthetic-id', ownerScope: coordinatorOwnerScope }), { code: 'COORDINATOR_AUTH_REQUIRED' });
+  const denied = createFirestoreBackupOperationCoordinator({ firestore: { ...firestore, runTransaction: async () => { throw Object.assign(new Error('synthetic private backend detail'), { code: 'permission-denied' }); } }, getOwnerUid: () => 'synthetic-owner-a' });
+  await assert.rejects(() => denied.reserve({ idempotencyHash, contentSha256, proposedFileId: 'synthetic-drive-file-d', ownerScope: coordinatorOwnerScope }), error => error.code === 'COORDINATOR_FORBIDDEN' && error.message === 'COORDINATOR_FORBIDDEN');
+  const unavailable = createFirestoreBackupOperationCoordinator({ firestore: { ...firestore, runTransaction: async () => { throw new Error('synthetic private backend detail'); } }, getOwnerUid: () => 'synthetic-owner-a' });
+  await assert.rejects(() => unavailable.reserve({ idempotencyHash, contentSha256, proposedFileId: 'synthetic-drive-file-e', ownerScope: coordinatorOwnerScope }), error => error.code === 'COORDINATOR_UNAVAILABLE' && error.retryable === true && error.message === 'COORDINATOR_UNAVAILABLE');
+});
+
+test('Drive adapter shares operation identity across independent local journals and reports one file', async () => {
+  const drive = driveHarness();
+  const rows = new Map();
+  let reserveQueue = Promise.resolve();
+  const coordinator = {
+    reserve(args) {
+      const next = reserveQueue.then(() => {
+        const current = rows.get(args.idempotencyHash);
+        if (current && current.contentSha256 !== args.contentSha256) throw Object.assign(new Error('IDEMPOTENCY_CONFLICT'), { code: 'IDEMPOTENCY_CONFLICT' });
+        const record = current || { fileId: args.proposedFileId, contentSha256: args.contentSha256 };
+        rows.set(args.idempotencyHash, record);
+        return record;
+      });
+      reserveQueue = next.catch(() => {});
+      return next;
+    }
+  };
+  const options = { getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1', operationCoordinator: coordinator };
+  const first = createGoogleDriveBackupAdapter({ ...options, operationStore: operationStore() });
+  const second = createGoogleDriveBackupAdapter({ ...options, operationStore: operationStore() });
+  const results = await Promise.all([
+    first.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'cross-device', envelope }),
+    second.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'cross-device', envelope })
+  ]);
+  assert.equal(results[0].fileId, results[1].fileId);
+  assert.equal(drive.files.size, 1);
+  assert.equal(rows.size, 1);
+});
+
 test('Drive adapter reuses a journaled Drive ID after restart when search is temporarily stale', async () => {
   const drive = driveHarness();
   const journal = operationStore();
@@ -226,7 +289,10 @@ test('Drive adapter default journal persists only remote identity metadata in th
   } };
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { locks: { request: (_name, callback) => callback() } } });
   try {
-    const options = { getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' };
+    const options = {
+      getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1',
+      operationCoordinator: { reserve: async operation => ({ fileId: operation.proposedFileId, contentSha256: operation.contentSha256 }) }
+    };
     const first = await createGoogleDriveBackupAdapter(options).upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'browser-default-journal', envelope });
     const replay = await createGoogleDriveBackupAdapter(options).upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'browser-default-journal', envelope });
     const journalText = [...values.values()].join(' ');
@@ -240,6 +306,45 @@ test('Drive adapter default journal persists only remote identity metadata in th
     else globalThis.window = previousWindow;
     if (previousNavigator === undefined) delete globalThis.navigator;
     else Object.defineProperty(globalThis, 'navigator', { configurable: true, value: previousNavigator });
+  }
+});
+
+test('Drive adapter blocks browser uploads without shared cross-device coordination before network access', async () => {
+  const drive = driveHarness();
+  const previousWindow = globalThis.window;
+  const previousNavigator = globalThis.navigator;
+  globalThis.window = { localStorage: operationStore() };
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { locks: { request: (_name, callback) => callback() } } });
+  try {
+    const adapter = createGoogleDriveBackupAdapter({ getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' });
+    await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'browser-without-coordinator', envelope }), { code: 'SHARED_COORDINATOR_REQUIRED' });
+    assert.equal(drive.calls.length, 0);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+    if (previousNavigator === undefined) delete globalThis.navigator;
+    else Object.defineProperty(globalThis, 'navigator', { configurable: true, value: previousNavigator });
+  }
+});
+
+test('Drive adapter blocks worker uploads without shared cross-device coordination before network access', async () => {
+  const drive = driveHarness();
+  const names = ['window', 'navigator', 'self'];
+  const previous = Object.fromEntries(names.map(name => [name, Object.getOwnPropertyDescriptor(globalThis, name)]));
+  for (const name of names) delete globalThis[name];
+  globalThis.navigator = {};
+  globalThis.self = { importScripts() {} };
+  try {
+    const adapter = createGoogleDriveBackupAdapter({ getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' });
+    await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'worker-without-coordinator', envelope }), { code: 'CROSS_TAB_COORDINATION_UNAVAILABLE' });
+    globalThis.navigator = { locks: { request: (_name, callback) => callback() } };
+    await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'worker-with-lock-without-coordinator', envelope }), { code: 'SHARED_COORDINATOR_REQUIRED' });
+    assert.equal(drive.calls.length, 0);
+  } finally {
+    for (const name of names) {
+      if (previous[name]) Object.defineProperty(globalThis, name, previous[name]);
+      else delete globalThis[name];
+    }
   }
 });
 

@@ -17,6 +17,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /users/{userId}/driveBackupOperations/{operationId} {
+      allow get: if request.auth != null && request.auth.uid == userId && operationId.matches('^[a-f0-9]{64}$');
+      allow list, update, delete: if false;
+      allow create: if request.auth != null && request.auth.uid == userId
+        && operationId.matches('^[a-f0-9]{64}$')
+        && request.resource.data.keys().hasOnly(['fileId', 'contentSha256'])
+        && request.resource.data.keys().hasAll(['fileId', 'contentSha256'])
+        && request.resource.data.fileId is string
+        && request.resource.data.fileId.matches('^[A-Za-z0-9_-]{1,200}$')
+        && request.resource.data.contentSha256 is string
+        && request.resource.data.contentSha256.matches('^[a-f0-9]{64}$');
+    }
+
     match /portfolios/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if false;

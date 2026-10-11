@@ -1,8 +1,9 @@
-## Próxima ação — V1651
+## Próxima ação — V1651–V2000
 
-1. Revalidar o HEAD atualizado após sincronização documental, o estado Draft da PR #493 e o status do Preview para esse SHA.
-2. Manter `MAJOR=1` para corridas entre dispositivos; não certificar exactly-once, backup externo produtivo nem integrar o adaptador ao fluxo financeiro.
-3. Gate futuro: projetar coordenador autoritativo compartilhado entre dispositivos ou uma política segura e testada de reconciliação de duplicatas; requer evidência real de execução concorrente antes da certificação final.
+1. Resolver autorização específica para `npm ci` somente na worktree `C:\Projetos\carteira-investimentos.worktrees\v1651-drive-idempotency`; então rodar suites Modern/QA/release e Playwright relevantes.
+2. Corrigir/reproduzir o bloqueio local do Firestore Emulator sem alterar regras para facilitar testes; executar `tests/v311-security-emulator.test.js`, incluindo dois usuários sintéticos e operações de reserva imutável.
+3. Revalidar diff, `git diff --check`, atualizar PR #493 normalmente se permitido, e observar CI/Preview no SHA exato. Não fazer merge.
+4. Manter `MAJOR_IDEMPOTENCY=MITIGATED` até Emulator provar rules/transaction e um Drive QA sintético autorizado provar concorrência/conflict recovery. O adaptador não está ligado ao produto. Não declarar exactly-once nem readiness produtiva.
 
 ## V1351 — continuação segura da PR #492 (2026-10-11)
 

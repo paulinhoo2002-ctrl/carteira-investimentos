@@ -10,12 +10,26 @@
   Separate devices may create distinct files for the same operation during a
   stale or incomplete search. Never claim exactly-once external backup from
   this mechanism.
-- Keep the adapter disconnected from product/financial flows until an
-  authoritative cross-device coordinator or an explicitly safe duplicate
-  reconciliation contract is implemented and tested. The local journal must
-  fail closed before upload if it cannot persist operation identity; it stores
-  only a generated remote file ID and content digest, never credentials or
-  financial payloads.
+- The opt-in adapter now accepts a shared Firestore transaction coordinator.
+  It reserves one generated Drive file ID at
+  `users/{authenticatedUid}/driveBackupOperations/{idempotencyHash}` with only
+  `fileId` and the encrypted-envelope SHA-256. Before the transaction, it also
+  verifies that the Drive `ownerScope` hashes the same authenticated UID.
+  Rules allow owner `get` and validated immutable `create`; list, update,
+  delete and cross-owner access are denied. The UID scopes the Firestore path;
+  the hashed `ownerScope` remains a separate Drive metadata filter.
+- Browser uploads fail closed with `SHARED_COORDINATOR_REQUIRED` if no shared
+  coordinator is injected. The local journal remains a retry cache, not a
+  cross-device authority. Do not wire the adapter into product flows until the
+  Firestore emulator validates rules/transactions and an authorized Drive QA
+  validates concurrent creation and conflict recovery. Existing uploads made
+  before coordinator adoption may need explicit duplicate review.
+- Synthetic Node tests exercise the transaction adapter and two independent
+  local journals against a serialized fake. They are not proof of Firestore
+  transaction semantics or real Drive behavior. Do not claim exactly-once
+  external backup until those service-level gates pass. The local journal
+  stores only a generated remote file ID and content digest, never credentials
+  or financial payloads.
 
 ## V333 — cobertura mensal de Dividendos (decisão humana aprovada, 2026-10-08)
 

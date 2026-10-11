@@ -1,3 +1,10 @@
+## V1651–V2000 — coordenador compartilhado de idempotência (2026-10-11)
+
+- O adaptador opt-in ganhou um coordenador Firestore transacional por UID. Um documento de operação reserva o mesmo ID pré-gerado Drive e SHA-256 do envelope; antes da reserva o helper confere se o `ownerScope` é o hash da mesma UID autenticada. Rules permitem somente leitura pontual do proprietário e criação validada, sem list/update/delete. Navegadores e workers falham fechados sem coordenação compartilhada; worker sem Web Locks também falha antes da rede.
+- Testes diretos de backup, restauração, segurança, simulador e adapter: 60/60 PASS após o novo teste de worker. A concorrência entre dois adaptadores foi testada com um fake transacional, não com Firebase Emulator nem Drive. O Emulator 15.32.1/Java 26 saiu antes dos testes com código 1 e log vazio; nenhum listener permaneceu nas portas configuradas. A causa do encerramento não foi determinada.
+- MAJOR=MITIGATED, não encerrado: rules/transaction ainda aguardam teste no Emulator e upload concorrente aguarda Drive QA autorizado. Adaptador continua desconectado do produto; exatamente uma gravação não foi certificada. `node_modules` ausente; sem autorização para `npm ci`; matrizes que dependem de React/Vite/Playwright não executadas.
+- Nenhum OAuth ou Drive real, Firebase hospedado, escrita/restauração financeira, produção ou merge. Confira SHA, Actions e Preview após qualquer publicação.
+
 ## V1651 — retries idempotentes locais do adaptador Drive (2026-10-11)
 
 - Na branch isolada `codex/v1651-drive-idempotency`, o adaptador opt-in pré-aloca um ID via Drive `files.generateIds`, persiste ID e SHA do envelope em journal local e reconcilia retries após reinício/resposta perdida. Web Locks protege contextos cooperantes do mesmo navegador; falha de journal ou falta de coordenação entre abas bloqueia antes do upload quando aplicável. Nenhuma integração de produto foi feita.

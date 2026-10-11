@@ -21,6 +21,43 @@
     return Object.assign(new Error(code), { code, retryable, retryAfter });
   }
 
+  function isBrowserRuntime() {
+    return typeof window === 'object' || typeof document === 'object' || (typeof self === 'object' && typeof self.importScripts === 'function');
+  }
+
+  function createFirestoreBackupOperationCoordinator({ firestore, getOwnerUid } = {}) {
+    if (!firestore || typeof firestore.collection !== 'function' || typeof firestore.runTransaction !== 'function') throw fail('COORDINATOR_UNAVAILABLE');
+    if (typeof getOwnerUid !== 'function') throw fail('COORDINATOR_AUTH_REQUIRED');
+    return Object.freeze({
+      async reserve({ idempotencyHash, contentSha256, proposedFileId, ownerScope } = {}) {
+        if (!HEX_256.test(idempotencyHash || '') || !HEX_256.test(contentSha256 || '') || !HEX_256.test(ownerScope || '') ||
+            typeof proposedFileId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(proposedFileId)) throw fail('INVALID_OPERATION_IDENTITY');
+        let ownerUid;
+        try { ownerUid = await getOwnerUid(); } catch { throw fail('COORDINATOR_AUTH_REQUIRED'); }
+        if (typeof ownerUid !== 'string' || !ownerUid || ownerUid !== ownerUid.trim() || ownerUid.includes('/') || ownerUid.length > 128) throw fail('COORDINATOR_AUTH_REQUIRED');
+        if (ownerScope !== await sha256(`carteira-investimentos-backup-owner-v1:${ownerUid}`)) throw fail('COORDINATOR_OWNER_MISMATCH');
+        const ref = firestore.collection('users').doc(ownerUid).collection('driveBackupOperations').doc(idempotencyHash);
+        try {
+          return await firestore.runTransaction(async transaction => {
+            const snapshot = await transaction.get(ref);
+            if (snapshot.exists) {
+              const stored = snapshot.data();
+              if (!stored || stored.contentSha256 !== contentSha256 || typeof stored.fileId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(stored.fileId)) throw fail('IDEMPOTENCY_CONFLICT');
+              return { fileId: stored.fileId, contentSha256: stored.contentSha256 };
+            }
+            const operation = { fileId: proposedFileId, contentSha256 };
+            transaction.set(ref, operation);
+            return operation;
+          });
+        } catch (error) {
+          if (error?.code === 'IDEMPOTENCY_CONFLICT') throw error;
+          if (['permission-denied', 'unauthenticated', 'firestore/permission-denied', 'firestore/unauthenticated'].includes(error?.code)) throw fail('COORDINATOR_FORBIDDEN');
+          throw fail('COORDINATOR_UNAVAILABLE', true);
+        }
+      }
+    });
+  }
+
   async function sha256(value) {
     const crypto = globalThis.crypto;
     if (!crypto?.subtle) throw fail('CRYPTO_UNAVAILABLE');
@@ -145,11 +182,12 @@
     return provider;
   }
 
-  function createGoogleDriveBackupAdapter({ getAccessToken, fetchImpl = globalThis.fetch, ownerScope, appId, operationStore } = {}) {
+  function createGoogleDriveBackupAdapter({ getAccessToken, fetchImpl = globalThis.fetch, ownerScope, appId, operationStore, operationCoordinator } = {}) {
     if (typeof getAccessToken !== 'function') throw fail('AUTH_PROVIDER_REQUIRED');
     if (typeof fetchImpl !== 'function') throw fail('FETCH_UNAVAILABLE');
     if (!HEX_256.test(ownerScope || '')) throw fail('OWNER_SCOPE_REQUIRED');
     if (typeof appId !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(appId)) throw fail('INVALID_APP_ID');
+    if (operationCoordinator && typeof operationCoordinator.reserve !== 'function') throw fail('COORDINATOR_UNAVAILABLE');
     let journal = operationStore;
     if (!journal) {
       // shortcut: local journal only recovers this profile; upgrade when a shared authority exists.
@@ -374,7 +412,7 @@
       const run = () => uploadOne(args);
       try {
         if (globalThis.navigator?.locks?.request) return await globalThis.navigator.locks.request(`drive-backup:${queueKey}`, run);
-        if (typeof window === 'object') throw fail('CROSS_TAB_COORDINATION_UNAVAILABLE');
+        if (isBrowserRuntime()) throw fail('CROSS_TAB_COORDINATION_UNAVAILABLE');
         return await run();
       }
       finally {
@@ -385,6 +423,7 @@
 
     async function uploadOne({ backupKey, idempotencyKey, envelope } = {}) {
       if (typeof backupKey !== 'string' || !backupKey.trim() || typeof idempotencyKey !== 'string' || !idempotencyKey.trim()) throw fail('INVALID_BACKUP_IDENTITY');
+      if (isBrowserRuntime() && !operationCoordinator) throw fail('SHARED_COORDINATOR_REQUIRED');
       const content = validateEnvelope(envelope);
       const contentSha256 = await sha256(content);
       const backupKeyHash = await sha256(backupKey);
@@ -394,18 +433,27 @@
       if (operation && (typeof operation.fileId !== 'string' || !/^[\w-]+$/.test(operation.fileId) || operation.contentSha256 !== contentSha256)) throw fail('IDEMPOTENCY_CONFLICT');
       const existing = await listRaw({ backupKeyHash, idempotencyHash });
       if (existing.length > 1) throw fail('IDEMPOTENCY_CONFLICT');
-      if (existing.length === 1) {
-        if (existing[0].appProperties.contentSha256 !== contentSha256) throw fail('IDEMPOTENCY_CONFLICT');
-        await verifyUploadedFile(existing[0], { backupKey, contentSha256, expectedSize: new TextEncoder().encode(content).byteLength });
-        journalSet(journalKey, { fileId: existing[0].id, contentSha256 });
-        return { fileId: existing[0].id, createdAt: existing[0].createdTime || null, contentSha256, replayed: true };
-      }
       const sameContent = (await listRaw({ backupKeyHash })).filter(file => file.appProperties.contentSha256 === contentSha256);
       if (sameContent.length > 1) throw fail('IDEMPOTENCY_CONFLICT');
-      if (sameContent.length === 1) {
-        await verifyUploadedFile(sameContent[0], { backupKey, contentSha256, expectedSize: new TextEncoder().encode(content).byteLength });
-        journalSet(journalKey, { fileId: sameContent[0].id, contentSha256 });
-        return { fileId: sameContent[0].id, createdAt: sameContent[0].createdTime || null, contentSha256, replayed: true };
+      const discovered = existing[0] || sameContent[0] || null;
+      if (discovered && discovered.appProperties.contentSha256 !== contentSha256) throw fail('IDEMPOTENCY_CONFLICT');
+      if (operationCoordinator) {
+        let proposedFileId = operation?.fileId || discovered?.id;
+        if (!proposedFileId) {
+          const ids = await readJson(await request(`${DRIVE_FILES}/generateIds?count=1&space=drive&fields=ids`));
+          if (!Array.isArray(ids.ids) || typeof ids.ids[0] !== 'string' || !/^[\w-]+$/.test(ids.ids[0])) throw fail('DRIVE_RESPONSE_INVALID');
+          proposedFileId = ids.ids[0];
+        }
+        const shared = await operationCoordinator.reserve({ idempotencyHash, contentSha256, proposedFileId, ownerScope });
+        if (!shared || typeof shared.fileId !== 'string' || !/^[\w-]+$/.test(shared.fileId) || shared.contentSha256 !== contentSha256 ||
+            (operation && operation.fileId !== shared.fileId) || (discovered && discovered.id !== shared.fileId)) throw fail('IDEMPOTENCY_CONFLICT');
+        operation = { fileId: shared.fileId, contentSha256 };
+        journalSet(journalKey, operation);
+      }
+      if (discovered) {
+        await verifyUploadedFile(discovered, { backupKey, contentSha256, expectedSize: new TextEncoder().encode(content).byteLength });
+        if (!operation) { operation = { fileId: discovered.id, contentSha256 }; journalSet(journalKey, operation); }
+        return { fileId: discovered.id, createdAt: discovered.createdTime || null, contentSha256, replayed: true };
       }
       if (operation) {
         try {
@@ -492,5 +540,5 @@
     return Object.freeze({ upload, listVersions, download, planRetention });
   }
 
-  return { GOOGLE_DRIVE_FILE_SCOPE: DRIVE_SCOPE, createGoogleDriveTokenProvider, createGoogleDriveBackupAdapter };
+  return { GOOGLE_DRIVE_FILE_SCOPE: DRIVE_SCOPE, createGoogleDriveTokenProvider, createGoogleDriveBackupAdapter, createFirestoreBackupOperationCoordinator };
 });
