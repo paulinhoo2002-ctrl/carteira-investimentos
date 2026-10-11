@@ -1,3 +1,9 @@
+## V1051 — simulador local de backup externo (2026-10-11)
+
+- Implementação local validada na worktree isolada `C:\Projetos\carteira-investimentos.worktrees\v1051-drive-backup`, branch `codex/v1051-drive-backup-simulator`, baseada no HEAD remoto da PR #491 `af7d52afc81c8f8358005698a0c988184de943f7`. `origin/main` foi conferida em `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; PR #491 continua OPEN/DRAFT e não foi integrada.
+- Implementação de teste reutiliza o envelope cifrado existente, sem OAuth/Drive/Firebase real. Simulador de pasta temporária cobre arquivos imutáveis, retry idempotente, isolamento por escopo, falhas/corrupção e retenção somente após confirmação. Recuperação sintética em subprocesso separado compara SHA-256 e métricas de ativo, compra, venda, provento e saldo. Testes locais: V1051 6/6, backup/restore 24/24, recovery 9/9, V324 backup 17/17, finanças 96/96, build PASS e diff-check limpo.
+- Evidência e limites: [`V1051_GOOGLE_DRIVE_BACKUP_DISASTER_RECOVERY.md`](V1051_GOOGLE_DRIVE_BACKUP_DISASTER_RECOVERY.md). Nenhum arquivo financeiro pessoal, credencial ou backup externo real acessado. `REAL_DRIVE_UPLOAD_DOWNLOAD=NOT_TESTED`; `MERGE=false`; `PRODUCTION=false`.
+
 ## V1006 — desastre recovery: certificação sintética local (2026-10-11)
 
 - Base `origin/main` confirmada em `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; worktree isolada `codex/v1006-disaster-recovery`.

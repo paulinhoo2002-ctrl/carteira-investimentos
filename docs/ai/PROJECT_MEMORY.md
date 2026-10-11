@@ -1,3 +1,11 @@
+## V1051 — simulador e recuperação sintética de destino externo (2026-10-11)
+
+- O simulador de Drive é exclusivamente de teste, usa diretório temporário validado e recebe apenas envelope cifrado existente. Não adicionar cliente OAuth/HTTP no caminho financeiro para certificar um mock.
+- Retry do mesmo conteúdo precisa ser idempotente; chave idempotente com bytes diferentes deve conflitar. Versões são imutáveis e retenção deve ser prévia explícita, proteger corrupção e não apagar automaticamente.
+- Recuperação independente sintética deve abrir o artefato do destino no subprocesso novo sem IndexedDB/localStorage, validar criptografia/manifesto/owner e comparar SHA-256 do estado restaurado. Isso comprova mock/local recovery, não upload/download real nem restore persistido no app.
+- Para eventual integração Drive, `drive.file` é um escopo mais restrito que acesso amplo ao Drive, mas inclui editar e excluir arquivos usados pelo app; não habilitar retenção/exclusão automática. Consultar a política OAuth e obter gate antes de conectar uma conta.
+- Status desta fase e evidências: [`V1051_GOOGLE_DRIVE_BACKUP_DISASTER_RECOVERY.md`](V1051_GOOGLE_DRIVE_BACKUP_DISASTER_RECOVERY.md). O mock e sua recuperação não certificam disponibilidade do Google Drive, OAuth, restauração persistida ou operação em produção.
+
 ## V1005 — operacional e exportação portátil protegida (2026-10-11)
 
 - Na branch isolada `codex/v1005-operational-certification`, export portátil recebeu AES-256-GCM com chave derivada PBKDF2/SHA-256; a validação de proprietário/manifesto/SHA continua antes da cifra e depois da decifra. Snapshots locais do navegador permanecem sem esta criptografia e a UI de import continua preview-only.

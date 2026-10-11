@@ -1,3 +1,10 @@
+## V1051 — continuação do simulador de backup externo (2026-10-11)
+
+- Branch `codex/v1051-drive-backup-simulator` em worktree LEGACY isolada, empilhada sobre PR #491 no HEAD `af7d52afc81c8f8358005698a0c988184de943f7`; validar o estado da PR #491 novamente antes da publicação. Base atual da main: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`.
+- Gates locais PASS: V1051 focused 6/6, `test:backup-restore` 24/24, `test:backup-recovery` 9/9, `test:v324-backup` 17/17, `test:finance` 96/96, build e `git diff --check`. Publicação autorizada nesta missão: commit/push normal e Draft PR empilhada apontando para `codex/v1006-disaster-recovery`; então conferir CI/Vercel no SHA exato.
+- Dependências completas não estão instaladas nesta worktree; não executar `npm ci` sem autorização específica. Nenhuma integração OAuth/Drive, Firebase hospedado, upload real, restore financeiro real, produção ou merge.
+- Após push, observar CI e Vercel no SHA exato. Gate humano futuro e separado: OAuth Drive em ambiente QA sintético, upload/download real de arquivo sintético e restore isolado; operações sobre dados reais ou exclusão externa requerem autorização própria.
+
 ## V1006 — gate de disaster recovery (2026-10-11)
 
 - Base isolada: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; branch `codex/v1006-disaster-recovery`.
