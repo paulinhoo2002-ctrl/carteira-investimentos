@@ -1,3 +1,10 @@
+## V1006 — gate de disaster recovery (2026-10-11)
+
+- Base isolada: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; branch `codex/v1006-disaster-recovery`.
+- Suítes sintéticas focadas: backup/restore/segurança 53/53 e finanças 82/82. Fluxo de arquivo cifrado foi aberto em subprocesso limpo sem IndexedDB/localStorage; aplicação persistida não foi restaurada.
+- Próxima ação: concluir build/diff review; commit e push normal desta branch; abrir Draft PR; conferir CI e Vercel no SHA exato. Não declarar backup externo certificado. Gate humano futuro: escolher/autorizar destino externo e, separadamente, autorizar restauração de fixture sintética em QA isolado.
+- Evidência: [`V1006_DISASTER_RECOVERY_CERTIFICATION.md`](V1006_DISASTER_RECOVERY_CERTIFICATION.md). `MERGE=false`; `PRODUCTION=false`; nenhuma operação financeira real.
+
 ## V1005 — certificação operacional LEGACY (2026-10-11)
 
 - Base verificada: `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; implementação na worktree isolada `codex/v1005-operational-certification`.

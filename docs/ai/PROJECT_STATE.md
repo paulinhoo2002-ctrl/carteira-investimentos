@@ -1,3 +1,9 @@
+## V1006 — desastre recovery: certificação sintética local (2026-10-11)
+
+- Base `origin/main` confirmada em `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; worktree isolada `codex/v1006-disaster-recovery`.
+- Teste focal recupera backup portátil cifrado em subprocesso sem IndexedDB/localStorage e compara hashes do estado sintético antes/depois do helper isolado em memória. Backup, segurança e finanças focados passaram; detalhes em [`V1006_DISASTER_RECOVERY_CERTIFICATION.md`](V1006_DISASTER_RECOVERY_CERTIFICATION.md).
+- Exportação AES-256-GCM/PBKDF2 existente é manual. Destino externo, retenção externa, restauração persistida, matriz completa, CI e Vercel ainda não certificados. `CONDITIONAL_GO` somente para o fluxo sintético/local; `PRODUCTION_READY=false`.
+
 ## V1005 — certificação operacional (2026-10-11)
 
 - Base `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; branch isolada `codex/v1005-operational-certification`.

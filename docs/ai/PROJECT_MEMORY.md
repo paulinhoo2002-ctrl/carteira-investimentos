@@ -68,6 +68,12 @@ As entradas V851–V860 e V861–V920 abaixo preservam a evidência daquele mome
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V1006 — limite entre exportação cifrada e recuperação independente (2026-10-11)
+
+- Um arquivo exportado cifrado pode ser transportável e verificado sem constituir backup externo automatizado. IndexedDB é local ao dispositivo; upload, retenção externa e download de recuperação precisam de evidência própria.
+- Teste sintético de subprocesso limpo demonstra decifragem/manifesto/proprietário e roundtrip do estado em helper de memória sem IndexedDB/localStorage. Isso não certifica aplicação persistida, conta externa ou restauração real.
+- Estado-base `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; documentação/evidência: [`V1006_DISASTER_RECOVERY_CERTIFICATION.md`](V1006_DISASTER_RECOVERY_CERTIFICATION.md).
+
 ## V831–V850 — contratos de backup e isolamento (2026-10-10)
 
 - Snapshots IndexedDB precisam de owner scope derivado do UID e de chaves versionadas; listagem e retenção por conta evitam sobrescrita/remoção cruzada. Backups vinculados exigem a mesma identidade para verificar e simular restauração.
