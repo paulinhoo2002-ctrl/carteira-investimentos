@@ -62,6 +62,56 @@
     }
     throw new Error('SHA256_UNAVAILABLE');
   }
+  const ENCRYPTED_FORMAT = 'carteira-investimentos-backup-encrypted';
+  const PBKDF2_ITERATIONS = 310000;
+  const MAX_ENCRYPTED_TEXT = 36 * 1024 * 1024;
+  function bytesToBase64(bytes) {
+    if (typeof Buffer !== 'undefined') return Buffer.from(bytes).toString('base64');
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+    return btoa(binary);
+  }
+  function base64ToBytes(value) {
+    if (typeof value !== 'string' || value.length > MAX_ENCRYPTED_TEXT || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)) throw new Error('INVALID_ENCRYPTED_BACKUP');
+    if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(value, 'base64'));
+    const binary = atob(value);
+    return Uint8Array.from(binary, char => char.charCodeAt(0));
+  }
+  function assertCryptoProvider(cryptoProvider) {
+    if (!cryptoProvider?.subtle || typeof cryptoProvider.getRandomValues !== 'function') throw new Error('WEBCRYPTO_UNAVAILABLE');
+  }
+  function assertPassphrase(passphrase) {
+    if (typeof passphrase !== 'string' || passphrase.length < 12) throw new Error('PASSPHRASE_TOO_SHORT');
+  }
+  async function deriveBackupKey(passphrase, salt, cryptoProvider, usages) {
+    const material = await cryptoProvider.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+    return cryptoProvider.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' }, material, { name: 'AES-GCM', length: 256 }, false, usages);
+  }
+  async function encryptBackup(backup, passphrase, { cryptoProvider = globalThis.crypto } = {}) {
+    assertPassphrase(passphrase);
+    assertCryptoProvider(cryptoProvider);
+    const plaintext = JSON.stringify(backup);
+    if (typeof plaintext !== 'string' || new TextEncoder().encode(plaintext).length > 25 * 1024 * 1024) throw new Error('INVALID_BACKUP_PAYLOAD');
+    const salt = cryptoProvider.getRandomValues(new Uint8Array(16));
+    const iv = cryptoProvider.getRandomValues(new Uint8Array(12));
+    const key = await deriveBackupKey(passphrase, salt, cryptoProvider, ['encrypt']);
+    const ciphertext = await cryptoProvider.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(plaintext));
+    return { format: ENCRYPTED_FORMAT, version: 1, kdf: { name: 'PBKDF2', hash: 'SHA-256', iterations: PBKDF2_ITERATIONS, salt: bytesToBase64(salt) }, cipher: { name: 'AES-GCM', iv: bytesToBase64(iv) }, ciphertext: bytesToBase64(new Uint8Array(ciphertext)) };
+  }
+  async function decryptBackup(envelope, passphrase, { cryptoProvider = globalThis.crypto } = {}) {
+    assertPassphrase(passphrase);
+    assertCryptoProvider(cryptoProvider);
+    if (!isRecord(envelope) || envelope.format !== ENCRYPTED_FORMAT || envelope.version !== 1 || envelope.kdf?.name !== 'PBKDF2' || envelope.kdf?.hash !== 'SHA-256' || envelope.kdf?.iterations !== PBKDF2_ITERATIONS || envelope.cipher?.name !== 'AES-GCM') throw new Error('UNSUPPORTED_ENCRYPTED_BACKUP');
+    const salt = base64ToBytes(envelope.kdf.salt);
+    const iv = base64ToBytes(envelope.cipher.iv);
+    const ciphertext = base64ToBytes(envelope.ciphertext);
+    if (salt.length !== 16 || iv.length !== 12 || ciphertext.length < 16) throw new Error('INVALID_ENCRYPTED_BACKUP');
+    try {
+      const key = await deriveBackupKey(passphrase, salt, cryptoProvider, ['decrypt']);
+      const plaintext = await cryptoProvider.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+      return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(plaintext));
+    } catch (_) { throw new Error('DECRYPTION_FAILED'); }
+  }
   async function ownerScopeFor(ownerId) {
     if (typeof ownerId !== 'string' || !ownerId.trim()) throw new Error('OWNER_ID_REQUIRED');
     return sha256(`carteira-investimentos-backup-owner-v1:${ownerId.trim()}`);
@@ -576,5 +626,5 @@
       result.ok = true; result.store = next; result.rollback = false; return result;
     } catch (error) { return { ...result, error }; }
   }
-  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize, sha256, planRetention, periodicCadences, listLocalBackups, saveLocalBackup, createPeriodicBackups, externalBackupChannels };
+  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize, sha256, planRetention, periodicCadences, listLocalBackups, saveLocalBackup, createPeriodicBackups, externalBackupChannels, encryptBackup, decryptBackup };
 });
