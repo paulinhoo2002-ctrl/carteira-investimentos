@@ -17,7 +17,7 @@
     "verify:release": "npm test && npm run test:modern && npm run qa:all && npm run test:visual-regression",
     "test:finance": "node --test tests/finance-core.test.js tests/v333-dividend-month-coverage.test.js tests/v333-passive-income-coverage.test.js",
     "test:persistence": "node --test tests/persistence-core.test.js",
-    "test:backup-restore": "node --test tests/backup-restore-integration.test.js tests/backup-security-policy.test.js tests/backup-encryption.test.js",
+    "test:backup-restore": "node --test tests/backup-restore-integration.test.js tests/backup-security-policy.test.js tests/backup-encryption.test.js tests/v1051-drive-backup-simulator.test.js tests/google-drive-backup-adapter.test.js",
     "test:load": "node --test tests/load-integration.test.js",
     "pretest": "npm run build:modern",
     "test:roundtrip": "node --test tests/save-load-roundtrip.test.js",
