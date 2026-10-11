@@ -1,4 +1,14 @@
-## V1002 — reconciliação da PR #485 com main após #486 (2026-10-11)
+## Estado atual — V1003 pós-integração (2026-10-11)
+
+- Os blocos de checkpoint abaixo são históricos; não representam o estado remoto atual. Use o snapshot V1003 e o checkpoint vinculado.
+
+- `ORIGIN_MAIN=6b559adac12cdedb40d7b8294b14c82469c07446`; #485, #486 e #487 estão MERGED. O checkout canônico continua intocado nesta fase.
+- Checks GitHub Actions passaram nos HEADs finais das três PRs; a consulta de runs disparados por PR não retornou resultados para o merge SHA; CI pós-merge não foi observado. Vercel reportou main deployment READY para esse SHA.
+- Auditoria atual do lockfile: 7 advisories de desenvolvimento (4 high/3 moderate); audit omit-dev=0. Nenhuma dependência foi alterada.
+- Backup externo independente, restauração real, Firebase hospedado multiusuário e validação de produção não certificados. `PRODUCTION_READY=false`; nenhuma operação financeira real.
+- Detalhes e limites: [`V1003_V1200_LEGACY_STABILIZATION_CHECKPOINT.md`](V1003_V1200_LEGACY_STABILIZATION_CHECKPOINT.md).
+
+### Histórico V1002 — snapshot superado por V1003
 
 - PR #486 MERGED pela main em 78549c05c0a9baf8cabf7c57513bf6946f399908; PR #485 permanece OPEN/DRAFT no HEAD anterior d516ec9a7907aef1d750898a1ec78f69f802377a e estava CONFLICTING antes desta integração.
 - Merge normal da main 78549c05c0a9baf8cabf7c57513bf6946f399908 concluído no commit 5b937289c95e24c7b7a8ff8f4ebd9b58867aaaf0, com pais d516ec9a7907aef1d750898a1ec78f69f802377a 78549c05c0a9baf8cabf7c57513bf6946f399908. Conflitos apenas nos três documentos de continuidade; históricos dos dois lados preservados integralmente.
