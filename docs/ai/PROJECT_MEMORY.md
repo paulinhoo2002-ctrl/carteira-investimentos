@@ -1,4 +1,13 @@
-## V851–V860 — auditoria e roteamento de Skills (2026-10-10)
+## V1001 — reconciliação das PRs #485/#486 (2026-10-11)
+
+- Base remota a746e0c4cd198baa6d9af00cc4188557dfa5300d foi incorporada sem rebase; conflitos documentais resolvidos preservando os checkpoints originais.
+- #485 recebeu merge normal da main e foi publicada em f23d1c99bfba1f328ea9d16cde24488b81245509. #486 está sendo reconciliada separadamente; nenhum código da #485 foi introduzido nela.
+- Nenhuma PR foi mesclada. Sem escrita, exportação, importação ou restauração financeira real, produção ou credenciais. CI/Preview serão avaliados por SHA após push.
+
+## Checkpoints anteriores — registros de 2026-10-10
+
+As entradas V851–V860 e V861–V920 abaixo preservam a evidência daquele momento e não são estado remoto atual.
+
 
 - Auditoria parte da main `efc9778e57f17e3778a69f4214301cacef670153`, em worktree isolada `codex/v851-v860-skills-intelligence`; checkout canônico sujo foi preservado.
 - Roteamento vigente: `AGENTS.md` → Superpowers primeiro → Ponytail full → Caveman → mínimo de Skills específicas. O Codex é runtime disponível; Hermes/NVIDIA não foi executado nem validado por credenciais neste ambiente.
@@ -7,6 +16,13 @@
 - Seletor limitado a duas Skills especializadas, exige inventário disponível fornecido pelo executor, não instala/carrega/executa Skills nem concede autorização. Casos financeiros, Firebase, UI, browser, backup, segurança, documentação e release cobertos por testes. IDs de plugin namespaced precisam de aliases explícitos no roteador; a saída preserva o identificador real fornecido pelo runtime. O contrato permanente não pode conceder autoridade Git global; ação e escopo precisam de autorização humana específica.
 - Catálogo NVIDIA foi rechecado em 2026-10-10. Poolside Laguna XS 2.1 e GLM-5.3 são candidatos de catálogo para coding/tool use; presença pública não prova acesso. Modelo Hermes indisponível nesta sessão. Sem mudança financeira, cloud, deploy ou produto.
 - `NEXT_ACTION=reviewar diff V851, validar testes e publicar Draft PR; sem merge`.
+
+
+- Main auditada: `efc9778e57f17e3778a69f4214301cacef670153`; checkout canônica continua com alterações locais preexistentes preservadas.
+- PR #486: OPEN/DRAFT, HEAD `3d4456a0dda931802f567af36a0de542754b5caf`, CI #904 SUCCESS, Vercel READY; descrição sincronizada. PR #485: OPEN/DRAFT, HEAD `a64bca3b05f9cd3288560a54011bb1b3cda37ff7`, CI #898 SUCCESS, Vercel SUCCESS. PR #487: OPEN/DRAFT no SHA `c205fa245af9143c14eaf755ba823e9bd74e685a`, CI #905 SUCCESS, Preview READY, threads 0. Nenhum merge.
+- Testes frescos na V861: finanças 96/96; performance 97/97; testes app backup/restore passaram; source-code archive dry-run foi bloqueado fail-closed por nomes de caminhos sinalizados. Modern e V84 não certificados por dependências ausentes. `npm ci` requer autorização.
+- Main mantém backup periódico local ao navegador e exportação manual. PR #484 registra automações externas habilitadas e execuções OK; estado ao vivo não foi consultável neste runtime. Firestore managed schedules não configurados. Nenhuma cópia financeira real foi inspecionada; QA hospedado multiusuário segue NOT_TESTED.
+- `firestore.rules` permanece idêntico ao SHA V436 com Emulator 8/8 documentado; não foi rerodado. `PRODUCTION_READY=false`; nenhuma escrita/exportação/restauração financeira real, ação manual de produção ou merge.
 
 ## V436 — gates operacionais (2026-10-10)
 

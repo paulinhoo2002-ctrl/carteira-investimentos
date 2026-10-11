@@ -63,7 +63,11 @@ function Get-BackupArchivePathPolicy {
     if ($segments | Where-Object { $_ -ieq 'local-imports' -or $_ -ieq '_backups-seguros' }) {
         return [pscustomobject]@{ Disposition = 'BLOCK'; Reason = 'SENSITIVE_FINANCIAL_DATA' }
     }
-    if ($segments | Where-Object { $_ -match '(?i)(secret|token|credential|password|private[-_]?key)' }) {
+    $parentSegments = if ($segments.Length -gt 1) { $segments[0..($segments.Length - 2)] } else { @() }
+    if ($parentSegments | Where-Object { $_ -match '(?i)(secret|token|credential|password|private[-_]?key)' }) {
+        return [pscustomobject]@{ Disposition = 'BLOCK'; Reason = 'CREDENTIAL_LIKE_PATH' }
+    }
+    if ($leaf -match '(?i)(secret|token|credential|password|private[-_]?keys?)(?:\.[^.]+)?$') {
         return [pscustomobject]@{ Disposition = 'BLOCK'; Reason = 'CREDENTIAL_LIKE_PATH' }
     }
     if ($leaf -ieq '.env' -or $leaf -match '(?i)^\.env\.') {
