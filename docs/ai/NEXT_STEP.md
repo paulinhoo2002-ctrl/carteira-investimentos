@@ -1,12 +1,17 @@
 # Next Step
-## V831–V850 — sincronização documental e gates remotos
+## V1001 — reconciliação de PRs #485/#486 (2026-10-11)
 
-- PR #485 permanece OPEN/DRAFT/MERGEABLE na branch `codex/v831-v850-backup-automation`; worktree dedicada em `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`. O último SHA de código certificado é `ca7e148eb1460e7e8676aac698d0c09d68e662e2`.
-- GitHub Actions run `38099988910` passou os três jobs no SHA acima. O deployment Vercel desse SHA falhou com `git_info_fail` antes de gerar Preview utilizável; não confundir com o check Vercel Preview Comments, que passou.
-- Após o commit documental, verificar os checks e o deployment no SHA novo exato. Não fazer deploy manual.
-- Localmente, `test:modern` teve 719 testes aprovados, mas 9 arquivos não carregaram por React ausente; `qa:all` e `verify:release` pararam no Vite ausente. `npm ci` não foi autorizado nesta worktree; solicitar autorização específica apenas se necessário para completar esses gates locais.
-- Próximos gates humanos: primeiro export real, OAuth/Drive, leitura de arquivo financeiro pessoal, Firebase write, restore/migração real e merge. Nenhum deles foi executado.
+- Reconciliar cada branch com `origin/main` `a746e0c4cd198baa6d9af00cc4188557dfa5300d` usando merge não destrutivo; não fazer rebase, force-push ou merge de PR.
+- #485: backup local/IndexedDB, escopo por UID, integridade e restauração sintética; worktree `v831-v850-backup-automation`.
+- #486: governança e roteador de Skills; worktree `v851-v860-skills-intelligence`.
+- Após cada push, verificar SHA exato, CI e Preview. PRs permanecem Draft; sem dados reais, escrita, restauração, produção ou merge.
 
+## Registro anterior — V831–V850/V861–V920 (2026-10-10)
+
+- Os próximos passos e estados registrados abaixo refletem os checkpoints antes desta reconciliação e não substituem o gate V1001 acima.
+- V831–V850: PR #485 tinha CI verde no SHA `ca7e148eb1460e7e8676aac698d0c09d68e662e2`; o deployment Vercel reportou `git_info_fail`, sem Preview utilizável. Gates locais Modern, `qa:all` e `verify:release` estavam incompletos por dependências ausentes; npm ci não estava autorizado naquela worktree naquele momento.
+- V861–V920: retomar de `docs/ai/V861_V920_MASTER_CHECKPOINT.md`; autorização de npm ci era exclusiva à worktree V861. A evidência #484 registrava três jobs habilitados e duas execuções OK, sem comprovação de agenda ativa.
+- Nesse checkpoint, #485/#486/#487 estavam OPEN/DRAFT; #487 CI #905 e Preview READY em `c205fa2`. Nenhuma PR foi mesclada.
 ## V561 — hardening da comparação mensal (2026-10-10)
 
 - PR #481 segue OPEN/DRAFT no SHA `871a5de5cc7300b0a1c72497621b1b98cb441f0a`; testes sintéticos cobrem filtro exclusivo PAID, meses calendário consecutivos e UNKNOWN versus zero com cobertura completa.
