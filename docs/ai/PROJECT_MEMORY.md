@@ -1,3 +1,10 @@
+## V861–V920 — continuidade factual (2026-10-10)
+
+- Main auditada: `efc9778e57f17e3778a69f4214301cacef670153`; checkout canônica continua com alterações locais preexistentes preservadas.
+- PR #486: OPEN/DRAFT, HEAD `3d4456a0dda931802f567af36a0de542754b5caf`, CI #904 SUCCESS, Vercel READY; descrição sincronizada. PR #485: OPEN/DRAFT, HEAD `a64bca3b05f9cd3288560a54011bb1b3cda37ff7`, CI #898 SUCCESS, Vercel SUCCESS. Nenhum merge.
+- Testes frescos na V861: finanças 96/96; performance 97/97; testes app backup/restore passaram; source-code archive dry-run foi bloqueado fail-closed por nomes de caminhos sinalizados. Modern e V84 não certificados por dependências ausentes. `npm ci` requer autorização.
+- Main mantém backup periódico local ao navegador e exportação manual. PR #484 registra automações externas habilitadas e execuções OK; estado ao vivo não foi consultável neste runtime. Firestore managed schedules não configurados. Nenhuma cópia financeira real foi inspecionada; QA hospedado multiusuário segue NOT_TESTED.
+- `firestore.rules` permanece idêntico ao SHA V436 com Emulator 8/8 documentado; não foi rerodado. `PRODUCTION_READY=false`; nenhuma escrita/exportação/restauração financeira real, ação manual de produção ou merge.
 ## V436 — gates operacionais (2026-10-10)
 
 - Main `c7690dfd9539e139226cb7865e7de165ab36ea2c`: CI 3/3 SUCCESS, incluindo Auth/Firestore Emulator 8/8; deploy Vercel READY no SHA exato.

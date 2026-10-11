@@ -1,4 +1,11 @@
 # Next Step
+
+## V861–V920 — gate de retomada (2026-10-10)
+
+- Retomar de `docs/ai/V861_V920_MASTER_CHECKPOINT.md`; não reiniciar auditoria nem reutilizar PASS sem validar freshness.
+- Human gate obrigatório: autorização para npm ci somente na worktree V861. Depois, rerun Modern, V84/Playwright, suites legacy, builds, qa:all, verify:release e Firebase Emulator.
+- Reavaliar o bloqueio fail-closed do source archive sem expor caminhos; atualizar estado das automações por visualização suportada. A evidência #484 recente registra três jobs habilitados e duas execuções OK.
+- PR #485/#486 seguem OPEN/DRAFT; sem merge, dados reais, export/restore reais ou deploy manual.
 ## V561 — hardening da comparação mensal (2026-10-10)
 
 - PR #481 segue OPEN/DRAFT no SHA `871a5de5cc7300b0a1c72497621b1b98cb441f0a`; testes sintéticos cobrem filtro exclusivo PAID, meses calendário consecutivos e UNKNOWN versus zero com cobertura completa.
