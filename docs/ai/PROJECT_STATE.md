@@ -4,9 +4,9 @@
 
 - Base: `origin/main=efc9778e57f17e3778a69f4214301cacef670153`; worktree `codex/v851-v860-skills-intelligence` isolada e iniciada limpa.
 - Auditoria detectou caminho inexistente `docs/ai/SKILL_OPERATIONAL_CATALOG.md`, snapshot de inventário defasado e ordem antiga Caveman→Superpowers em um router deprecado. A fonte física versionada é `docs/ai/SKILLS.md`; processo: Superpowers primeiro, Ponytail full, Caveman; rotas técnicas em `docs/ai/SKILL_ROUTER.md`.
-- Seletor consultivo e inventário de rotas implementados; revisão de 14 arquivos concluída. `test:qa-harness` passou (roteamento/governança 8/8; harness local 5/5); `git diff --check` limpo. Build e suítes gerais não executados: dependências completas ausentes e sem autorização para instalar nesta missão.
+- Seletor consultivo e inventário de rotas implementados; revisão de 14 arquivos concluída. `test:qa-harness` passou (roteamento/governança 8/8; harness local 5/5); `git diff --check` limpo. PR #486 aberta como Draft. CI do SHA de implementação `ba8c23086294d40322fcf7b30de072ba52a6f358` passou (3 jobs) e Preview ficou READY nesse SHA. Build e suítes amplas locais não foram executados: dependências completas ausentes e instalação não autorizada nesta missão.
 - `BLOCKER=0`; `MAJOR=0`; `MINOR=1` (disponibilidade de ferramentas/modelos externos não é reproduzível em todas as sessões).
-- `NEXT_ACTION=commit e push normais autorizados; abrir Draft PR e verificar CI do SHA exato`.
+- `NEXT_ACTION=revisão humana da PR #486; confirmar CI do HEAD mais recente antes de qualquer decisão posterior`.
 
 ## V436 — final operational gates (2026-10-10)
 

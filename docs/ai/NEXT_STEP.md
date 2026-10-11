@@ -3,7 +3,8 @@
 
 - Worktree isolada `codex/v851-v860-skills-intelligence`, base `efc9778e57f17e3778a69f4214301cacef670153`.
 - `test:qa-harness` passou (8/8 roteamento/governança e 5/5 harness); revisão dos 14 arquivos concluída; `git diff --check` limpo. Base remota segue `efc9778e57f17e3778a69f4214301cacef670153`.
-- Próximo: commit e push normais dos arquivos explícitos, abrir Draft PR e acompanhar CI/Preview do SHA exato. Build e suítes gerais permanecem não executados porque dependências completas não estão disponíveis e instalação não foi autorizada nesta missão.
+- PR #486 está OPEN/DRAFT. CI (3 jobs) e Preview passaram no SHA de implementação `ba8c23086294d40322fcf7b30de072ba52a6f358`; este checkpoint documental exige nova validação no HEAD final. Build e suítes amplas locais não foram executados porque dependências completas não estavam disponíveis e instalação não foi autorizada.
+- Próximo gate: revisão humana da PR #486; sem merge.
 - Não mesclar nem fazer deploy; preservar o checkout canônico e overlays locais de Skills.
 
 ## V561 — hardening da comparação mensal (2026-10-10)
