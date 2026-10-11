@@ -32,9 +32,14 @@ function driveHarness() {
     const parsed = new URL(url);
     calls.push({ url: parsed, options });
     const id = parsed.pathname.match(/\/files\/([^/]+)$/)?.[1];
+    if (options.method === 'GET' && parsed.pathname.endsWith('/drive/v3/files/generateIds')) {
+      return response(200, { ids: [`synthetic-drive-file-${++sequence}`] });
+    }
     if (options.method === 'POST' && parsed.pathname.endsWith('/upload/drive/v3/files') && parsed.searchParams.get('uploadType') === 'resumable') {
+      const metadata = JSON.parse(options.body);
+      if (files.has(metadata.id)) return response(409, {});
       const sessionId = `synthetic-session-${sessions.size + 1}`;
-      sessions.set(sessionId, { metadata: JSON.parse(options.body) });
+      sessions.set(sessionId, { metadata });
       return response(200, {}, { location: `https://www.googleapis.com/upload/drive/v3/files?upload_id=${sessionId}` });
     }
     if (options.method === 'PUT' && parsed.searchParams.has('upload_id')) {
@@ -47,7 +52,8 @@ function driveHarness() {
       session.content = `${session.content || ''}${contentText}`;
       session.received = start + contentText.length;
       if (session.received < Number(range.match(/\/(\d+)$/)[1])) return response(308, {}, { range: `bytes=0-${session.received - 1}` });
-      const fileId = `synthetic-drive-file-${++sequence}`;
+      const fileId = session.metadata.id || `synthetic-drive-file-${++sequence}`;
+      if (files.has(fileId)) return response(409, {});
       const file = { id: fileId, createdTime: new Date(1000 + sequence).toISOString(), size: String(session.content.length), ...session.metadata };
       delete file.mimeType;
       files.set(fileId, { metadata: file, content: session.content });
@@ -75,6 +81,14 @@ function driveHarness() {
     return response(404, { error: { errors: [{ reason: 'notFound' }] } });
   };
   return { files, sessions, calls, fetchImpl };
+}
+
+function operationStore() {
+  const values = new Map();
+  return {
+    getItem(key) { return values.get(key) ?? null; },
+    setItem(key, value) { values.set(key, value); }
+  };
 }
 
 function tokenProvider(scope = GOOGLE_DRIVE_FILE_SCOPE) {
@@ -180,6 +194,88 @@ test('Drive adapter serializes same-page retries for an idempotency key', async 
   assert.equal(results.filter(item => item.status === 'fulfilled').length, 1);
   assert.equal(results.find(item => item.status === 'rejected').reason.code, 'IDEMPOTENCY_CONFLICT');
   assert.equal(drive.files.size, 1);
+});
+
+test('Drive adapter reuses a journaled Drive ID after restart when search is temporarily stale', async () => {
+  const drive = driveHarness();
+  const journal = operationStore();
+  const base = { getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1', operationStore: journal };
+  const first = createGoogleDriveBackupAdapter(base);
+  const uploaded = await first.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'restart-replay', envelope });
+  const hiddenList = async (url, options) => {
+    const parsed = new URL(url);
+    if (parsed.pathname.endsWith('/drive/v3/files') && options.method !== 'POST') return response(200, { files: [] });
+    return drive.fetchImpl(url, options);
+  };
+  const restarted = createGoogleDriveBackupAdapter({ ...base, fetchImpl: hiddenList });
+  const replay = await restarted.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'restart-replay', envelope });
+  assert.equal(replay.fileId, uploaded.fileId);
+  assert.equal(replay.replayed, true);
+  assert.equal(drive.files.size, 1);
+  assert.equal(drive.calls.filter(call => call.url.pathname.endsWith('/drive/v3/files/generateIds')).length, 1);
+});
+
+test('Drive adapter default journal persists only remote identity metadata in the browser profile', async () => {
+  const drive = driveHarness();
+  const values = new Map();
+  const previousWindow = globalThis.window;
+  const previousNavigator = globalThis.navigator;
+  globalThis.window = { localStorage: {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value)
+  } };
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { locks: { request: (_name, callback) => callback() } } });
+  try {
+    const options = { getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1' };
+    const first = await createGoogleDriveBackupAdapter(options).upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'browser-default-journal', envelope });
+    const replay = await createGoogleDriveBackupAdapter(options).upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'browser-default-journal', envelope });
+    const journalText = [...values.values()].join(' ');
+    assert.equal(replay.fileId, first.fileId);
+    assert.equal(replay.replayed, true);
+    assert.equal(drive.files.size, 1);
+    assert.equal(journalText.includes(envelope), false);
+    assert.equal(journalText.includes('synthetic-access-token'), false);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+    if (previousNavigator === undefined) delete globalThis.navigator;
+    else Object.defineProperty(globalThis, 'navigator', { configurable: true, value: previousNavigator });
+  }
+});
+
+test('Drive adapter reconciles a lost upload response by the journaled ID after restart', async () => {
+  const drive = driveHarness();
+  const journal = operationStore();
+  const base = { getAccessToken: tokenProvider(), ownerScope, appId: 'carteira-investimentos-v1', operationStore: journal };
+  const interrupted = createGoogleDriveBackupAdapter({
+    ...base,
+    fetchImpl: async (url, options) => {
+      const parsed = new URL(url);
+      if (options.method === 'PUT' && parsed.searchParams.has('upload_id') && options.body) {
+        const result = await drive.fetchImpl(url, options);
+        if (result.ok) throw new Error('synthetic response lost after commit');
+        return result;
+      }
+      return drive.fetchImpl(url, options);
+    }
+  });
+  await assert.rejects(() => interrupted.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'lost-response', envelope }), { code: 'UPLOAD_SESSION_EXPIRED' });
+  assert.equal(drive.files.size, 1);
+  const restarted = createGoogleDriveBackupAdapter({ ...base, fetchImpl: drive.fetchImpl });
+  const replay = await restarted.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'lost-response', envelope });
+  assert.equal(replay.replayed, true);
+  assert.equal(drive.files.size, 1);
+});
+
+test('Drive adapter fails closed when it cannot persist the operation identity', async () => {
+  const drive = driveHarness();
+  const adapter = createGoogleDriveBackupAdapter({
+    getAccessToken: tokenProvider(), fetchImpl: drive.fetchImpl, ownerScope, appId: 'carteira-investimentos-v1',
+    operationStore: { getItem: () => null, setItem() { throw new Error('synthetic journal unavailable'); } }
+  });
+  await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'journal-failure', envelope }), { code: 'OPERATION_JOURNAL_UNAVAILABLE' });
+  assert.equal(drive.files.size, 0);
+  assert.equal(drive.calls.some(call => call.options.method === 'POST'), false);
 });
 
 test('Drive adapter rejects invalid, expired, or overbroad OAuth grants before network access', async () => {
@@ -371,11 +467,12 @@ test('Drive adapter rejects an untrusted resumable session URL without sending c
       const parsed = new URL(url);
       calls.push({ parsed, options });
       if (parsed.searchParams.has('q')) return response(200, { files: [] });
+      if (parsed.pathname.endsWith('/drive/v3/files/generateIds')) return response(200, { ids: ['synthetic-drive-id'] });
       return response(200, {}, { location: 'https://attacker.invalid/upload/drive/v3/files?upload_id=secret' });
     }
   });
   await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'unsafe-session', envelope }), { code: 'UPLOAD_SESSION_INVALID' });
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 4);
   assert.ok(calls.every(call => call.parsed.hostname === 'www.googleapis.com'));
 });
 

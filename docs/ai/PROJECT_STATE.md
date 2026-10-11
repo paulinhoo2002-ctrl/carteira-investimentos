@@ -1,3 +1,10 @@
+## V1651 — estado em revisão (2026-10-11)
+
+- Worktree isolada `C:\Projetos\carteira-investimentos.worktrees\v1651-drive-idempotency`, branch `codex/v1651-drive-idempotency`, base `b1af54d775e1d2a914a5922e014d827f010a5004` (HEAD final depende do commit). Diff pretendido: adaptador Drive, testes do adaptador e continuidade governada.
+- Implementação limita-se a recuperar retries locais por ID Drive pré-gerado/journal e falhar fechado sem journal. A integração segue opt-in e desconectada do produto. `MAJOR=1`: idempotência entre dispositivos não é garantida; não classificar backup externo como exactly-once nem readiness produtiva.
+- Gates sintéticos focados/build passaram; suítes que requerem React/Vite/Playwright não executaram por dependências ausentes. `npm ci` não autorizado nesta worktree. Sem OAuth, Drive real, Firebase hospedado, dados financeiros reais, produção ou merge.
+- Revisão independente encontrou o mesmo MAJOR e MINOR de ausência de teste browser real para `localStorage` e Web Locks. CI/Vercel do SHA final pendentes.
+
 ## V1351 — endurecimento do adaptador Drive e gates locais (2026-10-11)
 
 - Identidade confirmada na worktree LEGACY `C:\Projetos\carteira-investimentos.worktrees\v1051-drive-backup`, branch `codex/v1051-drive-backup-simulator`, HEAD base `b1b846514fb4e0b80cdaad0910e2f02082001cb9`, remote do repositório esperado. Diff local limitado a `google-drive-backup.js`, `tests/google-drive-backup-adapter.test.js` e documentação de continuidade; PR #492 continua OPEN/DRAFT/MERGEABLE, base #491. Main `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; #491 OPEN/DRAFT/MERGEABLE. Sem mudanças em main ou #491.

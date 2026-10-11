@@ -1,5 +1,22 @@
 # Product Contracts
 
+## V1651 external-backup idempotency boundary
+
+- A generated Drive file ID persisted in a local operation journal can recover
+  retries within that browser profile, and Web Locks can serialize cooperating
+  same-origin contexts. Neither provides a shared atomic idempotency authority
+  across devices or profiles.
+- Google Drive appProperties search is not an atomic uniqueness constraint.
+  Separate devices may create distinct files for the same operation during a
+  stale or incomplete search. Never claim exactly-once external backup from
+  this mechanism.
+- Keep the adapter disconnected from product/financial flows until an
+  authoritative cross-device coordinator or an explicitly safe duplicate
+  reconciliation contract is implemented and tested. The local journal must
+  fail closed before upload if it cannot persist operation identity; it stores
+  only a generated remote file ID and content digest, never credentials or
+  financial payloads.
+
 ## V333 — cobertura mensal de Dividendos (decisão humana aprovada, 2026-10-08)
 
 - `NO_RECORDS != ZERO_RECEIVED`. Estados mensais: `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`.

@@ -1,3 +1,10 @@
+## V1651 — retries idempotentes locais do adaptador Drive (2026-10-11)
+
+- Na branch isolada `codex/v1651-drive-idempotency`, o adaptador opt-in pré-aloca um ID via Drive `files.generateIds`, persiste ID e SHA do envelope em journal local e reconcilia retries após reinício/resposta perdida. Web Locks protege contextos cooperantes do mesmo navegador; falha de journal ou falta de coordenação entre abas bloqueia antes do upload quando aplicável. Nenhuma integração de produto foi feita.
+- Testes sintéticos locais no diff: adapter 29/29; backup/restore 54/54; recovery 9/9; V324 backup 17/17; financeiro 96/96; performance 97/97; local synthetic 44/44; QA harness 17/17; build legado e `git diff --check` PASS. `test:modern` 719/728, nove arquivos não carregam sem React; `qa:all` e `verify:release` bloqueados por Vite ausente; V84/V289/browser bloqueados por Playwright ausente. `npm ci` não autorizado nesta worktree.
+- MAJOR permanece: journal é local e não coordena dispositivos/perfis separados. Uma busca Drive atrasada pode levar dispositivos a pré-alocar IDs distintos e criar duplicatas. Não declarar exactly-once nem integrar ao fluxo financeiro até existir coordenador autoritativo ou reconciliação segura. Revisão adversarial independente confirmou o limite; testes usam journal in-memory e não exercitam localStorage/Web Locks reais.
+- Não houve OAuth/Drive real, Firebase hospedado, escrita financeira, restore real, produção, deploy manual ou merge. CI/Vercel ainda não verificados para o SHA desta branch. Próximo passo: revisão final, commit/push normal autorizado e Draft PR empilhada sobre #492; depois conferir CI/Preview pelo SHA exato.
+
 ## V1351 — endurecimento local do adaptador Drive (2026-10-11)
 
 - No mesmo delta da PR #492, o upload Drive usa sessão retomável, valida a URL do servidor, consulta bytes aceitos após interrupção/5xx e verifica tamanho mais SHA-256 por readback antes do sucesso. O readback adiciona uma leitura completa por upload/replay. O adaptador continua opt-in e desconectado do produto.
