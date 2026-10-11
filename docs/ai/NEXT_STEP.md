@@ -5,6 +5,12 @@
 - Dependências completas não estão instaladas nesta worktree; não executar `npm ci` sem autorização específica. Nenhuma integração OAuth/Drive, Firebase hospedado, upload real, restore financeiro real, produção ou merge.
 - Após push, observar CI e Vercel no SHA exato. Gate humano futuro e separado: OAuth Drive em ambiente QA sintético, upload/download real de arquivo sintético e restore isolado; operações sobre dados reais ou exclusão externa requerem autorização própria.
 
+### V1121 — preparação isolada do adaptador Google Drive
+
+- Mesma PR #492 e mesma branch/worktree; implementação ainda local, não publicada. `google-drive-backup.js` é opt-in e não está conectado ao produto. Usa apenas OAuth scope `drive.file`, APIs Google fixas, envelope já cifrado, appProperties sem identificadores brutos, checksum e plano de retenção sem exclusão.
+- Testes locais no diff atual: adapter 12/12; simulador V1051 8/8; backup/restore 38/38; recovery 9/9; V324 17/17; financeiro 96/96; QA sintético 44/44; build legado e `git diff --check` PASS. Modern permanece parcial por React ausente; builds modernos/`qa:all`/`verify:release` dependem de Vite ausente; V84/V289 não carregam sem `playwright-core`. `npm ci` não está autorizado nesta worktree.
+- Cross-tab/device idempotency não é atômica no Google Drive; nenhum OAuth, rede Google, conta real, Firebase remoto ou persistência da aplicação foi usado. Gate humano posterior: conta sintética Drive QA e autorização de upload/download real cifrado.
+
 ## V1006 — gate de disaster recovery (2026-10-11)
 
 - Base isolada: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; branch `codex/v1006-disaster-recovery`.

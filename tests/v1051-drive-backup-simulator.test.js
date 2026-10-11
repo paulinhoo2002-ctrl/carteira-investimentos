@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { webcrypto } = require('node:crypto');
+const { randomUUID, webcrypto } = require('node:crypto');
 const test = require('node:test');
 const Backup = require('../backup-portability.js');
 const { MockDriveBackupAdapter } = require('./support/mock-drive-backup-adapter.js');
@@ -59,11 +59,11 @@ test('V1051 mock Drive stores encrypted immutable versions and retries idempoten
   assert.equal(duplicate.replayed, true);
   assert.deepEqual(download.envelope, first.envelope);
   assert.equal(next.version, 2);
-  assert.deepEqual(versions.map(row => row.version), [2, 1]);
+  assert.deepEqual(versions.versions.map(row => row.version), [2, 1]);
   assert.equal(storedObject.includes('SYNTH3'), false);
   const concurrent = await Promise.all([1, 2].map(() => adapter.upload({ backupKey: 'concurrent-wallet', idempotencyKey: 'same-concurrent-run', ownerScope: scope, envelope: first.envelope })));
   assert.equal(concurrent[0].fileId, concurrent[1].fileId);
-  assert.equal((await adapter.listVersions({ backupKey: 'concurrent-wallet', ownerScope: scope })).length, 1);
+  assert.equal((await adapter.listVersions({ backupKey: 'concurrent-wallet', ownerScope: scope })).versions.length, 1);
 });
 
 test('V1051 mock Drive isolates owners and rejects an idempotency-key content conflict', async t => {
@@ -76,14 +76,14 @@ test('V1051 mock Drive isolates owners and rejects an idempotency-key content co
   const scopeB = await ownerScope(ownerB);
   const uploaded = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'same-run', ownerScope: scopeA, envelope: a.envelope });
 
-  assert.deepEqual(await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scopeB }), []);
+  assert.deepEqual((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scopeB })).versions, []);
   adapter.failNext('download', 'NETWORK_ERROR');
   await assert.rejects(() => adapter.download(uploaded.fileId, { ownerScope: scopeA }), { code: 'NETWORK_ERROR' });
   await assert.rejects(() => adapter.download(uploaded.fileId, { ownerScope: scopeB }), { code: 'NOT_FOUND' });
   await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'same-run', ownerScope: scopeA, envelope: b.envelope }), { code: 'IDEMPOTENCY_CONFLICT' });
   const isolated = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'same-run', ownerScope: scopeB, envelope: b.envelope });
   assert.notEqual(isolated.fileId, uploaded.fileId);
-  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scopeB })).length, 1);
+  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scopeB })).versions.length, 1);
 });
 
 test('V1051 mock Drive fails closed on auth/network/interrupted uploads and leaves no partial object', async t => {
@@ -101,7 +101,7 @@ test('V1051 mock Drive fails closed on auth/network/interrupted uploads and leav
 
   const retry = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'retry', ownerScope: scope, envelope });
   assert.equal(retry.version, 1);
-  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope })).length, 1);
+  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope })).versions.length, 1);
 });
 
 test('V1051 mock Drive detects corrupt and incompatible encrypted files', async t => {
@@ -112,19 +112,68 @@ test('V1051 mock Drive detects corrupt and incompatible encrypted files', async 
   const { envelope } = await encryptedBackup();
   await assert.rejects(() => adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'plain', ownerScope: scope, envelope: { format: 'plain-json' } }), { code: 'UNSUPPORTED_ENCRYPTED_BACKUP' });
   const uploaded = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'corrupt', ownerScope: scope, envelope });
-  const objectPath = await adapter.objectPathForTest(uploaded.fileId);
+  const later = await encryptedBackup(ownerA, '2026-07-01T12:00:00.000Z');
+  const corruptVersion = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'corrupt-later', ownerScope: scope, envelope: later.envelope });
+  const objectPath = await adapter.objectPathForTest(corruptVersion.fileId);
   const stored = JSON.parse(await fs.readFile(objectPath, 'utf8'));
   stored.envelope.ciphertext = stored.envelope.ciphertext.slice(0, -4) + 'AAAA';
   await fs.writeFile(objectPath, JSON.stringify(stored));
 
-  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope }))[0].integrity, 'CORRUPT');
-  await assert.rejects(() => adapter.download(uploaded.fileId, { ownerScope: scope }), { code: 'FILE_CORRUPT' });
+  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope })).versions[0].integrity, 'CORRUPT');
+  await assert.rejects(() => adapter.download(corruptVersion.fileId, { ownerScope: scope }), { code: 'FILE_CORRUPT' });
   const retention = await adapter.planRetention({ backupKey: 'synthetic-wallet', ownerScope: scope, keepLatest: 1 });
-  assert.deepEqual(retention.keepFileIds, [uploaded.fileId]);
+  assert.deepEqual(retention.keepFileIds, [corruptVersion.fileId, uploaded.fileId]);
   assert.deepEqual(retention.deleteFileIds, []);
-  const malformed = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'malformed-metadata', ownerScope: scope, envelope });
+  const malformedEnvelope = await encryptedBackup(ownerA, '2026-08-01T12:00:00.000Z');
+  const malformed = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'malformed-metadata', ownerScope: scope, envelope: malformedEnvelope.envelope });
   await fs.writeFile(await adapter.objectPathForTest(malformed.fileId), '{broken-json');
-  await assert.rejects(() => adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope }), { code: 'CORRUPT_METADATA' });
+  const listing = await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope });
+  assert.deepEqual(listing.versions.map(row => row.fileId), [corruptVersion.fileId, uploaded.fileId]);
+  assert.deepEqual(listing.warnings, ['UNSCOPED_CORRUPT_METADATA']);
+  const safeRetention = await adapter.planRetention({ backupKey: 'synthetic-wallet', ownerScope: scope, keepLatest: 1 });
+  assert.deepEqual(safeRetention.deleteFileIds, []);
+  assert.deepEqual(safeRetention.warnings, ['UNSCOPED_CORRUPT_METADATA']);
+});
+
+test('V1051 mock Drive rejects linked roots and object directories', async t => {
+  const realRoot = await temporaryRoot();
+  const linkedRoot = path.join(os.tmpdir(), `v1051-mock-drive-${randomUUID()}`);
+  const objectsRoot = await temporaryRoot();
+  t.after(async () => {
+    await fs.rm(linkedRoot, { recursive: true, force: true });
+    await fs.rm(realRoot, { recursive: true, force: true });
+    await fs.rm(objectsRoot, { recursive: true, force: true });
+  });
+  await fs.symlink(realRoot, linkedRoot, process.platform === 'win32' ? 'junction' : 'dir');
+  assert.throws(() => new MockDriveBackupAdapter(linkedRoot), { code: 'MOCK_STORAGE_MUST_USE_REAL_TEMP_DIRECTORY' });
+  await fs.symlink(objectsRoot, path.join(realRoot, 'objects'), process.platform === 'win32' ? 'junction' : 'dir');
+  const adapter = new MockDriveBackupAdapter(realRoot);
+  const scope = await ownerScope(ownerA);
+  await assert.rejects(() => adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope }), { code: 'MOCK_STORAGE_MUST_USE_REAL_TEMP_DIRECTORY' });
+});
+
+test('V1051 mock Drive propagates storage read failures and distinguishes corrupt from missing files', async t => {
+  const root = await temporaryRoot();
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const adapter = new MockDriveBackupAdapter(root);
+  const scope = await ownerScope(ownerA);
+  const { envelope } = await encryptedBackup();
+  const uploaded = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'read-failure', ownerScope: scope, envelope });
+  const objectPath = await adapter.objectPathForTest(uploaded.fileId);
+  const originalReadFile = fs.readFile;
+  fs.readFile = async (file, ...args) => {
+    if (path.resolve(file) === path.resolve(objectPath)) throw Object.assign(new Error('synthetic storage failure'), { code: 'EIO' });
+    return originalReadFile.call(fs, file, ...args);
+  };
+  try {
+    await assert.rejects(() => adapter.download(uploaded.fileId, { ownerScope: scope }), { code: 'EIO' });
+    await assert.rejects(() => adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope }), { code: 'EIO' });
+  } finally { fs.readFile = originalReadFile; }
+
+  await assert.rejects(() => adapter.download(randomUUID(), { ownerScope: scope }), { code: 'NOT_FOUND' });
+  const malformed = await adapter.upload({ backupKey: 'synthetic-wallet', idempotencyKey: 'malformed-download', ownerScope: scope, envelope });
+  await fs.writeFile(await adapter.objectPathForTest(malformed.fileId), '{broken-json');
+  await assert.rejects(() => adapter.download(malformed.fileId, { ownerScope: scope }), { code: 'FILE_CORRUPT' });
 });
 
 test('V1051 mock retention plans first and deletes only after explicit confirmation', async t => {
@@ -139,9 +188,9 @@ test('V1051 mock retention plans first and deletes only after explicit confirmat
   const plan = await adapter.planRetention({ backupKey: 'synthetic-wallet', ownerScope: scope, keepLatest: 2 });
   assert.equal(plan.deleteFileIds.length, 1);
   await assert.rejects(() => adapter.applyRetention(plan, { confirm: false, ownerScope: scope }), { code: 'CONFIRMATION_REQUIRED' });
-  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope })).length, 3);
+  assert.equal((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope })).versions.length, 3);
   assert.deepEqual(await adapter.applyRetention(plan, { confirm: true, ownerScope: scope }), plan.deleteFileIds);
-  assert.deepEqual((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope })).map(row => row.version), [3, 2]);
+  assert.deepEqual((await adapter.listVersions({ backupKey: 'synthetic-wallet', ownerScope: scope })).versions.map(row => row.version), [3, 2]);
 });
 
 test('V1051 synthetic recovery downloads from mock storage in a clean process without browser storage', async t => {

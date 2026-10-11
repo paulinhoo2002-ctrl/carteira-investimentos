@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('node:crypto');
+const fsSync = require('node:fs');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
@@ -39,10 +40,16 @@ function validateEnvelope(envelope) {
 
 class MockDriveBackupAdapter {
   constructor(root) {
-    this.root = path.resolve(root);
-    if (path.dirname(this.root) !== path.resolve(os.tmpdir()) || !path.basename(this.root).startsWith('v1051-mock-drive-')) {
+    const resolvedRoot = path.resolve(root);
+    if (path.dirname(resolvedRoot) !== path.resolve(os.tmpdir()) || !path.basename(resolvedRoot).startsWith('v1051-mock-drive-')) {
       throw fail('MOCK_STORAGE_MUST_USE_TEST_TEMP_DIRECTORY');
     }
+    try {
+      const stat = fsSync.lstatSync(resolvedRoot);
+      const realRoot = fsSync.realpathSync.native(resolvedRoot);
+      if (!stat.isDirectory() || stat.isSymbolicLink() || path.dirname(realRoot) !== fsSync.realpathSync.native(os.tmpdir())) throw fail('MOCK_STORAGE_MUST_USE_REAL_TEMP_DIRECTORY');
+      this.root = realRoot;
+    } catch (error) { throw error.code ? error : fail('MOCK_STORAGE_MUST_USE_REAL_TEMP_DIRECTORY'); }
     this.objects = path.join(this.root, 'objects');
     this.faults = new Map();
   }
@@ -64,16 +71,26 @@ class MockDriveBackupAdapter {
 
   async _readRows() {
     await fs.mkdir(this.objects, { recursive: true });
+    const rootStat = await fs.lstat(this.root);
+    const objectsStat = await fs.lstat(this.objects);
+    if (!rootStat.isDirectory() || rootStat.isSymbolicLink() || !objectsStat.isDirectory() || objectsStat.isSymbolicLink() ||
+        await fs.realpath(this.root) !== this.root || await fs.realpath(this.objects) !== this.objects) {
+      throw fail('MOCK_STORAGE_MUST_USE_REAL_TEMP_DIRECTORY');
+    }
     const rows = [];
+    let quarantinedCount = 0;
     for (const name of await fs.readdir(this.objects)) {
       if (!/^[a-f0-9-]{36}\.json$/.test(name)) continue;
       try {
         const row = JSON.parse(await fs.readFile(path.join(this.objects, name), 'utf8'));
         if (row?.schema !== 'mock-drive-object-v1' || row.fileId !== name.slice(0, -5)) throw fail('CORRUPT_METADATA');
         rows.push(row);
-      } catch (error) { throw error.code ? error : fail('CORRUPT_METADATA'); }
+      } catch (error) {
+        if (error instanceof SyntaxError || error.code === 'CORRUPT_METADATA') quarantinedCount += 1;
+        else throw error;
+      }
     }
-    return rows;
+    return { rows, quarantinedCount };
   }
 
   async upload(args) {
@@ -96,7 +113,8 @@ class MockDriveBackupAdapter {
     const serialized = validateEnvelope(envelope);
     const contentSha256 = sha256(serialized);
     const idempotencyHash = sha256(`${ownerScope}:${backupKey}:${idempotencyKey}`);
-    const rows = await this._readRows();
+    const { rows, quarantinedCount } = await this._readRows();
+    if (quarantinedCount) throw fail('CORRUPT_METADATA');
     const sameRequest = rows.find(row => !row.malformed && row.ownerScope === ownerScope && row.backupKey === backupKey && row.idempotencyHash === idempotencyHash);
     if (sameRequest) {
       if (sameRequest.contentSha256 !== contentSha256) throw fail('IDEMPOTENCY_CONFLICT');
@@ -139,14 +157,16 @@ class MockDriveBackupAdapter {
     this._authorize(ownerScope, authenticated);
     const fault = this._takeFault('listVersions');
     if (fault) throw fail(fault);
-    const rows = (await this._readRows())
+    const { rows, quarantinedCount } = await this._readRows();
+    const scopedRows = rows
       .filter(row => !row.malformed && row.ownerScope === ownerScope && row.backupKey === backupKey)
       .sort((a, b) => b.version - a.version);
-    return Promise.all(rows.map(async row => {
+    const versions = await Promise.all(scopedRows.map(async row => {
       const serialized = JSON.stringify(row.envelope);
       const integrity = sha256(serialized) === row.contentSha256 && recordSha256(row) === row.recordSha256 ? 'VALID' : 'CORRUPT';
       return this._publicMetadata(row, false, integrity);
     }));
+    return { versions, warnings: quarantinedCount ? ['UNSCOPED_CORRUPT_METADATA'] : [] };
   }
 
   async download(fileId, { ownerScope, authenticated = true }) {
@@ -154,9 +174,14 @@ class MockDriveBackupAdapter {
     const fault = this._takeFault('download');
     if (fault) throw fail(fault);
     if (typeof fileId !== 'string' || !/^[a-f0-9-]{36}$/.test(fileId)) throw fail('NOT_FOUND');
+    await this._readRows();
     let row;
     try { row = JSON.parse(await fs.readFile(path.join(this.objects, `${fileId}.json`), 'utf8')); }
-    catch (_) { throw fail('NOT_FOUND'); }
+    catch (error) {
+      if (error.code === 'ENOENT') throw fail('NOT_FOUND');
+      if (error instanceof SyntaxError) throw fail('FILE_CORRUPT');
+      throw error;
+    }
     if (row.fileId !== fileId || row.ownerScope !== ownerScope) throw fail('NOT_FOUND');
     if (sha256(JSON.stringify(row.envelope)) !== row.contentSha256 || recordSha256(row) !== row.recordSha256) throw fail('FILE_CORRUPT');
     return { ...this._publicMetadata(row, false, 'VALID'), envelope: row.envelope };
@@ -165,13 +190,14 @@ class MockDriveBackupAdapter {
   async planRetention({ backupKey, ownerScope, keepLatest }) {
     this._authorize(ownerScope);
     if (!Number.isInteger(keepLatest) || keepLatest < 1) throw fail('INVALID_RETENTION_POLICY');
-    const versions = await this.listVersions({ backupKey, ownerScope });
+    const { versions, warnings } = await this.listVersions({ backupKey, ownerScope });
     const protectedFileIds = versions.filter(row => row.integrity !== 'VALID').map(row => row.fileId);
     const validVersions = versions.filter(row => row.integrity === 'VALID');
     const keepFileIds = [...protectedFileIds, ...validVersions.slice(0, keepLatest).map(row => row.fileId)];
     return {
       backupKey, ownerScope, keepLatest, keepFileIds,
-      deleteFileIds: validVersions.slice(keepLatest).map(row => row.fileId)
+      deleteFileIds: warnings.length ? [] : validVersions.slice(keepLatest).map(row => row.fileId),
+      warnings
     };
   }
 

@@ -1,6 +1,6 @@
 # V1051 — Google Drive backup and disaster recovery
 
-**Status:** synthetic simulator implementation; real Google Drive integration is not implemented or certified.
+**Status:** synthetic simulator plus an isolated Google Drive REST adapter preparation; no production wiring or real OAuth/Drive certification.
 
 ## Execution routing
 
@@ -22,24 +22,33 @@ Retention is a previewed plan. Corrupt versions are protected from pruning. The 
 
 `tests/v1051-drive-backup-simulator.test.js` creates a synthetic wallet, calls the established backup creation and encryption APIs, uploads the ciphertext to the simulator, discards the source fixture reference, then starts a new Node process to list/download/decrypt/verify it. The child has no IndexedDB or localStorage and applies only through `applyToIsolatedStore`, which is an in-memory test helper. It compares canonical source/restored SHA-256 hashes and checks synthetic asset quantity, buy gross, sell gross, paid income, balance, and domain counts. No app persistence, Firebase, real account, personal file, or real portfolio is touched.
 
+## Google Drive adapter preparation (not connected to the product)
+
+`google-drive-backup.js` is an opt-in, separately constructed REST adapter. Nothing in the app imports or invokes it. It requests only `drive.file` through an injected Google Identity Services token client; access tokens remain in the returned short-lived in-memory value and are not written to storage or logs. The adapter calls only fixed `www.googleapis.com` endpoints, rejects redirects, uploads the existing encrypted envelope as immutable JSON, stores only hashed owner/backup/idempotency identifiers in app-private `appProperties`, pages through list results, verifies content SHA-256 on download, and propagates quota/network/auth failures distinctly. It never calls a delete API. Retention is a preview plan only and refuses incomplete listings.
+
+The envelope validator checks version, cryptographic metadata, base64 structure and size; it cannot prove that ciphertext was produced by `Backup.encryptBackup()` or authenticate it without the passphrase. Callers must pass the output of that existing encryptor, and restore consumers must run `Backup.decryptBackup()` followed by manifest/owner verification. `ownerScope` is an application-level filter, not an authorization boundary; production wiring must derive it from the authenticated user through the existing backup contract and must separately enforce Google account/file access. Same-page retries serialize by idempotency key. Drive does not provide an atomic unique constraint, so cross-tab/device races can still create duplicate files; later retries detect ambiguous duplicate identities and fail closed.
+
+The adapter tests use only injected `fetch` mocks. A test exercises a real synthetic AES-GCM envelope through mocked upload/download, decryption, owner/manifest validation and `applyToIsolatedStore`; this is not a live Drive test and does not prove persistent restore. The separate mock-adapter recovery test still performs a new-process recovery without IndexedDB/localStorage.
+
 ## Future Google Drive permission model
 
-Any future user-visible Drive integration should evaluate the narrow `https://www.googleapis.com/auth/drive.file` scope. Google describes it as access to specific Drive files the app uses, rather than all files. That scope includes seeing, editing, creating, and deleting those app-used files, so the product must not expose deletion/retention as an unattended default. The OAuth design and any live test require separate human authorization; this repository change does not request or use OAuth. See [Google's Drive API scope guidance](https://developers.google.com/workspace/drive/api/guides/api-specific-auth) and [OAuth scopes reference](https://developers.google.com/identity/protocols/oauth2/scopes).
+Any future user-visible Drive integration must retain the narrow `https://www.googleapis.com/auth/drive.file` scope. Google describes it as access to specific Drive files the app uses; broader `drive` scopes reach all Drive files. The chosen scope can still modify or delete app-used files, so the product must not expose unattended deletion. This branch only tests a fake GIS callback and fake HTTP transport; it does not configure an OAuth client, request consent, connect an account or perform a Drive request. See [Google's Drive API scope guidance](https://developers.google.com/workspace/drive/api/guides/api-specific-auth), [Drive search/appProperties guidance](https://developers.google.com/workspace/drive/api/guides/search-files), [download guidance](https://developers.google.com/workspace/drive/api/guides/manage-downloads) and [error handling guidance](https://developers.google.com/workspace/drive/api/guides/handle-errors).
 
 The simulator's `backupKey` is only a synthetic namespace. A real adapter must bind storage to the authenticated Google account, avoid broad Drive listing/search scopes, retain only app-owned file IDs, store OAuth tokens only through the approved platform's secure token storage, and never log tokens or backup contents. The encrypted file should be uploaded as opaque bytes; names and metadata should not contain personal or financial details.
 
 ## Automation limits and remaining gates
 
-The simulator verifies deterministic retry/version behavior, but does not prove a real provider's atomicity, resumable-upload semantics, availability, quota handling, OAuth consent, retention, or download integrity. Browser background execution is opportunistic and cannot guarantee a scheduled backup. A production design would need a supported execution trigger, user-visible last-success/last-valid-backup state, failure alerts, and periodic restore drills; no such schedule is active here.
+The simulator verifies local retry/version behavior. The mocked REST adapter tests API construction, status handling, app metadata, pagination, checksum validation and recovery logic, but neither proves provider atomicity, quota behavior in a real account, OAuth consent, actual retention, availability, nor real download integrity. Multipart upload is used; resumable upload is not implemented. Browser background execution is opportunistic and cannot guarantee a scheduled backup. A production design would need a supported execution trigger, user-visible last-success/last-valid-backup state, failure alerts, and periodic restore drills; no such schedule is active here.
 
-Before certification of an external backup: authorize OAuth setup and a synthetic account, review consent/scope and deployment environment, execute an actual synthetic upload/download, verify account/object ownership, corruption and retry behavior, and perform a clean-process restore into an isolated synthetic store. A separate gate is required before deleting external versions or restoring any real account. Do not describe this simulator result as real Drive backup or production disaster-recovery certification.
+Before certification of an external backup: separately authorize OAuth setup and a synthetic Google account, configure/review the consent screen and deployment environment, execute an actual synthetic upload/download, verify account/object ownership, corruption and retry behavior, and perform a clean-process restore into an isolated synthetic store. A separate gate is required before deleting external versions or restoring any real account. Do not describe this adapter or simulator as a real Drive backup or production disaster-recovery certification.
 
 ## Gate summary
 
-- Local evidence: V1051 simulator 6/6; backup/restore 24/24; recovery 9/9; V324 backup 17/17; finance 96/96; static build PASS; `git diff --check` PASS. Full npm matrix and Firebase emulator were not run locally; dependencies are absent and no install was authorized for this worktree.
+- Local evidence on the current diff: adapter+simulator focused 20/20; `test:backup-restore` 38/38; recovery 9/9; V324 backup 17/17; finance 96/96; local synthetic QA 44/44; legacy static build and `git diff --check` PASS. `npm test`, `test:modern`, `qa:all` and `verify:release` were attempted but incomplete because Vite/React are missing; V84/V289 could not load without `playwright-core`. Firestore emulator exited before running tests. `npm ci` is not authorized for this worktree.
 - CI, Preview and Draft PR status must be recorded only after verifying the pushed exact HEAD.
 - `REAL_DRIVE_OAUTH=NOT_USED`
 - `REAL_DRIVE_UPLOAD_DOWNLOAD=NOT_TESTED`
+- `GOOGLE_DRIVE_ADAPTER=PREPARED_NOT_WIRED`
 - `SYNTHETIC_MOCK_UPLOAD_DOWNLOAD=TESTED`
 - `CLEAN_PROCESS_SYNTHETIC_RECOVERY=TESTED`
 - `FIREBASE_HOSTED_QA=NOT_USED`
