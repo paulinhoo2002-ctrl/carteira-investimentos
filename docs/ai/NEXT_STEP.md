@@ -6,6 +6,7 @@
 - Próxima ação: manter #491 separada e a #492 em Draft. Resolver o MAJOR de concorrência idempotente antes de ligar o adaptador ao produto; depois obter QA OAuth/Drive sintético separado.
 - Testes locais no delta: adapter 26/26; backup/restore 52/52 (fresh após readback); recovery 9/9; V324 17/17; finanças 96/96; runtime QA sintético 44/44; V407 17/17; QA harness 17/17; audit previamente 0; build estático e diff-check PASS. Modern 719/728, nove falhas ao carregar React ausente. `npm test`, `qa:all` e `verify:release` bloqueados por Vite ausente; V84/V289/browser sem Playwright. `npm ci` não autorizado nesta worktree.
 - Firestore Emulator encerrou antes dos testes; log vazio, Java 26 presente, causa não comprovada. OAuth real e Drive real não usados. Token helper no browser continua apenas preparação isolada; integração de produção requer fluxo de código com PKCE/backend e gate OAuth separado. Não integrar #491/#492, não escrever Firebase hospedado e não executar produção/merge.
+- Diagnóstico atualizado: execução direta do JAR com JDK 21 e 26 falha em Netty/WEPollSelector ao criar conexão loopback (`Invalid argument: connect`); probe .NET em loopback passa, ports estão livres e processos Java existentes não são emuladores. Causa abaixo do Java desconhecida; não contornar nem alterar segurança. Continuar emulador-free tests enquanto esse runtime blocker persistir.
 
 ## V1051 — continuação do simulador de backup externo (2026-10-11)
 

@@ -7,6 +7,7 @@
 - Publicado no commit `aabb0230cf0f0aa07f097af32a2abaaa7d14ce23`; PR #492 OPEN/DRAFT/MERGEABLE, sem threads não resolvidas. Actions não observou workflow no SHA; Vercel status success e Preview READY no deployment `dMqDBrfA6pF1QfbUhshRDc6Pgucb`, associado ao mesmo SHA. #491 preservada separadamente.
 - Sem OAuth/Drive real, Firebase hospedado, escrita financeira real, importação/restauração, produção, deploy manual ou merge.
 - Revisão independente: upload truncado não pode retornar sucesso, coberto por teste e readback do conteúdo. `MAJOR=1` para integração futura: não existe unicidade/idempotência atômica entre abas/dispositivos. Adaptador permanece fora do produto; não classificar readiness produtiva.
+- Diagnóstico Emulator: JDK 21 e 26 reproduzem falha de Netty/WEPollSelector (`Unable to establish loopback connection`, `Invalid argument: connect`); loopback TCP .NET funciona, ports estavam livres, e processos Java observados não eram os emuladores. Causa subjacente permanece desconhecida; regras e processos foram preservados.
 
 ## V1051 — simulador local de backup externo (2026-10-11)
 
