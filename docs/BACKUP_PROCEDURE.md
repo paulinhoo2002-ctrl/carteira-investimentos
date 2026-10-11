@@ -14,11 +14,16 @@ O LEGACY é uma SPA que **exporta backup via download do navegador** (botão "Ex
 3. Copiar o arquivo para `C:\Projetos\_backups\carteira-investimentos\`.
 4. Gerar o hash sidecar para verificação automática (PowerShell):
    `Get-FileHash "C:\Projetos\_backups\carteira-investimentos\<arquivo>.json" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  <arquivo>.json" | Set-Content "C:\Projetos\_backups\carteira-investimentos\<arquivo>.json.sha256" }`
-5. A partir daí, o **cron diário do Hermes (backup-verify)** valida formato, hash e idade automaticamente e te avisa se algo degradar.
+5. O verificador pode ser agendado pelo proprietário depois de configurar uma tarefa local. A existência do script, por si só, não significa que há uma agenda ativa nem que notificações estão configuradas.
 
 ## O que a automação já faz (sem tocar nos seus dados)
-- `scripts/maintenance/backup-verify.js` (cron diário 09:05): verifica JSON válido, SHA-256 vs sidecar, idade <35d, arquivo vazio. Read-only — nunca deleta, move ou restaura.
+- `scripts/maintenance/backup-verify.js`: valida manifest/schema/domínios/checksum do backup do aplicativo, SHA-256 externo no sidecar e idade <35d. Read-only — nunca deleta, move ou restaura.
+- Não há workflow de backup agendado no repositório. A cópia IndexedDB do aplicativo é local ao navegador, oportunista e condicionada à sessão sincronizada aberta; não é armazenamento externo nem recuperação independente do dispositivo.
 - Suítes sintéticas (npm test): backup/restore/rollback/idempotência/dedupe — 32 testes verdes, sem dados reais.
+
+## Limite operacional
+
+O documento descreve o procedimento manual e as capacidades locais existentes. Nenhuma agenda Hermes/Task Scheduler, OAuth de Drive, destino externo ou aviso foi verificado nesta revisão; portanto, backup automático fora do navegador permanece **NÃO CONFIGURADO**. Não execute o verificador contra a pasta padrão sem autorização específica para acessar artefatos financeiros locais.
 
 ## Limites por design (gates humanos)
 - Exportar dados reais = só o dono (botão no app). O agente não exporta carteira real.

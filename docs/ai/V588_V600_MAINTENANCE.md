@@ -42,5 +42,7 @@ PROJECT_IDENTITY_GATE=PASS — worktree v588-600-maintenance, branch codex/v588-
 
 **Pendência de configuração (novo human gate leve)**: dizer "agenda health-check diário" e eu configuro o cron do Hermes (health-check + backup-verify diários, auditoria mensal) — as rotinas passam a rodar sozinhas e te aviso quando algo degradar.
 
+> **Estado histórico revisado em V831 (2026-10-10):** o parágrafo acima registra uma proposta de configuração, não uma agenda ativa. A configuração Hermes/Task Scheduler e notificações não foram comprovadas. O verificador atual valida o formato versionado do app e o sidecar obrigatório; consulte `docs/BACKUP_PROCEDURE.md` para o limite operacional vigente.
+
 ## Segurança
 REAL_FINANCIAL_WRITES=0; REAL_IMPORT=false; REAL_RESTORE=false; PRODUCTION_FIREBASE_CHANGES=false; UNAUTHORIZED_PROCESS_KILL=false; FORCE_PUSH=false; DESTRUCTIVE_GIT=false; MERGE=false.

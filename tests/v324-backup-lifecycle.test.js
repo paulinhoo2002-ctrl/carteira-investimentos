@@ -28,6 +28,13 @@ function fakeIndexedDB(seed = [], failures = {}) {
             if (mode === 'readwrite' && failures.abort) { tx.error = new Error('transaction aborted'); tx.onabort?.(); return; }
             rows.set(value.id, clone(value)); queueMicrotask(() => tx.oncomplete?.());
           }); },
+          add(value) { queueMicrotask(() => {
+            if (mode !== 'readwrite') { tx.error = new Error('readonly transaction'); tx.onabort?.(); return; }
+            if (rows.has(value.id)) { tx.error = Object.assign(new Error('key already exists'), { name: 'ConstraintError' }); tx.onabort?.(); return; }
+            if (failures.quota) { tx.error = Object.assign(new Error('storage quota exceeded'), { name: 'QuotaExceededError' }); tx.onabort?.(); return; }
+            if (failures.abort) { tx.error = new Error('transaction aborted'); tx.onabort?.(); return; }
+            rows.set(value.id, clone(value)); queueMicrotask(() => tx.oncomplete?.());
+          }); },
           delete(id) { queueMicrotask(() => { rows.delete(id); queueMicrotask(() => tx.oncomplete?.()); }); },
           getAll() {
             const request = {};
@@ -179,8 +186,9 @@ test('V324 validates archived payload hashes before cadence dedupe and retention
       { now: new Date('2026-10-06T12:00:00.000Z'), indexedDB }
     );
     assert.equal(result.status, 'SAVED');
-    assert.equal(result.results.some(item => item.id === 'monthly:2026-10'), true);
-    assert.equal((await Backup.verifyBackup(indexedDB.rows.get('monthly:2026-10').backup)).status, 'SUPPORTED');
+    assert.equal(result.results.some(item => item.ok && item.id.includes(':monthly:2026-10:')), true);
+    const created = indexedDB.rows.get(result.results.find(item => item.ok).id);
+    assert.equal((await Backup.verifyBackup(created.backup)).status, 'SUPPORTED');
     assert.equal((await Backup.verifyBackup(indexedDB.rows.get('only-valid').backup)).status, 'SUPPORTED');
     assert.equal(indexedDB.rows.has('only-valid'), true, 'the sole known-valid recovery point must survive');
   }
@@ -218,9 +226,58 @@ test('V324 preview and isolated restore roundtrip all required domains without m
   assert.deepEqual(original, before);
 });
 
+test('V831 local archives are isolated by account and retention never deletes another account snapshots', async () => {
+  const indexedDB = fakeIndexedDB();
+  const stateA = { ...state(), assets: [{ id: 'a', type: 'Ação' }] };
+  const stateB = { ...state(), assets: [{ id: 'b', type: 'Ação' }] };
+  const backupA = await Backup.createBackup({ state: stateA, config: {}, ownerId: 'synthetic-user-a', supportedAssetTypes: ['Ação'], createdAt: '2026-01-10T00:00:00.000Z' });
+  const backupB = await Backup.createBackup({ state: stateB, config: {}, ownerId: 'synthetic-user-b', supportedAssetTypes: ['Ação'], createdAt: '2026-01-11T00:00:00.000Z' });
+  await Backup.saveLocalBackup(backupA, { cadence: 'monthly', period: '2026-01', ownerId: 'synthetic-user-a', indexedDB, supportedAssetTypes: ['Ação'] });
+  await Backup.saveLocalBackup(backupB, { cadence: 'monthly', period: '2026-01', ownerId: 'synthetic-user-b', indexedDB, supportedAssetTypes: ['Ação'] });
+  assert.equal(indexedDB.rows.size, 2);
+  assert.equal((await Backup.listLocalBackups({ ownerId: 'synthetic-user-a', indexedDB, supportedAssetTypes: ['Ação'] })).length, 1);
+  assert.equal((await Backup.listLocalBackups({ ownerId: 'synthetic-user-b', indexedDB, supportedAssetTypes: ['Ação'] })).length, 1);
+  const ownerScopeA = await Backup.sha256('carteira-investimentos-backup-owner-v1:synthetic-user-a');
+  const ownerScopeB = await Backup.sha256('carteira-investimentos-backup-owner-v1:synthetic-user-b');
+  for (let month = 2; month <= 13; month += 1) {
+    const period = month === 13 ? '2027-01' : `2026-${String(month).padStart(2, '0')}`;
+    const createdAt = `${period}-12T00:00:00.000Z`;
+    const sameOwnerBackup = await Backup.createBackup({ state: { ...stateA, assets: [{ id: `a${month}`, type: 'Ação' }] }, config: {}, ownerId: 'synthetic-user-a', supportedAssetTypes: ['Ação'], createdAt });
+    await Backup.saveLocalBackup(sameOwnerBackup, { cadence: 'monthly', period, ownerId: 'synthetic-user-a', indexedDB, supportedAssetTypes: ['Ação'] });
+  }
+  assert.equal([...indexedDB.rows.values()].filter(row => row.ownerScope === ownerScopeA).length, 12);
+  assert.equal([...indexedDB.rows.values()].some(row => row.ownerScope === ownerScopeB), true, 'retention preserves the other account snapshot');
+  assert.equal(indexedDB.rows.size, 13, 'monthly retention is isolated to one account');
+});
+
+test('V831 local archive rejects cross-account backup and exact-version overwrite', async () => {
+  const indexedDB = fakeIndexedDB();
+  const backup = await Backup.createBackup({ state: state(), config: {}, ownerId: 'synthetic-user-a', supportedAssetTypes: ['Ação'], createdAt: '2026-03-01T00:00:00.000Z', operationId: 'synthetic-operation-a' });
+  const first = await Backup.saveLocalBackup(backup, { cadence: 'monthly', period: '2026-03', ownerId: 'synthetic-user-a', indexedDB, supportedAssetTypes: ['Ação'] });
+  const crossAccount = await Backup.saveLocalBackup(backup, { cadence: 'monthly', period: '2026-03', ownerId: 'synthetic-user-b', indexedDB, supportedAssetTypes: ['Ação'] });
+  const duplicate = await Backup.saveLocalBackup(backup, { cadence: 'monthly', period: '2026-03', ownerId: 'synthetic-user-a', indexedDB, supportedAssetTypes: ['Ação'] });
+  assert.equal(first.ok, true);
+  assert.equal(crossAccount.status, 'OWNER_MISMATCH');
+  assert.equal(duplicate.status, 'ALREADY_EXISTS');
+  assert.equal(indexedDB.rows.size, 1);
+});
+
+test('V831 owner-bound backups require matching account identity for verification and restore preview', async () => {
+  const backup = await Backup.createBackup({ state: state(), config: {}, ownerId: 'synthetic-owner-a', supportedAssetTypes: ['Ação'] });
+  assert.equal((await Backup.verifyBackup(backup)).status, 'OWNER_REQUIRED');
+  assert.equal((await Backup.verifyBackup(backup, { ownerId: 'synthetic-owner-b', supportedAssetTypes: ['Ação'] })).status, 'OWNER_MISMATCH');
+  assert.equal((await Backup.verifyBackup(backup, { ownerId: 'synthetic-owner-a', supportedAssetTypes: ['Ação'] })).status, 'SUPPORTED');
+  const preview = await Backup.previewRestore(backup, state(), { ownerId: 'synthetic-owner-b', supportedAssetTypes: ['Ação'] });
+  assert.equal(preview.restoreAllowed, false);
+  assert.equal(preview.writeCount, 0);
+});
+
 test('V324 UI includes V76 data and limits periodic snapshots to an open, writable runtime', () => {
   assert.match(html, /state\.performance=window\.PortfolioRuntimeStores\.backupSupplement/);
-  assert.match(html, /createPeriodicBackups\(\(\)=>backupPortabilityPayload\(\),\{supportedAssetTypes:TYPE_CHOICES,canCreateSnapshot:v324PeriodicBackupEligible\}\)/);
+  assert.match(html, /createPeriodicBackups\(\(\)=>backupPortabilityPayload\(\),\{supportedAssetTypes:TYPE_CHOICES,ownerId:FB\.user\.uid,canCreateSnapshot:v324PeriodicBackupEligible\}\)/);
+  assert.match(html, /async function backupPortabilityPayload\(\)\{[\s\S]*?v324PeriodicBackupEligible\(\)[\s\S]*?ownerId:FB\.user\.uid/);
+  assert.match(html, /listLocalBackups\(\{ownerId:FB\.user\.uid,supportedAssetTypes:TYPE_CHOICES\}\)/);
+  assert.match(html, /verifyBackup\(d,\{supportedAssetTypes:TYPE_CHOICES,ownerId\}\)/);
   assert.match(html, /!!FB\.user&&FB\.access\?\.allowed===true&&FB\.cloudLoaded===true&&!FB\.pendingCloudSave&&!FB\.syncInFlight&&!FB\.applying&&!FB\.lastCloudError/);
   assert.match(html, /S\.backupRestoreInProgress/);
   assert.match(html, /!isLocalTestMode\(\)&&!isActiveWalletHostMode\(\)&&!isAuthoritativeLocalRecoveryBoot\(\)&&!isProtectedReadOnlyQaBoot\(\)/);

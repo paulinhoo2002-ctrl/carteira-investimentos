@@ -1,5 +1,13 @@
 # Project State
 
+## V831–V850 — hardening do backup local, em revisão
+
+- Worktree isolada `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`, branch `codex/v831-v850-backup-automation`, baseada na `origin/main` `efc9778e57f17e3778a69f4214301cacef670153`.
+- Corrigido isolamento por proprietário para arquivos IndexedDB e endurecido o verificador de integridade. Suíte focal sintética passou 41/41 antes das últimas assertions; matriz ampla ainda não executada.
+- Dependências npm não instaladas; `npm ci` requer autorização explícita conforme AGENTS.md. Nenhum backup real, diretório pessoal, Firebase ou credencial foi acessado.
+- Automação externa, agenda, OAuth/Drive e recuperação independente permanecem NÃO CONFIGURADOS. Snapshots antigos sem escopo são preservados e não atribuídos automaticamente.
+- Evidência e continuação: [`V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md`](V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md). `MERGE=false`.
+
 ## V436 — final operational gates (2026-10-10)
 
 - Main e CI confirmados no SHA `c7690dfd9539e139226cb7865e7de165ab36ea2c`; GitHub run `38061181090` passou nos 3 checks, inclusive Auth/Firestore Emulator QA 8/8.

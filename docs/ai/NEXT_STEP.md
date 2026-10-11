@@ -1,4 +1,11 @@
 # Next Step
+## V831–V850 — concluir validação e preparar Draft PR
+
+- Continuar na worktree `C:\Projetos\carteira-investimentos.worktrees\v831-v850-backup-automation`, branch `codex/v831-v850-backup-automation`; não editar checkout canônico sujo.
+- Reexecutar testes focados, `git diff --check` e a matriz possível. Dependências ausentes; solicitar autorização para `npm ci` apenas se a matriz local não puder ser coberta pelo CI.
+- Revisar e publicar commits explícitos em Draft PR se a governança autorizar; sem merge/deploy. Registrar CI/Vercel no SHA exato.
+- Gates humanos: primeiro export real, OAuth/Drive, leitura de arquivo financeiro pessoal, Firebase write, restore/migração real e merge.
+
 ## V561 — hardening da comparação mensal (2026-10-10)
 
 - PR #481 segue OPEN/DRAFT no SHA `871a5de5cc7300b0a1c72497621b1b98cb441f0a`; testes sintéticos cobrem filtro exclusivo PAID, meses calendário consecutivos e UNKNOWN versus zero com cobertura completa.

@@ -14,6 +14,15 @@
 - Só fixtures sintéticas; nenhuma alteração de produto, escrita real/produção, mudança financeira ou merge. V323 import/write segue bloqueado até #445 merged + CI pós-merge green.
 # Project Memory
 
+## V831–V850 — contratos de backup e isolamento (2026-10-10)
+
+- Snapshots IndexedDB precisam de owner scope derivado do UID e de chaves versionadas; listagem e retenção por conta evitam sobrescrita/remoção cruzada. Backups vinculados exigem a mesma identidade para verificar e simular restauração.
+- Exportação e snapshot pré-restauração dependem de usuário permitido e cloud sincronizada estável. Backups históricos sem owner scope não devem ser atribuídos automaticamente; são preservados e ficam fora da listagem isolada.
+- `backup-verify.js` só certifica manifest/schema/domínios/checksum do formato do app e sidecar SHA-256 externo válido. JSON genérico, arquivo não suportado ou sidecar ausente/divergente nunca é PASS.
+- A existência de um script não prova cron configurado. IndexedDB local oportunista não equivale a backup externo/disaster recovery. Hermes/Task Scheduler, Drive/OAuth e notificações seguem não configurados até evidência/autorizações correspondentes.
+- V831 valida apenas fixtures sintéticas; dependências npm estavam ausentes e `npm ci` não foi autorizado nesta worktree. Sem exportação/restauração real, Firebase write ou produção.
+- Detalhes: [`V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md`](V831_V850_BACKUP_AUTOMATION_CHECKPOINT.md).
+
 ## V402 — órfãos do Firestore emulator: causa raiz e disciplina segura (2026-10-09)
 
 - firebase-tools (Node) sai antes do processo java filho; o emulador Firestore (`java.exe ... cloud-firestore-emulator-v1.22.0.jar --port 8080`) permanece ouvindo com ParentProcessId morto. Reproduzido em todo `test:auth-emulator` na worktree LEGACY (Windows).

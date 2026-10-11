@@ -119,6 +119,7 @@ function makeHarness({ storage, backupOverrides = {}, runtimeDiagnostics = ['EMP
     __V76_RUNTIME__: { snapshots: { snapshots: [] }, flows: { flows: [] }, diagnostics: runtimeDiagnostics },
     v76Clock: () => Date.now(),
     TYPE_CHOICES: ['Ação'],
+    FB: { user: { uid: 'synthetic-restore-user' }, access: { allowed: true }, cloudLoaded: true },
     document: { getElementById: id => id === 'backup-import-confirm' ? restoreButton : null },
     STOR: stateKey,
     localStorage: storage,
