@@ -1,4 +1,4 @@
-const test=require('node:test');const assert=require('node:assert/strict');const P=require('../fixed-income-benchmark-provider.js');
+const test=require('node:test');const assert=require('node:assert/strict');const P=require('../legacy/js/fixed-income-benchmark-provider.js');
 test('builds official free BCB SGS CDI URL',()=>{const u=P.buildSgsUrl('CDI','2026-06-01','2026-06-15');assert.match(u,/bcdata\.sgs\.12/);assert.match(u,/dataInicial=01\/06\/2026/);});
 test('normalizes Brazilian SGS daily values without weekend fabrication',()=>{const x=P.normalizeSeries([{data:'01/06/2026',valor:'0,053400'},{data:'06/06/2026',valor:'0.05'},{data:'invalid',valor:'1'}]);assert.equal(x.length,2);assert.equal(x[0].date,'2026-06-01');assert.equal(x[0].factor,1.000534);});
 test('compounds only supplied business-day factors',()=>{const rows=P.normalizeSeries([{data:'02/06/2026',valor:'1'},{data:'03/06/2026',valor:'1'}]);assert.equal(P.compoundFactor(rows,'2026-06-01','2026-06-03'),1.0201);});

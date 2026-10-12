@@ -3,10 +3,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const html = fs.readFileSync('index.html', 'utf8');
-const engineSource = fs.readFileSync('asset-detail-intelligence.js', 'utf8');
+const engineSource = fs.readFileSync('legacy/js/asset-detail-intelligence.js', 'utf8');
 
 test('V260 conecta os motores certificados ao detalhe do ativo sem duplicar cálculo', () => {
-  assert.match(html, /<script src="asset-detail-intelligence\.js"><\/script>/);
+  assert.match(html, /<script src="legacy\/js\/asset-detail-intelligence\.js"><\/script>/);
   assert.match(html, /options:detailIntelligenceOptions/);
   assert.match(html, /v257QualityModel\(\)/);
   assert.match(html, /v258MonitoringModel\(detailQualityModel\)/);
@@ -30,7 +30,7 @@ test('V260 consolida renda, custo-base, histórico, qualidade e eventos na aba I
   assert.match(block, /Alertas de monitoramento/);
   assert.match(block, /Eventos corporativos/);
   assert.match(block, /Proveniência/);
-  assert.match(block, /===null\?'—'/);
+  assert.match(block, /===null\?'—':/);
   assert.doesNotMatch(block, /onclick|submit|persist|save/i);
 });
 

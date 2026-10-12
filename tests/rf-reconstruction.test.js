@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { reconstructRfPosition } = require('../rf-reconstruction');
+const { reconstructRfPosition } = require('../legacy/js/rf-reconstruction');
 
 const redemption = (date, delta, id) => ({ date, principalDelta: delta, id });
 

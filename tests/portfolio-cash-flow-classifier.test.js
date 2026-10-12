@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Classifier = require('../portfolio-cash-flow-classifier.js');
+const Classifier = require('../legacy/js/portfolio-cash-flow-classifier.js');
 
 const trustedContext = { walletId: 'wallet-a', sourceSystem: 'V76_MANUAL' };
 const explicitContribution = {

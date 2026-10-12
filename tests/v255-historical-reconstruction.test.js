@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Audit = require('../historical-reconstruction-hardening.js');
+const Audit = require('../legacy/js/historical-reconstruction-hardening.js');
 
 test('reconcilia compras e vendas com a posição atual sem escrever ou inventar dados', () => {
   const result = Audit.buildHistoricalReconstructionAudit({

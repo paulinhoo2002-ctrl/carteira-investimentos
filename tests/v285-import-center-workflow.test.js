@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 
-const Workflow = require('../import-center-workflow.js');
+const Workflow = require('../legacy/js/import-center-workflow.js');
 
 test('workflow module loads in browser without CommonJS globals', () => {
-  const source = fs.readFileSync(path.join(__dirname, '..', 'import-center-workflow.js'), 'utf8');
+  const source = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/import-center-workflow.js'), 'utf8');
   const browserGlobal = {};
   vm.runInNewContext(source, { globalThis: browserGlobal });
   assert.equal(typeof browserGlobal.ImportCenterWorkflow.openReviewForFile, 'function');

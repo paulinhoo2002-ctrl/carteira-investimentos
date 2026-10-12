@@ -238,7 +238,7 @@ test('fixed-income review: cancel blocks persistence; explicit apply reaches con
 });
 
 test('Import Center confirmation remains preview-only and has no writer adapter', () => {
-  const core = require('../import-center-core.js');
+  const core = require('../legacy/js/import-center-core.js');
   const preview = core.buildPreview({ source: { name: 'synthetic.csv', headers: ['ticker', 'quantidade'] }, rows: [] });
   const session = core.createSession(preview, { sessionId: 'synthetic-v284' });
   const confirmed = core.confirmSession(session, { confirmed: true });

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { buildTaxIntelligence } = require('../tax-cost-basis-intelligence.js');
+const { buildTaxIntelligence } = require('../legacy/js/tax-cost-basis-intelligence.js');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 

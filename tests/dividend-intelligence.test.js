@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('../dividend-intelligence');
+const D = require('../legacy/js/dividend-intelligence');
 
 const rows = [
   { id: 'd1', date: '2026-01-15', ticker: 'AAA3', type: 'Dividendo', value: 100, assetClass: 'Ação', source: 'ledger' },

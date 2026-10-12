@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { V213TransactionTrust } = require('../v213-transaction-trust.js');
+const { V213TransactionTrust } = require('../legacy/js/v213-transaction-trust.js');
 
 const rows = [
   { id: 'a', ticker: 'BBAS3', type: 'Compra', date: '2026-09-02', value: 1200, source: 'B3' },

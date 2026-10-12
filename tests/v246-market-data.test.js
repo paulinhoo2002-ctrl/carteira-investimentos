@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const M = require('../market-data-2');
+const M = require('../legacy/js/market-data-2');
 
 test('Market Data 2 normaliza cotação com provenance e freshness', () => {
   const now = Date.parse('2026-09-19T12:00:00Z');

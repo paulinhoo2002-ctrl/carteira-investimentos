@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const index = fs.readFileSync('index.html', 'utf8');
 
 test('V248 carrega o engine histórico puro na superfície legada', () => {
-  assert.match(index, /<script src="historical-performance-engine\.js"><\/script>/);
+  assert.match(index, /<script src="legacy\/js\/historical-performance-engine\.js"><\/script>/);
   assert.match(index, /function v248HistoricalPerformanceSnapshot\(\)/);
 });
 

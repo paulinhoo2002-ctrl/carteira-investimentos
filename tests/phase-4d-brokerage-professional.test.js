@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Brokerage = require('../brokerage-professional.js');
+const Brokerage = require('../legacy/js/brokerage-professional.js');
 
 function note(overrides = {}) {
   return Brokerage.normalizeNote({

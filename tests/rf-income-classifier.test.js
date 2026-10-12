@@ -5,7 +5,7 @@ const {
   classifyRfIncomeEvent,
   passiveIncomeCategory,
   buildReadOnlyPassiveIncomeBucket,
-} = require('../rf-income-classifier');
+} = require('../legacy/js/rf-income-classifier');
 
 test('classifica juros e cupom RF como candidatos de renda passiva', () => {
   assert.deepEqual(classifyRfIncomeEvent({ isFixedIncome: true, eventType: 'Juros' }).type, 'RF_INTEREST');

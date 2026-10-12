@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const ImportFoundation = require('../import-foundation.js');
+const ImportFoundation = require('../legacy/js/import-foundation.js');
 
 test('exact identity uses explicit assetId, ISIN, ticker and then security identity', () => {
   assert.equal(ImportFoundation.resolveExactIdentity({ assetId: 'a-1', ticker: 'ABCD3' }), 'assetId:A-1');

@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('production loads the explicit cloud sync state machine', () => {
-  assert.match(html, /<script src="cloud-sync-state\.js"><\/script>/);
+  assert.match(html, /<script src="legacy\/js\/cloud-sync-state\.js"><\/script>/);
   assert.match(html, /cloudStateModel/);
   assert.match(html, /CloudSyncState\.STATES\.TIMEOUT/);
 });

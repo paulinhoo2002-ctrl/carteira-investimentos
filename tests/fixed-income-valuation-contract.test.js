@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { selectFixedIncomeValuation } = require('../fixed-income-valuation.js');
+const { selectFixedIncomeValuation } = require('../legacy/js/fixed-income-valuation.js');
 
 function legacy(position) {
   const field = ['rf_liquid_value', 'fixed_current_value', 'liquidValue', 'rf_gross_value', 'fixed_gross_value', 'marketValue', 'currentValue', 'current_price'].find(name => Number.isFinite(Number(position[name])) && Number(position[name]) > 0);

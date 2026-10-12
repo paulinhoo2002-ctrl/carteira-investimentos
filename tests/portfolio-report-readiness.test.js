@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildPortfolioReportReadiness, reasonLabel } = require('../portfolio-report-readiness.js');
+const { buildPortfolioReportReadiness, reasonLabel } = require('../legacy/js/portfolio-report-readiness.js');
 
 test('sem evidência mantém seções unavailable e métricas sem valores inventados', () => {
   const result = buildPortfolioReportReadiness();

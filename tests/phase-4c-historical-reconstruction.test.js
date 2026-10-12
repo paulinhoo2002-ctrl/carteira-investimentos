@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Reconstruction = require('../historical-reconstruction.js');
+const Reconstruction = require('../legacy/js/historical-reconstruction.js');
 
 test('classifies custody, lending, subscription, corporate, income and trade events', () => {
   assert.equal(Reconstruction.classifyMovement({ Movimento: 'Transferência entrada' }).classification, 'TRANSFER_IN');

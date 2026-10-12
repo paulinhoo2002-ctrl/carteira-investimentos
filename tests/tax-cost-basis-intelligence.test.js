@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const T = require('../tax-cost-basis-intelligence');
+const T = require('../legacy/js/tax-cost-basis-intelligence');
 
 test('calcula custo médio ponderado e venda parcial sem tratar venda como lucro', () => {
   const result = T.buildTaxIntelligence({ transactions: [

@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('V253 carrega engine puro antes do bootstrap da tela', () => {
-  assert.match(html, /<script src="dividend-intelligence\.js"><\/script>/);
+  assert.match(html, /<script src="legacy\/js\/dividend-intelligence\.js"><\/script>/);
   assert.match(html, /function v253DividendIntelligencePanel\(rows\)/);
   assert.match(html, /v253-income-intelligence/);
 });

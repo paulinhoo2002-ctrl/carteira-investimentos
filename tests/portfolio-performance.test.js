@@ -1,4 +1,4 @@
-const test=require('node:test');const assert=require('node:assert/strict');const P=require('../portfolio-performance');
+const test=require('node:test');const assert=require('node:assert/strict');const P=require('../legacy/js/portfolio-performance');
 test('agrega ativos listados, renda fixa e outros sem dupla contagem',()=>{assert.deepEqual(P.aggregate({listedValue:100,fixedIncomeValue:20,otherValue:5}),{listedValue:100,fixedIncomeValue:20,otherValue:5,totalValue:125});});
 test('separa ganho não realizado, capital realizado e renda',()=>{const r=P.assetReturn({costBasis:100,currentValue:120,realizedCapitalGain:5,realizedIncome:3});assert.equal(r.unrealizedGainLoss,20);assert.ok(Math.abs(r.totalReturn-28)<1e-9);assert.ok(Math.abs(r.totalReturnPercent-28)<1e-9);});
 test('retorno de ativo fechado permanece calculável pela base histórica',()=>{const r=P.assetReturn({costBasis:100,currentValue:0,realizedCapitalGain:20,realizedIncome:4});assert.equal(r.totalReturn,-76);});

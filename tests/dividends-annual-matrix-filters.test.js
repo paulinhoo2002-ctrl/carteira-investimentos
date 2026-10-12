@@ -29,7 +29,7 @@ function makeMatrixContext() {
 
   const context = {
     console,
-    DividendIntelligence: require('../dividend-intelligence.js'),
+    DividendIntelligence: require('../legacy/js/dividend-intelligence.js'),
     S: { dividendMonthlyHistoryView: 'list', dividendMonthlyHistoryLimit: 6, dividendMonthlyHistoryExpanded: [] },
     fmt(value) {
       return Number(value ?? 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});

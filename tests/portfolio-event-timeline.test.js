@@ -1,4 +1,4 @@
-const test=require('node:test'); const assert=require('node:assert/strict'); const T=require('../portfolio-event-timeline.js');
+const test=require('node:test'); const assert=require('node:assert/strict'); const T=require('../legacy/js/portfolio-event-timeline.js');
 const base={proventos:[{id:'d1',ticker:'PETR4',date:'2026-09-20',type:'Dividendo',value:0},{id:'j1',ticker:'BBAS3',paymentDate:'2026-08-15',type:'JCP',value:10},{id:'ref',ticker:'PETR4',date:'2026-09-01',type:'Dividendo',value:99,sourceEventKind:'reference'}],aportes:[{id:'buy',ticker:'PETR4',date:'2026-07-01',operation:'compra',totalValue:100}],corporateEvents:[{id:'c1',symbol:'PETR4',eventType:'DIVIDEND',paymentDate:'2026-10-01',status:'EXPECTED',expectedNet:12}]};
 test('normaliza datas YYYY-MM-DD sem deslocamento de fuso',()=>assert.equal(T.normalizeDate('2026-09-20').display,'20/09/2026'));
 test('ordena cronologicamente e preserva zero legítimo',()=>{const e=T.buildTimeline(base);assert.equal(e[0].date,'2026-10-01');assert.equal(e.find(x=>x.id==='d1').value,0);});

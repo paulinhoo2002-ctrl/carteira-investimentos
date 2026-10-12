@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Engine = require('../asset-detail-intelligence');
+const Engine = require('../legacy/js/asset-detail-intelligence');
 
 test('compõe renda paga, anunciada e custo-base por identidade exata do ativo', () => {
   const result = Engine.buildAssetDetailIntelligence({

@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const contract = require('../portfolio-movement-contract.js');
+const contract = require('../legacy/js/portfolio-movement-contract.js');
 
 function extractFunctionSource(name, nextMarker) {
   const start = indexHtml.indexOf(`function ${name}(`);
@@ -136,6 +136,7 @@ const SALE_FLOW_SOURCES = [
   ['quickMovementSalePreview', 'function quickMovementSaleInfoHtml'],
   ['quickMovementSaleInfoHtml', 'function quickMovementSalePreviewHtml'],
   ['quickMovementSalePreviewHtml', 'function quickMovementSourceLabel'],
+  ['parseQuickMovementNumber', 'function quickMovementNumberField'],
 ];
 
 function loadSaleFlow(draft, overrides = {}) {

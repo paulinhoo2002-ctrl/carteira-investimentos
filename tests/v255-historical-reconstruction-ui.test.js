@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('V255 carrega a camada de reconstrução histórica antes do painel fiscal', () => {
-  assert.match(html, /<script src="historical-reconstruction-hardening\.js"><\/script>/);
+  assert.match(html, /<script src="legacy\/js\/historical-reconstruction-hardening\.js"><\/script>/);
   assert.match(html, /function v255HistoryStatusLabel\(status\)/);
   assert.match(html, /Reconstrução histórica/);
 });

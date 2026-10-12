@@ -1,5 +1,5 @@
 const test=require('node:test'); const assert=require('node:assert/strict');
-const P=require('../corporate-events-parity');
+const P=require('../legacy/js/corporate-events-parity');
 
 test('reconciles exact rows by semantic cents rather than formatted strings',()=>{
   const out=P.reconcileRows([{ticker:'ABCD3',eventType:'DIVIDEND',date:'2026-09-20',value:0.5}], [{symbol:'abcd3',type:'DIVIDEND',paymentDate:'2026-09-20',value:0.50}]);

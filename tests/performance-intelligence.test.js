@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const P = require('../performance-intelligence');
+const P = require('../legacy/js/performance-intelligence');
 
 test('reconcilia patrimônio, custo e resultado sem escrever', () => {
   const result = P.buildPerformanceIntelligence({

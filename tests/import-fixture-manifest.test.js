@@ -1,24 +1,33 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const Manifest = require('../import-fixture-manifest.js');
-const Sanitizer = require('../import-fixture-sanitizer.js');
-const Cli = require('../import-fixture-cli.js');
+const Manifest = require('../legacy/js/import-fixture-manifest.js');
+const Sanitizer = require('../legacy/js/import-fixture-sanitizer.js');
+const Cli = require('../legacy/js/import-fixture-cli.js');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 
-const TEST_FIXTURES_DIR = path.join(__dirname, 'fixtures', 'import-center', 'test-temp');
+let TEST_FIXTURES_DIR;
+let TestCli;
 
 function setupTestDir() {
-  if (!fs.existsSync(TEST_FIXTURES_DIR)) {
-    fs.mkdirSync(TEST_FIXTURES_DIR, { recursive: true });
-  }
+  cleanupTestDir();
+  TEST_FIXTURES_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'legacy-import-fixture-test-'));
+  TestCli = Cli.create({ fixturesDir: TEST_FIXTURES_DIR, manifestPath: path.join(TEST_FIXTURES_DIR, Manifest.MANIFEST_FILENAME) });
 }
 
 function cleanupTestDir() {
-  if (fs.existsSync(TEST_FIXTURES_DIR)) {
-    fs.rmSync(TEST_FIXTURES_DIR, { recursive: true, force: true });
+  if (!TEST_FIXTURES_DIR) return;
+  const tempDir = path.resolve(TEST_FIXTURES_DIR);
+  if (path.dirname(tempDir) !== path.resolve(os.tmpdir()) || !path.basename(tempDir).startsWith('legacy-import-fixture-test-')) {
+    throw new Error('Refusing to clean a directory not created by this test');
   }
+  fs.rmSync(tempDir, { recursive: true, force: true });
+  TEST_FIXTURES_DIR = undefined;
+  TestCli = undefined;
 }
+
+test.afterEach(cleanupTestDir);
 
 test('Manifest: createEmptyManifest produces valid structure', () => {
   const manifest = Manifest.createEmptyManifest();
@@ -213,7 +222,7 @@ test('CLI: validate catches missing manifest file', () => {
   const fs = require('node:fs');
   const path = require('node:path');
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fixture-test-'));
-  const CliIsolated = require('../import-fixture-cli.js').create({ fixturesDir: tempDir, manifestPath: path.join(tempDir, 'fixture-manifest.json') });
+  const CliIsolated = require('../legacy/js/import-fixture-cli.js').create({ fixturesDir: tempDir, manifestPath: path.join(tempDir, 'fixture-manifest.json') });
   const result = CliIsolated.validate();
   assert.equal(result.summary.totalFixtures, 0);
   assert.equal(result.summary.manifestValid, true);
@@ -224,7 +233,7 @@ test('CLI: registerFixture creates entry and copies file in non-dry-run', () => 
   setupTestDir();
   const testFile = path.join(TEST_FIXTURES_DIR, 'source-sanitized.json');
   fs.writeFileSync(testFile, JSON.stringify({ test: 'data' }), 'utf8');
-  const result = Cli.registerFixture({
+  const result = TestCli.registerFixture({
     sourcePath: testFile,
     fixtureId: 'INTER_BROKERAGE-NOTE-PDF_001.json',
     sourceKind: 'REAL_SANITIZED',
@@ -233,7 +242,8 @@ test('CLI: registerFixture creates entry and copies file in non-dry-run', () => 
   });
   assert.equal(result.dryRun, false);
   assert.equal(result.fixtureId, 'INTER_BROKERAGE-NOTE-PDF_001.json');
-  assert.ok(fs.existsSync(path.join(Cli.FIXTURES_DIR, 'INTER_BROKERAGE-NOTE-PDF_001.json')));
+  assert.notEqual(TestCli.FIXTURES_DIR, Cli.FIXTURES_DIR);
+  assert.ok(fs.existsSync(path.join(TestCli.FIXTURES_DIR, 'INTER_BROKERAGE-NOTE-PDF_001.json')));
   cleanupTestDir();
 });
 
@@ -241,7 +251,7 @@ test('CLI: registerFixture dry-run does not copy file', () => {
   setupTestDir();
   const testFile = path.join(TEST_FIXTURES_DIR, 'source-sanitized.json');
   fs.writeFileSync(testFile, JSON.stringify({ test: 'data' }), 'utf8');
-  const result = Cli.registerFixture({
+  const result = TestCli.registerFixture({
     sourcePath: testFile,
     fixtureId: 'INTER_BROKERAGE-NOTE-PDF_002.json',
     dryRun: true
@@ -255,8 +265,8 @@ test('CLI: registerFixture rejects duplicate fixtureId', () => {
   setupTestDir();
   const testFile = path.join(TEST_FIXTURES_DIR, 'source-sanitized.json');
   fs.writeFileSync(testFile, JSON.stringify({ test: 'data' }), 'utf8');
-  Cli.registerFixture({ sourcePath: testFile, fixtureId: 'DUPLICATE.json', dryRun: false });
-  const result = Cli.registerFixture({ sourcePath: testFile, fixtureId: 'DUPLICATE.json', dryRun: false });
+  TestCli.registerFixture({ sourcePath: testFile, fixtureId: 'DUPLICATE.json', dryRun: false });
+  const result = TestCli.registerFixture({ sourcePath: testFile, fixtureId: 'DUPLICATE.json', dryRun: false });
   assert.equal(result.error, 'DUPLICATE_FIXTURE_ID');
   cleanupTestDir();
 });
@@ -265,7 +275,7 @@ test('CLI: sanitize dry-run shows redactions without writing', () => {
   setupTestDir();
   const testFile = path.join(TEST_FIXTURES_DIR, 'raw.pdf');
   fs.writeFileSync(testFile, 'CPF: 123.456.789-00\nValor: R$ 100,00', 'utf8');
-  const result = Cli.sanitize(testFile, { dryRun: true });
+  const result = TestCli.sanitize(testFile, { dryRun: true });
   assert.equal(result.dryRun, true);
   assert.ok(result.redactions.some(r => r.pattern === 'CPF'));
   assert.ok(result.warnings.length === 0 || result.warnings.every(w => w !== 'ALL_MONETARY_VALUES_REMOVED'));
@@ -277,7 +287,7 @@ test('CLI: sanitize non-dry-run writes sanitized file', () => {
   const testFile = path.join(TEST_FIXTURES_DIR, 'raw.pdf');
   const outputFile = path.join(TEST_FIXTURES_DIR, 'sanitized.pdf');
   fs.writeFileSync(testFile, 'CPF: 123.456.789-00\nValor: R$ 100,00', 'utf8');
-  const result = Cli.sanitize(testFile, { dryRun: false, outputPath: outputFile });
+  const result = TestCli.sanitize(testFile, { dryRun: false, outputPath: outputFile });
   assert.equal(result.dryRun, false);
   const outputContent = fs.readFileSync(outputFile, 'utf8');
   assert.ok(outputContent.includes('[CPF_REDACTED]'));
@@ -289,8 +299,8 @@ test('CLI: list returns fixture entries', () => {
   setupTestDir();
   const testFile = path.join(TEST_FIXTURES_DIR, 'source-sanitized.json');
   fs.writeFileSync(testFile, JSON.stringify({ test: 'data' }), 'utf8');
-  Cli.registerFixture({ sourcePath: testFile, fixtureId: 'LIST_TEST.json', dryRun: false });
-  const list = Cli.list();
+  TestCli.registerFixture({ sourcePath: testFile, fixtureId: 'LIST_TEST.json', dryRun: false });
+  const list = TestCli.list();
   assert.ok(list.some(f => f.fixtureId === 'LIST_TEST.json'));
   cleanupTestDir();
 });
@@ -299,8 +309,8 @@ test('CLI: runHarness runs detection on fixture', () => {
   setupTestDir();
   const testFile = path.join(TEST_FIXTURES_DIR, 'source-sanitized.pdf');
   fs.writeFileSync(testFile, 'INTER DTVM LTDA\nNota de Corretagem', 'utf8');
-  Cli.registerFixture({ sourcePath: testFile, fixtureId: 'HARNESS_TEST.pdf', dryRun: false });
-  const result = Cli.runHarness({ fixtureId: 'HARNESS_TEST.pdf' });
+  TestCli.registerFixture({ sourcePath: testFile, fixtureId: 'HARNESS_TEST.pdf', dryRun: false });
+  const result = TestCli.runHarness({ fixtureId: 'HARNESS_TEST.pdf' });
   assert.equal(result.fixtureId, 'HARNESS_TEST.pdf');
   assert.equal(result.detection.provider, 'INTER');
   cleanupTestDir();
@@ -407,5 +417,3 @@ test('Manifest: validateFilesMatchManifest detects orphan files', () => {
   assert.ok(result.orphanFiles.includes('orphan.json'));
   cleanupTestDir();
 });
-
-cleanupTestDir();

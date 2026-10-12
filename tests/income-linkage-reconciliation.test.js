@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Linkage = require('../income-linkage-reconciliation.js');
+const Linkage = require('../legacy/js/income-linkage-reconciliation.js');
 
 const yahoo = (id, value = 100) => ({ id, ticker: 'ABCP11', type: 'Yahoo', date: '03/08/2026', value });
 const b3 = (id, value = 100) => ({ id, ticker: 'ABCP11', type: 'Rendimento', source: 'B3 Proventos Recebidos', date: '14/08/2026', value });

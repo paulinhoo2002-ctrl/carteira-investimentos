@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Trust = require('../portfolio-data-trust.js');
+const Trust = require('../legacy/js/portfolio-data-trust.js');
 
 const NOW = Date.parse('2026-09-19T12:00:00Z');
 const asset = (overrides = {}) => ({ id: 'a1', ticker: 'ABCD3', name: 'Ativo', type: 'Ação', current_price: 10, quoteSource: 'Yahoo Finance', quoteUpdatedAt: '2026-09-19T10:00:00Z', sector: 'Financeiro', issuer: 'Emissor', ...overrides });

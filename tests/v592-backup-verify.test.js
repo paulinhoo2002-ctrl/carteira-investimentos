@@ -5,7 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { verifyFile } = require('../scripts/maintenance/backup-verify.js');
-const Backup = require('../backup-portability.js');
+const Backup = require('../legacy/js/backup-portability.js');
 
 async function tmpFixture({ corrupt = false, sidecar = true, mismatch = false, olderDays = 0, nonJson = false } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'v592-'));

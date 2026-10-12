@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { describe } = require('../fixed-income-display.js');
+const { describe } = require('../legacy/js/fixed-income-display.js');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -24,8 +24,8 @@ test('V190 fixed-income display describes fallback without changing valuation', 
 });
 
 test('V190 Import Center has a semantic heading and live simulation result', () => {
-  assert.match(fs.readFileSync(path.join(root, 'import-center-view.js'), 'utf8'), /<h1 class="import-center-title"/);
-  assert.match(fs.readFileSync(path.join(root, 'import-center-preview-renderer.js'), 'utf8'), /role="status" aria-live="polite"/);
+  assert.match(fs.readFileSync(path.join(root, 'legacy', 'js', 'import-center-view.js'), 'utf8'), /<h1 class="import-center-title"/);
+  assert.match(fs.readFileSync(path.join(root, 'legacy', 'js', 'import-center-preview-renderer.js'), 'utf8'), /role="status" aria-live="polite"/);
 });
 
 test('V196 local test mode skips protected authority validation before its in-memory save', () => {
@@ -44,7 +44,7 @@ test('V196 local test mode skips protected authority validation before its in-me
 });
 
 test('V196 Import Center exposes the active simulation step to assistive technology', () => {
-  const html = fs.readFileSync(path.join(root, 'import-center-view.js'), 'utf8');
+  const html = fs.readFileSync(path.join(root, 'legacy', 'js', 'import-center-view.js'), 'utf8');
   assert.match(html, /class="import-center-step \$\{session\.step===index\+1\?'on':''\}[^`]*aria-current="step"/);
 });
 
