@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
-const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer } = require('./local-http-server.js');
 
 function resolveBrowser() {
   return [
@@ -14,40 +13,23 @@ function resolveBrowser() {
   ].filter(Boolean).find(file => { try { fs.accessSync(file); return true; } catch { return false; } });
 }
 
-async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const filePath = path.normalize(path.join(rootDir, pathname === '/' ? 'index.html' : pathname));
-      if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(); return; }
-      const content = await fsp.readFile(filePath);
-      const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json' };
-      res.writeHead(200, { 'Content-Type': `${types[path.extname(filePath)] || 'text/plain'}; charset=utf-8` });
-      res.end(content);
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end();
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
-}
-
 const viewports = [
+  { width: 360, height: 800, label: '360x800' },
   { width: 390, height: 844, label: '390x844' },
+  { width: 430, height: 932, label: '430x932' },
   { width: 768, height: 1024, label: '768x1024' },
   { width: 1366, height: 768, label: '1366x768' },
   { width: 1920, height: 1080, label: '1920x1080' },
 ];
 
-const metricLabels = ['Patrimônio atual', 'Total investido', 'Resultado geral', 'Rentabilidade', 'Recebido no mês', 'Média 12 meses', 'Meta mensal'];
+const metricLabels = ['Patrimônio atual', 'Resultado', 'Recebido'];
 const aporteLabels = ['Total aportado', 'Média mensal', 'Maior aporte', 'Meses com aportes'];
 
 for (const viewport of viewports) {
   test(`Dashboard/Aportes readability - ${viewport.label}`, async () => {
     const executablePath = resolveBrowser();
     assert.ok(executablePath, 'Chrome/Edge não encontrado para smoke browser');
-    const harness = await startServer(path.join(__dirname, '..'));
+    const harness = await startLocalHttpServer(path.join(__dirname, '..'));
     const { chromium } = await import('playwright-core');
     const browser = await chromium.launch({ executablePath, headless: true });
     const errors = [];
@@ -60,7 +42,7 @@ for (const viewport of viewports) {
       page.on('requestfailed', request => requestFailures.push(`${request.url()} (${request.failure()?.errorText || 'unknown'})`));
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => { restoreLocalTestData(); go('dashboard'); });
-      await page.waitForSelector('.dashboard-master-primary', { state: 'visible', timeout: 5000 });
+      await page.waitForSelector('.canon-dashboard .dashboard-executive-kpis', { state: 'visible', timeout: 5000 });
 
       const dashboard = await page.evaluate(labels => {
         const firstStyle = selector => getComputedStyle(document.querySelector(selector));
@@ -68,12 +50,20 @@ for (const viewport of viewports) {
           const node = [...document.querySelectorAll('.premium-metric-label')].find(item => item.textContent.trim() === label);
           return { label, value: node?.closest('.premium-metric')?.querySelector('.premium-metric-value')?.textContent.trim() || '' };
         });
-        return { labelSize: parseFloat(firstStyle('.premium-metric-label').fontSize), noteSize: parseFloat(firstStyle('.premium-metric-note').fontSize), values, overflow: document.documentElement.scrollWidth > innerWidth };
+        const chart = document.querySelector('.dashboard-evolution-card');
+        const chartSvg = chart?.querySelector('svg.dashboard-patrimony-chart');
+        const received = [...document.querySelectorAll('.premium-metric-label')].find(item => item.textContent.trim() === 'Recebido')?.closest('.premium-metric')?.innerText || '';
+        return { labelSize: parseFloat(firstStyle('.premium-metric-label').fontSize), noteSize: parseFloat(firstStyle('.premium-metric-note').fontSize), values, received, chartHeight: chart?.getBoundingClientRect().height || 0, chartSvgHeight: chartSvg?.getBoundingClientRect().height || 0, overflow: document.documentElement.scrollWidth > innerWidth };
       }, metricLabels);
       assert.ok(dashboard.labelSize >= 11, `label Dashboard <11px em ${viewport.label}`);
       assert.ok(dashboard.noteSize >= 11, `nota Dashboard <11px em ${viewport.label}`);
       dashboard.values.forEach(item => assert.ok(item.value, `KPI ausente: ${item.label}`));
+      assert.match(dashboard.received, /—[\s\S]*Cobertura desconhecida/, `recebimento sintético não deve virar zero quando cobertura é desconhecida em ${viewport.label}`);
       assert.equal(dashboard.overflow, false, `overflow Dashboard em ${viewport.label}`);
+      if (viewport.width <= 430) {
+        assert.ok(dashboard.chartHeight <= 215, `gráfico de aportes ocupa altura excessiva em ${viewport.label}: ${dashboard.chartHeight}px`);
+        assert.ok(dashboard.chartSvgHeight <= 140, `gráfico de aportes excede altura mobile em ${viewport.label}: ${dashboard.chartSvgHeight}px`);
+      }
 
       await page.evaluate(() => { restoreLocalTestData(); go('aportes'); setAportesViewMode('resumo'); });
       await page.locator('.aporte-secondary-summary > summary').click();
