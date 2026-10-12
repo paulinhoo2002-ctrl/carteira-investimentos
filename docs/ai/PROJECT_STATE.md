@@ -1,3 +1,11 @@
+## MEGA09 — estado local verificado (2026-10-12)
+
+- Base: `origin/main` `a6b1d349170b973528b2bf64f1eddcbfe9bc1e5b`; branch `codex/legacy-product-mega-09`; implementação funcional em `c715b33`.
+- Ativos agora aplica ordenação por ticker, resultado e rentabilidade à tabela desktop e aos cartões mobile; a preferência permanece em memória. Dados sem resultado/rentabilidade comprovados ficam ao final.
+- Validação no código: `test:modern` 823/823, `qa:all` PASS, `verify:release` PASS com V289 18/18, teste Playwright focal 2/2 e `git diff --check` limpo. QA sintético cobriu 360, 390, 430, 768, 1366, 1440, 1536 e 1920 px, sem overflow, escrita local, tráfego Firebase, erro de console ou erro de página.
+- Builds mantêm avisos já existentes do bundle Modern; a suíte também reportou a porta 24678 ocupada, sem falha final. Nenhum processo foi encerrado.
+- A implementação usa dependências locais existentes via junction, com `package-lock.json` idêntico; `npm ci` não foi executado. `PR #497` e worktrees existentes foram preservadas. Sem push, PR, merge ou deploy.
+
 ## V1005 — certificação operacional (2026-10-11)
 
 - Base `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; branch isolada `codex/v1005-operational-certification`.
