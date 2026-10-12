@@ -328,6 +328,8 @@ function makeAnalysisHarness(overrides = {}) {
     },
   };
 
+  vm.runInNewContext(read('legacy/js/ui/presentation.js'), context, { filename: 'legacy-presentation.js' });
+
   const exported = vm.runInNewContext(
     `${source}\n({ prudentContributionAnalysis, rebalanceContributionDistribution, ajudarTab, calcRebalance, iaTab, setAIFocus, getAI, generateOverviewAnalysis, generateIncomeAnalysis, generateRebalanceAnalysis, generateConcentrationAnalysis, aiModeMeta, aiNormalizeFocus });`,
     context,

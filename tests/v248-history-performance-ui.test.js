@@ -1,8 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 
-const index = fs.readFileSync('index.html', 'utf8');
+const index = readLegacyHtml();
 
 test('V248 carrega o engine histórico puro na superfície legada', () => {
   assert.match(index, /<script src="historical-performance-engine\.js"><\/script>/);
