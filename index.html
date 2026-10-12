@@ -32108,7 +32108,7 @@ function ativos(){
       <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)"><option value="all" ${S.assetsPerformanceFilter === 'all' ? 'selected' : ''}>Todos</option><option value="positive" ${S.assetsPerformanceFilter === 'positive' ? 'selected' : ''}>Positivos</option><option value="negative" ${S.assetsPerformanceFilter === 'negative' ? 'selected' : ''}>Negativos</option><option value="neutral" ${S.assetsPerformanceFilter === 'neutral' ? 'selected' : ''}>Neutros</option></select></label>
       ${activeAssetFilterCount ? '<button type="button" class="btn bgh assets-clear-filter" onclick="clearAssetsFilters()">Limpar filtros</button>' : ''}
     </div>
-    <div class="assets-filter-summary" role="status" aria-live="polite"><strong>${displayAssets.length}</strong><span>${assetFiltersActive ? `ativos exibidos de ${S.assets.length}` : 'ativos na carteira'}</span>${assetFiltersActive ? '<span class="assets-filter-summary-dot" aria-hidden="true">·</span><span>filtros em uso</span>' : ''}</div>
+    <div class="assets-filter-summary" role="status" aria-live="polite"><strong>${displayAssets.length}</strong><span>${assetFiltersActive ? `ativos exibidos de ${S.assets.length}` : 'ativos na carteira'}</span>${assetFiltersActive ? '<span class="assets-filter-summary-dot" aria-hidden="true">·</span><span class="assets-filter-summary-active">filtros em uso</span>' : ''}</div>
   </div>`;
   const assetsFilterEmpty = assetFiltersActive && displayAssets.length === 0;
   const assetsFilterEmptyMessage = '<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
@@ -32154,10 +32154,12 @@ function ativos(){
       const financial = m.financial;
 
       const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
-      const result = Number.isFinite(financial?.result) ? financial.result : null;
+      const hasAppliedBasis = Number.isFinite(financial?.invested) && financial.invested > 0;
+      const hasPerformanceData = displayCurrentValue != null && hasAppliedBasis;
+      const result = hasPerformanceData && Number.isFinite(financial?.result) ? financial.result : null;
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
       const resultPrefix2 = result != null && result > 0 ? '+' : '';
-      const returnPct = Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
+      const returnPct = hasPerformanceData && Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
 
       // Get analysis row for this ticker
       const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
@@ -32171,7 +32173,7 @@ function ativos(){
       const currentPriceDisplay = isRF
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
         : (currentUnit > 0 ? fmt(currentUnit) : '—');
-      const investedDisplay = Number.isFinite(financial?.invested) ? fmt(financial.invested) : '—';
+      const investedDisplay = hasAppliedBasis ? fmt(financial.invested) : '—';
       const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
       const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
       const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
@@ -32231,10 +32233,12 @@ function ativos(){
       const financial = m.financial;
 
       const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
-      const result = Number.isFinite(financial?.result) ? financial.result : null;
+      const hasAppliedBasis = Number.isFinite(financial?.invested) && financial.invested > 0;
+      const hasPerformanceData = displayCurrentValue != null && hasAppliedBasis;
+      const result = hasPerformanceData && Number.isFinite(financial?.result) ? financial.result : null;
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
       const resultPrefix2 = result != null && result > 0 ? '+' : '';
-      const returnPct = Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
+      const returnPct = hasPerformanceData && Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
 
       const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
       const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
@@ -32246,7 +32250,7 @@ function ativos(){
       const currentPriceDisplay = isRF
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
         : (currentUnit > 0 ? fmt(currentUnit) : '—');
-      const investedDisplay = Number.isFinite(financial?.invested) ? fmt(financial.invested) : '—';
+      const investedDisplay = hasAppliedBasis ? fmt(financial.invested) : '—';
       const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
       const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
       const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
@@ -38564,6 +38568,37 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-tab{color:#4b5d70}
 html[data-theme="light"] .premium-dividends-3 .div-type-badge.rendimento{color:#137333}
 html[data-theme="light"] .premium-dividends-3 .div-type-badge.outro{color:#475569}
 .assets-premium-shell .ag-k{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip}
+@media(max-width:767px){
+  .assets-premium-shell .assets-premium-controls{display:grid;grid-template-columns:minmax(0,1fr) 112px;grid-template-areas:"search filters" "sort summary";gap:5px;margin-bottom:8px}
+  .assets-premium-shell .assets-premium-controls .assets-premium-search{grid-area:search;flex:none;min-width:0}
+  .assets-premium-shell .assets-premium-controls .assets-premium-filters{grid-area:filters}
+  .assets-premium-shell .assets-premium-controls .assets-premium-sort{grid-area:sort;display:grid;grid-template-columns:auto minmax(0,1fr);flex:none;min-width:0}
+  .assets-premium-shell .assets-premium-controls .assets-premium-sort select{width:100%;min-width:0;max-width:none}
+  .assets-premium-shell .assets-filter-summary{grid-area:summary;box-sizing:border-box;gap:4px;margin:0;min-height:44px;overflow:hidden;white-space:nowrap;font-size:9px}
+  .assets-premium-shell .assets-filter-summary strong{flex:none;font-size:11px}
+  .assets-premium-shell .assets-filter-summary span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .assets-premium-shell .assets-filter-summary .assets-filter-summary-active{display:none}
+  .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{max-height:45vh;overscroll-behavior:contain}
+  .assets-premium-shell .assets-premium-controls:has(.assets-review-filter){grid-template-areas:"search filters" "sort summary" "review review"}
+  .assets-premium-shell .assets-premium-controls .assets-review-filter{grid-area:review}
+  .assets-premium-shell .asset-premium-card-summary{position:relative;grid-template-columns:minmax(0,1fr) auto 20px;gap:6px 8px;padding:8px 10px}
+  .assets-premium-shell .asset-premium-card-summary .asset-info{grid-column:1/3;align-items:center;gap:8px;min-width:0}
+  .assets-premium-shell .asset-premium-card-summary .asset-info>div:last-child{min-width:0}
+  .assets-premium-shell .asset-premium-card-summary::after{content:'+';grid-column:3;grid-row:1;display:grid;place-items:center;width:20px;height:20px;border:1px solid var(--border);border-radius:50%;color:var(--muted);font-size:15px;line-height:1}
+  .assets-premium-shell .asset-premium-card[open]>.asset-premium-card-summary::after{content:'−'}
+  .assets-premium-shell .asset-premium-card-meta{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;text-align:left}
+  .assets-premium-shell .asset-premium-card-meta>div{min-width:0;gap:2px}
+  .assets-premium-shell .asset-premium-card-meta span{font-size:9px}
+  .assets-premium-shell .asset-premium-card-meta strong{font-size:12px;line-height:1.25}
+  .assets-premium-shell .asset-premium-card-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;padding:8px 10px 10px}
+  .assets-premium-shell .asset-premium-card-details .asset-premium-card-row{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:2px;min-width:0;padding:5px 0}
+  .assets-premium-shell .asset-premium-card-details .asset-premium-card-row span{font-size:10px;line-height:1.25}
+  .assets-premium-shell .asset-premium-card-details .asset-premium-card-row strong{font-size:11px;line-height:1.3;text-align:left;overflow-wrap:anywhere}
+  .assets-premium-shell .asset-premium-card-details .asset-premium-card-actions{grid-column:1/-1;min-width:0;padding:8px 0 0}
+}
+@media(max-width:380px){
+  .assets-premium-shell .asset-premium-card-details{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{
