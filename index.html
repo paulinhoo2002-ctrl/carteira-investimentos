@@ -34901,14 +34901,16 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
   const covered=dividendAnnualMatrixData(rows).flatMap(year=>year.months).filter(month=>stats.monthKeys.includes(month.key));
   const complete=covered.filter(month=>month.coverage==='COMPLETE');
   const monthlyAvg=complete.length?complete.reduce((sum,month)=>sum+month.total,0)/complete.length:null;
-  const lastMonth=covered.find(month=>month.key===stats.monthKeys[stats.monthKeys.length-2])?.total??null;
+  const lastMonthRow=covered.find(month=>month.key===stats.monthKeys[stats.monthKeys.length-2]);
+  const lastMonth=lastMonthRow?.coverage==='COMPLETE' || (lastMonthRow?.coverage==='PARTIAL' && lastMonthRow.total>0) ? lastMonthRow.total : null;
+  const lastMonthSub=lastMonthRow?.coverage==='COMPLETE'?'Mês completo confirmado':lastMonthRow?.coverage==='PARTIAL'?'Recebido registrado · cobertura parcial':'Cobertura desconhecida';
   const annualProjection=complete.length===12&&monthlyAvg!==null?monthlyAvg*12:null;
   const portfolioTotal=(S.assets||[]).reduce((s,a)=>s+(assetCurrentValue(a)||0),0);
   const yieldNow=(portfolioTotal>0 && stats.total12>0) ? (stats.total12/portfolioTotal*100) : null;
   const cards=[
     ['Recebido no ano','income',receivedThisYearKnown?fmt(receivedThisYear):'—',receivedThisYearSub,receivedThisYearKnown&&receivedThisYear>0?'good':'',''],
     ['Média mensal','history',monthlyAvg===null?'—':fmt(monthlyAvg),`Cobertura confirmada: ${complete.length}/12 meses`,monthlyAvg>0?'good':'','blue'],
-    ['Último mês','trend',lastMonth===null?'—':fmt(lastMonth),'Recebido registrado · cobertura parcial',lastMonth>0?'good':'','orange'],
+    ['Último mês','trend',lastMonth===null?'—':fmt(lastMonth),lastMonthSub,lastMonth>0?'good':'','orange'],
     ['Projeção anual','target',annualProjection===null?'—':fmt(annualProjection),'Estimativa · somente meses completos',annualProjection>0?'good':'','purple'],
     ['Yield atual','percent',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'','cyan']
   ];
@@ -35842,7 +35844,7 @@ function metasTab(){
   </section>
 
   <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
-    <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${goalSnapshot.hasPortfolioData?fmt(mD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${goalSnapshot.hasPortfolioData?fmt(mD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira · não recebida</div></div>
     <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${goalSnapshot.hasPortfolioData?fmt(aD):'Indisponível'}</div></div>
     <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${goalSnapshot.hasPortfolioData?avgDY.toFixed(2)+'%':'Indisponível'}</div></div>
     <div class="card al metas-kpi-card ds-kpi" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('wallet')}<span>Total da carteira</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--text)">${goalSnapshot.hasPortfolioData?fmt(tC):'Indisponível'}</div></div>
