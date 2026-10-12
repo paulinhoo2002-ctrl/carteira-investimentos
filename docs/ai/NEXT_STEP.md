@@ -1,9 +1,17 @@
-## MEGA 12 — checkpoint de continuidade (2026-10-12)
+## MEGA 12 — retomada da modularização (2026-10-12)
+
+- Worktree `C:\Projetos\carteira-investimentos.worktrees\v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, iniciou em `75e9cda4716b72e9ca58d343c8d17594333739a6`; commit funcional `9bb87977212bb573532ab7e34fa4627486feae52`. Foram extraídos 22 blocos de estilos para 12 módulos CSS ordenados e 11 renderizadores/helpers compartilhados para `legacy/js/ui/presentation.js`; comparação de CSS reconstruiu 29 blocos sem diferenças (667.979 bytes, 937 `!important`, 216 `@media` preservados). `index.html` caiu de 2.450.595 para 1.834.218 bytes e de 38.662 para 29.957 linhas.
+- Corrigida uma vírgula ausente no array do app shell cache; `node --check sw.js` passa. Finance 96/96, persistência 32/32, V324 17/17, QA sintético 44/44, pacote focal de modularização/renderers 70/70, teste estático do service worker 1/1, build estático e `git diff --check` passam. Finance Core, persistência, Firebase e semântica de dados não foram alterados.
+- Matriz ampla não certificada: `npm test` para no pretest porque Vite não está instalado; `test:modern` falha por dependências React ausentes; `qa:all` e `verify:release` também param na ausência de Vite. O corpo Legacy executado sem lifecycle pretest chega ao teste de backup e é bloqueado porque falta o diretório de backup aprovado `C:\Projetos\_backups\carteira-investimentos`; o guard não foi contornado nem o destino criado. Playwright ausente impede a prova browser automatizada.
+- Browser local sintético/read-only mostrou o Dashboard renderizado; viewport disponível ~846px. A matriz responsiva completa e console/rede do browser não foram certificados. `npm ci` não executado nesta worktree. Sem push, PR, merge ou deploy.
+- Próximo passo: após autorização específica para instalar lockfile nesta worktree e disponibilização do destino aprovado do teste de backup, executar `npm ci`, repetir matriz completa, corrigir falhas reais e revisar o diff final. Preservar o estado local atual; nenhum dado real foi acessado.
+
+## MEGA 12 — checkpoint anterior (2026-10-12; superseded by the update above)
 
 - Worktree isolada `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, base/HEAD inicial `e791cbf4286f5af312f530cfd68c82e6ba01b3f7`, HEAD atual `1355d79be570d2857b044473dcd6be87dc5e3e34`. Commit `1355d79` reúne as melhorias de Dividendos, Patrimônio e Ativos; Finance Core, persistência e Firebase intactos.
 - Focados: 16/16; backup/recovery: 25/25; QA sintético: 44/44; build estático: PASS. `test:modern`: 719/728, nove falhas de carregamento por React ausente. `npm test`, `qa:all`, `verify:release` e V289 bloqueados por Vite/Playwright ausentes; sem instalação de dependências nesta worktree.
 - Browser local oficial em `testMode=1&testReadOnly=1`: Dividendos, Patrimônio, Ativos e Renda Fixa inspecionados com fixtures sintéticas; sem operações financeiras. Captura disponível nesta sessão, viewport físico do navegador ~844px, sem matriz 390/1366 certificada.
-- Próximo passo: obter autorização explícita para `npm ci` nesta worktree e continuar a matriz visual/funcional da MEGA 12. Sem push, PR, merge ou deploy; não tocar no artefato de worktree criado fora da raiz autorizada.
+- Próximo passo registrado naquele checkpoint: obter autorização explícita para `npm ci` nesta worktree e continuar a matriz visual/funcional da MEGA 12. O estado e a autorização atuais estão descritos no checkpoint acima. Sem push, PR, merge ou deploy; não tocar no artefato de worktree criado fora da raiz autorizada.
 
 ## MEGA11 — Ativos: cobertura financeira (2026-10-12)
 

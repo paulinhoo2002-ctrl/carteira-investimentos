@@ -4,7 +4,9 @@
 
 ```text
 Browser
-  -> index.html bootstrap and inline CSS/JavaScript
+  -> index.html bootstrap and ordered legacy/css modules
+  -> legacy/js/ui/presentation.js shared presentation renderers
+  -> remaining inline application JavaScript
   -> testMode/auth/Firebase bootstrap
   -> PersistenceCore load or local fixture
   -> global state S
@@ -25,7 +27,9 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
 
 | File | Responsibility | Sensitivity |
 |---|---|---|
-| `index.html` | Authoritative legacy SPA, shell, screens, handlers and inline CSS | High; mixed product/runtime file |
+| `index.html` | Authoritative legacy SPA, shell, screens, handlers and remaining inline application code | High; mixed product/runtime file |
+| `legacy/css/*.css` | Ordered external modules extracted from the legacy style blocks | Presentation only; preserve link order |
+| `legacy/js/ui/presentation.js` | Shared legacy presentation helpers and markup renderers | Presentation only; classic script with runtime globals |
 | `finance-core.js` | Pure financial calculations and domain helpers | Protected |
 | `persistence-core.js` | Serialization, load/save and storage boundary | Protected |
 | `portfolio-movement-contract.js` | Movement validation/contract | Protected |

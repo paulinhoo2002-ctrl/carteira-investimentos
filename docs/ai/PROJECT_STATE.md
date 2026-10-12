@@ -1,3 +1,12 @@
+## MEGA 12 — modularização legacy, validação parcial (2026-10-12)
+
+- Worktree `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; começou em `75e9cda4716b72e9ca58d343c8d17594333739a6` e o commit funcional local é `9bb87977212bb573532ab7e34fa4627486feae52`.
+- CSS: 22 blocos em 12 módulos externos ordenados; reconstrução estática comparou 29 blocos ao HTML original sem diferença. Corrigidas fronteiras de comentários entre folhas externas, mantendo conteúdo e ordem. `index.html` reduziu aproximadamente 25% em bytes. Onze helpers/renderers de apresentação compartilhados foram extraídos; Finance Core, persistência e Firebase não foram alterados.
+- Validação no HEAD local: pacote focal 70/70; teste estático SW 1/1; finanças 96/96; persistência 32/32; V324 17/17; QA local sintético 44/44; build estático, `node --check` e `git diff --check` PASS.
+- Matriz total não certificada. `npm test` e `verify:release` param no pretest por Vite ausente; `test:modern` não conclui por React ausente; `qa:all` para no build Modern. O corpo Legacy com hooks ignorados chega ao teste de backup, bloqueado pela ausência do destino aprovado; `playwright-core` ausente bloqueia o teste de atualização do service worker e a matriz automatizada de viewports. Sem instalação (`npm ci`), sem criação de diretório de backup externo, sem dados reais.
+- Browser sintético/read-only recarregado após a correção de CSS: Dashboard renderizado e valores desconhecidos permaneceram como indisponíveis. Apenas o viewport natural de aproximadamente 846 px foi observado; sem certificação responsiva completa, console/rede ou hosted QA.
+- Sem push, PR, merge ou deploy. Próximo passo: concluir revisão local do restante da extração e obter autorização/environment para `npm ci` nesta worktree e acesso ao destino aprovado do teste backup; depois executar os gates bloqueados. A worktree permanece sob a raiz autorizada; outras worktrees não foram alteradas.
+
 ## MEGA10 — Ativos premium (2026-10-12)
 
 - Branch isolada `codex/legacy-product-mega-10`, baseada no HEAD MEGA09 `7186a5fff7996ef2e451f965b6eb6ba0df512a06`; commit funcional local `8dc3c8f` compacta controles/cartões mobile e deixa aplicado, resultado e rentabilidade indisponíveis sem base positiva confirmada. Finance Core, persistência e Firebase não foram alterados.
