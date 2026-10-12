@@ -7912,12 +7912,23 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .premium-dividends-3 .canon-year-chip{min-height:38px;padding:7px 12px;border-radius:9px;background:transparent}
 .premium-dividends-3 .canon-year-chip.on{background:var(--canon-green);border-color:var(--canon-green);color:#04130c}
 .premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:1180px) and (min-width:768px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
+@media(max-width:900px){
+  .assets-premium-shell .accordion-header{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px}
+  .assets-premium-shell .accordion-header .acc-info{grid-column:span 2;min-width:0}
+  .assets-premium-shell .accordion-header>div:not(.acc-info){min-width:0}
+}
+@media(max-width:640px){
+  .assets-premium-shell .accordion-header{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px}
+  .assets-premium-shell .accordion-header .acc-info{grid-column:1/-1}
+  .assets-premium-shell .accordion-header .acc-metric-value{font-size:13px;overflow-wrap:anywhere}
+}
 .premium-dividends-3 .div-monthly-summary-item span{color:var(--canon-text)}
 .premium-dividends-3 .canon-kpi-card{min-height:86px;padding:12px 13px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
-.premium-dividends-3 .dividend-executive-kpi-label{font-size:10px;color:var(--canon-muted)}
+.premium-dividends-3 .dividend-executive-kpi-label{font-size:11px;color:var(--canon-muted)}
 .premium-dividends-3 .dividend-executive-kpi-value{font-size:20px;line-height:1.1;color:var(--canon-text);font-variant-numeric:tabular-nums}
 .premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--canon-green)}
-.premium-dividends-3 .dividend-executive-kpi-sub{font-size:10px;color:var(--canon-muted)}
+.premium-dividends-3 .dividend-executive-kpi-sub{font-size:11px;color:var(--canon-muted)}
 .premium-dividends-3 .dividend-executive-kpi{position:relative}
 .premium-dividends-3 .dividend-executive-kpi-icon{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-size:16px;background:rgba(16,217,129,.12);color:var(--canon-green)}
 .premium-dividends-3 .dividend-executive-kpi-icon.blue{background:rgba(47,155,255,.14);color:#2f9bff}
@@ -31785,7 +31796,7 @@ function patrimonioTab(){
       </div>
       <div class="patrimonio-top-asset-value">
         <div class="patrimonio-top-asset-amount">${fmt(asset.currentValue)}</div>
-        <div class="patrimonio-top-asset-perc ${resultTone}">${share.toFixed(1)}% do exibido · ${asset.pct===null?'resultado indisponível':`${asset.result>=0?'+':''}${fmtP(asset.pct)}`}</div>
+        <div class="patrimonio-top-asset-perc ${resultTone}">${share.toFixed(1)}% do exibido · ${asset.pct===null?'resultado indisponível':`${fmtP(asset.pct)}`}</div>
       </div>
       <div class="patrimonio-top-asset-bar-wrap"><div class="patrimonio-top-asset-bar" style="width:${barWidth.toFixed(1)}%"></div></div>
     </div>`;

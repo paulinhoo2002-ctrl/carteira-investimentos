@@ -1,3 +1,10 @@
+## MEGA 12 — checkpoint de continuidade (2026-10-12)
+
+- Worktree isolada `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, base/HEAD inicial `e791cbf4286f5af312f530cfd68c82e6ba01b3f7`. Mudanças locais desta etapa: KPIs de Dividendos em tablet, sinal único no percentual de Top Ativos e cabeçalho de classe de Ativos responsivo; Finance Core, persistência e Firebase intactos.
+- Focados: 16/16; backup/recovery: 25/25; QA sintético: 44/44; build estático: PASS. `test:modern`: 719/728, nove falhas de carregamento por React ausente. `npm test`, `qa:all`, `verify:release` e V289 bloqueados por Vite/Playwright ausentes; sem instalação de dependências nesta worktree.
+- Browser local oficial em `testMode=1&testReadOnly=1`: Dividendos, Patrimônio, Ativos e Renda Fixa inspecionados com fixtures sintéticas; sem operações financeiras. Captura disponível nesta sessão, viewport físico do navegador ~844px, sem matriz 390/1366 certificada.
+- Próximo passo: obter autorização explícita para `npm ci` nesta worktree e continuar a matriz visual/funcional da MEGA 12. Sem push, PR, merge ou deploy; não tocar no artefato de worktree criado fora da raiz autorizada.
+
 ## MEGA11 — Ativos: cobertura financeira (2026-10-12)
 
 - Branch `codex/legacy-product-mega-11`, base MEGA10 `906bd72f7bffe71bad56e9fb9332f775f2ccbd30`, commit funcional `fe6c14c`; PR #497 permanece separada, OPEN/DRAFT no HEAD `0942d88b9ee563d177c61f978971866d9b10e463` e a MEGA11 não depende dela.

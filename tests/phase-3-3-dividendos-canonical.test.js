@@ -38,3 +38,27 @@ test('Dividendos mantém o contrato canônico, fontes oficiais e bloqueios visua
   assert.match(refs, /synthetic, independently/);
   assert.doesNotMatch(refs, /\.png|SHA-256/i);
 });
+
+test('Dividendos usa tres colunas nos tablets e rotulos legiveis', () => {
+  const source = read('index.html');
+  const tabletGrid = /@media\s*\(max-width:1180px\)\s*and\s*\(min-width:768px\)[\s\S]*?\.premium-dividends-3 \.dividend-kpis-canon-grid\s*\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/;
+  assert.ok(tabletGrid.test(source), 'tablet KPI breakpoint must override the five-column desktop rule');
+  assert.ok(/\.premium-dividends-3 \.dividend-executive-kpi-label\s*\{font-size:11px/.test(source), 'KPI labels remain readable');
+  assert.ok(/\.premium-dividends-3 \.dividend-executive-kpi-sub\s*\{font-size:11px/.test(source), 'KPI context remains readable');
+});
+
+test('Top Ativos renders the result percentage with one sign only', () => {
+  const source = read('index.html');
+  const resultLine = source.split(/\r?\n/).find(line => line.includes('asset.pct===null'));
+  assert.ok(resultLine, 'Top Ativos percentage row exists');
+  assert.match(resultLine, /fmtP\(asset\.pct\)/);
+  assert.doesNotMatch(resultLine, /asset\.result>=0/);
+  assert.match(resultLine, /asset\.pct===null\?'resultado indisponível'/);
+});
+
+test('Ativos reorganiza as metricas do resumo de classe em tablets e celulares', () => {
+  const source = read('index.html');
+  assert.match(source, /@media\(max-width:900px\)\{\s*\.assets-premium-shell \.accordion-header\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+  assert.match(source, /@media\(max-width:640px\)\{\s*\.assets-premium-shell \.accordion-header\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(source, /\.assets-premium-shell \.accordion-header \.acc-info\s*\{[^}]*grid-column:1\/-1/);
+});
