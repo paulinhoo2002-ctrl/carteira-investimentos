@@ -6442,7 +6442,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-trust-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 13px;border:1px solid rgba(96,165,250,.22);border-radius:14px;background:rgba(96,165,250,.06)}
       .premium-rf-trust-copy{display:flex;flex-direction:column;gap:3px;min-width:220px;color:var(--muted);font-size:10px;line-height:1.35}.premium-rf-trust-copy strong{color:var(--text);font-size:12px}
       .premium-rf-trust-counts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.premium-rf-trust-count{padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;white-space:nowrap}.premium-rf-trust-count b{color:var(--text);margin-left:3px}.premium-rf-trust-count.warn{color:#fcd34d}
-      .premium-rf-controls{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(2,minmax(150px,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+      .premium-rf-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+      .premium-rf-controls .premium-rf-search-control{grid-column:span 2}
       .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:11px;text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-row-meta.pos{color:var(--success)}
             .premium-rf-row-meta.neg{color:#f87171}
@@ -6500,6 +6501,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-kpi-value{font-size:15px}
         .premium-rf-grid,.premium-rf-distribution{grid-template-columns:1fr}
         .premium-rf-controls{grid-template-columns:1fr;padding:10px 12px}
+        .premium-rf-controls .premium-rf-search-control{grid-column:auto}
         .premium-rf-position-row,.premium-rf-maturity-row{padding:10px 12px}
         .premium-rf-row-main{flex-basis:100%}
         .premium-rf-row-value{text-align:left}
@@ -8971,7 +8973,7 @@ let S = {
   irpfYear:new Date().getFullYear(),
   irpfStep:1,
   apHistoryOpen:false, apSearch:'',
-  rfSearch:'', rfTrustFilter:'all', rfSort:'name-asc', rfSearchTimer:null,
+  rfSearch:'', rfTrustFilter:'all', rfIssuerFilter:'', rfCategoryFilter:'', rfSort:'name-asc', rfSearchTimer:null,
   aportesViewMode:'extrato',
   aportesFilter:'todos',
   aportesSort:'date-desc',
@@ -30797,6 +30799,14 @@ function setRfTrustFilter(value){
   S.rfTrustFilter=allowed.includes(String(value||'')) ? String(value) : 'all';
   render();
 }
+function setRfIssuerFilter(value){
+  S.rfIssuerFilter=String(value||'');
+  render();
+}
+function setRfCategoryFilter(value){
+  S.rfCategoryFilter=String(value||'');
+  render();
+}
 function setRfTrustSort(value){
   const allowed=['name-asc','value-desc','value-asc','maturity-asc','issuer-asc','type-asc'];
   S.rfSort=allowed.includes(String(value||'')) ? String(value) : 'name-asc';
@@ -30827,8 +30837,12 @@ function rendaFixaTab(){
   const trustSummary=data.trustSummary||{};
   const trustApi=globalThis.FixedIncomeTrust;
   const trustFiltered=trustApi?.filterRows ? trustApi.filterRows(data.tableRows,S.rfSearch,S.rfTrustFilter) : data.tableRows;
+  const issuerFiltered=trustApi?.filterByIssuer ? trustApi.filterByIssuer(trustFiltered,S.rfIssuerFilter) : trustFiltered;
+  const categoryFiltered=trustApi?.filterByCategory ? trustApi.filterByCategory(issuerFiltered,S.rfCategoryFilter) : issuerFiltered;
   const sortParts=String(S.rfSort||'name-asc').split('-');
-  const trustRows=trustApi?.sortRows ? trustApi.sortRows(trustFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':sortParts[0]==='issuer'?'issuer':sortParts[0]==='type'?'category':'name',sortParts[1]==='desc'?'desc':'asc') : trustFiltered;
+  const trustRows=trustApi?.sortRows ? trustApi.sortRows(categoryFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':sortParts[0]==='issuer'?'issuer':sortParts[0]==='type'?'category':'name',sortParts[1]==='desc'?'desc':'asc') : categoryFiltered;
+  const issuerOptions=[...new Set(data.tableRows.map(row=>String(row.issuer||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const categoryOptions=[...new Set(data.tableRows.map(row=>String(row.category||row.type||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
   const attentionBadges=count ? [
     overdue>0 ? `<span class="note-pill" style="color:#fecaca;background:#3f1d24;border-color:rgba(248,113,113,.24)">${overdue} vencido${overdue===1?'':'s'}</span>` : '',
     soon30>0 ? `<span class="note-pill" style="color:#fde68a;background:#3d2f12;border-color:rgba(251,191,36,.24)">${soon30} em até 30 dias</span>` : '',
@@ -31036,7 +31050,7 @@ function rendaFixaTab(){
       <div class="premium-rf-panel ds-panel ds-panel--readonly">
         <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${trustRows.length}/${count} posições</div></div>
         <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
-          <label><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
+          <label class="premium-rf-search-control"><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
           <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value)">
             <option value="all" ${S.rfTrustFilter==='all'?'selected':''}>Todos</option>
             <option value="MANUAL_AUTHORITATIVE" ${S.rfTrustFilter==='MANUAL_AUTHORITATIVE'?'selected':''}>Valor manual</option>
@@ -31044,6 +31058,14 @@ function rendaFixaTab(){
             <option value="UNSUPPORTED" ${S.rfTrustFilter==='UNSUPPORTED'?'selected':''}>Sem cálculo automático</option>
             <option value="UNAVAILABLE" ${S.rfTrustFilter==='UNAVAILABLE'?'selected':''}>Indisponível</option>
             <option value="STALE" ${S.rfTrustFilter==='STALE'?'selected':''}>Desatualizada</option>
+          </select></label>
+          <label><span>Instituição</span><select aria-label="Filtrar por instituição" onchange="setRfIssuerFilter(this.value)">
+            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todas as instituições</option>
+            ${issuerOptions.map(issuer=>`<option value="${esc(issuer)}" ${S.rfIssuerFilter===issuer?'selected':''}>${esc(issuer)}</option>`).join('')}
+          </select></label>
+          <label><span>Produto</span><select aria-label="Filtrar por produto de renda fixa" onchange="setRfCategoryFilter(this.value)">
+            <option value="" ${!S.rfCategoryFilter?'selected':''}>Todos os produtos</option>
+            ${categoryOptions.map(category=>`<option value="${esc(category)}" ${S.rfCategoryFilter===category?'selected':''}>${esc(category)}</option>`).join('')}
           </select></label>
           <label><span>Ordenar</span><select aria-label="Ordenar posições de renda fixa" onchange="setRfTrustSort(this.value)">
             <option value="name-asc" ${S.rfSort==='name-asc'?'selected':''}>Nome A–Z</option>

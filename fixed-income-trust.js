@@ -76,6 +76,18 @@
     });
   }
 
+  function filterByIssuer(rows, issuer = '') {
+    const list = Array.isArray(rows) ? rows : [];
+    const selected = text(issuer);
+    return selected ? list.filter(row => text(row.issuer) === selected) : list;
+  }
+
+  function filterByCategory(rows, category = '') {
+    const list = Array.isArray(rows) ? rows : [];
+    const selected = text(category);
+    return selected ? list.filter(row => text(row.category || row.type) === selected) : list;
+  }
+
   function sortRows(rows, key = 'name', direction = 'asc') {
     const multiplier = direction === 'desc' ? -1 : 1;
     return [...(Array.isArray(rows) ? rows : [])].sort((a, b) => {
@@ -115,5 +127,5 @@
     };
   }
 
-  return Object.freeze({ STATUS, classify, describeAuthority, describeSource, describeIndexer, filterRows, sortRows, summarize });
+  return Object.freeze({ STATUS, classify, describeAuthority, describeSource, describeIndexer, filterRows, filterByIssuer, filterByCategory, sortRows, summarize });
 });
