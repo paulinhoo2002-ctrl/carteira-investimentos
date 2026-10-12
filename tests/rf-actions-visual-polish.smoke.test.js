@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
-const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer: startServer } = require('./local-http-server.js');
 
 function resolveBrowser() {
   return [
@@ -15,23 +14,6 @@ function resolveBrowser() {
   ].filter(Boolean).find(candidate => {
     try { fs.accessSync(candidate); return true; } catch { return false; }
   });
-}
-
-async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const file = path.normalize(path.join(rootDir, pathname === '/' ? '/index.html' : pathname));
-      if (!file.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
-      res.writeHead(200, { 'Content-Type': file.endsWith('.html') ? 'text/html; charset=utf-8' : 'text/plain' });
-      res.end(await fsp.readFile(file));
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end('');
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
 }
 
 const viewports = [
@@ -62,7 +44,7 @@ for (const viewport of viewports) {
 
     try {
       await page.goto(harness.url, { waitUntil: 'networkidle' });
-      await page.evaluate(() => { go('ativos'); setAssetsInnerTab('patrimonio'); });
+      await page.evaluate(() => { go('ativos'); setAssetsInnerTab('renda-fixa'); });
       await page.evaluate(() => {
         const details = [...document.querySelectorAll('details.ag')].find(item =>
           (item.getAttribute('data-asset-group') || '').toLowerCase().includes('renda'));
@@ -71,13 +53,13 @@ for (const viewport of viewports) {
       });
       const rfCard = page.locator('.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card').first();
       if (viewport.width <= 640) await rfCard.locator(':scope > summary').click();
-      const rfActionScope = viewport.width <= 640 ? rfCard : page.locator('.rf-table tbody tr:first-child');
+      const rfActionScope = viewport.width <= 640 ? rfCard : page.locator('.ag[data-asset-group="Renda Fixa"] .rf-table tbody tr:first-child');
       await rfActionScope.waitFor({ state: 'visible', timeout: 5000 });
 
       const before = await page.evaluate(() => {
         const firstAsset = window.innerWidth <= 640
           ? document.querySelector('.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card')
-          : document.querySelector('.rf-table tbody tr:first-child');
+          : document.querySelector('.ag[data-asset-group="Renda Fixa"] .rf-table tbody tr:first-child');
         const asset = S.assets.find(item => String(item.id) === firstAsset?.dataset.id && isRendaFixaAsset(item) && Number(rfPrincipalBalance(item).value) > 0);
         const buttons = [...(firstAsset?.querySelectorAll('.asset-actions button') || [])]
           .filter(button => button.getBoundingClientRect().width > 0);
