@@ -1,3 +1,8 @@
+## MEGA 08 — próximo passo (2026-10-12)
+
+- Branch local codex/legacy-mega-08-final-integration, base a6b1d349170b973528b2bf64f1eddcbfe9bc1e5b. Quatro commits funcionais exclusivos da MEGA 07 reaplicados; checkpoints antigos excluídos.
+- Validação local completa: npm run verify:release PASS (Legacy/V324, Modern, qa:all, V289 18/18); focados de RF/Dividendos/Ativos 34/34. QA sintético RF 390x844 e 1366x768 sem overflow.
+- NEXT_ACTION=solicitar autorização específica para push e Draft PR; antes, revalidar main, diff e checks locais. Sem push, PR, merge, deploy ou QA Firebase hospedado.
 ## V1005 — certificação operacional LEGACY (2026-10-11)
 
 - Base verificada: `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; implementação na worktree isolada `codex/v1005-operational-certification`.
