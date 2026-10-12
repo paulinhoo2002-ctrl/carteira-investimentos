@@ -38490,16 +38490,29 @@ html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405
 @media(max-width:1180px){.canon-dashboard .dashboard-analytical-primary{grid-template-columns:1fr}.canon-dashboard .dashboard-v3-allocation{padding:0 2px}}
 @media(max-width:767px){
   html[data-theme="light"] .canon-dashboard{padding:10px;border-radius:0}
-  .canon-dashboard .dashboard-executive-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .canon-dashboard .dashboard-executive-kpis .premium-metric{min-height:112px;padding:12px}
-  .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child{grid-column:1/-1;min-height:98px}
-  .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:18px}
-  .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child .premium-metric-value{font-size:25px}
-  .canon-dashboard .dashboard-evolution-card{height:220px;min-height:220px;padding:12px}
+  .canon-dashboard .dashboard-executive-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric{min-height:88px;padding:9px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child{grid-column:1/-1;min-height:86px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:17px}
+  .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child .premium-metric-value{font-size:23px}
+  .canon-dashboard .dashboard-evolution-card{height:210px;min-height:210px;padding:10px}
   .canon-dashboard .dashboard-evolution-header .premium-panel-sub{display:block}
   .canon-dashboard .dashboard-evolution-card svg.dashboard-patrimony-chart{height:130px}
   .canon-dashboard .dashboard-v3-allocation{padding:3px 2px 5px}
   .canon-dashboard .dashboard-v3-priority{align-items:flex-start;flex-direction:column;gap:2px}
+}
+@media(min-width:768px) and (max-width:1499px){
+  .premium-rf-position-row{padding:8px 12px;gap:8px}
+  .premium-rf-row-value .premium-rf-row-meta{margin-top:2px;line-height:1.25}
+  .premium-rf-provenance-details{margin-top:1px}
+}
+@media(max-width:767px){
+  .premium-rf-controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px 10px}
+  .premium-rf-controls label:first-child{grid-column:1/-1}
+  .premium-rf-position-row{padding:8px 10px;gap:6px}
+  .premium-rf-row-value{width:100%;max-width:none;flex:1 1 100%;text-align:left}
+  .premium-rf-row-actions{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .premium-rf-row-actions .asset-detail-link,.premium-rf-row-actions .asset-action{width:100%;min-width:0;min-height:44px;height:44px;margin:0;padding:7px 6px;font-size:11px}
 }
  .rent-premium .rent-primary-result{border-left:4px solid var(--muted);padding:16px 18px}
  .rent-premium .rent-primary-result--available{border-left-color:var(--success)}
