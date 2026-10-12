@@ -1,3 +1,11 @@
+## 2026-10-12 — LEGACY_UI_UX_EVOLUTION_02
+
+- Dashboard mobile: cards executivos mais compactos; gráfico de aportes mantém a série real e estados de cobertura incompleta/desconhecida.
+- Renda Fixa: filtros compactos em duas colunas no mobile, busca em largura completa, ações em grade com alvos de 44px; linhas mais densas entre 768 e 1499px.
+- Validação local sintética: testes focados 18/18, build estático PASS, root hygiene PASS, Playwright sem overflow nas larguras verificadas (Dashboard 360/390/430/768/1366/1920; Renda Fixa 360/390/430/768/1366/1440/1536/1920). V289: matriz responsiva passou; seguem 2 falhas preexistentes fora do escopo CSS (cardinality synthetic-priority e contraste de asset-inner-tab/premium-empty), não corrigidas nesta mudança.
+- Capturas antes/depois em output/playwright (locais/ignoradas). Nenhuma alteração financeira, de persistência ou Firebase. PR #494 segue sem nova validação autenticada; BLOCKED_AUTHENTICATED_PREVIEW.
+- Próximo passo: revisar commits locais; não fazer push, merge ou deploy sem autorização específica.
+
 ## 2026-10-12 — LEGACY_AUTONOMOUS_PRODUCT_EVOLUTION
 
 - Branch de evolução local: `codex/legacy-dashboard-profile-spacing`, base `main` em `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; HEAD do código antes deste checkpoint `4b1b5c1762a1842b7674d9a4ad8fcced807f53b1`.
