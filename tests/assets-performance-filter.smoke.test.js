@@ -189,7 +189,7 @@ test('Ativos mobile compacta cartões e controles sem perder dados, filtros ou a
     });
     await page.evaluate(assets => { S.assets = assets; go('ativos'); }, syntheticAssets);
     let originalFixture = await page.evaluate(() => JSON.stringify(S.assets));
-    const screenshots = path.join(__dirname, '..', '.qa-state', 'mega10-assets');
+    const screenshots = path.join(__dirname, '..', '.qa-state', 'mega11-assets-coverage');
     fs.mkdirSync(screenshots, { recursive: true });
 
     for (const width of [360, 390, 430]) {
@@ -229,8 +229,11 @@ test('Ativos mobile compacta cartões e controles sem perder dados, filtros ou a
     assert.match(await noBasisCard.locator('summary').innerText(), /Resultado R\$\s+—/);
     assert.match(await noBasisCard.locator('summary').innerText(), /Rentabilidade · % Carteira\s+— · —/);
     assert.match(await page.locator('details.asset-premium-card[data-id="alpha"] summary').innerText(), /Resultado R\$\s+R\$ 0,00/);
+    assert.match(await page.locator('.assets-coverage-note').innerText(), /base confirmada em 1\/3/);
+    assert.match(await page.locator('.accordion-category[data-asset-group="FII"] .acc-sub').innerText(), /base parcial 1\/3 · atual parcial 2\/3/);
     await noBasisCard.locator('summary').click();
     assert.match(await noBasisCard.innerText(), /Investido\s+—/);
+    assert.match(await noBasisCard.innerText(), /Base de custo\s+Não confirmada/);
     await page.locator('.asset-premium-card[data-id="alpha"] > summary').click();
     const expanded = page.locator('details.asset-premium-card[data-id="alpha"]');
     await expanded.scrollIntoViewIfNeeded();

@@ -23,13 +23,15 @@ const summarize = (rows) => context.assetsPortfolioSummary(rows, {
   assetAppliedValue: asset => asset.applied,
   assetCurrentValue: asset => asset.current,
   assetRentabPct: asset => asset.applied ? ((asset.current - asset.applied) / asset.applied) * 100 : null,
+  isAppliedConfirmed: asset => asset.appliedConfirmed ?? (Number.isFinite(asset.applied) && asset.applied > 0),
+  isCurrentConfirmed: asset => asset.currentConfirmed ?? (Number.isFinite(asset.current) && asset.current > 0),
   normalizeType: value => String(value || 'Outros')
 });
 
 const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0);
 
 test('carteira vazia produz totais seguros', () => {
-  assert.deepEqual(JSON.parse(JSON.stringify(summarize([]))), { assets: [], invested: 0, current: 0, result: 0, returnPct: null, byClass: [] });
+  assert.deepEqual(JSON.parse(JSON.stringify(summarize([]))), { assets: [], invested: 0, current: 0, result: 0, coverage: { assets: 0, applied: 0, current: 0, result: 0 }, returnPct: null, byClass: [] });
 });
 
 test('ativo positivo deriva resultado e rentabilidade', () => {
@@ -49,6 +51,51 @@ test('resultado zero legítimo permanece zero', () => {
   const result = summarize([{ ticker: 'ETF1', type: 'ETF', applied: 1000, current: 1000 }]);
   assert.equal(result.result, 0);
   assert.equal(result.returnPct, 0);
+});
+
+test('base zero só conta quando a fonte confirma explicitamente', () => {
+  const result = summarize([
+    { ticker: 'CONFIRMADO', type: 'Ação', applied: 0, appliedConfirmed: true, current: 80 },
+    { ticker: 'SEMBASE', type: 'Ação', applied: 0, appliedConfirmed: false, current: 80 },
+  ]);
+  assert.equal(result.assets[0].invested, 0);
+  assert.equal(result.assets[0].result, 80);
+  assert.equal(result.assets[0].returnPct, null);
+  assert.equal(result.assets[1].invested, null);
+  assert.equal(result.assets[1].result, null);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.byClass[0].coverage)), { applied: 1, current: 2, result: 1, assets: 2 });
+  assert.equal(result.byClass[0].result, 80);
+  assert.equal(result.byClass[0].returnPct, null);
+});
+
+test('agregados parciais mantêm a cobertura e não fingem total completo', () => {
+  const result = summarize([
+    { ticker: 'COMPLETO', type: 'FII', applied: 100, current: 120 },
+    { ticker: 'SEMBASE', type: 'FII', applied: 0, appliedConfirmed: false, current: 80 },
+    { ticker: 'SEMATUAL', type: 'FII', applied: 50, current: null, currentConfirmed: false },
+  ]);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.byClass[0].coverage)), { applied: 2, current: 2, result: 1, assets: 3 });
+  assert.equal(result.byClass[0].invested, 150);
+  assert.equal(result.byClass[0].current, 200);
+  assert.equal(result.byClass[0].result, 20);
+  assert.equal(result.byClass[0].returnPct, null);
+  assert.equal(result.coverage.applied, 2);
+  assert.equal(result.coverage.current, 2);
+  assert.equal(result.coverage.result, 1);
+  assert.equal(result.result, 20);
+  assert.equal(result.returnPct, null);
+});
+
+test('agregado sem nenhum valor confirmado é indisponível, não zero', () => {
+  const result = summarize([
+    { ticker: 'SEMVALOR', type: 'Renda Fixa', applied: 1000, appliedConfirmed: true, current: null, currentConfirmed: false },
+  ]);
+  assert.equal(result.invested, 1000);
+  assert.equal(result.current, null);
+  assert.equal(result.result, null);
+  assert.equal(result.byClass[0].invested, 1000);
+  assert.equal(result.byClass[0].current, null);
+  assert.equal(result.byClass[0].result, null);
 });
 
 test('ativo sem valor atual não vira lucro falso', () => {
@@ -92,7 +139,10 @@ test('Renda Fixa usa somente aplicado e atual', () => {
 test('RF sem atual explícito permanece incompleta', () => {
   const result = summarize([{ ticker: 'CDB', type: 'Renda Fixa', applied: 1000, current: null }]);
   assert.equal(result.returnPct, null);
-  assert.equal(result.byClass[0].current, 0);
+  assert.equal(result.current, null);
+  assert.equal(result.result, null);
+  assert.equal(result.byClass[0].current, null);
+  assert.equal(result.byClass[0].result, null);
   assert.equal(result.byClass[0].incomplete, 1);
 });
 
@@ -116,7 +166,7 @@ test('paridade com fontes oficiais preserva os valores recebidos', () => {
     assetRentabPct: () => 25,
     normalizeType: value => value
   });
-  assert.deepEqual(JSON.parse(JSON.stringify(result.assets[0])), { asset: { ticker: 'X', type: 'Ação', applied: 1, current: 2 }, ticker: 'X', assetClass: 'Ação', invested: 40, current: 50, result: 10, returnPct: 25 });
+  assert.deepEqual(JSON.parse(JSON.stringify(result.assets[0])), { asset: { ticker: 'X', type: 'Ação', applied: 1, current: 2 }, ticker: 'X', assetClass: 'Ação', invested: 40, current: 50, result: 10, returnPct: 25, appliedConfirmed: true, currentConfirmed: true });
 });
 
 test('não gera NaN', () => {

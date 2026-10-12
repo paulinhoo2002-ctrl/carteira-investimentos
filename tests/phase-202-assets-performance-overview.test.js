@@ -48,6 +48,11 @@ function loadAssetPerformanceOverviewRows(assets) {
     'function hasOwnFiniteNumber(source, keys){',
     'function assetPerformanceOverviewRows(){',
   );
+  const valueStatusSource = extractFunctionBlock(
+    indexHtml,
+    'function assetAppliedBasisConfirmed(asset, value=assetAppliedValue(asset)){',
+    'function assetCurrentValueForDisplay(a){',
+  );
   const rowsSource = extractFunctionBlock(
     indexHtml,
     'function assetPerformanceOverviewRows(){',
@@ -92,9 +97,11 @@ function loadAssetPerformanceOverviewRows(assets) {
     normTypeKey(value) {
       return String(value || '').toLowerCase();
     },
+    isRendaFixaAsset() { return false; },
+    rfValues() { return { hasExplicitApplied: false, hasExplicitCurrent: false }; },
   };
 
-  return vm.runInNewContext(`${analysisSource}\n${hasOwnFiniteNumberSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
+  return vm.runInNewContext(`${analysisSource}\n${hasOwnFiniteNumberSource}\n${valueStatusSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
 }
 
 function loadAssetPerformanceOverviewRowsFromAnalysis(assets, analysisRowsOrFactory) {
@@ -103,6 +110,11 @@ function loadAssetPerformanceOverviewRowsFromAnalysis(assets, analysisRowsOrFact
     indexHtml,
     'function hasOwnFiniteNumber(source, keys){',
     'function assetPerformanceOverviewRows(){',
+  );
+  const valueStatusSource = extractFunctionBlock(
+    indexHtml,
+    'function assetAppliedBasisConfirmed(asset, value=assetAppliedValue(asset)){',
+    'function assetCurrentValueForDisplay(a){',
   );
   const rowsSource = extractFunctionBlock(
     indexHtml,
@@ -151,9 +163,11 @@ function loadAssetPerformanceOverviewRowsFromAnalysis(assets, analysisRowsOrFact
     normTypeKey(value) {
       return String(value || '').toLowerCase();
     },
+    isRendaFixaAsset() { return false; },
+    rfValues() { return { hasExplicitApplied: false, hasExplicitCurrent: false }; },
   };
 
-  return vm.runInNewContext(`${hasOwnFiniteNumberSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
+  return vm.runInNewContext(`${hasOwnFiniteNumberSource}\n${valueStatusSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
 }
 
 test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () => {
@@ -248,7 +262,7 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
   assert.equal(listed.trim(), '', 'modern/dist nao pode entrar no indice');
 });
 
-test('fase 202 trata base completa e incompleta sem inverter a semantica', () => {
+test('fase 202 trata base completa e zeros sem confirmação sem inverter a semântica', () => {
   const rows = loadAssetPerformanceOverviewRows([
     { ticker: 'AAA1', name: 'Completo positivo', type: 'Acao', qty: 1, current_price: 120, avg_price: 100, result: 20, resultPct: 20 },
     { ticker: 'BBB1', name: 'So aplicado', type: 'Acao', avg_price: 100, result: 999, resultPct: 999 },
@@ -284,15 +298,15 @@ test('fase 202 trata base completa e incompleta sem inverter a semantica', () =>
   assert.equal(rows[3].resultPct, null);
 
   assert.equal(rows[4].hasAnyFinancialSource, true);
-  assert.equal(rows[4].hasPerformanceData, true);
-  assert.equal(rows[4].statusLabel, 'Estavel');
-  assert.equal(rows[4].result, 0);
-  assert.equal(rows[4].resultPct, 0);
+  assert.equal(rows[4].hasPerformanceData, false);
+  assert.equal(rows[4].statusLabel, 'Dados insuficientes');
+  assert.equal(rows[4].result, null);
+  assert.equal(rows[4].resultPct, null);
 
   assert.equal(rows[5].hasAnyFinancialSource, true);
-  assert.equal(rows[5].hasPerformanceData, true);
-  assert.equal(rows[5].statusLabel, 'Positivo');
-  assert.equal(rows[5].result, 10);
+  assert.equal(rows[5].hasPerformanceData, false);
+  assert.equal(rows[5].statusLabel, 'Dados insuficientes');
+  assert.equal(rows[5].result, null);
   assert.equal(rows[5].resultPct, null);
 
   const validRows = rows.filter((row) => row.hasPerformanceData);
@@ -301,19 +315,19 @@ test('fase 202 trata base completa e incompleta sem inverter a semantica', () =>
   const negativeRows = validRows.filter((row) => Number.isFinite(row.result) && row.result < 0);
   const stableRows = validRows.filter((row) => Number.isFinite(row.result) && row.result === 0);
 
-  assert.deepEqual(validRows.map((row) => row.ticker), ['AAA1', 'EEE1', 'FFF1']);
-  assert.deepEqual(insufficientRows.map((row) => row.ticker), ['BBB1', 'CCC1', 'DDD1']);
-  assert.deepEqual(positiveRows.map((row) => row.ticker), ['AAA1', 'FFF1']);
+  assert.deepEqual(validRows.map((row) => row.ticker), ['AAA1']);
+  assert.deepEqual(insufficientRows.map((row) => row.ticker), ['BBB1', 'CCC1', 'DDD1', 'EEE1', 'FFF1']);
+  assert.deepEqual(positiveRows.map((row) => row.ticker), ['AAA1']);
   assert.deepEqual(negativeRows, []);
-  assert.deepEqual(stableRows.map((row) => row.ticker), ['EEE1']);
-  assert.equal(validRows.length, 3);
-  assert.equal(insufficientRows.length, 3);
-  assert.equal(positiveRows.length, 2);
+  assert.deepEqual(stableRows.map((row) => row.ticker), []);
+  assert.equal(validRows.length, 1);
+  assert.equal(insufficientRows.length, 5);
+  assert.equal(positiveRows.length, 1);
   assert.equal(negativeRows.length, 0);
-  assert.equal(stableRows.length, 1);
+  assert.equal(stableRows.length, 0);
 });
 
-test('fase 202 assetPerformanceOverviewRows deriva da fonte oficial de analise e preserva incompletos', () => {
+test('fase 202 assetPerformanceOverviewRows não trata campos zero padrão como base/valor confirmados', () => {
   let analysisCalls = 0;
   const rows = loadAssetPerformanceOverviewRowsFromAnalysis(
     [
@@ -343,13 +357,13 @@ test('fase 202 assetPerformanceOverviewRows deriva da fonte oficial de analise e
   assert.equal(rows[0].statusLabel, 'Positivo');
 
   assert.equal(rows[1].ticker, 'BBB1');
-  assert.equal(rows[1].current, 0);
-  assert.equal(rows[1].applied, 0);
-  assert.equal(rows[1].result, 0);
-  assert.equal(rows[1].resultPct, 0);
-  assert.equal(rows[1].share, 0);
-  assert.equal(rows[1].hasPerformanceData, true);
-  assert.equal(rows[1].statusLabel, 'Estavel');
+  assert.equal(rows[1].current, null);
+  assert.equal(rows[1].applied, null);
+  assert.equal(rows[1].result, null);
+  assert.equal(rows[1].resultPct, null);
+  assert.equal(rows[1].share, null);
+  assert.equal(rows[1].hasPerformanceData, false);
+  assert.equal(rows[1].statusLabel, 'Dados insuficientes');
 
   assert.equal(rows[2].ticker, '');
   assert.equal(rows[2].current, null);
@@ -361,6 +375,26 @@ test('fase 202 assetPerformanceOverviewRows deriva da fonte oficial de analise e
   assert.equal(rows[2].statusLabel, 'Dados insuficientes');
 
   const ordered = rows.filter((row) => row.hasPerformanceData);
-  assert.deepEqual(ordered.map((row) => row.ticker), ['AAA1', 'BBB1']);
-  assert.deepEqual(rows.filter((row) => !row.hasPerformanceData).map((row) => row.ticker), ['']);
+  assert.deepEqual(ordered.map((row) => row.ticker), ['AAA1']);
+  assert.deepEqual(rows.filter((row) => !row.hasPerformanceData).map((row) => row.ticker), ['BBB1', '']);
+});
+
+test('fase 202 aceita custo zero somente quando Renda Fixa marca base explícita', () => {
+  const indexHtml = read('index.html');
+  const rowsSource = extractFunctionBlock(indexHtml,'function assetPerformanceOverviewRows(){','function assetPerformanceOverviewSortRows(rows, sortBy){');
+  const hasOwnFiniteNumberSource = extractFunctionBlock(indexHtml,'function hasOwnFiniteNumber(source, keys){','function assetPerformanceOverviewRows(){');
+  const valueStatusSource = extractFunctionBlock(indexHtml,'function assetAppliedBasisConfirmed(asset, value=assetAppliedValue(asset)){','function assetCurrentValueForDisplay(a){');
+  const context = {
+    S:{assets:[{ticker:'ZERO',type:'Renda Fixa',rf_applied_value:0,rf_liquid_value:80}]},
+    assetAnalysisRows:()=>[{ticker:'ZERO',applied:0,current:80,profit:80,pct:null,share:100}],
+    assetAppliedValue:()=>0,assetCurrentValue:()=>80,assetJurosValue:()=>80,assetRentabPct:()=>null,
+    assetRfName:()=>'',normalizeType:value=>value,metaTicker:()=>({type:'Renda Fixa'}),normTypeKey:value=>value,
+    isRendaFixaAsset:()=>true,rfValues:()=>({hasExplicitApplied:true,hasExplicitCurrent:true})
+  };
+  const rows=vm.runInNewContext(`${hasOwnFiniteNumberSource}\n${valueStatusSource}\n${rowsSource}\nassetPerformanceOverviewRows;`,context)();
+  assert.equal(rows[0].hasPerformanceData,true);
+  assert.equal(rows[0].applied,0);
+  assert.equal(rows[0].current,80);
+  assert.equal(rows[0].result,80);
+  assert.equal(rows[0].resultPct,null);
 });

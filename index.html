@@ -19398,6 +19398,14 @@ function assetAppliedValue(a){
 function assetCurrentValue(a){
   return FinanceCore.assetCurrentValue(a);
 }
+function assetAppliedBasisConfirmed(asset, value=assetAppliedValue(asset)){
+  if(!Number.isFinite(value)) return false;
+  return isRendaFixaAsset(asset) ? !!rfValues(asset).hasExplicitApplied : value>0;
+}
+function assetCurrentValueConfirmed(asset, value=assetCurrentValue(asset)){
+  if(!Number.isFinite(value)) return false;
+  return isRendaFixaAsset(asset) ? !!rfValues(asset).hasExplicitCurrent : value>0;
+}
 function assetCurrentValueForDisplay(a){
   const v=assetCurrentValue(a);
   return Number.isFinite(v) ? v : null;
@@ -25732,35 +25740,50 @@ function assetsPortfolioSummary(rows, deps={}){
   const appliedOf=deps.assetAppliedValue||assetAppliedValue;
   const currentOf=deps.assetCurrentValue||assetCurrentValue;
   const rentabOf=deps.assetRentabPct||assetRentabPct;
+  const appliedConfirmedOf=deps.isAppliedConfirmed||((_asset,value)=>Number.isFinite(value)&&value>0);
+  const currentConfirmedOf=deps.isCurrentConfirmed||((_asset,value)=>Number.isFinite(value)&&value>0);
   const normalizeClass=deps.normalizeType||((value)=>String(value||'Outros').trim()||'Outros');
   const source=Array.isArray(rows)?rows:[];
   const byClass=new Map();
   const assets=source.map(asset=>{
     const applied=appliedOf(asset);
     const current=currentOf(asset);
-    const hasApplied=Number.isFinite(applied);
-    const hasCurrent=Number.isFinite(current);
+    const hasApplied=appliedConfirmedOf(asset,applied)===true;
+    const hasCurrent=currentConfirmedOf(asset,current)===true;
     const result=hasApplied&&hasCurrent ? current-applied : null;
     const returnPct=hasApplied&&hasCurrent&&applied!==0 ? rentabOf(asset) : null;
     const assetClass=normalizeClass(asset?.type||asset?.assetClass||'Outros','Outros');
     const row={asset,ticker:String(asset?.ticker||asset?.name||'').trim(),assetClass,
       invested:hasApplied?applied:null,current:hasCurrent?current:null,result,
-      returnPct:Number.isFinite(returnPct)?returnPct:null};
-    if(!byClass.has(assetClass)) byClass.set(assetClass,{className:assetClass,invested:0,current:0,result:0,complete:0,incomplete:0,assets:[]});
+      returnPct:Number.isFinite(returnPct)?returnPct:null,
+      appliedConfirmed:hasApplied,currentConfirmed:hasCurrent};
+    if(!byClass.has(assetClass)) byClass.set(assetClass,{className:assetClass,invested:0,current:0,result:0,complete:0,incomplete:0,coverage:{applied:0,current:0,result:0,assets:0},assets:[]});
     const group=byClass.get(assetClass);
     group.assets.push(row);
-    if(hasApplied&&hasCurrent){
-      group.invested+=applied; group.current+=current; group.result+=result; group.complete+=1;
-    }else group.incomplete+=1;
+    group.coverage.assets+=1;
+    if(hasApplied){group.invested+=applied; group.coverage.applied+=1;}
+    if(hasCurrent){group.current+=current; group.coverage.current+=1;}
+    if(hasApplied&&hasCurrent){group.result+=result; group.coverage.result+=1; group.complete+=1;}
+    else group.incomplete+=1;
     return row;
   });
-  const complete=assets.filter(row=>row.invested!=null&&row.current!=null);
-  const invested=complete.reduce((sum,row)=>sum+row.invested,0);
-  const current=complete.reduce((sum,row)=>sum+row.current,0);
-  const result=current-invested;
-  return {assets,invested,current,result,returnPct:invested!==0?(result/invested)*100:null,
+  const coverage={
+    assets:assets.length,
+    applied:assets.filter(row=>row.appliedConfirmed).length,
+    current:assets.filter(row=>row.currentConfirmed).length,
+    result:assets.filter(row=>row.result!=null).length
+  };
+  const invested=assets.reduce((sum,row)=>sum+(row.invested??0),0);
+  const current=assets.reduce((sum,row)=>sum+(row.current??0),0);
+  const result=assets.reduce((sum,row)=>sum+(row.result??0),0);
+  const aggregate=(value,count)=>count>0?value:assets.length===0?0:null;
+  return {assets,invested:aggregate(invested,coverage.applied),current:aggregate(current,coverage.current),result:aggregate(result,coverage.result),coverage,
+    returnPct:coverage.result===coverage.assets&&invested!==0?(result/invested)*100:null,
     byClass:Array.from(byClass.values()).map(group=>({...group,
-      returnPct:group.invested!==0?(group.result/group.invested)*100:null}))};
+      invested:aggregate(group.invested,group.coverage.applied),
+      current:aggregate(group.current,group.coverage.current),
+      result:aggregate(group.result,group.coverage.result),
+      returnPct:group.coverage.result===group.coverage.assets&&group.invested!==0?(group.result/group.invested)*100:null}))};
 }
 function assetRankingModeLabel(mode){
   return ({
@@ -25978,9 +26001,11 @@ function assetPerformanceOverviewRows(){
     const appliedKeys=isRF
       ? ['rf_applied_value','fixed_initial_value','avg_price','applied_value']
       : ['avg_price','applied_value'];
-    const hasCurrentSource=hasOwnFiniteNumber(asset, currentKeys);
-    const hasAppliedSource=hasOwnFiniteNumber(asset, appliedKeys);
-    const hasAnyFinancialSource=hasCurrentSource || hasAppliedSource;
+    const hasCurrentField=hasOwnFiniteNumber(asset,currentKeys);
+    const hasAppliedField=hasOwnFiniteNumber(asset,appliedKeys);
+    const hasCurrentSource=hasCurrentField && assetCurrentValueConfirmed(asset,assetCurrentValue(asset));
+    const hasAppliedSource=hasAppliedField && assetAppliedBasisConfirmed(asset,assetAppliedValue(asset));
+    const hasAnyFinancialSource=hasCurrentField || hasAppliedField;
     const rawCurrent=hasCurrentSource ? assetCurrentValue(asset) : null;
     const rawApplied=hasAppliedSource ? assetAppliedValue(asset) : null;
     const shouldConsumeAnalysis=Boolean(ticker) || (Number.isFinite(rawCurrent) && rawCurrent>0) || (Number.isFinite(rawApplied) && rawApplied>0);
@@ -25992,7 +26017,7 @@ function assetPerformanceOverviewRows(){
     const resultPct=hasPerformanceData
       ? (applied===0 ? (current===0 ? 0 : null) : (canonical ? canonical.pct : assetRentabPct(asset)))
       : null;
-    const share=canonical ? canonical.share : (Number.isFinite(current) && analysisPortfolioTotal>0 ? (current/analysisPortfolioTotal)*100 : null);
+    const share=hasCurrentSource ? (canonical ? canonical.share : (Number.isFinite(current) && analysisPortfolioTotal>0 ? (current/analysisPortfolioTotal)*100 : null)) : null;
     let statusLabel='Dados insuficientes';
     let statusTone='muted';
     if(hasPerformanceData){
@@ -32029,8 +32054,12 @@ function ativos(){
   const reviewFilterActive = assetReviewFilterIsActive();
   const reviewFilterCount = reviewFilterActive ? (S.assetReviewFilter.assetIds || []).length : 0;
 
-  const consolidated = assetsPortfolioSummary(S.assets);
+  const consolidated = assetsPortfolioSummary(S.assets,{
+    isAppliedConfirmed:assetAppliedBasisConfirmed,
+    isCurrentConfirmed:assetCurrentValueConfirmed
+  });
   const consolidatedAssetRows = new Map(consolidated.assets.map(row => [row.asset, row]));
+  const consolidatedClasses = new Map(consolidated.byClass.map(row => [row.className, row]));
   const assetMetricsCache = new Map();
   const getAssetMetrics = a => {
     if (assetMetricsCache.has(a)) return assetMetricsCache.get(a);
@@ -32039,7 +32068,8 @@ function ativos(){
     const currentKeys = isRF
       ? ['rf_liquid_value', 'fixed_current_value', 'rf_gross_value', 'current_value', 'current_price']
       : ['current_price', 'current_value'];
-    const displayCurrentValue = hasOwnFiniteNumber(a, currentKeys) ? currentValue : null;
+    const financial = consolidatedAssetRows.get(a);
+    const displayCurrentValue = financial?.currentConfirmed ? currentValue : null;
     const appliedValue = assetAppliedValue(a);
     const rentabPct = assetRentabPct(a);
     const jurosValue = assetJurosValue(a);
@@ -32047,7 +32077,7 @@ function ativos(){
     const avgPrice = Number(a.avg_price) || 0;
     const marketValue = isRF ? currentValue : (Number(a.qty) || 0) * currentUnit;
     const currentDisplay = isRF ? marketValue : currentUnit;
-    const metrics = { currentValue, displayCurrentValue, appliedValue, rentabPct, jurosValue, isRF, currentUnit, avgPrice, marketValue, currentDisplay, financial: consolidatedAssetRows.get(a) };
+    const metrics = { currentValue, displayCurrentValue, appliedValue, rentabPct, jurosValue, isRF, currentUnit, avgPrice, marketValue, currentDisplay, financial };
     assetMetricsCache.set(a, metrics);
     return metrics;
   };
@@ -32113,7 +32143,7 @@ function ativos(){
   const assetsFilterEmpty = assetFiltersActive && displayAssets.length === 0;
   const assetsFilterEmptyMessage = '<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
 
-  const portfolioHasCompleteCurrentValues = S.assets.every(a => getAssetMetrics(a).displayCurrentValue != null);
+  const portfolioHasCompleteCurrentValues = consolidated.coverage.current===S.assets.length;
   const portfolioTotal = portfolioHasCompleteCurrentValues ? (reviewFilterActive ? total : assetKpiCurrent) : null;
 
   // Build accordion categories using details/summary for test compatibility
@@ -32127,11 +32157,16 @@ function ativos(){
     const typeDisplayAssets = sortAssetsByGroup(type, filteredAssets, portfolioTotal || 0);
 
     // Category metrics
-    const typeHasCompleteCurrentValues = typeAssets.every(a => getAssetMetrics(a).displayCurrentValue != null);
-    const typeTotalValue = typeHasCompleteCurrentValues ? typeAssets.reduce((s, a) => s + getAssetMetrics(a).currentValue, 0) : null;
-    const typeInvested = typeAssets.reduce((s, a) => s + getAssetMetrics(a).appliedValue, 0);
-    const typeResult = typeTotalValue == null ? null : typeTotalValue - typeInvested;
-    const typeReturn = typeResult != null && typeInvested > 0 ? (typeResult / typeInvested) * 100 : null;
+    const classSummary=consolidatedClasses.get(type);
+    const classCoverage=classSummary?.coverage||{assets:typeAssets.length,applied:0,current:0,result:0};
+    const typeInvested=classSummary?.invested||0;
+    const typeTotalValue=classCoverage.current ? classSummary.current : null;
+    const typeResult=classCoverage.result ? classSummary.result : null;
+    const typeReturn=classCoverage.result===typeAssets.length && typeInvested>0 ? (typeResult/typeInvested)*100 : null;
+    const coverageLabel=(known,total)=>known===total?'completo':known?`parcial ${known}/${total}`:'indisponível';
+    const typeInvestedDisplay=classCoverage.applied?fmt(typeInvested):'—';
+    const typeCurrentDisplay=classCoverage.current?fmt(typeTotalValue):'—';
+    const typeResultDisplay=typeResult==null?'—':`${typeResult>0?'+':''}${fmt(typeResult)}`;
     const typeWeight = typeResult != null && portfolioTotal > 0 ? (typeTotalValue / portfolioTotal) * 100 : null;
     const typeCount = typeDisplayAssets.length;
 
@@ -32154,7 +32189,7 @@ function ativos(){
       const financial = m.financial;
 
       const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
-      const hasAppliedBasis = Number.isFinite(financial?.invested) && financial.invested > 0;
+      const hasAppliedBasis = financial?.appliedConfirmed===true;
       const hasPerformanceData = displayCurrentValue != null && hasAppliedBasis;
       const result = hasPerformanceData && Number.isFinite(financial?.result) ? financial.result : null;
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
@@ -32174,6 +32209,7 @@ function ativos(){
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
         : (currentUnit > 0 ? fmt(currentUnit) : '—');
       const investedDisplay = hasAppliedBasis ? fmt(financial.invested) : '—';
+      const appliedBasisLabel = hasAppliedBasis ? 'Confirmada' : 'Não confirmada';
       const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
       const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
       const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
@@ -32203,7 +32239,7 @@ function ativos(){
         <td class="num">${qtyDisplay}</td>
         <td class="num">${averagePriceDisplay}</td>
         <td class="num">${currentPriceDisplay}</td>
-        <td class="num">${investedDisplay}</td>
+        <td class="num" title="Base de custo ${appliedBasisLabel.toLowerCase()}">${investedDisplay}</td>
         <td class="num ${resultClass}">${resultMoneyDisplay}</td>
         <td class="num ${returnPct == null ? '' : returnPct >= 0 ? 'positive-text' : 'negative-text'}">${returnDisplay}</td>
         <td class="num">${positionValueDisplay}</td>
@@ -32233,7 +32269,7 @@ function ativos(){
       const financial = m.financial;
 
       const share = Number.isFinite(displayCurrentValue) && portfolioTotal > 0 ? (displayCurrentValue / portfolioTotal) * 100 : null;
-      const hasAppliedBasis = Number.isFinite(financial?.invested) && financial.invested > 0;
+      const hasAppliedBasis = financial?.appliedConfirmed===true;
       const hasPerformanceData = displayCurrentValue != null && hasAppliedBasis;
       const result = hasPerformanceData && Number.isFinite(financial?.result) ? financial.result : null;
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
@@ -32251,6 +32287,7 @@ function ativos(){
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
         : (currentUnit > 0 ? fmt(currentUnit) : '—');
       const investedDisplay = hasAppliedBasis ? fmt(financial.invested) : '—';
+      const appliedBasisLabel = hasAppliedBasis ? 'Confirmada' : 'Não confirmada';
       const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
       const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
       const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
@@ -32285,6 +32322,7 @@ function ativos(){
           <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Base de custo</span><strong>${appliedBasisLabel}</strong></div>
           <div class="asset-premium-card-row"><span>Resultado R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Rentabilidade</span><strong>${returnDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Valor total</span><strong>${positionValueDisplay}</strong></div>
@@ -32302,20 +32340,20 @@ function ativos(){
         <div class="acc-icon" style="background: ${type === 'Ação' ? 'rgba(59, 130, 246, 0.15)' : type === 'FII' ? 'rgba(139, 92, 246, 0.15)' : type === 'ETF' ? 'rgba(245, 197, 66, 0.15)' : type === 'Renda Fixa' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${type === 'Ação' ? 'var(--info)' : type === 'FII' ? 'var(--ds-info)' : type === 'ETF' ? 'var(--warning)' : type === 'Renda Fixa' ? 'var(--success)' : 'var(--warning)'}">${icon}</div>
         <div>
           <div class="acc-name">${esc(type)}</div>
-          <div class="acc-sub">${typeCount} ativo${typeCount !== 1 ? 's' : ''} ${reviewFilterActive ? ' · filtrados' : ''}</div>
+          <div class="acc-sub">${typeCount} ativo${typeCount !== 1 ? 's' : ''} · base ${coverageLabel(classCoverage.applied,typeAssets.length)} · atual ${coverageLabel(classCoverage.current,typeAssets.length)}${reviewFilterActive ? ' · filtrados' : ''}</div>
         </div>
       </div>
       <div>
         <div class="acc-metric-label ag-k">Investido</div>
-        <div class="acc-metric-value">${fmt(typeInvested)}</div>
+        <div class="acc-metric-value" title="Cobertura da base: ${classCoverage.applied}/${typeAssets.length}">${typeInvestedDisplay}${classCoverage.applied<typeAssets.length&&classCoverage.applied?' · parcial':''}</div>
       </div>
       <div>
         <div class="acc-metric-label ag-k">Atual</div>
-        <div class="acc-metric-value">${typeTotalValue == null ? '—' : fmt(typeTotalValue)}</div>
+        <div class="acc-metric-value" title="Cobertura do valor atual: ${classCoverage.current}/${typeAssets.length}">${typeCurrentDisplay}${classCoverage.current<typeAssets.length&&classCoverage.current?' · parcial':''}</div>
       </div>
       <div>
         <div class="acc-metric-label ag-k">Resultado</div>
-        <div class="acc-metric-value ${resultTone}">${typeResult == null ? '—' : `${resultPrefix}${fmt(typeResult)}`}</div>
+        <div class="acc-metric-value ${resultTone}" title="Cobertura comparável: ${classCoverage.result}/${typeAssets.length}">${typeResultDisplay}${classCoverage.result<typeAssets.length&&classCoverage.result?' · parcial':''}</div>
       </div>
       <div>
         <div class="acc-metric-label ag-k">Rentab.</div>
@@ -32367,7 +32405,9 @@ function ativos(){
   }).join('');
 
   const reviewBanner = reviewFilterActive ? `<div class="review-banner" style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:12px;font-weight:700;color:#fbbf24">Filtro de revisão ativo</div><div style="font-size:11px;color:var(--text-muted);flex:1">${reviewFilterCount} ativo${reviewFilterCount !== 1 ? 's' : ''} com dados pendentes</div><button class="btn bgh" onclick="clearAssetReviewFilter()" style="font-size:11px;padding:4px 10px">Limpar filtro</button></div>` : '';
-  const coverageNote = unavailableAssetCount ? `<p class="assets-coverage-note" role="status">Leitura parcial: ${unavailableAssetCount} ativo${unavailableAssetCount !== 1 ? 's' : ''} sem valor atual disponível; totais e pesos podem estar incompletos.</p>` : '';
+  const coverageNote = consolidated.coverage.applied<consolidated.coverage.assets || consolidated.coverage.current<consolidated.coverage.assets
+    ? `<p class="assets-coverage-note" role="status">Cobertura parcial: base confirmada em ${consolidated.coverage.applied}/${consolidated.coverage.assets} ativos e valor atual em ${consolidated.coverage.current}/${consolidated.coverage.assets}. Resultados comparáveis em ${consolidated.coverage.result}/${consolidated.coverage.assets}; subtotais incluem somente valores confirmados.</p>`
+    : unavailableAssetCount ? `<p class="assets-coverage-note" role="status">Leitura parcial: ${unavailableAssetCount} ativo${unavailableAssetCount !== 1 ? 's' : ''} sem valor atual disponível; totais e pesos podem estar incompletos.</p>` : '';
 
   const innerTabsHtml = `
     <div class="asset-inner-tabs" role="tablist" aria-label="Sub-abas de Ativos">
