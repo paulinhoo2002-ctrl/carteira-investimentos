@@ -217,10 +217,11 @@ test('Ativos mobile compacta cartões e controles sem perder dados, filtros ou a
     await page.screenshot({ path: path.join(screenshots, 'ativos-390-dark.png'), fullPage: true });
     await page.evaluate(() => toggleTheme());
     assert.equal(await page.locator('html').getAttribute('data-theme'), 'light');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(3200);
     await page.screenshot({ path: path.join(screenshots, 'ativos-390-light.png'), fullPage: true });
     await page.evaluate(() => toggleTheme());
     assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
+    await page.waitForTimeout(3200);
     const unknownCard = page.locator('.asset-premium-card[data-id="unknown"]');
     assert.match(await unknownCard.locator('summary').innerText(), /Valor da posição\s+—/);
     assert.match(await unknownCard.locator('summary').innerText(), /Resultado R\$\s+—/);
@@ -240,7 +241,7 @@ test('Ativos mobile compacta cartões e controles sem perder dados, filtros ou a
     assert.ok(await expanded.getByRole('button', { name: 'Editar ALFA' }).count(), 'ação Editar ausente');
     const actionHeights = await expanded.locator('.asset-premium-card-actions button').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().height));
     assert.ok(actionHeights.length > 0 && actionHeights.every(height => height >= 44), `alvo de ação menor que 44px: ${actionHeights}`);
-    await page.screenshot({ path: path.join(screenshots, 'ativos-390-expanded.png'), fullPage: true });
+    await expanded.screenshot({ path: path.join(screenshots, 'ativos-390-expanded.png') });
     await expanded.locator('summary').click();
     await noBasisCard.locator('summary').click();
     await page.getByRole('button', { name: /Filtros/ }).click();
