@@ -30798,7 +30798,7 @@ function setRfTrustFilter(value){
   render();
 }
 function setRfTrustSort(value){
-  const allowed=['name-asc','value-desc','value-asc','maturity-asc','issuer-asc'];
+  const allowed=['name-asc','value-desc','value-asc','maturity-asc','issuer-asc','type-asc'];
   S.rfSort=allowed.includes(String(value||'')) ? String(value) : 'name-asc';
   render();
 }
@@ -30828,7 +30828,7 @@ function rendaFixaTab(){
   const trustApi=globalThis.FixedIncomeTrust;
   const trustFiltered=trustApi?.filterRows ? trustApi.filterRows(data.tableRows,S.rfSearch,S.rfTrustFilter) : data.tableRows;
   const sortParts=String(S.rfSort||'name-asc').split('-');
-  const trustRows=trustApi?.sortRows ? trustApi.sortRows(trustFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':sortParts[0]==='issuer'?'issuer':'name',sortParts[1]==='desc'?'desc':'asc') : trustFiltered;
+  const trustRows=trustApi?.sortRows ? trustApi.sortRows(trustFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':sortParts[0]==='issuer'?'issuer':sortParts[0]==='type'?'category':'name',sortParts[1]==='desc'?'desc':'asc') : trustFiltered;
   const attentionBadges=count ? [
     overdue>0 ? `<span class="note-pill" style="color:#fecaca;background:#3f1d24;border-color:rgba(248,113,113,.24)">${overdue} vencido${overdue===1?'':'s'}</span>` : '',
     soon30>0 ? `<span class="note-pill" style="color:#fde68a;background:#3d2f12;border-color:rgba(251,191,36,.24)">${soon30} em até 30 dias</span>` : '',
@@ -31051,6 +31051,7 @@ function rendaFixaTab(){
             <option value="value-asc" ${S.rfSort==='value-asc'?'selected':''}>Menor valor</option>
             <option value="maturity-asc" ${S.rfSort==='maturity-asc'?'selected':''}>Vencimento próximo</option>
             <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Instituição A–Z</option>
+            <option value="type-asc" ${S.rfSort==='type-asc'?'selected':''}>Tipo do produto A–Z</option>
           </select></label>
         </div>
         <div class="premium-rf-position-list">${positionRows}</div>
@@ -34913,7 +34914,7 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
     ['Recebido no ano','income',receivedThisYearKnown?fmt(receivedThisYear):'—',receivedThisYearSub,receivedThisYearKnown&&receivedThisYear>0?'good':'',''],
     ['Média mensal','history',monthlyAvg===null?'—':fmt(monthlyAvg),`Cobertura confirmada: ${complete.length}/12 meses`,monthlyAvg>0?'good':'','blue'],
     ['Último mês','trend',lastMonth===null?'—':fmt(lastMonth),lastMonthSub,lastMonth>0?'good':'','orange'],
-    ['Projeção anual','target',annualProjection===null?'—':fmt(annualProjection),'Estimativa · somente meses completos',annualProjection>0?'good':'','purple'],
+    ['Projeção anual','target',annualProjection===null?'—':fmt(annualProjection),'Estimativa · não recebida · somente meses completos',annualProjection>0?'good':'','purple'],
     ['Yield atual','percent',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'','cyan']
   ];
   return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,icon,value,sub,tone,color])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><span class="dividend-executive-kpi-icon ${color}" aria-hidden="true">${waveBIcon(icon)}</span><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div></article>`).join('')}</div></section>`;
@@ -35847,7 +35848,7 @@ function metasTab(){
 
   <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
     <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${goalSnapshot.hasPortfolioData?fmt(mD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira · não recebida</div></div>
-    <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${goalSnapshot.hasPortfolioData?fmt(aD):'Indisponível'}</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${goalSnapshot.hasPortfolioData?fmt(aD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa · não recebida</div></div>
     <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${goalSnapshot.hasPortfolioData?avgDY.toFixed(2)+'%':'Indisponível'}</div></div>
     <div class="card al metas-kpi-card ds-kpi" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('wallet')}<span>Total da carteira</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--text)">${goalSnapshot.hasPortfolioData?fmt(tC):'Indisponível'}</div></div>
   </div>

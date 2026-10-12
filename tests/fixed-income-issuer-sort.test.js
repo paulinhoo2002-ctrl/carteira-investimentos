@@ -18,3 +18,16 @@ test('sorts by issuer and keeps missing issuers last', () => {
   assert.ok(source.includes('>Instituição A–Z<'));
   assert.ok(source.includes('premium-rf-row-issuer'));
 });
+
+test('sorts by product type and leaves missing types last', () => {
+  const rows = [
+    { ticker: 'Z', category: 'Tesouro' },
+    { ticker: 'B', category: '' },
+    { ticker: 'A', category: 'CDB' },
+    { ticker: 'A2', category: 'CDB' },
+  ];
+  assert.deepEqual(FixedIncomeTrust.sortRows(rows, 'category', 'asc').map(row => row.ticker), ['A', 'A2', 'Z', 'B']);
+  const source = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  assert.ok(source.includes('value="type-asc"'));
+  assert.ok(source.includes('>Tipo do produto A–Z<'));
+});

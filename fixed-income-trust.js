@@ -83,9 +83,10 @@
       let right;
       if (key === 'value') { left = finite(a.current); right = finite(b.current); }
       else if (key === 'maturity') { left = Date.parse(text(a.due) || '') || Number.POSITIVE_INFINITY; right = Date.parse(text(b.due) || '') || Number.POSITIVE_INFINITY; }
-      else if (key === 'issuer') {
-        left = text(a.issuer).toLocaleLowerCase('pt-BR');
-        right = text(b.issuer).toLocaleLowerCase('pt-BR');
+      else if (key === 'issuer' || key === 'category') {
+        const field = key === 'issuer' ? 'issuer' : 'category';
+        left = text(a[field] || (key === 'category' ? a.type : '')).toLocaleLowerCase('pt-BR');
+        right = text(b[field] || (key === 'category' ? b.type : '')).toLocaleLowerCase('pt-BR');
         if (!left && right) return 1;
         if (!right && left) return -1;
       }
