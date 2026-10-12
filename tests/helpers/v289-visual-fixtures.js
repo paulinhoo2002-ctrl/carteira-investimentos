@@ -42,12 +42,19 @@ function makeV289VisualFixture(scenario = 'baseline') {
     visual.valueState = 'NO_DATA';
   }
   if (scenario === 'priority-one') {
-    // A synthetic monthly income goal produces one real goal-gap insight.
-    assets.length = 0;
+    // A synthetic near-term maturity produces one supported fixed-income insight.
+    const maturity = new Date();
+    maturity.setDate(maturity.getDate() + 10);
+    const maturityDate = `${maturity.getFullYear()}-${String(maturity.getMonth() + 1).padStart(2, '0')}-${String(maturity.getDate()).padStart(2, '0')}`;
+    const rfPosition = { ...assets[2], id:'QA_PRIORITY_RF', ticker:'QARF01', name:'CDB sintético', product:'CDB sintético', title:'CDB sintético', subtype:'CDB', rf_subtype:'CDB', fixed_issuer:'Instituição sintética', rf_contract_rate:'100% CDI', currency:'BRL', rf_maturity_date:maturityDate };
+    assets.splice(0, assets.length, rfPosition);
     aportes.length = 0;
     proventos.length = 0;
+    goals.patrimonio.target = 5000;
+    goals.ativos.ticker = 'QARF01';
+    goals.ativos.type = 'Renda Fixa';
     goals.proventos.monthly = 1200;
-    visual.priorities = [{id:'QA_PRIORITY_1',reason:'Meta sintética sem renda recebida',impact:'Renda abaixo da meta',destination:'metas'}];
+    visual.priorities = [{id:'QA_PRIORITY_1',reason:'Vencimento sintético próximo',impact:'Revisão em até 30 dias',destination:'renda-fixa'}];
   }
   return { scenario, wallet:{id:'QA_WALLET_01',name:'Conta sintética'}, assets, aportes, proventos, rfEvents:[], goals, divGoal:0, lastUpdate: scenario === 'stale' ? '2026-01-01T12:00:00.000Z' : '2026-10-01T12:00:00.000Z', visual };
 }
@@ -69,7 +76,8 @@ async function applyV289VisualFixture(page, scenario = 'baseline') {
     const alias = () => document.querySelectorAll('.side-brand-sub').forEach(node => {
       const avatar = node.querySelector('.side-avatar');
       if (avatar && avatar.textContent !== 'QA') avatar.textContent = 'QA';
-      for (const child of node.childNodes) if (child.nodeType === Node.TEXT_NODE && child.textContent !== ' Conta sintética') child.textContent = ' Conta sintética';
+      const userName = node.querySelector('.side-brand-user-name');
+      if (userName && userName.textContent !== 'Conta sintética') userName.textContent = 'Conta sintética';
     });
     if (!window.__V289_ALIAS_OBSERVER__) {
       window.__V289_ALIAS_OBSERVER__ = new MutationObserver(alias);

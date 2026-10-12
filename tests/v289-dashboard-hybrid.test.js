@@ -255,13 +255,20 @@ test('Dashboard HYBRID V2 - priority cardinality: 0/1/many', async () => {
   });
   await withPage({ width: 1366, height: 768 }, async page => {
     await applyV289VisualFixture(page, 'priority-one');
-    assert.equal(await page.evaluate(() => S.goals.proventos.monthly), 1200);
+    const incomeState = await page.evaluate(() => {
+      const stats = passiveIncomeGoalStats();
+      return { averageStatus: stats.monthlyAverageStatus, average: stats.monthlyAvg, missing: stats.missing, incomeGap: portfolioInsightsSnapshot().some(item => item.id === 'income-goal-gap') };
+    });
+    assert.equal(incomeState.averageStatus, 'UNKNOWN');
+    assert.equal(incomeState.average, null);
+    assert.equal(incomeState.missing, null);
+    assert.equal(incomeState.incomeGap, false, 'Cobertura desconhecida não pode gerar prioridade de meta de renda');
     const priority = page.locator('.dashboard-v3-priority');
     assert.equal(await priority.count(), 1);
-    assert.match(await priority.innerText(), /meta de renda|renda passiva/i);
-    assert.match(await priority.innerText(), /abaixo|falta|meta/i);
+    assert.match(await priority.innerText(), /vencimentos próximos/i);
+    assert.match(await priority.innerText(), /30 dias/i);
     await priority.locator('button').click();
-    assert.equal(await page.evaluate(() => S.tab), 'metas');
+    assert.equal(await page.evaluate(() => S.tab), 'renda-fixa');
   });
   await withPage({ width: 1366, height: 768 }, async page => {
     await applyV289VisualFixture(page, 'priority-many');
