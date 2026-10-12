@@ -2,6 +2,7 @@
 
 - Branch isolada `codex/legacy-product-mega-10`, baseada no HEAD MEGA09 `7186a5fff7996ef2e451f965b6eb6ba0df512a06`; commit funcional local `8dc3c8f` compacta controles/cartões mobile e deixa aplicado, resultado e rentabilidade indisponíveis sem base positiva confirmada. Finance Core, persistência e Firebase não foram alterados.
 - `npm test`, `test:modern` (823/823), `qa:all` (390–1920 sem overflow), `verify:release` e V289 (18/18) PASS. Regressão Playwright sintética de Ativos 3/3 PASS, incluindo estado desconhecido e zero confirmado. Capturas locais em `.qa-state/mega10-assets/`.
+- A branch inclui os dois commits exclusivos da MEGA09 (`c715b33` e checkpoint documental), além dos três commits da MEGA10; não contém o HEAD da PR #497. A estratégia de base para publicação ainda precisa preservar esse histórico.
 - Sem push, PR, merge, deploy ou operação financeira real. `PR #497` e as demais worktrees permanecem preservadas; checkout canônico não foi tocado.
 
 ## MEGA09 — estado local verificado (2026-10-12)
