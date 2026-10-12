@@ -1,3 +1,9 @@
+## 2026-10-12 — LEGACY_REVIEW_FIX_PUSH_AND_PR
+
+- Base validada: `origin/main` `53d01ddb177cd6ad2fea48be1caea4366051e1b7`. Revisei os 11 commits da branch `codex/legacy-dashboard-profile-spacing` (HEAD `27a2d27b0d7d06e0697c2f54a836896f1041b822`); não dependem da PR #494. Simulação de integração com o HEAD remoto da #494 não encontrou conflitos textuais.
+- Validação local no HEAD de código: `npm test`, `test:modern` (823/823), `qa:all`, `verify:release` (V289 18/18), smoke Configurações (8/8), rotas/configurações (4/4), UTF-8, `git diff --check` e root hygiene PASS. Suite usa backup root temporária vazia para dry-run; nenhum backup criado. Avisos HMR Vite não fatais, sem listener persistente.
+- PR #494 permanece independente e inalterada; QA autenticado e Firebase hospedado continuam não verificados. Nenhuma alteração financeira, operação real, merge ou deploy.
+- `NEXT_ACTION=publicar somente esta branch, criar PR Draft contra main e verificar CI/Preview no SHA exato; manter sem merge/deploy.`
 ## 2026-10-12 — LEGACY_FULL_AUTONOMOUS_EVOLUTION_V3
 
 - V289 corrigido e validado: cenário priority-one usa vencimento sintético de renda fixa suportado; teste confirma que cobertura desconhecida não cria meta de renda certificada. Contraste AA/AAA do Dashboard corrigido em tema escuro e claro, sem alterar tokens globais. `tests/v289-dashboard-hybrid.test.js` 18/18 e fixtures visuais 6/6.
