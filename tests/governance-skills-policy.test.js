@@ -15,6 +15,7 @@ test('permanent Superpowers-first governance remains versioned', () => {
   const skillRouter = read('docs/ai/SKILL_ROUTER.md');
 
   assert.match(agents, /MANDATORY_FIRST_SKILL=Superpowers/);
+  assert.match(agents, /atualização\s+de `docs\/ai\/NEXT_STEP\.md`/);
   assert.match(legacyRouting, /use Superpowers primeiro/);
   assert.match(memory, /Roteamento vigente: .*Superpowers primeiro/);
   assert.equal(policy.superpowers_first, true);

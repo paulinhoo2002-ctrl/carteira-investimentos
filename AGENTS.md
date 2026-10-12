@@ -374,7 +374,7 @@ Toda sessão deve executar nesta ordem: PROJECT IDENTITY GATE; leitura de
 `docs/ai/DECISIONS.md` e `docs/ai/SKILLS_ROUTING.md`; classificação da missão e
 seus riscos; descoberta de Skills em `.agents/skills` e no runtime; seleção do
 menor conjunto relevante; execução autorizada; validação do delta; atualização
-de `NEXT_STEP.md`; `WORKSPACE_HYGIENE_GATE` não destrutivo. Skills nunca
+de `docs/ai/NEXT_STEP.md`; `WORKSPACE_HYGIENE_GATE` não destrutivo. Skills nunca
 substituem autorização nem regras de segurança. O router versionado em
 `docs/ai/SKILLS_ROUTING.md` é suficiente; `.agents/SKILL_ROUTER.md`, se existir,
 é somente uma bridge local e nunca é requisito do boot.
