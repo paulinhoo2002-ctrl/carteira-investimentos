@@ -140,6 +140,10 @@ async function inspectLayout(page) {
       return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && rect.width > 0 && rect.height > 0;
     };
     const root = document.querySelector('#root');
+    const idCounts = new Map();
+    for (const element of document.querySelectorAll('[id]')) idCounts.set(element.id, (idCounts.get(element.id) || 0) + 1);
+    const duplicateIds = [...idCounts].filter(([, count]) => count > 1).map(([id]) => id);
+    const fixedIncomeTextSizes = [...(root?.querySelectorAll('.premium-rf-controls label,.premium-rf-controls input,.premium-rf-controls select,.premium-rf-kpi-label,.premium-rf-kpi-note,.premium-rf-row-meta,.premium-rf-row-financial-label,.premium-rf-maturity-badge,.premium-rf-review-group-title,.premium-rf-review-group-count,.premium-rf-review-group-sub,.premium-rf-review-item-title,.premium-rf-review-item-meta,.premium-rf-review-item-value,.premium-rf-review-action,.premium-rf-review-empty,.premium-rf-row-actions .btn,.premium-rf-distribution-label,.premium-rf-distribution-value,.premium-rf-panel-sub') || [])].filter(visible).map(element => ({text: element.textContent.trim().slice(0,60),font:Number.parseFloat(getComputedStyle(element).fontSize),height:element.getBoundingClientRect().height,requiredHeight:element.matches('.premium-rf-review-action,.premium-rf-row-actions .btn')}));
     const routeContent = document.querySelector('#root .wrap');
     const heading = [...(root?.querySelectorAll('h1') || [])].find(visible);
     const clipCandidates = routeContent?.querySelectorAll('button,a,input,select,textarea,[role="button"],.premium-metric-value') || [];
@@ -164,6 +168,8 @@ async function inspectLayout(page) {
       criticalLabels,
       movementTypeLabels,
       assetMetricLabels,
+      duplicateIds,
+      fixedIncomeTextSizes,
       theme: document.documentElement.dataset.theme,
     };
   });
@@ -184,6 +190,7 @@ test('V289 final route matrix renders every route in both themes at 390 and 1366
           assert.ok(layout.heading || layout.rootText.length > 20, `${route} rendered no visible route content at ${viewport.width}px/${theme}`);
           assert.equal(layout.pageOverflow, false, `${route} horizontal page overflow at ${viewport.width}px/${theme}`);
           assert.deepEqual(layout.clipped, [], `${route} contains internally clipped control at ${viewport.width}px/${theme}: ${JSON.stringify(layout.clipped)}`);
+          assert.deepEqual(layout.duplicateIds, [], route + ' has duplicate DOM IDs at ' + viewport.width + 'px/' + theme);
           assert.deepEqual(layout.criticalLabels, [], `${route} has an essential heading below 12px at ${viewport.width}px/${theme}`);
           if (route === 'aportes') {
             assert.ok(layout.movementTypeLabels.length > 0, `Aportes synthetic movement labels missing at ${viewport.width}px/${theme}`);
@@ -233,6 +240,7 @@ test('V328 premium screens remain readable across the responsive viewport matrix
     ['Rentabilidade', 'rentabilidade'],
     ['Rebalancear', 'ajudar'],
     ['Ativos', 'ativos'],
+    ['Renda Fixa', 'renda-fixa'],
   ];
   try {
     for (const viewport of MATRIX_VIEWPORTS) {
@@ -254,7 +262,13 @@ test('V328 premium screens remain readable across the responsive viewport matrix
           assert.ok(layout.heading || layout.rootText.length > 20, `${screen} has no visible content at ${viewport.width}px/${theme}`);
           assert.equal(layout.pageOverflow, false, `${screen} overflows at ${viewport.width}px/${theme}`);
           assert.deepEqual(layout.clipped, [], `${screen} clips a visible control at ${viewport.width}px/${theme}: ${JSON.stringify(layout.clipped)}`);
+          assert.deepEqual(layout.duplicateIds, [], screen + ' has duplicate DOM IDs at ' + viewport.width + 'px/' + theme);
           assert.deepEqual(layout.criticalLabels, [], `${screen} has an unreadable heading at ${viewport.width}px/${theme}`);
+          if (screen === 'Renda Fixa') {
+            assert.ok(layout.fixedIncomeTextSizes.length > 0, 'Renda Fixa text targets were not measured');
+            assert.ok(layout.fixedIncomeTextSizes.every(item => item.font >= 12), 'Renda Fixa functional text must be at least 12px at ' + viewport.width + 'px/' + theme + ': ' + JSON.stringify(layout.fixedIncomeTextSizes.filter(item => item.font < 12)));
+            if (viewport.width <= 430) assert.ok(layout.fixedIncomeTextSizes.filter(item => item.requiredHeight).every(item => item.height >= 44), 'Renda Fixa mobile actions must keep a 44px touch target');
+          }
           if (screen === 'Patrimônio') {
             assert.match(layout.rootText, /Aportes líquidos acumulados/, 'Patrimônio contribution series label missing at ' + viewport.width + 'px/' + theme);
             assert.match(layout.rootText, /Histórico patrimonial indisponível/i, 'Patrimônio history availability missing at ' + viewport.width + 'px/' + theme);
@@ -282,6 +296,8 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
   const screenshots = [
     { route: 'ativos', width: 1366, height: 768 },
     { route: 'ativos', width: 390, height: 844 },
+    { route: 'renda-fixa', width: 1366, height: 768 },
+    { route: 'renda-fixa', width: 390, height: 844 },
     { route: 'dividendos', width: 1366, height: 768 },
     { route: 'dividendos', width: 390, height: 844 },
     { route: 'dashboard', width: 1366, height: 768 },
@@ -331,6 +347,14 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
         path: path.join(screenshotDir, `${item.route}-${item.width}x${item.height}.png`),
         fullPage: true,
       });
+      if (item.route === 'renda-fixa' && item.width <= 430) {
+        const action = runtime.page.locator('.premium-rf-row-actions .btn').first();
+        if (await action.count()) {
+          await action.scrollIntoViewIfNeeded();
+          const geometry = await action.evaluate(element => ({actionBottom: element.getBoundingClientRect().bottom, navTop: document.querySelector('#investBottomNav')?.getBoundingClientRect().top}));
+          assert.ok(geometry.actionBottom <= geometry.navTop, 'Renda Fixa action is obscured by mobile navigation');
+        }
+      }
     }
     assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
     assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);

@@ -14,6 +14,7 @@ const links = [...head.matchAll(/<link\b(?=[^>]*\bdata-legacy-css\b)[^>]*\bhref=
 test('legacy CSS is extracted into ordered external modules and pre-cached offline', () => {
   assert.ok(links.length >= 10, 'Expected named external CSS modules in the document head');
   assert.equal([...head.matchAll(/<style\b/gi)].length, 0, 'The main document should no longer embed screen CSS');
+  assert.equal([...html.matchAll(/<style\b/gi)].length, 2, 'Only runtime-generated print document CSS remains as markup text');
 
   const segments = [];
   for (const [, href] of links) {
@@ -28,12 +29,12 @@ test('legacy CSS is extracted into ordered external modules and pre-cached offli
     const relative = href.replace(/^\.\//, '');
     assert.ok(sw.includes("'./" + relative + "'"), 'Service worker must pre-cache ' + relative);
   }
-  assert.deepEqual([...new Set(segments.map(({ block }) => block))], Array.from({ length: 22 }, (_, index) => index), 'Every original style block must be represented');
+  assert.deepEqual([...new Set(segments.map(({ block }) => block))], Array.from({ length: 27 }, (_, index) => index), 'Every original style block must be represented');
   assert.deepEqual(segments.map(({ block, part }) => [block, part]), segments.slice().sort((a, b) => a.block - b.block || a.part - b.part).map(({ block, part }) => [block, part]));
 
   const reconstructed = readLegacyHtml();
   const reconstructedHead = reconstructed.slice(reconstructed.indexOf('<head'), reconstructed.indexOf('</head>'));
-  assert.equal([...reconstructedHead.matchAll(/<style\b/gi)].length, 22, 'Static tests can reconstruct original style block boundaries');
+  assert.equal([...reconstructedHead.matchAll(/<style\b/gi)].length, 27, 'Static tests can reconstruct original style block boundaries');
   assert.ok(reconstructedHead.includes('<style id="apple-pass-wave-1">'));
   assert.ok(sw.includes("'./legacy/js/ui/presentation.js'"), 'Service worker must pre-cache extracted presentation helpers');
 });

@@ -1,6 +1,6 @@
 // Bump only when the app-shell/static asset contract changes. Activate removes
 // older caches with this app-owned prefix and preserves unrelated origin data.
-const SW_VERSION = 'v250.3';
+const SW_VERSION = 'v250.4';
 const CACHE_PREFIX = 'carteira-investimentos-';
 const CACHE_NAME = `${CACHE_PREFIX}${SW_VERSION}`;
 const CRITICAL_RUNTIME_PATHS = new Set([
@@ -30,6 +30,7 @@ const APP_SHELL = [
   './legacy/css/fixed-income.css',
   './legacy/css/screen-overrides.css',
   './legacy/css/premium-overrides.css',
+  './legacy/css/final-overrides.css',
   './legacy/js/ui/presentation.js',
 ];
 

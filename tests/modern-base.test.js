@@ -561,7 +561,16 @@ test('modern shell exists and stays isolated', async () => {
   assert.match(navigationTs, /Leitura readonly dedicada/);
   assert.match(navigationTs, /Snapshot somente leitura controlado por adaptador explicito/);
   assert.match(navigationTs, /Snapshot de leitura segura/);
-  assert.equal(packageJson.scripts.build, "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js','v250-runtime.js','v250-offline-session.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"");
+  const staticBuild = packageJson.scripts.build;
+  for (const requiredAsset of [
+    'index.html', 'manifest.json', 'sw.js', 'v250-runtime.js', 'v250-offline-session.js',
+    'legacy/css/tokens.css', 'legacy/css/shell-navigation.css', 'legacy/css/movement-preview.css',
+    'legacy/css/responsive-layout.css', 'legacy/css/reports.css', 'legacy/css/dividends.css',
+    'legacy/css/dividends-compact.css', 'legacy/css/shared-components.css', 'legacy/css/assets.css',
+    'legacy/css/fixed-income.css', 'legacy/css/screen-overrides.css', 'legacy/css/premium-overrides.css',
+    'legacy/css/final-overrides.css',
+    'legacy/js/ui/presentation.js',
+  ]) assert.ok(staticBuild.includes(requiredAsset), 'static build must validate ' + requiredAsset);
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);
   assert.match(packageJson.scripts.test, /tests\/readonly-reports-data-contract\.test\.js/);
