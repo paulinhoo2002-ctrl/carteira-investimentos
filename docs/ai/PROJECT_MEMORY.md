@@ -1,3 +1,11 @@
+## MEGA 12 — estado atual após instalação e certificação local (2026-10-12)
+
+- Worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, HEAD inicial `58fc6ae96535202ede7359d66200b9b4db8aa30c`. `npm ci` autorizado nesta worktree passou (94 pacotes, zero vulnerabilidades); scripts nativos omitidos pela política não foram contornados e manifests/lockfile permaneceram sem delta versionado.
+- A extração da camada de apresentação removeu os 5 blocos de CSS de tela restantes do HTML para `legacy/css/final-overrides.css`: 27 segmentos em 13 módulos, testes de reconstrução/ordem, app shell e SW `v250.4` atualizados. `index.html` reduziu ~56 KB/~711 linhas neste lote; CSS inline de tela agora zero. JS inline (~1,77 MB) permanece pendente, sem tentativa de reescrita ampla.
+- Regressões dos harnesses atualizadas para carregar CSS/helper de produção. V289/rotas passaram detecção de IDs duplicados e verificações responsivas de Renda Fixa; texto funcional mínimo medido 12 px e ações mobile 44 px. Capturas sintéticas em `.qa-state/v330-daily-use/`.
+- `npm run verify:release` no delta atual: exit 0; suites Legacy, Modern 823/823, QA smoke 12/12, V289 18/18, V324 17/17 e build passaram. Backup/restore executado sem dados reais, usando somente caminho temporário sintético permitido. Warnings de bundling Modern e mensagens de porta 24678 ocupada continuam observados, sem falha final; nenhum processo terminado.
+- Finance Core, persistência, Firebase, dados financeiros reais e worktrees externas permaneceram intocados. Commits locais: `a7407a4` (harnesses) e `e0db0ef` (CSS/app shell/SW/QA); checkpoint documental em commit separado. Sem push, PR, merge ou deploy. Métricas globais de `!important`, media queries e microtexto não foram reduzidas; só a legibilidade direcionada de Renda Fixa foi elevada.
+
 ## MEGA10 — verdade financeira na apresentação de Ativos (2026-10-12)
 
 - Alguns helpers legados normalizam campos ausentes para zero. A tabela e os cartões de Ativos agora mostram aplicado, resultado e rentabilidade como indisponíveis sem valor atual explícito e base aplicada positiva; zero verdadeiro continua visível quando atual e base estão confirmados. A correção é somente de apresentação e não altera Finance Core.

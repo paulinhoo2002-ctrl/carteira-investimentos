@@ -1,3 +1,10 @@
+## MEGA 12 — próximo passo atual (2026-10-12)
+
+1. Na worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, revisar o diff da extração CSS final, correções de harness e legibilidade/QA de Renda Fixa.
+2. Preservar os checkpoints MEGA 12 históricos abaixo; a alegação antiga de dependências ausentes foi supersedida: `npm ci` foi autorizado e executado nesta worktree. A última execução de `npm run verify:release` terminou exit 0, incluindo Modern 823/823, `qa:all` 12/12, V289 18/18, V324 17/17 e backup sintético.
+3. Os commits locais de harness (`a7407a4`) e extração/QA (`e0db0ef`) já foram revisados e criados; concluir o commit separado deste checkpoint documental. Push/PR/merge/deploy não estão autorizados.
+4. Limitações remanescentes para futura fase: modularização do JavaScript inline (~1,77 MB), escala tipográfica global/microtexto, investigar a porta 24678 e warnings de bundling Modern. Não repetir auditorias gerais; selecionar um escopo técnico específico.
+
 ## MEGA 12 — retomada da modularização (2026-10-12)
 
 - Worktree `C:\Projetos\carteira-investimentos.worktrees\v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, iniciou em `75e9cda4716b72e9ca58d343c8d17594333739a6`; commit funcional `9bb87977212bb573532ab7e34fa4627486feae52`. Foram extraídos 22 blocos de estilos para 12 módulos CSS ordenados e 11 renderizadores/helpers compartilhados para `legacy/js/ui/presentation.js`; comparação de CSS reconstruiu 29 blocos sem diferenças (667.979 bytes, 937 `!important`, 216 `@media` preservados). `index.html` caiu de 2.450.595 para 1.834.218 bytes e de 38.662 para 29.957 linhas.
