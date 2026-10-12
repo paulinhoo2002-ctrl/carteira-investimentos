@@ -1,3 +1,10 @@
+## MEGA11 — Ativos: cobertura financeira (2026-10-12)
+
+- Branch `codex/legacy-product-mega-11`, base MEGA10 `906bd72f7bffe71bad56e9fb9332f775f2ccbd30`, commit funcional `fe6c14c`; PR #497 permanece separada, OPEN/DRAFT no HEAD `0942d88b9ee563d177c61f978971866d9b10e463` e a MEGA11 não depende dela.
+- A tela Ativos agora distingue base/valor confirmados de ausência, mostra cobertura dos subtotais por carteira e classe, e mantém `—` quando não há nenhum valor confirmado. Zero explícito só é considerado quando a fonte de Renda Fixa confirma o campo; zeros sem proveniência suficiente permanecem indisponíveis.
+- Focados financeiros 23/23, browser Ativos 3/3, `qa:smoke` 7 viewports sem overflow/erros, Modern 823/823 e V324 17/17 no lote anterior. A suíte Legacy sem lifecycle pretest foi 254/256; V289 16/18. Os dois V84 e os dois V289 falharam pelo bundle moderno ausente em `modern/dist`; `qa:all` e `verify:release` não foram executados porque o build grava nessa pasta protegida.
+- Próximo passo: revisar os commits locais e solicitar autorização própria para push/PR; antes de completar gates de build, definir uma rota de validação autorizada que não escreva em `modern/dist`. Sem push, PR, merge, deploy ou dados reais nesta missão.
+
 ## MEGA10 — próxima ação (2026-10-12)
 
 - Revisar o diff local antes de publicação. A branch contém os commits MEGA09 `c715b33` e seu checkpoint, seguidos pelos commits MEGA10 `8dc3c8f`, `ec05729` e o checkpoint atual; o HEAD da PR #497 não é ancestral (ancestral comum verificado: `a6b1d349`).
