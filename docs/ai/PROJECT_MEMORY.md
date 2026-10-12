@@ -1,3 +1,10 @@
+## LEGACY overnight delivery checkpoint — 2026-10-11
+
+- In the canonical checkout, local branch `codex/legacy-overnight-delivery` was created from the verified initial HEAD `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; local commits are `354d583` (legacy module organization/path fixes) and `ec6bc97` (document paths and Skills/governance). No remote publication occurred.
+- Fresh `verify:release` passed on the code checkpoint, covering Legacy, Modern, builds, QA harness, synthetic browser smoke, and V289/V333 visual checks. Smoke covered 390/430/768/1366/1440/1536/1920 with no page overflow or relevant console/page/request failures. Skills routing passed 13/13 after governance updates.
+- Read-only Vercel audit observed production still on `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; storage usage was not exposed. Firebase emulator and hosted multi-user QA were not run. Build retains existing script bundling/default-export warnings; Modern tests report occupied WebSocket port 24678 without failing.
+- Several unclassified local artifacts, including five untracked fixtures under `legacy/js/tests/fixtures/import-center`, remain unstaged and preserved. Do not clean them until origin and ownership are established. `PRODUCTION_READY=false`; no financial writes/import/restore, merge, or production deployment.
+
 ## V1005 — operacional e exportação portátil protegida (2026-10-11)
 
 - Na branch isolada `codex/v1005-operational-certification`, export portátil recebeu AES-256-GCM com chave derivada PBKDF2/SHA-256; a validação de proprietário/manifesto/SHA continua antes da cifra e depois da decifra. Snapshots locais do navegador permanecem sem esta criptografia e a UI de import continua preview-only.

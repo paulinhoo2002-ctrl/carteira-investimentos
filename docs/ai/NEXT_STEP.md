@@ -1,3 +1,10 @@
+## Current action — LEGACY overnight delivery checkpoint (2026-10-11)
+
+- Current branch: `codex/legacy-overnight-delivery`; last measured HEAD before this checkpoint edit: `ec6bc97` (previous commits `354d583`, `ec6bc97`); initial HEAD: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`.
+- Product code/path organization and governance changes have fresh local validation. `verify:release` passed at the code checkpoint; skills routing 13/13, root hygiene, and diff checks passed after governance edits.
+- Do not publish: this mission authorizes local commits only. Review preserved unclassified leftovers before any future staging. No merge/deploy/real-data operation was performed.
+- Next safe action: human review the local commits and preserved unclassified files; then authorize any separate push/PR work if desired. Firebase hosted/emulator multi-user certification and exact Vercel storage usage remain unverified/unavailable.
+
 ## V1005 — certificação operacional LEGACY (2026-10-11)
 
 - Base verificada: `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; implementação na worktree isolada `codex/v1005-operational-certification`.
