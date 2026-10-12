@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const { webcrypto } = require('node:crypto');
 const { test } = require('node:test');
 const Backup = require('../backup-portability.js');
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 
 const passphrase = 'synthetic-only passphrase 2026';
 const payload = {
@@ -58,7 +59,7 @@ test('encrypted backup rejects weak passwords and unsupported envelopes', async 
 });
 test('backup UI encrypts downloads and decrypts before existing validation', () => {
   const fs = require('node:fs');
-  const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  const html = readLegacyHtml();
   const exportStart = html.indexOf('async function exportBackup(){');
   const exportEnd = html.indexOf('function v324PeriodicBackupEligible(){', exportStart);
   const exportSource = html.slice(exportStart, exportEnd);

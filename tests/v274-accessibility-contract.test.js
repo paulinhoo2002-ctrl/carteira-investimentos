@@ -1,8 +1,9 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
-const html = fs.readFileSync('index.html', 'utf8');
+const html = readLegacyHtml();
 
 test('V274 dark secondary text and AI badge use readable foregrounds', () => {
   assert.match(html, /\.mu\{color:#94a3b8\}/);

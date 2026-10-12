@@ -39,15 +39,6 @@ function extractGoalsSnippet() {
   return html.slice(start, end);
 }
 
-function extractDashboardConsultiveCardSnippet() {
-  const html = read('index.html');
-  const start = html.indexOf('function dashboardConsultiveCard(');
-  const end = html.indexOf('function dashboardHomeSummaryPanel(', start);
-  assert.notEqual(start, -1, 'dashboardConsultiveCard precisa existir');
-  assert.notEqual(end, -1, 'dashboardHomeSummaryPanel precisa existir depois do helper');
-  return html.slice(start, end);
-}
-
 function extractAssetCurrentValueSnippet() {
   const html = read('index.html');
   const start = html.indexOf('function assetCurrentValue(a){');
@@ -236,7 +227,7 @@ function buildContext({ goals = {}, assets = [], historyRows = [] } = {}) {
   state.globalThis = state;
   vm.createContext(state);
   vm.runInContext(extractAssetCurrentValueSnippet(), state, { filename: 'asset-current-value-snippet.js' });
-  vm.runInContext(extractDashboardConsultiveCardSnippet(), state, { filename: 'dashboard-consultive-card-snippet.js' });
+  vm.runInContext(read('legacy/js/ui/presentation.js'), state, { filename: 'legacy-presentation.js' });
   vm.runInContext(extractGoalsSnippet(), state, { filename: 'financial-goals-snippet.js' });
   // This contract checks Dashboard composition; its evolution model is covered separately.
   state.dashboardEvolutionPanel = () => '<section class="dashboard-evolution-card">Evolução</section>';

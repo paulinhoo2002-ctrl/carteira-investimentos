@@ -1,3 +1,4 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const Core = require('../import-center-core.js');
@@ -133,7 +134,7 @@ test('resultado visual não inventa deduplicação, snapshot ou laboratório sem
 });
 
 test('regressão de 768px mantém cabeçalho e navegação dentro da viewport', () => {
-  const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  const source = readLegacyHtml();
   assert.match(source, /@media\(min-width:621px\) and \(max-width:900px\)/);
   assert.match(source, /\.hdr-right\{min-width:0;max-width:52%/);
 });

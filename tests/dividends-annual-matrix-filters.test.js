@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 
 const repoRoot = path.join(__dirname, '..');
 
@@ -52,8 +53,8 @@ function nowYear() { return new Date().getFullYear(); }
 function nowMonth() { return new Date().getMonth() + 1; }
 function pad(m) { return String(m).padStart(2, '0'); }
 
-test('CSS classes da matriz existem no index.html', () => {
-  const indexHtml = read('index.html');
+test('CSS classes da matriz existem nos estilos legados', () => {
+  const indexHtml = readLegacyHtml();
   assert.match(indexHtml, /\.div-mat-table\b/);
   assert.match(indexHtml, /\.div-mat-toggle\b/);
   assert.match(indexHtml, /\.div-mat-wrap\b/);

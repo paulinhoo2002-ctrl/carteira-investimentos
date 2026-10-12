@@ -1,3 +1,4 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -5,7 +6,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 function read(relativePath) {
-  return fs.readFileSync(path.join(__dirname, '..', relativePath), 'utf8');
+  return relativePath === 'index.html' ? readLegacyHtml() : fs.readFileSync(path.join(__dirname, '..', relativePath), 'utf8');
 }
 
 function escapeHtml(value) {

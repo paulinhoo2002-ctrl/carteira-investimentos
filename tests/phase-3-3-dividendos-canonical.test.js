@@ -1,10 +1,11 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 
 const root = path.join(__dirname, '..');
-const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const read = file => file === 'index.html' ? readLegacyHtml() : fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Dividendos mantém o contrato canônico, fontes oficiais e bloqueios visuais', () => {
   const source = read('index.html');

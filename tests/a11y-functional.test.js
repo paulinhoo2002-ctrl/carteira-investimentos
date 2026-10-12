@@ -1,3 +1,4 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
@@ -6,7 +7,7 @@ const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 
 // Load index.html
-const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const indexHtml = readLegacyHtml();
 
 test('A11Y: synthetic browser runtime initializes before accessibility checks', async () => {
   const harness = await startLocalHttpServer(path.join(__dirname, '..'));

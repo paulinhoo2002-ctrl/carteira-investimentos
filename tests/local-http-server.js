@@ -56,7 +56,7 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
         content = Buffer.from(html.replace(head, match => `${match}\n<script>Object.defineProperty(window,'__LOCAL_QA_RUNTIME__',{value:'local-synthetic-v1',writable:false,configurable:false});</script>`), 'utf8');
       }
       res.writeHead(200, {
-        'Content-Type': path.extname(filePath) === '.html' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8',
+        'Content-Type': path.extname(filePath) === '.html' ? 'text/html; charset=utf-8' : path.extname(filePath) === '.css' ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8',
         ...(syntheticQa && path.extname(filePath) === '.html' ? { 'Cache-Control': 'no-store' } : {}),
       });
       res.end(content);

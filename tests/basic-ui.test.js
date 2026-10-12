@@ -1,3 +1,4 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -5,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 function readIndexHtml() {
-  return fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  return readLegacyHtml();
 }
 
 function extractSnippet(startMarker, endMarker) {

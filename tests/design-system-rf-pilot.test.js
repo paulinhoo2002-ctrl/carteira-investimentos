@@ -5,7 +5,7 @@ const test = require('node:test');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const rendererStart = source.indexOf('function rendaFixaTab()');
-const rendererEnd = source.indexOf('\nfunction dashboardMetricIcon', rendererStart);
+const rendererEnd = source.indexOf('\nfunction dashLegacy', rendererStart);
 const renderer = source.slice(rendererStart, rendererEnd);
 
 test('Renda Fixa adopts visual primitives without replacing official sources', () => {

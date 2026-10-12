@@ -1,3 +1,4 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -9,7 +10,7 @@ const { assertPhase202FutureSequence, assertPhase202RoadmapClosed } = require('.
 const repoRoot = path.join(__dirname, '..');
 
 function read(relativePath) {
-  return fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
+  return relativePath === 'index.html' ? readLegacyHtml() : fs.readFileSync(path.join(repoRoot, relativePath), 'utf8');
 }
 
 function assertUtf8WithoutBom(relativePath) {

@@ -143,6 +143,7 @@ function buildContext(assets){
 
 /** Avalia as funções principais (assetAnalysisRows, dashboardHighlightsRows, rendaFixaTab) no contexto. */
 function loadPrincipalFns(ctx){
+  vm.runInNewContext(fs.readFileSync(path.join(repoRoot, 'legacy/js/ui/presentation.js'), 'utf8'), ctx, { filename: 'legacy-presentation.js' });
   const assetAnalysis = extractFunctionBlock(INDEX_HTML, 'function assetAnalysisRows(){', 'function assetConcentrationAlert(');
   vm.runInNewContext(assetAnalysis, ctx);
   const assetAnalysisBlock = extractFunctionBlock(INDEX_HTML, 'function assetAnalysisBlock(rowsInput){', 'function hasOwnFiniteNumber(');
@@ -153,7 +154,7 @@ function loadPrincipalFns(ctx){
   vm.runInNewContext(assetInsightRowHtml, ctx);
   const assetPremiumSection = extractFunctionBlock(INDEX_HTML, 'function assetPremiumSection(', 'function assetPerformanceRowHtml(');
   vm.runInNewContext(assetPremiumSection, ctx);
-  const assetConcentrationAlert = extractFunctionBlock(INDEX_HTML, 'function assetConcentrationAlert(share){', 'function assetSummaryCard(');
+  const assetConcentrationAlert = extractFunctionBlock(INDEX_HTML, 'function assetConcentrationAlert(share){', 'function assetPremiumSection(');
   vm.runInNewContext(assetConcentrationAlert, ctx);
   // IMPORTANTE: o teste RED deve falhar POR DIVERGÊNCIA, não por ReferenceError em fonte legada.
   // Stub do pipeline antigo (assetPerformanceOverviewRows) que retorna DATOS DIFERENTES da
@@ -171,7 +172,7 @@ function loadPrincipalFns(ctx){
   vm.runInNewContext(dashboardHighlights, ctx);
   const rfSnapshot = extractFunctionBlock(INDEX_HTML, 'function rfIntelligenceSnapshot(){', 'function rendaFixaTab()');
   vm.runInNewContext(rfSnapshot, ctx);
-  const rendaFixaTab = extractFunctionBlock(INDEX_HTML, 'function rendaFixaTab(){', 'function dashboardMetricCard(');
+  const rendaFixaTab = extractFunctionBlock(INDEX_HTML, 'function rendaFixaTab(){', 'function dashLegacy(');
   vm.runInNewContext(rendaFixaTab, ctx);
   const dashboardMetricCard = 'function dashboardMetricCard(icon,label,value,sub,tone="muted",bg="rgba(0,0,0,0)"){return `<div class="dash-metric ${tone}"><div class="dash-metric-icon">${icon}</div><div class="dash-metric-body"><div class="dash-metric-label">${esc(label)}</div><div class="dash-metric-value">${value}</div><div class="dash-metric-sub">${esc(sub)}</div></div></div>`;}';
   vm.runInNewContext(dashboardMetricCard, ctx);

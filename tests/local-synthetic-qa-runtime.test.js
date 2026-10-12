@@ -1,9 +1,10 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const test = require('node:test');
 
-const source = fs.readFileSync('index.html', 'utf8');
+const source = readLegacyHtml();
 
 function boot({ marker, hostname = '127.0.0.1', search = '?testMode=1' } = {}) {
   const normalizedSource = source.replace(/\r\n/g, '\n');
@@ -297,7 +298,7 @@ for (const name of ['svA', 'svP', 'rmP', 'svD', 'rmD']) {
 // Synthetic-only READ ONLY VM reproduction. Run from the reviewed worktree.
 const fs=require('node:fs');
 const vm=require('node:vm');
-const source=fs.readFileSync('index.html','utf8');
+const source=readLegacyHtml();
 function body(name){
   const start=source.indexOf(`function ${name}(`);
   if(start<0) throw Error(`Missing ${name}`);

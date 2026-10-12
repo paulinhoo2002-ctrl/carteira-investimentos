@@ -1,9 +1,10 @@
+const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const html = readLegacyHtml();
 
 test('desktop shell keeps a stable content gutter after the sidebar', () => {
   assert.match(html, /@media\(min-width:1181px\)\{[\s\S]*?\.wrap\{max-width:1500px;padding:20px 28px 30px\}/);
