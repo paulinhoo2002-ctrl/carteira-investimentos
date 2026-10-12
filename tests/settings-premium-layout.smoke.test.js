@@ -1,34 +1,19 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const http = require('node:http');
-const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer } = require('./local-http-server');
 
 function browserPath() {
   return [process.env.CHROME_PATH, 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe']
     .filter(Boolean).find(candidate => { try { fs.accessSync(candidate); return true; } catch { return false; } });
 }
 
-async function startServer(root) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const filePath = path.normalize(path.join(root, pathname === '/' ? '/index.html' : pathname));
-      if (!filePath.startsWith(root)) { res.writeHead(403); return res.end(); }
-      res.writeHead(200, { 'Content-Type': path.extname(filePath) === '.html' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8' });
-      res.end(await fsp.readFile(filePath));
-    } catch { res.writeHead(404); res.end(); }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
-}
-
 for (const [width, height] of [[390, 844], [430, 932], [768, 1024], [1366, 768], [1920, 1080]]) {
   test(`settings premium layout ${width}x${height}`, async () => {
     const executablePath = browserPath();
     assert.ok(executablePath, 'Chrome não encontrado');
-    const harness = await startServer(path.join(__dirname, '..'));
+    const harness = await startLocalHttpServer(path.join(__dirname, '..'));
     const { chromium } = await import('playwright-core');
     const browser = await chromium.launch({ executablePath, headless: true });
     const errors = [];
@@ -95,7 +80,7 @@ for (const [width, height] of [[390, 844], [430, 932], [768, 1024], [1366, 768],
 test('settings tab is navigable from sidebar', async () => {
   const executablePath = browserPath();
   assert.ok(executablePath, 'Chrome não encontrado');
-  const harness = await startServer(path.join(__dirname, '..'));
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
   const { chromium } = await import('playwright-core');
   const browser = await chromium.launch({ executablePath, headless: true });
   try {
@@ -115,7 +100,7 @@ test('settings tab is navigable from sidebar', async () => {
 test('theme toggle works from settings page', async () => {
   const executablePath = browserPath();
   assert.ok(executablePath, 'Chrome não encontrado');
-  const harness = await startServer(path.join(__dirname, '..'));
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
   const { chromium } = await import('playwright-core');
   const browser = await chromium.launch({ executablePath, headless: true });
   try {
@@ -137,7 +122,7 @@ test('theme toggle works from settings page', async () => {
 test('hide values toggle works from settings page', async () => {
   const executablePath = browserPath();
   assert.ok(executablePath, 'Chrome não encontrado');
-  const harness = await startServer(path.join(__dirname, '..'));
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
   const { chromium } = await import('playwright-core');
   const browser = await chromium.launch({ executablePath, headless: true });
   try {

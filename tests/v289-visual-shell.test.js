@@ -109,7 +109,7 @@ test('Mais keeps secondary destinations labeled and available', async () => {
     for (const label of ['Aportes', 'Rentab.', 'Análise', 'Rebalancear', 'Metas', 'Confiabilidade', 'Importar dados', 'Relatórios', 'IRPF', 'Auditoria', 'Insights', 'Configurações']) {
       assert.ok(labels.some(text => text.includes(label)), `${label} missing from Mais`);
     }
-    assert.equal(await page.evaluate(() => { go('patrimonio'); return S.tab; }), 'dashboard', 'Patrimônio remains an existing Resumo alias');
+    assert.equal(await page.evaluate(() => { go('patrimonio'); return S.tab; }), 'patrimonio', 'Patrimônio uses its dedicated route');
   });
 });
 

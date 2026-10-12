@@ -44,6 +44,8 @@ test('visual cases preserve explicit mismatch, gaps, allocation uncertainty and 
   assert.equal(makeV289VisualFixture('allocation-unknown').visual.allocationState, 'UNKNOWN');
   assert.equal(makeV289VisualFixture('priority-zero').visual.priorities.length, 0);
   assert.equal(makeV289VisualFixture('priority-one').visual.priorities.length, 1);
+  assert.equal(makeV289VisualFixture('priority-one').assets[0].ticker, 'QARF01');
+  assert.match(makeV289VisualFixture('priority-one').assets[0].rf_maturity_date, /^\d{4}-\d{2}-\d{2}$/);
   assert.ok(makeV289VisualFixture('priority-many').visual.priorities.length > 1);
 });
 
@@ -51,13 +53,13 @@ test('scenario edits cannot mutate baseline or another scenario', () => {
   const baselineBefore = makeV289VisualFixture('baseline');
   const one = makeV289VisualFixture('priority-one');
   const many = makeV289VisualFixture('priority-many');
-  one.goals.proventos.monthly = 1;
+  one.assets[0].ticker = 'ALTERADO';
   one.visual.priorities.push({ id: 'QA_EXTRA' });
   many.assets[0].name = 'Alterado apenas no teste';
   many.visual.history[0].value = -1;
   assert.deepEqual(makeV289VisualFixture('baseline'), baselineBefore);
   assert.equal(makeV289VisualFixture('priority-one').visual.priorities.length, 1);
-  assert.equal(makeV289VisualFixture('priority-one').goals.proventos.monthly, 1200);
+  assert.equal(makeV289VisualFixture('priority-one').assets[0].ticker, 'QARF01');
   assert.notEqual(makeV289VisualFixture('priority-many').assets[0].name, 'Alterado apenas no teste');
   assert.notEqual(makeV289VisualFixture('priority-many').visual.history[0].value, -1);
 });
@@ -85,8 +87,7 @@ test('fixture seeds only memory and aliases static account label across render',
     assert.deepEqual(after.assets, makeV289VisualFixture('baseline').assets.map(a => a.ticker));
     assert.equal(after.wallet, 'Conta sintética');
     await page.evaluate(() => render());
-    assert.match(await page.locator('.side-brand-sub').innerText(), /Conta sintética/);
-    assert.doesNotMatch(await page.locator('.side-brand-sub').innerText(), /Paulo/);
+    assert.deepEqual((await page.locator('.side-brand-sub').innerText()).split('\n'), ['QA', 'Conta sintética']);
   } finally {
     await browser.close();
     server.server.close();

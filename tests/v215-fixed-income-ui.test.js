@@ -16,6 +16,7 @@ function browserPath() {
 }
 
 for (const viewport of [
+  { width: 360, height: 800 },
   { width: 390, height: 844 },
   { width: 430, height: 932 },
   { width: 768, height: 900 },
@@ -47,11 +48,24 @@ for (const viewport of [
           rowCount: rows.length,
           narrowMainRows: mainWidths.filter(width => width < 180).length,
           gridColumns: getComputedStyle(document.querySelector('.premium-rf-grid')).gridTemplateColumns,
+          controlsColumns: getComputedStyle(document.querySelector('.premium-rf-controls')).gridTemplateColumns,
+          controlsSearchSpan: getComputedStyle(document.querySelector('.premium-rf-controls label:first-child')).gridColumnEnd,
+          mobileActionsColumns: getComputedStyle(rows[0].querySelector('.premium-rf-row-actions')).gridTemplateColumns,
+          mobileActionHeights: [...(rows[0].querySelectorAll('.premium-rf-row-actions button'))].map(button => button.getBoundingClientRect().height),
+          positionPaddingTop: parseFloat(getComputedStyle(rows[0]).paddingTop),
         };
       });
       assert.ok(layout.rowCount > 0, 'nenhuma posição de renda fixa renderizada');
       assert.equal(layout.narrowMainRows, 0, `nomes espremidos em ${viewport.width}px`);
       assert.equal(layout.overflow, 0, `overflow horizontal de renda fixa em ${viewport.width}px`);
+      if (viewport.width <= 430) {
+        assert.equal(layout.controlsColumns.split(' ').length, 2, `filtros devem usar duas colunas em ${viewport.width}px`);
+        assert.equal(layout.controlsSearchSpan, '-1', `busca deve ocupar largura completa em ${viewport.width}px`);
+        assert.equal(layout.mobileActionsColumns.split(' ').length, 2, `ações devem formar grade 2x2 em ${viewport.width}px`);
+        assert.ok(layout.mobileActionHeights.every(height => height >= 44), `ação abaixo de 44px em ${viewport.width}px`);
+      } else if (viewport.width <= 1499) {
+        assert.ok(layout.positionPaddingTop <= 9, `linha desktop segue alta em ${viewport.width}px`);
+      }
       await page.getByLabel('Buscar título de renda fixa').fill('CDI');
       await page.waitForTimeout(180);
       await page.getByLabel('Filtrar status do valuation').selectOption('UNAVAILABLE');
