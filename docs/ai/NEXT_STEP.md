@@ -1,3 +1,10 @@
+## 2026-10-12 — LEGACY_FULL_AUTONOMOUS_EVOLUTION_V3
+
+- V289 corrigido e validado: cenário priority-one usa vencimento sintético de renda fixa suportado; teste confirma que cobertura desconhecida não cria meta de renda certificada. Contraste AA/AAA do Dashboard corrigido em tema escuro e claro, sem alterar tokens globais. `tests/v289-dashboard-hybrid.test.js` 18/18 e fixtures visuais 6/6.
+- Validação local no HEAD `1050bfd78d5f3ff88af94feda776d3196f7310de`: `npm test` exit 0; `test:modern` 823/823; `qa:all` exit 0; `verify:release` exit 0, suíte visual 18/18; regressões focadas Dashboard/Renda Fixa 22/22; `git diff --check` e root hygiene PASS. Os builds ainda emitem avisos preexistentes de bundling do contrato de relatórios; build conclui com sucesso.
+- Alterações desta missão: CSS de contraste no Dashboard, fixture/testes V289 e este checkpoint. Dados exclusivamente sintéticos; Finance Core, persistência, Firebase, worktrees e PR #494 não modificados. Sem push, Preview, merge ou produção.
+- Próximo passo: revisar e enviar os commits locais somente após autorização para push; Preview autenticado da PR #494 continua não verificado e não foi tentado novamente.
+
 ## 2026-10-12 — LEGACY_UI_UX_EVOLUTION_02
 
 - Dashboard mobile: cards executivos mais compactos; gráfico de aportes mantém a série real e estados de cobertura incompleta/desconhecida.
