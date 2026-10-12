@@ -6,7 +6,7 @@
 - Renda Fixa recebeu legibilidade mínima de 12 px para texto funcional medido e alvos de ação de pelo menos 44 px em mobile. Playwright sintético validou Dashboard, Ativos, Dividendos e Renda Fixa; capturas before/after em `.qa-state/v330-daily-use/` (artefatos locais ignorados pelo Git). V289 agora mede IDs DOM duplicados nas rotas reais e não encontrou duplicatas na matriz.
 - `npm run verify:release` executado após as últimas alterações, exit 0: Legacy passou (incluindo finanças 96, persistência 32, backup/restore 16, UI 307, performance 97 e demais grupos); Modern 823/823; `qa:all` smoke 12/12; visual regression V289 18/18; V324 17/17; build passou. QA usa apenas dados sintéticos; backup foi direcionado a pasta temporária sintética externa permitida, sem criar arquivo de backup real.
 - Avisos: Modern/Vite mantém warnings de bundling preexistentes; a suíte imprimiu erros de WebSocket por porta 24678 já ocupada, mas terminou verde. Nenhum processo desconhecido foi encerrado. Métricas estáticas aproximadas não substituem uma auditoria tipográfica completa: `!important` e `@media` permaneceram sem redução global; a regra direcionada de Renda Fixa foi corrigida. Nenhuma alteração em Finance Core, persistência, Firebase ou regras.
-- Commits locais desta sessão: `a7407a4` (reparo dos harnesses) e `e0db0ef` (extração CSS, app shell/SW e QA responsivo). Este checkpoint será commitado separadamente. Sem push, PR, merge ou deploy.
+- Commits locais desta sessão: `a7407a4` (reparo dos harnesses), `e0db0ef` (extração CSS, app shell/SW e QA responsivo) e `9a977a0` (checkpoint de continuidade). Sem push, PR, merge ou deploy.
 
 ## MEGA 12 — modularização legacy, validação parcial (2026-10-12)
 

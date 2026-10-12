@@ -2,7 +2,7 @@
 
 1. Na worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, revisar o diff da extração CSS final, correções de harness e legibilidade/QA de Renda Fixa.
 2. Preservar os checkpoints MEGA 12 históricos abaixo; a alegação antiga de dependências ausentes foi supersedida: `npm ci` foi autorizado e executado nesta worktree. A última execução de `npm run verify:release` terminou exit 0, incluindo Modern 823/823, `qa:all` 12/12, V289 18/18, V324 17/17 e backup sintético.
-3. Os commits locais de harness (`a7407a4`) e extração/QA (`e0db0ef`) já foram revisados e criados; concluir o commit separado deste checkpoint documental. Push/PR/merge/deploy não estão autorizados.
+3. Os commits locais de harness (`a7407a4`), extração/QA (`e0db0ef`) e checkpoint documental (`9a977a0`) já foram criados; revisar o estado consolidado antes de qualquer autorização de publicação. Push/PR/merge/deploy não estão autorizados.
 4. Limitações remanescentes para futura fase: modularização do JavaScript inline (~1,77 MB), escala tipográfica global/microtexto, investigar a porta 24678 e warnings de bundling Modern. Não repetir auditorias gerais; selecionar um escopo técnico específico.
 
 ## MEGA 12 — retomada da modularização (2026-10-12)
