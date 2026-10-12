@@ -13,9 +13,20 @@ test('settings pilot adopts primitives only in safe sections', () => {
   assert.match(html, /ds-badge ds-badge--positive ok/);
 });
 
+test('settings page exposes one primary heading and a descriptive subtitle', () => {
+  const settingsStart = html.indexOf('function settingsTab(){');
+  const settingsEnd = html.indexOf('function closeWalletMenus(){', settingsStart);
+  assert.notEqual(settingsStart, -1, 'settingsTab precisa existir');
+  assert.notEqual(settingsEnd, -1, 'settingsTab precisa ter limite identificável');
+  const settings = html.slice(settingsStart, settingsEnd);
+  assert.match(settings, /<h1 class="premium-settings-title">Preferências e administração<\/h1>/);
+  assert.match(settings, /<p class="premium-settings-subtitle">Preferências, dados e administração da carteira\.<\/p>/);
+  assert.doesNotMatch(settings, /<h2 class="premium-settings-title"|<h1 class="premium-settings-subtitle"/);
+});
+
 test('protected settings flows remain owned by existing handlers', () => {
   assert.match(html, /onclick="openBackupCenter\(\)"/);
-  assert.match(html, /onclick="resetPortfolio\(\)"/);
+  assert.match(html, /onclick="resetPortfolio\(event\)"/);
   assert.match(html, /onclick="deleteWallet\(\)"/);
   assert.match(html, /function confirmBackupImport\(\)/);
   assert.match(html, /function applyBackupData\(parsed\)/);
