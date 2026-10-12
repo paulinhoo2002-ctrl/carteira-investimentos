@@ -103,6 +103,7 @@ minimal routes used by the selector.
 | **BROWSER_QA**<br>browser validation, responsive QA, console/network issues, interaction regression | caveman<br>using-superpowers<br>browser-harness-main | browser-testing-with-devtools (if DevTools MCP needed)<br>playwright (if CLI automation preferred) | ui-ux-pro-max<br>frontend-design<br>interface-design<br>design-system<br>ui-styling<br>impeccable<br>banner-design<br>brand<br>slides<br>interview-me | Don't run all 3 browser skills redundantly<br>Select ONE primary<br>Clean console (0 errors)<br>Viewports: 390, 430, 768, 1366, 1440, 1536, 1920 |
 | **UI_VISUAL**<br>only when VISUAL_PHASE=AUTHORIZED<br>visual redesign, new UI direction, brand-aligned visuals | caveman<br>using-superpowers<br>interface-design | frontend-design (if new aesthetic direction)<br>design-system (if token work)<br>ui-ux-pro-max (if heavy design system gen)<br>ui-styling (if React/Tailwind impl)<br>impeccable (final polish)<br>browser-harness-main (verification) | banner-design<br>brand (unless brand work)<br>slides<br>interview-me | VISUAL_PHASE must be AUTHORIZED<br>VISUAL_CANON_V2 must be active<br>No financial logic changes |
 | **CODE_REVIEW**<br>pre-PR, release review, receiving external review | caveman<br>using-superpowers<br>caveman-review<br>impeccable<br>verification-before-completion<br>requesting-code-review | interface-design (if UI changes)<br>browser-harness-main (if UI)<br>doubt-driven-development (if financial)<br>source-driven-development (if financial) | frontend-design<br>ui-ux-pro-max<br>banner-design<br>brand<br>slides<br>interview-me | All verification gates pass<br>No MISLEADING_FINANCIAL_METRIC<br>No BROKEN_CORE_WORKFLOW |
+| **VERCEL_PREVIEW_INSPECTION**<br>deployment identity, preview health, logs and verification | vercel:verification<br>vercel:deployments-cicd<br>deploy-to-vercel | source-driven-development (if platform behavior is unclear) | Do not deploy or change remote configuration without explicit authorization | Exact deployment SHA and read-only scope confirmed |
 | **GIT_CLOSEOUT**<br>commit preparation, branch closeout, safe staging | caveman<br>using-superpowers<br>caveman-commit<br>verification-before-completion | caveman-review (self-review) | All UI skills<br>All financial skills (unless committing financial fix) | No `git add .`<br>No `git add -A`<br>No force push<br>No history rewrite<br>Explicit staging only |
 | **LONG_HERMES**<br>multi-step autonomous missions with gates | caveman<br>using-superpowers<br>caveman-compress<br>writing-plans | cavecrew (ONLY if genuinely independent)<br>executing-plans or subagent-driven-development | ui-ux-pro-max (unless visual authorized)<br>banner-design<br>brand<br>slides | Plan written to .hermes/plans/<br>Gates at each phase<br>No cavecrew on shared financial truth path |
 | **DOCUMENTATION_ONLY**<br>docs, manifests, routing, intent capture | caveman<br>using-superpowers | interview-me (if requirements unclear)<br>archify (if diagrams)<br>slides (if presentation)<br>brand (if brand docs) | All financial skills<br>All browser skills<br>All UI skills | No runtime changes<br>No test logic changes |
@@ -238,6 +239,25 @@ C:/Projetos/carteira-investimentos/.agents/skills/<skill-name>/SKILL.md  (local 
 If missing from both: `SKILL_UNAVAILABLE=<name>` — assess if mission can proceed safely.
 
 Note: `.agents/skills` is partially tracked (see .gitignore). Approved skills are versioned. Heavy skills (browser-harness-main, impeccable, archify-main) remain external and can be re-synced from `C:/Projetos/skills/` or upstream sources.
+
+### SOURCE, INTEGRATION AND PORTABILITY
+
+- `C:/Projetos/skills/` is an external, read-only source during inventory. Never
+  execute bundled scripts just to inspect a Skill.
+- `.agents/skills/` inside the LEGACY checkout remains the canonical project
+  root. The adjacent `C:/Projetos/carteira-investimentos.agents/skills/` path is
+  not an automatic discovery root; do not treat a copy there as integrated
+  until Hermes/Codex discovery is demonstrated in that runtime.
+- Prefer an already-installed canonical/runtime Skill. Do not duplicate or
+  overwrite a local Skill when the source differs; record the version mismatch
+  and review it separately. Sync only the smallest approved package when a real
+  missing capability and runtime discovery path are both proven.
+- A plain `SKILL.md` is readable by both agents, but commands, hooks, MCP
+  servers, subagent profiles, Python/Node helpers and provider-specific APIs
+  remain conditional dependencies. Verify them before claiming compatibility.
+- Skill selection never grants authorization. End missions with the
+  non-destructive `WORKSPACE_HYGIENE_GATE`; it reports state and never cleans
+  files or worktrees automatically.
 
 ---
 

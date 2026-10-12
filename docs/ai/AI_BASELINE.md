@@ -32,7 +32,7 @@ Baseline v1.0 - Consolidated AI infrastructure for Carteira de Investimentos
 
 ## Mandatory Skills
 - archify: Architecture and diagram generation
-- interface-design: UI/UX guidelines based on DESIGN.md
+- interface-design: UI/UX guidelines based on docs/DESIGN.md
 - impeccable: Code quality, audit, and polish
 - playwright: End-to-end browser testing
 - caveman: Ultra-compressed communication
@@ -52,7 +52,7 @@ Baseline v1.0 - Consolidated AI infrastructure for Carteira de Investimentos
 - Prefer small, reversible extractions over large rewrites.
 - Financial rules are isolated in finance-core.js; never duplicate calculations.
 - Persistence is centralized in persistence-core.js; never duplicate storage logic.
-- UI changes must follow DESIGN.md and be validated with Playwright and Impeccable.
+- UI changes must follow docs/DESIGN.md and be validated with Playwright and Impeccable.
 - Always reuse official flows (e.g., openRfMovementEditor, saveRfMovimentacao).
 - Never alter protected areas: finance-core.js, persistence-core.js, firestore.rules, sw.js, manifest.json, modern/src, modern/dist, etc.
 - Mobile-first responsive design; validate at 390px, 768px, 1366px, 1920px.

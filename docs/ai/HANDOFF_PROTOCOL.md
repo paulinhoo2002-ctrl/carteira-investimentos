@@ -2,7 +2,7 @@
 
 ## Início
 
-1. Ler `PROJECT_MEMORY.md`, `PROJECT_STATE.md`, `OPEN_WORK.md` e
+1. Ler `PROJECT_MEMORY.md`, `PROJECT_STATE.md`, `../OPEN_WORK.md` e
    `FINANCIAL_INVARIANTS.md`.
 2. Confirmar workspace, branch, HEAD e worktree.
 3. Comparar baseline e fingerprint antes de qualquer persistência.

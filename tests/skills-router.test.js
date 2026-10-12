@@ -9,7 +9,8 @@ const inventory = [
   'firebase-security-rules-auditor', 'interface-design', 'web-quality-audit',
   'browser-harness', 'playwright', 'browser-testing-with-devtools',
   'caveman-review', 'caveman-commit', 'archify', 'find-skills',
-  'verification-before-completion'
+  'verification-before-completion', 'code-review-and-quality',
+  'vercel:verification', 'vercel:deployments-cicd', 'deploy-to-vercel'
 ];
 
 test('representative routes select only available, minimal specialist skills', () => {
@@ -21,6 +22,8 @@ test('representative routes select only available, minimal specialist skills', (
     ['backup', [], ['doubt-driven-development']],
     ['security', [], ['firebase-security-rules-auditor']],
     ['documentation', [], ['caveman-review']],
+    ['codeReview', [], ['code-review-and-quality']],
+    ['vercel', [], ['vercel:verification']],
     ['release', [], ['verification-before-completion']],
     ['skillDiscovery', [], ['find-skills']]
   ];
@@ -80,4 +83,9 @@ test('selects a namespaced browser harness from the active runtime inventory', (
   const result = selectSkills('browser', ['browser-harness:browser-harness']);
   assert.deepEqual(result.selectedSkills, ['browser-harness:browser-harness']);
   assert.deepEqual(result.missingRequiredSkills, []);
+});
+
+test('code review and Vercel routes select available runtime skills', () => {
+  assert.deepEqual(selectSkills('codeReview', ['caveman-review']).selectedSkills, ['caveman-review']);
+  assert.deepEqual(selectSkills('vercel', ['deploy-to-vercel']).selectedSkills, ['deploy-to-vercel']);
 });

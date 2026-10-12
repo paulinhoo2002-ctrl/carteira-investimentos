@@ -17,8 +17,8 @@ Fase 57 - UX Premium
 
 | Documento | Descricao |
 |-----------|-----------|
-| [PRODUCT.md](PRODUCT.md) | Visao do produto |
-| [DESIGN.md](DESIGN.md) | Sistema de design |
+| [PRODUCT.md](docs/PRODUCT.md) | Visao do produto |
+| [DESIGN.md](docs/DESIGN.md) | Sistema de design |
 | [CHANGELOG.md](CHANGELOG.md) | Historico de versoes |
 
 ## DOCUMENTACAO DO PRODUTO
@@ -82,8 +82,8 @@ IA Consultiva
 
 Antes de implementar qualquer melhoria:
 
-1. Ler `PRODUCT.md`
-2. Ler `DESIGN.md`
+1. Ler `docs/PRODUCT.md`
+2. Ler `docs/DESIGN.md`
 3. Consultar `CHANGELOG.md`
 4. Executar `cmd /c npm run build` antes de finalizar
 

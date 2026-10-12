@@ -474,7 +474,7 @@ Precondition: Verify V248 snapshot capture provides dated valuations before inte
 - `BLOCKED_BY_USER_INPUT=Sanitized XP and BTG statement fixtures`
 - `LAST_UPDATED=2026-09-22`
 
-The recommendation comes from `docs/ai/OPEN_WORK.md`; it is readiness only.
+The recommendation comes from `docs/OPEN_WORK.md`; it is readiness only.
 Do not start a new phase without explicit authorization. The historical
 snapshots below are retained as evidence and are not the current boot state.
 
@@ -1175,3 +1175,19 @@ Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada 
   2. Abrir Draft PR para revisão humana.
   3. Aguardar gate humano para revisão do Draft PR e decisão de merge.
   4. Após merge autorizado, preparar release de produção.
+## LEGACY Skills audit — 2026-10-11
+
+- Auditoria somente leitura de `C:\Projetos\skills`: 43 arquivos `SKILL.md`,
+  38 IDs com frontmatter, 3 stubs e duplicações; detalhes e classificação em
+  [`SKILLS_SOURCE_AUDIT.md`](SKILLS_SOURCE_AUDIT.md). Nenhum script de origem
+  executado.
+- `.agents/skills` continua raiz canônica. O destino adjacente solicitado não
+  possui descoberta comprovada e não recebeu cópias. Skills essenciais e rotas
+  usuais já estão no runtime ou na raiz canônica; `caveman-stats` segue rejeitada
+  por hooks ausentes e acesso a log de sessão Claude.
+- Vercel auditado somente leitura para `carteira-investimentos`; configuração e
+  primeira página de deployments visíveis, métrica de armazenamento não exposta
+  pelo CLI.
+- Próximo passo humano: decidir se basta manter a raiz canônica ou se deseja
+  autorizar uma mudança de configuração de runtime para descoberta do caminho
+  adjacente. Não integrar/copy skills antes dessa prova.

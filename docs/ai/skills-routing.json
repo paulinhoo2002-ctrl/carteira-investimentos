@@ -31,6 +31,8 @@
     "backup": { "required": ["doubt-driven-development"], "optional": { "independentDiffReview": "caveman-review" } },
     "security": { "required": ["firebase-security-rules-auditor"], "optional": { "officialSource": "source-driven-development" } },
     "documentation": { "required": ["caveman-review"], "optional": { "architectureDiagram": "archify" } },
+    "codeReview": { "alternatives": [["code-review-and-quality", "caveman-review"]] },
+    "vercel": { "alternatives": [["vercel:verification", "vercel:deployments-cicd", "deploy-to-vercel"]] },
     "release": { "required": ["verification-before-completion"], "optional": { "gitCloseout": "caveman-commit" } },
     "skillDiscovery": { "required": ["find-skills"], "optional": {} }
   },

@@ -10,7 +10,7 @@ regressões funcionais.
 
 Este arquivo complementa (e não substitui) as instruções oficiais já
 versionadas em `docs/FLUXO-DESENVOLVIMENTO.md`, `docs/ESTABILIDADE.md`,
-`docs/project-phases-roadmap.md`, `REGRESSION_CHECKLIST.md` e
+`docs/project-phases-roadmap.md`, `docs/REGRESSION_CHECKLIST.md` e
 `.github/PULL_REQUEST_TEMPLATE.md`. Em caso de conflito, siga a regra mais
 conservadora que não altere o que já foi documentado em outros lugares.
 
@@ -360,7 +360,7 @@ tarefa exigir:
 - Manifesto/versionamento de ferramentas: `docs/ai/SKILLS_MANIFEST.md`
 - Decisões V192: `docs/ai/DECISIONS_V192.md`
 
-`DESIGN.md` é a fonte visual do projeto. Memória Git-tracked é a fonte de
+`docs/DESIGN.md` é a fonte visual do projeto. Memória Git-tracked é a fonte de
 verdade; qualquer índice MCP é derivado e não autoriza alterações.
 
 Até nova orientação, este `AGENTS.md` não substitui nem altera qualquer
@@ -369,11 +369,13 @@ Codex e outros agentes devem seguir no fluxo diário.
 
 ## V197 compact boot contract
 
-|Toda sessão deve executar primeiro o PROJECT IDENTITY GATE, ler `AGENTS.md`,
-`docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`, `docs/ai/DECISIONS.md` e
-`docs/ai/SKILLS_ROUTING.md`, descobrir Skills em `.agents/skills`, sempre
-considerar Superpowers, selecionar o menor conjunto relevante, executar,
-validar delta e atualizar `NEXT_STEP.md`. O router versionado em
+Toda sessão deve executar nesta ordem: PROJECT IDENTITY GATE; leitura de
+`AGENTS.md`, `docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`,
+`docs/ai/DECISIONS.md` e `docs/ai/SKILLS_ROUTING.md`; classificação da missão e
+seus riscos; descoberta de Skills em `.agents/skills` e no runtime; seleção do
+menor conjunto relevante; execução autorizada; validação do delta; atualização
+de `NEXT_STEP.md`; `WORKSPACE_HYGIENE_GATE` não destrutivo. Skills nunca
+substituem autorização nem regras de segurança. O router versionado em
 `docs/ai/SKILLS_ROUTING.md` é suficiente; `.agents/SKILL_ROUTER.md`, se existir,
 é somente uma bridge local e nunca é requisito do boot.
 
@@ -456,7 +458,7 @@ Regras permanentes para todos os agentes (Codex, Hermes, OpenCode, etc.):
 - `AGENTS.md`
 - `docs/ai/PROJECT_MEMORY.md`
 - `docs/ai/SKILLS_ROUTING.md`
-- `docs/ai/DESIGN.md` quando aplicável
+- `docs/DESIGN.md` quando aplicável
 - **Histórico do chat NÃO é source of truth**
 
 ## Runtime-agnostic project skill policy

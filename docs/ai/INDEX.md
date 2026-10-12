@@ -15,7 +15,7 @@ scan archives, local imports, or every worktree by default.
 ## Current and operational documents
 
 - State and continuity: `PROJECT_STATE.md`, `NEXT_STEP.md`, `PROJECT_MEMORY.md`,
-  `CURRENT_PROJECT_MAP.md`, `OPEN_WORK.md`.
+  `CURRENT_PROJECT_MAP.md`, [`OPEN_WORK.md`](../OPEN_WORK.md).
 - Architecture and product: `ARCHITECTURE.md`, `ARCHITECTURE_MAP.md`,
   `PRODUCT_CONTRACTS.md`, `FINANCIAL_RULES.md`, `FINANCIAL_SEMANTICS.md`,
   `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md`,

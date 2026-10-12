@@ -446,7 +446,7 @@ As entradas V851–V860 e V861–V920 abaixo preservam a evidência daquele mome
 - Worktrees limpos `ci-ops-fix` e `identity-governance-pr409` foram removidos
   após verificação; V260 foi preservada porque contém três arquivos locais não
   rastreados. Nenhuma branch remota foi removida.
-- Próxima recomendação baseada em `docs/ai/OPEN_WORK.md`: atualizar o snapshot
+- Próxima recomendação baseada em `docs/OPEN_WORK.md`: atualizar o snapshot
   de estado/continuidade desatualizado e então priorizar uma fase focada em
   frescor, valuation e proveniência `as-of` de Renda Fixa. Fixtures legítimas
   XP/BTG continuam bloqueadas por entrada do usuário.
@@ -1619,7 +1619,7 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
   V79 é documentação/governança e não altera runtime financeiro.
 - Estado financeiro protegido continua `431/330/101`, 99 referências,
   `2709626` cents e fingerprint `06df1e4ea0adf48cdba16c6eab62c39641a75f6800fe0e296b5846213bd201c2`.
-- Próximo agente deve ler `PROJECT_STATE.md`, `OPEN_WORK.md` e
+- Próximo agente deve ler `PROJECT_STATE.md`, `../OPEN_WORK.md` e
   `FINANCIAL_INVARIANTS.md` antes de agir. Não repetir recovery, fundações
   V68–V78 ou converter compra/venda em fluxo externo.
 
