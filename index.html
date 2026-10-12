@@ -30798,7 +30798,7 @@ function setRfTrustFilter(value){
   render();
 }
 function setRfTrustSort(value){
-  const allowed=['name-asc','value-desc','value-asc','maturity-asc'];
+  const allowed=['name-asc','value-desc','value-asc','maturity-asc','issuer-asc'];
   S.rfSort=allowed.includes(String(value||'')) ? String(value) : 'name-asc';
   render();
 }
@@ -30828,7 +30828,7 @@ function rendaFixaTab(){
   const trustApi=globalThis.FixedIncomeTrust;
   const trustFiltered=trustApi?.filterRows ? trustApi.filterRows(data.tableRows,S.rfSearch,S.rfTrustFilter) : data.tableRows;
   const sortParts=String(S.rfSort||'name-asc').split('-');
-  const trustRows=trustApi?.sortRows ? trustApi.sortRows(trustFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':'name',sortParts[1]==='desc'?'desc':'asc') : trustFiltered;
+  const trustRows=trustApi?.sortRows ? trustApi.sortRows(trustFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':sortParts[0]==='issuer'?'issuer':'name',sortParts[1]==='desc'?'desc':'asc') : trustFiltered;
   const attentionBadges=count ? [
     overdue>0 ? `<span class="note-pill" style="color:#fecaca;background:#3f1d24;border-color:rgba(248,113,113,.24)">${overdue} vencido${overdue===1?'':'s'}</span>` : '',
     soon30>0 ? `<span class="note-pill" style="color:#fde68a;background:#3d2f12;border-color:rgba(251,191,36,.24)">${soon30} em até 30 dias</span>` : '',
@@ -30876,7 +30876,8 @@ function rendaFixaTab(){
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
         <div class="premium-rf-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
-        <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}${row.issuer?` · ${esc(row.issuer)}`:''}</div>
+        <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}</div>
+        <div class="premium-rf-row-meta premium-rf-row-issuer">Instituição: ${esc(row.issuer||'não informada')}</div>
       </div>
       <div class="premium-rf-row-value">
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
@@ -31049,6 +31050,7 @@ function rendaFixaTab(){
             <option value="value-desc" ${S.rfSort==='value-desc'?'selected':''}>Maior valor</option>
             <option value="value-asc" ${S.rfSort==='value-asc'?'selected':''}>Menor valor</option>
             <option value="maturity-asc" ${S.rfSort==='maturity-asc'?'selected':''}>Vencimento próximo</option>
+            <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Instituição A–Z</option>
           </select></label>
         </div>
         <div class="premium-rf-position-list">${positionRows}</div>
