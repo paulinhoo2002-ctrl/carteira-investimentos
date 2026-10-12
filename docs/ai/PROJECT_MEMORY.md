@@ -1,3 +1,8 @@
+## MEGA10 — verdade financeira na apresentação de Ativos (2026-10-12)
+
+- Alguns helpers legados normalizam campos ausentes para zero. A tabela e os cartões de Ativos agora mostram aplicado, resultado e rentabilidade como indisponíveis sem valor atual explícito e base aplicada positiva; zero verdadeiro continua visível quando atual e base estão confirmados. A correção é somente de apresentação e não altera Finance Core.
+- Regressão Playwright sintética cobre posição sem cotação, cotação sem base e resultado confirmado zero em mobile/desktop.
+
 ## V1005 — operacional e exportação portátil protegida (2026-10-11)
 
 - Na branch isolada `codex/v1005-operational-certification`, export portátil recebeu AES-256-GCM com chave derivada PBKDF2/SHA-256; a validação de proprietário/manifesto/SHA continua antes da cifra e depois da decifra. Snapshots locais do navegador permanecem sem esta criptografia e a UI de import continua preview-only.

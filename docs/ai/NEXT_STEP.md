@@ -1,3 +1,8 @@
+## MEGA10 — próxima ação (2026-10-12)
+
+- Revisar a branch local `codex/legacy-product-mega-10` e o diff completo contra a base MEGA09 `7186a5fff7996ef2e451f965b6eb6ba0df512a06`. O commit funcional `8dc3c8f` está validado; o checkpoint desta missão registra também o estado atual.
+- Se houver autorização futura para publicação, confirmar a base/independência da PR #497 antes de push ou Draft PR. Esta missão não autoriza push, PR, merge ou deploy.
+
 ## MEGA09 — próxima ação (2026-10-12)
 
 - Revisar a branch local `codex/legacy-product-mega-09` e os commits funcionais/documentais antes de qualquer publicação.
